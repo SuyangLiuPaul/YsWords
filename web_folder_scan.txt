@@ -1,0 +1,178 @@
+Scanning folder: /Users/paul/Documents/Flutter/yswords/build/web
+
+File: flutter_bootstrap.js
+  Size: 7.87 KB
+  Last Modified: 2025-04-24 13:42:25
+
+File: version.json
+  Size: 0.06 KB
+  Last Modified: 2025-04-24 13:42:42
+
+File: .last_build_id
+  Size: 0.03 KB
+  Last Modified: 2025-04-24 13:10:33
+
+File: index.html
+  Size: 1.17 KB
+  Last Modified: 2025-04-24 13:42:25
+
+File: .DS_Store
+  Size: 6.00 KB
+  Last Modified: 2025-04-24 13:03:23
+
+File: main.dart.js.map
+  Size: 3345.97 KB
+  Last Modified: 2025-04-24 13:42:41
+
+File: main.dart.js
+  Size: 7505.90 KB
+  Last Modified: 2025-04-24 13:42:41
+
+File: flutter.js
+  Size: 7.55 KB
+  Last Modified: 2025-04-10 14:26:14
+
+File: flutter_service_worker.js
+  Size: 0.00 KB
+  Last Modified: 2025-04-24 13:42:44
+
+File: favicon.png
+  Size: 0.47 KB
+  Last Modified: 2025-04-23 21:39:13
+
+File: manifest.json
+  Size: 0.89 KB
+  Last Modified: 2025-04-23 21:39:13
+
+File: icons/Icon-192.png
+  Size: 30.14 KB
+  Last Modified: 2025-04-23 21:39:13
+
+File: icons/Icon-maskable-192.png
+  Size: 30.14 KB
+  Last Modified: 2025-04-23 21:39:13
+
+File: icons/Icon-maskable-512.png
+  Size: 265.00 KB
+  Last Modified: 2025-04-23 21:39:13
+
+File: icons/Icon-512.png
+  Size: 265.00 KB
+  Last Modified: 2025-04-23 21:39:13
+
+File: assets/AssetManifest.json
+  Size: 0.74 KB
+  Last Modified: 2025-04-24 13:42:42
+
+File: assets/NOTICES
+  Size: 1748.95 KB
+  Last Modified: 2025-04-24 13:42:42
+
+File: assets/FontManifest.json
+  Size: 0.45 KB
+  Last Modified: 2025-04-24 13:42:42
+
+File: assets/AssetManifest.bin.json
+  Size: 1.08 KB
+  Last Modified: 2025-04-24 13:42:42
+
+File: assets/AssetManifest.bin
+  Size: 0.80 KB
+  Last Modified: 2025-04-24 13:42:42
+
+File: assets/packages/cupertino_icons/assets/CupertinoIcons.ttf
+  Size: 251.59 KB
+  Last Modified: 2024-04-29 11:22:33
+
+File: assets/packages/fluttertoast/assets/toastify.js
+  Size: 5.16 KB
+  Last Modified: 2025-04-02 09:46:20
+
+File: assets/packages/fluttertoast/assets/toastify.css
+  Size: 1.31 KB
+  Last Modified: 2025-04-02 09:46:20
+
+File: assets/shaders/ink_sparkle.frag
+  Size: 8.66 KB
+  Last Modified: 2025-04-24 13:42:43
+
+File: assets/fonts/MaterialIcons-Regular.otf
+  Size: 1606.62 KB
+  Last Modified: 2022-09-08 02:43:36
+
+File: assets/assets/app_icon.png
+  Size: 1289.12 KB
+  Last Modified: 2025-04-23 21:22:57
+
+File: assets/assets/kjv.json
+  Size: 7334.99 KB
+  Last Modified: 2025-04-04 17:15:20
+
+File: assets/assets/cuvs-yhwh.json
+  Size: 5830.75 KB
+  Last Modified: 2025-04-23 13:05:55
+
+File: assets/assets/biblexg.json
+  Size: 1466.78 KB
+  Last Modified: 2025-04-23 14:54:35
+
+File: assets/assets/fonts/Roboto-Italic-VariableFont_wdth,wght.ttf
+  Size: 485.47 KB
+  Last Modified: 2025-04-23 17:40:56
+
+File: assets/assets/fonts/Roboto-VariableFont_wdth,wght.ttf
+  Size: 457.33 KB
+  Last Modified: 2025-04-23 17:40:56
+
+File: assets/assets/fonts/Microsoft%20Yahei.ttf
+  Size: 21257.77 KB
+  Last Modified: 2025-04-23 17:39:21
+
+File: canvaskit/skwasm_st.js
+  Size: 56.57 KB
+  Last Modified: 2025-04-10 14:36:02
+
+File: canvaskit/skwasm.js
+  Size: 64.50 KB
+  Last Modified: 2025-04-10 14:34:42
+
+File: canvaskit/skwasm.js.symbols
+  Size: 1398.26 KB
+  Last Modified: 2025-04-10 14:34:42
+
+File: canvaskit/canvaskit.js.symbols
+  Size: 1299.22 KB
+  Last Modified: 2025-04-10 14:32:54
+
+File: canvaskit/skwasm.wasm
+  Size: 3317.09 KB
+  Last Modified: 2025-04-10 14:34:42
+
+File: canvaskit/skwasm_st.js.symbols
+  Size: 1394.64 KB
+  Last Modified: 2025-04-10 14:36:02
+
+File: canvaskit/canvaskit.js
+  Size: 84.58 KB
+  Last Modified: 2025-04-10 14:32:54
+
+File: canvaskit/canvaskit.wasm
+  Size: 6782.17 KB
+  Last Modified: 2025-04-10 14:32:54
+
+File: canvaskit/skwasm_st.wasm
+  Size: 3304.44 KB
+  Last Modified: 2025-04-10 14:36:02
+
+File: canvaskit/chromium/canvaskit.js.symbols
+  Size: 1222.18 KB
+  Last Modified: 2025-04-10 14:33:20
+
+File: canvaskit/chromium/canvaskit.js
+  Size: 84.22 KB
+  Last Modified: 2025-04-10 14:33:20
+
+File: canvaskit/chromium/canvaskit.wasm
+  Size: 5437.04 KB
+  Last Modified: 2025-04-10 14:33:20
+

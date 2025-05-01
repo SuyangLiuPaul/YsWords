@@ -1,0 +1,73 @@
+name: yswords
+description: "YsWords means Yahweh's words. A bilingual Bible app to help you listen to His voice and abide in Him daily."
+publish_to: 'none'
+version: 0.1.0
+
+environment:
+  sdk: '>=3.2.3 <4.0.0'
+
+dependencies:
+  clipboard: ^0.1.3
+  expandable: ^5.0.1
+  flutter:
+    sdk: flutter
+  fluttertoast: ^8.2.12
+  get: ^4.6.6
+  provider: ^6.1.1
+  scroll_to_index: ^3.0.1
+  scrollable_positioned_list: ^0.3.8
+  shared_preferences: ^2.5.3
+  google_fonts: ^6.2.1
+  cupertino_icons: ^1.0.2
+  draggable_scrollbar: ^0.1.0
+  url_launcher: ^6.3.1
+  intl: ^0.20.2
+  universal_html: ^2.2.4
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+  flutter_launcher_icons: ^0.14.3
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/kjv.json
+    - assets/leb.json
+    - assets/cuvs-yhwh.json
+    - assets/cuvs-yhwh-tr.json
+    - assets/biblexg.json
+    - assets/biblexg-tr.json
+    - assets/app_icon.png
+    - assets/loading.png
+    - assets/fonts/
+  fonts:
+    - family: Roboto
+      fonts:
+        - asset: assets/fonts/Roboto-VariableFont_wdth,wght.ttf
+    - family: Microsoft YaHei
+      fonts:
+        - asset: assets/fonts/Microsoft Yahei.ttf
+
+# Note:
+# For Flutter Web, the browser tab icon (favicon) is located at:
+# web/favicon.png
+# You may need to manually replace or symlink it using:
+# ln -sf ../assets/app_icon.png web/favicon.png
+
+flutter_icons:
+  image_path: "assets/app_icon.png"
+  android:
+    generate: true
+  ios:
+    generate: true
+  macos:
+    generate: true
+  windows:
+    generate: true
+  linux:
+    generate: true
+  web:
+    generate: true
+    image_path: "assets/app_icon.png"
