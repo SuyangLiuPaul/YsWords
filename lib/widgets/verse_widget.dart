@@ -23,9 +23,7 @@ class VerseWidget extends StatelessWidget {
         final notePattern = RegExp(r'<note:([^>]+)>');
         final combinedPattern = RegExp(r'(\{[^}]+\}|\[[^\]]+\]|<note:[^>]+>)');
         final original = verse.text.replaceAll('\n', '');
-        final noteMatches = notePattern.allMatches(original).toList();
         final raw = original.trim();
-        final noteCount = notePattern.allMatches(original).length;
         final parts = raw
             .splitMapJoin(
               combinedPattern,

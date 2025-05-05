@@ -160,8 +160,6 @@ const _zhAliasToEn = {
   '列王纪下': '2 Kings', '列王紀下': '2 Kings',
   '历代志上': '1 Chronicles', '歷代志上': '1 Chronicles',
   '历代志下': '2 Chronicles', '歷代志下': '2 Chronicles',
-  '历代誌上': '1 Chronicles', '歷代誌上': '1 Chronicles',
-  '历代誌下': '2 Chronicles', '歷代誌下': '2 Chronicles',
   '以斯拉记': 'Ezra', '以斯拉記': 'Ezra',
   '尼希米记': 'Nehemiah', '尼希米記': 'Nehemiah',
   '以斯帖记': 'Esther', '以斯帖記': 'Esther',
