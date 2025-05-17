@@ -330,5 +330,13 @@ A GitHub Actions workflow `.github/workflows/build.yml`:
 
 ---
 
+## 📧 Contact
+
+For questions, feedback, or licensing enquiries, please email:
+
+**paul.sy.liu@gmail.com**
+
+---
+
 > “Your word is a lamp to my feet  
 >  and a light for my path.” — *Psalm 119:105*
