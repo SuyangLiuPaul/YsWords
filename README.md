@@ -115,11 +115,12 @@ Each verse record:
 
 ```jsonc
 {
-  "book": "Acts",
-  "chapter": 8,
-  "verse": 33,
-  "text": "{他；}[受屈]…<note:引用赛53:8>",
-  "isParagraphStart": false
+  "book": "Genesis",
+  "chapter": "1",
+  "verse": "1",
+  "text": "In the beginning God created the heavens and the earth.\n",
+  "id": "001001001",
+  "isParagraphStart": true
 }
 ```
 
@@ -235,9 +236,10 @@ python tools/usfm_to_json.py --input raw/usfm/Acts.usfm --output assets/Acts.jso
 | Field | Type | Description |
 |-------|------|-------------|
 | `book` | `string` | Localised book name |
-| `chapter` | `int` | Chapter number |
-| `verse` | `int` | Verse number |
+| `chapter` | `int / string` | Chapter number |
+| `verse` | `int / string` | Verse number |
 | `text` | `string` | Raw verse text with inline tags |
+| `id` | `string` | 9‑digit canonical ID (`bbbcccvvv`) for quick look‑ups |
 | `isParagraphStart` | `bool` | `true` if a new paragraph starts here |
 
 ### Inline Tag Grammar
@@ -247,6 +249,20 @@ python tools/usfm_to_json.py --input raw/usfm/Acts.usfm --output assets/Acts.jso
 […]       → Keyword with dotted underline
 <note:…>  → Hidden note icon
 ```
+
+Example (Genesis 1:2):
+
+```jsonc
+{
+  "book": "Genesis",
+  "chapter": "1",
+  "verse": "2",
+  "text": "Now<note: Or \"And\"> the earth was formless and empty, and darkness [was] over the face of the deep. And the Spirit of God [was] hovering over the surface of the waters.\n",
+  "id": "001001002"
+}
+```
+
+* Chapter / verse may be stored as strings (`"1"`) or integers (`1`) depending on source.  
 
 ---
 
