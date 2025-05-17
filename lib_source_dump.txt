@@ -4424,8 +4424,9 @@ class VerseWidget extends StatelessWidget {
                     final afterBrace =
                         verseText.substring(braceIndex + braceFull.length);
                     // Look for the next <note:...> tag, allowing for whitespace or punctuation in between, but no braces/brackets
-                    final nextAnnotation = RegExp(r'''^([\s.,;:"“”'"”]*)<note:([^>]+)>''')
-                        .firstMatch(afterBrace);
+                    final nextAnnotation =
+                        RegExp(r'''^([\s.,;:"“”'"”]*)<note:([^>]+)>''')
+                            .firstMatch(afterBrace);
                     if (nextAnnotation != null) {
                       extractedNote = nextAnnotation.group(2);
                     }
@@ -4590,7 +4591,7 @@ class VerseWidget extends StatelessWidget {
                 ? Theme.of(context).colorScheme.secondary.withOpacity(0.2)
                 : Theme.of(context).colorScheme.secondary.withOpacity(0.3);
             spans.add(WidgetSpan(
-              alignment: PlaceholderAlignment.middle,
+              alignment: PlaceholderAlignment.bottom,
               child: GestureDetector(
                 onTap: () {
                   showDialog(
@@ -4608,12 +4609,14 @@ class VerseWidget extends StatelessWidget {
                   );
                 },
                 child: Padding(
-                  padding: const EdgeInsets.only(left: 2, bottom: 1.5),
-                  child: Icon(
-                    Icons.menu_book,
-                    size: settings.fontSize * 0.75,
-                    color: Theme.of(context).iconTheme.color?.withOpacity(0.5),
-                  ),
+                  padding:
+                      const EdgeInsets.only(right: 4.0, left: 2.0, bottom: 5.0),
+                  child: Icon(Icons.menu_book,
+                      size: settings.fontSize * 1.2,
+                      color: Theme.of(context)
+                          .iconTheme
+                          .color
+                          ?.withAlpha((255 * 0.5).toInt())),
                 ),
               ),
             ));
