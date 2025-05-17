@@ -186,12 +186,6 @@ Please run `flutter format .` before committing to maintain code style.
 
 ---
 
-## 🖼️ Screenshots
-
-*(Add Light‑mode and Dark‑mode screenshots, plus search page preview.)*
-
----
-
 ## 📜 Licence
 
 YsWords is released under the MIT Licence.  
@@ -199,9 +193,9 @@ Scripture texts remain © their respective publishers. See `/assets/*` for licen
 
 ---
 
-## 🙏 Acknowledgements
-
 - Lexham English Bible © Logos Bible Software.  
+- 《原文释经圣经》 © Bible Exegesis Ministry (<https://www.biblexg.com/>). Used with permission.  
+- 《雅伟的话》 和合本‑雅伟版 © Yahweh De Hua Ministry (<https://yahwehdehua.net/cn>). Used with permission.  
 - Fonts: Roboto (Google), Microsoft YaHei.  
 - Inspiration from BibleWorks, YouVersion, and community Bible APIs.
 
