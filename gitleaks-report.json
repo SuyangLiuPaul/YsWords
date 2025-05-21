@@ -1,0 +1,23 @@
+[
+ {
+  "RuleID": "generic-api-key",
+  "Description": "Detected a Generic API Key, potentially exposing access to various services and sensitive operations.",
+  "StartLine": 115323,
+  "EndLine": 115323,
+  "StartColumn": 34,
+  "EndColumn": 56,
+  "Match": "key || B.ModifierKey_8 ",
+  "Secret": "B.ModifierKey_8",
+  "File": "web_code_dump.txt",
+  "SymlinkFile": "",
+  "Commit": "3757063ba156967b808a1245e3e8b53cae1f8aeb",
+  "Link": "https://github.com/SuyangLiuPaul/YsWords/blob/3757063ba156967b808a1245e3e8b53cae1f8aeb/web_code_dump.txt#L115323",
+  "Entropy": 3.640224,
+  "Author": "Paul Liu",
+  "Email": "81271326+SuyangLiuPaul@users.noreply.github.com",
+  "Date": "2025-05-01T12:50:20Z",
+  "Message": "Add Flutter .gitignore",
+  "Tags": [],
+  "Fingerprint": "3757063ba156967b808a1245e3e8b53cae1f8aeb:web_code_dump.txt:generic-api-key:115323"
+ }
+]
