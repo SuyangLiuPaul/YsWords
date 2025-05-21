@@ -34,17 +34,11 @@
 
 ---
 
-### 🔍 Filter Dropdowns
+### 🔍 Search & Filter
 
-<p align="center">
-  <img src="assets/screenshots/screenshot_search_filter_zh.png" alt="Dropdown Simplified" width="300"/>
-</p>
-
----
-
-| 🔍 Search Results |  |
-|------------------|-------------------|
-| <img src="assets/screenshots/screenshot_search_results.png" alt="Search results" width="400"/> |  |
+| Search Results | Filter Dropdown |
+|----------------|-----------------|
+| <img src="assets/screenshots/screenshot_search_results.png" alt="Search results" width="400"/> | <img src="assets/screenshots/screenshot_search_filter_zh.png" alt="Dropdown Simplified" width="300"/> |
 
 ---
 
