@@ -20,6 +20,65 @@
 
 ---
 
+## 📸 App Screenshots
+
+### 📖 Main Reading View
+<img src="assets/screenshots/screenshot_multi_select.png" alt="Multi-select verses" width="450"/>
+
+Tap verses to select and copy in various formats. Inline annotations appear as tappable badges or note icons.
+
+---
+
+### 📌 Note Popup (Annotation)
+<img src="assets/screenshots/screenshot_note_popup.png" alt="Note popup dialog" width="350"/>
+
+Tapping on a `{…}` badge reveals linked `<note:…>` content in a clean pop-up.
+
+---
+
+### 🔍 Search in Action
+<img src="assets/screenshots/screenshot_search_results.png" alt="Search results" width="450"/>
+
+Search across the entire Bible or just the current book, with results grouped by book.
+
+<img src="assets/screenshots/screenshot_search_filter_zh.png" alt="Search filter dropdown (Chinese)" width="300"/>
+<img src="assets/screenshots/screenshot_search_filter_zh_alt.png" alt="Search filter dropdown alt" width="300"/>
+
+---
+
+### 📚 Version Switching
+<img src="assets/screenshots/screenshot_version_switch.png" alt="Version switching menu" width="400"/>
+
+Switch between English (KJV, LEB) and Chinese versions (雅伟版, 原文释经圣经), simplified or traditional.
+
+---
+
+### ⚙️ Settings Page
+<img src="assets/screenshots/screenshot_settings_page.png" alt="Settings page" width="400"/>
+
+Customise your reading experience: theme, colour, font, interface language, and more.
+
+---
+
+### 📘 Book & Chapter Picker
+<img src="assets/screenshots/screenshot_book_chapter_picker.png" alt="Book and chapter picker" width="400"/>
+
+Quickly jump to any book and chapter via a clean, collapsible menu.
+
+---
+
+### 🚀 App Splash Screen
+<img src="assets/screenshots/screenshot_loading_page.png" alt="Splash screen" width="300"/>
+
+Includes a daily random verse and a bilingual welcome message.
+
+---
+
+### 🕊️ App Icon
+
+<img src="assets/app_icon.png" alt="YsWords App Icon" width="120"/>
+---
+
 ## 🛠️ Installation
 
 ```bash
