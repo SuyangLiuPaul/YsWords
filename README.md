@@ -1,7 +1,7 @@
 # YsWords – Yahweh’s Words
 
 <p align="center">
-  <img src="assets/app_icon.png" alt="YsWords App Icon" width="100"/>
+  <img src="assets/app_icon.png" alt="YsWords App Icon" width="60"/>
 </p>
 
 *A bilingual, offline‑capable Bible reader built with Flutter.*
