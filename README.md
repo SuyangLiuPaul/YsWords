@@ -8,8 +8,6 @@
 
 ---
 
-**YsWords** means _Yahweh’s words_.
-
 ## ✨ Features
 
 | Category     | Details                                                                                                                 |
