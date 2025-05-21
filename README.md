@@ -1,6 +1,6 @@
 # YsWords – Yahweh’s Words
 
-<p align="center">
+<p align="left">
   <img src="assets/app_icon.png" alt="YsWords App Icon" width="60"/>
 </p>
 
