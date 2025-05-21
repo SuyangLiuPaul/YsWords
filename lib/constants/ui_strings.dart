@@ -226,4 +226,9 @@ const uiStrings = {
     'en':
         '❗️Content contains unsupported symbols (such as emojis). Please remove them before sending.',
   },
+  'note': {
+    'zh-Hans': '注释',
+    'zh-Hant': '註釋',
+    'en': 'Note',
+  },
 };

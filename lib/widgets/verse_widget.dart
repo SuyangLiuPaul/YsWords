@@ -4,16 +4,20 @@ import 'package:yswords/providers/main_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/utils/clipboard_helper.dart';
+import 'package:yswords/constants/ui_strings.dart';
 
 class VerseWidget extends StatelessWidget {
   final Verse verse;
   final int index;
+
   const VerseWidget({super.key, required this.verse, required this.index});
+
 
   @override
   Widget build(BuildContext context) {
     return Consumer2<MainProvider, AppSettings>(
       builder: (context, mainProvider, settings, child) {
+        final locale = settings.locale;
         final isSelected = mainProvider.isSelected(verse);
         final isHighlighted = mainProvider.highlightIndex == index;
 
@@ -99,12 +103,25 @@ class VerseWidget extends StatelessWidget {
                   showDialog(
                     context: context,
                     builder: (_) => AlertDialog(
-                      title: Text('Note'),
+                      title: Text(
+                        uiStrings['note']?[locale] ?? 'Note',
+                        style: TextStyle(
+                          fontSize: settings.fontSize + 2,
+                          fontFamily: settings.fontFamily,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                       content: Text(extractedNote ?? annotation),
                       actions: [
                         TextButton(
                           onPressed: () => Navigator.of(context).pop(),
-                          child: Text('Close'),
+                          child: Text(
+                            uiStrings['ok']?[locale] ?? 'OK',
+                            style: TextStyle(
+                              fontSize: settings.fontSize,
+                              fontFamily: settings.fontFamily,
+                            ),
+                          ),
                         )
                       ],
                     ),
@@ -262,12 +279,25 @@ class VerseWidget extends StatelessWidget {
                   showDialog(
                     context: context,
                     builder: (_) => AlertDialog(
-                      title: Text('Note'),
+                      title: Text(
+                        uiStrings['note']?[locale] ?? 'Note',
+                        style: TextStyle(
+                          fontSize: settings.fontSize + 2,
+                          fontFamily: settings.fontFamily,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                       content: Text(note),
                       actions: [
                         TextButton(
                           onPressed: () => Navigator.of(context).pop(),
-                          child: Text('Close'),
+                          child: Text(
+                            uiStrings['ok']?[locale] ?? 'OK',
+                            style: TextStyle(
+                              fontSize: settings.fontSize,
+                              fontFamily: settings.fontFamily,
+                            ),
+                          ),
                         )
                       ],
                     ),
