@@ -4,9 +4,11 @@
   <img src="assets/app_icon.png" alt="YsWords App Icon" width="60"/>
 </p>
 
-<p align="center"><em>A bilingual, offline‑capable Bible reader built with Flutter.</em></p>
+<p align="center"><em>A bilingual Bible reader for Yahweh's words built with Flutter.</em></p>
 
 ---
+
+**YsWords** means _Yahweh’s words_.
 
 ## ✨ Features
 
