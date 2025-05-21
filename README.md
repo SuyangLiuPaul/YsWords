@@ -88,7 +88,7 @@ https://yswords.netlify.app/
 
 1. Open the URL in any modern browser (Chrome, Edge, Safari, Firefox).
 2. The first load downloads all required Bible JSON files; please wait for the progress indicator to complete.
-3. **Offline‑first:** the site installs a service worker – subsequent visits work without an Internet connection.
+3. *Note: Service worker is currently unavailable; offline support is temporarily disabled.*
 4. On mobile, tap the browser menu → _“Add to Home Screen”_ to install as a PWA.
 5. All features listed above (version switch, search, notes, copy formats) work exactly as in the mobile app.
 
