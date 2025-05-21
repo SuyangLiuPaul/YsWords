@@ -54,8 +54,6 @@
 
 ---
 
----
-
 ## 🛠️ Installation
 
 ```bash
@@ -193,16 +191,6 @@ flutter build web
 ```
 
 To deploy on Netlify, point the site to `build/web` and enable “Redirects: /\* /index.html 200”.
-
----
-
-## 🗺️ Roadmap
-
-- [ ] Verse audio playback (BIBLEXG MP3).
-- [ ] Bookmark / Favourite verses.
-- [ ] Inline cross‑references.
-- [ ] Sync bookmarks via Firebase.
-- [ ] Greek / Hebrew lexicon pop‑ups.
 
 ---
 
