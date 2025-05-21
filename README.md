@@ -28,20 +28,17 @@
 
 ### 📖 Main Reading View & 📌 Note Popup
 
-<p align="center">
-  <img src="assets/screenshots/screenshot_multi_select.png" alt="Main Reading View" width="400"/>
-  <img src="assets/screenshots/screenshot_note_popup.png" alt="Note popup" width="300"/>
-</p>
+| Main Reading View | Note Popup |
+|-------------------|------------|
+| <img src="assets/screenshots/screenshot_multi_select.png" alt="Main Reading View" width="400"/> | <img src="assets/screenshots/screenshot_note_popup.png" alt="Note popup" width="300"/> |
 
 ---
 
 ### 🔍 Filter Dropdowns
 
-<p align="center">
-  <img src="assets/screenshots/screenshot_search_filter_zh.png" alt="Dropdown Simplified" width="280"/>
-  <img src="assets/screenshots/screenshot_search_filter_zh_alt.png" alt="Dropdown Traditional" width="280"/>
-  <img src="assets/screenshots/screenshot_note_popup.png" alt="Note popup" width="280"/>
-</p>
+| Simplified | Traditional |
+|------------|-------------|
+| <img src="assets/screenshots/screenshot_search_filter_zh.png" alt="Dropdown Simplified" width="300"/> | <img src="assets/screenshots/screenshot_search_filter_zh_alt.png" alt="Dropdown Traditional" width="300"/> |
 
 ---
 
