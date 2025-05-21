@@ -1,5 +1,9 @@
 # YsWords – Yahweh’s Words
 
+<p align="center">
+  <img src="assets/app_icon.png" alt="YsWords App Icon" width="100"/>
+</p>
+
 *A bilingual, offline‑capable Bible reader built with Flutter.*
 
 ---
@@ -24,13 +28,23 @@
 
 | 📖 Main Reading View | 📌 Note Popup |
 |----------------------|----------------|
-| <img src="assets/screenshots/screenshot_multi_select.png" alt="Multi-select verses" width="400"/> | <img src="assets/screenshots/screenshot_note_popup.png" alt="Note popup dialog" width="300"/> |
+| <img src="assets/screenshots/screenshot_multi_select.png" alt="Multi-select verses" width="400"/> | |
 
 ---
 
-| 🔍 Search Results | 🔍 Filter Dropdown |
+### 🔍 Filter Dropdown & 📌 Note Popup
+
+<p align="center">
+  <img src="assets/screenshots/screenshot_search_filter_zh.png" alt="Dropdown Simplified" width="280"/>
+  <img src="assets/screenshots/screenshot_search_filter_zh_alt.png" alt="Dropdown Traditional" width="280"/>
+  <img src="assets/screenshots/screenshot_note_popup.png" alt="Note popup" width="280"/>
+</p>
+
+---
+
+| 🔍 Search Results |  |
 |------------------|-------------------|
-| <img src="assets/screenshots/screenshot_search_results.png" alt="Search results" width="400"/> | <img src="assets/screenshots/screenshot_search_filter_zh.png" alt="Search filter dropdown (Chinese)" width="300"/><br><img src="assets/screenshots/screenshot_search_filter_zh_alt.png" alt="Search filter dropdown alt" width="300"/> |
+| <img src="assets/screenshots/screenshot_search_results.png" alt="Search results" width="400"/> |  |
 
 ---
 
@@ -46,9 +60,6 @@
 
 ---
 
-### 🕊️ App Icon
-
-<img src="assets/app_icon.png" alt="YsWords App Icon" width="100"/>
 ---
 
 ## 🛠️ Installation
