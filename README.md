@@ -30,7 +30,7 @@
 
 | Main Reading View                                                                               | Note Popup                                                                             |
 | ----------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
-| <img src="assets/screenshots/screenshot_multi_select.png" alt="Main Reading View" height="350"/> | <img src="assets/screenshots/screenshot_note_popup.png" alt="Note popup" height="350"/> |
+| <img src="assets/screenshots/screenshot_multi_select.png" alt="Main Reading View" height="400"/> | <img src="assets/screenshots/screenshot_note_popup.png" alt="Note popup" height="400"/> |
 
 ---
 
@@ -38,19 +38,19 @@
 
 | Search Results                                                                                 | Filter Dropdown                                                                                       |
 | ---------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| <img src="assets/screenshots/screenshot_search_results.png" alt="Search results" height="350"/> | <img src="assets/screenshots/screenshot_search_filter_zh.png" alt="Dropdown Simplified" height="350"/> |
+| <img src="assets/screenshots/screenshot_search_results.png" alt="Search results" height="400"/> | <img src="assets/screenshots/screenshot_search_filter_zh.png" alt="Dropdown Simplified" height="400"/> |
 
 ---
 
 | 📚 Version Switching                                                                                   | ⚙️ Settings Page                                                                             |
 | ------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------- |
-| <img src="assets/screenshots/screenshot_version_switch.png" alt="Version switching menu" height="350"/> | <img src="assets/screenshots/screenshot_settings_page.png" alt="Settings page" height="350"/> |
+| <img src="assets/screenshots/screenshot_version_switch.png" alt="Version switching menu" height="400"/> | <img src="assets/screenshots/screenshot_settings_page.png" alt="Settings page" height="400"/> |
 
 ---
 
 | 📘 Book & Chapter Picker                                                                                     | 🚀 App Splash Screen                                                                        |
 | ------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------- |
-| <img src="assets/screenshots/screenshot_book_chapter_picker.png" alt="Book and chapter picker" height="350"/> | <img src="assets/screenshots/screenshot_loading_page.png" alt="Splash screen" height="350"/> |
+| <img src="assets/screenshots/screenshot_book_chapter_picker.png" alt="Book and chapter picker" height="400"/> | <img src="assets/screenshots/screenshot_loading_page.png" alt="Splash screen" height="400"/> |
 
 ---
 
