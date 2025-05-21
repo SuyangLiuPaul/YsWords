@@ -30,7 +30,7 @@ Tap verses to select and copy in various formats. Inline annotations appear as t
 ---
 
 ### 📌 Note Popup (Annotation)
-<img src="assets/screenshots/screenshot_note_popup.png" alt="Note popup dialog" width="350"/>
+<img src="assets/screenshots/screenshot_note_popup.png" alt="Note popup dialog" width="300"/>
 
 Tapping on a `{…}` badge reveals linked `<note:…>` content in a clean pop-up.
 
@@ -47,21 +47,21 @@ Search across the entire Bible or just the current book, with results grouped by
 ---
 
 ### 📚 Version Switching
-<img src="assets/screenshots/screenshot_version_switch.png" alt="Version switching menu" width="400"/>
+<img src="assets/screenshots/screenshot_version_switch.png" alt="Version switching menu" width="450"/>
 
 Switch between English (KJV, LEB) and Chinese versions (雅伟版, 原文释经圣经), simplified or traditional.
 
 ---
 
 ### ⚙️ Settings Page
-<img src="assets/screenshots/screenshot_settings_page.png" alt="Settings page" width="400"/>
+<img src="assets/screenshots/screenshot_settings_page.png" alt="Settings page" width="450"/>
 
 Customise your reading experience: theme, colour, font, interface language, and more.
 
 ---
 
 ### 📘 Book & Chapter Picker
-<img src="assets/screenshots/screenshot_book_chapter_picker.png" alt="Book and chapter picker" width="400"/>
+<img src="assets/screenshots/screenshot_book_chapter_picker.png" alt="Book and chapter picker" width="450"/>
 
 Quickly jump to any book and chapter via a clean, collapsible menu.
 
