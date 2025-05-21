@@ -36,9 +36,9 @@
 
 ### 🔍 Filter Dropdowns
 
-| Simplified | Traditional |
-|------------|-------------|
-| <img src="assets/screenshots/screenshot_search_filter_zh.png" alt="Dropdown Simplified" width="300"/> | <img src="assets/screenshots/screenshot_search_filter_zh_alt.png" alt="Dropdown Traditional" width="300"/> |
+<p align="center">
+  <img src="assets/screenshots/screenshot_search_filter_zh.png" alt="Dropdown Simplified" width="300"/>
+</p>
 
 ---
 
