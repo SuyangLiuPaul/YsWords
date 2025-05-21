@@ -1,4 +1,4 @@
-# YsWords – Yahweh’s Words
+<h1 align="center">YsWords – Yahweh’s Words</h1>
 
 <p align="center">
   <img src="assets/app_icon.png" alt="YsWords App Icon" width="60"/>
