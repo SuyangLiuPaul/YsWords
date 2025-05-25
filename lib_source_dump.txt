@@ -1,0 +1,4723 @@
+
+================================================================================
+FILE: pubspec.yaml
+================================================================================
+name: yswords
+description: "YsWords means Yahweh's words. A bilingual Bible app to help you listen to His voice and abide in Him daily."
+publish_to: 'none'
+version: 0.1.0
+
+environment:
+  sdk: '>=3.2.3 <4.0.0'
+
+dependencies:
+  clipboard: ^0.1.3
+  expandable: ^5.0.1
+  flutter:
+    sdk: flutter
+  fluttertoast: ^8.2.12
+  get: ^4.6.6
+  provider: ^6.1.1
+  scroll_to_index: ^3.0.1
+  scrollable_positioned_list: ^0.3.8
+  shared_preferences: ^2.5.3
+  google_fonts: ^6.2.1
+  cupertino_icons: ^1.0.2
+  draggable_scrollbar: ^0.1.0
+  url_launcher: ^6.3.1
+  intl: ^0.20.2
+  universal_html: ^2.2.4
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+  flutter_launcher_icons: ^0.14.3
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/kjv.json
+    - assets/leb.json
+    - assets/cuvs-yhwh.json
+    - assets/cuvs-yhwh-tr.json
+    - assets/biblexg.json
+    - assets/biblexg-tr.json
+    - assets/app_icon.png
+    - assets/loading.png
+    - assets/fonts/
+  fonts:
+    - family: Roboto
+      fonts:
+        - asset: assets/fonts/Roboto-VariableFont_wdth,wght.ttf
+    - family: Microsoft YaHei
+      fonts:
+        - asset: assets/fonts/Microsoft Yahei.ttf
+
+# Note:
+# For Flutter Web, the browser tab icon (favicon) is located at:
+# web/favicon.png
+# You may need to manually replace or symlink it using:
+# ln -sf ../assets/app_icon.png web/favicon.png
+
+flutter_icons:
+  image_path: "assets/app_icon.png"
+  android:
+    generate: true
+  ios:
+    generate: true
+  macos:
+    generate: true
+  windows:
+    generate: true
+  linux:
+    generate: true
+  web:
+    generate: true
+    image_path: "assets/app_icon.png"
+
+
+================================================================================
+FILE: main.dart
+================================================================================
+import 'dart:async';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import 'package:yswords/pages/loading_page.dart';
+import 'package:yswords/providers/main_provider.dart';
+import 'package:yswords/models/app_settings.dart';
+import 'package:yswords/services/fetch_books.dart';
+import 'package:yswords/services/fetch_verses.dart';
+import 'package:provider/provider.dart';
+import 'package:get/get.dart';
+
+void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  FlutterError.onError = (FlutterErrorDetails details) {
+    FlutterError.dumpErrorToConsole(details);
+    PlatformDispatcher.instance.onError = (e, st) {
+      print('UNCAUGHT: $e\n$st');
+      return true;
+    };
+  };
+
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (context) => MainProvider()),
+        ChangeNotifierProvider(create: (context) => AppSettings()),
+      ],
+      child: const MainApp(),
+    ),
+  );
+}
+
+class MainApp extends StatefulWidget {
+  const MainApp({super.key});
+
+  @override
+  State<MainApp> createState() => _MainAppState();
+}
+
+class _MainAppState extends State<MainApp> {
+  bool _loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    Timer(Duration(seconds: 8), () {
+      if (_loading) {
+        setState(() {
+          _loading = false; // Optionally handle timeout behavior here.
+        });
+      }
+    });
+    Future.microtask(() async {
+      final mainProvider = Provider.of<MainProvider>(context, listen: false);
+      final appSettings = Provider.of<AppSettings>(context, listen: false);
+
+      // Load settings and Bible content
+      await appSettings.loadSettings();
+
+      bool localResourcesReady = await FetchVerses.testLoadLocal();
+      if (!localResourcesReady) {
+        // If updates are disabled but no local data exists, fetch once to populate it:
+        if (!appSettings.allowUpdates) {
+          await FetchVerses.execute(
+            mainProvider: mainProvider,
+            settings: appSettings,
+          );
+          // recheck
+          localResourcesReady = await FetchVerses.testLoadLocal();
+        }
+        appSettings.setLockAllowUpdates(true);
+      } else {
+        appSettings.setLockAllowUpdates(false);
+      }
+
+      await mainProvider.restoreState();
+
+      if (mainProvider.verses.isEmpty) {
+        if (appSettings.allowUpdates) {
+          await FetchVerses.execute(
+            mainProvider: mainProvider,
+            settings: appSettings,
+          );
+        } else {
+          await FetchVerses.loadLocalOnly(
+            mainProvider: mainProvider,
+          );
+        }
+      }
+
+      await FetchBooks.execute(
+          mainProvider: mainProvider, settings: appSettings);
+
+      // Validate restored state or fallback
+      if (mainProvider.currentBook != null &&
+          mainProvider.currentChapter != null &&
+          mainProvider.verses.any((v) =>
+              v.book == mainProvider.currentBook &&
+              v.chapter == mainProvider.currentChapter)) {
+        final match = mainProvider.verses.firstWhere(
+          (v) =>
+              v.book == mainProvider.currentBook &&
+              v.chapter == mainProvider.currentChapter,
+        );
+        mainProvider.updateCurrentVerse(verse: match);
+      } else if (mainProvider.verses.isNotEmpty) {
+        final firstVerse = mainProvider.verses.first;
+        mainProvider.setCurrentChapter(
+            book: firstVerse.book, chapter: firstVerse.chapter);
+        mainProvider.updateCurrentVerse(verse: firstVerse);
+      }
+
+      setState(() {
+        _loading = false;
+      });
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<AppSettings>(
+      builder: (context, settings, _) {
+        return GetMaterialApp(
+          debugShowCheckedModeBanner: false,
+          themeMode: settings.themeMode,
+          theme: ThemeData(
+            fontFamily: settings.fontFamily,
+            fontFamilyFallback: ['Roboto', 'Arial', 'Helvetica'],
+            textTheme: ThemeData.light().textTheme.copyWith(
+                  bodyLarge: ThemeData.light().textTheme.bodyLarge?.copyWith(
+                        fontFamily: settings.fontFamily,
+                        fontSize: settings.fontSize,
+                      ),
+                  bodyMedium: ThemeData.light().textTheme.bodyMedium?.copyWith(
+                        fontFamily: settings.fontFamily,
+                        fontSize: settings.fontSize - 2,
+                      ),
+                  titleLarge: ThemeData.light().textTheme.titleLarge?.copyWith(
+                        fontFamily: settings.fontFamily,
+                        fontSize: settings.fontSize + 4,
+                      ),
+                ),
+            colorSchemeSeed: settings.primaryColor,
+          ),
+          darkTheme: ThemeData(
+            fontFamily: settings.fontFamily,
+            fontFamilyFallback: ['Roboto', 'Arial', 'Helvetica'],
+            textTheme: ThemeData.dark().textTheme.copyWith(
+                  bodyLarge: ThemeData.dark().textTheme.bodyLarge?.copyWith(
+                        fontFamily: settings.fontFamily,
+                        fontSize: settings.fontSize,
+                        color: Color(0xFFCCCCCC),
+                      ),
+                  bodyMedium: ThemeData.dark().textTheme.bodyMedium?.copyWith(
+                        fontFamily: settings.fontFamily,
+                        fontSize: settings.fontSize - 2,
+                        color: Color(0xFFCCCCCC),
+                      ),
+                  titleLarge: ThemeData.dark().textTheme.titleLarge?.copyWith(
+                        fontFamily: settings.fontFamily,
+                        fontSize: settings.fontSize + 4,
+                        color: Color(0xFFCCCCCC),
+                      ),
+                ),
+            inputDecorationTheme: InputDecorationTheme(
+              enabledBorder: UnderlineInputBorder(
+                borderSide: BorderSide(color: Color(0xFF888888)),
+              ),
+              focusedBorder: UnderlineInputBorder(
+                borderSide: BorderSide(color: Color(0xFFCCCCCC), width: 2),
+              ),
+              hintStyle: TextStyle(color: Color(0xFFAAAAAA)),
+            ),
+            colorScheme: const ColorScheme.dark(
+              surface: Color(0xFF1A1A1A),
+              background: Color(0xFF121212),
+              primary: Color(0xFFCCCCCC),
+              onPrimary: Colors.black,
+              onSurface: Color(0xFFCCCCCC),
+            ),
+            scaffoldBackgroundColor: Color(0xFF121212),
+            cardColor: const Color(0xFF1A1A1A),
+            cardTheme: CardTheme(
+              color: Color(0xFF1F1F1F),
+              elevation: 2,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            appBarTheme: const AppBarTheme(
+              backgroundColor: Color(0xFF121212),
+              foregroundColor: Color(0xFFCCCCCC),
+            ),
+            sliderTheme: const SliderThemeData(
+              inactiveTrackColor: Color(0xFF424242),
+            ),
+            elevatedButtonTheme: ElevatedButtonThemeData(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Color(0xFF333333),
+                foregroundColor: Color(0xFFCCCCCC),
+              ),
+            ),
+            textButtonTheme: TextButtonThemeData(
+              style: TextButton.styleFrom(
+                foregroundColor: Color(0xFFCCCCCC),
+              ),
+            ),
+            outlinedButtonTheme: OutlinedButtonThemeData(
+              style: OutlinedButton.styleFrom(
+                foregroundColor: Color(0xFFCCCCCC),
+                side: BorderSide(color: Color(0xFFCCCCCC)),
+              ),
+            ),
+            dialogTheme: DialogTheme(
+              backgroundColor: Color(0xFF1E1E1E),
+              titleTextStyle: TextStyle(
+                color: Color(0xFFCCCCCC),
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
+              contentTextStyle: TextStyle(
+                color: Color(0xFFCCCCCC),
+                fontSize: 16,
+              ),
+            ),
+            snackBarTheme: SnackBarThemeData(
+              backgroundColor: Color(0xFF2C2C2C),
+              contentTextStyle: TextStyle(
+                color: Color(0xFFCCCCCC),
+                fontSize: 14,
+              ),
+            ),
+            dividerColor: Color(0xFF424242),
+            iconTheme: const IconThemeData(
+              color: Color(0xFFCCCCCC),
+            ),
+          ),
+          builder: (context, child) {
+            return ScrollConfiguration(
+              behavior:
+                  const MaterialScrollBehavior().copyWith(scrollbars: true),
+              child: child!,
+            );
+          },
+          home: _loading
+              ? const Scaffold(
+                  body: Center(
+                    child: CircularProgressIndicator(),
+                  ),
+                )
+              : LoadingPage(
+                  verses:
+                      Provider.of<MainProvider>(context, listen: false).verses),
+        );
+      },
+    );
+  }
+}
+
+
+================================================================================
+FILE: constants/book_groups.dart
+================================================================================
+/// Old Testament (English + Chinese Simplified + Chinese Traditional)
+const oldTestamentBooks = <String>{
+  // English
+  'Genesis', 'Exodus', 'Leviticus', 'Numbers', 'Deuteronomy',
+  'Joshua', 'Judges', 'Ruth', '1 Samuel', '2 Samuel',
+  '1 Kings', '2 Kings', '1 Chronicles', '2 Chronicles',
+  'Ezra', 'Nehemiah', 'Esther', 'Job', 'Psalms', 'Proverbs',
+  'Ecclesiastes', 'Song of Solomon', 'Isaiah', 'Jeremiah',
+  'Lamentations', 'Ezekiel', 'Daniel', 'Hosea', 'Joel', 'Amos',
+  'Obadiah', 'Jonah', 'Micah', 'Nahum', 'Habakkuk',
+  'Zephaniah', 'Haggai', 'Zechariah', 'Malachi',
+  // Chinese Simplified + Traditional
+  '创世记', '創世紀',
+  '出埃及记', '出埃及記',
+  '利未记', '利未記',
+  '民数记', '民數記',
+  '申命记', '申命記',
+  '约书亚记', '約書亞記',
+  '士师记', '士師記',
+  '路得记', '路得記',
+  '撒母耳记上', '撒母耳記上',
+  '撒母耳记下', '撒母耳記下',
+  '列王纪上', '列王紀上',
+  '列王纪下', '列王紀下',
+  '历代志上', '歷代志上',
+  '历代志下', '歷代志下',
+  '以斯拉记', '以斯拉記',
+  '尼希米记', '尼希米記',
+  '以斯帖记', '以斯帖記',
+  '约伯记', '約伯記',
+  '诗篇', '詩篇',
+  '箴言',
+  '传道书', '傳道書',
+  '雅歌',
+  '以赛亚书', '以賽亞書',
+  '耶利米书', '耶利米書',
+  '耶利米哀歌',
+  '以西结书', '以西結書',
+  '但以理书', '但以理書',
+  '何西阿书', '何西阿書',
+  '约珥书', '約珥書',
+  '阿摩司书', '阿摩司書',
+  '俄巴底亚书', '俄巴底亞書',
+  '约拿书', '約拿書',
+  '弥迦书', '彌迦書',
+  '那鸿书', '那鴻書',
+  '哈巴谷书', '哈巴谷書',
+  '西番雅书', '西番雅書',
+  '哈该书', '哈該書',
+  '撒迦利亚书', '撒迦利亞書',
+  '玛拉基书', '瑪拉基書',
+};
+
+/// New Testament (English + Chinese Simplified + Chinese Traditional)
+const newTestamentBooks = <String>{
+  // English
+  'Matthew', 'Mark', 'Luke', 'John', 'Acts', 'Romans',
+  '1 Corinthians', '2 Corinthians', 'Galatians', 'Ephesians',
+  'Philippians', 'Colossians', '1 Thessalonians', '2 Thessalonians',
+  '1 Timothy', '2 Timothy', 'Titus', 'Philemon', 'Hebrews',
+  'James', '1 Peter', '2 Peter', '1 John', '2 John', '3 John',
+  'Jude', 'Revelation',
+  // Chinese Simplified + Traditional
+  '马太福音', '馬太福音',
+  '马可福音', '馬可福音',
+  '路加福音',
+  '约翰福音', '約翰福音',
+  '使徒行传', '使徒行傳',
+  '罗马书', '羅馬書',
+  '哥林多前书', '哥林多前書',
+  '哥林多后书', '哥林多後書',
+  '加拉太书', '加拉太書',
+  '以弗所书', '以弗所書',
+  '腓立比书', '腓立比書',
+  '歌罗西书', '歌羅西書',
+  '帖撒罗尼迦前书', '帖撒羅尼迦前書',
+  '帖撒罗尼迦后书', '帖撒羅尼迦後書',
+  '提摩太前书', '提摩太前書',
+  '提摩太后书', '提摩太後書',
+  '提多书', '提多書',
+  '腓利门书', '腓利門書',
+  '希伯来书', '希伯來書',
+  '雅各书', '雅各書',
+  '彼得前书', '彼得前書',
+  '彼得后书', '彼得後書',
+  '约翰一书', '約翰一書',
+  '约翰二书', '約翰二書',
+  '约翰三书', '約翰三書',
+  '犹大书', '猶大書',
+  '启示录', '啟示錄',
+};
+
+
+================================================================================
+FILE: constants/ui_strings.dart
+================================================================================
+const uiStrings = {
+  // ====== Search Page ======
+  'search': {
+    'zh-Hans': '搜索',
+    'zh-Hant': '搜尋',
+    'en': 'Search',
+  },
+  'searchResultCount': {
+    'zh-Hans': '共 {count} 处，按书统计：',
+    'zh-Hant': '共 {count} 處，按書統計：',
+    'en': 'Total {count} matches, grouped by book:',
+  },
+  'viewMoreBooksHint': {
+    'zh-Hans': '点击查看更多书卷，右上角筛选可跳转到书卷。',
+    'zh-Hant': '點擊查看更多書卷，右上角篩選可跳轉到書卷。',
+    'en': 'Tap to view more books; use top-right filter to jump to a book.',
+  },
+  'noResults': {
+    'zh-Hans': '未找到结果',
+    'zh-Hant': '找不到結果',
+    'en': 'No results found',
+  },
+
+  // ====== Search Filters ======
+  'searchCurrentBook': {
+    'zh-Hans': '搜索当前书卷',
+    'zh-Hant': '搜尋當前書卷',
+    'en': 'Search Current Book',
+  },
+  'searchEntireBible': {
+    'zh-Hans': '搜索整本圣经',
+    'zh-Hant': '搜尋整本聖經',
+    'en': 'Search Entire Bible',
+  },
+
+  // ====== General Navigation ======
+  'back': {
+    'zh-Hans': '返回',
+    'zh-Hant': '返回',
+    'en': 'Back',
+  },
+  'showMenu': {
+    'zh-Hans': '显示菜单',
+    'zh-Hant': '顯示選單',
+    'en': 'Show menu',
+  },
+
+  // ====== Bible Navigation ======
+  'oldTestament': {
+    'zh-Hans': '旧约',
+    'zh-Hant': '舊約',
+    'en': 'Old Testament',
+  },
+  'newTestament': {
+    'zh-Hans': '新约',
+    'zh-Hant': '新約',
+    'en': 'New Testament',
+  },
+  'previousChapter': {
+    'zh-Hans': '上一章',
+    'zh-Hant': '上一章',
+    'en': 'Previous Chapter',
+  },
+  'nextChapter': {
+    'zh-Hans': '下一章',
+    'zh-Hant': '下一章',
+    'en': 'Next Chapter',
+  },
+  'bibleBooks': {
+    'zh-Hans': '书卷',
+    'zh-Hant': '書卷',
+    'en': 'Bible Books',
+  },
+  'changeVersion': {
+    'zh-Hans': '切换版本',
+    'zh-Hant': '切換版本',
+    'en': 'Change Version',
+  },
+
+  // ====== Settings Page ======
+  'themeMode': {
+    'zh-Hans': '主题模式',
+    'zh-Hant': '主題模式',
+    'en': 'Theme Mode',
+  },
+  'themeDay': {
+    'zh-Hans': '白天模式',
+    'zh-Hant': '白天模式',
+    'en': 'Light Mode',
+  },
+  'themeNight': {
+    'zh-Hans': '夜间模式',
+    'zh-Hant': '夜間模式',
+    'en': 'Dark Mode',
+  },
+  'themeSystem': {
+    'zh-Hans': '跟随系统',
+    'zh-Hant': '跟隨系統',
+    'en': 'System Default',
+  },
+  'themeLight': {
+    'zh-Hans': '亮色模式',
+    'zh-Hant': '亮色模式',
+    'en': 'Light Mode',
+  },
+  'themeDark': {
+    'zh-Hans': '暗色模式',
+    'zh-Hant': '暗色模式',
+    'en': 'Dark Mode',
+  },
+  'settings': {
+    'zh-Hans': '设置',
+    'zh-Hant': '設定',
+    'en': 'Settings',
+  },
+  'allowUpdates': {
+    'zh-Hans': '允许自动更新',
+    'zh-Hant': '允許自動更新',
+    'en': 'Allow Auto Updates',
+  },
+  'allowUpdatesSubtitle': {
+    'zh-Hans': '切换是否允许从服务器更新应用程序。',
+    'zh-Hant': '切換是否允許從伺服器更新應用程式。',
+    'en': 'Toggle whether to allow app updates from server.',
+  },
+  'interfaceLanguage': {
+    'zh-Hans': '界面语言',
+    'zh-Hant': '介面語言',
+    'en': 'Interface Language',
+  },
+  'fontSize': {
+    'zh-Hans': '字体大小',
+    'zh-Hant': '字體大小',
+    'en': 'Font Size',
+  },
+  'lineSpacing': {
+    'zh-Hans': '行距',
+    'zh-Hant': '行距',
+    'en': 'Line Spacing',
+  },
+  'fontFamily': {
+    'zh-Hans': '字体',
+    'zh-Hant': '字體',
+    'en': 'Font Family',
+  },
+  'primaryColor': {
+    'zh-Hans': '主色调',
+    'zh-Hant': '主色調',
+    'en': 'Primary Colour',
+  },
+  'samplePreview': {
+    'zh-Hans': '预览示范',
+    'zh-Hant': '預覽示範',
+    'en': 'Sample Preview',
+  },
+  'copyFormat': {
+    'zh-Hans': '复制格式',
+    'zh-Hant': '複製格式',
+    'en': 'Copy Format',
+  },
+  'plainText': {
+    'zh-Hans': '纯文字',
+    'zh-Hant': '純文字',
+    'en': 'Plain Text',
+  },
+  'withReference': {
+    'zh-Hans': '包含经文参考',
+    'zh-Hant': '包含經文參考',
+    'en': 'Include Reference',
+  },
+  'devotionalFormat': {
+    'zh-Hans': '灵修格式',
+    'zh-Hant': '靈修格式',
+    'en': 'Devotional Format',
+  },
+  'copyPreview': {
+    'zh-Hans': '复制预览',
+    'zh-Hant': '複製預覽',
+    'en': 'Copy Preview',
+  },
+  'copied': {
+    'zh-Hans': '已复制！',
+    'zh-Hant': '已複製！',
+    'en': 'Copied!',
+  },
+  'sendFeedback': {
+    'zh-Hans': '发送反馈',
+    'zh-Hant': '發送反饋',
+    'en': 'Send Feedback',
+  },
+  'feedbackHint': {
+    'zh-Hans': '请输入您的意见或建议（最多500字）...',
+    'zh-Hant': '請輸入您的意見或建議（最多500字）...',
+    'en': 'Please enter your feedback (up to 500 characters)...',
+  },
+  'feedbackSuccess': {
+    'zh-Hans': '✅ 已成功发送，谢谢反馈！',
+    'zh-Hant': '✅ 發送成功，感謝您的反饋！',
+    'en': '✅ Feedback sent. Thank you!',
+  },
+  'feedbackFailure': {
+    'zh-Hans': '❌ 发送失败，请稍后重试。',
+    'zh-Hant': '❌ 發送失敗，請稍後重試。',
+    'en': '❌ Failed to send. Please try again.',
+  },
+  'ok': {
+    'zh-Hans': '确定',
+    'zh-Hant': '確定',
+    'en': 'OK',
+  },
+
+  'feedbackEmpty': {
+    'zh-Hans': '❗️发送内容不能为空，请输入反馈内容。',
+    'zh-Hant': '❗️發送內容不能為空，請輸入反饋內容。',
+    'en': '❗️Feedback content cannot be empty. Please enter your feedback.',
+  },
+  'feedbackTooLong': {
+    'zh-Hans': '❗️内容超过最大长度（500字），请删减后再发送。',
+    'zh-Hant': '❗️內容超過最大長度（500字），請刪減後再發送。',
+    'en':
+        '❗️Content exceeds the maximum length (500 characters). Please shorten it before sending.',
+  },
+  'feedbackInvalid': {
+    'zh-Hans': '❗️内容包含不支持的符号（如表情符号），请移除后再发送。',
+    'zh-Hant': '❗️內容包含不支援的符號（如表情符號），請移除後再發送。',
+    'en':
+        '❗️Content contains unsupported symbols (such as emojis). Please remove them before sending.',
+  },
+  'note': {
+    'zh-Hans': '注释',
+    'zh-Hant': '註釋',
+    'en': 'Note',
+  },
+};
+
+
+================================================================================
+FILE: constants/book_name_mapping.dart
+================================================================================
+const englishToChinese = {
+  // Old Testament (Simplified)
+  "Genesis": "创世记",
+  "Exodus": "出埃及记",
+  "Leviticus": "利未记",
+  "Numbers": "民数记",
+  "Deuteronomy": "申命记",
+  "Joshua": "约书亚记",
+  "Judges": "士师记",
+  "Ruth": "路得记",
+  "1 Samuel": "撒母耳记上",
+  "2 Samuel": "撒母耳记下",
+  "1 Kings": "列王纪上",
+  "2 Kings": "列王纪下",
+  "1 Chronicles": "历代志上",
+  "2 Chronicles": "历代志下",
+  "Ezra": "以斯拉记",
+  "Nehemiah": "尼希米记",
+  "Esther": "以斯帖记",
+  "Job": "约伯记",
+  "Psalms": "诗篇",
+  "Proverbs": "箴言",
+  "Ecclesiastes": "传道书",
+  "Song of Solomon": "雅歌",
+  "Isaiah": "以赛亚书",
+  "Jeremiah": "耶利米书",
+  "Lamentations": "耶利米哀歌",
+  "Ezekiel": "以西结书",
+  "Daniel": "但以理书",
+  "Hosea": "何西阿书",
+  "Joel": "约珥书",
+  "Amos": "阿摩司书",
+  "Obadiah": "俄巴底亚书",
+  "Jonah": "约拿书",
+  "Micah": "弥迦书",
+  "Nahum": "那鸿书",
+  "Habakkuk": "哈巴谷书",
+  "Zephaniah": "西番雅书",
+  "Haggai": "哈该书",
+  "Zechariah": "撒迦利亚书",
+  "Malachi": "玛拉基书",
+
+  // New Testament (Simplified)
+  "Matthew": "马太福音",
+  "Mark": "马可福音",
+  "Luke": "路加福音",
+  "John": "约翰福音",
+  "Acts": "使徒行传",
+  "Romans": "罗马书",
+  "1 Corinthians": "哥林多前书",
+  "2 Corinthians": "哥林多后书",
+  "Galatians": "加拉太书",
+  "Ephesians": "以弗所书",
+  "Philippians": "腓立比书",
+  "Colossians": "歌罗西书",
+  "1 Thessalonians": "帖撒罗尼迦前书",
+  "2 Thessalonians": "帖撒罗尼迦后书",
+  "1 Timothy": "提摩太前书",
+  "2 Timothy": "提摩太后书",
+  "Titus": "提多书",
+  "Philemon": "腓利门书",
+  "Hebrews": "希伯来书",
+  "James": "雅各书",
+  "1 Peter": "彼得前书",
+  "2 Peter": "彼得后书",
+  "1 John": "约翰一书",
+  "2 John": "约翰二书",
+  "3 John": "约翰三书",
+  "Jude": "犹大书",
+  "Revelation": "启示录",
+};
+
+const englishToChineseTraditional = {
+  // Old Testament
+  "Genesis": "創世紀",
+  "Exodus": "出埃及記",
+  "Leviticus": "利未記",
+  "Numbers": "民數記",
+  "Deuteronomy": "申命記",
+  "Joshua": "約書亞記",
+  "Judges": "士師記",
+  "Ruth": "路得記",
+  "1 Samuel": "撒母耳記上",
+  "2 Samuel": "撒母耳記下",
+  "1 Kings": "列王紀上",
+  "2 Kings": "列王紀下",
+  "1 Chronicles": "歷代志上",
+  "2 Chronicles": "歷代志下",
+  "Ezra": "以斯拉記",
+  "Nehemiah": "尼希米記",
+  "Esther": "以斯帖記",
+  "Job": "約伯記",
+  "Psalms": "詩篇",
+  "Proverbs": "箴言",
+  "Ecclesiastes": "傳道書",
+  "Song of Solomon": "雅歌",
+  "Isaiah": "以賽亞書",
+  "Jeremiah": "耶利米書",
+  "Lamentations": "耶利米哀歌",
+  "Ezekiel": "以西結書",
+  "Daniel": "但以理書",
+  "Hosea": "何西阿書",
+  "Joel": "約珥書",
+  "Amos": "阿摩司書",
+  "Obadiah": "俄巴底亞書",
+  "Jonah": "約拿書",
+  "Micah": "彌迦書",
+  "Nahum": "那鴻書",
+  "Habakkuk": "哈巴谷書",
+  "Zephaniah": "西番雅書",
+  "Haggai": "哈該書",
+  "Zechariah": "撒迦利亞書",
+  "Malachi": "瑪拉基書",
+
+  // New Testament
+  "Matthew": "馬太福音",
+  "Mark": "馬可福音",
+  "Luke": "路加福音",
+  "John": "約翰福音",
+  "Acts": "使徒行傳",
+  "Romans": "羅馬書",
+  "1 Corinthians": "哥林多前書",
+  "2 Corinthians": "哥林多後書",
+  "Galatians": "加拉太書",
+  "Ephesians": "以弗所書",
+  "Philippians": "腓立比書",
+  "Colossians": "歌羅西書",
+  "1 Thessalonians": "帖撒羅尼迦前書",
+  "2 Thessalonians": "帖撒羅尼迦後書",
+  "1 Timothy": "提摩太前書",
+  "2 Timothy": "提摩太後書",
+  "Titus": "提多書",
+  "Philemon": "腓利門書",
+  "Hebrews": "希伯來書",
+  "James": "雅各書",
+  "1 Peter": "彼得前書",
+  "2 Peter": "彼得後書",
+  "1 John": "約翰一書",
+  "2 John": "約翰二書",
+  "3 John": "約翰三書",
+  "Jude": "猶大書",
+  "Revelation": "啟示錄",
+};
+
+// 常见的中文别写（简/繁 / 异体字）→ 英文键，用于容错
+// 常见的中文别写（简 / 繁 / 异体字 / 旧译名）→ 英文键
+const _zhAliasToEn = {
+  // ===== Old Testament =====
+  '创世纪': 'Genesis', '創世紀': 'Genesis', '创世记': 'Genesis', '創世記': 'Genesis',
+  '出埃及记': 'Exodus', '出埃及記': 'Exodus',
+  '利未记': 'Leviticus', '利未記': 'Leviticus',
+  '民数记': 'Numbers', '民數記': 'Numbers',
+  '申命记': 'Deuteronomy', '申命記': 'Deuteronomy',
+  '约书亚记': 'Joshua', '約書亞記': 'Joshua',
+  '士师记': 'Judges', '士師記': 'Judges',
+  '路得记': 'Ruth', '路得記': 'Ruth',
+  '撒母耳记上': '1 Samuel', '撒母耳記上': '1 Samuel',
+  '撒母耳记下': '2 Samuel', '撒母耳記下': '2 Samuel',
+  '列王纪上': '1 Kings', '列王紀上': '1 Kings',
+  '列王纪下': '2 Kings', '列王紀下': '2 Kings',
+  '历代志上': '1 Chronicles', '歷代志上': '1 Chronicles',
+  '历代志下': '2 Chronicles', '歷代志下': '2 Chronicles',
+  '以斯拉记': 'Ezra', '以斯拉記': 'Ezra',
+  '尼希米记': 'Nehemiah', '尼希米記': 'Nehemiah',
+  '以斯帖记': 'Esther', '以斯帖記': 'Esther',
+  '约伯记': 'Job', '約伯記': 'Job',
+  '诗篇': 'Psalms', '詩篇': 'Psalms',
+  '箴言': 'Proverbs',
+  '传道书': 'Ecclesiastes', '傳道書': 'Ecclesiastes',
+  '雅歌': 'Song of Solomon',
+  '以赛亚书': 'Isaiah', '以賽亞書': 'Isaiah',
+  '耶利米书': 'Jeremiah', '耶利米書': 'Jeremiah',
+  '耶利米哀歌': 'Lamentations',
+  '以西结书': 'Ezekiel', '以西結書': 'Ezekiel',
+  '但以理书': 'Daniel', '但以理書': 'Daniel',
+  '何西阿书': 'Hosea', '何西阿書': 'Hosea',
+  '约珥书': 'Joel', '約珥書': 'Joel',
+  '阿摩司书': 'Amos', '阿摩司書': 'Amos',
+  '俄巴底亚书': 'Obadiah', '俄巴底亞書': 'Obadiah',
+  '约拿书': 'Jonah', '約拿書': 'Jonah',
+  '弥迦书': 'Micah', '彌迦書': 'Micah',
+  '那鸿书': 'Nahum', '那鴻書': 'Nahum',
+  '哈巴谷书': 'Habakkuk', '哈巴谷書': 'Habakkuk',
+  '西番雅书': 'Zephaniah', '西番雅書': 'Zephaniah',
+  '哈该书': 'Haggai', '哈該書': 'Haggai',
+  '撒迦利亚书': 'Zechariah', '撒迦利亞書': 'Zechariah',
+  '玛拉基书': 'Malachi', '瑪拉基書': 'Malachi',
+
+  // ===== New Testament =====
+  '马太福音': 'Matthew', '馬太福音': 'Matthew',
+  '马可福音': 'Mark', '馬可福音': 'Mark',
+  '路加福音': 'Luke',
+  '约翰福音': 'John', '約翰福音': 'John',
+  '使徒行传': 'Acts', '使徒行傳': 'Acts',
+  '罗马书': 'Romans', '羅馬書': 'Romans',
+  '哥林多前书': '1 Corinthians', '哥林多前書': '1 Corinthians',
+  '哥林多后书': '2 Corinthians', '哥林多後書': '2 Corinthians',
+  '加拉太书': 'Galatians', '加拉太書': 'Galatians',
+  '以弗所书': 'Ephesians', '以弗所書': 'Ephesians',
+  '腓立比书': 'Philippians', '腓立比書': 'Philippians',
+  '歌罗西书': 'Colossians', '歌羅西書': 'Colossians',
+  '帖撒罗尼迦前书': '1 Thessalonians', '帖撒羅尼迦前書': '1 Thessalonians',
+  '帖撒罗尼迦后书': '2 Thessalonians', '帖撒羅尼迦後書': '2 Thessalonians',
+  '提摩太前书': '1 Timothy', '提摩太前書': '1 Timothy',
+  '提摩太后书': '2 Timothy', '提摩太後書': '2 Timothy',
+  '提多书': 'Titus', '提多書': 'Titus',
+  '腓利门书': 'Philemon', '腓利門書': 'Philemon',
+  '希伯来书': 'Hebrews', '希伯來書': 'Hebrews',
+  '雅各书': 'James', '雅各書': 'James',
+  '彼得前书': '1 Peter', '彼得前書': '1 Peter',
+  '彼得后书': '2 Peter', '彼得後書': '2 Peter',
+  '约翰一书': '1 John', '約翰一書': '1 John',
+  '约翰二书': '2 John', '約翰二書': '2 John',
+  '约翰三书': '3 John', '約翰三書': '3 John',
+  '犹大书': 'Jude', '猶大書': 'Jude',
+  '启示录': 'Revelation', '啟示錄': 'Revelation',
+};
+
+/// 把中文书名（简体或繁体）转换为英文键；若找不到则返回 null
+String? zhToEn(String name) {
+  final hitHans = englishToChinese.entries
+      .firstWhere((e) => e.value == name, orElse: () => const MapEntry('', ''));
+  if (hitHans.key.isNotEmpty) return hitHans.key;
+
+  final hitHant = englishToChineseTraditional.entries
+      .firstWhere((e) => e.value == name, orElse: () => const MapEntry('', ''));
+  if (hitHant.key.isNotEmpty) return hitHant.key;
+
+  // 别写容错
+  return _zhAliasToEn[name];
+}
+
+String toLocale(String englishKey, String version) {
+  if (version == 'kjv' || version == 'leb') return englishKey;
+  return version.endsWith('-tr')
+      ? englishToChineseTraditional[englishKey] ?? englishKey
+      : englishToChinese[englishKey] ?? englishKey;
+}
+
+
+================================================================================
+FILE: providers/main_provider.dart
+================================================================================
+import 'dart:async';
+import 'package:flutter/material.dart';
+import 'package:yswords/models/verse.dart';
+import 'package:yswords/models/book.dart';
+import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+// MainProvider class to extends ChangeNotifier for state management
+
+class MainProvider extends ChangeNotifier {
+  // Index of a verse to temporarily highlight
+  int? highlightIndex;
+
+  /// Temporarily highlight the verse at [index]
+  void setHighlightIndex(int index) {
+    highlightIndex = index;
+    notifyListeners();
+  }
+
+  /// Clear any temporary highlight
+  void clearHighlightIndex() {
+    highlightIndex = null;
+    notifyListeners();
+  }
+
+  void setVerses(List<Verse> list) {
+    verses = list;
+    notifyListeners();
+  }
+
+  void setBooks(List<Book> list) {
+    books = list;
+    notifyListeners();
+  }
+
+  // Contollers and Listeners for managing scroll positions and items
+  ItemScrollController itemScrollController = ItemScrollController();
+  ScrollOffsetController scrollOffsetController = ScrollOffsetController();
+  ItemPositionsListener itemPositionsListener = ItemPositionsListener.create();
+  ScrollOffsetListener scrollOffsetListener = ScrollOffsetListener.create();
+
+  // Variables to store the current chapter and book
+  int? currentChapter;
+  String? currentBook;
+  String currentVersion = 'cuvs-yhwh'; // default version
+
+  void setVersion(String version) {
+    currentVersion = version;
+    saveCurrentState();
+    notifyListeners();
+  }
+
+  List<Verse> verses = [];
+  // Set to store selected verse IDs
+  final Set<String> _selectedIds = {};
+
+  // List of Store Verse Objects
+  List<Verse> get selectedVerses =>
+      verses.where((v) => _selectedIds.contains(v.id)).toList();
+  Set<String> get selectedIds => _selectedIds;
+
+  bool isSelected(Verse v) => _selectedIds.contains(v.id);
+
+  // Method to set the current book and chapter, persist state, and notify listeners
+  void setCurrentChapter({required String book, required int chapter}) {
+    currentBook = book;
+    currentChapter = chapter;
+    saveCurrentState();
+    notifyListeners();
+  }
+
+  // Method to add a verse to the list and notify listeners
+  void addVerse({required Verse verse}) {
+    verses.add(verse);
+    notifyListeners();
+  }
+
+  // List to store Book Objects
+  List<Book> books = [];
+
+  // Method to add a book to the list and notify listeners
+  void addBook({required Book book}) {
+    books.add(book);
+    notifyListeners();
+  }
+
+  // Variable to store the current verse
+  Verse? currentVerse;
+  // Method to update the current verse and notify listeners
+  void updateCurrentVerse({required Verse verse}) {
+    currentVerse = verse;
+    notifyListeners();
+  }
+
+  // Method to scroll to a specific index in the list and notify listeners
+  void scrollToIndex({required int index}) {
+    // debugPrint(
+    //     '🌀 scrollToIndex: index=$index, controller attached: ${itemScrollController.isAttached}');
+    if (itemScrollController.isAttached) {
+      itemScrollController.scrollTo(
+        index: index,
+        duration: const Duration(milliseconds: 800),
+      );
+    } else {
+      // debugPrint('⚠️ scrollToIndex skipped: controller not attached');
+    }
+    notifyListeners();
+  }
+
+  void jumpToIndex({required int index}) {
+    if (itemScrollController.isAttached) {
+      itemScrollController.jumpTo(index: index);
+    }
+  }
+
+  // Method to toggle the selection of a Verse and notify listeners
+  void toggleVerse({required Verse verse}) {
+    if (!_selectedIds.remove(verse.id)) {
+      _selectedIds.add(verse.id);
+    }
+    // debugPrint('selected=${_selectedIds.length}');
+
+    notifyListeners();
+  }
+
+  // Method to clear the selected verses and notify listeners
+  void clearSelectedVerses() {
+    _selectedIds.clear();
+    notifyListeners();
+  }
+  Future<void> saveCurrentState() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (currentBook != null) prefs.setString('book', currentBook!);
+    if (currentChapter != null) prefs.setInt('chapter', currentChapter!);
+    prefs.setString('version', currentVersion);
+  }
+
+  Future<void> restoreState() async {
+    final prefs = await SharedPreferences.getInstance();
+    final savedVersion = prefs.getString('version');
+    final savedBook = prefs.getString('book');
+    final savedChapter = prefs.getInt('chapter');
+
+    if (savedVersion != null) currentVersion = savedVersion;
+    if (savedBook != null) currentBook = savedBook;
+    if (savedChapter != null) currentChapter = savedChapter;
+
+    notifyListeners();
+  }
+}
+
+
+================================================================================
+FILE: utils/clipboard_helper.dart
+================================================================================
+import 'package:flutter/services.dart';
+
+abstract class ClipboardHelper {
+  static Future<void> copyText(String text) async {
+    await Clipboard.setData(ClipboardData(text: text));
+  }
+}
+
+
+================================================================================
+FILE: utils/format_searched_text.dart
+================================================================================
+import 'package:flutter/material.dart';
+
+Text formatSearchText({
+  required String input,
+  required String text,
+  required BuildContext context,
+}) {
+  // Check if the input or text is empty
+  if (input.isEmpty || text.isEmpty) {
+    return Text(input);
+  }
+
+  // List to store formatted text spans
+  List<TextSpan> textSpans = [];
+
+  // Create a regular expression to find all matches of the search text
+  RegExp regExp = RegExp(text, caseSensitive: false);
+
+  // Find all matches in the input string
+  Iterable<Match> matches = regExp.allMatches(input);
+
+  // Initialize the current index to track the position in the input string
+  int currentIndex = 0;
+
+  // Loop through the matches
+  for (Match match in matches) {
+    // Add non-matching text span
+    textSpans.add(TextSpan(text: input.substring(currentIndex, match.start)));
+
+    // Add matching text span with styling
+    textSpans.add(
+      TextSpan(
+        text: input.substring(match.start, match.end),
+        style: TextStyle(
+          color: Theme.of(context).colorScheme.primary,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    );
+
+    // Update the current index
+    currentIndex = match.end;
+  }
+
+  // Add the remaining non-matching text span
+  textSpans.add(TextSpan(text: input.substring(currentIndex)));
+
+  // Return the formatted text with spans
+  return Text.rich(TextSpan(children: textSpans));
+}
+
+
+================================================================================
+FILE: utils/version_mapper.dart
+================================================================================
+import 'package:yswords/constants/book_name_mapping.dart' show zhToEn, toLocale;
+
+String translateBookName(String? book, String version) {
+  if (book == null) return '';
+  final en = zhToEn(book) ?? book;
+  return toLocale(en, version);
+}
+
+String? toEnglish(String? book) {
+  if (book == null || book.isEmpty) return null;
+
+  final mapped = zhToEn(book);
+  if (mapped != null) return mapped;
+
+  return book;
+}
+
+
+================================================================================
+FILE: models/app_settings.dart
+================================================================================
+import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+class AppSettings extends ChangeNotifier {
+  String _fontFamily = 'Roboto';
+  double _fontSize = 20.0;
+  double _lineSpacing = 1.5;
+  Color _primaryColor = Colors.lightBlue;
+  String _copyFormat = 'withRef';
+  bool _allowUpdates = true;
+  bool _lockAllowUpdates = false;
+  String _locale = 'zh-Hans';
+  ThemeMode _themeMode = ThemeMode.system;
+  bool _readingModeCentered = false;
+  bool get readingModeCentered => _readingModeCentered;
+
+  String get fontFamily => _fontFamily;
+  double get fontSize => _fontSize;
+  double get lineSpacing => _lineSpacing;
+  Color get primaryColor => _primaryColor;
+  String get copyFormat => _copyFormat;
+  bool get allowUpdates => _allowUpdates;
+  bool get lockAllowUpdates => _lockAllowUpdates;
+  String get locale => _locale;
+  ThemeMode get themeMode => _themeMode;
+
+  void setFontFamily(String family) async {
+    _fontFamily = family;
+    final prefs = await SharedPreferences.getInstance();
+    prefs.setString('fontFamily', family);
+    notifyListeners();
+  }
+
+  void setFontSize(double size) async {
+    _fontSize = size;
+    final prefs = await SharedPreferences.getInstance();
+    prefs.setDouble('fontSize', size);
+    notifyListeners();
+  }
+
+  void setLineSpacing(double spacing) async {
+    _lineSpacing = spacing;
+    final prefs = await SharedPreferences.getInstance();
+    prefs.setDouble('lineSpacing', spacing);
+    notifyListeners();
+  }
+
+  void setPrimaryColor(Color color) async {
+    _primaryColor = color;
+    final prefs = await SharedPreferences.getInstance();
+    prefs.setInt('primaryColor', color.value);
+    notifyListeners();
+  }
+
+  void setCopyFormat(String format) async {
+    _copyFormat = format;
+    final prefs = await SharedPreferences.getInstance();
+    prefs.setString('copyFormat', format);
+    notifyListeners();
+  }
+
+  void setAllowUpdates(bool allow) async {
+    _allowUpdates = allow;
+    final prefs = await SharedPreferences.getInstance();
+    prefs.setBool('allowUpdates', allow);
+    notifyListeners();
+  }
+
+  void setLockAllowUpdates(bool lock) {
+    _lockAllowUpdates = lock;
+    notifyListeners();
+  }
+
+  void setLocale(String langCode) async {
+    _locale = langCode;
+    final prefs = await SharedPreferences.getInstance();
+    prefs.setString('locale', langCode);
+    notifyListeners();
+  }
+
+  void setThemeMode(ThemeMode mode) async {
+    _themeMode = mode;
+    final prefs = await SharedPreferences.getInstance();
+    prefs.setString('themeMode', mode.toString());
+    notifyListeners();
+  }
+
+  void setReadingModeCentered(bool centered) async {
+    _readingModeCentered = centered;
+    final prefs = await SharedPreferences.getInstance();
+    prefs.setBool('readingModeCentered', centered);
+    notifyListeners();
+  }
+
+  Future<void> loadSettings() async {
+    final prefs = await SharedPreferences.getInstance();
+    _fontFamily = prefs.getString('fontFamily') ?? 'Roboto';
+    _fontSize = prefs.getDouble('fontSize') ?? 20.0;
+    _lineSpacing = prefs.getDouble('lineSpacing') ?? 1.5;
+    _primaryColor =
+        Color(prefs.getInt('primaryColor') ?? Colors.lightBlue.value);
+    _copyFormat = prefs.getString('copyFormat') ?? 'withRef';
+    _allowUpdates = prefs.getBool('allowUpdates') ?? true;
+    _lockAllowUpdates = false;
+    _locale = prefs.getString('locale') ?? _detectSystemLocale();
+    final themeModeString = prefs.getString('themeMode') ?? 'ThemeMode.system';
+    switch (themeModeString) {
+      case 'ThemeMode.light':
+        _themeMode = ThemeMode.light;
+        break;
+      case 'ThemeMode.dark':
+        _themeMode = ThemeMode.dark;
+        break;
+      default:
+        _themeMode = ThemeMode.system;
+    }
+    _readingModeCentered = prefs.getBool('readingModeCentered') ?? false;
+    notifyListeners();
+  }
+
+  String _detectSystemLocale() {
+    final String systemLocale =
+        WidgetsBinding.instance.platformDispatcher.locale.languageCode;
+    if (systemLocale == 'zh') {
+      final String? scriptCode =
+          WidgetsBinding.instance.platformDispatcher.locale.scriptCode;
+      if (scriptCode == 'Hant') {
+        return 'zh-Hant';
+      } else {
+        return 'zh-Hans';
+      }
+    } else {
+      return 'en';
+    }
+  }
+}
+
+
+================================================================================
+FILE: models/verse.dart
+================================================================================
+import 'package:flutter/widgets.dart';
+
+@immutable
+class Verse {
+  final String book;
+  final int chapter;
+  final int verse;
+  final String text;
+  final bool isParagraphStart;
+
+  const Verse({
+    required this.book,
+    required this.chapter,
+    required this.verse,
+    required this.text,
+    this.isParagraphStart = false,
+  });
+
+  String get id => '$book-$chapter-$verse';
+  // Factory constructor to create a Verse object from a JSON map
+  factory Verse.fromJson(Map<String, dynamic> json) {
+    final chapterStr = json['chapter']?.toString() ?? '';
+    final verseStr = json['verse']?.toString() ?? '';
+    final chapterNum = int.tryParse(chapterStr);
+    final verseNum = int.tryParse(verseStr);
+    if (chapterNum == null || verseNum == null) {
+      throw FormatException(
+        'Skipping non-numeric entry: chapter="$chapterStr", verse="$verseStr"'
+      );
+    }
+    return Verse(
+      book: json['book'] as String,
+      chapter: chapterNum,
+      verse: verseNum,
+      text: json['text'] as String,
+      isParagraphStart: json['isParagraphStart'] as bool? ?? false,
+    );
+  }
+}
+
+
+================================================================================
+FILE: models/book.dart
+================================================================================
+import 'chapter.dart';
+
+class Book {
+  final String title;
+  final List<Chapter> chapters;
+
+  Book({
+    required this.title,
+    required this.chapters,
+  });
+}
+
+
+================================================================================
+FILE: models/chapter.dart
+================================================================================
+import 'verse.dart';
+
+class Chapter {
+  final int title;
+  final List<Verse> verses;
+
+  Chapter({
+    required this.title,
+    required this.verses,
+  });
+}
+
+
+================================================================================
+FILE: pages/loading_page.dart
+================================================================================
+import 'dart:async';
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../models/app_settings.dart';
+import '../models/verse.dart';
+import 'home_page.dart';
+
+class LoadingPage extends StatefulWidget {
+  final List<Verse> verses;
+  const LoadingPage({super.key, required this.verses});
+
+  @override
+  State<LoadingPage> createState() => _LoadingPageState();
+}
+
+class _LoadingPageState extends State<LoadingPage> {
+  @override
+  void initState() {
+    super.initState();
+    Future.delayed(const Duration(seconds: 3), () {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => const HomePage()),
+      );
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final settings = Provider.of<AppSettings>(context, listen: false);
+    // final today = DateTime.now();
+    final verse =
+        widget.verses.isNotEmpty ? (widget.verses..shuffle()).first : null;
+
+    final notePattern   = RegExp(r'<note:[^>]*>');
+    final bracePattern  = RegExp(r'\{[^}]*\}');
+    final squarePattern = RegExp(r'\[([^\]]+)\]');
+    // Combined to split text and bracket tokens
+    final combinedPattern = RegExp(r'(\[[^\]]+\])');
+    final original      = verse?.text.replaceAll('\n', '') ?? '';
+    // Remove only notes and braces, keep square brackets for rendering
+    final raw           = original.replaceAll(notePattern, '').replaceAll(bracePattern, '').trim();
+    // Split so that each [word] is its own part
+    final parts         = raw.splitMapJoin(
+      combinedPattern,
+      onMatch:    (m) => '||${m[0]}||',
+      onNonMatch: (n) => n,
+    ).split('||');
+
+    return Scaffold(
+      backgroundColor: Theme.of(context).colorScheme.background,
+      body: Center(
+        child: verse == null
+            ? const Text('No verses available')
+            : Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Image.asset(
+                    'assets/loading.png',
+                    width: 150,
+                    height: 150,
+                  ),
+                  const SizedBox(height: 24),
+                  const SizedBox(height: 16),
+                  Column(
+                    children: [
+                      Text(
+                        'YsWords',
+                        style: TextStyle(
+                          fontSize: settings.fontSize * 1.2,
+                          fontFamily: settings.fontFamily,
+                          color: Theme.of(context).colorScheme.primary,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      SizedBox(height: 4),
+                      Text(
+                        '雅伟之言',
+                        style: TextStyle(
+                          fontSize: settings.fontSize * 1.0,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 48),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 32.0),
+                    child: RichText(
+                      textAlign: TextAlign.center,
+                      text: TextSpan(
+                        children: parts.map<InlineSpan>((part) {
+                          final match = squarePattern.firstMatch(part);
+                          if (match != null) {
+                            return TextSpan(
+                              text: match.group(1),
+                              style: TextStyle(
+                                fontSize: settings.fontSize,
+                                fontFamily: settings.fontFamily,
+                                height: 1.5,
+                                decoration: TextDecoration.underline,
+                                decorationStyle: TextDecorationStyle.dotted,
+                                decorationColor: Theme.of(context).colorScheme.primary,
+                                decorationThickness: 2.0,
+                                color: Theme.of(context).textTheme.bodyLarge?.color,
+                              ),
+                            );
+                          } else {
+                            return TextSpan(
+                              text: part,
+                              style: TextStyle(
+                                fontSize: settings.fontSize,
+                                fontFamily: settings.fontFamily,
+                                height: 1.5,
+                                color: Theme.of(context).textTheme.bodyLarge?.color,
+                              ),
+                            );
+                          }
+                        }).toList(),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    '${verse.book} ${verse.chapter}:${verse.verse}',
+                    style: TextStyle(
+                      fontSize: settings.fontSize * 0.9,
+                      color: Theme.of(context)
+                          .textTheme
+                          .titleSmall
+                          ?.color
+                          ?.withOpacity(0.7),
+                    ),
+                  ),
+                ],
+              ),
+      ),
+    );
+  }
+}
+
+
+================================================================================
+FILE: pages/home_page.dart
+================================================================================
+import 'package:flutter/gestures.dart';
+import 'package:flutter/material.dart';
+import 'package:clipboard/clipboard.dart';
+
+import 'package:flutter/services.dart';
+import 'package:get/get.dart';
+import 'package:provider/provider.dart';
+import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
+
+import 'package:yswords/models/verse.dart';
+import 'package:yswords/models/app_settings.dart';
+import 'package:yswords/pages/books_page.dart';
+import 'package:yswords/pages/search_page.dart';
+import 'package:yswords/pages/settings_page.dart';
+import 'package:yswords/providers/main_provider.dart';
+import 'package:yswords/services/fetch_books.dart';
+import 'package:yswords/services/fetch_verses.dart';
+import 'package:yswords/services/read_last_index.dart';
+import 'package:yswords/utils/clipboard_helper.dart';
+import 'package:yswords/widgets/verse_widget.dart';
+import 'package:yswords/utils/version_mapper.dart'
+    show translateBookName, toEnglish;
+import 'package:yswords/constants/ui_strings.dart';
+
+class CustomFloatingActionButtonLocation extends FloatingActionButtonLocation {
+  final double xOffset;
+  final double yOffset;
+
+  const CustomFloatingActionButtonLocation({
+    this.xOffset = 0.0,
+    this.yOffset = 0.0,
+  });
+
+  @override
+  Offset getOffset(ScaffoldPrelayoutGeometry scaffoldGeometry) {
+    final endFloat =
+        FloatingActionButtonLocation.endFloat.getOffset(scaffoldGeometry);
+    return endFloat.translate(xOffset, yOffset);
+  }
+}
+
+class HomePage extends StatefulWidget {
+  const HomePage({super.key});
+
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  bool _controllerInitialized = false;
+  final ScrollController _fakeScrollController = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final mainProvider = Provider.of<MainProvider>(context, listen: false);
+      final settings = Provider.of<AppSettings>(context, listen: false);
+      if (mainProvider.verses.isEmpty) {
+        await FetchVerses.execute(
+            mainProvider: mainProvider, settings: settings);
+        await FetchBooks.execute(
+            mainProvider: mainProvider, settings: settings);
+      }
+      await ReadLastIndex.execute().then((index) {
+        if (index != null) {
+          mainProvider.scrollToIndex(index: index);
+        }
+      });
+    });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    if (!_controllerInitialized) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        final provider = Provider.of<MainProvider>(context, listen: false);
+        if (provider.books.isEmpty) return;
+
+        setState(() {
+          _controllerInitialized = true;
+        });
+
+        // ✅ Moved here!
+        provider.clearSelectedVerses();
+      });
+    } else {
+      // ✅ Clear outside build frame
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Provider.of<MainProvider>(context, listen: false).clearSelectedVerses();
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _fakeScrollController.dispose();
+    Provider.of<MainProvider>(context, listen: false).clearSelectedVerses();
+    super.dispose();
+  }
+
+  String formattedSelectedVerses({required List<Verse> verses}) {
+    final settings = Provider.of<AppSettings>(context, listen: false);
+    final notePattern = RegExp(r'<note:[^>]*>');
+    final braceInnerPattern = RegExp(r'\{([^}]*)\}');
+    final squareInnerPattern = RegExp(r'\[([^\]]*)\]');
+    final sorted = [...verses]..sort((a, b) {
+        final bookComparison = a.book.compareTo(b.book);
+        if (bookComparison != 0) return bookComparison;
+        if (a.chapter != b.chapter) return a.chapter.compareTo(b.chapter);
+        return a.verse.compareTo(b.verse);
+      });
+
+    if (sorted.isEmpty) return '';
+
+    final first = sorted.first;
+    final header = '${first.book} ${first.chapter}';
+
+    switch (settings.copyFormat) {
+      case 'withRef':
+        return sorted
+            .map((v) {
+              final cleanedText = v.text
+                .replaceAll(notePattern, '')
+                .replaceAllMapped(braceInnerPattern, (m) => m.group(1) ?? '')
+                .replaceAllMapped(squareInnerPattern, (m) => m.group(1) ?? '')
+                .trim();
+              return '[${v.book} ${v.chapter}:${v.verse}] $cleanedText';
+            })
+            .join('\n');
+      case 'plain':
+        return '$header\n' +
+            sorted
+                .map((v) {
+                  final cleanedText = v.text
+                    .replaceAll(notePattern, '')
+                    .replaceAllMapped(braceInnerPattern, (m) => m.group(1) ?? '')
+                    .replaceAllMapped(squareInnerPattern, (m) => m.group(1) ?? '')
+                    .trim();
+                  return '${v.verse} $cleanedText';
+                })
+                .join('\n');
+      case 'devotional':
+        final book = first.book;
+        final chapter = first.chapter;
+        final versesText = sorted
+            .map((v) =>
+                v.text.replaceAll(notePattern, '') 
+                    .replaceAllMapped(braceInnerPattern, (m) => m.group(1) ?? '')
+                    .replaceAllMapped(squareInnerPattern, (m) => m.group(1) ?? '')
+                    .trim())
+            .join('\n');
+        final verseNumbers = sorted.map((v) => v.verse).toList();
+
+        String formatRange(List<int> nums) {
+          if (nums.isEmpty) return '';
+          nums.sort();
+          final List<String> parts = [];
+          int start = nums[0];
+          int end = start;
+
+          for (int i = 1; i < nums.length; i++) {
+            if (nums[i] == end + 1) {
+              end = nums[i];
+            } else {
+              if (start == end) {
+                parts.add('$start');
+              } else {
+                parts.add('$start–$end');
+              }
+              start = nums[i];
+              end = start;
+            }
+          }
+
+          if (start == end) {
+            parts.add('$start');
+          } else {
+            parts.add('$start–$end');
+          }
+
+          return parts.join(', ');
+        }
+
+        final range = formatRange(verseNumbers);
+        return '$versesText\n($book $chapter:$range)';
+      default:
+        return sorted
+            .map((v) => v.text.replaceAll(notePattern, '')
+                .replaceAllMapped(braceInnerPattern, (m) => m.group(1) ?? '')
+                .replaceAllMapped(squareInnerPattern, (m) => m.group(1) ?? '')
+                .trim())
+            .join('\n');
+    }
+  }
+
+  List<InlineSpan> _buildVerseSpans(List<Verse> verses, BuildContext context) {
+    final settings = Provider.of<AppSettings>(context, listen: false);
+    final spans = <InlineSpan>[];
+    final bracePattern = RegExp(r'\{([^}]+)\}');
+    final notePattern  = RegExp(r'<note:([^>]+)>');
+
+    for (var v in verses) {
+      // Verse number
+      spans.add(WidgetSpan(
+        child: GestureDetector(
+          onTap: () async {
+            final original = v.text.replaceAll('\n', '');
+            final sanitized = original.replaceAll(notePattern, '').replaceAll(bracePattern, '').trim();
+            final toCopy = '${v.verse} $sanitized';
+            await ClipboardHelper.copyText(toCopy);
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Copied verse ${v.verse}')),
+            );
+          },
+          child: Text(
+            '${v.verse} ',
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.primary,
+              fontSize: settings.fontSize,
+              fontFamily: settings.fontFamily,
+              height: settings.lineSpacing,
+            ),
+          ),
+        ),
+      ));
+
+      // Prepare original text and extract notes
+      final original = v.text.replaceAll('\n', '');
+      // Remove note tags from display
+      final raw = original.replaceAll(notePattern, '').trim();
+      // Split on curly annotations, preserving them for badge rendering
+      final parts = raw.splitMapJoin(
+        bracePattern,
+        onMatch: (m) => '||${m[0]}||',
+        onNonMatch: (n) => n,
+      ).split('||');
+
+      for (var part in parts) {
+        if (bracePattern.hasMatch(part)) {
+          final annotation = bracePattern.firstMatch(part)!.group(1)!;
+          // Retrieve the first note from the original full text
+          final noteMatch = notePattern.firstMatch(original);
+          final noteText  = noteMatch != null ? noteMatch.group(1)! : '';
+
+          spans.add(WidgetSpan(
+            alignment: PlaceholderAlignment.middle,
+            child: GestureDetector(
+              onTap: () {
+                showDialog(
+                  context: context,
+                  builder: (_) => AlertDialog(
+                    title: Text('Note'),
+                    content: Text(noteText),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.of(context).pop(),
+                        child: Text('Close'),
+                      ),
+                    ],
+                  ),
+                );
+              },
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                margin: EdgeInsets.symmetric(horizontal: 2),
+                decoration: BoxDecoration(
+                  color: Theme.of(context)
+                      .colorScheme
+                      .secondary
+                      .withOpacity(0.3),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Text(
+                  annotation,
+                  style: TextStyle(
+                    fontSize: settings.fontSize * 0.85,
+                    fontFamily: settings.fontFamily,
+                    height: settings.lineSpacing,
+                  ),
+                ),
+              ),
+            ),
+          ));
+        } else {
+          spans.add(TextSpan(
+            text: part,
+            style: TextStyle(
+              fontSize: settings.fontSize,
+              fontFamily: settings.fontFamily,
+              height: settings.lineSpacing,
+              color: Theme.of(context).textTheme.bodyMedium?.color,
+            ),
+          ));
+        }
+      }
+    }
+
+    return spans;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Consumer2<MainProvider, AppSettings>(
+      builder: (context, mainProvider, settings, child) {
+        final verses = mainProvider.verses
+            .where((v) =>
+                v.book == mainProvider.currentBook &&
+                v.chapter == mainProvider.currentChapter)
+            .toList()
+          ..sort((a, b) => a.verse.compareTo(b.verse));
+
+        // (groupVersesIntoParagraphs local function removed)
+
+        // final paragraphs = _groupVersesIntoParagraphs(verses);
+        final currentVerse = mainProvider.currentVerse ??
+            (verses.isNotEmpty ? verses.first : null);
+        final isSelected = mainProvider.selectedVerses.isNotEmpty;
+
+        return SelectionArea(
+          child: GestureDetector(
+            onHorizontalDragEnd: (details) {
+              if (details.primaryVelocity! < 0) {
+                _goToNextChapter();
+              } else if (details.primaryVelocity! > 0) {
+                _goToPreviousChapter();
+              }
+            },
+            child: AnnotatedRegion<SystemUiOverlayStyle>(
+              value: SystemUiOverlayStyle(
+                systemNavigationBarColor:
+                    Theme.of(context).colorScheme.background,
+                systemNavigationBarIconBrightness:
+                    Theme.of(context).brightness == Brightness.dark
+                        ? Brightness.light
+                        : Brightness.dark,
+              ),
+              child: Scaffold(
+                floatingActionButtonAnimator: NoScalingAnimation(),
+                appBar: AppBar(
+                  title: LayoutBuilder(
+                    builder: (context, constraints) {
+                      // double scale =
+                      //     (constraints.maxWidth / 375).clamp(0.75, 1.0);
+                      double baseFontSize =
+                          Theme.of(context).textTheme.titleLarge?.fontSize ??
+                              20;
+                      if (currentVerse == null) {
+                        return Text(
+                          uiStrings['bible']?[settings.locale] ?? 'Bible',
+                          style: TextStyle(
+                            fontSize: baseFontSize,
+                            fontFamily: settings.fontFamily,
+                          ),
+                        );
+                      }
+                      return FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                borderRadius: BorderRadius.circular(8),
+                                onTap: () {
+                                  final mainProvider =
+                                      Provider.of<MainProvider>(context,
+                                          listen: false);
+                                  mainProvider.clearSelectedVerses();
+                                  Get.to(
+                                    () => BooksPage(
+                                      chapterIdx:
+                                          mainProvider.currentVerse?.chapter ??
+                                              1,
+                                      bookIdx:
+                                          mainProvider.currentVerse?.book ?? '',
+                                    ),
+                                    transition: Transition.leftToRight,
+                                    duration: const Duration(milliseconds: 300),
+                                    curve: Curves.easeInOut,
+                                  );
+                                },
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 4, vertical: 2),
+                                  child: Text(
+                                    '${currentVerse.book} ${currentVerse.chapter}',
+                                    style: TextStyle(
+                                      fontFamily: settings.fontFamily,
+                                      fontSize: settings.fontSize,
+                                      fontWeight: FontWeight.w600,
+                                      color:
+                                          Theme.of(context).colorScheme.primary,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            PopupMenuButton<String>(
+                              padding: EdgeInsets.zero,
+                              tooltip: uiStrings['changeVersion']
+                                      ?[settings.locale] ??
+                                  'Change Version',
+                              child: Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 4),
+                                child: Text(
+                                  {
+                                        'kjv': 'KJV',
+                                        'leb': 'LEB',
+                                        'cuvs-yhwh': 'cuvs(简)',
+                                        'cuvs-yhwh-tr': 'cuvs(繁)',
+                                        'BIBLEXG': 'biblexg(简)',
+                                        'BIBLEXG-tr': 'biblexg(繁)',
+                                      }[mainProvider.currentVersion] ??
+                                      mainProvider.currentVersion,
+                                  style: TextStyle(
+                                    fontFamily: settings.fontFamily,
+                                    fontSize: settings.fontSize,
+                                    fontWeight: FontWeight.w600,
+                                    color:
+                                        Theme.of(context).colorScheme.primary,
+                                  ),
+                                ),
+                              ),
+                              onSelected: (version) async {
+                                final p = context.read<MainProvider>();
+                                final settings = Provider.of<AppSettings>(
+                                    context,
+                                    listen: false);
+                                p.clearSelectedVerses();
+
+                                final prevEn = toEnglish(p.currentBook);
+
+                                p.setVersion(version);
+                                await FetchVerses.execute(
+                                    mainProvider: p, settings: settings);
+                                await FetchBooks.execute(
+                                    mainProvider: p, settings: settings);
+
+                                String? targetBook = prevEn == null
+                                    ? null
+                                    : translateBookName(prevEn, version);
+
+                                final match = p.verses.firstWhere(
+                                  (v) =>
+                                      v.book ==
+                                          (targetBook ?? p.verses.first.book) &&
+                                      v.chapter ==
+                                          (p.currentChapter ?? v.chapter),
+                                  orElse: () => p.verses.first,
+                                );
+
+                                p.setCurrentChapter(
+                                    book: match.book, chapter: match.chapter);
+                                p.updateCurrentVerse(verse: match);
+                              },
+                              itemBuilder: (context) => const [
+                                PopupMenuItem(
+                                    value: 'kjv',
+                                    child: Text('King James Version')),
+                                PopupMenuItem(
+                                    value: 'leb',
+                                    child: Text('Lexham English Bible'),),
+                                PopupMenuItem(
+                                    value: 'cuvs-yhwh',
+                                    child: Text('和合本雅伟版(简体)')),
+                                PopupMenuItem(
+                                    value: 'cuvs-yhwh-tr',
+                                    child: Text('和合本雅伟版(繁體)')),
+                                PopupMenuItem(
+                                    value: 'BIBLEXG', child: Text('梁家铿译本(简体)')),
+                                PopupMenuItem(
+                                    value: 'BIBLEXG-tr',
+                                    child: Text('梁家铿譯本(繁體)')),
+                              ],
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                  actions: [
+                    LayoutBuilder(
+                      builder: (context, constraints) {
+                        if (constraints.maxWidth < 377) {
+                          return PopupMenuButton<String>(
+                            icon: const Icon(Icons.more_vert),
+                            onSelected: (value) async {
+                              if (value == 'search') {
+                                mainProvider.clearSelectedVerses();
+                                Get.to(
+                                  () => SearchPage(),
+                                  transition: Transition.rightToLeft,
+                                );
+                              }
+                            },
+                            itemBuilder: (context) => [
+                              PopupMenuItem<String>(
+                                value: 'search',
+                                child: ListTile(
+                                  leading: Icon(Icons.search),
+                                  title: Text(uiStrings['search']
+                                          ?[settings.locale] ??
+                                      'Search'),
+                                ),
+                              ),
+                            ],
+                          );
+                        } else {
+                          double screenWidth =
+                              MediaQuery.of(context).size.width;
+                          double scale = (screenWidth / 375).clamp(0.5, 1.0);
+                          double baseFontSize = Theme.of(context)
+                                  .textTheme
+                                  .titleLarge
+                                  ?.fontSize ??
+                              20;
+                          // Use padding and constrained box to limit right margin and width
+                          return Padding(
+                            padding: const EdgeInsets.only(right: 8),
+                            child: ConstrainedBox(
+                              constraints: const BoxConstraints(maxWidth: 120),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Transform.scale(
+                                    scale: scale,
+                                    child: IconButton(
+                                      padding: EdgeInsets.all(8.0 * scale),
+                                      constraints: const BoxConstraints(),
+                                      icon: Icon(Icons.search_rounded,
+                                          size: baseFontSize * scale),
+                                      onPressed: () {
+                                        mainProvider.clearSelectedVerses();
+                                        Get.to(
+                                          () => SearchPage(),
+                                          transition: Transition.rightToLeft,
+                                        );
+                                      },
+                                    ),
+                                  ),
+                                  SizedBox(width: 2 * scale),
+                                  Transform.scale(
+                                    scale: scale,
+                                    child: IconButton(
+                                      padding: EdgeInsets.all(8.0 * scale),
+                                      constraints: const BoxConstraints(),
+                                      icon: Icon(Icons.settings,
+                                          size: baseFontSize * scale),
+                                      onPressed: () {
+                                        mainProvider.clearSelectedVerses();
+                                        Get.to(() => SettingsPage());
+                                      },
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        }
+                      },
+                    ),
+                  ],
+                ),
+                body: Stack(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.only(right: 8.0),
+                      child: settings.readingModeCentered
+                          ? SingleChildScrollView(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 16.0, vertical: 12.0),
+                              child: Text.rich(
+                                TextSpan(
+                                    children:
+                                        _buildVerseSpans(verses, context)),
+                              ),
+                            )
+                          : Scrollbar(
+                              controller: _fakeScrollController,
+                              child: ScrollablePositionedList.builder(
+                                itemCount: verses.length + 1,
+                                itemBuilder: (context, index) {
+                                  if (index < verses.length) {
+                                    return VerseWidget(
+                                      verse: verses[index],
+                                      index: index,
+                                    );
+                                  }
+                                  return const SizedBox(height: 120);
+                                },
+                                itemScrollController:
+                                    mainProvider.itemScrollController,
+                                itemPositionsListener:
+                                    mainProvider.itemPositionsListener,
+                                scrollOffsetController:
+                                    mainProvider.scrollOffsetController,
+                                scrollOffsetListener:
+                                    mainProvider.scrollOffsetListener,
+                              ),
+                            ),
+                    ),
+                  ],
+                ),
+                floatingActionButton: isSelected
+                    ? FloatingActionButton(
+                        onPressed: () async {
+                          final text = formattedSelectedVerses(
+                              verses: mainProvider.selectedVerses);
+                          await FlutterClipboard.copy(text);
+                          mainProvider.clearSelectedVerses();
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    uiStrings['copied']?[settings.locale] ??
+                                        'Copied!',
+                                    style: TextStyle(
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .onPrimary,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              backgroundColor: Theme.of(context)
+                                  .colorScheme
+                                  .primary
+                                  .withOpacity(0.8),
+                              duration: Duration(milliseconds: 800),
+                            ),
+                          );
+                        },
+                        child: const Icon(Icons.copy_rounded),
+                      )
+                    : null,
+                floatingActionButtonLocation:
+                    CustomFloatingActionButtonLocation(
+                  xOffset: -16,
+                  yOffset: -16,
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void _goToNextChapter() {
+    final provider = Provider.of<MainProvider>(context, listen: false);
+    provider.clearSelectedVerses();
+    final books = provider.books;
+    final currentBook = provider.currentBook;
+    final currentChapter = provider.currentChapter;
+    if (currentBook == null || currentChapter == null) return;
+
+    // 找到当前书卷在列表中的索引
+    final bookIdx = books.indexWhere((b) => b.title == currentBook);
+    if (bookIdx < 0) return;
+    final chapters = books[bookIdx].chapters;
+    final chapIdx = chapters.indexWhere((c) => c.title == currentChapter);
+    String nextBook;
+    int nextChap;
+    if (chapIdx < chapters.length - 1) {
+      nextBook = currentBook;
+      nextChap = chapters[chapIdx + 1].title;
+    } else {
+      final nextBookIdx = (bookIdx + 1) % books.length;
+      nextBook = books[nextBookIdx].title;
+      nextChap = books[nextBookIdx].chapters.first.title;
+    }
+
+    _switchTo(provider, nextBook, nextChap);
+  }
+
+  void _goToPreviousChapter() {
+    final provider = Provider.of<MainProvider>(context, listen: false);
+    provider.clearSelectedVerses();
+    final books = provider.books;
+    final currentBook = provider.currentBook;
+    final currentChapter = provider.currentChapter;
+    if (currentBook == null || currentChapter == null) return;
+
+    final bookIdx = books.indexWhere((b) => b.title == currentBook);
+    if (bookIdx < 0) return;
+    final chapters = books[bookIdx].chapters;
+    final chapIdx = chapters.indexWhere((c) => c.title == currentChapter);
+    String prevBook;
+    int prevChap;
+    if (chapIdx > 0) {
+      prevBook = currentBook;
+      prevChap = chapters[chapIdx - 1].title;
+    } else {
+      final prevBookIdx = (bookIdx - 1 + books.length) % books.length;
+      prevBook = books[prevBookIdx].title;
+      prevChap = books[prevBookIdx].chapters.last.title;
+    }
+
+    _switchTo(provider, prevBook, prevChap);
+  }
+
+  void _switchTo(MainProvider provider, String book, int chap) {
+    final matched = provider.verses
+        .where((v) => v.book == book && v.chapter == chap)
+        .toList();
+
+    final first = matched.isNotEmpty ? matched.first : provider.verses.first;
+    provider.setCurrentChapter(book: book, chapter: chap);
+    provider.updateCurrentVerse(verse: first);
+
+    provider.jumpToIndex(index: 0); 
+  }
+
+  List<List<Verse>> _groupVersesIntoParagraphs(List<Verse> verses) {
+    final List<List<Verse>> paragraphs = [];
+    List<Verse> current = [];
+    for (var v in verses) {
+      if (current.isEmpty ||
+          v.verse == 1 ||
+          v.verse > (current.last.verse + 1)) {
+        if (current.isNotEmpty) paragraphs.add(current);
+        current = [v];
+      } else {
+        current.add(v);
+      }
+    }
+    if (current.isNotEmpty) paragraphs.add(current);
+    return paragraphs;
+  }
+}
+
+class NoScalingAnimation extends FloatingActionButtonAnimator {
+  @override
+  Offset getOffset(
+      {required Offset begin, required Offset end, required double progress}) {
+    return Offset.lerp(begin, end, 1)!; // Instantly move without animation
+  }
+
+  @override
+  Animation<double> getRotationAnimation({required Animation<double> parent}) {
+    return AlwaysStoppedAnimation(1); // No rotation
+  }
+
+  @override
+  Animation<double> getScaleAnimation({required Animation<double> parent}) {
+    return AlwaysStoppedAnimation(1); // No scaling animation
+  }
+}
+
+
+================================================================================
+FILE: pages/settings_page.dart
+================================================================================
+import 'package:flutter/material.dart';
+// import 'package:http/http.dart' as http;
+import 'package:yswords/constants/ui_strings.dart';
+// import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
+import 'package:yswords/models/app_settings.dart';
+import 'package:yswords/providers/main_provider.dart';
+
+import 'package:yswords/widgets/localized_back_button.dart';
+
+
+String getDevotionalFormattedText(
+    List<Map<String, dynamic>> verses, String? book, int? chapter) {
+  if (verses.isEmpty || book == null || chapter == null) return '';
+
+  List<int> verseNums = verses.map((v) => v['verse'] as int).toList()..sort();
+  List<String> textParts = verses
+      .map((v) => v['text'] as String)
+      .toList();
+
+  // Build reference string
+  List<String> ranges = [];
+  for (int i = 0; i < verseNums.length;) {
+    int start = verseNums[i];
+    int end = start;
+    while (i + 1 < verseNums.length && verseNums[i + 1] == end + 1) {
+      end = verseNums[++i];
+    }
+    ranges.add(start == end ? '$start' : '$start–$end');
+    i++;
+  }
+
+  final ref = '$book $chapter:${ranges.join(',')}';
+  final fullText = textParts.join('\n');
+  return '$fullText\n($ref)';
+}
+
+class SettingsPage extends StatelessWidget {
+  SettingsPage({super.key});
+
+  // final TextEditingController _feedbackController = TextEditingController();
+  // final ValueNotifier<bool> _isSending = ValueNotifier(false);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        leading: const LocalizedBackButton(),
+        // The settings locale is now available inside the Consumer below
+        title: Consumer<AppSettings>(
+          builder: (context, settings, _) =>
+              Text(uiStrings['settings']?[settings.locale] ?? 'Settings'),
+        ),
+      ),
+      body: Consumer<AppSettings>(
+        builder: (context, settings, _) {
+          final mainProvider = Provider.of<MainProvider>(context);
+          final currentBook = mainProvider.currentBook;
+          final currentChapter = mainProvider.currentChapter;
+
+          final List<Color> palette = [
+            Colors.red,
+            Colors.deepOrange,
+            Colors.orange,
+            Colors.amber,
+            Colors.yellow,
+            Colors.lime,
+            Colors.lightGreen,
+            Colors.green,
+            Colors.teal,
+            Colors.cyan,
+            Colors.lightBlue,
+            Colors.blue,
+            Colors.indigo,
+            Colors.deepPurple,
+            Colors.purple,
+            Colors.pink,
+            Colors.brown,
+            Colors.grey,
+            Colors.blueGrey,
+          ];
+
+          final versesInChapter = mainProvider.verses
+              .where((v) => v.book == currentBook && v.chapter == currentChapter)
+              .toList()
+            ..sort((a, b) => a.verse.compareTo(b.verse));
+          final verseSamples = versesInChapter
+              .take(3)
+              .map((v) => {'verse': v.verse, 'text': v.text})
+              .toList();
+
+          return ListView(
+            padding: const EdgeInsets.all(16),
+            children: [
+              Card(
+                child: Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        uiStrings['fontSize']?[settings.locale] ?? 'Font Size',
+                        style: TextStyle(
+                          fontFamily: settings.fontFamily,
+                          fontSize: settings.fontSize + 2,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      Slider(
+                        value: settings.fontSize,
+                        min: 12,
+                        max: 40,
+                        divisions: 28,
+                        label: '${settings.fontSize.toInt()} pt',
+                        onChanged: (val) => settings.setFontSize(val),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Card(
+                child: Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        uiStrings['lineSpacing']?[settings.locale] ??
+                            'Line Spacing',
+                        style: TextStyle(
+                          fontFamily: settings.fontFamily,
+                          fontSize: settings.fontSize + 2,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      Slider(
+                        value: settings.lineSpacing,
+                        min: 1.0,
+                        max: 3.0,
+                        divisions: 20,
+                        label: settings.lineSpacing.toStringAsFixed(1),
+                        onChanged: (val) => settings.setLineSpacing(
+                            double.parse(val.toStringAsFixed(1))),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        uiStrings['samplePreview']?[settings.locale] ??
+                            'Sample Preview',
+                        style: TextStyle(
+                          fontFamily: settings.fontFamily,
+                          fontSize: settings.fontSize + 2,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            uiStrings['copyFormat']?[settings.locale] ??
+                                'Copy Format',
+                            style: TextStyle(
+                              fontFamily: settings.fontFamily,
+                              fontSize: settings.fontSize + 2,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          DropdownButton<String>(
+                            value: settings.copyFormat,
+                            onChanged: (val) {
+                              if (val != null) settings.setCopyFormat(val);
+                            },
+                            items: [
+                              DropdownMenuItem(
+                                  value: 'plain',
+                                  child: Text(
+                                    uiStrings['plainText']?[settings.locale] ??
+                                        'Plain Text',
+                                    style: TextStyle(
+                                      fontSize: settings.fontSize,
+                                      fontFamily: settings.fontFamily,
+                                    ),
+                                  )),
+                              DropdownMenuItem(
+                                  value: 'withRef',
+                                  child: Text(
+                                    uiStrings['withReference']
+                                            ?[settings.locale] ??
+                                        'With Reference',
+                                    style: TextStyle(
+                                      fontSize: settings.fontSize,
+                                      fontFamily: settings.fontFamily,
+                                    ),
+                                  )),
+                              DropdownMenuItem(
+                                  value: 'devotional',
+                                  child: Text(
+                                    uiStrings['devotionalFormat']
+                                            ?[settings.locale] ??
+                                        'Devotional Format',
+                                    style: TextStyle(
+                                      fontSize: settings.fontSize,
+                                      fontFamily: settings.fontFamily,
+                                    ),
+                                  )),
+                            ],
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        '$currentBook $currentChapter',
+                        style:
+                            Theme.of(context).textTheme.titleMedium?.copyWith(
+                                  fontFamily: settings.fontFamily,
+                                  fontWeight: FontWeight.bold,
+                                  color: Theme.of(context).colorScheme.primary,
+                                  fontSize: settings.fontSize,
+                                ),
+                      ),
+                      const SizedBox(height: 8),
+                      const SizedBox(height: 12),
+                      if (settings.copyFormat == 'devotional')
+                        Padding(
+                          padding:
+                              EdgeInsets.only(bottom: settings.lineSpacing * 2),
+                          child: RichText(
+                            text: TextSpan(
+                              style: TextStyle(
+                                fontSize: settings.fontSize,
+                                fontFamily: settings.fontFamily,
+                                height: settings.lineSpacing,
+                                color: Theme.of(context)
+                                    .textTheme
+                                    .bodyMedium
+                                    ?.color,
+                              ),
+                              children: [
+                                TextSpan(
+                                  text: getDevotionalFormattedText(verseSamples,
+                                      currentBook, currentChapter),
+                                ),
+                              ],
+                            ),
+                          ),
+                        )
+                      else
+                        ...verseSamples.map((v) {
+                          final ref =
+                              '${currentBook ?? ''} ${currentChapter}:${v['verse']}';
+                          String formattedText;
+                          switch (settings.copyFormat) {
+                            case 'withRef':
+                              formattedText = '[$ref] ${v['text']}';
+                              break;
+                            case 'plain':
+                            default:
+                              formattedText = '${v['verse']} ${v['text']}';
+                          }
+                          final cleanedText = formattedText
+                              .replaceAll(RegExp(r'<[^>]*>'), '')
+                              .replaceAll(RegExp(r'\{[^}]*\}'), '');
+
+                          return Padding(
+                            padding: EdgeInsets.only(
+                                bottom: settings.lineSpacing * 2),
+                            child: RichText(
+                              text: TextSpan(
+                                style: TextStyle(
+                                  fontSize: settings.fontSize,
+                                  fontFamily: settings.fontFamily,
+                                  height: settings.lineSpacing,
+                                  color: Theme.of(context)
+                                      .textTheme
+                                      .bodyMedium
+                                      ?.color,
+                                ),
+                                children: [
+                                  if (settings.copyFormat == 'plain') ...[
+                                    TextSpan(
+                                      text: '${v['verse']} ',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .primary,
+                                      ),
+                                    ),
+                                    TextSpan(
+                                      text: v['text']
+                                          .toString()
+                                          .replaceAll(RegExp(r'<[^>]*>'), '')
+                                          .replaceAll(RegExp(r'\{[^}]*\}'), ''),
+                                    ),
+                                  ] else ...[
+                                    TextSpan(text: cleanedText),
+                                  ],
+                                ],
+                              ),
+                            ),
+                          );
+                        }),
+                      // Removed Copy Preview button and its padding
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Card(
+                child: Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        uiStrings['fontFamily']?[settings.locale] ??
+                            'Font Family',
+                        style: TextStyle(
+                          fontFamily: settings.fontFamily,
+                          fontSize: settings.fontSize + 2,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      DropdownButton<String>(
+                        value: settings.fontFamily,
+                        onChanged: (val) {
+                          if (val != null) settings.setFontFamily(val);
+                        },
+                        items: [
+                          DropdownMenuItem(
+                            value: 'Roboto',
+                            child: Text('Roboto',
+                                style: TextStyle(
+                                  fontSize: settings.fontSize,
+                                  fontFamily: 'Roboto',
+                                )),
+                          ),
+                          DropdownMenuItem(
+                            value: 'Microsoft YaHei',
+                            child: Text('Microsoft YaHei',
+                                style: TextStyle(
+                                  fontSize: settings.fontSize,
+                                  fontFamily: 'Microsoft Yahei',
+                                )),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              // --- Reading/Study Mode Toggle ---
+              // Card(
+              //   child: Padding(
+              //     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              //     child: Column(
+              //       crossAxisAlignment: CrossAxisAlignment.start,
+              //       children: [
+              //         Text(
+              //           '阅读模式排版',
+              //           style: TextStyle(
+              //             fontFamily: settings.fontFamily,
+              //             fontSize: settings.fontSize + 2,
+              //             fontWeight: FontWeight.w600,
+              //           ),
+              //         ),
+              //         const SizedBox(height: 12),
+              //         SwitchListTile(
+              //           contentPadding: EdgeInsets.zero,
+              //           title: Text(
+              //             settings.readingModeCentered ? '阅读型（居中、段落）' : '查经型（左对齐、一节一行）',
+              //             style: TextStyle(
+              //               fontFamily: settings.fontFamily,
+              //               fontSize: settings.fontSize,
+              //             ),
+              //           ),
+              //           value: settings.readingModeCentered,
+              //           onChanged: (val) => settings.setReadingModeCentered(val),
+              //         ),
+              //       ],
+              //     ),
+              //   ),
+              // ),
+              // const SizedBox(height: 16),
+              if (Theme.of(context).brightness != Brightness.dark) ...[
+                Card(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 12),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          uiStrings['primaryColor']?[settings.locale] ??
+                              'Primary Color',
+                          style: TextStyle(
+                            fontFamily: settings.fontFamily,
+                            fontSize: settings.fontSize + 2,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: palette.map((c) {
+                            return GestureDetector(
+                              onTap: () => settings.setPrimaryColor(c),
+                              child: CircleAvatar(
+                                backgroundColor: c,
+                                radius: settings.fontSize * 0.8,
+                                child: settings.primaryColor == c
+                                    ? Icon(Icons.check,
+                                        color: Colors.white,
+                                        size: settings.fontSize * 0.6)
+                                    : null,
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+              ],
+              Card(
+                child: Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        uiStrings['themeMode']?[settings.locale] ??
+                            'Theme Mode',
+                        style: TextStyle(
+                          fontFamily: settings.fontFamily,
+                          fontSize: settings.fontSize + 2,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      DropdownButton<ThemeMode>(
+                        value: settings.themeMode,
+                        onChanged: (val) {
+                          if (val != null) settings.setThemeMode(val);
+                        },
+                        items: [
+                          DropdownMenuItem(
+                            value: ThemeMode.system,
+                            child: Text(
+                              uiStrings['themeSystem']?[settings.locale] ??
+                                  '跟隨系統',
+                              style: TextStyle(
+                                fontSize: settings.fontSize,
+                                fontFamily: settings.fontFamily,
+                              ),
+                            ),
+                          ),
+                          DropdownMenuItem(
+                            value: ThemeMode.light,
+                            child: Text(
+                              uiStrings['themeDay']?[settings.locale] ?? '白天模式',
+                              style: TextStyle(
+                                fontSize: settings.fontSize,
+                                fontFamily: settings.fontFamily,
+                              ),
+                            ),
+                          ),
+                          DropdownMenuItem(
+                            value: ThemeMode.dark,
+                            child: Text(
+                              uiStrings['themeNight']?[settings.locale] ??
+                                  '夜間模式',
+                              style: TextStyle(
+                                fontSize: settings.fontSize,
+                                fontFamily: settings.fontFamily,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              // Only show these settings when running as Web App
+              // if (kIsWeb && !settings.lockAllowUpdates)
+              //   Card(
+              //     // margin: const EdgeInsets.only(top: 24),
+              //     child: SwitchListTile(
+              //       title: Text(
+              //         uiStrings['allowUpdates']?[settings.locale] ??
+              //             'Allow Auto Updates',
+              //         style: TextStyle(
+              //           fontSize: settings.fontSize + 2,
+              //           fontWeight: FontWeight.w600,
+              //         ),
+              //       ),
+              //       subtitle: Text(
+              //         uiStrings['allowUpdatesSubtitle']?[settings.locale] ??
+              //             'Toggle whether to allow app updates from server.',
+              //         style: TextStyle(
+              //           fontSize: settings.fontSize,
+              //           fontFamily: settings.fontFamily,
+              //         ),
+              //       ),
+              //       value: settings.allowUpdates,
+              //       onChanged: (val) {
+              //         settings.setAllowUpdates(val);
+              //       },
+              //     ),
+              //   ),
+              // const SizedBox(height: 16),
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        uiStrings['interfaceLanguage']?[settings.locale] ??
+                            '界面语言',
+                        style: TextStyle(
+                          fontFamily: settings.fontFamily,
+                          fontSize: settings.fontSize + 2,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      DropdownButton<String>(
+                        value: settings.locale,
+                        onChanged: (val) {
+                          if (val != null) settings.setLocale(val);
+                        },
+                        items: [
+                          DropdownMenuItem(
+                            value: 'zh-Hans',
+                            child: Text('简体中文',
+                                style: TextStyle(
+                                  fontSize: settings.fontSize,
+                                  fontFamily: settings.fontFamily,
+                                )),
+                          ),
+                          DropdownMenuItem(
+                            value: 'zh-Hant',
+                            child: Text('繁體中文',
+                                style: TextStyle(
+                                  fontSize: settings.fontSize,
+                                  fontFamily: settings.fontFamily,
+                                )),
+                          ),
+                          DropdownMenuItem(
+                            value: 'en',
+                            child: Text('English',
+                                style: TextStyle(
+                                  fontSize: settings.fontSize,
+                                  fontFamily: settings.fontFamily,
+                                )),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              // --- 直接在 App 內輸入並發送反饋的區塊 ---
+//               Card(
+//                 child: Padding(
+//                   padding: const EdgeInsets.all(16),
+//                   child: Column(
+//                     crossAxisAlignment: CrossAxisAlignment.start,
+//                     children: [
+//                       Text(
+//                         uiStrings['sendFeedback']?[settings.locale] ??
+//                             'Send Feedback',
+//                         style: TextStyle(
+//                           fontFamily: settings.fontFamily,
+//                           fontSize: settings.fontSize + 2,
+//                           fontWeight: FontWeight.w600,
+//                         ),
+//                       ),
+//                       const SizedBox(height: 12),
+//                       TextFormField(
+//                         controller: _feedbackController,
+//                         style: TextStyle(
+//                           fontSize: settings.fontSize,
+//                           fontFamily: settings.fontFamily,
+//                         ),
+//                         maxLines: null,
+//                         maxLength: 500,
+//                         decoration: InputDecoration(
+//                           hintText: uiStrings['feedbackHint']
+//                                   ?[settings.locale] ??
+//                               'Please enter your feedback...',
+//                           hintStyle: TextStyle(
+//                             fontSize: settings.fontSize,
+//                             fontFamily: settings.fontFamily,
+//                           ),
+//                           counterStyle: TextStyle(
+//                             fontSize: settings.fontSize,
+//                             fontFamily: settings.fontFamily,
+//                           ),
+//                           border: const OutlineInputBorder(),
+//                         ),
+//                       ),
+//                       const SizedBox(height: 12),
+//                       SizedBox(
+//                         width: double.infinity,
+//                         child: ValueListenableBuilder<bool>(
+//                           valueListenable: _isSending,
+//                           builder: (context, isSending, child) {
+//                             return ElevatedButton.icon(
+//                               style: Theme.of(context).brightness ==
+//                                       Brightness.light
+//                                   ? ElevatedButton.styleFrom(
+//                                       backgroundColor:
+//                                           Theme.of(context).colorScheme.primary,
+//                                       foregroundColor: Colors.white,
+//                                       padding: const EdgeInsets.symmetric(
+//                                           vertical: 16),
+//                                       textStyle: TextStyle(
+//                                         fontSize: settings.fontSize + 2,
+//                                         fontWeight: FontWeight.bold,
+//                                         fontFamily: settings.fontFamily,
+//                                       ),
+//                                     )
+//                                   : null,
+//                               icon: isSending
+//                                   ? const SizedBox(
+//                                       width: 16,
+//                                       height: 16,
+//                                       child: CircularProgressIndicator(
+//                                         strokeWidth: 2,
+//                                         valueColor:
+//                                             AlwaysStoppedAnimation<Color>(
+//                                                 Colors.white),
+//                                       ),
+//                                     )
+//                                   : const Icon(Icons.send),
+//                               label: Text(
+//                                 isSending
+//                                     ? (uiStrings['sendingFeedback']
+//                                             ?[settings.locale] ??
+//                                         'Sending...')
+//                                     : (uiStrings['sendFeedback']
+//                                             ?[settings.locale] ??
+//                                         'Send Feedback'),
+//                                 style: TextStyle(
+//                                   fontFamily: settings.fontFamily,
+//                                   fontSize: settings.fontSize,
+//                                 ),
+//                               ),
+//                               onPressed: isSending
+//                                   ? null
+//                                   : () async {
+//                                       final content =
+//                                           _feedbackController.text.trim();
+//                                       if (content.isEmpty) {
+//                                         ScaffoldMessenger.of(context)
+//                                             .showSnackBar(
+//                                           SnackBar(
+//                                             content: Text(
+//                                               uiStrings['feedbackEmpty']
+//                                                       ?[settings.locale] ??
+//                                                   '請輸入反饋內容',
+//                                               style: TextStyle(
+//                                                 fontFamily: settings.fontFamily,
+//                                                 fontSize: settings.fontSize,
+//                                               ),
+//                                             ),
+//                                             duration:
+//                                                 Duration(milliseconds: 1500),
+//                                           ),
+//                                         );
+//                                         return;
+//                                       }
+//                                       if (content.length > 500) {
+//                                         ScaffoldMessenger.of(context)
+//                                             .showSnackBar(
+//                                           SnackBar(
+//                                             content: Text(
+//                                               uiStrings['feedbackTooLong']
+//                                                       ?[settings.locale] ??
+//                                                   '內容過長，請刪減後再發送。',
+//                                               style: TextStyle(
+//                                                 fontFamily: settings.fontFamily,
+//                                                 fontSize: settings.fontSize,
+//                                               ),
+//                                             ),
+//                                             duration:
+//                                                 Duration(milliseconds: 1500),
+//                                           ),
+//                                         );
+//                                         return;
+//                                       }
+
+//                                       final emojiRegex = RegExp(
+//                                         r'[\u{1F600}-\u{1F64F}]|' // Emoticons 表情符號
+//                                         r'[\u{1F300}-\u{1F5FF}]|' // 各種符號
+//                                         r'[\u{1F680}-\u{1F6FF}]|' // 交通工具符號
+//                                         r'[\u{2600}-\u{26FF}]|' // 雜項符號
+//                                         r'[\u{2700}-\u{27BF}]', // Dingbats 記號
+//                                         unicode: true,
+//                                       );
+
+//                                       if (emojiRegex.hasMatch(content)) {
+//                                         ScaffoldMessenger.of(context)
+//                                             .showSnackBar(
+//                                           SnackBar(
+//                                             content: Text(
+//                                               uiStrings['feedbackInvalid']
+//                                                       ?[settings.locale] ??
+//                                                   '❗️內容包含不支援的符號（如 emoji 表情符號），請移除後再發送。',
+//                                               style: TextStyle(
+//                                                 fontFamily: settings.fontFamily,
+//                                                 fontSize: settings.fontSize,
+//                                               ),
+//                                             ),
+//                                             duration:
+//                                                 Duration(milliseconds: 1500),
+//                                           ),
+//                                         );
+//                                         return;
+//                                       }
+
+//                                       _isSending.value = true;
+
+//                                       // 當地系統時間（完整格式）
+//                                       final now = DateTime.now();
+//                                       final formattedTime =
+//                                           DateFormat('yyyy-MM-dd HH:mm:ss')
+//                                               .format(now);
+
+//                                       final timezoneOffset = now.timeZoneOffset;
+//                                       final timezoneString = timezoneOffset
+//                                               .isNegative
+//                                           ? '-${timezoneOffset.inHours.abs().toString().padLeft(2, '0')}:${(timezoneOffset.inMinutes.abs() % 60).toString().padLeft(2, '0')}'
+//                                           : '+${timezoneOffset.inHours.toString().padLeft(2, '0')}:${(timezoneOffset.inMinutes % 60).toString().padLeft(2, '0')}';
+
+//                                       final timezoneName = now.timeZoneName;
+
+//                                       final deviceTimeString =
+//                                           '$formattedTime GMT$timezoneString ($timezoneName)';
+
+//                                       final formattedDate =
+//                                           DateFormat('yyyy-MM-dd').format(now);
+
+//                                       // 平台資訊
+//                                       final platform = kIsWeb
+//                                           ? 'Web'
+//                                           : Theme.of(context).platform.name;
+
+//                                       // 語言
+//                                       final locale = settings.locale;
+
+//                                       // Web 的 UserAgent
+//                                       String userAgent = '';
+//                                       if (kIsWeb) {
+//                                         userAgent =
+//                                             'Web Browser'; // 简单标记是Web端，无需访问html.window
+//                                       }
+
+//                                       // 組裝完整訊息
+//                                       final fullMessage = '''
+// $content
+
+// ———
+// Platform: $platform ${kIsWeb ? '(Web)' : ''}
+// Locale: $locale
+// ${userAgent.isNotEmpty ? 'UserAgent: $userAgent\n' : ''}Device Local Time (User\'s timezone): $deviceTimeString
+// ''';
+//                                       try {
+//                                         final response = await http.post(
+//                                           Uri.parse(
+//                                               'https://formsubmit.co/f9d9312f748905d64423c6ce18bb285a'),
+//                                           headers: {
+//                                             'Content-Type':
+//                                                 'application/x-www-form-urlencoded'
+//                                           },
+//                                           body: {
+//                                             '_subject':
+//                                                 'YsWords Feedback ($formattedDate)',
+//                                             'message': fullMessage,
+//                                             '_template': 'table',
+//                                             '_honey': '',
+//                                             '_captcha': 'false',
+//                                           },
+//                                         );
+//                                         if (response.statusCode == 200) {
+//                                           ScaffoldMessenger.of(context)
+//                                               .showSnackBar(
+//                                             SnackBar(
+//                                               content: Text(
+//                                                 uiStrings['feedbackSuccess']
+//                                                         ?[settings.locale] ??
+//                                                     '✅ Feedback sent. Thank you!',
+//                                                 style: TextStyle(
+//                                                   fontFamily:
+//                                                       settings.fontFamily,
+//                                                   fontSize: settings.fontSize,
+//                                                 ),
+//                                               ),
+//                                               duration:
+//                                                   Duration(milliseconds: 1500),
+//                                             ),
+//                                           );
+//                                           _feedbackController.clear();
+//                                         } else {
+//                                           ScaffoldMessenger.of(context)
+//                                               .showSnackBar(
+//                                             SnackBar(
+//                                               content: Text(
+//                                                 uiStrings['feedbackFailure']
+//                                                         ?[settings.locale] ??
+//                                                     '❌ Failed to send. Please try again.',
+//                                                 style: TextStyle(
+//                                                   fontFamily:
+//                                                       settings.fontFamily,
+//                                                   fontSize: settings.fontSize,
+//                                                 ),
+//                                               ),
+//                                               duration:
+//                                                   Duration(milliseconds: 1500),
+//                                             ),
+//                                           );
+//                                         }
+//                                       } catch (_) {
+//                                         ScaffoldMessenger.of(context)
+//                                             .showSnackBar(
+//                                           SnackBar(
+//                                             content: Text(
+//                                               uiStrings['feedbackFailure']
+//                                                       ?[settings.locale] ??
+//                                                   '❌ Failed to send. Please try again.',
+//                                               style: TextStyle(
+//                                                 fontFamily: settings.fontFamily,
+//                                                 fontSize: settings.fontSize,
+//                                               ),
+//                                             ),
+//                                             duration:
+//                                                 Duration(milliseconds: 1500),
+//                                           ),
+//                                         );
+//                                       } finally {
+//                                         _isSending.value = false;
+//                                       }
+//                                     },
+//                             );
+//                           },
+//                         ),
+//                       )
+//                     ],
+//                   ),
+//                 ),
+//               ),
+            
+            ],
+          );
+        },
+      ),
+    );
+  }
+}
+
+
+================================================================================
+FILE: pages/books_page.dart
+================================================================================
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:yswords/models/book.dart';
+import 'package:yswords/models/chapter.dart';
+import 'package:yswords/providers/main_provider.dart';
+import 'package:provider/provider.dart';
+import 'package:scroll_to_index/scroll_to_index.dart';
+import 'package:yswords/constants/book_groups.dart'
+    show oldTestamentBooks, newTestamentBooks;
+import 'package:yswords/constants/ui_strings.dart';
+import 'package:yswords/models/app_settings.dart';
+import 'package:yswords/widgets/localized_back_button.dart';
+import 'package:yswords/utils/version_mapper.dart' show toEnglish;
+
+class BooksPage extends StatefulWidget {
+  final int chapterIdx;
+  final String bookIdx;
+  const BooksPage({super.key, required this.chapterIdx, required this.bookIdx});
+
+  @override
+  State<BooksPage> createState() => _BooksPageState();
+}
+
+class _BooksPageState extends State<BooksPage> {
+  final AutoScrollController _autoScrollController = AutoScrollController();
+  Book? currentBook;
+  bool showOldTestament = true;
+  bool hasOldTestament = false;
+  bool hasNewTestament = false;
+  bool _initialScrollDone = false;
+
+  Map<String, bool> expandStatus = {};
+  @override
+  void initState() {
+    super.initState();
+    final mainProvider = Provider.of<MainProvider>(context, listen: false);
+
+    // Map displayed titles back to English keys (支持简 / 繁 / 英)
+    final bookTitlesEng = mainProvider.books
+        .map<String>((b) => toEnglish(b.title) ?? b.title)
+        .toSet();
+
+    hasOldTestament = bookTitlesEng.any(
+      (b) => oldTestamentBooks.contains(b),
+    );
+    hasNewTestament = bookTitlesEng.any(
+      (b) => newTestamentBooks.contains(b),
+    );
+
+    // Default to OT if available; show NT only when no OT exists
+    showOldTestament = hasOldTestament;
+
+    // All start collapsed
+    for (var book in mainProvider.books) {
+      expandStatus[book.title] = false;
+    }
+
+    // Auto‑expand the current book (but only when a bookIdx was passed in)
+    if (widget.bookIdx.isNotEmpty && expandStatus.containsKey(widget.bookIdx)) {
+      expandStatus[widget.bookIdx] = true;
+    }
+
+    // **Scroll (but do not expand) to the book passed in via widget.bookIdx**
+    final verseBook = widget.bookIdx;
+    // if that book actually exists in our list...
+    final bookEntry =
+        mainProvider.books.firstWhereOrNull((b) => b.title == verseBook);
+    if (bookEntry != null) {
+      // show the correct side (OT/NT)
+      showOldTestament = _isOldTestament(bookEntry.title);
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!_initialScrollDone) {
+          final filtered = mainProvider.books
+              .where((b) => showOldTestament
+                  ? _isOldTestament(b.title)
+                  : !_isOldTestament(b.title))
+              .toList();
+          final idx = filtered.indexWhere((b) => b.title == bookEntry.title);
+          if (idx != -1) {
+            // Scroll to the book index
+            Future.microtask(() {
+              if (mounted) {
+                _autoScrollController.scrollToIndex(
+                  idx,
+                  preferPosition: AutoScrollPosition.begin,
+                  duration: const Duration(milliseconds: 10),
+                );
+              }
+            });
+          }
+          _initialScrollDone = true;
+        }
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final settings = Provider.of<AppSettings>(context);
+
+    return Consumer<MainProvider>(
+      builder: (context, mainProvider, child) {
+        final books = mainProvider.books;
+        final filteredBooks = books.where((book) {
+          return showOldTestament
+              ? _isOldTestament(book.title)
+              : !_isOldTestament(book.title);
+        }).toList();
+
+        return Scaffold(
+          appBar: AppBar(
+            leading: const LocalizedBackButton(),
+            title: Text(
+                uiStrings['bibleBooks']?[settings.locale] ?? 'Bible Books'),
+          ),
+          body: Column(
+            children: [
+              if (hasOldTestament && hasNewTestament)
+                Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      if (hasOldTestament)
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 4),
+                          child: TextButton(
+                            onPressed: () {
+                              setState(() {
+                                showOldTestament = true;
+                                expandStatus.updateAll((key, _) => false);
+                              });
+                              _autoScrollController.scrollToIndex(
+                                0,
+                                preferPosition: AutoScrollPosition.begin,
+                                duration: const Duration(milliseconds: 10),
+                              );
+                            },
+                            style: TextButton.styleFrom(
+                              backgroundColor: showOldTestament
+                                  ? Theme.of(context).colorScheme.primary
+                                  : Theme.of(context).colorScheme.surface,
+                              foregroundColor: showOldTestament
+                                  ? Theme.of(context).colorScheme.onPrimary
+                                  : Theme.of(context).colorScheme.onSurface,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(25),
+                              ),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 20, vertical: 10),
+                            ),
+                            child: Text(
+                              uiStrings['oldTestament']?[settings.locale] ??
+                                  'Old Testament',
+                              style: TextStyle(
+                                fontSize: settings.fontSize,
+                                fontFamily: settings.fontFamily,
+                              ),
+                            ),
+                          ),
+                        ),
+                      if (hasNewTestament)
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 4),
+                          child: TextButton(
+                            onPressed: () {
+                              setState(() {
+                                showOldTestament = false;
+                                expandStatus.updateAll((key, _) => false);
+                              });
+                              _autoScrollController.scrollToIndex(
+                                0,
+                                preferPosition: AutoScrollPosition.begin,
+                                duration: const Duration(milliseconds: 10),
+                              );
+                            },
+                            style: TextButton.styleFrom(
+                              backgroundColor: !showOldTestament
+                                  ? Theme.of(context).colorScheme.primary
+                                  : Theme.of(context).colorScheme.surface,
+                              foregroundColor: !showOldTestament
+                                  ? Theme.of(context).colorScheme.onPrimary
+                                  : Theme.of(context).colorScheme.onSurface,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(25),
+                              ),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 20, vertical: 10),
+                            ),
+                            child: Text(
+                              uiStrings['newTestament']?[settings.locale] ??
+                                  'New Testament',
+                              style: TextStyle(
+                                  fontSize: settings.fontSize,
+                                  fontFamily: settings.fontFamily),
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              Expanded(
+                child: ListView.builder(
+                  itemCount: filteredBooks.length,
+                  physics: const BouncingScrollPhysics(),
+                  controller: _autoScrollController,
+                  itemBuilder: (context, index) {
+                    Book book = filteredBooks[index];
+                    return AutoScrollTag(
+                      key: ValueKey(index),
+                      controller: _autoScrollController,
+                      index: index,
+                      child: Container(
+                        decoration: expandStatus[book.title] == true
+                            ? null
+                            : BoxDecoration(
+                                border: Border(
+                                  bottom: BorderSide(
+                                    color: Theme.of(context).dividerColor,
+                                    width: 0.3,
+                                  ),
+                                ),
+                              ),
+                        child: Theme(
+                          data: Theme.of(context).copyWith(
+                            expansionTileTheme: ExpansionTileThemeData(
+                              expansionAnimationStyle: AnimationStyle(
+                                  // duration: Duration(milliseconds: 1050),
+                                  ),
+                            ),
+                          ),
+                          child: ExpansionTile(
+                            title: Text(
+                              book.title,
+                              style: TextStyle(
+                                  fontSize: settings.fontSize,
+                                  fontFamily: settings.fontFamily),
+                            ),
+                            initiallyExpanded:
+                                expandStatus[book.title] ?? false,
+                            maintainState: true,
+                            onExpansionChanged: (expanded) {
+                              setState(() {
+                                expandStatus[book.title] = expanded;
+                              });
+                            },
+                            children: [
+                              Wrap(
+                                alignment: WrapAlignment.start,
+                                children:
+                                    List.generate(book.chapters.length, (i) {
+                                  Chapter chapter = book.chapters[i];
+                                  return Padding(
+                                    padding: const EdgeInsets.all(4),
+                                    child: SizedBox(
+                                      height: 55,
+                                      width: 55,
+                                      child: Card(
+                                        color: (chapter.title ==
+                                                    widget.chapterIdx &&
+                                                widget.bookIdx == book.title)
+                                            ? Theme.of(context)
+                                                .colorScheme
+                                                .primaryContainer
+                                            : null,
+                                        elevation: 1,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(7.5),
+                                        ),
+                                        child: InkWell(
+                                          borderRadius:
+                                              BorderRadius.circular(7.5),
+                                          onTap: () {
+                                            final firstVerseOfChapter =
+                                                mainProvider.verses.firstWhere(
+                                              (v) =>
+                                                  v.book == book.title &&
+                                                  v.chapter == chapter.title,
+                                            );
+                                            mainProvider.setCurrentChapter(
+                                              book: book.title,
+                                              chapter: chapter.title,
+                                            );
+                                            mainProvider.updateCurrentVerse(
+                                                verse: firstVerseOfChapter);
+                                            mainProvider.itemScrollController
+                                                .jumpTo(index: 0);
+                                            Get.back();
+                                          },
+                                          child: Center(
+                                            child: Text(
+                                              chapter.title.toString(),
+                                              style: TextStyle(
+                                                  fontSize:
+                                                      settings.fontSize * 0.9,
+                                                  fontFamily:
+                                                      settings.fontFamily),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                }),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  bool _isOldTestament(String displayedTitle) {
+    final en = toEnglish(displayedTitle) ?? displayedTitle;
+    return oldTestamentBooks.contains(en);
+  }
+}
+
+
+================================================================================
+FILE: pages/search_page.dart
+================================================================================
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:yswords/models/verse.dart';
+import 'package:yswords/providers/main_provider.dart';
+import 'package:yswords/utils/format_searched_text.dart';
+import 'package:provider/provider.dart';
+import 'dart:async';
+import 'package:yswords/constants/ui_strings.dart';
+import 'package:yswords/models/app_settings.dart';
+import 'package:yswords/widgets/localized_back_button.dart';
+import 'package:flutter/services.dart';
+
+class SearchPage extends StatefulWidget {
+  const SearchPage({super.key});
+
+  @override
+  State<SearchPage> createState() => _SearchPageState();
+}
+
+class _SearchPageState extends State<SearchPage> {
+  // Controllers and list for managing search functionality
+  final ScrollController _scrollController = ScrollController();
+  final TextEditingController _textEditingController = TextEditingController();
+  final List<Verse> _results = [];
+
+  bool searchPerformed = false;
+  bool searchAll = true;
+  Map<String, int> bookCounts = {};
+  String? filterBook;
+
+  // Method to perform the search
+  Future<void> search() async {
+    setState(() {
+      _results.clear();
+      bookCounts.clear();
+      searchPerformed = false;
+    });
+
+    final mainProvider = Provider.of<MainProvider>(context, listen: false);
+    final verses = mainProvider.verses;
+    final source = filterBook != null
+        ? verses.where((v) => v.book == filterBook)
+        : searchAll
+            ? verses
+            : verses.where((v) => v.book == mainProvider.currentBook);
+
+    final notePattern  = RegExp(r'<note:[^>]*>');
+    final bracePattern = RegExp(r'\{[^}]*\}');
+
+    for (var verse in source) {
+      // sanitize out notes and braces before searching
+      final sanitized = verse.text
+          .replaceAll(notePattern, '')
+          .replaceAll(bracePattern, '')
+          .trim();
+      final textNorm = sanitized.replaceAll(" ", "").toLowerCase();
+      final queryNorm =
+          _textEditingController.text.trim().replaceAll(" ", "").toLowerCase();
+      if (textNorm.contains(queryNorm)) {
+        if (!_results.contains(verse)) {
+          _results.add(verse);
+          bookCounts[verse.book] = (bookCounts[verse.book] ?? 0) + 1;
+        }
+      }
+    }
+
+    final bookOrder = { for (var i = 0; i < mainProvider.books.length; i++) mainProvider.books[i].title: i };
+
+    _results.sort((a, b) {
+      final orderA = bookOrder[a.book] ?? 9999;
+      final orderB = bookOrder[b.book] ?? 9999;
+      if (orderA != orderB) return orderA.compareTo(orderB);
+      if (a.chapter != b.chapter) return a.chapter.compareTo(b.chapter);
+      return a.verse.compareTo(b.verse);
+    });
+
+    final sortedEntries = bookCounts.entries.toList()
+      ..sort((a, b) {
+        final orderA = bookOrder[a.key] ?? 9999;
+        final orderB = bookOrder[b.key] ?? 9999;
+        return orderA.compareTo(orderB);
+      });
+    bookCounts = { for (var e in sortedEntries) e.key: e.value };
+
+    setState(() {
+      searchPerformed = true;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final settings = Provider.of<AppSettings>(context);
+    // Patterns to strip out notes and curly annotations
+    final notePattern  = RegExp(r'<note:[^>]*>');
+    final bracePattern = RegExp(r'\{[^}]*\}');
+    return Scaffold(
+        appBar: AppBar(
+          leading: const LocalizedBackButton(),
+          // Search input field in the app bar
+          title: TextField(
+            autofocus: true,
+            controller: _textEditingController,
+            style: TextStyle(fontSize: settings.fontSize),
+            decoration: InputDecoration(
+              border: InputBorder.none,
+              hintText: uiStrings['search']?[settings.locale] ?? 'Search',
+            ),
+            inputFormatters: [
+              FilteringTextInputFormatter.allow(RegExp(r'[0-9a-zA-Z\u4E00-\u9FFF ]')),
+            ],
+            onChanged: (text) {
+              setState(() {
+                if (text.trim().isEmpty) {
+                  searchAll = true;
+                  filterBook = null;
+                }
+              });
+            },
+            onSubmitted: (s) async {
+              if (s.trim().isEmpty) {
+                setState(() {
+                  searchAll = true;
+                  filterBook = null;
+                });
+              }
+              await search();
+              _scrollController.jumpTo(0.0);
+            },
+            textInputAction: TextInputAction.search,
+          ),
+          actions: [
+            PopupMenuButton<Object>(
+              tooltip: uiStrings['showMenu']?[settings.locale] ?? 'Show menu',
+              icon: const Icon(Icons.filter_list),
+              onSelected: (value) async {
+                setState(() {
+                  _results.clear();
+                  bookCounts.clear();
+                  if (value is bool) {
+                    searchAll = value;
+                    filterBook = null;
+                  } else if (value is String) {
+                    filterBook = value;
+                    searchAll = false;
+                  }
+                });
+                // Immediately perform search and scroll to top
+                await search();
+                _scrollController.jumpTo(0.0);
+              },
+              itemBuilder: (_) {
+                // base scope items
+                final items = <PopupMenuEntry<Object>>[
+                  PopupMenuItem<bool>(
+                      value: false,
+                      child: Text(uiStrings['searchCurrentBook']?[settings.locale] ?? 'Search Current Book', style: TextStyle(fontSize: settings.fontSize))),
+                  PopupMenuItem<bool>(
+                      value: true,
+                      child: Text(uiStrings['searchEntireBible']?[settings.locale] ?? 'Search Entire Bible', style: TextStyle(fontSize: settings.fontSize))),
+                ];
+                // divider
+                items.add(const PopupMenuDivider());
+                // use bookCounts for per-book counts
+                bookCounts.forEach((book, count) {
+                  items.add(
+                    PopupMenuItem<String>(
+                      value: book,
+                      child: Text('$book ($count)', style: TextStyle(fontSize: settings.fontSize)),
+                    ),
+                  );
+                });
+                return items;
+              },
+            ),
+            // Clear search button when there's input
+            if (_textEditingController.text.isNotEmpty)
+              IconButton(
+                onPressed: () {
+                  setState(() {
+                    _textEditingController.clear();
+                    FocusScope.of(context).unfocus(); // 关闭键盘
+                    _results.clear();
+                    bookCounts.clear();
+                    searchPerformed = false;
+                    searchAll = true; // ✅ 恢复为整本搜索
+                    filterBook = null; // ✅ 清除书卷筛选
+                  });
+                },
+                icon: const Icon(Icons.close_rounded),
+              ),
+          ],
+        ),
+        body: Column(
+          children: [
+            if (_results.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: GestureDetector(
+                  onTap: () {
+                    if (bookCounts.isNotEmpty) {
+                      showDialog(
+                        context: context,
+                        builder: (context) {
+                          return AlertDialog(
+                            title: Text(uiStrings['bibleBooks']
+                                    ?[settings.locale] ??
+                                'Bible Books',
+                              style: TextStyle(fontSize: settings.fontSize),
+                            ),
+                            content: SingleChildScrollView(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: bookCounts.entries
+                                    .map((e) => Text('${e.key} (${e.value})', style: TextStyle(fontSize: settings.fontSize)))
+                                    .toList(),
+                              ),
+                            ),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.of(context).pop(),
+                                child: Text(uiStrings['ok']?[settings.locale] ?? 'OK', style: TextStyle(fontSize: settings.fontSize)),
+                              ),
+                            ],
+                          );
+                        },
+                      );
+                    }
+                  },
+                  child: Text(
+                    ((uiStrings['searchResultCount']?[settings.locale] ??
+                                    'Total {count} matches, grouped by book:')
+                                .replaceAll(
+                                    '{count}', _results.length.toString()) +
+                            bookCounts.entries
+                                .take(3)
+                                .map((e) => '${e.key}(${e.value})')
+                                .join('，') +
+                            (bookCounts.length > 3 ? '...' : '')) +
+                        (bookCounts.length > 3
+                            ? '\n${uiStrings['viewMoreBooksHint']?[settings.locale] ?? ''}'
+                            : ''),
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontWeight: FontWeight.w500,
+                      fontSize: settings.fontSize,
+                    ),
+                  ),
+                ),
+              ),
+            Expanded(
+              child: _results.isEmpty && searchPerformed
+                  ? Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(20.0),
+                        child: Text(
+                          uiStrings['noResults']?[settings.locale] ??
+                              'No results found',
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodyLarge
+                              ?.copyWith(
+                                fontWeight: FontWeight.w500,
+                                color: Theme.of(context).colorScheme.outline,
+                              )
+                              .copyWith(fontSize: settings.fontSize),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    )
+                  : ListView.builder(
+                      controller: _scrollController,
+                      physics: const BouncingScrollPhysics(),
+                      itemCount: _results.length,
+                      itemBuilder: (context, index) {
+                        final verse = _results[index];
+                        return DecoratedBox(
+                          decoration: BoxDecoration(
+                            border: Border(
+                              bottom: BorderSide(
+                                  color: Theme.of(context).hoverColor),
+                            ),
+                          ),
+                          child: ListTile(
+                            onTap: () {
+                              final mainProv = Provider.of<MainProvider>(
+                                  context,
+                                  listen: false);
+                              mainProv.setCurrentChapter(
+                                  book: verse.book, chapter: verse.chapter);
+                              mainProv.updateCurrentVerse(verse: verse);
+                              Get.back();
+                              Future.delayed(const Duration(milliseconds: 1), () {
+                                final chapterVerses = mainProv.verses
+                                    .where((v) => v.book == verse.book && v.chapter == verse.chapter)
+                                    .toList();
+                                chapterVerses.sort((a, b) => a.verse.compareTo(b.verse)); // Ensure order
+                                final relIdx = chapterVerses.indexWhere((v) => v.verse == verse.verse);
+                                if (relIdx < 0) return;
+                                mainProv.jumpToIndex(index: relIdx);
+                                mainProv.setHighlightIndex(relIdx);
+                                Future.delayed(const Duration(milliseconds: 800), () {
+                                  mainProv.clearHighlightIndex();
+                                });
+                              });
+                            },
+                            // Sanitize verse text: remove <note:…> and {...}, leave […]
+                            title: Builder(
+                              builder: (context) {
+                                final sanitized = verse.text
+                                    .replaceAll(notePattern, '')
+                                    .replaceAll(bracePattern, '')
+                                    .trim();
+                                return formatSearchText(
+                                  input: sanitized,
+                                  text: _textEditingController.text.trim(),
+                                  context: context,
+                                );
+                              },
+                            ),
+                            subtitle: Text(
+                                '${verse.book} ${verse.chapter}:${verse.verse}',
+                                style: TextStyle(fontSize: settings.fontSize * 0.85),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+            )
+          ],
+        ));
+  }
+}
+
+
+================================================================================
+FILE: services/read_last_index.dart
+================================================================================
+import 'package:shared_preferences/shared_preferences.dart';
+
+// Class responsible for reading the last saved index from SharedPreference
+
+class ReadLastIndex {
+  // Static method to execute the reading process
+  static Future<int?> execute() async {
+    // Obtain an instance of SharedPreference
+    final SharedPreferences sharedPreferences =
+        await SharedPreferences.getInstance();
+
+    // Retrieve the last saved index from SharedPreferences
+    return sharedPreferences.getInt('index');
+  }
+}
+
+
+================================================================================
+FILE: services/fetch_books.dart
+================================================================================
+import 'package:yswords/models/book.dart';
+import 'package:yswords/models/chapter.dart';
+import 'package:yswords/providers/main_provider.dart';
+import 'package:yswords/models/verse.dart';
+import 'package:yswords/models/app_settings.dart';
+
+const List<String> standardBookOrder = [
+  'Genesis', 'Exodus', 'Leviticus', 'Numbers', 'Deuteronomy',
+  'Joshua', 'Judges', 'Ruth',
+  '1 Samuel', '2 Samuel', '1 Kings', '2 Kings',
+  '1 Chronicles', '2 Chronicles', 'Ezra', 'Nehemiah', 'Esther',
+  'Job', 'Psalms', 'Proverbs', 'Ecclesiastes', 'Song of Solomon',
+  'Isaiah', 'Jeremiah', 'Lamentations', 'Ezekiel', 'Daniel',
+  'Hosea', 'Joel', 'Amos', 'Obadiah', 'Jonah', 'Micah',
+  'Nahum', 'Habakkuk', 'Zephaniah', 'Haggai', 'Zechariah', 'Malachi',
+  'Matthew', 'Mark', 'Luke', 'John', 'Acts',
+  'Romans', '1 Corinthians', '2 Corinthians', 'Galatians', 'Ephesians',
+  'Philippians', 'Colossians', '1 Thessalonians', '2 Thessalonians',
+  '1 Timothy', '2 Timothy', 'Titus', 'Philemon',
+  'Hebrews', 'James', '1 Peter', '2 Peter',
+  '1 John', '2 John', '3 John', 'Jude', 'Revelation',
+  // Add Chinese Simplified and Traditional names afterwards if needed separately.
+];
+
+const Map<String, String> bookNameToEnglish = {
+  // Genesis
+  'Genesis': 'Genesis', '创世纪': 'Genesis', '創世紀': 'Genesis',
+  // Exodus
+  'Exodus': 'Exodus', '出埃及记': 'Exodus', '出埃及記': 'Exodus',
+  // Leviticus
+  'Leviticus': 'Leviticus', '利未记': 'Leviticus', '利未記': 'Leviticus',
+  // Numbers
+  'Numbers': 'Numbers', '民数记': 'Numbers', '民數記': 'Numbers',
+  // Deuteronomy
+  'Deuteronomy': 'Deuteronomy', '申命记': 'Deuteronomy', '申命記': 'Deuteronomy',
+  // Joshua
+  'Joshua': 'Joshua', '约书亚记': 'Joshua', '約書亞記': 'Joshua',
+  // Judges
+  'Judges': 'Judges', '士师记': 'Judges', '士師記': 'Judges',
+  // Ruth
+  'Ruth': 'Ruth', '路得记': 'Ruth', '路得記': 'Ruth',
+  // 1 Samuel
+  '1 Samuel': '1 Samuel', '撒母耳记上': '1 Samuel', '撒母耳記上': '1 Samuel',
+  // 2 Samuel
+  '2 Samuel': '2 Samuel', '撒母耳记下': '2 Samuel', '撒母耳記下': '2 Samuel',
+  // 1 Kings
+  '1 Kings': '1 Kings', '列王纪上': '1 Kings', '列王紀上': '1 Kings',
+  // 2 Kings
+  '2 Kings': '2 Kings', '列王纪下': '2 Kings', '列王紀下': '2 Kings',
+  // 1 Chronicles
+  '1 Chronicles': '1 Chronicles', '历代志上': '1 Chronicles', '歷代志上': '1 Chronicles',
+  // 2 Chronicles
+  '2 Chronicles': '2 Chronicles', '历代志下': '2 Chronicles', '歷代志下': '2 Chronicles',
+  // Ezra
+  'Ezra': 'Ezra', '以斯拉记': 'Ezra', '以斯拉記': 'Ezra',
+  // Nehemiah
+  'Nehemiah': 'Nehemiah', '尼希米记': 'Nehemiah', '尼希米記': 'Nehemiah',
+  // Esther
+  'Esther': 'Esther', '以斯帖记': 'Esther', '以斯帖記': 'Esther',
+  // Job
+  'Job': 'Job', '约伯记': 'Job', '約伯記': 'Job',
+  // Psalms
+  'Psalms': 'Psalms', '诗篇': 'Psalms', '詩篇': 'Psalms',
+  // Proverbs
+  'Proverbs': 'Proverbs', '箴言': 'Proverbs',
+  // Ecclesiastes
+  'Ecclesiastes': 'Ecclesiastes', '传道书': 'Ecclesiastes', '傳道書': 'Ecclesiastes',
+  // Song of Solomon
+  'Song of Solomon': 'Song of Solomon', '雅歌': 'Song of Solomon',
+  // Isaiah
+  'Isaiah': 'Isaiah', '以赛亚书': 'Isaiah', '以賽亞書': 'Isaiah',
+  // Jeremiah
+  'Jeremiah': 'Jeremiah', '耶利米书': 'Jeremiah', '耶利米書': 'Jeremiah',
+  // Lamentations
+  'Lamentations': 'Lamentations', '耶利米哀歌': 'Lamentations', 
+  // Ezekiel
+  'Ezekiel': 'Ezekiel', '以西结书': 'Ezekiel', '以西結書': 'Ezekiel',
+  // Daniel
+  'Daniel': 'Daniel', '但以理书': 'Daniel', '但以理書': 'Daniel',
+  // Hosea
+  'Hosea': 'Hosea', '何西阿书': 'Hosea', '何西阿書': 'Hosea',
+  // Joel
+  'Joel': 'Joel', '约珥书': 'Joel', '約珥書': 'Joel',
+  // Amos
+  'Amos': 'Amos', '阿摩司书': 'Amos', '阿摩司書': 'Amos',
+  // Obadiah
+  'Obadiah': 'Obadiah', '俄巴底亚书': 'Obadiah', '俄巴底亞書': 'Obadiah',
+  // Jonah
+  'Jonah': 'Jonah', '约拿书': 'Jonah', '約拿書': 'Jonah',
+  // Micah
+  'Micah': 'Micah', '弥迦书': 'Micah', '彌迦書': 'Micah',
+  // Nahum
+  'Nahum': 'Nahum', '那鸿书': 'Nahum', '那鴻書': 'Nahum',
+  // Habakkuk
+  'Habakkuk': 'Habakkuk', '哈巴谷书': 'Habakkuk', '哈巴谷書': 'Habakkuk',
+  // Zephaniah
+  'Zephaniah': 'Zephaniah', '西番雅书': 'Zephaniah', '西番雅書': 'Zephaniah',
+  // Haggai
+  'Haggai': 'Haggai', '哈该书': 'Haggai', '哈該書': 'Haggai',
+  // Zechariah
+  'Zechariah': 'Zechariah', '撒迦利亚书': 'Zechariah', '撒迦利亞書': 'Zechariah',
+  // Malachi
+  'Malachi': 'Malachi', '玛拉基书': 'Malachi', '瑪拉基書': 'Malachi',
+  // Matthew
+  'Matthew': 'Matthew', '马太福音': 'Matthew', '馬太福音': 'Matthew',
+  // Mark
+  'Mark': 'Mark', '马可福音': 'Mark', '馬可福音': 'Mark',
+  // Luke
+  'Luke': 'Luke', '路加福音': 'Luke',
+  // John
+  'John': 'John', '约翰福音': 'John', '約翰福音': 'John',
+  // Acts
+  'Acts': 'Acts', '使徒行传': 'Acts', '使徒行傳': 'Acts',
+  // Romans
+  'Romans': 'Romans', '罗马书': 'Romans', '羅馬書': 'Romans',
+  // 1 Corinthians
+  '1 Corinthians': '1 Corinthians', '哥林多前书': '1 Corinthians', '哥林多前書': '1 Corinthians',
+  // 2 Corinthians
+  '2 Corinthians': '2 Corinthians', '哥林多后书': '2 Corinthians', '哥林多後書': '2 Corinthians',
+  // Galatians
+  'Galatians': 'Galatians', '加拉太书': 'Galatians', '加拉太書': 'Galatians',
+  // Ephesians
+  'Ephesians': 'Ephesians', '以弗所书': 'Ephesians', '以弗所書': 'Ephesians',
+  // Philippians
+  'Philippians': 'Philippians', '腓立比书': 'Philippians', '腓立比書': 'Philippians',
+  // Colossians
+  'Colossians': 'Colossians', '歌罗西书': 'Colossians', '歌羅西書': 'Colossians',
+  // 1 Thessalonians
+  '1 Thessalonians': '1 Thessalonians', '帖撒罗尼迦前书': '1 Thessalonians', '帖撒羅尼迦前書': '1 Thessalonians',
+  // 2 Thessalonians
+  '2 Thessalonians': '2 Thessalonians', '帖撒罗尼迦后书': '2 Thessalonians', '帖撒羅尼迦後書': '2 Thessalonians',
+  // 1 Timothy
+  '1 Timothy': '1 Timothy', '提摩太前书': '1 Timothy', '提摩太前書': '1 Timothy',
+  // 2 Timothy
+  '2 Timothy': '2 Timothy', '提摩太后书': '2 Timothy', '提摩太後書': '2 Timothy',
+  // Titus
+  'Titus': 'Titus', '提多书': 'Titus', '提多書': 'Titus',
+  // Philemon
+  'Philemon': 'Philemon', '腓利门书': 'Philemon', '腓利門書': 'Philemon',
+  // Hebrews
+  'Hebrews': 'Hebrews', '希伯来书': 'Hebrews', '希伯來書': 'Hebrews',
+  // James
+  'James': 'James', '雅各书': 'James', '雅各書': 'James',
+  // 1 Peter
+  '1 Peter': '1 Peter', '彼得前书': '1 Peter', '彼得前書': '1 Peter',
+  // 2 Peter
+  '2 Peter': '2 Peter', '彼得后书': '2 Peter', '彼得後書': '2 Peter',
+  // 1 John
+  '1 John': '1 John', '约翰一书': '1 John', '約翰一書': '1 John',
+  // 2 John
+  '2 John': '2 John', '约翰二书': '2 John', '約翰二書': '2 John',
+  // 3 John
+  '3 John': '3 John', '约翰三书': '3 John', '約翰三書': '3 John',
+  // Jude
+  'Jude': 'Jude', '犹大书': 'Jude', '猶大書': 'Jude',
+  // Revelation
+  'Revelation': 'Revelation', '启示录': 'Revelation', '啟示錄': 'Revelation',
+};
+
+// Class repsonsible for fetching books based on the provided verses
+
+class FetchBooks {
+  // Static method to execute the fetching process
+  static Future<void> execute({required MainProvider mainProvider, required AppSettings settings}) async {
+    if (!settings.allowUpdates) {
+      return; 
+    }
+    List<Verse> verses = mainProvider.verses;
+
+    // Collect unique book titles mapped to English
+    final Set<String> _seen = {};
+    final List<String> foundBookTitles = [];
+    for (final v in verses) {
+      final englishBook = bookNameToEnglish[v.book] ?? v.book;
+      if (_seen.add(englishBook)) foundBookTitles.add(englishBook);
+    }
+
+    // Sort book titles according to standard biblical order
+    final List<String> bookTitles = [
+      ...standardBookOrder.where((b) => foundBookTitles.contains(b))
+    ];
+
+    // Iterate through each unique book title to organize chapters and verses
+    for (var bookTitle in bookTitles) {
+      // Filter verses based on the current book title mapped to English
+      List<Verse> availableVerses =
+          verses.where((v) => (bookNameToEnglish[v.book] ?? v.book) == bookTitle).toList();
+
+      // Collect unique chapter numbers *and* sort them so UI lists 1, 2, 3… in order.
+      List<int> availableChapters = availableVerses
+          .map((e) => e.chapter)
+          .toSet()
+          .toList()
+        ..sort();
+
+      List<Chapter> chapters = [];
+
+      // Iterate through each unique chapter number to organize verses
+      for (var element in availableChapters) {
+        // Create a Chapter object for each unique chapter
+        Chapter chapter = Chapter(
+          title: element,
+          verses: (availableVerses.where((v) => v.chapter == element).toList()
+            ..sort((a, b) => a.verse.compareTo(b.verse))),
+        );
+
+        chapters.add(chapter);
+      }
+
+      // Use the localized book name from the first verse for display
+      final localizedBookName = availableVerses.first.book;
+      Book book = Book(title: localizedBookName, chapters: chapters);
+
+      // Add the created Book to the mainProvider's ist of books
+      mainProvider.addBook(book: book);
+    }
+  }
+
+}
+
+
+================================================================================
+FILE: services/save_current_index.dart
+================================================================================
+import 'package:shared_preferences/shared_preferences.dart';
+
+// Class responsible for saving the current index to SharedPreferences
+
+class SaveCurrentIndex {
+  // Static method to execute the saving process
+  static Future<void> execute({required int index}) async {
+    // Obtain an instance of SharedPreferences
+    final SharedPreferences sharedPreferences =
+        await SharedPreferences.getInstance();
+
+    // Save the curent index to SharedPreference
+    sharedPreferences.setInt('index', index);
+  }
+
+  static Future<void> saveVersion(String version) async {
+    final prefs = await SharedPreferences.getInstance();
+    prefs.setString('version', version);
+  }
+
+  static Future<String?> readVersion() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString('version');
+  }
+}
+
+
+================================================================================
+FILE: services/fetch_verses.dart
+================================================================================
+import 'dart:convert';
+
+import 'package:flutter/services.dart';
+import 'package:yswords/models/verse.dart';
+import 'package:yswords/providers/main_provider.dart';
+import 'package:yswords/models/app_settings.dart';
+
+class FetchVerses {
+  static Future<void> execute(
+      {required MainProvider mainProvider,
+      required AppSettings settings}) async {
+    final version = mainProvider.currentVersion;
+    final path = 'assets/${version.toLowerCase()}.json';
+
+    if (settings.allowUpdates == false) {
+      await loadLocalOnly(mainProvider: mainProvider);
+      return;
+    }
+
+    mainProvider.setVerses([]);
+    mainProvider.setBooks([]);
+
+    // Load & parse the JSON from assets, supporting both list and passages-map formats
+    String jsonString = await rootBundle.loadString(path);
+    final dynamic decoded = json.decode(jsonString);
+
+    // Build a flat list of maps with book, chapter, verse, text
+    List<Map<String, dynamic>> rawList;
+    if (decoded is List) {
+      rawList = List<Map<String, dynamic>>.from(decoded);
+    } else if (decoded is Map<String, dynamic> && decoded['passages'] != null) {
+      final passages = decoded['passages'] as Map<String, dynamic>;
+      final bookName = decoded['abbreviation'] ?? decoded['book'] ?? '';
+      rawList = passages.entries.map((e) {
+        final parts = e.key.split(':');
+        return {
+          'book': bookName,
+          'chapter': parts[0],
+          'verse': parts[1],
+          'text': e.value + '\n',
+        };
+      }).toList();
+    } else {
+      throw Exception('Unsupported verse JSON format');
+    }
+
+    // Filter out entries where verse is non-numeric (e.g. Psalm titles)
+    rawList = rawList.where((m) => int.tryParse(m['verse']?.toString() ?? '') != null).toList();
+
+    // Map into Verse objects, skipping any parse errors
+    final verses = <Verse>[];
+    for (final m in rawList) {
+      try {
+        verses.add(Verse.fromJson(m));
+      } catch (_) {
+        // skip invalid entries
+      }
+    }
+
+    // Sort in canonical order
+    const bookOrder = [
+      'Genesis','Exodus','Leviticus','Numbers','Deuteronomy','Joshua',
+      'Judges','Ruth','1 Samuel','2 Samuel','1 Kings','2 Kings',
+      '1 Chronicles','2 Chronicles','Ezra','Nehemiah','Esther','Job',
+      'Psalms','Proverbs','Ecclesiastes','Song of Solomon','Isaiah',
+      'Jeremiah','Lamentations','Ezekiel','Daniel','Hosea','Joel',
+      'Amos','Obadiah','Jonah','Micah','Nahum','Habakkuk',
+      'Zechariah','Haggai','Malachi','Matthew','Mark','Luke','John',
+      'Acts','Romans','1 Corinthians','2 Corinthians','Galatians',
+      'Ephesians','Philippians','Colossians','1 Thessalonians',
+      '2 Thessalonians','1 Timothy','2 Timothy','Titus','Philemon',
+      'Hebrews','James','1 Peter','2 Peter','1 John','2 John',
+      '3 John','Jude','Revelation'
+    ];
+    verses.sort((a, b) {
+      final ai = bookOrder.indexOf(a.book);
+      final bi = bookOrder.indexOf(b.book);
+      if (ai != bi) return ai.compareTo(bi);
+      final c = a.chapter.compareTo(b.chapter);
+      return c != 0 ? c : a.verse.compareTo(b.verse);
+    });
+
+    // Update provider
+    mainProvider.setVerses(verses);
+  }
+
+  static Future<void> loadLocalOnly(
+      {required MainProvider mainProvider}) async {
+    try {
+      // Determine the asset file based on the current version
+      final version = mainProvider.currentVersion.toLowerCase();
+      final path = 'assets/$version.json';
+
+      // Clear existing verses and books
+      mainProvider.setVerses([]);
+      mainProvider.setBooks([]);
+
+      // Load & parse the JSON from assets, supporting both list and passages-map formats
+      String jsonString = await rootBundle.loadString(path);
+      final dynamic decoded = json.decode(jsonString);
+
+      // Build a flat list of maps with book, chapter, verse, text
+      List<Map<String, dynamic>> rawList;
+      if (decoded is List) {
+        rawList = List<Map<String, dynamic>>.from(decoded);
+      } else if (decoded is Map<String, dynamic> && decoded['passages'] != null) {
+        final passages = decoded['passages'] as Map<String, dynamic>;
+        final bookName = decoded['abbreviation'] ?? decoded['book'] ?? '';
+        rawList = passages.entries.map((e) {
+          final parts = e.key.split(':');
+          return {
+            'book': bookName,
+            'chapter': parts[0],
+            'verse': parts[1],
+            'text': e.value + '\n',
+          };
+        }).toList();
+      } else {
+        throw Exception('Unsupported verse JSON format');
+      }
+
+      // Filter out entries where verse is non-numeric (e.g. Psalm titles)
+      rawList = rawList.where((m) => int.tryParse(m['verse']?.toString() ?? '') != null).toList();
+
+      // Map into Verse objects, skipping any parse errors
+      final verses = <Verse>[];
+      for (final m in rawList) {
+        try {
+          verses.add(Verse.fromJson(m));
+        } catch (_) {
+          // skip invalid entries
+        }
+      }
+
+      // Sort in canonical order
+      const bookOrder = [
+        'Genesis','Exodus','Leviticus','Numbers','Deuteronomy','Joshua',
+        'Judges','Ruth','1 Samuel','2 Samuel','1 Kings','2 Kings',
+        '1 Chronicles','2 Chronicles','Ezra','Nehemiah','Esther','Job',
+        'Psalms','Proverbs','Ecclesiastes','Song of Solomon','Isaiah',
+        'Jeremiah','Lamentations','Ezekiel','Daniel','Hosea','Joel',
+        'Amos','Obadiah','Jonah','Micah','Nahum','Habakkuk',
+        'Zechariah','Haggai','Malachi','Matthew','Mark','Luke','John',
+        'Acts','Romans','1 Corinthians','2 Corinthians','Galatians',
+        'Ephesians','Philippians','Colossians','1 Thessalonians',
+        '2 Thessalonians','1 Timothy','2 Timothy','Titus','Philemon',
+        'Hebrews','James','1 Peter','2 Peter','1 John','2 John',
+        '3 John','Jude','Revelation'
+      ];
+      verses.sort((a, b) {
+        final ai = bookOrder.indexOf(a.book);
+        final bi = bookOrder.indexOf(b.book);
+        if (ai != bi) return ai.compareTo(bi);
+        final c = a.chapter.compareTo(b.chapter);
+        return c != 0 ? c : a.verse.compareTo(b.verse);
+      });
+
+      // Update provider
+      mainProvider.setVerses(verses);
+      print('Loaded local $path verses.');
+    } catch (e) {
+      print(
+          'Error loading local verses for version ${mainProvider.currentVersion}: $e');
+    }
+  }
+
+  static Future<bool> testLoadLocal() async {
+    final List<String> assetPaths = [
+      'assets/kjv.json',
+      'assets/leb.json',
+      'assets/cuvs-yhwh.json',
+      'assets/cuvs-yhwh-tr.json',
+      'assets/biblexg.json',
+      'assets/biblexg-tr.json',
+      'assets/app_icon.png',
+      'assets/loading.png',
+      'assets/fonts/Microsoft Yahei.ttf',
+      'assets/fonts/Roboto-VariableFont_wdth,wght.ttf',
+    ];
+
+    try {
+      for (final path in assetPaths) {
+        await rootBundle.load(path);
+      }
+      return true;
+    } catch (e) {
+      print('Local resource not fully ready: $e');
+      return false;
+    }
+  }
+}
+
+
+================================================================================
+FILE: widgets/localized_back_button.dart
+================================================================================
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:yswords/constants/ui_strings.dart';
+import 'package:yswords/models/app_settings.dart';
+
+class LocalizedBackButton extends StatelessWidget {
+  const LocalizedBackButton({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final settings = Provider.of<AppSettings>(context, listen: false);
+    return IconButton(
+      icon: const Icon(Icons.arrow_back),
+      tooltip: uiStrings['back']?[settings.locale] ?? 'Back',
+      onPressed: () => Navigator.of(context).maybePop(),
+    );
+  }
+}
+
+================================================================================
+FILE: widgets/verse_widget.dart
+================================================================================
+import 'package:flutter/material.dart';
+import 'package:yswords/models/verse.dart';
+import 'package:yswords/providers/main_provider.dart';
+import 'package:provider/provider.dart';
+import 'package:yswords/models/app_settings.dart';
+import 'package:yswords/utils/clipboard_helper.dart';
+import 'package:yswords/constants/ui_strings.dart';
+
+class VerseWidget extends StatelessWidget {
+  final Verse verse;
+  final int index;
+
+  const VerseWidget({super.key, required this.verse, required this.index});
+
+
+  @override
+  Widget build(BuildContext context) {
+    return Consumer2<MainProvider, AppSettings>(
+      builder: (context, mainProvider, settings, child) {
+        final locale = settings.locale;
+        final isSelected = mainProvider.isSelected(verse);
+        final isHighlighted = mainProvider.highlightIndex == index;
+
+        // Prepare regex and spans for verse text with annotations
+        final squarePattern = RegExp(r'\[([^\]]+)\]');
+        final bracePattern = RegExp(r'\{([^}]+)\}');
+        final notePattern = RegExp(r'<note:([^>]+)>');
+        final combinedPattern = RegExp(r'(\{[^}]+\}|\[[^\]]+\]|<note:[^>]+>)');
+        final original = verse.text.replaceAll('\n', '');
+        final raw = original.trim();
+        final parts = raw
+            .splitMapJoin(
+              combinedPattern,
+              onMatch: (m) => '||${m[0]}||',
+              onNonMatch: (n) => n,
+            )
+            .split('||');
+        final spans = <InlineSpan>[];
+        final skipNoteIcons =
+            bracePattern.hasMatch(original) && notePattern.hasMatch(original);
+        // Verse number span
+        spans.add(WidgetSpan(
+          child: GestureDetector(
+            onTap: () async {
+              final toCopy = '${verse.verse} ${verse.text.trim()}';
+              await ClipboardHelper.copyText(toCopy);
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Copied verse ${verse.verse}')),
+              );
+            },
+            child: Text(
+              '${verse.verse} ',
+              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                    fontSize: settings.fontSize,
+                    height: settings.lineSpacing,
+                    fontWeight: FontWeight.w500,
+                    fontFamily: settings.fontFamily,
+                    color: isSelected
+                        ? Theme.of(context).colorScheme.onPrimaryContainer
+                        : Theme.of(context).colorScheme.primary,
+                  ),
+            ),
+          ),
+        ));
+        // Build text and badge spans
+        String? lastPart;
+        for (var part in parts) {
+          // Skip <note:...> if lastPart was exactly a brace and this part is *only* a note
+          final isNoteOnly =
+              part.trim().startsWith('<note:') && part.trim().endsWith('>');
+          final wasBraceOnly = lastPart != null &&
+              lastPart.trim().startsWith('{') &&
+              lastPart.trim().endsWith('}');
+          if (isNoteOnly && wasBraceOnly) {
+            lastPart = part;
+            continue;
+          }
+          if (bracePattern.hasMatch(part)) {
+            final annotation = bracePattern.firstMatch(part)!.group(1)!;
+            final isDark = Theme.of(context).brightness == Brightness.dark;
+            final bgColor = isDark
+                ? Theme.of(context).colorScheme.secondary.withOpacity(0.2)
+                : Theme.of(context).colorScheme.secondary.withOpacity(0.3);
+            spans.add(WidgetSpan(
+              alignment: PlaceholderAlignment.middle,
+              child: GestureDetector(
+                onTap: () {
+                  final verseText = verse.text.replaceAll('\n', '');
+                  final braceFull = '{$annotation}';
+                  final braceIndex = verseText.indexOf(braceFull);
+                  String? extractedNote;
+                  if (braceIndex != -1) {
+                    final afterBrace =
+                        verseText.substring(braceIndex + braceFull.length);
+                    // Look for the next <note:...> tag, allowing for whitespace or punctuation in between, but no braces/brackets
+                    final nextAnnotation =
+                        RegExp(r'''^([\s.,;:"“”'"”]*)<note:([^>]+)>''')
+                            .firstMatch(afterBrace);
+                    if (nextAnnotation != null) {
+                      extractedNote = nextAnnotation.group(2);
+                    }
+                  }
+                  showDialog(
+                    context: context,
+                    builder: (_) => AlertDialog(
+                      title: Text(
+                        uiStrings['note']?[locale] ?? 'Note',
+                        style: TextStyle(
+                          fontSize: settings.fontSize + 2,
+                          fontFamily: settings.fontFamily,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      content: Text(extractedNote ?? annotation),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.of(context).pop(),
+                          child: Text(
+                            uiStrings['ok']?[locale] ?? 'OK',
+                            style: TextStyle(
+                              fontSize: settings.fontSize,
+                              fontFamily: settings.fontFamily,
+                            ),
+                          ),
+                        )
+                      ],
+                    ),
+                  );
+                },
+                child: Container(
+                  padding: EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                  margin: EdgeInsets.symmetric(horizontal: 2),
+                  decoration: BoxDecoration(
+                    color: bgColor,
+                    border: Border.all(
+                      color: isDark ? Colors.teal.shade200 : Colors.teal,
+                      width: 1,
+                    ),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Builder(
+                    builder: (_) {
+                      final spans = <InlineSpan>[];
+                      final regex = RegExp(r'\[([^\[\]]+)\]');
+                      final matches = regex.allMatches(annotation);
+
+                      if (matches.isNotEmpty) {
+                        int lastEnd = 0;
+                        for (final match in matches) {
+                          if (match.start > lastEnd) {
+                            spans.add(TextSpan(
+                              text: annotation.substring(lastEnd, match.start),
+                              style: TextStyle(
+                                fontSize: settings.fontSize * 0.1,
+                                fontFamily: settings.fontFamily,
+                                height: settings.lineSpacing,
+                                color: isSelected
+                                    ? Theme.of(context)
+                                        .colorScheme
+                                        .onPrimaryContainer
+                                    : Theme.of(context)
+                                        .textTheme
+                                        .bodyLarge
+                                        ?.color,
+                              ),
+                            ));
+                          }
+                          final text = match.group(1)!;
+                          spans.add(TextSpan(
+                            text: text,
+                            style: TextStyle(
+                              fontSize: settings.fontSize,
+                              fontFamily: settings.fontFamily,
+                              height: settings.lineSpacing,
+                              decoration: TextDecoration.underline,
+                              decorationStyle: TextDecorationStyle.dotted,
+                              decorationColor:
+                                  Theme.of(context).colorScheme.primary,
+                              decorationThickness: 2.0,
+                              color: isSelected
+                                  ? Theme.of(context)
+                                      .colorScheme
+                                      .onPrimaryContainer
+                                  : Theme.of(context)
+                                      .textTheme
+                                      .bodyLarge
+                                      ?.color,
+                            ),
+                          ));
+                          lastEnd = match.end;
+                        }
+                        if (lastEnd < annotation.length) {
+                          spans.add(TextSpan(
+                            text: annotation.substring(lastEnd),
+                            style: TextStyle(
+                              fontSize: settings.fontSize * 0.85,
+                              fontFamily: settings.fontFamily,
+                              height: settings.lineSpacing,
+                              color: isSelected
+                                  ? Theme.of(context)
+                                      .colorScheme
+                                      .onPrimaryContainer
+                                  : Theme.of(context)
+                                      .textTheme
+                                      .bodyLarge
+                                      ?.color,
+                            ),
+                          ));
+                        }
+
+                        return RichText(text: TextSpan(children: spans));
+                      } else {
+                        return Text(
+                          annotation,
+                          style: TextStyle(
+                            fontSize: settings.fontSize * 0.85,
+                            fontFamily: settings.fontFamily,
+                            height: settings.lineSpacing,
+                            color: isSelected
+                                ? Theme.of(context)
+                                    .colorScheme
+                                    .onPrimaryContainer
+                                : (isDark
+                                    ? Colors.white
+                                    : Theme.of(context)
+                                        .textTheme
+                                        .bodyLarge
+                                        ?.color),
+                          ),
+                        );
+                      }
+                    },
+                  ),
+                ),
+              ),
+            ));
+            // handled as a brace
+            lastPart = part;
+            continue;
+          }
+          if (squarePattern.hasMatch(part)) {
+            final annotation = squarePattern.firstMatch(part)!.group(1)!;
+            spans.add(TextSpan(
+              text: annotation,
+              style: TextStyle(
+                fontSize: settings.fontSize,
+                fontFamily: settings.fontFamily,
+                height: settings.lineSpacing,
+                decoration: TextDecoration.underline,
+                decorationStyle: TextDecorationStyle.dotted,
+                decorationColor: Theme.of(context).colorScheme.primary,
+                decorationThickness: 2.0,
+                color: isSelected
+                    ? Theme.of(context).colorScheme.onPrimaryContainer
+                    : Theme.of(context).textTheme.bodyLarge?.color,
+              ),
+            ));
+            lastPart = part;
+            continue;
+          }
+          if (notePattern.hasMatch(part) &&
+              !bracePattern.hasMatch(part) &&
+              !(part.trim().startsWith('<note:') &&
+                  part.trim().endsWith('>') &&
+                  (lastPart?.trim().endsWith('}') ?? false))) {
+            if (skipNoteIcons) {
+              lastPart = part;
+              continue;
+            }
+            final note = notePattern.firstMatch(part)!.group(1)!;
+            final isDark = Theme.of(context).brightness == Brightness.dark;
+            final bgColor = isDark
+                ? Theme.of(context).colorScheme.secondary.withOpacity(0.2)
+                : Theme.of(context).colorScheme.secondary.withOpacity(0.3);
+            spans.add(WidgetSpan(
+              alignment: PlaceholderAlignment.bottom,
+              child: GestureDetector(
+                onTap: () {
+                  showDialog(
+                    context: context,
+                    builder: (_) => AlertDialog(
+                      title: Text(
+                        uiStrings['note']?[locale] ?? 'Note',
+                        style: TextStyle(
+                          fontSize: settings.fontSize + 2,
+                          fontFamily: settings.fontFamily,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      content: Text(note),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.of(context).pop(),
+                          child: Text(
+                            uiStrings['ok']?[locale] ?? 'OK',
+                            style: TextStyle(
+                              fontSize: settings.fontSize,
+                              fontFamily: settings.fontFamily,
+                            ),
+                          ),
+                        )
+                      ],
+                    ),
+                  );
+                },
+                child: Padding(
+                  padding:
+                      const EdgeInsets.only(right: 4.0, left: 2.0, bottom: 5.0),
+                  child: Icon(Icons.menu_book,
+                      size: settings.fontSize * 1.2,
+                      color: Theme.of(context)
+                          .iconTheme
+                          .color
+                          ?.withAlpha((255 * 0.5).toInt())),
+                ),
+              ),
+            ));
+            lastPart = part;
+            continue;
+          }
+          {
+            spans.add(TextSpan(
+              text: part,
+              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                    fontSize: settings.fontSize,
+                    height: settings.lineSpacing,
+                    color: isSelected
+                        ? Theme.of(context).colorScheme.onPrimaryContainer
+                        : Theme.of(context).textTheme.bodyLarge?.color,
+                    fontFamily: settings.fontFamily,
+                  ),
+            ));
+            lastPart = part;
+          }
+        }
+
+        return Material(
+          color: Colors.white.withOpacity(0.01),
+          clipBehavior: Clip.hardEdge,
+          child: InkWell(
+            highlightColor: Colors.transparent,
+            splashColor: Colors.transparent,
+            onTap: () {
+              mainProvider.toggleVerse(verse: verse);
+            },
+            child: Column(
+              crossAxisAlignment: settings.readingModeCentered
+                  ? CrossAxisAlignment.center
+                  : CrossAxisAlignment.start,
+              children: [
+                if (settings.readingModeCentered &&
+                    verse.isParagraphStart == true)
+                  const SizedBox(height: 16),
+                Container(
+                  width: double.infinity,
+                  color: isSelected
+                      ? Theme.of(context).colorScheme.primaryContainer
+                      : isHighlighted
+                          ? Theme.of(context)
+                              .colorScheme
+                              .secondary
+                              .withOpacity(0.3)
+                          : Colors.transparent,
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  child: RichText(
+                    textAlign: settings.readingModeCentered
+                        ? TextAlign.center
+                        : TextAlign.start,
+                    text: TextSpan(
+                      children: spans,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
