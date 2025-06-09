@@ -31,20 +31,25 @@ class _LoadingPageState extends State<LoadingPage> {
     final verse =
         widget.verses.isNotEmpty ? (widget.verses..shuffle()).first : null;
 
-    final notePattern   = RegExp(r'<note:[^>]*>');
-    final bracePattern  = RegExp(r'\{[^}]*\}');
+    final notePattern = RegExp(r'<note:[^>]*>');
+    final bracePattern = RegExp(r'\{[^}]*\}');
     final squarePattern = RegExp(r'\[([^\]]+)\]');
     // Combined to split text and bracket tokens
     final combinedPattern = RegExp(r'(\[[^\]]+\])');
-    final original      = verse?.text.replaceAll('\n', '') ?? '';
+    final original = verse?.text.replaceAll('\n', '') ?? '';
     // Remove only notes and braces, keep square brackets for rendering
-    final raw           = original.replaceAll(notePattern, '').replaceAll(bracePattern, '').trim();
+    final raw = original
+        .replaceAll(notePattern, '')
+        .replaceAll(bracePattern, '')
+        .trim();
     // Split so that each [word] is its own part
-    final parts         = raw.splitMapJoin(
-      combinedPattern,
-      onMatch:    (m) => '||${m[0]}||',
-      onNonMatch: (n) => n,
-    ).split('||');
+    final parts = raw
+        .splitMapJoin(
+          combinedPattern,
+          onMatch: (m) => '||${m[0]}||',
+          onNonMatch: (n) => n,
+        )
+        .split('||');
 
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.background,
@@ -99,9 +104,13 @@ class _LoadingPageState extends State<LoadingPage> {
                                 height: 1.5,
                                 decoration: TextDecoration.underline,
                                 decorationStyle: TextDecorationStyle.dotted,
-                                decorationColor: Theme.of(context).colorScheme.primary,
+                                decorationColor:
+                                    Theme.of(context).colorScheme.primary,
                                 decorationThickness: 2.0,
-                                color: Theme.of(context).textTheme.bodyLarge?.color,
+                                color: Theme.of(context)
+                                    .textTheme
+                                    .bodyLarge
+                                    ?.color,
                               ),
                             );
                           } else {
@@ -111,7 +120,10 @@ class _LoadingPageState extends State<LoadingPage> {
                                 fontSize: settings.fontSize,
                                 fontFamily: settings.fontFamily,
                                 height: 1.5,
-                                color: Theme.of(context).textTheme.bodyLarge?.color,
+                                color: Theme.of(context)
+                                    .textTheme
+                                    .bodyLarge
+                                    ?.color,
                               ),
                             );
                           }
