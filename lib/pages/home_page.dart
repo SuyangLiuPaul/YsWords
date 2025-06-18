@@ -120,37 +120,33 @@ class _HomePageState extends State<HomePage> {
 
     switch (settings.copyFormat) {
       case 'withRef':
-        return sorted
-            .map((v) {
-              final cleanedText = v.text
-                .replaceAll(notePattern, '')
-                .replaceAllMapped(braceInnerPattern, (m) => m.group(1) ?? '')
-                .replaceAllMapped(squareInnerPattern, (m) => m.group(1) ?? '')
-                .trim();
-              return '[${v.book} ${v.chapter}:${v.verse}] $cleanedText';
-            })
-            .join('\n');
+        return sorted.map((v) {
+          final cleanedText = v.text
+              .replaceAll(notePattern, '')
+              .replaceAllMapped(braceInnerPattern, (m) => m.group(1) ?? '')
+              .replaceAllMapped(squareInnerPattern, (m) => m.group(1) ?? '')
+              .trim();
+          return '[${v.book} ${v.chapter}:${v.verse}] $cleanedText';
+        }).join('\n');
       case 'plain':
         return '$header\n' +
-            sorted
-                .map((v) {
-                  final cleanedText = v.text
-                    .replaceAll(notePattern, '')
-                    .replaceAllMapped(braceInnerPattern, (m) => m.group(1) ?? '')
-                    .replaceAllMapped(squareInnerPattern, (m) => m.group(1) ?? '')
-                    .trim();
-                  return '${v.verse} $cleanedText';
-                })
-                .join('\n');
+            sorted.map((v) {
+              final cleanedText = v.text
+                  .replaceAll(notePattern, '')
+                  .replaceAllMapped(braceInnerPattern, (m) => m.group(1) ?? '')
+                  .replaceAllMapped(squareInnerPattern, (m) => m.group(1) ?? '')
+                  .trim();
+              return '${v.verse} $cleanedText';
+            }).join('\n');
       case 'devotional':
         final book = first.book;
         final chapter = first.chapter;
         final versesText = sorted
-            .map((v) =>
-                v.text.replaceAll(notePattern, '') 
-                    .replaceAllMapped(braceInnerPattern, (m) => m.group(1) ?? '')
-                    .replaceAllMapped(squareInnerPattern, (m) => m.group(1) ?? '')
-                    .trim())
+            .map((v) => v.text
+                .replaceAll(notePattern, '')
+                .replaceAllMapped(braceInnerPattern, (m) => m.group(1) ?? '')
+                .replaceAllMapped(squareInnerPattern, (m) => m.group(1) ?? '')
+                .trim())
             .join('\n');
         final verseNumbers = sorted.map((v) => v.verse).toList();
 
@@ -188,7 +184,8 @@ class _HomePageState extends State<HomePage> {
         return '$versesText\n($book $chapter:$range)';
       default:
         return sorted
-            .map((v) => v.text.replaceAll(notePattern, '')
+            .map((v) => v.text
+                .replaceAll(notePattern, '')
                 .replaceAllMapped(braceInnerPattern, (m) => m.group(1) ?? '')
                 .replaceAllMapped(squareInnerPattern, (m) => m.group(1) ?? '')
                 .trim())
@@ -200,7 +197,7 @@ class _HomePageState extends State<HomePage> {
     final settings = Provider.of<AppSettings>(context, listen: false);
     final spans = <InlineSpan>[];
     final bracePattern = RegExp(r'\{([^}]+)\}');
-    final notePattern  = RegExp(r'<note:([^>]+)>');
+    final notePattern = RegExp(r'<note:([^>]+)>');
 
     for (var v in verses) {
       // Verse number
@@ -208,7 +205,10 @@ class _HomePageState extends State<HomePage> {
         child: GestureDetector(
           onTap: () async {
             final original = v.text.replaceAll('\n', '');
-            final sanitized = original.replaceAll(notePattern, '').replaceAll(bracePattern, '').trim();
+            final sanitized = original
+                .replaceAll(notePattern, '')
+                .replaceAll(bracePattern, '')
+                .trim();
             final toCopy = '${v.verse} $sanitized';
             await ClipboardHelper.copyText(toCopy);
             ScaffoldMessenger.of(context).showSnackBar(
@@ -232,18 +232,20 @@ class _HomePageState extends State<HomePage> {
       // Remove note tags from display
       final raw = original.replaceAll(notePattern, '').trim();
       // Split on curly annotations, preserving them for badge rendering
-      final parts = raw.splitMapJoin(
-        bracePattern,
-        onMatch: (m) => '||${m[0]}||',
-        onNonMatch: (n) => n,
-      ).split('||');
+      final parts = raw
+          .splitMapJoin(
+            bracePattern,
+            onMatch: (m) => '||${m[0]}||',
+            onNonMatch: (n) => n,
+          )
+          .split('||');
 
       for (var part in parts) {
         if (bracePattern.hasMatch(part)) {
           final annotation = bracePattern.firstMatch(part)!.group(1)!;
           // Retrieve the first note from the original full text
           final noteMatch = notePattern.firstMatch(original);
-          final noteText  = noteMatch != null ? noteMatch.group(1)! : '';
+          final noteText = noteMatch != null ? noteMatch.group(1)! : '';
 
           spans.add(WidgetSpan(
             alignment: PlaceholderAlignment.middle,
@@ -267,10 +269,8 @@ class _HomePageState extends State<HomePage> {
                 padding: EdgeInsets.symmetric(horizontal: 6, vertical: 3),
                 margin: EdgeInsets.symmetric(horizontal: 2),
                 decoration: BoxDecoration(
-                  color: Theme.of(context)
-                      .colorScheme
-                      .secondary
-                      .withOpacity(0.3),
+                  color:
+                      Theme.of(context).colorScheme.secondary.withOpacity(0.3),
                   borderRadius: BorderRadius.circular(4),
                 ),
                 child: Text(
@@ -319,7 +319,7 @@ class _HomePageState extends State<HomePage> {
             (verses.isNotEmpty ? verses.first : null);
         final isSelected = mainProvider.selectedVerses.isNotEmpty;
 
-        return SelectionArea(
+        return SelectionContainer.disabled(
           child: GestureDetector(
             onHorizontalDragEnd: (details) {
               if (details.primaryVelocity! < 0) {
@@ -464,8 +464,9 @@ class _HomePageState extends State<HomePage> {
                                     value: 'kjv',
                                     child: Text('King James Version')),
                                 PopupMenuItem(
-                                    value: 'leb',
-                                    child: Text('Lexham English Bible'),),
+                                  value: 'leb',
+                                  child: Text('Lexham English Bible'),
+                                ),
                                 PopupMenuItem(
                                     value: 'cuvs-yhwh',
                                     child: Text('和合本雅伟版(简体)')),
@@ -717,7 +718,7 @@ class _HomePageState extends State<HomePage> {
     provider.setCurrentChapter(book: book, chapter: chap);
     provider.updateCurrentVerse(verse: first);
 
-    provider.jumpToIndex(index: 0); 
+    provider.jumpToIndex(index: 0);
   }
 
   List<List<Verse>> _groupVersesIntoParagraphs(List<Verse> verses) {
