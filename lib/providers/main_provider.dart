@@ -29,7 +29,9 @@ class MainProvider extends ChangeNotifier {
   }
 
   void setBooks(List<Book> list) {
-    books = list;
+    // Deduplicate by title while preserving first occurrence
+    final seen = <String>{};
+    books = list.where((b) => seen.add(b.title)).toList();
     notifyListeners();
   }
 
@@ -80,7 +82,13 @@ class MainProvider extends ChangeNotifier {
 
   // Method to add a book to the list and notify listeners
   void addBook({required Book book}) {
-    books.add(book);
+    // Avoid duplicate entries; replace existing by title
+    final idx = books.indexWhere((b) => b.title == book.title);
+    if (idx >= 0) {
+      books[idx] = book;
+    } else {
+      books.add(book);
+    }
     notifyListeners();
   }
 
@@ -128,6 +136,7 @@ class MainProvider extends ChangeNotifier {
     _selectedIds.clear();
     notifyListeners();
   }
+
   Future<void> saveCurrentState() async {
     final prefs = await SharedPreferences.getInstance();
     if (currentBook != null) prefs.setString('book', currentBook!);

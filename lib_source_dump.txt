@@ -1415,20 +1415,25 @@ class _LoadingPageState extends State<LoadingPage> {
     final verse =
         widget.verses.isNotEmpty ? (widget.verses..shuffle()).first : null;
 
-    final notePattern   = RegExp(r'<note:[^>]*>');
-    final bracePattern  = RegExp(r'\{[^}]*\}');
+    final notePattern = RegExp(r'<note:[^>]*>');
+    final bracePattern = RegExp(r'\{[^}]*\}');
     final squarePattern = RegExp(r'\[([^\]]+)\]');
     // Combined to split text and bracket tokens
     final combinedPattern = RegExp(r'(\[[^\]]+\])');
-    final original      = verse?.text.replaceAll('\n', '') ?? '';
+    final original = verse?.text.replaceAll('\n', '') ?? '';
     // Remove only notes and braces, keep square brackets for rendering
-    final raw           = original.replaceAll(notePattern, '').replaceAll(bracePattern, '').trim();
+    final raw = original
+        .replaceAll(notePattern, '')
+        .replaceAll(bracePattern, '')
+        .trim();
     // Split so that each [word] is its own part
-    final parts         = raw.splitMapJoin(
-      combinedPattern,
-      onMatch:    (m) => '||${m[0]}||',
-      onNonMatch: (n) => n,
-    ).split('||');
+    final parts = raw
+        .splitMapJoin(
+          combinedPattern,
+          onMatch: (m) => '||${m[0]}||',
+          onNonMatch: (n) => n,
+        )
+        .split('||');
 
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.background,
@@ -1483,9 +1488,13 @@ class _LoadingPageState extends State<LoadingPage> {
                                 height: 1.5,
                                 decoration: TextDecoration.underline,
                                 decorationStyle: TextDecorationStyle.dotted,
-                                decorationColor: Theme.of(context).colorScheme.primary,
+                                decorationColor:
+                                    Theme.of(context).colorScheme.primary,
                                 decorationThickness: 2.0,
-                                color: Theme.of(context).textTheme.bodyLarge?.color,
+                                color: Theme.of(context)
+                                    .textTheme
+                                    .bodyLarge
+                                    ?.color,
                               ),
                             );
                           } else {
@@ -1495,7 +1504,10 @@ class _LoadingPageState extends State<LoadingPage> {
                                 fontSize: settings.fontSize,
                                 fontFamily: settings.fontFamily,
                                 height: 1.5,
-                                color: Theme.of(context).textTheme.bodyLarge?.color,
+                                color: Theme.of(context)
+                                    .textTheme
+                                    .bodyLarge
+                                    ?.color,
                               ),
                             );
                           }
@@ -1526,7 +1538,6 @@ class _LoadingPageState extends State<LoadingPage> {
 ================================================================================
 FILE: pages/home_page.dart
 ================================================================================
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:clipboard/clipboard.dart';
 
@@ -1648,37 +1659,33 @@ class _HomePageState extends State<HomePage> {
 
     switch (settings.copyFormat) {
       case 'withRef':
-        return sorted
-            .map((v) {
-              final cleanedText = v.text
-                .replaceAll(notePattern, '')
-                .replaceAllMapped(braceInnerPattern, (m) => m.group(1) ?? '')
-                .replaceAllMapped(squareInnerPattern, (m) => m.group(1) ?? '')
-                .trim();
-              return '[${v.book} ${v.chapter}:${v.verse}] $cleanedText';
-            })
-            .join('\n');
+        return sorted.map((v) {
+          final cleanedText = v.text
+              .replaceAll(notePattern, '')
+              .replaceAllMapped(braceInnerPattern, (m) => m.group(1) ?? '')
+              .replaceAllMapped(squareInnerPattern, (m) => m.group(1) ?? '')
+              .trim();
+          return '[${v.book} ${v.chapter}:${v.verse}] $cleanedText';
+        }).join('\n');
       case 'plain':
         return '$header\n' +
-            sorted
-                .map((v) {
-                  final cleanedText = v.text
-                    .replaceAll(notePattern, '')
-                    .replaceAllMapped(braceInnerPattern, (m) => m.group(1) ?? '')
-                    .replaceAllMapped(squareInnerPattern, (m) => m.group(1) ?? '')
-                    .trim();
-                  return '${v.verse} $cleanedText';
-                })
-                .join('\n');
+            sorted.map((v) {
+              final cleanedText = v.text
+                  .replaceAll(notePattern, '')
+                  .replaceAllMapped(braceInnerPattern, (m) => m.group(1) ?? '')
+                  .replaceAllMapped(squareInnerPattern, (m) => m.group(1) ?? '')
+                  .trim();
+              return '${v.verse} $cleanedText';
+            }).join('\n');
       case 'devotional':
         final book = first.book;
         final chapter = first.chapter;
         final versesText = sorted
-            .map((v) =>
-                v.text.replaceAll(notePattern, '') 
-                    .replaceAllMapped(braceInnerPattern, (m) => m.group(1) ?? '')
-                    .replaceAllMapped(squareInnerPattern, (m) => m.group(1) ?? '')
-                    .trim())
+            .map((v) => v.text
+                .replaceAll(notePattern, '')
+                .replaceAllMapped(braceInnerPattern, (m) => m.group(1) ?? '')
+                .replaceAllMapped(squareInnerPattern, (m) => m.group(1) ?? '')
+                .trim())
             .join('\n');
         final verseNumbers = sorted.map((v) => v.verse).toList();
 
@@ -1716,7 +1723,8 @@ class _HomePageState extends State<HomePage> {
         return '$versesText\n($book $chapter:$range)';
       default:
         return sorted
-            .map((v) => v.text.replaceAll(notePattern, '')
+            .map((v) => v.text
+                .replaceAll(notePattern, '')
                 .replaceAllMapped(braceInnerPattern, (m) => m.group(1) ?? '')
                 .replaceAllMapped(squareInnerPattern, (m) => m.group(1) ?? '')
                 .trim())
@@ -1728,7 +1736,7 @@ class _HomePageState extends State<HomePage> {
     final settings = Provider.of<AppSettings>(context, listen: false);
     final spans = <InlineSpan>[];
     final bracePattern = RegExp(r'\{([^}]+)\}');
-    final notePattern  = RegExp(r'<note:([^>]+)>');
+    final notePattern = RegExp(r'<note:([^>]+)>');
 
     for (var v in verses) {
       // Verse number
@@ -1736,7 +1744,10 @@ class _HomePageState extends State<HomePage> {
         child: GestureDetector(
           onTap: () async {
             final original = v.text.replaceAll('\n', '');
-            final sanitized = original.replaceAll(notePattern, '').replaceAll(bracePattern, '').trim();
+            final sanitized = original
+                .replaceAll(notePattern, '')
+                .replaceAll(bracePattern, '')
+                .trim();
             final toCopy = '${v.verse} $sanitized';
             await ClipboardHelper.copyText(toCopy);
             ScaffoldMessenger.of(context).showSnackBar(
@@ -1760,18 +1771,20 @@ class _HomePageState extends State<HomePage> {
       // Remove note tags from display
       final raw = original.replaceAll(notePattern, '').trim();
       // Split on curly annotations, preserving them for badge rendering
-      final parts = raw.splitMapJoin(
-        bracePattern,
-        onMatch: (m) => '||${m[0]}||',
-        onNonMatch: (n) => n,
-      ).split('||');
+      final parts = raw
+          .splitMapJoin(
+            bracePattern,
+            onMatch: (m) => '||${m[0]}||',
+            onNonMatch: (n) => n,
+          )
+          .split('||');
 
       for (var part in parts) {
         if (bracePattern.hasMatch(part)) {
           final annotation = bracePattern.firstMatch(part)!.group(1)!;
           // Retrieve the first note from the original full text
           final noteMatch = notePattern.firstMatch(original);
-          final noteText  = noteMatch != null ? noteMatch.group(1)! : '';
+          final noteText = noteMatch != null ? noteMatch.group(1)! : '';
 
           spans.add(WidgetSpan(
             alignment: PlaceholderAlignment.middle,
@@ -1795,10 +1808,8 @@ class _HomePageState extends State<HomePage> {
                 padding: EdgeInsets.symmetric(horizontal: 6, vertical: 3),
                 margin: EdgeInsets.symmetric(horizontal: 2),
                 decoration: BoxDecoration(
-                  color: Theme.of(context)
-                      .colorScheme
-                      .secondary
-                      .withOpacity(0.3),
+                  color:
+                      Theme.of(context).colorScheme.secondary.withOpacity(0.3),
                   borderRadius: BorderRadius.circular(4),
                 ),
                 child: Text(
@@ -1847,7 +1858,7 @@ class _HomePageState extends State<HomePage> {
             (verses.isNotEmpty ? verses.first : null);
         final isSelected = mainProvider.selectedVerses.isNotEmpty;
 
-        return SelectionArea(
+        return SelectionContainer.disabled(
           child: GestureDetector(
             onHorizontalDragEnd: (details) {
               if (details.primaryVelocity! < 0) {
@@ -1992,8 +2003,9 @@ class _HomePageState extends State<HomePage> {
                                     value: 'kjv',
                                     child: Text('King James Version')),
                                 PopupMenuItem(
-                                    value: 'leb',
-                                    child: Text('Lexham English Bible'),),
+                                  value: 'leb',
+                                  child: Text('Lexham English Bible'),
+                                ),
                                 PopupMenuItem(
                                     value: 'cuvs-yhwh',
                                     child: Text('和合本雅伟版(简体)')),
@@ -2245,24 +2257,7 @@ class _HomePageState extends State<HomePage> {
     provider.setCurrentChapter(book: book, chapter: chap);
     provider.updateCurrentVerse(verse: first);
 
-    provider.jumpToIndex(index: 0); 
-  }
-
-  List<List<Verse>> _groupVersesIntoParagraphs(List<Verse> verses) {
-    final List<List<Verse>> paragraphs = [];
-    List<Verse> current = [];
-    for (var v in verses) {
-      if (current.isEmpty ||
-          v.verse == 1 ||
-          v.verse > (current.last.verse + 1)) {
-        if (current.isNotEmpty) paragraphs.add(current);
-        current = [v];
-      } else {
-        current.add(v);
-      }
-    }
-    if (current.isNotEmpty) paragraphs.add(current);
-    return paragraphs;
+    provider.jumpToIndex(index: 0);
   }
 }
 
@@ -4352,7 +4347,6 @@ class VerseWidget extends StatelessWidget {
 
   const VerseWidget({super.key, required this.verse, required this.index});
 
-
   @override
   Widget build(BuildContext context) {
     return Consumer2<MainProvider, AppSettings>(
@@ -4418,9 +4412,7 @@ class VerseWidget extends StatelessWidget {
           if (bracePattern.hasMatch(part)) {
             final annotation = bracePattern.firstMatch(part)!.group(1)!;
             final isDark = Theme.of(context).brightness == Brightness.dark;
-            final bgColor = isDark
-                ? Theme.of(context).colorScheme.secondary.withOpacity(0.2)
-                : Theme.of(context).colorScheme.secondary.withOpacity(0.3);
+            final bgColor = Theme.of(context).colorScheme.secondaryContainer;
             spans.add(WidgetSpan(
               alignment: PlaceholderAlignment.middle,
               child: GestureDetector(
@@ -4494,14 +4486,9 @@ class VerseWidget extends StatelessWidget {
                                 fontSize: settings.fontSize * 0.1,
                                 fontFamily: settings.fontFamily,
                                 height: settings.lineSpacing,
-                                color: isSelected
-                                    ? Theme.of(context)
-                                        .colorScheme
-                                        .onPrimaryContainer
-                                    : Theme.of(context)
-                                        .textTheme
-                                        .bodyLarge
-                                        ?.color,
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .onSecondaryContainer,
                               ),
                             ));
                           }
@@ -4517,14 +4504,9 @@ class VerseWidget extends StatelessWidget {
                               decorationColor:
                                   Theme.of(context).colorScheme.primary,
                               decorationThickness: 2.0,
-                              color: isSelected
-                                  ? Theme.of(context)
-                                      .colorScheme
-                                      .onPrimaryContainer
-                                  : Theme.of(context)
-                                      .textTheme
-                                      .bodyLarge
-                                      ?.color,
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onSecondaryContainer,
                             ),
                           ));
                           lastEnd = match.end;
@@ -4536,14 +4518,9 @@ class VerseWidget extends StatelessWidget {
                               fontSize: settings.fontSize * 0.85,
                               fontFamily: settings.fontFamily,
                               height: settings.lineSpacing,
-                              color: isSelected
-                                  ? Theme.of(context)
-                                      .colorScheme
-                                      .onPrimaryContainer
-                                  : Theme.of(context)
-                                      .textTheme
-                                      .bodyLarge
-                                      ?.color,
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onSecondaryContainer,
                             ),
                           ));
                         }
@@ -4556,16 +4533,9 @@ class VerseWidget extends StatelessWidget {
                             fontSize: settings.fontSize * 0.85,
                             fontFamily: settings.fontFamily,
                             height: settings.lineSpacing,
-                            color: isSelected
-                                ? Theme.of(context)
-                                    .colorScheme
-                                    .onPrimaryContainer
-                                : (isDark
-                                    ? Colors.white
-                                    : Theme.of(context)
-                                        .textTheme
-                                        .bodyLarge
-                                        ?.color),
+                            color: Theme.of(context)
+                                .colorScheme
+                                .onSecondaryContainer,
                           ),
                         );
                       }
@@ -4608,10 +4578,6 @@ class VerseWidget extends StatelessWidget {
               continue;
             }
             final note = notePattern.firstMatch(part)!.group(1)!;
-            final isDark = Theme.of(context).brightness == Brightness.dark;
-            final bgColor = isDark
-                ? Theme.of(context).colorScheme.secondary.withOpacity(0.2)
-                : Theme.of(context).colorScheme.secondary.withOpacity(0.3);
             spans.add(WidgetSpan(
               alignment: PlaceholderAlignment.bottom,
               child: GestureDetector(
@@ -4646,12 +4612,13 @@ class VerseWidget extends StatelessWidget {
                 child: Padding(
                   padding:
                       const EdgeInsets.only(right: 4.0, left: 2.0, bottom: 5.0),
-                  child: Icon(Icons.menu_book,
-                      size: settings.fontSize * 1.2,
-                      color: Theme.of(context)
-                          .iconTheme
-                          .color
-                          ?.withAlpha((255 * 0.5).toInt())),
+                  child: Icon(
+                    Icons.menu_book,
+                    size: settings.fontSize * 1.2,
+                    color: isSelected
+                        ? Theme.of(context).colorScheme.onPrimaryContainer
+                        : Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
                 ),
               ),
             ));
