@@ -12,7 +12,6 @@ class VerseWidget extends StatelessWidget {
 
   const VerseWidget({super.key, required this.verse, required this.index});
 
-
   @override
   Widget build(BuildContext context) {
     return Consumer2<MainProvider, AppSettings>(
@@ -78,9 +77,7 @@ class VerseWidget extends StatelessWidget {
           if (bracePattern.hasMatch(part)) {
             final annotation = bracePattern.firstMatch(part)!.group(1)!;
             final isDark = Theme.of(context).brightness == Brightness.dark;
-            final bgColor = isDark
-                ? Theme.of(context).colorScheme.secondary.withOpacity(0.2)
-                : Theme.of(context).colorScheme.secondary.withOpacity(0.3);
+            final bgColor = Theme.of(context).colorScheme.secondaryContainer;
             spans.add(WidgetSpan(
               alignment: PlaceholderAlignment.middle,
               child: GestureDetector(
@@ -154,14 +151,9 @@ class VerseWidget extends StatelessWidget {
                                 fontSize: settings.fontSize * 0.1,
                                 fontFamily: settings.fontFamily,
                                 height: settings.lineSpacing,
-                                color: isSelected
-                                    ? Theme.of(context)
-                                        .colorScheme
-                                        .onPrimaryContainer
-                                    : Theme.of(context)
-                                        .textTheme
-                                        .bodyLarge
-                                        ?.color,
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .onSecondaryContainer,
                               ),
                             ));
                           }
@@ -177,14 +169,9 @@ class VerseWidget extends StatelessWidget {
                               decorationColor:
                                   Theme.of(context).colorScheme.primary,
                               decorationThickness: 2.0,
-                              color: isSelected
-                                  ? Theme.of(context)
-                                      .colorScheme
-                                      .onPrimaryContainer
-                                  : Theme.of(context)
-                                      .textTheme
-                                      .bodyLarge
-                                      ?.color,
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onSecondaryContainer,
                             ),
                           ));
                           lastEnd = match.end;
@@ -196,14 +183,9 @@ class VerseWidget extends StatelessWidget {
                               fontSize: settings.fontSize * 0.85,
                               fontFamily: settings.fontFamily,
                               height: settings.lineSpacing,
-                              color: isSelected
-                                  ? Theme.of(context)
-                                      .colorScheme
-                                      .onPrimaryContainer
-                                  : Theme.of(context)
-                                      .textTheme
-                                      .bodyLarge
-                                      ?.color,
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onSecondaryContainer,
                             ),
                           ));
                         }
@@ -216,16 +198,9 @@ class VerseWidget extends StatelessWidget {
                             fontSize: settings.fontSize * 0.85,
                             fontFamily: settings.fontFamily,
                             height: settings.lineSpacing,
-                            color: isSelected
-                                ? Theme.of(context)
-                                    .colorScheme
-                                    .onPrimaryContainer
-                                : (isDark
-                                    ? Colors.white
-                                    : Theme.of(context)
-                                        .textTheme
-                                        .bodyLarge
-                                        ?.color),
+                            color: Theme.of(context)
+                                .colorScheme
+                                .onSecondaryContainer,
                           ),
                         );
                       }
@@ -268,10 +243,6 @@ class VerseWidget extends StatelessWidget {
               continue;
             }
             final note = notePattern.firstMatch(part)!.group(1)!;
-            final isDark = Theme.of(context).brightness == Brightness.dark;
-            final bgColor = isDark
-                ? Theme.of(context).colorScheme.secondary.withOpacity(0.2)
-                : Theme.of(context).colorScheme.secondary.withOpacity(0.3);
             spans.add(WidgetSpan(
               alignment: PlaceholderAlignment.bottom,
               child: GestureDetector(
@@ -306,12 +277,13 @@ class VerseWidget extends StatelessWidget {
                 child: Padding(
                   padding:
                       const EdgeInsets.only(right: 4.0, left: 2.0, bottom: 5.0),
-                  child: Icon(Icons.menu_book,
-                      size: settings.fontSize * 1.2,
-                      color: Theme.of(context)
-                          .iconTheme
-                          .color
-                          ?.withAlpha((255 * 0.5).toInt())),
+                  child: Icon(
+                    Icons.menu_book,
+                    size: settings.fontSize * 1.2,
+                    color: isSelected
+                        ? Theme.of(context).colorScheme.onPrimaryContainer
+                        : Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
                 ),
               ),
             ));

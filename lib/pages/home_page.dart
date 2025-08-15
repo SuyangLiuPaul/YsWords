@@ -1,4 +1,3 @@
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:clipboard/clipboard.dart';
 
@@ -719,23 +718,6 @@ class _HomePageState extends State<HomePage> {
     provider.updateCurrentVerse(verse: first);
 
     provider.jumpToIndex(index: 0);
-  }
-
-  List<List<Verse>> _groupVersesIntoParagraphs(List<Verse> verses) {
-    final List<List<Verse>> paragraphs = [];
-    List<Verse> current = [];
-    for (var v in verses) {
-      if (current.isEmpty ||
-          v.verse == 1 ||
-          v.verse > (current.last.verse + 1)) {
-        if (current.isNotEmpty) paragraphs.add(current);
-        current = [v];
-      } else {
-        current.add(v);
-      }
-    }
-    if (current.isNotEmpty) paragraphs.add(current);
-    return paragraphs;
   }
 }
 
