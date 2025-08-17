@@ -251,18 +251,15 @@ class _BooksPageState extends State<BooksPage> {
                                 children:
                                     List.generate(book.chapters.length, (i) {
                                   Chapter chapter = book.chapters[i];
+                                  final selected = (chapter.title == widget.chapterIdx && widget.bookIdx == book.title);
                                   return Padding(
                                     padding: const EdgeInsets.all(4),
                                     child: SizedBox(
                                       height: 55,
                                       width: 55,
                                       child: Card(
-                                        color: (chapter.title ==
-                                                    widget.chapterIdx &&
-                                                widget.bookIdx == book.title)
-                                            ? Theme.of(context)
-                                                .colorScheme
-                                                .primaryContainer
+                                        color: selected
+                                            ? Theme.of(context).colorScheme.primary
                                             : null,
                                         elevation: 1,
                                         shape: RoundedRectangleBorder(
@@ -293,10 +290,14 @@ class _BooksPageState extends State<BooksPage> {
                                             child: Text(
                                               chapter.title.toString(),
                                               style: TextStyle(
-                                                  fontSize:
-                                                      settings.fontSize * 0.9,
-                                                  fontFamily:
-                                                      settings.fontFamily),
+                                                fontSize:
+                                                    settings.fontSize * 0.9,
+                                                fontFamily:
+                                                    settings.fontFamily,
+                                                color: selected
+                                                    ? Theme.of(context).colorScheme.onPrimary
+                                                    : Theme.of(context).colorScheme.onSurface,
+                                              ),
                                             ),
                                           ),
                                         ),
