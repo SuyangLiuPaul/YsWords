@@ -953,7 +953,9 @@ class MainProvider extends ChangeNotifier {
   }
 
   void setBooks(List<Book> list) {
-    books = list;
+    // Deduplicate by title while preserving first occurrence
+    final seen = <String>{};
+    books = list.where((b) => seen.add(b.title)).toList();
     notifyListeners();
   }
 
@@ -1004,7 +1006,13 @@ class MainProvider extends ChangeNotifier {
 
   // Method to add a book to the list and notify listeners
   void addBook({required Book book}) {
-    books.add(book);
+    // Avoid duplicate entries; replace existing by title
+    final idx = books.indexWhere((b) => b.title == book.title);
+    if (idx >= 0) {
+      books[idx] = book;
+    } else {
+      books.add(book);
+    }
     notifyListeners();
   }
 
@@ -1052,6 +1060,7 @@ class MainProvider extends ChangeNotifier {
     _selectedIds.clear();
     notifyListeners();
   }
+
   Future<void> saveCurrentState() async {
     final prefs = await SharedPreferences.getInstance();
     if (currentBook != null) prefs.setString('book', currentBook!);
@@ -3425,18 +3434,19 @@ class _BooksPageState extends State<BooksPage> {
                                 children:
                                     List.generate(book.chapters.length, (i) {
                                   Chapter chapter = book.chapters[i];
+                                  final selected =
+                                      (chapter.title == widget.chapterIdx &&
+                                          widget.bookIdx == book.title);
                                   return Padding(
                                     padding: const EdgeInsets.all(4),
                                     child: SizedBox(
                                       height: 55,
                                       width: 55,
                                       child: Card(
-                                        color: (chapter.title ==
-                                                    widget.chapterIdx &&
-                                                widget.bookIdx == book.title)
+                                        color: selected
                                             ? Theme.of(context)
                                                 .colorScheme
-                                                .primaryContainer
+                                                .primary
                                             : null,
                                         elevation: 1,
                                         shape: RoundedRectangleBorder(
@@ -3467,10 +3477,17 @@ class _BooksPageState extends State<BooksPage> {
                                             child: Text(
                                               chapter.title.toString(),
                                               style: TextStyle(
-                                                  fontSize:
-                                                      settings.fontSize * 0.9,
-                                                  fontFamily:
-                                                      settings.fontFamily),
+                                                fontSize:
+                                                    settings.fontSize * 0.9,
+                                                fontFamily: settings.fontFamily,
+                                                color: selected
+                                                    ? Theme.of(context)
+                                                        .colorScheme
+                                                        .onPrimary
+                                                    : Theme.of(context)
+                                                        .colorScheme
+                                                        .onSurface,
+                                              ),
                                             ),
                                           ),
                                         ),
