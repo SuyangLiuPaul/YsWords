@@ -181,7 +181,7 @@ class _MainAppState extends State<MainApp> {
             ),
             scaffoldBackgroundColor: Color(0xFF121212),
             cardColor: const Color(0xFF1A1A1A),
-            cardTheme: CardTheme(
+            cardTheme: CardThemeData(
               color: Color(0xFF1F1F1F),
               elevation: 2,
               shape: RoundedRectangleBorder(
@@ -212,7 +212,7 @@ class _MainAppState extends State<MainApp> {
                 side: BorderSide(color: Color(0xFFCCCCCC)),
               ),
             ),
-            dialogTheme: DialogTheme(
+            dialogTheme: DialogThemeData(
               backgroundColor: Color(0xFF1E1E1E),
               titleTextStyle: TextStyle(
                 color: Color(0xFFCCCCCC),
