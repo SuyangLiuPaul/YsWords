@@ -1,0 +1,8 @@
+[build]
+  command = "echo 'Flutter web pre-built'"
+  publish = "build/web"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
