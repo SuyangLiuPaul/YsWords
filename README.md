@@ -19,6 +19,7 @@
 | Annotations  | • `{…}` inline badges with linked `<note:…>` pop‑ups<br>• `[…]` dotted‑underline keywords                               |
 | Copy & Share | • Tap verses to multi‑select<br>• Copy in **Plain**, **With Reference**, or **Devotional** formats                      |
 | Persistence  | • Last‑read position & user settings stored with `shared_preferences`                                                   |
+| Offline      | • Offline mode toggle — use downloaded data without network requests                                                   |
 | Updates      | • Optional auto‑download of new JSON assets (toggle in Settings)                                                        |
 | Platforms    | Android, iOS, Web, macOS, Windows, Linux                                                                                |
 
@@ -171,6 +172,7 @@ Each verse record:
 | Font family | **Settings → Reading → Font**     | Switch between Roboto / Microsoft YaHei |
 | Theme       | **Settings → Appearance**         | Light / Dark / System                   |
 | Copy format | **Settings → Copy**               | Plain / With Reference / Devotional     |
+| Offline mode| **Settings → Offline Mode**       | Toggle to use downloaded data only      |
 | Update mode | **Settings → Advanced → Updates** | Online (service‑worker) vs Offline      |
 
 Stored locally via `shared_preferences` (`lib/services/app_settings.dart`).
