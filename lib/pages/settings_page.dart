@@ -584,7 +584,29 @@ class SettingsPage extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 16),
-              // --- 直接在 App 內輸入並發送反饋的區塊 ---
+              Card(
+                child: SwitchListTile(
+                  title: Text(
+                    uiStrings['offlineMode']?[settings.locale] ?? 'Offline Mode',
+                    style: TextStyle(
+                      fontSize: settings.fontSize + 2,
+                      fontWeight: FontWeight.w600,
+                      fontFamily: settings.fontFamily,
+                    ),
+                  ),
+                  subtitle: Text(
+                    uiStrings['offlineModeSubtitle']?[settings.locale] ??
+                        'Use downloaded data only. No network requests.',
+                    style: TextStyle(
+                      fontSize: settings.fontSize,
+                      fontFamily: settings.fontFamily,
+                    ),
+                  ),
+                  value: settings.offlineMode,
+                  onChanged: (val) => settings.setOfflineMode(val),
+                ),
+              ),
+              const SizedBox(height: 16),
 //               Card(
 //                 child: Padding(
 //                   padding: const EdgeInsets.all(16),

@@ -13,6 +13,8 @@ class AppSettings extends ChangeNotifier {
   ThemeMode _themeMode = ThemeMode.system;
   bool _readingModeCentered = false;
   bool get readingModeCentered => _readingModeCentered;
+  bool _offlineMode = false;
+  bool get offlineMode => _offlineMode;
 
   String get fontFamily => _fontFamily;
   double get fontSize => _fontSize;
@@ -92,6 +94,13 @@ class AppSettings extends ChangeNotifier {
     notifyListeners();
   }
 
+  void setOfflineMode(bool offline) async {
+    _offlineMode = offline;
+    final prefs = await SharedPreferences.getInstance();
+    prefs.setBool('offlineMode', offline);
+    notifyListeners();
+  }
+
   Future<void> loadSettings() async {
     final prefs = await SharedPreferences.getInstance();
     _fontFamily = prefs.getString('fontFamily') ?? 'Roboto';
@@ -115,6 +124,7 @@ class AppSettings extends ChangeNotifier {
         _themeMode = ThemeMode.system;
     }
     _readingModeCentered = prefs.getBool('readingModeCentered') ?? false;
+    _offlineMode = prefs.getBool('offlineMode') ?? false;
     notifyListeners();
   }
 

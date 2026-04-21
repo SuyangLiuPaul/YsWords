@@ -128,6 +128,16 @@ const uiStrings = {
     'zh-Hant': '介面語言',
     'en': 'Interface Language',
   },
+  'offlineMode': {
+    'zh-Hans': '离线模式',
+    'zh-Hant': '離線模式',
+    'en': 'Offline Mode',
+  },
+  'offlineModeSubtitle': {
+    'zh-Hans': '开启后将使用已下载的数据，不会请求网络。',
+    'zh-Hant': '開啟後將使用已下載的資料，不會請求網路。',
+    'en': 'Use downloaded data only. No network requests.',
+  },
   'fontSize': {
     'zh-Hans': '字体大小',
     'zh-Hant': '字體大小',
