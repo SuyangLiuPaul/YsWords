@@ -192,6 +192,23 @@ flutter build web
 
 To deploy on Netlify, point the site to `build/web` and enable “Redirects: /\* /index.html 200”.
 
+### Deploy Flow (GitHub → Netlify)
+
+```
+flutter build web          # Build locally
+git push origin main       # Push to GitHub
+  → GitHub webhook         # Triggers Netlify build hook
+  → Netlify auto-deploys   # Publishes build/web/
+```
+
+- **Netlify site**: https://yswords.netlify.app
+- **Netlify Site ID**: `975d1a08-8203-4994-a7ef-ca60452e41bf`
+- **Build hook**: configured via GitHub webhook (push to `main`)
+- **Publish directory**: `build/web/`
+- **SPA redirect**: `_redirects` file in `build/web/_redirects` (`/* /index.html 200`)
+
+> Note: Netlify does NOT run `flutter build web` — the Flutter web build must be done locally before pushing.
+
 ---
 
 ## 🤝 Contributing
