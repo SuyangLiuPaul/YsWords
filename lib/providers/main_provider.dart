@@ -25,6 +25,7 @@ class MainProvider extends ChangeNotifier {
 
   void setVerses(List<Verse> list) {
     verses = list;
+    _selectedIds.clear();
     notifyListeners();
   }
 

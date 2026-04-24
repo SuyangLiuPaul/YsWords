@@ -44,7 +44,6 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  final ScrollController _fakeScrollController = ScrollController();
 
   @override
   void initState() {
@@ -62,7 +61,6 @@ class _HomePageState extends State<HomePage> {
 
   @override
   void dispose() {
-    _fakeScrollController.dispose();
     super.dispose();
   }
 
@@ -133,13 +131,13 @@ class _HomePageState extends State<HomePage> {
       spans.add(WidgetSpan(
         child: GestureDetector(
           onTap: () async {
-            final messenger = ScaffoldMessenger.of(context);
             final toCopy = '${v.verse} ${sanitizeVerseText(v.text)}';
             await ClipboardHelper.copyText(toCopy);
+            if (!context.mounted) return;
             final msg = (uiStrings['copiedVerse']?[settings.locale] ??
                     'Copied verse {verse}')
                 .replaceAll('{verse}', '${v.verse}');
-            messenger.showSnackBar(SnackBar(content: Text(msg)));
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
           },
           child: Text(
             '${v.verse} ',
@@ -155,7 +153,9 @@ class _HomePageState extends State<HomePage> {
 
       // Prepare original text and extract notes
       final original = v.text.replaceAll('\n', '');
-      // Remove note tags from display
+      // Remove note tags from display, but collect them first
+      final noteMatches = notePattern.allMatches(original).toList();
+      int noteIndex = 0;
       final raw = original.replaceAll(notePattern, '').trim();
       // Split on curly annotations, preserving them for badge rendering
       final parts = raw
@@ -169,9 +169,10 @@ class _HomePageState extends State<HomePage> {
       for (var part in parts) {
         if (bracePattern.hasMatch(part)) {
           final annotation = bracePattern.firstMatch(part)!.group(1)!;
-          // Retrieve the first note from the original full text
-          final noteMatch = notePattern.firstMatch(original);
-          final noteText = noteMatch != null ? noteMatch.group(1)! : '';
+          // Retrieve the corresponding note (each brace maps to the next note in order)
+          final noteText = noteIndex < noteMatches.length
+              ? noteMatches[noteIndex++].group(1) ?? ''
+              : '';
 
           spans.add(WidgetSpan(
             alignment: PlaceholderAlignment.middle,
@@ -507,9 +508,7 @@ class _HomePageState extends State<HomePage> {
                                         _buildVerseSpans(verses, context)),
                               ),
                             )
-                          : Scrollbar(
-                              controller: _fakeScrollController,
-                              child: ScrollablePositionedList.builder(
+                          : ScrollablePositionedList.builder(
                                 itemCount: verses.length + 1,
                                 itemBuilder: (context, index) {
                                   if (index < verses.length) {
@@ -529,22 +528,21 @@ class _HomePageState extends State<HomePage> {
                                 scrollOffsetListener:
                                     mainProvider.scrollOffsetListener,
                               ),
-                            ),
                     ),
                   ],
                 ),
                 floatingActionButton: isSelected
                     ? FloatingActionButton(
                         onPressed: () async {
-                          final messenger = ScaffoldMessenger.of(context);
-                          final scheme = Theme.of(context).colorScheme;
-                          final copiedLabel =
-                              uiStrings['copied']?[settings.locale] ?? 'Copied!';
                           final text = formattedSelectedVerses(
                               verses: mainProvider.selectedVerses);
                           await ClipboardHelper.copyText(text);
                           mainProvider.clearSelectedVerses();
-                          messenger.showSnackBar(
+                          if (!context.mounted) return;
+                          final scheme = Theme.of(context).colorScheme;
+                          final copiedLabel =
+                              uiStrings['copied']?[settings.locale] ?? 'Copied!';
+                          ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                               content: Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
@@ -638,11 +636,9 @@ class _HomePageState extends State<HomePage> {
         .where((v) => v.book == book && v.chapter == chap)
         .toList();
 
-    if (matched.isEmpty && provider.verses.isEmpty) return;
-    final first = matched.isNotEmpty ? matched.first : provider.verses.first;
+    if (matched.isEmpty) return;
     provider.setCurrentChapter(book: book, chapter: chap);
-    provider.updateCurrentVerse(verse: first);
-
+    provider.updateCurrentVerse(verse: matched.first);
     provider.jumpToIndex(index: 0);
   }
 }

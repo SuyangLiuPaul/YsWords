@@ -173,8 +173,8 @@ class FetchBooks {
     final bookTitles =
         standardBookOrder.where((b) => foundBookTitles.contains(b)).toList();
 
-    // Reset books before rebuilding so we don't accumulate across version switches
-    mainProvider.setBooks([]);
+    // Build complete book list first, then set once to avoid N+1 rebuilds
+    final builtBooks = <Book>[];
 
     for (final bookTitle in bookTitles) {
       final availableVerses = verses
@@ -199,8 +199,9 @@ class FetchBooks {
 
       // Use the localized book name from the first verse for display
       final localizedBookName = availableVerses.first.book;
-      mainProvider
-          .addBook(book: Book(title: localizedBookName, chapters: chapters));
+      builtBooks.add(Book(title: localizedBookName, chapters: chapters));
     }
+
+    mainProvider.setBooks(builtBooks);
   }
 }

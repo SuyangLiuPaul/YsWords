@@ -38,6 +38,16 @@ class _SearchPageState extends State<SearchPage> {
 
   // Method to perform the search
   Future<void> search() async {
+    final query = _textEditingController.text.trim();
+    if (query.isEmpty) {
+      setState(() {
+        _results.clear();
+        bookCounts.clear();
+        searchPerformed = true;
+      });
+      return;
+    }
+
     setState(() {
       _results.clear();
       bookCounts.clear();

@@ -281,14 +281,13 @@ class _BooksPageState extends State<BooksPage> {
                                           borderRadius:
                                               BorderRadius.circular(7.5),
                                           onTap: () {
-                                            if (mainProvider.verses.isEmpty) return;
-                                            final firstVerseOfChapter =
-                                                mainProvider.verses.firstWhere(
-                                              (v) =>
-                                                  v.book == book.title &&
-                                                  v.chapter == chapter.title,
-                                              orElse: () => mainProvider.verses.first,
-                                            );
+                                            final matched = mainProvider.verses
+                                                .where((v) =>
+                                                    v.book == book.title &&
+                                                    v.chapter == chapter.title)
+                                                .toList();
+                                            if (matched.isEmpty) return;
+                                            final firstVerseOfChapter = matched.first;
                                             mainProvider.setCurrentChapter(
                                               book: book.title,
                                               chapter: chapter.title,

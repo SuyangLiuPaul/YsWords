@@ -145,13 +145,8 @@ class _MainAppState extends State<MainApp> {
               ),
               hintStyle: TextStyle(color: Color(0xFFAAAAAA)),
             ),
-            colorScheme: const ColorScheme.dark(
-              surface: Color(0xFF1A1A1A),
-              primary: Color(0xFFCCCCCC),
-              onPrimary: Colors.black,
-              onSurface: Color(0xFFCCCCCC),
-            ),
-            scaffoldBackgroundColor: Color(0xFF121212),
+            colorSchemeSeed: settings.primaryColor,
+            brightness: Brightness.dark,
             cardTheme: CardThemeData(
               color: Color(0xFF1F1F1F),
               elevation: 2,

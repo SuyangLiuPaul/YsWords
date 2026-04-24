@@ -14,7 +14,7 @@ Text formatSearchText({
   List<TextSpan> textSpans = [];
 
   // Create a regular expression to find all matches of the search text
-  RegExp regExp = RegExp(text, caseSensitive: false);
+  RegExp regExp = RegExp(RegExp.escape(text), caseSensitive: false);
 
   // Find all matches in the input string
   Iterable<Match> matches = regExp.allMatches(input);
