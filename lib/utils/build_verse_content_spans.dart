@@ -30,9 +30,6 @@ List<InlineSpan> buildVerseContentSpans({
       )
       .split('||');
   final spans = <InlineSpan>[];
-  final skipNoteIcons =
-      bracePattern.hasMatch(original) && notePattern.hasMatch(original);
-
   // Verse number span
   final verseNumFontSize =
       superscriptVerseNum ? settings.fontSize * 0.7 : settings.fontSize;
@@ -248,10 +245,6 @@ List<InlineSpan> buildVerseContentSpans({
         !(part.trim().startsWith('<note:') &&
             part.trim().endsWith('>') &&
             (lastPart?.trim().endsWith('}') ?? false))) {
-      if (skipNoteIcons) {
-        lastPart = part;
-        continue;
-      }
       final note = notePattern.firstMatch(part)!.group(1)!;
       spans.add(WidgetSpan(
         alignment: PlaceholderAlignment.bottom,

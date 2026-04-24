@@ -504,10 +504,12 @@ class _HomePageState extends State<HomePage> {
     if (chapIdx < chapters.length - 1) {
       nextBook = currentBook;
       nextChap = chapters[chapIdx + 1].title;
-    } else {
-      final nextBookIdx = (bookIdx + 1) % books.length;
+    } else if (bookIdx < books.length - 1) {
+      final nextBookIdx = bookIdx + 1;
       nextBook = books[nextBookIdx].title;
       nextChap = books[nextBookIdx].chapters.first.title;
+    } else {
+      return;
     }
 
     _switchTo(provider, nextBook, nextChap);
@@ -530,10 +532,12 @@ class _HomePageState extends State<HomePage> {
     if (chapIdx > 0) {
       prevBook = currentBook;
       prevChap = chapters[chapIdx - 1].title;
-    } else {
-      final prevBookIdx = (bookIdx - 1 + books.length) % books.length;
+    } else if (bookIdx > 0) {
+      final prevBookIdx = bookIdx - 1;
       prevBook = books[prevBookIdx].title;
       prevChap = books[prevBookIdx].chapters.last.title;
+    } else {
+      return;
     }
 
     _switchTo(provider, prevBook, prevChap);
