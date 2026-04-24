@@ -554,7 +554,7 @@ class _ReaderStatusBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final settings = context.watch<AppSettings>();
     final scheme = Theme.of(context).colorScheme;
-    final detailFontSize = settings.fontSize.clamp(11.0, 13.0).toDouble();
+    final detailFontSize = settings.fontSize.clamp(10.0, 16.0).toDouble();
     final modeLabel = paragraphMode
         ? (uiStrings['paragraphFlow']?[settings.locale] ?? 'Paragraph Flow')
         : (uiStrings['verseByVerse']?[settings.locale] ?? 'Verse by Verse');
@@ -725,7 +725,7 @@ class _SelectionActionBar extends StatelessWidget {
     final label =
         (uiStrings['selectedVerses']?[settings.locale] ?? '{count} selected')
             .replaceAll('{count}', '$selectedCount');
-    final fontSize = settings.fontSize.clamp(13.0, 16.0).toDouble();
+    final fontSize = settings.fontSize.clamp(11.0, 18.0).toDouble();
 
     return SafeArea(
       top: false,
@@ -820,8 +820,8 @@ class _FloatingHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final settings = context.watch<AppSettings>();
     final scheme = Theme.of(context).colorScheme;
-    final fontSize = settings.fontSize.clamp(14.0, 17.0).toDouble();
-    final iconSize = settings.fontSize.clamp(18.0, 26.0).toDouble();
+    final fontSize = settings.fontSize.clamp(12.0, 19.0).toDouble();
+    final iconSize = settings.fontSize.clamp(16.0, 28.0).toDouble();
     final iconPad = (iconSize * 0.45).clamp(6.0, 10.0);
 
     return Positioned(
