@@ -101,11 +101,19 @@ class MainProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  // Verse-to-item index map for paragraph mode grouping
+  Map<int, int> _verseToItemMap = {};
+
+  void setVerseToItemMap(Map<int, int> map) {
+    _verseToItemMap = map;
+  }
+
   // Method to scroll to a specific index in the list and notify listeners
   void scrollToIndex({required int index}) {
+    final mapped = _verseToItemMap[index] ?? index;
     if (itemScrollController.isAttached) {
       itemScrollController.scrollTo(
-        index: index,
+        index: mapped,
         duration: const Duration(milliseconds: 800),
       );
     }
@@ -113,8 +121,9 @@ class MainProvider extends ChangeNotifier {
   }
 
   void jumpToIndex({required int index}) {
+    final mapped = _verseToItemMap[index] ?? index;
     if (itemScrollController.isAttached) {
-      itemScrollController.jumpTo(index: index);
+      itemScrollController.jumpTo(index: mapped);
     }
   }
 

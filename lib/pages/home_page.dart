@@ -19,6 +19,7 @@ import 'package:yswords/utils/clipboard_helper.dart';
 import 'package:yswords/utils/version_mapper.dart'
     show translateBookName, toEnglish;
 import 'package:yswords/widgets/verse_widget.dart';
+import 'package:yswords/widgets/paragraph_group_widget.dart';
 
 class CustomFloatingActionButtonLocation extends FloatingActionButtonLocation {
   final double xOffset;
@@ -143,7 +144,24 @@ class _HomePageState extends State<HomePage> {
         final hasParagraphData =
             verses.any((v) => v.isParagraphStart == true);
 
-        // (groupVersesIntoParagraphs local function removed)
+        // Group verses into paragraphs when paragraph mode is on and data exists
+        List<List<Verse>> paragraphGroups;
+        if (settings.paragraphMode && hasParagraphData) {
+          paragraphGroups = _groupIntoParagraphs(verses);
+        } else {
+          paragraphGroups = verses.map((v) => [v]).toList();
+        }
+
+        // Build verse-to-item index map for scroll/jump
+        final verseToItemMap = <int, int>{};
+        int vIdx = 0;
+        for (int g = 0; g < paragraphGroups.length; g++) {
+          for (int v = 0; v < paragraphGroups[g].length; v++) {
+            verseToItemMap[vIdx] = g;
+            vIdx++;
+          }
+        }
+        mainProvider.setVerseToItemMap(verseToItemMap);
 
         // final paragraphs = _groupVersesIntoParagraphs(verses);
         final currentVerse = mainProvider.currentVerse ??
@@ -383,13 +401,27 @@ class _HomePageState extends State<HomePage> {
                     Padding(
                       padding: const EdgeInsets.only(right: 8.0),
                       child: ScrollablePositionedList.builder(
-                          itemCount: verses.length + 1,
+                          itemCount: paragraphGroups.length + 1,
                           itemBuilder: (context, index) {
-                            if (index < verses.length) {
-                              return VerseWidget(
-                                verse: verses[index],
-                                index: index,
-                                hasParagraphData: hasParagraphData,
+                            if (index < paragraphGroups.length) {
+                              final group = paragraphGroups[index];
+                              // Compute startVerseIndex for this group
+                              int startIdx = 0;
+                              for (int g = 0; g < index; g++) {
+                                startIdx += paragraphGroups[g].length;
+                              }
+                              if (group.length == 1) {
+                                // Single verse: use VerseWidget
+                                return VerseWidget(
+                                  verse: group.first,
+                                  index: startIdx,
+                                  hasParagraphData: hasParagraphData,
+                                );
+                              }
+                              // Multi-verse group: use ParagraphGroupWidget
+                              return ParagraphGroupWidget(
+                                group: group,
+                                startVerseIndex: startIdx,
                               );
                             }
                             return const SizedBox(height: 120);
@@ -516,6 +548,26 @@ class _HomePageState extends State<HomePage> {
     provider.setCurrentChapter(book: book, chapter: chap);
     provider.updateCurrentVerse(verse: matched.first);
     provider.jumpToIndex(index: 0);
+  }
+
+  /// Groups consecutive inline verses into paragraph blocks.
+  /// Paragraph-start verses begin a new group; reference verses get their own group.
+  static List<List<Verse>> _groupIntoParagraphs(List<Verse> verses) {
+    if (verses.isEmpty) return [];
+    final groups = <List<Verse>>[];
+    List<Verse> currentGroup = [];
+
+    for (final verse in verses) {
+      final startsNew =
+          verse.isParagraphStart || verse.paragraphType == 'reference';
+      if (startsNew && currentGroup.isNotEmpty) {
+        groups.add(currentGroup);
+        currentGroup = [];
+      }
+      currentGroup.add(verse);
+    }
+    if (currentGroup.isNotEmpty) groups.add(currentGroup);
+    return groups;
   }
 }
 
