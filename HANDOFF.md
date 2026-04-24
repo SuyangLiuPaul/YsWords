@@ -49,7 +49,7 @@ main.dart (entry point)
 ### Models
 | File | Purpose |
 |---|---|
-| `lib/models/verse.dart` | Immutable Verse with `fromJson` factory. ID format: `"$book-$chapter-$verse"` |
+| `lib/models/verse.dart` | Immutable Verse with `fromJson` factory. Fields: `book`, `chapter`, `verse`, `verseLabel`, `text`, `id`, `paragraphType`, `isParagraphStart` |
 | `lib/models/book.dart` | Book with title + chapters list |
 | `lib/models/chapter.dart` | Chapter with title (int) + verses list |
 
@@ -58,13 +58,11 @@ main.dart (entry point)
 |---|---|
 | `lib/services/fetch_verses.dart` | Loads + parses verse JSON. Handles two formats: flat array and `{passages: {...}}` map |
 | `lib/services/fetch_books.dart` | Builds Book/Chapter tree from flat verse list. Contains `standardBookOrder` (66 books) and `bookNameToEnglish` (EN/ZH-CN/ZH-TW mappings) |
-| `lib/services/read_last_index.dart` | Reads last scroll position from SharedPreferences |
-| `lib/services/save_current_index.dart` | Saves scroll position + version to SharedPreferences |
 
 ### Pages
 | File | Purpose |
 |---|---|
-| `lib/pages/home_page.dart` | Main reading view. ScrollablePositionedList of VerseWidgets with `hasParagraphData` flag. Swipe gestures for chapter nav. Copy FAB. ~520 lines |
+| `lib/pages/home_page.dart` | Main reading view. ScrollablePositionedList with paragraph group items. Swipe gestures for chapter nav. Copy FAB. ~594 lines |
 | `lib/pages/books_page.dart` | OT/NT tabs, ExpansionTile per book, chapter grid. AutoScrollController to jump to current book |
 | `lib/pages/search_page.dart` | Full-text search with book filter. Results sorted canonically. Tap to jump+highlight |
 | `lib/pages/settings_page.dart` | Settings UI: font size/spacing/family, copy format, theme, color palette, reading mode (verse-by-verse / paragraph flow), language |
@@ -84,6 +82,7 @@ main.dart (entry point)
 | `lib/constants/ui_strings.dart` | Trilingual string table accessed via `uiStrings['key']?[locale]` |
 | `lib/constants/book_groups.dart` | OT/NT book name sets (EN + ZH-CN + ZH-TW) |
 | `lib/constants/book_name_mapping.dart` | EN↔ZH name maps, `zhToEn()`, `toLocale()` helpers |
+| `lib/constants/bible_versions.dart` | Bible version definitions with `menuLabel`, `value` properties. `shortBibleVersionLabel()` helper |
 
 ### Utils
 | File | Purpose |
@@ -181,7 +180,6 @@ The `netlify` CLI binary is at `/Users/pliu0036/Documents/CodingProject/SmartHom
 | `scrollable_positioned_list` | ^0.3.8 | Precise verse scroll/jump-to-index |
 | `scroll_to_index` | ^3.0.1 | Auto-scroll in BooksPage |
 | `shared_preferences` | ^2.5.3 | Persist settings and last-read position |
-| `clipboard` | ^0.1.3 | System clipboard copy |
 | `cupertino_icons` | ^1.0.2 | iOS-style icons |
 
 No unused dependencies remain. Seven were removed in the last cleanup: `expandable`, `google_fonts`, `fluttertoast`, `draggable_scrollbar`, `url_launcher`, `intl`, `universal_html`.
@@ -262,12 +260,7 @@ When verse loading fails, the user sees nothing — no error message, no retry b
 - The `Microsoft Yahei.ttf` font is 21.8 MB — large for web initial load
 
 ### README Inaccuracies
-The README contains several references to features that don't exist:
-- Testing section references non-existent `test/` directory
-- CI/CD section references non-existent `.github/workflows/build.yml`
-- Dependencies table still lists `intl` (removed)
-- Deploy flow section incorrectly says GitHub webhook triggers Netlify auto-deploy
-- Linting section references non-existent `.githooks/pre-commit`
+The README was rewritten on 2026-04-24 to remove references to non-existent features (testing, CI/CD, offline mode, data pipeline).
 
 ---
 
