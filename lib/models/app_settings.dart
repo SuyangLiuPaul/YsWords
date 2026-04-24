@@ -107,15 +107,19 @@ class AppSettings extends ChangeNotifier {
   Future<void> loadSettings() async {
     final prefs = await SharedPreferences.getInstance();
     _fontFamily = prefs.getString(_kFontFamily) ?? 'Roboto';
-    _fontSize = prefs.getDouble(_kFontSize) ?? 20.0;
-    _lineSpacing = prefs.getDouble(_kLineSpacing) ?? 1.5;
+    // Round to nearest step to avoid Slider assertion with stale values
+    final rawFontSize = prefs.getDouble(_kFontSize) ?? 20.0;
+    _fontSize = (rawFontSize - 12).roundToDouble() + 12;
+    final rawLineSpacing = prefs.getDouble(_kLineSpacing) ?? 1.5;
+    _lineSpacing = (rawLineSpacing * 10).roundToDouble() / 10;
     _primaryColor =
         Color(prefs.getInt(_kPrimaryColor) ?? Colors.lightBlue.toARGB32());
     _copyFormat = prefs.getString(_kCopyFormat) ?? 'withRef';
     _locale = prefs.getString(_kLocale) ?? _detectSystemLocale();
     _themeMode = _parseThemeMode(prefs.getString(_kThemeMode));
     _paragraphMode = prefs.getBool(_kParagraphMode) ?? false;
-    _menuScale = prefs.getDouble(_kMenuScale) ?? 1.0;
+    final rawMenuScale = prefs.getDouble(_kMenuScale) ?? 1.0;
+    _menuScale = (rawMenuScale * 10).roundToDouble() / 10;
     notifyListeners();
   }
 

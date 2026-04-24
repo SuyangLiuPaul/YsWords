@@ -136,7 +136,9 @@ class _SearchPageState extends State<SearchPage> {
                 });
               }
               await search();
-              _scrollController.jumpTo(0.0);
+              if (_scrollController.hasClients) {
+                _scrollController.jumpTo(0.0);
+              }
             },
             textInputAction: TextInputAction.search,
           ),
@@ -158,7 +160,9 @@ class _SearchPageState extends State<SearchPage> {
                 });
                 // Immediately perform search and scroll to top
                 await search();
-                _scrollController.jumpTo(0.0);
+                if (_scrollController.hasClients) {
+                  _scrollController.jumpTo(0.0);
+                }
               },
               itemBuilder: (_) {
                 // base scope items
@@ -313,7 +317,7 @@ class _SearchPageState extends State<SearchPage> {
                                   book: verse.book, chapter: verse.chapter);
                               mainProv.updateCurrentVerse(verse: verse);
                               Get.back();
-                              Future.delayed(const Duration(milliseconds: 1),
+                              Future.delayed(const Duration(milliseconds: 300),
                                   () {
                                 final chapterVerses = mainProv.verses
                                     .where((v) =>
@@ -329,7 +333,9 @@ class _SearchPageState extends State<SearchPage> {
                                 mainProv.setHighlightIndex(relIdx);
                                 Future.delayed(
                                     const Duration(milliseconds: 800), () {
-                                  mainProv.clearHighlightIndex();
+                                  if (mounted) {
+                                    mainProv.clearHighlightIndex();
+                                  }
                                 });
                               });
                             },

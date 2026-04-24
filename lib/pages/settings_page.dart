@@ -79,7 +79,7 @@ class SettingsPage extends StatelessWidget {
             ..sort((a, b) => a.verse.compareTo(b.verse));
           final verseSamples = versesInChapter
               .take(3)
-              .map((v) => {'verse': v.verseLabel, 'text': v.text})
+              .map((v) => {'verse': v.verse, 'verseLabel': v.verseLabel, 'text': v.text})
               .toList();
 
           return ListView(
@@ -285,8 +285,9 @@ class SettingsPage extends StatelessWidget {
                         )
                       else
                         ...verseSamples.map((v) {
+                          final label = v['verseLabel'] as String;
                           final ref =
-                              '${currentBook ?? ''} $currentChapter:${v['verse']}';
+                              '${currentBook ?? ''} $currentChapter:$label';
                           String formattedText;
                           switch (settings.copyFormat) {
                             case 'withRef':
@@ -294,7 +295,7 @@ class SettingsPage extends StatelessWidget {
                               break;
                             case 'plain':
                             default:
-                              formattedText = '${v['verse']} ${v['text']}';
+                              formattedText = '$label ${v['text']}';
                           }
                           final cleanedText = formattedText
                               .replaceAll(RegExp(r'<[^>]*>'), '')
@@ -317,7 +318,7 @@ class SettingsPage extends StatelessWidget {
                                 children: [
                                   if (settings.copyFormat == 'plain') ...[
                                     TextSpan(
-                                      text: '${v['verse']} ',
+                                      text: '$label ',
                                       style: TextStyle(
                                         fontWeight: FontWeight.bold,
                                         color: Theme.of(context)
