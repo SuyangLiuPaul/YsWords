@@ -553,7 +553,6 @@ class _ReaderStatusBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final settings = context.watch<AppSettings>();
     final scheme = Theme.of(context).colorScheme;
-    final statusFontSize = settings.fontSize.clamp(13.0, 16.0).toDouble();
     final detailFontSize = settings.fontSize.clamp(11.0, 13.0).toDouble();
     final modeLabel = paragraphMode
         ? (uiStrings['paragraphFlow']?[settings.locale] ?? 'Paragraph Flow')
@@ -562,9 +561,6 @@ class _ReaderStatusBar extends StatelessWidget {
             'Verse {current} of {total}')
         .replaceAll('{current}', verseCount == 0 ? '0' : '${verseIndex + 1}')
         .replaceAll('{total}', '$verseCount');
-    final title = verse == null
-        ? (uiStrings['bible']?[settings.locale] ?? 'Bible')
-        : '${verse!.book} ${verse!.chapter}:${verse!.verseLabel}';
     final detail = '$versionLabel | $modeLabel | $versePosition';
 
     return SafeArea(
@@ -605,38 +601,18 @@ class _ReaderStatusBar extends StatelessWidget {
                     icon: const Icon(Icons.chevron_left_rounded),
                   ),
                   Expanded(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Text(
-                          title,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontFamily: settings.fontFamily,
-                            fontSize: statusFontSize,
-                            fontWeight: FontWeight.w700,
-                            color: scheme.onSurface,
-                            height: 1.15,
-                          ),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          detail,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontFamily: settings.fontFamily,
-                            fontSize: detailFontSize,
-                            fontWeight: FontWeight.w500,
-                            color: scheme.onSurfaceVariant,
-                            height: 1.15,
-                          ),
-                        ),
-                      ],
+                    child: Text(
+                      detail,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontFamily: settings.fontFamily,
+                        fontSize: detailFontSize,
+                        fontWeight: FontWeight.w500,
+                        color: scheme.onSurfaceVariant,
+                        height: 1.15,
+                      ),
                     ),
                   ),
                   IconButton(
