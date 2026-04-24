@@ -116,6 +116,11 @@ const uiStrings = {
     'zh-Hant': '高亮顏色',
     'en': 'Highlight color',
   },
+  'menuScale': {
+    'zh-Hans': '菜单大小',
+    'zh-Hant': '選單大小',
+    'en': 'Menu Size',
+  },
 
   // ====== Settings Page ======
   'themeMode': {

@@ -9,6 +9,7 @@ const _kCopyFormat = 'copyFormat';
 const _kLocale = 'locale';
 const _kThemeMode = 'themeMode';
 const _kParagraphMode = 'paragraphMode';
+const _kMenuScale = 'menuScale';
 
 class AppSettings extends ChangeNotifier {
   String _fontFamily = 'Roboto';
@@ -19,6 +20,7 @@ class AppSettings extends ChangeNotifier {
   String _locale = 'zh-Hans';
   ThemeMode _themeMode = ThemeMode.system;
   bool _paragraphMode = false;
+  double _menuScale = 1.0;
 
   String get fontFamily => _fontFamily;
   double get fontSize => _fontSize;
@@ -28,6 +30,7 @@ class AppSettings extends ChangeNotifier {
   String get locale => _locale;
   ThemeMode get themeMode => _themeMode;
   bool get paragraphMode => _paragraphMode;
+  double get menuScale => _menuScale;
 
   Future<void> setFontFamily(String family) async {
     if (_fontFamily == family) return;
@@ -93,6 +96,14 @@ class AppSettings extends ChangeNotifier {
     await prefs.setBool(_kParagraphMode, enabled);
   }
 
+  Future<void> setMenuScale(double scale) async {
+    if (_menuScale == scale) return;
+    _menuScale = scale;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setDouble(_kMenuScale, scale);
+  }
+
   Future<void> loadSettings() async {
     final prefs = await SharedPreferences.getInstance();
     _fontFamily = prefs.getString(_kFontFamily) ?? 'Roboto';
@@ -104,6 +115,7 @@ class AppSettings extends ChangeNotifier {
     _locale = prefs.getString(_kLocale) ?? _detectSystemLocale();
     _themeMode = _parseThemeMode(prefs.getString(_kThemeMode));
     _paragraphMode = prefs.getBool(_kParagraphMode) ?? false;
+    _menuScale = prefs.getDouble(_kMenuScale) ?? 1.0;
     notifyListeners();
   }
 

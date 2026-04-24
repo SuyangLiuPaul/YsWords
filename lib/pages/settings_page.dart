@@ -121,6 +121,34 @@ class SettingsPage extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
+                        uiStrings['menuScale']?[settings.locale] ?? 'Menu Size',
+                        style: TextStyle(
+                          fontFamily: settings.fontFamily,
+                          fontSize: settings.fontSize + 2,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      Slider(
+                        value: settings.menuScale,
+                        min: 0.7,
+                        max: 1.5,
+                        divisions: 8,
+                        label: '${settings.menuScale.toStringAsFixed(1)}x',
+                        onChanged: (val) => settings.setMenuScale(val),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Card(
+                child: Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
                         uiStrings['lineSpacing']?[settings.locale] ??
                             'Line Spacing',
                         style: TextStyle(
