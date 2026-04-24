@@ -10,9 +10,9 @@
 
 ## What Is This Project
 
-YsWords is a Flutter Bible reader app supporting 6 Bible translations across English, Simplified Chinese, and Traditional Chinese. It runs on Web, Android, iOS, macOS, Windows, and Linux. The web build is deployed to Netlify.
+YsWords is a Flutter Bible reader app supporting 8 Bible translations across English, Simplified Chinese, and Traditional Chinese. It runs on Web, Android, iOS, macOS, Windows, and Linux. The web build is deployed to Netlify.
 
-The app's core loop: load a JSON file from bundled assets → parse into Verse objects → organize into Book/Chapter tree → display in a scrollable list with inline annotations ({...} badges, [...] dotted underlines, <note:...> popups).
+The app's core loop: load a JSON file from bundled assets → parse into Verse objects → organize into Book/Chapter tree → display in a scrollable list with inline annotations ({...} badges, [...] dotted underlines, <note:...> popups). Users can toggle between Verse-by-Verse (default) and Paragraph Flow (flowing layout with hanging indent, superscript verse numbers, and indented reference blocks).
 
 ---
 
@@ -44,7 +44,7 @@ main.dart (entry point)
 |---|---|
 | `lib/main.dart` | App bootstrap. MultiProvider setup, loading screen with 8s timeout, initial data load sequence |
 | `lib/providers/main_provider.dart` | Central state: verses, books, current book/chapter/version, selection, scroll controllers, state persistence |
-| `lib/models/app_settings.dart` | All user preferences persisted via SharedPreferences (font, theme, locale, copy format, offline mode) |
+| `lib/models/app_settings.dart` | All user preferences persisted via SharedPreferences (font, theme, locale, copy format, paragraph mode) |
 
 ### Models
 | File | Purpose |
@@ -64,16 +64,16 @@ main.dart (entry point)
 ### Pages
 | File | Purpose |
 |---|---|
-| `lib/pages/home_page.dart` | Main reading view. ScrollablePositionedList of VerseWidgets. Swipe gestures for chapter nav. Copy FAB. 725 lines |
+| `lib/pages/home_page.dart` | Main reading view. ScrollablePositionedList of VerseWidgets with `hasParagraphData` flag. Swipe gestures for chapter nav. Copy FAB. ~520 lines |
 | `lib/pages/books_page.dart` | OT/NT tabs, ExpansionTile per book, chapter grid. AutoScrollController to jump to current book |
 | `lib/pages/search_page.dart` | Full-text search with book filter. Results sorted canonically. Tap to jump+highlight |
-| `lib/pages/settings_page.dart` | Settings UI: font size/spacing/family, copy format, theme, color palette, language, offline mode |
+| `lib/pages/settings_page.dart` | Settings UI: font size/spacing/family, copy format, theme, color palette, reading mode (verse-by-verse / paragraph flow), language |
 | `lib/pages/loading_page.dart` | 3-second splash with random verse display and app branding |
 
 ### Widgets
 | File | Purpose |
 |---|---|
-| `lib/widgets/verse_widget.dart` | Renders single verse. Complex annotation parsing ({...} badges, [...] underlines, <note:...> dialogs). Tap to select, tap number to copy. 352 lines |
+| `lib/widgets/verse_widget.dart` | Renders single verse. In paragraph mode: superscript verse numbers, hanging indent, paragraph-start spacers, reference-block indent. Complex annotation parsing ({...} badges, [...] underlines, <note:...> dialogs). Tap to select, tap number to copy. Accepts `hasParagraphData` param — when false, every verse is treated as paragraph-start in paragraph mode |
 | `lib/widgets/localized_back_button.dart` | Back button with localized tooltip |
 
 ### Constants
@@ -95,20 +95,39 @@ main.dart (entry point)
 
 ## Bible Versions
 
-| Key | Name | Language | Filename |
-|---|---|---|---|
-| `kjv` | King James Version | English | `assets/kjv.json` |
-| `leb` | Lexham English Bible | English | `assets/leb.json` |
-| `cuvs-yhwh` | 和合本雅伟版 (简) | Simplified Chinese | `assets/cuvs-yhwh.json` |
-| `cuvs-yhwh-tr` | 和合本雅伟版 (繁) | Traditional Chinese | `assets/cuvs-yhwh-tr.json` |
-| `biblexg` | 原文释经圣经 (简) | Simplified Chinese | `assets/biblexg.json` |
-| `biblexg-tr` | 原文释经圣经 (繁) | Traditional Chinese | `assets/biblexg-tr.json` |
+| Key | Name | Language | Filename | Paragraph Data |
+|---|---|---|---|---|
+| `kjv` | King James Version | English | `assets/kjv.json` | No |
+| `leb` | Lexham English Bible | English | `assets/leb.json` | No |
+| `cuvs-yhwh` | 和合本雅伟版 (简) | Simplified Chinese | `assets/cuvs-yhwh.json` | No |
+| `cuvs-yhwh-tr` | 和合本雅伟版 (繁) | Traditional Chinese | `assets/cuvs-yhwh-tr.json` | No |
+| `biblexg` | 原文释经圣经 (简) | Simplified Chinese | `assets/biblexg.json` | No |
+| `biblexg-tr` | 原文释经圣经 (繁) | Traditional Chinese | `assets/biblexg-tr.json` | No |
+| `biblexg-v2` | 原文释经圣经第二版 (简) | Simplified Chinese | `assets/biblexg-v2.json` | Yes (NT only) |
+| `biblexg-v2-tr` | 原文释经圣经第二版 (繁) | Traditional Chinese | `assets/biblexg-v2-tr.json` | Yes (NT only) |
 
 Default version on first launch: `cuvs-yhwh`. All JSON files are bundled in the app (no runtime download).
 
 ---
 
 ## Text Markup in Verse Data
+
+### Paragraph Mode
+
+The app supports two reading modes (toggled in Settings):
+
+**Verse by Verse (default)**: Each verse rendered as a standalone block with standard padding.
+
+**Paragraph Flow**: Verses flow together into paragraphs based on `isParagraphStart` / `paragraphType` fields in the Verse model:
+- Paragraph-start verses: `SizedBox(fontSize * 0.8)` spacer above, `fontSize * 2` left indent (hanging indent)
+- Inline continuation verses: no spacer, 16px left padding
+- Reference verses (`paragraphType == 'reference'`): `fontSize * 3` left indent, italic text
+- Verse numbers: superscript style (fontSize * 0.7, bold) in paragraph mode
+- **Fallback**: Versions without paragraph data (any verse where `isParagraphStart` is false for all verses) treat every verse as paragraph-start in paragraph mode
+
+Only `biblexg-v2.json` / `biblexg-v2-tr.json` have paragraph metadata. Other 6 versions fall back gracefully.
+
+**Implementation**: Always uses `ScrollablePositionedList` (1 VerseWidget per verse). The `hasParagraphData` bool is computed in `home_page.dart` and passed to each `VerseWidget`. Paragraph mode changes visual rendering only — no index mapping, no structural changes.
 
 Verse `text` fields contain inline markup rendered by `VerseWidget`:
 
@@ -210,10 +229,10 @@ Contains ~178 font files not used in production (commented out in `web/index.htm
 ### `lib_source_dump.txt`
 A 187 KB concatenated dump of all Dart source from `scan_folder.py`. Development artifact that could be deleted.
 
-### HomePage is 725 Lines
-The main reading page handles too many concerns: verse display, swipe gestures, copy logic, version switching, chapter navigation, note dialogs. Consider extracting copy formatting, chapter navigation, and annotation rendering into separate classes/widgets.
+### HomePage is ~520 Lines
+The main reading page handles too many concerns: verse display, swipe gestures, copy logic, version switching, chapter navigation. Consider extracting copy formatting and chapter navigation into separate classes/widgets.
 
-### VerseWidget is 352 Lines
+### VerseWidget is ~370 Lines
 Complex annotation parsing and rendering could be extracted into a dedicated `AnnotationParser` class.
 
 ### Search is Linear
@@ -261,7 +280,7 @@ The README contains several references to features that don't exist:
 /Users/pliu0036/flutter/bin/flutter build web
 
 # Deploy to Netlify
-source /Users/pliu0036/Documents/CodingProject/SmartHome/.env
+source /Users/pliu0036/Documents/yswords/.env
 /Users/pliu0036/Documents/CodingProject/SmartHome/node_modules/.bin/netlify deploy --prod --dir=build/web --auth $NETLIFY_AUTH_TOKEN --site $NETLIFY_SITE_ID
 
 # Push to GitHub
