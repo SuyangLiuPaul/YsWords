@@ -273,10 +273,7 @@ class _HomePageState extends State<HomePage> {
                     children: [
                     Padding(
                       padding: EdgeInsets.only(
-                        right: ResponsiveBreakpoints.readingPadding(
-                          ResponsiveBreakpoints.classOf(
-                              MediaQuery.of(context).size.width),
-                        ),
+                        right: ResponsiveBreakpoints.readingPadding(dc),
                       ),
                       child: ScrollablePositionedList.builder(
                         // +1 for the chapter header (item 0)
@@ -344,6 +341,7 @@ class _HomePageState extends State<HomePage> {
                       paragraphMode: settings.paragraphMode,
                       onToggleParagraphMode: () =>
                           settings.setParagraphMode(!settings.paragraphMode),
+                      deviceClass: dc,
                       onBookTap: isWideScreen
                           ? () {
                               mainProvider.clearSelectedVerses();
@@ -422,6 +420,7 @@ class _HomePageState extends State<HomePage> {
                               selectedCount: mainProvider.selectedVerses.length,
                               anyHighlighted: mainProvider.selectedVerses.any(
                                   (v) => mainProvider.isVerseHighlighted(v)),
+                              deviceClass: dc,
                               onCopy: () => _copySelectedVerses(
                                 mainProvider: mainProvider,
                                 settings: settings,
@@ -455,6 +454,7 @@ class _HomePageState extends State<HomePage> {
                               onNext: _goToNextChapter,
                               onToggleParagraphMode: () =>
                                   settings.setParagraphMode(!settings.paragraphMode),
+                              deviceClass: dc,
                             ),
                     ),
                   ],
@@ -651,6 +651,7 @@ class _ReaderStatusBar extends StatelessWidget {
   final VoidCallback onPrevious;
   final VoidCallback onNext;
   final VoidCallback? onToggleParagraphMode;
+  final DeviceClass deviceClass;
 
   const _ReaderStatusBar({
     required this.verse,
@@ -664,6 +665,7 @@ class _ReaderStatusBar extends StatelessWidget {
     required this.onPrevious,
     required this.onNext,
     this.onToggleParagraphMode,
+    required this.deviceClass,
   });
 
   @override
@@ -679,9 +681,7 @@ class _ReaderStatusBar extends StatelessWidget {
             'Verse {current} of {total}')
         .replaceAll('{current}', verseCount == 0 ? '0' : '${verseIndex + 1}')
         .replaceAll('{total}', '$verseCount');
-    final dc = ResponsiveBreakpoints.classOf(
-        MediaQuery.of(context).size.width);
-    final inset = ResponsiveBreakpoints.headerInset(dc);
+    final inset = ResponsiveBreakpoints.headerInset(deviceClass);
 
     return SafeArea(
       top: false,
@@ -807,6 +807,7 @@ class _SelectionActionBar extends StatelessWidget {
   final VoidCallback onClear;
   final ValueChanged<int> onHighlight;
   final VoidCallback onRemoveHighlight;
+  final DeviceClass deviceClass;
 
   const _SelectionActionBar({
     required this.selectedCount,
@@ -815,6 +816,7 @@ class _SelectionActionBar extends StatelessWidget {
     required this.onClear,
     required this.onHighlight,
     required this.onRemoveHighlight,
+    required this.deviceClass,
   });
 
   static const _highlightColors = <int>[
@@ -894,9 +896,7 @@ class _SelectionActionBar extends StatelessWidget {
             .replaceAll('{count}', '$selectedCount');
     final fontSize =
         (settings.fontSize.clamp(11.0, 18.0) * settings.menuScale).toDouble();
-    final dc = ResponsiveBreakpoints.classOf(
-        MediaQuery.of(context).size.width);
-    final inset = ResponsiveBreakpoints.headerInset(dc);
+    final inset = ResponsiveBreakpoints.headerInset(deviceClass);
 
     return SafeArea(
       top: false,
@@ -969,6 +969,7 @@ class _FloatingHeader extends StatelessWidget {
   final VoidCallback? onToggleSidebar;
   final bool paragraphMode;
   final VoidCallback? onToggleParagraphMode;
+  final DeviceClass deviceClass;
 
   const _FloatingHeader({
     required this.showBookInfo,
@@ -984,6 +985,7 @@ class _FloatingHeader extends StatelessWidget {
     this.onToggleSidebar,
     this.paragraphMode = false,
     this.onToggleParagraphMode,
+    required this.deviceClass,
   });
 
   @override
@@ -996,9 +998,7 @@ class _FloatingHeader extends StatelessWidget {
         (settings.fontSize.clamp(16.0, 28.0) * settings.menuScale).toDouble();
     final iconPad = (iconSize * 0.45).clamp(6.0, 10.0);
 
-    final dc = ResponsiveBreakpoints.classOf(
-        MediaQuery.of(context).size.width);
-    final inset = ResponsiveBreakpoints.headerInset(dc);
+    final inset = ResponsiveBreakpoints.headerInset(deviceClass);
 
     return Positioned(
       top: 0,

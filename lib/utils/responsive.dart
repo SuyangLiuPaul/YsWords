@@ -13,20 +13,14 @@ class ResponsiveBreakpoints {
   static bool isTabletOrWider(double w) => w >= 600;
   static bool isDesktopOrWider(double w) => w >= 1024;
 
-  static double maxContentWidth(DeviceClass dc) => switch (dc) {
-        DeviceClass.miniPhone => double.infinity,
-        DeviceClass.phone => double.infinity,
-        DeviceClass.tablet => 680,
-        DeviceClass.desktop => 780,
-        DeviceClass.tv => 860,
-      };
+  static double maxContentWidth(DeviceClass dc) => double.infinity;
 
   static double readingPadding(DeviceClass dc) => switch (dc) {
         DeviceClass.miniPhone => 6,
         DeviceClass.phone => 8,
-        DeviceClass.tablet => 24,
-        DeviceClass.desktop => 32,
-        DeviceClass.tv => 48,
+        DeviceClass.tablet => 8,
+        DeviceClass.desktop => 8,
+        DeviceClass.tv => 8,
       };
 
   static double spacingScale(DeviceClass dc) => switch (dc) {
@@ -40,9 +34,9 @@ class ResponsiveBreakpoints {
   static double verseIndent(DeviceClass dc) => switch (dc) {
         DeviceClass.miniPhone => 12,
         DeviceClass.phone => 16,
-        DeviceClass.tablet => 20,
-        DeviceClass.desktop => 24,
-        DeviceClass.tv => 28,
+        DeviceClass.tablet => 16,
+        DeviceClass.desktop => 16,
+        DeviceClass.tv => 16,
       };
 
   static double chapterTileSize(DeviceClass dc) => switch (dc) {
@@ -72,9 +66,9 @@ class ResponsiveBreakpoints {
   static double headerInset(DeviceClass dc) => switch (dc) {
         DeviceClass.miniPhone => 6,
         DeviceClass.phone => 10,
-        DeviceClass.tablet => 16,
-        DeviceClass.desktop => 24,
-        DeviceClass.tv => 32,
+        DeviceClass.tablet => 10,
+        DeviceClass.desktop => 10,
+        DeviceClass.tv => 10,
       };
 
   static double get sidebarWidth => 280.0;

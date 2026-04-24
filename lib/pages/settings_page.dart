@@ -14,7 +14,13 @@ String getDevotionalFormattedText(
   if (verses.isEmpty || book == null || chapter == null) return '';
 
   List<int> verseNums = verses.map((v) => v['verse'] as int).toList()..sort();
-  List<String> textParts = verses.map((v) => v['text'] as String).toList();
+  List<String> textParts = verses.map((v) {
+    var t = v['text'] as String;
+    t = t.replaceAll(RegExp(r'<note:[^>]*>'), '')
+         .replaceAll(RegExp(r'<[^>]*>'), '')
+         .replaceAll(RegExp(r'\{[^}]*\}'), '');
+    return t;
+  }).toList();
 
   // Build reference string
   List<String> ranges = [];
@@ -310,7 +316,8 @@ class SettingsPage extends StatelessWidget {
                           }
                           final cleanedText = formattedText
                               .replaceAll(RegExp(r'<[^>]*>'), '')
-                              .replaceAll(RegExp(r'\{[^}]*\}'), '');
+                              .replaceAll(RegExp(r'\{[^}]*\}'), '')
+                              .replaceAll(RegExp(r'\[[^\]]*\]'), '');
 
                           return Padding(
                             padding: EdgeInsets.only(
@@ -406,8 +413,8 @@ class SettingsPage extends StatelessWidget {
               if (Theme.of(context).brightness != Brightness.dark) ...[
                 Card(
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 12),
+                    padding: EdgeInsets.symmetric(
+                        horizontal: 16 * s, vertical: 12 * s),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [

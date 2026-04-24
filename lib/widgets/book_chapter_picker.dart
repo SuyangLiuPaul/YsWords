@@ -162,6 +162,15 @@ class _BookChapterPickerState extends State<BookChapterPicker> {
                         ],
                       );
 
+                      final otLabel = isNarrow && settings.locale == 'en'
+                          ? 'OT'
+                          : (uiStrings['oldTestament']?[settings.locale] ??
+                              'Old Testament');
+                      final ntLabel = isNarrow && settings.locale == 'en'
+                          ? 'NT'
+                          : (uiStrings['newTestament']?[settings.locale] ??
+                              'New Testament');
+
                       if (isNarrow) {
                         return Column(
                           mainAxisSize: MainAxisSize.min,
@@ -176,9 +185,7 @@ class _BookChapterPickerState extends State<BookChapterPicker> {
                                         context: context,
                                         settings: settings,
                                         selected: showOldTestament,
-                                        label: uiStrings['oldTestament']
-                                                ?[settings.locale] ??
-                                            'Old Testament',
+                                        label: otLabel,
                                         onPressed: () =>
                                             _setTestament(settings, true),
                                       ),
@@ -191,9 +198,7 @@ class _BookChapterPickerState extends State<BookChapterPicker> {
                                         context: context,
                                         settings: settings,
                                         selected: !showOldTestament,
-                                        label: uiStrings['newTestament']
-                                                ?[settings.locale] ??
-                                            'New Testament',
+                                        label: ntLabel,
                                         onPressed: () =>
                                             _setTestament(settings, false),
                                       ),
