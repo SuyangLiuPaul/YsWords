@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/gestures.dart';
 import 'package:yswords/models/verse.dart';
 import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/utils/clipboard_helper.dart';
@@ -14,6 +15,8 @@ List<InlineSpan> buildVerseContentSpans({
   required String locale,
   required bool isSelected,
   bool superscriptVerseNum = false,
+  VoidCallback? onTextTap,
+  Color? spanBgColor,
 }) {
   final isReferenceLine = verse.paragraphType == 'reference';
 
@@ -218,6 +221,9 @@ List<InlineSpan> buildVerseContentSpans({
       final annotation = squarePattern.firstMatch(part)!.group(1)!;
       spans.add(TextSpan(
         text: annotation,
+        recognizer: onTextTap != null
+            ? (TapGestureRecognizer()..onTap = onTextTap)
+            : null,
         style: TextStyle(
           fontSize: settings.fontSize,
           fontFamily: settings.fontFamily,
@@ -229,6 +235,9 @@ List<InlineSpan> buildVerseContentSpans({
           color: isSelected
               ? Theme.of(context).colorScheme.onPrimaryContainer
               : Theme.of(context).textTheme.bodyLarge?.color,
+          backgroundColor: isSelected && spanBgColor != null
+              ? spanBgColor
+              : null,
         ),
       ));
       lastPart = part;
@@ -294,6 +303,9 @@ List<InlineSpan> buildVerseContentSpans({
     {
       spans.add(TextSpan(
         text: part,
+        recognizer: onTextTap != null
+            ? (TapGestureRecognizer()..onTap = onTextTap)
+            : null,
         style: Theme.of(context).textTheme.bodyLarge?.copyWith(
               fontSize: settings.fontSize,
               height: settings.lineSpacing,
@@ -303,6 +315,9 @@ List<InlineSpan> buildVerseContentSpans({
               fontFamily: settings.fontFamily,
               fontStyle:
                   isReferenceLine ? FontStyle.italic : FontStyle.normal,
+              backgroundColor: isSelected && spanBgColor != null
+                  ? spanBgColor
+                  : null,
             ),
       ));
       lastPart = part;

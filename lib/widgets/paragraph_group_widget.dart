@@ -25,28 +25,35 @@ class ParagraphGroupWidget extends StatelessWidget {
         final isParagraphStart =
             group.isNotEmpty && group.first.isParagraphStart == true;
 
-        // Build flowing spans for all verses in the group
+        // Build flowing spans for all verses, with per-verse tap handling
         final allSpans = <InlineSpan>[];
         for (int i = 0; i < group.length; i++) {
           final verse = group[i];
           final isSelected = mainProvider.isSelected(verse);
+          final isHighlighted =
+              mainProvider.highlightIndex == startVerseIndex + i;
+
+          Color? bgColor;
+          if (isSelected) {
+            bgColor = Theme.of(context).colorScheme.primaryContainer;
+          } else if (isHighlighted) {
+            bgColor = Theme.of(context)
+                .colorScheme
+                .secondary
+                .withValues(alpha: 0.3);
+          }
 
           allSpans.addAll(buildVerseContentSpans(
             verse: verse,
             context: context,
             settings: settings,
             locale: locale,
-            isSelected: isSelected,
+            isSelected: isSelected || isHighlighted,
             superscriptVerseNum: true,
+            onTextTap: () => mainProvider.toggleVerse(verse: verse),
+            spanBgColor: bgColor,
           ));
         }
-
-        // Check selection and highlight for the group
-        final anySelected = group.any((v) => mainProvider.isSelected(v));
-        final highlightedIdx = mainProvider.highlightIndex;
-        final anyHighlighted = highlightedIdx != null &&
-            highlightedIdx >= startVerseIndex &&
-            highlightedIdx < startVerseIndex + group.length;
 
         // Compute indent
         double leftIndent;
@@ -61,47 +68,30 @@ class ParagraphGroupWidget extends StatelessWidget {
         return Material(
           color: Colors.transparent,
           clipBehavior: Clip.hardEdge,
-          child: InkWell(
-            highlightColor: Colors.transparent,
-            splashColor: Colors.transparent,
-            onTap: () {
-              for (final verse in group) {
-                mainProvider.toggleVerse(verse: verse);
-              }
-            },
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                if (isParagraphStart)
-                  SizedBox(height: settings.fontSize * 0.8),
-                Container(
-                  width: double.infinity,
-                  color: anySelected
-                      ? Theme.of(context).colorScheme.primaryContainer
-                      : anyHighlighted
-                          ? Theme.of(context)
-                              .colorScheme
-                              .secondary
-                              .withValues(alpha: 0.3)
-                          : Colors.transparent,
-                  padding: EdgeInsets.fromLTRB(leftIndent, 4, 16, 4),
-                  child: RichText(
-                    textAlign: TextAlign.start,
-                    text: TextSpan(
-                      style: TextStyle(
-                        fontSize: settings.fontSize,
-                        fontFamily: settings.fontFamily,
-                        height: settings.lineSpacing,
-                        color: Theme.of(context).textTheme.bodyLarge?.color,
-                        fontStyle:
-                            isReference ? FontStyle.italic : FontStyle.normal,
-                      ),
-                      children: allSpans,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (isParagraphStart)
+                SizedBox(height: settings.fontSize * 0.8),
+              Container(
+                width: double.infinity,
+                padding: EdgeInsets.fromLTRB(leftIndent, 4, 16, 4),
+                child: RichText(
+                  textAlign: TextAlign.start,
+                  text: TextSpan(
+                    style: TextStyle(
+                      fontSize: settings.fontSize,
+                      fontFamily: settings.fontFamily,
+                      height: settings.lineSpacing,
+                      color: Theme.of(context).textTheme.bodyLarge?.color,
+                      fontStyle:
+                          isReference ? FontStyle.italic : FontStyle.normal,
                     ),
+                    children: allSpans,
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         );
       },
