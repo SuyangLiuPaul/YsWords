@@ -73,7 +73,8 @@ main.dart (entry point)
 ### Widgets
 | File | Purpose |
 |---|---|
-| `lib/widgets/verse_widget.dart` | Renders single verse. In paragraph mode: superscript verse numbers, hanging indent, paragraph-start spacers, reference-block indent. Complex annotation parsing ({...} badges, [...] underlines, <note:...> dialogs). Tap to select, tap number to copy. Accepts `hasParagraphData` param — when false, every verse is treated as paragraph-start in paragraph mode |
+| `lib/widgets/verse_widget.dart` | Renders single verse. In paragraph mode: superscript verse numbers, hanging indent, paragraph-start spacers, reference-block indent. Uses shared `buildVerseContentSpans()` for annotation rendering. Tap to select, tap number to copy. Accepts `hasParagraphData` param — when false, every verse is treated as paragraph-start in paragraph mode |
+| `lib/widgets/paragraph_group_widget.dart` | Renders multiple verses as a single flowing RichText in paragraph mode. Per-verse selection via `TapGestureRecognizer`, per-verse background highlight. Paragraph-start indent (`fontSize * 2`) and reference indent (`fontSize * 3`) |
 | `lib/widgets/localized_back_button.dart` | Back button with localized tooltip |
 
 ### Constants
@@ -89,6 +90,7 @@ main.dart (entry point)
 |---|---|
 | `lib/utils/clipboard_helper.dart` | Wraps `Clipboard.setData()` |
 | `lib/utils/format_searched_text.dart` | Builds RichText spans with highlighted search matches |
+| `lib/utils/build_verse_content_spans.dart` | Shared utility that builds `InlineSpan` list for a single verse (number + text with annotations). Used by both VerseWidget and ParagraphGroupWidget. Accepts `onTextTap` callback and `spanBgColor` for per-verse interaction in paragraph mode |
 | `lib/utils/version_mapper.dart` | `translateBookName()` and `toEnglish()` for cross-version name mapping |
 
 ---
@@ -127,7 +129,7 @@ The app supports two reading modes (toggled in Settings):
 
 Only `biblexg-v2.json` / `biblexg-v2-tr.json` have paragraph metadata. Other 6 versions fall back gracefully.
 
-**Implementation**: Always uses `ScrollablePositionedList` (1 VerseWidget per verse). The `hasParagraphData` bool is computed in `home_page.dart` and passed to each `VerseWidget`. Paragraph mode changes visual rendering only — no index mapping, no structural changes.
+**Implementation**: Uses `ScrollablePositionedList` with items = paragraph groups. When paragraph mode is on and `hasParagraphData` is true, consecutive inline verses are grouped into `ParagraphGroupWidget` (shared RichText); single-verse groups use `VerseWidget`. A `verseToItemMap` in MainProvider maps verse indices to item indices for correct scroll/jump behavior.
 
 Verse `text` fields contain inline markup rendered by `VerseWidget`:
 
@@ -135,7 +137,7 @@ Verse `text` fields contain inline markup rendered by `VerseWidget`:
 |---|---|---|
 | `{text}` | Tappable colored badge, may link to a `<note:...>` | `{God}` → badge "God" |
 | `[text]` | Dotted underline decoration | `[was]` → underlined "was" |
-| `<note:...>` | Book icon, tap opens dialog with note text | `<note: Or "And">` → info icon |
+| `<note:...>` | Book icon, tap opens dialog with note text. In `biblexg-v2` data, notes are positioned inline (after the relevant phrase), not at verse end | `<note:指大希律>` → info icon after the relevant phrase |
 
 The parsing is handled via shared regex patterns in `lib/constants/text_patterns.dart`. All widgets that process verse text must use these shared patterns — never define local RegExp.
 
@@ -188,7 +190,20 @@ No unused dependencies remain. Seven were removed in the last cleanup: `expandab
 
 ## What Has Been Fixed (2026-04-24)
 
-These bugs were found and fixed in commit `ed60f07`:
+### Paragraph Mode Feature (commits `2c6759f`–`2403fb4`)
+- **Paragraph mode toggle**: Added in Settings with trilingual labels (阅读模式/閱讀模式/Reading Mode)
+- **Flowing paragraph layout**: Verses with `isParagraphStart` data group into shared RichText via `ParagraphGroupWidget`
+- **Per-verse selection in paragraphs**: `TapGestureRecognizer` on each verse's text spans, with per-verse background highlight
+- **Superscript verse numbers**: `fontSize * 0.7`, bold, in paragraph mode
+- **Paragraph indent**: `fontSize * 2` first-line indent, `fontSize * 3` for reference blocks
+- **Fallback for non-paragraph versions**: Each verse renders as its own indented paragraph block
+
+### Bug Fixes Round 2 (commits `95ef4bf`–`2403fb4`)
+- **Note icon suppression**: Removed overly aggressive `skipNoteIcons` flag that hid ALL standalone note icons when a verse had braces + notes. Only notes immediately following a `{...}` badge are now suppressed
+- **Swipe navigation wrap-around**: Fixed `_goToNextChapter()` and `_goToPreviousChapter()` — reaching book boundaries now stops instead of wrapping (e.g., Matthew ch.1 no longer wraps to Revelation)
+- **Note positioning in data**: Repositioned 1,133 `<note:...>` tags in `biblexg-v2.json` and `biblexg-v2-tr.json` from verse-end to inline positions. Cross-refs placed at end of quoted phrases; explanatory notes placed next to referenced words. Multi-note verses distribute notes across different phrase breaks
+
+### Earlier Fixes (commit `ed60f07`)
 
 ### Critical
 - **Invisible annotation text**: `fontSize * 0.1` → `fontSize * 0.85` in `verse_widget.dart`
@@ -232,8 +247,8 @@ A 187 KB concatenated dump of all Dart source from `scan_folder.py`. Development
 ### HomePage is ~520 Lines
 The main reading page handles too many concerns: verse display, swipe gestures, copy logic, version switching, chapter navigation. Consider extracting copy formatting and chapter navigation into separate classes/widgets.
 
-### VerseWidget is ~370 Lines
-Complex annotation parsing and rendering could be extracted into a dedicated `AnnotationParser` class.
+### VerseWidget + ParagraphGroupWidget
+`buildVerseContentSpans()` in `utils/build_verse_content_spans.dart` handles annotation parsing and is shared by both widgets. VerseWidget is ~100 lines; ParagraphGroupWidget is ~100 lines. The annotation parsing itself (~325 lines) could still benefit from being split into smaller functions.
 
 ### Search is Linear
 Full-text search iterates every verse on every query. For 31,000+ verses this works but could be slow on older devices. A pre-built inverted index would help.
