@@ -716,30 +716,47 @@ class _ReaderStatusBar extends StatelessWidget {
                     Expanded(
                       child: GestureDetector(
                         onTap: onToggleParagraphMode,
-                        child: Text.rich(
-                          TextSpan(
-                            children: [
-                              TextSpan(text: '$versionLabel • '),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text.rich(
                               TextSpan(
-                                text: modeLabel,
+                                children: [
+                                  TextSpan(text: '$versionLabel • '),
+                                  TextSpan(
+                                    text: modeLabel,
+                                    style: TextStyle(
+                                      color: scheme.primary,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                ],
                                 style: TextStyle(
-                                  color: scheme.primary,
-                                  fontWeight: FontWeight.w700,
+                                  fontFamily: settings.fontFamily,
+                                  fontSize: detailFontSize,
+                                  fontWeight: FontWeight.w600,
+                                  color: scheme.onSurfaceVariant,
+                                  height: 1.3,
                                 ),
                               ),
-                              TextSpan(text: ' • $versePosition'),
-                            ],
-                            style: TextStyle(
-                              fontFamily: settings.fontFamily,
-                              fontSize: detailFontSize,
-                              fontWeight: FontWeight.w600,
-                              color: scheme.onSurfaceVariant,
-                              height: 1.15,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              textAlign: TextAlign.center,
                             ),
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          textAlign: TextAlign.center,
+                            Text(
+                              versePosition,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontFamily: settings.fontFamily,
+                                fontSize: detailFontSize * 0.88,
+                                fontWeight: FontWeight.w500,
+                                color: scheme.onSurfaceVariant,
+                                height: 1.3,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ),
