@@ -130,116 +130,6 @@ class _HomePageState extends State<HomePage> {
     return _formatVerseRange(verses.map((v) => v.verse).toList());
   }
 
-  List<InlineSpan> _buildVerseSpans(List<Verse> verses, BuildContext context) {
-    final settings = Provider.of<AppSettings>(context, listen: false);
-    final spans = <InlineSpan>[];
-
-    for (var v in verses) {
-      // Verse number
-      spans.add(WidgetSpan(
-        child: GestureDetector(
-          onTap: () async {
-            final toCopy = '${v.verseLabel} ${sanitizeVerseText(v.text)}';
-            await ClipboardHelper.copyText(toCopy);
-            if (!context.mounted) return;
-            final msg = (uiStrings['copiedVerse']?[settings.locale] ??
-                    'Copied verse {verse}')
-                .replaceAll('{verse}', v.verseLabel);
-            ScaffoldMessenger.of(context)
-                .showSnackBar(SnackBar(content: Text(msg)));
-          },
-          child: Text(
-            '${v.verseLabel} ',
-            style: TextStyle(
-              color: Theme.of(context).colorScheme.primary,
-              fontSize: settings.fontSize,
-              fontFamily: settings.fontFamily,
-              height: settings.lineSpacing,
-            ),
-          ),
-        ),
-      ));
-
-      // Prepare original text and extract notes
-      final original = v.text.replaceAll('\n', '');
-      // Remove note tags from display, but collect them first
-      final noteMatches = notePattern.allMatches(original).toList();
-      int noteIndex = 0;
-      final raw = original.replaceAll(notePattern, '').trim();
-      // Split on curly annotations, preserving them for badge rendering
-      final parts = raw
-          .splitMapJoin(
-            bracePattern,
-            onMatch: (m) => '||${m[0]}||',
-            onNonMatch: (n) => n,
-          )
-          .split('||');
-
-      for (var part in parts) {
-        if (bracePattern.hasMatch(part)) {
-          final annotation = bracePattern.firstMatch(part)!.group(1)!;
-          // Retrieve the corresponding note (each brace maps to the next note in order)
-          final noteText = noteIndex < noteMatches.length
-              ? noteMatches[noteIndex++].group(1) ?? ''
-              : '';
-
-          spans.add(WidgetSpan(
-            alignment: PlaceholderAlignment.middle,
-            child: GestureDetector(
-              onTap: () {
-                showDialog(
-                  context: context,
-                  builder: (_) => AlertDialog(
-                    title: Text(uiStrings['note']?[settings.locale] ?? 'Note'),
-                    content: Text(noteText),
-                    actions: [
-                      TextButton(
-                        onPressed: () => Navigator.of(context).pop(),
-                        child: Text(
-                            uiStrings['close']?[settings.locale] ?? 'Close'),
-                      ),
-                    ],
-                  ),
-                );
-              },
-              child: Container(
-                padding: EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-                margin: EdgeInsets.symmetric(horizontal: 2),
-                decoration: BoxDecoration(
-                  color: Theme.of(context)
-                      .colorScheme
-                      .secondary
-                      .withValues(alpha: 0.3),
-                  borderRadius: BorderRadius.circular(4),
-                ),
-                child: Text(
-                  annotation,
-                  style: TextStyle(
-                    fontSize: settings.fontSize * 0.85,
-                    fontFamily: settings.fontFamily,
-                    height: settings.lineSpacing,
-                  ),
-                ),
-              ),
-            ),
-          ));
-        } else {
-          spans.add(TextSpan(
-            text: part,
-            style: TextStyle(
-              fontSize: settings.fontSize,
-              fontFamily: settings.fontFamily,
-              height: settings.lineSpacing,
-              color: Theme.of(context).textTheme.bodyMedium?.color,
-            ),
-          ));
-        }
-      }
-    }
-
-    return spans;
-  }
-
   @override
   Widget build(BuildContext context) {
     return Consumer2<MainProvider, AppSettings>(
@@ -250,6 +140,8 @@ class _HomePageState extends State<HomePage> {
                 v.chapter == mainProvider.currentChapter)
             .toList()
           ..sort((a, b) => a.verse.compareTo(b.verse));
+        final hasParagraphData =
+            verses.any((v) => v.isParagraphStart == true);
 
         // (groupVersesIntoParagraphs local function removed)
 
@@ -490,36 +382,27 @@ class _HomePageState extends State<HomePage> {
                   children: [
                     Padding(
                       padding: const EdgeInsets.only(right: 8.0),
-                      child: settings.readingModeCentered
-                          ? SingleChildScrollView(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 16.0, vertical: 12.0),
-                              child: Text.rich(
-                                TextSpan(
-                                    children:
-                                        _buildVerseSpans(verses, context)),
-                              ),
-                            )
-                          : ScrollablePositionedList.builder(
-                              itemCount: verses.length + 1,
-                              itemBuilder: (context, index) {
-                                if (index < verses.length) {
-                                  return VerseWidget(
-                                    verse: verses[index],
-                                    index: index,
-                                  );
-                                }
-                                return const SizedBox(height: 120);
-                              },
-                              itemScrollController:
-                                  mainProvider.itemScrollController,
-                              itemPositionsListener:
-                                  mainProvider.itemPositionsListener,
-                              scrollOffsetController:
-                                  mainProvider.scrollOffsetController,
-                              scrollOffsetListener:
-                                  mainProvider.scrollOffsetListener,
-                            ),
+                      child: ScrollablePositionedList.builder(
+                          itemCount: verses.length + 1,
+                          itemBuilder: (context, index) {
+                            if (index < verses.length) {
+                              return VerseWidget(
+                                verse: verses[index],
+                                index: index,
+                                hasParagraphData: hasParagraphData,
+                              );
+                            }
+                            return const SizedBox(height: 120);
+                          },
+                          itemScrollController:
+                              mainProvider.itemScrollController,
+                          itemPositionsListener:
+                              mainProvider.itemPositionsListener,
+                          scrollOffsetController:
+                              mainProvider.scrollOffsetController,
+                          scrollOffsetListener:
+                              mainProvider.scrollOffsetListener,
+                        ),
                     ),
                   ],
                 ),

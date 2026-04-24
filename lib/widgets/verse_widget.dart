@@ -10,8 +10,9 @@ import 'package:yswords/constants/ui_strings.dart';
 class VerseWidget extends StatelessWidget {
   final Verse verse;
   final int index;
+  final bool hasParagraphData;
 
-  const VerseWidget({super.key, required this.verse, required this.index});
+  const VerseWidget({super.key, required this.verse, required this.index, this.hasParagraphData = false});
 
   @override
   Widget build(BuildContext context) {
@@ -21,6 +22,10 @@ class VerseWidget extends StatelessWidget {
         final isSelected = mainProvider.isSelected(verse);
         final isHighlighted = mainProvider.highlightIndex == index;
         final isReferenceLine = verse.paragraphType == 'reference';
+        final inParagraphMode = settings.paragraphMode;
+        final effectiveParagraphStart = inParagraphMode
+            ? (hasParagraphData ? (verse.isParagraphStart == true) : true)
+            : false;
 
         // Use shared regex patterns from text_patterns.dart
         final original = verse.text.replaceAll('\n', '');
@@ -36,6 +41,10 @@ class VerseWidget extends StatelessWidget {
         final skipNoteIcons =
             bracePattern.hasMatch(original) && notePattern.hasMatch(original);
         // Verse number span
+        final verseNumFontSize =
+            inParagraphMode ? settings.fontSize * 0.7 : settings.fontSize;
+        final verseNumWeight =
+            inParagraphMode ? FontWeight.bold : FontWeight.w500;
         spans.add(WidgetSpan(
           child: GestureDetector(
             onTap: () async {
@@ -52,9 +61,9 @@ class VerseWidget extends StatelessWidget {
             child: Text(
               '${verse.verseLabel} ',
               style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    fontSize: settings.fontSize,
-                    height: settings.lineSpacing,
-                    fontWeight: FontWeight.w500,
+                    fontSize: verseNumFontSize,
+                    height: inParagraphMode ? 1.0 : settings.lineSpacing,
+                    fontWeight: verseNumWeight,
                     fontFamily: settings.fontFamily,
                     fontStyle:
                         isReferenceLine ? FontStyle.italic : FontStyle.normal,
@@ -312,6 +321,27 @@ class VerseWidget extends StatelessWidget {
           }
         }
 
+        double leftIndent;
+        double topSpacer;
+        double vertPadding;
+        if (inParagraphMode) {
+          if (isReferenceLine) {
+            leftIndent = settings.fontSize * 3;
+            topSpacer = 0;
+          } else if (effectiveParagraphStart) {
+            leftIndent = settings.fontSize * 2;
+            topSpacer = settings.fontSize * 0.8;
+          } else {
+            leftIndent = 16;
+            topSpacer = 0;
+          }
+          vertPadding = 2;
+        } else {
+          leftIndent = isReferenceLine ? 24 : 16;
+          topSpacer = (verse.isParagraphStart == true) ? 10 : 0;
+          vertPadding = 8;
+        }
+
         return Material(
           color: Colors.transparent,
           clipBehavior: Clip.hardEdge,
@@ -322,12 +352,9 @@ class VerseWidget extends StatelessWidget {
               mainProvider.toggleVerse(verse: verse);
             },
             child: Column(
-              crossAxisAlignment: settings.readingModeCentered
-                  ? CrossAxisAlignment.center
-                  : CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                if (verse.isParagraphStart == true)
-                  SizedBox(height: settings.readingModeCentered ? 16 : 10),
+                if (topSpacer > 0) SizedBox(height: topSpacer),
                 Container(
                   width: double.infinity,
                   color: isSelected
@@ -339,11 +366,9 @@ class VerseWidget extends StatelessWidget {
                               .withValues(alpha: 0.3)
                           : Colors.transparent,
                   padding:
-                      EdgeInsets.fromLTRB(isReferenceLine ? 24 : 16, 8, 16, 8),
+                      EdgeInsets.fromLTRB(leftIndent, vertPadding, 16, vertPadding),
                   child: RichText(
-                    textAlign: settings.readingModeCentered
-                        ? TextAlign.center
-                        : TextAlign.start,
+                    textAlign: TextAlign.start,
                     text: TextSpan(
                       children: spans,
                     ),

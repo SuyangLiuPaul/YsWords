@@ -241,4 +241,19 @@ const uiStrings = {
     'zh-Hant': '聖經',
     'en': 'Bible',
   },
+  'readingMode': {
+    'zh-Hans': '阅读模式',
+    'zh-Hant': '閱讀模式',
+    'en': 'Reading Mode',
+  },
+  'verseByVerse': {
+    'zh-Hans': '逐节显示',
+    'zh-Hant': '逐節顯示',
+    'en': 'Verse by Verse',
+  },
+  'paragraphFlow': {
+    'zh-Hans': '段落排版',
+    'zh-Hant': '段落排版',
+    'en': 'Paragraph Flow',
+  },
 };

@@ -8,7 +8,7 @@ const _kPrimaryColor = 'primaryColor';
 const _kCopyFormat = 'copyFormat';
 const _kLocale = 'locale';
 const _kThemeMode = 'themeMode';
-const _kReadingModeCentered = 'readingModeCentered';
+const _kParagraphMode = 'paragraphMode';
 
 class AppSettings extends ChangeNotifier {
   String _fontFamily = 'Roboto';
@@ -18,7 +18,7 @@ class AppSettings extends ChangeNotifier {
   String _copyFormat = 'withRef';
   String _locale = 'zh-Hans';
   ThemeMode _themeMode = ThemeMode.system;
-  bool _readingModeCentered = false;
+  bool _paragraphMode = false;
 
   String get fontFamily => _fontFamily;
   double get fontSize => _fontSize;
@@ -27,7 +27,7 @@ class AppSettings extends ChangeNotifier {
   String get copyFormat => _copyFormat;
   String get locale => _locale;
   ThemeMode get themeMode => _themeMode;
-  bool get readingModeCentered => _readingModeCentered;
+  bool get paragraphMode => _paragraphMode;
 
   Future<void> setFontFamily(String family) async {
     if (_fontFamily == family) return;
@@ -85,12 +85,12 @@ class AppSettings extends ChangeNotifier {
     await prefs.setString(_kThemeMode, mode.name);
   }
 
-  Future<void> setReadingModeCentered(bool centered) async {
-    if (_readingModeCentered == centered) return;
-    _readingModeCentered = centered;
+  Future<void> setParagraphMode(bool enabled) async {
+    if (_paragraphMode == enabled) return;
+    _paragraphMode = enabled;
     notifyListeners();
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool(_kReadingModeCentered, centered);
+    await prefs.setBool(_kParagraphMode, enabled);
   }
 
   Future<void> loadSettings() async {
@@ -103,7 +103,7 @@ class AppSettings extends ChangeNotifier {
     _copyFormat = prefs.getString(_kCopyFormat) ?? 'withRef';
     _locale = prefs.getString(_kLocale) ?? _detectSystemLocale();
     _themeMode = _parseThemeMode(prefs.getString(_kThemeMode));
-    _readingModeCentered = prefs.getBool(_kReadingModeCentered) ?? false;
+    _paragraphMode = prefs.getBool(_kParagraphMode) ?? false;
     notifyListeners();
   }
 
