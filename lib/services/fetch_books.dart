@@ -162,8 +162,9 @@ const Map<String, String> bookNameToEnglish = {
 class FetchBooks {
   // Static method to execute the fetching process
   static Future<void> execute({required MainProvider mainProvider, required AppSettings settings}) async {
-    if (!settings.allowUpdates) {
-      return; 
+    // Always build books from available verses, even when updates are disabled
+    if (mainProvider.books.isNotEmpty && !settings.allowUpdates) {
+      return; // Books already built, skip rebuild
     }
     List<Verse> verses = mainProvider.verses;
 

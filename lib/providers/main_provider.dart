@@ -102,15 +102,11 @@ class MainProvider extends ChangeNotifier {
 
   // Method to scroll to a specific index in the list and notify listeners
   void scrollToIndex({required int index}) {
-    // debugPrint(
-    //     '🌀 scrollToIndex: index=$index, controller attached: ${itemScrollController.isAttached}');
     if (itemScrollController.isAttached) {
       itemScrollController.scrollTo(
         index: index,
         duration: const Duration(milliseconds: 800),
       );
-    } else {
-      // debugPrint('⚠️ scrollToIndex skipped: controller not attached');
     }
     notifyListeners();
   }
@@ -126,8 +122,6 @@ class MainProvider extends ChangeNotifier {
     if (!_selectedIds.remove(verse.id)) {
       _selectedIds.add(verse.id);
     }
-    // debugPrint('selected=${_selectedIds.length}');
-
     notifyListeners();
   }
 

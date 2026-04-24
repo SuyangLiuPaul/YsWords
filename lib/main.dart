@@ -45,9 +45,9 @@ class _MainAppState extends State<MainApp> {
   void initState() {
     super.initState();
     Timer(Duration(seconds: 8), () {
-      if (_loading) {
+      if (_loading && mounted) {
         setState(() {
-          _loading = false; // Optionally handle timeout behavior here.
+          _loading = false;
         });
       }
     });
@@ -102,6 +102,7 @@ class _MainAppState extends State<MainApp> {
           (v) =>
               v.book == mainProvider.currentBook &&
               v.chapter == mainProvider.currentChapter,
+          orElse: () => mainProvider.verses.first,
         );
         mainProvider.updateCurrentVerse(verse: match);
       } else if (mainProvider.verses.isNotEmpty) {
@@ -111,9 +112,11 @@ class _MainAppState extends State<MainApp> {
         mainProvider.updateCurrentVerse(verse: firstVerse);
       }
 
-      setState(() {
-        _loading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _loading = false;
+        });
+      }
     });
   }
 
@@ -174,13 +177,11 @@ class _MainAppState extends State<MainApp> {
             ),
             colorScheme: const ColorScheme.dark(
               surface: Color(0xFF1A1A1A),
-              background: Color(0xFF121212),
               primary: Color(0xFFCCCCCC),
               onPrimary: Colors.black,
               onSurface: Color(0xFFCCCCCC),
             ),
             scaffoldBackgroundColor: Color(0xFF121212),
-            cardColor: const Color(0xFF1A1A1A),
             cardTheme: CardThemeData(
               color: Color(0xFF1F1F1F),
               elevation: 2,

@@ -4,6 +4,7 @@ import 'package:yswords/providers/main_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/utils/clipboard_helper.dart';
+import 'package:yswords/constants/text_patterns.dart';
 import 'package:yswords/constants/ui_strings.dart';
 
 class VerseWidget extends StatelessWidget {
@@ -20,11 +21,7 @@ class VerseWidget extends StatelessWidget {
         final isSelected = mainProvider.isSelected(verse);
         final isHighlighted = mainProvider.highlightIndex == index;
 
-        // Prepare regex and spans for verse text with annotations
-        final squarePattern = RegExp(r'\[([^\]]+)\]');
-        final bracePattern = RegExp(r'\{([^}]+)\}');
-        final notePattern = RegExp(r'<note:([^>]+)>');
-        final combinedPattern = RegExp(r'(\{[^}]+\}|\[[^\]]+\]|<note:[^>]+>)');
+        // Use shared regex patterns from text_patterns.dart
         final original = verse.text.replaceAll('\n', '');
         final raw = original.trim();
         final parts = raw
@@ -148,7 +145,7 @@ class VerseWidget extends StatelessWidget {
                             spans.add(TextSpan(
                               text: annotation.substring(lastEnd, match.start),
                               style: TextStyle(
-                                fontSize: settings.fontSize * 0.1,
+                                fontSize: settings.fontSize * 0.85,
                                 fontFamily: settings.fontFamily,
                                 height: settings.lineSpacing,
                                 color: Theme.of(context)
@@ -307,7 +304,7 @@ class VerseWidget extends StatelessWidget {
         }
 
         return Material(
-          color: Colors.white.withOpacity(0.01),
+          color: Colors.transparent,
           clipBehavior: Clip.hardEdge,
           child: InkWell(
             highlightColor: Colors.transparent,

@@ -20,6 +20,7 @@ class _LoadingPageState extends State<LoadingPage> {
   void initState() {
     super.initState();
     Future.delayed(const Duration(seconds: 3), () {
+      if (!mounted) return;
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (_) => const HomePage()),
       );

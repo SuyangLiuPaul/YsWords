@@ -103,9 +103,6 @@ class _HomePageState extends State<HomePage> {
 
   String formattedSelectedVerses({required List<Verse> verses}) {
     final settings = Provider.of<AppSettings>(context, listen: false);
-    final notePattern = RegExp(r'<note:[^>]*>');
-    final braceInnerPattern = RegExp(r'\{([^}]*)\}');
-    final squareInnerPattern = RegExp(r'\[([^\]]*)\]');
     final sorted = [...verses]..sort((a, b) {
         final bookComparison = a.book.compareTo(b.book);
         if (bookComparison != 0) return bookComparison;
@@ -121,32 +118,20 @@ class _HomePageState extends State<HomePage> {
     switch (settings.copyFormat) {
       case 'withRef':
         return sorted.map((v) {
-          final cleanedText = v.text
-              .replaceAll(notePattern, '')
-              .replaceAllMapped(braceInnerPattern, (m) => m.group(1) ?? '')
-              .replaceAllMapped(squareInnerPattern, (m) => m.group(1) ?? '')
-              .trim();
+          final cleanedText = sanitizeForSearch(v.text);
           return '[${v.book} ${v.chapter}:${v.verse}] $cleanedText';
         }).join('\n');
       case 'plain':
         return '$header\n' +
             sorted.map((v) {
-              final cleanedText = v.text
-                  .replaceAll(notePattern, '')
-                  .replaceAllMapped(braceInnerPattern, (m) => m.group(1) ?? '')
-                  .replaceAllMapped(squareInnerPattern, (m) => m.group(1) ?? '')
-                  .trim();
+              final cleanedText = sanitizeForSearch(v.text);
               return '${v.verse} $cleanedText';
             }).join('\n');
       case 'devotional':
         final book = first.book;
         final chapter = first.chapter;
         final versesText = sorted
-            .map((v) => v.text
-                .replaceAll(notePattern, '')
-                .replaceAllMapped(braceInnerPattern, (m) => m.group(1) ?? '')
-                .replaceAllMapped(squareInnerPattern, (m) => m.group(1) ?? '')
-                .trim())
+            .map((v) => sanitizeForSearch(v.text))
             .join('\n');
         final verseNumbers = sorted.map((v) => v.verse).toList();
 
@@ -184,11 +169,7 @@ class _HomePageState extends State<HomePage> {
         return '$versesText\n($book $chapter:$range)';
       default:
         return sorted
-            .map((v) => v.text
-                .replaceAll(notePattern, '')
-                .replaceAllMapped(braceInnerPattern, (m) => m.group(1) ?? '')
-                .replaceAllMapped(squareInnerPattern, (m) => m.group(1) ?? '')
-                .trim())
+            .map((v) => sanitizeForSearch(v.text))
             .join('\n');
     }
   }
@@ -196,8 +177,6 @@ class _HomePageState extends State<HomePage> {
   List<InlineSpan> _buildVerseSpans(List<Verse> verses, BuildContext context) {
     final settings = Provider.of<AppSettings>(context, listen: false);
     final spans = <InlineSpan>[];
-    final bracePattern = RegExp(r'\{([^}]+)\}');
-    final notePattern = RegExp(r'<note:([^>]+)>');
 
     for (var v in verses) {
       // Verse number
@@ -212,7 +191,7 @@ class _HomePageState extends State<HomePage> {
             final toCopy = '${v.verse} $sanitized';
             await ClipboardHelper.copyText(toCopy);
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Copied verse ${v.verse}')),
+              SnackBar(content: Text((uiStrings['copiedVerse']?[settings.locale] ?? 'Copied verse {verse}').replaceAll('{verse}', '${v.verse}'))),
             );
           },
           child: Text(
@@ -254,12 +233,12 @@ class _HomePageState extends State<HomePage> {
                 showDialog(
                   context: context,
                   builder: (_) => AlertDialog(
-                    title: Text('Note'),
+                    title: Text(uiStrings['note']?[settings.locale] ?? 'Note'),
                     content: Text(noteText),
                     actions: [
                       TextButton(
                         onPressed: () => Navigator.of(context).pop(),
-                        child: Text('Close'),
+                        child: Text(uiStrings['close']?[settings.locale] ?? 'Close'),
                       ),
                     ],
                   ),
@@ -322,16 +301,17 @@ class _HomePageState extends State<HomePage> {
         return SelectionContainer.disabled(
           child: GestureDetector(
             onHorizontalDragEnd: (details) {
-              if (details.primaryVelocity! < 0) {
+              final velocity = details.primaryVelocity ?? 0;
+              if (velocity < -300) {
                 _goToNextChapter();
-              } else if (details.primaryVelocity! > 0) {
+              } else if (velocity > 300) {
                 _goToPreviousChapter();
               }
             },
             child: AnnotatedRegion<SystemUiOverlayStyle>(
               value: SystemUiOverlayStyle(
                 systemNavigationBarColor:
-                    Theme.of(context).colorScheme.background,
+                    Theme.of(context).colorScheme.surface,
                 systemNavigationBarIconBrightness:
                     Theme.of(context).brightness == Brightness.dark
                         ? Brightness.light
@@ -449,11 +429,13 @@ class _HomePageState extends State<HomePage> {
                                 final match = p.verses.firstWhere(
                                   (v) =>
                                       v.book ==
-                                          (targetBook ?? p.verses.first.book) &&
+                                          (targetBook ?? (p.verses.isNotEmpty ? p.verses.first.book : '')) &&
                                       v.chapter ==
                                           (p.currentChapter ?? v.chapter),
                                   orElse: () => p.verses.first,
                                 );
+
+                                if (p.verses.isEmpty) return;
 
                                 p.setCurrentChapter(
                                     book: match.book, chapter: match.chapter);
@@ -714,6 +696,7 @@ class _HomePageState extends State<HomePage> {
         .where((v) => v.book == book && v.chapter == chap)
         .toList();
 
+    if (matched.isEmpty && provider.verses.isEmpty) return;
     final first = matched.isNotEmpty ? matched.first : provider.verses.first;
     provider.setCurrentChapter(book: book, chapter: chap);
     provider.updateCurrentVerse(verse: first);

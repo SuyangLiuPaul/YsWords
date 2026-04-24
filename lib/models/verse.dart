@@ -29,10 +29,10 @@ class Verse {
       );
     }
     return Verse(
-      book: json['book'] as String,
+      book: (json['book'] as String?) ?? '',
       chapter: chapterNum,
       verse: verseNum,
-      text: json['text'] as String,
+      text: (json['text'] as String?) ?? '',
       isParagraphStart: json['isParagraphStart'] as bool? ?? false,
     );
   }

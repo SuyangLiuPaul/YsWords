@@ -21,11 +21,34 @@ class FetchVerses {
     mainProvider.setVerses([]);
     mainProvider.setBooks([]);
 
-    // Load & parse the JSON from assets, supporting both list and passages-map formats
+    try {
+      final verses = await _loadAndParse(path);
+      mainProvider.setVerses(verses);
+    } catch (e) {
+      print('Error loading verses from $path: $e');
+    }
+  }
+
+  static Future<void> loadLocalOnly(
+      {required MainProvider mainProvider}) async {
+    try {
+      final version = mainProvider.currentVersion.toLowerCase();
+      final path = 'assets/$version.json';
+
+      mainProvider.setVerses([]);
+      mainProvider.setBooks([]);
+
+      final verses = await _loadAndParse(path);
+      mainProvider.setVerses(verses);
+    } catch (e) {
+      print('Error loading local verses for version ${mainProvider.currentVersion}: $e');
+    }
+  }
+
+  static Future<List<Verse>> _loadAndParse(String path) async {
     String jsonString = await rootBundle.loadString(path);
     final dynamic decoded = json.decode(jsonString);
 
-    // Build a flat list of maps with book, chapter, verse, text
     List<Map<String, dynamic>> rawList;
     if (decoded is List) {
       rawList = List<Map<String, dynamic>>.from(decoded);
@@ -33,19 +56,19 @@ class FetchVerses {
       final passages = decoded['passages'] as Map<String, dynamic>;
       final bookName = decoded['abbreviation'] ?? decoded['book'] ?? '';
       rawList = passages.entries.map((e) {
-        final parts = e.key.split(':');
+        final parts = e.key.toString().split(':');
         return {
           'book': bookName,
-          'chapter': parts[0],
-          'verse': parts[1],
-          'text': e.value + '\n',
+          'chapter': parts.isNotEmpty ? parts[0] : '',
+          'verse': parts.length > 1 ? parts[1] : '',
+          'text': (e.value ?? '').toString() + '\n',
         };
       }).toList();
     } else {
       throw Exception('Unsupported verse JSON format');
     }
 
-    // Filter out entries where verse is non-numeric (e.g. Psalm titles)
+    // Filter out entries where verse is non-numeric
     rawList = rawList.where((m) => int.tryParse(m['verse']?.toString() ?? '') != null).toList();
 
     // Map into Verse objects, skipping any parse errors
@@ -53,12 +76,10 @@ class FetchVerses {
     for (final m in rawList) {
       try {
         verses.add(Verse.fromJson(m));
-      } catch (_) {
-        // skip invalid entries
-      }
+      } catch (_) {}
     }
 
-    // Sort in canonical order (map Chinese/localised book names → English for lookup)
+    // Sort in canonical order
     verses.sort((a, b) {
       final ai = standardBookOrder.indexOf(bookNameToEnglish[a.book] ?? a.book);
       final bi = standardBookOrder.indexOf(bookNameToEnglish[b.book] ?? b.book);
@@ -67,74 +88,7 @@ class FetchVerses {
       return c != 0 ? c : a.verse.compareTo(b.verse);
     });
 
-    // Update provider
-    mainProvider.setVerses(verses);
-  }
-
-  static Future<void> loadLocalOnly(
-      {required MainProvider mainProvider}) async {
-    try {
-      // Determine the asset file based on the current version
-      final version = mainProvider.currentVersion.toLowerCase();
-      final path = 'assets/$version.json';
-
-      // Clear existing verses and books
-      mainProvider.setVerses([]);
-      mainProvider.setBooks([]);
-
-      // Load & parse the JSON from assets, supporting both list and passages-map formats
-      String jsonString = await rootBundle.loadString(path);
-      final dynamic decoded = json.decode(jsonString);
-
-      // Build a flat list of maps with book, chapter, verse, text
-      List<Map<String, dynamic>> rawList;
-      if (decoded is List) {
-        rawList = List<Map<String, dynamic>>.from(decoded);
-      } else if (decoded is Map<String, dynamic> && decoded['passages'] != null) {
-        final passages = decoded['passages'] as Map<String, dynamic>;
-        final bookName = decoded['abbreviation'] ?? decoded['book'] ?? '';
-        rawList = passages.entries.map((e) {
-          final parts = e.key.split(':');
-          return {
-            'book': bookName,
-            'chapter': parts[0],
-            'verse': parts[1],
-            'text': e.value + '\n',
-          };
-        }).toList();
-      } else {
-        throw Exception('Unsupported verse JSON format');
-      }
-
-      // Filter out entries where verse is non-numeric (e.g. Psalm titles)
-      rawList = rawList.where((m) => int.tryParse(m['verse']?.toString() ?? '') != null).toList();
-
-      // Map into Verse objects, skipping any parse errors
-      final verses = <Verse>[];
-      for (final m in rawList) {
-        try {
-          verses.add(Verse.fromJson(m));
-        } catch (_) {
-          // skip invalid entries
-        }
-      }
-
-      // Sort in canonical order (map Chinese/localised book names → English for lookup)
-      verses.sort((a, b) {
-        final ai = standardBookOrder.indexOf(bookNameToEnglish[a.book] ?? a.book);
-        final bi = standardBookOrder.indexOf(bookNameToEnglish[b.book] ?? b.book);
-        if (ai != bi) return ai.compareTo(bi);
-        final c = a.chapter.compareTo(b.chapter);
-        return c != 0 ? c : a.verse.compareTo(b.verse);
-      });
-
-      // Update provider
-      mainProvider.setVerses(verses);
-      print('Loaded local $path verses.');
-    } catch (e) {
-      print(
-          'Error loading local verses for version ${mainProvider.currentVersion}: $e');
-    }
+    return verses;
   }
 
   static Future<bool> testLoadLocal() async {
@@ -145,10 +99,6 @@ class FetchVerses {
       'assets/cuvs-yhwh-tr.json',
       'assets/biblexg.json',
       'assets/biblexg-tr.json',
-      'assets/app_icon.png',
-      'assets/loading.png',
-      'assets/fonts/Microsoft Yahei.ttf',
-      'assets/fonts/Roboto-VariableFont_wdth,wght.ttf',
     ];
 
     try {

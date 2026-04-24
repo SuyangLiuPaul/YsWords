@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-// import 'package:http/http.dart' as http;
 import 'package:yswords/constants/ui_strings.dart';
-// import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/providers/main_provider.dart';
@@ -37,9 +35,6 @@ String getDevotionalFormattedText(
 
 class SettingsPage extends StatelessWidget {
   SettingsPage({super.key});
-
-  // final TextEditingController _feedbackController = TextEditingController();
-  // final ValueNotifier<bool> _isSending = ValueNotifier(false);
 
   @override
   Widget build(BuildContext context) {
@@ -223,7 +218,9 @@ class SettingsPage extends StatelessWidget {
                       ),
                       const SizedBox(height: 12),
                       Text(
-                        '$currentBook $currentChapter',
+                        currentBook != null && currentChapter != null
+                            ? '$currentBook $currentChapter'
+                            : uiStrings['noVersesAvailable']?[settings.locale] ?? 'No verses available',
                         style:
                             Theme.of(context).textTheme.titleMedium?.copyWith(
                                   fontFamily: settings.fontFamily,
@@ -366,39 +363,6 @@ class SettingsPage extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 16),
-              // --- Reading/Study Mode Toggle ---
-              // Card(
-              //   child: Padding(
-              //     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              //     child: Column(
-              //       crossAxisAlignment: CrossAxisAlignment.start,
-              //       children: [
-              //         Text(
-              //           '阅读模式排版',
-              //           style: TextStyle(
-              //             fontFamily: settings.fontFamily,
-              //             fontSize: settings.fontSize + 2,
-              //             fontWeight: FontWeight.w600,
-              //           ),
-              //         ),
-              //         const SizedBox(height: 12),
-              //         SwitchListTile(
-              //           contentPadding: EdgeInsets.zero,
-              //           title: Text(
-              //             settings.readingModeCentered ? '阅读型（居中、段落）' : '查经型（左对齐、一节一行）',
-              //             style: TextStyle(
-              //               fontFamily: settings.fontFamily,
-              //               fontSize: settings.fontSize,
-              //             ),
-              //           ),
-              //           value: settings.readingModeCentered,
-              //           onChanged: (val) => settings.setReadingModeCentered(val),
-              //         ),
-              //       ],
-              //     ),
-              //   ),
-              // ),
-              // const SizedBox(height: 16),
               if (Theme.of(context).brightness != Brightness.dark) ...[
                 Card(
                   child: Padding(
@@ -503,34 +467,6 @@ class SettingsPage extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 16),
-              // Only show these settings when running as Web App
-              // if (kIsWeb && !settings.lockAllowUpdates)
-              //   Card(
-              //     // margin: const EdgeInsets.only(top: 24),
-              //     child: SwitchListTile(
-              //       title: Text(
-              //         uiStrings['allowUpdates']?[settings.locale] ??
-              //             'Allow Auto Updates',
-              //         style: TextStyle(
-              //           fontSize: settings.fontSize + 2,
-              //           fontWeight: FontWeight.w600,
-              //         ),
-              //       ),
-              //       subtitle: Text(
-              //         uiStrings['allowUpdatesSubtitle']?[settings.locale] ??
-              //             'Toggle whether to allow app updates from server.',
-              //         style: TextStyle(
-              //           fontSize: settings.fontSize,
-              //           fontFamily: settings.fontFamily,
-              //         ),
-              //       ),
-              //       value: settings.allowUpdates,
-              //       onChanged: (val) {
-              //         settings.setAllowUpdates(val);
-              //       },
-              //     ),
-              //   ),
-              // const SizedBox(height: 16),
               Card(
                 child: Padding(
                   padding: const EdgeInsets.all(16),
@@ -607,296 +543,6 @@ class SettingsPage extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 16),
-//               Card(
-//                 child: Padding(
-//                   padding: const EdgeInsets.all(16),
-//                   child: Column(
-//                     crossAxisAlignment: CrossAxisAlignment.start,
-//                     children: [
-//                       Text(
-//                         uiStrings['sendFeedback']?[settings.locale] ??
-//                             'Send Feedback',
-//                         style: TextStyle(
-//                           fontFamily: settings.fontFamily,
-//                           fontSize: settings.fontSize + 2,
-//                           fontWeight: FontWeight.w600,
-//                         ),
-//                       ),
-//                       const SizedBox(height: 12),
-//                       TextFormField(
-//                         controller: _feedbackController,
-//                         style: TextStyle(
-//                           fontSize: settings.fontSize,
-//                           fontFamily: settings.fontFamily,
-//                         ),
-//                         maxLines: null,
-//                         maxLength: 500,
-//                         decoration: InputDecoration(
-//                           hintText: uiStrings['feedbackHint']
-//                                   ?[settings.locale] ??
-//                               'Please enter your feedback...',
-//                           hintStyle: TextStyle(
-//                             fontSize: settings.fontSize,
-//                             fontFamily: settings.fontFamily,
-//                           ),
-//                           counterStyle: TextStyle(
-//                             fontSize: settings.fontSize,
-//                             fontFamily: settings.fontFamily,
-//                           ),
-//                           border: const OutlineInputBorder(),
-//                         ),
-//                       ),
-//                       const SizedBox(height: 12),
-//                       SizedBox(
-//                         width: double.infinity,
-//                         child: ValueListenableBuilder<bool>(
-//                           valueListenable: _isSending,
-//                           builder: (context, isSending, child) {
-//                             return ElevatedButton.icon(
-//                               style: Theme.of(context).brightness ==
-//                                       Brightness.light
-//                                   ? ElevatedButton.styleFrom(
-//                                       backgroundColor:
-//                                           Theme.of(context).colorScheme.primary,
-//                                       foregroundColor: Colors.white,
-//                                       padding: const EdgeInsets.symmetric(
-//                                           vertical: 16),
-//                                       textStyle: TextStyle(
-//                                         fontSize: settings.fontSize + 2,
-//                                         fontWeight: FontWeight.bold,
-//                                         fontFamily: settings.fontFamily,
-//                                       ),
-//                                     )
-//                                   : null,
-//                               icon: isSending
-//                                   ? const SizedBox(
-//                                       width: 16,
-//                                       height: 16,
-//                                       child: CircularProgressIndicator(
-//                                         strokeWidth: 2,
-//                                         valueColor:
-//                                             AlwaysStoppedAnimation<Color>(
-//                                                 Colors.white),
-//                                       ),
-//                                     )
-//                                   : const Icon(Icons.send),
-//                               label: Text(
-//                                 isSending
-//                                     ? (uiStrings['sendingFeedback']
-//                                             ?[settings.locale] ??
-//                                         'Sending...')
-//                                     : (uiStrings['sendFeedback']
-//                                             ?[settings.locale] ??
-//                                         'Send Feedback'),
-//                                 style: TextStyle(
-//                                   fontFamily: settings.fontFamily,
-//                                   fontSize: settings.fontSize,
-//                                 ),
-//                               ),
-//                               onPressed: isSending
-//                                   ? null
-//                                   : () async {
-//                                       final content =
-//                                           _feedbackController.text.trim();
-//                                       if (content.isEmpty) {
-//                                         ScaffoldMessenger.of(context)
-//                                             .showSnackBar(
-//                                           SnackBar(
-//                                             content: Text(
-//                                               uiStrings['feedbackEmpty']
-//                                                       ?[settings.locale] ??
-//                                                   '請輸入反饋內容',
-//                                               style: TextStyle(
-//                                                 fontFamily: settings.fontFamily,
-//                                                 fontSize: settings.fontSize,
-//                                               ),
-//                                             ),
-//                                             duration:
-//                                                 Duration(milliseconds: 1500),
-//                                           ),
-//                                         );
-//                                         return;
-//                                       }
-//                                       if (content.length > 500) {
-//                                         ScaffoldMessenger.of(context)
-//                                             .showSnackBar(
-//                                           SnackBar(
-//                                             content: Text(
-//                                               uiStrings['feedbackTooLong']
-//                                                       ?[settings.locale] ??
-//                                                   '內容過長，請刪減後再發送。',
-//                                               style: TextStyle(
-//                                                 fontFamily: settings.fontFamily,
-//                                                 fontSize: settings.fontSize,
-//                                               ),
-//                                             ),
-//                                             duration:
-//                                                 Duration(milliseconds: 1500),
-//                                           ),
-//                                         );
-//                                         return;
-//                                       }
-
-//                                       final emojiRegex = RegExp(
-//                                         r'[\u{1F600}-\u{1F64F}]|' // Emoticons 表情符號
-//                                         r'[\u{1F300}-\u{1F5FF}]|' // 各種符號
-//                                         r'[\u{1F680}-\u{1F6FF}]|' // 交通工具符號
-//                                         r'[\u{2600}-\u{26FF}]|' // 雜項符號
-//                                         r'[\u{2700}-\u{27BF}]', // Dingbats 記號
-//                                         unicode: true,
-//                                       );
-
-//                                       if (emojiRegex.hasMatch(content)) {
-//                                         ScaffoldMessenger.of(context)
-//                                             .showSnackBar(
-//                                           SnackBar(
-//                                             content: Text(
-//                                               uiStrings['feedbackInvalid']
-//                                                       ?[settings.locale] ??
-//                                                   '❗️內容包含不支援的符號（如 emoji 表情符號），請移除後再發送。',
-//                                               style: TextStyle(
-//                                                 fontFamily: settings.fontFamily,
-//                                                 fontSize: settings.fontSize,
-//                                               ),
-//                                             ),
-//                                             duration:
-//                                                 Duration(milliseconds: 1500),
-//                                           ),
-//                                         );
-//                                         return;
-//                                       }
-
-//                                       _isSending.value = true;
-
-//                                       // 當地系統時間（完整格式）
-//                                       final now = DateTime.now();
-//                                       final formattedTime =
-//                                           DateFormat('yyyy-MM-dd HH:mm:ss')
-//                                               .format(now);
-
-//                                       final timezoneOffset = now.timeZoneOffset;
-//                                       final timezoneString = timezoneOffset
-//                                               .isNegative
-//                                           ? '-${timezoneOffset.inHours.abs().toString().padLeft(2, '0')}:${(timezoneOffset.inMinutes.abs() % 60).toString().padLeft(2, '0')}'
-//                                           : '+${timezoneOffset.inHours.toString().padLeft(2, '0')}:${(timezoneOffset.inMinutes % 60).toString().padLeft(2, '0')}';
-
-//                                       final timezoneName = now.timeZoneName;
-
-//                                       final deviceTimeString =
-//                                           '$formattedTime GMT$timezoneString ($timezoneName)';
-
-//                                       final formattedDate =
-//                                           DateFormat('yyyy-MM-dd').format(now);
-
-//                                       // 平台資訊
-//                                       final platform = kIsWeb
-//                                           ? 'Web'
-//                                           : Theme.of(context).platform.name;
-
-//                                       // 語言
-//                                       final locale = settings.locale;
-
-//                                       // Web 的 UserAgent
-//                                       String userAgent = '';
-//                                       if (kIsWeb) {
-//                                         userAgent =
-//                                             'Web Browser'; // 简单标记是Web端，无需访问html.window
-//                                       }
-
-//                                       // 組裝完整訊息
-//                                       final fullMessage = '''
-// $content
-
-// ———
-// Platform: $platform ${kIsWeb ? '(Web)' : ''}
-// Locale: $locale
-// ${userAgent.isNotEmpty ? 'UserAgent: $userAgent\n' : ''}Device Local Time (User\'s timezone): $deviceTimeString
-// ''';
-//                                       try {
-//                                         final response = await http.post(
-//                                           Uri.parse(
-//                                               'https://formsubmit.co/f9d9312f748905d64423c6ce18bb285a'),
-//                                           headers: {
-//                                             'Content-Type':
-//                                                 'application/x-www-form-urlencoded'
-//                                           },
-//                                           body: {
-//                                             '_subject':
-//                                                 'YsWords Feedback ($formattedDate)',
-//                                             'message': fullMessage,
-//                                             '_template': 'table',
-//                                             '_honey': '',
-//                                             '_captcha': 'false',
-//                                           },
-//                                         );
-//                                         if (response.statusCode == 200) {
-//                                           ScaffoldMessenger.of(context)
-//                                               .showSnackBar(
-//                                             SnackBar(
-//                                               content: Text(
-//                                                 uiStrings['feedbackSuccess']
-//                                                         ?[settings.locale] ??
-//                                                     '✅ Feedback sent. Thank you!',
-//                                                 style: TextStyle(
-//                                                   fontFamily:
-//                                                       settings.fontFamily,
-//                                                   fontSize: settings.fontSize,
-//                                                 ),
-//                                               ),
-//                                               duration:
-//                                                   Duration(milliseconds: 1500),
-//                                             ),
-//                                           );
-//                                           _feedbackController.clear();
-//                                         } else {
-//                                           ScaffoldMessenger.of(context)
-//                                               .showSnackBar(
-//                                             SnackBar(
-//                                               content: Text(
-//                                                 uiStrings['feedbackFailure']
-//                                                         ?[settings.locale] ??
-//                                                     '❌ Failed to send. Please try again.',
-//                                                 style: TextStyle(
-//                                                   fontFamily:
-//                                                       settings.fontFamily,
-//                                                   fontSize: settings.fontSize,
-//                                                 ),
-//                                               ),
-//                                               duration:
-//                                                   Duration(milliseconds: 1500),
-//                                             ),
-//                                           );
-//                                         }
-//                                       } catch (_) {
-//                                         ScaffoldMessenger.of(context)
-//                                             .showSnackBar(
-//                                           SnackBar(
-//                                             content: Text(
-//                                               uiStrings['feedbackFailure']
-//                                                       ?[settings.locale] ??
-//                                                   '❌ Failed to send. Please try again.',
-//                                               style: TextStyle(
-//                                                 fontFamily: settings.fontFamily,
-//                                                 fontSize: settings.fontSize,
-//                                               ),
-//                                             ),
-//                                             duration:
-//                                                 Duration(milliseconds: 1500),
-//                                           ),
-//                                         );
-//                                       } finally {
-//                                         _isSending.value = false;
-//                                       }
-//                                     },
-//                             );
-//                           },
-//                         ),
-//                       )
-//                     ],
-//                   ),
-//                 ),
-//               ),
-            
             ],
           );
         },

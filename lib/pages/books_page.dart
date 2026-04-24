@@ -30,6 +30,13 @@ class _BooksPageState extends State<BooksPage> {
   bool _initialScrollDone = false;
 
   Map<String, bool> expandStatus = {};
+
+  @override
+  void dispose() {
+    _autoScrollController.dispose();
+    super.dispose();
+  }
+
   @override
   void initState() {
     super.initState();
@@ -274,6 +281,7 @@ class _BooksPageState extends State<BooksPage> {
                                           borderRadius:
                                               BorderRadius.circular(7.5),
                                           onTap: () {
+                                            if (mainProvider.verses.isEmpty) return;
                                             final firstVerseOfChapter =
                                                 mainProvider.verses.firstWhere(
                                               (v) =>
