@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/app_settings.dart';
 import '../models/verse.dart';
+import '../providers/main_provider.dart';
+import '../services/fetch_verses.dart';
+import '../services/fetch_books.dart';
 import '../constants/text_patterns.dart';
 import '../constants/ui_strings.dart';
 import 'home_page.dart';
@@ -16,10 +19,23 @@ class LoadingPage extends StatefulWidget {
 }
 
 class _LoadingPageState extends State<LoadingPage> {
+  Timer? _autoAdvance;
+  bool _retrying = false;
+
   @override
   void initState() {
     super.initState();
-    Future.delayed(const Duration(seconds: 3), () {
+    _scheduleAdvanceIfReady();
+  }
+
+  void _scheduleAdvanceIfReady() {
+    final mainProvider = context.read<MainProvider>();
+    if (mainProvider.loadError != null || mainProvider.verses.isEmpty) {
+      // Stay on the splash with the error UI; do not auto-advance.
+      return;
+    }
+    _autoAdvance?.cancel();
+    _autoAdvance = Timer(const Duration(seconds: 3), () {
       if (!mounted) return;
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (_) => const HomePage()),
@@ -27,9 +43,50 @@ class _LoadingPageState extends State<LoadingPage> {
     });
   }
 
+  Future<void> _retry() async {
+    if (_retrying) return;
+    setState(() => _retrying = true);
+    final mainProvider = context.read<MainProvider>();
+    try {
+      await FetchVerses.execute(mainProvider: mainProvider);
+      await FetchBooks.execute(mainProvider: mainProvider);
+      if (mainProvider.verses.isNotEmpty) {
+        final first = mainProvider.verses.first;
+        if (mainProvider.currentBook == null ||
+            mainProvider.currentChapter == null) {
+          mainProvider.setCurrentChapter(
+              book: first.book, chapter: first.chapter);
+          mainProvider.updateCurrentVerse(verse: first);
+        }
+        mainProvider.setLoadError(null);
+      } else {
+        mainProvider.setLoadError('empty');
+      }
+    } catch (e) {
+      mainProvider.setLoadError(e.toString());
+    }
+    if (!mounted) return;
+    setState(() => _retrying = false);
+    _scheduleAdvanceIfReady();
+  }
+
+  @override
+  void dispose() {
+    _autoAdvance?.cancel();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     final settings = Provider.of<AppSettings>(context, listen: false);
+    final mainProvider = context.watch<MainProvider>();
+    final hasError =
+        mainProvider.loadError != null || mainProvider.verses.isEmpty;
+
+    if (hasError) {
+      return _buildErrorScaffold(context, settings);
+    }
+
     // Shuffle a COPY so we don't mutate the canonical verse order
     final verse = widget.verses.isNotEmpty
         ? (List<Verse>.from(widget.verses)..shuffle()).first
@@ -63,7 +120,6 @@ class _LoadingPageState extends State<LoadingPage> {
                     height: 150,
                   ),
                   const SizedBox(height: 24),
-                  const SizedBox(height: 16),
                   Column(
                     children: [
                       Text(
@@ -75,7 +131,7 @@ class _LoadingPageState extends State<LoadingPage> {
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      SizedBox(height: 4),
+                      const SizedBox(height: 4),
                       Text(
                         '雅伟之言',
                         style: TextStyle(
@@ -143,6 +199,72 @@ class _LoadingPageState extends State<LoadingPage> {
                   ),
                 ],
               ),
+      ),
+    );
+  }
+
+  Widget _buildErrorScaffold(BuildContext context, AppSettings settings) {
+    final title =
+        uiStrings['loadErrorTitle']?[settings.locale] ?? 'Failed to load';
+    final body = uiStrings['loadErrorBody']?[settings.locale] ??
+        'Could not load Bible verses. Please check your connection and retry.';
+    final retryLabel = uiStrings['retry']?[settings.locale] ?? 'Retry';
+
+    return Scaffold(
+      backgroundColor: Theme.of(context).colorScheme.surface,
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 32),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.cloud_off_outlined,
+                size: 64,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+              const SizedBox(height: 16),
+              Text(
+                title,
+                style: TextStyle(
+                  fontSize: settings.fontSize * 1.1,
+                  fontFamily: settings.fontFamily,
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                body,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: settings.fontSize,
+                  fontFamily: settings.fontFamily,
+                  height: 1.5,
+                  color: Theme.of(context).textTheme.bodyLarge?.color,
+                ),
+              ),
+              const SizedBox(height: 24),
+              ElevatedButton.icon(
+                onPressed: _retrying ? null : _retry,
+                icon: _retrying
+                    ? const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Icon(Icons.refresh),
+                label: Text(
+                  retryLabel,
+                  style: TextStyle(
+                    fontSize: settings.fontSize,
+                    fontFamily: settings.fontFamily,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

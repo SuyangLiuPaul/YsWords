@@ -323,12 +323,25 @@ class _HomePageState extends State<HomePage> {
                         },
                         onVersionSelected: (version) async {
                           final p = context.read<MainProvider>();
+                          final messenger = ScaffoldMessenger.of(context);
                           p.clearSelectedVerses();
                           final prevEn = toEnglish(p.currentBook);
                           p.setVersion(version);
                           await FetchVerses.execute(mainProvider: p);
                           await FetchBooks.execute(mainProvider: p);
-                          if (p.verses.isEmpty) return;
+                          if (p.verses.isEmpty) {
+                            if (!mounted) return;
+                            messenger.showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  uiStrings['loadErrorBody']?[settings.locale] ??
+                                      'Could not load verses. Please retry.',
+                                ),
+                                duration: const Duration(seconds: 3),
+                              ),
+                            );
+                            return;
+                          }
                           final targetBook = prevEn == null
                               ? null
                               : translateBookName(prevEn, version);

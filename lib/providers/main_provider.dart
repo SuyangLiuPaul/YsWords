@@ -48,6 +48,16 @@ class MainProvider extends ChangeNotifier {
   String? currentBook;
   String currentVersion = 'cuvs-yhwh'; // default version
 
+  // Error surfaced from the initial load (e.g. asset read/decode failure).
+  // When non-null, the loading screen shows a retry UI.
+  String? loadError;
+
+  void setLoadError(String? error) {
+    if (loadError == error) return;
+    loadError = error;
+    notifyListeners();
+  }
+
   void setVersion(String version) {
     currentVersion = version;
     saveCurrentState();

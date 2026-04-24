@@ -318,52 +318,84 @@ class _BooksPageState extends State<BooksPage> {
 
     // If a book is selected, show its chapters
     if (_gridSelectedBook != null) {
-      final book = filteredBooks.firstWhereOrNull((b) => b.title == _gridSelectedBook);
+      final book = filteredBooks
+          .firstWhereOrNull((b) => b.title == _gridSelectedBook);
       if (book != null) {
         return Column(
           children: [
-            // Back to book grid
-            InkWell(
-              onTap: () => setState(() => _gridSelectedBook = null),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                child: Row(
-                  children: [
-                    Icon(Icons.arrow_back, size: settings.fontSize, color: scheme.primary),
-                    const SizedBox(width: 8),
-                    Text(
-                      book.title,
-                      style: TextStyle(
-                        fontSize: settings.fontSize,
-                        fontFamily: settings.fontFamily,
-                        fontWeight: FontWeight.w600,
-                        color: scheme.primary,
+            // Polished header: back arrow + prominent book title + chapter count
+            Material(
+              color: scheme.surfaceContainerLow,
+              child: InkWell(
+                onTap: () => setState(() => _gridSelectedBook = null),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 12, vertical: 12),
+                  child: Row(
+                    children: [
+                      Icon(Icons.arrow_back_rounded,
+                          size: settings.fontSize * 1.1,
+                          color: scheme.onSurface),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          book.title,
+                          style: TextStyle(
+                            fontSize: settings.fontSize * 1.1,
+                            fontFamily: settings.fontFamily,
+                            fontWeight: FontWeight.w600,
+                            color: scheme.onSurface,
+                          ),
+                        ),
                       ),
-                    ),
-                  ],
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: scheme.primaryContainer,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          '${book.chapters.length} '
+                          '${uiStrings['chapters']?[settings.locale] ?? 'ch'}',
+                          style: TextStyle(
+                            fontSize: settings.fontSize * 0.75,
+                            fontFamily: settings.fontFamily,
+                            color: scheme.onPrimaryContainer,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
-            const Divider(height: 1),
+            Divider(height: 1, color: scheme.outlineVariant.withValues(alpha: 0.4)),
             Expanded(
-              child: GridView.builder(
-                padding: const EdgeInsets.all(12),
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 5,
-                  crossAxisSpacing: 6,
-                  mainAxisSpacing: 6,
-                  childAspectRatio: 1.1,
-                ),
-                itemCount: book.chapters.length,
-                itemBuilder: (context, index) {
-                  final chapter = book.chapters[index];
-                  final selected = chapter.title == widget.chapterIdx &&
-                      widget.bookIdx == book.title;
-                  return _chapterTile(
-                    context, mainProvider, settings, book, chapter, selected, scheme,
-                  );
-                },
-              ),
+              child: LayoutBuilder(builder: (context, constraints) {
+                // Responsive chapter grid: target ~56 px tile on screen
+                final tileTarget = 56.0;
+                final cols =
+                    (constraints.maxWidth / tileTarget).floor().clamp(4, 8);
+                return GridView.builder(
+                  padding: const EdgeInsets.all(12),
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: cols,
+                    crossAxisSpacing: 8,
+                    mainAxisSpacing: 8,
+                    childAspectRatio: 1.0,
+                  ),
+                  itemCount: book.chapters.length,
+                  itemBuilder: (context, index) {
+                    final chapter = book.chapters[index];
+                    final selected = chapter.title == widget.chapterIdx &&
+                        widget.bookIdx == book.title;
+                    return _gridChapterTile(context, mainProvider, settings,
+                        book, chapter, selected, scheme);
+                  },
+                );
+              }),
             ),
           ],
         );
@@ -371,62 +403,157 @@ class _BooksPageState extends State<BooksPage> {
     }
 
     // Show book grid
-    return GridView.builder(
-      padding: const EdgeInsets.all(8),
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 3,
-        crossAxisSpacing: 6,
-        mainAxisSpacing: 6,
-        childAspectRatio: 2.5,
-      ),
-      itemCount: filteredBooks.length,
-      itemBuilder: (context, index) {
-        final book = filteredBooks[index];
-        final isCurrent = widget.bookIdx == book.title;
-        return Card(
-          color: isCurrent ? scheme.primary : scheme.surfaceContainerHighest,
-          elevation: isCurrent ? 2 : 0,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
-            side: BorderSide(
-              color: isCurrent ? scheme.primary : scheme.outlineVariant.withValues(alpha: 0.3),
-            ),
+    return LayoutBuilder(builder: (context, constraints) {
+      // Responsive: target ~150 px per card — 2 cols on phones, 3–5 on tablets
+      final targetWidth = 150.0;
+      final cols =
+          (constraints.maxWidth / targetWidth).floor().clamp(2, 5);
+      return GridView.builder(
+        padding: const EdgeInsets.fromLTRB(12, 6, 12, 12),
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: cols,
+          crossAxisSpacing: 10,
+          mainAxisSpacing: 10,
+          childAspectRatio: 1.6,
+        ),
+        itemCount: filteredBooks.length,
+        itemBuilder: (context, index) {
+          final book = filteredBooks[index];
+          final isCurrent = widget.bookIdx == book.title;
+          return _bookCard(
+              context, settings, book, isCurrent, scheme);
+        },
+      );
+    });
+  }
+
+  Widget _bookCard(BuildContext context, AppSettings settings, Book book,
+      bool isCurrent, ColorScheme scheme) {
+    final bgColor = isCurrent
+        ? scheme.primaryContainer
+        : scheme.surfaceContainerHighest;
+    final fgColor = isCurrent ? scheme.onPrimaryContainer : scheme.onSurface;
+    final borderColor = isCurrent
+        ? scheme.primary
+        : scheme.outlineVariant.withValues(alpha: 0.5);
+    return Material(
+      color: bgColor,
+      borderRadius: BorderRadius.circular(12),
+      elevation: isCurrent ? 1.5 : 0,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(12),
+        onTap: () => setState(() => _gridSelectedBook = book.title),
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: borderColor, width: isCurrent ? 1.5 : 1),
           ),
-          child: InkWell(
-            borderRadius: BorderRadius.circular(8),
-            onTap: () => setState(() => _gridSelectedBook = book.title),
-            child: Center(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 4),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      book.title,
-                      textAlign: TextAlign.center,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontSize: settings.fontSize * 0.85,
-                        fontFamily: settings.fontFamily,
-                        fontWeight: FontWeight.w500,
-                        color: isCurrent ? scheme.onPrimary : scheme.onSurface,
-                      ),
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+          child: Stack(
+            children: [
+              // Chapter count badge (top-right)
+              Positioned(
+                top: 0,
+                right: 0,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 8, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: isCurrent
+                        ? scheme.primary.withValues(alpha: 0.2)
+                        : scheme.surface,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Text(
+                    '${book.chapters.length}',
+                    style: TextStyle(
+                      fontSize: settings.fontSize * 0.65,
+                      fontFamily: settings.fontFamily,
+                      color: isCurrent
+                          ? scheme.onPrimaryContainer
+                          : scheme.onSurfaceVariant,
+                      fontWeight: FontWeight.w600,
+                      height: 1.0,
                     ),
-                    Text(
-                      '${book.chapters.length}',
-                      style: TextStyle(
-                        fontSize: settings.fontSize * 0.6,
-                        color: isCurrent ? scheme.onPrimary.withValues(alpha: 0.7) : scheme.onSurfaceVariant,
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
               ),
+              // Book title (centered)
+              Center(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                  child: Text(
+                    book.title,
+                    textAlign: TextAlign.center,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: settings.fontSize * 0.95,
+                      fontFamily: settings.fontFamily,
+                      fontWeight:
+                          isCurrent ? FontWeight.w700 : FontWeight.w500,
+                      color: fgColor,
+                      height: 1.2,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Chapter tile sized to fill the grid cell (no fixed 55×55 clash).
+  Widget _gridChapterTile(
+      BuildContext context,
+      MainProvider mainProvider,
+      AppSettings settings,
+      Book book,
+      Chapter chapter,
+      bool selected,
+      ColorScheme scheme) {
+    return Material(
+      color: selected ? scheme.primary : scheme.surfaceContainerHighest,
+      borderRadius: BorderRadius.circular(10),
+      elevation: selected ? 1.5 : 0,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(10),
+        onTap: () {
+          final matched = mainProvider.verses
+              .where(
+                  (v) => v.book == book.title && v.chapter == chapter.title)
+              .toList();
+          if (matched.isEmpty) return;
+          mainProvider.setCurrentChapter(
+              book: book.title, chapter: chapter.title);
+          mainProvider.updateCurrentVerse(verse: matched.first);
+          mainProvider.jumpToTop();
+          Get.back();
+        },
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(
+              color: selected
+                  ? scheme.primary
+                  : scheme.outlineVariant.withValues(alpha: 0.4),
+              width: 1,
             ),
           ),
-        );
-      },
+          alignment: Alignment.center,
+          child: Text(
+            chapter.title.toString(),
+            style: TextStyle(
+              fontSize: settings.fontSize * 0.95,
+              fontFamily: settings.fontFamily,
+              fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+              color: selected ? scheme.onPrimary : scheme.onSurface,
+            ),
+          ),
+        ),
+      ),
     );
   }
 

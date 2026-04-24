@@ -10,6 +10,7 @@ const _kLocale = 'locale';
 const _kThemeMode = 'themeMode';
 const _kParagraphMode = 'paragraphMode';
 const _kMenuScale = 'menuScale';
+const _kOfflineMode = 'offlineMode';
 
 class AppSettings extends ChangeNotifier {
   String _fontFamily = 'Roboto';
@@ -21,6 +22,7 @@ class AppSettings extends ChangeNotifier {
   ThemeMode _themeMode = ThemeMode.system;
   bool _paragraphMode = false;
   double _menuScale = 1.0;
+  bool _offlineMode = true;
 
   String get fontFamily => _fontFamily;
   double get fontSize => _fontSize;
@@ -31,6 +33,7 @@ class AppSettings extends ChangeNotifier {
   ThemeMode get themeMode => _themeMode;
   bool get paragraphMode => _paragraphMode;
   double get menuScale => _menuScale;
+  bool get offlineMode => _offlineMode;
 
   Future<void> setFontFamily(String family) async {
     if (_fontFamily == family) return;
@@ -96,12 +99,21 @@ class AppSettings extends ChangeNotifier {
     await prefs.setBool(_kParagraphMode, enabled);
   }
 
-  Future<void> setMenuScale(double scale) async {
-    if (_menuScale == scale) return;
-    _menuScale = scale;
+  Future<void> setOfflineMode(bool enabled) async {
+    if (_offlineMode == enabled) return;
+    _offlineMode = enabled;
     notifyListeners();
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setDouble(_kMenuScale, scale);
+    await prefs.setBool(_kOfflineMode, enabled);
+  }
+
+  Future<void> setMenuScale(double scale) async {
+    final clamped = scale.clamp(0.7, 1.5);
+    if (_menuScale == clamped) return;
+    _menuScale = clamped;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setDouble(_kMenuScale, clamped);
   }
 
   Future<void> loadSettings() async {
@@ -119,7 +131,8 @@ class AppSettings extends ChangeNotifier {
     _themeMode = _parseThemeMode(prefs.getString(_kThemeMode));
     _paragraphMode = prefs.getBool(_kParagraphMode) ?? false;
     final rawMenuScale = prefs.getDouble(_kMenuScale) ?? 1.0;
-    _menuScale = (rawMenuScale * 10).roundToDouble() / 10;
+    _menuScale = ((rawMenuScale * 10).roundToDouble() / 10).clamp(0.7, 1.5);
+    _offlineMode = prefs.getBool(_kOfflineMode) ?? true;
     notifyListeners();
   }
 

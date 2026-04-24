@@ -22,6 +22,16 @@ const bibleVersions = <BibleVersionInfo>[
     menuLabel: 'Lexham English Bible',
   ),
   BibleVersionInfo(
+    value: 'nasb',
+    shortLabel: 'NASB',
+    menuLabel: 'New American Standard Bible 2020',
+  ),
+  BibleVersionInfo(
+    value: 'niv',
+    shortLabel: 'NIV',
+    menuLabel: 'New International Version 2011',
+  ),
+  BibleVersionInfo(
     value: 'cuvs-yhwh',
     shortLabel: 'CUVS(简)',
     menuLabel: '和合本雅伟版(简体)',

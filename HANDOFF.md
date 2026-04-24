@@ -1,6 +1,6 @@
 # YsWords — AI Agent Handoff Document
 
-> Last updated: 2026-04-24
+> Last updated: 2026-04-25
 > Project: YsWords (Yahweh's Words) — bilingual Bible reader
 > Stack: Flutter 3.41.7 / Dart 3.11.5 / Provider + GetX
 > Repo: https://github.com/SuyangLiuPaul/YsWords
@@ -198,6 +198,32 @@ No unused dependencies remain. Seven were removed in the last cleanup: `expandab
 
 ## What Has Been Fixed (2026-04-25)
 
+### Books Grid Polish & Offline Toggle Restore (this session, round 2)
+- **Books grid redesign** (`lib/pages/books_page.dart`):
+  - Book cards now use a 1.6 aspect ratio (was 2.5, too stretched). Each card shows the book title centered with a chapter-count badge in the top-right corner.
+  - Responsive column count: target ~150 px per card, clamped to 2–5 columns. Phones get 2, tablets get 3–5.
+  - Selected book uses `primaryContainer` tint + 1.5 px primary border + elevation, so it reads as "current" without looking like a disabled button.
+  - Chapter-selector header (when a book is tapped) promoted from a plain row into a material strip with back arrow, prominent book title, and a chapter-count pill (`primaryContainer`).
+  - Chapter tiles now fill the grid cell (removed the hardcoded 55×55 `SizedBox` that was clashing with the outer `GridView` sizing). Responsive 4–8 columns based on width.
+  - Borders use `outlineVariant` at 40–50 % alpha for softer separation instead of hard lines.
+- **Offline mode toggle restored** (`lib/models/app_settings.dart` + `lib/pages/settings_page.dart`):
+  - Added back the `SwitchListTile` in Settings between the Reading Mode card and the Interface Language card.
+  - `AppSettings` regains `offlineMode` getter, `setOfflineMode()`, and persistence under `_kOfflineMode`. Defaults to `true` since all Bible data is already bundled in assets.
+  - Localized subtitle clarifies "All Bible data is bundled. No network connection required." — the toggle is a user-visible guarantee rather than a silent no-op.
+  - uiStrings keys `offlineMode`, `offlineModeSubtitle` re-added.
+- **NASB / NIV ship fully offline**: both are bundled static JSON (`assets/nasb.json` 7.6 MB, `assets/niv.json` 7.4 MB, 31 089–31 090 verses, 66 books each). The api.bible key is only used by `tools/fetch_bible_versions.py` for *one-time* authoring refresh — never at runtime. Adding NASB/NIV to `bible_versions.dart` in the previous round is what makes them selectable in the picker.
+
+### UI/UX Hardening & Error Recovery (this session)
+- **Error UI with retry**: `LoadingPage` now detects `mainProvider.loadError != null` (or an empty verses list) and renders an error scaffold with `Icons.cloud_off_outlined`, localized title/body, and an inline "Retry" button that re-runs `FetchVerses.execute()` + `FetchBooks.execute()`. Removes the old silent failure path where users saw only a static splash.
+- **`MainProvider.loadError`**: New nullable `String?` field + `setLoadError()` on `MainProvider`. Populated from `main.dart` bootstrap's try/catch and from the retry path.
+- **Bootstrap try/catch**: `_MainAppState` in `main.dart` now wraps the init sequence in try/catch, calls `setLoadError('empty')` when verses fail to load, and `setLoadError(null)` on success.
+- **NASB/NIV exposed in picker**: Added `nasb` and `niv` entries to `lib/constants/bible_versions.dart`. The two versions had ~15 MB of full-text JSON bundled since commit `898e9b5` but were hidden because `c59528e`'s workaround was never reverted. The picker now shows all 14 versions.
+- **Menu scale bounds enforced**: `AppSettings.setMenuScale()` now clamps input to `[0.7, 1.5]` before persisting — previously the setter took any value, which could drive the Slider into assert failures if SharedPreferences held a stale out-of-range value.
+- **Version-switch error surface**: `HomePage` version picker now shows a `SnackBar` with the localized load-error message when `FetchVerses` returns empty, instead of silently leaving the reader stuck.
+- **Splash layout cleanup**: Removed the dead `SizedBox(height: 16)` that followed the 24 px spacer in `LoadingPage` — no visual change, just pays back a dead line.
+- **Localized strings added**: `loadErrorTitle`, `loadErrorBody`, `retry` in `lib/constants/ui_strings.dart` (en / zh-Hans / zh-Hant).
+- **Dev artifact removed**: Deleted `lib_source_dump.txt` (187 KB regenerated artifact) and added it to `.gitignore` so `scan_folder.py` output no longer re-enters VCS.
+
 ### New Bible Versions (commits `598313c`, api.bible integration)
 - **和合本 (简/繁)**: Downloaded 31,103 verses from getbible.net (CUV simplified & traditional, 66 books)
 - **新译本 (简/繁)**: Downloaded 31,102-31,104 verses from getbible.net (CNV simplified & traditional, 66 books)
@@ -319,9 +345,6 @@ The 14 Bible JSON files total ~58 MB. They are loaded entirely into memory via `
 ### `fonts_backup/` Directory
 Contains ~178 font files not used in production (commented out in `web/index.html` preloads). Could be deleted or moved to a separate repository to reduce clone size.
 
-### `lib_source_dump.txt`
-A 187 KB concatenated dump of all Dart source from `scan_folder.py`. Development artifact that could be deleted.
-
 ### HomePage is ~520 Lines
 The main reading page handles too many concerns: verse display, swipe gestures, copy logic, version switching, chapter navigation. Consider extracting copy formatting and chapter navigation into separate classes/widgets.
 
@@ -330,9 +353,6 @@ The main reading page handles too many concerns: verse display, swipe gestures, 
 
 ### Search is Linear
 Full-text search iterates every verse on every query. For 31,000+ verses this works but could be slow on older devices. A pre-built inverted index would help.
-
-### No Error UI
-When verse loading fails, the user sees nothing — no error message, no retry button. The try-catch in `FetchVerses` silently prints to console.
 
 ### Web-specific Issues
 - PWA service worker is mentioned as unavailable in the README

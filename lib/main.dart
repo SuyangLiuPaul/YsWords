@@ -49,11 +49,15 @@ class _MainAppState extends State<MainApp> {
         });
       }
     });
-    Future.microtask(() async {
-      if (!mounted) return;
-      final mainProvider = context.read<MainProvider>();
-      final appSettings = context.read<AppSettings>();
+    Future.microtask(_bootstrap);
+  }
 
+  Future<void> _bootstrap() async {
+    if (!mounted) return;
+    final mainProvider = context.read<MainProvider>();
+    final appSettings = context.read<AppSettings>();
+
+    try {
       await appSettings.loadSettings();
       await mainProvider.restoreState();
 
@@ -61,6 +65,12 @@ class _MainAppState extends State<MainApp> {
         await FetchVerses.execute(mainProvider: mainProvider);
       }
       await FetchBooks.execute(mainProvider: mainProvider);
+
+      if (mainProvider.verses.isEmpty) {
+        mainProvider.setLoadError('empty');
+      } else {
+        mainProvider.setLoadError(null);
+      }
 
       // Validate restored state or fallback
       if (mainProvider.currentBook != null &&
@@ -81,13 +91,16 @@ class _MainAppState extends State<MainApp> {
             book: firstVerse.book, chapter: firstVerse.chapter);
         mainProvider.updateCurrentVerse(verse: firstVerse);
       }
+    } catch (e, st) {
+      debugPrint('Bootstrap failed: $e\n$st');
+      mainProvider.setLoadError(e.toString());
+    }
 
-      if (mounted) {
-        setState(() {
-          _loading = false;
-        });
-      }
-    });
+    if (mounted) {
+      setState(() {
+        _loading = false;
+      });
+    }
   }
 
   @override

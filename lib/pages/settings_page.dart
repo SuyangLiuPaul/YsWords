@@ -547,6 +547,29 @@ class SettingsPage extends StatelessWidget {
               ),
               const SizedBox(height: 16),
               Card(
+                child: SwitchListTile(
+                  title: Text(
+                    uiStrings['offlineMode']?[settings.locale] ?? 'Offline Mode',
+                    style: TextStyle(
+                      fontSize: settings.fontSize + 2,
+                      fontWeight: FontWeight.w600,
+                      fontFamily: settings.fontFamily,
+                    ),
+                  ),
+                  subtitle: Text(
+                    uiStrings['offlineModeSubtitle']?[settings.locale] ??
+                        'All Bible data is bundled. No network connection required.',
+                    style: TextStyle(
+                      fontSize: settings.fontSize,
+                      fontFamily: settings.fontFamily,
+                    ),
+                  ),
+                  value: settings.offlineMode,
+                  onChanged: (val) => settings.setOfflineMode(val),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Card(
                 child: Padding(
                   padding: const EdgeInsets.all(16),
                   child: Column(

@@ -291,6 +291,36 @@ const uiStrings = {
     'zh-Hant': '暫無經文',
     'en': 'No verses available',
   },
+  'loadErrorTitle': {
+    'zh-Hans': '加载失败',
+    'zh-Hant': '載入失敗',
+    'en': 'Failed to load',
+  },
+  'loadErrorBody': {
+    'zh-Hans': '无法加载圣经经文，请检查网络或重试。',
+    'zh-Hant': '無法載入聖經經文，請檢查網絡或重試。',
+    'en': 'Could not load Bible verses. Please check your connection and retry.',
+  },
+  'retry': {
+    'zh-Hans': '重试',
+    'zh-Hant': '重試',
+    'en': 'Retry',
+  },
+  'offlineMode': {
+    'zh-Hans': '离线模式',
+    'zh-Hant': '離線模式',
+    'en': 'Offline Mode',
+  },
+  'chapters': {
+    'zh-Hans': '章',
+    'zh-Hant': '章',
+    'en': 'ch',
+  },
+  'offlineModeSubtitle': {
+    'zh-Hans': '所有圣经数据均已内置，无需联网即可阅读。',
+    'zh-Hant': '所有聖經數據均已內置，無需聯網即可閱讀。',
+    'en': 'All Bible data is bundled. No network connection required.',
+  },
   'bible': {
     'zh-Hans': '圣经',
     'zh-Hant': '聖經',
