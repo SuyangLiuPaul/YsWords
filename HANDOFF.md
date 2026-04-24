@@ -64,8 +64,8 @@ main.dart (entry point)
 ### Pages
 | File | Purpose |
 |---|---|
-| `lib/pages/home_page.dart` | Main reading view. No fixed AppBar — uses `_FloatingHeader` (always shows book/chapter/version, search, settings). `ScrollablePositionedList` with paragraph group items. Bottom bar: `_ReaderStatusBar` (progress, chapter nav) or `_SelectionActionBar` (copy, highlight with 6-color picker, clear). Swipe gestures for chapter nav. Menu sizes scale with `settings.menuScale` |
-| `lib/pages/books_page.dart` | OT/NT tabs, list/grid view toggle, ExpansionTile (list) or card grid (grid) per book, chapter grid. AutoScrollController to jump to current book |
+| `lib/pages/home_page.dart` | Main reading view. No fixed AppBar — uses Apple-glass `_FloatingHeader` / `_GlassSurface` (always shows book/chapter/version, search, settings). `ScrollablePositionedList` with paragraph group items. Bottom glass bar: `_ReaderStatusBar` (progress, chapter nav) or `_SelectionActionBar` (copy, highlight with 6-color picker, clear). Swipe gestures for chapter nav. Menu sizes scale with `settings.menuScale` |
+| `lib/pages/books_page.dart` | OT/NT tabs, list/grid view toggle, ExpansionTile (list) or dense card grid (grid) per book, chapter grid. Uses glass filter surfaces for the controls and chapter header. `_shortBookTitle()` handles English + Simplified/Traditional Chinese abbreviations so grid labels do not squeeze or truncate. AutoScrollController jumps to current book |
 | `lib/pages/search_page.dart` | Full-text search with book filter. Results sorted canonically. Tap to jump+highlight |
 | `lib/pages/settings_page.dart` | Settings UI: font size, menu size, line spacing, copy format with preview, theme, color palette, reading mode, language |
 | `lib/pages/loading_page.dart` | 3-second splash with random verse display and app branding |
@@ -174,6 +174,9 @@ Netlify does NOT run Flutter. The `netlify.toml` build command is `echo 'Flutter
 **Netlify credentials** are in `.env` (gitignored):
 - `NETLIFY_AUTH_TOKEN`
 - `NETLIFY_SITE_ID=975d1a08-8203-4994-a7ef-ca60452e41bf`
+- `GITHUB_TOKEN` (for non-interactive GitHub push from this machine)
+
+The api.bible key is only needed for one-time authoring refresh via `tools/fetch_bible_versions.py --api-key ...`; the app itself reads bundled assets and does not call api.bible at runtime.
 
 The `netlify` CLI binary is at `/Users/pliu0036/Documents/CodingProject/SmartHome/node_modules/.bin/netlify` (borrowed from another project). If unavailable, install globally with `npm i -g netlify-cli`.
 
@@ -197,6 +200,12 @@ No unused dependencies remain. Seven were removed in the last cleanup: `expandab
 ---
 
 ## What Has Been Fixed (2026-04-25)
+
+### Apple-Glass UI Polish & Bilingual Grid Abbreviations (this session, round 4)
+- **Reader glass chrome** (`lib/pages/home_page.dart`): `_FloatingHeader`, `_ReaderStatusBar`, and `_SelectionActionBar` now use `_GlassSurface` with `BackdropFilter` blur, translucent `surface` fill, soft outline, and floating rounded geometry. Header and bottom clearance values were retuned (`topInset + 64 * menuScale + 12`, bottom `96 * menuScale`) so content does not tuck under the glass controls.
+- **Selection bar clarity**: Copy/highlight/clear actions now sit inside the same glass bottom bar as the reading status, keeping the action surface stable while preserving the 6-color highlight picker and remove-highlight flow.
+- **Books picker glass controls** (`lib/pages/books_page.dart`): OT/NT + List/Grid controls and the selected-book chapter header now sit on `_BooksGlassSurface` with blur and rounded translucent styling. OT/NT tabs are horizontally scrollable to prevent overflow on narrow screens or large menu/font settings.
+- **Grid abbreviation fix**: `_shortBookTitle()` now covers English, Simplified Chinese, and Traditional Chinese book names. Long English labels are compact (`1 Thessalonians` → `1Th`, `1 Chronicles` → `1Chr`), and Chinese grid labels use familiar short forms (`帖撒罗尼迦前书` → `帖前`, `哥林多前书` → `林前`, `啟示錄` → `啟`, etc.). Full names remain available via tile tooltips.
 
 ### Reader Layout & Grid Redesign (this session, round 3)
 - **WeDevote-style books grid** (`lib/pages/books_page.dart`): Dense 4–8 column square-tile grid (1.0 aspect) targeting ~80 px per tile. Tiles show a single-line book name (auto-fitted with `FittedBox`) with long English names abbreviated (`1 Corinthians` → `1 Cor`, `Matthew` → `Matt`, etc.) via a local `_shortBookTitle()` map covering all 66 books. Current book fills with `scheme.primary`/`onPrimary`; others use `surfaceContainerHighest` with a soft `outlineVariant` border — matches 微读圣经's dense reference feel.

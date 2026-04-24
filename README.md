@@ -13,9 +13,9 @@
 | Category     | Details                                                                                                                 |
 | ------------ | ----------------------------------------------------------------------------------------------------------------------- |
 | Versions     | KJV, LEB, NASB, NIV, 和合本雅伟版 (简 / 繁), 和合本 (简 / 繁), 新译本 (简 / 繁), 原文释经圣经 (简 / 繁)                              |
-| Reading      | Light / Dark / System theme; Adjustable font family, size, line spacing, menu scale; Verse-by-verse or Paragraph Flow reading mode |
+| Reading      | Apple-glass reader controls; Light / Dark / System theme; Adjustable font family, size, line spacing, menu scale; Verse-by-verse or Paragraph Flow reading mode |
 | Highlights   | Mark verses with 6 colors (yellow, green, blue, pink, orange, purple); persistent across sessions                      |
-| Navigation   | Swipe left/right to change chapter; Floating chapter picker; Previous/next chapter buttons; Grid/List view for books   |
+| Navigation   | Swipe left/right to change chapter; Floating chapter picker; Previous/next chapter buttons; Grid/List view for books with compact English/Chinese labels |
 | Search       | Book-only or whole-Bible search; Highlighted results with book summary                                                  |
 | Annotations  | `{...}` inline badges with linked `<note:...>` pop-ups; `[...]` dotted-underline keywords; Book icon notes              |
 | Copy & Share | Tap verses to multi-select; Copy in **Plain**, **With Reference**, or **Devotional** formats                            |
@@ -194,7 +194,7 @@ flutter build web
 # 2. Deploy to Netlify
 netlify deploy --prod --dir=build/web --auth $NETLIFY_AUTH_TOKEN --site $NETLIFY_SITE_ID
 
-# 3. Push to GitHub
+# 3. Push to GitHub (uses GITHUB_TOKEN from .env when configured)
 git push origin main
 ```
 

@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -273,7 +275,7 @@ class _HomePageState extends State<HomePage> {
                             // the first verse never tucks under the header.
                             return SizedBox(
                                 height:
-                                    topInset + 52 * settings.menuScale + 8);
+                                    topInset + 64 * settings.menuScale + 12);
                           }
                           final groupIdx = index - 1;
                           if (groupIdx < paragraphGroups.length) {
@@ -298,10 +300,14 @@ class _HomePageState extends State<HomePage> {
                             );
                           }
                           // Trailing clearance so the last verse is not
-                          // tucked under _ReaderStatusBar. Scales with menu
-                          // size so taller status bars still get clearance
-                          // without over-padding smaller layouts.
-                          return SizedBox(height: 72 * settings.menuScale);
+                          // tucked under _ReaderStatusBar. The status bar
+                          // itself is ~85–100 px plus the device bottom
+                          // safe-area inset, so we add both here and scale
+                          // with menu size for larger UI settings.
+                          final bottomInset =
+                              MediaQuery.of(context).padding.bottom;
+                          return SizedBox(
+                              height: bottomInset + 96 * settings.menuScale);
                         },
                         itemScrollController: mainProvider.itemScrollController,
                         itemPositionsListener:
@@ -313,82 +319,81 @@ class _HomePageState extends State<HomePage> {
                     ),
                     // Floating header: always shows book/chapter/version, search/settings
                     _FloatingHeader(
-                        showBookInfo: currentVerse != null,
-                        book: currentVerse?.book ?? '',
-                        chapter: currentVerse?.chapter ?? 0,
-                        version: mainProvider.currentVersion,
-                        onBookTap: () {
-                          mainProvider.clearSelectedVerses();
-                          Get.to(
-                            () => BooksPage(
-                              chapterIdx:
-                                  mainProvider.currentVerse?.chapter ?? 1,
-                              bookIdx: mainProvider.currentVerse?.book ?? '',
-                            ),
-                            transition: Transition.leftToRight,
-                            duration: const Duration(milliseconds: 300),
-                            curve: Curves.easeInOut,
-                          );
-                        },
-                        onVersionSelected: (version) async {
-                          final p = context.read<MainProvider>();
-                          final messenger = ScaffoldMessenger.of(context);
-                          p.clearSelectedVerses();
-                          final prevEn = toEnglish(p.currentBook);
-                          p.setVersion(version);
-                          await FetchVerses.execute(mainProvider: p);
-                          await FetchBooks.execute(mainProvider: p);
-                          if (p.verses.isEmpty) {
-                            if (!mounted) return;
-                            messenger.showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  uiStrings['loadErrorBody']?[settings.locale] ??
-                                      'Could not load verses. Please retry.',
-                                ),
-                                duration: const Duration(seconds: 3),
+                      showBookInfo: currentVerse != null,
+                      book: currentVerse?.book ?? '',
+                      chapter: currentVerse?.chapter ?? 0,
+                      version: mainProvider.currentVersion,
+                      onBookTap: () {
+                        mainProvider.clearSelectedVerses();
+                        Get.to(
+                          () => BooksPage(
+                            chapterIdx: mainProvider.currentVerse?.chapter ?? 1,
+                            bookIdx: mainProvider.currentVerse?.book ?? '',
+                          ),
+                          transition: Transition.leftToRight,
+                          duration: const Duration(milliseconds: 300),
+                          curve: Curves.easeInOut,
+                        );
+                      },
+                      onVersionSelected: (version) async {
+                        final p = context.read<MainProvider>();
+                        final messenger = ScaffoldMessenger.of(context);
+                        p.clearSelectedVerses();
+                        final prevEn = toEnglish(p.currentBook);
+                        p.setVersion(version);
+                        await FetchVerses.execute(mainProvider: p);
+                        await FetchBooks.execute(mainProvider: p);
+                        if (p.verses.isEmpty) {
+                          if (!mounted) return;
+                          messenger.showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                uiStrings['loadErrorBody']?[settings.locale] ??
+                                    'Could not load verses. Please retry.',
                               ),
-                            );
-                            return;
-                          }
-                          final targetBook = prevEn == null
-                              ? null
-                              : translateBookName(prevEn, version);
-                          final targetChapter = p.currentChapter;
-                          final match = p.verses.firstWhere(
-                            (v) =>
-                                (targetBook == null || v.book == targetBook) &&
-                                (targetChapter == null ||
-                                    v.chapter == targetChapter),
-                            orElse: () => p.verses.first,
+                              duration: const Duration(seconds: 3),
+                            ),
                           );
-                          p.setCurrentChapter(
-                              book: match.book, chapter: match.chapter);
-                          p.updateCurrentVerse(verse: match);
-                          p.jumpToTop();
-                          if (mounted) {
-                            setState(() => _visibleItemIndex = 0);
-                          }
-                        },
-                        onSearch: () {
-                          mainProvider.clearSelectedVerses();
-                          Get.to(
-                            () => SearchPage(),
-                            transition: Transition.rightToLeft,
-                          );
-                        },
-                        onSettings: () {
-                          mainProvider.clearSelectedVerses();
-                          Get.to(() => SettingsPage());
-                        },
-                      ),
+                          return;
+                        }
+                        final targetBook = prevEn == null
+                            ? null
+                            : translateBookName(prevEn, version);
+                        final targetChapter = p.currentChapter;
+                        final match = p.verses.firstWhere(
+                          (v) =>
+                              (targetBook == null || v.book == targetBook) &&
+                              (targetChapter == null ||
+                                  v.chapter == targetChapter),
+                          orElse: () => p.verses.first,
+                        );
+                        p.setCurrentChapter(
+                            book: match.book, chapter: match.chapter);
+                        p.updateCurrentVerse(verse: match);
+                        p.jumpToTop();
+                        if (mounted) {
+                          setState(() => _visibleItemIndex = 0);
+                        }
+                      },
+                      onSearch: () {
+                        mainProvider.clearSelectedVerses();
+                        Get.to(
+                          () => SearchPage(),
+                          transition: Transition.rightToLeft,
+                        );
+                      },
+                      onSettings: () {
+                        mainProvider.clearSelectedVerses();
+                        Get.to(() => SettingsPage());
+                      },
+                    ),
                     Align(
                       alignment: Alignment.bottomCenter,
                       child: isSelected
                           ? _SelectionActionBar(
                               selectedCount: mainProvider.selectedVerses.length,
-                              anyHighlighted: mainProvider.selectedVerses
-                                  .any((v) => mainProvider.isVerseHighlighted(v)),
+                              anyHighlighted: mainProvider.selectedVerses.any(
+                                  (v) => mainProvider.isVerseHighlighted(v)),
                               onCopy: () => _copySelectedVerses(
                                 mainProvider: mainProvider,
                                 settings: settings,
@@ -576,7 +581,8 @@ class _ReaderStatusBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final settings = context.watch<AppSettings>();
     final scheme = Theme.of(context).colorScheme;
-    final detailFontSize = (settings.fontSize.clamp(10.0, 16.0) * settings.menuScale).toDouble();
+    final detailFontSize =
+        (settings.fontSize.clamp(10.0, 16.0) * settings.menuScale).toDouble();
     final modeLabel = paragraphMode
         ? (uiStrings['paragraphFlow']?[settings.locale] ?? 'Paragraph Flow')
         : (uiStrings['verseByVerse']?[settings.locale] ?? 'Verse by Verse');
@@ -588,66 +594,100 @@ class _ReaderStatusBar extends StatelessWidget {
 
     return SafeArea(
       top: false,
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          color: scheme.surface.withValues(alpha: 0.96),
-          border: Border(
-            top: BorderSide(
-              color: scheme.outlineVariant.withValues(alpha: 0.7),
-            ),
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: scheme.shadow.withValues(alpha: 0.08),
-              blurRadius: 10,
-              offset: const Offset(0, -3),
-            ),
-          ],
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            LinearProgressIndicator(
-              value: progress,
-              minHeight: 3,
-              backgroundColor: scheme.surfaceContainerHighest,
-              color: scheme.primary,
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(8, 6, 8, 8),
-              child: Row(
-                children: [
-                  IconButton(
-                    tooltip: uiStrings['previousChapter']?[settings.locale] ??
-                        'Previous Chapter',
-                    onPressed: canGoPrevious ? onPrevious : null,
-                    icon: const Icon(Icons.chevron_left_rounded),
-                  ),
-                  Expanded(
-                    child: Text(
-                      detail,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontFamily: settings.fontFamily,
-                        fontSize: detailFontSize,
-                        fontWeight: FontWeight.w500,
-                        color: scheme.onSurfaceVariant,
-                        height: 1.15,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(10, 0, 10, 8),
+        child: _GlassSurface(
+          radius: 22,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ClipRRect(
+                borderRadius:
+                    const BorderRadius.vertical(top: Radius.circular(22)),
+                child: LinearProgressIndicator(
+                  value: progress,
+                  minHeight: 3,
+                  backgroundColor:
+                      scheme.surfaceContainerHighest.withValues(alpha: 0.5),
+                  color: scheme.primary,
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(8, 6, 8, 8),
+                child: Row(
+                  children: [
+                    IconButton(
+                      tooltip: uiStrings['previousChapter']?[settings.locale] ??
+                          'Previous Chapter',
+                      onPressed: canGoPrevious ? onPrevious : null,
+                      icon: const Icon(Icons.chevron_left_rounded),
+                    ),
+                    Expanded(
+                      child: Text(
+                        detail,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontFamily: settings.fontFamily,
+                          fontSize: detailFontSize,
+                          fontWeight: FontWeight.w600,
+                          color: scheme.onSurfaceVariant,
+                          height: 1.15,
+                        ),
                       ),
                     ),
-                  ),
-                  IconButton(
-                    tooltip: uiStrings['nextChapter']?[settings.locale] ??
-                        'Next Chapter',
-                    onPressed: canGoNext ? onNext : null,
-                    icon: const Icon(Icons.chevron_right_rounded),
-                  ),
-                ],
+                    IconButton(
+                      tooltip: uiStrings['nextChapter']?[settings.locale] ??
+                          'Next Chapter',
+                      onPressed: canGoNext ? onNext : null,
+                      icon: const Icon(Icons.chevron_right_rounded),
+                    ),
+                  ],
+                ),
               ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _GlassSurface extends StatelessWidget {
+  final Widget child;
+  final double radius;
+
+  const _GlassSurface({
+    required this.child,
+    this.radius = 20,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(radius),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            color: scheme.surface.withValues(alpha: isDark ? 0.72 : 0.78),
+            borderRadius: BorderRadius.circular(radius),
+            border: Border.all(
+              color:
+                  scheme.outlineVariant.withValues(alpha: isDark ? 0.35 : 0.6),
             ),
-          ],
+            boxShadow: [
+              BoxShadow(
+                color: scheme.shadow.withValues(alpha: isDark ? 0.22 : 0.12),
+                blurRadius: 24,
+                offset: const Offset(0, 10),
+              ),
+            ],
+          ),
+          child: child,
         ),
       ),
     );
@@ -692,8 +732,8 @@ class _SelectionActionBar extends StatelessWidget {
             children: [
               Text(
                 uiStrings['highlightColor']?[locale] ?? 'Highlight color',
-                style: const TextStyle(
-                    fontSize: 16, fontWeight: FontWeight.w600),
+                style:
+                    const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
               ),
               const SizedBox(height: 16),
               Row(
@@ -728,8 +768,7 @@ class _SelectionActionBar extends StatelessWidget {
                   },
                   icon: const Icon(Icons.highlight_remove, size: 20),
                   label: Text(
-                    uiStrings['removeHighlight']?[locale] ??
-                        'Remove highlight',
+                    uiStrings['removeHighlight']?[locale] ?? 'Remove highlight',
                   ),
                 ),
               ],
@@ -747,67 +786,57 @@ class _SelectionActionBar extends StatelessWidget {
     final label =
         (uiStrings['selectedVerses']?[settings.locale] ?? '{count} selected')
             .replaceAll('{count}', '$selectedCount');
-    final fontSize = (settings.fontSize.clamp(11.0, 18.0) * settings.menuScale).toDouble();
+    final fontSize =
+        (settings.fontSize.clamp(11.0, 18.0) * settings.menuScale).toDouble();
 
     return SafeArea(
       top: false,
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          color: scheme.surface.withValues(alpha: 0.98),
-          border: Border(
-            top: BorderSide(
-              color: scheme.outlineVariant.withValues(alpha: 0.7),
-            ),
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: scheme.shadow.withValues(alpha: 0.1),
-              blurRadius: 12,
-              offset: const Offset(0, -4),
-            ),
-          ],
-        ),
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
-          child: Row(
-            children: [
-              IconButton(
-                tooltip:
-                    uiStrings['clearSelection']?[settings.locale] ?? 'Clear',
-                onPressed: onClear,
-                icon: const Icon(Icons.close_rounded),
-              ),
-              Expanded(
-                child: Text(
-                  label,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontFamily: settings.fontFamily,
-                    fontSize: fontSize,
-                    fontWeight: FontWeight.w700,
-                    color: scheme.onSurface,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(10, 0, 10, 8),
+        child: _GlassSurface(
+          radius: 22,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
+            child: Row(
+              children: [
+                IconButton(
+                  tooltip:
+                      uiStrings['clearSelection']?[settings.locale] ?? 'Clear',
+                  onPressed: onClear,
+                  icon: const Icon(Icons.close_rounded),
+                ),
+                Expanded(
+                  child: Text(
+                    label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontFamily: settings.fontFamily,
+                      fontSize: fontSize,
+                      fontWeight: FontWeight.w700,
+                      color: scheme.onSurface,
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(width: 4),
-              IconButton(
-                tooltip:
-                    uiStrings['highlight']?[settings.locale] ?? 'Highlight',
-                onPressed: () => _showColorPicker(context),
-                icon: const Icon(Icons.format_color_fill),
-              ),
-              const SizedBox(width: 4),
-              FilledButton.icon(
-                onPressed: onCopy,
-                icon: const Icon(Icons.copy_rounded),
-                label: Text(
-                  uiStrings['copySelection']?[settings.locale] ?? 'Copy',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+                const SizedBox(width: 4),
+                IconButton(
+                  tooltip:
+                      uiStrings['highlight']?[settings.locale] ?? 'Highlight',
+                  onPressed: () => _showColorPicker(context),
+                  icon: const Icon(Icons.format_color_fill),
                 ),
-              ),
-            ],
+                const SizedBox(width: 4),
+                FilledButton.icon(
+                  onPressed: onCopy,
+                  icon: const Icon(Icons.copy_rounded),
+                  label: Text(
+                    uiStrings['copySelection']?[settings.locale] ?? 'Copy',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -842,22 +871,22 @@ class _FloatingHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final settings = context.watch<AppSettings>();
     final scheme = Theme.of(context).colorScheme;
-    final fontSize = (settings.fontSize.clamp(12.0, 19.0) * settings.menuScale).toDouble();
-    final iconSize = (settings.fontSize.clamp(16.0, 28.0) * settings.menuScale).toDouble();
+    final fontSize =
+        (settings.fontSize.clamp(12.0, 19.0) * settings.menuScale).toDouble();
+    final iconSize =
+        (settings.fontSize.clamp(16.0, 28.0) * settings.menuScale).toDouble();
     final iconPad = (iconSize * 0.45).clamp(6.0, 10.0);
 
     return Positioned(
       top: 0,
-      left: 0,
-      right: 0,
+      left: 10,
+      right: 10,
       child: SafeArea(
         bottom: false,
-        child: Material(
-          elevation: 1,
-          shadowColor: scheme.shadow.withValues(alpha: 0.08),
-          color: scheme.surface,
+        child: _GlassSurface(
+          radius: 22,
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
             child: Row(
               children: [
                 if (showBookInfo) ...[
