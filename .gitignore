@@ -12,3 +12,4 @@ build/
 *.lock
 .env
 .netlify/
+ljk-nt-bible-webapp
