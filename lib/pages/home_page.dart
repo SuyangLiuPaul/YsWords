@@ -1,26 +1,23 @@
 import 'package:flutter/material.dart';
-import 'package:clipboard/clipboard.dart';
-
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:provider/provider.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
-import 'package:yswords/models/verse.dart';
+import 'package:yswords/constants/text_patterns.dart';
+import 'package:yswords/constants/ui_strings.dart';
 import 'package:yswords/models/app_settings.dart';
+import 'package:yswords/models/verse.dart';
 import 'package:yswords/pages/books_page.dart';
 import 'package:yswords/pages/search_page.dart';
 import 'package:yswords/pages/settings_page.dart';
 import 'package:yswords/providers/main_provider.dart';
 import 'package:yswords/services/fetch_books.dart';
 import 'package:yswords/services/fetch_verses.dart';
-import 'package:yswords/services/read_last_index.dart';
 import 'package:yswords/utils/clipboard_helper.dart';
-import 'package:yswords/widgets/verse_widget.dart';
 import 'package:yswords/utils/version_mapper.dart'
     show translateBookName, toEnglish;
-import 'package:yswords/constants/ui_strings.dart';
-import 'package:yswords/constants/text_patterns.dart';
+import 'package:yswords/widgets/verse_widget.dart';
 
 class CustomFloatingActionButtonLocation extends FloatingActionButtonLocation {
   final double xOffset;
@@ -47,131 +44,84 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  bool _controllerInitialized = false;
   final ScrollController _fakeScrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      final mainProvider = Provider.of<MainProvider>(context, listen: false);
-      final settings = Provider.of<AppSettings>(context, listen: false);
+      if (!mounted) return;
+      final mainProvider = context.read<MainProvider>();
       if (mainProvider.verses.isEmpty) {
-        await FetchVerses.execute(
-            mainProvider: mainProvider, settings: settings);
-        await FetchBooks.execute(
-            mainProvider: mainProvider, settings: settings);
+        await FetchVerses.execute(mainProvider: mainProvider);
+        if (!mounted) return;
+        await FetchBooks.execute(mainProvider: mainProvider);
       }
-      await ReadLastIndex.execute().then((index) {
-        if (index != null) {
-          mainProvider.scrollToIndex(index: index);
-        }
-      });
     });
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-
-    if (!_controllerInitialized) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        final provider = Provider.of<MainProvider>(context, listen: false);
-        if (provider.books.isEmpty) return;
-
-        setState(() {
-          _controllerInitialized = true;
-        });
-
-        // ✅ Moved here!
-        provider.clearSelectedVerses();
-      });
-    } else {
-      // ✅ Clear outside build frame
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        Provider.of<MainProvider>(context, listen: false).clearSelectedVerses();
-      });
-    }
   }
 
   @override
   void dispose() {
     _fakeScrollController.dispose();
-    Provider.of<MainProvider>(context, listen: false).clearSelectedVerses();
     super.dispose();
   }
 
   String formattedSelectedVerses({required List<Verse> verses}) {
-    final settings = Provider.of<AppSettings>(context, listen: false);
+    if (verses.isEmpty) return '';
+    final settings = context.read<AppSettings>();
+
+    int bookOrder(String book) {
+      final en = toEnglish(book) ?? book;
+      final idx = standardBookOrder.indexOf(en);
+      return idx < 0 ? standardBookOrder.length : idx;
+    }
+
     final sorted = [...verses]..sort((a, b) {
-        final bookComparison = a.book.compareTo(b.book);
-        if (bookComparison != 0) return bookComparison;
+        final bookCmp = bookOrder(a.book).compareTo(bookOrder(b.book));
+        if (bookCmp != 0) return bookCmp;
         if (a.chapter != b.chapter) return a.chapter.compareTo(b.chapter);
         return a.verse.compareTo(b.verse);
       });
 
-    if (sorted.isEmpty) return '';
-
     final first = sorted.first;
-    final header = '${first.book} ${first.chapter}';
 
     switch (settings.copyFormat) {
       case 'withRef':
-        return sorted.map((v) {
-          final cleanedText = sanitizeForSearch(v.text);
-          return '[${v.book} ${v.chapter}:${v.verse}] $cleanedText';
-        }).join('\n');
-      case 'plain':
-        return '$header\n' +
-            sorted.map((v) {
-              final cleanedText = sanitizeForSearch(v.text);
-              return '${v.verse} $cleanedText';
-            }).join('\n');
-      case 'devotional':
-        final book = first.book;
-        final chapter = first.chapter;
-        final versesText = sorted
-            .map((v) => sanitizeForSearch(v.text))
-            .join('\n');
-        final verseNumbers = sorted.map((v) => v.verse).toList();
-
-        String formatRange(List<int> nums) {
-          if (nums.isEmpty) return '';
-          nums.sort();
-          final List<String> parts = [];
-          int start = nums[0];
-          int end = start;
-
-          for (int i = 1; i < nums.length; i++) {
-            if (nums[i] == end + 1) {
-              end = nums[i];
-            } else {
-              if (start == end) {
-                parts.add('$start');
-              } else {
-                parts.add('$start–$end');
-              }
-              start = nums[i];
-              end = start;
-            }
-          }
-
-          if (start == end) {
-            parts.add('$start');
-          } else {
-            parts.add('$start–$end');
-          }
-
-          return parts.join(', ');
-        }
-
-        final range = formatRange(verseNumbers);
-        return '$versesText\n($book $chapter:$range)';
-      default:
         return sorted
-            .map((v) => sanitizeForSearch(v.text))
+            .map((v) =>
+                '[${v.book} ${v.chapter}:${v.verse}] ${sanitizeForSearch(v.text)}')
             .join('\n');
+      case 'devotional':
+        final versesText =
+            sorted.map((v) => sanitizeForSearch(v.text)).join('\n');
+        final range = _formatVerseRange(sorted.map((v) => v.verse).toList());
+        return '$versesText\n(${first.book} ${first.chapter}:$range)';
+      case 'plain':
+      default:
+        final body = sorted
+            .map((v) => '${v.verse} ${sanitizeForSearch(v.text)}')
+            .join('\n');
+        return '${first.book} ${first.chapter}\n$body';
     }
+  }
+
+  static String _formatVerseRange(List<int> nums) {
+    if (nums.isEmpty) return '';
+    final sorted = [...nums]..sort();
+    final parts = <String>[];
+    int start = sorted[0];
+    int end = start;
+    for (int i = 1; i < sorted.length; i++) {
+      if (sorted[i] == end + 1) {
+        end = sorted[i];
+      } else {
+        parts.add(start == end ? '$start' : '$start–$end');
+        start = sorted[i];
+        end = start;
+      }
+    }
+    parts.add(start == end ? '$start' : '$start–$end');
+    return parts.join(', ');
   }
 
   List<InlineSpan> _buildVerseSpans(List<Verse> verses, BuildContext context) {
@@ -183,16 +133,13 @@ class _HomePageState extends State<HomePage> {
       spans.add(WidgetSpan(
         child: GestureDetector(
           onTap: () async {
-            final original = v.text.replaceAll('\n', '');
-            final sanitized = original
-                .replaceAll(notePattern, '')
-                .replaceAll(bracePattern, '')
-                .trim();
-            final toCopy = '${v.verse} $sanitized';
+            final messenger = ScaffoldMessenger.of(context);
+            final toCopy = '${v.verse} ${sanitizeVerseText(v.text)}';
             await ClipboardHelper.copyText(toCopy);
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text((uiStrings['copiedVerse']?[settings.locale] ?? 'Copied verse {verse}').replaceAll('{verse}', '${v.verse}'))),
-            );
+            final msg = (uiStrings['copiedVerse']?[settings.locale] ??
+                    'Copied verse {verse}')
+                .replaceAll('{verse}', '${v.verse}');
+            messenger.showSnackBar(SnackBar(content: Text(msg)));
           },
           child: Text(
             '${v.verse} ',
@@ -248,8 +195,10 @@ class _HomePageState extends State<HomePage> {
                 padding: EdgeInsets.symmetric(horizontal: 6, vertical: 3),
                 margin: EdgeInsets.symmetric(horizontal: 2),
                 decoration: BoxDecoration(
-                  color:
-                      Theme.of(context).colorScheme.secondary.withOpacity(0.3),
+                  color: Theme.of(context)
+                      .colorScheme
+                      .secondary
+                      .withValues(alpha: 0.3),
                   borderRadius: BorderRadius.circular(4),
                 ),
                 child: Text(
@@ -389,13 +338,13 @@ class _HomePageState extends State<HomePage> {
                                 padding:
                                     const EdgeInsets.symmetric(horizontal: 4),
                                 child: Text(
-                                  {
+                                  const {
                                         'kjv': 'KJV',
                                         'leb': 'LEB',
                                         'cuvs-yhwh': 'cuvs(简)',
                                         'cuvs-yhwh-tr': 'cuvs(繁)',
-                                        'BIBLEXG': 'biblexg(简)',
-                                        'BIBLEXG-tr': 'biblexg(繁)',
+                                        'biblexg': 'biblexg(简)',
+                                        'biblexg-tr': 'biblexg(繁)',
                                       }[mainProvider.currentVersion] ??
                                       mainProvider.currentVersion,
                                   style: TextStyle(
@@ -409,33 +358,27 @@ class _HomePageState extends State<HomePage> {
                               ),
                               onSelected: (version) async {
                                 final p = context.read<MainProvider>();
-                                final settings = Provider.of<AppSettings>(
-                                    context,
-                                    listen: false);
                                 p.clearSelectedVerses();
 
                                 final prevEn = toEnglish(p.currentBook);
 
                                 p.setVersion(version);
-                                await FetchVerses.execute(
-                                    mainProvider: p, settings: settings);
-                                await FetchBooks.execute(
-                                    mainProvider: p, settings: settings);
+                                await FetchVerses.execute(mainProvider: p);
+                                await FetchBooks.execute(mainProvider: p);
 
-                                String? targetBook = prevEn == null
+                                if (p.verses.isEmpty) return;
+
+                                final targetBook = prevEn == null
                                     ? null
                                     : translateBookName(prevEn, version);
+                                final targetChapter = p.currentChapter;
 
                                 final match = p.verses.firstWhere(
                                   (v) =>
-                                      v.book ==
-                                          (targetBook ?? (p.verses.isNotEmpty ? p.verses.first.book : '')) &&
-                                      v.chapter ==
-                                          (p.currentChapter ?? v.chapter),
+                                      (targetBook == null || v.book == targetBook) &&
+                                      (targetChapter == null || v.chapter == targetChapter),
                                   orElse: () => p.verses.first,
                                 );
-
-                                if (p.verses.isEmpty) return;
 
                                 p.setCurrentChapter(
                                     book: match.book, chapter: match.chapter);
@@ -456,9 +399,9 @@ class _HomePageState extends State<HomePage> {
                                     value: 'cuvs-yhwh-tr',
                                     child: Text('和合本雅伟版(繁體)')),
                                 PopupMenuItem(
-                                    value: 'BIBLEXG', child: Text('梁家铿译本(简体)')),
+                                    value: 'biblexg', child: Text('梁家铿译本(简体)')),
                                 PopupMenuItem(
-                                    value: 'BIBLEXG-tr',
+                                    value: 'biblexg-tr',
                                     child: Text('梁家铿譯本(繁體)')),
                               ],
                             ),
@@ -593,32 +536,31 @@ class _HomePageState extends State<HomePage> {
                 floatingActionButton: isSelected
                     ? FloatingActionButton(
                         onPressed: () async {
+                          final messenger = ScaffoldMessenger.of(context);
+                          final scheme = Theme.of(context).colorScheme;
+                          final copiedLabel =
+                              uiStrings['copied']?[settings.locale] ?? 'Copied!';
                           final text = formattedSelectedVerses(
                               verses: mainProvider.selectedVerses);
-                          await FlutterClipboard.copy(text);
+                          await ClipboardHelper.copyText(text);
                           mainProvider.clearSelectedVerses();
-                          ScaffoldMessenger.of(context).showSnackBar(
+                          messenger.showSnackBar(
                             SnackBar(
                               content: Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   Text(
-                                    uiStrings['copied']?[settings.locale] ??
-                                        'Copied!',
+                                    copiedLabel,
                                     style: TextStyle(
-                                      color: Theme.of(context)
-                                          .colorScheme
-                                          .onPrimary,
+                                      color: scheme.onPrimary,
                                       fontWeight: FontWeight.w600,
                                     ),
                                   ),
                                 ],
                               ),
-                              backgroundColor: Theme.of(context)
-                                  .colorScheme
-                                  .primary
-                                  .withOpacity(0.8),
-                              duration: Duration(milliseconds: 800),
+                              backgroundColor:
+                                  scheme.primary.withValues(alpha: 0.8),
+                              duration: const Duration(milliseconds: 800),
                             ),
                           );
                         },

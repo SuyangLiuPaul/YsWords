@@ -34,7 +34,7 @@ String getDevotionalFormattedText(
 }
 
 class SettingsPage extends StatelessWidget {
-  SettingsPage({super.key});
+  const SettingsPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -258,7 +258,7 @@ class SettingsPage extends StatelessWidget {
                       else
                         ...verseSamples.map((v) {
                           final ref =
-                              '${currentBook ?? ''} ${currentChapter}:${v['verse']}';
+                              '${currentBook ?? ''} $currentChapter:${v['verse']}';
                           String formattedText;
                           switch (settings.copyFormat) {
                             case 'withRef':
@@ -517,29 +517,6 @@ class SettingsPage extends StatelessWidget {
                       ),
                     ],
                   ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              Card(
-                child: SwitchListTile(
-                  title: Text(
-                    uiStrings['offlineMode']?[settings.locale] ?? 'Offline Mode',
-                    style: TextStyle(
-                      fontSize: settings.fontSize + 2,
-                      fontWeight: FontWeight.w600,
-                      fontFamily: settings.fontFamily,
-                    ),
-                  ),
-                  subtitle: Text(
-                    uiStrings['offlineModeSubtitle']?[settings.locale] ??
-                        'Use downloaded data only. No network requests.',
-                    style: TextStyle(
-                      fontSize: settings.fontSize,
-                      fontFamily: settings.fontFamily,
-                    ),
-                  ),
-                  value: settings.offlineMode,
-                  onChanged: (val) => settings.setOfflineMode(val),
                 ),
               ),
               const SizedBox(height: 16),

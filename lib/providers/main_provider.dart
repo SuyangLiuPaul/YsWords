@@ -144,7 +144,7 @@ class MainProvider extends ChangeNotifier {
     final savedBook = prefs.getString('book');
     final savedChapter = prefs.getInt('chapter');
 
-    if (savedVersion != null) currentVersion = savedVersion;
+    if (savedVersion != null) currentVersion = savedVersion.toLowerCase();
     if (savedBook != null) currentBook = savedBook;
     if (savedChapter != null) currentChapter = savedChapter;
 

@@ -1,22 +1,16 @@
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:yswords/models/verse.dart';
 import 'package:yswords/providers/main_provider.dart';
-import 'package:yswords/models/app_settings.dart';
-import 'package:yswords/services/fetch_books.dart' show bookNameToEnglish, standardBookOrder;
+import 'package:yswords/services/fetch_books.dart'
+    show bookNameToEnglish, standardBookOrder;
 
 class FetchVerses {
-  static Future<void> execute(
-      {required MainProvider mainProvider,
-      required AppSettings settings}) async {
-    final version = mainProvider.currentVersion;
-    final path = 'assets/${version.toLowerCase()}.json';
-
-    if (settings.allowUpdates == false) {
-      await loadLocalOnly(mainProvider: mainProvider);
-      return;
-    }
+  static Future<void> execute({required MainProvider mainProvider}) async {
+    final version = mainProvider.currentVersion.toLowerCase();
+    final path = 'assets/$version.json';
 
     mainProvider.setVerses([]);
     mainProvider.setBooks([]);
@@ -25,28 +19,12 @@ class FetchVerses {
       final verses = await _loadAndParse(path);
       mainProvider.setVerses(verses);
     } catch (e) {
-      print('Error loading verses from $path: $e');
-    }
-  }
-
-  static Future<void> loadLocalOnly(
-      {required MainProvider mainProvider}) async {
-    try {
-      final version = mainProvider.currentVersion.toLowerCase();
-      final path = 'assets/$version.json';
-
-      mainProvider.setVerses([]);
-      mainProvider.setBooks([]);
-
-      final verses = await _loadAndParse(path);
-      mainProvider.setVerses(verses);
-    } catch (e) {
-      print('Error loading local verses for version ${mainProvider.currentVersion}: $e');
+      debugPrint('Error loading verses from $path: $e');
     }
   }
 
   static Future<List<Verse>> _loadAndParse(String path) async {
-    String jsonString = await rootBundle.loadString(path);
+    final jsonString = await rootBundle.loadString(path);
     final dynamic decoded = json.decode(jsonString);
 
     List<Map<String, dynamic>> rawList;
@@ -61,7 +39,7 @@ class FetchVerses {
           'book': bookName,
           'chapter': parts.isNotEmpty ? parts[0] : '',
           'verse': parts.length > 1 ? parts[1] : '',
-          'text': (e.value ?? '').toString() + '\n',
+          'text': '${e.value ?? ''}\n',
         };
       }).toList();
     } else {
@@ -69,7 +47,9 @@ class FetchVerses {
     }
 
     // Filter out entries where verse is non-numeric
-    rawList = rawList.where((m) => int.tryParse(m['verse']?.toString() ?? '') != null).toList();
+    rawList = rawList
+        .where((m) => int.tryParse(m['verse']?.toString() ?? '') != null)
+        .toList();
 
     // Map into Verse objects, skipping any parse errors
     final verses = <Verse>[];
@@ -89,26 +69,5 @@ class FetchVerses {
     });
 
     return verses;
-  }
-
-  static Future<bool> testLoadLocal() async {
-    final List<String> assetPaths = [
-      'assets/kjv.json',
-      'assets/leb.json',
-      'assets/cuvs-yhwh.json',
-      'assets/cuvs-yhwh-tr.json',
-      'assets/biblexg.json',
-      'assets/biblexg-tr.json',
-    ];
-
-    try {
-      for (final path in assetPaths) {
-        await rootBundle.load(path);
-      }
-      return true;
-    } catch (e) {
-      print('Local resource not fully ready: $e');
-      return false;
-    }
   }
 }

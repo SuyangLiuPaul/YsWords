@@ -47,7 +47,7 @@ class _LoadingPageState extends State<LoadingPage> {
         .split('||');
 
     return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.background,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       body: Center(
         child: verse == null
             ? Text(
@@ -138,7 +138,7 @@ class _LoadingPageState extends State<LoadingPage> {
                           .textTheme
                           .titleSmall
                           ?.color
-                          ?.withOpacity(0.7),
+                          ?.withValues(alpha: 0.7),
                     ),
                   ),
                 ],

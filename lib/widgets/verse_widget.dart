@@ -38,11 +38,13 @@ class VerseWidget extends StatelessWidget {
         spans.add(WidgetSpan(
           child: GestureDetector(
             onTap: () async {
-              final toCopy = '${verse.verse} ${verse.text.trim()}';
+              final messenger = ScaffoldMessenger.of(context);
+              final toCopy = '${verse.verse} ${sanitizeVerseText(verse.text)}';
               await ClipboardHelper.copyText(toCopy);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('Copied verse ${verse.verse}')),
-              );
+              final msg = (uiStrings['copiedVerse']?[locale] ??
+                      'Copied verse {verse}')
+                  .replaceAll('{verse}', '${verse.verse}');
+              messenger.showSnackBar(SnackBar(content: Text(msg)));
             },
             child: Text(
               '${verse.verse} ',
@@ -328,7 +330,7 @@ class VerseWidget extends StatelessWidget {
                           ? Theme.of(context)
                               .colorScheme
                               .secondary
-                              .withOpacity(0.3)
+                              .withValues(alpha: 0.3)
                           : Colors.transparent,
                   padding:
                       const EdgeInsets.symmetric(horizontal: 16, vertical: 8),

@@ -113,30 +113,10 @@ const uiStrings = {
     'zh-Hant': '設定',
     'en': 'Settings',
   },
-  'allowUpdates': {
-    'zh-Hans': '允许自动更新',
-    'zh-Hant': '允許自動更新',
-    'en': 'Allow Auto Updates',
-  },
-  'allowUpdatesSubtitle': {
-    'zh-Hans': '切换是否允许从服务器更新应用程序。',
-    'zh-Hant': '切換是否允許從伺服器更新應用程式。',
-    'en': 'Toggle whether to allow app updates from server.',
-  },
   'interfaceLanguage': {
     'zh-Hans': '界面语言',
     'zh-Hant': '介面語言',
     'en': 'Interface Language',
-  },
-  'offlineMode': {
-    'zh-Hans': '离线模式',
-    'zh-Hant': '離線模式',
-    'en': 'Offline Mode',
-  },
-  'offlineModeSubtitle': {
-    'zh-Hans': '开启后将使用已下载的数据，不会请求网络。',
-    'zh-Hant': '開啟後將使用已下載的資料，不會請求網路。',
-    'en': 'Use downloaded data only. No network requests.',
   },
   'fontSize': {
     'zh-Hans': '字体大小',

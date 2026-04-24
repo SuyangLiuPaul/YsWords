@@ -1,7 +1,6 @@
-/// Shared regex patterns and text utilities for verse annotation handling.
-///
-/// Used across loading_page, home_page, search_page, verse_widget, and
-/// fetch_verses to ensure consistent text processing.
+// Shared regex patterns and text utilities for verse annotation handling.
+// Used across loading_page, home_page, search_page, verse_widget, and
+// fetch_verses to ensure consistent text processing.
 
 /// Matches `<note:...>` tags embedded in verse text.
 final notePattern = RegExp(r'<note:([^>]+)>');

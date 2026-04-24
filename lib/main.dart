@@ -12,12 +12,10 @@ import 'package:get/get.dart';
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
 
-  FlutterError.onError = (FlutterErrorDetails details) {
-    FlutterError.dumpErrorToConsole(details);
-    PlatformDispatcher.instance.onError = (e, st) {
-      print('UNCAUGHT: $e\n$st');
-      return true;
-    };
+  FlutterError.onError = FlutterError.dumpErrorToConsole;
+  PlatformDispatcher.instance.onError = (error, stack) {
+    debugPrint('UNCAUGHT: $error\n$stack');
+    return true;
   };
 
   runApp(
@@ -52,45 +50,17 @@ class _MainAppState extends State<MainApp> {
       }
     });
     Future.microtask(() async {
-      final mainProvider = Provider.of<MainProvider>(context, listen: false);
-      final appSettings = Provider.of<AppSettings>(context, listen: false);
+      if (!mounted) return;
+      final mainProvider = context.read<MainProvider>();
+      final appSettings = context.read<AppSettings>();
 
-      // Load settings and Bible content
       await appSettings.loadSettings();
-
-      bool localResourcesReady = await FetchVerses.testLoadLocal();
-      if (!localResourcesReady) {
-        // If updates are disabled but no local data exists, fetch once to populate it:
-        if (!appSettings.allowUpdates) {
-          await FetchVerses.execute(
-            mainProvider: mainProvider,
-            settings: appSettings,
-          );
-          // recheck
-          localResourcesReady = await FetchVerses.testLoadLocal();
-        }
-        appSettings.setLockAllowUpdates(true);
-      } else {
-        appSettings.setLockAllowUpdates(false);
-      }
-
       await mainProvider.restoreState();
 
       if (mainProvider.verses.isEmpty) {
-        if (appSettings.allowUpdates) {
-          await FetchVerses.execute(
-            mainProvider: mainProvider,
-            settings: appSettings,
-          );
-        } else {
-          await FetchVerses.loadLocalOnly(
-            mainProvider: mainProvider,
-          );
-        }
+        await FetchVerses.execute(mainProvider: mainProvider);
       }
-
-      await FetchBooks.execute(
-          mainProvider: mainProvider, settings: appSettings);
+      await FetchBooks.execute(mainProvider: mainProvider);
 
       // Validate restored state or fallback
       if (mainProvider.currentBook != null &&

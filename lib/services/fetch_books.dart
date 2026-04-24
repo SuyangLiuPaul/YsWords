@@ -1,8 +1,6 @@
 import 'package:yswords/models/book.dart';
 import 'package:yswords/models/chapter.dart';
 import 'package:yswords/providers/main_provider.dart';
-import 'package:yswords/models/verse.dart';
-import 'package:yswords/models/app_settings.dart';
 
 const List<String> standardBookOrder = [
   'Genesis', 'Exodus', 'Leviticus', 'Numbers', 'Deuteronomy',
@@ -160,61 +158,49 @@ const Map<String, String> bookNameToEnglish = {
 // Class repsonsible for fetching books based on the provided verses
 
 class FetchBooks {
-  // Static method to execute the fetching process
-  static Future<void> execute({required MainProvider mainProvider, required AppSettings settings}) async {
-    // Always build books from available verses, even when updates are disabled
-    if (mainProvider.books.isNotEmpty && !settings.allowUpdates) {
-      return; // Books already built, skip rebuild
-    }
-    List<Verse> verses = mainProvider.verses;
+  static Future<void> execute({required MainProvider mainProvider}) async {
+    final verses = mainProvider.verses;
 
     // Collect unique book titles mapped to English
-    final Set<String> _seen = {};
-    final List<String> foundBookTitles = [];
+    final seen = <String>{};
+    final foundBookTitles = <String>[];
     for (final v in verses) {
       final englishBook = bookNameToEnglish[v.book] ?? v.book;
-      if (_seen.add(englishBook)) foundBookTitles.add(englishBook);
+      if (seen.add(englishBook)) foundBookTitles.add(englishBook);
     }
 
     // Sort book titles according to standard biblical order
-    final List<String> bookTitles = [
-      ...standardBookOrder.where((b) => foundBookTitles.contains(b))
-    ];
+    final bookTitles =
+        standardBookOrder.where((b) => foundBookTitles.contains(b)).toList();
 
-    // Iterate through each unique book title to organize chapters and verses
-    for (var bookTitle in bookTitles) {
-      // Filter verses based on the current book title mapped to English
-      List<Verse> availableVerses =
-          verses.where((v) => (bookNameToEnglish[v.book] ?? v.book) == bookTitle).toList();
+    // Reset books before rebuilding so we don't accumulate across version switches
+    mainProvider.setBooks([]);
 
-      // Collect unique chapter numbers *and* sort them so UI lists 1, 2, 3… in order.
-      List<int> availableChapters = availableVerses
+    for (final bookTitle in bookTitles) {
+      final availableVerses = verses
+          .where((v) => (bookNameToEnglish[v.book] ?? v.book) == bookTitle)
+          .toList();
+      if (availableVerses.isEmpty) continue;
+
+      final availableChapters = availableVerses
           .map((e) => e.chapter)
           .toSet()
           .toList()
         ..sort();
 
-      List<Chapter> chapters = [];
-
-      // Iterate through each unique chapter number to organize verses
-      for (var element in availableChapters) {
-        // Create a Chapter object for each unique chapter
-        Chapter chapter = Chapter(
-          title: element,
-          verses: (availableVerses.where((v) => v.chapter == element).toList()
-            ..sort((a, b) => a.verse.compareTo(b.verse))),
-        );
-
-        chapters.add(chapter);
-      }
+      final chapters = <Chapter>[
+        for (final element in availableChapters)
+          Chapter(
+            title: element,
+            verses: (availableVerses.where((v) => v.chapter == element).toList()
+              ..sort((a, b) => a.verse.compareTo(b.verse))),
+          )
+      ];
 
       // Use the localized book name from the first verse for display
       final localizedBookName = availableVerses.first.book;
-      Book book = Book(title: localizedBookName, chapters: chapters);
-
-      // Add the created Book to the mainProvider's ist of books
-      mainProvider.addBook(book: book);
+      mainProvider
+          .addBook(book: Book(title: localizedBookName, chapters: chapters));
     }
   }
-
 }
