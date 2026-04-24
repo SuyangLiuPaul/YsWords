@@ -304,10 +304,9 @@ class _HomePageState extends State<HomePage> {
                         scrollOffsetListener: mainProvider.scrollOffsetListener,
                       ),
                     ),
-                    // Floating header: always shows search/settings,
-                    // shows book/chapter/version when scrolled past the chapter header
+                    // Floating header: always shows book/chapter/version, search/settings
                     _FloatingHeader(
-                        showBookInfo: visibleItemIndex > 0 && currentVerse != null,
+                        showBookInfo: currentVerse != null,
                         book: currentVerse?.book ?? '',
                         chapter: currentVerse?.chapter ?? 0,
                         version: mainProvider.currentVersion,
@@ -875,9 +874,8 @@ class _ChapterHeader extends StatelessWidget {
   }
 }
 
-/// Persistent top bar with search/settings always visible.
-/// When scrolled past the chapter header, also shows book/chapter (tappable)
-/// and version picker for context.
+/// Persistent top bar: book/chapter (tappable), version picker, search, settings.
+/// Always visible with a solid background. All elements scale with font size.
 class _FloatingHeader extends StatelessWidget {
   final bool showBookInfo;
   final String book;
@@ -904,6 +902,8 @@ class _FloatingHeader extends StatelessWidget {
     final settings = context.watch<AppSettings>();
     final scheme = Theme.of(context).colorScheme;
     final fontSize = settings.fontSize.clamp(14.0, 17.0).toDouble();
+    final iconSize = settings.fontSize.clamp(18.0, 26.0).toDouble();
+    final iconPad = (iconSize * 0.45).clamp(6.0, 10.0);
 
     return Positioned(
       top: 0,
@@ -912,15 +912,14 @@ class _FloatingHeader extends StatelessWidget {
       child: SafeArea(
         bottom: false,
         child: Material(
-          elevation: showBookInfo ? 2 : 0,
-          shadowColor: scheme.shadow.withValues(alpha: 0.12),
-          color: scheme.surface.withValues(alpha: showBookInfo ? 0.97 : 0.0),
+          elevation: 1,
+          shadowColor: scheme.shadow.withValues(alpha: 0.08),
+          color: scheme.surface,
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
             child: Row(
               children: [
                 if (showBookInfo) ...[
-                  // Book & chapter — tappable to open book picker
                   InkWell(
                     borderRadius: BorderRadius.circular(8),
                     onTap: onBookTap,
@@ -938,7 +937,6 @@ class _FloatingHeader extends StatelessWidget {
                       ),
                     ),
                   ),
-                  // Version picker
                   PopupMenuButton<String>(
                     padding: EdgeInsets.zero,
                     position: PopupMenuPosition.under,
@@ -966,27 +964,17 @@ class _FloatingHeader extends StatelessWidget {
                   ),
                 ],
                 const Spacer(),
-                // Search icon — always visible
                 IconButton(
                   onPressed: onSearch,
-                  icon: Icon(Icons.search_rounded,
-                      size: fontSize * 1.2,
-                      color: showBookInfo
-                          ? null
-                          : scheme.onSurface.withValues(alpha: 0.6)),
-                  padding: const EdgeInsets.all(8),
+                  icon: Icon(Icons.search_rounded, size: iconSize),
+                  padding: EdgeInsets.all(iconPad),
                   constraints: const BoxConstraints(),
                 ),
                 const SizedBox(width: 2),
-                // Settings icon — always visible
                 IconButton(
                   onPressed: onSettings,
-                  icon: Icon(Icons.settings,
-                      size: fontSize * 1.2,
-                      color: showBookInfo
-                          ? null
-                          : scheme.onSurface.withValues(alpha: 0.6)),
-                  padding: const EdgeInsets.all(8),
+                  icon: Icon(Icons.settings, size: iconSize),
+                  padding: EdgeInsets.all(iconPad),
                   constraints: const BoxConstraints(),
                 ),
               ],
