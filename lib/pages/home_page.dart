@@ -267,7 +267,8 @@ class _HomePageState extends State<HomePage> {
                         itemCount: paragraphGroups.length + 2,
                         itemBuilder: (context, index) {
                           if (index == 0) {
-                            return SizedBox(height: settings.fontSize * 0.5);
+                            final topInset = MediaQuery.of(context).padding.top;
+                            return SizedBox(height: topInset + 44);
                           }
                           final groupIdx = index - 1;
                           if (groupIdx < paragraphGroups.length) {
