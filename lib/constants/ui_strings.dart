@@ -316,6 +316,26 @@ const uiStrings = {
     'zh-Hant': '章',
     'en': 'ch',
   },
+  'checkForUpdates': {
+    'zh-Hans': '检查更新',
+    'zh-Hant': '檢查更新',
+    'en': 'Check for Updates',
+  },
+  'checkForUpdatesSubtitle': {
+    'zh-Hans': '重新加载内置圣经数据。',
+    'zh-Hant': '重新載入內建聖經數據。',
+    'en': 'Refresh bundled Bible data and reload app.',
+  },
+  'updatesAvailableTitle': {
+    'zh-Hans': '已是最新版本',
+    'zh-Hant': '已是最新版本',
+    'en': 'You\'re up to date',
+  },
+  'updatesAvailableBody': {
+    'zh-Hans': '所有圣经版本均已内置，数据已从本地重新加载。',
+    'zh-Hant': '所有聖經版本均已內建，數據已從本機重新載入。',
+    'en': 'All Bible versions are bundled with the app. Data reloaded from local assets.',
+  },
   'offlineModeSubtitle': {
     'zh-Hans': '所有圣经数据均已内置，无需联网即可阅读。',
     'zh-Hant': '所有聖經數據均已內置，無需聯網即可閱讀。',

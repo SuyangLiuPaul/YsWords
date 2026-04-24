@@ -198,6 +198,14 @@ No unused dependencies remain. Seven were removed in the last cleanup: `expandab
 
 ## What Has Been Fixed (2026-04-25)
 
+### Reader Layout & Grid Redesign (this session, round 3)
+- **WeDevote-style books grid** (`lib/pages/books_page.dart`): Dense 4–8 column square-tile grid (1.0 aspect) targeting ~80 px per tile. Tiles show a single-line book name (auto-fitted with `FittedBox`) with long English names abbreviated (`1 Corinthians` → `1 Cor`, `Matthew` → `Matt`, etc.) via a local `_shortBookTitle()` map covering all 66 books. Current book fills with `scheme.primary`/`onPrimary`; others use `surfaceContainerHighest` with a soft `outlineVariant` border — matches 微读圣经's dense reference feel.
+- **Persisted view mode**: New `AppSettings.booksViewMode` (`'list'` | `'grid'`, default `'list'`) stored under `_kBooksViewMode`. `BooksPage` reads/writes via `settings.setBooksViewMode()`; the toggle no longer resets when the picker re-opens.
+- **Check for Updates button**: Added beneath the Offline Mode switch in Settings. Tapping re-runs `FetchVerses.execute()` + `FetchBooks.execute()` against the bundled assets, then shows an AlertDialog with a check-circle icon, a "You're up to date" title/body, and the current app version (`v0.1.0` — manual constant in `settings_page.dart`; bump alongside `pubspec.yaml`). Gives users a concrete action tied to the Offline card without lying about a runtime fetch.
+- **Reader top overlap fix**: Bumped the index-0 header-clearance spacer from `topInset + 44 * menuScale` to `topInset + 52 * menuScale + 8`. The floating header's actual height (icon-button-driven) sits closer to 48–52 px, so the previous value had first verses tucking under the header on default scale.
+- **Reader bottom gap fix**: Trailing clearance spacer dropped from a fixed 120 px to `72 * menuScale`. Respects menu scale instead of over-padding small layouts, so the last verse sits ~20–30 px above `_ReaderStatusBar` on typical phones instead of floating in dead space.
+- **uiStrings added**: `checkForUpdates`, `checkForUpdatesSubtitle`, `updatesAvailableTitle`, `updatesAvailableBody` (en / zh-Hans / zh-Hant).
+
 ### Books Grid Polish & Offline Toggle Restore (this session, round 2)
 - **Books grid redesign** (`lib/pages/books_page.dart`):
   - Book cards now use a 1.6 aspect ratio (was 2.5, too stretched). Each card shows the book title centered with a chapter-count badge in the top-right corner.

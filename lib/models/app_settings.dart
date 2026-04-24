@@ -11,6 +11,7 @@ const _kThemeMode = 'themeMode';
 const _kParagraphMode = 'paragraphMode';
 const _kMenuScale = 'menuScale';
 const _kOfflineMode = 'offlineMode';
+const _kBooksViewMode = 'booksViewMode';
 
 class AppSettings extends ChangeNotifier {
   String _fontFamily = 'Roboto';
@@ -23,6 +24,8 @@ class AppSettings extends ChangeNotifier {
   bool _paragraphMode = false;
   double _menuScale = 1.0;
   bool _offlineMode = true;
+  /// 'list' or 'grid' — persisted choice for the books picker.
+  String _booksViewMode = 'list';
 
   String get fontFamily => _fontFamily;
   double get fontSize => _fontSize;
@@ -34,6 +37,7 @@ class AppSettings extends ChangeNotifier {
   bool get paragraphMode => _paragraphMode;
   double get menuScale => _menuScale;
   bool get offlineMode => _offlineMode;
+  String get booksViewMode => _booksViewMode;
 
   Future<void> setFontFamily(String family) async {
     if (_fontFamily == family) return;
@@ -107,6 +111,15 @@ class AppSettings extends ChangeNotifier {
     await prefs.setBool(_kOfflineMode, enabled);
   }
 
+  Future<void> setBooksViewMode(String mode) async {
+    final normalized = (mode == 'grid') ? 'grid' : 'list';
+    if (_booksViewMode == normalized) return;
+    _booksViewMode = normalized;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_kBooksViewMode, normalized);
+  }
+
   Future<void> setMenuScale(double scale) async {
     final clamped = scale.clamp(0.7, 1.5);
     if (_menuScale == clamped) return;
@@ -133,6 +146,8 @@ class AppSettings extends ChangeNotifier {
     final rawMenuScale = prefs.getDouble(_kMenuScale) ?? 1.0;
     _menuScale = ((rawMenuScale * 10).roundToDouble() / 10).clamp(0.7, 1.5);
     _offlineMode = prefs.getBool(_kOfflineMode) ?? true;
+    final rawBooksView = prefs.getString(_kBooksViewMode) ?? 'list';
+    _booksViewMode = rawBooksView == 'grid' ? 'grid' : 'list';
     notifyListeners();
   }
 

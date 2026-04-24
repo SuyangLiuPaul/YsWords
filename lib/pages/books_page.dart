@@ -30,7 +30,6 @@ class _BooksPageState extends State<BooksPage> {
   bool _initialScrollDone = false;
 
   Map<String, bool> expandStatus = {};
-  bool _showGridView = false;
   String? _gridSelectedBook;
 
   @override
@@ -145,7 +144,7 @@ class _BooksPageState extends State<BooksPage> {
                                     expandStatus.updateAll((key, _) => false);
                                     _gridSelectedBook = null;
                                   });
-                                  if (!_showGridView) {
+                                  if (settings.booksViewMode != 'grid') {
                                     _autoScrollController.scrollToIndex(
                                       0,
                                       preferPosition: AutoScrollPosition.begin,
@@ -186,7 +185,7 @@ class _BooksPageState extends State<BooksPage> {
                                     expandStatus.updateAll((key, _) => false);
                                     _gridSelectedBook = null;
                                   });
-                                  if (!_showGridView) {
+                                  if (settings.booksViewMode != 'grid') {
                                     _autoScrollController.scrollToIndex(
                                       0,
                                       preferPosition: AutoScrollPosition.begin,
@@ -220,35 +219,44 @@ class _BooksPageState extends State<BooksPage> {
                       )
                     else
                       const Spacer(),
-                    // Grid/List toggle
-                    ToggleButtons(
-                      isSelected: [_showGridView == false, _showGridView == true],
-                      onPressed: (index) {
-                        setState(() {
-                          _showGridView = index == 1;
-                          _gridSelectedBook = null;
-                          expandStatus.updateAll((key, _) => false);
-                        });
-                      },
-                      borderRadius: BorderRadius.circular(8),
-                      constraints: const BoxConstraints(minWidth: 40, minHeight: 36),
-                      children: [
-                        Tooltip(
-                          message: uiStrings['listView']?[settings.locale] ?? 'List',
-                          child: Icon(Icons.list, size: settings.fontSize * 1.1),
-                        ),
-                        Tooltip(
-                          message: uiStrings['gridView']?[settings.locale] ?? 'Grid',
-                          child: Icon(Icons.grid_view, size: settings.fontSize * 1.1),
-                        ),
-                      ],
-                    ),
+                    // Grid/List toggle (persisted in AppSettings)
+                    Builder(builder: (context) {
+                      final isGrid = settings.booksViewMode == 'grid';
+                      return ToggleButtons(
+                        isSelected: [!isGrid, isGrid],
+                        onPressed: (index) {
+                          final target = index == 1 ? 'grid' : 'list';
+                          settings.setBooksViewMode(target);
+                          setState(() {
+                            _gridSelectedBook = null;
+                            expandStatus.updateAll((key, _) => false);
+                          });
+                        },
+                        borderRadius: BorderRadius.circular(8),
+                        constraints:
+                            const BoxConstraints(minWidth: 40, minHeight: 36),
+                        children: [
+                          Tooltip(
+                            message:
+                                uiStrings['listView']?[settings.locale] ?? 'List',
+                            child: Icon(Icons.list,
+                                size: settings.fontSize * 1.1),
+                          ),
+                          Tooltip(
+                            message:
+                                uiStrings['gridView']?[settings.locale] ?? 'Grid',
+                            child: Icon(Icons.grid_view,
+                                size: settings.fontSize * 1.1),
+                          ),
+                        ],
+                      );
+                    }),
                   ],
                 ),
               ),
               // Body
               Expanded(
-                child: _showGridView
+                child: settings.booksViewMode == 'grid'
                     ? _buildGridView(context, mainProvider, settings, filteredBooks)
                     : _buildListView(context, mainProvider, settings, filteredBooks),
               ),
@@ -402,107 +410,113 @@ class _BooksPageState extends State<BooksPage> {
       }
     }
 
-    // Show book grid
+    // WeDevote-style book grid: dense, square tiles, single-line book name.
+    // Target ~80 px tiles: 4 columns on phones, 5-8 on tablets.
     return LayoutBuilder(builder: (context, constraints) {
-      // Responsive: target ~150 px per card — 2 cols on phones, 3–5 on tablets
-      final targetWidth = 150.0;
+      final targetWidth = 80.0;
       final cols =
-          (constraints.maxWidth / targetWidth).floor().clamp(2, 5);
+          (constraints.maxWidth / targetWidth).floor().clamp(4, 8);
       return GridView.builder(
-        padding: const EdgeInsets.fromLTRB(12, 6, 12, 12),
+        padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: cols,
-          crossAxisSpacing: 10,
-          mainAxisSpacing: 10,
-          childAspectRatio: 1.6,
+          crossAxisSpacing: 8,
+          mainAxisSpacing: 8,
+          childAspectRatio: 1.0,
         ),
         itemCount: filteredBooks.length,
         itemBuilder: (context, index) {
           final book = filteredBooks[index];
           final isCurrent = widget.bookIdx == book.title;
-          return _bookCard(
-              context, settings, book, isCurrent, scheme);
+          return _bookTile(context, settings, book, isCurrent, scheme);
         },
       );
     });
   }
 
-  Widget _bookCard(BuildContext context, AppSettings settings, Book book,
+  /// Compact square book tile. Shows the short book name centered on a single
+  /// line. Current book highlights with primary color fill, others use a soft
+  /// neutral background — matches 微读圣经's dense grid aesthetic.
+  Widget _bookTile(BuildContext context, AppSettings settings, Book book,
       bool isCurrent, ColorScheme scheme) {
-    final bgColor = isCurrent
-        ? scheme.primaryContainer
-        : scheme.surfaceContainerHighest;
-    final fgColor = isCurrent ? scheme.onPrimaryContainer : scheme.onSurface;
-    final borderColor = isCurrent
-        ? scheme.primary
-        : scheme.outlineVariant.withValues(alpha: 0.5);
+    final bgColor =
+        isCurrent ? scheme.primary : scheme.surfaceContainerHighest;
+    final fgColor = isCurrent ? scheme.onPrimary : scheme.onSurface;
+    final shortName = _shortBookTitle(book.title);
     return Material(
       color: bgColor,
-      borderRadius: BorderRadius.circular(12),
-      elevation: isCurrent ? 1.5 : 0,
+      borderRadius: BorderRadius.circular(8),
+      elevation: 0,
       child: InkWell(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(8),
         onTap: () => setState(() => _gridSelectedBook = book.title),
         child: Container(
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: borderColor, width: isCurrent ? 1.5 : 1),
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(
+              color: isCurrent
+                  ? scheme.primary
+                  : scheme.outlineVariant.withValues(alpha: 0.35),
+              width: 1,
+            ),
           ),
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-          child: Stack(
-            children: [
-              // Chapter count badge (top-right)
-              Positioned(
-                top: 0,
-                right: 0,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 8, vertical: 2),
-                  decoration: BoxDecoration(
-                    color: isCurrent
-                        ? scheme.primary.withValues(alpha: 0.2)
-                        : scheme.surface,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Text(
-                    '${book.chapters.length}',
-                    style: TextStyle(
-                      fontSize: settings.fontSize * 0.65,
-                      fontFamily: settings.fontFamily,
-                      color: isCurrent
-                          ? scheme.onPrimaryContainer
-                          : scheme.onSurfaceVariant,
-                      fontWeight: FontWeight.w600,
-                      height: 1.0,
-                    ),
-                  ),
-                ),
+          alignment: Alignment.center,
+          padding: const EdgeInsets.symmetric(horizontal: 4),
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              shortName,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
+              softWrap: false,
+              style: TextStyle(
+                fontSize: settings.fontSize * 0.9,
+                fontFamily: settings.fontFamily,
+                fontWeight: isCurrent ? FontWeight.w700 : FontWeight.w500,
+                color: fgColor,
+                height: 1.1,
+                letterSpacing: 0,
               ),
-              // Book title (centered)
-              Center(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 4),
-                  child: Text(
-                    book.title,
-                    textAlign: TextAlign.center,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontSize: settings.fontSize * 0.95,
-                      fontFamily: settings.fontFamily,
-                      fontWeight:
-                          isCurrent ? FontWeight.w700 : FontWeight.w500,
-                      color: fgColor,
-                      height: 1.2,
-                    ),
-                  ),
-                ),
-              ),
-            ],
+            ),
           ),
         ),
       ),
     );
+  }
+
+  /// Abbreviate long English book names so they fit a single line in the
+  /// dense grid (Chinese titles are already 1-3 characters and fit as-is).
+  String _shortBookTitle(String title) {
+    // If title has no spaces and isn't too long, use as-is (Chinese books).
+    if (!title.contains(' ') && title.length <= 10) return title;
+    // Known multi-word English abbreviations used by the Bible picker.
+    const abbr = <String, String>{
+      'Genesis': 'Gen', 'Exodus': 'Exod', 'Leviticus': 'Lev',
+      'Numbers': 'Num', 'Deuteronomy': 'Deut', 'Joshua': 'Josh',
+      'Judges': 'Judg', 'Ruth': 'Ruth', '1 Samuel': '1 Sam',
+      '2 Samuel': '2 Sam', '1 Kings': '1 Kgs', '2 Kings': '2 Kgs',
+      '1 Chronicles': '1 Chr', '2 Chronicles': '2 Chr', 'Ezra': 'Ezra',
+      'Nehemiah': 'Neh', 'Esther': 'Est', 'Job': 'Job', 'Psalms': 'Ps',
+      'Psalm': 'Ps', 'Proverbs': 'Prov', 'Ecclesiastes': 'Eccl',
+      'Song of Solomon': 'Song', 'Song of Songs': 'Song', 'Isaiah': 'Isa',
+      'Jeremiah': 'Jer', 'Lamentations': 'Lam', 'Ezekiel': 'Ezek',
+      'Daniel': 'Dan', 'Hosea': 'Hos', 'Joel': 'Joel', 'Amos': 'Amos',
+      'Obadiah': 'Obad', 'Jonah': 'Jonah', 'Micah': 'Mic', 'Nahum': 'Nah',
+      'Habakkuk': 'Hab', 'Zephaniah': 'Zeph', 'Haggai': 'Hag',
+      'Zechariah': 'Zech', 'Malachi': 'Mal',
+      'Matthew': 'Matt', 'Mark': 'Mark', 'Luke': 'Luke', 'John': 'John',
+      'Acts': 'Acts', 'Romans': 'Rom', '1 Corinthians': '1 Cor',
+      '2 Corinthians': '2 Cor', 'Galatians': 'Gal', 'Ephesians': 'Eph',
+      'Philippians': 'Phil', 'Colossians': 'Col',
+      '1 Thessalonians': '1 Thess', '2 Thessalonians': '2 Thess',
+      '1 Timothy': '1 Tim', '2 Timothy': '2 Tim', 'Titus': 'Titus',
+      'Philemon': 'Phlm', 'Hebrews': 'Heb', 'James': 'Jas',
+      '1 Peter': '1 Pet', '2 Peter': '2 Pet', '1 John': '1 Jn',
+      '2 John': '2 Jn', '3 John': '3 Jn', 'Jude': 'Jude',
+      'Revelation': 'Rev',
+    };
+    return abbr[title] ?? title;
   }
 
   /// Chapter tile sized to fill the grid cell (no fixed 55×55 clash).

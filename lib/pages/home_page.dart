@@ -268,7 +268,12 @@ class _HomePageState extends State<HomePage> {
                         itemBuilder: (context, index) {
                           if (index == 0) {
                             final topInset = MediaQuery.of(context).padding.top;
-                            return SizedBox(height: topInset + 44 * settings.menuScale);
+                            // Floating header occupies ~52 px plus the top
+                            // safe-area inset. Add an 8 px breathing gap so
+                            // the first verse never tucks under the header.
+                            return SizedBox(
+                                height:
+                                    topInset + 52 * settings.menuScale + 8);
                           }
                           final groupIdx = index - 1;
                           if (groupIdx < paragraphGroups.length) {
@@ -292,7 +297,11 @@ class _HomePageState extends State<HomePage> {
                               isFirst: isFirst,
                             );
                           }
-                          return const SizedBox(height: 120);
+                          // Trailing clearance so the last verse is not
+                          // tucked under _ReaderStatusBar. Scales with menu
+                          // size so taller status bars still get clearance
+                          // without over-padding smaller layouts.
+                          return SizedBox(height: 72 * settings.menuScale);
                         },
                         itemScrollController: mainProvider.itemScrollController,
                         itemPositionsListener:
