@@ -76,6 +76,11 @@ const uiStrings = {
     'zh-Hant': '切換版本',
     'en': 'Change Version',
   },
+  'chapter': {
+    'zh-Hans': '第 {n} 章',
+    'zh-Hant': '第 {n} 章',
+    'en': 'Chapter {n}',
+  },
 
   // ====== Settings Page ======
   'themeMode': {

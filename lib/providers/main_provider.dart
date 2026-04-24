@@ -128,6 +128,14 @@ class MainProvider extends ChangeNotifier {
     }
   }
 
+  /// Jump to the very top of the chapter (chapter header).
+  /// Use when switching chapters/books.
+  void jumpToTop() {
+    if (itemScrollController.isAttached) {
+      itemScrollController.jumpTo(index: 0);
+    }
+  }
+
   // Method to toggle the selection of a Verse and notify listeners
   void toggleVerse({required Verse verse}) {
     if (!_selectedIds.remove(verse.id)) {

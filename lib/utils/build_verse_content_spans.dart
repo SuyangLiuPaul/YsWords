@@ -30,12 +30,30 @@ List<InlineSpan> buildVerseContentSpans({
       )
       .split('||');
   final spans = <InlineSpan>[];
-  // Verse number span
-  final verseNumFontSize =
-      superscriptVerseNum ? settings.fontSize * 0.7 : settings.fontSize;
-  final verseNumWeight =
-      superscriptVerseNum ? FontWeight.bold : FontWeight.w500;
+  // Verse number span — superscript in paragraph mode, normal-weight inline otherwise.
+  // Superscript style: small, muted color (like printed Bibles / WeDevote 微读圣经),
+  // top-aligned to sit above the baseline. Verse-by-verse style: same size as body,
+  // colored with the theme's primary so it stands out as a label.
+  final verseNumColor = isSelected
+      ? Theme.of(context).colorScheme.onPrimaryContainer
+      : (superscriptVerseNum
+          ? Theme.of(context).colorScheme.onSurfaceVariant
+          : Theme.of(context).colorScheme.primary);
+
+  final verseNumStyle = TextStyle(
+    fontSize:
+        superscriptVerseNum ? settings.fontSize * 0.65 : settings.fontSize,
+    height: superscriptVerseNum ? 1.0 : settings.lineSpacing,
+    fontWeight: superscriptVerseNum ? FontWeight.w600 : FontWeight.w500,
+    fontFamily: settings.fontFamily,
+    fontStyle: isReferenceLine ? FontStyle.italic : FontStyle.normal,
+    color: verseNumColor,
+  );
+
   spans.add(WidgetSpan(
+    alignment:
+        superscriptVerseNum ? PlaceholderAlignment.top : PlaceholderAlignment.baseline,
+    baseline: TextBaseline.alphabetic,
     child: GestureDetector(
       onTap: () async {
         final toCopy =
@@ -48,19 +66,15 @@ List<InlineSpan> buildVerseContentSpans({
         ScaffoldMessenger.of(context)
             .showSnackBar(SnackBar(content: Text(msg)));
       },
-      child: Text(
-        '${verse.verseLabel} ',
-        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-              fontSize: verseNumFontSize,
-              height: superscriptVerseNum ? 1.0 : settings.lineSpacing,
-              fontWeight: verseNumWeight,
-              fontFamily: settings.fontFamily,
-              fontStyle:
-                  isReferenceLine ? FontStyle.italic : FontStyle.normal,
-              color: isSelected
-                  ? Theme.of(context).colorScheme.onPrimaryContainer
-                  : Theme.of(context).colorScheme.primary,
-            ),
+      child: Padding(
+        // Slight right gap so number doesn't glue onto the first character.
+        // Superscript needs less right-pad because it's smaller.
+        padding: EdgeInsets.only(
+          right: superscriptVerseNum ? 3 : 4,
+          // Lift superscript a touch so it sits visually above the baseline.
+          top: superscriptVerseNum ? settings.fontSize * 0.05 : 0,
+        ),
+        child: Text(verse.verseLabel, style: verseNumStyle),
       ),
     ),
   ));

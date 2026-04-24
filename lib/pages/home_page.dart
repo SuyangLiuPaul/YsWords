@@ -144,20 +144,24 @@ class _HomePageState extends State<HomePage> {
         final hasParagraphData =
             verses.any((v) => v.isParagraphStart == true);
 
-        // Group verses into paragraphs when paragraph mode is on and data exists
+        // Paragraph mode → always group so verses flow continuously in one RichText.
+        //   - With paragraph metadata: group by isParagraphStart / reference type
+        //   - Without metadata: the whole chapter becomes a single flowing paragraph
+        // Verse-by-verse mode: one verse per item.
         List<List<Verse>> paragraphGroups;
-        if (settings.paragraphMode && hasParagraphData) {
+        if (settings.paragraphMode) {
           paragraphGroups = _groupIntoParagraphs(verses);
         } else {
           paragraphGroups = verses.map((v) => [v]).toList();
         }
 
-        // Build verse-to-item index map for scroll/jump
+        // Build verse-to-item index map for scroll/jump.
+        // Item 0 is the chapter header → groups start at item 1.
         final verseToItemMap = <int, int>{};
         int vIdx = 0;
         for (int g = 0; g < paragraphGroups.length; g++) {
           for (int v = 0; v < paragraphGroups[g].length; v++) {
-            verseToItemMap[vIdx] = g;
+            verseToItemMap[vIdx] = g + 1;
             vIdx++;
           }
         }
@@ -401,27 +405,36 @@ class _HomePageState extends State<HomePage> {
                     Padding(
                       padding: const EdgeInsets.only(right: 8.0),
                       child: ScrollablePositionedList.builder(
-                          itemCount: paragraphGroups.length + 1,
+                          // +1 for the chapter header (item 0)
+                          // +1 for the trailing FAB-clearance spacer
+                          itemCount: paragraphGroups.length + 2,
                           itemBuilder: (context, index) {
-                            if (index < paragraphGroups.length) {
-                              final group = paragraphGroups[index];
-                              // Compute startVerseIndex for this group
+                            if (index == 0) {
+                              return _ChapterHeader(
+                                book: mainProvider.currentBook,
+                                chapter: mainProvider.currentChapter,
+                              );
+                            }
+                            final groupIdx = index - 1;
+                            if (groupIdx < paragraphGroups.length) {
+                              final group = paragraphGroups[groupIdx];
                               int startIdx = 0;
-                              for (int g = 0; g < index; g++) {
+                              for (int g = 0; g < groupIdx; g++) {
                                 startIdx += paragraphGroups[g].length;
                               }
+                              final isFirst = groupIdx == 0;
                               if (group.length == 1) {
-                                // Single verse: use VerseWidget
                                 return VerseWidget(
                                   verse: group.first,
                                   index: startIdx,
                                   hasParagraphData: hasParagraphData,
+                                  isFirst: isFirst,
                                 );
                               }
-                              // Multi-verse group: use ParagraphGroupWidget
                               return ParagraphGroupWidget(
                                 group: group,
                                 startVerseIndex: startIdx,
+                                isFirst: isFirst,
                               );
                             }
                             return const SizedBox(height: 120);
@@ -551,7 +564,7 @@ class _HomePageState extends State<HomePage> {
     if (matched.isEmpty) return;
     provider.setCurrentChapter(book: book, chapter: chap);
     provider.updateCurrentVerse(verse: matched.first);
-    provider.jumpToIndex(index: 0);
+    provider.jumpToTop();
   }
 
   /// Groups consecutive inline verses into paragraph blocks.
@@ -590,5 +603,60 @@ class NoScalingAnimation extends FloatingActionButtonAnimator {
   @override
   Animation<double> getScaleAnimation({required Animation<double> parent}) {
     return AlwaysStoppedAnimation(1); // No scaling animation
+  }
+}
+
+/// Large chapter heading rendered at the top of the reading view.
+/// Shows the localized book name and the chapter number, separated by a
+/// hairline rule. Mirrors the style used in printed Bibles and the
+/// 微读圣经 (WeDevote) mobile app.
+class _ChapterHeader extends StatelessWidget {
+  final String? book;
+  final int? chapter;
+
+  const _ChapterHeader({required this.book, required this.chapter});
+
+  @override
+  Widget build(BuildContext context) {
+    if (book == null || chapter == null) return const SizedBox.shrink();
+    return Consumer<AppSettings>(
+      builder: (context, settings, _) {
+        final scheme = Theme.of(context).colorScheme;
+        return Padding(
+          padding: const EdgeInsets.fromLTRB(16, 24, 16, 12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                book!,
+                style: TextStyle(
+                  fontFamily: settings.fontFamily,
+                  fontSize: settings.fontSize * 1.4,
+                  fontWeight: FontWeight.w700,
+                  color: scheme.primary,
+                  height: 1.2,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                (uiStrings['chapter']?[settings.locale] ?? 'Chapter {n}')
+                    .replaceAll('{n}', '$chapter'),
+                style: TextStyle(
+                  fontFamily: settings.fontFamily,
+                  fontSize: settings.fontSize * 0.95,
+                  fontWeight: FontWeight.w500,
+                  color: scheme.onSurfaceVariant,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Container(
+                height: 1,
+                color: scheme.outlineVariant.withValues(alpha: 0.5),
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 }
