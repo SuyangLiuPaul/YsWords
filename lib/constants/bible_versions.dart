@@ -71,17 +71,14 @@ const bibleVersions = <BibleVersionInfo>[
     shortLabel: '新译本(繁)',
     menuLabel: '新译本(繁體)',
   ),
-  BibleVersionInfo(
-    value: 'nasb',
-    shortLabel: 'NASB',
-    menuLabel: 'New American Standard Bible',
-  ),
-  BibleVersionInfo(
-    value: 'niv',
-    shortLabel: 'NIV',
-    menuLabel: 'New International Version',
-  ),
 ];
+
+/// Versions that have placeholder data only — hidden from the picker.
+const disabledVersions = {'nasb', 'niv'};
+
+/// Versions shown in the picker (excludes disabled ones).
+List<BibleVersionInfo> get availableVersions =>
+    bibleVersions.where((v) => !disabledVersions.contains(v.value)).toList();
 
 String shortBibleVersionLabel(String version) {
   return bibleVersions

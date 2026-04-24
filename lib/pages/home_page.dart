@@ -861,7 +861,7 @@ class _FloatingHeader extends StatelessWidget {
                     position: PopupMenuPosition.under,
                     tooltip: uiStrings['changeVersion']?[settings.locale] ??
                         'Change Version',
-                    itemBuilder: (context) => bibleVersions
+                    itemBuilder: (context) => availableVersions
                         .map((v) => PopupMenuItem(
                               value: v.value,
                               child: Text(v.menuLabel),
