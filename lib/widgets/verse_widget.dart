@@ -5,6 +5,7 @@ import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/models/verse.dart';
 import 'package:yswords/providers/main_provider.dart';
 import 'package:yswords/utils/build_verse_content_spans.dart';
+import 'package:yswords/utils/responsive.dart';
 
 /// Renders a single verse. Used by:
 ///   - Verse-by-verse mode for every verse
@@ -63,11 +64,15 @@ class VerseWidget extends StatelessWidget {
         late final double topGap;
         late final double vertPadding;
 
+        final dc = ResponsiveBreakpoints.classOf(
+            MediaQuery.of(context).size.width);
+        final baseIndent = ResponsiveBreakpoints.verseIndent(dc);
+
         if (inParagraphMode) {
           if (isReferenceLine) {
             leftIndent = settings.fontSize * 2;
           } else {
-            leftIndent = 20;
+            leftIndent = baseIndent + 4;
           }
           // Suppress gap on the first item; tiny gap between paragraphs
           topGap = (!isFirst && (isReferenceLine || verse.isParagraphStart))
@@ -76,7 +81,7 @@ class VerseWidget extends StatelessWidget {
           vertPadding = 2;
         } else {
           // Verse-by-verse mode
-          leftIndent = isReferenceLine ? 24 : 16;
+          leftIndent = isReferenceLine ? baseIndent + 8 : baseIndent;
           topGap = (!isFirst && verse.isParagraphStart) ? 8 : 0;
           vertPadding = 6;
         }
@@ -105,7 +110,7 @@ class VerseWidget extends StatelessWidget {
                               ? highlightColor.withValues(alpha: 0.35)
                               : Colors.transparent,
                   padding: EdgeInsets.fromLTRB(
-                      leftIndent, vertPadding, 16, vertPadding),
+                      leftIndent, vertPadding, baseIndent, vertPadding),
                   child: RichText(
                     textAlign: TextAlign.start,
                     text: TextSpan(

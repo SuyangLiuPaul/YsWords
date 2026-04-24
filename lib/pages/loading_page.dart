@@ -8,6 +8,7 @@ import '../services/fetch_verses.dart';
 import '../services/fetch_books.dart';
 import '../constants/text_patterns.dart';
 import '../constants/ui_strings.dart';
+import '../utils/responsive.dart';
 import 'home_page.dart';
 
 class LoadingPage extends StatefulWidget {
@@ -103,6 +104,11 @@ class _LoadingPageState extends State<LoadingPage> {
         )
         .split('||');
 
+    final dc = ResponsiveBreakpoints.classOf(
+        MediaQuery.of(context).size.width);
+    final s = ResponsiveBreakpoints.spacingScale(dc);
+    final logoSize = ResponsiveBreakpoints.loadingLogoSize(dc);
+
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
       body: Center(
@@ -116,10 +122,10 @@ class _LoadingPageState extends State<LoadingPage> {
                 children: [
                   Image.asset(
                     'assets/loading.png',
-                    width: 150,
-                    height: 150,
+                    width: logoSize,
+                    height: logoSize,
                   ),
-                  const SizedBox(height: 24),
+                  SizedBox(height: 24 * s),
                   Column(
                     children: [
                       Text(
@@ -131,7 +137,7 @@ class _LoadingPageState extends State<LoadingPage> {
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      const SizedBox(height: 4),
+                      SizedBox(height: 4 * s),
                       Text(
                         '雅伟之言',
                         style: TextStyle(
@@ -141,9 +147,9 @@ class _LoadingPageState extends State<LoadingPage> {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 48),
+                  SizedBox(height: 48 * s),
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 32.0),
+                    padding: EdgeInsets.symmetric(horizontal: 32.0 * s),
                     child: RichText(
                       textAlign: TextAlign.center,
                       text: TextSpan(
@@ -185,7 +191,7 @@ class _LoadingPageState extends State<LoadingPage> {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  SizedBox(height: 8 * s),
                   Text(
                     '${verse.book} ${verse.chapter}:${verse.verseLabel}',
                     style: TextStyle(
@@ -210,20 +216,24 @@ class _LoadingPageState extends State<LoadingPage> {
         'Could not load Bible verses. Please check your connection and retry.';
     final retryLabel = uiStrings['retry']?[settings.locale] ?? 'Retry';
 
+    final dc = ResponsiveBreakpoints.classOf(
+        MediaQuery.of(context).size.width);
+    final s = ResponsiveBreakpoints.spacingScale(dc);
+
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
       body: Center(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 32),
+          padding: EdgeInsets.symmetric(horizontal: 32 * s),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(
                 Icons.cloud_off_outlined,
-                size: 64,
+                size: 64 * s,
                 color: Theme.of(context).colorScheme.primary,
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: 16 * s),
               Text(
                 title,
                 style: TextStyle(
@@ -233,7 +243,7 @@ class _LoadingPageState extends State<LoadingPage> {
                   color: Theme.of(context).colorScheme.primary,
                 ),
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: 8 * s),
               Text(
                 body,
                 textAlign: TextAlign.center,
@@ -244,7 +254,7 @@ class _LoadingPageState extends State<LoadingPage> {
                   color: Theme.of(context).textTheme.bodyLarge?.color,
                 ),
               ),
-              const SizedBox(height: 24),
+              SizedBox(height: 24 * s),
               ElevatedButton.icon(
                 onPressed: _retrying ? null : _retry,
                 icon: _retrying

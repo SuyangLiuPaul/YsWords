@@ -12,6 +12,7 @@ import 'package:yswords/constants/book_groups.dart'
 import 'package:yswords/constants/ui_strings.dart';
 import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/widgets/localized_back_button.dart';
+import 'package:yswords/utils/responsive.dart';
 import 'package:yswords/utils/version_mapper.dart' show toEnglish;
 
 class BooksPage extends StatefulWidget {
@@ -123,7 +124,15 @@ class _BooksPageState extends State<BooksPage> {
             title: Text(
                 uiStrings['bibleBooks']?[settings.locale] ?? 'Bible Books'),
           ),
-          body: Column(
+          body: Center(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                maxWidth: ResponsiveBreakpoints.isDesktopOrWider(
+                        MediaQuery.of(context).size.width)
+                    ? 800
+                    : double.infinity,
+              ),
+              child: Column(
             children: [
               Padding(
                 padding: const EdgeInsets.fromLTRB(12, 8, 12, 6),
@@ -214,6 +223,8 @@ class _BooksPageState extends State<BooksPage> {
                         context, mainProvider, settings, filteredBooks),
               ),
             ],
+              ),
+            ),
           ),
         );
       },
@@ -394,7 +405,7 @@ class _BooksPageState extends State<BooksPage> {
                 // Responsive chapter grid: target ~56 px tile on screen
                 final tileTarget = 56.0;
                 final cols =
-                    (constraints.maxWidth / tileTarget).floor().clamp(4, 8);
+                    (constraints.maxWidth / tileTarget).floor().clamp(4, 10);
                 return GridView.builder(
                   padding: const EdgeInsets.all(12),
                   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
@@ -423,7 +434,7 @@ class _BooksPageState extends State<BooksPage> {
     // Target ~80 px tiles: 4 columns on phones, 5-8 on tablets.
     return LayoutBuilder(builder: (context, constraints) {
       final targetWidth = 80.0;
-      final cols = (constraints.maxWidth / targetWidth).floor().clamp(4, 8);
+      final cols = (constraints.maxWidth / targetWidth).floor().clamp(4, 10);
       return GridView.builder(
         padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
@@ -777,11 +788,14 @@ class _BooksPageState extends State<BooksPage> {
       Chapter chapter,
       bool selected,
       ColorScheme scheme) {
+    final dc = ResponsiveBreakpoints.classOf(
+        MediaQuery.of(context).size.width);
+    final tileSize = ResponsiveBreakpoints.chapterTileSize(dc);
     return Padding(
       padding: const EdgeInsets.all(4),
       child: SizedBox(
-        height: 55,
-        width: 55,
+        height: tileSize,
+        width: tileSize,
         child: Card(
           color: selected ? scheme.primary : null,
           elevation: 1,

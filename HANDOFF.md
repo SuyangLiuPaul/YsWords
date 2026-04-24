@@ -1,6 +1,6 @@
 # YsWords — AI Agent Handoff Document
 
-> Last updated: 2026-04-25
+> Last updated: 2026-04-24
 > Project: YsWords (Yahweh's Words) — bilingual Bible reader
 > Stack: Flutter 3.41.7 / Dart 3.11.5 / Provider + GetX
 > Repo: https://github.com/SuyangLiuPaul/YsWords
@@ -89,6 +89,7 @@ main.dart (entry point)
 ### Utils
 | File | Purpose |
 |---|---|
+| `lib/utils/responsive.dart` | `DeviceClass` enum and `ResponsiveBreakpoints` class — device detection, max-content-width, spacing scale, indent, tile size per device class |
 | `lib/utils/clipboard_helper.dart` | Wraps `Clipboard.setData()` |
 | `lib/utils/format_searched_text.dart` | Builds RichText spans with highlighted search matches |
 | `lib/utils/build_verse_content_spans.dart` | Shared utility that builds `InlineSpan` list for a single verse (number + text with annotations). Used by both VerseWidget and ParagraphGroupWidget. Accepts `onTextTap` callback and `spanBgColor` for per-verse background (selection or highlight color) |
@@ -199,7 +200,35 @@ No unused dependencies remain. Seven were removed in the last cleanup: `expandab
 
 ---
 
+## Responsive Design
+
+The app adapts its layout to all device sizes using `lib/utils/responsive.dart`:
+
+| Device | Width Range | Content Max-Width | Spacing Scale |
+|--------|------------|-------------------|---------------|
+| miniPhone | < 360px | ∞ (full) | 0.85× |
+| phone | 360–599px | ∞ (full) | 1.0× |
+| tablet | 600–1023px | 680px | 1.15× |
+| desktop | 1024–1919px | 780px | 1.25× |
+| tv | ≥ 1920px | 860px | 1.4× |
+
+**How it works**: `ResponsiveBreakpoints.classOf(width)` returns a `DeviceClass` enum. Each page uses `Center` + `ConstrainedBox(maxWidth)` to cap content width on wide screens. Padding, indents, tile sizes, and spacing multiply by device-class-specific scale factors. Phone layouts are byte-identical to the pre-responsive code (scale 1.0, no width cap).
+
+**Affected areas**: reading view (max 780px), settings (max 640px), books page (max 800px), search (max 680px), verse indents (12–28px), chapter tiles (44–72px), loading logo (100–240px), all spacing gaps.
+
+---
+
 ## What Has Been Fixed (2026-04-25)
+
+### Responsive Design for All Devices
+- **New utility**: `lib/utils/responsive.dart` with `DeviceClass` enum (miniPhone, phone, tablet, desktop, tv) and `ResponsiveBreakpoints` class
+- **Max content width**: Reading view capped at 780px (desktop), 680px (tablet), centered with side margins; settings at 640px; books at 800px; search at 680px
+- **Adaptive spacing**: All padding, gaps, and indents scale by device class (0.85× mini phone → 1.4× TV)
+- **Verse indents**: Hardcoded 16/20/24px replaced with device-class-aware 12–28px
+- **Chapter tiles**: Fixed 55×55 replaced with 44–72px per device class
+- **Loading page**: Logo scales from 100px (mini phone) to 240px (TV)
+- **Dark theme fix**: Hardcoded font sizes (14, 16, 20) in dialogs/snackbars now use `settings.fontSize`
+- **Phone unchanged**: All scale factors are 1.0 and max-width is `infinity` for phone class — zero visual change
 
 ### Apple-Glass UI Polish & Bilingual Grid Abbreviations (this session, round 4)
 - **Reader glass chrome** (`lib/pages/home_page.dart`): `_FloatingHeader`, `_ReaderStatusBar`, and `_SelectionActionBar` now use `_GlassSurface` with `BackdropFilter` blur, translucent `surface` fill, soft outline, and floating rounded geometry. Header and bottom clearance values were retuned (`topInset + 64 * menuScale + 12`, bottom `96 * menuScale`) so content does not tuck under the glass controls.

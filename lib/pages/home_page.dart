@@ -18,6 +18,7 @@ import 'package:yswords/providers/main_provider.dart';
 import 'package:yswords/services/fetch_books.dart';
 import 'package:yswords/services/fetch_verses.dart';
 import 'package:yswords/utils/clipboard_helper.dart';
+import 'package:yswords/utils/responsive.dart';
 import 'package:yswords/utils/version_mapper.dart'
     show translateBookName, toEnglish;
 import 'package:yswords/widgets/verse_widget.dart';
@@ -259,10 +260,23 @@ class _HomePageState extends State<HomePage> {
                         : Brightness.dark,
               ),
               child: Scaffold(
-                body: Stack(
+                body: Center(
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      maxWidth: ResponsiveBreakpoints.maxContentWidth(
+                        ResponsiveBreakpoints.classOf(
+                            MediaQuery.of(context).size.width),
+                      ),
+                    ),
+                    child: Stack(
                   children: [
                     Padding(
-                      padding: const EdgeInsets.only(right: 8.0),
+                      padding: EdgeInsets.only(
+                        right: ResponsiveBreakpoints.readingPadding(
+                          ResponsiveBreakpoints.classOf(
+                              MediaQuery.of(context).size.width),
+                        ),
+                      ),
                       child: ScrollablePositionedList.builder(
                         // +1 for the chapter header (item 0)
                         // +1 for the trailing FAB-clearance spacer
@@ -428,6 +442,8 @@ class _HomePageState extends State<HomePage> {
                             ),
                     ),
                   ],
+                    ),
+                  ),
                 ),
               ),
             ),
@@ -591,11 +607,14 @@ class _ReaderStatusBar extends StatelessWidget {
         .replaceAll('{current}', verseCount == 0 ? '0' : '${verseIndex + 1}')
         .replaceAll('{total}', '$verseCount');
     final detail = '$versionLabel | $modeLabel | $versePosition';
+    final dc = ResponsiveBreakpoints.classOf(
+        MediaQuery.of(context).size.width);
+    final inset = ResponsiveBreakpoints.headerInset(dc);
 
     return SafeArea(
       top: false,
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(10, 0, 10, 8),
+        padding: EdgeInsets.fromLTRB(inset, 0, inset, 8),
         child: _GlassSurface(
           radius: 22,
           child: Column(
@@ -788,11 +807,14 @@ class _SelectionActionBar extends StatelessWidget {
             .replaceAll('{count}', '$selectedCount');
     final fontSize =
         (settings.fontSize.clamp(11.0, 18.0) * settings.menuScale).toDouble();
+    final dc = ResponsiveBreakpoints.classOf(
+        MediaQuery.of(context).size.width);
+    final inset = ResponsiveBreakpoints.headerInset(dc);
 
     return SafeArea(
       top: false,
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(10, 0, 10, 8),
+        padding: EdgeInsets.fromLTRB(inset, 0, inset, 8),
         child: _GlassSurface(
           radius: 22,
           child: Padding(
@@ -877,10 +899,14 @@ class _FloatingHeader extends StatelessWidget {
         (settings.fontSize.clamp(16.0, 28.0) * settings.menuScale).toDouble();
     final iconPad = (iconSize * 0.45).clamp(6.0, 10.0);
 
+    final dc = ResponsiveBreakpoints.classOf(
+        MediaQuery.of(context).size.width);
+    final inset = ResponsiveBreakpoints.headerInset(dc);
+
     return Positioned(
       top: 0,
-      left: 10,
-      right: 10,
+      left: inset,
+      right: inset,
       child: SafeArea(
         bottom: false,
         child: _GlassSurface(

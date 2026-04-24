@@ -9,6 +9,7 @@ import 'package:yswords/constants/ui_strings.dart';
 import 'package:yswords/constants/text_patterns.dart';
 import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/widgets/localized_back_button.dart';
+import 'package:yswords/utils/responsive.dart';
 import 'package:flutter/services.dart';
 
 class SearchPage extends StatefulWidget {
@@ -213,7 +214,15 @@ class _SearchPageState extends State<SearchPage> {
               ),
           ],
         ),
-        body: Column(
+        body: Center(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              maxWidth: ResponsiveBreakpoints.isTabletOrWider(
+                      MediaQuery.of(context).size.width)
+                  ? 680
+                  : double.infinity,
+            ),
+            child: Column(
           children: [
             if (_results.isNotEmpty)
               Padding(
@@ -361,6 +370,8 @@ class _SearchPageState extends State<SearchPage> {
                     ),
             )
           ],
+            ),
+          ),
         ));
   }
 }

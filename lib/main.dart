@@ -195,19 +195,19 @@ class _MainAppState extends State<MainApp> {
               backgroundColor: Color(0xFF1E1E1E),
               titleTextStyle: TextStyle(
                 color: Color(0xFFCCCCCC),
-                fontSize: 20,
+                fontSize: settings.fontSize + 2,
                 fontWeight: FontWeight.bold,
               ),
               contentTextStyle: TextStyle(
                 color: Color(0xFFCCCCCC),
-                fontSize: 16,
+                fontSize: settings.fontSize,
               ),
             ),
             snackBarTheme: SnackBarThemeData(
               backgroundColor: Color(0xFF2C2C2C),
               contentTextStyle: TextStyle(
                 color: Color(0xFFCCCCCC),
-                fontSize: 14,
+                fontSize: settings.fontSize * 0.85,
               ),
             ),
             dividerColor: Color(0xFF424242),

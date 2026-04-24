@@ -5,6 +5,7 @@ import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/models/verse.dart';
 import 'package:yswords/providers/main_provider.dart';
 import 'package:yswords/utils/build_verse_content_spans.dart';
+import 'package:yswords/utils/responsive.dart';
 
 /// Renders a group of consecutive verses as one flowing paragraph (RichText).
 /// Used in paragraph mode. Eliminates per-verse line breaks so verses read
@@ -83,9 +84,12 @@ class ParagraphGroupWidget extends StatelessWidget {
         // Outer indent (left margin of the whole block, applied to every line)
         // Reference blocks: deeper indent + italic
         // Normal paragraphs: small breathing room
+        final dc = ResponsiveBreakpoints.classOf(
+            MediaQuery.of(context).size.width);
+        final baseIndent = ResponsiveBreakpoints.verseIndent(dc);
         final EdgeInsets blockPadding = isReference
-            ? EdgeInsets.fromLTRB(settings.fontSize * 2, 2, 16, 2)
-            : const EdgeInsets.fromLTRB(20, 2, 16, 2);
+            ? EdgeInsets.fromLTRB(settings.fontSize * 2, 2, baseIndent, 2)
+            : EdgeInsets.fromLTRB(baseIndent + 4, 2, baseIndent, 2);
 
         // Inter-paragraph gap — small and only between paragraphs (not at top)
         final double topGap = (!isFirst && (isParagraphStart || isReference))

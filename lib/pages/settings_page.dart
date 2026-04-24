@@ -7,6 +7,7 @@ import 'package:yswords/services/fetch_books.dart';
 import 'package:yswords/services/fetch_verses.dart';
 
 import 'package:yswords/widgets/localized_back_button.dart';
+import 'package:yswords/utils/responsive.dart';
 
 String getDevotionalFormattedText(
     List<Map<String, dynamic>> verses, String? book, int? chapter) {
@@ -84,13 +85,21 @@ class SettingsPage extends StatelessWidget {
               .map((v) => {'verse': v.verse, 'verseLabel': v.verseLabel, 'text': v.text})
               .toList();
 
-          return ListView(
-            padding: const EdgeInsets.all(16),
+          final dc = ResponsiveBreakpoints.classOf(
+              MediaQuery.of(context).size.width);
+          final maxW = ResponsiveBreakpoints.settingsMaxWidth(dc);
+          final s = ResponsiveBreakpoints.spacingScale(dc);
+
+          return Center(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(maxWidth: maxW),
+              child: ListView(
+            padding: EdgeInsets.all(16 * s),
             children: [
               Card(
                 child: Padding(
                   padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      EdgeInsets.symmetric(horizontal: 16 * s, vertical: 12 * s),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -114,11 +123,11 @@ class SettingsPage extends StatelessWidget {
                   ),
                 ),
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: 16 * s),
               Card(
                 child: Padding(
                   padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      EdgeInsets.symmetric(horizontal: 16 * s, vertical: 12 * s),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -142,11 +151,11 @@ class SettingsPage extends StatelessWidget {
                   ),
                 ),
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: 16 * s),
               Card(
                 child: Padding(
                   padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      EdgeInsets.symmetric(horizontal: 16 * s, vertical: 12 * s),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -172,10 +181,10 @@ class SettingsPage extends StatelessWidget {
                   ),
                 ),
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: 16 * s),
               Card(
                 child: Padding(
-                  padding: const EdgeInsets.all(16),
+                  padding: EdgeInsets.all(16 * s),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -188,7 +197,7 @@ class SettingsPage extends StatelessWidget {
                           fontWeight: FontWeight.w600,
                         ),
                       ),
-                      const SizedBox(height: 12),
+                      SizedBox(height: 12 * s),
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -201,7 +210,7 @@ class SettingsPage extends StatelessWidget {
                               fontWeight: FontWeight.w500,
                             ),
                           ),
-                          const SizedBox(height: 8),
+                          SizedBox(height: 8 * s),
                           DropdownButton<String>(
                             value: settings.copyFormat,
                             onChanged: (val) {
@@ -244,7 +253,7 @@ class SettingsPage extends StatelessWidget {
                           ),
                         ],
                       ),
-                      const SizedBox(height: 12),
+                      SizedBox(height: 12 * s),
                       Text(
                         currentBook != null && currentChapter != null
                             ? '$currentBook $currentChapter'
@@ -259,8 +268,8 @@ class SettingsPage extends StatelessWidget {
                                   fontSize: settings.fontSize,
                                 ),
                       ),
-                      const SizedBox(height: 8),
-                      const SizedBox(height: 12),
+                      SizedBox(height: 8 * s),
+                      SizedBox(height: 12 * s),
                       if (settings.copyFormat == 'devotional')
                         Padding(
                           padding:
@@ -347,11 +356,11 @@ class SettingsPage extends StatelessWidget {
                   ),
                 ),
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: 16 * s),
               Card(
                 child: Padding(
                   padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      EdgeInsets.symmetric(horizontal: 16 * s, vertical: 12 * s),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -364,7 +373,7 @@ class SettingsPage extends StatelessWidget {
                           fontWeight: FontWeight.w600,
                         ),
                       ),
-                      const SizedBox(height: 12),
+                      SizedBox(height: 12 * s),
                       DropdownButton<String>(
                         value: settings.fontFamily,
                         onChanged: (val) {
@@ -393,7 +402,7 @@ class SettingsPage extends StatelessWidget {
                   ),
                 ),
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: 16 * s),
               if (Theme.of(context).brightness != Brightness.dark) ...[
                 Card(
                   child: Padding(
@@ -411,7 +420,7 @@ class SettingsPage extends StatelessWidget {
                             fontWeight: FontWeight.w600,
                           ),
                         ),
-                        const SizedBox(height: 12),
+                        SizedBox(height: 12 * s),
                         Wrap(
                           spacing: 8,
                           runSpacing: 8,
@@ -434,12 +443,12 @@ class SettingsPage extends StatelessWidget {
                     ),
                   ),
                 ),
-                const SizedBox(height: 16),
+                SizedBox(height: 16 * s),
               ],
               Card(
                 child: Padding(
                   padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      EdgeInsets.symmetric(horizontal: 16 * s, vertical: 12 * s),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -452,7 +461,7 @@ class SettingsPage extends StatelessWidget {
                           fontWeight: FontWeight.w600,
                         ),
                       ),
-                      const SizedBox(height: 12),
+                      SizedBox(height: 12 * s),
                       DropdownButton<ThemeMode>(
                         value: settings.themeMode,
                         onChanged: (val) {
@@ -497,11 +506,11 @@ class SettingsPage extends StatelessWidget {
                   ),
                 ),
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: 16 * s),
               Card(
                 child: Padding(
                   padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      EdgeInsets.symmetric(horizontal: 16 * s, vertical: 12 * s),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -514,7 +523,7 @@ class SettingsPage extends StatelessWidget {
                           fontWeight: FontWeight.w600,
                         ),
                       ),
-                      const SizedBox(height: 12),
+                      SizedBox(height: 12 * s),
                       ToggleButtons(
                         isSelected: [!settings.paragraphMode, settings.paragraphMode],
                         onPressed: (index) =>
@@ -547,7 +556,7 @@ class SettingsPage extends StatelessWidget {
                   ),
                 ),
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: 16 * s),
               Card(
                 child: Column(
                   children: [
@@ -607,10 +616,10 @@ class SettingsPage extends StatelessWidget {
                   ],
                 ),
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: 16 * s),
               Card(
                 child: Padding(
-                  padding: const EdgeInsets.all(16),
+                  padding: EdgeInsets.all(16 * s),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -623,7 +632,7 @@ class SettingsPage extends StatelessWidget {
                           fontWeight: FontWeight.w600,
                         ),
                       ),
-                      const SizedBox(height: 8),
+                      SizedBox(height: 8 * s),
                       DropdownButton<String>(
                         value: settings.locale,
                         onChanged: (val) {
@@ -660,8 +669,10 @@ class SettingsPage extends StatelessWidget {
                   ),
                 ),
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: 16 * s),
             ],
+              ),
+            ),
           );
         },
       ),
@@ -676,6 +687,8 @@ class SettingsPage extends StatelessWidget {
   Future<void> _onCheckForUpdates(
       BuildContext context, AppSettings settings) async {
     final messenger = ScaffoldMessenger.of(context);
+    final s = ResponsiveBreakpoints.spacingScale(
+        ResponsiveBreakpoints.classOf(MediaQuery.of(context).size.width));
     final mainProvider = context.read<MainProvider>();
     final localeTitle =
         uiStrings['updatesAvailableTitle']?[settings.locale] ??
@@ -726,7 +739,7 @@ class SettingsPage extends StatelessWidget {
                 fontFamily: settings.fontFamily,
               ),
             ),
-            const SizedBox(height: 12),
+            SizedBox(height: 12 * s),
             Text(
               'v$appVersion',
               style: TextStyle(
