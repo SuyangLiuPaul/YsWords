@@ -147,18 +147,20 @@ Chapter/verse may be stored as strings or integers depending on source.
 
 ## Bible Versions
 
-| Key | Name | Language | Filename | Paragraph Data |
-| --- | ---- | -------- | -------- | -------------- |
+| Key | Name | Language | Filename | Paragraph Data (raw) |
+| --- | ---- | -------- | -------- | -------------------- |
 | `kjv` | King James Version | English | `assets/kjv.json` | No |
 | `leb` | Lexham English Bible | English | `assets/leb.json` | No |
 | `cuvs-yhwh` | 和合本雅伟版 (简) | Simplified Chinese | `assets/cuvs-yhwh.json` | No |
 | `cuvs-yhwh-tr` | 和合本雅伟版 (繁) | Traditional Chinese | `assets/cuvs-yhwh-tr.json` | No |
 | `biblexg` | 原文释经圣经 (简) | Simplified Chinese | `assets/biblexg.json` | No |
 | `biblexg-tr` | 原文释经圣经 (繁) | Traditional Chinese | `assets/biblexg-tr.json` | No |
-| `biblexg-v2` | 原文释经圣经第二版 (简) | Simplified Chinese | `assets/biblexg-v2.json` | Yes (NT only) |
-| `biblexg-v2-tr` | 原文释经圣经第二版 (繁) | Traditional Chinese | `assets/biblexg-v2-tr.json` | Yes (NT only) |
+| `biblexg-v2` | 原文释经圣经第二版 (简) | Simplified Chinese | `assets/biblexg-v2.json` | NT only (canonical source) |
+| `biblexg-v2-tr` | 原文释经圣经第二版 (繁) | Traditional Chinese | `assets/biblexg-v2-tr.json` | NT only (canonical source) |
 
 Default version on first launch: `cuvs-yhwh`.
+
+**Paragraph mode note**: LJK2 (`biblexg-v2`) is the only translation shipped with hand-curated paragraph metadata. At load time, `FetchVerses` replays LJK2's `isParagraphStart` / `paragraphType` flags onto every other version (keyed by english book name + `chapter:verse`) so the paragraph layout is consistent across all 8 translations in the NT. The OT has no paragraph source data and renders as one continuous paragraph in paragraph mode.
 
 ---
 

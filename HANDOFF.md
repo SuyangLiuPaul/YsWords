@@ -31,9 +31,11 @@ main.dart (entry point)
 
 **Data flow**:
 1. `FetchVerses.execute()` loads `assets/{version}.json` via `rootBundle.loadString()`
-2. Parses JSON into `List<Verse>`, sorts by canonical book order
-3. `FetchBooks.execute()` builds `List<Book>` with nested `Chapter` objects from the flat verse list
-4. `MainProvider` holds everything, widgets consume via `Consumer` / `Provider.of`
+2. Parses JSON into `List<Verse>`
+3. Enriches every verse with LJK2's paragraph metadata (loaded once into `_paragraphMapCache`) so all 8 versions share the same NT paragraph structure
+4. Sorts by canonical book order
+5. `FetchBooks.execute()` builds `List<Book>` with nested `Chapter` objects from the flat verse list
+6. `MainProvider` holds everything, widgets consume via `Consumer` / `Provider.of`
 
 ---
 
@@ -49,14 +51,14 @@ main.dart (entry point)
 ### Models
 | File | Purpose |
 |---|---|
-| `lib/models/verse.dart` | Immutable Verse with `fromJson` factory. Fields: `book`, `chapter`, `verse`, `verseLabel`, `text`, `id`, `paragraphType`, `isParagraphStart` |
+| `lib/models/verse.dart` | Immutable Verse with `fromJson` factory and `copyWith` (used by `FetchVerses` to apply cross-version paragraph metadata). Fields: `book`, `chapter`, `verse`, `verseLabel`, `text`, `id`, `paragraphType`, `isParagraphStart` |
 | `lib/models/book.dart` | Book with title + chapters list |
 | `lib/models/chapter.dart` | Chapter with title (int) + verses list |
 
 ### Services
 | File | Purpose |
 |---|---|
-| `lib/services/fetch_verses.dart` | Loads + parses verse JSON. Handles two formats: flat array and `{passages: {...}}` map |
+| `lib/services/fetch_verses.dart` | Loads + parses verse JSON. Handles two formats: flat array and `{passages: {...}}` map. Also lazily loads `assets/biblexg-v2.json` once into `_paragraphMapCache` (keyed by english book name + `chapter:verse`) and replays its `isParagraphStart` / `paragraphType` flags onto every loaded version so all 8 translations share LJK2's NT paragraph structure |
 | `lib/services/fetch_books.dart` | Builds Book/Chapter tree from flat verse list. Contains `standardBookOrder` (66 books) and `bookNameToEnglish` (EN/ZH-CN/ZH-TW mappings) |
 
 ### Pages
@@ -71,8 +73,8 @@ main.dart (entry point)
 ### Widgets
 | File | Purpose |
 |---|---|
-| `lib/widgets/verse_widget.dart` | Renders single verse. In paragraph mode: superscript verse numbers, hanging indent, paragraph-start spacers, reference-block indent. Uses shared `buildVerseContentSpans()` for annotation rendering. Tap to select, tap number to copy. Accepts `hasParagraphData` param — when false, every verse is treated as paragraph-start in paragraph mode |
-| `lib/widgets/paragraph_group_widget.dart` | Renders multiple verses as a single flowing RichText in paragraph mode. Per-verse selection via `TapGestureRecognizer`, per-verse background highlight. Paragraph-start indent (`fontSize * 2`) and reference indent (`fontSize * 3`) |
+| `lib/widgets/verse_widget.dart` | Renders single verse. In paragraph mode: superscript verse numbers, first-line indent (`fontSize * 1.6` via leading `WidgetSpan`), paragraph-start spacers (`fontSize * 0.35`, suppressed when `isFirst`), reference-block indent (`fontSize * 3`). Uses shared `buildVerseContentSpans()` for annotation rendering. Tap to select, tap number to copy. Verse-by-verse mode uses `6` vertical padding |
+| `lib/widgets/paragraph_group_widget.dart` | Renders multiple verses as a single flowing RichText in paragraph mode. Per-verse selection via `TapGestureRecognizer`, per-verse background highlight. First-line indent via `WidgetSpan(SizedBox(width: fontSize * 1.6))` prepended at paragraph starts; reference indent `fontSize * 3`; inter-paragraph gap `fontSize * 0.35` (suppressed via `isFirst` on the first group) |
 | `lib/widgets/localized_back_button.dart` | Back button with localized tooltip |
 
 ### Constants
@@ -96,18 +98,20 @@ main.dart (entry point)
 
 ## Bible Versions
 
-| Key | Name | Language | Filename | Paragraph Data |
-|---|---|---|---|---|
-| `kjv` | King James Version | English | `assets/kjv.json` | No |
-| `leb` | Lexham English Bible | English | `assets/leb.json` | No |
-| `cuvs-yhwh` | 和合本雅伟版 (简) | Simplified Chinese | `assets/cuvs-yhwh.json` | No |
-| `cuvs-yhwh-tr` | 和合本雅伟版 (繁) | Traditional Chinese | `assets/cuvs-yhwh-tr.json` | No |
-| `biblexg` | 原文释经圣经 (简) | Simplified Chinese | `assets/biblexg.json` | No |
-| `biblexg-tr` | 原文释经圣经 (繁) | Traditional Chinese | `assets/biblexg-tr.json` | No |
-| `biblexg-v2` | 原文释经圣经第二版 (简) | Simplified Chinese | `assets/biblexg-v2.json` | Yes (NT only) |
-| `biblexg-v2-tr` | 原文释经圣经第二版 (繁) | Traditional Chinese | `assets/biblexg-v2-tr.json` | Yes (NT only) |
+| Key | Name | Language | Filename | Paragraph Data (raw) | Paragraph Data (effective) |
+|---|---|---|---|---|---|
+| `kjv` | King James Version | English | `assets/kjv.json` | No | NT (via LJK2 replay) |
+| `leb` | Lexham English Bible | English | `assets/leb.json` | No | NT (via LJK2 replay) |
+| `cuvs-yhwh` | 和合本雅伟版 (简) | Simplified Chinese | `assets/cuvs-yhwh.json` | No | NT (via LJK2 replay) |
+| `cuvs-yhwh-tr` | 和合本雅伟版 (繁) | Traditional Chinese | `assets/cuvs-yhwh-tr.json` | No | NT (via LJK2 replay) |
+| `biblexg` | 原文释经圣经 (简) | Simplified Chinese | `assets/biblexg.json` | No | NT (via LJK2 replay) |
+| `biblexg-tr` | 原文释经圣经 (繁) | Traditional Chinese | `assets/biblexg-tr.json` | No | NT (via LJK2 replay) |
+| `biblexg-v2` | 原文释经圣经第二版 (简) | Simplified Chinese | `assets/biblexg-v2.json` | NT only (canonical source) | NT |
+| `biblexg-v2-tr` | 原文释经圣经第二版 (繁) | Traditional Chinese | `assets/biblexg-v2-tr.json` | NT only (canonical source) | NT |
 
 Default version on first launch: `cuvs-yhwh`. All JSON files are bundled in the app (no runtime download).
+
+**Cross-version paragraph share** (commit `cfbcaf0`, 2026-04-24): LJK2 (`biblexg-v2`) is the only translation with hand-curated paragraph metadata. `FetchVerses` loads it once into a cache keyed by english book name + `chapter:verse`, and replays the `isParagraphStart` / `paragraphType` flags onto every other version at load time so paragraph mode reads consistently regardless of translation. The merge is conservative — LJK2's flags only *add* breaks, never remove existing ones.
 
 ---
 
@@ -119,16 +123,16 @@ The app supports two reading modes (toggled in Settings):
 
 **Verse by Verse (default)**: Each verse rendered as a standalone block with standard padding.
 
-**Paragraph Flow**: Verses flow together into paragraphs based on `isParagraphStart` / `paragraphType` fields in the Verse model:
-- Paragraph-start verses: `SizedBox(fontSize * 0.8)` spacer above, `fontSize * 2` left indent (hanging indent)
-- Inline continuation verses: no spacer, 16px left padding
+**Paragraph Flow**: Verses flow together into paragraphs based on `isParagraphStart` / `paragraphType` fields in the Verse model. Styling is tuned to match WeDevote 微读圣经:
+- Paragraph-start verses: `SizedBox(fontSize * 0.35)` spacer above (suppressed for the very first paragraph via `isFirst`), first-line indent via a `WidgetSpan(SizedBox(width: fontSize * 1.6))` prepended to the flowing RichText
+- Inline continuation verses: no spacer, text flows directly into the preceding paragraph
 - Reference verses (`paragraphType == 'reference'`): `fontSize * 3` left indent, italic text
-- Verse numbers: superscript style (fontSize * 0.7, bold) in paragraph mode
-- **Fallback**: Versions without paragraph data (any verse where `isParagraphStart` is false for all verses) treat every verse as paragraph-start in paragraph mode
+- Verse numbers: superscript (`fontSize * 0.65`, weight `w600`, `onSurfaceVariant` color), `PlaceholderAlignment.top` with a small lift (`fontSize * 0.05`), `3px` right gap
+- Chapter header (`_ChapterHeader` at item index 0) with the localized "Chapter {n}" label
 
-Only `biblexg-v2.json` / `biblexg-v2-tr.json` have paragraph metadata. Other 6 versions fall back gracefully.
+**Cross-version paragraph share**: All 8 Bible versions share LJK2's NT paragraph metadata at load time (see `FetchVerses._loadParagraphMap`). There is no per-version fallback path anymore — every translation gets the same NT structure. OT still has no paragraph data because LJK2 itself doesn't cover the OT; OT chapters render as one continuous paragraph in paragraph mode.
 
-**Implementation**: Uses `ScrollablePositionedList` with items = paragraph groups. When paragraph mode is on and `hasParagraphData` is true, consecutive inline verses are grouped into `ParagraphGroupWidget` (shared RichText); single-verse groups use `VerseWidget`. A `verseToItemMap` in MainProvider maps verse indices to item indices for correct scroll/jump behavior.
+**Implementation**: Uses `ScrollablePositionedList`. Item layout is always `[ChapterHeader, ...paragraphGroups, FAB clearance]` in paragraph mode. Consecutive inline verses are grouped into `ParagraphGroupWidget` (shared RichText); single-verse groups use `VerseWidget` with the `isFirst` flag to suppress the top gap when appropriate. `verseToItemMap` in MainProvider maps verse indices to item indices (shifted by +1 for the header) for correct scroll/jump behavior; `provider.jumpToTop()` is used when switching chapters/books.
 
 Verse `text` fields contain inline markup rendered by `VerseWidget`:
 
@@ -187,6 +191,21 @@ No unused dependencies remain. Seven were removed in the last cleanup: `expandab
 ---
 
 ## What Has Been Fixed (2026-04-24)
+
+### Cross-Version Paragraph Share (commit `cfbcaf0`)
+- **Problem**: Only LJK2 (`biblexg-v2`) had hand-curated paragraph breaks, so the other 6 translations rendered the NT as a wall of text in paragraph mode.
+- **Fix**: Added `Verse.copyWith` and a lazy paragraph-metadata cache in `FetchVerses`. At load time, every verse in every version is looked up against LJK2's `bookEn → "chapter:verse" → {isParagraphStart, paragraphType}` map and patched to match. Merge is conservative — LJK2 only adds breaks, never removes existing ones.
+- **Result**: All 8 Bible versions now share LJK2's 1694 NT paragraph starts and 41 reference-block breaks. OT is unchanged (no source data).
+
+### Reading View Polish (commit `7341151`)
+Paragraph mode was shipped but felt loose compared to WeDevote 微读圣经. Retuned to match:
+- **Continuous flowing RichText**: `ParagraphGroupWidget` now renders grouped verses as one flowing span instead of stacked lines
+- **First-line indent**: `WidgetSpan(SizedBox(width: fontSize * 1.6))` prepended at paragraph starts
+- **Reduced inter-paragraph gap**: `fontSize * 0.8` → `fontSize * 0.35`; first paragraph suppresses the gap via `isFirst`
+- **Tighter block padding**: `4` → `2`
+- **Polished superscript verse numbers**: `fontSize * 0.7` → `fontSize * 0.65`, `FontWeight.bold` → `w600`, color `onSurfaceVariant`, `PlaceholderAlignment.top` with a small lift, `3px` right gap
+- **Chapter header at top**: `_ChapterHeader` widget at item index 0; `verseToItemMap` shifted by +1; `provider.jumpToTop()` for chapter/book switches
+- **Verse-by-verse mode**: vertical padding tightened from `8` → `6` to mirror the new spacing rules
 
 ### Paragraph Mode Feature (commits `2c6759f`–`2403fb4`)
 - **Paragraph mode toggle**: Added in Settings with trilingual labels (阅读模式/閱讀模式/Reading Mode)
