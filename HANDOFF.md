@@ -32,7 +32,7 @@ main.dart (entry point)
 **Data flow**:
 1. `FetchVerses.execute()` loads `assets/{version}.json` via `rootBundle.loadString()`
 2. Parses JSON into `List<Verse>`
-3. Enriches every verse with LJK2's paragraph metadata (loaded once into `_paragraphMapCache`) so all 8 versions share the same NT paragraph structure
+3. Enriches every verse with shared paragraph metadata (WEB-derived OT + LJK2 NT, loaded once into `_paragraphMapCache`) so versions share the same paragraph structure where their verse data exists
 4. Sorts by canonical book order
 5. `FetchBooks.execute()` builds `List<Book>` with nested `Chapter` objects from the flat verse list
 6. `MainProvider` holds everything, widgets consume via `Consumer` / `Provider.of`
@@ -58,7 +58,7 @@ main.dart (entry point)
 ### Services
 | File | Purpose |
 |---|---|
-| `lib/services/fetch_verses.dart` | Loads + parses verse JSON. Handles two formats: flat array and `{passages: {...}}` map. Also lazily loads `assets/biblexg-v2.json` once into `_paragraphMapCache` (keyed by english book name + `chapter:verse`) and replays its `isParagraphStart` / `paragraphType` flags onto every loaded version so all 8 translations share LJK2's NT paragraph structure |
+| `lib/services/fetch_verses.dart` | Loads + parses verse JSON. Handles two formats: flat array and `{passages: {...}}` map. Also lazily loads `assets/web-ot-paragraphs.json` + `assets/biblexg-v2.json` once into `_paragraphMapCache` (keyed by english book name + `chapter:verse`) and replays their `isParagraphStart` / `paragraphType` flags onto every loaded version |
 | `lib/services/fetch_books.dart` | Builds Book/Chapter tree from flat verse list. Contains `standardBookOrder` (66 books) and `bookNameToEnglish` (EN/ZH-CN/ZH-TW mappings) |
 
 ### Pages
@@ -100,18 +100,18 @@ main.dart (entry point)
 
 | Key | Name | Language | Filename | Paragraph Data (raw) | Paragraph Data (effective) |
 |---|---|---|---|---|---|
-| `kjv` | King James Version | English | `assets/kjv.json` | No | NT (via LJK2 replay) |
-| `leb` | Lexham English Bible | English | `assets/leb.json` | No | NT (via LJK2 replay) |
-| `cuvs-yhwh` | 和合本雅伟版 (简) | Simplified Chinese | `assets/cuvs-yhwh.json` | No | NT (via LJK2 replay) |
-| `cuvs-yhwh-tr` | 和合本雅伟版 (繁) | Traditional Chinese | `assets/cuvs-yhwh-tr.json` | No | NT (via LJK2 replay) |
-| `biblexg` | 原文释经圣经 (简) | Simplified Chinese | `assets/biblexg.json` | No | NT (via LJK2 replay) |
-| `biblexg-tr` | 原文释经圣经 (繁) | Traditional Chinese | `assets/biblexg-tr.json` | No | NT (via LJK2 replay) |
+| `kjv` | King James Version | English | `assets/kjv.json` | No | OT (WEB replay) + NT (LJK2 replay) |
+| `leb` | Lexham English Bible | English | `assets/leb.json` | No | OT (WEB replay for available verses) + NT (LJK2 replay) |
+| `cuvs-yhwh` | 和合本雅伟版 (简) | Simplified Chinese | `assets/cuvs-yhwh.json` | No | OT (WEB replay) + NT (LJK2 replay) |
+| `cuvs-yhwh-tr` | 和合本雅伟版 (繁) | Traditional Chinese | `assets/cuvs-yhwh-tr.json` | No | OT (WEB replay) + NT (LJK2 replay) |
+| `biblexg` | 原文释经圣经 (简) | Simplified Chinese | `assets/biblexg.json` | No; NT text only | NT (LJK2 replay) |
+| `biblexg-tr` | 原文释经圣经 (繁) | Traditional Chinese | `assets/biblexg-tr.json` | No; NT text only | NT (LJK2 replay) |
 | `biblexg-v2` | 原文释经圣经第二版 (简) | Simplified Chinese | `assets/biblexg-v2.json` | NT only (canonical source) | NT |
 | `biblexg-v2-tr` | 原文释经圣经第二版 (繁) | Traditional Chinese | `assets/biblexg-v2-tr.json` | NT only (canonical source) | NT |
 
 Default version on first launch: `cuvs-yhwh`. All JSON files are bundled in the app (no runtime download).
 
-**Cross-version paragraph share** (commit `cfbcaf0`, 2026-04-24): LJK2 (`biblexg-v2`) is the only translation with hand-curated paragraph metadata. `FetchVerses` loads it once into a cache keyed by english book name + `chapter:verse`, and replays the `isParagraphStart` / `paragraphType` flags onto every other version at load time so paragraph mode reads consistently regardless of translation. The merge is conservative — LJK2's flags only *add* breaks, never remove existing ones.
+**Cross-version paragraph share**: `FetchVerses` loads two paragraph sources once into a cache keyed by english book name + `chapter:verse`: `assets/web-ot-paragraphs.json` for the OT (11,922 verse starts derived from public-domain WEB USFM block markers) and LJK2 (`assets/biblexg-v2.json`) for the NT (1,694 starts, including 41 reference blocks). It replays those flags onto every version at load time so paragraph mode reads consistently regardless of translation. The merge is conservative — shared flags only *add* breaks, never remove existing ones.
 
 ---
 
@@ -130,7 +130,7 @@ The app supports two reading modes (toggled in Settings):
 - Verse numbers: superscript (`fontSize * 0.65`, weight `w600`, `onSurfaceVariant` color), `PlaceholderAlignment.top` with a small lift (`fontSize * 0.05`), `3px` right gap
 - Chapter header (`_ChapterHeader` at item index 0) with the localized "Chapter {n}" label
 
-**Cross-version paragraph share**: All 8 Bible versions share LJK2's NT paragraph metadata at load time (see `FetchVerses._loadParagraphMap`). There is no per-version fallback path anymore — every translation gets the same NT structure. OT still has no paragraph data because LJK2 itself doesn't cover the OT; OT chapters render as one continuous paragraph in paragraph mode.
+**Cross-version paragraph share**: Versions share paragraph metadata at load time (see `FetchVerses._loadParagraphMap`). OT structure comes from `assets/web-ot-paragraphs.json`, generated from public-domain WEB USFM paragraph/poetry block markers. NT structure comes from LJK2 (`biblexg-v2`). There is no per-version fallback path anymore — translations get the same structure wherever their verse data exists.
 
 **Implementation**: Uses `ScrollablePositionedList`. Item layout is always `[ChapterHeader, ...paragraphGroups, FAB clearance]` in paragraph mode. Consecutive inline verses are grouped into `ParagraphGroupWidget` (shared RichText); single-verse groups use `VerseWidget` with the `isFirst` flag to suppress the top gap when appropriate. `verseToItemMap` in MainProvider maps verse indices to item indices (shifted by +1 for the header) for correct scroll/jump behavior; `provider.jumpToTop()` is used when switching chapters/books.
 
@@ -192,10 +192,15 @@ No unused dependencies remain. Seven were removed in the last cleanup: `expandab
 
 ## What Has Been Fixed (2026-04-24)
 
+### Old Testament Paragraph Structure
+- **Problem**: Paragraph Flow had proper NT structure, but OT chapters still rendered as one long continuous block because LJK2 has no OT text.
+- **Fix**: Added `assets/web-ot-paragraphs.json`, generated by `tools/generate_web_ot_paragraphs.py` from the public-domain World English Bible USFM archive. `FetchVerses` now merges WEB-derived OT paragraph/poetry starts with LJK2's NT metadata in the same `_paragraphMapCache`.
+- **Result**: Full-Bible versions now receive 11,922 OT paragraph starts plus the existing 1,694 NT starts at load time. NT-only BibleXG versions continue to receive NT paragraph metadata only.
+
 ### Cross-Version Paragraph Share (commit `cfbcaf0`)
 - **Problem**: Only LJK2 (`biblexg-v2`) had hand-curated paragraph breaks, so the other 6 translations rendered the NT as a wall of text in paragraph mode.
 - **Fix**: Added `Verse.copyWith` and a lazy paragraph-metadata cache in `FetchVerses`. At load time, every verse in every version is looked up against LJK2's `bookEn → "chapter:verse" → {isParagraphStart, paragraphType}` map and patched to match. Merge is conservative — LJK2 only adds breaks, never removes existing ones.
-- **Result**: All 8 Bible versions now share LJK2's 1694 NT paragraph starts and 41 reference-block breaks. OT is unchanged (no source data).
+- **Result**: All versions now share LJK2's 1694 NT paragraph starts and 41 reference-block breaks. This was later extended with WEB-derived OT paragraph starts for versions that include OT text.
 
 ### Reading View Polish (commit `7341151`)
 Paragraph mode was shipped but felt loose compared to WeDevote 微读圣经. Retuned to match:
