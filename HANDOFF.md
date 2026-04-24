@@ -45,7 +45,7 @@ main.dart (entry point)
 | File | Purpose |
 |---|---|
 | `lib/main.dart` | App bootstrap. MultiProvider setup, loading screen with 8s timeout, initial data load sequence |
-| `lib/providers/main_provider.dart` | Central state: verses, books, current book/chapter/version, selection, scroll controllers, state persistence |
+| `lib/providers/main_provider.dart` | Central state: verses, books, current book/chapter/version, selection, **verse highlights** (`Map<String, int>` verse ID → ARGB color), scroll controllers, state persistence via SharedPreferences |
 | `lib/models/app_settings.dart` | All user preferences persisted via SharedPreferences (font, theme, locale, copy format, paragraph mode) |
 
 ### Models
@@ -64,7 +64,7 @@ main.dart (entry point)
 ### Pages
 | File | Purpose |
 |---|---|
-| `lib/pages/home_page.dart` | Main reading view. ScrollablePositionedList with paragraph group items. Swipe gestures for chapter nav. Copy FAB. ~594 lines |
+| `lib/pages/home_page.dart` | Main reading view. No fixed AppBar — uses `_FloatingHeader` (always shows search/settings; shows book/chapter/version when scrolled). `ScrollablePositionedList` with paragraph group items. Bottom bar: `_ReaderStatusBar` (progress, chapter nav) or `_SelectionActionBar` (copy, highlight with 6-color picker, clear). Swipe gestures for chapter nav |
 | `lib/pages/books_page.dart` | OT/NT tabs, ExpansionTile per book, chapter grid. AutoScrollController to jump to current book |
 | `lib/pages/search_page.dart` | Full-text search with book filter. Results sorted canonically. Tap to jump+highlight |
 | `lib/pages/settings_page.dart` | Settings UI: font size/spacing/family, copy format, theme, color palette, reading mode (verse-by-verse / paragraph flow), language |
@@ -73,8 +73,8 @@ main.dart (entry point)
 ### Widgets
 | File | Purpose |
 |---|---|
-| `lib/widgets/verse_widget.dart` | Renders single verse. In paragraph mode: superscript verse numbers, first-line indent (`fontSize * 1.6` via leading `WidgetSpan`), paragraph-start spacers (`fontSize * 0.35`, suppressed when `isFirst`), reference-block indent (`fontSize * 3`). Uses shared `buildVerseContentSpans()` for annotation rendering. Tap to select, tap number to copy. Verse-by-verse mode uses `6` vertical padding |
-| `lib/widgets/paragraph_group_widget.dart` | Renders multiple verses as a single flowing RichText in paragraph mode. Per-verse selection via `TapGestureRecognizer`, per-verse background highlight. First-line indent via `WidgetSpan(SizedBox(width: fontSize * 1.6))` prepended at paragraph starts; reference indent `fontSize * 3`; inter-paragraph gap `fontSize * 0.35` (suppressed via `isFirst` on the first group) |
+| `lib/widgets/verse_widget.dart` | Renders single verse. Background priority: selection > search highlight > **user highlight color** (35% opacity) > transparent. In paragraph mode: superscript verse numbers, first-line indent, paragraph-start spacers, reference-block indent. Tap to select, tap number to copy |
+| `lib/widgets/paragraph_group_widget.dart` | Renders multiple verses as a single flowing RichText in paragraph mode. Per-verse selection via `TapGestureRecognizer`, per-verse background (selection/highlight). Same background priority as VerseWidget |
 | `lib/widgets/localized_back_button.dart` | Back button with localized tooltip |
 
 ### Constants
@@ -91,7 +91,7 @@ main.dart (entry point)
 |---|---|
 | `lib/utils/clipboard_helper.dart` | Wraps `Clipboard.setData()` |
 | `lib/utils/format_searched_text.dart` | Builds RichText spans with highlighted search matches |
-| `lib/utils/build_verse_content_spans.dart` | Shared utility that builds `InlineSpan` list for a single verse (number + text with annotations). Used by both VerseWidget and ParagraphGroupWidget. Accepts `onTextTap` callback and `spanBgColor` for per-verse interaction in paragraph mode |
+| `lib/utils/build_verse_content_spans.dart` | Shared utility that builds `InlineSpan` list for a single verse (number + text with annotations). Used by both VerseWidget and ParagraphGroupWidget. Accepts `onTextTap` callback and `spanBgColor` for per-verse background (selection or highlight color) |
 | `lib/utils/version_mapper.dart` | `translateBookName()` and `toEnglish()` for cross-version name mapping |
 
 ---
@@ -191,6 +191,19 @@ No unused dependencies remain. Seven were removed in the last cleanup: `expandab
 ---
 
 ## What Has Been Fixed (2026-04-24)
+
+### Verse Highlight Feature (commit `35492b7`)
+- **6-color highlights**: Select verses → tap highlight icon → pick yellow/green/blue/pink/orange/purple
+- **Persistent storage**: Highlights saved as `Map<String, int>` (verse ID → ARGB color) in SharedPreferences, restored on app restart
+- **Remove highlights**: Select highlighted verses → highlight → "Remove highlight"
+- **Rendering**: Highlight color shown as 35% opacity background in both VerseWidget and ParagraphGroupWidget, in both reading modes
+- **Background priority**: selection (primary container) > search highlight (secondary 30%) > user highlight (35%) > transparent
+
+### Floating Header + UI Polish (commits `bd0f0c4`–`25cc0d4`)
+- **Removed fixed AppBar**: Replaced with `_FloatingHeader` inside the Stack
+- **At chapter top**: Only search and settings icons visible (transparent background)
+- **When scrolled**: Book/chapter (tappable, opens book picker) + version switcher appear with elevation
+- **Bottom bar**: `_ReaderStatusBar` with chapter progress bar and prev/next arrows, or `_SelectionActionBar` with highlight/copy/clear
 
 ### Old Testament Paragraph Structure
 - **Problem**: Paragraph Flow had proper NT structure, but OT chapters still rendered as one long continuous block because LJK2 has no OT text.

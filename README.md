@@ -14,11 +14,12 @@
 | ------------ | ----------------------------------------------------------------------------------------------------------------------- |
 | Versions     | KJV, LEB, 和合本雅伟版 (简 / 繁), 原文释经圣经 (简 / 繁)                                                                |
 | Reading      | Light / Dark / System theme; Adjustable font family, size, line spacing; Verse-by-verse or Paragraph Flow reading mode |
-| Navigation   | Swipe left/right to change chapter; Floating chapter picker in AppBar                                                   |
+| Highlights   | Mark verses with 6 colors (yellow, green, blue, pink, orange, purple); persistent across sessions                      |
+| Navigation   | Swipe left/right to change chapter; Floating chapter picker; Previous/next chapter buttons                              |
 | Search       | Book-only or whole-Bible search; Highlighted results with book summary                                                  |
 | Annotations  | `{...}` inline badges with linked `<note:...>` pop-ups; `[...]` dotted-underline keywords; Book icon notes              |
 | Copy & Share | Tap verses to multi-select; Copy in **Plain**, **With Reference**, or **Devotional** formats                            |
-| Persistence  | Last-read position & user settings stored with `shared_preferences`                                                     |
+| Persistence  | Last-read position, highlights & user settings stored with `shared_preferences`                                         |
 | Platforms    | Android, iOS, Web, macOS, Windows, Linux                                                                                |
 
 ---
