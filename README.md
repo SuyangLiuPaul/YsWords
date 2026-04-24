@@ -12,8 +12,8 @@
 
 | Category     | Details                                                                                                                 |
 | ------------ | ----------------------------------------------------------------------------------------------------------------------- |
-| Versions     | KJV, LEB, 和合本雅伟版 (简 / 繁), 原文释经圣经 (简 / 繁)                                                                |
-| Reading      | Light / Dark / System theme; Adjustable font family, size, line spacing; Verse-by-verse or Paragraph Flow reading mode |
+| Versions     | KJV, LEB, 和合本雅伟版 (简 / 繁), 和合本 (简 / 繁), 新译本 (简 / 繁), 原文释经圣经 (简 / 繁)                              |
+| Reading      | Light / Dark / System theme; Adjustable font family, size, line spacing, menu scale; Verse-by-verse or Paragraph Flow reading mode |
 | Highlights   | Mark verses with 6 colors (yellow, green, blue, pink, orange, purple); persistent across sessions                      |
 | Navigation   | Swipe left/right to change chapter; Floating chapter picker; Previous/next chapter buttons                              |
 | Search       | Book-only or whole-Bible search; Highlighted results with book summary                                                  |
@@ -154,6 +154,10 @@ Chapter/verse may be stored as strings or integers depending on source.
 | `leb` | Lexham English Bible | English | `assets/leb.json` | No | OT + NT replay for available verses |
 | `cuvs-yhwh` | 和合本雅伟版 (简) | Simplified Chinese | `assets/cuvs-yhwh.json` | No | OT + NT replay |
 | `cuvs-yhwh-tr` | 和合本雅伟版 (繁) | Traditional Chinese | `assets/cuvs-yhwh-tr.json` | No | OT + NT replay |
+| `cuv` | 和合本 (简) | Simplified Chinese | `assets/cuv.json` | No | OT + NT replay |
+| `cuv-tr` | 和合本 (繁) | Traditional Chinese | `assets/cuv-tr.json` | No | OT + NT replay |
+| `cnv` | 新译本 (简) | Simplified Chinese | `assets/cnv.json` | No | OT + NT replay |
+| `cnv-tr` | 新译本 (繁) | Traditional Chinese | `assets/cnv-tr.json` | No | OT + NT replay |
 | `biblexg` | 原文释经圣经 (简) | Simplified Chinese | `assets/biblexg.json` | No; NT text only | NT replay |
 | `biblexg-tr` | 原文释经圣经 (繁) | Traditional Chinese | `assets/biblexg-tr.json` | No; NT text only | NT replay |
 | `biblexg-v2` | 原文释经圣经第二版 (简) | Simplified Chinese | `assets/biblexg-v2.json` | NT only (canonical source) | NT |

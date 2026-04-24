@@ -1,6 +1,6 @@
 # YsWords — AI Agent Handoff Document
 
-> Last updated: 2026-04-24
+> Last updated: 2026-04-25
 > Project: YsWords (Yahweh's Words) — bilingual Bible reader
 > Stack: Flutter 3.41.7 / Dart 3.11.5 / Provider + GetX
 > Repo: https://github.com/SuyangLiuPaul/YsWords
@@ -10,7 +10,7 @@
 
 ## What Is This Project
 
-YsWords is a Flutter Bible reader app supporting 8 Bible translations across English, Simplified Chinese, and Traditional Chinese. It runs on Web, Android, iOS, macOS, Windows, and Linux. The web build is deployed to Netlify.
+YsWords is a Flutter Bible reader app supporting 12 Bible translations across English, Simplified Chinese, and Traditional Chinese. It runs on Web, Android, iOS, macOS, Windows, and Linux. The web build is deployed to Netlify.
 
 The app's core loop: load a JSON file from bundled assets → parse into Verse objects → organize into Book/Chapter tree → display in a scrollable list with inline annotations ({...} badges, [...] dotted underlines, <note:...> popups). Users can toggle between Verse-by-Verse (default) and Paragraph Flow (flowing layout with hanging indent, superscript verse numbers, and indented reference blocks).
 
@@ -46,7 +46,7 @@ main.dart (entry point)
 |---|---|
 | `lib/main.dart` | App bootstrap. MultiProvider setup, loading screen with 8s timeout, initial data load sequence |
 | `lib/providers/main_provider.dart` | Central state: verses, books, current book/chapter/version, selection, **verse highlights** (`Map<String, int>` verse ID → ARGB color), scroll controllers, state persistence via SharedPreferences |
-| `lib/models/app_settings.dart` | All user preferences persisted via SharedPreferences (font, theme, locale, copy format, paragraph mode) |
+| `lib/models/app_settings.dart` | All user preferences persisted via SharedPreferences (font, theme, locale, copy format, paragraph mode, **menu scale**) |
 
 ### Models
 | File | Purpose |
@@ -64,10 +64,10 @@ main.dart (entry point)
 ### Pages
 | File | Purpose |
 |---|---|
-| `lib/pages/home_page.dart` | Main reading view. No fixed AppBar — uses `_FloatingHeader` (always shows search/settings; shows book/chapter/version when scrolled). `ScrollablePositionedList` with paragraph group items. Bottom bar: `_ReaderStatusBar` (progress, chapter nav) or `_SelectionActionBar` (copy, highlight with 6-color picker, clear). Swipe gestures for chapter nav |
+| `lib/pages/home_page.dart` | Main reading view. No fixed AppBar — uses `_FloatingHeader` (always shows book/chapter/version, search, settings). `ScrollablePositionedList` with paragraph group items. Bottom bar: `_ReaderStatusBar` (progress, chapter nav) or `_SelectionActionBar` (copy, highlight with 6-color picker, clear). Swipe gestures for chapter nav. Menu sizes scale with `settings.menuScale` |
 | `lib/pages/books_page.dart` | OT/NT tabs, ExpansionTile per book, chapter grid. AutoScrollController to jump to current book |
 | `lib/pages/search_page.dart` | Full-text search with book filter. Results sorted canonically. Tap to jump+highlight |
-| `lib/pages/settings_page.dart` | Settings UI: font size/spacing/family, copy format, theme, color palette, reading mode (verse-by-verse / paragraph flow), language |
+| `lib/pages/settings_page.dart` | Settings UI: font size, menu size, line spacing, copy format with preview, theme, color palette, reading mode, language |
 | `lib/pages/loading_page.dart` | 3-second splash with random verse display and app branding |
 
 ### Widgets
@@ -84,7 +84,7 @@ main.dart (entry point)
 | `lib/constants/ui_strings.dart` | Trilingual string table accessed via `uiStrings['key']?[locale]` |
 | `lib/constants/book_groups.dart` | OT/NT book name sets (EN + ZH-CN + ZH-TW) |
 | `lib/constants/book_name_mapping.dart` | EN↔ZH name maps, `zhToEn()`, `toLocale()` helpers |
-| `lib/constants/bible_versions.dart` | Bible version definitions with `menuLabel`, `value` properties. `shortBibleVersionLabel()` helper |
+| `lib/constants/bible_versions.dart` | Bible version definitions with `menuLabel`, `value` properties. `availableVersions` getter excludes disabled (placeholder-only) versions. `shortBibleVersionLabel()` helper |
 
 ### Utils
 | File | Purpose |
@@ -104,12 +104,18 @@ main.dart (entry point)
 | `leb` | Lexham English Bible | English | `assets/leb.json` | No | OT (WEB replay for available verses) + NT (LJK2 replay) |
 | `cuvs-yhwh` | 和合本雅伟版 (简) | Simplified Chinese | `assets/cuvs-yhwh.json` | No | OT (WEB replay) + NT (LJK2 replay) |
 | `cuvs-yhwh-tr` | 和合本雅伟版 (繁) | Traditional Chinese | `assets/cuvs-yhwh-tr.json` | No | OT (WEB replay) + NT (LJK2 replay) |
+| `cuv` | 和合本 (简) | Simplified Chinese | `assets/cuv.json` | No | OT (WEB replay) + NT (LJK2 replay) |
+| `cuv-tr` | 和合本 (繁) | Traditional Chinese | `assets/cuv-tr.json` | No | OT (WEB replay) + NT (LJK2 replay) |
+| `cnv` | 新译本 (简) | Simplified Chinese | `assets/cnv.json` | No | OT (WEB replay) + NT (LJK2 replay) |
+| `cnv-tr` | 新译本 (繁) | Traditional Chinese | `assets/cnv-tr.json` | No | OT (WEB replay) + NT (LJK2 replay) |
 | `biblexg` | 原文释经圣经 (简) | Simplified Chinese | `assets/biblexg.json` | No; NT text only | NT (LJK2 replay) |
 | `biblexg-tr` | 原文释经圣经 (繁) | Traditional Chinese | `assets/biblexg-tr.json` | No; NT text only | NT (LJK2 replay) |
 | `biblexg-v2` | 原文释经圣经第二版 (简) | Simplified Chinese | `assets/biblexg-v2.json` | NT only (canonical source) | NT |
 | `biblexg-v2-tr` | 原文释经圣经第二版 (繁) | Traditional Chinese | `assets/biblexg-v2-tr.json` | NT only (canonical source) | NT |
+| `nasb` | New American Standard Bible | English | `assets/nasb.json` | Placeholder only (hidden) | — |
+| `niv` | New International Version | English | `assets/niv.json` | Placeholder only (hidden) | — |
 
-Default version on first launch: `cuvs-yhwh`. All JSON files are bundled in the app (no runtime download).
+Default version on first launch: `cuvs-yhwh`. NASB and NIV are hidden from the picker until full text data is downloaded via `tools/fetch_bible_versions.py --api-key`. All JSON files are bundled in the app (no runtime download).
 
 **Cross-version paragraph share**: `FetchVerses` loads two paragraph sources once into a cache keyed by english book name + `chapter:verse`: `assets/web-ot-paragraphs.json` for the OT (11,922 verse starts derived from public-domain WEB USFM block markers) and LJK2 (`assets/biblexg-v2.json`) for the NT (1,694 starts, including 41 reference blocks). It replays those flags onto every version at load time so paragraph mode reads consistently regardless of translation. The merge is conservative — shared flags only *add* breaks, never remove existing ones.
 
@@ -190,7 +196,35 @@ No unused dependencies remain. Seven were removed in the last cleanup: `expandab
 
 ---
 
-## What Has Been Fixed (2026-04-24)
+## What Has Been Fixed (2026-04-25)
+
+### New Bible Versions (commit `598313c`)
+- **和合本 (简/繁)**: Downloaded 31,103 verses from getbible.net (CUV simplified & traditional, 66 books)
+- **新译本 (简/繁)**: Downloaded 31,102-31,104 verses from getbible.net (CNV simplified & traditional, 66 books)
+- **NASB / NIV**: Version entries created with placeholder data, hidden from picker until full text is available
+- **Fetch script**: `tools/fetch_bible_versions.py` supports getbible.net (free, no key) and api.bible (requires `--api-key`)
+- **Book name normalization**: Fixed `啟示錄` → `启示录` (simplified) and `創世記` → `創世紀` (traditional) mismatches from API
+
+### Menu Size Setting (commit `3171369`)
+- **Menu scale slider**: 0.7x–1.5x (default 1.0x), independently controls top header and bottom bar sizes
+- **Persists**: Saved in SharedPreferences as `menuScale`
+
+### Bug Fixes (commit `c999904`)
+- **Settings page crash**: Fixed type error in `getDevotionalFormattedText` where `verseLabel` (String) was cast as `int`, causing white screen when switching to devotional copy format
+- **Search crash**: Wrapped `jumpTo(0.0)` with `hasClients` check to prevent assertion when results are empty
+- **Search navigation timing**: Increased `Future.delayed` from 1ms to 300ms for verse-to-item map rebuild
+- **Slider assertions**: Rounded loaded SharedPreferences values to nearest step to prevent Slider division mismatch
+- **Highlight cleanup**: Added `mounted` check before clearing highlight from delayed callback
+
+### Duplicate Title Fix (commits `c2d4dcb`–`3d5c0de`)
+- **Removed duplicate chapter header**: `_ChapterHeader` class removed from scroll list, only `_FloatingHeader` shows book/chapter
+- **Removed bottom status bar title**: Bottom bar now shows only version/mode/progress detail line, not the book/chapter title
+- **Header clearance spacer**: Top padding uses `MediaQuery.of(context).padding.top + 44 * menuScale`
+
+### Floating Header Polish (commits `277bc51`–`43d70dc`)
+- **Always visible**: Header always shows book/chapter/version/search/settings with solid background
+- **Adjustable icon sizes**: Search and settings icons scale with font size setting
+- **Book picker always accessible**: Tapping book/chapter in header opens BooksPage regardless of scroll position
 
 ### Verse Highlight Feature (commit `35492b7`)
 - **6-color highlights**: Select verses → tap highlight icon → pick yellow/green/blue/pink/orange/purple
@@ -271,7 +305,7 @@ There is no `test/` directory. The README references tests but none exist. Addin
 The README references `.github/workflows/build.yml` but this file does not exist. A CI workflow that runs `flutter analyze` + `flutter test` on push would catch regressions.
 
 ### Large Asset Files
-The 6 Bible JSON files total ~33 MB. They are loaded entirely into memory via `rootBundle.loadString()`. For mobile platforms this works but could be optimized with lazy loading per book/chapter.
+The 12 Bible JSON files total ~58 MB. They are loaded entirely into memory via `rootBundle.loadString()`. For mobile platforms this works but could be optimized with lazy loading per book/chapter.
 
 ### `fonts_backup/` Directory
 Contains ~178 font files not used in production (commented out in `web/index.html` preloads). Could be deleted or moved to a separate repository to reduce clone size.
