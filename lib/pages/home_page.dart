@@ -304,11 +304,12 @@ class _HomePageState extends State<HomePage> {
                         scrollOffsetListener: mainProvider.scrollOffsetListener,
                       ),
                     ),
-                    // Floating header: appears when scrolled past the chapter header
-                    if (visibleItemIndex > 0 && currentVerse != null)
-                      _FloatingHeader(
-                        book: currentVerse.book,
-                        chapter: currentVerse.chapter,
+                    // Floating header: always shows search/settings,
+                    // shows book/chapter/version when scrolled past the chapter header
+                    _FloatingHeader(
+                        showBookInfo: visibleItemIndex > 0 && currentVerse != null,
+                        book: currentVerse?.book ?? '',
+                        chapter: currentVerse?.chapter ?? 0,
                         version: mainProvider.currentVersion,
                         onBookTap: () {
                           mainProvider.clearSelectedVerses();
@@ -777,10 +778,11 @@ class _ChapterHeader extends StatelessWidget {
   }
 }
 
-/// Floating header that slides in from the top when the user scrolls
-/// past the chapter header. Shows book/chapter (tappable), version picker,
-/// search and settings icons.
+/// Persistent top bar with search/settings always visible.
+/// When scrolled past the chapter header, also shows book/chapter (tappable)
+/// and version picker for context.
 class _FloatingHeader extends StatelessWidget {
+  final bool showBookInfo;
   final String book;
   final int chapter;
   final String version;
@@ -790,6 +792,7 @@ class _FloatingHeader extends StatelessWidget {
   final VoidCallback onSettings;
 
   const _FloatingHeader({
+    required this.showBookInfo,
     required this.book,
     required this.chapter,
     required this.version,
@@ -812,70 +815,80 @@ class _FloatingHeader extends StatelessWidget {
       child: SafeArea(
         bottom: false,
         child: Material(
-          elevation: 2,
+          elevation: showBookInfo ? 2 : 0,
           shadowColor: scheme.shadow.withValues(alpha: 0.12),
-          color: scheme.surface.withValues(alpha: 0.97),
+          color: scheme.surface.withValues(alpha: showBookInfo ? 0.97 : 0.0),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
             child: Row(
               children: [
-                // Book & chapter — tappable to open book picker
-                InkWell(
-                  borderRadius: BorderRadius.circular(8),
-                  onTap: onBookTap,
-                  child: Padding(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-                    child: Text(
-                      '$book $chapter',
-                      style: TextStyle(
-                        fontFamily: settings.fontFamily,
-                        fontSize: fontSize,
-                        fontWeight: FontWeight.w700,
-                        color: scheme.primary,
+                if (showBookInfo) ...[
+                  // Book & chapter — tappable to open book picker
+                  InkWell(
+                    borderRadius: BorderRadius.circular(8),
+                    onTap: onBookTap,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 6),
+                      child: Text(
+                        '$book $chapter',
+                        style: TextStyle(
+                          fontFamily: settings.fontFamily,
+                          fontSize: fontSize,
+                          fontWeight: FontWeight.w700,
+                          color: scheme.primary,
+                        ),
                       ),
                     ),
                   ),
-                ),
-                // Version picker
-                PopupMenuButton<String>(
-                  padding: EdgeInsets.zero,
-                  position: PopupMenuPosition.under,
-                  tooltip: uiStrings['changeVersion']?[settings.locale] ??
-                      'Change Version',
-                  itemBuilder: (context) => bibleVersions
-                      .map((v) => PopupMenuItem(
-                            value: v.value,
-                            child: Text(v.menuLabel),
-                          ))
-                      .toList(),
-                  onSelected: onVersionSelected,
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 6),
-                    child: Text(
-                      shortBibleVersionLabel(version),
-                      style: TextStyle(
-                        fontFamily: settings.fontFamily,
-                        fontSize: fontSize * 0.85,
-                        fontWeight: FontWeight.w600,
-                        color: scheme.primary.withValues(alpha: 0.8),
+                  // Version picker
+                  PopupMenuButton<String>(
+                    padding: EdgeInsets.zero,
+                    position: PopupMenuPosition.under,
+                    tooltip: uiStrings['changeVersion']?[settings.locale] ??
+                        'Change Version',
+                    itemBuilder: (context) => bibleVersions
+                        .map((v) => PopupMenuItem(
+                              value: v.value,
+                              child: Text(v.menuLabel),
+                            ))
+                        .toList(),
+                    onSelected: onVersionSelected,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 6),
+                      child: Text(
+                        shortBibleVersionLabel(version),
+                        style: TextStyle(
+                          fontFamily: settings.fontFamily,
+                          fontSize: fontSize * 0.85,
+                          fontWeight: FontWeight.w600,
+                          color: scheme.primary.withValues(alpha: 0.8),
+                        ),
                       ),
                     ),
                   ),
-                ),
+                ],
                 const Spacer(),
-                // Search icon
+                // Search icon — always visible
                 IconButton(
                   onPressed: onSearch,
-                  icon: Icon(Icons.search_rounded, size: fontSize * 1.2),
+                  icon: Icon(Icons.search_rounded,
+                      size: fontSize * 1.2,
+                      color: showBookInfo
+                          ? null
+                          : scheme.onSurface.withValues(alpha: 0.6)),
                   padding: const EdgeInsets.all(8),
                   constraints: const BoxConstraints(),
                 ),
                 const SizedBox(width: 2),
-                // Settings icon
+                // Settings icon — always visible
                 IconButton(
                   onPressed: onSettings,
-                  icon: Icon(Icons.settings, size: fontSize * 1.2),
+                  icon: Icon(Icons.settings,
+                      size: fontSize * 1.2,
+                      color: showBookInfo
+                          ? null
+                          : scheme.onSurface.withValues(alpha: 0.6)),
                   padding: const EdgeInsets.all(8),
                   constraints: const BoxConstraints(),
                 ),
