@@ -21,6 +21,29 @@ class Verse {
   }) : verseLabel = verseLabel ?? '$verse';
 
   String get id => '$book-$chapter-$verseLabel';
+
+  /// Returns a new Verse with the given fields replaced.
+  /// Used to apply cross-version paragraph metadata after JSON parsing.
+  Verse copyWith({
+    String? book,
+    int? chapter,
+    int? verse,
+    String? verseLabel,
+    String? text,
+    bool? isParagraphStart,
+    String? paragraphType,
+  }) {
+    return Verse(
+      book: book ?? this.book,
+      chapter: chapter ?? this.chapter,
+      verse: verse ?? this.verse,
+      verseLabel: verseLabel ?? this.verseLabel,
+      text: text ?? this.text,
+      isParagraphStart: isParagraphStart ?? this.isParagraphStart,
+      paragraphType: paragraphType ?? this.paragraphType,
+    );
+  }
+
   // Factory constructor to create a Verse object from a JSON map
   factory Verse.fromJson(Map<String, dynamic> json) {
     final chapterStr = json['chapter']?.toString() ?? '';
