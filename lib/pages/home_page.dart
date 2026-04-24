@@ -257,218 +257,6 @@ class _HomePageState extends State<HomePage> {
                         : Brightness.dark,
               ),
               child: Scaffold(
-                appBar: AppBar(
-                  title: LayoutBuilder(
-                    builder: (context, constraints) {
-                      // double scale =
-                      //     (constraints.maxWidth / 375).clamp(0.75, 1.0);
-                      double baseFontSize =
-                          Theme.of(context).textTheme.titleLarge?.fontSize ??
-                              20;
-                      if (currentVerse == null) {
-                        return Text(
-                          uiStrings['bible']?[settings.locale] ?? 'Bible',
-                          style: TextStyle(
-                            fontSize: baseFontSize,
-                            fontFamily: settings.fontFamily,
-                          ),
-                        );
-                      }
-                      return FittedBox(
-                        fit: BoxFit.scaleDown,
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Material(
-                              color: Colors.transparent,
-                              child: InkWell(
-                                borderRadius: BorderRadius.circular(8),
-                                onTap: () {
-                                  final mainProvider =
-                                      Provider.of<MainProvider>(context,
-                                          listen: false);
-                                  mainProvider.clearSelectedVerses();
-                                  Get.to(
-                                    () => BooksPage(
-                                      chapterIdx:
-                                          mainProvider.currentVerse?.chapter ??
-                                              1,
-                                      bookIdx:
-                                          mainProvider.currentVerse?.book ?? '',
-                                    ),
-                                    transition: Transition.leftToRight,
-                                    duration: const Duration(milliseconds: 300),
-                                    curve: Curves.easeInOut,
-                                  );
-                                },
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 4, vertical: 2),
-                                  child: Text(
-                                    '${currentVerse.book} ${currentVerse.chapter}',
-                                    style: TextStyle(
-                                      fontFamily: settings.fontFamily,
-                                      fontSize: settings.fontSize,
-                                      fontWeight: FontWeight.w600,
-                                      color:
-                                          Theme.of(context).colorScheme.primary,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            PopupMenuButton<String>(
-                              padding: EdgeInsets.zero,
-                              tooltip: uiStrings['changeVersion']
-                                      ?[settings.locale] ??
-                                  'Change Version',
-                              child: Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 4),
-                                child: Text(
-                                  shortBibleVersionLabel(
-                                      mainProvider.currentVersion),
-                                  style: TextStyle(
-                                    fontFamily: settings.fontFamily,
-                                    fontSize: settings.fontSize,
-                                    fontWeight: FontWeight.w600,
-                                    color:
-                                        Theme.of(context).colorScheme.primary,
-                                  ),
-                                ),
-                              ),
-                              onSelected: (version) async {
-                                final p = context.read<MainProvider>();
-                                p.clearSelectedVerses();
-
-                                final prevEn = toEnglish(p.currentBook);
-
-                                p.setVersion(version);
-                                await FetchVerses.execute(mainProvider: p);
-                                await FetchBooks.execute(mainProvider: p);
-
-                                if (p.verses.isEmpty) return;
-
-                                final targetBook = prevEn == null
-                                    ? null
-                                    : translateBookName(prevEn, version);
-                                final targetChapter = p.currentChapter;
-
-                                final match = p.verses.firstWhere(
-                                  (v) =>
-                                      (targetBook == null ||
-                                          v.book == targetBook) &&
-                                      (targetChapter == null ||
-                                          v.chapter == targetChapter),
-                                  orElse: () => p.verses.first,
-                                );
-
-                                p.setCurrentChapter(
-                                    book: match.book, chapter: match.chapter);
-                                p.updateCurrentVerse(verse: match);
-                                p.jumpToTop();
-                                if (mounted) {
-                                  setState(() => _visibleItemIndex = 0);
-                                }
-                              },
-                              itemBuilder: (context) => bibleVersions
-                                  .map(
-                                    (version) => PopupMenuItem(
-                                      value: version.value,
-                                      child: Text(version.menuLabel),
-                                    ),
-                                  )
-                                  .toList(),
-                            ),
-                          ],
-                        ),
-                      );
-                    },
-                  ),
-                  actions: [
-                    LayoutBuilder(
-                      builder: (context, constraints) {
-                        if (constraints.maxWidth < 377) {
-                          return PopupMenuButton<String>(
-                            icon: const Icon(Icons.more_vert),
-                            onSelected: (value) async {
-                              if (value == 'search') {
-                                mainProvider.clearSelectedVerses();
-                                Get.to(
-                                  () => SearchPage(),
-                                  transition: Transition.rightToLeft,
-                                );
-                              }
-                            },
-                            itemBuilder: (context) => [
-                              PopupMenuItem<String>(
-                                value: 'search',
-                                child: ListTile(
-                                  leading: Icon(Icons.search),
-                                  title: Text(uiStrings['search']
-                                          ?[settings.locale] ??
-                                      'Search'),
-                                ),
-                              ),
-                            ],
-                          );
-                        } else {
-                          double screenWidth =
-                              MediaQuery.of(context).size.width;
-                          double scale = (screenWidth / 375).clamp(0.5, 1.0);
-                          double baseFontSize = Theme.of(context)
-                                  .textTheme
-                                  .titleLarge
-                                  ?.fontSize ??
-                              20;
-                          // Use padding and constrained box to limit right margin and width
-                          return Padding(
-                            padding: const EdgeInsets.only(right: 8),
-                            child: ConstrainedBox(
-                              constraints: const BoxConstraints(maxWidth: 120),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Transform.scale(
-                                    scale: scale,
-                                    child: IconButton(
-                                      padding: EdgeInsets.all(8.0 * scale),
-                                      constraints: const BoxConstraints(),
-                                      icon: Icon(Icons.search_rounded,
-                                          size: baseFontSize * scale),
-                                      onPressed: () {
-                                        mainProvider.clearSelectedVerses();
-                                        Get.to(
-                                          () => SearchPage(),
-                                          transition: Transition.rightToLeft,
-                                        );
-                                      },
-                                    ),
-                                  ),
-                                  SizedBox(width: 2 * scale),
-                                  Transform.scale(
-                                    scale: scale,
-                                    child: IconButton(
-                                      padding: EdgeInsets.all(8.0 * scale),
-                                      constraints: const BoxConstraints(),
-                                      icon: Icon(Icons.settings,
-                                          size: baseFontSize * scale),
-                                      onPressed: () {
-                                        mainProvider.clearSelectedVerses();
-                                        Get.to(() => SettingsPage());
-                                      },
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          );
-                        }
-                      },
-                    ),
-                  ],
-                ),
                 body: Stack(
                   children: [
                     Padding(
@@ -516,6 +304,64 @@ class _HomePageState extends State<HomePage> {
                         scrollOffsetListener: mainProvider.scrollOffsetListener,
                       ),
                     ),
+                    // Floating header: appears when scrolled past the chapter header
+                    if (visibleItemIndex > 0 && currentVerse != null)
+                      _FloatingHeader(
+                        book: currentVerse.book,
+                        chapter: currentVerse.chapter,
+                        version: mainProvider.currentVersion,
+                        onBookTap: () {
+                          mainProvider.clearSelectedVerses();
+                          Get.to(
+                            () => BooksPage(
+                              chapterIdx:
+                                  mainProvider.currentVerse?.chapter ?? 1,
+                              bookIdx: mainProvider.currentVerse?.book ?? '',
+                            ),
+                            transition: Transition.leftToRight,
+                            duration: const Duration(milliseconds: 300),
+                            curve: Curves.easeInOut,
+                          );
+                        },
+                        onVersionSelected: (version) async {
+                          final p = context.read<MainProvider>();
+                          p.clearSelectedVerses();
+                          final prevEn = toEnglish(p.currentBook);
+                          p.setVersion(version);
+                          await FetchVerses.execute(mainProvider: p);
+                          await FetchBooks.execute(mainProvider: p);
+                          if (p.verses.isEmpty) return;
+                          final targetBook = prevEn == null
+                              ? null
+                              : translateBookName(prevEn, version);
+                          final targetChapter = p.currentChapter;
+                          final match = p.verses.firstWhere(
+                            (v) =>
+                                (targetBook == null || v.book == targetBook) &&
+                                (targetChapter == null ||
+                                    v.chapter == targetChapter),
+                            orElse: () => p.verses.first,
+                          );
+                          p.setCurrentChapter(
+                              book: match.book, chapter: match.chapter);
+                          p.updateCurrentVerse(verse: match);
+                          p.jumpToTop();
+                          if (mounted) {
+                            setState(() => _visibleItemIndex = 0);
+                          }
+                        },
+                        onSearch: () {
+                          mainProvider.clearSelectedVerses();
+                          Get.to(
+                            () => SearchPage(),
+                            transition: Transition.rightToLeft,
+                          );
+                        },
+                        onSettings: () {
+                          mainProvider.clearSelectedVerses();
+                          Get.to(() => SettingsPage());
+                        },
+                      ),
                     Align(
                       alignment: Alignment.bottomCenter,
                       child: isSelected
@@ -927,6 +773,117 @@ class _ChapterHeader extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+}
+
+/// Floating header that slides in from the top when the user scrolls
+/// past the chapter header. Shows book/chapter (tappable), version picker,
+/// search and settings icons.
+class _FloatingHeader extends StatelessWidget {
+  final String book;
+  final int chapter;
+  final String version;
+  final VoidCallback onBookTap;
+  final ValueChanged<String> onVersionSelected;
+  final VoidCallback onSearch;
+  final VoidCallback onSettings;
+
+  const _FloatingHeader({
+    required this.book,
+    required this.chapter,
+    required this.version,
+    required this.onBookTap,
+    required this.onVersionSelected,
+    required this.onSearch,
+    required this.onSettings,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final settings = context.watch<AppSettings>();
+    final scheme = Theme.of(context).colorScheme;
+    final fontSize = settings.fontSize.clamp(14.0, 17.0).toDouble();
+
+    return Positioned(
+      top: 0,
+      left: 0,
+      right: 0,
+      child: SafeArea(
+        bottom: false,
+        child: Material(
+          elevation: 2,
+          shadowColor: scheme.shadow.withValues(alpha: 0.12),
+          color: scheme.surface.withValues(alpha: 0.97),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+            child: Row(
+              children: [
+                // Book & chapter — tappable to open book picker
+                InkWell(
+                  borderRadius: BorderRadius.circular(8),
+                  onTap: onBookTap,
+                  child: Padding(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                    child: Text(
+                      '$book $chapter',
+                      style: TextStyle(
+                        fontFamily: settings.fontFamily,
+                        fontSize: fontSize,
+                        fontWeight: FontWeight.w700,
+                        color: scheme.primary,
+                      ),
+                    ),
+                  ),
+                ),
+                // Version picker
+                PopupMenuButton<String>(
+                  padding: EdgeInsets.zero,
+                  position: PopupMenuPosition.under,
+                  tooltip: uiStrings['changeVersion']?[settings.locale] ??
+                      'Change Version',
+                  itemBuilder: (context) => bibleVersions
+                      .map((v) => PopupMenuItem(
+                            value: v.value,
+                            child: Text(v.menuLabel),
+                          ))
+                      .toList(),
+                  onSelected: onVersionSelected,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 6),
+                    child: Text(
+                      shortBibleVersionLabel(version),
+                      style: TextStyle(
+                        fontFamily: settings.fontFamily,
+                        fontSize: fontSize * 0.85,
+                        fontWeight: FontWeight.w600,
+                        color: scheme.primary.withValues(alpha: 0.8),
+                      ),
+                    ),
+                  ),
+                ),
+                const Spacer(),
+                // Search icon
+                IconButton(
+                  onPressed: onSearch,
+                  icon: Icon(Icons.search_rounded, size: fontSize * 1.2),
+                  padding: const EdgeInsets.all(8),
+                  constraints: const BoxConstraints(),
+                ),
+                const SizedBox(width: 2),
+                // Settings icon
+                IconButton(
+                  onPressed: onSettings,
+                  icon: Icon(Icons.settings, size: fontSize * 1.2),
+                  padding: const EdgeInsets.all(8),
+                  constraints: const BoxConstraints(),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
