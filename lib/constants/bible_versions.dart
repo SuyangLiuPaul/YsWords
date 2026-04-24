@@ -74,7 +74,7 @@ const bibleVersions = <BibleVersionInfo>[
 ];
 
 /// Versions that have placeholder data only — hidden from the picker.
-const disabledVersions = {'nasb', 'niv'};
+const disabledVersions = <String>{};
 
 /// Versions shown in the picker (excludes disabled ones).
 List<BibleVersionInfo> get availableVersions =>

@@ -12,10 +12,10 @@
 
 | Category     | Details                                                                                                                 |
 | ------------ | ----------------------------------------------------------------------------------------------------------------------- |
-| Versions     | KJV, LEB, 和合本雅伟版 (简 / 繁), 和合本 (简 / 繁), 新译本 (简 / 繁), 原文释经圣经 (简 / 繁)                              |
+| Versions     | KJV, LEB, NASB, NIV, 和合本雅伟版 (简 / 繁), 和合本 (简 / 繁), 新译本 (简 / 繁), 原文释经圣经 (简 / 繁)                              |
 | Reading      | Light / Dark / System theme; Adjustable font family, size, line spacing, menu scale; Verse-by-verse or Paragraph Flow reading mode |
 | Highlights   | Mark verses with 6 colors (yellow, green, blue, pink, orange, purple); persistent across sessions                      |
-| Navigation   | Swipe left/right to change chapter; Floating chapter picker; Previous/next chapter buttons                              |
+| Navigation   | Swipe left/right to change chapter; Floating chapter picker; Previous/next chapter buttons; Grid/List view for books   |
 | Search       | Book-only or whole-Bible search; Highlighted results with book summary                                                  |
 | Annotations  | `{...}` inline badges with linked `<note:...>` pop-ups; `[...]` dotted-underline keywords; Book icon notes              |
 | Copy & Share | Tap verses to multi-select; Copy in **Plain**, **With Reference**, or **Devotional** formats                            |
@@ -112,6 +112,8 @@ pubspec.yaml            Dependencies & asset registration
 | Language | Version                    | Source                                             |
 | -------- | -------------------------- | -------------------------------------------------- |
 | English  | KJV, LEB                   | Public domain / Logos Bible Software               |
+| English  | NASB 2020, NIV 2011        | api.bible (requires API key)                       |
+| Chinese  | 和合本, 新译本               | getbible.net (free public API)                     |
 | Chinese  | 原文释经圣经 (BIBLEXG)      | https://www.biblexg.com/                           |
 | Chinese  | 雅伟的话 和合本雅伟版        | https://yahwehdehua.net/cn                         |
 
@@ -152,6 +154,8 @@ Chapter/verse may be stored as strings or integers depending on source.
 | --- | ---- | -------- | -------- | -------------------- | -------------------------- |
 | `kjv` | King James Version | English | `assets/kjv.json` | No | OT + NT replay |
 | `leb` | Lexham English Bible | English | `assets/leb.json` | No | OT + NT replay for available verses |
+| `nasb` | New American Standard Bible 2020 | English | `assets/nasb.json` | No | OT + NT replay |
+| `niv` | New International Version 2011 | English | `assets/niv.json` | No | OT + NT replay |
 | `cuvs-yhwh` | 和合本雅伟版 (简) | Simplified Chinese | `assets/cuvs-yhwh.json` | No | OT + NT replay |
 | `cuvs-yhwh-tr` | 和合本雅伟版 (繁) | Traditional Chinese | `assets/cuvs-yhwh-tr.json` | No | OT + NT replay |
 | `cuv` | 和合本 (简) | Simplified Chinese | `assets/cuv.json` | No | OT + NT replay |

@@ -30,6 +30,8 @@ class _BooksPageState extends State<BooksPage> {
   bool _initialScrollDone = false;
 
   Map<String, bool> expandStatus = {};
+  bool _showGridView = false;
+  String? _gridSelectedBook;
 
   @override
   void dispose() {
@@ -122,217 +124,365 @@ class _BooksPageState extends State<BooksPage> {
           ),
           body: Column(
             children: [
-              if (hasOldTestament && hasNewTestament)
-                Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      if (hasOldTestament)
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 4),
-                          child: TextButton(
-                            onPressed: () {
-                              setState(() {
-                                showOldTestament = true;
-                                expandStatus.updateAll((key, _) => false);
-                              });
-                              _autoScrollController.scrollToIndex(
-                                0,
-                                preferPosition: AutoScrollPosition.begin,
-                                duration: const Duration(milliseconds: 10),
-                              );
-                            },
-                            style: TextButton.styleFrom(
-                              backgroundColor: showOldTestament
-                                  ? Theme.of(context).colorScheme.primary
-                                  : Theme.of(context).colorScheme.surface,
-                              foregroundColor: showOldTestament
-                                  ? Theme.of(context).colorScheme.onPrimary
-                                  : Theme.of(context).colorScheme.onSurface,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(25),
-                              ),
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 20, vertical: 10),
-                            ),
-                            child: Text(
-                              uiStrings['oldTestament']?[settings.locale] ??
-                                  'Old Testament',
-                              style: TextStyle(
-                                fontSize: settings.fontSize,
-                                fontFamily: settings.fontFamily,
-                              ),
-                            ),
-                          ),
-                        ),
-                      if (hasNewTestament)
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 4),
-                          child: TextButton(
-                            onPressed: () {
-                              setState(() {
-                                showOldTestament = false;
-                                expandStatus.updateAll((key, _) => false);
-                              });
-                              _autoScrollController.scrollToIndex(
-                                0,
-                                preferPosition: AutoScrollPosition.begin,
-                                duration: const Duration(milliseconds: 10),
-                              );
-                            },
-                            style: TextButton.styleFrom(
-                              backgroundColor: !showOldTestament
-                                  ? Theme.of(context).colorScheme.primary
-                                  : Theme.of(context).colorScheme.surface,
-                              foregroundColor: !showOldTestament
-                                  ? Theme.of(context).colorScheme.onPrimary
-                                  : Theme.of(context).colorScheme.onSurface,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(25),
-                              ),
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 20, vertical: 10),
-                            ),
-                            child: Text(
-                              uiStrings['newTestament']?[settings.locale] ??
-                                  'New Testament',
-                              style: TextStyle(
-                                  fontSize: settings.fontSize,
-                                  fontFamily: settings.fontFamily),
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-              Expanded(
-                child: ListView.builder(
-                  itemCount: filteredBooks.length,
-                  physics: const BouncingScrollPhysics(),
-                  controller: _autoScrollController,
-                  itemBuilder: (context, index) {
-                    Book book = filteredBooks[index];
-                    return AutoScrollTag(
-                      key: ValueKey(index),
-                      controller: _autoScrollController,
-                      index: index,
-                      child: Container(
-                        decoration: expandStatus[book.title] == true
-                            ? null
-                            : BoxDecoration(
-                                border: Border(
-                                  bottom: BorderSide(
-                                    color: Theme.of(context).dividerColor,
-                                    width: 0.3,
+              // Top row: OT/NT toggle + Grid/List toggle
+              Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    // OT/NT toggle
+                    if (hasOldTestament && hasNewTestament)
+                      Row(
+                        children: [
+                          if (hasOldTestament)
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 4),
+                              child: TextButton(
+                                onPressed: () {
+                                  setState(() {
+                                    showOldTestament = true;
+                                    expandStatus.updateAll((key, _) => false);
+                                    _gridSelectedBook = null;
+                                  });
+                                  if (!_showGridView) {
+                                    _autoScrollController.scrollToIndex(
+                                      0,
+                                      preferPosition: AutoScrollPosition.begin,
+                                      duration: const Duration(milliseconds: 10),
+                                    );
+                                  }
+                                },
+                                style: TextButton.styleFrom(
+                                  backgroundColor: showOldTestament
+                                      ? Theme.of(context).colorScheme.primary
+                                      : Theme.of(context).colorScheme.surface,
+                                  foregroundColor: showOldTestament
+                                      ? Theme.of(context).colorScheme.onPrimary
+                                      : Theme.of(context).colorScheme.onSurface,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(25),
+                                  ),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 20, vertical: 10),
+                                ),
+                                child: Text(
+                                  uiStrings['oldTestament']?[settings.locale] ??
+                                      'Old Testament',
+                                  style: TextStyle(
+                                    fontSize: settings.fontSize,
+                                    fontFamily: settings.fontFamily,
                                   ),
                                 ),
                               ),
-                        child: Theme(
-                          data: Theme.of(context).copyWith(
-                            expansionTileTheme: ExpansionTileThemeData(
-                              expansionAnimationStyle: AnimationStyle(
-                                  // duration: Duration(milliseconds: 1050),
+                            ),
+                          if (hasNewTestament)
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 4),
+                              child: TextButton(
+                                onPressed: () {
+                                  setState(() {
+                                    showOldTestament = false;
+                                    expandStatus.updateAll((key, _) => false);
+                                    _gridSelectedBook = null;
+                                  });
+                                  if (!_showGridView) {
+                                    _autoScrollController.scrollToIndex(
+                                      0,
+                                      preferPosition: AutoScrollPosition.begin,
+                                      duration: const Duration(milliseconds: 10),
+                                    );
+                                  }
+                                },
+                                style: TextButton.styleFrom(
+                                  backgroundColor: !showOldTestament
+                                      ? Theme.of(context).colorScheme.primary
+                                      : Theme.of(context).colorScheme.surface,
+                                  foregroundColor: !showOldTestament
+                                      ? Theme.of(context).colorScheme.onPrimary
+                                      : Theme.of(context).colorScheme.onSurface,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(25),
                                   ),
-                            ),
-                          ),
-                          child: ExpansionTile(
-                            title: Text(
-                              book.title,
-                              style: TextStyle(
-                                  fontSize: settings.fontSize,
-                                  fontFamily: settings.fontFamily),
-                            ),
-                            initiallyExpanded:
-                                expandStatus[book.title] ?? false,
-                            maintainState: true,
-                            onExpansionChanged: (expanded) {
-                              setState(() {
-                                expandStatus[book.title] = expanded;
-                              });
-                            },
-                            children: [
-                              Wrap(
-                                alignment: WrapAlignment.start,
-                                children:
-                                    List.generate(book.chapters.length, (i) {
-                                  Chapter chapter = book.chapters[i];
-                                  final selected =
-                                      (chapter.title == widget.chapterIdx &&
-                                          widget.bookIdx == book.title);
-                                  return Padding(
-                                    padding: const EdgeInsets.all(4),
-                                    child: SizedBox(
-                                      height: 55,
-                                      width: 55,
-                                      child: Card(
-                                        color: selected
-                                            ? Theme.of(context)
-                                                .colorScheme
-                                                .primary
-                                            : null,
-                                        elevation: 1,
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(7.5),
-                                        ),
-                                        child: InkWell(
-                                          borderRadius:
-                                              BorderRadius.circular(7.5),
-                                          onTap: () {
-                                            final matched = mainProvider.verses
-                                                .where((v) =>
-                                                    v.book == book.title &&
-                                                    v.chapter == chapter.title)
-                                                .toList();
-                                            if (matched.isEmpty) return;
-                                            final firstVerseOfChapter = matched.first;
-                                            mainProvider.setCurrentChapter(
-                                              book: book.title,
-                                              chapter: chapter.title,
-                                            );
-                                            mainProvider.updateCurrentVerse(
-                                                verse: firstVerseOfChapter);
-                                            mainProvider.itemScrollController
-                                                .jumpTo(index: 0);
-                                            Get.back();
-                                          },
-                                          child: Center(
-                                            child: Text(
-                                              chapter.title.toString(),
-                                              style: TextStyle(
-                                                fontSize:
-                                                    settings.fontSize * 0.9,
-                                                fontFamily: settings.fontFamily,
-                                                color: selected
-                                                    ? Theme.of(context)
-                                                        .colorScheme
-                                                        .onPrimary
-                                                    : Theme.of(context)
-                                                        .colorScheme
-                                                        .onSurface,
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  );
-                                }),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 20, vertical: 10),
+                                ),
+                                child: Text(
+                                  uiStrings['newTestament']?[settings.locale] ??
+                                      'New Testament',
+                                  style: TextStyle(
+                                      fontSize: settings.fontSize,
+                                      fontFamily: settings.fontFamily),
+                                ),
                               ),
-                            ],
-                          ),
+                            ),
+                        ],
+                      )
+                    else
+                      const Spacer(),
+                    // Grid/List toggle
+                    ToggleButtons(
+                      isSelected: [_showGridView == false, _showGridView == true],
+                      onPressed: (index) {
+                        setState(() {
+                          _showGridView = index == 1;
+                          _gridSelectedBook = null;
+                          expandStatus.updateAll((key, _) => false);
+                        });
+                      },
+                      borderRadius: BorderRadius.circular(8),
+                      constraints: const BoxConstraints(minWidth: 40, minHeight: 36),
+                      children: [
+                        Tooltip(
+                          message: uiStrings['listView']?[settings.locale] ?? 'List',
+                          child: Icon(Icons.list, size: settings.fontSize * 1.1),
                         ),
-                      ),
-                    );
-                  },
+                        Tooltip(
+                          message: uiStrings['gridView']?[settings.locale] ?? 'Grid',
+                          child: Icon(Icons.grid_view, size: settings.fontSize * 1.1),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
+              ),
+              // Body
+              Expanded(
+                child: _showGridView
+                    ? _buildGridView(context, mainProvider, settings, filteredBooks)
+                    : _buildListView(context, mainProvider, settings, filteredBooks),
               ),
             ],
           ),
         );
       },
+    );
+  }
+
+  Widget _buildListView(BuildContext context, MainProvider mainProvider,
+      AppSettings settings, List<Book> filteredBooks) {
+    return ListView.builder(
+      itemCount: filteredBooks.length,
+      physics: const BouncingScrollPhysics(),
+      controller: _autoScrollController,
+      itemBuilder: (context, index) {
+        Book book = filteredBooks[index];
+        return AutoScrollTag(
+          key: ValueKey(index),
+          controller: _autoScrollController,
+          index: index,
+          child: Container(
+            decoration: expandStatus[book.title] == true
+                ? null
+                : BoxDecoration(
+                    border: Border(
+                      bottom: BorderSide(
+                        color: Theme.of(context).dividerColor,
+                        width: 0.3,
+                      ),
+                    ),
+                  ),
+            child: Theme(
+              data: Theme.of(context).copyWith(
+                expansionTileTheme: const ExpansionTileThemeData(),
+              ),
+              child: ExpansionTile(
+                title: Text(
+                  book.title,
+                  style: TextStyle(
+                      fontSize: settings.fontSize,
+                      fontFamily: settings.fontFamily),
+                ),
+                initiallyExpanded: expandStatus[book.title] ?? false,
+                maintainState: true,
+                onExpansionChanged: (expanded) {
+                  setState(() {
+                    expandStatus[book.title] = expanded;
+                  });
+                },
+                children: [
+                  _buildChapterGrid(
+                      context, mainProvider, settings, book),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildGridView(BuildContext context, MainProvider mainProvider,
+      AppSettings settings, List<Book> filteredBooks) {
+    final scheme = Theme.of(context).colorScheme;
+
+    // If a book is selected, show its chapters
+    if (_gridSelectedBook != null) {
+      final book = filteredBooks.firstWhereOrNull((b) => b.title == _gridSelectedBook);
+      if (book != null) {
+        return Column(
+          children: [
+            // Back to book grid
+            InkWell(
+              onTap: () => setState(() => _gridSelectedBook = null),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                child: Row(
+                  children: [
+                    Icon(Icons.arrow_back, size: settings.fontSize, color: scheme.primary),
+                    const SizedBox(width: 8),
+                    Text(
+                      book.title,
+                      style: TextStyle(
+                        fontSize: settings.fontSize,
+                        fontFamily: settings.fontFamily,
+                        fontWeight: FontWeight.w600,
+                        color: scheme.primary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const Divider(height: 1),
+            Expanded(
+              child: GridView.builder(
+                padding: const EdgeInsets.all(12),
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 5,
+                  crossAxisSpacing: 6,
+                  mainAxisSpacing: 6,
+                  childAspectRatio: 1.1,
+                ),
+                itemCount: book.chapters.length,
+                itemBuilder: (context, index) {
+                  final chapter = book.chapters[index];
+                  final selected = chapter.title == widget.chapterIdx &&
+                      widget.bookIdx == book.title;
+                  return _chapterTile(
+                    context, mainProvider, settings, book, chapter, selected, scheme,
+                  );
+                },
+              ),
+            ),
+          ],
+        );
+      }
+    }
+
+    // Show book grid
+    return GridView.builder(
+      padding: const EdgeInsets.all(8),
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 3,
+        crossAxisSpacing: 6,
+        mainAxisSpacing: 6,
+        childAspectRatio: 2.5,
+      ),
+      itemCount: filteredBooks.length,
+      itemBuilder: (context, index) {
+        final book = filteredBooks[index];
+        final isCurrent = widget.bookIdx == book.title;
+        return Card(
+          color: isCurrent ? scheme.primary : scheme.surfaceContainerHighest,
+          elevation: isCurrent ? 2 : 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+            side: BorderSide(
+              color: isCurrent ? scheme.primary : scheme.outlineVariant.withValues(alpha: 0.3),
+            ),
+          ),
+          child: InkWell(
+            borderRadius: BorderRadius.circular(8),
+            onTap: () => setState(() => _gridSelectedBook = book.title),
+            child: Center(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 4),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      book.title,
+                      textAlign: TextAlign.center,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: settings.fontSize * 0.85,
+                        fontFamily: settings.fontFamily,
+                        fontWeight: FontWeight.w500,
+                        color: isCurrent ? scheme.onPrimary : scheme.onSurface,
+                      ),
+                    ),
+                    Text(
+                      '${book.chapters.length}',
+                      style: TextStyle(
+                        fontSize: settings.fontSize * 0.6,
+                        color: isCurrent ? scheme.onPrimary.withValues(alpha: 0.7) : scheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildChapterGrid(BuildContext context, MainProvider mainProvider,
+      AppSettings settings, Book book) {
+    return Wrap(
+      alignment: WrapAlignment.start,
+      children: List.generate(book.chapters.length, (i) {
+        final chapter = book.chapters[i];
+        final selected = chapter.title == widget.chapterIdx &&
+            widget.bookIdx == book.title;
+        final scheme = Theme.of(context).colorScheme;
+        return _chapterTile(
+            context, mainProvider, settings, book, chapter, selected, scheme);
+      }),
+    );
+  }
+
+  Widget _chapterTile(BuildContext context, MainProvider mainProvider,
+      AppSettings settings, Book book, Chapter chapter, bool selected, ColorScheme scheme) {
+    return Padding(
+      padding: const EdgeInsets.all(4),
+      child: SizedBox(
+        height: 55,
+        width: 55,
+        child: Card(
+          color: selected ? scheme.primary : null,
+          elevation: 1,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(7.5),
+          ),
+          child: InkWell(
+            borderRadius: BorderRadius.circular(7.5),
+            onTap: () {
+              final matched = mainProvider.verses
+                  .where((v) => v.book == book.title && v.chapter == chapter.title)
+                  .toList();
+              if (matched.isEmpty) return;
+              mainProvider.setCurrentChapter(book: book.title, chapter: chapter.title);
+              mainProvider.updateCurrentVerse(verse: matched.first);
+              mainProvider.jumpToTop();
+              Get.back();
+            },
+            child: Center(
+              child: Text(
+                chapter.title.toString(),
+                style: TextStyle(
+                  fontSize: settings.fontSize * 0.9,
+                  fontFamily: settings.fontFamily,
+                  color: selected ? scheme.onPrimary : scheme.onSurface,
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 

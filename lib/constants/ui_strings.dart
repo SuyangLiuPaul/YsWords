@@ -121,6 +121,16 @@ const uiStrings = {
     'zh-Hant': '選單大小',
     'en': 'Menu Size',
   },
+  'listView': {
+    'zh-Hans': '列表',
+    'zh-Hant': '列表',
+    'en': 'List',
+  },
+  'gridView': {
+    'zh-Hans': '网格',
+    'zh-Hant': '網格',
+    'en': 'Grid',
+  },
 
   // ====== Settings Page ======
   'themeMode': {

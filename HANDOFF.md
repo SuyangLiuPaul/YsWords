@@ -1,6 +1,6 @@
 # YsWords — AI Agent Handoff Document
 
-> Last updated: 2026-04-25
+> Last updated: 2026-04-24
 > Project: YsWords (Yahweh's Words) — bilingual Bible reader
 > Stack: Flutter 3.41.7 / Dart 3.11.5 / Provider + GetX
 > Repo: https://github.com/SuyangLiuPaul/YsWords
@@ -10,7 +10,7 @@
 
 ## What Is This Project
 
-YsWords is a Flutter Bible reader app supporting 12 Bible translations across English, Simplified Chinese, and Traditional Chinese. It runs on Web, Android, iOS, macOS, Windows, and Linux. The web build is deployed to Netlify.
+YsWords is a Flutter Bible reader app supporting 14 Bible translations across English, Simplified Chinese, and Traditional Chinese. It runs on Web, Android, iOS, macOS, Windows, and Linux. The web build is deployed to Netlify.
 
 The app's core loop: load a JSON file from bundled assets → parse into Verse objects → organize into Book/Chapter tree → display in a scrollable list with inline annotations ({...} badges, [...] dotted underlines, <note:...> popups). Users can toggle between Verse-by-Verse (default) and Paragraph Flow (flowing layout with hanging indent, superscript verse numbers, and indented reference blocks).
 
@@ -65,7 +65,7 @@ main.dart (entry point)
 | File | Purpose |
 |---|---|
 | `lib/pages/home_page.dart` | Main reading view. No fixed AppBar — uses `_FloatingHeader` (always shows book/chapter/version, search, settings). `ScrollablePositionedList` with paragraph group items. Bottom bar: `_ReaderStatusBar` (progress, chapter nav) or `_SelectionActionBar` (copy, highlight with 6-color picker, clear). Swipe gestures for chapter nav. Menu sizes scale with `settings.menuScale` |
-| `lib/pages/books_page.dart` | OT/NT tabs, ExpansionTile per book, chapter grid. AutoScrollController to jump to current book |
+| `lib/pages/books_page.dart` | OT/NT tabs, list/grid view toggle, ExpansionTile (list) or card grid (grid) per book, chapter grid. AutoScrollController to jump to current book |
 | `lib/pages/search_page.dart` | Full-text search with book filter. Results sorted canonically. Tap to jump+highlight |
 | `lib/pages/settings_page.dart` | Settings UI: font size, menu size, line spacing, copy format with preview, theme, color palette, reading mode, language |
 | `lib/pages/loading_page.dart` | 3-second splash with random verse display and app branding |
@@ -112,10 +112,10 @@ main.dart (entry point)
 | `biblexg-tr` | 原文释经圣经 (繁) | Traditional Chinese | `assets/biblexg-tr.json` | No; NT text only | NT (LJK2 replay) |
 | `biblexg-v2` | 原文释经圣经第二版 (简) | Simplified Chinese | `assets/biblexg-v2.json` | NT only (canonical source) | NT |
 | `biblexg-v2-tr` | 原文释经圣经第二版 (繁) | Traditional Chinese | `assets/biblexg-v2-tr.json` | NT only (canonical source) | NT |
-| `nasb` | New American Standard Bible | English | `assets/nasb.json` | Placeholder only (hidden) | — |
-| `niv` | New International Version | English | `assets/niv.json` | Placeholder only (hidden) | — |
+| `nasb` | New American Standard Bible 2020 | English | `assets/nasb.json` | No | OT (WEB replay) + NT (LJK2 replay) |
+| `niv` | New International Version 2011 | English | `assets/niv.json` | No | OT (WEB replay) + NT (LJK2 replay) |
 
-Default version on first launch: `cuvs-yhwh`. NASB and NIV are hidden from the picker until full text data is downloaded via `tools/fetch_bible_versions.py --api-key`. All JSON files are bundled in the app (no runtime download).
+Default version on first launch: `cuvs-yhwh`. All JSON files are bundled in the app (no runtime download).
 
 **Cross-version paragraph share**: `FetchVerses` loads two paragraph sources once into a cache keyed by english book name + `chapter:verse`: `assets/web-ot-paragraphs.json` for the OT (11,922 verse starts derived from public-domain WEB USFM block markers) and LJK2 (`assets/biblexg-v2.json`) for the NT (1,694 starts, including 41 reference blocks). It replays those flags onto every version at load time so paragraph mode reads consistently regardless of translation. The merge is conservative — shared flags only *add* breaks, never remove existing ones.
 
@@ -198,12 +198,21 @@ No unused dependencies remain. Seven were removed in the last cleanup: `expandab
 
 ## What Has Been Fixed (2026-04-25)
 
-### New Bible Versions (commit `598313c`)
+### New Bible Versions (commits `598313c`, api.bible integration)
 - **和合本 (简/繁)**: Downloaded 31,103 verses from getbible.net (CUV simplified & traditional, 66 books)
 - **新译本 (简/繁)**: Downloaded 31,102-31,104 verses from getbible.net (CNV simplified & traditional, 66 books)
-- **NASB / NIV**: Version entries created with placeholder data, hidden from picker until full text is available
+- **NASB 2020**: Downloaded 31,090 verses from api.bible (NASB 2020, 66 books)
+- **NIV 2011**: Downloaded 31,089 verses from api.bible (NIV 2011, 66 books)
 - **Fetch script**: `tools/fetch_bible_versions.py` supports getbible.net (free, no key) and api.bible (requires `--api-key`)
 - **Book name normalization**: Fixed `啟示錄` → `启示录` (simplified) and `創世記` → `創世紀` (traditional) mismatches from API
+- **NIV abbreviation mapping**: Added dotted abbreviations (Gen., Lev., 1 Chron., Song of Songs, Matt., Heb., etc.) to `map_apibible_book()`
+
+### Grid/List View for Books Page
+- **Two-level grid view**: Toggle between list (ExpansionTile) and grid (card) views for books
+- **Book grid**: 3-column card layout showing book name + chapter count; current book highlighted
+- **Chapter grid**: Tap a book card → 5-column chapter grid with navigation back to books
+- **OT/NT toggle preserved**: Works in both list and grid views
+- **ToggleButtons**: List/Grid icons in top-right corner
 
 ### Menu Size Setting (commit `3171369`)
 - **Menu scale slider**: 0.7x–1.5x (default 1.0x), independently controls top header and bottom bar sizes
@@ -305,7 +314,7 @@ There is no `test/` directory. The README references tests but none exist. Addin
 The README references `.github/workflows/build.yml` but this file does not exist. A CI workflow that runs `flutter analyze` + `flutter test` on push would catch regressions.
 
 ### Large Asset Files
-The 12 Bible JSON files total ~58 MB. They are loaded entirely into memory via `rootBundle.loadString()`. For mobile platforms this works but could be optimized with lazy loading per book/chapter.
+The 14 Bible JSON files total ~58 MB. They are loaded entirely into memory via `rootBundle.loadString()`. For mobile platforms this works but could be optimized with lazy loading per book/chapter.
 
 ### `fonts_backup/` Directory
 Contains ~178 font files not used in production (commented out in `web/index.html` preloads). Could be deleted or moved to a separate repository to reduce clone size.
