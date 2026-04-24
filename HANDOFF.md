@@ -1,6 +1,6 @@
 # YsWords — AI Agent Handoff Document
 
-> Last updated: 2026-04-24
+> Last updated: 2026-04-25
 > Project: YsWords (Yahweh's Words) — bilingual Bible reader
 > Stack: Flutter 3.41.7 / Dart 3.11.5 / Provider + GetX
 > Repo: https://github.com/SuyangLiuPaul/YsWords
@@ -204,21 +204,31 @@ No unused dependencies remain. Seven were removed in the last cleanup: `expandab
 
 The app adapts its layout to all device sizes using `lib/utils/responsive.dart`:
 
-| Device | Width Range | Content Max-Width | Spacing Scale |
-|--------|------------|-------------------|---------------|
-| miniPhone | < 360px | ∞ (full) | 0.85× |
-| phone | 360–599px | ∞ (full) | 1.0× |
-| tablet | 600–1023px | 680px | 1.15× |
-| desktop | 1024–1919px | 780px | 1.25× |
-| tv | ≥ 1920px | 860px | 1.4× |
+| Device | Width Range | Spacing Scale |
+|--------|------------|---------------|
+| miniPhone | < 360px | 0.85× |
+| phone | 360–599px | 1.0× |
+| tablet | 600–1023px | 1.15× |
+| desktop | 1024–1919px | 1.25× |
+| tv | ≥ 1920px | 1.4× |
 
-**How it works**: `ResponsiveBreakpoints.classOf(width)` returns a `DeviceClass` enum. Each page uses `Center` + `ConstrainedBox(maxWidth)` to cap content width on wide screens. Padding, indents, tile sizes, and spacing multiply by device-class-specific scale factors. Phone layouts are byte-identical to the pre-responsive code (scale 1.0, no width cap).
+**How it works**: `ResponsiveBreakpoints.classOf(width)` returns a `DeviceClass` enum. The reading view fills the full screen width on all devices (no max-width constraint) for an iPhone-like experience. Padding, indents, tile sizes, and spacing multiply by device-class-specific scale factors. Phone layouts are byte-identical to the pre-responsive code (scale 1.0).
 
-**Affected areas**: reading view (max 780px), settings (max 640px), books page (max 800px), search (max 680px), verse indents (12–28px), chapter tiles (44–72px), loading logo (100–240px), all spacing gaps.
+**Affected areas**: settings (max 640px), books page (max 800px), search (max 680px), chapter tiles (44–72px), loading logo (100–240px), all spacing gaps. Reading view uses phone-level padding/indent on all devices (8px reading padding, 16px verse indent, 10px header inset).
 
 ---
 
 ## What Has Been Fixed (2026-04-25)
+
+### iPad UI/UX Fixes (round 2)
+- **Full-width reading on all devices**: Removed `maxContentWidth` constraint from reading area. Verse text now fills screen width on iPad/tablet/desktop just like iPhone — no side gaps.
+- **Phone-level padding/indent**: `readingPadding`, `verseIndent`, and `headerInset` use phone values (8, 16, 10) for all device classes so the reading experience is identical everywhere.
+- **OT/NT sidebar toggle**: In the narrow sidebar (280px), OT/NT buttons now stack vertically using two `Expanded` rows instead of a cramped horizontal scroll. English uses "OT"/"NT" abbreviations; Chinese labels remain full ("旧约"/"新约").
+- **Reading mode toggle on tablet+**: Floating header shows a paragraph/verse-by-verse mode icon on tablet+ screens. Status bar mode label is tappable and highlighted in the primary color.
+- **Settings ToggleButtons overflow**: Reading mode toggle in settings used `MediaQuery` full-screen width for `minWidth`, overflowing on iPad. Fixed with `LayoutBuilder`.
+- **DeviceClass from LayoutBuilder**: `_FloatingHeader`, `_ReaderStatusBar`, and `_SelectionActionBar` now receive `DeviceClass` from the parent `LayoutBuilder` instead of computing from `MediaQuery.of(context).size.width` — prevents wrong responsive calculations when the sidebar is open.
+- **Settings preview tags**: Devotional and other preview formats now strip `<note:...>`, `{...}`, and `[...]` tags. Primary Color card padding scales with `spacingScale`.
+- **List view book names**: Added explicit `textColor` and `iconColor` to `ExpansionTile` in list view for visibility in all contexts.
 
 ### Collapsible Sidebar for Wide Screens + Default Settings
 - **New sidebar**: On tablets and wider screens (>= 600px), a collapsible 280px sidebar appears on the left with book/chapter navigation. Toggle via menu icon in the floating header. Closes automatically when a chapter is selected. Phone layout is completely unchanged.
