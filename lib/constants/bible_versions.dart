@@ -1,0 +1,67 @@
+class BibleVersionInfo {
+  final String value;
+  final String shortLabel;
+  final String menuLabel;
+
+  const BibleVersionInfo({
+    required this.value,
+    required this.shortLabel,
+    required this.menuLabel,
+  });
+}
+
+const bibleVersions = <BibleVersionInfo>[
+  BibleVersionInfo(
+    value: 'kjv',
+    shortLabel: 'KJV',
+    menuLabel: 'King James Version',
+  ),
+  BibleVersionInfo(
+    value: 'leb',
+    shortLabel: 'LEB',
+    menuLabel: 'Lexham English Bible',
+  ),
+  BibleVersionInfo(
+    value: 'cuvs-yhwh',
+    shortLabel: 'CUVS(简)',
+    menuLabel: '和合本雅伟版(简体)',
+  ),
+  BibleVersionInfo(
+    value: 'cuvs-yhwh-tr',
+    shortLabel: 'CUVS(繁)',
+    menuLabel: '和合本雅伟版(繁體)',
+  ),
+  BibleVersionInfo(
+    value: 'biblexg',
+    shortLabel: 'LJK1(简)',
+    menuLabel: '梁家铿译本 第一版(简体)',
+  ),
+  BibleVersionInfo(
+    value: 'biblexg-tr',
+    shortLabel: 'LJK1(繁)',
+    menuLabel: '梁家铿譯本 第一版(繁體)',
+  ),
+  BibleVersionInfo(
+    value: 'biblexg-v2',
+    shortLabel: 'LJK2(简)',
+    menuLabel: '梁家铿译本 第二版(简体)',
+  ),
+  BibleVersionInfo(
+    value: 'biblexg-v2-tr',
+    shortLabel: 'LJK2(繁)',
+    menuLabel: '梁家铿譯本 第二版(繁體)',
+  ),
+];
+
+String shortBibleVersionLabel(String version) {
+  return bibleVersions
+      .firstWhere(
+        (item) => item.value == version,
+        orElse: () => BibleVersionInfo(
+          value: version,
+          shortLabel: version,
+          menuLabel: version,
+        ),
+      )
+      .shortLabel;
+}

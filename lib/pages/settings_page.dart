@@ -6,15 +6,12 @@ import 'package:yswords/providers/main_provider.dart';
 
 import 'package:yswords/widgets/localized_back_button.dart';
 
-
 String getDevotionalFormattedText(
     List<Map<String, dynamic>> verses, String? book, int? chapter) {
   if (verses.isEmpty || book == null || chapter == null) return '';
 
   List<int> verseNums = verses.map((v) => v['verse'] as int).toList()..sort();
-  List<String> textParts = verses
-      .map((v) => v['text'] as String)
-      .toList();
+  List<String> textParts = verses.map((v) => v['text'] as String).toList();
 
   // Build reference string
   List<String> ranges = [];
@@ -76,12 +73,13 @@ class SettingsPage extends StatelessWidget {
           ];
 
           final versesInChapter = mainProvider.verses
-              .where((v) => v.book == currentBook && v.chapter == currentChapter)
+              .where(
+                  (v) => v.book == currentBook && v.chapter == currentChapter)
               .toList()
             ..sort((a, b) => a.verse.compareTo(b.verse));
           final verseSamples = versesInChapter
               .take(3)
-              .map((v) => {'verse': v.verse, 'text': v.text})
+              .map((v) => {'verse': v.verseLabel, 'text': v.text})
               .toList();
 
           return ListView(
@@ -220,7 +218,9 @@ class SettingsPage extends StatelessWidget {
                       Text(
                         currentBook != null && currentChapter != null
                             ? '$currentBook $currentChapter'
-                            : uiStrings['noVersesAvailable']?[settings.locale] ?? 'No verses available',
+                            : uiStrings['noVersesAvailable']
+                                    ?[settings.locale] ??
+                                'No verses available',
                         style:
                             Theme.of(context).textTheme.titleMedium?.copyWith(
                                   fontFamily: settings.fontFamily,

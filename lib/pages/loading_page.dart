@@ -131,7 +131,7 @@ class _LoadingPageState extends State<LoadingPage> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    '${verse.book} ${verse.chapter}:${verse.verse}',
+                    '${verse.book} ${verse.chapter}:${verse.verseLabel}',
                     style: TextStyle(
                       fontSize: settings.fontSize * 0.9,
                       color: Theme.of(context)

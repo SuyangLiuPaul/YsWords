@@ -75,7 +75,10 @@ class _SearchPageState extends State<SearchPage> {
       }
     }
 
-    final bookOrder = { for (var i = 0; i < mainProvider.books.length; i++) mainProvider.books[i].title: i };
+    final bookOrder = {
+      for (var i = 0; i < mainProvider.books.length; i++)
+        mainProvider.books[i].title: i
+    };
 
     _results.sort((a, b) {
       final orderA = bookOrder[a.book] ?? 9999;
@@ -91,7 +94,7 @@ class _SearchPageState extends State<SearchPage> {
         final orderB = bookOrder[b.key] ?? 9999;
         return orderA.compareTo(orderB);
       });
-    bookCounts = { for (var e in sortedEntries) e.key: e.value };
+    bookCounts = {for (var e in sortedEntries) e.key: e.value};
 
     setState(() {
       searchPerformed = true;
@@ -114,7 +117,8 @@ class _SearchPageState extends State<SearchPage> {
               hintText: uiStrings['search']?[settings.locale] ?? 'Search',
             ),
             inputFormatters: [
-              FilteringTextInputFormatter.allow(RegExp(r'[0-9a-zA-Z\u4E00-\u9FFF ]')),
+              FilteringTextInputFormatter.allow(
+                  RegExp(r'[0-9a-zA-Z\u4E00-\u9FFF ]')),
             ],
             onChanged: (text) {
               setState(() {
@@ -161,10 +165,16 @@ class _SearchPageState extends State<SearchPage> {
                 final items = <PopupMenuEntry<Object>>[
                   PopupMenuItem<bool>(
                       value: false,
-                      child: Text(uiStrings['searchCurrentBook']?[settings.locale] ?? 'Search Current Book', style: TextStyle(fontSize: settings.fontSize))),
+                      child: Text(
+                          uiStrings['searchCurrentBook']?[settings.locale] ??
+                              'Search Current Book',
+                          style: TextStyle(fontSize: settings.fontSize))),
                   PopupMenuItem<bool>(
                       value: true,
-                      child: Text(uiStrings['searchEntireBible']?[settings.locale] ?? 'Search Entire Bible', style: TextStyle(fontSize: settings.fontSize))),
+                      child: Text(
+                          uiStrings['searchEntireBible']?[settings.locale] ??
+                              'Search Entire Bible',
+                          style: TextStyle(fontSize: settings.fontSize))),
                 ];
                 // divider
                 items.add(const PopupMenuDivider());
@@ -173,7 +183,8 @@ class _SearchPageState extends State<SearchPage> {
                   items.add(
                     PopupMenuItem<String>(
                       value: book,
-                      child: Text('$book ($count)', style: TextStyle(fontSize: settings.fontSize)),
+                      child: Text('$book ($count)',
+                          style: TextStyle(fontSize: settings.fontSize)),
                     ),
                   );
                 });
@@ -210,23 +221,28 @@ class _SearchPageState extends State<SearchPage> {
                         context: context,
                         builder: (context) {
                           return AlertDialog(
-                            title: Text(uiStrings['bibleBooks']
-                                    ?[settings.locale] ??
-                                'Bible Books',
+                            title: Text(
+                              uiStrings['bibleBooks']?[settings.locale] ??
+                                  'Bible Books',
                               style: TextStyle(fontSize: settings.fontSize),
                             ),
                             content: SingleChildScrollView(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: bookCounts.entries
-                                    .map((e) => Text('${e.key} (${e.value})', style: TextStyle(fontSize: settings.fontSize)))
+                                    .map((e) => Text('${e.key} (${e.value})',
+                                        style: TextStyle(
+                                            fontSize: settings.fontSize)))
                                     .toList(),
                               ),
                             ),
                             actions: [
                               TextButton(
                                 onPressed: () => Navigator.of(context).pop(),
-                                child: Text(uiStrings['ok']?[settings.locale] ?? 'OK', style: TextStyle(fontSize: settings.fontSize)),
+                                child: Text(
+                                    uiStrings['ok']?[settings.locale] ?? 'OK',
+                                    style:
+                                        TextStyle(fontSize: settings.fontSize)),
                               ),
                             ],
                           );
@@ -297,16 +313,22 @@ class _SearchPageState extends State<SearchPage> {
                                   book: verse.book, chapter: verse.chapter);
                               mainProv.updateCurrentVerse(verse: verse);
                               Get.back();
-                              Future.delayed(const Duration(milliseconds: 1), () {
+                              Future.delayed(const Duration(milliseconds: 1),
+                                  () {
                                 final chapterVerses = mainProv.verses
-                                    .where((v) => v.book == verse.book && v.chapter == verse.chapter)
+                                    .where((v) =>
+                                        v.book == verse.book &&
+                                        v.chapter == verse.chapter)
                                     .toList();
-                                chapterVerses.sort((a, b) => a.verse.compareTo(b.verse)); // Ensure order
-                                final relIdx = chapterVerses.indexWhere((v) => v.verse == verse.verse);
+                                chapterVerses.sort((a, b) =>
+                                    a.verse.compareTo(b.verse)); // Ensure order
+                                final relIdx = chapterVerses
+                                    .indexWhere((v) => v.verse == verse.verse);
                                 if (relIdx < 0) return;
                                 mainProv.jumpToIndex(index: relIdx);
                                 mainProv.setHighlightIndex(relIdx);
-                                Future.delayed(const Duration(milliseconds: 800), () {
+                                Future.delayed(
+                                    const Duration(milliseconds: 800), () {
                                   mainProv.clearHighlightIndex();
                                 });
                               });
@@ -323,8 +345,9 @@ class _SearchPageState extends State<SearchPage> {
                               },
                             ),
                             subtitle: Text(
-                                '${verse.book} ${verse.chapter}:${verse.verse}',
-                                style: TextStyle(fontSize: settings.fontSize * 0.85),
+                              '${verse.book} ${verse.chapter}:${verse.verseLabel}',
+                              style:
+                                  TextStyle(fontSize: settings.fontSize * 0.85),
                             ),
                           ),
                         );

@@ -31,6 +31,8 @@ flutter:
     - assets/cuvs-yhwh-tr.json
     - assets/biblexg.json
     - assets/biblexg-tr.json
+    - assets/biblexg-v2.json
+    - assets/biblexg-v2-tr.json
     - assets/app_icon.png
     - assets/loading.png
     - assets/fonts/

@@ -20,6 +20,7 @@ class VerseWidget extends StatelessWidget {
         final locale = settings.locale;
         final isSelected = mainProvider.isSelected(verse);
         final isHighlighted = mainProvider.highlightIndex == index;
+        final isReferenceLine = verse.paragraphType == 'reference';
 
         // Use shared regex patterns from text_patterns.dart
         final original = verse.text.replaceAll('\n', '');
@@ -38,21 +39,25 @@ class VerseWidget extends StatelessWidget {
         spans.add(WidgetSpan(
           child: GestureDetector(
             onTap: () async {
-              final toCopy = '${verse.verse} ${sanitizeVerseText(verse.text)}';
+              final toCopy =
+                  '${verse.verseLabel} ${sanitizeVerseText(verse.text)}';
               await ClipboardHelper.copyText(toCopy);
               if (!context.mounted) return;
-              final msg = (uiStrings['copiedVerse']?[locale] ??
-                      'Copied verse {verse}')
-                  .replaceAll('{verse}', '${verse.verse}');
-              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+              final msg =
+                  (uiStrings['copiedVerse']?[locale] ?? 'Copied verse {verse}')
+                      .replaceAll('{verse}', verse.verseLabel);
+              ScaffoldMessenger.of(context)
+                  .showSnackBar(SnackBar(content: Text(msg)));
             },
             child: Text(
-              '${verse.verse} ',
+              '${verse.verseLabel} ',
               style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                     fontSize: settings.fontSize,
                     height: settings.lineSpacing,
                     fontWeight: FontWeight.w500,
                     fontFamily: settings.fontFamily,
+                    fontStyle:
+                        isReferenceLine ? FontStyle.italic : FontStyle.normal,
                     color: isSelected
                         ? Theme.of(context).colorScheme.onPrimaryContainer
                         : Theme.of(context).colorScheme.primary,
@@ -299,6 +304,8 @@ class VerseWidget extends StatelessWidget {
                         ? Theme.of(context).colorScheme.onPrimaryContainer
                         : Theme.of(context).textTheme.bodyLarge?.color,
                     fontFamily: settings.fontFamily,
+                    fontStyle:
+                        isReferenceLine ? FontStyle.italic : FontStyle.normal,
                   ),
             ));
             lastPart = part;
@@ -319,9 +326,8 @@ class VerseWidget extends StatelessWidget {
                   ? CrossAxisAlignment.center
                   : CrossAxisAlignment.start,
               children: [
-                if (settings.readingModeCentered &&
-                    verse.isParagraphStart == true)
-                  const SizedBox(height: 16),
+                if (verse.isParagraphStart == true)
+                  SizedBox(height: settings.readingModeCentered ? 16 : 10),
                 Container(
                   width: double.infinity,
                   color: isSelected
@@ -333,7 +339,7 @@ class VerseWidget extends StatelessWidget {
                               .withValues(alpha: 0.3)
                           : Colors.transparent,
                   padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      EdgeInsets.fromLTRB(isReferenceLine ? 24 : 16, 8, 16, 8),
                   child: RichText(
                     textAlign: settings.readingModeCentered
                         ? TextAlign.center

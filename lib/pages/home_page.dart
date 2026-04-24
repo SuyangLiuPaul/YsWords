@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:provider/provider.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
+import 'package:yswords/constants/bible_versions.dart';
 import 'package:yswords/constants/text_patterns.dart';
 import 'package:yswords/constants/ui_strings.dart';
 import 'package:yswords/models/app_settings.dart';
@@ -44,7 +45,6 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-
   @override
   void initState() {
     super.initState();
@@ -87,17 +87,17 @@ class _HomePageState extends State<HomePage> {
       case 'withRef':
         return sorted
             .map((v) =>
-                '[${v.book} ${v.chapter}:${v.verse}] ${sanitizeForSearch(v.text)}')
+                '[${v.book} ${v.chapter}:${v.verseLabel}] ${sanitizeForSearch(v.text)}')
             .join('\n');
       case 'devotional':
         final versesText =
             sorted.map((v) => sanitizeForSearch(v.text)).join('\n');
-        final range = _formatVerseRange(sorted.map((v) => v.verse).toList());
+        final range = _formatVerseRangeLabels(sorted);
         return '$versesText\n(${first.book} ${first.chapter}:$range)';
       case 'plain':
       default:
         final body = sorted
-            .map((v) => '${v.verse} ${sanitizeForSearch(v.text)}')
+            .map((v) => '${v.verseLabel} ${sanitizeForSearch(v.text)}')
             .join('\n');
         return '${first.book} ${first.chapter}\n$body';
     }
@@ -122,6 +122,14 @@ class _HomePageState extends State<HomePage> {
     return parts.join(', ');
   }
 
+  static String _formatVerseRangeLabels(List<Verse> verses) {
+    if (verses.isEmpty) return '';
+    if (verses.any((v) => v.verseLabel != '${v.verse}')) {
+      return verses.map((v) => v.verseLabel).join(', ');
+    }
+    return _formatVerseRange(verses.map((v) => v.verse).toList());
+  }
+
   List<InlineSpan> _buildVerseSpans(List<Verse> verses, BuildContext context) {
     final settings = Provider.of<AppSettings>(context, listen: false);
     final spans = <InlineSpan>[];
@@ -131,16 +139,17 @@ class _HomePageState extends State<HomePage> {
       spans.add(WidgetSpan(
         child: GestureDetector(
           onTap: () async {
-            final toCopy = '${v.verse} ${sanitizeVerseText(v.text)}';
+            final toCopy = '${v.verseLabel} ${sanitizeVerseText(v.text)}';
             await ClipboardHelper.copyText(toCopy);
             if (!context.mounted) return;
             final msg = (uiStrings['copiedVerse']?[settings.locale] ??
                     'Copied verse {verse}')
-                .replaceAll('{verse}', '${v.verse}');
-            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+                .replaceAll('{verse}', v.verseLabel);
+            ScaffoldMessenger.of(context)
+                .showSnackBar(SnackBar(content: Text(msg)));
           },
           child: Text(
-            '${v.verse} ',
+            '${v.verseLabel} ',
             style: TextStyle(
               color: Theme.of(context).colorScheme.primary,
               fontSize: settings.fontSize,
@@ -186,7 +195,8 @@ class _HomePageState extends State<HomePage> {
                     actions: [
                       TextButton(
                         onPressed: () => Navigator.of(context).pop(),
-                        child: Text(uiStrings['close']?[settings.locale] ?? 'Close'),
+                        child: Text(
+                            uiStrings['close']?[settings.locale] ?? 'Close'),
                       ),
                     ],
                   ),
@@ -260,8 +270,7 @@ class _HomePageState extends State<HomePage> {
             },
             child: AnnotatedRegion<SystemUiOverlayStyle>(
               value: SystemUiOverlayStyle(
-                systemNavigationBarColor:
-                    Theme.of(context).colorScheme.surface,
+                systemNavigationBarColor: Theme.of(context).colorScheme.surface,
                 systemNavigationBarIconBrightness:
                     Theme.of(context).brightness == Brightness.dark
                         ? Brightness.light
@@ -339,15 +348,8 @@ class _HomePageState extends State<HomePage> {
                                 padding:
                                     const EdgeInsets.symmetric(horizontal: 4),
                                 child: Text(
-                                  const {
-                                        'kjv': 'KJV',
-                                        'leb': 'LEB',
-                                        'cuvs-yhwh': 'cuvs(简)',
-                                        'cuvs-yhwh-tr': 'cuvs(繁)',
-                                        'biblexg': 'biblexg(简)',
-                                        'biblexg-tr': 'biblexg(繁)',
-                                      }[mainProvider.currentVersion] ??
-                                      mainProvider.currentVersion,
+                                  shortBibleVersionLabel(
+                                      mainProvider.currentVersion),
                                   style: TextStyle(
                                     fontFamily: settings.fontFamily,
                                     fontSize: settings.fontSize,
@@ -376,8 +378,10 @@ class _HomePageState extends State<HomePage> {
 
                                 final match = p.verses.firstWhere(
                                   (v) =>
-                                      (targetBook == null || v.book == targetBook) &&
-                                      (targetChapter == null || v.chapter == targetChapter),
+                                      (targetBook == null ||
+                                          v.book == targetBook) &&
+                                      (targetChapter == null ||
+                                          v.chapter == targetChapter),
                                   orElse: () => p.verses.first,
                                 );
 
@@ -385,26 +389,14 @@ class _HomePageState extends State<HomePage> {
                                     book: match.book, chapter: match.chapter);
                                 p.updateCurrentVerse(verse: match);
                               },
-                              itemBuilder: (context) => const [
-                                PopupMenuItem(
-                                    value: 'kjv',
-                                    child: Text('King James Version')),
-                                PopupMenuItem(
-                                  value: 'leb',
-                                  child: Text('Lexham English Bible'),
-                                ),
-                                PopupMenuItem(
-                                    value: 'cuvs-yhwh',
-                                    child: Text('和合本雅伟版(简体)')),
-                                PopupMenuItem(
-                                    value: 'cuvs-yhwh-tr',
-                                    child: Text('和合本雅伟版(繁體)')),
-                                PopupMenuItem(
-                                    value: 'biblexg', child: Text('梁家铿译本(简体)')),
-                                PopupMenuItem(
-                                    value: 'biblexg-tr',
-                                    child: Text('梁家铿譯本(繁體)')),
-                              ],
+                              itemBuilder: (context) => bibleVersions
+                                  .map(
+                                    (version) => PopupMenuItem(
+                                      value: version.value,
+                                      child: Text(version.menuLabel),
+                                    ),
+                                  )
+                                  .toList(),
                             ),
                           ],
                         ),
@@ -509,25 +501,25 @@ class _HomePageState extends State<HomePage> {
                               ),
                             )
                           : ScrollablePositionedList.builder(
-                                itemCount: verses.length + 1,
-                                itemBuilder: (context, index) {
-                                  if (index < verses.length) {
-                                    return VerseWidget(
-                                      verse: verses[index],
-                                      index: index,
-                                    );
-                                  }
-                                  return const SizedBox(height: 120);
-                                },
-                                itemScrollController:
-                                    mainProvider.itemScrollController,
-                                itemPositionsListener:
-                                    mainProvider.itemPositionsListener,
-                                scrollOffsetController:
-                                    mainProvider.scrollOffsetController,
-                                scrollOffsetListener:
-                                    mainProvider.scrollOffsetListener,
-                              ),
+                              itemCount: verses.length + 1,
+                              itemBuilder: (context, index) {
+                                if (index < verses.length) {
+                                  return VerseWidget(
+                                    verse: verses[index],
+                                    index: index,
+                                  );
+                                }
+                                return const SizedBox(height: 120);
+                              },
+                              itemScrollController:
+                                  mainProvider.itemScrollController,
+                              itemPositionsListener:
+                                  mainProvider.itemPositionsListener,
+                              scrollOffsetController:
+                                  mainProvider.scrollOffsetController,
+                              scrollOffsetListener:
+                                  mainProvider.scrollOffsetListener,
+                            ),
                     ),
                   ],
                 ),
@@ -540,8 +532,9 @@ class _HomePageState extends State<HomePage> {
                           mainProvider.clearSelectedVerses();
                           if (!context.mounted) return;
                           final scheme = Theme.of(context).colorScheme;
-                          final copiedLabel =
-                              uiStrings['copied']?[settings.locale] ?? 'Copied!';
+                          final copiedLabel = uiStrings['copied']
+                                  ?[settings.locale] ??
+                              'Copied!';
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                               content: Row(
