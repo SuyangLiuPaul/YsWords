@@ -21,23 +21,6 @@ import 'package:yswords/utils/version_mapper.dart'
 import 'package:yswords/widgets/verse_widget.dart';
 import 'package:yswords/widgets/paragraph_group_widget.dart';
 
-class CustomFloatingActionButtonLocation extends FloatingActionButtonLocation {
-  final double xOffset;
-  final double yOffset;
-
-  const CustomFloatingActionButtonLocation({
-    this.xOffset = 0.0,
-    this.yOffset = 0.0,
-  });
-
-  @override
-  Offset getOffset(ScaffoldPrelayoutGeometry scaffoldGeometry) {
-    final endFloat =
-        FloatingActionButtonLocation.endFloat.getOffset(scaffoldGeometry);
-    return endFloat.translate(xOffset, yOffset);
-  }
-}
-
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
@@ -46,12 +29,16 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  MainProvider? _positionsProvider;
+  int _visibleItemIndex = 0;
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (!mounted) return;
       final mainProvider = context.read<MainProvider>();
+      _attachPositionsListener(mainProvider);
       if (mainProvider.verses.isEmpty) {
         await FetchVerses.execute(mainProvider: mainProvider);
         if (!mounted) return;
@@ -62,7 +49,38 @@ class _HomePageState extends State<HomePage> {
 
   @override
   void dispose() {
+    _positionsProvider?.itemPositionsListener.itemPositions
+        .removeListener(_handleItemPositionsChanged);
     super.dispose();
+  }
+
+  void _attachPositionsListener(MainProvider provider) {
+    if (_positionsProvider == provider) return;
+    _positionsProvider?.itemPositionsListener.itemPositions
+        .removeListener(_handleItemPositionsChanged);
+    _positionsProvider = provider;
+    provider.itemPositionsListener.itemPositions
+        .addListener(_handleItemPositionsChanged);
+  }
+
+  void _handleItemPositionsChanged() {
+    final positions =
+        _positionsProvider?.itemPositionsListener.itemPositions.value;
+    if (positions == null || positions.isEmpty || !mounted) return;
+
+    final visible = positions
+        .where((p) => p.itemTrailingEdge > 0 && p.itemLeadingEdge < 1)
+        .toList();
+    if (visible.isEmpty) return;
+
+    visible.sort((a, b) {
+      final edge = a.itemLeadingEdge.compareTo(b.itemLeadingEdge);
+      return edge != 0 ? edge : a.index.compareTo(b.index);
+    });
+    final nextIndex = visible.first.index;
+    if (nextIndex != _visibleItemIndex) {
+      setState(() => _visibleItemIndex = nextIndex);
+    }
   }
 
   String formattedSelectedVerses({required List<Verse> verses}) {
@@ -131,6 +149,36 @@ class _HomePageState extends State<HomePage> {
     return _formatVerseRange(verses.map((v) => v.verse).toList());
   }
 
+  Future<void> _copySelectedVerses({
+    required MainProvider mainProvider,
+    required AppSettings settings,
+  }) async {
+    final text = formattedSelectedVerses(verses: mainProvider.selectedVerses);
+    await ClipboardHelper.copyText(text);
+    mainProvider.clearSelectedVerses();
+    if (!mounted) return;
+    final scheme = Theme.of(context).colorScheme;
+    final copiedLabel = uiStrings['copied']?[settings.locale] ?? 'Copied!';
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              copiedLabel,
+              style: TextStyle(
+                color: scheme.onPrimary,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+        backgroundColor: scheme.primary.withValues(alpha: 0.8),
+        duration: const Duration(milliseconds: 800),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Consumer2<MainProvider, AppSettings>(
@@ -141,8 +189,7 @@ class _HomePageState extends State<HomePage> {
                 v.chapter == mainProvider.currentChapter)
             .toList()
           ..sort((a, b) => a.verse.compareTo(b.verse));
-        final hasParagraphData =
-            verses.any((v) => v.isParagraphStart == true);
+        final hasParagraphData = verses.any((v) => v.isParagraphStart == true);
 
         // Paragraph mode → always group so verses flow continuously in one RichText.
         //   - With paragraph metadata: group by isParagraphStart / reference type
@@ -158,8 +205,10 @@ class _HomePageState extends State<HomePage> {
         // Build verse-to-item index map for scroll/jump.
         // Item 0 is the chapter header → groups start at item 1.
         final verseToItemMap = <int, int>{};
+        final itemToVerseIndex = <int, int>{0: 0};
         int vIdx = 0;
         for (int g = 0; g < paragraphGroups.length; g++) {
+          itemToVerseIndex[g + 1] = vIdx;
           for (int v = 0; v < paragraphGroups[g].length; v++) {
             verseToItemMap[vIdx] = g + 1;
             vIdx++;
@@ -171,6 +220,23 @@ class _HomePageState extends State<HomePage> {
         final currentVerse = mainProvider.currentVerse ??
             (verses.isNotEmpty ? verses.first : null);
         final isSelected = mainProvider.selectedVerses.isNotEmpty;
+        final visibleItemIndex = _visibleItemIndex < 0
+            ? 0
+            : (_visibleItemIndex > paragraphGroups.length + 1
+                ? paragraphGroups.length + 1
+                : _visibleItemIndex);
+        final rawVisibleVerseIndex = itemToVerseIndex[visibleItemIndex] ??
+            (visibleItemIndex > paragraphGroups.length ? verses.length - 1 : 0);
+        final visibleVerseIndex = verses.isEmpty
+            ? 0
+            : rawVisibleVerseIndex.clamp(0, verses.length - 1).toInt();
+        final visibleVerse =
+            verses.isEmpty ? currentVerse : verses[visibleVerseIndex];
+        final chapterProgress = verses.isEmpty
+            ? 0.0
+            : ((visibleVerseIndex + 1) / verses.length)
+                .clamp(0.0, 1.0)
+                .toDouble();
 
         return SelectionContainer.disabled(
           child: GestureDetector(
@@ -191,7 +257,6 @@ class _HomePageState extends State<HomePage> {
                         : Brightness.dark,
               ),
               child: Scaffold(
-                floatingActionButtonAnimator: NoScalingAnimation(),
                 appBar: AppBar(
                   title: LayoutBuilder(
                     builder: (context, constraints) {
@@ -302,6 +367,10 @@ class _HomePageState extends State<HomePage> {
                                 p.setCurrentChapter(
                                     book: match.book, chapter: match.chapter);
                                 p.updateCurrentVerse(verse: match);
+                                p.jumpToTop();
+                                if (mounted) {
+                                  setState(() => _visibleItemIndex = 0);
+                                }
                               },
                               itemBuilder: (context) => bibleVersions
                                   .map(
@@ -405,91 +474,74 @@ class _HomePageState extends State<HomePage> {
                     Padding(
                       padding: const EdgeInsets.only(right: 8.0),
                       child: ScrollablePositionedList.builder(
-                          // +1 for the chapter header (item 0)
-                          // +1 for the trailing FAB-clearance spacer
-                          itemCount: paragraphGroups.length + 2,
-                          itemBuilder: (context, index) {
-                            if (index == 0) {
-                              return _ChapterHeader(
-                                book: mainProvider.currentBook,
-                                chapter: mainProvider.currentChapter,
-                              );
+                        // +1 for the chapter header (item 0)
+                        // +1 for the trailing FAB-clearance spacer
+                        itemCount: paragraphGroups.length + 2,
+                        itemBuilder: (context, index) {
+                          if (index == 0) {
+                            return _ChapterHeader(
+                              book: mainProvider.currentBook,
+                              chapter: mainProvider.currentChapter,
+                            );
+                          }
+                          final groupIdx = index - 1;
+                          if (groupIdx < paragraphGroups.length) {
+                            final group = paragraphGroups[groupIdx];
+                            int startIdx = 0;
+                            for (int g = 0; g < groupIdx; g++) {
+                              startIdx += paragraphGroups[g].length;
                             }
-                            final groupIdx = index - 1;
-                            if (groupIdx < paragraphGroups.length) {
-                              final group = paragraphGroups[groupIdx];
-                              int startIdx = 0;
-                              for (int g = 0; g < groupIdx; g++) {
-                                startIdx += paragraphGroups[g].length;
-                              }
-                              final isFirst = groupIdx == 0;
-                              if (group.length == 1) {
-                                return VerseWidget(
-                                  verse: group.first,
-                                  index: startIdx,
-                                  hasParagraphData: hasParagraphData,
-                                  isFirst: isFirst,
-                                );
-                              }
-                              return ParagraphGroupWidget(
-                                group: group,
-                                startVerseIndex: startIdx,
+                            final isFirst = groupIdx == 0;
+                            if (group.length == 1) {
+                              return VerseWidget(
+                                verse: group.first,
+                                index: startIdx,
+                                hasParagraphData: hasParagraphData,
                                 isFirst: isFirst,
                               );
                             }
-                            return const SizedBox(height: 120);
-                          },
-                          itemScrollController:
-                              mainProvider.itemScrollController,
-                          itemPositionsListener:
-                              mainProvider.itemPositionsListener,
-                          scrollOffsetController:
-                              mainProvider.scrollOffsetController,
-                          scrollOffsetListener:
-                              mainProvider.scrollOffsetListener,
-                        ),
+                            return ParagraphGroupWidget(
+                              group: group,
+                              startVerseIndex: startIdx,
+                              isFirst: isFirst,
+                            );
+                          }
+                          return const SizedBox(height: 120);
+                        },
+                        itemScrollController: mainProvider.itemScrollController,
+                        itemPositionsListener:
+                            mainProvider.itemPositionsListener,
+                        scrollOffsetController:
+                            mainProvider.scrollOffsetController,
+                        scrollOffsetListener: mainProvider.scrollOffsetListener,
+                      ),
+                    ),
+                    Align(
+                      alignment: Alignment.bottomCenter,
+                      child: isSelected
+                          ? _SelectionActionBar(
+                              selectedCount: mainProvider.selectedVerses.length,
+                              onCopy: () => _copySelectedVerses(
+                                mainProvider: mainProvider,
+                                settings: settings,
+                              ),
+                              onClear: mainProvider.clearSelectedVerses,
+                            )
+                          : _ReaderStatusBar(
+                              verse: visibleVerse,
+                              verseIndex: visibleVerseIndex,
+                              verseCount: verses.length,
+                              progress: chapterProgress,
+                              versionLabel: shortBibleVersionLabel(
+                                  mainProvider.currentVersion),
+                              paragraphMode: settings.paragraphMode,
+                              canGoPrevious: _hasPreviousChapter(mainProvider),
+                              canGoNext: _hasNextChapter(mainProvider),
+                              onPrevious: _goToPreviousChapter,
+                              onNext: _goToNextChapter,
+                            ),
                     ),
                   ],
-                ),
-                floatingActionButton: isSelected
-                    ? FloatingActionButton(
-                        onPressed: () async {
-                          final text = formattedSelectedVerses(
-                              verses: mainProvider.selectedVerses);
-                          await ClipboardHelper.copyText(text);
-                          mainProvider.clearSelectedVerses();
-                          if (!context.mounted) return;
-                          final scheme = Theme.of(context).colorScheme;
-                          final copiedLabel = uiStrings['copied']
-                                  ?[settings.locale] ??
-                              'Copied!';
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Text(
-                                    copiedLabel,
-                                    style: TextStyle(
-                                      color: scheme.onPrimary,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              backgroundColor:
-                                  scheme.primary.withValues(alpha: 0.8),
-                              duration: const Duration(milliseconds: 800),
-                            ),
-                          );
-                        },
-                        child: const Icon(Icons.copy_rounded),
-                      )
-                    : null,
-                floatingActionButtonLocation:
-                    CustomFloatingActionButtonLocation(
-                  xOffset: -16,
-                  yOffset: -16,
                 ),
               ),
             ),
@@ -565,6 +617,32 @@ class _HomePageState extends State<HomePage> {
     provider.setCurrentChapter(book: book, chapter: chap);
     provider.updateCurrentVerse(verse: matched.first);
     provider.jumpToTop();
+    if (mounted) {
+      setState(() => _visibleItemIndex = 0);
+    }
+  }
+
+  bool _hasNextChapter(MainProvider provider) {
+    final currentBook = provider.currentBook;
+    final currentChapter = provider.currentChapter;
+    if (currentBook == null || currentChapter == null) return false;
+    final bookIdx = provider.books.indexWhere((b) => b.title == currentBook);
+    if (bookIdx < 0) return false;
+    final chapters = provider.books[bookIdx].chapters;
+    final chapIdx = chapters.indexWhere((c) => c.title == currentChapter);
+    return chapIdx >= 0 &&
+        (chapIdx < chapters.length - 1 || bookIdx < provider.books.length - 1);
+  }
+
+  bool _hasPreviousChapter(MainProvider provider) {
+    final currentBook = provider.currentBook;
+    final currentChapter = provider.currentChapter;
+    if (currentBook == null || currentChapter == null) return false;
+    final bookIdx = provider.books.indexWhere((b) => b.title == currentBook);
+    if (bookIdx < 0) return false;
+    final chapters = provider.books[bookIdx].chapters;
+    final chapIdx = chapters.indexWhere((c) => c.title == currentChapter);
+    return chapIdx >= 0 && (chapIdx > 0 || bookIdx > 0);
   }
 
   /// Groups consecutive inline verses into paragraph blocks.
@@ -588,21 +666,213 @@ class _HomePageState extends State<HomePage> {
   }
 }
 
-class NoScalingAnimation extends FloatingActionButtonAnimator {
-  @override
-  Offset getOffset(
-      {required Offset begin, required Offset end, required double progress}) {
-    return Offset.lerp(begin, end, 1)!; // Instantly move without animation
-  }
+class _ReaderStatusBar extends StatelessWidget {
+  final Verse? verse;
+  final int verseIndex;
+  final int verseCount;
+  final double progress;
+  final String versionLabel;
+  final bool paragraphMode;
+  final bool canGoPrevious;
+  final bool canGoNext;
+  final VoidCallback onPrevious;
+  final VoidCallback onNext;
+
+  const _ReaderStatusBar({
+    required this.verse,
+    required this.verseIndex,
+    required this.verseCount,
+    required this.progress,
+    required this.versionLabel,
+    required this.paragraphMode,
+    required this.canGoPrevious,
+    required this.canGoNext,
+    required this.onPrevious,
+    required this.onNext,
+  });
 
   @override
-  Animation<double> getRotationAnimation({required Animation<double> parent}) {
-    return AlwaysStoppedAnimation(1); // No rotation
+  Widget build(BuildContext context) {
+    final settings = context.watch<AppSettings>();
+    final scheme = Theme.of(context).colorScheme;
+    final statusFontSize = settings.fontSize.clamp(13.0, 16.0).toDouble();
+    final detailFontSize = settings.fontSize.clamp(11.0, 13.0).toDouble();
+    final modeLabel = paragraphMode
+        ? (uiStrings['paragraphFlow']?[settings.locale] ?? 'Paragraph Flow')
+        : (uiStrings['verseByVerse']?[settings.locale] ?? 'Verse by Verse');
+    final versePosition = (uiStrings['versePosition']?[settings.locale] ??
+            'Verse {current} of {total}')
+        .replaceAll('{current}', verseCount == 0 ? '0' : '${verseIndex + 1}')
+        .replaceAll('{total}', '$verseCount');
+    final title = verse == null
+        ? (uiStrings['bible']?[settings.locale] ?? 'Bible')
+        : '${verse!.book} ${verse!.chapter}:${verse!.verseLabel}';
+    final detail = '$versionLabel | $modeLabel | $versePosition';
+
+    return SafeArea(
+      top: false,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: scheme.surface.withValues(alpha: 0.96),
+          border: Border(
+            top: BorderSide(
+              color: scheme.outlineVariant.withValues(alpha: 0.7),
+            ),
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: scheme.shadow.withValues(alpha: 0.08),
+              blurRadius: 10,
+              offset: const Offset(0, -3),
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            LinearProgressIndicator(
+              value: progress,
+              minHeight: 3,
+              backgroundColor: scheme.surfaceContainerHighest,
+              color: scheme.primary,
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(8, 6, 8, 8),
+              child: Row(
+                children: [
+                  IconButton(
+                    tooltip: uiStrings['previousChapter']?[settings.locale] ??
+                        'Previous Chapter',
+                    onPressed: canGoPrevious ? onPrevious : null,
+                    icon: const Icon(Icons.chevron_left_rounded),
+                  ),
+                  Expanded(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Text(
+                          title,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontFamily: settings.fontFamily,
+                            fontSize: statusFontSize,
+                            fontWeight: FontWeight.w700,
+                            color: scheme.onSurface,
+                            height: 1.15,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          detail,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontFamily: settings.fontFamily,
+                            fontSize: detailFontSize,
+                            fontWeight: FontWeight.w500,
+                            color: scheme.onSurfaceVariant,
+                            height: 1.15,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  IconButton(
+                    tooltip: uiStrings['nextChapter']?[settings.locale] ??
+                        'Next Chapter',
+                    onPressed: canGoNext ? onNext : null,
+                    icon: const Icon(Icons.chevron_right_rounded),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
+}
+
+class _SelectionActionBar extends StatelessWidget {
+  final int selectedCount;
+  final VoidCallback onCopy;
+  final VoidCallback onClear;
+
+  const _SelectionActionBar({
+    required this.selectedCount,
+    required this.onCopy,
+    required this.onClear,
+  });
 
   @override
-  Animation<double> getScaleAnimation({required Animation<double> parent}) {
-    return AlwaysStoppedAnimation(1); // No scaling animation
+  Widget build(BuildContext context) {
+    final settings = context.watch<AppSettings>();
+    final scheme = Theme.of(context).colorScheme;
+    final label =
+        (uiStrings['selectedVerses']?[settings.locale] ?? '{count} selected')
+            .replaceAll('{count}', '$selectedCount');
+    final fontSize = settings.fontSize.clamp(13.0, 16.0).toDouble();
+
+    return SafeArea(
+      top: false,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: scheme.surface.withValues(alpha: 0.98),
+          border: Border(
+            top: BorderSide(
+              color: scheme.outlineVariant.withValues(alpha: 0.7),
+            ),
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: scheme.shadow.withValues(alpha: 0.1),
+              blurRadius: 12,
+              offset: const Offset(0, -4),
+            ),
+          ],
+        ),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
+          child: Row(
+            children: [
+              IconButton(
+                tooltip:
+                    uiStrings['clearSelection']?[settings.locale] ?? 'Clear',
+                onPressed: onClear,
+                icon: const Icon(Icons.close_rounded),
+              ),
+              Expanded(
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontFamily: settings.fontFamily,
+                    fontSize: fontSize,
+                    fontWeight: FontWeight.w700,
+                    color: scheme.onSurface,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              FilledButton.icon(
+                onPressed: onCopy,
+                icon: const Icon(Icons.copy_rounded),
+                label: Text(
+                  uiStrings['copySelection']?[settings.locale] ?? 'Copy',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }
 

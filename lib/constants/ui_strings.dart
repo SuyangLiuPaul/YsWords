@@ -81,6 +81,26 @@ const uiStrings = {
     'zh-Hant': '第 {n} 章',
     'en': 'Chapter {n}',
   },
+  'versePosition': {
+    'zh-Hans': '第 {current} / {total} 节',
+    'zh-Hant': '第 {current} / {total} 節',
+    'en': 'Verse {current} of {total}',
+  },
+  'selectedVerses': {
+    'zh-Hans': '已选择 {count} 节',
+    'zh-Hant': '已選擇 {count} 節',
+    'en': '{count} selected',
+  },
+  'clearSelection': {
+    'zh-Hans': '清除选择',
+    'zh-Hant': '清除選擇',
+    'en': 'Clear selection',
+  },
+  'copySelection': {
+    'zh-Hans': '复制',
+    'zh-Hant': '複製',
+    'en': 'Copy',
+  },
 
   // ====== Settings Page ======
   'themeMode': {
