@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/app_settings.dart';
 import '../models/verse.dart';
+import '../constants/text_patterns.dart';
+import '../constants/ui_strings.dart';
 import 'home_page.dart';
 
 class LoadingPage extends StatefulWidget {
@@ -27,25 +29,17 @@ class _LoadingPageState extends State<LoadingPage> {
   @override
   Widget build(BuildContext context) {
     final settings = Provider.of<AppSettings>(context, listen: false);
-    // final today = DateTime.now();
-    final verse =
-        widget.verses.isNotEmpty ? (widget.verses..shuffle()).first : null;
+    // Shuffle a COPY so we don't mutate the canonical verse order
+    final verse = widget.verses.isNotEmpty
+        ? (List<Verse>.from(widget.verses)..shuffle()).first
+        : null;
 
-    final notePattern = RegExp(r'<note:[^>]*>');
-    final bracePattern = RegExp(r'\{[^}]*\}');
-    final squarePattern = RegExp(r'\[([^\]]+)\]');
-    // Combined to split text and bracket tokens
-    final combinedPattern = RegExp(r'(\[[^\]]+\])');
     final original = verse?.text.replaceAll('\n', '') ?? '';
-    // Remove only notes and braces, keep square brackets for rendering
-    final raw = original
-        .replaceAll(notePattern, '')
-        .replaceAll(bracePattern, '')
-        .trim();
+    final raw = sanitizeForSearch(original);
     // Split so that each [word] is its own part
     final parts = raw
         .splitMapJoin(
-          combinedPattern,
+          squarePattern,
           onMatch: (m) => '||${m[0]}||',
           onNonMatch: (n) => n,
         )
@@ -55,7 +49,10 @@ class _LoadingPageState extends State<LoadingPage> {
       backgroundColor: Theme.of(context).colorScheme.background,
       body: Center(
         child: verse == null
-            ? const Text('No verses available')
+            ? Text(
+                uiStrings['noVersesAvailable']?[settings.locale] ??
+                    'No verses available',
+              )
             : Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [

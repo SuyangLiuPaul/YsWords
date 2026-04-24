@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:yswords/models/verse.dart';
 import 'package:yswords/providers/main_provider.dart';
 import 'package:yswords/models/app_settings.dart';
+import 'package:yswords/services/fetch_books.dart' show bookNameToEnglish, standardBookOrder;
 
 class FetchVerses {
   static Future<void> execute(
@@ -57,24 +58,10 @@ class FetchVerses {
       }
     }
 
-    // Sort in canonical order
-    const bookOrder = [
-      'Genesis','Exodus','Leviticus','Numbers','Deuteronomy','Joshua',
-      'Judges','Ruth','1 Samuel','2 Samuel','1 Kings','2 Kings',
-      '1 Chronicles','2 Chronicles','Ezra','Nehemiah','Esther','Job',
-      'Psalms','Proverbs','Ecclesiastes','Song of Solomon','Isaiah',
-      'Jeremiah','Lamentations','Ezekiel','Daniel','Hosea','Joel',
-      'Amos','Obadiah','Jonah','Micah','Nahum','Habakkuk',
-      'Zechariah','Haggai','Malachi','Matthew','Mark','Luke','John',
-      'Acts','Romans','1 Corinthians','2 Corinthians','Galatians',
-      'Ephesians','Philippians','Colossians','1 Thessalonians',
-      '2 Thessalonians','1 Timothy','2 Timothy','Titus','Philemon',
-      'Hebrews','James','1 Peter','2 Peter','1 John','2 John',
-      '3 John','Jude','Revelation'
-    ];
+    // Sort in canonical order (map Chinese/localised book names → English for lookup)
     verses.sort((a, b) {
-      final ai = bookOrder.indexOf(a.book);
-      final bi = bookOrder.indexOf(b.book);
+      final ai = standardBookOrder.indexOf(bookNameToEnglish[a.book] ?? a.book);
+      final bi = standardBookOrder.indexOf(bookNameToEnglish[b.book] ?? b.book);
       if (ai != bi) return ai.compareTo(bi);
       final c = a.chapter.compareTo(b.chapter);
       return c != 0 ? c : a.verse.compareTo(b.verse);
@@ -132,24 +119,10 @@ class FetchVerses {
         }
       }
 
-      // Sort in canonical order
-      const bookOrder = [
-        'Genesis','Exodus','Leviticus','Numbers','Deuteronomy','Joshua',
-        'Judges','Ruth','1 Samuel','2 Samuel','1 Kings','2 Kings',
-        '1 Chronicles','2 Chronicles','Ezra','Nehemiah','Esther','Job',
-        'Psalms','Proverbs','Ecclesiastes','Song of Solomon','Isaiah',
-        'Jeremiah','Lamentations','Ezekiel','Daniel','Hosea','Joel',
-        'Amos','Obadiah','Jonah','Micah','Nahum','Habakkuk',
-        'Zechariah','Haggai','Malachi','Matthew','Mark','Luke','John',
-        'Acts','Romans','1 Corinthians','2 Corinthians','Galatians',
-        'Ephesians','Philippians','Colossians','1 Thessalonians',
-        '2 Thessalonians','1 Timothy','2 Timothy','Titus','Philemon',
-        'Hebrews','James','1 Peter','2 Peter','1 John','2 John',
-        '3 John','Jude','Revelation'
-      ];
+      // Sort in canonical order (map Chinese/localised book names → English for lookup)
       verses.sort((a, b) {
-        final ai = bookOrder.indexOf(a.book);
-        final bi = bookOrder.indexOf(b.book);
+        final ai = standardBookOrder.indexOf(bookNameToEnglish[a.book] ?? a.book);
+        final bi = standardBookOrder.indexOf(bookNameToEnglish[b.book] ?? b.book);
         if (ai != bi) return ai.compareTo(bi);
         final c = a.chapter.compareTo(b.chapter);
         return c != 0 ? c : a.verse.compareTo(b.verse);

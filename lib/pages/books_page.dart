@@ -279,6 +279,7 @@ class _BooksPageState extends State<BooksPage> {
                                               (v) =>
                                                   v.book == book.title &&
                                                   v.chapter == chapter.title,
+                                              orElse: () => mainProvider.verses.first,
                                             );
                                             mainProvider.setCurrentChapter(
                                               book: book.title,

@@ -6,6 +6,7 @@ import 'package:yswords/utils/format_searched_text.dart';
 import 'package:provider/provider.dart';
 import 'dart:async';
 import 'package:yswords/constants/ui_strings.dart';
+import 'package:yswords/constants/text_patterns.dart';
 import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/widgets/localized_back_button.dart';
 import 'package:flutter/services.dart';
@@ -28,6 +29,13 @@ class _SearchPageState extends State<SearchPage> {
   Map<String, int> bookCounts = {};
   String? filterBook;
 
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    _textEditingController.dispose();
+    super.dispose();
+  }
+
   // Method to perform the search
   Future<void> search() async {
     setState(() {
@@ -44,15 +52,8 @@ class _SearchPageState extends State<SearchPage> {
             ? verses
             : verses.where((v) => v.book == mainProvider.currentBook);
 
-    final notePattern  = RegExp(r'<note:[^>]*>');
-    final bracePattern = RegExp(r'\{[^}]*\}');
-
     for (var verse in source) {
-      // sanitize out notes and braces before searching
-      final sanitized = verse.text
-          .replaceAll(notePattern, '')
-          .replaceAll(bracePattern, '')
-          .trim();
+      final sanitized = sanitizeForSearch(verse.text);
       final textNorm = sanitized.replaceAll(" ", "").toLowerCase();
       final queryNorm =
           _textEditingController.text.trim().replaceAll(" ", "").toLowerCase();
@@ -90,9 +91,6 @@ class _SearchPageState extends State<SearchPage> {
   @override
   Widget build(BuildContext context) {
     final settings = Provider.of<AppSettings>(context);
-    // Patterns to strip out notes and curly annotations
-    final notePattern  = RegExp(r'<note:[^>]*>');
-    final bracePattern = RegExp(r'\{[^}]*\}');
     return Scaffold(
         appBar: AppBar(
           leading: const LocalizedBackButton(),
@@ -306,10 +304,7 @@ class _SearchPageState extends State<SearchPage> {
                             // Sanitize verse text: remove <note:…> and {...}, leave […]
                             title: Builder(
                               builder: (context) {
-                                final sanitized = verse.text
-                                    .replaceAll(notePattern, '')
-                                    .replaceAll(bracePattern, '')
-                                    .trim();
+                                final sanitized = sanitizeForSearch(verse.text);
                                 return formatSearchText(
                                   input: sanitized,
                                   text: _textEditingController.text.trim(),

@@ -20,6 +20,7 @@ import 'package:yswords/widgets/verse_widget.dart';
 import 'package:yswords/utils/version_mapper.dart'
     show translateBookName, toEnglish;
 import 'package:yswords/constants/ui_strings.dart';
+import 'package:yswords/constants/text_patterns.dart';
 
 class CustomFloatingActionButtonLocation extends FloatingActionButtonLocation {
   final double xOffset;

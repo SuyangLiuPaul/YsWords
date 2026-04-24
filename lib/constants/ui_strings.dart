@@ -241,4 +241,24 @@ const uiStrings = {
     'zh-Hant': '註釋',
     'en': 'Note',
   },
+  'close': {
+    'zh-Hans': '关闭',
+    'zh-Hant': '關閉',
+    'en': 'Close',
+  },
+  'copiedVerse': {
+    'zh-Hans': '已复制第{verse}节',
+    'zh-Hant': '已複製第{verse}節',
+    'en': 'Copied verse {verse}',
+  },
+  'noVersesAvailable': {
+    'zh-Hans': '暂无经文',
+    'zh-Hant': '暫無經文',
+    'en': 'No verses available',
+  },
+  'bible': {
+    'zh-Hans': '圣经',
+    'zh-Hant': '聖經',
+    'en': 'Bible',
+  },
 };
