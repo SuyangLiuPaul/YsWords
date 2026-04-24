@@ -246,9 +246,7 @@ List<InlineSpan> buildVerseContentSpans({
           color: isSelected
               ? Theme.of(context).colorScheme.onPrimaryContainer
               : Theme.of(context).textTheme.bodyLarge?.color,
-          backgroundColor: isSelected && spanBgColor != null
-              ? spanBgColor
-              : null,
+          backgroundColor: spanBgColor,
         ),
       ));
       lastPart = part;
@@ -322,9 +320,7 @@ List<InlineSpan> buildVerseContentSpans({
               fontFamily: settings.fontFamily,
               fontStyle:
                   isReferenceLine ? FontStyle.italic : FontStyle.normal,
-              backgroundColor: isSelected && spanBgColor != null
-                  ? spanBgColor
-                  : null,
+              backgroundColor: spanBgColor,
             ),
       ));
       lastPart = part;

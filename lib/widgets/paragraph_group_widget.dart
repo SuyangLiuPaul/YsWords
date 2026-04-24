@@ -52,6 +52,7 @@ class ParagraphGroupWidget extends StatelessWidget {
               mainProvider.highlightIndex == startVerseIndex + i;
 
           Color? bgColor;
+          final highlightColor = mainProvider.getHighlightColor(verse);
           if (isSelected) {
             bgColor = Theme.of(context).colorScheme.primaryContainer;
           } else if (isHighlighted) {
@@ -59,6 +60,8 @@ class ParagraphGroupWidget extends StatelessWidget {
                 .colorScheme
                 .secondary
                 .withValues(alpha: 0.3);
+          } else if (highlightColor != null) {
+            bgColor = highlightColor.withValues(alpha: 0.35);
           }
 
           allSpans.addAll(buildVerseContentSpans(

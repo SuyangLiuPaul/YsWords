@@ -101,6 +101,21 @@ const uiStrings = {
     'zh-Hant': '複製',
     'en': 'Copy',
   },
+  'highlight': {
+    'zh-Hans': '高亮',
+    'zh-Hant': '高亮',
+    'en': 'Highlight',
+  },
+  'removeHighlight': {
+    'zh-Hans': '移除高亮',
+    'zh-Hant': '移除高亮',
+    'en': 'Remove highlight',
+  },
+  'highlightColor': {
+    'zh-Hans': '高亮颜色',
+    'zh-Hant': '高亮顏色',
+    'en': 'Highlight color',
+  },
 
   // ====== Settings Page ======
   'themeMode': {

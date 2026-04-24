@@ -368,11 +368,26 @@ class _HomePageState extends State<HomePage> {
                       child: isSelected
                           ? _SelectionActionBar(
                               selectedCount: mainProvider.selectedVerses.length,
+                              anyHighlighted: mainProvider.selectedVerses
+                                  .any((v) => mainProvider.isVerseHighlighted(v)),
                               onCopy: () => _copySelectedVerses(
                                 mainProvider: mainProvider,
                                 settings: settings,
                               ),
                               onClear: mainProvider.clearSelectedVerses,
+                              onHighlight: (color) {
+                                mainProvider.setHighlightsForVerses(
+                                  verses: mainProvider.selectedVerses,
+                                  color: color,
+                                );
+                                mainProvider.clearSelectedVerses();
+                              },
+                              onRemoveHighlight: () {
+                                mainProvider.removeHighlightsForVerses(
+                                  verses: mainProvider.selectedVerses,
+                                );
+                                mainProvider.clearSelectedVerses();
+                              },
                             )
                           : _ReaderStatusBar(
                               verse: visibleVerse,
@@ -646,14 +661,89 @@ class _ReaderStatusBar extends StatelessWidget {
 
 class _SelectionActionBar extends StatelessWidget {
   final int selectedCount;
+  final bool anyHighlighted;
   final VoidCallback onCopy;
   final VoidCallback onClear;
+  final ValueChanged<int> onHighlight;
+  final VoidCallback onRemoveHighlight;
 
   const _SelectionActionBar({
     required this.selectedCount,
+    required this.anyHighlighted,
     required this.onCopy,
     required this.onClear,
+    required this.onHighlight,
+    required this.onRemoveHighlight,
   });
+
+  static const _highlightColors = <int>[
+    0xFFFFF176, // yellow
+    0xFFA5D6A7, // green
+    0xFF90CAF9, // blue
+    0xFFF48FB1, // pink
+    0xFFFFCC80, // orange
+    0xFFCE93D8, // purple
+  ];
+
+  void _showColorPicker(BuildContext context) {
+    final locale = context.read<AppSettings>().locale;
+    showModalBottomSheet(
+      context: context,
+      builder: (_) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                uiStrings['highlightColor']?[locale] ?? 'Highlight color',
+                style: const TextStyle(
+                    fontSize: 16, fontWeight: FontWeight.w600),
+              ),
+              const SizedBox(height: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: _highlightColors.map((argb) {
+                  return GestureDetector(
+                    onTap: () {
+                      Navigator.of(context).pop();
+                      onHighlight(argb);
+                    },
+                    child: Container(
+                      width: 44,
+                      height: 44,
+                      margin: const EdgeInsets.symmetric(horizontal: 6),
+                      decoration: BoxDecoration(
+                        color: Color(argb),
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: Colors.grey.withValues(alpha: 0.3),
+                        ),
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ),
+              if (anyHighlighted) ...[
+                const SizedBox(height: 12),
+                TextButton.icon(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    onRemoveHighlight();
+                  },
+                  icon: const Icon(Icons.highlight_remove, size: 20),
+                  label: Text(
+                    uiStrings['removeHighlight']?[locale] ??
+                        'Remove highlight',
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -705,7 +795,14 @@ class _SelectionActionBar extends StatelessWidget {
                   ),
                 ),
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 4),
+              IconButton(
+                tooltip:
+                    uiStrings['highlight']?[settings.locale] ?? 'Highlight',
+                onPressed: () => _showColorPicker(context),
+                icon: const Icon(Icons.format_color_fill),
+              ),
+              const SizedBox(width: 4),
               FilledButton.icon(
                 onPressed: onCopy,
                 icon: const Icon(Icons.copy_rounded),

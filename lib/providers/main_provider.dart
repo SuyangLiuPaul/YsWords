@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:yswords/models/verse.dart';
 import 'package:yswords/models/book.dart';
@@ -57,12 +58,65 @@ class MainProvider extends ChangeNotifier {
   // Set to store selected verse IDs
   final Set<String> _selectedIds = {};
 
+  // Map to store verse highlight colors (verse ID → ARGB int)
+  Map<String, int> _highlights = {};
+
   // List of Store Verse Objects
   List<Verse> get selectedVerses =>
       verses.where((v) => _selectedIds.contains(v.id)).toList();
   Set<String> get selectedIds => _selectedIds;
 
   bool isSelected(Verse v) => _selectedIds.contains(v.id);
+
+  bool isVerseHighlighted(Verse v) => _highlights.containsKey(v.id);
+
+  Color? getHighlightColor(Verse v) {
+    final argb = _highlights[v.id];
+    if (argb == null) return null;
+    return Color(argb);
+  }
+
+  void setHighlight({required Verse verse, required int color}) {
+    _highlights[verse.id] = color;
+    _saveHighlights();
+    notifyListeners();
+  }
+
+  void removeHighlight({required Verse verse}) {
+    _highlights.remove(verse.id);
+    _saveHighlights();
+    notifyListeners();
+  }
+
+  void setHighlightsForVerses({required List<Verse> verses, required int color}) {
+    for (final v in verses) {
+      _highlights[v.id] = color;
+    }
+    _saveHighlights();
+    notifyListeners();
+  }
+
+  void removeHighlightsForVerses({required List<Verse> verses}) {
+    for (final v in verses) {
+      _highlights.remove(v.id);
+    }
+    _saveHighlights();
+    notifyListeners();
+  }
+
+  void _saveHighlights() async {
+    final prefs = await SharedPreferences.getInstance();
+    prefs.setString('highlights', jsonEncode(_highlights));
+  }
+
+  Future<void> _loadHighlights() async {
+    final prefs = await SharedPreferences.getInstance();
+    final json = prefs.getString('highlights');
+    if (json != null) {
+      final decoded = jsonDecode(json) as Map<String, dynamic>;
+      _highlights = decoded.map((k, v) => MapEntry(k, v as int));
+    }
+  }
 
   // Method to set the current book and chapter, persist state, and notify listeners
   void setCurrentChapter({required String book, required int chapter}) {
@@ -166,6 +220,8 @@ class MainProvider extends ChangeNotifier {
     if (savedVersion != null) currentVersion = savedVersion.toLowerCase();
     if (savedBook != null) currentBook = savedBook;
     if (savedChapter != null) currentChapter = savedChapter;
+
+    await _loadHighlights();
 
     notifyListeners();
   }

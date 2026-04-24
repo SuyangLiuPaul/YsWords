@@ -33,6 +33,7 @@ class VerseWidget extends StatelessWidget {
         final locale = settings.locale;
         final isSelected = mainProvider.isSelected(verse);
         final isHighlighted = mainProvider.highlightIndex == index;
+        final highlightColor = mainProvider.getHighlightColor(verse);
         final isReferenceLine = verse.paragraphType == 'reference';
         final inParagraphMode = settings.paragraphMode;
 
@@ -100,7 +101,9 @@ class VerseWidget extends StatelessWidget {
                               .colorScheme
                               .secondary
                               .withValues(alpha: 0.3)
-                          : Colors.transparent,
+                          : highlightColor != null
+                              ? highlightColor.withValues(alpha: 0.35)
+                              : Colors.transparent,
                   padding: EdgeInsets.fromLTRB(
                       leftIndent, vertPadding, 16, vertPadding),
                   child: RichText(
