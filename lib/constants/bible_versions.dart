@@ -51,6 +51,36 @@ const bibleVersions = <BibleVersionInfo>[
     shortLabel: 'LJK2(繁)',
     menuLabel: '梁家铿譯本 第二版(繁體)',
   ),
+  BibleVersionInfo(
+    value: 'cuv',
+    shortLabel: '和合本(简)',
+    menuLabel: '和合本(简体)',
+  ),
+  BibleVersionInfo(
+    value: 'cuv-tr',
+    shortLabel: '和合本(繁)',
+    menuLabel: '和合本(繁體)',
+  ),
+  BibleVersionInfo(
+    value: 'cnv',
+    shortLabel: '新译本(简)',
+    menuLabel: '新译本(简体)',
+  ),
+  BibleVersionInfo(
+    value: 'cnv-tr',
+    shortLabel: '新译本(繁)',
+    menuLabel: '新译本(繁體)',
+  ),
+  BibleVersionInfo(
+    value: 'nasb',
+    shortLabel: 'NASB',
+    menuLabel: 'New American Standard Bible',
+  ),
+  BibleVersionInfo(
+    value: 'niv',
+    shortLabel: 'NIV',
+    menuLabel: 'New International Version',
+  ),
 ];
 
 String shortBibleVersionLabel(String version) {

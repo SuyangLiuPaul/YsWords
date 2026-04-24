@@ -22,7 +22,8 @@ const List<String> standardBookOrder = [
 
 const Map<String, String> bookNameToEnglish = {
   // Genesis
-  'Genesis': 'Genesis', '创世纪': 'Genesis', '創世紀': 'Genesis',
+  'Genesis': 'Genesis', '创世纪': 'Genesis', '创世记': 'Genesis',
+  '創世紀': 'Genesis', '創世記': 'Genesis',
   // Exodus
   'Exodus': 'Exodus', '出埃及记': 'Exodus', '出埃及記': 'Exodus',
   // Leviticus

@@ -33,6 +33,12 @@ flutter:
     - assets/biblexg-tr.json
     - assets/biblexg-v2.json
     - assets/biblexg-v2-tr.json
+    - assets/cuv.json
+    - assets/cuv-tr.json
+    - assets/cnv.json
+    - assets/cnv-tr.json
+    - assets/nasb.json
+    - assets/niv.json
     - assets/web-ot-paragraphs.json
     - assets/app_icon.png
     - assets/loading.png
