@@ -21,11 +21,11 @@ class AppSettings extends ChangeNotifier {
   String _copyFormat = 'withRef';
   String _locale = 'zh-Hans';
   ThemeMode _themeMode = ThemeMode.system;
-  bool _paragraphMode = false;
+  bool _paragraphMode = true;
   double _menuScale = 1.0;
   bool _offlineMode = true;
   /// 'list' or 'grid' — persisted choice for the books picker.
-  String _booksViewMode = 'list';
+  String _booksViewMode = 'grid';
 
   String get fontFamily => _fontFamily;
   double get fontSize => _fontSize;
@@ -142,11 +142,11 @@ class AppSettings extends ChangeNotifier {
     _copyFormat = prefs.getString(_kCopyFormat) ?? 'withRef';
     _locale = prefs.getString(_kLocale) ?? _detectSystemLocale();
     _themeMode = _parseThemeMode(prefs.getString(_kThemeMode));
-    _paragraphMode = prefs.getBool(_kParagraphMode) ?? false;
+    _paragraphMode = prefs.getBool(_kParagraphMode) ?? true;
     final rawMenuScale = prefs.getDouble(_kMenuScale) ?? 1.0;
     _menuScale = ((rawMenuScale * 10).roundToDouble() / 10).clamp(0.7, 1.5);
     _offlineMode = prefs.getBool(_kOfflineMode) ?? true;
-    final rawBooksView = prefs.getString(_kBooksViewMode) ?? 'list';
+    final rawBooksView = prefs.getString(_kBooksViewMode) ?? 'grid';
     _booksViewMode = rawBooksView == 'grid' ? 'grid' : 'list';
     notifyListeners();
   }

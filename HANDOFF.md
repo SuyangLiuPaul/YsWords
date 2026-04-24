@@ -220,6 +220,13 @@ The app adapts its layout to all device sizes using `lib/utils/responsive.dart`:
 
 ## What Has Been Fixed (2026-04-25)
 
+### Collapsible Sidebar for Wide Screens + Default Settings
+- **New sidebar**: On tablets and wider screens (>= 600px), a collapsible 280px sidebar appears on the left with book/chapter navigation. Toggle via menu icon in the floating header. Closes automatically when a chapter is selected. Phone layout is completely unchanged.
+- **BookChapterPicker widget**: Extracted from BooksPage into reusable `lib/widgets/book_chapter_picker.dart`. Both BooksPage (phone overlay) and SidebarPanel (tablet sidebar) use it with different callbacks.
+- **SidebarPanel**: `lib/widgets/sidebar_panel.dart` — container widget with title bar + close button + BookChapterPicker.
+- **Default settings**: First-time users now get Paragraph Flow mode (was verse-by-verse) and Grid view (was list view). Existing users' saved preferences are unaffected.
+- **Phone unchanged**: Phones still use `Get.to(BooksPage(...))` full-screen overlay. Sidebar only activates at 600px+.
+
 ### Responsive Design for All Devices
 - **New utility**: `lib/utils/responsive.dart` with `DeviceClass` enum (miniPhone, phone, tablet, desktop, tv) and `ResponsiveBreakpoints` class
 - **Max content width**: Reading view capped at 780px (desktop), 680px (tablet), centered with side margins; settings at 640px; books at 800px; search at 680px

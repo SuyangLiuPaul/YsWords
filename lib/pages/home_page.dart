@@ -18,6 +18,7 @@ import 'package:yswords/providers/main_provider.dart';
 import 'package:yswords/services/fetch_books.dart';
 import 'package:yswords/services/fetch_verses.dart';
 import 'package:yswords/utils/clipboard_helper.dart';
+import 'package:yswords/widgets/sidebar_panel.dart';
 import 'package:yswords/utils/responsive.dart';
 import 'package:yswords/utils/version_mapper.dart'
     show translateBookName, toEnglish;
@@ -34,6 +35,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   MainProvider? _positionsProvider;
   int _visibleItemIndex = 0;
+  bool _sidebarOpen = false;
 
   @override
   void initState() {
@@ -260,16 +262,15 @@ class _HomePageState extends State<HomePage> {
                         : Brightness.dark,
               ),
               child: Scaffold(
-                body: Center(
-                  child: ConstrainedBox(
-                    constraints: BoxConstraints(
-                      maxWidth: ResponsiveBreakpoints.maxContentWidth(
-                        ResponsiveBreakpoints.classOf(
-                            MediaQuery.of(context).size.width),
-                      ),
-                    ),
-                    child: Stack(
-                  children: [
+                body: LayoutBuilder(builder: (context, constraints) {
+                  final screenWidth = constraints.maxWidth;
+                  final isWideScreen = ResponsiveBreakpoints.isTabletOrWider(screenWidth);
+                  final dc = ResponsiveBreakpoints.classOf(screenWidth);
+                  final maxW = ResponsiveBreakpoints.maxContentWidth(dc);
+                  final sidebarW = _sidebarOpen ? ResponsiveBreakpoints.sidebarWidth : 0.0;
+
+                  Widget readingStack = Stack(
+                    children: [
                     Padding(
                       padding: EdgeInsets.only(
                         right: ResponsiveBreakpoints.readingPadding(
@@ -337,18 +338,28 @@ class _HomePageState extends State<HomePage> {
                       book: currentVerse?.book ?? '',
                       chapter: currentVerse?.chapter ?? 0,
                       version: mainProvider.currentVersion,
-                      onBookTap: () {
-                        mainProvider.clearSelectedVerses();
-                        Get.to(
-                          () => BooksPage(
-                            chapterIdx: mainProvider.currentVerse?.chapter ?? 1,
-                            bookIdx: mainProvider.currentVerse?.book ?? '',
-                          ),
-                          transition: Transition.leftToRight,
-                          duration: const Duration(milliseconds: 300),
-                          curve: Curves.easeInOut,
-                        );
-                      },
+                      showSidebarToggle: isWideScreen,
+                      sidebarOpen: _sidebarOpen,
+                      onToggleSidebar: _toggleSidebar,
+                      onBookTap: isWideScreen
+                          ? () {
+                              mainProvider.clearSelectedVerses();
+                              _toggleSidebar();
+                            }
+                          : () {
+                              mainProvider.clearSelectedVerses();
+                              Get.to(
+                                () => BooksPage(
+                                  chapterIdx:
+                                      mainProvider.currentVerse?.chapter ?? 1,
+                                  bookIdx:
+                                      mainProvider.currentVerse?.book ?? '',
+                                ),
+                                transition: Transition.leftToRight,
+                                duration: const Duration(milliseconds: 300),
+                                curve: Curves.easeInOut,
+                              );
+                            },
                       onVersionSelected: (version) async {
                         final p = context.read<MainProvider>();
                         final messenger = ScaffoldMessenger.of(context);
@@ -442,9 +453,45 @@ class _HomePageState extends State<HomePage> {
                             ),
                     ),
                   ],
-                    ),
-                  ),
-                ),
+                  );
+
+                  if (!isWideScreen) {
+                    return Center(
+                      child: ConstrainedBox(
+                        constraints: BoxConstraints(maxWidth: maxW),
+                        child: readingStack,
+                      ),
+                    );
+                  }
+
+                  return Row(
+                    children: [
+                      AnimatedContainer(
+                        duration: const Duration(milliseconds: 250),
+                        curve: Curves.easeInOutCubic,
+                        width: sidebarW,
+                        child: ClipRect(
+                          child: _sidebarOpen
+                              ? SidebarPanel(
+                                  currentBook: mainProvider.currentBook ?? '',
+                                  currentChapter: mainProvider.currentChapter ?? 1,
+                                  onChapterSelected: _onSidebarChapterSelected,
+                                  onClose: _toggleSidebar,
+                                )
+                              : const SizedBox.shrink(),
+                        ),
+                      ),
+                      Expanded(
+                        child: Center(
+                          child: ConstrainedBox(
+                            constraints: BoxConstraints(maxWidth: maxW),
+                            child: readingStack,
+                          ),
+                        ),
+                      ),
+                    ],
+                  );
+                }),
               ),
             ),
           ),
@@ -522,6 +569,25 @@ class _HomePageState extends State<HomePage> {
     if (mounted) {
       setState(() => _visibleItemIndex = 0);
     }
+  }
+
+  void _toggleSidebar() {
+    setState(() => _sidebarOpen = !_sidebarOpen);
+  }
+
+  void _onSidebarChapterSelected(String book, int chapter) {
+    final provider = Provider.of<MainProvider>(context, listen: false);
+    final matched = provider.verses
+        .where((v) => v.book == book && v.chapter == chapter)
+        .toList();
+    if (matched.isEmpty) return;
+    provider.setCurrentChapter(book: book, chapter: chapter);
+    provider.updateCurrentVerse(verse: matched.first);
+    provider.jumpToTop();
+    setState(() {
+      _sidebarOpen = false;
+      _visibleItemIndex = 0;
+    });
   }
 
   bool _hasNextChapter(MainProvider provider) {
@@ -877,6 +943,9 @@ class _FloatingHeader extends StatelessWidget {
   final ValueChanged<String> onVersionSelected;
   final VoidCallback onSearch;
   final VoidCallback onSettings;
+  final bool showSidebarToggle;
+  final bool sidebarOpen;
+  final VoidCallback? onToggleSidebar;
 
   const _FloatingHeader({
     required this.showBookInfo,
@@ -887,6 +956,9 @@ class _FloatingHeader extends StatelessWidget {
     required this.onVersionSelected,
     required this.onSearch,
     required this.onSettings,
+    this.showSidebarToggle = false,
+    this.sidebarOpen = false,
+    this.onToggleSidebar,
   });
 
   @override
@@ -915,6 +987,22 @@ class _FloatingHeader extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
             child: Row(
               children: [
+                if (showSidebarToggle)
+                  IconButton(
+                    onPressed: onToggleSidebar,
+                    icon: Icon(
+                      sidebarOpen
+                          ? Icons.chevron_left_rounded
+                          : Icons.menu_book_rounded,
+                      size: iconSize,
+                    ),
+                    padding: EdgeInsets.all(iconPad),
+                    constraints: const BoxConstraints(),
+                    tooltip: sidebarOpen
+                        ? (uiStrings['close']?[settings.locale] ?? 'Close')
+                        : (uiStrings['bibleBooks']?[settings.locale] ??
+                            'Bible Books'),
+                  ),
                 if (showBookInfo) ...[
                   InkWell(
                     borderRadius: BorderRadius.circular(8),

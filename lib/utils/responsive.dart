@@ -76,4 +76,6 @@ class ResponsiveBreakpoints {
         DeviceClass.desktop => 24,
         DeviceClass.tv => 32,
       };
+
+  static double get sidebarWidth => 280.0;
 }
