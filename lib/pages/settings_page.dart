@@ -524,33 +524,37 @@ class SettingsPage extends StatelessWidget {
                         ),
                       ),
                       SizedBox(height: 12 * s),
-                      ToggleButtons(
-                        isSelected: [!settings.paragraphMode, settings.paragraphMode],
-                        onPressed: (index) =>
-                            settings.setParagraphMode(index == 1),
-                        borderRadius: BorderRadius.circular(8),
-                        constraints: BoxConstraints(
-                          minHeight: 36,
-                          minWidth: (MediaQuery.of(context).size.width - 80) / 2,
-                        ),
-                        children: [
-                          Text(
-                            uiStrings['verseByVerse']?[settings.locale] ??
-                                'Verse by Verse',
-                            style: TextStyle(
-                              fontSize: settings.fontSize * 0.9,
-                              fontFamily: settings.fontFamily,
+                      LayoutBuilder(
+                        builder: (context, toggleConstraints) {
+                          return ToggleButtons(
+                            isSelected: [!settings.paragraphMode, settings.paragraphMode],
+                            onPressed: (index) =>
+                                settings.setParagraphMode(index == 1),
+                            borderRadius: BorderRadius.circular(8),
+                            constraints: BoxConstraints(
+                              minHeight: 36,
+                              minWidth: (toggleConstraints.maxWidth - 8) / 2,
                             ),
-                          ),
-                          Text(
-                            uiStrings['paragraphFlow']?[settings.locale] ??
-                                'Paragraph Flow',
-                            style: TextStyle(
-                              fontSize: settings.fontSize * 0.9,
-                              fontFamily: settings.fontFamily,
-                            ),
-                          ),
-                        ],
+                            children: [
+                              Text(
+                                uiStrings['verseByVerse']?[settings.locale] ??
+                                    'Verse by Verse',
+                                style: TextStyle(
+                                  fontSize: settings.fontSize * 0.9,
+                                  fontFamily: settings.fontFamily,
+                                ),
+                              ),
+                              Text(
+                                uiStrings['paragraphFlow']?[settings.locale] ??
+                                    'Paragraph Flow',
+                                style: TextStyle(
+                                  fontSize: settings.fontSize * 0.9,
+                                  fontFamily: settings.fontFamily,
+                                ),
+                              ),
+                            ],
+                          );
+                        },
                       ),
                     ],
                   ),

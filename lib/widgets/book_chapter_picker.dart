@@ -124,77 +124,134 @@ class _BookChapterPickerState extends State<BookChapterPicker> {
                 child: Padding(
                   padding:
                       const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-                  child: Row(
-                    children: [
-                      if (hasOldTestament && hasNewTestament)
-                        Expanded(
-                          child: SingleChildScrollView(
-                            scrollDirection: Axis.horizontal,
-                            child: Row(
-                              children: [
-                                if (hasOldTestament)
-                                  _testamentButton(
-                                    context: context,
-                                    settings: settings,
-                                    selected: showOldTestament,
-                                    label: uiStrings['oldTestament']
-                                            ?[settings.locale] ??
-                                        'Old Testament',
-                                    onPressed: () =>
-                                        _setTestament(settings, true),
-                                  ),
-                                if (hasNewTestament)
-                                  _testamentButton(
-                                    context: context,
-                                    settings: settings,
-                                    selected: !showOldTestament,
-                                    label: uiStrings['newTestament']
-                                            ?[settings.locale] ??
-                                        'New Testament',
-                                    onPressed: () =>
-                                        _setTestament(settings, false),
-                                  ),
-                              ],
-                            ),
+                  child: LayoutBuilder(
+                    builder: (context, barConstraints) {
+                      final isNarrow = barConstraints.maxWidth < 300;
+
+                      final viewToggle = ToggleButtons(
+                        isSelected: [
+                          settings.booksViewMode != 'grid',
+                          settings.booksViewMode == 'grid',
+                        ],
+                        onPressed: (index) {
+                          final target = index == 1 ? 'grid' : 'list';
+                          settings.setBooksViewMode(target);
+                          setState(() {
+                            _gridSelectedBook = null;
+                            expandStatus.updateAll((key, _) => false);
+                          });
+                        },
+                        borderRadius: BorderRadius.circular(14),
+                        constraints: const BoxConstraints(
+                            minWidth: 42, minHeight: 36),
+                        children: [
+                          Tooltip(
+                            message: uiStrings['listView']
+                                    ?[settings.locale] ??
+                                'List',
+                            child: Icon(Icons.list_rounded,
+                                size: settings.fontSize * 1.05),
                           ),
-                        )
-                      else
-                        const Spacer(),
-                      const SizedBox(width: 8),
-                      Builder(builder: (context) {
-                        final isGrid = settings.booksViewMode == 'grid';
-                        return ToggleButtons(
-                          isSelected: [!isGrid, isGrid],
-                          onPressed: (index) {
-                            final target = index == 1 ? 'grid' : 'list';
-                            settings.setBooksViewMode(target);
-                            setState(() {
-                              _gridSelectedBook = null;
-                              expandStatus.updateAll((key, _) => false);
-                            });
-                          },
-                          borderRadius: BorderRadius.circular(14),
-                          constraints: const BoxConstraints(
-                              minWidth: 42, minHeight: 36),
+                          Tooltip(
+                            message: uiStrings['gridView']
+                                    ?[settings.locale] ??
+                                'Grid',
+                            child: Icon(Icons.grid_view_rounded,
+                                size: settings.fontSize * 1.05),
+                          ),
+                        ],
+                      );
+
+                      if (isNarrow) {
+                        return Column(
+                          mainAxisSize: MainAxisSize.min,
                           children: [
-                            Tooltip(
-                              message: uiStrings['listView']
-                                      ?[settings.locale] ??
-                                  'List',
-                              child: Icon(Icons.list_rounded,
-                                  size: settings.fontSize * 1.05),
-                            ),
-                            Tooltip(
-                              message: uiStrings['gridView']
-                                      ?[settings.locale] ??
-                                  'Grid',
-                              child: Icon(Icons.grid_view_rounded,
-                                  size: settings.fontSize * 1.05),
+                            if (hasOldTestament && hasNewTestament)
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: Padding(
+                                      padding: const EdgeInsets.only(right: 3),
+                                      child: _testamentButton(
+                                        context: context,
+                                        settings: settings,
+                                        selected: showOldTestament,
+                                        label: uiStrings['oldTestament']
+                                                ?[settings.locale] ??
+                                            'Old Testament',
+                                        onPressed: () =>
+                                            _setTestament(settings, true),
+                                      ),
+                                    ),
+                                  ),
+                                  Expanded(
+                                    child: Padding(
+                                      padding: const EdgeInsets.only(left: 3),
+                                      child: _testamentButton(
+                                        context: context,
+                                        settings: settings,
+                                        selected: !showOldTestament,
+                                        label: uiStrings['newTestament']
+                                                ?[settings.locale] ??
+                                            'New Testament',
+                                        onPressed: () =>
+                                            _setTestament(settings, false),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            if (hasOldTestament && hasNewTestament)
+                              const SizedBox(height: 6),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: [viewToggle],
                             ),
                           ],
                         );
-                      }),
-                    ],
+                      }
+
+                      return Row(
+                        children: [
+                          if (hasOldTestament && hasNewTestament)
+                            Expanded(
+                              child: SingleChildScrollView(
+                                scrollDirection: Axis.horizontal,
+                                child: Row(
+                                  children: [
+                                    if (hasOldTestament)
+                                      _testamentButton(
+                                        context: context,
+                                        settings: settings,
+                                        selected: showOldTestament,
+                                        label: uiStrings['oldTestament']
+                                                ?[settings.locale] ??
+                                            'Old Testament',
+                                        onPressed: () =>
+                                            _setTestament(settings, true),
+                                      ),
+                                    if (hasNewTestament)
+                                      _testamentButton(
+                                        context: context,
+                                        settings: settings,
+                                        selected: !showOldTestament,
+                                        label: uiStrings['newTestament']
+                                                ?[settings.locale] ??
+                                            'New Testament',
+                                        onPressed: () =>
+                                            _setTestament(settings, false),
+                                      ),
+                                  ],
+                                ),
+                              ),
+                            )
+                          else
+                            const Spacer(),
+                          const SizedBox(width: 8),
+                          viewToggle,
+                        ],
+                      );
+                    },
                   ),
                 ),
               ),
@@ -224,34 +281,32 @@ class _BookChapterPickerState extends State<BookChapterPicker> {
     required VoidCallback onPressed,
   }) {
     final scheme = Theme.of(context).colorScheme;
-    return Padding(
-      padding: const EdgeInsets.only(right: 6),
-      child: TextButton(
-        onPressed: onPressed,
-        style: TextButton.styleFrom(
-          backgroundColor: selected
-              ? scheme.primary.withValues(alpha: 0.92)
-              : scheme.surfaceContainerHighest.withValues(alpha: 0.52),
-          foregroundColor: selected ? scheme.onPrimary : scheme.onSurface,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
-            side: BorderSide(
-              color: selected
-                  ? scheme.primary
-                  : scheme.outlineVariant.withValues(alpha: 0.45),
-            ),
+    return TextButton(
+      onPressed: onPressed,
+      style: TextButton.styleFrom(
+        backgroundColor: selected
+            ? scheme.primary.withValues(alpha: 0.92)
+            : scheme.surfaceContainerHighest.withValues(alpha: 0.52),
+        foregroundColor: selected ? scheme.onPrimary : scheme.onSurface,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(14),
+          side: BorderSide(
+            color: selected
+                ? scheme.primary
+                : scheme.outlineVariant.withValues(alpha: 0.45),
           ),
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
         ),
-        child: Text(
-          label,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: TextStyle(
-            fontSize: settings.fontSize.clamp(13.0, 17.0).toDouble(),
-            fontFamily: settings.fontFamily,
-            fontWeight: FontWeight.w700,
-          ),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+      ),
+      child: Text(
+        label,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        textAlign: TextAlign.center,
+        style: TextStyle(
+          fontSize: settings.fontSize.clamp(13.0, 17.0).toDouble(),
+          fontFamily: settings.fontFamily,
+          fontWeight: FontWeight.w700,
         ),
       ),
     );
@@ -274,6 +329,7 @@ class _BookChapterPickerState extends State<BookChapterPicker> {
 
   Widget _buildListView(BuildContext context, MainProvider mainProvider,
       AppSettings settings, List<Book> filteredBooks) {
+    final scheme = Theme.of(context).colorScheme;
     return ListView.builder(
       itemCount: filteredBooks.length,
       physics: const BouncingScrollPhysics(),
@@ -300,11 +356,16 @@ class _BookChapterPickerState extends State<BookChapterPicker> {
                 expansionTileTheme: const ExpansionTileThemeData(),
               ),
               child: ExpansionTile(
+                textColor: scheme.primary,
+                iconColor: scheme.primary,
                 title: Text(
                   book.title,
                   style: TextStyle(
                       fontSize: settings.fontSize,
-                      fontFamily: settings.fontFamily),
+                      fontFamily: settings.fontFamily,
+                      color: expandStatus[book.title] == true
+                          ? scheme.primary
+                          : scheme.onSurface),
                 ),
                 initiallyExpanded: expandStatus[book.title] ?? false,
                 maintainState: true,

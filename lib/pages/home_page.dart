@@ -341,6 +341,9 @@ class _HomePageState extends State<HomePage> {
                       showSidebarToggle: isWideScreen,
                       sidebarOpen: _sidebarOpen,
                       onToggleSidebar: _toggleSidebar,
+                      paragraphMode: settings.paragraphMode,
+                      onToggleParagraphMode: () =>
+                          settings.setParagraphMode(!settings.paragraphMode),
                       onBookTap: isWideScreen
                           ? () {
                               mainProvider.clearSelectedVerses();
@@ -450,6 +453,8 @@ class _HomePageState extends State<HomePage> {
                               canGoNext: _hasNextChapter(mainProvider),
                               onPrevious: _goToPreviousChapter,
                               onNext: _goToNextChapter,
+                              onToggleParagraphMode: () =>
+                                  settings.setParagraphMode(!settings.paragraphMode),
                             ),
                     ),
                   ],
@@ -645,6 +650,7 @@ class _ReaderStatusBar extends StatelessWidget {
   final bool canGoNext;
   final VoidCallback onPrevious;
   final VoidCallback onNext;
+  final VoidCallback? onToggleParagraphMode;
 
   const _ReaderStatusBar({
     required this.verse,
@@ -657,6 +663,7 @@ class _ReaderStatusBar extends StatelessWidget {
     required this.canGoNext,
     required this.onPrevious,
     required this.onNext,
+    this.onToggleParagraphMode,
   });
 
   @override
@@ -672,7 +679,6 @@ class _ReaderStatusBar extends StatelessWidget {
             'Verse {current} of {total}')
         .replaceAll('{current}', verseCount == 0 ? '0' : '${verseIndex + 1}')
         .replaceAll('{total}', '$verseCount');
-    final detail = '$versionLabel | $modeLabel | $versePosition';
     final dc = ResponsiveBreakpoints.classOf(
         MediaQuery.of(context).size.width);
     final inset = ResponsiveBreakpoints.headerInset(dc);
@@ -708,17 +714,32 @@ class _ReaderStatusBar extends StatelessWidget {
                       icon: const Icon(Icons.chevron_left_rounded),
                     ),
                     Expanded(
-                      child: Text(
-                        detail,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontFamily: settings.fontFamily,
-                          fontSize: detailFontSize,
-                          fontWeight: FontWeight.w600,
-                          color: scheme.onSurfaceVariant,
-                          height: 1.15,
+                      child: GestureDetector(
+                        onTap: onToggleParagraphMode,
+                        child: Text.rich(
+                          TextSpan(
+                            children: [
+                              TextSpan(text: '$versionLabel • '),
+                              TextSpan(
+                                text: modeLabel,
+                                style: TextStyle(
+                                  color: scheme.primary,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                              TextSpan(text: ' • $versePosition'),
+                            ],
+                            style: TextStyle(
+                              fontFamily: settings.fontFamily,
+                              fontSize: detailFontSize,
+                              fontWeight: FontWeight.w600,
+                              color: scheme.onSurfaceVariant,
+                              height: 1.15,
+                            ),
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          textAlign: TextAlign.center,
                         ),
                       ),
                     ),
@@ -946,6 +967,8 @@ class _FloatingHeader extends StatelessWidget {
   final bool showSidebarToggle;
   final bool sidebarOpen;
   final VoidCallback? onToggleSidebar;
+  final bool paragraphMode;
+  final VoidCallback? onToggleParagraphMode;
 
   const _FloatingHeader({
     required this.showBookInfo,
@@ -959,6 +982,8 @@ class _FloatingHeader extends StatelessWidget {
     this.showSidebarToggle = false,
     this.sidebarOpen = false,
     this.onToggleSidebar,
+    this.paragraphMode = false,
+    this.onToggleParagraphMode,
   });
 
   @override
@@ -1048,6 +1073,23 @@ class _FloatingHeader extends StatelessWidget {
                   ),
                 ],
                 const Spacer(),
+                if (showSidebarToggle && onToggleParagraphMode != null)
+                  IconButton(
+                    onPressed: onToggleParagraphMode,
+                    icon: Icon(
+                      paragraphMode
+                          ? Icons.format_align_left
+                          : Icons.format_list_numbered_rounded,
+                      size: iconSize,
+                    ),
+                    padding: EdgeInsets.all(iconPad),
+                    constraints: const BoxConstraints(),
+                    tooltip: paragraphMode
+                        ? (uiStrings['paragraphFlow']?[settings.locale] ??
+                            'Paragraph Flow')
+                        : (uiStrings['verseByVerse']?[settings.locale] ??
+                            'Verse by Verse'),
+                  ),
                 IconButton(
                   onPressed: onSearch,
                   icon: Icon(Icons.search_rounded, size: iconSize),
