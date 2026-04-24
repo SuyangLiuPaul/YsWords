@@ -56,10 +56,8 @@ class ParagraphGroupWidget extends StatelessWidget {
           if (isSelected) {
             bgColor = Theme.of(context).colorScheme.primaryContainer;
           } else if (isHighlighted) {
-            bgColor = Theme.of(context)
-                .colorScheme
-                .secondary
-                .withValues(alpha: 0.3);
+            bgColor =
+                Theme.of(context).colorScheme.secondary.withValues(alpha: 0.3);
           } else if (highlightColor != null) {
             bgColor = highlightColor.withValues(alpha: 0.35);
           }
@@ -90,37 +88,43 @@ class ParagraphGroupWidget extends StatelessWidget {
             : const EdgeInsets.fromLTRB(20, 2, 16, 2);
 
         // Inter-paragraph gap — small and only between paragraphs (not at top)
-        final double topGap =
-            (!isFirst && (isParagraphStart || isReference))
-                ? settings.fontSize * 0.35
-                : 0;
+        final double topGap = (!isFirst && (isParagraphStart || isReference))
+            ? settings.fontSize * 0.35
+            : 0;
 
         return Material(
           color: Colors.transparent,
           clipBehavior: Clip.hardEdge,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              if (topGap > 0) SizedBox(height: topGap),
-              Container(
-                width: double.infinity,
-                padding: blockPadding,
-                child: RichText(
-                  textAlign: TextAlign.start,
-                  text: TextSpan(
-                    style: TextStyle(
-                      fontSize: settings.fontSize,
-                      fontFamily: settings.fontFamily,
-                      height: settings.lineSpacing,
-                      color: Theme.of(context).textTheme.bodyLarge?.color,
-                      fontStyle:
-                          isReference ? FontStyle.italic : FontStyle.normal,
+          child: InkWell(
+            highlightColor: Colors.transparent,
+            splashColor: Colors.transparent,
+            onTap: group.length == 1
+                ? () => mainProvider.toggleVerse(verse: group.first)
+                : null,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (topGap > 0) SizedBox(height: topGap),
+                Container(
+                  width: double.infinity,
+                  padding: blockPadding,
+                  child: RichText(
+                    textAlign: TextAlign.start,
+                    text: TextSpan(
+                      style: TextStyle(
+                        fontSize: settings.fontSize,
+                        fontFamily: settings.fontFamily,
+                        height: settings.lineSpacing,
+                        color: Theme.of(context).textTheme.bodyLarge?.color,
+                        fontStyle:
+                            isReference ? FontStyle.italic : FontStyle.normal,
+                      ),
+                      children: allSpans,
                     ),
-                    children: allSpans,
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         );
       },

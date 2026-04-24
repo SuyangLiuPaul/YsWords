@@ -51,13 +51,18 @@ List<InlineSpan> buildVerseContentSpans({
   );
 
   spans.add(WidgetSpan(
-    alignment:
-        superscriptVerseNum ? PlaceholderAlignment.top : PlaceholderAlignment.baseline,
+    alignment: superscriptVerseNum
+        ? PlaceholderAlignment.top
+        : PlaceholderAlignment.baseline,
     baseline: TextBaseline.alphabetic,
     child: GestureDetector(
+      behavior: HitTestBehavior.opaque,
       onTap: () async {
-        final toCopy =
-            '${verse.verseLabel} ${sanitizeVerseText(verse.text)}';
+        if (onTextTap != null) {
+          onTextTap();
+          return;
+        }
+        final toCopy = '${verse.verseLabel} ${sanitizeVerseText(verse.text)}';
         await ClipboardHelper.copyText(toCopy);
         if (!context.mounted) return;
         final msg =
@@ -182,12 +187,10 @@ List<InlineSpan> buildVerseContentSpans({
                         height: settings.lineSpacing,
                         decoration: TextDecoration.underline,
                         decorationStyle: TextDecorationStyle.dotted,
-                        decorationColor:
-                            Theme.of(context).colorScheme.primary,
+                        decorationColor: Theme.of(context).colorScheme.primary,
                         decorationThickness: 2.0,
-                        color: Theme.of(context)
-                            .colorScheme
-                            .onSecondaryContainer,
+                        color:
+                            Theme.of(context).colorScheme.onSecondaryContainer,
                       ),
                     ));
                     lastEnd = match.end;
@@ -199,9 +202,8 @@ List<InlineSpan> buildVerseContentSpans({
                         fontSize: settings.fontSize * 0.85,
                         fontFamily: settings.fontFamily,
                         height: settings.lineSpacing,
-                        color: Theme.of(context)
-                            .colorScheme
-                            .onSecondaryContainer,
+                        color:
+                            Theme.of(context).colorScheme.onSecondaryContainer,
                       ),
                     ));
                   }
@@ -214,9 +216,7 @@ List<InlineSpan> buildVerseContentSpans({
                       fontSize: settings.fontSize * 0.85,
                       fontFamily: settings.fontFamily,
                       height: settings.lineSpacing,
-                      color: Theme.of(context)
-                          .colorScheme
-                          .onSecondaryContainer,
+                      color: Theme.of(context).colorScheme.onSecondaryContainer,
                     ),
                   );
                 }
@@ -290,8 +290,7 @@ List<InlineSpan> buildVerseContentSpans({
             );
           },
           child: Padding(
-            padding:
-                const EdgeInsets.only(right: 4.0, left: 2.0, bottom: 5.0),
+            padding: const EdgeInsets.only(right: 4.0, left: 2.0, bottom: 5.0),
             child: Icon(
               Icons.menu_book,
               size: settings.fontSize * 1.2,
@@ -318,8 +317,7 @@ List<InlineSpan> buildVerseContentSpans({
                   ? Theme.of(context).colorScheme.onPrimaryContainer
                   : Theme.of(context).textTheme.bodyLarge?.color,
               fontFamily: settings.fontFamily,
-              fontStyle:
-                  isReferenceLine ? FontStyle.italic : FontStyle.normal,
+              fontStyle: isReferenceLine ? FontStyle.italic : FontStyle.normal,
               backgroundColor: spanBgColor,
             ),
       ));

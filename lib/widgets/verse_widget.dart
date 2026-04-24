@@ -55,6 +55,7 @@ class VerseWidget extends StatelessWidget {
           locale: locale,
           isSelected: isSelected,
           superscriptVerseNum: inParagraphMode,
+          onTextTap: () => mainProvider.toggleVerse(verse: verse),
         ));
 
         // Layout: indent + top gap depend on mode and paragraph context
@@ -69,8 +70,7 @@ class VerseWidget extends StatelessWidget {
             leftIndent = 20;
           }
           // Suppress gap on the first item; tiny gap between paragraphs
-          topGap = (!isFirst &&
-                  (isReferenceLine || verse.isParagraphStart))
+          topGap = (!isFirst && (isReferenceLine || verse.isParagraphStart))
               ? settings.fontSize * 0.35
               : 0;
           vertPadding = 2;
