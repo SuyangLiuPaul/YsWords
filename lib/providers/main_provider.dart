@@ -106,6 +106,7 @@ class MainProvider extends ChangeNotifier {
 
   void setVerseToItemMap(Map<int, int> map) {
     _verseToItemMap = map;
+    // Intentionally no notifyListeners() — called during build
   }
 
   // Method to scroll to a specific index in the list and notify listeners
