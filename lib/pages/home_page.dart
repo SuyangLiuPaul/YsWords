@@ -267,10 +267,7 @@ class _HomePageState extends State<HomePage> {
                         itemCount: paragraphGroups.length + 2,
                         itemBuilder: (context, index) {
                           if (index == 0) {
-                            return _ChapterHeader(
-                              book: mainProvider.currentBook,
-                              chapter: mainProvider.currentChapter,
-                            );
+                            return SizedBox(height: settings.fontSize * 0.5);
                           }
                           final groupIdx = index - 1;
                           if (groupIdx < paragraphGroups.length) {
@@ -815,61 +812,6 @@ class _SelectionActionBar extends StatelessWidget {
           ),
         ),
       ),
-    );
-  }
-}
-
-/// Large chapter heading rendered at the top of the reading view.
-/// Shows the localized book name and the chapter number, separated by a
-/// hairline rule. Mirrors the style used in printed Bibles and the
-/// 微读圣经 (WeDevote) mobile app.
-class _ChapterHeader extends StatelessWidget {
-  final String? book;
-  final int? chapter;
-
-  const _ChapterHeader({required this.book, required this.chapter});
-
-  @override
-  Widget build(BuildContext context) {
-    if (book == null || chapter == null) return const SizedBox.shrink();
-    return Consumer<AppSettings>(
-      builder: (context, settings, _) {
-        final scheme = Theme.of(context).colorScheme;
-        return Padding(
-          padding: const EdgeInsets.fromLTRB(16, 24, 16, 12),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                book!,
-                style: TextStyle(
-                  fontFamily: settings.fontFamily,
-                  fontSize: settings.fontSize * 1.4,
-                  fontWeight: FontWeight.w700,
-                  color: scheme.primary,
-                  height: 1.2,
-                ),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                (uiStrings['chapter']?[settings.locale] ?? 'Chapter {n}')
-                    .replaceAll('{n}', '$chapter'),
-                style: TextStyle(
-                  fontFamily: settings.fontFamily,
-                  fontSize: settings.fontSize * 0.95,
-                  fontWeight: FontWeight.w500,
-                  color: scheme.onSurfaceVariant,
-                ),
-              ),
-              const SizedBox(height: 12),
-              Container(
-                height: 1,
-                color: scheme.outlineVariant.withValues(alpha: 0.5),
-              ),
-            ],
-          ),
-        );
-      },
     );
   }
 }
