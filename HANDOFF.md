@@ -220,6 +220,16 @@ The app adapts its layout to all device sizes using `lib/utils/responsive.dart`:
 
 ## What Has Been Fixed (2026-04-25)
 
+### Stage-Manager-style stacked card navigation (this session, round 6)
+- **New widget** `lib/widgets/stacked_card_nav.dart` — `StackedCardScaffold` wraps the app root and exposes a `push(WidgetBuilder)` / `pop()` / `promote(int)` / `popAll()` API. Pushed pages slide in from the right as cascading layers; each layer leaves a slim left-edge strip of the page beneath it visible (18 dp on phone, 26 dp small tablet, 34 dp larger). Tapping a strip promotes that layer back to the front; tapping the base strip pops everything; system back / Android gesture pops the top layer (via `PopScope`).
+- **Responsive layer cap**: phone (<600 dp) 3 total cards, small tablet (<900) 4, large tablet (<1300) 5, desktop ≥1300 6. Pushing past the cap evicts the oldest overlay automatically.
+- **Where wired**: `Search`, `Settings`, and the `BooksPage` book/chapter picker pushed from the home reader floating header. Each call site keeps its `Get.to(...)` as a fallback for when no `StackedCardScaffold` ancestor is present, so behavior degrades gracefully if the scaffold is ever bypassed.
+- **MediaQuery scoping**: Each layer wraps its child in a `MediaQuery` whose `size.width` and `padding.left` are adjusted to the layer's actual visible bounds, so Scaffolds inside (with their own AppBars / safe-area handling) render correctly within the offset card.
+- **Persistent across loading→home transition**: `_RootRouter` (in `main.dart`) is the base widget inside the scaffold. It shows `LoadingPage` first and swaps to `HomePage` in place when verses are ready, so the StackedCardScaffold itself never gets torn down. `LoadingPage` accepts an optional `onAdvance` callback for this purpose; absent the callback it falls back to the legacy `Navigator.pushReplacement`.
+- **LocalizedBackButton** now prefers `StackedCardScaffold.maybeOf(context)?.pop()` over `Get.back()` whenever an overlay is on screen, so AppBar back buttons close the layer without unmounting the host route.
+- **Existing UI preserved exactly** — only the transition feel changes for these three nav targets.
+- **Status**: built (`flutter build web --release`), committed, and pushed to GitHub `main` (`53f0694`). Netlify production deploy was not run from this session — the CLI was unauthenticated; the user should run `netlify login` (or set `NETLIFY_AUTH_TOKEN`) and re-run `netlify deploy --dir build/web --prod` to publish.
+
 ### iPad UI/UX Fixes (round 2)
 - **Full-width reading on all devices**: Removed `maxContentWidth` constraint from reading area. Verse text now fills screen width on iPad/tablet/desktop just like iPhone — no side gaps.
 - **Phone-level padding/indent**: `readingPadding`, `verseIndent`, and `headerInset` use phone values (8, 16, 10) for all device classes so the reading experience is identical everywhere.
