@@ -165,29 +165,6 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
     if (mounted) setState(() => _visibleItemIndex = 0);
   }
 
-  bool _hasNextChapter(MainProvider provider) {
-    final currentBook = provider.currentBook;
-    final currentChapter = provider.currentChapter;
-    if (currentBook == null || currentChapter == null) return false;
-    final bookIdx = provider.books.indexWhere((b) => b.title == currentBook);
-    if (bookIdx < 0) return false;
-    final chapters = provider.books[bookIdx].chapters;
-    final chapIdx = chapters.indexWhere((c) => c.title == currentChapter);
-    return chapIdx >= 0 &&
-        (chapIdx < chapters.length - 1 || bookIdx < provider.books.length - 1);
-  }
-
-  bool _hasPreviousChapter(MainProvider provider) {
-    final currentBook = provider.currentBook;
-    final currentChapter = provider.currentChapter;
-    if (currentBook == null || currentChapter == null) return false;
-    final bookIdx = provider.books.indexWhere((b) => b.title == currentBook);
-    if (bookIdx < 0) return false;
-    final chapters = provider.books[bookIdx].chapters;
-    final chapIdx = chapters.indexWhere((c) => c.title == currentChapter);
-    return chapIdx >= 0 && (chapIdx > 0 || bookIdx > 0);
-  }
-
   // ── Copy / format helpers ───────────────────────────────────────────
 
   String _formattedSelectedVerses({required List<Verse> verses}) {
@@ -586,16 +563,6 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                               verseIndex: visibleVerseIndex,
                               verseCount: verses.length,
                               progress: chapterProgress,
-                              versionLabel: shortBibleVersionLabel(
-                                  mainProvider.currentVersion),
-                              paragraphMode: settings.paragraphMode,
-                              canGoPrevious:
-                                  _hasPreviousChapter(mainProvider),
-                              canGoNext: _hasNextChapter(mainProvider),
-                              onPrevious: _goToPreviousChapter,
-                              onNext: _goToNextChapter,
-                              onToggleParagraphMode: () => settings
-                                  .setParagraphMode(!settings.paragraphMode),
                               deviceClass: dc,
                             ),
                     ),
@@ -619,13 +586,6 @@ class _ReaderStatusBar extends StatelessWidget {
   final int verseIndex;
   final int verseCount;
   final double progress;
-  final String versionLabel;
-  final bool paragraphMode;
-  final bool canGoPrevious;
-  final bool canGoNext;
-  final VoidCallback onPrevious;
-  final VoidCallback onNext;
-  final VoidCallback? onToggleParagraphMode;
   final DeviceClass deviceClass;
 
   const _ReaderStatusBar({
@@ -633,13 +593,6 @@ class _ReaderStatusBar extends StatelessWidget {
     required this.verseIndex,
     required this.verseCount,
     required this.progress,
-    required this.versionLabel,
-    required this.paragraphMode,
-    required this.canGoPrevious,
-    required this.canGoNext,
-    required this.onPrevious,
-    required this.onNext,
-    this.onToggleParagraphMode,
     required this.deviceClass,
   });
 
@@ -647,116 +600,46 @@ class _ReaderStatusBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final settings = context.watch<AppSettings>();
     final scheme = Theme.of(context).colorScheme;
-    final detailFontSize =
-        (settings.fontSize.clamp(10.0, 16.0) * settings.menuScale)
+    final fontSize =
+        (settings.fontSize.clamp(9.0, 13.0) * settings.menuScale)
             .toDouble();
-    final modeLabel = paragraphMode
-        ? (uiStrings['paragraphFlow']?[settings.locale] ??
-            'Paragraph Flow')
-        : (uiStrings['verseByVerse']?[settings.locale] ?? 'Verse by Verse');
     final versePosition =
         (uiStrings['versePosition']?[settings.locale] ?? 'Verse {current} of {total}')
             .replaceAll(
                 '{current}', verseCount == 0 ? '0' : '${verseIndex + 1}')
             .replaceAll('{total}', '$verseCount');
     final inset = ResponsiveBreakpoints.headerInset(deviceClass);
+    final bottomInset = MediaQuery.of(context).padding.bottom;
 
-    return SafeArea(
-      top: false,
-      child: Padding(
-        padding: EdgeInsets.fromLTRB(inset, 0, inset, 8),
-        child: _GlassSurface(
-          radius: 22,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ClipRRect(
-                borderRadius: const BorderRadius.vertical(
-                    top: Radius.circular(22)),
-                child: LinearProgressIndicator(
-                  value: progress,
-                  minHeight: (3 * settings.menuScale).clamp(2.5, 6.0),
-                  backgroundColor: scheme.surfaceContainerHighest
-                      .withValues(alpha: 0.5),
-                  color: scheme.primary,
-                ),
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // Floating verse position label
+        Padding(
+          padding: EdgeInsets.only(right: inset + 4, bottom: 6),
+          child: Align(
+            alignment: Alignment.centerRight,
+            child: Text(
+              versePosition,
+              style: TextStyle(
+                fontFamily: settings.fontFamily,
+                fontSize: fontSize,
+                fontWeight: FontWeight.w500,
+                color: scheme.onSurfaceVariant.withValues(alpha: 0.6),
               ),
-              Padding(
-                padding: EdgeInsets.fromLTRB(
-                    8 * settings.menuScale,
-                    6 * settings.menuScale,
-                    8 * settings.menuScale,
-                    8 * settings.menuScale),
-                child: Row(
-                  children: [
-                    IconButton(
-                      tooltip:
-                          uiStrings['previousChapter']?[settings.locale] ??
-                              'Previous Chapter',
-                      onPressed: canGoPrevious ? onPrevious : null,
-                      icon: const Icon(Icons.chevron_left_rounded),
-                    ),
-                    Expanded(
-                      child: GestureDetector(
-                        onTap: onToggleParagraphMode,
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text.rich(
-                              TextSpan(
-                                children: [
-                                  TextSpan(text: '$versionLabel • '),
-                                  TextSpan(
-                                    text: modeLabel,
-                                    style: TextStyle(
-                                      color: scheme.primary,
-                                      fontWeight: FontWeight.w700,
-                                    ),
-                                  ),
-                                ],
-                                style: TextStyle(
-                                  fontFamily: settings.fontFamily,
-                                  fontSize: detailFontSize,
-                                  fontWeight: FontWeight.w600,
-                                  color: scheme.onSurfaceVariant,
-                                  height: 1.3,
-                                ),
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              textAlign: TextAlign.center,
-                            ),
-                            Text(
-                              versePosition,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                fontFamily: settings.fontFamily,
-                                fontSize: detailFontSize * 0.88,
-                                fontWeight: FontWeight.w500,
-                                color: scheme.onSurfaceVariant,
-                                height: 1.3,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    IconButton(
-                      tooltip:
-                          uiStrings['nextChapter']?[settings.locale] ??
-                              'Next Chapter',
-                      onPressed: canGoNext ? onNext : null,
-                      icon: const Icon(Icons.chevron_right_rounded),
-                    ),
-                  ],
-                ),
-              ),
-            ],
+            ),
           ),
         ),
-      ),
+        // Thin progress bar at the very bottom
+        LinearProgressIndicator(
+          value: progress,
+          minHeight: (2.5 * settings.menuScale).clamp(2.0, 4.0),
+          backgroundColor:
+              scheme.surfaceContainerHighest.withValues(alpha: 0.3),
+          color: scheme.primary.withValues(alpha: 0.7),
+        ),
+        SizedBox(height: bottomInset),
+      ],
     );
   }
 }
