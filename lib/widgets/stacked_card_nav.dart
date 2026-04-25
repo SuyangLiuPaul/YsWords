@@ -2,6 +2,10 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
+
+import 'package:yswords/constants/ui_strings.dart';
+import 'package:yswords/models/app_settings.dart';
 
 /// A Stage-Manager-style stacked card navigation host.
 ///
@@ -24,6 +28,9 @@ class StackedCardScaffold extends StatefulWidget {
   /// Tooltip / aria-label for the floating "+" button.
   final String addLayerTooltip;
 
+  /// Label used for the root reader in the stack switcher.
+  final String baseLayerLabel;
+
   /// When non-null, the scaffold renders a small floating "+" button at
   /// the bottom-left corner. Tapping it invokes [onAddLayer]; the
   /// callback is responsible for showing whatever picker UI is needed
@@ -37,6 +44,7 @@ class StackedCardScaffold extends StatefulWidget {
     required this.child,
     this.onAddLayer,
     this.addLayerTooltip = 'Open another chapter',
+    this.baseLayerLabel = 'Reader',
   });
 
   static StackedCardScaffoldState? maybeOf(BuildContext context) =>
@@ -57,7 +65,16 @@ class _Layer<T> {
   final AnimationController controller;
   final Completer<T?> completer;
   final Object id;
-  _Layer(this.builder, this.controller, this.completer, this.id);
+  final String label;
+  final IconData icon;
+  _Layer(
+    this.builder,
+    this.controller,
+    this.completer,
+    this.id,
+    this.label,
+    this.icon,
+  );
 }
 
 class StackedCardScaffoldState extends State<StackedCardScaffold>
@@ -82,14 +99,25 @@ class StackedCardScaffoldState extends State<StackedCardScaffold>
   bool get hasOverlays => _layers.isNotEmpty;
   int get overlayCount => _layers.length;
 
-  Future<T?> push<T>(WidgetBuilder builder) {
+  Future<T?> push<T>(
+    WidgetBuilder builder, {
+    String? label,
+    IconData icon = Icons.layers_rounded,
+  }) {
     final controller = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 320),
       reverseDuration: const Duration(milliseconds: 260),
     );
     final completer = Completer<T?>();
-    final layer = _Layer<T>(builder, controller, completer, Object());
+    final layer = _Layer<T>(
+      builder,
+      controller,
+      completer,
+      Object(),
+      label ?? 'Page ${_layers.length + 1}',
+      icon,
+    );
 
     // Enforce max-layer cap by evicting oldest overlays.
     final maxTotal = _maxTotalCards(MediaQuery.of(context).size.width);
@@ -120,6 +148,24 @@ class StackedCardScaffoldState extends State<StackedCardScaffold>
     return true;
   }
 
+  /// Close any overlay by index. The top layer uses [pop] so it keeps
+  /// the normal reverse animation/result behavior.
+  bool closeAt(int index) {
+    if (index < 0 || index >= _layers.length) return false;
+    if (index == _layers.length - 1) return pop();
+
+    final layer = _layers[index];
+    layer.controller.reverse().whenComplete(() {
+      if (!mounted) return;
+      if (_layers.contains(layer)) {
+        setState(() => _layers.remove(layer));
+        layer.controller.dispose();
+        if (!layer.completer.isCompleted) layer.completer.complete(null);
+      }
+    });
+    return true;
+  }
+
   /// Bring the layer at [index] to the top of the stack.
   void promote(int index) {
     if (index < 0 || index >= _layers.length) return;
@@ -143,6 +189,97 @@ class StackedCardScaffoldState extends State<StackedCardScaffold>
         }
       });
     }
+  }
+
+  void _showLayerSwitcher(BuildContext context) {
+    final settings = context.read<AppSettings>();
+    final locale = settings.locale;
+    final scheme = Theme.of(context).colorScheme;
+    final title = uiStrings['openPages']?[locale] ?? 'Open pages';
+    final reader = uiStrings['reader']?[locale] ?? widget.baseLayerLabel;
+    final current = uiStrings['currentPage']?[locale] ?? 'Current';
+    final closeLabel = uiStrings['closePage']?[locale] ?? 'Close page';
+
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: scheme.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(22)),
+      ),
+      builder: (sheetCtx) {
+        return SafeArea(
+          top: false,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 42,
+                  height: 4,
+                  margin: const EdgeInsets.only(bottom: 10),
+                  decoration: BoxDecoration(
+                    color: scheme.outlineVariant,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        title,
+                        style: TextStyle(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w800,
+                          color: scheme.onSurface,
+                        ),
+                      ),
+                    ),
+                    IconButton(
+                      tooltip: uiStrings['close']?[locale] ?? 'Close',
+                      onPressed: () => Navigator.of(sheetCtx).pop(),
+                      icon: const Icon(Icons.close_rounded),
+                    ),
+                  ],
+                ),
+                ListTile(
+                  leading: Icon(Icons.menu_book_rounded, color: scheme.primary),
+                  title: Text(reader),
+                  subtitle: _layers.isEmpty ? Text(current) : null,
+                  onTap: () {
+                    Navigator.of(sheetCtx).pop();
+                    popAll();
+                  },
+                ),
+                for (var i = 0; i < _layers.length; i++)
+                  ListTile(
+                    leading: Icon(_layers[i].icon, color: scheme.primary),
+                    title: Text(
+                      _layers[i].label,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    subtitle:
+                        i == _layers.length - 1 ? Text(current) : null,
+                    trailing: IconButton(
+                      tooltip: closeLabel,
+                      icon: const Icon(Icons.close_rounded),
+                      onPressed: () {
+                        Navigator.of(sheetCtx).pop();
+                        closeAt(i);
+                      },
+                    ),
+                    onTap: () {
+                      Navigator.of(sheetCtx).pop();
+                      promote(i);
+                    },
+                  ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
 
   @override
@@ -208,7 +345,7 @@ class StackedCardScaffoldState extends State<StackedCardScaffold>
                 // Floating "+" launcher: shown only when the host wires
                 // up [onAddLayer] (typically once the splash screen has
                 // finished and the home reader is ready).
-                if (widget.onAddLayer != null)
+                if (widget.onAddLayer != null && _layers.isEmpty)
                   Positioned(
                     left: 0,
                     bottom: 0,
@@ -218,6 +355,29 @@ class StackedCardScaffoldState extends State<StackedCardScaffold>
                         child: _AddLayerFab(
                           tooltip: widget.addLayerTooltip,
                           onTap: widget.onAddLayer!,
+                        ),
+                      ),
+                    ),
+                  ),
+                if (widget.onAddLayer != null && _layers.isNotEmpty)
+                  Positioned(
+                    left: 0,
+                    bottom: 0,
+                    child: SafeArea(
+                      child: Padding(
+                        padding: const EdgeInsets.only(left: 12, bottom: 12),
+                        child: _StackControlPill(
+                          count: _layers.length + 1,
+                          addTooltip: widget.addLayerTooltip,
+                          switchTooltip: uiStrings['switchPage']?[
+                                  context.watch<AppSettings>().locale] ??
+                              'Switch page',
+                          closeTooltip: uiStrings['closePage']?[
+                                  context.watch<AppSettings>().locale] ??
+                              'Close page',
+                          onAdd: widget.onAddLayer!,
+                          onSwitch: () => _showLayerSwitcher(context),
+                          onClose: pop,
                         ),
                       ),
                     ),
@@ -384,11 +544,104 @@ class _LayerCard extends StatelessWidget {
                   onTap: onPromoteTap,
                   child: DecoratedBox(
                     decoration: BoxDecoration(
-                      color: Colors.black.withValues(alpha: 0.04),
+                      color: scheme.primary.withValues(alpha: 0.06),
+                    ),
+                    child: Center(
+                      child: Container(
+                        width: 4,
+                        height: 42,
+                        decoration: BoxDecoration(
+                          color: scheme.primary.withValues(alpha: 0.4),
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
                     ),
                   ),
                 ),
               ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _StackControlPill extends StatelessWidget {
+  final int count;
+  final String addTooltip;
+  final String switchTooltip;
+  final String closeTooltip;
+  final VoidCallback onAdd;
+  final VoidCallback onSwitch;
+  final VoidCallback onClose;
+
+  const _StackControlPill({
+    required this.count,
+    required this.addTooltip,
+    required this.switchTooltip,
+    required this.closeTooltip,
+    required this.onAdd,
+    required this.onSwitch,
+    required this.onClose,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Material(
+      color: scheme.surface.withValues(alpha: 0.96),
+      elevation: 8,
+      shadowColor: Colors.black.withValues(alpha: 0.35),
+      borderRadius: BorderRadius.circular(28),
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(28),
+          border: Border.all(
+            color: scheme.outlineVariant.withValues(alpha: 0.45),
+          ),
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Tooltip(
+              message: addTooltip,
+              child: IconButton(
+                visualDensity: VisualDensity.compact,
+                onPressed: onAdd,
+                icon: const Icon(Icons.add_rounded),
+              ),
+            ),
+            Tooltip(
+              message: switchTooltip,
+              child: InkWell(
+                borderRadius: BorderRadius.circular(22),
+                onTap: onSwitch,
+                child: Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.layers_rounded, size: 20),
+                      const SizedBox(width: 5),
+                      Text(
+                        '$count',
+                        style: const TextStyle(fontWeight: FontWeight.w800),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            Tooltip(
+              message: closeTooltip,
+              child: IconButton(
+                visualDensity: VisualDensity.compact,
+                onPressed: onClose,
+                icon: const Icon(Icons.close_rounded),
+              ),
+            ),
           ],
         ),
       ),

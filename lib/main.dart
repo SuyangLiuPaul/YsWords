@@ -335,6 +335,8 @@ class _RootRouterState extends State<_RootRouter> {
                           book: book,
                           chapter: chapter,
                         ),
+                        label: '$book $chapter',
+                        icon: Icons.menu_book_rounded,
                       );
                     },
                   ),

@@ -77,8 +77,8 @@ main.dart (entry point)
 | `lib/widgets/verse_widget.dart` | Renders single verse. Background priority: selection > search highlight > **user highlight color** (35% opacity) > transparent. In paragraph mode: superscript verse numbers, first-line indent, paragraph-start spacers, reference-block indent. Tap to select, tap number to copy |
 | `lib/widgets/paragraph_group_widget.dart` | Renders multiple verses as a single flowing RichText in paragraph mode. Per-verse selection via `TapGestureRecognizer`, per-verse background (selection/highlight). Same background priority as VerseWidget |
 | `lib/widgets/localized_back_button.dart` | Back button with localized tooltip |
-| `lib/widgets/stacked_card_nav.dart` | Stage-Manager-style stacked card host. Provides `push`, `pop`, `promote`, `popAll`, responsive layer caps, and the floating "+" launcher hook |
-| `lib/widgets/chapter_reader_card.dart` | Self-contained chapter reader for added stacked cards. It locks to the selected book/chapter, does not mutate the global current-chapter state, and shows its own copy/highlight/clear selection bar |
+| `lib/widgets/stacked_card_nav.dart` | Stage-Manager-style stacked card host. Provides `push(label, icon)`, `pop`, `closeAt`, `promote`, `popAll`, responsive layer caps, and mobile-visible stack controls (`+`, switcher, close current page) |
+| `lib/widgets/chapter_reader_card.dart` | Self-contained chapter reader for added stacked cards. It locks to the selected book/chapter, does not mutate the global current-chapter state, shows an explicit close button, and has its own copy/highlight/clear selection bar |
 
 ### Constants
 | File | Purpose |
@@ -222,6 +222,14 @@ The app adapts its layout to all device sizes using `lib/utils/responsive.dart`:
 ---
 
 ## What Has Been Fixed (2026-04-25)
+
+### Mobile Stack UX Redesign (this session, round 8)
+- **Visible stack controls**: Once any extra page is open, the standalone floating "+" becomes a compact three-action pill: add another chapter, open the page switcher, and close the current page. Users no longer need to hit the narrow left-edge strips to manage stacked pages on mobile.
+- **Page switcher sheet**: The layers button opens a bottom sheet listing the base reader plus every stacked page by label (Search, Settings, Bible Books, or the exact chapter such as `John 3`). Tapping a page promotes it to the front; each row also has a close button.
+- **Explicit close affordance**: `ChapterReaderCard` now has a right-side `X` close button in addition to the back arrow. The stack control pill also has a persistent close-current-page action.
+- **Better visual edges**: Non-top layer strips now show a subtle primary-colored handle, so the remaining Stage-Manager-style peeking behavior is visible instead of feeling like accidental blank space.
+- **API update**: `StackedCardScaffold.push` accepts optional `label` and `icon` metadata, used by the switcher and by the mobile stack manager.
+- **Verification**: `flutter analyze` and `flutter build web` both pass.
 
 ### Add-Chapter Stacked Card Flow (this session, round 7)
 - **Floating "+" behavior corrected**: `StackedCardScaffold` no longer shows the old Search / Books / Settings quick-launch sheet. The button is wired through `onAddLayer`, stays hidden during loading, and opens only the book/chapter picker once `HomePage` is ready.

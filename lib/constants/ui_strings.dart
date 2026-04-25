@@ -81,6 +81,31 @@ const uiStrings = {
     'zh-Hant': '開啟另一章',
     'en': 'Open another chapter',
   },
+  'openPages': {
+    'zh-Hans': '打开的页面',
+    'zh-Hant': '開啟的頁面',
+    'en': 'Open pages',
+  },
+  'reader': {
+    'zh-Hans': '阅读',
+    'zh-Hant': '閱讀',
+    'en': 'Reader',
+  },
+  'currentPage': {
+    'zh-Hans': '当前页面',
+    'zh-Hant': '目前頁面',
+    'en': 'Current page',
+  },
+  'switchPage': {
+    'zh-Hans': '切换页面',
+    'zh-Hant': '切換頁面',
+    'en': 'Switch page',
+  },
+  'closePage': {
+    'zh-Hans': '关闭页面',
+    'zh-Hant': '關閉頁面',
+    'en': 'Close page',
+  },
   'changeVersion': {
     'zh-Hans': '切换版本',
     'zh-Hant': '切換版本',

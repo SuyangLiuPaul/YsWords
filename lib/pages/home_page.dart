@@ -357,10 +357,16 @@ class _HomePageState extends State<HomePage> {
                               final stack =
                                   StackedCardScaffold.maybeOf(context);
                               if (stack != null) {
-                                stack.push((_) => BooksPage(
-                                      chapterIdx: chapter,
-                                      bookIdx: book,
-                                    ));
+                                stack.push(
+                                  (_) => BooksPage(
+                                    chapterIdx: chapter,
+                                    bookIdx: book,
+                                  ),
+                                  label:
+                                      uiStrings['bibleBooks']?[settings.locale] ??
+                                          'Bible Books',
+                                  icon: Icons.menu_book_rounded,
+                                );
                               } else {
                                 Get.to(
                                   () => BooksPage(
@@ -417,7 +423,13 @@ class _HomePageState extends State<HomePage> {
                         mainProvider.clearSelectedVerses();
                         final stack = StackedCardScaffold.maybeOf(context);
                         if (stack != null) {
-                          stack.push((_) => SearchPage());
+                          stack.push(
+                            (_) => SearchPage(),
+                            label:
+                                uiStrings['search']?[settings.locale] ??
+                                    'Search',
+                            icon: Icons.search_rounded,
+                          );
                         } else {
                           Get.to(
                             () => SearchPage(),
@@ -429,7 +441,13 @@ class _HomePageState extends State<HomePage> {
                         mainProvider.clearSelectedVerses();
                         final stack = StackedCardScaffold.maybeOf(context);
                         if (stack != null) {
-                          stack.push((_) => SettingsPage());
+                          stack.push(
+                            (_) => SettingsPage(),
+                            label:
+                                uiStrings['settings']?[settings.locale] ??
+                                    'Settings',
+                            icon: Icons.settings_rounded,
+                          );
                         } else {
                           Get.to(() => SettingsPage());
                         }

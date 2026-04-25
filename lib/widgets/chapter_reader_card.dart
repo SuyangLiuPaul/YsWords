@@ -13,6 +13,7 @@ import 'package:yswords/utils/clipboard_helper.dart';
 import 'package:yswords/utils/version_mapper.dart' show toEnglish;
 import 'package:yswords/widgets/localized_back_button.dart';
 import 'package:yswords/widgets/paragraph_group_widget.dart';
+import 'package:yswords/widgets/stacked_card_nav.dart';
 import 'package:yswords/widgets/verse_widget.dart';
 
 /// A self-contained chapter reader rendered inside a single
@@ -71,6 +72,19 @@ class _ChapterReaderCardState extends State<ChapterReaderCard> {
                     ),
                   ),
                 ),
+              ),
+              IconButton(
+                tooltip:
+                    uiStrings['closePage']?[settings.locale] ?? 'Close page',
+                onPressed: () {
+                  final stack = StackedCardScaffold.maybeOf(context);
+                  if (stack != null && stack.hasOverlays) {
+                    stack.pop();
+                  } else {
+                    Navigator.of(context).maybePop();
+                  }
+                },
+                icon: const Icon(Icons.close_rounded),
               ),
             ],
           ),
