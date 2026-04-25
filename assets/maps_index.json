@@ -3,14 +3,14 @@
     "id": "ancient_near_east",
     "title": { "en": "Ancient Near East", "zh-Hans": "古代近东", "zh-Hant": "古代近東" },
     "description": { "en": "The Fertile Crescent — Mesopotamia, Canaan, and Egypt in patriarchal times.", "zh-Hans": "肥沃月弯——列祖时代的美索不达米亚、迦南与埃及。", "zh-Hant": "肥沃月彎——列祖時代的美索不達米亞、迦南與埃及。" },
-    "books": { "Genesis": [1, 11] },
+    "books": { "Genesis": [1, 11], "Job": [1, 42] },
     "file": "01_ancient_near_east.jpg"
   },
   {
     "id": "abrahams_journeys",
     "title": { "en": "Abraham's Journeys", "zh-Hans": "亚伯拉罕的旅程", "zh-Hant": "亞伯拉罕的旅程" },
     "description": { "en": "From Ur of the Chaldees through Haran to Canaan and Egypt.", "zh-Hans": "从迦勒底的吾珥经哈兰到迦南与埃及。", "zh-Hant": "從迦勒底的吾珥經哈蘭到迦南與埃及。" },
-    "books": { "Genesis": [12, 25] },
+    "books": { "Genesis": [12, 50] },
     "file": "02_abrahams_journeys.jpg"
   },
   {
@@ -38,42 +38,42 @@
     "id": "kingdom_david_solomon",
     "title": { "en": "Kingdom of David & Solomon", "zh-Hans": "大卫与所罗门的王国", "zh-Hant": "大衛與所羅門的王國" },
     "description": { "en": "The united kingdom at its height — from the Mediterranean to the Euphrates.", "zh-Hans": "联合王国鼎盛时期——从地中海到幼发拉底河。", "zh-Hant": "聯合王國鼎盛時期——從地中海到幼發拉底河。" },
-    "books": { "1 Samuel": [1, 31], "2 Samuel": [1, 24], "1 Kings": [1, 11], "1 Chronicles": [1, 29] },
+    "books": { "1 Samuel": [1, 31], "2 Samuel": [1, 24], "1 Kings": [1, 11], "1 Chronicles": [1, 29], "2 Chronicles": [1, 9], "Psalms": [1, 150], "Proverbs": [1, 31], "Ecclesiastes": [1, 12], "Song of Solomon": [1, 8] },
     "file": "06_kingdom_david_solomon.png"
   },
   {
     "id": "divided_kingdom",
     "title": { "en": "Divided Kingdom", "zh-Hans": "分裂王国", "zh-Hant": "分裂王國" },
     "description": { "en": "Israel in the north and Judah in the south during the period of the kings.", "zh-Hans": "列王时期北国以色列与南国犹大。", "zh-Hant": "列王時期北國以色列與南國猶大。" },
-    "books": { "1 Kings": [12, 22], "2 Kings": [1, 16], "2 Chronicles": [10, 28] },
+    "books": { "1 Kings": [12, 22], "2 Kings": [1, 16], "2 Chronicles": [10, 28], "Hosea": [1, 14], "Joel": [1, 3], "Amos": [1, 9], "Obadiah": [1, 1], "Micah": [1, 7] },
     "file": "07_divided_kingdom.png"
   },
   {
     "id": "assyrian_empire",
     "title": { "en": "Assyrian Empire", "zh-Hans": "亚述帝国", "zh-Hant": "亞述帝國" },
     "description": { "en": "The Assyrian Empire at its height — conquest of Samaria and the fall of Israel.", "zh-Hans": "亚述帝国鼎盛时期——撒玛利亚的征服与以色列的灭亡。", "zh-Hant": "亞述帝國鼎盛時期——撒瑪利亞的征服與以色列的滅亡。" },
-    "books": { "2 Kings": [17, 20], "Isaiah": [1, 39] },
+    "books": { "2 Kings": [17, 20], "Isaiah": [1, 39], "Hosea": [1, 14], "Amos": [1, 9], "Jonah": [1, 4], "Nahum": [1, 3], "Micah": [1, 7] },
     "file": "08_assyrian_empire.jpg"
   },
   {
     "id": "babylonian_empire",
     "title": { "en": "Babylonian Empire", "zh-Hans": "巴比伦帝国", "zh-Hant": "巴比倫帝國" },
     "description": { "en": "Nebuchadnezzar's empire — the destruction of Jerusalem and the Babylonian exile.", "zh-Hans": "尼布甲尼撒帝国——耶路撒冷的毁灭与巴比伦之囚。", "zh-Hant": "尼布甲尼撒帝國——耶路撒冷的毀滅與巴比倫之囚。" },
-    "books": { "2 Kings": [21, 25], "Jeremiah": [1, 52], "Ezekiel": [1, 48], "Daniel": [1, 12], "Lamentations": [1, 5] },
+    "books": { "2 Kings": [21, 25], "2 Chronicles": [29, 36], "Jeremiah": [1, 52], "Ezekiel": [1, 48], "Daniel": [1, 12], "Lamentations": [1, 5], "Habakkuk": [1, 3], "Zephaniah": [1, 3], "Isaiah": [40, 66] },
     "file": "09_babylonian_empire.jpg"
   },
   {
     "id": "persian_empire",
     "title": { "en": "Persian Empire & the Return", "zh-Hans": "波斯帝国与回归", "zh-Hant": "波斯帝國與回歸" },
     "description": { "en": "The Persian Empire — Cyrus' decree and the return from exile to rebuild the Temple.", "zh-Hans": "波斯帝国——居鲁士的诏书与从被掳之地回归重建圣殿。", "zh-Hant": "波斯帝國——居魯士的詔書與從被擄之地回歸重建聖殿。" },
-    "books": { "Ezra": [1, 10], "Nehemiah": [1, 13], "Esther": [1, 10] },
+    "books": { "Ezra": [1, 10], "Nehemiah": [1, 13], "Esther": [1, 10], "Haggai": [1, 2], "Zechariah": [1, 14], "Malachi": [1, 4] },
     "file": "10_persian_empire.jpg"
   },
   {
     "id": "israel_nt_times",
     "title": { "en": "Israel in New Testament Times", "zh-Hans": "新约时代的以色列", "zh-Hant": "新約時代的以色列" },
     "description": { "en": "Galilee, Samaria, and Judea in the first century — the world of Jesus' ministry.", "zh-Hans": "一世纪的加利利、撒玛利亚和犹太地——耶稣事奉的世界。", "zh-Hant": "一世紀的加利利、撒馬利亞和猶太地——耶穌事奉的世界。" },
-    "books": { "Matthew": [1, 20], "Mark": [1, 10], "Luke": [1, 18], "John": [1, 11] },
+    "books": { "Matthew": [1, 28], "Mark": [1, 16], "Luke": [1, 24], "John": [1, 21], "Acts": [22, 26] },
     "file": "11_israel_nt_times.jpg"
   },
   {
@@ -150,7 +150,28 @@
     "id": "israel_relief",
     "title": { "en": "Geography of Israel", "zh-Hans": "以色列地理", "zh-Hant": "以色列地理" },
     "description": { "en": "Physical relief map of the land of Israel — mountains, valleys, and the Jordan rift.", "zh-Hans": "以色列地的地势图——山脉、山谷与约旦裂谷。", "zh-Hant": "以色列地的地勢圖——山脈、山谷與約旦裂谷。" },
-    "books": { "Joshua": [1, 24], "Judges": [1, 21], "1 Samuel": [1, 31], "2 Samuel": [1, 24] },
+    "books": { "Joshua": [1, 24], "Judges": [1, 21], "Ruth": [1, 4], "1 Samuel": [1, 31], "2 Samuel": [1, 24] },
     "file": "22_israel_relief.jpg"
+  },
+  {
+    "id": "jerusalem_old_city",
+    "title": { "en": "Jerusalem — Old City", "zh-Hans": "耶路撒冷古城", "zh-Hant": "耶路撒冷古城" },
+    "description": { "en": "Plan of the Old City of Jerusalem — quarters, gates, and the Temple Mount.", "zh-Hans": "耶路撒冷古城平面图——四区、城门与圣殿山。", "zh-Hant": "耶路撒冷古城平面圖——四區、城門與聖殿山。" },
+    "books": { "2 Samuel": [5, 24], "1 Kings": [1, 22], "2 Kings": [1, 25], "1 Chronicles": [11, 29], "2 Chronicles": [1, 36], "Nehemiah": [1, 13], "Psalms": [1, 150], "Lamentations": [1, 5], "Matthew": [21, 28], "Mark": [11, 16], "Luke": [19, 24], "John": [12, 21], "Acts": [1, 8] },
+    "file": "23_jerusalem_old_city.png"
+  },
+  {
+    "id": "assyria_detail",
+    "title": { "en": "Assyria & Mesopotamia", "zh-Hans": "亚述与美索不达米亚", "zh-Hant": "亞述與美索不達米亞" },
+    "description": { "en": "The Assyrian heartland — Nineveh, Asshur, Calah — and the rivers of Mesopotamia.", "zh-Hans": "亚述心脏地带——尼尼微、亚述城、迦拉——与美索不达米亚两河流域。", "zh-Hant": "亞述心臟地帶——尼尼微、亞述城、迦拉——與美索不達米亞兩河流域。" },
+    "books": { "Jonah": [1, 4], "Nahum": [1, 3], "2 Kings": [15, 20], "Isaiah": [10, 39] },
+    "file": "24_assyria_detail.jpg"
+  },
+  {
+    "id": "herodian_tetrarchy",
+    "title": { "en": "Herodian Tetrarchy", "zh-Hans": "希律四分领地", "zh-Hant": "希律四分領地" },
+    "description": { "en": "Palestine after Herod the Great — Judea, Galilee, Samaria, and the Decapolis at the time of Jesus' ministry.", "zh-Hans": "大希律之后的巴勒斯坦——耶稣事奉时期的犹太、加利利、撒玛利亚与十城地区。", "zh-Hant": "大希律之後的巴勒斯坦——耶穌事奉時期的猶太、加利利、撒瑪利亞與十城地區。" },
+    "books": { "Matthew": [1, 28], "Mark": [1, 16], "Luke": [1, 24], "John": [1, 21], "Acts": [1, 12] },
+    "file": "25_herodian_tetrarchy.png"
   }
 ]
