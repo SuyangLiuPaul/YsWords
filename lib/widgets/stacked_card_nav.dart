@@ -92,9 +92,20 @@ class StackedCardScaffoldState extends State<StackedCardScaffold>
     return 34.0;
   }
 
+  /// Vertical offset for overlay layers on phones so the layer below
+  /// peeks through at the top, giving users a visual toggle hint.
+  double _phoneLayerTopOffset(int index, double width) {
+    if (width >= 600) return 0.0;
+    return 44.0 + (index * 8.0);
+  }
+
   bool get hasOverlays => _layers.isNotEmpty;
   int get overlayCount => _layers.length;
-  bool get canAddLayer => widget.onAddLayer != null;
+  bool get canAddLayer {
+    if (widget.onAddLayer == null) return false;
+    final w = MediaQuery.of(context).size.width;
+    return _layers.length < _maxTotalCards(w) - 1;
+  }
 
   void requestAddLayer() {
     widget.onAddLayer?.call();
@@ -339,7 +350,21 @@ class StackedCardScaffoldState extends State<StackedCardScaffold>
                   ),
 
                 // Overlay layers, in z-order (lowest first → topmost last).
-                for (int i = 0; i < _layers.length; i++)
+                // On phones, interleave tap zones for exposed top strips.
+                for (int i = 0; i < _layers.length; i++) ...[
+                  // Phone: tap zone for the exposed top strip of this layer.
+                  if (mobileFullScreen && i < _layers.length - 1)
+                    Positioned(
+                      left: 0,
+                      right: 0,
+                      top: _phoneLayerTopOffset(i, constraints.maxWidth),
+                      height: _phoneLayerTopOffset(i + 1, constraints.maxWidth) -
+                          _phoneLayerTopOffset(i, constraints.maxWidth),
+                      child: GestureDetector(
+                        behavior: HitTestBehavior.opaque,
+                        onTap: () => promote(i),
+                      ),
+                    ),
                   _buildLayer(
                     context: context,
                     layer: _layers[i],
@@ -350,6 +375,7 @@ class StackedCardScaffoldState extends State<StackedCardScaffold>
                     screenWidth: constraints.maxWidth,
                     screenHeight: constraints.maxHeight,
                   ),
+                ],
               ],
             );
           },
@@ -373,17 +399,17 @@ class StackedCardScaffoldState extends State<StackedCardScaffold>
     //   layer 0 strip exposed at stripWidth..2*stripWidth
     //   etc.
     final targetLeft = mobileFullScreen ? 0.0 : (index + 1) * stripWidth;
+    final targetTop = _phoneLayerTopOffset(index, screenWidth);
 
     return AnimatedBuilder(
       key: ValueKey(layer.id),
       animation: layer.controller,
       builder: (context, child) {
         final t = Curves.easeOutCubic.transform(layer.controller.value);
-        // Slide from off-screen right to its target left.
         final left = (screenWidth) * (1 - t) + targetLeft * t;
         return Positioned(
           left: left,
-          top: 0,
+          top: targetTop,
           bottom: 0,
           right: 0,
           child: Opacity(
@@ -397,16 +423,23 @@ class StackedCardScaffoldState extends State<StackedCardScaffold>
         stripWidth: stripWidth,
         onPromoteTap: isTop ? null : () => promote(index),
         fullScreen: mobileFullScreen,
-        // Adjust MediaQuery so the page inside thinks its width is the
-        // visible portion (full width minus its left offset). Otherwise a
-        // Scaffold inside would compute layout for the whole screen.
         adjustedWidth: screenWidth - targetLeft,
-        screenHeight: screenHeight,
+        screenHeight: screenHeight - targetTop,
+        layerIndex: index,
         child: Builder(builder: layer.builder),
       ),
     );
   }
 }
+
+const _layerAccentColors = <Color>[
+  Color(0xFF5B9FED), // blue
+  Color(0xFF6BCB77), // green
+  Color(0xFFFF6B6B), // coral
+  Color(0xFFFFD93D), // amber
+  Color(0xFFC084FC), // violet
+  Color(0xFF38BDF8), // sky
+];
 
 class _LayerCard extends StatelessWidget {
   final bool isTop;
@@ -415,6 +448,7 @@ class _LayerCard extends StatelessWidget {
   final double adjustedWidth;
   final double screenHeight;
   final bool fullScreen;
+  final int layerIndex;
   final Widget child;
 
   const _LayerCard({
@@ -424,6 +458,7 @@ class _LayerCard extends StatelessWidget {
     required this.adjustedWidth,
     required this.screenHeight,
     required this.fullScreen,
+    required this.layerIndex,
     required this.child,
   });
 
@@ -432,8 +467,9 @@ class _LayerCard extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final media = MediaQuery.of(context);
+    final accentColor = _layerAccentColors[layerIndex % _layerAccentColors.length];
+    final tintedSurface = Color.lerp(scheme.surface, accentColor, 0.04)!;
 
-    // Re-scope MediaQuery so descendants see the layer's actual bounds.
     final adjustedMedia = media.copyWith(
       size: Size(adjustedWidth, screenHeight),
       padding: media.padding.copyWith(left: 0),
@@ -442,14 +478,17 @@ class _LayerCard extends StatelessWidget {
 
     return ClipRRect(
       borderRadius: fullScreen
-          ? BorderRadius.zero
+          ? const BorderRadius.only(
+              topLeft: Radius.circular(16),
+              topRight: Radius.circular(16),
+            )
           : const BorderRadius.only(
               topLeft: Radius.circular(22),
               bottomLeft: Radius.circular(22),
             ),
       child: DecoratedBox(
         decoration: BoxDecoration(
-          color: scheme.surface,
+          color: tintedSurface,
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: isDark ? 0.55 : 0.22),
@@ -468,6 +507,16 @@ class _LayerCard extends StatelessWidget {
         ),
         child: Stack(
           children: [
+            // Accent bar at top.
+            Positioned(
+              left: 0,
+              right: 0,
+              top: 0,
+              height: 3.0,
+              child: DecoratedBox(
+                decoration: BoxDecoration(color: accentColor),
+              ),
+            ),
             Positioned.fill(
               child: MediaQuery(
                 data: adjustedMedia,
