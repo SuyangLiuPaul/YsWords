@@ -9,7 +9,6 @@ import 'package:yswords/constants/ui_strings.dart';
 import 'package:yswords/constants/text_patterns.dart';
 import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/widgets/localized_back_button.dart';
-import 'package:yswords/widgets/stacked_card_nav.dart';
 import 'package:yswords/utils/responsive.dart';
 import 'package:flutter/services.dart';
 
@@ -110,10 +109,7 @@ class _SearchPageState extends State<SearchPage> {
       onHorizontalDragEnd: (details) {
         final velocity = details.primaryVelocity ?? 0;
         if (velocity > 300) {
-          final stack = StackedCardScaffold.maybeOf(context);
-          if (stack != null && stack.hasOverlays) {
-            stack.pop();
-          }
+          Get.back();
         }
       },
       child: Scaffold(
@@ -325,13 +321,7 @@ class _SearchPageState extends State<SearchPage> {
                               mainProv.setCurrentChapter(
                                   book: verse.book, chapter: verse.chapter);
                               mainProv.updateCurrentVerse(verse: verse);
-                              final stack =
-                                  StackedCardScaffold.maybeOf(context);
-                              if (stack != null && stack.hasOverlays) {
-                                stack.pop();
-                              } else {
-                                Get.back();
-                              }
+                              Get.back();
                               Future.delayed(const Duration(milliseconds: 300),
                                   () {
                                 final chapterVerses = mainProv.verses

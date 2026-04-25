@@ -14,8 +14,7 @@ import 'home_page.dart';
 class LoadingPage extends StatefulWidget {
   final List<Verse> verses;
 
-  /// Optional advance callback. When provided (e.g. by a persistent
-  /// scaffold like StackedCardScaffold), it is used instead of a
+  /// Optional advance callback. When provided, it is used instead of a
   /// Navigator pushReplacement so the surrounding scaffold remains in
   /// the widget tree.
   final VoidCallback? onAdvance;

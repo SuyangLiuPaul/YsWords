@@ -19,7 +19,6 @@ import 'package:yswords/services/fetch_books.dart';
 import 'package:yswords/services/fetch_verses.dart';
 import 'package:yswords/utils/clipboard_helper.dart';
 import 'package:yswords/widgets/sidebar_panel.dart';
-import 'package:yswords/widgets/stacked_card_nav.dart';
 import 'package:yswords/utils/responsive.dart';
 import 'package:yswords/utils/version_mapper.dart'
     show translateBookName, toEnglish;
@@ -336,22 +335,6 @@ class _HomePageState extends State<HomePage> {
                       book: currentVerse?.book ?? '',
                       chapter: currentVerse?.chapter ?? 0,
                       version: mainProvider.currentVersion,
-                      onAddLayer: StackedCardScaffold.maybeOf(context)
-                                  ?.canAddLayer ==
-                              true
-                          ? StackedCardScaffold.maybeOf(context)!
-                              .requestAddLayer
-                          : null,
-                      onSwitchLayer: StackedCardScaffold.maybeOf(context)
-                                  ?.hasOverlays ==
-                              true
-                          ? StackedCardScaffold.maybeOf(context)!
-                              .showLayerSwitcher
-                          : null,
-                      openPageCount:
-                          (StackedCardScaffold.maybeOf(context)?.overlayCount ??
-                                  0) +
-                              1,
                       showSidebarToggle: isWideScreen,
                       sidebarOpen: _sidebarOpen,
                       onToggleSidebar: _toggleSidebar,
@@ -370,30 +353,15 @@ class _HomePageState extends State<HomePage> {
                                   mainProvider.currentVerse?.chapter ?? 1;
                               final book =
                                   mainProvider.currentVerse?.book ?? '';
-                              final stack =
-                                  StackedCardScaffold.maybeOf(context);
-                              if (stack != null) {
-                                stack.push(
-                                  (_) => BooksPage(
-                                    chapterIdx: chapter,
-                                    bookIdx: book,
-                                  ),
-                                  label:
-                                      uiStrings['bibleBooks']?[settings.locale] ??
-                                          'Bible Books',
-                                  icon: Icons.menu_book_rounded,
-                                );
-                              } else {
-                                Get.to(
-                                  () => BooksPage(
-                                    chapterIdx: chapter,
-                                    bookIdx: book,
-                                  ),
-                                  transition: Transition.leftToRight,
-                                  duration: const Duration(milliseconds: 300),
-                                  curve: Curves.easeInOut,
-                                );
-                              }
+                              Get.to(
+                                () => BooksPage(
+                                  chapterIdx: chapter,
+                                  bookIdx: book,
+                                ),
+                                transition: Transition.leftToRight,
+                                duration: const Duration(milliseconds: 300),
+                                curve: Curves.easeInOut,
+                              );
                             },
                       onVersionSelected: (version) async {
                         final p = context.read<MainProvider>();
@@ -437,36 +405,14 @@ class _HomePageState extends State<HomePage> {
                       },
                       onSearch: () {
                         mainProvider.clearSelectedVerses();
-                        final stack = StackedCardScaffold.maybeOf(context);
-                        if (stack != null) {
-                          stack.push(
-                            (_) => SearchPage(),
-                            label:
-                                uiStrings['search']?[settings.locale] ??
-                                    'Search',
-                            icon: Icons.search_rounded,
-                          );
-                        } else {
-                          Get.to(
-                            () => SearchPage(),
-                            transition: Transition.rightToLeft,
-                          );
-                        }
+                        Get.to(
+                          () => SearchPage(),
+                          transition: Transition.rightToLeft,
+                        );
                       },
                       onSettings: () {
                         mainProvider.clearSelectedVerses();
-                        final stack = StackedCardScaffold.maybeOf(context);
-                        if (stack != null) {
-                          stack.push(
-                            (_) => SettingsPage(),
-                            label:
-                                uiStrings['settings']?[settings.locale] ??
-                                    'Settings',
-                            icon: Icons.settings_rounded,
-                          );
-                        } else {
-                          Get.to(() => SettingsPage());
-                        }
+                        Get.to(() => SettingsPage());
                       },
                     ),
                     Align(
@@ -1040,9 +986,6 @@ class _FloatingHeader extends StatelessWidget {
   final ValueChanged<String> onVersionSelected;
   final VoidCallback onSearch;
   final VoidCallback onSettings;
-  final VoidCallback? onAddLayer;
-  final VoidCallback? onSwitchLayer;
-  final int openPageCount;
   final bool showSidebarToggle;
   final bool sidebarOpen;
   final VoidCallback? onToggleSidebar;
@@ -1059,9 +1002,6 @@ class _FloatingHeader extends StatelessWidget {
     required this.onVersionSelected,
     required this.onSearch,
     required this.onSettings,
-    this.onAddLayer,
-    this.onSwitchLayer,
-    this.openPageCount = 1,
     this.showSidebarToggle = false,
     this.sidebarOpen = false,
     this.onToggleSidebar,
@@ -1188,32 +1128,6 @@ class _FloatingHeader extends StatelessWidget {
                                 'Paragraph Flow')
                             : (uiStrings['verseByVerse']?[settings.locale] ??
                                 'Verse by Verse'),
-                      ),
-                    if (onAddLayer != null)
-                      IconButton(
-                        onPressed: onAddLayer,
-                        icon:
-                            Icon(Icons.library_add_rounded, size: iconSize),
-                        padding: EdgeInsets.all(iconPad),
-                        constraints: const BoxConstraints(
-                            minWidth: 36, minHeight: 36),
-                        tooltip: uiStrings['openAnotherChapter']
-                                ?[settings.locale] ??
-                            'Open another chapter',
-                      ),
-                    if (onSwitchLayer != null)
-                      IconButton(
-                        onPressed: onSwitchLayer,
-                        icon: Badge(
-                          label: Text('$openPageCount'),
-                          child:
-                              Icon(Icons.layers_rounded, size: iconSize),
-                        ),
-                        padding: EdgeInsets.all(iconPad),
-                        constraints: const BoxConstraints(
-                            minWidth: 36, minHeight: 36),
-                        tooltip: uiStrings['switchPage']?[settings.locale] ??
-                            'Switch page',
                       ),
                     IconButton(
                       onPressed: onSearch,
