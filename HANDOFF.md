@@ -1,6 +1,6 @@
 # YsWords — AI Agent Handoff Document
 
-> Last updated: 2026-04-25
+> Last updated: 2026-04-26
 > Project: YsWords (Yahweh's Words) — bilingual Bible reader
 > Stack: Flutter 3.41.7 / Dart 3.11.5 / Provider + GetX
 > Repo: https://github.com/SuyangLiuPaul/YsWords
@@ -224,7 +224,27 @@ The app adapts its layout to all device sizes using `lib/utils/responsive.dart`:
 
 ---
 
-## What Has Been Fixed (2026-04-25)
+## What Has Been Fixed (2026-04-26)
+
+### Bug + UX audit pass (round 17)
+
+Issues caught by a codebase-wide audit (analyzer was already clean).
+
+**Robustness / latent bugs**
+- `bible_reading_pane.dart::_updateMapsForBookChapter` now compares `_lastBookChapter` again *after* the `Future.wait` resolves. Previously a stale chapter's maps could land in `_chapterMaps` / `_bookMaps` if the user switched chapters before the future settled, briefly flickering the wrong fallback into the picker.
+- Same file's `onVersionSelected` callback gains explicit `mounted` checks before `context.read()` and after each of the two `await Fetch*.execute()` calls — we never touch `BuildContext` or call `setState` on a disposed pane.
+- `search_page.dart` chapter-tap handler captures `MainProvider` synchronously and only touches the captured reference inside the nested `Future.delayed` (the search page is popped before the inner timer fires, so `mounted` is unreliable there). The provider survives the pop and is safe to call.
+- Visible-verse index uses Dart's `clamp()` (`_visibleItemIndex.clamp(0, paragraphGroups.length + 1)`) — previously an out-of-range value could slip through if the chapter list shrank between rebuilds.
+- `_MapPickerSheet`'s `TabController` `initialIndex` is clamped to `[0, _tabs.length - 1]` so future composition changes in `_buildTabs()` can't accidentally feed an out-of-range index.
+
+**UX / a11y / i18n**
+- Search page first-open shows a friendly icon + "Type a word or phrase to search" hint instead of a blank list. "No results found" is reserved for after a real search.
+- Split-view toggle tooltip is localized via new `openSplitView` / `closeSplitView` keys (en / zh-Hans / zh-Hant). New `searchHint` localized string for the search empty state.
+- Active paragraph-mode icon tints with the primary color so the active state is obvious at a glance.
+- Map viewer page reactively re-translates when the user switches language. Was passing `widget.locale` (immutable from the launching widget); now reads `settings.locale` via `context.watch<AppSettings>()` and falls back to `widget.locale` for ancestor-less contexts.
+- Settings primary-color picker swatches floor at ~22 dp radius (was ~9.6 dp at min font size) and get 4 dp tap-padding via an `InkWell`, pushing the hit-test area past 44 dp on every device class without changing the visible swatch size.
+- Version popup-menu items wrap each label in a 280 dp `ConstrainedBox` with `TextOverflow.ellipsis`, so long localized version names (e.g. `原文释经圣经第二版 (繁)`) can't push the popup off-screen.
+- Reader trailing spacer is now `bottomInset + (isSelected ? 132 : 96) * menuScale`. The selection action bar is taller than the status bar, so the last verse used to tuck under it on small phones at large menu scale.
 
 ### More Maps Expansion II (round 16)
 - **Library expanded 39 → 55 entries** by downloading and registering 16 additional public-domain Wikimedia Commons maps at web-friendly thumbnail sizes.
