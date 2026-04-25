@@ -271,5 +271,117 @@
     "description": { "en": "First-century Jerusalem map for the passion narratives, resurrection appearances, Pentecost, and the early church.", "zh-Hans": "第一世纪耶路撒冷地图，适合查看受难叙事、复活显现、五旬节与初期教会。", "zh-Hant": "第一世紀耶路撒冷地圖，適合查看受難敘事、復活顯現、五旬節與初期教會。" },
     "books": { "Matthew": [21, 28], "Mark": [11, 16], "Luke": [19, 24], "John": [12, 21], "Acts": [1, 8] },
     "file": "39_jerusalem_first_century.jpg"
+  },
+  {
+    "id": "pef_old_testament_survey",
+    "title": { "en": "Western Palestine — Old Testament Survey", "zh-Hans": "西巴勒斯坦旧约测绘图", "zh-Hant": "西巴勒斯坦舊約測繪圖" },
+    "description": { "en": "A Palestine Exploration Fund survey map keyed to Old Testament geography.", "zh-Hans": "巴勒斯坦勘探基金旧约地理测绘图。", "zh-Hant": "巴勒斯坦勘探基金舊約地理測繪圖。" },
+    "books": { "Genesis": [12, 50], "Exodus": [1, 40], "Leviticus": [1, 27], "Numbers": [1, 36], "Deuteronomy": [1, 34], "Joshua": [1, 24], "Judges": [1, 21], "Ruth": [1, 4], "1 Samuel": [1, 31], "2 Samuel": [1, 24], "1 Kings": [1, 22], "2 Kings": [1, 25], "1 Chronicles": [1, 29], "2 Chronicles": [1, 36], "Ezra": [1, 10], "Nehemiah": [1, 13], "Esther": [1, 10], "Psalms": [1, 150], "Proverbs": [1, 31], "Ecclesiastes": [1, 12], "Song of Solomon": [1, 8], "Isaiah": [1, 66], "Jeremiah": [1, 52], "Lamentations": [1, 5], "Ezekiel": [1, 48], "Daniel": [1, 12], "Hosea": [1, 14], "Joel": [1, 3], "Amos": [1, 9], "Obadiah": [1, 1], "Jonah": [1, 4], "Micah": [1, 7], "Nahum": [1, 3], "Habakkuk": [1, 3], "Zephaniah": [1, 3], "Haggai": [1, 2], "Zechariah": [1, 14], "Malachi": [1, 4] },
+    "file": "40_pef_old_testament.jpg"
+  },
+  {
+    "id": "land_promise_joshua",
+    "title": { "en": "Land of Promise — Joshua", "zh-Hans": "应许之地——约书亚", "zh-Hant": "應許之地——約書亞" },
+    "description": { "en": "The promised land as compiled from Joshua, useful for conquest and tribal-allotment chapters.", "zh-Hans": "根据约书亚记编制的应许之地地图，适合征服迦南与支派分地章节。", "zh-Hant": "根據約書亞記編製的應許之地地圖，適合征服迦南與支派分地章節。" },
+    "books": { "Numbers": [13, 36], "Deuteronomy": [1, 34], "Joshua": [1, 24], "Judges": [1, 21] },
+    "file": "41_land_promise_joshua.jpg"
+  },
+  {
+    "id": "patriarchs_peregrination",
+    "title": { "en": "Journeys of the Patriarchs", "zh-Hans": "列祖旅程", "zh-Hant": "列祖旅程" },
+    "description": { "en": "Patriarchal journey map for Abraham, Isaac, Jacob, and the Genesis travel narratives.", "zh-Hans": "亚伯拉罕、以撒、雅各及创世记旅程叙事的列祖地图。", "zh-Hant": "亞伯拉罕、以撒、雅各及創世記旅程敘事的列祖地圖。" },
+    "books": { "Genesis": [12, 50] },
+    "file": "42_patriarchs_peregrination.jpg"
+  },
+  {
+    "id": "moses_travel_egypt_canaan",
+    "title": { "en": "Moses’ Travel from Egypt to Canaan", "zh-Hans": "摩西从埃及到迦南的路线", "zh-Hant": "摩西從埃及到迦南的路線" },
+    "description": { "en": "Wilderness travel map from Egypt toward Canaan, matching Exodus, Numbers, and Deuteronomy.", "zh-Hans": "从埃及前往迦南的旷野路线图，对应出埃及记、民数记与申命记。", "zh-Hant": "從埃及前往迦南的曠野路線圖，對應出埃及記、民數記與申命記。" },
+    "books": { "Exodus": [1, 40], "Leviticus": [1, 27], "Numbers": [1, 36], "Deuteronomy": [1, 34] },
+    "file": "43_moses_travel_egypt_canaan.jpg"
+  },
+  {
+    "id": "judah_region",
+    "title": { "en": "Judah Region", "zh-Hans": "犹大地区", "zh-Hant": "猶大地區" },
+    "description": { "en": "A focused map of Judah and surrounding territory for the southern kingdom and prophetic books.", "zh-Hans": "犹大及周边地区地图，适合南国历史与先知书。", "zh-Hant": "猶大及周邊地區地圖，適合南國歷史與先知書。" },
+    "books": { "Joshua": [13, 24], "Judges": [1, 21], "Ruth": [1, 4], "1 Samuel": [1, 31], "2 Samuel": [1, 24], "1 Kings": [1, 22], "2 Kings": [1, 25], "1 Chronicles": [1, 29], "2 Chronicles": [1, 36], "Isaiah": [1, 66], "Jeremiah": [1, 52], "Lamentations": [1, 5], "Micah": [1, 7], "Habakkuk": [1, 3], "Zephaniah": [1, 3] },
+    "file": "44_judah_map.jpg"
+  },
+  {
+    "id": "herod_kingdom",
+    "title": { "en": "Kingdom of Herod the Great", "zh-Hans": "大希律的王国", "zh-Hant": "大希律的王國" },
+    "description": { "en": "Herod’s kingdom at the opening of the New Testament period.", "zh-Hans": "新约时代开端大希律统治下的王国。", "zh-Hant": "新約時代開端大希律統治下的王國。" },
+    "books": { "Matthew": [1, 28], "Mark": [1, 16], "Luke": [1, 24], "John": [1, 21], "Acts": [1, 12] },
+    "file": "45_herod_kingdom.gif"
+  },
+  {
+    "id": "jebus_ancient_jerusalem",
+    "title": { "en": "Jebus — Ancient Jerusalem", "zh-Hans": "耶布斯——古耶路撒冷", "zh-Hant": "耶布斯——古耶路撒冷" },
+    "description": { "en": "Jerusalem before and around David’s capture of Jebus.", "zh-Hans": "大卫攻取耶布斯前后的耶路撒冷。", "zh-Hant": "大衛攻取耶布斯前後的耶路撒冷。" },
+    "books": { "Joshua": [15, 18], "Judges": [1, 1], "2 Samuel": [5, 6], "1 Chronicles": [11, 11] },
+    "file": "46_jebus.jpg"
+  },
+  {
+    "id": "jerusalem_david_solomon",
+    "title": { "en": "Jerusalem in the Time of David and Solomon", "zh-Hans": "大卫与所罗门时代的耶路撒冷", "zh-Hant": "大衛與所羅門時代的耶路撒冷" },
+    "description": { "en": "City layout for the united-monarchy period and Solomon’s temple setting.", "zh-Hans": "联合王国时期及所罗门圣殿背景下的城市布局。", "zh-Hant": "聯合王國時期及所羅門聖殿背景下的城市布局。" },
+    "books": { "2 Samuel": [5, 24], "1 Kings": [1, 11], "1 Chronicles": [11, 29], "2 Chronicles": [1, 9], "Psalms": [1, 150] },
+    "file": "47_jerusalem_david_solomon.jpg"
+  },
+  {
+    "id": "jerusalem_hezekiah",
+    "title": { "en": "Jerusalem in the Time of Hezekiah", "zh-Hans": "希西家时代的耶路撒冷", "zh-Hant": "希西家時代的耶路撒冷" },
+    "description": { "en": "Jerusalem during Hezekiah’s reign, useful for Assyrian-crisis chapters.", "zh-Hans": "希西家作王时期的耶路撒冷，适合查看亚述危机相关章节。", "zh-Hant": "希西家作王時期的耶路撒冷，適合查看亞述危機相關章節。" },
+    "books": { "2 Kings": [18, 20], "2 Chronicles": [29, 32], "Isaiah": [36, 39] },
+    "file": "48_jerusalem_hezekiah.jpg"
+  },
+  {
+    "id": "jerusalem_nehemiah",
+    "title": { "en": "Jerusalem in the Time of Nehemiah", "zh-Hans": "尼希米时代的耶路撒冷", "zh-Hant": "尼希米時代的耶路撒冷" },
+    "description": { "en": "Jerusalem’s walls and gates in the rebuilding period after exile.", "zh-Hans": "被掳归回后重建时期耶路撒冷的城墙与城门。", "zh-Hant": "被擄歸回後重建時期耶路撒冷的城牆與城門。" },
+    "books": { "Ezra": [1, 10], "Nehemiah": [1, 13] },
+    "file": "49_jerusalem_nehemiah.jpg"
+  },
+  {
+    "id": "jerusalem_nt_cram",
+    "title": { "en": "Ancient Jerusalem — New Testament Period", "zh-Hans": "古耶路撒冷——新约时期", "zh-Hant": "古耶路撒冷——新約時期" },
+    "description": { "en": "George F. Cram map of Jerusalem in the New Testament period.", "zh-Hans": "乔治·F·克拉姆的新约时期耶路撒冷地图。", "zh-Hant": "喬治·F·克拉姆的新約時期耶路撒冷地圖。" },
+    "books": { "Matthew": [21, 28], "Mark": [11, 16], "Luke": [19, 24], "John": [12, 21], "Acts": [1, 8] },
+    "file": "50_jerusalem_nt_cram.jpg"
+  },
+  {
+    "id": "jerusalem_terrain",
+    "title": { "en": "Jerusalem Terrain", "zh-Hans": "耶路撒冷地形", "zh-Hant": "耶路撒冷地形" },
+    "description": { "en": "Relief and terrain map of central Jerusalem from Encyclopaedia Biblica.", "zh-Hans": "《圣经百科全书》中的耶路撒冷中心地区地形图。", "zh-Hant": "《聖經百科全書》中的耶路撒冷中心地區地形圖。" },
+    "books": { "2 Samuel": [5, 24], "1 Kings": [1, 22], "2 Kings": [18, 25], "1 Chronicles": [11, 29], "2 Chronicles": [1, 36], "Ezra": [1, 10], "Nehemiah": [1, 13], "Psalms": [1, 150], "Lamentations": [1, 5], "Matthew": [21, 28], "Mark": [11, 16], "Luke": [19, 24], "John": [12, 21], "Acts": [1, 8] },
+    "file": "51_jerusalem_terrain.png"
+  },
+  {
+    "id": "jerusalem_walls_contours",
+    "title": { "en": "Jerusalem Walls and Contours", "zh-Hans": "耶路撒冷城墙与等高线", "zh-Hant": "耶路撒冷城牆與等高線" },
+    "description": { "en": "Historical walls and contours of Jerusalem from Encyclopaedia Biblica.", "zh-Hans": "《圣经百科全书》中的耶路撒冷历史城墙与等高线图。", "zh-Hant": "《聖經百科全書》中的耶路撒冷歷史城牆與等高線圖。" },
+    "books": { "2 Samuel": [5, 24], "1 Kings": [1, 22], "2 Kings": [18, 25], "1 Chronicles": [11, 29], "2 Chronicles": [1, 36], "Ezra": [1, 10], "Nehemiah": [1, 13], "Matthew": [21, 28], "Mark": [11, 16], "Luke": [19, 24], "John": [12, 21], "Acts": [1, 8] },
+    "file": "52_jerusalem_walls_contours.png"
+  },
+  {
+    "id": "pef_new_testament_survey",
+    "title": { "en": "Western Palestine — New Testament Survey", "zh-Hans": "西巴勒斯坦新约测绘图", "zh-Hant": "西巴勒斯坦新約測繪圖" },
+    "description": { "en": "A Palestine Exploration Fund survey map keyed to New Testament geography.", "zh-Hans": "巴勒斯坦勘探基金新约地理测绘图。", "zh-Hant": "巴勒斯坦勘探基金新約地理測繪圖。" },
+    "books": { "Matthew": [1, 28], "Mark": [1, 16], "Luke": [1, 24], "John": [1, 21], "Acts": [1, 12] },
+    "file": "53_pef_new_testament.jpg"
+  },
+  {
+    "id": "palestine_new_testament_period_large",
+    "title": { "en": "Palestine — New Testament Period", "zh-Hans": "巴勒斯坦——新约时期", "zh-Hant": "巴勒斯坦——新約時期" },
+    "description": { "en": "Large-format historical map of Palestine in the New Testament period.", "zh-Hans": "新约时期巴勒斯坦的大幅历史地图。", "zh-Hant": "新約時期巴勒斯坦的大幅歷史地圖。" },
+    "books": { "Matthew": [1, 28], "Mark": [1, 16], "Luke": [1, 24], "John": [1, 21], "Acts": [1, 12] },
+    "file": "54_palestine_nt_period.jpg"
+  },
+  {
+    "id": "palestine_time_of_christ_cram",
+    "title": { "en": "Palestine in the Time of Christ", "zh-Hans": "基督时代的巴勒斯坦", "zh-Hant": "基督時代的巴勒斯坦" },
+    "description": { "en": "George F. Cram map of Palestine in the time of Christ.", "zh-Hans": "乔治·F·克拉姆的基督时代巴勒斯坦地图。", "zh-Hant": "喬治·F·克拉姆的基督時代巴勒斯坦地圖。" },
+    "books": { "Matthew": [1, 28], "Mark": [1, 16], "Luke": [1, 24], "John": [1, 21], "Acts": [1, 12] },
+    "file": "55_palestine_time_christ_cram.jpg"
   }
 ]

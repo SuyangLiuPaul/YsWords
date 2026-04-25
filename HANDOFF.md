@@ -226,6 +226,29 @@ The app adapts its layout to all device sizes using `lib/utils/responsive.dart`:
 
 ## What Has Been Fixed (2026-04-25)
 
+### More Maps Expansion II (round 16)
+- **Library expanded 39 → 55 entries** by downloading and registering 16 additional public-domain Wikimedia Commons maps at web-friendly thumbnail sizes.
+- **New public-domain map entries**:
+  - `40_pef_old_testament.jpg` — Western Palestine / Old Testament survey
+  - `41_land_promise_joshua.jpg` — Land of Promise compiled from Joshua
+  - `42_patriarchs_peregrination.jpg` — Journeys of the Patriarchs
+  - `43_moses_travel_egypt_canaan.jpg` — Moses' travel from Egypt to Canaan
+  - `44_judah_map.jpg` — Judah region
+  - `45_herod_kingdom.gif` — Kingdom of Herod the Great
+  - `46_jebus.jpg` — Jebus / ancient Jerusalem
+  - `47_jerusalem_david_solomon.jpg` — Jerusalem in the time of David and Solomon
+  - `48_jerusalem_hezekiah.jpg` — Jerusalem in the time of Hezekiah
+  - `49_jerusalem_nehemiah.jpg` — Jerusalem in the time of Nehemiah
+  - `50_jerusalem_nt_cram.jpg` — Ancient Jerusalem, New Testament period
+  - `51_jerusalem_terrain.png` — Jerusalem terrain
+  - `52_jerusalem_walls_contours.png` — Jerusalem walls and contours
+  - `53_pef_new_testament.jpg` — Western Palestine / New Testament survey
+  - `54_palestine_nt_period.jpg` — Palestine in the New Testament period
+  - `55_palestine_time_christ_cram.jpg` — Palestine in the time of Christ
+- **Metadata**: Every new map has English, Simplified Chinese, and Traditional Chinese title/description fields in `assets/maps_index.json`.
+- **Coverage preserved**: Verified `55 maps, 0 uncovered chapters` across all 1189 canonical chapters.
+- **Integrity check**: `sips` successfully decoded every `jpg/png/gif` in `assets/maps`; no corrupt files reported.
+
 ### More Maps Expansion (round 15)
 - **Library expanded 25 → 39 entries** by registering the prepared map assets `26`-`39` in `assets/maps_index.json`.
 - **New map entries**:
