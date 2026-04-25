@@ -57,7 +57,13 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
   int _visibleItemIndex = 0;
   bool _showVersePosition = false;
   Timer? _versePositionTimer;
-  List<BibleMap> _currentMaps = [];
+  /// Maps whose chapter range covers the current book + chapter exactly.
+  List<BibleMap> _chapterMaps = [];
+
+  /// Maps that mention the current book at all (any chapter range).
+  /// Used as the fallback when [_chapterMaps] is empty so the user
+  /// still gets a relevant suggestion (e.g. Acts 22 → Paul's journeys).
+  List<BibleMap> _bookMaps = [];
   String _lastBookChapter = '';
 
   @override
@@ -119,8 +125,22 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
     if (key == _lastBookChapter) return;
     _lastBookChapter = key;
     final en = bookNameToEnglish[book] ?? book;
-    MapService.mapsForBookChapter(en, chapter).then((maps) {
-      if (mounted) setState(() => _currentMaps = maps);
+    Future.wait([
+      MapService.mapsForBookChapter(en, chapter),
+      MapService.mapsForBook(en),
+    ]).then((results) {
+      if (!mounted) return;
+      final chapterMaps = results[0];
+      final bookMaps = results[1];
+      // Subtract chapter matches so the "book" section only shows the
+      // additional related maps and we don't render duplicates.
+      final extraBookMaps = bookMaps
+          .where((m) => !chapterMaps.any((c) => c.id == m.id))
+          .toList();
+      setState(() {
+        _chapterMaps = chapterMaps;
+        _bookMaps = extraBookMaps;
+      });
     });
   }
 
@@ -482,7 +502,8 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                       splitViewActive: widget.splitViewActive,
                       onClose: widget.onClose,
                       showSearchAndSettings: widget.showSearchAndSettings,
-                      maps: _currentMaps,
+                      chapterMaps: _chapterMaps,
+                      bookMaps: _bookMaps,
                       locale: settings.locale,
                       onBookTap: isWideScreen && widget.showSidebarToggle
                           ? () {
@@ -886,25 +907,124 @@ class _SelectionActionBar extends StatelessWidget {
   }
 }
 
+/// Shows the map picker as a tabbed sheet.
+///
+///   - "For this chapter" — exact chapter matches (highlighted; auto-
+///     selected as the default tab when at least one exists).
+///   - "For this book" — additional maps that mention this book.
+///     Auto-selected when no chapter match exists, with a small note
+///     explaining that nothing matches the exact chapter.
+///   - "All maps" — the full library, always available so users can
+///     browse even on chapters with zero matches (Judges, Job, etc.).
 void _showMapPicker(
-    BuildContext context, List<BibleMap> maps, String locale) {
-  if (maps.length == 1) {
-    Get.to(() => MapViewerPage(map: maps.first, locale: locale));
-    return;
-  }
-  showModalBottomSheet(
+  BuildContext context, {
+  required List<BibleMap> chapterMaps,
+  required List<BibleMap> bookMaps,
+  required String locale,
+}) {
+  showModalBottomSheet<void>(
     context: context,
+    isScrollControlled: true,
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
     ),
-    builder: (_) {
-      final scheme = Theme.of(context).colorScheme;
-      return SafeArea(
+    builder: (sheetCtx) {
+      return _MapPickerSheet(
+        chapterMaps: chapterMaps,
+        bookMaps: bookMaps,
+        locale: locale,
+      );
+    },
+  );
+}
+
+class _MapPickerSheet extends StatefulWidget {
+  final List<BibleMap> chapterMaps;
+  final List<BibleMap> bookMaps;
+  final String locale;
+  const _MapPickerSheet({
+    required this.chapterMaps,
+    required this.bookMaps,
+    required this.locale,
+  });
+
+  @override
+  State<_MapPickerSheet> createState() => _MapPickerSheetState();
+}
+
+class _MapPickerSheetState extends State<_MapPickerSheet>
+    with SingleTickerProviderStateMixin {
+  late TabController _tab;
+  List<BibleMap> _allMaps = const [];
+  bool _allLoading = true;
+
+  // Tab indices that are visible in the current configuration.
+  // The "Chapter" tab is hidden when there are no chapter matches —
+  // so we don't waste a tab on an empty list.
+  late final List<_MapTab> _tabs;
+
+  @override
+  void initState() {
+    super.initState();
+    _tabs = _buildTabs();
+    final initial = _tabs.indexWhere((t) => t.kind == _MapTabKind.book) >= 0 &&
+            widget.chapterMaps.isEmpty
+        ? _tabs.indexWhere((t) => t.kind == _MapTabKind.book)
+        : 0;
+    _tab = TabController(
+      length: _tabs.length,
+      vsync: this,
+      initialIndex: initial < 0 ? 0 : initial,
+    );
+    _loadAll();
+  }
+
+  @override
+  void dispose() {
+    _tab.dispose();
+    super.dispose();
+  }
+
+  Future<void> _loadAll() async {
+    final all = await MapService.loadMaps();
+    if (!mounted) return;
+    setState(() {
+      _allMaps = all;
+      _allLoading = false;
+    });
+  }
+
+  List<_MapTab> _buildTabs() {
+    final tabs = <_MapTab>[];
+    if (widget.chapterMaps.isNotEmpty) {
+      tabs.add(_MapTab(_MapTabKind.chapter,
+          uiStrings['mapsForThisChapter']?[widget.locale] ??
+              'For this chapter'));
+    }
+    if (widget.bookMaps.isNotEmpty) {
+      tabs.add(_MapTab(_MapTabKind.book,
+          uiStrings['mapsForThisBook']?[widget.locale] ?? 'For this book'));
+    }
+    tabs.add(_MapTab(
+        _MapTabKind.all, uiStrings['mapsAll']?[widget.locale] ?? 'All maps'));
+    return tabs;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final mediaH = MediaQuery.of(context).size.height;
+    final sheetHeight = mediaH * 0.7;
+
+    return SizedBox(
+      height: sheetHeight,
+      child: SafeArea(
+        top: false,
         child: Column(
-          mainAxisSize: MainAxisSize.min,
           children: [
+            // Drag handle
             Padding(
-              padding: const EdgeInsets.only(top: 8),
+              padding: const EdgeInsets.only(top: 8, bottom: 4),
               child: Container(
                 width: 32,
                 height: 4,
@@ -914,68 +1034,207 @@ void _showMapPicker(
                 ),
               ),
             ),
+            // Title row
             Padding(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+              padding: const EdgeInsets.fromLTRB(16, 4, 8, 4),
               child: Row(
                 children: [
                   Icon(Icons.map_outlined, size: 18, color: scheme.primary),
                   const SizedBox(width: 8),
-                  Text(
-                    uiStrings['maps']?[locale] ?? 'Maps',
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                      color: scheme.onSurface,
+                  Expanded(
+                    child: Text(
+                      uiStrings['maps']?[widget.locale] ?? 'Maps',
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                        color: scheme.onSurface,
+                      ),
                     ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close_rounded),
+                    onPressed: () => Navigator.of(context).pop(),
+                    tooltip: uiStrings['close']?[widget.locale] ?? 'Close',
                   ),
                 ],
               ),
             ),
+            // Tab strip — only render when there's more than one tab.
+            if (_tabs.length > 1)
+              TabBar(
+                controller: _tab,
+                isScrollable: true,
+                tabAlignment: TabAlignment.start,
+                tabs: [for (final t in _tabs) Tab(text: t.label)],
+              ),
             const Divider(height: 1),
-            ...maps.map((m) => ListTile(
-                  dense: true,
-                  leading: ClipRRect(
-                    borderRadius: BorderRadius.circular(6),
-                    child: Container(
-                      width: 44,
-                      height: 44,
-                      color: scheme.surfaceContainerHighest
-                          .withValues(alpha: 0.5),
-                      child: Image.asset(
-                        'assets/maps/${m.file}',
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => Icon(Icons.map,
-                            size: 22, color: scheme.primary),
-                      ),
-                    ),
-                  ),
-                  title: Text(
-                    m.localizedTitle(locale),
-                    style: const TextStyle(fontSize: 14),
-                  ),
-                  subtitle: m.localizedDescription(locale).isNotEmpty
-                      ? Text(
-                          m.localizedDescription(locale),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                              fontSize: 12, color: scheme.onSurfaceVariant),
-                        )
-                      : null,
-                  trailing: Icon(Icons.chevron_right_rounded,
-                      size: 20, color: scheme.outline),
-                  onTap: () {
-                    Navigator.pop(context);
-                    Get.to(
-                        () => MapViewerPage(map: m, locale: locale));
-                  },
-                )),
-            const SizedBox(height: 4),
+            Expanded(
+              child: TabBarView(
+                controller: _tab,
+                children: [
+                  for (final t in _tabs) _buildTabContent(t.kind),
+                ],
+              ),
+            ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildTabContent(_MapTabKind kind) {
+    switch (kind) {
+      case _MapTabKind.chapter:
+        return _mapList(widget.chapterMaps);
+      case _MapTabKind.book:
+        return Column(
+          children: [
+            if (widget.chapterMaps.isEmpty)
+              _FallbackNote(
+                text: uiStrings['mapsNoneForChapterFallback']
+                        ?[widget.locale] ??
+                    'No map specifically for this chapter — here are related maps:',
+              ),
+            Expanded(child: _mapList(widget.bookMaps)),
+          ],
+        );
+      case _MapTabKind.all:
+        if (_allLoading) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        return _mapList(_allMaps);
+    }
+  }
+
+  Widget _mapList(List<BibleMap> maps) {
+    if (maps.isEmpty) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Text(
+            uiStrings['noMapsForChapter']?[widget.locale] ??
+                'No maps for this chapter',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+          ),
+        ),
       );
-    },
-  );
+    }
+    return ListView.builder(
+      itemCount: maps.length,
+      itemBuilder: (ctx, i) => _MapTile(
+        map: maps[i],
+        locale: widget.locale,
+        related: [
+          ...widget.chapterMaps,
+          ...widget.bookMaps,
+        ],
+        onClose: () => Navigator.of(context).pop(),
+      ),
+    );
+  }
+}
+
+enum _MapTabKind { chapter, book, all }
+
+class _MapTab {
+  final _MapTabKind kind;
+  final String label;
+  const _MapTab(this.kind, this.label);
+}
+
+class _FallbackNote extends StatelessWidget {
+  final String text;
+  const _FallbackNote({required this.text});
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
+      color: scheme.surfaceContainerHighest.withValues(alpha: 0.4),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(Icons.info_outline_rounded,
+              size: 16, color: scheme.onSurfaceVariant),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              text,
+              style: TextStyle(
+                fontSize: 12,
+                color: scheme.onSurfaceVariant,
+                height: 1.4,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _MapTile extends StatelessWidget {
+  final BibleMap map;
+  final String locale;
+  final List<BibleMap> related;
+  final VoidCallback onClose;
+  const _MapTile({
+    required this.map,
+    required this.locale,
+    required this.related,
+    required this.onClose,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return ListTile(
+      leading: ClipRRect(
+        borderRadius: BorderRadius.circular(6),
+        child: Container(
+          width: 44,
+          height: 44,
+          color: scheme.surfaceContainerHighest.withValues(alpha: 0.5),
+          child: Image.asset(
+            'assets/maps/${map.file}',
+            fit: BoxFit.cover,
+            errorBuilder: (_, __, ___) =>
+                Icon(Icons.map, size: 22, color: scheme.primary),
+          ),
+        ),
+      ),
+      title: Text(
+        map.localizedTitle(locale),
+        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+        maxLines: 2,
+        overflow: TextOverflow.ellipsis,
+      ),
+      subtitle: map.localizedDescription(locale).isNotEmpty
+          ? Text(
+              map.localizedDescription(locale),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style:
+                  TextStyle(fontSize: 12, color: scheme.onSurfaceVariant),
+            )
+          : null,
+      trailing:
+          Icon(Icons.chevron_right_rounded, size: 20, color: scheme.outline),
+      onTap: () {
+        onClose();
+        Get.to(() => MapViewerPage(
+              map: map,
+              locale: locale,
+              relatedMaps: related,
+            ));
+      },
+    );
+  }
 }
 
 class _FloatingHeader extends StatelessWidget {
@@ -997,7 +1256,8 @@ class _FloatingHeader extends StatelessWidget {
   final bool splitViewActive;
   final VoidCallback? onClose;
   final bool showSearchAndSettings;
-  final List<BibleMap> maps;
+  final List<BibleMap> chapterMaps;
+  final List<BibleMap> bookMaps;
   final String locale;
 
   const _FloatingHeader({
@@ -1019,7 +1279,8 @@ class _FloatingHeader extends StatelessWidget {
     this.splitViewActive = false,
     this.onClose,
     this.showSearchAndSettings = true,
-    this.maps = const [],
+    this.chapterMaps = const [],
+    this.bookMaps = const [],
     this.locale = 'en',
   });
 
@@ -1174,15 +1435,33 @@ class _FloatingHeader extends StatelessWidget {
                             ? 'Close Split View'
                             : 'Open Split View',
                       ),
-                    if (maps.isNotEmpty)
-                      IconButton(
-                        onPressed: () => _showMapPicker(context, maps, locale),
-                        icon: Icon(Icons.map_outlined, size: iconSize),
-                        padding: EdgeInsets.all(iconPad),
-                        constraints: const BoxConstraints(
-                            minWidth: 36, minHeight: 36),
-                        tooltip: uiStrings['maps']?[locale] ?? 'Maps',
+                    // Always show the map button — even when no maps
+                    // match this chapter the picker offers a book-level
+                    // fallback and a "browse all" entry.
+                    IconButton(
+                      onPressed: () => _showMapPicker(
+                        context,
+                        chapterMaps: chapterMaps,
+                        bookMaps: bookMaps,
+                        locale: locale,
                       ),
+                      icon: Icon(
+                        chapterMaps.isNotEmpty
+                            ? Icons.map_rounded
+                            : Icons.map_outlined,
+                        size: iconSize,
+                        // Dim slightly when no chapter-specific match —
+                        // signals "fallback" without disabling the
+                        // affordance.
+                        color: chapterMaps.isEmpty
+                            ? scheme.onSurfaceVariant.withValues(alpha: 0.7)
+                            : null,
+                      ),
+                      padding: EdgeInsets.all(iconPad),
+                      constraints: const BoxConstraints(
+                          minWidth: 36, minHeight: 36),
+                      tooltip: uiStrings['maps']?[locale] ?? 'Maps',
+                    ),
                     if (showSearchAndSettings) ...[
                       IconButton(
                         onPressed: onSearch,

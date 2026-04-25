@@ -23,6 +23,14 @@ class MapService {
     return all.where((m) => m.matchesBookChapter(englishBook, chapter)).toList();
   }
 
+  /// All maps that mention the given book, regardless of chapter range.
+  /// Used as a fallback when no chapter-specific map matches — e.g. on
+  /// Acts 22 we still want to surface Paul's journeys / NT World.
+  static Future<List<BibleMap>> mapsForBook(String englishBook) async {
+    final all = await loadMaps();
+    return all.where((m) => m.books.containsKey(englishBook)).toList();
+  }
+
   static void clearCache() {
     _cache = null;
   }
