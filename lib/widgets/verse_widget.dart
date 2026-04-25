@@ -37,6 +37,8 @@ class VerseWidget extends StatelessWidget {
         final highlightColor = mainProvider.getHighlightColor(verse);
         final isReferenceLine = verse.paragraphType == 'reference';
         final inParagraphMode = settings.paragraphMode;
+        final isDark = Theme.of(context).brightness == Brightness.dark;
+        final highlightAlpha = isDark ? 0.55 : 0.35;
 
         final spans = <InlineSpan>[];
 
@@ -105,9 +107,9 @@ class VerseWidget extends StatelessWidget {
                           ? Theme.of(context)
                               .colorScheme
                               .secondary
-                              .withValues(alpha: 0.35)
+                              .withValues(alpha: highlightAlpha)
                           : highlightColor != null
-                              ? highlightColor.withValues(alpha: 0.35)
+                              ? highlightColor.withValues(alpha: highlightAlpha)
                               : Colors.transparent,
                   padding: EdgeInsets.fromLTRB(
                       leftIndent, vertPadding, baseIndent, vertPadding),

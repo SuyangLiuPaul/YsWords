@@ -83,7 +83,7 @@ class _HomePageState extends State<HomePage> {
       return edge != 0 ? edge : a.index.compareTo(b.index);
     });
     final nextIndex = visible.first.index;
-    if (nextIndex != _visibleItemIndex) {
+    if (nextIndex != _visibleItemIndex && mounted) {
       setState(() => _visibleItemIndex = nextIndex);
     }
   }
@@ -697,7 +697,7 @@ class _ReaderStatusBar extends StatelessWidget {
                     const BorderRadius.vertical(top: Radius.circular(22)),
                 child: LinearProgressIndicator(
                   value: progress,
-                  minHeight: 3 * settings.menuScale,
+                  minHeight: (3 * settings.menuScale).clamp(2.5, 6.0),
                   backgroundColor:
                       scheme.surfaceContainerHighest.withValues(alpha: 0.5),
                   color: scheme.primary,
@@ -878,7 +878,7 @@ class _SelectionActionBar extends StatelessWidget {
                         color: Color(argb),
                         shape: BoxShape.circle,
                         border: Border.all(
-                          color: Colors.grey.withValues(alpha: 0.3),
+                          color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.3),
                         ),
                       ),
                     ),
@@ -953,13 +953,15 @@ class _SelectionActionBar extends StatelessWidget {
                   icon: const Icon(Icons.format_color_fill),
                 ),
                 const SizedBox(width: 4),
-                FilledButton.icon(
-                  onPressed: onCopy,
-                  icon: const Icon(Icons.copy_rounded),
-                  label: Text(
-                    uiStrings['copySelection']?[settings.locale] ?? 'Copy',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
+                Flexible(
+                  child: FilledButton.icon(
+                    onPressed: onCopy,
+                    icon: const Icon(Icons.copy_rounded),
+                    label: Text(
+                      uiStrings['copySelection']?[settings.locale] ?? 'Copy',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
                 ),
               ],
@@ -1040,7 +1042,7 @@ class _FloatingHeader extends StatelessWidget {
                       size: iconSize,
                     ),
                     padding: EdgeInsets.all(iconPad),
-                    constraints: const BoxConstraints(),
+                    constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
                     tooltip: sidebarOpen
                         ? (uiStrings['close']?[settings.locale] ?? 'Close')
                         : (uiStrings['bibleBooks']?[settings.locale] ??
@@ -1105,7 +1107,7 @@ class _FloatingHeader extends StatelessWidget {
                       size: iconSize,
                     ),
                     padding: EdgeInsets.all(iconPad),
-                    constraints: const BoxConstraints(),
+                    constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
                     tooltip: paragraphMode
                         ? (uiStrings['paragraphFlow']?[settings.locale] ??
                             'Paragraph Flow')
@@ -1116,14 +1118,14 @@ class _FloatingHeader extends StatelessWidget {
                   onPressed: onSearch,
                   icon: Icon(Icons.search_rounded, size: iconSize),
                   padding: EdgeInsets.all(iconPad),
-                  constraints: const BoxConstraints(),
+                  constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
                 ),
                 const SizedBox(width: 2),
                 IconButton(
                   onPressed: onSettings,
                   icon: Icon(Icons.settings, size: iconSize),
                   padding: EdgeInsets.all(iconPad),
-                  constraints: const BoxConstraints(),
+                  constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
                 ),
               ],
             ),

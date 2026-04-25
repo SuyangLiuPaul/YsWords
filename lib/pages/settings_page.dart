@@ -275,7 +275,6 @@ class SettingsPage extends StatelessWidget {
                                 ),
                       ),
                       SizedBox(height: 8 * s),
-                      SizedBox(height: 12 * s),
                       if (settings.copyFormat == 'devotional')
                         Padding(
                           padding:
@@ -410,7 +409,7 @@ class SettingsPage extends StatelessWidget {
                 ),
               ),
               SizedBox(height: 16 * s),
-              if (Theme.of(context).brightness != Brightness.dark) ...[
+              // Primary Color card - always visible (dark + light)
                 Card(
                   child: Padding(
                     padding: EdgeInsets.symmetric(
@@ -432,14 +431,17 @@ class SettingsPage extends StatelessWidget {
                           spacing: 8,
                           runSpacing: 8,
                           children: palette.map((c) {
+                            final isSelected = settings.primaryColor == c;
                             return GestureDetector(
                               onTap: () => settings.setPrimaryColor(c),
                               child: CircleAvatar(
                                 backgroundColor: c,
                                 radius: settings.fontSize * 0.8,
-                                child: settings.primaryColor == c
+                                child: isSelected
                                     ? Icon(Icons.check,
-                                        color: Colors.white,
+                                        color: c.computeLuminance() > 0.5
+                                            ? Colors.black
+                                            : Colors.white,
                                         size: settings.fontSize * 0.6)
                                     : null,
                               ),
@@ -451,7 +453,7 @@ class SettingsPage extends StatelessWidget {
                   ),
                 ),
                 SizedBox(height: 16 * s),
-              ],
+              SizedBox(height: 16 * s),
               Card(
                 child: Padding(
                   padding:

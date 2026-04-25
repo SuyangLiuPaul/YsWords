@@ -28,7 +28,7 @@ class BooksPage extends StatelessWidget {
           body: Center(
             child: ConstrainedBox(
               constraints: BoxConstraints(
-                maxWidth: ResponsiveBreakpoints.isDesktopOrWider(
+                maxWidth: ResponsiveBreakpoints.isTabletOrWider(
                         MediaQuery.of(context).size.width)
                     ? 800
                     : double.infinity,

@@ -42,7 +42,7 @@ class _MainAppState extends State<MainApp> {
   @override
   void initState() {
     super.initState();
-    Timer(Duration(seconds: 8), () {
+    Timer(const Duration(seconds: 4), () {
       if (_loading && mounted) {
         setState(() {
           _loading = false;

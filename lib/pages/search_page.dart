@@ -264,18 +264,7 @@ class _SearchPageState extends State<SearchPage> {
                     }
                   },
                   child: Text(
-                    ((uiStrings['searchResultCount']?[settings.locale] ??
-                                    'Total {count} matches, grouped by book:')
-                                .replaceAll(
-                                    '{count}', _results.length.toString()) +
-                            bookCounts.entries
-                                .take(3)
-                                .map((e) => '${e.key}(${e.value})')
-                                .join(settings.locale == 'en' ? ', ' : '，') +
-                            (bookCounts.length > 3 ? '...' : '')) +
-                        (bookCounts.length > 3
-                            ? '\n${uiStrings['viewMoreBooksHint']?[settings.locale] ?? ''}'
-                            : ''),
+                    '${(uiStrings['searchResultCount']?[settings.locale] ?? 'Total {count} matches, grouped by book:').replaceAll('{count}', _results.length.toString())} ${bookCounts.entries.take(3).map((e) => '${e.key}(${e.value})').join(settings.locale == 'en' ? ', ' : '，')}${bookCounts.length > 3 ? '...' : ''}${bookCounts.length > 3 ? '\n${uiStrings['viewMoreBooksHint']?[settings.locale] ?? ''}' : ''}',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontWeight: FontWeight.w500,
