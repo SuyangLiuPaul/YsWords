@@ -232,6 +232,8 @@ class _BookChapterPickerState extends State<BookChapterPicker> {
                                         onPressed: () =>
                                             _setTestament(settings, true),
                                       ),
+                                    if (hasOldTestament && hasNewTestament)
+                                      const SizedBox(width: 10),
                                     if (hasNewTestament)
                                       _testamentButton(
                                         context: context,
