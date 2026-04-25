@@ -71,6 +71,16 @@ const uiStrings = {
     'zh-Hant': '書卷',
     'en': 'Bible Books',
   },
+  'addChapter': {
+    'zh-Hans': '添加章节',
+    'zh-Hant': '新增章節',
+    'en': 'Add chapter',
+  },
+  'openAnotherChapter': {
+    'zh-Hans': '打开另一章',
+    'zh-Hant': '開啟另一章',
+    'en': 'Open another chapter',
+  },
   'changeVersion': {
     'zh-Hans': '切换版本',
     'zh-Hant': '切換版本',
@@ -290,6 +300,11 @@ const uiStrings = {
     'zh-Hans': '暂无经文',
     'zh-Hant': '暫無經文',
     'en': 'No verses available',
+  },
+  'chapterUnavailable': {
+    'zh-Hans': '当前版本没有这一章。',
+    'zh-Hant': '目前版本沒有這一章。',
+    'en': 'This chapter is not available in the current version.',
   },
   'loadErrorTitle': {
     'zh-Hans': '加载失败',

@@ -6,6 +6,7 @@ import 'package:yswords/constants/ui_strings.dart';
 import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/widgets/localized_back_button.dart';
 import 'package:yswords/widgets/book_chapter_picker.dart';
+import 'package:yswords/widgets/stacked_card_nav.dart';
 import 'package:yswords/utils/responsive.dart';
 
 class BooksPage extends StatelessWidget {
@@ -44,7 +45,12 @@ class BooksPage extends StatelessWidget {
                   mainProvider.setCurrentChapter(book: book, chapter: chapter);
                   mainProvider.updateCurrentVerse(verse: matched.first);
                   mainProvider.jumpToTop();
-                  Get.back();
+                  final stack = StackedCardScaffold.maybeOf(context);
+                  if (stack != null && stack.hasOverlays) {
+                    stack.pop();
+                  } else {
+                    Get.back();
+                  }
                 },
               ),
             ),

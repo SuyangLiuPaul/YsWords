@@ -24,7 +24,8 @@ main.dart (entry point)
   │   ├── MainProvider    — app state (verses, books, selection, scroll, current position)
   │   └── AppSettings     — user prefs (font, theme, locale, copy format)
   ├── GetMaterialApp      — routing via GetX (Get.to / Get.back)
-  └── LoadingPage (3s splash) → HomePage
+  └── _RootRouter
+      └── StackedCardScaffold → LoadingPage (3s splash) → HomePage
 ```
 
 **State management**: Provider (ChangeNotifier + Consumer) for data, GetX for navigation only.
@@ -44,7 +45,7 @@ main.dart (entry point)
 ### Entry Point & State
 | File | Purpose |
 |---|---|
-| `lib/main.dart` | App bootstrap. MultiProvider setup, loading screen with 8s timeout, initial data load sequence |
+| `lib/main.dart` | App bootstrap. MultiProvider setup, initial data load sequence, persistent stacked-card host, and the global "add chapter" picker flow. The floating "+" is hidden during loading and appears only once the home reader is ready |
 | `lib/providers/main_provider.dart` | Central state: verses, books, current book/chapter/version, selection, **verse highlights** (`Map<String, int>` verse ID → ARGB color), scroll controllers, state persistence via SharedPreferences |
 | `lib/models/app_settings.dart` | All user preferences persisted via SharedPreferences (font, theme, locale, copy format, paragraph mode, **menu scale**) |
 
@@ -76,6 +77,8 @@ main.dart (entry point)
 | `lib/widgets/verse_widget.dart` | Renders single verse. Background priority: selection > search highlight > **user highlight color** (35% opacity) > transparent. In paragraph mode: superscript verse numbers, first-line indent, paragraph-start spacers, reference-block indent. Tap to select, tap number to copy |
 | `lib/widgets/paragraph_group_widget.dart` | Renders multiple verses as a single flowing RichText in paragraph mode. Per-verse selection via `TapGestureRecognizer`, per-verse background (selection/highlight). Same background priority as VerseWidget |
 | `lib/widgets/localized_back_button.dart` | Back button with localized tooltip |
+| `lib/widgets/stacked_card_nav.dart` | Stage-Manager-style stacked card host. Provides `push`, `pop`, `promote`, `popAll`, responsive layer caps, and the floating "+" launcher hook |
+| `lib/widgets/chapter_reader_card.dart` | Self-contained chapter reader for added stacked cards. It locks to the selected book/chapter, does not mutate the global current-chapter state, and shows its own copy/highlight/clear selection bar |
 
 ### Constants
 | File | Purpose |
@@ -220,6 +223,14 @@ The app adapts its layout to all device sizes using `lib/utils/responsive.dart`:
 
 ## What Has Been Fixed (2026-04-25)
 
+### Add-Chapter Stacked Card Flow (this session, round 7)
+- **Floating "+" behavior corrected**: `StackedCardScaffold` no longer shows the old Search / Books / Settings quick-launch sheet. The button is wired through `onAddLayer`, stays hidden during loading, and opens only the book/chapter picker once `HomePage` is ready.
+- **New chapter cards actually render chapters**: Selecting a book/chapter from the "+" picker now pushes `ChapterReaderCard(book, chapter)`, an independent reader layer locked to that chapter. It can stack multiple chapters without changing the base reader's current location.
+- **Added-card verse actions fixed**: `ChapterReaderCard` now has its own bottom action bar for selected verses, with copy, highlight, remove-highlight, and clear actions. This prevents verse taps in an added card from putting the controls behind the top card.
+- **Stack-aware close behavior**: `BooksPage` chapter selection and `SearchPage` result taps now close the top stacked layer via `StackedCardScaffold.pop()` when available, falling back to `Get.back()` only outside the stacked host.
+- **Localization**: Added `addChapter`, `openAnotherChapter`, and `chapterUnavailable` strings for English, Simplified Chinese, and Traditional Chinese.
+- **Verification**: `flutter analyze` and `flutter build web` both pass.
+
 ### Stage-Manager-style stacked card navigation (this session, round 6)
 - **New widget** `lib/widgets/stacked_card_nav.dart` — `StackedCardScaffold` wraps the app root and exposes a `push(WidgetBuilder)` / `pop()` / `promote(int)` / `popAll()` API. Pushed pages slide in from the right as cascading layers; each layer leaves a slim left-edge strip of the page beneath it visible (18 dp on phone, 26 dp small tablet, 34 dp larger). Tapping a strip promotes that layer back to the front; tapping the base strip pops everything; system back / Android gesture pops the top layer (via `PopScope`).
 - **Responsive layer cap**: phone (<600 dp) 3 total cards, small tablet (<900) 4, large tablet (<1300) 5, desktop ≥1300 6. Pushing past the cap evicts the oldest overlay automatically.
@@ -228,7 +239,7 @@ The app adapts its layout to all device sizes using `lib/utils/responsive.dart`:
 - **Persistent across loading→home transition**: `_RootRouter` (in `main.dart`) is the base widget inside the scaffold. It shows `LoadingPage` first and swaps to `HomePage` in place when verses are ready, so the StackedCardScaffold itself never gets torn down. `LoadingPage` accepts an optional `onAdvance` callback for this purpose; absent the callback it falls back to the legacy `Navigator.pushReplacement`.
 - **LocalizedBackButton** now prefers `StackedCardScaffold.maybeOf(context)?.pop()` over `Get.back()` whenever an overlay is on screen, so AppBar back buttons close the layer without unmounting the host route.
 - **Existing UI preserved exactly** — only the transition feel changes for these three nav targets.
-- **Status**: built (`flutter build web --release`), committed, and pushed to GitHub `main` (`53f0694`). Netlify production deploy was not run from this session — the CLI was unauthenticated; the user should run `netlify login` (or set `NETLIFY_AUTH_TOKEN`) and re-run `netlify deploy --dir build/web --prod` to publish.
+- **Status**: superseded by round 7, which fixes the add-chapter user flow and deploys via the credentials in `.env`.
 
 ### iPad UI/UX Fixes (round 2)
 - **Full-width reading on all devices**: Removed `maxContentWidth` constraint from reading area. Verse text now fills screen width on iPad/tablet/desktop just like iPhone — no side gaps.
