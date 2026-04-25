@@ -51,6 +51,7 @@ class _ChapterReaderCardState extends State<ChapterReaderCard> {
         final groups = settings.paragraphMode
             ? _groupIntoParagraphs(verses)
             : verses.map((v) => [v]).toList();
+        final stack = StackedCardScaffold.maybeOf(context);
 
         return Scaffold(
           appBar: AppBar(
@@ -62,7 +63,7 @@ class _ChapterReaderCardState extends State<ChapterReaderCard> {
             ),
             actions: [
               Padding(
-                padding: const EdgeInsets.only(right: 12),
+                padding: const EdgeInsets.only(right: 4),
                 child: Center(
                   child: Text(
                     shortBibleVersionLabel(mainProvider.currentVersion),
@@ -73,11 +74,28 @@ class _ChapterReaderCardState extends State<ChapterReaderCard> {
                   ),
                 ),
               ),
+              if (stack?.canAddLayer == true)
+                IconButton(
+                  tooltip:
+                      uiStrings['openAnotherChapter']?[settings.locale] ??
+                          'Open another chapter',
+                  onPressed: stack!.requestAddLayer,
+                  icon: const Icon(Icons.library_add_rounded),
+                ),
+              if ((stack?.overlayCount ?? 0) > 1)
+                IconButton(
+                  tooltip: uiStrings['switchPage']?[settings.locale] ??
+                      'Switch page',
+                  onPressed: stack!.showLayerSwitcher,
+                  icon: Badge(
+                    label: Text('${(stack.overlayCount) + 1}'),
+                    child: const Icon(Icons.layers_rounded),
+                  ),
+                ),
               IconButton(
                 tooltip:
                     uiStrings['closePage']?[settings.locale] ?? 'Close page',
                 onPressed: () {
-                  final stack = StackedCardScaffold.maybeOf(context);
                   if (stack != null && stack.hasOverlays) {
                     stack.pop();
                   } else {

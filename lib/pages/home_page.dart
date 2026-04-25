@@ -336,6 +336,22 @@ class _HomePageState extends State<HomePage> {
                       book: currentVerse?.book ?? '',
                       chapter: currentVerse?.chapter ?? 0,
                       version: mainProvider.currentVersion,
+                      onAddLayer: StackedCardScaffold.maybeOf(context)
+                                  ?.canAddLayer ==
+                              true
+                          ? StackedCardScaffold.maybeOf(context)!
+                              .requestAddLayer
+                          : null,
+                      onSwitchLayer: StackedCardScaffold.maybeOf(context)
+                                  ?.hasOverlays ==
+                              true
+                          ? StackedCardScaffold.maybeOf(context)!
+                              .showLayerSwitcher
+                          : null,
+                      openPageCount:
+                          (StackedCardScaffold.maybeOf(context)?.overlayCount ??
+                                  0) +
+                              1,
                       showSidebarToggle: isWideScreen,
                       sidebarOpen: _sidebarOpen,
                       onToggleSidebar: _toggleSidebar,
@@ -1024,6 +1040,9 @@ class _FloatingHeader extends StatelessWidget {
   final ValueChanged<String> onVersionSelected;
   final VoidCallback onSearch;
   final VoidCallback onSettings;
+  final VoidCallback? onAddLayer;
+  final VoidCallback? onSwitchLayer;
+  final int openPageCount;
   final bool showSidebarToggle;
   final bool sidebarOpen;
   final VoidCallback? onToggleSidebar;
@@ -1040,6 +1059,9 @@ class _FloatingHeader extends StatelessWidget {
     required this.onVersionSelected,
     required this.onSearch,
     required this.onSettings,
+    this.onAddLayer,
+    this.onSwitchLayer,
+    this.openPageCount = 1,
     this.showSidebarToggle = false,
     this.sidebarOpen = false,
     this.onToggleSidebar,
@@ -1153,6 +1175,30 @@ class _FloatingHeader extends StatelessWidget {
                             'Paragraph Flow')
                         : (uiStrings['verseByVerse']?[settings.locale] ??
                             'Verse by Verse'),
+                  ),
+                if (onAddLayer != null)
+                  IconButton(
+                    onPressed: onAddLayer,
+                    icon: Icon(Icons.library_add_rounded, size: iconSize),
+                    padding: EdgeInsets.all(iconPad),
+                    constraints:
+                        const BoxConstraints(minWidth: 36, minHeight: 36),
+                    tooltip:
+                        uiStrings['openAnotherChapter']?[settings.locale] ??
+                            'Open another chapter',
+                  ),
+                if (onSwitchLayer != null)
+                  IconButton(
+                    onPressed: onSwitchLayer,
+                    icon: Badge(
+                      label: Text('$openPageCount'),
+                      child: Icon(Icons.layers_rounded, size: iconSize),
+                    ),
+                    padding: EdgeInsets.all(iconPad),
+                    constraints:
+                        const BoxConstraints(minWidth: 36, minHeight: 36),
+                    tooltip: uiStrings['switchPage']?[settings.locale] ??
+                        'Switch page',
                   ),
                 IconButton(
                   onPressed: onSearch,

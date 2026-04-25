@@ -77,8 +77,8 @@ main.dart (entry point)
 | `lib/widgets/verse_widget.dart` | Renders single verse. Background priority: selection > search highlight > **user highlight color** (35% opacity) > transparent. In paragraph mode: superscript verse numbers, first-line indent, paragraph-start spacers, reference-block indent. Tap to select, tap number to copy |
 | `lib/widgets/paragraph_group_widget.dart` | Renders multiple verses as a single flowing RichText in paragraph mode. Per-verse selection via `TapGestureRecognizer`, per-verse background (selection/highlight). Same background priority as VerseWidget |
 | `lib/widgets/localized_back_button.dart` | Back button with localized tooltip |
-| `lib/widgets/stacked_card_nav.dart` | Stage-Manager-style stacked card host. Provides `push(label, icon)`, `pop`, `closeAt`, `promote`, `popAll`, responsive layer caps, and mobile-visible stack controls (`+`, switcher, close current page) |
-| `lib/widgets/chapter_reader_card.dart` | Self-contained chapter reader for added stacked cards. It locks to the selected book/chapter, does not mutate the global current-chapter state, shows an explicit close button, and has its own copy/highlight/clear selection bar |
+| `lib/widgets/stacked_card_nav.dart` | Responsive stacked-page host. Provides `push(label, icon)`, `pop`, `closeAt`, `promote`, `popAll`, `requestAddLayer()`, and `showLayerSwitcher()`. Phones use full-screen overlays with explicit top-bar controls; tablet/desktop keep the offset card strips |
+| `lib/widgets/chapter_reader_card.dart` | Self-contained chapter reader for added stacked pages. It locks to the selected book/chapter, does not mutate the global current-chapter state, shows explicit add/switch/close app-bar controls, and has its own copy/highlight/clear selection bar |
 
 ### Constants
 | File | Purpose |
@@ -222,6 +222,14 @@ The app adapts its layout to all device sizes using `lib/utils/responsive.dart`:
 ---
 
 ## What Has Been Fixed (2026-04-25)
+
+### Mobile Added-Page UX Correction (this session, round 9)
+- **Removed the floating plus / bottom stack pill**: The global bottom-left controls were confusing and covered reading content. Add/switch/close now live in top navigation where mobile users expect page controls.
+- **Phone overlays are full-screen**: For widths under 600 dp, stacked pages no longer render with left offsets or peeking strips. The selected page fills the phone screen so newly added chapters are actually visible.
+- **Top-bar add/switch controls**: The home reader header now exposes an add-chapter icon. Added chapter pages expose add another chapter, switch pages, and close page in the AppBar.
+- **Switcher remains available**: `StackedCardScaffoldState.showLayerSwitcher()` is now public so top-bar controls can open the page list. The switcher still lists the reader plus each added page by label.
+- **Desktop/tablet behavior preserved**: Offset strips and card shadows remain on wider screens where the Stage-Manager-style layout has enough space.
+- **Verification**: `flutter analyze` and `flutter build web` both pass.
 
 ### Mobile Stack UX Redesign (this session, round 8)
 - **Visible stack controls**: Once any extra page is open, the standalone floating "+" becomes a compact three-action pill: add another chapter, open the page switcher, and close the current page. Users no longer need to hit the narrow left-edge strips to manage stacked pages on mobile.

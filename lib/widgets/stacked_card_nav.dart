@@ -25,18 +25,14 @@ import 'package:yswords/models/app_settings.dart';
 class StackedCardScaffold extends StatefulWidget {
   final Widget child;
 
-  /// Tooltip / aria-label for the floating "+" button.
+  /// Tooltip / aria-label for adding another chapter.
   final String addLayerTooltip;
 
   /// Label used for the root reader in the stack switcher.
   final String baseLayerLabel;
 
-  /// When non-null, the scaffold renders a small floating "+" button at
-  /// the bottom-left corner. Tapping it invokes [onAddLayer]; the
-  /// callback is responsible for showing whatever picker UI is needed
-  /// and then calling [push] with a builder for the new card. Leave
-  /// `null` to hide the button entirely (e.g. while the splash screen
-  /// is still on screen).
+  /// When non-null, descendants can call [StackedCardScaffoldState.requestAddLayer]
+  /// to show the app's add-chapter picker, then push a new reader layer.
   final VoidCallback? onAddLayer;
 
   const StackedCardScaffold({
@@ -98,6 +94,15 @@ class StackedCardScaffoldState extends State<StackedCardScaffold>
 
   bool get hasOverlays => _layers.isNotEmpty;
   int get overlayCount => _layers.length;
+  bool get canAddLayer => widget.onAddLayer != null;
+
+  void requestAddLayer() {
+    widget.onAddLayer?.call();
+  }
+
+  void showLayerSwitcher() {
+    _showLayerSwitcher(context);
+  }
 
   Future<T?> push<T>(
     WidgetBuilder builder, {
@@ -295,6 +300,7 @@ class StackedCardScaffoldState extends State<StackedCardScaffold>
     final media = MediaQuery.of(context);
     final w = media.size.width;
     final stripW = _stripWidth(w);
+    final mobileFullScreen = w < 600;
 
     return PopScope(
       canPop: _layers.isEmpty,
@@ -318,7 +324,9 @@ class StackedCardScaffoldState extends State<StackedCardScaffold>
                 Positioned.fill(child: widget.child),
 
                 // A tap-zone over the base's exposed strip pops all overlays.
-                if (_layers.isNotEmpty)
+                // On phones overlays are full-screen, so switching is handled
+                // by explicit app-bar controls instead of tiny edge strips.
+                if (_layers.isNotEmpty && !mobileFullScreen)
                   Positioned(
                     left: 0,
                     top: 0,
@@ -338,49 +346,9 @@ class StackedCardScaffoldState extends State<StackedCardScaffold>
                     index: i,
                     isTop: i == _layers.length - 1,
                     stripWidth: stripW,
+                    mobileFullScreen: mobileFullScreen,
                     screenWidth: constraints.maxWidth,
                     screenHeight: constraints.maxHeight,
-                  ),
-
-                // Floating "+" launcher: shown only when the host wires
-                // up [onAddLayer] (typically once the splash screen has
-                // finished and the home reader is ready).
-                if (widget.onAddLayer != null && _layers.isEmpty)
-                  Positioned(
-                    left: 0,
-                    bottom: 0,
-                    child: SafeArea(
-                      child: Padding(
-                        padding: const EdgeInsets.only(left: 12, bottom: 12),
-                        child: _AddLayerFab(
-                          tooltip: widget.addLayerTooltip,
-                          onTap: widget.onAddLayer!,
-                        ),
-                      ),
-                    ),
-                  ),
-                if (widget.onAddLayer != null && _layers.isNotEmpty)
-                  Positioned(
-                    left: 0,
-                    bottom: 0,
-                    child: SafeArea(
-                      child: Padding(
-                        padding: const EdgeInsets.only(left: 12, bottom: 12),
-                        child: _StackControlPill(
-                          count: _layers.length + 1,
-                          addTooltip: widget.addLayerTooltip,
-                          switchTooltip: uiStrings['switchPage']?[
-                                  context.watch<AppSettings>().locale] ??
-                              'Switch page',
-                          closeTooltip: uiStrings['closePage']?[
-                                  context.watch<AppSettings>().locale] ??
-                              'Close page',
-                          onAdd: widget.onAddLayer!,
-                          onSwitch: () => _showLayerSwitcher(context),
-                          onClose: pop,
-                        ),
-                      ),
-                    ),
                   ),
               ],
             );
@@ -396,6 +364,7 @@ class StackedCardScaffoldState extends State<StackedCardScaffold>
     required int index,
     required bool isTop,
     required double stripWidth,
+    required bool mobileFullScreen,
     required double screenWidth,
     required double screenHeight,
   }) {
@@ -403,7 +372,7 @@ class StackedCardScaffoldState extends State<StackedCardScaffold>
     //   base strip exposed at 0..stripWidth
     //   layer 0 strip exposed at stripWidth..2*stripWidth
     //   etc.
-    final targetLeft = (index + 1) * stripWidth;
+    final targetLeft = mobileFullScreen ? 0.0 : (index + 1) * stripWidth;
 
     return AnimatedBuilder(
       key: ValueKey(layer.id),
@@ -427,6 +396,7 @@ class StackedCardScaffoldState extends State<StackedCardScaffold>
         isTop: isTop,
         stripWidth: stripWidth,
         onPromoteTap: isTop ? null : () => promote(index),
+        fullScreen: mobileFullScreen,
         // Adjust MediaQuery so the page inside thinks its width is the
         // visible portion (full width minus its left offset). Otherwise a
         // Scaffold inside would compute layout for the whole screen.
@@ -438,43 +408,13 @@ class StackedCardScaffoldState extends State<StackedCardScaffold>
   }
 }
 
-/// The "+" button rendered at the bottom-left corner of the scaffold
-/// once the host wires up an [StackedCardScaffold.onAddLayer] callback.
-class _AddLayerFab extends StatelessWidget {
-  final String tooltip;
-  final VoidCallback onTap;
-  const _AddLayerFab({required this.tooltip, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    return Tooltip(
-      message: tooltip,
-      child: Material(
-        color: scheme.primary,
-        shape: const CircleBorder(),
-        elevation: 6,
-        shadowColor: Colors.black.withValues(alpha: 0.4),
-        child: InkWell(
-          customBorder: const CircleBorder(),
-          onTap: onTap,
-          child: SizedBox(
-            width: 48,
-            height: 48,
-            child: Icon(Icons.add_rounded, color: scheme.onPrimary, size: 26),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
 class _LayerCard extends StatelessWidget {
   final bool isTop;
   final double stripWidth;
   final VoidCallback? onPromoteTap;
   final double adjustedWidth;
   final double screenHeight;
+  final bool fullScreen;
   final Widget child;
 
   const _LayerCard({
@@ -483,6 +423,7 @@ class _LayerCard extends StatelessWidget {
     required this.onPromoteTap,
     required this.adjustedWidth,
     required this.screenHeight,
+    required this.fullScreen,
     required this.child,
   });
 
@@ -500,10 +441,12 @@ class _LayerCard extends StatelessWidget {
     );
 
     return ClipRRect(
-      borderRadius: const BorderRadius.only(
-        topLeft: Radius.circular(22),
-        bottomLeft: Radius.circular(22),
-      ),
+      borderRadius: fullScreen
+          ? BorderRadius.zero
+          : const BorderRadius.only(
+              topLeft: Radius.circular(22),
+              bottomLeft: Radius.circular(22),
+            ),
       child: DecoratedBox(
         decoration: BoxDecoration(
           color: scheme.surface,
@@ -515,10 +458,12 @@ class _LayerCard extends StatelessWidget {
             ),
           ],
           border: Border(
-            left: BorderSide(
-              color: scheme.outlineVariant.withValues(alpha: 0.4),
-              width: 0.5,
-            ),
+            left: fullScreen
+                ? BorderSide.none
+                : BorderSide(
+                    color: scheme.outlineVariant.withValues(alpha: 0.4),
+                    width: 0.5,
+                  ),
           ),
         ),
         child: Stack(
@@ -533,7 +478,7 @@ class _LayerCard extends StatelessWidget {
               ),
             ),
             // Subtle dim + tap-catcher on the strip when this layer isn't top.
-            if (!isTop)
+            if (!isTop && !fullScreen)
               Positioned(
                 left: 0,
                 top: 0,
@@ -559,89 +504,6 @@ class _LayerCard extends StatelessWidget {
                   ),
                 ),
               ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _StackControlPill extends StatelessWidget {
-  final int count;
-  final String addTooltip;
-  final String switchTooltip;
-  final String closeTooltip;
-  final VoidCallback onAdd;
-  final VoidCallback onSwitch;
-  final VoidCallback onClose;
-
-  const _StackControlPill({
-    required this.count,
-    required this.addTooltip,
-    required this.switchTooltip,
-    required this.closeTooltip,
-    required this.onAdd,
-    required this.onSwitch,
-    required this.onClose,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    return Material(
-      color: scheme.surface.withValues(alpha: 0.96),
-      elevation: 8,
-      shadowColor: Colors.black.withValues(alpha: 0.35),
-      borderRadius: BorderRadius.circular(28),
-      child: Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(28),
-          border: Border.all(
-            color: scheme.outlineVariant.withValues(alpha: 0.45),
-          ),
-        ),
-        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Tooltip(
-              message: addTooltip,
-              child: IconButton(
-                visualDensity: VisualDensity.compact,
-                onPressed: onAdd,
-                icon: const Icon(Icons.add_rounded),
-              ),
-            ),
-            Tooltip(
-              message: switchTooltip,
-              child: InkWell(
-                borderRadius: BorderRadius.circular(22),
-                onTap: onSwitch,
-                child: Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(Icons.layers_rounded, size: 20),
-                      const SizedBox(width: 5),
-                      Text(
-                        '$count',
-                        style: const TextStyle(fontWeight: FontWeight.w800),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-            Tooltip(
-              message: closeTooltip,
-              child: IconButton(
-                visualDensity: VisualDensity.compact,
-                onPressed: onClose,
-                icon: const Icon(Icons.close_rounded),
-              ),
-            ),
           ],
         ),
       ),
