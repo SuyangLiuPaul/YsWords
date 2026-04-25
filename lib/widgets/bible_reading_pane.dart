@@ -316,6 +316,15 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
       builder: (context, mainProvider, settings, child) {
         _attachPositionsListener(mainProvider);
 
+        // Show loading spinner when verses haven't been loaded yet
+        if (mainProvider.verses.isEmpty && mainProvider.books.isEmpty) {
+          return Scaffold(
+            body: Center(
+              child: CircularProgressIndicator(),
+            ),
+          );
+        }
+
         final verses = mainProvider.verses
             .where((v) =>
                 v.book == mainProvider.currentBook &&
@@ -368,11 +377,6 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                 .clamp(0.0, 1.0)
                 .toDouble();
 
-        final screenWidth = MediaQuery.of(context).size.width;
-        final dc = ResponsiveBreakpoints.classOf(screenWidth);
-        final isWideScreen =
-            ResponsiveBreakpoints.isTabletOrWider(screenWidth);
-
         return SelectionContainer.disabled(
           child: GestureDetector(
             onHorizontalDragEnd: (details) {
@@ -393,8 +397,14 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                         : Brightness.dark,
               ),
               child: Scaffold(
-                body: Stack(
-                  children: [
+                body: LayoutBuilder(
+                  builder: (context, constraints) {
+                    final paneWidth = constraints.maxWidth;
+                    final dc = ResponsiveBreakpoints.classOf(paneWidth);
+                    final isWideScreen = ResponsiveBreakpoints.isTabletOrWider(paneWidth);
+
+                    return Stack(
+                      children: [
                     Padding(
                       padding: EdgeInsets.only(
                         right: ResponsiveBreakpoints.readingPadding(dc),
@@ -590,6 +600,8 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                             ),
                     ),
                   ],
+                );
+                  },
                 ),
               ),
             ),

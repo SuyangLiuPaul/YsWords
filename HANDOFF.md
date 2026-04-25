@@ -25,7 +25,8 @@ main.dart (entry point)
   │   └── AppSettings     — user prefs (font, theme, locale, copy format)
   ├── GetMaterialApp      — routing via GetX (Get.to / Get.back)
   └── _RootRouter
-      └── StackedCardScaffold → LoadingPage (3s splash) → HomePage
+      └── LoadingPage (3s splash) → HomePage
+          └── BibleReadingPane (primary) ± BibleReadingPane (secondary, split view)
 ```
 
 **State management**: Provider (ChangeNotifier + Consumer) for data, GetX for navigation only.
@@ -45,8 +46,8 @@ main.dart (entry point)
 ### Entry Point & State
 | File | Purpose |
 |---|---|
-| `lib/main.dart` | App bootstrap. MultiProvider setup, initial data load sequence, persistent stacked-card host, and the global "add chapter" picker flow. The floating "+" is hidden during loading and appears only once the home reader is ready |
-| `lib/providers/main_provider.dart` | Central state: verses, books, current book/chapter/version, selection, **verse highlights** (`Map<String, int>` verse ID → ARGB color), scroll controllers, state persistence via SharedPreferences |
+| `lib/main.dart` | App bootstrap. MultiProvider setup, initial data load sequence. LoadingPage → HomePage transition |
+| `lib/providers/main_provider.dart` | Central state: verses, books, current book/chapter/version, selection, **verse highlights** (`Map<String, int>` verse ID → ARGB color), scroll controllers, state persistence via SharedPreferences. Supports multiple instances via `storagePrefix` (secondary pane uses `'secondary_'` prefix, does not persist) |
 | `lib/models/app_settings.dart` | All user preferences persisted via SharedPreferences (font, theme, locale, copy format, paragraph mode, **menu scale**) |
 
 ### Models
@@ -65,8 +66,8 @@ main.dart (entry point)
 ### Pages
 | File | Purpose |
 |---|---|
-| `lib/pages/home_page.dart` | Main reading view. No fixed AppBar — uses Apple-glass `_FloatingHeader` / `_GlassSurface` (always shows book/chapter/version, search, settings). `ScrollablePositionedList` with paragraph group items. Bottom glass bar: `_ReaderStatusBar` (progress, chapter nav) or `_SelectionActionBar` (copy, highlight with 6-color picker, clear). Swipe gestures for chapter nav. Menu sizes scale with `settings.menuScale` |
-| `lib/pages/books_page.dart` | OT/NT tabs, list/grid view toggle, ExpansionTile (list) or dense card grid (grid) per book, chapter grid. Uses glass filter surfaces for the controls and chapter header. `_shortBookTitle()` handles English + Simplified/Traditional Chinese abbreviations so grid labels do not squeeze or truncate. AutoScrollController jumps to current book |
+| `lib/pages/home_page.dart` | Layout manager for split-pane reading view. Manages sidebar (single-pane wide screen), split view state, secondary provider lifecycle, and draggable divider. Delegates all reading UI to `BibleReadingPane`. ~285 lines |
+| `lib/pages/books_page.dart` | OT/NT tabs, list/grid view toggle, ExpansionTile (list) or dense card grid (grid) per book, chapter grid. Accepts optional `providerOverride` for secondary pane support. Uses glass filter surfaces for the controls and chapter header |
 | `lib/pages/search_page.dart` | Full-text search with book filter. Results sorted canonically. Tap to jump+highlight |
 | `lib/pages/settings_page.dart` | Settings UI: font size, menu size, line spacing, copy format with preview, theme, color palette, reading mode, language |
 | `lib/pages/loading_page.dart` | 3-second splash with random verse display and app branding |
@@ -77,8 +78,7 @@ main.dart (entry point)
 | `lib/widgets/verse_widget.dart` | Renders single verse. Background priority: selection > search highlight > **user highlight color** (35% opacity) > transparent. In paragraph mode: superscript verse numbers, first-line indent, paragraph-start spacers, reference-block indent. Tap to select, tap number to copy |
 | `lib/widgets/paragraph_group_widget.dart` | Renders multiple verses as a single flowing RichText in paragraph mode. Per-verse selection via `TapGestureRecognizer`, per-verse background (selection/highlight). Same background priority as VerseWidget |
 | `lib/widgets/localized_back_button.dart` | Back button with localized tooltip |
-| `lib/widgets/stacked_card_nav.dart` | Responsive stacked-page host. Provides `push(label, icon)`, `pop`, `closeAt`, `promote`, `popAll`, `requestAddLayer()`, and `showLayerSwitcher()`. Phones use full-screen overlays with explicit top-bar controls; tablet/desktop keep the offset card strips |
-| `lib/widgets/chapter_reader_card.dart` | Self-contained chapter reader for added stacked pages. It locks to the selected book/chapter, does not mutate the global current-chapter state, shows explicit add/switch/close app-bar controls, and has its own copy/highlight/clear selection bar |
+| `lib/widgets/bible_reading_pane.dart` | Self-contained Bible reading widget. Contains `ScrollablePositionedList` with verse/paragraph groups, glass `_FloatingHeader` (book/chapter/version, split toggle, search, settings), `_ReaderStatusBar` (progress, chapter nav), `_SelectionActionBar` (copy, highlight, clear). Each pane handles its own swipe gestures, scroll tracking, and chapter navigation. Uses `Consumer2<MainProvider, AppSettings>` which resolves to the correct provider via Provider override in split view. ~610 lines |
 
 ### Constants
 | File | Purpose |
@@ -222,6 +222,27 @@ The app adapts its layout to all device sizes using `lib/utils/responsive.dart`:
 ---
 
 ## What Has Been Fixed (2026-04-25)
+
+### Split-Pane Bible Reading (round 13)
+- **Two fully independent Bible panes**: Each pane has its own book, chapter, and version
+- **Responsive layout**: Side-by-side on tablet/desktop (>=600px) with vertical draggable divider; top-bottom on phone with horizontal draggable divider
+- **Provider override pattern**: Secondary pane wrapped in `ChangeNotifierProvider<MainProvider>.value` so VerseWidget, ParagraphGroupWidget, and BookChapterPicker work unchanged
+- **MainProvider multi-instance support**: Added `storagePrefix` constructor parameter; secondary provider uses `'secondary_'` prefix for SharedPreferences keys and does not persist state
+- **BibleReadingPane widget**: Extracted all reading UI from HomePage into reusable widget (~610 lines). Contains FloatingHeader, ReaderStatusBar, SelectionActionBar, GlassSurface, swipe gestures, chapter navigation, copy/format helpers
+- **HomePage simplified**: From ~1150 lines to ~285 lines. Now manages layout (single pane, side-by-side, top-bottom), sidebar, and secondary provider lifecycle
+- **BooksPage secondary provider support**: Added `providerOverride` parameter; wraps BookChapterPicker in provider override so secondary pane's book picker modifies the secondary provider
+- **Loading state**: Secondary pane shows CircularProgressIndicator while verses load
+- **Race condition fix**: `_activateSplitView` checks `_secondaryProvider == sp` after async operations to prevent calling methods on a disposed provider
+- **Sidebar auto-hides**: When split view is active, sidebar is hidden (too cramped on tablets)
+- **Toggle/close buttons**: Primary pane header shows split-view toggle icon; secondary pane shows close button
+- **Search/settings only on primary pane**: Secondary pane omits search and settings buttons to avoid confusion about which provider they modify
+
+### Stacked Card Feature Removed (round 12)
+- **Deleted** `stacked_card_nav.dart` and `chapter_reader_card.dart`
+- **Simplified** `LocalizedBackButton` to just use `Get.back()`
+- **Simplified** `_RootRouter` in `main.dart` — removed StackedCardScaffold wrapper
+- **Cleaned** all pages (home, books, settings, search) of StackedCardScaffold references
+- All navigation now uses standard `Get.to()` / `Get.back()` with swipe-to-go-back gestures
 
 ### Comprehensive Bug Fix & UI Polish (round 11)
 - **Primary color picker now visible in dark mode**: Was completely hidden; now always visible with adaptive check icon (black on light colors, white on dark colors via `computeLuminance()`).
@@ -473,8 +494,8 @@ The 14 Bible JSON files total ~58 MB. They are loaded entirely into memory via `
 ### `fonts_backup/` Directory
 Contains ~178 font files not used in production (commented out in `web/index.html` preloads). Could be deleted or moved to a separate repository to reduce clone size.
 
-### HomePage is ~520 Lines
-The main reading page handles too many concerns: verse display, swipe gestures, copy logic, version switching, chapter navigation. Consider extracting copy formatting and chapter navigation into separate classes/widgets.
+### HomePage is ~285 Lines
+The main page manages layout (single pane, split view, sidebar) and secondary provider lifecycle. Reading logic is in `BibleReadingPane` (~610 lines) which is well-encapsulated but could still benefit from further splitting (copy formatting, chapter navigation).
 
 ### VerseWidget + ParagraphGroupWidget
 `buildVerseContentSpans()` in `utils/build_verse_content_spans.dart` handles annotation parsing and is shared by both widgets. VerseWidget is ~100 lines; ParagraphGroupWidget is ~100 lines. The annotation parsing itself (~325 lines) could still benefit from being split into smaller functions.

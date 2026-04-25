@@ -62,6 +62,7 @@ class _HomePageState extends State<HomePage> {
     await FetchBooks.execute(mainProvider: sp);
 
     if (!mounted) return;
+    if (_secondaryProvider != sp) return; // deactivated while loading
     final primary = context.read<MainProvider>();
     if (primary.currentBook != null && primary.currentChapter != null) {
       final match = sp.verses.firstWhere(
@@ -74,7 +75,7 @@ class _HomePageState extends State<HomePage> {
       sp.updateCurrentVerse(verse: match);
     }
 
-    if (mounted) setState(() {});
+    if (mounted && _secondaryProvider == sp) setState(() {});
   }
 
   void _deactivateSplitView() {

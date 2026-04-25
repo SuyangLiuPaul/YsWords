@@ -16,6 +16,7 @@
 | Reading      | Apple-glass reader controls; Light / Dark / System theme; Adjustable font family, size, line spacing, menu scale; Verse-by-verse or Paragraph Flow reading mode (default); Full-width reading on all devices; Grid view default for new users; Reading mode toggle in header on tablet+ |
 | Highlights   | Mark verses with 6 colors (yellow, green, blue, pink, orange, purple); persistent across sessions                      |
 | Navigation   | Swipe left/right to change chapter; Floating chapter picker; Previous/next chapter buttons; Grid/List view for books with compact English/Chinese labels; Responsive grid for tablets/desktops; Collapsible sidebar for wide screens (≥600px) |
+| Split View   | Two fully independent Bible panes; Side-by-side on tablet/desktop (≥600px) with draggable divider; Top-bottom on phone with draggable divider; Each pane has its own book, chapter, and version; Toggle in header |
 | Search       | Book-only or whole-Bible search; Highlighted results with book summary                                                  |
 | Annotations  | `{...}` inline badges with linked `<note:...>` pop-ups; `[...]` dotted-underline keywords; Book icon notes              |
 | Copy & Share | Tap verses to multi-select; Copy in **Plain**, **With Reference**, or **Devotional** formats                            |
@@ -86,7 +87,7 @@ lib/
   models/               Verse, Book, Chapter, AppSettings
   providers/            MainProvider (state + persistence)
   pages/                HomePage, BooksPage, SearchPage, SettingsPage
-  widgets/              VerseWidget, ParagraphGroupWidget, BookChapterPicker, SidebarPanel, LocalizedBackButton, StackedCardScaffold
+  widgets/              VerseWidget, ParagraphGroupWidget, BookChapterPicker, SidebarPanel, LocalizedBackButton, BibleReadingPane
   services/             FetchVerses, FetchBooks
   constants/            Book lists, UI strings, text patterns, Bible versions
   utils/                Clipboard helper, search formatter, version mapper, verse span builder, responsive breakpoints
