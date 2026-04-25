@@ -1094,124 +1094,143 @@ class _FloatingHeader extends StatelessWidget {
             padding: EdgeInsets.symmetric(horizontal: 6 * settings.menuScale, vertical: 4 * settings.menuScale),
             child: Row(
               children: [
-                if (showSidebarToggle)
-                  IconButton(
-                    onPressed: onToggleSidebar,
-                    icon: Icon(
-                      sidebarOpen
-                          ? Icons.chevron_left_rounded
-                          : Icons.menu_book_rounded,
-                      size: iconSize,
-                    ),
-                    padding: EdgeInsets.all(iconPad),
-                    constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
-                    tooltip: sidebarOpen
-                        ? (uiStrings['close']?[settings.locale] ?? 'Close')
-                        : (uiStrings['bibleBooks']?[settings.locale] ??
-                            'Bible Books'),
-                  ),
-                if (showBookInfo) ...[
-                  Flexible(
-                    child: InkWell(
-                      borderRadius: BorderRadius.circular(8),
-                      onTap: onBookTap,
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 6),
-                        child: Text(
-                          '$book $chapter',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontFamily: settings.fontFamily,
-                            fontSize: fontSize,
-                            fontWeight: FontWeight.w700,
-                            color: scheme.primary,
+                Expanded(
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (showSidebarToggle)
+                        IconButton(
+                          onPressed: onToggleSidebar,
+                          icon: Icon(
+                            sidebarOpen
+                                ? Icons.chevron_left_rounded
+                                : Icons.menu_book_rounded,
+                            size: iconSize,
+                          ),
+                          padding: EdgeInsets.all(iconPad),
+                          constraints: const BoxConstraints(
+                              minWidth: 36, minHeight: 36),
+                          tooltip: sidebarOpen
+                              ? (uiStrings['close']?[settings.locale] ??
+                                  'Close')
+                              : (uiStrings['bibleBooks']?[settings.locale] ??
+                                  'Bible Books'),
+                        ),
+                      if (showBookInfo) ...[
+                        Flexible(
+                          child: InkWell(
+                            borderRadius: BorderRadius.circular(8),
+                            onTap: onBookTap,
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 8, vertical: 6),
+                              child: Text(
+                                '$book $chapter',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  fontFamily: settings.fontFamily,
+                                  fontSize: fontSize,
+                                  fontWeight: FontWeight.w700,
+                                  color: scheme.primary,
+                                ),
+                              ),
+                            ),
                           ),
                         ),
-                      ),
-                    ),
-                  ),
-                  PopupMenuButton<String>(
-                    padding: EdgeInsets.zero,
-                    position: PopupMenuPosition.under,
-                    tooltip: uiStrings['changeVersion']?[settings.locale] ??
-                        'Change Version',
-                    itemBuilder: (context) => availableVersions
-                        .map((v) => PopupMenuItem(
-                              value: v.value,
-                              child: Text(v.menuLabel),
-                            ))
-                        .toList(),
-                    onSelected: onVersionSelected,
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 6),
-                      child: Text(
-                        shortBibleVersionLabel(version),
-                        style: TextStyle(
-                          fontFamily: settings.fontFamily,
-                          fontSize: fontSize * 0.85,
-                          fontWeight: FontWeight.w600,
-                          color: scheme.primary.withValues(alpha: 0.8),
+                        PopupMenuButton<String>(
+                          padding: EdgeInsets.zero,
+                          position: PopupMenuPosition.under,
+                          tooltip:
+                              uiStrings['changeVersion']?[settings.locale] ??
+                                  'Change Version',
+                          itemBuilder: (context) => availableVersions
+                              .map((v) => PopupMenuItem(
+                                    value: v.value,
+                                    child: Text(v.menuLabel),
+                                  ))
+                              .toList(),
+                          onSelected: onVersionSelected,
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 6),
+                            child: Text(
+                              shortBibleVersionLabel(version),
+                              style: TextStyle(
+                                fontFamily: settings.fontFamily,
+                                fontSize: fontSize * 0.85,
+                                fontWeight: FontWeight.w600,
+                                color: scheme.primary.withValues(alpha: 0.8),
+                              ),
+                            ),
+                          ),
                         ),
-                      ),
-                    ),
+                      ],
+                    ],
                   ),
-                ],
-                const Spacer(),
-                if (showSidebarToggle && onToggleParagraphMode != null)
-                  IconButton(
-                    onPressed: onToggleParagraphMode,
-                    icon: Icon(
-                      paragraphMode
-                          ? Icons.format_align_left
-                          : Icons.format_list_numbered_rounded,
-                      size: iconSize,
-                    ),
-                    padding: EdgeInsets.all(iconPad),
-                    constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
-                    tooltip: paragraphMode
-                        ? (uiStrings['paragraphFlow']?[settings.locale] ??
-                            'Paragraph Flow')
-                        : (uiStrings['verseByVerse']?[settings.locale] ??
-                            'Verse by Verse'),
-                  ),
-                if (onAddLayer != null)
-                  IconButton(
-                    onPressed: onAddLayer,
-                    icon: Icon(Icons.library_add_rounded, size: iconSize),
-                    padding: EdgeInsets.all(iconPad),
-                    constraints:
-                        const BoxConstraints(minWidth: 36, minHeight: 36),
-                    tooltip:
-                        uiStrings['openAnotherChapter']?[settings.locale] ??
-                            'Open another chapter',
-                  ),
-                if (onSwitchLayer != null)
-                  IconButton(
-                    onPressed: onSwitchLayer,
-                    icon: Badge(
-                      label: Text('$openPageCount'),
-                      child: Icon(Icons.layers_rounded, size: iconSize),
-                    ),
-                    padding: EdgeInsets.all(iconPad),
-                    constraints:
-                        const BoxConstraints(minWidth: 36, minHeight: 36),
-                    tooltip: uiStrings['switchPage']?[settings.locale] ??
-                        'Switch page',
-                  ),
-                IconButton(
-                  onPressed: onSearch,
-                  icon: Icon(Icons.search_rounded, size: iconSize),
-                  padding: EdgeInsets.all(iconPad),
-                  constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
                 ),
-                const SizedBox(width: 2),
-                IconButton(
-                  onPressed: onSettings,
-                  icon: Icon(Icons.settings, size: iconSize),
-                  padding: EdgeInsets.all(iconPad),
-                  constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (showSidebarToggle && onToggleParagraphMode != null)
+                      IconButton(
+                        onPressed: onToggleParagraphMode,
+                        icon: Icon(
+                          paragraphMode
+                              ? Icons.format_align_left
+                              : Icons.format_list_numbered_rounded,
+                          size: iconSize,
+                        ),
+                        padding: EdgeInsets.all(iconPad),
+                        constraints: const BoxConstraints(
+                            minWidth: 36, minHeight: 36),
+                        tooltip: paragraphMode
+                            ? (uiStrings['paragraphFlow']?[settings.locale] ??
+                                'Paragraph Flow')
+                            : (uiStrings['verseByVerse']?[settings.locale] ??
+                                'Verse by Verse'),
+                      ),
+                    if (onAddLayer != null)
+                      IconButton(
+                        onPressed: onAddLayer,
+                        icon:
+                            Icon(Icons.library_add_rounded, size: iconSize),
+                        padding: EdgeInsets.all(iconPad),
+                        constraints: const BoxConstraints(
+                            minWidth: 36, minHeight: 36),
+                        tooltip: uiStrings['openAnotherChapter']
+                                ?[settings.locale] ??
+                            'Open another chapter',
+                      ),
+                    if (onSwitchLayer != null)
+                      IconButton(
+                        onPressed: onSwitchLayer,
+                        icon: Badge(
+                          label: Text('$openPageCount'),
+                          child:
+                              Icon(Icons.layers_rounded, size: iconSize),
+                        ),
+                        padding: EdgeInsets.all(iconPad),
+                        constraints: const BoxConstraints(
+                            minWidth: 36, minHeight: 36),
+                        tooltip: uiStrings['switchPage']?[settings.locale] ??
+                            'Switch page',
+                      ),
+                    IconButton(
+                      onPressed: onSearch,
+                      icon: Icon(Icons.search_rounded, size: iconSize),
+                      padding: EdgeInsets.all(iconPad),
+                      constraints: const BoxConstraints(
+                          minWidth: 36, minHeight: 36),
+                    ),
+                    const SizedBox(width: 2),
+                    IconButton(
+                      onPressed: onSettings,
+                      icon: Icon(Icons.settings, size: iconSize),
+                      padding: EdgeInsets.all(iconPad),
+                      constraints: const BoxConstraints(
+                          minWidth: 36, minHeight: 36),
+                    ),
+                  ],
                 ),
               ],
             ),

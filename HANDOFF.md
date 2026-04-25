@@ -223,6 +223,10 @@ The app adapts its layout to all device sizes using `lib/utils/responsive.dart`:
 
 ## What Has Been Fixed (2026-04-25)
 
+### iPad Header Alignment (this session, round 10)
+- **Top-right controls fixed**: `_FloatingHeader` now splits the reader title/version area and the action icons into separate left/right clusters. This pins Search and Settings to the far right on iPad/tablet instead of letting flexible book/version text influence their final position.
+- **Verification**: `flutter analyze` and `flutter build web` both pass.
+
 ### Mobile Added-Page UX Correction (this session, round 9)
 - **Removed the floating plus / bottom stack pill**: The global bottom-left controls were confusing and covered reading content. Add/switch/close now live in top navigation where mobile users expect page controls.
 - **Phone overlays are full-screen**: For widths under 600 dp, stacked pages no longer render with left offsets or peeking strips. The selected page fills the phone screen so newly added chapters are actually visible.
