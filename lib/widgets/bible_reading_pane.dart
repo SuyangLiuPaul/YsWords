@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
@@ -51,6 +52,8 @@ class BibleReadingPane extends StatefulWidget {
 class _BibleReadingPaneState extends State<BibleReadingPane> {
   MainProvider? _positionsProvider;
   int _visibleItemIndex = 0;
+  bool _showVersePosition = false;
+  Timer? _versePositionTimer;
 
   @override
   void initState() {
@@ -64,6 +67,7 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
 
   @override
   void dispose() {
+    _versePositionTimer?.cancel();
     _positionsProvider?.itemPositionsListener.itemPositions
         .removeListener(_handleItemPositionsChanged);
     super.dispose();
@@ -94,7 +98,14 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
     });
     final nextIndex = visible.first.index;
     if (nextIndex != _visibleItemIndex && mounted) {
-      setState(() => _visibleItemIndex = nextIndex);
+      _versePositionTimer?.cancel();
+      _versePositionTimer = Timer(const Duration(seconds: 2), () {
+        if (mounted) setState(() => _showVersePosition = false);
+      });
+      setState(() {
+        _visibleItemIndex = nextIndex;
+        _showVersePosition = true;
+      });
     }
   }
 
@@ -564,6 +575,7 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                               verseCount: verses.length,
                               progress: chapterProgress,
                               deviceClass: dc,
+                              visible: _showVersePosition,
                             ),
                     ),
                   ],
@@ -587,6 +599,7 @@ class _ReaderStatusBar extends StatelessWidget {
   final int verseCount;
   final double progress;
   final DeviceClass deviceClass;
+  final bool visible;
 
   const _ReaderStatusBar({
     required this.verse,
@@ -594,6 +607,7 @@ class _ReaderStatusBar extends StatelessWidget {
     required this.verseCount,
     required this.progress,
     required this.deviceClass,
+    this.visible = true,
   });
 
   @override
@@ -614,18 +628,22 @@ class _ReaderStatusBar extends StatelessWidget {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        // Floating verse position label
-        Padding(
-          padding: EdgeInsets.only(right: inset + 4, bottom: 6),
-          child: Align(
-            alignment: Alignment.centerRight,
-            child: Text(
-              versePosition,
-              style: TextStyle(
-                fontFamily: settings.fontFamily,
-                fontSize: fontSize,
-                fontWeight: FontWeight.w500,
-                color: scheme.onSurfaceVariant.withValues(alpha: 0.6),
+        // Floating verse position label — auto-fades on scroll
+        AnimatedOpacity(
+          opacity: visible ? 1.0 : 0.0,
+          duration: const Duration(milliseconds: 400),
+          child: Padding(
+            padding: EdgeInsets.only(right: inset + 4, bottom: 6),
+            child: Align(
+              alignment: Alignment.centerRight,
+              child: Text(
+                versePosition,
+                style: TextStyle(
+                  fontFamily: settings.fontFamily,
+                  fontSize: fontSize,
+                  fontWeight: FontWeight.w500,
+                  color: scheme.onSurfaceVariant.withValues(alpha: 0.6),
+                ),
               ),
             ),
           ),
