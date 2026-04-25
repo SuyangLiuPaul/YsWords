@@ -11,13 +11,16 @@ import 'package:yswords/constants/bible_versions.dart';
 import 'package:yswords/constants/text_patterns.dart';
 import 'package:yswords/constants/ui_strings.dart';
 import 'package:yswords/models/app_settings.dart';
+import 'package:yswords/models/bible_map.dart';
 import 'package:yswords/models/verse.dart';
 import 'package:yswords/pages/books_page.dart';
+import 'package:yswords/pages/map_viewer_page.dart';
 import 'package:yswords/pages/search_page.dart';
 import 'package:yswords/pages/settings_page.dart';
 import 'package:yswords/providers/main_provider.dart';
 import 'package:yswords/services/fetch_books.dart';
 import 'package:yswords/services/fetch_verses.dart';
+import 'package:yswords/services/map_service.dart';
 import 'package:yswords/utils/clipboard_helper.dart';
 import 'package:yswords/utils/responsive.dart';
 import 'package:yswords/utils/version_mapper.dart'
@@ -54,6 +57,8 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
   int _visibleItemIndex = 0;
   bool _showVersePosition = false;
   Timer? _versePositionTimer;
+  List<BibleMap> _currentMaps = [];
+  String _lastBookChapter = '';
 
   @override
   void initState() {
@@ -107,6 +112,16 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
         _showVersePosition = true;
       });
     }
+  }
+
+  void _updateMapsForBookChapter(String book, int chapter) {
+    final key = '$book:$chapter';
+    if (key == _lastBookChapter) return;
+    _lastBookChapter = key;
+    final en = bookNameToEnglish[book] ?? book;
+    MapService.mapsForBookChapter(en, chapter).then((maps) {
+      if (mounted) setState(() => _currentMaps = maps);
+    });
   }
 
   // ── Chapter navigation ──────────────────────────────────────────────
@@ -343,6 +358,9 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
 
         final currentVerse = mainProvider.currentVerse ??
             (verses.isNotEmpty ? verses.first : null);
+        if (currentVerse != null) {
+          _updateMapsForBookChapter(currentVerse.book, currentVerse.chapter);
+        }
         final isSelected = mainProvider.selectedVerses.isNotEmpty;
         final visibleItemIndex = _visibleItemIndex < 0
             ? 0
@@ -464,6 +482,8 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                       splitViewActive: widget.splitViewActive,
                       onClose: widget.onClose,
                       showSearchAndSettings: widget.showSearchAndSettings,
+                      maps: _currentMaps,
+                      locale: settings.locale,
                       onBookTap: isWideScreen && widget.showSidebarToggle
                           ? () {
                               mainProvider.clearSelectedVerses();
@@ -866,6 +886,57 @@ class _SelectionActionBar extends StatelessWidget {
   }
 }
 
+void _showMapPicker(
+    BuildContext context, List<BibleMap> maps, String locale) {
+  if (maps.length == 1) {
+    Get.to(() => MapViewerPage(map: maps.first, locale: locale));
+    return;
+  }
+  showModalBottomSheet(
+    context: context,
+    builder: (_) {
+      final scheme = Theme.of(context).colorScheme;
+      return SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+              child: Text(
+                uiStrings['maps']?[locale] ?? 'Maps',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: scheme.onSurface,
+                ),
+              ),
+            ),
+            ...maps.map((m) => ListTile(
+                  leading: Icon(Icons.map_outlined, color: scheme.primary),
+                  title: Text(m.localizedTitle(locale)),
+                  subtitle: m.localizedDescription(locale).isNotEmpty
+                      ? Text(
+                          m.localizedDescription(locale),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                              fontSize: 12, color: scheme.onSurfaceVariant),
+                        )
+                      : null,
+                  onTap: () {
+                    Navigator.pop(context);
+                    Get.to(
+                        () => MapViewerPage(map: m, locale: locale));
+                  },
+                )),
+            const SizedBox(height: 8),
+          ],
+        ),
+      );
+    },
+  );
+}
+
 class _FloatingHeader extends StatelessWidget {
   final bool showBookInfo;
   final String book;
@@ -885,6 +956,8 @@ class _FloatingHeader extends StatelessWidget {
   final bool splitViewActive;
   final VoidCallback? onClose;
   final bool showSearchAndSettings;
+  final List<BibleMap> maps;
+  final String locale;
 
   const _FloatingHeader({
     required this.showBookInfo,
@@ -905,6 +978,8 @@ class _FloatingHeader extends StatelessWidget {
     this.splitViewActive = false,
     this.onClose,
     this.showSearchAndSettings = true,
+    this.maps = const [],
+    this.locale = 'en',
   });
 
   @override
@@ -1057,6 +1132,15 @@ class _FloatingHeader extends StatelessWidget {
                         tooltip: splitViewActive
                             ? 'Close Split View'
                             : 'Open Split View',
+                      ),
+                    if (maps.isNotEmpty)
+                      IconButton(
+                        onPressed: () => _showMapPicker(context, maps, locale),
+                        icon: Icon(Icons.map_outlined, size: iconSize),
+                        padding: EdgeInsets.all(iconPad),
+                        constraints: const BoxConstraints(
+                            minWidth: 36, minHeight: 36),
+                        tooltip: uiStrings['maps']?[locale] ?? 'Maps',
                       ),
                     if (showSearchAndSettings) ...[
                       IconButton(

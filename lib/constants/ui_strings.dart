@@ -401,4 +401,21 @@ const uiStrings = {
     'zh-Hant': '段落排版',
     'en': 'Paragraph Flow',
   },
+
+  // ====== Maps ======
+  'maps': {
+    'zh-Hans': '地图',
+    'zh-Hant': '地圖',
+    'en': 'Maps',
+  },
+  'viewMap': {
+    'zh-Hans': '查看地图',
+    'zh-Hant': '查看地圖',
+    'en': 'View Map',
+  },
+  'noMapsForChapter': {
+    'zh-Hans': '本章暂无地图',
+    'zh-Hant': '本章暫無地圖',
+    'en': 'No maps for this chapter',
+  },
 };

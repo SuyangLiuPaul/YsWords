@@ -43,6 +43,8 @@ flutter:
     - assets/app_icon.png
     - assets/loading.png
     - assets/fonts/
+    - assets/maps/
+    - assets/maps_index.json
   fonts:
     - family: Roboto
       fonts:
