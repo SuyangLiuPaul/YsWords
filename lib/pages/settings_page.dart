@@ -479,7 +479,7 @@ class SettingsPage extends StatelessWidget {
                             value: ThemeMode.system,
                             child: Text(
                               uiStrings['themeSystem']?[settings.locale] ??
-                                  '跟隨系統',
+                                  'System Default',
                               style: TextStyle(
                                 fontSize: settings.fontSize,
                                 fontFamily: settings.fontFamily,
@@ -489,7 +489,7 @@ class SettingsPage extends StatelessWidget {
                           DropdownMenuItem(
                             value: ThemeMode.light,
                             child: Text(
-                              uiStrings['themeDay']?[settings.locale] ?? '白天模式',
+                              uiStrings['themeDay']?[settings.locale] ?? 'Light Mode',
                               style: TextStyle(
                                 fontSize: settings.fontSize,
                                 fontFamily: settings.fontFamily,
@@ -500,7 +500,7 @@ class SettingsPage extends StatelessWidget {
                             value: ThemeMode.dark,
                             child: Text(
                               uiStrings['themeNight']?[settings.locale] ??
-                                  '夜間模式',
+                                  'Dark Mode',
                               style: TextStyle(
                                 fontSize: settings.fontSize,
                                 fontFamily: settings.fontFamily,
@@ -636,7 +636,7 @@ class SettingsPage extends StatelessWidget {
                     children: [
                       Text(
                         uiStrings['interfaceLanguage']?[settings.locale] ??
-                            '界面语言',
+                            'Interface Language',
                         style: TextStyle(
                           fontFamily: settings.fontFamily,
                           fontSize: settings.fontSize + 2,

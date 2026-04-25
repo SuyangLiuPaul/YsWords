@@ -697,14 +697,14 @@ class _ReaderStatusBar extends StatelessWidget {
                     const BorderRadius.vertical(top: Radius.circular(22)),
                 child: LinearProgressIndicator(
                   value: progress,
-                  minHeight: 3,
+                  minHeight: 3 * settings.menuScale,
                   backgroundColor:
                       scheme.surfaceContainerHighest.withValues(alpha: 0.5),
                   color: scheme.primary,
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.fromLTRB(8, 6, 8, 8),
+                padding: EdgeInsets.fromLTRB(8 * settings.menuScale, 6 * settings.menuScale, 8 * settings.menuScale, 8 * settings.menuScale),
                 child: Row(
                   children: [
                     IconButton(
@@ -846,21 +846,22 @@ class _SelectionActionBar extends StatelessWidget {
   ];
 
   void _showColorPicker(BuildContext context) {
-    final locale = context.read<AppSettings>().locale;
+    final settings = context.read<AppSettings>();
+    final locale = settings.locale;
+    final ms = settings.menuScale;
     showModalBottomSheet(
       context: context,
       builder: (_) => SafeArea(
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: EdgeInsets.all(16 * ms),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
                 uiStrings['highlightColor']?[locale] ?? 'Highlight color',
-                style:
-                    const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                style: TextStyle(fontSize: 16 * ms, fontWeight: FontWeight.w600),
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: 16 * ms),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: _highlightColors.map((argb) {
@@ -870,9 +871,9 @@ class _SelectionActionBar extends StatelessWidget {
                       onHighlight(argb);
                     },
                     child: Container(
-                      width: 44,
-                      height: 44,
-                      margin: const EdgeInsets.symmetric(horizontal: 6),
+                      width: 44 * ms,
+                      height: 44 * ms,
+                      margin: EdgeInsets.symmetric(horizontal: 6 * ms),
                       decoration: BoxDecoration(
                         color: Color(argb),
                         shape: BoxShape.circle,
@@ -885,13 +886,13 @@ class _SelectionActionBar extends StatelessWidget {
                 }).toList(),
               ),
               if (anyHighlighted) ...[
-                const SizedBox(height: 12),
+                SizedBox(height: 12 * ms),
                 TextButton.icon(
                   onPressed: () {
                     Navigator.of(context).pop();
                     onRemoveHighlight();
                   },
-                  icon: const Icon(Icons.highlight_remove, size: 20),
+                  icon: Icon(Icons.highlight_remove, size: 20 * ms),
                   label: Text(
                     uiStrings['removeHighlight']?[locale] ?? 'Remove highlight',
                   ),
@@ -922,7 +923,7 @@ class _SelectionActionBar extends StatelessWidget {
         child: _GlassSurface(
           radius: 22,
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
+            padding: EdgeInsets.fromLTRB(12 * settings.menuScale, 8 * settings.menuScale, 12 * settings.menuScale, 8 * settings.menuScale),
             child: Row(
               children: [
                 IconButton(
@@ -1026,7 +1027,7 @@ class _FloatingHeader extends StatelessWidget {
         child: _GlassSurface(
           radius: 22,
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+            padding: EdgeInsets.symmetric(horizontal: 6 * settings.menuScale, vertical: 4 * settings.menuScale),
             child: Row(
               children: [
                 if (showSidebarToggle)
@@ -1046,19 +1047,23 @@ class _FloatingHeader extends StatelessWidget {
                             'Bible Books'),
                   ),
                 if (showBookInfo) ...[
-                  InkWell(
-                    borderRadius: BorderRadius.circular(8),
-                    onTap: onBookTap,
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 6),
-                      child: Text(
-                        '$book $chapter',
-                        style: TextStyle(
-                          fontFamily: settings.fontFamily,
-                          fontSize: fontSize,
-                          fontWeight: FontWeight.w700,
-                          color: scheme.primary,
+                  Flexible(
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(8),
+                      onTap: onBookTap,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 6),
+                        child: Text(
+                          '$book $chapter',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontFamily: settings.fontFamily,
+                            fontSize: fontSize,
+                            fontWeight: FontWeight.w700,
+                            color: scheme.primary,
+                          ),
                         ),
                       ),
                     ),

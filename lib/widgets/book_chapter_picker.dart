@@ -142,8 +142,8 @@ class _BookChapterPickerState extends State<BookChapterPicker> {
                           });
                         },
                         borderRadius: BorderRadius.circular(14),
-                        constraints: const BoxConstraints(
-                            minWidth: 42, minHeight: 36),
+                        constraints: BoxConstraints(
+                            minWidth: 42 * settings.menuScale, minHeight: 36 * settings.menuScale),
                         children: [
                           Tooltip(
                             message: uiStrings['listView']
@@ -302,7 +302,7 @@ class _BookChapterPickerState extends State<BookChapterPicker> {
                 : scheme.outlineVariant.withValues(alpha: 0.45),
           ),
         ),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        padding: EdgeInsets.symmetric(horizontal: 16 * settings.menuScale, vertical: 10 * settings.menuScale),
       ),
       child: Text(
         label,
@@ -453,7 +453,7 @@ class _BookChapterPickerState extends State<BookChapterPicker> {
             ),
             Expanded(
               child: LayoutBuilder(builder: (context, constraints) {
-                final tileTarget = 56.0;
+                final tileTarget = 56.0 * settings.menuScale;
                 final cols =
                     (constraints.maxWidth / tileTarget).floor().clamp(4, 10);
                 return GridView.builder(
@@ -482,7 +482,7 @@ class _BookChapterPickerState extends State<BookChapterPicker> {
     }
 
     return LayoutBuilder(builder: (context, constraints) {
-      final targetWidth = 80.0;
+      final targetWidth = 80.0 * settings.menuScale;
       final cols = (constraints.maxWidth / targetWidth).floor().clamp(4, 10);
       return GridView.builder(
         padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
@@ -699,10 +699,10 @@ class _BookChapterPickerState extends State<BookChapterPicker> {
           color: selected ? scheme.primary : null,
           elevation: 1,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(7.5),
+            borderRadius: BorderRadius.circular(10),
           ),
           child: InkWell(
-            borderRadius: BorderRadius.circular(7.5),
+            borderRadius: BorderRadius.circular(10),
             onTap: () => _selectChapter(
                 mainProvider, book.title, chapter.title),
             child: Center(
@@ -739,20 +739,20 @@ class BooksGlassSurface extends StatelessWidget {
     return ClipRRect(
       borderRadius: BorderRadius.circular(18),
       child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
+        filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
         child: DecoratedBox(
           decoration: BoxDecoration(
-            color: scheme.surface.withValues(alpha: isDark ? 0.72 : 0.8),
+            color: scheme.surface.withValues(alpha: isDark ? 0.72 : 0.78),
             borderRadius: BorderRadius.circular(18),
             border: Border.all(
               color:
-                  scheme.outlineVariant.withValues(alpha: isDark ? 0.35 : 0.58),
+                  scheme.outlineVariant.withValues(alpha: isDark ? 0.35 : 0.6),
             ),
             boxShadow: [
               BoxShadow(
-                color: scheme.shadow.withValues(alpha: isDark ? 0.18 : 0.08),
-                blurRadius: 18,
-                offset: const Offset(0, 8),
+                color: scheme.shadow.withValues(alpha: isDark ? 0.22 : 0.12),
+                blurRadius: 24,
+                offset: const Offset(0, 10),
               ),
             ],
           ),

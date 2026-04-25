@@ -78,12 +78,12 @@ class VerseWidget extends StatelessWidget {
           topGap = (!isFirst && (isReferenceLine || verse.isParagraphStart))
               ? settings.fontSize * 0.35
               : 0;
-          vertPadding = 2;
+          vertPadding = (settings.fontSize * 0.1).clamp(1.0, 4.0);
         } else {
           // Verse-by-verse mode
           leftIndent = isReferenceLine ? baseIndent + 8 : baseIndent;
-          topGap = (!isFirst && verse.isParagraphStart) ? 8 : 0;
-          vertPadding = 6;
+          topGap = (!isFirst && verse.isParagraphStart) ? settings.fontSize * 0.4 : 0;
+          vertPadding = (settings.fontSize * 0.3).clamp(2.0, 8.0);
         }
 
         return Material(
@@ -105,7 +105,7 @@ class VerseWidget extends StatelessWidget {
                           ? Theme.of(context)
                               .colorScheme
                               .secondary
-                              .withValues(alpha: 0.3)
+                              .withValues(alpha: 0.35)
                           : highlightColor != null
                               ? highlightColor.withValues(alpha: 0.35)
                               : Colors.transparent,

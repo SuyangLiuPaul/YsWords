@@ -87,9 +87,10 @@ class ParagraphGroupWidget extends StatelessWidget {
         final dc = ResponsiveBreakpoints.classOf(
             MediaQuery.of(context).size.width);
         final baseIndent = ResponsiveBreakpoints.verseIndent(dc);
+        final double vPad = (settings.fontSize * 0.1).clamp(1.0, 4.0);
         final EdgeInsets blockPadding = isReference
-            ? EdgeInsets.fromLTRB(settings.fontSize * 2, 2, baseIndent, 2)
-            : EdgeInsets.fromLTRB(baseIndent + 4, 2, baseIndent, 2);
+            ? EdgeInsets.fromLTRB(settings.fontSize * 2, vPad, baseIndent, vPad)
+            : EdgeInsets.fromLTRB(baseIndent + 4, vPad, baseIndent, vPad);
 
         // Inter-paragraph gap — small and only between paragraphs (not at top)
         final double topGap = (!isFirst && (isParagraphStart || isReference))

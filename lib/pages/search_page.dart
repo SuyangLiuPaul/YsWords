@@ -219,7 +219,7 @@ class _SearchPageState extends State<SearchPage> {
             constraints: BoxConstraints(
               maxWidth: ResponsiveBreakpoints.isTabletOrWider(
                       MediaQuery.of(context).size.width)
-                  ? 680
+                  ? 720
                   : double.infinity,
             ),
             child: Column(
@@ -271,7 +271,7 @@ class _SearchPageState extends State<SearchPage> {
                             bookCounts.entries
                                 .take(3)
                                 .map((e) => '${e.key}(${e.value})')
-                                .join('，') +
+                                .join(settings.locale == 'en' ? ', ' : '，') +
                             (bookCounts.length > 3 ? '...' : '')) +
                         (bookCounts.length > 3
                             ? '\n${uiStrings['viewMoreBooksHint']?[settings.locale] ?? ''}'
