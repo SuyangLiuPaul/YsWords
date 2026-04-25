@@ -229,9 +229,11 @@ class _BookChapterPickerState extends State<BookChapterPicker> {
                                         context: context,
                                         settings: settings,
                                         selected: showOldTestament,
-                                        label: uiStrings['oldTestament']
-                                                ?[settings.locale] ??
-                                            'Old Testament',
+                                        label: settings.locale == 'en'
+                                            ? 'OT'
+                                            : (uiStrings['oldTestament']
+                                                    ?[settings.locale] ??
+                                                'Old Testament'),
                                         onPressed: () =>
                                             _setTestament(settings, true),
                                       ),
@@ -240,9 +242,11 @@ class _BookChapterPickerState extends State<BookChapterPicker> {
                                         context: context,
                                         settings: settings,
                                         selected: !showOldTestament,
-                                        label: uiStrings['newTestament']
-                                                ?[settings.locale] ??
-                                            'New Testament',
+                                        label: settings.locale == 'en'
+                                            ? 'NT'
+                                            : (uiStrings['newTestament']
+                                                    ?[settings.locale] ??
+                                                'New Testament'),
                                         onPressed: () =>
                                             _setTestament(settings, false),
                                       ),
