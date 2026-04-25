@@ -426,12 +426,6 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                     final paneWidth = constraints.maxWidth;
                     final dc = ResponsiveBreakpoints.classOf(paneWidth);
                     final isWideScreen = ResponsiveBreakpoints.isTabletOrWider(paneWidth);
-                    final scheme = Theme.of(context).colorScheme;
-                    final isDark = Theme.of(context).brightness == Brightness.dark;
-                    final versePosition =
-                        (uiStrings['versePosition']?[settings.locale] ?? 'Verse {current} of {total}')
-                            .replaceAll('{current}', verses.isEmpty ? '0' : '${visibleVerseIndex + 1}')
-                            .replaceAll('{total}', '${verses.length}');
 
                     return Stack(
                       children: [
@@ -585,39 +579,27 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                         Get.to(() => SettingsPage());
                       },
                     ),
-                    // Verse position indicator — centered-right, auto-fades
-                    if (!isSelected)
+                    // Vertical position indicator on the right edge — a
+                    // thin track + a small "current/total" pill that
+                    // slides top-to-bottom as the user reads, then
+                    // auto-fades after 2 s of inactivity.
+                    if (!isSelected && verses.isNotEmpty)
                       Positioned(
                         right: ResponsiveBreakpoints.headerInset(dc) + 4,
-                        top: 0,
-                        bottom: 0,
+                        top: MediaQuery.of(context).padding.top +
+                            64 * settings.menuScale +
+                            24,
+                        bottom: MediaQuery.of(context).padding.bottom + 56,
                         child: IgnorePointer(
-                          child: Center(
-                            child: AnimatedOpacity(
-                              opacity: _showVersePosition ? 1.0 : 0.0,
-                              duration: const Duration(milliseconds: 400),
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 10, vertical: 5),
-                                decoration: BoxDecoration(
-                                  color: scheme.surface
-                                      .withValues(alpha: isDark ? 0.72 : 0.78),
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: Text(
-                                  versePosition,
-                                  style: TextStyle(
-                                    fontFamily: settings.fontFamily,
-                                    fontSize: (settings.fontSize
-                                                .clamp(9.0, 13.0) *
-                                            settings.menuScale)
-                                        .toDouble(),
-                                    fontWeight: FontWeight.w500,
-                                    color: scheme.onSurfaceVariant
-                                        .withValues(alpha: 0.7),
-                                  ),
-                                ),
-                              ),
+                          child: AnimatedOpacity(
+                            opacity: _showVersePosition ? 1.0 : 0.0,
+                            duration: const Duration(milliseconds: 400),
+                            child: _VerticalProgressIndicator(
+                              progress: chapterProgress,
+                              currentLabel: '${visibleVerseIndex + 1}',
+                              totalLabel: '${verses.length}',
+                              fontFamily: settings.fontFamily,
+                              menuScale: settings.menuScale,
                             ),
                           ),
                         ),
@@ -671,6 +653,133 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
 }
 
 // ── Private helper widgets ────────────────────────────────────────────
+
+/// Thin vertical "scroll bookmark" on the right edge of the reader.
+/// A small pill (e.g. `12 / 50`) slides top-to-bottom in lockstep with
+/// the chapter progress. The whole widget is wrapped in an
+/// [AnimatedOpacity] by the caller so it auto-fades after 2 s of
+/// inactivity, matching the previous pill behavior.
+class _VerticalProgressIndicator extends StatelessWidget {
+  final double progress;
+  final String currentLabel;
+  final String totalLabel;
+  final String fontFamily;
+  final double menuScale;
+
+  const _VerticalProgressIndicator({
+    required this.progress,
+    required this.currentLabel,
+    required this.totalLabel,
+    required this.fontFamily,
+    required this.menuScale,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final fontSize = (10.0 * menuScale).clamp(9.0, 13.0).toDouble();
+
+    return LayoutBuilder(builder: (ctx, constraints) {
+      final h = constraints.maxHeight;
+      final pillHeight = (22 * menuScale).clamp(20.0, 32.0).toDouble();
+      // Anchor the pill so its center tracks the progress; clamp so it
+      // never overflows the track.
+      final clamped = progress.clamp(0.0, 1.0);
+      final pillTop =
+          (clamped * (h - pillHeight)).clamp(0.0, h - pillHeight).toDouble();
+
+      return SizedBox(
+        width: 56 * menuScale,
+        height: h,
+        child: Stack(
+          alignment: Alignment.topRight,
+          children: [
+            // Background track — full height.
+            Positioned(
+              right: 1,
+              top: 0,
+              bottom: 0,
+              child: Container(
+                width: 2,
+                decoration: BoxDecoration(
+                  color: scheme.outlineVariant.withValues(alpha: 0.35),
+                  borderRadius: BorderRadius.circular(1),
+                ),
+              ),
+            ),
+            // Filled portion from the top down to the pill.
+            Positioned(
+              right: 1,
+              top: 0,
+              child: Container(
+                width: 2,
+                height: pillTop + pillHeight / 2,
+                decoration: BoxDecoration(
+                  color: scheme.primary.withValues(alpha: 0.55),
+                  borderRadius: BorderRadius.circular(1),
+                ),
+              ),
+            ),
+            // Floating "current/total" pill.
+            Positioned(
+              right: 6,
+              top: pillTop,
+              child: Container(
+                height: pillHeight,
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: scheme.surface
+                      .withValues(alpha: isDark ? 0.86 : 0.92),
+                  borderRadius: BorderRadius.circular(pillHeight / 2),
+                  border: Border.all(
+                    color: scheme.primary.withValues(alpha: 0.45),
+                    width: 1,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black
+                          .withValues(alpha: isDark ? 0.32 : 0.12),
+                      blurRadius: 6,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Text.rich(
+                  TextSpan(
+                    children: [
+                      TextSpan(
+                        text: currentLabel,
+                        style: TextStyle(
+                          color: scheme.primary,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      TextSpan(
+                        text: ' / $totalLabel',
+                        style: TextStyle(
+                          color: scheme.onSurfaceVariant,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                  style: TextStyle(
+                    fontFamily: fontFamily,
+                    fontSize: fontSize,
+                    height: 1.0,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    });
+  }
+}
 
 class _ReaderStatusBar extends StatelessWidget {
   final double progress;

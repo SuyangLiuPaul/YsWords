@@ -39,7 +39,7 @@
     "title": { "en": "Kingdom of David & Solomon", "zh-Hans": "大卫与所罗门的王国", "zh-Hant": "大衛與所羅門的王國" },
     "description": { "en": "The united kingdom at its height — from the Mediterranean to the Euphrates.", "zh-Hans": "联合王国鼎盛时期——从地中海到幼发拉底河。", "zh-Hant": "聯合王國鼎盛時期——從地中海到幼發拉底河。" },
     "books": { "1 Samuel": [1, 31], "2 Samuel": [1, 24], "1 Kings": [1, 11], "1 Chronicles": [1, 29] },
-    "file": "06_kingdom_david_solomon.jpg"
+    "file": "06_kingdom_david_solomon.png"
   },
   {
     "id": "divided_kingdom",
@@ -79,9 +79,9 @@
   {
     "id": "paul_first_journey",
     "title": { "en": "Paul's First Missionary Journey", "zh-Hans": "保罗第一次传道旅程", "zh-Hant": "保羅第一次傳道旅程" },
-    "description": { "en": "From Antioch to Cyprus and through the cities of Galatia (Acts 13–14).", "zh-Hans": "从安提阿到塞浦路斯，经过加拉太各城（使徒行传13–14章）。", "zh-Hant": "從安提阿到塞浦路斯，經過加拉太各城（使徒行傳13–14章）。" },
+    "description": { "en": "From Antioch to Cyprus and through the cities of Galatia (Acts 13–14). Shown in the context of all four journeys for reference.", "zh-Hans": "从安提阿到塞浦路斯，经过加拉太各城（使徒行传13–14章），与四次旅程合并展示以便对照。", "zh-Hant": "從安提阿到塞浦路斯，經過加拉太各城（使徒行傳13–14章），與四次旅程合併展示以便對照。" },
     "books": { "Acts": [13, 14] },
-    "file": "12_paul_first_journey.jpg"
+    "file": "12_paul_journeys.png"
   },
   {
     "id": "paul_second_journey",
@@ -114,8 +114,43 @@
   {
     "id": "nt_world_roman_empire",
     "title": { "en": "The New Testament World", "zh-Hans": "新约世界", "zh-Hant": "新約世界" },
-    "description": { "en": "The Roman Empire in the first century — the world of the early church.", "zh-Hans": "一世纪的罗马帝国——早期教会的世界。", "zh-Hant": "一世紀的羅馬帝國——早期教會的世界。" },
+    "description": { "en": "The Roman Empire at its greatest extent (117 AD) — the world of the early church.", "zh-Hans": "罗马帝国鼎盛时期（公元117年）——早期教会的世界。", "zh-Hant": "羅馬帝國鼎盛時期（公元117年）——早期教會的世界。" },
     "books": { "Acts": [1, 12], "Romans": [1, 16], "1 Corinthians": [1, 16], "2 Corinthians": [1, 13], "Galatians": [1, 6], "Ephesians": [1, 6], "Philippians": [1, 4], "Colossians": [1, 4], "1 Thessalonians": [1, 5], "2 Thessalonians": [1, 3], "1 Timothy": [1, 6], "2 Timothy": [1, 4], "Titus": [1, 3], "Philemon": [1, 1], "Hebrews": [1, 13], "James": [1, 5], "1 Peter": [1, 5], "2 Peter": [1, 3], "1 John": [1, 5], "2 John": [1, 1], "3 John": [1, 1], "Jude": [1, 1], "Revelation": [4, 22] },
-    "file": "17_nt_world_roman_empire.png"
+    "file": "17_roman_empire.png"
+  },
+  {
+    "id": "ministry_of_jesus",
+    "title": { "en": "Ministry of Jesus in Galilee", "zh-Hans": "耶稣在加利利的事奉", "zh-Hant": "耶穌在加利利的事奉" },
+    "description": { "en": "Galilee, Samaria, and Judea — the cities and regions where Jesus taught and ministered.", "zh-Hans": "加利利、撒玛利亚和犹太地——耶稣教导与服侍的城镇与地区。", "zh-Hant": "加利利、撒瑪利亞和猶太地——耶穌教導與服侍的城鎮與地區。" },
+    "books": { "Matthew": [4, 28], "Mark": [1, 16], "Luke": [3, 24], "John": [1, 21] },
+    "file": "18_ministry_of_jesus.png"
+  },
+  {
+    "id": "solomons_temple",
+    "title": { "en": "Solomon's Temple", "zh-Hans": "所罗门的圣殿", "zh-Hant": "所羅門的聖殿" },
+    "description": { "en": "Floor plan of the First Temple in Jerusalem, built under King Solomon (1 Kings 6).", "zh-Hans": "耶路撒冷第一圣殿的平面图，由所罗门王建造（列王纪上6章）。", "zh-Hant": "耶路撒冷第一聖殿的平面圖，由所羅門王建造（列王紀上6章）。" },
+    "books": { "1 Kings": [5, 9], "2 Chronicles": [2, 7] },
+    "file": "19_solomons_temple.jpg"
+  },
+  {
+    "id": "tabernacle_schematic",
+    "title": { "en": "The Tabernacle", "zh-Hans": "会幕", "zh-Hant": "會幕" },
+    "description": { "en": "Layout of the wilderness Tabernacle — courtyard, holy place, and most holy place (Exodus 25–40).", "zh-Hans": "旷野会幕的布局——外院、圣所与至圣所（出埃及记25–40章）。", "zh-Hant": "曠野會幕的佈局——外院、聖所與至聖所（出埃及記25–40章）。" },
+    "books": { "Exodus": [25, 40], "Leviticus": [1, 27], "Numbers": [1, 10] },
+    "file": "20_tabernacle_schematic.jpg"
+  },
+  {
+    "id": "maccabean_palestine",
+    "title": { "en": "Palestine under the Maccabees", "zh-Hans": "马加比时期的巴勒斯坦", "zh-Hant": "馬加比時期的巴勒斯坦" },
+    "description": { "en": "The intertestamental period — Jewish independence under the Hasmonean dynasty (Smith, 1915).", "zh-Hans": "两约之间——哈斯摩尼王朝下的犹太独立（1915年史密斯地图）。", "zh-Hant": "兩約之間——哈斯摩尼王朝下的猶太獨立（1915年史密斯地圖）。" },
+    "books": { "Daniel": [11, 12] },
+    "file": "21_maccabean_palestine.jpg"
+  },
+  {
+    "id": "israel_relief",
+    "title": { "en": "Geography of Israel", "zh-Hans": "以色列地理", "zh-Hant": "以色列地理" },
+    "description": { "en": "Physical relief map of the land of Israel — mountains, valleys, and the Jordan rift.", "zh-Hans": "以色列地的地势图——山脉、山谷与约旦裂谷。", "zh-Hant": "以色列地的地勢圖——山脈、山谷與約旦裂谷。" },
+    "books": { "Joshua": [1, 24], "Judges": [1, 21], "1 Samuel": [1, 31], "2 Samuel": [1, 24] },
+    "file": "22_israel_relief.jpg"
   }
 ]
