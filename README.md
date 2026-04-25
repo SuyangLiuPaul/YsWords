@@ -86,7 +86,7 @@ lib/
   models/               Verse, Book, Chapter, AppSettings
   providers/            MainProvider (state + persistence)
   pages/                HomePage, BooksPage, SearchPage, SettingsPage
-  widgets/              VerseWidget, ParagraphGroupWidget, BookChapterPicker, SidebarPanel, LocalizedBackButton
+  widgets/              VerseWidget, ParagraphGroupWidget, BookChapterPicker, SidebarPanel, LocalizedBackButton, StackedCardScaffold
   services/             FetchVerses, FetchBooks
   constants/            Book lists, UI strings, text patterns, Bible versions
   utils/                Clipboard helper, search formatter, version mapper, verse span builder, responsive breakpoints

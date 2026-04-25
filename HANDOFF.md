@@ -217,11 +217,35 @@ The app adapts its layout to all device sizes using `lib/utils/responsive.dart`:
 
 **How it works**: `ResponsiveBreakpoints.classOf(width)` returns a `DeviceClass` enum. The reading view fills the full screen width on all devices (no max-width constraint) for an iPhone-like experience. Padding, indents, tile sizes, and spacing multiply by device-class-specific scale factors. Phone layouts are byte-identical to the pre-responsive code (scale 1.0).
 
-**Affected areas**: settings (max 640px), books page (max 800px), search (max 680px), chapter tiles (44–72px), loading logo (100–240px), all spacing gaps. Reading view uses phone-level padding/indent on all devices (8px reading padding, 16px verse indent, 10px header inset).
+**Affected areas**: settings (max 640px), books page (max 800px), search (max 720px), chapter tiles (44–72px), loading logo (100–240px), all spacing gaps. Reading view uses phone-level padding/indent on all devices (8px reading padding, 16px verse indent, 10px header inset).
 
 ---
 
 ## What Has Been Fixed (2026-04-25)
+
+### Comprehensive Bug Fix & UI Polish (round 11)
+- **Primary color picker now visible in dark mode**: Was completely hidden; now always visible with adaptive check icon (black on light colors, white on dark colors via `computeLuminance()`).
+- **Highlight colors brighter in dark mode**: Alpha raised from 0.35 to 0.55 in dark theme so user highlights are visible against dark surfaces.
+- **Swipe-to-go-back on all overlay pages**: Settings, Search, and Books pages now detect rightward swipe gesture and call `stack.pop()` / `Get.back()` — matching the back arrow. Previously the system/browser gesture could reload the page.
+- **Back button uses Get.back()**: `LocalizedBackButton` now uses `Get.back()` and `stack.pop()` (consistent with GetX navigation and StackedCardScaffold overlays), with `context.watch<AppSettings>()` so the tooltip updates on locale change.
+- **Bootstrap fallback timer reduced**: From 8 seconds to 4 seconds — less waiting on load failure.
+- **setState-after-dispose guard**: Added `mounted` check right before `setState` in `_handleItemPositionsChanged()`.
+- **Remove duplicate SizedBox**: Settings preview had a double `SizedBox(height: 12 * s)`.
+- **Books page max-width consistency**: Uses `isTabletOrWider` (600px threshold) instead of `isDesktopOrWider` (1024px), matching search page behavior.
+- **Progress bar height clamped**: `minHeight` clamped to 2.5–6.0 range so it's visible at all menu scales.
+- **Header icon minimum constraints**: All `IconButton` widgets in `_FloatingHeader` now have `BoxConstraints(minWidth: 36, minHeight: 36)` to prevent zero-size squeeze.
+- **Copy button protected in selection bar**: `FilledButton` wrapped in `Flexible` so it's always usable on narrow screens.
+- **Color picker theme**: Border uses `scheme.outline` instead of hardcoded `Colors.grey`.
+- **Search results separator**: Added space after colon in English results summary; uses locale-aware comma separator (`,` vs `，`).
+- **Glass surface consistency**: Unified blur sigma (18), shadow (blurRadius 24, offset 0,10), and alpha values between `BooksGlassSurface` and `_GlassSurface`.
+- **All paddings scale with menuScale**: FloatingHeader, ReaderStatusBar, SelectionActionBar inner padding now multiply by `settings.menuScale`.
+- **Color picker bottom sheet scales**: Dots, margins, title font all scale with `menuScale`.
+- **Verse/paragraph padding scales**: Vertical padding derived from `fontSize` instead of hardcoded constants.
+- **Unified highlight alpha**: Both search and user highlights use 0.35 alpha (was inconsistent 0.3 vs 0.35).
+- **Grid tile targets scale**: Testament button padding, toggle button constraints, and grid tile widths scale with `menuScale`.
+- **Border radii unified**: All chapter/book tiles use 10 (was mixed 7.5, 8, 10).
+- **OT/NT abbreviation**: English uses "OT"/"NT" in both narrow (sidebar) and wide (full-screen) layout paths. Chinese labels unchanged.
+- **OT/NT spacing**: 10px gap between buttons in wide layout, 8px in narrow layout.
 
 ### iPad Header Alignment (this session, round 10)
 - **Top-right controls fixed**: `_FloatingHeader` now splits the reader title/version area and the action icons into separate left/right clusters. This pins Search and Settings to the far right on iPad/tablet instead of letting flexible book/version text influence their final position.
