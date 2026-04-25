@@ -357,8 +357,6 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
         final visibleVerseIndex = verses.isEmpty
             ? 0
             : rawVisibleVerseIndex.clamp(0, verses.length - 1).toInt();
-        final visibleVerse =
-            verses.isEmpty ? currentVerse : verses[visibleVerseIndex];
         final chapterProgress = verses.isEmpty
             ? 0.0
             : ((visibleVerseIndex + 1) / verses.length)
@@ -390,6 +388,12 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                     final paneWidth = constraints.maxWidth;
                     final dc = ResponsiveBreakpoints.classOf(paneWidth);
                     final isWideScreen = ResponsiveBreakpoints.isTabletOrWider(paneWidth);
+                    final scheme = Theme.of(context).colorScheme;
+                    final isDark = Theme.of(context).brightness == Brightness.dark;
+                    final versePosition =
+                        (uiStrings['versePosition']?[settings.locale] ?? 'Verse {current} of {total}')
+                            .replaceAll('{current}', verses.isEmpty ? '0' : '${visibleVerseIndex + 1}')
+                            .replaceAll('{total}', '${verses.length}');
 
                     return Stack(
                       children: [
@@ -540,6 +544,44 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                         Get.to(() => SettingsPage());
                       },
                     ),
+                    // Verse position indicator — centered-right, auto-fades
+                    if (!isSelected)
+                      Positioned(
+                        right: ResponsiveBreakpoints.headerInset(dc) + 4,
+                        top: 0,
+                        bottom: 0,
+                        child: IgnorePointer(
+                          child: Center(
+                            child: AnimatedOpacity(
+                              opacity: _showVersePosition ? 1.0 : 0.0,
+                              duration: const Duration(milliseconds: 400),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 10, vertical: 5),
+                                decoration: BoxDecoration(
+                                  color: scheme.surface
+                                      .withValues(alpha: isDark ? 0.72 : 0.78),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Text(
+                                  versePosition,
+                                  style: TextStyle(
+                                    fontFamily: settings.fontFamily,
+                                    fontSize: (settings.fontSize
+                                                .clamp(9.0, 13.0) *
+                                            settings.menuScale)
+                                        .toDouble(),
+                                    fontWeight: FontWeight.w500,
+                                    color: scheme.onSurfaceVariant
+                                        .withValues(alpha: 0.7),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    // Bottom bar — selection actions or progress bar
                     Align(
                       alignment: Alignment.bottomCenter,
                       child: isSelected
@@ -570,12 +612,8 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                               },
                             )
                           : _ReaderStatusBar(
-                              verse: visibleVerse,
-                              verseIndex: visibleVerseIndex,
-                              verseCount: verses.length,
                               progress: chapterProgress,
                               deviceClass: dc,
-                              visible: _showVersePosition,
                             ),
                     ),
                   ],
@@ -594,61 +632,23 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
 // ── Private helper widgets ────────────────────────────────────────────
 
 class _ReaderStatusBar extends StatelessWidget {
-  final Verse? verse;
-  final int verseIndex;
-  final int verseCount;
   final double progress;
   final DeviceClass deviceClass;
-  final bool visible;
 
   const _ReaderStatusBar({
-    required this.verse,
-    required this.verseIndex,
-    required this.verseCount,
     required this.progress,
     required this.deviceClass,
-    this.visible = true,
   });
 
   @override
   Widget build(BuildContext context) {
     final settings = context.watch<AppSettings>();
     final scheme = Theme.of(context).colorScheme;
-    final fontSize =
-        (settings.fontSize.clamp(9.0, 13.0) * settings.menuScale)
-            .toDouble();
-    final versePosition =
-        (uiStrings['versePosition']?[settings.locale] ?? 'Verse {current} of {total}')
-            .replaceAll(
-                '{current}', verseCount == 0 ? '0' : '${verseIndex + 1}')
-            .replaceAll('{total}', '$verseCount');
-    final inset = ResponsiveBreakpoints.headerInset(deviceClass);
     final bottomInset = MediaQuery.of(context).padding.bottom;
 
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        // Floating verse position label — auto-fades on scroll
-        AnimatedOpacity(
-          opacity: visible ? 1.0 : 0.0,
-          duration: const Duration(milliseconds: 400),
-          child: Padding(
-            padding: EdgeInsets.only(right: inset + 4, bottom: 6),
-            child: Align(
-              alignment: Alignment.centerRight,
-              child: Text(
-                versePosition,
-                style: TextStyle(
-                  fontFamily: settings.fontFamily,
-                  fontSize: fontSize,
-                  fontWeight: FontWeight.w500,
-                  color: scheme.onSurfaceVariant.withValues(alpha: 0.6),
-                ),
-              ),
-            ),
-          ),
-        ),
-        // Thin progress bar at the very bottom
         LinearProgressIndicator(
           value: progress,
           minHeight: (2.5 * settings.menuScale).clamp(2.0, 4.0),
