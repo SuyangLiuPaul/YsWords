@@ -894,6 +894,9 @@ void _showMapPicker(
   }
   showModalBottomSheet(
     context: context,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+    ),
     builder: (_) {
       final scheme = Theme.of(context).colorScheme;
       return SafeArea(
@@ -901,35 +904,73 @@ void _showMapPicker(
           mainAxisSize: MainAxisSize.min,
           children: [
             Padding(
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-              child: Text(
-                uiStrings['maps']?[locale] ?? 'Maps',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: scheme.onSurface,
+              padding: const EdgeInsets.only(top: 8),
+              child: Container(
+                width: 32,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: scheme.outlineVariant.withValues(alpha: 0.5),
+                  borderRadius: BorderRadius.circular(2),
                 ),
               ),
             ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+              child: Row(
+                children: [
+                  Icon(Icons.map_outlined, size: 18, color: scheme.primary),
+                  const SizedBox(width: 8),
+                  Text(
+                    uiStrings['maps']?[locale] ?? 'Maps',
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      color: scheme.onSurface,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Divider(height: 1),
             ...maps.map((m) => ListTile(
-                  leading: Icon(Icons.map_outlined, color: scheme.primary),
-                  title: Text(m.localizedTitle(locale)),
+                  dense: true,
+                  leading: ClipRRect(
+                    borderRadius: BorderRadius.circular(6),
+                    child: Container(
+                      width: 44,
+                      height: 44,
+                      color: scheme.surfaceContainerHighest
+                          .withValues(alpha: 0.5),
+                      child: Image.asset(
+                        'assets/maps/${m.file}',
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => Icon(Icons.map,
+                            size: 22, color: scheme.primary),
+                      ),
+                    ),
+                  ),
+                  title: Text(
+                    m.localizedTitle(locale),
+                    style: const TextStyle(fontSize: 14),
+                  ),
                   subtitle: m.localizedDescription(locale).isNotEmpty
                       ? Text(
                           m.localizedDescription(locale),
-                          maxLines: 2,
+                          maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
                               fontSize: 12, color: scheme.onSurfaceVariant),
                         )
                       : null,
+                  trailing: Icon(Icons.chevron_right_rounded,
+                      size: 20, color: scheme.outline),
                   onTap: () {
                     Navigator.pop(context);
                     Get.to(
                         () => MapViewerPage(map: m, locale: locale));
                   },
                 )),
-            const SizedBox(height: 8),
+            const SizedBox(height: 4),
           ],
         ),
       );

@@ -32,7 +32,7 @@
     "title": { "en": "Twelve Tribe Portions", "zh-Hans": "十二支派分地", "zh-Hant": "十二支派分地" },
     "description": { "en": "The territorial allotments given to each of the twelve tribes of Israel.", "zh-Hans": "以色列十二支派各分得的地业。", "zh-Hant": "以色列十二支派各分得的地業。" },
     "books": { "Joshua": [13, 24] },
-    "file": "05_twelve_tribe_portions.gif"
+    "file": "05_twelve_tribe_portions.png"
   },
   {
     "id": "kingdom_david_solomon",
@@ -46,7 +46,7 @@
     "title": { "en": "Divided Kingdom", "zh-Hans": "分裂王国", "zh-Hant": "分裂王國" },
     "description": { "en": "Israel in the north and Judah in the south during the period of the kings.", "zh-Hans": "列王时期北国以色列与南国犹大。", "zh-Hant": "列王時期北國以色列與南國猶大。" },
     "books": { "1 Kings": [12, 22], "2 Kings": [1, 16], "2 Chronicles": [10, 28] },
-    "file": "07_divided_kingdom.gif"
+    "file": "07_divided_kingdom.png"
   },
   {
     "id": "assyrian_empire",
@@ -109,7 +109,7 @@
     "title": { "en": "Seven Churches of Revelation", "zh-Hans": "启示录七教会", "zh-Hant": "啟示錄七教會" },
     "description": { "en": "Ephesus, Smyrna, Pergamum, Thyatira, Sardis, Philadelphia, and Laodicea in Asia Minor.", "zh-Hans": "小亚细亚的以弗所、士每拿、别迦摩、推雅推喇、撒狄、非拉铁非和老底嘉。", "zh-Hant": "小亞細亞的以弗所、士每拿、別迦摩、推雅推喇、撒狄、非拉鐵非和老底嘉。" },
     "books": { "Revelation": [1, 3] },
-    "file": "16_seven_churches.gif"
+    "file": "16_seven_churches.png"
   },
   {
     "id": "nt_world_roman_empire",
