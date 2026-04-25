@@ -9,6 +9,12 @@ import 'package:shared_preferences/shared_preferences.dart';
 // MainProvider class to extends ChangeNotifier for state management
 
 class MainProvider extends ChangeNotifier {
+  final String _storagePrefix;
+
+  MainProvider({String storagePrefix = ''}) : _storagePrefix = storagePrefix;
+
+  bool get isPrimary => _storagePrefix.isEmpty;
+
   // Index of a verse to temporarily highlight
   int? highlightIndex;
 
@@ -60,7 +66,7 @@ class MainProvider extends ChangeNotifier {
 
   void setVersion(String version) {
     currentVersion = version;
-    saveCurrentState();
+    if (isPrimary) saveCurrentState();
     notifyListeners();
   }
 
@@ -115,13 +121,14 @@ class MainProvider extends ChangeNotifier {
   }
 
   void _saveHighlights() async {
+    if (!isPrimary) return;
     final prefs = await SharedPreferences.getInstance();
-    prefs.setString('highlights', jsonEncode(_highlights));
+    prefs.setString('${_storagePrefix}highlights', jsonEncode(_highlights));
   }
 
   Future<void> _loadHighlights() async {
     final prefs = await SharedPreferences.getInstance();
-    final json = prefs.getString('highlights');
+    final json = prefs.getString('${_storagePrefix}highlights');
     if (json != null) {
       final decoded = jsonDecode(json) as Map<String, dynamic>;
       _highlights = decoded.map((k, v) => MapEntry(k, v as int));
@@ -132,7 +139,7 @@ class MainProvider extends ChangeNotifier {
   void setCurrentChapter({required String book, required int chapter}) {
     currentBook = book;
     currentChapter = chapter;
-    saveCurrentState();
+    if (isPrimary) saveCurrentState();
     notifyListeners();
   }
 
@@ -216,16 +223,16 @@ class MainProvider extends ChangeNotifier {
 
   Future<void> saveCurrentState() async {
     final prefs = await SharedPreferences.getInstance();
-    if (currentBook != null) prefs.setString('book', currentBook!);
-    if (currentChapter != null) prefs.setInt('chapter', currentChapter!);
-    prefs.setString('version', currentVersion);
+    if (currentBook != null) prefs.setString('${_storagePrefix}book', currentBook!);
+    if (currentChapter != null) prefs.setInt('${_storagePrefix}chapter', currentChapter!);
+    prefs.setString('${_storagePrefix}version', currentVersion);
   }
 
   Future<void> restoreState() async {
     final prefs = await SharedPreferences.getInstance();
-    final savedVersion = prefs.getString('version');
-    final savedBook = prefs.getString('book');
-    final savedChapter = prefs.getInt('chapter');
+    final savedVersion = prefs.getString('${_storagePrefix}version');
+    final savedBook = prefs.getString('${_storagePrefix}book');
+    final savedChapter = prefs.getInt('${_storagePrefix}chapter');
 
     if (savedVersion != null) currentVersion = savedVersion.toLowerCase();
     if (savedBook != null) currentBook = savedBook;

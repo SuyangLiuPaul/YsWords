@@ -11,54 +11,69 @@ import 'package:yswords/utils/responsive.dart';
 class BooksPage extends StatelessWidget {
   final int chapterIdx;
   final String bookIdx;
-  const BooksPage({super.key, required this.chapterIdx, required this.bookIdx});
+  final MainProvider? providerOverride;
+
+  const BooksPage({
+    super.key,
+    required this.chapterIdx,
+    required this.bookIdx,
+    this.providerOverride,
+  });
 
   @override
   Widget build(BuildContext context) {
+    if (providerOverride != null) {
+      return ChangeNotifierProvider<MainProvider>.value(
+        value: providerOverride!,
+        child: _buildContent(context, providerOverride!),
+      );
+    }
+    return Consumer<MainProvider>(
+      builder: (context, mainProvider, _) => _buildContent(context, mainProvider),
+    );
+  }
+
+  Widget _buildContent(BuildContext context, MainProvider mainProvider) {
     final settings = Provider.of<AppSettings>(context);
 
-    return Consumer<MainProvider>(
-      builder: (context, mainProvider, child) {
-        return GestureDetector(
-          onHorizontalDragEnd: (details) {
-            final velocity = details.primaryVelocity ?? 0;
-            if (velocity > 300) {
-              Get.back();
-            }
-          },
-          child: Scaffold(
-          appBar: AppBar(
-            leading: const LocalizedBackButton(),
-            title: Text(
-                uiStrings['bibleBooks']?[settings.locale] ?? 'Bible Books'),
-          ),
-          body: Center(
-            child: ConstrainedBox(
-              constraints: BoxConstraints(
-                maxWidth: ResponsiveBreakpoints.isTabletOrWider(
-                        MediaQuery.of(context).size.width)
-                    ? 800
-                    : double.infinity,
-              ),
-              child: BookChapterPicker(
-                currentBook: bookIdx,
-                currentChapter: chapterIdx,
-                onChapterSelected: (book, chapter) {
-                  final matched = mainProvider.verses
-                      .where((v) => v.book == book && v.chapter == chapter)
-                      .toList();
-                  if (matched.isEmpty) return;
-                  mainProvider.setCurrentChapter(book: book, chapter: chapter);
-                  mainProvider.updateCurrentVerse(verse: matched.first);
-                  mainProvider.jumpToTop();
-                  Get.back();
-                },
-              ),
+    return GestureDetector(
+      onHorizontalDragEnd: (details) {
+        final velocity = details.primaryVelocity ?? 0;
+        if (velocity > 300) {
+          Get.back();
+        }
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          leading: const LocalizedBackButton(),
+          title: Text(
+              uiStrings['bibleBooks']?[settings.locale] ?? 'Bible Books'),
+        ),
+        body: Center(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              maxWidth: ResponsiveBreakpoints.isTabletOrWider(
+                      MediaQuery.of(context).size.width)
+                  ? 800
+                  : double.infinity,
+            ),
+            child: BookChapterPicker(
+              currentBook: bookIdx,
+              currentChapter: chapterIdx,
+              onChapterSelected: (book, chapter) {
+                final matched = mainProvider.verses
+                    .where((v) => v.book == book && v.chapter == chapter)
+                    .toList();
+                if (matched.isEmpty) return;
+                mainProvider.setCurrentChapter(book: book, chapter: chapter);
+                mainProvider.updateCurrentVerse(verse: matched.first);
+                mainProvider.jumpToTop();
+                Get.back();
+              },
             ),
           ),
         ),
-        );
-      },
+      ),
     );
   }
 }
