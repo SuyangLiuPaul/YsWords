@@ -1,11 +1,14 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:yswords/pages/home_page.dart';
 import 'package:yswords/pages/loading_page.dart';
+import 'package:yswords/models/verse.dart';
 import 'package:yswords/providers/main_provider.dart';
 import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/services/fetch_books.dart';
 import 'package:yswords/services/fetch_verses.dart';
+import 'package:yswords/widgets/stacked_card_nav.dart';
 import 'package:provider/provider.dart';
 import 'package:get/get.dart';
 
@@ -228,11 +231,44 @@ class _MainAppState extends State<MainApp> {
                     child: CircularProgressIndicator(),
                   ),
                 )
-              : LoadingPage(
-                  verses:
-                      Provider.of<MainProvider>(context, listen: false).verses),
+              : StackedCardScaffold(
+                  child: _RootRouter(
+                    initialVerses:
+                        Provider.of<MainProvider>(context, listen: false)
+                            .verses,
+                  ),
+                ),
         );
       },
+    );
+  }
+}
+
+/// Root child of [StackedCardScaffold]: shows the loading splash first and
+/// swaps to [HomePage] in place once verses are ready, so the surrounding
+/// stacked-card scaffold persists across the transition.
+class _RootRouter extends StatefulWidget {
+  final List<Verse> initialVerses;
+  const _RootRouter({required this.initialVerses});
+
+  @override
+  State<_RootRouter> createState() => _RootRouterState();
+}
+
+class _RootRouterState extends State<_RootRouter> {
+  bool _showHome = false;
+
+  void _advance() {
+    if (!mounted || _showHome) return;
+    setState(() => _showHome = true);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_showHome) return const HomePage();
+    return LoadingPage(
+      verses: widget.initialVerses,
+      onAdvance: _advance,
     );
   }
 }

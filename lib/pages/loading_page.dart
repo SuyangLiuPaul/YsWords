@@ -13,7 +13,14 @@ import 'home_page.dart';
 
 class LoadingPage extends StatefulWidget {
   final List<Verse> verses;
-  const LoadingPage({super.key, required this.verses});
+
+  /// Optional advance callback. When provided (e.g. by a persistent
+  /// scaffold like StackedCardScaffold), it is used instead of a
+  /// Navigator pushReplacement so the surrounding scaffold remains in
+  /// the widget tree.
+  final VoidCallback? onAdvance;
+
+  const LoadingPage({super.key, required this.verses, this.onAdvance});
 
   @override
   State<LoadingPage> createState() => _LoadingPageState();
@@ -38,9 +45,14 @@ class _LoadingPageState extends State<LoadingPage> {
     _autoAdvance?.cancel();
     _autoAdvance = Timer(const Duration(seconds: 3), () {
       if (!mounted) return;
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const HomePage()),
-      );
+      final advance = widget.onAdvance;
+      if (advance != null) {
+        advance();
+      } else {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const HomePage()),
+        );
+      }
     });
   }
 
