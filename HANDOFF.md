@@ -78,7 +78,10 @@ main.dart (entry point)
 | `lib/widgets/verse_widget.dart` | Renders single verse. Background priority: selection > search highlight > **user highlight color** (35% opacity) > transparent. In paragraph mode: superscript verse numbers, first-line indent, paragraph-start spacers, reference-block indent. Tap to select, tap number to copy |
 | `lib/widgets/paragraph_group_widget.dart` | Renders multiple verses as a single flowing RichText in paragraph mode. Per-verse selection via `TapGestureRecognizer`, per-verse background (selection/highlight). Same background priority as VerseWidget |
 | `lib/widgets/localized_back_button.dart` | Back button with localized tooltip |
-| `lib/widgets/bible_reading_pane.dart` | Self-contained Bible reading widget. Contains `ScrollablePositionedList` with verse/paragraph groups, glass `_FloatingHeader` (book/chapter/version, split toggle, search, settings), `_ReaderStatusBar` (progress, chapter nav), `_SelectionActionBar` (copy, highlight, clear). Each pane handles its own swipe gestures, scroll tracking, and chapter navigation. Uses `Consumer2<MainProvider, AppSettings>` which resolves to the correct provider via Provider override in split view. ~610 lines |
+| `lib/widgets/bible_reading_pane.dart` | Self-contained Bible reading widget. Contains `ScrollablePositionedList` with verse/paragraph groups, glass `_FloatingHeader` (book/chapter/version, split toggle, search, settings, **map button**), `_ReaderStatusBar` (thin progress bar at the bottom), `_SelectionActionBar` (copy, highlight, clear), `_VerticalProgressIndicator` (right-edge scroll bookmark with sliding `current/total` pill that auto-fades after 2s of inactivity), and the `_MapPickerSheet` tabbed picker (For-this-chapter / For-this-book / All-maps). Each pane handles its own swipe gestures, scroll tracking, chapter navigation, and tracks two map lists (`_chapterMaps` + `_bookMaps`) for the picker fallback. Uses `Consumer2<MainProvider, AppSettings>` which resolves to the correct provider via Provider override in split view. ~1300 lines |
+| `lib/pages/map_viewer_page.dart` | Full-screen `InteractiveViewer` map with floating glass header (title wraps to 2 lines so long names don't ellipsize) and a horizontal "related maps" strip at the bottom. Strip shows `relatedMaps` first (chapter + book matches, marked with a bookmark badge) and then the rest of the library. Tapping a thumbnail switches the displayed map in place and resets pan/zoom via a unique `ValueKey` on the `InteractiveViewer`. |
+| `lib/services/map_service.dart` | Loads `assets/maps_index.json` once into a static cache. Exposes `mapsForBookChapter(en, ch)` (exact chapter match) and `mapsForBook(en)` (book-level fallback so chapters without a specific map still surface relevant ones). |
+| `lib/models/bible_map.dart` | Immutable BibleMap with localized title/description maps, `books: Map<String, [start, end]>` chapter ranges per English book name, and `matchesBookChapter()` predicate. |
 
 ### Constants
 | File | Purpose |
@@ -222,6 +225,78 @@ The app adapts its layout to all device sizes using `lib/utils/responsive.dart`:
 ---
 
 ## What Has Been Fixed (2026-04-25)
+
+### More Maps Expansion (round 15)
+- **Library expanded 25 → 39 entries** by registering the prepared map assets `26`-`39` in `assets/maps_index.json`.
+- **New map entries**:
+  - `26_palestine_nt_times.jpg` — Palestine in New Testament Times
+  - `27_jesus_ministry_detail.jpg` — detailed route map for Jesus' ministry
+  - `28_lower_galilee.gif` — Lower Galilee
+  - `29_decapolis.gif` — Decapolis
+  - `30_judea_southern.gif` — Judea and southern Palestine
+  - `31_galilee_northern.gif` — Northern Galilee
+  - `32_upper_galilee.gif` — Upper Galilee
+  - `33_samaria.gif` — Samaria
+  - `34_roads_israel.jpg` — Roads of Israel
+  - `35_last_passover.gif` — Jesus' last Passover / passion-week setting
+  - `36_spread_christianity.gif` — spread of early Christianity
+  - `37_nt_world.jpg` — New Testament world
+  - `38_nt_asia.jpg` — Asia Minor in the New Testament
+  - `39_jerusalem_first_century.jpg` — Jerusalem in the first century
+- **Localized metadata**: Every new map has English, Simplified Chinese, and Traditional Chinese title/description fields.
+- **Coverage preserved**: Verified `39 maps, 0 uncovered chapters` across all 1189 canonical chapters.
+- **Asset hygiene**: Removed untracked `assets/maps/test_*` scratch files so the whole `assets/maps/` directory can be safely bundled without shipping test artifacts.
+- **Integrity check**: `sips` successfully decoded every `jpg/png/gif` in `assets/maps`; no corrupt files reported.
+
+### Maps system overhaul + reader scroll bookmark (round 14)
+
+**Reader UX**
+- Replaced the centered "Verse N of M" pill with `_VerticalProgressIndicator` — a thin vertical track pinned to the right edge of the reader. A small `current/total` pill slides top-to-bottom in lockstep with `chapterProgress`; the track fills with primary color from the top down to the pill so position is readable at a glance. Auto-fades after 2 s of inactivity (driven by the existing `_versePositionTimer`).
+
+**Maps system**
+- **Always-on map button.** Previously the map IconButton was hidden whenever `_chapterMaps` was empty, which meant most of Judges, Job, Psalms, Proverbs, the minor prophets, and the dialogue chapters of the gospels had no map affordance at all. The button is now always rendered — outlined + dimmed when there's only a fallback, filled when there's a chapter match.
+- **Tabbed picker** (`_MapPickerSheet`, stateful with a `TabController`):
+  - **For this chapter** — exact matches (auto-selected when any exist).
+  - **For this book** — additional maps that mention this book at any chapter range. Auto-selected when the chapter list is empty, with an info banner explaining the fallback.
+  - **All maps** — full library, lazy-loaded via `MapService.loadMaps()` so the modal stays snappy on open.
+- **In-viewer related-maps strip.** `MapViewerPage` now shows a horizontal scroller below the map listing related maps first (with a bookmark badge) and then the rest of the library. Tap a thumbnail to switch in place; `InteractiveViewer` is keyed by map id so pan/zoom resets on switch. Title wraps to 2 lines so long names like "保罗第二次传道旅程" / "Paul's Second Missionary Journey" no longer ellipsize.
+- **Three corrupt source files replaced.** `06_kingdom_david_solomon.jpg`, `12_paul_first_journey.jpg`, and `17_nt_world_roman_empire.png` were silently un-decodable (`sips` returned `<nil>` for pixel dimensions), which is why those entries showed "Map unavailable" in the viewer. Replaced from public-domain Wikimedia Commons sources:
+  - 06 → *Kingdom of Israel 1020 BCE* (PNG render of `Kingdom_of_Israel_1020_map.svg`).
+  - 12 → *Map of St Paul's missionary journeys* (Knecht). Single image showing all four journeys color-coded; description updated.
+  - 17 → *Roman Empire under Trajan, AD 117* (`Roman_Empire_Trajan_117AD.png`).
+- **Library expanded 17 → 25 entries.** Eight new public-domain maps from Wikimedia Commons:
+  - `18_ministry_of_jesus.png` (Galilee/Samaria/Judea sites of Jesus' ministry)
+  - `19_solomons_temple.jpg` (First Temple floor plan)
+  - `20_tabernacle_schematic.jpg` (Wilderness Tabernacle layout)
+  - `21_maccabean_palestine.jpg` (Smith 1915 — Hasmonean intertestamental period)
+  - `22_israel_relief.jpg` (physical relief map)
+  - `23_jerusalem_old_city.png` (Old City quarters, gates, Temple Mount)
+  - `24_assyria_detail.jpg` (Assyrian heartland: Nineveh, Asshur, Calah)
+  - `25_herodian_tetrarchy.png` (Palestine after Herod the Great — Judea / Galilee / Samaria / Decapolis)
+- **Full 66-book coverage.** Beyond the new files, extended the `books` field of several existing entries so every book matches at least one map. Verified via a Python coverage check — 0 uncovered chapters across all 1189 chapters of the canon. Notable extensions:
+  - 01 ANE → +Job (set in patriarchal Uz)
+  - 02 Abraham's Journeys → Genesis 12-50 (Joseph cycle is the same map area)
+  - 06 Kingdom of David & Solomon → +Psalms / Proverbs / Ecclesiastes / Song of Solomon, 2 Chr 1-9
+  - 07 Divided Kingdom → +Hosea, Joel, Amos, Obadiah, Micah
+  - 08 Assyrian Empire → +Hosea, Amos, Jonah, Nahum, Micah
+  - 09 Babylonian Empire → +Habakkuk, Zephaniah, Isaiah 40-66, 2 Chr 29-36
+  - 10 Persian Empire & Return → +Haggai, Zechariah, Malachi
+  - 11 Israel in NT Times → all gospels through their final chapters + Acts 22-26 (Caesarea hearings)
+  - 22 Geography of Israel → +Ruth
+- **New localized strings** in `ui_strings.dart` for the picker: `mapsForThisChapter`, `mapsForThisBook`, `mapsAll`, `mapsRelated`, `mapsBrowseLibrary`, `mapsNoneForChapterFallback`. All trilingual (en / zh-Hans / zh-Hant).
+
+**Verification recipe** (paste into a terminal at the repo root):
+```bash
+python3 -c "
+import json
+data = json.load(open('assets/maps_index.json'))
+ch = {'Genesis':50,'Exodus':40,'Leviticus':27,'Numbers':36,'Deuteronomy':34,'Joshua':24,'Judges':21,'Ruth':4,'1 Samuel':31,'2 Samuel':24,'1 Kings':22,'2 Kings':25,'1 Chronicles':29,'2 Chronicles':36,'Ezra':10,'Nehemiah':13,'Esther':10,'Job':42,'Psalms':150,'Proverbs':31,'Ecclesiastes':12,'Song of Solomon':8,'Isaiah':66,'Jeremiah':52,'Lamentations':5,'Ezekiel':48,'Daniel':12,'Hosea':14,'Joel':3,'Amos':9,'Obadiah':1,'Jonah':4,'Micah':7,'Nahum':3,'Habakkuk':3,'Zephaniah':3,'Haggai':2,'Zechariah':14,'Malachi':4,'Matthew':28,'Mark':16,'Luke':24,'John':21,'Acts':28,'Romans':16,'1 Corinthians':16,'2 Corinthians':13,'Galatians':6,'Ephesians':6,'Philippians':4,'Colossians':4,'1 Thessalonians':5,'2 Thessalonians':3,'1 Timothy':6,'2 Timothy':4,'Titus':3,'Philemon':1,'Hebrews':13,'James':5,'1 Peter':5,'2 Peter':3,'1 John':5,'2 John':1,'3 John':1,'Jude':1,'Revelation':22}
+miss = [f'{b} {c}' for b,n in ch.items() for c in range(1,n+1) if not any(b in m['books'] and m['books'][b][0]<=c<=m['books'][b][1] for m in data)]
+print(f'{len(data)} maps, {len(miss)} uncovered chapters')
+"
+```
+
+**Detecting future corrupt map files**: `for f in assets/maps/*.{jpg,png,gif}; do [[ "$(sips --getProperty pixelHeight "$f" 2>/dev/null | tail -1 | awk '{print $2}')" = "<nil>" ]] && echo "CORRUPT: $f"; done`
 
 ### Split-Pane Bible Reading (round 13)
 - **Two fully independent Bible panes**: Each pane has its own book, chapter, and version

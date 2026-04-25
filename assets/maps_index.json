@@ -173,5 +173,103 @@
     "description": { "en": "Palestine after Herod the Great — Judea, Galilee, Samaria, and the Decapolis at the time of Jesus' ministry.", "zh-Hans": "大希律之后的巴勒斯坦——耶稣事奉时期的犹太、加利利、撒玛利亚与十城地区。", "zh-Hant": "大希律之後的巴勒斯坦——耶穌事奉時期的猶太、加利利、撒瑪利亞與十城地區。" },
     "books": { "Matthew": [1, 28], "Mark": [1, 16], "Luke": [1, 24], "John": [1, 21], "Acts": [1, 12] },
     "file": "25_herodian_tetrarchy.png"
+  },
+  {
+    "id": "palestine_nt_times_detail",
+    "title": { "en": "Palestine in New Testament Times", "zh-Hans": "新约时代的巴勒斯坦", "zh-Hant": "新約時代的巴勒斯坦" },
+    "description": { "en": "A regional New Testament map showing Galilee, Samaria, Judea, Perea, and nearby districts.", "zh-Hans": "新约时代区域图，显示加利利、撒马利亚、犹太、比利亚及周边地区。", "zh-Hant": "新約時代區域圖，顯示加利利、撒瑪利亞、猶太、比利亞及周邊地區。" },
+    "books": { "Matthew": [1, 28], "Mark": [1, 16], "Luke": [1, 24], "John": [1, 21], "Acts": [1, 12] },
+    "file": "26_palestine_nt_times.jpg"
+  },
+  {
+    "id": "jesus_ministry_detail",
+    "title": { "en": "Jesus' Ministry — Detailed Route Map", "zh-Hans": "耶稣事奉路线详图", "zh-Hant": "耶穌事奉路線詳圖" },
+    "description": { "en": "Detailed map of places associated with Jesus' birth, ministry, final journey, death, and resurrection.", "zh-Hans": "耶稣降生、事奉、最后旅程、受死与复活相关地点详图。", "zh-Hant": "耶穌降生、事奉、最後旅程、受死與復活相關地點詳圖。" },
+    "books": { "Matthew": [1, 28], "Mark": [1, 16], "Luke": [1, 24], "John": [1, 21] },
+    "file": "27_jesus_ministry_detail.jpg"
+  },
+  {
+    "id": "lower_galilee",
+    "title": { "en": "Lower Galilee", "zh-Hans": "下加利利", "zh-Hant": "下加利利" },
+    "description": { "en": "Local map of Lower Galilee, useful for Nazareth, Cana, Nain, and early Galilean ministry scenes.", "zh-Hans": "下加利利地方图，适合查看拿撒勒、迦拿、拿因及早期加利利事奉场景。", "zh-Hant": "下加利利地方圖，適合查看拿撒勒、迦拿、拿因及早期加利利事奉場景。" },
+    "books": { "Matthew": [2, 17], "Mark": [1, 9], "Luke": [1, 9], "John": [1, 6] },
+    "file": "28_lower_galilee.gif"
+  },
+  {
+    "id": "decapolis",
+    "title": { "en": "The Decapolis", "zh-Hans": "低加坡里十城", "zh-Hant": "低加坡里十城" },
+    "description": { "en": "The Decapolis cities east and southeast of Galilee, helpful for gospel scenes around Gerasa/Gadara and the eastern lake region.", "zh-Hans": "加利利东部及东南部的十城地区，适合查看格拉森/加大拉及加利利海东岸的福音书场景。", "zh-Hant": "加利利東部及東南部的十城地區，適合查看格拉森/加大拉及加利利海東岸的福音書場景。" },
+    "books": { "Matthew": [4, 15], "Mark": [5, 8], "Luke": [8, 9] },
+    "file": "29_decapolis.gif"
+  },
+  {
+    "id": "judea_southern",
+    "title": { "en": "Judea and Southern Palestine", "zh-Hans": "犹太与南部巴勒斯坦", "zh-Hant": "猶太與南部巴勒斯坦" },
+    "description": { "en": "Southern Judea map for Bethlehem, Hebron, Jerusalem approaches, and the passion-week setting.", "zh-Hans": "南部犹太地图，适合查看伯利恒、希伯仑、通往耶路撒冷的路线及受难周背景。", "zh-Hant": "南部猶太地圖，適合查看伯利恆、希伯崙、通往耶路撒冷的路線及受難週背景。" },
+    "books": { "Matthew": [1, 28], "Mark": [10, 16], "Luke": [1, 24], "John": [7, 21], "Acts": [1, 8] },
+    "file": "30_judea_southern.gif"
+  },
+  {
+    "id": "northern_galilee",
+    "title": { "en": "Northern Galilee", "zh-Hans": "北加利利", "zh-Hant": "北加利利" },
+    "description": { "en": "Northern Galilee region map for Caesarea Philippi, upper Jordan, and northern gospel travel.", "zh-Hans": "北加利利区域图，适合查看该撒利亚腓立比、约旦河上游及福音书北部行程。", "zh-Hant": "北加利利區域圖，適合查看該撒利亞腓立比、約旦河上游及福音書北部行程。" },
+    "books": { "Matthew": [4, 18], "Mark": [1, 9], "Luke": [4, 9], "John": [1, 6] },
+    "file": "31_galilee_northern.gif"
+  },
+  {
+    "id": "upper_galilee",
+    "title": { "en": "Upper Galilee", "zh-Hans": "上加利利", "zh-Hant": "上加利利" },
+    "description": { "en": "Upper Galilee map showing hill country and northern routes around the Sea of Galilee.", "zh-Hans": "上加利利地图，显示加利利海周边山地与北部路线。", "zh-Hant": "上加利利地圖，顯示加利利海周邊山地與北部路線。" },
+    "books": { "Matthew": [4, 18], "Mark": [1, 9], "Luke": [4, 9], "John": [1, 6] },
+    "file": "32_upper_galilee.gif"
+  },
+  {
+    "id": "samaria_region",
+    "title": { "en": "Samaria", "zh-Hans": "撒马利亚", "zh-Hant": "撒瑪利亞" },
+    "description": { "en": "Samaria map for Shechem, Mount Gerizim, Sychar, and the early spread of the gospel in Acts.", "zh-Hans": "撒马利亚地图，适合查看示剑、基利心山、叙加及使徒行传中福音早期扩展。", "zh-Hant": "撒瑪利亞地圖，適合查看示劍、基利心山、敘加及使徒行傳中福音早期擴展。" },
+    "books": { "John": [4, 4], "Luke": [9, 17], "Acts": [8, 9] },
+    "file": "33_samaria.gif"
+  },
+  {
+    "id": "roads_of_israel",
+    "title": { "en": "Roads of Israel", "zh-Hans": "以色列道路", "zh-Hant": "以色列道路" },
+    "description": { "en": "Major roads and routes through Israel, useful for travel narratives from the Old Testament through Acts.", "zh-Hans": "以色列主要道路与路线，适合查看旧约至使徒行传中的行程叙事。", "zh-Hant": "以色列主要道路與路線，適合查看舊約至使徒行傳中的行程敘事。" },
+    "books": { "Genesis": [12, 50], "Exodus": [1, 40], "Numbers": [10, 36], "Deuteronomy": [1, 34], "Joshua": [1, 24], "Judges": [1, 21], "Ruth": [1, 4], "1 Samuel": [1, 31], "2 Samuel": [1, 24], "1 Kings": [1, 22], "2 Kings": [1, 25], "Matthew": [1, 28], "Mark": [1, 16], "Luke": [1, 24], "John": [1, 21], "Acts": [1, 12] },
+    "file": "34_roads_israel.jpg"
+  },
+  {
+    "id": "last_passover",
+    "title": { "en": "Jesus' Last Passover", "zh-Hans": "耶稣最后的逾越节", "zh-Hant": "耶穌最後的逾越節" },
+    "description": { "en": "Map focused on Jesus' final approach to Jerusalem and passion-week locations.", "zh-Hans": "聚焦耶稣最后上耶路撒冷及受难周地点的地图。", "zh-Hant": "聚焦耶穌最後上耶路撒冷及受難週地點的地圖。" },
+    "books": { "Matthew": [21, 28], "Mark": [11, 16], "Luke": [19, 24], "John": [11, 21] },
+    "file": "35_last_passover.gif"
+  },
+  {
+    "id": "spread_of_christianity",
+    "title": { "en": "Spread of Early Christianity", "zh-Hans": "早期基督信仰的传播", "zh-Hant": "早期基督信仰的傳播" },
+    "description": { "en": "A broad map of the spread of Christianity across the Mediterranean world.", "zh-Hans": "基督信仰在地中海世界扩展的总览地图。", "zh-Hant": "基督信仰在地中海世界擴展的總覽地圖。" },
+    "books": { "Acts": [1, 28], "Romans": [1, 16], "1 Corinthians": [1, 16], "2 Corinthians": [1, 13], "Galatians": [1, 6], "Ephesians": [1, 6], "Philippians": [1, 4], "Colossians": [1, 4], "1 Thessalonians": [1, 5], "2 Thessalonians": [1, 3], "1 Timothy": [1, 6], "2 Timothy": [1, 4], "Titus": [1, 3], "Philemon": [1, 1], "Hebrews": [1, 13], "James": [1, 5], "1 Peter": [1, 5], "2 Peter": [1, 3], "1 John": [1, 5], "2 John": [1, 1], "3 John": [1, 1], "Jude": [1, 1], "Revelation": [1, 22] },
+    "file": "36_spread_christianity.gif"
+  },
+  {
+    "id": "new_testament_world_detail",
+    "title": { "en": "New Testament World", "zh-Hans": "新约世界", "zh-Hant": "新約世界" },
+    "description": { "en": "The wider Roman Mediterranean world of the Gospels, Acts, and the epistles.", "zh-Hans": "福音书、使徒行传与书信所在的罗马地中海世界。", "zh-Hant": "福音書、使徒行傳與書信所在的羅馬地中海世界。" },
+    "books": { "Matthew": [1, 28], "Mark": [1, 16], "Luke": [1, 24], "John": [1, 21], "Acts": [1, 28], "Romans": [1, 16], "1 Corinthians": [1, 16], "2 Corinthians": [1, 13], "Galatians": [1, 6], "Ephesians": [1, 6], "Philippians": [1, 4], "Colossians": [1, 4], "1 Thessalonians": [1, 5], "2 Thessalonians": [1, 3], "1 Timothy": [1, 6], "2 Timothy": [1, 4], "Titus": [1, 3], "Philemon": [1, 1], "Hebrews": [1, 13], "James": [1, 5], "1 Peter": [1, 5], "2 Peter": [1, 3], "1 John": [1, 5], "2 John": [1, 1], "3 John": [1, 1], "Jude": [1, 1], "Revelation": [1, 22] },
+    "file": "37_nt_world.jpg"
+  },
+  {
+    "id": "asia_minor_new_testament",
+    "title": { "en": "Asia Minor in the New Testament", "zh-Hans": "新约中的小亚细亚", "zh-Hant": "新約中的小亞細亞" },
+    "description": { "en": "Asia Minor map for Paul's journeys, the prison letters, pastoral letters, and Revelation's seven churches.", "zh-Hans": "小亚细亚地图，适合查看保罗旅程、监狱书信、教牧书信与启示录七教会。", "zh-Hant": "小亞細亞地圖，適合查看保羅旅程、監獄書信、教牧書信與啟示錄七教會。" },
+    "books": { "Acts": [13, 21], "Galatians": [1, 6], "Ephesians": [1, 6], "Colossians": [1, 4], "1 Timothy": [1, 6], "2 Timothy": [1, 4], "Philemon": [1, 1], "1 Peter": [1, 5], "Revelation": [1, 3] },
+    "file": "38_nt_asia.jpg"
+  },
+  {
+    "id": "jerusalem_first_century",
+    "title": { "en": "Jerusalem in the First Century", "zh-Hans": "第一世纪的耶路撒冷", "zh-Hant": "第一世紀的耶路撒冷" },
+    "description": { "en": "First-century Jerusalem map for the passion narratives, resurrection appearances, Pentecost, and the early church.", "zh-Hans": "第一世纪耶路撒冷地图，适合查看受难叙事、复活显现、五旬节与初期教会。", "zh-Hant": "第一世紀耶路撒冷地圖，適合查看受難敘事、復活顯現、五旬節與初期教會。" },
+    "books": { "Matthew": [21, 28], "Mark": [11, 16], "Luke": [19, 24], "John": [12, 21], "Acts": [1, 8] },
+    "file": "39_jerusalem_first_century.jpg"
   }
 ]
