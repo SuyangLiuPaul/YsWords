@@ -130,6 +130,11 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
       MapService.mapsForBook(en),
     ]).then((results) {
       if (!mounted) return;
+      // Discard a stale result if the user already switched chapters
+      // while this Future was in flight — without this guard, an old
+      // chapter's maps could overwrite the new chapter's maps and
+      // briefly flicker the wrong fallback in the picker.
+      if (_lastBookChapter != key) return;
       final chapterMaps = results[0];
       final bookMaps = results[1];
       // Subtract chapter matches so the "book" section only shows the
@@ -382,11 +387,11 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
           _updateMapsForBookChapter(currentVerse.book, currentVerse.chapter);
         }
         final isSelected = mainProvider.selectedVerses.isNotEmpty;
-        final visibleItemIndex = _visibleItemIndex < 0
-            ? 0
-            : (_visibleItemIndex > paragraphGroups.length + 1
-                ? paragraphGroups.length + 1
-                : _visibleItemIndex);
+        // Items: [chapter header(0), ...paragraphGroups, trailing spacer].
+        // So valid item indices are 0 .. paragraphGroups.length + 1.
+        final visibleItemIndex = _visibleItemIndex
+            .clamp(0, paragraphGroups.length + 1)
+            .toInt();
         final rawVisibleVerseIndex =
             itemToVerseIndex[visibleItemIndex] ??
                 (visibleItemIndex > paragraphGroups.length
@@ -465,10 +470,18 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                               isFirst: isFirst,
                             );
                           }
+                          // Trailing spacer height matches whichever
+                          // bottom bar is showing (selection action bar
+                          // when verses are selected, otherwise the
+                          // reader status bar). The selection bar is
+                          // taller, so we pad more in that case to keep
+                          // the last verse from being hidden under it.
                           final bottomInset =
                               MediaQuery.of(context).padding.bottom;
-                          return SizedBox(
-                              height: bottomInset + 96 * settings.menuScale);
+                          final extra = isSelected
+                              ? 132 * settings.menuScale
+                              : 96 * settings.menuScale;
+                          return SizedBox(height: bottomInset + extra);
                         },
                         itemScrollController:
                             mainProvider.itemScrollController,
@@ -525,6 +538,7 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                               );
                             },
                       onVersionSelected: (version) async {
+                        if (!mounted) return;
                         final p = context.read<MainProvider>();
                         final messenger =
                             ScaffoldMessenger.of(context);
@@ -532,9 +546,10 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                         final prevEn = toEnglish(p.currentBook);
                         p.setVersion(version);
                         await FetchVerses.execute(mainProvider: p);
+                        if (!mounted) return;
                         await FetchBooks.execute(mainProvider: p);
+                        if (!mounted) return;
                         if (p.verses.isEmpty) {
-                          if (!mounted) return;
                           messenger.showSnackBar(
                             SnackBar(
                               content: Text(
@@ -1076,14 +1091,17 @@ class _MapPickerSheetState extends State<_MapPickerSheet>
   void initState() {
     super.initState();
     _tabs = _buildTabs();
-    final initial = _tabs.indexWhere((t) => t.kind == _MapTabKind.book) >= 0 &&
-            widget.chapterMaps.isEmpty
-        ? _tabs.indexWhere((t) => t.kind == _MapTabKind.book)
-        : 0;
+    // Auto-select the "book" tab when no chapter-specific match exists,
+    // so the picker opens directly on the most useful list. Falls back
+    // to index 0 (always valid) when the book tab isn't present. The
+    // final clamp guarantees we never feed an out-of-range index to
+    // TabController, even if _buildTabs() composition changes later.
+    final bookIdx = _tabs.indexWhere((t) => t.kind == _MapTabKind.book);
+    final initial = (widget.chapterMaps.isEmpty && bookIdx >= 0) ? bookIdx : 0;
     _tab = TabController(
       length: _tabs.length,
       vsync: this,
-      initialIndex: initial < 0 ? 0 : initial,
+      initialIndex: initial.clamp(0, _tabs.length - 1),
     );
     _loadAll();
   }
@@ -1481,7 +1499,19 @@ class _FloatingHeader extends StatelessWidget {
                           itemBuilder: (context) => availableVersions
                               .map((v) => PopupMenuItem(
                                     value: v.value,
-                                    child: Text(v.menuLabel),
+                                    // Constrain + ellipsize so localized
+                                    // long labels (e.g.
+                                    // "原文释经圣经第二版 (繁)") never push
+                                    // the popup past the screen edge.
+                                    child: ConstrainedBox(
+                                      constraints: const BoxConstraints(
+                                          maxWidth: 280),
+                                      child: Text(
+                                        v.menuLabel,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
                                   ))
                               .toList(),
                           onSelected: onVersionSelected,
@@ -1516,6 +1546,11 @@ class _FloatingHeader extends StatelessWidget {
                               ? Icons.format_align_left
                               : Icons.format_list_numbered_rounded,
                           size: iconSize,
+                          // Tint the icon when in paragraph mode so the
+                          // active state is visually obvious — previously
+                          // only the icon glyph changed, which was easy
+                          // to miss.
+                          color: paragraphMode ? scheme.primary : null,
                         ),
                         padding: EdgeInsets.all(iconPad),
                         constraints: const BoxConstraints(
@@ -1541,8 +1576,10 @@ class _FloatingHeader extends StatelessWidget {
                         constraints: const BoxConstraints(
                             minWidth: 36, minHeight: 36),
                         tooltip: splitViewActive
-                            ? 'Close Split View'
-                            : 'Open Split View',
+                            ? (uiStrings['closeSplitView']?[locale] ??
+                                'Close Split View')
+                            : (uiStrings['openSplitView']?[locale] ??
+                                'Open Split View'),
                       ),
                     // Always show the map button — even when no maps
                     // match this chapter the picker offers a book-level

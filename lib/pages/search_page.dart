@@ -281,22 +281,41 @@ class _SearchPageState extends State<SearchPage> {
                 ),
               ),
             Expanded(
-              child: _results.isEmpty && searchPerformed
+              child: _results.isEmpty
                   ? Center(
                       child: Padding(
                         padding: const EdgeInsets.all(20.0),
-                        child: Text(
-                          uiStrings['noResults']?[settings.locale] ??
-                              'No results found',
-                          style: Theme.of(context)
-                              .textTheme
-                              .bodyLarge
-                              ?.copyWith(
-                                fontWeight: FontWeight.w500,
-                                color: Theme.of(context).colorScheme.outline,
-                              )
-                              .copyWith(fontSize: settings.fontSize),
-                          textAlign: TextAlign.center,
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              searchPerformed
+                                  ? Icons.search_off_rounded
+                                  : Icons.search_rounded,
+                              size: settings.fontSize * 2.4,
+                              color: Theme.of(context).colorScheme.outline,
+                            ),
+                            const SizedBox(height: 12),
+                            Text(
+                              searchPerformed
+                                  ? (uiStrings['noResults']?[settings.locale] ??
+                                      'No results found')
+                                  : (uiStrings['searchHint']
+                                          ?[settings.locale] ??
+                                      'Type a word or phrase to search'),
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodyLarge
+                                  ?.copyWith(
+                                    fontWeight: FontWeight.w500,
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .outline,
+                                  )
+                                  .copyWith(fontSize: settings.fontSize),
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
                         ),
                       ),
                     )
@@ -315,6 +334,10 @@ class _SearchPageState extends State<SearchPage> {
                           ),
                           child: ListTile(
                             onTap: () {
+                              // Capture the provider synchronously — by
+                              // the time the delayed callbacks run we'll
+                              // have popped this page so context lookups
+                              // would be unsafe.
                               final mainProv = Provider.of<MainProvider>(
                                   context,
                                   listen: false);
@@ -322,15 +345,17 @@ class _SearchPageState extends State<SearchPage> {
                                   book: verse.book, chapter: verse.chapter);
                               mainProv.updateCurrentVerse(verse: verse);
                               Get.back();
-                              Future.delayed(const Duration(milliseconds: 300),
-                                  () {
+                              Future.delayed(
+                                  const Duration(milliseconds: 300), () {
+                                // Provider is captured; we don't touch
+                                // BuildContext after this point.
                                 final chapterVerses = mainProv.verses
                                     .where((v) =>
                                         v.book == verse.book &&
                                         v.chapter == verse.chapter)
-                                    .toList();
-                                chapterVerses.sort((a, b) =>
-                                    a.verse.compareTo(b.verse)); // Ensure order
+                                    .toList()
+                                  ..sort((a, b) =>
+                                      a.verse.compareTo(b.verse));
                                 final relIdx = chapterVerses
                                     .indexWhere((v) => v.verse == verse.verse);
                                 if (relIdx < 0) return;
@@ -338,9 +363,10 @@ class _SearchPageState extends State<SearchPage> {
                                 mainProv.setHighlightIndex(relIdx);
                                 Future.delayed(
                                     const Duration(milliseconds: 800), () {
-                                  if (mounted) {
-                                    mainProv.clearHighlightIndex();
-                                  }
+                                  // It's safe to clear regardless of this
+                                  // widget's lifetime — provider survives
+                                  // the page pop.
+                                  mainProv.clearHighlightIndex();
                                 });
                               });
                             },

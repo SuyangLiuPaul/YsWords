@@ -435,22 +435,37 @@ class SettingsPage extends StatelessWidget {
                         ),
                         SizedBox(height: 12 * s),
                         Wrap(
-                          spacing: 8,
-                          runSpacing: 8,
+                          spacing: 10,
+                          runSpacing: 10,
                           children: palette.map((c) {
                             final isSelected = settings.primaryColor == c;
-                            return GestureDetector(
+                            // Floor the avatar at ~22 dp so the swatch
+                            // never falls below a comfortable tap
+                            // target even when the user shrinks the
+                            // font size to its minimum.
+                            final avatarRadius =
+                                (settings.fontSize * 0.8).clamp(20.0, 28.0);
+                            return InkWell(
+                              borderRadius: BorderRadius.circular(40),
                               onTap: () => settings.setPrimaryColor(c),
-                              child: CircleAvatar(
-                                backgroundColor: c,
-                                radius: settings.fontSize * 0.8,
-                                child: isSelected
-                                    ? Icon(Icons.check,
-                                        color: c.computeLuminance() > 0.5
-                                            ? Colors.black
-                                            : Colors.white,
-                                        size: settings.fontSize * 0.6)
-                                    : null,
+                              child: Padding(
+                                // Padding pushes the actual hit-test
+                                // size up past 44 dp on every device
+                                // class without changing the visual
+                                // size of the swatch.
+                                padding: const EdgeInsets.all(4),
+                                child: CircleAvatar(
+                                  backgroundColor: c,
+                                  radius: avatarRadius,
+                                  child: isSelected
+                                      ? Icon(Icons.check,
+                                          color:
+                                              c.computeLuminance() > 0.5
+                                                  ? Colors.black
+                                                  : Colors.white,
+                                          size: settings.fontSize * 0.6)
+                                      : null,
+                                ),
                               ),
                             );
                           }).toList(),

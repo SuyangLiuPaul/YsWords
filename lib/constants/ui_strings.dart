@@ -448,4 +448,19 @@ const uiStrings = {
     'zh-Hant': '本章無專屬地圖，以下是相關地圖：',
     'en': 'No map specifically for this chapter — here are related maps:',
   },
+  'openSplitView': {
+    'zh-Hans': '打开分屏阅读',
+    'zh-Hant': '打開分屏閱讀',
+    'en': 'Open Split View',
+  },
+  'closeSplitView': {
+    'zh-Hans': '关闭分屏阅读',
+    'zh-Hant': '關閉分屏閱讀',
+    'en': 'Close Split View',
+  },
+  'searchHint': {
+    'zh-Hans': '输入关键字开始搜索',
+    'zh-Hant': '輸入關鍵字開始搜索',
+    'en': 'Type a word or phrase to search',
+  },
 };

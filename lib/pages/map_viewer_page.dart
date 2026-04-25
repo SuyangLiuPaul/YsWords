@@ -63,7 +63,13 @@ class _MapViewerPageState extends State<MapViewerPage> {
     final scheme = Theme.of(context).colorScheme;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final settings = context.watch<AppSettings>();
-    final desc = _current.localizedDescription(widget.locale);
+    // Prefer the live locale so titles/descriptions retranslate
+    // immediately if the user switches language while the map page
+    // is open. Fall back to the locale that was passed in by the
+    // launching widget, which is still useful when there's no
+    // AppSettings ancestor (tests, isolated previews).
+    final locale = settings.locale.isNotEmpty ? settings.locale : widget.locale;
+    final desc = _current.localizedDescription(locale);
     final showStrip = _stripMaps.length > 1;
 
     return Scaffold(
@@ -141,7 +147,7 @@ class _MapViewerPageState extends State<MapViewerPage> {
                             constraints: const BoxConstraints(
                                 minWidth: 40, minHeight: 40),
                             tooltip:
-                                uiStrings['back']?[widget.locale] ?? 'Back',
+                                uiStrings['back']?[locale] ?? 'Back',
                           ),
                           Expanded(
                             child: Padding(
@@ -152,7 +158,7 @@ class _MapViewerPageState extends State<MapViewerPage> {
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   Text(
-                                    _current.localizedTitle(widget.locale),
+                                    _current.localizedTitle(locale),
                                     maxLines: 2,
                                     overflow: TextOverflow.ellipsis,
                                     softWrap: true,
@@ -219,7 +225,7 @@ class _MapViewerPageState extends State<MapViewerPage> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              uiStrings['mapsRelated']?[widget.locale] ??
+                              uiStrings['mapsRelated']?[locale] ??
                                   'Related maps',
                               style: TextStyle(
                                 fontSize: 11 * settings.menuScale,
@@ -243,7 +249,7 @@ class _MapViewerPageState extends State<MapViewerPage> {
                                       .any((r) => r.id == m.id);
                                   return _StripCard(
                                     map: m,
-                                    locale: widget.locale,
+                                    locale: locale,
                                     isCurrent: isCurrent,
                                     isRelated: isRelated,
                                     menuScale: settings.menuScale,
