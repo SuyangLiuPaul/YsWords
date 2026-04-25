@@ -179,29 +179,24 @@ class _BookChapterPickerState extends State<BookChapterPicker> {
                               Row(
                                 children: [
                                   Expanded(
-                                    child: Padding(
-                                      padding: const EdgeInsets.only(right: 3),
-                                      child: _testamentButton(
-                                        context: context,
-                                        settings: settings,
-                                        selected: showOldTestament,
-                                        label: otLabel,
-                                        onPressed: () =>
-                                            _setTestament(settings, true),
-                                      ),
+                                    child: _testamentButton(
+                                      context: context,
+                                      settings: settings,
+                                      selected: showOldTestament,
+                                      label: otLabel,
+                                      onPressed: () =>
+                                          _setTestament(settings, true),
                                     ),
                                   ),
+                                  const SizedBox(width: 8),
                                   Expanded(
-                                    child: Padding(
-                                      padding: const EdgeInsets.only(left: 3),
-                                      child: _testamentButton(
-                                        context: context,
-                                        settings: settings,
-                                        selected: !showOldTestament,
-                                        label: ntLabel,
-                                        onPressed: () =>
-                                            _setTestament(settings, false),
-                                      ),
+                                    child: _testamentButton(
+                                      context: context,
+                                      settings: settings,
+                                      selected: !showOldTestament,
+                                      label: ntLabel,
+                                      onPressed: () =>
+                                          _setTestament(settings, false),
                                     ),
                                   ),
                                 ],
@@ -305,7 +300,7 @@ class _BookChapterPickerState extends State<BookChapterPicker> {
                 : scheme.outlineVariant.withValues(alpha: 0.45),
           ),
         ),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       ),
       child: Text(
         label,
