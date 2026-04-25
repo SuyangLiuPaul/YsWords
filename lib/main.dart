@@ -1,8 +1,12 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:yswords/constants/ui_strings.dart';
+import 'package:yswords/pages/books_page.dart';
 import 'package:yswords/pages/home_page.dart';
 import 'package:yswords/pages/loading_page.dart';
+import 'package:yswords/pages/search_page.dart';
+import 'package:yswords/pages/settings_page.dart';
 import 'package:yswords/models/verse.dart';
 import 'package:yswords/providers/main_provider.dart';
 import 'package:yswords/models/app_settings.dart';
@@ -232,6 +236,7 @@ class _MainAppState extends State<MainApp> {
                   ),
                 )
               : StackedCardScaffold(
+                  quickLaunch: _quickLaunchActions(),
                   child: _RootRouter(
                     initialVerses:
                         Provider.of<MainProvider>(context, listen: false)
@@ -242,6 +247,41 @@ class _MainAppState extends State<MainApp> {
       },
     );
   }
+}
+
+/// Builds the list of pages exposed by the floating "+" button on the
+/// scaffold. Each entry pushes its page on top of whatever is already
+/// visible, so the user can stack multiple cards regardless of which
+/// page is currently focused.
+List<QuickLaunchAction> _quickLaunchActions() {
+  String tr(BuildContext ctx, String key, String fallback) {
+    final locale = ctx.read<AppSettings>().locale;
+    return uiStrings[key]?[locale] ?? fallback;
+  }
+
+  return [
+    QuickLaunchAction(
+      icon: Icons.search_rounded,
+      label: (ctx) => tr(ctx, 'search', 'Search'),
+      builder: (_) => SearchPage(),
+    ),
+    QuickLaunchAction(
+      icon: Icons.menu_book_rounded,
+      label: (ctx) => tr(ctx, 'bibleBooks', 'Bible Books'),
+      builder: (ctx) {
+        final mp = Provider.of<MainProvider>(ctx, listen: false);
+        return BooksPage(
+          chapterIdx: mp.currentVerse?.chapter ?? 1,
+          bookIdx: mp.currentVerse?.book ?? '',
+        );
+      },
+    ),
+    QuickLaunchAction(
+      icon: Icons.settings,
+      label: (ctx) => tr(ctx, 'settings', 'Settings'),
+      builder: (_) => SettingsPage(),
+    ),
+  ];
 }
 
 /// Root child of [StackedCardScaffold]: shows the loading splash first and

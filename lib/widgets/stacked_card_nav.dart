@@ -3,6 +3,23 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+/// One entry in the quick-launch menu attached to [StackedCardScaffold].
+///
+/// The scaffold renders a small floating "+" button. Tapping it opens a
+/// menu listing every action; selecting one calls
+/// [StackedCardScaffoldState.push] with the action's [builder] so the
+/// chosen page slides in as a new layered card.
+class QuickLaunchAction {
+  final IconData icon;
+  final String Function(BuildContext context) label;
+  final WidgetBuilder builder;
+  const QuickLaunchAction({
+    required this.icon,
+    required this.label,
+    required this.builder,
+  });
+}
+
 /// A Stage-Manager-style stacked card navigation host.
 ///
 /// Wrap the root of your app in [StackedCardScaffold]. From any descendant,
@@ -20,7 +37,17 @@ import 'package:flutter/services.dart';
 /// Pushing past the maximum evicts the bottom-most overlay.
 class StackedCardScaffold extends StatefulWidget {
   final Widget child;
-  const StackedCardScaffold({super.key, required this.child});
+
+  /// Optional list of pages that can be pushed onto the stack from a
+  /// floating "+" button rendered by the scaffold itself. Leave empty
+  /// to hide the button entirely.
+  final List<QuickLaunchAction> quickLaunch;
+
+  const StackedCardScaffold({
+    super.key,
+    required this.child,
+    this.quickLaunch = const [],
+  });
 
   static StackedCardScaffoldState? maybeOf(BuildContext context) =>
       context.findAncestorStateOfType<StackedCardScaffoldState>();
@@ -187,6 +214,23 @@ class StackedCardScaffoldState extends State<StackedCardScaffold>
                     screenWidth: constraints.maxWidth,
                     screenHeight: constraints.maxHeight,
                   ),
+
+                // Floating "+" launcher: always on top, always tappable.
+                if (widget.quickLaunch.isNotEmpty)
+                  Positioned(
+                    left: 0,
+                    bottom: 0,
+                    child: SafeArea(
+                      child: Padding(
+                        padding: const EdgeInsets.only(left: 12, bottom: 12),
+                        child: _QuickLaunchFab(
+                          actions: widget.quickLaunch,
+                          onSelect: (a) =>
+                              push<dynamic>((ctx) => a.builder(ctx)),
+                        ),
+                      ),
+                    ),
+                  ),
               ],
             );
           },
@@ -238,6 +282,78 @@ class StackedCardScaffoldState extends State<StackedCardScaffold>
         adjustedWidth: screenWidth - targetLeft,
         screenHeight: screenHeight,
         child: Builder(builder: layer.builder),
+      ),
+    );
+  }
+}
+
+/// The little "+" button rendered at the bottom-left corner of the
+/// scaffold. Tapping it shows a bottom sheet listing every quick-launch
+/// action; tapping a row pushes that page onto the stack as a new card.
+class _QuickLaunchFab extends StatelessWidget {
+  final List<QuickLaunchAction> actions;
+  final ValueChanged<QuickLaunchAction> onSelect;
+  const _QuickLaunchFab({required this.actions, required this.onSelect});
+
+  void _showMenu(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: scheme.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (sheetCtx) => SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                margin: const EdgeInsets.only(bottom: 4),
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: scheme.outlineVariant,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              for (final a in actions)
+                ListTile(
+                  leading: Icon(a.icon, color: scheme.primary),
+                  title: Text(
+                    a.label(sheetCtx),
+                    style: const TextStyle(fontWeight: FontWeight.w600),
+                  ),
+                  onTap: () {
+                    Navigator.of(sheetCtx).pop();
+                    onSelect(a);
+                  },
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Material(
+      color: scheme.primary,
+      shape: const CircleBorder(),
+      elevation: 6,
+      shadowColor: Colors.black.withValues(alpha: 0.4),
+      child: InkWell(
+        customBorder: const CircleBorder(),
+        onTap: () => _showMenu(context),
+        child: SizedBox(
+          width: 48,
+          height: 48,
+          child: Icon(Icons.add_rounded, color: scheme.onPrimary, size: 26),
+        ),
       ),
     );
   }
