@@ -106,7 +106,17 @@ class _SearchPageState extends State<SearchPage> {
   @override
   Widget build(BuildContext context) {
     final settings = Provider.of<AppSettings>(context);
-    return Scaffold(
+    return GestureDetector(
+      onHorizontalDragEnd: (details) {
+        final velocity = details.primaryVelocity ?? 0;
+        if (velocity > 300) {
+          final stack = StackedCardScaffold.maybeOf(context);
+          if (stack != null && stack.hasOverlays) {
+            stack.pop();
+          }
+        }
+      },
+      child: Scaffold(
         appBar: AppBar(
           leading: const LocalizedBackButton(),
           // Search input field in the app bar
@@ -368,6 +378,8 @@ class _SearchPageState extends State<SearchPage> {
           ],
             ),
           ),
-        ));
+        ),
+        ),
+    );
   }
 }

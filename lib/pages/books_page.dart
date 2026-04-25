@@ -20,7 +20,19 @@ class BooksPage extends StatelessWidget {
 
     return Consumer<MainProvider>(
       builder: (context, mainProvider, child) {
-        return Scaffold(
+        return GestureDetector(
+          onHorizontalDragEnd: (details) {
+            final velocity = details.primaryVelocity ?? 0;
+            if (velocity > 300) {
+              final stack = StackedCardScaffold.maybeOf(context);
+              if (stack != null && stack.hasOverlays) {
+                stack.pop();
+              } else {
+                Get.back();
+              }
+            }
+          },
+          child: Scaffold(
           appBar: AppBar(
             leading: const LocalizedBackButton(),
             title: Text(
@@ -55,6 +67,7 @@ class BooksPage extends StatelessWidget {
               ),
             ),
           ),
+        ),
         );
       },
     );

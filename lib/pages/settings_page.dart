@@ -7,6 +7,7 @@ import 'package:yswords/services/fetch_books.dart';
 import 'package:yswords/services/fetch_verses.dart';
 
 import 'package:yswords/widgets/localized_back_button.dart';
+import 'package:yswords/widgets/stacked_card_nav.dart';
 import 'package:yswords/utils/responsive.dart';
 
 String getDevotionalFormattedText(
@@ -44,7 +45,19 @@ class SettingsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return GestureDetector(
+      onHorizontalDragEnd: (details) {
+        final velocity = details.primaryVelocity ?? 0;
+        if (velocity > 300) {
+          final stack = StackedCardScaffold.maybeOf(context);
+          if (stack != null && stack.hasOverlays) {
+            stack.pop();
+          } else {
+            Navigator.of(context).maybePop();
+          }
+        }
+      },
+      child: Scaffold(
       appBar: AppBar(
         leading: const LocalizedBackButton(),
         // The settings locale is now available inside the Consumer below
@@ -689,6 +702,7 @@ class SettingsPage extends StatelessWidget {
           );
         },
       ),
+    ),
     );
   }
 
