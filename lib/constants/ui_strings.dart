@@ -161,6 +161,21 @@ const uiStrings = {
     'zh-Hant': '未找到該 Strong\'s 詞條。',
     'en': 'Lexicon entry not found.',
   },
+  'concordanceUsed': {
+    'zh-Hans': '出现 {count} 次',
+    'zh-Hant': '出現 {count} 次',
+    'en': 'Used {count} times',
+  },
+  'concordanceShowingFirst': {
+    'zh-Hans': '显示前 {shown} 条（共 {total} 条）',
+    'zh-Hant': '顯示前 {shown} 條（共 {total} 條）',
+    'en': 'showing first {shown} of {total}',
+  },
+  'concordanceNoMatchInVersion': {
+    'zh-Hans': '此版本未找到该经节',
+    'zh-Hant': '此版本未找到該經節',
+    'en': 'This verse is not available in the current version',
+  },
   'removeHighlight': {
     'zh-Hans': '移除高亮',
     'zh-Hant': '移除高亮',

@@ -375,6 +375,104 @@ def build_greek_nt() -> None:
         print(f'  wrote {english}: {len(book_data)} verses')
 
 
+# ── Concordance (inverted index over the bundled originals) ────────────
+
+# Cap on how many references we keep per Strong's number. Common words
+# like the Greek definite article G3588 appear ~20k times; storing every
+# occurrence would balloon the bundle and overwhelm the UI. The total
+# count is preserved separately so the UI can show "Used N times" even
+# when only the first MAX_REFS are listed.
+MAX_REFS_PER_STRONGS = 200
+
+# Canonical book ordering used to sort references within a Strong's
+# entry. Matches lib/services/fetch_books.dart `standardBookOrder`.
+CANONICAL_ORDER = [
+    'Genesis', 'Exodus', 'Leviticus', 'Numbers', 'Deuteronomy',
+    'Joshua', 'Judges', 'Ruth',
+    '1 Samuel', '2 Samuel', '1 Kings', '2 Kings',
+    '1 Chronicles', '2 Chronicles', 'Ezra', 'Nehemiah', 'Esther',
+    'Job', 'Psalms', 'Proverbs', 'Ecclesiastes', 'Song of Solomon',
+    'Isaiah', 'Jeremiah', 'Lamentations', 'Ezekiel', 'Daniel',
+    'Hosea', 'Joel', 'Amos', 'Obadiah', 'Jonah', 'Micah',
+    'Nahum', 'Habakkuk', 'Zephaniah', 'Haggai', 'Zechariah', 'Malachi',
+    'Matthew', 'Mark', 'Luke', 'John', 'Acts',
+    'Romans', '1 Corinthians', '2 Corinthians', 'Galatians', 'Ephesians',
+    'Philippians', 'Colossians', '1 Thessalonians', '2 Thessalonians',
+    '1 Timothy', '2 Timothy', 'Titus', 'Philemon',
+    'Hebrews', 'James', '1 Peter', '2 Peter',
+    '1 John', '2 John', '3 John', 'Jude', 'Revelation',
+]
+_BOOK_INDEX = {b: i for i, b in enumerate(CANONICAL_ORDER)}
+
+
+def build_concordance() -> None:
+    """Walk every per-book file in assets/originals/ and emit an inverted
+    index keyed by Strong's number. Output: assets/strongs/concordance.json
+    shaped as `{ "G2316": {"n": 1320, "r": ["John 3:16", ...]}, ... }`.
+
+    `n` is the absolute count; `r` is the canonical-order list capped at
+    MAX_REFS_PER_STRONGS. Refs are stored as `"<English book> <ch>:<vs>"`
+    strings — the runtime translates them to the user's locale via the
+    existing `version_mapper` helpers when navigating.
+    """
+    print('Concordance (inverted index):')
+    if not os.path.isdir(ORIGINALS_DIR):
+        print('  no originals/ directory, skipping')
+        return
+
+    counts: dict[str, int] = {}
+    refs: dict[str, list[tuple[int, int, int, str]]] = {}
+
+    for fname in sorted(os.listdir(ORIGINALS_DIR)):
+        if not fname.endswith('.json'):
+            continue
+        with open(os.path.join(ORIGINALS_DIR, fname), 'r',
+                  encoding='utf-8') as f:
+            book_data = json.load(f)
+        # Recover canonical English name from the file slug. Build a
+        # reverse map once.
+        slug = fname[:-5]
+        # Pre-compute slug → english name for canonical ordering.
+        english = next((b for b in CANONICAL_ORDER if
+                        b.lower().replace(' ', '_') == slug), None)
+        if not english:
+            continue
+        book_idx = _BOOK_INDEX[english]
+        for cv, words in book_data.items():
+            try:
+                ch, vs = (int(p) for p in cv.split(':'))
+            except ValueError:
+                continue
+            ref_str = f'{english} {ch}:{vs}'
+            seen_in_verse: set[str] = set()
+            for w in words:
+                s = w.get('s')
+                if not s:
+                    continue
+                counts[s] = counts.get(s, 0) + 1
+                # De-dup within a single verse so the same ref doesn't
+                # appear twice when a word recurs (very common for the
+                # Hebrew direct-object marker H853 and Greek article).
+                if s in seen_in_verse:
+                    continue
+                seen_in_verse.add(s)
+                refs.setdefault(s, []).append((book_idx, ch, vs, ref_str))
+
+    out: dict[str, dict] = {}
+    for s, occurrences in refs.items():
+        occurrences.sort()
+        capped = [r[3] for r in occurrences[:MAX_REFS_PER_STRONGS]]
+        out[s] = {'n': counts[s], 'r': capped}
+
+    os.makedirs(STRONGS_DIR, exist_ok=True)
+    path = os.path.join(STRONGS_DIR, 'concordance.json')
+    with open(path, 'w', encoding='utf-8') as f:
+        json.dump(out, f, ensure_ascii=False, separators=(',', ':'))
+    total_refs = sum(len(v['r']) for v in out.values())
+    print(f'  wrote {len(out)} Strong\'s with {total_refs} verse refs '
+          f'(capped at {MAX_REFS_PER_STRONGS} per entry)')
+
+
 # ── CLI ────────────────────────────────────────────────────────────────
 
 
@@ -383,6 +481,8 @@ def main() -> int:
     parser.add_argument('--skip-strongs', action='store_true')
     parser.add_argument('--skip-hebrew', action='store_true')
     parser.add_argument('--skip-greek', action='store_true')
+    parser.add_argument('--skip-concordance', action='store_true',
+                        help='Skip rebuilding the inverted-index file.')
     args = parser.parse_args()
 
     if not args.skip_strongs:
@@ -391,6 +491,11 @@ def main() -> int:
         build_hebrew_ot()
     if not args.skip_greek:
         build_greek_nt()
+    # Concordance reads from the per-book files written above, so it
+    # must run last. Skip it explicitly when iterating only on a single
+    # half (the existing index will be left in place).
+    if not args.skip_concordance:
+        build_concordance()
     print('done.')
     return 0
 

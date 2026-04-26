@@ -4,6 +4,7 @@ import 'package:yswords/constants/ui_strings.dart';
 import 'package:yswords/models/original_word.dart';
 import 'package:yswords/models/strongs.dart';
 import 'package:yswords/models/verse.dart';
+import 'package:yswords/services/concordance_service.dart';
 import 'package:yswords/services/originals_service.dart';
 import 'package:yswords/services/strongs_service.dart';
 import 'package:yswords/utils/version_mapper.dart' show toEnglish;
@@ -15,14 +16,21 @@ import 'package:yswords/utils/version_mapper.dart' show toEnglish;
 /// Pure data — no AI, no network. The sheet falls back to a friendly
 /// "no original-language data for this verse yet" message when bundled
 /// coverage is missing for the verse, so the affordance always opens.
+///
+/// `onNavigateRef` is invoked when the user taps a concordance entry
+/// (e.g. "John 3:16"). The host widget is responsible for closing the
+/// sheet, switching to that book/chapter, and scrolling to the verse —
+/// the sheet stays presentation-only.
 class OriginalsSheet extends StatefulWidget {
   final List<Verse> verses;
   final String locale;
+  final void Function(ConcordanceRef ref)? onNavigateRef;
 
   const OriginalsSheet({
     super.key,
     required this.verses,
     required this.locale,
+    this.onNavigateRef,
   });
 
   @override
@@ -33,6 +41,7 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
   late Future<List<_VerseOriginals>> _future;
   OriginalWord? _selectedWord;
   StrongsEntry? _selectedEntry;
+  ConcordanceResult? _selectedConcordance;
   bool _loadingEntry = false;
 
   @override
@@ -55,12 +64,20 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
     setState(() {
       _selectedWord = w;
       _selectedEntry = null;
+      _selectedConcordance = null;
       _loadingEntry = true;
     });
-    final entry = await StrongsService.lookup(w.strongs);
+    // Fire both lookups in parallel — Strong's entry is per-language,
+    // concordance is a single shared file that gets warmed by the
+    // first lookup of the session.
+    final entryFuture = StrongsService.lookup(w.strongs);
+    final concordanceFuture = ConcordanceService.lookup(w.strongs);
+    final entry = await entryFuture;
+    final concordance = await concordanceFuture;
     if (!mounted) return;
     setState(() {
       _selectedEntry = entry;
+      _selectedConcordance = concordance;
       _loadingEntry = false;
     });
   }
@@ -345,7 +362,98 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
                 fontStyle: FontStyle.italic,
               ),
             ),
+          if (_selectedConcordance != null &&
+              _selectedConcordance!.refs.isNotEmpty) ...[
+            const SizedBox(height: 14),
+            Divider(
+                height: 1, color: scheme.outlineVariant.withValues(alpha: 0.5)),
+            const SizedBox(height: 12),
+            _buildConcordance(scheme, locale, _selectedConcordance!),
+          ],
         ],
+      ),
+    );
+  }
+
+  Widget _buildConcordance(
+      ColorScheme scheme, String locale, ConcordanceResult cr) {
+    final usedTemplate = uiStrings['concordanceUsed']?[locale] ??
+        'Used {count} times';
+    final usedLabel =
+        usedTemplate.replaceAll('{count}', cr.total.toString());
+    final shown = cr.refs.length;
+    final showingFirst = shown < cr.total
+        ? (uiStrings['concordanceShowingFirst']?[locale] ??
+                'showing first {shown} of {total}')
+            .replaceAll('{shown}', shown.toString())
+            .replaceAll('{total}', cr.total.toString())
+        : null;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(Icons.menu_book_outlined,
+                size: 16, color: scheme.onSurfaceVariant),
+            const SizedBox(width: 6),
+            Expanded(
+              child: Text(
+                usedLabel,
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  color: scheme.onSurface,
+                  letterSpacing: 0.3,
+                ),
+              ),
+            ),
+          ],
+        ),
+        if (showingFirst != null) ...[
+          const SizedBox(height: 2),
+          Text(
+            showingFirst,
+            style: TextStyle(
+              fontSize: 11,
+              color: scheme.onSurfaceVariant,
+              fontStyle: FontStyle.italic,
+            ),
+          ),
+        ],
+        const SizedBox(height: 10),
+        Wrap(
+          spacing: 6,
+          runSpacing: 6,
+          children: [
+            for (final r in cr.refs) _refChip(r, scheme),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _refChip(ConcordanceRef r, ColorScheme scheme) {
+    final canNavigate = widget.onNavigateRef != null;
+    return Material(
+      color: scheme.surfaceContainerHighest.withValues(alpha: 0.7),
+      borderRadius: BorderRadius.circular(6),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(6),
+        onTap: canNavigate ? () => widget.onNavigateRef!(r) : null,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+          child: Text(
+            r.label,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+              color: canNavigate
+                  ? scheme.primary
+                  : scheme.onSurfaceVariant,
+            ),
+          ),
+        ),
       ),
     );
   }

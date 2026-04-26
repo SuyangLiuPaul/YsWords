@@ -19,6 +19,7 @@ import 'package:yswords/pages/search_page.dart';
 import 'package:yswords/pages/settings_page.dart';
 import 'package:yswords/providers/main_provider.dart';
 import 'package:yswords/services/fetch_books.dart';
+import 'package:yswords/services/concordance_service.dart';
 import 'package:yswords/services/fetch_verses.dart';
 import 'package:yswords/services/map_service.dart';
 import 'package:yswords/utils/clipboard_helper.dart';
@@ -1056,13 +1057,18 @@ class _SelectionActionBar extends StatelessWidget {
 
 /// Shows the original Hebrew/Greek text for the currently selected
 /// verses as a draggable bottom sheet. Tapping a word in the sheet
-/// expands its Strong's lexicon entry below.
+/// expands its Strong's lexicon entry below; tapping a concordance
+/// reference closes the sheet and jumps the reader to that verse.
 void _showOriginalsSheet({
   required BuildContext context,
   required List<Verse> verses,
   required String locale,
 }) {
   if (verses.isEmpty) return;
+  // Capture the provider synchronously — by the time the user taps a
+  // concordance reference the sheet's BuildContext may be defunct, so
+  // we rely on the provider reference instead.
+  final mainProvider = context.read<MainProvider>();
   showModalBottomSheet<void>(
     context: context,
     isScrollControlled: true,
@@ -1070,8 +1076,56 @@ void _showOriginalsSheet({
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
     ),
-    builder: (_) => OriginalsSheet(verses: verses, locale: locale),
+    builder: (sheetCtx) => OriginalsSheet(
+      verses: verses,
+      locale: locale,
+      onNavigateRef: (ref) {
+        Navigator.of(sheetCtx).maybePop();
+        _navigateToConcordanceRef(
+          mainProvider: mainProvider,
+          ref: ref,
+          locale: locale,
+        );
+      },
+    ),
   );
+}
+
+/// Jump the reader to a `ConcordanceRef` (e.g. "John 3:16") translated
+/// into the current version's book naming. Mirrors the search-page
+/// pattern: setCurrentChapter → updateCurrentVerse → jumpToIndex →
+/// momentary highlight. Falls back silently when the verse isn't in
+/// the current version (e.g. an OT ref while reading a NT-only edition).
+void _navigateToConcordanceRef({
+  required MainProvider mainProvider,
+  required ConcordanceRef ref,
+  required String locale,
+}) {
+  final localBook =
+      translateBookName(ref.englishBook, mainProvider.currentVersion);
+  final match = mainProvider.verses.where(
+    (v) => v.book == localBook &&
+        v.chapter == ref.chapter &&
+        v.verse == ref.verse,
+  );
+  if (match.isEmpty) return;
+  final verse = match.first;
+  mainProvider.setCurrentChapter(book: verse.book, chapter: verse.chapter);
+  mainProvider.updateCurrentVerse(verse: verse);
+  Future.delayed(const Duration(milliseconds: 250), () {
+    final chapterVerses = mainProvider.verses
+        .where((v) => v.book == verse.book && v.chapter == verse.chapter)
+        .toList()
+      ..sort((a, b) => a.verse.compareTo(b.verse));
+    final relIdx =
+        chapterVerses.indexWhere((v) => v.verse == verse.verse);
+    if (relIdx < 0) return;
+    mainProvider.jumpToIndex(index: relIdx);
+    mainProvider.setHighlightIndex(relIdx);
+    Future.delayed(const Duration(milliseconds: 1200), () {
+      mainProvider.clearHighlightIndex();
+    });
+  });
 }
 
 /// Shows the map picker as a tabbed sheet.

@@ -86,6 +86,7 @@ main.dart (entry point)
 | `lib/models/original_word.dart` | Immutable `OriginalWord` — one tagged Hebrew/Greek surface form with its Strong's number and optional transliteration/morphology. |
 | `lib/services/strongs_service.dart` | Lazy loader for `assets/strongs/{greek,hebrew}.json`. Branches on the `G`/`H` prefix of a Strong's number so a NT-only session never pays the Hebrew load cost. Caches the parsed map by language. |
 | `lib/services/originals_service.dart` | Lazy loader for `assets/originals/<book_slug>.json`. `forVerse(book, ch, vs)` returns the tagged words or null. Cache is per-book and stores an empty map for missing files so a second probe is free. |
+| `lib/services/concordance_service.dart` | Lazy loader for `assets/strongs/concordance.json` — the inverted index from a Strong's number to every verse reference where it appears. Returns a `ConcordanceResult` with the absolute count plus the (capped) list of `ConcordanceRef` items so callers don't need to parse `"John 3:16"` into book/chapter/verse themselves. |
 | `lib/widgets/originals_sheet.dart` | Bottom sheet that displays the original Hebrew/Greek for the currently selected verses. Each word is a tappable chip; tapping opens a Strong's panel with lemma, transliteration, pronunciation, gloss, and full definition. RTL Wrap for Hebrew. Pure data — no AI, no network. |
 
 ### Constants
@@ -408,6 +409,23 @@ The app adapts its layout to all device sizes using `lib/utils/responsive.dart`:
 ---
 
 ## What Has Been Fixed (2026-04-27)
+
+### Concordance + tap-to-navigate (round 20)
+
+Extends round 19. The Strong's panel inside `OriginalsSheet` now has a "Used N times" section listing every other verse where that Strong's number appears. Tap a reference (e.g. "John 3:16") and the reader closes the sheet, jumps to that verse, and momentarily highlights it.
+
+**Bundled data**:
+- `assets/strongs/concordance.json` — inverted index keyed by Strong's number. Shape: `{ "G2316": {"n": 1317, "r": ["Matthew 1:23", ...]}, ... }`. `n` is the absolute occurrence count; `r` is the canonical-order reference list capped at `MAX_REFS_PER_STRONGS = 200` (set in `tools/build_originals.py`). 14,039 entries, 206,415 unique verse refs, ~3.5 MB.
+
+**Pipeline**: `tools/build_originals.py build_concordance()` walks every per-book file in `assets/originals/` and builds the inverted index. Runs after the Hebrew + Greek stages by default; gated behind `--skip-concordance` for partial rebuilds. Within a single verse, repeated occurrences of the same Strong's number are deduped in the ref list (so `H853` doesn't appear twice for "אֵת" + "וְאֵת" in Genesis 1:1) but the absolute count includes every word.
+
+**Service**: `lib/services/concordance_service.dart` — lazy loader for the index (one fetch per session), with a `ConcordanceRef.tryParse("John 3:16")` helper so callers don't have to do book/chapter/verse splitting.
+
+**UI**: `OriginalsSheet`'s entry card grows a divider + a `Wrap` of small primary-colored chips, each tappable. The header shows `Used {count} times` and (when truncated) `showing first {shown} of {total}` in italics. Strong's lookup + concordance lookup fire in parallel from `_onWordTap` so the panel populates in one round-trip.
+
+**Navigation**: `_navigateToConcordanceRef` in `bible_reading_pane.dart` translates the English book name to the current version's locale via `translateBookName(...)`, then runs the same flow as `search_page.dart`'s result tap: `setCurrentChapter` → `updateCurrentVerse` → 250 ms later `jumpToIndex` + `setHighlightIndex`, with the highlight cleared after 1.2 s. Falls back silently when the verse isn't present in the current version (e.g. tapping a Hebrew OT reference while reading the NT-only `biblexg`).
+
+**Localized strings**: `concordanceUsed`, `concordanceShowingFirst`, `concordanceNoMatchInVersion` (en / zh-Hans / zh-Hant).
 
 ### Original-language word study (round 19)
 
