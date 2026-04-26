@@ -1,6 +1,6 @@
 # YsWords — AI Agent Handoff Document
 
-> Last updated: 2026-04-26
+> Last updated: 2026-04-27
 > Project: YsWords (Yahweh's Words) — bilingual Bible reader
 > Stack: Flutter 3.41.7 / Dart 3.11.5 / Provider + GetX
 > Repo: https://github.com/SuyangLiuPaul/YsWords
@@ -78,10 +78,15 @@ main.dart (entry point)
 | `lib/widgets/verse_widget.dart` | Renders single verse. Background priority: selection > search highlight > **user highlight color** (35% opacity) > transparent. In paragraph mode: superscript verse numbers, first-line indent, paragraph-start spacers, reference-block indent. Tap to select, tap number to copy |
 | `lib/widgets/paragraph_group_widget.dart` | Renders multiple verses as a single flowing RichText in paragraph mode. Per-verse selection via `TapGestureRecognizer`, per-verse background (selection/highlight). Same background priority as VerseWidget |
 | `lib/widgets/localized_back_button.dart` | Back button with localized tooltip |
-| `lib/widgets/bible_reading_pane.dart` | Self-contained Bible reading widget. Contains `ScrollablePositionedList` with verse/paragraph groups, glass `_FloatingHeader` (book/chapter/version, split toggle, search, settings, **map button**), `_ReaderStatusBar` (thin progress bar at the bottom), `_SelectionActionBar` (copy, highlight, clear), `_VerticalProgressIndicator` (right-edge scroll bookmark with sliding `current/total` pill that auto-fades after 2s of inactivity), and the `_MapPickerSheet` tabbed picker (For-this-chapter / For-this-book / All-maps). Each pane handles its own swipe gestures, scroll tracking, chapter navigation, and tracks two map lists (`_chapterMaps` + `_bookMaps`) for the picker fallback. Uses `Consumer2<MainProvider, AppSettings>` which resolves to the correct provider via Provider override in split view. Wraps its `Scaffold` in a pane-local `ScaffoldMessenger` (keyed by `_messengerKey`) so SnackBars stay scoped to the originating pane in split view. ~1650 lines |
+| `lib/widgets/bible_reading_pane.dart` | Self-contained Bible reading widget. Contains `ScrollablePositionedList` with verse/paragraph groups, glass `_FloatingHeader` (book/chapter/version, split toggle, search, settings, **map button**), `_ReaderStatusBar` (thin progress bar at the bottom), `_SelectionActionBar` (Original → opens `OriginalsSheet` with Hebrew/Greek word study; copy; highlight; clear), `_VerticalProgressIndicator` (right-edge scroll bookmark with sliding `current/total` pill that auto-fades after 2s of inactivity), and the `_MapPickerSheet` tabbed picker (For-this-chapter / For-this-book / All-maps). Each pane handles its own swipe gestures, scroll tracking, chapter navigation, and tracks two map lists (`_chapterMaps` + `_bookMaps`) for the picker fallback. Uses `Consumer2<MainProvider, AppSettings>` which resolves to the correct provider via Provider override in split view. Wraps its `Scaffold` in a pane-local `ScaffoldMessenger` (keyed by `_messengerKey`) so SnackBars stay scoped to the originating pane in split view. ~1680 lines |
 | `lib/pages/map_viewer_page.dart` | Full-screen `InteractiveViewer` map with floating glass header (title wraps to 2 lines so long names don't ellipsize) and a horizontal "related maps" strip at the bottom. Strip shows `relatedMaps` first (chapter + book matches, marked with a bookmark badge) and then the rest of the library. Tapping a thumbnail switches the displayed map in place and resets pan/zoom via a unique `ValueKey` on the `InteractiveViewer`. |
 | `lib/services/map_service.dart` | Loads `assets/maps_index.json` once into a static cache. Exposes `mapsForBookChapter(en, ch)` (exact chapter match) and `mapsForBook(en)` (book-level fallback so chapters without a specific map still surface relevant ones). |
 | `lib/models/bible_map.dart` | Immutable BibleMap with localized title/description maps, `books: Map<String, [start, end]>` chapter ranges per English book name, and `matchesBookChapter()` predicate. |
+| `lib/models/strongs.dart` | Immutable `StrongsEntry` for a Strong's Concordance lexicon entry (lemma, transliteration, pronunciation, gloss, full definition). |
+| `lib/models/original_word.dart` | Immutable `OriginalWord` — one tagged Hebrew/Greek surface form with its Strong's number and optional transliteration/morphology. |
+| `lib/services/strongs_service.dart` | Lazy loader for `assets/strongs/{greek,hebrew}.json`. Branches on the `G`/`H` prefix of a Strong's number so a NT-only session never pays the Hebrew load cost. Caches the parsed map by language. |
+| `lib/services/originals_service.dart` | Lazy loader for `assets/originals/<book_slug>.json`. `forVerse(book, ch, vs)` returns the tagged words or null. Cache is per-book and stores an empty map for missing files so a second probe is free. |
+| `lib/widgets/originals_sheet.dart` | Bottom sheet that displays the original Hebrew/Greek for the currently selected verses. Each word is a tappable chip; tapping opens a Strong's panel with lemma, transliteration, pronunciation, gloss, and full definition. RTL Wrap for Hebrew. Pure data — no AI, no network. |
 
 ### Constants
 | File | Purpose |
@@ -402,7 +407,36 @@ The app adapts its layout to all device sizes using `lib/utils/responsive.dart`:
 
 ---
 
-## What Has Been Fixed (2026-04-26)
+## What Has Been Fixed (2026-04-27)
+
+### Original-language word study (round 19)
+
+**Feature**: Tap a verse → tap the new "原文 / Original" button in the selection action bar → bottom sheet renders the verse in tagged Hebrew (OT) or Greek (NT). Each word is a chip; tap a word → expands to show its Strong's number, lemma, transliteration, pronunciation, gloss, and full definition. Pure bundled data — no AI, no network calls.
+
+**Bundled data** (added):
+- `assets/strongs/hebrew.json` — 8,674 Strong's Hebrew entries (~2.0 MB).
+- `assets/strongs/greek.json` — 5,523 Strong's Greek entries (~1.2 MB).
+- `assets/originals/<book>.json` — 66 files, one per book. ~23,200 OT verses + ~7,950 NT verses. ~440k tagged words. ~17 MB total.
+
+**Sources** (all public domain or CC):
+- Strong's lexicons: [openscriptures/strongs](https://github.com/openscriptures/strongs).
+- Hebrew OT: [openscriptures/morphhb](https://github.com/openscriptures/morphhb) (Westminster Leningrad Codex with Strong's + morphology).
+- Greek NT: [eliranwong/OpenGNT](https://github.com/eliranwong/OpenGNT) base text v3.3 (`OGNTa` accented form, `sn` Strong's, `transSBL` transliteration).
+
+**Pipeline**: `tools/build_originals.py` downloads the three sources to a sibling cache (`.cache/originals/`) and writes the bundled JSON. Re-runnable; supports `--skip-strongs / --skip-hebrew / --skip-greek` for partial rebuilds. The morphhb prefix/root separator `/` is stripped from surface forms so the words read like a Hebrew Bible.
+
+**Bundle impact**: app assets grew ~58 MB → ~78 MB.
+
+**UX integration**: a new `IconButton(Icons.translate)` sits between Highlight and Copy in `_SelectionActionBar`. Selecting a verse and tapping it opens `OriginalsSheet`. The sheet is robust to missing data (per-verse fallback message) and missing lexicon entries (shows the Strong's number with a "lexicon entry not found" note instead of crashing).
+
+**Files**:
+- `lib/models/strongs.dart`, `lib/models/original_word.dart`
+- `lib/services/strongs_service.dart`, `lib/services/originals_service.dart`
+- `lib/widgets/originals_sheet.dart`
+- `lib/widgets/bible_reading_pane.dart` (added `onOriginal` to `_SelectionActionBar`, new `_showOriginalsSheet` helper, new icon button, `originalText` import)
+- `lib/constants/ui_strings.dart` (new keys: `originalText`, `originalHint`, `originalNotAvailable`, `strongsNotFound`)
+- `pubspec.yaml` (registered `assets/strongs/` and `assets/originals/`)
+- `tools/build_originals.py`
 
 ### Split-view SnackBar isolation (round 18)
 
@@ -793,7 +827,7 @@ There is no `test/` directory. The README references tests but none exist. Addin
 The README references `.github/workflows/build.yml` but this file does not exist. A CI workflow that runs `flutter analyze` + `flutter test` on push would catch regressions.
 
 ### Large Asset Files
-The 14 Bible JSON files total ~58 MB. They are loaded entirely into memory via `rootBundle.loadString()`. For mobile platforms this works but could be optimized with lazy loading per book/chapter.
+The 14 Bible JSON files total ~58 MB. The original-language data (round 19) added another ~20 MB (`assets/originals/` ~17 MB across 66 per-book files + `assets/strongs/` ~3 MB). Bibles are loaded entirely into memory via `rootBundle.loadString()`; originals are lazy-loaded per book and Strong's lexicons are lazy-loaded per language. For mobile platforms this works but could be optimized with chapter-level slicing for the Bibles.
 
 ### `fonts_backup/` Directory
 Contains ~178 font files not used in production (commented out in `web/index.html` preloads). Could be deleted or moved to a separate repository to reduce clone size.

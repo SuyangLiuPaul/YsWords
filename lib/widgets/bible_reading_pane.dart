@@ -25,6 +25,7 @@ import 'package:yswords/utils/clipboard_helper.dart';
 import 'package:yswords/utils/responsive.dart';
 import 'package:yswords/utils/version_mapper.dart'
     show translateBookName, toEnglish;
+import 'package:yswords/widgets/originals_sheet.dart';
 import 'package:yswords/widgets/verse_widget.dart';
 import 'package:yswords/widgets/paragraph_group_widget.dart';
 
@@ -655,6 +656,11 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                                 );
                                 mainProvider.clearSelectedVerses();
                               },
+                              onOriginal: () => _showOriginalsSheet(
+                                context: context,
+                                verses: mainProvider.selectedVerses,
+                                locale: settings.locale,
+                              ),
                             )
                           : _ReaderStatusBar(
                               progress: chapterProgress,
@@ -883,6 +889,7 @@ class _SelectionActionBar extends StatelessWidget {
   final VoidCallback onClear;
   final ValueChanged<int> onHighlight;
   final VoidCallback onRemoveHighlight;
+  final VoidCallback onOriginal;
   final DeviceClass deviceClass;
 
   const _SelectionActionBar({
@@ -892,6 +899,7 @@ class _SelectionActionBar extends StatelessWidget {
     required this.onClear,
     required this.onHighlight,
     required this.onRemoveHighlight,
+    required this.onOriginal,
     required this.deviceClass,
   });
 
@@ -1014,6 +1022,13 @@ class _SelectionActionBar extends StatelessWidget {
                 const SizedBox(width: 4),
                 IconButton(
                   tooltip:
+                      uiStrings['originalText']?[settings.locale] ?? 'Original',
+                  onPressed: onOriginal,
+                  icon: const Icon(Icons.translate),
+                ),
+                const SizedBox(width: 4),
+                IconButton(
+                  tooltip:
                       uiStrings['highlight']?[settings.locale] ?? 'Highlight',
                   onPressed: () => _showColorPicker(context),
                   icon: const Icon(Icons.format_color_fill),
@@ -1037,6 +1052,26 @@ class _SelectionActionBar extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Shows the original Hebrew/Greek text for the currently selected
+/// verses as a draggable bottom sheet. Tapping a word in the sheet
+/// expands its Strong's lexicon entry below.
+void _showOriginalsSheet({
+  required BuildContext context,
+  required List<Verse> verses,
+  required String locale,
+}) {
+  if (verses.isEmpty) return;
+  showModalBottomSheet<void>(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Theme.of(context).colorScheme.surface,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+    ),
+    builder: (_) => OriginalsSheet(verses: verses, locale: locale),
+  );
 }
 
 /// Shows the map picker as a tabbed sheet.

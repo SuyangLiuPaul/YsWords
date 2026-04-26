@@ -141,6 +141,26 @@ const uiStrings = {
     'zh-Hant': '高亮',
     'en': 'Highlight',
   },
+  'originalText': {
+    'zh-Hans': '原文',
+    'zh-Hant': '原文',
+    'en': 'Original',
+  },
+  'originalHint': {
+    'zh-Hans': '点击词语查看 Strong\'s 词条。',
+    'zh-Hant': '點擊詞語查看 Strong\'s 詞條。',
+    'en': 'Tap a word to see its Strong\'s entry.',
+  },
+  'originalNotAvailable': {
+    'zh-Hans': '此节经文暂未提供原文数据。',
+    'zh-Hant': '此節經文暫未提供原文資料。',
+    'en': 'Original-language data not available for this verse yet.',
+  },
+  'strongsNotFound': {
+    'zh-Hans': '未找到该 Strong\'s 词条。',
+    'zh-Hant': '未找到該 Strong\'s 詞條。',
+    'en': 'Lexicon entry not found.',
+  },
   'removeHighlight': {
     'zh-Hans': '移除高亮',
     'zh-Hant': '移除高亮',
