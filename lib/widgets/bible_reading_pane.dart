@@ -57,6 +57,12 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
   int _visibleItemIndex = 0;
   bool _showVersePosition = false;
   Timer? _versePositionTimer;
+  /// Pane-local messenger so SnackBars (e.g. the "Copied!" toast) appear
+  /// only in the pane that triggered them. Without this, `ScaffoldMessenger
+  /// .of(context)` resolves to the app-root messenger and the toast is
+  /// shown over both panes in split view.
+  final GlobalKey<ScaffoldMessengerState> _messengerKey =
+      GlobalKey<ScaffoldMessengerState>();
   /// Maps whose chapter range covers the current book + chapter exactly.
   List<BibleMap> _chapterMaps = [];
 
@@ -296,7 +302,7 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
     final scheme = Theme.of(context).colorScheme;
     final copiedLabel =
         uiStrings['copied']?[settings.locale] ?? 'Copied!';
-    ScaffoldMessenger.of(context).showSnackBar(
+    _messengerKey.currentState?.showSnackBar(
       SnackBar(
         content: Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -425,7 +431,9 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                         ? Brightness.light
                         : Brightness.dark,
               ),
-              child: Scaffold(
+              child: ScaffoldMessenger(
+                key: _messengerKey,
+                child: Scaffold(
                 body: LayoutBuilder(
                   builder: (context, constraints) {
                     final paneWidth = constraints.maxWidth;
@@ -540,8 +548,7 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                       onVersionSelected: (version) async {
                         if (!mounted) return;
                         final p = context.read<MainProvider>();
-                        final messenger =
-                            ScaffoldMessenger.of(context);
+                        final messenger = _messengerKey.currentState;
                         p.clearSelectedVerses();
                         final prevEn = toEnglish(p.currentBook);
                         p.setVersion(version);
@@ -550,7 +557,7 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                         await FetchBooks.execute(mainProvider: p);
                         if (!mounted) return;
                         if (p.verses.isEmpty) {
-                          messenger.showSnackBar(
+                          messenger?.showSnackBar(
                             SnackBar(
                               content: Text(
                                 uiStrings['loadErrorBody']?[
@@ -658,6 +665,7 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                 );
                   },
                 ),
+              ),
               ),
             ),
           ),

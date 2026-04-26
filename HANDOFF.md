@@ -404,6 +404,14 @@ The app adapts its layout to all device sizes using `lib/utils/responsive.dart`:
 
 ## What Has Been Fixed (2026-04-26)
 
+### Split-view SnackBar isolation (round 18)
+
+**Bug**: When the user copied verses in one pane of split view, the "Copied!" SnackBar appeared overlaid across the whole window — visible in both panes — because `ScaffoldMessenger.of(context)` resolved to the app-root messenger provided by `GetMaterialApp`, not the pane's own Scaffold.
+
+**Fix**: Each `BibleReadingPane` now wraps its own `Scaffold` in a local `ScaffoldMessenger` keyed by a `GlobalKey<ScaffoldMessengerState>` field on the State. The copy toast and the "could not load verses" error toast both go through `_messengerKey.currentState?.showSnackBar(...)` instead of `ScaffoldMessenger.of(context)`. SnackBars now appear inside the originating pane only — verified by reading the build tree: the local messenger is an ancestor of every Scaffold descendant in that pane, so `ScaffoldMessenger.of(context)` for any descendant context still resolves to the pane-local one.
+
+Files: `lib/widgets/bible_reading_pane.dart`.
+
 ### Bug + UX audit pass (round 17)
 
 Issues caught by a codebase-wide audit (analyzer was already clean).
