@@ -51,6 +51,21 @@ STRONGS_GREEK_URL = (
     'greek/strongs-greek-dictionary.js'
 )
 
+# CBOL Chinese Strong's lexicon (ier1990 mirror).
+# License: CC-BY-NC-SA 4.0 — original from CBOL project (bible.fhl.net).
+# We bundle both the Hebrew and Greek "merged" files; entries have a
+# Strong's number padded to 5 digits as the key (e.g. "02316" / "00430").
+ZH_STRONGS_HEBREW_URL = (
+    'https://raw.githubusercontent.com/'
+    'ier1990/samekhi_china_strongs-master/master/zhrcn/zh-rcn/words/'
+    'hebrew.json'
+)
+ZH_STRONGS_GREEK_URL = (
+    'https://raw.githubusercontent.com/'
+    'ier1990/samekhi_china_strongs-master/master/zhrcn/zh-rcn/words/'
+    'greek.json'
+)
+
 MORPHHB_BOOKS_URL = (
     'https://raw.githubusercontent.com/openscriptures/morphhb/master/'
     'wlc/{osis}.xml'
@@ -189,6 +204,78 @@ def _normalize_strongs_entry(num: str, raw: dict) -> dict:
     return out
 
 
+def _parse_zh_strongs_body(raw: str) -> tuple[str, str]:
+    """Extract a (gloss_zh, def_zh) pair from a CBOL Chinese Strong's
+    body. The body's shape is roughly:
+
+        <num> <translit> {<pron>}
+        <blank>
+        <etymology>; <part of speech>; <TWOT/TDNT refs>
+        <blank>
+        钦定本 - <KJV usage>; <count>
+        <blank>
+        1) <main definition>
+           1a) <sub-definition>
+           ...
+        2) <main definition>
+           ...
+
+    For `def_zh` we keep everything from the first numbered line to the
+    end. For `gloss_zh` we take the first "1)" line — short but
+    accurate; the user can read the full body for nuance.
+    """
+    if not raw:
+        return ('', '')
+    lines = raw.split('\n')
+    def_start = None
+    for i, ln in enumerate(lines):
+        # `\s*` instead of `\s` so we catch both `1) text` and `1)text`.
+        if re.match(r'^\s*\d+\)\s*\S', ln):
+            def_start = i
+            break
+    if def_start is None:
+        return ('', raw.strip())
+    body = '\n'.join(lines[def_start:]).rstrip()
+    # CBOL is inconsistent about the space between `1)` and the text
+    # (e.g. G25 has `1)珍爱`, while G2316 has `1) 神或女神`). Accept
+    # either form. Also fall back to "2)..." when "1)" is missing.
+    m = re.search(r'^\s*1\)\s*(.+?)\s*$', body, re.MULTILINE)
+    if not m:
+        m = re.search(r'^\s*\d+\)\s*(.+?)\s*$', body, re.MULTILINE)
+    gloss = m.group(1).strip() if m else ''
+    return (gloss, body.strip())
+
+
+def _load_zh_strongs(url: str, cache_name: str, prefix: str) -> dict[str, tuple[str, str]]:
+    """Fetch a CBOL Chinese Strong's JSON file (a list of single-pair
+    objects keyed by zero-padded numbers like "02316" or "07225") and
+    return `{ "G2316": (gloss_zh, def_zh), ... }` keyed in our format.
+    """
+    raw = fetch(url, cache_name).decode('utf-8', errors='replace')
+    items = json.loads(raw)
+    out: dict[str, tuple[str, str]] = {}
+    for entry in items:
+        for key, body in entry.items():
+            if not body:
+                continue
+            # CBOL uses 5-digit zero padding plus optional a/b suffix
+            # variants. We don't differentiate variants: the leading
+            # numeric portion is the canonical Strong's number.
+            m = re.match(r'^0*(\d+)', key)
+            if not m:
+                continue
+            our_key = f'{prefix}{m.group(1)}'
+            # If a variant collides with the base number, prefer the
+            # first non-empty body (canonical form).
+            if our_key in out:
+                continue
+            gloss, full = _parse_zh_strongs_body(body)
+            if not gloss and not full:
+                continue
+            out[our_key] = (gloss, full)
+    return out
+
+
 def build_strongs() -> None:
     print('Strong\'s lexicons:')
     he_js = fetch(STRONGS_HEBREW_URL, 'strongs-hebrew.js').decode('utf-8')
@@ -197,6 +284,27 @@ def build_strongs() -> None:
     gr = _parse_strongs_js(gr_js)
     out_he = {k: _normalize_strongs_entry(k, v) for k, v in he.items()}
     out_gr = {k: _normalize_strongs_entry(k, v) for k, v in gr.items()}
+
+    # Merge in CBOL Chinese definitions where available. Keys missing
+    # from the Chinese source keep only English fields, so the UI's
+    # locale-fallback logic handles partial coverage gracefully.
+    print('  + CBOL Chinese (CC-BY-NC-SA)')
+    zh_he = _load_zh_strongs(ZH_STRONGS_HEBREW_URL, 'cbol-hebrew.json', 'H')
+    zh_gr = _load_zh_strongs(ZH_STRONGS_GREEK_URL, 'cbol-greek.json', 'G')
+    he_matched = 0
+    for k, (gloss_zh, def_zh) in zh_he.items():
+        if k in out_he:
+            out_he[k]['glossZh'] = gloss_zh
+            out_he[k]['defZh'] = def_zh
+            he_matched += 1
+    gr_matched = 0
+    for k, (gloss_zh, def_zh) in zh_gr.items():
+        if k in out_gr:
+            out_gr[k]['glossZh'] = gloss_zh
+            out_gr[k]['defZh'] = def_zh
+            gr_matched += 1
+    print(f'    matched {he_matched} Hebrew + {gr_matched} Greek')
+
     os.makedirs(STRONGS_DIR, exist_ok=True)
     with open(os.path.join(STRONGS_DIR, 'hebrew.json'), 'w',
               encoding='utf-8') as f:

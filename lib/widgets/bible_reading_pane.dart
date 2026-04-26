@@ -1079,6 +1079,7 @@ void _showOriginalsSheet({
     builder: (sheetCtx) => OriginalsSheet(
       verses: verses,
       locale: locale,
+      currentVersion: mainProvider.currentVersion,
       onNavigateRef: (ref) {
         Navigator.of(sheetCtx).maybePop();
         _navigateToConcordanceRef(

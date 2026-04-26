@@ -7,7 +7,8 @@ import 'package:yswords/models/verse.dart';
 import 'package:yswords/services/concordance_service.dart';
 import 'package:yswords/services/originals_service.dart';
 import 'package:yswords/services/strongs_service.dart';
-import 'package:yswords/utils/version_mapper.dart' show toEnglish;
+import 'package:yswords/utils/version_mapper.dart'
+    show toEnglish, translateBookName;
 
 /// Bottom sheet that shows the original Hebrew/Greek text for one or
 /// more selected verses, with each word as a tappable chip linked to
@@ -24,12 +25,14 @@ import 'package:yswords/utils/version_mapper.dart' show toEnglish;
 class OriginalsSheet extends StatefulWidget {
   final List<Verse> verses;
   final String locale;
+  final String? currentVersion;
   final void Function(ConcordanceRef ref)? onNavigateRef;
 
   const OriginalsSheet({
     super.key,
     required this.verses,
     required this.locale,
+    this.currentVersion,
     this.onNavigateRef,
   });
 
@@ -318,10 +321,13 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
                   fontStyle: FontStyle.italic,
                 ),
               ),
-            if (entry.gloss.isNotEmpty) ...[
+            // Headline gloss and full definition follow the user's
+            // current locale: Chinese for zh-Hans / zh-Hant when CBOL
+            // has data, English fallback otherwise.
+            if (entry.localizedGloss(locale).isNotEmpty) ...[
               const SizedBox(height: 8),
               Text(
-                entry.gloss,
+                entry.localizedGloss(locale),
                 style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w600,
@@ -341,16 +347,29 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
                 ),
               ),
             ],
-            if (entry.definition.isNotEmpty) ...[
+            if (entry.localizedDefinition(locale).isNotEmpty) ...[
               const SizedBox(height: 10),
               Text(
-                entry.definition,
+                entry.localizedDefinition(locale),
                 style: TextStyle(
                   fontSize: 14,
                   color: scheme.onSurface,
                   height: 1.45,
                 ),
               ),
+              if (locale.startsWith('zh') &&
+                  (entry.definitionZh ?? '').isNotEmpty) ...[
+                const SizedBox(height: 8),
+                Text(
+                  // CC-BY-NC-SA 4.0 attribution required by the source.
+                  '中文释义来源：CBOL · bible.fhl.net (CC-BY-NC-SA 4.0)',
+                  style: TextStyle(
+                    fontSize: 10,
+                    color: scheme.onSurfaceVariant.withValues(alpha: 0.7),
+                    fontStyle: FontStyle.italic,
+                  ),
+                ),
+              ],
             ],
           ] else
             Text(
@@ -433,6 +452,17 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
     );
   }
 
+  String _localizedRefLabel(ConcordanceRef r) {
+    // Translate the English book name to the current version's
+    // book naming so a reader of CUVS sees "约翰福音 3:16" rather
+    // than "John 3:16". `translateBookName` falls back to the
+    // English name when no mapping exists.
+    final v = widget.currentVersion;
+    if (v == null) return r.label;
+    final localBook = translateBookName(r.englishBook, v);
+    return '$localBook ${r.chapter}:${r.verse}';
+  }
+
   Widget _refChip(ConcordanceRef r, ColorScheme scheme) {
     final canNavigate = widget.onNavigateRef != null;
     return Material(
@@ -444,7 +474,7 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
           child: Text(
-            r.label,
+            _localizedRefLabel(r),
             style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w500,

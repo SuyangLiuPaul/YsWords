@@ -410,6 +410,24 @@ The app adapts its layout to all device sizes using `lib/utils/responsive.dart`:
 
 ## What Has Been Fixed (2026-04-27)
 
+### Chinese exegesis (round 21)
+
+Extends rounds 19+20. The Strong's panel now switches its gloss + full definition + concordance ref labels to Chinese (Simplified or Traditional, following the user's `AppSettings.locale`) when CBOL has data; English remains the fallback.
+
+**Source**: [ier1990/samekhi_china_strongs-master](https://github.com/ier1990/samekhi_china_strongs-master), a JSON port of CBOL's Chinese Strong's lexicon (bible.fhl.net). License: **CC-BY-NC-SA 4.0** — non-commercial + share-alike + attribution required. The non-commercial clause matches the project (free Bible reader, no monetization). The required attribution is rendered as a small italic footer in the entry card whenever the Chinese definition is shown: `中文释义来源：CBOL · bible.fhl.net (CC-BY-NC-SA 4.0)`.
+
+**Pipeline**: `tools/build_originals.py build_strongs()` now runs a second pass that downloads the CBOL JSON files, parses each body (handles inconsistent `1)` vs `1)X` spacing in the source), and merges `glossZh` + `defZh` into the existing per-language lexicon files. Coverage:
+- **Greek**: 5,514 / 5,523 entries (99.8%)
+- **Hebrew**: 8,669 / 8,674 entries (99.9%)
+
+The bundled lexicon files grew ~3 MB → ~5 MB total.
+
+**Schema**: `StrongsEntry` gains `glossZh` and `definitionZh` (both nullable `String?`) plus two helpers: `localizedGloss(locale)` and `localizedDefinition(locale)`. The helpers return Chinese when the locale starts with `zh` and the field is non-empty, else fall back to the English field.
+
+**Concordance refs**: `OriginalsSheet` now takes an optional `currentVersion` parameter; ref chips translate the English book name to that version's locale via `translateBookName(...)`. So a user reading CUVS sees `约翰福音 3:16`, a user reading KJV sees `John 3:16`, all from the same canonical English ref data.
+
+**Why this was tricky**: CBOL formats `1)` definitions inconsistently — some entries have `1) text` (G2316), others `1)text` (G25, H7225). The first regex `^\s*1\)\s+(.+)` missed about 200 Greek + 100 Hebrew entries. Switching to `^\s*1\)\s*(.+)` and applying the same loosened spacing to the def-start scan brought coverage up to 99%+.
+
 ### Concordance + tap-to-navigate (round 20)
 
 Extends round 19. The Strong's panel inside `OriginalsSheet` now has a "Used N times" section listing every other verse where that Strong's number appears. Tap a reference (e.g. "John 3:16") and the reader closes the sheet, jumps to that verse, and momentarily highlights it.
