@@ -1,6 +1,6 @@
 # YsWords — AI Agent Handoff Document
 
-> Last updated: 2026-04-27
+> Last updated: 2026-04-26
 > Project: YsWords (Yahweh's Words) — bilingual Bible reader
 > Stack: Flutter 3.41.7 / Dart 3.11.5 / Provider + GetX
 > Repo: https://github.com/SuyangLiuPaul/YsWords
@@ -82,12 +82,12 @@ main.dart (entry point)
 | `lib/pages/map_viewer_page.dart` | Full-screen `InteractiveViewer` map with floating glass header (title wraps to 2 lines so long names don't ellipsize) and a horizontal "related maps" strip at the bottom. Strip shows `relatedMaps` first (chapter + book matches, marked with a bookmark badge) and then the rest of the library. Tapping a thumbnail switches the displayed map in place and resets pan/zoom via a unique `ValueKey` on the `InteractiveViewer`. |
 | `lib/services/map_service.dart` | Loads `assets/maps_index.json` once into a static cache. Exposes `mapsForBookChapter(en, ch)` (exact chapter match) and `mapsForBook(en)` (book-level fallback so chapters without a specific map still surface relevant ones). |
 | `lib/models/bible_map.dart` | Immutable BibleMap with localized title/description maps, `books: Map<String, [start, end]>` chapter ranges per English book name, and `matchesBookChapter()` predicate. |
-| `lib/models/strongs.dart` | Immutable `StrongsEntry` for a Strong's Concordance lexicon entry (lemma, transliteration, pronunciation, gloss, full definition). |
+| `lib/models/strongs.dart` | Immutable `StrongsEntry` for a Strong's Concordance lexicon entry (lemma, transliteration, pronunciation, gloss, full definition, raw etymology/derivation string). |
 | `lib/models/original_word.dart` | Immutable `OriginalWord` — one tagged Hebrew/Greek surface form with its Strong's number and optional transliteration/morphology. |
 | `lib/services/strongs_service.dart` | Lazy loader for `assets/strongs/{greek,hebrew}.json`. Branches on the `G`/`H` prefix of a Strong's number so a NT-only session never pays the Hebrew load cost. Caches the parsed map by language. |
 | `lib/services/originals_service.dart` | Lazy loader for `assets/originals/<book_slug>.json`. `forVerse(book, ch, vs)` returns the tagged words or null. Cache is per-book and stores an empty map for missing files so a second probe is free. |
 | `lib/services/concordance_service.dart` | Lazy loader for `assets/strongs/concordance.json` — the inverted index from a Strong's number to every verse reference where it appears. Returns a `ConcordanceResult` with the absolute count plus the (capped) list of `ConcordanceRef` items so callers don't need to parse `"John 3:16"` into book/chapter/verse themselves. |
-| `lib/widgets/originals_sheet.dart` | Bottom sheet that displays the original Hebrew/Greek for the currently selected verses. Each word is a tappable chip; tapping opens a Strong's panel with lemma, transliteration, pronunciation, gloss, and full definition. RTL Wrap for Hebrew. Pure data — no AI, no network. |
+| `lib/widgets/originals_sheet.dart` | Bottom sheet that displays the original Hebrew/Greek for the currently selected verses. Each word is a tappable chip; tapping opens a Strong's panel with lemma, transliteration, pronunciation, gloss, full definition, and etymology line. Strong's refs in the etymology (e.g. G165, H8040) are tappable links that navigate to that root entry with a back arrow. RTL Wrap for Hebrew. Pure data — no AI, no network. |
 
 ### Constants
 | File | Purpose |
@@ -408,7 +408,21 @@ The app adapts its layout to all device sizes using `lib/utils/responsive.dart`:
 
 ---
 
-## What Has Been Fixed (2026-04-27)
+## What Has Been Fixed (2026-04-26)
+
+### Root word exploration (round 22)
+
+**Feature**: Each Strong's entry card now shows the raw etymology / derivation line beneath the full definition. Any Strong's references within that line (e.g. "G165", "H8040") are rendered as tappable underlined primary-colored links. Tapping one loads that root's Strong's entry inline — same card, no new screen — with a back arrow (←) in the card header to return to the original word's entry. The root panel also shows the root word's concordance. Multi-hop is supported (tapping a ref in the root's derivation loads the next root).
+
+**TapGestureRecognizer lifecycle**: Flutter requires explicit disposal of `TapGestureRecognizer`. All recognizers created by `_buildDerivationRich` are appended to `_tapRecognizers: List<TapGestureRecognizer>`. `_clearTapRecognizers()` disposes + clears the list; it's called before every `setState` that changes the displayed entry (`_onWordTap`, `_loadRootEntry`, `_clearRoot`) and in `dispose()`.
+
+**Data change**: `tools/build_originals.py` `_normalize_strongs_entry` now emits a `deriv` field with the raw openscriptures `derivation` string. `StrongsEntry` gains `final String? derivation` parsed from `deriv` in JSON. Only ~100 entries lack derivation data (particles, indeclinable forms) — for those the derivation line is omitted.
+
+**Files changed**:
+- `tools/build_originals.py` — emit `deriv` in output dict
+- `assets/strongs/greek.json`, `assets/strongs/hebrew.json` — regenerated with `deriv` field
+- `lib/models/strongs.dart` — add `derivation` field
+- `lib/widgets/originals_sheet.dart` — `_rootEntry`, `_rootConcordance`, `_loadRootEntry()`, `_clearRoot()`, `_buildDerivationRich()`, `_tapRecognizers` lifecycle, back arrow in entry card header
 
 ### Chinese exegesis (round 21)
 
