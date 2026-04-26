@@ -199,8 +199,10 @@ def _normalize_strongs_entry(num: str, raw: dict) -> dict:
         parts.append('KJV: ' + kjv_def)
     definition = ' '.join(parts).strip()
 
-    out = {'lemma': lemma, 'translit': translit, 'pron': pron,
-           'gloss': gloss, 'def': definition}
+    out: dict = {'lemma': lemma, 'translit': translit, 'pron': pron,
+                 'gloss': gloss, 'def': definition}
+    if derivation:
+        out['deriv'] = derivation
     return out
 
 

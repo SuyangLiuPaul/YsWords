@@ -1,3 +1,4 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
 import 'package:yswords/constants/ui_strings.dart';
@@ -45,12 +46,31 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
   OriginalWord? _selectedWord;
   StrongsEntry? _selectedEntry;
   ConcordanceResult? _selectedConcordance;
+  // When non-null, the user is browsing a root entry instead of the
+  // word entry. Back button reverts to the word entry.
+  StrongsEntry? _rootEntry;
+  ConcordanceResult? _rootConcordance;
   bool _loadingEntry = false;
+  // TapGestureRecognizers for inline derivation links — disposed on change.
+  final _tapRecognizers = <TapGestureRecognizer>[];
 
   @override
   void initState() {
     super.initState();
     _future = _loadAll();
+  }
+
+  @override
+  void dispose() {
+    _clearTapRecognizers();
+    super.dispose();
+  }
+
+  void _clearTapRecognizers() {
+    for (final r in _tapRecognizers) {
+      r.dispose();
+    }
+    _tapRecognizers.clear();
   }
 
   Future<List<_VerseOriginals>> _loadAll() async {
@@ -64,10 +84,13 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
   }
 
   Future<void> _onWordTap(OriginalWord w) async {
+    _clearTapRecognizers();
     setState(() {
       _selectedWord = w;
       _selectedEntry = null;
       _selectedConcordance = null;
+      _rootEntry = null;
+      _rootConcordance = null;
       _loadingEntry = true;
     });
     // Fire both lookups in parallel — Strong's entry is per-language,
@@ -78,10 +101,35 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
     final entry = await entryFuture;
     final concordance = await concordanceFuture;
     if (!mounted) return;
+    _clearTapRecognizers();
     setState(() {
       _selectedEntry = entry;
       _selectedConcordance = concordance;
       _loadingEntry = false;
+    });
+  }
+
+  Future<void> _loadRootEntry(String strongsNumber) async {
+    _clearTapRecognizers();
+    setState(() { _loadingEntry = true; });
+    final entryFuture = StrongsService.lookup(strongsNumber);
+    final concordanceFuture = ConcordanceService.lookup(strongsNumber);
+    final entry = await entryFuture;
+    final concordance = await concordanceFuture;
+    if (!mounted) return;
+    _clearTapRecognizers();
+    setState(() {
+      _rootEntry = entry;
+      _rootConcordance = concordance;
+      _loadingEntry = false;
+    });
+  }
+
+  void _clearRoot() {
+    _clearTapRecognizers();
+    setState(() {
+      _rootEntry = null;
+      _rootConcordance = null;
     });
   }
 
@@ -264,7 +312,13 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
         child: Center(child: CircularProgressIndicator()),
       );
     }
-    final entry = _selectedEntry;
+    // When the user has tapped a root link, show that entry instead.
+    final isBrowsingRoot = _rootEntry != null;
+    final entry = isBrowsingRoot ? _rootEntry : _selectedEntry;
+    final concordance = isBrowsingRoot ? _rootConcordance : _selectedConcordance;
+    // The displayed number: root number when browsing, otherwise the word's.
+    final displayNumber = entry?.number ?? w.strongs;
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -277,6 +331,17 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
         children: [
           Row(
             children: [
+              if (isBrowsingRoot) ...[
+                InkWell(
+                  onTap: _clearRoot,
+                  borderRadius: BorderRadius.circular(6),
+                  child: Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: Icon(Icons.arrow_back,
+                        size: 18, color: scheme.primary),
+                  ),
+                ),
+              ],
               Container(
                 padding: const EdgeInsets.symmetric(
                     horizontal: 8, vertical: 2),
@@ -285,7 +350,7 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(
-                  w.strongs,
+                  displayNumber,
                   style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w700,
@@ -371,25 +436,71 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
                 ),
               ],
             ],
+            // Derivation / etymology line with tappable Strong's refs.
+            if ((entry.derivation ?? '').isNotEmpty) ...[
+              const SizedBox(height: 10),
+              _buildDerivationRich(entry.derivation!, scheme),
+            ],
           ] else
             Text(
               uiStrings['strongsNotFound']?[locale] ??
-                  'Lexicon entry not found for ${w.strongs}.',
+                  'Lexicon entry not found for $displayNumber.',
               style: TextStyle(
                 fontSize: 13,
                 color: scheme.onSurfaceVariant,
                 fontStyle: FontStyle.italic,
               ),
             ),
-          if (_selectedConcordance != null &&
-              _selectedConcordance!.refs.isNotEmpty) ...[
+          if (concordance != null && concordance.refs.isNotEmpty) ...[
             const SizedBox(height: 14),
             Divider(
                 height: 1, color: scheme.outlineVariant.withValues(alpha: 0.5)),
             const SizedBox(height: 12),
-            _buildConcordance(scheme, locale, _selectedConcordance!),
+            _buildConcordance(scheme, locale, concordance),
           ],
         ],
+      ),
+    );
+  }
+
+  /// Renders [text] with any Strong's refs ([GH]\d+) as tappable blue links.
+  /// Recognizers are tracked in [_tapRecognizers] and disposed on state change.
+  Widget _buildDerivationRich(String text, ColorScheme scheme) {
+    final spans = <InlineSpan>[];
+    final re = RegExp(r'([GH]\d+)');
+    int last = 0;
+    for (final m in re.allMatches(text)) {
+      if (m.start > last) {
+        spans.add(TextSpan(text: text.substring(last, m.start)));
+      }
+      final num = m.group(1)!;
+      final rec = TapGestureRecognizer()
+        ..onTap = () => _loadRootEntry(num);
+      _tapRecognizers.add(rec);
+      spans.add(TextSpan(
+        text: num,
+        style: TextStyle(
+          color: scheme.primary,
+          fontWeight: FontWeight.w600,
+          decoration: TextDecoration.underline,
+          decorationColor: scheme.primary.withValues(alpha: 0.6),
+        ),
+        recognizer: rec,
+      ));
+      last = m.end;
+    }
+    if (last < text.length) {
+      spans.add(TextSpan(text: text.substring(last)));
+    }
+    return RichText(
+      text: TextSpan(
+        style: TextStyle(
+          fontSize: 12,
+          color: scheme.onSurfaceVariant,
+          fontStyle: FontStyle.italic,
+          height: 1.45,
+        ),
+        children: spans,
       ),
     );
   }

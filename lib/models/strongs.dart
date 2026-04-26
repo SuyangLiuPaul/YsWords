@@ -16,6 +16,7 @@ class StrongsEntry {
   final String? partOfSpeech;
   final String gloss;
   final String definition;
+  final String? derivation;
   final String? glossZh;
   final String? definitionZh;
 
@@ -27,6 +28,7 @@ class StrongsEntry {
     this.partOfSpeech,
     required this.gloss,
     required this.definition,
+    this.derivation,
     this.glossZh,
     this.definitionZh,
   });
@@ -60,6 +62,7 @@ class StrongsEntry {
       partOfSpeech: json['pos'] as String?,
       gloss: (json['gloss'] ?? '') as String,
       definition: (json['def'] ?? '') as String,
+      derivation: json['deriv'] as String?,
       glossZh: json['glossZh'] as String?,
       definitionZh: json['defZh'] as String?,
     );
