@@ -6,6 +6,7 @@ import 'package:yswords/providers/main_provider.dart';
 import 'package:yswords/services/concordance_service.dart';
 import 'package:yswords/services/strongs_service.dart';
 import 'package:yswords/pages/strongs_entry_page.dart';
+import 'package:yswords/services/recent_searches_service.dart';
 import 'package:yswords/utils/format_searched_text.dart';
 import 'package:yswords/utils/reference_parser.dart';
 import 'package:yswords/utils/version_mapper.dart'
@@ -41,6 +42,9 @@ class _SearchPageState extends State<SearchPage> {
   bool searchAll = true;
   Map<String, int> bookCounts = {};
   String? filterBook;
+  /// Recent searches for the active profile. Loaded once on init,
+  /// updated whenever the user submits a non-trivial query.
+  List<String> _recents = const [];
 
   // When the user typed a Strong's-number pattern (e.g. "G2316"), these
   // hold the lookup result; in this mode the regular text-search path
@@ -48,6 +52,18 @@ class _SearchPageState extends State<SearchPage> {
   String? _strongsKey;
   StrongsEntry? _strongsEntry;
   ConcordanceResult? _strongsResult;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadRecents();
+  }
+
+  Future<void> _loadRecents() async {
+    final list = await RecentSearchesService.list();
+    if (!mounted) return;
+    setState(() => _recents = list);
+  }
 
   @override
   void dispose() {
@@ -222,6 +238,13 @@ class _SearchPageState extends State<SearchPage> {
                     Provider.of<MainProvider>(context, listen: false);
                 if (_navigateToReference(ref, mainProv)) return;
               }
+              // Record the query in the recent-searches list AFTER
+              // we've established that the user submitted a real
+              // text-search (not a Strong's # or a parseable
+              // reference, which navigate away). Fire-and-forget
+              // is fine — list is only read on next page open.
+              await RecentSearchesService.add(trimmed);
+              await _loadRecents();
               await search();
               if (_scrollController.hasClients) {
                 _scrollController.jumpTo(0.0);
@@ -400,6 +423,86 @@ class _SearchPageState extends State<SearchPage> {
                                   .copyWith(fontSize: settings.fontSize),
                               textAlign: TextAlign.center,
                             ),
+                            // Recent-searches chips: shown only on
+                            // the empty pre-search state, not after a
+                            // search returned 0 results (the user
+                            // doesn't need history when they're
+                            // already mid-query).
+                            if (!searchPerformed && _recents.isNotEmpty) ...[
+                              const SizedBox(height: 24),
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    uiStrings['recentSearches']
+                                            ?[settings.locale] ??
+                                        'Recent',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w700,
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .primary,
+                                    ),
+                                  ),
+                                  TextButton.icon(
+                                    onPressed: () async {
+                                      await RecentSearchesService
+                                          .clear();
+                                      await _loadRecents();
+                                    },
+                                    icon: const Icon(
+                                        Icons.delete_sweep_outlined,
+                                        size: 16),
+                                    label: Text(
+                                      uiStrings['clear']
+                                              ?[settings.locale] ??
+                                          'Clear',
+                                      style:
+                                          const TextStyle(fontSize: 12),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 4),
+                              Wrap(
+                                spacing: 6,
+                                runSpacing: 6,
+                                alignment: WrapAlignment.center,
+                                children: [
+                                  for (final q in _recents)
+                                    InputChip(
+                                      label: Text(
+                                        q,
+                                        style:
+                                            const TextStyle(fontSize: 12.5),
+                                      ),
+                                      onPressed: () {
+                                        _textEditingController.text = q;
+                                        _textEditingController.selection =
+                                            TextSelection.fromPosition(
+                                          TextPosition(offset: q.length),
+                                        );
+                                        // Reuse the onSubmitted path
+                                        // by triggering search +
+                                        // recents-bump directly.
+                                        () async {
+                                          await RecentSearchesService
+                                              .add(q);
+                                          await _loadRecents();
+                                          await search();
+                                          if (_scrollController
+                                              .hasClients) {
+                                            _scrollController
+                                                .jumpTo(0.0);
+                                          }
+                                        }();
+                                      },
+                                    ),
+                                ],
+                              ),
+                            ],
                           ],
                         ),
                       ),

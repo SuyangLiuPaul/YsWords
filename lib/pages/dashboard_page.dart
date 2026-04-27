@@ -6,6 +6,7 @@ import 'package:yswords/constants/text_patterns.dart' show sanitizeForSearch;
 import 'package:yswords/constants/ui_strings.dart';
 import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/models/verse.dart';
+import 'package:yswords/pages/highlights_page.dart';
 import 'package:yswords/pages/home_page.dart';
 import 'package:yswords/pages/library_page.dart';
 import 'package:yswords/pages/settings_page.dart';
@@ -13,12 +14,14 @@ import 'package:yswords/pages/stats_page.dart';
 import 'package:yswords/providers/main_provider.dart';
 import 'package:yswords/services/cloud_auth_service.dart';
 import 'package:yswords/services/cloud_sync_service.dart';
+import 'package:yswords/services/daily_verse_service.dart';
 import 'package:yswords/services/profile_service.dart';
 import 'package:yswords/services/reading_plan_service.dart';
 import 'package:yswords/utils/reference_parser.dart';
 import 'package:yswords/utils/responsive.dart';
 import 'package:yswords/utils/version_mapper.dart' show translateBookName;
 import 'package:yswords/widgets/google_g_logo.dart';
+import 'package:yswords/widgets/onboarding_dialog.dart';
 import 'package:yswords/widgets/localized_back_button.dart';
 
 /// Personal "home" / dashboard. Shows the signed-in user's reading
@@ -43,6 +46,7 @@ class _DashboardPageState extends State<DashboardPage> {
   ReadingPlan? _plan;
   int _planDay = 1;
   Set<int> _planDone = const {};
+  Verse? _dailyVerse;
 
   @override
   void initState() {
@@ -51,6 +55,45 @@ class _DashboardPageState extends State<DashboardPage> {
     CloudAuthService.instance.addListener(_onProfileOrAuthChanged);
     CloudSyncService.instance.addListener(_onProfileOrAuthChanged);
     _loadPlan();
+    _loadDailyVerse();
+    _maybeShowOnboarding();
+  }
+
+  /// Show the 4-slide onboarding tour the first time the dashboard
+  /// mounts on a given device. Flagged in SharedPreferences so the
+  /// dialog never re-appears (until we bump the version key).
+  Future<void> _maybeShowOnboarding() async {
+    final seen = await OnboardingDialog.hasSeen();
+    if (seen || !mounted) return;
+    // Wait one frame so the dashboard scaffold is fully built before
+    // we try to push a Dialog over it.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      showDialog<void>(
+        context: context,
+        barrierDismissible: false,
+        builder: (_) => const OnboardingDialog(),
+      );
+    });
+  }
+
+  /// Resolve today's curated reference to an actual [Verse] from the
+  /// loaded version. Re-runs when MainProvider's verse list changes
+  /// (e.g. after a version switch).
+  Future<void> _loadDailyVerse() async {
+    final ref = await DailyVerseService.todayRef();
+    if (ref == null || !mounted) return;
+    final parsed = parseReference(ref);
+    if (parsed == null) return;
+    final mp = context.read<MainProvider>();
+    final localBook = translateBookName(parsed.englishBook, mp.currentVersion);
+    final targetVerse = parsed.verseStart ?? 1;
+    final matches = mp.verses.where((v) =>
+        v.book == localBook &&
+        v.chapter == parsed.chapter &&
+        v.verse == targetVerse);
+    if (matches.isEmpty || !mounted) return;
+    setState(() => _dailyVerse = matches.first);
   }
 
   @override
@@ -158,7 +201,37 @@ class _DashboardPageState extends State<DashboardPage> {
           ),
           const SizedBox(height: 16),
 
-          // Today's reading
+          // Daily verse — one curated verse per day, deterministic
+          // by day-of-year so two devices on the same calendar day
+          // show the same one. Hidden until the verse text resolves.
+          if (_dailyVerse != null) ...[
+            Text(
+              uiStrings['dailyVerse']?[locale] ?? 'Verse of the Day',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+                color: scheme.primary,
+              ),
+            ),
+            const SizedBox(height: 8),
+            _DailyVerseCard(
+              verse: _dailyVerse!,
+              fontFamily: settings.fontFamily,
+              onTap: () {
+                final v = _dailyVerse!;
+                mainProvider.setCurrentChapter(
+                    book: v.book, chapter: v.chapter);
+                mainProvider.updateCurrentVerse(verse: v);
+                Get.to(
+                  () => const HomePage(),
+                  transition: Transition.rightToLeft,
+                );
+              },
+            ),
+            const SizedBox(height: 16),
+          ],
+
+          // Today's reading (from active reading plan)
           Text(
             uiStrings['todayReading']?[locale] ?? "Today's Reading",
             style: TextStyle(
@@ -240,11 +313,8 @@ class _DashboardPageState extends State<DashboardPage> {
                   icon: Icons.format_color_fill,
                   count: mainProvider.highlights.length,
                   label: uiStrings['highlights']?[locale] ?? 'Highlights',
-                  // Highlights live in a modal sheet inside the
-                  // reading pane (no dedicated page yet). Push the
-                  // reader; user opens them via the overflow menu.
                   onTap: () => Get.to(
-                    () => const HomePage(),
+                    () => const HighlightsPage(),
                     transition: Transition.rightToLeft,
                   ),
                 ),
@@ -753,6 +823,85 @@ class _CountTile extends StatelessWidget {
                     fontWeight: FontWeight.w500,
                     color: scheme.onSurfaceVariant,
                   ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Verse-of-the-day card. Italic body text + reference, tappable to
+/// jump straight into the reader at that verse. Visual style is
+/// intentionally lighter than the other cards — meant to feel like
+/// a quote, not a CTA.
+class _DailyVerseCard extends StatelessWidget {
+  final Verse verse;
+  final String fontFamily;
+  final VoidCallback onTap;
+  const _DailyVerseCard({
+    required this.verse,
+    required this.fontFamily,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final preview = sanitizeForSearch(verse.text);
+    return Material(
+      color: scheme.surface,
+      borderRadius: BorderRadius.circular(12),
+      child: Ink(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          border: Border(
+            left: BorderSide(color: scheme.primary, width: 3),
+            top: BorderSide(
+                color: scheme.outlineVariant.withValues(alpha: 0.6)),
+            right: BorderSide(
+                color: scheme.outlineVariant.withValues(alpha: 0.6)),
+            bottom: BorderSide(
+                color: scheme.outlineVariant.withValues(alpha: 0.6)),
+          ),
+        ),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(12),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  preview,
+                  style: TextStyle(
+                    fontFamily: fontFamily,
+                    fontSize: 15,
+                    height: 1.45,
+                    fontStyle: FontStyle.italic,
+                    color: scheme.onSurface,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        '— ${verse.book} ${verse.chapter}:${verse.verseLabel}',
+                        style: TextStyle(
+                          fontFamily: fontFamily,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: scheme.primary,
+                        ),
+                      ),
+                    ),
+                    Icon(Icons.arrow_forward,
+                        size: 16, color: scheme.outline),
+                  ],
                 ),
               ],
             ),

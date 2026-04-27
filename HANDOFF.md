@@ -909,6 +909,150 @@ Paragraph mode was shipped but felt loose compared to WeDevote 微读圣经. Ret
 
 ## Recent Work (Round 18 — 2026-04-27, multiple deploys)
 
+### Round 34 (daily verse + UX polish wave — 2026-04-28)
+
+Multi-feature wave covering daily verse, highlight management,
+first-launch onboarding, settings reorganization, sharing, and
+recent-searches history. Three deploys with build+verify between
+each batch so any single regression couldn't nuke a successful
+build.
+
+**Batch A — daily verse + sharing**
+
+- `assets/daily_verses.json`: 90 well-known reference strings
+  (John 3:16, Psalms 23:1, etc.). Selection is `dayOfYear %
+  count`, deterministic and tz-independent so two devices on the
+  same calendar day show the same verse.
+- `lib/services/daily_verse_service.dart`: lazy-loaded list +
+  `todayRef()` accessor.
+- `lib/pages/dashboard_page.dart`: new "Verse of the Day" card
+  with italic body text and reference, tappable to jump to the
+  reader at that verse. Hidden until the verse text resolves
+  from `MainProvider.verses` (avoids a flash of empty card during
+  the first 2-3s of the cold-start verse load).
+- `lib/services/share_service.dart` + `share_service_web.dart` +
+  `share_service_stub.dart`: thin platform-conditional wrapper
+  around `navigator.share` (iOS Safari + Android Chrome + recent
+  desktop Chrome/Edge). Builds the share-data dict via raw JS
+  interop (no `package:web` dep) using `JSObject.setProperty`.
+  Falls through to clipboard-copy when unsupported / cancelled.
+- `lib/utils/clipboard_helper.dart`: new `shareOrCopy` helper
+  that uses share-first with copy-as-fallback. Wired into the
+  reading-pane's verse-selection copy action so mobile users get
+  the system share sheet automatically.
+
+Deploy: `69efe4f7f60b7046896a445b`.
+
+**Batch B — highlights page, onboarding, settings sections**
+
+- `lib/pages/highlights_page.dart`: dedicated Highlights browser
+  with text-search box, color-filter chips (All + one chip per
+  color the user has actually used), copy-all to clipboard /
+  share, per-row long-press → Share / Remove, tap → jump to
+  verse with brief flash highlight.
+- The dashboard's Highlights count tile now navigates here (was
+  a no-op `Get.back()` before). The floating-header overflow
+  menu's "My Highlights" entry also routes here instead of
+  opening the older modal sheet (the sheet is kept around with
+  `// ignore: unused_element` for future re-use).
+- `lib/widgets/onboarding_dialog.dart`: 4-slide first-launch
+  carousel (Welcome / Reading plans / Notes & bookmarks / Sync &
+  profiles). Shown via `showDialog` from `_DashboardPageState`'s
+  init when `onboarding.seen.v1` flag is unset; bumped to .v2
+  etc. when a future round wants returning users to see updates.
+  Dialog is small (max 420 dp wide) so it overlays the dashboard
+  without disturbing the navigator stack.
+- `lib/pages/settings_page.dart`: added uppercase
+  `_SectionHeader` widget rendered above each card group —
+  Display, Reading, App, Account, Reading plans. The settings
+  list grew long enough that visual section dividers
+  significantly help scanning. No structural change to the
+  cards themselves (lower regression risk than a full
+  ExpansionTile refactor).
+
+Deploy: `69efe6ae2b51094e703e1a88`.
+
+**Batch C — recent searches**
+
+- `lib/services/recent_searches_service.dart`: per-profile
+  history (LinkedHashSet-style ordering, dedup on
+  case-insensitive match, capped at 12 entries). All keys go
+  through `ProfileService.scopedKey` so each signed-in user gets
+  their own list.
+- `lib/pages/search_page.dart`: chips render in the empty state
+  (when `!searchPerformed`). Tap a chip → re-run the search.
+  "Clear" button wipes the list. Submit records the query
+  fire-and-forget (only after the Strong's-# / reference paths
+  fall through, since those navigate away).
+
+Deploy: `69efe764326f634fdd033ed1`.
+
+**Deferred from this round (intentional):**
+
+- **Smart offline service worker**: rejected. The current
+  kill-switch SW (Round 31.5) reliably gets users onto the
+  latest build; reintroducing a caching SW with a "proper update
+  strategy" risks reintroducing the stale-build problem we just
+  fixed. Defer until offline use is concretely requested.
+- **TSK cross-reference expansion**: the public-domain Treasury
+  of Scripture Knowledge dataset is widely available but not in
+  a structured format on hand; merging it into our existing
+  `assets/cross_references.json` schema is its own data-prep
+  effort. Better as a focused round than slipped into a polish
+  wave.
+- Native iOS/Android, audio Bible, CI/CD, Sentry, push
+  notifications, verse memorization, full PD commentaries — all
+  flagged as needing user / external setup or focused effort
+  beyond a single session. Documented in the user-facing "What's
+  next" reply for follow-up.
+
+### Round 33 (Dashboard as root — 2026-04-28)
+
+User reported the Dashboard had a back arrow and the app opened
+to the Bible reader instead of Home.
+
+Architecture flip:
+
+Before:
+  `_RootRouter → HomePage` (Bible reader) was the root.
+  Dashboard was pushed via:
+    - Welcome page's post-frame `Get.to` after sign-in
+    - Floating-header overflow menu's "Home" entry
+  → Dashboard always had back arrow, felt like a sub-page.
+
+After:
+  `_RootRouter → DashboardPage` is the root.
+  HomePage (Bible reader) is pushed via:
+    - Dashboard's "Continue reading" tile
+    - Recent-bookmark tap (mutates provider, then pushes reader)
+    - Today's-reading chip tap
+    - Highlights count tile (now actually goes to HighlightsPage
+      after Round 34)
+  Floating-header "Home" pops to root via `popUntil(isFirst)`,
+  so any nested stack collapses to the Dashboard with one tap.
+
+`AppBar.leading` is conditional on `Navigator.canPop` so the
+back arrow is shown when Dashboard is pushed (e.g. from a deep-
+link) and hidden when it's the actual root.
+
+Welcome page's post-frame Dashboard push is no longer needed —
+after `widget.onDone()` the `_RootRouter` rebuilds and renders
+DashboardPage automatically.
+
+Deploy: `69efdeae911489122759fe26`.
+
+Round 33.5 (same day): Dashboard redesign for iPad/desktop.
+User screenshot showed empty stretched cards on a 1024 dp
+window. Wrapped body in `Center + ConstrainedBox(maxWidth =
+settingsMaxWidth)`. Greeting card: avatar + name + Sign-in
+button now in a horizontal row instead of a tall stack. Pick-
+plan card: thin tinted border instead of muddy primary-container
+fill. Count tiles: icon+number inline, surface bg with
+outlineVariant border. Continue-reading promoted to a full-
+width primary FilledButton above a 3-up (iPad) / 2-up (phone)
+quick-link grid. "Highlight" → "Highlights" plural. Deploy:
+`69efe08ca568a93952b6a364`.
+
 ### Round 32 (full app audit + polish — 2026-04-28)
 
 End-of-night sweep over rounds 26-31 to clean up regressions and

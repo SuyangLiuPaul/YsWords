@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'package:yswords/constants/ui_strings.dart';
+import 'package:yswords/services/share_service.dart';
 
 abstract class ClipboardHelper {
   static Future<void> copyText(String text) async {
@@ -59,6 +60,28 @@ abstract class ClipboardHelper {
         ),
       ),
     );
+  }
+
+  /// Share-first with copy-as-fallback. On platforms with the Web
+  /// Share API (most mobile browsers + recent desktop Chrome/Edge),
+  /// opens the system share sheet so users can post to Messages /
+  /// Mail / Twitter / etc. Falls back to clipboard copy + the same
+  /// "Copied!" snackbar when sharing isn't available or the user
+  /// cancels the share dialog.
+  static Future<void> shareOrCopy(
+    BuildContext context,
+    String text, {
+    String? title,
+  }) async {
+    if (ShareService.isAvailable) {
+      final shared = await ShareService.shareText(
+        text: text,
+        title: title,
+      );
+      if (shared) return;
+    }
+    if (!context.mounted) return;
+    await copyWithFeedback(context, text);
   }
 
   static String _localeFor(BuildContext context) {

@@ -116,6 +116,9 @@ class SettingsPage extends StatelessWidget {
               child: ListView(
             padding: EdgeInsets.all(16 * s),
             children: [
+              _SectionHeader(
+                  uiStrings['settingsSectionDisplay']?[settings.locale] ??
+                      'Display'),
               Card(
                 child: Padding(
                   padding:
@@ -483,6 +486,9 @@ class SettingsPage extends StatelessWidget {
                 ),
                 SizedBox(height: 16 * s),
               SizedBox(height: 16 * s),
+              _SectionHeader(
+                  uiStrings['settingsSectionReading']?[settings.locale] ??
+                      'Reading'),
               Card(
                 child: Padding(
                   padding:
@@ -729,6 +735,9 @@ class SettingsPage extends StatelessWidget {
                 ),
               ),
               SizedBox(height: 16 * s),
+              _SectionHeader(
+                  uiStrings['settingsSectionApp']?[settings.locale] ??
+                      'App'),
               Card(
                 child: Padding(
                   padding: EdgeInsets.all(16 * s),
@@ -782,8 +791,14 @@ class SettingsPage extends StatelessWidget {
                 ),
               ),
               SizedBox(height: 16 * s),
+              _SectionHeader(
+                  uiStrings['settingsSectionAccount']?[settings.locale] ??
+                      'Account'),
               _AccountSection(settings: settings, s: s),
               SizedBox(height: 16 * s),
+              _SectionHeader(
+                  uiStrings['settingsSectionPlan']?[settings.locale] ??
+                      'Reading plans'),
               _ReadingPlanSection(settings: settings, s: s),
               SizedBox(height: 16 * s),
             ],
@@ -1442,6 +1457,33 @@ class _AccountSectionState extends State<_AccountSection> {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Compact uppercase section divider that sits above a group of
+/// related cards in the settings list. Round 34 added these to
+/// give the long settings list visual structure (Display / Reading
+/// / App / Account / Reading plans) without forcing a refactor of
+/// the existing card layout.
+class _SectionHeader extends StatelessWidget {
+  final String label;
+  const _SectionHeader(this.label);
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(4, 4, 4, 8),
+      child: Text(
+        label.toUpperCase(),
+        style: TextStyle(
+          fontSize: 11,
+          fontWeight: FontWeight.w700,
+          letterSpacing: 0.6,
+          color: scheme.primary,
         ),
       ),
     );

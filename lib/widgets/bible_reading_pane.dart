@@ -14,6 +14,7 @@ import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/models/bible_map.dart';
 import 'package:yswords/models/verse.dart';
 import 'package:yswords/pages/books_page.dart';
+import 'package:yswords/pages/highlights_page.dart';
 import 'package:yswords/pages/library_page.dart';
 import 'package:yswords/pages/map_viewer_page.dart';
 import 'package:yswords/pages/search_page.dart';
@@ -26,6 +27,7 @@ import 'package:yswords/services/cloud_auth_service.dart';
 import 'package:yswords/services/cross_reference_service.dart';
 import 'package:yswords/services/fetch_verses.dart';
 import 'package:yswords/services/map_service.dart';
+import 'package:yswords/services/share_service.dart';
 import 'package:yswords/services/synopsis_service.dart';
 import 'package:yswords/services/tts_service.dart';
 import 'package:yswords/utils/clipboard_helper.dart';
@@ -468,9 +470,21 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
   }) async {
     final text =
         _formattedSelectedVerses(verses: mainProvider.selectedVerses);
-    await ClipboardHelper.copyText(text);
-    mainProvider.clearSelectedVerses();
-    if (!mounted) return;
+    // Try the platform share sheet first (mobile + recent desktops);
+    // it falls through to clipboard copy automatically when the
+    // user cancels or the API isn't available. Either way the
+    // selection clears and the user gets feedback.
+    if (ShareService.isAvailable) {
+      final shared =
+          await ShareService.shareText(text: text, title: 'YsWords');
+      mainProvider.clearSelectedVerses();
+      if (!mounted) return;
+      if (shared) return;
+    } else {
+      await ClipboardHelper.copyText(text);
+      mainProvider.clearSelectedVerses();
+      if (!mounted) return;
+    }
     final scheme = Theme.of(context).colorScheme;
     final copiedLabel =
         uiStrings['copied']?[settings.locale] ?? 'Copied!';
@@ -808,10 +822,15 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                       },
                       highlightCount:
                           mainProvider.highlights.length,
-                      onHighlights: () => _showHighlightsSheet(
-                        context: context,
-                        highlights: mainProvider.highlights,
-                        locale: settings.locale,
+                      // The dedicated Highlights page (Round 34)
+                      // gives a richer experience than the modal
+                      // sheet — search, color filters, copy-all —
+                      // so the floating-header entry now opens it.
+                      // The modal HighlightsSheet remains for the
+                      // long-press color-picker context only.
+                      onHighlights: () => Get.to(
+                        () => const HighlightsPage(),
+                        transition: Transition.rightToLeft,
                       ),
                       // TTS read-aloud — only on web (or any platform
                       // where the SpeechSynthesis API is available).
@@ -1663,6 +1682,13 @@ void _showNoteEditor({
   );
 }
 
+// Round 34 replaced this modal sheet with a dedicated
+// `HighlightsPage` (see lib/pages/highlights_page.dart) reachable
+// from both the floating-header overflow menu and the dashboard's
+// Highlights count tile. Kept here for now in case a future flow
+// (e.g. an in-reader long-press shortcut) wants the modal again;
+// safe to delete entirely once that is decided.
+// ignore: unused_element
 void _showHighlightsSheet({
   required BuildContext context,
   required Map<String, int> highlights,

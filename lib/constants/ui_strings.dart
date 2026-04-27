@@ -160,6 +160,31 @@ const uiStrings = {
     'zh-Hant': '高亮',
     'en': 'Highlights',
   },
+  'highlightsEmpty': {
+    'zh-Hans': '尚无高亮。长按经文，选择颜色即可添加。',
+    'zh-Hant': '尚無高亮。長按經文，選擇顏色即可添加。',
+    'en': 'No highlights yet. Long-press a verse and pick a color.',
+  },
+  'highlightsNoMatch': {
+    'zh-Hans': '没有符合此筛选的高亮。',
+    'zh-Hant': '沒有符合此篩選的高亮。',
+    'en': 'No highlights match this filter.',
+  },
+  'allColors': {
+    'zh-Hans': '所有颜色',
+    'zh-Hant': '所有顏色',
+    'en': 'All',
+  },
+  'copyAll': {
+    'zh-Hans': '复制全部',
+    'zh-Hant': '複製全部',
+    'en': 'Copy all',
+  },
+  'share': {
+    'zh-Hans': '分享',
+    'zh-Hant': '分享',
+    'en': 'Share',
+  },
   'originalText': {
     'zh-Hans': '释经',
     'zh-Hant': '釋經',
@@ -417,6 +442,95 @@ const uiStrings = {
     'zh-Hant': '繼續閱讀',
     'en': 'Continue reading',
   },
+  'dailyVerse': {
+    'zh-Hans': '每日金句',
+    'zh-Hant': '每日金句',
+    'en': 'Verse of the Day',
+  },
+  // ── Onboarding tour (Round 34) ──────────────────────────────────
+  'skip': {'zh-Hans': '跳过', 'zh-Hant': '跳過', 'en': 'Skip'},
+  'next': {'zh-Hans': '下一步', 'zh-Hant': '下一步', 'en': 'Next'},
+  'getStarted': {
+    'zh-Hans': '开始使用',
+    'zh-Hant': '開始使用',
+    'en': 'Get started',
+  },
+  'onboardWelcomeTitle': {
+    'zh-Hans': '欢迎使用 YsWords',
+    'zh-Hant': '歡迎使用 YsWords',
+    'en': 'Welcome to YsWords',
+  },
+  'onboardWelcomeBody': {
+    'zh-Hans': '双语圣经阅读应用。随时点击「继续阅读」可打开经文列表、侧栏、搜索、原文和相互参照。',
+    'zh-Hant': '雙語聖經閱讀應用。隨時點擊「繼續閱讀」可打開經文列表、側欄、搜索、原文和相互參照。',
+    'en':
+        'A bilingual Bible reader. Tap "Continue reading" any time to open the verse list with sidebar, search, originals, and cross-references.',
+  },
+  'onboardPlansTitle': {
+    'zh-Hans': '读经计划',
+    'zh-Hant': '讀經計劃',
+    'en': 'Reading plans',
+  },
+  'onboardPlansBody': {
+    'zh-Hans': '在「设置」中选择一年、按历史顺序或麦琴计划——今日内容会自动显示在主页。',
+    'zh-Hant': '在「設定」中選擇一年、按歷史順序或麥琴計劃——今日內容會自動顯示在主頁。',
+    'en':
+        'Pick a one-year, chronological, or McCheyne plan in Settings — today\'s readings show on this Home page automatically.',
+  },
+  'onboardLibraryTitle': {
+    'zh-Hans': '笔记与书签',
+    'zh-Hant': '筆記與書籤',
+    'en': 'Notes & bookmarks',
+  },
+  'onboardLibraryBody': {
+    'zh-Hans': '长按经文可添加笔记、书签或彩色高亮，可在「我的标记」和「高亮」中查找。',
+    'zh-Hant': '長按經文可添加筆記、書籤或彩色高亮，可在「我的標記」和「高亮」中查找。',
+    'en':
+        'Long-press a verse to add a note, bookmark, or color highlight. Find them all in Library and Highlights.',
+  },
+  'onboardCloudTitle': {
+    'zh-Hans': '同步与账号',
+    'zh-Hant': '同步與帳號',
+    'en': 'Sync & profiles',
+  },
+  'onboardCloudBody': {
+    'zh-Hans': '使用 Google 登录可在所有设备同步；也可使用本地账号仅保存于此设备。',
+    'zh-Hant': '使用 Google 登入可在所有裝置同步；也可使用本地帳號僅保存於此裝置。',
+    'en':
+        'Sign in with Google to sync everything across devices, or use a local profile to keep things on this device only.',
+  },
+  // ── Settings section headers (Round 34) ─────────────────────────
+  'settingsSectionDisplay': {
+    'zh-Hans': '显示',
+    'zh-Hant': '顯示',
+    'en': 'Display',
+  },
+  'settingsSectionReading': {
+    'zh-Hans': '阅读',
+    'zh-Hant': '閱讀',
+    'en': 'Reading',
+  },
+  'settingsSectionApp': {
+    'zh-Hans': '应用',
+    'zh-Hant': '應用',
+    'en': 'App',
+  },
+  'settingsSectionAccount': {
+    'zh-Hans': '账号',
+    'zh-Hant': '帳號',
+    'en': 'Account',
+  },
+  'settingsSectionPlan': {
+    'zh-Hans': '读经计划',
+    'zh-Hant': '讀經計劃',
+    'en': 'Reading plans',
+  },
+  'recentSearches': {
+    'zh-Hans': '最近搜索',
+    'zh-Hant': '最近搜索',
+    'en': 'Recent',
+  },
+  'clear': {'zh-Hans': '清除', 'zh-Hant': '清除', 'en': 'Clear'},
   // ── Gospel synopsis (Round 27B) ─────────────────────────────────
   'synopsis': {
     'zh-Hans': '福音书对观',
