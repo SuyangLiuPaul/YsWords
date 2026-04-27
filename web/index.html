@@ -112,47 +112,76 @@
   <meta name="msapplication-TileColor" content="#2196F3">
 </head>
 <body>
-  <!-- Self-heal + auto-reload. Earlier builds shipped a Flutter
-       service worker that aggressively cached main.dart.js, leaving
-       users stuck on stale builds for days. We now build with
-       --pwa-strategy=none so new deploys carry no SW at all, but
-       any browser that visited a previous build still has the old
-       SW installed. This script:
-         1. Unregisters every leftover SW
-         2. Wipes their cache buckets
-         3. If anything was actually torn down, reloads the page
-            ONCE (guarded by sessionStorage so we never loop) so the
-            user lands on a fully SW-less session immediately.
-       After that one reload, future deploys are picked up the moment
-       Netlify serves new HTML — no caching layer in the way. -->
+  <!-- Cache-busting self-heal. Two failure modes have hit users:
+         A) Old Flutter service worker keeps serving cached HTML.
+         B) Even after the SW is gone, the browser's HTTP disk cache
+            on some clients (mobile Safari especially) holds onto an
+            old main.dart.js until clear-site-data is called.
+       This script handles both:
+         1. Embed a server-side build timestamp (replaced by Netlify
+            at deploy time via the post-processing comment below).
+            Compare to localStorage's last-seen value; if different,
+            force a fresh reload + best-effort cache wipe.
+         2. Unregister every leftover SW + delete every cache bucket
+            (handles A above).
+         3. Auto-reload ONCE if anything was torn down or the build
+            stamp changed, guarded by sessionStorage to prevent
+            loops on uncooperative browsers.
+       Result: every Netlify deploy gets the user onto the new build
+       within the next page load, regardless of which caching layer
+       was being uncooperative. -->
   <script>
     (function() {
-      if (!('serviceWorker' in navigator)) return;
-      var RELOAD_KEY = 'yswords_sw_self_heal';
-      var alreadyReloaded = sessionStorage.getItem(RELOAD_KEY) === '1';
+      // BUILD_STAMP is rewritten on each deploy by the build script.
+      // Falls back to a fixed string if the build wasn't post-
+      // processed; cache-busting still works via the SW-unregister
+      // path below in that case.
+      var BUILD_STAMP = '__BUILD_STAMP__';
+      var STAMP_KEY = 'yswords_build_stamp';
+      var RELOAD_KEY = 'yswords_self_heal_reloaded';
+      var lastStamp;
+      try { lastStamp = localStorage.getItem(STAMP_KEY); } catch (_) {}
+      var alreadyReloaded = false;
+      try {
+        alreadyReloaded = sessionStorage.getItem(RELOAD_KEY) === '1';
+      } catch (_) {}
+      var stampChanged = lastStamp !== null && lastStamp !== BUILD_STAMP
+                          && BUILD_STAMP !== '__BUILD_STAMP__';
+      try { localStorage.setItem(STAMP_KEY, BUILD_STAMP); } catch (_) {}
+
+      function maybeReload(reason) {
+        if (alreadyReloaded) return;
+        try { sessionStorage.setItem(RELOAD_KEY, '1'); } catch (_) {}
+        // location.reload() is enough — Netlify's no-cache headers
+        // on / index.html / bootstrap / main.dart.js force network
+        // re-fetch on the reload.
+        location.reload();
+      }
+
+      // Service-worker self-heal (handles failure mode A).
       var unregisterCount = 0;
-      navigator.serviceWorker.getRegistrations().then(function(regs) {
-        unregisterCount = regs.length;
-        return Promise.all(regs.map(function(r) {
-          return r.unregister().catch(function() {});
-        }));
-      }).then(function() {
-        if (window.caches && caches.keys) {
-          return caches.keys().then(function(keys) {
+      var swPromise = ('serviceWorker' in navigator)
+        ? navigator.serviceWorker.getRegistrations().then(function(regs) {
+            unregisterCount = regs.length;
+            return Promise.all(regs.map(function(r) {
+              return r.unregister().catch(function() {});
+            }));
+          }).catch(function() { return; })
+        : Promise.resolve();
+
+      var cachePromise = (window.caches && caches.keys)
+        ? caches.keys().then(function(keys) {
             return Promise.all(keys.map(function(k) {
               return caches.delete(k).catch(function() {});
             }));
-          });
+          }).catch(function() { return; })
+        : Promise.resolve();
+
+      Promise.all([swPromise, cachePromise]).then(function() {
+        if (stampChanged || unregisterCount > 0) {
+          maybeReload(stampChanged ? 'build' : 'sw');
         }
-      }).then(function() {
-        // Only reload if we actually killed an SW and haven't
-        // already reloaded this tab. Without the guard, a SW that
-        // can't be unregistered would loop forever.
-        if (unregisterCount > 0 && !alreadyReloaded) {
-          sessionStorage.setItem(RELOAD_KEY, '1');
-          location.reload();
-        }
-      }).catch(function() {});
+      });
     })();
   </script>
   <script src="flutter_bootstrap.js" async></script>
