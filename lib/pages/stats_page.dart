@@ -307,7 +307,15 @@ class _BooksTabState extends State<_BooksTab> {
     final sortedBooks = _sortedBooks;
     final maxWords = widget.stats.books.fold<int>(
         0, (m, b) => b.words > m ? b.words : m);
-    return Scrollbar(
+    final w = MediaQuery.of(context).size.width;
+    // Cap a bit wider than the other tabs (~960 dp vs 720) since
+    // the DataTable has 6 columns and benefits from extra room
+    // before the user has to horizontally scroll.
+    final maxW = w >= 720 ? 960.0 : double.infinity;
+    return Center(
+      child: ConstrainedBox(
+        constraints: BoxConstraints(maxWidth: maxW),
+        child: Scrollbar(
       thumbVisibility: true,
       child: SingleChildScrollView(
         child: SingleChildScrollView(
@@ -385,6 +393,8 @@ class _BooksTabState extends State<_BooksTab> {
                 ]),
             ],
           ),
+        ),
+      ),
         ),
       ),
     );
