@@ -901,6 +901,84 @@ Paragraph mode was shipped but felt loose compared to WeDevote 微读圣经. Ret
 
 ---
 
+## Recent Work (Round 18 — 2026-04-27)
+
+This round added several exegesis features and fixed the iPad sidebar layout. All changes shipped to production at `yswords.netlify.app`.
+
+### Exegesis panel additions
+- **Word family / 同源词** (`originals_sheet.dart` + `strongs_service.dart`): siblings sharing the same immediate root + direct children. Reverse derivation index is built lazily once per language. Root groups with >25 members are skipped to avoid flooding.
+- **Synonyms / 同义词**: entries cross-referenced as "compare G/H####" in the lexicographer notes. Tap any chip to navigate into that Strong's entry.
+- **Copy interlinear table** (sheet header copy icon): TSV with all verse words, Strong's, lemma, translit, gloss.
+- **Comprehensive copy word study** (entry card copy icon): single flat TSV containing the current word + word family + synonyms + each one's concordance refs. Section column tags rows as Main/Family/Synonym for filtering in Sheets/Excel.
+- **Distribution table** (entry card table icon, `word_distribution_table.dart`): horizontally + vertically scrollable grid showing per-book and per-corpus counts for the word + family + synonyms. Greek words show NT books with G&A/Paul/John/Other sub-corpus totals; Hebrew shows OT books with Torah/History/Wisdom/Major/Minor sub-corpus totals.
+
+### Maps → Illustrations rename
+UI labels changed from "Maps / 地图" to "Illustrations / 插图 / 插畫" so the section can hold parable scenes, narrative paintings, and prophecy imagery alongside geographic maps. `Icons.map*` → `Icons.collections*`. The underlying `BibleMap` model and `maps_index.json` are unchanged for compatibility — adding non-map content is purely a content-curation task using the existing pipeline.
+
+### iPad sidebar layout fixes
+- Replaced `Row + AnimatedContainer(width:)` with `Stack + AnimatedPositioned(top:0, bottom:0, width:)` in `home_page.dart`. The Container width parameter was creating `BoxConstraints.tightFor(width:)` which silently stripped the parent's vertical constraint, collapsing the sidebar's `Expanded` book list to zero height on Flutter web HTML renderer.
+- `Stack(fit: StackFit.expand)` so the Stack fills the parent's screen-size constraints.
+- `Material` ancestor wrapper added to `SidebarPanel` so `ExpansionTile` / `InkWell` / `Ink` inside `BookChapterPicker` render correctly (the iPhone path got this from `Scaffold` automatically).
+- `decoration: TextDecoration.none` added to book title and chapter header `Text` styles + sidebar-wide `DefaultTextStyle.merge` to immunize all descendants from browser CSS bleed (Chrome on iPad was inheriting red color and yellow underline from accessibility-tree `<a>` wrappers).
+- `crossAxisAlignment: CrossAxisAlignment.stretch` on the inner Row.
+- Floating header sidebar toggle hidden when sidebar is already open (`showSidebarToggle: showSidebar && !_sidebarOpen`) to avoid the duplicate close-arrow.
+
+### Hardening
+- `_autoScrollController.scrollToIndex` calls now check `hasClients` before firing — previously caused a runtime "Null check operator used on a null value" inside the `scroll_to_index` package when the controller was unattached (grid mode, or initial mount before list mounted).
+- `BookChapterPicker` view-mode toggle re-expands the current book on switch to list, so the panel doesn't appear blank.
+- `web/index.html` adds `spellcheck="false"`, `format-detection` meta, and CSS for `a[x-apple-data-detectors]` to suppress iOS Safari spell-check / data-detector decorations on the HTML renderer.
+
+---
+
+## Deferred Feature Plans
+
+These were requested in this session but deferred because they need data acquisition or content curation, not just code:
+
+### Septuagint (LXX / 七十士译本) integration
+**Goal**: For Hebrew (OT) Strong's entries, surface the Greek LXX equivalents so the user can pivot into Greek synonym/family analysis.
+
+**What's needed**:
+1. **LXX-Hebrew alignment dataset** — most authoritative is the CATSS LXX/MT parallel module (Tov & Polak). It maps each Hebrew morpheme to its LXX Greek translation. Public-domain options:
+   - CCAT/CATSS released alignments (CC0/PD)
+   - SBLGNT-style alignment from Logos/Faithlife (license check needed)
+2. **Flatten to Strong's**: collapse the morpheme alignment into a `Map<String, List<String>>` — Hebrew Strong's # → list of Greek Strong's #s observed in LXX, ranked by frequency.
+3. **Storage**: ~50KB JSON at `assets/strongs/lxx_hebrew_to_greek.json`.
+
+**Code touch points**:
+- New `LxxService` similar to `ConcordanceService` for the lookup.
+- In `originals_sheet.dart` `_buildEntryCard`, when the entry is Hebrew, add a "LXX equivalents / 七十士译本对应" section after the existing synonyms section. Same chip layout as `_relatedChip`. Tap a chip → `_loadRootEntry(greekStrongsNumber)`. From there the existing Greek family/synonyms machinery just works.
+
+This is a self-contained ~4-hour task once the dataset is in hand. Dataset acquisition is the gating step.
+
+### Per-chapter illustrations (parables, narrative scenes, prophecy imagery)
+**Goal**: Beyond geographic maps, attach scene illustrations to specific chapters (Daniel 5 fingers on the wall, Revelation imagery, parable paintings, etc.).
+
+**What's needed**:
+1. **Source curation**: public-domain art from Wikimedia Commons, Pitts Theology Library Digital Image Archive, Yale Divinity image archive, Doré Bible Illustrations (PD). Each illustration needs:
+   - Image file (≤300KB after compression)
+   - Caption (EN + ZH-Hans + ZH-Hant)
+   - `book` (English) + `chapter` + optional `verse` range
+   - `kind` field — `'map' | 'scene' | 'parable' | 'prophecy' | 'genealogy'` so filters can split them later if needed
+   - Source attribution + license
+
+**Code touch points** (already mostly in place after the Maps→Illustrations rename):
+- `BibleMap.fromJson` accepts a `kind` field (default `'map'`).
+- `assets/maps_index.json` keeps growing with new entries; rename to `illustrations_index.json` once the kind tagging is fully adopted.
+- `_MapPickerSheet` already filters by chapter/book; we'd add a small kind-filter chip row at the top once we have meaningful diversity.
+
+The pipeline exists; this is now a pure content task.
+
+### Synonyms section: clearer click-to-verse affordance
+**User report**: "for 同义词 in exegesis can you please have click and refer to the related bible verse like existing one can be clicked?"
+
+The chips are already tappable and navigate to the synonym's full Strong's entry, which includes its own concordance ref list — but the two-step path (tap chip → see new entry → scroll to refs → tap ref → navigate) isn't obvious. Two options:
+1. **Tooltip / visual cue**: add a small cursor-pointer indicator and a tooltip "Tap to open word study & verses".
+2. **Inline expansion**: tap chip → expand inline below the synonyms row to show the first 3-5 concordance refs without leaving the current entry. This is the closer match to the user's mental model.
+
+Recommend option 2 — needs adding an `_expandedSynonym` state field similar to `_expandedConcordanceBook`, and a small inline ref list under each tapped chip.
+
+---
+
 ## Known Issues & Remaining Work
 
 ### No Tests
