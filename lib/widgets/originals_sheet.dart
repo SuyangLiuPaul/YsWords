@@ -701,6 +701,13 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
               _buildRelatedSection(
                 uiStrings['lxxEquivalents']?[locale] ?? 'LXX Equivalents',
                 _lxxEquivalents, scheme, locale,
+                // Override: when expanding an LXX Greek chip, show the
+                // OT verses where the source Hebrew word appears (the
+                // verses the LXX renders using this Greek lemma). The
+                // verse text is auto-displayed in the user's current
+                // Bible version (English / Chinese) via _verseIndex.
+                overrideConcordance: concordance,
+                overrideHeaderLemma: entry.lemma,
               ),
             ],
             if (_hebrewSources.isNotEmpty) ...[
@@ -788,7 +795,8 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
   // ── Word family + synonyms ──────────────────────────────────────────────────
 
   Widget _buildRelatedSection(
-      String label, List<StrongsEntry> entries, ColorScheme scheme, String locale) {
+      String label, List<StrongsEntry> entries, ColorScheme scheme, String locale,
+      {ConcordanceResult? overrideConcordance, String? overrideHeaderLemma}) {
     // Find which entry (if any) in this section is expanded — only
     // expand inline within the section that owns the chip, so a tap
     // on a Word-Family chip doesn't dangle verses inside the Synonyms
@@ -822,15 +830,23 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
         ),
         if (expanded != null) ...[
           const SizedBox(height: 8),
-          _buildExpandedRelatedVerses(expanded, scheme, locale),
+          _buildExpandedRelatedVerses(expanded, scheme, locale,
+              overrideConcordance: overrideConcordance,
+              overrideHeaderLemma: overrideHeaderLemma),
         ],
       ],
     );
   }
 
   Widget _buildExpandedRelatedVerses(
-      StrongsEntry e, ColorScheme scheme, String locale) {
-    final cr = _relatedConcordances[e.number];
+      StrongsEntry e, ColorScheme scheme, String locale,
+      {ConcordanceResult? overrideConcordance, String? overrideHeaderLemma}) {
+    // For the LXX section we override the concordance so the user sees
+    // the Old Testament verses where the source Hebrew word appears
+    // (translated as this Greek word in the LXX) — that's the OT
+    // context behind the Greek lemma. Verse text is displayed in the
+    // current Bible version's locale via _lookupVerseText.
+    final cr = overrideConcordance ?? _relatedConcordances[e.number];
     if (cr == null) {
       // Concordance still loading or genuinely unavailable.
       return Padding(
@@ -903,7 +919,9 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
               const SizedBox(width: 6),
               Expanded(
                 child: Text(
-                  '${e.lemma} · $usedLabel',
+                  overrideHeaderLemma != null
+                      ? '${e.lemma} ← $overrideHeaderLemma · $usedLabel'
+                      : '${e.lemma} · $usedLabel',
                   style: TextStyle(
                     fontSize: 11,
                     color: scheme.onSurfaceVariant,
