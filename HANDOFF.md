@@ -903,6 +903,117 @@ Paragraph mode was shipped but felt loose compared to WeDevote 微读圣经. Ret
 
 ## Recent Work (Round 18 — 2026-04-27, multiple deploys)
 
+### Round 27E (web keyboard shortcuts)
+- `lib/widgets/bible_reading_pane.dart`: wrapped Scaffold in
+  `CallbackShortcuts` + `Focus(autofocus:true)`. Web users get:
+  - `/` open Search
+  - `[` / `]` previous / next chapter
+  - `Shift+T` toggle TTS read-aloud
+  - `?` (Shift+/) shortcut help dialog
+- New `_showShortcutsHelp` method renders a small localized dialog
+  with monospace key chips. Only one new ui string `shortcutsHelp`
+  added; rest reuses existing keys.
+- `CallbackShortcuts` respects focus traversal so shortcuts don't
+  fire while a TextField has focus.
+
+### Round 27D (verse audio — Web Speech API TTS)
+- `lib/services/tts_service.dart` + `tts_service_web.dart` +
+  `tts_service_stub.dart`: thin platform-conditional wrapper around
+  the browser's `window.speechSynthesis`. Uses `dart:js_interop`
+  (modern, replaces deprecated `dart:html`). isAvailable / speak /
+  stop / speaking surface; conditional import keeps non-web targets
+  type-clean.
+- `lib/widgets/bible_reading_pane.dart`: new "Listen to chapter"
+  entry in the floating-header overflow menu. State has
+  `_isListening` bool + 500 ms `_ttsPoller` so the menu icon flips
+  between volume_up_outlined / stop_circle_outlined when the browser
+  finishes the utterance. Locale heuristic maps cuv/cnv/biblexg
+  versions to zh-CN/zh-TW (with -tr → zh-TW), everything else en-US,
+  so the SpeechSynthesizer picks an appropriate voice.
+- TTS is stopped on `dispose()` so swiping back doesn't leave the
+  browser narrating an empty page.
+- 2 new ui strings (ttsListen / ttsStop).
+
+### Round 27C (Strong's # direct search)
+- `lib/pages/strongs_entry_page.dart`: standalone page showing the
+  lemma + transliteration + pronunciation + part of speech, the
+  localized gloss + definition, derivation note, word family + compare
+  chips (each tappable to pivot to other entries), and the full
+  concordance (capped at 200 verse rows for render perf).
+- `parseStrongsNumber()`: case/spacing-tolerant regex with Greek
+  1..5700 / Hebrew 1..8700 sanity range; strips leading zeros. Note:
+  cannot use a raw string because the regex contains `'` for
+  "strong's"; uses regular string with escaped backslashes.
+- `lib/pages/search_page.dart`: detect Strong's-shape in
+  `onSubmitted` BEFORE reference parsing or text search; navigates
+  via `Get.to` with rightToLeft transition.
+- 5 new ui strings (strongsDerivation / strongsFamily /
+  strongsCompare / strongsOccurrences; reuses existing
+  strongsNotFound).
+
+### Round 27B (Gospel Synopsis — parallel passages)
+- `assets/gospel_synopsis.json`: 73 curated harmony entries from
+  A.T. Robertson "A Harmony of the Gospels" (1922, public domain) +
+  standard harmony tables. Each entry has localized titles
+  (en/zh-Hans/zh-Hant) and refs as parseable strings (one per
+  Gospel that records the event).
+- `lib/services/synopsis_service.dart`: lazy load + index by
+  Gospel + chapter + verse range. `byChapter()` / `byVerse()` /
+  `isGospel()` accessors. The index parses each ref string once at
+  load; subsequent queries are O(events) within a Gospel.
+- `lib/widgets/bible_reading_pane.dart`: new "Gospel Synopsis"
+  entry in the floating-header overflow menu, only shown when
+  `SynopsisService.isGospel(toEnglish(book))` is true. Opens
+  `_SynopsisSheetBody` in a DraggableScrollableSheet — listing
+  events with tappable ref chips per Gospel; current Gospel chip
+  highlighted, "Only in this Gospel" tag for unique events.
+- 4 new ui strings (synopsis / synopsisChapterTitle /
+  synopsisNone / synopsisOnlyHere).
+
+### Round 27A (Bible Statistics page) [completed earlier this session]
+- `lib/services/bible_stats_service.dart` + `lib/pages/stats_page.dart`.
+  Three tabs: Overview / Books / Vocabulary. Tokenization regex
+  splits Latin words (`don't`, `loved`) and single CJK ideographs.
+  Stop-word set filters EN function words + single-char Chinese
+  function words. Memoized per version key.
+
+### Round 26 (reading plans)
+- `assets/reading_plans.json` (~85 KB): three public-domain plans,
+  each 365 days, generated programmatically from the canonical
+  book-chapter table:
+  - **One-Year Bible (Canonical)**: ~3 chapters/day, canonical order.
+  - **Chronological**: ~3 chapters/day in approximate historical
+    order (Job with Genesis, prophets interleaved with kings).
+  - **M'Cheyne**: 4 readings/day; NT/Psalms read twice via offset
+    stream D (D = NT rotated by half its length, so Day 1 reads
+    Matthew 1 + Romans 14 instead of Matthew 1 twice).
+- `lib/services/reading_plan_service.dart`: lazy-load + memoize
+  plans; SharedPreferences keys: `plan.activeId`, `plan.startMs`,
+  `plan.useDate`, `plan.completed.<id>`. `todayOfPlan()` honors
+  calendar-date vs day-of-year mode + multi-year wraparound.
+- `lib/widgets/today_reading_card.dart`: glass-style card under the
+  floating header with day-N pill, completion checkbox, and
+  localized chips per reading. Long-press toggles completion.
+  Hidden when verses are selected (no double-bar competition) and
+  on the secondary split-view pane (avoid duplicates).
+- `lib/pages/library_page.dart`: new third "Plan" tab showing the
+  full per-day list with progress bar, today highlight, jump-to-today
+  button, and per-chip done/strike-through styling.
+- `lib/pages/settings_page.dart`: new Reading Plans card — pick
+  active plan, toggle calendar/day-of-year mode, set start date,
+  reset progress.
+- `lib/widgets/bible_reading_pane.dart`: `_FloatingHeader` now
+  accepts a `belowHeader` widget so the today card slots into the
+  same Positioned region as the glass header. Wrapping the existing
+  header content + new card in a Column inside the SafeArea kept
+  the layout deterministic (no need to compute header height for
+  Positioned `top:` of a separate widget).
+- 14 new ui strings (tabPlan / readingPlans / todayReading /
+  planDayLabel / planChooseActive / planNoActive / planActive /
+  planStartDate / planUseCalendarDate(+Sub) / planResetProgress(+Confirm) /
+  planMarkDone / planMarkUndone / planJumpToToday / planProgress /
+  planNone / planLibraryEmpty).
+
 ### Round 23 (distribution table polish)
 - **Number truncation fix**: numeric (centered) cells now use
   `FittedBox(scaleDown)` so digits like "27" / "127" / "1234" always
