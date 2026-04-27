@@ -487,13 +487,20 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                           // Trailing spacer height matches whichever
                           // bottom bar is showing (selection action bar
                           // when verses are selected, otherwise the
-                          // reader status bar). The selection bar is
-                          // taller, so we pad more in that case to keep
-                          // the last verse from being hidden under it.
+                          // reader status bar). On narrow screens the
+                          // selection bar is now two rows tall (count+
+                          // copy on top, action icons below), so we
+                          // pad more aggressively when selected to
+                          // keep the last verse from being hidden
+                          // under it.
                           final bottomInset =
                               MediaQuery.of(context).padding.bottom;
+                          final isPhoneWidth =
+                              MediaQuery.of(context).size.width < 560;
                           final extra = isSelected
-                              ? 132 * settings.menuScale
+                              ? (isPhoneWidth
+                                  ? 200 * settings.menuScale
+                                  : 132 * settings.menuScale)
                               : 96 * settings.menuScale;
                           return SizedBox(height: bottomInset + extra);
                         },
@@ -1049,6 +1056,77 @@ class _SelectionActionBar extends StatelessWidget {
             .toDouble();
     final inset = ResponsiveBreakpoints.headerInset(deviceClass);
 
+    // Pre-build the secondary action icons. Each is a small
+    // IconButton with the same compact density. Order: Original →
+    // Cross-refs → Note → Bookmark → Highlight.
+    final actionButtons = <Widget>[
+      IconButton(
+        tooltip:
+            uiStrings['originalText']?[settings.locale] ?? 'Original',
+        onPressed: onOriginal,
+        icon: const Icon(Icons.auto_stories),
+        visualDensity: VisualDensity.compact,
+      ),
+      IconButton(
+        tooltip: uiStrings['crossRefs']?[settings.locale] ??
+            'Cross-references',
+        onPressed: onCrossRefs,
+        icon: const Icon(Icons.hub_outlined),
+        visualDensity: VisualDensity.compact,
+      ),
+      IconButton(
+        tooltip: uiStrings['noteAdd']?[settings.locale] ?? 'Note',
+        onPressed: onNote,
+        icon: Icon(anyNoted
+            ? Icons.sticky_note_2
+            : Icons.sticky_note_2_outlined),
+        color: anyNoted ? scheme.primary : null,
+        visualDensity: VisualDensity.compact,
+      ),
+      IconButton(
+        tooltip: uiStrings['bookmark']?[settings.locale] ?? 'Bookmark',
+        onPressed: onBookmark,
+        icon: Icon(anyBookmarked
+            ? Icons.bookmark_rounded
+            : Icons.bookmark_outline_rounded),
+        color: anyBookmarked ? scheme.primary : null,
+        visualDensity: VisualDensity.compact,
+      ),
+      IconButton(
+        tooltip:
+            uiStrings['highlight']?[settings.locale] ?? 'Highlight',
+        onPressed: () => _showColorPicker(context),
+        icon: const Icon(Icons.format_color_fill),
+        visualDensity: VisualDensity.compact,
+      ),
+    ];
+
+    final clearBtn = IconButton(
+      tooltip: uiStrings['clearSelection']?[settings.locale] ?? 'Clear',
+      onPressed: onClear,
+      icon: const Icon(Icons.close_rounded),
+    );
+    final countLabel = Text(
+      label,
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
+      style: TextStyle(
+        fontFamily: settings.fontFamily,
+        fontSize: fontSize,
+        fontWeight: FontWeight.w700,
+        color: scheme.onSurface,
+      ),
+    );
+    final copyBtn = FilledButton.icon(
+      onPressed: onCopy,
+      icon: const Icon(Icons.copy_rounded),
+      label: Text(
+        uiStrings['copySelection']?[settings.locale] ?? 'Copy',
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+      ),
+    );
+
     return SafeArea(
       top: false,
       child: Padding(
@@ -1057,81 +1135,45 @@ class _SelectionActionBar extends StatelessWidget {
           radius: 22,
           child: Padding(
             padding: EdgeInsets.fromLTRB(12 * settings.menuScale,
-                8 * settings.menuScale, 12 * settings.menuScale, 8 * settings.menuScale),
-            child: Row(
-              children: [
-                IconButton(
-                  tooltip: uiStrings['clearSelection']?[settings.locale] ??
-                      'Clear',
-                  onPressed: onClear,
-                  icon: const Icon(Icons.close_rounded),
-                ),
-                Expanded(
-                  child: Text(
-                    label,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontFamily: settings.fontFamily,
-                      fontSize: fontSize,
-                      fontWeight: FontWeight.w700,
-                      color: scheme.onSurface,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 4),
-                IconButton(
-                  tooltip:
-                      uiStrings['originalText']?[settings.locale] ?? 'Original',
-                  onPressed: onOriginal,
-                  icon: const Icon(Icons.auto_stories),
-                ),
-                const SizedBox(width: 4),
-                IconButton(
-                  tooltip: uiStrings['crossRefs']?[settings.locale] ??
-                      'Cross-references',
-                  onPressed: onCrossRefs,
-                  icon: const Icon(Icons.hub_outlined),
-                ),
-                const SizedBox(width: 4),
-                IconButton(
-                  tooltip: uiStrings['noteAdd']?[settings.locale] ?? 'Note',
-                  onPressed: onNote,
-                  icon: Icon(anyNoted
-                      ? Icons.sticky_note_2
-                      : Icons.sticky_note_2_outlined),
-                  color: anyNoted ? scheme.primary : null,
-                ),
-                const SizedBox(width: 4),
-                IconButton(
-                  tooltip:
-                      uiStrings['bookmark']?[settings.locale] ?? 'Bookmark',
-                  onPressed: onBookmark,
-                  icon: Icon(anyBookmarked
-                      ? Icons.bookmark_rounded
-                      : Icons.bookmark_outline_rounded),
-                  color: anyBookmarked ? scheme.primary : null,
-                ),
-                const SizedBox(width: 4),
-                IconButton(
-                  tooltip:
-                      uiStrings['highlight']?[settings.locale] ?? 'Highlight',
-                  onPressed: () => _showColorPicker(context),
-                  icon: const Icon(Icons.format_color_fill),
-                ),
-                const SizedBox(width: 4),
-                Flexible(
-                  child: FilledButton.icon(
-                    onPressed: onCopy,
-                    icon: const Icon(Icons.copy_rounded),
-                    label: Text(
-                      uiStrings['copySelection']?[settings.locale] ?? 'Copy',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                ),
-              ],
+                6 * settings.menuScale, 12 * settings.menuScale, 6 * settings.menuScale),
+            child: LayoutBuilder(
+              builder: (ctx, constraints) {
+                // On narrow screens (phones, ~360–600 dp wide) split
+                // the bar into two rows so nothing collides:
+                //   [Clear] [count] [Copy]
+                //   [Original Cross-ref Note Bookmark Highlight]
+                // On wider screens keep everything on one row.
+                final isNarrow = constraints.maxWidth < 560;
+                if (isNarrow) {
+                  return Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Row(
+                        children: [
+                          clearBtn,
+                          Expanded(child: countLabel),
+                          const SizedBox(width: 4),
+                          Flexible(child: copyBtn),
+                        ],
+                      ),
+                      const SizedBox(height: 2),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: actionButtons,
+                      ),
+                    ],
+                  );
+                }
+                return Row(
+                  children: [
+                    clearBtn,
+                    Expanded(child: countLabel),
+                    ...actionButtons,
+                    const SizedBox(width: 4),
+                    Flexible(child: copyBtn),
+                  ],
+                );
+              },
             ),
           ),
         ),
