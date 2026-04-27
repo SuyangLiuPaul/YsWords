@@ -7,6 +7,7 @@ import 'package:yswords/constants/ui_strings.dart';
 import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/models/verse.dart';
 import 'package:yswords/providers/main_provider.dart';
+import 'package:yswords/services/profile_service.dart';
 import 'package:yswords/services/reading_plan_service.dart';
 import 'package:yswords/utils/clipboard_helper.dart';
 import 'package:yswords/utils/reference_parser.dart';
@@ -332,10 +333,14 @@ class _PlanTabState extends State<_PlanTab> {
   void initState() {
     super.initState();
     _refresh();
+    // Refresh when active profile changes — keeps the displayed
+    // plan + progress synced with whichever account is signed in.
+    ProfileService.instance.addListener(_refresh);
   }
 
   @override
   void dispose() {
+    ProfileService.instance.removeListener(_refresh);
     _scrollController.dispose();
     super.dispose();
   }

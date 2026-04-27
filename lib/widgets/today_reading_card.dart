@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import 'package:yswords/constants/ui_strings.dart';
 import 'package:yswords/models/app_settings.dart';
+import 'package:yswords/services/profile_service.dart';
 import 'package:yswords/services/reading_plan_service.dart';
 import 'package:yswords/utils/version_mapper.dart' show translateBookName;
 import 'package:yswords/providers/main_provider.dart';
@@ -35,6 +36,15 @@ class _TodayReadingCardState extends State<TodayReadingCard> {
   void initState() {
     super.initState();
     _refresh();
+    // Reload when the user switches profiles — different profiles
+    // can have different active plans + completion states.
+    ProfileService.instance.addListener(_refresh);
+  }
+
+  @override
+  void dispose() {
+    ProfileService.instance.removeListener(_refresh);
+    super.dispose();
   }
 
   Future<void> _refresh() async {

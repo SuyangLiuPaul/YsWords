@@ -2,6 +2,8 @@ import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:yswords/services/profile_service.dart';
+
 /// One reading entry within a [ReadingPlan]. `readings` is a list of
 /// reference strings ("Genesis 1", "Psalms 23", "Matthew 5") that the
 /// reference parser can resolve. Each chip in the UI represents one
@@ -52,10 +54,15 @@ class ReadingPlanService {
   static List<ReadingPlan>? _cache;
   static Future<void>? _loading;
 
+  // Base key names. The actual SharedPreferences keys are namespaced
+  // by the active profile via `ProfileService.scopedKey()` so each
+  // signed-in user keeps their own plan + progress.
   static const _kActiveId = 'plan.activeId';
   static const _kStartDateMs = 'plan.startMs';
   static const _kModeUseDate = 'plan.useDate';
   static const _kCompletedPrefix = 'plan.completed.';
+
+  static String _k(String base) => ProfileService.instance.scopedKey(base);
 
   /// Load all bundled plans (once per process).
   static Future<List<ReadingPlan>> all() async {
@@ -106,15 +113,15 @@ class ReadingPlanService {
   /// Currently selected plan id, or null if the user hasn't picked one.
   static Future<String?> activeId() async {
     final prefs = await SharedPreferences.getInstance();
-    return prefs.getString(_kActiveId);
+    return prefs.getString(_k(_kActiveId));
   }
 
   static Future<void> setActiveId(String? id) async {
     final prefs = await SharedPreferences.getInstance();
     if (id == null) {
-      await prefs.remove(_kActiveId);
+      await prefs.remove(_k(_kActiveId));
     } else {
-      await prefs.setString(_kActiveId, id);
+      await prefs.setString(_k(_kActiveId), id);
     }
   }
 
@@ -123,7 +130,7 @@ class ReadingPlanService {
   /// first time the user opens a plan.
   static Future<DateTime?> startDate() async {
     final prefs = await SharedPreferences.getInstance();
-    final ms = prefs.getInt(_kStartDateMs);
+    final ms = prefs.getInt(_k(_kStartDateMs));
     if (ms == null) return null;
     return DateTime.fromMillisecondsSinceEpoch(ms);
   }
@@ -131,12 +138,12 @@ class ReadingPlanService {
   static Future<void> setStartDate(DateTime? d) async {
     final prefs = await SharedPreferences.getInstance();
     if (d == null) {
-      await prefs.remove(_kStartDateMs);
+      await prefs.remove(_k(_kStartDateMs));
     } else {
       // Store as midnight UTC of the chosen calendar day so day-rollover
       // doesn't depend on the user's exact start time.
       final midnight = DateTime.utc(d.year, d.month, d.day);
-      await prefs.setInt(_kStartDateMs, midnight.millisecondsSinceEpoch);
+      await prefs.setInt(_k(_kStartDateMs), midnight.millisecondsSinceEpoch);
     }
   }
 
@@ -145,12 +152,12 @@ class ReadingPlanService {
   /// canonical/chronological plans — they restart Jan 1 each year.
   static Future<bool> useDateMode() async {
     final prefs = await SharedPreferences.getInstance();
-    return prefs.getBool(_kModeUseDate) ?? true;
+    return prefs.getBool(_k(_kModeUseDate)) ?? true;
   }
 
   static Future<void> setUseDateMode(bool useDate) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool(_kModeUseDate, useDate);
+    await prefs.setBool(_k(_kModeUseDate), useDate);
   }
 
   /// Compute today's 1-indexed day-of-plan for [plan], based on the
@@ -182,7 +189,7 @@ class ReadingPlanService {
   /// Returns the set of completed day numbers for [planId].
   static Future<Set<int>> completedDays(String planId) async {
     final prefs = await SharedPreferences.getInstance();
-    final list = prefs.getStringList('$_kCompletedPrefix$planId');
+    final list = prefs.getStringList(_k('$_kCompletedPrefix$planId'));
     if (list == null) return <int>{};
     return list
         .map((s) => int.tryParse(s))
@@ -193,7 +200,7 @@ class ReadingPlanService {
   static Future<void> setDayCompleted(
       String planId, int day, bool completed) async {
     final prefs = await SharedPreferences.getInstance();
-    final key = '$_kCompletedPrefix$planId';
+    final key = _k('$_kCompletedPrefix$planId');
     final cur = (prefs.getStringList(key) ?? <String>[]).toSet();
     if (completed) {
       cur.add(day.toString());
@@ -207,6 +214,6 @@ class ReadingPlanService {
   /// Reset Progress.
   static Future<void> resetProgress(String planId) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.remove('$_kCompletedPrefix$planId');
+    await prefs.remove(_k('$_kCompletedPrefix$planId'));
   }
 }

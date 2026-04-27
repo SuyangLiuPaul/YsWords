@@ -446,6 +446,94 @@ const uiStrings = {
     'zh-Hant': '鍵盤快捷鍵',
     'en': 'Keyboard shortcuts',
   },
+  // ── Profiles / sign-in (Round 28) ──────────────────────────────
+  'welcomeTagline': {
+    'zh-Hans': '随身的个人圣经研读工具。',
+    'zh-Hant': '隨身的個人聖經研讀工具。',
+    'en': 'Personal Bible study, on every device.',
+  },
+  'welcomeChooseHowToUse': {
+    'zh-Hans': '请选择使用方式',
+    'zh-Hant': '請選擇使用方式',
+    'en': 'How would you like to use YsWords?',
+  },
+  'welcomeSignIn': {
+    'zh-Hans': '登录',
+    'zh-Hant': '登入',
+    'en': 'Sign in',
+  },
+  'welcomeContinueGuest': {
+    'zh-Hans': '以访客身份继续',
+    'zh-Hant': '以訪客身份繼續',
+    'en': 'Continue as guest',
+  },
+  'welcomeLocalOnlyNotice': {
+    'zh-Hans': '账号仅保存在本设备，不需要密码、不上传服务器。',
+    'zh-Hant': '帳號僅保存在本裝置，不需要密碼、不上傳伺服器。',
+    'en':
+        'Profiles are stored only on this device. No password, no server.',
+  },
+  'welcomeNamePrompt': {
+    'zh-Hans': '请输入您的称呼',
+    'zh-Hant': '請輸入您的稱呼',
+    'en': "What should we call you?",
+  },
+  'welcomeNameHint': {
+    'zh-Hans': '您的姓名',
+    'zh-Hant': '您的姓名',
+    'en': 'Your name',
+  },
+  'profileTitle': {
+    'zh-Hans': '账号',
+    'zh-Hant': '帳號',
+    'en': 'Profiles',
+  },
+  'profileCurrent': {
+    'zh-Hans': '当前账号',
+    'zh-Hant': '目前帳號',
+    'en': 'Active profile',
+  },
+  'profileSwitchOrAdd': {
+    'zh-Hans': '切换或新增账号',
+    'zh-Hant': '切換或新增帳號',
+    'en': 'Switch or add a profile',
+  },
+  'profileSwitch': {
+    'zh-Hans': '切换到此账号',
+    'zh-Hant': '切換到此帳號',
+    'en': 'Switch to this profile',
+  },
+  'profileRename': {
+    'zh-Hans': '重命名',
+    'zh-Hant': '重新命名',
+    'en': 'Rename',
+  },
+  'profileDelete': {
+    'zh-Hans': '删除',
+    'zh-Hant': '刪除',
+    'en': 'Delete',
+  },
+  'profileDeleteConfirm': {
+    'zh-Hans': '确定要删除「{name}」及其在本设备上的所有笔记、书签、高亮与读经进度吗？',
+    'zh-Hant': '確定要刪除「{name}」及其在本裝置上的所有筆記、書籤、高亮與讀經進度嗎？',
+    'en':
+        'Permanently delete "{name}" and all its notes, bookmarks, highlights and reading-plan progress on this device?',
+  },
+  'profileCreateTitle': {
+    'zh-Hans': '新建账号',
+    'zh-Hant': '新建帳號',
+    'en': 'Create profile',
+  },
+  'profileGuestSub': {
+    'zh-Hans': '默认账号 — 任何使用本浏览器的人',
+    'zh-Hant': '預設帳號 — 任何使用本瀏覽器的人',
+    'en': 'Default — anyone using this browser',
+  },
+  'profileLocalOnly': {
+    'zh-Hans': '本地账号',
+    'zh-Hant': '本地帳號',
+    'en': 'Local profile',
+  },
   'crossRefsNone': {
     'zh-Hans': '此节经文暂无人工整理的相互参照。',
     'zh-Hant': '此節經文暫無人工整理的相互參照。',

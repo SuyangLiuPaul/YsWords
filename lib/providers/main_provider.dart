@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:yswords/models/verse.dart';
 import 'package:yswords/models/book.dart';
 import 'package:yswords/services/fetch_books.dart' show bookNameToEnglish;
+import 'package:yswords/services/profile_service.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -12,7 +13,27 @@ import 'package:shared_preferences/shared_preferences.dart';
 class MainProvider extends ChangeNotifier {
   final String _storagePrefix;
 
-  MainProvider({String storagePrefix = ''}) : _storagePrefix = storagePrefix;
+  MainProvider({String storagePrefix = ''}) : _storagePrefix = storagePrefix {
+    // When the active profile changes, reload all profile-scoped
+    // user data (highlights / notes / bookmarks) so the UI flips
+    // atomically. Both panes in split-view share the same profile,
+    // so each pane needs its own subscription.
+    ProfileService.instance.addListener(_onProfileChanged);
+  }
+
+  @override
+  void dispose() {
+    ProfileService.instance.removeListener(_onProfileChanged);
+    super.dispose();
+  }
+
+  Future<void> _onProfileChanged() async {
+    await _loadHighlights();
+    await _loadNotes();
+    await _loadBookmarks();
+    onHighlightsMutated?.call();
+    notifyListeners();
+  }
 
   bool get isPrimary => _storagePrefix.isEmpty;
 
@@ -158,14 +179,23 @@ class MainProvider extends ChangeNotifier {
 
   void _saveHighlights() async {
     final prefs = await SharedPreferences.getInstance();
-    // No prefix — highlights are global annotations shared across panes/versions.
-    prefs.setString('highlights', jsonEncode(_highlights));
+    // Profile-scoped — different signed-in users keep their own
+    // annotations even when they share the same browser. Both
+    // split-view panes share the same profile so they still see
+    // the same set.
+    prefs.setString(
+        ProfileService.instance.scopedKey('highlights'),
+        jsonEncode(_highlights));
   }
 
   Future<void> _loadHighlights() async {
     final prefs = await SharedPreferences.getInstance();
-    // No prefix — both panes load the same store so split view stays in sync.
-    final json = prefs.getString('highlights');
+    // Reload from the active profile's namespace. Reset the in-memory
+    // map first so switching from a profile with highlights to one
+    // without doesn't leave stale entries.
+    _highlights = {};
+    final json =
+        prefs.getString(ProfileService.instance.scopedKey('highlights'));
     if (json == null) return;
     final decoded = jsonDecode(json) as Map<String, dynamic>;
 
@@ -239,12 +269,15 @@ class MainProvider extends ChangeNotifier {
 
   void _saveNotes() async {
     final prefs = await SharedPreferences.getInstance();
-    prefs.setString('verseNotes', jsonEncode(_verseNotes));
+    prefs.setString(ProfileService.instance.scopedKey('verseNotes'),
+        jsonEncode(_verseNotes));
   }
 
   Future<void> _loadNotes() async {
     final prefs = await SharedPreferences.getInstance();
-    final json = prefs.getString('verseNotes');
+    _verseNotes = {};
+    final json =
+        prefs.getString(ProfileService.instance.scopedKey('verseNotes'));
     if (json == null) return;
     final decoded = jsonDecode(json) as Map<String, dynamic>;
     _verseNotes = {
@@ -254,12 +287,15 @@ class MainProvider extends ChangeNotifier {
 
   void _saveBookmarks() async {
     final prefs = await SharedPreferences.getInstance();
-    prefs.setStringList('bookmarks', _bookmarks.toList());
+    prefs.setStringList(ProfileService.instance.scopedKey('bookmarks'),
+        _bookmarks.toList());
   }
 
   Future<void> _loadBookmarks() async {
     final prefs = await SharedPreferences.getInstance();
-    final list = prefs.getStringList('bookmarks');
+    _bookmarks = {};
+    final list =
+        prefs.getStringList(ProfileService.instance.scopedKey('bookmarks'));
     if (list == null) return;
     _bookmarks = list.toSet();
   }

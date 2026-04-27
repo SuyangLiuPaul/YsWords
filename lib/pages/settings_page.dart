@@ -3,8 +3,11 @@ import 'package:yswords/constants/ui_strings.dart';
 import 'package:provider/provider.dart';
 import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/providers/main_provider.dart';
+import 'package:get/get.dart';
+import 'package:yswords/pages/profiles_page.dart';
 import 'package:yswords/services/fetch_books.dart';
 import 'package:yswords/services/fetch_verses.dart';
+import 'package:yswords/services/profile_service.dart';
 import 'package:yswords/services/reading_plan_service.dart';
 
 import 'package:yswords/widgets/localized_back_button.dart';
@@ -776,6 +779,8 @@ class SettingsPage extends StatelessWidget {
                 ),
               ),
               SizedBox(height: 16 * s),
+              _AccountSection(settings: settings, s: s),
+              SizedBox(height: 16 * s),
               _ReadingPlanSection(settings: settings, s: s),
               SizedBox(height: 16 * s),
             ],
@@ -912,6 +917,15 @@ class _ReadingPlanSectionState extends State<_ReadingPlanSection> {
   void initState() {
     super.initState();
     _refresh();
+    // Refresh on profile switch so the dropdown / start-date row
+    // reflect whichever account is signed in.
+    ProfileService.instance.addListener(_refresh);
+  }
+
+  @override
+  void dispose() {
+    ProfileService.instance.removeListener(_refresh);
+    super.dispose();
   }
 
   Future<void> _refresh() async {
@@ -1147,6 +1161,112 @@ class _ReadingPlanSectionState extends State<_ReadingPlanSection> {
                 ),
               ),
             ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+
+/// Settings card for the local "account" / profile system. Shows
+/// the active profile name and a row to open the full profile
+/// switcher (lib/pages/profiles_page.dart). Listens to
+/// ProfileService changes so the displayed name updates as soon
+/// as the user switches.
+class _AccountSection extends StatefulWidget {
+  final AppSettings settings;
+  final double s;
+  const _AccountSection({required this.settings, required this.s});
+
+  @override
+  State<_AccountSection> createState() => _AccountSectionState();
+}
+
+class _AccountSectionState extends State<_AccountSection> {
+  @override
+  void initState() {
+    super.initState();
+    ProfileService.instance.addListener(_onChanged);
+  }
+
+  @override
+  void dispose() {
+    ProfileService.instance.removeListener(_onChanged);
+    super.dispose();
+  }
+
+  void _onChanged() {
+    if (mounted) setState(() {});
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final settings = widget.settings;
+    final s = widget.s;
+    final scheme = Theme.of(context).colorScheme;
+    final locale = settings.locale;
+    final p = ProfileService.instance.current;
+    return Card(
+      child: Padding(
+        padding: EdgeInsets.all(16 * s),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              uiStrings['profileTitle']?[locale] ?? 'Profiles',
+              style: TextStyle(
+                fontFamily: settings.fontFamily,
+                fontSize: settings.fontSize + 2,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            SizedBox(height: 8 * s),
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              leading: CircleAvatar(
+                backgroundColor: scheme.primary,
+                foregroundColor: scheme.onPrimary,
+                child: Text(
+                  p.name.isEmpty
+                      ? "?"
+                      : p.name.characters.first.toUpperCase(),
+                  style: const TextStyle(fontWeight: FontWeight.w700),
+                ),
+              ),
+              title: Text(
+                p.name,
+                style: TextStyle(
+                  fontFamily: settings.fontFamily,
+                  fontSize: settings.fontSize,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              subtitle: Text(
+                uiStrings["profileCurrent"]?[locale] ?? "Active profile",
+                style: TextStyle(
+                  fontSize: settings.fontSize - 2,
+                  color: scheme.onSurfaceVariant,
+                ),
+              ),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => Get.to(
+                () => const ProfilesPage(),
+                transition: Transition.rightToLeft,
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(top: 4),
+              child: Text(
+                uiStrings["welcomeLocalOnlyNotice"]?[locale] ??
+                    "Profiles are stored only on this device. No password, no server.",
+                style: TextStyle(
+                  fontSize: 11,
+                  fontStyle: FontStyle.italic,
+                  color: scheme.onSurfaceVariant,
+                ),
+              ),
+            ),
           ],
         ),
       ),
