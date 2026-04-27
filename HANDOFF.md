@@ -901,7 +901,15 @@ Paragraph mode was shipped but felt loose compared to WeDevote 微读圣经. Ret
 
 ---
 
-## Recent Work (Round 18 — 2026-04-27)
+## Recent Work (Round 18 — 2026-04-27, multiple deploys)
+
+### Polish round (final commits this session)
+- **OT/NT renamed to Hebrew Bible / Greek Bible** in all three locales (EN, zh-Hans, zh-Hant). The shorthand `'oldTestamentShort'` / `'newTestamentShort'` keys are used **only** for the English narrow-toggle case (sidebar 280px); Chinese always shows the full 4–5-char form (希伯来圣经 / 希腊圣经) since it fits even in narrow buttons. See [book_chapter_picker.dart:174](lib/widgets/book_chapter_picker.dart:174).
+- **Distribution table self-contained**: takes a single `strongsNumber` and loads entry + family + synonyms + concordance internally. Earlier version pulled from the parent's `_wordFamily` / `_compareWords` state which is populated asynchronously, so opening the table before the background load finished left it with only one row. See [word_distribution_table.dart:47](lib/widgets/word_distribution_table.dart:47).
+- **Wider modal sheets on desktop / iPad**: `showModalBottomSheet` defaults to ~640dp max width. Added explicit `constraints: BoxConstraints(maxWidth: 1100)` on the exegesis sheet and `1400` on the distribution table sheet so wide screens get readable widths. Phones are unaffected (their screen is narrower than the cap).
+- **Synonym chips reliably clickable**: wrapped `_relatedChip`'s `InkWell` in `Material(color: Colors.transparent)`. Without that, web's hit-testing was sometimes letting the Container's opaque decoration eat taps before they reached the InkWell. See [originals_sheet.dart:751](lib/widgets/originals_sheet.dart:751).
+
+### Earlier in this round
 
 This round added several exegesis features and fixed the iPad sidebar layout. All changes shipped to production at `yswords.netlify.app`.
 
