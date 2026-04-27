@@ -181,6 +181,16 @@ const uiStrings = {
     'zh-Hant': '複製詞語研經',
     'en': 'Copy word study',
   },
+  'wordFamily': {
+    'zh-Hans': '同源词',
+    'zh-Hant': '同源詞',
+    'en': 'Word Family',
+  },
+  'synonyms': {
+    'zh-Hans': '同义词',
+    'zh-Hant': '同義詞',
+    'en': 'Synonyms',
+  },
   'concordanceBookCount': {
     'zh-Hans': '出现 {count} 次',
     'zh-Hant': '出現 {count} 次',

@@ -1,3 +1,5 @@
+import 'dart:async' show unawaited;
+
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -77,6 +79,11 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
   // "englishBook-chapter-verse" → cleaned verse text for concordance preview.
   late final Map<String, String> _verseIndex;
 
+  // Word family (siblings + children) and synonyms (compare refs) for the
+  // currently displayed entry. Populated asynchronously after each word tap.
+  List<StrongsEntry> _wordFamily = const [];
+  List<StrongsEntry> _compareWords = const [];
+
   @override
   void initState() {
     super.initState();
@@ -136,6 +143,8 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
       _rootConcordance = null;
       _loadingEntry = true;
       _expandedConcordanceBook = null;
+      _wordFamily = const [];
+      _compareWords = const [];
     });
     // Fire both lookups in parallel — Strong's entry is per-language,
     // concordance is a single shared file that gets warmed by the
@@ -154,6 +163,8 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
       _expandedConcordanceBook =
           concordance?.refs.isNotEmpty == true ? concordance!.refs.first.englishBook : null;
     });
+    // Word family + synonyms load in the background — doesn't block the entry card.
+    unawaited(_loadRelations(w.strongs));
   }
 
   Future<void> _loadRootEntry(String strongsNumber) async {
@@ -161,6 +172,8 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
     setState(() {
       _loadingEntry = true;
       _expandedConcordanceBook = null;
+      _wordFamily = const [];
+      _compareWords = const [];
     });
     final entryFuture = StrongsService.lookup(strongsNumber);
     final concordanceFuture = ConcordanceService.lookup(strongsNumber);
@@ -175,6 +188,7 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
       _expandedConcordanceBook =
           concordance?.refs.isNotEmpty == true ? concordance!.refs.first.englishBook : null;
     });
+    unawaited(_loadRelations(strongsNumber));
   }
 
   void _clearRoot() {
@@ -182,10 +196,25 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
     setState(() {
       _rootEntry = null;
       _rootConcordance = null;
+      _wordFamily = const [];
+      _compareWords = const [];
       // Restore the word-entry's auto-opened first book.
       _expandedConcordanceBook = _selectedConcordance?.refs.isNotEmpty == true
           ? _selectedConcordance!.refs.first.englishBook
           : null;
+    });
+    if (_selectedWord != null) {
+      unawaited(_loadRelations(_selectedWord!.strongs));
+    }
+  }
+
+  Future<void> _loadRelations(String number) async {
+    final family = await StrongsService.wordFamily(number);
+    final compare = await StrongsService.compareWords(number);
+    if (!mounted) return;
+    setState(() {
+      _wordFamily = family;
+      _compareWords = compare;
     });
   }
 
@@ -590,6 +619,20 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
               const SizedBox(height: 10),
               _buildDerivationRich(entry.derivation!, scheme),
             ],
+            if (_wordFamily.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              _buildRelatedSection(
+                uiStrings['wordFamily']?[locale] ?? 'Word Family',
+                _wordFamily, scheme, locale,
+              ),
+            ],
+            if (_compareWords.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              _buildRelatedSection(
+                uiStrings['synonyms']?[locale] ?? 'Synonyms',
+                _compareWords, scheme, locale,
+              ),
+            ],
           ] else
             Text(
               uiStrings['strongsNotFound']?[locale] ??
@@ -661,6 +704,98 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
           height: 1.45,
         ),
         children: spans,
+      ),
+    );
+  }
+
+  // ── Word family + synonyms ──────────────────────────────────────────────────
+
+  Widget _buildRelatedSection(
+      String label, List<StrongsEntry> entries, ColorScheme scheme, String locale) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 11,
+            fontWeight: FontWeight.w600,
+            color: scheme.onSurfaceVariant,
+            letterSpacing: 0.5,
+          ),
+        ),
+        const SizedBox(height: 6),
+        Wrap(
+          spacing: 6,
+          runSpacing: 6,
+          children: [for (final e in entries) _relatedChip(e, scheme, locale)],
+        ),
+      ],
+    );
+  }
+
+  Widget _relatedChip(StrongsEntry e, ColorScheme scheme, String locale) {
+    return InkWell(
+      onTap: () => _loadRootEntry(e.number),
+      borderRadius: BorderRadius.circular(8),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+        constraints: const BoxConstraints(maxWidth: 200),
+        decoration: BoxDecoration(
+          color: scheme.secondaryContainer.withValues(alpha: 0.55),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: scheme.outlineVariant),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                  decoration: BoxDecoration(
+                    color: scheme.secondary.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Text(
+                    e.number,
+                    style: TextStyle(
+                      fontSize: 9,
+                      fontWeight: FontWeight.w700,
+                      color: scheme.secondary,
+                      letterSpacing: 0.4,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 5),
+                Flexible(
+                  child: Text(
+                    e.lemma,
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      color: scheme.onSurface,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 2),
+            Text(
+              e.localizedGloss(locale),
+              style: TextStyle(
+                fontSize: 11,
+                color: scheme.onSurfaceVariant,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+        ),
       ),
     );
   }
