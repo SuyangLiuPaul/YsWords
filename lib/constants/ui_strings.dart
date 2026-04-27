@@ -142,9 +142,9 @@ const uiStrings = {
     'en': 'Highlight',
   },
   'originalText': {
-    'zh-Hans': '原文',
-    'zh-Hant': '原文',
-    'en': 'Original',
+    'zh-Hans': '释经',
+    'zh-Hant': '釋經',
+    'en': 'Exegesis',
   },
   'originalHint': {
     'zh-Hans': '点击词语查看 Strong\'s 词条。',

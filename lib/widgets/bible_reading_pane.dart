@@ -1033,7 +1033,7 @@ class _SelectionActionBar extends StatelessWidget {
                   tooltip:
                       uiStrings['originalText']?[settings.locale] ?? 'Original',
                   onPressed: onOriginal,
-                  icon: const Icon(Icons.translate),
+                  icon: const Icon(Icons.history_edu),
                 ),
                 const SizedBox(width: 4),
                 IconButton(
