@@ -60,12 +60,18 @@ class DefaultFirebaseOptions {
   /// Web-target options. We don't ship native iOS/Android right now;
   /// if you ever do, run `flutterfire configure` to regenerate this
   /// file with android/ios/macos/windows entries too.
+  ///
+  /// These values are public by design — they identify the project,
+  /// not authenticate it. Privacy is enforced by Firestore security
+  /// rules (see firebase_options.dart header / HANDOFF.md), which
+  /// require `request.auth.uid == uid` for any read or write.
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: _placeholder,
-    appId: _placeholder,
-    messagingSenderId: _placeholder,
-    projectId: _placeholder,
-    authDomain: _placeholder,
-    storageBucket: _placeholder,
+    apiKey: 'AIzaSyBKa1M1de_9ALJe_AD7vcDDVTBgtSW3_P8',
+    appId: '1:461522287670:web:764f0dcb592564b15dec97',
+    messagingSenderId: '461522287670',
+    projectId: 'ysword',
+    authDomain: 'ysword.firebaseapp.com',
+    storageBucket: 'ysword.firebasestorage.app',
+    measurementId: 'G-1TB1F4XNB8',
   );
 }
