@@ -181,6 +181,61 @@ const uiStrings = {
     'zh-Hant': '複製詞語研經',
     'en': 'Copy word study',
   },
+  'distributionTable': {
+    'zh-Hans': '分布表',
+    'zh-Hant': '分佈表',
+    'en': 'Distribution Table',
+  },
+  'colTotal': {
+    'zh-Hans': '总',
+    'zh-Hant': '總',
+    'en': 'Total',
+  },
+  'colGospelsActs': {
+    'zh-Hans': '福音+徒',
+    'zh-Hant': '福音+徒',
+    'en': 'G&A',
+  },
+  'colPauline': {
+    'zh-Hans': '保罗',
+    'zh-Hant': '保羅',
+    'en': 'Paul',
+  },
+  'colJohannine': {
+    'zh-Hans': '约翰',
+    'zh-Hant': '約翰',
+    'en': 'John',
+  },
+  'colOtherApostolic': {
+    'zh-Hans': '其他',
+    'zh-Hant': '其他',
+    'en': 'Other',
+  },
+  'colPentateuch': {
+    'zh-Hans': '律法',
+    'zh-Hant': '律法',
+    'en': 'Torah',
+  },
+  'colHistory': {
+    'zh-Hans': '历史',
+    'zh-Hant': '歷史',
+    'en': 'Hist.',
+  },
+  'colWisdom': {
+    'zh-Hans': '智慧',
+    'zh-Hant': '智慧',
+    'en': 'Wisd.',
+  },
+  'colMajorProphets': {
+    'zh-Hans': '大先知',
+    'zh-Hant': '大先知',
+    'en': 'Maj.Pr.',
+  },
+  'colMinorProphets': {
+    'zh-Hans': '小先知',
+    'zh-Hant': '小先知',
+    'en': 'Min.Pr.',
+  },
   'wordFamily': {
     'zh-Hans': '同源词',
     'zh-Hant': '同源詞',
@@ -462,19 +517,20 @@ const uiStrings = {
     'en': 'Paragraph Flow',
   },
 
-  // ====== Maps ======
+  // ====== Illustrations (formerly "Maps" — now also covers parable
+  // scenes, narrative paintings, prophecy imagery, etc.) ======
   'maps': {
-    'zh-Hans': '地图',
-    'zh-Hant': '地圖',
-    'en': 'Maps',
+    'zh-Hans': '插图',
+    'zh-Hant': '插畫',
+    'en': 'Illustrations',
   },
   'viewMap': {
-    'zh-Hans': '查看地图',
-    'zh-Hant': '查看地圖',
-    'en': 'View Map',
+    'zh-Hans': '查看插图',
+    'zh-Hant': '查看插畫',
+    'en': 'View Illustration',
   },
   'noMapsForChapter': {
-    'zh-Hans': '本章暂无地图',
+    'zh-Hans': '本章暂无插图',
     'zh-Hant': '本章暫無地圖',
     'en': 'No maps for this chapter',
   },

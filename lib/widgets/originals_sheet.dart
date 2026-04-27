@@ -16,6 +16,7 @@ import 'package:yswords/services/strongs_service.dart';
 import 'package:yswords/utils/version_mapper.dart'
     show localeAwareBookName, toEnglish;
 import 'package:yswords/widgets/word_distribution.dart';
+import 'package:yswords/widgets/word_distribution_table.dart';
 
 /// Bottom sheet that shows the original Hebrew/Greek text for one or
 /// more selected verses, with each word as a tappable chip linked to
@@ -541,6 +542,16 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
                 ),
               ),
               IconButton(
+                icon: const Icon(Icons.table_chart_outlined),
+                iconSize: 18,
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+                tooltip: uiStrings['distributionTable']?[locale] ??
+                    'Distribution Table',
+                onPressed: () => _showDistributionTable(context),
+              ),
+              const SizedBox(width: 4),
+              IconButton(
                 icon: const Icon(Icons.copy_outlined),
                 iconSize: 18,
                 padding: EdgeInsets.zero,
@@ -842,32 +853,150 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
     if (entry == null && w == null) return;
     final locale = widget.locale;
     final buf = StringBuffer();
-    buf.writeln("Strong's\tLemma\tTransliteration\tPronunciation\tGloss\tDefinition");
-    buf.writeln([
-      entry?.number ?? w?.strongs ?? '',
-      entry?.lemma ?? w?.text ?? '',
-      entry?.translit ?? '',
-      entry?.pronunciation ?? '',
-      entry?.localizedGloss(locale) ?? '',
-      entry?.localizedDefinition(locale) ?? '',
-    ].map((s) => s.replaceAll('\t', ' ').replaceAll('\n', ' ')).join('\t'));
-    if (concordance != null && concordance.refs.isNotEmpty) {
-      buf.writeln();
-      buf.writeln('Reference\tVerse Text');
-      for (final r in concordance.refs) {
-        final label =
-            '${localeAwareBookName(r.englishBook, locale, widget.currentVersion)} '
-            '${r.chapter}:${r.verse}';
-        final verseText = _lookupVerseText(r) ?? '';
-        buf.writeln('$label\t${verseText.replaceAll('\t', ' ')}');
+
+    // Single flat TSV so the whole family + synonyms paste cleanly into
+    // Sheets/Excel as one table. Each row is tagged with a Section.
+    buf.writeln(
+        "Section\tStrong's\tLemma\tTranslit\tGloss\tDefinition\tReference\tVerse Text");
+
+    void writeEntry(String section, StrongsEntry e, ConcordanceResult? cr) {
+      final base = [
+        section,
+        e.number,
+        e.lemma,
+        e.translit,
+        e.localizedGloss(locale),
+        e.localizedDefinition(locale),
+      ].map((s) => s.replaceAll('\t', ' ').replaceAll('\n', ' ')).toList();
+      if (cr != null && cr.refs.isNotEmpty) {
+        for (final r in cr.refs) {
+          final label =
+              '${localeAwareBookName(r.englishBook, locale, widget.currentVersion)} '
+              '${r.chapter}:${r.verse}';
+          final verseText =
+              (_lookupVerseText(r) ?? '').replaceAll('\t', ' ').replaceAll('\n', ' ');
+          buf.writeln([...base, label, verseText].join('\t'));
+        }
+      } else {
+        buf.writeln([...base, '', ''].join('\t'));
       }
     }
+
+    if (entry != null) {
+      writeEntry('Main', entry, concordance);
+    } else if (w != null) {
+      buf.writeln([
+        'Main',
+        w.strongs,
+        w.text,
+        w.translit ?? '',
+        '',
+        '',
+        '',
+        '',
+      ].join('\t'));
+    }
+
+    // Word family — fetch concordance per entry; cached after first lookup.
+    for (final famEntry in _wordFamily) {
+      final famConc = await ConcordanceService.lookup(famEntry.number);
+      writeEntry('Family', famEntry, famConc);
+    }
+
+    // Synonyms / compare references.
+    for (final synEntry in _compareWords) {
+      final synConc = await ConcordanceService.lookup(synEntry.number);
+      writeEntry('Synonym', synEntry, synConc);
+    }
+
     await Clipboard.setData(ClipboardData(text: buf.toString().trimRight()));
     if (!ctx.mounted) return;
     ScaffoldMessenger.of(ctx).showSnackBar(SnackBar(
       content: Text(uiStrings['copied']?[locale] ?? 'Copied!'),
       duration: const Duration(seconds: 1),
     ));
+  }
+
+  // ── Distribution table ───────────────────────────────────────────
+
+  void _showDistributionTable(BuildContext ctx) {
+    final isBrowsingRoot = _rootEntry != null;
+    final entry = isBrowsingRoot ? _rootEntry : _selectedEntry;
+    if (entry == null) return;
+    // Rows: current word + word family + synonyms, deduped by Strong's #.
+    final seen = <String>{entry.number};
+    final rows = <StrongsEntry>[entry];
+    for (final e in _wordFamily) {
+      if (seen.add(e.number)) rows.add(e);
+    }
+    for (final e in _compareWords) {
+      if (seen.add(e.number)) rows.add(e);
+    }
+    final locale = widget.locale;
+    final scheme = Theme.of(ctx).colorScheme;
+    showModalBottomSheet<void>(
+      context: ctx,
+      isScrollControlled: true,
+      backgroundColor: scheme.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (sheetCtx) => DraggableScrollableSheet(
+        initialChildSize: 0.92,
+        minChildSize: 0.5,
+        maxChildSize: 0.95,
+        expand: false,
+        builder: (_, scrollController) => Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              margin: const EdgeInsets.only(top: 8),
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: scheme.outlineVariant,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 12, 12, 8),
+              child: Row(
+                children: [
+                  Icon(Icons.table_chart_outlined,
+                      color: scheme.primary, size: 20),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      uiStrings['distributionTable']?[locale] ??
+                          'Distribution Table',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        color: scheme.onSurface,
+                      ),
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close),
+                    iconSize: 20,
+                    onPressed: () => Navigator.of(sheetCtx).maybePop(),
+                  ),
+                ],
+              ),
+            ),
+            const Divider(height: 1),
+            Expanded(
+              child: WordDistributionTable(
+                entries: rows,
+                locale: locale,
+                currentVersion: widget.currentVersion,
+                scrollController: scrollController,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   Widget _buildConcordance(

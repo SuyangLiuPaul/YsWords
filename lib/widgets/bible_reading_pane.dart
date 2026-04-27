@@ -1321,7 +1321,7 @@ class _MapPickerSheetState extends State<_MapPickerSheet>
               padding: const EdgeInsets.fromLTRB(16, 4, 8, 4),
               child: Row(
                 children: [
-                  Icon(Icons.map_outlined, size: 18, color: scheme.primary),
+                  Icon(Icons.collections_outlined, size: 18, color: scheme.primary),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
@@ -1486,7 +1486,7 @@ class _MapTile extends StatelessWidget {
             'assets/maps/${map.file}',
             fit: BoxFit.cover,
             errorBuilder: (_, __, ___) =>
-                Icon(Icons.map, size: 22, color: scheme.primary),
+                Icon(Icons.collections, size: 22, color: scheme.primary),
           ),
         ),
       ),
@@ -1752,8 +1752,8 @@ class _FloatingHeader extends StatelessWidget {
                           child: _menuRow(
                             context,
                             icon: chapterMaps.isNotEmpty
-                                ? Icons.map_rounded
-                                : Icons.map_outlined,
+                                ? Icons.collections_rounded
+                                : Icons.collections_outlined,
                             iconColor: chapterMaps.isNotEmpty
                                 ? scheme.primary
                                 : null,
