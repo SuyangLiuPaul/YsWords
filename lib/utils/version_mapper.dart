@@ -6,24 +6,23 @@ String translateBookName(String? book, String version) {
   return toLocale(en, version);
 }
 
-/// Returns the book name to display anywhere a Bible verse reference
-/// appears in the exegesis / search / highlight panels. Book names
-/// follow the **reading version**, so they match the verse text shown
-/// alongside them — reading KJV gives "Genesis 1:1", reading CUVS
-/// gives "创世记 1:1", regardless of UI locale.
+/// Returns a book name driven by the UI [locale] only — the reading
+/// Bible version is intentionally ignored. Used everywhere a Bible
+/// reference book name appears in the exegesis / search / highlight
+/// panels (Top books chips, "Used N times" refs, highlight browser,
+/// Strong's search results).
 ///
-/// This is what the user expects: when the Strong's panel shows the
-/// verse text in KJV English right above the "Used N times" list, the
-/// list should also be in English; otherwise mixed-language refs feel
-/// broken even when each label individually is "correct" by some rule.
+/// - `zh-Hant` → Traditional Chinese
+/// - `zh-Hans` (or any `zh-*`) → Simplified Chinese
+/// - any other locale → English canonical name
 ///
-/// Falls back to locale-driven naming only when [currentVersion] is
-/// null/empty (rare — most call sites pass it).
+/// The [currentVersion] parameter is kept in the signature for
+/// existing call sites but is intentionally unused — per the user's
+/// requirement, book names follow the system language, not the Bible
+/// version. Use [translateBookName] directly when you need to match
+/// the version's verse-data book naming for navigation lookups.
 String localeAwareBookName(
     String englishBook, String locale, [String? currentVersion]) {
-  if (currentVersion != null && currentVersion.isNotEmpty) {
-    return translateBookName(englishBook, currentVersion);
-  }
   if (locale == 'zh-Hant') {
     return toLocale(englishBook, 'cuvs-tr');
   } else if (locale.startsWith('zh')) {
