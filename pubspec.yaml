@@ -46,6 +46,7 @@ flutter:
     - assets/maps/
     - assets/maps_index.json
     - assets/cross_references.json
+    - assets/reading_plans.json
     - assets/strongs/
     - assets/originals/
   fonts:

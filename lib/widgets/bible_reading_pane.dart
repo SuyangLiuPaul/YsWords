@@ -28,6 +28,7 @@ import 'package:yswords/services/map_service.dart';
 import 'package:yswords/utils/clipboard_helper.dart';
 import 'package:yswords/utils/reference_parser.dart';
 import 'package:yswords/utils/responsive.dart';
+import 'package:yswords/widgets/today_reading_card.dart';
 import 'package:yswords/utils/version_mapper.dart'
     show translateBookName, toEnglish, localeAwareBookName;
 import 'package:yswords/widgets/highlights_sheet.dart';
@@ -621,6 +622,21 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                         highlights: mainProvider.highlights,
                         locale: settings.locale,
                       ),
+                      // Hide the Today's Reading card while a verse
+                      // selection is active — the selection action bar
+                      // already crowds the screen and the card just
+                      // adds noise. Also hide on the secondary split-
+                      // view pane (no `onSearch`) so the card never
+                      // appears twice on the same screen.
+                      belowHeader: (!isSelected && widget.showSearchAndSettings)
+                          ? TodayReadingCard(
+                              onJump: (ref) => _navigateToBibleReference(
+                                mainProvider: mainProvider,
+                                ref: ref,
+                                locale: settings.locale,
+                              ),
+                            )
+                          : null,
                     ),
                     // Vertical position indicator on the right edge — a
                     // thin track + a small "current/total" pill that
@@ -1887,6 +1903,10 @@ class _FloatingHeader extends StatelessWidget {
   final String locale;
   final int highlightCount;
   final VoidCallback? onHighlights;
+  /// Optional widget rendered immediately below the glass header
+  /// (still inside the same SafeArea + Positioned region). Used for
+  /// the "Today's Reading" card when a reading plan is active.
+  final Widget? belowHeader;
 
   const _FloatingHeader({
     required this.showBookInfo,
@@ -1912,6 +1932,7 @@ class _FloatingHeader extends StatelessWidget {
     this.locale = 'en',
     this.highlightCount = 0,
     this.onHighlights,
+    this.belowHeader,
   });
 
   @override
@@ -1932,21 +1953,24 @@ class _FloatingHeader extends StatelessWidget {
       right: inset,
       child: SafeArea(
         bottom: false,
-        child: _GlassSurface(
-          radius: 22,
-          child: Padding(
-            padding: EdgeInsets.symmetric(
-                horizontal: 6 * settings.menuScale,
-                vertical: 4 * settings.menuScale),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      if (onClose != null)
-                        IconButton(
-                          onPressed: onClose,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _GlassSurface(
+              radius: 22,
+              child: Padding(
+                padding: EdgeInsets.symmetric(
+                    horizontal: 6 * settings.menuScale,
+                    vertical: 4 * settings.menuScale),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (onClose != null)
+                            IconButton(
+                              onPressed: onClose,
                           icon: Icon(Icons.close_rounded, size: iconSize),
                           padding: EdgeInsets.all(iconPad),
                           constraints: const BoxConstraints(
@@ -2197,6 +2221,9 @@ class _FloatingHeader extends StatelessWidget {
               ],
             ),
           ),
+        ),
+            if (belowHeader != null) belowHeader!,
+          ],
         ),
       ),
     );

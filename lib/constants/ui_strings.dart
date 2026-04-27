@@ -300,6 +300,93 @@ const uiStrings = {
   },
   'tabNotes': {'zh-Hans': '笔记', 'zh-Hant': '筆記', 'en': 'Notes'},
   'tabBookmarks': {'zh-Hans': '书签', 'zh-Hant': '書籤', 'en': 'Bookmarks'},
+  // ── Reading plans (Round 26) ─────────────────────────────────────
+  'tabPlan': {'zh-Hans': '读经计划', 'zh-Hant': '讀經計劃', 'en': 'Plan'},
+  'readingPlans': {
+    'zh-Hans': '读经计划',
+    'zh-Hant': '讀經計劃',
+    'en': 'Reading Plans',
+  },
+  'todayReading': {
+    'zh-Hans': '今日读经',
+    'zh-Hant': '今日讀經',
+    'en': 'Today\'s Reading',
+  },
+  'planDayLabel': {
+    'zh-Hans': '第 {day} 天 / 共 {total} 天',
+    'zh-Hant': '第 {day} 天 / 共 {total} 天',
+    'en': 'Day {day} of {total}',
+  },
+  'planChooseActive': {
+    'zh-Hans': '选择读经计划',
+    'zh-Hant': '選擇讀經計劃',
+    'en': 'Choose Reading Plan',
+  },
+  'planNoActive': {
+    'zh-Hans': '尚未选择读经计划。',
+    'zh-Hant': '尚未選擇讀經計劃。',
+    'en': 'No reading plan selected.',
+  },
+  'planActive': {
+    'zh-Hans': '当前计划',
+    'zh-Hant': '當前計劃',
+    'en': 'Active plan',
+  },
+  'planStartDate': {
+    'zh-Hans': '起始日期',
+    'zh-Hant': '起始日期',
+    'en': 'Start date',
+  },
+  'planUseCalendarDate': {
+    'zh-Hans': '按日历日期推算',
+    'zh-Hant': '按日曆日期推算',
+    'en': 'Use calendar date',
+  },
+  'planUseCalendarDateSub': {
+    'zh-Hans': '关闭则按一年中的第几天计算（每年 1 月 1 日重置）。',
+    'zh-Hant': '關閉則按一年中的第幾天計算（每年 1 月 1 日重置）。',
+    'en': 'When off, day-of-plan follows the day of year (resets every Jan 1).',
+  },
+  'planResetProgress': {
+    'zh-Hans': '重置进度',
+    'zh-Hant': '重置進度',
+    'en': 'Reset Progress',
+  },
+  'planResetProgressConfirm': {
+    'zh-Hans': '确定要清除所有已完成标记吗？',
+    'zh-Hant': '確定要清除所有已完成標記嗎？',
+    'en': 'Clear all completion marks for this plan?',
+  },
+  'planMarkDone': {
+    'zh-Hans': '标记为已读',
+    'zh-Hant': '標記為已讀',
+    'en': 'Mark as done',
+  },
+  'planMarkUndone': {
+    'zh-Hans': '取消已读',
+    'zh-Hant': '取消已讀',
+    'en': 'Mark as unread',
+  },
+  'planJumpToToday': {
+    'zh-Hans': '跳到今天',
+    'zh-Hant': '跳到今天',
+    'en': 'Jump to today',
+  },
+  'planProgress': {
+    'zh-Hans': '进度: {done} / {total} ({percent}%)',
+    'zh-Hant': '進度: {done} / {total} ({percent}%)',
+    'en': 'Progress: {done} / {total} ({percent}%)',
+  },
+  'planNone': {
+    'zh-Hans': '不使用读经计划',
+    'zh-Hant': '不使用讀經計劃',
+    'en': 'No plan',
+  },
+  'planLibraryEmpty': {
+    'zh-Hans': '尚未选择读经计划。前往「设置」中挑选一份。',
+    'zh-Hant': '尚未選擇讀經計劃。前往「設定」中挑選一份。',
+    'en': 'No reading plan selected. Pick one from Settings.',
+  },
   'crossRefsNone': {
     'zh-Hans': '此节经文暂无人工整理的相互参照。',
     'zh-Hant': '此節經文暫無人工整理的相互參照。',

@@ -5,6 +5,7 @@ import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/providers/main_provider.dart';
 import 'package:yswords/services/fetch_books.dart';
 import 'package:yswords/services/fetch_verses.dart';
+import 'package:yswords/services/reading_plan_service.dart';
 
 import 'package:yswords/widgets/localized_back_button.dart';
 import 'package:yswords/utils/responsive.dart';
@@ -775,6 +776,8 @@ class SettingsPage extends StatelessWidget {
                 ),
               ),
               SizedBox(height: 16 * s),
+              _ReadingPlanSection(settings: settings, s: s),
+              SizedBox(height: 16 * s),
             ],
               ),
             ),
@@ -883,4 +886,270 @@ const String _currentAppVersion = '0.1.0';
 Future<void> _reloadVerses(MainProvider mainProvider) async {
   await FetchVerses.execute(mainProvider: mainProvider);
   await FetchBooks.execute(mainProvider: mainProvider);
+}
+
+/// Settings card for picking a reading plan, choosing the start
+/// date, and resetting completion progress. Lives at the bottom of
+/// the settings list because it's an opt-in feature and most users
+/// will never touch it.
+class _ReadingPlanSection extends StatefulWidget {
+  final AppSettings settings;
+  final double s;
+  const _ReadingPlanSection({required this.settings, required this.s});
+
+  @override
+  State<_ReadingPlanSection> createState() => _ReadingPlanSectionState();
+}
+
+class _ReadingPlanSectionState extends State<_ReadingPlanSection> {
+  List<ReadingPlan> _plans = [];
+  String? _activeId;
+  DateTime? _startDate;
+  bool _useDate = true;
+  bool _loaded = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _refresh();
+  }
+
+  Future<void> _refresh() async {
+    final plans = await ReadingPlanService.all();
+    final active = await ReadingPlanService.activeId();
+    final start = await ReadingPlanService.startDate();
+    final useDate = await ReadingPlanService.useDateMode();
+    if (!mounted) return;
+    setState(() {
+      _plans = plans;
+      _activeId = active;
+      _startDate = start;
+      _useDate = useDate;
+      _loaded = true;
+    });
+  }
+
+  Future<void> _confirmReset() async {
+    final locale = widget.settings.locale;
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(uiStrings['planResetProgress']?[locale] ?? 'Reset Progress'),
+        content: Text(uiStrings['planResetProgressConfirm']?[locale] ??
+            'Clear all completion marks for this plan?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: Text(uiStrings['cancel']?[locale] ?? 'Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: Text(uiStrings['planResetProgress']?[locale] ??
+                'Reset Progress'),
+          ),
+        ],
+      ),
+    );
+    if (ok == true && _activeId != null) {
+      await ReadingPlanService.resetProgress(_activeId!);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(uiStrings['planResetProgress']?[locale] ?? 'Reset'),
+        duration: const Duration(seconds: 2),
+      ));
+    }
+  }
+
+  Future<void> _pickStartDate() async {
+    final now = DateTime.now();
+    final initial = _startDate ?? DateTime(now.year, now.month, now.day);
+    final d = await showDatePicker(
+      context: context,
+      initialDate: initial,
+      firstDate: DateTime(now.year - 5, 1, 1),
+      lastDate: DateTime(now.year + 5, 12, 31),
+    );
+    if (d != null) {
+      await ReadingPlanService.setStartDate(d);
+      if (!mounted) return;
+      setState(() => _startDate = d);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final settings = widget.settings;
+    final s = widget.s;
+    final locale = settings.locale;
+    if (!_loaded) {
+      return Card(
+        child: Padding(
+          padding: EdgeInsets.all(16 * s),
+          child: const SizedBox(
+            height: 24,
+            child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+          ),
+        ),
+      );
+    }
+
+    return Card(
+      child: Padding(
+        padding: EdgeInsets.all(16 * s),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              uiStrings['readingPlans']?[locale] ?? 'Reading Plans',
+              style: TextStyle(
+                fontFamily: settings.fontFamily,
+                fontSize: settings.fontSize + 2,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            SizedBox(height: 8 * s),
+            Text(
+              uiStrings['planChooseActive']?[locale] ?? 'Choose Reading Plan',
+              style: TextStyle(
+                fontFamily: settings.fontFamily,
+                fontSize: settings.fontSize,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+            ),
+            SizedBox(height: 6 * s),
+            DropdownButton<String?>(
+              value: _activeId,
+              isExpanded: true,
+              hint: Text(
+                uiStrings['planNoActive']?[locale] ?? 'No reading plan',
+                style: TextStyle(
+                  fontFamily: settings.fontFamily,
+                  fontSize: settings.fontSize,
+                ),
+              ),
+              onChanged: (val) async {
+                await ReadingPlanService.setActiveId(val);
+                if (val != null && _startDate == null) {
+                  // Default start date to today the first time a plan
+                  // is selected so the user immediately sees Day 1.
+                  await ReadingPlanService.setStartDate(DateTime.now());
+                }
+                await _refresh();
+              },
+              items: [
+                DropdownMenuItem<String?>(
+                  value: null,
+                  child: Text(
+                    uiStrings['planNone']?[locale] ?? 'No plan',
+                    style: TextStyle(
+                      fontFamily: settings.fontFamily,
+                      fontSize: settings.fontSize,
+                      fontStyle: FontStyle.italic,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ),
+                for (final p in _plans)
+                  DropdownMenuItem<String?>(
+                    value: p.id,
+                    child: Text(
+                      p.localizedName(locale),
+                      style: TextStyle(
+                        fontFamily: settings.fontFamily,
+                        fontSize: settings.fontSize,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+            if (_activeId != null) ...[
+              SizedBox(height: 8 * s),
+              Text(
+                _plans
+                        .firstWhere(
+                          (p) => p.id == _activeId,
+                          orElse: () => _plans.first,
+                        )
+                        .localizedDescription(locale),
+                style: TextStyle(
+                  fontFamily: settings.fontFamily,
+                  fontSize: settings.fontSize - 1,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+              ),
+              SizedBox(height: 12 * s),
+              SwitchListTile(
+                contentPadding: EdgeInsets.zero,
+                title: Text(
+                  uiStrings['planUseCalendarDate']?[locale] ??
+                      'Use calendar date',
+                  style: TextStyle(
+                    fontFamily: settings.fontFamily,
+                    fontSize: settings.fontSize,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                subtitle: Text(
+                  uiStrings['planUseCalendarDateSub']?[locale] ??
+                      'Off = day-of-year (resets every Jan 1).',
+                  style: TextStyle(
+                    fontFamily: settings.fontFamily,
+                    fontSize: settings.fontSize - 2,
+                  ),
+                ),
+                value: _useDate,
+                onChanged: (val) async {
+                  await ReadingPlanService.setUseDateMode(val);
+                  if (!mounted) return;
+                  setState(() => _useDate = val);
+                },
+              ),
+              if (_useDate)
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: const Icon(Icons.calendar_today_outlined),
+                  title: Text(
+                    uiStrings['planStartDate']?[locale] ?? 'Start date',
+                    style: TextStyle(
+                      fontFamily: settings.fontFamily,
+                      fontSize: settings.fontSize,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  subtitle: Text(
+                    _startDate == null
+                        ? '—'
+                        : '${_startDate!.year}-${_startDate!.month.toString().padLeft(2, '0')}-${_startDate!.day.toString().padLeft(2, '0')}',
+                    style: TextStyle(
+                      fontFamily: settings.fontFamily,
+                      fontSize: settings.fontSize - 1,
+                    ),
+                  ),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: _pickStartDate,
+                ),
+              SizedBox(height: 4 * s),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: TextButton.icon(
+                  onPressed: _confirmReset,
+                  icon: Icon(Icons.refresh,
+                      color: Theme.of(context).colorScheme.error),
+                  label: Text(
+                    uiStrings['planResetProgress']?[locale] ??
+                        'Reset Progress',
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.error,
+                      fontSize: settings.fontSize,
+                      fontFamily: settings.fontFamily,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
 }
