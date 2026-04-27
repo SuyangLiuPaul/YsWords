@@ -171,6 +171,11 @@ const uiStrings = {
     'zh-Hant': '顯示前 {shown} 條（共 {total} 條）',
     'en': 'showing first {shown} of {total}',
   },
+  'concordanceBookCount': {
+    'zh-Hans': '出现 {count} 次',
+    'zh-Hant': '出現 {count} 次',
+    'en': '{count} occurrences',
+  },
   'concordanceNoMatchInVersion': {
     'zh-Hans': '此版本未找到该经节',
     'zh-Hant': '此版本未找到該經節',

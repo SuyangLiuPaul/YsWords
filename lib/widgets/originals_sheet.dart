@@ -64,6 +64,11 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
   // chip so we don't re-fetch the same lemma over and over.
   final Map<String, StrongsEntry?> _glossCache = {};
 
+  // Which book group is currently expanded in the concordance section.
+  // Null = all collapsed. Reset whenever the user switches to a new
+  // word entry or root entry.
+  String? _expandedConcordanceBook;
+
   // "englishBook-chapter-verse" → cleaned verse text for concordance preview.
   late final Map<String, String> _verseIndex;
 
@@ -124,6 +129,7 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
       _rootEntry = null;
       _rootConcordance = null;
       _loadingEntry = true;
+      _expandedConcordanceBook = null;
     });
     // Fire both lookups in parallel — Strong's entry is per-language,
     // concordance is a single shared file that gets warmed by the
@@ -138,12 +144,18 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
       _selectedEntry = entry;
       _selectedConcordance = concordance;
       _loadingEntry = false;
+      // Auto-open the first book group so the user sees refs immediately.
+      _expandedConcordanceBook =
+          concordance?.refs.isNotEmpty == true ? concordance!.refs.first.englishBook : null;
     });
   }
 
   Future<void> _loadRootEntry(String strongsNumber) async {
     _clearTapRecognizers();
-    setState(() { _loadingEntry = true; });
+    setState(() {
+      _loadingEntry = true;
+      _expandedConcordanceBook = null;
+    });
     final entryFuture = StrongsService.lookup(strongsNumber);
     final concordanceFuture = ConcordanceService.lookup(strongsNumber);
     final entry = await entryFuture;
@@ -154,6 +166,8 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
       _rootEntry = entry;
       _rootConcordance = concordance;
       _loadingEntry = false;
+      _expandedConcordanceBook =
+          concordance?.refs.isNotEmpty == true ? concordance!.refs.first.englishBook : null;
     });
   }
 
@@ -162,6 +176,10 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
     setState(() {
       _rootEntry = null;
       _rootConcordance = null;
+      // Restore the word-entry's auto-opened first book.
+      _expandedConcordanceBook = _selectedConcordance?.refs.isNotEmpty == true
+          ? _selectedConcordance!.refs.first.englishBook
+          : null;
     });
   }
 
@@ -628,10 +646,9 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
 
   Widget _buildConcordance(
       ColorScheme scheme, String locale, ConcordanceResult cr) {
-    final usedTemplate = uiStrings['concordanceUsed']?[locale] ??
-        'Used {count} times';
-    final usedLabel =
-        usedTemplate.replaceAll('{count}', cr.total.toString());
+    final usedTemplate =
+        uiStrings['concordanceUsed']?[locale] ?? 'Used {count} times';
+    final usedLabel = usedTemplate.replaceAll('{count}', cr.total.toString());
     final shown = cr.refs.length;
     final showingFirst = shown < cr.total
         ? (uiStrings['concordanceShowingFirst']?[locale] ??
@@ -639,6 +656,13 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
             .replaceAll('{shown}', shown.toString())
             .replaceAll('{total}', cr.total.toString())
         : null;
+
+    // Group refs by book, preserving canonical order of first appearance.
+    final grouped = <String, List<ConcordanceRef>>{};
+    for (final r in cr.refs) {
+      grouped.putIfAbsent(r.englishBook, () => []).add(r);
+    }
+    final books = grouped.keys.toList();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -674,17 +698,111 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
         ],
         const SizedBox(height: 6),
         Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            for (int i = 0; i < cr.refs.length; i++) ...[
+            for (int i = 0; i < books.length; i++) ...[
               if (i > 0)
                 Divider(
                     height: 1,
                     thickness: 0.5,
-                    color: scheme.outlineVariant.withValues(alpha: 0.4)),
-              _refRow(cr.refs[i], scheme),
+                    color: scheme.outlineVariant.withValues(alpha: 0.3)),
+              _buildBookGroup(
+                books[i],
+                grouped[books[i]]!,
+                cr.byBook[books[i]] ?? grouped[books[i]]!.length,
+                scheme,
+                locale,
+              ),
             ],
           ],
         ),
+      ],
+    );
+  }
+
+  Widget _buildBookGroup(
+    String englishBook,
+    List<ConcordanceRef> refs,
+    int totalCount,
+    ColorScheme scheme,
+    String locale,
+  ) {
+    final localBook =
+        localeAwareBookName(englishBook, locale, widget.currentVersion);
+    final isExpanded = _expandedConcordanceBook == englishBook;
+    final countTemplate =
+        uiStrings['concordanceBookCount']?[locale] ?? '{count} occurrences';
+    final countLabel =
+        countTemplate.replaceAll('{count}', totalCount.toString());
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Book header — tappable to expand/collapse
+        Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: () => setState(() {
+              _expandedConcordanceBook = isExpanded ? null : englishBook;
+            }),
+            borderRadius: BorderRadius.circular(6),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  AnimatedRotation(
+                    turns: isExpanded ? 0.25 : 0,
+                    duration: const Duration(milliseconds: 180),
+                    child: Icon(Icons.arrow_right_rounded,
+                        size: 20, color: scheme.onSurfaceVariant),
+                  ),
+                  const SizedBox(width: 4),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          localBook,
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: scheme.onSurface,
+                          ),
+                        ),
+                        Text(
+                          countLabel,
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: scheme.onSurfaceVariant,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+        // Expandable ref list
+        if (isExpanded)
+          Padding(
+            padding: const EdgeInsets.only(left: 24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                for (int i = 0; i < refs.length; i++) ...[
+                  if (i > 0)
+                    Divider(
+                        height: 1,
+                        thickness: 0.5,
+                        color: scheme.outlineVariant.withValues(alpha: 0.4)),
+                  _refRow(refs[i], scheme),
+                ],
+              ],
+            ),
+          ),
       ],
     );
   }
