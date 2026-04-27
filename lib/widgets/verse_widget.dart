@@ -116,6 +116,9 @@ class VerseWidget extends StatelessWidget {
                   child: RichText(
                     textAlign: TextAlign.start,
                     text: TextSpan(
+                      style: settings.boldVerseText
+                          ? const TextStyle(fontWeight: FontWeight.w600)
+                          : null,
                       children: spans,
                     ),
                   ),

@@ -200,6 +200,52 @@ const uiStrings = {
     'zh-Hant': '分佈表',
     'en': 'Distribution Table',
   },
+  'boldVerseText': {
+    'zh-Hans': '加粗经文',
+    'zh-Hant': '加粗經文',
+    'en': 'Bold verse text',
+  },
+  'boldVerseTextSubtitle': {
+    'zh-Hans': '将经文正文以半粗体呈现。',
+    'zh-Hant': '將經文正文以半粗體呈現。',
+    'en': 'Render scripture body text in semi-bold weight.',
+  },
+  'showStrongsBadge': {
+    'zh-Hans': '在词卡显示 Strong\'s 号',
+    'zh-Hant': '在詞卡顯示 Strong\'s 號',
+    'en': "Show Strong's number on word chips",
+  },
+  'showStrongsBadgeSubtitle': {
+    'zh-Hans': '在释经面板每个希伯来/希腊词卡下方显示 G####/H#### 徽标。',
+    'zh-Hant': '在釋經面板每個希伯來/希臘詞卡下方顯示 G####/H#### 徽標。',
+    'en': "Display the G#### / H#### badge under each Hebrew/Greek word in the exegesis sheet.",
+  },
+  'autoExpandFirstRef': {
+    'zh-Hans': '自动展开首个经文分组',
+    'zh-Hant': '自動展開首個經文分組',
+    'en': 'Auto-expand first verse group',
+  },
+  'autoExpandFirstRefSubtitle': {
+    'zh-Hans': '在释经面板自动打开第一处经文分组,免去一次点击。',
+    'zh-Hant': '在釋經面板自動打開第一處經文分組,免去一次點擊。',
+    'en': "Automatically open the first book group of concordance refs in the exegesis sheet.",
+  },
+  'zoomIn': {'zh-Hans': '放大', 'zh-Hant': '放大', 'en': 'Zoom in'},
+  'zoomOut': {'zh-Hans': '缩小', 'zh-Hant': '縮小', 'en': 'Zoom out'},
+  'zoomReset': {'zh-Hans': '重置', 'zh-Hant': '重置', 'en': 'Reset zoom'},
+  'summary': {'zh-Hans': '汇总', 'zh-Hant': '匯總', 'en': 'Summary'},
+  'statWords': {'zh-Hans': '词数', 'zh-Hant': '詞數', 'en': 'Words'},
+  'statTotal': {
+    'zh-Hans': '总出现次数',
+    'zh-Hant': '總出現次數',
+    'en': 'Total occurrences',
+  },
+  'statTopBook': {
+    'zh-Hans': '出现最多的书卷',
+    'zh-Hant': '出現最多的書卷',
+    'en': 'Most frequent book',
+  },
+  'statCanon': {'zh-Hans': '正典', 'zh-Hant': '正典', 'en': 'Canon'},
   'colTotal': {
     'zh-Hans': '总',
     'zh-Hant': '總',

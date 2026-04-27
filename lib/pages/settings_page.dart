@@ -617,6 +617,76 @@ class SettingsPage extends StatelessWidget {
                       onChanged: (val) => settings.setOfflineMode(val),
                     ),
                     const Divider(height: 1),
+                    SwitchListTile(
+                      title: Text(
+                        uiStrings['boldVerseText']?[settings.locale] ??
+                            'Bold verse text',
+                        style: TextStyle(
+                          fontSize: settings.fontSize + 2,
+                          fontWeight: FontWeight.w600,
+                          fontFamily: settings.fontFamily,
+                        ),
+                      ),
+                      subtitle: Text(
+                        uiStrings['boldVerseTextSubtitle']?[settings.locale] ??
+                            'Render scripture body text in semi-bold weight.',
+                        style: TextStyle(
+                          fontSize: settings.fontSize,
+                          fontFamily: settings.fontFamily,
+                        ),
+                      ),
+                      value: settings.boldVerseText,
+                      onChanged: (val) => settings.setBoldVerseText(val),
+                    ),
+                    const Divider(height: 1),
+                    SwitchListTile(
+                      title: Text(
+                        uiStrings['showStrongsBadge']?[settings.locale] ??
+                            "Show Strong's number on word chips",
+                        style: TextStyle(
+                          fontSize: settings.fontSize + 2,
+                          fontWeight: FontWeight.w600,
+                          fontFamily: settings.fontFamily,
+                        ),
+                      ),
+                      subtitle: Text(
+                        uiStrings['showStrongsBadgeSubtitle']
+                                ?[settings.locale] ??
+                            "Display the G#### / H#### badge under each Hebrew/Greek word in the exegesis sheet.",
+                        style: TextStyle(
+                          fontSize: settings.fontSize,
+                          fontFamily: settings.fontFamily,
+                        ),
+                      ),
+                      value: settings.showStrongsInOriginals,
+                      onChanged: (val) =>
+                          settings.setShowStrongsInOriginals(val),
+                    ),
+                    const Divider(height: 1),
+                    SwitchListTile(
+                      title: Text(
+                        uiStrings['autoExpandFirstRef']?[settings.locale] ??
+                            'Auto-expand first verse group',
+                        style: TextStyle(
+                          fontSize: settings.fontSize + 2,
+                          fontWeight: FontWeight.w600,
+                          fontFamily: settings.fontFamily,
+                        ),
+                      ),
+                      subtitle: Text(
+                        uiStrings['autoExpandFirstRefSubtitle']
+                                ?[settings.locale] ??
+                            "Automatically open the first book group of concordance refs in the exegesis sheet.",
+                        style: TextStyle(
+                          fontSize: settings.fontSize,
+                          fontFamily: settings.fontFamily,
+                        ),
+                      ),
+                      value: settings.autoExpandFirstRef,
+                      onChanged: (val) =>
+                          settings.setAutoExpandFirstRef(val),
+                    ),
+                    const Divider(height: 1),
                     ListTile(
                       leading: Icon(
                         Icons.refresh_rounded,

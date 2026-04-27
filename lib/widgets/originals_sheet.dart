@@ -3,10 +3,12 @@ import 'dart:async' show unawaited;
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
 
 import 'package:yswords/constants/text_patterns.dart'
     show sanitizeForSearch, notePattern, bracePattern, squarePattern;
 import 'package:yswords/constants/ui_strings.dart';
+import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/models/original_word.dart';
 import 'package:yswords/models/strongs.dart';
 import 'package:yswords/models/verse.dart';
@@ -199,9 +201,13 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
       _selectedEntry = entry;
       _selectedConcordance = concordance;
       _loadingEntry = false;
-      // Auto-open the first book group so the user sees refs immediately.
+      // All book groups are collapsed by default — user opts in to
+      // auto-expand-first via the AppSettings.autoExpandFirstRef flag.
       _expandedConcordanceBook =
-          concordance?.refs.isNotEmpty == true ? concordance!.refs.first.englishBook : null;
+          (context.read<AppSettings>().autoExpandFirstRef &&
+                  concordance?.refs.isNotEmpty == true)
+              ? concordance!.refs.first.englishBook
+              : null;
     });
     // Word family + synonyms load in the background — doesn't block the entry card.
     unawaited(_loadRelations(w.strongs));
@@ -232,8 +238,7 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
       _rootEntry = entry;
       _rootConcordance = concordance;
       _loadingEntry = false;
-      _expandedConcordanceBook =
-          concordance?.refs.isNotEmpty == true ? concordance!.refs.first.englishBook : null;
+      _expandedConcordanceBook = null;
     });
     // pivotFromNumber: when the user reached this entry via a chip in
     // a cross-language section (LXX or Hebrew Sources), auto-expand the
@@ -256,9 +261,7 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
       _lxxEquivalents = const [];
       _hebrewSources = const [];
       // Restore the word-entry's auto-opened first book.
-      _expandedConcordanceBook = _selectedConcordance?.refs.isNotEmpty == true
-          ? _selectedConcordance!.refs.first.englishBook
-          : null;
+      _expandedConcordanceBook = null;
     });
     if (_selectedWord != null) {
       unawaited(_loadRelations(_selectedWord!.strongs));
@@ -535,6 +538,34 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
                   color: scheme.onSurfaceVariant,
                 ),
               ),
+            // Strong's # badge — small, monospace, dimmed so it doesn't
+            // compete with the lemma but is identifiable at a glance.
+            // Force LTR Directionality so the number reads left-to-right
+            // even when the surrounding chip Wrap is RTL for Hebrew.
+            // Hidden when the user has disabled the badge in settings.
+            if (context.read<AppSettings>().showStrongsInOriginals) ...[
+              const SizedBox(height: 2),
+              Directionality(
+                textDirection: TextDirection.ltr,
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                  decoration: BoxDecoration(
+                    color: scheme.secondary.withValues(alpha: 0.13),
+                    borderRadius: BorderRadius.circular(3),
+                  ),
+                  child: Text(
+                    w.strongs,
+                    style: TextStyle(
+                      fontSize: 9,
+                      fontWeight: FontWeight.w700,
+                      color: scheme.secondary,
+                      letterSpacing: 0.3,
+                    ),
+                  ),
+                ),
+              ),
+            ],
             if (gloss.isNotEmpty) ...[
               const SizedBox(height: 2),
               // Gloss is locale-script (LTR/Chinese), even when the

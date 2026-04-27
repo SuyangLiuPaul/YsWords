@@ -12,6 +12,9 @@ const _kParagraphMode = 'paragraphMode';
 const _kMenuScale = 'menuScale';
 const _kOfflineMode = 'offlineMode';
 const _kBooksViewMode = 'booksViewMode';
+const _kBoldVerseText = 'boldVerseText';
+const _kShowStrongsInOriginals = 'showStrongsInOriginals';
+const _kAutoExpandFirstRef = 'autoExpandFirstRef';
 
 class AppSettings extends ChangeNotifier {
   String _fontFamily = 'Roboto';
@@ -26,6 +29,14 @@ class AppSettings extends ChangeNotifier {
   bool _offlineMode = true;
   /// 'list' or 'grid' — persisted choice for the books picker.
   String _booksViewMode = 'grid';
+  /// Render verse text with FontWeight.w700 instead of normal weight.
+  bool _boldVerseText = false;
+  /// Show the Strong's # badge inside each word chip in the originals
+  /// (exegesis) sheet — handy for power users, distracting for some.
+  bool _showStrongsInOriginals = true;
+  /// Auto-expand the first book group in the concordance section of
+  /// each Strong's entry so the user sees verse refs immediately.
+  bool _autoExpandFirstRef = false;
 
   String get fontFamily => _fontFamily;
   double get fontSize => _fontSize;
@@ -38,6 +49,9 @@ class AppSettings extends ChangeNotifier {
   double get menuScale => _menuScale;
   bool get offlineMode => _offlineMode;
   String get booksViewMode => _booksViewMode;
+  bool get boldVerseText => _boldVerseText;
+  bool get showStrongsInOriginals => _showStrongsInOriginals;
+  bool get autoExpandFirstRef => _autoExpandFirstRef;
 
   Future<void> setFontFamily(String family) async {
     if (_fontFamily == family) return;
@@ -120,6 +134,30 @@ class AppSettings extends ChangeNotifier {
     await prefs.setString(_kBooksViewMode, normalized);
   }
 
+  Future<void> setBoldVerseText(bool enabled) async {
+    if (_boldVerseText == enabled) return;
+    _boldVerseText = enabled;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_kBoldVerseText, enabled);
+  }
+
+  Future<void> setShowStrongsInOriginals(bool enabled) async {
+    if (_showStrongsInOriginals == enabled) return;
+    _showStrongsInOriginals = enabled;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_kShowStrongsInOriginals, enabled);
+  }
+
+  Future<void> setAutoExpandFirstRef(bool enabled) async {
+    if (_autoExpandFirstRef == enabled) return;
+    _autoExpandFirstRef = enabled;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_kAutoExpandFirstRef, enabled);
+  }
+
   Future<void> setMenuScale(double scale) async {
     final clamped = scale.clamp(0.7, 1.5);
     if (_menuScale == clamped) return;
@@ -148,6 +186,10 @@ class AppSettings extends ChangeNotifier {
     _offlineMode = prefs.getBool(_kOfflineMode) ?? true;
     final rawBooksView = prefs.getString(_kBooksViewMode) ?? 'grid';
     _booksViewMode = rawBooksView == 'grid' ? 'grid' : 'list';
+    _boldVerseText = prefs.getBool(_kBoldVerseText) ?? false;
+    _showStrongsInOriginals =
+        prefs.getBool(_kShowStrongsInOriginals) ?? true;
+    _autoExpandFirstRef = prefs.getBool(_kAutoExpandFirstRef) ?? false;
     notifyListeners();
   }
 

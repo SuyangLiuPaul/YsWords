@@ -43,10 +43,28 @@ class WordDistributionTable extends StatefulWidget {
 class _WordDistributionTableState extends State<WordDistributionTable> {
   late Future<List<_Row>> _future;
 
+  // Separate horizontal scroll controller — the vertical one comes
+  // from the parent DraggableScrollableSheet via widget.scrollController.
+  late final ScrollController _horizontalController;
+
+  // Zoom factor — multiplies all cell widths and font sizes so the
+  // user can read the table at a comfortable size. Persisted only
+  // for the lifetime of this widget instance.
+  double _zoom = 1.0;
+  static const double _minZoom = 0.7;
+  static const double _maxZoom = 2.0;
+
   @override
   void initState() {
     super.initState();
     _future = _loadAll();
+    _horizontalController = ScrollController();
+  }
+
+  @override
+  void dispose() {
+    _horizontalController.dispose();
+    super.dispose();
   }
 
   Future<List<_Row>> _loadAll() async {
@@ -141,45 +159,222 @@ class _WordDistributionTableState extends State<WordDistributionTable> {
     final groups = isGreek ? _ntGroups(locale) : _otGroups(locale);
     final headerCells = _headerCells(groups, books, scheme, locale);
 
-    // Compute the table's total width so we can give the inner Column
-    // an EXPLICIT width via SizedBox. Without this, the nested
-    // SingleChildScrollView pattern was reporting ambiguous constraints
-    // on Flutter web's HTML renderer and the table would render zero-
-    // sized — looking like the modal sheet was broken.
-    final fixedWidth = 64.0 + 96.0 + 140.0 + 52.0; // Strong's + Lemma + Gloss + Total
-    final groupWidth = groups.length * 64.0;
-    final bookWidth = books.length * 38.0;
+    // Apply zoom: scale every column width proportionally so the
+    // entire table grows / shrinks together. Font sizes also scale
+    // (handled inside _cellWidget via the zoom field).
+    final fixedWidth = (64.0 + 96.0 + 140.0 + 52.0) * _zoom;
+    final groupWidth = groups.length * 64.0 * _zoom;
+    final bookWidth = books.length * 38.0 * _zoom;
     final totalWidth = fixedWidth + groupWidth + bookWidth;
 
-    // Material ancestor + explicit width make the layout deterministic.
     return Material(
       color: Colors.transparent,
-      child: Scrollbar(
-        controller: widget.scrollController,
-        thumbVisibility: true,
-        child: SingleChildScrollView(
-          controller: widget.scrollController,
-          // Outer = vertical scroll. Inside, a horizontal-scroll wrapper
-          // around a fixed-width Column containing the rows.
-          child: SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: SizedBox(
-              width: totalWidth,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _row(headerCells, scheme, isHeader: true),
-                  for (int i = 0; i < rows.length; i++)
-                    _row(_dataCells(rows[i], groups, books, scheme, locale),
-                        scheme,
-                        isHeader: false,
-                        zebra: i.isOdd),
-                ],
+      child: Column(
+        children: [
+          // Zoom controls + summary footer share the same axis so they
+          // stay visible while the user scrolls the table.
+          _buildZoomBar(scheme, locale),
+          // Two-axis scroll: outer vertical (sheet's controller),
+          // inner horizontal (its own controller + visible scrollbar).
+          Expanded(
+            child: Scrollbar(
+              controller: widget.scrollController,
+              thumbVisibility: true,
+              child: SingleChildScrollView(
+                controller: widget.scrollController,
+                child: Scrollbar(
+                  controller: _horizontalController,
+                  thumbVisibility: true,
+                  notificationPredicate: (n) => n.depth == 1,
+                  child: SingleChildScrollView(
+                    controller: _horizontalController,
+                    scrollDirection: Axis.horizontal,
+                    child: SizedBox(
+                      width: totalWidth,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _row(headerCells, scheme, isHeader: true),
+                          for (int i = 0; i < rows.length; i++)
+                            _row(
+                                _dataCells(rows[i], groups, books, scheme,
+                                    locale),
+                                scheme,
+                                isHeader: false,
+                                zebra: i.isOdd),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
               ),
             ),
           ),
+          _buildSummary(rows, books, isGreek, scheme, locale),
+        ],
+      ),
+    );
+  }
+
+  // ── Zoom controls ─────────────────────────────────────────────────
+
+  Widget _buildZoomBar(ColorScheme scheme, String locale) {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(12, 4, 12, 4),
+      decoration: BoxDecoration(
+        border: Border(
+          bottom: BorderSide(
+              color: scheme.outlineVariant.withValues(alpha: 0.4), width: 0.5),
         ),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.zoom_out_map_rounded,
+              size: 14, color: scheme.onSurfaceVariant),
+          const SizedBox(width: 6),
+          Text(
+            '${(_zoom * 100).round()}%',
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+              color: scheme.onSurfaceVariant,
+            ),
+          ),
+          const Spacer(),
+          IconButton(
+            tooltip: uiStrings['zoomOut']?[locale] ?? 'Zoom out',
+            icon: const Icon(Icons.remove_circle_outline),
+            iconSize: 18,
+            visualDensity: VisualDensity.compact,
+            onPressed: _zoom <= _minZoom
+                ? null
+                : () => setState(() {
+                      _zoom = (_zoom - 0.1).clamp(_minZoom, _maxZoom);
+                    }),
+          ),
+          IconButton(
+            tooltip: uiStrings['zoomReset']?[locale] ?? 'Reset zoom',
+            icon: const Icon(Icons.refresh),
+            iconSize: 16,
+            visualDensity: VisualDensity.compact,
+            onPressed: _zoom == 1.0
+                ? null
+                : () => setState(() => _zoom = 1.0),
+          ),
+          IconButton(
+            tooltip: uiStrings['zoomIn']?[locale] ?? 'Zoom in',
+            icon: const Icon(Icons.add_circle_outline),
+            iconSize: 18,
+            visualDensity: VisualDensity.compact,
+            onPressed: _zoom >= _maxZoom
+                ? null
+                : () => setState(() {
+                      _zoom = (_zoom + 0.1).clamp(_minZoom, _maxZoom);
+                    }),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ── Summary footer ────────────────────────────────────────────────
+
+  Widget _buildSummary(List<_Row> rows, List<String> books, bool isGreek,
+      ColorScheme scheme, String locale) {
+    // Aggregate stats across every row.
+    final totalOccurrences =
+        rows.fold<int>(0, (a, r) => a + (r.concordance?.total ?? 0));
+    // Find the book with the most combined occurrences across all rows.
+    final perBook = <String, int>{};
+    for (final r in rows) {
+      final byBook = r.concordance?.byBook ?? const <String, int>{};
+      byBook.forEach((b, n) {
+        perBook[b] = (perBook[b] ?? 0) + n;
+      });
+    }
+    String? topBook;
+    int topCount = 0;
+    perBook.forEach((b, n) {
+      if (n > topCount) {
+        topBook = b;
+        topCount = n;
+      }
+    });
+    final wordCount = rows.length;
+    return Container(
+      padding: const EdgeInsets.fromLTRB(12, 8, 12, 10),
+      decoration: BoxDecoration(
+        color: scheme.surfaceContainerHigh,
+        border: Border(
+          top: BorderSide(color: scheme.outlineVariant, width: 0.5),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            uiStrings['summary']?[locale] ?? 'Summary',
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+              color: scheme.onSurfaceVariant,
+              letterSpacing: 0.6,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Wrap(
+            spacing: 16,
+            runSpacing: 4,
+            children: [
+              _statChip(
+                  uiStrings['statWords']?[locale] ?? 'Words',
+                  '$wordCount',
+                  scheme),
+              _statChip(
+                  uiStrings['statTotal']?[locale] ?? 'Total occurrences',
+                  '$totalOccurrences',
+                  scheme),
+              _statChip(
+                  uiStrings['statTopBook']?[locale] ?? 'Most frequent book',
+                  topBook == null
+                      ? '—'
+                      : '${localeAwareBookName(topBook!, locale, widget.currentVersion)} ($topCount)',
+                  scheme),
+              _statChip(
+                  uiStrings['statCanon']?[locale] ?? 'Canon',
+                  isGreek
+                      ? (uiStrings['newTestament']?[locale] ?? 'Greek Bible')
+                      : (uiStrings['oldTestament']?[locale] ?? 'Hebrew Bible'),
+                  scheme),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _statChip(String label, String value, ColorScheme scheme) {
+    return RichText(
+      text: TextSpan(
+        children: [
+          TextSpan(
+            text: '$label: ',
+            style: TextStyle(
+              fontSize: 11,
+              color: scheme.onSurfaceVariant,
+            ),
+          ),
+          TextSpan(
+            text: value,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+              color: scheme.onSurface,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -287,16 +482,18 @@ class _WordDistributionTableState extends State<WordDistributionTable> {
     final color = c.dim
         ? scheme.onSurfaceVariant.withValues(alpha: 0.45)
         : (isHeader ? scheme.onSurfaceVariant : scheme.onSurface);
+    // Scale font size and column width by the current zoom factor so
+    // every cell grows / shrinks together when the user taps +/−.
     final style = TextStyle(
-      fontSize: isHeader ? 11 : 12,
+      fontSize: (isHeader ? 11 : 12) * _zoom,
       fontWeight: isHeader || c.bold ? FontWeight.w700 : FontWeight.w400,
       fontFamily: c.mono ? 'monospace' : null,
       color: color,
       height: 1.2,
     );
     final cell = Container(
-      width: c.width,
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
+      width: c.width * _zoom,
+      padding: EdgeInsets.symmetric(horizontal: 6 * _zoom, vertical: 6 * _zoom),
       alignment: c.align == TextAlign.left
           ? Alignment.centerLeft
           : Alignment.center,

@@ -121,6 +121,9 @@ class ParagraphGroupWidget extends StatelessWidget {
                         fontFamily: settings.fontFamily,
                         height: settings.lineSpacing,
                         color: Theme.of(context).textTheme.bodyLarge?.color,
+                        fontWeight: settings.boldVerseText
+                            ? FontWeight.w600
+                            : FontWeight.normal,
                         fontStyle:
                             isReference ? FontStyle.italic : FontStyle.normal,
                       ),
