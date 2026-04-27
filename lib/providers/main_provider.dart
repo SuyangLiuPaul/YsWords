@@ -78,6 +78,15 @@ class MainProvider extends ChangeNotifier {
   // Map to store verse highlight colors (verse ID → ARGB int)
   Map<String, int> _highlights = {};
 
+  // Map of verse ID → user note text. Notes are persisted in
+  // SharedPreferences globally (no prefix) the same way highlights
+  // are, so split-view panes share them.
+  Map<String, String> _verseNotes = {};
+
+  // Set of bookmarked verse IDs. Same global persistence as
+  // highlights and notes.
+  Set<String> _bookmarks = {};
+
   // List of Store Verse Objects
   List<Verse> get selectedVerses =>
       verses.where((v) => _selectedIds.contains(v.id)).toList();
@@ -177,6 +186,82 @@ class MainProvider extends ChangeNotifier {
     if (migrated && isPrimary) {
       _saveHighlights();
     }
+  }
+
+  // ── Verse notes ─────────────────────────────────────────────────
+
+  /// Read-only snapshot for UI rendering (e.g. notes-list page).
+  Map<String, String> get verseNotes => Map.unmodifiable(_verseNotes);
+
+  /// Returns true if the verse has any note text attached.
+  bool isVerseNoted(Verse v) => (_verseNotes[v.id]?.isNotEmpty ?? false);
+
+  /// Returns the note text for [v], or null if no note exists.
+  String? getVerseNote(Verse v) => _verseNotes[v.id];
+
+  /// Set or replace the note for [verse]. Pass an empty string to
+  /// remove the note. Persists to SharedPreferences and notifies.
+  void setVerseNote({required Verse verse, required String text}) {
+    final trimmed = text.trim();
+    if (trimmed.isEmpty) {
+      _verseNotes.remove(verse.id);
+    } else {
+      _verseNotes[verse.id] = trimmed;
+    }
+    _saveNotes();
+    notifyListeners();
+  }
+
+  /// Same as [setVerseNote] but for an empty string — convenience.
+  void clearVerseNote({required Verse verse}) {
+    if (_verseNotes.remove(verse.id) != null) {
+      _saveNotes();
+      notifyListeners();
+    }
+  }
+
+  // ── Bookmarks ───────────────────────────────────────────────────
+
+  /// Read-only snapshot of bookmarked verse IDs.
+  Set<String> get bookmarks => Set.unmodifiable(_bookmarks);
+
+  bool isBookmarked(Verse v) => _bookmarks.contains(v.id);
+
+  void toggleBookmark({required Verse verse}) {
+    if (_bookmarks.contains(verse.id)) {
+      _bookmarks.remove(verse.id);
+    } else {
+      _bookmarks.add(verse.id);
+    }
+    _saveBookmarks();
+    notifyListeners();
+  }
+
+  void _saveNotes() async {
+    final prefs = await SharedPreferences.getInstance();
+    prefs.setString('verseNotes', jsonEncode(_verseNotes));
+  }
+
+  Future<void> _loadNotes() async {
+    final prefs = await SharedPreferences.getInstance();
+    final json = prefs.getString('verseNotes');
+    if (json == null) return;
+    final decoded = jsonDecode(json) as Map<String, dynamic>;
+    _verseNotes = {
+      for (final e in decoded.entries) e.key: e.value as String,
+    };
+  }
+
+  void _saveBookmarks() async {
+    final prefs = await SharedPreferences.getInstance();
+    prefs.setStringList('bookmarks', _bookmarks.toList());
+  }
+
+  Future<void> _loadBookmarks() async {
+    final prefs = await SharedPreferences.getInstance();
+    final list = prefs.getStringList('bookmarks');
+    if (list == null) return;
+    _bookmarks = list.toSet();
   }
 
   /// Maps a highlight ID like "历代志上-3-19" → "1 Chronicles-3-19".
@@ -298,6 +383,8 @@ class MainProvider extends ChangeNotifier {
     if (savedChapter != null) currentChapter = savedChapter;
 
     await _loadHighlights();
+    await _loadNotes();
+    await _loadBookmarks();
 
     notifyListeners();
   }

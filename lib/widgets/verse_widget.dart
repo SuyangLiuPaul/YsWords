@@ -35,6 +35,8 @@ class VerseWidget extends StatelessWidget {
         final isSelected = mainProvider.isSelected(verse);
         final isHighlighted = mainProvider.highlightIndex == index;
         final highlightColor = mainProvider.getHighlightColor(verse);
+        final isNoted = mainProvider.isVerseNoted(verse);
+        final isBookmarked = mainProvider.isBookmarked(verse);
         final isReferenceLine = verse.paragraphType == 'reference';
         final inParagraphMode = settings.paragraphMode;
         final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -99,29 +101,69 @@ class VerseWidget extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 if (topGap > 0) SizedBox(height: topGap),
-                Container(
-                  width: double.infinity,
-                  color: isSelected
-                      ? Theme.of(context).colorScheme.primaryContainer
-                      : isHighlighted
-                          ? Theme.of(context)
-                              .colorScheme
-                              .secondary
-                              .withValues(alpha: highlightAlpha)
-                          : highlightColor != null
-                              ? highlightColor.withValues(alpha: highlightAlpha)
-                              : Colors.transparent,
-                  padding: EdgeInsets.fromLTRB(
-                      leftIndent, vertPadding, baseIndent, vertPadding),
-                  child: RichText(
-                    textAlign: TextAlign.start,
-                    text: TextSpan(
-                      style: settings.boldVerseText
-                          ? const TextStyle(fontWeight: FontWeight.w600)
-                          : null,
-                      children: spans,
+                Stack(
+                  children: [
+                    Container(
+                      width: double.infinity,
+                      color: isSelected
+                          ? Theme.of(context).colorScheme.primaryContainer
+                          : isHighlighted
+                              ? Theme.of(context)
+                                  .colorScheme
+                                  .secondary
+                                  .withValues(alpha: highlightAlpha)
+                              : highlightColor != null
+                                  ? highlightColor
+                                      .withValues(alpha: highlightAlpha)
+                                  : Colors.transparent,
+                      padding: EdgeInsets.fromLTRB(
+                          leftIndent, vertPadding, baseIndent, vertPadding),
+                      child: RichText(
+                        textAlign: TextAlign.start,
+                        text: TextSpan(
+                          style: settings.boldVerseText
+                              ? const TextStyle(fontWeight: FontWeight.w600)
+                              : null,
+                          children: spans,
+                        ),
+                      ),
                     ),
-                  ),
+                    // Tiny note / bookmark badges anchored to the right
+                    // edge of the verse container. Only render when the
+                    // verse has the corresponding annotation, so the
+                    // reading view stays clean for un-annotated verses.
+                    if (isNoted || isBookmarked)
+                      Positioned(
+                        top: 2,
+                        right: 4,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (isNoted)
+                              Padding(
+                                padding: const EdgeInsets.only(right: 4),
+                                child: Icon(
+                                  Icons.sticky_note_2,
+                                  size: 14,
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .primary
+                                      .withValues(alpha: 0.6),
+                                ),
+                              ),
+                            if (isBookmarked)
+                              Icon(
+                                Icons.bookmark_rounded,
+                                size: 14,
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .primary
+                                    .withValues(alpha: 0.6),
+                              ),
+                          ],
+                        ),
+                      ),
+                  ],
                 ),
               ],
             ),

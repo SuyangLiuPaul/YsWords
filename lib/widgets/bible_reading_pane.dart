@@ -14,6 +14,7 @@ import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/models/bible_map.dart';
 import 'package:yswords/models/verse.dart';
 import 'package:yswords/pages/books_page.dart';
+import 'package:yswords/pages/library_page.dart';
 import 'package:yswords/pages/map_viewer_page.dart';
 import 'package:yswords/pages/search_page.dart';
 import 'package:yswords/pages/settings_page.dart';
@@ -678,6 +679,34 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                                 locale: settings.locale,
                                 mainProvider: mainProvider,
                               ),
+                              anyNoted: mainProvider.selectedVerses
+                                  .any(mainProvider.isVerseNoted),
+                              anyBookmarked: mainProvider.selectedVerses
+                                  .any(mainProvider.isBookmarked),
+                              onNote: () => _showNoteEditor(
+                                context: context,
+                                verse: mainProvider.selectedVerses.first,
+                                locale: settings.locale,
+                                mainProvider: mainProvider,
+                              ),
+                              onBookmark: () {
+                                final selected =
+                                    mainProvider.selectedVerses.toList();
+                                final allBookmarked = selected.every(
+                                    mainProvider.isBookmarked);
+                                for (final v in selected) {
+                                  if (allBookmarked) {
+                                    if (mainProvider.isBookmarked(v)) {
+                                      mainProvider.toggleBookmark(verse: v);
+                                    }
+                                  } else {
+                                    if (!mainProvider.isBookmarked(v)) {
+                                      mainProvider.toggleBookmark(verse: v);
+                                    }
+                                  }
+                                }
+                                mainProvider.clearSelectedVerses();
+                              },
                             )
                           : _ReaderStatusBar(
                               progress: chapterProgress,
@@ -908,6 +937,14 @@ class _SelectionActionBar extends StatelessWidget {
   final VoidCallback onRemoveHighlight;
   final VoidCallback onOriginal;
   final VoidCallback onCrossRefs;
+  final VoidCallback onNote;
+  final VoidCallback onBookmark;
+  /// True when at least one of the currently-selected verses is
+  /// already bookmarked — so the star icon can render filled.
+  final bool anyBookmarked;
+  /// True when at least one of the currently-selected verses already
+  /// has a note attached — so the note icon can render filled.
+  final bool anyNoted;
   final DeviceClass deviceClass;
 
   const _SelectionActionBar({
@@ -919,6 +956,10 @@ class _SelectionActionBar extends StatelessWidget {
     required this.onRemoveHighlight,
     required this.onOriginal,
     required this.onCrossRefs,
+    required this.onNote,
+    required this.onBookmark,
+    required this.anyBookmarked,
+    required this.anyNoted,
     required this.deviceClass,
   });
 
@@ -1051,6 +1092,25 @@ class _SelectionActionBar extends StatelessWidget {
                       'Cross-references',
                   onPressed: onCrossRefs,
                   icon: const Icon(Icons.hub_outlined),
+                ),
+                const SizedBox(width: 4),
+                IconButton(
+                  tooltip: uiStrings['noteAdd']?[settings.locale] ?? 'Note',
+                  onPressed: onNote,
+                  icon: Icon(anyNoted
+                      ? Icons.sticky_note_2
+                      : Icons.sticky_note_2_outlined),
+                  color: anyNoted ? scheme.primary : null,
+                ),
+                const SizedBox(width: 4),
+                IconButton(
+                  tooltip:
+                      uiStrings['bookmark']?[settings.locale] ?? 'Bookmark',
+                  onPressed: onBookmark,
+                  icon: Icon(anyBookmarked
+                      ? Icons.bookmark_rounded
+                      : Icons.bookmark_outline_rounded),
+                  color: anyBookmarked ? scheme.primary : null,
                 ),
                 const SizedBox(width: 4),
                 IconButton(
@@ -1206,6 +1266,140 @@ void _navigateToBibleReference({
       mainProvider.clearHighlightIndex();
     });
   });
+}
+
+/// Modal text-editing sheet for attaching a note to a single verse.
+/// If the verse already has a note, the editor pre-fills with it
+/// and shows a Delete button.
+void _showNoteEditor({
+  required BuildContext context,
+  required Verse verse,
+  required String locale,
+  required MainProvider mainProvider,
+}) {
+  final controller = TextEditingController(
+      text: mainProvider.getVerseNote(verse) ?? '');
+  final ref = '${verse.book} ${verse.chapter}:${verse.verseLabel}';
+  showModalBottomSheet<void>(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Theme.of(context).colorScheme.surface,
+    constraints: const BoxConstraints(maxWidth: 720),
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+    ),
+    builder: (sheetCtx) {
+      final scheme = Theme.of(sheetCtx).colorScheme;
+      final hasExisting =
+          (mainProvider.getVerseNote(verse) ?? '').isNotEmpty;
+      return Padding(
+        padding: EdgeInsets.only(
+          left: 16,
+          right: 16,
+          top: 12,
+          bottom: MediaQuery.of(sheetCtx).viewInsets.bottom + 16,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              margin: const EdgeInsets.only(bottom: 8),
+              alignment: Alignment.center,
+              child: Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: scheme.outlineVariant,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+            Row(
+              children: [
+                Icon(Icons.sticky_note_2_outlined,
+                    color: scheme.primary, size: 20),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        uiStrings['noteEdit']?[locale] ?? 'Edit note',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                          color: scheme.onSurface,
+                        ),
+                      ),
+                      Text(
+                        ref,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: scheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.close),
+                  onPressed: () => Navigator.of(sheetCtx).maybePop(),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: controller,
+              autofocus: true,
+              maxLines: 8,
+              minLines: 4,
+              textInputAction: TextInputAction.newline,
+              decoration: InputDecoration(
+                hintText: uiStrings['noteHint']?[locale] ??
+                    'Type your note for this verse…',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                if (hasExisting)
+                  TextButton.icon(
+                    onPressed: () {
+                      mainProvider.clearVerseNote(verse: verse);
+                      mainProvider.clearSelectedVerses();
+                      Navigator.of(sheetCtx).maybePop();
+                    },
+                    icon: Icon(Icons.delete_outline, color: scheme.error),
+                    label: Text(
+                      uiStrings['noteDelete']?[locale] ?? 'Delete',
+                      style: TextStyle(color: scheme.error),
+                    ),
+                  ),
+                const Spacer(),
+                FilledButton.icon(
+                  onPressed: () {
+                    mainProvider.setVerseNote(
+                      verse: verse,
+                      text: controller.text,
+                    );
+                    mainProvider.clearSelectedVerses();
+                    Navigator.of(sheetCtx).maybePop();
+                  },
+                  icon: const Icon(Icons.check_rounded),
+                  label: Text(uiStrings['noteSave']?[locale] ?? 'Save'),
+                ),
+              ],
+            ),
+          ],
+        ),
+      );
+    },
+  );
 }
 
 void _showHighlightsSheet({
@@ -1840,7 +2034,7 @@ class _FloatingHeader extends StatelessWidget {
                             onTap: () => onHighlights?.call(),
                             child: _menuRow(
                               context,
-                              icon: Icons.bookmark_rounded,
+                              icon: Icons.format_color_fill,
                               iconColor: scheme.primary,
                               label: uiStrings['myHighlights']?[locale] ??
                                   'My Highlights',
@@ -1848,6 +2042,23 @@ class _FloatingHeader extends StatelessWidget {
                             ),
                           ));
                         }
+                        // Library entry — always shown so the user
+                        // can discover Notes / Bookmarks even before
+                        // creating any.
+                        items.add(PopupMenuItem(
+                          value: 'library',
+                          onTap: () {
+                            Get.to(
+                              () => const LibraryPage(),
+                              transition: Transition.rightToLeft,
+                            );
+                          },
+                          child: _menuRow(
+                            context,
+                            icon: Icons.collections_bookmark_outlined,
+                            label: uiStrings['library']?[locale] ?? 'Library',
+                          ),
+                        ));
                         items.add(PopupMenuItem(
                           value: 'maps',
                           onTap: () => _showMapPicker(
