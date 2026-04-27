@@ -498,4 +498,19 @@ const uiStrings = {
     'zh-Hant': '輸入關鍵字開始搜索',
     'en': 'Type a word or phrase to search',
   },
+  'myHighlights': {
+    'zh-Hans': '我的高亮',
+    'zh-Hant': '我的高亮',
+    'en': 'My Highlights',
+  },
+  'noHighlights': {
+    'zh-Hans': '还没有高亮内容。\n选中经文，点击高亮按钮即可保存。',
+    'zh-Hant': '還沒有高亮內容。\n選中經文，點擊高亮按鈕即可儲存。',
+    'en': 'No highlights yet.\nSelect a verse and tap the highlight button to save.',
+  },
+  'highlightsVerseCount': {
+    'zh-Hans': '{count} 节',
+    'zh-Hant': '{count} 節',
+    'en': '{count} verse',
+  },
 };

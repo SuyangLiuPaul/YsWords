@@ -26,6 +26,7 @@ import 'package:yswords/utils/clipboard_helper.dart';
 import 'package:yswords/utils/responsive.dart';
 import 'package:yswords/utils/version_mapper.dart'
     show translateBookName, toEnglish;
+import 'package:yswords/widgets/highlights_sheet.dart';
 import 'package:yswords/widgets/originals_sheet.dart';
 import 'package:yswords/widgets/verse_widget.dart';
 import 'package:yswords/widgets/paragraph_group_widget.dart';
@@ -602,6 +603,13 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                         mainProvider.clearSelectedVerses();
                         Get.to(() => SettingsPage());
                       },
+                      highlightCount:
+                          mainProvider.highlights.length,
+                      onHighlights: () => _showHighlightsSheet(
+                        context: context,
+                        highlights: mainProvider.highlights,
+                        locale: settings.locale,
+                      ),
                     ),
                     // Vertical position indicator on the right edge — a
                     // thin track + a small "current/total" pill that
@@ -1092,6 +1100,53 @@ void _showOriginalsSheet({
   );
 }
 
+void _showHighlightsSheet({
+  required BuildContext context,
+  required Map<String, int> highlights,
+  required String locale,
+}) {
+  final mainProvider = context.read<MainProvider>();
+  showModalBottomSheet<void>(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Theme.of(context).colorScheme.surface,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+    ),
+    builder: (sheetCtx) => HighlightsSheet(
+      highlights: highlights,
+      locale: locale,
+      onNavigate: (englishBook, chapter, verse) {
+        Navigator.of(sheetCtx).maybePop();
+        final localBook =
+            translateBookName(englishBook, mainProvider.currentVersion);
+        final match = mainProvider.verses.where(
+          (v) => v.book == localBook &&
+              v.chapter == chapter &&
+              v.verse == verse,
+        );
+        if (match.isEmpty) return;
+        final v = match.first;
+        mainProvider.setCurrentChapter(book: v.book, chapter: v.chapter);
+        mainProvider.updateCurrentVerse(verse: v);
+        Future.delayed(const Duration(milliseconds: 250), () {
+          final chapterVerses = mainProvider.verses
+              .where((cv) => cv.book == v.book && cv.chapter == v.chapter)
+              .toList()
+            ..sort((a, b) => a.verse.compareTo(b.verse));
+          final relIdx = chapterVerses.indexWhere((cv) => cv.verse == v.verse);
+          if (relIdx < 0) return;
+          mainProvider.jumpToIndex(index: relIdx);
+          mainProvider.setHighlightIndex(relIdx);
+          Future.delayed(const Duration(milliseconds: 1200), () {
+            mainProvider.clearHighlightIndex();
+          });
+        });
+      },
+    ),
+  );
+}
+
 /// Jump the reader to a `ConcordanceRef` (e.g. "John 3:16") translated
 /// into the current version's book naming. Mirrors the search-page
 /// pattern: setCurrentChapter → updateCurrentVerse → jumpToIndex →
@@ -1484,6 +1539,8 @@ class _FloatingHeader extends StatelessWidget {
   final List<BibleMap> chapterMaps;
   final List<BibleMap> bookMaps;
   final String locale;
+  final int highlightCount;
+  final VoidCallback? onHighlights;
 
   const _FloatingHeader({
     required this.showBookInfo,
@@ -1507,6 +1564,8 @@ class _FloatingHeader extends StatelessWidget {
     this.chapterMaps = const [],
     this.bookMaps = const [],
     this.locale = 'en',
+    this.highlightCount = 0,
+    this.onHighlights,
   });
 
   @override
@@ -1678,6 +1737,20 @@ class _FloatingHeader extends StatelessWidget {
                                 'Close Split View')
                             : (uiStrings['openSplitView']?[locale] ??
                                 'Open Split View'),
+                      ),
+                    if (highlightCount > 0)
+                      IconButton(
+                        onPressed: onHighlights,
+                        icon: Icon(
+                          Icons.bookmark_rounded,
+                          size: iconSize,
+                          color: scheme.primary,
+                        ),
+                        padding: EdgeInsets.all(iconPad),
+                        constraints: const BoxConstraints(
+                            minWidth: 36, minHeight: 36),
+                        tooltip: uiStrings['myHighlights']?[locale] ??
+                            'My Highlights',
                       ),
                     // Always show the map button — even when no maps
                     // match this chapter the picker offers a book-level

@@ -84,6 +84,9 @@ class MainProvider extends ChangeNotifier {
 
   bool isSelected(Verse v) => _selectedIds.contains(v.id);
 
+  /// Read-only snapshot for UI rendering (e.g. HighlightsSheet).
+  Map<String, int> get highlights => Map.unmodifiable(_highlights);
+
   bool isVerseHighlighted(Verse v) => _highlights.containsKey(v.id);
 
   Color? getHighlightColor(Verse v) {
@@ -123,12 +126,14 @@ class MainProvider extends ChangeNotifier {
   void _saveHighlights() async {
     if (!isPrimary) return;
     final prefs = await SharedPreferences.getInstance();
-    prefs.setString('${_storagePrefix}highlights', jsonEncode(_highlights));
+    // No prefix — highlights are global annotations shared across panes/versions.
+    prefs.setString('highlights', jsonEncode(_highlights));
   }
 
   Future<void> _loadHighlights() async {
     final prefs = await SharedPreferences.getInstance();
-    final json = prefs.getString('${_storagePrefix}highlights');
+    // No prefix — both panes load the same store so split view stays in sync.
+    final json = prefs.getString('highlights');
     if (json != null) {
       final decoded = jsonDecode(json) as Map<String, dynamic>;
       _highlights = decoded.map((k, v) => MapEntry(k, v as int));

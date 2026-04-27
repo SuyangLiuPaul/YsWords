@@ -1,4 +1,5 @@
 import 'package:flutter/widgets.dart';
+import 'package:yswords/services/fetch_books.dart' show bookNameToEnglish;
 
 @immutable
 class Verse {
@@ -20,7 +21,12 @@ class Verse {
     this.paragraphType = 'inline',
   }) : verseLabel = verseLabel ?? '$verse';
 
-  String get id => '$book-$chapter-$verseLabel';
+  // Always use the English book name so the ID is the same regardless of
+  // which translation is loaded — enables cross-version highlight persistence.
+  String get id {
+    final en = bookNameToEnglish[book] ?? book;
+    return '$en-$chapter-$verseLabel';
+  }
 
   /// Returns a new Verse with the given fields replaced.
   /// Used to apply cross-version paragraph metadata after JSON parsing.
