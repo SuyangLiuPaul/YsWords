@@ -513,4 +513,9 @@ const uiStrings = {
     'zh-Hant': '{count} 節',
     'en': '{count} verse',
   },
+  'more': {
+    'zh-Hans': '更多',
+    'zh-Hant': '更多',
+    'en': 'More',
+  },
 };

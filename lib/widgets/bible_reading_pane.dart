@@ -1691,112 +1691,134 @@ class _FloatingHeader extends StatelessWidget {
                     ],
                   ),
                 ),
+                // Right-side actions: Material 3 best practice — keep
+                // the most-used action (Search) visible and consolidate
+                // everything else into a single overflow menu so the
+                // book/chapter label on the left has room to render
+                // (avoids "马可..." truncation in narrow layouts and
+                // split view).
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    if (showSidebarToggle &&
-                        onToggleParagraphMode != null)
-                      IconButton(
-                        onPressed: onToggleParagraphMode,
-                        icon: Icon(
-                          paragraphMode
-                              ? Icons.format_align_left
-                              : Icons.format_list_numbered_rounded,
-                          size: iconSize,
-                          // Tint the icon when in paragraph mode so the
-                          // active state is visually obvious — previously
-                          // only the icon glyph changed, which was easy
-                          // to miss.
-                          color: paragraphMode ? scheme.primary : null,
-                        ),
-                        padding: EdgeInsets.all(iconPad),
-                        constraints: const BoxConstraints(
-                            minWidth: 36, minHeight: 36),
-                        tooltip: paragraphMode
-                            ? (uiStrings['paragraphFlow']
-                                    ?[settings.locale] ??
-                                'Paragraph Flow')
-                            : (uiStrings['verseByVerse']
-                                    ?[settings.locale] ??
-                                'Verse by Verse'),
-                      ),
-                    if (onToggleSplitView != null)
-                      IconButton(
-                        onPressed: onToggleSplitView,
-                        icon: Icon(
-                          splitViewActive
-                              ? Icons.close_fullscreen
-                              : Icons.vertical_split,
-                          size: iconSize,
-                        ),
-                        padding: EdgeInsets.all(iconPad),
-                        constraints: const BoxConstraints(
-                            minWidth: 36, minHeight: 36),
-                        tooltip: splitViewActive
-                            ? (uiStrings['closeSplitView']?[locale] ??
-                                'Close Split View')
-                            : (uiStrings['openSplitView']?[locale] ??
-                                'Open Split View'),
-                      ),
-                    if (highlightCount > 0)
-                      IconButton(
-                        onPressed: onHighlights,
-                        icon: Icon(
-                          Icons.bookmark_rounded,
-                          size: iconSize,
-                          color: scheme.primary,
-                        ),
-                        padding: EdgeInsets.all(iconPad),
-                        constraints: const BoxConstraints(
-                            minWidth: 36, minHeight: 36),
-                        tooltip: uiStrings['myHighlights']?[locale] ??
-                            'My Highlights',
-                      ),
-                    // Always show the map button — even when no maps
-                    // match this chapter the picker offers a book-level
-                    // fallback and a "browse all" entry.
-                    IconButton(
-                      onPressed: () => _showMapPicker(
-                        context,
-                        chapterMaps: chapterMaps,
-                        bookMaps: bookMaps,
-                        locale: locale,
-                      ),
-                      icon: Icon(
-                        chapterMaps.isNotEmpty
-                            ? Icons.map_rounded
-                            : Icons.map_outlined,
-                        size: iconSize,
-                        // Dim slightly when no chapter-specific match —
-                        // signals "fallback" without disabling the
-                        // affordance.
-                        color: chapterMaps.isEmpty
-                            ? scheme.onSurfaceVariant.withValues(alpha: 0.7)
-                            : null,
-                      ),
-                      padding: EdgeInsets.all(iconPad),
-                      constraints: const BoxConstraints(
-                          minWidth: 36, minHeight: 36),
-                      tooltip: uiStrings['maps']?[locale] ?? 'Maps',
-                    ),
-                    if (showSearchAndSettings) ...[
+                    if (showSearchAndSettings)
                       IconButton(
                         onPressed: onSearch,
-                        icon:
-                            Icon(Icons.search_rounded, size: iconSize),
+                        icon: Icon(Icons.search_rounded, size: iconSize),
                         padding: EdgeInsets.all(iconPad),
                         constraints: const BoxConstraints(
                             minWidth: 36, minHeight: 36),
+                        tooltip: uiStrings['search']?[locale] ?? 'Search',
                       ),
-                      const SizedBox(width: 2),
-                      IconButton(
-                        onPressed: onSettings,
-                        icon: Icon(Icons.settings, size: iconSize),
-                        padding: EdgeInsets.all(iconPad),
-                        constraints: const BoxConstraints(
-                            minWidth: 36, minHeight: 36),
-                      ),
-                    ],
+                    PopupMenuButton<String>(
+                      icon: Icon(Icons.more_vert_rounded, size: iconSize),
+                      padding: EdgeInsets.all(iconPad),
+                      tooltip: uiStrings['more']?[locale] ?? 'More',
+                      position: PopupMenuPosition.under,
+                      itemBuilder: (context) {
+                        final items = <PopupMenuEntry<String>>[];
+                        if (highlightCount > 0) {
+                          items.add(PopupMenuItem(
+                            value: 'highlights',
+                            child: _menuRow(
+                              context,
+                              icon: Icons.bookmark_rounded,
+                              iconColor: scheme.primary,
+                              label: uiStrings['myHighlights']?[locale] ??
+                                  'My Highlights',
+                              trailing: highlightCount.toString(),
+                            ),
+                          ));
+                        }
+                        items.add(PopupMenuItem(
+                          value: 'maps',
+                          child: _menuRow(
+                            context,
+                            icon: chapterMaps.isNotEmpty
+                                ? Icons.map_rounded
+                                : Icons.map_outlined,
+                            iconColor: chapterMaps.isNotEmpty
+                                ? scheme.primary
+                                : null,
+                            label: uiStrings['maps']?[locale] ?? 'Maps',
+                            trailing: chapterMaps.isNotEmpty
+                                ? chapterMaps.length.toString()
+                                : null,
+                          ),
+                        ));
+                        if (onToggleSplitView != null) {
+                          items.add(PopupMenuItem(
+                            value: 'split',
+                            child: _menuRow(
+                              context,
+                              icon: splitViewActive
+                                  ? Icons.close_fullscreen
+                                  : Icons.vertical_split,
+                              label: splitViewActive
+                                  ? (uiStrings['closeSplitView']?[locale] ??
+                                      'Close Split View')
+                                  : (uiStrings['openSplitView']?[locale] ??
+                                      'Open Split View'),
+                            ),
+                          ));
+                        }
+                        if (showSidebarToggle &&
+                            onToggleParagraphMode != null) {
+                          items.add(PopupMenuItem(
+                            value: 'paragraph',
+                            child: _menuRow(
+                              context,
+                              icon: paragraphMode
+                                  ? Icons.format_align_left
+                                  : Icons.format_list_numbered_rounded,
+                              iconColor:
+                                  paragraphMode ? scheme.primary : null,
+                              label: paragraphMode
+                                  ? (uiStrings['paragraphFlow']?[locale] ??
+                                      'Paragraph Flow')
+                                  : (uiStrings['verseByVerse']?[locale] ??
+                                      'Verse by Verse'),
+                            ),
+                          ));
+                        }
+                        if (showSearchAndSettings) {
+                          items.add(const PopupMenuDivider());
+                          items.add(PopupMenuItem(
+                            value: 'settings',
+                            child: _menuRow(
+                              context,
+                              icon: Icons.settings_outlined,
+                              label: uiStrings['settings']?[locale] ??
+                                  'Settings',
+                            ),
+                          ));
+                        }
+                        return items;
+                      },
+                      onSelected: (value) {
+                        switch (value) {
+                          case 'highlights':
+                            onHighlights?.call();
+                            break;
+                          case 'maps':
+                            _showMapPicker(
+                              context,
+                              chapterMaps: chapterMaps,
+                              bookMaps: bookMaps,
+                              locale: locale,
+                            );
+                            break;
+                          case 'split':
+                            onToggleSplitView?.call();
+                            break;
+                          case 'paragraph':
+                            onToggleParagraphMode?.call();
+                            break;
+                          case 'settings':
+                            onSettings();
+                            break;
+                        }
+                      },
+                    ),
                   ],
                 ),
               ],
@@ -1804,6 +1826,52 @@ class _FloatingHeader extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+
+  /// Compact menu row used inside the overflow popup. The optional
+  /// [trailing] string renders as a small count badge on the right.
+  Widget _menuRow(
+    BuildContext context, {
+    required IconData icon,
+    Color? iconColor,
+    required String label,
+    String? trailing,
+  }) {
+    final scheme = Theme.of(context).colorScheme;
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, size: 18, color: iconColor ?? scheme.onSurfaceVariant),
+        const SizedBox(width: 12),
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 14,
+            color: scheme.onSurface,
+          ),
+        ),
+        if (trailing != null) ...[
+          const SizedBox(width: 12),
+          Container(
+            padding:
+                const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+            decoration: BoxDecoration(
+              color:
+                  scheme.surfaceContainerHighest.withValues(alpha: 0.7),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Text(
+              trailing,
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+                color: scheme.onSurfaceVariant,
+              ),
+            ),
+          ),
+        ],
+      ],
     );
   }
 }
