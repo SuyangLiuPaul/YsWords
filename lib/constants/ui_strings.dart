@@ -440,6 +440,12 @@ const uiStrings = {
     'zh-Hant': '停止朗讀',
     'en': 'Stop reading',
   },
+  // ── Keyboard shortcuts (Round 27E) ──────────────────────────────
+  'shortcutsHelp': {
+    'zh-Hans': '键盘快捷键',
+    'zh-Hant': '鍵盤快捷鍵',
+    'en': 'Keyboard shortcuts',
+  },
   'crossRefsNone': {
     'zh-Hans': '此节经文暂无人工整理的相互参照。',
     'zh-Hant': '此節經文暫無人工整理的相互參照。',

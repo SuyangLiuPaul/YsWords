@@ -159,6 +159,71 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
     _ttsPoller = null;
   }
 
+  /// Show a small dialog listing the keyboard shortcuts. Triggered by
+  /// `?` (Shift+/) on web — pure discoverability help; tapping
+  /// outside or hitting Esc dismisses.
+  void _showShortcutsHelp(BuildContext context, String locale) {
+    final scheme = Theme.of(context).colorScheme;
+    final rows = <List<String>>[
+      ['/', uiStrings['search']?[locale] ?? 'Search'],
+      ['[', uiStrings['previousChapter']?[locale] ?? 'Previous chapter'],
+      [']', uiStrings['nextChapter']?[locale] ?? 'Next chapter'],
+      ['Shift + T', uiStrings['ttsListen']?[locale] ?? 'Listen to chapter'],
+      ['?', uiStrings['shortcutsHelp']?[locale] ?? 'Keyboard shortcuts'],
+    ];
+    showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        icon: Icon(Icons.keyboard_outlined, color: scheme.primary),
+        title: Text(
+          uiStrings['shortcutsHelp']?[locale] ?? 'Keyboard shortcuts',
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            for (final row in rows)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: scheme.surfaceContainerHighest,
+                        borderRadius: BorderRadius.circular(4),
+                        border: Border.all(
+                          color: scheme.outline.withValues(alpha: 0.4),
+                        ),
+                      ),
+                      child: Text(
+                        row[0],
+                        style: const TextStyle(
+                          fontFamily: 'monospace',
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(row[1]),
+                    ),
+                  ],
+                ),
+              ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: Text(uiStrings['ok']?[locale] ?? 'OK'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   void dispose() {
     _versePositionTimer?.cancel();
@@ -512,7 +577,34 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
               ),
               child: ScaffoldMessenger(
                 key: _messengerKey,
-                child: Scaffold(
+                child: CallbackShortcuts(
+                  bindings: <ShortcutActivator, VoidCallback>{
+                    // Web keyboard shortcuts (Round 27E). These are
+                    // discoverable but unobtrusive — they're standard
+                    // app idioms (`/` for search, `[`/`]` for prev/next
+                    // chapter, `?` for help). Disabled while a text
+                    // field is focused so they don't fight typing.
+                    const SingleActivator(LogicalKeyboardKey.bracketLeft):
+                        _goToPreviousChapter,
+                    const SingleActivator(LogicalKeyboardKey.bracketRight):
+                        _goToNextChapter,
+                    const SingleActivator(LogicalKeyboardKey.slash): () {
+                      if (widget.showSearchAndSettings) {
+                        Get.to(() => SearchPage(),
+                            transition: Transition.rightToLeft);
+                      }
+                    },
+                    const SingleActivator(LogicalKeyboardKey.keyT,
+                        shift: true): () {
+                      if (TtsService.isAvailable) _toggleListenChapter();
+                    },
+                    const SingleActivator(LogicalKeyboardKey.question,
+                        shift: true): () =>
+                        _showShortcutsHelp(context, settings.locale),
+                  },
+                  child: Focus(
+                    autofocus: true,
+                    child: Scaffold(
                 body: LayoutBuilder(
                   builder: (context, constraints) {
                     final paneWidth = constraints.maxWidth;
@@ -822,6 +914,8 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                   },
                 ),
               ),
+                  ),
+                ),
               ),
             ),
           ),
