@@ -270,6 +270,11 @@ const uiStrings = {
     'zh-Hant': '處更多',
     'en': 'more',
   },
+  'collapse': {
+    'zh-Hans': '收起',
+    'zh-Hant': '收起',
+    'en': 'Collapse',
+  },
   'wordFamily': {
     'zh-Hans': '同源词',
     'zh-Hant': '同源詞',

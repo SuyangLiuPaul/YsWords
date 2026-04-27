@@ -95,6 +95,11 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
   // inline (showing its verse refs below the Wrap). Null = all collapsed.
   String? _expandedRelatedNumber;
 
+  // Strong's #s for which the user has tapped "+N more" to reveal
+  // every concordance ref (rather than the default first-8 preview).
+  // Cleared whenever the user switches to a new word entry.
+  final Set<String> _refsShowAll = {};
+
   // LXX Greek equivalents for the current Hebrew entry (empty for
   // Greek entries). Tapping a chip navigates into that Greek entry,
   // which then loads its own family / synonyms / verses — letting
@@ -177,6 +182,7 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
       _compareWords = const [];
       _relatedConcordances = const {};
       _expandedRelatedNumber = null;
+      _refsShowAll.clear();
       _lxxEquivalents = const [];
       _hebrewSources = const [];
     });
@@ -212,6 +218,7 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
       _compareWords = const [];
       _relatedConcordances = const {};
       _expandedRelatedNumber = null;
+      _refsShowAll.clear();
       _lxxEquivalents = const [];
       _hebrewSources = const [];
     });
@@ -245,6 +252,7 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
       _compareWords = const [];
       _relatedConcordances = const {};
       _expandedRelatedNumber = null;
+      _refsShowAll.clear();
       _lxxEquivalents = const [];
       _hebrewSources = const [];
       // Restore the word-entry's auto-opened first book.
@@ -908,7 +916,8 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
         ),
       );
     }
-    final shown = cr.refs.take(8).toList();
+    final showAll = _refsShowAll.contains(e.number);
+    final shown = showAll ? cr.refs : cr.refs.take(8).toList();
     final remaining = cr.refs.length - shown.length;
     final usedTemplate =
         uiStrings['concordanceUsed']?[locale] ?? 'Used {count} times';
@@ -1002,12 +1011,57 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
           ],
           if (remaining > 0) ...[
             const SizedBox(height: 4),
-            Text(
-              '+ $remaining ${uiStrings['moreRefs']?[locale] ?? 'more'}',
-              style: TextStyle(
-                fontSize: 11,
-                fontStyle: FontStyle.italic,
-                color: scheme.onSurfaceVariant,
+            // Tappable: reveal every remaining ref instead of the
+            // first-8 preview. Idempotent — stays expanded until the
+            // user switches to a new word.
+            InkWell(
+              onTap: () => setState(() => _refsShowAll.add(e.number)),
+              borderRadius: BorderRadius.circular(4),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 4, vertical: 4),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      '+ $remaining ${uiStrings['moreRefs']?[locale] ?? 'more'}',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        color: scheme.primary,
+                      ),
+                    ),
+                    Icon(Icons.expand_more,
+                        size: 14, color: scheme.primary),
+                  ],
+                ),
+              ),
+            ),
+          ] else if (showAll && cr.refs.length > 8) ...[
+            // Once expanded, show a "collapse" affordance so the
+            // section can fold back to the compact preview.
+            const SizedBox(height: 4),
+            InkWell(
+              onTap: () => setState(() => _refsShowAll.remove(e.number)),
+              borderRadius: BorderRadius.circular(4),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 4, vertical: 4),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      uiStrings['collapse']?[locale] ?? 'Collapse',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        color: scheme.primary,
+                      ),
+                    ),
+                    Icon(Icons.expand_less,
+                        size: 14, color: scheme.primary),
+                  ],
+                ),
               ),
             ),
           ],
@@ -1193,6 +1247,21 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
     for (final synEntry in _compareWords) {
       final synConc = await ConcordanceService.lookup(synEntry.number);
       writeEntry('Synonym', synEntry, synConc);
+    }
+
+    // LXX Greek equivalents (Hebrew → Greek). Their concordance is
+    // already cached in _relatedConcordances from _loadRelations.
+    for (final lxxEntry in _lxxEquivalents) {
+      final lxxConc = _relatedConcordances[lxxEntry.number] ??
+          await ConcordanceService.lookup(lxxEntry.number);
+      writeEntry('LXX', lxxEntry, lxxConc);
+    }
+
+    // Hebrew sources (Greek → Hebrew). Mirror of LXX for NT entries.
+    for (final hebEntry in _hebrewSources) {
+      final hebConc = _relatedConcordances[hebEntry.number] ??
+          await ConcordanceService.lookup(hebEntry.number);
+      writeEntry('HebrewSource', hebEntry, hebConc);
     }
 
     await Clipboard.setData(ClipboardData(text: buf.toString().trimRight()));
