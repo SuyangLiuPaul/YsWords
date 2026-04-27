@@ -242,8 +242,13 @@ const _englishVersionCodes = <String>{
 };
 
 String toLocale(String englishKey, String version) {
-  if (_englishVersionCodes.contains(version)) return englishKey;
-  return version.endsWith('-tr')
+  // Normalize before classifying so stored versions like " NASB" or
+  // "Nasb" still resolve correctly. Anything outside the English set
+  // falls through to the Chinese mapping (Simplified by default,
+  // Traditional when the version code ends with "-tr").
+  final v = version.trim().toLowerCase();
+  if (_englishVersionCodes.contains(v)) return englishKey;
+  return v.endsWith('-tr')
       ? englishToChineseTraditional[englishKey] ?? englishKey
       : englishToChinese[englishKey] ?? englishKey;
 }
