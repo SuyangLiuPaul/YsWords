@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html spellcheck="false">
 <head>
   <!--
     If you are serving your web app in a path other than the root, change the
@@ -19,6 +19,10 @@
   <meta charset="UTF-8">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
   <meta name="description" content="YsWords — A bilingual Bible reader app to help you listen to His voice and abide in Him daily.">
+
+  <!-- Disable iOS Safari data-detection (auto-linking of dates/phone numbers)
+       and spell-check underlining on Flutter web HTML renderer elements. -->
+  <meta name="format-detection" content="telephone=no,address=no,email=no,date=no,url=no">
 
   <!-- iOS meta tags & icons -->
   <link rel="apple-touch-icon" href="assets/app_icon.png">
@@ -62,6 +66,21 @@
 
   <!-- Preload app icon -->
   <link rel="preload" href="assets/app_icon.png" as="image">
+
+  <style>
+    /* Strip browser-injected styling from iOS Safari data-detector <a> tags
+       (phone numbers, dates, addresses auto-linked by Safari on the HTML renderer). */
+    a[x-apple-data-detectors] {
+      color: inherit !important;
+      text-decoration: inherit !important;
+      font-size: inherit !important;
+      font-weight: inherit !important;
+    }
+    /* Suppress tap highlight flash on all Flutter interactive elements. */
+    * {
+      -webkit-tap-highlight-color: transparent;
+    }
+  </style>
 
   <!-- PWA Settings -->
   <meta name="theme-color" content="#2196F3">
