@@ -73,6 +73,24 @@
   <meta name="msapplication-TileColor" content="#2196F3">
 </head>
 <body>
+  <!-- Self-heal: previous deploys registered a Flutter service worker
+       that aggressively cached main.dart.js, so users were stuck on
+       stale builds for hours. Unregister anything currently active and
+       wipe its cache before bootstrapping. New deploys still get fresh
+       JS via netlify.toml's no-cache headers. -->
+  <script>
+    (function() {
+      if (!('serviceWorker' in navigator)) return;
+      navigator.serviceWorker.getRegistrations().then(function(regs) {
+        for (var r of regs) { r.unregister(); }
+      }).catch(function() {});
+      if (window.caches && caches.keys) {
+        caches.keys().then(function(keys) {
+          for (var k of keys) { caches.delete(k); }
+        }).catch(function() {});
+      }
+    })();
+  </script>
   <script src="flutter_bootstrap.js" async></script>
 </body>
 </html>
