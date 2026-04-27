@@ -6,23 +6,21 @@ String translateBookName(String? book, String version) {
   return toLocale(en, version);
 }
 
-/// Returns a localized book name driven by [locale], not by the reading
-/// version. This ensures Chinese-UI users see Chinese book names even when
-/// they are reading an English version like KJV.
+/// Returns a localized book name driven by [locale] alone — the reading
+/// version is intentionally ignored so exegesis panels always match the
+/// UI language regardless of which Bible the user has open.
 ///
-/// - `zh-Hant` → Traditional Chinese (any `-tr` version mapping)
+/// - `zh-Hant` → Traditional Chinese
 /// - `zh-Hans` (or any `zh-*`) → Simplified Chinese
-/// - otherwise → falls back to [translateBookName] with [currentVersion]
+/// - any other locale → English canonical name
 String localeAwareBookName(
-    String englishBook, String locale, String? currentVersion) {
+    String englishBook, String locale, [String? currentVersion]) {
   if (locale == 'zh-Hant') {
     return toLocale(englishBook, 'cuvs-tr');
   } else if (locale.startsWith('zh')) {
     return toLocale(englishBook, 'cuvs-yhwh');
   }
-  final v = currentVersion;
-  if (v == null) return englishBook;
-  return translateBookName(englishBook, v);
+  return englishBook;
 }
 
 String? toEnglish(String? book) {
