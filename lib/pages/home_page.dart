@@ -181,47 +181,47 @@ class _HomePageState extends State<HomePage> {
       );
     }
 
-    // LayoutBuilder gives us the actual screen height we can pass
-    // explicitly to the AnimatedContainer. AnimatedContainer with only
-    // `width:` set passes `BoxConstraints.tightFor(width: w)` to its
-    // child, which silently strips the parent's tight vertical
-    // constraint — Expanded inside SidebarPanel then collapses to zero
-    // height on Flutter web's HTML renderer.
-    return LayoutBuilder(
-      builder: (context, parentConstraints) {
-        final fullHeight = parentConstraints.maxHeight.isFinite
-            ? parentConstraints.maxHeight
-            : MediaQuery.of(context).size.height;
-        return Row(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 250),
-              curve: Curves.easeInOutCubic,
-              width: sidebarW,
-              height: fullHeight,
-              child: ClipRect(
-                child: _sidebarOpen
-                    ? SidebarPanel(
-                        currentBook: mainProvider.currentBook ?? '',
-                        currentChapter: mainProvider.currentChapter ?? 1,
-                        onChapterSelected: _onSidebarChapterSelected,
-                        onClose: _toggleSidebar,
-                      )
-                    : const SizedBox.shrink(),
-              ),
+    // Stack + AnimatedPositioned is the most reliable way to give the
+    // sidebar both a bounded height (top:0 + bottom:0) and an animated
+    // width. Earlier attempts using AnimatedContainer in a Row left the
+    // sidebar's inner Expanded book-list collapsing to zero height on
+    // Flutter web's HTML renderer.
+    return Stack(
+      children: [
+        // Main reading pane fills the screen; we use AnimatedPadding
+        // so it slides right when the sidebar opens.
+        AnimatedPadding(
+          duration: const Duration(milliseconds: 250),
+          curve: Curves.easeInOutCubic,
+          padding: EdgeInsets.only(left: sidebarW),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(maxWidth: maxW),
+              child: primaryPane,
             ),
-            Expanded(
-              child: Center(
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(maxWidth: maxW),
-                  child: primaryPane,
-                ),
-              ),
-            ),
-          ],
-        );
-      },
+          ),
+        ),
+        // Sidebar — Positioned with top:0/bottom:0 guarantees full
+        // screen height; animated width handles open/close transition.
+        AnimatedPositioned(
+          duration: const Duration(milliseconds: 250),
+          curve: Curves.easeInOutCubic,
+          left: 0,
+          top: 0,
+          bottom: 0,
+          width: sidebarW,
+          child: ClipRect(
+            child: _sidebarOpen
+                ? SidebarPanel(
+                    currentBook: mainProvider.currentBook ?? '',
+                    currentChapter: mainProvider.currentChapter ?? 1,
+                    onChapterSelected: _onSidebarChapterSelected,
+                    onClose: _toggleSidebar,
+                  )
+                : const SizedBox.shrink(),
+          ),
+        ),
+      ],
     );
   }
 
