@@ -559,6 +559,21 @@ const uiStrings = {
     'zh-Hant': '編輯帳號',
     'en': 'Edit profile',
   },
+  'setPhoto': {
+    'zh-Hans': '设置头像',
+    'zh-Hant': '設置頭像',
+    'en': 'Set photo',
+  },
+  'changePhoto': {
+    'zh-Hans': '更换头像',
+    'zh-Hant': '更換頭像',
+    'en': 'Change photo',
+  },
+  'removePhoto': {
+    'zh-Hans': '删除头像',
+    'zh-Hant': '刪除頭像',
+    'en': 'Remove photo',
+  },
   // ── Gospel synopsis (Round 27B) ─────────────────────────────────
   'synopsis': {
     'zh-Hans': '福音书对观',

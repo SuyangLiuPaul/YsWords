@@ -3,16 +3,22 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 /// One stored profile — id is stable (used as the SharedPreferences
 /// namespace); name is the human-friendly label shown in the UI.
-/// Optional [avatarColorArgb] lets the user pick a color tile for
-/// their initial when they don't have a Google profile photo set.
+///   • [avatarColorArgb] — optional color tile for the initial when
+///     no photo is set. Falls back to scheme.primary.
+///   • [photoDataUrl] — optional locally-uploaded avatar (JPEG data
+///     URL, ~10-30 KB at 256×256). For Google-signed-in users the
+///     Google profile photo wins; this acts as a fallback for
+///     local users or when the Google photo fails to load.
 class Profile {
   final String id;
   final String name;
   final int? avatarColorArgb;
+  final String? photoDataUrl;
   const Profile({
     required this.id,
     required this.name,
     this.avatarColorArgb,
+    this.photoDataUrl,
   });
 
   bool get isGuest => id == ProfileService.guestId;
@@ -40,6 +46,7 @@ class ProfileService extends ChangeNotifier {
   static const _kList = 'profile.list';
   static const _kNamePrefix = 'profile.name.';
   static const _kAvatarPrefix = 'profile.avatar.';
+  static const _kPhotoPrefix = 'profile.photo.';
   static const _kSeenWelcome = 'profile.seenWelcome';
 
   /// The reserved "guest" profile id. Always exists, can't be
@@ -90,6 +97,7 @@ class ProfileService extends ChangeNotifier {
               name: prefs.getString('$_kNamePrefix$id') ??
                   (id == guestId ? 'Guest' : id),
               avatarColorArgb: prefs.getInt('$_kAvatarPrefix$id'),
+              photoDataUrl: prefs.getString('$_kPhotoPrefix$id'),
             ))
         .toList();
 
@@ -213,6 +221,8 @@ class ProfileService extends ChangeNotifier {
     ids.remove(id);
     await prefs.setStringList(_kList, ids);
     await prefs.remove('$_kNamePrefix$id');
+    await prefs.remove('$_kAvatarPrefix$id');
+    await prefs.remove('$_kPhotoPrefix$id');
     // Wipe scoped data — every key under profile.<id>.*
     final dead = prefs
         .getKeys()
@@ -250,6 +260,7 @@ class ProfileService extends ChangeNotifier {
                 id: id,
                 name: newName.trim(),
                 avatarColorArgb: p.avatarColorArgb,
+                photoDataUrl: p.photoDataUrl,
               )
             : p)
         .toList();
@@ -273,6 +284,34 @@ class ProfileService extends ChangeNotifier {
                 id: id,
                 name: p.name,
                 avatarColorArgb: argb,
+                photoDataUrl: p.photoDataUrl,
+              )
+            : p)
+        .toList();
+    notifyListeners();
+  }
+
+  /// Set (or clear) the profile's locally-uploaded avatar photo.
+  /// [dataUrl] should be a base64 JPEG data URL (typically the
+  /// 256×256 image returned by `AvatarPickerService.pickAvatar()`,
+  /// ~10-30 KB). Stored at `profile.photo.<id>` — local-only, not
+  /// synced to Firestore (per-device by design; matches how
+  /// avatarColorArgb works).
+  Future<void> setAvatarPhoto(String id, String? dataUrl) async {
+    final prefs = await SharedPreferences.getInstance();
+    final key = '$_kPhotoPrefix$id';
+    if (dataUrl == null) {
+      await prefs.remove(key);
+    } else {
+      await prefs.setString(key, dataUrl);
+    }
+    _profiles = _profiles
+        .map((p) => p.id == id
+            ? Profile(
+                id: id,
+                name: p.name,
+                avatarColorArgb: p.avatarColorArgb,
+                photoDataUrl: dataUrl,
               )
             : p)
         .toList();

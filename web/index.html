@@ -184,6 +184,71 @@
       });
     })();
   </script>
+  <!-- Avatar picker: opens an `<input type="file">`, reads the
+       chosen image, center-crops to a square, resizes to 256×256
+       via Canvas, and resolves with a JPEG data URL. Used by the
+       Profile editor so local users can set a custom avatar
+       without shipping any image-picker package. Resolves with
+       null on cancel / read error. The setTimeout-after-focus
+       trick handles the cancel case (file inputs don't fire any
+       event when the user closes the picker without choosing). -->
+  <script>
+    window.yswordsPickAvatar = function() {
+      return new Promise(function(resolve) {
+        var done = false;
+        function finish(v) { if (done) return; done = true; resolve(v); }
+        var input = document.createElement('input');
+        input.type = 'file';
+        input.accept = 'image/*';
+        input.style.display = 'none';
+        document.body.appendChild(input);
+        function cleanup() {
+          if (input.parentNode) document.body.removeChild(input);
+        }
+        input.addEventListener('change', function() {
+          var file = input.files && input.files[0];
+          if (!file) { cleanup(); return finish(null); }
+          var reader = new FileReader();
+          reader.onload = function() {
+            var img = new Image();
+            img.onload = function() {
+              var size = 256;
+              var canvas = document.createElement('canvas');
+              canvas.width = size;
+              canvas.height = size;
+              var ctx = canvas.getContext('2d');
+              var srcSize = Math.min(img.width, img.height);
+              var sx = (img.width - srcSize) / 2;
+              var sy = (img.height - srcSize) / 2;
+              ctx.drawImage(img, sx, sy, srcSize, srcSize, 0, 0, size, size);
+              cleanup();
+              try {
+                finish(canvas.toDataURL('image/jpeg', 0.85));
+              } catch (e) {
+                finish(null);
+              }
+            };
+            img.onerror = function() { cleanup(); finish(null); };
+            img.src = reader.result;
+          };
+          reader.onerror = function() { cleanup(); finish(null); };
+          reader.readAsDataURL(file);
+        });
+        // Cancel detection: when the file picker closes without a
+        // selection, no event fires on the input. Listen for window
+        // re-focus and assume cancel after a small delay — gives
+        // the change event time to fire if the user did choose a
+        // file just before the picker closes.
+        window.addEventListener('focus', function once() {
+          window.removeEventListener('focus', once);
+          setTimeout(function() {
+            if (!done) { cleanup(); finish(null); }
+          }, 800);
+        }, {once: true});
+        input.click();
+      });
+    };
+  </script>
   <script src="flutter_bootstrap.js" async></script>
 </body>
 </html>

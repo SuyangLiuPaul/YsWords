@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import 'package:yswords/constants/ui_strings.dart';
 import 'package:yswords/models/app_settings.dart';
+import 'package:yswords/services/avatar_picker_service.dart';
 import 'package:yswords/services/profile_service.dart';
 import 'package:yswords/widgets/home_icon_button.dart';
 import 'package:yswords/widgets/localized_back_button.dart';
@@ -26,7 +27,9 @@ class ProfileEditPage extends StatefulWidget {
 class _ProfileEditPageState extends State<ProfileEditPage> {
   late final TextEditingController _nameController;
   int? _selectedColorArgb;
+  String? _selectedPhotoDataUrl;
   bool _saving = false;
+  bool _pickingPhoto = false;
 
   @override
   void initState() {
@@ -34,6 +37,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
     final p = ProfileService.instance.current;
     _nameController = TextEditingController(text: p.name);
     _selectedColorArgb = p.avatarColorArgb;
+    _selectedPhotoDataUrl = p.photoDataUrl;
   }
 
   @override
@@ -69,8 +73,26 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
     if (_selectedColorArgb != svc.current.avatarColorArgb) {
       await svc.setAvatarColor(id, _selectedColorArgb);
     }
+    if (_selectedPhotoDataUrl != svc.current.photoDataUrl) {
+      await svc.setAvatarPhoto(id, _selectedPhotoDataUrl);
+    }
     if (!mounted) return;
     Navigator.of(context).maybePop();
+  }
+
+  Future<void> _pickPhoto() async {
+    if (_pickingPhoto) return;
+    setState(() => _pickingPhoto = true);
+    final dataUrl = await AvatarPickerService.pickAvatar();
+    if (!mounted) return;
+    setState(() {
+      _pickingPhoto = false;
+      if (dataUrl != null) _selectedPhotoDataUrl = dataUrl;
+    });
+  }
+
+  void _removePhoto() {
+    setState(() => _selectedPhotoDataUrl = null);
   }
 
   @override
@@ -106,20 +128,62 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
             children: [
               // Big preview avatar at the top so the user sees the
               // result of their selections immediately.
+              // Priority: locally-uploaded photo > color tile + initial.
+              // (Google profile photo overrides this elsewhere when
+              // signed in — but the editor is for the LOCAL profile
+              // settings, so we show what the user controls.)
               Center(
                 child: CircleAvatar(
                   radius: 48,
                   backgroundColor: previewColor,
                   foregroundColor: Colors.white,
-                  child: Text(
-                    initial,
-                    style: const TextStyle(
-                      fontSize: 36,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
+                  backgroundImage: _selectedPhotoDataUrl != null
+                      ? NetworkImage(_selectedPhotoDataUrl!)
+                      : null,
+                  child: _selectedPhotoDataUrl != null
+                      ? null
+                      : Text(
+                          initial,
+                          style: const TextStyle(
+                            fontSize: 36,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
                 ),
               ),
+              const SizedBox(height: 12),
+              // Set / Remove photo actions.
+              if (AvatarPickerService.isAvailable)
+                Center(
+                  child: Wrap(
+                    spacing: 8,
+                    children: [
+                      OutlinedButton.icon(
+                        onPressed:
+                            _pickingPhoto || _saving ? null : _pickPhoto,
+                        icon: const Icon(Icons.photo_camera_outlined,
+                            size: 18),
+                        label: Text(
+                          _selectedPhotoDataUrl == null
+                              ? (uiStrings['setPhoto']?[locale] ??
+                                  'Set photo')
+                              : (uiStrings['changePhoto']?[locale] ??
+                                  'Change photo'),
+                        ),
+                      ),
+                      if (_selectedPhotoDataUrl != null)
+                        TextButton.icon(
+                          onPressed:
+                              _pickingPhoto || _saving ? null : _removePhoto,
+                          icon: const Icon(Icons.close_rounded, size: 18),
+                          label: Text(
+                            uiStrings['removePhoto']?[locale] ??
+                                'Remove photo',
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
               const SizedBox(height: 24),
               Text(
                 uiStrings['displayName']?[locale] ?? 'Display name',

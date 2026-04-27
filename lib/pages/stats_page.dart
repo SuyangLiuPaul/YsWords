@@ -111,7 +111,13 @@ class _OverviewTab extends StatelessWidget {
     final mins = readingMin % 60;
     final readingLabel =
         hours > 0 ? '${hours}h ${mins}m' : '${mins}m';
-    return ListView(
+    final w = MediaQuery.of(context).size.width;
+    final isWide = w >= 720;
+    final maxW = isWide ? 720.0 : double.infinity;
+    return Center(
+      child: ConstrainedBox(
+        constraints: BoxConstraints(maxWidth: maxW),
+        child: ListView(
       padding: const EdgeInsets.all(16),
       children: [
         Text(
@@ -124,14 +130,14 @@ class _OverviewTab extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 8),
-        // Big-number cards laid out in a 2-column grid.
+        // Big-number cards: 3-up on iPad/desktop, 2-up on phone.
         GridView.count(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
-          crossAxisCount: 2,
+          crossAxisCount: isWide ? 3 : 2,
           crossAxisSpacing: 12,
           mainAxisSpacing: 12,
-          childAspectRatio: 1.6,
+          childAspectRatio: isWide ? 1.4 : 1.6,
           children: [
             _StatCard(
                 label: uiStrings['statsBooks']?[locale] ?? 'Books',
@@ -167,6 +173,8 @@ class _OverviewTab extends StatelessWidget {
         const SizedBox(height: 8),
         _LongestShortestList(stats: stats, locale: locale, version: version),
       ],
+    ),
+      ),
     );
   }
 }
@@ -420,7 +428,12 @@ class _VocabularyTabState extends State<_VocabularyTab> {
       hapax = b.hapaxInBook().take(40).toList();
       totalWords = b.words;
     }
-    return ListView(
+    final w = MediaQuery.of(context).size.width;
+    final maxW = w >= 720 ? 720.0 : double.infinity;
+    return Center(
+      child: ConstrainedBox(
+        constraints: BoxConstraints(maxWidth: maxW),
+        child: ListView(
       padding: const EdgeInsets.all(16),
       children: [
         // Book filter dropdown.
@@ -521,6 +534,8 @@ class _VocabularyTabState extends State<_VocabularyTab> {
           ),
         ),
       ],
+    ),
+      ),
     );
   }
 }

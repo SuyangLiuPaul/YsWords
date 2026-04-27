@@ -241,7 +241,10 @@ class _DashboardPageState extends State<DashboardPage> {
             authConfigured: auth.isConfigured,
             isSignedIn: auth.isSignedIn,
             email: auth.currentUser?.email,
-            photoUrl: auth.currentUser?.photoURL,
+            // Render priority: Google profile photo first (when
+            // signed in) → locally-uploaded avatar → color tile +
+            // initial. Pass both URLs; the card picks one.
+            photoUrl: auth.currentUser?.photoURL ?? profile.photoDataUrl,
             avatarColor: profile.avatarColorArgb,
             syncStatus: CloudSyncService.instance.status,
             locale: locale,

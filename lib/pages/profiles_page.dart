@@ -161,18 +161,27 @@ class _ProfilesPageState extends State<ProfilesPage> {
         itemBuilder: (_, i) {
           final p = svc.profiles[i];
           final isActive = p.id == svc.currentId;
+          final photo = p.photoDataUrl;
           return ListTile(
             leading: CircleAvatar(
-              backgroundColor: isActive
-                  ? scheme.primary
-                  : scheme.surfaceContainerHighest,
+              backgroundColor: p.avatarColorArgb != null
+                  ? Color(p.avatarColorArgb!)
+                  : (isActive
+                      ? scheme.primary
+                      : scheme.surfaceContainerHighest),
               foregroundColor: isActive
                   ? scheme.onPrimary
                   : scheme.onSurfaceVariant,
-              child: Text(
-                p.name.isEmpty ? '?' : p.name.characters.first.toUpperCase(),
-                style: const TextStyle(fontWeight: FontWeight.w700),
-              ),
+              backgroundImage:
+                  photo != null ? NetworkImage(photo) : null,
+              child: photo != null
+                  ? null
+                  : Text(
+                      p.name.isEmpty
+                          ? '?'
+                          : p.name.characters.first.toUpperCase(),
+                      style: const TextStyle(fontWeight: FontWeight.w700),
+                    ),
             ),
             title: Text(
               p.name,
