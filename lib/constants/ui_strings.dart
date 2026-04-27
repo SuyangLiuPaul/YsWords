@@ -155,6 +155,11 @@ const uiStrings = {
     'zh-Hant': '高亮',
     'en': 'Highlight',
   },
+  'highlights': {
+    'zh-Hans': '高亮',
+    'zh-Hant': '高亮',
+    'en': 'Highlights',
+  },
   'originalText': {
     'zh-Hans': '释经',
     'zh-Hant': '釋經',

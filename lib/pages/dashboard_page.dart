@@ -16,6 +16,7 @@ import 'package:yswords/services/cloud_sync_service.dart';
 import 'package:yswords/services/profile_service.dart';
 import 'package:yswords/services/reading_plan_service.dart';
 import 'package:yswords/utils/reference_parser.dart';
+import 'package:yswords/utils/responsive.dart';
 import 'package:yswords/utils/version_mapper.dart' show translateBookName;
 import 'package:yswords/widgets/google_g_logo.dart';
 import 'package:yswords/widgets/localized_back_button.dart';
@@ -111,13 +112,26 @@ class _DashboardPageState extends State<DashboardPage> {
     // nothing to pop back to, so the back arrow would be confusing
     // — `Navigator.canPop` keeps it conditional automatically.
     final canPop = Navigator.of(context).canPop();
+    final dc = ResponsiveBreakpoints.classOf(
+        MediaQuery.of(context).size.width);
+    // Cap reading width on iPad / desktop so the dashboard doesn't
+    // become a row of stretched, half-empty cards. Same constraint
+    // pattern used in Settings keeps the app's wide-screen feel
+    // consistent.
+    final maxW = ResponsiveBreakpoints.settingsMaxWidth(dc);
+    final isWide = MediaQuery.of(context).size.width >= 720;
+
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
         leading: canPop ? const LocalizedBackButton() : null,
         title: Text(uiStrings['home']?[locale] ?? 'Home'),
+        centerTitle: true,
       ),
-      body: ListView(
+      body: Center(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(maxWidth: maxW),
+          child: ListView(
         padding: const EdgeInsets.all(16),
         children: [
           // Greeting + profile / sync status
@@ -225,7 +239,7 @@ class _DashboardPageState extends State<DashboardPage> {
                 child: _CountTile(
                   icon: Icons.format_color_fill,
                   count: mainProvider.highlights.length,
-                  label: uiStrings['highlight']?[locale] ?? 'Highlights',
+                  label: uiStrings['highlights']?[locale] ?? 'Highlights',
                   // Highlights live in a modal sheet inside the
                   // reading pane (no dedicated page yet). Push the
                   // reader; user opens them via the overflow menu.
@@ -282,11 +296,37 @@ class _DashboardPageState extends State<DashboardPage> {
           ],
 
           // Quick-link tiles
+          // "Continue reading" gets its own full-width primary
+          // button — it's the highest-intent action on this page,
+          // hiding it among 4 link tiles makes it less prominent
+          // than it should be.
+          SizedBox(
+            width: double.infinity,
+            child: FilledButton.icon(
+              onPressed: () => Get.to(
+                () => const HomePage(),
+                transition: Transition.rightToLeft,
+              ),
+              icon: const Icon(Icons.menu_book_rounded),
+              label: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 10),
+                child: Text(
+                  uiStrings['continueReading']?[locale] ??
+                      'Continue reading',
+                  style: const TextStyle(
+                      fontSize: 14, fontWeight: FontWeight.w600),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
           GridView.count(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
-            crossAxisCount: 2,
-            childAspectRatio: 2.6,
+            // 3-up on iPad/desktop so the tiles feel balanced;
+            // 2-up on phones where 3 columns would be cramped.
+            crossAxisCount: isWide ? 3 : 2,
+            childAspectRatio: isWide ? 3.2 : 2.6,
             mainAxisSpacing: 8,
             crossAxisSpacing: 8,
             children: [
@@ -307,23 +347,6 @@ class _DashboardPageState extends State<DashboardPage> {
                 ),
               ),
               _LinkTile(
-                icon: Icons.menu_book_rounded,
-                label: uiStrings['continueReading']?[locale] ??
-                    'Continue reading',
-                // Push the Bible reader on top of the Dashboard.
-                // If a HomePage is already on the stack (because the
-                // user came from Bible → Home → Continue), Get.back
-                // would pop it directly — but tracking that adds
-                // complexity for marginal stack-cleanliness benefit.
-                // A duplicate HomePage on the stack is harmless;
-                // swipe-back / browser-back lands on the previous
-                // one which then lands on Dashboard.
-                onTap: () => Get.to(
-                  () => const HomePage(),
-                  transition: Transition.rightToLeft,
-                ),
-              ),
-              _LinkTile(
                 icon: Icons.settings_outlined,
                 label: uiStrings['settings']?[locale] ?? 'Settings',
                 onTap: () => Get.to(
@@ -334,6 +357,8 @@ class _DashboardPageState extends State<DashboardPage> {
             ],
           ),
         ],
+      ),
+        ),
       ),
     );
   }
@@ -404,48 +429,74 @@ class _GreetingCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final initial = profileName.isEmpty
+        ? '?'
+        : profileName.characters.first.toUpperCase();
+    // Compact horizontal layout: avatar on the left, greeting + name
+    // stacked in the middle, sign-in button (or sync chip) on the
+    // right. Keeps the card to ~80 dp tall on phones and avoids the
+    // tall empty box that wide-screen layouts produced before.
     return Card(
-      color: scheme.primaryContainer.withValues(alpha: 0.30),
       child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        padding: const EdgeInsets.fromLTRB(16, 12, 12, 12),
+        child: Row(
           children: [
-            Text(
-              greeting,
-              style: TextStyle(
-                fontSize: 13,
-                color: scheme.onSurfaceVariant,
+            CircleAvatar(
+              radius: 24,
+              backgroundColor: scheme.primary,
+              foregroundColor: scheme.onPrimary,
+              child: Text(
+                initial,
+                style: const TextStyle(
+                    fontWeight: FontWeight.w700, fontSize: 18),
               ),
             ),
-            const SizedBox(height: 4),
-            Text(
-              profileName,
-              style: TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.w700,
-                color: scheme.primary,
-              ),
-            ),
-            const SizedBox(height: 8),
-            if (isSignedIn)
-              Row(
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Icon(Icons.cloud_done_outlined,
-                      size: 14, color: scheme.primary),
-                  const SizedBox(width: 6),
-                  Expanded(
-                    child: Text(
-                      (uiStrings['cloudSignedInAs']?[locale] ??
-                              'Cloud-synced as {email}')
-                          .replaceAll('{email}', email ?? ''),
-                      style: TextStyle(
-                          fontSize: 11, color: scheme.onSurfaceVariant),
+                  Text(
+                    greeting,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: scheme.onSurfaceVariant,
                     ),
                   ),
+                  Text(
+                    profileName,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                      color: scheme.onSurface,
+                    ),
+                  ),
+                  if (isSignedIn && email != null)
+                    Row(
+                      children: [
+                        Icon(Icons.cloud_done_outlined,
+                            size: 12, color: scheme.primary),
+                        const SizedBox(width: 4),
+                        Flexible(
+                          child: Text(
+                            email!,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: scheme.onSurfaceVariant,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                 ],
-              )
-            else if (authConfigured) ...[
+              ),
+            ),
+            const SizedBox(width: 8),
+            if (!isSignedIn && authConfigured)
               OutlinedButton(
                 onPressed: onSignIn,
                 style: OutlinedButton.styleFrom(
@@ -457,15 +508,15 @@ class _GreetingCard extends StatelessWidget {
                     borderRadius: BorderRadius.circular(8),
                   ),
                   padding: const EdgeInsets.symmetric(
-                      horizontal: 14, vertical: 10),
+                      horizontal: 12, vertical: 10),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     const GoogleGLogo(size: 16),
-                    const SizedBox(width: 10),
+                    const SizedBox(width: 8),
                     Text(
-                      uiStrings['cloudSignInGoogle']?[locale] ??
+                      uiStrings['welcomeSignInGoogle']?[locale] ??
                           'Sign in with Google',
                       style: const TextStyle(
                         fontSize: 13,
@@ -475,7 +526,6 @@ class _GreetingCard extends StatelessWidget {
                   ],
                 ),
               ),
-            ],
           ],
         ),
       ),
@@ -588,16 +638,26 @@ class _PickPlanCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     return Card(
-      color: scheme.primaryContainer.withValues(alpha: 0.20),
+      // Use a thin tinted border instead of a translucent fill —
+      // looked muddy when the user's primary color was low-contrast
+      // (e.g. mid-blue on grey scaffold).
+      color: scheme.surface,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(
+          color: scheme.primary.withValues(alpha: 0.25),
+        ),
+      ),
+      elevation: 0,
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(12),
         child: Padding(
-          padding: const EdgeInsets.all(14),
+          padding: const EdgeInsets.fromLTRB(14, 12, 8, 12),
           child: Row(
             children: [
               Icon(Icons.menu_book_outlined,
-                  size: 28, color: scheme.primary),
+                  size: 22, color: scheme.primary),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
@@ -612,6 +672,7 @@ class _PickPlanCard extends StatelessWidget {
                         color: scheme.primary,
                       ),
                     ),
+                    const SizedBox(height: 2),
                     Text(
                       uiStrings['planHomeHintSub']?[locale] ??
                           'Tap to open Settings.',
@@ -623,7 +684,8 @@ class _PickPlanCard extends StatelessWidget {
                   ],
                 ),
               ),
-              Icon(Icons.chevron_right, color: scheme.primary),
+              Icon(Icons.chevron_right,
+                  size: 20, color: scheme.outline),
             ],
           ),
         ),
@@ -648,35 +710,52 @@ class _CountTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     return Material(
-      color: scheme.surfaceContainerHighest.withValues(alpha: 0.5),
+      color: scheme.surface,
       borderRadius: BorderRadius.circular(12),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.all(12),
-          child: Column(
-            children: [
-              Icon(icon, color: scheme.primary, size: 20),
-              const SizedBox(height: 4),
-              Text(
-                count.toString(),
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w700,
-                  color: scheme.onSurface,
+      child: Ink(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+              color: scheme.outlineVariant.withValues(alpha: 0.6)),
+        ),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(12),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(
+                horizontal: 12, vertical: 14),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(icon, color: scheme.primary, size: 18),
+                    const SizedBox(width: 6),
+                    Text(
+                      count.toString(),
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.w700,
+                        color: scheme.onSurface,
+                        height: 1.0,
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-              Text(
-                label,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontSize: 11,
-                  color: scheme.onSurfaceVariant,
+                const SizedBox(height: 4),
+                Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w500,
+                    color: scheme.onSurfaceVariant,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -698,30 +777,39 @@ class _LinkTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     return Material(
-      color: scheme.surfaceContainerHigh.withValues(alpha: 0.5),
+      color: scheme.surface,
       borderRadius: BorderRadius.circular(12),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12),
-          child: Row(
-            children: [
-              Icon(icon, color: scheme.primary, size: 18),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  label,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontSize: 12.5,
-                    fontWeight: FontWeight.w600,
-                    color: scheme.onSurface,
+      child: Ink(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+              color: scheme.outlineVariant.withValues(alpha: 0.6)),
+        ),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(12),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 14),
+            child: Row(
+              children: [
+                Icon(icon, color: scheme.primary, size: 20),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: scheme.onSurface,
+                    ),
                   ),
                 ),
-              ),
-            ],
+                Icon(Icons.chevron_right,
+                    size: 18, color: scheme.outline),
+              ],
+            ),
           ),
         ),
       ),
