@@ -46,15 +46,29 @@ const uiStrings = {
   },
 
   // ====== Bible Navigation ======
+  // Renamed from OT/NT to Hebrew Bible / Greek Bible at the user's
+  // request — more accurate to the underlying source languages.
   'oldTestament': {
-    'zh-Hans': '旧约',
-    'zh-Hant': '舊約',
-    'en': 'Old Testament',
+    'zh-Hans': '希伯来圣经',
+    'zh-Hant': '希伯來聖經',
+    'en': 'Hebrew Bible',
   },
   'newTestament': {
-    'zh-Hans': '新约',
-    'zh-Hant': '新約',
-    'en': 'New Testament',
+    'zh-Hans': '希腊圣经',
+    'zh-Hant': '希臘聖經',
+    'en': 'Greek Bible',
+  },
+  // Short forms used in narrow toggle buttons where the full name
+  // would overflow.
+  'oldTestamentShort': {
+    'zh-Hans': '希伯来',
+    'zh-Hant': '希伯來',
+    'en': 'Hebrew',
+  },
+  'newTestamentShort': {
+    'zh-Hans': '希腊',
+    'zh-Hant': '希臘',
+    'en': 'Greek',
   },
   'previousChapter': {
     'zh-Hans': '上一章',
