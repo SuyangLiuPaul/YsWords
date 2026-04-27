@@ -408,6 +408,27 @@ const uiStrings = {
     'zh-Hant': '僅記於本福音書',
     'en': 'Only in this Gospel',
   },
+  // ── Strong's # direct lookup (Round 27C) ─────────────────────────
+  'strongsDerivation': {
+    'zh-Hans': '词源',
+    'zh-Hant': '詞源',
+    'en': 'Derivation',
+  },
+  'strongsFamily': {
+    'zh-Hans': '同根词',
+    'zh-Hant': '同根詞',
+    'en': 'Word family',
+  },
+  'strongsCompare': {
+    'zh-Hans': '相关词',
+    'zh-Hant': '相關詞',
+    'en': 'Compare',
+  },
+  'strongsOccurrences': {
+    'zh-Hans': '出处',
+    'zh-Hant': '出處',
+    'en': 'Occurrences',
+  },
   'crossRefsNone': {
     'zh-Hans': '此节经文暂无人工整理的相互参照。',
     'zh-Hant': '此節經文暫無人工整理的相互參照。',

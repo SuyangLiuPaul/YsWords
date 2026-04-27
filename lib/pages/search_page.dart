@@ -5,6 +5,7 @@ import 'package:yswords/models/verse.dart';
 import 'package:yswords/providers/main_provider.dart';
 import 'package:yswords/services/concordance_service.dart';
 import 'package:yswords/services/strongs_service.dart';
+import 'package:yswords/pages/strongs_entry_page.dart';
 import 'package:yswords/utils/format_searched_text.dart';
 import 'package:yswords/utils/reference_parser.dart';
 import 'package:yswords/utils/version_mapper.dart'
@@ -200,7 +201,17 @@ class _SearchPageState extends State<SearchPage> {
                 await search();
                 return;
               }
-              // First, try parsing as a Bible reference. If it
+              // Strong's-shaped query ("G25", "H430", "Strong G1234")
+              // jumps straight to the lexicon entry — common idiom in
+              // study-tool searches. Done before reference parsing
+              // because "H1" could otherwise match a malformed ref.
+              final strongs = parseStrongsNumber(trimmed);
+              if (strongs != null) {
+                Get.to(() => StrongsEntryPage(number: strongs),
+                    transition: Transition.rightToLeft);
+                return;
+              }
+              // Then try parsing as a Bible reference. If it
               // resolves to a real verse in the current version,
               // navigate straight there instead of doing full-text
               // search — that's almost always what the user wants
