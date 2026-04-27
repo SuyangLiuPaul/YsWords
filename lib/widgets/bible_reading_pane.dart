@@ -26,6 +26,7 @@ import 'package:yswords/services/cross_reference_service.dart';
 import 'package:yswords/services/fetch_verses.dart';
 import 'package:yswords/services/map_service.dart';
 import 'package:yswords/services/synopsis_service.dart';
+import 'package:yswords/services/tts_service.dart';
 import 'package:yswords/utils/clipboard_helper.dart';
 import 'package:yswords/utils/reference_parser.dart';
 import 'package:yswords/utils/responsive.dart';
@@ -81,6 +82,13 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
   List<BibleMap> _bookMaps = [];
   String _lastBookChapter = '';
 
+  /// Polled flag mirroring `TtsService.speaking` so the floating-header
+  /// menu can swap its icon/label without recomputing on every frame.
+  /// Updated by a 500 ms ticker that runs only while a TTS utterance
+  /// is active.
+  bool _isListening = false;
+  Timer? _ttsPoller;
+
   @override
   void initState() {
     super.initState();
@@ -91,9 +99,71 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
     });
   }
 
+  /// Toggle TTS read-aloud: when not speaking, build a single string
+  /// from every verse in the current chapter and start the utterance;
+  /// when speaking, cancel. Locale is mapped from the version code so
+  /// the browser picks an appropriate voice (CN voice for Chinese
+  /// versions, EN for English).
+  void _toggleListenChapter() {
+    if (TtsService.speaking) {
+      TtsService.stop();
+      _stopTtsPolling();
+      setState(() => _isListening = false);
+      return;
+    }
+    final mp = context.read<MainProvider>();
+    final book = mp.currentBook;
+    final chapter = mp.currentChapter;
+    if (book == null || chapter == null) return;
+    final chapterVerses = mp.verses
+        .where((v) => v.book == book && v.chapter == chapter)
+        .toList()
+      ..sort((a, b) => a.verse.compareTo(b.verse));
+    if (chapterVerses.isEmpty) return;
+    // Strip <note:...> tags and {variant} braces so the synthesizer
+    // doesn't read editorial markup aloud.
+    final text = chapterVerses
+        .map((v) => sanitizeForSearch(v.text))
+        .join(' ');
+    final locale = _ttsLocaleForVersion(mp.currentVersion);
+    TtsService.speak(text, locale: locale);
+    setState(() => _isListening = true);
+    _startTtsPolling();
+  }
+
+  String _ttsLocaleForVersion(String version) {
+    final v = version.toLowerCase();
+    if (v.contains('cuv') ||
+        v.contains('cnv') ||
+        v.contains('biblexg') ||
+        v.contains('-tr')) {
+      // Traditional vs. simplified guess: -tr suffix => zh-TW, else zh-CN.
+      return v.endsWith('-tr') ? 'zh-TW' : 'zh-CN';
+    }
+    return 'en-US';
+  }
+
+  void _startTtsPolling() {
+    _ttsPoller?.cancel();
+    _ttsPoller = Timer.periodic(const Duration(milliseconds: 500), (_) {
+      final speaking = TtsService.speaking;
+      if (!speaking && _isListening) {
+        if (mounted) setState(() => _isListening = false);
+        _stopTtsPolling();
+      }
+    });
+  }
+
+  void _stopTtsPolling() {
+    _ttsPoller?.cancel();
+    _ttsPoller = null;
+  }
+
   @override
   void dispose() {
     _versePositionTimer?.cancel();
+    _ttsPoller?.cancel();
+    if (_isListening) TtsService.stop();
     _positionsProvider?.itemPositionsListener.itemPositions
         .removeListener(_handleItemPositionsChanged);
     super.dispose();
@@ -623,6 +693,15 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                         highlights: mainProvider.highlights,
                         locale: settings.locale,
                       ),
+                      // TTS read-aloud — only on web (or any platform
+                      // where the SpeechSynthesis API is available).
+                      // The state class also self-stops the utterance
+                      // on dispose so swiping back doesn't leave the
+                      // browser narrating an empty page.
+                      onToggleListen: TtsService.isAvailable
+                          ? _toggleListenChapter
+                          : null,
+                      isListening: _isListening,
                       // Hide the Today's Reading card while a verse
                       // selection is active — the selection action bar
                       // already crowds the screen and the card just
@@ -1904,6 +1983,13 @@ class _FloatingHeader extends StatelessWidget {
   final String locale;
   final int highlightCount;
   final VoidCallback? onHighlights;
+  /// Toggles read-aloud (web TTS) for the current chapter. Null hides
+  /// the menu item — set to null on platforms / browsers without
+  /// SpeechSynthesis support.
+  final VoidCallback? onToggleListen;
+  /// True when a TTS utterance is currently in progress, so the menu
+  /// can show "Stop reading" instead of "Listen to chapter".
+  final bool isListening;
   /// Optional widget rendered immediately below the glass header
   /// (still inside the same SafeArea + Positioned region). Used for
   /// the "Today's Reading" card when a reading plan is active.
@@ -1933,6 +2019,8 @@ class _FloatingHeader extends StatelessWidget {
     this.locale = 'en',
     this.highlightCount = 0,
     this.onHighlights,
+    this.onToggleListen,
+    this.isListening = false,
     this.belowHeader,
   });
 
@@ -2147,6 +2235,25 @@ class _FloatingHeader extends StatelessWidget {
                         // Gospels. The data is curated from public-
                         // domain harmony tables so non-Gospel books
                         // never have anything to show.
+                        if (onToggleListen != null) {
+                          items.add(PopupMenuItem(
+                            value: 'listen',
+                            onTap: onToggleListen,
+                            child: _menuRow(
+                              context,
+                              icon: isListening
+                                  ? Icons.stop_circle_outlined
+                                  : Icons.volume_up_outlined,
+                              iconColor:
+                                  isListening ? scheme.primary : null,
+                              label: isListening
+                                  ? (uiStrings['ttsStop']?[locale] ??
+                                      'Stop reading')
+                                  : (uiStrings['ttsListen']?[locale] ??
+                                      'Listen to chapter'),
+                            ),
+                          ));
+                        }
                         if (SynopsisService.isGospel(toEnglish(book) ?? '')) {
                           items.add(PopupMenuItem(
                             value: 'synopsis',

@@ -429,6 +429,17 @@ const uiStrings = {
     'zh-Hant': '出處',
     'en': 'Occurrences',
   },
+  // ── Verse audio (Round 27D) ─────────────────────────────────────
+  'ttsListen': {
+    'zh-Hans': '朗读本章',
+    'zh-Hant': '朗讀本章',
+    'en': 'Listen to chapter',
+  },
+  'ttsStop': {
+    'zh-Hans': '停止朗读',
+    'zh-Hant': '停止朗讀',
+    'en': 'Stop reading',
+  },
   'crossRefsNone': {
     'zh-Hans': '此节经文暂无人工整理的相互参照。',
     'zh-Hant': '此節經文暫無人工整理的相互參照。',
