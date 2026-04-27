@@ -746,7 +746,12 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
   }
 
   Widget _relatedChip(StrongsEntry e, ColorScheme scheme, String locale) {
-    return InkWell(
+    // Material ancestor guarantees InkWell.onTap fires on Flutter web.
+    // Without it, the Container's opaque decoration was eating taps in
+    // some configurations.
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
       onTap: () => _loadRootEntry(e.number),
       borderRadius: BorderRadius.circular(8),
       child: Container(
@@ -807,6 +812,7 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
             ),
           ],
         ),
+      ),
       ),
     );
   }
@@ -923,21 +929,15 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
     final isBrowsingRoot = _rootEntry != null;
     final entry = isBrowsingRoot ? _rootEntry : _selectedEntry;
     if (entry == null) return;
-    // Rows: current word + word family + synonyms, deduped by Strong's #.
-    final seen = <String>{entry.number};
-    final rows = <StrongsEntry>[entry];
-    for (final e in _wordFamily) {
-      if (seen.add(e.number)) rows.add(e);
-    }
-    for (final e in _compareWords) {
-      if (seen.add(e.number)) rows.add(e);
-    }
     final locale = widget.locale;
     final scheme = Theme.of(ctx).colorScheme;
     showModalBottomSheet<void>(
       context: ctx,
       isScrollControlled: true,
       backgroundColor: scheme.surface,
+      // Wider sheet on desktop/iPad — Material's default ~640dp cap
+      // squeezes the table on wide screens.
+      constraints: const BoxConstraints(maxWidth: 1400),
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
@@ -987,7 +987,7 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
             const Divider(height: 1),
             Expanded(
               child: WordDistributionTable(
-                entries: rows,
+                strongsNumber: entry.number,
                 locale: locale,
                 currentVersion: widget.currentVersion,
                 scrollController: scrollController,

@@ -1081,6 +1081,10 @@ void _showOriginalsSheet({
     context: context,
     isScrollControlled: true,
     backgroundColor: Theme.of(context).colorScheme.surface,
+    // Material's default ~640dp cap squeezes the exegesis panel on
+    // wide desktop/iPad screens. Allow up to 1100px so the panel
+    // breathes on web while still feeling sheet-like on phones.
+    constraints: const BoxConstraints(maxWidth: 1100),
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
     ),
