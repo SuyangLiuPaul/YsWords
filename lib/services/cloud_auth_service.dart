@@ -131,6 +131,39 @@ class CloudAuthService extends ChangeNotifier {
     }
   }
 
+  /// Sign in with Google via Firebase's web popup flow. Uses
+  /// `signInWithPopup(GoogleAuthProvider)` which opens a Google
+  /// accounts window, completes OAuth via the project's authDomain
+  /// (ysword.firebaseapp.com), and returns a Firebase credential
+  /// without us having to wire up the `google_sign_in` package or
+  /// add SDK script tags to web/index.html.
+  ///
+  /// Requirements (one-time):
+  ///   1. Firebase Console → Authentication → Sign-in method →
+  ///      Google → Enable.
+  ///   2. The popup is initiated by a user click — modern browsers
+  ///      block popups otherwise. Calling this from a button's
+  ///      onPressed handler satisfies the gesture requirement.
+  Future<CloudAuthResult> signInWithGoogle() async {
+    if (!_configured) {
+      return const CloudAuthResult.error('Cloud sync not configured.');
+    }
+    try {
+      final provider = GoogleAuthProvider();
+      // Always show the chooser even if there's a single signed-in
+      // Google account, so users on shared devices can pick the
+      // right one.
+      provider.setCustomParameters({'prompt': 'select_account'});
+      final cred =
+          await FirebaseAuth.instance.signInWithPopup(provider);
+      return CloudAuthResult.ok(cred.user);
+    } on FirebaseAuthException catch (e) {
+      return CloudAuthResult.error(_friendlyError(e));
+    } catch (e) {
+      return CloudAuthResult.error(e.toString());
+    }
+  }
+
   /// Send a password-reset email. Same friendly-error treatment.
   Future<String?> sendPasswordReset(String email) async {
     if (!_configured) return 'Cloud sync not configured.';
@@ -166,6 +199,17 @@ class CloudAuthService extends ChangeNotifier {
         return 'Too many attempts — please wait a moment and try again.';
       case 'network-request-failed':
         return 'Network error — check your connection.';
+      case 'popup-closed-by-user':
+      case 'cancelled-popup-request':
+        return 'Sign-in cancelled.';
+      case 'popup-blocked':
+        return 'Popup blocked — allow popups for this site and try again.';
+      case 'unauthorized-domain':
+        return 'This domain is not authorized for sign-in. '
+            'Add it in Firebase → Authentication → Settings → Authorized domains.';
+      case 'operation-not-allowed':
+        return 'Google sign-in is not enabled on this Firebase project. '
+            'Enable it in Firebase → Authentication → Sign-in method.';
     }
     return e.message ?? e.code;
   }

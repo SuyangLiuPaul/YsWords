@@ -540,6 +540,16 @@ const uiStrings = {
     'zh-Hant': '使用電子郵箱登入（多裝置同步）',
     'en': 'Sign in with email (sync across devices)',
   },
+  'welcomeSignInGoogle': {
+    'zh-Hans': '使用 Google 登录',
+    'zh-Hant': '使用 Google 登入',
+    'en': 'Sign in with Google',
+  },
+  'cloudSignInGoogle': {
+    'zh-Hans': '使用 Google 登录（多设备同步）',
+    'zh-Hant': '使用 Google 登入（多裝置同步）',
+    'en': 'Sign in with Google',
+  },
   'welcomeLocalProfile': {
     'zh-Hans': '本地账号（仅限本设备）',
     'zh-Hant': '本地帳號（僅限本裝置）',

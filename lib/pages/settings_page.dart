@@ -5,7 +5,6 @@ import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/providers/main_provider.dart';
 import 'package:get/get.dart';
 import 'package:yswords/pages/profiles_page.dart';
-import 'package:yswords/pages/sign_in_page.dart';
 import 'package:yswords/services/cloud_auth_service.dart';
 import 'package:yswords/services/cloud_sync_service.dart';
 import 'package:yswords/services/fetch_books.dart';
@@ -1358,14 +1357,43 @@ class _AccountSectionState extends State<_AccountSection> {
               const Divider(height: 24),
               if (!auth.isSignedIn)
                 FilledButton.icon(
-                  onPressed: () => Get.to(
-                    () => const SignInPage(),
-                    transition: Transition.rightToLeft,
-                  ),
-                  icon: const Icon(Icons.cloud_outlined),
+                  onPressed: () async {
+                    final result = await CloudAuthService.instance
+                        .signInWithGoogle();
+                    if (!context.mounted) return;
+                    if (!result.isOk) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            result.errorMessage ?? 'Sign-in failed.',
+                          ),
+                          duration: const Duration(seconds: 3),
+                        ),
+                      );
+                      return;
+                    }
+                    // Match local profile name to Google display
+                    // name so the just-synced data lands somewhere.
+                    final user = result.user!;
+                    final svc = ProfileService.instance;
+                    final namePart =
+                        user.displayName?.trim().isNotEmpty == true
+                            ? user.displayName!.trim()
+                            : (user.email ?? 'user').split('@').first;
+                    final existing = svc.profiles.where((p) =>
+                        p.name.toLowerCase() ==
+                        namePart.toLowerCase());
+                    if (existing.isNotEmpty) {
+                      await svc.setCurrent(existing.first.id);
+                    } else {
+                      final p = await svc.create(namePart);
+                      await svc.setCurrent(p.id);
+                    }
+                  },
+                  icon: const Icon(Icons.account_circle_outlined),
                   label: Text(
-                    uiStrings['cloudSignIn']?[locale] ??
-                        'Sign in to sync across devices',
+                    uiStrings['cloudSignInGoogle']?[locale] ??
+                        'Sign in with Google',
                   ),
                 )
               else

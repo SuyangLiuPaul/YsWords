@@ -1,11 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import 'package:get/get.dart';
-
 import 'package:yswords/constants/ui_strings.dart';
 import 'package:yswords/models/app_settings.dart';
-import 'package:yswords/pages/sign_in_page.dart';
 import 'package:yswords/services/cloud_auth_service.dart';
 import 'package:yswords/services/profile_service.dart';
 
@@ -41,6 +38,40 @@ class _WelcomePageState extends State<WelcomePage> {
     setState(() => _busy = true);
     await ProfileService.instance.setCurrent(ProfileService.guestId);
     await ProfileService.instance.markWelcomeSeen();
+    if (!mounted) return;
+    widget.onDone();
+  }
+
+  /// Trigger Firebase's Google popup. On success, derive a local
+  /// profile name from the Google display name (or email prefix as
+  /// a fallback) so cloud-synced data has a local landing spot.
+  Future<void> _signInWithGoogle() async {
+    if (_busy) return;
+    setState(() => _busy = true);
+    final result = await CloudAuthService.instance.signInWithGoogle();
+    if (!mounted) return;
+    if (!result.isOk) {
+      setState(() => _busy = false);
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(result.errorMessage ?? 'Sign-in failed.'),
+        duration: const Duration(seconds: 3),
+      ));
+      return;
+    }
+    final user = result.user!;
+    final svc = ProfileService.instance;
+    final namePart = user.displayName?.trim().isNotEmpty == true
+        ? user.displayName!.trim()
+        : (user.email ?? 'user').split('@').first;
+    final existing = svc.profiles
+        .where((p) => p.name.toLowerCase() == namePart.toLowerCase());
+    if (existing.isNotEmpty) {
+      await svc.setCurrent(existing.first.id);
+    } else {
+      final p = await svc.create(namePart);
+      await svc.setCurrent(p.id);
+    }
+    await svc.markWelcomeSeen();
     if (!mounted) return;
     widget.onDone();
   }
@@ -126,34 +157,21 @@ class _WelcomePageState extends State<WelcomePage> {
                       ),
                     ),
                     const SizedBox(height: 20),
-                    // Cloud sign-in (Firebase) — shown only when the
-                    // user has finished the firebase_options.dart
-                    // setup. Otherwise the only "Sign in" option is
-                    // the local-profile path further down.
+                    // Cloud sign-in (Firebase Google popup) — shown
+                    // only when the user has finished the
+                    // firebase_options.dart setup. Otherwise the
+                    // only "Sign in" option is the local-profile
+                    // path further down.
                     if (CloudAuthService.instance.isConfigured) ...[
                       FilledButton.icon(
-                        onPressed: _busy
-                            ? null
-                            : () async {
-                                await Get.to(
-                                  () => SignInPage(
-                                    onSuccess: widget.onDone,
-                                  ),
-                                  transition: Transition.rightToLeft,
-                                );
-                                // Mark welcome seen so they don't
-                                // see the gate again even if they
-                                // didn't complete sign-in.
-                                await ProfileService.instance
-                                    .markWelcomeSeen();
-                              },
-                        icon: const Icon(Icons.cloud_outlined),
+                        onPressed: _busy ? null : _signInWithGoogle,
+                        icon: const Icon(Icons.account_circle_outlined),
                         label: Padding(
                           padding:
                               const EdgeInsets.symmetric(vertical: 12),
                           child: Text(
-                            uiStrings['welcomeSignInCloud']?[locale] ??
-                                'Sign in with email (sync across devices)',
+                            uiStrings['welcomeSignInGoogle']?[locale] ??
+                                'Sign in with Google',
                             style: const TextStyle(fontSize: 14),
                           ),
                         ),
