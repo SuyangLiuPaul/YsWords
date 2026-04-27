@@ -387,6 +387,27 @@ const uiStrings = {
     'zh-Hant': '尚未選擇讀經計劃。前往「設定」中挑選一份。',
     'en': 'No reading plan selected. Pick one from Settings.',
   },
+  // ── Gospel synopsis (Round 27B) ─────────────────────────────────
+  'synopsis': {
+    'zh-Hans': '福音书对观',
+    'zh-Hant': '福音書對觀',
+    'en': 'Gospel Synopsis',
+  },
+  'synopsisChapterTitle': {
+    'zh-Hans': '本章对观条目',
+    'zh-Hant': '本章對觀條目',
+    'en': 'Parallel passages in this chapter',
+  },
+  'synopsisNone': {
+    'zh-Hans': '本章暂无对观条目。',
+    'zh-Hant': '本章暫無對觀條目。',
+    'en': 'No parallel passages curated for this chapter.',
+  },
+  'synopsisOnlyHere': {
+    'zh-Hans': '仅记于本福音书',
+    'zh-Hant': '僅記於本福音書',
+    'en': 'Only in this Gospel',
+  },
   'crossRefsNone': {
     'zh-Hans': '此节经文暂无人工整理的相互参照。',
     'zh-Hant': '此節經文暫無人工整理的相互參照。',

@@ -25,6 +25,7 @@ import 'package:yswords/services/concordance_service.dart';
 import 'package:yswords/services/cross_reference_service.dart';
 import 'package:yswords/services/fetch_verses.dart';
 import 'package:yswords/services/map_service.dart';
+import 'package:yswords/services/synopsis_service.dart';
 import 'package:yswords/utils/clipboard_helper.dart';
 import 'package:yswords/utils/reference_parser.dart';
 import 'package:yswords/utils/responsive.dart';
@@ -2141,6 +2142,28 @@ class _FloatingHeader extends StatelessWidget {
                                 'Statistics',
                           ),
                         ));
+                        // Gospel Synopsis — only shown when the
+                        // current chapter belongs to one of the four
+                        // Gospels. The data is curated from public-
+                        // domain harmony tables so non-Gospel books
+                        // never have anything to show.
+                        if (SynopsisService.isGospel(toEnglish(book) ?? '')) {
+                          items.add(PopupMenuItem(
+                            value: 'synopsis',
+                            onTap: () => _showSynopsisSheet(
+                              context: context,
+                              englishBook: toEnglish(book) ?? book,
+                              chapter: chapter,
+                              locale: locale,
+                            ),
+                            child: _menuRow(
+                              context,
+                              icon: Icons.compare_arrows_rounded,
+                              label: uiStrings['synopsis']?[locale] ??
+                                  'Gospel Synopsis',
+                            ),
+                          ));
+                        }
                         items.add(PopupMenuItem(
                           value: 'maps',
                           onTap: () => _showMapPicker(
@@ -2468,6 +2491,324 @@ class _CrossRefsSheetBodyState extends State<_CrossRefsSheetBody> {
           ),
         ),
       ],
+    );
+  }
+}
+
+/// Open a modal sheet showing the harmony entries that touch the
+/// current Gospel chapter. Each row lists the parallels in the
+/// other Gospels — tapping any reference jumps the reader to it.
+void _showSynopsisSheet({
+  required BuildContext context,
+  required String englishBook,
+  required int chapter,
+  required String locale,
+}) {
+  final mainProvider = context.read<MainProvider>();
+  showModalBottomSheet<void>(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Theme.of(context).colorScheme.surface,
+    constraints: const BoxConstraints(maxWidth: 900),
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+    ),
+    builder: (sheetCtx) => DraggableScrollableSheet(
+      initialChildSize: 0.7,
+      minChildSize: 0.35,
+      maxChildSize: 0.95,
+      expand: false,
+      builder: (_, scrollController) => Scaffold(
+        backgroundColor: Colors.transparent,
+        body: _SynopsisSheetBody(
+          englishBook: englishBook,
+          chapter: chapter,
+          locale: locale,
+          scrollController: scrollController,
+          onNavigate: (ref) {
+            Navigator.of(sheetCtx).maybePop();
+            _navigateToBibleReference(
+              mainProvider: mainProvider,
+              ref: ref,
+              locale: locale,
+            );
+          },
+        ),
+      ),
+    ),
+  );
+}
+
+class _SynopsisSheetBody extends StatefulWidget {
+  final String englishBook;
+  final int chapter;
+  final String locale;
+  final ScrollController scrollController;
+  final void Function(BibleReference) onNavigate;
+
+  const _SynopsisSheetBody({
+    required this.englishBook,
+    required this.chapter,
+    required this.locale,
+    required this.scrollController,
+    required this.onNavigate,
+  });
+
+  @override
+  State<_SynopsisSheetBody> createState() => _SynopsisSheetBodyState();
+}
+
+class _SynopsisSheetBodyState extends State<_SynopsisSheetBody> {
+  List<SynopsisEvent>? _events;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    final list =
+        await SynopsisService.byChapter(widget.englishBook, widget.chapter);
+    if (!mounted) return;
+    setState(() => _events = list);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final settings = context.watch<AppSettings>();
+    final events = _events;
+    final mainProvider = context.read<MainProvider>();
+
+    if (events == null) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    return Column(
+      children: [
+        // Drag handle.
+        Container(
+          margin: const EdgeInsets.only(top: 8, bottom: 4),
+          width: 40,
+          height: 4,
+          decoration: BoxDecoration(
+            color: scheme.outline.withValues(alpha: 0.4),
+            borderRadius: BorderRadius.circular(2),
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+          child: Row(
+            children: [
+              Icon(Icons.compare_arrows_rounded,
+                  color: scheme.primary, size: 22),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      uiStrings['synopsis']?[widget.locale] ??
+                          'Gospel Synopsis',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        color: scheme.primary,
+                      ),
+                    ),
+                    Text(
+                      '${localeAwareBookName(widget.englishBook, widget.locale, mainProvider.currentVersion)} ${widget.chapter}',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: scheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        const Divider(height: 1),
+        Expanded(
+          child: events.isEmpty
+              ? Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(32),
+                    child: Text(
+                      uiStrings['synopsisNone']?[widget.locale] ??
+                          'No parallel passages curated for this chapter.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: scheme.onSurfaceVariant,
+                        fontStyle: FontStyle.italic,
+                      ),
+                    ),
+                  ),
+                )
+              : ListView.separated(
+                  controller: widget.scrollController,
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  itemCount: events.length,
+                  separatorBuilder: (_, __) => const Divider(height: 1),
+                  itemBuilder: (_, i) {
+                    final ev = events[i];
+                    return _SynopsisRow(
+                      event: ev,
+                      currentBook: widget.englishBook,
+                      locale: widget.locale,
+                      version: mainProvider.currentVersion,
+                      fontFamily: settings.fontFamily,
+                      onNavigate: widget.onNavigate,
+                    );
+                  },
+                ),
+        ),
+      ],
+    );
+  }
+}
+
+class _SynopsisRow extends StatelessWidget {
+  final SynopsisEvent event;
+  final String currentBook;
+  final String locale;
+  final String version;
+  final String fontFamily;
+  final void Function(BibleReference) onNavigate;
+
+  const _SynopsisRow({
+    required this.event,
+    required this.currentBook,
+    required this.locale,
+    required this.version,
+    required this.fontFamily,
+    required this.onNavigate,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final gospels = ['Matthew', 'Mark', 'Luke', 'John'];
+    final present = gospels
+        .where((g) => event.refs.containsKey(g.toLowerCase()))
+        .toList();
+    final isUnique = present.length == 1;
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            event.localizedTitle(locale),
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: scheme.onSurface,
+              fontFamily: fontFamily,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Wrap(
+            spacing: 6,
+            runSpacing: 4,
+            children: [
+              for (final g in present)
+                _RefChip(
+                  label: _shortLabel(g, event.rawRef(g.toLowerCase()) ?? ''),
+                  isCurrentGospel: g == currentBook,
+                  onTap: () {
+                    final ref = event.referenceFor(g);
+                    if (ref != null) onNavigate(ref);
+                  },
+                ),
+              if (isUnique)
+                Padding(
+                  padding: const EdgeInsets.only(left: 4, top: 2),
+                  child: Text(
+                    uiStrings['synopsisOnlyHere']?[locale] ??
+                        'Only in this Gospel',
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontStyle: FontStyle.italic,
+                      color: scheme.onSurfaceVariant,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Compact chip label like "Mt 5:1-12" (English) or
+  /// "马太 5:1-12" (Chinese). Strips the full English name from the raw
+  /// "Matthew 5:1-12" and replaces with the localized abbreviation.
+  String _shortLabel(String englishGospel, String raw) {
+    // raw looks like "Matthew 5:1-12" — take everything after the first
+    // space and prepend a localized short name.
+    final spaceIdx = raw.indexOf(' ');
+    final tail = spaceIdx > 0 ? raw.substring(spaceIdx + 1) : raw;
+    final shortBook = locale.startsWith('zh')
+        ? localeAwareBookName(englishGospel, locale, version)
+        : _enShortGospel(englishGospel);
+    return '$shortBook $tail';
+  }
+
+  String _enShortGospel(String g) {
+    switch (g) {
+      case 'Matthew':
+        return 'Matt';
+      case 'Mark':
+        return 'Mark';
+      case 'Luke':
+        return 'Luke';
+      case 'John':
+        return 'John';
+    }
+    return g;
+  }
+}
+
+class _RefChip extends StatelessWidget {
+  final String label;
+  final bool isCurrentGospel;
+  final VoidCallback onTap;
+
+  const _RefChip({
+    required this.label,
+    required this.isCurrentGospel,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final bg = isCurrentGospel
+        ? scheme.primary.withValues(alpha: 0.20)
+        : scheme.primary.withValues(alpha: 0.08);
+    final fg = isCurrentGospel ? scheme.primary : scheme.onSurface;
+    return Material(
+      color: bg,
+      borderRadius: BorderRadius.circular(8),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(8),
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+          child: Text(
+            label,
+            style: TextStyle(
+              fontSize: 12.5,
+              fontWeight: FontWeight.w600,
+              color: fg,
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
