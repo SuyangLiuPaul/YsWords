@@ -2205,27 +2205,27 @@ class _FloatingHeader extends StatelessWidget {
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          // Home button as the leftmost element in
-                          // the floating glass header — matches the
-                          // top-left placement on every other page's
-                          // AppBar. Only renders when the reader is
-                          // pushed (i.e. there's a Dashboard below to
-                          // pop back to). Hidden in split-view's
-                          // secondary pane (where `onClose` already
-                          // sits in this slot) so we never get two
-                          // close-style buttons crowding each other.
+                          // Back arrow as the leftmost element when
+                          // the reader is pushed (has a parent on
+                          // the navigator stack). Pops one level —
+                          // matches the back-arrow-on-leading
+                          // pattern across all AppBar-based pages.
+                          // Hidden in split view's secondary pane
+                          // (where `onClose` already sits in this
+                          // slot) so we don't get two close-style
+                          // buttons stacking up.
                           if (onClose == null &&
                               Navigator.of(context).canPop())
                             IconButton(
-                              onPressed: () => Navigator.of(context)
-                                  .popUntil((r) => r.isFirst),
-                              icon: Icon(Icons.home_rounded,
+                              onPressed: () =>
+                                  Navigator.of(context).maybePop(),
+                              icon: Icon(Icons.arrow_back_rounded,
                                   size: iconSize),
                               padding: EdgeInsets.all(iconPad),
                               constraints: const BoxConstraints(
                                   minWidth: 36, minHeight: 36),
                               tooltip:
-                                  uiStrings['home']?[locale] ?? 'Home',
+                                  uiStrings['back']?[locale] ?? 'Back',
                             ),
                           if (onClose != null)
                             IconButton(
@@ -2338,6 +2338,23 @@ class _FloatingHeader extends StatelessWidget {
                         constraints: const BoxConstraints(
                             minWidth: 36, minHeight: 36),
                         tooltip: uiStrings['search']?[locale] ?? 'Search',
+                      ),
+                    // Home action — jump back to the Dashboard root.
+                    // Sits in the right-side action group, mirroring
+                    // the actions-area HomeIconButton on every
+                    // AppBar page. Self-hides when there's no
+                    // parent route (rare; defends against deep-link
+                    // edge cases).
+                    if (Navigator.of(context).canPop() && onClose == null)
+                      IconButton(
+                        onPressed: () => Navigator.of(context)
+                            .popUntil((r) => r.isFirst),
+                        icon:
+                            Icon(Icons.home_rounded, size: iconSize),
+                        padding: EdgeInsets.all(iconPad),
+                        constraints: const BoxConstraints(
+                            minWidth: 36, minHeight: 36),
+                        tooltip: uiStrings['home']?[locale] ?? 'Home',
                       ),
                     PopupMenuButton<String>(
                       icon: Icon(Icons.more_vert_rounded, size: iconSize),

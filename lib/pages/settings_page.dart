@@ -14,6 +14,7 @@ import 'package:yswords/services/profile_service.dart';
 import 'package:yswords/services/reading_plan_service.dart';
 
 import 'package:yswords/widgets/home_icon_button.dart';
+import 'package:yswords/widgets/localized_back_button.dart';
 import 'package:yswords/utils/responsive.dart';
 
 String getDevotionalFormattedText(
@@ -60,12 +61,13 @@ class SettingsPage extends StatelessWidget {
       },
       child: Scaffold(
       appBar: AppBar(
-        leading: const HomeIconButton(),
+        leading: const LocalizedBackButton(),
         // The settings locale is now available inside the Consumer below
         title: Consumer<AppSettings>(
           builder: (context, settings, _) =>
               Text(uiStrings['settings']?[settings.locale] ?? 'Settings'),
         ),
+        actions: const [HomeIconButton()],
       ),
       body: Consumer<AppSettings>(
         builder: (context, settings, _) {

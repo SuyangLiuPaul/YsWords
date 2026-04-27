@@ -17,6 +17,7 @@ import 'package:yswords/constants/ui_strings.dart';
 import 'package:yswords/constants/text_patterns.dart';
 import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/widgets/home_icon_button.dart';
+import 'package:yswords/widgets/localized_back_button.dart';
 import 'package:yswords/utils/responsive.dart';
 import 'package:flutter/services.dart';
 
@@ -182,7 +183,7 @@ class _SearchPageState extends State<SearchPage> {
       },
       child: Scaffold(
         appBar: AppBar(
-          leading: const HomeIconButton(),
+          leading: const LocalizedBackButton(),
           // Search input field in the app bar
           title: TextField(
             autofocus: true,
@@ -321,6 +322,7 @@ class _SearchPageState extends State<SearchPage> {
                 },
                 icon: const Icon(Icons.close_rounded),
               ),
+            const HomeIconButton(),
           ],
         ),
         body: Center(

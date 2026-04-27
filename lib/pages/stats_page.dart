@@ -8,6 +8,7 @@ import 'package:yswords/services/bible_stats_service.dart';
 import 'package:yswords/utils/clipboard_helper.dart';
 import 'package:yswords/utils/version_mapper.dart' show toEnglish, localeAwareBookName;
 import 'package:yswords/widgets/home_icon_button.dart';
+import 'package:yswords/widgets/localized_back_button.dart';
 
 /// Statistical analysis of the currently-loaded Bible version —
 /// vocabulary frequency, per-book size, hapax legomena, reading
@@ -28,7 +29,7 @@ class StatsPage extends StatelessWidget {
       length: 3,
       child: Scaffold(
         appBar: AppBar(
-          leading: const HomeIconButton(),
+          leading: const LocalizedBackButton(),
           title: Text(uiStrings['statistics']?[locale] ?? 'Statistics'),
           bottom: TabBar(
             isScrollable: true,
@@ -55,6 +56,7 @@ class StatsPage extends StatelessWidget {
               onPressed: () => _copyAllStats(context, stats, locale,
                   mainProvider.currentVersion),
             ),
+            const HomeIconButton(),
           ],
         ),
         body: TabBarView(

@@ -5,6 +5,7 @@ import 'package:yswords/constants/ui_strings.dart';
 import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/services/profile_service.dart';
 import 'package:yswords/widgets/home_icon_button.dart';
+import 'package:yswords/widgets/localized_back_button.dart';
 
 /// Edit the active profile's display name and avatar color tile.
 ///
@@ -85,7 +86,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
 
     return Scaffold(
       appBar: AppBar(
-        leading: const HomeIconButton(),
+        leading: const LocalizedBackButton(),
         title: Text(
           uiStrings['profileEditTitle']?[locale] ?? 'Edit profile',
         ),
@@ -94,6 +95,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
             onPressed: _saving ? null : _save,
             child: Text(uiStrings['save']?[locale] ?? 'Save'),
           ),
+          const HomeIconButton(),
         ],
       ),
       body: Center(
