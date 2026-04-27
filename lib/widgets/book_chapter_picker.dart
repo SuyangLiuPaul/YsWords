@@ -172,23 +172,20 @@ class _BookChapterPickerState extends State<BookChapterPicker> {
                         ],
                       );
 
-                      // Responsive labels — only English shortens to 'Hebrew' /
-                      // 'Greek' on narrow toggles. Chinese keeps the full
-                      // 希伯来圣经 / 希腊圣经 since 4–5 CJK chars fit easily.
-                      final useShort =
-                          isNarrow && settings.locale == 'en';
-                      final otLabel = useShort
-                          ? (uiStrings['oldTestamentShort']
-                                  ?[settings.locale] ??
-                              'Hebrew')
-                          : (uiStrings['oldTestament']?[settings.locale] ??
-                              'Hebrew Bible');
-                      final ntLabel = useShort
-                          ? (uiStrings['newTestamentShort']
-                                  ?[settings.locale] ??
-                              'Greek')
-                          : (uiStrings['newTestament']?[settings.locale] ??
-                              'Greek Bible');
+                      // Always use the full label — Hebrew Bible /
+                      // Greek Bible / 希伯来圣经 / 希腊圣经. The button
+                      // text uses FittedBox(scaleDown) (see
+                      // _testamentButton) so the label is shrunk to
+                      // fit when the button is narrow rather than
+                      // truncated with an invisible "…" that made
+                      // "希伯来圣经" look like "希伯来圣" and
+                      // "Hebrew Bible" look like "Hebrew".
+                      final otLabel =
+                          uiStrings['oldTestament']?[settings.locale] ??
+                              'Hebrew Bible';
+                      final ntLabel =
+                          uiStrings['newTestament']?[settings.locale] ??
+                              'Greek Bible';
 
                       if (isNarrow) {
                         return Column(
@@ -319,18 +316,27 @@ class _BookChapterPickerState extends State<BookChapterPicker> {
                 : scheme.outlineVariant.withValues(alpha: 0.45),
           ),
         ),
-        padding: EdgeInsets.symmetric(horizontal: 16 * settings.menuScale, vertical: 10 * settings.menuScale),
+        padding: EdgeInsets.symmetric(
+            horizontal: 14 * settings.menuScale,
+            vertical: 10 * settings.menuScale),
       ),
-      child: Text(
+      // FittedBox(scaleDown) shrinks the label proportionally if the
+      // button is too narrow for the natural-size text, instead of
+      // truncating with a near-invisible ellipsis that swallowed the
+      // last character ("Hebrew Bible" → "Hebrew", "希伯来圣经" → "希伯来圣").
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        child: Text(
         label,
         maxLines: 1,
-        overflow: TextOverflow.ellipsis,
+        softWrap: false,
         textAlign: TextAlign.center,
         style: TextStyle(
           fontSize: settings.fontSize.clamp(13.0, 17.0).toDouble(),
           fontFamily: settings.fontFamily,
           fontWeight: FontWeight.w700,
         ),
+      ),
       ),
     );
   }
