@@ -112,22 +112,47 @@
   <meta name="msapplication-TileColor" content="#2196F3">
 </head>
 <body>
-  <!-- Self-heal: previous deploys registered a Flutter service worker
-       that aggressively cached main.dart.js, so users were stuck on
-       stale builds for hours. Unregister anything currently active and
-       wipe its cache before bootstrapping. New deploys still get fresh
-       JS via netlify.toml's no-cache headers. -->
+  <!-- Self-heal + auto-reload. Earlier builds shipped a Flutter
+       service worker that aggressively cached main.dart.js, leaving
+       users stuck on stale builds for days. We now build with
+       --pwa-strategy=none so new deploys carry no SW at all, but
+       any browser that visited a previous build still has the old
+       SW installed. This script:
+         1. Unregisters every leftover SW
+         2. Wipes their cache buckets
+         3. If anything was actually torn down, reloads the page
+            ONCE (guarded by sessionStorage so we never loop) so the
+            user lands on a fully SW-less session immediately.
+       After that one reload, future deploys are picked up the moment
+       Netlify serves new HTML — no caching layer in the way. -->
   <script>
     (function() {
       if (!('serviceWorker' in navigator)) return;
+      var RELOAD_KEY = 'yswords_sw_self_heal';
+      var alreadyReloaded = sessionStorage.getItem(RELOAD_KEY) === '1';
+      var unregisterCount = 0;
       navigator.serviceWorker.getRegistrations().then(function(regs) {
-        for (var r of regs) { r.unregister(); }
+        unregisterCount = regs.length;
+        return Promise.all(regs.map(function(r) {
+          return r.unregister().catch(function() {});
+        }));
+      }).then(function() {
+        if (window.caches && caches.keys) {
+          return caches.keys().then(function(keys) {
+            return Promise.all(keys.map(function(k) {
+              return caches.delete(k).catch(function() {});
+            }));
+          });
+        }
+      }).then(function() {
+        // Only reload if we actually killed an SW and haven't
+        // already reloaded this tab. Without the guard, a SW that
+        // can't be unregistered would loop forever.
+        if (unregisterCount > 0 && !alreadyReloaded) {
+          sessionStorage.setItem(RELOAD_KEY, '1');
+          location.reload();
+        }
       }).catch(function() {});
-      if (window.caches && caches.keys) {
-        caches.keys().then(function(keys) {
-          for (var k of keys) { caches.delete(k); }
-        }).catch(function() {});
-      }
     })();
   </script>
   <script src="flutter_bootstrap.js" async></script>

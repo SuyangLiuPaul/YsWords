@@ -3,9 +3,6 @@ import 'package:provider/provider.dart';
 
 import 'package:yswords/constants/ui_strings.dart';
 import 'package:yswords/models/app_settings.dart';
-import 'package:get/get.dart';
-
-import 'package:yswords/pages/settings_page.dart';
 import 'package:yswords/services/profile_service.dart';
 import 'package:yswords/services/reading_plan_service.dart';
 import 'package:yswords/utils/version_mapper.dart' show translateBookName;
@@ -92,11 +89,7 @@ class _TodayReadingCardState extends State<TodayReadingCard> {
 
   @override
   Widget build(BuildContext context) {
-    if (!_loaded) return const SizedBox.shrink();
-    // No plan selected yet — show a small tappable hint so the
-    // feature is discoverable without forcing users into Settings
-    // first. Hidden once they've picked any plan.
-    if (_plan == null) return _NoPlanHint();
+    if (!_loaded || _plan == null) return const SizedBox.shrink();
     final plan = _plan!;
     final settings = context.watch<AppSettings>();
     final scheme = Theme.of(context).colorScheme;
@@ -210,57 +203,6 @@ class _TodayReadingCardState extends State<TodayReadingCard> {
     if (ref == null) return canonical;
     final localBook = translateBookName(ref.englishBook, currentVersion);
     return '$localBook ${ref.chapter}';
-  }
-}
-
-/// Tiny "Choose a reading plan" prompt shown when the user hasn't
-/// picked one yet — keeps the feature discoverable from the home
-/// screen instead of buried in Settings.
-class _NoPlanHint extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    final settings = context.watch<AppSettings>();
-    final scheme = Theme.of(context).colorScheme;
-    final locale = settings.locale;
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(12, 4, 12, 0),
-      child: Material(
-        color: scheme.primaryContainer.withValues(alpha: 0.30),
-        elevation: 0,
-        borderRadius: BorderRadius.circular(12),
-        child: InkWell(
-          borderRadius: BorderRadius.circular(12),
-          onTap: () => Get.to(
-            () => const SettingsPage(),
-            transition: Transition.rightToLeft,
-          ),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(
-                horizontal: 12, vertical: 8),
-            child: Row(
-              children: [
-                Icon(Icons.menu_book_outlined,
-                    size: 18, color: scheme.primary),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    uiStrings['planHomeHint']?[locale] ??
-                        'Choose a reading plan to see today\'s passages here.',
-                    style: TextStyle(
-                      fontSize: 12.5,
-                      color: scheme.primary,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-                Icon(Icons.chevron_right,
-                    size: 18, color: scheme.primary),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
   }
 }
 
