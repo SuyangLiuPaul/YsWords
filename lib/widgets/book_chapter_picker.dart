@@ -92,7 +92,7 @@ class _BookChapterPickerState extends State<BookChapterPicker> {
               Provider.of<AppSettings>(context, listen: false);
           if (idx != -1 && currentSettings.booksViewMode != 'grid') {
             Future.microtask(() {
-              if (mounted) {
+              if (mounted && _autoScrollController.hasClients) {
                 _autoScrollController.scrollToIndex(
                   idx,
                   preferPosition: AutoScrollPosition.begin,
@@ -334,7 +334,12 @@ class _BookChapterPickerState extends State<BookChapterPicker> {
       expandStatus.updateAll((key, _) => false);
       _gridSelectedBook = null;
     });
-    if (settings.booksViewMode != 'grid') {
+    // Only scroll if the controller is actually attached to a ListView.
+    // In grid mode, or during transitions before the new list mounts,
+    // the controller has no positions and scrollToIndex will throw a
+    // null check error inside the scroll_to_index package.
+    if (settings.booksViewMode != 'grid' &&
+        _autoScrollController.hasClients) {
       _autoScrollController.scrollToIndex(
         0,
         preferPosition: AutoScrollPosition.begin,

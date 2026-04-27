@@ -187,6 +187,10 @@ class _HomePageState extends State<HomePage> {
     // sidebar's inner Expanded book-list collapsing to zero height on
     // Flutter web's HTML renderer.
     return Stack(
+      // Expand fills the parent's constraints so the AnimatedPositioned
+      // sidebar (top:0/bottom:0) gets the screen height, not just the
+      // intrinsic height of the primary pane.
+      fit: StackFit.expand,
       children: [
         // Main reading pane fills the screen; we use AnimatedPadding
         // so it slides right when the sidebar opens.
