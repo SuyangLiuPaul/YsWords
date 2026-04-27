@@ -1,5 +1,6 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import 'package:yswords/constants/text_patterns.dart'
     show sanitizeForSearch, notePattern, bracePattern, squarePattern;
@@ -69,6 +70,10 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
   // word entry or root entry.
   String? _expandedConcordanceBook;
 
+  // Loaded interlinear data — set once _loadAll completes so the
+  // "copy table" button can build the TSV without re-awaiting the future.
+  List<_VerseOriginals>? _verseOriginals;
+
   // "englishBook-chapter-verse" → cleaned verse text for concordance preview.
   late final Map<String, String> _verseIndex;
 
@@ -117,6 +122,7 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
       if (_glossCache.containsKey(n)) return;
       _glossCache[n] = await StrongsService.lookup(n);
     }));
+    if (mounted) setState(() => _verseOriginals = results);
     return results;
   }
 
@@ -237,6 +243,13 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
                       ],
                     ),
                   ),
+                  if (_verseOriginals != null)
+                    IconButton(
+                      icon: const Icon(Icons.copy_outlined),
+                      iconSize: 20,
+                      tooltip: uiStrings['copyTable']?[locale] ?? 'Copy word table',
+                      onPressed: () => _copyInterlinearTable(context),
+                    ),
                   IconButton(
                     icon: const Icon(Icons.close),
                     iconSize: 20,
@@ -261,7 +274,7 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
                       for (final vo in data) _buildVerseBlock(vo, scheme),
                       if (_selectedWord != null) ...[
                         const SizedBox(height: 16),
-                        _buildEntryCard(scheme, locale),
+                        _buildEntryCard(context, scheme, locale),
                       ] else ...[
                         const SizedBox(height: 16),
                         _buildHint(scheme, locale),
@@ -432,7 +445,7 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
     );
   }
 
-  Widget _buildEntryCard(ColorScheme scheme, String locale) {
+  Widget _buildEntryCard(BuildContext context, ColorScheme scheme, String locale) {
     final w = _selectedWord!;
     if (_loadingEntry) {
       return const Padding(
@@ -497,6 +510,14 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
                     color: scheme.onSurface,
                   ),
                 ),
+              ),
+              IconButton(
+                icon: const Icon(Icons.copy_outlined),
+                iconSize: 18,
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+                tooltip: uiStrings['copyWordStudy']?[locale] ?? 'Copy word study',
+                onPressed: () => _copyWordEntry(context),
               ),
             ],
           ),
@@ -642,6 +663,76 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
         children: spans,
       ),
     );
+  }
+
+  // ── Copy helpers ────────────────────────────────────────────────────────────
+
+  Future<void> _copyInterlinearTable(BuildContext ctx) async {
+    final data = _verseOriginals;
+    if (data == null) return;
+    final locale = widget.locale;
+    final buf = StringBuffer();
+    buf.writeln("Verse\tWord\tStrong's\tLemma\tTransliteration\tPronunciation\tGloss");
+    for (final vo in data) {
+      final en = toEnglish(vo.verse.book) ?? vo.verse.book;
+      final verseRef =
+          '${localeAwareBookName(en, locale, widget.currentVersion)} '
+          '${vo.verse.chapter}:${vo.verse.verse}';
+      for (final w in vo.words ?? const <OriginalWord>[]) {
+        final entry = _glossCache[w.strongs];
+        buf.writeln([
+          verseRef,
+          w.text,
+          w.strongs,
+          entry?.lemma ?? '',
+          entry?.translit ?? w.translit ?? '',
+          entry?.pronunciation ?? '',
+          entry?.localizedGloss(locale) ?? '',
+        ].map((s) => s.replaceAll('\t', ' ')).join('\t'));
+      }
+    }
+    await Clipboard.setData(ClipboardData(text: buf.toString().trimRight()));
+    if (!ctx.mounted) return;
+    ScaffoldMessenger.of(ctx).showSnackBar(SnackBar(
+      content: Text(uiStrings['copied']?[locale] ?? 'Copied!'),
+      duration: const Duration(seconds: 1),
+    ));
+  }
+
+  Future<void> _copyWordEntry(BuildContext ctx) async {
+    final isBrowsingRoot = _rootEntry != null;
+    final entry = isBrowsingRoot ? _rootEntry : _selectedEntry;
+    final concordance = isBrowsingRoot ? _rootConcordance : _selectedConcordance;
+    final w = _selectedWord;
+    if (entry == null && w == null) return;
+    final locale = widget.locale;
+    final buf = StringBuffer();
+    buf.writeln("Strong's\tLemma\tTransliteration\tPronunciation\tGloss\tDefinition");
+    buf.writeln([
+      entry?.number ?? w?.strongs ?? '',
+      entry?.lemma ?? w?.text ?? '',
+      entry?.translit ?? '',
+      entry?.pronunciation ?? '',
+      entry?.localizedGloss(locale) ?? '',
+      entry?.localizedDefinition(locale) ?? '',
+    ].map((s) => s.replaceAll('\t', ' ').replaceAll('\n', ' ')).join('\t'));
+    if (concordance != null && concordance.refs.isNotEmpty) {
+      buf.writeln();
+      buf.writeln('Reference\tVerse Text');
+      for (final r in concordance.refs) {
+        final label =
+            '${localeAwareBookName(r.englishBook, locale, widget.currentVersion)} '
+            '${r.chapter}:${r.verse}';
+        final verseText = _lookupVerseText(r) ?? '';
+        buf.writeln('$label\t${verseText.replaceAll('\t', ' ')}');
+      }
+    }
+    await Clipboard.setData(ClipboardData(text: buf.toString().trimRight()));
+    if (!ctx.mounted) return;
+    ScaffoldMessenger.of(ctx).showSnackBar(SnackBar(
+      content: Text(uiStrings['copied']?[locale] ?? 'Copied!'),
+      duration: const Duration(seconds: 1),
+    ));
   }
 
   Widget _buildConcordance(

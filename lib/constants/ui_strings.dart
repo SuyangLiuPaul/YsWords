@@ -171,6 +171,16 @@ const uiStrings = {
     'zh-Hant': '顯示前 {shown} 條（共 {total} 條）',
     'en': 'showing first {shown} of {total}',
   },
+  'copyTable': {
+    'zh-Hans': '复制词表',
+    'zh-Hant': '複製詞表',
+    'en': 'Copy word table',
+  },
+  'copyWordStudy': {
+    'zh-Hans': '复制词语研经',
+    'zh-Hant': '複製詞語研經',
+    'en': 'Copy word study',
+  },
   'concordanceBookCount': {
     'zh-Hans': '出现 {count} 次',
     'zh-Hant': '出現 {count} 次',
