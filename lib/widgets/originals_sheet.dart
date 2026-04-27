@@ -211,7 +211,7 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
               padding: const EdgeInsets.fromLTRB(20, 12, 20, 8),
               child: Row(
                 children: [
-                  Icon(Icons.history_edu, color: scheme.primary, size: 20),
+                  Icon(Icons.auto_stories, color: scheme.primary, size: 20),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Column(
