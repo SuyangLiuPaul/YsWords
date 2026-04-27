@@ -1,12 +1,12 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 import 'package:yswords/constants/book_groups.dart';
 import 'package:yswords/constants/ui_strings.dart';
 import 'package:yswords/models/strongs.dart';
 import 'package:yswords/services/concordance_service.dart';
 import 'package:yswords/services/strongs_service.dart';
+import 'package:yswords/utils/clipboard_helper.dart';
 import 'package:yswords/utils/version_mapper.dart' show localeAwareBookName;
 
 /// Holistic per-book / per-corpus distribution table for a set of
@@ -359,12 +359,9 @@ class _WordDistributionTableState extends State<WordDistributionTable> {
       buf.writeln(_tsvRow(cells));
     }
 
-    await Clipboard.setData(ClipboardData(text: buf.toString().trimRight()));
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text(uiStrings['copied']?[locale] ?? 'Copied!'),
-      duration: const Duration(seconds: 1),
-    ));
+    await ClipboardHelper.copyWithFeedback(
+        context, buf.toString().trimRight());
   }
 
   String _tsvRow(List<String> cells) =>

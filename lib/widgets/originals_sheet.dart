@@ -2,7 +2,6 @@ import 'dart:async' show unawaited;
 
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 import 'package:yswords/constants/text_patterns.dart'
@@ -16,6 +15,7 @@ import 'package:yswords/services/concordance_service.dart';
 import 'package:yswords/services/lxx_service.dart';
 import 'package:yswords/services/originals_service.dart';
 import 'package:yswords/services/strongs_service.dart';
+import 'package:yswords/utils/clipboard_helper.dart';
 import 'package:yswords/utils/version_mapper.dart'
     show localeAwareBookName, toEnglish;
 import 'package:yswords/widgets/word_distribution.dart';
@@ -322,7 +322,14 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
       maxChildSize: 0.95,
       expand: false,
       builder: (context, scrollController) {
-        return Column(
+        // Local Scaffold so snackbars from ScaffoldMessenger.of(ctx)
+        // (e.g. the "Copied!" feedback after tapping a copy icon)
+        // render INSIDE this modal sheet — without it the snackbar
+        // anchors to the root scaffold below the modal and the user
+        // never sees the feedback.
+        return Scaffold(
+          backgroundColor: Colors.transparent,
+          body: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
@@ -406,6 +413,7 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
               ),
             ),
           ],
+        ),
         );
       },
     );
@@ -1208,12 +1216,7 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
         ].map((s) => s.replaceAll('\t', ' ')).join('\t'));
       }
     }
-    await Clipboard.setData(ClipboardData(text: buf.toString().trimRight()));
-    if (!ctx.mounted) return;
-    ScaffoldMessenger.of(ctx).showSnackBar(SnackBar(
-      content: Text(uiStrings['copied']?[locale] ?? 'Copied!'),
-      duration: const Duration(seconds: 1),
-    ));
+    await ClipboardHelper.copyWithFeedback(ctx, buf.toString().trimRight());
   }
 
   Future<void> _copyWordEntry(BuildContext ctx) async {
@@ -1295,12 +1298,8 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
       writeEntry('HebrewSource', hebEntry, hebConc);
     }
 
-    await Clipboard.setData(ClipboardData(text: buf.toString().trimRight()));
     if (!ctx.mounted) return;
-    ScaffoldMessenger.of(ctx).showSnackBar(SnackBar(
-      content: Text(uiStrings['copied']?[locale] ?? 'Copied!'),
-      duration: const Duration(seconds: 1),
-    ));
+    await ClipboardHelper.copyWithFeedback(ctx, buf.toString().trimRight());
   }
 
   // ── Distribution table ───────────────────────────────────────────
@@ -1331,7 +1330,9 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
         minChildSize: 0.5,
         maxChildSize: 0.95,
         expand: false,
-        builder: (_, scrollController) => Column(
+        builder: (_, scrollController) => Scaffold(
+          backgroundColor: Colors.transparent,
+          body: Column(
           children: [
             Container(
               margin: const EdgeInsets.only(top: 8),
@@ -1378,6 +1379,7 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
               ),
             ),
           ],
+        ),
         ),
       ),
     );
