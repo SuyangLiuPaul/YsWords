@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:yswords/pages/home_page.dart';
+import 'package:yswords/pages/dashboard_page.dart';
 import 'package:yswords/pages/loading_page.dart';
 import 'package:yswords/models/verse.dart';
 import 'package:yswords/providers/main_provider.dart';
@@ -288,8 +288,14 @@ class _RootRouterState extends State<_RootRouter> {
         },
       );
     }
+    // After Round 32: Dashboard is the home / root page. The Bible
+    // reader (HomePage) is pushed on top via Dashboard's "Continue
+    // reading" tile. This gives users a personal landing page with
+    // greeting + today's reading + bookmark counts instead of
+    // dropping straight into a verse list, which felt like a
+    // sub-page rather than a home.
     return _showHome
-        ? const HomePage()
+        ? const DashboardPage()
         : LoadingPage(
             verses: widget.initialVerses,
             onAdvance: _advance,

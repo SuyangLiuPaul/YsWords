@@ -6,6 +6,7 @@ import 'package:yswords/constants/text_patterns.dart' show sanitizeForSearch;
 import 'package:yswords/constants/ui_strings.dart';
 import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/models/verse.dart';
+import 'package:yswords/pages/home_page.dart';
 import 'package:yswords/pages/library_page.dart';
 import 'package:yswords/pages/settings_page.dart';
 import 'package:yswords/pages/stats_page.dart';
@@ -105,9 +106,15 @@ class _DashboardPageState extends State<DashboardPage> {
     final profile = ProfileService.instance.current;
     final auth = CloudAuthService.instance;
 
+    // The Dashboard is shown both as the app root AND as a pushed
+    // page from the floating-header "Home" entry. As root there's
+    // nothing to pop back to, so the back arrow would be confusing
+    // — `Navigator.canPop` keeps it conditional automatically.
+    final canPop = Navigator.of(context).canPop();
     return Scaffold(
       appBar: AppBar(
-        leading: const LocalizedBackButton(),
+        automaticallyImplyLeading: false,
+        leading: canPop ? const LocalizedBackButton() : null,
         title: Text(uiStrings['home']?[locale] ?? 'Home'),
       ),
       body: ListView(
@@ -157,10 +164,14 @@ class _DashboardPageState extends State<DashboardPage> {
               onJump: (canonical) {
                 final ref = parseReference(canonical);
                 if (ref == null) return;
-                // Navigate first (mutates provider), then pop the
-                // dashboard so the reader rebuilds at the target.
+                // Mutate provider first so the reader picks up the
+                // new chapter on its first build; then push the
+                // reader on top of the dashboard.
                 _navigateToReference(mainProvider, ref);
-                Get.back();
+                Get.to(
+                  () => const HomePage(),
+                  transition: Transition.rightToLeft,
+                );
               },
               onToggleDone: () async {
                 if (_plan == null) return;
@@ -216,10 +227,12 @@ class _DashboardPageState extends State<DashboardPage> {
                   count: mainProvider.highlights.length,
                   label: uiStrings['highlight']?[locale] ?? 'Highlights',
                   // Highlights live in a modal sheet inside the
-                  // reading pane (no dedicated page yet). Tap goes
-                  // back to the reader where the user can open
-                  // them via the overflow menu.
-                  onTap: () => Get.back(),
+                  // reading pane (no dedicated page yet). Push the
+                  // reader; user opens them via the overflow menu.
+                  onTap: () => Get.to(
+                    () => const HomePage(),
+                    transition: Transition.rightToLeft,
+                  ),
                 ),
               ),
             ],
@@ -255,14 +268,14 @@ class _DashboardPageState extends State<DashboardPage> {
                   overflow: TextOverflow.ellipsis,
                 ),
                 onTap: () {
-                  // setCurrentChapter mutates state, so do it BEFORE
-                  // popping — once popped, the dashboard's context
-                  // is dead and any setState chained after Get.back
-                  // would warn.
+                  // Mutate provider first; push reader on top.
                   mainProvider.setCurrentChapter(
                       book: v.book, chapter: v.chapter);
                   mainProvider.updateCurrentVerse(verse: v);
-                  Get.back();
+                  Get.to(
+                    () => const HomePage(),
+                    transition: Transition.rightToLeft,
+                  );
                 },
               ),
             const SizedBox(height: 16),
@@ -297,7 +310,18 @@ class _DashboardPageState extends State<DashboardPage> {
                 icon: Icons.menu_book_rounded,
                 label: uiStrings['continueReading']?[locale] ??
                     'Continue reading',
-                onTap: () => Get.back(),
+                // Push the Bible reader on top of the Dashboard.
+                // If a HomePage is already on the stack (because the
+                // user came from Bible → Home → Continue), Get.back
+                // would pop it directly — but tracking that adds
+                // complexity for marginal stack-cleanliness benefit.
+                // A duplicate HomePage on the stack is harmless;
+                // swipe-back / browser-back lands on the previous
+                // one which then lands on Dashboard.
+                onTap: () => Get.to(
+                  () => const HomePage(),
+                  transition: Transition.rightToLeft,
+                ),
               ),
               _LinkTile(
                 icon: Icons.settings_outlined,

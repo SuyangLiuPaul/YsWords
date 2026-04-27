@@ -14,7 +14,6 @@ import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/models/bible_map.dart';
 import 'package:yswords/models/verse.dart';
 import 'package:yswords/pages/books_page.dart';
-import 'package:yswords/pages/dashboard_page.dart';
 import 'package:yswords/pages/library_page.dart';
 import 'package:yswords/pages/map_viewer_page.dart';
 import 'package:yswords/pages/search_page.dart';
@@ -2366,18 +2365,17 @@ class _FloatingHeader extends StatelessWidget {
                             ),
                           ));
                         }
-                        // Home / dashboard — top-level entry above
-                        // Library so users can land on a personal
-                        // overview (today's reading + bookmark
-                        // counts + signed-in profile state) instead
-                        // of always opening to the verse text.
+                        // Home — pops everything off the stack so
+                        // the user lands back on the Dashboard root.
+                        // After Round 33 the Dashboard IS the app
+                        // root; any nested stack (Settings, Library,
+                        // Stats etc. on top of the reader) collapses
+                        // to it via popUntil(isFirst).
                         items.add(PopupMenuItem(
                           value: 'home',
                           onTap: () {
-                            Get.to(
-                              () => const DashboardPage(),
-                              transition: Transition.rightToLeft,
-                            );
+                            Navigator.of(context)
+                                .popUntil((r) => r.isFirst);
                           },
                           child: _menuRow(
                             context,

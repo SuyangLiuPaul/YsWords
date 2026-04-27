@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:provider/provider.dart';
 
 import 'package:yswords/constants/ui_strings.dart';
 import 'package:yswords/models/app_settings.dart';
-import 'package:yswords/pages/dashboard_page.dart';
 import 'package:yswords/services/cloud_auth_service.dart';
 import 'package:yswords/services/profile_service.dart';
 import 'package:yswords/widgets/google_g_logo.dart';
@@ -42,26 +40,7 @@ class _WelcomePageState extends State<WelcomePage> {
     await ProfileService.instance.setCurrent(ProfileService.guestId);
     await ProfileService.instance.markWelcomeSeen();
     if (!mounted) return;
-    // Guests didn't make a personal choice — drop straight into the
-    // reader rather than the dashboard.
-    _finish(showDashboard: false);
-  }
-
-  /// Dismiss the welcome gate via [widget.onDone], then optionally
-  /// push the Dashboard on top of the reader as the post-sign-in
-  /// landing page. The Dashboard push is scheduled in a post-frame
-  /// callback so HomePage has time to mount before Get's navigator
-  /// is asked to push.
-  void _finish({required bool showDashboard}) {
     widget.onDone();
-    if (showDashboard) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        Get.to(
-          () => const DashboardPage(),
-          transition: Transition.rightToLeft,
-        );
-      });
-    }
   }
 
   /// Trigger Firebase's Google popup. Profile reconciliation
@@ -88,7 +67,7 @@ class _WelcomePageState extends State<WelcomePage> {
     // again on the next launch.
     await ProfileService.instance.markWelcomeSeen();
     if (!mounted) return;
-    _finish(showDashboard: true);
+    widget.onDone();
   }
 
   Future<void> _signIn() async {
@@ -108,7 +87,7 @@ class _WelcomePageState extends State<WelcomePage> {
     }
     await svc.markWelcomeSeen();
     if (!mounted) return;
-    _finish(showDashboard: true);
+    widget.onDone();
   }
 
   @override
