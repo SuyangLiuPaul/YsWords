@@ -7,6 +7,8 @@ import 'package:yswords/models/verse.dart';
 import 'package:yswords/providers/main_provider.dart';
 import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/pages/welcome_page.dart';
+import 'package:yswords/services/cloud_auth_service.dart';
+import 'package:yswords/services/cloud_sync_service.dart';
 import 'package:yswords/services/fetch_books.dart';
 import 'package:yswords/services/fetch_verses.dart';
 import 'package:yswords/services/profile_service.dart';
@@ -67,6 +69,12 @@ class _MainAppState extends State<MainApp> {
       // the active profile's namespace. Same goes for ReadingPlanService
       // calls that fire while the home page builds.
       await ProfileService.instance.init();
+      // Firebase auth is best-effort — falls through gracefully if
+      // the user hasn't filled in lib/firebase_options.dart yet.
+      // After auth init we wire up CloudSyncService so any future
+      // local changes mirror to Firestore (when signed in).
+      await CloudAuthService.instance.init();
+      CloudSyncService.instance.init();
       await appSettings.loadSettings();
       await mainProvider.restoreState();
 

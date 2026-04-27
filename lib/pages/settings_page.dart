@@ -5,6 +5,9 @@ import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/providers/main_provider.dart';
 import 'package:get/get.dart';
 import 'package:yswords/pages/profiles_page.dart';
+import 'package:yswords/pages/sign_in_page.dart';
+import 'package:yswords/services/cloud_auth_service.dart';
+import 'package:yswords/services/cloud_sync_service.dart';
 import 'package:yswords/services/fetch_books.dart';
 import 'package:yswords/services/fetch_verses.dart';
 import 'package:yswords/services/profile_service.dart';
@@ -1188,16 +1191,100 @@ class _AccountSectionState extends State<_AccountSection> {
   void initState() {
     super.initState();
     ProfileService.instance.addListener(_onChanged);
+    CloudAuthService.instance.addListener(_onChanged);
+    CloudSyncService.instance.addListener(_onChanged);
   }
 
   @override
   void dispose() {
     ProfileService.instance.removeListener(_onChanged);
+    CloudAuthService.instance.removeListener(_onChanged);
+    CloudSyncService.instance.removeListener(_onChanged);
     super.dispose();
   }
 
   void _onChanged() {
     if (mounted) setState(() {});
+  }
+
+  /// Map sync status to a colored chip with an icon + label, so the
+  /// user can see "Synced" / "Syncing..." / "Error" / "Local-only"
+  /// at a glance.
+  Widget _syncBadge(BuildContext context, String locale) {
+    final auth = CloudAuthService.instance;
+    final sync = CloudSyncService.instance;
+    final scheme = Theme.of(context).colorScheme;
+    if (!auth.isConfigured) {
+      return _badge(
+        scheme.surfaceContainerHighest,
+        scheme.onSurfaceVariant,
+        Icons.cloud_off_outlined,
+        uiStrings['cloudNotConfigured']?[locale] ?? 'Local only',
+      );
+    }
+    if (!auth.isSignedIn) {
+      return _badge(
+        scheme.surfaceContainerHighest,
+        scheme.onSurfaceVariant,
+        Icons.cloud_outlined,
+        uiStrings['cloudNotSignedIn']?[locale] ?? 'Not signed in',
+      );
+    }
+    switch (sync.status) {
+      case CloudSyncStatus.disabled:
+        return _badge(
+          scheme.surfaceContainerHighest,
+          scheme.onSurfaceVariant,
+          Icons.cloud_outlined,
+          uiStrings['cloudNotSignedIn']?[locale] ?? 'Not signed in',
+        );
+      case CloudSyncStatus.syncing:
+        return _badge(
+          scheme.tertiaryContainer,
+          scheme.onTertiaryContainer,
+          Icons.cloud_sync_outlined,
+          uiStrings['cloudSyncing']?[locale] ?? 'Syncing…',
+        );
+      case CloudSyncStatus.synced:
+        return _badge(
+          scheme.primaryContainer,
+          scheme.onPrimaryContainer,
+          Icons.cloud_done_outlined,
+          uiStrings['cloudSynced']?[locale] ?? 'Synced',
+        );
+      case CloudSyncStatus.error:
+        return _badge(
+          scheme.errorContainer,
+          scheme.error,
+          Icons.cloud_off_outlined,
+          uiStrings['cloudError']?[locale] ?? 'Sync error',
+        );
+    }
+  }
+
+  Widget _badge(Color bg, Color fg, IconData icon, String text) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 13, color: fg),
+          const SizedBox(width: 4),
+          Text(
+            text,
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+              color: fg,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -1207,19 +1294,27 @@ class _AccountSectionState extends State<_AccountSection> {
     final scheme = Theme.of(context).colorScheme;
     final locale = settings.locale;
     final p = ProfileService.instance.current;
+    final auth = CloudAuthService.instance;
     return Card(
       child: Padding(
         padding: EdgeInsets.all(16 * s),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              uiStrings['profileTitle']?[locale] ?? 'Profiles',
-              style: TextStyle(
-                fontFamily: settings.fontFamily,
-                fontSize: settings.fontSize + 2,
-                fontWeight: FontWeight.w600,
-              ),
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    uiStrings['profileTitle']?[locale] ?? 'Profiles',
+                    style: TextStyle(
+                      fontFamily: settings.fontFamily,
+                      fontSize: settings.fontSize + 2,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+                _syncBadge(context, locale),
+              ],
             ),
             SizedBox(height: 8 * s),
             ListTile(
@@ -1243,7 +1338,10 @@ class _AccountSectionState extends State<_AccountSection> {
                 ),
               ),
               subtitle: Text(
-                uiStrings["profileCurrent"]?[locale] ?? "Active profile",
+                auth.isSignedIn
+                    ? '${uiStrings["profileCurrent"]?[locale] ?? "Active profile"} • ${auth.currentUser?.email ?? ""}'
+                    : (uiStrings["profileCurrent"]?[locale] ??
+                        "Active profile"),
                 style: TextStyle(
                   fontSize: settings.fontSize - 2,
                   color: scheme.onSurfaceVariant,
@@ -1255,11 +1353,54 @@ class _AccountSectionState extends State<_AccountSection> {
                 transition: Transition.rightToLeft,
               ),
             ),
+            // Cloud-sync row — Sign in / Sign out depending on state.
+            if (auth.isConfigured) ...[
+              const Divider(height: 24),
+              if (!auth.isSignedIn)
+                FilledButton.icon(
+                  onPressed: () => Get.to(
+                    () => const SignInPage(),
+                    transition: Transition.rightToLeft,
+                  ),
+                  icon: const Icon(Icons.cloud_outlined),
+                  label: Text(
+                    uiStrings['cloudSignIn']?[locale] ??
+                        'Sign in to sync across devices',
+                  ),
+                )
+              else
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        (uiStrings['cloudSignedInAs']?[locale] ??
+                                'Cloud-synced as {email}')
+                            .replaceAll(
+                                '{email}', auth.currentUser?.email ?? ''),
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: scheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ),
+                    TextButton.icon(
+                      onPressed: () => CloudAuthService.instance.signOut(),
+                      icon: const Icon(Icons.logout, size: 16),
+                      label: Text(
+                        uiStrings['cloudSignOut']?[locale] ?? 'Sign out',
+                      ),
+                    ),
+                  ],
+                ),
+            ],
             Padding(
               padding: const EdgeInsets.only(top: 4),
               child: Text(
-                uiStrings["welcomeLocalOnlyNotice"]?[locale] ??
-                    "Profiles are stored only on this device. No password, no server.",
+                auth.isConfigured
+                    ? (uiStrings['cloudPrivacyNotice']?[locale] ??
+                        'Cloud sync uses your own Firebase project. Each user can only read their own data.')
+                    : (uiStrings["welcomeLocalOnlyNotice"]?[locale] ??
+                        "Profiles are stored only on this device. No password, no server."),
                 style: TextStyle(
                   fontSize: 11,
                   fontStyle: FontStyle.italic,

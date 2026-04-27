@@ -903,6 +903,167 @@ Paragraph mode was shipped but felt loose compared to WeDevote 微读圣经. Ret
 
 ## Recent Work (Round 18 — 2026-04-27, multiple deploys)
 
+### Round 29 (Firebase cloud auth + sync)
+
+Adds optional cloud sync on top of the local profile system from
+Round 28. When configured, user data (highlights, notes, bookmarks,
+reading-plan progress) mirrors to Firestore and back, so the same
+account on a second device sees the same data. When NOT configured
+(default), the app keeps using local-only profiles unchanged.
+
+Files added:
+- `lib/firebase_options.dart` — config holder. Ships with
+  `FILL_ME_IN` placeholders; `firebaseConfigured` getter checks if
+  the user has filled in real values. Header comment is the
+  step-by-step setup guide.
+- `lib/services/cloud_auth_service.dart` — wraps FirebaseAuth.
+  `isConfigured` gate keeps the rest of the app safe when Firebase
+  isn't initialized. Email/password sign-in + sign-up + sign-out +
+  password reset. Maps FirebaseAuthException codes to plain-English
+  messages.
+- `lib/services/cloud_sync_service.dart` — bidirectional mirror.
+  On auth → subscribes to `users/{uid}/profileData/main`. First
+  emission pulls cloud → local; missing doc seeds from local.
+  Local writes call `requestUpload()` (debounced 600 ms) which
+  snapshots all profile-scoped keys and `set()`s the doc. Conflict
+  policy: last write wins per top-level key.
+- `lib/pages/sign_in_page.dart` — email + password form, toggles
+  between Sign in / Create account modes via single switch button.
+  Forgot-password sends a reset link. On success, switches local
+  profile to one keyed off the email so cloud-synced data has a
+  local landing spot.
+
+Files modified:
+- `lib/main.dart`: bootstraps `CloudAuthService.init()` and
+  `CloudSyncService.init()` between `ProfileService.init()` and
+  `MainProvider.restoreState()`. Init is wrapped in try/catch so
+  bad config never crashes the app — falls back silently to
+  local-only.
+- `lib/providers/main_provider.dart`: every save method
+  (`_saveHighlights`, `_saveNotes`, `_saveBookmarks`) now also
+  calls `CloudSyncService.instance.requestUpload()`. The debounce
+  makes multi-write actions (e.g. highlighting 5 verses at once)
+  produce one upload, not five.
+- `lib/services/reading_plan_service.dart`: same — every setter
+  triggers `requestUpload()`.
+- `lib/pages/welcome_page.dart`: when `CloudAuthService.isConfigured`,
+  shows a third primary button "Sign in with email (sync across
+  devices)" above the local profile / guest options. Hidden
+  otherwise so the unconfigured experience is unchanged.
+- `lib/pages/settings_page.dart` (`_AccountSection`): sync-status
+  badge in the section header (Local-only / Not signed in /
+  Syncing… / Synced / Error). When signed in, shows the user's
+  email + a Sign out button. Listens to all three notifiers
+  (Profile / CloudAuth / CloudSync) for live updates.
+- `lib/constants/ui_strings.dart`: ~25 new keys
+  (welcome / signIn / signUp / cloud*) in en/zh-Hans/zh-Hant.
+
+Storage layout in Firestore:
+```
+users/
+  {uid}/
+    profileData/
+      main: {
+        data: {
+          highlights: "<json>",
+          verseNotes: "<json>",
+          bookmarks: ["..."],
+          plan.activeId: "one-year-canonical",
+          plan.startMs: 1714182400000,
+          plan.useDate: true,
+          plan.completed.one-year-canonical: ["1","2","3"]
+        },
+        updatedAt: <server timestamp>
+      }
+```
+
+#### Firebase setup checklist (user-facing — copy into the app's
+README too if you publish it)
+
+1. Go to https://console.firebase.google.com → "Add project".
+   Name it (e.g. "yswords"). Disable Google Analytics for the
+   simplest path.
+2. In the new project, click the `</>` Web icon to register a web
+   app. Copy the `firebaseConfig` object that appears.
+3. Build → **Authentication** → Get started. Sign-in method tab →
+   **Email/Password** → Enable → Save.
+4. Build → **Firestore Database** → Create database. Pick "production
+   mode". Choose a location near your users (`nam5` for US, `eur3`
+   for EU).
+5. Authentication → **Settings** → **Authorized domains** tab.
+   Add `yswords.netlify.app`. (`localhost` is allowed by default.)
+6. Firestore Database → **Rules** tab. Paste:
+   ```
+   rules_version = '2';
+   service cloud.firestore {
+     match /databases/{database}/documents {
+       match /users/{uid}/{doc=**} {
+         allow read, write: if request.auth != null
+                               && request.auth.uid == uid;
+       }
+     }
+   }
+   ```
+   Click Publish.
+7. Open `lib/firebase_options.dart` and replace each `FILL_ME_IN`
+   with the corresponding value from step 2.
+8. Run `flutter build web --release` and deploy. The "Sign in with
+   email" button on the welcome page lights up automatically because
+   `firebaseConfigured` flips to true.
+
+Free-tier quotas (Firebase Spark plan) are well above YsWords' use:
+50K reads/day, 20K writes/day, 1 GB storage. A typical user makes
+~50 writes/day; you'd need a few hundred users before hitting any
+limit. Going over costs cents per million ops, not dollars.
+
+### Round 28 (local profiles + welcome gate)
+
+YsWords ships as a static Flutter web bundle with no backend, so
+"sign in" before this round was N/A. Round 28 introduces local
+profiles — a name-only "account" that namespaces SharedPreferences
+data so a household can share one browser without their notes /
+bookmarks / highlights / reading-plan progress mixing together.
+
+Round 29 builds on top of this: cloud-signed-in users get the
+same profile system, just with their data mirrored to Firestore
+in addition to localStorage.
+
+Files added:
+- `lib/services/profile_service.dart` — ChangeNotifier with
+  `init()` bootstrap, `scopedKey()` helper, create/rename/delete/
+  setCurrent. One-time legacy migration moves any pre-profile keys
+  into the guest namespace so existing users don't lose data on
+  upgrade (guarded by a `profile.legacyMigrated` flag so subsequent
+  launches don't clobber intentionally-cleared profile data).
+- `lib/pages/welcome_page.dart` — first-launch gate with two
+  paths, "Sign in" (asks for a name → creates / switches to
+  profile) or "Continue as guest". Marks itself seen so it stays
+  out of the way after dismissal. Footer reminds users this is
+  local-only. (Round 29 added the cloud-sign-in path on top.)
+- `lib/pages/profiles_page.dart` — full management UI: list,
+  switch, rename, delete (guest is non-deletable). Reachable from
+  Settings → Profiles.
+
+Files modified:
+- `lib/main.dart`: ProfileService.init() runs before
+  MainProvider.restoreState so all reads are profile-scoped from
+  the start. _RootRouter routes through WelcomePage on first
+  launch.
+- `lib/providers/main_provider.dart`: highlights / notes /
+  bookmarks reads + writes go through `ProfileService.scopedKey()`;
+  subscribes to profile changes and reloads all three datasets
+  atomically so switching profiles updates every visible verse
+  instantly. Both split-view panes share the active profile.
+- `lib/services/reading_plan_service.dart`: every prefs key passes
+  through `_k()` (= `scopedKey`) — active plan, start date,
+  use-date flag, and per-plan completion lists.
+- `lib/widgets/today_reading_card.dart` +
+  `lib/pages/library_page.dart` (`_PlanTab`) +
+  `lib/pages/settings_page.dart` (`_ReadingPlanSection`):
+  subscribe to ProfileService and refresh local state on switch.
+
+22 new ui strings (welcome*, profile*) in en / zh-Hans / zh-Hant.
+
 ### Round 27E (web keyboard shortcuts)
 - `lib/widgets/bible_reading_pane.dart`: wrapped Scaffold in
   `CallbackShortcuts` + `Focus(autofocus:true)`. Web users get:

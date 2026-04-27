@@ -534,6 +534,136 @@ const uiStrings = {
     'zh-Hant': '本地帳號',
     'en': 'Local profile',
   },
+  // ── Cloud auth (Round 29) ───────────────────────────────────────
+  'welcomeSignInCloud': {
+    'zh-Hans': '使用电子邮箱登录（多设备同步）',
+    'zh-Hant': '使用電子郵箱登入（多裝置同步）',
+    'en': 'Sign in with email (sync across devices)',
+  },
+  'welcomeLocalProfile': {
+    'zh-Hans': '本地账号（仅限本设备）',
+    'zh-Hant': '本地帳號（僅限本裝置）',
+    'en': 'Local profile (this device only)',
+  },
+  'welcomeCloudNotice': {
+    'zh-Hans': '登录后笔记、书签、读经进度可在所有设备同步；也可继续使用本地账号或访客模式。',
+    'zh-Hant': '登入後筆記、書籤、讀經進度可在所有裝置同步；也可繼續使用本地帳號或訪客模式。',
+    'en':
+        'Sign in to sync across devices, or use a local profile / guest if you prefer to keep everything on this device.',
+  },
+  'signInTitle': {
+    'zh-Hans': '登录',
+    'zh-Hant': '登入',
+    'en': 'Sign in',
+  },
+  'signInSubtitle': {
+    'zh-Hans': '登录以在所有设备同步笔记、书签和读经进度。',
+    'zh-Hant': '登入以在所有裝置同步筆記、書籤和讀經進度。',
+    'en':
+        'Sign in to sync your notes, bookmarks and reading-plan progress across devices.',
+  },
+  'signUpTitle': {
+    'zh-Hans': '创建账号',
+    'zh-Hant': '建立帳號',
+    'en': 'Create account',
+  },
+  'signUpSubtitle': {
+    'zh-Hans': '免费创建账号，可在多设备同步笔记、书签和读经进度。',
+    'zh-Hant': '免費建立帳號，可在多裝置同步筆記、書籤和讀經進度。',
+    'en':
+        'Create a free account to sync notes, bookmarks and progress across devices.',
+  },
+  'emailLabel': {
+    'zh-Hans': '电子邮箱',
+    'zh-Hant': '電子郵箱',
+    'en': 'Email',
+  },
+  'passwordLabel': {
+    'zh-Hans': '密码',
+    'zh-Hant': '密碼',
+    'en': 'Password',
+  },
+  'emailRequired': {
+    'zh-Hans': '请输入电子邮箱。',
+    'zh-Hant': '請輸入電子郵箱。',
+    'en': 'Enter your email.',
+  },
+  'emailInvalid': {
+    'zh-Hans': '邮箱格式不正确。',
+    'zh-Hant': '郵箱格式不正確。',
+    'en': 'Invalid email.',
+  },
+  'passwordRequired': {
+    'zh-Hans': '请输入密码。',
+    'zh-Hant': '請輸入密碼。',
+    'en': 'Enter your password.',
+  },
+  'passwordTooShort': {
+    'zh-Hans': '密码至少 6 位。',
+    'zh-Hant': '密碼至少 6 位。',
+    'en': '6+ characters please.',
+  },
+  'forgotPassword': {
+    'zh-Hans': '忘记密码？',
+    'zh-Hant': '忘記密碼？',
+    'en': 'Forgot password?',
+  },
+  'signInToggleNew': {
+    'zh-Hans': '创建新账号',
+    'zh-Hant': '建立新帳號',
+    'en': 'Create new account',
+  },
+  'signInToggleExisting': {
+    'zh-Hans': '已有账号？立即登录',
+    'zh-Hant': '已有帳號？立即登入',
+    'en': 'Already have an account? Sign in',
+  },
+  'cloudSignIn': {
+    'zh-Hans': '登录以在多设备同步',
+    'zh-Hant': '登入以在多裝置同步',
+    'en': 'Sign in to sync across devices',
+  },
+  'cloudSignOut': {
+    'zh-Hans': '退出',
+    'zh-Hant': '登出',
+    'en': 'Sign out',
+  },
+  'cloudSignedInAs': {
+    'zh-Hans': '已登录为 {email}',
+    'zh-Hant': '已登入為 {email}',
+    'en': 'Cloud-synced as {email}',
+  },
+  'cloudSyncing': {
+    'zh-Hans': '同步中…',
+    'zh-Hant': '同步中…',
+    'en': 'Syncing…',
+  },
+  'cloudSynced': {
+    'zh-Hans': '已同步',
+    'zh-Hant': '已同步',
+    'en': 'Synced',
+  },
+  'cloudError': {
+    'zh-Hans': '同步出错',
+    'zh-Hant': '同步出錯',
+    'en': 'Sync error',
+  },
+  'cloudNotConfigured': {
+    'zh-Hans': '仅本地',
+    'zh-Hant': '僅本地',
+    'en': 'Local only',
+  },
+  'cloudNotSignedIn': {
+    'zh-Hans': '未登录',
+    'zh-Hant': '未登入',
+    'en': 'Not signed in',
+  },
+  'cloudPrivacyNotice': {
+    'zh-Hans': '云端同步使用您自己的 Firebase 项目。每个用户只能读写自己的数据。',
+    'zh-Hant': '雲端同步使用您自己的 Firebase 專案。每個用戶只能讀寫自己的資料。',
+    'en':
+        'Cloud sync uses your own Firebase project. Each user can only read their own data.',
+  },
   'crossRefsNone': {
     'zh-Hans': '此节经文暂无人工整理的相互参照。',
     'zh-Hant': '此節經文暫無人工整理的相互參照。',

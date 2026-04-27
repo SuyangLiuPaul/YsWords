@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:yswords/services/cloud_sync_service.dart';
 import 'package:yswords/services/profile_service.dart';
 
 /// One reading entry within a [ReadingPlan]. `readings` is a list of
@@ -123,6 +124,7 @@ class ReadingPlanService {
     } else {
       await prefs.setString(_k(_kActiveId), id);
     }
+    CloudSyncService.instance.requestUpload();
   }
 
   /// Start date for the active plan. Used together with `useDate=true`
@@ -145,6 +147,7 @@ class ReadingPlanService {
       final midnight = DateTime.utc(d.year, d.month, d.day);
       await prefs.setInt(_k(_kStartDateMs), midnight.millisecondsSinceEpoch);
     }
+    CloudSyncService.instance.requestUpload();
   }
 
   /// Whether to compute today's day from the calendar date (true) or
@@ -158,6 +161,7 @@ class ReadingPlanService {
   static Future<void> setUseDateMode(bool useDate) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_k(_kModeUseDate), useDate);
+    CloudSyncService.instance.requestUpload();
   }
 
   /// Compute today's 1-indexed day-of-plan for [plan], based on the
@@ -208,6 +212,7 @@ class ReadingPlanService {
       cur.remove(day.toString());
     }
     await prefs.setStringList(key, cur.toList());
+    CloudSyncService.instance.requestUpload();
   }
 
   /// Wipe all completion tracking for [planId]. Used by Settings →
@@ -215,5 +220,6 @@ class ReadingPlanService {
   static Future<void> resetProgress(String planId) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_k('$_kCompletedPrefix$planId'));
+    CloudSyncService.instance.requestUpload();
   }
 }

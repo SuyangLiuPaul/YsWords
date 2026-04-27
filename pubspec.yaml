@@ -15,6 +15,11 @@ dependencies:
   scrollable_positioned_list: ^0.3.8
   shared_preferences: ^2.5.3
   cupertino_icons: ^1.0.2
+  # Cloud sync (optional — see lib/firebase_options.dart for setup).
+  # Pinned to versions that build cleanly under Dart 3.2 SDK.
+  firebase_core: ^3.6.0
+  firebase_auth: ^5.3.1
+  cloud_firestore: ^5.4.4
 
 dev_dependencies:
   flutter_test:

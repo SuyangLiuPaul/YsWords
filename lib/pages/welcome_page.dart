@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import 'package:get/get.dart';
+
 import 'package:yswords/constants/ui_strings.dart';
 import 'package:yswords/models/app_settings.dart';
+import 'package:yswords/pages/sign_in_page.dart';
+import 'package:yswords/services/cloud_auth_service.dart';
 import 'package:yswords/services/profile_service.dart';
 
 /// One-time gate shown on first launch (and accessible later from
@@ -122,7 +126,41 @@ class _WelcomePageState extends State<WelcomePage> {
                       ),
                     ),
                     const SizedBox(height: 20),
-                    FilledButton.icon(
+                    // Cloud sign-in (Firebase) — shown only when the
+                    // user has finished the firebase_options.dart
+                    // setup. Otherwise the only "Sign in" option is
+                    // the local-profile path further down.
+                    if (CloudAuthService.instance.isConfigured) ...[
+                      FilledButton.icon(
+                        onPressed: _busy
+                            ? null
+                            : () async {
+                                await Get.to(
+                                  () => SignInPage(
+                                    onSuccess: widget.onDone,
+                                  ),
+                                  transition: Transition.rightToLeft,
+                                );
+                                // Mark welcome seen so they don't
+                                // see the gate again even if they
+                                // didn't complete sign-in.
+                                await ProfileService.instance
+                                    .markWelcomeSeen();
+                              },
+                        icon: const Icon(Icons.cloud_outlined),
+                        label: Padding(
+                          padding:
+                              const EdgeInsets.symmetric(vertical: 12),
+                          child: Text(
+                            uiStrings['welcomeSignInCloud']?[locale] ??
+                                'Sign in with email (sync across devices)',
+                            style: const TextStyle(fontSize: 14),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                    ],
+                    FilledButton.tonalIcon(
                       onPressed: _busy
                           ? null
                           : () => setState(() => _signingIn = true),
@@ -130,8 +168,13 @@ class _WelcomePageState extends State<WelcomePage> {
                       label: Padding(
                         padding: const EdgeInsets.symmetric(vertical: 12),
                         child: Text(
-                          uiStrings['welcomeSignIn']?[locale] ?? 'Sign in',
-                          style: const TextStyle(fontSize: 15),
+                          CloudAuthService.instance.isConfigured
+                              ? (uiStrings['welcomeLocalProfile']
+                                      ?[locale] ??
+                                  'Local profile (this device only)')
+                              : (uiStrings['welcomeSignIn']?[locale] ??
+                                  'Sign in'),
+                          style: const TextStyle(fontSize: 14),
                         ),
                       ),
                     ),
@@ -144,14 +187,18 @@ class _WelcomePageState extends State<WelcomePage> {
                         child: Text(
                           uiStrings['welcomeContinueGuest']?[locale] ??
                               'Continue as guest',
-                          style: const TextStyle(fontSize: 15),
+                          style: const TextStyle(fontSize: 14),
                         ),
                       ),
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      uiStrings['welcomeLocalOnlyNotice']?[locale] ??
-                          'Profiles are stored only on this device. No password, no server.',
+                      CloudAuthService.instance.isConfigured
+                          ? (uiStrings['welcomeCloudNotice']?[locale] ??
+                              'Sign in to sync across devices, or use a local profile / guest if you prefer to keep everything on this device.')
+                          : (uiStrings['welcomeLocalOnlyNotice']
+                                  ?[locale] ??
+                              'Profiles are stored only on this device. No password, no server.'),
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 11,
