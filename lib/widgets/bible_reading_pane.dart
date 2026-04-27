@@ -1116,6 +1116,7 @@ void _showHighlightsSheet({
     builder: (sheetCtx) => HighlightsSheet(
       highlights: highlights,
       locale: locale,
+      currentVersion: mainProvider.currentVersion,
       onNavigate: (englishBook, chapter, verse) {
         Navigator.of(sheetCtx).maybePop();
         final localBook =

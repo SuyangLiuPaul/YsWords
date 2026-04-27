@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:yswords/constants/ui_strings.dart';
+import 'package:yswords/utils/version_mapper.dart' show translateBookName;
 
 /// A parsed verse reference recovered from a stored highlight ID.
 /// ID format: "EnglishBook-chapter-verseLabel"
@@ -47,15 +48,23 @@ class _HighlightRef {
 /// Bottom sheet that lists all saved highlights grouped by color.
 /// Each row is tappable; [onNavigate] receives the English book name,
 /// chapter, and verse number so the host can close the sheet and jump.
+///
+/// Highlight IDs are stored with English book names (e.g.
+/// "1 Chronicles-3-19") for cross-version persistence. The display
+/// label translates the book name to [currentVersion]'s naming via
+/// `translateBookName` so a CUVS reader sees "马可福音 4:7" rather
+/// than "Mark 4:7".
 class HighlightsSheet extends StatelessWidget {
   final Map<String, int> highlights;
   final String locale;
+  final String? currentVersion;
   final void Function(String englishBook, int chapter, int verse)? onNavigate;
 
   const HighlightsSheet({
     super.key,
     required this.highlights,
     required this.locale,
+    this.currentVersion,
     this.onNavigate,
   });
 
@@ -168,6 +177,7 @@ class HighlightsSheet extends StatelessWidget {
                               label: _colorLabel(argb),
                               refs: grouped[argb]!,
                               scheme: scheme,
+                              currentVersion: currentVersion,
                               onNavigate: onNavigate,
                             ),
                       ],
@@ -200,6 +210,7 @@ class _ColorSection extends StatefulWidget {
   final String label;
   final List<_HighlightRef> refs;
   final ColorScheme scheme;
+  final String? currentVersion;
   final void Function(String, int, int)? onNavigate;
 
   const _ColorSection({
@@ -207,6 +218,7 @@ class _ColorSection extends StatefulWidget {
     required this.label,
     required this.refs,
     required this.scheme,
+    required this.currentVersion,
     required this.onNavigate,
   });
 
@@ -291,6 +303,7 @@ class _ColorSectionState extends State<_ColorSection> {
               ref: ref,
               argb: widget.argb,
               scheme: scheme,
+              currentVersion: widget.currentVersion,
               onNavigate: widget.onNavigate,
             ),
         const Divider(height: 1, indent: 20, endIndent: 20),
@@ -303,18 +316,26 @@ class _RefRow extends StatelessWidget {
   final _HighlightRef ref;
   final int argb;
   final ColorScheme scheme;
+  final String? currentVersion;
   final void Function(String, int, int)? onNavigate;
 
   const _RefRow({
     required this.ref,
     required this.argb,
     required this.scheme,
+    required this.currentVersion,
     required this.onNavigate,
   });
 
   @override
   Widget build(BuildContext context) {
     final canNav = onNavigate != null;
+    // Translate the canonical English book name (which is what the
+    // highlight ID stores) to the user's current version's naming.
+    final displayBook = currentVersion == null
+        ? ref.book
+        : translateBookName(ref.book, currentVersion!);
+    final displayLabel = '$displayBook ${ref.chapter}:${ref.verseLabel}';
     return InkWell(
       onTap: canNav
           ? () {
@@ -337,7 +358,7 @@ class _RefRow extends StatelessWidget {
             const SizedBox(width: 14),
             Expanded(
               child: Text(
-                ref.label,
+                displayLabel,
                 style: TextStyle(
                   fontSize: 14,
                   color: canNav ? scheme.primary : scheme.onSurface,
