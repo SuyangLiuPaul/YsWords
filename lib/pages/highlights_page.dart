@@ -10,7 +10,6 @@ import 'package:yswords/pages/home_page.dart';
 import 'package:yswords/providers/main_provider.dart';
 import 'package:yswords/utils/clipboard_helper.dart';
 import 'package:yswords/widgets/home_icon_button.dart';
-import 'package:yswords/widgets/localized_back_button.dart';
 
 /// Standalone highlights browser. Filters by color (or "All") and a
 /// free-text search box; tap a row to jump to the verse in the
@@ -79,7 +78,7 @@ class _HighlightsPageState extends State<HighlightsPage> {
 
     return Scaffold(
       appBar: AppBar(
-        leading: const LocalizedBackButton(),
+        leading: const HomeIconButton(),
         title: Text(uiStrings['highlights']?[locale] ?? 'Highlights'),
         actions: [
           if (highlights.isNotEmpty)
@@ -88,7 +87,6 @@ class _HighlightsPageState extends State<HighlightsPage> {
               tooltip: uiStrings['copyAll']?[locale] ?? 'Copy all',
               onPressed: () => _copyAll(context, items, settings),
             ),
-          const HomeIconButton(),
         ],
       ),
       body: Column(
@@ -325,6 +323,7 @@ class _FilterChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final settings = context.watch<AppSettings>();
     return Padding(
       padding: const EdgeInsets.only(right: 8, top: 4, bottom: 4),
       child: ChoiceChip(
@@ -333,7 +332,9 @@ class _FilterChip extends StatelessWidget {
         onSelected: (_) => onTap(),
         selectedColor: scheme.primary.withValues(alpha: 0.18),
         labelStyle: TextStyle(
-          fontSize: 12.5,
+          fontFamily: settings.fontFamily,
+          fontSize:
+              (settings.fontSize - 2).clamp(12.0, 16.0).toDouble(),
           fontWeight: FontWeight.w600,
           color: selected ? scheme.primary : scheme.onSurfaceVariant,
         ),

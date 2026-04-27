@@ -13,7 +13,6 @@ import 'package:yswords/utils/clipboard_helper.dart';
 import 'package:yswords/utils/reference_parser.dart';
 import 'package:yswords/utils/version_mapper.dart' show translateBookName;
 import 'package:yswords/widgets/home_icon_button.dart';
-import 'package:yswords/widgets/localized_back_button.dart';
 
 /// "Library" — a single page with two tabs: Notes and Bookmarks.
 /// Each tab shows the user's saved annotations for the current
@@ -30,9 +29,8 @@ class LibraryPage extends StatelessWidget {
       length: 3,
       child: Scaffold(
         appBar: AppBar(
-          leading: const LocalizedBackButton(),
+          leading: const HomeIconButton(),
           title: Text(uiStrings['library']?[locale] ?? 'Library'),
-          actions: const [HomeIconButton()],
           bottom: TabBar(
             tabs: [
               Tab(

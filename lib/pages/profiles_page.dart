@@ -8,7 +8,6 @@ import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/pages/profile_edit_page.dart';
 import 'package:yswords/services/profile_service.dart';
 import 'package:yswords/widgets/home_icon_button.dart';
-import 'package:yswords/widgets/localized_back_button.dart';
 
 /// Manage local profiles — switch active profile, add a new one,
 /// rename, or delete. Reachable from Settings → Account.
@@ -142,7 +141,7 @@ class _ProfilesPageState extends State<ProfilesPage> {
     final svc = ProfileService.instance;
     return Scaffold(
       appBar: AppBar(
-        leading: const LocalizedBackButton(),
+        leading: const HomeIconButton(),
         title: Text(uiStrings['profileTitle']?[locale] ?? 'Profiles'),
         actions: [
           IconButton(
@@ -151,7 +150,6 @@ class _ProfilesPageState extends State<ProfilesPage> {
             onPressed: _createProfile,
             icon: const Icon(Icons.person_add_alt_outlined),
           ),
-          const HomeIconButton(),
         ],
       ),
       body: ListView.separated(
@@ -188,7 +186,10 @@ class _ProfilesPageState extends State<ProfilesPage> {
                 : Text(
                     '${(uiStrings['profileLocalOnly']?[locale] ?? 'Local profile')} • id: ${p.id}',
                     style: TextStyle(
-                      fontSize: 11,
+                      fontFamily: settings.fontFamily,
+                      fontSize: (settings.fontSize - 4)
+                          .clamp(11.0, 15.0)
+                          .toDouble(),
                       color: scheme.onSurfaceVariant,
                     ),
                   ),

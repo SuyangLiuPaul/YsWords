@@ -123,7 +123,9 @@ class _WelcomePageState extends State<WelcomePage> {
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontFamily: settings.fontFamily,
-                      fontSize: 28,
+                      fontSize: (settings.fontSize + 12)
+                          .clamp(24.0, 36.0)
+                          .toDouble(),
                       fontWeight: FontWeight.w700,
                       color: scheme.primary,
                     ),
@@ -134,7 +136,10 @@ class _WelcomePageState extends State<WelcomePage> {
                         'Personal Bible study, on every device.',
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                      fontSize: 13,
+                      fontFamily: settings.fontFamily,
+                      fontSize: (settings.fontSize - 2)
+                          .clamp(12.0, 18.0)
+                          .toDouble(),
                       color: scheme.onSurfaceVariant,
                     ),
                   ),
@@ -145,7 +150,8 @@ class _WelcomePageState extends State<WelcomePage> {
                           'How would you like to use YsWords?',
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        fontSize: 14,
+                        fontFamily: settings.fontFamily,
+                        fontSize: settings.fontSize,
                         fontWeight: FontWeight.w600,
                         color: scheme.onSurface,
                       ),
@@ -181,8 +187,11 @@ class _WelcomePageState extends State<WelcomePage> {
                             Text(
                               uiStrings['welcomeSignInGoogle']?[locale] ??
                                   'Sign in with Google',
-                              style: const TextStyle(
-                                fontSize: 14,
+                              style: TextStyle(
+                                fontFamily: settings.fontFamily,
+                                fontSize: (settings.fontSize)
+                                    .clamp(13.0, 18.0)
+                                    .toDouble(),
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
@@ -205,7 +214,11 @@ class _WelcomePageState extends State<WelcomePage> {
                                   'Local profile (this device only)')
                               : (uiStrings['welcomeSignIn']?[locale] ??
                                   'Sign in'),
-                          style: const TextStyle(fontSize: 14),
+                          style: TextStyle(
+                              fontFamily: settings.fontFamily,
+                              fontSize: (settings.fontSize)
+                                  .clamp(13.0, 18.0)
+                                  .toDouble()),
                         ),
                       ),
                     ),
@@ -218,7 +231,11 @@ class _WelcomePageState extends State<WelcomePage> {
                         child: Text(
                           uiStrings['welcomeContinueGuest']?[locale] ??
                               'Continue as guest',
-                          style: const TextStyle(fontSize: 14),
+                          style: TextStyle(
+                              fontFamily: settings.fontFamily,
+                              fontSize: (settings.fontSize)
+                                  .clamp(13.0, 18.0)
+                                  .toDouble()),
                         ),
                       ),
                     ),
@@ -232,7 +249,10 @@ class _WelcomePageState extends State<WelcomePage> {
                               'Profiles are stored only on this device. No password, no server.'),
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        fontSize: 11,
+                        fontFamily: settings.fontFamily,
+                        fontSize: (settings.fontSize - 4)
+                            .clamp(11.0, 16.0)
+                            .toDouble(),
                         fontStyle: FontStyle.italic,
                         color: scheme.onSurfaceVariant,
                       ),
@@ -243,7 +263,8 @@ class _WelcomePageState extends State<WelcomePage> {
                           "What should we call you?",
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        fontSize: 14,
+                        fontFamily: settings.fontFamily,
+                        fontSize: settings.fontSize,
                         fontWeight: FontWeight.w600,
                         color: scheme.onSurface,
                       ),

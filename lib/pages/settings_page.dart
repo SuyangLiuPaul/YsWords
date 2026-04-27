@@ -14,7 +14,6 @@ import 'package:yswords/services/profile_service.dart';
 import 'package:yswords/services/reading_plan_service.dart';
 
 import 'package:yswords/widgets/home_icon_button.dart';
-import 'package:yswords/widgets/localized_back_button.dart';
 import 'package:yswords/utils/responsive.dart';
 
 String getDevotionalFormattedText(
@@ -61,13 +60,12 @@ class SettingsPage extends StatelessWidget {
       },
       child: Scaffold(
       appBar: AppBar(
-        leading: const LocalizedBackButton(),
+        leading: const HomeIconButton(),
         // The settings locale is now available inside the Consumer below
         title: Consumer<AppSettings>(
           builder: (context, settings, _) =>
               Text(uiStrings['settings']?[settings.locale] ?? 'Settings'),
         ),
-        actions: const [HomeIconButton()],
       ),
       body: Consumer<AppSettings>(
         builder: (context, settings, _) {
@@ -1477,12 +1475,20 @@ class _SectionHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    // Scale with the user's font preference — at the default 16 pt
+    // body size the header reads as 14, at 24 pt body it scales to
+    // 22. Caps at 22 so very-large reader settings don't make
+    // section headers tower over the cards beneath them.
+    final settings = context.watch<AppSettings>();
+    final size =
+        (settings.fontSize - 2).clamp(11.0, 22.0).toDouble();
     return Padding(
       padding: const EdgeInsets.fromLTRB(4, 4, 4, 8),
       child: Text(
         label.toUpperCase(),
         style: TextStyle(
-          fontSize: 11,
+          fontFamily: settings.fontFamily,
+          fontSize: size,
           fontWeight: FontWeight.w700,
           letterSpacing: 0.6,
           color: scheme.primary,

@@ -23,7 +23,6 @@ import 'package:yswords/utils/responsive.dart';
 import 'package:yswords/utils/version_mapper.dart' show translateBookName;
 import 'package:yswords/widgets/google_g_logo.dart';
 import 'package:yswords/widgets/onboarding_dialog.dart';
-import 'package:yswords/widgets/localized_back_button.dart';
 
 /// Personal "home" / dashboard. Shows the signed-in user's reading
 /// state at a glance:
@@ -53,10 +52,6 @@ class _DashboardPageState extends State<DashboardPage> {
   /// switch can re-resolve the verse text without re-fetching the
   /// reference list.
   String? _dailyVerseRef;
-  /// Snapshot of MainProvider.currentVersion at the time we last
-  /// resolved the daily verse — lets `didChangeDependencies` decide
-  /// whether to redo the resolve.
-  String? _resolvedForVersion;
 
   @override
   void initState() {
@@ -72,17 +67,13 @@ class _DashboardPageState extends State<DashboardPage> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    // Daily-verse resolution depends on MainProvider.currentVersion
-    // (the verse text comes from whichever Bible the user has
-    // loaded) and on mp.verses (which is replaced when version
-    // switches). didChangeDependencies fires when any watched
-    // provider changes — so a version switch reliably triggers a
-    // re-resolve here without us needing a manual listener.
-    final mp = context.read<MainProvider>();
-    if (_dailyVerseRef != null &&
-        _resolvedForVersion != mp.currentVersion) {
-      _resolveDailyVerse();
-    }
+    // Always re-resolve. Cheap (early-bails when verses are empty,
+    // setStates only when the resolved Verse actually differs from
+    // the cached one). Handles every flavour of MainProvider
+    // notify: setVersion (currentVersion changed, verses still old),
+    // setVerses (verses replaced after fetch), and benign
+    // notifyListeners from highlight/note saves.
+    _resolveDailyVerse();
   }
 
   /// Show the 4-slide onboarding tour the first time the dashboard
@@ -118,24 +109,44 @@ class _DashboardPageState extends State<DashboardPage> {
   /// version. Re-run whenever the user switches version (or the
   /// initial verse list finishes loading) so the verse text always
   /// matches what they're reading.
+  ///
+  /// IMPORTANT: this gets called from [didChangeDependencies], which
+  /// fires twice on a version switch — once for `setVersion` (verses
+  /// still old) and again for the post-fetch `setVerses` (verses
+  /// new). The first fire would resolve against stale data and
+  /// potentially set _dailyVerse to null; we guard with
+  /// `mp.verses.isEmpty` AND only blank out _dailyVerse when we
+  /// confirm there really is no match for the *current* version
+  /// (i.e. mp.verses is non-empty). Otherwise we leave the previous
+  /// value alone until the verses actually arrive.
   void _resolveDailyVerse() {
     final ref = _dailyVerseRef;
     if (ref == null) return;
     final parsed = parseReference(ref);
     if (parsed == null) return;
     final mp = context.read<MainProvider>();
+    if (mp.verses.isEmpty) return;
     final localBook =
         translateBookName(parsed.englishBook, mp.currentVersion);
     final targetVerse = parsed.verseStart ?? 1;
-    final matches = mp.verses.where((v) =>
-        v.book == localBook &&
-        v.chapter == parsed.chapter &&
-        v.verse == targetVerse);
+    Verse? match;
+    for (final v in mp.verses) {
+      if (v.book == localBook &&
+          v.chapter == parsed.chapter &&
+          v.verse == targetVerse) {
+        match = v;
+        break;
+      }
+    }
     if (!mounted) return;
-    setState(() {
-      _dailyVerse = matches.isEmpty ? null : matches.first;
-      _resolvedForVersion = mp.currentVersion;
-    });
+    // Only setState when the resolved verse actually changes (book
+    // field carries the locale-specific name, so a version switch
+    // always produces a different match.book even if id is the
+    // same canonical English form).
+    if (match?.book != _dailyVerse?.book ||
+        match?.text != _dailyVerse?.text) {
+      setState(() => _dailyVerse = match);
+    }
   }
 
   @override
@@ -192,11 +203,10 @@ class _DashboardPageState extends State<DashboardPage> {
     final profile = ProfileService.instance.current;
     final auth = CloudAuthService.instance;
 
-    // The Dashboard is shown both as the app root AND as a pushed
-    // page from the floating-header "Home" entry. As root there's
-    // nothing to pop back to, so the back arrow would be confusing
-    // — `Navigator.canPop` keeps it conditional automatically.
-    final canPop = Navigator.of(context).canPop();
+    // After Round 36 the Dashboard is *always* the navigator root
+    // (the floating-header "Home" entry pops to first instead of
+    // pushing a duplicate). Hard-disable the back arrow here so a
+    // weirdly-stacked navigator never sneaks one in.
     final dc = ResponsiveBreakpoints.classOf(
         MediaQuery.of(context).size.width);
     // Cap reading width on iPad / desktop so the dashboard doesn't
@@ -205,11 +215,16 @@ class _DashboardPageState extends State<DashboardPage> {
     // consistent.
     final maxW = ResponsiveBreakpoints.settingsMaxWidth(dc);
     final isWide = MediaQuery.of(context).size.width >= 720;
+    // Round 36: every header/label scales with settings.fontSize.
+    // Caps prevent very-large reader settings (24-40 pt) from
+    // making chrome tower over the cards.
+    final headerSize =
+        (settings.fontSize - 1).clamp(12.0, 22.0).toDouble();
 
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        leading: canPop ? const LocalizedBackButton() : null,
+        leading: null,
         title: Text(uiStrings['home']?[locale] ?? 'Home'),
         centerTitle: true,
       ),
@@ -252,7 +267,8 @@ class _DashboardPageState extends State<DashboardPage> {
             Text(
               uiStrings['dailyVerse']?[locale] ?? 'Verse of the Day',
               style: TextStyle(
-                fontSize: 14,
+                fontFamily: settings.fontFamily,
+                fontSize: headerSize,
                 fontWeight: FontWeight.w700,
                 color: scheme.primary,
               ),
@@ -261,6 +277,7 @@ class _DashboardPageState extends State<DashboardPage> {
             _DailyVerseCard(
               verse: _dailyVerse!,
               fontFamily: settings.fontFamily,
+              fontSize: settings.fontSize,
               onTap: () {
                 final v = _dailyVerse!;
                 mainProvider.setCurrentChapter(
@@ -279,7 +296,8 @@ class _DashboardPageState extends State<DashboardPage> {
           Text(
             uiStrings['todayReading']?[locale] ?? "Today's Reading",
             style: TextStyle(
-              fontSize: 14,
+              fontFamily: settings.fontFamily,
+              fontSize: headerSize,
               fontWeight: FontWeight.w700,
               color: scheme.primary,
             ),
@@ -373,7 +391,8 @@ class _DashboardPageState extends State<DashboardPage> {
               uiStrings['homeRecentBookmarks']?[locale] ??
                   'Recent bookmarks',
               style: TextStyle(
-                fontSize: 14,
+                fontFamily: settings.fontFamily,
+                fontSize: headerSize,
                 fontWeight: FontWeight.w700,
                 color: scheme.primary,
               ),
@@ -388,6 +407,7 @@ class _DashboardPageState extends State<DashboardPage> {
                   '${v.book} ${v.chapter}:${v.verseLabel}',
                   style: TextStyle(
                       fontFamily: settings.fontFamily,
+                      fontSize: settings.fontSize,
                       fontWeight: FontWeight.w600),
                 ),
                 subtitle: Text(
@@ -427,8 +447,10 @@ class _DashboardPageState extends State<DashboardPage> {
                 child: Text(
                   uiStrings['continueReading']?[locale] ??
                       'Continue reading',
-                  style: const TextStyle(
-                      fontSize: 14, fontWeight: FontWeight.w600),
+                  style: TextStyle(
+                      fontFamily: settings.fontFamily,
+                      fontSize: settings.fontSize,
+                      fontWeight: FontWeight.w600),
                 ),
               ),
             ),
@@ -551,6 +573,8 @@ class _GreetingCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final settings = context.watch<AppSettings>();
+    final fs = settings.fontSize;
     final initial = profileName.isEmpty
         ? '?'
         : profileName.characters.first.toUpperCase();
@@ -639,7 +663,8 @@ class _GreetingCard extends StatelessWidget {
                   Text(
                     greeting,
                     style: TextStyle(
-                      fontSize: 12,
+                      fontFamily: settings.fontFamily,
+                      fontSize: (fs - 3).clamp(11.0, 16.0).toDouble(),
                       color: scheme.onSurfaceVariant,
                     ),
                   ),
@@ -648,7 +673,8 @@ class _GreetingCard extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
-                      fontSize: 18,
+                      fontFamily: settings.fontFamily,
+                      fontSize: (fs + 3).clamp(16.0, 28.0).toDouble(),
                       fontWeight: FontWeight.w700,
                       color: scheme.onSurface,
                     ),
@@ -665,7 +691,9 @@ class _GreetingCard extends StatelessWidget {
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
-                              fontSize: 11,
+                              fontFamily: settings.fontFamily,
+                              fontSize:
+                                  (fs - 4).clamp(10.0, 14.0).toDouble(),
                               color: scheme.onSurfaceVariant,
                             ),
                           ),
@@ -698,8 +726,9 @@ class _GreetingCard extends StatelessWidget {
                     Text(
                       uiStrings['welcomeSignInGoogle']?[locale] ??
                           'Sign in with Google',
-                      style: const TextStyle(
-                        fontSize: 13,
+                      style: TextStyle(
+                        fontFamily: settings.fontFamily,
+                        fontSize: (fs - 2).clamp(12.0, 18.0).toDouble(),
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -735,6 +764,8 @@ class _DashboardPlanCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final settings = context.watch<AppSettings>();
+    final fs = settings.fontSize;
     final entry = plan.dayOf(day);
     if (entry == null) return const SizedBox.shrink();
     final dayLabel = (uiStrings['planDayLabel']?[locale] ??
@@ -753,7 +784,8 @@ class _DashboardPlanCard extends StatelessWidget {
                   child: Text(
                     plan.localizedName(locale),
                     style: TextStyle(
-                      fontSize: 13,
+                      fontFamily: settings.fontFamily,
+                      fontSize: (fs - 2).clamp(12.0, 18.0).toDouble(),
                       fontWeight: FontWeight.w600,
                       color: scheme.onSurfaceVariant,
                     ),
@@ -779,7 +811,8 @@ class _DashboardPlanCard extends StatelessWidget {
             Text(
               dayLabel,
               style: TextStyle(
-                fontSize: 11,
+                fontFamily: settings.fontFamily,
+                fontSize: (fs - 4).clamp(10.0, 14.0).toDouble(),
                 color: scheme.onSurfaceVariant,
               ),
             ),
@@ -817,10 +850,9 @@ class _PickPlanCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final settings = context.watch<AppSettings>();
+    final fs = settings.fontSize;
     return Card(
-      // Use a thin tinted border instead of a translucent fill —
-      // looked muddy when the user's primary color was low-contrast
-      // (e.g. mid-blue on grey scaffold).
       color: scheme.surface,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
@@ -847,7 +879,8 @@ class _PickPlanCard extends StatelessWidget {
                       uiStrings['planHomeHint']?[locale] ??
                           'Choose a reading plan to see today\'s passages here.',
                       style: TextStyle(
-                        fontSize: 13,
+                        fontFamily: settings.fontFamily,
+                        fontSize: (fs - 2).clamp(12.0, 18.0).toDouble(),
                         fontWeight: FontWeight.w600,
                         color: scheme.primary,
                       ),
@@ -857,7 +890,8 @@ class _PickPlanCard extends StatelessWidget {
                       uiStrings['planHomeHintSub']?[locale] ??
                           'Tap to open Settings.',
                       style: TextStyle(
-                        fontSize: 11,
+                        fontFamily: settings.fontFamily,
+                        fontSize: (fs - 4).clamp(10.0, 14.0).toDouble(),
                         color: scheme.onSurfaceVariant,
                       ),
                     ),
@@ -889,6 +923,8 @@ class _CountTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final settings = context.watch<AppSettings>();
+    final fs = settings.fontSize;
     return Material(
       color: scheme.surface,
       borderRadius: BorderRadius.circular(12),
@@ -915,7 +951,9 @@ class _CountTile extends StatelessWidget {
                     Text(
                       count.toString(),
                       style: TextStyle(
-                        fontSize: 22,
+                        fontFamily: settings.fontFamily,
+                        fontSize:
+                            (fs + 6).clamp(20.0, 32.0).toDouble(),
                         fontWeight: FontWeight.w700,
                         color: scheme.onSurface,
                         height: 1.0,
@@ -929,7 +967,9 @@ class _CountTile extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
-                    fontSize: 11,
+                    fontFamily: settings.fontFamily,
+                    fontSize:
+                        (fs - 4).clamp(10.0, 14.0).toDouble(),
                     fontWeight: FontWeight.w500,
                     color: scheme.onSurfaceVariant,
                   ),
@@ -950,10 +990,14 @@ class _CountTile extends StatelessWidget {
 class _DailyVerseCard extends StatelessWidget {
   final Verse verse;
   final String fontFamily;
+  /// User's reading font size — daily verse text uses it directly so
+  /// the verse renders at the same scale as their Bible reading.
+  final double fontSize;
   final VoidCallback onTap;
   const _DailyVerseCard({
     required this.verse,
     required this.fontFamily,
+    required this.fontSize,
     required this.onTap,
   });
 
@@ -989,7 +1033,7 @@ class _DailyVerseCard extends StatelessWidget {
                   preview,
                   style: TextStyle(
                     fontFamily: fontFamily,
-                    fontSize: 15,
+                    fontSize: fontSize,
                     height: 1.45,
                     fontStyle: FontStyle.italic,
                     color: scheme.onSurface,
@@ -1003,7 +1047,8 @@ class _DailyVerseCard extends StatelessWidget {
                         '— ${verse.book} ${verse.chapter}:${verse.verseLabel}',
                         style: TextStyle(
                           fontFamily: fontFamily,
-                          fontSize: 12,
+                          fontSize:
+                              (fontSize - 3).clamp(11.0, 18.0).toDouble(),
                           fontWeight: FontWeight.w600,
                           color: scheme.primary,
                         ),
@@ -1035,6 +1080,8 @@ class _LinkTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final settings = context.watch<AppSettings>();
+    final fs = settings.fontSize;
     return Material(
       color: scheme.surface,
       borderRadius: BorderRadius.circular(12),
@@ -1059,7 +1106,8 @@ class _LinkTile extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
-                      fontSize: 13,
+                      fontFamily: settings.fontFamily,
+                      fontSize: (fs - 2).clamp(12.0, 18.0).toDouble(),
                       fontWeight: FontWeight.w600,
                       color: scheme.onSurface,
                     ),
@@ -1084,6 +1132,7 @@ class _ChipBtn extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final settings = context.watch<AppSettings>();
     return Material(
       color: scheme.primary.withValues(alpha: 0.10),
       borderRadius: BorderRadius.circular(8),
@@ -1095,7 +1144,9 @@ class _ChipBtn extends StatelessWidget {
           child: Text(
             label,
             style: TextStyle(
-              fontSize: 12.5,
+              fontFamily: settings.fontFamily,
+              fontSize:
+                  (settings.fontSize - 2).clamp(12.0, 18.0).toDouble(),
               fontWeight: FontWeight.w600,
               color: scheme.primary,
             ),

@@ -100,7 +100,10 @@ class _OnboardingDialogState extends State<OnboardingDialog> {
                             s.title,
                             textAlign: TextAlign.center,
                             style: TextStyle(
-                              fontSize: 18,
+                              fontFamily: settings.fontFamily,
+                              fontSize: (settings.fontSize + 2)
+                                  .clamp(16.0, 26.0)
+                                  .toDouble(),
                               fontWeight: FontWeight.w700,
                               color: scheme.onSurface,
                             ),
@@ -110,7 +113,10 @@ class _OnboardingDialogState extends State<OnboardingDialog> {
                             s.body,
                             textAlign: TextAlign.center,
                             style: TextStyle(
-                              fontSize: 13,
+                              fontFamily: settings.fontFamily,
+                              fontSize: (settings.fontSize - 2)
+                                  .clamp(12.0, 18.0)
+                                  .toDouble(),
                               height: 1.4,
                               color: scheme.onSurfaceVariant,
                             ),
