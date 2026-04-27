@@ -88,6 +88,10 @@ class MainProvider extends ChangeNotifier {
   /// Read-only snapshot for UI rendering (e.g. HighlightsSheet).
   Map<String, int> get highlights => Map.unmodifiable(_highlights);
 
+  /// Called after any local highlight mutation (add / remove).
+  /// home_page.dart wires this up to sync the other split-view pane.
+  VoidCallback? onHighlightsMutated;
+
   bool isVerseHighlighted(Verse v) => _highlights.containsKey(v.id);
 
   Color? getHighlightColor(Verse v) {
@@ -100,12 +104,14 @@ class MainProvider extends ChangeNotifier {
     _highlights[verse.id] = color;
     _saveHighlights();
     notifyListeners();
+    onHighlightsMutated?.call();
   }
 
   void removeHighlight({required Verse verse}) {
     _highlights.remove(verse.id);
     _saveHighlights();
     notifyListeners();
+    onHighlightsMutated?.call();
   }
 
   void setHighlightsForVerses({required List<Verse> verses, required int color}) {
@@ -114,6 +120,7 @@ class MainProvider extends ChangeNotifier {
     }
     _saveHighlights();
     notifyListeners();
+    onHighlightsMutated?.call();
   }
 
   void removeHighlightsForVerses({required List<Verse> verses}) {
@@ -122,10 +129,25 @@ class MainProvider extends ChangeNotifier {
     }
     _saveHighlights();
     notifyListeners();
+    onHighlightsMutated?.call();
+  }
+
+  /// Overwrite the in-memory highlights with [data] and notify listeners.
+  /// Does NOT save to SharedPreferences and does NOT fire [onHighlightsMutated]
+  /// — this is used for cross-pane sync to avoid infinite-loop callbacks.
+  void syncHighlights(Map<String, int> data) {
+    _highlights = Map.from(data);
+    notifyListeners();
+  }
+
+  /// Reload highlights from SharedPreferences and notify listeners.
+  /// Called when the split-view secondary pane is first created.
+  Future<void> reloadHighlights() async {
+    await _loadHighlights();
+    notifyListeners();
   }
 
   void _saveHighlights() async {
-    if (!isPrimary) return;
     final prefs = await SharedPreferences.getInstance();
     // No prefix — highlights are global annotations shared across panes/versions.
     prefs.setString('highlights', jsonEncode(_highlights));

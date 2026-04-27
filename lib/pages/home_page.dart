@@ -57,13 +57,29 @@ class _HomePageState extends State<HomePage> {
       _secondaryProvider = sp;
     });
 
-    sp.currentVersion = context.read<MainProvider>().currentVersion;
+    final primary = context.read<MainProvider>();
+    sp.currentVersion = primary.currentVersion;
     await FetchVerses.execute(mainProvider: sp);
     await FetchBooks.execute(mainProvider: sp);
 
     if (!mounted) return;
     if (_secondaryProvider != sp) return; // deactivated while loading
-    final primary = context.read<MainProvider>();
+
+    // Populate secondary's highlights from shared storage so the menu
+    // item appears and verse highlights render immediately.
+    await sp.reloadHighlights();
+
+    if (!mounted || _secondaryProvider != sp) return;
+
+    // Bidirectional highlight sync: when either pane mutates highlights,
+    // push the updated map to the other pane's in-memory store.
+    primary.onHighlightsMutated = () {
+      _secondaryProvider?.syncHighlights(primary.highlights);
+    };
+    sp.onHighlightsMutated = () {
+      primary.syncHighlights(sp.highlights);
+    };
+
     if (primary.currentBook != null && primary.currentChapter != null) {
       final match = sp.verses.firstWhere(
         (v) =>
@@ -79,6 +95,9 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _deactivateSplitView() {
+    // Clear the cross-pane sync callback so primary no longer pushes to
+    // a secondary that no longer exists.
+    context.read<MainProvider>().onHighlightsMutated = null;
     setState(() {
       _splitViewActive = false;
       _secondaryProvider?.dispose();
