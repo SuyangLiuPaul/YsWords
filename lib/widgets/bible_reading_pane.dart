@@ -14,6 +14,7 @@ import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/models/bible_map.dart';
 import 'package:yswords/models/verse.dart';
 import 'package:yswords/pages/books_page.dart';
+import 'package:yswords/pages/dashboard_page.dart';
 import 'package:yswords/pages/library_page.dart';
 import 'package:yswords/pages/map_viewer_page.dart';
 import 'package:yswords/pages/search_page.dart';
@@ -22,6 +23,7 @@ import 'package:yswords/pages/stats_page.dart';
 import 'package:yswords/providers/main_provider.dart';
 import 'package:yswords/services/fetch_books.dart';
 import 'package:yswords/services/concordance_service.dart';
+import 'package:yswords/services/cloud_auth_service.dart';
 import 'package:yswords/services/cross_reference_service.dart';
 import 'package:yswords/services/fetch_verses.dart';
 import 'package:yswords/services/map_service.dart';
@@ -30,6 +32,8 @@ import 'package:yswords/services/tts_service.dart';
 import 'package:yswords/utils/clipboard_helper.dart';
 import 'package:yswords/utils/reference_parser.dart';
 import 'package:yswords/utils/responsive.dart';
+import 'package:yswords/services/profile_service.dart';
+import 'package:yswords/widgets/google_g_logo.dart';
 import 'package:yswords/widgets/today_reading_card.dart';
 import 'package:yswords/utils/version_mapper.dart'
     show translateBookName, toEnglish, localeAwareBookName;
@@ -2304,6 +2308,72 @@ class _FloatingHeader extends StatelessWidget {
                       // first split-view tap feel like it was lost.
                       itemBuilder: (context) {
                         final items = <PopupMenuEntry<String>>[];
+                        // Top-level "Sign in" — only when Firebase
+                        // is configured and the user isn't signed
+                        // in. Tapping triggers Google popup
+                        // directly, no detour through Settings.
+                        if (CloudAuthService.instance.isConfigured &&
+                            !CloudAuthService.instance.isSignedIn) {
+                          items.add(PopupMenuItem(
+                            value: 'cloudSignIn',
+                            onTap: () async {
+                              final result = await CloudAuthService
+                                  .instance
+                                  .signInWithGoogle();
+                              if (!context.mounted) return;
+                              if (!result.isOk) {
+                                ScaffoldMessenger.of(context)
+                                    .showSnackBar(SnackBar(
+                                  content: Text(
+                                    result.errorMessage ??
+                                        'Sign-in failed.',
+                                  ),
+                                  duration:
+                                      const Duration(seconds: 3),
+                                ));
+                                return;
+                              }
+                              final user = result.user!;
+                              final svc = ProfileService.instance;
+                              final namePart = user.displayName
+                                          ?.trim()
+                                          .isNotEmpty ==
+                                      true
+                                  ? user.displayName!.trim()
+                                  : (user.email ?? 'user')
+                                      .split('@')
+                                      .first;
+                              final existing = svc.profiles.where(
+                                  (p) =>
+                                      p.name.toLowerCase() ==
+                                      namePart.toLowerCase());
+                              if (existing.isNotEmpty) {
+                                await svc
+                                    .setCurrent(existing.first.id);
+                              } else {
+                                final p = await svc.create(namePart);
+                                await svc.setCurrent(p.id);
+                              }
+                            },
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const GoogleGLogo(size: 16),
+                                const SizedBox(width: 12),
+                                Text(
+                                  uiStrings['cloudSignInGoogle']
+                                          ?[locale] ??
+                                      'Sign in with Google',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: scheme.onSurface,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ));
+                          items.add(const PopupMenuDivider());
+                        }
                         if (highlightCount > 0) {
                           items.add(PopupMenuItem(
                             value: 'highlights',
@@ -2318,6 +2388,25 @@ class _FloatingHeader extends StatelessWidget {
                             ),
                           ));
                         }
+                        // Home / dashboard — top-level entry above
+                        // Library so users can land on a personal
+                        // overview (today's reading + bookmark
+                        // counts + signed-in profile state) instead
+                        // of always opening to the verse text.
+                        items.add(PopupMenuItem(
+                          value: 'home',
+                          onTap: () {
+                            Get.to(
+                              () => const DashboardPage(),
+                              transition: Transition.rightToLeft,
+                            );
+                          },
+                          child: _menuRow(
+                            context,
+                            icon: Icons.home_outlined,
+                            label: uiStrings['home']?[locale] ?? 'Home',
+                          ),
+                        ));
                         // Library entry — always shown so the user
                         // can discover Notes / Bookmarks even before
                         // creating any.

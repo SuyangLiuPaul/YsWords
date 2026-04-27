@@ -6,6 +6,7 @@ import 'package:yswords/providers/main_provider.dart';
 import 'package:get/get.dart';
 import 'package:yswords/pages/profiles_page.dart';
 import 'package:yswords/services/cloud_auth_service.dart';
+import 'package:yswords/widgets/google_g_logo.dart';
 import 'package:yswords/services/cloud_sync_service.dart';
 import 'package:yswords/services/fetch_books.dart';
 import 'package:yswords/services/fetch_verses.dart';
@@ -1356,7 +1357,7 @@ class _AccountSectionState extends State<_AccountSection> {
             if (auth.isConfigured) ...[
               const Divider(height: 24),
               if (!auth.isSignedIn)
-                FilledButton.icon(
+                OutlinedButton(
                   onPressed: () async {
                     final result = await CloudAuthService.instance
                         .signInWithGoogle();
@@ -1372,8 +1373,6 @@ class _AccountSectionState extends State<_AccountSection> {
                       );
                       return;
                     }
-                    // Match local profile name to Google display
-                    // name so the just-synced data lands somewhere.
                     final user = result.user!;
                     final svc = ProfileService.instance;
                     final namePart =
@@ -1390,10 +1389,31 @@ class _AccountSectionState extends State<_AccountSection> {
                       await svc.setCurrent(p.id);
                     }
                   },
-                  icon: const Icon(Icons.account_circle_outlined),
-                  label: Text(
-                    uiStrings['cloudSignInGoogle']?[locale] ??
-                        'Sign in with Google',
+                  style: OutlinedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    foregroundColor: const Color(0xFF1F1F1F),
+                    side: const BorderSide(
+                        color: Color(0xFFDADCE0), width: 1),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 12),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const GoogleGLogo(size: 18),
+                      const SizedBox(width: 12),
+                      Text(
+                        uiStrings['cloudSignInGoogle']?[locale] ??
+                            'Sign in with Google',
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
                   ),
                 )
               else

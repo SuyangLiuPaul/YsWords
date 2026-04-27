@@ -387,6 +387,31 @@ const uiStrings = {
     'zh-Hant': '尚未選擇讀經計劃。前往「設定」中挑選一份。',
     'en': 'No reading plan selected. Pick one from Settings.',
   },
+  'planHomeHint': {
+    'zh-Hans': '选择一份读经计划，每日内容会显示在此。',
+    'zh-Hant': '選擇一份讀經計劃，每日內容會顯示在此。',
+    'en': 'Choose a reading plan to see today\'s passages here.',
+  },
+  'planHomeHintSub': {
+    'zh-Hans': '点击进入设置。',
+    'zh-Hant': '點擊進入設定。',
+    'en': 'Tap to open Settings.',
+  },
+  'home': {
+    'zh-Hans': '主页',
+    'zh-Hant': '主頁',
+    'en': 'Home',
+  },
+  'homeRecentBookmarks': {
+    'zh-Hans': '最近书签',
+    'zh-Hant': '最近書籤',
+    'en': 'Recent bookmarks',
+  },
+  'continueReading': {
+    'zh-Hans': '继续阅读',
+    'zh-Hant': '繼續閱讀',
+    'en': 'Continue reading',
+  },
   // ── Gospel synopsis (Round 27B) ─────────────────────────────────
   'synopsis': {
     'zh-Hans': '福音书对观',

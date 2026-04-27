@@ -5,6 +5,7 @@ import 'package:yswords/constants/ui_strings.dart';
 import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/services/cloud_auth_service.dart';
 import 'package:yswords/services/profile_service.dart';
+import 'package:yswords/widgets/google_g_logo.dart';
 
 /// One-time gate shown on first launch (and accessible later from
 /// Settings → Switch profile). Lets the user pick a name so their
@@ -163,17 +164,36 @@ class _WelcomePageState extends State<WelcomePage> {
                     // only "Sign in" option is the local-profile
                     // path further down.
                     if (CloudAuthService.instance.isConfigured) ...[
-                      FilledButton.icon(
+                      // Google brand button — white background +
+                      // multi-color G logo + slate text — matches
+                      // Google's web sign-in button guidelines.
+                      OutlinedButton(
                         onPressed: _busy ? null : _signInWithGoogle,
-                        icon: const Icon(Icons.account_circle_outlined),
-                        label: Padding(
-                          padding:
-                              const EdgeInsets.symmetric(vertical: 12),
-                          child: Text(
-                            uiStrings['welcomeSignInGoogle']?[locale] ??
-                                'Sign in with Google',
-                            style: const TextStyle(fontSize: 14),
+                        style: OutlinedButton.styleFrom(
+                          backgroundColor: Colors.white,
+                          foregroundColor: const Color(0xFF1F1F1F),
+                          side: const BorderSide(
+                              color: Color(0xFFDADCE0), width: 1),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
                           ),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 14),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const GoogleGLogo(size: 20),
+                            const SizedBox(width: 12),
+                            Text(
+                              uiStrings['welcomeSignInGoogle']?[locale] ??
+                                  'Sign in with Google',
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                       const SizedBox(height: 10),

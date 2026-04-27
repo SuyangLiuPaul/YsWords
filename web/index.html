@@ -24,10 +24,30 @@
        and spell-check underlining on Flutter web HTML renderer elements. -->
   <meta name="format-detection" content="telephone=no,address=no,email=no,date=no,url=no">
 
-  <!-- iOS meta tags & icons -->
-  <link rel="apple-touch-icon" href="assets/app_icon.png">
+  <!-- iOS PWA meta tags. Without apple-mobile-web-app-capable=yes,
+       Add-to-Home-Screen on iPhone opens YsWords in Safari instead
+       of full-screen, breaking the app feel. Status bar style is
+       'default' so the iOS status bar contrasts our white surface. -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="YsWords">
+  <meta name="theme-color" content="#FFFFFF">
 
-  <!-- Favicon -->
+  <!-- iOS Add-to-Home-Screen icons. iOS picks the closest size to
+       its current launcher (180×180 on iPhone, 167×167 on iPad,
+       152×152 on older iPads). We point all sizes at the 1024×1024
+       master and let iOS downscale — looks crisper than shipping
+       pre-baked downscales for our simple flat icon. -->
+  <link rel="apple-touch-icon" sizes="180x180" href="icons/Icon-512.png">
+  <link rel="apple-touch-icon" sizes="167x167" href="icons/Icon-512.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="icons/Icon-192.png">
+  <link rel="apple-touch-icon" href="icons/Icon-512.png">
+
+  <!-- Favicon — link to the 192 icon as an SVG-equivalent fallback,
+       plus the legacy favicon.png for older browsers. -->
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/Icon-192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="icons/Icon-512.png">
   <link rel="icon" type="image/png" href="favicon.png"/>
 
   <title>YsWords</title>
