@@ -10,6 +10,7 @@ import 'package:yswords/services/originals_service.dart';
 import 'package:yswords/services/strongs_service.dart';
 import 'package:yswords/utils/version_mapper.dart'
     show toEnglish, translateBookName;
+import 'package:yswords/widgets/word_distribution.dart';
 
 /// Bottom sheet that shows the original Hebrew/Greek text for one or
 /// more selected verses, with each word as a tappable chip linked to
@@ -451,6 +452,17 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
                 fontStyle: FontStyle.italic,
               ),
             ),
+          if (concordance != null && concordance.byBook.isNotEmpty) ...[
+            const SizedBox(height: 14),
+            Divider(
+                height: 1, color: scheme.outlineVariant.withValues(alpha: 0.5)),
+            const SizedBox(height: 12),
+            WordDistribution(
+              byBook: concordance.byBook,
+              locale: locale,
+              currentVersion: widget.currentVersion,
+            ),
+          ],
           if (concordance != null && concordance.refs.isNotEmpty) ...[
             const SizedBox(height: 14),
             Divider(

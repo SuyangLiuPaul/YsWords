@@ -491,8 +491,9 @@ def build_greek_nt() -> None:
 # like the Greek definite article G3588 appear ~20k times; storing every
 # occurrence would balloon the bundle and overwhelm the UI. The total
 # count is preserved separately so the UI can show "Used N times" even
-# when only the first MAX_REFS are listed.
-MAX_REFS_PER_STRONGS = 200
+# when only the first MAX_REFS are listed. 500 covers ~99% of Strong's
+# words completely; only ~50 ultra-common particles/articles are capped.
+MAX_REFS_PER_STRONGS = 500
 
 # Canonical book ordering used to sort references within a Strong's
 # entry. Matches lib/services/fetch_books.dart `standardBookOrder`.
@@ -518,12 +519,17 @@ _BOOK_INDEX = {b: i for i, b in enumerate(CANONICAL_ORDER)}
 def build_concordance() -> None:
     """Walk every per-book file in assets/originals/ and emit an inverted
     index keyed by Strong's number. Output: assets/strongs/concordance.json
-    shaped as `{ "G2316": {"n": 1320, "r": ["John 3:16", ...]}, ... }`.
+    shaped as:
+        { "G2316": {
+            "n": 1320,                       # absolute count
+            "r": ["Matt 1:23", ...],         # capped reference list
+            "b": {"Matthew": 51, ... }       # per-book counts (uncapped)
+          }, ... }
 
     `n` is the absolute count; `r` is the canonical-order list capped at
-    MAX_REFS_PER_STRONGS. Refs are stored as `"<English book> <ch>:<vs>"`
-    strings — the runtime translates them to the user's locale via the
-    existing `version_mapper` helpers when navigating.
+    MAX_REFS_PER_STRONGS. `b` lets the runtime render statistical
+    distribution panels (Pauline / Johannine / per-book) without having
+    to parse every ref string.
     """
     print('Concordance (inverted index):')
     if not os.path.isdir(ORIGINALS_DIR):
@@ -532,6 +538,8 @@ def build_concordance() -> None:
 
     counts: dict[str, int] = {}
     refs: dict[str, list[tuple[int, int, int, str]]] = {}
+    # Per-Strong's per-book absolute counts: { strongs: { english_book: n } }
+    by_book: dict[str, dict[str, int]] = {}
 
     for fname in sorted(os.listdir(ORIGINALS_DIR)):
         if not fname.endswith('.json'):
@@ -560,6 +568,8 @@ def build_concordance() -> None:
                 if not s:
                     continue
                 counts[s] = counts.get(s, 0) + 1
+                bbook = by_book.setdefault(s, {})
+                bbook[english] = bbook.get(english, 0) + 1
                 # De-dup within a single verse so the same ref doesn't
                 # appear twice when a word recurs (very common for the
                 # Hebrew direct-object marker H853 and Greek article).
@@ -572,7 +582,11 @@ def build_concordance() -> None:
     for s, occurrences in refs.items():
         occurrences.sort()
         capped = [r[3] for r in occurrences[:MAX_REFS_PER_STRONGS]]
-        out[s] = {'n': counts[s], 'r': capped}
+        out[s] = {
+            'n': counts[s],
+            'r': capped,
+            'b': by_book.get(s, {}),
+        }
 
     os.makedirs(STRONGS_DIR, exist_ok=True)
     path = os.path.join(STRONGS_DIR, 'concordance.json')
@@ -580,7 +594,7 @@ def build_concordance() -> None:
         json.dump(out, f, ensure_ascii=False, separators=(',', ':'))
     total_refs = sum(len(v['r']) for v in out.values())
     print(f'  wrote {len(out)} Strong\'s with {total_refs} verse refs '
-          f'(capped at {MAX_REFS_PER_STRONGS} per entry)')
+          f'(capped at {MAX_REFS_PER_STRONGS} per entry) + per-book counts')
 
 
 # ── CLI ────────────────────────────────────────────────────────────────

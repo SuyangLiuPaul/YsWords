@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:yswords/models/strongs.dart';
 import 'package:yswords/models/verse.dart';
 import 'package:yswords/providers/main_provider.dart';
+import 'package:yswords/services/concordance_service.dart';
+import 'package:yswords/services/strongs_service.dart';
 import 'package:yswords/utils/format_searched_text.dart';
+import 'package:yswords/utils/version_mapper.dart' show translateBookName;
 import 'package:provider/provider.dart';
 import 'dart:async';
 import 'package:yswords/constants/ui_strings.dart';
@@ -11,6 +15,11 @@ import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/widgets/localized_back_button.dart';
 import 'package:yswords/utils/responsive.dart';
 import 'package:flutter/services.dart';
+
+/// Pattern for Strong's-number queries: optional whitespace, "G" or "H",
+/// optional whitespace, digits. Matches user-typed forms like "G2316",
+/// "g 2316", "h7200", with case insensitivity.
+final _strongsQueryPattern = RegExp(r'^\s*([GHgh])\s*(\d{1,5})\s*$');
 
 class SearchPage extends StatefulWidget {
   const SearchPage({super.key});
@@ -30,6 +39,13 @@ class _SearchPageState extends State<SearchPage> {
   Map<String, int> bookCounts = {};
   String? filterBook;
 
+  // When the user typed a Strong's-number pattern (e.g. "G2316"), these
+  // hold the lookup result; in this mode the regular text-search path
+  // is bypassed and the UI renders concordance refs instead of verses.
+  String? _strongsKey;
+  StrongsEntry? _strongsEntry;
+  ConcordanceResult? _strongsResult;
+
   @override
   void dispose() {
     _scrollController.dispose();
@@ -44,6 +60,36 @@ class _SearchPageState extends State<SearchPage> {
       setState(() {
         _results.clear();
         bookCounts.clear();
+        _strongsKey = null;
+        _strongsEntry = null;
+        _strongsResult = null;
+        searchPerformed = true;
+      });
+      return;
+    }
+
+    // Strong's-number search path. When the input matches "G2316" /
+    // "H7200" / etc., bypass the text scan and load the bundled
+    // concordance — every verse where that Strong's word appears.
+    final strongsMatch = _strongsQueryPattern.firstMatch(query);
+    if (strongsMatch != null) {
+      final prefix = strongsMatch.group(1)!.toUpperCase();
+      final digits = strongsMatch.group(2)!;
+      final num = '$prefix$digits';
+      setState(() {
+        _results.clear();
+        bookCounts.clear();
+        searchPerformed = false;
+        _strongsKey = num;
+        _strongsEntry = null;
+        _strongsResult = null;
+      });
+      final entry = await StrongsService.lookup(num);
+      final conc = await ConcordanceService.lookup(num);
+      if (!mounted) return;
+      setState(() {
+        _strongsEntry = entry;
+        _strongsResult = conc;
         searchPerformed = true;
       });
       return;
@@ -52,6 +98,9 @@ class _SearchPageState extends State<SearchPage> {
     setState(() {
       _results.clear();
       bookCounts.clear();
+      _strongsKey = null;
+      _strongsEntry = null;
+      _strongsResult = null;
       searchPerformed = false;
     });
 
@@ -231,6 +280,12 @@ class _SearchPageState extends State<SearchPage> {
             ),
             child: Column(
           children: [
+            if (_strongsKey != null) ...[
+              _buildStrongsHeader(context, settings),
+              Expanded(
+                child: _buildStrongsRefList(context, settings),
+              ),
+            ] else ...[
             if (_results.isNotEmpty)
               Padding(
                 padding: const EdgeInsets.all(8.0),
@@ -391,11 +446,212 @@ class _SearchPageState extends State<SearchPage> {
                       },
                     ),
             )
+            ],
           ],
             ),
           ),
         ),
         ),
     );
+  }
+
+  /// Header for Strong's-search mode: the Strong's number badge,
+  /// lemma, and a short result summary. Replaces the bookCounts
+  /// summary row used by text search.
+  Widget _buildStrongsHeader(BuildContext context, AppSettings settings) {
+    final scheme = Theme.of(context).colorScheme;
+    final entry = _strongsEntry;
+    final result = _strongsResult;
+    final num = _strongsKey ?? '';
+    if (!searchPerformed && entry == null && result == null) {
+      return const Padding(
+        padding: EdgeInsets.symmetric(vertical: 24),
+        child: Center(child: CircularProgressIndicator()),
+      );
+    }
+    final total = result?.total ?? 0;
+    final shown = result?.refs.length ?? 0;
+    final usedTemplate = uiStrings['concordanceUsed']?[settings.locale] ??
+        'Used {count} times';
+    final usedLabel = usedTemplate.replaceAll('{count}', total.toString());
+    final showingFirst = (total > 0 && shown < total)
+        ? (uiStrings['concordanceShowingFirst']?[settings.locale] ??
+                'showing first {shown} of {total}')
+            .replaceAll('{shown}', shown.toString())
+            .replaceAll('{total}', total.toString())
+        : null;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: scheme.surfaceContainerHighest.withValues(alpha: 0.4),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: scheme.outlineVariant),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 8, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: scheme.primary.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Text(
+                    num,
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                      color: scheme.primary,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    entry?.lemma ?? num,
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                      color: scheme.onSurface,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
+            if (entry != null &&
+                entry.localizedGloss(settings.locale).isNotEmpty) ...[
+              const SizedBox(height: 4),
+              Text(
+                entry.localizedGloss(settings.locale),
+                style: TextStyle(
+                  fontSize: 13,
+                  color: scheme.onSurfaceVariant,
+                ),
+              ),
+            ],
+            const SizedBox(height: 6),
+            Text(
+              usedLabel,
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: scheme.onSurface,
+              ),
+            ),
+            if (showingFirst != null) ...[
+              const SizedBox(height: 2),
+              Text(
+                showingFirst,
+                style: TextStyle(
+                  fontSize: 11,
+                  color: scheme.onSurfaceVariant,
+                  fontStyle: FontStyle.italic,
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Tappable list of all concordance references for the queried
+  /// Strong's number. Each row navigates to that verse — same flow as
+  /// regular search results.
+  Widget _buildStrongsRefList(BuildContext context, AppSettings settings) {
+    final result = _strongsResult;
+    if (result == null) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Text(
+            uiStrings['noResults']?[settings.locale] ?? 'No results found',
+            style: TextStyle(
+              fontSize: settings.fontSize,
+              color: Theme.of(context).colorScheme.outline,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ),
+      );
+    }
+    final refs = result.refs;
+    if (refs.isEmpty) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Text(
+            uiStrings['noResults']?[settings.locale] ?? 'No results found',
+            style: TextStyle(
+              fontSize: settings.fontSize,
+              color: Theme.of(context).colorScheme.outline,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ),
+      );
+    }
+    final mainProv = Provider.of<MainProvider>(context, listen: false);
+    return ListView.builder(
+      controller: _scrollController,
+      physics: const BouncingScrollPhysics(),
+      itemCount: refs.length,
+      itemBuilder: (context, index) {
+        final ref = refs[index];
+        final localBook =
+            translateBookName(ref.englishBook, mainProv.currentVersion);
+        return DecoratedBox(
+          decoration: BoxDecoration(
+            border: Border(
+              bottom: BorderSide(color: Theme.of(context).hoverColor),
+            ),
+          ),
+          child: ListTile(
+            onTap: () => _navigateToRef(ref, mainProv),
+            title: Text(
+              '$localBook ${ref.chapter}:${ref.verse}',
+              style: TextStyle(fontSize: settings.fontSize),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void _navigateToRef(ConcordanceRef ref, MainProvider mainProv) {
+    final localBook =
+        translateBookName(ref.englishBook, mainProv.currentVersion);
+    final match = mainProv.verses.where(
+      (v) => v.book == localBook &&
+          v.chapter == ref.chapter &&
+          v.verse == ref.verse,
+    );
+    if (match.isEmpty) return;
+    final verse = match.first;
+    mainProv.setCurrentChapter(book: verse.book, chapter: verse.chapter);
+    mainProv.updateCurrentVerse(verse: verse);
+    Get.back();
+    Future.delayed(const Duration(milliseconds: 300), () {
+      final chapterVerses = mainProv.verses
+          .where((v) => v.book == verse.book && v.chapter == verse.chapter)
+          .toList()
+        ..sort((a, b) => a.verse.compareTo(b.verse));
+      final relIdx =
+          chapterVerses.indexWhere((v) => v.verse == verse.verse);
+      if (relIdx < 0) return;
+      mainProv.jumpToIndex(index: relIdx);
+      mainProv.setHighlightIndex(relIdx);
+      Future.delayed(const Duration(milliseconds: 800), () {
+        mainProv.clearHighlightIndex();
+      });
+    });
   }
 }

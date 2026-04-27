@@ -8,10 +8,17 @@ import 'package:flutter/services.dart';
 /// can show "Used 19,859 times" even when the bundled list itself is
 /// truncated. `refs` are English-name verse strings like "John 3:16",
 /// canonical-order sorted, capped at the pipeline's per-entry limit.
+/// `byBook` is the absolute (uncapped) per-book count map keyed by
+/// canonical English book name — used by the WordDistribution panel.
 class ConcordanceResult {
   final int total;
   final List<ConcordanceRef> refs;
-  const ConcordanceResult({required this.total, required this.refs});
+  final Map<String, int> byBook;
+  const ConcordanceResult({
+    required this.total,
+    required this.refs,
+    this.byBook = const {},
+  });
 }
 
 class ConcordanceRef {
@@ -60,6 +67,7 @@ class ConcordanceService {
     if (entry is! Map) return null;
     final n = entry['n'];
     final r = entry['r'];
+    final b = entry['b'];
     if (r is! List) return null;
     final refs = <ConcordanceRef>[];
     for (final raw in r) {
@@ -68,9 +76,17 @@ class ConcordanceService {
         if (parsed != null) refs.add(parsed);
       }
     }
+    final byBook = <String, int>{};
+    if (b is Map) {
+      for (final entry in b.entries) {
+        final v = entry.value;
+        if (v is int) byBook[entry.key.toString()] = v;
+      }
+    }
     return ConcordanceResult(
       total: n is int ? n : refs.length,
       refs: refs,
+      byBook: byBook,
     );
   }
 }

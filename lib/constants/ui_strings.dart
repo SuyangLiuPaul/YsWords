@@ -518,4 +518,19 @@ const uiStrings = {
     'zh-Hant': '更多',
     'en': 'More',
   },
+  'wordDistribution': {
+    'zh-Hans': '分布',
+    'zh-Hant': '分佈',
+    'en': 'Distribution',
+  },
+  'topBooks': {
+    'zh-Hans': '主要出处',
+    'zh-Hant': '主要出處',
+    'en': 'Top books',
+  },
+  'searchByStrongs': {
+    'zh-Hans': '按 Strong\'s 编号搜索',
+    'zh-Hant': '按 Strong\'s 編號搜尋',
+    'en': 'Strong\'s number',
+  },
 };
