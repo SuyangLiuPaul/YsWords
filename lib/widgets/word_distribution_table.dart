@@ -1,4 +1,6 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import 'package:yswords/constants/book_groups.dart';
 import 'package:yswords/constants/ui_strings.dart';
@@ -162,48 +164,74 @@ class _WordDistributionTableState extends State<WordDistributionTable> {
     // Apply zoom: scale every column width proportionally so the
     // entire table grows / shrinks together. Font sizes also scale
     // (handled inside _cellWidget via the zoom field).
-    final fixedWidth = (64.0 + 96.0 + 140.0 + 52.0) * _zoom;
-    final groupWidth = groups.length * 64.0 * _zoom;
-    final bookWidth = books.length * 38.0 * _zoom;
+    // Book columns widened from 38 → 46 so 4-digit counts (e.g. 7259
+    // for very common words) fit at natural font size; FittedBox
+    // (in _cellWidget) is the safety net for the rare wider case.
+    final fixedWidth = (64.0 + 96.0 + 140.0 + 60.0) * _zoom;
+    final groupWidth = groups.length * 70.0 * _zoom;
+    final bookWidth = books.length * 46.0 * _zoom;
     final totalWidth = fixedWidth + groupWidth + bookWidth;
+
+    // Enable mouse-drag scrolling on web: by default Flutter only
+    // accepts touch + trackpad as scroll-by-drag inputs, so a desktop
+    // user can't grab the table and drag it like a mobile user can.
+    // Adding PointerDeviceKind.mouse lets click-and-drag work on web.
+    final dragScrollBehaviour = ScrollConfiguration.of(context).copyWith(
+      dragDevices: const {
+        PointerDeviceKind.touch,
+        PointerDeviceKind.mouse,
+        PointerDeviceKind.trackpad,
+        PointerDeviceKind.stylus,
+      },
+      // Don't show the platform's overscroll glow; we have our own
+      // visible Scrollbars for both axes.
+      scrollbars: false,
+    );
 
     return Material(
       color: Colors.transparent,
       child: Column(
         children: [
-          // Zoom controls + summary footer share the same axis so they
-          // stay visible while the user scrolls the table.
-          _buildZoomBar(scheme, locale),
+          // Zoom controls + copy button + summary footer share the
+          // same axis so they stay visible while the user scrolls the
+          // table.
+          _buildZoomBar(scheme, locale, rows, books, groups),
           // Two-axis scroll: outer vertical (sheet's controller),
           // inner horizontal (its own controller + visible scrollbar).
           Expanded(
             child: Scrollbar(
               controller: widget.scrollController,
               thumbVisibility: true,
-              child: SingleChildScrollView(
-                controller: widget.scrollController,
-                child: Scrollbar(
-                  controller: _horizontalController,
-                  thumbVisibility: true,
-                  notificationPredicate: (n) => n.depth == 1,
-                  child: SingleChildScrollView(
+              child: ScrollConfiguration(
+                behavior: dragScrollBehaviour,
+                child: SingleChildScrollView(
+                  controller: widget.scrollController,
+                  child: Scrollbar(
                     controller: _horizontalController,
-                    scrollDirection: Axis.horizontal,
-                    child: SizedBox(
-                      width: totalWidth,
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          _row(headerCells, scheme, isHeader: true),
-                          for (int i = 0; i < rows.length; i++)
-                            _row(
-                                _dataCells(rows[i], groups, books, scheme,
-                                    locale),
-                                scheme,
-                                isHeader: false,
-                                zebra: i.isOdd),
-                        ],
+                    thumbVisibility: true,
+                    notificationPredicate: (n) => n.depth == 1,
+                    child: ScrollConfiguration(
+                      behavior: dragScrollBehaviour,
+                      child: SingleChildScrollView(
+                        controller: _horizontalController,
+                        scrollDirection: Axis.horizontal,
+                        child: SizedBox(
+                          width: totalWidth,
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _row(headerCells, scheme, isHeader: true),
+                              for (int i = 0; i < rows.length; i++)
+                                _row(
+                                    _dataCells(rows[i], groups, books, scheme,
+                                        locale),
+                                    scheme,
+                                    isHeader: false,
+                                    zebra: i.isOdd),
+                            ],
+                          ),
+                        ),
                       ),
                     ),
                   ),
@@ -219,7 +247,8 @@ class _WordDistributionTableState extends State<WordDistributionTable> {
 
   // ── Zoom controls ─────────────────────────────────────────────────
 
-  Widget _buildZoomBar(ColorScheme scheme, String locale) {
+  Widget _buildZoomBar(ColorScheme scheme, String locale, List<_Row> rows,
+      List<String> books, List<_Group> groups) {
     return Container(
       padding: const EdgeInsets.fromLTRB(12, 4, 12, 4),
       decoration: BoxDecoration(
@@ -242,6 +271,16 @@ class _WordDistributionTableState extends State<WordDistributionTable> {
             ),
           ),
           const Spacer(),
+          // Copy table → TSV → clipboard. Same flat-table format the
+          // user can paste straight into Sheets/Excel.
+          IconButton(
+            tooltip: uiStrings['copyTable']?[locale] ?? 'Copy table',
+            icon: const Icon(Icons.copy_outlined),
+            iconSize: 18,
+            visualDensity: VisualDensity.compact,
+            onPressed: () => _copyTable(rows, books, groups, locale),
+          ),
+          const SizedBox(width: 4),
           IconButton(
             tooltip: uiStrings['zoomOut']?[locale] ?? 'Zoom out',
             icon: const Icon(Icons.remove_circle_outline),
@@ -277,6 +316,59 @@ class _WordDistributionTableState extends State<WordDistributionTable> {
       ),
     );
   }
+
+  // ── Copy table to clipboard as TSV ────────────────────────────────
+
+  Future<void> _copyTable(List<_Row> rows, List<String> books,
+      List<_Group> groups, String locale) async {
+    final buf = StringBuffer();
+
+    // Header row: Strong's, Lemma, Gloss, Total, sub-corpus totals,
+    // then per-book counts. Book names are localized.
+    final headers = <String>[
+      "Strong's",
+      uiStrings['lemma']?[locale] ?? 'Word',
+      uiStrings['gloss']?[locale] ?? 'Gloss',
+      uiStrings['colTotal']?[locale] ?? 'Total',
+    ];
+    for (final g in groups) {
+      headers.add(g.label);
+    }
+    for (final book in books) {
+      headers.add(localeAwareBookName(book, locale, widget.currentVersion));
+    }
+    buf.writeln(_tsvRow(headers));
+
+    // Data rows.
+    for (final r in rows) {
+      final byBook = r.concordance?.byBook ?? const <String, int>{};
+      final total = r.concordance?.total ?? 0;
+      final cells = <String>[
+        r.entry.number,
+        r.entry.lemma,
+        r.entry.localizedGloss(locale),
+        '$total',
+      ];
+      for (final g in groups) {
+        final sum = g.books.fold<int>(0, (a, b) => a + (byBook[b] ?? 0));
+        cells.add('$sum');
+      }
+      for (final book in books) {
+        cells.add('${byBook[book] ?? 0}');
+      }
+      buf.writeln(_tsvRow(cells));
+    }
+
+    await Clipboard.setData(ClipboardData(text: buf.toString().trimRight()));
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text(uiStrings['copied']?[locale] ?? 'Copied!'),
+      duration: const Duration(seconds: 1),
+    ));
+  }
+
+  String _tsvRow(List<String> cells) =>
+      cells.map((s) => s.replaceAll('\t', ' ').replaceAll('\n', ' ')).join('\t');
 
   // ── Summary footer ────────────────────────────────────────────────
 
@@ -395,16 +487,16 @@ class _WordDistributionTableState extends State<WordDistributionTable> {
           align: TextAlign.left),
       _Cell(
           text: uiStrings['colTotal']?[locale] ?? 'Total',
-          width: 52,
+          width: 60,
           align: TextAlign.center),
     ];
     for (final g in groups) {
-      cells.add(_Cell(text: g.label, width: 64, align: TextAlign.center));
+      cells.add(_Cell(text: g.label, width: 70, align: TextAlign.center));
     }
     for (final book in books) {
       cells.add(_Cell(
         text: _shortBook(book),
-        width: 38,
+        width: 46,
         align: TextAlign.center,
         tooltip: localeAwareBookName(book, locale, widget.currentVersion),
       ));
@@ -427,7 +519,7 @@ class _WordDistributionTableState extends State<WordDistributionTable> {
           maxLines: 2),
       _Cell(
           text: total > 0 ? '$total' : '·',
-          width: 52,
+          width: 60,
           align: TextAlign.center,
           bold: true),
     ];
@@ -435,7 +527,7 @@ class _WordDistributionTableState extends State<WordDistributionTable> {
       final sum = g.books.fold<int>(0, (a, b) => a + (byBook[b] ?? 0));
       cells.add(_Cell(
           text: sum > 0 ? '$sum' : '·',
-          width: 64,
+          width: 70,
           align: TextAlign.center,
           dim: sum == 0));
     }
@@ -443,7 +535,7 @@ class _WordDistributionTableState extends State<WordDistributionTable> {
       final count = byBook[book] ?? 0;
       cells.add(_Cell(
           text: count > 0 ? '$count' : '·',
-          width: 38,
+          width: 46,
           align: TextAlign.center,
           dim: count == 0));
     }
@@ -491,6 +583,20 @@ class _WordDistributionTableState extends State<WordDistributionTable> {
       color: color,
       height: 1.2,
     );
+    // Numeric cells (centered) must NEVER show "..." for digits — that
+    // would corrupt counts like "27" → "..." which is meaningless.
+    // Use FittedBox(scaleDown) so the number scales down to fit its
+    // cell instead of truncating. Identity cells (left-aligned) keep
+    // ellipsis for graceful long-text handling.
+    final isNumeric = c.align == TextAlign.center;
+    final textWidget = Text(
+      c.text,
+      textAlign: c.align,
+      maxLines: c.maxLines,
+      overflow: isNumeric ? TextOverflow.visible : TextOverflow.ellipsis,
+      softWrap: !isNumeric && c.maxLines > 1,
+      style: style,
+    );
     final cell = Container(
       width: c.width * _zoom,
       padding: EdgeInsets.symmetric(horizontal: 6 * _zoom, vertical: 6 * _zoom),
@@ -505,13 +611,13 @@ class _WordDistributionTableState extends State<WordDistributionTable> {
           ),
         ),
       ),
-      child: Text(
-        c.text,
-        textAlign: c.align,
-        maxLines: c.maxLines,
-        overflow: TextOverflow.ellipsis,
-        style: style,
-      ),
+      child: isNumeric
+          ? FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.center,
+              child: textWidget,
+            )
+          : textWidget,
     );
     if (c.tooltip != null) {
       return Tooltip(message: c.tooltip!, child: cell);

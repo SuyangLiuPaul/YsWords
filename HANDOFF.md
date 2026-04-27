@@ -903,6 +903,64 @@ Paragraph mode was shipped but felt loose compared to WeDevote 微读圣经. Ret
 
 ## Recent Work (Round 18 — 2026-04-27, multiple deploys)
 
+### Round 23 (distribution table polish)
+- **Number truncation fix**: numeric (centered) cells now use
+  `FittedBox(scaleDown)` so digits like "27" / "127" / "1234" always
+  render fully — previously a tight column at 70% zoom could show
+  "..." instead of the digits, corrupting the count display. Identity
+  cells (Strong's, Lemma, Gloss) still use ellipsis for graceful
+  long-text handling.
+- **Copy table → TSV**: new copy icon in the zoom bar emits the entire
+  table as a tab-separated table with header row, ready to paste into
+  Sheets / Excel. Header row is localized (uses the user's current
+  Bible version's book names). Each data row is one Strong's entry
+  with its Strong's #, lemma, gloss, total, sub-corpus totals, and
+  per-book counts.
+
+### Round 22 (table + word chip + 3 settings)
+- **Distribution table dual scrollbars**: separate `ScrollController`
+  for horizontal axis with its own visible Scrollbar. Web users can
+  now actually scroll right through all 27 NT or 39 OT book columns.
+- **Distribution table zoom**: top bar with -/reset/+ buttons (range
+  70 %–200 %); cell widths and font sizes scale together.
+- **Distribution table summary footer**: aggregates Words count,
+  Total occurrences, Most frequent book + count, Canon. So the user
+  can answer "how spread is this word?" without manually scanning.
+- **Strong's # badge on word chips**: `originals_sheet.dart`'s
+  `_wordChip` shows a small monospace `G####/H####` badge between
+  transliteration and gloss. Force LTR Directionality so digits read
+  correctly inside Hebrew RTL Wraps.
+- **Three new persistable settings** (`AppSettings`):
+  - `boldVerseText` — semi-bold scripture body text (applies in
+    `VerseWidget` + `ParagraphGroupWidget`).
+  - `showStrongsInOriginals` — hide the Strong's badge from word
+    chips for users who find it cluttering. Default true.
+  - `autoExpandFirstRef` — opt-in to auto-expanding the first book
+    group of concordance refs in each Strong's entry. Default false.
+- **All concordance book groups collapsed by default** — previously
+  the first one auto-expanded, leaving the rest closed (inconsistent
+  UX). The opt-in is preserved via the new
+  `autoExpandFirstRef` setting.
+
+### Round 21 (LXX audit)
+Cross-referenced every entry in `lxx_hebrew_to_greek.json` against
+the actual `hebrew.json` + `greek.json` lexicons by printing lemmas
+and glosses side-by-side. Found and fixed 8 incorrect mappings:
+- H264 אַחֲוָה (fraternity) → was wrongly G266 ἁμαρτία (sin),
+  fixed to G81 ἀδελφότης (brotherhood).
+- H1397 גֶּבֶר → added primary G435 ἀνήρ (was only secondary δυνατός).
+- H982 בָּטַח → added primary G1679 ἐλπίζω (was only πείθω).
+- H1984 הָלַל → added secondary G1867 ἐπαινέω.
+- H6485 פָּקַד → removed wrong G2564 καλέω, added G2641 καταλείπω.
+- H5677 עֵבֶר → fixed conceptual confusion: was G1445 Ἑβραῖος
+  (gentilic), should be G1443 Ἐβέρ (proper noun). H5680 still
+  correctly maps to G1445.
+- H6635 צָבָא → added primary G1411 δύναμις (was only the
+  transliteration σαβαώθ).
+- H7723 שָׁוְא → added primary G3153 ματαιότης (was only adverb
+  G3155 μάτην for a noun entry).
+Final: 214 Hebrew entries → 259 Greek mappings, every entry verified.
+
 ### Round 19 (the three deferred features, landed)
 
 The three features previously deferred for follow-up were all delivered.
