@@ -18,6 +18,7 @@ import 'package:yswords/pages/library_page.dart';
 import 'package:yswords/pages/map_viewer_page.dart';
 import 'package:yswords/pages/search_page.dart';
 import 'package:yswords/pages/settings_page.dart';
+import 'package:yswords/pages/stats_page.dart';
 import 'package:yswords/providers/main_provider.dart';
 import 'package:yswords/services/fetch_books.dart';
 import 'package:yswords/services/concordance_service.dart';
@@ -2099,6 +2100,21 @@ class _FloatingHeader extends StatelessWidget {
                             context,
                             icon: Icons.collections_bookmark_outlined,
                             label: uiStrings['library']?[locale] ?? 'Library',
+                          ),
+                        ));
+                        items.add(PopupMenuItem(
+                          value: 'stats',
+                          onTap: () {
+                            Get.to(
+                              () => const StatsPage(),
+                              transition: Transition.rightToLeft,
+                            );
+                          },
+                          child: _menuRow(
+                            context,
+                            icon: Icons.insights_outlined,
+                            label: uiStrings['statistics']?[locale] ??
+                                'Statistics',
                           ),
                         ));
                         items.add(PopupMenuItem(

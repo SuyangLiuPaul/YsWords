@@ -216,6 +216,78 @@ const uiStrings = {
   'noteDelete': {'zh-Hans': '删除', 'zh-Hant': '刪除', 'en': 'Delete'},
   'bookmark': {'zh-Hans': '书签', 'zh-Hant': '書籤', 'en': 'Bookmark'},
   'library': {'zh-Hans': '我的标记', 'zh-Hant': '我的標記', 'en': 'Library'},
+  'statistics': {'zh-Hans': '统计分析', 'zh-Hant': '統計分析', 'en': 'Statistics'},
+  'statsOverview':
+      {'zh-Hans': '总览', 'zh-Hant': '總覽', 'en': 'Overview'},
+  'statsBooks': {'zh-Hans': '书卷', 'zh-Hant': '書卷', 'en': 'Books'},
+  'statsBook': {'zh-Hans': '书卷', 'zh-Hant': '書卷', 'en': 'Book'},
+  'statsChapters': {'zh-Hans': '章数', 'zh-Hant': '章數', 'en': 'Chapters'},
+  'statsVerses': {'zh-Hans': '节数', 'zh-Hant': '節數', 'en': 'Verses'},
+  'statsWords': {'zh-Hans': '字词数', 'zh-Hant': '字詞數', 'en': 'Words'},
+  'statsChars':
+      {'zh-Hans': '字符数', 'zh-Hant': '字符數', 'en': 'Characters'},
+  'statsAvgWordsVerse': {
+    'zh-Hans': '平均字词/节',
+    'zh-Hant': '平均字詞/節',
+    'en': 'Avg w/v',
+  },
+  'statsTime':
+      {'zh-Hans': '阅读时间(分)', 'zh-Hant': '閱讀時間(分)', 'en': 'Time (m)'},
+  'statsReadingTime': {
+    'zh-Hans': '阅读时间 @ 200 wpm',
+    'zh-Hant': '閱讀時間 @ 200 wpm',
+    'en': 'Reading time @ 200 wpm',
+  },
+  'statsLongestShortest': {
+    'zh-Hans': '最长与最短书卷',
+    'zh-Hant': '最長與最短書卷',
+    'en': 'Longest and shortest books',
+  },
+  'statsLongest': {
+    'zh-Hans': '最长(按字词数)',
+    'zh-Hant': '最長(按字詞數)',
+    'en': 'Longest (by word count)',
+  },
+  'statsShortest': {
+    'zh-Hans': '最短(按字词数)',
+    'zh-Hant': '最短(按字詞數)',
+    'en': 'Shortest (by word count)',
+  },
+  'statsVocabulary':
+      {'zh-Hans': '词汇', 'zh-Hant': '詞彙', 'en': 'Vocabulary'},
+  'statsTopWords': {
+    'zh-Hans': '高频字词',
+    'zh-Hant': '高頻字詞',
+    'en': 'Top words',
+  },
+  'statsTopWordsSub': {
+    'zh-Hans': '出现频次最高的实词(已过滤虚词)。',
+    'zh-Hant': '出現頻次最高的實詞(已過濾虛詞)。',
+    'en': 'Frequency of content words (function words filtered).',
+  },
+  'statsHapax': {
+    'zh-Hans': '独例字词',
+    'zh-Hant': '獨例字詞',
+    'en': 'Hapax legomena',
+  },
+  'statsHapaxSub': {
+    'zh-Hans': '在所选范围内仅出现一次的字词。',
+    'zh-Hant': '在所選範圍內僅出現一次的字詞。',
+    'en': 'Words appearing only once in the selected scope.',
+  },
+  'statsNoHapax':
+      {'zh-Hans': '— 无 —', 'zh-Hant': '— 無 —', 'en': '— none —'},
+  'statsScope': {'zh-Hans': '范围:', 'zh-Hant': '範圍:', 'en': 'Scope:'},
+  'statsAllCanon': {
+    'zh-Hans': '整本圣经',
+    'zh-Hant': '整本聖經',
+    'en': 'Whole Bible',
+  },
+  'statsScopeTotal': {
+    'zh-Hans': '所选范围总字词数:{n}',
+    'zh-Hant': '所選範圍總字詞數:{n}',
+    'en': 'Total words in scope: {n}',
+  },
   'libraryEmptyNotes': {
     'zh-Hans': '尚无笔记。长按经文,点击笔记图标即可添加。',
     'zh-Hant': '尚無筆記。長按經文,點擊筆記圖標即可添加。',
