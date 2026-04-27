@@ -194,7 +194,8 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
     unawaited(_loadRelations(w.strongs));
   }
 
-  Future<void> _loadRootEntry(String strongsNumber) async {
+  Future<void> _loadRootEntry(String strongsNumber,
+      {String? pivotFromNumber}) async {
     _clearTapRecognizers();
     setState(() {
       _loadingEntry = true;
@@ -219,7 +220,11 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
       _expandedConcordanceBook =
           concordance?.refs.isNotEmpty == true ? concordance!.refs.first.englishBook : null;
     });
-    unawaited(_loadRelations(strongsNumber));
+    // pivotFromNumber: when the user reached this entry via a chip in
+    // a cross-language section (LXX or Hebrew Sources), auto-expand the
+    // chip pointing back to where they came from so the OT context is
+    // visible immediately — saves an extra tap.
+    unawaited(_loadRelations(strongsNumber, pivotFromNumber: pivotFromNumber));
   }
 
   void _clearRoot() {
@@ -243,7 +248,7 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
     }
   }
 
-  Future<void> _loadRelations(String number) async {
+  Future<void> _loadRelations(String number, {String? pivotFromNumber}) async {
     final family = await StrongsService.wordFamily(number);
     final compare = await StrongsService.compareWords(number);
     // Hebrew entries get LXX Greek equivalents (forward).
@@ -262,12 +267,26 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
       entries[e.number] = await ConcordanceService.lookup(e.number);
     }));
     if (!mounted) return;
+    // If the user reached this entry by tapping a chip in a related
+    // section (Word Family / Synonyms / LXX / Hebrew Sources) on the
+    // previous entry, find that "previous" Strong's # in the new
+    // entry's related sets and auto-expand it. For an LXX→Greek pivot
+    // this surfaces the OT verses (via Hebrew Sources) immediately;
+    // for a Hebrew Sources→Hebrew pivot it surfaces the LXX equivalent.
+    String? autoExpand;
+    if (pivotFromNumber != null) {
+      final pivots = {
+        for (final e in all) e.number,
+      };
+      if (pivots.contains(pivotFromNumber)) autoExpand = pivotFromNumber;
+    }
     setState(() {
       _wordFamily = family;
       _compareWords = compare;
       _lxxEquivalents = lxx;
       _hebrewSources = hebSrc;
       _relatedConcordances = entries;
+      if (autoExpand != null) _expandedRelatedNumber = autoExpand;
     });
   }
 
@@ -929,9 +948,17 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
-              // Open the full word study for this entry.
+              // Open the full word study for this entry. Pass the
+              // current entry's Strong's # as `pivotFromNumber` so that
+              // when the user lands on the new entry, we auto-expand
+              // the chip pointing back to where they came from. For an
+              // LXX Greek chip this surfaces the OT verses (via Hebrew
+              // Sources) immediately — saving an extra tap.
               InkWell(
-                onTap: () => _loadRootEntry(e.number),
+                onTap: () {
+                  final currentNumber = (_rootEntry ?? _selectedEntry)?.number;
+                  _loadRootEntry(e.number, pivotFromNumber: currentNumber);
+                },
                 borderRadius: BorderRadius.circular(4),
                 child: Padding(
                   padding: const EdgeInsets.symmetric(
