@@ -1277,7 +1277,12 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
   void _showDistributionTable(BuildContext ctx) {
     final isBrowsingRoot = _rootEntry != null;
     final entry = isBrowsingRoot ? _rootEntry : _selectedEntry;
-    if (entry == null) return;
+    // Resolve the Strong's # from any of: root entry → selected entry →
+    // raw selected word. We prefer entry when available (typed lemma)
+    // but fall back to the original-word's strongs so the table still
+    // opens even if the lexicon lookup hasn't completed.
+    final number = entry?.number ?? _selectedWord?.strongs;
+    if (number == null || number.isEmpty) return;
     final locale = widget.locale;
     final scheme = Theme.of(ctx).colorScheme;
     showModalBottomSheet<void>(
@@ -1335,7 +1340,7 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
             const Divider(height: 1),
             Expanded(
               child: WordDistributionTable(
-                strongsNumber: entry.number,
+                strongsNumber: number,
                 locale: locale,
                 currentVersion: widget.currentVersion,
                 scrollController: scrollController,

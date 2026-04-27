@@ -141,21 +141,44 @@ class _WordDistributionTableState extends State<WordDistributionTable> {
     final groups = isGreek ? _ntGroups(locale) : _otGroups(locale);
     final headerCells = _headerCells(groups, books, scheme, locale);
 
-    // Two-axis scrolling: vertical rows, horizontal columns.
-    return SingleChildScrollView(
-      controller: widget.scrollController,
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _row(headerCells, scheme, isHeader: true),
-            for (int i = 0; i < rows.length; i++)
-              _row(_dataCells(rows[i], groups, books, scheme, locale),
-                  scheme,
-                  isHeader: false,
-                  zebra: i.isOdd),
-          ],
+    // Compute the table's total width so we can give the inner Column
+    // an EXPLICIT width via SizedBox. Without this, the nested
+    // SingleChildScrollView pattern was reporting ambiguous constraints
+    // on Flutter web's HTML renderer and the table would render zero-
+    // sized — looking like the modal sheet was broken.
+    final fixedWidth = 64.0 + 96.0 + 140.0 + 52.0; // Strong's + Lemma + Gloss + Total
+    final groupWidth = groups.length * 64.0;
+    final bookWidth = books.length * 38.0;
+    final totalWidth = fixedWidth + groupWidth + bookWidth;
+
+    // Material ancestor + explicit width make the layout deterministic.
+    return Material(
+      color: Colors.transparent,
+      child: Scrollbar(
+        controller: widget.scrollController,
+        thumbVisibility: true,
+        child: SingleChildScrollView(
+          controller: widget.scrollController,
+          // Outer = vertical scroll. Inside, a horizontal-scroll wrapper
+          // around a fixed-width Column containing the rows.
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: SizedBox(
+              width: totalWidth,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _row(headerCells, scheme, isHeader: true),
+                  for (int i = 0; i < rows.length; i++)
+                    _row(_dataCells(rows[i], groups, books, scheme, locale),
+                        scheme,
+                        isHeader: false,
+                        zebra: i.isOdd),
+                ],
+              ),
+            ),
+          ),
         ),
       ),
     );
@@ -252,7 +275,9 @@ class _WordDistributionTableState extends State<WordDistributionTable> {
         ),
       ),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
+        // Default crossAxisAlignment (center) — each cell sizes to its
+        // text content. CrossAxisAlignment.stretch was causing render
+        // issues on web because cells had no intrinsic vertical bound.
         children: [for (final c in cells) _cellWidget(c, scheme, isHeader)],
       ),
     );
