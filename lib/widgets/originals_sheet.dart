@@ -107,6 +107,12 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
   // אֲדֹנָי (H136), etc.
   List<StrongsEntry> _hebrewSources = const [];
 
+  // The Strong's # the user pivoted FROM via Full Study. When that
+  // chip is auto-expanded in the new entry, we hide the redundant
+  // "Full Study →" link inside it (clicking it would just take them
+  // back to where they came from — confusing right after navigation).
+  String? _pivotFromNumber;
+
   @override
   void initState() {
     super.initState();
@@ -158,6 +164,7 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
 
   Future<void> _onWordTap(OriginalWord w) async {
     _clearTapRecognizers();
+    _pivotFromNumber = null;
     setState(() {
       _selectedWord = w;
       _selectedEntry = null;
@@ -196,6 +203,7 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
 
   Future<void> _loadRootEntry(String strongsNumber,
       {String? pivotFromNumber}) async {
+    _pivotFromNumber = pivotFromNumber;
     _clearTapRecognizers();
     setState(() {
       _loadingEntry = true;
@@ -229,6 +237,7 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
 
   void _clearRoot() {
     _clearTapRecognizers();
+    _pivotFromNumber = null;
     setState(() {
       _rootEntry = null;
       _rootConcordance = null;
@@ -948,37 +957,37 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
-              // Open the full word study for this entry. Pass the
-              // current entry's Strong's # as `pivotFromNumber` so that
-              // when the user lands on the new entry, we auto-expand
-              // the chip pointing back to where they came from. For an
-              // LXX Greek chip this surfaces the OT verses (via Hebrew
-              // Sources) immediately — saving an extra tap.
-              InkWell(
-                onTap: () {
-                  final currentNumber = (_rootEntry ?? _selectedEntry)?.number;
-                  _loadRootEntry(e.number, pivotFromNumber: currentNumber);
-                },
-                borderRadius: BorderRadius.circular(4),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 4, vertical: 2),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        uiStrings['fullStudy']?[locale] ?? 'Full study',
-                        style: TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.w600,
-                          color: scheme.primary,
+              // Hide the "Full Study →" link when this chip is the
+              // back-pivot — clicking it would just take the user
+              // where they just came from. Otherwise, tapping it
+              // navigates into this entry's full word study, with the
+              // current entry recorded as the next back-pivot.
+              if (e.number != _pivotFromNumber)
+                InkWell(
+                  onTap: () {
+                    final currentNumber = (_rootEntry ?? _selectedEntry)?.number;
+                    _loadRootEntry(e.number, pivotFromNumber: currentNumber);
+                  },
+                  borderRadius: BorderRadius.circular(4),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 4, vertical: 2),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          uiStrings['fullStudy']?[locale] ?? 'Full study',
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w600,
+                            color: scheme.primary,
+                          ),
                         ),
-                      ),
-                      Icon(Icons.arrow_forward_rounded,
-                          size: 12, color: scheme.primary),
-                    ],
+                        Icon(Icons.arrow_forward_rounded,
+                            size: 12, color: scheme.primary),
+                      ],
+                    ),
                   ),
-                ),
               ),
             ],
           ),
