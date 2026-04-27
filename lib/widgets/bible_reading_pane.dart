@@ -32,7 +32,6 @@ import 'package:yswords/services/tts_service.dart';
 import 'package:yswords/utils/clipboard_helper.dart';
 import 'package:yswords/utils/reference_parser.dart';
 import 'package:yswords/utils/responsive.dart';
-import 'package:yswords/services/profile_service.dart';
 import 'package:yswords/widgets/google_g_logo.dart';
 import 'package:yswords/widgets/today_reading_card.dart';
 import 'package:yswords/utils/version_mapper.dart'
@@ -2317,13 +2316,14 @@ class _FloatingHeader extends StatelessWidget {
                           items.add(PopupMenuItem(
                             value: 'cloudSignIn',
                             onTap: () async {
+                              final messenger =
+                                  ScaffoldMessenger.of(context);
                               final result = await CloudAuthService
                                   .instance
-                                  .signInWithGoogle();
+                                  .signInWithGoogleAndAdoptProfile();
                               if (!context.mounted) return;
                               if (!result.isOk) {
-                                ScaffoldMessenger.of(context)
-                                    .showSnackBar(SnackBar(
+                                messenger.showSnackBar(SnackBar(
                                   content: Text(
                                     result.errorMessage ??
                                         'Sign-in failed.',
@@ -2331,28 +2331,6 @@ class _FloatingHeader extends StatelessWidget {
                                   duration:
                                       const Duration(seconds: 3),
                                 ));
-                                return;
-                              }
-                              final user = result.user!;
-                              final svc = ProfileService.instance;
-                              final namePart = user.displayName
-                                          ?.trim()
-                                          .isNotEmpty ==
-                                      true
-                                  ? user.displayName!.trim()
-                                  : (user.email ?? 'user')
-                                      .split('@')
-                                      .first;
-                              final existing = svc.profiles.where(
-                                  (p) =>
-                                      p.name.toLowerCase() ==
-                                      namePart.toLowerCase());
-                              if (existing.isNotEmpty) {
-                                await svc
-                                    .setCurrent(existing.first.id);
-                              } else {
-                                final p = await svc.create(namePart);
-                                await svc.setCurrent(p.id);
                               }
                             },
                             child: Row(

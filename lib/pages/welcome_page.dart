@@ -43,36 +43,29 @@ class _WelcomePageState extends State<WelcomePage> {
     widget.onDone();
   }
 
-  /// Trigger Firebase's Google popup. On success, derive a local
-  /// profile name from the Google display name (or email prefix as
-  /// a fallback) so cloud-synced data has a local landing spot.
+  /// Trigger Firebase's Google popup. Profile reconciliation
+  /// (find-by-display-name or create) lives in
+  /// `signInWithGoogleAndAdoptProfile` so welcome / dashboard /
+  /// floating-header menu all share the same flow.
   Future<void> _signInWithGoogle() async {
     if (_busy) return;
     setState(() => _busy = true);
-    final result = await CloudAuthService.instance.signInWithGoogle();
+    final messenger = ScaffoldMessenger.of(context);
+    final result = await CloudAuthService.instance
+        .signInWithGoogleAndAdoptProfile();
     if (!mounted) return;
     if (!result.isOk) {
       setState(() => _busy = false);
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      messenger.showSnackBar(SnackBar(
         content: Text(result.errorMessage ?? 'Sign-in failed.'),
         duration: const Duration(seconds: 3),
       ));
       return;
     }
-    final user = result.user!;
-    final svc = ProfileService.instance;
-    final namePart = user.displayName?.trim().isNotEmpty == true
-        ? user.displayName!.trim()
-        : (user.email ?? 'user').split('@').first;
-    final existing = svc.profiles
-        .where((p) => p.name.toLowerCase() == namePart.toLowerCase());
-    if (existing.isNotEmpty) {
-      await svc.setCurrent(existing.first.id);
-    } else {
-      final p = await svc.create(namePart);
-      await svc.setCurrent(p.id);
-    }
-    await svc.markWelcomeSeen();
+    // Mark welcome seen even if the user later signs out — they've
+    // explicitly answered the gate's question and shouldn't see it
+    // again on the next launch.
+    await ProfileService.instance.markWelcomeSeen();
     if (!mounted) return;
     widget.onDone();
   }

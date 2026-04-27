@@ -307,7 +307,12 @@ Final app checks:
 
 ```bash
 /Users/pliu0036/flutter/bin/flutter analyze
-/Users/pliu0036/flutter/bin/flutter build web
+# IMPORTANT: --pwa-strategy=none stops Flutter from generating a
+# service worker that aggressively caches the build. After build,
+# our kill-switch SW must be restored (Flutter overwrites it with
+# an empty file). See Round 31.5 in Recent Work for context.
+/Users/pliu0036/flutter/bin/flutter build web --release --pwa-strategy=none
+cp web/flutter_service_worker.js build/web/flutter_service_worker.js
 ```
 
 ### GitHub And Netlify Deploy
@@ -349,8 +354,9 @@ After deploy, record the production URL, unique deploy URL, and commit hash in t
 
 The workflow is entirely manual:
 ```bash
-# 1. Build locally
-/Users/pliu0036/flutter/bin/flutter build web
+# 1. Build locally (no SW, then restore kill-switch)
+/Users/pliu0036/flutter/bin/flutter build web --release --pwa-strategy=none
+cp web/flutter_service_worker.js build/web/flutter_service_worker.js
 
 # 2. Deploy to Netlify (pre-built files)
 source .env
@@ -903,6 +909,54 @@ Paragraph mode was shipped but felt loose compared to WeDevote 微读圣经. Ret
 
 ## Recent Work (Round 18 — 2026-04-27, multiple deploys)
 
+### Round 32 (full app audit + polish — 2026-04-28)
+
+End-of-night sweep over rounds 26-31 to clean up regressions and
+maintenance debt. No new features; existing surfaces tightened.
+
+Findings + fixes:
+- **Dead email/password code**: Round 30 swapped to Google Sign-In
+  popup but left `lib/pages/sign_in_page.dart` and three
+  `CloudAuthService` methods (`signIn`, `signUp`,
+  `sendPasswordReset`) wired but unreachable. Plus 14 ui_strings
+  for the email form were never removed. **Deleted** the page,
+  the methods, and the strings; trimmed CloudAuthService's
+  `_friendlyError` switch to only the codes Google sign-in
+  actually emits.
+- **Sign-in flow duplication (4× copies)**: the same 30-line
+  "sign in with Google → adopt local profile by display name"
+  was inlined in WelcomePage `_signInWithGoogle`, DashboardPage
+  `_GreetingCard.onSignIn`, the floating-header overflow menu's
+  "Sign in with Google" entry, and the Settings → Account
+  section. **Extracted**
+  `CloudAuthService.signInWithGoogleAndAdoptProfile()` so all
+  four surfaces share one path. Future tweaks (account-picker,
+  conflict handling) only have to be made once.
+- **Dashboard async-gap bugs**: tapping a recent bookmark or
+  reading-plan chip used `Get.back(); mainProvider.setX();` —
+  once popped, the dashboard's context is gone and any state
+  mutation chained after would warn. **Reordered** to mutate
+  first, then pop.
+- **Dashboard "Highlights" tile no-op**: had `onTap: () {}` so
+  the tile looked clickable but did nothing. **Made** it
+  `Get.back()` so the user returns to the reader where they can
+  open highlights via the existing menu entry.
+- **Recent-bookmarks ordering**: comment claimed Set ordering was
+  "approximate canon-last-first". Actually `_bookmarks` is a
+  `LinkedHashSet` (constructed via `List.toSet()` in
+  `MainProvider._loadBookmarks`), so iteration preserves
+  insertion order across sessions; reversed gives newest-first.
+  **Fixed comment** to state actual semantics.
+- **Missing `cancel` ui_string**: referenced from settings_page
+  + profiles_page but never defined; the `?? 'Cancel'` fallback
+  was hiding the gap. **Added** the key with zh-Hans/zh-Hant
+  translations.
+- **Unused import**: `bible_reading_pane.dart` no longer needed
+  ProfileService directly after the inline sign-in callback was
+  refactored. **Removed**.
+
+Deploy: `69ef6c1af50e163701857dec`.
+
 ### Round 29 (Firebase cloud auth + sync)
 
 Adds optional cloud sync on top of the local profile system from
@@ -1015,6 +1069,111 @@ Free-tier quotas (Firebase Spark plan) are well above YsWords' use:
 50K reads/day, 20K writes/day, 1 GB storage. A typical user makes
 ~50 writes/day; you'd need a few hundred users before hitting any
 limit. Going over costs cents per million ops, not dollars.
+
+### Round 31.5 (service worker kill-switch — same day)
+
+Users reported new deploys weren't reaching them. Root cause was
+Flutter's default service worker aggressively caching main.dart.js
+and intercepting page loads. The first attempted fix
+(`--pwa-strategy=none`) actually made it worse: removing
+`/flutter_service_worker.js` entirely meant browsers got 404 on
+their update check, interpreted that as "no update", and kept the
+old SW alive forever.
+
+Real fix is two-part:
+- Build with `--pwa-strategy=none` so new builds carry no SW.
+- Put a tiny **kill-switch SW** at the same URL
+  (`web/flutter_service_worker.js`). When stale browsers fetch it
+  for an update check, the new bytes trigger SW replacement.
+  Lifecycle:
+  - `install`: `skipWaiting()` — activate without waiting for
+    every tab to close.
+  - `activate`: `clients.claim()` to take control of every open
+    tab, wipe all cache buckets the old SW built up, unregister
+    this SW, then `client.navigate(client.url)` to reload each
+    controlled tab. Result: the user sees the new build the next
+    paint frame after install completes, with no SW in the way.
+  - `fetch`: pass-through (no `event.respondWith`).
+
+Build subtlety: `flutter build web --pwa-strategy=none` overwrites
+`web/flutter_service_worker.js` with an empty file in `build/web/`.
+Must `cp web/flutter_service_worker.js build/web/` after every
+build before deploy. Bake into the deploy script if you forget.
+
+After one activation, the user has no SW and no app caches. Every
+future visit is a clean HTTP fetch from Netlify, governed only by
+the no-cache headers in `netlify.toml`. The kill-switch file can
+stay deployed forever as a tombstone — once a client has been
+through the activate handler once, future visits never ask for it.
+
+### Round 31 (Google G logo, dashboard, PWA polish, plan empty state)
+
+Five UX issues fixed:
+
+1. **Google G logo** on sign-in buttons.
+   `lib/widgets/google_g_logo.dart`: CustomPainter draws the
+   multi-color G with 4 colored arcs + the horizontal "G" arm.
+   No PNG / SVG asset, no `google_sign_in_web` package — pure
+   Flutter primitives. Welcome page, Settings Account section,
+   floating-header menu entry all use it inside Google-spec white
+   buttons (#FFF bg, #DADCE0 border, #1F1F1F text).
+2. **Sign-in discoverability**: top-level "Sign in with Google"
+   added to the floating-header overflow menu (only when Firebase
+   is configured AND user isn't signed in). 1-tap accessible from
+   anywhere in the app — no detour through Settings.
+3. **Reading-plan empty state** *(later reverted on user
+   request)*: when no plan was selected the today card was
+   invisible — feature was undiscoverable. Briefly added a
+   "Choose a reading plan" hint card under the floating header,
+   then reverted because the user found it intrusive. The plan
+   picker is reachable via Settings → Reading Plans, the Library
+   Plan tab, or the Dashboard `_PickPlanCard`.
+4. **Home / Dashboard page**: `lib/pages/dashboard_page.dart` —
+   opt-in personal landing page. Greeting (Good morning/afternoon/
+   evening per locale + time of day), profile name + cloud-sync
+   status, today's reading from active plan or pick-plan card,
+   counts for bookmarks / notes / highlights, recent bookmarks
+   (newest-first, last 5), quick-link tiles to Library /
+   Statistics / Continue reading / Settings. Reachable from the
+   floating-header menu's "Home" entry.
+5. **PWA polish for iOS / Android Add-to-Home-Screen**:
+   `web/index.html` got `apple-mobile-web-app-capable=yes` (iOS
+   opens YsWords full-screen instead of in Safari),
+   `apple-touch-icon` at 180/167/152 sizes,
+   `mobile-web-app-capable`, `theme-color`, multi-size favicon
+   links. `web/favicon.png` was 479 bytes (broken); replaced
+   with the 192px icon.
+
+### Round 30 (Google Sign-In via Firebase popup)
+
+Replaced email/password welcome+settings buttons with a single
+"Sign in with Google" path using
+`FirebaseAuth.instance.signInWithPopup(GoogleAuthProvider())`. No
+`google_sign_in` package needed — Firebase handles the OAuth flow
+through the project's authDomain (`ysword.firebaseapp.com`), no
+script tags in `web/index.html`.
+
+- `lib/services/cloud_auth_service.dart`: `signInWithGoogle()`
+  method calling `signInWithPopup`. Sets
+  `prompt=select_account` so users on shared browsers always pick
+  the right Google account. Friendly errors expanded:
+  `popup-closed-by-user`, `popup-blocked`, `unauthorized-domain`,
+  `operation-not-allowed`.
+- Welcome page cloud sign-in button now triggers the Google popup
+  directly. Local profile name derives from Google `displayName`
+  (or email prefix as fallback) so synced data has a local
+  landing spot.
+- Settings → Account "Sign in to sync" button calls
+  `signInWithGoogle` inline. Snackbar on failure.
+
+(Round 32 later extracted the duplicated welcome/dashboard/menu/
+settings sign-in callbacks into
+`CloudAuthService.signInWithGoogleAndAdoptProfile`.)
+
+Setup requirement: Firebase Console → Authentication → Sign-in
+method → Google → Enable + set support email. Authorized domains
+must include `yswords.netlify.app` (only the production host;
+Netlify branch-deploy URLs won't be authorized).
 
 ### Round 28 (local profiles + welcome gate)
 

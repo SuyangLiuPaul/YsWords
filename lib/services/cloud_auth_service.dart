@@ -3,6 +3,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 
 import 'package:yswords/firebase_options.dart';
+import 'package:yswords/services/profile_service.dart';
 
 /// Result of a sign-in / sign-up attempt. Carries either the
 /// authenticated [User] or a friendly [errorMessage] suitable for
@@ -73,52 +74,6 @@ class CloudAuthService extends ChangeNotifier {
     }
   }
 
-  /// Sign in an existing account. Returns a result with the user on
-  /// success or a friendly localized-ish error string on failure.
-  /// (We keep error messages in English here — UI layer can map
-  /// them via uiStrings if needed.)
-  Future<CloudAuthResult> signIn({
-    required String email,
-    required String password,
-  }) async {
-    if (!_configured) {
-      return const CloudAuthResult.error('Cloud sync not configured.');
-    }
-    try {
-      final cred = await FirebaseAuth.instance.signInWithEmailAndPassword(
-        email: email.trim(),
-        password: password,
-      );
-      return CloudAuthResult.ok(cred.user);
-    } on FirebaseAuthException catch (e) {
-      return CloudAuthResult.error(_friendlyError(e));
-    } catch (e) {
-      return CloudAuthResult.error(e.toString());
-    }
-  }
-
-  /// Create a new account. Same return shape as [signIn].
-  Future<CloudAuthResult> signUp({
-    required String email,
-    required String password,
-  }) async {
-    if (!_configured) {
-      return const CloudAuthResult.error('Cloud sync not configured.');
-    }
-    try {
-      final cred =
-          await FirebaseAuth.instance.createUserWithEmailAndPassword(
-        email: email.trim(),
-        password: password,
-      );
-      return CloudAuthResult.ok(cred.user);
-    } on FirebaseAuthException catch (e) {
-      return CloudAuthResult.error(_friendlyError(e));
-    } catch (e) {
-      return CloudAuthResult.error(e.toString());
-    }
-  }
-
   /// Sign out from Firebase Auth. Doesn't touch local profiles —
   /// the user stays on the same local profile, just without cloud
   /// sync until they sign back in.
@@ -164,18 +119,34 @@ class CloudAuthService extends ChangeNotifier {
     }
   }
 
-  /// Send a password-reset email. Same friendly-error treatment.
-  Future<String?> sendPasswordReset(String email) async {
-    if (!_configured) return 'Cloud sync not configured.';
-    try {
-      await FirebaseAuth.instance
-          .sendPasswordResetEmail(email: email.trim());
-      return null;
-    } on FirebaseAuthException catch (e) {
-      return _friendlyError(e);
-    } catch (e) {
-      return e.toString();
+  /// One-shot Google sign-in + local-profile reconciliation. Used by
+  /// every UI surface that exposes the sign-in button (welcome page,
+  /// dashboard greeting card, floating-header menu, settings →
+  /// account section). Centralised so future tweaks (e.g. account-
+  /// picker UX, profile-name conflict handling) only have to be
+  /// made once.
+  ///
+  /// Returns [CloudAuthResult.ok] with the authenticated user on
+  /// success — local profile is automatically created or switched
+  /// to one matching the Google display name (or email prefix as
+  /// fallback). On failure returns the friendly error string.
+  Future<CloudAuthResult> signInWithGoogleAndAdoptProfile() async {
+    final result = await signInWithGoogle();
+    if (!result.isOk) return result;
+    final user = result.user!;
+    final svc = ProfileService.instance;
+    final namePart = user.displayName?.trim().isNotEmpty == true
+        ? user.displayName!.trim()
+        : (user.email ?? 'user').split('@').first;
+    final existing = svc.profiles
+        .where((p) => p.name.toLowerCase() == namePart.toLowerCase());
+    if (existing.isNotEmpty) {
+      await svc.setCurrent(existing.first.id);
+    } else {
+      final p = await svc.create(namePart);
+      await svc.setCurrent(p.id);
     }
+    return result;
   }
 
   /// Map FirebaseAuth's machine codes to short, plain-English
@@ -183,18 +154,8 @@ class CloudAuthService extends ChangeNotifier {
   /// `e.message ?? code`.
   static String _friendlyError(FirebaseAuthException e) {
     switch (e.code) {
-      case 'invalid-email':
-        return 'Invalid email address.';
       case 'user-disabled':
         return 'This account has been disabled.';
-      case 'user-not-found':
-      case 'wrong-password':
-      case 'invalid-credential':
-        return 'Wrong email or password.';
-      case 'email-already-in-use':
-        return 'An account already exists for that email.';
-      case 'weak-password':
-        return 'Password is too weak (use 6+ characters).';
       case 'too-many-requests':
         return 'Too many attempts — please wait a moment and try again.';
       case 'network-request-failed':

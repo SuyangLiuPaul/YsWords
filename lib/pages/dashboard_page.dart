@@ -125,28 +125,13 @@ class _DashboardPageState extends State<DashboardPage> {
             onSignIn: () async {
               final messenger = ScaffoldMessenger.of(context);
               final result = await CloudAuthService.instance
-                  .signInWithGoogle();
+                  .signInWithGoogleAndAdoptProfile();
               if (!mounted) return;
               if (!result.isOk) {
                 messenger.showSnackBar(SnackBar(
                   content: Text(result.errorMessage ?? 'Sign-in failed.'),
                   duration: const Duration(seconds: 3),
                 ));
-                return;
-              }
-              final user = result.user!;
-              final svc = ProfileService.instance;
-              final namePart =
-                  user.displayName?.trim().isNotEmpty == true
-                      ? user.displayName!.trim()
-                      : (user.email ?? 'user').split('@').first;
-              final existing = svc.profiles.where(
-                  (p) => p.name.toLowerCase() == namePart.toLowerCase());
-              if (existing.isNotEmpty) {
-                await svc.setCurrent(existing.first.id);
-              } else {
-                final p = await svc.create(namePart);
-                await svc.setCurrent(p.id);
               }
             },
           ),
@@ -172,8 +157,10 @@ class _DashboardPageState extends State<DashboardPage> {
               onJump: (canonical) {
                 final ref = parseReference(canonical);
                 if (ref == null) return;
-                Get.back();
+                // Navigate first (mutates provider), then pop the
+                // dashboard so the reader rebuilds at the target.
                 _navigateToReference(mainProvider, ref);
+                Get.back();
               },
               onToggleDone: () async {
                 if (_plan == null) return;
@@ -228,7 +215,11 @@ class _DashboardPageState extends State<DashboardPage> {
                   icon: Icons.format_color_fill,
                   count: mainProvider.highlights.length,
                   label: uiStrings['highlight']?[locale] ?? 'Highlights',
-                  onTap: () {},
+                  // Highlights live in a modal sheet inside the
+                  // reading pane (no dedicated page yet). Tap goes
+                  // back to the reader where the user can open
+                  // them via the overflow menu.
+                  onTap: () => Get.back(),
                 ),
               ),
             ],
@@ -264,10 +255,14 @@ class _DashboardPageState extends State<DashboardPage> {
                   overflow: TextOverflow.ellipsis,
                 ),
                 onTap: () {
-                  Get.back();
+                  // setCurrentChapter mutates state, so do it BEFORE
+                  // popping — once popped, the dashboard's context
+                  // is dead and any setState chained after Get.back
+                  // would warn.
                   mainProvider.setCurrentChapter(
                       book: v.book, chapter: v.chapter);
                   mainProvider.updateCurrentVerse(verse: v);
+                  Get.back();
                 },
               ),
             const SizedBox(height: 16),
@@ -319,10 +314,12 @@ class _DashboardPageState extends State<DashboardPage> {
     );
   }
 
-  /// Most-recently-bookmarked verses in canonical reverse order.
-  /// Bookmarks are stored as a Set so we can't actually order by
-  /// "added time" — fall back to canonical-last-first which at
-  /// least gives a stable, useful ordering for the tile.
+  /// Most-recently-bookmarked verses, newest first.
+  /// `_bookmarks` is a `LinkedHashSet` (constructed by `List.toSet()`
+  /// in MainProvider._loadBookmarks), so iteration preserves
+  /// insertion order — i.e. the order they were added across
+  /// sessions. Reversed gives newest-first, which is the natural
+  /// "Recent bookmarks" sort.
   List<Verse> _recentBookmarks(MainProvider mp) {
     final byId = {for (final v in mp.verses) v.id: v};
     return mp.bookmarks

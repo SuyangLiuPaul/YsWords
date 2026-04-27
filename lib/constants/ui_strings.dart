@@ -559,12 +559,12 @@ const uiStrings = {
     'zh-Hant': '本地帳號',
     'en': 'Local profile',
   },
-  // ── Cloud auth (Round 29) ───────────────────────────────────────
-  'welcomeSignInCloud': {
-    'zh-Hans': '使用电子邮箱登录（多设备同步）',
-    'zh-Hant': '使用電子郵箱登入（多裝置同步）',
-    'en': 'Sign in with email (sync across devices)',
+  'cancel': {
+    'zh-Hans': '取消',
+    'zh-Hant': '取消',
+    'en': 'Cancel',
   },
+  // ── Cloud auth (rounds 29-30) ───────────────────────────────────
   'welcomeSignInGoogle': {
     'zh-Hans': '使用 Google 登录',
     'zh-Hant': '使用 Google 登入',
@@ -585,73 +585,6 @@ const uiStrings = {
     'zh-Hant': '登入後筆記、書籤、讀經進度可在所有裝置同步；也可繼續使用本地帳號或訪客模式。',
     'en':
         'Sign in to sync across devices, or use a local profile / guest if you prefer to keep everything on this device.',
-  },
-  'signInTitle': {
-    'zh-Hans': '登录',
-    'zh-Hant': '登入',
-    'en': 'Sign in',
-  },
-  'signInSubtitle': {
-    'zh-Hans': '登录以在所有设备同步笔记、书签和读经进度。',
-    'zh-Hant': '登入以在所有裝置同步筆記、書籤和讀經進度。',
-    'en':
-        'Sign in to sync your notes, bookmarks and reading-plan progress across devices.',
-  },
-  'signUpTitle': {
-    'zh-Hans': '创建账号',
-    'zh-Hant': '建立帳號',
-    'en': 'Create account',
-  },
-  'signUpSubtitle': {
-    'zh-Hans': '免费创建账号，可在多设备同步笔记、书签和读经进度。',
-    'zh-Hant': '免費建立帳號，可在多裝置同步筆記、書籤和讀經進度。',
-    'en':
-        'Create a free account to sync notes, bookmarks and progress across devices.',
-  },
-  'emailLabel': {
-    'zh-Hans': '电子邮箱',
-    'zh-Hant': '電子郵箱',
-    'en': 'Email',
-  },
-  'passwordLabel': {
-    'zh-Hans': '密码',
-    'zh-Hant': '密碼',
-    'en': 'Password',
-  },
-  'emailRequired': {
-    'zh-Hans': '请输入电子邮箱。',
-    'zh-Hant': '請輸入電子郵箱。',
-    'en': 'Enter your email.',
-  },
-  'emailInvalid': {
-    'zh-Hans': '邮箱格式不正确。',
-    'zh-Hant': '郵箱格式不正確。',
-    'en': 'Invalid email.',
-  },
-  'passwordRequired': {
-    'zh-Hans': '请输入密码。',
-    'zh-Hant': '請輸入密碼。',
-    'en': 'Enter your password.',
-  },
-  'passwordTooShort': {
-    'zh-Hans': '密码至少 6 位。',
-    'zh-Hant': '密碼至少 6 位。',
-    'en': '6+ characters please.',
-  },
-  'forgotPassword': {
-    'zh-Hans': '忘记密码？',
-    'zh-Hant': '忘記密碼？',
-    'en': 'Forgot password?',
-  },
-  'signInToggleNew': {
-    'zh-Hans': '创建新账号',
-    'zh-Hant': '建立新帳號',
-    'en': 'Create new account',
-  },
-  'signInToggleExisting': {
-    'zh-Hans': '已有账号？立即登录',
-    'zh-Hant': '已有帳號？立即登入',
-    'en': 'Already have an account? Sign in',
   },
   'cloudSignIn': {
     'zh-Hans': '登录以在多设备同步',

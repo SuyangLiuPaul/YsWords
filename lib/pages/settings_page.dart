@@ -1359,11 +1359,12 @@ class _AccountSectionState extends State<_AccountSection> {
               if (!auth.isSignedIn)
                 OutlinedButton(
                   onPressed: () async {
+                    final messenger = ScaffoldMessenger.of(context);
                     final result = await CloudAuthService.instance
-                        .signInWithGoogle();
+                        .signInWithGoogleAndAdoptProfile();
                     if (!context.mounted) return;
                     if (!result.isOk) {
-                      ScaffoldMessenger.of(context).showSnackBar(
+                      messenger.showSnackBar(
                         SnackBar(
                           content: Text(
                             result.errorMessage ?? 'Sign-in failed.',
@@ -1371,22 +1372,6 @@ class _AccountSectionState extends State<_AccountSection> {
                           duration: const Duration(seconds: 3),
                         ),
                       );
-                      return;
-                    }
-                    final user = result.user!;
-                    final svc = ProfileService.instance;
-                    final namePart =
-                        user.displayName?.trim().isNotEmpty == true
-                            ? user.displayName!.trim()
-                            : (user.email ?? 'user').split('@').first;
-                    final existing = svc.profiles.where((p) =>
-                        p.name.toLowerCase() ==
-                        namePart.toLowerCase());
-                    if (existing.isNotEmpty) {
-                      await svc.setCurrent(existing.first.id);
-                    } else {
-                      final p = await svc.create(namePart);
-                      await svc.setCurrent(p.id);
                     }
                   },
                   style: OutlinedButton.styleFrom(
