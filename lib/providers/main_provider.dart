@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:yswords/models/verse.dart';
 import 'package:yswords/models/book.dart';
+import 'package:yswords/services/fetch_books.dart' show bookNameToEnglish;
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -134,10 +135,41 @@ class MainProvider extends ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
     // No prefix — both panes load the same store so split view stays in sync.
     final json = prefs.getString('highlights');
-    if (json != null) {
-      final decoded = jsonDecode(json) as Map<String, dynamic>;
-      _highlights = decoded.map((k, v) => MapEntry(k, v as int));
+    if (json == null) return;
+    final decoded = jsonDecode(json) as Map<String, dynamic>;
+
+    // Migrate legacy keys: highlights saved before the cross-version fix
+    // used the localized book name in the ID (e.g. "历代志上-3-19" or
+    // "創世記-1-1"). Re-key those to the canonical English form so the
+    // sheet shows a single deduplicated list. If multiple legacy keys
+    // collide with the same English key, the last one wins — fine for a
+    // user-color choice (and any survivor is still correct).
+    final out = <String, int>{};
+    var migrated = false;
+    for (final entry in decoded.entries) {
+      final normalized = _normalizeHighlightKey(entry.key);
+      if (normalized != entry.key) migrated = true;
+      out[normalized] = entry.value as int;
     }
+    _highlights = out;
+    if (migrated && isPrimary) {
+      _saveHighlights();
+    }
+  }
+
+  /// Maps a highlight ID like "历代志上-3-19" → "1 Chronicles-3-19".
+  /// Splits from the right so books with hyphens-or-spaces still parse.
+  static String _normalizeHighlightKey(String key) {
+    final lastDash = key.lastIndexOf('-');
+    if (lastDash < 0) return key;
+    final verseLabel = key.substring(lastDash + 1);
+    final rest = key.substring(0, lastDash);
+    final prevDash = rest.lastIndexOf('-');
+    if (prevDash < 0) return key;
+    final chapter = rest.substring(prevDash + 1);
+    final book = rest.substring(0, prevDash);
+    final en = bookNameToEnglish[book] ?? book;
+    return '$en-$chapter-$verseLabel';
   }
 
   // Method to set the current book and chapter, persist state, and notify listeners
