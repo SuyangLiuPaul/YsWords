@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 
 import 'package:yswords/constants/ui_strings.dart';
-import 'package:yswords/utils/version_mapper.dart' show translateBookName;
+import 'package:yswords/utils/version_mapper.dart'
+    show localeAwareBookName;
 
 /// EaglesView-style "Word Study" distribution panel. Given a per-book
 /// count map for a single Strong's number, renders horizontal bar groups
@@ -281,11 +282,7 @@ class WordDistribution extends StatelessWidget {
   }
 
   Widget _bookChip(String englishBook, int count, ColorScheme scheme) {
-    // Translate to the user's current version's book naming so a CUVS
-    // reader sees "约翰福音 14" rather than "John 14".
-    final v = currentVersion;
-    final localBook =
-        v == null ? englishBook : translateBookName(englishBook, v);
+    final localBook = localeAwareBookName(englishBook, locale, currentVersion);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(

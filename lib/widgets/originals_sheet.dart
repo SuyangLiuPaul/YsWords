@@ -10,7 +10,7 @@ import 'package:yswords/services/concordance_service.dart';
 import 'package:yswords/services/originals_service.dart';
 import 'package:yswords/services/strongs_service.dart';
 import 'package:yswords/utils/version_mapper.dart'
-    show toEnglish, translateBookName;
+    show localeAwareBookName, toEnglish;
 import 'package:yswords/widgets/word_distribution.dart';
 
 /// Bottom sheet that shows the original Hebrew/Greek text for one or
@@ -675,13 +675,8 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
   }
 
   String _localizedRefLabel(ConcordanceRef r) {
-    // Translate the English book name to the current version's
-    // book naming so a reader of CUVS sees "约翰福音 3:16" rather
-    // than "John 3:16". `translateBookName` falls back to the
-    // English name when no mapping exists.
-    final v = widget.currentVersion;
-    if (v == null) return r.label;
-    final localBook = translateBookName(r.englishBook, v);
+    final localBook = localeAwareBookName(
+        r.englishBook, widget.locale, widget.currentVersion);
     return '$localBook ${r.chapter}:${r.verse}';
   }
 
