@@ -200,6 +200,16 @@ const uiStrings = {
     'zh-Hant': '分佈表',
     'en': 'Distribution Table',
   },
+  'crossRefs': {
+    'zh-Hans': '相互参照',
+    'zh-Hant': '相互參照',
+    'en': 'Cross-references',
+  },
+  'crossRefsNone': {
+    'zh-Hans': '此节经文暂无人工整理的相互参照。',
+    'zh-Hant': '此節經文暫無人工整理的相互參照。',
+    'en': 'No curated cross-references for this verse yet.',
+  },
   'boldVerseText': {
     'zh-Hans': '加粗经文',
     'zh-Hant': '加粗經文',

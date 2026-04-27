@@ -1,0 +1,433 @@
+{
+  "_meta": {
+    "description": "Bible cross-references — for any verse, related verses that explain, parallel, fulfil, or contrast its theme. Initial dataset is hand-curated from the Treasury of Scripture Knowledge (R.A. Torrey, 1834, public domain) and openbible.com's CC-BY cross-reference data, focused on the most frequently studied verses across the canon. Format: 'EnglishBook chapter:verse' → ordered list of related references in the same string format. Append more entries to expand coverage.",
+    "license": "Public domain (TSK 1834) + CC-BY (openbible.com)",
+    "schema_version": 1
+  },
+
+  "Genesis 1:1": [
+    "John 1:1-3", "Hebrews 11:3", "Colossians 1:16-17", "Psalms 33:6", "Psalms 90:2", "Isaiah 40:28", "Acts 17:24", "Revelation 4:11", "Romans 1:20", "Genesis 2:4"
+  ],
+  "Genesis 1:26": [
+    "Genesis 5:1", "Genesis 9:6", "Psalms 8:5-8", "1 Corinthians 11:7", "Colossians 3:10", "James 3:9", "Ephesians 4:24"
+  ],
+  "Genesis 3:15": [
+    "Romans 16:20", "Galatians 4:4", "Hebrews 2:14", "Revelation 12:17", "1 John 3:8", "Matthew 1:23", "Galatians 3:16"
+  ],
+  "Genesis 12:3": [
+    "Genesis 22:18", "Galatians 3:8", "Galatians 3:14", "Acts 3:25", "Romans 4:13", "Genesis 18:18"
+  ],
+  "Genesis 15:6": [
+    "Romans 4:3", "Romans 4:9", "Romans 4:22", "Galatians 3:6", "James 2:23", "Hebrews 11:8"
+  ],
+  "Genesis 22:18": [
+    "Genesis 12:3", "Acts 3:25", "Galatians 3:8", "Galatians 3:16", "Romans 4:13", "Hebrews 6:14"
+  ],
+
+  "Exodus 3:14": [
+    "John 8:58", "Revelation 1:8", "Revelation 4:8", "Hebrews 13:8", "Isaiah 44:6", "Exodus 6:3"
+  ],
+  "Exodus 12:13": [
+    "1 Corinthians 5:7", "John 1:29", "Hebrews 11:28", "1 Peter 1:19", "Revelation 5:9"
+  ],
+  "Exodus 20:3": [
+    "Deuteronomy 5:7", "Matthew 4:10", "1 Corinthians 8:6", "Isaiah 42:8"
+  ],
+  "Exodus 34:6": [
+    "Numbers 14:18", "Psalms 86:15", "Psalms 103:8", "Psalms 145:8", "Joel 2:13", "Jonah 4:2", "Nehemiah 9:17"
+  ],
+
+  "Leviticus 19:18": [
+    "Matthew 22:39", "Mark 12:31", "Luke 10:27", "Romans 13:9", "Galatians 5:14", "James 2:8"
+  ],
+
+  "Numbers 21:9": [
+    "John 3:14-15", "2 Kings 18:4", "1 Corinthians 10:9"
+  ],
+
+  "Deuteronomy 6:4": [
+    "Mark 12:29", "1 Corinthians 8:4", "1 Corinthians 8:6", "Galatians 3:20", "James 2:19"
+  ],
+  "Deuteronomy 6:5": [
+    "Matthew 22:37", "Mark 12:30", "Luke 10:27", "Deuteronomy 10:12", "Deuteronomy 30:6"
+  ],
+  "Deuteronomy 18:15": [
+    "Acts 3:22-23", "Acts 7:37", "John 1:21", "John 1:45", "John 6:14", "Hebrews 1:1-2"
+  ],
+
+  "Joshua 1:9": [
+    "Deuteronomy 31:6", "Hebrews 13:5", "Isaiah 41:10", "Psalms 27:1", "1 Chronicles 28:20"
+  ],
+
+  "1 Samuel 16:7": [
+    "1 Kings 8:39", "1 Chronicles 28:9", "Psalms 7:9", "Jeremiah 17:10", "Acts 1:24", "Hebrews 4:13"
+  ],
+
+  "2 Samuel 7:12-13": [
+    "Psalms 89:3-4", "Psalms 132:11", "Acts 2:30", "Hebrews 1:5", "Luke 1:32-33"
+  ],
+
+  "1 Kings 8:46": [
+    "Romans 3:23", "Ecclesiastes 7:20", "1 John 1:8-10", "Psalms 14:3", "James 3:2"
+  ],
+
+  "Job 19:25": [
+    "Isaiah 44:6", "1 Corinthians 15:20-23", "Acts 17:31", "John 5:28-29", "Revelation 1:18"
+  ],
+
+  "Psalms 1:1-2": [
+    "Joshua 1:8", "Jeremiah 17:7-8", "Psalms 119:1-2", "Proverbs 4:14-15", "1 Corinthians 15:33"
+  ],
+  "Psalms 19:1": [
+    "Romans 1:20", "Psalms 8:1", "Psalms 50:6", "Psalms 89:5", "Acts 14:17", "Job 12:7-9"
+  ],
+  "Psalms 22:1": [
+    "Matthew 27:46", "Mark 15:34", "Psalms 22:7-8", "Hebrews 5:7"
+  ],
+  "Psalms 22:18": [
+    "Matthew 27:35", "Mark 15:24", "Luke 23:34", "John 19:24"
+  ],
+  "Psalms 23:1": [
+    "John 10:11", "John 10:14", "Isaiah 40:11", "Ezekiel 34:11-12", "1 Peter 2:25", "Psalms 80:1"
+  ],
+  "Psalms 51:10": [
+    "Ezekiel 36:26", "Ephesians 4:23-24", "Acts 15:9", "Hebrews 10:22", "Matthew 5:8"
+  ],
+  "Psalms 110:1": [
+    "Matthew 22:44", "Mark 12:36", "Luke 20:42", "Acts 2:34-35", "Hebrews 1:13", "Hebrews 10:13"
+  ],
+  "Psalms 119:105": [
+    "Psalms 19:8", "Proverbs 6:23", "2 Peter 1:19", "Psalms 43:3", "John 8:12"
+  ],
+
+  "Proverbs 3:5-6": [
+    "Psalms 37:5", "Psalms 62:8", "Jeremiah 17:7", "1 Peter 5:7", "Philippians 4:6-7"
+  ],
+  "Proverbs 22:6": [
+    "Deuteronomy 6:7", "Ephesians 6:4", "2 Timothy 3:15", "Psalms 78:5-7"
+  ],
+
+  "Ecclesiastes 12:13": [
+    "Deuteronomy 10:12", "Micah 6:8", "1 John 5:3", "Matthew 22:37-38", "Revelation 14:7"
+  ],
+
+  "Isaiah 7:14": [
+    "Matthew 1:23", "Luke 1:31-35", "Isaiah 9:6", "Isaiah 8:8"
+  ],
+  "Isaiah 9:6": [
+    "Luke 2:11", "Isaiah 7:14", "Matthew 28:18", "John 1:14", "Hebrews 1:8", "Revelation 19:16"
+  ],
+  "Isaiah 40:3": [
+    "Matthew 3:3", "Mark 1:3", "Luke 3:4", "John 1:23", "Malachi 3:1"
+  ],
+  "Isaiah 53:5": [
+    "1 Peter 2:24", "Romans 4:25", "Romans 5:1", "2 Corinthians 5:21", "Matthew 8:17"
+  ],
+  "Isaiah 53:6": [
+    "1 Peter 2:25", "Romans 3:23", "Psalms 119:176", "Luke 15:4", "John 10:11"
+  ],
+  "Isaiah 55:6": [
+    "Psalms 32:6", "Psalms 95:7-8", "2 Corinthians 6:2", "Hebrews 3:13", "Matthew 6:33"
+  ],
+
+  "Jeremiah 29:11": [
+    "Romans 8:28", "Ephesians 1:11", "Psalms 33:11", "Proverbs 19:21", "Jeremiah 31:17"
+  ],
+  "Jeremiah 31:31-34": [
+    "Hebrews 8:8-12", "Hebrews 10:16-17", "Luke 22:20", "2 Corinthians 3:6", "Ezekiel 36:26-27"
+  ],
+
+  "Ezekiel 36:26": [
+    "Jeremiah 31:33", "2 Corinthians 5:17", "Hebrews 8:10", "Ezekiel 11:19", "Psalms 51:10"
+  ],
+
+  "Daniel 7:13-14": [
+    "Matthew 26:64", "Mark 14:62", "Revelation 1:7", "Revelation 1:13", "Revelation 14:14"
+  ],
+  "Daniel 9:24-27": [
+    "Matthew 24:15", "Mark 13:14", "Galatians 4:4", "Hebrews 9:24-26"
+  ],
+
+  "Joel 2:28-32": [
+    "Acts 2:17-21", "Romans 10:13", "Revelation 6:12", "Matthew 24:29"
+  ],
+
+  "Micah 5:2": [
+    "Matthew 2:6", "John 7:42", "Luke 2:4-7"
+  ],
+
+  "Habakkuk 2:4": [
+    "Romans 1:17", "Galatians 3:11", "Hebrews 10:38"
+  ],
+
+  "Zechariah 9:9": [
+    "Matthew 21:5", "John 12:15", "Mark 11:7-10"
+  ],
+  "Zechariah 12:10": [
+    "John 19:34-37", "Revelation 1:7", "Matthew 24:30"
+  ],
+
+  "Malachi 3:1": [
+    "Matthew 11:10", "Mark 1:2", "Luke 7:27", "Isaiah 40:3"
+  ],
+
+  "Matthew 1:21": [
+    "Luke 1:31", "Acts 4:12", "Acts 13:23", "1 Timothy 1:15", "Hebrews 7:25"
+  ],
+  "Matthew 1:23": [
+    "Isaiah 7:14", "Luke 1:35", "John 1:14"
+  ],
+  "Matthew 5:3-12": [
+    "Luke 6:20-23", "Isaiah 61:1-3", "Psalms 37:11", "1 Peter 3:14"
+  ],
+  "Matthew 5:17": [
+    "Luke 24:44", "Romans 3:31", "Romans 10:4", "Galatians 3:24", "Hebrews 10:1"
+  ],
+  "Matthew 6:9-13": [
+    "Luke 11:2-4", "1 John 5:14-15", "Romans 8:15"
+  ],
+  "Matthew 16:16": [
+    "John 6:69", "John 11:27", "Luke 9:20", "Mark 8:29", "1 John 5:1", "1 John 4:15"
+  ],
+  "Matthew 22:37-39": [
+    "Deuteronomy 6:5", "Leviticus 19:18", "Mark 12:30-31", "Luke 10:27", "Romans 13:9"
+  ],
+  "Matthew 24:14": [
+    "Mark 13:10", "Romans 10:18", "Colossians 1:6", "Revelation 14:6"
+  ],
+  "Matthew 28:18-20": [
+    "Mark 16:15", "Luke 24:46-47", "Acts 1:8", "Romans 10:14-15", "Ephesians 1:21"
+  ],
+
+  "Mark 10:45": [
+    "Matthew 20:28", "1 Timothy 2:6", "Titus 2:14", "Hebrews 9:12", "Revelation 5:9"
+  ],
+  "Mark 16:15": [
+    "Matthew 28:19", "Luke 24:47", "Acts 1:8", "Romans 10:18", "Colossians 1:23"
+  ],
+
+  "Luke 1:32-33": [
+    "2 Samuel 7:12-13", "Isaiah 9:6-7", "Daniel 7:14", "Acts 2:30", "Hebrews 1:5"
+  ],
+  "Luke 2:11": [
+    "Matthew 1:21", "Acts 13:23", "Isaiah 9:6", "Titus 1:4"
+  ],
+  "Luke 19:10": [
+    "Matthew 18:11", "Matthew 9:13", "1 Timothy 1:15", "Ezekiel 34:16", "John 3:17"
+  ],
+  "Luke 24:46-47": [
+    "Acts 1:8", "Acts 26:23", "1 Corinthians 15:3-4", "Isaiah 53:5", "Psalms 22:1"
+  ],
+
+  "John 1:1": [
+    "Genesis 1:1", "1 John 1:1", "Revelation 19:13", "Hebrews 1:1-2", "Colossians 1:16-17", "John 17:5"
+  ],
+  "John 1:14": [
+    "Matthew 1:23", "Luke 2:7", "1 Timothy 3:16", "Hebrews 2:14", "1 John 1:1-3", "Philippians 2:7"
+  ],
+  "John 1:29": [
+    "Exodus 12:3", "Isaiah 53:7", "1 Corinthians 5:7", "1 Peter 1:19", "Revelation 5:6", "Hebrews 9:28"
+  ],
+  "John 3:16": [
+    "Romans 5:8", "1 John 4:9-10", "John 3:36", "Romans 6:23", "Ephesians 2:4-5", "1 John 4:14", "Romans 8:32"
+  ],
+  "John 3:17": [
+    "Luke 19:10", "John 12:47", "1 Timothy 1:15", "1 John 4:14"
+  ],
+  "John 5:24": [
+    "John 3:16", "John 3:36", "John 6:40", "John 6:47", "Romans 8:1", "1 John 5:11-13"
+  ],
+  "John 8:32": [
+    "John 8:36", "Romans 6:18", "Galatians 5:1", "James 1:25", "2 Corinthians 3:17"
+  ],
+  "John 10:11": [
+    "Psalms 23:1", "Ezekiel 34:11-12", "Hebrews 13:20", "1 Peter 2:25", "1 Peter 5:4", "Isaiah 40:11"
+  ],
+  "John 11:25-26": [
+    "John 5:21", "John 5:24", "John 6:39-40", "1 Corinthians 15:21-22", "1 Thessalonians 4:14"
+  ],
+  "John 14:6": [
+    "John 10:9", "Acts 4:12", "1 Timothy 2:5", "Hebrews 10:19-20", "Ephesians 2:18", "John 1:14", "John 1:17"
+  ],
+  "John 15:5": [
+    "Galatians 2:20", "2 Corinthians 12:9", "Philippians 4:13", "Acts 17:28"
+  ],
+  "John 17:3": [
+    "1 John 5:20", "Jeremiah 9:24", "Daniel 11:32", "Habakkuk 2:14", "John 14:7", "John 17:25"
+  ],
+  "John 20:31": [
+    "1 John 5:13", "Luke 1:4", "Romans 10:9-10", "1 Peter 1:8-9"
+  ],
+
+  "Acts 1:8": [
+    "Matthew 28:19-20", "Mark 16:15", "Luke 24:48-49", "Acts 2:32", "Acts 4:33", "Romans 1:16"
+  ],
+  "Acts 2:38": [
+    "Luke 24:47", "Acts 3:19", "Acts 16:31", "Acts 22:16", "Mark 16:16", "1 Peter 3:21"
+  ],
+  "Acts 4:12": [
+    "John 14:6", "1 Timothy 2:5", "Matthew 1:21", "Hebrews 7:25", "Isaiah 45:21-22", "1 John 5:11-12"
+  ],
+  "Acts 16:31": [
+    "John 3:16", "John 3:36", "Romans 10:9", "Acts 13:39", "1 John 5:13"
+  ],
+  "Acts 17:30-31": [
+    "Romans 2:4", "2 Peter 3:9", "Luke 13:3-5", "Romans 14:10-12", "Matthew 25:31-32"
+  ],
+
+  "Romans 1:16": [
+    "1 Corinthians 1:18", "1 Corinthians 1:24", "1 Corinthians 15:1-2", "2 Timothy 1:8", "Psalms 119:46", "Romans 10:14-15"
+  ],
+  "Romans 1:17": [
+    "Habakkuk 2:4", "Galatians 3:11", "Hebrews 10:38", "Philippians 3:9"
+  ],
+  "Romans 3:23": [
+    "Ecclesiastes 7:20", "Romans 5:12", "1 John 1:8-10", "Galatians 3:22", "Psalms 14:3"
+  ],
+  "Romans 5:1": [
+    "Ephesians 2:14-17", "Colossians 1:20", "Isaiah 32:17", "Philippians 4:7", "Galatians 3:24"
+  ],
+  "Romans 5:8": [
+    "John 3:16", "1 John 4:9-10", "Ephesians 2:4-5", "1 Peter 3:18", "Galatians 2:20"
+  ],
+  "Romans 6:23": [
+    "Romans 5:12", "James 1:15", "John 3:16", "1 John 5:11", "Genesis 2:17", "Galatians 6:8"
+  ],
+  "Romans 8:1": [
+    "John 3:18", "John 5:24", "Romans 8:33-34", "Galatians 5:16", "Galatians 5:25"
+  ],
+  "Romans 8:28": [
+    "Genesis 50:20", "Psalms 145:9", "Jeremiah 24:5-6", "Ephesians 1:11", "James 1:2-4"
+  ],
+  "Romans 10:9": [
+    "Acts 16:31", "Acts 8:37", "1 John 4:2-3", "Matthew 10:32", "Luke 12:8", "1 Corinthians 12:3"
+  ],
+  "Romans 10:13": [
+    "Joel 2:32", "Acts 2:21", "Acts 22:16", "1 Corinthians 1:2", "Psalms 86:5"
+  ],
+  "Romans 12:1-2": [
+    "Romans 6:13", "1 Corinthians 6:20", "Hebrews 13:15-16", "Ephesians 4:23", "Colossians 3:10", "1 Peter 1:14-15"
+  ],
+
+  "1 Corinthians 13:4-7": [
+    "Romans 13:8-10", "1 John 4:7-21", "Ephesians 4:2", "Colossians 3:12-14", "Galatians 5:22"
+  ],
+  "1 Corinthians 15:3-4": [
+    "Isaiah 53:5-12", "Luke 24:46", "Acts 26:22-23", "Hosea 6:2", "Psalms 16:10"
+  ],
+
+  "2 Corinthians 5:17": [
+    "Galatians 6:15", "Ephesians 2:10", "Ephesians 4:24", "Colossians 3:10", "Revelation 21:5"
+  ],
+  "2 Corinthians 5:21": [
+    "Isaiah 53:6", "Romans 5:19", "Galatians 3:13", "1 Peter 2:24", "Hebrews 4:15", "1 John 3:5"
+  ],
+
+  "Galatians 2:20": [
+    "Romans 6:6", "Ephesians 2:4-5", "Philippians 1:21", "Colossians 3:3-4", "1 John 4:9-10"
+  ],
+  "Galatians 5:22-23": [
+    "Ephesians 5:9", "Colossians 3:12-14", "2 Peter 1:5-7", "Philippians 4:8", "James 3:17"
+  ],
+
+  "Ephesians 2:8-9": [
+    "Romans 3:24", "Romans 4:16", "Romans 11:6", "Titus 3:5-7", "2 Timothy 1:9", "Galatians 2:16"
+  ],
+  "Ephesians 6:10-11": [
+    "1 Peter 5:8-9", "James 4:7", "Romans 13:12", "2 Corinthians 10:3-5", "1 Thessalonians 5:8"
+  ],
+
+  "Philippians 2:5-11": [
+    "John 1:14", "John 17:5", "Hebrews 1:3", "Hebrews 2:9", "2 Corinthians 8:9", "Isaiah 45:23"
+  ],
+  "Philippians 4:6-7": [
+    "Matthew 6:25-34", "1 Peter 5:7", "Psalms 55:22", "Colossians 3:15", "Isaiah 26:3"
+  ],
+  "Philippians 4:13": [
+    "John 15:5", "2 Corinthians 12:9-10", "Ephesians 3:16-20", "1 Timothy 1:12", "Colossians 1:11"
+  ],
+
+  "Colossians 1:15-17": [
+    "John 1:1-3", "Hebrews 1:3", "Hebrews 1:8-10", "Philippians 2:6", "Revelation 3:14", "Genesis 1:1"
+  ],
+  "Colossians 3:1-2": [
+    "Romans 6:4-5", "Galatians 2:20", "Ephesians 2:6", "Matthew 6:33", "1 John 2:15-17"
+  ],
+
+  "1 Thessalonians 4:16-17": [
+    "Matthew 24:30-31", "1 Corinthians 15:51-52", "Revelation 1:7", "John 14:1-3", "Acts 1:11"
+  ],
+
+  "1 Timothy 2:5": [
+    "John 14:6", "Hebrews 8:6", "Hebrews 9:15", "Hebrews 12:24", "Galatians 3:20", "1 Corinthians 8:6"
+  ],
+
+  "2 Timothy 3:16-17": [
+    "2 Peter 1:21", "Psalms 19:7-11", "Hebrews 4:12", "Joshua 1:8", "Romans 15:4"
+  ],
+
+  "Hebrews 4:12": [
+    "Ephesians 6:17", "1 Corinthians 14:24-25", "John 12:48", "Jeremiah 23:29", "Isaiah 49:2"
+  ],
+  "Hebrews 4:15-16": [
+    "Hebrews 2:17-18", "Hebrews 7:25-26", "1 John 2:1-2", "Hebrews 10:19-22"
+  ],
+  "Hebrews 11:1": [
+    "Romans 8:24-25", "2 Corinthians 4:18", "2 Corinthians 5:7", "1 Peter 1:8"
+  ],
+  "Hebrews 11:6": [
+    "Hebrews 11:1", "Romans 14:23", "James 1:6", "John 6:29", "1 John 5:1"
+  ],
+  "Hebrews 12:1-2": [
+    "1 Corinthians 9:24", "Philippians 3:13-14", "Hebrews 6:18-19", "1 Peter 2:21", "Galatians 5:7"
+  ],
+  "Hebrews 13:8": [
+    "Malachi 3:6", "James 1:17", "John 8:58", "Revelation 1:8", "Hebrews 1:12"
+  ],
+
+  "James 1:2-4": [
+    "Romans 5:3-5", "1 Peter 1:6-7", "Matthew 5:11-12", "Hebrews 12:11", "Romans 8:28"
+  ],
+  "James 2:17": [
+    "Galatians 5:6", "1 John 3:17-18", "Matthew 7:21", "Titus 1:16", "James 2:26"
+  ],
+
+  "1 Peter 1:3-4": [
+    "1 Corinthians 15:20-22", "Romans 6:4", "Ephesians 1:3", "Titus 3:5", "Colossians 1:12"
+  ],
+  "1 Peter 2:24": [
+    "Isaiah 53:5-6", "Romans 6:11-13", "2 Corinthians 5:21", "Galatians 6:14", "Hebrews 9:28"
+  ],
+  "1 Peter 5:7": [
+    "Psalms 55:22", "Matthew 6:25-34", "Philippians 4:6-7", "Hebrews 13:5-6"
+  ],
+
+  "1 John 1:7": [
+    "Hebrews 9:14", "Hebrews 9:22", "Revelation 1:5", "Revelation 7:14", "Ephesians 1:7"
+  ],
+  "1 John 1:9": [
+    "Proverbs 28:13", "Psalms 32:5", "Psalms 51:1-4", "Hebrews 8:12", "Acts 8:22"
+  ],
+  "1 John 4:8": [
+    "1 John 4:16", "John 3:16", "Romans 5:8", "Exodus 34:6", "Psalms 86:15"
+  ],
+  "1 John 5:11-12": [
+    "John 3:36", "John 5:24", "John 6:47", "Romans 6:23", "1 John 2:25"
+  ],
+
+  "Revelation 1:8": [
+    "Revelation 22:13", "Revelation 1:17", "Isaiah 41:4", "Isaiah 44:6", "Exodus 3:14"
+  ],
+  "Revelation 3:20": [
+    "John 14:23", "Song of Solomon 5:2", "Luke 12:36-37", "James 4:8"
+  ],
+  "Revelation 21:1-4": [
+    "Isaiah 65:17", "Isaiah 66:22", "2 Peter 3:13", "1 Corinthians 15:54", "Revelation 7:17"
+  ],
+  "Revelation 22:13": [
+    "Revelation 1:8", "Revelation 1:17", "Revelation 21:6", "Isaiah 44:6", "Isaiah 48:12"
+  ],
+  "Revelation 22:20": [
+    "1 Corinthians 16:22", "1 Thessalonians 4:16", "Hebrews 10:37", "James 5:8", "2 Peter 3:12"
+  ]
+}

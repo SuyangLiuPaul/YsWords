@@ -6,6 +6,7 @@ import 'package:yswords/providers/main_provider.dart';
 import 'package:yswords/services/concordance_service.dart';
 import 'package:yswords/services/strongs_service.dart';
 import 'package:yswords/utils/format_searched_text.dart';
+import 'package:yswords/utils/reference_parser.dart';
 import 'package:yswords/utils/version_mapper.dart'
     show localeAwareBookName, toEnglish, translateBookName;
 import 'package:provider/provider.dart';
@@ -175,8 +176,11 @@ class _SearchPageState extends State<SearchPage> {
               hintText: uiStrings['search']?[settings.locale] ?? 'Search',
             ),
             inputFormatters: [
+              // Allow alphanumerics + Chinese chars + space + the
+              // colon / dash / dot punctuation needed to type Bible
+              // references like "John 3:16" or "约 3:16-18".
               FilteringTextInputFormatter.allow(
-                  RegExp(r'[0-9a-zA-Z\u4E00-\u9FFF ]')),
+                  RegExp(r'[0-9a-zA-Z\u4E00-\u9FFF :\-\.：。‐–—]')),
             ],
             onChanged: (text) {
               setState(() {
@@ -187,11 +191,25 @@ class _SearchPageState extends State<SearchPage> {
               });
             },
             onSubmitted: (s) async {
-              if (s.trim().isEmpty) {
+              final trimmed = s.trim();
+              if (trimmed.isEmpty) {
                 setState(() {
                   searchAll = true;
                   filterBook = null;
                 });
+                await search();
+                return;
+              }
+              // First, try parsing as a Bible reference. If it
+              // resolves to a real verse in the current version,
+              // navigate straight there instead of doing full-text
+              // search — that's almost always what the user wants
+              // when they typed something that looks like a reference.
+              final ref = parseReference(trimmed);
+              if (ref != null) {
+                final mainProv =
+                    Provider.of<MainProvider>(context, listen: false);
+                if (_navigateToReference(ref, mainProv)) return;
               }
               await search();
               if (_scrollController.hasClients) {
@@ -677,5 +695,45 @@ class _SearchPageState extends State<SearchPage> {
         mainProv.clearHighlightIndex();
       });
     });
+  }
+
+  /// Navigate to a free-form parsed [BibleReference]. Returns true
+  /// if the reference resolved to an actual verse in the current
+  /// Bible version and the navigation was triggered; false if it
+  /// didn't (caller should fall back to full-text search).
+  ///
+  /// Re-uses the same post-jump highlight + scroll dance as the
+  /// concordance-ref handler.
+  bool _navigateToReference(BibleReference ref, MainProvider mainProv) {
+    final localBook =
+        translateBookName(ref.englishBook, mainProv.currentVersion);
+    // Find candidate verses in the requested book + chapter.
+    final chapterMatches = mainProv.verses
+        .where((v) => v.book == localBook && v.chapter == ref.chapter)
+        .toList()
+      ..sort((a, b) => a.verse.compareTo(b.verse));
+    if (chapterMatches.isEmpty) return false;
+    // Pick the verse to highlight: explicit verseStart, else the
+    // first verse of the chapter.
+    final targetVerse = ref.verseStart ?? chapterMatches.first.verse;
+    final hit = chapterMatches.firstWhere(
+      (v) => v.verse == targetVerse,
+      orElse: () => chapterMatches.first,
+    );
+
+    mainProv.setCurrentChapter(book: hit.book, chapter: hit.chapter);
+    mainProv.updateCurrentVerse(verse: hit);
+    Get.back();
+    Future.delayed(const Duration(milliseconds: 300), () {
+      final relIdx =
+          chapterMatches.indexWhere((v) => v.verse == hit.verse);
+      if (relIdx < 0) return;
+      mainProv.jumpToIndex(index: relIdx);
+      mainProv.setHighlightIndex(relIdx);
+      Future.delayed(const Duration(milliseconds: 800), () {
+        mainProv.clearHighlightIndex();
+      });
+    });
+    return true;
   }
 }

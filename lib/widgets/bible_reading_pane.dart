@@ -20,12 +20,14 @@ import 'package:yswords/pages/settings_page.dart';
 import 'package:yswords/providers/main_provider.dart';
 import 'package:yswords/services/fetch_books.dart';
 import 'package:yswords/services/concordance_service.dart';
+import 'package:yswords/services/cross_reference_service.dart';
 import 'package:yswords/services/fetch_verses.dart';
 import 'package:yswords/services/map_service.dart';
 import 'package:yswords/utils/clipboard_helper.dart';
+import 'package:yswords/utils/reference_parser.dart';
 import 'package:yswords/utils/responsive.dart';
 import 'package:yswords/utils/version_mapper.dart'
-    show translateBookName, toEnglish;
+    show translateBookName, toEnglish, localeAwareBookName;
 import 'package:yswords/widgets/highlights_sheet.dart';
 import 'package:yswords/widgets/originals_sheet.dart';
 import 'package:yswords/widgets/verse_widget.dart';
@@ -670,6 +672,12 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                                 verses: mainProvider.selectedVerses,
                                 locale: settings.locale,
                               ),
+                              onCrossRefs: () => _showCrossRefsSheet(
+                                context: context,
+                                verses: mainProvider.selectedVerses,
+                                locale: settings.locale,
+                                mainProvider: mainProvider,
+                              ),
                             )
                           : _ReaderStatusBar(
                               progress: chapterProgress,
@@ -899,6 +907,7 @@ class _SelectionActionBar extends StatelessWidget {
   final ValueChanged<int> onHighlight;
   final VoidCallback onRemoveHighlight;
   final VoidCallback onOriginal;
+  final VoidCallback onCrossRefs;
   final DeviceClass deviceClass;
 
   const _SelectionActionBar({
@@ -909,6 +918,7 @@ class _SelectionActionBar extends StatelessWidget {
     required this.onHighlight,
     required this.onRemoveHighlight,
     required this.onOriginal,
+    required this.onCrossRefs,
     required this.deviceClass,
   });
 
@@ -1037,6 +1047,13 @@ class _SelectionActionBar extends StatelessWidget {
                 ),
                 const SizedBox(width: 4),
                 IconButton(
+                  tooltip: uiStrings['crossRefs']?[settings.locale] ??
+                      'Cross-references',
+                  onPressed: onCrossRefs,
+                  icon: const Icon(Icons.hub_outlined),
+                ),
+                const SizedBox(width: 4),
+                IconButton(
                   tooltip:
                       uiStrings['highlight']?[settings.locale] ?? 'Highlight',
                   onPressed: () => _showColorPicker(context),
@@ -1103,6 +1120,92 @@ void _showOriginalsSheet({
       },
     ),
   );
+}
+
+/// Shows a draggable bottom sheet listing the cross-references
+/// curated for the FIRST selected verse. Each row is tappable to
+/// navigate; the sheet falls back to a friendly message when the
+/// dataset doesn't yet have an entry for that verse.
+void _showCrossRefsSheet({
+  required BuildContext context,
+  required List<Verse> verses,
+  required String locale,
+  required MainProvider mainProvider,
+}) {
+  if (verses.isEmpty) return;
+  final firstSorted = [...verses]..sort(
+      (a, b) => a.verse.compareTo(b.verse),
+    );
+  final source = firstSorted.first;
+  final englishBook = toEnglish(source.book) ?? source.book;
+  showModalBottomSheet<void>(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Theme.of(context).colorScheme.surface,
+    constraints: const BoxConstraints(maxWidth: 900),
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+    ),
+    builder: (sheetCtx) => DraggableScrollableSheet(
+      initialChildSize: 0.7,
+      minChildSize: 0.35,
+      maxChildSize: 0.95,
+      expand: false,
+      builder: (_, scrollController) => Scaffold(
+        backgroundColor: Colors.transparent,
+        body: _CrossRefsSheetBody(
+          englishBook: englishBook,
+          chapter: source.chapter,
+          verse: source.verse,
+          locale: locale,
+          mainProvider: mainProvider,
+          scrollController: scrollController,
+          onNavigate: (ref) {
+            Navigator.of(sheetCtx).maybePop();
+            _navigateToBibleReference(
+              mainProvider: mainProvider,
+              ref: ref,
+              locale: locale,
+            );
+          },
+        ),
+      ),
+    ),
+  );
+  mainProvider.clearSelectedVerses();
+}
+
+/// Navigate to a free-form parsed [BibleReference] from a cross-ref
+/// tap. Same dance as the search-page handler: setCurrentChapter,
+/// scroll to verse, briefly highlight.
+void _navigateToBibleReference({
+  required MainProvider mainProvider,
+  required BibleReference ref,
+  required String locale,
+}) {
+  final localBook =
+      translateBookName(ref.englishBook, mainProvider.currentVersion);
+  final chapterMatches = mainProvider.verses
+      .where((v) => v.book == localBook && v.chapter == ref.chapter)
+      .toList()
+    ..sort((a, b) => a.verse.compareTo(b.verse));
+  if (chapterMatches.isEmpty) return;
+  final targetVerse = ref.verseStart ?? chapterMatches.first.verse;
+  final hit = chapterMatches.firstWhere(
+    (v) => v.verse == targetVerse,
+    orElse: () => chapterMatches.first,
+  );
+  mainProvider.setCurrentChapter(book: hit.book, chapter: hit.chapter);
+  mainProvider.updateCurrentVerse(verse: hit);
+  Future.delayed(const Duration(milliseconds: 300), () {
+    final relIdx = chapterMatches.indexWhere((v) => v.verse == hit.verse);
+    if (relIdx < 0) return;
+    mainProvider.jumpToIndex(index: relIdx);
+    mainProvider.setHighlightIndex(relIdx);
+    Future.delayed(const Duration(milliseconds: 800), () {
+      mainProvider.clearHighlightIndex();
+    });
+  });
 }
 
 void _showHighlightsSheet({
@@ -1872,6 +1975,202 @@ class _FloatingHeader extends StatelessWidget {
             ),
           ),
         ],
+      ],
+    );
+  }
+}
+
+/// Body of the cross-references modal sheet — loads cross-refs for
+/// the source verse and renders them as a tappable list with verse
+/// previews in the user's current Bible version.
+class _CrossRefsSheetBody extends StatefulWidget {
+  final String englishBook;
+  final int chapter;
+  final int verse;
+  final String locale;
+  final MainProvider mainProvider;
+  final ScrollController scrollController;
+  final void Function(BibleReference ref) onNavigate;
+
+  const _CrossRefsSheetBody({
+    required this.englishBook,
+    required this.chapter,
+    required this.verse,
+    required this.locale,
+    required this.mainProvider,
+    required this.scrollController,
+    required this.onNavigate,
+  });
+
+  @override
+  State<_CrossRefsSheetBody> createState() => _CrossRefsSheetBodyState();
+}
+
+class _CrossRefsSheetBodyState extends State<_CrossRefsSheetBody> {
+  late Future<List<BibleReference>> _future;
+  // Index of the current Bible version's verses by canonical book +
+  // chapter + verse so the preview text loads instantly.
+  late final Map<String, String> _verseIndex;
+
+  @override
+  void initState() {
+    super.initState();
+    _future = CrossReferenceService.forVerseOrNearby(
+        widget.englishBook, widget.chapter, widget.verse);
+    _verseIndex = {
+      for (final v in widget.mainProvider.verses)
+        '${toEnglish(v.book) ?? v.book}-${v.chapter}-${v.verse}': v.text,
+    };
+  }
+
+  String? _previewFor(BibleReference ref) {
+    final v = ref.verseStart ?? 1;
+    final raw = _verseIndex['${ref.englishBook}-${ref.chapter}-$v'];
+    if (raw == null) return null;
+    return sanitizeForSearch(raw);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final locale = widget.locale;
+    final sourceLabel =
+        '${localeAwareBookName(widget.englishBook, locale, widget.mainProvider.currentVersion)} '
+        '${widget.chapter}:${widget.verse}';
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          margin: const EdgeInsets.only(top: 8),
+          width: 40,
+          height: 4,
+          decoration: BoxDecoration(
+            color: scheme.outlineVariant,
+            borderRadius: BorderRadius.circular(2),
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(20, 12, 12, 8),
+          child: Row(
+            children: [
+              Icon(Icons.hub_outlined, color: scheme.primary, size: 20),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      uiStrings['crossRefs']?[locale] ?? 'Cross-references',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        color: scheme.onSurface,
+                      ),
+                    ),
+                    Text(
+                      sourceLabel,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: scheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              IconButton(
+                icon: const Icon(Icons.close),
+                iconSize: 20,
+                onPressed: () => Navigator.of(context).maybePop(),
+              ),
+            ],
+          ),
+        ),
+        const Divider(height: 1),
+        Expanded(
+          child: FutureBuilder<List<BibleReference>>(
+            future: _future,
+            builder: (ctx, snap) {
+              if (snap.connectionState != ConnectionState.done) {
+                return const Center(child: CircularProgressIndicator());
+              }
+              final refs = snap.data ?? const <BibleReference>[];
+              if (refs.isEmpty) {
+                return Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.info_outline,
+                            color: scheme.onSurfaceVariant, size: 32),
+                        const SizedBox(height: 8),
+                        Text(
+                          uiStrings['crossRefsNone']?[locale] ??
+                              'No curated cross-references for this verse yet.',
+                          style: TextStyle(
+                              color: scheme.onSurfaceVariant,
+                              fontStyle: FontStyle.italic),
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }
+              return ListView.separated(
+                controller: widget.scrollController,
+                padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+                itemCount: refs.length,
+                separatorBuilder: (_, __) => Divider(
+                    height: 1,
+                    thickness: 0.5,
+                    color: scheme.outlineVariant.withValues(alpha: 0.4)),
+                itemBuilder: (_, i) {
+                  final r = refs[i];
+                  final preview = _previewFor(r);
+                  final label = r.toString().replaceFirst(
+                        r.englishBook,
+                        localeAwareBookName(r.englishBook, locale,
+                            widget.mainProvider.currentVersion),
+                      );
+                  return InkWell(
+                    onTap: () => widget.onNavigate(r),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 10),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            label,
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w700,
+                              color: scheme.primary,
+                            ),
+                          ),
+                          if (preview != null) ...[
+                            const SizedBox(height: 3),
+                            Text(
+                              preview,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: scheme.onSurface,
+                                height: 1.4,
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              );
+            },
+          ),
+        ),
       ],
     );
   }
