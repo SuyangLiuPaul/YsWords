@@ -6,23 +6,23 @@ String translateBookName(String? book, String version) {
   return toLocale(en, version);
 }
 
-/// Returns a book name driven by the UI [locale] only — the reading
-/// Bible version is intentionally ignored. Used everywhere a Bible
-/// reference book name appears in the exegesis / search / highlight
+/// Returns the book name to display in cross-reference / aggregate
 /// panels (Top books chips, "Used N times" refs, highlight browser,
-/// Strong's search results).
+/// Strong's search results). Driven by the reading [currentVersion]
+/// so book names match the verse text the user is reading — KJV /
+/// NASB / NIV / LEB → "Genesis"; CUVS / CNV / CUV → "创世记"; the
+/// `-tr` variants → "創世記".
 ///
-/// - `zh-Hant` → Traditional Chinese
-/// - `zh-Hans` (or any `zh-*`) → Simplified Chinese
-/// - any other locale → English canonical name
+/// The English-version detection (kjv/leb/nasb/niv) lives in
+/// `book_name_mapping.dart`'s `toLocale`; English versions not on
+/// that list will be misclassified as Chinese — add new ones there.
 ///
-/// The [currentVersion] parameter is kept in the signature for
-/// existing call sites but is intentionally unused — per the user's
-/// requirement, book names follow the system language, not the Bible
-/// version. Use [translateBookName] directly when you need to match
-/// the version's verse-data book naming for navigation lookups.
+/// Falls back to locale-driven naming when no version is provided.
 String localeAwareBookName(
     String englishBook, String locale, [String? currentVersion]) {
+  if (currentVersion != null && currentVersion.isNotEmpty) {
+    return translateBookName(englishBook, currentVersion);
+  }
   if (locale == 'zh-Hant') {
     return toLocale(englishBook, 'cuvs-tr');
   } else if (locale.startsWith('zh')) {

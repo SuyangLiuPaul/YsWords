@@ -230,8 +230,19 @@ String? zhToEn(String name) {
   return _zhAliasToEn[name];
 }
 
+/// Bible version codes whose source text is English. Adding a new
+/// English version requires listing its code here, otherwise
+/// `toLocale` would silently route it through the Chinese mapping
+/// table — which is what made NASB/NIV book names render in Chinese.
+const _englishVersionCodes = <String>{
+  'kjv',
+  'leb',
+  'nasb',
+  'niv',
+};
+
 String toLocale(String englishKey, String version) {
-  if (version == 'kjv' || version == 'leb') return englishKey;
+  if (_englishVersionCodes.contains(version)) return englishKey;
   return version.endsWith('-tr')
       ? englishToChineseTraditional[englishKey] ?? englishKey
       : englishToChinese[englishKey] ?? englishKey;
