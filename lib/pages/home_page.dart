@@ -106,8 +106,11 @@ class _HomePageState extends State<HomePage> {
       showSidebarToggle: showSidebar,
       sidebarOpen: _sidebarOpen,
       onToggleSidebar: showSidebar ? _toggleSidebar : null,
-      onToggleSplitView: _activateSplitView,
-      splitViewActive: false,
+      // Toggle direction tracks current state — when split is active the
+      // primary's menu shows "Close Split View" and tapping it deactivates.
+      onToggleSplitView:
+          _splitViewActive ? _deactivateSplitView : _activateSplitView,
+      splitViewActive: _splitViewActive,
       onClose: null,
       showSearchAndSettings: true,
     );

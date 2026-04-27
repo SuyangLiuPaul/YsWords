@@ -1715,11 +1715,20 @@ class _FloatingHeader extends StatelessWidget {
                       padding: EdgeInsets.all(iconPad),
                       tooltip: uiStrings['more']?[locale] ?? 'More',
                       position: PopupMenuPosition.under,
+                      // Each item fires its action via `onTap` (which
+                      // runs the moment the user taps the row, before
+                      // the menu's close animation begins) so layout-
+                      // changing actions like Open Split View take
+                      // effect immediately. Using `onSelected` here
+                      // delayed the callback until after the menu had
+                      // fully animated closed (~250 ms), making the
+                      // first split-view tap feel like it was lost.
                       itemBuilder: (context) {
                         final items = <PopupMenuEntry<String>>[];
                         if (highlightCount > 0) {
                           items.add(PopupMenuItem(
                             value: 'highlights',
+                            onTap: () => onHighlights?.call(),
                             child: _menuRow(
                               context,
                               icon: Icons.bookmark_rounded,
@@ -1732,6 +1741,12 @@ class _FloatingHeader extends StatelessWidget {
                         }
                         items.add(PopupMenuItem(
                           value: 'maps',
+                          onTap: () => _showMapPicker(
+                            context,
+                            chapterMaps: chapterMaps,
+                            bookMaps: bookMaps,
+                            locale: locale,
+                          ),
                           child: _menuRow(
                             context,
                             icon: chapterMaps.isNotEmpty
@@ -1749,6 +1764,7 @@ class _FloatingHeader extends StatelessWidget {
                         if (onToggleSplitView != null) {
                           items.add(PopupMenuItem(
                             value: 'split',
+                            onTap: () => onToggleSplitView?.call(),
                             child: _menuRow(
                               context,
                               icon: splitViewActive
@@ -1766,6 +1782,7 @@ class _FloatingHeader extends StatelessWidget {
                             onToggleParagraphMode != null) {
                           items.add(PopupMenuItem(
                             value: 'paragraph',
+                            onTap: () => onToggleParagraphMode?.call(),
                             child: _menuRow(
                               context,
                               icon: paragraphMode
@@ -1785,6 +1802,7 @@ class _FloatingHeader extends StatelessWidget {
                           items.add(const PopupMenuDivider());
                           items.add(PopupMenuItem(
                             value: 'settings',
+                            onTap: onSettings,
                             child: _menuRow(
                               context,
                               icon: Icons.settings_outlined,
@@ -1794,30 +1812,6 @@ class _FloatingHeader extends StatelessWidget {
                           ));
                         }
                         return items;
-                      },
-                      onSelected: (value) {
-                        switch (value) {
-                          case 'highlights':
-                            onHighlights?.call();
-                            break;
-                          case 'maps':
-                            _showMapPicker(
-                              context,
-                              chapterMaps: chapterMaps,
-                              bookMaps: bookMaps,
-                              locale: locale,
-                            );
-                            break;
-                          case 'split':
-                            onToggleSplitView?.call();
-                            break;
-                          case 'paragraph':
-                            onToggleParagraphMode?.call();
-                            break;
-                          case 'settings':
-                            onSettings();
-                            break;
-                        }
                       },
                     ),
                   ],
