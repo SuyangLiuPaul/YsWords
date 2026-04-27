@@ -122,7 +122,9 @@ class _HomePageState extends State<HomePage> {
 
     Widget primaryPane = BibleReadingPane(
       key: const ValueKey('primary'),
-      showSidebarToggle: showSidebar,
+      // When the sidebar is already open it shows its own close button,
+      // so we don't need a duplicate toggle in the reading pane header.
+      showSidebarToggle: showSidebar && !_sidebarOpen,
       sidebarOpen: _sidebarOpen,
       onToggleSidebar: showSidebar ? _toggleSidebar : null,
       // Toggle direction tracks current state — when split is active the

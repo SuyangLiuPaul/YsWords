@@ -1644,6 +1644,7 @@ class _FloatingHeader extends StatelessWidget {
                                   fontSize: fontSize,
                                   fontWeight: FontWeight.w700,
                                   color: scheme.primary,
+                                  decoration: TextDecoration.none,
                                 ),
                               ),
                             ),

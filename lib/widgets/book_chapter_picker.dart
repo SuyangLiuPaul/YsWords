@@ -86,7 +86,11 @@ class _BookChapterPickerState extends State<BookChapterPicker> {
                   : !_isOldTestament(b.title))
               .toList();
           final idx = filtered.indexWhere((b) => b.title == bookEntry.title);
-          if (idx != -1) {
+          // Only scroll when the list view is actually rendered.
+          // In grid mode the AutoScrollController is unattached.
+          final currentSettings =
+              Provider.of<AppSettings>(context, listen: false);
+          if (idx != -1 && currentSettings.booksViewMode != 'grid') {
             Future.microtask(() {
               if (mounted) {
                 _autoScrollController.scrollToIndex(
@@ -139,6 +143,12 @@ class _BookChapterPickerState extends State<BookChapterPicker> {
                           setState(() {
                             _gridSelectedBook = null;
                             expandStatus.updateAll((key, _) => false);
+                            // Re-expand the current book so list view
+                            // doesn't appear empty after switching from grid.
+                            if (target == 'list' &&
+                                widget.currentBook.isNotEmpty) {
+                              expandStatus[widget.currentBook] = true;
+                            }
                           });
                         },
                         borderRadius: BorderRadius.circular(14),
@@ -369,6 +379,7 @@ class _BookChapterPickerState extends State<BookChapterPicker> {
                   style: TextStyle(
                       fontSize: settings.fontSize,
                       fontFamily: settings.fontFamily,
+                      decoration: TextDecoration.none,
                       color: expandStatus[book.title] == true
                           ? scheme.primary
                           : scheme.onSurface),
