@@ -181,37 +181,47 @@ class _HomePageState extends State<HomePage> {
       );
     }
 
-    return Row(
-      // Stretch so the sidebar fills the full screen height — the inner
-      // SidebarPanel uses Expanded for its book list, which silently
-      // collapses to zero height under loose vertical constraints on
-      // Flutter web's HTML renderer.
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        AnimatedContainer(
-          duration: const Duration(milliseconds: 250),
-          curve: Curves.easeInOutCubic,
-          width: sidebarW,
-          child: ClipRect(
-            child: _sidebarOpen
-                ? SidebarPanel(
-                    currentBook: mainProvider.currentBook ?? '',
-                    currentChapter: mainProvider.currentChapter ?? 1,
-                    onChapterSelected: _onSidebarChapterSelected,
-                    onClose: _toggleSidebar,
-                  )
-                : const SizedBox.shrink(),
-          ),
-        ),
-        Expanded(
-          child: Center(
-            child: ConstrainedBox(
-              constraints: BoxConstraints(maxWidth: maxW),
-              child: primaryPane,
+    // LayoutBuilder gives us the actual screen height we can pass
+    // explicitly to the AnimatedContainer. AnimatedContainer with only
+    // `width:` set passes `BoxConstraints.tightFor(width: w)` to its
+    // child, which silently strips the parent's tight vertical
+    // constraint — Expanded inside SidebarPanel then collapses to zero
+    // height on Flutter web's HTML renderer.
+    return LayoutBuilder(
+      builder: (context, parentConstraints) {
+        final fullHeight = parentConstraints.maxHeight.isFinite
+            ? parentConstraints.maxHeight
+            : MediaQuery.of(context).size.height;
+        return Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 250),
+              curve: Curves.easeInOutCubic,
+              width: sidebarW,
+              height: fullHeight,
+              child: ClipRect(
+                child: _sidebarOpen
+                    ? SidebarPanel(
+                        currentBook: mainProvider.currentBook ?? '',
+                        currentChapter: mainProvider.currentChapter ?? 1,
+                        onChapterSelected: _onSidebarChapterSelected,
+                        onClose: _toggleSidebar,
+                      )
+                    : const SizedBox.shrink(),
+              ),
             ),
-          ),
-        ),
-      ],
+            Expanded(
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(maxWidth: maxW),
+                  child: primaryPane,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 
