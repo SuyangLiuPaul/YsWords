@@ -99,16 +99,20 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
     });
   }
 
-  /// Toggle TTS read-aloud: when not speaking, build a single string
-  /// from every verse in the current chapter and start the utterance;
-  /// when speaking, cancel. Locale is mapped from the version code so
-  /// the browser picks an appropriate voice (CN voice for Chinese
-  /// versions, EN for English).
+  /// Toggle TTS read-aloud. Plays each verse of the current chapter as
+  /// its own utterance so cancellation is responsive and we can flash
+  /// a brief highlight on the verse currently being read (`_isListening`
+  /// alone wouldn't surface progress to the user).
   void _toggleListenChapter() {
-    if (TtsService.speaking) {
+    // Logical state takes precedence over the browser flag because
+    // chrome's speechSynthesis.speaking flickers between chunks.
+    if (_isListening || TtsService.speaking) {
       TtsService.stop();
       _stopTtsPolling();
-      setState(() => _isListening = false);
+      if (mounted) {
+        context.read<MainProvider>().clearHighlightIndex();
+        setState(() => _isListening = false);
+      }
       return;
     }
     final mp = context.read<MainProvider>();
@@ -121,12 +125,34 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
       ..sort((a, b) => a.verse.compareTo(b.verse));
     if (chapterVerses.isEmpty) return;
     // Strip <note:...> tags and {variant} braces so the synthesizer
-    // doesn't read editorial markup aloud.
-    final text = chapterVerses
+    // doesn't read editorial markup aloud. One chunk per verse so
+    // (a) cancel works deterministically and (b) we can highlight
+    // the current verse in the list as it's spoken.
+    final chunks = chapterVerses
         .map((v) => sanitizeForSearch(v.text))
-        .join(' ');
+        .toList();
     final locale = _ttsLocaleForVersion(mp.currentVersion);
-    TtsService.speak(text, locale: locale);
+    TtsService.speakSequence(
+      chunks,
+      locale: locale,
+      onAdvance: (idx) {
+        if (!mounted) return;
+        // Reuse the same in-list highlight machinery used by cross-
+        // ref taps. Index here is the verse's position within the
+        // chapter, which matches the relative index the list expects.
+        mp.setHighlightIndex(idx);
+        // Auto-scroll along so the spoken verse is on screen.
+        if (mp.itemScrollController.isAttached) {
+          mp.scrollToIndex(index: idx);
+        }
+      },
+      onDone: () {
+        if (!mounted) return;
+        mp.clearHighlightIndex();
+        _stopTtsPolling();
+        setState(() => _isListening = false);
+      },
+    );
     setState(() => _isListening = true);
     _startTtsPolling();
   }

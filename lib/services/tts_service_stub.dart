@@ -3,6 +3,11 @@
 // `tts_service.dart` is type-correct.
 
 bool ttsIsAvailable() => false;
-void ttsSpeak(String text, String locale) {}
+void ttsSpeakSequence(
+  List<String> chunks,
+  String locale,
+  void Function(int)? onAdvance,
+  void Function()? onDone,
+) {}
 void ttsStop() {}
 bool ttsSpeaking() => false;
