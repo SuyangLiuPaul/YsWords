@@ -250,6 +250,21 @@ const uiStrings = {
     'zh-Hant': '小先知',
     'en': 'Min.Pr.',
   },
+  'lxxEquivalents': {
+    'zh-Hans': '七十士译本对应',
+    'zh-Hant': '七十士譯本對應',
+    'en': 'LXX Equivalents',
+  },
+  'fullStudy': {
+    'zh-Hans': '完整研经',
+    'zh-Hant': '完整研經',
+    'en': 'Full study',
+  },
+  'moreRefs': {
+    'zh-Hans': '处更多',
+    'zh-Hant': '處更多',
+    'en': 'more',
+  },
   'wordFamily': {
     'zh-Hans': '同源词',
     'zh-Hant': '同源詞',

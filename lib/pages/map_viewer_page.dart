@@ -84,7 +84,13 @@ class _MapViewerPageState extends State<MapViewerPage> {
               minScale: 0.5,
               maxScale: 5.0,
               child: Center(
-                child: Image.asset(
+                child: _current.file.startsWith('http')
+                    ? Image.network(
+                        _current.file,
+                        fit: BoxFit.contain,
+                        errorBuilder: (_, __, ___) => _imageFallback(scheme),
+                      )
+                    : Image.asset(
                   'assets/maps/${_current.file}',
                   fit: BoxFit.contain,
                   errorBuilder: (_, __, ___) => Center(
@@ -273,6 +279,22 @@ class _MapViewerPageState extends State<MapViewerPage> {
       ),
     );
   }
+
+  Widget _imageFallback(ColorScheme scheme) {
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.broken_image, size: 48, color: scheme.outline),
+          const SizedBox(height: 8),
+          Text(
+            'Illustration unavailable',
+            style: TextStyle(color: scheme.outline, fontSize: 14),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 class _StripCard extends StatelessWidget {
@@ -321,14 +343,23 @@ class _StripCard extends StatelessWidget {
                   child: Stack(
                     fit: StackFit.expand,
                     children: [
-                      Image.asset(
-                        'assets/maps/${map.file}',
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => Icon(
-                          Icons.map,
-                          color: scheme.primary,
-                        ),
-                      ),
+                      map.file.startsWith('http')
+                          ? Image.network(
+                              map.file,
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, __, ___) => Icon(
+                                Icons.collections,
+                                color: scheme.primary,
+                              ),
+                            )
+                          : Image.asset(
+                              'assets/maps/${map.file}',
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, __, ___) => Icon(
+                                Icons.collections,
+                                color: scheme.primary,
+                              ),
+                            ),
                       if (isRelated && !isCurrent)
                         Positioned(
                           top: 4,

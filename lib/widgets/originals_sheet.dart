@@ -11,6 +11,7 @@ import 'package:yswords/models/original_word.dart';
 import 'package:yswords/models/strongs.dart';
 import 'package:yswords/models/verse.dart';
 import 'package:yswords/services/concordance_service.dart';
+import 'package:yswords/services/lxx_service.dart';
 import 'package:yswords/services/originals_service.dart';
 import 'package:yswords/services/strongs_service.dart';
 import 'package:yswords/utils/version_mapper.dart'
@@ -85,6 +86,21 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
   List<StrongsEntry> _wordFamily = const [];
   List<StrongsEntry> _compareWords = const [];
 
+  // Pre-fetched concordances for every related entry (family + synonym),
+  // so tapping a chip can immediately show inline verse refs without
+  // a per-tap network round trip. Populated by _loadRelations.
+  Map<String, ConcordanceResult?> _relatedConcordances = {};
+
+  // Strong's # of the word-family / synonym chip currently expanded
+  // inline (showing its verse refs below the Wrap). Null = all collapsed.
+  String? _expandedRelatedNumber;
+
+  // LXX Greek equivalents for the current Hebrew entry (empty for
+  // Greek entries). Tapping a chip navigates into that Greek entry,
+  // which then loads its own family / synonyms / verses — letting
+  // the user pivot from Hebrew to Greek word study seamlessly.
+  List<StrongsEntry> _lxxEquivalents = const [];
+
   @override
   void initState() {
     super.initState();
@@ -146,6 +162,9 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
       _expandedConcordanceBook = null;
       _wordFamily = const [];
       _compareWords = const [];
+      _relatedConcordances = const {};
+      _expandedRelatedNumber = null;
+      _lxxEquivalents = const [];
     });
     // Fire both lookups in parallel — Strong's entry is per-language,
     // concordance is a single shared file that gets warmed by the
@@ -175,6 +194,9 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
       _expandedConcordanceBook = null;
       _wordFamily = const [];
       _compareWords = const [];
+      _relatedConcordances = const {};
+      _expandedRelatedNumber = null;
+      _lxxEquivalents = const [];
     });
     final entryFuture = StrongsService.lookup(strongsNumber);
     final concordanceFuture = ConcordanceService.lookup(strongsNumber);
@@ -199,6 +221,9 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
       _rootConcordance = null;
       _wordFamily = const [];
       _compareWords = const [];
+      _relatedConcordances = const {};
+      _expandedRelatedNumber = null;
+      _lxxEquivalents = const [];
       // Restore the word-entry's auto-opened first book.
       _expandedConcordanceBook = _selectedConcordance?.refs.isNotEmpty == true
           ? _selectedConcordance!.refs.first.englishBook
@@ -212,10 +237,24 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
   Future<void> _loadRelations(String number) async {
     final family = await StrongsService.wordFamily(number);
     final compare = await StrongsService.compareWords(number);
+    // Hebrew entries also get LXX Greek equivalents.
+    final lxx = number.startsWith('H')
+        ? await LxxService.greekEntriesFor(number)
+        : const <StrongsEntry>[];
+    if (!mounted) return;
+    // Prefetch concordances for every related entry (family + synonyms
+    // + LXX equivalents) so the inline-expand UI is instant on tap.
+    final all = <StrongsEntry>[...family, ...compare, ...lxx];
+    final entries = <String, ConcordanceResult?>{};
+    await Future.wait(all.map((e) async {
+      entries[e.number] = await ConcordanceService.lookup(e.number);
+    }));
     if (!mounted) return;
     setState(() {
       _wordFamily = family;
       _compareWords = compare;
+      _lxxEquivalents = lxx;
+      _relatedConcordances = entries;
     });
   }
 
@@ -644,6 +683,13 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
                 _compareWords, scheme, locale,
               ),
             ],
+            if (_lxxEquivalents.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              _buildRelatedSection(
+                uiStrings['lxxEquivalents']?[locale] ?? 'LXX Equivalents',
+                _lxxEquivalents, scheme, locale,
+              ),
+            ],
           ] else
             Text(
               uiStrings['strongsNotFound']?[locale] ??
@@ -723,6 +769,19 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
 
   Widget _buildRelatedSection(
       String label, List<StrongsEntry> entries, ColorScheme scheme, String locale) {
+    // Find which entry (if any) in this section is expanded — only
+    // expand inline within the section that owns the chip, so a tap
+    // on a Word-Family chip doesn't dangle verses inside the Synonyms
+    // section.
+    StrongsEntry? expanded;
+    if (_expandedRelatedNumber != null) {
+      for (final e in entries) {
+        if (e.number == _expandedRelatedNumber) {
+          expanded = e;
+          break;
+        }
+      }
+    }
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -741,26 +800,173 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
           runSpacing: 6,
           children: [for (final e in entries) _relatedChip(e, scheme, locale)],
         ),
+        if (expanded != null) ...[
+          const SizedBox(height: 8),
+          _buildExpandedRelatedVerses(expanded, scheme, locale),
+        ],
       ],
+    );
+  }
+
+  Widget _buildExpandedRelatedVerses(
+      StrongsEntry e, ColorScheme scheme, String locale) {
+    final cr = _relatedConcordances[e.number];
+    if (cr == null) {
+      // Concordance still loading or genuinely unavailable.
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        child: Center(
+          child: SizedBox(
+            width: 18,
+            height: 18,
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              color: scheme.primary,
+            ),
+          ),
+        ),
+      );
+    }
+    if (cr.refs.isEmpty) {
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        decoration: BoxDecoration(
+          color: scheme.surfaceContainerHighest.withValues(alpha: 0.4),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Text(
+          uiStrings['concordanceNoResults']?[locale] ??
+              'No verse references for this entry.',
+          style: TextStyle(
+              fontSize: 12,
+              color: scheme.onSurfaceVariant,
+              fontStyle: FontStyle.italic),
+        ),
+      );
+    }
+    final shown = cr.refs.take(8).toList();
+    final remaining = cr.refs.length - shown.length;
+    final usedTemplate =
+        uiStrings['concordanceUsed']?[locale] ?? 'Used {count} times';
+    final usedLabel = usedTemplate.replaceAll('{count}', cr.total.toString());
+    return Container(
+      padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
+      decoration: BoxDecoration(
+        color: scheme.surfaceContainerHighest.withValues(alpha: 0.45),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+          color: scheme.outlineVariant.withValues(alpha: 0.5),
+          width: 0.5,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                decoration: BoxDecoration(
+                  color: scheme.primary.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Text(
+                  e.number,
+                  style: TextStyle(
+                    fontSize: 9,
+                    fontWeight: FontWeight.w700,
+                    color: scheme.primary,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  '${e.lemma} · $usedLabel',
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: scheme.onSurfaceVariant,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              // Open the full word study for this entry.
+              InkWell(
+                onTap: () => _loadRootEntry(e.number),
+                borderRadius: BorderRadius.circular(4),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 4, vertical: 2),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        uiStrings['fullStudy']?[locale] ?? 'Full study',
+                        style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w600,
+                          color: scheme.primary,
+                        ),
+                      ),
+                      Icon(Icons.arrow_forward_rounded,
+                          size: 12, color: scheme.primary),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          for (int i = 0; i < shown.length; i++) ...[
+            if (i > 0)
+              Divider(
+                  height: 1,
+                  thickness: 0.5,
+                  color: scheme.outlineVariant.withValues(alpha: 0.3)),
+            _refRow(shown[i], scheme),
+          ],
+          if (remaining > 0) ...[
+            const SizedBox(height: 4),
+            Text(
+              '+ $remaining ${uiStrings['moreRefs']?[locale] ?? 'more'}',
+              style: TextStyle(
+                fontSize: 11,
+                fontStyle: FontStyle.italic,
+                color: scheme.onSurfaceVariant,
+              ),
+            ),
+          ],
+        ],
+      ),
     );
   }
 
   Widget _relatedChip(StrongsEntry e, ColorScheme scheme, String locale) {
     // Material ancestor guarantees InkWell.onTap fires on Flutter web.
-    // Without it, the Container's opaque decoration was eating taps in
-    // some configurations.
+    // Tap behavior: toggle inline verse-list expansion. To open the
+    // full word study, the user uses the "Full study →" affordance
+    // inside the expanded section.
+    final isExpanded = _expandedRelatedNumber == e.number;
     return Material(
       color: Colors.transparent,
       child: InkWell(
-      onTap: () => _loadRootEntry(e.number),
+      onTap: () => setState(() {
+        _expandedRelatedNumber = isExpanded ? null : e.number;
+      }),
       borderRadius: BorderRadius.circular(8),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
         constraints: const BoxConstraints(maxWidth: 200),
         decoration: BoxDecoration(
-          color: scheme.secondaryContainer.withValues(alpha: 0.55),
+          color: isExpanded
+              ? scheme.primaryContainer
+              : scheme.secondaryContainer.withValues(alpha: 0.55),
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: scheme.outlineVariant),
+          border: Border.all(
+            color: isExpanded ? scheme.primary : scheme.outlineVariant,
+            width: isExpanded ? 1.5 : 1,
+          ),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,

@@ -383,5 +383,125 @@
     "description": { "en": "George F. Cram map of Palestine in the time of Christ.", "zh-Hans": "乔治·F·克拉姆的基督时代巴勒斯坦地图。", "zh-Hant": "喬治·F·克拉姆的基督時代巴勒斯坦地圖。" },
     "books": { "Matthew": [1, 28], "Mark": [1, 16], "Luke": [1, 24], "John": [1, 21], "Acts": [1, 12] },
     "file": "55_palestine_time_christ_cram.jpg"
+  },
+  {
+    "id": "scene_creation_dore",
+    "kind": "scene",
+    "title": { "en": "The Creation of Light (Doré)", "zh-Hans": "光的创造 (多雷)", "zh-Hant": "光的創造 (多雷)" },
+    "description": { "en": "Gustave Doré, 1866 — engraving for Genesis 1:3.", "zh-Hans": "古斯塔夫·多雷,1866 年——创世记 1:3 的版画。", "zh-Hant": "古斯塔夫·多雷,1866 年——創世記 1:3 的版畫。" },
+    "books": { "Genesis": [1, 1] },
+    "file": "https://commons.wikimedia.org/wiki/Special:FilePath/Gustave_Dor%C3%A9_-_Bible_Illustrations_-_001.jpg?width=1200"
+  },
+  {
+    "id": "scene_tower_babel_bruegel",
+    "kind": "scene",
+    "title": { "en": "Tower of Babel (Bruegel)", "zh-Hans": "巴别塔 (老布鲁盖尔)", "zh-Hant": "巴別塔 (老布魯蓋爾)" },
+    "description": { "en": "Pieter Bruegel the Elder, 1563 — Vienna version.", "zh-Hans": "老彼得·布鲁盖尔,1563 年——维也纳版本。", "zh-Hant": "老彼得·布魯蓋爾,1563 年——維也納版本。" },
+    "books": { "Genesis": [11, 11] },
+    "file": "https://commons.wikimedia.org/wiki/Special:FilePath/Pieter_Bruegel_the_Elder_-_The_Tower_of_Babel_(Vienna)_-_Google_Art_Project_-_edited.jpg?width=1200"
+  },
+  {
+    "id": "scene_sacrifice_isaac_dore",
+    "kind": "scene",
+    "title": { "en": "Sacrifice of Isaac (Doré)", "zh-Hans": "以撒的献祭 (多雷)", "zh-Hant": "以撒的獻祭 (多雷)" },
+    "description": { "en": "Gustave Doré, 1866 — Abraham binds Isaac on Mount Moriah (Genesis 22).", "zh-Hans": "古斯塔夫·多雷,1866 年——亚伯拉罕在摩利亚山捆绑以撒(创世记 22 章)。", "zh-Hant": "古斯塔夫·多雷,1866 年——亞伯拉罕在摩利亞山捆綁以撒(創世記 22 章)。" },
+    "books": { "Genesis": [22, 22] },
+    "file": "https://commons.wikimedia.org/wiki/Special:FilePath/Gustave_Dor%C3%A9_-_The_Holy_Bible_-_Plate_I,_The_Sacrifice_of_Isaac.jpg?width=1200"
+  },
+  {
+    "id": "scene_red_sea_crossing_dore",
+    "kind": "scene",
+    "title": { "en": "Crossing of the Red Sea (Doré)", "zh-Hans": "过红海 (多雷)", "zh-Hant": "過紅海 (多雷)" },
+    "description": { "en": "Gustave Doré, 1866 — Israelites pass through the divided sea (Exodus 14).", "zh-Hans": "古斯塔夫·多雷,1866 年——以色列人通过分开的海(出埃及记 14 章)。", "zh-Hant": "古斯塔夫·多雷,1866 年——以色列人通過分開的海(出埃及記 14 章)。" },
+    "books": { "Exodus": [14, 14] },
+    "file": "https://commons.wikimedia.org/wiki/Special:FilePath/Crossing_of_the_Red_Sea,_by_Gustave_Dor%C3%A9.jpg?width=1200"
+  },
+  {
+    "id": "scene_walls_jericho_dore",
+    "kind": "scene",
+    "title": { "en": "Walls of Jericho Fall (Doré)", "zh-Hans": "耶利哥城墙倒塌 (多雷)", "zh-Hant": "耶利哥城牆倒塌 (多雷)" },
+    "description": { "en": "Gustave Doré, 1866 — the seventh trumpet and the falling walls (Joshua 6).", "zh-Hans": "古斯塔夫·多雷,1866 年——第七声号角与倒塌的城墙(约书亚记 6 章)。", "zh-Hant": "古斯塔夫·多雷,1866 年——第七聲號角與倒塌的城牆(約書亞記 6 章)。" },
+    "books": { "Joshua": [6, 6] },
+    "file": "https://commons.wikimedia.org/wiki/Special:FilePath/Gustave_dore_bible_the_walls_of_jericho_falling_down.jpg?width=1200"
+  },
+  {
+    "id": "scene_david_goliath_dore",
+    "kind": "scene",
+    "title": { "en": "David and Goliath (Doré)", "zh-Hans": "大卫与歌利亚 (多雷)", "zh-Hant": "大衛與歌利亞 (多雷)" },
+    "description": { "en": "Gustave Doré, 1866 — the young shepherd's victory (1 Samuel 17).", "zh-Hans": "古斯塔夫·多雷,1866 年——少年牧人的胜利(撒母耳记上 17 章)。", "zh-Hant": "古斯塔夫·多雷,1866 年——少年牧人的勝利(撒母耳記上 17 章)。" },
+    "books": { "1 Samuel": [17, 17] },
+    "file": "https://commons.wikimedia.org/wiki/Special:FilePath/Gustave_dor%C3%A9_-_David_and_Goliath.jpg?width=1200"
+  },
+  {
+    "id": "scene_belshazzar_rembrandt",
+    "kind": "scene",
+    "title": { "en": "Belshazzar's Feast (Rembrandt)", "zh-Hans": "伯沙撒的筵席 (伦勃朗)", "zh-Hant": "伯沙撒的筵席 (倫勃朗)" },
+    "description": { "en": "Rembrandt, c. 1635 — the writing on the wall (Daniel 5).", "zh-Hans": "伦勃朗,约 1635 年——墙上的字(但以理书 5 章)。", "zh-Hant": "倫勃朗,約 1635 年——牆上的字(但以理書 5 章)。" },
+    "books": { "Daniel": [5, 5] },
+    "file": "https://commons.wikimedia.org/wiki/Special:FilePath/Rembrandt-Belsazar.jpg?width=1200"
+  },
+  {
+    "id": "scene_daniel_lions_dore",
+    "kind": "scene",
+    "title": { "en": "Daniel in the Lions' Den (Doré)", "zh-Hans": "但以理在狮子坑中 (多雷)", "zh-Hant": "但以理在獅子坑中 (多雷)" },
+    "description": { "en": "Gustave Doré, 1866 — Daniel preserved among the lions (Daniel 6).", "zh-Hans": "古斯塔夫·多雷,1866 年——但以理在狮子中得保守(但以理书 6 章)。", "zh-Hant": "古斯塔夫·多雷,1866 年——但以理在獅子中得保守(但以理書 6 章)。" },
+    "books": { "Daniel": [6, 6] },
+    "file": "https://commons.wikimedia.org/wiki/Special:FilePath/Gustave_dor%C3%A9_-_Daniel%27s_answer_to_the_king.jpg?width=1200"
+  },
+  {
+    "id": "scene_jonah_whale_dore",
+    "kind": "scene",
+    "title": { "en": "Jonah and the Great Fish (Doré)", "zh-Hans": "约拿与大鱼 (多雷)", "zh-Hant": "約拿與大魚 (多雷)" },
+    "description": { "en": "Gustave Doré, 1866 — Jonah cast forth onto dry land (Jonah 2).", "zh-Hans": "古斯塔夫·多雷,1866 年——约拿被吐到旱地上(约拿书 2 章)。", "zh-Hant": "古斯塔夫·多雷,1866 年——約拿被吐到旱地上(約拿書 2 章)。" },
+    "books": { "Jonah": [1, 2] },
+    "file": "https://commons.wikimedia.org/wiki/Special:FilePath/Gustave_dor%C3%A9_-_Jonah_cast_forth_by_the_whale.jpg?width=1200"
+  },
+  {
+    "id": "scene_good_samaritan_dore",
+    "kind": "parable",
+    "title": { "en": "Good Samaritan (Doré)", "zh-Hans": "好撒玛利亚人 (多雷)", "zh-Hant": "好撒瑪利亞人 (多雷)" },
+    "description": { "en": "Gustave Doré, 1866 — the parable of the Good Samaritan (Luke 10).", "zh-Hans": "古斯塔夫·多雷,1866 年——好撒玛利亚人的比喻(路加福音 10 章)。", "zh-Hant": "古斯塔夫·多雷,1866 年——好撒瑪利亞人的比喻(路加福音 10 章)。" },
+    "books": { "Luke": [10, 10] },
+    "file": "https://commons.wikimedia.org/wiki/Special:FilePath/Brooklyn_Museum_-_The_Good_Samaritan_(Le_bon_Samaritain)_-_James_Tissot.jpg?width=1200"
+  },
+  {
+    "id": "scene_prodigal_son_dore",
+    "kind": "parable",
+    "title": { "en": "Return of the Prodigal Son (Doré)", "zh-Hans": "浪子回头 (多雷)", "zh-Hant": "浪子回頭 (多雷)" },
+    "description": { "en": "Gustave Doré, 1866 — the parable's reconciliation moment (Luke 15).", "zh-Hans": "古斯塔夫·多雷,1866 年——比喻中和好的时刻(路加福音 15 章)。", "zh-Hant": "古斯塔夫·多雷,1866 年——比喻中和好的時刻(路加福音 15 章)。" },
+    "books": { "Luke": [15, 15] },
+    "file": "https://commons.wikimedia.org/wiki/Special:FilePath/Gustave_dor%C3%A9_-_The_return_of_the_prodigal_son.jpg?width=1200"
+  },
+  {
+    "id": "scene_walking_on_water_dore",
+    "kind": "scene",
+    "title": { "en": "Jesus Walking on the Water (Doré)", "zh-Hans": "耶稣行在水面上 (多雷)", "zh-Hant": "耶穌行在水面上 (多雷)" },
+    "description": { "en": "Gustave Doré, 1866 — Peter beginning to sink (Matthew 14).", "zh-Hans": "古斯塔夫·多雷,1866 年——彼得开始下沉(马太福音 14 章)。", "zh-Hant": "古斯塔夫·多雷,1866 年——彼得開始下沉(馬太福音 14 章)。" },
+    "books": { "Matthew": [14, 14], "Mark": [6, 6], "John": [6, 6] },
+    "file": "https://commons.wikimedia.org/wiki/Special:FilePath/Gustave_Dor%C3%A9_-_Jesus_walking_on_the_sea.jpg?width=1200"
+  },
+  {
+    "id": "scene_raising_lazarus_dore",
+    "kind": "scene",
+    "title": { "en": "Raising of Lazarus (Doré)", "zh-Hans": "拉撒路复活 (多雷)", "zh-Hant": "拉撒路復活 (多雷)" },
+    "description": { "en": "Gustave Doré, 1866 — Lazarus called from the tomb (John 11).", "zh-Hans": "古斯塔夫·多雷,1866 年——拉撒路从坟墓里出来(约翰福音 11 章)。", "zh-Hant": "古斯塔夫·多雷,1866 年——拉撒路從墳墓裡出來(約翰福音 11 章)。" },
+    "books": { "John": [11, 11] },
+    "file": "https://commons.wikimedia.org/wiki/Special:FilePath/Gustave_dor%C3%A9_-_The_resurrection_of_lazarus.jpg?width=1200"
+  },
+  {
+    "id": "scene_four_horsemen_dore",
+    "kind": "prophecy",
+    "title": { "en": "Four Horsemen of the Apocalypse (Doré)", "zh-Hans": "天启四骑士 (多雷)", "zh-Hant": "天啟四騎士 (多雷)" },
+    "description": { "en": "Gustave Doré, 1866 — the seals broken (Revelation 6).", "zh-Hans": "古斯塔夫·多雷,1866 年——印被揭开(启示录 6 章)。", "zh-Hant": "古斯塔夫·多雷,1866 年——印被揭開(啟示錄 6 章)。" },
+    "books": { "Revelation": [6, 6] },
+    "file": "https://commons.wikimedia.org/wiki/Special:FilePath/Gustave_Dor%C3%A9_-_The_Four_Horsemen_of_the_Apocalypse_(coloured).jpg?width=1200"
+  },
+  {
+    "id": "scene_woman_clothed_sun_dore",
+    "kind": "prophecy",
+    "title": { "en": "The Woman Clothed with the Sun (Doré)", "zh-Hans": "身披日头的妇人 (多雷)", "zh-Hant": "身披日頭的婦人 (多雷)" },
+    "description": { "en": "Gustave Doré, 1866 — the great sign in heaven (Revelation 12).", "zh-Hans": "古斯塔夫·多雷,1866 年——天上的大异象(启示录 12 章)。", "zh-Hant": "古斯塔夫·多雷,1866 年——天上的大異象(啟示錄 12 章)。" },
+    "books": { "Revelation": [12, 12] },
+    "file": "https://commons.wikimedia.org/wiki/Special:FilePath/Gustave_dor%C3%A9_-_A_great_wonder_in_heaven.jpg?width=1200"
   }
 ]

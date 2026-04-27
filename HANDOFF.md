@@ -903,7 +903,33 @@ Paragraph mode was shipped but felt loose compared to WeDevote 微读圣经. Ret
 
 ## Recent Work (Round 18 — 2026-04-27, multiple deploys)
 
-### Polish round (final commits this session)
+### Round 19 (the three deferred features, landed)
+
+The three features previously deferred for follow-up were all delivered.
+
+#### 1. Synonym chips: inline verse expansion (Task A)
+Tapping a 同源词 / 同义词 / LXX-equivalent chip now toggles an inline verse list directly under the chip Wrap, instead of replacing the entry view. The expanded card shows:
+- Strong's badge + lemma + "Used N times" header
+- Up to 8 verse refs (each tappable to navigate)
+- "+ N more" if there are additional refs
+- "Full study →" link to open the chip's word as the new root entry (same behaviour the old single-tap had)
+
+State plumbed through new fields `_relatedConcordances` (pre-fetched in parallel by `_loadRelations`) and `_expandedRelatedNumber`. The expanded chip itself highlights with `primaryContainer` background to make the active selection obvious. See [originals_sheet.dart:763](lib/widgets/originals_sheet.dart:763).
+
+#### 2. Illustrations content + URL support (Task B)
+- `BibleMap` model gains a `kind` field: `'map' | 'scene' | 'parable' | 'prophecy' | 'genealogy'`. Default `'map'` keeps every existing entry working unchanged.
+- The viewer (`map_viewer_page.dart`) now branches on `file.startsWith('http')` and renders `Image.network` with a graceful "Illustration unavailable" fallback for remote URLs.
+- 15 new entries added to `assets/maps_index.json`, drawn from public-domain artwork (Doré 1866, Bruegel 1563, Rembrandt 1635). All reference Wikimedia Commons via `Special:FilePath` redirect URLs, which remain stable even if the underlying file is renamed. New count: 70 entries (55 maps + 11 scenes + 2 parables + 2 prophecy).
+- Adding more entries is now a pure data task — append a JSON object with `"kind": "scene"` and a `Special:FilePath` URL.
+
+#### 3. Septuagint (LXX) Hebrew → Greek bridge (Task C)
+- New asset `assets/strongs/lxx_hebrew_to_greek.json` — a curated mapping of 88 high-value Hebrew Strong's numbers to their canonical LXX Greek equivalents (102 Greek mappings total). Covers core theological vocabulary: יהוה→κύριος, חֶסֶד→ἔλεος/χάρις, תּוֹרָה→νόμος, etc. Schema includes `_meta` block with version + license; expansion is plain JSON append.
+- New `LxxService` ([lxx_service.dart](lib/services/lxx_service.dart)) — lazy-loads the mapping and resolves to `StrongsEntry` lists.
+- `_buildEntryCard` now shows a "LXX Equivalents / 七十士译本对应 / 七十士譯本對應" section whenever the current entry is Hebrew and has a curated mapping. Renders with the same `_relatedChip` machinery as Word Family / Synonyms — so tapping a chip expands inline verses, and "Full study →" pivots to that Greek entry, where the existing Greek family/synonyms machinery just works.
+
+This means the user can now look up a Hebrew word, see its LXX Greek equivalent, jump to the Greek entry, and from there explore Greek synonyms / word family / NT distribution — full Hebrew→Greek cross-language word study.
+
+### Polish round (earlier commits this session)
 - **OT/NT renamed to Hebrew Bible / Greek Bible** in all three locales (EN, zh-Hans, zh-Hant). The shorthand `'oldTestamentShort'` / `'newTestamentShort'` keys are used **only** for the English narrow-toggle case (sidebar 280px); Chinese always shows the full 4–5-char form (希伯来圣经 / 希腊圣经) since it fits even in narrow buttons. See [book_chapter_picker.dart:174](lib/widgets/book_chapter_picker.dart:174).
 - **Distribution table self-contained**: takes a single `strongsNumber` and loads entry + family + synonyms + concordance internally. Earlier version pulled from the parent's `_wordFamily` / `_compareWords` state which is populated asynchronously, so opening the table before the background load finished left it with only one row. See [word_distribution_table.dart:47](lib/widgets/word_distribution_table.dart:47).
 - **Wider modal sheets on desktop / iPad**: `showModalBottomSheet` defaults to ~640dp max width. Added explicit `constraints: BoxConstraints(maxWidth: 1100)` on the exegesis sheet and `1400` on the distribution table sheet so wide screens get readable widths. Phones are unaffected (their screen is narrower than the cap).
@@ -940,7 +966,7 @@ UI labels changed from "Maps / 地图" to "Illustrations / 插图 / 插畫" so t
 
 ## Deferred Feature Plans
 
-These were requested in this session but deferred because they need data acquisition or content curation, not just code:
+> **Status note (Round 19):** The three previously deferred features below have all been delivered. The plans remain documented because they describe the architecture and data sources, which are useful when expanding the curated mappings/illustrations.
 
 ### Septuagint (LXX / 七十士译本) integration
 **Goal**: For Hebrew (OT) Strong's entries, surface the Greek LXX equivalents so the user can pivot into Greek synonym/family analysis.
