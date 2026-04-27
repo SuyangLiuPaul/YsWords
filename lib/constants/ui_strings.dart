@@ -255,6 +255,11 @@ const uiStrings = {
     'zh-Hant': '七十士譯本對應',
     'en': 'LXX Equivalents',
   },
+  'hebrewSources': {
+    'zh-Hans': '希伯来源词',
+    'zh-Hant': '希伯來源詞',
+    'en': 'Hebrew Sources',
+  },
   'fullStudy': {
     'zh-Hans': '完整研经',
     'zh-Hant': '完整研經',

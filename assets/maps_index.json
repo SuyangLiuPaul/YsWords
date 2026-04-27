@@ -503,5 +503,141 @@
     "description": { "en": "Gustave Doré, 1866 — the great sign in heaven (Revelation 12).", "zh-Hans": "古斯塔夫·多雷,1866 年——天上的大异象(启示录 12 章)。", "zh-Hant": "古斯塔夫·多雷,1866 年——天上的大異象(啟示錄 12 章)。" },
     "books": { "Revelation": [12, 12] },
     "file": "https://commons.wikimedia.org/wiki/Special:FilePath/Gustave_dor%C3%A9_-_A_great_wonder_in_heaven.jpg?width=1200"
+  },
+  {
+    "id": "scene_garden_eden_dore",
+    "kind": "scene",
+    "title": { "en": "Garden of Eden (Doré)", "zh-Hans": "伊甸园 (多雷)", "zh-Hant": "伊甸園 (多雷)" },
+    "description": { "en": "Gustave Doré, 1866 — Adam and Eve in paradise (Genesis 2).", "zh-Hans": "古斯塔夫·多雷,1866 年——亚当与夏娃在乐园(创世记 2 章)。", "zh-Hant": "古斯塔夫·多雷,1866 年——亞當與夏娃在樂園(創世記 2 章)。" },
+    "books": { "Genesis": [2, 3] },
+    "file": "https://commons.wikimedia.org/wiki/Special:FilePath/Gustave_Dor%C3%A9_-_The_Holy_Bible_-_Plate_II,_The_Earth_Was_Without_Form,_and_Void.jpg?width=1200"
+  },
+  {
+    "id": "scene_noahs_ark_dore",
+    "kind": "scene",
+    "title": { "en": "The Deluge / Noah's Ark (Doré)", "zh-Hans": "洪水 / 挪亚方舟 (多雷)", "zh-Hant": "洪水 / 挪亞方舟 (多雷)" },
+    "description": { "en": "Gustave Doré, 1866 — the world destroyed by water (Genesis 7).", "zh-Hans": "古斯塔夫·多雷,1866 年——世界被水毁灭(创世记 7 章)。", "zh-Hant": "古斯塔夫·多雷,1866 年——世界被水毀滅(創世記 7 章)。" },
+    "books": { "Genesis": [6, 9] },
+    "file": "https://commons.wikimedia.org/wiki/Special:FilePath/Gustave_Dor%C3%A9_-_The_Holy_Bible_-_Plate_VI,_The_Deluge.jpg?width=1200"
+  },
+  {
+    "id": "scene_sodom_dore",
+    "kind": "scene",
+    "title": { "en": "Destruction of Sodom (Doré)", "zh-Hans": "所多玛被毁 (多雷)", "zh-Hant": "所多瑪被毀 (多雷)" },
+    "description": { "en": "Gustave Doré, 1866 — Lot's family flees the burning cities (Genesis 19).", "zh-Hans": "古斯塔夫·多雷,1866 年——罗得一家逃离烈火中的城(创世记 19 章)。", "zh-Hant": "古斯塔夫·多雷,1866 年——羅得一家逃離烈火中的城(創世記 19 章)。" },
+    "books": { "Genesis": [19, 19] },
+    "file": "https://commons.wikimedia.org/wiki/Special:FilePath/Gustave_Dor%C3%A9_-_The_Holy_Bible_-_Plate_XII,_The_Cities_of_the_Plain_Destroyed.jpg?width=1200"
+  },
+  {
+    "id": "scene_burning_bush_dore",
+    "kind": "scene",
+    "title": { "en": "Moses and the Burning Bush (Doré)", "zh-Hans": "摩西与燃烧的荆棘 (多雷)", "zh-Hant": "摩西與燃燒的荊棘 (多雷)" },
+    "description": { "en": "Gustave Doré, 1866 — God's call from the unconsumed bush (Exodus 3).", "zh-Hans": "古斯塔夫·多雷,1866 年——神从烧不尽的荆棘中呼召摩西(出埃及记 3 章)。", "zh-Hant": "古斯塔夫·多雷,1866 年——神從燒不盡的荊棘中呼召摩西(出埃及記 3 章)。" },
+    "books": { "Exodus": [3, 4] },
+    "file": "https://commons.wikimedia.org/wiki/Special:FilePath/Gustave_dor%C3%A9_-_The_burning_bush.jpg?width=1200"
+  },
+  {
+    "id": "scene_ten_commandments_dore",
+    "kind": "scene",
+    "title": { "en": "Moses Receives the Law (Doré)", "zh-Hans": "摩西领受律法 (多雷)", "zh-Hant": "摩西領受律法 (多雷)" },
+    "description": { "en": "Gustave Doré, 1866 — the tablets given on Sinai (Exodus 20).", "zh-Hans": "古斯塔夫·多雷,1866 年——西奈山上颁赐的法版(出埃及记 20 章)。", "zh-Hant": "古斯塔夫·多雷,1866 年——西奈山上頒賜的法版(出埃及記 20 章)。" },
+    "books": { "Exodus": [19, 20] },
+    "file": "https://commons.wikimedia.org/wiki/Special:FilePath/Gustave_Dor%C3%A9_-_Moses_breaking_the_tablets.jpg?width=1200"
+  },
+  {
+    "id": "scene_brazen_serpent_dore",
+    "kind": "scene",
+    "title": { "en": "The Brazen Serpent (Doré)", "zh-Hans": "铜蛇 (多雷)", "zh-Hant": "銅蛇 (多雷)" },
+    "description": { "en": "Gustave Doré, 1866 — Moses lifts up the serpent in the wilderness (Numbers 21).", "zh-Hans": "古斯塔夫·多雷,1866 年——摩西在旷野举起铜蛇(民数记 21 章)。", "zh-Hant": "古斯塔夫·多雷,1866 年——摩西在曠野舉起銅蛇(民數記 21 章)。" },
+    "books": { "Numbers": [21, 21] },
+    "file": "https://commons.wikimedia.org/wiki/Special:FilePath/Gustave_dor%C3%A9_-_The_brazen_serpent.jpg?width=1200"
+  },
+  {
+    "id": "scene_samson_delilah_dore",
+    "kind": "scene",
+    "title": { "en": "Samson and Delilah (Doré)", "zh-Hans": "参孙与大利拉 (多雷)", "zh-Hant": "參孫與大利拉 (多雷)" },
+    "description": { "en": "Gustave Doré, 1866 — Samson's hair cut while he sleeps (Judges 16).", "zh-Hans": "古斯塔夫·多雷,1866 年——参孙在睡梦中头发被剪(士师记 16 章)。", "zh-Hant": "古斯塔夫·多雷,1866 年——參孫在睡夢中頭髮被剪(士師記 16 章)。" },
+    "books": { "Judges": [16, 16] },
+    "file": "https://commons.wikimedia.org/wiki/Special:FilePath/Gustave_Dor%C3%A9_-_Samson_and_Delilah.jpg?width=1200"
+  },
+  {
+    "id": "scene_elijah_chariot_dore",
+    "kind": "prophecy",
+    "title": { "en": "Elijah Taken to Heaven (Doré)", "zh-Hans": "以利亚被接升天 (多雷)", "zh-Hant": "以利亞被接升天 (多雷)" },
+    "description": { "en": "Gustave Doré, 1866 — the chariot of fire (2 Kings 2).", "zh-Hans": "古斯塔夫·多雷,1866 年——火焰的车马(列王纪下 2 章)。", "zh-Hant": "古斯塔夫·多雷,1866 年——火焰的車馬(列王紀下 2 章)。" },
+    "books": { "2 Kings": [2, 2] },
+    "file": "https://commons.wikimedia.org/wiki/Special:FilePath/Gustave_Dor%C3%A9_-_Elijah%27s_ascension.jpg?width=1200"
+  },
+  {
+    "id": "scene_fiery_furnace_dore",
+    "kind": "scene",
+    "title": { "en": "Three in the Fiery Furnace (Doré)", "zh-Hans": "三人在烈火窑中 (多雷)", "zh-Hant": "三人在烈火窯中 (多雷)" },
+    "description": { "en": "Gustave Doré, 1866 — Shadrach, Meshach, Abednego unharmed (Daniel 3).", "zh-Hans": "古斯塔夫·多雷,1866 年——沙得拉、米煞、亚伯尼歌毫发无伤(但以理书 3 章)。", "zh-Hant": "古斯塔夫·多雷,1866 年——沙得拉、米煞、亞伯尼歌毫髮無傷(但以理書 3 章)。" },
+    "books": { "Daniel": [3, 3] },
+    "file": "https://commons.wikimedia.org/wiki/Special:FilePath/Gustave_dor%C3%A9_-_The_three_holy_children_in_the_furnace.jpg?width=1200"
+  },
+  {
+    "id": "scene_nativity_dore",
+    "kind": "scene",
+    "title": { "en": "The Nativity (Doré)", "zh-Hans": "耶稣降生 (多雷)", "zh-Hant": "耶穌降生 (多雷)" },
+    "description": { "en": "Gustave Doré, 1866 — shepherds at the manger (Luke 2).", "zh-Hans": "古斯塔夫·多雷,1866 年——牧羊人在马槽前(路加福音 2 章)。", "zh-Hant": "古斯塔夫·多雷,1866 年——牧羊人在馬槽前(路加福音 2 章)。" },
+    "books": { "Luke": [2, 2] },
+    "file": "https://commons.wikimedia.org/wiki/Special:FilePath/Gustave_dor%C3%A9_-_The_nativity.jpg?width=1200"
+  },
+  {
+    "id": "scene_sermon_mount_dore",
+    "kind": "scene",
+    "title": { "en": "Sermon on the Mount (Doré)", "zh-Hans": "登山宝训 (多雷)", "zh-Hant": "登山寶訓 (多雷)" },
+    "description": { "en": "Gustave Doré, 1866 — Jesus teaching the multitude (Matthew 5–7).", "zh-Hans": "古斯塔夫·多雷,1866 年——耶稣教导群众(马太福音 5–7 章)。", "zh-Hant": "古斯塔夫·多雷,1866 年——耶穌教導群眾(馬太福音 5–7 章)。" },
+    "books": { "Matthew": [5, 7] },
+    "file": "https://commons.wikimedia.org/wiki/Special:FilePath/Gustave_dor%C3%A9_-_The_sermon_on_the_mount.jpg?width=1200"
+  },
+  {
+    "id": "scene_last_supper_davinci",
+    "kind": "scene",
+    "title": { "en": "The Last Supper (da Vinci)", "zh-Hans": "最后的晚餐 (达·芬奇)", "zh-Hant": "最後的晚餐 (達·芬奇)" },
+    "description": { "en": "Leonardo da Vinci, 1495–1498 — Milan refectory mural (Matthew 26 / John 13).", "zh-Hans": "莱昂纳多·达·芬奇,1495–1498 年——米兰修道院壁画(马太福音 26 / 约翰福音 13 章)。", "zh-Hant": "萊昂納多·達·芬奇,1495–1498 年——米蘭修道院壁畫(馬太福音 26 / 約翰福音 13 章)。" },
+    "books": { "Matthew": [26, 26], "Mark": [14, 14], "Luke": [22, 22], "John": [13, 13] },
+    "file": "https://commons.wikimedia.org/wiki/Special:FilePath/%C3%9Altima_Cena_-_Da_Vinci_5.jpg?width=1200"
+  },
+  {
+    "id": "scene_gethsemane_dore",
+    "kind": "scene",
+    "title": { "en": "Agony in Gethsemane (Doré)", "zh-Hans": "客西马尼的祷告 (多雷)", "zh-Hant": "客西馬尼的禱告 (多雷)" },
+    "description": { "en": "Gustave Doré, 1866 — Jesus at prayer before His arrest (Matthew 26).", "zh-Hans": "古斯塔夫·多雷,1866 年——耶稣被捕前的祷告(马太福音 26 章)。", "zh-Hant": "古斯塔夫·多雷,1866 年——耶穌被捕前的禱告(馬太福音 26 章)。" },
+    "books": { "Matthew": [26, 26], "Mark": [14, 14], "Luke": [22, 22] },
+    "file": "https://commons.wikimedia.org/wiki/Special:FilePath/Gustave_dor%C3%A9_-_The_agony_in_the_garden.jpg?width=1200"
+  },
+  {
+    "id": "scene_crucifixion_dore",
+    "kind": "scene",
+    "title": { "en": "The Crucifixion (Doré)", "zh-Hans": "被钉十字架 (多雷)", "zh-Hant": "被釘十字架 (多雷)" },
+    "description": { "en": "Gustave Doré, 1866 — the Saviour on the cross (Matthew 27 / John 19).", "zh-Hans": "古斯塔夫·多雷,1866 年——救主在十字架上(马太福音 27 / 约翰福音 19 章)。", "zh-Hant": "古斯塔夫·多雷,1866 年——救主在十字架上(馬太福音 27 / 約翰福音 19 章)。" },
+    "books": { "Matthew": [27, 27], "Mark": [15, 15], "Luke": [23, 23], "John": [19, 19] },
+    "file": "https://commons.wikimedia.org/wiki/Special:FilePath/Gustave_dor%C3%A9_-_Crucifixion_of_Jesus.jpg?width=1200"
+  },
+  {
+    "id": "scene_resurrection_dore",
+    "kind": "scene",
+    "title": { "en": "The Resurrection (Doré)", "zh-Hans": "复活 (多雷)", "zh-Hant": "復活 (多雷)" },
+    "description": { "en": "Gustave Doré, 1866 — the angel at the empty tomb (Matthew 28).", "zh-Hans": "古斯塔夫·多雷,1866 年——天使在空墓前(马太福音 28 章)。", "zh-Hant": "古斯塔夫·多雷,1866 年——天使在空墓前(馬太福音 28 章)。" },
+    "books": { "Matthew": [28, 28], "Mark": [16, 16], "Luke": [24, 24], "John": [20, 20] },
+    "file": "https://commons.wikimedia.org/wiki/Special:FilePath/Gustave_dor%C3%A9_-_The_angel_at_the_sepulchre.jpg?width=1200"
+  },
+  {
+    "id": "scene_pentecost_dore",
+    "kind": "scene",
+    "title": { "en": "Pentecost (Doré)", "zh-Hans": "五旬节 (多雷)", "zh-Hant": "五旬節 (多雷)" },
+    "description": { "en": "Gustave Doré, 1866 — the descent of the Holy Spirit (Acts 2).", "zh-Hans": "古斯塔夫·多雷,1866 年——圣灵降临(使徒行传 2 章)。", "zh-Hant": "古斯塔夫·多雷,1866 年——聖靈降臨(使徒行傳 2 章)。" },
+    "books": { "Acts": [2, 2] },
+    "file": "https://commons.wikimedia.org/wiki/Special:FilePath/Gustave_dor%C3%A9_-_The_descent_of_the_holy_spirit.jpg?width=1200"
+  },
+  {
+    "id": "scene_paul_conversion_caravaggio",
+    "kind": "scene",
+    "title": { "en": "Conversion of Paul (Caravaggio)", "zh-Hans": "保罗悔改 (卡拉瓦乔)", "zh-Hant": "保羅悔改 (卡拉瓦喬)" },
+    "description": { "en": "Caravaggio, 1601 — Saul on the Damascus road (Acts 9).", "zh-Hans": "卡拉瓦乔,1601 年——扫罗在大马士革的路上(使徒行传 9 章)。", "zh-Hant": "卡拉瓦喬,1601 年——掃羅在大馬士革的路上(使徒行傳 9 章)。" },
+    "books": { "Acts": [9, 9], "Acts": [22, 22], "Acts": [26, 26] },
+    "file": "https://commons.wikimedia.org/wiki/Special:FilePath/Conversion_on_the_Way_to_Damascus-Caravaggio_(c.1600-1).jpg?width=1200"
   }
 ]

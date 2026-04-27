@@ -101,6 +101,12 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
   // the user pivot from Hebrew to Greek word study seamlessly.
   List<StrongsEntry> _lxxEquivalents = const [];
 
+  // Reverse LXX: Hebrew Strong's that the LXX renders using the
+  // current Greek entry. Empty for Hebrew entries. Lets a NT reader
+  // surface OT roots — e.g. for κύριος (G2962) shows יהוה (H3068),
+  // אֲדֹנָי (H136), etc.
+  List<StrongsEntry> _hebrewSources = const [];
+
   @override
   void initState() {
     super.initState();
@@ -165,6 +171,7 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
       _relatedConcordances = const {};
       _expandedRelatedNumber = null;
       _lxxEquivalents = const [];
+      _hebrewSources = const [];
     });
     // Fire both lookups in parallel — Strong's entry is per-language,
     // concordance is a single shared file that gets warmed by the
@@ -197,6 +204,7 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
       _relatedConcordances = const {};
       _expandedRelatedNumber = null;
       _lxxEquivalents = const [];
+      _hebrewSources = const [];
     });
     final entryFuture = StrongsService.lookup(strongsNumber);
     final concordanceFuture = ConcordanceService.lookup(strongsNumber);
@@ -224,6 +232,7 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
       _relatedConcordances = const {};
       _expandedRelatedNumber = null;
       _lxxEquivalents = const [];
+      _hebrewSources = const [];
       // Restore the word-entry's auto-opened first book.
       _expandedConcordanceBook = _selectedConcordance?.refs.isNotEmpty == true
           ? _selectedConcordance!.refs.first.englishBook
@@ -237,14 +246,17 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
   Future<void> _loadRelations(String number) async {
     final family = await StrongsService.wordFamily(number);
     final compare = await StrongsService.compareWords(number);
-    // Hebrew entries also get LXX Greek equivalents.
+    // Hebrew entries get LXX Greek equivalents (forward).
+    // Greek entries get Hebrew sources (reverse LXX).
     final lxx = number.startsWith('H')
         ? await LxxService.greekEntriesFor(number)
         : const <StrongsEntry>[];
+    final hebSrc = number.startsWith('G')
+        ? await LxxService.hebrewSourceEntriesFor(number)
+        : const <StrongsEntry>[];
     if (!mounted) return;
-    // Prefetch concordances for every related entry (family + synonyms
-    // + LXX equivalents) so the inline-expand UI is instant on tap.
-    final all = <StrongsEntry>[...family, ...compare, ...lxx];
+    // Prefetch concordances for every related entry in parallel.
+    final all = <StrongsEntry>[...family, ...compare, ...lxx, ...hebSrc];
     final entries = <String, ConcordanceResult?>{};
     await Future.wait(all.map((e) async {
       entries[e.number] = await ConcordanceService.lookup(e.number);
@@ -254,6 +266,7 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
       _wordFamily = family;
       _compareWords = compare;
       _lxxEquivalents = lxx;
+      _hebrewSources = hebSrc;
       _relatedConcordances = entries;
     });
   }
@@ -688,6 +701,13 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
               _buildRelatedSection(
                 uiStrings['lxxEquivalents']?[locale] ?? 'LXX Equivalents',
                 _lxxEquivalents, scheme, locale,
+              ),
+            ],
+            if (_hebrewSources.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              _buildRelatedSection(
+                uiStrings['hebrewSources']?[locale] ?? 'Hebrew Sources',
+                _hebrewSources, scheme, locale,
               ),
             ],
           ] else
@@ -1153,7 +1173,6 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
         maxChildSize: 0.95,
         expand: false,
         builder: (_, scrollController) => Column(
-          mainAxisSize: MainAxisSize.min,
           children: [
             Container(
               margin: const EdgeInsets.only(top: 8),
