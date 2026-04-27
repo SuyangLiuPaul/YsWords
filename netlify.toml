@@ -6,3 +6,26 @@
   from = "/*"
   to = "/index.html"
   status = 200
+
+# Force browsers to revalidate the entry files on every load. Without
+# these headers, Flutter's service worker happily served users a stale
+# main.dart.js for hours/days after a deploy.
+[[headers]]
+  for = "/index.html"
+  [headers.values]
+    Cache-Control = "no-cache, no-store, must-revalidate"
+
+[[headers]]
+  for = "/flutter_service_worker.js"
+  [headers.values]
+    Cache-Control = "no-cache, no-store, must-revalidate"
+
+[[headers]]
+  for = "/flutter_bootstrap.js"
+  [headers.values]
+    Cache-Control = "no-cache, no-store, must-revalidate"
+
+[[headers]]
+  for = "/main.dart.js"
+  [headers.values]
+    Cache-Control = "no-cache, must-revalidate"
