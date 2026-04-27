@@ -2324,7 +2324,7 @@
     "file": "55_palestine_time_christ_cram.jpg"
   },
   {
-    "id": "scene_creation_light",
+    "id": "illus_dore_001thecreationofligh",
     "kind": "scene",
     "title": {
       "en": "The Creation of Light (Doré)",
@@ -2332,9 +2332,9 @@
       "zh-Hant": "光的創造 (多雷)"
     },
     "description": {
-      "en": "Gustave Doré, 1866 — engraving for Genesis 1:3.",
-      "zh-Hans": "古斯塔夫·多雷,1866 年——创世记 1:3 的版画。",
-      "zh-Hant": "古斯塔夫·多雷,1866 年——創世記 1:3 的版畫。"
+      "en": "Gustave Doré, 1866 — The Creation of Light (Genesis 1).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——光的创造。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——光的創造。"
     },
     "books": {
       "Genesis": [
@@ -2342,10 +2342,10 @@
         1
       ]
     },
-    "file": "https://commons.wikimedia.org/wiki/Special:FilePath/001.The%20Creation%20of%20Light.jpg?width=1200"
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d2/001.The_Creation_of_Light.jpg/1280px-001.The_Creation_of_Light.jpg"
   },
   {
-    "id": "scene_creation_eve",
+    "id": "illus_dore_002thecreationofevej",
     "kind": "scene",
     "title": {
       "en": "The Creation of Eve (Doré)",
@@ -2353,9 +2353,9 @@
       "zh-Hant": "夏娃的創造 (多雷)"
     },
     "description": {
-      "en": "Gustave Doré, 1866 — Genesis 2.",
-      "zh-Hans": "古斯塔夫·多雷,1866 年——创世记 2 章。",
-      "zh-Hant": "古斯塔夫·多雷,1866 年——創世記 2 章。"
+      "en": "Gustave Doré, 1866 — The Creation of Eve (Genesis 2).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——夏娃的创造。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——夏娃的創造。"
     },
     "books": {
       "Genesis": [
@@ -2363,10 +2363,10 @@
         2
       ]
     },
-    "file": "https://commons.wikimedia.org/wiki/Special:FilePath/002.The%20Creation%20of%20Eve.jpg?width=1200"
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/28/002.The_Creation_of_Eve.jpg/1280px-002.The_Creation_of_Eve.jpg"
   },
   {
-    "id": "scene_eden_expulsion",
+    "id": "illus_dore_003adamandevearedriv",
     "kind": "scene",
     "title": {
       "en": "Adam and Eve Driven from Eden (Doré)",
@@ -2374,9 +2374,9 @@
       "zh-Hant": "逐出伊甸園 (多雷)"
     },
     "description": {
-      "en": "Gustave Doré, 1866 — Genesis 3.",
-      "zh-Hans": "古斯塔夫·多雷,1866 年——创世记 3 章。",
-      "zh-Hant": "古斯塔夫·多雷,1866 年——創世記 3 章。"
+      "en": "Gustave Doré, 1866 — Adam and Eve Driven from Eden (Genesis 3).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——逐出伊甸园。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——逐出伊甸園。"
     },
     "books": {
       "Genesis": [
@@ -2384,20 +2384,20 @@
         3
       ]
     },
-    "file": "https://commons.wikimedia.org/wiki/Special:FilePath/003.Adam%20and%20Eve%20Are%20Driven%20out%20of%20Eden.jpg?width=1200"
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/01/003.Adam_and_Eve_Are_Driven_out_of_Eden.jpg/1280px-003.Adam_and_Eve_Are_Driven_out_of_Eden.jpg"
   },
   {
-    "id": "scene_cain_abel",
+    "id": "illus_dore_004cainandabeloffert",
     "kind": "scene",
     "title": {
-      "en": "Cain Slays Abel (Doré)",
-      "zh-Hans": "该隐杀亚伯 (多雷)",
-      "zh-Hant": "該隱殺亞伯 (多雷)"
+      "en": "Cain and Abel Offer Sacrifices (Doré)",
+      "zh-Hans": "该隐与亚伯的祭物 (多雷)",
+      "zh-Hant": "該隱與亞伯的祭物 (多雷)"
     },
     "description": {
-      "en": "Gustave Doré, 1866 — Genesis 4.",
-      "zh-Hans": "古斯塔夫·多雷,1866 年——创世记 4 章。",
-      "zh-Hant": "古斯塔夫·多雷,1866 年——創世記 4 章。"
+      "en": "Gustave Doré, 1866 — Cain and Abel Offer Sacrifices (Genesis 4).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——该隐与亚伯的祭物。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——該隱與亞伯的祭物。"
     },
     "books": {
       "Genesis": [
@@ -2405,31 +2405,115 @@
         4
       ]
     },
-    "file": "https://commons.wikimedia.org/wiki/Special:FilePath/005.Cain%20Slays%20Abel.jpg?width=1200"
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/97/004.Cain_and_Abel_Offer_Their_Sacrifices.jpg/1280px-004.Cain_and_Abel_Offer_Their_Sacrifices.jpg"
   },
   {
-    "id": "scene_deluge",
+    "id": "illus_dore_005cainslaysabeljpg",
     "kind": "scene",
     "title": {
-      "en": "The Deluge (Doré)",
-      "zh-Hans": "洪水 (多雷)",
-      "zh-Hant": "洪水 (多雷)"
+      "en": "Cain Slays Abel (Doré)",
+      "zh-Hans": "该隐杀亚伯 (多雷)",
+      "zh-Hant": "該隱殺亞伯 (多雷)"
     },
     "description": {
-      "en": "Gustave Doré, 1866 — the world destroyed by water (Genesis 7).",
-      "zh-Hans": "古斯塔夫·多雷,1866 年——世界被水毁灭(创世记 7 章)。",
-      "zh-Hant": "古斯塔夫·多雷,1866 年——世界被水毀滅(創世記 7 章)。"
+      "en": "Gustave Doré, 1866 — Cain Slays Abel (Genesis 4).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——该隐杀亚伯。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——該隱殺亞伯。"
     },
     "books": {
       "Genesis": [
-        6,
+        4,
+        4
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/bc/005.Cain_Slays_Abel.jpg/1280px-005.Cain_Slays_Abel.jpg"
+  },
+  {
+    "id": "illus_dore_006theworldisdestroy",
+    "kind": "scene",
+    "title": {
+      "en": "World Destroyed by Water (Doré)",
+      "zh-Hans": "世界被水毁灭 (多雷)",
+      "zh-Hant": "世界被水毀滅 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — World Destroyed by Water (Genesis 7).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——世界被水毁灭。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——世界被水毀滅。"
+    },
+    "books": {
+      "Genesis": [
+        7,
+        7
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f0/006.The_World_Is_Destroyed_by_Water.jpg/1280px-006.The_World_Is_Destroyed_by_Water.jpg"
+  },
+  {
+    "id": "illus_dore_007thegreatfloodjpg",
+    "kind": "scene",
+    "title": {
+      "en": "The Great Flood (Doré)",
+      "zh-Hans": "大洪水 (多雷)",
+      "zh-Hant": "大洪水 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — The Great Flood (Genesis 7).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——大洪水。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——大洪水。"
+    },
+    "books": {
+      "Genesis": [
+        7,
+        7
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/64/007.The_Great_Flood.jpg/1280px-007.The_Great_Flood.jpg"
+  },
+  {
+    "id": "illus_dore_008adoveissentforthf",
+    "kind": "scene",
+    "title": {
+      "en": "Dove Sent from the Ark (Doré)",
+      "zh-Hans": "从方舟放出鸽子 (多雷)",
+      "zh-Hant": "從方舟放出鴿子 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Dove Sent from the Ark (Genesis 8).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——从方舟放出鸽子。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——從方舟放出鴿子。"
+    },
+    "books": {
+      "Genesis": [
+        8,
+        8
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d4/008.A_Dove_Is_Sent_Forth_from_the_Ark.jpg/1280px-008.A_Dove_Is_Sent_Forth_from_the_Ark.jpg"
+  },
+  {
+    "id": "illus_dore_009noahcurseshamandc",
+    "kind": "scene",
+    "title": {
+      "en": "Noah Curses Ham (Doré)",
+      "zh-Hans": "挪亚咒诅含 (多雷)",
+      "zh-Hant": "挪亞咒詛含 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Noah Curses Ham (Genesis 9).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——挪亚咒诅含。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——挪亞咒詛含。"
+    },
+    "books": {
+      "Genesis": [
+        9,
         9
       ]
     },
-    "file": "https://commons.wikimedia.org/wiki/Special:FilePath/006.The%20World%20Is%20Destroyed%20by%20Water.jpg?width=1200"
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/25/009.Noah_Curses_Ham_and_Canaan.jpg/1280px-009.Noah_Curses_Ham_and_Canaan.jpg"
   },
   {
-    "id": "scene_tower_babel_dore",
+    "id": "illus_dore_010thetowerofbabeljp",
     "kind": "scene",
     "title": {
       "en": "Tower of Babel (Doré)",
@@ -2437,9 +2521,9 @@
       "zh-Hant": "巴別塔 (多雷)"
     },
     "description": {
-      "en": "Gustave Doré, 1866 — Genesis 11.",
-      "zh-Hans": "古斯塔夫·多雷,1866 年——创世记 11 章。",
-      "zh-Hant": "古斯塔夫·多雷,1866 年——創世記 11 章。"
+      "en": "Gustave Doré, 1866 — Tower of Babel (Genesis 11).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——巴别塔。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——巴別塔。"
     },
     "books": {
       "Genesis": [
@@ -2447,41 +2531,62 @@
         11
       ]
     },
-    "file": "https://commons.wikimedia.org/wiki/Special:FilePath/010.The%20Tower%20of%20Babel.jpg?width=1200"
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/14/010.The_Tower_of_Babel.jpg/1280px-010.The_Tower_of_Babel.jpg"
   },
   {
-    "id": "scene_tower_babel_bruegel",
+    "id": "illus_dore_011abrahamgoestothel",
     "kind": "scene",
     "title": {
-      "en": "Tower of Babel (Bruegel)",
-      "zh-Hans": "巴别塔 (老布鲁盖尔)",
-      "zh-Hant": "巴別塔 (老布魯蓋爾)"
+      "en": "Abraham Goes to Canaan (Doré)",
+      "zh-Hans": "亚伯拉罕往迦南去 (多雷)",
+      "zh-Hant": "亞伯拉罕往迦南去 (多雷)"
     },
     "description": {
-      "en": "Pieter Bruegel the Elder, 1563 — Vienna version.",
-      "zh-Hans": "老彼得·布鲁盖尔,1563 年——维也纳版本。",
-      "zh-Hant": "老彼得·布魯蓋爾,1563 年——維也納版本。"
+      "en": "Gustave Doré, 1866 — Abraham Goes to Canaan (Genesis 12).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——亚伯拉罕往迦南去。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——亞伯拉罕往迦南去。"
     },
     "books": {
       "Genesis": [
-        11,
-        11
+        12,
+        12
       ]
     },
-    "file": "https://commons.wikimedia.org/wiki/Special:FilePath/Pieter%20Bruegel%20the%20Elder%20-%20The%20Tower%20of%20Babel%20%28Vienna%29%20-%20Google%20Art%20Project%20-%20edited.jpg?width=1200"
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e5/011.Abraham_Goes_to_the_Land_of_Canaan.jpg/1280px-011.Abraham_Goes_to_the_Land_of_Canaan.jpg"
   },
   {
-    "id": "scene_sodom_destruction",
+    "id": "illus_dore_012abrahamandthethre",
     "kind": "scene",
     "title": {
-      "en": "Destruction of Sodom (Doré)",
-      "zh-Hans": "所多玛被毁 (多雷)",
-      "zh-Hant": "所多瑪被毀 (多雷)"
+      "en": "Abraham and the Three Angels (Doré)",
+      "zh-Hans": "亚伯拉罕与三位天使 (多雷)",
+      "zh-Hant": "亞伯拉罕與三位天使 (多雷)"
     },
     "description": {
-      "en": "Gustave Doré, 1866 — Lot flees the burning cities (Genesis 19).",
-      "zh-Hans": "古斯塔夫·多雷,1866 年——罗得逃离烈火中的城(创世记 19 章)。",
-      "zh-Hant": "古斯塔夫·多雷,1866 年——羅得逃離烈火中的城(創世記 19 章)。"
+      "en": "Gustave Doré, 1866 — Abraham and the Three Angels (Genesis 18).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——亚伯拉罕与三位天使。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——亞伯拉罕與三位天使。"
+    },
+    "books": {
+      "Genesis": [
+        18,
+        18
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9b/012.Abraham_and_the_Three_Angels.jpg/1280px-012.Abraham_and_the_Three_Angels.jpg"
+  },
+  {
+    "id": "illus_dore_013lotfleesassodoman",
+    "kind": "scene",
+    "title": {
+      "en": "Lot Flees Sodom (Doré)",
+      "zh-Hans": "罗得逃离所多玛 (多雷)",
+      "zh-Hant": "羅得逃離所多瑪 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Lot Flees Sodom (Genesis 19).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——罗得逃离所多玛。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——羅得逃離所多瑪。"
     },
     "books": {
       "Genesis": [
@@ -2489,20 +2594,62 @@
         19
       ]
     },
-    "file": "https://commons.wikimedia.org/wiki/Special:FilePath/013.Lot%20Flees%20as%20Sodom%20and%20Gomorrah%20Burn.jpg?width=1200"
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/59/013.Lot_Flees_as_Sodom_and_Gomorrah_Burn.jpg/1280px-013.Lot_Flees_as_Sodom_and_Gomorrah_Burn.jpg"
   },
   {
-    "id": "scene_sacrifice_isaac",
+    "id": "illus_dore_014abrahamsendshagar",
+    "kind": "scene",
+    "title": {
+      "en": "Abraham Sends Hagar Away (Doré)",
+      "zh-Hans": "亚伯拉罕打发夏甲离去 (多雷)",
+      "zh-Hant": "亞伯拉罕打發夏甲離去 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Abraham Sends Hagar Away (Genesis 21).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——亚伯拉罕打发夏甲离去。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——亞伯拉罕打發夏甲離去。"
+    },
+    "books": {
+      "Genesis": [
+        21,
+        21
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/35/014.Abraham_Sends_Hagar_and_Ishmael_Away.jpg/1280px-014.Abraham_Sends_Hagar_and_Ishmael_Away.jpg"
+  },
+  {
+    "id": "illus_dore_015hagarandishmaelin",
+    "kind": "scene",
+    "title": {
+      "en": "Hagar and Ishmael in Wilderness (Doré)",
+      "zh-Hans": "夏甲与以实玛利在旷野 (多雷)",
+      "zh-Hant": "夏甲與以實瑪利在曠野 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Hagar and Ishmael in Wilderness (Genesis 21).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——夏甲与以实玛利在旷野。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——夏甲與以實瑪利在曠野。"
+    },
+    "books": {
+      "Genesis": [
+        21,
+        21
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/35/015.Hagar_and_Ishmael_in_the_Wilderness.jpg/1280px-015.Hagar_and_Ishmael_in_the_Wilderness.jpg"
+  },
+  {
+    "id": "illus_dore_016thetestingofabrah",
     "kind": "scene",
     "title": {
       "en": "Abraham's Sacrifice of Isaac (Doré)",
-      "zh-Hans": "以撒的献祭 (多雷)",
-      "zh-Hant": "以撒的獻祭 (多雷)"
+      "zh-Hans": "亚伯拉罕献以撒 (多雷)",
+      "zh-Hant": "亞伯拉罕獻以撒 (多雷)"
     },
     "description": {
-      "en": "Gustave Doré, 1866 — Mount Moriah (Genesis 22).",
-      "zh-Hans": "古斯塔夫·多雷,1866 年——摩利亚山(创世记 22 章)。",
-      "zh-Hant": "古斯塔夫·多雷,1866 年——摩利亞山(創世記 22 章)。"
+      "en": "Gustave Doré, 1866 — Abraham's Sacrifice of Isaac (Genesis 22).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——亚伯拉罕献以撒。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——亞伯拉罕獻以撒。"
     },
     "books": {
       "Genesis": [
@@ -2510,20 +2657,440 @@
         22
       ]
     },
-    "file": "https://commons.wikimedia.org/wiki/Special:FilePath/016.The%20Testing%20of%20Abraham%27s%20Faith.jpg?width=1200"
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/17/016.The_Testing_of_Abraham%27s_Faith.jpg/1280px-016.The_Testing_of_Abraham%27s_Faith.jpg"
   },
   {
-    "id": "scene_red_sea",
+    "id": "illus_dore_017theburialofsarahj",
     "kind": "scene",
     "title": {
-      "en": "Crossing the Red Sea (Doré)",
-      "zh-Hans": "过红海 (多雷)",
-      "zh-Hant": "過紅海 (多雷)"
+      "en": "The Burial of Sarah (Doré)",
+      "zh-Hans": "撒拉的安葬 (多雷)",
+      "zh-Hant": "撒拉的安葬 (多雷)"
     },
     "description": {
-      "en": "Gustave Doré, 1866 — Egyptians drown (Exodus 14).",
-      "zh-Hans": "古斯塔夫·多雷,1866 年——埃及人沉没(出埃及记 14 章)。",
-      "zh-Hant": "古斯塔夫·多雷,1866 年——埃及人沉沒(出埃及記 14 章)。"
+      "en": "Gustave Doré, 1866 — The Burial of Sarah (Genesis 23).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——撒拉的安葬。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——撒拉的安葬。"
+    },
+    "books": {
+      "Genesis": [
+        23,
+        23
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/50/017.The_Burial_of_Sarah.jpg/1280px-017.The_Burial_of_Sarah.jpg"
+  },
+  {
+    "id": "illus_dore_018eliezerandrebekah",
+    "kind": "scene",
+    "title": {
+      "en": "Eliezer and Rebekah (Doré)",
+      "zh-Hans": "以利以谢与利百加 (多雷)",
+      "zh-Hant": "以利以謝與利百加 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Eliezer and Rebekah (Genesis 24).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——以利以谢与利百加。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——以利以謝與利百加。"
+    },
+    "books": {
+      "Genesis": [
+        24,
+        24
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a4/018.Eliezer_and_Rebekah_at_the_Well.jpg/1280px-018.Eliezer_and_Rebekah_at_the_Well.jpg"
+  },
+  {
+    "id": "illus_dore_019themeetingofisaac",
+    "kind": "scene",
+    "title": {
+      "en": "Isaac Meets Rebekah (Doré)",
+      "zh-Hans": "以撒与利百加相遇 (多雷)",
+      "zh-Hant": "以撒與利百加相遇 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Isaac Meets Rebekah (Genesis 24).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——以撒与利百加相遇。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——以撒與利百加相遇。"
+    },
+    "books": {
+      "Genesis": [
+        24,
+        24
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c6/019.The_Meeting_of_Isaac_and_Rebekah.jpg/1280px-019.The_Meeting_of_Isaac_and_Rebekah.jpg"
+  },
+  {
+    "id": "illus_dore_020isaacblessesjacob",
+    "kind": "scene",
+    "title": {
+      "en": "Isaac Blesses Jacob (Doré)",
+      "zh-Hans": "以撒为雅各祝福 (多雷)",
+      "zh-Hant": "以撒為雅各祝福 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Isaac Blesses Jacob (Genesis 27).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——以撒为雅各祝福。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——以撒為雅各祝福。"
+    },
+    "books": {
+      "Genesis": [
+        27,
+        27
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/50/020.Isaac_Blesses_Jacob.jpg/1280px-020.Isaac_Blesses_Jacob.jpg"
+  },
+  {
+    "id": "illus_dore_021jacobsdreamjpg",
+    "kind": "scene",
+    "title": {
+      "en": "Jacob's Dream / Ladder (Doré)",
+      "zh-Hans": "雅各的梦 (多雷)",
+      "zh-Hant": "雅各的夢 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Jacob's Dream / Ladder (Genesis 28).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——雅各的梦。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——雅各的夢。"
+    },
+    "books": {
+      "Genesis": [
+        28,
+        28
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/14/021.Jacob%27s_Dream.jpg/1280px-021.Jacob%27s_Dream.jpg"
+  },
+  {
+    "id": "illus_dore_022jacobtendslabansf",
+    "kind": "scene",
+    "title": {
+      "en": "Jacob Meets Rachel (Doré)",
+      "zh-Hans": "雅各遇拉结 (多雷)",
+      "zh-Hant": "雅各遇拉結 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Jacob Meets Rachel (Genesis 29).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——雅各遇拉结。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——雅各遇拉結。"
+    },
+    "books": {
+      "Genesis": [
+        29,
+        29
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/15/022.Jacob_Tends_Laban%27s_Flocks_and_Meets_Rachel.jpg/1280px-022.Jacob_Tends_Laban%27s_Flocks_and_Meets_Rachel.jpg"
+  },
+  {
+    "id": "illus_dore_023jacobpraysforprot",
+    "kind": "scene",
+    "title": {
+      "en": "Jacob Prays for Protection (Doré)",
+      "zh-Hans": "雅各祷告求保护 (多雷)",
+      "zh-Hant": "雅各禱告求保護 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Jacob Prays for Protection (Genesis 32).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——雅各祷告求保护。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——雅各禱告求保護。"
+    },
+    "books": {
+      "Genesis": [
+        32,
+        32
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6f/023.Jacob_Prays_for_Protection.jpg/1280px-023.Jacob_Prays_for_Protection.jpg"
+  },
+  {
+    "id": "illus_dore_024jacobwrestleswith",
+    "kind": "scene",
+    "title": {
+      "en": "Jacob Wrestles the Angel (Doré)",
+      "zh-Hans": "雅各与天使摔跤 (多雷)",
+      "zh-Hant": "雅各與天使摔跤 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Jacob Wrestles the Angel (Genesis 32).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——雅各与天使摔跤。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——雅各與天使摔跤。"
+    },
+    "books": {
+      "Genesis": [
+        32,
+        32
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b7/024.Jacob_Wrestles_with_the_Angel.jpg/1280px-024.Jacob_Wrestles_with_the_Angel.jpg"
+  },
+  {
+    "id": "illus_dore_025jacobandesaumeetj",
+    "kind": "scene",
+    "title": {
+      "en": "Jacob and Esau Meet (Doré)",
+      "zh-Hans": "雅各与以扫相遇 (多雷)",
+      "zh-Hant": "雅各與以掃相遇 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Jacob and Esau Meet (Genesis 33).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——雅各与以扫相遇。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——雅各與以掃相遇。"
+    },
+    "books": {
+      "Genesis": [
+        33,
+        33
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1c/025.Jacob_and_Esau_Meet.jpg/1280px-025.Jacob_and_Esau_Meet.jpg"
+  },
+  {
+    "id": "illus_dore_026josephissoldbyhis",
+    "kind": "scene",
+    "title": {
+      "en": "Joseph Sold by His Brothers (Doré)",
+      "zh-Hans": "约瑟被兄长们卖掉 (多雷)",
+      "zh-Hant": "約瑟被兄長們賣掉 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Joseph Sold by His Brothers (Genesis 37).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——约瑟被兄长们卖掉。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——約瑟被兄長們賣掉。"
+    },
+    "books": {
+      "Genesis": [
+        37,
+        37
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/38/026.Joseph_Is_Sold_by_His_Brothers.jpg/1280px-026.Joseph_Is_Sold_by_His_Brothers.jpg"
+  },
+  {
+    "id": "illus_dore_027josephinterpretsp",
+    "kind": "scene",
+    "title": {
+      "en": "Joseph Interprets Pharaoh's Dream (Doré)",
+      "zh-Hans": "约瑟解法老的梦 (多雷)",
+      "zh-Hant": "約瑟解法老的夢 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Joseph Interprets Pharaoh's Dream (Genesis 41).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——约瑟解法老的梦。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——約瑟解法老的夢。"
+    },
+    "books": {
+      "Genesis": [
+        41,
+        41
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/027.Joseph_Interprets_Pharaoh%27s_Dream.jpg/1280px-027.Joseph_Interprets_Pharaoh%27s_Dream.jpg"
+  },
+  {
+    "id": "illus_dore_028josephrevealshims",
+    "kind": "scene",
+    "title": {
+      "en": "Joseph Reveals Himself (Doré)",
+      "zh-Hans": "约瑟与兄弟相认 (多雷)",
+      "zh-Hant": "約瑟與兄弟相認 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Joseph Reveals Himself (Genesis 45).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——约瑟与兄弟相认。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——約瑟與兄弟相認。"
+    },
+    "books": {
+      "Genesis": [
+        45,
+        45
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/028.Joseph_Reveals_Himself_to_His_Brothers.jpg/1280px-028.Joseph_Reveals_Himself_to_His_Brothers.jpg"
+  },
+  {
+    "id": "illus_dore_029jacobgoestoegyptj",
+    "kind": "scene",
+    "title": {
+      "en": "Jacob Goes to Egypt (Doré)",
+      "zh-Hans": "雅各往埃及去 (多雷)",
+      "zh-Hant": "雅各往埃及去 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Jacob Goes to Egypt (Genesis 46).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——雅各往埃及去。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——雅各往埃及去。"
+    },
+    "books": {
+      "Genesis": [
+        46,
+        46
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/98/029.Jacob_Goes_to_Egypt.jpg/1280px-029.Jacob_Goes_to_Egypt.jpg"
+  },
+  {
+    "id": "illus_dore_030thechildmosesonth",
+    "kind": "scene",
+    "title": {
+      "en": "Child Moses on the Nile (Doré)",
+      "zh-Hans": "尼罗河上的婴孩摩西 (多雷)",
+      "zh-Hant": "尼羅河上的嬰孩摩西 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Child Moses on the Nile (Exodus 2).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——尼罗河上的婴孩摩西。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——尼羅河上的嬰孩摩西。"
+    },
+    "books": {
+      "Exodus": [
+        2,
+        2
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/79/030.The_Child_Moses_on_the_Nile.jpg/1280px-030.The_Child_Moses_on_the_Nile.jpg"
+  },
+  {
+    "id": "illus_dore_031thefindingofmoses",
+    "kind": "scene",
+    "title": {
+      "en": "The Finding of Moses (Doré)",
+      "zh-Hans": "摩西被发现 (多雷)",
+      "zh-Hant": "摩西被發現 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — The Finding of Moses (Exodus 2).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——摩西被发现。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——摩西被發現。"
+    },
+    "books": {
+      "Exodus": [
+        2,
+        2
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3e/031.The_Finding_of_Moses.jpg/1280px-031.The_Finding_of_Moses.jpg"
+  },
+  {
+    "id": "illus_dore_032mosesandaaronappe",
+    "kind": "scene",
+    "title": {
+      "en": "Moses and Aaron Before Pharaoh (Doré)",
+      "zh-Hans": "摩西与亚伦见法老 (多雷)",
+      "zh-Hant": "摩西與亞倫見法老 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Moses and Aaron Before Pharaoh (Exodus 5).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——摩西与亚伦见法老。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——摩西與亞倫見法老。"
+    },
+    "books": {
+      "Exodus": [
+        5,
+        5
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8c/032.Moses_and_Aaron_Appear_before_Pharaoh.jpg/1280px-032.Moses_and_Aaron_Appear_before_Pharaoh.jpg"
+  },
+  {
+    "id": "illus_dore_033thefifthplagueliv",
+    "kind": "scene",
+    "title": {
+      "en": "Fifth Plague — Livestock (Doré)",
+      "zh-Hans": "第五灾——畜瘟 (多雷)",
+      "zh-Hant": "第五災——畜瘟 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Fifth Plague — Livestock (Exodus 9).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——第五灾——畜瘟。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——第五災——畜瘟。"
+    },
+    "books": {
+      "Exodus": [
+        9,
+        9
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/033.The_Fifth_Plague._Livestock_Disease.jpg/1280px-033.The_Fifth_Plague._Livestock_Disease.jpg"
+  },
+  {
+    "id": "illus_dore_034theninthplaguedar",
+    "kind": "scene",
+    "title": {
+      "en": "Ninth Plague — Darkness (Doré)",
+      "zh-Hans": "第九灾——黑暗 (多雷)",
+      "zh-Hant": "第九災——黑暗 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Ninth Plague — Darkness (Exodus 10).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——第九灾——黑暗。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——第九災——黑暗。"
+    },
+    "books": {
+      "Exodus": [
+        10,
+        10
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/35/034.The_Ninth_Plague._Darkness.jpg/1280px-034.The_Ninth_Plague._Darkness.jpg"
+  },
+  {
+    "id": "illus_dore_035thefirstbornofthe",
+    "kind": "scene",
+    "title": {
+      "en": "Firstborn of Egypt Slain (Doré)",
+      "zh-Hans": "埃及长子被击杀 (多雷)",
+      "zh-Hant": "埃及長子被擊殺 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Firstborn of Egypt Slain (Exodus 12).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——埃及长子被击杀。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——埃及長子被擊殺。"
+    },
+    "books": {
+      "Exodus": [
+        12,
+        12
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0b/035.The_Firstborn_of_the_Egyptians_Are_Slain.jpg/1280px-035.The_Firstborn_of_the_Egyptians_Are_Slain.jpg"
+  },
+  {
+    "id": "illus_dore_036theegyptiansaskmo",
+    "kind": "scene",
+    "title": {
+      "en": "Egyptians Ask Moses to Depart (Doré)",
+      "zh-Hans": "埃及人求摩西离去 (多雷)",
+      "zh-Hant": "埃及人求摩西離去 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Egyptians Ask Moses to Depart (Exodus 12).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——埃及人求摩西离去。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——埃及人求摩西離去。"
+    },
+    "books": {
+      "Exodus": [
+        12,
+        12
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7e/036.The_Egyptians_Ask_Moses_to_Depart.jpg/1280px-036.The_Egyptians_Ask_Moses_to_Depart.jpg"
+  },
+  {
+    "id": "illus_dore_037theegyptiansdrown",
+    "kind": "scene",
+    "title": {
+      "en": "Egyptians Drown in the Red Sea (Doré)",
+      "zh-Hans": "埃及人沉没红海中 (多雷)",
+      "zh-Hant": "埃及人沉沒紅海中 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Egyptians Drown in the Red Sea (Exodus 14).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——埃及人沉没红海中。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——埃及人沉沒紅海中。"
     },
     "books": {
       "Exodus": [
@@ -2531,20 +3098,20 @@
         14
       ]
     },
-    "file": "https://commons.wikimedia.org/wiki/Special:FilePath/037.The%20Egyptians%20Drown%20in%20the%20Sea.jpg?width=1200"
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/45/037.The_Egyptians_Drown_in_the_Sea.jpg/1280px-037.The_Egyptians_Drown_in_the_Sea.jpg"
   },
   {
-    "id": "scene_law_sinai",
+    "id": "illus_dore_038thegivingofthelaw",
     "kind": "scene",
     "title": {
       "en": "Giving of the Law (Doré)",
-      "zh-Hans": "颁赐律法 (多雷)",
-      "zh-Hant": "頒賜律法 (多雷)"
+      "zh-Hans": "在西奈山颁律法 (多雷)",
+      "zh-Hant": "在西奈山頒律法 (多雷)"
     },
     "description": {
-      "en": "Gustave Doré, 1866 — Mount Sinai (Exodus 19–20).",
-      "zh-Hans": "古斯塔夫·多雷,1866 年——西奈山(出埃及记 19–20 章)。",
-      "zh-Hant": "古斯塔夫·多雷,1866 年——西奈山(出埃及記 19–20 章)。"
+      "en": "Gustave Doré, 1866 — Giving of the Law (Exodus 19–20).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——在西奈山颁律法。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——在西奈山頒律法。"
     },
     "books": {
       "Exodus": [
@@ -2552,10 +3119,115 @@
         20
       ]
     },
-    "file": "https://commons.wikimedia.org/wiki/Special:FilePath/038.The%20Giving%20of%20the%20Law%20on%20Mount%20Sinai.jpg?width=1200"
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/88/038.The_Giving_of_the_Law_on_Mount_Sinai.jpg/1280px-038.The_Giving_of_the_Law_on_Mount_Sinai.jpg"
   },
   {
-    "id": "scene_brazen_serpent",
+    "id": "illus_dore_039mosescomesdownfro",
+    "kind": "scene",
+    "title": {
+      "en": "Moses Comes Down from Sinai (Doré)",
+      "zh-Hans": "摩西下西奈山 (多雷)",
+      "zh-Hant": "摩西下西奈山 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Moses Comes Down from Sinai (Exodus 32).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——摩西下西奈山。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——摩西下西奈山。"
+    },
+    "books": {
+      "Exodus": [
+        32,
+        32
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/06/039.Moses_Comes_Down_from_Mount_Sinai.jpg/1280px-039.Moses_Comes_Down_from_Mount_Sinai.jpg"
+  },
+  {
+    "id": "illus_dore_040thedeathofkorahda",
+    "kind": "scene",
+    "title": {
+      "en": "Korah Rebellion (Doré)",
+      "zh-Hans": "可拉党之死 (多雷)",
+      "zh-Hant": "可拉黨之死 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Korah Rebellion (Numbers 16).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——可拉党之死。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——可拉黨之死。"
+    },
+    "books": {
+      "Numbers": [
+        16,
+        16
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5a/040.The_Death_of_Korah%2C_Dathan%2C_and_Abiram.jpg/1280px-040.The_Death_of_Korah%2C_Dathan%2C_and_Abiram.jpg"
+  },
+  {
+    "id": "illus_dore_041mosesstrikesthero",
+    "kind": "scene",
+    "title": {
+      "en": "Moses Strikes the Rock (Doré)",
+      "zh-Hans": "摩西击磐 (多雷)",
+      "zh-Hant": "摩西擊磐 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Moses Strikes the Rock (Exodus 17).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——摩西击磐。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——摩西擊磐。"
+    },
+    "books": {
+      "Exodus": [
+        17,
+        17
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f2/041.Moses_Strikes_the_Rock_at_Horeb.jpg/1280px-041.Moses_Strikes_the_Rock_at_Horeb.jpg"
+  },
+  {
+    "id": "illus_dore_041amosesbreakstheta",
+    "kind": "scene",
+    "title": {
+      "en": "Moses Breaks the Tables (Doré)",
+      "zh-Hans": "摩西打碎法版 (多雷)",
+      "zh-Hant": "摩西打碎法版 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Moses Breaks the Tables (Exodus 32).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——摩西打碎法版。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——摩西打碎法版。"
+    },
+    "books": {
+      "Exodus": [
+        32,
+        32
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/54/041A.Moses_Breaks_the_Tables_of_the_Law.jpg/1280px-041A.Moses_Breaks_the_Tables_of_the_Law.jpg"
+  },
+  {
+    "id": "illus_dore_041bthespiesreturnfr",
+    "kind": "scene",
+    "title": {
+      "en": "Spies Return (Doré)",
+      "zh-Hans": "探子归来 (多雷)",
+      "zh-Hant": "探子歸來 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Spies Return (Numbers 13).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——探子归来。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——探子歸來。"
+    },
+    "books": {
+      "Numbers": [
+        13,
+        13
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3b/041B.The_Spies_Return_from_the_Promised_Land.jpg/1280px-041B.The_Spies_Return_from_the_Promised_Land.jpg"
+  },
+  {
+    "id": "illus_dore_042thebronzeserpentj",
     "kind": "scene",
     "title": {
       "en": "The Bronze Serpent (Doré)",
@@ -2563,9 +3235,9 @@
       "zh-Hant": "銅蛇 (多雷)"
     },
     "description": {
-      "en": "Gustave Doré, 1866 — Numbers 21.",
-      "zh-Hans": "古斯塔夫·多雷,1866 年——民数记 21 章。",
-      "zh-Hant": "古斯塔夫·多雷,1866 年——民數記 21 章。"
+      "en": "Gustave Doré, 1866 — The Bronze Serpent (Numbers 21).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——铜蛇。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——銅蛇。"
     },
     "books": {
       "Numbers": [
@@ -2573,10 +3245,73 @@
         21
       ]
     },
-    "file": "https://commons.wikimedia.org/wiki/Special:FilePath/042.The%20Bronze%20Serpent.jpg?width=1200"
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6f/042.The_Bronze_Serpent.jpg/1280px-042.The_Bronze_Serpent.jpg"
   },
   {
-    "id": "scene_jericho",
+    "id": "illus_dore_043anangelappearstob",
+    "kind": "scene",
+    "title": {
+      "en": "Angel Appears to Balaam (Doré)",
+      "zh-Hans": "天使向巴兰显现 (多雷)",
+      "zh-Hant": "天使向巴蘭顯現 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Angel Appears to Balaam (Numbers 22).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——天使向巴兰显现。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——天使向巴蘭顯現。"
+    },
+    "books": {
+      "Numbers": [
+        22,
+        22
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/80/043.An_Angel_Appears_to_Balaam.jpg/1280px-043.An_Angel_Appears_to_Balaam.jpg"
+  },
+  {
+    "id": "illus_dore_044theisraelitescros",
+    "kind": "scene",
+    "title": {
+      "en": "Israel Crosses the Jordan (Doré)",
+      "zh-Hans": "以色列人过约旦河 (多雷)",
+      "zh-Hant": "以色列人過約旦河 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Israel Crosses the Jordan (Joshua 3).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——以色列人过约旦河。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——以色列人過約旦河。"
+    },
+    "books": {
+      "Joshua": [
+        3,
+        3
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fe/044._The_Israelites_Cross_the_Jordan_River.jpg/1280px-044._The_Israelites_Cross_the_Jordan_River.jpg"
+  },
+  {
+    "id": "illus_dore_045anangelappearstot",
+    "kind": "scene",
+    "title": {
+      "en": "Angel Appears to Israel (Doré)",
+      "zh-Hans": "天使向以色列人显现 (多雷)",
+      "zh-Hant": "天使向以色列人顯現 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Angel Appears to Israel (Joshua 5).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——天使向以色列人显现。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——天使向以色列人顯現。"
+    },
+    "books": {
+      "Joshua": [
+        5,
+        5
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/24/045._An_Angel_Appears_to_the_Israelites.jpg/1280px-045._An_Angel_Appears_to_the_Israelites.jpg"
+  },
+  {
+    "id": "illus_dore_046thewallsofjericho",
     "kind": "scene",
     "title": {
       "en": "Walls of Jericho Fall (Doré)",
@@ -2584,9 +3319,9 @@
       "zh-Hant": "耶利哥城牆倒塌 (多雷)"
     },
     "description": {
-      "en": "Gustave Doré, 1866 — Joshua 6.",
-      "zh-Hans": "古斯塔夫·多雷,1866 年——约书亚记 6 章。",
-      "zh-Hant": "古斯塔夫·多雷,1866 年——約書亞記 6 章。"
+      "en": "Gustave Doré, 1866 — Walls of Jericho Fall (Joshua 6).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——耶利哥城墙倒塌。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——耶利哥城牆倒塌。"
     },
     "books": {
       "Joshua": [
@@ -2594,20 +3329,314 @@
         6
       ]
     },
-    "file": "https://commons.wikimedia.org/wiki/Special:FilePath/046.The%20Walls%20of%20Jericho%20Fall%20Down.jpg?width=1200"
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ed/046.The_Walls_of_Jericho_Fall_Down.jpg/1280px-046.The_Walls_of_Jericho_Fall_Down.jpg"
   },
   {
-    "id": "scene_samson_delilah",
+    "id": "illus_dore_047joshuasparesrahab",
     "kind": "scene",
     "title": {
-      "en": "Samson and Delilah (Doré)",
-      "zh-Hans": "参孙与大利拉 (多雷)",
-      "zh-Hant": "參孫與大利拉 (多雷)"
+      "en": "Joshua Spares Rahab (Doré)",
+      "zh-Hans": "约书亚顾惜喇合 (多雷)",
+      "zh-Hant": "約書亞顧惜喇合 (多雷)"
     },
     "description": {
-      "en": "Gustave Doré, 1866 — Judges 16.",
-      "zh-Hans": "古斯塔夫·多雷,1866 年——士师记 16 章。",
-      "zh-Hant": "古斯塔夫·多雷,1866 年——士師記 16 章。"
+      "en": "Gustave Doré, 1866 — Joshua Spares Rahab (Joshua 6).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——约书亚顾惜喇合。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——約書亞顧惜喇合。"
+    },
+    "books": {
+      "Joshua": [
+        6,
+        6
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/047.Joshua_Spares_Rahab.jpg/1280px-047.Joshua_Spares_Rahab.jpg"
+  },
+  {
+    "id": "illus_dore_048achanisstonedtode",
+    "kind": "scene",
+    "title": {
+      "en": "Achan Is Stoned (Doré)",
+      "zh-Hans": "亚干被石击毙 (多雷)",
+      "zh-Hant": "亞干被石擊斃 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Achan Is Stoned (Joshua 7).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——亚干被石击毙。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——亞干被石擊斃。"
+    },
+    "books": {
+      "Joshua": [
+        7,
+        7
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fd/048.Achan_Is_Stoned_to_Death.jpg/1280px-048.Achan_Is_Stoned_to_Death.jpg"
+  },
+  {
+    "id": "illus_dore_049joshuaburnsthetow",
+    "kind": "scene",
+    "title": {
+      "en": "Joshua Burns Ai (Doré)",
+      "zh-Hans": "约书亚焚烧艾城 (多雷)",
+      "zh-Hant": "約書亞焚燒艾城 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Joshua Burns Ai (Joshua 8).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——约书亚焚烧艾城。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——約書亞焚燒艾城。"
+    },
+    "books": {
+      "Joshua": [
+        8,
+        8
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/96/049.Joshua_Burns_the_Town_of_Ai.jpg/1280px-049.Joshua_Burns_the_Town_of_Ai.jpg"
+  },
+  {
+    "id": "illus_dore_050thearmyoftheamori",
+    "kind": "scene",
+    "title": {
+      "en": "Amorites Destroyed (Doré)",
+      "zh-Hans": "亚摩利人军队被毁 (多雷)",
+      "zh-Hant": "亞摩利人軍隊被毀 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Amorites Destroyed (Joshua 10).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——亚摩利人军队被毁。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——亞摩利人軍隊被毀。"
+    },
+    "books": {
+      "Joshua": [
+        10,
+        10
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9b/050.The_Army_of_the_Amorites_Is_Destroyed.jpg/1280px-050.The_Army_of_the_Amorites_Is_Destroyed.jpg"
+  },
+  {
+    "id": "illus_dore_051joshuacommandsthe",
+    "kind": "scene",
+    "title": {
+      "en": "Joshua Commands the Sun (Doré)",
+      "zh-Hans": "约书亚命太阳停住 (多雷)",
+      "zh-Hant": "約書亞命太陽停住 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Joshua Commands the Sun (Joshua 10).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——约书亚命太阳停住。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——約書亞命太陽停住。"
+    },
+    "books": {
+      "Joshua": [
+        10,
+        10
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8b/051.Joshua_Commands_the_Sun_to_Stand_Still.jpg/1280px-051.Joshua_Commands_the_Sun_to_Stand_Still.jpg"
+  },
+  {
+    "id": "illus_dore_052jaelkillssiserajp",
+    "kind": "scene",
+    "title": {
+      "en": "Jael Kills Sisera (Doré)",
+      "zh-Hans": "雅亿杀西西拉 (多雷)",
+      "zh-Hant": "雅億殺西西拉 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Jael Kills Sisera (Judges 4).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——雅亿杀西西拉。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——雅億殺西西拉。"
+    },
+    "books": {
+      "Judges": [
+        4,
+        4
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/70/052.Jael_Kills_Sisera.jpg/1280px-052.Jael_Kills_Sisera.jpg"
+  },
+  {
+    "id": "illus_dore_054gideonchooses300s",
+    "kind": "scene",
+    "title": {
+      "en": "Gideon Chooses 300 (Doré)",
+      "zh-Hans": "基甸选300勇士 (多雷)",
+      "zh-Hant": "基甸選300勇士 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Gideon Chooses 300 (Judges 7).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——基甸选300勇士。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——基甸選300勇士。"
+    },
+    "books": {
+      "Judges": [
+        7,
+        7
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d5/054.Gideon_Chooses_300_Soldiers.jpg/1280px-054.Gideon_Chooses_300_Soldiers.jpg"
+  },
+  {
+    "id": "illus_dore_055themidianitesarer",
+    "kind": "scene",
+    "title": {
+      "en": "Midianites Routed (Doré)",
+      "zh-Hans": "米甸人溃败 (多雷)",
+      "zh-Hant": "米甸人潰敗 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Midianites Routed (Judges 7).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——米甸人溃败。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——米甸人潰敗。"
+    },
+    "books": {
+      "Judges": [
+        7,
+        7
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cc/055.The_Midianites_Are_Routed.jpg/1280px-055.The_Midianites_Are_Routed.jpg"
+  },
+  {
+    "id": "illus_dore_056thedeathofgideons",
+    "kind": "scene",
+    "title": {
+      "en": "Death of Gideon's Sons (Doré)",
+      "zh-Hans": "基甸众子被杀 (多雷)",
+      "zh-Hant": "基甸眾子被殺 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Death of Gideon's Sons (Judges 9).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——基甸众子被杀。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——基甸眾子被殺。"
+    },
+    "books": {
+      "Judges": [
+        9,
+        9
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/70/056.The_Death_of_Gideon%27s_Sons.jpg/1280px-056.The_Death_of_Gideon%27s_Sons.jpg"
+  },
+  {
+    "id": "illus_dore_057thedeathofabimele",
+    "kind": "scene",
+    "title": {
+      "en": "Death of Abimelech (Doré)",
+      "zh-Hans": "亚比米勒的死 (多雷)",
+      "zh-Hant": "亞比米勒的死 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Death of Abimelech (Judges 9).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——亚比米勒的死。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——亞比米勒的死。"
+    },
+    "books": {
+      "Judges": [
+        9,
+        9
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/20/057.The_Death_of_Abimelech.jpg/1280px-057.The_Death_of_Abimelech.jpg"
+  },
+  {
+    "id": "illus_dore_058jephthahsdaughter",
+    "kind": "scene",
+    "title": {
+      "en": "Jephthah's Daughter (Doré)",
+      "zh-Hans": "耶弗他的女儿 (多雷)",
+      "zh-Hant": "耶弗他的女兒 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Jephthah's Daughter (Judges 11).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——耶弗他的女儿。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——耶弗他的女兒。"
+    },
+    "books": {
+      "Judges": [
+        11,
+        11
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5a/058.Jephthah%27s_Daughter_Comes_to_Meet_Her_Father.jpg/1280px-058.Jephthah%27s_Daughter_Comes_to_Meet_Her_Father.jpg"
+  },
+  {
+    "id": "illus_dore_059israelitewomenmou",
+    "kind": "scene",
+    "title": {
+      "en": "Mourning Jephthah's Daughter (Doré)",
+      "zh-Hans": "为耶弗他女儿哀哭 (多雷)",
+      "zh-Hant": "為耶弗他女兒哀哭 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Mourning Jephthah's Daughter (Judges 11).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——为耶弗他女儿哀哭。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——為耶弗他女兒哀哭。"
+    },
+    "books": {
+      "Judges": [
+        11,
+        11
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/059.Israelite_Women_Mourn_with_Jephthah%27s_Daughter.jpg/1280px-059.Israelite_Women_Mourn_with_Jephthah%27s_Daughter.jpg"
+  },
+  {
+    "id": "illus_dore_060samsonslaysalionj",
+    "kind": "scene",
+    "title": {
+      "en": "Samson Slays a Lion (Doré)",
+      "zh-Hans": "参孙杀狮 (多雷)",
+      "zh-Hant": "參孫殺獅 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Samson Slays a Lion (Judges 14).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——参孙杀狮。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——參孫殺獅。"
+    },
+    "books": {
+      "Judges": [
+        14,
+        14
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/20/060.Samson_Slays_a_Lion.jpg/1280px-060.Samson_Slays_a_Lion.jpg"
+  },
+  {
+    "id": "illus_dore_061samsondestroysthe",
+    "kind": "scene",
+    "title": {
+      "en": "Samson with the Jawbone (Doré)",
+      "zh-Hans": "参孙用驴腮骨杀敌 (多雷)",
+      "zh-Hant": "參孫用驢腮骨殺敵 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Samson with the Jawbone (Judges 15).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——参孙用驴腮骨杀敌。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——參孫用驢腮骨殺敵。"
+    },
+    "books": {
+      "Judges": [
+        15,
+        15
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/48/061.Samson_Destroys_the_Philistines_with_an_Ass%27_Jawbone.jpg/1280px-061.Samson_Destroys_the_Philistines_with_an_Ass%27_Jawbone.jpg"
+  },
+  {
+    "id": "illus_dore_062samsoncarriesaway",
+    "kind": "scene",
+    "title": {
+      "en": "Samson Carries the Gates (Doré)",
+      "zh-Hans": "参孙扛走城门 (多雷)",
+      "zh-Hant": "參孫扛走城門 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Samson Carries the Gates (Judges 16).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——参孙扛走城门。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——參孫扛走城門。"
     },
     "books": {
       "Judges": [
@@ -2615,20 +3644,167 @@
         16
       ]
     },
-    "file": "https://commons.wikimedia.org/wiki/Special:FilePath/063.Samson%20and%20Delilah.jpg?width=1200"
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a4/062.Samson_Carries_away_the_Gates_of_Gaza.jpg/1280px-062.Samson_Carries_away_the_Gates_of_Gaza.jpg"
   },
   {
-    "id": "scene_david_goliath",
+    "id": "illus_dore_063samsonanddelilahj",
     "kind": "scene",
     "title": {
-      "en": "David and Goliath (Doré)",
-      "zh-Hans": "大卫与歌利亚 (多雷)",
-      "zh-Hant": "大衛與歌利亞 (多雷)"
+      "en": "Samson and Delilah (Doré)",
+      "zh-Hans": "参孙与大利拉 (多雷)",
+      "zh-Hant": "參孫與大利拉 (多雷)"
     },
     "description": {
-      "en": "Gustave Doré, 1866 — 1 Samuel 17.",
-      "zh-Hans": "古斯塔夫·多雷,1866 年——撒母耳记上 17 章。",
-      "zh-Hant": "古斯塔夫·多雷,1866 年——撒母耳記上 17 章。"
+      "en": "Gustave Doré, 1866 — Samson and Delilah (Judges 16).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——参孙与大利拉。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——參孫與大利拉。"
+    },
+    "books": {
+      "Judges": [
+        16,
+        16
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e9/063.Samson_and_Delilah.jpg/1280px-063.Samson_and_Delilah.jpg"
+  },
+  {
+    "id": "illus_dore_064thedeathofsamsonj",
+    "kind": "scene",
+    "title": {
+      "en": "Death of Samson (Doré)",
+      "zh-Hans": "参孙的死 (多雷)",
+      "zh-Hant": "參孫的死 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Death of Samson (Judges 16).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——参孙的死。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——參孫的死。"
+    },
+    "books": {
+      "Judges": [
+        16,
+        16
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/64/064.The_Death_of_Samson.jpg/1280px-064.The_Death_of_Samson.jpg"
+  },
+  {
+    "id": "illus_dore_068naomiandherdaught",
+    "kind": "scene",
+    "title": {
+      "en": "Naomi and Daughters-in-Law (Doré)",
+      "zh-Hans": "拿俄米与儿妇 (多雷)",
+      "zh-Hant": "拿俄米與兒婦 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Naomi and Daughters-in-Law (Ruth 1).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——拿俄米与儿妇。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——拿俄米與兒婦。"
+    },
+    "books": {
+      "Ruth": [
+        1,
+        1
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/41/068.Naomi_and_Her_Daughters-in-Law.jpg/1280px-068.Naomi_and_Her_Daughters-in-Law.jpg"
+  },
+  {
+    "id": "illus_dore_069ruthandboazjpg",
+    "kind": "scene",
+    "title": {
+      "en": "Ruth and Boaz (Doré)",
+      "zh-Hans": "路得与波阿斯 (多雷)",
+      "zh-Hant": "路得與波阿斯 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Ruth and Boaz (Ruth 2).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——路得与波阿斯。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——路得與波阿斯。"
+    },
+    "books": {
+      "Ruth": [
+        2,
+        2
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2e/069.Ruth_and_Boaz.jpg/1280px-069.Ruth_and_Boaz.jpg"
+  },
+  {
+    "id": "illus_dore_070thearkisreturnedt",
+    "kind": "scene",
+    "title": {
+      "en": "Ark Returned to Beth-shemesh (Doré)",
+      "zh-Hans": "约柜回伯示麦 (多雷)",
+      "zh-Hant": "約櫃回伯示麥 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Ark Returned to Beth-shemesh (1 Samuel 6).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——约柜回伯示麦。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——約櫃回伯示麥。"
+    },
+    "books": {
+      "1 Samuel": [
+        6,
+        6
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/70/070.The_Ark_Is_Returned_to_Beth-shemesh.jpg/1280px-070.The_Ark_Is_Returned_to_Beth-shemesh.jpg"
+  },
+  {
+    "id": "illus_dore_070asamuelblessessau",
+    "kind": "scene",
+    "title": {
+      "en": "Samuel Blesses Saul (Doré)",
+      "zh-Hans": "撒母耳为扫罗祝福 (多雷)",
+      "zh-Hant": "撒母耳為掃羅祝福 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Samuel Blesses Saul (1 Samuel 10).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——撒母耳为扫罗祝福。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——撒母耳為掃羅祝福。"
+    },
+    "books": {
+      "1 Samuel": [
+        10,
+        10
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5b/070A.Samuel_Blesses_Saul.jpg/1280px-070A.Samuel_Blesses_Saul.jpg"
+  },
+  {
+    "id": "illus_dore_071thedeathofagagjpg",
+    "kind": "scene",
+    "title": {
+      "en": "Death of Agag (Doré)",
+      "zh-Hans": "亚甲被诛 (多雷)",
+      "zh-Hant": "亞甲被誅 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Death of Agag (1 Samuel 15).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——亚甲被诛。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——亞甲被誅。"
+    },
+    "books": {
+      "1 Samuel": [
+        15,
+        15
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/39/071.The_Death_of_Agag.jpg/1280px-071.The_Death_of_Agag.jpg"
+  },
+  {
+    "id": "illus_dore_071adavidslaysgoliat",
+    "kind": "scene",
+    "title": {
+      "en": "David Slays Goliath (Doré)",
+      "zh-Hans": "大卫击杀歌利亚 (多雷)",
+      "zh-Hant": "大衛擊殺歌利亞 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — David Slays Goliath (1 Samuel 17).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——大卫击杀歌利亚。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——大衛擊殺歌利亞。"
     },
     "books": {
       "1 Samuel": [
@@ -2636,20 +3812,209 @@
         17
       ]
     },
-    "file": "https://commons.wikimedia.org/wiki/Special:FilePath/071A.David%20Slays%20Goliath.jpg?width=1200"
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/00/071A.David_Slays_Goliath.jpg/1280px-071A.David_Slays_Goliath.jpg"
   },
   {
-    "id": "scene_solomon_judgment",
+    "id": "illus_dore_072saulattemptstokil",
     "kind": "scene",
     "title": {
-      "en": "The Judgment of Solomon (Doré)",
-      "zh-Hans": "所罗门的判断 (多雷)",
-      "zh-Hant": "所羅門的判斷 (多雷)"
+      "en": "Saul Attempts to Kill David (Doré)",
+      "zh-Hans": "扫罗欲杀大卫 (多雷)",
+      "zh-Hant": "掃羅欲殺大衛 (多雷)"
     },
     "description": {
-      "en": "Gustave Doré, 1866 — 1 Kings 3.",
-      "zh-Hans": "古斯塔夫·多雷,1866 年——列王纪上 3 章。",
-      "zh-Hant": "古斯塔夫·多雷,1866 年——列王紀上 3 章。"
+      "en": "Gustave Doré, 1866 — Saul Attempts to Kill David (1 Samuel 19).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——扫罗欲杀大卫。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——掃羅欲殺大衛。"
+    },
+    "books": {
+      "1 Samuel": [
+        19,
+        19
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4e/072.Saul_Attempts_to_Kill_David.jpg/1280px-072.Saul_Attempts_to_Kill_David.jpg"
+  },
+  {
+    "id": "illus_dore_073davidescapesthrou",
+    "kind": "scene",
+    "title": {
+      "en": "David Escapes through a Window (Doré)",
+      "zh-Hans": "大卫从窗口逃脱 (多雷)",
+      "zh-Hant": "大衛從窗口逃脫 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — David Escapes through a Window (1 Samuel 19).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——大卫从窗口逃脱。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——大衛從窗口逃脫。"
+    },
+    "books": {
+      "1 Samuel": [
+        19,
+        19
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4a/073.David_Escapes_through_a_Window.jpg/1280px-073.David_Escapes_through_a_Window.jpg"
+  },
+  {
+    "id": "illus_dore_073adavidandjonathan",
+    "kind": "scene",
+    "title": {
+      "en": "David and Jonathan (Doré)",
+      "zh-Hans": "大卫与约拿单 (多雷)",
+      "zh-Hant": "大衛與約拿單 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — David and Jonathan (1 Samuel 20).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——大卫与约拿单。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——大衛與約拿單。"
+    },
+    "books": {
+      "1 Samuel": [
+        20,
+        20
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9d/073A.David_and_Jonathan.jpg/1280px-073A.David_and_Jonathan.jpg"
+  },
+  {
+    "id": "illus_dore_074davidshowssaulhow",
+    "kind": "scene",
+    "title": {
+      "en": "David Spares Saul (Doré)",
+      "zh-Hans": "大卫顾全扫罗的命 (多雷)",
+      "zh-Hant": "大衛顧全掃羅的命 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — David Spares Saul (1 Samuel 24).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——大卫顾全扫罗的命。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——大衛顧全掃羅的命。"
+    },
+    "books": {
+      "1 Samuel": [
+        24,
+        24
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/62/074.David_Shows_Saul_How_He_Spared_His_Life.jpg/1280px-074.David_Shows_Saul_How_He_Spared_His_Life.jpg"
+  },
+  {
+    "id": "illus_dore_075saulandthewitchof",
+    "kind": "scene",
+    "title": {
+      "en": "Saul and the Witch of Endor (Doré)",
+      "zh-Hans": "扫罗与隐多珥的女巫 (多雷)",
+      "zh-Hant": "掃羅與隱多珥的女巫 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Saul and the Witch of Endor (1 Samuel 28).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——扫罗与隐多珥的女巫。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——掃羅與隱多珥的女巫。"
+    },
+    "books": {
+      "1 Samuel": [
+        28,
+        28
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/08/075.Saul_and_the_Witch_of_Endor.jpg/1280px-075.Saul_and_the_Witch_of_Endor.jpg"
+  },
+  {
+    "id": "illus_dore_076thedeathofsauljpg",
+    "kind": "scene",
+    "title": {
+      "en": "The Death of Saul (Doré)",
+      "zh-Hans": "扫罗之死 (多雷)",
+      "zh-Hant": "掃羅之死 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — The Death of Saul (1 Samuel 31).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——扫罗之死。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——掃羅之死。"
+    },
+    "books": {
+      "1 Samuel": [
+        31,
+        31
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/88/076.The_Death_of_Saul.jpg/1280px-076.The_Death_of_Saul.jpg"
+  },
+  {
+    "id": "illus_dore_079davidattackstheam",
+    "kind": "scene",
+    "title": {
+      "en": "David Attacks the Ammonites (Doré)",
+      "zh-Hans": "大卫攻击亚扪人 (多雷)",
+      "zh-Hant": "大衛攻擊亞捫人 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — David Attacks the Ammonites (2 Samuel 12).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——大卫攻击亚扪人。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——大衛攻擊亞捫人。"
+    },
+    "books": {
+      "2 Samuel": [
+        12,
+        12
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/25/079.David_Attacks_the_Ammonites.jpg/1280px-079.David_Attacks_the_Ammonites.jpg"
+  },
+  {
+    "id": "illus_dore_080thedeathofabsalom",
+    "kind": "scene",
+    "title": {
+      "en": "Death of Absalom (Doré)",
+      "zh-Hans": "押沙龙的死 (多雷)",
+      "zh-Hant": "押沙龍的死 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Death of Absalom (2 Samuel 18).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——押沙龙的死。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——押沙龍的死。"
+    },
+    "books": {
+      "2 Samuel": [
+        18,
+        18
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6d/080.The_Death_of_Absalom.jpg/1280px-080.The_Death_of_Absalom.jpg"
+  },
+  {
+    "id": "illus_dore_081davidmournsthedea",
+    "kind": "scene",
+    "title": {
+      "en": "David Mourns Absalom (Doré)",
+      "zh-Hans": "大卫为押沙龙哀哭 (多雷)",
+      "zh-Hant": "大衛為押沙龍哀哭 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — David Mourns Absalom (2 Samuel 19).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——大卫为押沙龙哀哭。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——大衛為押沙龍哀哭。"
+    },
+    "books": {
+      "2 Samuel": [
+        19,
+        19
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/71/081.David_Mourns_the_Death_of_Absalom.jpg/1280px-081.David_Mourns_the_Death_of_Absalom.jpg"
+  },
+  {
+    "id": "illus_dore_084thejudgmentofsolo",
+    "kind": "scene",
+    "title": {
+      "en": "Judgment of Solomon (Doré)",
+      "zh-Hans": "所罗门的智断 (多雷)",
+      "zh-Hant": "所羅門的智斷 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Judgment of Solomon (1 Kings 3).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——所罗门的智断。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——所羅門的智斷。"
     },
     "books": {
       "1 Kings": [
@@ -2657,20 +4022,146 @@
         3
       ]
     },
-    "file": "https://commons.wikimedia.org/wiki/Special:FilePath/084.The%20Judgment%20of%20Solomon.jpg?width=1200"
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/61/084.The_Judgment_of_Solomon.jpg/1280px-084.The_Judgment_of_Solomon.jpg"
   },
   {
-    "id": "scene_elijah_chariot",
-    "kind": "prophecy",
+    "id": "illus_dore_086solomonreceivesth",
+    "kind": "scene",
     "title": {
-      "en": "Elijah Taken to Heaven (Doré)",
+      "en": "Solomon and Queen of Sheba (Doré)",
+      "zh-Hans": "所罗门接待示巴女王 (多雷)",
+      "zh-Hant": "所羅門接待示巴女王 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Solomon and Queen of Sheba (1 Kings 10).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——所罗门接待示巴女王。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——所羅門接待示巴女王。"
+    },
+    "books": {
+      "1 Kings": [
+        10,
+        10
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7d/086.Solomon_Receives_the_Queen_of_Sheba.jpg/1280px-086.Solomon_Receives_the_Queen_of_Sheba.jpg"
+  },
+  {
+    "id": "illus_dore_087kingsolomoninolda",
+    "kind": "scene",
+    "title": {
+      "en": "King Solomon in Old Age (Doré)",
+      "zh-Hans": "所罗门年迈 (多雷)",
+      "zh-Hant": "所羅門年邁 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — King Solomon in Old Age (1 Kings 11).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——所罗门年迈。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——所羅門年邁。"
+    },
+    "books": {
+      "1 Kings": [
+        11,
+        11
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/39/087.King_Solomon_in_Old_Age.jpg/1280px-087.King_Solomon_in_Old_Age.jpg"
+  },
+  {
+    "id": "illus_dore_089elijahraisestheso",
+    "kind": "scene",
+    "title": {
+      "en": "Elijah Raises Widow's Son (Doré)",
+      "zh-Hans": "以利亚使寡妇之子复活 (多雷)",
+      "zh-Hant": "以利亞使寡婦之子復活 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Elijah Raises Widow's Son (1 Kings 17).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——以利亚使寡妇之子复活。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——以利亞使寡婦之子復活。"
+    },
+    "books": {
+      "1 Kings": [
+        17,
+        17
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/55/089.Elijah_Raises_the_Son_of_the_Widow_of_Zarephath.jpg/1280px-089.Elijah_Raises_the_Son_of_the_Widow_of_Zarephath.jpg"
+  },
+  {
+    "id": "illus_dore_090theprophetsofbaal",
+    "kind": "scene",
+    "title": {
+      "en": "Prophets of Baal Slain (Doré)",
+      "zh-Hans": "巴力先知被杀 (多雷)",
+      "zh-Hant": "巴力先知被殺 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Prophets of Baal Slain (1 Kings 18).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——巴力先知被杀。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——巴力先知被殺。"
+    },
+    "books": {
+      "1 Kings": [
+        18,
+        18
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/26/090.The_Prophets_of_Baal_Are_Slaughtered.jpg/1280px-090.The_Prophets_of_Baal_Are_Slaughtered.jpg"
+  },
+  {
+    "id": "illus_dore_091elijahisnourished",
+    "kind": "scene",
+    "title": {
+      "en": "Elijah Nourished by an Angel (Doré)",
+      "zh-Hans": "天使供养以利亚 (多雷)",
+      "zh-Hant": "天使供養以利亞 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Elijah Nourished by an Angel (1 Kings 19).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——天使供养以利亚。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——天使供養以利亞。"
+    },
+    "books": {
+      "1 Kings": [
+        19,
+        19
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c9/091.Elijah_Is_Nourished_by_an_Angel.jpg/1280px-091.Elijah_Is_Nourished_by_an_Angel.jpg"
+  },
+  {
+    "id": "illus_dore_093thedeathofahabjpg",
+    "kind": "scene",
+    "title": {
+      "en": "Death of Ahab (Doré)",
+      "zh-Hans": "亚哈之死 (多雷)",
+      "zh-Hant": "亞哈之死 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Death of Ahab (1 Kings 22).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——亚哈之死。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——亞哈之死。"
+    },
+    "books": {
+      "1 Kings": [
+        22,
+        22
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/52/093.The_Death_of_Ahab.jpg/1280px-093.The_Death_of_Ahab.jpg"
+  },
+  {
+    "id": "illus_dore_095elijahascendstohe",
+    "kind": "scene",
+    "title": {
+      "en": "Elijah Ascends to Heaven (Doré)",
       "zh-Hans": "以利亚被接升天 (多雷)",
       "zh-Hant": "以利亞被接升天 (多雷)"
     },
     "description": {
-      "en": "Gustave Doré, 1866 — 2 Kings 2.",
-      "zh-Hans": "古斯塔夫·多雷,1866 年——列王纪下 2 章。",
-      "zh-Hant": "古斯塔夫·多雷,1866 年——列王紀下 2 章。"
+      "en": "Gustave Doré, 1866 — Elijah Ascends to Heaven (2 Kings 2).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——以利亚被接升天。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——以利亞被接升天。"
     },
     "books": {
       "2 Kings": [
@@ -2678,10 +4169,367 @@
         2
       ]
     },
-    "file": "https://commons.wikimedia.org/wiki/Special:FilePath/095.Elijah%20Ascends%20to%20Heaven%20in%20a%20Chariot%20of%20Fire.jpg?width=1200"
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/095.Elijah_Ascends_to_Heaven_in_a_Chariot_of_Fire.jpg/1280px-095.Elijah_Ascends_to_Heaven_in_a_Chariot_of_Fire.jpg"
   },
   {
-    "id": "scene_fiery_furnace",
+    "id": "illus_dore_097thedeathofjezebel",
+    "kind": "scene",
+    "title": {
+      "en": "Death of Jezebel (Doré)",
+      "zh-Hans": "耶洗别之死 (多雷)",
+      "zh-Hant": "耶洗別之死 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Death of Jezebel (2 Kings 9).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——耶洗别之死。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——耶洗別之死。"
+    },
+    "books": {
+      "2 Kings": [
+        9,
+        9
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c6/097.The_Death_of_Jezebel.jpg/1280px-097.The_Death_of_Jezebel.jpg"
+  },
+  {
+    "id": "illus_dore_099thedeathofathalia",
+    "kind": "scene",
+    "title": {
+      "en": "Death of Athaliah (Doré)",
+      "zh-Hans": "亚他利雅之死 (多雷)",
+      "zh-Hant": "亞他利雅之死 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Death of Athaliah (2 Kings 11).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——亚他利雅之死。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——亞他利雅之死。"
+    },
+    "books": {
+      "2 Kings": [
+        11,
+        11
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/57/099.The_Death_of_Athaliah.jpg/1280px-099.The_Death_of_Athaliah.jpg"
+  },
+  {
+    "id": "illus_dore_101sennacheribsarmyi",
+    "kind": "scene",
+    "title": {
+      "en": "Sennacherib's Army Destroyed (Doré)",
+      "zh-Hans": "西拿基立的军队被毁 (多雷)",
+      "zh-Hant": "西拿基立的軍隊被毀 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Sennacherib's Army Destroyed (2 Kings 19).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——西拿基立的军队被毁。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——西拿基立的軍隊被毀。"
+    },
+    "books": {
+      "2 Kings": [
+        19,
+        19
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/101.Sennacherib%27s_Army_Is_Destroyed.jpg/1280px-101.Sennacherib%27s_Army_Is_Destroyed.jpg"
+  },
+  {
+    "id": "illus_dore_102zedekiahssonsares",
+    "kind": "scene",
+    "title": {
+      "en": "Zedekiah's Sons Slain (Doré)",
+      "zh-Hans": "西底家众子被杀 (多雷)",
+      "zh-Hant": "西底家眾子被殺 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Zedekiah's Sons Slain (2 Kings 25).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——西底家众子被杀。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——西底家眾子被殺。"
+    },
+    "books": {
+      "2 Kings": [
+        25,
+        25
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/af/102.Zedekiah%27s_Sons_Are_Slaughtered_before_His_Eyes.jpg/1280px-102.Zedekiah%27s_Sons_Are_Slaughtered_before_His_Eyes.jpg"
+  },
+  {
+    "id": "illus_dore_114queenvashtirefuse",
+    "kind": "scene",
+    "title": {
+      "en": "Vashti Refuses (Doré)",
+      "zh-Hans": "瓦实提违命 (多雷)",
+      "zh-Hant": "瓦實提違命 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Vashti Refuses (Esther 1).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——瓦实提违命。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——瓦實提違命。"
+    },
+    "books": {
+      "Esther": [
+        1,
+        1
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/37/114.Queen_Vashti_Refuses_to_Obey_Ahasuerus%27_Command.jpg/1280px-114.Queen_Vashti_Refuses_to_Obey_Ahasuerus%27_Command.jpg"
+  },
+  {
+    "id": "illus_dore_115estherbeforetheki",
+    "kind": "scene",
+    "title": {
+      "en": "Esther Before the King (Doré)",
+      "zh-Hans": "以斯帖见王 (多雷)",
+      "zh-Hant": "以斯帖見王 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Esther Before the King (Esther 5).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——以斯帖见王。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——以斯帖見王。"
+    },
+    "books": {
+      "Esther": [
+        5,
+        5
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/13/115.Esther_Before_the_King.jpg/1280px-115.Esther_Before_the_King.jpg"
+  },
+  {
+    "id": "illus_dore_116thetriumphofmorde",
+    "kind": "scene",
+    "title": {
+      "en": "Triumph of Mordecai (Doré)",
+      "zh-Hans": "末底改的尊荣 (多雷)",
+      "zh-Hant": "末底改的尊榮 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Triumph of Mordecai (Esther 6).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——末底改的尊荣。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——末底改的尊榮。"
+    },
+    "books": {
+      "Esther": [
+        6,
+        6
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/89/116.The_Triumph_of_Mordecai.jpg/1280px-116.The_Triumph_of_Mordecai.jpg"
+  },
+  {
+    "id": "illus_dore_117estheraccuseshama",
+    "kind": "scene",
+    "title": {
+      "en": "Esther Accuses Haman (Doré)",
+      "zh-Hans": "以斯帖控诉哈曼 (多雷)",
+      "zh-Hant": "以斯帖控訴哈曼 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Esther Accuses Haman (Esther 7).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——以斯帖控诉哈曼。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——以斯帖控訴哈曼。"
+    },
+    "books": {
+      "Esther": [
+        7,
+        7
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e5/117.Esther_Accuses_Haman.jpg/1280px-117.Esther_Accuses_Haman.jpg"
+  },
+  {
+    "id": "illus_dore_118jobhearsofhismisf",
+    "kind": "scene",
+    "title": {
+      "en": "Job Hears of His Misfortunes (Doré)",
+      "zh-Hans": "约伯闻祸 (多雷)",
+      "zh-Hant": "約伯聞禍 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Job Hears of His Misfortunes (Job 1).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——约伯闻祸。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——約伯聞禍。"
+    },
+    "books": {
+      "Job": [
+        1,
+        1
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/118.Job_Hears_of_His_Misfortunes.jpg/1280px-118.Job_Hears_of_His_Misfortunes.jpg"
+  },
+  {
+    "id": "illus_dore_119jobspeakswithhisf",
+    "kind": "scene",
+    "title": {
+      "en": "Job Speaks with His Friends (Doré)",
+      "zh-Hans": "约伯与友人对话 (多雷)",
+      "zh-Hant": "約伯與友人對話 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Job Speaks with His Friends (Job 4).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——约伯与友人对话。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——約伯與友人對話。"
+    },
+    "books": {
+      "Job": [
+        4,
+        4
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/79/119.Job_Speaks_with_His_Friends.jpg/1280px-119.Job_Speaks_with_His_Friends.jpg"
+  },
+  {
+    "id": "illus_dore_120theprophetisaiahj",
+    "kind": "scene",
+    "title": {
+      "en": "The Prophet Isaiah (Doré)",
+      "zh-Hans": "先知以赛亚 (多雷)",
+      "zh-Hant": "先知以賽亞 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — The Prophet Isaiah (Isaiah 1).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——先知以赛亚。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——先知以賽亞。"
+    },
+    "books": {
+      "Isaiah": [
+        1,
+        1
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/43/120.The_Prophet_Isaiah.jpg/1280px-120.The_Prophet_Isaiah.jpg"
+  },
+  {
+    "id": "illus_dore_121isaiahsvisionofth",
+    "kind": "scene",
+    "title": {
+      "en": "Isaiah's Vision of Babylon (Doré)",
+      "zh-Hans": "以赛亚见巴比伦异象 (多雷)",
+      "zh-Hant": "以賽亞見巴比倫異象 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Isaiah's Vision of Babylon (Isaiah 13).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——以赛亚见巴比伦异象。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——以賽亞見巴比倫異象。"
+    },
+    "books": {
+      "Isaiah": [
+        13,
+        13
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5c/121.Isaiah%27s_Vision_of_the_Destruction_of_Babylon.jpg/1280px-121.Isaiah%27s_Vision_of_the_Destruction_of_Babylon.jpg"
+  },
+  {
+    "id": "illus_dore_122thedestructionofl",
+    "kind": "scene",
+    "title": {
+      "en": "Destruction of Leviathan (Doré)",
+      "zh-Hans": "鳄鱼被毁 (多雷)",
+      "zh-Hant": "鱷魚被毀 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Destruction of Leviathan (Isaiah 27).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——鳄鱼被毁。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——鱷魚被毀。"
+    },
+    "books": {
+      "Isaiah": [
+        27,
+        27
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/38/122.The_Destruction_of_Leviathan.jpg/1280px-122.The_Destruction_of_Leviathan.jpg"
+  },
+  {
+    "id": "illus_dore_123theprophetjeremia",
+    "kind": "scene",
+    "title": {
+      "en": "The Prophet Jeremiah (Doré)",
+      "zh-Hans": "先知耶利米 (多雷)",
+      "zh-Hant": "先知耶利米 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — The Prophet Jeremiah (Jeremiah 1).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——先知耶利米。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——先知耶利米。"
+    },
+    "books": {
+      "Jeremiah": [
+        1,
+        1
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d3/123.The_Prophet_Jeremiah.jpg/1280px-123.The_Prophet_Jeremiah.jpg"
+  },
+  {
+    "id": "illus_dore_124peoplemournoverth",
+    "kind": "scene",
+    "title": {
+      "en": "Mourning Destruction of Jerusalem (Doré)",
+      "zh-Hans": "为耶路撒冷哀哭 (多雷)",
+      "zh-Hant": "為耶路撒冷哀哭 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Mourning Destruction of Jerusalem (Lamentations 1).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——为耶路撒冷哀哭。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——為耶路撒冷哀哭。"
+    },
+    "books": {
+      "Lamentations": [
+        1,
+        1
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9f/124.People_Mourn_over_the_Destruction_of_Jerusalem.jpg/1280px-124.People_Mourn_over_the_Destruction_of_Jerusalem.jpg"
+  },
+  {
+    "id": "illus_dore_126theprophetezekiel",
+    "kind": "scene",
+    "title": {
+      "en": "The Prophet Ezekiel (Doré)",
+      "zh-Hans": "先知以西结 (多雷)",
+      "zh-Hant": "先知以西結 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — The Prophet Ezekiel (Ezekiel 1).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——先知以西结。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——先知以西結。"
+    },
+    "books": {
+      "Ezekiel": [
+        1,
+        1
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/42/126.The_Prophet_Ezekiel.jpg/1280px-126.The_Prophet_Ezekiel.jpg"
+  },
+  {
+    "id": "illus_dore_128danielamongtheexi",
+    "kind": "scene",
+    "title": {
+      "en": "Daniel among the Exiles (Doré)",
+      "zh-Hans": "但以理在被掳之中 (多雷)",
+      "zh-Hant": "但以理在被擄之中 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Daniel among the Exiles (Daniel 1).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——但以理在被掳之中。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——但以理在被擄之中。"
+    },
+    "books": {
+      "Daniel": [
+        1,
+        1
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/36/128.Daniel_among_the_Exiles.jpg/1280px-128.Daniel_among_the_Exiles.jpg"
+  },
+  {
+    "id": "illus_dore_129shadrachmeshachan",
     "kind": "scene",
     "title": {
       "en": "Three in the Fiery Furnace (Doré)",
@@ -2689,9 +4537,9 @@
       "zh-Hant": "三人在烈火窯中 (多雷)"
     },
     "description": {
-      "en": "Gustave Doré, 1866 — Daniel 3.",
-      "zh-Hans": "古斯塔夫·多雷,1866 年——但以理书 3 章。",
-      "zh-Hant": "古斯塔夫·多雷,1866 年——但以理書 3 章。"
+      "en": "Gustave Doré, 1866 — Three in the Fiery Furnace (Daniel 3).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——三人在烈火窑中。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——三人在烈火窯中。"
     },
     "books": {
       "Daniel": [
@@ -2699,10 +4547,10 @@
         3
       ]
     },
-    "file": "https://commons.wikimedia.org/wiki/Special:FilePath/129.Shadrach%2C%20Meshach%20and%20Abednego%20in%20the%20Furnace.jpg?width=1200"
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a5/129.Shadrach%2C_Meshach_and_Abednego_in_the_Furnace.jpg/1280px-129.Shadrach%2C_Meshach_and_Abednego_in_the_Furnace.jpg"
   },
   {
-    "id": "scene_writing_on_wall_dore",
+    "id": "illus_dore_130danielinterpretst",
     "kind": "scene",
     "title": {
       "en": "Writing on the Wall (Doré)",
@@ -2710,9 +4558,9 @@
       "zh-Hant": "牆上的字 (多雷)"
     },
     "description": {
-      "en": "Gustave Doré, 1866 — Daniel 5.",
-      "zh-Hans": "古斯塔夫·多雷,1866 年——但以理书 5 章。",
-      "zh-Hant": "古斯塔夫·多雷,1866 年——但以理書 5 章。"
+      "en": "Gustave Doré, 1866 — Writing on the Wall (Daniel 5).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——墙上的字。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——牆上的字。"
     },
     "books": {
       "Daniel": [
@@ -2720,31 +4568,10 @@
         5
       ]
     },
-    "file": "https://commons.wikimedia.org/wiki/Special:FilePath/130.Daniel%20Interprets%20the%20Writing%20on%20the%20Wall.jpg?width=1200"
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/70/130.Daniel_Interprets_the_Writing_on_the_Wall.jpg/1280px-130.Daniel_Interprets_the_Writing_on_the_Wall.jpg"
   },
   {
-    "id": "scene_belshazzar_rembrandt",
-    "kind": "scene",
-    "title": {
-      "en": "Belshazzar's Feast (Rembrandt)",
-      "zh-Hans": "伯沙撒的筵席 (伦勃朗)",
-      "zh-Hant": "伯沙撒的筵席 (倫勃朗)"
-    },
-    "description": {
-      "en": "Rembrandt, c. 1635 — the writing on the wall (Daniel 5).",
-      "zh-Hans": "伦勃朗,约 1635 年——墙上的字(但以理书 5 章)。",
-      "zh-Hant": "倫勃朗,約 1635 年——牆上的字(但以理書 5 章)。"
-    },
-    "books": {
-      "Daniel": [
-        5,
-        5
-      ]
-    },
-    "file": "https://commons.wikimedia.org/wiki/Special:FilePath/Rembrandt-Belsazar.jpg?width=1200"
-  },
-  {
-    "id": "scene_daniel_lions",
+    "id": "illus_dore_131danielinthelionsd",
     "kind": "scene",
     "title": {
       "en": "Daniel in the Lions' Den (Doré)",
@@ -2752,9 +4579,9 @@
       "zh-Hant": "但以理在獅子坑中 (多雷)"
     },
     "description": {
-      "en": "Gustave Doré, 1866 — Daniel 6.",
-      "zh-Hans": "古斯塔夫·多雷,1866 年——但以理书 6 章。",
-      "zh-Hant": "古斯塔夫·多雷,1866 年——但以理書 6 章。"
+      "en": "Gustave Doré, 1866 — Daniel in the Lions' Den (Daniel 6).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——但以理在狮子坑中。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——但以理在獅子坑中。"
     },
     "books": {
       "Daniel": [
@@ -2762,31 +4589,136 @@
         6
       ]
     },
-    "file": "https://commons.wikimedia.org/wiki/Special:FilePath/131.Daniel%20in%20the%20Lions%27%20Den.jpg?width=1200"
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/131.Daniel_in_the_Lions%27_Den.jpg/1280px-131.Daniel_in_the_Lions%27_Den.jpg"
   },
   {
-    "id": "scene_jonah_whale",
+    "id": "illus_dore_132danielsvisionofth",
     "kind": "scene",
     "title": {
-      "en": "Jonah and the Great Fish (Doré)",
-      "zh-Hans": "约拿与大鱼 (多雷)",
-      "zh-Hant": "約拿與大魚 (多雷)"
+      "en": "Daniel's Vision of Four Beasts (Doré)",
+      "zh-Hans": "但以理见四兽异象 (多雷)",
+      "zh-Hant": "但以理見四獸異象 (多雷)"
     },
     "description": {
-      "en": "Gustave Doré, 1866 — Jonah 2.",
-      "zh-Hans": "古斯塔夫·多雷,1866 年——约拿书 2 章。",
-      "zh-Hant": "古斯塔夫·多雷,1866 年——約拿書 2 章。"
+      "en": "Gustave Doré, 1866 — Daniel's Vision of Four Beasts (Daniel 7).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——但以理见四兽异象。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——但以理見四獸異象。"
+    },
+    "books": {
+      "Daniel": [
+        7,
+        7
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5b/132.Daniel%27s_Vision_of_the_Four_Beasts.jpg/1280px-132.Daniel%27s_Vision_of_the_Four_Beasts.jpg"
+  },
+  {
+    "id": "illus_dore_136theprophetamosjpg",
+    "kind": "scene",
+    "title": {
+      "en": "The Prophet Amos (Doré)",
+      "zh-Hans": "先知阿摩司 (多雷)",
+      "zh-Hant": "先知阿摩司 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — The Prophet Amos (Amos 1).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——先知阿摩司。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——先知阿摩司。"
+    },
+    "books": {
+      "Amos": [
+        1,
+        1
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cf/136.The_Prophet_Amos.jpg/1280px-136.The_Prophet_Amos.jpg"
+  },
+  {
+    "id": "illus_dore_137jonahisspewedfort",
+    "kind": "scene",
+    "title": {
+      "en": "Jonah Spewed by the Whale (Doré)",
+      "zh-Hans": "约拿被大鱼吐出 (多雷)",
+      "zh-Hant": "約拿被大魚吐出 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Jonah Spewed by the Whale (Jonah 2).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——约拿被大鱼吐出。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——約拿被大魚吐出。"
     },
     "books": {
       "Jonah": [
-        1,
+        2,
         2
       ]
     },
-    "file": "https://commons.wikimedia.org/wiki/Special:FilePath/137.Jonah%20Is%20Spewed%20Forth%20by%20the%20Whale.jpg?width=1200"
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/73/137.Jonah_Is_Spewed_Forth_by_the_Whale.jpg/1280px-137.Jonah_Is_Spewed_Forth_by_the_Whale.jpg"
   },
   {
-    "id": "scene_annunciation_dore",
+    "id": "illus_dore_138jonahpreachestoth",
+    "kind": "scene",
+    "title": {
+      "en": "Jonah Preaches to Nineveh (Doré)",
+      "zh-Hans": "约拿向尼尼微传道 (多雷)",
+      "zh-Hant": "約拿向尼尼微傳道 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Jonah Preaches to Nineveh (Jonah 3).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——约拿向尼尼微传道。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——約拿向尼尼微傳道。"
+    },
+    "books": {
+      "Jonah": [
+        3,
+        3
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e9/138.Jonah_Preaches_to_the_Ninevites.jpg/1280px-138.Jonah_Preaches_to_the_Ninevites.jpg"
+  },
+  {
+    "id": "illus_dore_139micahexhortstheis",
+    "kind": "scene",
+    "title": {
+      "en": "Micah Calls Israel to Repent (Doré)",
+      "zh-Hans": "弥迦呼召以色列悔改 (多雷)",
+      "zh-Hant": "彌迦呼召以色列悔改 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Micah Calls Israel to Repent (Micah 6).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——弥迦呼召以色列悔改。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——彌迦呼召以色列悔改。"
+    },
+    "books": {
+      "Micah": [
+        6,
+        6
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/29/139.Micah_Exhorts_the_Israelites_to_Repent.jpg/1280px-139.Micah_Exhorts_the_Israelites_to_Repent.jpg"
+  },
+  {
+    "id": "illus_dore_140zechariahsvisiono",
+    "kind": "scene",
+    "title": {
+      "en": "Zechariah's Vision of Four Chariots (Doré)",
+      "zh-Hans": "撒迦利亚见四车异象 (多雷)",
+      "zh-Hant": "撒迦利亞見四車異象 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Zechariah's Vision of Four Chariots (Zechariah 6).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——撒迦利亚见四车异象。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——撒迦利亞見四車異象。"
+    },
+    "books": {
+      "Zechariah": [
+        6,
+        6
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5d/140.Zechariah%27s_Vision_of_Four_Chariots.jpg/1280px-140.Zechariah%27s_Vision_of_Four_Chariots.jpg"
+  },
+  {
+    "id": "illus_dore_gustavedoretheannunc",
     "kind": "scene",
     "title": {
       "en": "The Annunciation (Doré)",
@@ -2794,9 +4726,9 @@
       "zh-Hant": "天使報喜 (多雷)"
     },
     "description": {
-      "en": "Gustave Doré — Luke 1.",
-      "zh-Hans": "古斯塔夫·多雷——路加福音 1 章。",
-      "zh-Hant": "古斯塔夫·多雷——路加福音 1 章。"
+      "en": "Gustave Doré, 1866 — The Annunciation (Luke 1).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——天使报喜。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——天使報喜。"
     },
     "books": {
       "Luke": [
@@ -2804,10 +4736,10 @@
         1
       ]
     },
-    "file": "https://commons.wikimedia.org/wiki/Special:FilePath/Gustave%20Dore%20-%20The%20Annunciation.jpg?width=1200"
+    "file": "https://upload.wikimedia.org/wikipedia/commons/a/ac/Gustave_Dore_-_The_Annunciation.jpg"
   },
   {
-    "id": "scene_nativity_dore",
+    "id": "illus_dore_thebirthofjesusjpg",
     "kind": "scene",
     "title": {
       "en": "The Birth of Jesus (Doré)",
@@ -2815,24 +4747,20 @@
       "zh-Hant": "耶穌降生 (多雷)"
     },
     "description": {
-      "en": "Gustave Doré — Luke 2 / Matthew 2.",
-      "zh-Hans": "古斯塔夫·多雷——路加福音 2 / 马太福音 2 章。",
-      "zh-Hant": "古斯塔夫·多雷——路加福音 2 / 馬太福音 2 章。"
+      "en": "Gustave Doré, 1866 — The Birth of Jesus (Luke 2).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——耶稣降生。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——耶穌降生。"
     },
     "books": {
-      "Matthew": [
-        1,
-        2
-      ],
       "Luke": [
         2,
         2
       ]
     },
-    "file": "https://commons.wikimedia.org/wiki/Special:FilePath/The%20Birth%20of%20Jesus.jpg?width=1200"
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c7/The_Birth_of_Jesus.jpg/1280px-The_Birth_of_Jesus.jpg"
   },
   {
-    "id": "scene_baptism_jesus",
+    "id": "illus_dore_gustavedorejohntheba",
     "kind": "scene",
     "title": {
       "en": "Baptism of Jesus (Doré)",
@@ -2840,49 +4768,20 @@
       "zh-Hant": "耶穌受洗 (多雷)"
     },
     "description": {
-      "en": "Gustave Doré — Matthew 3.",
-      "zh-Hans": "古斯塔夫·多雷——马太福音 3 章。",
-      "zh-Hant": "古斯塔夫·多雷——馬太福音 3 章。"
+      "en": "Gustave Doré, 1866 — Baptism of Jesus (Matthew 3).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——耶稣受洗。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——耶穌受洗。"
     },
     "books": {
       "Matthew": [
         3,
         3
-      ],
-      "Mark": [
-        1,
-        1
-      ],
-      "Luke": [
-        3,
-        3
       ]
     },
-    "file": "https://commons.wikimedia.org/wiki/Special:FilePath/Gustave%20Dore%20-%20John%20the%20Baptist%20baptizes%20Jesus.jpg?width=1200"
+    "file": "https://upload.wikimedia.org/wikipedia/commons/3/34/Gustave_Dore_-_John_the_Baptist_baptizes_Jesus.jpg"
   },
   {
-    "id": "scene_sermon_mount",
-    "kind": "scene",
-    "title": {
-      "en": "Sermon on the Mount (Doré)",
-      "zh-Hans": "登山宝训 (多雷)",
-      "zh-Hant": "登山寶訓 (多雷)"
-    },
-    "description": {
-      "en": "Gustave Doré — Matthew 5–7.",
-      "zh-Hans": "古斯塔夫·多雷——马太福音 5–7 章。",
-      "zh-Hant": "古斯塔夫·多雷——馬太福音 5–7 章。"
-    },
-    "books": {
-      "Matthew": [
-        5,
-        7
-      ]
-    },
-    "file": "https://commons.wikimedia.org/wiki/Special:FilePath/Dore%20Bible%20Sermon%20on%20the%20Mount.jpg?width=1200"
-  },
-  {
-    "id": "scene_marriage_cana",
+    "id": "illus_dore_marriageatcanaengrav",
     "kind": "scene",
     "title": {
       "en": "Marriage at Cana (Doré)",
@@ -2890,9 +4789,9 @@
       "zh-Hant": "迦拿婚宴 (多雷)"
     },
     "description": {
-      "en": "Gustave Doré — John 2.",
-      "zh-Hans": "古斯塔夫·多雷——约翰福音 2 章。",
-      "zh-Hant": "古斯塔夫·多雷——約翰福音 2 章。"
+      "en": "Gustave Doré, 1866 — Marriage at Cana (John 2).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——迦拿婚宴。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——迦拿婚宴。"
     },
     "books": {
       "John": [
@@ -2900,10 +4799,31 @@
         2
       ]
     },
-    "file": "https://commons.wikimedia.org/wiki/Special:FilePath/Marriage%20at%20Cana%20engraving%20by%20Gustave%20Dor%C3%A9.jpg?width=1200"
+    "file": "https://upload.wikimedia.org/wikipedia/commons/3/38/Marriage_at_Cana_engraving_by_Gustave_Dor%C3%A9.jpg"
   },
   {
-    "id": "scene_walking_on_water",
+    "id": "illus_dore_dorebiblesermononthe",
+    "kind": "scene",
+    "title": {
+      "en": "Sermon on the Mount (Doré)",
+      "zh-Hans": "登山宝训 (多雷)",
+      "zh-Hant": "登山寶訓 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Sermon on the Mount (Matthew 5–7).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——登山宝训。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——登山寶訓。"
+    },
+    "books": {
+      "Matthew": [
+        5,
+        7
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b5/Dore_Bible_Sermon_on_the_Mount.jpg/1280px-Dore_Bible_Sermon_on_the_Mount.jpg"
+  },
+  {
+    "id": "illus_dore_jesuswalksontheseajp",
     "kind": "scene",
     "title": {
       "en": "Jesus Walks on the Sea (Doré)",
@@ -2911,28 +4831,41 @@
       "zh-Hant": "耶穌行在水面上 (多雷)"
     },
     "description": {
-      "en": "Gustave Doré — Matthew 14 / John 6.",
-      "zh-Hans": "古斯塔夫·多雷——马太福音 14 / 约翰福音 6 章。",
-      "zh-Hant": "古斯塔夫·多雷——馬太福音 14 / 約翰福音 6 章。"
+      "en": "Gustave Doré, 1866 — Jesus Walks on the Sea (Matthew 14).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——耶稣行在水面上。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——耶穌行在水面上。"
     },
     "books": {
       "Matthew": [
         14,
         14
-      ],
-      "Mark": [
-        6,
-        6
-      ],
-      "John": [
-        6,
-        6
       ]
     },
-    "file": "https://commons.wikimedia.org/wiki/Special:FilePath/Jesus%20walks%20on%20the%20sea.jpg?width=1200"
+    "file": "https://upload.wikimedia.org/wikipedia/commons/4/48/Jesus_walks_on_the_sea.jpg"
   },
   {
-    "id": "scene_palm_sunday",
+    "id": "illus_dore_gustavedorejesusrais",
+    "kind": "scene",
+    "title": {
+      "en": "Raising Jairus's Daughter (Doré)",
+      "zh-Hans": "使睚鲁女儿复活 (多雷)",
+      "zh-Hant": "使睚魯女兒復活 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Raising Jairus's Daughter (Mark 5).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——使睚鲁女儿复活。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——使睚魯女兒復活。"
+    },
+    "books": {
+      "Mark": [
+        5,
+        5
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/9/91/Gustave_Dore_-_Jesus_raises_the_daughter_of_Jairus_from_the_dead.jpg"
+  },
+  {
+    "id": "illus_dore_gustavedorejesusride",
     "kind": "scene",
     "title": {
       "en": "Triumphal Entry (Doré)",
@@ -2940,32 +4873,62 @@
       "zh-Hant": "凱旋入城 (多雷)"
     },
     "description": {
-      "en": "Gustave Doré — Matthew 21 / John 12.",
-      "zh-Hans": "古斯塔夫·多雷——马太福音 21 / 约翰福音 12 章。",
-      "zh-Hant": "古斯塔夫·多雷——馬太福音 21 / 約翰福音 12 章。"
+      "en": "Gustave Doré, 1866 — Triumphal Entry (Matthew 21).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——凯旋入城。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——凱旋入城。"
     },
     "books": {
       "Matthew": [
         21,
         21
-      ],
-      "Mark": [
-        11,
-        11
-      ],
-      "Luke": [
-        19,
-        19
-      ],
-      "John": [
-        12,
-        12
       ]
     },
-    "file": "https://commons.wikimedia.org/wiki/Special:FilePath/Gustave%20Dore%20-%20Jesus%20rides%20into%20Jerusalem%20on%20a%20donkey%20on%20Palm%20Sunday.jpg?width=1200"
+    "file": "https://upload.wikimedia.org/wikipedia/commons/6/67/Gustave_Dore_-_Jesus_rides_into_Jerusalem_on_a_donkey_on_Palm_Sunday.jpg"
   },
   {
-    "id": "scene_last_supper_dore",
+    "id": "illus_dore_gustavedorejesustalk",
+    "kind": "scene",
+    "title": {
+      "en": "The Tribute Money (Doré)",
+      "zh-Hans": "论纳税银 (多雷)",
+      "zh-Hant": "論納稅銀 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — The Tribute Money (Matthew 22).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——论纳税银。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——論納稅銀。"
+    },
+    "books": {
+      "Matthew": [
+        22,
+        22
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/7/76/Gustave_Dore_-_Jesus_talks_of_the_tribute_money.jpg"
+  },
+  {
+    "id": "illus_dore_gustavedorethetransf",
+    "kind": "scene",
+    "title": {
+      "en": "The Transfiguration (Doré)",
+      "zh-Hans": "登山变像 (多雷)",
+      "zh-Hant": "登山變像 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — The Transfiguration (Matthew 17).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——登山变像。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——登山變像。"
+    },
+    "books": {
+      "Matthew": [
+        17,
+        17
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/2/22/Gustave_Dore_-_The_Transfiguration.jpg"
+  },
+  {
+    "id": "illus_dore_jesusandthedisciples",
     "kind": "scene",
     "title": {
       "en": "Last Supper (Doré)",
@@ -2973,61 +4936,20 @@
       "zh-Hant": "最後的晚餐 (多雷)"
     },
     "description": {
-      "en": "Gustave Doré — Matthew 26 / John 13.",
-      "zh-Hans": "古斯塔夫·多雷——马太福音 26 / 约翰福音 13 章。",
-      "zh-Hant": "古斯塔夫·多雷——馬太福音 26 / 約翰福音 13 章。"
+      "en": "Gustave Doré, 1866 — Last Supper (Matthew 26).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——最后的晚餐。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——最後的晚餐。"
     },
     "books": {
       "Matthew": [
         26,
         26
-      ],
-      "Mark": [
-        14,
-        14
-      ],
-      "Luke": [
-        22,
-        22
-      ],
-      "John": [
-        13,
-        13
       ]
     },
-    "file": "https://commons.wikimedia.org/wiki/Special:FilePath/Jesus%20and%20the%20disciples%20at%20the%20Last%20Supper.jpg?width=1200"
+    "file": "https://upload.wikimedia.org/wikipedia/commons/a/a4/Jesus_and_the_disciples_at_the_Last_Supper.jpg"
   },
   {
-    "id": "scene_gethsemane",
-    "kind": "scene",
-    "title": {
-      "en": "Jesus Praying in Gethsemane (Doré)",
-      "zh-Hans": "客西马尼的祷告 (多雷)",
-      "zh-Hant": "客西馬尼的禱告 (多雷)"
-    },
-    "description": {
-      "en": "Gustave Doré — Matthew 26.",
-      "zh-Hans": "古斯塔夫·多雷——马太福音 26 章。",
-      "zh-Hant": "古斯塔夫·多雷——馬太福音 26 章。"
-    },
-    "books": {
-      "Matthew": [
-        26,
-        26
-      ],
-      "Mark": [
-        14,
-        14
-      ],
-      "Luke": [
-        22,
-        22
-      ]
-    },
-    "file": "https://commons.wikimedia.org/wiki/Special:FilePath/DoreJesusPrayingintheGarden.jpg?width=1200"
-  },
-  {
-    "id": "scene_judas_kiss",
+    "id": "illus_dore_gustavedorejudasbetr",
     "kind": "scene",
     "title": {
       "en": "The Judas Kiss (Doré)",
@@ -3035,28 +4957,41 @@
       "zh-Hant": "猶大之吻 (多雷)"
     },
     "description": {
-      "en": "Gustave Doré — Matthew 26.",
-      "zh-Hans": "古斯塔夫·多雷——马太福音 26 章。",
-      "zh-Hant": "古斯塔夫·多雷——馬太福音 26 章。"
+      "en": "Gustave Doré, 1866 — The Judas Kiss (Matthew 26).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——犹大之吻。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——猶大之吻。"
     },
     "books": {
       "Matthew": [
         26,
         26
-      ],
-      "Mark": [
-        14,
-        14
-      ],
-      "Luke": [
-        22,
-        22
       ]
     },
-    "file": "https://commons.wikimedia.org/wiki/Special:FilePath/Gustave%20Dore%20-%20Judas%20betrays%20Jesus%20with%20a%20kiss.jpg?width=1200"
+    "file": "https://upload.wikimedia.org/wikipedia/commons/5/52/Gustave_Dore_-_Judas_betrays_Jesus_with_a_kiss.jpg"
   },
   {
-    "id": "scene_crucifixion_dore",
+    "id": "illus_dore_dorejesusprayinginth",
+    "kind": "scene",
+    "title": {
+      "en": "Praying in Gethsemane (Doré)",
+      "zh-Hans": "客西马尼祷告 (多雷)",
+      "zh-Hant": "客西馬尼禱告 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Praying in Gethsemane (Matthew 26).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——客西马尼祷告。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——客西馬尼禱告。"
+    },
+    "books": {
+      "Matthew": [
+        26,
+        26
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/b/b2/DoreJesusPrayingintheGarden.jpg"
+  },
+  {
+    "id": "illus_dore_gustavedorécrucifixi",
     "kind": "scene",
     "title": {
       "en": "The Crucifixion (Doré)",
@@ -3064,63 +4999,51 @@
       "zh-Hant": "被釘十字架 (多雷)"
     },
     "description": {
-      "en": "Gustave Doré — Matthew 27 / John 19.",
-      "zh-Hans": "古斯塔夫·多雷——马太福音 27 / 约翰福音 19 章。",
-      "zh-Hant": "古斯塔夫·多雷——馬太福音 27 / 約翰福音 19 章。"
+      "en": "Gustave Doré, 1866 — The Crucifixion (Matthew 27).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——被钉十字架。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——被釘十字架。"
     },
     "books": {
       "Matthew": [
         27,
         27
-      ],
-      "Mark": [
-        15,
-        15
-      ],
-      "Luke": [
-        23,
-        23
-      ],
-      "John": [
-        19,
-        19
       ]
     },
-    "file": "https://commons.wikimedia.org/wiki/Special:FilePath/Gustave%20Dor%C3%A9%20-%20Crucifixion%20of%20Jesus.jpg?width=1200"
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d/Gustave_Dor%C3%A9_-_Crucifixion_of_Jesus.jpg/1280px-Gustave_Dor%C3%A9_-_Crucifixion_of_Jesus.jpg"
   },
   {
-    "id": "scene_prodigal_son",
-    "kind": "parable",
+    "id": "illus_dore_dorethedeadchristjpg",
+    "kind": "scene",
     "title": {
-      "en": "Return of the Prodigal Son (Doré)",
-      "zh-Hans": "浪子回头 (多雷)",
-      "zh-Hant": "浪子回頭 (多雷)"
+      "en": "The Dead Christ (Doré)",
+      "zh-Hans": "基督的死 (多雷)",
+      "zh-Hant": "基督的死 (多雷)"
     },
     "description": {
-      "en": "Gustave Doré — Luke 15.",
-      "zh-Hans": "古斯塔夫·多雷——路加福音 15 章。",
-      "zh-Hant": "古斯塔夫·多雷——路加福音 15 章。"
+      "en": "Gustave Doré, 1866 — The Dead Christ (Matthew 27).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——基督的死。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——基督的死。"
     },
     "books": {
-      "Luke": [
-        15,
-        15
+      "Matthew": [
+        27,
+        27
       ]
     },
-    "file": "https://commons.wikimedia.org/wiki/Special:FilePath/Gustave%20Dore%20-%20The%20prodigal%20son%20decides%20to%20return%20to%20his%20father.jpg?width=1200"
+    "file": "https://upload.wikimedia.org/wikipedia/commons/2/2c/DoreTheDeadchrist.jpg"
   },
   {
-    "id": "scene_lazarus_rich_man",
-    "kind": "parable",
+    "id": "illus_dore_gustavedorelazarusan",
+    "kind": "scene",
     "title": {
       "en": "Lazarus and the Rich Man (Doré)",
       "zh-Hans": "财主与拉撒路 (多雷)",
       "zh-Hant": "財主與拉撒路 (多雷)"
     },
     "description": {
-      "en": "Gustave Doré — parable in Luke 16.",
-      "zh-Hans": "古斯塔夫·多雷——路加福音 16 章的比喻。",
-      "zh-Hant": "古斯塔夫·多雷——路加福音 16 章的比喻。"
+      "en": "Gustave Doré, 1866 — Lazarus and the Rich Man (Luke 16).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——财主与拉撒路。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——財主與拉撒路。"
     },
     "books": {
       "Luke": [
@@ -3128,10 +5051,31 @@
         16
       ]
     },
-    "file": "https://commons.wikimedia.org/wiki/Special:FilePath/Gustave%20Dore%20Lazarus%20and%20the%20Rich%20Man.jpg?width=1200"
+    "file": "https://upload.wikimedia.org/wikipedia/commons/5/59/Gustave_Dore_Lazarus_and_the_Rich_Man.jpg"
   },
   {
-    "id": "scene_ascension",
+    "id": "illus_dore_gustavedoretheprodig",
+    "kind": "scene",
+    "title": {
+      "en": "Return of the Prodigal Son (Doré)",
+      "zh-Hans": "浪子回头 (多雷)",
+      "zh-Hant": "浪子回頭 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Return of the Prodigal Son (Luke 15).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——浪子回头。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——浪子回頭。"
+    },
+    "books": {
+      "Luke": [
+        15,
+        15
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/6/67/Gustave_Dore_-_The_prodigal_son_decides_to_return_to_his_father.jpg"
+  },
+  {
+    "id": "illus_dore_gustadoretheascensio",
     "kind": "scene",
     "title": {
       "en": "The Ascension (Doré)",
@@ -3139,9 +5083,9 @@
       "zh-Hant": "升天 (多雷)"
     },
     "description": {
-      "en": "Gustave Doré — Acts 1.",
-      "zh-Hans": "古斯塔夫·多雷——使徒行传 1 章。",
-      "zh-Hant": "古斯塔夫·多雷——使徒行傳 1 章。"
+      "en": "Gustave Doré, 1866 — The Ascension (Acts 1).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——升天。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——升天。"
     },
     "books": {
       "Acts": [
@@ -3149,41 +5093,20 @@
         1
       ]
     },
-    "file": "https://commons.wikimedia.org/wiki/Special:FilePath/Gusta%20Dore%20-%20The%20Ascension.jpg?width=1200"
+    "file": "https://upload.wikimedia.org/wikipedia/commons/2/25/Gusta_Dore_-_The_Ascension.jpg"
   },
   {
-    "id": "scene_paul_arrest",
+    "id": "illus_dore_thedeathofstephenbyg",
     "kind": "scene",
     "title": {
-      "en": "Paul Addresses the Crowd (Doré)",
-      "zh-Hans": "保罗向群众讲话 (多雷)",
-      "zh-Hant": "保羅向群眾講話 (多雷)"
-    },
-    "description": {
-      "en": "Gustave Doré — Acts 22.",
-      "zh-Hans": "古斯塔夫·多雷——使徒行传 22 章。",
-      "zh-Hant": "古斯塔夫·多雷——使徒行傳 22 章。"
-    },
-    "books": {
-      "Acts": [
-        22,
-        22
-      ]
-    },
-    "file": "https://commons.wikimedia.org/wiki/Special:FilePath/Paul%20Addresses%20the%20Crowd%20After%20His%20Arrest%20by%20Gustave%20Dor%C3%A9.jpg?width=1200"
-  },
-  {
-    "id": "scene_stephen_martyr",
-    "kind": "scene",
-    "title": {
-      "en": "The Death of Stephen (Doré)",
+      "en": "Death of Stephen (Doré)",
       "zh-Hans": "司提反殉道 (多雷)",
       "zh-Hant": "司提反殉道 (多雷)"
     },
     "description": {
-      "en": "Gustave Doré — Acts 7.",
-      "zh-Hans": "古斯塔夫·多雷——使徒行传 7 章。",
-      "zh-Hant": "古斯塔夫·多雷——使徒行傳 7 章。"
+      "en": "Gustave Doré, 1866 — Death of Stephen (Acts 7).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——司提反殉道。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——司提反殉道。"
     },
     "books": {
       "Acts": [
@@ -3191,20 +5114,41 @@
         7
       ]
     },
-    "file": "https://commons.wikimedia.org/wiki/Special:FilePath/The%20Death%20of%20Stephen%20by%20Gustave%20Dor%C3%A9.jpg?width=1200"
+    "file": "https://upload.wikimedia.org/wikipedia/commons/8/82/The_Death_of_Stephen_by_Gustave_Dor%C3%A9.jpg"
   },
   {
-    "id": "scene_pale_horse_dore",
-    "kind": "prophecy",
+    "id": "illus_dore_pauladdressesthecrow",
+    "kind": "scene",
+    "title": {
+      "en": "Paul Addresses the Crowd (Doré)",
+      "zh-Hans": "保罗向群众讲话 (多雷)",
+      "zh-Hant": "保羅向群眾講話 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Paul Addresses the Crowd (Acts 22).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——保罗向群众讲话。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——保羅向群眾講話。"
+    },
+    "books": {
+      "Acts": [
+        22,
+        22
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/9/93/Paul_Addresses_the_Crowd_After_His_Arrest_by_Gustave_Dor%C3%A9.jpg"
+  },
+  {
+    "id": "illus_dore_gustavedoredeathonth",
+    "kind": "scene",
     "title": {
       "en": "Death on a Pale Horse (Doré)",
       "zh-Hans": "骑灰马的死 (多雷)",
       "zh-Hant": "騎灰馬的死 (多雷)"
     },
     "description": {
-      "en": "Gustave Doré — Revelation 6:8.",
-      "zh-Hans": "古斯塔夫·多雷——启示录 6:8。",
-      "zh-Hant": "古斯塔夫·多雷——啟示錄 6:8。"
+      "en": "Gustave Doré, 1866 — Death on a Pale Horse (Revelation 6).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——骑灰马的死。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——騎灰馬的死。"
     },
     "books": {
       "Revelation": [
@@ -3212,6 +5156,237 @@
         6
       ]
     },
-    "file": "https://commons.wikimedia.org/wiki/Special:FilePath/Gustave%20Dore%20-%20Death%20on%20the%20Pale%20Horse.png?width=1200"
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/67/Gustave_Dore_-_Death_on_the_Pale_Horse.png/1280px-Gustave_Dore_-_Death_on_the_Pale_Horse.png"
+  },
+  {
+    "id": "illus_dore_dorestpaulpreachingt",
+    "kind": "scene",
+    "title": {
+      "en": "Paul Preaches to Thessalonians (Doré)",
+      "zh-Hans": "保罗向帖撒罗尼迦人传道 (多雷)",
+      "zh-Hant": "保羅向帖撒羅尼迦人傳道 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Paul Preaches to Thessalonians (1 Thessalonians 1).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——保罗向帖撒罗尼迦人传道。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——保羅向帖撒羅尼迦人傳道。"
+    },
+    "books": {
+      "1 Thessalonians": [
+        1,
+        1
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/d/d7/DoreStPaulPreachingtotheThessalonians.jpg"
+  },
+  {
+    "id": "illus_dore_gustavedorejesusconv",
+    "kind": "scene",
+    "title": {
+      "en": "Jesus Among the Teachers (Doré)",
+      "zh-Hans": "耶稣与圣殿学者 (多雷)",
+      "zh-Hant": "耶穌與聖殿學者 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Jesus Among the Teachers (Luke 2).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——耶稣与圣殿学者。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——耶穌與聖殿學者。"
+    },
+    "books": {
+      "Luke": [
+        2,
+        2
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/8/8d/Gustave_Dore_-_Jesus_converses_with_the_learned_ones_in_the_Temple.jpg"
+  },
+  {
+    "id": "illus_dore_dorejesusseagalileej",
+    "kind": "scene",
+    "title": {
+      "en": "Jesus by the Sea of Galilee (Doré)",
+      "zh-Hans": "耶稣在加利利海边 (多雷)",
+      "zh-Hant": "耶穌在加利利海邊 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Jesus by the Sea of Galilee (Matthew 4).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——耶稣在加利利海边。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——耶穌在加利利海邊。"
+    },
+    "books": {
+      "Matthew": [
+        4,
+        4
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/8/81/DoreJesusSeaGalilee.jpg"
+  },
+  {
+    "id": "illus_dore_dorejohnthebaptistpr",
+    "kind": "scene",
+    "title": {
+      "en": "John the Baptist Preaching (Doré)",
+      "zh-Hans": "施洗约翰讲道 (多雷)",
+      "zh-Hant": "施洗約翰講道 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — John the Baptist Preaching (Matthew 3).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——施洗约翰讲道。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——施洗約翰講道。"
+    },
+    "books": {
+      "Matthew": [
+        3,
+        3
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/0/0f/DoreJohntheBaptistPreachingintheWilderness.jpg"
+  },
+  {
+    "id": "illus_dore_jesusfeedingmultitud",
+    "kind": "scene",
+    "title": {
+      "en": "Feeding the Multitude (Doré)",
+      "zh-Hans": "喂饱众人 (多雷)",
+      "zh-Hant": "餵飽眾人 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Feeding the Multitude (Matthew 14).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——喂饱众人。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——餵飽眾人。"
+    },
+    "books": {
+      "Matthew": [
+        14,
+        14
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/c/c2/JesusFeedingMultitude.jpg"
+  },
+  {
+    "id": "illus_dore_doreadultressjpg",
+    "kind": "scene",
+    "title": {
+      "en": "Jesus and the Adulteress (Doré)",
+      "zh-Hans": "耶稣与犯奸淫的妇人 (多雷)",
+      "zh-Hant": "耶穌與犯姦淫的婦人 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Jesus and the Adulteress (John 8).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——耶稣与犯奸淫的妇人。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——耶穌與犯姦淫的婦人。"
+    },
+    "books": {
+      "John": [
+        8,
+        8
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/1/12/Dore_adultress.jpg"
+  },
+  {
+    "id": "illus_dore_jesuscalmingthetempe",
+    "kind": "scene",
+    "title": {
+      "en": "Calming the Tempest (Doré)",
+      "zh-Hans": "平静风浪 (多雷)",
+      "zh-Hant": "平靜風浪 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Calming the Tempest (Mark 4).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——平静风浪。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——平靜風浪。"
+    },
+    "books": {
+      "Mark": [
+        4,
+        4
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/c/c7/JesusCalmingtheTempestDore.jpg"
+  },
+  {
+    "id": "illus_dore_thecrownofthornsdore",
+    "kind": "scene",
+    "title": {
+      "en": "The Crown of Thorns (Doré)",
+      "zh-Hans": "荆棘冠冕 (多雷)",
+      "zh-Hant": "荊棘冠冕 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — The Crown of Thorns (Matthew 27).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——荆棘冠冕。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——荊棘冠冕。"
+    },
+    "books": {
+      "Matthew": [
+        27,
+        27
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/3/36/TheCrownofThornsDore.jpg"
+  },
+  {
+    "id": "illus_dore_gustavedorétheholybi",
+    "kind": "scene",
+    "title": {
+      "en": "The Judas Kiss (alt) (Doré)",
+      "zh-Hans": "犹大之吻(另) (多雷)",
+      "zh-Hant": "猶大之吻(另) (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — The Judas Kiss (alt) (Matthew 26).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——犹大之吻(另)。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——猶大之吻(另)。"
+    },
+    "books": {
+      "Matthew": [
+        26,
+        26
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c7/Gustave_Dor%C3%A9_-_The_Holy_Bible_-_Plate_CXLI%2C_The_Judas_Kiss.jpg/1280px-Gustave_Dor%C3%A9_-_The_Holy_Bible_-_Plate_CXLI%2C_The_Judas_Kiss.jpg"
+  },
+  {
+    "id": "illus_extra_pieterbruegeltheelde",
+    "kind": "scene",
+    "title": {
+      "en": "Tower of Babel (Bruegel)",
+      "zh-Hans": "巴别塔(老布鲁盖尔)",
+      "zh-Hant": "巴別塔(老布魯蓋爾)"
+    },
+    "description": {
+      "en": "Public-domain artwork — Tower of Babel (Bruegel) (Genesis 11).",
+      "zh-Hans": "公共领域艺术品——巴别塔(老布鲁盖尔)。",
+      "zh-Hant": "公共領域藝術品——巴別塔(老布魯蓋爾)。"
+    },
+    "books": {
+      "Genesis": [
+        11,
+        11
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fc/Pieter_Bruegel_the_Elder_-_The_Tower_of_Babel_%28Vienna%29_-_Google_Art_Project_-_edited.jpg/1280px-Pieter_Bruegel_the_Elder_-_The_Tower_of_Babel_%28Vienna%29_-_Google_Art_Project_-_edited.jpg"
+  },
+  {
+    "id": "illus_extra_rembrandtbelsazarjpg",
+    "kind": "scene",
+    "title": {
+      "en": "Belshazzar's Feast (Rembrandt)",
+      "zh-Hans": "伯沙撒的筵席(伦勃朗)",
+      "zh-Hant": "伯沙撒的筵席(倫勃朗)"
+    },
+    "description": {
+      "en": "Public-domain artwork — Belshazzar's Feast (Rembrandt) (Daniel 5).",
+      "zh-Hans": "公共领域艺术品——伯沙撒的筵席(伦勃朗)。",
+      "zh-Hant": "公共領域藝術品——伯沙撒的筵席(倫勃朗)。"
+    },
+    "books": {
+      "Daniel": [
+        5,
+        5
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0e/Rembrandt-Belsazar.jpg/1280px-Rembrandt-Belsazar.jpg"
   }
 ]
