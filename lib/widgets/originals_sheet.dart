@@ -1,6 +1,7 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
+import 'package:yswords/constants/text_patterns.dart' show sanitizeForSearch;
 import 'package:yswords/constants/ui_strings.dart';
 import 'package:yswords/models/original_word.dart';
 import 'package:yswords/models/strongs.dart';
@@ -253,6 +254,11 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
     final isHebrew = (vo.words ?? const []).isNotEmpty &&
         vo.words!.first.strongs.startsWith('H');
     final words = vo.words;
+    // Verse text from the user's current Bible version, with `{...}`
+    // emphasis braces and `<note:...>` markers stripped so the panel
+    // reads cleanly. We keep `[...]` (e.g. KJV italicized supplied
+    // words) since that's part of the published text.
+    final verseText = sanitizeForSearch(vo.verse.text);
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
@@ -268,7 +274,33 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
               letterSpacing: 0.4,
             ),
           ),
-          const SizedBox(height: 8),
+          if (verseText.isNotEmpty) ...[
+            const SizedBox(height: 6),
+            // Show the verse as it appears in the user's current
+            // version above the original-language line so the reader
+            // can compare their translation to the Hebrew/Greek and
+            // the per-word glosses below.
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
+              decoration: BoxDecoration(
+                color: scheme.surfaceContainerHighest.withValues(alpha: 0.4),
+                borderRadius: BorderRadius.circular(8),
+                border: Border(
+                  left: BorderSide(color: scheme.primary, width: 3),
+                ),
+              ),
+              child: Text(
+                verseText,
+                style: TextStyle(
+                  fontSize: 14,
+                  color: scheme.onSurface,
+                  height: 1.5,
+                ),
+              ),
+            ),
+          ],
+          const SizedBox(height: 10),
           if (words == null || words.isEmpty)
             Text(
               uiStrings['originalNotAvailable']?[widget.locale] ??
