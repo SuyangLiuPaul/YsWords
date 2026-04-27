@@ -1,6 +1,6 @@
 # YsWords — AI Agent Handoff Document
 
-> Last updated: 2026-04-26
+> Last updated: 2026-04-27
 > Project: YsWords (Yahweh's Words) — bilingual Bible reader
 > Stack: Flutter 3.41.7 / Dart 3.11.5 / Provider + GetX
 > Repo: https://github.com/SuyangLiuPaul/YsWords
@@ -408,7 +408,40 @@ The app adapts its layout to all device sizes using `lib/utils/responsive.dart`:
 
 ---
 
-## What Has Been Fixed (2026-04-26)
+## What Has Been Fixed (2026-04-27)
+
+### Word distribution + Strong's-number search (round 23)
+
+**Goal**: Match the core word-study tools from EaglesView (legacy church software) — per-book/per-section distribution stats and search-by-Strong's-number — without the spreadsheet UI.
+
+**Pipeline** (`tools/build_originals.py` `build_concordance()`):
+- New `b` field in every concordance entry: `{"Matthew": 51, "Mark": 14, ...}` — absolute, uncapped per-book counts.
+- `MAX_REFS_PER_STRONGS` raised 200 → 500. Now only ultra-common particles (G3588 ὁ, H853 אֵת, H3068 יהוה) hit the cap. concordance.json grew 3.5 MB → 5.1 MB.
+
+**Word distribution panel** (`lib/widgets/word_distribution.dart`):
+- Horizontal-bar groups by canonical section. OT: Pentateuch / Historical / Wisdom & Poetry / Major Prophets / Minor Prophets. NT: Gospels / Acts / Pauline / Johannine (1-3 John + Revelation, matching EaglesView's "John T") / Other Apostolic (Hebrews, James, 1-2 Peter, Jude).
+- Bars scale to the larger testament's total so words spanning both testaments remain visually comparable.
+- Top-5 books mini-table beneath the bars, with book names translated to the user's current version's locale.
+- Renders inside `OriginalsSheet`'s entry card above the concordance ref list whenever `byBook` data is present.
+
+**Strong's-number search** (`lib/pages/search_page.dart`):
+- Detects the regex `^\s*([GHgh])\s*(\d{1,5})\s*$` on every search submit. Examples: `G2316`, `g 2316`, `H7200`, `h7200`.
+- Branches to `StrongsService.lookup` + `ConcordanceService.lookup` instead of the text scan.
+- Renders a Strong's header (number badge + lemma + locale-appropriate gloss + "Used {n} times") above a scrollable list of every concordance ref. Tap a ref → jumps + flash-highlights, same flow as text-search.
+- Falls back to text search the moment the input no longer matches the pattern (e.g. typing trailing text).
+
+**Schema additions to `ConcordanceResult`**: nullable `byBook: Map<String, int>` with absolute uncapped per-book counts. Backwards-compatible — older entries without the field default to `const {}`.
+
+**Localized strings** (en / zh-Hans / zh-Hant): `wordDistribution`, `topBooks`, `searchByStrongs`, plus reused `oldTestament` / `newTestament` already present.
+
+**Files changed**:
+- `tools/build_originals.py` — emit `b` field, raise cap
+- `assets/strongs/concordance.json` — regenerated (5.1 MB)
+- `lib/services/concordance_service.dart` — parse `b`, expose `byBook`
+- `lib/widgets/word_distribution.dart` — new bar widget
+- `lib/widgets/originals_sheet.dart` — render distribution above concordance
+- `lib/pages/search_page.dart` — Strong's regex branch + Strong's UI helpers
+- `lib/constants/ui_strings.dart` — new keys
 
 ### Root word exploration (round 22)
 
