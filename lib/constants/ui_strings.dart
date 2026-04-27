@@ -531,6 +531,34 @@ const uiStrings = {
     'en': 'Recent',
   },
   'clear': {'zh-Hans': '清除', 'zh-Hant': '清除', 'en': 'Clear'},
+  // Profile editing (Round 35)
+  'profileEditTitle': {
+    'zh-Hans': '编辑账号',
+    'zh-Hant': '編輯帳號',
+    'en': 'Edit profile',
+  },
+  'displayName': {
+    'zh-Hans': '昵称',
+    'zh-Hant': '暱稱',
+    'en': 'Display name',
+  },
+  'avatarColor': {
+    'zh-Hans': '头像颜色',
+    'zh-Hant': '頭像顏色',
+    'en': 'Avatar color',
+  },
+  'save': {'zh-Hans': '保存', 'zh-Hant': '保存', 'en': 'Save'},
+  'profileEditNotice': {
+    'zh-Hans': '账号名和颜色仅保存在本设备。若已使用 Google 登录，将以 Google 头像优先显示。',
+    'zh-Hant': '帳號名和顏色僅保存在本裝置。若已使用 Google 登入，將以 Google 頭像優先顯示。',
+    'en':
+        'Profile name and color are stored on this device. If you\'re signed in with Google your photo will appear instead of the colored initial.',
+  },
+  'editProfile': {
+    'zh-Hans': '编辑账号',
+    'zh-Hant': '編輯帳號',
+    'en': 'Edit profile',
+  },
   // ── Gospel synopsis (Round 27B) ─────────────────────────────────
   'synopsis': {
     'zh-Hans': '福音书对观',

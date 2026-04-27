@@ -13,6 +13,7 @@ import 'package:yswords/services/fetch_verses.dart';
 import 'package:yswords/services/profile_service.dart';
 import 'package:yswords/services/reading_plan_service.dart';
 
+import 'package:yswords/widgets/home_icon_button.dart';
 import 'package:yswords/widgets/localized_back_button.dart';
 import 'package:yswords/utils/responsive.dart';
 
@@ -66,6 +67,7 @@ class SettingsPage extends StatelessWidget {
           builder: (context, settings, _) =>
               Text(uiStrings['settings']?[settings.locale] ?? 'Settings'),
         ),
+        actions: const [HomeIconButton()],
       ),
       body: Consumer<AppSettings>(
         builder: (context, settings, _) {

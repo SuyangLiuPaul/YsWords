@@ -8,6 +8,7 @@ import 'package:yswords/models/strongs.dart';
 import 'package:yswords/services/concordance_service.dart';
 import 'package:yswords/services/strongs_service.dart';
 import 'package:yswords/utils/clipboard_helper.dart';
+import 'package:yswords/widgets/home_icon_button.dart';
 import 'package:yswords/widgets/localized_back_button.dart';
 
 /// Standalone page for viewing a single Strong's lexicon entry by its
@@ -74,6 +75,7 @@ class _StrongsEntryPageState extends State<StrongsEntryPage> {
       appBar: AppBar(
         leading: const LocalizedBackButton(),
         title: Text(widget.number),
+        actions: const [HomeIconButton()],
       ),
       body: _loading
           ? const Center(child: CircularProgressIndicator())

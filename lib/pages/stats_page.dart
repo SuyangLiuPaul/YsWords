@@ -7,6 +7,7 @@ import 'package:yswords/providers/main_provider.dart';
 import 'package:yswords/services/bible_stats_service.dart';
 import 'package:yswords/utils/clipboard_helper.dart';
 import 'package:yswords/utils/version_mapper.dart' show toEnglish, localeAwareBookName;
+import 'package:yswords/widgets/home_icon_button.dart';
 import 'package:yswords/widgets/localized_back_button.dart';
 
 /// Statistical analysis of the currently-loaded Bible version —
@@ -55,6 +56,7 @@ class StatsPage extends StatelessWidget {
               onPressed: () => _copyAllStats(context, stats, locale,
                   mainProvider.currentVersion),
             ),
+            const HomeIconButton(),
           ],
         ),
         body: TabBarView(

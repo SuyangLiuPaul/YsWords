@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import 'package:get/get.dart';
+
 import 'package:yswords/constants/ui_strings.dart';
 import 'package:yswords/models/app_settings.dart';
+import 'package:yswords/pages/profile_edit_page.dart';
 import 'package:yswords/services/profile_service.dart';
+import 'package:yswords/widgets/home_icon_button.dart';
 import 'package:yswords/widgets/localized_back_button.dart';
 
 /// Manage local profiles — switch active profile, add a new one,
@@ -147,6 +151,7 @@ class _ProfilesPageState extends State<ProfilesPage> {
             onPressed: _createProfile,
             icon: const Icon(Icons.person_add_alt_outlined),
           ),
+          const HomeIconButton(),
         ],
       ),
       body: ListView.separated(
@@ -194,6 +199,15 @@ class _ProfilesPageState extends State<ProfilesPage> {
                   case 'switch':
                     svc.setCurrent(p.id);
                     break;
+                  case 'edit':
+                    // Editing only makes sense on the active profile
+                    // (the edit page reads/writes ProfileService.current).
+                    if (!isActive) svc.setCurrent(p.id);
+                    Get.to(
+                      () => const ProfileEditPage(),
+                      transition: Transition.rightToLeft,
+                    );
+                    break;
                   case 'rename':
                     _rename(p);
                     break;
@@ -209,6 +223,11 @@ class _ProfilesPageState extends State<ProfilesPage> {
                     child: Text(uiStrings['profileSwitch']?[locale] ??
                         'Switch to this profile'),
                   ),
+                PopupMenuItem(
+                  value: 'edit',
+                  child: Text(
+                      uiStrings['editProfile']?[locale] ?? 'Edit profile'),
+                ),
                 PopupMenuItem(
                   value: 'rename',
                   child:

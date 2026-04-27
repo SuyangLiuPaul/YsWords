@@ -9,6 +9,7 @@ import 'package:yswords/models/verse.dart';
 import 'package:yswords/pages/home_page.dart';
 import 'package:yswords/providers/main_provider.dart';
 import 'package:yswords/utils/clipboard_helper.dart';
+import 'package:yswords/widgets/home_icon_button.dart';
 import 'package:yswords/widgets/localized_back_button.dart';
 
 /// Standalone highlights browser. Filters by color (or "All") and a
@@ -87,6 +88,7 @@ class _HighlightsPageState extends State<HighlightsPage> {
               tooltip: uiStrings['copyAll']?[locale] ?? 'Copy all',
               onPressed: () => _copyAll(context, items, settings),
             ),
+          const HomeIconButton(),
         ],
       ),
       body: Column(

@@ -2308,6 +2308,24 @@ class _FloatingHeader extends StatelessWidget {
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
+                    // Visible Home button: pops back to the
+                    // dashboard root. Mirrors the AppBar HomeIconButton
+                    // used on Settings / Library / etc., but fits
+                    // the floating-glass header style. Only shown
+                    // when there's actually something to pop back
+                    // to (Navigator.canPop) so the secondary split-
+                    // view pane and edge cases don't render a
+                    // dead button.
+                    if (Navigator.of(context).canPop())
+                      IconButton(
+                        onPressed: () => Navigator.of(context)
+                            .popUntil((r) => r.isFirst),
+                        icon: Icon(Icons.home_outlined, size: iconSize),
+                        padding: EdgeInsets.all(iconPad),
+                        constraints: const BoxConstraints(
+                            minWidth: 36, minHeight: 36),
+                        tooltip: uiStrings['home']?[locale] ?? 'Home',
+                      ),
                     if (showSearchAndSettings)
                       IconButton(
                         onPressed: onSearch,

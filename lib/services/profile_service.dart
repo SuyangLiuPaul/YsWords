@@ -3,10 +3,17 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 /// One stored profile — id is stable (used as the SharedPreferences
 /// namespace); name is the human-friendly label shown in the UI.
+/// Optional [avatarColorArgb] lets the user pick a color tile for
+/// their initial when they don't have a Google profile photo set.
 class Profile {
   final String id;
   final String name;
-  const Profile({required this.id, required this.name});
+  final int? avatarColorArgb;
+  const Profile({
+    required this.id,
+    required this.name,
+    this.avatarColorArgb,
+  });
 
   bool get isGuest => id == ProfileService.guestId;
 }
@@ -32,6 +39,7 @@ class ProfileService extends ChangeNotifier {
   static const _kCurrent = 'profile.current';
   static const _kList = 'profile.list';
   static const _kNamePrefix = 'profile.name.';
+  static const _kAvatarPrefix = 'profile.avatar.';
   static const _kSeenWelcome = 'profile.seenWelcome';
 
   /// The reserved "guest" profile id. Always exists, can't be
@@ -81,6 +89,7 @@ class ProfileService extends ChangeNotifier {
               id: id,
               name: prefs.getString('$_kNamePrefix$id') ??
                   (id == guestId ? 'Guest' : id),
+              avatarColorArgb: prefs.getInt('$_kAvatarPrefix$id'),
             ))
         .toList();
 
@@ -236,7 +245,36 @@ class ProfileService extends ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('$_kNamePrefix$id', newName.trim());
     _profiles = _profiles
-        .map((p) => p.id == id ? Profile(id: id, name: newName.trim()) : p)
+        .map((p) => p.id == id
+            ? Profile(
+                id: id,
+                name: newName.trim(),
+                avatarColorArgb: p.avatarColorArgb,
+              )
+            : p)
+        .toList();
+    notifyListeners();
+  }
+
+  /// Set (or clear) the profile's preferred avatar color tile.
+  /// Used when the user doesn't have a Google profile photo or
+  /// wants a custom-color initial.
+  Future<void> setAvatarColor(String id, int? argb) async {
+    final prefs = await SharedPreferences.getInstance();
+    final key = '$_kAvatarPrefix$id';
+    if (argb == null) {
+      await prefs.remove(key);
+    } else {
+      await prefs.setInt(key, argb);
+    }
+    _profiles = _profiles
+        .map((p) => p.id == id
+            ? Profile(
+                id: id,
+                name: p.name,
+                avatarColorArgb: argb,
+              )
+            : p)
         .toList();
     notifyListeners();
   }

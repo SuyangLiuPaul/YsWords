@@ -9,6 +9,7 @@ import 'package:yswords/models/verse.dart';
 import 'package:yswords/pages/highlights_page.dart';
 import 'package:yswords/pages/home_page.dart';
 import 'package:yswords/pages/library_page.dart';
+import 'package:yswords/pages/profile_edit_page.dart';
 import 'package:yswords/pages/settings_page.dart';
 import 'package:yswords/pages/stats_page.dart';
 import 'package:yswords/providers/main_provider.dart';
@@ -47,6 +48,15 @@ class _DashboardPageState extends State<DashboardPage> {
   int _planDay = 1;
   Set<int> _planDone = const {};
   Verse? _dailyVerse;
+  /// Cached canonical English ref ("John 3:16") loaded once from the
+  /// asset. Kept separate from [_dailyVerse] so a Bible-version
+  /// switch can re-resolve the verse text without re-fetching the
+  /// reference list.
+  String? _dailyVerseRef;
+  /// Snapshot of MainProvider.currentVersion at the time we last
+  /// resolved the daily verse — lets `didChangeDependencies` decide
+  /// whether to redo the resolve.
+  String? _resolvedForVersion;
 
   @override
   void initState() {
@@ -57,6 +67,22 @@ class _DashboardPageState extends State<DashboardPage> {
     _loadPlan();
     _loadDailyVerse();
     _maybeShowOnboarding();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Daily-verse resolution depends on MainProvider.currentVersion
+    // (the verse text comes from whichever Bible the user has
+    // loaded) and on mp.verses (which is replaced when version
+    // switches). didChangeDependencies fires when any watched
+    // provider changes — so a version switch reliably triggers a
+    // re-resolve here without us needing a manual listener.
+    final mp = context.read<MainProvider>();
+    if (_dailyVerseRef != null &&
+        _resolvedForVersion != mp.currentVersion) {
+      _resolveDailyVerse();
+    }
   }
 
   /// Show the 4-slide onboarding tour the first time the dashboard
@@ -77,23 +103,39 @@ class _DashboardPageState extends State<DashboardPage> {
     });
   }
 
-  /// Resolve today's curated reference to an actual [Verse] from the
-  /// loaded version. Re-runs when MainProvider's verse list changes
-  /// (e.g. after a version switch).
+  /// Load today's curated reference once (asset is small, cached
+  /// in service after first call), then resolve via
+  /// [_resolveDailyVerse]. Called from initState; the version-change
+  /// listener takes care of re-resolving when the user switches.
   Future<void> _loadDailyVerse() async {
     final ref = await DailyVerseService.todayRef();
-    if (ref == null || !mounted) return;
+    if (!mounted || ref == null) return;
+    setState(() => _dailyVerseRef = ref);
+    _resolveDailyVerse();
+  }
+
+  /// Resolve [_dailyVerseRef] against the currently-loaded Bible
+  /// version. Re-run whenever the user switches version (or the
+  /// initial verse list finishes loading) so the verse text always
+  /// matches what they're reading.
+  void _resolveDailyVerse() {
+    final ref = _dailyVerseRef;
+    if (ref == null) return;
     final parsed = parseReference(ref);
     if (parsed == null) return;
     final mp = context.read<MainProvider>();
-    final localBook = translateBookName(parsed.englishBook, mp.currentVersion);
+    final localBook =
+        translateBookName(parsed.englishBook, mp.currentVersion);
     final targetVerse = parsed.verseStart ?? 1;
     final matches = mp.verses.where((v) =>
         v.book == localBook &&
         v.chapter == parsed.chapter &&
         v.verse == targetVerse);
-    if (matches.isEmpty || !mounted) return;
-    setState(() => _dailyVerse = matches.first);
+    if (!mounted) return;
+    setState(() {
+      _dailyVerse = matches.isEmpty ? null : matches.first;
+      _resolvedForVersion = mp.currentVersion;
+    });
   }
 
   @override
@@ -184,6 +226,8 @@ class _DashboardPageState extends State<DashboardPage> {
             authConfigured: auth.isConfigured,
             isSignedIn: auth.isSignedIn,
             email: auth.currentUser?.email,
+            photoUrl: auth.currentUser?.photoURL,
+            avatarColor: profile.avatarColorArgb,
             syncStatus: CloudSyncService.instance.status,
             locale: locale,
             onSignIn: () async {
@@ -481,6 +525,12 @@ class _GreetingCard extends StatelessWidget {
   final bool authConfigured;
   final bool isSignedIn;
   final String? email;
+  /// Google profile photo URL when signed in. Falls through to
+  /// initial-on-color when null or fails to load.
+  final String? photoUrl;
+  /// Custom avatar color picked in Profile setup. Used when there's
+  /// no [photoUrl]; falls through to scheme.primary when null.
+  final int? avatarColor;
   final CloudSyncStatus syncStatus;
   final String locale;
   final VoidCallback onSignIn;
@@ -491,6 +541,8 @@ class _GreetingCard extends StatelessWidget {
     required this.authConfigured,
     required this.isSignedIn,
     required this.email,
+    required this.photoUrl,
+    required this.avatarColor,
     required this.syncStatus,
     required this.locale,
     required this.onSignIn,
@@ -502,23 +554,81 @@ class _GreetingCard extends StatelessWidget {
     final initial = profileName.isEmpty
         ? '?'
         : profileName.characters.first.toUpperCase();
+    final tileColor = avatarColor != null ? Color(avatarColor!) : scheme.primary;
     // Compact horizontal layout: avatar on the left, greeting + name
     // stacked in the middle, sign-in button (or sync chip) on the
     // right. Keeps the card to ~80 dp tall on phones and avoids the
     // tall empty box that wide-screen layouts produced before.
+    // Tap-to-edit on the avatar opens the Profile editor (rename,
+    // pick avatar color). Most discoverable affordance — users
+    // already mentally associate "tap the avatar" with profile
+    // settings from every social app they use.
+    final avatar = (photoUrl != null && photoUrl!.isNotEmpty)
+                ? CircleAvatar(
+                    radius: 24,
+                    backgroundColor: tileColor,
+                    foregroundColor: scheme.onPrimary,
+                    backgroundImage: NetworkImage(photoUrl!),
+                    onBackgroundImageError: (_, __) {},
+                    child: ClipOval(
+                      child: Image.network(
+                        photoUrl!,
+                        width: 48,
+                        height: 48,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => Text(
+                          initial,
+                          style: const TextStyle(
+                              fontWeight: FontWeight.w700, fontSize: 18),
+                        ),
+                      ),
+                    ),
+                  )
+                : CircleAvatar(
+                    radius: 24,
+                    backgroundColor: tileColor,
+                    foregroundColor: scheme.onPrimary,
+                    child: Text(
+                      initial,
+                      style: const TextStyle(
+                          fontWeight: FontWeight.w700, fontSize: 18),
+                    ),
+                  );
     return Card(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(16, 12, 12, 12),
         child: Row(
           children: [
-            CircleAvatar(
-              radius: 24,
-              backgroundColor: scheme.primary,
-              foregroundColor: scheme.onPrimary,
-              child: Text(
-                initial,
-                style: const TextStyle(
-                    fontWeight: FontWeight.w700, fontSize: 18),
+            InkWell(
+              customBorder: const CircleBorder(),
+              onTap: () => Get.to(
+                () => const ProfileEditPage(),
+                transition: Transition.rightToLeft,
+              ),
+              child: Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  avatar,
+                  // Small edit-pencil chip in the bottom-right
+                  // corner makes the affordance unmistakable.
+                  Positioned(
+                    right: -2,
+                    bottom: -2,
+                    child: Container(
+                      width: 18,
+                      height: 18,
+                      decoration: BoxDecoration(
+                        color: scheme.surface,
+                        shape: BoxShape.circle,
+                        border:
+                            Border.all(color: scheme.outline, width: 1),
+                      ),
+                      alignment: Alignment.center,
+                      child: Icon(Icons.edit,
+                          size: 10, color: scheme.onSurfaceVariant),
+                    ),
+                  ),
+                ],
               ),
             ),
             const SizedBox(width: 12),
