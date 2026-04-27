@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 
 import 'package:yswords/constants/ui_strings.dart';
-import 'package:yswords/utils/version_mapper.dart' show translateBookName;
+import 'package:yswords/utils/version_mapper.dart'
+    show localeAwareBookName;
 
 /// A parsed verse reference recovered from a stored highlight ID.
 /// ID format: "EnglishBook-chapter-verseLabel"
@@ -177,6 +178,7 @@ class HighlightsSheet extends StatelessWidget {
                               label: _colorLabel(argb),
                               refs: grouped[argb]!,
                               scheme: scheme,
+                              locale: locale,
                               currentVersion: currentVersion,
                               onNavigate: onNavigate,
                             ),
@@ -210,6 +212,7 @@ class _ColorSection extends StatefulWidget {
   final String label;
   final List<_HighlightRef> refs;
   final ColorScheme scheme;
+  final String locale;
   final String? currentVersion;
   final void Function(String, int, int)? onNavigate;
 
@@ -218,6 +221,7 @@ class _ColorSection extends StatefulWidget {
     required this.label,
     required this.refs,
     required this.scheme,
+    required this.locale,
     required this.currentVersion,
     required this.onNavigate,
   });
@@ -303,6 +307,7 @@ class _ColorSectionState extends State<_ColorSection> {
               ref: ref,
               argb: widget.argb,
               scheme: scheme,
+              locale: widget.locale,
               currentVersion: widget.currentVersion,
               onNavigate: widget.onNavigate,
             ),
@@ -316,6 +321,7 @@ class _RefRow extends StatelessWidget {
   final _HighlightRef ref;
   final int argb;
   final ColorScheme scheme;
+  final String locale;
   final String? currentVersion;
   final void Function(String, int, int)? onNavigate;
 
@@ -323,6 +329,7 @@ class _RefRow extends StatelessWidget {
     required this.ref,
     required this.argb,
     required this.scheme,
+    required this.locale,
     required this.currentVersion,
     required this.onNavigate,
   });
@@ -330,11 +337,7 @@ class _RefRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final canNav = onNavigate != null;
-    // Translate the canonical English book name (which is what the
-    // highlight ID stores) to the user's current version's naming.
-    final displayBook = currentVersion == null
-        ? ref.book
-        : translateBookName(ref.book, currentVersion!);
+    final displayBook = localeAwareBookName(ref.book, locale, currentVersion);
     final displayLabel = '$displayBook ${ref.chapter}:${ref.verseLabel}';
     return InkWell(
       onTap: canNav

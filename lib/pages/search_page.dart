@@ -6,7 +6,8 @@ import 'package:yswords/providers/main_provider.dart';
 import 'package:yswords/services/concordance_service.dart';
 import 'package:yswords/services/strongs_service.dart';
 import 'package:yswords/utils/format_searched_text.dart';
-import 'package:yswords/utils/version_mapper.dart' show translateBookName;
+import 'package:yswords/utils/version_mapper.dart'
+    show localeAwareBookName, translateBookName;
 import 'package:provider/provider.dart';
 import 'dart:async';
 import 'package:yswords/constants/ui_strings.dart';
@@ -606,8 +607,11 @@ class _SearchPageState extends State<SearchPage> {
       itemCount: refs.length,
       itemBuilder: (context, index) {
         final ref = refs[index];
-        final localBook =
-            translateBookName(ref.englishBook, mainProv.currentVersion);
+        // Display label follows UI locale; navigation lookup (in
+        // _navigateToRef) still uses translateBookName so it matches
+        // the version's actual verse data.
+        final displayBook = localeAwareBookName(
+            ref.englishBook, settings.locale, mainProv.currentVersion);
         return DecoratedBox(
           decoration: BoxDecoration(
             border: Border(
@@ -617,7 +621,7 @@ class _SearchPageState extends State<SearchPage> {
           child: ListTile(
             onTap: () => _navigateToRef(ref, mainProv),
             title: Text(
-              '$localBook ${ref.chapter}:${ref.verse}',
+              '$displayBook ${ref.chapter}:${ref.verse}',
               style: TextStyle(fontSize: settings.fontSize),
             ),
           ),
