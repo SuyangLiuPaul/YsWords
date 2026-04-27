@@ -2205,6 +2205,28 @@ class _FloatingHeader extends StatelessWidget {
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
+                          // Home button as the leftmost element in
+                          // the floating glass header — matches the
+                          // top-left placement on every other page's
+                          // AppBar. Only renders when the reader is
+                          // pushed (i.e. there's a Dashboard below to
+                          // pop back to). Hidden in split-view's
+                          // secondary pane (where `onClose` already
+                          // sits in this slot) so we never get two
+                          // close-style buttons crowding each other.
+                          if (onClose == null &&
+                              Navigator.of(context).canPop())
+                            IconButton(
+                              onPressed: () => Navigator.of(context)
+                                  .popUntil((r) => r.isFirst),
+                              icon: Icon(Icons.home_rounded,
+                                  size: iconSize),
+                              padding: EdgeInsets.all(iconPad),
+                              constraints: const BoxConstraints(
+                                  minWidth: 36, minHeight: 36),
+                              tooltip:
+                                  uiStrings['home']?[locale] ?? 'Home',
+                            ),
                           if (onClose != null)
                             IconButton(
                               onPressed: onClose,
