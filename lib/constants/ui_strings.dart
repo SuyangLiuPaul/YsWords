@@ -533,4 +533,9 @@ const uiStrings = {
     'zh-Hant': '按 Strong\'s 編號搜尋',
     'en': 'Strong\'s number',
   },
+  'interlinearHint': {
+    'zh-Hans': '原文 · Strong\'s 中文释义',
+    'zh-Hant': '原文 · Strong\'s 中文釋義',
+    'en': 'Original · Strong\'s gloss',
+  },
 };

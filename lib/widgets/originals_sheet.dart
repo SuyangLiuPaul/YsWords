@@ -55,6 +55,11 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
   // TapGestureRecognizers for inline derivation links — disposed on change.
   final _tapRecognizers = <TapGestureRecognizer>[];
 
+  // Strong's-entry cache for the interlinear gloss line rendered below
+  // each word chip. Populated once in [_loadAll] and reused by every
+  // chip so we don't re-fetch the same lemma over and over.
+  final Map<String, StrongsEntry?> _glossCache = {};
+
   @override
   void initState() {
     super.initState();
@@ -81,6 +86,21 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
       final words = await OriginalsService.forVerse(english, v.chapter, v.verse);
       results.add(_VerseOriginals(verse: v, words: words));
     }
+    // Prefetch Strong's entries for every unique number across all
+    // verses so the interlinear gloss row under each chip can render
+    // synchronously when the chip first builds. Lookups are async but
+    // hit a cached lexicon after the first call, so wrapping them in
+    // `Future.wait` parallelises the dictionary scans.
+    final uniqueNums = <String>{};
+    for (final r in results) {
+      for (final w in r.words ?? const <OriginalWord>[]) {
+        uniqueNums.add(w.strongs);
+      }
+    }
+    await Future.wait(uniqueNums.map((n) async {
+      if (_glossCache.containsKey(n)) return;
+      _glossCache[n] = await StrongsService.lookup(n);
+    }));
     return results;
   }
 
@@ -165,13 +185,27 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
                   Icon(Icons.translate, color: scheme.primary, size: 20),
                   const SizedBox(width: 8),
                   Expanded(
-                    child: Text(
-                      title,
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                        color: scheme.onSurface,
-                      ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          title,
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                            color: scheme.onSurface,
+                          ),
+                        ),
+                        Text(
+                          uiStrings['interlinearHint']?[locale] ??
+                              'Original · Strong\'s gloss',
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: scheme.onSurfaceVariant,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                   IconButton(
@@ -265,11 +299,19 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
   Widget _wordChip(OriginalWord w, ColorScheme scheme) {
     final isSelected = _selectedWord?.strongs == w.strongs &&
         _selectedWord?.text == w.text;
+    // Interlinear gloss row — the Strong's entry's primary meaning in
+    // the user's locale (English `gloss` or Chinese `glossZh`). Shown
+    // beneath the original word so a reader who doesn't know
+    // Hebrew/Greek can immediately see what each word means.
+    final entry = _glossCache[w.strongs];
+    final gloss =
+        entry?.localizedGloss(widget.locale) ?? '';
     return InkWell(
       onTap: () => _onWordTap(w),
       borderRadius: BorderRadius.circular(8),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+        constraints: const BoxConstraints(minWidth: 56, maxWidth: 140),
         decoration: BoxDecoration(
           color: isSelected
               ? scheme.primaryContainer
@@ -282,9 +324,11 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Text(
               w.text,
+              textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
@@ -294,11 +338,34 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
             if (w.translit != null && w.translit!.isNotEmpty)
               Text(
                 w.translit!,
+                textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 10,
                   color: scheme.onSurfaceVariant,
                 ),
               ),
+            if (gloss.isNotEmpty) ...[
+              const SizedBox(height: 2),
+              // Gloss is locale-script (LTR/Chinese), even when the
+              // surrounding chip Wrap is RTL for Hebrew. Force LTR so
+              // multi-word glosses don't render right-to-left inside
+              // the Hebrew Directionality scope.
+              Directionality(
+                textDirection: TextDirection.ltr,
+                child: Text(
+                  gloss,
+                  textAlign: TextAlign.center,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w500,
+                    color: scheme.primary.withValues(alpha: 0.85),
+                    height: 1.2,
+                  ),
+                ),
+              ),
+            ],
           ],
         ),
       ),
