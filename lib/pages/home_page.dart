@@ -182,6 +182,11 @@ class _HomePageState extends State<HomePage> {
     }
 
     return Row(
+      // Stretch so the sidebar fills the full screen height — the inner
+      // SidebarPanel uses Expanded for its book list, which silently
+      // collapses to zero height under loose vertical constraints on
+      // Flutter web's HTML renderer.
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         AnimatedContainer(
           duration: const Duration(milliseconds: 250),

@@ -26,7 +26,13 @@ class SidebarPanel extends StatelessWidget {
 
     return Consumer<MainProvider>(
       builder: (context, mainProvider, _) {
-        return Container(
+        return DefaultTextStyle.merge(
+          style: TextStyle(
+            color: scheme.onSurface,
+            decoration: TextDecoration.none,
+            decorationColor: Colors.transparent,
+          ),
+          child: Container(
           decoration: BoxDecoration(
             color: scheme.surface,
             border: Border(
@@ -54,6 +60,9 @@ class SidebarPanel extends StatelessWidget {
                               fontSize: settings.fontSize.clamp(14.0, 18.0),
                               fontWeight: FontWeight.w700,
                               fontFamily: settings.fontFamily,
+                              color: scheme.onSurface,
+                              decoration: TextDecoration.none,
+                              decorationColor: Colors.transparent,
                             ),
                           ),
                         ),
@@ -79,6 +88,7 @@ class SidebarPanel extends StatelessWidget {
               ),
             ],
           ),
+        ),
         );
       },
     );
