@@ -7,7 +7,7 @@ import 'package:yswords/services/concordance_service.dart';
 import 'package:yswords/services/strongs_service.dart';
 import 'package:yswords/utils/format_searched_text.dart';
 import 'package:yswords/utils/version_mapper.dart'
-    show localeAwareBookName, translateBookName;
+    show localeAwareBookName, toEnglish, translateBookName;
 import 'package:provider/provider.dart';
 import 'dart:async';
 import 'package:yswords/constants/ui_strings.dart';
@@ -601,6 +601,11 @@ class _SearchPageState extends State<SearchPage> {
       );
     }
     final mainProv = Provider.of<MainProvider>(context, listen: false);
+    // Build a version-independent index for verse text lookup.
+    final verseIndex = <String, String>{
+      for (final v in mainProv.verses)
+        '${(toEnglish(v.book) ?? v.book)}-${v.chapter}-${v.verse}': v.text,
+    };
     return ListView.builder(
       controller: _scrollController,
       physics: const BouncingScrollPhysics(),
@@ -612,6 +617,13 @@ class _SearchPageState extends State<SearchPage> {
         // the version's actual verse data.
         final displayBook = localeAwareBookName(
             ref.englishBook, settings.locale, mainProv.currentVersion);
+        final preview = verseIndex['${ref.englishBook}-${ref.chapter}-${ref.verse}']
+            ?.replaceAll('\n', ' ')
+            .replaceAll(notePattern, '')
+            .replaceAllMapped(bracePattern, (m) => m.group(1) ?? '')
+            .replaceAllMapped(squarePattern, (m) => m.group(1) ?? '')
+            .replaceAll(RegExp(r' {2,}'), ' ')
+            .trim();
         return DecoratedBox(
           decoration: BoxDecoration(
             border: Border(
@@ -624,6 +636,14 @@ class _SearchPageState extends State<SearchPage> {
               '$displayBook ${ref.chapter}:${ref.verse}',
               style: TextStyle(fontSize: settings.fontSize),
             ),
+            subtitle: preview != null
+                ? Text(
+                    preview,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(fontSize: settings.fontSize - 2),
+                  )
+                : null,
           ),
         );
       },

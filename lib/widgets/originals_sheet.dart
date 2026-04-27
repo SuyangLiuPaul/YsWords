@@ -1,7 +1,8 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
-import 'package:yswords/constants/text_patterns.dart' show sanitizeForSearch;
+import 'package:yswords/constants/text_patterns.dart'
+    show sanitizeForSearch, notePattern, bracePattern, squarePattern;
 import 'package:yswords/constants/ui_strings.dart';
 import 'package:yswords/models/original_word.dart';
 import 'package:yswords/models/strongs.dart';
@@ -27,6 +28,7 @@ import 'package:yswords/widgets/word_distribution.dart';
 /// the sheet stays presentation-only.
 class OriginalsSheet extends StatefulWidget {
   final List<Verse> verses;
+  final List<Verse> allVerses;
   final String locale;
   final String? currentVersion;
   final void Function(ConcordanceRef ref)? onNavigateRef;
@@ -34,6 +36,7 @@ class OriginalsSheet extends StatefulWidget {
   const OriginalsSheet({
     super.key,
     required this.verses,
+    this.allVerses = const [],
     required this.locale,
     this.currentVersion,
     this.onNavigateRef,
@@ -61,10 +64,17 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
   // chip so we don't re-fetch the same lemma over and over.
   final Map<String, StrongsEntry?> _glossCache = {};
 
+  // "englishBook-chapter-verse" → cleaned verse text for concordance preview.
+  late final Map<String, String> _verseIndex;
+
   @override
   void initState() {
     super.initState();
     _future = _loadAll();
+    _verseIndex = {
+      for (final v in widget.allVerses)
+        '${(toEnglish(v.book) ?? v.book)}-${v.chapter}-${v.verse}': v.text,
+    };
   }
 
   @override
@@ -662,12 +672,17 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
             ),
           ),
         ],
-        const SizedBox(height: 10),
-        Wrap(
-          spacing: 6,
-          runSpacing: 6,
+        const SizedBox(height: 6),
+        Column(
           children: [
-            for (final r in cr.refs) _refChip(r, scheme),
+            for (int i = 0; i < cr.refs.length; i++) ...[
+              if (i > 0)
+                Divider(
+                    height: 1,
+                    thickness: 0.5,
+                    color: scheme.outlineVariant.withValues(alpha: 0.4)),
+              _refRow(cr.refs[i], scheme),
+            ],
           ],
         ),
       ],
@@ -680,25 +695,54 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
     return '$localBook ${r.chapter}:${r.verse}';
   }
 
-  Widget _refChip(ConcordanceRef r, ColorScheme scheme) {
+  String? _lookupVerseText(ConcordanceRef r) {
+    final raw = _verseIndex['${r.englishBook}-${r.chapter}-${r.verse}'];
+    if (raw == null) return null;
+    return raw
+        .replaceAll('\n', ' ')
+        .replaceAll(notePattern, '')
+        .replaceAllMapped(bracePattern, (m) => m.group(1) ?? '')
+        .replaceAllMapped(squarePattern, (m) => m.group(1) ?? '')
+        .replaceAll(RegExp(r' {2,}'), ' ')
+        .trim();
+  }
+
+  Widget _refRow(ConcordanceRef r, ColorScheme scheme) {
     final canNavigate = widget.onNavigateRef != null;
+    final label = _localizedRefLabel(r);
+    final preview = _lookupVerseText(r);
     return Material(
-      color: scheme.surfaceContainerHighest.withValues(alpha: 0.7),
-      borderRadius: BorderRadius.circular(6),
+      color: Colors.transparent,
       child: InkWell(
-        borderRadius: BorderRadius.circular(6),
         onTap: canNavigate ? () => widget.onNavigateRef!(r) : null,
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
-          child: Text(
-            _localizedRefLabel(r),
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
-              color: canNavigate
-                  ? scheme.primary
-                  : scheme.onSurfaceVariant,
-            ),
+          padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 8),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color:
+                      canNavigate ? scheme.primary : scheme.onSurfaceVariant,
+                ),
+              ),
+              if (preview != null) ...[
+                const SizedBox(height: 3),
+                Text(
+                  preview,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: scheme.onSurfaceVariant,
+                    height: 1.4,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ],
           ),
         ),
       ),

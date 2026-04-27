@@ -1086,6 +1086,7 @@ void _showOriginalsSheet({
     ),
     builder: (sheetCtx) => OriginalsSheet(
       verses: verses,
+      allVerses: mainProvider.verses,
       locale: locale,
       currentVersion: mainProvider.currentVersion,
       onNavigateRef: (ref) {
