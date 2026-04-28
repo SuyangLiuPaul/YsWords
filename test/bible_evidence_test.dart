@@ -68,5 +68,38 @@ void main() {
       expect(e.bibleBooks, isEmpty);
       expect(e.images, isEmpty);
     });
+
+    test('flattens paragraph arrays into double-newline strings', () {
+      // Some entries (e.g. hazor_destruction) store long-form
+      // description / scripturalCorrelation as List<String> per
+      // locale instead of String. Pre-fix this rendered the literal
+      // bracketed list to the user. Verify we now join paragraphs.
+      final e = BibleEvidence.fromJson({
+        'id': 'hazor_destruction',
+        'category': 'Archaeology',
+        'confidenceLevel': 'Strong',
+        'icon': '🪨',
+        'title': {'en': 'Hazor', 'zh-Hans': '夏琐', 'zh-Hant': '夏琐'},
+        'summary': {'en': 's', 'zh-Hans': 's', 'zh-Hant': 's'},
+        'description': {
+          'en': ['Para one.', 'Para two.', 'Para three.'],
+          'zh-Hans': '中文段落',
+          'zh-Hant': '中文段落',
+        },
+        'scripturalCorrelation': {
+          'en': ['Joshua 11.', 'Confirms.'],
+          'zh-Hans': '关联',
+          'zh-Hant': '關聯',
+        },
+      });
+      expect(
+        e.localizedDescription('en'),
+        'Para one.\n\nPara two.\n\nPara three.',
+      );
+      expect(e.localizedCorrelation('en'), 'Joshua 11.\n\nConfirms.');
+      expect(e.localizedDescription('zh-Hans'), '中文段落');
+      // No leading "[" or trailing "]" — that was the pre-fix bug.
+      expect(e.localizedDescription('en').startsWith('['), isFalse);
+    });
   });
 }

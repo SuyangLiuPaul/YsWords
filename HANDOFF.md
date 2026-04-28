@@ -165,6 +165,100 @@ The parsing is handled via shared regex patterns in `lib/constants/text_patterns
 
 ---
 
+## Central data source — `yswords-data`
+
+**Single canonical home for every dynamic dataset YsWords reads.**
+Lives at `~/Documents/CodingProject/yswords-data/` locally,
+`https://github.com/SuyangLiuPaul/yswords-data` on GitHub, and
+`https://yswords-data.netlify.app/` in production.
+
+### What's there
+
+| Path | Source of truth | Refresh cadence |
+|---|---|---|
+| `data/bible_evidence.json` | manual edits | as edited |
+| `data/daily_news.json` | GitHub Actions cron (`refresh.yml`) | 4×/day Sydney time |
+| `data/daily_verses.json` | manual edits | rarely |
+| `data/_manifest.json` | auto-regenerated | every push |
+| `schemas/*.schema.json` | hand-maintained | as schema evolves |
+
+### How YsWords consumes it
+
+`lib/services/remote_data_service.dart` is the base class. Every
+service that backs a JSON dataset extends it and gets:
+
+1. SharedPreferences cache (last successful network fetch)
+2. Bundled snapshot from `assets/<file>.json` (offline floor)
+3. Best-effort HTTP fetch on every `load()` call (background refresh)
+
+UI never blocks on network — `load()` returns the cached / bundled
+copy immediately, then swaps in fresher data when the response
+arrives. URLs override at build time:
+
+```sh
+flutter build web --dart-define=DAILY_NEWS_URL=https://staging/.../daily_news.json \
+                 --dart-define=BIBLE_EVIDENCE_URL=...
+```
+
+Cache key versions (`v1`, `v2`, …) are bumped when the model shape
+changes incompatibly so old user caches auto-invalidate.
+
+### Editing data
+
+```sh
+cd ~/Documents/CodingProject/yswords-data
+# edit data/<file>.json
+npm run build       # validate schema + regenerate manifest
+npm test            # 3 smoke tests
+git commit -am "data: <change>"
+git push            # auto-deploys to yswords-data.netlify.app
+```
+
+YsWords picks up the change on each user's next launch.
+
+### Adding a new dataset
+
+1. Drop JSON at `yswords-data/data/<name>.json`.
+2. Write `yswords-data/schemas/<name>.schema.json`.
+3. Add to `validate.mjs` `datasets` array.
+4. Drop a snapshot at `yswords/assets/<name>.json` (so the app works
+   offline / on first launch before any network roundtrip).
+5. Add `assets/<name>.json` to the `assets` block in `pubspec.yaml`.
+6. Create a Flutter service that extends `RemoteDataService<T>` —
+   see `daily_news_service.dart` or `bible_evidence_service.dart`.
+7. Add a 3-line schema test in `yswords/test/`.
+
+### Why not a database?
+
+For now: static JSON on Netlify is fast, free, cacheable, fine for
+the data sizes we have (1.5 MB max), and zero ops. If a dataset ever
+grows past ~50 MB or needs per-user writes, move it to Firestore via
+the `lib/firebase_options.dart` already-configured project — but
+not before that.
+
+### Migration history
+
+- **Round 38–40 (April 2026)**: data was scattered — `daily_news`
+  hosted on `newsbible.netlify.app` (run by a separate DailyNews
+  repo), `bible_evidence` and `daily_verses` bundled into YsWords
+  with no refresh path.
+- **Round 42 (2026-04-28)**: created `yswords-data` repo + Netlify
+  site as the single source of truth. DailyNews's hourly cron was
+  retired in favour of a new cron in `yswords-data`. The legacy URL
+  `newsbible.netlify.app/data/latest-news.json` 301s to the new
+  canonical URL so any external consumer keeps working. YsWords now
+  refreshes all three datasets at runtime.
+
+### Critical setup tasks (one-time)
+
+- Add **`OPENAI_API_KEY`** as a GitHub Actions secret on the
+  `yswords-data` repo (Settings → Secrets and variables → Actions).
+  Without it the cron still runs but produces English-only news.
+  See "Bible Evidence — AI Search Backend" below for where the SA
+  key lives — same key works.
+
+---
+
 ## Bible Evidence — Data Update Workflow
 
 Use this section when the user asks to add, edit, translate, or audit evidence entries.

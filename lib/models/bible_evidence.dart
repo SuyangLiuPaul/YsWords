@@ -81,10 +81,23 @@ class BibleEvidence {
   }
 
   factory BibleEvidence.fromJson(Map<String, dynamic> j) {
+    // Some entries in the upstream dataset (e.g. "hazor_destruction")
+    // store long-form `description` and `scripturalCorrelation` as
+    // an *array of paragraphs* per locale rather than a single
+    // string. Older versions of this code cast to `String?` and
+    // returned the raw `[a, b, c]` toString — bracketed list visible
+    // to users. Now we flatten paragraphs to a double-newline
+    // joined string so the detail page renders properly.
+    String flatten(dynamic v) {
+      if (v == null) return '';
+      if (v is String) return v;
+      if (v is List) return v.map((e) => e.toString()).join('\n\n');
+      return v.toString();
+    }
+
     Map<String, String> tm(dynamic v) {
       if (v is Map) {
-        return v.map(
-            (k, val) => MapEntry(k.toString(), (val ?? '').toString()));
+        return v.map((k, val) => MapEntry(k.toString(), flatten(val)));
       }
       return {};
     }
