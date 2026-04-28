@@ -476,18 +476,14 @@ class CloudSyncService extends ChangeNotifier {
     _setStatus(CloudSyncStatus.syncing);
     try {
       final data = await _snapshotLocal();
-      // Force a fresh ID token before the write. If the cached token
-      // expired, set() can sit in the SDK's auth-refresh queue until
-      // it gives up — which manifests as a "Sync timeout" with no
-      // clear cause. Pre-refreshing surfaces auth issues faster and
-      // ensures the write goes out with a current token.
-      try {
-        await auth.currentUser!.getIdToken(true)
-            .timeout(const Duration(seconds: 8));
-      } catch (e) {
-        debugPrint('CloudSync: token refresh failed: $e');
-        // Fall through — set() will try with whatever token is cached.
-      }
+      // No explicit pre-token-refresh here. Earlier attempts to
+      // call getIdToken(true) before set() seemed to help with the
+      // initial timeout, but turned out to break the SECOND
+      // consecutive Sync-now click — the forced refresh races with
+      // Firestore's own internal token management. With
+      // experimentalAutoDetectLongPolling enabled (see
+      // CloudAuthService._doInit), the Firestore SDK refreshes
+      // tokens correctly on its own.
       // 30 s instead of 15 — slow networks (mobile, cafe wifi, etc.)
       // routinely take 10-20 s for a Firestore write to round-trip,
       // and 15 s was tripping under normal conditions.
