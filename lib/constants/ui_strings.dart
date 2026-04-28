@@ -819,6 +819,11 @@ const uiStrings = {
     'zh-Hant': '引用條目',
     'en': 'Citations',
   },
+  'keywordMatches': {
+    'zh-Hans': '关键词匹配',
+    'zh-Hant': '關鍵字匹配',
+    'en': 'Keyword matches',
+  },
   // Daily News (Round 40 — migrated from sibling DailyNews project).
   'dailyNews': {
     'zh-Hans': '每日新闻',

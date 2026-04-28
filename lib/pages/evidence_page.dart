@@ -520,8 +520,12 @@ class _AiSearchDialog extends StatefulWidget {
 class _AiSearchDialogState extends State<_AiSearchDialog> {
   final _ctrl = TextEditingController();
   bool _busy = false;
-  String? _error;
+  String? _notice; // shown when AI was unavailable but local matches found
   AiSearchResult? _result;
+  // When AI is unavailable, we surface a local keyword match so the
+  // feature still does something useful. These are domain entries
+  // matched by `BibleEvidenceService.search()`, not Gemini citations.
+  List<BibleEvidence> _localMatches = const [];
 
   @override
   void dispose() {
@@ -534,19 +538,33 @@ class _AiSearchDialogState extends State<_AiSearchDialog> {
     if (q.length < 2) return;
     setState(() {
       _busy = true;
-      _error = null;
+      _notice = null;
       _result = null;
+      _localMatches = const [];
     });
-    try {
-      final r = await AiSearchService.ask(query: q, locale: widget.locale);
-      if (!mounted) return;
-      setState(() => _result = r);
-    } catch (e) {
-      if (!mounted) return;
-      setState(() => _error = e.toString());
-    } finally {
-      if (mounted) setState(() => _busy = false);
+    final r = await AiSearchService.ask(query: q, locale: widget.locale);
+    if (!mounted) return;
+
+    if (r.unavailable) {
+      // AI service down / not deployed. Don't show a scary error —
+      // run the same query through the local keyword index and
+      // return those matches instead, with a small note explaining
+      // the fallback.
+      final local =
+          BibleEvidenceService.search(widget.all, q, widget.locale);
+      setState(() {
+        _busy = false;
+        _result = r; // keep so the unavailable note surface
+        _notice = r.unavailableReason;
+        _localMatches = local.take(12).toList();
+      });
+      return;
     }
+
+    setState(() {
+      _busy = false;
+      _result = r;
+    });
   }
 
   /// Resolve a citation id back to the loaded evidence list so we can
@@ -603,25 +621,70 @@ class _AiSearchDialogState extends State<_AiSearchDialog> {
                 padding: EdgeInsets.symmetric(vertical: 16),
                 child: Center(child: CircularProgressIndicator()),
               ),
-            if (_error != null)
+            // AI-unavailable notice — neutral tone, not red. Sits
+            // above whatever local matches we found.
+            if (_notice != null)
               Container(
+                margin: const EdgeInsets.only(bottom: 8),
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: scheme.errorContainer.withValues(alpha: 0.4),
+                  color: scheme.surfaceContainerHighest
+                      .withValues(alpha: 0.6),
                   borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                      color: scheme.outlineVariant
+                          .withValues(alpha: 0.4)),
                 ),
-                child: Text(
-                  _error!,
-                  style: TextStyle(
-                    fontFamily: settings.fontFamily,
-                    fontSize: (settings.fontSize - 2)
-                        .clamp(11.0, 14.0)
-                        .toDouble(),
-                    color: scheme.onErrorContainer,
-                  ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(Icons.info_outline,
+                        size: 14, color: scheme.onSurfaceVariant),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: Text(
+                        _notice!,
+                        style: TextStyle(
+                          fontFamily: settings.fontFamily,
+                          fontSize: (settings.fontSize - 2)
+                              .clamp(11.0, 14.0)
+                              .toDouble(),
+                          color: scheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-            if (_result != null && _result!.answer.isNotEmpty) ...[
+            // ── Local keyword fallback ─────────────────────────────
+            // Shown when the AI service is unavailable. Same evidence
+            // entries the main filter chip search would return, but
+            // accessed inline in the dialog so the user gets results
+            // for "What evidence supports the Exodus?" type queries
+            // without needing the function deployed.
+            if (_localMatches.isNotEmpty) ...[
+              Text(
+                uiStrings['keywordMatches']?[locale] ??
+                    'Keyword matches',
+                style: TextStyle(
+                  fontFamily: settings.fontFamily,
+                  fontSize:
+                      (settings.fontSize - 2).clamp(11.0, 14.0).toDouble(),
+                  fontWeight: FontWeight.w700,
+                  color: scheme.onSurfaceVariant,
+                ),
+              ),
+              const SizedBox(height: 6),
+              for (final ev in _localMatches)
+                _LocalMatchTile(
+                  evidence: ev,
+                  locale: locale,
+                  onTap: () => widget.onCitationTap(ev),
+                ),
+            ],
+            if (_result != null &&
+                _result!.answer.isNotEmpty &&
+                !_result!.unavailable) ...[
               Text(
                 _result!.answer,
                 style: TextStyle(
@@ -652,10 +715,14 @@ class _AiSearchDialogState extends State<_AiSearchDialog> {
                   },
                 ),
             ],
-            if (_result != null &&
+            // Empty state — only when we genuinely got nothing back
+            // (AI returned no answer AND local found nothing AND
+            // nothing's loading).
+            if (!_busy &&
+                _result != null &&
                 _result!.answer.isEmpty &&
                 _result!.citations.isEmpty &&
-                !_busy)
+                _localMatches.isEmpty)
               Text(
                 uiStrings['noResults']?[locale] ?? 'No results',
                 style: TextStyle(
@@ -678,6 +745,72 @@ class _AiSearchDialogState extends State<_AiSearchDialog> {
           label: Text(uiStrings['ask']?[locale] ?? 'Ask'),
         ),
       ],
+    );
+  }
+}
+
+/// One row in the local-keyword fallback list shown when the Cloud
+/// Function is unreachable. Renders the matched BibleEvidence's
+/// title + scripture reference so the user can immediately spot
+/// relevant entries and tap through.
+class _LocalMatchTile extends StatelessWidget {
+  final BibleEvidence evidence;
+  final String locale;
+  final VoidCallback onTap;
+  const _LocalMatchTile({
+    required this.evidence,
+    required this.locale,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final settings = context.watch<AppSettings>();
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(8),
+      child: Padding(
+        padding:
+            const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
+        child: Row(
+          children: [
+            Text(evidence.icon,
+                style: const TextStyle(fontSize: 18)),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    evidence.localizedTitle(locale),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontFamily: settings.fontFamily,
+                      fontWeight: FontWeight.w600,
+                      color: scheme.onSurface,
+                    ),
+                  ),
+                  if (evidence.scriptureReference.isNotEmpty)
+                    Text(
+                      evidence.scriptureReference,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontFamily: settings.fontFamily,
+                        fontSize: 12,
+                        color: scheme.primary,
+                      ),
+                    ),
+                ],
+              ),
+            ),
+            Icon(Icons.chevron_right,
+                size: 16, color: scheme.outline),
+          ],
+        ),
+      ),
     );
   }
 }

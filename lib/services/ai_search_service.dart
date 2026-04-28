@@ -13,6 +13,12 @@ import 'package:http/http.dart' as http;
 /// account key never ends up in the client bundle (the previous
 /// bible-evidence React project leaked 5 keys exactly because Vite
 /// inlines `VITE_*` env vars).
+///
+/// Status of the function (2026-04-28): scaffolded but **not deployed**
+/// — needs `firebase login` + `firebase deploy --only functions` from
+/// the repo owner. Until then `ask()` returns `AiSearchResult.empty()
+/// .markUnavailable()` so callers can fall back to local search
+/// without surfacing a confusing error to non-technical users.
 class AiSearchService {
   /// Production endpoint. Override with `--dart-define=AI_SEARCH_URL=...`
   /// for emulator / staging.
@@ -25,7 +31,13 @@ class AiSearchService {
   );
 
   /// Returns the Gemini-generated answer plus a list of cited evidence
-  /// entries. Throws on network / server error.
+  /// entries. Returns `AiSearchResult.unavailable(reason)` when the
+  /// Cloud Function is unreachable / not deployed / errored — callers
+  /// inspect `result.unavailable` and decide whether to fall back to
+  /// local keyword search.
+  ///
+  /// The reason string is human-readable and meant for direct rendering
+  /// (no internal class names, no minified runtime types).
   static Future<AiSearchResult> ask({
     required String query,
     required String locale,
@@ -43,35 +55,42 @@ class AiSearchService {
           )
           .timeout(const Duration(seconds: 25));
     } on TimeoutException {
-      // Friendly message — the dialog renders this verbatim. We avoid
-      // leaking the raw `TimeoutException` ToString which says
-      // "Timeout after 0:00:25.000000" and confuses non-technical
-      // users.
-      throw const AiSearchException(
+      return AiSearchResult.unavailable(
         'The AI search took too long. Please try again or rephrase '
         'your question.',
       );
-    } catch (e) {
-      // Network unreachable, DNS failure, etc. The Cloud Function
-      // is also not deployed yet for some users — surface the
-      // underlying message but keep it short.
-      throw AiSearchException(
-        'Could not reach the AI search service. (${e.runtimeType})',
+    } catch (_) {
+      // Network unreachable, DNS failure, CORS preflight reject, or
+      // the function isn't deployed yet (the most common case). We
+      // deliberately do NOT include `e.runtimeType` here — in
+      // release builds it produces minified names like "td" that
+      // mean nothing to users.
+      return AiSearchResult.unavailable(
+        'AI search is not available right now. Showing keyword '
+        'matches instead.',
       );
     }
 
+    if (resp.statusCode == 404) {
+      // Function isn't deployed at this URL yet.
+      return AiSearchResult.unavailable(
+        'AI search is not available yet. Showing keyword matches '
+        'instead.',
+      );
+    }
     if (resp.statusCode != 200) {
-      throw AiSearchException(
-        'AI search failed (${resp.statusCode}). '
-        '${resp.body.length > 160 ? "${resp.body.substring(0, 160)}…" : resp.body}',
+      return AiSearchResult.unavailable(
+        'AI search returned an error (${resp.statusCode}). Showing '
+        'keyword matches instead.',
       );
     }
     try {
       final body = jsonDecode(resp.body) as Map<String, dynamic>;
       return AiSearchResult.fromJson(body);
     } catch (_) {
-      throw const AiSearchException(
-        'Got an unexpected response from the AI search service.',
+      return AiSearchResult.unavailable(
+        'AI search returned an unexpected response. Showing keyword '
+        'matches instead.',
       );
     }
   }
@@ -92,14 +111,27 @@ class AiSearchResult {
   final List<AiCitation> citations;
   final int hits;
 
+  /// Non-null when the AI service couldn't answer (404, timeout,
+  /// network blip). The dialog uses this to switch to local keyword
+  /// search and shows the reason string as a contextual note.
+  final String? unavailableReason;
+
   AiSearchResult({
     required this.answer,
     required this.citations,
     required this.hits,
+    this.unavailableReason,
   });
 
   factory AiSearchResult.empty() =>
       AiSearchResult(answer: '', citations: const [], hits: 0);
+
+  factory AiSearchResult.unavailable(String reason) => AiSearchResult(
+        answer: '',
+        citations: const [],
+        hits: 0,
+        unavailableReason: reason,
+      );
 
   factory AiSearchResult.fromJson(Map<String, dynamic> j) {
     final raw = (j['citations'] as List?) ?? const [];
@@ -114,6 +146,7 @@ class AiSearchResult {
   }
 
   bool get isEmpty => answer.isEmpty && citations.isEmpty;
+  bool get unavailable => unavailableReason != null;
 }
 
 class AiCitation {
