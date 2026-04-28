@@ -1099,6 +1099,16 @@ const uiStrings = {
     'zh-Hant': '已登入為 {email}',
     'en': 'Cloud-synced as {email}',
   },
+  'cloudInitFailedTitle': {
+    'zh-Hans': '云端登录暂时不可用',
+    'zh-Hant': '雲端登入暫時無法使用',
+    'en': 'Cloud sign-in temporarily unavailable',
+  },
+  'cloudInitOk': {
+    'zh-Hans': '云端登录已恢复。',
+    'zh-Hant': '雲端登入已恢復。',
+    'en': 'Cloud sign-in restored.',
+  },
   'cloudSyncing': {
     'zh-Hans': '同步中…',
     'zh-Hant': '同步中…',

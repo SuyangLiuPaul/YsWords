@@ -1392,6 +1392,17 @@ class _AccountSectionState extends State<_AccountSection> {
               ),
             ),
             // Cloud-sync row — Sign in / Sign out depending on state.
+            //
+            // We split into two paths:
+            //   • init succeeded (auth.isConfigured == true) → render
+            //     the live Sign in / Sign out flow as before.
+            //   • init failed but credentials are present
+            //     (hasFirebaseCredentials && !isConfigured) → still
+            //     show the button so the user can SEE the surface,
+            //     but disable it and surface the error + a Retry
+            //     button. Without this, a transient Firebase init
+            //     failure (revoked key, network blip) silently hides
+            //     the entire account section.
             if (auth.isConfigured) ...[
               const Divider(height: 24),
               if (!auth.isSignedIn)
@@ -1469,6 +1480,85 @@ class _AccountSectionState extends State<_AccountSection> {
                 SizedBox(height: 6 * s),
                 _SyncStatusRow(settings: settings),
               ],
+            ] else if (auth.hasFirebaseCredentials) ...[
+              // Init failed — show a disabled-looking sign-in button
+              // plus the error + a Retry button. Better than silently
+              // hiding everything cloud-related.
+              const Divider(height: 24),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: scheme.errorContainer.withValues(alpha: 0.4),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: scheme.error.withValues(alpha: 0.4),
+                  ),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(Icons.cloud_off_outlined,
+                            size: 18, color: scheme.error),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            uiStrings['cloudInitFailedTitle']?[locale] ??
+                                'Cloud sign-in temporarily unavailable',
+                            style: TextStyle(
+                              fontFamily: settings.fontFamily,
+                              fontSize: (settings.fontSize - 4)
+                                  .clamp(13.0, 16.0).toDouble(),
+                              fontWeight: FontWeight.w600,
+                              color: scheme.error,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    if (auth.initError != null) ...[
+                      const SizedBox(height: 6),
+                      Text(
+                        auth.initError!,
+                        style: TextStyle(
+                          fontFamily: settings.fontFamily,
+                          fontSize: (settings.fontSize - 6)
+                              .clamp(11.0, 14.0).toDouble(),
+                          color: scheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
+                    const SizedBox(height: 10),
+                    Row(
+                      children: [
+                        OutlinedButton.icon(
+                          icon: const Icon(Icons.refresh, size: 16),
+                          label: Text(
+                            uiStrings['retry']?[locale] ?? 'Retry',
+                          ),
+                          onPressed: () async {
+                            final messenger = ScaffoldMessenger.of(context);
+                            await CloudAuthService.instance.retryInit();
+                            if (!context.mounted) return;
+                            if (CloudAuthService.instance.isConfigured) {
+                              messenger.showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    uiStrings['cloudInitOk']?[locale] ??
+                                        'Cloud sign-in restored.',
+                                  ),
+                                  duration: const Duration(seconds: 2),
+                                ),
+                              );
+                            }
+                          },
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
             ],
             Padding(
               padding: const EdgeInsets.only(top: 4),

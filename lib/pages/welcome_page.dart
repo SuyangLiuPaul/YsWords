@@ -51,6 +51,27 @@ class _WelcomePageState extends State<WelcomePage> {
     if (_busy) return;
     setState(() => _busy = true);
     final messenger = ScaffoldMessenger.of(context);
+    // Recover from a boot-time init failure: if Firebase is not yet
+    // configured but credentials are present, retry init once before
+    // attempting sign-in. Clears the most common transient failure
+    // (network blip during cold start) without making the user dig
+    // into Settings.
+    final auth = CloudAuthService.instance;
+    if (!auth.isConfigured && auth.hasFirebaseCredentials) {
+      await auth.retryInit();
+      if (!mounted) return;
+      if (!auth.isConfigured) {
+        setState(() => _busy = false);
+        messenger.showSnackBar(SnackBar(
+          content: Text(
+            auth.initError ??
+                'Cloud sign-in unavailable. Check your network and retry.',
+          ),
+          duration: const Duration(seconds: 4),
+        ));
+        return;
+      }
+    }
     final result = await CloudAuthService.instance
         .signInWithGoogleAndAdoptProfile();
     if (!mounted) return;
@@ -162,10 +183,16 @@ class _WelcomePageState extends State<WelcomePage> {
                     // firebase_options.dart setup. Otherwise the
                     // only "Sign in" option is the local-profile
                     // path further down.
-                    if (CloudAuthService.instance.isConfigured) ...[
+                    if (CloudAuthService.instance.isConfigured ||
+                        CloudAuthService.instance.hasFirebaseCredentials) ...[
                       // Google brand button — white background +
                       // multi-color G logo + slate text — matches
-                      // Google's web sign-in button guidelines.
+                      // Google's web sign-in button guidelines. When
+                      // hasFirebaseCredentials is true but
+                      // isConfigured is false, init failed at boot;
+                      // the button is enabled and a click triggers
+                      // retryInit() before falling through to sign-in
+                      // so a transient error doesn't block the user.
                       OutlinedButton(
                         onPressed: _busy ? null : _signInWithGoogle,
                         style: OutlinedButton.styleFrom(

@@ -28,15 +28,31 @@ class CloudAuthService extends ChangeNotifier {
 
   bool _ready = false;
   bool _configured = false;
+  String? _initError;
   User? _user;
 
   /// True once [init] has finished (regardless of success/failure).
   bool get ready => _ready;
 
   /// True only when both the Firebase config has real values and
-  /// `Firebase.initializeApp` succeeded. UIs should hide cloud
-  /// features when this is false.
+  /// `Firebase.initializeApp` succeeded. When false but
+  /// [firebaseConfigured] is true, [initError] explains why init
+  /// failed. UIs should still surface the Google sign-in affordance
+  /// (disabled, with [initError] as the reason + a Retry button) so
+  /// a transient init failure doesn't silently hide the whole
+  /// account section.
   bool get isConfigured => _configured;
+
+  /// Whether this build has Firebase project credentials filled in
+  /// (regardless of whether init succeeded). UIs use this to decide
+  /// whether to show the cloud-sync surface at all — if false, the
+  /// app is a local-only build and there's nothing to retry.
+  bool get hasFirebaseCredentials => firebaseConfigured;
+
+  /// Last error message from [init] (or [retryInit]). Null when
+  /// init succeeded. Format is whatever Firebase / dart:js threw —
+  /// surfaced to UI so the user can see *why* sign-in is disabled.
+  String? get initError => _initError;
 
   /// Currently signed-in cloud user, or null if not signed in
   /// (or Firebase isn't configured).
@@ -47,18 +63,34 @@ class CloudAuthService extends ChangeNotifier {
   /// from main(); on misconfiguration logs a debug message and
   /// returns without throwing.
   Future<void> init() async {
-    if (_ready) return;
+    if (_ready && _configured) return;
+    await _doInit();
+  }
+
+  /// Re-run init after a transient failure. Wired to a "Retry" button
+  /// on Settings so users aren't stuck if the first attempt failed
+  /// due to a network blip or a momentarily-revoked API key.
+  Future<void> retryInit() async {
+    _ready = false;
+    _configured = false;
+    _initError = null;
+    notifyListeners();
+    await _doInit();
+  }
+
+  Future<void> _doInit() async {
     try {
       if (!firebaseConfigured) {
         // Stub config — leave _configured false so the rest of the
         // app stays on local-only profiles. No network calls.
-        _ready = true;
+        _initError = null;
         return;
       }
       await Firebase.initializeApp(
         options: DefaultFirebaseOptions.web,
       );
       _configured = true;
+      _initError = null;
       _user = FirebaseAuth.instance.currentUser;
       // Reflect future sign-in / sign-out events into our notifier.
       FirebaseAuth.instance.userChanges().listen((u) {
@@ -66,8 +98,9 @@ class CloudAuthService extends ChangeNotifier {
         notifyListeners();
       });
     } catch (e, st) {
-      debugPrint('CloudAuthService.init failed: $e\n$st');
+      debugPrint('CloudAuthService._doInit failed: $e\n$st');
       _configured = false;
+      _initError = e.toString();
     } finally {
       _ready = true;
       notifyListeners();
