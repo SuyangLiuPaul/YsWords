@@ -34,3 +34,9 @@ assets/*.bak
 lib/**/*.bak
 
 functions/package-lock.json
+
+# Netlify Functions install their own deps locally; bundler picks
+# them up at deploy time. Keep node_modules out of git.
+netlify/functions/node_modules/
+netlify/functions/package-lock.json
+.netlify/

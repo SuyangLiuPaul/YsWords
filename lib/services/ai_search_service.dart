@@ -20,10 +20,19 @@ import 'package:http/http.dart' as http;
 /// .markUnavailable()` so callers can fall back to local search
 /// without surfacing a confusing error to non-technical users.
 class AiSearchService {
-  /// Production endpoint. Override with `--dart-define=AI_SEARCH_URL=...`
-  /// for emulator / staging.
-  static const String _defaultEndpoint =
-      'https://us-central1-ysword.cloudfunctions.net/aiSearch';
+  /// Production endpoint. Same-origin call to the Netlify Function
+  /// at `/api/aiSearch` (Netlify rewrites this to `/.netlify/
+  /// functions/aiSearch`). Same-origin means no CORS preflight.
+  ///
+  /// Override at build time via `--dart-define=AI_SEARCH_URL=...`
+  /// for emulator / staging — e.g. point at
+  /// `http://localhost:8888/.netlify/functions/aiSearch` when running
+  /// `netlify dev` locally.
+  ///
+  /// The legacy URL `https://us-central1-ysword.cloudfunctions.net/aiSearch`
+  /// was retired in round 52 — Cloud Functions required the Blaze
+  /// (pay-as-you-go) Firebase plan, which we opted not to enable.
+  static const String _defaultEndpoint = '/api/aiSearch';
 
   static const String endpoint = String.fromEnvironment(
     'AI_SEARCH_URL',
