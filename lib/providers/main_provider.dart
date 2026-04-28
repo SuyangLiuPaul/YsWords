@@ -198,6 +198,14 @@ class MainProvider extends ChangeNotifier {
     }
   }
 
+  // Static guard for the legacy-key migration in _loadHighlights.
+  // Without this, every cloud-sync pull re-runs migration → re-saves
+  // → re-triggers a cloud upload → next snapshot pull re-runs
+  // migration → infinite syncing/synced flash. We only ever need to
+  // migrate once per app session; after the first save the cloud
+  // copy gets normalized and subsequent loads are no-ops.
+  static bool _didMigrateHighlightKeys = false;
+
   Future<void> _loadHighlights() async {
     final prefs = await SharedPreferences.getInstance();
     // Reload from the active profile's namespace. Reset the in-memory
@@ -223,7 +231,8 @@ class MainProvider extends ChangeNotifier {
       out[normalized] = entry.value as int;
     }
     _highlights = out;
-    if (migrated && isPrimary) {
+    if (migrated && isPrimary && !_didMigrateHighlightKeys) {
+      _didMigrateHighlightKeys = true;
       _saveHighlights();
     }
   }
