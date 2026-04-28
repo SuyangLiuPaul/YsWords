@@ -410,33 +410,19 @@ class CloudSyncService extends ChangeNotifier {
   }
 
   /// Apply [remote] to local prefs while suppressing the cloud
-  /// upload listener for long enough that any async fire-and-forget
-  /// `_save*()` calls triggered by the resulting
-  /// `ProfileService.notifyListeners` (MainProvider's `_loadHighlights`
-  /// migration path is the canonical example) get absorbed by the
-  /// guard instead of escaping to the network.
+  /// upload listener so any fire-and-forget save kicked off by the
+  /// downstream `ProfileService.notifyListeners` get absorbed.
   ///
-  /// Without the trailing `Future.delayed`, the suppress flag was
-  /// reset before MainProvider's async listener chain finished, so
-  /// any save call kicked up a 600 ms debounced upload that fired
-  /// AFTER the suppress window — re-uploading data identical to what
-  /// we just received and triggering an endless syncing/synced
-  /// flash loop.
+  /// Note: the suppress flag is released as soon as the prefs writes
+  /// finish. The downstream `requestUpload` debounce timer also
+  /// re-checks the flag when it fires (see `requestUpload`), so even
+  /// a save that lands just after the flag flips back to false will
+  /// no-op if a fresh remote pull is in flight by then.
   Future<void> _applyRemoteSuppressed(Map<String, dynamic> remote) async {
     _suppressLocalListener = true;
     try {
       await _writeRemoteIntoLocal(remote);
-      // 800 ms is empirically enough for MainProvider._onProfileChanged
-      // to walk through _loadHighlights / _loadNotes / _loadBookmarks
-      // including any prefs-write side effects. Tune up if a heavier
-      // load chain ever races again.
-      await Future.delayed(const Duration(milliseconds: 800));
     } finally {
-      // Cancel any debounced upload that was scheduled while the
-      // suppress flag was set — even though requestUpload now
-      // re-checks the flag at fire time, cancelling here makes
-      // the cleanup explicit instead of relying on a race.
-      _debounce?.cancel();
       _suppressLocalListener = false;
     }
   }
