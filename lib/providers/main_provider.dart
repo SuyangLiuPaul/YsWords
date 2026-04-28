@@ -178,16 +178,24 @@ class MainProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  // Fire-and-forget local save. Errors from SharedPreferences are
+  // exceedingly rare (quota / corrupt platform store) but we still
+  // surface them via debugPrint so a regression is visible in the
+  // browser console rather than silently swallowed.
   void _saveHighlights() async {
-    final prefs = await SharedPreferences.getInstance();
-    // Profile-scoped — different signed-in users keep their own
-    // annotations even when they share the same browser. Both
-    // split-view panes share the same profile so they still see
-    // the same set.
-    prefs.setString(
-        ProfileService.instance.scopedKey('highlights'),
-        jsonEncode(_highlights));
-    CloudSyncService.instance.requestUpload();
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      // Profile-scoped — different signed-in users keep their own
+      // annotations even when they share the same browser. Both
+      // split-view panes share the same profile so they still see
+      // the same set.
+      await prefs.setString(
+          ProfileService.instance.scopedKey('highlights'),
+          jsonEncode(_highlights));
+      CloudSyncService.instance.requestUpload();
+    } catch (e, st) {
+      debugPrint('MainProvider._saveHighlights failed: $e\n$st');
+    }
   }
 
   Future<void> _loadHighlights() async {
@@ -270,10 +278,14 @@ class MainProvider extends ChangeNotifier {
   }
 
   void _saveNotes() async {
-    final prefs = await SharedPreferences.getInstance();
-    prefs.setString(ProfileService.instance.scopedKey('verseNotes'),
-        jsonEncode(_verseNotes));
-    CloudSyncService.instance.requestUpload();
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(ProfileService.instance.scopedKey('verseNotes'),
+          jsonEncode(_verseNotes));
+      CloudSyncService.instance.requestUpload();
+    } catch (e, st) {
+      debugPrint('MainProvider._saveNotes failed: $e\n$st');
+    }
   }
 
   Future<void> _loadNotes() async {
@@ -289,10 +301,14 @@ class MainProvider extends ChangeNotifier {
   }
 
   void _saveBookmarks() async {
-    final prefs = await SharedPreferences.getInstance();
-    prefs.setStringList(ProfileService.instance.scopedKey('bookmarks'),
-        _bookmarks.toList());
-    CloudSyncService.instance.requestUpload();
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setStringList(ProfileService.instance.scopedKey('bookmarks'),
+          _bookmarks.toList());
+      CloudSyncService.instance.requestUpload();
+    } catch (e, st) {
+      debugPrint('MainProvider._saveBookmarks failed: $e\n$st');
+    }
   }
 
   Future<void> _loadBookmarks() async {

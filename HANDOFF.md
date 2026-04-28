@@ -1,6 +1,6 @@
 # YsWords — AI Agent Handoff Document
 
-> Last updated: 2026-04-27
+> Last updated: 2026-04-28
 > Project: YsWords (Yahweh's Words) — bilingual Bible reader
 > Stack: Flutter 3.41.7 / Dart 3.11.5 / Provider + GetX
 > Repo: https://github.com/SuyangLiuPaul/YsWords
@@ -1223,6 +1223,132 @@ Paragraph mode was shipped but felt loose compared to WeDevote 微读圣经. Ret
 ---
 
 ## Recent Work (Round 18 — 2026-04-27, multiple deploys)
+
+### Round 35 (sync, cross-refs, AI search, typography — 2026-04-28)
+
+Multi-batch wave responding to a string of user-reported issues:
+sync hangs, missing cross-references, AI Search "minified: td"
+error, leaked Gemini keys in a sibling repo, and Windows web
+typography issues in the Statistics page. Also includes
+multi-repo work on bible-evidence and DailyNews companion sites.
+
+**Batch A — cloud sync visibility**
+
+- `lib/services/cloud_sync_service.dart`: added `_lastSyncedAt`
+  + `_kLastSyncedAt` SharedPreferences key, public `syncNow()`
+  method, 15s `.timeout()` on every Firestore `set()` so a
+  stuck connection surfaces as a real error instead of a forever
+  spinner. New `_firstPullAfterSignIn` flag drives a one-time
+  local→cloud merge so users with offline annotations don't lose
+  them on first sign-in.
+- `lib/widgets/profile_avatar.dart` (new): shared widget with
+  `photoUrl → dataUrl → initial` fallback chain. Used in the
+  AppBar trailing icon, the Settings account card, and the
+  drawer header — all three surfaces now stay in sync.
+- `lib/pages/settings_page.dart`: "Sync now" button shows a
+  `CircularProgressIndicator` while the upload-pending future
+  is in flight, last-synced timestamp underneath, and a `SnackBar`
+  on failure with the actual error message.
+
+**Batch B — cross-references rebuild**
+
+- `assets/cross_references.json`: regenerated from the public-
+  domain OpenBible.info Treasury of Scripture Knowledge dataset
+  (CC-BY 4.0). Result: 4.3 MB, 29,318 source verses, all 66
+  books covered. Previous file had patchy coverage with many
+  empty results.
+- `scripts/build_cross_references.py` (new): converts OpenBible
+  TSK rows to YsWords' format (`{book, chapter, verse}` array)
+  with same-book range collapsing ("Genesis 1:1-3" instead of
+  three separate keys).
+- `lib/services/cross_reference_service.dart`: `forVerseOrNearby`
+  now MERGES nearby refs by distance, capped at 12 — was
+  returning only the first nearby key's refs and discarding the
+  rest, which made many verses feel sparse.
+- `test/cross_references_test.dart` (new): 5 tests pinning
+  coverage + lookup heuristics so a future regen can't silently
+  collapse coverage.
+
+**Batch C — AI search Netlify migration**
+
+- `lib/services/ai_search_service.dart`: replaced
+  `${e.runtimeType}` (which minified to "td" in release builds)
+  with explicit `AiSearchResult.unavailable(reason)` factory.
+  Default endpoint is now same-origin `/api/aiSearch` (no CORS
+  preflight, no client-side key).
+- `lib/pages/evidence_page.dart`: `_AiSearchDialog` falls back to
+  local `BibleEvidenceService.search()` if the AI endpoint is
+  unavailable so users still see relevant entries when the proxy
+  is down.
+- Cloud Functions was the original plan but Firebase requires
+  the Blaze (paid) plan. Pivoted to Netlify Functions (free
+  tier). The same-origin `/api/aiSearch` endpoint reads
+  `GEMINI_API_KEYS` (comma-separated, server-side only) and
+  rotates on 429/403.
+
+**Batch D — splash verse + dashboard alignment**
+
+- `lib/pages/loading_page.dart`: `_resolveDailyVerseForSplash()`
+  now waits for `MainProvider.verses` to populate (1.2s timer
+  fallback to a random verse if the load is slow). The splash
+  now matches the Dashboard's "Verse of the Day" exactly so
+  users don't see two different verses on cold start.
+
+**Batch E — typography pass for Windows web**
+
+User reported the Statistics → Overview tab had unreadably
+small text on Windows. Root cause: `DataTable` columns/cells
+had no explicit `TextStyle`, defaulting to ~13pt regardless of
+the user's font-size setting. Audited every page for the same
+problem.
+
+- `lib/pages/stats_page.dart`: `_SectionHeader` now scales with
+  `settings.fontSize`. Every `DataTable` got explicit
+  `headerStyle` / `cellStyle` derived from font-size with
+  sensible clamps.
+- `lib/pages/library_page.dart`, `dashboard_page.dart`,
+  `daily_news_page.dart`, `news_detail_page.dart`,
+  `evidence_page.dart`, `settings_page.dart`: bulk raised the
+  smallest text floor from 10pt → 11pt and ensured every
+  `Text` widget reads from `settings.fontFamily / fontSize`.
+
+**Batch F — robustness polish**
+
+- `lib/providers/main_provider.dart`: `_saveHighlights` /
+  `_saveNotes` / `_saveBookmarks` wrapped in try/catch with
+  `debugPrint` so a SharedPreferences regression surfaces in
+  the browser console instead of being silently swallowed.
+- All `.first` accesses on potentially-empty `matches` lists in
+  cross-link navigation (`dashboard_page.dart:711`,
+  `library_page.dart:625`, `news_detail_page.dart:319`) verified
+  to have `if (matches.isEmpty) return;` guards.
+
+**Companion-repo work (same session)**
+
+- **bible-evidence** (`/Users/pliu0036/Documents/CodingProject/bible-evidence`):
+  stripped 5 hardcoded Gemini keys leaked in commit `cb7ebf14`,
+  replaced with same-origin Netlify Function proxy
+  (`netlify/functions/aiSearch.mjs`). Restored as a standalone
+  site (the iOS PWA was redirecting to YsWords because of an
+  old VitePWA service worker — fixed with a kill-switch SW).
+  Added scroll-aware compact filter bar, ported 192/209 working
+  Wikipedia URLs from YsWords, generated full PWA icon set
+  (favicon, apple-touch, pwa-192/512, maskable, mstile, og-image).
+- **DailyNews** (`/Users/pliu0036/Documents/CodingProject/DailyNews`):
+  PWA install button was missing because `public/manifest.json`,
+  `public/sw.js`, and the icon PNGs were untracked. Committed
+  them and pushed.
+- **Cross-app contact line**: unified "Made by Paul Liu ·
+  Questions, feedback, or anything else: paul.sy.liu@gmail.com"
+  in YsWords (`lib/widgets/contact_line.dart`), bible-evidence
+  (`src/App.tsx`), DailyNews (`Layout.astro`), and SmartHome
+  (`SmartHomeDashboard.jsx`).
+
+**Action item for the user (cannot be automated):** rotate /
+revoke the 5 Gemini API keys leaked in bible-evidence commit
+`cb7ebf14` via Google Cloud Console. The git-history rewrite
+was rejected (would require force-push on a public repo) — the
+keys are only safe once revoked at the source.
 
 ### Round 34 (daily verse + UX polish wave — 2026-04-28)
 
