@@ -16,7 +16,7 @@
       "Strong": 90,
       "Circumstantial": 39
     },
-    "generatedAt": "2026-04-28T01:56:42.336065+00:00"
+    "generatedAt": "2026-04-28T02:11:13.727799+00:00"
   },
   "evidences": [
     {
@@ -39,7 +39,7 @@
         "Israel Antiquities Authority. The Leon Levy Dead Sea Scrolls Digital Library."
       ],
       "confidenceLevel": "Definitive",
-      "icon": "ð",
+      "icon": "📜",
       "title": {
         "en": "Dead Sea Scrolls",
         "zh-Hans": "死海古卷",
@@ -81,7 +81,7 @@
         "Dever, William G. What Did the Biblical Writers Know and When Did They Know It? Eerdmans, 2001."
       ],
       "confidenceLevel": "Strong",
-      "icon": "ðª¨",
+      "icon": "🪨",
       "title": {
         "en": "Tel Dan Stele",
         "zh-Hans": "但以理石碑",
@@ -123,7 +123,7 @@
         "Smallwood, E. Mary. The Jews Under Roman Rule. Brill, 1976."
       ],
       "confidenceLevel": "Definitive",
-      "icon": "ðï¸",
+      "icon": "🏛️",
       "title": {
         "en": "Pilate Inscription",
         "zh-Hans": "彼拉多铭刻",
@@ -165,7 +165,7 @@
         "Reich, Ronny, and Eli Shukron. \"Light at the End of the Tunnel.\" Biblical Archaeology Review 25 (1999): 22â33."
       ],
       "confidenceLevel": "Definitive",
-      "icon": "âï¸",
+      "icon": "⛏️",
       "title": {
         "en": "Hezekiah's Tunnel",
         "zh-Hans": "希西家水道",
@@ -206,7 +206,7 @@
         "Tov, Emanuel. Textual Criticism of the Hebrew Bible. 3rd ed. Fortress Press, 2012."
       ],
       "confidenceLevel": "Definitive",
-      "icon": "ð¿",
+      "icon": "📿",
       "title": {
         "en": "Ketef Hinnom Silver Scrolls",
         "zh-Hans": "基特夫·欣嫩银卷",
@@ -247,7 +247,7 @@
         "Briant, Pierre. From Cyrus to Alexander. Eisenbrauns, 2002."
       ],
       "confidenceLevel": "Strong",
-      "icon": "ðº",
+      "icon": "🏺",
       "title": {
         "en": "Cyrus Cylinder",
         "zh-Hans": "古列圆柱",
@@ -290,7 +290,7 @@
         "Collins, Billie Jean. The Hittites and Their World. Society of Biblical Literature, 2007."
       ],
       "confidenceLevel": "Definitive",
-      "icon": "ð¿",
+      "icon": "🗿",
       "title": {
         "en": "Hittite Empire",
         "zh-Hans": "赫梯帝国",
@@ -330,7 +330,7 @@
         "Shanks, Hershel. \"The Siloam Pool: Where Jesus Cured the Blind Man.\" BAR 31.5 (2005): 16â23."
       ],
       "confidenceLevel": "Definitive",
-      "icon": "ð§",
+      "icon": "💧",
       "title": {
         "en": "Pool of Siloam",
         "zh-Hans": "西罗亚池",
@@ -371,7 +371,7 @@
         "Smelik, K. A. D. \"The Inscription of King Mesha.\" COS 2 (2000): 137â138."
       ],
       "confidenceLevel": "Definitive",
-      "icon": "ðª¨",
+      "icon": "🪨",
       "title": {
         "en": "Mesha Stele",
         "zh-Hans": "米沙石碑",
@@ -413,7 +413,7 @@
         "Gallagher, William R. Sennacherib's Campaign to Judah. Brill, 1999."
       ],
       "confidenceLevel": "Definitive",
-      "icon": "ð",
+      "icon": "📐",
       "title": {
         "en": "Sennacherib Prism",
         "zh-Hans": "西拿基立棱柱",
@@ -455,7 +455,7 @@
         "Mazar, Amihai. Archaeology of the Land of the Bible. Doubleday, 1990."
       ],
       "confidenceLevel": "Definitive",
-      "icon": "ðï¸",
+      "icon": "🏛️",
       "title": {
         "en": "Shishak Relief at Karnak",
         "zh-Hans": "卡纳克示撒浮雕",
@@ -497,7 +497,7 @@
         "Tadmor, Hayim. \"The Black Obelisk and Israelite History.\" IEJ 18 (1968): 46â51."
       ],
       "confidenceLevel": "Definitive",
-      "icon": "ð¿",
+      "icon": "🗿",
       "title": {
         "en": "Black Obelisk of Shalmaneser III",
         "zh-Hans": "撒缦以色三世黑色方尖碑",
@@ -539,7 +539,7 @@
         "Greenhut, Zvi. \"Burial Cave of the Caiaphas Family.\" BAR 18.5 (1992): 29â36."
       ],
       "confidenceLevel": "Strong",
-      "icon": "â±ï¸",
+      "icon": "⚱️",
       "title": {
         "en": "Caiaphas Ossuary",
         "zh-Hans": "该亚法骨灰罐",
@@ -580,7 +580,7 @@
         "Charlesworth, James H. Jesus and Archaeology. Eerdmans, 2006."
       ],
       "confidenceLevel": "Definitive",
-      "icon": "âï¸",
+      "icon": "✝️",
       "title": {
         "en": "Yehohanan Crucifixion Evidence",
         "zh-Hans": "耶何哈南钉十字架遗骨",
@@ -621,7 +621,7 @@
         "Levine, Lee I. The Ancient Synagogue. Yale University Press, 2000."
       ],
       "confidenceLevel": "Definitive",
-      "icon": "ðï¸",
+      "icon": "🏛️",
       "title": {
         "en": "Temple Warning Inscription",
         "zh-Hans": "圣殿警告铭文",
@@ -662,7 +662,7 @@
         "King, Philip J., and Lawrence E. Stager. Life in Biblical Israel. Westminster John Knox, 2001."
       ],
       "confidenceLevel": "Strong",
-      "icon": "ð",
+      "icon": "📋",
       "title": {
         "en": "Gezer Calendar",
         "zh-Hans": "基色历",
@@ -703,7 +703,7 @@
         "Ussishkin, David. The Conquest of Lachish by Sennacherib. Tel Aviv University Press, 1982."
       ],
       "confidenceLevel": "Definitive",
-      "icon": "ð",
+      "icon": "📜",
       "title": {
         "en": "Lachish Letters",
         "zh-Hans": "拉吉书信",
@@ -742,7 +742,7 @@
         "Hackett, Jo Ann. The Balaam Text from Deir 'AllÄ. Scholars Press, 1984."
       ],
       "confidenceLevel": "Strong",
-      "icon": "ð",
+      "icon": "📝",
       "title": {
         "en": "Balaam Inscription (Deir Alla)",
         "zh-Hans": "巴兰铭文（底尔阿拉）",
@@ -785,7 +785,7 @@
         "Strange, James F., and Hershel Shanks. \"Synagogue Where Jesus Preached Found at Capernaum.\" BAR 9.6 (1983): 24â31."
       ],
       "confidenceLevel": "Definitive",
-      "icon": "ð",
+      "icon": "🕍",
       "title": {
         "en": "Capernaum Synagogue",
         "zh-Hans": "迦百农犹太会堂",
@@ -827,7 +827,7 @@
         "McRay, John. Archaeology and the New Testament. Baker Academic, 1991."
       ],
       "confidenceLevel": "Strong",
-      "icon": "ð ",
+      "icon": "🏠",
       "title": {
         "en": "House of Peter, Capernaum",
         "zh-Hans": "迦百农彼得之家",
@@ -866,7 +866,7 @@
         "Finegan, Jack. The Archaeology of the New Testament. Princeton University Press, 1992."
       ],
       "confidenceLevel": "Strong",
-      "icon": "ðª¨",
+      "icon": "🪨",
       "title": {
         "en": "Nazareth Inscription",
         "zh-Hans": "拿撒勒铭文",
@@ -907,7 +907,7 @@
         "Bienkowski, Piotr. Jericho in the Late Bronze Age. Aris & Phillips, 1986."
       ],
       "confidenceLevel": "Circumstantial",
-      "icon": "ð°",
+      "icon": "🏰",
       "title": {
         "en": "Jericho Walls",
         "zh-Hans": "耶利哥城墙",
@@ -948,7 +948,7 @@
         "Silvia, Phillip J. \"The Middle Bronze Age Civilization-Ending Destruction of the Middle Ghor.\" NEAS (2015)."
       ],
       "confidenceLevel": "Circumstantial",
-      "icon": "ð¥",
+      "icon": "🔥",
       "title": {
         "en": "Tall el-Hammam Cosmic Airburst",
         "zh-Hans": "特尔哈曼宇宙空爆",
@@ -988,7 +988,7 @@
         "Shanks, Hershel. \"Jeremiah's Scribe and Confidant Speaks from a Hoard of Clay Seals.\" BAR 13.5 (1987)."
       ],
       "confidenceLevel": "Strong",
-      "icon": "ð",
+      "icon": "🔏",
       "title": {
         "en": "Baruch's Seal Impression",
         "zh-Hans": "巴录的印章",
@@ -1028,7 +1028,7 @@
         "Israel Antiquities Authority. \"First Seal Impression Bearing the Name Bethlehem Found.\" Press Release, 2012."
       ],
       "confidenceLevel": "Definitive",
-      "icon": "ð",
+      "icon": "📋",
       "title": {
         "en": "Ancient Bethlehem Bulla",
         "zh-Hans": "古代伯利恒泥印",
@@ -1069,7 +1069,7 @@
         "Barnett, Richard D., et al. Sculptures from the South-West Palace of Sennacherib at Nineveh. British Museum, 1998."
       ],
       "confidenceLevel": "Definitive",
-      "icon": "ðº",
+      "icon": "🏺",
       "title": {
         "en": "Sennacherib's Lachish Campaign",
         "zh-Hans": "西拿基立的拉吉战役浮雕",
@@ -1109,7 +1109,7 @@
         "Winter, Irene. \"Is There a South Syrian Style?\" Iraq 43 (1981): 101â130."
       ],
       "confidenceLevel": "Definitive",
-      "icon": "ð",
+      "icon": "🐘",
       "title": {
         "en": "Ahab's Ivory House",
         "zh-Hans": "亚哈的象牙宫",
@@ -1149,7 +1149,7 @@
         "Duprez, Antoine. JÃ©sus et les dieux guÃ©risseurs. Gabalda, 1970."
       ],
       "confidenceLevel": "Definitive",
-      "icon": "ð§",
+      "icon": "💧",
       "title": {
         "en": "Bethesda's Five Porticoes",
         "zh-Hans": "毕士大池的五道廊子",
@@ -1189,7 +1189,7 @@
         "Zapata-Meza, Marcela. \"The Magdala Stone.\" BAR 43.2 (2017)."
       ],
       "confidenceLevel": "Definitive",
-      "icon": "ð",
+      "icon": "🕍",
       "title": {
         "en": "First-Century Magdala Synagogue",
         "zh-Hans": "公元一世纪抹大拉会堂",
@@ -1231,7 +1231,7 @@
         "Hoffmeier, James K. Israel in Egypt. Oxford University Press, 1997."
       ],
       "confidenceLevel": "Definitive",
-      "icon": "ðï¸",
+      "icon": "🏛️",
       "title": {
         "en": "Israel's Earliest Mention",
         "zh-Hans": "以色列最早的提及",
@@ -1272,7 +1272,7 @@
         "Hendel, Ronald S. \"The Siloam Tunnel Inscription.\" COS 2 (2000): 145â146."
       ],
       "confidenceLevel": "Definitive",
-      "icon": "ð",
+      "icon": "📝",
       "title": {
         "en": "Hezekiah's Tunnel Inscription",
         "zh-Hans": "希西家隧道的铭文",
@@ -1313,7 +1313,7 @@
         "Mazar, Amihai. Archaeology of the Land of the Bible. Doubleday, 1990."
       ],
       "confidenceLevel": "Strong",
-      "icon": "ð¥",
+      "icon": "🔥",
       "title": {
         "en": "Hazor's Fiery Destruction Confirmed",
         "zh-Hans": "夏琐城毁灭",
@@ -1361,7 +1361,7 @@
         "Reich, Ronny, and Eli Shukron. \"The History of the Gihon Spring.\" ADAJ 49 (2005)."
       ],
       "confidenceLevel": "Definitive",
-      "icon": "ðï¸",
+      "icon": "🏙️",
       "title": {
         "en": "City of David Excavations",
         "zh-Hans": "大卫城考古发掘",
@@ -1401,7 +1401,7 @@
         "Cogan, Mordechai. \"Tiglath-Pileser III.\" COS 2 (2000): 284â292."
       ],
       "confidenceLevel": "Definitive",
-      "icon": "ð",
+      "icon": "📋",
       "title": {
         "en": "Tiglath-Pileser III Annals",
         "zh-Hans": "提革拉·毗列色三世年鉴",
@@ -1442,7 +1442,7 @@
         "Aland, Kurt, and Barbara Aland. The Text of the New Testament. Eerdmans, 1987."
       ],
       "confidenceLevel": "Definitive",
-      "icon": "ð",
+      "icon": "📜",
       "title": {
         "en": "Rylands Papyrus P52",
         "zh-Hans": "赖兰纸莎草残片P52",
@@ -1482,7 +1482,7 @@
         "Comfort, Philip W. New Testament Text and Translation Commentary. Tyndale, 2008."
       ],
       "confidenceLevel": "Definitive",
-      "icon": "ð",
+      "icon": "📜",
       "title": {
         "en": "Chester Beatty Papyri",
         "zh-Hans": "切斯特·比替纸莎草文献",
@@ -1521,7 +1521,7 @@
         "Codex Sinaiticus Project. codexsinaiticus.org."
       ],
       "confidenceLevel": "Definitive",
-      "icon": "ð",
+      "icon": "📗",
       "title": {
         "en": "Codex Sinaiticus",
         "zh-Hans": "西乃抄本",
@@ -1561,7 +1561,7 @@
         "Metzger, Bruce M. The Text of the New Testament. Oxford University Press, 1992."
       ],
       "confidenceLevel": "Definitive",
-      "icon": "ð",
+      "icon": "📗",
       "title": {
         "en": "Codex Vaticanus",
         "zh-Hans": "梵蒂冈抄本",
@@ -1600,7 +1600,7 @@
         "Albright, William F. \"A Biblical Fragment from the Maccabaean Age.\" JBL 56 (1937): 145â176."
       ],
       "confidenceLevel": "Definitive",
-      "icon": "ð",
+      "icon": "📜",
       "title": {
         "en": "Nash Papyrus",
         "zh-Hans": "纳什纸莎草",
@@ -1640,7 +1640,7 @@
         "Ben-Zvi, Izhak. \"The Codex of Ben Asher.\" Textus 1 (1960): 1â16."
       ],
       "confidenceLevel": "Definitive",
-      "icon": "ð",
+      "icon": "📗",
       "title": {
         "en": "Aleppo Codex",
         "zh-Hans": "阿勒颇抄本",
@@ -1680,7 +1680,7 @@
         "Tov, Emanuel. Textual Criticism of the Hebrew Bible. Fortress Press, 2012."
       ],
       "confidenceLevel": "Definitive",
-      "icon": "ð",
+      "icon": "📗",
       "title": {
         "en": "Leningrad Codex",
         "zh-Hans": "列宁格勒抄本",
@@ -1721,7 +1721,7 @@
         "Porten, Bezalel. Archives from Elephantine. University of California Press, 1968."
       ],
       "confidenceLevel": "Strong",
-      "icon": "ð",
+      "icon": "📜",
       "title": {
         "en": "Elephantine Papyri",
         "zh-Hans": "象岛纸莎草文献",
@@ -1761,7 +1761,7 @@
         "Lefkovits, Judah K. The Copper Scroll. Brill, 2000."
       ],
       "confidenceLevel": "Strong",
-      "icon": "ð©",
+      "icon": "🔩",
       "title": {
         "en": "Copper Scroll",
         "zh-Hans": "铜卷",
@@ -1802,7 +1802,7 @@
         "Maier, Johann. The Temple Scroll. JSOT Press, 1985."
       ],
       "confidenceLevel": "Strong",
-      "icon": "ð",
+      "icon": "📜",
       "title": {
         "en": "Temple Scroll",
         "zh-Hans": "圣殿卷轴",
@@ -1842,7 +1842,7 @@
         "Head, Peter M. \"The Date of the Magdalen Papyrus of Matthew.\" TynBul 46 (1995): 251â285."
       ],
       "confidenceLevel": "Strong",
-      "icon": "ð",
+      "icon": "📜",
       "title": {
         "en": "Magdalen Papyrus",
         "zh-Hans": "马大拉纸莎草残片 (P64)",
@@ -1883,7 +1883,7 @@
         "Comfort, Philip W. New Testament Text and Translation Commentary. Tyndale, 2008."
       ],
       "confidenceLevel": "Definitive",
-      "icon": "ð",
+      "icon": "📚",
       "title": {
         "en": "Greek New Testament Manuscripts",
         "zh-Hans": "希腊文新约手稿",
@@ -1924,7 +1924,7 @@
         "Comfort, Philip W. Encountering the Manuscripts. Broadman & Holman, 2005."
       ],
       "confidenceLevel": "Definitive",
-      "icon": "ð",
+      "icon": "📜",
       "title": {
         "en": "Bodmer Papyri",
         "zh-Hans": "鲍德默纸莎草文献",
@@ -1964,7 +1964,7 @@
         "Skeat, T. C. \"The Provenance of the Codex Alexandrinus.\" JTS 6 (1955): 233â235."
       ],
       "confidenceLevel": "Definitive",
-      "icon": "ð",
+      "icon": "📗",
       "title": {
         "en": "Codex Alexandrinus Manuscript",
         "zh-Hans": "亚历山大抄本",
@@ -2004,7 +2004,7 @@
         "Reif, Stefan C. A Jewish Archive from Old Cairo. Curzon Press, 2000."
       ],
       "confidenceLevel": "Definitive",
-      "icon": "ð",
+      "icon": "📚",
       "title": {
         "en": "Cairo Genizah Fragments",
         "zh-Hans": "开罗格尼扎残片",
@@ -2042,7 +2042,7 @@
         "Yadin, Yigael. Bar-Kokhba. Random House, 1971."
       ],
       "confidenceLevel": "Definitive",
-      "icon": "ð",
+      "icon": "📜",
       "title": {
         "en": "Wadi Murabba'at Scrolls",
         "zh-Hans": "穆拉巴特洞穴古卷",
@@ -2082,7 +2082,7 @@
         "Comfort, Philip W. Encountering the Manuscripts. Broadman & Holman, 2005."
       ],
       "confidenceLevel": "Strong",
-      "icon": "ð",
+      "icon": "📜",
       "title": {
         "en": "Oxyrhynchus Papyri Fragments",
         "zh-Hans": "奥克西林库斯纸莎草残片",
@@ -2122,7 +2122,7 @@
         "Metzger, Bruce M. Early Versions of the New Testament. Oxford University Press, 1977."
       ],
       "confidenceLevel": "Strong",
-      "icon": "ð",
+      "icon": "📖",
       "title": {
         "en": "Peshitta Syriac Translation",
         "zh-Hans": "别西大叙利亚文译本",
@@ -2163,7 +2163,7 @@
         "Duhaime, Jean. \"War Scroll.\" EDSS 2 (2000): 965â977."
       ],
       "confidenceLevel": "Strong",
-      "icon": "âï¸",
+      "icon": "⚔️",
       "title": {
         "en": "Qumran War Scroll",
         "zh-Hans": "昆兰《战争古卷》",
@@ -2203,7 +2203,7 @@
         "Tov, Emanuel. The Text-Critical Use of the Septuagint in Biblical Research. Eisenbrauns, 1997."
       ],
       "confidenceLevel": "Definitive",
-      "icon": "ð",
+      "icon": "📜",
       "title": {
         "en": "Septuagint Greek Translation",
         "zh-Hans": "七十士译本（希腊文）",
@@ -2243,7 +2243,7 @@
         "Talmon, Shemaryahu. Masada VI: The Yigael Yadin Excavations. Israel Exploration Society, 1999."
       ],
       "confidenceLevel": "Definitive",
-      "icon": "ð",
+      "icon": "📜",
       "title": {
         "en": "Masada Biblical Scrolls",
         "zh-Hans": "马萨达圣经卷轴",
@@ -2285,7 +2285,7 @@
         "Whealey, Alice. Josephus on Jesus. Peter Lang, 2003."
       ],
       "confidenceLevel": "Strong",
-      "icon": "ð",
+      "icon": "📜",
       "title": {
         "en": "Josephus on Jesus",
         "zh-Hans": "约瑟夫论耶稣",
@@ -2326,7 +2326,7 @@
         "Chilton, Bruce, and Craig Evans. James the Just and Christian Origins. Brill, 1999."
       ],
       "confidenceLevel": "Definitive",
-      "icon": "ð",
+      "icon": "📜",
       "title": {
         "en": "Josephus on James",
         "zh-Hans": "约瑟夫论雅各",
@@ -2367,7 +2367,7 @@
         "Theissen, Gerd, and Annette Merz. The Historical Jesus. SCM Press, 1998."
       ],
       "confidenceLevel": "Definitive",
-      "icon": "ð",
+      "icon": "📜",
       "title": {
         "en": "Tacitus on Christians",
         "zh-Hans": "塔西佗论基督徒",
@@ -2407,7 +2407,7 @@
         "Wilken, Robert L. The Christians as the Romans Saw Them. Yale University Press, 1984."
       ],
       "confidenceLevel": "Definitive",
-      "icon": "ð",
+      "icon": "📜",
       "title": {
         "en": "Pliny on Christian Practices",
         "zh-Hans": "小普林尼论基督徒习俗",
@@ -2447,7 +2447,7 @@
         "Riesner, Rainer. Paul's Early Period. Eerdmans, 1998."
       ],
       "confidenceLevel": "Strong",
-      "icon": "ð",
+      "icon": "📜",
       "title": {
         "en": "Suetonius on Claudius' Edict",
         "zh-Hans": "苏埃托尼乌斯论革老丢的敕令",
@@ -2487,7 +2487,7 @@
         "Van Voorst, Robert E. Jesus Outside the New Testament. Eerdmans, 2000."
       ],
       "confidenceLevel": "Circumstantial",
-      "icon": "ð",
+      "icon": "📜",
       "title": {
         "en": "Mara Bar Serapion Letter",
         "zh-Hans": "马拉·巴·塞拉皮翁书信",
@@ -2528,7 +2528,7 @@
         "Grayson, A. K. Assyrian and Babylonian Chronicles. J. J. Augustin, 1975."
       ],
       "confidenceLevel": "Definitive",
-      "icon": "ð",
+      "icon": "📋",
       "title": {
         "en": "Babylonian Chronicles Judah",
         "zh-Hans": "巴比伦编年史与犹大",
@@ -2568,7 +2568,7 @@
         "Grayson, A. K. Assyrian and Babylonian Chronicles. J. J. Augustin, 1975."
       ],
       "confidenceLevel": "Definitive",
-      "icon": "ð",
+      "icon": "📋",
       "title": {
         "en": "Nabonidus Chronicle Confirms Daniel",
         "zh-Hans": "拿波尼度编年史证实但以理书",
@@ -2609,7 +2609,7 @@
         "Rainey, Anson F. The El-Amarna Correspondence. Brill, 2015."
       ],
       "confidenceLevel": "Strong",
-      "icon": "ð",
+      "icon": "📋",
       "title": {
         "en": "Amarna Letters Detail Canaan",
         "zh-Hans": "亚玛拿书信详述迦南",
@@ -2650,7 +2650,7 @@
         "Freedman, David Noel, ed. Anchor Bible Dictionary. Vol. 4. Doubleday, 1992."
       ],
       "confidenceLevel": "Strong",
-      "icon": "ð",
+      "icon": "📋",
       "title": {
         "en": "Mari Tablets Illuminate Patriarchal Era",
         "zh-Hans": "马里泥版文书阐明列祖时代",
@@ -2688,7 +2688,7 @@
         "Thompson, Thomas L. The Historicity of the Patriarchal Narratives. De Gruyter, 1974."
       ],
       "confidenceLevel": "Strong",
-      "icon": "ð",
+      "icon": "📋",
       "title": {
         "en": "Nuzi Tablets Confirm Genesis Customs",
         "zh-Hans": "努兹泥版文书证实创世记习俗",
@@ -2728,7 +2728,7 @@
         "Smith, Mark S. The Origins of Biblical Monotheism. Oxford University Press, 2001."
       ],
       "confidenceLevel": "Strong",
-      "icon": "ð",
+      "icon": "📋",
       "title": {
         "en": "Ugaritic Texts Illuminate Canaanite Religion",
         "zh-Hans": "乌加里特文献阐明迦南宗教",
@@ -2768,7 +2768,7 @@
         "Cogan, Mordechai, and Hayim Tadmor. II Kings. Anchor Bible. Doubleday, 1988."
       ],
       "confidenceLevel": "Definitive",
-      "icon": "ð",
+      "icon": "📋",
       "title": {
         "en": "Esarhaddon Prism Confirms Sennacherib's Death",
         "zh-Hans": "以撒哈顿棱柱证实西拿基立之死",
@@ -2808,7 +2808,7 @@
         "Millard, Alan. \"A New Babylonian Genesis Story.\" TynBul 18 (1967): 3â18."
       ],
       "confidenceLevel": "Strong",
-      "icon": "ð",
+      "icon": "📋",
       "title": {
         "en": "Gilgamesh Flood Tablet Parallels Genesis",
         "zh-Hans": "吉尔伽美什洪水泥版文书与创世记平行",
@@ -2849,7 +2849,7 @@
         "Bright, John. A History of Israel. Westminster John Knox Press, 2000."
       ],
       "confidenceLevel": "Definitive",
-      "icon": "ð",
+      "icon": "📋",
       "title": {
         "en": "Nebuchadnezzar Chronicles Confirm Jerusalem Siege",
         "zh-Hans": "尼布甲尼撒编年史证实耶路撒冷围城",
@@ -2889,7 +2889,7 @@
         "Millar, Fergus. The Emperor in the Roman World. Duckworth, 1977."
       ],
       "confidenceLevel": "Strong",
-      "icon": "ð",
+      "icon": "📋",
       "title": {
         "en": "Roman Census Supports Luke's Account",
         "zh-Hans": "罗马人口普查支持路加福音记载",
@@ -2929,7 +2929,7 @@
         "Yadin, Yigael. \"Expedition D â Cave of Letters.\" IEJ 12 (1962): 227â257."
       ],
       "confidenceLevel": "Definitive",
-      "icon": "ð",
+      "icon": "📜",
       "title": {
         "en": "Bar Kokhba Letters Detail Revolt",
         "zh-Hans": "巴尔·科赫巴书信详述起义",
@@ -2969,7 +2969,7 @@
         "Hoffmeier, James K. Israel in Egypt. Oxford University Press, 1997."
       ],
       "confidenceLevel": "Circumstantial",
-      "icon": "ð",
+      "icon": "📜",
       "title": {
         "en": "Ipuwer Papyrus Reflects Egyptian Chaos",
         "zh-Hans": "伊普维尔纸莎草文献反映埃及混乱",
@@ -3009,7 +3009,7 @@
         "Thiele, Edwin R. The Mysterious Numbers of the Hebrew Kings. Eerdmans, 1983."
       ],
       "confidenceLevel": "Strong",
-      "icon": "ð",
+      "icon": "📋",
       "title": {
         "en": "Ptolemy Canon Dates Kings",
         "zh-Hans": "托勒密王表确定君王年代",
@@ -3049,7 +3049,7 @@
         "Riesner, Rainer. Paul's Early Period. Eerdmans, 1998."
       ],
       "confidenceLevel": "Strong",
-      "icon": "ð",
+      "icon": "📋",
       "title": {
         "en": "Augustus' Res Gestae Confirms Imperial Authority",
         "zh-Hans": "奥古斯都《功业铭》证实帝国权威",
@@ -3089,7 +3089,7 @@
         "Kaiser, Walter C. Hard Sayings of the Bible. IVP, 1996."
       ],
       "confidenceLevel": "Strong",
-      "icon": "ð",
+      "icon": "🌍",
       "title": {
         "en": "Earth's Sphere in Isaiah",
         "zh-Hans": "以赛亚书中的地球形状",
@@ -3129,7 +3129,7 @@
         "Waltke, Bruce K. An Introduction to Biblical Hebrew Syntax. Eisenbrauns, 1990."
       ],
       "confidenceLevel": "Strong",
-      "icon": "ð",
+      "icon": "🌌",
       "title": {
         "en": "Earth Suspended in Space",
         "zh-Hans": "地球悬于虚空",
@@ -3170,7 +3170,7 @@
         "Ross, Hugh. The Creator and the Cosmos. NavPress, 2001."
       ],
       "confidenceLevel": "Circumstantial",
-      "icon": "ð­",
+      "icon": "🔭",
       "title": {
         "en": "Expanding Universe Foretold",
         "zh-Hans": "预言宇宙膨胀",
@@ -3211,7 +3211,7 @@
         "Strahler, Arthur N. Physical Geography. Wiley, 1975."
       ],
       "confidenceLevel": "Strong",
-      "icon": "ð§",
+      "icon": "💧",
       "title": {
         "en": "Biblical Hydrological Cycle",
         "zh-Hans": "圣经中的水文循环",
@@ -3251,7 +3251,7 @@
         "Williams, Frances Leigh. Matthew Fontaine Maury: Scientist of the Sea. Rutgers University Press, 1963."
       ],
       "confidenceLevel": "Strong",
-      "icon": "ð",
+      "icon": "🌊",
       "title": {
         "en": "Paths in the Seas",
         "zh-Hans": "海洋中的路径",
@@ -3291,7 +3291,7 @@
         "Childress, James J. \"Life in Sulfidic Environments.\" American Zoologist 28 (1988): 79â96."
       ],
       "confidenceLevel": "Strong",
-      "icon": "ð",
+      "icon": "🌊",
       "title": {
         "en": "Deep Sea Springs Revealed",
         "zh-Hans": "深海泉源的揭示",
@@ -3332,7 +3332,7 @@
         "Lauer, Tod R., et al. \"New Horizons Observations of the Cosmic Optical Background.\" Astrophysical Journal Letters 906 (2021)."
       ],
       "confidenceLevel": "Definitive",
-      "icon": "â­",
+      "icon": "⭐",
       "title": {
         "en": "Innumerable Stars Confirmed",
         "zh-Hans": "证实星辰无数",
@@ -3373,7 +3373,7 @@
         "Ness, Robert B., et al. \"Circumcision and Newborn Blood Coagulation.\" Pediatrics (1999)."
       ],
       "confidenceLevel": "Strong",
-      "icon": "âï¸",
+      "icon": "⚕️",
       "title": {
         "en": "Optimal Circumcision Day",
         "zh-Hans": "最佳割礼日期",
@@ -3413,7 +3413,7 @@
         "McMillen, S. I. None of These Diseases. Revell, 1984."
       ],
       "confidenceLevel": "Strong",
-      "icon": "ð©¸",
+      "icon": "🩸",
       "title": {
         "en": "Blood Sustains Life",
         "zh-Hans": "血液维持生命",
@@ -3454,7 +3454,7 @@
         "Rosen, George. A History of Public Health. Johns Hopkins University Press, 1993."
       ],
       "confidenceLevel": "Strong",
-      "icon": "ð¥",
+      "icon": "🏥",
       "title": {
         "en": "Ancient Quarantine Laws",
         "zh-Hans": "古代的隔离律法",
@@ -3494,7 +3494,7 @@
         "Wallace, John M. Atmospheric Science: An Introductory Survey. Academic Press, 2006."
       ],
       "confidenceLevel": "Strong",
-      "icon": "ð¨",
+      "icon": "💨",
       "title": {
         "en": "Wind Circuits Described",
         "zh-Hans": "圣经描述风的循环",
@@ -3534,7 +3534,7 @@
         "Ross, Hugh. The Creator and the Cosmos. NavPress, 2001."
       ],
       "confidenceLevel": "Circumstantial",
-      "icon": "â¨",
+      "icon": "✨",
       "title": {
         "en": "Pleiades' Gravitational Binding",
         "zh-Hans": "昴星团的引力束缚",
@@ -3575,7 +3575,7 @@
         "Penrose, Roger. The Road to Reality. Vintage Books, 2004."
       ],
       "confidenceLevel": "Circumstantial",
-      "icon": "â¾ï¸",
+      "icon": "♾️",
       "title": {
         "en": "Universe's Decay Foretold",
         "zh-Hans": "预言宇宙的衰变",
@@ -3616,7 +3616,7 @@
         "Douglas, Mary. Purity and Danger. Routledge, 1966."
       ],
       "confidenceLevel": "Strong",
-      "icon": "ð¥©",
+      "icon": "🥩",
       "title": {
         "en": "Dietary Laws for Health",
         "zh-Hans": "饮食律法与健康",
@@ -3656,7 +3656,7 @@
         "Hawking, Stephen. A Brief History of Time. Bantam Books, 1988."
       ],
       "confidenceLevel": "Circumstantial",
-      "icon": "ð¡",
+      "icon": "💡",
       "title": {
         "en": "Light's Path and Speed",
         "zh-Hans": "光的路径与速度",
@@ -3697,7 +3697,7 @@
         "Israel Antiquities Authority. \"Royal Bulla of King Hezekiah.\" Press Release, 2015."
       ],
       "confidenceLevel": "Definitive",
-      "icon": "ð",
+      "icon": "🔏",
       "title": {
         "en": "King Hezekiah's Royal Seal",
         "zh-Hans": "希西家王的王室印章",
@@ -3738,7 +3738,7 @@
         "Shanks, Hershel, and Ben Witherington III. The Brother of Jesus. HarperSanFrancisco, 2003."
       ],
       "confidenceLevel": "Circumstantial",
-      "icon": "ð¦",
+      "icon": "📦",
       "title": {
         "en": "James Ossuary Controversy",
         "zh-Hans": "雅各骸骨箱争议",
@@ -3778,7 +3778,7 @@
         "Gill, David W. J. \"Erastus the Aedile.\" TynBul 40 (1989): 293â301."
       ],
       "confidenceLevel": "Strong",
-      "icon": "ðï¸",
+      "icon": "🏛️",
       "title": {
         "en": "Erastus Corinth Inscription",
         "zh-Hans": "以拉都哥林多铭文",
@@ -3818,7 +3818,7 @@
         "Finegan, Jack. The Archaeology of the New Testament. Princeton University Press, 1992."
       ],
       "confidenceLevel": "Definitive",
-      "icon": "ðï¸",
+      "icon": "🏛️",
       "title": {
         "en": "Thessalonica Politarchs Inscription",
         "zh-Hans": "帖撒罗尼迦城官铭文",
@@ -3858,7 +3858,7 @@
         "Charlesworth, James H. The Dead Sea Scrolls: Rule of the Community. Mohr Siebeck, 1994."
       ],
       "confidenceLevel": "Strong",
-      "icon": "ð",
+      "icon": "📜",
       "title": {
         "en": "Qumran Community Rule Scroll",
         "zh-Hans": "昆兰《社群规章》卷轴",
@@ -3900,7 +3900,7 @@
         "Metzger, Bruce M. The Text of the New Testament. Oxford University Press, 1992."
       ],
       "confidenceLevel": "Strong",
-      "icon": "ð",
+      "icon": "📗",
       "title": {
         "en": "Codex Bezae Manuscript",
         "zh-Hans": "贝扎抄本",
@@ -3941,7 +3941,7 @@
         "Moorey, P. R. S. A Century of Biblical Archaeology. Westminster/John Knox, 1991."
       ],
       "confidenceLevel": "Strong",
-      "icon": "ð",
+      "icon": "📋",
       "title": {
         "en": "Ebla Tablets Ancient Records",
         "zh-Hans": "埃卜拉泥版文献",
@@ -3981,7 +3981,7 @@
         "Riesner, Rainer. Paul's Early Period. Eerdmans, 1998."
       ],
       "confidenceLevel": "Definitive",
-      "icon": "ð",
+      "icon": "📋",
       "title": {
         "en": "Delphi Gallio Inscription",
         "zh-Hans": "德尔斐迦流铭文",
@@ -4022,7 +4022,7 @@
         "Richardson, Peter. Herod: King of the Jews and Friend of the Romans. University of South Carolina Press, 1996."
       ],
       "confidenceLevel": "Definitive",
-      "icon": "ð",
+      "icon": "📜",
       "title": {
         "en": "Josephus on Herod the Great",
         "zh-Hans": "约瑟夫笔下的大希律",
@@ -4062,7 +4062,7 @@
         "Van Voorst, Robert E. Jesus Outside the New Testament. Eerdmans, 2000."
       ],
       "confidenceLevel": "Circumstantial",
-      "icon": "ð",
+      "icon": "📜",
       "title": {
         "en": "Thallus on Jesus' Crucifixion",
         "zh-Hans": "塔勒斯论耶稣受难",
@@ -4102,7 +4102,7 @@
         "Stegemann, Hartmut. The Library of Qumran. Eerdmans, 1998."
       ],
       "confidenceLevel": "Strong",
-      "icon": "ð",
+      "icon": "📜",
       "title": {
         "en": "Qumran Thanksgiving Scroll",
         "zh-Hans": "昆兰《感恩诗篇》卷轴",
@@ -4142,7 +4142,7 @@
         "Kitchen, Kenneth A. On the Reliability of the Old Testament. Eerdmans, 2003."
       ],
       "confidenceLevel": "Definitive",
-      "icon": "ðª¨",
+      "icon": "🪨",
       "title": {
         "en": "Kurkh Monoliths — Shalmaneser III and King Ahab of Israel",
         "zh-Hans": "库尔赫石碑——撒缦以色三世与以色列王亚哈",
@@ -4183,7 +4183,7 @@
         "Wiseman, D. J. Chronicles of Chaldaean Kings. British Museum, 1956."
       ],
       "confidenceLevel": "Definitive",
-      "icon": "ð",
+      "icon": "📋",
       "title": {
         "en": "Jehoiachin Ration Tablets — Babylonian Records of Judah's Exiled King",
         "zh-Hans": "约雅斤口粮泥版——巴比伦记录中的犹大被掳之王",
@@ -4221,7 +4221,7 @@
         "Kitchen, Kenneth A. On the Reliability of the Old Testament. Eerdmans, 2003."
       ],
       "confidenceLevel": "Definitive",
-      "icon": "ðª¨",
+      "icon": "🪨",
       "title": {
         "en": "Nebo-Sarsekim Tablet — Official Named in Jeremiah 39:3",
         "zh-Hans": "尼波-撒西金泥版——耶利米书39:3所载官员",
@@ -4259,7 +4259,7 @@
         "Ussishkin, David. The Conquest of Lachish by Sennacherib. Tel Aviv University, 1982."
       ],
       "confidenceLevel": "Definitive",
-      "icon": "ð",
+      "icon": "🔏",
       "title": {
         "en": "LMLK Seals — Hezekiah's Emergency Preparation for Assyrian Siege",
         "zh-Hans": "LMLK封印——希西家为亚述围攻的紧急备战",
@@ -4300,7 +4300,7 @@
         "Dothan, Trude, and Seymour Gitin. \"Miqne, Tel (Ekron).\" NEAEHL. Simon & Schuster, 1993."
       ],
       "confidenceLevel": "Definitive",
-      "icon": "ðª¨",
+      "icon": "🪨",
       "title": {
         "en": "Ekron Inscription — Philistine City Identified by Name",
         "zh-Hans": "以革伦铭文——非利士城名被确认",
@@ -4341,7 +4341,7 @@
         "Finegan, Jack. The Archaeology of the New Testament. Princeton University Press, 1992."
       ],
       "confidenceLevel": "Definitive",
-      "icon": "ðï¸",
+      "icon": "🏛️",
       "title": {
         "en": "Arch of Titus — Rome's Monument to the Temple's Destruction",
         "zh-Hans": "提多凯旋门——罗马对圣殿毁灭的纪念碑",
@@ -4382,7 +4382,7 @@
         "Galter, Hermann. \"The Azekah Inscription.\" SAAB 7 (1993): 33â56."
       ],
       "confidenceLevel": "Definitive",
-      "icon": "ðª¨",
+      "icon": "🪨",
       "title": {
         "en": "Azekah Inscription — Assyrian Account of Judah's Fortified Cities",
         "zh-Hans": "亚西加铭文——亚述对犹大坚城的记载",
@@ -4422,7 +4422,7 @@
         "Kitchen, Kenneth A. On the Reliability of the Old Testament. Eerdmans, 2003."
       ],
       "confidenceLevel": "Definitive",
-      "icon": "ð",
+      "icon": "🔏",
       "title": {
         "en": "Jehucal Seal — Bulla of the Official Named in Jeremiah 37:3",
         "zh-Hans": "犹甲封印——耶利米书37:3所载官员的封泥",
@@ -4462,7 +4462,7 @@
         "Cogan, Mordechai. \"Jeremiah's Opponents in Light of Recent Discoveries.\" IEJ 58 (2008)."
       ],
       "confidenceLevel": "Definitive",
-      "icon": "ð",
+      "icon": "🔏",
       "title": {
         "en": "Gedaliah Seal — Bulla of the Official Named in Jeremiah 38:1",
         "zh-Hans": "基大利印——耶利米书38:1所载官员的封泥",
@@ -4502,7 +4502,7 @@
         "Na'aman, Nadav. \"The Temple of YHWH in the Arad Ostraca.\" VT 50 (2000): 232â243."
       ],
       "confidenceLevel": "Definitive",
-      "icon": "ðº",
+      "icon": "🏺",
       "title": {
         "en": "Arad Ostraca — Judahite Military Correspondence",
         "zh-Hans": "亚拉得陶片——犹大军事通信",
@@ -4543,7 +4543,7 @@
         "Tadmor, Hayim. \"The Campaigns of Sargon II.\" JCS 12 (1958): 22â40, 77â100."
       ],
       "confidenceLevel": "Definitive",
-      "icon": "ðï¸",
+      "icon": "🏛️",
       "title": {
         "en": "Sargon II's Palace at Khorsabad — Confirming Isaiah 20:1",
         "zh-Hans": "萨尔贡二世在霍尔萨巴德的宫殿——确认以赛亚书20:1",
@@ -4581,7 +4581,7 @@
         "Kitchen, Kenneth A. On the Reliability of the Old Testament. Eerdmans, 2003."
       ],
       "confidenceLevel": "Definitive",
-      "icon": "ðª¨",
+      "icon": "🪨",
       "title": {
         "en": "Tell al-Rimah Stele — Assyrian Confirmation of Jehoash of Israel",
         "zh-Hans": "泰勒里迈赫石碑——亚述文献确认以色列王约阿施",
@@ -4619,7 +4619,7 @@
         "Tadmor, Hayim. The Inscriptions of Tiglath-Pileser III. Israel Academy of Sciences, 1994."
       ],
       "confidenceLevel": "Definitive",
-      "icon": "ð",
+      "icon": "📋",
       "title": {
         "en": "Nimrud Tablet K3751 — Tiglath-Pileser III and the Kingdom of Israel",
         "zh-Hans": "尼姆鲁德泥版K3751——提格拉特毗列色三世与以色列王国",
@@ -4659,7 +4659,7 @@
         "Kitchen, Kenneth A. On the Reliability of the Old Testament. Eerdmans, 2003."
       ],
       "confidenceLevel": "Definitive",
-      "icon": "ðª¨",
+      "icon": "🪨",
       "title": {
         "en": "Stele of Zakkur — Aramean Kingdom Confirmed",
         "zh-Hans": "扎库尔石碑——亚兰王国获确认",
@@ -4699,7 +4699,7 @@
         "Finkelstein, Israel, and Amihai Mazar. The Quest for the Historical Israel. Society of Biblical Literature, 2007."
       ],
       "confidenceLevel": "Circumstantial",
-      "icon": "ðº",
+      "icon": "🏺",
       "title": {
         "en": "Khirbet Qeiyafa Ostracon — 10th Century BCE Hebrew Inscription",
         "zh-Hans": "基尔贝特·基亚法陶片——公元前10世纪的希伯来铭文",
@@ -4740,7 +4740,7 @@
         "Meshorer, Ya'akov. A Treasury of Jewish Coins. Yad Ben-Zvi Press, 2001."
       ],
       "confidenceLevel": "Definitive",
-      "icon": "ðª",
+      "icon": "🪙",
       "title": {
         "en": "Pilate Coins — Numismatic Evidence for the Prefect of Judea",
         "zh-Hans": "彼拉多钱币——犹大巡抚的钱币学证据",
@@ -4781,7 +4781,7 @@
         "Netzer, Ehud. The Architecture of Herod the Great. Baker Academic, 2008."
       ],
       "confidenceLevel": "Definitive",
-      "icon": "ð°",
+      "icon": "🏰",
       "title": {
         "en": "Herodium Palace — Herod's Fortress and Tomb",
         "zh-Hans": "希律堡宫殿——希律大帝的堡垒和陵墓",
@@ -4821,7 +4821,7 @@
         "Ulrich, Eugene. The Dead Sea Scrolls and the Origins of the Bible. Eerdmans, 1999."
       ],
       "confidenceLevel": "Definitive",
-      "icon": "ð",
+      "icon": "📜",
       "title": {
         "en": "Great Isaiah Scroll (1QIsaᵃ) — Complete Isaiah Text from 2nd Century BCE",
         "zh-Hans": "以赛亚书大卷（1QIsaᵃ）——公元前2世纪的完整以赛亚书",
@@ -4861,7 +4861,7 @@
         "VanderKam, James C. The Dead Sea Scrolls Today. Eerdmans, 2010."
       ],
       "confidenceLevel": "Definitive",
-      "icon": "ð",
+      "icon": "📜",
       "title": {
         "en": "Habakkuk Commentary (1QpHab) — Dead Sea Pesher on the Prophet",
         "zh-Hans": "哈巴谷书注释（1QpHab）——死海古卷先知注解",
@@ -4903,7 +4903,7 @@
         "Dever, William G. Did God Have a Wife? Eerdmans, 2005."
       ],
       "confidenceLevel": "Definitive",
-      "icon": "ðº",
+      "icon": "🏺",
       "title": {
         "en": "Kuntillet Ajrud Inscriptions — Evidence for Yahweh Worship in the 9th-8th Century BCE",
         "zh-Hans": "昆提莱特·阿吉鲁德铭文——公元前9-8世纪耶和华崇拜的证据",
@@ -4944,7 +4944,7 @@
         "VanderKam, James C. Enoch and the Growth of an Apocalyptic Tradition. CBQMS 16, 1984."
       ],
       "confidenceLevel": "Definitive",
-      "icon": "ð",
+      "icon": "📜",
       "title": {
         "en": "Book of Enoch Manuscripts — Qumran Fragments Confirmed",
         "zh-Hans": "以诺书手稿——昆兰残卷确认古老来源",
@@ -4984,7 +4984,7 @@
         "Tov, Emanuel. The Text-Critical Use of the Septuagint in Biblical Research. Eisenbrauns, 1997."
       ],
       "confidenceLevel": "Definitive",
-      "icon": "ð",
+      "icon": "📜",
       "title": {
         "en": "Fouad Papyrus 266 — Greek Deuteronomy with Tetragrammaton",
         "zh-Hans": "法乌德纸草266——带四字神名的希腊文申命记",
@@ -5026,7 +5026,7 @@
         "Pagels, Elaine. The Gnostic Gospels. Random House, 1979."
       ],
       "confidenceLevel": "Circumstantial",
-      "icon": "ð",
+      "icon": "📚",
       "title": {
         "en": "Nag Hammadi Codices — Gnostic Library and New Testament Context",
         "zh-Hans": "拿戈哈马迪抄本——诺斯替图书馆与新约背景",
@@ -5066,7 +5066,7 @@
         "Beaulieu, Paul-Alain. The Reign of Nabonidus. Yale University Press, 1989."
       ],
       "confidenceLevel": "Definitive",
-      "icon": "ð",
+      "icon": "📋",
       "title": {
         "en": "Nabonidus Harran Inscription — Confirming Daniel's Belshazzar",
         "zh-Hans": "拿波尼度哈兰铭文——确认但以理中的伯沙撒",
@@ -5107,7 +5107,7 @@
         "Bond, Helen K. Pontius Pilate in History and Interpretation. Cambridge University Press, 1998."
       ],
       "confidenceLevel": "Definitive",
-      "icon": "ð",
+      "icon": "📜",
       "title": {
         "en": "Philo on Pontius Pilate — Contemporary Jewish Witness to the Prefect",
         "zh-Hans": "斐洛论本丢彼拉多——该巡抚的当代犹太见证",
@@ -5150,7 +5150,7 @@
         "Zias, Joseph, and Eliezer Sekeles. \"The Crucified Man from Giv'at ha-Mivtar.\" IEJ 35 (1985): 22â27."
       ],
       "confidenceLevel": "Definitive",
-      "icon": "âï¸",
+      "icon": "✝️",
       "title": {
         "en": "Roman Crucifixion Evidence — Archaeological Confirmation of the Practice",
         "zh-Hans": "罗马钉十字架证据——该做法的考古确认",
@@ -5190,7 +5190,7 @@
         "Smallwood, E. Mary. The Jews Under Roman Rule. Brill, 2001."
       ],
       "confidenceLevel": "Definitive",
-      "icon": "ð",
+      "icon": "📜",
       "title": {
         "en": "Strabo's Geographica — Roman-Era Geographic Confirmation of Biblical Sites",
         "zh-Hans": "斯特拉波《地理志》——罗马时代对圣经地点的地理确认",
@@ -5231,7 +5231,7 @@
         "Hoffmeier, James K. Israel in Egypt. Oxford University Press, 1997."
       ],
       "confidenceLevel": "Strong",
-      "icon": "ð",
+      "icon": "📜",
       "title": {
         "en": "Herodotus on Egypt — Independent Confirmation of Biblical Details",
         "zh-Hans": "希罗多德论埃及——圣经细节的独立印证",
@@ -5271,7 +5271,7 @@
         "Finegan, Jack. The Archaeology of the New Testament. Princeton University Press, 1992."
       ],
       "confidenceLevel": "Strong",
-      "icon": "ðª¨",
+      "icon": "🪨",
       "title": {
         "en": "Quirinius Inscription — Luke's Census and Roman Administration",
         "zh-Hans": "居里扭铭文——路加的人口普查与罗马行政",
@@ -5311,7 +5311,7 @@
         "Waltke, Bruce K. The Book of Proverbs. Eerdmans, 2004."
       ],
       "confidenceLevel": "Strong",
-      "icon": "ð¨",
+      "icon": "💨",
       "title": {
         "en": "Weight of Air — Job's Scientific Insight Ahead of Its Time",
         "zh-Hans": "空气的重量——约伯超越时代的科学洞见",
@@ -5351,7 +5351,7 @@
         "Thiselton, Anthony C. The First Epistle to the Corinthians. Eerdmans, 2000."
       ],
       "confidenceLevel": "Strong",
-      "icon": "ð±",
+      "icon": "🌱",
       "title": {
         "en": "Seed Death and Resurrection — Botany Confirms Paul's Analogy",
         "zh-Hans": "种子的死亡与复活——植物学证实保罗的类比",
@@ -5391,7 +5391,7 @@
         "Murphy, John. A History of Biblical Israel. Westminster John Knox, 2004."
       ],
       "confidenceLevel": "Strong",
-      "icon": "ð",
+      "icon": "🐜",
       "title": {
         "en": "Ant Behavior — Proverbs 6:6 Confirmed by Myrmecology",
         "zh-Hans": "蚂蚁行为——箴言6:6获蚁学证实",
@@ -5432,7 +5432,7 @@
         "Kaiser, Walter C. Hard Sayings of the Bible. IVP, 1996."
       ],
       "confidenceLevel": "Circumstantial",
-      "icon": "ð",
+      "icon": "🌍",
       "title": {
         "en": "Dust Cycle — Genesis 3:19 and Modern Soil Science",
         "zh-Hans": "尘土循环——创世记3:19与现代土壤科学",
@@ -5472,7 +5472,7 @@
         "Fleming, Daniel E. \"The Fallen Prophet: Ezekiel and the History of Tyre.\" JBL 121 (2002)."
       ],
       "confidenceLevel": "Strong",
-      "icon": "ð®",
+      "icon": "🔮",
       "title": {
         "en": "Prophecy Against Tyre — Ezekiel's Astonishing Fulfillment",
         "zh-Hans": "推罗预言的应验——以西结惊人的预言实现",
@@ -5513,7 +5513,7 @@
         "Beaulieu, Paul-Alain. \"The Afterlife of Babylon.\" ISIMU 6 (2003): 155â171."
       ],
       "confidenceLevel": "Strong",
-      "icon": "ð®",
+      "icon": "🔮",
       "title": {
         "en": "Babylon's Fall Prophesied — Isaiah and Jeremiah Fulfilled",
         "zh-Hans": "巴比伦倾覆预言的应验——以赛亚与耶利米",
@@ -5555,7 +5555,7 @@
         "Gilbert, Martin. Israel: A History. Doubleday, 1998."
       ],
       "confidenceLevel": "Strong",
-      "icon": "ð®",
+      "icon": "🔮",
       "title": {
         "en": "Rebirth of Israel — Ezekiel's Valley of Dry Bones Fulfilled in 1948",
         "zh-Hans": "以色列复国——以西结枯骨异象于1948年应验",
@@ -5599,7 +5599,7 @@
         "McDowell, Josh. Evidence That Demands a Verdict. Campus Crusade, 1972."
       ],
       "confidenceLevel": "Strong",
-      "icon": "ð®",
+      "icon": "🔮",
       "title": {
         "en": "Messianic Prophecies Fulfilled in Jesus — Statistical Analysis",
         "zh-Hans": "在耶稣身上应验的弥赛亚预言——统计分析",
@@ -5639,7 +5639,7 @@
         "Kidger, Mark. The Star of Bethlehem. Princeton University Press, 1999."
       ],
       "confidenceLevel": "Circumstantial",
-      "icon": "â­",
+      "icon": "⭐",
       "title": {
         "en": "The Star of Bethlehem — Astronomical Investigations",
         "zh-Hans": "伯利恒之星——天文学研究",
@@ -5679,7 +5679,7 @@
         "Hoffmeier, James K. Israel in Egypt. Oxford University Press, 1997."
       ],
       "confidenceLevel": "Circumstantial",
-      "icon": "ð¬",
+      "icon": "🔬",
       "title": {
         "en": "Exodus Plagues — Scientific Analysis of the Ten Plagues",
         "zh-Hans": "出埃及记十灾——十灾的科学研究分析",
@@ -5719,7 +5719,7 @@
         "Patten, Donald W. The Long Day of Joshua. Pacific Meridian, 1973."
       ],
       "confidenceLevel": "Circumstantial",
-      "icon": "âï¸",
+      "icon": "☀️",
       "title": {
         "en": "Joshua's Long Day — Historical and Astronomical Investigations",
         "zh-Hans": "约书亚长日——历史和天文学研究",
@@ -5759,7 +5759,7 @@
         "Finkelstein, Israel. \"Carmel in the Biblical Period.\" Tel Aviv 26 (1999)."
       ],
       "confidenceLevel": "Strong",
-      "icon": "ð¥",
+      "icon": "🔥",
       "title": {
         "en": "Elijah on Mount Carmel — The Prophetic Contest Site",
         "zh-Hans": "迦密山上的以利亚——先知对决之地",
@@ -5800,7 +5800,7 @@
         "Nissen, Hans J. The Early History of the Ancient Near East. University of Chicago Press, 1988."
       ],
       "confidenceLevel": "Circumstantial",
-      "icon": "ð¢",
+      "icon": "🚢",
       "title": {
         "en": "Noah's Ark — Ancient Flood Traditions and Archaeological Evidence",
         "zh-Hans": "挪亚方舟——古代洪水传统和考古证据",
@@ -5841,7 +5841,7 @@
         "Bunch, Ted E., et al. \"Widespread Rampart Destruction.\" Scientific Reports 11 (2021)."
       ],
       "confidenceLevel": "Circumstantial",
-      "icon": "ð¥",
+      "icon": "🔥",
       "title": {
         "en": "Sodom and Gomorrah — Archaeological Evidence from Tall el-Hammam",
         "zh-Hans": "所多玛和蛾摩拉——来自泰勒哈曼的考古证据",
@@ -5881,7 +5881,7 @@
         "Finkelstein, Israel. \"The Rise of Jerusalem and Judah.\" PEQ 133 (2001)."
       ],
       "confidenceLevel": "Definitive",
-      "icon": "ð°",
+      "icon": "🏰",
       "title": {
         "en": "David's Jerusalem — The City of David Archaeological Evidence",
         "zh-Hans": "大卫的耶路撒冷——大卫之城考古证据",
@@ -5922,7 +5922,7 @@
         "Ussishkin, David. \"Solomon's Temple.\" IEJ 62 (2012): 225â242."
       ],
       "confidenceLevel": "Strong",
-      "icon": "ðï¸",
+      "icon": "🏛️",
       "title": {
         "en": "Solomon's Temple — Archaeological Evidence for the First Temple",
         "zh-Hans": "所罗门圣殿——第一圣殿的考古证据",
@@ -5963,7 +5963,7 @@
         "Waltke, Bruce K. \"The Date of the Book of Daniel.\" BSac 133 (1976)."
       ],
       "confidenceLevel": "Strong",
-      "icon": "ð®",
+      "icon": "🔮",
       "title": {
         "en": "Daniel's Prophecies — Accurate Prediction of Successive Kingdoms",
         "zh-Hans": "但以理预言——对相继帝国的精确预测",
@@ -6008,7 +6008,7 @@
         "Craig, William Lane. Assessing the New Testament Evidence. Edwin Mellen, 1989."
       ],
       "confidenceLevel": "Strong",
-      "icon": "âï¸",
+      "icon": "✝️",
       "title": {
         "en": "Historical Evidence for the Resurrection of Jesus",
         "zh-Hans": "耶稣复活的历史证据",
@@ -6050,7 +6050,7 @@
         "Craig, William Lane. \"The Empty Tomb of Jesus.\" Gospel Perspectives II. JSOT Press, 1981."
       ],
       "confidenceLevel": "Strong",
-      "icon": "ðï¸",
+      "icon": "🏛️",
       "title": {
         "en": "The Empty Tomb — Historical Evidence for the Resurrection",
         "zh-Hans": "空坟墓——复活的历史证据",
@@ -6091,7 +6091,7 @@
         "Kitchen, K. A. On the Reliability of the Old Testament. Eerdmans, 2003."
       ],
       "confidenceLevel": "Circumstantial",
-      "icon": "ð",
+      "icon": "🌊",
       "title": {
         "en": "Parting of the Red Sea — Wind Setdown Evidence",
         "zh-Hans": "红海分开——风落效应的科学证据",
@@ -6132,7 +6132,7 @@
         "Yamauchi, Edwin M. Persia and the Bible. Baker Academic, 1990."
       ],
       "confidenceLevel": "Circumstantial",
-      "icon": "ð¦",
+      "icon": "🦁",
       "title": {
         "en": "Daniel in the Lions' Den — Persian Court Evidence",
         "zh-Hans": "但以理在狮子坑——波斯宫廷证据",
@@ -6173,7 +6173,7 @@
         "Millard, Alan R. \"Daniel and Belshazzar in History.\" Biblical Archaeology Review 11, 1985."
       ],
       "confidenceLevel": "Circumstantial",
-      "icon": "ð¥",
+      "icon": "🔥",
       "title": {
         "en": "Shadrach, Meshach, and Abednego — Babylonian Furnace Evidence",
         "zh-Hans": "沙得拉、米煞、亚伯尼歌——巴比伦火窑证据",
@@ -6215,7 +6215,7 @@
         "Reade, Julian. \"More about Adiabene.\" Iraq 63, 2001."
       ],
       "confidenceLevel": "Strong",
-      "icon": "ð",
+      "icon": "🐋",
       "title": {
         "en": "Jonah at Nineveh — The Assyrian Capital Rediscovered",
         "zh-Hans": "约拿在尼尼微——亚述都城的重现",
@@ -6256,7 +6256,7 @@
         "Magness, Jodi. Stone and Dung, Oil and Spit: Jewish Daily Life in the Time of Jesus. Eerdmans, 2011."
       ],
       "confidenceLevel": "Strong",
-      "icon": "ð·",
+      "icon": "🍷",
       "title": {
         "en": "Cana of Galilee — Stone Jar Evidence for the Wedding Miracle",
         "zh-Hans": "加利利的迦拿——婚宴神迹的石缸证据",
@@ -6298,7 +6298,7 @@
         "Arav, Rami. Bethsaida: A City by the North Shore of the Sea of Galilee. Truman State University Press, 1995â2009."
       ],
       "confidenceLevel": "Strong",
-      "icon": "ð",
+      "icon": "🍞",
       "title": {
         "en": "Feeding of the 5,000 — Bethsaida Rediscovered at el-Araj",
         "zh-Hans": "五饼二鱼——伯赛大在艾尔-阿拉吉重现",
@@ -6339,7 +6339,7 @@
         "Eusebius. Onomasticon, 4th century CE."
       ],
       "confidenceLevel": "Circumstantial",
-      "icon": "â°ï¸",
+      "icon": "⚰️",
       "title": {
         "en": "Tomb of Lazarus at Bethany",
         "zh-Hans": "伯大尼的拉撒路墓",
@@ -6379,7 +6379,7 @@
         "Bull, Robert J. \"An Archaeological Context for Understanding John 4:20.\" Biblical Archaeologist 38, 1975."
       ],
       "confidenceLevel": "Strong",
-      "icon": "ð§",
+      "icon": "💧",
       "title": {
         "en": "Jacob's Well at Sychar",
         "zh-Hans": "叙加的雅各井",
@@ -6423,7 +6423,7 @@
         "Taylor, Joan E. \"The Garden of Gethsemane: Not the Place of Jesus' Arrest.\" Biblical Archaeology Review 21, 1995."
       ],
       "confidenceLevel": "Strong",
-      "icon": "ð¿",
+      "icon": "🌿",
       "title": {
         "en": "Garden of Gethsemane — Ancient Olive Trees",
         "zh-Hans": "客西马尼园——古橄榄树",
@@ -6465,7 +6465,7 @@
         "Danin, Avinoam. Desert Vegetation of Israel and Sinai. Cana Publishing, 1983."
       ],
       "confidenceLevel": "Circumstantial",
-      "icon": "ð¯",
+      "icon": "🍯",
       "title": {
         "en": "Manna from Heaven — Sinai Desert Natural Parallels",
         "zh-Hans": "从天降下的吗哪——西奈沙漠的自然对应物",
@@ -6507,7 +6507,7 @@
         "Eusebius. Life of Constantine, 4th century CE."
       ],
       "confidenceLevel": "Circumstantial",
-      "icon": "âï¸",
+      "icon": "☁️",
       "title": {
         "en": "Ascension of Jesus — Mount of Olives Tradition",
         "zh-Hans": "耶稣升天——橄榄山传统",
@@ -6548,7 +6548,7 @@
         "Epiphanius of Salamis. On Weights and Measures, 4th century CE."
       ],
       "confidenceLevel": "Circumstantial",
-      "icon": "ðï¸",
+      "icon": "🕊️",
       "title": {
         "en": "Pentecost and the Upper Room (Cenacle) on Mount Zion",
         "zh-Hans": "五旬节与锡安山楼房（Cenacle）",
@@ -6590,7 +6590,7 @@
         "Riesner, Rainer. Paul's Early Period: Chronology, Mission Strategy, Theology. Eerdmans, 1998."
       ],
       "confidenceLevel": "Strong",
-      "icon": "â¡",
+      "icon": "⚡",
       "title": {
         "en": "Paul's Damascus Road Conversion — Via Recta and Damascus Archaeology",
         "zh-Hans": "保罗大马士革路归主——直街与大马士革考古",
@@ -6632,7 +6632,7 @@
         "Kitchen, K. A. On the Reliability of the Old Testament. Eerdmans, 2003."
       ],
       "confidenceLevel": "Strong",
-      "icon": "ð",
+      "icon": "👑",
       "title": {
         "en": "Joseph in Egypt — Tell el-Daba and Middle Kingdom Evidence",
         "zh-Hans": "约瑟在埃及——泰勒达巴与中王国证据",
@@ -6673,7 +6673,7 @@
         "Walton, John H. \"The Mesopotamian Background of the Tower of Babel Account.\" Bulletin for Biblical Research 5, 1995."
       ],
       "confidenceLevel": "Strong",
-      "icon": "ðï¸",
+      "icon": "🏗️",
       "title": {
         "en": "Tower of Babel — Etemenanki Ziggurat at Babylon",
         "zh-Hans": "巴别塔——巴比伦埃特曼南基塔庙",
@@ -6714,7 +6714,7 @@
         "Kitchen, K. A. On the Reliability of the Old Testament. Eerdmans, 2003."
       ],
       "confidenceLevel": "Strong",
-      "icon": "ðº",
+      "icon": "🏺",
       "title": {
         "en": "Abraham's Ur of the Chaldeans",
         "zh-Hans": "亚伯拉罕的迦勒底吾珥",
@@ -6755,7 +6755,7 @@
         "Egeria. Itinerarium Egeriae, late 4th century CE."
       ],
       "confidenceLevel": "Circumstantial",
-      "icon": "ð³",
+      "icon": "🌳",
       "title": {
         "en": "Mount Sinai and the Burning Bush at St. Catherine's Monastery",
         "zh-Hans": "西奈山与圣凯瑟琳修道院的荆棘火焰",
@@ -6796,7 +6796,7 @@
         "Dieulafoy, Marcel. L'Acropole de Suse. Hachette, 1893."
       ],
       "confidenceLevel": "Strong",
-      "icon": "ð¸",
+      "icon": "👸",
       "title": {
         "en": "Esther at Susa — Xerxes' Palace Excavated",
         "zh-Hans": "以斯帖在书珊——薛西斯宫殿的发掘",
@@ -6838,7 +6838,7 @@
         "Mazar, Eilat. Discovering the Solomonic Wall in Jerusalem. Shoham Academic, 2011."
       ],
       "confidenceLevel": "Circumstantial",
-      "icon": "ð",
+      "icon": "💎",
       "title": {
         "en": "Queen of Sheba — Sabaean Kingdom and Solomon's Trade",
         "zh-Hans": "示巴女王——示巴王国与所罗门贸易",
@@ -6881,7 +6881,7 @@
         "Hadas, Gideon. \"Stone Anchors from the Sea of Galilee.\" Atiqot 21, 1992."
       ],
       "confidenceLevel": "Strong",
-      "icon": "âµ",
+      "icon": "⛵",
       "title": {
         "en": "The Galilee Boat — Physical Setting of the Sea of Galilee Miracles",
         "zh-Hans": "加利利海船——加利利海神迹的物质背景",
@@ -6923,7 +6923,7 @@
         "KjÃ¦r, Hans. \"The Excavation of Shilo 1929.\" Journal of the Palestine Oriental Society 10, 1930."
       ],
       "confidenceLevel": "Strong",
-      "icon": "âº",
+      "icon": "⛺",
       "title": {
         "en": "Shiloh — The Tabernacle's Long-Term Home",
         "zh-Hans": "示罗——会幕的长期所在地",
@@ -6964,7 +6964,7 @@
         "Maeir, Aren M. \"The Excavations at Tell es-Safi/Gath.\" Near Eastern Archaeology 75, 2012."
       ],
       "confidenceLevel": "Strong",
-      "icon": "ðª",
+      "icon": "💪",
       "title": {
         "en": "Samson's Pillared Temple — Philistine Architecture Confirmed",
         "zh-Hans": "参孙的柱式神殿——非利士建筑印证",
@@ -7005,7 +7005,7 @@
         "Cogan, Mordechai, and Hayim Tadmor. II Kings: A New Translation with Introduction and Commentary. Anchor Bible, 1988."
       ],
       "confidenceLevel": "Strong",
-      "icon": "ð¥",
+      "icon": "🔥",
       "title": {
         "en": "Elisha at Dothan — Iron Age Fortified City Confirmed",
         "zh-Hans": "以利沙在多坍——铁器时代设防城市印证",
@@ -7047,7 +7047,7 @@
         "Piccirillo, Michele. \"Machaerus.\" Anchor Bible Dictionary Vol. 4. Doubleday, 1992."
       ],
       "confidenceLevel": "Strong",
-      "icon": "ð¡ï¸",
+      "icon": "🗡️",
       "title": {
         "en": "Machaerus — The Fortress of John the Baptist's Execution",
         "zh-Hans": "马卡鲁斯——施洗约翰被处决的堡垒",
@@ -7091,7 +7091,7 @@
         "Origen. Commentary on John, 6.24, c. 248 CE."
       ],
       "confidenceLevel": "Strong",
-      "icon": "ð¦",
+      "icon": "💦",
       "title": {
         "en": "Bethany Beyond the Jordan — Jesus' Baptism Site",
         "zh-Hans": "约旦河外的伯大尼——耶稣受洗处",
@@ -7133,7 +7133,7 @@
         "Hemer, Colin J. The Book of Acts in the Setting of Hellenistic History. Mohr Siebeck, 1989."
       ],
       "confidenceLevel": "Strong",
-      "icon": "â",
+      "icon": "⚓",
       "title": {
         "en": "Paul's Shipwreck at Malta — Roman Anchors Recovered",
         "zh-Hans": "保罗在马耳他遇难——出土罗马锚",
@@ -7174,7 +7174,7 @@
         "Pausanias. Description of Greece, Book 1, c. 150 CE."
       ],
       "confidenceLevel": "Strong",
-      "icon": "ðï¸",
+      "icon": "🏛️",
       "title": {
         "en": "The Areopagus (Mars Hill) — Paul's Athens Sermon",
         "zh-Hans": "亚略巴古（战神山）——保罗在雅典的演讲",
@@ -7213,7 +7213,7 @@
         "Friesen, Steven J. \"The Cult of the Roman Emperors in Ephesos.\" Archaeology of the New Testament, Brill, 1995."
       ],
       "confidenceLevel": "Definitive",
-      "icon": "ð­",
+      "icon": "🎭",
       "title": {
         "en": "Ephesus — Theater of the Silversmiths' Riot and Temple of Artemis",
         "zh-Hans": "以弗所——银匠骚乱剧场与亚底米神殿",
@@ -7252,7 +7252,7 @@
         "Beaulieu, Paul-Alain. The Reign of Nabonidus, King of Babylon 556â539 B.C. Yale University Press, 1989."
       ],
       "confidenceLevel": "Strong",
-      "icon": "ð",
+      "icon": "📜",
       "title": {
         "en": "Prayer of Nabonidus (4Q242) — Babylonian King's Affliction Confirmed",
         "zh-Hans": "拿波尼度祷词（4Q242）——巴比伦王的疾病得证",
@@ -7295,7 +7295,7 @@
         "Origen. Against Celsus, 1.51, c. 248 CE."
       ],
       "confidenceLevel": "Strong",
-      "icon": "â­",
+      "icon": "⭐",
       "title": {
         "en": "Church of the Nativity — Jesus' Birth Grotto",
         "zh-Hans": "圣诞大教堂——耶稣降生洞窟",
@@ -7334,7 +7334,7 @@
         "Mazar, Amihai. Archaeology of the Land of the Bible 10,000â586 B.C.E. Doubleday, 1990."
       ],
       "confidenceLevel": "Strong",
-      "icon": "ð°",
+      "icon": "🏰",
       "title": {
         "en": "Solomon's Six-Chamber Gates at Hazor, Megiddo, and Gezer",
         "zh-Hans": "所罗门六房城门——夏琐、米吉多、基色的统一建筑群",
@@ -7377,7 +7377,7 @@
         "Cyril of Jerusalem. Catechetical Lectures 12.16, c. 348 CE."
       ],
       "confidenceLevel": "Circumstantial",
-      "icon": "â°ï¸",
+      "icon": "⛰️",
       "title": {
         "en": "Mount Tabor — Traditional Site of the Transfiguration",
         "zh-Hans": "他泊山——登山变像传统地点",
@@ -7418,7 +7418,7 @@
         "Wood, Bryant G. \"The Walls of Jericho.\" Bible and Spade 12, 1999."
       ],
       "confidenceLevel": "Circumstantial",
-      "icon": "ðï¸",
+      "icon": "🏞️",
       "title": {
         "en": "Crossing the Jordan — Landslides at Adam Documented",
         "zh-Hans": "亚当城堵塞约旦河——1267年与1927年的现代证实",
@@ -7459,7 +7459,7 @@
         "Finkelstein, Israel. \"Jerusalem in the Persian (and Early Hellenistic) Period.\" JSOT 32, 2008."
       ],
       "confidenceLevel": "Strong",
-      "icon": "ð§±",
+      "icon": "🧱",
       "title": {
         "en": "Nehemiah's Wall — Discovered in Jerusalem's Ophel",
         "zh-Hans": "尼希米城墙——公元前5世纪耶路撒冷防御工事",
@@ -7500,7 +7500,7 @@
         "Mazar, Amihai. \"Archaeology and the Biblical Narrative.\" The Quest for the Historical Israel, SBL, 2007."
       ],
       "confidenceLevel": "Strong",
-      "icon": "ðª¨",
+      "icon": "🪨",
       "title": {
         "en": "David and Goliath — Khirbet Qeiyafa and the Elah Valley",
         "zh-Hans": "以拉谷——大卫战胜歌利亚的战场",
@@ -7542,7 +7542,7 @@
         "Hasel, Michael G. \"New Excavations at Khirbet Qeiyafa and the Early History of Judah.\" Do Historical Matters Matter to Faith?, Crossway, 2012."
       ],
       "confidenceLevel": "Strong",
-      "icon": "ð¿",
+      "icon": "🗿",
       "title": {
         "en": "Goliath's Home City — Tell es-Safi/Gath Excavated",
         "zh-Hans": "迦特——歌利亚之城与非利士巨人的历史背景",
@@ -7587,7 +7587,7 @@
         "Josephus, Flavius. The Jewish War, Book V, c. 75 CE."
       ],
       "confidenceLevel": "Definitive",
-      "icon": "ð",
+      "icon": "🕍",
       "title": {
         "en": "Herod's Temple Mount — Western Wall and Robinson's Arch",
         "zh-Hans": "大希律圣殿山——世界最大古代宗教平台",
@@ -7630,7 +7630,7 @@
         "Stern, Ephraim. Archaeology of the Land of the Bible: The Assyrian, Babylonian, and Persian Periods. Doubleday, 2001."
       ],
       "confidenceLevel": "Definitive",
-      "icon": "ð¥",
+      "icon": "🔥",
       "title": {
         "en": "Jerusalem's Fall in 586 BCE — Archaeological Burn Evidence",
         "zh-Hans": "耶路撒冷陷落（公元前586年）——毁灭层的考古印证",
@@ -7674,7 +7674,7 @@
         "Moropoulou, Antonia et al. \"Non-destructive dating of mortars from the Edicule of the Holy Sepulchre.\" Journal of Archaeological Science 81, 2017."
       ],
       "confidenceLevel": "Strong",
-      "icon": "âï¸",
+      "icon": "✝️",
       "title": {
         "en": "Golgotha and the Church of the Holy Sepulchre",
         "zh-Hans": "圣墓教堂——各各他与耶稣坟墓的早期传统",
@@ -7716,7 +7716,7 @@
         "Ben-Yosef, Erez. \"Back to Solomon's Era: Results of the First Excavations at Slaves' Hill (Timna Site 34).\" BASOR 376, 2016."
       ],
       "confidenceLevel": "Strong",
-      "icon": "ð",
+      "icon": "🐍",
       "title": {
         "en": "Bronze Serpent at Timna — Midianite-Era Copper Snake Found",
         "zh-Hans": "提姆纳铜蛇——米甸帐幕的考古平行",
@@ -7759,7 +7759,7 @@
         "Nun, Mendel. The Sea of Galilee and Its Fishermen in the New Testament. Kibbutz Ein Gev, 1989."
       ],
       "confidenceLevel": "Circumstantial",
-      "icon": "ð",
+      "icon": "🌊",
       "title": {
         "en": "Walking on Water — Sea of Galilee Context",
         "zh-Hans": "耶稣在水面上行走——加利利海的物理背景",
@@ -7800,7 +7800,7 @@
         "Sweeney, Marvin. I & II Kings: A Commentary. Westminster John Knox, 2007."
       ],
       "confidenceLevel": "Circumstantial",
-      "icon": "ð¥",
+      "icon": "🔥",
       "title": {
         "en": "Elijah's Whirlwind Ascent — Jordan Crossing Near Jericho",
         "zh-Hans": "以利亚旋风升天——耶利哥附近约旦河口",
@@ -7841,7 +7841,7 @@
         "Hobbs, T. R. 2 Kings (Word Biblical Commentary 13). Word, 1985."
       ],
       "confidenceLevel": "Circumstantial",
-      "icon": "ð§",
+      "icon": "💧",
       "title": {
         "en": "Naaman's Healing — Aramean-Israelite Relations Verified",
         "zh-Hans": "乃缦的医治——亚兰-以色列关系的证实",
@@ -7883,7 +7883,7 @@
         "Stephenson, F. Richard. Historical Eclipses and Earth's Rotation. Cambridge University Press, 1997."
       ],
       "confidenceLevel": "Circumstantial",
-      "icon": "ð",
+      "icon": "🌞",
       "title": {
         "en": "Hezekiah's Sundial Sign — Ahaz's Stairway Dial",
         "zh-Hans": "希西家的日晷神迹——亚哈斯阶梯日晷",
@@ -7925,7 +7925,7 @@
         "Evans, Craig. Jesus and His World: The Archaeological Evidence. Westminster John Knox, 2012."
       ],
       "confidenceLevel": "Strong",
-      "icon": "ð¿",
+      "icon": "🌿",
       "title": {
         "en": "Triumphal Entry — Bethphage to Jerusalem Route",
         "zh-Hans": "荣入圣城——从伯法其到耶路撒冷的路径",
@@ -7966,7 +7966,7 @@
         "Taylor, Joan. \"The Garden of Gethsemane: Not the Place of Jesus' Arrest.\" BAR 21:4, 1995."
       ],
       "confidenceLevel": "Circumstantial",
-      "icon": "ð¥",
+      "icon": "🥖",
       "title": {
         "en": "Road to Emmaus — Emmaus-Nicopolis Identification",
         "zh-Hans": "以马忤斯之路——尼可波利斯的认定",
@@ -8005,7 +8005,7 @@
         "Ambraseys, Nicholas. Earthquakes in the Mediterranean and Middle East. Cambridge University Press, 2009."
       ],
       "confidenceLevel": "Strong",
-      "icon": "âï¸",
+      "icon": "⛓️",
       "title": {
         "en": "Paul at Philippi — Prison Earthquake and Roman Colony Verified",
         "zh-Hans": "保罗在腓立比——狱中地震与罗马殖民地的证实",
@@ -8046,7 +8046,7 @@
         "Kraft, Heinrich. Die Offenbarung des Johannes. Mohr Siebeck, 1974."
       ],
       "confidenceLevel": "Strong",
-      "icon": "ð",
+      "icon": "📜",
       "title": {
         "en": "John on Patmos — Cave of the Apocalypse",
         "zh-Hans": "约翰在拔摩岛——启示录之洞",
@@ -8089,7 +8089,7 @@
         "Van der Horst, Pieter. \"Thallus on the Darkness at the Crucifixion.\" In Jews and Christians in Their Graeco-Roman Context. Mohr Siebeck, 2006."
       ],
       "confidenceLevel": "Circumstantial",
-      "icon": "ð",
+      "icon": "🌑",
       "title": {
         "en": "Crucifixion Darkness and Earthquake — Independent Witnesses",
         "zh-Hans": "受难日的黑暗与地震——独立见证",
@@ -8131,7 +8131,7 @@
         "Har-El, Menashe. The Sinai Journeys: The Route of the Exodus. Ridgefield, 1983."
       ],
       "confidenceLevel": "Circumstantial",
-      "icon": "â²",
+      "icon": "⛲",
       "title": {
         "en": "Water from the Rock — Sinai Hydrogeology",
         "zh-Hans": "磐石出水——西奈水文地质",
@@ -8172,7 +8172,7 @@
         "Finkelstein, Israel, and Lily Singer-Avitz. \"Reevaluating Bethel.\" ZDPV 125, 2009."
       ],
       "confidenceLevel": "Strong",
-      "icon": "ðª",
+      "icon": "🪜",
       "title": {
         "en": "Jacob's Ladder at Bethel — Archaeological Evidence for the Sacred Site",
         "zh-Hans": "雅各天梯伯特利——圣地的考古证据",
@@ -8213,7 +8213,7 @@
         "Gass, Erasmus. The Elisha Cycle in 2 Kings 2-13. De Gruyter, 2019."
       ],
       "confidenceLevel": "Circumstantial",
-      "icon": "ð¦",
+      "icon": "👦",
       "title": {
         "en": "Elisha and the Shunammite Woman's Son — Archaeological Context",
         "zh-Hans": "以利沙与书念妇人之子——考古背景",
@@ -8255,7 +8255,7 @@
         "Vanderhooft, David, and Oded Lipschits. \"A New Typology of the Yehud Stamp Impressions.\" Tel Aviv 34, 2007."
       ],
       "confidenceLevel": "Strong",
-      "icon": "ð",
+      "icon": "📖",
       "title": {
         "en": "Josiah's Discovery of the Book of the Law — Archaeological Context",
         "zh-Hans": "约西亚发现律法书——考古背景",
@@ -8298,7 +8298,7 @@
         "Porten, Bezalel. The Elephantine Papyri in English. Brill, 1996."
       ],
       "confidenceLevel": "Strong",
-      "icon": "ðï¸",
+      "icon": "🏛️",
       "title": {
         "en": "Zerubbabel's Second Temple — Persian-Period Evidence",
         "zh-Hans": "所罗巴伯第二圣殿——波斯时期证据",
@@ -8339,7 +8339,7 @@
         "Murphy-O'Connor, Jerome. The Holy Land: An Oxford Archaeological Guide. Oxford University Press, 2008."
       ],
       "confidenceLevel": "Strong",
-      "icon": "ðª¨",
+      "icon": "🪨",
       "title": {
         "en": "Stoning of Stephen — Archaeological and Traditional Evidence",
         "zh-Hans": "司提反殉道——考古与传统证据",
@@ -8380,7 +8380,7 @@
         "Bauckham, Richard. \"Tabitha of Joppa.\" In Gospel Women. Eerdmans, 2002."
       ],
       "confidenceLevel": "Strong",
-      "icon": "ðï¸",
+      "icon": "🕊️",
       "title": {
         "en": "Peter Raises Tabitha at Joppa — Archaeological Evidence for the Setting",
         "zh-Hans": "彼得在约帕使大比大复活——场景的考古证据",
@@ -8421,7 +8421,7 @@
         "Holum, Kenneth, Avner Raban, and Joseph Patrich, eds. Caesarea Papers 2. JRA Supplement 35, 1999."
       ],
       "confidenceLevel": "Definitive",
-      "icon": "ð",
+      "icon": "👑",
       "title": {
         "en": "Herod Agrippa I's Death — Acts 12 Confirmed by Josephus",
         "zh-Hans": "希律亚基帕一世之死——使徒行传12章获约瑟夫证实",
@@ -8462,7 +8462,7 @@
         "Arnold, Clinton. Ephesians: Power and Magic. Cambridge University Press, 1989."
       ],
       "confidenceLevel": "Strong",
-      "icon": "ð",
+      "icon": "📕",
       "title": {
         "en": "Ephesus Artemis Temple — Acts 19 Burning of Magic Books",
         "zh-Hans": "以弗所亚底米神庙——使徒行传19章焚烧邪术书籍",
@@ -8503,7 +8503,7 @@
         "Meinardus, Otto. The Holy Family in Egypt. American University in Cairo Press, 1986."
       ],
       "confidenceLevel": "Circumstantial",
-      "icon": "ð«",
+      "icon": "🐫",
       "title": {
         "en": "Flight to Egypt — Coptic Traditions and Archaeological Sites",
         "zh-Hans": "逃往埃及——科普特传统和考古遗址",
@@ -8544,7 +8544,7 @@
         "Reed, Jonathan. Archaeology and the Galilean Jesus. Trinity Press, 2000."
       ],
       "confidenceLevel": "Circumstantial",
-      "icon": "â°ï¸",
+      "icon": "⚰️",
       "title": {
         "en": "Widow of Nain's Son Raised — The Galilean Village Confirmed",
         "zh-Hans": "拿因城寡妇之子复活——加利利村庄获确认",
