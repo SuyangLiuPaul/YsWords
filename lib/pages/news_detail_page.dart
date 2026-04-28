@@ -199,15 +199,19 @@ class NewsDetailPage extends StatelessWidget {
                             Icon(Icons.auto_stories,
                                 size: 16, color: scheme.primary),
                             const SizedBox(width: 6),
-                            Text(
-                              article.verse.reference,
-                              style: TextStyle(
-                                fontFamily: settings.fontFamily,
-                                fontSize: (fs - 1)
-                                    .clamp(13.0, 16.0)
-                                    .toDouble(),
-                                fontWeight: FontWeight.w700,
-                                color: scheme.primary,
+                            Flexible(
+                              child: Text(
+                                article.verse.reference,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  fontFamily: settings.fontFamily,
+                                  fontSize: (fs - 1)
+                                      .clamp(13.0, 16.0)
+                                      .toDouble(),
+                                  fontWeight: FontWeight.w700,
+                                  color: scheme.primary,
+                                ),
                               ),
                             ),
                             const SizedBox(width: 6),

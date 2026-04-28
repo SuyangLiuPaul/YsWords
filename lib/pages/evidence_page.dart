@@ -533,12 +533,13 @@ class _AiSearchDialogState extends State<_AiSearchDialog> {
   }
 
   /// Resolve a citation id back to the loaded evidence list so we can
-  /// hand a real model object to the navigator.
+  /// hand a real model object to the navigator. Built lazily so we
+  /// only pay the O(n) cost on first citation tap, then O(1) for
+  /// every tap after.
+  Map<String, BibleEvidence>? _idMap;
   BibleEvidence? _resolve(String id) {
-    for (final e in widget.all) {
-      if (e.id == id) return e;
-    }
-    return null;
+    final m = _idMap ??= {for (final e in widget.all) e.id: e};
+    return m[id];
   }
 
   @override

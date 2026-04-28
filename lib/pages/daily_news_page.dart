@@ -52,6 +52,10 @@ class _DailyNewsPageState extends State<DailyNewsPage> {
   }
 
   Future<void> _manualRefresh() async {
+    // Guard against double-taps and overlapping refreshes — without
+    // this, two near-simultaneous taps would race and the slower
+    // response could overwrite a fresher one (out-of-order resolve).
+    if (_refreshing) return;
     setState(() => _refreshing = true);
     try {
       await DailyNewsService.refresh();

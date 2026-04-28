@@ -1,3 +1,4 @@
+import 'dart:async' show TimeoutException;
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
@@ -32,22 +33,58 @@ class AiSearchService {
     if (query.trim().length < 2) {
       return AiSearchResult.empty();
     }
-    final resp = await http
-        .post(
-          Uri.parse(endpoint),
-          headers: const {'Content-Type': 'application/json'},
-          body: jsonEncode({'query': query, 'locale': locale}),
-        )
-        .timeout(const Duration(seconds: 25));
-
-    if (resp.statusCode != 200) {
-      throw Exception(
-        'AI search failed: ${resp.statusCode} ${resp.body.length > 200 ? "${resp.body.substring(0, 200)}…" : resp.body}',
+    final http.Response resp;
+    try {
+      resp = await http
+          .post(
+            Uri.parse(endpoint),
+            headers: const {'Content-Type': 'application/json'},
+            body: jsonEncode({'query': query, 'locale': locale}),
+          )
+          .timeout(const Duration(seconds: 25));
+    } on TimeoutException {
+      // Friendly message — the dialog renders this verbatim. We avoid
+      // leaking the raw `TimeoutException` ToString which says
+      // "Timeout after 0:00:25.000000" and confuses non-technical
+      // users.
+      throw const AiSearchException(
+        'The AI search took too long. Please try again or rephrase '
+        'your question.',
+      );
+    } catch (e) {
+      // Network unreachable, DNS failure, etc. The Cloud Function
+      // is also not deployed yet for some users — surface the
+      // underlying message but keep it short.
+      throw AiSearchException(
+        'Could not reach the AI search service. (${e.runtimeType})',
       );
     }
-    final body = jsonDecode(resp.body) as Map<String, dynamic>;
-    return AiSearchResult.fromJson(body);
+
+    if (resp.statusCode != 200) {
+      throw AiSearchException(
+        'AI search failed (${resp.statusCode}). '
+        '${resp.body.length > 160 ? "${resp.body.substring(0, 160)}…" : resp.body}',
+      );
+    }
+    try {
+      final body = jsonDecode(resp.body) as Map<String, dynamic>;
+      return AiSearchResult.fromJson(body);
+    } catch (_) {
+      throw const AiSearchException(
+        'Got an unexpected response from the AI search service.',
+      );
+    }
   }
+}
+
+/// User-facing exception class. Implementations of `toString()` show
+/// the message verbatim (no `Exception:` prefix), so the dialog can
+/// render `e.toString()` without extra wrangling.
+class AiSearchException implements Exception {
+  final String message;
+  const AiSearchException(this.message);
+  @override
+  String toString() => message;
 }
 
 class AiSearchResult {
