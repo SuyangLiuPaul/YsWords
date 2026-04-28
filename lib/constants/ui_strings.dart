@@ -824,6 +824,26 @@ const uiStrings = {
     'zh-Hant': '關鍵字匹配',
     'en': 'Keyword matches',
   },
+  'settingsSectionAbout': {
+    'zh-Hans': '关于',
+    'zh-Hant': '關於',
+    'en': 'About',
+  },
+  'appTagline': {
+    'zh-Hans': '双语圣经研读应用。',
+    'zh-Hant': '雙語聖經研讀應用。',
+    'en': 'A bilingual Bible study app.',
+  },
+  'contactIntro': {
+    'zh-Hans': '作者 Paul Liu',
+    'zh-Hant': '作者 Paul Liu',
+    'en': 'Made by Paul Liu',
+  },
+  'contactTail': {
+    'zh-Hans': '问题、反馈或其他事宜：',
+    'zh-Hant': '問題、反饋或其他事宜：',
+    'en': 'Questions, feedback, or anything else:',
+  },
   // Daily News (Round 40 — migrated from sibling DailyNews project).
   'dailyNews': {
     'zh-Hans': '每日新闻',

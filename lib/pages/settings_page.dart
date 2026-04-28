@@ -11,6 +11,7 @@ import 'dart:async' show Timer;
 
 import 'package:yswords/services/cloud_sync_service.dart';
 import 'package:yswords/services/notification_service.dart';
+import 'package:yswords/widgets/contact_line.dart';
 import 'package:yswords/widgets/profile_avatar.dart';
 import 'package:yswords/services/fetch_books.dart';
 import 'package:yswords/services/fetch_verses.dart';
@@ -817,6 +818,11 @@ class SettingsPage extends StatelessWidget {
                           ?[settings.locale] ??
                       'Notifications'),
               _NotificationsCard(settings: settings, s: s),
+              SizedBox(height: 16 * s),
+              _SectionHeader(
+                  uiStrings['settingsSectionAbout']?[settings.locale] ??
+                      'About'),
+              _AboutCard(settings: settings, s: s),
               SizedBox(height: 16 * s),
             ],
               ),
@@ -2018,6 +2024,63 @@ class _NotificationsCardState extends State<_NotificationsCard> {
                   ),
                 ),
               ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+
+/// Settings → About — app name, version line, and the unified
+/// ContactLine. Lives at the bottom of the Settings list.
+class _AboutCard extends StatelessWidget {
+  final AppSettings settings;
+  final double s;
+  const _AboutCard({required this.settings, required this.s});
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final locale = settings.locale;
+    return Card(
+      child: Padding(
+        padding: EdgeInsets.fromLTRB(16 * s, 14 * s, 16 * s, 8 * s),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.menu_book_rounded,
+                    color: scheme.primary,
+                    size: settings.fontSize + 4),
+                SizedBox(width: 8 * s),
+                Text(
+                  uiStrings['appName']?[locale] ?? 'YsWords',
+                  style: TextStyle(
+                    fontFamily: settings.fontFamily,
+                    fontSize: settings.fontSize + 2,
+                    fontWeight: FontWeight.w700,
+                    color: scheme.onSurface,
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: 4 * s),
+            Text(
+              uiStrings['appTagline']?[locale] ??
+                  'A bilingual Bible study app.',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontFamily: settings.fontFamily,
+                fontSize: (settings.fontSize - 3).clamp(11.0, 14.0),
+                color: scheme.onSurfaceVariant,
+                fontStyle: FontStyle.italic,
+              ),
+            ),
+            SizedBox(height: 6 * s),
+            const ContactLine(),
           ],
         ),
       ),
