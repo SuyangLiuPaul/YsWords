@@ -7,6 +7,7 @@ import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/models/news_article.dart';
 import 'package:yswords/pages/home_page.dart';
 import 'package:yswords/providers/main_provider.dart';
+import 'package:yswords/services/link_opener.dart';
 import 'package:yswords/utils/clipboard_helper.dart';
 import 'package:yswords/utils/reference_parser.dart' show parseReference;
 import 'package:yswords/utils/version_mapper.dart' show translateBookName;
@@ -44,7 +45,7 @@ class NewsDetailPage extends StatelessWidget {
           IconButton(
             tooltip: uiStrings['openSource']?[locale] ?? 'Open original',
             icon: const Icon(Icons.open_in_new_outlined),
-            onPressed: () => _copySource(context, locale),
+            onPressed: () => _openOrCopySource(context, locale),
           ),
           const HomeIconButton(),
         ],
@@ -113,11 +114,11 @@ class NewsDetailPage extends StatelessWidget {
               ),
               const SizedBox(height: 12),
               TextButton.icon(
-                onPressed: () => _copySource(context, locale),
-                icon: const Icon(Icons.link, size: 16),
+                onPressed: () => _openOrCopySource(context, locale),
+                icon: const Icon(Icons.open_in_new, size: 16),
                 label: Text(
                   (uiStrings['readOriginal']?[locale] ??
-                          'Copy link to {source}')
+                          'Read original at {source}')
                       .replaceAll('{source}', article.source),
                 ),
               ),
@@ -264,10 +265,20 @@ class NewsDetailPage extends StatelessWidget {
     return '${l.year}-${two(l.month)}-${two(l.day)} ${two(l.hour)}:${two(l.minute)}';
   }
 
-  /// We don't depend on url_launcher (see comment in evidence_detail_page.dart).
-  /// Tap copies the URL so the user can paste it into a browser.
-  Future<void> _copySource(BuildContext context, String locale) async {
+  /// Open the source article in a new browser tab (web) — falls back
+  /// to copy-link-to-clipboard if window.open is blocked or we're on
+  /// a non-web platform without `url_launcher`. Either way the user
+  /// gets to the article.
+  Future<void> _openOrCopySource(
+      BuildContext context, String locale) async {
     if (article.link.isEmpty) return;
+    if (LinkOpener.isAvailable) {
+      final ok = await LinkOpener.open(article.link);
+      if (ok) return;
+    }
+    if (!context.mounted) return;
+    // Web pop-up was blocked OR native target with no launcher —
+    // give the user the URL via clipboard.
     await ClipboardHelper.shareOrCopy(
       context,
       article.link,

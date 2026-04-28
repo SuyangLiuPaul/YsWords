@@ -716,9 +716,9 @@ const uiStrings = {
     'en': 'Read full story',
   },
   'readOriginal': {
-    'zh-Hans': '复制 {source} 原文链接',
-    'zh-Hant': '複製 {source} 原文連結',
-    'en': 'Copy link to {source}',
+    'zh-Hans': '阅读 {source} 原文',
+    'zh-Hant': '閱讀 {source} 原文',
+    'en': 'Read original at {source}',
   },
   'openSource': {
     'zh-Hans': '打开原文',
