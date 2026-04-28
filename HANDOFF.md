@@ -252,7 +252,7 @@ The 209 image URLs migrated from the React project were all fabricated — plaus
 
 - Queries Wikipedia REST API `/page/summary/<title>` per entry to get a real `thumbnail.source` URL.
 - Falls back to Wikipedia search when the direct title lookup misses.
-- Final fallback: a per-category placeholder image (Tel Megiddo for Archaeology, Codex Sinaiticus for Manuscripts, Hubble UDF for Science, Roman Empire map for History).
+- If still nothing real, leaves `images: []` so the UI renders the entry's emoji icon. We deliberately **do not** use generic per-category placeholders (e.g. "show a Tel Megiddo photo for any unmatched Archaeology entry") — that would mislead users into thinking the entry has its own picture.
 - Idempotent: skips entries whose existing URL still resolves.
 
 Re-run after editing `evidences[].title.en` if a new entry's image is wrong.
@@ -605,8 +605,8 @@ The app adapts its layout to all device sizes using `lib/utils/responsive.dart`:
 
 **Image backfill (`scripts/backfill_evidence_images.py` + `scripts/verify_evidence_images.py`)**:
 - The 209 image URLs migrated from the bible-evidence React project were all fabricated — plausible-looking Wikimedia thumb paths with wrong hash prefixes that all returned 400.
-- Stage 1 (`backfill_…`): query Wikipedia REST `/page/summary/<title>` per entry, fall back to Wikipedia search, then to per-category placeholder. Result: 188 real / 13 fallback / 8 kept.
-- Stage 2 (`verify_…`): GET-test every URL; for 4xx/5xx, rewrite via `Special:FilePath` (hash-stable); final fallback to per-category placeholder.
+- Stage 1 (`backfill_…`): query Wikipedia REST `/page/summary/<title>` per entry, fall back to Wikipedia search; if nothing matches leave `images: []` (UI renders the entry's emoji). Final result after both passes: **192/209 (91.9%) have real images, 17 render the emoji icon** — explicit "no picture" beats a misleading shared placeholder.
+- Stage 2 (`verify_…`): GET-test every URL; for 4xx/5xx, rewrite via `Special:FilePath` (hash-stable); if that also fails, clear `images: []` so the UI shows the entry's emoji icon (no generic placeholders — see policy note below).
 - Idempotent — re-runs only touch broken entries.
 - Backups created at `assets/bible_evidence.json.bak` (gitignored).
 

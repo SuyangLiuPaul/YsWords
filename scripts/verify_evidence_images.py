@@ -5,7 +5,8 @@ For broken URLs, attempt to extract a stable file name and fall back
 to https://commons.wikimedia.org/wiki/Special:FilePath/<name>?width=400
 which is hash-stable and immune to thumb-cache invalidation.
 
-Final fallback: per-category placeholder.
+If the FilePath rewrite also fails, clear `images: []` and let the UI
+render the entry's emoji icon — no generic per-category placeholder.
 
 Idempotent. Run after backfill_evidence_images.py.
 """
@@ -25,14 +26,10 @@ JSON_PATH = os.path.join(REPO_ROOT, "assets", "bible_evidence.json")
 
 UA = "yswords-image-verifier/1.0 (https://yswords.netlify.app)"
 
-# Per-category fallback — every URL here is verified to return 200 via
-# `curl -L`. If you change one, re-test before committing.
-CATEGORY_FALLBACK = {
-    "Archaeology": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/bf/TEL_MEGIDO_AERIAL_C.JPG/640px-TEL_MEGIDO_AERIAL_C.JPG",
-    "Manuscripts": "https://upload.wikimedia.org/wikipedia/commons/4/4a/Sinaiticus_text.jpg",
-    "Science":     "https://commons.wikimedia.org/wiki/Special:FilePath/Hubble_ultra_deep_field_high_rez_edit1.jpg?width=640",
-    "History":     "https://commons.wikimedia.org/wiki/Special:FilePath/Roman_Empire_Trajan_117AD.png?width=640",
-}
+# No category fallbacks — entries with no working real image get
+# `images: []` and the UI renders the emoji icon (see `_IconFallback`,
+# `_IconHero`, `_ThumbIcon`). A generic Tel Megiddo photo under
+# "Nuzi tablets" is more misleading than showing no photo at all.
 
 
 def fetch_status(url: str, timeout: int = 8) -> int:
@@ -97,12 +94,7 @@ def main() -> int:
         eid = entry.get("id", f"<idx {idx}>")
         cur = (entry.get("images") or [None])[0]
         if not cur:
-            # Apply category fallback.
-            fb = CATEGORY_FALLBACK.get(entry.get("category", ""))
-            if fb:
-                entry["images"] = [fb]
-                fixed_fallback += 1
-                print(f"[{idx:3d}/{total}] empty -> fallback ({entry.get('category')})  {eid}")
+            # Already empty — UI will render emoji icon. Skip.
             continue
 
         code = fetch_status(cur)
@@ -126,13 +118,10 @@ def main() -> int:
             fixed_filepath += 1
             print(f"[{idx:3d}/{total}] {code} -> filepath  {eid}")
         else:
-            fb = CATEGORY_FALLBACK.get(entry.get("category", ""))
-            if fb:
-                entry["images"] = [fb] + (entry.get("images") or [])[1:]
-                fixed_fallback += 1
-                print(f"[{idx:3d}/{total}] {code} -> fallback ({entry.get('category')})  {eid}")
-            else:
-                print(f"[{idx:3d}/{total}] {code} SKIP  {eid}")
+            # No working URL — clear so the UI renders the icon.
+            entry["images"] = []
+            fixed_fallback += 1
+            print(f"[{idx:3d}/{total}] {code} -> icon  {eid}")
 
         time.sleep(0.1)
 
@@ -142,7 +131,7 @@ def main() -> int:
         json.dump(data, f, ensure_ascii=False, indent=2)
 
     print()
-    print(f"Done. ok={ok}  filepath_rewrite={fixed_filepath}  fallback={fixed_fallback}  total={total}")
+    print(f"Done. ok={ok}  filepath_rewrite={fixed_filepath}  icon-only={fixed_fallback}  total={total}")
     return 0
 
 

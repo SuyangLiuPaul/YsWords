@@ -16,7 +16,7 @@
       "Strong": 90,
       "Circumstantial": 39
     },
-    "generatedAt": "2026-04-28T01:53:03.829754+00:00"
+    "generatedAt": "2026-04-28T01:56:42.336065+00:00"
   },
   "evidences": [
     {
@@ -735,9 +735,7 @@
       "discoveryDate": "1967",
       "location": "Jordan Museum, Amman",
       "scriptureReference": "Numbers 22-24",
-      "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/b/bf/TEL_MEGIDO_AERIAL_C.JPG/640px-TEL_MEGIDO_AERIAL_C.JPG"
-      ],
+      "images": [],
       "academicSources": [
         "Hoftijzer, Jacob, and G. van der Kooij. Aramaic Texts from Deir Alla. Brill, 1976.",
         "Moore, Michael S. The Balaam Traditions. Scholars Press, 1990.",
@@ -861,9 +859,7 @@
       "discoveryDate": "1878 (acquired) / 1930 (published)",
       "location": "BibliothÃ¨que nationale de France, Paris",
       "scriptureReference": "Matthew 28:12-13",
-      "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/b/bf/TEL_MEGIDO_AERIAL_C.JPG/640px-TEL_MEGIDO_AERIAL_C.JPG"
-      ],
+      "images": [],
       "academicSources": [
         "Cumont, Franz. \"Un rescrit impÃ©rial sur la violation de sÃ©pulture.\" Revue historique 163 (1930): 241â266.",
         "Clarysse, Willy, and Mark Depauw. \"The Nazareth Inscription Reconsidered.\" Analecta Papyrologica (2020).",
@@ -1518,9 +1514,7 @@
       "discoveryDate": "1844",
       "location": "British Library, London (primary portion)",
       "scriptureReference": "John 1:1",
-      "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/4/4a/Sinaiticus_text.jpg"
-      ],
+      "images": [],
       "academicSources": [
         "Tischendorf, Constantin von. Codex Sinaiticus. Giesecke & Devrient, 1862.",
         "Milne, H. J. M., and T. C. Skeat. Scribes and Correctors of the Codex Sinaiticus. British Museum, 1938.",
@@ -1600,9 +1594,7 @@
       "discoveryDate": "1898",
       "location": "Cambridge University Library",
       "scriptureReference": "Exodus 20:2-17",
-      "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/4/4a/Sinaiticus_text.jpg"
-      ],
+      "images": [],
       "academicSources": [
         "Nash, W. L. \"A Hebrew Papyrus.\" Proceedings of the Society of Biblical Archaeology 22 (1900): 21â34.",
         "Albright, William F. \"A Biblical Fragment from the Maccabaean Age.\" JBL 56 (1937): 145â176."
@@ -2044,9 +2036,7 @@
       "discoveryDate": "1951-1952",
       "location": "Israel Antiquities Authority, Jerusalem",
       "scriptureReference": "Romans 13:1",
-      "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/4/4a/Sinaiticus_text.jpg"
-      ],
+      "images": [],
       "academicSources": [
         "Benoit, Pierre, et al. Les Grottes de Murabba'Ã¢t. DJD 2. Oxford University Press, 1961.",
         "Yadin, Yigael. Bar-Kokhba. Random House, 1971."
@@ -2692,9 +2682,7 @@
       "discoveryDate": "1925-1931",
       "location": "Iraq Museum, Baghdad / Harvard Semitic Museum",
       "scriptureReference": "Genesis 16:1-4",
-      "images": [
-        "https://commons.wikimedia.org/wiki/Special:FilePath/Roman_Empire_Trajan_117AD.png?width=640"
-      ],
+      "images": [],
       "academicSources": [
         "Gordon, Cyrus H. \"Biblical Customs and the Nuzu Tablets.\" BA 3 (1940): 1â12.",
         "Thompson, Thomas L. The Historicity of the Patriarchal Narratives. De Gruyter, 1974."
@@ -4227,9 +4215,7 @@
       "discoveryDate": "1920s / identified 2007",
       "location": "British Museum, London",
       "scriptureReference": "Jeremiah 39:3",
-      "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/b/bf/TEL_MEGIDO_AERIAL_C.JPG/640px-TEL_MEGIDO_AERIAL_C.JPG"
-      ],
+      "images": [],
       "academicSources": [
         "Jursa, Michael. \"Nebo-Sarsekim, der Oberster der Eunuchen.\" NABU 2007/2 (2007): 41â43.",
         "Kitchen, Kenneth A. On the Reliability of the Old Testament. Eerdmans, 2003."
@@ -4267,9 +4253,7 @@
       "discoveryDate": "1869+",
       "location": "Various museums; Israel Antiquities Authority",
       "scriptureReference": "2 Chronicles 32:1-8",
-      "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/b/bf/TEL_MEGIDO_AERIAL_C.JPG/640px-TEL_MEGIDO_AERIAL_C.JPG"
-      ],
+      "images": [],
       "academicSources": [
         "Vaughn, Andrew G. Theology, History, and Archaeology in the Chronicler's Account of Hezekiah. Scholars Press, 1999.",
         "Ussishkin, David. The Conquest of Lachish by Sennacherib. Tel Aviv University, 1982."
@@ -4591,9 +4575,7 @@
       "discoveryDate": "1967",
       "location": "Iraq Museum, Baghdad",
       "scriptureReference": "2 Kings 13:10-25",
-      "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/b/bf/TEL_MEGIDO_AERIAL_C.JPG/640px-TEL_MEGIDO_AERIAL_C.JPG"
-      ],
+      "images": [],
       "academicSources": [
         "Page, Stephanie. \"A Stela of Adad-Nirari III and Nergal-Eresh from Tell al Rimah.\" Iraq 30 (1968): 139â153.",
         "Kitchen, Kenneth A. On the Reliability of the Old Testament. Eerdmans, 2003."
@@ -4631,9 +4613,7 @@
       "discoveryDate": "19th century",
       "location": "British Museum, London",
       "scriptureReference": "2 Kings 15:19-20",
-      "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/b/bf/TEL_MEGIDO_AERIAL_C.JPG/640px-TEL_MEGIDO_AERIAL_C.JPG"
-      ],
+      "images": [],
       "academicSources": [
         "Luckenbill, Daniel David. Ancient Records of Assyria. University of Chicago Press, 1926.",
         "Tadmor, Hayim. The Inscriptions of Tiglath-Pileser III. Israel Academy of Sciences, 1994."
@@ -6311,9 +6291,7 @@
       "discoveryDate": "2017â2019 (el-Araj excavations)",
       "location": "el-Araj / Bethsaida, Sea of Galilee, Israel",
       "scriptureReference": "Luke 9:10-17",
-      "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/b/bf/TEL_MEGIDO_AERIAL_C.JPG/640px-TEL_MEGIDO_AERIAL_C.JPG"
-      ],
+      "images": [],
       "academicSources": [
         "Aviam, Mordechai, and R. Steven Notley. \"The Bethsaida-Julias Excavations at el-Araj.\" Israel Exploration Journal, 2020.",
         "Notley, R. Steven. In the Master's Steps: The Gospels in the Land. Carta, 2014.",
@@ -6394,9 +6372,7 @@
       "discoveryDate": "Continuously venerated since the 1st century CE",
       "location": "Bir Ya'qub, Nablus, West Bank",
       "scriptureReference": "John 4:5-14",
-      "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/b/bf/TEL_MEGIDO_AERIAL_C.JPG/640px-TEL_MEGIDO_AERIAL_C.JPG"
-      ],
+      "images": [],
       "academicSources": [
         "Murphy-O'Connor, Jerome. The Holy Land: An Oxford Archaeological Guide. Oxford University Press, 2008.",
         "Pringle, Denys. The Churches of the Crusader Kingdom of Jerusalem: Volume II. Cambridge University Press, 1998.",
@@ -7230,9 +7206,7 @@
       "discoveryDate": "1863 (Wood, British Museum); ongoing Austrian excavations from 1895",
       "location": "Ephesus (SelÃ§uk), Turkey",
       "scriptureReference": "Acts 19:23-41",
-      "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/b/bf/TEL_MEGIDO_AERIAL_C.JPG/640px-TEL_MEGIDO_AERIAL_C.JPG"
-      ],
+      "images": [],
       "academicSources": [
         "Wood, J. T. Discoveries at Ephesus. Longmans, Green, 1877.",
         "Trebilco, Paul. The Early Christians in Ephesus from Paul to Ignatius. Eerdmans, 2004.",
@@ -7271,9 +7245,7 @@
       "discoveryDate": "1952 (Qumran Cave 4); published 1956 (Milik)",
       "location": "Shrine of the Book, Israel Museum, Jerusalem",
       "scriptureReference": "Daniel 4:28-34",
-      "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/4/4a/Sinaiticus_text.jpg"
-      ],
+      "images": [],
       "academicSources": [
         "Milik, JÃ³zef T. \"PriÃ¨re de Nabonide et autres Ã©crits d'un cycle de Daniel.\" Revue Biblique 63, 1956.",
         "Collins, John J. The Apocalyptic Imagination. Eerdmans, 1998.",
@@ -7355,9 +7327,7 @@
       "discoveryDate": "1957â1971 (Yadin excavations at Hazor, Megiddo, Gezer)",
       "location": "Hazor, Megiddo, Gezer (Israel)",
       "scriptureReference": "1 Kings 9:15",
-      "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/b/bf/TEL_MEGIDO_AERIAL_C.JPG/640px-TEL_MEGIDO_AERIAL_C.JPG"
-      ],
+      "images": [],
       "academicSources": [
         "Yadin, Yigael. Hazor: The Rediscovery of a Great Citadel of the Bible. Random House, 1975.",
         "Dever, William G. What Did the Biblical Writers Know and When Did They Know It? Eerdmans, 2001.",
@@ -7948,9 +7918,7 @@
       "discoveryDate": "Bethphage ossuary inscriptions (1923); Mount of Olives excavations ongoing",
       "location": "Mount of Olives, Bethphage, Jerusalem",
       "scriptureReference": "Matthew 21:1-11; Zechariah 9:9",
-      "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/b/bf/TEL_MEGIDO_AERIAL_C.JPG/640px-TEL_MEGIDO_AERIAL_C.JPG"
-      ],
+      "images": [],
       "academicSources": [
         "Murphy-O'Connor, Jerome. The Holy Land: An Oxford Archaeological Guide. Oxford University Press, 2008.",
         "Bauckham, Richard. Jesus and the Eyewitnesses. Eerdmans, 2006.",
@@ -8030,9 +7998,7 @@
       "discoveryDate": "Philippi excavations (Ãcole franÃ§aise d'AthÃ¨nes 1914-present)",
       "location": "Philippi, Macedonia (northern Greece)",
       "scriptureReference": "Acts 16:16-40",
-      "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/b/bf/TEL_MEGIDO_AERIAL_C.JPG/640px-TEL_MEGIDO_AERIAL_C.JPG"
-      ],
+      "images": [],
       "academicSources": [
         "Bakirtzis, Charalambos, and Helmut Koester, eds. Philippi at the Time of Paul and after His Death. Trinity Press, 1998.",
         "Pilhofer, Peter. Philippi. 2 vols. Mohr Siebeck, 1995-2000.",

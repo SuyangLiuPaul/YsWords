@@ -10,8 +10,9 @@ Strategy per entry:
   1. Try the English title verbatim against /page/summary/<title>.
   2. If 404 / no thumbnail, try a few transformed candidates (the id, or
      a stripped title without parentheticals).
-  3. If still nothing, fall back to a generic per-category placeholder
-     (a small set of well-known Wikipedia photos representing the topic).
+  3. If still nothing, leave `images: []` and let the UI render the
+     entry's emoji icon — better than a generic per-category photo that
+     would mislead users into thinking the entry has a specific image.
 
 Run with:
     cd <repo root>
@@ -39,14 +40,10 @@ SEARCH_API = (
     "action=query&list=search&format=json&srlimit=3&srsearch={}"
 )
 
-# Per-category fallback — every URL here is verified to return 200.
-# If you change one, re-test before committing.
-CATEGORY_FALLBACK = {
-    "Archaeology": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/bf/TEL_MEGIDO_AERIAL_C.JPG/640px-TEL_MEGIDO_AERIAL_C.JPG",
-    "Manuscripts": "https://upload.wikimedia.org/wikipedia/commons/4/4a/Sinaiticus_text.jpg",
-    "Science":     "https://commons.wikimedia.org/wiki/Special:FilePath/Hubble_ultra_deep_field_high_rez_edit1.jpg?width=640",
-    "History":     "https://commons.wikimedia.org/wiki/Special:FilePath/Roman_Empire_Trajan_117AD.png?width=640",
-}
+# No category fallbacks — entries that we can't find a real image for
+# render their emoji icon (handled in the Flutter widgets:
+# _IconFallback / _IconHero / _ThumbIcon). A generic Tel Megiddo photo
+# under "Nuzi tablets" is more misleading than showing no photo.
 
 
 def http_get(url: str, timeout: int = 8) -> Optional[bytes]:
@@ -178,13 +175,10 @@ def main() -> int:
             updated += 1
             print(f"[{idx:3d}/{total}] update  {eid} -> {new_url[:90]}")
         else:
-            fb = CATEGORY_FALLBACK.get(entry.get("category", ""), "")
-            if fb:
-                entry["images"] = [fb] + existing[1:]
-                fallback += 1
-                print(f"[{idx:3d}/{total}] fallbk  {eid} -> [{entry.get('category')}]")
-            else:
-                print(f"[{idx:3d}/{total}] SKIP    {eid} (no candidate, no fallback)")
+            # No real image found — clear so the UI renders the icon.
+            entry["images"] = []
+            fallback += 1
+            print(f"[{idx:3d}/{total}] icon    {eid} (no real match — will render emoji)")
 
         # Be polite to Wikipedia API.
         time.sleep(0.25)
@@ -197,7 +191,7 @@ def main() -> int:
         json.dump(data, f, ensure_ascii=False, indent=2)
 
     print()
-    print(f"Done. updated={updated}  fallback={fallback}  kept={kept}  total={total}")
+    print(f"Done. updated={updated}  icon-only={fallback}  kept={kept}  total={total}")
     return 0
 
 
