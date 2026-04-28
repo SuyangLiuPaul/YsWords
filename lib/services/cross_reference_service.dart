@@ -50,26 +50,56 @@ class CrossReferenceService {
     return _cache?[key] ?? const [];
   }
 
-  /// Heuristic for chapter-level queries: try the exact verse key
-  /// first; if nothing, return cross-refs for any verse in the same
-  /// chapter that has an entry. Useful when the user opens the
-  /// cross-refs panel for a chapter where only certain key verses
-  /// have curated mappings (e.g. Genesis 1 only has refs for 1:1).
+  /// Heuristic for chapter-level queries:
+  ///   1. Try the exact verse key first. With the OpenBible TSK
+  ///      dataset this is the common case — every verse in the Bible
+  ///      has its own entry (29k+ source verses).
+  ///   2. If the exact key is missing, find ALL nearby verses in the
+  ///      same chapter and merge their refs (deduped by canonical
+  ///      reference key). Sort by closeness to the requested verse so
+  ///      the most relevant nearby refs appear first.
+  ///   3. Cap the merged result at 12 refs to keep the sheet readable.
+  ///
+  /// Pre-round-50: only returned the first nearby key's refs, so a
+  /// chapter with 8 verses each having one ref would surface only
+  /// the first verse's refs — confusing.
   static Future<List<BibleReference>> forVerseOrNearby(
       String englishBook, int chapter, int verse) async {
     await _ensureLoaded();
-    final exact = _cache?[_key(englishBook, chapter, verse)] ?? const [];
-    if (exact.isNotEmpty) return exact;
     final cache = _cache;
     if (cache == null) return const [];
-    // Look for any nearby verse in the same chapter that has refs.
+
+    final exact = cache[_key(englishBook, chapter, verse)] ?? const [];
+    if (exact.isNotEmpty) return exact;
+
+    // Walk all keys in the same book+chapter; sort by distance from
+    // the requested verse so refs closest to the user's tap appear
+    // first.
     final prefix = '$englishBook $chapter:';
-    final keys = cache.keys
-        .where((k) => k.startsWith(prefix))
-        .toList()
-      ..sort();
-    if (keys.isEmpty) return const [];
-    return cache[keys.first] ?? const [];
+    final neighbours = <int, List<BibleReference>>{};
+    for (final entry in cache.entries) {
+      final k = entry.key;
+      if (!k.startsWith(prefix)) continue;
+      final v = int.tryParse(k.substring(prefix.length));
+      if (v == null) continue;
+      neighbours[v] = entry.value;
+    }
+    if (neighbours.isEmpty) return const [];
+
+    final sortedVerses = neighbours.keys.toList()
+      ..sort((a, b) =>
+          (a - verse).abs().compareTo((b - verse).abs()));
+    final merged = <String, BibleReference>{};
+    for (final v in sortedVerses) {
+      for (final ref in neighbours[v]!) {
+        final key =
+            '${ref.englishBook} ${ref.chapter}:${ref.verseStart ?? 1}';
+        merged.putIfAbsent(key, () => ref);
+        if (merged.length >= 12) break;
+      }
+      if (merged.length >= 12) break;
+    }
+    return merged.values.toList();
   }
 
   /// Total number of curated source verses currently in the dataset.
