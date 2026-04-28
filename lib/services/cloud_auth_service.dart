@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 // ignore: depend_on_referenced_packages
@@ -144,6 +145,26 @@ class CloudAuthService extends ChangeNotifier {
       await Firebase.initializeApp(
         options: DefaultFirebaseOptions.web,
       );
+      // Tell Firestore to auto-detect when the WebChannel transport
+      // is being blocked (some browser extensions, corporate
+      // proxies, mobile carrier networks) and fall back to long-
+      // polling. Without this, set() can hang indefinitely and the
+      // user sees a generic 30 s timeout with no clue why. This has
+      // to be set BEFORE any Firestore call — doing it right after
+      // initializeApp is the canonical place.
+      if (kIsWeb) {
+        try {
+          step = 'Firestore.settings';
+          FirebaseFirestore.instance.settings = const Settings(
+            webExperimentalAutoDetectLongPolling: true,
+          );
+        } catch (e) {
+          // Settings can only be set once per app instance. If we
+          // somehow get here twice (hot-restart in dev) the second
+          // assignment throws — non-fatal, the first one stuck.
+          debugPrint('CloudAuthService: Firestore settings: $e');
+        }
+      }
       step = 'FirebaseAuth.instance';
       final auth = FirebaseAuth.instance;
       step = 'FirebaseAuth.currentUser';
