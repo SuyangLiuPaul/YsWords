@@ -11,6 +11,7 @@ import 'dart:async' show Timer;
 
 import 'package:yswords/services/cloud_sync_service.dart';
 import 'package:yswords/services/notification_service.dart';
+import 'package:yswords/widgets/profile_avatar.dart';
 import 'package:yswords/services/fetch_books.dart';
 import 'package:yswords/services/fetch_verses.dart';
 import 'package:yswords/services/profile_service.dart';
@@ -1350,15 +1351,15 @@ class _AccountSectionState extends State<_AccountSection> {
             SizedBox(height: 8 * s),
             ListTile(
               contentPadding: EdgeInsets.zero,
-              leading: CircleAvatar(
-                backgroundColor: scheme.primary,
-                foregroundColor: scheme.onPrimary,
-                child: Text(
-                  p.name.isEmpty
-                      ? "?"
-                      : p.name.characters.first.toUpperCase(),
-                  style: const TextStyle(fontWeight: FontWeight.w700),
-                ),
+              // Resolution priority matches the Dashboard greeting:
+              // signed-in Google photo first, then locally-uploaded
+              // photo, then color tile + initial. Keeps the avatar
+              // visually consistent across the app.
+              leading: ProfileAvatar(
+                photoUrl: auth.currentUser?.photoURL ?? p.photoDataUrl,
+                name: p.name,
+                avatarColor: p.avatarColorArgb,
+                radius: 22,
               ),
               title: Text(
                 p.name,
@@ -1669,18 +1670,63 @@ class _SyncStatusRowState extends State<_SyncStatusRow> {
     setState(() => _busy = false);
     if (messenger != null) {
       final locale = widget.settings.locale;
+      final scheme = Theme.of(context).colorScheme;
       messenger.hideCurrentSnackBar();
-      messenger.showSnackBar(SnackBar(
-        content: Text(
-          ok
-              ? (uiStrings['syncSuccess']?[locale] ?? 'Synced.')
-              : (uiStrings['syncFailed']?[locale] ??
-                  'Sync failed. Check your connection and try again.'),
-          style: TextStyle(fontFamily: widget.settings.fontFamily),
-        ),
-        duration: const Duration(milliseconds: 2200),
-        behavior: SnackBarBehavior.floating,
-      ));
+      if (ok) {
+        // Success — short, no fuss, dismissible.
+        messenger.showSnackBar(SnackBar(
+          content: Row(
+            children: [
+              const Icon(Icons.check_circle_outline,
+                  color: Colors.white, size: 18),
+              const SizedBox(width: 8),
+              Text(
+                uiStrings['syncSuccess']?[locale] ?? 'Synced.',
+                style: TextStyle(
+                    fontFamily: widget.settings.fontFamily,
+                    color: Colors.white),
+              ),
+            ],
+          ),
+          backgroundColor: Colors.green.shade700,
+          duration: const Duration(milliseconds: 2200),
+          behavior: SnackBarBehavior.floating,
+        ));
+      } else {
+        // Failure — error color, longer (5s), dismissible, includes
+        // the actual error message from CloudSyncService so the user
+        // knows WHY (timeout vs not-signed-in vs Firestore rule
+        // denial vs network blip).
+        final actual = CloudSyncService.instance.lastError;
+        final fallback = uiStrings['syncFailed']?[locale] ??
+            'Sync failed. Check your connection and try again.';
+        messenger.showSnackBar(SnackBar(
+          content: Row(
+            children: [
+              Icon(Icons.error_outline,
+                  color: scheme.onError, size: 18),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  actual != null && actual.isNotEmpty ? actual : fallback,
+                  style: TextStyle(
+                    fontFamily: widget.settings.fontFamily,
+                    color: scheme.onError,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          backgroundColor: scheme.error,
+          duration: const Duration(seconds: 5),
+          behavior: SnackBarBehavior.floating,
+          action: SnackBarAction(
+            label: uiStrings['retry']?[locale] ?? 'Retry',
+            textColor: scheme.onError,
+            onPressed: _trigger,
+          ),
+        ));
+      }
     }
   }
 
@@ -1719,12 +1765,19 @@ class _SyncStatusRowState extends State<_SyncStatusRow> {
     String stamp;
     if (status == CloudSyncStatus.syncing || _busy) {
       stamp = uiStrings['syncingNow']?[locale] ?? 'Syncing now…';
+    } else if (status == CloudSyncStatus.error) {
+      // Prefer the actual error message from CloudSyncService so
+      // users can see "Sync timed out after 15 seconds." or
+      // "Permission denied" rather than a generic catch-all. Falls
+      // back to the localized friendly string when no detail.
+      final actual = sync.lastError;
+      stamp = (actual != null && actual.isNotEmpty)
+          ? actual
+          : (uiStrings['syncFailed']?[locale] ??
+              'Sync failed. Check your connection and try again.');
     } else if (last != null) {
       stamp = (uiStrings['lastSyncedAt']?[locale] ?? 'Last synced {when}')
           .replaceAll('{when}', _relative(last, locale));
-    } else if (status == CloudSyncStatus.error) {
-      stamp = uiStrings['syncFailed']?[locale] ??
-          'Sync failed. Check your connection and try again.';
     } else {
       stamp =
           uiStrings['syncNotYet']?[locale] ?? 'Not synced yet on this device.';

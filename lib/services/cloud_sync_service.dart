@@ -55,6 +55,13 @@ class CloudSyncService extends ChangeNotifier {
   bool _initialized = false;
   DateTime? _lastSyncedAt;
 
+  /// True for the very first remote snapshot after sign-in. Used to
+  /// switch _onRemoteSnapshot from "overwrite local" to "merge local
+  /// + remote" so a user who built up bookmarks/highlights/notes
+  /// locally and only later signs in doesn't lose any of it.
+  /// Reset to true on every sign-in / profile switch.
+  bool _firstPullAfterSignIn = true;
+
   /// SharedPreferences key holding the ISO timestamp of the last
   /// successful sync (push or pull). Survives reload so the user
   /// sees "Synced 3 minutes ago" right after opening the app.
@@ -146,6 +153,9 @@ class CloudSyncService extends ChangeNotifier {
       return;
     }
     final uid = auth.currentUser!.uid;
+    // Re-arm the merge guard so the next remote snapshot we receive
+    // is treated as a "first pull" — and merges instead of overwrites.
+    _firstPullAfterSignIn = true;
     _setStatus(CloudSyncStatus.syncing);
     try {
       // Subscribe to remote doc; first emission is the pull.
@@ -175,21 +185,51 @@ class CloudSyncService extends ChangeNotifier {
     }
   }
 
-  /// Apply a remote snapshot to local prefs. Treats a missing/empty
-  /// doc as "first device for this user" and immediately uploads
-  /// what's currently in local prefs.
+  /// Apply a remote snapshot to local prefs.
+  ///
+  /// Three paths:
+  ///   1. No cloud data yet → upload local as the seed.
+  ///   2. First pull AFTER sign-in AND local has data → MERGE local
+  ///      with remote (don't lose the user's pre-sign-in highlights
+  ///      / notes / bookmarks), then push the merged result back.
+  ///   3. Subsequent real-time pulls → write remote into local
+  ///      verbatim (otherwise deletes from another device would never
+  ///      propagate).
   Future<void> _onRemoteSnapshot(
       DocumentSnapshot<Map<String, dynamic>> snap) async {
     try {
       if (!snap.exists || (snap.data()?['data'] == null)) {
         // No cloud data yet — promote local to cloud as the seed.
+        _firstPullAfterSignIn = false;
         await _uploadFromLocal();
         return;
       }
-      final data = (snap.data()!['data'] as Map).cast<String, dynamic>();
+      final remote = (snap.data()!['data'] as Map).cast<String, dynamic>();
+
+      if (_firstPullAfterSignIn) {
+        _firstPullAfterSignIn = false;
+        final local = await _snapshotLocal();
+        if (_localHasUserData(local)) {
+          // Both sides have data → merge instead of overwrite.
+          final merged = _mergeSnapshots(local: local, remote: remote);
+          _suppressLocalListener = true;
+          try {
+            await _writeRemoteIntoLocal(merged);
+          } finally {
+            _suppressLocalListener = false;
+          }
+          // Push the merged result back so cloud has it too.
+          await _uploadFromLocal();
+          await _stampSyncedNow();
+          _setStatus(CloudSyncStatus.synced);
+          return;
+        }
+        // Local has nothing → standard overwrite path below.
+      }
+
       _suppressLocalListener = true;
       try {
-        await _writeRemoteIntoLocal(data);
+        await _writeRemoteIntoLocal(remote);
       } finally {
         _suppressLocalListener = false;
       }
@@ -199,6 +239,119 @@ class CloudSyncService extends ChangeNotifier {
       _lastError = e.toString();
       _setStatus(CloudSyncStatus.error);
     }
+  }
+
+  /// True if the local snapshot has any user-edited data we'd be
+  /// embarrassed to lose. Empty bookmarks list / no highlights /
+  /// no notes counts as "no data".
+  bool _localHasUserData(Map<String, dynamic> local) {
+    final bm = local['bookmarks'];
+    if (bm is List && bm.isNotEmpty) return true;
+    final hl = local['highlights'];
+    if (hl is String && hl.isNotEmpty && hl != '{}') return true;
+    final notes = local['verseNotes'];
+    if (notes is String && notes.isNotEmpty && notes != '{}') return true;
+    if (local.containsKey('plan.activeId')) return true;
+    for (final k in local.keys) {
+      if (k.startsWith('plan.completed.')) {
+        final v = local[k];
+        if (v is List && v.isNotEmpty) return true;
+      }
+    }
+    return false;
+  }
+
+  /// Merge local and remote snapshots, never losing user data.
+  ///
+  /// Strategy per key:
+  ///   bookmarks                — union of refs (deduped)
+  ///   highlights / verseNotes  — JSON object key-merge; LOCAL wins
+  ///                              on conflicting verse keys (the
+  ///                              user just edited them seconds ago,
+  ///                              cloud copy is stale)
+  ///   plan.activeId / startMs / useDate
+  ///                            — prefer LOCAL when set, else remote
+  ///                              (a fresh pick on this device should
+  ///                              not be reverted by a stale cloud
+  ///                              value)
+  ///   `plan.completed.<planId>`  — union of day indices
+  Map<String, dynamic> _mergeSnapshots({
+    required Map<String, dynamic> local,
+    required Map<String, dynamic> remote,
+  }) {
+    final out = <String, dynamic>{};
+
+    // bookmarks: union
+    final lbm = ((local['bookmarks'] as List?) ?? const [])
+        .map((e) => e.toString())
+        .toList();
+    final rbm = ((remote['bookmarks'] as List?) ?? const [])
+        .map((e) => e.toString())
+        .toList();
+    if (lbm.isNotEmpty || rbm.isNotEmpty) {
+      out['bookmarks'] = <String>{...lbm, ...rbm}.toList();
+    }
+
+    // highlights / verseNotes: JSON map merge, local wins
+    for (final k in const ['highlights', 'verseNotes']) {
+      final lm = _parseJsonMap(local[k]);
+      final rm = _parseJsonMap(remote[k]);
+      if (lm.isEmpty && rm.isEmpty) continue;
+      // Spread remote first, then local — Dart map literal semantics
+      // means local entries overwrite remote entries on key collision.
+      final merged = {...rm, ...lm};
+      out[k] = jsonEncode(merged);
+    }
+
+    // plan scalars: prefer local when present (fresh pick wins),
+    // fall back to remote.
+    for (final k in const ['plan.activeId', 'plan.startMs', 'plan.useDate']) {
+      if (local.containsKey(k)) {
+        out[k] = local[k];
+      } else if (remote.containsKey(k)) {
+        out[k] = remote[k];
+      }
+    }
+
+    // plan.completed.<id>: union of day strings.
+    final completedKeys = <String>{};
+    for (final k in local.keys) {
+      if (k.startsWith('plan.completed.')) completedKeys.add(k);
+    }
+    for (final k in remote.keys) {
+      if (k.startsWith('plan.completed.')) completedKeys.add(k);
+    }
+    for (final k in completedKeys) {
+      final ll = ((local[k] as List?) ?? const [])
+          .map((e) => e.toString())
+          .toList();
+      final rl = ((remote[k] as List?) ?? const [])
+          .map((e) => e.toString())
+          .toList();
+      final union = <String>{...ll, ...rl}.toList();
+      if (union.isNotEmpty) out[k] = union;
+    }
+
+    return out;
+  }
+
+  /// Tolerant JSON-string → Map parser used by [_mergeSnapshots]
+  /// for `highlights` and `verseNotes`, which are stored as
+  /// stringified JSON in SharedPreferences.
+  Map<String, dynamic> _parseJsonMap(dynamic raw) {
+    if (raw == null) return const {};
+    if (raw is Map) return Map<String, dynamic>.from(raw);
+    if (raw is String) {
+      if (raw.isEmpty) return const {};
+      try {
+        final decoded = jsonDecode(raw);
+        if (decoded is Map) return Map<String, dynamic>.from(decoded);
+      } catch (_) {
+        // Corrupt JSON — treat as empty so a single bad write doesn't
+        // wipe the merge.
+      }
+    }
+    return const {};
   }
 
   /// Snapshot every tracked key from local prefs into a JSON map
