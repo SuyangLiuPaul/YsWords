@@ -79,6 +79,10 @@ class CloudAuthService extends ChangeNotifier {
   }
 
   Future<void> _doInit() async {
+    // Step-by-step init so we can pinpoint WHICH operation failed —
+    // initializeApp, FirebaseAuth.instance access, or userChanges()
+    // — instead of lumping them under one opaque error string.
+    String step = 'init';
     try {
       if (!firebaseConfigured) {
         // Stub config — leave _configured false so the rest of the
@@ -86,21 +90,32 @@ class CloudAuthService extends ChangeNotifier {
         _initError = null;
         return;
       }
+      step = 'Firebase.initializeApp';
       await Firebase.initializeApp(
         options: DefaultFirebaseOptions.web,
       );
-      _configured = true;
-      _initError = null;
-      _user = FirebaseAuth.instance.currentUser;
+      step = 'FirebaseAuth.instance';
+      final auth = FirebaseAuth.instance;
+      step = 'FirebaseAuth.currentUser';
+      _user = auth.currentUser;
+      step = 'FirebaseAuth.userChanges';
       // Reflect future sign-in / sign-out events into our notifier.
-      FirebaseAuth.instance.userChanges().listen((u) {
+      auth.userChanges().listen((u) {
         _user = u;
         notifyListeners();
       });
+      _configured = true;
+      _initError = null;
     } catch (e, st) {
-      debugPrint('CloudAuthService._doInit failed: $e\n$st');
+      // Both debugPrint and stderr — Flutter web's console.error shows
+      // up red in DevTools, easier for the user to copy/paste back.
+      // ignore: avoid_print
+      print('[CloudAuthService] FAILED at step=$step :: $e');
+      // ignore: avoid_print
+      print('[CloudAuthService] stack: $st');
+      debugPrint('CloudAuthService._doInit failed at step=$step: $e\n$st');
       _configured = false;
-      _initError = e.toString();
+      _initError = '[$step] ${e.runtimeType}: $e';
     } finally {
       _ready = true;
       notifyListeners();

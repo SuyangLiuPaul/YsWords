@@ -264,53 +264,6 @@
       }
     };
   </script>
-  <!-- ROBUST FIREBASE BOOTSTRAP.
-
-       firebase_core_web 2.24.1 (the package backing Firebase.initializeApp
-       on Flutter web) tries to load the Firebase JS SDK at runtime by
-       injecting a `<script>` whose body does `await import("https://...")`
-       wrapped in a Trusted Types policy. We've seen that path fail
-       silently for users — most often when:
-         • a browser extension blocks the dynamic script
-         • the kill-switch reload above interrupts the import
-         • Trusted Types policy creation throws
-       When it fails, Firebase.initializeApp throws, every cloud-sync
-       UI hides ("Cloud sign-in temporarily unavailable") and the user
-       has no path forward.
-
-       Workaround: pre-load Firebase JS as ES modules HERE, expose them
-       on `window.firebase_*`, THEN start Flutter. firebase_core_web
-       short-circuits its own injection when `window.firebase_core`
-       is already set (firebase_core_web.dart:179), so the runtime
-       dynamic-import path is bypassed entirely. SDK version 11.9.1
-       matches the version pinned in firebase_core_web 2.24.1's
-       firebase_sdk_version.dart — bump both together if you upgrade. -->
-  <script type="module">
-    const SDK = '11.9.1';
-    const base = 'https://www.gstatic.com/firebasejs/' + SDK;
-    try {
-      const [core, auth, firestore] = await Promise.all([
-        import(base + '/firebase-app.js'),
-        import(base + '/firebase-auth.js'),
-        import(base + '/firebase-firestore.js'),
-      ]);
-      window.firebase_core = core;
-      window.firebase_auth = auth;
-      window.firebase_firestore = firestore;
-    } catch (e) {
-      // Don't block the app on a Firebase load error — the Dart side
-      // surfaces a Retry button + the actual error message in
-      // Settings → Account when initializeApp fails. Local-only
-      // profiles still work without Firebase.
-      console.warn('[yswords] Firebase JS pre-load failed:', e);
-    }
-    // Whether Firebase loaded or not, start Flutter now. Dart's
-    // CloudAuthService.init catches initializeApp failures and the UI
-    // shows a Retry path.
-    const s = document.createElement('script');
-    s.src = 'flutter_bootstrap.js';
-    s.async = true;
-    document.body.appendChild(s);
-  </script>
+  <script src="flutter_bootstrap.js" async></script>
 </body>
 </html>

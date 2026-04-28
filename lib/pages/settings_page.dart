@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show Clipboard, ClipboardData;
 import 'package:yswords/constants/ui_strings.dart';
 import 'package:provider/provider.dart';
 import 'package:yswords/models/app_settings.dart';
@@ -1519,13 +1520,24 @@ class _AccountSectionState extends State<_AccountSection> {
                     ),
                     if (auth.initError != null) ...[
                       const SizedBox(height: 6),
-                      Text(
-                        auth.initError!,
-                        style: TextStyle(
-                          fontFamily: settings.fontFamily,
-                          fontSize: (settings.fontSize - 6)
-                              .clamp(11.0, 14.0).toDouble(),
-                          color: scheme.onSurfaceVariant,
+                      // Selectable so the user can copy + paste the
+                      // exact error message back to the maintainer
+                      // when filing a bug. Monospace + boxed so it
+                      // looks like a code block.
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: scheme.surfaceContainerHighest,
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: SelectableText(
+                          auth.initError!,
+                          style: TextStyle(
+                            fontFamily: 'monospace',
+                            fontSize: (settings.fontSize - 6)
+                                .clamp(11.0, 14.0).toDouble(),
+                            color: scheme.onSurface,
+                          ),
                         ),
                       ),
                     ],
@@ -1554,6 +1566,30 @@ class _AccountSectionState extends State<_AccountSection> {
                             }
                           },
                         ),
+                        if (auth.initError != null) ...[
+                          const SizedBox(width: 8),
+                          OutlinedButton.icon(
+                            icon: const Icon(Icons.copy_outlined, size: 16),
+                            label: Text(
+                              uiStrings['copy']?[locale] ?? 'Copy error',
+                            ),
+                            onPressed: () async {
+                              final messenger = ScaffoldMessenger.of(context);
+                              await Clipboard.setData(
+                                ClipboardData(text: auth.initError!),
+                              );
+                              if (!context.mounted) return;
+                              messenger.showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    uiStrings['copied']?[locale] ?? 'Copied',
+                                  ),
+                                  duration: const Duration(seconds: 1),
+                                ),
+                              );
+                            },
+                          ),
+                        ],
                       ],
                     ),
                   ],
