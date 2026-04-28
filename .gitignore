@@ -23,3 +23,13 @@ lib_source_dump.txt
 # Local agent dev settings (preview launch config, etc.)
 .claude/
 
+# Cloud Functions local deps (installed via `cd functions && npm install`).
+functions/node_modules/
+# Bundled at deploy time only — sourced from assets/bible_evidence.json.
+functions/bible_evidence.json
+
+# Backup files from one-off data migration scripts.
+*.bak
+assets/*.bak
+lib/**/*.bak
+

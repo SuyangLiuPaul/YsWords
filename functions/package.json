@@ -1,0 +1,22 @@
+{
+  "name": "yswords-functions",
+  "description": "Cloud Functions for YsWords — server-side proxy for Gemini AI search.",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": "20"
+  },
+  "main": "index.js",
+  "scripts": {
+    "serve": "firebase emulators:start --only functions",
+    "shell": "firebase functions:shell",
+    "start": "npm run shell",
+    "deploy": "firebase deploy --only functions",
+    "logs": "firebase functions:log"
+  },
+  "dependencies": {
+    "firebase-admin": "^12.6.0",
+    "firebase-functions": "^6.1.0",
+    "google-auth-library": "^9.14.2"
+  }
+}

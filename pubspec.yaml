@@ -20,6 +20,8 @@ dependencies:
   firebase_core: ^3.6.0
   firebase_auth: ^5.3.1
   cloud_firestore: ^5.4.4
+  # Used by AiSearchService to call the Cloud Functions Gemini proxy.
+  http: ^1.2.2
 
 dev_dependencies:
   flutter_test:

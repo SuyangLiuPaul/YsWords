@@ -663,6 +663,27 @@ const uiStrings = {
     'zh-Hant': '間接證據',
     'en': 'Circumstantial',
   },
+  // AI search (Round 39, Stage 4 — Cloud Functions Gemini proxy).
+  'askAi': {
+    'zh-Hans': 'AI 提问',
+    'zh-Hant': 'AI 提問',
+    'en': 'Ask AI',
+  },
+  'ask': {
+    'zh-Hans': '提问',
+    'zh-Hant': '提問',
+    'en': 'Ask',
+  },
+  'askAiHint': {
+    'zh-Hans': '例如：出埃及有何证据？',
+    'zh-Hant': '例如：出埃及有何證據？',
+    'en': 'e.g. What evidence supports the Exodus?',
+  },
+  'citations': {
+    'zh-Hans': '引用条目',
+    'zh-Hant': '引用條目',
+    'en': 'Citations',
+  },
   // ── Gospel synopsis (Round 27B) ─────────────────────────────────
   'synopsis': {
     'zh-Hans': '福音书对观',

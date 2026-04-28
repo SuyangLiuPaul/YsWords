@@ -165,6 +165,185 @@ The parsing is handled via shared regex patterns in `lib/constants/text_patterns
 
 ---
 
+## Bible Evidence — Data Update Workflow
+
+Use this section when the user asks to add, edit, translate, or audit evidence entries.
+
+### Where the data lives
+
+- **`assets/bible_evidence.json`** — the canonical, single source of truth (~1.5 MB, 209 entries at time of migration).
+- Bundled via `pubspec.yaml` under `assets/`.
+- Loaded lazily and cached by `lib/services/bible_evidence_service.dart` (singleton).
+
+### Schema
+
+```json
+{
+  "_meta": {
+    "version": "1.0",
+    "count": 209,
+    "generatedAt": "2026-04-27T...Z"
+  },
+  "evidences": [
+    {
+      "id": "kebab-case-stable-id",
+      "category": "Archaeology" | "History" | "Manuscripts" | "Science",
+      "bibleBooks": ["Genesis", "Exodus", ...],
+      "timeline": "c. 1400 BC",
+      "discoveryDate": "1929",
+      "location": "Ras Shamra, Syria",
+      "scriptureReference": "Genesis 12:1",
+      "images": ["https://...", ...],
+      "academicSources": ["Author, Title, Year", ...],
+      "confidenceLevel": "Definitive" | "Strong" | "Circumstantial",
+      "icon": "🏺",
+      "title":                { "en": "...", "zh-Hans": "...", "zh-Hant": "..." },
+      "summary":              { "en": "...", "zh-Hans": "...", "zh-Hant": "..." },
+      "description":          { "en": "...", "zh-Hans": "...", "zh-Hant": "..." },
+      "scripturalCorrelation":{ "en": "...", "zh-Hans": "...", "zh-Hant": "..." }
+    }
+  ]
+}
+```
+
+### Required invariants
+
+- `id` must be unique and stable. It's used by the daily-evidence rotation (`dayOfYear % count`) and by URL-style deep links if we add them later.
+- `category` must be exactly one of the four enum strings — `evidence_page.dart` filter chips and `categoryArchaeology` etc. UI strings depend on this.
+- `confidenceLevel` must be exactly `Definitive`, `Strong`, or `Circumstantial`. `confidence_badge.dart` and `bible_evidence.dart#confidenceColor()` switch on these strings.
+- `bibleBooks` must use **English** book names matching `lib/utils/book_translations.dart#toEnglish()` output. The reader's overflow-menu pre-filter calls `forBook(toEnglish(currentBook))`.
+- `scriptureReference` should parse via `parseReference()` in `lib/utils/scripture_ref.dart` — otherwise the "Read in Bible" chip on the detail page won't navigate.
+- All four translation maps (`title`, `summary`, `description`, `scripturalCorrelation`) must include all three locales (`en`, `zh-Hans`, `zh-Hant`). The accessor (`localizedTitle(locale)`) falls back to `en` if a locale is missing, but missing fallbacks degrade UX silently.
+
+### Adding a new entry
+
+1. Open `assets/bible_evidence.json`.
+2. Append a new object to `evidences` matching the schema above.
+3. Bump `_meta.count` to match the new array length.
+4. Update `_meta.generatedAt` to current ISO 8601 timestamp.
+5. Run `flutter analyze` (parses JSON at build time via the asset bundle, but does not validate schema — be careful).
+6. Manually verify in the running app: open `EvidencePage`, search for the new title, tap it, confirm the detail page renders all sections and the scripture chip navigates correctly.
+
+### Editing translations
+
+- Each translation field is a `{en, zh-Hans, zh-Hant}` map. Edit the value in place.
+- Do **not** rename or remove keys — the model accessor expects all four (`title`, `summary`, `description`, `scripturalCorrelation`).
+- For a bulk re-translation pass, prefer scripting outside the repo (e.g. a Python script that reads the JSON, calls a translation API, writes it back) rather than hand-editing 209 entries.
+
+### Daily evidence rotation
+
+- `BibleEvidenceService.todayEvidence()` returns `evidences[dayOfYear % evidences.length]`.
+- `dayOfYear` is computed from the device's local date.
+- If `_meta.count` ever drifts from `evidences.length`, the rotation still uses the actual array length (defensive). But keep them aligned for clarity.
+
+### Cross-links (do not break)
+
+- **Reader → Evidence:** `lib/widgets/bible_reading_pane.dart` adds an "Bible Evidence" item to the floating-header overflow menu. It pre-filters by `toEnglish(currentBook)` and falls back to the full archive if the filter returns empty.
+- **Evidence → Reader:** `lib/pages/evidence_detail_page.dart` renders `scriptureReference` as a tappable chip that calls `parseReference()` and navigates to the reader at the resolved book/chapter.
+- **Dashboard:** `dashboard_page.dart` has a "Today's Evidence" card and a Bible Evidence quick-link tile in the 4-up grid.
+
+### History
+
+This dataset was migrated in April 2026 from a separate Vite/React project at `~/Documents/CodingProject/bible-evidence/` (now sunset — see `DEPRECATED.md` in that repo). The original Python extractor regex-parsed `src/data/evidences.ts` and merged in `src/locales/{en,zh}.json`. The React project's AI search (Gemini) was not migrated client-side — instead it's served by a Cloud Function (see "Bible Evidence — AI Search Backend" below). The old site at `bible-evidence.netlify.app` is being replaced with a `_redirects`-only stub that 301s to `yswords.netlify.app`. The redirect bundle lives at `~/Documents/CodingProject/bible-evidence-redirect-stub/`.
+
+### Image backfill (Round 39)
+
+The 209 image URLs migrated from the React project were all fabricated — plausible-looking `upload.wikimedia.org/.../thumb/<hash>/<file>/<thumb>` paths with wrong hash prefixes that all returned 400. Backfill via `scripts/backfill_evidence_images.py`:
+
+- Queries Wikipedia REST API `/page/summary/<title>` per entry to get a real `thumbnail.source` URL.
+- Falls back to Wikipedia search when the direct title lookup misses.
+- Final fallback: a per-category placeholder image (Tel Megiddo for Archaeology, Codex Sinaiticus for Manuscripts, Hubble UDF for Science, Roman Empire map for History).
+- Idempotent: skips entries whose existing URL still resolves.
+
+Re-run after editing `evidences[].title.en` if a new entry's image is wrong.
+
+---
+
+## Bible Evidence — AI Search Backend
+
+The AI search feature (Gemini-powered Q&A over evidence) is implemented as a server-side Cloud Function so the service-account key never reaches the browser. The previous bible-evidence React project leaked 5 Gemini keys exactly because Vite inlines `VITE_*` env vars.
+
+### Files
+
+- `functions/index.js` — single HTTP function `aiSearch` that:
+  1. Accepts `POST { query, locale }`.
+  2. Runs a local keyword pre-filter on the bundled evidence dataset to pick the top 12 candidates.
+  3. Calls Gemini 1.5 Flash via Vertex AI with those candidates as context.
+  4. Returns `{ answer, citations: [{id, title, scriptureReference}], hits }`.
+- `functions/package.json` — Node 20, ES modules, deps: `firebase-functions`, `firebase-admin`, `google-auth-library`.
+- `functions/README.md` — local dev / deploy / cost notes.
+- `firebase.json`, `.firebaserc` — root-level config pointing at project `ysword`.
+- `lib/services/ai_search_service.dart` — Flutter client. Endpoint overridable via `--dart-define=AI_SEARCH_URL=...`.
+
+### One-time setup
+
+```sh
+npm install -g firebase-tools
+firebase login
+firebase use ysword
+
+# Push the Gemini service-account key as a secret (key lives at
+# ~/.config/yswords/secrets/gemini-service-account.json — see the
+# secrets README in that directory).
+firebase functions:secrets:set GEMINI_SA \
+  --data-file ~/.config/yswords/secrets/gemini-service-account.json
+
+cd functions && npm install
+```
+
+### Deploy
+
+The dataset must be present alongside the function at deploy time:
+
+```sh
+# from repo root
+cp assets/bible_evidence.json functions/bible_evidence.json
+firebase deploy --only functions
+```
+
+Endpoint after deploy: `https://us-central1-ysword.cloudfunctions.net/aiSearch`.
+
+### Wiring into the Flutter UI
+
+`AiSearchService.ask()` is ready to call. The UI integration (an "Ask AI" expansion above the search box on `EvidencePage`) is the **next step** — not yet wired so we don't ship a button that calls a 404 endpoint. To wire:
+
+1. Add a `_AiSearchPanel` widget to `lib/pages/evidence_page.dart` above the search box.
+2. Show a `TextField` + "Ask" button + result/citation list when answer arrives.
+3. On citation tap, navigate to that entry's `EvidenceDetailPage`.
+4. Surface errors via `SnackBar` so a failed Cloud Function call is visible.
+
+### Security
+
+- Service-account key stays in Firebase secrets — never bundled into the client, never committed.
+- CORS is locked to `https://yswords.netlify.app` + localhost dev ports. Update `ALLOWED_ORIGINS` in `functions/index.js` if the app gets a custom domain.
+- Function is unauthenticated for MVP. If abuse becomes a problem, swap `onRequest` for `onCall` and require Firebase Auth.
+
+---
+
+## Bible Evidence — Redirect Stub (legacy domain)
+
+The old `bible-evidence.netlify.app` site is replaced with a tiny static bundle that 301s every path to YsWords. The bundle lives at `~/Documents/CodingProject/bible-evidence-redirect-stub/`:
+
+- `_redirects` — `/* https://yswords.netlify.app/:splat 301!`
+- `index.html` — meta-refresh fallback
+- `netlify.toml` — `publish = "."`, no build step
+- `README.md` — deploy instructions
+
+**Deploy options:**
+
+1. **Drag-and-drop (easiest, no CLI needed):** open <https://app.netlify.com/sites/bible-evidence/deploys>, drag the whole `bible-evidence-redirect-stub/` folder onto the page.
+2. **Netlify CLI:**
+   ```sh
+   npm install -g netlify-cli
+   cd ~/Documents/CodingProject/bible-evidence-redirect-stub
+   netlify link    # pick the existing bible-evidence site
+   netlify deploy --prod --dir=.
+   ```
+
+**Verify:** `curl -I https://bible-evidence.netlify.app/anything` should return `301` with `Location: https://yswords.netlify.app/anything`.
+
+---
+
 ## Map Update Workflow
 
 Use this section when the user asks for "more maps" or asks how to maintain the Bible map library.
@@ -415,6 +594,48 @@ The app adapts its layout to all device sizes using `lib/utils/responsive.dart`:
 ---
 
 ## What Has Been Fixed (2026-04-27)
+
+### Bible Evidence sunset stages 2-4 + UX fixes (round 39, 2026-04-28)
+
+**Triggered by user audit feedback**: "bible evidence cuts off bible eviden... also all of them no picture which is bad experience".
+
+**Truncation fix (`lib/pages/dashboard_page.dart`)**:
+- `_LinkTile` (the 4 quick-link tiles in the Dashboard 2-up grid on phone) was using `maxLines: 1` with 14px horizontal padding. "Bible Evidence" (14 chars) ellipsized into "bible eviden…" on iPhone-class widths.
+- Reduced padding to 10px, gap 10→8, chevron 18→16, allowed `maxLines: 2` with `height: 1.15`. Multi-word labels now wrap to 2 lines on phones; single-word labels still render on 1.
+
+**Image backfill (`scripts/backfill_evidence_images.py` + `scripts/verify_evidence_images.py`)**:
+- The 209 image URLs migrated from the bible-evidence React project were all fabricated — plausible-looking Wikimedia thumb paths with wrong hash prefixes that all returned 400.
+- Stage 1 (`backfill_…`): query Wikipedia REST `/page/summary/<title>` per entry, fall back to Wikipedia search, then to per-category placeholder. Result: 188 real / 13 fallback / 8 kept.
+- Stage 2 (`verify_…`): GET-test every URL; for 4xx/5xx, rewrite via `Special:FilePath` (hash-stable); final fallback to per-category placeholder.
+- Idempotent — re-runs only touch broken entries.
+- Backups created at `assets/bible_evidence.json.bak` (gitignored).
+
+**AI search Cloud Function backend (Stage 4)**:
+- `functions/index.js` — single HTTP function `aiSearch`, Gemini 1.5 Flash via Vertex AI, server-side service-account auth.
+- `functions/package.json` — Node 20, ESM, deps `firebase-functions` + `firebase-admin` + `google-auth-library`.
+- `firebase.json` + `.firebaserc` — root config pointing at project `ysword`.
+- See "Bible Evidence — AI Search Backend" section above for setup, deploy, and cost notes.
+
+**AI search Flutter integration**:
+- `lib/services/ai_search_service.dart` — HTTP client targeting the deployed function. Endpoint overridable via `--dart-define=AI_SEARCH_URL=...` for emulator / staging.
+- `EvidencePage` AppBar gains an "Ask AI" sparkle icon → opens `_AiSearchDialog` (text input → Gemini answer + tappable citations that navigate to `EvidenceDetailPage`).
+- `pubspec.yaml` — added `http: ^1.2.2`.
+- Graceful when function isn't deployed yet: failed POST surfaces inline as a SnackBar-style error inside the dialog.
+- New ui_strings keys: `askAi`, `ask`, `askAiHint`, `citations`.
+
+**Sunset stage 2-3 deliverables**:
+- `~/Documents/CodingProject/bible-evidence/DEPRECATED.md` — deprecation notice for the old React repo (do **not** push it — `origin` is misconfigured to YsWords).
+- `~/Documents/CodingProject/bible-evidence-redirect-stub/` — drag-and-droppable Netlify bundle that 301s every path to `yswords.netlify.app`. See "Bible Evidence — Redirect Stub" section above.
+- HANDOFF: 4 new sections (Data Update Workflow, AI Search Backend, Redirect Stub, this Round 39 entry).
+
+**Files added**:
+```
+.firebaserc
+firebase.json
+functions/{index.js, package.json, README.md, .gitignore}
+lib/services/ai_search_service.dart
+scripts/{backfill_evidence_images.py, verify_evidence_images.py}
+```
 
 ### Word distribution + Strong's-number search (round 23)
 

@@ -15,7 +15,8 @@
       "Definitive": 80,
       "Strong": 90,
       "Circumstantial": 39
-    }
+    },
+    "generatedAt": "2026-04-28T01:53:03.829754+00:00"
   },
   "evidences": [
     {
@@ -29,7 +30,7 @@
       "location": "Shrine of the Book, Israel Museum, Jerusalem",
       "scriptureReference": "Isaiah 40:8",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/3/37/Frgmnt_of_a_Bible.jpg/400px-Frgmnt_of_a_Bible.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/1/15/Temple_Scroll.png/330px-Temple_Scroll.png"
       ],
       "academicSources": [
         "Tov, Emanuel. Scribal Practices and Approaches Reflected in the Texts Found in the Judean Desert. Brill, 2004.",
@@ -72,7 +73,7 @@
       "location": "Israel Museum, Jerusalem",
       "scriptureReference": "2 Samuel 7:11-16",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d4/Tel_Dan_Stele.jpg/400px-Tel_Dan_Stele.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/4/40/JRSLM_300116_Tel_Dan_Stele_01.jpg/330px-JRSLM_300116_Tel_Dan_Stele_01.jpg"
       ],
       "academicSources": [
         "Biran, Avraham, and Joseph Naveh. \"An Aramaic Stele Fragment from Tel Dan.\" Israel Exploration Journal 43 (1993): 81â98.",
@@ -114,7 +115,7 @@
       "location": "Israel Museum, Jerusalem",
       "scriptureReference": "Matthew 27:2",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/4/42/Pontius_Pilate_inscription.jpg/400px-Pontius_Pilate_inscription.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/a/af/Pontius_Pilate_Inscription.JPG/330px-Pontius_Pilate_Inscription.JPG"
       ],
       "academicSources": [
         "iscrizione di Ponzio Pilato a Cesarea.\" Rendiconti dell",
@@ -156,7 +157,7 @@
       "location": "City of David, Jerusalem",
       "scriptureReference": "2 Kings 20:20",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/5/54/Hezekiahs_tunnel.jpg/400px-Hezekiahs_tunnel.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/5/58/Siloam22.jpg/330px-Siloam22.jpg"
       ],
       "academicSources": [
         "Gill, Dan. \"How They Met: Geology and Hydrology of the Siloam Tunnel.\" Biblical Archaeologist 57 (1994): 20â26.",
@@ -197,7 +198,7 @@
       "location": "Israel Museum, Jerusalem",
       "scriptureReference": "Numbers 6:24-26",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1c/Ketef_Hinnom.jpg/400px-Ketef_Hinnom.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a4/Ketef_hinom_scrolls.JPG/330px-Ketef_hinom_scrolls.JPG"
       ],
       "academicSources": [
         "Barkay, Gabriel. \"The Priestly Benediction on Silver Plaques from Ketef Hinnom in Jerusalem.\" Tel Aviv 19 (1992): 139â192.",
@@ -239,7 +240,7 @@
       "location": "British Museum, London (No. 90920)",
       "scriptureReference": "Ezra 1:1-4",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6e/Cyrus_cylinder.jpg/400px-Cyrus_cylinder.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e5/Cyrus_Cylinder_front.jpg/330px-Cyrus_Cylinder_front.jpg"
       ],
       "academicSources": [
         "Kuhrt, AmÃ©lie. \"The Cyrus Cylinder and Achaemenid Imperial Policy.\" JSOT 25 (1983): 83â97.",
@@ -322,7 +323,7 @@
       "location": "City of David, Jerusalem",
       "scriptureReference": "John 9:7",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/4/47/PoolOfSiloam.jpg/400px-PoolOfSiloam.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4c/Pool_of_Siloam_and_Lower_%28Old%29_Pool_in_the_Ordnance_Survey_of_Jerusalem.png/330px-Pool_of_Siloam_and_Lower_%28Old%29_Pool_in_the_Ordnance_Survey_of_Jerusalem.png"
       ],
       "academicSources": [
         "Reich, Ronny, and Eli Shukron. \"The Siloam Pool.\" Biblical Archaeology Review 31.3 (2005): 16â23.",
@@ -362,7 +363,7 @@
       "location": "Louvre Museum, Paris",
       "scriptureReference": "2 Kings 3:4-5",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3a/Mesha_Stele.jpg/400px-Mesha_Stele.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7b/P1120870_Louvre_st%C3%A8le_de_M%C3%A9sha_AO5066_rwk.JPG/330px-P1120870_Louvre_st%C3%A8le_de_M%C3%A9sha_AO5066_rwk.JPG"
       ],
       "academicSources": [
         "Dearman, J. Andrew, ed. Studies in the Mesha Inscription and Moab. Scholars Press, 1989.",
@@ -404,7 +405,7 @@
       "location": "Oriental Institute, University of Chicago",
       "scriptureReference": "2 Kings 18:13",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5f/Sennacherib_Prism.jpg/400px-Sennacherib_Prism.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/%C3%85hus_kyrka-10.jpg/330px-%C3%85hus_kyrka-10.jpg"
       ],
       "academicSources": [
         "Luckenbill, Daniel D. The Annals of Sennacherib. University of Chicago Press, 1924.",
@@ -446,7 +447,7 @@
       "location": "Temple of Amun, Karnak, Egypt",
       "scriptureReference": "1 Kings 14:25-26",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3b/Karnak_Tempel_06.jpg/400px-Karnak_Tempel_06.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/e/eb/Karnak_Tempel_19.jpg/330px-Karnak_Tempel_19.jpg"
       ],
       "academicSources": [
         "Kitchen, K. A. The Third Intermediate Period in Egypt. Aris & Phillips, 1986.",
@@ -488,7 +489,7 @@
       "location": "British Museum, London",
       "scriptureReference": "2 Kings 9:2â10:36",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/7/79/Black_obelisk_of_shalmaneser_III.jpg/400px-Black_obelisk_of_shalmaneser_III.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/3/30/The_Black_Obelisk_of_Shalmaneser_III%2C_9th_century_BC%2C_from_Nimrud%2C_Iraq._The_British_Museum.jpg/330px-The_Black_Obelisk_of_Shalmaneser_III%2C_9th_century_BC%2C_from_Nimrud%2C_Iraq._The_British_Museum.jpg"
       ],
       "academicSources": [
         "Layard, Austen Henry. Discoveries in the Ruins of Nineveh and Babylon. John Murray, 1853.",
@@ -530,7 +531,7 @@
       "location": "Israel Museum, Jerusalem",
       "scriptureReference": "Matthew 26:3",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/5/57/Caiaphas_ossuary.jpg/400px-Caiaphas_ossuary.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/6/63/Ossuary_of_the_high_priest_Joseph_Caiaphas_P1180839.JPG/330px-Ossuary_of_the_high_priest_Joseph_Caiaphas_P1180839.JPG"
       ],
       "academicSources": [
         "Reich, Ronny. \"Caiaphas Name Inscribed on Bone Boxes.\" BAR 18.5 (1992): 38â44.",
@@ -571,7 +572,7 @@
       "location": "Israel Museum, Jerusalem",
       "scriptureReference": "John 19:17-18",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b0/Crucifixion_nail_through_heel_bone.jpg/400px-Crucifixion_nail_through_heel_bone.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d7/Cristo_crucificado.jpg/330px-Cristo_crucificado.jpg"
       ],
       "academicSources": [
         "Haas, Nicu. \"Anthropological Observations on the Skeletal Remains from Giv'at ha-Mivtar.\" IEJ 20 (1970): 38â59.",
@@ -612,7 +613,7 @@
       "location": "Istanbul Archaeological Museum / Israel Museum",
       "scriptureReference": "Acts 21:28-29",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Temple_warning_inscription.jpg/400px-Temple_warning_inscription.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/6/60/Jerusalem_Temple_Warning_Inscription.jpg/330px-Jerusalem_Temple_Warning_Inscription.jpg"
       ],
       "academicSources": [
         "Clermont-Ganneau, Charles. \"Une stÃ¨le du Temple de JÃ©rusalem.\" Revue archÃ©ologique 23 (1872): 214â234.",
@@ -653,7 +654,7 @@
       "location": "Istanbul Archaeological Museum",
       "scriptureReference": "Leviticus 23",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2e/Gezer_calendar.jpg/400px-Gezer_calendar.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/0/05/Gezer_calendar_close_up.jpg/330px-Gezer_calendar_close_up.jpg"
       ],
       "academicSources": [
         "Talmon, Shemaryahu. \"The Gezer Calendar and the Seasonal Cycle.\" JAOS 83 (1963): 177â187.",
@@ -694,7 +695,7 @@
       "location": "British Museum, London / Israel Museum",
       "scriptureReference": "Jeremiah 34:7",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/d/da/Lachish_letters.jpg/400px-Lachish_letters.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e2/Steen_met_inscriptie_in_het_Lahish_schrift%2C_Bestanddeelnr_255-6141.jpg/330px-Steen_met_inscriptie_in_het_Lahish_schrift%2C_Bestanddeelnr_255-6141.jpg"
       ],
       "academicSources": [
         "Torczyner, Harry. The Lachish Letters. Oxford University Press, 1938.",
@@ -735,7 +736,7 @@
       "location": "Jordan Museum, Amman",
       "scriptureReference": "Numbers 22-24",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/Balaam_inscription.jpg/400px-Balaam_inscription.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/b/bf/TEL_MEGIDO_AERIAL_C.JPG/640px-TEL_MEGIDO_AERIAL_C.JPG"
       ],
       "academicSources": [
         "Hoftijzer, Jacob, and G. van der Kooij. Aramaic Texts from Deir Alla. Brill, 1976.",
@@ -778,7 +779,7 @@
       "location": "Capernaum, Israel",
       "scriptureReference": "Matthew 4:13",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/9/97/Capernaum_synagogue.jpg/400px-Capernaum_synagogue.jpg"
+        "https://commons.wikimedia.org/wiki/Special:FilePath/Sites_of_Christianity_in_the_Galillee_-_Ruins_of_the_ancient_Great_Synagogue_at_Capernaum_%28or_Kfar_Nahum%29_on_the_shore_of_the_Lake_of_Galilee%2C_Northern_Israel.jpg?width=400"
       ],
       "academicSources": [
         "Loffreda, Stanislao. Recovering Capharnaum. Franciscan Printing Press, 1985.",
@@ -820,7 +821,7 @@
       "location": "Capernaum, Israel",
       "scriptureReference": "Matthew 8:14",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d2/House_of_Saint_Peter_Capernaum.jpg/400px-House_of_Saint_Peter_Capernaum.jpg"
+        "https://commons.wikimedia.org/wiki/Special:FilePath/Sites_of_Christianity_in_the_Galillee_-_Ruins_of_the_ancient_Great_Synagogue_at_Capernaum_%28or_Kfar_Nahum%29_on_the_shore_of_the_Lake_of_Galilee%2C_Northern_Israel.jpg?width=400"
       ],
       "academicSources": [
         "Corbo, Virgilio C. The House of Saint Peter at Capernaum. Franciscan Printing Press, 1972.",
@@ -861,7 +862,7 @@
       "location": "BibliothÃ¨que nationale de France, Paris",
       "scriptureReference": "Matthew 28:12-13",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ef/Nazareth_inscription.jpg/400px-Nazareth_inscription.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/b/bf/TEL_MEGIDO_AERIAL_C.JPG/640px-TEL_MEGIDO_AERIAL_C.JPG"
       ],
       "academicSources": [
         "Cumont, Franz. \"Un rescrit impÃ©rial sur la violation de sÃ©pulture.\" Revue historique 163 (1930): 241â266.",
@@ -902,7 +903,7 @@
       "location": "Tell es-Sultan, Jericho, Palestine",
       "scriptureReference": "Joshua 6:1-27",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3a/Jericho_Tell_es-Sultan.jpg/400px-Jericho_Tell_es-Sultan.jpg"
+        "https://commons.wikimedia.org/wiki/Special:FilePath/Walls_of_Jericho_-_Reload_Festival_2024_03.jpg?width=400"
       ],
       "academicSources": [
         "Wood, Bryant G. \"Did the Israelites Conquer Jericho?\" BAR 16.2 (1990): 44â58.",
@@ -943,7 +944,7 @@
       "location": "Tall el-Hammam, Jordan",
       "scriptureReference": "Genesis 19:24-25",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/1/17/Dead_Sea_by_David_Shankbone.jpg/400px-Dead_Sea_by_David_Shankbone.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a4/Tunguska_Ereignis-1.jpg/330px-Tunguska_Ereignis-1.jpg"
       ],
       "academicSources": [
         "Collins, Steven, et al. \"A Tall el-Hammam Cosmic Airburst Event.\" Scientific Reports 11 (2021).",
@@ -984,7 +985,7 @@
       "location": "Shlomo Moussaieff Collection",
       "scriptureReference": "Jeremiah 36:4",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c2/Bulla_from_the_City_of_David.jpg/400px-Bulla_from_the_City_of_David.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f3/Cippus_-_Louvre.jpg/330px-Cippus_-_Louvre.jpg"
       ],
       "academicSources": [
         "Avigad, Nahman. \"Baruch the Scribe and Jerahmeel the King's Son.\" IEJ 28 (1978): 52â56.",
@@ -1024,7 +1025,7 @@
       "location": "Israel Antiquities Authority, Jerusalem",
       "scriptureReference": "Micah 5:2",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c2/Bulla_from_the_City_of_David.jpg/400px-Bulla_from_the_City_of_David.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/6/61/Church_of_the_Nativity_%287703592746%29.jpg/330px-Church_of_the_Nativity_%287703592746%29.jpg"
       ],
       "academicSources": [
         "Vainstub, Daniel. \"A Fiscal Bulla from the Reign of Hezekiah.\" IEJ 62 (2012): 160â168.",
@@ -1065,7 +1066,7 @@
       "location": "British Museum, London",
       "scriptureReference": "2 Kings 18:14",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f1/Lachish_relief_from_Sennacherib%27s_palace_at_Nineveh%2C_built_c._700-692_BC.jpg/400px-Lachish_relief_from_Sennacherib%27s_palace_at_Nineveh%2C_built_c._700-692_BC.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/9/93/Assyrian_siege-engine_attacking_the_city_wall_of_Lachish%2C_part_of_the_ascending_assaulting_wave._Detail_of_a_wall_relief_dating_back_to_the_reign_of_Sennacherib%2C_700-692_BCE._From_Nineveh%2C_Iraq%2C_currently_housed_in_the_British_Museum.jpg/330px-thumbnail.jpg"
       ],
       "academicSources": [
         "Ussishkin, David. The Conquest of Lachish by Sennacherib. Tel Aviv University Press, 1982.",
@@ -1105,7 +1106,7 @@
       "location": "Israel Museum, Jerusalem / Rockefeller Museum",
       "scriptureReference": "1 Kings 22:39",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/5/50/Ivory_inlay_Samaria.jpg/400px-Ivory_inlay_Samaria.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b7/Ahab_rex.png/330px-Ahab_rex.png"
       ],
       "academicSources": [
         "Crowfoot, J. W., and Grace M. Crowfoot. Early Ivories from Samaria. Palestine Exploration Fund, 1938.",
@@ -1145,7 +1146,7 @@
       "location": "St. Anne's Church compound, Jerusalem",
       "scriptureReference": "John 5:2-9",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a5/PoolOfBethesda.jpg/400px-PoolOfBethesda.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/Jerusalem_Bethesda_BW_1.JPG/330px-Jerusalem_Bethesda_BW_1.JPG"
       ],
       "academicSources": [
         "Jeremias, Joachim. Die Wiederentdeckung von Bethesda. Vandenhoeck & Ruprecht, 1966.",
@@ -1185,7 +1186,7 @@
       "location": "Magdala, Sea of Galilee, Israel",
       "scriptureReference": "Matthew 4:23",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fc/Magdala_stone.jpg/400px-Magdala_stone.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5d/%D7%91%D7%99%D7%AA_%D7%94%D7%9B%D7%A0%D7%A1%D7%AA_%D7%9E%D7%92%D7%93%D7%9C%D7%90.JPG/330px-%D7%91%D7%99%D7%AA_%D7%94%D7%9B%D7%A0%D7%A1%D7%AA_%D7%9E%D7%92%D7%93%D7%9C%D7%90.JPG"
       ],
       "academicSources": [
         "Avshalom-Gorni, Dina, and Arfan Najar. \"Migdal.\" Excavations and Surveys in Israel 125 (2013).",
@@ -1226,7 +1227,7 @@
       "location": "Egyptian Museum, Cairo",
       "scriptureReference": "Exodus 1:1",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5a/Merenptah_Stele.jpg/400px-Merenptah_Stele.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/0/09/Merneptah_Steli_%28cropped%29.jpg/330px-Merneptah_Steli_%28cropped%29.jpg"
       ],
       "academicSources": [
         "Hasel, Michael G. \"Israel in the Merneptah Stele.\" BASOR 296 (1994): 45â61.",
@@ -1268,7 +1269,7 @@
       "location": "Istanbul Archaeological Museum",
       "scriptureReference": "2 Kings 20:20",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d4/Siloam_inscription.jpg/400px-Siloam_inscription.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/a/af/Siloam_Inscription_2.jpg/330px-Siloam_Inscription_2.jpg"
       ],
       "academicSources": [
         "Rogerson, John, and Philip Davies. \"Was the Siloam Tunnel Built by Hezekiah?\" BA 59.3 (1996).",
@@ -1308,7 +1309,7 @@
       "location": "Israel Antiquities Authority / Hazor, Israel",
       "scriptureReference": "Joshua 11:10-11",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Hazor_Archaeological_Site.jpg/400px-Hazor_Archaeological_Site.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/0/03/88338_gazar_mound_PikiWiki_Israel.jpg/330px-88338_gazar_mound_PikiWiki_Israel.jpg"
       ],
       "academicSources": [
         "Yadin, Yigael. Hazor: The Schweich Lectures. Oxford University Press, 1972.",
@@ -1356,7 +1357,7 @@
       "location": "City of David National Park, Jerusalem",
       "scriptureReference": "2 Samuel 5:7",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/3/32/City_of_David.jpg/400px-City_of_David.jpg"
+        "https://commons.wikimedia.org/wiki/Special:FilePath/%D7%A2%D7%99%D7%A8_%D7%93%D7%95%D7%93_2.JPG?width=400"
       ],
       "academicSources": [
         "Warren, Charles. Underground Jerusalem. Richard Bentley & Son, 1876.",
@@ -1397,7 +1398,7 @@
       "location": "British Museum, London",
       "scriptureReference": "2 Kings 15:29",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/b/bc/Tiglath-Pileser_III.jpg/400px-Tiglath-Pileser_III.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/8/88/Tilglath_pileser_iii.jpg/330px-Tilglath_pileser_iii.jpg"
       ],
       "academicSources": [
         "Tadmor, Hayim. The Inscriptions of Tiglath-Pileser III. Israel Academy of Sciences, 1994.",
@@ -1478,7 +1479,7 @@
       "location": "Chester Beatty Library, Dublin",
       "scriptureReference": "Romans 8:18",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/Chester_Beatty_Library.jpg/400px-Chester_Beatty_Library.jpg"
+        "https://commons.wikimedia.org/wiki/Special:FilePath/Dublin%2C_Chester_Beatty_Ms_Papyrus_45_BP_I_ff.13-14_Luke_11.50-12.12%3B_12.18-37%3B_12.42-13.1%3B_13.jpg?width=400"
       ],
       "academicSources": [
         "Kenyon, Frederic G. The Chester Beatty Biblical Papyri. Emery Walker, 1933.",
@@ -1559,7 +1560,7 @@
       "location": "Vatican Apostolic Library, Vatican City",
       "scriptureReference": "Genesis 1:1",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/7/73/Codex_Vaticanus_1464_11r.jpg/400px-Codex_Vaticanus_1464_11r.jpg"
+        "https://commons.wikimedia.org/wiki/Special:FilePath/Codex_Vaticanus_B%2C_2Thess._3%2C11-18%2C_Hebr._1%2C1-2%2C2.jpg?width=400"
       ],
       "academicSources": [
         "Canart, Paul. Il Codice Vaticano Greco 1209. Biblioteca Apostolica Vaticana, 1999.",
@@ -1600,7 +1601,7 @@
       "location": "Cambridge University Library",
       "scriptureReference": "Exodus 20:2-17",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/1/17/Nash_Papyrus.jpg/400px-Nash_Papyrus.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/4/4a/Sinaiticus_text.jpg"
       ],
       "academicSources": [
         "Nash, W. L. \"A Hebrew Papyrus.\" Proceedings of the Society of Biblical Archaeology 22 (1900): 21â34.",
@@ -1640,7 +1641,7 @@
       "location": "National Library of Israel, Jerusalem",
       "scriptureReference": "Deuteronomy 17:18",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b5/Aleppo_Codex_Joshua_1_1.jpg/400px-Aleppo_Codex_Joshua_1_1.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/7/75/Aleppo_Codex_Joshua_1_1.jpg/330px-Aleppo_Codex_Joshua_1_1.jpg"
       ],
       "academicSources": [
         "Goshen-Gottstein, Moshe. The Aleppo Codex. Hebrew University Bible Project, 1976.",
@@ -1680,7 +1681,7 @@
       "location": "Russian National Library, St. Petersburg",
       "scriptureReference": "Isaiah 1:1",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/2/26/Leningrad_Codex_Carpet_page_folio_475a.jpg/400px-Leningrad_Codex_Carpet_page_folio_475a.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a9/Leningrad_Codex_Folio_474a.jpg/330px-Leningrad_Codex_Folio_474a.jpg"
       ],
       "academicSources": [
         "Freedman, David Noel, ed. The Leningrad Codex. Eerdmans / Facsimile, 1998.",
@@ -1721,7 +1722,7 @@
       "location": "Berlin / Cairo / New York",
       "scriptureReference": "Ezra 4:7",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/a/aa/Elephantine_papyri.jpg/400px-Elephantine_papyri.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7f/Papyrus_narrating_the_story_of_the_wise_chancellor_Ahiqar._Aramaic_script._5th_century_BCE._From_Elephantine%2C_Egypt._Neues_Museum.jpg/330px-Papyrus_narrating_the_story_of_the_wise_chancellor_Ahiqar._Aramaic_script._5th_century_BCE._From_Elephantine%2C_Egypt._Neues_Museum.jpg"
       ],
       "academicSources": [
         "Cowley, Arthur Ernest. Aramaic Papyri of the Fifth Century B.C. Clarendon Press, 1923.",
@@ -1882,7 +1883,7 @@
       "location": "Libraries worldwide",
       "scriptureReference": "2 Timothy 3:16",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5a/Greek_minuscule_manuscript.jpg/400px-Greek_minuscule_manuscript.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/5/57/Codex_Ebnerianus_Prolog_J_1%2C_5b-10.JPG/330px-Codex_Ebnerianus_Prolog_J_1%2C_5b-10.JPG"
       ],
       "academicSources": [
         "Metzger, Bruce M. The Text of the New Testament. Oxford University Press, 1992.",
@@ -1924,7 +1925,7 @@
       "location": "Bodmer Library, Geneva / Vatican Library",
       "scriptureReference": "John 1:1-14",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b4/Papyrus_Bodmer_II.jpg/400px-Papyrus_Bodmer_II.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b0/Geneva%2C_Bodmer_Lab_Ms_Papyrus_66_%28P.Bodmer_II_-_PB_2%29_fol._1r.jpg/330px-Geneva%2C_Bodmer_Lab_Ms_Papyrus_66_%28P.Bodmer_II_-_PB_2%29_fol._1r.jpg"
       ],
       "academicSources": [
         "Martin, Victor. Papyrus Bodmer II: Ãvangile de Jean. Bibliotheca Bodmeriana, 1956.",
@@ -1964,7 +1965,7 @@
       "location": "British Library, London",
       "scriptureReference": "Revelation 1:1",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/9/98/Codex_Alexandrinus_fol_41r.jpg/400px-Codex_Alexandrinus_fol_41r.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/5/58/Codex_Alexandrinus_f41v_-_Luke.jpg/330px-Codex_Alexandrinus_f41v_-_Luke.jpg"
       ],
       "academicSources": [
         "Kenyon, Frederic G. The Codex Alexandrinus. British Museum, 1909.",
@@ -2004,7 +2005,7 @@
       "location": "Cambridge University Library / Jewish Theological Seminary",
       "scriptureReference": "Ecclesiasticus (Sirach) 39:1",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Cairo_Genizah_manuscript.jpg/400px-Cairo_Genizah_manuscript.jpg"
+        "https://commons.wikimedia.org/wiki/Special:FilePath/Bab_voc_fragment_2.jpg?width=400"
       ],
       "academicSources": [
         "Schechter, Solomon. Documents of Jewish Sectaries. Cambridge University Press, 1910.",
@@ -2044,7 +2045,7 @@
       "location": "Israel Antiquities Authority, Jerusalem",
       "scriptureReference": "Romans 13:1",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d1/Dead_sea_scrolls_%28doitu_oyajibabaa_%2C_kyoto_koshin_yukishin%29.jpg/250px-Dead_sea_scrolls_%28doitu_oyajibabaa_%2C_kyoto_koshin_yukishin%29.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/4/4a/Sinaiticus_text.jpg"
       ],
       "academicSources": [
         "Benoit, Pierre, et al. Les Grottes de Murabba'Ã¢t. DJD 2. Oxford University Press, 1961.",
@@ -2084,7 +2085,7 @@
       "location": "Bodleian Library, Oxford / Various",
       "scriptureReference": "Matthew 5:3-12",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/2/22/Oxyrhynchus_papyri.jpg/400px-Oxyrhynchus_papyri.jpg"
+        "https://upload.wikimedia.org/wikipedia/en/thumb/b/b5/Grenfell-hunt-1896.jpg/330px-Grenfell-hunt-1896.jpg"
       ],
       "academicSources": [
         "Grenfell, Bernard P., and Arthur S. Hunt. The Oxyrhynchus Papyri. Vol. 1â. Egypt Exploration Society, 1898â.",
@@ -2124,7 +2125,7 @@
       "location": "Various libraries worldwide",
       "scriptureReference": "John 1:1",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d3/Syriac_Bible.jpg/400px-Syriac_Bible.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cc/Peshitta_%281%29.jpg/330px-Peshitta_%281%29.jpg"
       ],
       "academicSources": [
         "Brock, Sebastian. The Bible in the Syriac Tradition. St. Ephrem Ecumenical Research Institute, 1988.",
@@ -2205,7 +2206,7 @@
       "location": "Various libraries worldwide",
       "scriptureReference": "Isaiah 7:14",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/d/df/Rahlfs_Septuaginta.jpg/400px-Rahlfs_Septuaginta.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f5/Codex_Vaticanus_%281_Esdras_1-55_to_2-5%29_%28The_S.S._Teacher%27s_Edition-The_Holy_Bible%29.jpg/330px-Codex_Vaticanus_%281_Esdras_1-55_to_2-5%29_%28The_S.S._Teacher%27s_Edition-The_Holy_Bible%29.jpg"
       ],
       "academicSources": [
         "Hengel, Martin. The Septuagint as Christian Scripture. Baker Academic, 2002.",
@@ -2245,7 +2246,7 @@
       "location": "Hebrew University, Jerusalem / Israel Antiquities Authority",
       "scriptureReference": "Psalm 81:3",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fa/Masada aerial view.jpg/400px-Masada_aerial_view.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/1/14/Israel-2013-Aerial_21-Masada.jpg/330px-Israel-2013-Aerial_21-Masada.jpg"
       ],
       "academicSources": [
         "Yadin, Yigael. Masada: Herod's Fortress and the Zealots' Last Stand. Weidenfeld & Nicolson, 1966.",
@@ -2286,7 +2287,7 @@
       "location": "Antiquities 18.3.3",
       "scriptureReference": "Matthew 27:50",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7e/Josephus_bust.jpg/400px-Josephus_bust.jpg"
+        "https://commons.wikimedia.org/wiki/Special:FilePath/Josephus_Antiquitates_Iudaice.jpg?width=400"
       ],
       "academicSources": [
         "Meier, John P. A Marginal Jew. Vol. 1. Doubleday, 1991.",
@@ -2328,7 +2329,7 @@
       "location": "Antiquities 20.9.1",
       "scriptureReference": "Acts 15:13",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7e/Josephus_bust.jpg/400px-Josephus_bust.jpg"
+        "https://commons.wikimedia.org/wiki/Special:FilePath/Josephus_Antiquitates_Iudaice.jpg?width=400"
       ],
       "academicSources": [
         "Meier, John P. A Marginal Jew. Vol. 1. Doubleday, 1991.",
@@ -2368,7 +2369,7 @@
       "location": "Annals 15.44",
       "scriptureReference": "Matthew 27:50",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/4/42/Tacitus.jpg/400px-Tacitus.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c4/Karl_von_Piloty_Nero_R%C3%B3ma_%C3%A9g%C3%A9s%C3%A9t_szeml%C3%A9li.jpg/330px-Karl_von_Piloty_Nero_R%C3%B3ma_%C3%A9g%C3%A9s%C3%A9t_szeml%C3%A9li.jpg"
       ],
       "academicSources": [
         "Tacitus. Annales. Trans. Michael Grant. Penguin Classics, 1996.",
@@ -2409,7 +2410,7 @@
       "location": "Letters 10.96",
       "scriptureReference": "Acts 18:2",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0f/Pliny_the_Younger.jpg/400px-Pliny_the_Younger.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d/0012_-_Milano_-_Sant%27Ambrogio_-_Atrio_-_Frammento_lapide_C._Plinio_-_Foto_Giovanni_Dall%27Orto_25-Apr-2007.jpg/330px-0012_-_Milano_-_Sant%27Ambrogio_-_Atrio_-_Frammento_lapide_C._Plinio_-_Foto_Giovanni_Dall%27Orto_25-Apr-2007.jpg"
       ],
       "academicSources": [
         "Pliny the Younger. Letters and Panegyricus. Trans. Betty Radice. Loeb Classical Library, 1969.",
@@ -2449,7 +2450,7 @@
       "location": "Life of Claudius 25.4",
       "scriptureReference": "Acts 18:2",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5c/Suetonius.jpg/400px-Suetonius.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/7/71/Claudius_crop.jpg/330px-Claudius_crop.jpg"
       ],
       "academicSources": [
         "Suetonius. Lives of the Twelve Caesars. Trans. J. C. Rolfe. Loeb Classical Library, 1914.",
@@ -2489,7 +2490,7 @@
       "location": "British Museum, London (Add. MS 14658)",
       "scriptureReference": "Matthew 27:50",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/8/80/British_Museum_Ancient_letters.jpg/400px-British_Museum_Ancient_letters.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/6/66/SVouet.jpg/330px-SVouet.jpg"
       ],
       "academicSources": [
         "Cureton, William. Spicilegium Syriacum. Rivington, 1855.",
@@ -2530,7 +2531,7 @@
       "location": "British Museum, London",
       "scriptureReference": "2 Kings 24:10-17",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d8/Babylonian_chronicle.jpg/400px-Babylonian_chronicle.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/ABC_05_Early_Years_of_Nebuchadnezzar_chronicle.jpg/330px-ABC_05_Early_Years_of_Nebuchadnezzar_chronicle.jpg"
       ],
       "academicSources": [
         "Wiseman, D. J. Chronicles of Chaldaean Kings. British Museum, 1956.",
@@ -2570,7 +2571,7 @@
       "location": "British Museum, London",
       "scriptureReference": "Daniel 5:30-31",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a6/Nabonidus_Chronicle.jpg/400px-Nabonidus_Chronicle.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cd/Nabonidus%27s_faults_and_absences_were_recorded_alongside_events_of_his_reign._By_the_autumn_of_539_BCE%2C_Babylon_had_surrendered_to_the_army_of_king_Cyrus_to_become_part_of_the_growing_Achaemenid_Empire._From_Babylon%2C_Iraq%2C_530-400_BCE.jpg/330px-thumbnail.jpg"
       ],
       "academicSources": [
         "Oppenheim, A. Leo. \"Nabonidus Chronicle.\" ANET. Princeton University Press, 1969.",
@@ -2611,7 +2612,7 @@
       "location": "British Museum / Cairo / Berlin",
       "scriptureReference": "Genesis 12:10",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/6/62/Amarna_letter.jpg/400px-Amarna_letter.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d3/Five_Amarna_letters_on_display_at_the_British_Museum%2C_LondonA.jpg/330px-Five_Amarna_letters_on_display_at_the_British_Museum%2C_LondonA.jpg"
       ],
       "academicSources": [
         "Moran, William L. The Amarna Letters. Johns Hopkins University Press, 1992.",
@@ -2652,7 +2653,7 @@
       "location": "Louvre Museum, Paris / National Museum of Syria",
       "scriptureReference": "Genesis 11:31",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e1/Mari_tablets.jpg/400px-Mari_tablets.jpg"
+        "https://commons.wikimedia.org/wiki/Special:FilePath/MariZiggurat.jpg?width=400"
       ],
       "academicSources": [
         "Parrot, AndrÃ©. Mission archÃ©ologique de Mari. Geuthner, 1956.",
@@ -2692,7 +2693,7 @@
       "location": "Iraq Museum, Baghdad / Harvard Semitic Museum",
       "scriptureReference": "Genesis 16:1-4",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c2/Cuneiform_tablet.jpg/400px-Cuneiform_tablet.jpg"
+        "https://commons.wikimedia.org/wiki/Special:FilePath/Roman_Empire_Trajan_117AD.png?width=640"
       ],
       "academicSources": [
         "Gordon, Cyrus H. \"Biblical Customs and the Nuzu Tablets.\" BA 3 (1940): 1â12.",
@@ -2732,7 +2733,7 @@
       "location": "Louvre Museum, Paris / National Museum of Syria",
       "scriptureReference": "Psalm 29",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/4/45/Ugaritic_tablet.jpg/400px-Ugaritic_tablet.jpg"
+        "https://commons.wikimedia.org/wiki/Special:FilePath/Sea_people02_upscayl_1x_remacri-4x.png?width=400"
       ],
       "academicSources": [
         "Parker, Simon B., ed. Ugaritic Narrative Poetry. Scholars Press, 1997.",
@@ -2772,7 +2773,7 @@
       "location": "British Museum, London",
       "scriptureReference": "2 Kings 19:37",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4f/Esarhaddon_prism.jpg/400px-Esarhaddon_prism.jpg"
+        "https://commons.wikimedia.org/wiki/Special:FilePath/Nineveh_-_Mashki_Gate.jpg?width=400"
       ],
       "academicSources": [
         "Borger, Rykle. Die Inschriften Asarhaddons. Archiv fÃ¼r Orientforschung Beiheft 9, 1956.",
@@ -2812,7 +2813,7 @@
       "location": "British Museum, London",
       "scriptureReference": "Genesis 6-9",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d1/Gilgamesh_Flood_Tablet.jpg/400px-Gilgamesh_Flood_Tablet.jpg"
+        "https://commons.wikimedia.org/wiki/Special:FilePath/British_Museum_Flood_Tablet_1.jpg?width=400"
       ],
       "academicSources": [
         "George, Andrew R. The Babylonian Gilgamesh Epic. Oxford University Press, 2003.",
@@ -2853,7 +2854,7 @@
       "location": "British Museum, London",
       "scriptureReference": "2 Kings 24:10",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b4/Nebuchadnezzar_chronicle.jpg/400px-Nebuchadnezzar_chronicle.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/b/bb/Nebuchadnezzar_II_crop.png/330px-Nebuchadnezzar_II_crop.png"
       ],
       "academicSources": [
         "Wiseman, D. J. Chronicles of Chaldaean Kings. British Museum, 1956.",
@@ -2893,7 +2894,7 @@
       "location": "Various museums worldwide",
       "scriptureReference": "Luke 2:1-5",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b9/Roman_census_relief.jpg/400px-Roman_census_relief.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/2/22/Luke_13.29-35_and_14.10_%28CBL_BP_I%2C_f.15r%29.jpg/330px-Luke_13.29-35_and_14.10_%28CBL_BP_I%2C_f.15r%29.jpg"
       ],
       "academicSources": [
         "Brunt, P. A. Italian Manpower 225 BCâAD 14. Oxford University Press, 1971.",
@@ -2933,7 +2934,7 @@
       "location": "Israel Museum, Jerusalem",
       "scriptureReference": "Luke 21:20-24",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Bar_Kokhba_coins.jpg/400px-Bar_Kokhba_coins.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a3/Bar_kochba22.jpg/330px-Bar_kochba22.jpg"
       ],
       "academicSources": [
         "Yadin, Yigael. Bar-Kokhba. Random House, 1971.",
@@ -2973,7 +2974,7 @@
       "location": "National Museum of Antiquities, Leiden",
       "scriptureReference": "Exodus 7-12",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/0/09/Ipuwer_Papyrus.jpg/400px-Ipuwer_Papyrus.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c8/Papyrus_van_Ipoewer_-_Google_Art_Project.jpg/330px-Papyrus_van_Ipoewer_-_Google_Art_Project.jpg"
       ],
       "academicSources": [
         "Gardiner, Alan H. The Admonitions of an Egyptian Sage. J. C. Hinrichs, 1909.",
@@ -3013,7 +3014,7 @@
       "location": "Various manuscript traditions",
       "scriptureReference": "Daniel 1:1",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0e/Ptolemy_Canon.jpg/400px-Ptolemy_Canon.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/b/be/Claudio_Tolomeo_-_In_una_miniatura_del_trattato_%22Geografia%22_stampato_a_Ulm_%28Germania%29_nel_1482.jpg/330px-Claudio_Tolomeo_-_In_una_miniatura_del_trattato_%22Geografia%22_stampato_a_Ulm_%28Germania%29_nel_1482.jpg"
       ],
       "academicSources": [
         "Toomer, G. J. Ptolemy's Almagest. Duckworth, 1984.",
@@ -3053,7 +3054,7 @@
       "location": "Temple of Augustus, Ankara (original site) / Various",
       "scriptureReference": "Luke 2:1",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7b/Res_Gestae_Divi_Augusti.jpg/400px-Res_Gestae_Divi_Augusti.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/Octave_%2813668015683%29.jpg/330px-Octave_%2813668015683%29.jpg"
       ],
       "academicSources": [
         "Cooley, Alison E. Res Gestae Divi Augusti. Cambridge University Press, 2009.",
@@ -3093,7 +3094,7 @@
       "location": "Isaiah 40:22",
       "scriptureReference": "Isaiah 40:22",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/2/22/The_Blue_Marble_%28remastered%29.jpg/400px-The_Blue_Marble_%28remastered%29.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/8/82/American_Christian_Nationalism_4_Flags_Symbol.svg/330px-American_Christian_Nationalism_4_Flags_Symbol.svg.png"
       ],
       "academicSources": [
         "Seely, Paul H. \"The Geographical Meaning of 'Earth' and 'Seas' in Genesis 1:10.\" WTJ 59 (1997): 231â255.",
@@ -3133,7 +3134,7 @@
       "location": "Job 26:7",
       "scriptureReference": "Job 26:7",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cb/Earth_Western_Hemisphere_transparent_background.png/400px-Earth_Western_Hemisphere_transparent_background.png"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d/God_the_Geometer.jpg/330px-God_the_Geometer.jpg"
       ],
       "academicSources": [
         "Stoner, Peter W. Science Speaks. Moody Press, 1963.",
@@ -3174,7 +3175,7 @@
       "location": "Job 9:8 / Isaiah 40:22",
       "scriptureReference": "Job 9:8",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/6/69/Hubble_Ultra_Deep_Field_2014.jpg/400px-Hubble_Ultra_Deep_Field_2014.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6f/CMB_Timeline300_no_WMAP.jpg/330px-CMB_Timeline300_no_WMAP.jpg"
       ],
       "academicSources": [
         "Hubble, Edwin. \"A Relation Between Distance and Radial Velocity Among Extra-Galactic Nebulae.\" PNAS 15 (1929): 168â173.",
@@ -3215,7 +3216,7 @@
       "location": "Ecclesiastes 1:7 / Amos 9:6",
       "scriptureReference": "Ecclesiastes 1:7",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/b/bb/Water_cycle.png/400px-Water_cycle.png"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0b/Lac_de_l%27Entonnoir_-_img_49473.jpg/330px-Lac_de_l%27Entonnoir_-_img_49473.jpg"
       ],
       "academicSources": [
         "Perrault, Pierre. De l'Origine des Fontaines. Paris, 1674.",
@@ -3255,7 +3256,7 @@
       "location": "Psalm 8:8",
       "scriptureReference": "Psalm 8:8",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/6/67/Ocean_currents_1943.jpg/400px-Ocean_currents_1943.jpg"
+        "https://upload.wikimedia.org/wikipedia/en/9/91/ThePathBetweenTheSeas.jpg"
       ],
       "academicSources": [
         "Maury, Matthew Fontaine. The Physical Geography of the Sea. Harper & Brothers, 1855.",
@@ -3295,7 +3296,7 @@
       "location": "Job 38:16",
       "scriptureReference": "Job 38:16",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/d/de/Black_smoker_hydrothermal_vent.jpg/400px-Black_smoker_hydrothermal_vent.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6f/Blacksmoker_in_Atlantic_Ocean.jpg/330px-Blacksmoker_in_Atlantic_Ocean.jpg"
       ],
       "academicSources": [
         "Corliss, J. B., et al. \"Submarine Thermal Springs on the Galapagos Rift.\" Science 203 (1979): 1073â1083.",
@@ -3336,7 +3337,7 @@
       "location": "Genesis 15:5 / Jeremiah 33:22",
       "scriptureReference": "Genesis 15:5",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/2/24/Milky_Way_Visitor_Center.jpg/400px-Milky_Way_Visitor_Center.jpg"
+        "https://upload.wikimedia.org/wikipedia/en/0/07/Infinite_%282021_film%29_release_poster.jpeg"
       ],
       "academicSources": [
         "van den Bergh, Sidney. \"The Sizes of Galaxies and the Number of Stars.\" JRASC 94 (2000).",
@@ -3376,7 +3377,7 @@
       "location": "Genesis 17:12",
       "scriptureReference": "Genesis 17:12",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/4/47/Ebers_Medical_Papyrus.jpg/400px-Ebers_Medical_Papyrus.jpg"
+        "https://upload.wikimedia.org/wikipedia/en/3/3e/David_Reimer.jpg"
       ],
       "academicSources": [
         "McMillen, S. I. None of These Diseases. Revell, 1984.",
@@ -3417,7 +3418,7 @@
       "location": "Leviticus 17:11",
       "scriptureReference": "Leviticus 17:11",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/7/71/Red_blood_cells.jpg/400px-Red_blood_cells.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/5/50/Venous_and_arterial_blood.jpg/330px-Venous_and_arterial_blood.jpg"
       ],
       "academicSources": [
         "Harvey, William. De Motu Cordis. 1628.",
@@ -3457,7 +3458,7 @@
       "location": "Leviticus 13:4-5",
       "scriptureReference": "Leviticus 13:4-5",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/0/09/Plague_bible.jpg/400px-Plague_bible.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0a/Wards_32-33_EBH%2C_1978.jpg/330px-Wards_32-33_EBH%2C_1978.jpg"
       ],
       "academicSources": [
         "Pasteur, Louis. Germ Theory. AcadÃ©mie de MÃ©decine, 1878.",
@@ -3498,7 +3499,7 @@
       "location": "Ecclesiastes 1:6",
       "scriptureReference": "Ecclesiastes 1:6",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/1/18/Atmospheric_circulation.jpg/400px-Atmospheric_circulation.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/8/81/Weather_Station_at_Feilding_Waste_Water_Treatment_Plant.JPG/330px-Weather_Station_at_Feilding_Waste_Water_Treatment_Plant.JPG"
       ],
       "academicSources": [
         "Maury, Matthew Fontaine. The Physical Geography of the Sea. Harper & Brothers, 1855.",
@@ -3538,7 +3539,7 @@
       "location": "Job 38:31",
       "scriptureReference": "Job 38:31",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/4/45/Pleiades_large.jpg/400px-Pleiades_large.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5c/Artist%27s_impression_of_the_free-floating_planet_CFBDSIR_J214947.2-040308.9.ogv/330px--Artist%27s_impression_of_the_free-floating_planet_CFBDSIR_J214947.2-040308.9.ogv.jpg"
       ],
       "academicSources": [
         "Robichon, C., and A. PÃªtre. \"On the Pleiades Star Cluster.\" A&A 315 (1996): 549â557.",
@@ -3579,7 +3580,7 @@
       "location": "Psalm 102:25-27",
       "scriptureReference": "Psalm 102:25-27",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/8/86/Hubble_sequence_photo.png/400px-Hubble_sequence_photo.png"
+        "https://upload.wikimedia.org/wikipedia/en/d/da/Doctor_Manhattan.png"
       ],
       "academicSources": [
         "Clausius, Rudolf. The Mechanical Theory of Heat. John van Voorst, 1867.",
@@ -3619,7 +3620,7 @@
       "location": "Leviticus 11",
       "scriptureReference": "Leviticus 11:7",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1f/Ancient_food.jpg/400px-Ancient_food.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/0/03/ALFiqh.png/330px-ALFiqh.png"
       ],
       "academicSources": [
         "Harris, Marvin. Cows, Pigs, Wars, and Witches. Vintage Books, 1974.",
@@ -3660,7 +3661,7 @@
       "location": "Job 38:19",
       "scriptureReference": "Job 38:19",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/3/33/Prism_rainbow.jpg/400px-Prism_rainbow.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2e/Earth_to_Sun_-_en.png/330px-Earth_to_Sun_-_en.png"
       ],
       "academicSources": [
         "RÃ¸mer, Ole. \"DÃ©monstration touchant le mouvement de la lumiÃ¨re.\" Journal des SÃ§avans (1676).",
@@ -3701,7 +3702,7 @@
       "location": "Israel Antiquities Authority, Jerusalem",
       "scriptureReference": "2 Kings 18:1",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f7/Seal_of_King_Hezekiah.jpg/400px-Seal_of_King_Hezekiah.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/5/59/LMLK%2C_Ezekiah_seals.jpg/330px-LMLK%2C_Ezekiah_seals.jpg"
       ],
       "academicSources": [
         "Mazar, Eilat. \"Is This the Royal Seal of King Hezekiah?\" BAR 41.6 (2015).",
@@ -3742,7 +3743,7 @@
       "location": "Royal Ontario Museum, Toronto (on loan)",
       "scriptureReference": "Acts 12:17",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5a/James_Ossuary.jpg/400px-James_Ossuary.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b8/JamesOssuary-1-.jpg/330px-JamesOssuary-1-.jpg"
       ],
       "academicSources": [
         "Lemaire, AndrÃ©. \"Burial Box of James the Brother of Jesus.\" BAR 28.6 (2002): 24â33.",
@@ -3782,7 +3783,7 @@
       "location": "Ancient Corinth Archaeological Site, Greece",
       "scriptureReference": "Romans 16:23",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5b/Erastus_inscription_Corinth.jpg/400px-Erastus_inscription_Corinth.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/2/28/Erastus%2C_Olympus%2C_Rhodion%2C_Sosipater%2C_Quartus_and_Tertius_%28Menologion_of_Basil_II%29.jpg/330px-Erastus%2C_Olympus%2C_Rhodion%2C_Sosipater%2C_Quartus_and_Tertius_%28Menologion_of_Basil_II%29.jpg"
       ],
       "academicSources": [
         "Kent, John Harvey. Corinth, Volume VIII: The Inscriptions. ASCSA, 1966.",
@@ -3822,7 +3823,7 @@
       "location": "British Museum, London",
       "scriptureReference": "Acts 17:6",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8f/Arch_of_Galerius_and_Rotunda_Thessaloniki.jpg/400px-Arch_of_Galerius_and_Rotunda_Thessaloniki.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/0/01/%D0%A1%D0%B2%D1%98%D0%B5%D1%82%D0%BB%D0%BE%D0%BF%D0%B8%D1%81_%D0%B6%D0%B8%D0%B2%D0%BE%D0%BF%D0%B8%D1%81%D0%B0_%D0%A1%D0%B2._%D0%B0%D0%BF%D0%BE%D1%81%D1%82%D0%BE%D0%BB%D0%B0_%D0%90%D1%80%D0%B8%D1%81%D1%82%D0%B0%D1%80%D1%85%D0%B0_%D1%83_%D0%BA%D1%80%D0%B8%D0%BF%D1%82%D0%B8_%D1%85%D1%80%D0%B0%D0%BC%D0%B0_%D0%A1%D0%B2._%D0%A1%D0%B0%D0%B2%D0%B5_%D1%83_%D0%91%D0%B8%D0%BE%D0%B3%D1%80%D0%B0%D0%B4%D1%83.jpg/330px-%D0%A1%D0%B2%D1%98%D0%B5%D1%82%D0%BB%D0%BE%D0%BF%D0%B8%D1%81_%D0%B6%D0%B8%D0%B2%D0%BE%D0%BF%D0%B8%D1%81%D0%B0_%D0%A1%D0%B2._%D0%B0%D0%BF%D0%BE%D1%81%D1%82%D0%BE%D0%BB%D0%B0_%D0%90%D1%80%D0%B8%D1%81%D1%82%D0%B0%D1%80%D1%85%D0%B0_%D1%83_%D0%BA%D1%80%D0%B8%D0%BF%D1%82%D0%B8_%D1%85%D1%80%D0%B0%D0%BC%D0%B0_%D0%A1%D0%B2._%D0%A1%D0%B0%D0%B2%D0%B5_%D1%83_%D0%91%D0%B8%D0%BE%D0%B3%D1%80%D0%B0%D0%B4%D1%83.jpg"
       ],
       "academicSources": [
         "Horsley, G. H. R. \"The Politarchs.\" The Book of Acts in Its Graeco-Roman Setting. Eerdmans, 1994.",
@@ -3862,7 +3863,7 @@
       "location": "Shrine of the Book, Israel Museum, Jerusalem",
       "scriptureReference": "Isaiah 40:3",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0d/Dead_Sea_Scrolls_Exhibition_elevator_poster_Calif_Science_Center.jpg/250px-Dead_Sea_Scrolls_Exhibition_elevator_poster_Calif_Science_Center.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cb/Qumran.jpeg/330px-Qumran.jpeg"
       ],
       "academicSources": [
         "Leaney, A. R. C. The Rule of Qumran and Its Meaning. SCM Press, 1966.",
@@ -3904,7 +3905,7 @@
       "location": "Cambridge University Library",
       "scriptureReference": "Luke 1:1-4",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3a/Codex_Bezae_fol_407v.jpg/400px-Codex_Bezae_fol_407v.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/0/08/Codex_Bezae_-_Greek_Luke_23-47_to_24-1_%28The_S.S._Teacher%27s_Edition-The_Holy_Bible_-_Plate_XXV%29.jpg/330px-Codex_Bezae_-_Greek_Luke_23-47_to_24-1_%28The_S.S._Teacher%27s_Edition-The_Holy_Bible_-_Plate_XXV%29.jpg"
       ],
       "academicSources": [
         "Parker, David C. Codex Bezae: An Early Christian Manuscript and Its Text. Cambridge University Press, 1992.",
@@ -3944,7 +3945,7 @@
       "location": "National Museum of Syria, Damascus",
       "scriptureReference": "Genesis 14:2",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/b/be/Ebla_tablets.jpg/400px-Ebla_tablets.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/8/85/Calco_di_tavoletta_in_terracotta_da_Ebla_-_Museo_d%27Arte_Orientale_Roma.jpg/330px-Calco_di_tavoletta_in_terracotta_da_Ebla_-_Museo_d%27Arte_Orientale_Roma.jpg"
       ],
       "academicSources": [
         "Matthiae, Paolo. Ebla: An Empire Rediscovered. Doubleday, 1981.",
@@ -3985,7 +3986,7 @@
       "location": "Delphi Museum, Greece",
       "scriptureReference": "Acts 18:12",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/Delphi_temple.jpg/400px-Delphi_temple.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1f/Delphes_Gallion.jpg/330px-Delphes_Gallion.jpg"
       ],
       "academicSources": [
         "Murphy-O'Connor, Jerome. \"Paul and Gallio.\" JBL 112 (1993): 315â317.",
@@ -4026,7 +4027,7 @@
       "location": "Jewish War / Antiquities of the Jews",
       "scriptureReference": "Matthew 2:1",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7e/Josephus_bust.jpg/400px-Josephus_bust.jpg"
+        "https://commons.wikimedia.org/wiki/Special:FilePath/Herod_Antipas_medal.svg?width=400"
       ],
       "academicSources": [
         "Josephus, Flavius. Jewish Antiquities. Trans. Louis H. Feldman. Loeb Classical Library, 1965.",
@@ -4066,7 +4067,7 @@
       "location": "Fragment cited in Julius Africanus, Chronography",
       "scriptureReference": "Matthew 27:45",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0b/Ancient_papyrus_fragment.jpg/400px-Ancient_papyrus_fragment.jpg"
+        "https://commons.wikimedia.org/wiki/Special:FilePath/Pilate_Inscription.JPG?width=400"
       ],
       "academicSources": [
         "Carrier, Richard. \"Thallus: An Analysis.\" The Empty Tomb. Prometheus Books, 2005.",
@@ -4106,7 +4107,7 @@
       "location": "Shrine of the Book, Israel Museum, Jerusalem",
       "scriptureReference": "Psalm 22",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d4/Hodayot_4Q432_f2.jpg/400px-Hodayot_4Q432_f2.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cb/Qumran.jpeg/330px-Qumran.jpeg"
       ],
       "academicSources": [
         "Holm-Nielsen, Svend. Hodayot: Psalms from Qumran. Universitetsforlaget, 1960.",
@@ -4146,7 +4147,7 @@
       "location": "British Museum, London",
       "scriptureReference": "1 Kings 16:28-34",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5f/Kurkh_Monolith.jpg/400px-Kurkh_Monolith.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/e/ef/Karkar.jpg"
       ],
       "academicSources": [
         "Luckenbill, Daniel David. Ancient Records of Assyria. University of Chicago Press, 1926.",
@@ -4187,7 +4188,7 @@
       "location": "Vorderasiatisches Museum, Berlin",
       "scriptureReference": "2 Kings 25:27-30",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d8/Babylonian_chronicle.jpg/400px-Babylonian_chronicle.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8f/Tissot_The_Flight_of_the_Prisoners.jpg/330px-Tissot_The_Flight_of_the_Prisoners.jpg"
       ],
       "academicSources": [
         "Weidner, Ernst F. \"Jojachin, KÃ¶nig von Juda.\" Babylonische Inschriften. OLZ 22 (1919): 74â76.",
@@ -4227,7 +4228,7 @@
       "location": "British Museum, London",
       "scriptureReference": "Jeremiah 39:3",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d8/Babylonian_chronicle.jpg/400px-Babylonian_chronicle.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/b/bf/TEL_MEGIDO_AERIAL_C.JPG/640px-TEL_MEGIDO_AERIAL_C.JPG"
       ],
       "academicSources": [
         "Jursa, Michael. \"Nebo-Sarsekim, der Oberster der Eunuchen.\" NABU 2007/2 (2007): 41â43.",
@@ -4267,7 +4268,7 @@
       "location": "Various museums; Israel Antiquities Authority",
       "scriptureReference": "2 Chronicles 32:1-8",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/5/57/LMLK_seal.jpg/400px-LMLK_seal.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/b/bf/TEL_MEGIDO_AERIAL_C.JPG/640px-TEL_MEGIDO_AERIAL_C.JPG"
       ],
       "academicSources": [
         "Vaughn, Andrew G. Theology, History, and Archaeology in the Chronicler's Account of Hezekiah. Scholars Press, 1999.",
@@ -4308,7 +4309,7 @@
       "location": "Israel Museum, Jerusalem",
       "scriptureReference": "1 Samuel 5:10",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e1/Ekron_Inscription.jpg/400px-Ekron_Inscription.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/2/28/JRSLM_300116_Ekron_inscription.jpg/330px-JRSLM_300116_Ekron_inscription.jpg"
       ],
       "academicSources": [
         "Gitin, Seymour, et al. \"Tel Miqne-Ekron: Excavations 1986-1988.\" IEJ 47 (1997).",
@@ -4349,7 +4350,7 @@
       "location": "Roman Forum, Rome, Italy",
       "scriptureReference": "Matthew 24:1-2",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/Titus_arch.jpg/400px-Titus_arch.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b9/Arch_Titus%2C_Forum_Romanum%2C_Rome%2C_Italy.jpg/330px-Arch_Titus%2C_Forum_Romanum%2C_Rome%2C_Italy.jpg"
       ],
       "academicSources": [
         "Pfanner, Michael. \"The Arch of Titus.\" JRA 16 (2003): 213â240.",
@@ -4390,7 +4391,7 @@
       "location": "British Museum, London",
       "scriptureReference": "Joshua 10:10-11",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d8/Babylonian_chronicle.jpg/400px-Babylonian_chronicle.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1d/K6205_Rawlinson_and_Smith_Azekah_Inscription.jpg/330px-K6205_Rawlinson_and_Smith_Azekah_Inscription.jpg"
       ],
       "academicSources": [
         "Na'aman, Nadav. \"Sennacherib's Campaign to Judah.\" JSOT 26 (2002): 145â164.",
@@ -4430,7 +4431,7 @@
       "location": "City of David, Jerusalem; IAA",
       "scriptureReference": "Jeremiah 37:3",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f7/Seal_of_King_Hezekiah.jpg/400px-Seal_of_King_Hezekiah.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/1/17/James_Wyld%2C_the_elder%2C_Land_of_Israel_Shewing_the_Purveyorships_in_the_Reign_of_Solomon._1._Kings%2C_Chap._4_%28FL45582276_3918323%29.jpg/330px-James_Wyld%2C_the_elder%2C_Land_of_Israel_Shewing_the_Purveyorships_in_the_Reign_of_Solomon._1._Kings%2C_Chap._4_%28FL45582276_3918323%29.jpg"
       ],
       "academicSources": [
         "Mazar, Eilat. \"The Bullae of the City of David.\" City of David Archaeological Project, 2005.",
@@ -4470,7 +4471,7 @@
       "location": "City of David, Jerusalem; IAA",
       "scriptureReference": "Jeremiah 38:1",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f7/Seal_of_King_Hezekiah.jpg/400px-Seal_of_King_Hezekiah.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3b/Aleppo-HighRes2-Neviim6-Jeremiah_%28page_1_crop%29.jpg/330px-Aleppo-HighRes2-Neviim6-Jeremiah_%28page_1_crop%29.jpg"
       ],
       "academicSources": [
         "Mazar, Eilat. \"The Gedaliah Bulla.\" City of David Archaeological Project, 2008.",
@@ -4510,7 +4511,7 @@
       "location": "Israel Museum, Jerusalem",
       "scriptureReference": "2 Chronicles 11:5-12",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c2/Cuneiform_tablet.jpg/400px-Cuneiform_tablet.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/5/50/Bible-Lands-Museum-Yemen-2999.jpg/330px-Bible-Lands-Museum-Yemen-2999.jpg"
       ],
       "academicSources": [
         "Aharoni, Yohanan. Arad Inscriptions. Israel Exploration Society, 1981.",
@@ -4551,7 +4552,7 @@
       "location": "Louvre Museum, Paris / British Museum, London",
       "scriptureReference": "2 Kings 17:1-6",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4f/Esarhaddon_prism.jpg/400px-Esarhaddon_prism.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f2/Sargon_of_Akkad_on_his_victory_stele.jpg/330px-Sargon_of_Akkad_on_his_victory_stele.jpg"
       ],
       "academicSources": [
         "Luckenbill, Daniel David. Ancient Records of Assyria. University of Chicago Press, 1926.",
@@ -4591,7 +4592,7 @@
       "location": "Iraq Museum, Baghdad",
       "scriptureReference": "2 Kings 13:10-25",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4f/Esarhaddon_prism.jpg/400px-Esarhaddon_prism.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/b/bf/TEL_MEGIDO_AERIAL_C.JPG/640px-TEL_MEGIDO_AERIAL_C.JPG"
       ],
       "academicSources": [
         "Page, Stephanie. \"A Stela of Adad-Nirari III and Nergal-Eresh from Tell al Rimah.\" Iraq 30 (1968): 139â153.",
@@ -4631,7 +4632,7 @@
       "location": "British Museum, London",
       "scriptureReference": "2 Kings 15:19-20",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c2/Cuneiform_tablet.jpg/400px-Cuneiform_tablet.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/b/bf/TEL_MEGIDO_AERIAL_C.JPG/640px-TEL_MEGIDO_AERIAL_C.JPG"
       ],
       "academicSources": [
         "Luckenbill, Daniel David. Ancient Records of Assyria. University of Chicago Press, 1926.",
@@ -4671,7 +4672,7 @@
       "location": "National Museum, Damascus",
       "scriptureReference": "2 Kings 8:7-15",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d4/Tel_Dan_Stele.jpg/400px-Tel_Dan_Stele.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/0/01/Neohititas-en.svg/330px-Neohititas-en.svg.png"
       ],
       "academicSources": [
         "Donner, Herbert, and Wolfgang RÃ¶llig. KanaanÃ¤ische und AramÃ¤ische Inschriften. Harrassowitz, 1966.",
@@ -4711,7 +4712,7 @@
       "location": "Israel Museum, Jerusalem",
       "scriptureReference": "1 Samuel 17",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c2/Cuneiform_tablet.jpg/400px-Cuneiform_tablet.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/a/af/Qeiyafa-western-gate1_cr.jpg/330px-Qeiyafa-western-gate1_cr.jpg"
       ],
       "academicSources": [
         "Garfinkel, Yosef, and Saar Ganor. Khirbet Qeiyafa Vol. 1. Israel Exploration Society, 2009.",
@@ -4752,7 +4753,7 @@
       "location": "Israel Museum; various collections",
       "scriptureReference": "Matthew 27:2",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/4/42/Pontius_Pilate_inscription.jpg/400px-Pontius_Pilate_inscription.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/8/82/Roman_Empire_-_Iudaea_%28125_AD%29.svg/330px-Roman_Empire_-_Iudaea_%28125_AD%29.svg.png"
       ],
       "academicSources": [
         "Madden, Frederic W. History of Jewish Coinage. Bernard Quaritch, 1864.",
@@ -4793,7 +4794,7 @@
       "location": "Herodium, Judean Desert, West Bank",
       "scriptureReference": "Matthew 2:1-19",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3e/Herodium_2008.jpg/400px-Herodium_2008.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5f/Herodium_from_above_2.jpg/330px-Herodium_from_above_2.jpg"
       ],
       "academicSources": [
         "Netzer, Ehud. \"Herod's Tomb at Herodium.\" JRA 21 (2008): 85â93.",
@@ -4833,7 +4834,7 @@
       "location": "Shrine of the Book, Israel Museum, Jerusalem",
       "scriptureReference": "Isaiah 53",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/3/37/Frgmnt_of_a_Bible.jpg/400px-Frgmnt_of_a_Bible.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b2/Great_Isaiah_Scroll_Ch53.jpg/330px-Great_Isaiah_Scroll_Ch53.jpg"
       ],
       "academicSources": [
         "Burrows, Millar. The Dead Sea Scrolls. Viking Press, 1955.",
@@ -4873,7 +4874,7 @@
       "location": "Shrine of the Book, Israel Museum, Jerusalem",
       "scriptureReference": "Habakkuk 1-2",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/3/37/Frgmnt_of_a_Bible.jpg/400px-Frgmnt_of_a_Bible.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0b/Habakkuk_Pesher.png/330px-Habakkuk_Pesher.png"
       ],
       "academicSources": [
         "Horgan, Maurya P. Pesharim: Qumran Interpretations of Biblical Books. CBQMS 8, 1979.",
@@ -4915,7 +4916,7 @@
       "location": "Israel Museum, Jerusalem",
       "scriptureReference": "Judges 3:7",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Cairo_Genizah_manuscript.jpg/400px-Cairo_Genizah_manuscript.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/c/ca/Ajrud.jpg/330px-Ajrud.jpg"
       ],
       "academicSources": [
         "Meshel, Zeev. Kuntillet Ajrud. Israel Exploration Society, 2012.",
@@ -4956,7 +4957,7 @@
       "location": "Various museums and collections",
       "scriptureReference": "Jude 14-15",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/3/37/Frgmnt_of_a_Bible.jpg/400px-Frgmnt_of_a_Bible.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/8/86/Paradise_Lost_1.jpg/330px-Paradise_Lost_1.jpg"
       ],
       "academicSources": [
         "Milik, J. T. The Books of Enoch. Clarendon Press, 1976.",
@@ -4996,7 +4997,7 @@
       "location": "Cairo / various collections",
       "scriptureReference": "Deuteronomy 6:4",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/2/22/Oxyrhynchus_papyri.jpg/400px-Oxyrhynchus_papyri.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3b/Pap_266.jpg/330px-Pap_266.jpg"
       ],
       "academicSources": [
         "Waddell, W. G. \"The Tetragrammaton in the LXX.\" JTS 45 (1944): 158â161.",
@@ -5038,7 +5039,7 @@
       "location": "Coptic Museum, Cairo",
       "scriptureReference": "Luke 1:1-4",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d1/Dead_sea_scrolls_%28doitu_oyajibabaa_%2C_kyoto_koshin_yukishin%29.jpg/250px-Dead_sea_scrolls_%28doitu_oyajibabaa_%2C_kyoto_koshin_yukishin%29.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/4/42/El_Evangelio_de_Tom%C3%A1s-Gospel_of_Thomas-_Codex_II_Manuscritos_de_Nag_Hammadi-The_Nag_Hammadi_manuscripts.png/330px-El_Evangelio_de_Tom%C3%A1s-Gospel_of_Thomas-_Codex_II_Manuscritos_de_Nag_Hammadi-The_Nag_Hammadi_manuscripts.png"
       ],
       "academicSources": [
         "Robinson, James M., ed. The Nag Hammadi Library. Harper & Row, 1978.",
@@ -5078,7 +5079,7 @@
       "location": "British Museum, London",
       "scriptureReference": "Daniel 5",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a6/Nabonidus_Chronicle.jpg/400px-Nabonidus_Chronicle.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9e/Cylinder_of_Nabonidus_from_the_temple_of_Shamash_at_Larsa%2C_Mesopotamia..JPG/330px-Cylinder_of_Nabonidus_from_the_temple_of_Shamash_at_Larsa%2C_Mesopotamia..JPG"
       ],
       "academicSources": [
         "Gadd, C. J. \"The Harran Inscriptions of Nabonidus.\" Anatolian Studies 8 (1958): 35â92.",
@@ -5119,7 +5120,7 @@
       "location": "Embassy to Gaius (preserved in manuscript)",
       "scriptureReference": "Matthew 27:11-26",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/4/42/Pontius_Pilate_inscription.jpg/400px-Pontius_Pilate_inscription.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/d/de/Ecce_homo_by_Antonio_Ciseri_%281%29.jpg/330px-Ecce_homo_by_Antonio_Ciseri_%281%29.jpg"
       ],
       "academicSources": [
         "Philo of Alexandria. Legatio ad Gaium. Trans. E. M. Smallwood. Brill, 1970.",
@@ -5162,7 +5163,7 @@
       "location": "Various museums and literary sources",
       "scriptureReference": "John 19:31-33",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0b/Ancient_papyrus_fragment.jpg/400px-Ancient_papyrus_fragment.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d7/Cristo_crucificado.jpg/330px-Cristo_crucificado.jpg"
       ],
       "academicSources": [
         "Hengel, Martin. Crucifixion. Fortress Press, 1977.",
@@ -5202,7 +5203,7 @@
       "location": "Geographica (preserved in manuscript)",
       "scriptureReference": "Various NT references",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5c/Suetonius.jpg/400px-Suetonius.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8e/Ilion---metopa.jpg/330px-Ilion---metopa.jpg"
       ],
       "academicSources": [
         "Strabo. Geographica. Trans. Horace L. Jones. Loeb Classical Library, 1917-1932.",
@@ -5243,7 +5244,7 @@
       "location": "Histories (preserved in manuscript)",
       "scriptureReference": "Exodus 1:11",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/0/09/Ipuwer_Papyrus.jpg/400px-Ipuwer_Papyrus.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8b/Palestine_with_the_Hauran_and_the_adjacent_districts%2C_William_Hughes_1843.jpg/330px-Palestine_with_the_Hauran_and_the_adjacent_districts%2C_William_Hughes_1843.jpg"
       ],
       "academicSources": [
         "Herodotus. Histories. Trans. A. D. Godley. Loeb Classical Library, 1920-1925.",
@@ -5283,7 +5284,7 @@
       "location": "Various museum collections",
       "scriptureReference": "Luke 2:1-2",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7b/Res_Gestae_Divi_Augusti.jpg/400px-Res_Gestae_Divi_Augusti.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a6/Meister_der_Kahriye-Cami-Kirche_in_Istanbul_005.jpg/330px-Meister_der_Kahriye-Cami-Kirche_in_Istanbul_005.jpg"
       ],
       "academicSources": [
         "Ramsey, William M. The Bearing of Recent Discovery on the Trustworthiness of the New Testament. Hodder & Stoughton, 1915.",
@@ -5323,7 +5324,7 @@
       "location": "Job 28:25",
       "scriptureReference": "Job 28:25",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/3/33/Prism_rainbow.jpg/400px-Prism_rainbow.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4b/La_Tour_Eiffel_vue_de_la_Tour_Saint-Jacques%2C_Paris_ao%C3%BBt_2014_%282%29.jpg/330px-La_Tour_Eiffel_vue_de_la_Tour_Saint-Jacques%2C_Paris_ao%C3%BBt_2014_%282%29.jpg"
       ],
       "academicSources": [
         "Stoner, Peter W. Science Speaks. Moody Press, 1963.",
@@ -5363,7 +5364,7 @@
       "location": "1 Corinthians 15:36-38",
       "scriptureReference": "1 Corinthians 15:36-38",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1f/Ancient_food.jpg/400px-Ancient_food.jpg"
+        "https://commons.wikimedia.org/wiki/Special:FilePath/Hubble_ultra_deep_field_high_rez_edit1.jpg?width=400"
       ],
       "academicSources": [
         "Bewley, J. Derek, and Michael Black. Seeds: Physiology of Development and Germination. Plenum Press, 1994.",
@@ -5403,7 +5404,7 @@
       "location": "Proverbs 6:6-8",
       "scriptureReference": "Proverbs 6:6-8",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1f/Ancient_food.jpg/400px-Ancient_food.jpg"
+        "https://commons.wikimedia.org/wiki/Special:FilePath/Hubble_ultra_deep_field_high_rez_edit1.jpg?width=400"
       ],
       "academicSources": [
         "HÃ¶lldobler, Bert, and Edward O. Wilson. The Ants. Harvard University Press, 1990.",
@@ -5444,7 +5445,7 @@
       "location": "Genesis 3:19",
       "scriptureReference": "Genesis 3:19",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/2/22/The_Blue_Marble_%28remastered%29.jpg/400px-The_Blue_Marble_%28remastered%29.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3b/Great_Soil_Structure_in_Stehly_Crop_Field_in_Eastern%2C_SD_%2821480483232%29.jpg/330px-Great_Soil_Structure_in_Stehly_Crop_Field_in_Eastern%2C_SD_%2821480483232%29.jpg"
       ],
       "academicSources": [
         "Brady, Nyle C. The Nature and Properties of Soils. Prentice Hall, 1999.",
@@ -5484,7 +5485,7 @@
       "location": "Tyre, Lebanon / underwater ruins",
       "scriptureReference": "Ezekiel 26:3-14",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d1/Gilgamesh_Flood_Tablet.jpg/400px-Gilgamesh_Flood_Tablet.jpg"
+        "https://commons.wikimedia.org/wiki/Special:FilePath/Roman_Empire_Trajan_117AD.png?width=400"
       ],
       "academicSources": [
         "Katzenstein, H. Jacob. The History of Tyre. Israel Exploration Society, 1973.",
@@ -5525,7 +5526,7 @@
       "location": "Babylon ruins, Hillah, Iraq",
       "scriptureReference": "Isaiah 13:19-22",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b4/Nebuchadnezzar_chronicle.jpg/400px-Nebuchadnezzar_chronicle.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/7/78/SA_160-Jeremia_op_de_puinhopen_van_Jeruzalem.jpg/330px-SA_160-Jeremia_op_de_puinhopen_van_Jeruzalem.jpg"
       ],
       "academicSources": [
         "Oates, Joan. Babylon. Thames & Hudson, 1986.",
@@ -5610,7 +5611,7 @@
       "location": "Various â texts preserved in manuscript tradition",
       "scriptureReference": "Isaiah 53; Psalm 22; Micah 5:2; Zechariah 11:12-13",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/3/37/Frgmnt_of_a_Bible.jpg/400px-Frgmnt_of_a_Bible.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d7/Judaica.jpg/330px-Judaica.jpg"
       ],
       "academicSources": [
         "Payne, J. Barton. Encyclopedia of Biblical Prophecy. Baker Book House, 1973.",
@@ -5651,7 +5652,7 @@
       "location": "Astronomical / Bethlehem",
       "scriptureReference": "Matthew 2:1-10",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/2/24/Milky_Way_Visitor_Center.jpg/400px-Milky_Way_Visitor_Center.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/7/75/Portrait_of_Jupiter_from_Cassini.jpg/330px-Portrait_of_Jupiter_from_Cassini.jpg"
       ],
       "academicSources": [
         "Molnar, Michael R. The Star of Bethlehem. Rutgers University Press, 1999.",
@@ -5691,7 +5692,7 @@
       "location": "Egypt / Nile Delta",
       "scriptureReference": "Exodus 7-12",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/0/09/Ipuwer_Papyrus.jpg/400px-Ipuwer_Papyrus.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/Great_plague_of_london-1665.jpg/330px-Great_plague_of_london-1665.jpg"
       ],
       "academicSources": [
         "Marr, John S., and Curtis D. Malloy. \"The Plagues of Egypt.\" Caduceus 12 (1996): 7â23.",
@@ -5731,7 +5732,7 @@
       "location": "Gibeon, Israel",
       "scriptureReference": "Joshua 10:12-14",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/6/69/Hubble_Ultra_Deep_Field_2014.jpg/400px-Hubble_Ultra_Deep_Field_2014.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/6/68/Astronomical_unit_svg.svg/330px-Astronomical_unit_svg.svg.png"
       ],
       "academicSources": [
         "Humphreys, Colin J. \"The Date of Joshua's Long Day.\" Science and Christian Belief 23 (2011).",
@@ -5771,7 +5772,7 @@
       "location": "Mount Carmel, Israel",
       "scriptureReference": "1 Kings 18:16-46",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e1/Mari_tablets.jpg/400px-Mari_tablets.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e4/Giovanni_Girolamo_Savoldo%2C_Elijah_Fed_by_the_Raven%2C_c._1510%2C_NGA_46134.jpg/330px-Giovanni_Girolamo_Savoldo%2C_Elijah_Fed_by_the_Raven%2C_c._1510%2C_NGA_46134.jpg"
       ],
       "academicSources": [
         "Malamat, Abraham. \"The Battle of Mount Carmel.\" BAR 18.4 (1992).",
@@ -5811,7 +5812,7 @@
       "location": "Mountains of Ararat, Turkey",
       "scriptureReference": "Genesis 6-9",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d1/Gilgamesh_Flood_Tablet.jpg/400px-Gilgamesh_Flood_Tablet.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/3/31/Edward_Hicks%2C_American_-_Noah%27s_Ark_-_Google_Art_Project.jpg/330px-Edward_Hicks%2C_American_-_Noah%27s_Ark_-_Google_Art_Project.jpg"
       ],
       "academicSources": [
         "Montgomery, John Warwick. The Quest for Noah's Ark. Bethany Fellowship, 1974.",
@@ -5852,7 +5853,7 @@
       "location": "Tall el-Hammam, Jordan / Dead Sea region",
       "scriptureReference": "Genesis 19:24-28",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/8/86/Hubble_sequence_photo.png/400px-Hubble_sequence_photo.png"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/5/57/Tall_el-Hammam_overlooking_the_Jordan_Valley_2007.jpg/330px-Tall_el-Hammam_overlooking_the_Jordan_Valley_2007.jpg"
       ],
       "academicSources": [
         "Collins, Steven. \"The Search for Sodom.\" Bible and Spade 21 (2008).",
@@ -5893,7 +5894,7 @@
       "location": "City of David, Jerusalem",
       "scriptureReference": "2 Samuel 5:6-10",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/5/57/LMLK_seal.jpg/400px-LMLK_seal.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/9/98/%D7%A2%D7%99%D7%A8_%D7%93%D7%95%D7%93_2.JPG/330px-%D7%A2%D7%99%D7%A8_%D7%93%D7%95%D7%93_2.JPG"
       ],
       "academicSources": [
         "Mazar, Eilat. \"The Stepped Stone Structure.\" IEJ 56 (2006): 69â82.",
@@ -5934,7 +5935,7 @@
       "location": "Temple Mount, Jerusalem",
       "scriptureReference": "1 Kings 6-8",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a6/Nabonidus_Chronicle.jpg/400px-Nabonidus_Chronicle.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/8/88/Francois_Vatable%2C_reconstructie_van_de_tempel_van_Salomo_%28detail%29.jpg/330px-Francois_Vatable%2C_reconstructie_van_de_tempel_van_Salomo_%28detail%29.jpg"
       ],
       "academicSources": [
         "Mazar, Benjamin. The Mountain of the Lord. Doubleday, 1975.",
@@ -5974,7 +5975,7 @@
       "location": "Various â texts preserved in manuscript tradition",
       "scriptureReference": "Daniel 2, 7, 8, 11",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d8/Babylonian_chronicle.jpg/400px-Babylonian_chronicle.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/5/59/The_Vision_of_Daniel.png/330px-The_Vision_of_Daniel.png"
       ],
       "academicSources": [
         "Archer, Gleason L. \"The Chronological Index.\" Expositor's Bible Commentary. Zondervan, 1985.",
@@ -6019,7 +6020,7 @@
       "location": "Jerusalem / early Christian communities",
       "scriptureReference": "1 Corinthians 15:3-8",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0b/Ancient_papyrus_fragment.jpg/400px-Ancient_papyrus_fragment.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ef/Rafael_-_ressureicaocristo01.jpg/330px-Rafael_-_ressureicaocristo01.jpg"
       ],
       "academicSources": [
         "Wright, N. T. The Resurrection of the Son of God. Fortress Press, 2003.",
@@ -6061,7 +6062,7 @@
       "location": "Jerusalem",
       "scriptureReference": "Matthew 28:5-7",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0b/Ancient_papyrus_fragment.jpg/400px-Ancient_papyrus_fragment.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/0/03/PericopesHenryIIFol117rAngelOnTomb.jpg/330px-PericopesHenryIIFol117rAngelOnTomb.jpg"
       ],
       "academicSources": [
         "Wright, N. T. The Resurrection of the Son of God. Fortress Press, 2003.",
@@ -6102,7 +6103,7 @@
       "location": "Eastern Nile Delta / Gulf of Aqaba",
       "scriptureReference": "Exodus 14:21-22",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1d/Crossing_of_the_Red_Sea.jpg/400px-Crossing_of_the_Red_Sea.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/b/bd/The_Crossing_of_The_Red_Sea.jpg/330px-The_Crossing_of_The_Red_Sea.jpg"
       ],
       "academicSources": [
         "Drews, Carl, and Weiqing Han. \"Dynamics of Wind Setdown at Suez and the Eastern Nile Delta.\" PLOS ONE 5(8), 2010.",
@@ -6143,7 +6144,7 @@
       "location": "British Museum / Babylon",
       "scriptureReference": "Daniel 6:16-23",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Briton_Rivi%C3%A8re_-_Daniel%27s_Answer_to_the_King.jpg/400px-Briton_Rivi%C3%A8re_-_Daniel%27s_Answer_to_the_King.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/9/99/Songe_Nabuchodonosor_statue.jpg"
       ],
       "academicSources": [
         "Wiseman, D. J. Nebuchadrezzar and Babylon. Oxford University Press, 1985.",
@@ -6184,7 +6185,7 @@
       "location": "Babylon (modern Iraq)",
       "scriptureReference": "Daniel 3:19-27",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d0/Simeon_Solomon_-_Shadrach%2C_Meshach_and_Abednego.jpg/400px-Simeon_Solomon_-_Shadrach%2C_Meshach_and_Abednego.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/b/bb/Nebuchadnezzar_II_crop.png/330px-Nebuchadnezzar_II_crop.png"
       ],
       "academicSources": [
         "Koldewey, Robert. The Excavations at Babylon. Macmillan, 1914.",
@@ -6226,7 +6227,7 @@
       "location": "Mosul, Iraq (Tell Kuyunjik and Tell Nebi Yunus)",
       "scriptureReference": "Jonah 3:3-5",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3a/Nineveh_Adad_gate_exterior_entrance_far2.JPG/400px-Nineveh_Adad_gate_exterior_entrance_far2.JPG"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/2/27/Nineveh_-_Mashki_Gate.jpg/330px-Nineveh_-_Mashki_Gate.jpg"
       ],
       "academicSources": [
         "Layard, Austen Henry. Nineveh and Its Remains. John Murray, 1849.",
@@ -6267,7 +6268,7 @@
       "location": "Khirbet Qana, Lower Galilee, Israel",
       "scriptureReference": "John 2:1-11",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4e/Stone_jar_cana.jpg/400px-Stone_jar_cana.jpg"
+        "https://commons.wikimedia.org/wiki/Special:FilePath/Kafr_Kanna_BW_1.JPG?width=400"
       ],
       "academicSources": [
         "Richardson, Peter. \"Khirbet Qana (and Other Villages) as a Context for Jesus.\" Jesus and Archaeology. Eerdmans, 2006.",
@@ -6311,7 +6312,7 @@
       "location": "el-Araj / Bethsaida, Sea of Galilee, Israel",
       "scriptureReference": "Luke 9:10-17",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/6/63/Tabgha_Mosaic_Loaves_and_Fishes.jpg/400px-Tabgha_Mosaic_Loaves_and_Fishes.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/b/bf/TEL_MEGIDO_AERIAL_C.JPG/640px-TEL_MEGIDO_AERIAL_C.JPG"
       ],
       "academicSources": [
         "Aviam, Mordechai, and R. Steven Notley. \"The Bethsaida-Julias Excavations at el-Araj.\" Israel Exploration Journal, 2020.",
@@ -6352,7 +6353,7 @@
       "location": "al-Eizariya (Bethany), West Bank",
       "scriptureReference": "John 11:38-44",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/9/98/Tomb_of_Lazarus_in_Bethany.jpg/400px-Tomb_of_Lazarus_in_Bethany.jpg"
+        "https://commons.wikimedia.org/wiki/Special:FilePath/Iglesia_de_San_L%C3%A1zaro%2C_L%C3%A1rnaca%2C_Chipre%2C_2021-12-12%2C_DD_06.jpg?width=400"
       ],
       "academicSources": [
         "Murphy-O'Connor, Jerome. The Holy Land: An Oxford Archaeological Guide. Oxford University Press, 2008.",
@@ -6394,7 +6395,7 @@
       "location": "Bir Ya'qub, Nablus, West Bank",
       "scriptureReference": "John 4:5-14",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a1/Jacob%27s_Well_interior_2017.jpg/400px-Jacob%27s_Well_interior_2017.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/b/bf/TEL_MEGIDO_AERIAL_C.JPG/640px-TEL_MEGIDO_AERIAL_C.JPG"
       ],
       "academicSources": [
         "Murphy-O'Connor, Jerome. The Holy Land: An Oxford Archaeological Guide. Oxford University Press, 2008.",
@@ -6438,7 +6439,7 @@
       "location": "Mount of Olives, Jerusalem",
       "scriptureReference": "Matthew 26:36-46",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5f/Garden_of_Gethsemane_olives.jpg/400px-Garden_of_Gethsemane_olives.jpg"
+        "https://commons.wikimedia.org/wiki/Special:FilePath/Olivesfromjordan.jpg?width=400"
       ],
       "academicSources": [
         "Bernabei, Mauro. \"The Age of the Olive Trees in the Garden of Gethsemane.\" Journal of Archaeological Science 53, 2015.",
@@ -6480,7 +6481,7 @@
       "location": "Sinai Peninsula",
       "scriptureReference": "Exodus 16:14-15",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/3/37/Gathering_of_the_Manna_%28James_Tissot%29.jpg/400px-Gathering_of_the_Manna_%28James_Tissot%29.jpg"
+        "https://upload.wikimedia.org/wikipedia/en/6/69/Manna_from_heaven.jpg"
       ],
       "academicSources": [
         "Bodenheimer, F. S. \"The Manna of Sinai.\" Biblical Archaeologist 10, 1947.",
@@ -6522,7 +6523,7 @@
       "location": "Mount of Olives, Jerusalem",
       "scriptureReference": "Acts 1:9-12",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8e/Chapel_of_the_Ascension_Jerusalem.jpg/400px-Chapel_of_the_Ascension_Jerusalem.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4c/2013-Aerial-Mount_of_Olives.jpg/330px-2013-Aerial-Mount_of_Olives.jpg"
       ],
       "academicSources": [
         "Murphy-O'Connor, Jerome. The Holy Land: An Oxford Archaeological Guide. Oxford University Press, 2008.",
@@ -6563,7 +6564,7 @@
       "location": "Mount Zion, Jerusalem (traditional Cenacle)",
       "scriptureReference": "Acts 2:1-4",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1c/Cenacle_on_Mount_Zion%2C_Jerusalem.jpg/400px-Cenacle_on_Mount_Zion%2C_Jerusalem.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/5/54/Cenacle_on_Mount_Zion.jpg/330px-Cenacle_on_Mount_Zion.jpg"
       ],
       "academicSources": [
         "Pixner, Bargil. \"Church of the Apostles Found on Mt. Zion.\" Biblical Archaeology Review 16, 1990.",
@@ -6605,7 +6606,7 @@
       "location": "Damascus, Syria (Via Recta)",
       "scriptureReference": "Acts 9:3-11",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/9/99/Bab_Sharqi_Damascus.jpg/400px-Bab_Sharqi_Damascus.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/2/22/Damascus_from_qasioun_mountain.jpg/330px-Damascus_from_qasioun_mountain.jpg"
       ],
       "academicSources": [
         "Burns, Ross. Damascus: A History. Routledge, 2005.",
@@ -6646,7 +6647,7 @@
       "location": "Tell el-Daba (Avaris), Eastern Nile Delta, Egypt",
       "scriptureReference": "Genesis 41:41-43",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e7/Semitic_tribute_bearers_Beni_Hasan_tomb_painting.jpg/400px-Semitic_tribute_bearers_Beni_Hasan_tomb_painting.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cf/Painting_of_foreign_delegation_in_the_tomb_of_Khnumhotep_II_circa_1900_BCE_%28Detail_mentioning_%22Abisha_the_Hyksos%22_in_hieroglyphs%29.jpg/330px-Painting_of_foreign_delegation_in_the_tomb_of_Khnumhotep_II_circa_1900_BCE_%28Detail_mentioning_%22Abisha_the_Hyksos%22_in_hieroglyphs%29.jpg"
       ],
       "academicSources": [
         "Bietak, Manfred. Avaris: The Capital of the Hyksos. British Museum Press, 1996.",
@@ -6688,7 +6689,7 @@
       "location": "Babylon, Iraq (Etemenanki ziggurat foundations)",
       "scriptureReference": "Genesis 11:1-9",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/Pieter_Bruegel_the_Elder_-_The_Tower_of_Babel_%28Vienna%29.jpg/400px-Pieter_Bruegel_the_Elder_-_The_Tower_of_Babel_%28Vienna%29.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fc/Pieter_Bruegel_the_Elder_-_The_Tower_of_Babel_%28Vienna%29_-_Google_Art_Project_-_edited.jpg/330px-Pieter_Bruegel_the_Elder_-_The_Tower_of_Babel_%28Vienna%29_-_Google_Art_Project_-_edited.jpg"
       ],
       "academicSources": [
         "George, Andrew R. \"The Tower of Babel: Archaeology, History and Cuneiform Texts.\" Archiv fÃ¼r Orientforschung 51, 2005/2006.",
@@ -6729,7 +6730,7 @@
       "location": "Tell el-Muqayyar, Dhi Qar Province, Iraq",
       "scriptureReference": "Genesis 11:31",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/1/18/Ancient_ziggurat_at_Ali_Air_Base_Iraq_2005.jpg/400px-Ancient_ziggurat_at_Ali_Air_Base_Iraq_2005.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a0/20160105-Abraham_house_in_Ur_Iraq.jpg/330px-20160105-Abraham_house_in_Ur_Iraq.jpg"
       ],
       "academicSources": [
         "Woolley, C. Leonard. Ur of the Chaldees. Pelican, 1950.",
@@ -6770,7 +6771,7 @@
       "location": "St. Catherine's Monastery, Jebel Musa, Sinai, Egypt",
       "scriptureReference": "Exodus 3:1-6",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a4/Saint_Catherine%27s_Monastery.jpg/400px-Saint_Catherine%27s_Monastery.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/4/49/Bourdon%2C_S%C3%A9bastien_-_Burning_bush.jpg/330px-Bourdon%2C_S%C3%A9bastien_-_Burning_bush.jpg"
       ],
       "academicSources": [
         "Hobbs, Joseph J. Mount Sinai. University of Texas Press, 1995.",
@@ -6811,7 +6812,7 @@
       "location": "Susa (Shush), Khuzestan Province, Iran",
       "scriptureReference": "Esther 1:2-5",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0a/Apadana_of_Susa_capital.jpg/400px-Apadana_of_Susa_capital.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8b/History_of_Egypt%2C_Chaldea%2C_Syria%2C_Babylonia_and_Assyria_%281903%29_%2814584070300%29.jpg/330px-History_of_Egypt%2C_Chaldea%2C_Syria%2C_Babylonia_and_Assyria_%281903%29_%2814584070300%29.jpg"
       ],
       "academicSources": [
         "Yamauchi, Edwin M. Persia and the Bible. Baker Academic, 1990.",
@@ -6853,7 +6854,7 @@
       "location": "Marib, Yemen / Ophel, Jerusalem",
       "scriptureReference": "1 Kings 10:1-13",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a0/Marib_ruins_Yemen.jpg/400px-Marib_ruins_Yemen.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/9/96/Queen_of_Sheba_%281907%29%2C_by_Edward_Slocombe.jpg/330px-Queen_of_Sheba_%281907%29%2C_by_Edward_Slocombe.jpg"
       ],
       "academicSources": [
         "Kitchen, K. A. \"Sheba and Arabia.\" The Age of Solomon: Scholarship at the Turn of the Millennium. Brill, 1997.",
@@ -6896,7 +6897,7 @@
       "location": "Yigal Allon Museum, Kibbutz Ginosar, Sea of Galilee, Israel",
       "scriptureReference": "Mark 4:37-41",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Ancient_Galilee_Boat.jpg/400px-Ancient_Galilee_Boat.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f7/Kinneret_cropped.jpg/330px-Kinneret_cropped.jpg"
       ],
       "academicSources": [
         "Wachsmann, Shelley. The Sea of Galilee Boat: An Extraordinary 2000 Year Old Discovery. Plenum Press, 1995.",
@@ -6938,7 +6939,7 @@
       "location": "Tel Shiloh, West Bank",
       "scriptureReference": "Joshua 18:1",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5d/Tel_Shiloh.jpg/400px-Tel_Shiloh.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/3/35/Eli_and_Samuel_%28cropped%29.jpg/330px-Eli_and_Samuel_%28cropped%29.jpg"
       ],
       "academicSources": [
         "Finkelstein, Israel. Shiloh: The Archaeology of a Biblical Site. Tel Aviv University, 1993.",
@@ -6979,7 +6980,7 @@
       "location": "Tel Qasile, Tel Aviv, Israel",
       "scriptureReference": "Judges 16:29-30",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/d/db/Tell_Qasile_Philistine_temple.jpg/400px-Tell_Qasile_Philistine_temple.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4b/%D8%A7%D9%84%D9%85%D8%B3%D8%AC%D8%AF_%D8%A7%D9%84%D8%B9%D9%85%D8%B1%D9%8A_%D8%A7%D9%84%D9%83%D8%A8%D9%8A%D8%B1_%D9%81%D9%8A_%D8%BA%D8%B2%D8%A9_%D8%A8%D8%B9%D8%AF_%D8%A7%D9%84%D9%82%D8%B5%D9%81_%D9%88%D8%A7%D9%84%D8%AF%D9%85%D8%A7%D8%B1.jpg/330px-%D8%A7%D9%84%D9%85%D8%B3%D8%AC%D8%AF_%D8%A7%D9%84%D8%B9%D9%85%D8%B1%D9%8A_%D8%A7%D9%84%D9%83%D8%A8%D9%8A%D8%B1_%D9%81%D9%8A_%D8%BA%D8%B2%D8%A9_%D8%A8%D8%B9%D8%AF_%D8%A7%D9%84%D9%82%D8%B5%D9%81_%D9%88%D8%A7%D9%84%D8%AF%D9%85%D8%A7%D8%B1.jpg"
       ],
       "academicSources": [
         "Mazar, Amihai. Excavations at Tell Qasile: Part Two. Qedem 20, Hebrew University, 1985.",
@@ -7020,7 +7021,7 @@
       "location": "Tel Dothan, West Bank",
       "scriptureReference": "2 Kings 6:13-17",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4a/Tell_Dothan.jpg/400px-Tell_Dothan.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/8/80/Jenin-new.jpg/330px-Jenin-new.jpg"
       ],
       "academicSources": [
         "Free, Joseph P. \"The Excavation of Dothan.\" Biblical Archaeologist 19, 1956.",
@@ -7062,7 +7063,7 @@
       "location": "Mukawir, Jordan",
       "scriptureReference": "Matthew 14:3-11",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/2/21/Machaerus_fortress.jpg/400px-Machaerus_fortress.jpg"
+        "https://commons.wikimedia.org/wiki/Special:FilePath/Machaerus_Panorama.jpg?width=400"
       ],
       "academicSources": [
         "VÃ¶rÃ¶s, GyÅzÅ. Machaerus IâIII: History, Archaeology and Architecture of the Fortified Herodian Royal Palace. Edizioni Terra Santa, 2013â2019.",
@@ -7106,7 +7107,7 @@
       "location": "Al-Maghtas, Jordan (east bank) / Qasr al-Yahud, West Bank",
       "scriptureReference": "John 1:28",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1b/Al-Maghtas_baptism_site.jpg/400px-Al-Maghtas_baptism_site.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/7/72/El_bautismo_de_Jes%C3%BAs%2C_por_Jos%C3%A9_Ferraz_de_Almeida_J%C3%BAnior.jpg/330px-El_bautismo_de_Jes%C3%BAs%2C_por_Jos%C3%A9_Ferraz_de_Almeida_J%C3%BAnior.jpg"
       ],
       "academicSources": [
         "Waheeb, Mohammad. The Discovery of Bethany Beyond the Jordan (Al-Maghtas). Dar al-Kitab, 2013.",
@@ -7147,7 +7148,7 @@
       "location": "St. Paul's Bay, Malta",
       "scriptureReference": "Acts 27:27-28:1",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e1/St_Paul%27s_Bay_Malta.jpg/400px-St_Paul%27s_Bay_Malta.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/0/00/Roman_Empire_Trajan_117AD.png/330px-Roman_Empire_Trajan_117AD.png"
       ],
       "academicSources": [
         "Smith, James. The Voyage and Shipwreck of St. Paul. Longmans, Green, 1848 (4th ed. 1880).",
@@ -7189,7 +7190,7 @@
       "location": "Areopagus (Mars Hill), Athens, Greece",
       "scriptureReference": "Acts 17:22-34",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e8/Areopagus_from_the_Acropolis.jpg/400px-Areopagus_from_the_Acropolis.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/5/56/V%26A_-_Raphael%2C_St_Paul_Preaching_in_Athens_%281515%29.jpg/330px-V%26A_-_Raphael%2C_St_Paul_Preaching_in_Athens_%281515%29.jpg"
       ],
       "academicSources": [
         "Winter, Bruce W. \"On Introducing Gods to Athens: An Alternative Reading of Acts 17:18-20.\" Tyndale Bulletin 47, 1996.",
@@ -7230,7 +7231,7 @@
       "location": "Ephesus (SelÃ§uk), Turkey",
       "scriptureReference": "Acts 19:23-41",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/2/23/Great_theater_of_Ephesus.jpg/400px-Great_theater_of_Ephesus.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/b/bf/TEL_MEGIDO_AERIAL_C.JPG/640px-TEL_MEGIDO_AERIAL_C.JPG"
       ],
       "academicSources": [
         "Wood, J. T. Discoveries at Ephesus. Longmans, Green, 1877.",
@@ -7271,7 +7272,7 @@
       "location": "Shrine of the Book, Israel Museum, Jerusalem",
       "scriptureReference": "Daniel 4:28-34",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/3/37/Frgmnt_of_a_Bible.jpg/400px-Frgmnt_of_a_Bible.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/4/4a/Sinaiticus_text.jpg"
       ],
       "academicSources": [
         "Milik, JÃ³zef T. \"PriÃ¨re de Nabonide et autres Ã©crits d'un cycle de Daniel.\" Revue Biblique 63, 1956.",
@@ -7313,7 +7314,7 @@
       "location": "Church of the Nativity, Bethlehem, West Bank",
       "scriptureReference": "Luke 2:4-7",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6d/Grotto_of_Nativity_Bethlehem.jpg/400px-Grotto_of_Nativity_Bethlehem.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/6/61/Church_of_the_Nativity_%287703592746%29.jpg/330px-Church_of_the_Nativity_%287703592746%29.jpg"
       ],
       "academicSources": [
         "Bagatti, Bellarmino. Gli antichi edifici sacri di Betlemme. Franciscan Printing Press, 1952.",
@@ -7355,7 +7356,7 @@
       "location": "Hazor, Megiddo, Gezer (Israel)",
       "scriptureReference": "1 Kings 9:15",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/Megiddo_gate.jpg/400px-Megiddo_gate.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/b/bf/TEL_MEGIDO_AERIAL_C.JPG/640px-TEL_MEGIDO_AERIAL_C.JPG"
       ],
       "academicSources": [
         "Yadin, Yigael. Hazor: The Rediscovery of a Great Citadel of the Bible. Random House, 1975.",
@@ -7398,7 +7399,7 @@
       "location": "Mount Tabor, Lower Galilee, Israel",
       "scriptureReference": "Matthew 17:1-8",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7f/Mount_Tabor_aerial.jpg/400px-Mount_Tabor_aerial.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/7/78/Mount_of_transfiguration_is.JPG/330px-Mount_of_transfiguration_is.JPG"
       ],
       "academicSources": [
         "Bagatti, Bellarmino. Excavations and Visit to Mount Tabor. Franciscan Printing Press, 1969.",
@@ -7439,7 +7440,7 @@
       "location": "Damiya Bridge area, Jordan Valley",
       "scriptureReference": "Joshua 3:16",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/8/89/Jordan_river.jpg/400px-Jordan_river.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/6/62/Leningrad-codex-06-joshua.pdf/page1-330px-Leningrad-codex-06-joshua.pdf.jpg"
       ],
       "academicSources": [
         "Garstang, John. The Foundations of Bible History: Joshua, Judges. Constable, 1931.",
@@ -7480,7 +7481,7 @@
       "location": "Ophel, City of David, Jerusalem",
       "scriptureReference": "Nehemiah 3:1-32",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/5/54/City_of_David_Jerusalem.jpg/400px-City_of_David_Jerusalem.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7c/JPF-Ophel_-_City_of_David.JPG/330px-JPF-Ophel_-_City_of_David.JPG"
       ],
       "academicSources": [
         "Mazar, Eilat. The Palace of King David: Excavations at the Summit of the City of David. Shoham Academic, 2009.",
@@ -7521,7 +7522,7 @@
       "location": "Elah Valley, Khirbet Qeiyafa, Israel",
       "scriptureReference": "1 Samuel 17:1-51",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7c/Khirbet_Qeiyafa.jpg/400px-Khirbet_Qeiyafa.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/a/af/Qeiyafa-western-gate1_cr.jpg/330px-Qeiyafa-western-gate1_cr.jpg"
       ],
       "academicSources": [
         "Garfinkel, Yosef, and Saar Ganor. Khirbet Qeiyafa Vol. 1: Excavation Report 2007-2008. Israel Exploration Society, 2009.",
@@ -7563,7 +7564,7 @@
       "location": "Tell es-Safi/Gath, Israel",
       "scriptureReference": "1 Samuel 17:4",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f8/Tell_es-Safi.jpg/400px-Tell_es-Safi.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e8/Cafit030.jpg/330px-Cafit030.jpg"
       ],
       "academicSources": [
         "Maeir, Aren M. Tell es-Safi/Gath I: The 1996-2005 Seasons. Harrassowitz, 2012.",
@@ -7607,7 +7608,7 @@
       "location": "Temple Mount, Jerusalem",
       "scriptureReference": "Mark 13:1-2",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/7/72/Western_Wall_Jerusalem.jpg/400px-Western_Wall_Jerusalem.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/2/27/The_remains_of_Robinson%27s_Arch_on_the_western_side_of_the_Temple_Mount.jpg/330px-The_remains_of_Robinson%27s_Arch_on_the_western_side_of_the_Temple_Mount.jpg"
       ],
       "academicSources": [
         "Mazar, Benjamin. The Mountain of the Lord: Excavating in Jerusalem. Doubleday, 1975.",
@@ -7651,7 +7652,7 @@
       "location": "City of David, Jerusalem",
       "scriptureReference": "2 Kings 25:8-10",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3d/Burnt_House_Jerusalem.jpg/400px-Burnt_House_Jerusalem.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/0/06/The_art_Bible%2C_comprising_the_Old_and_new_Testaments_-_with_numerous_illustrations_%281896%29_%2814783032815%29.jpg/330px-The_art_Bible%2C_comprising_the_Old_and_new_Testaments_-_with_numerous_illustrations_%281896%29_%2814783032815%29.jpg"
       ],
       "academicSources": [
         "Shiloh, Yigal. Excavations at the City of David I, 1978-1982. Qedem 19, 1984.",
@@ -7695,7 +7696,7 @@
       "location": "Church of the Holy Sepulchre, Jerusalem",
       "scriptureReference": "John 19:41-42",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/6/65/Holy_sepulchre_exterior.jpg/400px-Holy_sepulchre_exterior.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6d/Church_of_the_Holy_Sepulchre_by_Gerd_Eichmann_%28cropped%29.jpg/330px-Church_of_the_Holy_Sepulchre_by_Gerd_Eichmann_%28cropped%29.jpg"
       ],
       "academicSources": [
         "Corbo, Virgilio. Il Santo Sepolcro di Gerusalemme. Franciscan Printing Press, 1981.",
@@ -7737,7 +7738,7 @@
       "location": "Timna Valley, southern Negev, Israel",
       "scriptureReference": "Numbers 21:8-9",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9b/Timna_Park_Israel.jpg/400px-Timna_Park_Israel.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/0/02/Maurice_Ascalon_Menorah_Pal-Bell.jpg/330px-Maurice_Ascalon_Menorah_Pal-Bell.jpg"
       ],
       "academicSources": [
         "Rothenberg, Beno. Timna: Valley of the Biblical Copper Mines. Thames & Hudson, 1972.",
@@ -7780,7 +7781,7 @@
       "location": "Sea of Galilee, northern Israel",
       "scriptureReference": "Matthew 14:22-33; Mark 6:45-52; John 6:15-21",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b8/Sea_of_Galilee_early_morning.jpg/400px-Sea_of_Galilee_early_morning.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/1/11/Walking_the_Jesus_Trail.JPG/330px-Walking_the_Jesus_Trail.JPG"
       ],
       "academicSources": [
         "Nof, Doron, Ian McKeague, and Nathan Paldor. \"Is There a Paleolimnological Explanation for 'Walking on Water' in the Sea of Galilee?\" Journal of Paleolimnology 35, 2006.",
@@ -7821,7 +7822,7 @@
       "location": "Jordan River near Jericho / Tell es-Sultan",
       "scriptureReference": "2 Kings 2:1-12",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c3/Jordan_River_near_Jericho.jpg/400px-Jordan_River_near_Jericho.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ec/Bethany_%285%29.JPG/330px-Bethany_%285%29.JPG"
       ],
       "academicSources": [
         "Nigro, Lorenzo. Tell es-Sultan/Jericho in the Early Bronze II. Rome \"La Sapienza\" Studies on the Archaeology of Palestine, 2016.",
@@ -7862,7 +7863,7 @@
       "location": "Damascus and Jordan River, Aram-Israel",
       "scriptureReference": "2 Kings 5:1-19",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3f/Jordan_river.jpg/400px-Jordan_river.jpg"
+        "https://commons.wikimedia.org/wiki/Special:FilePath/Roman_Empire_Trajan_117AD.png?width=400"
       ],
       "academicSources": [
         "Pitard, Wayne. Ancient Damascus: A Historical Study of the Syrian City-State. Eisenbrauns, 1987.",
@@ -7904,7 +7905,7 @@
       "location": "Jerusalem (palace of Ahaz)",
       "scriptureReference": "2 Kings 20:8-11; Isaiah 38:7-8",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3a/Ancient_sundial.jpg/400px-Ancient_sundial.jpg"
+        "https://commons.wikimedia.org/wiki/Special:FilePath/Hubble_ultra_deep_field_high_rez_edit1.jpg?width=400"
       ],
       "academicSources": [
         "Walton, John. \"The Sign of the Shadow of the Sundial of Ahaz (Isaiah 38:7-8).\" Bulletin for Biblical Research 5, 1995.",
@@ -7948,7 +7949,7 @@
       "location": "Mount of Olives, Bethphage, Jerusalem",
       "scriptureReference": "Matthew 21:1-11; Zechariah 9:9",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d/Mount_of_Olives_Jerusalem.jpg/400px-Mount_of_Olives_Jerusalem.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/b/bf/TEL_MEGIDO_AERIAL_C.JPG/640px-TEL_MEGIDO_AERIAL_C.JPG"
       ],
       "academicSources": [
         "Murphy-O'Connor, Jerome. The Holy Land: An Oxford Archaeological Guide. Oxford University Press, 2008.",
@@ -7989,7 +7990,7 @@
       "location": "Emmaus-Nicopolis / Motza / Qubeibeh, west of Jerusalem",
       "scriptureReference": "Luke 24:13-35",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8e/Emmaus_Nicopolis_church_ruins.jpg/400px-Emmaus_Nicopolis_church_ruins.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d7/Emmaus_Nicopolis_basilica.JPG/330px-Emmaus_Nicopolis_basilica.JPG"
       ],
       "academicSources": [
         "Gibson, Shimon. \"Emmaus and the Gospels.\" In Jesus and Archaeology, edited by James Charlesworth, Eerdmans, 2006.",
@@ -8030,7 +8031,7 @@
       "location": "Philippi, Macedonia (northern Greece)",
       "scriptureReference": "Acts 16:16-40",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/9/94/Philippi_forum.jpg/400px-Philippi_forum.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/b/bf/TEL_MEGIDO_AERIAL_C.JPG/640px-TEL_MEGIDO_AERIAL_C.JPG"
       ],
       "academicSources": [
         "Bakirtzis, Charalambos, and Helmut Koester, eds. Philippi at the Time of Paul and after His Death. Trinity Press, 1998.",
@@ -8071,7 +8072,7 @@
       "location": "Patmos, Dodecanese, Greece",
       "scriptureReference": "Revelation 1:9-11",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/2/28/Patmos_Monastery_view.jpg/400px-Patmos_Monastery_view.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/7/77/Cave_of_the_Apocalypse.jpg/330px-Cave_of_the_Apocalypse.jpg"
       ],
       "academicSources": [
         "Koester, Craig. Revelation: A New Translation with Introduction and Commentary. Anchor Yale Bible, 2014.",
@@ -8114,7 +8115,7 @@
       "location": "Jerusalem; Dead Sea region",
       "scriptureReference": "Matthew 27:45-54; Mark 15:33; Luke 23:44-45",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5c/Dead_Sea_from_Masada.jpg/400px-Dead_Sea_from_Masada.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d7/Cristo_crucificado.jpg/330px-Cristo_crucificado.jpg"
       ],
       "academicSources": [
         "Williams, Jefferson B., Markus J. Schwab, and Achim Brauer. \"An Early First-Century Earthquake in the Dead Sea.\" International Geology Review 54:10, 2012.",
@@ -8156,7 +8157,7 @@
       "location": "Sinai Peninsula / Wadi Feiran / Horeb",
       "scriptureReference": "Exodus 17:1-7; Numbers 20:1-13",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f4/Sinai_mountains_wadi.jpg/400px-Sinai_mountains_wadi.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ea/Occupied_Palestinian_Territories.jpg/330px-Occupied_Palestinian_Territories.jpg"
       ],
       "academicSources": [
         "Issar, Arie. Water Shall Flow from the Rock: Hydrogeology and Climate in the Lands of the Bible. Springer, 1990.",
@@ -8197,7 +8198,7 @@
       "location": "Beitin, West Bank (ancient Bethel)",
       "scriptureReference": "Genesis 28:10-22",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ea/Beitin_landscape.jpg/400px-Beitin_landscape.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/Bethel_MET_DP116361.jpg/330px-Bethel_MET_DP116361.jpg"
       ],
       "academicSources": [
         "Albright, William F. \"The Kyle Memorial Excavation at Bethel.\" BASOR 56, 1934.",
@@ -8238,7 +8239,7 @@
       "location": "Sulam, Jezreel Valley, northern Israel (ancient Shunem)",
       "scriptureReference": "2 Kings 4:8-37",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2c/Jezreel_valley_from_Mount_Tabor.jpg/400px-Jezreel_valley_from_Mount_Tabor.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fe/Eva_Cranach.jpg/330px-Eva_Cranach.jpg"
       ],
       "academicSources": [
         "Aharoni, Yohanan. The Land of the Bible: A Historical Geography. Westminster, 1979.",
@@ -8280,7 +8281,7 @@
       "location": "Jerusalem Temple Mount region; City of David",
       "scriptureReference": "2 Kings 22:8-23:25",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/0/09/City_of_David_excavation.jpg/400px-City_of_David_excavation.jpg"
+        "https://upload.wikimedia.org/wikipedia/en/c/cb/Bible_Unearthed.jpg"
       ],
       "academicSources": [
         "Mazar, Eilat. The Wall of Jerusalem. Shoham, 2011.",
@@ -8323,7 +8324,7 @@
       "location": "Jerusalem Temple Mount; Elephantine, Egypt",
       "scriptureReference": "Ezra 3-6; Haggai 1-2",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e8/Second_Temple_model.jpg/400px-Second_Temple_model.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cd/Second_Temple.jpg/330px-Second_Temple.jpg"
       ],
       "academicSources": [
         "Stern, Ephraim. Archaeology of the Land of the Bible, Volume II: The Assyrian, Babylonian, and Persian Periods. Doubleday, 2001.",
@@ -8364,7 +8365,7 @@
       "location": "North of Damascus Gate, Jerusalem",
       "scriptureReference": "Acts 7:54-8:1",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/9/92/Saint-Etienne_church_Jerusalem.jpg/400px-Saint-Etienne_church_Jerusalem.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/4/40/Processed_SAM_loki.jpg/330px-Processed_SAM_loki.jpg"
       ],
       "academicSources": [
         "Vincent, Louis-Hugues, and F.-M. Abel. JÃ©rusalem Nouvelle. Gabalda, 1914-26.",
@@ -8405,7 +8406,7 @@
       "location": "Jaffa (Joppa), Israel",
       "scriptureReference": "Acts 9:36-43; 10:5-6",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0b/Old_Jaffa_port.jpg/400px-Old_Jaffa_port.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a3/ISR-2013-Aerial-Jaffa-Port_of_Jaffa.jpg/330px-ISR-2013-Aerial-Jaffa-Port_of_Jaffa.jpg"
       ],
       "academicSources": [
         "Kaplan, Jacob, and Haya Ritter-Kaplan. \"Jaffa.\" In New Encyclopedia of Archaeological Excavations in the Holy Land. Israel Exploration Society, 1993.",
@@ -8446,7 +8447,7 @@
       "location": "Caesarea Maritima, Israel",
       "scriptureReference": "Acts 12:19-23",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f7/Caesarea_maritima_theater.jpg/400px-Caesarea_maritima_theater.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/5/55/Piece_Agrippa_I.jpg/330px-Piece_Agrippa_I.jpg"
       ],
       "academicSources": [
         "Josephus, Flavius. Antiquities of the Jews 19.343-352.",
@@ -8487,7 +8488,7 @@
       "location": "Ephesus (SelÃ§uk), Turkey",
       "scriptureReference": "Acts 19:11-20, 23-41",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/Temple_of_Artemis_reconstruction.jpg/400px-Temple_of_Artemis_reconstruction.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b1/Lawrence_Alma-Tadema_10.jpeg/330px-Lawrence_Alma-Tadema_10.jpeg"
       ],
       "academicSources": [
         "Bammer, Anton, and Ulrike Muss. Das Artemision von Ephesos. Von Zabern, 1996.",
@@ -8528,7 +8529,7 @@
       "location": "Egypt (Cairo, Asyut, Matariyya, Wadi Natrun)",
       "scriptureReference": "Matthew 2:13-15",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/3/34/Abu_Serga_church_crypt.jpg/400px-Abu_Serga_church_crypt.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3d/Kairo_Hanging_Church_BW_1.jpg/330px-Kairo_Hanging_Church_BW_1.jpg"
       ],
       "academicSources": [
         "Gabra, Gawdat. Coptic Monasteries: Egypt's Monastic Art and Architecture. American University in Cairo Press, 2002.",
@@ -8569,7 +8570,7 @@
       "location": "Nein, Lower Galilee, Israel",
       "scriptureReference": "Luke 7:11-17",
       "images": [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/1/17/Village_of_Nain.jpg/400px-Village_of_Nain.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ea/Eduard_von_Gebhardt_-_The_Raising_of_Lazarus_-_Google_Art_Project_%28cropped%29.jpg/330px-Eduard_von_Gebhardt_-_The_Raising_of_Lazarus_-_Google_Art_Project_%28cropped%29.jpg"
       ],
       "academicSources": [
         "Bagatti, Bellarmino. Ancient Christian Villages of Galilee. Franciscan Printing Press, 2001.",

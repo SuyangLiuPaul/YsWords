@@ -6,6 +6,7 @@ import 'package:yswords/constants/ui_strings.dart';
 import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/models/bible_evidence.dart';
 import 'package:yswords/pages/evidence_detail_page.dart';
+import 'package:yswords/services/ai_search_service.dart';
 import 'package:yswords/services/bible_evidence_service.dart';
 import 'package:yswords/widgets/confidence_badge.dart';
 import 'package:yswords/widgets/home_icon_button.dart';
@@ -99,7 +100,14 @@ class _EvidencePageState extends State<EvidencePage> {
                   widget.filterBook!
               : (uiStrings['bibleEvidence']?[locale] ?? 'Bible Evidence'),
         ),
-        actions: const [HomeIconButton()],
+        actions: [
+          IconButton(
+            tooltip: uiStrings['askAi']?[locale] ?? 'Ask AI',
+            icon: const Icon(Icons.auto_awesome_outlined),
+            onPressed: () => _openAiDialog(context, locale),
+          ),
+          const HomeIconButton(),
+        ],
       ),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
@@ -246,6 +254,23 @@ class _EvidencePageState extends State<EvidencePage> {
                 ),
               ),
             ),
+    );
+  }
+
+  void _openAiDialog(BuildContext context, String locale) {
+    showDialog(
+      context: context,
+      builder: (_) => _AiSearchDialog(
+        locale: locale,
+        all: _all,
+        onCitationTap: (ev) {
+          Navigator.of(context).pop();
+          Get.to(
+            () => EvidenceDetailPage(evidence: ev),
+            transition: Transition.rightToLeft,
+          );
+        },
+      ),
     );
   }
 
@@ -448,6 +473,242 @@ class _Chip extends StatelessWidget {
               (settings.fontSize - 2).clamp(12.0, 16.0).toDouble(),
           fontWeight: FontWeight.w600,
           color: selected ? accent : scheme.onSurfaceVariant,
+        ),
+      ),
+    );
+  }
+}
+
+/// Modal dialog wrapping the Cloud Functions AI search (Gemini proxy).
+///
+/// Wired but graceful — if the Cloud Function isn't deployed yet, the
+/// 404/CORS error surfaces as a SnackBar inside the dialog rather than
+/// crashing or blocking the page. Citations link straight to the
+/// matching `EvidenceDetailPage`.
+class _AiSearchDialog extends StatefulWidget {
+  final String locale;
+  final List<BibleEvidence> all;
+  final void Function(BibleEvidence) onCitationTap;
+
+  const _AiSearchDialog({
+    required this.locale,
+    required this.all,
+    required this.onCitationTap,
+  });
+
+  @override
+  State<_AiSearchDialog> createState() => _AiSearchDialogState();
+}
+
+class _AiSearchDialogState extends State<_AiSearchDialog> {
+  final _ctrl = TextEditingController();
+  bool _busy = false;
+  String? _error;
+  AiSearchResult? _result;
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  Future<void> _ask() async {
+    final q = _ctrl.text.trim();
+    if (q.length < 2) return;
+    setState(() {
+      _busy = true;
+      _error = null;
+      _result = null;
+    });
+    try {
+      final r = await AiSearchService.ask(query: q, locale: widget.locale);
+      if (!mounted) return;
+      setState(() => _result = r);
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _error = e.toString());
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  /// Resolve a citation id back to the loaded evidence list so we can
+  /// hand a real model object to the navigator.
+  BibleEvidence? _resolve(String id) {
+    for (final e in widget.all) {
+      if (e.id == id) return e;
+    }
+    return null;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final settings = context.watch<AppSettings>();
+    final locale = widget.locale;
+
+    return AlertDialog(
+      title: Row(
+        children: [
+          Icon(Icons.auto_awesome, color: scheme.primary, size: 20),
+          const SizedBox(width: 8),
+          Text(uiStrings['askAi']?[locale] ?? 'Ask AI'),
+        ],
+      ),
+      content: SizedBox(
+        width: 520,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            TextField(
+              controller: _ctrl,
+              autofocus: true,
+              minLines: 1,
+              maxLines: 3,
+              style: TextStyle(
+                fontFamily: settings.fontFamily,
+                fontSize: settings.fontSize,
+              ),
+              decoration: InputDecoration(
+                hintText: uiStrings['askAiHint']?[locale] ??
+                    'e.g. What evidence supports the Exodus?',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+              onSubmitted: (_) => _ask(),
+            ),
+            const SizedBox(height: 12),
+            if (_busy)
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 16),
+                child: Center(child: CircularProgressIndicator()),
+              ),
+            if (_error != null)
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: scheme.errorContainer.withValues(alpha: 0.4),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  _error!,
+                  style: TextStyle(
+                    fontFamily: settings.fontFamily,
+                    fontSize: (settings.fontSize - 2)
+                        .clamp(11.0, 14.0)
+                        .toDouble(),
+                    color: scheme.onErrorContainer,
+                  ),
+                ),
+              ),
+            if (_result != null && _result!.answer.isNotEmpty) ...[
+              Text(
+                _result!.answer,
+                style: TextStyle(
+                  fontFamily: settings.fontFamily,
+                  fontSize: settings.fontSize,
+                  height: 1.4,
+                ),
+              ),
+              const SizedBox(height: 12),
+              if (_result!.citations.isNotEmpty)
+                Text(
+                  uiStrings['citations']?[locale] ?? 'Citations',
+                  style: TextStyle(
+                    fontFamily: settings.fontFamily,
+                    fontSize:
+                        (settings.fontSize - 2).clamp(11.0, 14.0).toDouble(),
+                    fontWeight: FontWeight.w700,
+                    color: scheme.onSurfaceVariant,
+                  ),
+                ),
+              const SizedBox(height: 6),
+              for (final c in _result!.citations)
+                _CitationTile(
+                  citation: c,
+                  onTap: () {
+                    final ev = _resolve(c.id);
+                    if (ev != null) widget.onCitationTap(ev);
+                  },
+                ),
+            ],
+            if (_result != null &&
+                _result!.answer.isEmpty &&
+                _result!.citations.isEmpty &&
+                !_busy)
+              Text(
+                uiStrings['noResults']?[locale] ?? 'No results',
+                style: TextStyle(
+                  fontFamily: settings.fontFamily,
+                  color: scheme.onSurfaceVariant,
+                  fontStyle: FontStyle.italic,
+                ),
+              ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: Text(uiStrings['close']?[locale] ?? 'Close'),
+        ),
+        FilledButton.icon(
+          onPressed: _busy ? null : _ask,
+          icon: const Icon(Icons.send_outlined, size: 16),
+          label: Text(uiStrings['ask']?[locale] ?? 'Ask'),
+        ),
+      ],
+    );
+  }
+}
+
+class _CitationTile extends StatelessWidget {
+  final AiCitation citation;
+  final VoidCallback onTap;
+  const _CitationTile({required this.citation, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(8),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
+        child: Row(
+          children: [
+            Icon(Icons.menu_book_outlined,
+                size: 14, color: scheme.primary),
+            const SizedBox(width: 6),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    citation.title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      color: scheme.onSurface,
+                    ),
+                  ),
+                  if (citation.scriptureReference.isNotEmpty)
+                    Text(
+                      citation.scriptureReference,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: scheme.primary,
+                      ),
+                    ),
+                ],
+              ),
+            ),
+            Icon(Icons.chevron_right,
+                size: 16, color: scheme.outline),
+          ],
         ),
       ),
     );

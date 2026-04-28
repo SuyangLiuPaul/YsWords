@@ -1153,26 +1153,32 @@ class _LinkTile extends StatelessWidget {
           onTap: onTap,
           borderRadius: BorderRadius.circular(12),
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 14),
+            // Tighter horizontal padding so longer labels like
+            // "Bible Evidence" don't ellipsize on phone (2-up grid).
+            padding: const EdgeInsets.symmetric(horizontal: 10),
             child: Row(
               children: [
                 Icon(icon, color: scheme.primary, size: 20),
-                const SizedBox(width: 10),
+                const SizedBox(width: 8),
                 Expanded(
                   child: Text(
                     label,
-                    maxLines: 1,
+                    // Allow wrap to a 2nd line so multi-word labels
+                    // (e.g. "Bible Evidence") never truncate; single-
+                    // word labels like "Settings" still render on 1.
+                    maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                       fontFamily: settings.fontFamily,
                       fontSize: (fs - 2).clamp(12.0, 18.0).toDouble(),
                       fontWeight: FontWeight.w600,
                       color: scheme.onSurface,
+                      height: 1.15,
                     ),
                   ),
                 ),
                 Icon(Icons.chevron_right,
-                    size: 18, color: scheme.outline),
+                    size: 16, color: scheme.outline),
               ],
             ),
           ),
