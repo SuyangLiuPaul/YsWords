@@ -6,12 +6,16 @@ import 'package:yswords/constants/text_patterns.dart' show sanitizeForSearch;
 import 'package:yswords/constants/ui_strings.dart';
 import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/models/verse.dart';
+import 'package:yswords/models/bible_evidence.dart';
+import 'package:yswords/pages/evidence_detail_page.dart';
+import 'package:yswords/pages/evidence_page.dart';
 import 'package:yswords/pages/highlights_page.dart';
 import 'package:yswords/pages/home_page.dart';
 import 'package:yswords/pages/library_page.dart';
 import 'package:yswords/pages/profile_edit_page.dart';
 import 'package:yswords/pages/settings_page.dart';
 import 'package:yswords/pages/stats_page.dart';
+import 'package:yswords/services/bible_evidence_service.dart';
 import 'package:yswords/providers/main_provider.dart';
 import 'package:yswords/services/cloud_auth_service.dart';
 import 'package:yswords/services/cloud_sync_service.dart';
@@ -52,6 +56,11 @@ class _DashboardPageState extends State<DashboardPage> {
   /// switch can re-resolve the verse text without re-fetching the
   /// reference list.
   String? _dailyVerseRef;
+  /// Today's spotlight from the Biblical Evidence Archive (one of
+  /// 209, deterministic by day-of-year so all devices see the same
+  /// item). Loaded lazily so the dashboard renders before the
+  /// 1.5 MB asset finishes parsing.
+  BibleEvidence? _dailyEvidence;
 
   @override
   void initState() {
@@ -61,7 +70,16 @@ class _DashboardPageState extends State<DashboardPage> {
     CloudSyncService.instance.addListener(_onProfileOrAuthChanged);
     _loadPlan();
     _loadDailyVerse();
+    _loadDailyEvidence();
     _maybeShowOnboarding();
+  }
+
+  Future<void> _loadDailyEvidence() async {
+    final list = await BibleEvidenceService.all();
+    if (!mounted) return;
+    setState(() {
+      _dailyEvidence = BibleEvidenceService.todayEvidence(list);
+    });
   }
 
   @override
@@ -295,6 +313,34 @@ class _DashboardPageState extends State<DashboardPage> {
             const SizedBox(height: 16),
           ],
 
+          // Today's evidence — one of 209 archaeological /
+          // manuscript / scientific / historical findings rotating
+          // by day-of-year. Migrated from the standalone
+          // bible-evidence project (Round 38). Hidden until the
+          // 1.5 MB asset finishes parsing.
+          if (_dailyEvidence != null) ...[
+            Text(
+              uiStrings['todayEvidence']?[locale] ??
+                  "Today's Evidence",
+              style: TextStyle(
+                fontFamily: settings.fontFamily,
+                fontSize: headerSize,
+                fontWeight: FontWeight.w700,
+                color: scheme.primary,
+              ),
+            ),
+            const SizedBox(height: 8),
+            _DashboardEvidenceCard(
+              evidence: _dailyEvidence!,
+              locale: locale,
+              onTap: () => Get.to(
+                () => EvidenceDetailPage(evidence: _dailyEvidence!),
+                transition: Transition.rightToLeft,
+              ),
+            ),
+            const SizedBox(height: 16),
+          ],
+
           // Today's reading (from active reading plan)
           Text(
             uiStrings['todayReading']?[locale] ?? "Today's Reading",
@@ -482,6 +528,15 @@ class _DashboardPageState extends State<DashboardPage> {
                 label: uiStrings['statistics']?[locale] ?? 'Statistics',
                 onTap: () => Get.to(
                   () => const StatsPage(),
+                  transition: Transition.rightToLeft,
+                ),
+              ),
+              _LinkTile(
+                icon: Icons.museum_outlined,
+                label: uiStrings['bibleEvidence']?[locale] ??
+                    'Bible Evidence',
+                onTap: () => Get.to(
+                  () => const EvidencePage(),
                   transition: Transition.rightToLeft,
                 ),
               ),
@@ -1156,6 +1211,141 @@ class _ChipBtn extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+/// Dashboard tile spotlighting today's rotating evidence entry.
+/// Compact: small thumb (image or emoji icon), title + summary
+/// preview, confidence badge, scripture reference. Tap → detail.
+class _DashboardEvidenceCard extends StatelessWidget {
+  final BibleEvidence evidence;
+  final String locale;
+  final VoidCallback onTap;
+  const _DashboardEvidenceCard({
+    required this.evidence,
+    required this.locale,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final settings = context.watch<AppSettings>();
+    final fs = settings.fontSize;
+    final imgUrl =
+        evidence.images.isNotEmpty ? evidence.images.first : null;
+    return Material(
+      color: scheme.surface,
+      borderRadius: BorderRadius.circular(12),
+      child: Ink(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+              color: scheme.outlineVariant.withValues(alpha: 0.6)),
+        ),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(12),
+          child: Padding(
+            padding: const EdgeInsets.all(10),
+            child: Row(
+              children: [
+                // Thumbnail.
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: SizedBox(
+                    width: 64,
+                    height: 64,
+                    child: imgUrl != null
+                        ? Image.network(
+                            imgUrl,
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) =>
+                                _ThumbIcon(icon: evidence.icon),
+                          )
+                        : _ThumbIcon(icon: evidence.icon),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              evidence.localizedTitle(locale),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontFamily: settings.fontFamily,
+                                fontSize:
+                                    (fs - 1).clamp(13.0, 18.0).toDouble(),
+                                fontWeight: FontWeight.w700,
+                                color: scheme.onSurface,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        evidence.localizedSummary(locale),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontFamily: settings.fontFamily,
+                          fontSize: (fs - 3).clamp(11.0, 15.0).toDouble(),
+                          color: scheme.onSurfaceVariant,
+                          height: 1.3,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          Icon(Icons.menu_book_outlined,
+                              size: 12, color: scheme.primary),
+                          const SizedBox(width: 4),
+                          Flexible(
+                            child: Text(
+                              evidence.scriptureReference,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontFamily: settings.fontFamily,
+                                fontSize:
+                                    (fs - 4).clamp(10.0, 14.0).toDouble(),
+                                fontWeight: FontWeight.w600,
+                                color: scheme.primary,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ThumbIcon extends StatelessWidget {
+  final String icon;
+  const _ThumbIcon({required this.icon});
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Container(
+      color: scheme.surfaceContainerHighest.withValues(alpha: 0.4),
+      alignment: Alignment.center,
+      child: Text(icon, style: const TextStyle(fontSize: 28)),
     );
   }
 }

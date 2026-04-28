@@ -54,6 +54,7 @@ flutter:
     - assets/reading_plans.json
     - assets/gospel_synopsis.json
     - assets/daily_verses.json
+    - assets/bible_evidence.json
     - assets/strongs/
     - assets/originals/
   fonts:

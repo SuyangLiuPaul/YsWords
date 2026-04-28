@@ -574,6 +574,95 @@ const uiStrings = {
     'zh-Hant': '刪除頭像',
     'en': 'Remove photo',
   },
+  // ── Bible Evidence (Round 38) ────────────────────────────────────
+  'bibleEvidence': {
+    'zh-Hans': '圣经实证',
+    'zh-Hant': '聖經實證',
+    'en': 'Bible Evidence',
+  },
+  'bibleEvidenceSubtitle': {
+    'zh-Hans': '考古、抄本、科学、历史多角度的实证档案',
+    'zh-Hant': '考古、抄本、科學、歷史多角度的實證檔案',
+    'en':
+        'Archaeological, manuscript, scientific & historical evidence intersecting with the Bible.',
+  },
+  'evidenceForBook': {
+    'zh-Hans': '经文实证 — ',
+    'zh-Hant': '經文實證 — ',
+    'en': 'Evidence — ',
+  },
+  'todayEvidence': {
+    'zh-Hans': '今日实证',
+    'zh-Hant': '今日實證',
+    'en': 'Today\'s Evidence',
+  },
+  'evidenceDescription': {
+    'zh-Hans': '详细说明',
+    'zh-Hant': '詳細說明',
+    'en': 'Description',
+  },
+  'scripturalCorrelation': {
+    'zh-Hans': '经文对应',
+    'zh-Hant': '經文對應',
+    'en': 'Scriptural correlation',
+  },
+  'academicSources': {
+    'zh-Hans': '学术来源',
+    'zh-Hant': '學術來源',
+    'en': 'Academic sources',
+  },
+  'readInBible': {
+    'zh-Hans': '阅读经文',
+    'zh-Hant': '閱讀經文',
+    'en': 'Read',
+  },
+  'allCategories': {
+    'zh-Hans': '全部分类',
+    'zh-Hant': '全部分類',
+    'en': 'All',
+  },
+  'resultsCount': {
+    'zh-Hans': '共 {n} 条',
+    'zh-Hant': '共 {n} 條',
+    'en': '{n} results',
+  },
+  // Categories.
+  'categoryArchaeology': {
+    'zh-Hans': '考古',
+    'zh-Hant': '考古',
+    'en': 'Archaeology',
+  },
+  'categoryManuscripts': {
+    'zh-Hans': '抄本',
+    'zh-Hant': '抄本',
+    'en': 'Manuscripts',
+  },
+  'categoryScience': {
+    'zh-Hans': '科学',
+    'zh-Hant': '科學',
+    'en': 'Science',
+  },
+  'categoryHistory': {
+    'zh-Hans': '历史',
+    'zh-Hant': '歷史',
+    'en': 'History',
+  },
+  // Confidence levels.
+  'confidenceDefinitive': {
+    'zh-Hans': '确证',
+    'zh-Hant': '確證',
+    'en': 'Definitive',
+  },
+  'confidenceStrong': {
+    'zh-Hans': '强证据',
+    'zh-Hant': '強證據',
+    'en': 'Strong',
+  },
+  'confidenceCircumstantial': {
+    'zh-Hans': '间接证据',
+    'zh-Hant': '間接證據',
+    'en': 'Circumstantial',
+  },
   // ── Gospel synopsis (Round 27B) ─────────────────────────────────
   'synopsis': {
     'zh-Hans': '福音书对观',

@@ -1,0 +1,455 @@
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:provider/provider.dart';
+
+import 'package:yswords/constants/ui_strings.dart';
+import 'package:yswords/models/app_settings.dart';
+import 'package:yswords/models/bible_evidence.dart';
+import 'package:yswords/pages/evidence_detail_page.dart';
+import 'package:yswords/services/bible_evidence_service.dart';
+import 'package:yswords/widgets/confidence_badge.dart';
+import 'package:yswords/widgets/home_icon_button.dart';
+import 'package:yswords/widgets/localized_back_button.dart';
+
+/// Browse the migrated Biblical Evidence Archive — 209 archaeological,
+/// manuscript, scientific, and historical findings that intersect
+/// with biblical accounts. Search box + category + confidence
+/// filters; tap a card to open the full description.
+class EvidencePage extends StatefulWidget {
+  /// When non-null, the list is pre-filtered to evidences referencing
+  /// this English book name. Used by the reader's "Evidence for
+  /// this chapter" entry point.
+  final String? filterBook;
+
+  const EvidencePage({super.key, this.filterBook});
+
+  @override
+  State<EvidencePage> createState() => _EvidencePageState();
+}
+
+class _EvidencePageState extends State<EvidencePage> {
+  List<BibleEvidence> _all = const [];
+  bool _loading = true;
+  final _searchController = TextEditingController();
+  String _query = '';
+  String? _categoryFilter;
+  String? _confidenceFilter;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _load() async {
+    final list = await BibleEvidenceService.all();
+    if (!mounted) return;
+    final filtered = widget.filterBook != null
+        ? BibleEvidenceService.forBook(list, widget.filterBook!)
+        : list;
+    setState(() {
+      // If pre-filtering by book wiped everything out, fall back to
+      // the full archive — better to show all than an empty page
+      // when the user opens "Evidence" for a book without any
+      // curated entries.
+      _all = filtered.isEmpty ? list : filtered;
+      _loading = false;
+    });
+  }
+
+  List<BibleEvidence> _filtered(String locale) {
+    var list = _all;
+    if (_categoryFilter != null) {
+      list = list.where((e) => e.category == _categoryFilter).toList();
+    }
+    if (_confidenceFilter != null) {
+      list = list
+          .where((e) => e.confidenceLevel == _confidenceFilter)
+          .toList();
+    }
+    return BibleEvidenceService.search(list, _query, locale);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final settings = context.watch<AppSettings>();
+    final scheme = Theme.of(context).colorScheme;
+    final locale = settings.locale;
+    final isWide = MediaQuery.of(context).size.width >= 720;
+    final maxW = isWide ? 1100.0 : double.infinity;
+    final crossAxisCount = isWide ? 2 : 1;
+
+    final filtered = _filtered(locale);
+    final categories = _all.map((e) => e.category).toSet().toList()
+      ..sort();
+
+    return Scaffold(
+      appBar: AppBar(
+        leading: const LocalizedBackButton(),
+        title: Text(
+          widget.filterBook != null
+              ? (uiStrings['evidenceForBook']?[locale] ?? 'Evidence — ')
+                      .replaceAll('{book}', widget.filterBook!) +
+                  widget.filterBook!
+              : (uiStrings['bibleEvidence']?[locale] ?? 'Bible Evidence'),
+        ),
+        actions: const [HomeIconButton()],
+      ),
+      body: _loading
+          ? const Center(child: CircularProgressIndicator())
+          : Center(
+              child: ConstrainedBox(
+                constraints: BoxConstraints(maxWidth: maxW),
+                child: Column(
+                  children: [
+                    // Search.
+                    Padding(
+                      padding:
+                          const EdgeInsets.fromLTRB(12, 8, 12, 4),
+                      child: TextField(
+                        controller: _searchController,
+                        style: TextStyle(
+                            fontFamily: settings.fontFamily,
+                            fontSize: settings.fontSize),
+                        decoration: InputDecoration(
+                          prefixIcon:
+                              const Icon(Icons.search, size: 20),
+                          hintText:
+                              uiStrings['search']?[locale] ?? 'Search',
+                          isDense: true,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          suffixIcon: _query.isEmpty
+                              ? null
+                              : IconButton(
+                                  icon: const Icon(Icons.clear,
+                                      size: 18),
+                                  onPressed: () {
+                                    _searchController.clear();
+                                    setState(() => _query = '');
+                                  },
+                                ),
+                        ),
+                        onChanged: (s) =>
+                            setState(() => _query = s.trim()),
+                      ),
+                    ),
+                    // Filter chip rows: category + confidence.
+                    SizedBox(
+                      height: 44,
+                      child: ListView(
+                        scrollDirection: Axis.horizontal,
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12),
+                        children: [
+                          _Chip(
+                            label: uiStrings['allCategories']?[locale] ??
+                                'All',
+                            selected: _categoryFilter == null,
+                            onTap: () =>
+                                setState(() => _categoryFilter = null),
+                          ),
+                          for (final c in categories)
+                            _Chip(
+                              label: _categoryLabel(c, locale),
+                              selected: _categoryFilter == c,
+                              onTap: () => setState(() {
+                                _categoryFilter =
+                                    _categoryFilter == c ? null : c;
+                              }),
+                            ),
+                          const SizedBox(width: 12),
+                          for (final lvl in const [
+                            'Definitive',
+                            'Strong',
+                            'Circumstantial'
+                          ])
+                            _Chip(
+                              label: _confidenceLabel(lvl, locale),
+                              selected: _confidenceFilter == lvl,
+                              outlineColor: _confidenceColor(lvl),
+                              onTap: () => setState(() {
+                                _confidenceFilter =
+                                    _confidenceFilter == lvl ? null : lvl;
+                              }),
+                            ),
+                        ],
+                      ),
+                    ),
+                    // Result count.
+                    Padding(
+                      padding:
+                          const EdgeInsets.fromLTRB(16, 4, 16, 8),
+                      child: Row(
+                        children: [
+                          Text(
+                            (uiStrings['resultsCount']?[locale] ??
+                                    '{n} results')
+                                .replaceAll(
+                                    '{n}', filtered.length.toString()),
+                            style: TextStyle(
+                              fontSize:
+                                  (settings.fontSize - 3)
+                                      .clamp(11.0, 14.0)
+                                      .toDouble(),
+                              color: scheme.onSurfaceVariant,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    if (filtered.isEmpty)
+                      Expanded(
+                        child: Center(
+                          child: Text(
+                            uiStrings['noResults']?[locale] ??
+                                'No results',
+                            style: TextStyle(
+                              color: scheme.onSurfaceVariant,
+                              fontStyle: FontStyle.italic,
+                            ),
+                          ),
+                        ),
+                      )
+                    else
+                      Expanded(
+                        child: GridView.builder(
+                          padding: const EdgeInsets.fromLTRB(
+                              12, 4, 12, 16),
+                          gridDelegate:
+                              SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: crossAxisCount,
+                            mainAxisSpacing: 12,
+                            crossAxisSpacing: 12,
+                            mainAxisExtent: 220,
+                          ),
+                          itemCount: filtered.length,
+                          itemBuilder: (_, i) => _EvidenceCard(
+                            evidence: filtered[i],
+                            locale: locale,
+                            onTap: () => Get.to(
+                              () => EvidenceDetailPage(
+                                  evidence: filtered[i]),
+                              transition: Transition.rightToLeft,
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ),
+    );
+  }
+
+  String _categoryLabel(String c, String locale) =>
+      uiStrings['category$c']?[locale] ?? c;
+
+  String _confidenceLabel(String c, String locale) =>
+      uiStrings['confidence$c']?[locale] ?? c;
+
+  Color _confidenceColor(String c) {
+    switch (c) {
+      case 'Definitive':
+        return const Color(0xFF2E7D32);
+      case 'Strong':
+        return Theme.of(context).colorScheme.primary;
+      case 'Circumstantial':
+      default:
+        return const Color(0xFFEF6C00);
+    }
+  }
+}
+
+class _EvidenceCard extends StatelessWidget {
+  final BibleEvidence evidence;
+  final String locale;
+  final VoidCallback onTap;
+
+  const _EvidenceCard({
+    required this.evidence,
+    required this.locale,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final settings = context.watch<AppSettings>();
+    final imgUrl =
+        evidence.images.isNotEmpty ? evidence.images.first : null;
+
+    return Material(
+      color: scheme.surface,
+      borderRadius: BorderRadius.circular(12),
+      child: Ink(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+              color: scheme.outlineVariant.withValues(alpha: 0.6)),
+        ),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Hero image / icon fallback.
+              SizedBox(
+                height: 100,
+                child: imgUrl != null
+                    ? ClipRRect(
+                        borderRadius: const BorderRadius.vertical(
+                            top: Radius.circular(12)),
+                        child: Image.network(
+                          imgUrl,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) =>
+                              _IconFallback(icon: evidence.icon),
+                          loadingBuilder: (_, child, p) {
+                            if (p == null) return child;
+                            return _IconFallback(icon: evidence.icon);
+                          },
+                        ),
+                      )
+                    : _IconFallback(icon: evidence.icon),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            evidence.localizedTitle(locale),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontFamily: settings.fontFamily,
+                              fontSize: (settings.fontSize - 1)
+                                  .clamp(13.0, 18.0)
+                                  .toDouble(),
+                              fontWeight: FontWeight.w700,
+                              color: scheme.onSurface,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        ConfidenceBadge(
+                          level: evidence.confidenceLevel,
+                          color:
+                              evidence.confidenceColor(scheme),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      evidence.localizedSummary(locale),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontFamily: settings.fontFamily,
+                        fontSize: (settings.fontSize - 3)
+                            .clamp(11.0, 15.0)
+                            .toDouble(),
+                        color: scheme.onSurfaceVariant,
+                        height: 1.3,
+                      ),
+                    ),
+                    const Spacer(),
+                    Row(
+                      children: [
+                        Icon(Icons.menu_book_outlined,
+                            size: 13, color: scheme.primary),
+                        const SizedBox(width: 4),
+                        Flexible(
+                          child: Text(
+                            evidence.scriptureReference,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontFamily: settings.fontFamily,
+                              fontSize: (settings.fontSize - 4)
+                                  .clamp(10.0, 14.0)
+                                  .toDouble(),
+                              fontWeight: FontWeight.w600,
+                              color: scheme.primary,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _IconFallback extends StatelessWidget {
+  final String icon;
+  const _IconFallback({required this.icon});
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Container(
+      color: scheme.surfaceContainerHighest.withValues(alpha: 0.5),
+      alignment: Alignment.center,
+      child: Text(icon, style: const TextStyle(fontSize: 36)),
+    );
+  }
+}
+
+class _Chip extends StatelessWidget {
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+  final Color? outlineColor;
+
+  const _Chip({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+    this.outlineColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final settings = context.watch<AppSettings>();
+    final accent = outlineColor ?? scheme.primary;
+    return Padding(
+      padding: const EdgeInsets.only(right: 8, top: 4, bottom: 4),
+      child: ChoiceChip(
+        label: Text(label),
+        selected: selected,
+        onSelected: (_) => onTap(),
+        selectedColor: accent.withValues(alpha: 0.18),
+        side: BorderSide(
+            color: selected ? accent : scheme.outlineVariant,
+            width: selected ? 1.4 : 1),
+        labelStyle: TextStyle(
+          fontFamily: settings.fontFamily,
+          fontSize:
+              (settings.fontSize - 2).clamp(12.0, 16.0).toDouble(),
+          fontWeight: FontWeight.w600,
+          color: selected ? accent : scheme.onSurfaceVariant,
+        ),
+      ),
+    );
+  }
+}

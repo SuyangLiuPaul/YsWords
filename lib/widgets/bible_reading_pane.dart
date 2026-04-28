@@ -14,6 +14,7 @@ import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/models/bible_map.dart';
 import 'package:yswords/models/verse.dart';
 import 'package:yswords/pages/books_page.dart';
+import 'package:yswords/pages/evidence_page.dart';
 import 'package:yswords/pages/highlights_page.dart';
 import 'package:yswords/pages/library_page.dart';
 import 'package:yswords/pages/map_viewer_page.dart';
@@ -2478,6 +2479,29 @@ class _FloatingHeader extends StatelessWidget {
                             icon: Icons.insights_outlined,
                             label: uiStrings['statistics']?[locale] ??
                                 'Statistics',
+                          ),
+                        ));
+                        // Bible Evidence — pre-filtered to the
+                        // current English book so users see
+                        // archaeological / manuscript / historical
+                        // findings relevant to whatever they're
+                        // reading. The list page falls back to the
+                        // full archive when the filter has no hits.
+                        items.add(PopupMenuItem(
+                          value: 'evidence',
+                          onTap: () {
+                            Get.to(
+                              () => EvidencePage(
+                                filterBook: toEnglish(book),
+                              ),
+                              transition: Transition.rightToLeft,
+                            );
+                          },
+                          child: _menuRow(
+                            context,
+                            icon: Icons.museum_outlined,
+                            label: uiStrings['bibleEvidence']?[locale] ??
+                                'Bible Evidence',
                           ),
                         ));
                         // Gospel Synopsis — only shown when the
