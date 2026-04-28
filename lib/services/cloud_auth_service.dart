@@ -1,5 +1,10 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
+// ignore: depend_on_referenced_packages
+import 'package:firebase_core_platform_interface/firebase_core_platform_interface.dart'
+    show FirebasePlatform;
+// ignore: depend_on_referenced_packages
+import 'package:firebase_core_web/firebase_core_web.dart' show FirebaseCoreWeb;
 import 'package:flutter/foundation.dart';
 
 import 'package:yswords/firebase_options.dart';
@@ -89,6 +94,36 @@ class CloudAuthService extends ChangeNotifier {
         // app stays on local-only profiles. No network calls.
         _initError = null;
         return;
+      }
+      // Force FirebaseCoreWeb to be the platform delegate before
+      // calling initializeApp. The auto-generated web plugin
+      // registrant should already do this, but in some builds (we've
+      // seen this with the firebase_core 4.x family) the dart2js
+      // tree-shake or the registrant ordering leaves
+      // FirebasePlatform.instance at the default MethodChannelFirebase
+      // — which then throws PlatformException(channel-error, ...
+      // FirebaseCoreHostApi.initializeCore) because there's no
+      // Pigeon receiver on web.
+      //
+      // Setting BOTH FirebasePlatform.instance AND
+      // Firebase.delegatePackingProperty (the lazy cache inside
+      // firebase_core) guarantees the web delegate is used regardless
+      // of registrant timing.
+      if (kIsWeb) {
+        step = 'FirebaseCoreWeb delegate setup';
+        try {
+          final web = FirebaseCoreWeb();
+          FirebasePlatform.instance = web;
+          // ignore: invalid_use_of_visible_for_testing_member
+          Firebase.delegatePackingProperty = web;
+        } catch (e) {
+          // Soft-fail: if for any reason instantiating FirebaseCoreWeb
+          // throws (e.g. it's already wired correctly and the setter
+          // verification trips), fall through and let initializeApp
+          // try its luck. We'd rather report the *real* downstream
+          // error than mask it with this one.
+          debugPrint('CloudAuthService: web delegate setup failed: $e');
+        }
       }
       step = 'Firebase.initializeApp';
       await Firebase.initializeApp(
