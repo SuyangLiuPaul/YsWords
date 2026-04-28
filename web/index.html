@@ -264,6 +264,44 @@
       }
     };
   </script>
+  <!-- In-app "Clear cache & reload" helper. Called from the Settings
+       → About card via dart:js_interop. Wipes the same surfaces the
+       boot-time self-heal does (service workers, Cache Storage,
+       build-stamp localStorage entry) but ALSO marks
+       yswords_self_heal_reloaded fresh so the post-reload self-heal
+       picks up the new build cleanly. Local profile data
+       (highlights / notes / bookmarks in IndexedDB / SharedPreferences)
+       is intentionally left alone. -->
+  <script>
+    window.yswordsClearCacheAndReload = async function() {
+      try {
+        if ('serviceWorker' in navigator) {
+          const regs = await navigator.serviceWorker.getRegistrations();
+          await Promise.all(regs.map(function(r) {
+            return r.unregister().catch(function() {});
+          }));
+        }
+      } catch (e) { console.warn('SW unregister failed:', e); }
+      try {
+        if (window.caches && caches.keys) {
+          const keys = await caches.keys();
+          await Promise.all(keys.map(function(k) {
+            return caches.delete(k).catch(function() {});
+          }));
+        }
+      } catch (e) { console.warn('Cache delete failed:', e); }
+      try { localStorage.removeItem('yswords_build_stamp'); } catch (_) {}
+      try { sessionStorage.removeItem('yswords_self_heal_reloaded'); } catch (_) {}
+      // Hard reload from server, bypassing browser disk cache.
+      // location.reload(true) is non-standard but still works in
+      // Safari/Chrome/Edge/Firefox; falls through to plain reload.
+      try {
+        location.reload(true);
+      } catch (_) {
+        location.reload();
+      }
+    };
+  </script>
   <script src="flutter_bootstrap.js" async></script>
 </body>
 </html>

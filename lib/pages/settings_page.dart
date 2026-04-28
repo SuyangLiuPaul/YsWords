@@ -1,3 +1,6 @@
+import 'dart:js_interop';
+
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show Clipboard, ClipboardData;
 import 'package:yswords/constants/ui_strings.dart';
@@ -2211,9 +2214,77 @@ class _AboutCard extends StatelessWidget {
             ),
             SizedBox(height: 6 * s),
             const ContactLine(),
+            SizedBox(height: 10 * s),
+            // Clear-cache button — wipes service workers + browser
+            // Cache Storage + the build-stamp localStorage entry,
+            // then reloads. Local profile data (highlights / notes /
+            // bookmarks in SharedPreferences / IndexedDB) is NOT
+            // touched. Useful when the app is stuck on a stale
+            // build and the automatic kill-switch reload didn't
+            // catch it.
+            OutlinedButton.icon(
+              icon: const Icon(Icons.cleaning_services_outlined, size: 18),
+              label: Text(
+                uiStrings['clearCache']?[locale] ??
+                    'Clear cache & reload',
+              ),
+              onPressed: () => _confirmClearCache(context, locale),
+            ),
+            SizedBox(height: 4 * s),
+            Text(
+              uiStrings['clearCacheNote']?[locale] ??
+                  'Wipes browser cache + service workers. Your profile '
+                      'data (highlights, notes, bookmarks) stays put.',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontFamily: settings.fontFamily,
+                fontSize: (settings.fontSize - 6).clamp(11.0, 13.0),
+                color: scheme.onSurfaceVariant,
+                fontStyle: FontStyle.italic,
+              ),
+            ),
           ],
         ),
       ),
     );
   }
+
+  Future<void> _confirmClearCache(
+      BuildContext context, String locale) async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(
+          uiStrings['clearCacheTitle']?[locale] ?? 'Clear cache & reload?',
+        ),
+        content: Text(
+          uiStrings['clearCacheBody']?[locale] ??
+              'This will unregister the service worker, delete browser '
+                  'caches, and reload the app. Your highlights, notes '
+                  'and bookmarks are stored separately and will not be '
+                  'cleared.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(uiStrings['cancel']?[locale] ?? 'Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(uiStrings['clearCache']?[locale] ?? 'Clear cache'),
+          ),
+        ],
+      ),
+    );
+    if (ok != true) return;
+    // The heavy lifting (unregister service workers, delete Cache
+    // Storage entries, clear the build-stamp, reload) lives in
+    // web/index.html as window.yswordsClearCacheAndReload(). The
+    // Dart side just calls it.
+    if (kIsWeb) _clearCacheAndReload();
+  }
 }
+
+// JS interop binding: defined in web/index.html.
+@JS('yswordsClearCacheAndReload')
+external void _clearCacheAndReload();

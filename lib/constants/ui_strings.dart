@@ -1109,6 +1109,31 @@ const uiStrings = {
     'zh-Hant': '雲端登入已恢復。',
     'en': 'Cloud sign-in restored.',
   },
+  'clearCache': {
+    'zh-Hans': '清除缓存并重新加载',
+    'zh-Hant': '清除快取並重新載入',
+    'en': 'Clear cache & reload',
+  },
+  'clearCacheTitle': {
+    'zh-Hans': '清除缓存并重新加载？',
+    'zh-Hant': '清除快取並重新載入？',
+    'en': 'Clear cache & reload?',
+  },
+  'clearCacheBody': {
+    'zh-Hans': '此操作将注销 Service Worker、删除浏览器缓存并重新加载应用。'
+        '您的标记、笔记和书签存储在别处，不会被清除。',
+    'zh-Hant': '此操作會註銷 Service Worker、刪除瀏覽器快取並重新載入應用程式。'
+        '您的標記、筆記與書籤儲存在他處，不會被清除。',
+    'en': 'This will unregister the service worker, delete browser '
+        'caches, and reload the app. Your highlights, notes and '
+        'bookmarks are stored separately and will not be cleared.',
+  },
+  'clearCacheNote': {
+    'zh-Hans': '清除浏览器缓存与 Service Worker。您的资料（标记、笔记、书签）会保留。',
+    'zh-Hant': '清除瀏覽器快取與 Service Worker。您的資料（標記、筆記、書籤）會保留。',
+    'en': 'Wipes browser cache + service workers. Your profile data '
+        '(highlights, notes, bookmarks) stays put.',
+  },
   'cloudSyncing': {
     'zh-Hans': '同步中…',
     'zh-Hant': '同步中…',
