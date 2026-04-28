@@ -212,12 +212,7 @@ class CloudSyncService extends ChangeNotifier {
         if (_localHasUserData(local)) {
           // Both sides have data → merge instead of overwrite.
           final merged = _mergeSnapshots(local: local, remote: remote);
-          _suppressLocalListener = true;
-          try {
-            await _writeRemoteIntoLocal(merged);
-          } finally {
-            _suppressLocalListener = false;
-          }
+          await _applyRemoteSuppressed(merged);
           // Push the merged result back so cloud has it too.
           await _uploadFromLocal();
           await _stampSyncedNow();
@@ -227,12 +222,7 @@ class CloudSyncService extends ChangeNotifier {
         // Local has nothing → standard overwrite path below.
       }
 
-      _suppressLocalListener = true;
-      try {
-        await _writeRemoteIntoLocal(remote);
-      } finally {
-        _suppressLocalListener = false;
-      }
+      await _applyRemoteSuppressed(remote);
       await _stampSyncedNow();
       _setStatus(CloudSyncStatus.synced);
     } catch (e) {
@@ -419,6 +409,38 @@ class CloudSyncService extends ChangeNotifier {
     ProfileService.instance.notifyListeners();
   }
 
+  /// Apply [remote] to local prefs while suppressing the cloud
+  /// upload listener for long enough that any async fire-and-forget
+  /// `_save*()` calls triggered by the resulting
+  /// `ProfileService.notifyListeners` (MainProvider's `_loadHighlights`
+  /// migration path is the canonical example) get absorbed by the
+  /// guard instead of escaping to the network.
+  ///
+  /// Without the trailing `Future.delayed`, the suppress flag was
+  /// reset before MainProvider's async listener chain finished, so
+  /// any save call kicked up a 600 ms debounced upload that fired
+  /// AFTER the suppress window — re-uploading data identical to what
+  /// we just received and triggering an endless syncing/synced
+  /// flash loop.
+  Future<void> _applyRemoteSuppressed(Map<String, dynamic> remote) async {
+    _suppressLocalListener = true;
+    try {
+      await _writeRemoteIntoLocal(remote);
+      // 800 ms is empirically enough for MainProvider._onProfileChanged
+      // to walk through _loadHighlights / _loadNotes / _loadBookmarks
+      // including any prefs-write side effects. Tune up if a heavier
+      // load chain ever races again.
+      await Future.delayed(const Duration(milliseconds: 800));
+    } finally {
+      // Cancel any debounced upload that was scheduled while the
+      // suppress flag was set — even though requestUpload now
+      // re-checks the flag at fire time, cancelling here makes
+      // the cleanup explicit instead of relying on a race.
+      _debounce?.cancel();
+      _suppressLocalListener = false;
+    }
+  }
+
   /// Push the current local snapshot up to Firestore as the source
   /// of truth. Called after sign-in (when remote was empty) and
   /// after every local change via [requestUpload].
@@ -502,7 +524,18 @@ class CloudSyncService extends ChangeNotifier {
     if (!CloudAuthService.instance.isSignedIn) return;
     if (_suppressLocalListener) return;
     _debounce?.cancel();
-    _debounce = Timer(const Duration(milliseconds: 600), _uploadFromLocal);
+    // Re-check the suppress flag when the timer FIRES (not just when
+    // requestUpload was called). Without this re-check, a save call
+    // that arrives just after a remote-pull window opens — but
+    // before the suppress flag is set — schedules a debounced upload
+    // that fires AFTER the pull has completed, uploading data that's
+    // identical to what we just received and triggering a redundant
+    // round-trip. That's the syncing/synced flash loop the user saw
+    // even after the migration-once guard landed.
+    _debounce = Timer(const Duration(milliseconds: 600), () {
+      if (_suppressLocalListener) return;
+      _uploadFromLocal();
+    });
   }
 
   void _setStatus(CloudSyncStatus s) {
