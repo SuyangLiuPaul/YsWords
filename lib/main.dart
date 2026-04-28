@@ -1,28 +1,6 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-// Force-import the firebase web platform plugins so dart2js doesn't
-// tree-shake their registerWith() static methods. Without these
-// imports the bundle ends up with FirebaseCoreHostApi (Pigeon)
-// symbols but no FirebaseCoreWeb implementation, so Firebase.
-// initializeApp tries to talk on a Pigeon channel that has no
-// receiver and throws:
-//   PlatformException(channel-error, Unable to establish connection
-//    on channel: dev.flutter.pigeon.firebase_core_platform_interface
-//    .FirebaseCoreHostApi.initializeCore)
-// Touching `FirebaseCoreWeb` etc. directly in main() (below) keeps
-// dart2js from removing them and ensures the platform_interface
-// instance is set BEFORE any Firebase.* getter caches the default
-// MethodChannelFirebase.
-// ignore: depend_on_referenced_packages
-import 'package:firebase_core_web/firebase_core_web.dart';
-// ignore: depend_on_referenced_packages
-import 'package:firebase_auth_web/firebase_auth_web.dart';
-// ignore: depend_on_referenced_packages
-import 'package:cloud_firestore_web/cloud_firestore_web.dart';
-// ignore: depend_on_referenced_packages
-import 'package:flutter_web_plugins/flutter_web_plugins.dart'
-    show webPluginRegistrar;
 import 'package:yswords/pages/dashboard_page.dart';
 import 'package:yswords/pages/loading_page.dart';
 import 'package:yswords/models/verse.dart';
@@ -39,17 +17,6 @@ import 'package:get/get.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  // EXPLICIT plugin registration. Belt-and-braces: even though
-  // Flutter's generated web_entrypoint also calls registerPlugins,
-  // we run it here at the top of main() to guarantee
-  // FirebasePlatform.instance is set to FirebaseCoreWeb BEFORE any
-  // code path can read Firebase.* and cache the default
-  // MethodChannelFirebase delegate.
-  if (kIsWeb) {
-    FirebaseCoreWeb.registerWith(webPluginRegistrar);
-    FirebaseAuthWeb.registerWith(webPluginRegistrar);
-    FirebaseFirestoreWeb.registerWith(webPluginRegistrar);
-  }
 
   FlutterError.onError = FlutterError.dumpErrorToConsole;
   PlatformDispatcher.instance.onError = (error, stack) {
