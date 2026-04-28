@@ -7,6 +7,8 @@ import 'package:get/get.dart';
 import 'package:yswords/pages/profiles_page.dart';
 import 'package:yswords/services/cloud_auth_service.dart';
 import 'package:yswords/widgets/google_g_logo.dart';
+import 'dart:async' show Timer;
+
 import 'package:yswords/services/cloud_sync_service.dart';
 import 'package:yswords/services/notification_service.dart';
 import 'package:yswords/services/fetch_books.dart';
@@ -1454,6 +1456,10 @@ class _AccountSectionState extends State<_AccountSection> {
                     ),
                   ],
                 ),
+              if (auth.isSignedIn) ...[
+                SizedBox(height: 6 * s),
+                _SyncStatusRow(settings: settings),
+              ],
             ],
             Padding(
               padding: const EdgeInsets.only(top: 4),
@@ -1611,6 +1617,168 @@ class _SettingsSwitch extends StatelessWidget {
             ),
       value: value,
       onChanged: onChanged,
+    );
+  }
+}
+
+/// "Last synced 3 minutes ago" + "Sync now" row. Shown inside the
+/// Account card whenever the user is signed in. Listens to
+/// `CloudSyncService` so the timestamp updates live (e.g. after a
+/// background push completes the user sees "Synced just now" without
+/// reopening Settings).
+class _SyncStatusRow extends StatefulWidget {
+  final AppSettings settings;
+  const _SyncStatusRow({required this.settings});
+
+  @override
+  State<_SyncStatusRow> createState() => _SyncStatusRowState();
+}
+
+class _SyncStatusRowState extends State<_SyncStatusRow> {
+  bool _busy = false;
+  Timer? _ticker;
+
+  @override
+  void initState() {
+    super.initState();
+    CloudSyncService.instance.addListener(_onSyncChange);
+    // Refresh the relative-time label every 30s so "5 minutes ago"
+    // doesn't go stale while the user stares at the Settings page.
+    _ticker = Timer.periodic(const Duration(seconds: 30), (_) {
+      if (mounted) setState(() {});
+    });
+  }
+
+  @override
+  void dispose() {
+    CloudSyncService.instance.removeListener(_onSyncChange);
+    _ticker?.cancel();
+    super.dispose();
+  }
+
+  void _onSyncChange() {
+    if (mounted) setState(() {});
+  }
+
+  Future<void> _trigger() async {
+    if (_busy) return;
+    setState(() => _busy = true);
+    final messenger = ScaffoldMessenger.maybeOf(context);
+    final ok = await CloudSyncService.instance.syncNow();
+    if (!mounted) return;
+    setState(() => _busy = false);
+    if (messenger != null) {
+      final locale = widget.settings.locale;
+      messenger.hideCurrentSnackBar();
+      messenger.showSnackBar(SnackBar(
+        content: Text(
+          ok
+              ? (uiStrings['syncSuccess']?[locale] ?? 'Synced.')
+              : (uiStrings['syncFailed']?[locale] ??
+                  'Sync failed. Check your connection and try again.'),
+          style: TextStyle(fontFamily: widget.settings.fontFamily),
+        ),
+        duration: const Duration(milliseconds: 2200),
+        behavior: SnackBarBehavior.floating,
+      ));
+    }
+  }
+
+  String _relative(DateTime utc, String locale) {
+    final now = DateTime.now().toUtc();
+    final diff = now.difference(utc);
+    final isZh = locale.startsWith('zh');
+    if (diff.inSeconds < 30) return isZh ? '刚刚' : 'just now';
+    if (diff.inMinutes < 1) {
+      return isZh ? '不到一分钟前' : 'less than a minute ago';
+    }
+    if (diff.inMinutes < 60) {
+      return isZh
+          ? '${diff.inMinutes} 分钟前'
+          : '${diff.inMinutes} minute${diff.inMinutes == 1 ? "" : "s"} ago';
+    }
+    if (diff.inHours < 24) {
+      return isZh
+          ? '${diff.inHours} 小时前'
+          : '${diff.inHours} hour${diff.inHours == 1 ? "" : "s"} ago';
+    }
+    return isZh
+        ? '${diff.inDays} 天前'
+        : '${diff.inDays} day${diff.inDays == 1 ? "" : "s"} ago';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final settings = widget.settings;
+    final locale = settings.locale;
+    final sync = CloudSyncService.instance;
+    final last = sync.lastSyncedAt;
+    final status = sync.status;
+
+    String stamp;
+    if (status == CloudSyncStatus.syncing || _busy) {
+      stamp = uiStrings['syncingNow']?[locale] ?? 'Syncing now…';
+    } else if (last != null) {
+      stamp = (uiStrings['lastSyncedAt']?[locale] ?? 'Last synced {when}')
+          .replaceAll('{when}', _relative(last, locale));
+    } else if (status == CloudSyncStatus.error) {
+      stamp = uiStrings['syncFailed']?[locale] ??
+          'Sync failed. Check your connection and try again.';
+    } else {
+      stamp =
+          uiStrings['syncNotYet']?[locale] ?? 'Not synced yet on this device.';
+    }
+
+    final isSyncing = status == CloudSyncStatus.syncing || _busy;
+    final color = status == CloudSyncStatus.error
+        ? scheme.error
+        : scheme.onSurfaceVariant;
+
+    return Row(
+      children: [
+        Icon(
+          status == CloudSyncStatus.error
+              ? Icons.cloud_off_outlined
+              : (isSyncing
+                  ? Icons.cloud_sync_outlined
+                  : Icons.cloud_done_outlined),
+          size: 16,
+          color: color,
+        ),
+        const SizedBox(width: 6),
+        Expanded(
+          child: Text(
+            stamp,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              fontFamily: settings.fontFamily,
+              fontSize: (settings.fontSize - 4).clamp(10.0, 13.0),
+              color: color,
+            ),
+          ),
+        ),
+        TextButton.icon(
+          onPressed: isSyncing ? null : _trigger,
+          icon: isSyncing
+              ? const SizedBox(
+                  width: 14,
+                  height: 14,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : const Icon(Icons.sync, size: 14),
+          label: Text(
+            isSyncing
+                ? (uiStrings['syncingNowShort']?[locale] ?? 'Syncing…')
+                : (uiStrings['syncNow']?[locale] ?? 'Sync now'),
+            style: TextStyle(
+              fontFamily: settings.fontFamily,
+              fontSize: (settings.fontSize - 3).clamp(11.0, 14.0),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

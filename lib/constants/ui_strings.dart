@@ -610,6 +610,41 @@ const uiStrings = {
     'zh-Hant': '從頭開始閱讀聖經。',
     'en': 'Open the Bible from the beginning.',
   },
+  'syncNow': {
+    'zh-Hans': '立即同步',
+    'zh-Hant': '立即同步',
+    'en': 'Sync now',
+  },
+  'syncingNow': {
+    'zh-Hans': '正在同步…',
+    'zh-Hant': '正在同步…',
+    'en': 'Syncing now…',
+  },
+  'syncingNowShort': {
+    'zh-Hans': '同步中…',
+    'zh-Hant': '同步中…',
+    'en': 'Syncing…',
+  },
+  'lastSyncedAt': {
+    'zh-Hans': '上次同步于{when}',
+    'zh-Hant': '上次同步於{when}',
+    'en': 'Last synced {when}',
+  },
+  'syncNotYet': {
+    'zh-Hans': '此设备尚未同步。',
+    'zh-Hant': '此裝置尚未同步。',
+    'en': 'Not synced yet on this device.',
+  },
+  'syncSuccess': {
+    'zh-Hans': '同步成功。',
+    'zh-Hant': '同步成功。',
+    'en': 'Synced.',
+  },
+  'syncFailed': {
+    'zh-Hans': '同步失败，请检查网络后重试。',
+    'zh-Hant': '同步失敗，請檢查網路後重試。',
+    'en': 'Sync failed. Check your connection and try again.',
+  },
   'newsEmptyTitle': {
     'zh-Hans': '暂无新闻',
     'zh-Hant': '暫無新聞',

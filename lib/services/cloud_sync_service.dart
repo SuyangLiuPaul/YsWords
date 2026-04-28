@@ -53,9 +53,20 @@ class CloudSyncService extends ChangeNotifier {
   StreamSubscription<DocumentSnapshot<Map<String, dynamic>>>? _docSub;
   bool _suppressLocalListener = false;
   bool _initialized = false;
+  DateTime? _lastSyncedAt;
+
+  /// SharedPreferences key holding the ISO timestamp of the last
+  /// successful sync (push or pull). Survives reload so the user
+  /// sees "Synced 3 minutes ago" right after opening the app.
+  static const String _kLastSyncedAt = 'cloudSync.lastSyncedAt';
 
   CloudSyncStatus get status => _status;
   String? get lastError => _lastError;
+
+  /// Most recent successful sync, or null if the user hasn't yet
+  /// completed one on this device. Used by the Settings UI to render
+  /// "Synced N minutes ago".
+  DateTime? get lastSyncedAt => _lastSyncedAt;
 
   // The keys this service syncs. Names match the unscoped base
   // names used in MainProvider / ReadingPlanService — the actual
@@ -83,6 +94,10 @@ class CloudSyncService extends ChangeNotifier {
   void init() {
     if (_initialized) return;
     _initialized = true;
+    // Restore lastSyncedAt from prefs so the UI shows a real
+    // timestamp on app launch instead of "never synced".
+    // ignore: unawaited_futures
+    _restoreLastSyncedAt();
     CloudAuthService.instance.addListener(_onAuthChanged);
     ProfileService.instance.addListener(_onProfileChanged);
     // Listen for local user-data changes (the set of keys above).
@@ -91,6 +106,31 @@ class CloudSyncService extends ChangeNotifier {
     // whole document. That's fine: it's a single small write to a
     // single doc.
     _onAuthChanged();
+  }
+
+  Future<void> _restoreLastSyncedAt() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final raw = prefs.getString(_kLastSyncedAt);
+      if (raw == null || raw.isEmpty) return;
+      final parsed = DateTime.tryParse(raw);
+      if (parsed == null) return;
+      _lastSyncedAt = parsed;
+      notifyListeners();
+    } catch (_) {
+      // Corrupt prefs — non-fatal.
+    }
+  }
+
+  Future<void> _stampSyncedNow() async {
+    _lastSyncedAt = DateTime.now().toUtc();
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_kLastSyncedAt, _lastSyncedAt!.toIso8601String());
+    } catch (_) {
+      // Best-effort; in-memory copy is still updated.
+    }
+    notifyListeners();
   }
 
   /// Local prefs writer — wraps [SharedPreferences] writes from a
@@ -153,6 +193,7 @@ class CloudSyncService extends ChangeNotifier {
       } finally {
         _suppressLocalListener = false;
       }
+      await _stampSyncedNow();
       _setStatus(CloudSyncStatus.synced);
     } catch (e) {
       _lastError = e.toString();
@@ -244,11 +285,35 @@ class CloudSyncService extends ChangeNotifier {
         'data': data,
         'updatedAt': FieldValue.serverTimestamp(),
       });
+      await _stampSyncedNow();
       _setStatus(CloudSyncStatus.synced);
     } catch (e) {
       _lastError = e.toString();
       _setStatus(CloudSyncStatus.error);
     }
+  }
+
+  /// User-initiated "Sync now". Pushes the current local snapshot to
+  /// Firestore and waits for the round-trip so the caller (Settings
+  /// page) can show a clean "syncing" → "synced" transition. Returns
+  /// true on success, false on any failure (status will reflect it).
+  ///
+  /// Cancels the auto-debounce so we don't double-push.
+  Future<bool> syncNow() async {
+    final auth = CloudAuthService.instance;
+    if (!auth.isConfigured) {
+      _lastError = 'Cloud sync not configured.';
+      _setStatus(CloudSyncStatus.error);
+      return false;
+    }
+    if (!auth.isSignedIn) {
+      _lastError = 'Not signed in.';
+      _setStatus(CloudSyncStatus.error);
+      return false;
+    }
+    _debounce?.cancel();
+    await _uploadFromLocal();
+    return _status == CloudSyncStatus.synced;
   }
 
   /// Public API — MainProvider and ReadingPlanService call this
