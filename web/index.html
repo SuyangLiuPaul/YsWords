@@ -249,6 +249,21 @@
       });
     };
   </script>
+  <!-- Browser Notification helper used by lib/services/notification_service_web.dart.
+       Wraps `new Notification(title, options)` so the Dart side can pass an options
+       bag without hitting Dart's inline-class language feature (only available
+       in Dart 3.3+; we target 3.2.3). -->
+  <script>
+    window.yswordsShowNotification = function(title, options) {
+      try {
+        if (typeof Notification === 'undefined') return null;
+        if (Notification.permission !== 'granted') return null;
+        return new Notification(title, options || {});
+      } catch (e) {
+        return null;
+      }
+    };
+  </script>
   <script src="flutter_bootstrap.js" async></script>
 </body>
 </html>

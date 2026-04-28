@@ -29,10 +29,23 @@ class _LoadingPageState extends State<LoadingPage> {
   Timer? _autoAdvance;
   bool _retrying = false;
 
+  /// Pick a random splash verse ONCE per mount and freeze it. Any
+  /// rebuild (provider notify, retry, etc.) keeps showing the same
+  /// verse instead of "twitching" through every verse in the bundle
+  /// — which used to happen because the shuffle was in build().
+  Verse? _splashVerse;
+
   @override
   void initState() {
     super.initState();
+    _splashVerse = _pickSplashVerse();
     _scheduleAdvanceIfReady();
+  }
+
+  Verse? _pickSplashVerse() {
+    final v = widget.verses;
+    if (v.isEmpty) return null;
+    return (List<Verse>.from(v)..shuffle()).first;
   }
 
   void _scheduleAdvanceIfReady() {
@@ -99,10 +112,11 @@ class _LoadingPageState extends State<LoadingPage> {
       return _buildErrorScaffold(context, settings);
     }
 
-    // Shuffle a COPY so we don't mutate the canonical verse order
-    final verse = widget.verses.isNotEmpty
-        ? (List<Verse>.from(widget.verses)..shuffle()).first
-        : null;
+    // Frozen at mount time — see _splashVerse / _pickSplashVerse.
+    // Falls back to a fresh pick if somehow the initState pick was
+    // null (provider hadn't populated yet) and verses are now ready.
+    final verse = _splashVerse ??=
+        (widget.verses.isNotEmpty ? _pickSplashVerse() : null);
 
     final original = verse?.text.replaceAll('\n', '') ?? '';
     final raw = sanitizeForSearch(original);

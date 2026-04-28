@@ -93,11 +93,30 @@ class _DashboardPageState extends State<DashboardPage> {
   }
 
   Future<void> _loadTodayHeadlines() async {
-    final bundle = await DailyNewsService.load();
+    // First paint: cached/bundled (instant, no network).
+    final initial = await DailyNewsService.load();
     if (!mounted) return;
     setState(() {
-      _todayHeadlines = DailyNewsService.dashboardHeadlines(bundle);
+      _todayHeadlines = DailyNewsService.dashboardHeadlines(initial);
     });
+
+    // Force a foreground refresh + re-pick so the headlines pick up
+    // today's edition without waiting for the next app launch. The
+    // initial paint above guarantees the user sees something
+    // immediately; this call upgrades to fresher data when ready.
+    await DailyNewsService.refresh();
+    if (!mounted) return;
+    final fresh = await DailyNewsService.load();
+    final newHeadlines = DailyNewsService.dashboardHeadlines(fresh);
+    // Skip rebuild if the picked-headlines list didn't actually
+    // change — avoids a needless paint flicker on dashboards that
+    // are already current.
+    final unchanged = newHeadlines.length == _todayHeadlines.length &&
+        newHeadlines.every((a) =>
+            _todayHeadlines.any((b) => a.id == b.id));
+    if (unchanged) return;
+    if (!mounted) return;
+    setState(() => _todayHeadlines = newHeadlines);
   }
 
   @override
@@ -333,8 +352,9 @@ class _DashboardPageState extends State<DashboardPage> {
 
           // Today's headlines — top 3 stories (one per section)
           // from the migrated DailyNews dataset (Round 40). Hidden
-          // until the bundle finishes loading.
-          if (_todayHeadlines.isNotEmpty) ...[
+          // until the bundle finishes loading. Also respects the
+          // user's opt-out (Settings → Dashboard sections).
+          if (settings.showDailyNews && _todayHeadlines.isNotEmpty) ...[
             Row(
               children: [
                 Expanded(
@@ -381,8 +401,9 @@ class _DashboardPageState extends State<DashboardPage> {
           // manuscript / scientific / historical findings rotating
           // by day-of-year. Migrated from the standalone
           // bible-evidence project (Round 38). Hidden until the
-          // 1.5 MB asset finishes parsing.
-          if (_dailyEvidence != null) ...[
+          // 1.5 MB asset finishes parsing, and when the user opts
+          // out via Settings → Dashboard sections.
+          if (settings.showBibleEvidence && _dailyEvidence != null) ...[
             Text(
               uiStrings['todayEvidence']?[locale] ??
                   "Today's Evidence",
@@ -405,55 +426,59 @@ class _DashboardPageState extends State<DashboardPage> {
             const SizedBox(height: 16),
           ],
 
-          // Today's reading (from active reading plan)
-          Text(
-            uiStrings['todayReading']?[locale] ?? "Today's Reading",
-            style: TextStyle(
-              fontFamily: settings.fontFamily,
-              fontSize: headerSize,
-              fontWeight: FontWeight.w700,
-              color: scheme.primary,
-            ),
-          ),
-          const SizedBox(height: 8),
-          if (_plan != null)
-            _DashboardPlanCard(
-              plan: _plan!,
-              day: _planDay,
-              isDone: _planDone.contains(_planDay),
-              currentVersion: mainProvider.currentVersion,
-              locale: locale,
-              onJump: (canonical) {
-                final ref = parseReference(canonical);
-                if (ref == null) return;
-                // Mutate provider first so the reader picks up the
-                // new chapter on its first build; then push the
-                // reader on top of the dashboard.
-                _navigateToReference(mainProvider, ref);
-                Get.to(
-                  () => const HomePage(),
-                  transition: Transition.rightToLeft,
-                );
-              },
-              onToggleDone: () async {
-                if (_plan == null) return;
-                await ReadingPlanService.setDayCompleted(
-                  _plan!.id,
-                  _planDay,
-                  !_planDone.contains(_planDay),
-                );
-                _loadPlan();
-              },
-            )
-          else
-            _PickPlanCard(
-              locale: locale,
-              onTap: () => Get.to(
-                () => const SettingsPage(),
-                transition: Transition.rightToLeft,
+          // Today's reading (from active reading plan). Hidden when
+          // the user opts out via Settings → Dashboard sections; the
+          // reading-plan picker is still reachable from Settings.
+          if (settings.showReadingPlan) ...[
+            Text(
+              uiStrings['todayReading']?[locale] ?? "Today's Reading",
+              style: TextStyle(
+                fontFamily: settings.fontFamily,
+                fontSize: headerSize,
+                fontWeight: FontWeight.w700,
+                color: scheme.primary,
               ),
             ),
-          const SizedBox(height: 24),
+            const SizedBox(height: 8),
+            if (_plan != null)
+              _DashboardPlanCard(
+                plan: _plan!,
+                day: _planDay,
+                isDone: _planDone.contains(_planDay),
+                currentVersion: mainProvider.currentVersion,
+                locale: locale,
+                onJump: (canonical) {
+                  final ref = parseReference(canonical);
+                  if (ref == null) return;
+                  // Mutate provider first so the reader picks up the
+                  // new chapter on its first build; then push the
+                  // reader on top of the dashboard.
+                  _navigateToReference(mainProvider, ref);
+                  Get.to(
+                    () => const HomePage(),
+                    transition: Transition.rightToLeft,
+                  );
+                },
+                onToggleDone: () async {
+                  if (_plan == null) return;
+                  await ReadingPlanService.setDayCompleted(
+                    _plan!.id,
+                    _planDay,
+                    !_planDone.contains(_planDay),
+                  );
+                  _loadPlan();
+                },
+              )
+            else
+              _PickPlanCard(
+                locale: locale,
+                onTap: () => Get.to(
+                  () => const SettingsPage(),
+                  transition: Transition.rightToLeft,
+                ),
+              ),
+            const SizedBox(height: 24),
+          ],
 
           // Counts row — bookmarks / notes / highlights
           Row(
@@ -595,21 +620,23 @@ class _DashboardPageState extends State<DashboardPage> {
                   transition: Transition.rightToLeft,
                 ),
               ),
-              _LinkTile(
-                icon: Icons.newspaper_outlined,
-                label: uiStrings['dailyNews']?[locale] ?? 'Daily News',
-                onTap: () => Get.to(
-                  () => const DailyNewsPage(),
-                  transition: Transition.rightToLeft,
+              if (settings.showDailyNews)
+                _LinkTile(
+                  icon: Icons.newspaper_outlined,
+                  label: uiStrings['dailyNews']?[locale] ?? 'Daily News',
+                  onTap: () => Get.to(
+                    () => const DailyNewsPage(),
+                    transition: Transition.rightToLeft,
+                  ),
                 ),
-              ),
-              _LinkTile(
-                icon: Icons.museum_outlined,
-                label: uiStrings['bibleEvidence']?[locale] ??
-                    'Bible Evidence',
-                onTap: () => Get.to(
-                  () => const EvidencePage(),
-                  transition: Transition.rightToLeft,
+              if (settings.showBibleEvidence)
+                _LinkTile(
+                  icon: Icons.museum_outlined,
+                  label: uiStrings['bibleEvidence']?[locale] ??
+                      'Bible Evidence',
+                  onTap: () => Get.to(
+                    () => const EvidencePage(),
+                    transition: Transition.rightToLeft,
                 ),
               ),
               _LinkTile(

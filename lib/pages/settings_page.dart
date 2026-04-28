@@ -8,6 +8,7 @@ import 'package:yswords/pages/profiles_page.dart';
 import 'package:yswords/services/cloud_auth_service.dart';
 import 'package:yswords/widgets/google_g_logo.dart';
 import 'package:yswords/services/cloud_sync_service.dart';
+import 'package:yswords/services/notification_service.dart';
 import 'package:yswords/services/fetch_books.dart';
 import 'package:yswords/services/fetch_verses.dart';
 import 'package:yswords/services/profile_service.dart';
@@ -803,6 +804,17 @@ class SettingsPage extends StatelessWidget {
                       'Reading plans'),
               _ReadingPlanSection(settings: settings, s: s),
               SizedBox(height: 16 * s),
+              _SectionHeader(
+                  uiStrings['settingsSectionDashboard']?[settings.locale] ??
+                      'Dashboard sections'),
+              _DashboardSectionsCard(settings: settings, s: s),
+              SizedBox(height: 16 * s),
+              _SectionHeader(
+                  uiStrings['settingsSectionNotifications']
+                          ?[settings.locale] ??
+                      'Notifications'),
+              _NotificationsCard(settings: settings, s: s),
+              SizedBox(height: 16 * s),
             ],
               ),
             ),
@@ -1494,6 +1506,252 @@ class _SectionHeader extends StatelessWidget {
           fontWeight: FontWeight.w700,
           letterSpacing: 0.6,
           color: scheme.primary,
+        ),
+      ),
+    );
+  }
+}
+
+/// Card with three switches: Today's Headlines, Today's Evidence, and
+/// Today's Reading. When toggled off, the matching dashboard card AND
+/// the matching quick-link tile are hidden. Lets users keep YsWords
+/// focused on the parts they actually use.
+class _DashboardSectionsCard extends StatelessWidget {
+  final AppSettings settings;
+  final double s;
+  const _DashboardSectionsCard({required this.settings, required this.s});
+
+  @override
+  Widget build(BuildContext context) {
+    final locale = settings.locale;
+    return Card(
+      child: Padding(
+        padding: EdgeInsets.fromLTRB(8 * s, 4 * s, 8 * s, 4 * s),
+        child: Column(
+          children: [
+            _SettingsSwitch(
+              icon: Icons.newspaper_outlined,
+              label: uiStrings['dailyNews']?[locale] ?? 'Daily News',
+              subtitle: uiStrings['settingsShowDailyNewsHint']?[locale] ??
+                  "Today's Headlines card + quick-link tile.",
+              value: settings.showDailyNews,
+              onChanged: (v) => settings.setShowDailyNews(v),
+              settings: settings,
+            ),
+            _SettingsSwitch(
+              icon: Icons.museum_outlined,
+              label: uiStrings['bibleEvidence']?[locale] ?? 'Bible Evidence',
+              subtitle:
+                  uiStrings['settingsShowEvidenceHint']?[locale] ??
+                      "Today's Evidence card + quick-link tile.",
+              value: settings.showBibleEvidence,
+              onChanged: (v) => settings.setShowBibleEvidence(v),
+              settings: settings,
+            ),
+            _SettingsSwitch(
+              icon: Icons.menu_book_outlined,
+              label:
+                  uiStrings['todayReading']?[locale] ?? "Today's Reading",
+              subtitle: uiStrings['settingsShowPlanHint']?[locale] ??
+                  'Active reading-plan card on the dashboard.',
+              value: settings.showReadingPlan,
+              onChanged: (v) => settings.setShowReadingPlan(v),
+              settings: settings,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Single switch row used by [_DashboardSectionsCard] and
+/// [_NotificationsCard]. Keeps font scaling consistent with the rest
+/// of the settings page.
+class _SettingsSwitch extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final String? subtitle;
+  final bool value;
+  final ValueChanged<bool> onChanged;
+  final AppSettings settings;
+
+  const _SettingsSwitch({
+    required this.icon,
+    required this.label,
+    required this.value,
+    required this.onChanged,
+    required this.settings,
+    this.subtitle,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return SwitchListTile.adaptive(
+      contentPadding: const EdgeInsets.symmetric(horizontal: 4),
+      secondary: Icon(icon, color: scheme.primary),
+      title: Text(
+        label,
+        style: TextStyle(
+          fontFamily: settings.fontFamily,
+          fontSize: settings.fontSize,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+      subtitle: (subtitle == null || subtitle!.isEmpty)
+          ? null
+          : Text(
+              subtitle!,
+              style: TextStyle(
+                fontFamily: settings.fontFamily,
+                fontSize: (settings.fontSize - 3).clamp(11.0, 14.0),
+                color: scheme.onSurfaceVariant,
+              ),
+            ),
+      value: value,
+      onChanged: onChanged,
+    );
+  }
+}
+
+/// Notifications opt-in card. On web, toggling on prompts the
+/// browser for permission via `Notification.requestPermission()`. On
+/// non-web platforms (we don't ship them today), the row is hidden.
+class _NotificationsCard extends StatefulWidget {
+  final AppSettings settings;
+  final double s;
+  const _NotificationsCard({required this.settings, required this.s});
+
+  @override
+  State<_NotificationsCard> createState() => _NotificationsCardState();
+}
+
+class _NotificationsCardState extends State<_NotificationsCard> {
+  bool _busy = false;
+
+  Future<void> _toggle(bool v) async {
+    if (_busy) return;
+    setState(() => _busy = true);
+    try {
+      if (v) {
+        // Opting in — request browser permission first.
+        if (!NotificationService.isSupported) {
+          if (!mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                uiStrings['notificationsUnsupported']
+                        ?[widget.settings.locale] ??
+                    "This browser doesn't support notifications.",
+              ),
+            ),
+          );
+          return;
+        }
+        final result = await NotificationService.requestPermission();
+        if (result == NotificationPermission.granted) {
+          await widget.settings.setNotificationsEnabled(true);
+          if (!mounted) return;
+          // Fire a confirmation notification so the user can see what
+          // they look like.
+          await NotificationService.show(
+            title: uiStrings['appName']?[widget.settings.locale] ??
+                'YsWords',
+            body: uiStrings['notificationsEnabledBody']
+                    ?[widget.settings.locale] ??
+                'Notifications are on. You\'ll get gentle daily reminders.',
+            tag: 'yswords-confirm',
+          );
+        } else {
+          await widget.settings.setNotificationsEnabled(false);
+          if (!mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                uiStrings['notificationsDenied']
+                        ?[widget.settings.locale] ??
+                    'Browser denied notification permission. Allow notifications in your browser settings to enable.',
+              ),
+            ),
+          );
+        }
+      } else {
+        await widget.settings.setNotificationsEnabled(false);
+      }
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final settings = widget.settings;
+    final locale = settings.locale;
+    final supported = NotificationService.isSupported;
+    final perm = NotificationService.permission;
+    final scheme = Theme.of(context).colorScheme;
+
+    final hint = !supported
+        ? (uiStrings['notificationsUnsupported']?[locale] ??
+            "This browser doesn't support notifications.")
+        : perm == NotificationPermission.denied
+            ? (uiStrings['notificationsBlocked']?[locale] ??
+                'Permission blocked at the browser level. Re-enable in browser settings, then toggle on here.')
+            : (uiStrings['notificationsHint']?[locale] ??
+                'Get gentle daily reminders for verse, reading, and news.');
+
+    return Card(
+      child: Padding(
+        padding: EdgeInsets.fromLTRB(8 * widget.s, 4 * widget.s,
+            8 * widget.s, 4 * widget.s),
+        child: Column(
+          children: [
+            _SettingsSwitch(
+              icon: Icons.notifications_active_outlined,
+              label: uiStrings['notificationsToggle']?[locale] ??
+                  'Enable notifications',
+              subtitle: hint,
+              value: settings.notificationsEnabled &&
+                  perm == NotificationPermission.granted,
+              onChanged: (supported &&
+                      perm != NotificationPermission.denied &&
+                      !_busy)
+                  ? _toggle
+                  : (_) {}, // ignore on unsupported / denied
+              settings: settings,
+            ),
+            if (settings.notificationsEnabled &&
+                perm == NotificationPermission.granted)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(0, 0, 0, 8),
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: TextButton.icon(
+                    onPressed: () async {
+                      await NotificationService.show(
+                        title: uiStrings['appName']?[locale] ?? 'YsWords',
+                        body: uiStrings['notificationsTestBody']
+                                ?[locale] ??
+                            'This is a test notification.',
+                        tag: 'yswords-test',
+                      );
+                    },
+                    icon: Icon(Icons.send_outlined,
+                        size: 16, color: scheme.primary),
+                    label: Text(
+                      uiStrings['notificationsTest']?[locale] ??
+                          'Send test notification',
+                      style: TextStyle(
+                        fontFamily: settings.fontFamily,
+                        fontSize:
+                            (settings.fontSize - 2).clamp(12.0, 14.0),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+          ],
         ),
       ),
     );

@@ -15,6 +15,10 @@ const _kBooksViewMode = 'booksViewMode';
 const _kBoldVerseText = 'boldVerseText';
 const _kShowStrongsInOriginals = 'showStrongsInOriginals';
 const _kAutoExpandFirstRef = 'autoExpandFirstRef';
+const _kShowDailyNews = 'showDailyNews';
+const _kShowBibleEvidence = 'showBibleEvidence';
+const _kShowReadingPlan = 'showReadingPlan';
+const _kNotificationsEnabled = 'notificationsEnabled';
 
 class AppSettings extends ChangeNotifier {
   String _fontFamily = 'Roboto';
@@ -38,6 +42,24 @@ class AppSettings extends ChangeNotifier {
   /// each Strong's entry so the user sees verse refs immediately.
   bool _autoExpandFirstRef = false;
 
+  /// Show the Today's Headlines card + Daily News quick-link tile +
+  /// the Daily News page entry. Default ON.
+  bool _showDailyNews = true;
+
+  /// Show the Today's Evidence card + Bible Evidence quick-link tile +
+  /// the Bible Evidence page entry. Default ON.
+  bool _showBibleEvidence = true;
+
+  /// Show the Today's Reading card on the dashboard. Default ON.
+  /// Reading-plan picker remains accessible from settings regardless.
+  bool _showReadingPlan = true;
+
+  /// Whether the user has opted into notifications. When true, the
+  /// app requests browser Notification permission on next launch and
+  /// fires local reminders (today's verse, today's reading missed,
+  /// etc.). Default OFF — must be explicit user opt-in.
+  bool _notificationsEnabled = false;
+
   String get fontFamily => _fontFamily;
   double get fontSize => _fontSize;
   double get lineSpacing => _lineSpacing;
@@ -52,6 +74,10 @@ class AppSettings extends ChangeNotifier {
   bool get boldVerseText => _boldVerseText;
   bool get showStrongsInOriginals => _showStrongsInOriginals;
   bool get autoExpandFirstRef => _autoExpandFirstRef;
+  bool get showDailyNews => _showDailyNews;
+  bool get showBibleEvidence => _showBibleEvidence;
+  bool get showReadingPlan => _showReadingPlan;
+  bool get notificationsEnabled => _notificationsEnabled;
 
   Future<void> setFontFamily(String family) async {
     if (_fontFamily == family) return;
@@ -158,6 +184,38 @@ class AppSettings extends ChangeNotifier {
     await prefs.setBool(_kAutoExpandFirstRef, enabled);
   }
 
+  Future<void> setShowDailyNews(bool enabled) async {
+    if (_showDailyNews == enabled) return;
+    _showDailyNews = enabled;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_kShowDailyNews, enabled);
+  }
+
+  Future<void> setShowBibleEvidence(bool enabled) async {
+    if (_showBibleEvidence == enabled) return;
+    _showBibleEvidence = enabled;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_kShowBibleEvidence, enabled);
+  }
+
+  Future<void> setShowReadingPlan(bool enabled) async {
+    if (_showReadingPlan == enabled) return;
+    _showReadingPlan = enabled;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_kShowReadingPlan, enabled);
+  }
+
+  Future<void> setNotificationsEnabled(bool enabled) async {
+    if (_notificationsEnabled == enabled) return;
+    _notificationsEnabled = enabled;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_kNotificationsEnabled, enabled);
+  }
+
   Future<void> setMenuScale(double scale) async {
     final clamped = scale.clamp(0.7, 1.5);
     if (_menuScale == clamped) return;
@@ -190,6 +248,10 @@ class AppSettings extends ChangeNotifier {
     _showStrongsInOriginals =
         prefs.getBool(_kShowStrongsInOriginals) ?? true;
     _autoExpandFirstRef = prefs.getBool(_kAutoExpandFirstRef) ?? false;
+    _showDailyNews = prefs.getBool(_kShowDailyNews) ?? true;
+    _showBibleEvidence = prefs.getBool(_kShowBibleEvidence) ?? true;
+    _showReadingPlan = prefs.getBool(_kShowReadingPlan) ?? true;
+    _notificationsEnabled = prefs.getBool(_kNotificationsEnabled) ?? false;
     notifyListeners();
   }
 

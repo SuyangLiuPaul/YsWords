@@ -525,6 +525,76 @@ const uiStrings = {
     'zh-Hant': '讀經計劃',
     'en': 'Reading plans',
   },
+  'settingsSectionDashboard': {
+    'zh-Hans': '主页板块',
+    'zh-Hant': '主頁板塊',
+    'en': 'Dashboard sections',
+  },
+  'settingsSectionNotifications': {
+    'zh-Hans': '通知',
+    'zh-Hant': '通知',
+    'en': 'Notifications',
+  },
+  'settingsShowDailyNewsHint': {
+    'zh-Hans': '主页"今日头条"卡片与快捷入口。',
+    'zh-Hant': '主頁「今日頭條」卡片與快捷入口。',
+    'en': "Show Today's Headlines card and quick-link tile.",
+  },
+  'settingsShowEvidenceHint': {
+    'zh-Hans': '主页"今日证据"卡片与快捷入口。',
+    'zh-Hant': '主頁「今日證據」卡片與快捷入口。',
+    'en': "Show Today's Evidence card and quick-link tile.",
+  },
+  'settingsShowPlanHint': {
+    'zh-Hans': '主页显示当前读经计划。',
+    'zh-Hant': '主頁顯示當前讀經計劃。',
+    'en': 'Show the active reading plan on the dashboard.',
+  },
+  'notificationsToggle': {
+    'zh-Hans': '启用通知',
+    'zh-Hant': '啟用通知',
+    'en': 'Enable notifications',
+  },
+  'notificationsHint': {
+    'zh-Hans': '每日经文、读经与新闻的轻提醒。',
+    'zh-Hant': '每日經文、讀經與新聞的輕提醒。',
+    'en': 'Gentle daily reminders for verse, reading, and news.',
+  },
+  'notificationsUnsupported': {
+    'zh-Hans': '此浏览器不支持通知。',
+    'zh-Hant': '此瀏覽器不支援通知。',
+    'en': "This browser doesn't support notifications.",
+  },
+  'notificationsBlocked': {
+    'zh-Hans': '浏览器已禁止此站点通知。请到浏览器设置中允许后再开启。',
+    'zh-Hant': '瀏覽器已禁止此站點通知。請到瀏覽器設定中允許後再開啟。',
+    'en': 'Permission blocked at the browser level. Re-enable in browser settings, then toggle on here.',
+  },
+  'notificationsDenied': {
+    'zh-Hans': '浏览器拒绝了通知权限。',
+    'zh-Hant': '瀏覽器拒絕了通知權限。',
+    'en': 'Browser denied notification permission.',
+  },
+  'notificationsEnabledBody': {
+    'zh-Hans': '通知已开启。我们会发送轻量的每日提醒。',
+    'zh-Hant': '通知已開啟。我們會發送輕量的每日提醒。',
+    'en': "Notifications are on. You'll get gentle daily reminders.",
+  },
+  'notificationsTest': {
+    'zh-Hans': '发送测试通知',
+    'zh-Hant': '發送測試通知',
+    'en': 'Send test notification',
+  },
+  'notificationsTestBody': {
+    'zh-Hans': '这是一条测试通知。',
+    'zh-Hant': '這是一條測試通知。',
+    'en': 'This is a test notification.',
+  },
+  'appName': {
+    'zh-Hans': 'YsWords 雅伟之言',
+    'zh-Hant': 'YsWords 雅偉之言',
+    'en': 'YsWords',
+  },
   'recentSearches': {
     'zh-Hans': '最近搜索',
     'zh-Hant': '最近搜索',
