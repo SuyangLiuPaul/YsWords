@@ -62,7 +62,7 @@ class NewsDetailPage extends StatelessWidget {
                 '${article.source}',
                 style: TextStyle(
                   fontFamily: settings.fontFamily,
-                  fontSize: (fs - 3).clamp(10.0, 13.0).toDouble(),
+                  fontSize: (fs - 3).clamp(11.0, 14.0).toDouble(),
                   fontWeight: FontWeight.w700,
                   letterSpacing: 1.0,
                   color: scheme.onSurfaceVariant,
@@ -85,7 +85,7 @@ class NewsDetailPage extends StatelessWidget {
                   _formatPublished(article.publishedAt!),
                   style: TextStyle(
                     fontFamily: settings.fontFamily,
-                    fontSize: (fs - 3).clamp(10.0, 13.0).toDouble(),
+                    fontSize: (fs - 3).clamp(11.0, 14.0).toDouble(),
                     color: scheme.onSurfaceVariant,
                   ),
                 ),
@@ -170,7 +170,7 @@ class NewsDetailPage extends StatelessWidget {
                         style: TextStyle(
                           fontFamily: settings.fontFamily,
                           fontSize: (fs - 3)
-                              .clamp(10.0, 13.0)
+                              .clamp(11.0, 14.0)
                               .toDouble(),
                           fontWeight: FontWeight.w600,
                           color: scheme.primary,

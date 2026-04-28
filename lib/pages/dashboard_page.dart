@@ -878,7 +878,7 @@ class _GreetingCard extends StatelessWidget {
                             style: TextStyle(
                               fontFamily: settings.fontFamily,
                               fontSize:
-                                  (fs - 4).clamp(10.0, 14.0).toDouble(),
+                                  (fs - 4).clamp(11.0, 14.0).toDouble(),
                               color: scheme.onSurfaceVariant,
                             ),
                           ),
@@ -997,7 +997,7 @@ class _DashboardPlanCard extends StatelessWidget {
               dayLabel,
               style: TextStyle(
                 fontFamily: settings.fontFamily,
-                fontSize: (fs - 4).clamp(10.0, 14.0).toDouble(),
+                fontSize: (fs - 4).clamp(11.0, 14.0).toDouble(),
                 color: scheme.onSurfaceVariant,
               ),
             ),
@@ -1076,7 +1076,7 @@ class _PickPlanCard extends StatelessWidget {
                           'Tap to open Settings.',
                       style: TextStyle(
                         fontFamily: settings.fontFamily,
-                        fontSize: (fs - 4).clamp(10.0, 14.0).toDouble(),
+                        fontSize: (fs - 4).clamp(11.0, 14.0).toDouble(),
                         color: scheme.onSurfaceVariant,
                       ),
                     ),
@@ -1154,7 +1154,7 @@ class _CountTile extends StatelessWidget {
                   style: TextStyle(
                     fontFamily: settings.fontFamily,
                     fontSize:
-                        (fs - 4).clamp(10.0, 14.0).toDouble(),
+                        (fs - 4).clamp(11.0, 14.0).toDouble(),
                     fontWeight: FontWeight.w500,
                     color: scheme.onSurfaceVariant,
                   ),
@@ -1449,7 +1449,7 @@ class _DashboardEvidenceCard extends StatelessWidget {
                               style: TextStyle(
                                 fontFamily: settings.fontFamily,
                                 fontSize:
-                                    (fs - 4).clamp(10.0, 14.0).toDouble(),
+                                    (fs - 4).clamp(11.0, 14.0).toDouble(),
                                 fontWeight: FontWeight.w600,
                                 color: scheme.primary,
                               ),
@@ -1607,7 +1607,7 @@ class _DashboardNewsCard extends StatelessWidget {
                                 style: TextStyle(
                                   fontFamily: settings.fontFamily,
                                   fontSize: (fs - 4)
-                                      .clamp(10.0, 13.0)
+                                      .clamp(11.0, 14.0)
                                       .toDouble(),
                                   fontWeight: FontWeight.w600,
                                   color: scheme.primary,

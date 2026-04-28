@@ -417,6 +417,7 @@ class _PlanTabState extends State<_PlanTab> {
     }
     final plan = _plan!;
     final scheme = Theme.of(context).colorScheme;
+    final settings = context.watch<AppSettings>();
     final percent = plan.days == 0
         ? 0
         : (100 * _done.length / plan.days).round();
@@ -459,7 +460,10 @@ class _PlanTabState extends State<_PlanTab> {
                     child: Text(
                       progressLabel,
                       style: TextStyle(
-                          fontSize: 11, color: scheme.onSurfaceVariant),
+                          fontFamily: settings.fontFamily,
+                          fontSize: (settings.fontSize - 7)
+                              .clamp(12.0, 15.0).toDouble(),
+                          color: scheme.onSurfaceVariant),
                     ),
                   ),
                   TextButton.icon(
@@ -480,7 +484,10 @@ class _PlanTabState extends State<_PlanTab> {
                     label: Text(
                       uiStrings['planJumpToToday']?[widget.locale] ??
                           'Jump to today',
-                      style: const TextStyle(fontSize: 12),
+                      style: TextStyle(
+                          fontFamily: settings.fontFamily,
+                          fontSize: (settings.fontSize - 6)
+                              .clamp(12.0, 15.0).toDouble()),
                     ),
                   ),
                 ],
@@ -521,7 +528,9 @@ class _PlanTabState extends State<_PlanTab> {
                                   ? '${(uiStrings['planDayLabel']?[widget.locale] ?? 'Day {day} of {total}').replaceAll('{day}', day.toString()).replaceAll('{total}', plan.days.toString())}  •  ★'
                                   : 'Day $day',
                               style: TextStyle(
-                                fontSize: 12,
+                                fontFamily: settings.fontFamily,
+                                fontSize: (settings.fontSize - 6)
+                                    .clamp(12.0, 16.0).toDouble(),
                                 fontWeight: isToday
                                     ? FontWeight.w700
                                     : FontWeight.w500,

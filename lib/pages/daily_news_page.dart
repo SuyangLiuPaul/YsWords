@@ -327,7 +327,7 @@ class _SectionHeader extends StatelessWidget {
             '${section.items.length}',
             style: TextStyle(
               fontFamily: settings.fontFamily,
-              fontSize: (fs - 3).clamp(10.0, 13.0).toDouble(),
+              fontSize: (fs - 3).clamp(11.0, 14.0).toDouble(),
               color: scheme.onSurfaceVariant,
             ),
           ),
@@ -399,7 +399,7 @@ class _HeadlineRow extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     fontFamily: settings.fontFamily,
-                    fontSize: (fs - 4).clamp(10.0, 13.0).toDouble(),
+                    fontSize: (fs - 4).clamp(11.0, 14.0).toDouble(),
                     color: scheme.onSurfaceVariant,
                     fontWeight: FontWeight.w600,
                     letterSpacing: 0.4,
@@ -466,7 +466,7 @@ class _BibleLensPanel extends StatelessWidget {
             uiStrings['bibleLens']?[locale] ?? 'Bible Lens',
             style: TextStyle(
               fontFamily: settings.fontFamily,
-              fontSize: (fs - 3).clamp(10.0, 13.0).toDouble(),
+              fontSize: (fs - 3).clamp(11.0, 14.0).toDouble(),
               fontWeight: FontWeight.w700,
               letterSpacing: 1.2,
               color: scheme.primary,
@@ -519,7 +519,7 @@ class _BibleLensPanel extends StatelessWidget {
               article.verse.theme(locale),
               style: TextStyle(
                 fontFamily: settings.fontFamily,
-                fontSize: (fs - 3).clamp(10.0, 13.0).toDouble(),
+                fontSize: (fs - 3).clamp(11.0, 14.0).toDouble(),
                 fontWeight: FontWeight.w600,
                 color: scheme.primary,
               ),

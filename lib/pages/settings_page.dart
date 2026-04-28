@@ -1449,7 +1449,9 @@ class _AccountSectionState extends State<_AccountSection> {
                             .replaceAll(
                                 '{email}', auth.currentUser?.email ?? ''),
                         style: TextStyle(
-                          fontSize: 12,
+                          fontFamily: settings.fontFamily,
+                          fontSize: (settings.fontSize - 6)
+                              .clamp(12.0, 15.0).toDouble(),
                           color: scheme.onSurfaceVariant,
                         ),
                       ),
@@ -1477,7 +1479,9 @@ class _AccountSectionState extends State<_AccountSection> {
                     : (uiStrings["welcomeLocalOnlyNotice"]?[locale] ??
                         "Profiles are stored only on this device. No password, no server."),
                 style: TextStyle(
-                  fontSize: 11,
+                  fontFamily: settings.fontFamily,
+                  fontSize: (settings.fontSize - 7)
+                      .clamp(12.0, 14.0).toDouble(),
                   fontStyle: FontStyle.italic,
                   color: scheme.onSurfaceVariant,
                 ),

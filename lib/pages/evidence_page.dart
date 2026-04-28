@@ -421,7 +421,7 @@ class _EvidenceCard extends StatelessWidget {
                             style: TextStyle(
                               fontFamily: settings.fontFamily,
                               fontSize: (settings.fontSize - 4)
-                                  .clamp(10.0, 14.0)
+                                  .clamp(11.0, 14.0)
                                   .toDouble(),
                               fontWeight: FontWeight.w600,
                               color: scheme.primary,

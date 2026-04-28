@@ -106,6 +106,8 @@ class _OverviewTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final settings = context.watch<AppSettings>();
+    final fs = settings.fontSize;
     final readingMin = stats.readingTimeMinutes();
     final hours = readingMin ~/ 60;
     final mins = readingMin % 60;
@@ -123,7 +125,8 @@ class _OverviewTab extends StatelessWidget {
         Text(
           version.toUpperCase(),
           style: TextStyle(
-            fontSize: 12,
+            fontFamily: settings.fontFamily,
+            fontSize: (fs - 6).clamp(13.0, 18.0).toDouble(),
             fontWeight: FontWeight.w700,
             color: scheme.onSurfaceVariant,
             letterSpacing: 0.6,
@@ -189,6 +192,8 @@ class _LongestShortestList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final settings = context.watch<AppSettings>();
+    final fs = settings.fontSize;
     final byWords = [...stats.books]..sort((a, b) => b.words.compareTo(a.words));
     final longest = byWords.take(5).toList();
     final shortest = byWords.reversed.take(5).toList();
@@ -207,9 +212,17 @@ class _LongestShortestList extends StatelessWidget {
             const SizedBox(width: 8),
             Expanded(
                 child: Text(book,
-                    style: const TextStyle(fontWeight: FontWeight.w600))),
+                    style: TextStyle(
+                      fontFamily: settings.fontFamily,
+                      fontSize: (fs - 4).clamp(13.0, 18.0).toDouble(),
+                      fontWeight: FontWeight.w600,
+                    ))),
             Text(_humanNum(b.words),
-                style: TextStyle(color: scheme.onSurfaceVariant)),
+                style: TextStyle(
+                  fontFamily: settings.fontFamily,
+                  fontSize: (fs - 4).clamp(13.0, 18.0).toDouble(),
+                  color: scheme.onSurfaceVariant,
+                )),
           ],
         ),
       );
@@ -222,7 +235,8 @@ class _LongestShortestList extends StatelessWidget {
           child: Text(
             uiStrings['statsLongest']?[locale] ?? 'Longest (by word count)',
             style: TextStyle(
-                fontSize: 11,
+                fontFamily: settings.fontFamily,
+                fontSize: (fs - 7).clamp(13.0, 16.0).toDouble(),
                 fontWeight: FontWeight.w700,
                 color: scheme.primary,
                 letterSpacing: 0.4),
@@ -233,7 +247,8 @@ class _LongestShortestList extends StatelessWidget {
         Text(
           uiStrings['statsShortest']?[locale] ?? 'Shortest (by word count)',
           style: TextStyle(
-              fontSize: 11,
+              fontFamily: settings.fontFamily,
+              fontSize: (fs - 7).clamp(13.0, 16.0).toDouble(),
               fontWeight: FontWeight.w700,
               color: scheme.tertiary,
               letterSpacing: 0.4),
@@ -303,6 +318,22 @@ class _BooksTabState extends State<_BooksTab> {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final settings = context.watch<AppSettings>();
+    final fs = settings.fontSize;
+    // Header style for DataColumn labels — bumps from theme default
+    // (~14pt) up via user font scale so Windows 1080p users can
+    // actually read the column titles.
+    final headerStyle = TextStyle(
+      fontFamily: settings.fontFamily,
+      fontSize: (fs - 5).clamp(13.0, 17.0).toDouble(),
+      fontWeight: FontWeight.w700,
+      color: scheme.onSurface,
+    );
+    final cellStyle = TextStyle(
+      fontFamily: settings.fontFamily,
+      fontSize: (fs - 5).clamp(13.0, 16.0).toDouble(),
+      color: scheme.onSurface,
+    );
     final l = widget.locale;
     final sortedBooks = _sortedBooks;
     final maxWords = widget.stats.books.fold<int>(
@@ -326,32 +357,38 @@ class _BooksTabState extends State<_BooksTab> {
             columnSpacing: 16,
             columns: [
               DataColumn(
-                label: Text(uiStrings['statsBook']?[l] ?? 'Book'),
+                label: Text(uiStrings['statsBook']?[l] ?? 'Book',
+                    style: headerStyle),
                 onSort: (i, asc) => _setSort(0),
               ),
               DataColumn(
-                label: Text(uiStrings['statsChapters']?[l] ?? 'Chapters'),
+                label: Text(uiStrings['statsChapters']?[l] ?? 'Chapters',
+                    style: headerStyle),
                 numeric: true,
                 onSort: (i, asc) => _setSort(1),
               ),
               DataColumn(
-                label: Text(uiStrings['statsVerses']?[l] ?? 'Verses'),
+                label: Text(uiStrings['statsVerses']?[l] ?? 'Verses',
+                    style: headerStyle),
                 numeric: true,
                 onSort: (i, asc) => _setSort(2),
               ),
               DataColumn(
-                label: Text(uiStrings['statsWords']?[l] ?? 'Words'),
+                label: Text(uiStrings['statsWords']?[l] ?? 'Words',
+                    style: headerStyle),
                 numeric: true,
                 onSort: (i, asc) => _setSort(3),
               ),
               DataColumn(
                 label: Text(
-                    uiStrings['statsAvgWordsVerse']?[l] ?? 'Avg w/v'),
+                    uiStrings['statsAvgWordsVerse']?[l] ?? 'Avg w/v',
+                    style: headerStyle),
                 numeric: true,
                 onSort: (i, asc) => _setSort(4),
               ),
               DataColumn(
-                label: Text(uiStrings['statsTime']?[l] ?? 'Time (m)'),
+                label: Text(uiStrings['statsTime']?[l] ?? 'Time (m)',
+                    style: headerStyle),
                 numeric: true,
                 onSort: (i, asc) => _setSort(5),
               ),
@@ -368,8 +405,8 @@ class _BooksTabState extends State<_BooksTab> {
                             localeAwareBookName(toEnglish(b.book) ?? b.book,
                                 l, widget.currentVersion),
                             overflow: TextOverflow.ellipsis,
-                            style:
-                                const TextStyle(fontWeight: FontWeight.w600),
+                            style: cellStyle.copyWith(
+                                fontWeight: FontWeight.w600),
                           ),
                         ),
                         // Tiny inline bar chart for word count.
@@ -385,11 +422,11 @@ class _BooksTabState extends State<_BooksTab> {
                       ],
                     ),
                   )),
-                  DataCell(Text('${b.chapters}')),
-                  DataCell(Text('${b.verses}')),
-                  DataCell(Text(_humanNum(b.words))),
-                  DataCell(Text(b.avgWordsPerVerse.toStringAsFixed(1))),
-                  DataCell(Text('${b.readingTimeMinutes()}')),
+                  DataCell(Text('${b.chapters}', style: cellStyle)),
+                  DataCell(Text('${b.verses}', style: cellStyle)),
+                  DataCell(Text(_humanNum(b.words), style: cellStyle)),
+                  DataCell(Text(b.avgWordsPerVerse.toStringAsFixed(1), style: cellStyle)),
+                  DataCell(Text('${b.readingTimeMinutes()}', style: cellStyle)),
                 ]),
             ],
           ),
@@ -421,6 +458,8 @@ class _VocabularyTabState extends State<_VocabularyTab> {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final settings = context.watch<AppSettings>();
+    final fs = settings.fontSize;
     final l = widget.locale;
     final List<MapEntry<String, int>> top;
     final List<String> hapax;
@@ -524,9 +563,10 @@ class _VocabularyTabState extends State<_VocabularyTab> {
                   child: Text(
                     w,
                     style: TextStyle(
-                      fontSize: 12,
-                      fontFamily:
-                          RegExp(r'[一-鿿]').hasMatch(w) ? null : 'monospace',
+                      fontSize: (fs - 6).clamp(13.0, 16.0).toDouble(),
+                      fontFamily: RegExp(r'[一-鿿]').hasMatch(w)
+                          ? settings.fontFamily
+                          : 'monospace',
                       color: scheme.onSurface,
                     ),
                   ),
@@ -538,7 +578,8 @@ class _VocabularyTabState extends State<_VocabularyTab> {
           (uiStrings['statsScopeTotal']?[l] ?? 'Total words in scope: {n}')
               .replaceAll('{n}', _humanNum(totalWords)),
           style: TextStyle(
-            fontSize: 11,
+            fontFamily: settings.fontFamily,
+            fontSize: (fs - 7).clamp(12.0, 15.0).toDouble(),
             color: scheme.onSurfaceVariant,
             fontStyle: FontStyle.italic,
           ),
@@ -560,6 +601,8 @@ class _StatCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final settings = context.watch<AppSettings>();
+    final fs = settings.fontSize;
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -582,7 +625,8 @@ class _StatCard extends StatelessWidget {
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
-                    fontSize: 11,
+                    fontFamily: settings.fontFamily,
+                    fontSize: (fs - 7).clamp(12.0, 15.0).toDouble(),
                     fontWeight: FontWeight.w600,
                     color: scheme.onSurfaceVariant,
                   ),
@@ -617,13 +661,20 @@ class _SectionHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final settings = context.watch<AppSettings>();
+    final fs = settings.fontSize;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           label,
           style: TextStyle(
-            fontSize: 13,
+            fontFamily: settings.fontFamily,
+            // Was hardcoded 13. On Windows 1080p that's hard to read,
+            // and it ignored the user's font-scale setting. Now scales
+            // with `settings.fontSize` while keeping clear hierarchy
+            // above body text.
+            fontSize: (fs - 5).clamp(14.0, 20.0).toDouble(),
             fontWeight: FontWeight.w800,
             color: scheme.onSurface,
             letterSpacing: 0.3,
@@ -634,7 +685,8 @@ class _SectionHeader extends StatelessWidget {
           Text(
             subtitle!,
             style: TextStyle(
-              fontSize: 11,
+              fontFamily: settings.fontFamily,
+              fontSize: (fs - 7).clamp(12.0, 15.0).toDouble(),
               color: scheme.onSurfaceVariant,
               fontStyle: FontStyle.italic,
             ),
