@@ -600,6 +600,16 @@ const uiStrings = {
     'zh-Hant': '今日頭條已更新',
     'en': "Today's headlines updated.",
   },
+  'startReading': {
+    'zh-Hans': '开始阅读',
+    'zh-Hant': '開始閱讀',
+    'en': 'Start reading',
+  },
+  'continueReadingHint': {
+    'zh-Hans': '从头开始阅读圣经。',
+    'zh-Hant': '從頭開始閱讀聖經。',
+    'en': 'Open the Bible from the beginning.',
+  },
   'newsEmptyTitle': {
     'zh-Hans': '暂无新闻',
     'zh-Hant': '暫無新聞',

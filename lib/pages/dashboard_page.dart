@@ -338,6 +338,24 @@ class _DashboardPageState extends State<DashboardPage> {
           ),
           const SizedBox(height: 16),
 
+          // ── PRIMARY ACTION ─────────────────────────────────────
+          // YsWords is first and foremost a Bible reading app. The
+          // hero "Continue reading" card belongs at the top of the
+          // dashboard, right under the greeting. Everything below
+          // (verse, plan, news, evidence) is supporting context.
+          _ContinueReadingHero(
+            book: mainProvider.currentBook,
+            chapter: mainProvider.currentChapter,
+            currentVersion: mainProvider.currentVersion,
+            locale: locale,
+            settings: settings,
+            onTap: () => Get.to(
+              () => const HomePage(),
+              transition: Transition.rightToLeft,
+            ),
+          ),
+          const SizedBox(height: 20),
+
           // Daily verse — one curated verse per day, deterministic
           // by day-of-year so two devices on the same calendar day
           // show the same one. Hidden until the verse text resolves.
@@ -366,82 +384,6 @@ class _DashboardPageState extends State<DashboardPage> {
                   transition: Transition.rightToLeft,
                 );
               },
-            ),
-            const SizedBox(height: 16),
-          ],
-
-          // Today's headlines — top 3 stories (one per section)
-          // from the migrated DailyNews dataset (Round 40). Hidden
-          // until the bundle finishes loading. Also respects the
-          // user's opt-out (Settings → Dashboard sections).
-          if (settings.showDailyNews && _todayHeadlines.isNotEmpty) ...[
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    uiStrings['todayHeadlines']?[locale] ??
-                        "Today's Headlines",
-                    style: TextStyle(
-                      fontFamily: settings.fontFamily,
-                      fontSize: headerSize,
-                      fontWeight: FontWeight.w700,
-                      color: scheme.primary,
-                    ),
-                  ),
-                ),
-                TextButton(
-                  onPressed: () => Get.to(
-                    () => const DailyNewsPage(),
-                    transition: Transition.rightToLeft,
-                  ),
-                  child: Text(
-                    uiStrings['viewAll']?[locale] ?? 'View all',
-                    style: TextStyle(
-                        fontFamily: settings.fontFamily,
-                        fontSize:
-                            (settings.fontSize - 2).clamp(11.0, 14.0)),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            for (final a in _todayHeadlines)
-              _DashboardNewsCard(
-                article: a,
-                locale: locale,
-                onTap: () => Get.to(
-                  () => NewsDetailPage(article: a),
-                  transition: Transition.rightToLeft,
-                ),
-              ),
-            const SizedBox(height: 16),
-          ],
-
-          // Today's evidence — one of 209 archaeological /
-          // manuscript / scientific / historical findings rotating
-          // by day-of-year. Migrated from the standalone
-          // bible-evidence project (Round 38). Hidden until the
-          // 1.5 MB asset finishes parsing, and when the user opts
-          // out via Settings → Dashboard sections.
-          if (settings.showBibleEvidence && _dailyEvidence != null) ...[
-            Text(
-              uiStrings['todayEvidence']?[locale] ??
-                  "Today's Evidence",
-              style: TextStyle(
-                fontFamily: settings.fontFamily,
-                fontSize: headerSize,
-                fontWeight: FontWeight.w700,
-                color: scheme.primary,
-              ),
-            ),
-            const SizedBox(height: 8),
-            _DashboardEvidenceCard(
-              evidence: _dailyEvidence!,
-              locale: locale,
-              onTap: () => Get.to(
-                () => EvidenceDetailPage(evidence: _dailyEvidence!),
-                transition: Transition.rightToLeft,
-              ),
             ),
             const SizedBox(height: 16),
           ],
@@ -587,33 +529,86 @@ class _DashboardPageState extends State<DashboardPage> {
             const SizedBox(height: 16),
           ],
 
-          // Quick-link tiles
-          // "Continue reading" gets its own full-width primary
-          // button — it's the highest-intent action on this page,
-          // hiding it among 4 link tiles makes it less prominent
-          // than it should be.
-          SizedBox(
-            width: double.infinity,
-            child: FilledButton.icon(
-              onPressed: () => Get.to(
-                () => const HomePage(),
-                transition: Transition.rightToLeft,
-              ),
-              icon: const Icon(Icons.menu_book_rounded),
-              label: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 10),
-                child: Text(
-                  uiStrings['continueReading']?[locale] ??
-                      'Continue reading',
-                  style: TextStyle(
+          // ── DISCOVER (supplementary) ───────────────────────────
+          // Today's Headlines and Today's Evidence sit below the
+          // reading-related content (verse, plan, counts, bookmarks)
+          // because they're discovery surfaces — interesting but not
+          // why most users opened the app.
+
+          // Today's headlines — top 3 stories (one per section)
+          // from the migrated DailyNews dataset. Respects the
+          // user's opt-out (Settings → Dashboard sections).
+          if (settings.showDailyNews && _todayHeadlines.isNotEmpty) ...[
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    uiStrings['todayHeadlines']?[locale] ??
+                        "Today's Headlines",
+                    style: TextStyle(
                       fontFamily: settings.fontFamily,
-                      fontSize: settings.fontSize,
-                      fontWeight: FontWeight.w600),
+                      fontSize: headerSize,
+                      fontWeight: FontWeight.w700,
+                      color: scheme.primary,
+                    ),
+                  ),
+                ),
+                TextButton(
+                  onPressed: () => Get.to(
+                    () => const DailyNewsPage(),
+                    transition: Transition.rightToLeft,
+                  ),
+                  child: Text(
+                    uiStrings['viewAll']?[locale] ?? 'View all',
+                    style: TextStyle(
+                        fontFamily: settings.fontFamily,
+                        fontSize:
+                            (settings.fontSize - 2).clamp(11.0, 14.0)),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            for (final a in _todayHeadlines)
+              _DashboardNewsCard(
+                article: a,
+                locale: locale,
+                onTap: () => Get.to(
+                  () => NewsDetailPage(article: a),
+                  transition: Transition.rightToLeft,
                 ),
               ),
+            const SizedBox(height: 16),
+          ],
+
+          // Today's evidence — one of 209 archaeological / manuscript
+          // / scientific / historical findings rotating by day-of-year.
+          if (settings.showBibleEvidence && _dailyEvidence != null) ...[
+            Text(
+              uiStrings['todayEvidence']?[locale] ??
+                  "Today's Evidence",
+              style: TextStyle(
+                fontFamily: settings.fontFamily,
+                fontSize: headerSize,
+                fontWeight: FontWeight.w700,
+                color: scheme.primary,
+              ),
             ),
-          ),
-          const SizedBox(height: 12),
+            const SizedBox(height: 8),
+            _DashboardEvidenceCard(
+              evidence: _dailyEvidence!,
+              locale: locale,
+              onTap: () => Get.to(
+                () => EvidenceDetailPage(evidence: _dailyEvidence!),
+                transition: Transition.rightToLeft,
+              ),
+            ),
+            const SizedBox(height: 16),
+          ],
+
+          // Quick-link tiles. The primary "Continue reading" CTA
+          // moved to the top of the dashboard — see _ContinueReadingHero
+          // above the daily verse.
           GridView.count(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
@@ -1658,6 +1653,112 @@ class _NewsThumbFallback extends StatelessWidget {
       color: color,
       alignment: Alignment.center,
       child: Text(icon, style: const TextStyle(fontSize: 26)),
+    );
+  }
+}
+
+/// Primary "Continue reading" hero card. Shipped as the top-most
+/// action on the dashboard because YsWords is first and foremost a
+/// Bible reading app — the user's most likely next move when they
+/// open Home is "open the Bible". Showing the current book / chapter /
+/// version under the CTA gives a clear "resume" affordance instead
+/// of feeling like a generic button.
+class _ContinueReadingHero extends StatelessWidget {
+  /// Localised book name for the current version (e.g. '創世記' on
+  /// CUV, 'Genesis' on KJV). May be null on cold start before
+  /// MainProvider has hydrated.
+  final String? book;
+  final int? chapter;
+  final String? currentVersion;
+  final String locale;
+  final AppSettings settings;
+  final VoidCallback onTap;
+
+  const _ContinueReadingHero({
+    required this.book,
+    required this.chapter,
+    required this.currentVersion,
+    required this.locale,
+    required this.settings,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final hasPosition = book != null && chapter != null;
+    final fs = settings.fontSize;
+
+    final ctaTitle = hasPosition
+        ? (uiStrings['continueReading']?[locale] ?? 'Continue reading')
+        : (uiStrings['startReading']?[locale] ?? 'Start reading');
+
+    final positionLine = hasPosition
+        ? '$book $chapter${currentVersion != null && currentVersion!.isNotEmpty ? "  ·  $currentVersion" : ""}'
+        : (uiStrings['continueReadingHint']?[locale] ??
+            'Open the Bible from the beginning.');
+
+    return Material(
+      color: scheme.primary,
+      borderRadius: BorderRadius.circular(16),
+      elevation: 0,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 18, 18, 18),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: scheme.onPrimary.withValues(alpha: 0.18),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.menu_book_rounded,
+                  color: scheme.onPrimary,
+                  size: (fs + 8).clamp(20.0, 32.0).toDouble(),
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      ctaTitle,
+                      style: TextStyle(
+                        fontFamily: settings.fontFamily,
+                        fontSize: (fs + 3).clamp(16.0, 24.0).toDouble(),
+                        fontWeight: FontWeight.w700,
+                        color: scheme.onPrimary,
+                      ),
+                    ),
+                    const SizedBox(height: 3),
+                    Text(
+                      positionLine,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontFamily: settings.fontFamily,
+                        fontSize: (fs - 2).clamp(11.0, 16.0).toDouble(),
+                        color: scheme.onPrimary.withValues(alpha: 0.85),
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Icon(
+                Icons.arrow_forward_rounded,
+                color: scheme.onPrimary,
+                size: 22,
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
