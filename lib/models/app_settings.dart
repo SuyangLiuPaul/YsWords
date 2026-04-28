@@ -19,6 +19,7 @@ const _kShowDailyNews = 'showDailyNews';
 const _kShowBibleEvidence = 'showBibleEvidence';
 const _kShowReadingPlan = 'showReadingPlan';
 const _kNotificationsEnabled = 'notificationsEnabled';
+const _kShowSectionTitles = 'showSectionTitles';
 
 class AppSettings extends ChangeNotifier {
   String _fontFamily = 'Roboto';
@@ -60,6 +61,12 @@ class AppSettings extends ChangeNotifier {
   /// etc.). Default OFF — must be explicit user opt-in.
   bool _notificationsEnabled = false;
 
+  /// Render section / paragraph headings (e.g. "The Sermon on the
+  /// Mount" / "登山宝训") above the matched verse in the reading
+  /// pane. Default ON — gives chapters useful structure. Toggle in
+  /// Settings → Reading.
+  bool _showSectionTitles = true;
+
   String get fontFamily => _fontFamily;
   double get fontSize => _fontSize;
   double get lineSpacing => _lineSpacing;
@@ -78,6 +85,7 @@ class AppSettings extends ChangeNotifier {
   bool get showBibleEvidence => _showBibleEvidence;
   bool get showReadingPlan => _showReadingPlan;
   bool get notificationsEnabled => _notificationsEnabled;
+  bool get showSectionTitles => _showSectionTitles;
 
   Future<void> setFontFamily(String family) async {
     if (_fontFamily == family) return;
@@ -216,6 +224,14 @@ class AppSettings extends ChangeNotifier {
     await prefs.setBool(_kNotificationsEnabled, enabled);
   }
 
+  Future<void> setShowSectionTitles(bool enabled) async {
+    if (_showSectionTitles == enabled) return;
+    _showSectionTitles = enabled;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_kShowSectionTitles, enabled);
+  }
+
   Future<void> setMenuScale(double scale) async {
     final clamped = scale.clamp(0.7, 1.5);
     if (_menuScale == clamped) return;
@@ -252,6 +268,7 @@ class AppSettings extends ChangeNotifier {
     _showBibleEvidence = prefs.getBool(_kShowBibleEvidence) ?? true;
     _showReadingPlan = prefs.getBool(_kShowReadingPlan) ?? true;
     _notificationsEnabled = prefs.getBool(_kNotificationsEnabled) ?? false;
+    _showSectionTitles = prefs.getBool(_kShowSectionTitles) ?? true;
     notifyListeners();
   }
 

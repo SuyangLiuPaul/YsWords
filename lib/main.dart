@@ -12,6 +12,7 @@ import 'package:yswords/services/cloud_sync_service.dart';
 import 'package:yswords/services/fetch_books.dart';
 import 'package:yswords/services/fetch_verses.dart';
 import 'package:yswords/services/profile_service.dart';
+import 'package:yswords/services/section_title_service.dart';
 import 'package:provider/provider.dart';
 import 'package:get/get.dart';
 
@@ -75,6 +76,10 @@ class _MainAppState extends State<MainApp> {
       // local changes mirror to Firestore (when signed in).
       await CloudAuthService.instance.init();
       CloudSyncService.instance.init();
+      // Pre-warm the section-titles cache so the first chapter
+      // render already has paragraph headings ready.
+      // ignore: unawaited_futures
+      SectionTitleService.ensureLoaded();
       await appSettings.loadSettings();
       await mainProvider.restoreState();
 

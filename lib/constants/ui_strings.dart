@@ -1134,6 +1134,17 @@ const uiStrings = {
     'en': 'Wipes browser cache + service workers. Your profile data '
         '(highlights, notes, bookmarks) stays put.',
   },
+  'showSectionTitles': {
+    'zh-Hans': '段落标题',
+    'zh-Hant': '段落標題',
+    'en': 'Section titles',
+  },
+  'showSectionTitlesSubtitle': {
+    'zh-Hans': '在相应经文上方显示段落主题（如「登山宝训」、「耶稣家谱」等）。',
+    'zh-Hant': '在相應經文上方顯示段落主題（如「登山寶訓」、「耶穌家譜」等）。',
+    'en': 'Render paragraph headings (e.g. "The Sermon on the Mount") '
+        'above the matched verse in the reading pane.',
+  },
   'cloudSyncing': {
     'zh-Hans': '同步中…',
     'zh-Hant': '同步中…',

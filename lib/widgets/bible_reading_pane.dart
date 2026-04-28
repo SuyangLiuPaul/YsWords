@@ -28,6 +28,7 @@ import 'package:yswords/services/cloud_auth_service.dart';
 import 'package:yswords/services/cross_reference_service.dart';
 import 'package:yswords/services/fetch_verses.dart';
 import 'package:yswords/services/map_service.dart';
+import 'package:yswords/services/section_title_service.dart';
 import 'package:yswords/services/share_service.dart';
 import 'package:yswords/services/synopsis_service.dart';
 import 'package:yswords/services/tts_service.dart';
@@ -678,18 +679,41 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                               startIdx += paragraphGroups[g].length;
                             }
                             final isFirst = groupIdx == 0;
-                            if (group.length == 1) {
-                              return VerseWidget(
-                                verse: group.first,
-                                index: startIdx,
-                                hasParagraphData: hasParagraphData,
-                                isFirst: isFirst,
+                            // Look up a section / paragraph title for
+                            // the FIRST verse in this group. Authored
+                            // headings live in
+                            // assets/section_titles.json and are
+                            // mapped per-version via
+                            // sectionTitleSetByVersion.
+                            String? sectionTitle;
+                            if (settings.showSectionTitles) {
+                              final firstVerse = group.first;
+                              final englishBook = toEnglish(firstVerse.book) ??
+                                  firstVerse.book;
+                              sectionTitle = SectionTitleService.titleAt(
+                                version: mainProvider.currentVersion,
+                                englishBook: englishBook,
+                                chapter: firstVerse.chapter,
+                                verse: firstVerse.verse,
                               );
                             }
-                            return ParagraphGroupWidget(
-                              group: group,
-                              startVerseIndex: startIdx,
+                            final body = group.length == 1
+                                ? VerseWidget(
+                                    verse: group.first,
+                                    index: startIdx,
+                                    hasParagraphData: hasParagraphData,
+                                    isFirst: isFirst,
+                                  )
+                                : ParagraphGroupWidget(
+                                    group: group,
+                                    startVerseIndex: startIdx,
+                                    isFirst: isFirst,
+                                  );
+                            if (sectionTitle == null) return body;
+                            return _SectionHeading(
+                              title: sectionTitle,
                               isFirst: isFirst,
+                              child: body,
                             );
                           }
                           // Trailing spacer height matches whichever
@@ -3190,6 +3214,72 @@ class _RefChip extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+/// Decorative section / paragraph heading rendered above the matching
+/// verse in the reading pane. Title text comes from
+/// `SectionTitleService` — the version-to-set mapping in
+/// `lib/constants/section_title_map.dart` decides which set is used
+/// for the active translation.
+class _SectionHeading extends StatelessWidget {
+  final String title;
+  final bool isFirst;
+  final Widget child;
+  const _SectionHeading({
+    required this.title,
+    required this.isFirst,
+    required this.child,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final settings = context.watch<AppSettings>();
+    final scheme = Theme.of(context).colorScheme;
+    final fs = settings.fontSize;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          // Larger top spacing between sections; a tighter top gap
+          // when this is the very first paragraph in the chapter so
+          // the heading doesn't push the chapter content too far down.
+          padding: EdgeInsets.fromLTRB(
+            12, isFirst ? 6 : 18, 12, 8),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              // Small accent bar on the left, matches the app's
+              // primary colour. Visually anchors the heading without
+              // making it shout.
+              Container(
+                width: 3,
+                height: (fs + 2).clamp(14.0, 20.0).toDouble(),
+                margin: const EdgeInsets.only(right: 8),
+                decoration: BoxDecoration(
+                  color: scheme.primary,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              Expanded(
+                child: Text(
+                  title,
+                  style: TextStyle(
+                    fontFamily: settings.fontFamily,
+                    fontSize:
+                        (fs + 1).clamp(14.0, 20.0).toDouble(),
+                    fontWeight: FontWeight.w700,
+                    color: scheme.onSurface,
+                    letterSpacing: 0.1,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        child,
+      ],
     );
   }
 }

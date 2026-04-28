@@ -665,6 +665,30 @@ class SettingsPage extends StatelessWidget {
                     const Divider(height: 1),
                     SwitchListTile(
                       title: Text(
+                        uiStrings['showSectionTitles']?[settings.locale] ??
+                            'Section titles',
+                        style: TextStyle(
+                          fontSize: settings.fontSize + 2,
+                          fontWeight: FontWeight.w600,
+                          fontFamily: settings.fontFamily,
+                        ),
+                      ),
+                      subtitle: Text(
+                        uiStrings['showSectionTitlesSubtitle']
+                                ?[settings.locale] ??
+                            'Render paragraph headings (e.g. "The Sermon '
+                                'on the Mount") above the verse.',
+                        style: TextStyle(
+                          fontSize: settings.fontSize,
+                          fontFamily: settings.fontFamily,
+                        ),
+                      ),
+                      value: settings.showSectionTitles,
+                      onChanged: (val) => settings.setShowSectionTitles(val),
+                    ),
+                    const Divider(height: 1),
+                    SwitchListTile(
+                      title: Text(
                         uiStrings['showStrongsBadge']?[settings.locale] ??
                             "Show Strong's number on word chips",
                         style: TextStyle(

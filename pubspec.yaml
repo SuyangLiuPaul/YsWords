@@ -62,6 +62,7 @@ flutter:
     - assets/maps/
     - assets/maps_index.json
     - assets/cross_references.json
+    - assets/section_titles.json
     - assets/reading_plans.json
     - assets/gospel_synopsis.json
     - assets/daily_verses.json
