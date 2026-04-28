@@ -51,6 +51,15 @@ class CloudSyncService extends ChangeNotifier {
   CloudSyncStatus _status = CloudSyncStatus.disabled;
   String? _lastError;
   StreamSubscription<DocumentSnapshot<Map<String, dynamic>>>? _docSub;
+  /// UID we currently have a Firestore subscription for. Used to
+  /// dedupe `_onAuthChanged` calls — `CloudAuthService` fires
+  /// `notifyListeners` on every Firebase `userChanges()` event,
+  /// which includes silent token refreshes triggered by Firestore
+  /// writes themselves. Without this guard each refresh tore down
+  /// + rebuilt the subscription, re-armed the merge flag, and
+  /// flashed `setStatus(syncing)`, producing the rapid-flash loop
+  /// the user reported during "Sync now".
+  String? _subscribedUid;
   bool _suppressLocalListener = false;
   bool _initialized = false;
   DateTime? _lastSyncedAt;
@@ -150,9 +159,19 @@ class CloudSyncService extends ChangeNotifier {
       _setStatus(CloudSyncStatus.disabled);
       _docSub?.cancel();
       _docSub = null;
+      _subscribedUid = null;
       return;
     }
     final uid = auth.currentUser!.uid;
+    // Dedupe re-fires for the same user. CloudAuthService notifies on
+    // every userChanges() event from FirebaseAuth — that includes
+    // silent token refreshes triggered by every Firestore write.
+    // Re-subscribing on each one was making the merge guard rearm,
+    // pushing setStatus(syncing) repeatedly and creating a visible
+    // flash whenever the user did anything that wrote to Firestore.
+    if (_subscribedUid == uid && _docSub != null) {
+      return;
+    }
     // Re-arm the merge guard so the next remote snapshot we receive
     // is treated as a "first pull" — and merges instead of overwrites.
     _firstPullAfterSignIn = true;
@@ -160,6 +179,7 @@ class CloudSyncService extends ChangeNotifier {
     try {
       // Subscribe to remote doc; first emission is the pull.
       _docSub?.cancel();
+      _subscribedUid = uid;
       _docSub = FirebaseFirestore.instance
           .collection('users')
           .doc(uid)
