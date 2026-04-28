@@ -1329,6 +1329,25 @@ class _AccountSectionState extends State<_AccountSection> {
     );
   }
 
+  /// Mirror of dashboard_page._displayNameFor — when signed in,
+  /// prefer Google displayName / email-prefix over the local
+  /// profile name (which can still be "guest" if the credential
+  /// was silently restored at boot without going through
+  /// signInWithGoogleAndAdoptProfile).
+  String _displayNameFor(CloudAuthService auth, dynamic profile) {
+    if (auth.isSignedIn) {
+      final u = auth.currentUser;
+      final dn = u?.displayName?.trim();
+      if (dn != null && dn.isNotEmpty) return dn;
+      final email = u?.email;
+      if (email != null && email.isNotEmpty) {
+        final at = email.indexOf('@');
+        return at > 0 ? email.substring(0, at) : email;
+      }
+    }
+    return profile.name as String;
+  }
+
   @override
   Widget build(BuildContext context) {
     final settings = widget.settings;
@@ -1367,12 +1386,16 @@ class _AccountSectionState extends State<_AccountSection> {
               // visually consistent across the app.
               leading: ProfileAvatar(
                 photoUrl: auth.currentUser?.photoURL ?? p.photoDataUrl,
-                name: p.name,
+                // When signed in, prefer the Google display name so
+                // the avatar's initial matches the title row below.
+                // Mirrors dashboard_page._displayNameFor's logic so
+                // the two surfaces stay in sync on cold-start.
+                name: _displayNameFor(auth, p),
                 avatarColor: p.avatarColorArgb,
                 radius: 22,
               ),
               title: Text(
-                p.name,
+                _displayNameFor(auth, p),
                 style: TextStyle(
                   fontFamily: settings.fontFamily,
                   fontSize: settings.fontSize,

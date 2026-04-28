@@ -266,6 +266,27 @@ class _DashboardPageState extends State<DashboardPage> {
     return 'Good evening';
   }
 
+  /// Pick the most user-friendly name for the greeting:
+  ///   1. Google `displayName` when signed in (covers cold-start
+  ///      where the local profile was never adopted via the
+  ///      sign-in button and would otherwise be "guest")
+  ///   2. Email prefix as a fallback (some Google accounts hide
+  ///      displayName)
+  ///   3. The local profile name (regular local-only flow)
+  String _displayNameFor(CloudAuthService auth, dynamic profile) {
+    if (auth.isSignedIn) {
+      final u = auth.currentUser;
+      final dn = u?.displayName?.trim();
+      if (dn != null && dn.isNotEmpty) return dn;
+      final email = u?.email;
+      if (email != null && email.isNotEmpty) {
+        final at = email.indexOf('@');
+        return at > 0 ? email.substring(0, at) : email;
+      }
+    }
+    return profile.name as String;
+  }
+
   @override
   Widget build(BuildContext context) {
     final settings = context.watch<AppSettings>();
@@ -312,7 +333,17 @@ class _DashboardPageState extends State<DashboardPage> {
           // Greeting + profile / sync status
           _GreetingCard(
             greeting: _greeting(locale),
-            profileName: profile.name,
+            // When signed in, prefer the Google display name over
+            // the local profile name. On cold-start the local
+            // profile is often still "guest" because
+            // signInWithGoogleAndAdoptProfile only runs on an
+            // explicit sign-in click — Firebase silently restoring
+            // a persisted credential never adopts the profile, so
+            // the greeting was reading "Good morning, guest" even
+            // though auth.currentUser was a real signed-in user.
+            // Falls back to email-prefix → profile.name in case
+            // displayName is null (some Google accounts hide it).
+            profileName: _displayNameFor(auth, profile),
             authConfigured: auth.isConfigured,
             isSignedIn: auth.isSignedIn,
             email: auth.currentUser?.email,
