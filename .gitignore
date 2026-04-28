@@ -33,3 +33,4 @@ functions/bible_evidence.json
 assets/*.bak
 lib/**/*.bak
 
+functions/package-lock.json

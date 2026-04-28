@@ -684,6 +684,72 @@ const uiStrings = {
     'zh-Hant': '引用條目',
     'en': 'Citations',
   },
+  // Daily News (Round 40 — migrated from sibling DailyNews project).
+  'dailyNews': {
+    'zh-Hans': '每日新闻',
+    'zh-Hant': '每日新聞',
+    'en': 'Daily News',
+  },
+  'dailyNewsTagline': {
+    'zh-Hans': '以圣经视角看新闻',
+    'zh-Hant': '以聖經視角看新聞',
+    'en': 'News through a biblical lens',
+  },
+  'todayHeadlines': {
+    'zh-Hans': '今日头条',
+    'zh-Hant': '今日頭條',
+    'en': "Today's Headlines",
+  },
+  'bibleLens': {
+    'zh-Hans': '圣经视角',
+    'zh-Hant': '聖經視角',
+    'en': 'Bible Lens',
+  },
+  'bibleReflection': {
+    'zh-Hans': '圣经反思',
+    'zh-Hant': '聖經反思',
+    'en': 'Bible reflection',
+  },
+  'readFullStory': {
+    'zh-Hans': '阅读全文',
+    'zh-Hant': '閱讀全文',
+    'en': 'Read full story',
+  },
+  'readOriginal': {
+    'zh-Hans': '复制 {source} 原文链接',
+    'zh-Hant': '複製 {source} 原文連結',
+    'en': 'Copy link to {source}',
+  },
+  'openSource': {
+    'zh-Hans': '打开原文',
+    'zh-Hant': '打開原文',
+    'en': 'Open original',
+  },
+  'newsSectionWorld': {
+    'zh-Hans': '国际',
+    'zh-Hant': '國際',
+    'en': 'World',
+  },
+  'newsSectionChina': {
+    'zh-Hans': '中国',
+    'zh-Hant': '中國',
+    'en': 'China',
+  },
+  'newsSectionAustralia': {
+    'zh-Hans': '澳洲',
+    'zh-Hant': '澳洲',
+    'en': 'Australia',
+  },
+  'refresh': {
+    'zh-Hans': '刷新',
+    'zh-Hant': '重新整理',
+    'en': 'Refresh',
+  },
+  'viewAll': {
+    'zh-Hans': '查看全部',
+    'zh-Hant': '查看全部',
+    'en': 'View all',
+  },
   // ── Gospel synopsis (Round 27B) ─────────────────────────────────
   'synopsis': {
     'zh-Hans': '福音书对观',

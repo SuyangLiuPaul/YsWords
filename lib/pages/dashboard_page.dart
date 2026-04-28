@@ -7,8 +7,11 @@ import 'package:yswords/constants/ui_strings.dart';
 import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/models/verse.dart';
 import 'package:yswords/models/bible_evidence.dart';
+import 'package:yswords/models/news_article.dart';
+import 'package:yswords/pages/daily_news_page.dart';
 import 'package:yswords/pages/evidence_detail_page.dart';
 import 'package:yswords/pages/evidence_page.dart';
+import 'package:yswords/pages/news_detail_page.dart';
 import 'package:yswords/pages/highlights_page.dart';
 import 'package:yswords/pages/home_page.dart';
 import 'package:yswords/pages/library_page.dart';
@@ -16,6 +19,7 @@ import 'package:yswords/pages/profile_edit_page.dart';
 import 'package:yswords/pages/settings_page.dart';
 import 'package:yswords/pages/stats_page.dart';
 import 'package:yswords/services/bible_evidence_service.dart';
+import 'package:yswords/services/daily_news_service.dart';
 import 'package:yswords/providers/main_provider.dart';
 import 'package:yswords/services/cloud_auth_service.dart';
 import 'package:yswords/services/cloud_sync_service.dart';
@@ -62,6 +66,11 @@ class _DashboardPageState extends State<DashboardPage> {
   /// 1.5 MB asset finishes parsing.
   BibleEvidence? _dailyEvidence;
 
+  /// Today's headlines (1 per section) from the migrated DailyNews
+  /// dataset. Loaded after dashboard renders; fires a background
+  /// refresh so the user sees fresher data as they keep the app open.
+  List<NewsArticle> _todayHeadlines = const [];
+
   @override
   void initState() {
     super.initState();
@@ -71,6 +80,7 @@ class _DashboardPageState extends State<DashboardPage> {
     _loadPlan();
     _loadDailyVerse();
     _loadDailyEvidence();
+    _loadTodayHeadlines();
     _maybeShowOnboarding();
   }
 
@@ -79,6 +89,14 @@ class _DashboardPageState extends State<DashboardPage> {
     if (!mounted) return;
     setState(() {
       _dailyEvidence = BibleEvidenceService.todayEvidence(list);
+    });
+  }
+
+  Future<void> _loadTodayHeadlines() async {
+    final bundle = await DailyNewsService.load();
+    if (!mounted) return;
+    setState(() {
+      _todayHeadlines = DailyNewsService.dashboardHeadlines(bundle);
     });
   }
 
@@ -313,6 +331,52 @@ class _DashboardPageState extends State<DashboardPage> {
             const SizedBox(height: 16),
           ],
 
+          // Today's headlines — top 3 stories (one per section)
+          // from the migrated DailyNews dataset (Round 40). Hidden
+          // until the bundle finishes loading.
+          if (_todayHeadlines.isNotEmpty) ...[
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    uiStrings['todayHeadlines']?[locale] ??
+                        "Today's Headlines",
+                    style: TextStyle(
+                      fontFamily: settings.fontFamily,
+                      fontSize: headerSize,
+                      fontWeight: FontWeight.w700,
+                      color: scheme.primary,
+                    ),
+                  ),
+                ),
+                TextButton(
+                  onPressed: () => Get.to(
+                    () => const DailyNewsPage(),
+                    transition: Transition.rightToLeft,
+                  ),
+                  child: Text(
+                    uiStrings['viewAll']?[locale] ?? 'View all',
+                    style: TextStyle(
+                        fontFamily: settings.fontFamily,
+                        fontSize:
+                            (settings.fontSize - 2).clamp(11.0, 14.0)),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            for (final a in _todayHeadlines)
+              _DashboardNewsCard(
+                article: a,
+                locale: locale,
+                onTap: () => Get.to(
+                  () => NewsDetailPage(article: a),
+                  transition: Transition.rightToLeft,
+                ),
+              ),
+            const SizedBox(height: 16),
+          ],
+
           // Today's evidence — one of 209 archaeological /
           // manuscript / scientific / historical findings rotating
           // by day-of-year. Migrated from the standalone
@@ -528,6 +592,14 @@ class _DashboardPageState extends State<DashboardPage> {
                 label: uiStrings['statistics']?[locale] ?? 'Statistics',
                 onTap: () => Get.to(
                   () => const StatsPage(),
+                  transition: Transition.rightToLeft,
+                ),
+              ),
+              _LinkTile(
+                icon: Icons.newspaper_outlined,
+                label: uiStrings['dailyNews']?[locale] ?? 'Daily News',
+                onTap: () => Get.to(
+                  () => const DailyNewsPage(),
                   transition: Transition.rightToLeft,
                 ),
               ),
@@ -1352,6 +1424,180 @@ class _ThumbIcon extends StatelessWidget {
       color: scheme.surfaceContainerHighest.withValues(alpha: 0.4),
       alignment: Alignment.center,
       child: Text(icon, style: const TextStyle(fontSize: 28)),
+    );
+  }
+}
+
+/// One-row Today's-Headlines card on the dashboard. Compact thumbnail
+/// + section label + title + Bible theme. Tap → `NewsDetailPage`.
+class _DashboardNewsCard extends StatelessWidget {
+  final NewsArticle article;
+  final String locale;
+  final VoidCallback onTap;
+
+  const _DashboardNewsCard({
+    required this.article,
+    required this.locale,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final settings = context.watch<AppSettings>();
+    final fs = settings.fontSize;
+    final imgUrl =
+        (article.image != null && article.image!.isNotEmpty)
+            ? article.image
+            : null;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Material(
+        color: scheme.surface,
+        borderRadius: BorderRadius.circular(12),
+        child: Ink(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+                color: scheme.outlineVariant.withValues(alpha: 0.6)),
+          ),
+          child: InkWell(
+            onTap: onTap,
+            borderRadius: BorderRadius.circular(12),
+            child: Padding(
+              padding: const EdgeInsets.all(10),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: SizedBox(
+                      width: 64,
+                      height: 64,
+                      child: imgUrl != null
+                          ? Image.network(
+                              imgUrl,
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, __, ___) =>
+                                  _NewsThumbFallback(
+                                      sectionId: article.section),
+                            )
+                          : _NewsThumbFallback(
+                              sectionId: article.section),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Text(
+                              (uiStrings['newsSection${_cap(article.section)}']
+                                          ?[locale] ??
+                                      article.section.toUpperCase())
+                                  .toUpperCase(),
+                              style: TextStyle(
+                                fontFamily: settings.fontFamily,
+                                fontSize:
+                                    (fs - 4).clamp(9.0, 12.0).toDouble(),
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: 0.8,
+                                color: scheme.primary,
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            Flexible(
+                              child: Text(
+                                '· ${article.source}',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  fontFamily: settings.fontFamily,
+                                  fontSize: (fs - 4)
+                                      .clamp(9.0, 12.0)
+                                      .toDouble(),
+                                  color: scheme.onSurfaceVariant,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          article.title(locale),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontFamily: settings.fontFamily,
+                            fontSize:
+                                (fs - 1).clamp(13.0, 17.0).toDouble(),
+                            fontWeight: FontWeight.w700,
+                            color: scheme.onSurface,
+                            height: 1.25,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Row(
+                          children: [
+                            Icon(Icons.auto_stories,
+                                size: 12, color: scheme.primary),
+                            const SizedBox(width: 4),
+                            Flexible(
+                              child: Text(
+                                '${article.verse.theme(locale)}  ·  ${article.verse.reference}',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  fontFamily: settings.fontFamily,
+                                  fontSize: (fs - 4)
+                                      .clamp(10.0, 13.0)
+                                      .toDouble(),
+                                  fontWeight: FontWeight.w600,
+                                  color: scheme.primary,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  String _cap(String s) =>
+      s.isEmpty ? s : s[0].toUpperCase() + s.substring(1);
+}
+
+class _NewsThumbFallback extends StatelessWidget {
+  final String sectionId;
+  const _NewsThumbFallback({required this.sectionId});
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final color = sectionId == 'china'
+        ? Colors.red.shade100
+        : sectionId == 'australia'
+            ? Colors.green.shade100
+            : scheme.primary.withValues(alpha: 0.12);
+    final icon = sectionId == 'china'
+        ? '🌏'
+        : sectionId == 'australia'
+            ? '🦘'
+            : '🌐';
+    return Container(
+      color: color,
+      alignment: Alignment.center,
+      child: Text(icon, style: const TextStyle(fontSize: 26)),
     );
   }
 }
