@@ -112,10 +112,25 @@ class CloudAuthService extends ChangeNotifier {
       if (kIsWeb) {
         step = 'FirebaseCoreWeb delegate setup';
         try {
-          final web = FirebaseCoreWeb();
-          FirebasePlatform.instance = web;
-          // ignore: invalid_use_of_visible_for_testing_member
-          Firebase.delegatePackingProperty = web;
+          // Only force-set the delegate if the auto-registrant didn't
+          // run for any reason. Creating a NEW FirebaseCoreWeb when
+          // the auto-registered one is already the active delegate
+          // produces two distinct Dart-side instances, which
+          // Firestore can race against (Firestore plugin uses the
+          // delegate that was active at its own registerWith time)
+          // and that race showed up as 30 s sync timeouts.
+          if (FirebasePlatform.instance is! FirebaseCoreWeb) {
+            final web = FirebaseCoreWeb();
+            FirebasePlatform.instance = web;
+            // ignore: invalid_use_of_visible_for_testing_member
+            Firebase.delegatePackingProperty = web;
+          } else {
+            // Auto-registrant already wired things up — just clear
+            // any previously-cached Firebase delegate so it picks
+            // up the live one rather than a stale instance.
+            // ignore: invalid_use_of_visible_for_testing_member
+            Firebase.delegatePackingProperty = FirebasePlatform.instance;
+          }
         } catch (e) {
           // Soft-fail: if for any reason instantiating FirebaseCoreWeb
           // throws (e.g. it's already wired correctly and the setter

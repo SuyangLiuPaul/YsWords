@@ -476,6 +476,21 @@ class CloudSyncService extends ChangeNotifier {
     _setStatus(CloudSyncStatus.syncing);
     try {
       final data = await _snapshotLocal();
+      // Force a fresh ID token before the write. If the cached token
+      // expired, set() can sit in the SDK's auth-refresh queue until
+      // it gives up — which manifests as a "Sync timeout" with no
+      // clear cause. Pre-refreshing surfaces auth issues faster and
+      // ensures the write goes out with a current token.
+      try {
+        await auth.currentUser!.getIdToken(true)
+            .timeout(const Duration(seconds: 8));
+      } catch (e) {
+        debugPrint('CloudSync: token refresh failed: $e');
+        // Fall through — set() will try with whatever token is cached.
+      }
+      // 30 s instead of 15 — slow networks (mobile, cafe wifi, etc.)
+      // routinely take 10-20 s for a Firestore write to round-trip,
+      // and 15 s was tripping under normal conditions.
       await FirebaseFirestore.instance
           .collection('users')
           .doc(auth.currentUser!.uid)
@@ -484,15 +499,24 @@ class CloudSyncService extends ChangeNotifier {
           .set({
         'data': data,
         'updatedAt': FieldValue.serverTimestamp(),
-      }).timeout(const Duration(seconds: 15));
+      }).timeout(const Duration(seconds: 30));
       await _stampSyncedNow();
       _setStatus(CloudSyncStatus.synced);
     } on TimeoutException {
-      _lastError = 'Sync timed out after 15 seconds. '
-          'Check your internet connection.';
+      _lastError = 'Sync timed out after 30 seconds. '
+          'Check your internet connection or sign out and back in.';
+      _setStatus(CloudSyncStatus.error);
+    } on FirebaseException catch (e) {
+      // Surface the Firebase code so security-rule denials etc. are
+      // identifiable instead of looking like a generic timeout.
+      _lastError = '[${e.code}] ${e.message ?? "Sync failed."}';
+      // ignore: avoid_print
+      print('[CloudSync] FirebaseException: ${e.code} :: ${e.message}');
       _setStatus(CloudSyncStatus.error);
     } catch (e) {
       _lastError = e.toString();
+      // ignore: avoid_print
+      print('[CloudSync] upload failed: $e');
       _setStatus(CloudSyncStatus.error);
     }
   }
