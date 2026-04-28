@@ -451,13 +451,17 @@ class CloudSyncService extends ChangeNotifier {
   /// of truth. Called after sign-in (when remote was empty) and
   /// after every local change via [requestUpload].
   ///
-  /// Hard-cap at 15 seconds. Without this the Firestore set() can
-  /// hang indefinitely on slow networks and the UI was reporting
-  /// "Syncing now…" forever.
-  Future<void> _uploadFromLocal() async {
+  /// [bypassSuppress] — true for user-initiated `syncNow()`. The
+  /// suppress-flag wait below was bailing out with "A pull is
+  /// taking longer than expected" when a snapshot echo was still
+  /// being processed from a recent successful upload. For a manual
+  /// sync, the user wants the upload to happen regardless of
+  /// background snapshot timing — pushing on top of the echo just
+  /// re-uploads the data we already have, which is harmless.
+  Future<void> _uploadFromLocal({bool bypassSuppress = false}) async {
     final auth = CloudAuthService.instance;
     if (!auth.isSignedIn) return;
-    if (_suppressLocalListener) {
+    if (!bypassSuppress && _suppressLocalListener) {
       // A remote pull is in flight. Don't push on top of it (would
       // overwrite the data we just received). The auto-debounce
       // path is fine to no-op silently — but a user-initiated
@@ -536,7 +540,14 @@ class CloudSyncService extends ChangeNotifier {
       return false;
     }
     _debounce?.cancel();
-    await _uploadFromLocal();
+    // bypassSuppress: a snapshot echo from a previous successful
+    // upload may still be in flight. The wait+timeout guard inside
+    // _uploadFromLocal would error out before the snapshot finishes
+    // processing, which is exactly what users hit when clicking
+    // Sync-now twice in a row. Skipping the guard for manual syncs
+    // is safe — pushing on top of an echo just re-sends what we
+    // already have.
+    await _uploadFromLocal(bypassSuppress: true);
     return _status == CloudSyncStatus.synced;
   }
 
