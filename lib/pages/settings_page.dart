@@ -1735,48 +1735,94 @@ class _SyncStatusRowState extends State<_SyncStatusRow> {
         ? scheme.error
         : scheme.onSurfaceVariant;
 
-    return Row(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Icon(
-          status == CloudSyncStatus.error
-              ? Icons.cloud_off_outlined
-              : (isSyncing
-                  ? Icons.cloud_sync_outlined
-                  : Icons.cloud_done_outlined),
-          size: 16,
-          color: color,
-        ),
-        const SizedBox(width: 6),
-        Expanded(
-          child: Text(
-            stamp,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              fontFamily: settings.fontFamily,
-              fontSize: (settings.fontSize - 4).clamp(10.0, 13.0),
-              color: color,
+        Row(
+          children: [
+            // Status icon. While syncing we show a real
+            // CircularProgressIndicator here (not just a static
+            // cloud-sync icon) so the user immediately knows
+            // something is happening even before the row text changes.
+            SizedBox(
+              width: 18,
+              height: 18,
+              child: isSyncing
+                  ? CircularProgressIndicator(
+                      strokeWidth: 2.4,
+                      color: scheme.primary,
+                    )
+                  : Icon(
+                      status == CloudSyncStatus.error
+                          ? Icons.cloud_off_outlined
+                          : Icons.cloud_done_outlined,
+                      size: 16,
+                      color: color,
+                    ),
             ),
-          ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                stamp,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontFamily: settings.fontFamily,
+                  fontSize: (settings.fontSize - 3).clamp(11.0, 14.0),
+                  color: color,
+                  fontWeight: isSyncing
+                      ? FontWeight.w600
+                      : FontWeight.w400,
+                ),
+              ),
+            ),
+            FilledButton.tonalIcon(
+              onPressed: isSyncing ? null : _trigger,
+              icon: isSyncing
+                  ? SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2.2,
+                        color: scheme.onSurfaceVariant,
+                      ),
+                    )
+                  : const Icon(Icons.sync, size: 16),
+              label: Text(
+                isSyncing
+                    ? (uiStrings['syncingNowShort']?[locale] ?? 'Syncing…')
+                    : (uiStrings['syncNow']?[locale] ?? 'Sync now'),
+                style: TextStyle(
+                  fontFamily: settings.fontFamily,
+                  fontSize: (settings.fontSize - 3).clamp(11.0, 14.0),
+                ),
+              ),
+            ),
+          ],
         ),
-        TextButton.icon(
-          onPressed: isSyncing ? null : _trigger,
-          icon: isSyncing
-              ? const SizedBox(
-                  width: 14,
-                  height: 14,
-                  child: CircularProgressIndicator(strokeWidth: 2),
+        // Full-width progress bar appears below the row whenever the
+        // sync is actually in flight. Indeterminate (no known total),
+        // shaped like a typical "loading" affordance so non-technical
+        // users immediately understand work is happening — much more
+        // visible than the previous tiny in-button spinner.
+        AnimatedSwitcher(
+          duration: const Duration(milliseconds: 200),
+          child: isSyncing
+              ? Padding(
+                  key: const ValueKey('progress'),
+                  padding: const EdgeInsets.only(top: 8),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(2),
+                    child: LinearProgressIndicator(
+                      minHeight: 3,
+                      backgroundColor:
+                          scheme.primary.withValues(alpha: 0.12),
+                      valueColor:
+                          AlwaysStoppedAnimation<Color>(scheme.primary),
+                    ),
+                  ),
                 )
-              : const Icon(Icons.sync, size: 14),
-          label: Text(
-            isSyncing
-                ? (uiStrings['syncingNowShort']?[locale] ?? 'Syncing…')
-                : (uiStrings['syncNow']?[locale] ?? 'Sync now'),
-            style: TextStyle(
-              fontFamily: settings.fontFamily,
-              fontSize: (settings.fontSize - 3).clamp(11.0, 14.0),
-            ),
-          ),
+              : const SizedBox.shrink(key: ValueKey('idle')),
         ),
       ],
     );

@@ -269,10 +269,29 @@ class CloudSyncService extends ChangeNotifier {
   /// Push the current local snapshot up to Firestore as the source
   /// of truth. Called after sign-in (when remote was empty) and
   /// after every local change via [requestUpload].
+  ///
+  /// Hard-cap at 15 seconds. Without this the Firestore set() can
+  /// hang indefinitely on slow networks and the UI was reporting
+  /// "Syncing now…" forever.
   Future<void> _uploadFromLocal() async {
     final auth = CloudAuthService.instance;
     if (!auth.isSignedIn) return;
-    if (_suppressLocalListener) return;
+    if (_suppressLocalListener) {
+      // A remote pull is in flight. Don't push on top of it (would
+      // overwrite the data we just received). The auto-debounce
+      // path is fine to no-op silently — but a user-initiated
+      // syncNow() should NOT look like a hang. Wait briefly for
+      // the pull to finish, then proceed.
+      for (var i = 0; i < 30 && _suppressLocalListener; i++) {
+        await Future.delayed(const Duration(milliseconds: 100));
+      }
+      if (_suppressLocalListener) {
+        _lastError = 'A pull is taking longer than expected. '
+            'Try Sync now again in a moment.';
+        _setStatus(CloudSyncStatus.error);
+        return;
+      }
+    }
     _setStatus(CloudSyncStatus.syncing);
     try {
       final data = await _snapshotLocal();
@@ -284,9 +303,13 @@ class CloudSyncService extends ChangeNotifier {
           .set({
         'data': data,
         'updatedAt': FieldValue.serverTimestamp(),
-      });
+      }).timeout(const Duration(seconds: 15));
       await _stampSyncedNow();
       _setStatus(CloudSyncStatus.synced);
+    } on TimeoutException {
+      _lastError = 'Sync timed out after 15 seconds. '
+          'Check your internet connection.';
+      _setStatus(CloudSyncStatus.error);
     } catch (e) {
       _lastError = e.toString();
       _setStatus(CloudSyncStatus.error);
