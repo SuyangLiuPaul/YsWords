@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:js_interop';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
@@ -7,6 +8,21 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:yswords/services/cloud_auth_service.dart';
 import 'package:yswords/services/profile_service.dart';
+
+// Tiny JS-interop binding for `navigator.onLine`. Lets us short-circuit
+// uploads with a clear "offline" message instead of sitting through a
+// 30-second Firestore timeout when the user has no network at all.
+@JS('navigator.onLine')
+external bool get _navigatorOnLine;
+
+bool get _isWebOnline {
+  if (!kIsWeb) return true;
+  try {
+    return _navigatorOnLine;
+  } catch (_) {
+    return true; // older browsers — assume online, let the request fail naturally
+  }
+}
 
 /// Status surface for the Settings UI — lets the user see "Synced",
 /// "Syncing...", or an error message at a glance.
@@ -461,6 +477,17 @@ class CloudSyncService extends ChangeNotifier {
   Future<void> _uploadFromLocal({bool bypassSuppress = false}) async {
     final auth = CloudAuthService.instance;
     if (!auth.isSignedIn) return;
+    // Fast-fail when the browser already knows it has no network. The
+    // 30 s Firestore timeout is helpful when the connection is just
+    // slow — but pointless when the user is plain offline. The local
+    // edits are already persisted to SharedPreferences; they'll
+    // upload automatically the next time CloudSyncService notices
+    // we're back online via the auto-debounce path.
+    if (!_isWebOnline) {
+      _lastError = 'Offline — sync will resume when your connection is back.';
+      _setStatus(CloudSyncStatus.error);
+      return;
+    }
     if (!bypassSuppress && _suppressLocalListener) {
       // A remote pull is in flight. Don't push on top of it (would
       // overwrite the data we just received). The auto-debounce
