@@ -595,6 +595,26 @@ const uiStrings = {
     'zh-Hant': 'YsWords 雅偉之言',
     'en': 'YsWords',
   },
+  'newsRefreshed': {
+    'zh-Hans': '今日头条已更新',
+    'zh-Hant': '今日頭條已更新',
+    'en': "Today's headlines updated.",
+  },
+  'newsEmptyTitle': {
+    'zh-Hans': '暂无新闻',
+    'zh-Hant': '暫無新聞',
+    'en': 'No news available',
+  },
+  'newsEmptyBody': {
+    'zh-Hans': '可能是后台任务跳过了本时段。下拉或点击重试可重新拉取。',
+    'zh-Hant': '可能是後台任務跳過了本時段。下拉或點擊重試可重新拉取。',
+    'en': 'The cron may have skipped this window. Pull down or tap retry to fetch the latest.',
+  },
+  'loading': {
+    'zh-Hans': '加载中…',
+    'zh-Hant': '載入中…',
+    'en': 'Loading…',
+  },
   'recentSearches': {
     'zh-Hans': '最近搜索',
     'zh-Hant': '最近搜索',

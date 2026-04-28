@@ -110,13 +110,30 @@ class _DashboardPageState extends State<DashboardPage> {
     final newHeadlines = DailyNewsService.dashboardHeadlines(fresh);
     // Skip rebuild if the picked-headlines list didn't actually
     // change — avoids a needless paint flicker on dashboards that
-    // are already current.
+    // are already current. O(n) via Set instead of the previous
+    // O(n²) every+any.
+    final currentIds = _todayHeadlines.map((a) => a.id).toSet();
     final unchanged = newHeadlines.length == _todayHeadlines.length &&
-        newHeadlines.every((a) =>
-            _todayHeadlines.any((b) => a.id == b.id));
+        newHeadlines.every((a) => currentIds.contains(a.id));
     if (unchanged) return;
     if (!mounted) return;
     setState(() => _todayHeadlines = newHeadlines);
+    // Subtle confirmation: only show when the user actually has
+    // fresh content. Not on first paint, not on no-op refreshes.
+    final messenger = ScaffoldMessenger.maybeOf(context);
+    if (messenger != null && _todayHeadlines.isNotEmpty) {
+      final settings = context.read<AppSettings>();
+      messenger.hideCurrentSnackBar();
+      messenger.showSnackBar(SnackBar(
+        content: Text(
+          uiStrings['newsRefreshed']?[settings.locale] ??
+              "Today's headlines updated.",
+          style: TextStyle(fontFamily: settings.fontFamily),
+        ),
+        duration: const Duration(milliseconds: 1600),
+        behavior: SnackBarBehavior.floating,
+      ));
+    }
   }
 
   @override
@@ -286,7 +303,10 @@ class _DashboardPageState extends State<DashboardPage> {
       body: Center(
         child: ConstrainedBox(
           constraints: BoxConstraints(maxWidth: maxW),
-          child: ListView(
+          child: RefreshIndicator(
+            onRefresh: _pullToRefresh,
+            child: ListView(
+        physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.all(16),
         children: [
           // Greeting + profile / sync status
@@ -652,8 +672,21 @@ class _DashboardPageState extends State<DashboardPage> {
         ],
       ),
         ),
+        ),
       ),
     );
+  }
+
+  /// Pull-to-refresh: re-pull every dynamic dashboard tile from its
+  /// remote source. Returns when all done so the spinner can collapse.
+  /// Cheap when network is up, graceful when down.
+  Future<void> _pullToRefresh() async {
+    await Future.wait<void>([
+      _loadTodayHeadlines(),
+      _loadDailyEvidence(),
+      _loadDailyVerse(),
+      _loadPlan(),
+    ]);
   }
 
   /// Most-recently-bookmarked verses, newest first.

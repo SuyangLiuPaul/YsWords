@@ -33,19 +33,27 @@ class _LoadingPageState extends State<LoadingPage> {
   /// rebuild (provider notify, retry, etc.) keeps showing the same
   /// verse instead of "twitching" through every verse in the bundle
   /// — which used to happen because the shuffle was in build().
+  ///
+  /// `_splashVerseLocked` makes this one-shot even if the initial
+  /// pick was null because verses arrived after mount. Once we've
+  /// committed to a verse (or to "no verse"), we don't re-pick.
   Verse? _splashVerse;
+  bool _splashVerseLocked = false;
 
   @override
   void initState() {
     super.initState();
-    _splashVerse = _pickSplashVerse();
+    _maybeLockSplashVerse();
     _scheduleAdvanceIfReady();
   }
 
-  Verse? _pickSplashVerse() {
-    final v = widget.verses;
-    if (v.isEmpty) return null;
-    return (List<Verse>.from(v)..shuffle()).first;
+  /// Lock a verse if we have one. Safe to call multiple times — only
+  /// the first call with a non-empty pool actually picks.
+  void _maybeLockSplashVerse() {
+    if (_splashVerseLocked) return;
+    if (widget.verses.isEmpty) return;
+    _splashVerse = (List<Verse>.from(widget.verses)..shuffle()).first;
+    _splashVerseLocked = true;
   }
 
   void _scheduleAdvanceIfReady() {
@@ -112,11 +120,11 @@ class _LoadingPageState extends State<LoadingPage> {
       return _buildErrorScaffold(context, settings);
     }
 
-    // Frozen at mount time — see _splashVerse / _pickSplashVerse.
-    // Falls back to a fresh pick if somehow the initState pick was
-    // null (provider hadn't populated yet) and verses are now ready.
-    final verse = _splashVerse ??=
-        (widget.verses.isNotEmpty ? _pickSplashVerse() : null);
+    // Frozen on first paint via _maybeLockSplashVerse(). If the
+    // verse pool wasn't ready in initState (rare), the next build
+    // call after verses arrive will lock + pick exactly once.
+    if (!_splashVerseLocked) _maybeLockSplashVerse();
+    final verse = _splashVerse;
 
     final original = verse?.text.replaceAll('\n', '') ?? '';
     final raw = sanitizeForSearch(original);

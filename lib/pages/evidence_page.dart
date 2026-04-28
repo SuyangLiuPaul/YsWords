@@ -228,7 +228,10 @@ class _EvidencePageState extends State<EvidencePage> {
                       )
                     else
                       Expanded(
-                        child: GridView.builder(
+                        child: RefreshIndicator(
+                          onRefresh: _refreshEvidence,
+                          child: GridView.builder(
+                          physics: const AlwaysScrollableScrollPhysics(),
                           padding: const EdgeInsets.fromLTRB(
                               12, 4, 12, 16),
                           gridDelegate:
@@ -249,12 +252,26 @@ class _EvidencePageState extends State<EvidencePage> {
                             ),
                           ),
                         ),
+                        ),
                       ),
                   ],
                 ),
               ),
             ),
     );
+  }
+
+  Future<void> _refreshEvidence() async {
+    await BibleEvidenceService.refresh();
+    if (!mounted) return;
+    final list = await BibleEvidenceService.all();
+    if (!mounted) return;
+    final filtered = widget.filterBook != null
+        ? BibleEvidenceService.forBook(list, widget.filterBook!)
+        : list;
+    setState(() {
+      _all = filtered.isEmpty ? list : filtered;
+    });
   }
 
   void _openAiDialog(BuildContext context, String locale) {

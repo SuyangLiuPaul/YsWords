@@ -103,49 +103,72 @@ class _DailyNewsPageState extends State<DailyNewsPage> {
       body: _bundle == null
           ? Center(
               child: _error != null
-                  ? Padding(
-                      padding: const EdgeInsets.all(24),
-                      child: Text(
-                        _error!,
-                        style: TextStyle(
-                            fontFamily: settings.fontFamily,
-                            color: Theme.of(context).colorScheme.error),
-                      ),
+                  ? _ErrorState(
+                      error: _error!,
+                      locale: locale,
+                      settings: settings,
+                      onRetry: _load,
                     )
-                  : const CircularProgressIndicator(),
+                  : Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const CircularProgressIndicator(),
+                        const SizedBox(height: 12),
+                        Text(
+                          uiStrings['loading']?[locale] ?? 'Loading…',
+                          style: TextStyle(
+                              fontFamily: settings.fontFamily,
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onSurfaceVariant),
+                        ),
+                      ],
+                    ),
             )
-          : Center(
+          : (_bundle!.allArticles.isEmpty
+              ? _EmptyState(
+                  locale: locale,
+                  settings: settings,
+                  onRetry: _manualRefresh,
+                )
+              : Center(
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 1200),
                 child: isWide
                     ? _buildTwoColumn(context, locale, settings)
                     : _buildSingleColumn(context, locale, settings),
               ),
-            ),
+            )),
     );
   }
 
   Widget _buildSingleColumn(
       BuildContext context, String locale, AppSettings settings) {
-    return ListView(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
-      children: [
-        _Masthead(bundle: _bundle!, locale: locale, settings: settings),
-        const SizedBox(height: 8),
-        for (final s in _bundle!.sections) ...[
-          _SectionHeader(
-              section: s, locale: locale, settings: settings),
-          for (final a in s.items)
-            _HeadlineRow(
-              article: a,
-              locale: locale,
-              settings: settings,
-              selected: false,
-              onTap: () => _open(a),
-            ),
-          const SizedBox(height: 16),
+    return RefreshIndicator(
+      onRefresh: _manualRefresh,
+      child: ListView(
+        // Always-scrollable physics so RefreshIndicator can pull
+        // even when the list is shorter than the viewport.
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+        children: [
+          _Masthead(bundle: _bundle!, locale: locale, settings: settings),
+          const SizedBox(height: 8),
+          for (final s in _bundle!.sections) ...[
+            _SectionHeader(
+                section: s, locale: locale, settings: settings),
+            for (final a in s.items)
+              _HeadlineRow(
+                article: a,
+                locale: locale,
+                settings: settings,
+                selected: false,
+                onTap: () => _open(a),
+              ),
+            const SizedBox(height: 16),
+          ],
         ],
-      ],
+      ),
     );
   }
 
@@ -158,8 +181,11 @@ class _DailyNewsPageState extends State<DailyNewsPage> {
         children: [
           Expanded(
             flex: 5,
-            child: ListView(
-              children: [
+            child: RefreshIndicator(
+              onRefresh: _manualRefresh,
+              child: ListView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                children: [
                 _Masthead(
                     bundle: _bundle!,
                     locale: locale,
@@ -182,6 +208,7 @@ class _DailyNewsPageState extends State<DailyNewsPage> {
                   const SizedBox(height: 16),
                 ],
               ],
+              ),
             ),
           ),
           const SizedBox(width: 20),
@@ -544,6 +571,130 @@ class _BibleLensPanel extends StatelessWidget {
                 'Read full story'),
           ),
         ],
+      ),
+    );
+  }
+}
+
+
+/// Friendly empty state — shown when the bundle parsed but contains
+/// zero articles (e.g. cron failed and produced an empty payload).
+/// Tap-to-retry triggers a manual refresh.
+class _EmptyState extends StatelessWidget {
+  final String locale;
+  final AppSettings settings;
+  final Future<void> Function() onRetry;
+
+  const _EmptyState({
+    required this.locale,
+    required this.settings,
+    required this.onRetry,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.newspaper_outlined,
+                size: 56, color: scheme.outline),
+            const SizedBox(height: 12),
+            Text(
+              uiStrings["newsEmptyTitle"]?[locale] ??
+                  "No news available",
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontFamily: settings.fontFamily,
+                fontSize: (settings.fontSize + 2).clamp(14.0, 22.0),
+                fontWeight: FontWeight.w700,
+                color: scheme.onSurface,
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              uiStrings["newsEmptyBody"]?[locale] ??
+                  "The cron may have skipped this window. Pull down or tap retry to fetch the latest.",
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontFamily: settings.fontFamily,
+                fontSize: (settings.fontSize - 2).clamp(11.0, 15.0),
+                color: scheme.onSurfaceVariant,
+                height: 1.5,
+              ),
+            ),
+            const SizedBox(height: 16),
+            FilledButton.tonalIcon(
+              onPressed: onRetry,
+              icon: const Icon(Icons.refresh, size: 16),
+              label: Text(uiStrings["retry"]?[locale] ?? "Retry"),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Friendly error state — shown when the very first load failed
+/// (no cache, no bundle, no network). Different from EmptyState in
+/// that we have *no* data to show, not even stale.
+class _ErrorState extends StatelessWidget {
+  final String error;
+  final String locale;
+  final AppSettings settings;
+  final Future<void> Function() onRetry;
+
+  const _ErrorState({
+    required this.error,
+    required this.locale,
+    required this.settings,
+    required this.onRetry,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.cloud_off_outlined,
+                size: 56, color: scheme.error),
+            const SizedBox(height: 12),
+            Text(
+              uiStrings["loadErrorTitle"]?[locale] ?? "Failed to load",
+              style: TextStyle(
+                fontFamily: settings.fontFamily,
+                fontSize: (settings.fontSize + 2).clamp(14.0, 22.0),
+                fontWeight: FontWeight.w700,
+                color: scheme.error,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              error,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontFamily: settings.fontFamily,
+                fontSize: (settings.fontSize - 2).clamp(11.0, 14.0),
+                color: scheme.onSurfaceVariant,
+                height: 1.45,
+              ),
+            ),
+            const SizedBox(height: 16),
+            FilledButton.tonalIcon(
+              onPressed: onRetry,
+              icon: const Icon(Icons.refresh, size: 16),
+              label: Text(uiStrings["retry"]?[locale] ?? "Retry"),
+            ),
+          ],
+        ),
       ),
     );
   }
