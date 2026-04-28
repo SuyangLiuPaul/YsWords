@@ -131,13 +131,28 @@ class DailyNewsService {
   /// Headlines for the dashboard "Today's News" card — picks the
   /// freshest article from each section so the user gets a balanced
   /// 3-up snapshot.
+  ///
+  /// Dedupes across sections: when the same Guardian story appears in
+  /// both /world/rss AND /australia-news/rss the upstream pipeline
+  /// keeps both copies, but we don't want the dashboard to show the
+  /// same headline twice. We pick the freshest unseen story per
+  /// section, falling through to deeper items if the first is a dup.
   static List<NewsArticle> dashboardHeadlines(DailyNewsBundle bundle) {
     final out = <NewsArticle>[];
+    final seenTitles = <String>{};
+    final seenLinks = <String>{};
     for (final s in bundle.sections) {
-      if (s.items.isEmpty) continue;
-      // Items in each section are already ordered freshest-first by
-      // the upstream GitHub Action.
-      out.add(s.items.first);
+      for (final a in s.items) {
+        final titleKey =
+            a.titleEn.trim().toLowerCase();
+        final linkKey = a.link.trim();
+        if (titleKey.isNotEmpty && seenTitles.contains(titleKey)) continue;
+        if (linkKey.isNotEmpty && seenLinks.contains(linkKey)) continue;
+        out.add(a);
+        if (titleKey.isNotEmpty) seenTitles.add(titleKey);
+        if (linkKey.isNotEmpty) seenLinks.add(linkKey);
+        break; // one per section
+      }
     }
     return out;
   }

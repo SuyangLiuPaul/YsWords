@@ -185,11 +185,18 @@ class _DailyNewsPageState extends State<DailyNewsPage> {
             flex: 4,
             child: _selected == null
                 ? const SizedBox.shrink()
-                : _BibleLensPanel(
-                    article: _selected!,
-                    locale: locale,
-                    settings: settings,
-                    onOpen: () => _open(_selected!),
+                // Wrap in a SingleChildScrollView so the panel can be
+                // taller than the viewport without clipping (image +
+                // reflection + verse can easily exceed phone-tablet
+                // heights, especially in Chinese where verse text is
+                // longer).
+                : SingleChildScrollView(
+                    child: _BibleLensPanel(
+                      article: _selected!,
+                      locale: locale,
+                      settings: settings,
+                      onOpen: () => _open(_selected!),
+                    ),
                   ),
           ),
         ],
@@ -513,6 +520,11 @@ class _BibleLensPanel extends StatelessWidget {
           const SizedBox(height: 4),
           Text(
             article.verse.text(locale),
+            // Cap so the panel stays compact even when the verse is
+            // long; the full text is always available on the detail
+            // page reachable via the button below.
+            maxLines: 6,
+            overflow: TextOverflow.ellipsis,
             style: TextStyle(
               fontFamily: settings.fontFamily,
               fontSize: (fs - 1).clamp(13.0, 16.0).toDouble(),
