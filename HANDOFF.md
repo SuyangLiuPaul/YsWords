@@ -1,6 +1,6 @@
 # YsWords — AI Agent Handoff Document
 
-> Last updated: 2026-04-27
+> Last updated: 2026-04-30
 > Project: YsWords (Yahweh's Words) — bilingual Bible reader
 > Stack: Flutter 3.41.7 / Dart 3.11.5 / Provider + GetX
 > Repo: https://github.com/SuyangLiuPaul/YsWords
@@ -106,6 +106,8 @@ main.dart (entry point)
 | `lib/utils/format_searched_text.dart` | Builds RichText spans with highlighted search matches |
 | `lib/utils/build_verse_content_spans.dart` | Shared utility that builds `InlineSpan` list for a single verse (number + text with annotations). Used by both VerseWidget and ParagraphGroupWidget. Accepts `onTextTap` callback and `spanBgColor` for per-verse background (selection or highlight color) |
 | `lib/utils/version_mapper.dart` | `translateBookName()` and `toEnglish()` for cross-version name mapping |
+| `lib/utils/greeting.dart` | `dayPartForHour(hour)` + `greetingFor({now,locale})` — pure functions for the dashboard greeting. Morning starts at 05:00; pre-fix bug treated 00:00 as morning |
+| `lib/utils/sydney_time.dart` | `sydneyOffsetMinutes`, `formatSydneyStamp`, `sydneyTzLabel` — DST-aware AEST/AEDT helpers used by the daily-news "last updated" line. Pre-fix the offset was hardcoded to +10 (AEST), so summer timestamps were displayed an hour behind reality |
 
 ---
 
@@ -364,14 +366,22 @@ Netlify does NOT run Flutter. The `netlify.toml` build command is `echo 'Flutter
 
 **Netlify credentials** are in `.env` (gitignored):
 - `NETLIFY_AUTH_TOKEN`
-- `NETLIFY_SITE_ID=975d1a08-8203-4994-a7ef-ca60452e41bf`
-- `GITHUB_TOKEN` (for non-interactive GitHub push from this machine)
+- `NETLIFY_SITE_ID=975d1a08-8203-4994-a7ef-ca60452e41bf` (yswords)
+
+Other Netlify site IDs we touch:
+- `e1252e5a-a37e-4ba4-94ab-046ee9e6da9b` (yswords-data)
+- `8ff9e697-1ef1-4d11-8cf6-3619028ecb57` (newsbible / DailyNews Astro)
+- `143364a0-509d-4644-b835-78ab3a49fdad` (bible-evidence)
 
 The api.bible key is only needed for one-time authoring refresh via `tools/fetch_bible_versions.py --api-key ...`; the app itself reads bundled assets and does not call api.bible at runtime.
 
 The `netlify` CLI binary is at `/Users/pliu0036/Documents/CodingProject/SmartHome/node_modules/.bin/netlify` (borrowed from another project). If unavailable, install globally with `npm i -g netlify-cli`.
 
 **Git note**: The repo has a `git-secrets` pre-commit hook installed but the tool is not available. Commits require bypassing hooks: `git -c core.hooksPath=/dev/null commit`.
+
+### yswords-data auto-deploy (separate concern)
+
+`yswords-data` runs a `*/30 * * * *` cron in `.github/workflows/refresh.yml` that refreshes `data/daily_news.json`, commits when content changes, then **deploys via the Netlify CLI** (because the Netlify-side GitHub clone is broken with `Host key verification failed`). The workflow needs `NETLIFY_AUTH_TOKEN` set as a GitHub Actions repo secret on `SuyangLiuPaul/yswords-data`. Without it the workflow falls back to the legacy build-hook path, which currently does not produce new deploys for that site.
 
 ---
 
@@ -405,6 +415,73 @@ The app adapts its layout to all device sizes using `lib/utils/responsive.dart`:
 **How it works**: `ResponsiveBreakpoints.classOf(width)` returns a `DeviceClass` enum. The reading view fills the full screen width on all devices (no max-width constraint) for an iPhone-like experience. Padding, indents, tile sizes, and spacing multiply by device-class-specific scale factors. Phone layouts are byte-identical to the pre-responsive code (scale 1.0).
 
 **Affected areas**: settings (max 640px), books page (max 800px), search (max 720px), chapter tiles (44–72px), loading logo (100–240px), all spacing gaps. Reading view uses phone-level padding/indent on all devices (8px reading padding, 16px verse indent, 10px header inset).
+
+---
+
+## What Has Been Fixed (2026-04-30)
+
+### Time-of-day greeting + Sydney DST display (round 41)
+
+Two display bugs caught the same day:
+
+1. **Dashboard greeted "Good morning" at midnight.** The bucket logic
+   was `hour < 12 → morning`, which captured 00:00 too. Extracted to
+   `lib/utils/greeting.dart` with explicit ranges:
+   `05:00–11:59 morning · 12:00–17:59 afternoon · 18:00–21:59 evening · 22:00–04:59 night`.
+   Adds a fourth "Good night / 夜安" bucket so late-night opens get
+   honest copy. 9 unit tests cover every boundary, including a
+   bug-pin test for hours 0/3/4 → night.
+
+2. **"Last updated" timestamp was 1h behind reality in summer.** The
+   formatter did `toUtc().add(Duration(hours: 10))`, hardcoded to AEST.
+   Sydney is on AEDT (+11) from October's first Sunday through April's
+   first Sunday. Added `lib/utils/sydney_time.dart` with
+   `sydneyOffsetMinutes` / `formatSydneyStamp` / `sydneyTzLabel` that
+   compute the DST window in pure Dart (no timezone-package dep).
+   8 tests cover both DST transitions to the minute.
+
+### Bible Evidence chapter-aware filtering (round 40)
+
+User reported "many pictures are not really related to that chapter".
+Root cause: tapping "Evidence for this chapter" passed only the
+**book** name to `EvidencePage`, so reading Genesis 1 surfaced
+Genesis-37 entries (and their pictures). Fix:
+
+- Added `BibleEvidenceService.forChapter(book, chapter)` plus
+  `chaptersInReference(reference)` that handles every format observed
+  in the 225-entry corpus including comma- and semicolon-separated
+  spans (`John 18:31-33, 37-38`, `Exodus 14:21-22; 1 Kings 5-7`),
+  cross-chapter ranges (`Genesis 1:1-2:3`), and single-chapter book
+  edge cases (`Jude 14-15` → chapter 1).
+- Added a scope-disclosure banner with one-tap widening:
+  "3 entries for Genesis 1" | "No entries for Genesis 5 — showing all
+  17 from Genesis", localized to en / zh-Hans / zh-Hant.
+- 224 / 225 (99.6 %) corpus entries now resolve to a specific chapter
+  or chapter range; the lone holdout ("Various NT references") falls
+  back to book-wide as designed.
+
+### Daily News deep-AI matching pipeline (round 39)
+
+User reported the verse + theme paired with each story were shallow
+and unrelated. Replaced the keyword-classifier-then-enrich pipeline
+with a single deep-reasoning Gemini call per story:
+
+- Curated 149-verse corpus at `yswords-data/data/news_verse_corpus.json`
+  spanning 24 topical categories (war_and_peace, justice_and_oppression,
+  …, science_and_technology, aging_and_elder_care, child_protection).
+- Pipeline asks `gemini-2.5-pro` to reason about each story's
+  underlying spiritual / human question and pick the SINGLE best-fit
+  verse from the catalog, then write a bilingual reflection in one
+  structured JSON response.
+- Per-story cache (keyed by `aiVerseId`) keeps the same verse pinned
+  across the day's refresh cycles. Legacy cached items (no marker)
+  force a one-time re-AI on the next run.
+- Soft per-section diversity hint stops one section ending up with
+  five "Romans 12:21" picks. Few-shot examples in the system prompt
+  anchor the editorial voice. Bounded retry on transient API errors.
+- Daily News tab + newsbible.netlify.app now show "Last updated …
+  (Sydney) · refreshes every 30 minutes" and link to the upstream
+  JSON so readers can confirm both surfaces use the same source.
 
 ---
 
