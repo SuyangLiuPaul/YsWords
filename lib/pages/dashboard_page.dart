@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import 'package:yswords/constants/text_patterns.dart' show sanitizeForSearch;
 import 'package:yswords/constants/ui_strings.dart';
+import 'package:yswords/utils/greeting.dart';
 import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/models/verse.dart';
 import 'package:yswords/models/bible_evidence.dart';
@@ -61,7 +62,7 @@ class _DashboardPageState extends State<DashboardPage> {
   /// reference list.
   String? _dailyVerseRef;
   /// Today's spotlight from the Biblical Evidence Archive (one of
-  /// 209, deterministic by day-of-year so all devices see the same
+  /// 225, deterministic by day-of-year so all devices see the same
   /// item). Loaded lazily so the dashboard renders before the
   /// 1.5 MB asset finishes parsing.
   BibleEvidence? _dailyEvidence;
@@ -254,17 +255,16 @@ class _DashboardPageState extends State<DashboardPage> {
     });
   }
 
-  String _greeting(String locale) {
-    final hour = DateTime.now().hour;
-    if (locale.startsWith('zh')) {
-      if (hour < 12) return '早安';
-      if (hour < 18) return '午安';
-      return '晚安';
-    }
-    if (hour < 12) return 'Good morning';
-    if (hour < 18) return 'Good afternoon';
-    return 'Good evening';
-  }
+  /// Day-part greeting matching how people actually talk:
+  ///   05:00 – 11:59  morning   / 早安
+  ///   12:00 – 17:59  afternoon / 午安
+  ///   18:00 – 21:59  evening   / 晚安
+  ///   22:00 – 04:59  night     / 夜安
+  ///
+  /// Pre-fix bug: `hour < 12` covered 00:00 too, so opening the app at
+  /// midnight greeted you with "Good morning". Logic now lives in
+  /// `utils/greeting.dart` so it can be unit-tested.
+  String _greeting(String locale) => greetingFor(locale: locale);
 
   /// Pick the most user-friendly name for the greeting:
   ///   1. Google `displayName` when signed in (covers cold-start
@@ -612,7 +612,7 @@ class _DashboardPageState extends State<DashboardPage> {
             const SizedBox(height: 16),
           ],
 
-          // Today's evidence — one of 209 archaeological / manuscript
+          // Today's evidence — one of 225 archaeological / manuscript
           // / scientific / historical findings rotating by day-of-year.
           if (settings.showBibleEvidence && _dailyEvidence != null) ...[
             Text(

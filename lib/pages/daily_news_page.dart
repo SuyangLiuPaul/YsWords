@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:provider/provider.dart';
 
 import 'package:yswords/constants/ui_strings.dart';
+import 'package:yswords/utils/sydney_time.dart';
 import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/models/news_article.dart';
 import 'package:yswords/pages/news_detail_page.dart';
@@ -323,22 +324,13 @@ class _Masthead extends StatelessWidget {
 
   /// Format the bundle's [generatedAt] as a localized "last updated"
   /// line. Returns null when the timestamp is missing so the caller
-  /// can omit the row entirely. Always rendered in Sydney time
-  /// because the cron commits according to Sydney publishing hours.
+  /// can omit the row entirely. Sydney-local with DST awareness
+  /// (AEST in winter, AEDT in summer) — the previous hardcoded +10
+  /// offset showed times one hour behind reality from October to
+  /// April.
   static String? _formatLastUpdated(DateTime? generatedAt, String locale) {
     if (generatedAt == null) return null;
-    // Convert to Sydney time. DateTime in Dart is offset-naive UTC
-    // when parsed from an ISO string with "Z" — adding 10/11 hours
-    // mirrors Sydney's standard / daylight saving offsets. We use a
-    // simple AEST (+10) offset because most of the year is AEST and
-    // the user only needs an approximate local timestamp.
-    final sydney = generatedAt.toUtc().add(const Duration(hours: 10));
-    final hh = sydney.hour.toString().padLeft(2, '0');
-    final mm = sydney.minute.toString().padLeft(2, '0');
-    final yyyy = sydney.year.toString();
-    final mo = sydney.month.toString().padLeft(2, '0');
-    final dd = sydney.day.toString().padLeft(2, '0');
-    final stamp = '$yyyy-$mo-$dd $hh:$mm';
+    final stamp = formatSydneyStamp(generatedAt);
     final template = uiStrings['dailyNewsLastUpdated']?[locale] ??
         'Last updated {stamp} (Sydney) · refreshes every 30 minutes';
     return template.replaceAll('{stamp}', stamp);

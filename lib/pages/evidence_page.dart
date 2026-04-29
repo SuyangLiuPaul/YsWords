@@ -12,10 +12,11 @@ import 'package:yswords/widgets/confidence_badge.dart';
 import 'package:yswords/widgets/home_icon_button.dart';
 import 'package:yswords/widgets/localized_back_button.dart';
 
-/// Browse the migrated Biblical Evidence Archive — 209 archaeological,
+/// Browse the Biblical Evidence Archive — 225 archaeological,
 /// manuscript, scientific, and historical findings that intersect
 /// with biblical accounts. Search box + category + confidence
-/// filters; tap a card to open the full description.
+/// filters; tap a card to open the full description. Optional
+/// chapter / book pre-filter via [filterBook] + [filterChapter].
 class EvidencePage extends StatefulWidget {
   /// When non-null, the list is pre-filtered to evidences referencing
   /// this English book name. Used by the reader's "Evidence for
