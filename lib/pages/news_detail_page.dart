@@ -91,18 +91,26 @@ class NewsDetailPage extends StatelessWidget {
                 ),
               ],
               const SizedBox(height: 14),
-              if (article.image != null && article.image!.isNotEmpty)
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(12),
-                  child: Image.network(
-                    article.image!,
-                    height: 240,
-                    width: double.infinity,
-                    fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => const SizedBox.shrink(),
-                  ),
-                ),
+              // Hero image — falls back to a section-tinted placeholder
+              // when no image was extracted (and when Image.network
+              // errors out, e.g. CORS-blocked CDN). Pre-fix the
+              // detail page just had a void where the image should be.
+              ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: (article.image != null && article.image!.isNotEmpty)
+                    ? Image.network(
+                        article.image!,
+                        height: 240,
+                        width: double.infinity,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) =>
+                            _ImagePlaceholder(section: article.section),
+                      )
+                    : _ImagePlaceholder(section: article.section),
+              ),
               const SizedBox(height: 16),
+              // Lede / standfirst — short summary in bold, then the
+              // long-form body if the pipeline pulled one in.
               Text(
                 article.summary(locale),
                 style: TextStyle(
@@ -110,8 +118,18 @@ class NewsDetailPage extends StatelessWidget {
                   fontSize: (fs + 1).clamp(14.0, 18.0).toDouble(),
                   color: scheme.onSurface,
                   height: 1.55,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
+              if (article.body(locale).isNotEmpty) ...[
+                const SizedBox(height: 14),
+                _ArticleBody(
+                  text: article.body(locale),
+                  settings: settings,
+                  locale: locale,
+                  scheme: scheme,
+                ),
+              ],
               const SizedBox(height: 12),
               TextButton.icon(
                 onPressed: () => _openOrCopySource(context, locale),
@@ -335,5 +353,92 @@ class NewsDetailPage extends StatelessWidget {
       Future.delayed(const Duration(milliseconds: 900),
           () => mp.clearHighlightIndex());
     });
+  }
+}
+
+/// Renders the long-form article body. Splits on blank lines so
+/// paragraph spacing is honoured; falls back to a single block when
+/// the source text didn't carry double-newlines.
+class _ArticleBody extends StatelessWidget {
+  final String text;
+  final AppSettings settings;
+  final String locale;
+  final ColorScheme scheme;
+
+  const _ArticleBody({
+    required this.text,
+    required this.settings,
+    required this.locale,
+    required this.scheme,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final fs = settings.fontSize;
+    // Split on 1+ blank line OR explicit double-newline. Most cleaned
+    // RSS bodies arrive as one big paragraph; that's still readable
+    // because the Text widget wraps naturally.
+    final paragraphs = text
+        .split(RegExp(r'\n\s*\n'))
+        .map((p) => p.trim())
+        .where((p) => p.isNotEmpty)
+        .toList();
+    final paras = paragraphs.isEmpty ? [text] : paragraphs;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        for (var i = 0; i < paras.length; i++) ...[
+          if (i > 0) const SizedBox(height: 10),
+          Text(
+            paras[i],
+            style: TextStyle(
+              fontFamily: settings.fontFamily,
+              fontSize: fs.clamp(14.0, 18.0).toDouble(),
+              color: scheme.onSurface,
+              height: 1.6,
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+/// Section-tinted placeholder shown in place of the hero image when
+/// the article has none (or the image URL fails to load). Avoids the
+/// jarring void where a photo was meant to go.
+class _ImagePlaceholder extends StatelessWidget {
+  final String section;
+  const _ImagePlaceholder({required this.section});
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final accent = section == 'china'
+        ? scheme.tertiary
+        : section == 'australia'
+            ? scheme.secondary
+            : scheme.primary;
+    return Container(
+      height: 180,
+      width: double.infinity,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            accent.withValues(alpha: 0.18),
+            accent.withValues(alpha: 0.08),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+      ),
+      child: Center(
+        child: Icon(
+          Icons.newspaper_outlined,
+          size: 56,
+          color: accent.withValues(alpha: 0.55),
+        ),
+      ),
+    );
   }
 }

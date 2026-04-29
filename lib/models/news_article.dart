@@ -47,6 +47,11 @@ class NewsArticle {
   final String titleZh;
   final String summaryEn;
   final String summaryZh;
+  /// Long-form article text for the in-app detail-page reader. Empty
+  /// string when no body was extracted. zh is empty when no
+  /// translation was produced (caller falls back to summary.zh).
+  final String bodyEn;
+  final String bodyZh;
   final String reflectionEn;
   final String reflectionZh;
   final NewsVerse verse;
@@ -64,6 +69,8 @@ class NewsArticle {
     required this.titleZh,
     required this.summaryEn,
     required this.summaryZh,
+    required this.bodyEn,
+    required this.bodyZh,
     required this.reflectionEn,
     required this.reflectionZh,
     required this.verse,
@@ -73,6 +80,7 @@ class NewsArticle {
   factory NewsArticle.fromJson(Map<String, dynamic> j) {
     final title = (j['title'] as Map?)?.cast<String, dynamic>() ?? const {};
     final summary = (j['summary'] as Map?)?.cast<String, dynamic>() ?? const {};
+    final body = (j['body'] as Map?)?.cast<String, dynamic>() ?? const {};
     final reflection =
         (j['reflection'] as Map?)?.cast<String, dynamic>() ?? const {};
     final pub = j['publishedAt'] as String?;
@@ -90,6 +98,8 @@ class NewsArticle {
       summaryEn: (summary['en'] as String?) ?? '',
       summaryZh:
           (summary['zh'] as String?) ?? (summary['en'] as String?) ?? '',
+      bodyEn: (body['en'] as String?) ?? '',
+      bodyZh: (body['zh'] as String?) ?? '',
       reflectionEn: (reflection['en'] as String?) ?? '',
       reflectionZh:
           (reflection['zh'] as String?) ?? (reflection['en'] as String?) ?? '',
@@ -105,6 +115,18 @@ class NewsArticle {
 
   String summary(String locale) =>
       locale.startsWith('zh') && summaryZh.isNotEmpty ? summaryZh : summaryEn;
+
+  /// Long-form body in the requested locale. Falls back to whichever
+  /// side is populated; returns empty string when nothing exists so
+  /// the detail page can hide the section cleanly.
+  String body(String locale) {
+    final wantZh = locale.startsWith('zh');
+    if (wantZh && bodyZh.isNotEmpty) return bodyZh;
+    if (!wantZh && bodyEn.isNotEmpty) return bodyEn;
+    // Fallback: whichever side has content.
+    if (bodyZh.isNotEmpty) return bodyZh;
+    return bodyEn;
+  }
 
   String reflection(String locale) =>
       locale.startsWith('zh') && reflectionZh.isNotEmpty
