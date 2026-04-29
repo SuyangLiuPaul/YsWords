@@ -30,7 +30,6 @@ import 'package:yswords/services/fetch_verses.dart';
 import 'package:yswords/services/book_intro_service.dart';
 import 'package:yswords/services/map_service.dart';
 import 'package:yswords/services/section_title_service.dart';
-import 'package:yswords/services/share_service.dart';
 import 'package:yswords/services/synopsis_service.dart';
 import 'package:yswords/services/tts_service.dart';
 import 'package:yswords/utils/clipboard_helper.dart';
@@ -471,23 +470,20 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
     required MainProvider mainProvider,
     required AppSettings settings,
   }) async {
+    // The "Copy" button does exactly what the label says: copy to
+    // clipboard, immediately. The previous implementation popped the
+    // OS share sheet first ("Try the platform share sheet first…")
+    // and only fell back to clipboard if the user cancelled, which
+    // confused users who got an unexpected share menu and then had
+    // to dismiss it before the text appeared on the clipboard.
+    //
+    // Sharing-to-app is still available via the system's native
+    // text-selection menu (long-press the copied text in any app).
     final text =
         _formattedSelectedVerses(verses: mainProvider.selectedVerses);
-    // Try the platform share sheet first (mobile + recent desktops);
-    // it falls through to clipboard copy automatically when the
-    // user cancels or the API isn't available. Either way the
-    // selection clears and the user gets feedback.
-    if (ShareService.isAvailable) {
-      final shared =
-          await ShareService.shareText(text: text, title: 'YsWords');
-      mainProvider.clearSelectedVerses();
-      if (!mounted) return;
-      if (shared) return;
-    } else {
-      await ClipboardHelper.copyText(text);
-      mainProvider.clearSelectedVerses();
-      if (!mounted) return;
-    }
+    await ClipboardHelper.copyText(text);
+    mainProvider.clearSelectedVerses();
+    if (!mounted) return;
     final scheme = Theme.of(context).colorScheme;
     final copiedLabel =
         uiStrings['copied']?[settings.locale] ?? 'Copied!';

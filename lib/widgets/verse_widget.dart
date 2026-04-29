@@ -84,18 +84,30 @@ class VerseWidget extends StatelessWidget {
               : 0;
           vertPadding = (settings.fontSize * 0.1).clamp(1.0, 4.0);
         } else {
-          // Verse-by-verse mode
+          // Verse-by-verse mode. Bumped vertPadding minimum to 6.0
+          // so each verse meets the Material 48dp tap-target rule
+          // even at the smallest font size — pre-fix users had to
+          // poke at thin verses (~24dp tall) to trigger selection.
           leftIndent = isReferenceLine ? baseIndent + 8 : baseIndent;
           topGap = (!isFirst && verse.isParagraphStart) ? settings.fontSize * 0.4 : 0;
-          vertPadding = (settings.fontSize * 0.3).clamp(2.0, 8.0);
+          vertPadding = (settings.fontSize * 0.4).clamp(6.0, 12.0);
         }
 
         return Material(
           color: Colors.transparent,
           clipBehavior: Clip.hardEdge,
           child: InkWell(
-            highlightColor: Colors.transparent,
-            splashColor: Colors.transparent,
+            // Subtle visible feedback so the user knows the tap registered.
+            // Pre-fix had both at Colors.transparent which made it feel
+            // like nothing was happening even when the tap did go through.
+            highlightColor: Theme.of(context)
+                .colorScheme
+                .primary
+                .withValues(alpha: 0.06),
+            splashColor: Theme.of(context)
+                .colorScheme
+                .primary
+                .withValues(alpha: 0.10),
             onTap: () => mainProvider.toggleVerse(verse: verse),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
