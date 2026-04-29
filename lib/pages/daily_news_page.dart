@@ -323,17 +323,21 @@ class _Masthead extends StatelessWidget {
   }
 
   /// Format the bundle's [generatedAt] as a localized "last updated"
-  /// line. Returns null when the timestamp is missing so the caller
-  /// can omit the row entirely. Sydney-local with DST awareness
-  /// (AEST in winter, AEDT in summer) — the previous hardcoded +10
-  /// offset showed times one hour behind reality from October to
-  /// April.
+  /// line. Returns null when the timestamp is missing.
+  ///
+  /// Renders in the viewer's LOCAL timezone (browser/device TZ),
+  /// falling back to Melbourne — which shares Sydney's AEST/AEDT —
+  /// if the device clock can't resolve a zone. This is what the user
+  /// asked for: "say the time based on viewer address if cannot find
+  /// then default Melbourne time".
   static String? _formatLastUpdated(DateTime? generatedAt, String locale) {
     if (generatedAt == null) return null;
-    final stamp = formatSydneyStamp(generatedAt);
+    final formatted = formatViewerLocalStamp(generatedAt);
     final template = uiStrings['dailyNewsLastUpdated']?[locale] ??
-        'Last updated {stamp} (Sydney) · refreshes every 30 minutes';
-    return template.replaceAll('{stamp}', stamp);
+        'Last updated {stamp} {tz} · refreshes every 30 minutes';
+    return template
+        .replaceAll('{stamp}', formatted.stamp)
+        .replaceAll('{tz}', formatted.tzLabel);
   }
 }
 

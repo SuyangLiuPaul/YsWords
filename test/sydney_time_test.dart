@@ -80,4 +80,16 @@ void main() {
       expect(formatSydneyStamp(t), '2026-12-27 10:30');
     });
   });
+
+  group('formatViewerLocalStamp', () {
+    test('returns a stamp + tz label for a valid moment', () {
+      final t = DateTime.utc(2026, 4, 29, 20, 39, 32);
+      final out = formatViewerLocalStamp(t);
+      // Stamp matches YYYY-MM-DD HH:MM exactly (any TZ).
+      expect(out.stamp, matches(RegExp(r'^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$')));
+      // tzLabel is non-empty — could be "AEST", "PDT", "UTC", etc.
+      expect(out.tzLabel.isNotEmpty, isTrue,
+          reason: 'always returns SOME label so the masthead never has a dangling space');
+    });
+  });
 }

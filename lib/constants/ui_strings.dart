@@ -767,9 +767,9 @@ const uiStrings = {
   // pull from the same upstream source (yswords-data) so this matches
   // across surfaces.
   'dailyNewsLastUpdated': {
-    'zh-Hans': '最近更新 {stamp}（悉尼时间） · 每 30 分钟自动刷新',
-    'zh-Hant': '最近更新 {stamp}（雪梨時間） · 每 30 分鐘自動重新整理',
-    'en': 'Last updated {stamp} (Sydney) · refreshes every 30 minutes',
+    'zh-Hans': '最近更新 {stamp} {tz} · 每 30 分钟自动刷新',
+    'zh-Hant': '最近更新 {stamp} {tz} · 每 30 分鐘自動重新整理',
+    'en': 'Last updated {stamp} {tz} · refreshes every 30 minutes',
   },
   // Evidence scope-disclosure banner (chapter / book / archive).
   // Use {n}, {book}, {chapter} as placeholders; the widget does the

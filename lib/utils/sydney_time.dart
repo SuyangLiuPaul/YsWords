@@ -52,6 +52,38 @@ String formatSydneyStamp(DateTime moment) {
       '${two(s.hour)}:${two(s.minute)}';
 }
 
+/// Format moment in the VIEWER's local timezone, falling back to
+/// Melbourne (which shares Sydney's AEST/AEDT) if the device can't
+/// resolve a local zone.
+///
+/// On every platform Dart supports, `toLocal()` returns the device's
+/// configured timezone — on web that's the browser's resolved IANA
+/// zone, on native it's the OS setting. The Melbourne fallback only
+/// kicks in for the (rare) case where the device clock is broken
+/// or the user has no system locale.
+({String stamp, String tzLabel}) formatViewerLocalStamp(DateTime moment) {
+  try {
+    final local = moment.toLocal();
+    String two(int n) => n.toString().padLeft(2, '0');
+    final stamp = '${local.year}-${two(local.month)}-${two(local.day)} '
+        '${two(local.hour)}:${two(local.minute)}';
+    final tz = local.timeZoneName;
+    // On web, Dart returns short codes like "AEST" / "PDT" — use as-is.
+    // On macOS / Linux it sometimes returns long names like "Australian
+    // Eastern Standard Time"; truncate to the first letters of each
+    // word so we don't blow out the masthead width.
+    final tzLabel = tz.contains(' ')
+        ? tz.split(' ').map((w) => w.isEmpty ? '' : w[0]).join().toUpperCase()
+        : tz;
+    return (stamp: stamp, tzLabel: tzLabel);
+  } catch (_) {
+    // Fall back to Melbourne (same TZ as Sydney since the user lives
+    // in Australia). Safer than throwing; the user still sees a
+    // reasonable timestamp.
+    return (stamp: formatSydneyStamp(moment), tzLabel: 'Melbourne');
+  }
+}
+
 /// UTC instant of the Sydney DST transition in [month] of [year]:
 ///   - October: AEST → AEDT at local 02:00 first Sunday
 ///   - April:   AEDT → AEST at local 03:00 first Sunday
