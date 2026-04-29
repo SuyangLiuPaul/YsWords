@@ -121,7 +121,7 @@ class NewsDetailPage extends StatelessWidget {
                   fontWeight: FontWeight.w600,
                 ),
               ),
-              if (article.body(locale).isNotEmpty) ...[
+              if (_shouldShowBody(article, locale)) ...[
                 const SizedBox(height: 14),
                 _ArticleBody(
                   text: article.body(locale),
@@ -266,6 +266,29 @@ class NewsDetailPage extends StatelessWidget {
   // -----------------------------------------------------------------
   // Helpers
   // -----------------------------------------------------------------
+
+  /// Returns true when the long-form body adds meaningful content
+  /// beyond the summary. Pipeline already guards against duplication
+  /// for newly-built stories; this check additionally handles older
+  /// cached payloads where body == summary, and the case where the
+  /// requested locale's body is missing entirely.
+  bool _shouldShowBody(NewsArticle article, String locale) {
+    final body = article.body(locale).trim();
+    if (body.isEmpty) return false;
+    final summary = article.summary(locale).trim();
+    if (body == summary) return false;
+    // Body that's only slightly longer than the summary is usually
+    // just the same first paragraph — not worth showing twice.
+    if (body.length < summary.length + 80) return false;
+    // Strong overlap signal: the summary is the literal opening
+    // chunk of the body. Many RSS feeds publish identical text in
+    // both slots.
+    if (body.startsWith(summary)) {
+      final extra = body.substring(summary.length).trim();
+      if (extra.length < 80) return false;
+    }
+    return true;
+  }
 
   String _sectionLabel(String id, String locale) {
     final m = uiStrings['newsSection${_cap(id)}'];
