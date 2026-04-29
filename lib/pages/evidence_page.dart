@@ -22,7 +22,16 @@ class EvidencePage extends StatefulWidget {
   /// this chapter" entry point.
   final String? filterBook;
 
-  const EvidencePage({super.key, this.filterBook});
+  /// When [filterBook] AND this are both set, narrow further to the
+  /// specific chapter — entries whose [scriptureReference] either
+  /// covers this chapter directly (e.g. "Genesis 1:1") or spans a
+  /// chapter range that includes it (e.g. "Genesis 1:1-2:3"). Avoids
+  /// the previous behaviour where reading Genesis 1 surfaced
+  /// Genesis-37 evidences whose images had nothing to do with the
+  /// chapter on screen.
+  final int? filterChapter;
+
+  const EvidencePage({super.key, this.filterBook, this.filterChapter});
 
   @override
   State<EvidencePage> createState() => _EvidencePageState();
@@ -51,15 +60,37 @@ class _EvidencePageState extends State<EvidencePage> {
   Future<void> _load() async {
     final list = await BibleEvidenceService.all();
     if (!mounted) return;
-    final filtered = widget.filterBook != null
-        ? BibleEvidenceService.forBook(list, widget.filterBook!)
-        : list;
+    // Narrow chain: chapter (most specific) -> book -> archive-wide.
+    // Each step falls back to the broader scope if it would otherwise
+    // strand the user on an empty page; better to show neighbouring
+    // entries than nothing at all when curated coverage is thin.
+    var filtered = list;
+    if (widget.filterBook != null) {
+      if (widget.filterChapter != null) {
+        final byChapter = BibleEvidenceService.forChapter(
+          list,
+          widget.filterBook!,
+          widget.filterChapter!,
+        );
+        if (byChapter.isNotEmpty) {
+          filtered = byChapter;
+        } else {
+          final byBook = BibleEvidenceService.forBook(
+            list,
+            widget.filterBook!,
+          );
+          filtered = byBook.isNotEmpty ? byBook : list;
+        }
+      } else {
+        final byBook = BibleEvidenceService.forBook(
+          list,
+          widget.filterBook!,
+        );
+        filtered = byBook.isNotEmpty ? byBook : list;
+      }
+    }
     setState(() {
-      // If pre-filtering by book wiped everything out, fall back to
-      // the full archive — better to show all than an empty page
-      // when the user opens "Evidence" for a book without any
-      // curated entries.
-      _all = filtered.isEmpty ? list : filtered;
+      _all = filtered;
       _loading = false;
     });
   }

@@ -2538,17 +2538,19 @@ class _FloatingHeader extends StatelessWidget {
                           ),
                         ));
                         // Bible Evidence — pre-filtered to the
-                        // current English book so users see
-                        // archaeological / manuscript / historical
-                        // findings relevant to whatever they're
-                        // reading. The list page falls back to the
-                        // full archive when the filter has no hits.
+                        // current English book AND chapter so users
+                        // only see archaeological / manuscript /
+                        // historical findings whose pictures actually
+                        // illustrate the chapter on screen. Falls back
+                        // to book-wide and then to the full archive
+                        // when chapter-specific coverage is thin.
                         items.add(PopupMenuItem(
                           value: 'evidence',
                           onTap: () {
                             Get.to(
                               () => EvidencePage(
                                 filterBook: toEnglish(book),
+                                filterChapter: chapter,
                               ),
                               transition: Transition.rightToLeft,
                             );
