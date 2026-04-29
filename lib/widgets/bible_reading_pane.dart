@@ -27,6 +27,7 @@ import 'package:yswords/services/concordance_service.dart';
 import 'package:yswords/services/cloud_auth_service.dart';
 import 'package:yswords/services/cross_reference_service.dart';
 import 'package:yswords/services/fetch_verses.dart';
+import 'package:yswords/services/book_intro_service.dart';
 import 'package:yswords/services/map_service.dart';
 import 'package:yswords/services/section_title_service.dart';
 import 'package:yswords/services/share_service.dart';
@@ -679,18 +680,18 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                               startIdx += paragraphGroups[g].length;
                             }
                             final isFirst = groupIdx == 0;
-                            // Look up a section / paragraph title for
-                            // the FIRST verse in this group. Authored
-                            // headings live in
-                            // assets/section_titles.json and are
-                            // mapped per-version via
-                            // sectionTitleSetByVersion.
-                            String? sectionTitle;
+                            // Look up a section / paragraph heading
+                            // for the FIRST verse in this group.
+                            // Heading carries optional `context` —
+                            // 1-2 sentences of background rendered
+                            // under the title. Both gate on
+                            // settings.showSectionTitles.
+                            SectionHeading? heading;
                             if (settings.showSectionTitles) {
                               final firstVerse = group.first;
                               final englishBook = toEnglish(firstVerse.book) ??
                                   firstVerse.book;
-                              sectionTitle = SectionTitleService.titleAt(
+                              heading = SectionTitleService.headingAt(
                                 version: mainProvider.currentVersion,
                                 englishBook: englishBook,
                                 chapter: firstVerse.chapter,
@@ -709,12 +710,43 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                                     startVerseIndex: startIdx,
                                     isFirst: isFirst,
                                   );
-                            if (sectionTitle == null) return body;
-                            return _SectionHeading(
-                              title: sectionTitle,
-                              isFirst: isFirst,
-                              child: body,
-                            );
+                            // If this is the first paragraph of the
+                            // chapter AND we're at chapter 1 of the
+                            // book AND a book intro is authored AND
+                            // the user hasn't disabled it — wrap the
+                            // body so the intro card renders above
+                            // the (possibly headed) verse block.
+                            Widget rendered = heading == null
+                                ? body
+                                : _SectionHeading(
+                                    title: heading.title,
+                                    context: heading.context,
+                                    isFirst: isFirst,
+                                    child: body,
+                                  );
+                            final firstVerse = group.first;
+                            final englishBook =
+                                toEnglish(firstVerse.book) ?? firstVerse.book;
+                            if (isFirst &&
+                                firstVerse.chapter == 1 &&
+                                settings.showBookIntro) {
+                              final intro =
+                                  BookIntroService.forBook(englishBook);
+                              if (intro != null) {
+                                rendered = Column(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.stretch,
+                                  children: [
+                                    _BookIntroCard(
+                                      intro: intro,
+                                      locale: settings.locale,
+                                    ),
+                                    rendered,
+                                  ],
+                                );
+                              }
+                            }
+                            return rendered;
                           }
                           // Trailing spacer height matches whichever
                           // bottom bar is showing (selection action bar
@@ -3222,21 +3254,24 @@ class _RefChip extends StatelessWidget {
 /// verse in the reading pane. Title text comes from
 /// `SectionTitleService` — the version-to-set mapping in
 /// `lib/constants/section_title_map.dart` decides which set is used
-/// for the active translation.
+/// for the active translation. Optional `context` is a 1-2 sentence
+/// background note rendered as italic helper text under the title.
 class _SectionHeading extends StatelessWidget {
   final String title;
+  final String? context;
   final bool isFirst;
   final Widget child;
   const _SectionHeading({
     required this.title,
+    this.context,
     required this.isFirst,
     required this.child,
   });
 
   @override
-  Widget build(BuildContext context) {
-    final settings = context.watch<AppSettings>();
-    final scheme = Theme.of(context).colorScheme;
+  Widget build(BuildContext buildContext) {
+    final settings = buildContext.watch<AppSettings>();
+    final scheme = Theme.of(buildContext).colorScheme;
     final fs = settings.fontSize;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -3246,7 +3281,7 @@ class _SectionHeading extends StatelessWidget {
           // when this is the very first paragraph in the chapter so
           // the heading doesn't push the chapter content too far down.
           padding: EdgeInsets.fromLTRB(
-            12, isFirst ? 6 : 18, 12, 8),
+            12, isFirst ? 6 : 18, 12, context != null ? 4 : 8),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
@@ -3278,8 +3313,221 @@ class _SectionHeading extends StatelessWidget {
             ],
           ),
         ),
+        if (context != null && context!.isNotEmpty)
+          Padding(
+            // Indented to line up with the title text (3 px bar + 8
+            // px margin = 11 px). Italic + softer colour signals
+            // "background, not scripture itself".
+            padding: const EdgeInsets.fromLTRB(23, 0, 12, 8),
+            child: Text(
+              context!,
+              style: TextStyle(
+                fontFamily: settings.fontFamily,
+                fontSize: (fs - 3).clamp(12.0, 15.0).toDouble(),
+                fontStyle: FontStyle.italic,
+                color: scheme.onSurfaceVariant,
+                height: 1.45,
+              ),
+            ),
+          ),
         child,
       ],
+    );
+  }
+}
+
+/// Collapsible card rendered at the top of chapter 1 when the active
+/// book has an authored intro. Shows subtitle + summary by default;
+/// tap "Read more" to expand author / date / audience / themes /
+/// key passage. Hidden when `settings.showBookIntro` is false.
+class _BookIntroCard extends StatefulWidget {
+  final BookIntro intro;
+  final String locale;
+  const _BookIntroCard({required this.intro, required this.locale});
+
+  @override
+  State<_BookIntroCard> createState() => _BookIntroCardState();
+}
+
+class _BookIntroCardState extends State<_BookIntroCard> {
+  bool _expanded = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final settings = context.watch<AppSettings>();
+    final scheme = Theme.of(context).colorScheme;
+    final locale = widget.locale;
+    final fs = settings.fontSize;
+    final intro = widget.intro;
+
+    final textStyle = TextStyle(
+      fontFamily: settings.fontFamily,
+      fontSize: (fs - 2).clamp(13.0, 16.0).toDouble(),
+      color: scheme.onSurface,
+      height: 1.55,
+    );
+    final labelStyle = TextStyle(
+      fontFamily: settings.fontFamily,
+      fontSize: (fs - 4).clamp(11.0, 13.0).toDouble(),
+      fontWeight: FontWeight.w700,
+      letterSpacing: 0.6,
+      color: scheme.primary,
+    );
+
+    Widget metaRow(String labelKey, String value) {
+      if (value.isEmpty) return const SizedBox.shrink();
+      return Padding(
+        padding: const EdgeInsets.only(top: 8),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              (uiStrings[labelKey]?[locale] ?? labelKey).toUpperCase(),
+              style: labelStyle,
+            ),
+            const SizedBox(height: 2),
+            Text(value, style: textStyle),
+          ],
+        ),
+      );
+    }
+
+    final themes = intro.getThemes(locale);
+
+    return Container(
+      margin: const EdgeInsets.fromLTRB(12, 8, 12, 16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: scheme.surfaceContainerHigh,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: scheme.outlineVariant),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.menu_book_rounded,
+                  size: 16, color: scheme.primary),
+              const SizedBox(width: 6),
+              Text(
+                uiStrings['aboutThisBook']?[locale] ?? 'About this book',
+                style: labelStyle,
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            intro.getSubtitle(locale),
+            style: TextStyle(
+              fontFamily: settings.fontFamily,
+              fontSize: (fs).clamp(14.0, 19.0).toDouble(),
+              fontWeight: FontWeight.w700,
+              color: scheme.onSurface,
+              height: 1.35,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            intro.getSummary(locale),
+            style: textStyle,
+          ),
+          if (_expanded) ...[
+            metaRow('authorLabel', intro.getAuthor(locale)),
+            metaRow('dateLabel', intro.getDate(locale)),
+            metaRow('audienceLabel', intro.getAudience(locale)),
+            if (themes.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      (uiStrings['themesLabel']?[locale] ?? 'Themes')
+                          .toUpperCase(),
+                      style: labelStyle,
+                    ),
+                    const SizedBox(height: 6),
+                    Wrap(
+                      spacing: 6,
+                      runSpacing: 6,
+                      children: [
+                        for (final t in themes)
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 10, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: scheme.primary.withValues(alpha: 0.10),
+                              borderRadius: BorderRadius.circular(99),
+                            ),
+                            child: Text(
+                              t,
+                              style: TextStyle(
+                                fontFamily: settings.fontFamily,
+                                fontSize:
+                                    (fs - 4).clamp(11.0, 14.0).toDouble(),
+                                color: scheme.primary,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            if (intro.keyPassage.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              Text(
+                (uiStrings['keyPassageLabel']?[locale] ?? 'Key passage')
+                    .toUpperCase(),
+                style: labelStyle,
+              ),
+              const SizedBox(height: 4),
+              Text(
+                intro.keyPassage,
+                style: TextStyle(
+                  fontFamily: settings.fontFamily,
+                  fontSize: (fs - 1).clamp(13.0, 17.0).toDouble(),
+                  fontWeight: FontWeight.w700,
+                  color: scheme.onSurface,
+                ),
+              ),
+              if (intro.getKeyPassageDescription(locale).isNotEmpty) ...[
+                const SizedBox(height: 4),
+                Text(
+                  intro.getKeyPassageDescription(locale),
+                  style: textStyle.copyWith(
+                    fontStyle: FontStyle.italic,
+                    color: scheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
+            ],
+          ],
+          const SizedBox(height: 6),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: TextButton.icon(
+              onPressed: () => setState(() => _expanded = !_expanded),
+              icon: Icon(
+                _expanded ? Icons.expand_less : Icons.expand_more,
+                size: 16,
+              ),
+              label: Text(
+                _expanded
+                    ? (uiStrings['showLess']?[locale] ?? 'Show less')
+                    : (uiStrings['readMore']?[locale] ?? 'Read more'),
+              ),
+              style: TextButton.styleFrom(
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                minimumSize: const Size(0, 32),
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

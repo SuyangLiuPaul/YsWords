@@ -689,6 +689,30 @@ class SettingsPage extends StatelessWidget {
                     const Divider(height: 1),
                     SwitchListTile(
                       title: Text(
+                        uiStrings['showBookIntro']?[settings.locale] ??
+                            'Book introductions',
+                        style: TextStyle(
+                          fontSize: settings.fontSize + 2,
+                          fontWeight: FontWeight.w600,
+                          fontFamily: settings.fontFamily,
+                        ),
+                      ),
+                      subtitle: Text(
+                        uiStrings['showBookIntroSubtitle']?[settings.locale] ??
+                            'Show a collapsible card at the top of '
+                                'chapter 1 with the book\'s author, '
+                                'date, themes, and key passage.',
+                        style: TextStyle(
+                          fontSize: settings.fontSize,
+                          fontFamily: settings.fontFamily,
+                        ),
+                      ),
+                      value: settings.showBookIntro,
+                      onChanged: (val) => settings.setShowBookIntro(val),
+                    ),
+                    const Divider(height: 1),
+                    SwitchListTile(
+                      title: Text(
                         uiStrings['showStrongsBadge']?[settings.locale] ??
                             "Show Strong's number on word chips",
                         style: TextStyle(

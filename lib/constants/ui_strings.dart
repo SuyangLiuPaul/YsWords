@@ -1145,6 +1145,57 @@ const uiStrings = {
     'en': 'Render paragraph headings (e.g. "The Sermon on the Mount") '
         'above the matched verse in the reading pane.',
   },
+  'showBookIntro': {
+    'zh-Hans': '书卷简介',
+    'zh-Hant': '書卷簡介',
+    'en': 'Book introductions',
+  },
+  'showBookIntroSubtitle': {
+    'zh-Hans': '在每卷书第一章顶部显示作者、年代、主题与关键经文等背景介绍。',
+    'zh-Hant': '在每卷書第一章頂部顯示作者、年代、主題與關鍵經文等背景介紹。',
+    'en': 'Show a collapsible card at the top of chapter 1 with the '
+        'book\'s author, date, audience, themes, and key passage.',
+  },
+  'aboutThisBook': {
+    'zh-Hans': '关于此卷书',
+    'zh-Hant': '關於此卷書',
+    'en': 'About this book',
+  },
+  'readMore': {
+    'zh-Hans': '展开',
+    'zh-Hant': '展開',
+    'en': 'Read more',
+  },
+  'showLess': {
+    'zh-Hans': '收起',
+    'zh-Hant': '收起',
+    'en': 'Show less',
+  },
+  'authorLabel': {
+    'zh-Hans': '作者',
+    'zh-Hant': '作者',
+    'en': 'Author',
+  },
+  'dateLabel': {
+    'zh-Hans': '成书年代',
+    'zh-Hant': '成書年代',
+    'en': 'Date',
+  },
+  'audienceLabel': {
+    'zh-Hans': '原始读者',
+    'zh-Hant': '原始讀者',
+    'en': 'Audience',
+  },
+  'themesLabel': {
+    'zh-Hans': '主题',
+    'zh-Hant': '主題',
+    'en': 'Themes',
+  },
+  'keyPassageLabel': {
+    'zh-Hans': '关键经文',
+    'zh-Hant': '關鍵經文',
+    'en': 'Key passage',
+  },
   'cloudSyncing': {
     'zh-Hans': '同步中…',
     'zh-Hant': '同步中…',

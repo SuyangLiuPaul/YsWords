@@ -10,7 +10,7 @@
       "Acts",
       "Romans"
     ],
-    "generatedAt": "2026-04-29T00:10:33Z",
+    "generatedAt": "2026-04-29T00:55:43Z",
     "description": "Section / paragraph titles. Loaded by SectionTitleService and rendered above the matched verse in the reading pane. Three title sets in this Phase-1 file: cuv (simplified), cuv-tr (traditional), english-classic (English). The version-to-set mapping lives in lib/constants/section_title_map.dart."
   },
   "sets": {
@@ -19,7 +19,8 @@
         "1": [
           {
             "verse": 1,
-            "title": "起初创造天地"
+            "title": "起初创造天地",
+            "context": "圣经的开篇，回应人类最古老的问题：宇宙、生命、人类从何而来？"
           },
           {
             "verse": 14,
@@ -37,7 +38,8 @@
           },
           {
             "verse": 4,
-            "title": "伊甸园"
+            "title": "伊甸园",
+            "context": "镜头从宇宙拉近到伊甸园：人是按神的形象造的，被安置在乐园中、与神同在。"
           },
           {
             "verse": 18,
@@ -47,7 +49,8 @@
         "3": [
           {
             "verse": 1,
-            "title": "人类的堕落"
+            "title": "人类的堕落",
+            "context": "人类故事的转折：受造物的悖逆，破坏了与神、与人、与受造界的关系。"
           },
           {
             "verse": 14,
@@ -85,7 +88,8 @@
           },
           {
             "verse": 9,
-            "title": "挪亚造方舟"
+            "title": "挪亚造方舟",
+            "context": "人类败坏到极点，神选择以洪水洗净大地，但通过挪亚保留人类的指望。"
           }
         ],
         "7": [
@@ -123,7 +127,8 @@
         "11": [
           {
             "verse": 1,
-            "title": "巴别塔"
+            "title": "巴别塔",
+            "context": "人类企图自筑通天高塔，宣告自主与团结，却招致语言的混乱与分散。"
           },
           {
             "verse": 10,
@@ -137,7 +142,8 @@
         "12": [
           {
             "verse": 1,
-            "title": "神呼召亚伯兰"
+            "title": "神呼召亚伯兰",
+            "context": "圣经核心的转折：神呼召一个人——亚伯兰，借他祝福万族。这是救赎史的开端。"
           },
           {
             "verse": 10,
@@ -221,7 +227,8 @@
         "22": [
           {
             "verse": 1,
-            "title": "亚伯拉罕献以撒"
+            "title": "亚伯拉罕献以撒",
+            "context": "亚伯拉罕信心的最终试炼，预表父神献子救赎人类的伟大爱。"
           },
           {
             "verse": 20,
@@ -347,7 +354,8 @@
           },
           {
             "verse": 12,
-            "title": "约瑟被卖"
+            "title": "约瑟被卖",
+            "context": "约瑟被亲兄弟出卖到埃及，神却用人的恶意成就拯救——日后保全了雅各家族。"
           }
         ],
         "38": [
@@ -439,7 +447,8 @@
           },
           {
             "verse": 15,
-            "title": "约瑟安慰兄弟"
+            "title": "约瑟安慰兄弟",
+            "context": "约瑟说：「你们的意思是要害我，但神的意思原是好的。」饶恕的最高典范。"
           },
           {
             "verse": 22,
@@ -451,13 +460,15 @@
         "1": [
           {
             "verse": 1,
-            "title": "义人与恶人之路"
+            "title": "义人与恶人之路",
+            "context": "诗篇的开篇，定下整卷书的基调：默想神律法的人有福，恶人必如糠秕被风吹散。"
           }
         ],
         "2": [
           {
             "verse": 1,
-            "title": "弥赛亚君王"
+            "title": "弥赛亚君王",
+            "context": "弥赛亚君王诗篇，被新约多次引用，描绘列国敌挡神受膏者的徒然。"
           }
         ],
         "3": [
@@ -577,13 +588,15 @@
         "22": [
           {
             "verse": 1,
-            "title": "受苦者的呼求"
+            "title": "受苦者的呼求",
+            "context": "「我的神！我的神！为什么离弃我？」——耶稣在十字架上引用的诗篇，预表受苦的弥赛亚。"
           }
         ],
         "23": [
           {
             "verse": 1,
-            "title": "耶和华是我的牧者"
+            "title": "耶和华是我的牧者",
+            "context": "全圣经最为人熟知的诗篇之一。在死荫幽谷与生命平安之间，宣告耶和华是牧者。"
           }
         ],
         "24": [
@@ -751,7 +764,8 @@
         "51": [
           {
             "verse": 1,
-            "title": "悔罪诗"
+            "title": "悔罪诗",
+            "context": "大卫与拔示巴犯罪后的悔罪诗。每个跌倒、却仍盼望神饶恕者都能在此找到自己。"
           }
         ],
         "52": [
@@ -1159,7 +1173,8 @@
         "119": [
           {
             "verse": 1,
-            "title": "神话语的诗篇"
+            "title": "神话语的诗篇",
+            "context": "圣经中最长的一章。22 个段落，按希伯来字母为顺序，全篇默想神的话语。"
           }
         ],
         "120": [
@@ -1279,7 +1294,8 @@
         "139": [
           {
             "verse": 1,
-            "title": "神无所不知无所不在"
+            "title": "神无所不知无所不在",
+            "context": "对神无所不知、无所不在最深刻的反思。即使到地极、到阴间，神仍紧紧握住我们。"
           }
         ],
         "140": [
@@ -1353,7 +1369,8 @@
         "1": [
           {
             "verse": 1,
-            "title": "耶稣的家谱"
+            "title": "耶稣的家谱",
+            "context": "马太福音以耶稣的家谱开篇，证明祂是亚伯拉罕之子（应许）与大卫之子（君王）。"
           },
           {
             "verse": 18,
@@ -1401,7 +1418,8 @@
         "5": [
           {
             "verse": 1,
-            "title": "登山宝训：八福"
+            "title": "登山宝训：八福",
+            "context": "耶稣事工初期最重要的讲论，颠覆人对「有福」的理解：贫穷、哀恸、饥渴慕义之人——这些人有福了。"
           },
           {
             "verse": 13,
@@ -1447,7 +1465,8 @@
           },
           {
             "verse": 9,
-            "title": "主祷文"
+            "title": "主祷文",
+            "context": "耶稣亲自教导门徒祷告。每一句都是天国子民与天父关系的核心。"
           },
           {
             "verse": 16,
@@ -1631,7 +1650,8 @@
           },
           {
             "verse": 13,
-            "title": "彼得的认信"
+            "title": "彼得的认信",
+            "context": "彼得在该撒利亚腓立比认信耶稣是基督，是神的儿子——四福音事工的转折点。"
           },
           {
             "verse": 21,
@@ -1641,7 +1661,8 @@
         "17": [
           {
             "verse": 1,
-            "title": "耶稣登山变像"
+            "title": "耶稣登山变像",
+            "context": "耶稣在山上变像，向三位门徒短暂显出神性的荣光，证实祂超越摩西与以利亚的权柄。"
           },
           {
             "verse": 14,
@@ -1787,11 +1808,13 @@
           },
           {
             "verse": 17,
-            "title": "最后的晚餐"
+            "title": "最后的晚餐",
+            "context": "耶稣最后的逾越节晚餐，设立圣餐礼。祂的身体与血即将作为新约的祭。"
           },
           {
             "verse": 36,
-            "title": "客西马尼园祷告"
+            "title": "客西马尼园祷告",
+            "context": "客西马尼园的祷告：耶稣以人性面对受难的恐惧，仍顺服天父的旨意。"
           },
           {
             "verse": 47,
@@ -1821,7 +1844,8 @@
           },
           {
             "verse": 32,
-            "title": "钉十字架"
+            "title": "钉十字架",
+            "context": "钉十字架——历史上最公开的处决。圣经四卷福音以此为高峰，用最少的笔墨描述最大的事件。"
           },
           {
             "verse": 45,
@@ -1835,7 +1859,8 @@
         "28": [
           {
             "verse": 1,
-            "title": "耶稣复活"
+            "title": "耶稣复活",
+            "context": "整本新约的高潮：耶稣从死里复活，证实祂的牺牲获蒙天父悦纳，开启永恒的盼望。"
           },
           {
             "verse": 11,
@@ -1843,7 +1868,8 @@
           },
           {
             "verse": 16,
-            "title": "大使命"
+            "title": "大使命",
+            "context": "复活的主向门徒颁布大使命：去使万民作主门徒。这是教会两千年宣教的根基。"
           }
         ]
       },
@@ -1851,7 +1877,8 @@
         "1": [
           {
             "verse": 1,
-            "title": "施洗约翰预备主道"
+            "title": "施洗约翰预备主道",
+            "context": "马可福音节奏最快、最具行动感。开篇即宣告：耶稣是神的儿子。"
           },
           {
             "verse": 9,
@@ -1945,7 +1972,8 @@
           },
           {
             "verse": 35,
-            "title": "平静风浪"
+            "title": "平静风浪",
+            "context": "耶稣平静狂风巨浪，门徒第一次震惊地问：「这到底是谁？连风和海也听从他。」"
           }
         ],
         "5": [
@@ -2013,7 +2041,8 @@
           },
           {
             "verse": 27,
-            "title": "彼得的认信"
+            "title": "彼得的认信",
+            "context": "彼得的认信——马可福音的中心。前八章讲祂是谁；后八章讲祂为何而来（受难）。"
           },
           {
             "verse": 31,
@@ -2185,7 +2214,8 @@
         "1": [
           {
             "verse": 1,
-            "title": "道成肉身"
+            "title": "道成肉身",
+            "context": "约翰福音以创世记为镜像开篇——那位在起初就有的「道」，如今成了肉身。"
           },
           {
             "verse": 19,
@@ -2213,7 +2243,8 @@
         "3": [
           {
             "verse": 1,
-            "title": "尼哥底母访耶稣"
+            "title": "尼哥底母访耶稣",
+            "context": "尼哥底母夜访耶稣，听见震撼一生的话：「人若不重生，就不能见神的国。」"
           },
           {
             "verse": 22,
@@ -2223,7 +2254,8 @@
         "4": [
           {
             "verse": 1,
-            "title": "撒玛利亚妇人"
+            "title": "撒玛利亚妇人",
+            "context": "耶稣超越种族、性别、宗教的偏见，向一位撒玛利亚妇女启示自己是「活水」。"
           },
           {
             "verse": 27,
@@ -2309,7 +2341,8 @@
         "11": [
           {
             "verse": 1,
-            "title": "拉撒路复活"
+            "title": "拉撒路复活",
+            "context": "约翰福音最戏剧性的神迹：耶稣使死了四天的拉撒路复活，预先彰显祂自己的复活权能。"
           },
           {
             "verse": 45,
@@ -2333,7 +2366,8 @@
         "13": [
           {
             "verse": 1,
-            "title": "为门徒洗脚"
+            "title": "为门徒洗脚",
+            "context": "最后晚餐前，耶稣亲自为门徒洗脚——颠覆所有关于权力和事奉的世俗观念。"
           },
           {
             "verse": 21,
@@ -2377,7 +2411,8 @@
         "17": [
           {
             "verse": 1,
-            "title": "耶稣大祭司的祷告"
+            "title": "耶稣大祭司的祷告",
+            "context": "耶稣大祭司的祷告——为门徒、为后世信徒祈求，是新约最深的祷告。"
           }
         ],
         "18": [
@@ -2411,7 +2446,8 @@
         "20": [
           {
             "verse": 1,
-            "title": "空坟墓"
+            "title": "空坟墓",
+            "context": "空坟墓——基督教信仰的根基。约翰冷静地记录他亲眼所见的细节。"
           },
           {
             "verse": 11,
@@ -2441,7 +2477,8 @@
         "1": [
           {
             "verse": 1,
-            "title": "耶稣升天前的应许"
+            "title": "耶稣升天前的应许",
+            "context": "使徒行传是路加福音的续集——耶稣升天后，圣灵借门徒展开教会的扩展史。"
           },
           {
             "verse": 12,
@@ -2451,7 +2488,8 @@
         "2": [
           {
             "verse": 1,
-            "title": "圣灵降临"
+            "title": "圣灵降临",
+            "context": "五旬节圣灵降临，应验耶稣的应许。从这一刻起，教会诞生，不分种族、地域。"
           },
           {
             "verse": 14,
@@ -2541,7 +2579,8 @@
         "9": [
           {
             "verse": 1,
-            "title": "扫罗大马士革路上的归正"
+            "title": "扫罗大马士革路上的归正",
+            "context": "教会最大的逼迫者扫罗（保罗）在大马士革路上遇见复活的主——历史的转折点。"
           },
           {
             "verse": 19,
@@ -2555,7 +2594,8 @@
         "10": [
           {
             "verse": 1,
-            "title": "哥尼流的异象"
+            "title": "哥尼流的异象",
+            "context": "彼得到外邦百夫长哥尼流家——福音正式打开外邦的门。"
           },
           {
             "verse": 9,
@@ -2621,7 +2661,8 @@
         "15": [
           {
             "verse": 1,
-            "title": "耶路撒冷会议"
+            "title": "耶路撒冷会议",
+            "context": "耶路撒冷会议：教会决定外邦信徒不必受割礼。这定义了教会的合一与多元。"
           },
           {
             "verse": 22,
@@ -2665,7 +2706,8 @@
           },
           {
             "verse": 22,
-            "title": "亚略巴古的讲道"
+            "title": "亚略巴古的讲道",
+            "context": "保罗在雅典亚略巴古的讲道——向异教知识分子宣讲创造主、悔改与复活。"
           }
         ],
         "18": [
@@ -2807,7 +2849,8 @@
           },
           {
             "verse": 16,
-            "title": "福音的大能"
+            "title": "福音的大能",
+            "context": "保罗的论文起点：「我不以福音为耻」。整卷书是这一句的展开。"
           },
           {
             "verse": 18,
@@ -2835,7 +2878,8 @@
           },
           {
             "verse": 21,
-            "title": "因信称义"
+            "title": "因信称义",
+            "context": "罗马书的核心：因信称义。神在律法以外向世人显明祂自己的义。"
           }
         ],
         "4": [
@@ -2851,7 +2895,8 @@
         "5": [
           {
             "verse": 1,
-            "title": "因信得平安"
+            "title": "因信得平安",
+            "context": "因信称义的果效：与神和好、得享平安、进入恩典、夸耀盼望——也包括苦难带来的成长。"
           },
           {
             "verse": 12,
@@ -2885,7 +2930,8 @@
         "8": [
           {
             "verse": 1,
-            "title": "圣灵的生命"
+            "title": "圣灵的生命",
+            "context": "罗马书的最高峰之一。「在基督耶稣里的就不定罪了」——并以「万事互相效力」收尾。"
           },
           {
             "verse": 18,
@@ -2941,7 +2987,8 @@
         "12": [
           {
             "verse": 1,
-            "title": "活祭与新生"
+            "title": "活祭与新生",
+            "context": "保罗从「神为我们做了什么」转到「我们当如何回应」——将身体献作活祭，是合理的事奉。"
           },
           {
             "verse": 9,
@@ -3007,7 +3054,8 @@
         "1": [
           {
             "verse": 1,
-            "title": "起初創造天地"
+            "title": "起初創造天地",
+            "context": "聖經的開篇，回應人類最古老的問題：宇宙、生命、人類從何而來？"
           },
           {
             "verse": 14,
@@ -3025,7 +3073,8 @@
           },
           {
             "verse": 4,
-            "title": "伊甸園"
+            "title": "伊甸園",
+            "context": "鏡頭從宇宙拉近到伊甸園：人是按神的形象造的，被安置在樂園中、與神同在。"
           },
           {
             "verse": 18,
@@ -3035,7 +3084,8 @@
         "3": [
           {
             "verse": 1,
-            "title": "人類的墮落"
+            "title": "人類的墮落",
+            "context": "人類故事的轉折：受造物的悖逆，破壞了與神、與人、與受造界的關係。"
           },
           {
             "verse": 14,
@@ -3073,7 +3123,8 @@
           },
           {
             "verse": 9,
-            "title": "挪亞造方舟"
+            "title": "挪亞造方舟",
+            "context": "人類敗壞到極點，神選擇以洪水洗淨大地，但通過挪亞保留人類的指望。"
           }
         ],
         "7": [
@@ -3111,7 +3162,8 @@
         "11": [
           {
             "verse": 1,
-            "title": "巴別塔"
+            "title": "巴別塔",
+            "context": "人類企圖自築通天高塔，宣告自主與團結，卻招致語言的混亂與分散。"
           },
           {
             "verse": 10,
@@ -3125,7 +3177,8 @@
         "12": [
           {
             "verse": 1,
-            "title": "神呼召亞伯蘭"
+            "title": "神呼召亞伯蘭",
+            "context": "聖經核心的轉折：神呼召一個人——亞伯蘭，藉他祝福萬族。這是救贖史的開端。"
           },
           {
             "verse": 10,
@@ -3209,7 +3262,8 @@
         "22": [
           {
             "verse": 1,
-            "title": "亞伯拉罕獻以撒"
+            "title": "亞伯拉罕獻以撒",
+            "context": "亞伯拉罕信心的最終試煉，預表父神獻子救贖人類的偉大愛。"
           },
           {
             "verse": 20,
@@ -3335,7 +3389,8 @@
           },
           {
             "verse": 12,
-            "title": "約瑟被賣"
+            "title": "約瑟被賣",
+            "context": "約瑟被親兄弟出賣到埃及，神卻用人的惡意成就拯救——日後保全了雅各家族。"
           }
         ],
         "38": [
@@ -3427,7 +3482,8 @@
           },
           {
             "verse": 15,
-            "title": "約瑟安慰兄弟"
+            "title": "約瑟安慰兄弟",
+            "context": "約瑟說：「你們的意思是要害我，但神的意思原是好的。」饒恕的最高典範。"
           },
           {
             "verse": 22,
@@ -3439,13 +3495,15 @@
         "1": [
           {
             "verse": 1,
-            "title": "義人與惡人之路"
+            "title": "義人與惡人之路",
+            "context": "詩篇的開篇，定下整卷書的基調：默想神律法的人有福，惡人必如糠秕被風吹散。"
           }
         ],
         "2": [
           {
             "verse": 1,
-            "title": "彌賽亞君王"
+            "title": "彌賽亞君王",
+            "context": "彌賽亞君王詩篇，被新約多次引用，描繪列國敵擋神受膏者的徒然。"
           }
         ],
         "3": [
@@ -3565,13 +3623,15 @@
         "22": [
           {
             "verse": 1,
-            "title": "受苦者的呼求"
+            "title": "受苦者的呼求",
+            "context": "「我的神！我的神！為什麼離棄我？」——耶穌在十字架上引用的詩篇，預表受苦的彌賽亞。"
           }
         ],
         "23": [
           {
             "verse": 1,
-            "title": "耶和華是我的牧者"
+            "title": "耶和華是我的牧者",
+            "context": "全聖經最為人熟知的詩篇之一。在死蔭幽谷與生命平安之間，宣告耶和華是牧者。"
           }
         ],
         "24": [
@@ -3739,7 +3799,8 @@
         "51": [
           {
             "verse": 1,
-            "title": "悔罪詩"
+            "title": "悔罪詩",
+            "context": "大衛與拔示巴犯罪後的悔罪詩。每個跌倒、卻仍盼望神饒恕者都能在此找到自己。"
           }
         ],
         "52": [
@@ -4147,7 +4208,8 @@
         "119": [
           {
             "verse": 1,
-            "title": "神話語的詩篇"
+            "title": "神話語的詩篇",
+            "context": "聖經中最長的一章。22 個段落，按希伯來字母為順序，全篇默想神的話語。"
           }
         ],
         "120": [
@@ -4267,7 +4329,8 @@
         "139": [
           {
             "verse": 1,
-            "title": "神無所不知無所不在"
+            "title": "神無所不知無所不在",
+            "context": "對神無所不知、無所不在最深刻的反思。即使到地極、到陰間，神仍緊緊握住我們。"
           }
         ],
         "140": [
@@ -4341,7 +4404,8 @@
         "1": [
           {
             "verse": 1,
-            "title": "耶穌的家譜"
+            "title": "耶穌的家譜",
+            "context": "馬太福音以耶穌的家譜開篇，證明祂是亞伯拉罕之子（應許）與大衛之子（君王）。"
           },
           {
             "verse": 18,
@@ -4389,7 +4453,8 @@
         "5": [
           {
             "verse": 1,
-            "title": "登山寶訓：八福"
+            "title": "登山寶訓：八福",
+            "context": "耶穌事工初期最重要的講論，顛覆人對「有福」的理解：貧窮、哀慟、飢渴慕義之人——這些人有福了。"
           },
           {
             "verse": 13,
@@ -4435,7 +4500,8 @@
           },
           {
             "verse": 9,
-            "title": "主禱文"
+            "title": "主禱文",
+            "context": "耶穌親自教導門徒禱告。每一句都是天國子民與天父關係的核心。"
           },
           {
             "verse": 16,
@@ -4619,7 +4685,8 @@
           },
           {
             "verse": 13,
-            "title": "彼得的認信"
+            "title": "彼得的認信",
+            "context": "彼得在該撒利亞腓立比認信耶穌是基督，是神的兒子——四福音事工的轉折點。"
           },
           {
             "verse": 21,
@@ -4629,7 +4696,8 @@
         "17": [
           {
             "verse": 1,
-            "title": "耶穌登山變像"
+            "title": "耶穌登山變像",
+            "context": "耶穌在山上變像，向三位門徒短暫顯出神性的榮光，證實祂超越摩西與以利亞的權柄。"
           },
           {
             "verse": 14,
@@ -4775,11 +4843,13 @@
           },
           {
             "verse": 17,
-            "title": "最後的晚餐"
+            "title": "最後的晚餐",
+            "context": "耶穌最後的逾越節晚餐，設立聖餐禮。祂的身體與血即將作為新約的祭。"
           },
           {
             "verse": 36,
-            "title": "客西馬尼園禱告"
+            "title": "客西馬尼園禱告",
+            "context": "客西馬尼園的禱告：耶穌以人性面對受難的恐懼，仍順服天父的旨意。"
           },
           {
             "verse": 47,
@@ -4809,7 +4879,8 @@
           },
           {
             "verse": 32,
-            "title": "釘十字架"
+            "title": "釘十字架",
+            "context": "釘十字架——歷史上最公開的處決。聖經四卷福音以此為高峰，用最少的筆墨描述最大的事件。"
           },
           {
             "verse": 45,
@@ -4823,7 +4894,8 @@
         "28": [
           {
             "verse": 1,
-            "title": "耶穌復活"
+            "title": "耶穌復活",
+            "context": "整本新約的高潮：耶穌從死裡復活，證實祂的犧牲獲蒙天父悅納，開啟永恆的盼望。"
           },
           {
             "verse": 11,
@@ -4831,7 +4903,8 @@
           },
           {
             "verse": 16,
-            "title": "大使命"
+            "title": "大使命",
+            "context": "復活的主向門徒頒布大使命：去使萬民作主門徒。這是教會兩千年宣教的根基。"
           }
         ]
       },
@@ -4839,7 +4912,8 @@
         "1": [
           {
             "verse": 1,
-            "title": "施洗約翰預備主道"
+            "title": "施洗約翰預備主道",
+            "context": "馬可福音節奏最快、最具行動感。開篇即宣告：耶穌是神的兒子。"
           },
           {
             "verse": 9,
@@ -4933,7 +5007,8 @@
           },
           {
             "verse": 35,
-            "title": "平靜風浪"
+            "title": "平靜風浪",
+            "context": "耶穌平靜狂風巨浪，門徒第一次震驚地問：「這到底是誰？連風和海也聽從他。」"
           }
         ],
         "5": [
@@ -5001,7 +5076,8 @@
           },
           {
             "verse": 27,
-            "title": "彼得的認信"
+            "title": "彼得的認信",
+            "context": "彼得的認信——馬可福音的中心。前八章講祂是誰；後八章講祂為何而來（受難）。"
           },
           {
             "verse": 31,
@@ -5173,7 +5249,8 @@
         "1": [
           {
             "verse": 1,
-            "title": "道成肉身"
+            "title": "道成肉身",
+            "context": "約翰福音以創世記為鏡像開篇——那位在起初就有的「道」，如今成了肉身。"
           },
           {
             "verse": 19,
@@ -5201,7 +5278,8 @@
         "3": [
           {
             "verse": 1,
-            "title": "尼哥底母訪耶穌"
+            "title": "尼哥底母訪耶穌",
+            "context": "尼哥底母夜訪耶穌，聽見震撼一生的話：「人若不重生，就不能見神的國。」"
           },
           {
             "verse": 22,
@@ -5211,7 +5289,8 @@
         "4": [
           {
             "verse": 1,
-            "title": "撒瑪利亞婦人"
+            "title": "撒瑪利亞婦人",
+            "context": "耶穌超越種族、性別、宗教的偏見，向一位撒瑪利亞婦女啟示自己是「活水」。"
           },
           {
             "verse": 27,
@@ -5297,7 +5376,8 @@
         "11": [
           {
             "verse": 1,
-            "title": "拉撒路復活"
+            "title": "拉撒路復活",
+            "context": "約翰福音最戲劇性的神蹟：耶穌使死了四天的拉撒路復活，預先彰顯祂自己的復活權能。"
           },
           {
             "verse": 45,
@@ -5321,7 +5401,8 @@
         "13": [
           {
             "verse": 1,
-            "title": "為門徒洗腳"
+            "title": "為門徒洗腳",
+            "context": "最後晚餐前，耶穌親自為門徒洗腳——顛覆所有關於權力和事奉的世俗觀念。"
           },
           {
             "verse": 21,
@@ -5365,7 +5446,8 @@
         "17": [
           {
             "verse": 1,
-            "title": "耶穌大祭司的禱告"
+            "title": "耶穌大祭司的禱告",
+            "context": "耶穌大祭司的禱告——為門徒、為後世信徒祈求，是新約最深的禱告。"
           }
         ],
         "18": [
@@ -5399,7 +5481,8 @@
         "20": [
           {
             "verse": 1,
-            "title": "空墳墓"
+            "title": "空墳墓",
+            "context": "空墳墓——基督教信仰的根基。約翰冷靜地記錄他親眼所見的細節。"
           },
           {
             "verse": 11,
@@ -5429,7 +5512,8 @@
         "1": [
           {
             "verse": 1,
-            "title": "耶穌升天前的應許"
+            "title": "耶穌升天前的應許",
+            "context": "使徒行傳是路加福音的續集——耶穌升天後，聖靈藉門徒展開教會的擴展史。"
           },
           {
             "verse": 12,
@@ -5439,7 +5523,8 @@
         "2": [
           {
             "verse": 1,
-            "title": "聖靈降臨"
+            "title": "聖靈降臨",
+            "context": "五旬節聖靈降臨，應驗耶穌的應許。從這一刻起，教會誕生，不分種族、地域。"
           },
           {
             "verse": 14,
@@ -5529,7 +5614,8 @@
         "9": [
           {
             "verse": 1,
-            "title": "掃羅大馬士革路上的歸正"
+            "title": "掃羅大馬士革路上的歸正",
+            "context": "教會最大的逼迫者掃羅（保羅）在大馬士革路上遇見復活的主——歷史的轉折點。"
           },
           {
             "verse": 19,
@@ -5543,7 +5629,8 @@
         "10": [
           {
             "verse": 1,
-            "title": "哥尼流的異象"
+            "title": "哥尼流的異象",
+            "context": "彼得到外邦百夫長哥尼流家——福音正式打開外邦的門。"
           },
           {
             "verse": 9,
@@ -5609,7 +5696,8 @@
         "15": [
           {
             "verse": 1,
-            "title": "耶路撒冷會議"
+            "title": "耶路撒冷會議",
+            "context": "耶路撒冷會議：教會決定外邦信徒不必受割禮。這定義了教會的合一與多元。"
           },
           {
             "verse": 22,
@@ -5653,7 +5741,8 @@
           },
           {
             "verse": 22,
-            "title": "亞略巴古的講道"
+            "title": "亞略巴古的講道",
+            "context": "保羅在雅典亞略巴古的講道——向異教知識分子宣講創造主、悔改與復活。"
           }
         ],
         "18": [
@@ -5795,7 +5884,8 @@
           },
           {
             "verse": 16,
-            "title": "福音的大能"
+            "title": "福音的大能",
+            "context": "保羅的論文起點：「我不以福音為恥」。整卷書是這一句的展開。"
           },
           {
             "verse": 18,
@@ -5823,7 +5913,8 @@
           },
           {
             "verse": 21,
-            "title": "因信稱義"
+            "title": "因信稱義",
+            "context": "羅馬書的核心：因信稱義。神在律法以外向世人顯明祂自己的義。"
           }
         ],
         "4": [
@@ -5839,7 +5930,8 @@
         "5": [
           {
             "verse": 1,
-            "title": "因信得平安"
+            "title": "因信得平安",
+            "context": "因信稱義的果效：與神和好、得享平安、進入恩典、誇耀盼望——也包括苦難帶來的成長。"
           },
           {
             "verse": 12,
@@ -5873,7 +5965,8 @@
         "8": [
           {
             "verse": 1,
-            "title": "聖靈的生命"
+            "title": "聖靈的生命",
+            "context": "羅馬書的最高峰之一。「在基督耶穌裡的就不定罪了」——並以「萬事互相效力」收尾。"
           },
           {
             "verse": 18,
@@ -5929,7 +6022,8 @@
         "12": [
           {
             "verse": 1,
-            "title": "活祭與新生"
+            "title": "活祭與新生",
+            "context": "保羅從「神為我們做了什麼」轉到「我們當如何回應」——將身體獻作活祭，是合理的事奉。"
           },
           {
             "verse": 9,
@@ -5995,7 +6089,8 @@
         "1": [
           {
             "verse": 1,
-            "title": "The Creation"
+            "title": "The Creation",
+            "context": "The Bible opens with the most fundamental question: where did everything come from? The answer — God spoke it into being."
           },
           {
             "verse": 14,
@@ -6013,7 +6108,8 @@
           },
           {
             "verse": 4,
-            "title": "The Garden of Eden"
+            "title": "The Garden of Eden",
+            "context": "The camera zooms from cosmos to garden. The first humans are made in God's image and placed in fellowship with him."
           },
           {
             "verse": 18,
@@ -6023,7 +6119,8 @@
         "3": [
           {
             "verse": 1,
-            "title": "The Fall of Mankind"
+            "title": "The Fall of Mankind",
+            "context": "The pivot of human history: a single act of distrust fractures every relationship — with God, with each other, with creation itself."
           },
           {
             "verse": 14,
@@ -6061,7 +6158,8 @@
           },
           {
             "verse": 9,
-            "title": "Noah and the Ark"
+            "title": "Noah and the Ark",
+            "context": "Mankind's wickedness has filled the earth. God will reset creation through a flood — but preserve a remnant through one righteous family."
           }
         ],
         "7": [
@@ -6099,7 +6197,8 @@
         "11": [
           {
             "verse": 1,
-            "title": "The Tower of Babel"
+            "title": "The Tower of Babel",
+            "context": "Humanity attempts to ascend to heaven by their own strength, defying God's command to fill the earth. The scattering of languages still shapes our world."
           },
           {
             "verse": 10,
@@ -6113,7 +6212,8 @@
         "12": [
           {
             "verse": 1,
-            "title": "The Call of Abram"
+            "title": "The Call of Abram",
+            "context": "The hinge of redemption history. God calls one man, Abram, promising to bless every nation through his line — a promise the rest of Scripture traces."
           },
           {
             "verse": 10,
@@ -6197,7 +6297,8 @@
         "22": [
           {
             "verse": 1,
-            "title": "Abraham Offers Isaac"
+            "title": "Abraham Offers Isaac",
+            "context": "Abraham's ultimate test of faith. The scene of a father offering his only son on Mount Moriah foreshadows what God himself will one day do."
           },
           {
             "verse": 20,
@@ -6323,7 +6424,8 @@
           },
           {
             "verse": 12,
-            "title": "Joseph Sold into Slavery"
+            "title": "Joseph Sold into Slavery",
+            "context": "Sold by his own brothers into slavery, Joseph's story shows God working through human evil to preserve the covenant family."
           }
         ],
         "38": [
@@ -6415,7 +6517,8 @@
           },
           {
             "verse": 15,
-            "title": "Joseph Reassures His Brothers"
+            "title": "Joseph Reassures His Brothers",
+            "context": "Joseph's famous declaration — 'You meant evil against me, but God meant it for good' — reframes decades of suffering as part of a redemptive plan."
           },
           {
             "verse": 22,
@@ -6427,13 +6530,15 @@
         "1": [
           {
             "verse": 1,
-            "title": "The Way of the Righteous"
+            "title": "The Way of the Righteous",
+            "context": "The doorway to the Psalms. Two paths, two destinies — and the wise are those who delight in God's instruction day and night."
           }
         ],
         "2": [
           {
             "verse": 1,
-            "title": "The Reign of the Lord's Anointed"
+            "title": "The Reign of the Lord's Anointed",
+            "context": "A messianic coronation psalm quoted repeatedly in the New Testament. The kings of earth rage in vain against the Anointed One God himself has installed."
           }
         ],
         "3": [
@@ -6553,13 +6658,15 @@
         "22": [
           {
             "verse": 1,
-            "title": "From Suffering to Praise"
+            "title": "From Suffering to Praise",
+            "context": "The cry Jesus echoed from the cross. Centuries before Calvary, David describes pierced hands and feet, mocking onlookers, and gambling for clothing."
           }
         ],
         "23": [
           {
             "verse": 1,
-            "title": "The LORD Is My Shepherd"
+            "title": "The LORD Is My Shepherd",
+            "context": "Perhaps the most beloved chapter in all Scripture. Through danger, fear, and even the valley of death's shadow, the believer is shepherded — not abandoned."
           }
         ],
         "24": [
@@ -6727,7 +6834,8 @@
         "51": [
           {
             "verse": 1,
-            "title": "Create in Me a Clean Heart"
+            "title": "Create in Me a Clean Heart",
+            "context": "David's cry of repentance after his sin with Bathsheba. Every fallen believer who has dared to hope in God's mercy finds words here."
           }
         ],
         "52": [
@@ -7135,7 +7243,8 @@
         "119": [
           {
             "verse": 1,
-            "title": "The Word of God: A Meditation"
+            "title": "The Word of God: A Meditation",
+            "context": "The longest chapter in the Bible — 176 verses in 22 alphabetic sections — a sustained meditation on the beauty and life-giving power of God's word."
           }
         ],
         "120": [
@@ -7255,7 +7364,8 @@
         "139": [
           {
             "verse": 1,
-            "title": "God Knows Me Completely"
+            "title": "God Knows Me Completely",
+            "context": "The Bible's deepest meditation on divine omniscience. There is no height, depth, or darkness where God's hand cannot reach the believer."
           }
         ],
         "140": [
@@ -7329,7 +7439,8 @@
         "1": [
           {
             "verse": 1,
-            "title": "The Genealogy of Jesus"
+            "title": "The Genealogy of Jesus",
+            "context": "Matthew opens with a genealogy because identity matters. Jesus is shown to fulfill both the Abrahamic promise of blessing and the Davidic promise of an eternal King."
           },
           {
             "verse": 18,
@@ -7377,7 +7488,8 @@
         "5": [
           {
             "verse": 1,
-            "title": "The Sermon on the Mount: The Beatitudes"
+            "title": "The Sermon on the Mount: The Beatitudes",
+            "context": "Jesus' foundational sermon, delivered early in his Galilean ministry. The Beatitudes invert worldly values — calling the poor in spirit, the mourners, and the persecuted 'blessed'."
           },
           {
             "verse": 13,
@@ -7423,7 +7535,8 @@
           },
           {
             "verse": 9,
-            "title": "The Lord's Prayer"
+            "title": "The Lord's Prayer",
+            "context": "The pattern Jesus gave his disciples for prayer. Every line is a window into the heart of how citizens of the kingdom relate to their Father."
           },
           {
             "verse": 16,
@@ -7607,7 +7720,8 @@
           },
           {
             "verse": 13,
-            "title": "Peter's Confession of Christ"
+            "title": "Peter's Confession of Christ",
+            "context": "Peter's confession at Caesarea Philippi is the hinge of all four Gospels. After this moment, Jesus begins openly teaching that he must die and rise again."
           },
           {
             "verse": 21,
@@ -7617,7 +7731,8 @@
         "17": [
           {
             "verse": 1,
-            "title": "The Transfiguration"
+            "title": "The Transfiguration",
+            "context": "On a mountain, Jesus' divine glory briefly breaks through his humanity. Moses (Law) and Elijah (Prophets) appear with him — both pointing to the One greater than themselves."
           },
           {
             "verse": 14,
@@ -7763,11 +7878,13 @@
           },
           {
             "verse": 17,
-            "title": "The Last Supper"
+            "title": "The Last Supper",
+            "context": "Jesus' final Passover. By breaking bread and pouring the cup, he institutes the new covenant in his body and blood — a memorial the church keeps to this day."
           },
           {
             "verse": 36,
-            "title": "Gethsemane"
+            "title": "Gethsemane",
+            "context": "In Gethsemane, the fully human Jesus wrestles with the cup before him — and submits to the Father's will. The hour of redemption begins here."
           },
           {
             "verse": 47,
@@ -7797,7 +7914,8 @@
           },
           {
             "verse": 32,
-            "title": "The Crucifixion"
+            "title": "The Crucifixion",
+            "context": "The crucifixion — the most public execution in history. The Gospels treat it with strange restraint, letting the event speak for itself."
           },
           {
             "verse": 45,
@@ -7811,7 +7929,8 @@
         "28": [
           {
             "verse": 1,
-            "title": "The Resurrection"
+            "title": "The Resurrection",
+            "context": "The climax of the New Testament. The resurrection vindicates Jesus' atoning sacrifice and inaugurates the hope of eternal life for all who trust him."
           },
           {
             "verse": 11,
@@ -7819,7 +7938,8 @@
           },
           {
             "verse": 16,
-            "title": "The Great Commission"
+            "title": "The Great Commission",
+            "context": "The Great Commission. The risen Jesus sends his disciples to all nations — the marching orders that have driven 2,000 years of Christian mission."
           }
         ]
       },
@@ -7827,7 +7947,8 @@
         "1": [
           {
             "verse": 1,
-            "title": "John the Baptist Prepares the Way"
+            "title": "John the Baptist Prepares the Way",
+            "context": "Mark moves at breakneck speed — the shortest, most action-packed Gospel. The opening line states the thesis: Jesus is the Son of God."
           },
           {
             "verse": 9,
@@ -7921,7 +8042,8 @@
           },
           {
             "verse": 35,
-            "title": "Jesus Calms the Storm"
+            "title": "Jesus Calms the Storm",
+            "context": "Jesus stills a storm. The terrified disciples ask the question Mark wants every reader to ask: 'Who is this, that even the wind and sea obey him?'"
           }
         ],
         "5": [
@@ -7989,7 +8111,8 @@
           },
           {
             "verse": 27,
-            "title": "Peter's Confession of Christ"
+            "title": "Peter's Confession of Christ",
+            "context": "Mark's hinge. The first eight chapters answer 'Who is Jesus?' Peter's confession unlocks the second half: 'What did he come to do?' — to suffer and die."
           },
           {
             "verse": 31,
@@ -8161,7 +8284,8 @@
         "1": [
           {
             "verse": 1,
-            "title": "The Word Became Flesh"
+            "title": "The Word Became Flesh",
+            "context": "John mirrors Genesis with his opening: 'In the beginning was the Word.' The eternal Logos — through whom all things were made — has now become flesh."
           },
           {
             "verse": 19,
@@ -8189,7 +8313,8 @@
         "3": [
           {
             "verse": 1,
-            "title": "Jesus Teaches Nicodemus"
+            "title": "Jesus Teaches Nicodemus",
+            "context": "A leading Pharisee comes by night for an encounter that contains the most-quoted verse in the Bible (3:16) — and a teaching that has changed millions of lives."
           },
           {
             "verse": 22,
@@ -8199,7 +8324,8 @@
         "4": [
           {
             "verse": 1,
-            "title": "The Samaritan Woman at the Well"
+            "title": "The Samaritan Woman at the Well",
+            "context": "Jesus crosses every boundary — racial, gender, religious — to offer 'living water' to a Samaritan woman at a well. By chapter's end, her village believes."
           },
           {
             "verse": 27,
@@ -8285,7 +8411,8 @@
         "11": [
           {
             "verse": 1,
-            "title": "The Death and Raising of Lazarus"
+            "title": "The Death and Raising of Lazarus",
+            "context": "The most dramatic miracle in John's Gospel. Raising Lazarus — dead four days — both ignites Jesus' final week and previews his own resurrection."
           },
           {
             "verse": 45,
@@ -8309,7 +8436,8 @@
         "13": [
           {
             "verse": 1,
-            "title": "Jesus Washes the Disciples' Feet"
+            "title": "Jesus Washes the Disciples' Feet",
+            "context": "On the night of his betrayal, the King washes his disciples' feet — overturning every worldly notion of power and service in a single act."
           },
           {
             "verse": 21,
@@ -8353,7 +8481,8 @@
         "17": [
           {
             "verse": 1,
-            "title": "Jesus Prays for Himself and His Disciples"
+            "title": "Jesus Prays for Himself and His Disciples",
+            "context": "Jesus' high priestly prayer — interceding for his disciples and for every believer who would come after them. The deepest prayer in the New Testament."
           }
         ],
         "18": [
@@ -8387,7 +8516,8 @@
         "20": [
           {
             "verse": 1,
-            "title": "The Empty Tomb"
+            "title": "The Empty Tomb",
+            "context": "The empty tomb — the foundation of the Christian faith. John records the details of what he himself saw with the precision of an eyewitness."
           },
           {
             "verse": 11,
@@ -8417,7 +8547,8 @@
         "1": [
           {
             "verse": 1,
-            "title": "Jesus Taken Up Into Heaven"
+            "title": "Jesus Taken Up Into Heaven",
+            "context": "Acts is volume two of Luke's Gospel. After Jesus' ascension, the Spirit propels his followers from Jerusalem to Rome — and the church begins."
           },
           {
             "verse": 12,
@@ -8427,7 +8558,8 @@
         "2": [
           {
             "verse": 1,
-            "title": "The Holy Spirit Comes at Pentecost"
+            "title": "The Holy Spirit Comes at Pentecost",
+            "context": "Pentecost fulfills Jesus' promise. The Spirit descends, the Gospel is preached in many tongues, and 3,000 are added to the church in a single day."
           },
           {
             "verse": 14,
@@ -8517,7 +8649,8 @@
         "9": [
           {
             "verse": 1,
-            "title": "Saul's Conversion"
+            "title": "Saul's Conversion",
+            "context": "The church's chief persecutor encounters the risen Christ on the Damascus road. Saul of Tarsus becomes Paul the apostle — a hinge moment in history."
           },
           {
             "verse": 19,
@@ -8531,7 +8664,8 @@
         "10": [
           {
             "verse": 1,
-            "title": "Cornelius Calls for Peter"
+            "title": "Cornelius Calls for Peter",
+            "context": "Through twin visions, God orchestrates Peter's visit to the Gentile centurion Cornelius. The Gospel is officially opened to the nations."
           },
           {
             "verse": 9,
@@ -8597,7 +8731,8 @@
         "15": [
           {
             "verse": 1,
-            "title": "The Council at Jerusalem"
+            "title": "The Council at Jerusalem",
+            "context": "The Jerusalem Council settles the church's most divisive question: Gentile believers do not have to keep the Mosaic law to be saved. The unity of the church is preserved."
           },
           {
             "verse": 22,
@@ -8641,7 +8776,8 @@
           },
           {
             "verse": 22,
-            "title": "Paul's Speech at the Areopagus"
+            "title": "Paul's Speech at the Areopagus",
+            "context": "Paul's masterful sermon to Greek philosophers at the Areopagus. He starts with their own poets and altars and ends with the resurrection of Christ."
           }
         ],
         "18": [
@@ -8783,7 +8919,8 @@
           },
           {
             "verse": 16,
-            "title": "The Power of the Gospel"
+            "title": "The Power of the Gospel",
+            "context": "Paul's thesis: 'I am not ashamed of the Gospel — it is the power of God for salvation.' Everything in Romans unpacks this single sentence."
           },
           {
             "verse": 18,
@@ -8811,7 +8948,8 @@
           },
           {
             "verse": 21,
-            "title": "Righteousness Through Faith"
+            "title": "Righteousness Through Faith",
+            "context": "The heart of Romans — and arguably the heart of the Gospel. God's righteousness is revealed apart from the law and received through faith in Christ alone."
           }
         ],
         "4": [
@@ -8827,7 +8965,8 @@
         "5": [
           {
             "verse": 1,
-            "title": "Peace and Hope"
+            "title": "Peace and Hope",
+            "context": "The fruits of justification: peace with God, access to grace, hope, and the strange gift of suffering — which produces the very character we long for."
           },
           {
             "verse": 12,
@@ -8861,7 +9000,8 @@
         "8": [
           {
             "verse": 1,
-            "title": "Life Through the Spirit"
+            "title": "Life Through the Spirit",
+            "context": "One of the highest peaks in Scripture. 'No condemnation' opens the chapter; 'no separation' closes it. In between: the Spirit, suffering, and unshakable hope."
           },
           {
             "verse": 18,
@@ -8917,7 +9057,8 @@
         "12": [
           {
             "verse": 1,
-            "title": "A Living Sacrifice"
+            "title": "A Living Sacrifice",
+            "context": "The pivot from doctrine to ethics. In view of God's mercy, we offer ourselves as living sacrifices — and the rest of life flows from that response."
           },
           {
             "verse": 9,

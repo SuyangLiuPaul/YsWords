@@ -658,12 +658,274 @@ ACTS: list[tuple[int, int, str, str, str]] = [
 ]
 
 
-def _set_for(book_data: list[tuple[int, int, str, str, str]], lang: str) -> dict:
-    """Group authored entries by chapter for one language."""
+# --------------------------------------------------------------------
+# Section-level CONTEXT (optional 1-2 sentences of background).
+#
+# Keyed by (book, chapter, verse) → (simplified, traditional, english).
+# Authored only for high-impact / commonly-misunderstood sections —
+# the goal is to give a reader who lands here cold enough setting
+# to make sense of what they're about to read.
+#
+# Entries that don't appear here render with a title alone.
+# --------------------------------------------------------------------
+SECTION_CONTEXTS: dict[tuple[str, int, int], tuple[str, str, str]] = {
+    # ── Genesis ──
+    ("Genesis", 1, 1): (
+        "圣经的开篇，回应人类最古老的问题：宇宙、生命、人类从何而来？",
+        "聖經的開篇，回應人類最古老的問題：宇宙、生命、人類從何而來？",
+        "The Bible opens with the most fundamental question: where did everything come from? The answer — God spoke it into being.",
+    ),
+    ("Genesis", 2, 4): (
+        "镜头从宇宙拉近到伊甸园：人是按神的形象造的，被安置在乐园中、与神同在。",
+        "鏡頭從宇宙拉近到伊甸園：人是按神的形象造的，被安置在樂園中、與神同在。",
+        "The camera zooms from cosmos to garden. The first humans are made in God's image and placed in fellowship with him.",
+    ),
+    ("Genesis", 3, 1): (
+        "人类故事的转折：受造物的悖逆，破坏了与神、与人、与受造界的关系。",
+        "人類故事的轉折：受造物的悖逆，破壞了與神、與人、與受造界的關係。",
+        "The pivot of human history: a single act of distrust fractures every relationship — with God, with each other, with creation itself.",
+    ),
+    ("Genesis", 6, 9): (
+        "人类败坏到极点，神选择以洪水洗净大地，但通过挪亚保留人类的指望。",
+        "人類敗壞到極點，神選擇以洪水洗淨大地，但通過挪亞保留人類的指望。",
+        "Mankind's wickedness has filled the earth. God will reset creation through a flood — but preserve a remnant through one righteous family.",
+    ),
+    ("Genesis", 11, 1): (
+        "人类企图自筑通天高塔，宣告自主与团结，却招致语言的混乱与分散。",
+        "人類企圖自築通天高塔，宣告自主與團結，卻招致語言的混亂與分散。",
+        "Humanity attempts to ascend to heaven by their own strength, defying God's command to fill the earth. The scattering of languages still shapes our world.",
+    ),
+    ("Genesis", 12, 1): (
+        "圣经核心的转折：神呼召一个人——亚伯兰，借他祝福万族。这是救赎史的开端。",
+        "聖經核心的轉折：神呼召一個人——亞伯蘭，藉他祝福萬族。這是救贖史的開端。",
+        "The hinge of redemption history. God calls one man, Abram, promising to bless every nation through his line — a promise the rest of Scripture traces.",
+    ),
+    ("Genesis", 22, 1): (
+        "亚伯拉罕信心的最终试炼，预表父神献子救赎人类的伟大爱。",
+        "亞伯拉罕信心的最終試煉，預表父神獻子救贖人類的偉大愛。",
+        "Abraham's ultimate test of faith. The scene of a father offering his only son on Mount Moriah foreshadows what God himself will one day do.",
+    ),
+    ("Genesis", 37, 12): (
+        "约瑟被亲兄弟出卖到埃及，神却用人的恶意成就拯救——日后保全了雅各家族。",
+        "約瑟被親兄弟出賣到埃及，神卻用人的惡意成就拯救——日後保全了雅各家族。",
+        "Sold by his own brothers into slavery, Joseph's story shows God working through human evil to preserve the covenant family.",
+    ),
+    ("Genesis", 50, 15): (
+        "约瑟说：「你们的意思是要害我，但神的意思原是好的。」饶恕的最高典范。",
+        "約瑟說：「你們的意思是要害我，但神的意思原是好的。」饒恕的最高典範。",
+        "Joseph's famous declaration — 'You meant evil against me, but God meant it for good' — reframes decades of suffering as part of a redemptive plan.",
+    ),
+    # ── Psalms (selected key psalms) ──
+    ("Psalms", 1, 1): (
+        "诗篇的开篇，定下整卷书的基调：默想神律法的人有福，恶人必如糠秕被风吹散。",
+        "詩篇的開篇，定下整卷書的基調：默想神律法的人有福，惡人必如糠秕被風吹散。",
+        "The doorway to the Psalms. Two paths, two destinies — and the wise are those who delight in God's instruction day and night.",
+    ),
+    ("Psalms", 2, 1): (
+        "弥赛亚君王诗篇，被新约多次引用，描绘列国敌挡神受膏者的徒然。",
+        "彌賽亞君王詩篇，被新約多次引用，描繪列國敵擋神受膏者的徒然。",
+        "A messianic coronation psalm quoted repeatedly in the New Testament. The kings of earth rage in vain against the Anointed One God himself has installed.",
+    ),
+    ("Psalms", 22, 1): (
+        "「我的神！我的神！为什么离弃我？」——耶稣在十字架上引用的诗篇，预表受苦的弥赛亚。",
+        "「我的神！我的神！為什麼離棄我？」——耶穌在十字架上引用的詩篇，預表受苦的彌賽亞。",
+        "The cry Jesus echoed from the cross. Centuries before Calvary, David describes pierced hands and feet, mocking onlookers, and gambling for clothing.",
+    ),
+    ("Psalms", 23, 1): (
+        "全圣经最为人熟知的诗篇之一。在死荫幽谷与生命平安之间，宣告耶和华是牧者。",
+        "全聖經最為人熟知的詩篇之一。在死蔭幽谷與生命平安之間，宣告耶和華是牧者。",
+        "Perhaps the most beloved chapter in all Scripture. Through danger, fear, and even the valley of death's shadow, the believer is shepherded — not abandoned.",
+    ),
+    ("Psalms", 51, 1): (
+        "大卫与拔示巴犯罪后的悔罪诗。每个跌倒、却仍盼望神饶恕者都能在此找到自己。",
+        "大衛與拔示巴犯罪後的悔罪詩。每個跌倒、卻仍盼望神饒恕者都能在此找到自己。",
+        "David's cry of repentance after his sin with Bathsheba. Every fallen believer who has dared to hope in God's mercy finds words here.",
+    ),
+    ("Psalms", 119, 1): (
+        "圣经中最长的一章。22 个段落，按希伯来字母为顺序，全篇默想神的话语。",
+        "聖經中最長的一章。22 個段落，按希伯來字母為順序，全篇默想神的話語。",
+        "The longest chapter in the Bible — 176 verses in 22 alphabetic sections — a sustained meditation on the beauty and life-giving power of God's word.",
+    ),
+    ("Psalms", 139, 1): (
+        "对神无所不知、无所不在最深刻的反思。即使到地极、到阴间，神仍紧紧握住我们。",
+        "對神無所不知、無所不在最深刻的反思。即使到地極、到陰間，神仍緊緊握住我們。",
+        "The Bible's deepest meditation on divine omniscience. There is no height, depth, or darkness where God's hand cannot reach the believer.",
+    ),
+    # ── Matthew ──
+    ("Matthew", 1, 1): (
+        "马太福音以耶稣的家谱开篇，证明祂是亚伯拉罕之子（应许）与大卫之子（君王）。",
+        "馬太福音以耶穌的家譜開篇，證明祂是亞伯拉罕之子（應許）與大衛之子（君王）。",
+        "Matthew opens with a genealogy because identity matters. Jesus is shown to fulfill both the Abrahamic promise of blessing and the Davidic promise of an eternal King.",
+    ),
+    ("Matthew", 5, 1): (
+        "耶稣事工初期最重要的讲论，颠覆人对「有福」的理解：贫穷、哀恸、饥渴慕义之人——这些人有福了。",
+        "耶穌事工初期最重要的講論，顛覆人對「有福」的理解：貧窮、哀慟、飢渴慕義之人——這些人有福了。",
+        "Jesus' foundational sermon, delivered early in his Galilean ministry. The Beatitudes invert worldly values — calling the poor in spirit, the mourners, and the persecuted 'blessed'.",
+    ),
+    ("Matthew", 6, 9): (
+        "耶稣亲自教导门徒祷告。每一句都是天国子民与天父关系的核心。",
+        "耶穌親自教導門徒禱告。每一句都是天國子民與天父關係的核心。",
+        "The pattern Jesus gave his disciples for prayer. Every line is a window into the heart of how citizens of the kingdom relate to their Father.",
+    ),
+    ("Matthew", 16, 13): (
+        "彼得在该撒利亚腓立比认信耶稣是基督，是神的儿子——四福音事工的转折点。",
+        "彼得在該撒利亞腓立比認信耶穌是基督，是神的兒子——四福音事工的轉折點。",
+        "Peter's confession at Caesarea Philippi is the hinge of all four Gospels. After this moment, Jesus begins openly teaching that he must die and rise again.",
+    ),
+    ("Matthew", 17, 1): (
+        "耶稣在山上变像，向三位门徒短暂显出神性的荣光，证实祂超越摩西与以利亚的权柄。",
+        "耶穌在山上變像，向三位門徒短暫顯出神性的榮光，證實祂超越摩西與以利亞的權柄。",
+        "On a mountain, Jesus' divine glory briefly breaks through his humanity. Moses (Law) and Elijah (Prophets) appear with him — both pointing to the One greater than themselves.",
+    ),
+    ("Matthew", 26, 17): (
+        "耶稣最后的逾越节晚餐，设立圣餐礼。祂的身体与血即将作为新约的祭。",
+        "耶穌最後的逾越節晚餐，設立聖餐禮。祂的身體與血即將作為新約的祭。",
+        "Jesus' final Passover. By breaking bread and pouring the cup, he institutes the new covenant in his body and blood — a memorial the church keeps to this day.",
+    ),
+    ("Matthew", 26, 36): (
+        "客西马尼园的祷告：耶稣以人性面对受难的恐惧，仍顺服天父的旨意。",
+        "客西馬尼園的禱告：耶穌以人性面對受難的恐懼，仍順服天父的旨意。",
+        "In Gethsemane, the fully human Jesus wrestles with the cup before him — and submits to the Father's will. The hour of redemption begins here.",
+    ),
+    ("Matthew", 27, 32): (
+        "钉十字架——历史上最公开的处决。圣经四卷福音以此为高峰，用最少的笔墨描述最大的事件。",
+        "釘十字架——歷史上最公開的處決。聖經四卷福音以此為高峰，用最少的筆墨描述最大的事件。",
+        "The crucifixion — the most public execution in history. The Gospels treat it with strange restraint, letting the event speak for itself.",
+    ),
+    ("Matthew", 28, 1): (
+        "整本新约的高潮：耶稣从死里复活，证实祂的牺牲获蒙天父悦纳，开启永恒的盼望。",
+        "整本新約的高潮：耶穌從死裡復活，證實祂的犧牲獲蒙天父悅納，開啟永恆的盼望。",
+        "The climax of the New Testament. The resurrection vindicates Jesus' atoning sacrifice and inaugurates the hope of eternal life for all who trust him.",
+    ),
+    ("Matthew", 28, 16): (
+        "复活的主向门徒颁布大使命：去使万民作主门徒。这是教会两千年宣教的根基。",
+        "復活的主向門徒頒布大使命：去使萬民作主門徒。這是教會兩千年宣教的根基。",
+        "The Great Commission. The risen Jesus sends his disciples to all nations — the marching orders that have driven 2,000 years of Christian mission.",
+    ),
+    # ── Mark ──
+    ("Mark", 1, 1): (
+        "马可福音节奏最快、最具行动感。开篇即宣告：耶稣是神的儿子。",
+        "馬可福音節奏最快、最具行動感。開篇即宣告：耶穌是神的兒子。",
+        "Mark moves at breakneck speed — the shortest, most action-packed Gospel. The opening line states the thesis: Jesus is the Son of God.",
+    ),
+    ("Mark", 4, 35): (
+        "耶稣平静狂风巨浪，门徒第一次震惊地问：「这到底是谁？连风和海也听从他。」",
+        "耶穌平靜狂風巨浪，門徒第一次震驚地問：「這到底是誰？連風和海也聽從他。」",
+        "Jesus stills a storm. The terrified disciples ask the question Mark wants every reader to ask: 'Who is this, that even the wind and sea obey him?'",
+    ),
+    ("Mark", 8, 27): (
+        "彼得的认信——马可福音的中心。前八章讲祂是谁；后八章讲祂为何而来（受难）。",
+        "彼得的認信——馬可福音的中心。前八章講祂是誰；後八章講祂為何而來（受難）。",
+        "Mark's hinge. The first eight chapters answer 'Who is Jesus?' Peter's confession unlocks the second half: 'What did he come to do?' — to suffer and die.",
+    ),
+    # ── John ──
+    ("John", 1, 1): (
+        "约翰福音以创世记为镜像开篇——那位在起初就有的「道」，如今成了肉身。",
+        "約翰福音以創世記為鏡像開篇——那位在起初就有的「道」，如今成了肉身。",
+        "John mirrors Genesis with his opening: 'In the beginning was the Word.' The eternal Logos — through whom all things were made — has now become flesh.",
+    ),
+    ("John", 3, 1): (
+        "尼哥底母夜访耶稣，听见震撼一生的话：「人若不重生，就不能见神的国。」",
+        "尼哥底母夜訪耶穌，聽見震撼一生的話：「人若不重生，就不能見神的國。」",
+        "A leading Pharisee comes by night for an encounter that contains the most-quoted verse in the Bible (3:16) — and a teaching that has changed millions of lives.",
+    ),
+    ("John", 4, 1): (
+        "耶稣超越种族、性别、宗教的偏见，向一位撒玛利亚妇女启示自己是「活水」。",
+        "耶穌超越種族、性別、宗教的偏見，向一位撒瑪利亞婦女啟示自己是「活水」。",
+        "Jesus crosses every boundary — racial, gender, religious — to offer 'living water' to a Samaritan woman at a well. By chapter's end, her village believes.",
+    ),
+    ("John", 11, 1): (
+        "约翰福音最戏剧性的神迹：耶稣使死了四天的拉撒路复活，预先彰显祂自己的复活权能。",
+        "約翰福音最戲劇性的神蹟：耶穌使死了四天的拉撒路復活，預先彰顯祂自己的復活權能。",
+        "The most dramatic miracle in John's Gospel. Raising Lazarus — dead four days — both ignites Jesus' final week and previews his own resurrection.",
+    ),
+    ("John", 13, 1): (
+        "最后晚餐前，耶稣亲自为门徒洗脚——颠覆所有关于权力和事奉的世俗观念。",
+        "最後晚餐前，耶穌親自為門徒洗腳——顛覆所有關於權力和事奉的世俗觀念。",
+        "On the night of his betrayal, the King washes his disciples' feet — overturning every worldly notion of power and service in a single act.",
+    ),
+    ("John", 17, 1): (
+        "耶稣大祭司的祷告——为门徒、为后世信徒祈求，是新约最深的祷告。",
+        "耶穌大祭司的禱告——為門徒、為後世信徒祈求，是新約最深的禱告。",
+        "Jesus' high priestly prayer — interceding for his disciples and for every believer who would come after them. The deepest prayer in the New Testament.",
+    ),
+    ("John", 20, 1): (
+        "空坟墓——基督教信仰的根基。约翰冷静地记录他亲眼所见的细节。",
+        "空墳墓——基督教信仰的根基。約翰冷靜地記錄他親眼所見的細節。",
+        "The empty tomb — the foundation of the Christian faith. John records the details of what he himself saw with the precision of an eyewitness.",
+    ),
+    # ── Acts ──
+    ("Acts", 1, 1): (
+        "使徒行传是路加福音的续集——耶稣升天后，圣灵借门徒展开教会的扩展史。",
+        "使徒行傳是路加福音的續集——耶穌升天後，聖靈藉門徒展開教會的擴展史。",
+        "Acts is volume two of Luke's Gospel. After Jesus' ascension, the Spirit propels his followers from Jerusalem to Rome — and the church begins.",
+    ),
+    ("Acts", 2, 1): (
+        "五旬节圣灵降临，应验耶稣的应许。从这一刻起，教会诞生，不分种族、地域。",
+        "五旬節聖靈降臨，應驗耶穌的應許。從這一刻起，教會誕生，不分種族、地域。",
+        "Pentecost fulfills Jesus' promise. The Spirit descends, the Gospel is preached in many tongues, and 3,000 are added to the church in a single day.",
+    ),
+    ("Acts", 9, 1): (
+        "教会最大的逼迫者扫罗（保罗）在大马士革路上遇见复活的主——历史的转折点。",
+        "教會最大的逼迫者掃羅（保羅）在大馬士革路上遇見復活的主——歷史的轉折點。",
+        "The church's chief persecutor encounters the risen Christ on the Damascus road. Saul of Tarsus becomes Paul the apostle — a hinge moment in history.",
+    ),
+    ("Acts", 10, 1): (
+        "彼得到外邦百夫长哥尼流家——福音正式打开外邦的门。",
+        "彼得到外邦百夫長哥尼流家——福音正式打開外邦的門。",
+        "Through twin visions, God orchestrates Peter's visit to the Gentile centurion Cornelius. The Gospel is officially opened to the nations.",
+    ),
+    ("Acts", 15, 1): (
+        "耶路撒冷会议：教会决定外邦信徒不必受割礼。这定义了教会的合一与多元。",
+        "耶路撒冷會議：教會決定外邦信徒不必受割禮。這定義了教會的合一與多元。",
+        "The Jerusalem Council settles the church's most divisive question: Gentile believers do not have to keep the Mosaic law to be saved. The unity of the church is preserved.",
+    ),
+    ("Acts", 17, 22): (
+        "保罗在雅典亚略巴古的讲道——向异教知识分子宣讲创造主、悔改与复活。",
+        "保羅在雅典亞略巴古的講道——向異教知識分子宣講創造主、悔改與復活。",
+        "Paul's masterful sermon to Greek philosophers at the Areopagus. He starts with their own poets and altars and ends with the resurrection of Christ.",
+    ),
+    # ── Romans ──
+    ("Romans", 1, 16): (
+        "保罗的论文起点：「我不以福音为耻」。整卷书是这一句的展开。",
+        "保羅的論文起點：「我不以福音為恥」。整卷書是這一句的展開。",
+        "Paul's thesis: 'I am not ashamed of the Gospel — it is the power of God for salvation.' Everything in Romans unpacks this single sentence.",
+    ),
+    ("Romans", 3, 21): (
+        "罗马书的核心：因信称义。神在律法以外向世人显明祂自己的义。",
+        "羅馬書的核心：因信稱義。神在律法以外向世人顯明祂自己的義。",
+        "The heart of Romans — and arguably the heart of the Gospel. God's righteousness is revealed apart from the law and received through faith in Christ alone.",
+    ),
+    ("Romans", 5, 1): (
+        "因信称义的果效：与神和好、得享平安、进入恩典、夸耀盼望——也包括苦难带来的成长。",
+        "因信稱義的果效：與神和好、得享平安、進入恩典、誇耀盼望——也包括苦難帶來的成長。",
+        "The fruits of justification: peace with God, access to grace, hope, and the strange gift of suffering — which produces the very character we long for.",
+    ),
+    ("Romans", 8, 1): (
+        "罗马书的最高峰之一。「在基督耶稣里的就不定罪了」——并以「万事互相效力」收尾。",
+        "羅馬書的最高峰之一。「在基督耶穌裡的就不定罪了」——並以「萬事互相效力」收尾。",
+        "One of the highest peaks in Scripture. 'No condemnation' opens the chapter; 'no separation' closes it. In between: the Spirit, suffering, and unshakable hope.",
+    ),
+    ("Romans", 12, 1): (
+        "保罗从「神为我们做了什么」转到「我们当如何回应」——将身体献作活祭，是合理的事奉。",
+        "保羅從「神為我們做了什麼」轉到「我們當如何回應」——將身體獻作活祭，是合理的事奉。",
+        "The pivot from doctrine to ethics. In view of God's mercy, we offer ourselves as living sacrifices — and the rest of life flows from that response.",
+    ),
+}
+
+
+def _set_for(book_data: list[tuple[int, int, str, str, str]], lang: str, book_name: str) -> dict:
+    """Group authored entries by chapter for one language. Adds an
+    optional `context` field when SECTION_CONTEXTS has a matching entry."""
     out: dict[str, list[dict]] = {}
     for ch, vs, simp, trad, en in book_data:
         title = {"hans": simp, "hant": trad, "en": en}[lang]
-        out.setdefault(str(ch), []).append({"verse": vs, "title": title})
+        item: dict = {"verse": vs, "title": title}
+        ctx = SECTION_CONTEXTS.get((book_name, ch, vs))
+        if ctx is not None:
+            ctx_text = {"hans": ctx[0], "hant": ctx[1], "en": ctx[2]}[lang]
+            item["context"] = ctx_text
+        out.setdefault(str(ch), []).append(item)
     # Sort each chapter's entries by verse for deterministic output.
     for ch in out:
         out[ch].sort(key=lambda e: e["verse"])
@@ -697,9 +959,9 @@ def main() -> int:
             ),
         },
         "sets": {
-            "cuv": {b: _set_for(d, "hans") for b, d in books_data.items()},
-            "cuv-tr": {b: _set_for(d, "hant") for b, d in books_data.items()},
-            "english-classic": {b: _set_for(d, "en") for b, d in books_data.items()},
+            "cuv": {b: _set_for(d, "hans", b) for b, d in books_data.items()},
+            "cuv-tr": {b: _set_for(d, "hant", b) for b, d in books_data.items()},
+            "english-classic": {b: _set_for(d, "en", b) for b, d in books_data.items()},
         },
     }
 

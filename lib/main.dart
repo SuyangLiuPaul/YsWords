@@ -12,6 +12,7 @@ import 'package:yswords/services/cloud_sync_service.dart';
 import 'package:yswords/services/fetch_books.dart';
 import 'package:yswords/services/fetch_verses.dart';
 import 'package:yswords/services/profile_service.dart';
+import 'package:yswords/services/book_intro_service.dart';
 import 'package:yswords/services/section_title_service.dart';
 import 'package:provider/provider.dart';
 import 'package:get/get.dart';
@@ -80,6 +81,8 @@ class _MainAppState extends State<MainApp> {
       // render already has paragraph headings ready.
       // ignore: unawaited_futures
       SectionTitleService.ensureLoaded();
+      // ignore: unawaited_futures
+      BookIntroService.ensureLoaded();
       await appSettings.loadSettings();
       await mainProvider.restoreState();
 

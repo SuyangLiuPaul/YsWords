@@ -20,6 +20,7 @@ const _kShowBibleEvidence = 'showBibleEvidence';
 const _kShowReadingPlan = 'showReadingPlan';
 const _kNotificationsEnabled = 'notificationsEnabled';
 const _kShowSectionTitles = 'showSectionTitles';
+const _kShowBookIntro = 'showBookIntro';
 
 class AppSettings extends ChangeNotifier {
   String _fontFamily = 'Roboto';
@@ -67,6 +68,11 @@ class AppSettings extends ChangeNotifier {
   /// Settings → Reading.
   bool _showSectionTitles = true;
 
+  /// Render the collapsible book-intro card at the top of chapter 1
+  /// when an intro is authored for that book. Default ON. Toggle in
+  /// Settings → Reading.
+  bool _showBookIntro = true;
+
   String get fontFamily => _fontFamily;
   double get fontSize => _fontSize;
   double get lineSpacing => _lineSpacing;
@@ -86,6 +92,7 @@ class AppSettings extends ChangeNotifier {
   bool get showReadingPlan => _showReadingPlan;
   bool get notificationsEnabled => _notificationsEnabled;
   bool get showSectionTitles => _showSectionTitles;
+  bool get showBookIntro => _showBookIntro;
 
   Future<void> setFontFamily(String family) async {
     if (_fontFamily == family) return;
@@ -232,6 +239,14 @@ class AppSettings extends ChangeNotifier {
     await prefs.setBool(_kShowSectionTitles, enabled);
   }
 
+  Future<void> setShowBookIntro(bool enabled) async {
+    if (_showBookIntro == enabled) return;
+    _showBookIntro = enabled;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_kShowBookIntro, enabled);
+  }
+
   Future<void> setMenuScale(double scale) async {
     final clamped = scale.clamp(0.7, 1.5);
     if (_menuScale == clamped) return;
@@ -269,6 +284,7 @@ class AppSettings extends ChangeNotifier {
     _showReadingPlan = prefs.getBool(_kShowReadingPlan) ?? true;
     _notificationsEnabled = prefs.getBool(_kNotificationsEnabled) ?? false;
     _showSectionTitles = prefs.getBool(_kShowSectionTitles) ?? true;
+    _showBookIntro = prefs.getBool(_kShowBookIntro) ?? true;
     notifyListeners();
   }
 
