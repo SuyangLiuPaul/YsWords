@@ -1,18 +1,25 @@
+import 'dart:async' show unawaited;
+
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import 'package:yswords/constants/text_patterns.dart'
     show sanitizeForSearch, notePattern, bracePattern, squarePattern;
 import 'package:yswords/constants/ui_strings.dart';
+import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/models/original_word.dart';
 import 'package:yswords/models/strongs.dart';
 import 'package:yswords/models/verse.dart';
 import 'package:yswords/services/concordance_service.dart';
+import 'package:yswords/services/lxx_service.dart';
 import 'package:yswords/services/originals_service.dart';
 import 'package:yswords/services/strongs_service.dart';
+import 'package:yswords/utils/clipboard_helper.dart';
 import 'package:yswords/utils/version_mapper.dart'
     show localeAwareBookName, toEnglish;
 import 'package:yswords/widgets/word_distribution.dart';
+import 'package:yswords/widgets/word_distribution_table.dart';
 
 /// Bottom sheet that shows the original Hebrew/Greek text for one or
 /// more selected verses, with each word as a tappable chip linked to
@@ -69,8 +76,49 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
   // word entry or root entry.
   String? _expandedConcordanceBook;
 
+  // Loaded interlinear data — set once _loadAll completes so the
+  // "copy table" button can build the TSV without re-awaiting the future.
+  List<_VerseOriginals>? _verseOriginals;
+
   // "englishBook-chapter-verse" → cleaned verse text for concordance preview.
   late final Map<String, String> _verseIndex;
+
+  // Word family (siblings + children) and synonyms (compare refs) for the
+  // currently displayed entry. Populated asynchronously after each word tap.
+  List<StrongsEntry> _wordFamily = const [];
+  List<StrongsEntry> _compareWords = const [];
+
+  // Pre-fetched concordances for every related entry (family + synonym),
+  // so tapping a chip can immediately show inline verse refs without
+  // a per-tap network round trip. Populated by _loadRelations.
+  Map<String, ConcordanceResult?> _relatedConcordances = {};
+
+  // Strong's # of the word-family / synonym chip currently expanded
+  // inline (showing its verse refs below the Wrap). Null = all collapsed.
+  String? _expandedRelatedNumber;
+
+  // Strong's #s for which the user has tapped "+N more" to reveal
+  // every concordance ref (rather than the default first-8 preview).
+  // Cleared whenever the user switches to a new word entry.
+  final Set<String> _refsShowAll = {};
+
+  // LXX Greek equivalents for the current Hebrew entry (empty for
+  // Greek entries). Tapping a chip navigates into that Greek entry,
+  // which then loads its own family / synonyms / verses — letting
+  // the user pivot from Hebrew to Greek word study seamlessly.
+  List<StrongsEntry> _lxxEquivalents = const [];
+
+  // Reverse LXX: Hebrew Strong's that the LXX renders using the
+  // current Greek entry. Empty for Hebrew entries. Lets a NT reader
+  // surface OT roots — e.g. for κύριος (G2962) shows יהוה (H3068),
+  // אֲדֹנָי (H136), etc.
+  List<StrongsEntry> _hebrewSources = const [];
+
+  // The Strong's # the user pivoted FROM via Full Study. When that
+  // chip is auto-expanded in the new entry, we hide the redundant
+  // "Full Study →" link inside it (clicking it would just take them
+  // back to where they came from — confusing right after navigation).
+  String? _pivotFromNumber;
 
   @override
   void initState() {
@@ -117,11 +165,13 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
       if (_glossCache.containsKey(n)) return;
       _glossCache[n] = await StrongsService.lookup(n);
     }));
+    if (mounted) setState(() => _verseOriginals = results);
     return results;
   }
 
   Future<void> _onWordTap(OriginalWord w) async {
     _clearTapRecognizers();
+    _pivotFromNumber = null;
     setState(() {
       _selectedWord = w;
       _selectedEntry = null;
@@ -130,6 +180,13 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
       _rootConcordance = null;
       _loadingEntry = true;
       _expandedConcordanceBook = null;
+      _wordFamily = const [];
+      _compareWords = const [];
+      _relatedConcordances = const {};
+      _expandedRelatedNumber = null;
+      _refsShowAll.clear();
+      _lxxEquivalents = const [];
+      _hebrewSources = const [];
     });
     // Fire both lookups in parallel — Strong's entry is per-language,
     // concordance is a single shared file that gets warmed by the
@@ -144,17 +201,32 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
       _selectedEntry = entry;
       _selectedConcordance = concordance;
       _loadingEntry = false;
-      // Auto-open the first book group so the user sees refs immediately.
+      // All book groups are collapsed by default — user opts in to
+      // auto-expand-first via the AppSettings.autoExpandFirstRef flag.
       _expandedConcordanceBook =
-          concordance?.refs.isNotEmpty == true ? concordance!.refs.first.englishBook : null;
+          (context.read<AppSettings>().autoExpandFirstRef &&
+                  concordance?.refs.isNotEmpty == true)
+              ? concordance!.refs.first.englishBook
+              : null;
     });
+    // Word family + synonyms load in the background — doesn't block the entry card.
+    unawaited(_loadRelations(w.strongs));
   }
 
-  Future<void> _loadRootEntry(String strongsNumber) async {
+  Future<void> _loadRootEntry(String strongsNumber,
+      {String? pivotFromNumber}) async {
+    _pivotFromNumber = pivotFromNumber;
     _clearTapRecognizers();
     setState(() {
       _loadingEntry = true;
       _expandedConcordanceBook = null;
+      _wordFamily = const [];
+      _compareWords = const [];
+      _relatedConcordances = const {};
+      _expandedRelatedNumber = null;
+      _refsShowAll.clear();
+      _lxxEquivalents = const [];
+      _hebrewSources = const [];
     });
     final entryFuture = StrongsService.lookup(strongsNumber);
     final concordanceFuture = ConcordanceService.lookup(strongsNumber);
@@ -166,20 +238,75 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
       _rootEntry = entry;
       _rootConcordance = concordance;
       _loadingEntry = false;
-      _expandedConcordanceBook =
-          concordance?.refs.isNotEmpty == true ? concordance!.refs.first.englishBook : null;
+      _expandedConcordanceBook = null;
     });
+    // pivotFromNumber: when the user reached this entry via a chip in
+    // a cross-language section (LXX or Hebrew Sources), auto-expand the
+    // chip pointing back to where they came from so the OT context is
+    // visible immediately — saves an extra tap.
+    unawaited(_loadRelations(strongsNumber, pivotFromNumber: pivotFromNumber));
   }
 
   void _clearRoot() {
     _clearTapRecognizers();
+    _pivotFromNumber = null;
     setState(() {
       _rootEntry = null;
       _rootConcordance = null;
+      _wordFamily = const [];
+      _compareWords = const [];
+      _relatedConcordances = const {};
+      _expandedRelatedNumber = null;
+      _refsShowAll.clear();
+      _lxxEquivalents = const [];
+      _hebrewSources = const [];
       // Restore the word-entry's auto-opened first book.
-      _expandedConcordanceBook = _selectedConcordance?.refs.isNotEmpty == true
-          ? _selectedConcordance!.refs.first.englishBook
-          : null;
+      _expandedConcordanceBook = null;
+    });
+    if (_selectedWord != null) {
+      unawaited(_loadRelations(_selectedWord!.strongs));
+    }
+  }
+
+  Future<void> _loadRelations(String number, {String? pivotFromNumber}) async {
+    final family = await StrongsService.wordFamily(number);
+    final compare = await StrongsService.compareWords(number);
+    // Hebrew entries get LXX Greek equivalents (forward).
+    // Greek entries get Hebrew sources (reverse LXX).
+    final lxx = number.startsWith('H')
+        ? await LxxService.greekEntriesFor(number)
+        : const <StrongsEntry>[];
+    final hebSrc = number.startsWith('G')
+        ? await LxxService.hebrewSourceEntriesFor(number)
+        : const <StrongsEntry>[];
+    if (!mounted) return;
+    // Prefetch concordances for every related entry in parallel.
+    final all = <StrongsEntry>[...family, ...compare, ...lxx, ...hebSrc];
+    final entries = <String, ConcordanceResult?>{};
+    await Future.wait(all.map((e) async {
+      entries[e.number] = await ConcordanceService.lookup(e.number);
+    }));
+    if (!mounted) return;
+    // If the user reached this entry by tapping a chip in a related
+    // section (Word Family / Synonyms / LXX / Hebrew Sources) on the
+    // previous entry, find that "previous" Strong's # in the new
+    // entry's related sets and auto-expand it. For an LXX→Greek pivot
+    // this surfaces the OT verses (via Hebrew Sources) immediately;
+    // for a Hebrew Sources→Hebrew pivot it surfaces the LXX equivalent.
+    String? autoExpand;
+    if (pivotFromNumber != null) {
+      final pivots = {
+        for (final e in all) e.number,
+      };
+      if (pivots.contains(pivotFromNumber)) autoExpand = pivotFromNumber;
+    }
+    setState(() {
+      _wordFamily = family;
+      _compareWords = compare;
+      _lxxEquivalents = lxx;
+      _hebrewSources = hebSrc;
+      _relatedConcordances = entries;
+      if (autoExpand != null) _expandedRelatedNumber = autoExpand;
     });
   }
 
@@ -195,7 +322,14 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
       maxChildSize: 0.95,
       expand: false,
       builder: (context, scrollController) {
-        return Column(
+        // Local Scaffold so snackbars from ScaffoldMessenger.of(ctx)
+        // (e.g. the "Copied!" feedback after tapping a copy icon)
+        // render INSIDE this modal sheet — without it the snackbar
+        // anchors to the root scaffold below the modal and the user
+        // never sees the feedback.
+        return Scaffold(
+          backgroundColor: Colors.transparent,
+          body: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
@@ -237,6 +371,13 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
                       ],
                     ),
                   ),
+                  if (_verseOriginals != null)
+                    IconButton(
+                      icon: const Icon(Icons.copy_outlined),
+                      iconSize: 20,
+                      tooltip: uiStrings['copyTable']?[locale] ?? 'Copy word table',
+                      onPressed: () => _copyInterlinearTable(context),
+                    ),
                   IconButton(
                     icon: const Icon(Icons.close),
                     iconSize: 20,
@@ -261,7 +402,7 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
                       for (final vo in data) _buildVerseBlock(vo, scheme),
                       if (_selectedWord != null) ...[
                         const SizedBox(height: 16),
-                        _buildEntryCard(scheme, locale),
+                        _buildEntryCard(context, scheme, locale),
                       ] else ...[
                         const SizedBox(height: 16),
                         _buildHint(scheme, locale),
@@ -272,6 +413,7 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
               ),
             ),
           ],
+        ),
         );
       },
     );
@@ -404,6 +546,34 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
                   color: scheme.onSurfaceVariant,
                 ),
               ),
+            // Strong's # badge — small, monospace, dimmed so it doesn't
+            // compete with the lemma but is identifiable at a glance.
+            // Force LTR Directionality so the number reads left-to-right
+            // even when the surrounding chip Wrap is RTL for Hebrew.
+            // Hidden when the user has disabled the badge in settings.
+            if (context.read<AppSettings>().showStrongsInOriginals) ...[
+              const SizedBox(height: 2),
+              Directionality(
+                textDirection: TextDirection.ltr,
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                  decoration: BoxDecoration(
+                    color: scheme.secondary.withValues(alpha: 0.13),
+                    borderRadius: BorderRadius.circular(3),
+                  ),
+                  child: Text(
+                    w.strongs,
+                    style: TextStyle(
+                      fontSize: 9,
+                      fontWeight: FontWeight.w700,
+                      color: scheme.secondary,
+                      letterSpacing: 0.3,
+                    ),
+                  ),
+                ),
+              ),
+            ],
             if (gloss.isNotEmpty) ...[
               const SizedBox(height: 2),
               // Gloss is locale-script (LTR/Chinese), even when the
@@ -432,7 +602,7 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
     );
   }
 
-  Widget _buildEntryCard(ColorScheme scheme, String locale) {
+  Widget _buildEntryCard(BuildContext context, ColorScheme scheme, String locale) {
     final w = _selectedWord!;
     if (_loadingEntry) {
       return const Padding(
@@ -497,6 +667,24 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
                     color: scheme.onSurface,
                   ),
                 ),
+              ),
+              IconButton(
+                icon: const Icon(Icons.table_chart_outlined),
+                iconSize: 18,
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+                tooltip: uiStrings['distributionTable']?[locale] ??
+                    'Distribution Table',
+                onPressed: () => _showDistributionTable(context),
+              ),
+              const SizedBox(width: 4),
+              IconButton(
+                icon: const Icon(Icons.copy_outlined),
+                iconSize: 18,
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+                tooltip: uiStrings['copyWordStudy']?[locale] ?? 'Copy word study',
+                onPressed: () => _copyWordEntry(context),
               ),
             ],
           ),
@@ -569,6 +757,41 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
               const SizedBox(height: 10),
               _buildDerivationRich(entry.derivation!, scheme),
             ],
+            if (_wordFamily.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              _buildRelatedSection(
+                uiStrings['wordFamily']?[locale] ?? 'Word Family',
+                _wordFamily, scheme, locale,
+              ),
+            ],
+            if (_compareWords.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              _buildRelatedSection(
+                uiStrings['synonyms']?[locale] ?? 'Synonyms',
+                _compareWords, scheme, locale,
+              ),
+            ],
+            if (_lxxEquivalents.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              _buildRelatedSection(
+                uiStrings['lxxEquivalents']?[locale] ?? 'LXX Equivalents',
+                _lxxEquivalents, scheme, locale,
+                // Override: when expanding an LXX Greek chip, show the
+                // OT verses where the source Hebrew word appears (the
+                // verses the LXX renders using this Greek lemma). The
+                // verse text is auto-displayed in the user's current
+                // Bible version (English / Chinese) via _verseIndex.
+                overrideConcordance: concordance,
+                overrideHeaderLemma: entry.lemma,
+              ),
+            ],
+            if (_hebrewSources.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              _buildRelatedSection(
+                uiStrings['hebrewSources']?[locale] ?? 'Hebrew Sources',
+                _hebrewSources, scheme, locale,
+              ),
+            ],
           ] else
             Text(
               uiStrings['strongsNotFound']?[locale] ??
@@ -640,6 +863,524 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
           height: 1.45,
         ),
         children: spans,
+      ),
+    );
+  }
+
+  // ── Word family + synonyms ──────────────────────────────────────────────────
+
+  Widget _buildRelatedSection(
+      String label, List<StrongsEntry> entries, ColorScheme scheme, String locale,
+      {ConcordanceResult? overrideConcordance, String? overrideHeaderLemma}) {
+    // Find which entry (if any) in this section is expanded — only
+    // expand inline within the section that owns the chip, so a tap
+    // on a Word-Family chip doesn't dangle verses inside the Synonyms
+    // section.
+    StrongsEntry? expanded;
+    if (_expandedRelatedNumber != null) {
+      for (final e in entries) {
+        if (e.number == _expandedRelatedNumber) {
+          expanded = e;
+          break;
+        }
+      }
+    }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 11,
+            fontWeight: FontWeight.w600,
+            color: scheme.onSurfaceVariant,
+            letterSpacing: 0.5,
+          ),
+        ),
+        const SizedBox(height: 6),
+        Wrap(
+          spacing: 6,
+          runSpacing: 6,
+          children: [for (final e in entries) _relatedChip(e, scheme, locale)],
+        ),
+        if (expanded != null) ...[
+          const SizedBox(height: 8),
+          _buildExpandedRelatedVerses(expanded, scheme, locale,
+              overrideConcordance: overrideConcordance,
+              overrideHeaderLemma: overrideHeaderLemma),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildExpandedRelatedVerses(
+      StrongsEntry e, ColorScheme scheme, String locale,
+      {ConcordanceResult? overrideConcordance, String? overrideHeaderLemma}) {
+    // For the LXX section we override the concordance so the user sees
+    // the Old Testament verses where the source Hebrew word appears
+    // (translated as this Greek word in the LXX) — that's the OT
+    // context behind the Greek lemma. Verse text is displayed in the
+    // current Bible version's locale via _lookupVerseText.
+    final cr = overrideConcordance ?? _relatedConcordances[e.number];
+    if (cr == null) {
+      // Concordance still loading or genuinely unavailable.
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        child: Center(
+          child: SizedBox(
+            width: 18,
+            height: 18,
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              color: scheme.primary,
+            ),
+          ),
+        ),
+      );
+    }
+    if (cr.refs.isEmpty) {
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        decoration: BoxDecoration(
+          color: scheme.surfaceContainerHighest.withValues(alpha: 0.4),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Text(
+          uiStrings['concordanceNoResults']?[locale] ??
+              'No verse references for this entry.',
+          style: TextStyle(
+              fontSize: 12,
+              color: scheme.onSurfaceVariant,
+              fontStyle: FontStyle.italic),
+        ),
+      );
+    }
+    final showAll = _refsShowAll.contains(e.number);
+    final shown = showAll ? cr.refs : cr.refs.take(8).toList();
+    final remaining = cr.refs.length - shown.length;
+    final usedTemplate =
+        uiStrings['concordanceUsed']?[locale] ?? 'Used {count} times';
+    final usedLabel = usedTemplate.replaceAll('{count}', cr.total.toString());
+    return Container(
+      padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
+      decoration: BoxDecoration(
+        color: scheme.surfaceContainerHighest.withValues(alpha: 0.45),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+          color: scheme.outlineVariant.withValues(alpha: 0.5),
+          width: 0.5,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                decoration: BoxDecoration(
+                  color: scheme.primary.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Text(
+                  e.number,
+                  style: TextStyle(
+                    fontSize: 9,
+                    fontWeight: FontWeight.w700,
+                    color: scheme.primary,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  overrideHeaderLemma != null
+                      ? '${e.lemma} ← $overrideHeaderLemma · $usedLabel'
+                      : '${e.lemma} · $usedLabel',
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: scheme.onSurfaceVariant,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              // Hide the "Full Study →" link when this chip is the
+              // back-pivot — clicking it would just take the user
+              // where they just came from. Otherwise, tapping it
+              // navigates into this entry's full word study, with the
+              // current entry recorded as the next back-pivot.
+              if (e.number != _pivotFromNumber)
+                InkWell(
+                  onTap: () {
+                    final currentNumber = (_rootEntry ?? _selectedEntry)?.number;
+                    _loadRootEntry(e.number, pivotFromNumber: currentNumber);
+                  },
+                  borderRadius: BorderRadius.circular(4),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 4, vertical: 2),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          uiStrings['fullStudy']?[locale] ?? 'Full study',
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w600,
+                            color: scheme.primary,
+                          ),
+                        ),
+                        Icon(Icons.arrow_forward_rounded,
+                            size: 12, color: scheme.primary),
+                      ],
+                    ),
+                  ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          for (int i = 0; i < shown.length; i++) ...[
+            if (i > 0)
+              Divider(
+                  height: 1,
+                  thickness: 0.5,
+                  color: scheme.outlineVariant.withValues(alpha: 0.3)),
+            _refRow(shown[i], scheme),
+          ],
+          if (remaining > 0) ...[
+            const SizedBox(height: 4),
+            // Tappable: reveal every remaining ref instead of the
+            // first-8 preview. Idempotent — stays expanded until the
+            // user switches to a new word.
+            InkWell(
+              onTap: () => setState(() => _refsShowAll.add(e.number)),
+              borderRadius: BorderRadius.circular(4),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 4, vertical: 4),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      '+ $remaining ${uiStrings['moreRefs']?[locale] ?? 'more'}',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        color: scheme.primary,
+                      ),
+                    ),
+                    Icon(Icons.expand_more,
+                        size: 14, color: scheme.primary),
+                  ],
+                ),
+              ),
+            ),
+          ] else if (showAll && cr.refs.length > 8) ...[
+            // Once expanded, show a "collapse" affordance so the
+            // section can fold back to the compact preview.
+            const SizedBox(height: 4),
+            InkWell(
+              onTap: () => setState(() => _refsShowAll.remove(e.number)),
+              borderRadius: BorderRadius.circular(4),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 4, vertical: 4),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      uiStrings['collapse']?[locale] ?? 'Collapse',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        color: scheme.primary,
+                      ),
+                    ),
+                    Icon(Icons.expand_less,
+                        size: 14, color: scheme.primary),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _relatedChip(StrongsEntry e, ColorScheme scheme, String locale) {
+    // Material ancestor guarantees InkWell.onTap fires on Flutter web.
+    // Tap behavior: toggle inline verse-list expansion. To open the
+    // full word study, the user uses the "Full study →" affordance
+    // inside the expanded section.
+    final isExpanded = _expandedRelatedNumber == e.number;
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+      onTap: () => setState(() {
+        _expandedRelatedNumber = isExpanded ? null : e.number;
+      }),
+      borderRadius: BorderRadius.circular(8),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+        constraints: const BoxConstraints(maxWidth: 200),
+        decoration: BoxDecoration(
+          color: isExpanded
+              ? scheme.primaryContainer
+              : scheme.secondaryContainer.withValues(alpha: 0.55),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: isExpanded ? scheme.primary : scheme.outlineVariant,
+            width: isExpanded ? 1.5 : 1,
+          ),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                  decoration: BoxDecoration(
+                    color: scheme.secondary.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Text(
+                    e.number,
+                    style: TextStyle(
+                      fontSize: 9,
+                      fontWeight: FontWeight.w700,
+                      color: scheme.secondary,
+                      letterSpacing: 0.4,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 5),
+                Flexible(
+                  child: Text(
+                    e.lemma,
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      color: scheme.onSurface,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 2),
+            Text(
+              e.localizedGloss(locale),
+              style: TextStyle(
+                fontSize: 11,
+                color: scheme.onSurfaceVariant,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+        ),
+      ),
+      ),
+    );
+  }
+
+  // ── Copy helpers ────────────────────────────────────────────────────────────
+
+  Future<void> _copyInterlinearTable(BuildContext ctx) async {
+    final data = _verseOriginals;
+    if (data == null) return;
+    final locale = widget.locale;
+    final buf = StringBuffer();
+    buf.writeln("Verse\tWord\tStrong's\tLemma\tTransliteration\tPronunciation\tGloss");
+    for (final vo in data) {
+      final en = toEnglish(vo.verse.book) ?? vo.verse.book;
+      final verseRef =
+          '${localeAwareBookName(en, locale, widget.currentVersion)} '
+          '${vo.verse.chapter}:${vo.verse.verse}';
+      for (final w in vo.words ?? const <OriginalWord>[]) {
+        final entry = _glossCache[w.strongs];
+        buf.writeln([
+          verseRef,
+          w.text,
+          w.strongs,
+          entry?.lemma ?? '',
+          entry?.translit ?? w.translit ?? '',
+          entry?.pronunciation ?? '',
+          entry?.localizedGloss(locale) ?? '',
+        ].map((s) => s.replaceAll('\t', ' ')).join('\t'));
+      }
+    }
+    await ClipboardHelper.copyWithFeedback(ctx, buf.toString().trimRight());
+  }
+
+  Future<void> _copyWordEntry(BuildContext ctx) async {
+    final isBrowsingRoot = _rootEntry != null;
+    final entry = isBrowsingRoot ? _rootEntry : _selectedEntry;
+    final concordance = isBrowsingRoot ? _rootConcordance : _selectedConcordance;
+    final w = _selectedWord;
+    if (entry == null && w == null) return;
+    final locale = widget.locale;
+    final buf = StringBuffer();
+
+    // Single flat TSV so the whole family + synonyms paste cleanly into
+    // Sheets/Excel as one table. Each row is tagged with a Section.
+    buf.writeln(
+        "Section\tStrong's\tLemma\tTranslit\tGloss\tDefinition\tReference\tVerse Text");
+
+    void writeEntry(String section, StrongsEntry e, ConcordanceResult? cr) {
+      final base = [
+        section,
+        e.number,
+        e.lemma,
+        e.translit,
+        e.localizedGloss(locale),
+        e.localizedDefinition(locale),
+      ].map((s) => s.replaceAll('\t', ' ').replaceAll('\n', ' ')).toList();
+      if (cr != null && cr.refs.isNotEmpty) {
+        for (final r in cr.refs) {
+          final label =
+              '${localeAwareBookName(r.englishBook, locale, widget.currentVersion)} '
+              '${r.chapter}:${r.verse}';
+          final verseText =
+              (_lookupVerseText(r) ?? '').replaceAll('\t', ' ').replaceAll('\n', ' ');
+          buf.writeln([...base, label, verseText].join('\t'));
+        }
+      } else {
+        buf.writeln([...base, '', ''].join('\t'));
+      }
+    }
+
+    if (entry != null) {
+      writeEntry('Main', entry, concordance);
+    } else if (w != null) {
+      buf.writeln([
+        'Main',
+        w.strongs,
+        w.text,
+        w.translit ?? '',
+        '',
+        '',
+        '',
+        '',
+      ].join('\t'));
+    }
+
+    // Word family — fetch concordance per entry; cached after first lookup.
+    for (final famEntry in _wordFamily) {
+      final famConc = await ConcordanceService.lookup(famEntry.number);
+      writeEntry('Family', famEntry, famConc);
+    }
+
+    // Synonyms / compare references.
+    for (final synEntry in _compareWords) {
+      final synConc = await ConcordanceService.lookup(synEntry.number);
+      writeEntry('Synonym', synEntry, synConc);
+    }
+
+    // LXX Greek equivalents (Hebrew → Greek). Their concordance is
+    // already cached in _relatedConcordances from _loadRelations.
+    for (final lxxEntry in _lxxEquivalents) {
+      final lxxConc = _relatedConcordances[lxxEntry.number] ??
+          await ConcordanceService.lookup(lxxEntry.number);
+      writeEntry('LXX', lxxEntry, lxxConc);
+    }
+
+    // Hebrew sources (Greek → Hebrew). Mirror of LXX for NT entries.
+    for (final hebEntry in _hebrewSources) {
+      final hebConc = _relatedConcordances[hebEntry.number] ??
+          await ConcordanceService.lookup(hebEntry.number);
+      writeEntry('HebrewSource', hebEntry, hebConc);
+    }
+
+    if (!ctx.mounted) return;
+    await ClipboardHelper.copyWithFeedback(ctx, buf.toString().trimRight());
+  }
+
+  // ── Distribution table ───────────────────────────────────────────
+
+  void _showDistributionTable(BuildContext ctx) {
+    final isBrowsingRoot = _rootEntry != null;
+    final entry = isBrowsingRoot ? _rootEntry : _selectedEntry;
+    // Resolve the Strong's # from any of: root entry → selected entry →
+    // raw selected word. We prefer entry when available (typed lemma)
+    // but fall back to the original-word's strongs so the table still
+    // opens even if the lexicon lookup hasn't completed.
+    final number = entry?.number ?? _selectedWord?.strongs;
+    if (number == null || number.isEmpty) return;
+    final locale = widget.locale;
+    final scheme = Theme.of(ctx).colorScheme;
+    showModalBottomSheet<void>(
+      context: ctx,
+      isScrollControlled: true,
+      backgroundColor: scheme.surface,
+      // Wider sheet on desktop/iPad — Material's default ~640dp cap
+      // squeezes the table on wide screens.
+      constraints: const BoxConstraints(maxWidth: 1400),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (sheetCtx) => DraggableScrollableSheet(
+        initialChildSize: 0.92,
+        minChildSize: 0.5,
+        maxChildSize: 0.95,
+        expand: false,
+        builder: (_, scrollController) => Scaffold(
+          backgroundColor: Colors.transparent,
+          body: Column(
+          children: [
+            Container(
+              margin: const EdgeInsets.only(top: 8),
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: scheme.outlineVariant,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 12, 12, 8),
+              child: Row(
+                children: [
+                  Icon(Icons.table_chart_outlined,
+                      color: scheme.primary, size: 20),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      uiStrings['distributionTable']?[locale] ??
+                          'Distribution Table',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        color: scheme.onSurface,
+                      ),
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close),
+                    iconSize: 20,
+                    onPressed: () => Navigator.of(sheetCtx).maybePop(),
+                  ),
+                ],
+              ),
+            ),
+            const Divider(height: 1),
+            Expanded(
+              child: WordDistributionTable(
+                strongsNumber: number,
+                locale: locale,
+                currentVersion: widget.currentVersion,
+                scrollController: scrollController,
+              ),
+            ),
+          ],
+        ),
+        ),
       ),
     );
   }

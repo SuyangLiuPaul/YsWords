@@ -35,6 +35,8 @@ class VerseWidget extends StatelessWidget {
         final isSelected = mainProvider.isSelected(verse);
         final isHighlighted = mainProvider.highlightIndex == index;
         final highlightColor = mainProvider.getHighlightColor(verse);
+        final isNoted = mainProvider.isVerseNoted(verse);
+        final isBookmarked = mainProvider.isBookmarked(verse);
         final isReferenceLine = verse.paragraphType == 'reference';
         final inParagraphMode = settings.paragraphMode;
         final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -82,43 +84,98 @@ class VerseWidget extends StatelessWidget {
               : 0;
           vertPadding = (settings.fontSize * 0.1).clamp(1.0, 4.0);
         } else {
-          // Verse-by-verse mode
+          // Verse-by-verse mode. Bumped vertPadding minimum to 6.0
+          // so each verse meets the Material 48dp tap-target rule
+          // even at the smallest font size — pre-fix users had to
+          // poke at thin verses (~24dp tall) to trigger selection.
           leftIndent = isReferenceLine ? baseIndent + 8 : baseIndent;
           topGap = (!isFirst && verse.isParagraphStart) ? settings.fontSize * 0.4 : 0;
-          vertPadding = (settings.fontSize * 0.3).clamp(2.0, 8.0);
+          vertPadding = (settings.fontSize * 0.4).clamp(6.0, 12.0);
         }
 
         return Material(
           color: Colors.transparent,
           clipBehavior: Clip.hardEdge,
           child: InkWell(
-            highlightColor: Colors.transparent,
-            splashColor: Colors.transparent,
+            // Subtle visible feedback so the user knows the tap registered.
+            // Pre-fix had both at Colors.transparent which made it feel
+            // like nothing was happening even when the tap did go through.
+            highlightColor: Theme.of(context)
+                .colorScheme
+                .primary
+                .withValues(alpha: 0.06),
+            splashColor: Theme.of(context)
+                .colorScheme
+                .primary
+                .withValues(alpha: 0.10),
             onTap: () => mainProvider.toggleVerse(verse: verse),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 if (topGap > 0) SizedBox(height: topGap),
-                Container(
-                  width: double.infinity,
-                  color: isSelected
-                      ? Theme.of(context).colorScheme.primaryContainer
-                      : isHighlighted
-                          ? Theme.of(context)
-                              .colorScheme
-                              .secondary
-                              .withValues(alpha: highlightAlpha)
-                          : highlightColor != null
-                              ? highlightColor.withValues(alpha: highlightAlpha)
-                              : Colors.transparent,
-                  padding: EdgeInsets.fromLTRB(
-                      leftIndent, vertPadding, baseIndent, vertPadding),
-                  child: RichText(
-                    textAlign: TextAlign.start,
-                    text: TextSpan(
-                      children: spans,
+                Stack(
+                  children: [
+                    Container(
+                      width: double.infinity,
+                      color: isSelected
+                          ? Theme.of(context).colorScheme.primaryContainer
+                          : isHighlighted
+                              ? Theme.of(context)
+                                  .colorScheme
+                                  .secondary
+                                  .withValues(alpha: highlightAlpha)
+                              : highlightColor != null
+                                  ? highlightColor
+                                      .withValues(alpha: highlightAlpha)
+                                  : Colors.transparent,
+                      padding: EdgeInsets.fromLTRB(
+                          leftIndent, vertPadding, baseIndent, vertPadding),
+                      child: RichText(
+                        textAlign: TextAlign.start,
+                        text: TextSpan(
+                          style: settings.boldVerseText
+                              ? const TextStyle(fontWeight: FontWeight.w600)
+                              : null,
+                          children: spans,
+                        ),
+                      ),
                     ),
-                  ),
+                    // Tiny note / bookmark badges anchored to the right
+                    // edge of the verse container. Only render when the
+                    // verse has the corresponding annotation, so the
+                    // reading view stays clean for un-annotated verses.
+                    if (isNoted || isBookmarked)
+                      Positioned(
+                        top: 2,
+                        right: 4,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (isNoted)
+                              Padding(
+                                padding: const EdgeInsets.only(right: 4),
+                                child: Icon(
+                                  Icons.sticky_note_2,
+                                  size: 14,
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .primary
+                                      .withValues(alpha: 0.6),
+                                ),
+                              ),
+                            if (isBookmarked)
+                              Icon(
+                                Icons.bookmark_rounded,
+                                size: 14,
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .primary
+                                    .withValues(alpha: 0.6),
+                              ),
+                          ],
+                        ),
+                      ),
+                  ],
                 ),
               ],
             ),

@@ -5,7 +5,10 @@ import 'package:yswords/models/verse.dart';
 import 'package:yswords/providers/main_provider.dart';
 import 'package:yswords/services/concordance_service.dart';
 import 'package:yswords/services/strongs_service.dart';
+import 'package:yswords/pages/strongs_entry_page.dart';
+import 'package:yswords/services/recent_searches_service.dart';
 import 'package:yswords/utils/format_searched_text.dart';
+import 'package:yswords/utils/reference_parser.dart';
 import 'package:yswords/utils/version_mapper.dart'
     show localeAwareBookName, toEnglish, translateBookName;
 import 'package:provider/provider.dart';
@@ -13,6 +16,7 @@ import 'dart:async';
 import 'package:yswords/constants/ui_strings.dart';
 import 'package:yswords/constants/text_patterns.dart';
 import 'package:yswords/models/app_settings.dart';
+import 'package:yswords/widgets/home_icon_button.dart';
 import 'package:yswords/widgets/localized_back_button.dart';
 import 'package:yswords/utils/responsive.dart';
 import 'package:flutter/services.dart';
@@ -39,6 +43,9 @@ class _SearchPageState extends State<SearchPage> {
   bool searchAll = true;
   Map<String, int> bookCounts = {};
   String? filterBook;
+  /// Recent searches for the active profile. Loaded once on init,
+  /// updated whenever the user submits a non-trivial query.
+  List<String> _recents = const [];
 
   // When the user typed a Strong's-number pattern (e.g. "G2316"), these
   // hold the lookup result; in this mode the regular text-search path
@@ -46,6 +53,18 @@ class _SearchPageState extends State<SearchPage> {
   String? _strongsKey;
   StrongsEntry? _strongsEntry;
   ConcordanceResult? _strongsResult;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadRecents();
+  }
+
+  Future<void> _loadRecents() async {
+    final list = await RecentSearchesService.list();
+    if (!mounted) return;
+    setState(() => _recents = list);
+  }
 
   @override
   void dispose() {
@@ -175,8 +194,11 @@ class _SearchPageState extends State<SearchPage> {
               hintText: uiStrings['search']?[settings.locale] ?? 'Search',
             ),
             inputFormatters: [
+              // Allow alphanumerics + Chinese chars + space + the
+              // colon / dash / dot punctuation needed to type Bible
+              // references like "John 3:16" or "约 3:16-18".
               FilteringTextInputFormatter.allow(
-                  RegExp(r'[0-9a-zA-Z\u4E00-\u9FFF ]')),
+                  RegExp(r'[0-9a-zA-Z\u4E00-\u9FFF :\-\.：。‐–—]')),
             ],
             onChanged: (text) {
               setState(() {
@@ -187,12 +209,43 @@ class _SearchPageState extends State<SearchPage> {
               });
             },
             onSubmitted: (s) async {
-              if (s.trim().isEmpty) {
+              final trimmed = s.trim();
+              if (trimmed.isEmpty) {
                 setState(() {
                   searchAll = true;
                   filterBook = null;
                 });
+                await search();
+                return;
               }
+              // Strong's-shaped query ("G25", "H430", "Strong G1234")
+              // jumps straight to the lexicon entry — common idiom in
+              // study-tool searches. Done before reference parsing
+              // because "H1" could otherwise match a malformed ref.
+              final strongs = parseStrongsNumber(trimmed);
+              if (strongs != null) {
+                Get.to(() => StrongsEntryPage(number: strongs),
+                    transition: Transition.rightToLeft);
+                return;
+              }
+              // Then try parsing as a Bible reference. If it
+              // resolves to a real verse in the current version,
+              // navigate straight there instead of doing full-text
+              // search — that's almost always what the user wants
+              // when they typed something that looks like a reference.
+              final ref = parseReference(trimmed);
+              if (ref != null) {
+                final mainProv =
+                    Provider.of<MainProvider>(context, listen: false);
+                if (_navigateToReference(ref, mainProv)) return;
+              }
+              // Record the query in the recent-searches list AFTER
+              // we've established that the user submitted a real
+              // text-search (not a Strong's # or a parseable
+              // reference, which navigate away). Fire-and-forget
+              // is fine — list is only read on next page open.
+              await RecentSearchesService.add(trimmed);
+              await _loadRecents();
               await search();
               if (_scrollController.hasClients) {
                 _scrollController.jumpTo(0.0);
@@ -269,6 +322,7 @@ class _SearchPageState extends State<SearchPage> {
                 },
                 icon: const Icon(Icons.close_rounded),
               ),
+            const HomeIconButton(),
           ],
         ),
         body: Center(
@@ -371,6 +425,86 @@ class _SearchPageState extends State<SearchPage> {
                                   .copyWith(fontSize: settings.fontSize),
                               textAlign: TextAlign.center,
                             ),
+                            // Recent-searches chips: shown only on
+                            // the empty pre-search state, not after a
+                            // search returned 0 results (the user
+                            // doesn't need history when they're
+                            // already mid-query).
+                            if (!searchPerformed && _recents.isNotEmpty) ...[
+                              const SizedBox(height: 24),
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    uiStrings['recentSearches']
+                                            ?[settings.locale] ??
+                                        'Recent',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w700,
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .primary,
+                                    ),
+                                  ),
+                                  TextButton.icon(
+                                    onPressed: () async {
+                                      await RecentSearchesService
+                                          .clear();
+                                      await _loadRecents();
+                                    },
+                                    icon: const Icon(
+                                        Icons.delete_sweep_outlined,
+                                        size: 16),
+                                    label: Text(
+                                      uiStrings['clear']
+                                              ?[settings.locale] ??
+                                          'Clear',
+                                      style:
+                                          const TextStyle(fontSize: 12),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 4),
+                              Wrap(
+                                spacing: 6,
+                                runSpacing: 6,
+                                alignment: WrapAlignment.center,
+                                children: [
+                                  for (final q in _recents)
+                                    InputChip(
+                                      label: Text(
+                                        q,
+                                        style:
+                                            const TextStyle(fontSize: 12.5),
+                                      ),
+                                      onPressed: () {
+                                        _textEditingController.text = q;
+                                        _textEditingController.selection =
+                                            TextSelection.fromPosition(
+                                          TextPosition(offset: q.length),
+                                        );
+                                        // Reuse the onSubmitted path
+                                        // by triggering search +
+                                        // recents-bump directly.
+                                        () async {
+                                          await RecentSearchesService
+                                              .add(q);
+                                          await _loadRecents();
+                                          await search();
+                                          if (_scrollController
+                                              .hasClients) {
+                                            _scrollController
+                                                .jumpTo(0.0);
+                                          }
+                                        }();
+                                      },
+                                    ),
+                                ],
+                              ),
+                            ],
                           ],
                         ),
                       ),
@@ -677,5 +811,45 @@ class _SearchPageState extends State<SearchPage> {
         mainProv.clearHighlightIndex();
       });
     });
+  }
+
+  /// Navigate to a free-form parsed [BibleReference]. Returns true
+  /// if the reference resolved to an actual verse in the current
+  /// Bible version and the navigation was triggered; false if it
+  /// didn't (caller should fall back to full-text search).
+  ///
+  /// Re-uses the same post-jump highlight + scroll dance as the
+  /// concordance-ref handler.
+  bool _navigateToReference(BibleReference ref, MainProvider mainProv) {
+    final localBook =
+        translateBookName(ref.englishBook, mainProv.currentVersion);
+    // Find candidate verses in the requested book + chapter.
+    final chapterMatches = mainProv.verses
+        .where((v) => v.book == localBook && v.chapter == ref.chapter)
+        .toList()
+      ..sort((a, b) => a.verse.compareTo(b.verse));
+    if (chapterMatches.isEmpty) return false;
+    // Pick the verse to highlight: explicit verseStart, else the
+    // first verse of the chapter.
+    final targetVerse = ref.verseStart ?? chapterMatches.first.verse;
+    final hit = chapterMatches.firstWhere(
+      (v) => v.verse == targetVerse,
+      orElse: () => chapterMatches.first,
+    );
+
+    mainProv.setCurrentChapter(book: hit.book, chapter: hit.chapter);
+    mainProv.updateCurrentVerse(verse: hit);
+    Get.back();
+    Future.delayed(const Duration(milliseconds: 300), () {
+      final relIdx =
+          chapterMatches.indexWhere((v) => v.verse == hit.verse);
+      if (relIdx < 0) return;
+      mainProv.jumpToIndex(index: relIdx);
+      mainProv.setHighlightIndex(relIdx);
+      Future.delayed(const Duration(milliseconds: 800), () {
+        mainProv.clearHighlightIndex();
+      });
+    });
+    return true;
   }
 }

@@ -7,6 +7,11 @@ class BibleMap {
   final Map<String, String> description;
   final Map<String, List<int>> books;
   final String file;
+  /// Illustration category: 'map' (default, geographic), 'scene'
+  /// (narrative painting / event), 'parable' (parable illustration),
+  /// 'prophecy' (apocalyptic / vision imagery), 'genealogy'.
+  /// Renamed user-facing label is "Illustrations" — see ui_strings.dart.
+  final String kind;
 
   const BibleMap({
     required this.id,
@@ -14,6 +19,7 @@ class BibleMap {
     required this.description,
     required this.books,
     required this.file,
+    this.kind = 'map',
   });
 
   factory BibleMap.fromJson(Map<String, dynamic> json) {
@@ -32,6 +38,7 @@ class BibleMap {
           .map((k, v) => MapEntry(k, v as String? ?? '')),
       books: books,
       file: json['file'] as String? ?? '',
+      kind: json['kind'] as String? ?? 'map',
     );
   }
 

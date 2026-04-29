@@ -2,6 +2,23 @@
   command = "echo 'Flutter web pre-built'"
   publish = "build/web"
 
+# Netlify Functions for the AI-search Gemini proxy. Source lives in
+# `netlify/functions/`; the function URL is exposed at
+# `/.netlify/functions/aiSearch` and (via the explicit `path` config
+# inside the function) also at `/api/aiSearch`.
+#
+# `included_files` ships `assets/bible_evidence.json` inside the
+# function bundle so the prompt builder can read it without a
+# network roundtrip on every invocation.
+[functions]
+  directory = "netlify/functions"
+  node_bundler = "esbuild"
+  included_files = ["assets/bible_evidence.json"]
+
+# Static-file SPA fallback. The Netlify Function URLs (`/api/*` and
+# `/.netlify/functions/*`) are matched and served by Netlify BEFORE
+# this catch-all rewrite, so the function doesn't get swallowed by
+# the SPA fallback.
 [[redirects]]
   from = "/*"
   to = "/index.html"

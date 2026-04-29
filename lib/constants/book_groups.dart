@@ -89,3 +89,75 @@ const newTestamentBooks = <String>{
   '犹大书', '猶大書',
   '启示录', '啟示錄',
 };
+
+/// Canonical English book names in canonical order — used for the
+/// distribution-table column order so books always appear left→right
+/// in Bible order regardless of locale.
+const canonicalOtBooks = <String>[
+  'Genesis', 'Exodus', 'Leviticus', 'Numbers', 'Deuteronomy',
+  'Joshua', 'Judges', 'Ruth', '1 Samuel', '2 Samuel',
+  '1 Kings', '2 Kings', '1 Chronicles', '2 Chronicles',
+  'Ezra', 'Nehemiah', 'Esther', 'Job', 'Psalms', 'Proverbs',
+  'Ecclesiastes', 'Song of Solomon', 'Isaiah', 'Jeremiah',
+  'Lamentations', 'Ezekiel', 'Daniel', 'Hosea', 'Joel', 'Amos',
+  'Obadiah', 'Jonah', 'Micah', 'Nahum', 'Habakkuk',
+  'Zephaniah', 'Haggai', 'Zechariah', 'Malachi',
+];
+
+const canonicalNtBooks = <String>[
+  'Matthew', 'Mark', 'Luke', 'John', 'Acts', 'Romans',
+  '1 Corinthians', '2 Corinthians', 'Galatians', 'Ephesians',
+  'Philippians', 'Colossians', '1 Thessalonians', '2 Thessalonians',
+  '1 Timothy', '2 Timothy', 'Titus', 'Philemon', 'Hebrews',
+  'James', '1 Peter', '2 Peter', '1 John', '2 John', '3 John',
+  'Jude', 'Revelation',
+];
+
+// ── NT sub-corpus groupings (analytical, not strict partitions) ──────
+
+/// Gospels + Acts — narrative section.
+const ntGospelsActs = <String>[
+  'Matthew', 'Mark', 'Luke', 'John', 'Acts',
+];
+
+/// Pauline epistles (traditional 13).
+const ntPauline = <String>[
+  'Romans', '1 Corinthians', '2 Corinthians', 'Galatians',
+  'Ephesians', 'Philippians', 'Colossians', '1 Thessalonians',
+  '2 Thessalonians', '1 Timothy', '2 Timothy', 'Titus', 'Philemon',
+];
+
+/// Johannine corpus excluding the Gospel of John (already in G&A).
+const ntJohannine = <String>[
+  '1 John', '2 John', '3 John', 'Revelation',
+];
+
+/// Other apostolic writings — Hebrews, James, Peter, Jude.
+const ntOtherApostolic = <String>[
+  'Hebrews', 'James', '1 Peter', '2 Peter', 'Jude',
+];
+
+// ── OT sub-corpus groupings (Christian canon order) ─────────────────
+
+const otPentateuch = <String>[
+  'Genesis', 'Exodus', 'Leviticus', 'Numbers', 'Deuteronomy',
+];
+
+const otHistory = <String>[
+  'Joshua', 'Judges', 'Ruth', '1 Samuel', '2 Samuel',
+  '1 Kings', '2 Kings', '1 Chronicles', '2 Chronicles',
+  'Ezra', 'Nehemiah', 'Esther',
+];
+
+const otWisdom = <String>[
+  'Job', 'Psalms', 'Proverbs', 'Ecclesiastes', 'Song of Solomon',
+];
+
+const otMajorProphets = <String>[
+  'Isaiah', 'Jeremiah', 'Lamentations', 'Ezekiel', 'Daniel',
+];
+
+const otMinorProphets = <String>[
+  'Hosea', 'Joel', 'Amos', 'Obadiah', 'Jonah', 'Micah', 'Nahum',
+  'Habakkuk', 'Zephaniah', 'Haggai', 'Zechariah', 'Malachi',
+];

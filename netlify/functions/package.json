@@ -1,0 +1,6 @@
+{
+  "name": "yswords-netlify-functions",
+  "private": true,
+  "type": "module",
+  "dependencies": {}
+}

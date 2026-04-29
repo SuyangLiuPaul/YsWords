@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html spellcheck="false">
 <head>
   <!--
     If you are serving your web app in a path other than the root, change the
@@ -20,10 +20,34 @@
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
   <meta name="description" content="YsWords — A bilingual Bible reader app to help you listen to His voice and abide in Him daily.">
 
-  <!-- iOS meta tags & icons -->
-  <link rel="apple-touch-icon" href="assets/app_icon.png">
+  <!-- Disable iOS Safari data-detection (auto-linking of dates/phone numbers)
+       and spell-check underlining on Flutter web HTML renderer elements. -->
+  <meta name="format-detection" content="telephone=no,address=no,email=no,date=no,url=no">
 
-  <!-- Favicon -->
+  <!-- iOS PWA meta tags. Without apple-mobile-web-app-capable=yes,
+       Add-to-Home-Screen on iPhone opens YsWords in Safari instead
+       of full-screen, breaking the app feel. Status bar style is
+       'default' so the iOS status bar contrasts our white surface. -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="YsWords">
+  <meta name="theme-color" content="#FFFFFF">
+
+  <!-- iOS Add-to-Home-Screen icons. iOS picks the closest size to
+       its current launcher (180×180 on iPhone, 167×167 on iPad,
+       152×152 on older iPads). We point all sizes at the 1024×1024
+       master and let iOS downscale — looks crisper than shipping
+       pre-baked downscales for our simple flat icon. -->
+  <link rel="apple-touch-icon" sizes="180x180" href="icons/Icon-512.png">
+  <link rel="apple-touch-icon" sizes="167x167" href="icons/Icon-512.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="icons/Icon-192.png">
+  <link rel="apple-touch-icon" href="icons/Icon-512.png">
+
+  <!-- Favicon — link to the 192 icon as an SVG-equivalent fallback,
+       plus the legacy favicon.png for older browsers. -->
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/Icon-192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="icons/Icon-512.png">
   <link rel="icon" type="image/png" href="favicon.png"/>
 
   <title>YsWords</title>
@@ -63,6 +87,21 @@
   <!-- Preload app icon -->
   <link rel="preload" href="assets/app_icon.png" as="image">
 
+  <style>
+    /* Strip browser-injected styling from iOS Safari data-detector <a> tags
+       (phone numbers, dates, addresses auto-linked by Safari on the HTML renderer). */
+    a[x-apple-data-detectors] {
+      color: inherit !important;
+      text-decoration: inherit !important;
+      font-size: inherit !important;
+      font-weight: inherit !important;
+    }
+    /* Suppress tap highlight flash on all Flutter interactive elements. */
+    * {
+      -webkit-tap-highlight-color: transparent;
+    }
+  </style>
+
   <!-- PWA Settings -->
   <meta name="theme-color" content="#2196F3">
   <meta name="mobile-web-app-capable" content="yes">
@@ -73,23 +112,195 @@
   <meta name="msapplication-TileColor" content="#2196F3">
 </head>
 <body>
-  <!-- Self-heal: previous deploys registered a Flutter service worker
-       that aggressively cached main.dart.js, so users were stuck on
-       stale builds for hours. Unregister anything currently active and
-       wipe its cache before bootstrapping. New deploys still get fresh
-       JS via netlify.toml's no-cache headers. -->
+  <!-- Cache-busting self-heal. Two failure modes have hit users:
+         A) Old Flutter service worker keeps serving cached HTML.
+         B) Even after the SW is gone, the browser's HTTP disk cache
+            on some clients (mobile Safari especially) holds onto an
+            old main.dart.js until clear-site-data is called.
+       This script handles both:
+         1. Embed a server-side build timestamp (replaced by Netlify
+            at deploy time via the post-processing comment below).
+            Compare to localStorage's last-seen value; if different,
+            force a fresh reload + best-effort cache wipe.
+         2. Unregister every leftover SW + delete every cache bucket
+            (handles A above).
+         3. Auto-reload ONCE if anything was torn down or the build
+            stamp changed, guarded by sessionStorage to prevent
+            loops on uncooperative browsers.
+       Result: every Netlify deploy gets the user onto the new build
+       within the next page load, regardless of which caching layer
+       was being uncooperative. -->
   <script>
     (function() {
-      if (!('serviceWorker' in navigator)) return;
-      navigator.serviceWorker.getRegistrations().then(function(regs) {
-        for (var r of regs) { r.unregister(); }
-      }).catch(function() {});
-      if (window.caches && caches.keys) {
-        caches.keys().then(function(keys) {
-          for (var k of keys) { caches.delete(k); }
-        }).catch(function() {});
+      // BUILD_STAMP is rewritten on each deploy by the build script.
+      // Falls back to a fixed string if the build wasn't post-
+      // processed; cache-busting still works via the SW-unregister
+      // path below in that case.
+      var BUILD_STAMP = '__BUILD_STAMP__';
+      var STAMP_KEY = 'yswords_build_stamp';
+      var RELOAD_KEY = 'yswords_self_heal_reloaded';
+      var lastStamp;
+      try { lastStamp = localStorage.getItem(STAMP_KEY); } catch (_) {}
+      var alreadyReloaded = false;
+      try {
+        alreadyReloaded = sessionStorage.getItem(RELOAD_KEY) === '1';
+      } catch (_) {}
+      var stampChanged = lastStamp !== null && lastStamp !== BUILD_STAMP
+                          && BUILD_STAMP !== '__BUILD_STAMP__';
+      try { localStorage.setItem(STAMP_KEY, BUILD_STAMP); } catch (_) {}
+
+      function maybeReload(reason) {
+        if (alreadyReloaded) return;
+        try { sessionStorage.setItem(RELOAD_KEY, '1'); } catch (_) {}
+        // location.reload() is enough — Netlify's no-cache headers
+        // on / index.html / bootstrap / main.dart.js force network
+        // re-fetch on the reload.
+        location.reload();
       }
+
+      // Service-worker self-heal (handles failure mode A).
+      var unregisterCount = 0;
+      var swPromise = ('serviceWorker' in navigator)
+        ? navigator.serviceWorker.getRegistrations().then(function(regs) {
+            unregisterCount = regs.length;
+            return Promise.all(regs.map(function(r) {
+              return r.unregister().catch(function() {});
+            }));
+          }).catch(function() { return; })
+        : Promise.resolve();
+
+      var cachePromise = (window.caches && caches.keys)
+        ? caches.keys().then(function(keys) {
+            return Promise.all(keys.map(function(k) {
+              return caches.delete(k).catch(function() {});
+            }));
+          }).catch(function() { return; })
+        : Promise.resolve();
+
+      Promise.all([swPromise, cachePromise]).then(function() {
+        if (stampChanged || unregisterCount > 0) {
+          maybeReload(stampChanged ? 'build' : 'sw');
+        }
+      });
     })();
+  </script>
+  <!-- Avatar picker: opens an `<input type="file">`, reads the
+       chosen image, center-crops to a square, resizes to 256×256
+       via Canvas, and resolves with a JPEG data URL. Used by the
+       Profile editor so local users can set a custom avatar
+       without shipping any image-picker package. Resolves with
+       null on cancel / read error. The setTimeout-after-focus
+       trick handles the cancel case (file inputs don't fire any
+       event when the user closes the picker without choosing). -->
+  <script>
+    window.yswordsPickAvatar = function() {
+      return new Promise(function(resolve) {
+        var done = false;
+        function finish(v) { if (done) return; done = true; resolve(v); }
+        var input = document.createElement('input');
+        input.type = 'file';
+        input.accept = 'image/*';
+        input.style.display = 'none';
+        document.body.appendChild(input);
+        function cleanup() {
+          if (input.parentNode) document.body.removeChild(input);
+        }
+        input.addEventListener('change', function() {
+          var file = input.files && input.files[0];
+          if (!file) { cleanup(); return finish(null); }
+          var reader = new FileReader();
+          reader.onload = function() {
+            var img = new Image();
+            img.onload = function() {
+              var size = 256;
+              var canvas = document.createElement('canvas');
+              canvas.width = size;
+              canvas.height = size;
+              var ctx = canvas.getContext('2d');
+              var srcSize = Math.min(img.width, img.height);
+              var sx = (img.width - srcSize) / 2;
+              var sy = (img.height - srcSize) / 2;
+              ctx.drawImage(img, sx, sy, srcSize, srcSize, 0, 0, size, size);
+              cleanup();
+              try {
+                finish(canvas.toDataURL('image/jpeg', 0.85));
+              } catch (e) {
+                finish(null);
+              }
+            };
+            img.onerror = function() { cleanup(); finish(null); };
+            img.src = reader.result;
+          };
+          reader.onerror = function() { cleanup(); finish(null); };
+          reader.readAsDataURL(file);
+        });
+        // Cancel detection: when the file picker closes without a
+        // selection, no event fires on the input. Listen for window
+        // re-focus and assume cancel after a small delay — gives
+        // the change event time to fire if the user did choose a
+        // file just before the picker closes.
+        window.addEventListener('focus', function once() {
+          window.removeEventListener('focus', once);
+          setTimeout(function() {
+            if (!done) { cleanup(); finish(null); }
+          }, 800);
+        }, {once: true});
+        input.click();
+      });
+    };
+  </script>
+  <!-- Browser Notification helper used by lib/services/notification_service_web.dart.
+       Wraps `new Notification(title, options)` so the Dart side can pass an options
+       bag without hitting Dart's inline-class language feature (only available
+       in Dart 3.3+; we target 3.2.3). -->
+  <script>
+    window.yswordsShowNotification = function(title, options) {
+      try {
+        if (typeof Notification === 'undefined') return null;
+        if (Notification.permission !== 'granted') return null;
+        return new Notification(title, options || {});
+      } catch (e) {
+        return null;
+      }
+    };
+  </script>
+  <!-- In-app "Clear cache & reload" helper. Called from the Settings
+       → About card via dart:js_interop. Wipes the same surfaces the
+       boot-time self-heal does (service workers, Cache Storage,
+       build-stamp localStorage entry) but ALSO marks
+       yswords_self_heal_reloaded fresh so the post-reload self-heal
+       picks up the new build cleanly. Local profile data
+       (highlights / notes / bookmarks in IndexedDB / SharedPreferences)
+       is intentionally left alone. -->
+  <script>
+    window.yswordsClearCacheAndReload = async function() {
+      try {
+        if ('serviceWorker' in navigator) {
+          const regs = await navigator.serviceWorker.getRegistrations();
+          await Promise.all(regs.map(function(r) {
+            return r.unregister().catch(function() {});
+          }));
+        }
+      } catch (e) { console.warn('SW unregister failed:', e); }
+      try {
+        if (window.caches && caches.keys) {
+          const keys = await caches.keys();
+          await Promise.all(keys.map(function(k) {
+            return caches.delete(k).catch(function() {});
+          }));
+        }
+      } catch (e) { console.warn('Cache delete failed:', e); }
+      try { localStorage.removeItem('yswords_build_stamp'); } catch (_) {}
+      try { sessionStorage.removeItem('yswords_self_heal_reloaded'); } catch (_) {}
+      // Hard reload from server, bypassing browser disk cache.
+      // location.reload(true) is non-standard but still works in
+      // Safari/Chrome/Edge/Firefox; falls through to plain reload.
+      try {
+        location.reload(true);
+      } catch (_) {
+        location.reload();
+      }
+    };
   </script>
   <script src="flutter_bootstrap.js" async></script>
 </body>

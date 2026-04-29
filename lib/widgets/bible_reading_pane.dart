@@ -14,18 +14,31 @@ import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/models/bible_map.dart';
 import 'package:yswords/models/verse.dart';
 import 'package:yswords/pages/books_page.dart';
+import 'package:yswords/pages/evidence_page.dart';
+import 'package:yswords/pages/highlights_page.dart';
+import 'package:yswords/pages/library_page.dart';
 import 'package:yswords/pages/map_viewer_page.dart';
 import 'package:yswords/pages/search_page.dart';
 import 'package:yswords/pages/settings_page.dart';
+import 'package:yswords/pages/stats_page.dart';
 import 'package:yswords/providers/main_provider.dart';
 import 'package:yswords/services/fetch_books.dart';
 import 'package:yswords/services/concordance_service.dart';
+import 'package:yswords/services/cloud_auth_service.dart';
+import 'package:yswords/services/cross_reference_service.dart';
 import 'package:yswords/services/fetch_verses.dart';
+import 'package:yswords/services/book_intro_service.dart';
 import 'package:yswords/services/map_service.dart';
+import 'package:yswords/services/section_title_service.dart';
+import 'package:yswords/services/synopsis_service.dart';
+import 'package:yswords/services/tts_service.dart';
 import 'package:yswords/utils/clipboard_helper.dart';
+import 'package:yswords/utils/reference_parser.dart';
 import 'package:yswords/utils/responsive.dart';
+import 'package:yswords/widgets/google_g_logo.dart';
+import 'package:yswords/widgets/today_reading_card.dart';
 import 'package:yswords/utils/version_mapper.dart'
-    show translateBookName, toEnglish;
+    show translateBookName, toEnglish, localeAwareBookName;
 import 'package:yswords/widgets/highlights_sheet.dart';
 import 'package:yswords/widgets/originals_sheet.dart';
 import 'package:yswords/widgets/verse_widget.dart';
@@ -75,6 +88,13 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
   List<BibleMap> _bookMaps = [];
   String _lastBookChapter = '';
 
+  /// Polled flag mirroring `TtsService.speaking` so the floating-header
+  /// menu can swap its icon/label without recomputing on every frame.
+  /// Updated by a 500 ms ticker that runs only while a TTS utterance
+  /// is active.
+  bool _isListening = false;
+  Timer? _ttsPoller;
+
   @override
   void initState() {
     super.initState();
@@ -85,9 +105,162 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
     });
   }
 
+  /// Toggle TTS read-aloud. Plays each verse of the current chapter as
+  /// its own utterance so cancellation is responsive and we can flash
+  /// a brief highlight on the verse currently being read (`_isListening`
+  /// alone wouldn't surface progress to the user).
+  void _toggleListenChapter() {
+    // Logical state takes precedence over the browser flag because
+    // chrome's speechSynthesis.speaking flickers between chunks.
+    if (_isListening || TtsService.speaking) {
+      TtsService.stop();
+      _stopTtsPolling();
+      if (mounted) {
+        context.read<MainProvider>().clearHighlightIndex();
+        setState(() => _isListening = false);
+      }
+      return;
+    }
+    final mp = context.read<MainProvider>();
+    final book = mp.currentBook;
+    final chapter = mp.currentChapter;
+    if (book == null || chapter == null) return;
+    final chapterVerses = mp.verses
+        .where((v) => v.book == book && v.chapter == chapter)
+        .toList()
+      ..sort((a, b) => a.verse.compareTo(b.verse));
+    if (chapterVerses.isEmpty) return;
+    // Strip <note:...> tags and {variant} braces so the synthesizer
+    // doesn't read editorial markup aloud. One chunk per verse so
+    // (a) cancel works deterministically and (b) we can highlight
+    // the current verse in the list as it's spoken.
+    final chunks = chapterVerses
+        .map((v) => sanitizeForSearch(v.text))
+        .toList();
+    final locale = _ttsLocaleForVersion(mp.currentVersion);
+    TtsService.speakSequence(
+      chunks,
+      locale: locale,
+      onAdvance: (idx) {
+        if (!mounted) return;
+        // Reuse the same in-list highlight machinery used by cross-
+        // ref taps. Index here is the verse's position within the
+        // chapter, which matches the relative index the list expects.
+        mp.setHighlightIndex(idx);
+        // Auto-scroll along so the spoken verse is on screen.
+        if (mp.itemScrollController.isAttached) {
+          mp.scrollToIndex(index: idx);
+        }
+      },
+      onDone: () {
+        if (!mounted) return;
+        mp.clearHighlightIndex();
+        _stopTtsPolling();
+        setState(() => _isListening = false);
+      },
+    );
+    setState(() => _isListening = true);
+    _startTtsPolling();
+  }
+
+  String _ttsLocaleForVersion(String version) {
+    final v = version.toLowerCase();
+    if (v.contains('cuv') ||
+        v.contains('cnv') ||
+        v.contains('biblexg') ||
+        v.contains('-tr')) {
+      // Traditional vs. simplified guess: -tr suffix => zh-TW, else zh-CN.
+      return v.endsWith('-tr') ? 'zh-TW' : 'zh-CN';
+    }
+    return 'en-US';
+  }
+
+  void _startTtsPolling() {
+    _ttsPoller?.cancel();
+    _ttsPoller = Timer.periodic(const Duration(milliseconds: 500), (_) {
+      final speaking = TtsService.speaking;
+      if (!speaking && _isListening) {
+        if (mounted) setState(() => _isListening = false);
+        _stopTtsPolling();
+      }
+    });
+  }
+
+  void _stopTtsPolling() {
+    _ttsPoller?.cancel();
+    _ttsPoller = null;
+  }
+
+  /// Show a small dialog listing the keyboard shortcuts. Triggered by
+  /// `?` (Shift+/) on web — pure discoverability help; tapping
+  /// outside or hitting Esc dismisses.
+  void _showShortcutsHelp(BuildContext context, String locale) {
+    final scheme = Theme.of(context).colorScheme;
+    final rows = <List<String>>[
+      ['/', uiStrings['search']?[locale] ?? 'Search'],
+      ['[', uiStrings['previousChapter']?[locale] ?? 'Previous chapter'],
+      [']', uiStrings['nextChapter']?[locale] ?? 'Next chapter'],
+      ['Shift + T', uiStrings['ttsListen']?[locale] ?? 'Listen to chapter'],
+      ['?', uiStrings['shortcutsHelp']?[locale] ?? 'Keyboard shortcuts'],
+    ];
+    showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        icon: Icon(Icons.keyboard_outlined, color: scheme.primary),
+        title: Text(
+          uiStrings['shortcutsHelp']?[locale] ?? 'Keyboard shortcuts',
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            for (final row in rows)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: scheme.surfaceContainerHighest,
+                        borderRadius: BorderRadius.circular(4),
+                        border: Border.all(
+                          color: scheme.outline.withValues(alpha: 0.4),
+                        ),
+                      ),
+                      child: Text(
+                        row[0],
+                        style: const TextStyle(
+                          fontFamily: 'monospace',
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(row[1]),
+                    ),
+                  ],
+                ),
+              ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: Text(uiStrings['ok']?[locale] ?? 'OK'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   void dispose() {
     _versePositionTimer?.cancel();
+    _ttsPoller?.cancel();
+    if (_isListening) TtsService.stop();
     _positionsProvider?.itemPositionsListener.itemPositions
         .removeListener(_handleItemPositionsChanged);
     super.dispose();
@@ -293,10 +466,142 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
     return _formatVerseRange(verses.map((v) => v.verse).toList());
   }
 
+  /// Empty-reader scaffold — shown when verses come back empty
+  /// (failed version switch, network blip, race) so the user always
+  /// has a visible Reload button instead of being stuck on a blank
+  /// list. The popup-menu Reload entry is also available, but
+  /// surfacing the button right where the eye lands is friendlier.
+  Widget _emptyReaderScaffold(BuildContext context, AppSettings settings) {
+    final scheme = Theme.of(context).colorScheme;
+    final locale = settings.locale;
+    return Scaffold(
+      body: SafeArea(
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 32),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.menu_book_outlined,
+                    size: 56, color: scheme.primary.withValues(alpha: 0.7)),
+                const SizedBox(height: 16),
+                Text(
+                  uiStrings['noVersesAvailable']?[locale] ??
+                      'No verses available',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontFamily: settings.fontFamily,
+                    fontSize: settings.fontSize * 1.1,
+                    fontWeight: FontWeight.w600,
+                    color: scheme.onSurface,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  uiStrings['loadErrorBody']?[locale] ??
+                      'Could not load Bible verses. Please check your connection and retry.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontFamily: settings.fontFamily,
+                    fontSize: settings.fontSize * 0.95,
+                    color: scheme.onSurfaceVariant,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                ElevatedButton.icon(
+                  onPressed: _reloadVerses,
+                  icon: const Icon(Icons.refresh),
+                  label: Text(
+                    uiStrings['reload']?[locale] ?? 'Reload',
+                    style: TextStyle(
+                      fontFamily: settings.fontFamily,
+                      fontSize: settings.fontSize,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// User-initiated reload. Re-fetches the current Bible version's
+  /// verses + books and resets the reader to the current chapter (or
+  /// the first chapter when the reader was empty). Used by the
+  /// "Reload" menu item AND by the empty-state widget shown when the
+  /// reader has no verses for the current selection.
+  ///
+  /// Pre-fix the only recovery from a failed FetchVerses was quit-
+  /// and-relaunch.
+  Future<void> _reloadVerses() async {
+    if (!mounted) return;
+    final p = context.read<MainProvider>();
+    final settings = context.read<AppSettings>();
+    final messenger = _messengerKey.currentState;
+    final reloadingMsg =
+        uiStrings['reloading']?[settings.locale] ?? 'Reloading…';
+    messenger?.showSnackBar(SnackBar(
+      content: Text(reloadingMsg),
+      duration: const Duration(seconds: 2),
+    ));
+    try {
+      await FetchVerses.execute(mainProvider: p);
+      if (!mounted) return;
+      await FetchBooks.execute(mainProvider: p);
+      if (!mounted) return;
+      if (p.verses.isEmpty) {
+        messenger?.showSnackBar(SnackBar(
+          content: Text(uiStrings['loadErrorBody']?[settings.locale] ??
+              'Could not load verses. Please retry.'),
+          duration: const Duration(seconds: 3),
+        ));
+        return;
+      }
+      // Settle the cursor on a verse that actually exists. Prefer the
+      // current selection; fall through to the bundle's first verse
+      // when the previous book/chapter no longer matches anything.
+      final keepBook = p.currentBook;
+      final keepChapter = p.currentChapter;
+      final match = p.verses.firstWhere(
+        (v) => v.book == keepBook && v.chapter == keepChapter,
+        orElse: () => p.verses.first,
+      );
+      p.setCurrentChapter(book: match.book, chapter: match.chapter);
+      p.updateCurrentVerse(verse: match);
+      p.setLoadError(null);
+      messenger?.showSnackBar(SnackBar(
+        content: Text(uiStrings['reloaded']?[settings.locale] ?? 'Reloaded'),
+        duration: const Duration(milliseconds: 1500),
+      ));
+    } catch (e) {
+      if (!mounted) return;
+      final base = uiStrings['loadErrorBody']?[settings.locale] ??
+          'Could not load verses.';
+      final detail = e.toString();
+      final detailShort =
+          detail.substring(0, detail.length.clamp(0, 100));
+      messenger?.showSnackBar(SnackBar(
+        content: Text('$base $detailShort'),
+        duration: const Duration(seconds: 3),
+      ));
+    }
+  }
+
   Future<void> _copySelectedVerses({
     required MainProvider mainProvider,
     required AppSettings settings,
   }) async {
+    // The "Copy" button does exactly what the label says: copy to
+    // clipboard, immediately. The previous implementation popped the
+    // OS share sheet first ("Try the platform share sheet first…")
+    // and only fell back to clipboard if the user cancelled, which
+    // confused users who got an unexpected share menu and then had
+    // to dismiss it before the text appeared on the clipboard.
+    //
+    // Sharing-to-app is still available via the system's native
+    // text-selection menu (long-press the copied text in any app).
     final text =
         _formattedSelectedVerses(verses: mainProvider.selectedVerses);
     await ClipboardHelper.copyText(text);
@@ -360,6 +665,14 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
               child: CircularProgressIndicator(),
             ),
           );
+        }
+
+        // The reader has no verses at all → show an empty state with
+        // a Reload button so the user has a one-tap recovery path
+        // instead of having to relaunch the app. Pre-fix this
+        // rendered an empty list silently.
+        if (mainProvider.verses.isEmpty) {
+          return _emptyReaderScaffold(context, settings);
         }
 
         final verses = mainProvider.verses
@@ -436,7 +749,34 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
               ),
               child: ScaffoldMessenger(
                 key: _messengerKey,
-                child: Scaffold(
+                child: CallbackShortcuts(
+                  bindings: <ShortcutActivator, VoidCallback>{
+                    // Web keyboard shortcuts (Round 27E). These are
+                    // discoverable but unobtrusive — they're standard
+                    // app idioms (`/` for search, `[`/`]` for prev/next
+                    // chapter, `?` for help). Disabled while a text
+                    // field is focused so they don't fight typing.
+                    const SingleActivator(LogicalKeyboardKey.bracketLeft):
+                        _goToPreviousChapter,
+                    const SingleActivator(LogicalKeyboardKey.bracketRight):
+                        _goToNextChapter,
+                    const SingleActivator(LogicalKeyboardKey.slash): () {
+                      if (widget.showSearchAndSettings) {
+                        Get.to(() => SearchPage(),
+                            transition: Transition.rightToLeft);
+                      }
+                    },
+                    const SingleActivator(LogicalKeyboardKey.keyT,
+                        shift: true): () {
+                      if (TtsService.isAvailable) _toggleListenChapter();
+                    },
+                    const SingleActivator(LogicalKeyboardKey.question,
+                        shift: true): () =>
+                        _showShortcutsHelp(context, settings.locale),
+                  },
+                  child: Focus(
+                    autofocus: true,
+                    child: Scaffold(
                 body: LayoutBuilder(
                   builder: (context, constraints) {
                     final paneWidth = constraints.maxWidth;
@@ -467,30 +807,91 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                               startIdx += paragraphGroups[g].length;
                             }
                             final isFirst = groupIdx == 0;
-                            if (group.length == 1) {
-                              return VerseWidget(
-                                verse: group.first,
-                                index: startIdx,
-                                hasParagraphData: hasParagraphData,
-                                isFirst: isFirst,
+                            // Look up a section / paragraph heading
+                            // for the FIRST verse in this group.
+                            // Heading carries optional `context` —
+                            // 1-2 sentences of background rendered
+                            // under the title. Both gate on
+                            // settings.showSectionTitles.
+                            SectionHeading? heading;
+                            if (settings.showSectionTitles) {
+                              final firstVerse = group.first;
+                              final englishBook = toEnglish(firstVerse.book) ??
+                                  firstVerse.book;
+                              heading = SectionTitleService.headingAt(
+                                version: mainProvider.currentVersion,
+                                englishBook: englishBook,
+                                chapter: firstVerse.chapter,
+                                verse: firstVerse.verse,
                               );
                             }
-                            return ParagraphGroupWidget(
-                              group: group,
-                              startVerseIndex: startIdx,
-                              isFirst: isFirst,
-                            );
+                            final body = group.length == 1
+                                ? VerseWidget(
+                                    verse: group.first,
+                                    index: startIdx,
+                                    hasParagraphData: hasParagraphData,
+                                    isFirst: isFirst,
+                                  )
+                                : ParagraphGroupWidget(
+                                    group: group,
+                                    startVerseIndex: startIdx,
+                                    isFirst: isFirst,
+                                  );
+                            // If this is the first paragraph of the
+                            // chapter AND we're at chapter 1 of the
+                            // book AND a book intro is authored AND
+                            // the user hasn't disabled it — wrap the
+                            // body so the intro card renders above
+                            // the (possibly headed) verse block.
+                            Widget rendered = heading == null
+                                ? body
+                                : _SectionHeading(
+                                    title: heading.title,
+                                    context: heading.context,
+                                    isFirst: isFirst,
+                                    child: body,
+                                  );
+                            final firstVerse = group.first;
+                            final englishBook =
+                                toEnglish(firstVerse.book) ?? firstVerse.book;
+                            if (isFirst &&
+                                firstVerse.chapter == 1 &&
+                                settings.showBookIntro) {
+                              final intro =
+                                  BookIntroService.forBook(englishBook);
+                              if (intro != null) {
+                                rendered = Column(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.stretch,
+                                  children: [
+                                    _BookIntroCard(
+                                      intro: intro,
+                                      locale: settings.locale,
+                                    ),
+                                    rendered,
+                                  ],
+                                );
+                              }
+                            }
+                            return rendered;
                           }
                           // Trailing spacer height matches whichever
                           // bottom bar is showing (selection action bar
                           // when verses are selected, otherwise the
-                          // reader status bar). The selection bar is
-                          // taller, so we pad more in that case to keep
-                          // the last verse from being hidden under it.
+                          // reader status bar). On narrow screens the
+                          // selection bar is now two rows tall (count+
+                          // copy on top, action icons below), so we
+                          // pad more aggressively when selected to
+                          // keep the last verse from being hidden
+                          // under it.
                           final bottomInset =
                               MediaQuery.of(context).padding.bottom;
+                          final isPhoneWidth =
+                              MediaQuery.of(context).size.width < 560;
                           final extra = isSelected
-                              ? 132 * settings.menuScale
+                              ? (isPhoneWidth
+                                  ? 200 * settings.menuScale
+                                  : 132 * settings.menuScale)
                               : 96 * settings.menuScale;
                           return SizedBox(height: bottomInset + extra);
                         },
@@ -605,11 +1006,45 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                       },
                       highlightCount:
                           mainProvider.highlights.length,
-                      onHighlights: () => _showHighlightsSheet(
-                        context: context,
-                        highlights: mainProvider.highlights,
-                        locale: settings.locale,
+                      // The dedicated Highlights page (Round 34)
+                      // gives a richer experience than the modal
+                      // sheet — search, color filters, copy-all —
+                      // so the floating-header entry now opens it.
+                      // The modal HighlightsSheet remains for the
+                      // long-press color-picker context only.
+                      onHighlights: () => Get.to(
+                        () => const HighlightsPage(),
+                        transition: Transition.rightToLeft,
                       ),
+                      // Reload — re-runs FetchVerses+FetchBooks on the
+                      // current version. User asked for this so they
+                      // don't have to relaunch the app when verses
+                      // fail to load mid-session.
+                      onReload: _reloadVerses,
+                      // TTS read-aloud — only on web (or any platform
+                      // where the SpeechSynthesis API is available).
+                      // The state class also self-stops the utterance
+                      // on dispose so swiping back doesn't leave the
+                      // browser narrating an empty page.
+                      onToggleListen: TtsService.isAvailable
+                          ? _toggleListenChapter
+                          : null,
+                      isListening: _isListening,
+                      // Hide the Today's Reading card while a verse
+                      // selection is active — the selection action bar
+                      // already crowds the screen and the card just
+                      // adds noise. Also hide on the secondary split-
+                      // view pane (no `onSearch`) so the card never
+                      // appears twice on the same screen.
+                      belowHeader: (!isSelected && widget.showSearchAndSettings)
+                          ? TodayReadingCard(
+                              onJump: (ref) => _navigateToBibleReference(
+                                mainProvider: mainProvider,
+                                ref: ref,
+                                locale: settings.locale,
+                              ),
+                            )
+                          : null,
                     ),
                     // Vertical position indicator on the right edge — a
                     // thin track + a small "current/total" pill that
@@ -670,6 +1105,40 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                                 verses: mainProvider.selectedVerses,
                                 locale: settings.locale,
                               ),
+                              onCrossRefs: () => _showCrossRefsSheet(
+                                context: context,
+                                verses: mainProvider.selectedVerses,
+                                locale: settings.locale,
+                                mainProvider: mainProvider,
+                              ),
+                              anyNoted: mainProvider.selectedVerses
+                                  .any(mainProvider.isVerseNoted),
+                              anyBookmarked: mainProvider.selectedVerses
+                                  .any(mainProvider.isBookmarked),
+                              onNote: () => _showNoteEditor(
+                                context: context,
+                                verse: mainProvider.selectedVerses.first,
+                                locale: settings.locale,
+                                mainProvider: mainProvider,
+                              ),
+                              onBookmark: () {
+                                final selected =
+                                    mainProvider.selectedVerses.toList();
+                                final allBookmarked = selected.every(
+                                    mainProvider.isBookmarked);
+                                for (final v in selected) {
+                                  if (allBookmarked) {
+                                    if (mainProvider.isBookmarked(v)) {
+                                      mainProvider.toggleBookmark(verse: v);
+                                    }
+                                  } else {
+                                    if (!mainProvider.isBookmarked(v)) {
+                                      mainProvider.toggleBookmark(verse: v);
+                                    }
+                                  }
+                                }
+                                mainProvider.clearSelectedVerses();
+                              },
                             )
                           : _ReaderStatusBar(
                               progress: chapterProgress,
@@ -681,6 +1150,8 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                   },
                 ),
               ),
+                  ),
+                ),
               ),
             ),
           ),
@@ -899,6 +1370,15 @@ class _SelectionActionBar extends StatelessWidget {
   final ValueChanged<int> onHighlight;
   final VoidCallback onRemoveHighlight;
   final VoidCallback onOriginal;
+  final VoidCallback onCrossRefs;
+  final VoidCallback onNote;
+  final VoidCallback onBookmark;
+  /// True when at least one of the currently-selected verses is
+  /// already bookmarked — so the star icon can render filled.
+  final bool anyBookmarked;
+  /// True when at least one of the currently-selected verses already
+  /// has a note attached — so the note icon can render filled.
+  final bool anyNoted;
   final DeviceClass deviceClass;
 
   const _SelectionActionBar({
@@ -909,6 +1389,11 @@ class _SelectionActionBar extends StatelessWidget {
     required this.onHighlight,
     required this.onRemoveHighlight,
     required this.onOriginal,
+    required this.onCrossRefs,
+    required this.onNote,
+    required this.onBookmark,
+    required this.anyBookmarked,
+    required this.anyNoted,
     required this.deviceClass,
   });
 
@@ -998,6 +1483,77 @@ class _SelectionActionBar extends StatelessWidget {
             .toDouble();
     final inset = ResponsiveBreakpoints.headerInset(deviceClass);
 
+    // Pre-build the secondary action icons. Each is a small
+    // IconButton with the same compact density. Order: Original →
+    // Cross-refs → Note → Bookmark → Highlight.
+    final actionButtons = <Widget>[
+      IconButton(
+        tooltip:
+            uiStrings['originalText']?[settings.locale] ?? 'Original',
+        onPressed: onOriginal,
+        icon: const Icon(Icons.auto_stories),
+        visualDensity: VisualDensity.compact,
+      ),
+      IconButton(
+        tooltip: uiStrings['crossRefs']?[settings.locale] ??
+            'Cross-references',
+        onPressed: onCrossRefs,
+        icon: const Icon(Icons.hub_outlined),
+        visualDensity: VisualDensity.compact,
+      ),
+      IconButton(
+        tooltip: uiStrings['noteAdd']?[settings.locale] ?? 'Note',
+        onPressed: onNote,
+        icon: Icon(anyNoted
+            ? Icons.sticky_note_2
+            : Icons.sticky_note_2_outlined),
+        color: anyNoted ? scheme.primary : null,
+        visualDensity: VisualDensity.compact,
+      ),
+      IconButton(
+        tooltip: uiStrings['bookmark']?[settings.locale] ?? 'Bookmark',
+        onPressed: onBookmark,
+        icon: Icon(anyBookmarked
+            ? Icons.bookmark_rounded
+            : Icons.bookmark_outline_rounded),
+        color: anyBookmarked ? scheme.primary : null,
+        visualDensity: VisualDensity.compact,
+      ),
+      IconButton(
+        tooltip:
+            uiStrings['highlight']?[settings.locale] ?? 'Highlight',
+        onPressed: () => _showColorPicker(context),
+        icon: const Icon(Icons.format_color_fill),
+        visualDensity: VisualDensity.compact,
+      ),
+    ];
+
+    final clearBtn = IconButton(
+      tooltip: uiStrings['clearSelection']?[settings.locale] ?? 'Clear',
+      onPressed: onClear,
+      icon: const Icon(Icons.close_rounded),
+    );
+    final countLabel = Text(
+      label,
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
+      style: TextStyle(
+        fontFamily: settings.fontFamily,
+        fontSize: fontSize,
+        fontWeight: FontWeight.w700,
+        color: scheme.onSurface,
+      ),
+    );
+    final copyBtn = FilledButton.icon(
+      onPressed: onCopy,
+      icon: const Icon(Icons.copy_rounded),
+      label: Text(
+        uiStrings['copySelection']?[settings.locale] ?? 'Copy',
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+      ),
+    );
+
     return SafeArea(
       top: false,
       child: Padding(
@@ -1006,55 +1562,45 @@ class _SelectionActionBar extends StatelessWidget {
           radius: 22,
           child: Padding(
             padding: EdgeInsets.fromLTRB(12 * settings.menuScale,
-                8 * settings.menuScale, 12 * settings.menuScale, 8 * settings.menuScale),
-            child: Row(
-              children: [
-                IconButton(
-                  tooltip: uiStrings['clearSelection']?[settings.locale] ??
-                      'Clear',
-                  onPressed: onClear,
-                  icon: const Icon(Icons.close_rounded),
-                ),
-                Expanded(
-                  child: Text(
-                    label,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontFamily: settings.fontFamily,
-                      fontSize: fontSize,
-                      fontWeight: FontWeight.w700,
-                      color: scheme.onSurface,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 4),
-                IconButton(
-                  tooltip:
-                      uiStrings['originalText']?[settings.locale] ?? 'Original',
-                  onPressed: onOriginal,
-                  icon: const Icon(Icons.auto_stories),
-                ),
-                const SizedBox(width: 4),
-                IconButton(
-                  tooltip:
-                      uiStrings['highlight']?[settings.locale] ?? 'Highlight',
-                  onPressed: () => _showColorPicker(context),
-                  icon: const Icon(Icons.format_color_fill),
-                ),
-                const SizedBox(width: 4),
-                Flexible(
-                  child: FilledButton.icon(
-                    onPressed: onCopy,
-                    icon: const Icon(Icons.copy_rounded),
-                    label: Text(
-                      uiStrings['copySelection']?[settings.locale] ?? 'Copy',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                ),
-              ],
+                6 * settings.menuScale, 12 * settings.menuScale, 6 * settings.menuScale),
+            child: LayoutBuilder(
+              builder: (ctx, constraints) {
+                // On narrow screens (phones, ~360–600 dp wide) split
+                // the bar into two rows so nothing collides:
+                //   [Clear] [count] [Copy]
+                //   [Original Cross-ref Note Bookmark Highlight]
+                // On wider screens keep everything on one row.
+                final isNarrow = constraints.maxWidth < 560;
+                if (isNarrow) {
+                  return Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Row(
+                        children: [
+                          clearBtn,
+                          Expanded(child: countLabel),
+                          const SizedBox(width: 4),
+                          Flexible(child: copyBtn),
+                        ],
+                      ),
+                      const SizedBox(height: 2),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: actionButtons,
+                      ),
+                    ],
+                  );
+                }
+                return Row(
+                  children: [
+                    clearBtn,
+                    Expanded(child: countLabel),
+                    ...actionButtons,
+                    const SizedBox(width: 4),
+                    Flexible(child: copyBtn),
+                  ],
+                );
+              },
             ),
           ),
         ),
@@ -1081,6 +1627,10 @@ void _showOriginalsSheet({
     context: context,
     isScrollControlled: true,
     backgroundColor: Theme.of(context).colorScheme.surface,
+    // Material's default ~640dp cap squeezes the exegesis panel on
+    // wide desktop/iPad screens. Allow up to 1100px so the panel
+    // breathes on web while still feeling sheet-like on phones.
+    constraints: const BoxConstraints(maxWidth: 1100),
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
     ),
@@ -1101,6 +1651,233 @@ void _showOriginalsSheet({
   );
 }
 
+/// Shows a draggable bottom sheet listing the cross-references
+/// curated for the FIRST selected verse. Each row is tappable to
+/// navigate; the sheet falls back to a friendly message when the
+/// dataset doesn't yet have an entry for that verse.
+void _showCrossRefsSheet({
+  required BuildContext context,
+  required List<Verse> verses,
+  required String locale,
+  required MainProvider mainProvider,
+}) {
+  if (verses.isEmpty) return;
+  final firstSorted = [...verses]..sort(
+      (a, b) => a.verse.compareTo(b.verse),
+    );
+  final source = firstSorted.first;
+  final englishBook = toEnglish(source.book) ?? source.book;
+  showModalBottomSheet<void>(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Theme.of(context).colorScheme.surface,
+    constraints: const BoxConstraints(maxWidth: 900),
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+    ),
+    builder: (sheetCtx) => DraggableScrollableSheet(
+      initialChildSize: 0.7,
+      minChildSize: 0.35,
+      maxChildSize: 0.95,
+      expand: false,
+      builder: (_, scrollController) => Scaffold(
+        backgroundColor: Colors.transparent,
+        body: _CrossRefsSheetBody(
+          englishBook: englishBook,
+          chapter: source.chapter,
+          verse: source.verse,
+          locale: locale,
+          mainProvider: mainProvider,
+          scrollController: scrollController,
+          onNavigate: (ref) {
+            Navigator.of(sheetCtx).maybePop();
+            _navigateToBibleReference(
+              mainProvider: mainProvider,
+              ref: ref,
+              locale: locale,
+            );
+          },
+        ),
+      ),
+    ),
+  );
+  mainProvider.clearSelectedVerses();
+}
+
+/// Navigate to a free-form parsed [BibleReference] from a cross-ref
+/// tap. Same dance as the search-page handler: setCurrentChapter,
+/// scroll to verse, briefly highlight.
+void _navigateToBibleReference({
+  required MainProvider mainProvider,
+  required BibleReference ref,
+  required String locale,
+}) {
+  final localBook =
+      translateBookName(ref.englishBook, mainProvider.currentVersion);
+  final chapterMatches = mainProvider.verses
+      .where((v) => v.book == localBook && v.chapter == ref.chapter)
+      .toList()
+    ..sort((a, b) => a.verse.compareTo(b.verse));
+  if (chapterMatches.isEmpty) return;
+  final targetVerse = ref.verseStart ?? chapterMatches.first.verse;
+  final hit = chapterMatches.firstWhere(
+    (v) => v.verse == targetVerse,
+    orElse: () => chapterMatches.first,
+  );
+  mainProvider.setCurrentChapter(book: hit.book, chapter: hit.chapter);
+  mainProvider.updateCurrentVerse(verse: hit);
+  Future.delayed(const Duration(milliseconds: 300), () {
+    final relIdx = chapterMatches.indexWhere((v) => v.verse == hit.verse);
+    if (relIdx < 0) return;
+    mainProvider.jumpToIndex(index: relIdx);
+    mainProvider.setHighlightIndex(relIdx);
+    Future.delayed(const Duration(milliseconds: 800), () {
+      mainProvider.clearHighlightIndex();
+    });
+  });
+}
+
+/// Modal text-editing sheet for attaching a note to a single verse.
+/// If the verse already has a note, the editor pre-fills with it
+/// and shows a Delete button.
+void _showNoteEditor({
+  required BuildContext context,
+  required Verse verse,
+  required String locale,
+  required MainProvider mainProvider,
+}) {
+  final controller = TextEditingController(
+      text: mainProvider.getVerseNote(verse) ?? '');
+  final ref = '${verse.book} ${verse.chapter}:${verse.verseLabel}';
+  showModalBottomSheet<void>(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Theme.of(context).colorScheme.surface,
+    constraints: const BoxConstraints(maxWidth: 720),
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+    ),
+    builder: (sheetCtx) {
+      final scheme = Theme.of(sheetCtx).colorScheme;
+      final hasExisting =
+          (mainProvider.getVerseNote(verse) ?? '').isNotEmpty;
+      return Padding(
+        padding: EdgeInsets.only(
+          left: 16,
+          right: 16,
+          top: 12,
+          bottom: MediaQuery.of(sheetCtx).viewInsets.bottom + 16,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              margin: const EdgeInsets.only(bottom: 8),
+              alignment: Alignment.center,
+              child: Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: scheme.outlineVariant,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+            Row(
+              children: [
+                Icon(Icons.sticky_note_2_outlined,
+                    color: scheme.primary, size: 20),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        uiStrings['noteEdit']?[locale] ?? 'Edit note',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                          color: scheme.onSurface,
+                        ),
+                      ),
+                      Text(
+                        ref,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: scheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.close),
+                  onPressed: () => Navigator.of(sheetCtx).maybePop(),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: controller,
+              autofocus: true,
+              maxLines: 8,
+              minLines: 4,
+              textInputAction: TextInputAction.newline,
+              decoration: InputDecoration(
+                hintText: uiStrings['noteHint']?[locale] ??
+                    'Type your note for this verse…',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                if (hasExisting)
+                  TextButton.icon(
+                    onPressed: () {
+                      mainProvider.clearVerseNote(verse: verse);
+                      mainProvider.clearSelectedVerses();
+                      Navigator.of(sheetCtx).maybePop();
+                    },
+                    icon: Icon(Icons.delete_outline, color: scheme.error),
+                    label: Text(
+                      uiStrings['noteDelete']?[locale] ?? 'Delete',
+                      style: TextStyle(color: scheme.error),
+                    ),
+                  ),
+                const Spacer(),
+                FilledButton.icon(
+                  onPressed: () {
+                    mainProvider.setVerseNote(
+                      verse: verse,
+                      text: controller.text,
+                    );
+                    mainProvider.clearSelectedVerses();
+                    Navigator.of(sheetCtx).maybePop();
+                  },
+                  icon: const Icon(Icons.check_rounded),
+                  label: Text(uiStrings['noteSave']?[locale] ?? 'Save'),
+                ),
+              ],
+            ),
+          ],
+        ),
+      );
+    },
+  );
+}
+
+// Round 34 replaced this modal sheet with a dedicated
+// `HighlightsPage` (see lib/pages/highlights_page.dart) reachable
+// from both the floating-header overflow menu and the dashboard's
+// Highlights count tile. Kept here for now in case a future flow
+// (e.g. an in-reader long-press shortcut) wants the modal again;
+// safe to delete entirely once that is decided.
+// ignore: unused_element
 void _showHighlightsSheet({
   required BuildContext context,
   required Map<String, int> highlights,
@@ -1321,7 +2098,7 @@ class _MapPickerSheetState extends State<_MapPickerSheet>
               padding: const EdgeInsets.fromLTRB(16, 4, 8, 4),
               child: Row(
                 children: [
-                  Icon(Icons.map_outlined, size: 18, color: scheme.primary),
+                  Icon(Icons.collections_outlined, size: 18, color: scheme.primary),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
@@ -1486,7 +2263,7 @@ class _MapTile extends StatelessWidget {
             'assets/maps/${map.file}',
             fit: BoxFit.cover,
             errorBuilder: (_, __, ___) =>
-                Icon(Icons.map, size: 22, color: scheme.primary),
+                Icon(Icons.collections, size: 22, color: scheme.primary),
           ),
         ),
       ),
@@ -1543,6 +2320,21 @@ class _FloatingHeader extends StatelessWidget {
   final String locale;
   final int highlightCount;
   final VoidCallback? onHighlights;
+  /// One-tap reload triggered from the overflow menu. Re-runs
+  /// FetchVerses + FetchBooks on the current Bible version. Null
+  /// hides the menu item.
+  final VoidCallback? onReload;
+  /// Toggles read-aloud (web TTS) for the current chapter. Null hides
+  /// the menu item — set to null on platforms / browsers without
+  /// SpeechSynthesis support.
+  final VoidCallback? onToggleListen;
+  /// True when a TTS utterance is currently in progress, so the menu
+  /// can show "Stop reading" instead of "Listen to chapter".
+  final bool isListening;
+  /// Optional widget rendered immediately below the glass header
+  /// (still inside the same SafeArea + Positioned region). Used for
+  /// the "Today's Reading" card when a reading plan is active.
+  final Widget? belowHeader;
 
   const _FloatingHeader({
     required this.showBookInfo,
@@ -1568,6 +2360,10 @@ class _FloatingHeader extends StatelessWidget {
     this.locale = 'en',
     this.highlightCount = 0,
     this.onHighlights,
+    this.onReload,
+    this.onToggleListen,
+    this.isListening = false,
+    this.belowHeader,
   });
 
   @override
@@ -1588,21 +2384,46 @@ class _FloatingHeader extends StatelessWidget {
       right: inset,
       child: SafeArea(
         bottom: false,
-        child: _GlassSurface(
-          radius: 22,
-          child: Padding(
-            padding: EdgeInsets.symmetric(
-                horizontal: 6 * settings.menuScale,
-                vertical: 4 * settings.menuScale),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      if (onClose != null)
-                        IconButton(
-                          onPressed: onClose,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _GlassSurface(
+              radius: 22,
+              child: Padding(
+                padding: EdgeInsets.symmetric(
+                    horizontal: 6 * settings.menuScale,
+                    vertical: 4 * settings.menuScale),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          // Back arrow as the leftmost element when
+                          // the reader is pushed (has a parent on
+                          // the navigator stack). Pops one level —
+                          // matches the back-arrow-on-leading
+                          // pattern across all AppBar-based pages.
+                          // Hidden in split view's secondary pane
+                          // (where `onClose` already sits in this
+                          // slot) so we don't get two close-style
+                          // buttons stacking up.
+                          if (onClose == null &&
+                              Navigator.of(context).canPop())
+                            IconButton(
+                              onPressed: () =>
+                                  Navigator.of(context).maybePop(),
+                              icon: Icon(Icons.arrow_back_rounded,
+                                  size: iconSize),
+                              padding: EdgeInsets.all(iconPad),
+                              constraints: const BoxConstraints(
+                                  minWidth: 36, minHeight: 36),
+                              tooltip:
+                                  uiStrings['back']?[locale] ?? 'Back',
+                            ),
+                          if (onClose != null)
+                            IconButton(
+                              onPressed: onClose,
                           icon: Icon(Icons.close_rounded, size: iconSize),
                           padding: EdgeInsets.all(iconPad),
                           constraints: const BoxConstraints(
@@ -1644,6 +2465,7 @@ class _FloatingHeader extends StatelessWidget {
                                   fontSize: fontSize,
                                   fontWeight: FontWeight.w700,
                                   color: scheme.primary,
+                                  decoration: TextDecoration.none,
                                 ),
                               ),
                             ),
@@ -1711,6 +2533,23 @@ class _FloatingHeader extends StatelessWidget {
                             minWidth: 36, minHeight: 36),
                         tooltip: uiStrings['search']?[locale] ?? 'Search',
                       ),
+                    // Home action — jump back to the Dashboard root.
+                    // Sits in the right-side action group, mirroring
+                    // the actions-area HomeIconButton on every
+                    // AppBar page. Self-hides when there's no
+                    // parent route (rare; defends against deep-link
+                    // edge cases).
+                    if (Navigator.of(context).canPop() && onClose == null)
+                      IconButton(
+                        onPressed: () => Navigator.of(context)
+                            .popUntil((r) => r.isFirst),
+                        icon:
+                            Icon(Icons.home_rounded, size: iconSize),
+                        padding: EdgeInsets.all(iconPad),
+                        constraints: const BoxConstraints(
+                            minWidth: 36, minHeight: 36),
+                        tooltip: uiStrings['home']?[locale] ?? 'Home',
+                      ),
                     PopupMenuButton<String>(
                       icon: Icon(Icons.more_vert_rounded, size: iconSize),
                       padding: EdgeInsets.all(iconPad),
@@ -1726,17 +2565,196 @@ class _FloatingHeader extends StatelessWidget {
                       // first split-view tap feel like it was lost.
                       itemBuilder: (context) {
                         final items = <PopupMenuEntry<String>>[];
+                        // Top-level "Sign in" — only when Firebase
+                        // is configured and the user isn't signed
+                        // in. Tapping triggers Google popup
+                        // directly, no detour through Settings.
+                        if (CloudAuthService.instance.isConfigured &&
+                            !CloudAuthService.instance.isSignedIn) {
+                          items.add(PopupMenuItem(
+                            value: 'cloudSignIn',
+                            onTap: () async {
+                              final messenger =
+                                  ScaffoldMessenger.of(context);
+                              final result = await CloudAuthService
+                                  .instance
+                                  .signInWithGoogleAndAdoptProfile();
+                              if (!context.mounted) return;
+                              if (!result.isOk) {
+                                messenger.showSnackBar(SnackBar(
+                                  content: Text(
+                                    result.errorMessage ??
+                                        'Sign-in failed.',
+                                  ),
+                                  duration:
+                                      const Duration(seconds: 3),
+                                ));
+                              }
+                            },
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const GoogleGLogo(size: 16),
+                                const SizedBox(width: 12),
+                                Text(
+                                  uiStrings['cloudSignInGoogle']
+                                          ?[locale] ??
+                                      'Sign in with Google',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: scheme.onSurface,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ));
+                          items.add(const PopupMenuDivider());
+                        }
                         if (highlightCount > 0) {
                           items.add(PopupMenuItem(
                             value: 'highlights',
                             onTap: () => onHighlights?.call(),
                             child: _menuRow(
                               context,
-                              icon: Icons.bookmark_rounded,
+                              icon: Icons.format_color_fill,
                               iconColor: scheme.primary,
                               label: uiStrings['myHighlights']?[locale] ??
                                   'My Highlights',
                               trailing: highlightCount.toString(),
+                            ),
+                          ));
+                        }
+                        // Home — pops everything off the stack so
+                        // the user lands back on the Dashboard root.
+                        // After Round 33 the Dashboard IS the app
+                        // root; any nested stack (Settings, Library,
+                        // Stats etc. on top of the reader) collapses
+                        // to it via popUntil(isFirst).
+                        items.add(PopupMenuItem(
+                          value: 'home',
+                          onTap: () {
+                            Navigator.of(context)
+                                .popUntil((r) => r.isFirst);
+                          },
+                          child: _menuRow(
+                            context,
+                            icon: Icons.home_outlined,
+                            label: uiStrings['home']?[locale] ?? 'Home',
+                          ),
+                        ));
+                        // Reload — always available so the user has
+                        // a one-tap recovery when the reader ends up
+                        // empty (failed version switch, network blip,
+                        // race condition). User asked for this
+                        // explicitly: "I need to quit and open app
+                        // again" was their previous workaround.
+                        if (onReload != null) {
+                          items.add(PopupMenuItem(
+                            value: 'reload',
+                            onTap: () => onReload!(),
+                            child: _menuRow(
+                              context,
+                              icon: Icons.refresh,
+                              label:
+                                  uiStrings['reload']?[locale] ?? 'Reload',
+                            ),
+                          ));
+                        }
+                        // Library entry — always shown so the user
+                        // can discover Notes / Bookmarks even before
+                        // creating any.
+                        items.add(PopupMenuItem(
+                          value: 'library',
+                          onTap: () {
+                            Get.to(
+                              () => const LibraryPage(),
+                              transition: Transition.rightToLeft,
+                            );
+                          },
+                          child: _menuRow(
+                            context,
+                            icon: Icons.collections_bookmark_outlined,
+                            label: uiStrings['library']?[locale] ?? 'Library',
+                          ),
+                        ));
+                        items.add(PopupMenuItem(
+                          value: 'stats',
+                          onTap: () {
+                            Get.to(
+                              () => const StatsPage(),
+                              transition: Transition.rightToLeft,
+                            );
+                          },
+                          child: _menuRow(
+                            context,
+                            icon: Icons.insights_outlined,
+                            label: uiStrings['statistics']?[locale] ??
+                                'Statistics',
+                          ),
+                        ));
+                        // Bible Evidence — pre-filtered to the
+                        // current English book AND chapter so users
+                        // only see archaeological / manuscript /
+                        // historical findings whose pictures actually
+                        // illustrate the chapter on screen. Falls back
+                        // to book-wide and then to the full archive
+                        // when chapter-specific coverage is thin.
+                        items.add(PopupMenuItem(
+                          value: 'evidence',
+                          onTap: () {
+                            Get.to(
+                              () => EvidencePage(
+                                filterBook: toEnglish(book),
+                                filterChapter: chapter,
+                              ),
+                              transition: Transition.rightToLeft,
+                            );
+                          },
+                          child: _menuRow(
+                            context,
+                            icon: Icons.museum_outlined,
+                            label: uiStrings['bibleEvidence']?[locale] ??
+                                'Bible Evidence',
+                          ),
+                        ));
+                        // Gospel Synopsis — only shown when the
+                        // current chapter belongs to one of the four
+                        // Gospels. The data is curated from public-
+                        // domain harmony tables so non-Gospel books
+                        // never have anything to show.
+                        if (onToggleListen != null) {
+                          items.add(PopupMenuItem(
+                            value: 'listen',
+                            onTap: onToggleListen,
+                            child: _menuRow(
+                              context,
+                              icon: isListening
+                                  ? Icons.stop_circle_outlined
+                                  : Icons.volume_up_outlined,
+                              iconColor:
+                                  isListening ? scheme.primary : null,
+                              label: isListening
+                                  ? (uiStrings['ttsStop']?[locale] ??
+                                      'Stop reading')
+                                  : (uiStrings['ttsListen']?[locale] ??
+                                      'Listen to chapter'),
+                            ),
+                          ));
+                        }
+                        if (SynopsisService.isGospel(toEnglish(book) ?? '')) {
+                          items.add(PopupMenuItem(
+                            value: 'synopsis',
+                            onTap: () => _showSynopsisSheet(
+                              context: context,
+                              englishBook: toEnglish(book) ?? book,
+                              chapter: chapter,
+                              locale: locale,
+                            ),
+                            child: _menuRow(
+                              context,
+                              icon: Icons.compare_arrows_rounded,
+                              label: uiStrings['synopsis']?[locale] ??
+                                  'Gospel Synopsis',
                             ),
                           ));
                         }
@@ -1751,8 +2769,8 @@ class _FloatingHeader extends StatelessWidget {
                           child: _menuRow(
                             context,
                             icon: chapterMaps.isNotEmpty
-                                ? Icons.map_rounded
-                                : Icons.map_outlined,
+                                ? Icons.collections_rounded
+                                : Icons.collections_outlined,
                             iconColor: chapterMaps.isNotEmpty
                                 ? scheme.primary
                                 : null,
@@ -1821,6 +2839,9 @@ class _FloatingHeader extends StatelessWidget {
             ),
           ),
         ),
+            if (belowHeader != null) belowHeader!,
+          ],
+        ),
       ),
     );
   }
@@ -1868,6 +2889,876 @@ class _FloatingHeader extends StatelessWidget {
           ),
         ],
       ],
+    );
+  }
+}
+
+/// Body of the cross-references modal sheet — loads cross-refs for
+/// the source verse and renders them as a tappable list with verse
+/// previews in the user's current Bible version.
+class _CrossRefsSheetBody extends StatefulWidget {
+  final String englishBook;
+  final int chapter;
+  final int verse;
+  final String locale;
+  final MainProvider mainProvider;
+  final ScrollController scrollController;
+  final void Function(BibleReference ref) onNavigate;
+
+  const _CrossRefsSheetBody({
+    required this.englishBook,
+    required this.chapter,
+    required this.verse,
+    required this.locale,
+    required this.mainProvider,
+    required this.scrollController,
+    required this.onNavigate,
+  });
+
+  @override
+  State<_CrossRefsSheetBody> createState() => _CrossRefsSheetBodyState();
+}
+
+class _CrossRefsSheetBodyState extends State<_CrossRefsSheetBody> {
+  late Future<List<BibleReference>> _future;
+  // Index of the current Bible version's verses by canonical book +
+  // chapter + verse so the preview text loads instantly.
+  late final Map<String, String> _verseIndex;
+
+  @override
+  void initState() {
+    super.initState();
+    _future = CrossReferenceService.forVerseOrNearby(
+        widget.englishBook, widget.chapter, widget.verse);
+    _verseIndex = {
+      for (final v in widget.mainProvider.verses)
+        '${toEnglish(v.book) ?? v.book}-${v.chapter}-${v.verse}': v.text,
+    };
+  }
+
+  String? _previewFor(BibleReference ref) {
+    final v = ref.verseStart ?? 1;
+    final raw = _verseIndex['${ref.englishBook}-${ref.chapter}-$v'];
+    if (raw == null) return null;
+    return sanitizeForSearch(raw);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final locale = widget.locale;
+    final sourceLabel =
+        '${localeAwareBookName(widget.englishBook, locale, widget.mainProvider.currentVersion)} '
+        '${widget.chapter}:${widget.verse}';
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          margin: const EdgeInsets.only(top: 8),
+          width: 40,
+          height: 4,
+          decoration: BoxDecoration(
+            color: scheme.outlineVariant,
+            borderRadius: BorderRadius.circular(2),
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(20, 12, 12, 8),
+          child: Row(
+            children: [
+              Icon(Icons.hub_outlined, color: scheme.primary, size: 20),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      uiStrings['crossRefs']?[locale] ?? 'Cross-references',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        color: scheme.onSurface,
+                      ),
+                    ),
+                    Text(
+                      sourceLabel,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: scheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              IconButton(
+                icon: const Icon(Icons.close),
+                iconSize: 20,
+                onPressed: () => Navigator.of(context).maybePop(),
+              ),
+            ],
+          ),
+        ),
+        const Divider(height: 1),
+        Expanded(
+          child: FutureBuilder<List<BibleReference>>(
+            future: _future,
+            builder: (ctx, snap) {
+              if (snap.connectionState != ConnectionState.done) {
+                return const Center(child: CircularProgressIndicator());
+              }
+              final refs = snap.data ?? const <BibleReference>[];
+              if (refs.isEmpty) {
+                return Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.info_outline,
+                            color: scheme.onSurfaceVariant, size: 32),
+                        const SizedBox(height: 8),
+                        Text(
+                          uiStrings['crossRefsNone']?[locale] ??
+                              'No curated cross-references for this verse yet.',
+                          style: TextStyle(
+                              color: scheme.onSurfaceVariant,
+                              fontStyle: FontStyle.italic),
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }
+              return ListView.separated(
+                controller: widget.scrollController,
+                padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+                itemCount: refs.length,
+                separatorBuilder: (_, __) => Divider(
+                    height: 1,
+                    thickness: 0.5,
+                    color: scheme.outlineVariant.withValues(alpha: 0.4)),
+                itemBuilder: (_, i) {
+                  final r = refs[i];
+                  final preview = _previewFor(r);
+                  final label = r.toString().replaceFirst(
+                        r.englishBook,
+                        localeAwareBookName(r.englishBook, locale,
+                            widget.mainProvider.currentVersion),
+                      );
+                  return InkWell(
+                    onTap: () => widget.onNavigate(r),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 10),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            label,
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w700,
+                              color: scheme.primary,
+                            ),
+                          ),
+                          if (preview != null) ...[
+                            const SizedBox(height: 3),
+                            Text(
+                              preview,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: scheme.onSurface,
+                                height: 1.4,
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// Open a modal sheet showing the harmony entries that touch the
+/// current Gospel chapter. Each row lists the parallels in the
+/// other Gospels — tapping any reference jumps the reader to it.
+void _showSynopsisSheet({
+  required BuildContext context,
+  required String englishBook,
+  required int chapter,
+  required String locale,
+}) {
+  final mainProvider = context.read<MainProvider>();
+  showModalBottomSheet<void>(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Theme.of(context).colorScheme.surface,
+    constraints: const BoxConstraints(maxWidth: 900),
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+    ),
+    builder: (sheetCtx) => DraggableScrollableSheet(
+      initialChildSize: 0.7,
+      minChildSize: 0.35,
+      maxChildSize: 0.95,
+      expand: false,
+      builder: (_, scrollController) => Scaffold(
+        backgroundColor: Colors.transparent,
+        body: _SynopsisSheetBody(
+          englishBook: englishBook,
+          chapter: chapter,
+          locale: locale,
+          scrollController: scrollController,
+          onNavigate: (ref) {
+            Navigator.of(sheetCtx).maybePop();
+            _navigateToBibleReference(
+              mainProvider: mainProvider,
+              ref: ref,
+              locale: locale,
+            );
+          },
+        ),
+      ),
+    ),
+  );
+}
+
+class _SynopsisSheetBody extends StatefulWidget {
+  final String englishBook;
+  final int chapter;
+  final String locale;
+  final ScrollController scrollController;
+  final void Function(BibleReference) onNavigate;
+
+  const _SynopsisSheetBody({
+    required this.englishBook,
+    required this.chapter,
+    required this.locale,
+    required this.scrollController,
+    required this.onNavigate,
+  });
+
+  @override
+  State<_SynopsisSheetBody> createState() => _SynopsisSheetBodyState();
+}
+
+class _SynopsisSheetBodyState extends State<_SynopsisSheetBody> {
+  List<SynopsisEvent>? _events;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    final list =
+        await SynopsisService.byChapter(widget.englishBook, widget.chapter);
+    if (!mounted) return;
+    setState(() => _events = list);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final settings = context.watch<AppSettings>();
+    final events = _events;
+    final mainProvider = context.read<MainProvider>();
+
+    if (events == null) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    return Column(
+      children: [
+        // Drag handle.
+        Container(
+          margin: const EdgeInsets.only(top: 8, bottom: 4),
+          width: 40,
+          height: 4,
+          decoration: BoxDecoration(
+            color: scheme.outline.withValues(alpha: 0.4),
+            borderRadius: BorderRadius.circular(2),
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+          child: Row(
+            children: [
+              Icon(Icons.compare_arrows_rounded,
+                  color: scheme.primary, size: 22),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      uiStrings['synopsis']?[widget.locale] ??
+                          'Gospel Synopsis',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        color: scheme.primary,
+                      ),
+                    ),
+                    Text(
+                      '${localeAwareBookName(widget.englishBook, widget.locale, mainProvider.currentVersion)} ${widget.chapter}',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: scheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        const Divider(height: 1),
+        Expanded(
+          child: events.isEmpty
+              ? Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(32),
+                    child: Text(
+                      uiStrings['synopsisNone']?[widget.locale] ??
+                          'No parallel passages curated for this chapter.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: scheme.onSurfaceVariant,
+                        fontStyle: FontStyle.italic,
+                      ),
+                    ),
+                  ),
+                )
+              : ListView.separated(
+                  controller: widget.scrollController,
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  itemCount: events.length,
+                  separatorBuilder: (_, __) => const Divider(height: 1),
+                  itemBuilder: (_, i) {
+                    final ev = events[i];
+                    return _SynopsisRow(
+                      event: ev,
+                      currentBook: widget.englishBook,
+                      locale: widget.locale,
+                      version: mainProvider.currentVersion,
+                      fontFamily: settings.fontFamily,
+                      onNavigate: widget.onNavigate,
+                    );
+                  },
+                ),
+        ),
+      ],
+    );
+  }
+}
+
+class _SynopsisRow extends StatelessWidget {
+  final SynopsisEvent event;
+  final String currentBook;
+  final String locale;
+  final String version;
+  final String fontFamily;
+  final void Function(BibleReference) onNavigate;
+
+  const _SynopsisRow({
+    required this.event,
+    required this.currentBook,
+    required this.locale,
+    required this.version,
+    required this.fontFamily,
+    required this.onNavigate,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final gospels = ['Matthew', 'Mark', 'Luke', 'John'];
+    final present = gospels
+        .where((g) => event.refs.containsKey(g.toLowerCase()))
+        .toList();
+    final isUnique = present.length == 1;
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            event.localizedTitle(locale),
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: scheme.onSurface,
+              fontFamily: fontFamily,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Wrap(
+            spacing: 6,
+            runSpacing: 4,
+            children: [
+              for (final g in present)
+                _RefChip(
+                  label: _shortLabel(g, event.rawRef(g.toLowerCase()) ?? ''),
+                  isCurrentGospel: g == currentBook,
+                  onTap: () {
+                    final ref = event.referenceFor(g);
+                    if (ref != null) onNavigate(ref);
+                  },
+                ),
+              if (isUnique)
+                Padding(
+                  padding: const EdgeInsets.only(left: 4, top: 2),
+                  child: Text(
+                    uiStrings['synopsisOnlyHere']?[locale] ??
+                        'Only in this Gospel',
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontStyle: FontStyle.italic,
+                      color: scheme.onSurfaceVariant,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Compact chip label like "Mt 5:1-12" (English) or
+  /// "马太 5:1-12" (Chinese). Strips the full English name from the raw
+  /// "Matthew 5:1-12" and replaces with the localized abbreviation.
+  String _shortLabel(String englishGospel, String raw) {
+    // raw looks like "Matthew 5:1-12" — take everything after the first
+    // space and prepend a localized short name.
+    final spaceIdx = raw.indexOf(' ');
+    final tail = spaceIdx > 0 ? raw.substring(spaceIdx + 1) : raw;
+    final shortBook = locale.startsWith('zh')
+        ? localeAwareBookName(englishGospel, locale, version)
+        : _enShortGospel(englishGospel);
+    return '$shortBook $tail';
+  }
+
+  String _enShortGospel(String g) {
+    switch (g) {
+      case 'Matthew':
+        return 'Matt';
+      case 'Mark':
+        return 'Mark';
+      case 'Luke':
+        return 'Luke';
+      case 'John':
+        return 'John';
+    }
+    return g;
+  }
+}
+
+class _RefChip extends StatelessWidget {
+  final String label;
+  final bool isCurrentGospel;
+  final VoidCallback onTap;
+
+  const _RefChip({
+    required this.label,
+    required this.isCurrentGospel,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final bg = isCurrentGospel
+        ? scheme.primary.withValues(alpha: 0.20)
+        : scheme.primary.withValues(alpha: 0.08);
+    final fg = isCurrentGospel ? scheme.primary : scheme.onSurface;
+    return Material(
+      color: bg,
+      borderRadius: BorderRadius.circular(8),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(8),
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+          child: Text(
+            label,
+            style: TextStyle(
+              fontSize: 12.5,
+              fontWeight: FontWeight.w600,
+              color: fg,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Decorative section / paragraph heading rendered above the matching
+/// verse in the reading pane. Title text comes from
+/// `SectionTitleService` — the version-to-set mapping in
+/// `lib/constants/section_title_map.dart` decides which set is used
+/// for the active translation. When optional `context` is present an
+/// info-icon button next to the title toggles a 1-2 sentence
+/// background note. Default state is collapsed — readers who want
+/// the context tap to reveal it; everyone else gets a clean heading.
+class _SectionHeading extends StatefulWidget {
+  final String title;
+  final String? context;
+  final bool isFirst;
+  final Widget child;
+  const _SectionHeading({
+    required this.title,
+    this.context,
+    required this.isFirst,
+    required this.child,
+  });
+
+  @override
+  State<_SectionHeading> createState() => _SectionHeadingState();
+}
+
+class _SectionHeadingState extends State<_SectionHeading> {
+  bool _expanded = false;
+
+  @override
+  Widget build(BuildContext buildContext) {
+    final settings = buildContext.watch<AppSettings>();
+    final scheme = Theme.of(buildContext).colorScheme;
+    final fs = settings.fontSize;
+    final hasContext =
+        widget.context != null && widget.context!.isNotEmpty;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          // Larger top spacing between sections; tighter when this
+          // is the very first paragraph in the chapter so the
+          // heading doesn't push the body too far down.
+          padding: EdgeInsets.fromLTRB(
+            12, widget.isFirst ? 6 : 18, 12, _expanded ? 4 : 8),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              // Small accent bar — anchors the heading without
+              // shouting.
+              Container(
+                width: 3,
+                height: (fs + 2).clamp(14.0, 20.0).toDouble(),
+                margin: const EdgeInsets.only(right: 8),
+                decoration: BoxDecoration(
+                  color: scheme.primary,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              Expanded(
+                child: Text(
+                  widget.title,
+                  style: TextStyle(
+                    fontFamily: settings.fontFamily,
+                    fontSize:
+                        (fs + 1).clamp(14.0, 20.0).toDouble(),
+                    fontWeight: FontWeight.w700,
+                    color: scheme.onSurface,
+                    letterSpacing: 0.1,
+                  ),
+                ),
+              ),
+              if (hasContext) ...[
+                const SizedBox(width: 6),
+                IconButton(
+                  visualDensity: VisualDensity.compact,
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(
+                      minWidth: 32, minHeight: 32),
+                  iconSize: 18,
+                  splashRadius: 18,
+                  tooltip: uiStrings['sectionContextTooltip']
+                          ?[settings.locale] ??
+                      'Background',
+                  icon: Icon(
+                    _expanded
+                        ? Icons.info
+                        : Icons.info_outline,
+                    color: scheme.primary,
+                  ),
+                  onPressed: () =>
+                      setState(() => _expanded = !_expanded),
+                ),
+              ],
+            ],
+          ),
+        ),
+        if (hasContext)
+          AnimatedSize(
+            duration: const Duration(milliseconds: 180),
+            curve: Curves.easeOut,
+            alignment: Alignment.topLeft,
+            child: _expanded
+                ? Padding(
+                    padding:
+                        const EdgeInsets.fromLTRB(23, 0, 12, 10),
+                    child: Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: scheme.surfaceContainerHigh,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                            color: scheme.outlineVariant
+                                .withValues(alpha: 0.6)),
+                      ),
+                      child: Text(
+                        widget.context!,
+                        style: TextStyle(
+                          fontFamily: settings.fontFamily,
+                          fontSize: (fs - 3)
+                              .clamp(12.0, 15.0)
+                              .toDouble(),
+                          fontStyle: FontStyle.italic,
+                          color: scheme.onSurface,
+                          height: 1.5,
+                        ),
+                      ),
+                    ),
+                  )
+                : const SizedBox(width: double.infinity),
+          ),
+        widget.child,
+      ],
+    );
+  }
+}
+
+/// Collapsible card rendered at the top of chapter 1 when the active
+/// book has an authored intro. Shows subtitle + summary by default;
+/// tap "Read more" to expand author / date / audience / themes /
+/// key passage. Hidden when `settings.showBookIntro` is false.
+class _BookIntroCard extends StatefulWidget {
+  final BookIntro intro;
+  final String locale;
+  const _BookIntroCard({required this.intro, required this.locale});
+
+  @override
+  State<_BookIntroCard> createState() => _BookIntroCardState();
+}
+
+class _BookIntroCardState extends State<_BookIntroCard> {
+  bool _expanded = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final settings = context.watch<AppSettings>();
+    final scheme = Theme.of(context).colorScheme;
+    final locale = widget.locale;
+    final fs = settings.fontSize;
+    final intro = widget.intro;
+
+    final textStyle = TextStyle(
+      fontFamily: settings.fontFamily,
+      fontSize: (fs - 2).clamp(13.0, 16.0).toDouble(),
+      color: scheme.onSurface,
+      height: 1.55,
+    );
+    final labelStyle = TextStyle(
+      fontFamily: settings.fontFamily,
+      fontSize: (fs - 4).clamp(11.0, 13.0).toDouble(),
+      fontWeight: FontWeight.w700,
+      letterSpacing: 0.6,
+      color: scheme.primary,
+    );
+
+    Widget metaRow(String labelKey, String value) {
+      if (value.isEmpty) return const SizedBox.shrink();
+      return Padding(
+        padding: const EdgeInsets.only(top: 8),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              (uiStrings[labelKey]?[locale] ?? labelKey).toUpperCase(),
+              style: labelStyle,
+            ),
+            const SizedBox(height: 2),
+            Text(value, style: textStyle),
+          ],
+        ),
+      );
+    }
+
+    final themes = intro.getThemes(locale);
+
+    // Default-collapsed: a slim banner — book icon + "About this
+    // book" label, the subtitle, and a "Background ▾" chip-button
+    // that reveals everything else on tap. Keeps the chapter's
+    // first verses immediately reachable for users who don't want
+    // the metadata.
+    return InkWell(
+      onTap: () => setState(() => _expanded = !_expanded),
+      borderRadius: BorderRadius.circular(14),
+      child: Container(
+        margin: const EdgeInsets.fromLTRB(12, 8, 12, 16),
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: scheme.surfaceContainerHigh,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: scheme.outlineVariant),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Header row: icon + label on the left, expand chevron
+            // on the right. Whole card is tappable, but the chevron
+            // makes the affordance obvious.
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Icon(Icons.menu_book_rounded,
+                    size: 16, color: scheme.primary),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    uiStrings['aboutThisBook']?[locale] ??
+                        'About this book',
+                    style: labelStyle,
+                  ),
+                ),
+                Icon(
+                  _expanded
+                      ? Icons.keyboard_arrow_up
+                      : Icons.keyboard_arrow_down,
+                  size: 22,
+                  color: scheme.onSurfaceVariant,
+                ),
+              ],
+            ),
+            const SizedBox(height: 6),
+            Text(
+              intro.getSubtitle(locale),
+              style: TextStyle(
+                fontFamily: settings.fontFamily,
+                fontSize: (fs).clamp(14.0, 19.0).toDouble(),
+                fontWeight: FontWeight.w700,
+                color: scheme.onSurface,
+                height: 1.35,
+              ),
+            ),
+            // Collapsed state stops here. Expanded state reveals
+            // summary + author / date / audience / themes / key
+            // passage. AnimatedSize gives a soft expand/collapse
+            // motion without dropping into the verse layout.
+            AnimatedSize(
+              duration: const Duration(milliseconds: 200),
+              curve: Curves.easeOut,
+              alignment: Alignment.topLeft,
+              child: _expanded
+                  ? Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const SizedBox(height: 10),
+                        Text(intro.getSummary(locale), style: textStyle),
+                        metaRow('authorLabel', intro.getAuthor(locale)),
+                        metaRow('dateLabel', intro.getDate(locale)),
+                        metaRow('audienceLabel', intro.getAudience(locale)),
+                        if (themes.isNotEmpty)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 8),
+                            child: Column(
+                              crossAxisAlignment:
+                                  CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  (uiStrings['themesLabel']?[locale] ??
+                                          'Themes')
+                                      .toUpperCase(),
+                                  style: labelStyle,
+                                ),
+                                const SizedBox(height: 6),
+                                Wrap(
+                                  spacing: 6,
+                                  runSpacing: 6,
+                                  children: [
+                                    for (final t in themes)
+                                      Container(
+                                        padding: const EdgeInsets
+                                            .symmetric(
+                                            horizontal: 10,
+                                            vertical: 4),
+                                        decoration: BoxDecoration(
+                                          color: scheme.primary
+                                              .withValues(alpha: 0.10),
+                                          borderRadius:
+                                              BorderRadius.circular(99),
+                                        ),
+                                        child: Text(
+                                          t,
+                                          style: TextStyle(
+                                            fontFamily:
+                                                settings.fontFamily,
+                                            fontSize: (fs - 4)
+                                                .clamp(11.0, 14.0)
+                                                .toDouble(),
+                                            color: scheme.primary,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                      ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        if (intro.keyPassage.isNotEmpty) ...[
+                          const SizedBox(height: 12),
+                          Text(
+                            (uiStrings['keyPassageLabel']?[locale] ??
+                                    'Key passage')
+                                .toUpperCase(),
+                            style: labelStyle,
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            intro.keyPassage,
+                            style: TextStyle(
+                              fontFamily: settings.fontFamily,
+                              fontSize:
+                                  (fs - 1).clamp(13.0, 17.0).toDouble(),
+                              fontWeight: FontWeight.w700,
+                              color: scheme.onSurface,
+                            ),
+                          ),
+                          if (intro
+                              .getKeyPassageDescription(locale)
+                              .isNotEmpty) ...[
+                            const SizedBox(height: 4),
+                            Text(
+                              intro.getKeyPassageDescription(locale),
+                              style: textStyle.copyWith(
+                                fontStyle: FontStyle.italic,
+                                color: scheme.onSurfaceVariant,
+                              ),
+                            ),
+                          ],
+                        ],
+                      ],
+                    )
+                  : const SizedBox(width: double.infinity),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

@@ -26,9 +26,21 @@ class SidebarPanel extends StatelessWidget {
 
     return Consumer<MainProvider>(
       builder: (context, mainProvider, _) {
-        return Container(
+        return DefaultTextStyle.merge(
+          style: TextStyle(
+            color: scheme.onSurface,
+            decoration: TextDecoration.none,
+            decorationColor: Colors.transparent,
+          ),
+          // Material ancestor is required for ExpansionTile/InkWell/Ink
+          // inside BookChapterPicker to render correctly. The iPhone
+          // path uses Scaffold (which provides Material); the iPad
+          // sidebar previously had only a Container and the inner
+          // book list silently failed to draw.
+          child: Material(
+          color: scheme.surface,
+          child: Container(
           decoration: BoxDecoration(
-            color: scheme.surface,
             border: Border(
               right: BorderSide(
                 color: scheme.outlineVariant.withValues(alpha: 0.5),
@@ -54,6 +66,9 @@ class SidebarPanel extends StatelessWidget {
                               fontSize: settings.fontSize.clamp(14.0, 18.0),
                               fontWeight: FontWeight.w700,
                               fontFamily: settings.fontFamily,
+                              color: scheme.onSurface,
+                              decoration: TextDecoration.none,
+                              decorationColor: Colors.transparent,
                             ),
                           ),
                         ),
@@ -79,6 +94,8 @@ class SidebarPanel extends StatelessWidget {
               ),
             ],
           ),
+        ),
+        ),
         );
       },
     );

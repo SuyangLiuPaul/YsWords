@@ -30,14 +30,15 @@ List<InlineSpan> buildVerseContentSpans({
       )
       .split('||');
   final spans = <InlineSpan>[];
-  // Verse number span — superscript in paragraph mode, normal-weight inline otherwise.
-  // Superscript style: small, muted color (like printed Bibles / WeDevote 微读圣经),
-  // top-aligned to sit above the baseline. Verse-by-verse style: same size as body,
-  // colored with the theme's primary so it stands out as a label.
+  // Verse number span — uses the theme primary color in both modes
+  // so the user's chosen color tints all reading-surface chrome
+  // consistently. Paragraph-mode superscript variant is rendered at
+  // 80% alpha so it stays subtle next to continuous prose;
+  // verse-by-verse uses full primary so it reads like a clear label.
   final verseNumColor = isSelected
       ? Theme.of(context).colorScheme.onPrimaryContainer
       : (superscriptVerseNum
-          ? Theme.of(context).colorScheme.onSurfaceVariant
+          ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.80)
           : Theme.of(context).colorScheme.primary);
 
   final verseNumStyle = TextStyle(

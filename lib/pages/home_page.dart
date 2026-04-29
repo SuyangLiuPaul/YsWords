@@ -122,7 +122,9 @@ class _HomePageState extends State<HomePage> {
 
     Widget primaryPane = BibleReadingPane(
       key: const ValueKey('primary'),
-      showSidebarToggle: showSidebar,
+      // When the sidebar is already open it shows its own close button,
+      // so we don't need a duplicate toggle in the reading pane header.
+      showSidebarToggle: showSidebar && !_sidebarOpen,
       sidebarOpen: _sidebarOpen,
       onToggleSidebar: showSidebar ? _toggleSidebar : null,
       // Toggle direction tracks current state — when split is active the
@@ -179,11 +181,38 @@ class _HomePageState extends State<HomePage> {
       );
     }
 
-    return Row(
+    // Stack + AnimatedPositioned is the most reliable way to give the
+    // sidebar both a bounded height (top:0 + bottom:0) and an animated
+    // width. Earlier attempts using AnimatedContainer in a Row left the
+    // sidebar's inner Expanded book-list collapsing to zero height on
+    // Flutter web's HTML renderer.
+    return Stack(
+      // Expand fills the parent's constraints so the AnimatedPositioned
+      // sidebar (top:0/bottom:0) gets the screen height, not just the
+      // intrinsic height of the primary pane.
+      fit: StackFit.expand,
       children: [
-        AnimatedContainer(
+        // Main reading pane fills the screen; we use AnimatedPadding
+        // so it slides right when the sidebar opens.
+        AnimatedPadding(
           duration: const Duration(milliseconds: 250),
           curve: Curves.easeInOutCubic,
+          padding: EdgeInsets.only(left: sidebarW),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(maxWidth: maxW),
+              child: primaryPane,
+            ),
+          ),
+        ),
+        // Sidebar — Positioned with top:0/bottom:0 guarantees full
+        // screen height; animated width handles open/close transition.
+        AnimatedPositioned(
+          duration: const Duration(milliseconds: 250),
+          curve: Curves.easeInOutCubic,
+          left: 0,
+          top: 0,
+          bottom: 0,
           width: sidebarW,
           child: ClipRect(
             child: _sidebarOpen
@@ -194,14 +223,6 @@ class _HomePageState extends State<HomePage> {
                     onClose: _toggleSidebar,
                   )
                 : const SizedBox.shrink(),
-          ),
-        ),
-        Expanded(
-          child: Center(
-            child: ConstrainedBox(
-              constraints: BoxConstraints(maxWidth: maxW),
-              child: primaryPane,
-            ),
           ),
         ),
       ],

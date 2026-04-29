@@ -23,3 +23,20 @@ lib_source_dump.txt
 # Local agent dev settings (preview launch config, etc.)
 .claude/
 
+# Cloud Functions local deps (installed via `cd functions && npm install`).
+functions/node_modules/
+# Bundled at deploy time only — sourced from assets/bible_evidence.json.
+functions/bible_evidence.json
+
+# Backup files from one-off data migration scripts.
+*.bak
+assets/*.bak
+lib/**/*.bak
+
+functions/package-lock.json
+
+# Netlify Functions install their own deps locally; bundler picks
+# them up at deploy time. Keep node_modules out of git.
+netlify/functions/node_modules/
+netlify/functions/package-lock.json
+.netlify/

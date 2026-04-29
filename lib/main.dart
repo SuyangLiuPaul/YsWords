@@ -1,13 +1,19 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:yswords/pages/home_page.dart';
+import 'package:yswords/pages/dashboard_page.dart';
 import 'package:yswords/pages/loading_page.dart';
 import 'package:yswords/models/verse.dart';
 import 'package:yswords/providers/main_provider.dart';
 import 'package:yswords/models/app_settings.dart';
+import 'package:yswords/pages/welcome_page.dart';
+import 'package:yswords/services/cloud_auth_service.dart';
+import 'package:yswords/services/cloud_sync_service.dart';
 import 'package:yswords/services/fetch_books.dart';
 import 'package:yswords/services/fetch_verses.dart';
+import 'package:yswords/services/profile_service.dart';
+import 'package:yswords/services/book_intro_service.dart';
+import 'package:yswords/services/section_title_service.dart';
 import 'package:provider/provider.dart';
 import 'package:get/get.dart';
 
@@ -60,6 +66,23 @@ class _MainAppState extends State<MainApp> {
     final appSettings = context.read<AppSettings>();
 
     try {
+      // Profiles must be initialised before MainProvider.restoreState
+      // because that step reads highlights / notes / bookmarks under
+      // the active profile's namespace. Same goes for ReadingPlanService
+      // calls that fire while the home page builds.
+      await ProfileService.instance.init();
+      // Firebase auth is best-effort — falls through gracefully if
+      // the user hasn't filled in lib/firebase_options.dart yet.
+      // After auth init we wire up CloudSyncService so any future
+      // local changes mirror to Firestore (when signed in).
+      await CloudAuthService.instance.init();
+      CloudSyncService.instance.init();
+      // Pre-warm the section-titles cache so the first chapter
+      // render already has paragraph headings ready.
+      // ignore: unawaited_futures
+      SectionTitleService.ensureLoaded();
+      // ignore: unawaited_futures
+      BookIntroService.ensureLoaded();
       await appSettings.loadSettings();
       await mainProvider.restoreState();
 
@@ -250,6 +273,7 @@ class _RootRouter extends StatefulWidget {
 
 class _RootRouterState extends State<_RootRouter> {
   bool _showHome = false;
+  bool _welcomeDone = false;
 
   void _advance() {
     if (!mounted || _showHome) return;
@@ -258,8 +282,28 @@ class _RootRouterState extends State<_RootRouter> {
 
   @override
   Widget build(BuildContext context) {
+    // Show the welcome / sign-in gate the first time the app is
+    // opened on a given device. After it's dismissed (either by
+    // continuing as Guest or by signing in) the gate stays out of
+    // the way; the switcher in Settings remains the entry point.
+    final showGate =
+        _showHome && !_welcomeDone && !ProfileService.instance.seenWelcome;
+    if (showGate) {
+      return WelcomePage(
+        onDone: () {
+          if (!mounted) return;
+          setState(() => _welcomeDone = true);
+        },
+      );
+    }
+    // After Round 32: Dashboard is the home / root page. The Bible
+    // reader (HomePage) is pushed on top via Dashboard's "Continue
+    // reading" tile. This gives users a personal landing page with
+    // greeting + today's reading + bookmark counts instead of
+    // dropping straight into a verse list, which felt like a
+    // sub-page rather than a home.
     return _showHome
-        ? const HomePage()
+        ? const DashboardPage()
         : LoadingPage(
             verses: widget.initialVerses,
             onAdvance: _advance,

@@ -4,11 +4,14 @@ import 'package:provider/provider.dart';
 import '../models/app_settings.dart';
 import '../models/verse.dart';
 import '../providers/main_provider.dart';
+import '../services/daily_verse_service.dart';
 import '../services/fetch_verses.dart';
 import '../services/fetch_books.dart';
 import '../constants/text_patterns.dart';
 import '../constants/ui_strings.dart';
+import '../utils/reference_parser.dart';
 import '../utils/responsive.dart';
+import '../utils/version_mapper.dart' show translateBookName;
 import 'home_page.dart';
 
 class LoadingPage extends StatefulWidget {
@@ -29,10 +32,121 @@ class _LoadingPageState extends State<LoadingPage> {
   Timer? _autoAdvance;
   bool _retrying = false;
 
+  /// Splash verse — locked ONCE per mount. The user sees the same
+  /// verse on the splash AS the dashboard's "Verse of the Day", which
+  /// reinforces the day's theme.
+  ///
+  /// Resolution order:
+  ///   1. `DailyVerseService.todayRef()` → parse → match against
+  ///      `widget.verses` for the active Bible version. Same logic
+  ///      the dashboard uses, so splash and dashboard always agree.
+  ///   2. If today's reference doesn't resolve in this version (book
+  ///      missing, etc.) OR resolution takes longer than the 1.2 s
+  ///      grace period, fall back to a random pick from the loaded
+  ///      bundle so the splash never sits empty.
+  ///
+  /// Once locked, no rebuild causes a re-pick — eliminates the
+  /// "verse twitching" issue from before round 43.
+  Verse? _splashVerse;
+  bool _splashVerseLocked = false;
+  Timer? _dailyVerseFallback;
+
   @override
   void initState() {
     super.initState();
+    _resolveDailyVerseForSplash();
     _scheduleAdvanceIfReady();
+  }
+
+  /// Try the curated daily-verse first; if it doesn't resolve in time,
+  /// fall back to a random pick. Either way `_splashVerse` is set
+  /// exactly once.
+  Future<void> _resolveDailyVerseForSplash() async {
+    if (_splashVerseLocked) return;
+
+    // Belt-and-braces: even if everything below times out or
+    // throws, we lock to a random pick after 1.2 s so the splash
+    // shows *something*. The auto-advance to home is 3 s total, so
+    // 1.2 s leaves the user with ~1.8 s of verse view.
+    _dailyVerseFallback = Timer(const Duration(milliseconds: 1200), () {
+      if (_splashVerseLocked) return;
+      _lockRandom();
+      if (mounted) setState(() {});
+    });
+
+    try {
+      final ref = await DailyVerseService.todayRef();
+      if (_splashVerseLocked) return; // fallback already fired
+      if (ref == null) {
+        _lockRandom();
+      } else {
+        final v = _resolveRefAgainstBundle(ref);
+        if (v != null) {
+          _splashVerse = v;
+          _splashVerseLocked = true;
+        } else {
+          _lockRandom();
+        }
+      }
+    } catch (_) {
+      if (!_splashVerseLocked) _lockRandom();
+    } finally {
+      _dailyVerseFallback?.cancel();
+      _dailyVerseFallback = null;
+      if (mounted) setState(() {});
+    }
+  }
+
+  /// Match a canonical English reference (e.g. "John 3:16") against
+  /// the loaded verse bundle for the user's active Bible version.
+  /// Mirrors the dashboard's `_resolveDailyVerse` so the splash and
+  /// the dashboard show literally the same Verse object.
+  Verse? _resolveRefAgainstBundle(String ref) {
+    if (widget.verses.isEmpty) return null;
+    final parsed = parseReference(ref);
+    if (parsed == null) return null;
+    String? activeVersion;
+    try {
+      activeVersion = context.read<MainProvider>().currentVersion;
+    } catch (_) {}
+    final localBook = activeVersion == null
+        ? parsed.englishBook
+        : translateBookName(parsed.englishBook, activeVersion);
+    final targetVerse = parsed.verseStart ?? 1;
+    for (final v in widget.verses) {
+      if (v.book == localBook &&
+          v.chapter == parsed.chapter &&
+          v.verse == targetVerse) {
+        return v;
+      }
+    }
+    // Same book/chapter, any verse — better than no match.
+    for (final v in widget.verses) {
+      if (v.book == localBook && v.chapter == parsed.chapter) {
+        return v;
+      }
+    }
+    return null;
+  }
+
+  void _lockRandom() {
+    if (_splashVerseLocked) return;
+    // Prefer the live provider list — widget.verses is a snapshot
+    // taken at LoadingPage construction time and can be empty if the
+    // FetchVerses future hadn't completed yet. Falling back to the
+    // provider lets us still pick a random verse instead of stranding
+    // the user on the bare "No verses available" screen.
+    var pool = widget.verses;
+    if (pool.isEmpty) {
+      try {
+        pool = context.read<MainProvider>().verses;
+      } catch (_) {
+        pool = const [];
+      }
+    }
+    if (pool.isEmpty) return;
+    _splashVerse = (List<Verse>.from(pool)..shuffle()).first;
+    _splashVerseLocked = true;
   }
 
   void _scheduleAdvanceIfReady() {
@@ -85,6 +199,7 @@ class _LoadingPageState extends State<LoadingPage> {
   @override
   void dispose() {
     _autoAdvance?.cancel();
+    _dailyVerseFallback?.cancel();
     super.dispose();
   }
 
@@ -99,10 +214,11 @@ class _LoadingPageState extends State<LoadingPage> {
       return _buildErrorScaffold(context, settings);
     }
 
-    // Shuffle a COPY so we don't mutate the canonical verse order
-    final verse = widget.verses.isNotEmpty
-        ? (List<Verse>.from(widget.verses)..shuffle()).first
-        : null;
+    // Frozen by _resolveDailyVerseForSplash() — either today's
+    // curated daily verse (matches the dashboard's "Verse of the
+    // Day") or a random fallback. The splash shows just the logo
+    // + name during the brief async resolve.
+    final verse = _splashVerse;
 
     final original = verse?.text.replaceAll('\n', '') ?? '';
     final raw = sanitizeForSearch(original);
@@ -120,15 +236,20 @@ class _LoadingPageState extends State<LoadingPage> {
     final s = ResponsiveBreakpoints.spacingScale(dc);
     final logoSize = ResponsiveBreakpoints.loadingLogoSize(dc);
 
+    // When _splashVerse is null but mainProvider.verses isn't empty,
+    // we'd otherwise sit with bare text and no way out — the auto-
+    // advance timer might also be cancelled. Reuse the error scaffold
+    // (with retry button) so the user always has a way to recover
+    // without quit-and-relaunch. This is the path the user hit when
+    // they reported "sometimes it says no verse but should have".
+    if (verse == null) {
+      return _buildErrorScaffold(context, settings);
+    }
+
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
       body: Center(
-        child: verse == null
-            ? Text(
-                uiStrings['noVersesAvailable']?[settings.locale] ??
-                    'No verses available',
-              )
-            : Column(
+        child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Image.asset(

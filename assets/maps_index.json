@@ -1,387 +1,5392 @@
 [
   {
     "id": "ancient_near_east",
-    "title": { "en": "Ancient Near East", "zh-Hans": "古代近东", "zh-Hant": "古代近東" },
-    "description": { "en": "The Fertile Crescent — Mesopotamia, Canaan, and Egypt in patriarchal times.", "zh-Hans": "肥沃月弯——列祖时代的美索不达米亚、迦南与埃及。", "zh-Hant": "肥沃月彎——列祖時代的美索不達米亞、迦南與埃及。" },
-    "books": { "Genesis": [1, 11], "Job": [1, 42] },
+    "title": {
+      "en": "Ancient Near East",
+      "zh-Hans": "古代近东",
+      "zh-Hant": "古代近東"
+    },
+    "description": {
+      "en": "The Fertile Crescent — Mesopotamia, Canaan, and Egypt in patriarchal times.",
+      "zh-Hans": "肥沃月弯——列祖时代的美索不达米亚、迦南与埃及。",
+      "zh-Hant": "肥沃月彎——列祖時代的美索不達米亞、迦南與埃及。"
+    },
+    "books": {
+      "Genesis": [
+        1,
+        11
+      ],
+      "Job": [
+        1,
+        42
+      ]
+    },
     "file": "01_ancient_near_east.jpg"
   },
   {
     "id": "abrahams_journeys",
-    "title": { "en": "Abraham's Journeys", "zh-Hans": "亚伯拉罕的旅程", "zh-Hant": "亞伯拉罕的旅程" },
-    "description": { "en": "From Ur of the Chaldees through Haran to Canaan and Egypt.", "zh-Hans": "从迦勒底的吾珥经哈兰到迦南与埃及。", "zh-Hant": "從迦勒底的吾珥經哈蘭到迦南與埃及。" },
-    "books": { "Genesis": [12, 50] },
+    "title": {
+      "en": "Abraham's Journeys",
+      "zh-Hans": "亚伯拉罕的旅程",
+      "zh-Hant": "亞伯拉罕的旅程"
+    },
+    "description": {
+      "en": "From Ur of the Chaldees through Haran to Canaan and Egypt.",
+      "zh-Hans": "从迦勒底的吾珥经哈兰到迦南与埃及。",
+      "zh-Hant": "從迦勒底的吾珥經哈蘭到迦南與埃及。"
+    },
+    "books": {
+      "Genesis": [
+        12,
+        50
+      ]
+    },
     "file": "02_abrahams_journeys.jpg"
   },
   {
     "id": "exodus_route",
-    "title": { "en": "The Exodus Route", "zh-Hans": "出埃及路线", "zh-Hant": "出埃及路線" },
-    "description": { "en": "The journey of the Israelites from Egypt through the wilderness to the Promised Land.", "zh-Hans": "以色列人从埃及经旷野到应许之地的旅程。", "zh-Hant": "以色列人從埃及經曠野到應許之地的旅程。" },
-    "books": { "Exodus": [1, 40], "Leviticus": [1, 27], "Numbers": [1, 36], "Deuteronomy": [1, 34] },
+    "title": {
+      "en": "The Exodus Route",
+      "zh-Hans": "出埃及路线",
+      "zh-Hant": "出埃及路線"
+    },
+    "description": {
+      "en": "The journey of the Israelites from Egypt through the wilderness to the Promised Land.",
+      "zh-Hans": "以色列人从埃及经旷野到应许之地的旅程。",
+      "zh-Hant": "以色列人從埃及經曠野到應許之地的旅程。"
+    },
+    "books": {
+      "Exodus": [
+        1,
+        40
+      ],
+      "Leviticus": [
+        1,
+        27
+      ],
+      "Numbers": [
+        1,
+        36
+      ],
+      "Deuteronomy": [
+        1,
+        34
+      ]
+    },
     "file": "03_exodus_route.png"
   },
   {
     "id": "conquest_canaan",
-    "title": { "en": "Conquest of Canaan", "zh-Hans": "征服迦南", "zh-Hant": "征服迦南" },
-    "description": { "en": "Joshua's campaigns — Jericho, Ai, and the southern and northern victories.", "zh-Hans": "约书亚的战役——耶利哥、艾城及南方与北方的胜利。", "zh-Hant": "約書亞的戰役——耶利哥、艾城及南方與北方的勝利。" },
-    "books": { "Joshua": [1, 12] },
+    "title": {
+      "en": "Conquest of Canaan",
+      "zh-Hans": "征服迦南",
+      "zh-Hant": "征服迦南"
+    },
+    "description": {
+      "en": "Joshua's campaigns — Jericho, Ai, and the southern and northern victories.",
+      "zh-Hans": "约书亚的战役——耶利哥、艾城及南方与北方的胜利。",
+      "zh-Hant": "約書亞的戰役——耶利哥、艾城及南方與北方的勝利。"
+    },
+    "books": {
+      "Joshua": [
+        1,
+        12
+      ]
+    },
     "file": "04_conquest_canaan.jpg"
   },
   {
     "id": "twelve_tribe_portions",
-    "title": { "en": "Twelve Tribe Portions", "zh-Hans": "十二支派分地", "zh-Hant": "十二支派分地" },
-    "description": { "en": "The territorial allotments given to each of the twelve tribes of Israel.", "zh-Hans": "以色列十二支派各分得的地业。", "zh-Hant": "以色列十二支派各分得的地業。" },
-    "books": { "Joshua": [13, 24] },
+    "title": {
+      "en": "Twelve Tribe Portions",
+      "zh-Hans": "十二支派分地",
+      "zh-Hant": "十二支派分地"
+    },
+    "description": {
+      "en": "The territorial allotments given to each of the twelve tribes of Israel.",
+      "zh-Hans": "以色列十二支派各分得的地业。",
+      "zh-Hant": "以色列十二支派各分得的地業。"
+    },
+    "books": {
+      "Joshua": [
+        13,
+        24
+      ]
+    },
     "file": "05_twelve_tribe_portions.png"
   },
   {
     "id": "kingdom_david_solomon",
-    "title": { "en": "Kingdom of David & Solomon", "zh-Hans": "大卫与所罗门的王国", "zh-Hant": "大衛與所羅門的王國" },
-    "description": { "en": "The united kingdom at its height — from the Mediterranean to the Euphrates.", "zh-Hans": "联合王国鼎盛时期——从地中海到幼发拉底河。", "zh-Hant": "聯合王國鼎盛時期——從地中海到幼發拉底河。" },
-    "books": { "1 Samuel": [1, 31], "2 Samuel": [1, 24], "1 Kings": [1, 11], "1 Chronicles": [1, 29], "2 Chronicles": [1, 9], "Psalms": [1, 150], "Proverbs": [1, 31], "Ecclesiastes": [1, 12], "Song of Solomon": [1, 8] },
+    "title": {
+      "en": "Kingdom of David & Solomon",
+      "zh-Hans": "大卫与所罗门的王国",
+      "zh-Hant": "大衛與所羅門的王國"
+    },
+    "description": {
+      "en": "The united kingdom at its height — from the Mediterranean to the Euphrates.",
+      "zh-Hans": "联合王国鼎盛时期——从地中海到幼发拉底河。",
+      "zh-Hant": "聯合王國鼎盛時期——從地中海到幼發拉底河。"
+    },
+    "books": {
+      "1 Samuel": [
+        1,
+        31
+      ],
+      "2 Samuel": [
+        1,
+        24
+      ],
+      "1 Kings": [
+        1,
+        11
+      ],
+      "1 Chronicles": [
+        1,
+        29
+      ],
+      "2 Chronicles": [
+        1,
+        9
+      ],
+      "Psalms": [
+        1,
+        150
+      ],
+      "Proverbs": [
+        1,
+        31
+      ],
+      "Ecclesiastes": [
+        1,
+        12
+      ],
+      "Song of Solomon": [
+        1,
+        8
+      ]
+    },
     "file": "06_kingdom_david_solomon.png"
   },
   {
     "id": "divided_kingdom",
-    "title": { "en": "Divided Kingdom", "zh-Hans": "分裂王国", "zh-Hant": "分裂王國" },
-    "description": { "en": "Israel in the north and Judah in the south during the period of the kings.", "zh-Hans": "列王时期北国以色列与南国犹大。", "zh-Hant": "列王時期北國以色列與南國猶大。" },
-    "books": { "1 Kings": [12, 22], "2 Kings": [1, 16], "2 Chronicles": [10, 28], "Hosea": [1, 14], "Joel": [1, 3], "Amos": [1, 9], "Obadiah": [1, 1], "Micah": [1, 7] },
+    "title": {
+      "en": "Divided Kingdom",
+      "zh-Hans": "分裂王国",
+      "zh-Hant": "分裂王國"
+    },
+    "description": {
+      "en": "Israel in the north and Judah in the south during the period of the kings.",
+      "zh-Hans": "列王时期北国以色列与南国犹大。",
+      "zh-Hant": "列王時期北國以色列與南國猶大。"
+    },
+    "books": {
+      "1 Kings": [
+        12,
+        22
+      ],
+      "2 Kings": [
+        1,
+        16
+      ],
+      "2 Chronicles": [
+        10,
+        28
+      ],
+      "Hosea": [
+        1,
+        14
+      ],
+      "Joel": [
+        1,
+        3
+      ],
+      "Amos": [
+        1,
+        9
+      ],
+      "Obadiah": [
+        1,
+        1
+      ],
+      "Micah": [
+        1,
+        7
+      ]
+    },
     "file": "07_divided_kingdom.png"
   },
   {
     "id": "assyrian_empire",
-    "title": { "en": "Assyrian Empire", "zh-Hans": "亚述帝国", "zh-Hant": "亞述帝國" },
-    "description": { "en": "The Assyrian Empire at its height — conquest of Samaria and the fall of Israel.", "zh-Hans": "亚述帝国鼎盛时期——撒玛利亚的征服与以色列的灭亡。", "zh-Hant": "亞述帝國鼎盛時期——撒瑪利亞的征服與以色列的滅亡。" },
-    "books": { "2 Kings": [17, 20], "Isaiah": [1, 39], "Hosea": [1, 14], "Amos": [1, 9], "Jonah": [1, 4], "Nahum": [1, 3], "Micah": [1, 7] },
+    "title": {
+      "en": "Assyrian Empire",
+      "zh-Hans": "亚述帝国",
+      "zh-Hant": "亞述帝國"
+    },
+    "description": {
+      "en": "The Assyrian Empire at its height — conquest of Samaria and the fall of Israel.",
+      "zh-Hans": "亚述帝国鼎盛时期——撒玛利亚的征服与以色列的灭亡。",
+      "zh-Hant": "亞述帝國鼎盛時期——撒瑪利亞的征服與以色列的滅亡。"
+    },
+    "books": {
+      "2 Kings": [
+        17,
+        20
+      ],
+      "Isaiah": [
+        1,
+        39
+      ],
+      "Hosea": [
+        1,
+        14
+      ],
+      "Amos": [
+        1,
+        9
+      ],
+      "Jonah": [
+        1,
+        4
+      ],
+      "Nahum": [
+        1,
+        3
+      ],
+      "Micah": [
+        1,
+        7
+      ]
+    },
     "file": "08_assyrian_empire.jpg"
   },
   {
     "id": "babylonian_empire",
-    "title": { "en": "Babylonian Empire", "zh-Hans": "巴比伦帝国", "zh-Hant": "巴比倫帝國" },
-    "description": { "en": "Nebuchadnezzar's empire — the destruction of Jerusalem and the Babylonian exile.", "zh-Hans": "尼布甲尼撒帝国——耶路撒冷的毁灭与巴比伦之囚。", "zh-Hant": "尼布甲尼撒帝國——耶路撒冷的毀滅與巴比倫之囚。" },
-    "books": { "2 Kings": [21, 25], "2 Chronicles": [29, 36], "Jeremiah": [1, 52], "Ezekiel": [1, 48], "Daniel": [1, 12], "Lamentations": [1, 5], "Habakkuk": [1, 3], "Zephaniah": [1, 3], "Isaiah": [40, 66] },
+    "title": {
+      "en": "Babylonian Empire",
+      "zh-Hans": "巴比伦帝国",
+      "zh-Hant": "巴比倫帝國"
+    },
+    "description": {
+      "en": "Nebuchadnezzar's empire — the destruction of Jerusalem and the Babylonian exile.",
+      "zh-Hans": "尼布甲尼撒帝国——耶路撒冷的毁灭与巴比伦之囚。",
+      "zh-Hant": "尼布甲尼撒帝國——耶路撒冷的毀滅與巴比倫之囚。"
+    },
+    "books": {
+      "2 Kings": [
+        21,
+        25
+      ],
+      "2 Chronicles": [
+        29,
+        36
+      ],
+      "Jeremiah": [
+        1,
+        52
+      ],
+      "Ezekiel": [
+        1,
+        48
+      ],
+      "Daniel": [
+        1,
+        12
+      ],
+      "Lamentations": [
+        1,
+        5
+      ],
+      "Habakkuk": [
+        1,
+        3
+      ],
+      "Zephaniah": [
+        1,
+        3
+      ],
+      "Isaiah": [
+        40,
+        66
+      ]
+    },
     "file": "09_babylonian_empire.jpg"
   },
   {
     "id": "persian_empire",
-    "title": { "en": "Persian Empire & the Return", "zh-Hans": "波斯帝国与回归", "zh-Hant": "波斯帝國與回歸" },
-    "description": { "en": "The Persian Empire — Cyrus' decree and the return from exile to rebuild the Temple.", "zh-Hans": "波斯帝国——居鲁士的诏书与从被掳之地回归重建圣殿。", "zh-Hant": "波斯帝國——居魯士的詔書與從被擄之地回歸重建聖殿。" },
-    "books": { "Ezra": [1, 10], "Nehemiah": [1, 13], "Esther": [1, 10], "Haggai": [1, 2], "Zechariah": [1, 14], "Malachi": [1, 4] },
+    "title": {
+      "en": "Persian Empire & the Return",
+      "zh-Hans": "波斯帝国与回归",
+      "zh-Hant": "波斯帝國與回歸"
+    },
+    "description": {
+      "en": "The Persian Empire — Cyrus' decree and the return from exile to rebuild the Temple.",
+      "zh-Hans": "波斯帝国——居鲁士的诏书与从被掳之地回归重建圣殿。",
+      "zh-Hant": "波斯帝國——居魯士的詔書與從被擄之地回歸重建聖殿。"
+    },
+    "books": {
+      "Ezra": [
+        1,
+        10
+      ],
+      "Nehemiah": [
+        1,
+        13
+      ],
+      "Esther": [
+        1,
+        10
+      ],
+      "Haggai": [
+        1,
+        2
+      ],
+      "Zechariah": [
+        1,
+        14
+      ],
+      "Malachi": [
+        1,
+        4
+      ]
+    },
     "file": "10_persian_empire.jpg"
   },
   {
     "id": "israel_nt_times",
-    "title": { "en": "Israel in New Testament Times", "zh-Hans": "新约时代的以色列", "zh-Hant": "新約時代的以色列" },
-    "description": { "en": "Galilee, Samaria, and Judea in the first century — the world of Jesus' ministry.", "zh-Hans": "一世纪的加利利、撒玛利亚和犹太地——耶稣事奉的世界。", "zh-Hant": "一世紀的加利利、撒馬利亞和猶太地——耶穌事奉的世界。" },
-    "books": { "Matthew": [1, 28], "Mark": [1, 16], "Luke": [1, 24], "John": [1, 21], "Acts": [22, 26] },
+    "title": {
+      "en": "Israel in New Testament Times",
+      "zh-Hans": "新约时代的以色列",
+      "zh-Hant": "新約時代的以色列"
+    },
+    "description": {
+      "en": "Galilee, Samaria, and Judea in the first century — the world of Jesus' ministry.",
+      "zh-Hans": "一世纪的加利利、撒玛利亚和犹太地——耶稣事奉的世界。",
+      "zh-Hant": "一世紀的加利利、撒馬利亞和猶太地——耶穌事奉的世界。"
+    },
+    "books": {
+      "Matthew": [
+        1,
+        28
+      ],
+      "Mark": [
+        1,
+        16
+      ],
+      "Luke": [
+        1,
+        24
+      ],
+      "John": [
+        1,
+        21
+      ],
+      "Acts": [
+        22,
+        26
+      ]
+    },
     "file": "11_israel_nt_times.jpg"
   },
   {
     "id": "paul_first_journey",
-    "title": { "en": "Paul's First Missionary Journey", "zh-Hans": "保罗第一次传道旅程", "zh-Hant": "保羅第一次傳道旅程" },
-    "description": { "en": "From Antioch to Cyprus and through the cities of Galatia (Acts 13–14). Shown in the context of all four journeys for reference.", "zh-Hans": "从安提阿到塞浦路斯，经过加拉太各城（使徒行传13–14章），与四次旅程合并展示以便对照。", "zh-Hant": "從安提阿到塞浦路斯，經過加拉太各城（使徒行傳13–14章），與四次旅程合併展示以便對照。" },
-    "books": { "Acts": [13, 14] },
+    "title": {
+      "en": "Paul's First Missionary Journey",
+      "zh-Hans": "保罗第一次传道旅程",
+      "zh-Hant": "保羅第一次傳道旅程"
+    },
+    "description": {
+      "en": "From Antioch to Cyprus and through the cities of Galatia (Acts 13–14). Shown in the context of all four journeys for reference.",
+      "zh-Hans": "从安提阿到塞浦路斯，经过加拉太各城（使徒行传13–14章），与四次旅程合并展示以便对照。",
+      "zh-Hant": "從安提阿到塞浦路斯，經過加拉太各城（使徒行傳13–14章），與四次旅程合併展示以便對照。"
+    },
+    "books": {
+      "Acts": [
+        13,
+        14
+      ]
+    },
     "file": "12_paul_journeys.png"
   },
   {
     "id": "paul_second_journey",
-    "title": { "en": "Paul's Second Missionary Journey", "zh-Hans": "保罗第二次传道旅程", "zh-Hant": "保羅第二次傳道旅程" },
-    "description": { "en": "Through Asia Minor and into Greece — Philippi, Thessalonica, Athens, Corinth (Acts 15–18).", "zh-Hans": "经小亚细亚进入希腊——腓立比、帖撒罗尼迦、雅典、哥林多（使徒行传15–18章）。", "zh-Hant": "經小亞細亞進入希臘——腓立比、帖撒羅尼迦、雅典、哥林多（使徒行傳15–18章）。" },
-    "books": { "Acts": [15, 18] },
+    "title": {
+      "en": "Paul's Second Missionary Journey",
+      "zh-Hans": "保罗第二次传道旅程",
+      "zh-Hant": "保羅第二次傳道旅程"
+    },
+    "description": {
+      "en": "Through Asia Minor and into Greece — Philippi, Thessalonica, Athens, Corinth (Acts 15–18).",
+      "zh-Hans": "经小亚细亚进入希腊——腓立比、帖撒罗尼迦、雅典、哥林多（使徒行传15–18章）。",
+      "zh-Hant": "經小亞細亞進入希臘——腓立比、帖撒羅尼迦、雅典、哥林多（使徒行傳15–18章）。"
+    },
+    "books": {
+      "Acts": [
+        15,
+        18
+      ]
+    },
     "file": "13_paul_second_journey.jpg"
   },
   {
     "id": "paul_third_journey",
-    "title": { "en": "Paul's Third Missionary Journey", "zh-Hans": "保罗第三次传道旅程", "zh-Hant": "保羅第三次傳道旅程" },
-    "description": { "en": "Ephesus as the center, revisiting the churches of Asia and Greece (Acts 18–21).", "zh-Hans": "以弗所为中心，重访亚细亚和希腊的教会（使徒行传18–21章）。", "zh-Hant": "以弗所為中心，重訪亞細亞和希臘的教會（使徒行傳18–21章）。" },
-    "books": { "Acts": [18, 21] },
+    "title": {
+      "en": "Paul's Third Missionary Journey",
+      "zh-Hans": "保罗第三次传道旅程",
+      "zh-Hant": "保羅第三次傳道旅程"
+    },
+    "description": {
+      "en": "Ephesus as the center, revisiting the churches of Asia and Greece (Acts 18–21).",
+      "zh-Hans": "以弗所为中心，重访亚细亚和希腊的教会（使徒行传18–21章）。",
+      "zh-Hant": "以弗所為中心，重訪亞細亞和希臘的教會（使徒行傳18–21章）。"
+    },
+    "books": {
+      "Acts": [
+        18,
+        21
+      ]
+    },
     "file": "14_paul_third_journey.jpg"
   },
   {
     "id": "paul_voyage_rome",
-    "title": { "en": "Paul's Voyage to Rome", "zh-Hans": "保罗航行到罗马", "zh-Hant": "保羅航行到羅馬" },
-    "description": { "en": "The Mediterranean ship route — shipwreck on Malta and arrival in Rome (Acts 27–28).", "zh-Hans": "地中海航线——在马耳他岛遇船难后抵达罗马（使徒行传27–28章）。", "zh-Hant": "地中海航線——在馬耳他島遇船難後抵達羅馬（使徒行傳27–28章）。" },
-    "books": { "Acts": [27, 28] },
+    "title": {
+      "en": "Paul's Voyage to Rome",
+      "zh-Hans": "保罗航行到罗马",
+      "zh-Hant": "保羅航行到羅馬"
+    },
+    "description": {
+      "en": "The Mediterranean ship route — shipwreck on Malta and arrival in Rome (Acts 27–28).",
+      "zh-Hans": "地中海航线——在马耳他岛遇船难后抵达罗马（使徒行传27–28章）。",
+      "zh-Hant": "地中海航線——在馬耳他島遇船難後抵達羅馬（使徒行傳27–28章）。"
+    },
+    "books": {
+      "Acts": [
+        27,
+        28
+      ]
+    },
     "file": "15_paul_voyage_rome.jpg"
   },
   {
     "id": "seven_churches",
-    "title": { "en": "Seven Churches of Revelation", "zh-Hans": "启示录七教会", "zh-Hant": "啟示錄七教會" },
-    "description": { "en": "Ephesus, Smyrna, Pergamum, Thyatira, Sardis, Philadelphia, and Laodicea in Asia Minor.", "zh-Hans": "小亚细亚的以弗所、士每拿、别迦摩、推雅推喇、撒狄、非拉铁非和老底嘉。", "zh-Hant": "小亞細亞的以弗所、士每拿、別迦摩、推雅推喇、撒狄、非拉鐵非和老底嘉。" },
-    "books": { "Revelation": [1, 3] },
+    "title": {
+      "en": "Seven Churches of Revelation",
+      "zh-Hans": "启示录七教会",
+      "zh-Hant": "啟示錄七教會"
+    },
+    "description": {
+      "en": "Ephesus, Smyrna, Pergamum, Thyatira, Sardis, Philadelphia, and Laodicea in Asia Minor.",
+      "zh-Hans": "小亚细亚的以弗所、士每拿、别迦摩、推雅推喇、撒狄、非拉铁非和老底嘉。",
+      "zh-Hant": "小亞細亞的以弗所、士每拿、別迦摩、推雅推喇、撒狄、非拉鐵非和老底嘉。"
+    },
+    "books": {
+      "Revelation": [
+        1,
+        3
+      ]
+    },
     "file": "16_seven_churches.png"
   },
   {
     "id": "nt_world_roman_empire",
-    "title": { "en": "The New Testament World", "zh-Hans": "新约世界", "zh-Hant": "新約世界" },
-    "description": { "en": "The Roman Empire at its greatest extent (117 AD) — the world of the early church.", "zh-Hans": "罗马帝国鼎盛时期（公元117年）——早期教会的世界。", "zh-Hant": "羅馬帝國鼎盛時期（公元117年）——早期教會的世界。" },
-    "books": { "Acts": [1, 12], "Romans": [1, 16], "1 Corinthians": [1, 16], "2 Corinthians": [1, 13], "Galatians": [1, 6], "Ephesians": [1, 6], "Philippians": [1, 4], "Colossians": [1, 4], "1 Thessalonians": [1, 5], "2 Thessalonians": [1, 3], "1 Timothy": [1, 6], "2 Timothy": [1, 4], "Titus": [1, 3], "Philemon": [1, 1], "Hebrews": [1, 13], "James": [1, 5], "1 Peter": [1, 5], "2 Peter": [1, 3], "1 John": [1, 5], "2 John": [1, 1], "3 John": [1, 1], "Jude": [1, 1], "Revelation": [4, 22] },
+    "title": {
+      "en": "The New Testament World",
+      "zh-Hans": "新约世界",
+      "zh-Hant": "新約世界"
+    },
+    "description": {
+      "en": "The Roman Empire at its greatest extent (117 AD) — the world of the early church.",
+      "zh-Hans": "罗马帝国鼎盛时期（公元117年）——早期教会的世界。",
+      "zh-Hant": "羅馬帝國鼎盛時期（公元117年）——早期教會的世界。"
+    },
+    "books": {
+      "Acts": [
+        1,
+        12
+      ],
+      "Romans": [
+        1,
+        16
+      ],
+      "1 Corinthians": [
+        1,
+        16
+      ],
+      "2 Corinthians": [
+        1,
+        13
+      ],
+      "Galatians": [
+        1,
+        6
+      ],
+      "Ephesians": [
+        1,
+        6
+      ],
+      "Philippians": [
+        1,
+        4
+      ],
+      "Colossians": [
+        1,
+        4
+      ],
+      "1 Thessalonians": [
+        1,
+        5
+      ],
+      "2 Thessalonians": [
+        1,
+        3
+      ],
+      "1 Timothy": [
+        1,
+        6
+      ],
+      "2 Timothy": [
+        1,
+        4
+      ],
+      "Titus": [
+        1,
+        3
+      ],
+      "Philemon": [
+        1,
+        1
+      ],
+      "Hebrews": [
+        1,
+        13
+      ],
+      "James": [
+        1,
+        5
+      ],
+      "1 Peter": [
+        1,
+        5
+      ],
+      "2 Peter": [
+        1,
+        3
+      ],
+      "1 John": [
+        1,
+        5
+      ],
+      "2 John": [
+        1,
+        1
+      ],
+      "3 John": [
+        1,
+        1
+      ],
+      "Jude": [
+        1,
+        1
+      ],
+      "Revelation": [
+        4,
+        22
+      ]
+    },
     "file": "17_roman_empire.png"
   },
   {
     "id": "ministry_of_jesus",
-    "title": { "en": "Ministry of Jesus in Galilee", "zh-Hans": "耶稣在加利利的事奉", "zh-Hant": "耶穌在加利利的事奉" },
-    "description": { "en": "Galilee, Samaria, and Judea — the cities and regions where Jesus taught and ministered.", "zh-Hans": "加利利、撒玛利亚和犹太地——耶稣教导与服侍的城镇与地区。", "zh-Hant": "加利利、撒瑪利亞和猶太地——耶穌教導與服侍的城鎮與地區。" },
-    "books": { "Matthew": [4, 28], "Mark": [1, 16], "Luke": [3, 24], "John": [1, 21] },
+    "title": {
+      "en": "Ministry of Jesus in Galilee",
+      "zh-Hans": "耶稣在加利利的事奉",
+      "zh-Hant": "耶穌在加利利的事奉"
+    },
+    "description": {
+      "en": "Galilee, Samaria, and Judea — the cities and regions where Jesus taught and ministered.",
+      "zh-Hans": "加利利、撒玛利亚和犹太地——耶稣教导与服侍的城镇与地区。",
+      "zh-Hant": "加利利、撒瑪利亞和猶太地——耶穌教導與服侍的城鎮與地區。"
+    },
+    "books": {
+      "Matthew": [
+        4,
+        28
+      ],
+      "Mark": [
+        1,
+        16
+      ],
+      "Luke": [
+        3,
+        24
+      ],
+      "John": [
+        1,
+        21
+      ]
+    },
     "file": "18_ministry_of_jesus.png"
   },
   {
     "id": "solomons_temple",
-    "title": { "en": "Solomon's Temple", "zh-Hans": "所罗门的圣殿", "zh-Hant": "所羅門的聖殿" },
-    "description": { "en": "Floor plan of the First Temple in Jerusalem, built under King Solomon (1 Kings 6).", "zh-Hans": "耶路撒冷第一圣殿的平面图，由所罗门王建造（列王纪上6章）。", "zh-Hant": "耶路撒冷第一聖殿的平面圖，由所羅門王建造（列王紀上6章）。" },
-    "books": { "1 Kings": [5, 9], "2 Chronicles": [2, 7] },
+    "title": {
+      "en": "Solomon's Temple",
+      "zh-Hans": "所罗门的圣殿",
+      "zh-Hant": "所羅門的聖殿"
+    },
+    "description": {
+      "en": "Floor plan of the First Temple in Jerusalem, built under King Solomon (1 Kings 6).",
+      "zh-Hans": "耶路撒冷第一圣殿的平面图，由所罗门王建造（列王纪上6章）。",
+      "zh-Hant": "耶路撒冷第一聖殿的平面圖，由所羅門王建造（列王紀上6章）。"
+    },
+    "books": {
+      "1 Kings": [
+        5,
+        9
+      ],
+      "2 Chronicles": [
+        2,
+        7
+      ]
+    },
     "file": "19_solomons_temple.jpg"
   },
   {
     "id": "tabernacle_schematic",
-    "title": { "en": "The Tabernacle", "zh-Hans": "会幕", "zh-Hant": "會幕" },
-    "description": { "en": "Layout of the wilderness Tabernacle — courtyard, holy place, and most holy place (Exodus 25–40).", "zh-Hans": "旷野会幕的布局——外院、圣所与至圣所（出埃及记25–40章）。", "zh-Hant": "曠野會幕的佈局——外院、聖所與至聖所（出埃及記25–40章）。" },
-    "books": { "Exodus": [25, 40], "Leviticus": [1, 27], "Numbers": [1, 10] },
+    "title": {
+      "en": "The Tabernacle",
+      "zh-Hans": "会幕",
+      "zh-Hant": "會幕"
+    },
+    "description": {
+      "en": "Layout of the wilderness Tabernacle — courtyard, holy place, and most holy place (Exodus 25–40).",
+      "zh-Hans": "旷野会幕的布局——外院、圣所与至圣所（出埃及记25–40章）。",
+      "zh-Hant": "曠野會幕的佈局——外院、聖所與至聖所（出埃及記25–40章）。"
+    },
+    "books": {
+      "Exodus": [
+        25,
+        40
+      ],
+      "Leviticus": [
+        1,
+        27
+      ],
+      "Numbers": [
+        1,
+        10
+      ]
+    },
     "file": "20_tabernacle_schematic.jpg"
   },
   {
     "id": "maccabean_palestine",
-    "title": { "en": "Palestine under the Maccabees", "zh-Hans": "马加比时期的巴勒斯坦", "zh-Hant": "馬加比時期的巴勒斯坦" },
-    "description": { "en": "The intertestamental period — Jewish independence under the Hasmonean dynasty (Smith, 1915).", "zh-Hans": "两约之间——哈斯摩尼王朝下的犹太独立（1915年史密斯地图）。", "zh-Hant": "兩約之間——哈斯摩尼王朝下的猶太獨立（1915年史密斯地圖）。" },
-    "books": { "Daniel": [11, 12] },
+    "title": {
+      "en": "Palestine under the Maccabees",
+      "zh-Hans": "马加比时期的巴勒斯坦",
+      "zh-Hant": "馬加比時期的巴勒斯坦"
+    },
+    "description": {
+      "en": "The intertestamental period — Jewish independence under the Hasmonean dynasty (Smith, 1915).",
+      "zh-Hans": "两约之间——哈斯摩尼王朝下的犹太独立（1915年史密斯地图）。",
+      "zh-Hant": "兩約之間——哈斯摩尼王朝下的猶太獨立（1915年史密斯地圖）。"
+    },
+    "books": {
+      "Daniel": [
+        11,
+        12
+      ]
+    },
     "file": "21_maccabean_palestine.jpg"
   },
   {
     "id": "israel_relief",
-    "title": { "en": "Geography of Israel", "zh-Hans": "以色列地理", "zh-Hant": "以色列地理" },
-    "description": { "en": "Physical relief map of the land of Israel — mountains, valleys, and the Jordan rift.", "zh-Hans": "以色列地的地势图——山脉、山谷与约旦裂谷。", "zh-Hant": "以色列地的地勢圖——山脈、山谷與約旦裂谷。" },
-    "books": { "Joshua": [1, 24], "Judges": [1, 21], "Ruth": [1, 4], "1 Samuel": [1, 31], "2 Samuel": [1, 24] },
+    "title": {
+      "en": "Geography of Israel",
+      "zh-Hans": "以色列地理",
+      "zh-Hant": "以色列地理"
+    },
+    "description": {
+      "en": "Physical relief map of the land of Israel — mountains, valleys, and the Jordan rift.",
+      "zh-Hans": "以色列地的地势图——山脉、山谷与约旦裂谷。",
+      "zh-Hant": "以色列地的地勢圖——山脈、山谷與約旦裂谷。"
+    },
+    "books": {
+      "Joshua": [
+        1,
+        24
+      ],
+      "Judges": [
+        1,
+        21
+      ],
+      "Ruth": [
+        1,
+        4
+      ],
+      "1 Samuel": [
+        1,
+        31
+      ],
+      "2 Samuel": [
+        1,
+        24
+      ]
+    },
     "file": "22_israel_relief.jpg"
   },
   {
     "id": "jerusalem_old_city",
-    "title": { "en": "Jerusalem — Old City", "zh-Hans": "耶路撒冷古城", "zh-Hant": "耶路撒冷古城" },
-    "description": { "en": "Plan of the Old City of Jerusalem — quarters, gates, and the Temple Mount.", "zh-Hans": "耶路撒冷古城平面图——四区、城门与圣殿山。", "zh-Hant": "耶路撒冷古城平面圖——四區、城門與聖殿山。" },
-    "books": { "2 Samuel": [5, 24], "1 Kings": [1, 22], "2 Kings": [1, 25], "1 Chronicles": [11, 29], "2 Chronicles": [1, 36], "Nehemiah": [1, 13], "Psalms": [1, 150], "Lamentations": [1, 5], "Matthew": [21, 28], "Mark": [11, 16], "Luke": [19, 24], "John": [12, 21], "Acts": [1, 8] },
+    "title": {
+      "en": "Jerusalem — Old City",
+      "zh-Hans": "耶路撒冷古城",
+      "zh-Hant": "耶路撒冷古城"
+    },
+    "description": {
+      "en": "Plan of the Old City of Jerusalem — quarters, gates, and the Temple Mount.",
+      "zh-Hans": "耶路撒冷古城平面图——四区、城门与圣殿山。",
+      "zh-Hant": "耶路撒冷古城平面圖——四區、城門與聖殿山。"
+    },
+    "books": {
+      "2 Samuel": [
+        5,
+        24
+      ],
+      "1 Kings": [
+        1,
+        22
+      ],
+      "2 Kings": [
+        1,
+        25
+      ],
+      "1 Chronicles": [
+        11,
+        29
+      ],
+      "2 Chronicles": [
+        1,
+        36
+      ],
+      "Nehemiah": [
+        1,
+        13
+      ],
+      "Psalms": [
+        1,
+        150
+      ],
+      "Lamentations": [
+        1,
+        5
+      ],
+      "Matthew": [
+        21,
+        28
+      ],
+      "Mark": [
+        11,
+        16
+      ],
+      "Luke": [
+        19,
+        24
+      ],
+      "John": [
+        12,
+        21
+      ],
+      "Acts": [
+        1,
+        8
+      ]
+    },
     "file": "23_jerusalem_old_city.png"
   },
   {
     "id": "assyria_detail",
-    "title": { "en": "Assyria & Mesopotamia", "zh-Hans": "亚述与美索不达米亚", "zh-Hant": "亞述與美索不達米亞" },
-    "description": { "en": "The Assyrian heartland — Nineveh, Asshur, Calah — and the rivers of Mesopotamia.", "zh-Hans": "亚述心脏地带——尼尼微、亚述城、迦拉——与美索不达米亚两河流域。", "zh-Hant": "亞述心臟地帶——尼尼微、亞述城、迦拉——與美索不達米亞兩河流域。" },
-    "books": { "Jonah": [1, 4], "Nahum": [1, 3], "2 Kings": [15, 20], "Isaiah": [10, 39] },
+    "title": {
+      "en": "Assyria & Mesopotamia",
+      "zh-Hans": "亚述与美索不达米亚",
+      "zh-Hant": "亞述與美索不達米亞"
+    },
+    "description": {
+      "en": "The Assyrian heartland — Nineveh, Asshur, Calah — and the rivers of Mesopotamia.",
+      "zh-Hans": "亚述心脏地带——尼尼微、亚述城、迦拉——与美索不达米亚两河流域。",
+      "zh-Hant": "亞述心臟地帶——尼尼微、亞述城、迦拉——與美索不達米亞兩河流域。"
+    },
+    "books": {
+      "Jonah": [
+        1,
+        4
+      ],
+      "Nahum": [
+        1,
+        3
+      ],
+      "2 Kings": [
+        15,
+        20
+      ],
+      "Isaiah": [
+        10,
+        39
+      ]
+    },
     "file": "24_assyria_detail.jpg"
   },
   {
     "id": "herodian_tetrarchy",
-    "title": { "en": "Herodian Tetrarchy", "zh-Hans": "希律四分领地", "zh-Hant": "希律四分領地" },
-    "description": { "en": "Palestine after Herod the Great — Judea, Galilee, Samaria, and the Decapolis at the time of Jesus' ministry.", "zh-Hans": "大希律之后的巴勒斯坦——耶稣事奉时期的犹太、加利利、撒玛利亚与十城地区。", "zh-Hant": "大希律之後的巴勒斯坦——耶穌事奉時期的猶太、加利利、撒瑪利亞與十城地區。" },
-    "books": { "Matthew": [1, 28], "Mark": [1, 16], "Luke": [1, 24], "John": [1, 21], "Acts": [1, 12] },
+    "title": {
+      "en": "Herodian Tetrarchy",
+      "zh-Hans": "希律四分领地",
+      "zh-Hant": "希律四分領地"
+    },
+    "description": {
+      "en": "Palestine after Herod the Great — Judea, Galilee, Samaria, and the Decapolis at the time of Jesus' ministry.",
+      "zh-Hans": "大希律之后的巴勒斯坦——耶稣事奉时期的犹太、加利利、撒玛利亚与十城地区。",
+      "zh-Hant": "大希律之後的巴勒斯坦——耶穌事奉時期的猶太、加利利、撒瑪利亞與十城地區。"
+    },
+    "books": {
+      "Matthew": [
+        1,
+        28
+      ],
+      "Mark": [
+        1,
+        16
+      ],
+      "Luke": [
+        1,
+        24
+      ],
+      "John": [
+        1,
+        21
+      ],
+      "Acts": [
+        1,
+        12
+      ]
+    },
     "file": "25_herodian_tetrarchy.png"
   },
   {
     "id": "palestine_nt_times_detail",
-    "title": { "en": "Palestine in New Testament Times", "zh-Hans": "新约时代的巴勒斯坦", "zh-Hant": "新約時代的巴勒斯坦" },
-    "description": { "en": "A regional New Testament map showing Galilee, Samaria, Judea, Perea, and nearby districts.", "zh-Hans": "新约时代区域图，显示加利利、撒马利亚、犹太、比利亚及周边地区。", "zh-Hant": "新約時代區域圖，顯示加利利、撒瑪利亞、猶太、比利亞及周邊地區。" },
-    "books": { "Matthew": [1, 28], "Mark": [1, 16], "Luke": [1, 24], "John": [1, 21], "Acts": [1, 12] },
+    "title": {
+      "en": "Palestine in New Testament Times",
+      "zh-Hans": "新约时代的巴勒斯坦",
+      "zh-Hant": "新約時代的巴勒斯坦"
+    },
+    "description": {
+      "en": "A regional New Testament map showing Galilee, Samaria, Judea, Perea, and nearby districts.",
+      "zh-Hans": "新约时代区域图，显示加利利、撒马利亚、犹太、比利亚及周边地区。",
+      "zh-Hant": "新約時代區域圖，顯示加利利、撒瑪利亞、猶太、比利亞及周邊地區。"
+    },
+    "books": {
+      "Matthew": [
+        1,
+        28
+      ],
+      "Mark": [
+        1,
+        16
+      ],
+      "Luke": [
+        1,
+        24
+      ],
+      "John": [
+        1,
+        21
+      ],
+      "Acts": [
+        1,
+        12
+      ]
+    },
     "file": "26_palestine_nt_times.jpg"
   },
   {
     "id": "jesus_ministry_detail",
-    "title": { "en": "Jesus' Ministry — Detailed Route Map", "zh-Hans": "耶稣事奉路线详图", "zh-Hant": "耶穌事奉路線詳圖" },
-    "description": { "en": "Detailed map of places associated with Jesus' birth, ministry, final journey, death, and resurrection.", "zh-Hans": "耶稣降生、事奉、最后旅程、受死与复活相关地点详图。", "zh-Hant": "耶穌降生、事奉、最後旅程、受死與復活相關地點詳圖。" },
-    "books": { "Matthew": [1, 28], "Mark": [1, 16], "Luke": [1, 24], "John": [1, 21] },
+    "title": {
+      "en": "Jesus' Ministry — Detailed Route Map",
+      "zh-Hans": "耶稣事奉路线详图",
+      "zh-Hant": "耶穌事奉路線詳圖"
+    },
+    "description": {
+      "en": "Detailed map of places associated with Jesus' birth, ministry, final journey, death, and resurrection.",
+      "zh-Hans": "耶稣降生、事奉、最后旅程、受死与复活相关地点详图。",
+      "zh-Hant": "耶穌降生、事奉、最後旅程、受死與復活相關地點詳圖。"
+    },
+    "books": {
+      "Matthew": [
+        1,
+        28
+      ],
+      "Mark": [
+        1,
+        16
+      ],
+      "Luke": [
+        1,
+        24
+      ],
+      "John": [
+        1,
+        21
+      ]
+    },
     "file": "27_jesus_ministry_detail.jpg"
   },
   {
     "id": "lower_galilee",
-    "title": { "en": "Lower Galilee", "zh-Hans": "下加利利", "zh-Hant": "下加利利" },
-    "description": { "en": "Local map of Lower Galilee, useful for Nazareth, Cana, Nain, and early Galilean ministry scenes.", "zh-Hans": "下加利利地方图，适合查看拿撒勒、迦拿、拿因及早期加利利事奉场景。", "zh-Hant": "下加利利地方圖，適合查看拿撒勒、迦拿、拿因及早期加利利事奉場景。" },
-    "books": { "Matthew": [2, 17], "Mark": [1, 9], "Luke": [1, 9], "John": [1, 6] },
+    "title": {
+      "en": "Lower Galilee",
+      "zh-Hans": "下加利利",
+      "zh-Hant": "下加利利"
+    },
+    "description": {
+      "en": "Local map of Lower Galilee, useful for Nazareth, Cana, Nain, and early Galilean ministry scenes.",
+      "zh-Hans": "下加利利地方图，适合查看拿撒勒、迦拿、拿因及早期加利利事奉场景。",
+      "zh-Hant": "下加利利地方圖，適合查看拿撒勒、迦拿、拿因及早期加利利事奉場景。"
+    },
+    "books": {
+      "Matthew": [
+        2,
+        17
+      ],
+      "Mark": [
+        1,
+        9
+      ],
+      "Luke": [
+        1,
+        9
+      ],
+      "John": [
+        1,
+        6
+      ]
+    },
     "file": "28_lower_galilee.gif"
   },
   {
     "id": "decapolis",
-    "title": { "en": "The Decapolis", "zh-Hans": "低加坡里十城", "zh-Hant": "低加坡里十城" },
-    "description": { "en": "The Decapolis cities east and southeast of Galilee, helpful for gospel scenes around Gerasa/Gadara and the eastern lake region.", "zh-Hans": "加利利东部及东南部的十城地区，适合查看格拉森/加大拉及加利利海东岸的福音书场景。", "zh-Hant": "加利利東部及東南部的十城地區，適合查看格拉森/加大拉及加利利海東岸的福音書場景。" },
-    "books": { "Matthew": [4, 15], "Mark": [5, 8], "Luke": [8, 9] },
+    "title": {
+      "en": "The Decapolis",
+      "zh-Hans": "低加坡里十城",
+      "zh-Hant": "低加坡里十城"
+    },
+    "description": {
+      "en": "The Decapolis cities east and southeast of Galilee, helpful for gospel scenes around Gerasa/Gadara and the eastern lake region.",
+      "zh-Hans": "加利利东部及东南部的十城地区，适合查看格拉森/加大拉及加利利海东岸的福音书场景。",
+      "zh-Hant": "加利利東部及東南部的十城地區，適合查看格拉森/加大拉及加利利海東岸的福音書場景。"
+    },
+    "books": {
+      "Matthew": [
+        4,
+        15
+      ],
+      "Mark": [
+        5,
+        8
+      ],
+      "Luke": [
+        8,
+        9
+      ]
+    },
     "file": "29_decapolis.gif"
   },
   {
     "id": "judea_southern",
-    "title": { "en": "Judea and Southern Palestine", "zh-Hans": "犹太与南部巴勒斯坦", "zh-Hant": "猶太與南部巴勒斯坦" },
-    "description": { "en": "Southern Judea map for Bethlehem, Hebron, Jerusalem approaches, and the passion-week setting.", "zh-Hans": "南部犹太地图，适合查看伯利恒、希伯仑、通往耶路撒冷的路线及受难周背景。", "zh-Hant": "南部猶太地圖，適合查看伯利恆、希伯崙、通往耶路撒冷的路線及受難週背景。" },
-    "books": { "Matthew": [1, 28], "Mark": [10, 16], "Luke": [1, 24], "John": [7, 21], "Acts": [1, 8] },
+    "title": {
+      "en": "Judea and Southern Palestine",
+      "zh-Hans": "犹太与南部巴勒斯坦",
+      "zh-Hant": "猶太與南部巴勒斯坦"
+    },
+    "description": {
+      "en": "Southern Judea map for Bethlehem, Hebron, Jerusalem approaches, and the passion-week setting.",
+      "zh-Hans": "南部犹太地图，适合查看伯利恒、希伯仑、通往耶路撒冷的路线及受难周背景。",
+      "zh-Hant": "南部猶太地圖，適合查看伯利恆、希伯崙、通往耶路撒冷的路線及受難週背景。"
+    },
+    "books": {
+      "Matthew": [
+        1,
+        28
+      ],
+      "Mark": [
+        10,
+        16
+      ],
+      "Luke": [
+        1,
+        24
+      ],
+      "John": [
+        7,
+        21
+      ],
+      "Acts": [
+        1,
+        8
+      ]
+    },
     "file": "30_judea_southern.gif"
   },
   {
     "id": "northern_galilee",
-    "title": { "en": "Northern Galilee", "zh-Hans": "北加利利", "zh-Hant": "北加利利" },
-    "description": { "en": "Northern Galilee region map for Caesarea Philippi, upper Jordan, and northern gospel travel.", "zh-Hans": "北加利利区域图，适合查看该撒利亚腓立比、约旦河上游及福音书北部行程。", "zh-Hant": "北加利利區域圖，適合查看該撒利亞腓立比、約旦河上游及福音書北部行程。" },
-    "books": { "Matthew": [4, 18], "Mark": [1, 9], "Luke": [4, 9], "John": [1, 6] },
+    "title": {
+      "en": "Northern Galilee",
+      "zh-Hans": "北加利利",
+      "zh-Hant": "北加利利"
+    },
+    "description": {
+      "en": "Northern Galilee region map for Caesarea Philippi, upper Jordan, and northern gospel travel.",
+      "zh-Hans": "北加利利区域图，适合查看该撒利亚腓立比、约旦河上游及福音书北部行程。",
+      "zh-Hant": "北加利利區域圖，適合查看該撒利亞腓立比、約旦河上游及福音書北部行程。"
+    },
+    "books": {
+      "Matthew": [
+        4,
+        18
+      ],
+      "Mark": [
+        1,
+        9
+      ],
+      "Luke": [
+        4,
+        9
+      ],
+      "John": [
+        1,
+        6
+      ]
+    },
     "file": "31_galilee_northern.gif"
   },
   {
     "id": "upper_galilee",
-    "title": { "en": "Upper Galilee", "zh-Hans": "上加利利", "zh-Hant": "上加利利" },
-    "description": { "en": "Upper Galilee map showing hill country and northern routes around the Sea of Galilee.", "zh-Hans": "上加利利地图，显示加利利海周边山地与北部路线。", "zh-Hant": "上加利利地圖，顯示加利利海周邊山地與北部路線。" },
-    "books": { "Matthew": [4, 18], "Mark": [1, 9], "Luke": [4, 9], "John": [1, 6] },
+    "title": {
+      "en": "Upper Galilee",
+      "zh-Hans": "上加利利",
+      "zh-Hant": "上加利利"
+    },
+    "description": {
+      "en": "Upper Galilee map showing hill country and northern routes around the Sea of Galilee.",
+      "zh-Hans": "上加利利地图，显示加利利海周边山地与北部路线。",
+      "zh-Hant": "上加利利地圖，顯示加利利海周邊山地與北部路線。"
+    },
+    "books": {
+      "Matthew": [
+        4,
+        18
+      ],
+      "Mark": [
+        1,
+        9
+      ],
+      "Luke": [
+        4,
+        9
+      ],
+      "John": [
+        1,
+        6
+      ]
+    },
     "file": "32_upper_galilee.gif"
   },
   {
     "id": "samaria_region",
-    "title": { "en": "Samaria", "zh-Hans": "撒马利亚", "zh-Hant": "撒瑪利亞" },
-    "description": { "en": "Samaria map for Shechem, Mount Gerizim, Sychar, and the early spread of the gospel in Acts.", "zh-Hans": "撒马利亚地图，适合查看示剑、基利心山、叙加及使徒行传中福音早期扩展。", "zh-Hant": "撒瑪利亞地圖，適合查看示劍、基利心山、敘加及使徒行傳中福音早期擴展。" },
-    "books": { "John": [4, 4], "Luke": [9, 17], "Acts": [8, 9] },
+    "title": {
+      "en": "Samaria",
+      "zh-Hans": "撒马利亚",
+      "zh-Hant": "撒瑪利亞"
+    },
+    "description": {
+      "en": "Samaria map for Shechem, Mount Gerizim, Sychar, and the early spread of the gospel in Acts.",
+      "zh-Hans": "撒马利亚地图，适合查看示剑、基利心山、叙加及使徒行传中福音早期扩展。",
+      "zh-Hant": "撒瑪利亞地圖，適合查看示劍、基利心山、敘加及使徒行傳中福音早期擴展。"
+    },
+    "books": {
+      "John": [
+        4,
+        4
+      ],
+      "Luke": [
+        9,
+        17
+      ],
+      "Acts": [
+        8,
+        9
+      ]
+    },
     "file": "33_samaria.gif"
   },
   {
     "id": "roads_of_israel",
-    "title": { "en": "Roads of Israel", "zh-Hans": "以色列道路", "zh-Hant": "以色列道路" },
-    "description": { "en": "Major roads and routes through Israel, useful for travel narratives from the Old Testament through Acts.", "zh-Hans": "以色列主要道路与路线，适合查看旧约至使徒行传中的行程叙事。", "zh-Hant": "以色列主要道路與路線，適合查看舊約至使徒行傳中的行程敘事。" },
-    "books": { "Genesis": [12, 50], "Exodus": [1, 40], "Numbers": [10, 36], "Deuteronomy": [1, 34], "Joshua": [1, 24], "Judges": [1, 21], "Ruth": [1, 4], "1 Samuel": [1, 31], "2 Samuel": [1, 24], "1 Kings": [1, 22], "2 Kings": [1, 25], "Matthew": [1, 28], "Mark": [1, 16], "Luke": [1, 24], "John": [1, 21], "Acts": [1, 12] },
+    "title": {
+      "en": "Roads of Israel",
+      "zh-Hans": "以色列道路",
+      "zh-Hant": "以色列道路"
+    },
+    "description": {
+      "en": "Major roads and routes through Israel, useful for travel narratives from the Old Testament through Acts.",
+      "zh-Hans": "以色列主要道路与路线，适合查看旧约至使徒行传中的行程叙事。",
+      "zh-Hant": "以色列主要道路與路線，適合查看舊約至使徒行傳中的行程敘事。"
+    },
+    "books": {
+      "Genesis": [
+        12,
+        50
+      ],
+      "Exodus": [
+        1,
+        40
+      ],
+      "Numbers": [
+        10,
+        36
+      ],
+      "Deuteronomy": [
+        1,
+        34
+      ],
+      "Joshua": [
+        1,
+        24
+      ],
+      "Judges": [
+        1,
+        21
+      ],
+      "Ruth": [
+        1,
+        4
+      ],
+      "1 Samuel": [
+        1,
+        31
+      ],
+      "2 Samuel": [
+        1,
+        24
+      ],
+      "1 Kings": [
+        1,
+        22
+      ],
+      "2 Kings": [
+        1,
+        25
+      ],
+      "Matthew": [
+        1,
+        28
+      ],
+      "Mark": [
+        1,
+        16
+      ],
+      "Luke": [
+        1,
+        24
+      ],
+      "John": [
+        1,
+        21
+      ],
+      "Acts": [
+        1,
+        12
+      ]
+    },
     "file": "34_roads_israel.jpg"
   },
   {
     "id": "last_passover",
-    "title": { "en": "Jesus' Last Passover", "zh-Hans": "耶稣最后的逾越节", "zh-Hant": "耶穌最後的逾越節" },
-    "description": { "en": "Map focused on Jesus' final approach to Jerusalem and passion-week locations.", "zh-Hans": "聚焦耶稣最后上耶路撒冷及受难周地点的地图。", "zh-Hant": "聚焦耶穌最後上耶路撒冷及受難週地點的地圖。" },
-    "books": { "Matthew": [21, 28], "Mark": [11, 16], "Luke": [19, 24], "John": [11, 21] },
+    "title": {
+      "en": "Jesus' Last Passover",
+      "zh-Hans": "耶稣最后的逾越节",
+      "zh-Hant": "耶穌最後的逾越節"
+    },
+    "description": {
+      "en": "Map focused on Jesus' final approach to Jerusalem and passion-week locations.",
+      "zh-Hans": "聚焦耶稣最后上耶路撒冷及受难周地点的地图。",
+      "zh-Hant": "聚焦耶穌最後上耶路撒冷及受難週地點的地圖。"
+    },
+    "books": {
+      "Matthew": [
+        21,
+        28
+      ],
+      "Mark": [
+        11,
+        16
+      ],
+      "Luke": [
+        19,
+        24
+      ],
+      "John": [
+        11,
+        21
+      ]
+    },
     "file": "35_last_passover.gif"
   },
   {
     "id": "spread_of_christianity",
-    "title": { "en": "Spread of Early Christianity", "zh-Hans": "早期基督信仰的传播", "zh-Hant": "早期基督信仰的傳播" },
-    "description": { "en": "A broad map of the spread of Christianity across the Mediterranean world.", "zh-Hans": "基督信仰在地中海世界扩展的总览地图。", "zh-Hant": "基督信仰在地中海世界擴展的總覽地圖。" },
-    "books": { "Acts": [1, 28], "Romans": [1, 16], "1 Corinthians": [1, 16], "2 Corinthians": [1, 13], "Galatians": [1, 6], "Ephesians": [1, 6], "Philippians": [1, 4], "Colossians": [1, 4], "1 Thessalonians": [1, 5], "2 Thessalonians": [1, 3], "1 Timothy": [1, 6], "2 Timothy": [1, 4], "Titus": [1, 3], "Philemon": [1, 1], "Hebrews": [1, 13], "James": [1, 5], "1 Peter": [1, 5], "2 Peter": [1, 3], "1 John": [1, 5], "2 John": [1, 1], "3 John": [1, 1], "Jude": [1, 1], "Revelation": [1, 22] },
+    "title": {
+      "en": "Spread of Early Christianity",
+      "zh-Hans": "早期基督信仰的传播",
+      "zh-Hant": "早期基督信仰的傳播"
+    },
+    "description": {
+      "en": "A broad map of the spread of Christianity across the Mediterranean world.",
+      "zh-Hans": "基督信仰在地中海世界扩展的总览地图。",
+      "zh-Hant": "基督信仰在地中海世界擴展的總覽地圖。"
+    },
+    "books": {
+      "Acts": [
+        1,
+        28
+      ],
+      "Romans": [
+        1,
+        16
+      ],
+      "1 Corinthians": [
+        1,
+        16
+      ],
+      "2 Corinthians": [
+        1,
+        13
+      ],
+      "Galatians": [
+        1,
+        6
+      ],
+      "Ephesians": [
+        1,
+        6
+      ],
+      "Philippians": [
+        1,
+        4
+      ],
+      "Colossians": [
+        1,
+        4
+      ],
+      "1 Thessalonians": [
+        1,
+        5
+      ],
+      "2 Thessalonians": [
+        1,
+        3
+      ],
+      "1 Timothy": [
+        1,
+        6
+      ],
+      "2 Timothy": [
+        1,
+        4
+      ],
+      "Titus": [
+        1,
+        3
+      ],
+      "Philemon": [
+        1,
+        1
+      ],
+      "Hebrews": [
+        1,
+        13
+      ],
+      "James": [
+        1,
+        5
+      ],
+      "1 Peter": [
+        1,
+        5
+      ],
+      "2 Peter": [
+        1,
+        3
+      ],
+      "1 John": [
+        1,
+        5
+      ],
+      "2 John": [
+        1,
+        1
+      ],
+      "3 John": [
+        1,
+        1
+      ],
+      "Jude": [
+        1,
+        1
+      ],
+      "Revelation": [
+        1,
+        22
+      ]
+    },
     "file": "36_spread_christianity.gif"
   },
   {
     "id": "new_testament_world_detail",
-    "title": { "en": "New Testament World", "zh-Hans": "新约世界", "zh-Hant": "新約世界" },
-    "description": { "en": "The wider Roman Mediterranean world of the Gospels, Acts, and the epistles.", "zh-Hans": "福音书、使徒行传与书信所在的罗马地中海世界。", "zh-Hant": "福音書、使徒行傳與書信所在的羅馬地中海世界。" },
-    "books": { "Matthew": [1, 28], "Mark": [1, 16], "Luke": [1, 24], "John": [1, 21], "Acts": [1, 28], "Romans": [1, 16], "1 Corinthians": [1, 16], "2 Corinthians": [1, 13], "Galatians": [1, 6], "Ephesians": [1, 6], "Philippians": [1, 4], "Colossians": [1, 4], "1 Thessalonians": [1, 5], "2 Thessalonians": [1, 3], "1 Timothy": [1, 6], "2 Timothy": [1, 4], "Titus": [1, 3], "Philemon": [1, 1], "Hebrews": [1, 13], "James": [1, 5], "1 Peter": [1, 5], "2 Peter": [1, 3], "1 John": [1, 5], "2 John": [1, 1], "3 John": [1, 1], "Jude": [1, 1], "Revelation": [1, 22] },
+    "title": {
+      "en": "New Testament World",
+      "zh-Hans": "新约世界",
+      "zh-Hant": "新約世界"
+    },
+    "description": {
+      "en": "The wider Roman Mediterranean world of the Gospels, Acts, and the epistles.",
+      "zh-Hans": "福音书、使徒行传与书信所在的罗马地中海世界。",
+      "zh-Hant": "福音書、使徒行傳與書信所在的羅馬地中海世界。"
+    },
+    "books": {
+      "Matthew": [
+        1,
+        28
+      ],
+      "Mark": [
+        1,
+        16
+      ],
+      "Luke": [
+        1,
+        24
+      ],
+      "John": [
+        1,
+        21
+      ],
+      "Acts": [
+        1,
+        28
+      ],
+      "Romans": [
+        1,
+        16
+      ],
+      "1 Corinthians": [
+        1,
+        16
+      ],
+      "2 Corinthians": [
+        1,
+        13
+      ],
+      "Galatians": [
+        1,
+        6
+      ],
+      "Ephesians": [
+        1,
+        6
+      ],
+      "Philippians": [
+        1,
+        4
+      ],
+      "Colossians": [
+        1,
+        4
+      ],
+      "1 Thessalonians": [
+        1,
+        5
+      ],
+      "2 Thessalonians": [
+        1,
+        3
+      ],
+      "1 Timothy": [
+        1,
+        6
+      ],
+      "2 Timothy": [
+        1,
+        4
+      ],
+      "Titus": [
+        1,
+        3
+      ],
+      "Philemon": [
+        1,
+        1
+      ],
+      "Hebrews": [
+        1,
+        13
+      ],
+      "James": [
+        1,
+        5
+      ],
+      "1 Peter": [
+        1,
+        5
+      ],
+      "2 Peter": [
+        1,
+        3
+      ],
+      "1 John": [
+        1,
+        5
+      ],
+      "2 John": [
+        1,
+        1
+      ],
+      "3 John": [
+        1,
+        1
+      ],
+      "Jude": [
+        1,
+        1
+      ],
+      "Revelation": [
+        1,
+        22
+      ]
+    },
     "file": "37_nt_world.jpg"
   },
   {
     "id": "asia_minor_new_testament",
-    "title": { "en": "Asia Minor in the New Testament", "zh-Hans": "新约中的小亚细亚", "zh-Hant": "新約中的小亞細亞" },
-    "description": { "en": "Asia Minor map for Paul's journeys, the prison letters, pastoral letters, and Revelation's seven churches.", "zh-Hans": "小亚细亚地图，适合查看保罗旅程、监狱书信、教牧书信与启示录七教会。", "zh-Hant": "小亞細亞地圖，適合查看保羅旅程、監獄書信、教牧書信與啟示錄七教會。" },
-    "books": { "Acts": [13, 21], "Galatians": [1, 6], "Ephesians": [1, 6], "Colossians": [1, 4], "1 Timothy": [1, 6], "2 Timothy": [1, 4], "Philemon": [1, 1], "1 Peter": [1, 5], "Revelation": [1, 3] },
+    "title": {
+      "en": "Asia Minor in the New Testament",
+      "zh-Hans": "新约中的小亚细亚",
+      "zh-Hant": "新約中的小亞細亞"
+    },
+    "description": {
+      "en": "Asia Minor map for Paul's journeys, the prison letters, pastoral letters, and Revelation's seven churches.",
+      "zh-Hans": "小亚细亚地图，适合查看保罗旅程、监狱书信、教牧书信与启示录七教会。",
+      "zh-Hant": "小亞細亞地圖，適合查看保羅旅程、監獄書信、教牧書信與啟示錄七教會。"
+    },
+    "books": {
+      "Acts": [
+        13,
+        21
+      ],
+      "Galatians": [
+        1,
+        6
+      ],
+      "Ephesians": [
+        1,
+        6
+      ],
+      "Colossians": [
+        1,
+        4
+      ],
+      "1 Timothy": [
+        1,
+        6
+      ],
+      "2 Timothy": [
+        1,
+        4
+      ],
+      "Philemon": [
+        1,
+        1
+      ],
+      "1 Peter": [
+        1,
+        5
+      ],
+      "Revelation": [
+        1,
+        3
+      ]
+    },
     "file": "38_nt_asia.jpg"
   },
   {
     "id": "jerusalem_first_century",
-    "title": { "en": "Jerusalem in the First Century", "zh-Hans": "第一世纪的耶路撒冷", "zh-Hant": "第一世紀的耶路撒冷" },
-    "description": { "en": "First-century Jerusalem map for the passion narratives, resurrection appearances, Pentecost, and the early church.", "zh-Hans": "第一世纪耶路撒冷地图，适合查看受难叙事、复活显现、五旬节与初期教会。", "zh-Hant": "第一世紀耶路撒冷地圖，適合查看受難敘事、復活顯現、五旬節與初期教會。" },
-    "books": { "Matthew": [21, 28], "Mark": [11, 16], "Luke": [19, 24], "John": [12, 21], "Acts": [1, 8] },
+    "title": {
+      "en": "Jerusalem in the First Century",
+      "zh-Hans": "第一世纪的耶路撒冷",
+      "zh-Hant": "第一世紀的耶路撒冷"
+    },
+    "description": {
+      "en": "First-century Jerusalem map for the passion narratives, resurrection appearances, Pentecost, and the early church.",
+      "zh-Hans": "第一世纪耶路撒冷地图，适合查看受难叙事、复活显现、五旬节与初期教会。",
+      "zh-Hant": "第一世紀耶路撒冷地圖，適合查看受難敘事、復活顯現、五旬節與初期教會。"
+    },
+    "books": {
+      "Matthew": [
+        21,
+        28
+      ],
+      "Mark": [
+        11,
+        16
+      ],
+      "Luke": [
+        19,
+        24
+      ],
+      "John": [
+        12,
+        21
+      ],
+      "Acts": [
+        1,
+        8
+      ]
+    },
     "file": "39_jerusalem_first_century.jpg"
   },
   {
     "id": "pef_old_testament_survey",
-    "title": { "en": "Western Palestine — Old Testament Survey", "zh-Hans": "西巴勒斯坦旧约测绘图", "zh-Hant": "西巴勒斯坦舊約測繪圖" },
-    "description": { "en": "A Palestine Exploration Fund survey map keyed to Old Testament geography.", "zh-Hans": "巴勒斯坦勘探基金旧约地理测绘图。", "zh-Hant": "巴勒斯坦勘探基金舊約地理測繪圖。" },
-    "books": { "Genesis": [12, 50], "Exodus": [1, 40], "Leviticus": [1, 27], "Numbers": [1, 36], "Deuteronomy": [1, 34], "Joshua": [1, 24], "Judges": [1, 21], "Ruth": [1, 4], "1 Samuel": [1, 31], "2 Samuel": [1, 24], "1 Kings": [1, 22], "2 Kings": [1, 25], "1 Chronicles": [1, 29], "2 Chronicles": [1, 36], "Ezra": [1, 10], "Nehemiah": [1, 13], "Esther": [1, 10], "Psalms": [1, 150], "Proverbs": [1, 31], "Ecclesiastes": [1, 12], "Song of Solomon": [1, 8], "Isaiah": [1, 66], "Jeremiah": [1, 52], "Lamentations": [1, 5], "Ezekiel": [1, 48], "Daniel": [1, 12], "Hosea": [1, 14], "Joel": [1, 3], "Amos": [1, 9], "Obadiah": [1, 1], "Jonah": [1, 4], "Micah": [1, 7], "Nahum": [1, 3], "Habakkuk": [1, 3], "Zephaniah": [1, 3], "Haggai": [1, 2], "Zechariah": [1, 14], "Malachi": [1, 4] },
+    "title": {
+      "en": "Western Palestine — Old Testament Survey",
+      "zh-Hans": "西巴勒斯坦旧约测绘图",
+      "zh-Hant": "西巴勒斯坦舊約測繪圖"
+    },
+    "description": {
+      "en": "A Palestine Exploration Fund survey map keyed to Old Testament geography.",
+      "zh-Hans": "巴勒斯坦勘探基金旧约地理测绘图。",
+      "zh-Hant": "巴勒斯坦勘探基金舊約地理測繪圖。"
+    },
+    "books": {
+      "Genesis": [
+        12,
+        50
+      ],
+      "Exodus": [
+        1,
+        40
+      ],
+      "Leviticus": [
+        1,
+        27
+      ],
+      "Numbers": [
+        1,
+        36
+      ],
+      "Deuteronomy": [
+        1,
+        34
+      ],
+      "Joshua": [
+        1,
+        24
+      ],
+      "Judges": [
+        1,
+        21
+      ],
+      "Ruth": [
+        1,
+        4
+      ],
+      "1 Samuel": [
+        1,
+        31
+      ],
+      "2 Samuel": [
+        1,
+        24
+      ],
+      "1 Kings": [
+        1,
+        22
+      ],
+      "2 Kings": [
+        1,
+        25
+      ],
+      "1 Chronicles": [
+        1,
+        29
+      ],
+      "2 Chronicles": [
+        1,
+        36
+      ],
+      "Ezra": [
+        1,
+        10
+      ],
+      "Nehemiah": [
+        1,
+        13
+      ],
+      "Esther": [
+        1,
+        10
+      ],
+      "Psalms": [
+        1,
+        150
+      ],
+      "Proverbs": [
+        1,
+        31
+      ],
+      "Ecclesiastes": [
+        1,
+        12
+      ],
+      "Song of Solomon": [
+        1,
+        8
+      ],
+      "Isaiah": [
+        1,
+        66
+      ],
+      "Jeremiah": [
+        1,
+        52
+      ],
+      "Lamentations": [
+        1,
+        5
+      ],
+      "Ezekiel": [
+        1,
+        48
+      ],
+      "Daniel": [
+        1,
+        12
+      ],
+      "Hosea": [
+        1,
+        14
+      ],
+      "Joel": [
+        1,
+        3
+      ],
+      "Amos": [
+        1,
+        9
+      ],
+      "Obadiah": [
+        1,
+        1
+      ],
+      "Jonah": [
+        1,
+        4
+      ],
+      "Micah": [
+        1,
+        7
+      ],
+      "Nahum": [
+        1,
+        3
+      ],
+      "Habakkuk": [
+        1,
+        3
+      ],
+      "Zephaniah": [
+        1,
+        3
+      ],
+      "Haggai": [
+        1,
+        2
+      ],
+      "Zechariah": [
+        1,
+        14
+      ],
+      "Malachi": [
+        1,
+        4
+      ]
+    },
     "file": "40_pef_old_testament.jpg"
   },
   {
     "id": "land_promise_joshua",
-    "title": { "en": "Land of Promise — Joshua", "zh-Hans": "应许之地——约书亚", "zh-Hant": "應許之地——約書亞" },
-    "description": { "en": "The promised land as compiled from Joshua, useful for conquest and tribal-allotment chapters.", "zh-Hans": "根据约书亚记编制的应许之地地图，适合征服迦南与支派分地章节。", "zh-Hant": "根據約書亞記編製的應許之地地圖，適合征服迦南與支派分地章節。" },
-    "books": { "Numbers": [13, 36], "Deuteronomy": [1, 34], "Joshua": [1, 24], "Judges": [1, 21] },
+    "title": {
+      "en": "Land of Promise — Joshua",
+      "zh-Hans": "应许之地——约书亚",
+      "zh-Hant": "應許之地——約書亞"
+    },
+    "description": {
+      "en": "The promised land as compiled from Joshua, useful for conquest and tribal-allotment chapters.",
+      "zh-Hans": "根据约书亚记编制的应许之地地图，适合征服迦南与支派分地章节。",
+      "zh-Hant": "根據約書亞記編製的應許之地地圖，適合征服迦南與支派分地章節。"
+    },
+    "books": {
+      "Numbers": [
+        13,
+        36
+      ],
+      "Deuteronomy": [
+        1,
+        34
+      ],
+      "Joshua": [
+        1,
+        24
+      ],
+      "Judges": [
+        1,
+        21
+      ]
+    },
     "file": "41_land_promise_joshua.jpg"
   },
   {
     "id": "patriarchs_peregrination",
-    "title": { "en": "Journeys of the Patriarchs", "zh-Hans": "列祖旅程", "zh-Hant": "列祖旅程" },
-    "description": { "en": "Patriarchal journey map for Abraham, Isaac, Jacob, and the Genesis travel narratives.", "zh-Hans": "亚伯拉罕、以撒、雅各及创世记旅程叙事的列祖地图。", "zh-Hant": "亞伯拉罕、以撒、雅各及創世記旅程敘事的列祖地圖。" },
-    "books": { "Genesis": [12, 50] },
+    "title": {
+      "en": "Journeys of the Patriarchs",
+      "zh-Hans": "列祖旅程",
+      "zh-Hant": "列祖旅程"
+    },
+    "description": {
+      "en": "Patriarchal journey map for Abraham, Isaac, Jacob, and the Genesis travel narratives.",
+      "zh-Hans": "亚伯拉罕、以撒、雅各及创世记旅程叙事的列祖地图。",
+      "zh-Hant": "亞伯拉罕、以撒、雅各及創世記旅程敘事的列祖地圖。"
+    },
+    "books": {
+      "Genesis": [
+        12,
+        50
+      ]
+    },
     "file": "42_patriarchs_peregrination.jpg"
   },
   {
     "id": "moses_travel_egypt_canaan",
-    "title": { "en": "Moses’ Travel from Egypt to Canaan", "zh-Hans": "摩西从埃及到迦南的路线", "zh-Hant": "摩西從埃及到迦南的路線" },
-    "description": { "en": "Wilderness travel map from Egypt toward Canaan, matching Exodus, Numbers, and Deuteronomy.", "zh-Hans": "从埃及前往迦南的旷野路线图，对应出埃及记、民数记与申命记。", "zh-Hant": "從埃及前往迦南的曠野路線圖，對應出埃及記、民數記與申命記。" },
-    "books": { "Exodus": [1, 40], "Leviticus": [1, 27], "Numbers": [1, 36], "Deuteronomy": [1, 34] },
+    "title": {
+      "en": "Moses’ Travel from Egypt to Canaan",
+      "zh-Hans": "摩西从埃及到迦南的路线",
+      "zh-Hant": "摩西從埃及到迦南的路線"
+    },
+    "description": {
+      "en": "Wilderness travel map from Egypt toward Canaan, matching Exodus, Numbers, and Deuteronomy.",
+      "zh-Hans": "从埃及前往迦南的旷野路线图，对应出埃及记、民数记与申命记。",
+      "zh-Hant": "從埃及前往迦南的曠野路線圖，對應出埃及記、民數記與申命記。"
+    },
+    "books": {
+      "Exodus": [
+        1,
+        40
+      ],
+      "Leviticus": [
+        1,
+        27
+      ],
+      "Numbers": [
+        1,
+        36
+      ],
+      "Deuteronomy": [
+        1,
+        34
+      ]
+    },
     "file": "43_moses_travel_egypt_canaan.jpg"
   },
   {
     "id": "judah_region",
-    "title": { "en": "Judah Region", "zh-Hans": "犹大地区", "zh-Hant": "猶大地區" },
-    "description": { "en": "A focused map of Judah and surrounding territory for the southern kingdom and prophetic books.", "zh-Hans": "犹大及周边地区地图，适合南国历史与先知书。", "zh-Hant": "猶大及周邊地區地圖，適合南國歷史與先知書。" },
-    "books": { "Joshua": [13, 24], "Judges": [1, 21], "Ruth": [1, 4], "1 Samuel": [1, 31], "2 Samuel": [1, 24], "1 Kings": [1, 22], "2 Kings": [1, 25], "1 Chronicles": [1, 29], "2 Chronicles": [1, 36], "Isaiah": [1, 66], "Jeremiah": [1, 52], "Lamentations": [1, 5], "Micah": [1, 7], "Habakkuk": [1, 3], "Zephaniah": [1, 3] },
+    "title": {
+      "en": "Judah Region",
+      "zh-Hans": "犹大地区",
+      "zh-Hant": "猶大地區"
+    },
+    "description": {
+      "en": "A focused map of Judah and surrounding territory for the southern kingdom and prophetic books.",
+      "zh-Hans": "犹大及周边地区地图，适合南国历史与先知书。",
+      "zh-Hant": "猶大及周邊地區地圖，適合南國歷史與先知書。"
+    },
+    "books": {
+      "Joshua": [
+        13,
+        24
+      ],
+      "Judges": [
+        1,
+        21
+      ],
+      "Ruth": [
+        1,
+        4
+      ],
+      "1 Samuel": [
+        1,
+        31
+      ],
+      "2 Samuel": [
+        1,
+        24
+      ],
+      "1 Kings": [
+        1,
+        22
+      ],
+      "2 Kings": [
+        1,
+        25
+      ],
+      "1 Chronicles": [
+        1,
+        29
+      ],
+      "2 Chronicles": [
+        1,
+        36
+      ],
+      "Isaiah": [
+        1,
+        66
+      ],
+      "Jeremiah": [
+        1,
+        52
+      ],
+      "Lamentations": [
+        1,
+        5
+      ],
+      "Micah": [
+        1,
+        7
+      ],
+      "Habakkuk": [
+        1,
+        3
+      ],
+      "Zephaniah": [
+        1,
+        3
+      ]
+    },
     "file": "44_judah_map.jpg"
   },
   {
     "id": "herod_kingdom",
-    "title": { "en": "Kingdom of Herod the Great", "zh-Hans": "大希律的王国", "zh-Hant": "大希律的王國" },
-    "description": { "en": "Herod’s kingdom at the opening of the New Testament period.", "zh-Hans": "新约时代开端大希律统治下的王国。", "zh-Hant": "新約時代開端大希律統治下的王國。" },
-    "books": { "Matthew": [1, 28], "Mark": [1, 16], "Luke": [1, 24], "John": [1, 21], "Acts": [1, 12] },
+    "title": {
+      "en": "Kingdom of Herod the Great",
+      "zh-Hans": "大希律的王国",
+      "zh-Hant": "大希律的王國"
+    },
+    "description": {
+      "en": "Herod’s kingdom at the opening of the New Testament period.",
+      "zh-Hans": "新约时代开端大希律统治下的王国。",
+      "zh-Hant": "新約時代開端大希律統治下的王國。"
+    },
+    "books": {
+      "Matthew": [
+        1,
+        28
+      ],
+      "Mark": [
+        1,
+        16
+      ],
+      "Luke": [
+        1,
+        24
+      ],
+      "John": [
+        1,
+        21
+      ],
+      "Acts": [
+        1,
+        12
+      ]
+    },
     "file": "45_herod_kingdom.gif"
   },
   {
     "id": "jebus_ancient_jerusalem",
-    "title": { "en": "Jebus — Ancient Jerusalem", "zh-Hans": "耶布斯——古耶路撒冷", "zh-Hant": "耶布斯——古耶路撒冷" },
-    "description": { "en": "Jerusalem before and around David’s capture of Jebus.", "zh-Hans": "大卫攻取耶布斯前后的耶路撒冷。", "zh-Hant": "大衛攻取耶布斯前後的耶路撒冷。" },
-    "books": { "Joshua": [15, 18], "Judges": [1, 1], "2 Samuel": [5, 6], "1 Chronicles": [11, 11] },
+    "title": {
+      "en": "Jebus — Ancient Jerusalem",
+      "zh-Hans": "耶布斯——古耶路撒冷",
+      "zh-Hant": "耶布斯——古耶路撒冷"
+    },
+    "description": {
+      "en": "Jerusalem before and around David’s capture of Jebus.",
+      "zh-Hans": "大卫攻取耶布斯前后的耶路撒冷。",
+      "zh-Hant": "大衛攻取耶布斯前後的耶路撒冷。"
+    },
+    "books": {
+      "Joshua": [
+        15,
+        18
+      ],
+      "Judges": [
+        1,
+        1
+      ],
+      "2 Samuel": [
+        5,
+        6
+      ],
+      "1 Chronicles": [
+        11,
+        11
+      ]
+    },
     "file": "46_jebus.jpg"
   },
   {
     "id": "jerusalem_david_solomon",
-    "title": { "en": "Jerusalem in the Time of David and Solomon", "zh-Hans": "大卫与所罗门时代的耶路撒冷", "zh-Hant": "大衛與所羅門時代的耶路撒冷" },
-    "description": { "en": "City layout for the united-monarchy period and Solomon’s temple setting.", "zh-Hans": "联合王国时期及所罗门圣殿背景下的城市布局。", "zh-Hant": "聯合王國時期及所羅門聖殿背景下的城市布局。" },
-    "books": { "2 Samuel": [5, 24], "1 Kings": [1, 11], "1 Chronicles": [11, 29], "2 Chronicles": [1, 9], "Psalms": [1, 150] },
+    "title": {
+      "en": "Jerusalem in the Time of David and Solomon",
+      "zh-Hans": "大卫与所罗门时代的耶路撒冷",
+      "zh-Hant": "大衛與所羅門時代的耶路撒冷"
+    },
+    "description": {
+      "en": "City layout for the united-monarchy period and Solomon’s temple setting.",
+      "zh-Hans": "联合王国时期及所罗门圣殿背景下的城市布局。",
+      "zh-Hant": "聯合王國時期及所羅門聖殿背景下的城市布局。"
+    },
+    "books": {
+      "2 Samuel": [
+        5,
+        24
+      ],
+      "1 Kings": [
+        1,
+        11
+      ],
+      "1 Chronicles": [
+        11,
+        29
+      ],
+      "2 Chronicles": [
+        1,
+        9
+      ],
+      "Psalms": [
+        1,
+        150
+      ]
+    },
     "file": "47_jerusalem_david_solomon.jpg"
   },
   {
     "id": "jerusalem_hezekiah",
-    "title": { "en": "Jerusalem in the Time of Hezekiah", "zh-Hans": "希西家时代的耶路撒冷", "zh-Hant": "希西家時代的耶路撒冷" },
-    "description": { "en": "Jerusalem during Hezekiah’s reign, useful for Assyrian-crisis chapters.", "zh-Hans": "希西家作王时期的耶路撒冷，适合查看亚述危机相关章节。", "zh-Hant": "希西家作王時期的耶路撒冷，適合查看亞述危機相關章節。" },
-    "books": { "2 Kings": [18, 20], "2 Chronicles": [29, 32], "Isaiah": [36, 39] },
+    "title": {
+      "en": "Jerusalem in the Time of Hezekiah",
+      "zh-Hans": "希西家时代的耶路撒冷",
+      "zh-Hant": "希西家時代的耶路撒冷"
+    },
+    "description": {
+      "en": "Jerusalem during Hezekiah’s reign, useful for Assyrian-crisis chapters.",
+      "zh-Hans": "希西家作王时期的耶路撒冷，适合查看亚述危机相关章节。",
+      "zh-Hant": "希西家作王時期的耶路撒冷，適合查看亞述危機相關章節。"
+    },
+    "books": {
+      "2 Kings": [
+        18,
+        20
+      ],
+      "2 Chronicles": [
+        29,
+        32
+      ],
+      "Isaiah": [
+        36,
+        39
+      ]
+    },
     "file": "48_jerusalem_hezekiah.jpg"
   },
   {
     "id": "jerusalem_nehemiah",
-    "title": { "en": "Jerusalem in the Time of Nehemiah", "zh-Hans": "尼希米时代的耶路撒冷", "zh-Hant": "尼希米時代的耶路撒冷" },
-    "description": { "en": "Jerusalem’s walls and gates in the rebuilding period after exile.", "zh-Hans": "被掳归回后重建时期耶路撒冷的城墙与城门。", "zh-Hant": "被擄歸回後重建時期耶路撒冷的城牆與城門。" },
-    "books": { "Ezra": [1, 10], "Nehemiah": [1, 13] },
+    "title": {
+      "en": "Jerusalem in the Time of Nehemiah",
+      "zh-Hans": "尼希米时代的耶路撒冷",
+      "zh-Hant": "尼希米時代的耶路撒冷"
+    },
+    "description": {
+      "en": "Jerusalem’s walls and gates in the rebuilding period after exile.",
+      "zh-Hans": "被掳归回后重建时期耶路撒冷的城墙与城门。",
+      "zh-Hant": "被擄歸回後重建時期耶路撒冷的城牆與城門。"
+    },
+    "books": {
+      "Ezra": [
+        1,
+        10
+      ],
+      "Nehemiah": [
+        1,
+        13
+      ]
+    },
     "file": "49_jerusalem_nehemiah.jpg"
   },
   {
     "id": "jerusalem_nt_cram",
-    "title": { "en": "Ancient Jerusalem — New Testament Period", "zh-Hans": "古耶路撒冷——新约时期", "zh-Hant": "古耶路撒冷——新約時期" },
-    "description": { "en": "George F. Cram map of Jerusalem in the New Testament period.", "zh-Hans": "乔治·F·克拉姆的新约时期耶路撒冷地图。", "zh-Hant": "喬治·F·克拉姆的新約時期耶路撒冷地圖。" },
-    "books": { "Matthew": [21, 28], "Mark": [11, 16], "Luke": [19, 24], "John": [12, 21], "Acts": [1, 8] },
+    "title": {
+      "en": "Ancient Jerusalem — New Testament Period",
+      "zh-Hans": "古耶路撒冷——新约时期",
+      "zh-Hant": "古耶路撒冷——新約時期"
+    },
+    "description": {
+      "en": "George F. Cram map of Jerusalem in the New Testament period.",
+      "zh-Hans": "乔治·F·克拉姆的新约时期耶路撒冷地图。",
+      "zh-Hant": "喬治·F·克拉姆的新約時期耶路撒冷地圖。"
+    },
+    "books": {
+      "Matthew": [
+        21,
+        28
+      ],
+      "Mark": [
+        11,
+        16
+      ],
+      "Luke": [
+        19,
+        24
+      ],
+      "John": [
+        12,
+        21
+      ],
+      "Acts": [
+        1,
+        8
+      ]
+    },
     "file": "50_jerusalem_nt_cram.jpg"
   },
   {
     "id": "jerusalem_terrain",
-    "title": { "en": "Jerusalem Terrain", "zh-Hans": "耶路撒冷地形", "zh-Hant": "耶路撒冷地形" },
-    "description": { "en": "Relief and terrain map of central Jerusalem from Encyclopaedia Biblica.", "zh-Hans": "《圣经百科全书》中的耶路撒冷中心地区地形图。", "zh-Hant": "《聖經百科全書》中的耶路撒冷中心地區地形圖。" },
-    "books": { "2 Samuel": [5, 24], "1 Kings": [1, 22], "2 Kings": [18, 25], "1 Chronicles": [11, 29], "2 Chronicles": [1, 36], "Ezra": [1, 10], "Nehemiah": [1, 13], "Psalms": [1, 150], "Lamentations": [1, 5], "Matthew": [21, 28], "Mark": [11, 16], "Luke": [19, 24], "John": [12, 21], "Acts": [1, 8] },
+    "title": {
+      "en": "Jerusalem Terrain",
+      "zh-Hans": "耶路撒冷地形",
+      "zh-Hant": "耶路撒冷地形"
+    },
+    "description": {
+      "en": "Relief and terrain map of central Jerusalem from Encyclopaedia Biblica.",
+      "zh-Hans": "《圣经百科全书》中的耶路撒冷中心地区地形图。",
+      "zh-Hant": "《聖經百科全書》中的耶路撒冷中心地區地形圖。"
+    },
+    "books": {
+      "2 Samuel": [
+        5,
+        24
+      ],
+      "1 Kings": [
+        1,
+        22
+      ],
+      "2 Kings": [
+        18,
+        25
+      ],
+      "1 Chronicles": [
+        11,
+        29
+      ],
+      "2 Chronicles": [
+        1,
+        36
+      ],
+      "Ezra": [
+        1,
+        10
+      ],
+      "Nehemiah": [
+        1,
+        13
+      ],
+      "Psalms": [
+        1,
+        150
+      ],
+      "Lamentations": [
+        1,
+        5
+      ],
+      "Matthew": [
+        21,
+        28
+      ],
+      "Mark": [
+        11,
+        16
+      ],
+      "Luke": [
+        19,
+        24
+      ],
+      "John": [
+        12,
+        21
+      ],
+      "Acts": [
+        1,
+        8
+      ]
+    },
     "file": "51_jerusalem_terrain.png"
   },
   {
     "id": "jerusalem_walls_contours",
-    "title": { "en": "Jerusalem Walls and Contours", "zh-Hans": "耶路撒冷城墙与等高线", "zh-Hant": "耶路撒冷城牆與等高線" },
-    "description": { "en": "Historical walls and contours of Jerusalem from Encyclopaedia Biblica.", "zh-Hans": "《圣经百科全书》中的耶路撒冷历史城墙与等高线图。", "zh-Hant": "《聖經百科全書》中的耶路撒冷歷史城牆與等高線圖。" },
-    "books": { "2 Samuel": [5, 24], "1 Kings": [1, 22], "2 Kings": [18, 25], "1 Chronicles": [11, 29], "2 Chronicles": [1, 36], "Ezra": [1, 10], "Nehemiah": [1, 13], "Matthew": [21, 28], "Mark": [11, 16], "Luke": [19, 24], "John": [12, 21], "Acts": [1, 8] },
+    "title": {
+      "en": "Jerusalem Walls and Contours",
+      "zh-Hans": "耶路撒冷城墙与等高线",
+      "zh-Hant": "耶路撒冷城牆與等高線"
+    },
+    "description": {
+      "en": "Historical walls and contours of Jerusalem from Encyclopaedia Biblica.",
+      "zh-Hans": "《圣经百科全书》中的耶路撒冷历史城墙与等高线图。",
+      "zh-Hant": "《聖經百科全書》中的耶路撒冷歷史城牆與等高線圖。"
+    },
+    "books": {
+      "2 Samuel": [
+        5,
+        24
+      ],
+      "1 Kings": [
+        1,
+        22
+      ],
+      "2 Kings": [
+        18,
+        25
+      ],
+      "1 Chronicles": [
+        11,
+        29
+      ],
+      "2 Chronicles": [
+        1,
+        36
+      ],
+      "Ezra": [
+        1,
+        10
+      ],
+      "Nehemiah": [
+        1,
+        13
+      ],
+      "Matthew": [
+        21,
+        28
+      ],
+      "Mark": [
+        11,
+        16
+      ],
+      "Luke": [
+        19,
+        24
+      ],
+      "John": [
+        12,
+        21
+      ],
+      "Acts": [
+        1,
+        8
+      ]
+    },
     "file": "52_jerusalem_walls_contours.png"
   },
   {
     "id": "pef_new_testament_survey",
-    "title": { "en": "Western Palestine — New Testament Survey", "zh-Hans": "西巴勒斯坦新约测绘图", "zh-Hant": "西巴勒斯坦新約測繪圖" },
-    "description": { "en": "A Palestine Exploration Fund survey map keyed to New Testament geography.", "zh-Hans": "巴勒斯坦勘探基金新约地理测绘图。", "zh-Hant": "巴勒斯坦勘探基金新約地理測繪圖。" },
-    "books": { "Matthew": [1, 28], "Mark": [1, 16], "Luke": [1, 24], "John": [1, 21], "Acts": [1, 12] },
+    "title": {
+      "en": "Western Palestine — New Testament Survey",
+      "zh-Hans": "西巴勒斯坦新约测绘图",
+      "zh-Hant": "西巴勒斯坦新約測繪圖"
+    },
+    "description": {
+      "en": "A Palestine Exploration Fund survey map keyed to New Testament geography.",
+      "zh-Hans": "巴勒斯坦勘探基金新约地理测绘图。",
+      "zh-Hant": "巴勒斯坦勘探基金新約地理測繪圖。"
+    },
+    "books": {
+      "Matthew": [
+        1,
+        28
+      ],
+      "Mark": [
+        1,
+        16
+      ],
+      "Luke": [
+        1,
+        24
+      ],
+      "John": [
+        1,
+        21
+      ],
+      "Acts": [
+        1,
+        12
+      ]
+    },
     "file": "53_pef_new_testament.jpg"
   },
   {
     "id": "palestine_new_testament_period_large",
-    "title": { "en": "Palestine — New Testament Period", "zh-Hans": "巴勒斯坦——新约时期", "zh-Hant": "巴勒斯坦——新約時期" },
-    "description": { "en": "Large-format historical map of Palestine in the New Testament period.", "zh-Hans": "新约时期巴勒斯坦的大幅历史地图。", "zh-Hant": "新約時期巴勒斯坦的大幅歷史地圖。" },
-    "books": { "Matthew": [1, 28], "Mark": [1, 16], "Luke": [1, 24], "John": [1, 21], "Acts": [1, 12] },
+    "title": {
+      "en": "Palestine — New Testament Period",
+      "zh-Hans": "巴勒斯坦——新约时期",
+      "zh-Hant": "巴勒斯坦——新約時期"
+    },
+    "description": {
+      "en": "Large-format historical map of Palestine in the New Testament period.",
+      "zh-Hans": "新约时期巴勒斯坦的大幅历史地图。",
+      "zh-Hant": "新約時期巴勒斯坦的大幅歷史地圖。"
+    },
+    "books": {
+      "Matthew": [
+        1,
+        28
+      ],
+      "Mark": [
+        1,
+        16
+      ],
+      "Luke": [
+        1,
+        24
+      ],
+      "John": [
+        1,
+        21
+      ],
+      "Acts": [
+        1,
+        12
+      ]
+    },
     "file": "54_palestine_nt_period.jpg"
   },
   {
     "id": "palestine_time_of_christ_cram",
-    "title": { "en": "Palestine in the Time of Christ", "zh-Hans": "基督时代的巴勒斯坦", "zh-Hant": "基督時代的巴勒斯坦" },
-    "description": { "en": "George F. Cram map of Palestine in the time of Christ.", "zh-Hans": "乔治·F·克拉姆的基督时代巴勒斯坦地图。", "zh-Hant": "喬治·F·克拉姆的基督時代巴勒斯坦地圖。" },
-    "books": { "Matthew": [1, 28], "Mark": [1, 16], "Luke": [1, 24], "John": [1, 21], "Acts": [1, 12] },
+    "title": {
+      "en": "Palestine in the Time of Christ",
+      "zh-Hans": "基督时代的巴勒斯坦",
+      "zh-Hant": "基督時代的巴勒斯坦"
+    },
+    "description": {
+      "en": "George F. Cram map of Palestine in the time of Christ.",
+      "zh-Hans": "乔治·F·克拉姆的基督时代巴勒斯坦地图。",
+      "zh-Hant": "喬治·F·克拉姆的基督時代巴勒斯坦地圖。"
+    },
+    "books": {
+      "Matthew": [
+        1,
+        28
+      ],
+      "Mark": [
+        1,
+        16
+      ],
+      "Luke": [
+        1,
+        24
+      ],
+      "John": [
+        1,
+        21
+      ],
+      "Acts": [
+        1,
+        12
+      ]
+    },
     "file": "55_palestine_time_christ_cram.jpg"
+  },
+  {
+    "id": "illus_dore_001thecreationofligh",
+    "kind": "scene",
+    "title": {
+      "en": "The Creation of Light (Doré)",
+      "zh-Hans": "光的创造 (多雷)",
+      "zh-Hant": "光的創造 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — The Creation of Light (Genesis 1).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——光的创造。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——光的創造。"
+    },
+    "books": {
+      "Genesis": [
+        1,
+        1
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d2/001.The_Creation_of_Light.jpg/1280px-001.The_Creation_of_Light.jpg"
+  },
+  {
+    "id": "illus_dore_002thecreationofevej",
+    "kind": "scene",
+    "title": {
+      "en": "The Creation of Eve (Doré)",
+      "zh-Hans": "夏娃的创造 (多雷)",
+      "zh-Hant": "夏娃的創造 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — The Creation of Eve (Genesis 2).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——夏娃的创造。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——夏娃的創造。"
+    },
+    "books": {
+      "Genesis": [
+        2,
+        2
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/28/002.The_Creation_of_Eve.jpg/1280px-002.The_Creation_of_Eve.jpg"
+  },
+  {
+    "id": "illus_dore_003adamandevearedriv",
+    "kind": "scene",
+    "title": {
+      "en": "Adam and Eve Driven from Eden (Doré)",
+      "zh-Hans": "逐出伊甸园 (多雷)",
+      "zh-Hant": "逐出伊甸園 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Adam and Eve Driven from Eden (Genesis 3).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——逐出伊甸园。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——逐出伊甸園。"
+    },
+    "books": {
+      "Genesis": [
+        3,
+        3
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/01/003.Adam_and_Eve_Are_Driven_out_of_Eden.jpg/1280px-003.Adam_and_Eve_Are_Driven_out_of_Eden.jpg"
+  },
+  {
+    "id": "illus_dore_004cainandabeloffert",
+    "kind": "scene",
+    "title": {
+      "en": "Cain and Abel Offer Sacrifices (Doré)",
+      "zh-Hans": "该隐与亚伯的祭物 (多雷)",
+      "zh-Hant": "該隱與亞伯的祭物 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Cain and Abel Offer Sacrifices (Genesis 4).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——该隐与亚伯的祭物。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——該隱與亞伯的祭物。"
+    },
+    "books": {
+      "Genesis": [
+        4,
+        4
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/97/004.Cain_and_Abel_Offer_Their_Sacrifices.jpg/1280px-004.Cain_and_Abel_Offer_Their_Sacrifices.jpg"
+  },
+  {
+    "id": "illus_dore_005cainslaysabeljpg",
+    "kind": "scene",
+    "title": {
+      "en": "Cain Slays Abel (Doré)",
+      "zh-Hans": "该隐杀亚伯 (多雷)",
+      "zh-Hant": "該隱殺亞伯 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Cain Slays Abel (Genesis 4).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——该隐杀亚伯。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——該隱殺亞伯。"
+    },
+    "books": {
+      "Genesis": [
+        4,
+        4
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/bc/005.Cain_Slays_Abel.jpg/1280px-005.Cain_Slays_Abel.jpg"
+  },
+  {
+    "id": "illus_dore_006theworldisdestroy",
+    "kind": "scene",
+    "title": {
+      "en": "World Destroyed by Water (Doré)",
+      "zh-Hans": "世界被水毁灭 (多雷)",
+      "zh-Hant": "世界被水毀滅 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — World Destroyed by Water (Genesis 7).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——世界被水毁灭。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——世界被水毀滅。"
+    },
+    "books": {
+      "Genesis": [
+        7,
+        7
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f0/006.The_World_Is_Destroyed_by_Water.jpg/1280px-006.The_World_Is_Destroyed_by_Water.jpg"
+  },
+  {
+    "id": "illus_dore_007thegreatfloodjpg",
+    "kind": "scene",
+    "title": {
+      "en": "The Great Flood (Doré)",
+      "zh-Hans": "大洪水 (多雷)",
+      "zh-Hant": "大洪水 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — The Great Flood (Genesis 7).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——大洪水。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——大洪水。"
+    },
+    "books": {
+      "Genesis": [
+        7,
+        7
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/64/007.The_Great_Flood.jpg/1280px-007.The_Great_Flood.jpg"
+  },
+  {
+    "id": "illus_dore_008adoveissentforthf",
+    "kind": "scene",
+    "title": {
+      "en": "Dove Sent from the Ark (Doré)",
+      "zh-Hans": "从方舟放出鸽子 (多雷)",
+      "zh-Hant": "從方舟放出鴿子 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Dove Sent from the Ark (Genesis 8).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——从方舟放出鸽子。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——從方舟放出鴿子。"
+    },
+    "books": {
+      "Genesis": [
+        8,
+        8
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d4/008.A_Dove_Is_Sent_Forth_from_the_Ark.jpg/1280px-008.A_Dove_Is_Sent_Forth_from_the_Ark.jpg"
+  },
+  {
+    "id": "illus_dore_009noahcurseshamandc",
+    "kind": "scene",
+    "title": {
+      "en": "Noah Curses Ham (Doré)",
+      "zh-Hans": "挪亚咒诅含 (多雷)",
+      "zh-Hant": "挪亞咒詛含 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Noah Curses Ham (Genesis 9).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——挪亚咒诅含。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——挪亞咒詛含。"
+    },
+    "books": {
+      "Genesis": [
+        9,
+        9
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/25/009.Noah_Curses_Ham_and_Canaan.jpg/1280px-009.Noah_Curses_Ham_and_Canaan.jpg"
+  },
+  {
+    "id": "illus_dore_010thetowerofbabeljp",
+    "kind": "scene",
+    "title": {
+      "en": "Tower of Babel (Doré)",
+      "zh-Hans": "巴别塔 (多雷)",
+      "zh-Hant": "巴別塔 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Tower of Babel (Genesis 11).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——巴别塔。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——巴別塔。"
+    },
+    "books": {
+      "Genesis": [
+        11,
+        11
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/14/010.The_Tower_of_Babel.jpg/1280px-010.The_Tower_of_Babel.jpg"
+  },
+  {
+    "id": "illus_dore_011abrahamgoestothel",
+    "kind": "scene",
+    "title": {
+      "en": "Abraham Goes to Canaan (Doré)",
+      "zh-Hans": "亚伯拉罕往迦南去 (多雷)",
+      "zh-Hant": "亞伯拉罕往迦南去 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Abraham Goes to Canaan (Genesis 12).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——亚伯拉罕往迦南去。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——亞伯拉罕往迦南去。"
+    },
+    "books": {
+      "Genesis": [
+        12,
+        12
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e5/011.Abraham_Goes_to_the_Land_of_Canaan.jpg/1280px-011.Abraham_Goes_to_the_Land_of_Canaan.jpg"
+  },
+  {
+    "id": "illus_dore_012abrahamandthethre",
+    "kind": "scene",
+    "title": {
+      "en": "Abraham and the Three Angels (Doré)",
+      "zh-Hans": "亚伯拉罕与三位天使 (多雷)",
+      "zh-Hant": "亞伯拉罕與三位天使 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Abraham and the Three Angels (Genesis 18).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——亚伯拉罕与三位天使。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——亞伯拉罕與三位天使。"
+    },
+    "books": {
+      "Genesis": [
+        18,
+        18
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9b/012.Abraham_and_the_Three_Angels.jpg/1280px-012.Abraham_and_the_Three_Angels.jpg"
+  },
+  {
+    "id": "illus_dore_013lotfleesassodoman",
+    "kind": "scene",
+    "title": {
+      "en": "Lot Flees Sodom (Doré)",
+      "zh-Hans": "罗得逃离所多玛 (多雷)",
+      "zh-Hant": "羅得逃離所多瑪 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Lot Flees Sodom (Genesis 19).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——罗得逃离所多玛。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——羅得逃離所多瑪。"
+    },
+    "books": {
+      "Genesis": [
+        19,
+        19
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/59/013.Lot_Flees_as_Sodom_and_Gomorrah_Burn.jpg/1280px-013.Lot_Flees_as_Sodom_and_Gomorrah_Burn.jpg"
+  },
+  {
+    "id": "illus_dore_014abrahamsendshagar",
+    "kind": "scene",
+    "title": {
+      "en": "Abraham Sends Hagar Away (Doré)",
+      "zh-Hans": "亚伯拉罕打发夏甲离去 (多雷)",
+      "zh-Hant": "亞伯拉罕打發夏甲離去 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Abraham Sends Hagar Away (Genesis 21).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——亚伯拉罕打发夏甲离去。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——亞伯拉罕打發夏甲離去。"
+    },
+    "books": {
+      "Genesis": [
+        21,
+        21
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/35/014.Abraham_Sends_Hagar_and_Ishmael_Away.jpg/1280px-014.Abraham_Sends_Hagar_and_Ishmael_Away.jpg"
+  },
+  {
+    "id": "illus_dore_015hagarandishmaelin",
+    "kind": "scene",
+    "title": {
+      "en": "Hagar and Ishmael in Wilderness (Doré)",
+      "zh-Hans": "夏甲与以实玛利在旷野 (多雷)",
+      "zh-Hant": "夏甲與以實瑪利在曠野 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Hagar and Ishmael in Wilderness (Genesis 21).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——夏甲与以实玛利在旷野。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——夏甲與以實瑪利在曠野。"
+    },
+    "books": {
+      "Genesis": [
+        21,
+        21
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/35/015.Hagar_and_Ishmael_in_the_Wilderness.jpg/1280px-015.Hagar_and_Ishmael_in_the_Wilderness.jpg"
+  },
+  {
+    "id": "illus_dore_016thetestingofabrah",
+    "kind": "scene",
+    "title": {
+      "en": "Abraham's Sacrifice of Isaac (Doré)",
+      "zh-Hans": "亚伯拉罕献以撒 (多雷)",
+      "zh-Hant": "亞伯拉罕獻以撒 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Abraham's Sacrifice of Isaac (Genesis 22).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——亚伯拉罕献以撒。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——亞伯拉罕獻以撒。"
+    },
+    "books": {
+      "Genesis": [
+        22,
+        22
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/17/016.The_Testing_of_Abraham%27s_Faith.jpg/1280px-016.The_Testing_of_Abraham%27s_Faith.jpg"
+  },
+  {
+    "id": "illus_dore_017theburialofsarahj",
+    "kind": "scene",
+    "title": {
+      "en": "The Burial of Sarah (Doré)",
+      "zh-Hans": "撒拉的安葬 (多雷)",
+      "zh-Hant": "撒拉的安葬 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — The Burial of Sarah (Genesis 23).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——撒拉的安葬。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——撒拉的安葬。"
+    },
+    "books": {
+      "Genesis": [
+        23,
+        23
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/50/017.The_Burial_of_Sarah.jpg/1280px-017.The_Burial_of_Sarah.jpg"
+  },
+  {
+    "id": "illus_dore_018eliezerandrebekah",
+    "kind": "scene",
+    "title": {
+      "en": "Eliezer and Rebekah (Doré)",
+      "zh-Hans": "以利以谢与利百加 (多雷)",
+      "zh-Hant": "以利以謝與利百加 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Eliezer and Rebekah (Genesis 24).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——以利以谢与利百加。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——以利以謝與利百加。"
+    },
+    "books": {
+      "Genesis": [
+        24,
+        24
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a4/018.Eliezer_and_Rebekah_at_the_Well.jpg/1280px-018.Eliezer_and_Rebekah_at_the_Well.jpg"
+  },
+  {
+    "id": "illus_dore_019themeetingofisaac",
+    "kind": "scene",
+    "title": {
+      "en": "Isaac Meets Rebekah (Doré)",
+      "zh-Hans": "以撒与利百加相遇 (多雷)",
+      "zh-Hant": "以撒與利百加相遇 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Isaac Meets Rebekah (Genesis 24).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——以撒与利百加相遇。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——以撒與利百加相遇。"
+    },
+    "books": {
+      "Genesis": [
+        24,
+        24
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c6/019.The_Meeting_of_Isaac_and_Rebekah.jpg/1280px-019.The_Meeting_of_Isaac_and_Rebekah.jpg"
+  },
+  {
+    "id": "illus_dore_020isaacblessesjacob",
+    "kind": "scene",
+    "title": {
+      "en": "Isaac Blesses Jacob (Doré)",
+      "zh-Hans": "以撒为雅各祝福 (多雷)",
+      "zh-Hant": "以撒為雅各祝福 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Isaac Blesses Jacob (Genesis 27).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——以撒为雅各祝福。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——以撒為雅各祝福。"
+    },
+    "books": {
+      "Genesis": [
+        27,
+        27
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/50/020.Isaac_Blesses_Jacob.jpg/1280px-020.Isaac_Blesses_Jacob.jpg"
+  },
+  {
+    "id": "illus_dore_021jacobsdreamjpg",
+    "kind": "scene",
+    "title": {
+      "en": "Jacob's Dream / Ladder (Doré)",
+      "zh-Hans": "雅各的梦 (多雷)",
+      "zh-Hant": "雅各的夢 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Jacob's Dream / Ladder (Genesis 28).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——雅各的梦。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——雅各的夢。"
+    },
+    "books": {
+      "Genesis": [
+        28,
+        28
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/14/021.Jacob%27s_Dream.jpg/1280px-021.Jacob%27s_Dream.jpg"
+  },
+  {
+    "id": "illus_dore_022jacobtendslabansf",
+    "kind": "scene",
+    "title": {
+      "en": "Jacob Meets Rachel (Doré)",
+      "zh-Hans": "雅各遇拉结 (多雷)",
+      "zh-Hant": "雅各遇拉結 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Jacob Meets Rachel (Genesis 29).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——雅各遇拉结。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——雅各遇拉結。"
+    },
+    "books": {
+      "Genesis": [
+        29,
+        29
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/15/022.Jacob_Tends_Laban%27s_Flocks_and_Meets_Rachel.jpg/1280px-022.Jacob_Tends_Laban%27s_Flocks_and_Meets_Rachel.jpg"
+  },
+  {
+    "id": "illus_dore_023jacobpraysforprot",
+    "kind": "scene",
+    "title": {
+      "en": "Jacob Prays for Protection (Doré)",
+      "zh-Hans": "雅各祷告求保护 (多雷)",
+      "zh-Hant": "雅各禱告求保護 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Jacob Prays for Protection (Genesis 32).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——雅各祷告求保护。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——雅各禱告求保護。"
+    },
+    "books": {
+      "Genesis": [
+        32,
+        32
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6f/023.Jacob_Prays_for_Protection.jpg/1280px-023.Jacob_Prays_for_Protection.jpg"
+  },
+  {
+    "id": "illus_dore_024jacobwrestleswith",
+    "kind": "scene",
+    "title": {
+      "en": "Jacob Wrestles the Angel (Doré)",
+      "zh-Hans": "雅各与天使摔跤 (多雷)",
+      "zh-Hant": "雅各與天使摔跤 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Jacob Wrestles the Angel (Genesis 32).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——雅各与天使摔跤。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——雅各與天使摔跤。"
+    },
+    "books": {
+      "Genesis": [
+        32,
+        32
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b7/024.Jacob_Wrestles_with_the_Angel.jpg/1280px-024.Jacob_Wrestles_with_the_Angel.jpg"
+  },
+  {
+    "id": "illus_dore_025jacobandesaumeetj",
+    "kind": "scene",
+    "title": {
+      "en": "Jacob and Esau Meet (Doré)",
+      "zh-Hans": "雅各与以扫相遇 (多雷)",
+      "zh-Hant": "雅各與以掃相遇 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Jacob and Esau Meet (Genesis 33).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——雅各与以扫相遇。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——雅各與以掃相遇。"
+    },
+    "books": {
+      "Genesis": [
+        33,
+        33
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1c/025.Jacob_and_Esau_Meet.jpg/1280px-025.Jacob_and_Esau_Meet.jpg"
+  },
+  {
+    "id": "illus_dore_026josephissoldbyhis",
+    "kind": "scene",
+    "title": {
+      "en": "Joseph Sold by His Brothers (Doré)",
+      "zh-Hans": "约瑟被兄长们卖掉 (多雷)",
+      "zh-Hant": "約瑟被兄長們賣掉 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Joseph Sold by His Brothers (Genesis 37).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——约瑟被兄长们卖掉。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——約瑟被兄長們賣掉。"
+    },
+    "books": {
+      "Genesis": [
+        37,
+        37
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/38/026.Joseph_Is_Sold_by_His_Brothers.jpg/1280px-026.Joseph_Is_Sold_by_His_Brothers.jpg"
+  },
+  {
+    "id": "illus_dore_027josephinterpretsp",
+    "kind": "scene",
+    "title": {
+      "en": "Joseph Interprets Pharaoh's Dream (Doré)",
+      "zh-Hans": "约瑟解法老的梦 (多雷)",
+      "zh-Hant": "約瑟解法老的夢 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Joseph Interprets Pharaoh's Dream (Genesis 41).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——约瑟解法老的梦。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——約瑟解法老的夢。"
+    },
+    "books": {
+      "Genesis": [
+        41,
+        41
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/027.Joseph_Interprets_Pharaoh%27s_Dream.jpg/1280px-027.Joseph_Interprets_Pharaoh%27s_Dream.jpg"
+  },
+  {
+    "id": "illus_dore_028josephrevealshims",
+    "kind": "scene",
+    "title": {
+      "en": "Joseph Reveals Himself (Doré)",
+      "zh-Hans": "约瑟与兄弟相认 (多雷)",
+      "zh-Hant": "約瑟與兄弟相認 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Joseph Reveals Himself (Genesis 45).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——约瑟与兄弟相认。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——約瑟與兄弟相認。"
+    },
+    "books": {
+      "Genesis": [
+        45,
+        45
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/028.Joseph_Reveals_Himself_to_His_Brothers.jpg/1280px-028.Joseph_Reveals_Himself_to_His_Brothers.jpg"
+  },
+  {
+    "id": "illus_dore_029jacobgoestoegyptj",
+    "kind": "scene",
+    "title": {
+      "en": "Jacob Goes to Egypt (Doré)",
+      "zh-Hans": "雅各往埃及去 (多雷)",
+      "zh-Hant": "雅各往埃及去 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Jacob Goes to Egypt (Genesis 46).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——雅各往埃及去。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——雅各往埃及去。"
+    },
+    "books": {
+      "Genesis": [
+        46,
+        46
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/98/029.Jacob_Goes_to_Egypt.jpg/1280px-029.Jacob_Goes_to_Egypt.jpg"
+  },
+  {
+    "id": "illus_dore_030thechildmosesonth",
+    "kind": "scene",
+    "title": {
+      "en": "Child Moses on the Nile (Doré)",
+      "zh-Hans": "尼罗河上的婴孩摩西 (多雷)",
+      "zh-Hant": "尼羅河上的嬰孩摩西 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Child Moses on the Nile (Exodus 2).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——尼罗河上的婴孩摩西。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——尼羅河上的嬰孩摩西。"
+    },
+    "books": {
+      "Exodus": [
+        2,
+        2
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/79/030.The_Child_Moses_on_the_Nile.jpg/1280px-030.The_Child_Moses_on_the_Nile.jpg"
+  },
+  {
+    "id": "illus_dore_031thefindingofmoses",
+    "kind": "scene",
+    "title": {
+      "en": "The Finding of Moses (Doré)",
+      "zh-Hans": "摩西被发现 (多雷)",
+      "zh-Hant": "摩西被發現 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — The Finding of Moses (Exodus 2).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——摩西被发现。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——摩西被發現。"
+    },
+    "books": {
+      "Exodus": [
+        2,
+        2
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3e/031.The_Finding_of_Moses.jpg/1280px-031.The_Finding_of_Moses.jpg"
+  },
+  {
+    "id": "illus_dore_032mosesandaaronappe",
+    "kind": "scene",
+    "title": {
+      "en": "Moses and Aaron Before Pharaoh (Doré)",
+      "zh-Hans": "摩西与亚伦见法老 (多雷)",
+      "zh-Hant": "摩西與亞倫見法老 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Moses and Aaron Before Pharaoh (Exodus 5).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——摩西与亚伦见法老。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——摩西與亞倫見法老。"
+    },
+    "books": {
+      "Exodus": [
+        5,
+        5
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8c/032.Moses_and_Aaron_Appear_before_Pharaoh.jpg/1280px-032.Moses_and_Aaron_Appear_before_Pharaoh.jpg"
+  },
+  {
+    "id": "illus_dore_033thefifthplagueliv",
+    "kind": "scene",
+    "title": {
+      "en": "Fifth Plague — Livestock (Doré)",
+      "zh-Hans": "第五灾——畜瘟 (多雷)",
+      "zh-Hant": "第五災——畜瘟 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Fifth Plague — Livestock (Exodus 9).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——第五灾——畜瘟。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——第五災——畜瘟。"
+    },
+    "books": {
+      "Exodus": [
+        9,
+        9
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/033.The_Fifth_Plague._Livestock_Disease.jpg/1280px-033.The_Fifth_Plague._Livestock_Disease.jpg"
+  },
+  {
+    "id": "illus_dore_034theninthplaguedar",
+    "kind": "scene",
+    "title": {
+      "en": "Ninth Plague — Darkness (Doré)",
+      "zh-Hans": "第九灾——黑暗 (多雷)",
+      "zh-Hant": "第九災——黑暗 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Ninth Plague — Darkness (Exodus 10).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——第九灾——黑暗。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——第九災——黑暗。"
+    },
+    "books": {
+      "Exodus": [
+        10,
+        10
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/35/034.The_Ninth_Plague._Darkness.jpg/1280px-034.The_Ninth_Plague._Darkness.jpg"
+  },
+  {
+    "id": "illus_dore_035thefirstbornofthe",
+    "kind": "scene",
+    "title": {
+      "en": "Firstborn of Egypt Slain (Doré)",
+      "zh-Hans": "埃及长子被击杀 (多雷)",
+      "zh-Hant": "埃及長子被擊殺 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Firstborn of Egypt Slain (Exodus 12).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——埃及长子被击杀。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——埃及長子被擊殺。"
+    },
+    "books": {
+      "Exodus": [
+        12,
+        12
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0b/035.The_Firstborn_of_the_Egyptians_Are_Slain.jpg/1280px-035.The_Firstborn_of_the_Egyptians_Are_Slain.jpg"
+  },
+  {
+    "id": "illus_dore_036theegyptiansaskmo",
+    "kind": "scene",
+    "title": {
+      "en": "Egyptians Ask Moses to Depart (Doré)",
+      "zh-Hans": "埃及人求摩西离去 (多雷)",
+      "zh-Hant": "埃及人求摩西離去 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Egyptians Ask Moses to Depart (Exodus 12).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——埃及人求摩西离去。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——埃及人求摩西離去。"
+    },
+    "books": {
+      "Exodus": [
+        12,
+        12
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7e/036.The_Egyptians_Ask_Moses_to_Depart.jpg/1280px-036.The_Egyptians_Ask_Moses_to_Depart.jpg"
+  },
+  {
+    "id": "illus_dore_037theegyptiansdrown",
+    "kind": "scene",
+    "title": {
+      "en": "Egyptians Drown in the Red Sea (Doré)",
+      "zh-Hans": "埃及人沉没红海中 (多雷)",
+      "zh-Hant": "埃及人沉沒紅海中 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Egyptians Drown in the Red Sea (Exodus 14).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——埃及人沉没红海中。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——埃及人沉沒紅海中。"
+    },
+    "books": {
+      "Exodus": [
+        14,
+        14
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/45/037.The_Egyptians_Drown_in_the_Sea.jpg/1280px-037.The_Egyptians_Drown_in_the_Sea.jpg"
+  },
+  {
+    "id": "illus_dore_038thegivingofthelaw",
+    "kind": "scene",
+    "title": {
+      "en": "Giving of the Law (Doré)",
+      "zh-Hans": "在西奈山颁律法 (多雷)",
+      "zh-Hant": "在西奈山頒律法 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Giving of the Law (Exodus 19–20).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——在西奈山颁律法。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——在西奈山頒律法。"
+    },
+    "books": {
+      "Exodus": [
+        19,
+        20
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/88/038.The_Giving_of_the_Law_on_Mount_Sinai.jpg/1280px-038.The_Giving_of_the_Law_on_Mount_Sinai.jpg"
+  },
+  {
+    "id": "illus_dore_039mosescomesdownfro",
+    "kind": "scene",
+    "title": {
+      "en": "Moses Comes Down from Sinai (Doré)",
+      "zh-Hans": "摩西下西奈山 (多雷)",
+      "zh-Hant": "摩西下西奈山 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Moses Comes Down from Sinai (Exodus 32).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——摩西下西奈山。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——摩西下西奈山。"
+    },
+    "books": {
+      "Exodus": [
+        32,
+        32
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/06/039.Moses_Comes_Down_from_Mount_Sinai.jpg/1280px-039.Moses_Comes_Down_from_Mount_Sinai.jpg"
+  },
+  {
+    "id": "illus_dore_040thedeathofkorahda",
+    "kind": "scene",
+    "title": {
+      "en": "Korah Rebellion (Doré)",
+      "zh-Hans": "可拉党之死 (多雷)",
+      "zh-Hant": "可拉黨之死 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Korah Rebellion (Numbers 16).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——可拉党之死。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——可拉黨之死。"
+    },
+    "books": {
+      "Numbers": [
+        16,
+        16
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5a/040.The_Death_of_Korah%2C_Dathan%2C_and_Abiram.jpg/1280px-040.The_Death_of_Korah%2C_Dathan%2C_and_Abiram.jpg"
+  },
+  {
+    "id": "illus_dore_041mosesstrikesthero",
+    "kind": "scene",
+    "title": {
+      "en": "Moses Strikes the Rock (Doré)",
+      "zh-Hans": "摩西击磐 (多雷)",
+      "zh-Hant": "摩西擊磐 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Moses Strikes the Rock (Exodus 17).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——摩西击磐。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——摩西擊磐。"
+    },
+    "books": {
+      "Exodus": [
+        17,
+        17
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f2/041.Moses_Strikes_the_Rock_at_Horeb.jpg/1280px-041.Moses_Strikes_the_Rock_at_Horeb.jpg"
+  },
+  {
+    "id": "illus_dore_041amosesbreakstheta",
+    "kind": "scene",
+    "title": {
+      "en": "Moses Breaks the Tables (Doré)",
+      "zh-Hans": "摩西打碎法版 (多雷)",
+      "zh-Hant": "摩西打碎法版 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Moses Breaks the Tables (Exodus 32).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——摩西打碎法版。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——摩西打碎法版。"
+    },
+    "books": {
+      "Exodus": [
+        32,
+        32
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/54/041A.Moses_Breaks_the_Tables_of_the_Law.jpg/1280px-041A.Moses_Breaks_the_Tables_of_the_Law.jpg"
+  },
+  {
+    "id": "illus_dore_041bthespiesreturnfr",
+    "kind": "scene",
+    "title": {
+      "en": "Spies Return (Doré)",
+      "zh-Hans": "探子归来 (多雷)",
+      "zh-Hant": "探子歸來 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Spies Return (Numbers 13).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——探子归来。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——探子歸來。"
+    },
+    "books": {
+      "Numbers": [
+        13,
+        13
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3b/041B.The_Spies_Return_from_the_Promised_Land.jpg/1280px-041B.The_Spies_Return_from_the_Promised_Land.jpg"
+  },
+  {
+    "id": "illus_dore_042thebronzeserpentj",
+    "kind": "scene",
+    "title": {
+      "en": "The Bronze Serpent (Doré)",
+      "zh-Hans": "铜蛇 (多雷)",
+      "zh-Hant": "銅蛇 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — The Bronze Serpent (Numbers 21).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——铜蛇。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——銅蛇。"
+    },
+    "books": {
+      "Numbers": [
+        21,
+        21
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6f/042.The_Bronze_Serpent.jpg/1280px-042.The_Bronze_Serpent.jpg"
+  },
+  {
+    "id": "illus_dore_043anangelappearstob",
+    "kind": "scene",
+    "title": {
+      "en": "Angel Appears to Balaam (Doré)",
+      "zh-Hans": "天使向巴兰显现 (多雷)",
+      "zh-Hant": "天使向巴蘭顯現 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Angel Appears to Balaam (Numbers 22).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——天使向巴兰显现。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——天使向巴蘭顯現。"
+    },
+    "books": {
+      "Numbers": [
+        22,
+        22
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/80/043.An_Angel_Appears_to_Balaam.jpg/1280px-043.An_Angel_Appears_to_Balaam.jpg"
+  },
+  {
+    "id": "illus_dore_044theisraelitescros",
+    "kind": "scene",
+    "title": {
+      "en": "Israel Crosses the Jordan (Doré)",
+      "zh-Hans": "以色列人过约旦河 (多雷)",
+      "zh-Hant": "以色列人過約旦河 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Israel Crosses the Jordan (Joshua 3).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——以色列人过约旦河。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——以色列人過約旦河。"
+    },
+    "books": {
+      "Joshua": [
+        3,
+        3
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fe/044._The_Israelites_Cross_the_Jordan_River.jpg/1280px-044._The_Israelites_Cross_the_Jordan_River.jpg"
+  },
+  {
+    "id": "illus_dore_045anangelappearstot",
+    "kind": "scene",
+    "title": {
+      "en": "Angel Appears to Israel (Doré)",
+      "zh-Hans": "天使向以色列人显现 (多雷)",
+      "zh-Hant": "天使向以色列人顯現 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Angel Appears to Israel (Joshua 5).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——天使向以色列人显现。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——天使向以色列人顯現。"
+    },
+    "books": {
+      "Joshua": [
+        5,
+        5
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/24/045._An_Angel_Appears_to_the_Israelites.jpg/1280px-045._An_Angel_Appears_to_the_Israelites.jpg"
+  },
+  {
+    "id": "illus_dore_046thewallsofjericho",
+    "kind": "scene",
+    "title": {
+      "en": "Walls of Jericho Fall (Doré)",
+      "zh-Hans": "耶利哥城墙倒塌 (多雷)",
+      "zh-Hant": "耶利哥城牆倒塌 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Walls of Jericho Fall (Joshua 6).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——耶利哥城墙倒塌。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——耶利哥城牆倒塌。"
+    },
+    "books": {
+      "Joshua": [
+        6,
+        6
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ed/046.The_Walls_of_Jericho_Fall_Down.jpg/1280px-046.The_Walls_of_Jericho_Fall_Down.jpg"
+  },
+  {
+    "id": "illus_dore_047joshuasparesrahab",
+    "kind": "scene",
+    "title": {
+      "en": "Joshua Spares Rahab (Doré)",
+      "zh-Hans": "约书亚顾惜喇合 (多雷)",
+      "zh-Hant": "約書亞顧惜喇合 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Joshua Spares Rahab (Joshua 6).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——约书亚顾惜喇合。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——約書亞顧惜喇合。"
+    },
+    "books": {
+      "Joshua": [
+        6,
+        6
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/047.Joshua_Spares_Rahab.jpg/1280px-047.Joshua_Spares_Rahab.jpg"
+  },
+  {
+    "id": "illus_dore_048achanisstonedtode",
+    "kind": "scene",
+    "title": {
+      "en": "Achan Is Stoned (Doré)",
+      "zh-Hans": "亚干被石击毙 (多雷)",
+      "zh-Hant": "亞干被石擊斃 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Achan Is Stoned (Joshua 7).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——亚干被石击毙。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——亞干被石擊斃。"
+    },
+    "books": {
+      "Joshua": [
+        7,
+        7
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fd/048.Achan_Is_Stoned_to_Death.jpg/1280px-048.Achan_Is_Stoned_to_Death.jpg"
+  },
+  {
+    "id": "illus_dore_049joshuaburnsthetow",
+    "kind": "scene",
+    "title": {
+      "en": "Joshua Burns Ai (Doré)",
+      "zh-Hans": "约书亚焚烧艾城 (多雷)",
+      "zh-Hant": "約書亞焚燒艾城 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Joshua Burns Ai (Joshua 8).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——约书亚焚烧艾城。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——約書亞焚燒艾城。"
+    },
+    "books": {
+      "Joshua": [
+        8,
+        8
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/96/049.Joshua_Burns_the_Town_of_Ai.jpg/1280px-049.Joshua_Burns_the_Town_of_Ai.jpg"
+  },
+  {
+    "id": "illus_dore_050thearmyoftheamori",
+    "kind": "scene",
+    "title": {
+      "en": "Amorites Destroyed (Doré)",
+      "zh-Hans": "亚摩利人军队被毁 (多雷)",
+      "zh-Hant": "亞摩利人軍隊被毀 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Amorites Destroyed (Joshua 10).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——亚摩利人军队被毁。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——亞摩利人軍隊被毀。"
+    },
+    "books": {
+      "Joshua": [
+        10,
+        10
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9b/050.The_Army_of_the_Amorites_Is_Destroyed.jpg/1280px-050.The_Army_of_the_Amorites_Is_Destroyed.jpg"
+  },
+  {
+    "id": "illus_dore_051joshuacommandsthe",
+    "kind": "scene",
+    "title": {
+      "en": "Joshua Commands the Sun (Doré)",
+      "zh-Hans": "约书亚命太阳停住 (多雷)",
+      "zh-Hant": "約書亞命太陽停住 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Joshua Commands the Sun (Joshua 10).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——约书亚命太阳停住。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——約書亞命太陽停住。"
+    },
+    "books": {
+      "Joshua": [
+        10,
+        10
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8b/051.Joshua_Commands_the_Sun_to_Stand_Still.jpg/1280px-051.Joshua_Commands_the_Sun_to_Stand_Still.jpg"
+  },
+  {
+    "id": "illus_dore_052jaelkillssiserajp",
+    "kind": "scene",
+    "title": {
+      "en": "Jael Kills Sisera (Doré)",
+      "zh-Hans": "雅亿杀西西拉 (多雷)",
+      "zh-Hant": "雅億殺西西拉 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Jael Kills Sisera (Judges 4).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——雅亿杀西西拉。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——雅億殺西西拉。"
+    },
+    "books": {
+      "Judges": [
+        4,
+        4
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/70/052.Jael_Kills_Sisera.jpg/1280px-052.Jael_Kills_Sisera.jpg"
+  },
+  {
+    "id": "illus_dore_054gideonchooses300s",
+    "kind": "scene",
+    "title": {
+      "en": "Gideon Chooses 300 (Doré)",
+      "zh-Hans": "基甸选300勇士 (多雷)",
+      "zh-Hant": "基甸選300勇士 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Gideon Chooses 300 (Judges 7).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——基甸选300勇士。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——基甸選300勇士。"
+    },
+    "books": {
+      "Judges": [
+        7,
+        7
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d5/054.Gideon_Chooses_300_Soldiers.jpg/1280px-054.Gideon_Chooses_300_Soldiers.jpg"
+  },
+  {
+    "id": "illus_dore_055themidianitesarer",
+    "kind": "scene",
+    "title": {
+      "en": "Midianites Routed (Doré)",
+      "zh-Hans": "米甸人溃败 (多雷)",
+      "zh-Hant": "米甸人潰敗 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Midianites Routed (Judges 7).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——米甸人溃败。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——米甸人潰敗。"
+    },
+    "books": {
+      "Judges": [
+        7,
+        7
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cc/055.The_Midianites_Are_Routed.jpg/1280px-055.The_Midianites_Are_Routed.jpg"
+  },
+  {
+    "id": "illus_dore_056thedeathofgideons",
+    "kind": "scene",
+    "title": {
+      "en": "Death of Gideon's Sons (Doré)",
+      "zh-Hans": "基甸众子被杀 (多雷)",
+      "zh-Hant": "基甸眾子被殺 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Death of Gideon's Sons (Judges 9).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——基甸众子被杀。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——基甸眾子被殺。"
+    },
+    "books": {
+      "Judges": [
+        9,
+        9
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/70/056.The_Death_of_Gideon%27s_Sons.jpg/1280px-056.The_Death_of_Gideon%27s_Sons.jpg"
+  },
+  {
+    "id": "illus_dore_057thedeathofabimele",
+    "kind": "scene",
+    "title": {
+      "en": "Death of Abimelech (Doré)",
+      "zh-Hans": "亚比米勒的死 (多雷)",
+      "zh-Hant": "亞比米勒的死 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Death of Abimelech (Judges 9).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——亚比米勒的死。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——亞比米勒的死。"
+    },
+    "books": {
+      "Judges": [
+        9,
+        9
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/20/057.The_Death_of_Abimelech.jpg/1280px-057.The_Death_of_Abimelech.jpg"
+  },
+  {
+    "id": "illus_dore_058jephthahsdaughter",
+    "kind": "scene",
+    "title": {
+      "en": "Jephthah's Daughter (Doré)",
+      "zh-Hans": "耶弗他的女儿 (多雷)",
+      "zh-Hant": "耶弗他的女兒 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Jephthah's Daughter (Judges 11).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——耶弗他的女儿。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——耶弗他的女兒。"
+    },
+    "books": {
+      "Judges": [
+        11,
+        11
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5a/058.Jephthah%27s_Daughter_Comes_to_Meet_Her_Father.jpg/1280px-058.Jephthah%27s_Daughter_Comes_to_Meet_Her_Father.jpg"
+  },
+  {
+    "id": "illus_dore_059israelitewomenmou",
+    "kind": "scene",
+    "title": {
+      "en": "Mourning Jephthah's Daughter (Doré)",
+      "zh-Hans": "为耶弗他女儿哀哭 (多雷)",
+      "zh-Hant": "為耶弗他女兒哀哭 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Mourning Jephthah's Daughter (Judges 11).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——为耶弗他女儿哀哭。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——為耶弗他女兒哀哭。"
+    },
+    "books": {
+      "Judges": [
+        11,
+        11
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/059.Israelite_Women_Mourn_with_Jephthah%27s_Daughter.jpg/1280px-059.Israelite_Women_Mourn_with_Jephthah%27s_Daughter.jpg"
+  },
+  {
+    "id": "illus_dore_060samsonslaysalionj",
+    "kind": "scene",
+    "title": {
+      "en": "Samson Slays a Lion (Doré)",
+      "zh-Hans": "参孙杀狮 (多雷)",
+      "zh-Hant": "參孫殺獅 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Samson Slays a Lion (Judges 14).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——参孙杀狮。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——參孫殺獅。"
+    },
+    "books": {
+      "Judges": [
+        14,
+        14
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/20/060.Samson_Slays_a_Lion.jpg/1280px-060.Samson_Slays_a_Lion.jpg"
+  },
+  {
+    "id": "illus_dore_061samsondestroysthe",
+    "kind": "scene",
+    "title": {
+      "en": "Samson with the Jawbone (Doré)",
+      "zh-Hans": "参孙用驴腮骨杀敌 (多雷)",
+      "zh-Hant": "參孫用驢腮骨殺敵 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Samson with the Jawbone (Judges 15).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——参孙用驴腮骨杀敌。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——參孫用驢腮骨殺敵。"
+    },
+    "books": {
+      "Judges": [
+        15,
+        15
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/48/061.Samson_Destroys_the_Philistines_with_an_Ass%27_Jawbone.jpg/1280px-061.Samson_Destroys_the_Philistines_with_an_Ass%27_Jawbone.jpg"
+  },
+  {
+    "id": "illus_dore_062samsoncarriesaway",
+    "kind": "scene",
+    "title": {
+      "en": "Samson Carries the Gates (Doré)",
+      "zh-Hans": "参孙扛走城门 (多雷)",
+      "zh-Hant": "參孫扛走城門 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Samson Carries the Gates (Judges 16).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——参孙扛走城门。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——參孫扛走城門。"
+    },
+    "books": {
+      "Judges": [
+        16,
+        16
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a4/062.Samson_Carries_away_the_Gates_of_Gaza.jpg/1280px-062.Samson_Carries_away_the_Gates_of_Gaza.jpg"
+  },
+  {
+    "id": "illus_dore_063samsonanddelilahj",
+    "kind": "scene",
+    "title": {
+      "en": "Samson and Delilah (Doré)",
+      "zh-Hans": "参孙与大利拉 (多雷)",
+      "zh-Hant": "參孫與大利拉 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Samson and Delilah (Judges 16).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——参孙与大利拉。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——參孫與大利拉。"
+    },
+    "books": {
+      "Judges": [
+        16,
+        16
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e9/063.Samson_and_Delilah.jpg/1280px-063.Samson_and_Delilah.jpg"
+  },
+  {
+    "id": "illus_dore_064thedeathofsamsonj",
+    "kind": "scene",
+    "title": {
+      "en": "Death of Samson (Doré)",
+      "zh-Hans": "参孙的死 (多雷)",
+      "zh-Hant": "參孫的死 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Death of Samson (Judges 16).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——参孙的死。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——參孫的死。"
+    },
+    "books": {
+      "Judges": [
+        16,
+        16
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/64/064.The_Death_of_Samson.jpg/1280px-064.The_Death_of_Samson.jpg"
+  },
+  {
+    "id": "illus_dore_068naomiandherdaught",
+    "kind": "scene",
+    "title": {
+      "en": "Naomi and Daughters-in-Law (Doré)",
+      "zh-Hans": "拿俄米与儿妇 (多雷)",
+      "zh-Hant": "拿俄米與兒婦 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Naomi and Daughters-in-Law (Ruth 1).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——拿俄米与儿妇。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——拿俄米與兒婦。"
+    },
+    "books": {
+      "Ruth": [
+        1,
+        1
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/41/068.Naomi_and_Her_Daughters-in-Law.jpg/1280px-068.Naomi_and_Her_Daughters-in-Law.jpg"
+  },
+  {
+    "id": "illus_dore_069ruthandboazjpg",
+    "kind": "scene",
+    "title": {
+      "en": "Ruth and Boaz (Doré)",
+      "zh-Hans": "路得与波阿斯 (多雷)",
+      "zh-Hant": "路得與波阿斯 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Ruth and Boaz (Ruth 2).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——路得与波阿斯。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——路得與波阿斯。"
+    },
+    "books": {
+      "Ruth": [
+        2,
+        2
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2e/069.Ruth_and_Boaz.jpg/1280px-069.Ruth_and_Boaz.jpg"
+  },
+  {
+    "id": "illus_dore_070thearkisreturnedt",
+    "kind": "scene",
+    "title": {
+      "en": "Ark Returned to Beth-shemesh (Doré)",
+      "zh-Hans": "约柜回伯示麦 (多雷)",
+      "zh-Hant": "約櫃回伯示麥 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Ark Returned to Beth-shemesh (1 Samuel 6).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——约柜回伯示麦。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——約櫃回伯示麥。"
+    },
+    "books": {
+      "1 Samuel": [
+        6,
+        6
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/70/070.The_Ark_Is_Returned_to_Beth-shemesh.jpg/1280px-070.The_Ark_Is_Returned_to_Beth-shemesh.jpg"
+  },
+  {
+    "id": "illus_dore_070asamuelblessessau",
+    "kind": "scene",
+    "title": {
+      "en": "Samuel Blesses Saul (Doré)",
+      "zh-Hans": "撒母耳为扫罗祝福 (多雷)",
+      "zh-Hant": "撒母耳為掃羅祝福 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Samuel Blesses Saul (1 Samuel 10).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——撒母耳为扫罗祝福。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——撒母耳為掃羅祝福。"
+    },
+    "books": {
+      "1 Samuel": [
+        10,
+        10
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5b/070A.Samuel_Blesses_Saul.jpg/1280px-070A.Samuel_Blesses_Saul.jpg"
+  },
+  {
+    "id": "illus_dore_071thedeathofagagjpg",
+    "kind": "scene",
+    "title": {
+      "en": "Death of Agag (Doré)",
+      "zh-Hans": "亚甲被诛 (多雷)",
+      "zh-Hant": "亞甲被誅 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Death of Agag (1 Samuel 15).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——亚甲被诛。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——亞甲被誅。"
+    },
+    "books": {
+      "1 Samuel": [
+        15,
+        15
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/39/071.The_Death_of_Agag.jpg/1280px-071.The_Death_of_Agag.jpg"
+  },
+  {
+    "id": "illus_dore_071adavidslaysgoliat",
+    "kind": "scene",
+    "title": {
+      "en": "David Slays Goliath (Doré)",
+      "zh-Hans": "大卫击杀歌利亚 (多雷)",
+      "zh-Hant": "大衛擊殺歌利亞 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — David Slays Goliath (1 Samuel 17).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——大卫击杀歌利亚。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——大衛擊殺歌利亞。"
+    },
+    "books": {
+      "1 Samuel": [
+        17,
+        17
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/00/071A.David_Slays_Goliath.jpg/1280px-071A.David_Slays_Goliath.jpg"
+  },
+  {
+    "id": "illus_dore_072saulattemptstokil",
+    "kind": "scene",
+    "title": {
+      "en": "Saul Attempts to Kill David (Doré)",
+      "zh-Hans": "扫罗欲杀大卫 (多雷)",
+      "zh-Hant": "掃羅欲殺大衛 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Saul Attempts to Kill David (1 Samuel 19).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——扫罗欲杀大卫。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——掃羅欲殺大衛。"
+    },
+    "books": {
+      "1 Samuel": [
+        19,
+        19
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4e/072.Saul_Attempts_to_Kill_David.jpg/1280px-072.Saul_Attempts_to_Kill_David.jpg"
+  },
+  {
+    "id": "illus_dore_073davidescapesthrou",
+    "kind": "scene",
+    "title": {
+      "en": "David Escapes through a Window (Doré)",
+      "zh-Hans": "大卫从窗口逃脱 (多雷)",
+      "zh-Hant": "大衛從窗口逃脫 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — David Escapes through a Window (1 Samuel 19).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——大卫从窗口逃脱。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——大衛從窗口逃脫。"
+    },
+    "books": {
+      "1 Samuel": [
+        19,
+        19
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4a/073.David_Escapes_through_a_Window.jpg/1280px-073.David_Escapes_through_a_Window.jpg"
+  },
+  {
+    "id": "illus_dore_073adavidandjonathan",
+    "kind": "scene",
+    "title": {
+      "en": "David and Jonathan (Doré)",
+      "zh-Hans": "大卫与约拿单 (多雷)",
+      "zh-Hant": "大衛與約拿單 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — David and Jonathan (1 Samuel 20).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——大卫与约拿单。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——大衛與約拿單。"
+    },
+    "books": {
+      "1 Samuel": [
+        20,
+        20
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9d/073A.David_and_Jonathan.jpg/1280px-073A.David_and_Jonathan.jpg"
+  },
+  {
+    "id": "illus_dore_074davidshowssaulhow",
+    "kind": "scene",
+    "title": {
+      "en": "David Spares Saul (Doré)",
+      "zh-Hans": "大卫顾全扫罗的命 (多雷)",
+      "zh-Hant": "大衛顧全掃羅的命 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — David Spares Saul (1 Samuel 24).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——大卫顾全扫罗的命。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——大衛顧全掃羅的命。"
+    },
+    "books": {
+      "1 Samuel": [
+        24,
+        24
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/62/074.David_Shows_Saul_How_He_Spared_His_Life.jpg/1280px-074.David_Shows_Saul_How_He_Spared_His_Life.jpg"
+  },
+  {
+    "id": "illus_dore_075saulandthewitchof",
+    "kind": "scene",
+    "title": {
+      "en": "Saul and the Witch of Endor (Doré)",
+      "zh-Hans": "扫罗与隐多珥的女巫 (多雷)",
+      "zh-Hant": "掃羅與隱多珥的女巫 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Saul and the Witch of Endor (1 Samuel 28).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——扫罗与隐多珥的女巫。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——掃羅與隱多珥的女巫。"
+    },
+    "books": {
+      "1 Samuel": [
+        28,
+        28
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/08/075.Saul_and_the_Witch_of_Endor.jpg/1280px-075.Saul_and_the_Witch_of_Endor.jpg"
+  },
+  {
+    "id": "illus_dore_076thedeathofsauljpg",
+    "kind": "scene",
+    "title": {
+      "en": "The Death of Saul (Doré)",
+      "zh-Hans": "扫罗之死 (多雷)",
+      "zh-Hant": "掃羅之死 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — The Death of Saul (1 Samuel 31).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——扫罗之死。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——掃羅之死。"
+    },
+    "books": {
+      "1 Samuel": [
+        31,
+        31
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/88/076.The_Death_of_Saul.jpg/1280px-076.The_Death_of_Saul.jpg"
+  },
+  {
+    "id": "illus_dore_079davidattackstheam",
+    "kind": "scene",
+    "title": {
+      "en": "David Attacks the Ammonites (Doré)",
+      "zh-Hans": "大卫攻击亚扪人 (多雷)",
+      "zh-Hant": "大衛攻擊亞捫人 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — David Attacks the Ammonites (2 Samuel 12).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——大卫攻击亚扪人。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——大衛攻擊亞捫人。"
+    },
+    "books": {
+      "2 Samuel": [
+        12,
+        12
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/25/079.David_Attacks_the_Ammonites.jpg/1280px-079.David_Attacks_the_Ammonites.jpg"
+  },
+  {
+    "id": "illus_dore_080thedeathofabsalom",
+    "kind": "scene",
+    "title": {
+      "en": "Death of Absalom (Doré)",
+      "zh-Hans": "押沙龙的死 (多雷)",
+      "zh-Hant": "押沙龍的死 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Death of Absalom (2 Samuel 18).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——押沙龙的死。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——押沙龍的死。"
+    },
+    "books": {
+      "2 Samuel": [
+        18,
+        18
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6d/080.The_Death_of_Absalom.jpg/1280px-080.The_Death_of_Absalom.jpg"
+  },
+  {
+    "id": "illus_dore_081davidmournsthedea",
+    "kind": "scene",
+    "title": {
+      "en": "David Mourns Absalom (Doré)",
+      "zh-Hans": "大卫为押沙龙哀哭 (多雷)",
+      "zh-Hant": "大衛為押沙龍哀哭 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — David Mourns Absalom (2 Samuel 19).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——大卫为押沙龙哀哭。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——大衛為押沙龍哀哭。"
+    },
+    "books": {
+      "2 Samuel": [
+        19,
+        19
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/71/081.David_Mourns_the_Death_of_Absalom.jpg/1280px-081.David_Mourns_the_Death_of_Absalom.jpg"
+  },
+  {
+    "id": "illus_dore_084thejudgmentofsolo",
+    "kind": "scene",
+    "title": {
+      "en": "Judgment of Solomon (Doré)",
+      "zh-Hans": "所罗门的智断 (多雷)",
+      "zh-Hant": "所羅門的智斷 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Judgment of Solomon (1 Kings 3).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——所罗门的智断。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——所羅門的智斷。"
+    },
+    "books": {
+      "1 Kings": [
+        3,
+        3
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/61/084.The_Judgment_of_Solomon.jpg/1280px-084.The_Judgment_of_Solomon.jpg"
+  },
+  {
+    "id": "illus_dore_086solomonreceivesth",
+    "kind": "scene",
+    "title": {
+      "en": "Solomon and Queen of Sheba (Doré)",
+      "zh-Hans": "所罗门接待示巴女王 (多雷)",
+      "zh-Hant": "所羅門接待示巴女王 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Solomon and Queen of Sheba (1 Kings 10).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——所罗门接待示巴女王。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——所羅門接待示巴女王。"
+    },
+    "books": {
+      "1 Kings": [
+        10,
+        10
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7d/086.Solomon_Receives_the_Queen_of_Sheba.jpg/1280px-086.Solomon_Receives_the_Queen_of_Sheba.jpg"
+  },
+  {
+    "id": "illus_dore_087kingsolomoninolda",
+    "kind": "scene",
+    "title": {
+      "en": "King Solomon in Old Age (Doré)",
+      "zh-Hans": "所罗门年迈 (多雷)",
+      "zh-Hant": "所羅門年邁 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — King Solomon in Old Age (1 Kings 11).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——所罗门年迈。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——所羅門年邁。"
+    },
+    "books": {
+      "1 Kings": [
+        11,
+        11
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/39/087.King_Solomon_in_Old_Age.jpg/1280px-087.King_Solomon_in_Old_Age.jpg"
+  },
+  {
+    "id": "illus_dore_089elijahraisestheso",
+    "kind": "scene",
+    "title": {
+      "en": "Elijah Raises Widow's Son (Doré)",
+      "zh-Hans": "以利亚使寡妇之子复活 (多雷)",
+      "zh-Hant": "以利亞使寡婦之子復活 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Elijah Raises Widow's Son (1 Kings 17).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——以利亚使寡妇之子复活。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——以利亞使寡婦之子復活。"
+    },
+    "books": {
+      "1 Kings": [
+        17,
+        17
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/55/089.Elijah_Raises_the_Son_of_the_Widow_of_Zarephath.jpg/1280px-089.Elijah_Raises_the_Son_of_the_Widow_of_Zarephath.jpg"
+  },
+  {
+    "id": "illus_dore_090theprophetsofbaal",
+    "kind": "scene",
+    "title": {
+      "en": "Prophets of Baal Slain (Doré)",
+      "zh-Hans": "巴力先知被杀 (多雷)",
+      "zh-Hant": "巴力先知被殺 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Prophets of Baal Slain (1 Kings 18).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——巴力先知被杀。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——巴力先知被殺。"
+    },
+    "books": {
+      "1 Kings": [
+        18,
+        18
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/26/090.The_Prophets_of_Baal_Are_Slaughtered.jpg/1280px-090.The_Prophets_of_Baal_Are_Slaughtered.jpg"
+  },
+  {
+    "id": "illus_dore_091elijahisnourished",
+    "kind": "scene",
+    "title": {
+      "en": "Elijah Nourished by an Angel (Doré)",
+      "zh-Hans": "天使供养以利亚 (多雷)",
+      "zh-Hant": "天使供養以利亞 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Elijah Nourished by an Angel (1 Kings 19).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——天使供养以利亚。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——天使供養以利亞。"
+    },
+    "books": {
+      "1 Kings": [
+        19,
+        19
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c9/091.Elijah_Is_Nourished_by_an_Angel.jpg/1280px-091.Elijah_Is_Nourished_by_an_Angel.jpg"
+  },
+  {
+    "id": "illus_dore_093thedeathofahabjpg",
+    "kind": "scene",
+    "title": {
+      "en": "Death of Ahab (Doré)",
+      "zh-Hans": "亚哈之死 (多雷)",
+      "zh-Hant": "亞哈之死 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Death of Ahab (1 Kings 22).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——亚哈之死。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——亞哈之死。"
+    },
+    "books": {
+      "1 Kings": [
+        22,
+        22
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/52/093.The_Death_of_Ahab.jpg/1280px-093.The_Death_of_Ahab.jpg"
+  },
+  {
+    "id": "illus_dore_095elijahascendstohe",
+    "kind": "scene",
+    "title": {
+      "en": "Elijah Ascends to Heaven (Doré)",
+      "zh-Hans": "以利亚被接升天 (多雷)",
+      "zh-Hant": "以利亞被接升天 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Elijah Ascends to Heaven (2 Kings 2).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——以利亚被接升天。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——以利亞被接升天。"
+    },
+    "books": {
+      "2 Kings": [
+        2,
+        2
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/095.Elijah_Ascends_to_Heaven_in_a_Chariot_of_Fire.jpg/1280px-095.Elijah_Ascends_to_Heaven_in_a_Chariot_of_Fire.jpg"
+  },
+  {
+    "id": "illus_dore_097thedeathofjezebel",
+    "kind": "scene",
+    "title": {
+      "en": "Death of Jezebel (Doré)",
+      "zh-Hans": "耶洗别之死 (多雷)",
+      "zh-Hant": "耶洗別之死 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Death of Jezebel (2 Kings 9).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——耶洗别之死。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——耶洗別之死。"
+    },
+    "books": {
+      "2 Kings": [
+        9,
+        9
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c6/097.The_Death_of_Jezebel.jpg/1280px-097.The_Death_of_Jezebel.jpg"
+  },
+  {
+    "id": "illus_dore_099thedeathofathalia",
+    "kind": "scene",
+    "title": {
+      "en": "Death of Athaliah (Doré)",
+      "zh-Hans": "亚他利雅之死 (多雷)",
+      "zh-Hant": "亞他利雅之死 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Death of Athaliah (2 Kings 11).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——亚他利雅之死。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——亞他利雅之死。"
+    },
+    "books": {
+      "2 Kings": [
+        11,
+        11
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/57/099.The_Death_of_Athaliah.jpg/1280px-099.The_Death_of_Athaliah.jpg"
+  },
+  {
+    "id": "illus_dore_101sennacheribsarmyi",
+    "kind": "scene",
+    "title": {
+      "en": "Sennacherib's Army Destroyed (Doré)",
+      "zh-Hans": "西拿基立的军队被毁 (多雷)",
+      "zh-Hant": "西拿基立的軍隊被毀 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Sennacherib's Army Destroyed (2 Kings 19).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——西拿基立的军队被毁。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——西拿基立的軍隊被毀。"
+    },
+    "books": {
+      "2 Kings": [
+        19,
+        19
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/101.Sennacherib%27s_Army_Is_Destroyed.jpg/1280px-101.Sennacherib%27s_Army_Is_Destroyed.jpg"
+  },
+  {
+    "id": "illus_dore_102zedekiahssonsares",
+    "kind": "scene",
+    "title": {
+      "en": "Zedekiah's Sons Slain (Doré)",
+      "zh-Hans": "西底家众子被杀 (多雷)",
+      "zh-Hant": "西底家眾子被殺 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Zedekiah's Sons Slain (2 Kings 25).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——西底家众子被杀。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——西底家眾子被殺。"
+    },
+    "books": {
+      "2 Kings": [
+        25,
+        25
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/af/102.Zedekiah%27s_Sons_Are_Slaughtered_before_His_Eyes.jpg/1280px-102.Zedekiah%27s_Sons_Are_Slaughtered_before_His_Eyes.jpg"
+  },
+  {
+    "id": "illus_dore_114queenvashtirefuse",
+    "kind": "scene",
+    "title": {
+      "en": "Vashti Refuses (Doré)",
+      "zh-Hans": "瓦实提违命 (多雷)",
+      "zh-Hant": "瓦實提違命 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Vashti Refuses (Esther 1).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——瓦实提违命。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——瓦實提違命。"
+    },
+    "books": {
+      "Esther": [
+        1,
+        1
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/37/114.Queen_Vashti_Refuses_to_Obey_Ahasuerus%27_Command.jpg/1280px-114.Queen_Vashti_Refuses_to_Obey_Ahasuerus%27_Command.jpg"
+  },
+  {
+    "id": "illus_dore_115estherbeforetheki",
+    "kind": "scene",
+    "title": {
+      "en": "Esther Before the King (Doré)",
+      "zh-Hans": "以斯帖见王 (多雷)",
+      "zh-Hant": "以斯帖見王 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Esther Before the King (Esther 5).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——以斯帖见王。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——以斯帖見王。"
+    },
+    "books": {
+      "Esther": [
+        5,
+        5
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/13/115.Esther_Before_the_King.jpg/1280px-115.Esther_Before_the_King.jpg"
+  },
+  {
+    "id": "illus_dore_116thetriumphofmorde",
+    "kind": "scene",
+    "title": {
+      "en": "Triumph of Mordecai (Doré)",
+      "zh-Hans": "末底改的尊荣 (多雷)",
+      "zh-Hant": "末底改的尊榮 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Triumph of Mordecai (Esther 6).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——末底改的尊荣。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——末底改的尊榮。"
+    },
+    "books": {
+      "Esther": [
+        6,
+        6
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/89/116.The_Triumph_of_Mordecai.jpg/1280px-116.The_Triumph_of_Mordecai.jpg"
+  },
+  {
+    "id": "illus_dore_117estheraccuseshama",
+    "kind": "scene",
+    "title": {
+      "en": "Esther Accuses Haman (Doré)",
+      "zh-Hans": "以斯帖控诉哈曼 (多雷)",
+      "zh-Hant": "以斯帖控訴哈曼 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Esther Accuses Haman (Esther 7).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——以斯帖控诉哈曼。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——以斯帖控訴哈曼。"
+    },
+    "books": {
+      "Esther": [
+        7,
+        7
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e5/117.Esther_Accuses_Haman.jpg/1280px-117.Esther_Accuses_Haman.jpg"
+  },
+  {
+    "id": "illus_dore_118jobhearsofhismisf",
+    "kind": "scene",
+    "title": {
+      "en": "Job Hears of His Misfortunes (Doré)",
+      "zh-Hans": "约伯闻祸 (多雷)",
+      "zh-Hant": "約伯聞禍 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Job Hears of His Misfortunes (Job 1).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——约伯闻祸。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——約伯聞禍。"
+    },
+    "books": {
+      "Job": [
+        1,
+        1
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/118.Job_Hears_of_His_Misfortunes.jpg/1280px-118.Job_Hears_of_His_Misfortunes.jpg"
+  },
+  {
+    "id": "illus_dore_119jobspeakswithhisf",
+    "kind": "scene",
+    "title": {
+      "en": "Job Speaks with His Friends (Doré)",
+      "zh-Hans": "约伯与友人对话 (多雷)",
+      "zh-Hant": "約伯與友人對話 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Job Speaks with His Friends (Job 4).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——约伯与友人对话。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——約伯與友人對話。"
+    },
+    "books": {
+      "Job": [
+        4,
+        4
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/79/119.Job_Speaks_with_His_Friends.jpg/1280px-119.Job_Speaks_with_His_Friends.jpg"
+  },
+  {
+    "id": "illus_dore_120theprophetisaiahj",
+    "kind": "scene",
+    "title": {
+      "en": "The Prophet Isaiah (Doré)",
+      "zh-Hans": "先知以赛亚 (多雷)",
+      "zh-Hant": "先知以賽亞 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — The Prophet Isaiah (Isaiah 1).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——先知以赛亚。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——先知以賽亞。"
+    },
+    "books": {
+      "Isaiah": [
+        1,
+        1
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/43/120.The_Prophet_Isaiah.jpg/1280px-120.The_Prophet_Isaiah.jpg"
+  },
+  {
+    "id": "illus_dore_121isaiahsvisionofth",
+    "kind": "scene",
+    "title": {
+      "en": "Isaiah's Vision of Babylon (Doré)",
+      "zh-Hans": "以赛亚见巴比伦异象 (多雷)",
+      "zh-Hant": "以賽亞見巴比倫異象 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Isaiah's Vision of Babylon (Isaiah 13).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——以赛亚见巴比伦异象。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——以賽亞見巴比倫異象。"
+    },
+    "books": {
+      "Isaiah": [
+        13,
+        13
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5c/121.Isaiah%27s_Vision_of_the_Destruction_of_Babylon.jpg/1280px-121.Isaiah%27s_Vision_of_the_Destruction_of_Babylon.jpg"
+  },
+  {
+    "id": "illus_dore_122thedestructionofl",
+    "kind": "scene",
+    "title": {
+      "en": "Destruction of Leviathan (Doré)",
+      "zh-Hans": "鳄鱼被毁 (多雷)",
+      "zh-Hant": "鱷魚被毀 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Destruction of Leviathan (Isaiah 27).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——鳄鱼被毁。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——鱷魚被毀。"
+    },
+    "books": {
+      "Isaiah": [
+        27,
+        27
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/38/122.The_Destruction_of_Leviathan.jpg/1280px-122.The_Destruction_of_Leviathan.jpg"
+  },
+  {
+    "id": "illus_dore_123theprophetjeremia",
+    "kind": "scene",
+    "title": {
+      "en": "The Prophet Jeremiah (Doré)",
+      "zh-Hans": "先知耶利米 (多雷)",
+      "zh-Hant": "先知耶利米 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — The Prophet Jeremiah (Jeremiah 1).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——先知耶利米。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——先知耶利米。"
+    },
+    "books": {
+      "Jeremiah": [
+        1,
+        1
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d3/123.The_Prophet_Jeremiah.jpg/1280px-123.The_Prophet_Jeremiah.jpg"
+  },
+  {
+    "id": "illus_dore_124peoplemournoverth",
+    "kind": "scene",
+    "title": {
+      "en": "Mourning Destruction of Jerusalem (Doré)",
+      "zh-Hans": "为耶路撒冷哀哭 (多雷)",
+      "zh-Hant": "為耶路撒冷哀哭 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Mourning Destruction of Jerusalem (Lamentations 1).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——为耶路撒冷哀哭。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——為耶路撒冷哀哭。"
+    },
+    "books": {
+      "Lamentations": [
+        1,
+        1
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9f/124.People_Mourn_over_the_Destruction_of_Jerusalem.jpg/1280px-124.People_Mourn_over_the_Destruction_of_Jerusalem.jpg"
+  },
+  {
+    "id": "illus_dore_126theprophetezekiel",
+    "kind": "scene",
+    "title": {
+      "en": "The Prophet Ezekiel (Doré)",
+      "zh-Hans": "先知以西结 (多雷)",
+      "zh-Hant": "先知以西結 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — The Prophet Ezekiel (Ezekiel 1).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——先知以西结。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——先知以西結。"
+    },
+    "books": {
+      "Ezekiel": [
+        1,
+        1
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/42/126.The_Prophet_Ezekiel.jpg/1280px-126.The_Prophet_Ezekiel.jpg"
+  },
+  {
+    "id": "illus_dore_128danielamongtheexi",
+    "kind": "scene",
+    "title": {
+      "en": "Daniel among the Exiles (Doré)",
+      "zh-Hans": "但以理在被掳之中 (多雷)",
+      "zh-Hant": "但以理在被擄之中 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Daniel among the Exiles (Daniel 1).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——但以理在被掳之中。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——但以理在被擄之中。"
+    },
+    "books": {
+      "Daniel": [
+        1,
+        1
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/36/128.Daniel_among_the_Exiles.jpg/1280px-128.Daniel_among_the_Exiles.jpg"
+  },
+  {
+    "id": "illus_dore_129shadrachmeshachan",
+    "kind": "scene",
+    "title": {
+      "en": "Three in the Fiery Furnace (Doré)",
+      "zh-Hans": "三人在烈火窑中 (多雷)",
+      "zh-Hant": "三人在烈火窯中 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Three in the Fiery Furnace (Daniel 3).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——三人在烈火窑中。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——三人在烈火窯中。"
+    },
+    "books": {
+      "Daniel": [
+        3,
+        3
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a5/129.Shadrach%2C_Meshach_and_Abednego_in_the_Furnace.jpg/1280px-129.Shadrach%2C_Meshach_and_Abednego_in_the_Furnace.jpg"
+  },
+  {
+    "id": "illus_dore_130danielinterpretst",
+    "kind": "scene",
+    "title": {
+      "en": "Writing on the Wall (Doré)",
+      "zh-Hans": "墙上的字 (多雷)",
+      "zh-Hant": "牆上的字 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Writing on the Wall (Daniel 5).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——墙上的字。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——牆上的字。"
+    },
+    "books": {
+      "Daniel": [
+        5,
+        5
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/70/130.Daniel_Interprets_the_Writing_on_the_Wall.jpg/1280px-130.Daniel_Interprets_the_Writing_on_the_Wall.jpg"
+  },
+  {
+    "id": "illus_dore_131danielinthelionsd",
+    "kind": "scene",
+    "title": {
+      "en": "Daniel in the Lions' Den (Doré)",
+      "zh-Hans": "但以理在狮子坑中 (多雷)",
+      "zh-Hant": "但以理在獅子坑中 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Daniel in the Lions' Den (Daniel 6).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——但以理在狮子坑中。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——但以理在獅子坑中。"
+    },
+    "books": {
+      "Daniel": [
+        6,
+        6
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/131.Daniel_in_the_Lions%27_Den.jpg/1280px-131.Daniel_in_the_Lions%27_Den.jpg"
+  },
+  {
+    "id": "illus_dore_132danielsvisionofth",
+    "kind": "scene",
+    "title": {
+      "en": "Daniel's Vision of Four Beasts (Doré)",
+      "zh-Hans": "但以理见四兽异象 (多雷)",
+      "zh-Hant": "但以理見四獸異象 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Daniel's Vision of Four Beasts (Daniel 7).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——但以理见四兽异象。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——但以理見四獸異象。"
+    },
+    "books": {
+      "Daniel": [
+        7,
+        7
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5b/132.Daniel%27s_Vision_of_the_Four_Beasts.jpg/1280px-132.Daniel%27s_Vision_of_the_Four_Beasts.jpg"
+  },
+  {
+    "id": "illus_dore_136theprophetamosjpg",
+    "kind": "scene",
+    "title": {
+      "en": "The Prophet Amos (Doré)",
+      "zh-Hans": "先知阿摩司 (多雷)",
+      "zh-Hant": "先知阿摩司 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — The Prophet Amos (Amos 1).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——先知阿摩司。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——先知阿摩司。"
+    },
+    "books": {
+      "Amos": [
+        1,
+        1
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cf/136.The_Prophet_Amos.jpg/1280px-136.The_Prophet_Amos.jpg"
+  },
+  {
+    "id": "illus_dore_137jonahisspewedfort",
+    "kind": "scene",
+    "title": {
+      "en": "Jonah Spewed by the Whale (Doré)",
+      "zh-Hans": "约拿被大鱼吐出 (多雷)",
+      "zh-Hant": "約拿被大魚吐出 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Jonah Spewed by the Whale (Jonah 2).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——约拿被大鱼吐出。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——約拿被大魚吐出。"
+    },
+    "books": {
+      "Jonah": [
+        2,
+        2
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/73/137.Jonah_Is_Spewed_Forth_by_the_Whale.jpg/1280px-137.Jonah_Is_Spewed_Forth_by_the_Whale.jpg"
+  },
+  {
+    "id": "illus_dore_138jonahpreachestoth",
+    "kind": "scene",
+    "title": {
+      "en": "Jonah Preaches to Nineveh (Doré)",
+      "zh-Hans": "约拿向尼尼微传道 (多雷)",
+      "zh-Hant": "約拿向尼尼微傳道 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Jonah Preaches to Nineveh (Jonah 3).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——约拿向尼尼微传道。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——約拿向尼尼微傳道。"
+    },
+    "books": {
+      "Jonah": [
+        3,
+        3
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e9/138.Jonah_Preaches_to_the_Ninevites.jpg/1280px-138.Jonah_Preaches_to_the_Ninevites.jpg"
+  },
+  {
+    "id": "illus_dore_139micahexhortstheis",
+    "kind": "scene",
+    "title": {
+      "en": "Micah Calls Israel to Repent (Doré)",
+      "zh-Hans": "弥迦呼召以色列悔改 (多雷)",
+      "zh-Hant": "彌迦呼召以色列悔改 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Micah Calls Israel to Repent (Micah 6).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——弥迦呼召以色列悔改。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——彌迦呼召以色列悔改。"
+    },
+    "books": {
+      "Micah": [
+        6,
+        6
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/29/139.Micah_Exhorts_the_Israelites_to_Repent.jpg/1280px-139.Micah_Exhorts_the_Israelites_to_Repent.jpg"
+  },
+  {
+    "id": "illus_dore_140zechariahsvisiono",
+    "kind": "scene",
+    "title": {
+      "en": "Zechariah's Vision of Four Chariots (Doré)",
+      "zh-Hans": "撒迦利亚见四车异象 (多雷)",
+      "zh-Hant": "撒迦利亞見四車異象 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Zechariah's Vision of Four Chariots (Zechariah 6).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——撒迦利亚见四车异象。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——撒迦利亞見四車異象。"
+    },
+    "books": {
+      "Zechariah": [
+        6,
+        6
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5d/140.Zechariah%27s_Vision_of_Four_Chariots.jpg/1280px-140.Zechariah%27s_Vision_of_Four_Chariots.jpg"
+  },
+  {
+    "id": "illus_dore_gustavedoretheannunc",
+    "kind": "scene",
+    "title": {
+      "en": "The Annunciation (Doré)",
+      "zh-Hans": "天使报喜 (多雷)",
+      "zh-Hant": "天使報喜 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — The Annunciation (Luke 1).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——天使报喜。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——天使報喜。"
+    },
+    "books": {
+      "Luke": [
+        1,
+        1
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/a/ac/Gustave_Dore_-_The_Annunciation.jpg"
+  },
+  {
+    "id": "illus_dore_thebirthofjesusjpg",
+    "kind": "scene",
+    "title": {
+      "en": "The Birth of Jesus (Doré)",
+      "zh-Hans": "耶稣降生 (多雷)",
+      "zh-Hant": "耶穌降生 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — The Birth of Jesus (Luke 2).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——耶稣降生。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——耶穌降生。"
+    },
+    "books": {
+      "Luke": [
+        2,
+        2
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c7/The_Birth_of_Jesus.jpg/1280px-The_Birth_of_Jesus.jpg"
+  },
+  {
+    "id": "illus_dore_gustavedorejohntheba",
+    "kind": "scene",
+    "title": {
+      "en": "Baptism of Jesus (Doré)",
+      "zh-Hans": "耶稣受洗 (多雷)",
+      "zh-Hant": "耶穌受洗 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Baptism of Jesus (Matthew 3).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——耶稣受洗。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——耶穌受洗。"
+    },
+    "books": {
+      "Matthew": [
+        3,
+        3
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/3/34/Gustave_Dore_-_John_the_Baptist_baptizes_Jesus.jpg"
+  },
+  {
+    "id": "illus_dore_marriageatcanaengrav",
+    "kind": "scene",
+    "title": {
+      "en": "Marriage at Cana (Doré)",
+      "zh-Hans": "迦拿婚宴 (多雷)",
+      "zh-Hant": "迦拿婚宴 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Marriage at Cana (John 2).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——迦拿婚宴。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——迦拿婚宴。"
+    },
+    "books": {
+      "John": [
+        2,
+        2
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/3/38/Marriage_at_Cana_engraving_by_Gustave_Dor%C3%A9.jpg"
+  },
+  {
+    "id": "illus_dore_dorebiblesermononthe",
+    "kind": "scene",
+    "title": {
+      "en": "Sermon on the Mount (Doré)",
+      "zh-Hans": "登山宝训 (多雷)",
+      "zh-Hant": "登山寶訓 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Sermon on the Mount (Matthew 5–7).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——登山宝训。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——登山寶訓。"
+    },
+    "books": {
+      "Matthew": [
+        5,
+        7
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b5/Dore_Bible_Sermon_on_the_Mount.jpg/1280px-Dore_Bible_Sermon_on_the_Mount.jpg"
+  },
+  {
+    "id": "illus_dore_jesuswalksontheseajp",
+    "kind": "scene",
+    "title": {
+      "en": "Jesus Walks on the Sea (Doré)",
+      "zh-Hans": "耶稣行在水面上 (多雷)",
+      "zh-Hant": "耶穌行在水面上 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Jesus Walks on the Sea (Matthew 14).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——耶稣行在水面上。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——耶穌行在水面上。"
+    },
+    "books": {
+      "Matthew": [
+        14,
+        14
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/4/48/Jesus_walks_on_the_sea.jpg"
+  },
+  {
+    "id": "illus_dore_gustavedorejesusrais",
+    "kind": "scene",
+    "title": {
+      "en": "Raising Jairus's Daughter (Doré)",
+      "zh-Hans": "使睚鲁女儿复活 (多雷)",
+      "zh-Hant": "使睚魯女兒復活 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Raising Jairus's Daughter (Mark 5).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——使睚鲁女儿复活。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——使睚魯女兒復活。"
+    },
+    "books": {
+      "Mark": [
+        5,
+        5
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/9/91/Gustave_Dore_-_Jesus_raises_the_daughter_of_Jairus_from_the_dead.jpg"
+  },
+  {
+    "id": "illus_dore_gustavedorejesusride",
+    "kind": "scene",
+    "title": {
+      "en": "Triumphal Entry (Doré)",
+      "zh-Hans": "凯旋入城 (多雷)",
+      "zh-Hant": "凱旋入城 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Triumphal Entry (Matthew 21).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——凯旋入城。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——凱旋入城。"
+    },
+    "books": {
+      "Matthew": [
+        21,
+        21
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/6/67/Gustave_Dore_-_Jesus_rides_into_Jerusalem_on_a_donkey_on_Palm_Sunday.jpg"
+  },
+  {
+    "id": "illus_dore_gustavedorejesustalk",
+    "kind": "scene",
+    "title": {
+      "en": "The Tribute Money (Doré)",
+      "zh-Hans": "论纳税银 (多雷)",
+      "zh-Hant": "論納稅銀 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — The Tribute Money (Matthew 22).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——论纳税银。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——論納稅銀。"
+    },
+    "books": {
+      "Matthew": [
+        22,
+        22
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/7/76/Gustave_Dore_-_Jesus_talks_of_the_tribute_money.jpg"
+  },
+  {
+    "id": "illus_dore_gustavedorethetransf",
+    "kind": "scene",
+    "title": {
+      "en": "The Transfiguration (Doré)",
+      "zh-Hans": "登山变像 (多雷)",
+      "zh-Hant": "登山變像 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — The Transfiguration (Matthew 17).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——登山变像。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——登山變像。"
+    },
+    "books": {
+      "Matthew": [
+        17,
+        17
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/2/22/Gustave_Dore_-_The_Transfiguration.jpg"
+  },
+  {
+    "id": "illus_dore_jesusandthedisciples",
+    "kind": "scene",
+    "title": {
+      "en": "Last Supper (Doré)",
+      "zh-Hans": "最后的晚餐 (多雷)",
+      "zh-Hant": "最後的晚餐 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Last Supper (Matthew 26).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——最后的晚餐。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——最後的晚餐。"
+    },
+    "books": {
+      "Matthew": [
+        26,
+        26
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/a/a4/Jesus_and_the_disciples_at_the_Last_Supper.jpg"
+  },
+  {
+    "id": "illus_dore_gustavedorejudasbetr",
+    "kind": "scene",
+    "title": {
+      "en": "The Judas Kiss (Doré)",
+      "zh-Hans": "犹大之吻 (多雷)",
+      "zh-Hant": "猶大之吻 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — The Judas Kiss (Matthew 26).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——犹大之吻。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——猶大之吻。"
+    },
+    "books": {
+      "Matthew": [
+        26,
+        26
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/5/52/Gustave_Dore_-_Judas_betrays_Jesus_with_a_kiss.jpg"
+  },
+  {
+    "id": "illus_dore_dorejesusprayinginth",
+    "kind": "scene",
+    "title": {
+      "en": "Praying in Gethsemane (Doré)",
+      "zh-Hans": "客西马尼祷告 (多雷)",
+      "zh-Hant": "客西馬尼禱告 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Praying in Gethsemane (Matthew 26).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——客西马尼祷告。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——客西馬尼禱告。"
+    },
+    "books": {
+      "Matthew": [
+        26,
+        26
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/b/b2/DoreJesusPrayingintheGarden.jpg"
+  },
+  {
+    "id": "illus_dore_gustavedorécrucifixi",
+    "kind": "scene",
+    "title": {
+      "en": "The Crucifixion (Doré)",
+      "zh-Hans": "被钉十字架 (多雷)",
+      "zh-Hant": "被釘十字架 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — The Crucifixion (Matthew 27).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——被钉十字架。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——被釘十字架。"
+    },
+    "books": {
+      "Matthew": [
+        27,
+        27
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d/Gustave_Dor%C3%A9_-_Crucifixion_of_Jesus.jpg/1280px-Gustave_Dor%C3%A9_-_Crucifixion_of_Jesus.jpg"
+  },
+  {
+    "id": "illus_dore_dorethedeadchristjpg",
+    "kind": "scene",
+    "title": {
+      "en": "The Dead Christ (Doré)",
+      "zh-Hans": "基督的死 (多雷)",
+      "zh-Hant": "基督的死 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — The Dead Christ (Matthew 27).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——基督的死。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——基督的死。"
+    },
+    "books": {
+      "Matthew": [
+        27,
+        27
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/2/2c/DoreTheDeadchrist.jpg"
+  },
+  {
+    "id": "illus_dore_gustavedorelazarusan",
+    "kind": "scene",
+    "title": {
+      "en": "Lazarus and the Rich Man (Doré)",
+      "zh-Hans": "财主与拉撒路 (多雷)",
+      "zh-Hant": "財主與拉撒路 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Lazarus and the Rich Man (Luke 16).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——财主与拉撒路。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——財主與拉撒路。"
+    },
+    "books": {
+      "Luke": [
+        16,
+        16
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/5/59/Gustave_Dore_Lazarus_and_the_Rich_Man.jpg"
+  },
+  {
+    "id": "illus_dore_gustavedoretheprodig",
+    "kind": "scene",
+    "title": {
+      "en": "Return of the Prodigal Son (Doré)",
+      "zh-Hans": "浪子回头 (多雷)",
+      "zh-Hant": "浪子回頭 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Return of the Prodigal Son (Luke 15).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——浪子回头。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——浪子回頭。"
+    },
+    "books": {
+      "Luke": [
+        15,
+        15
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/6/67/Gustave_Dore_-_The_prodigal_son_decides_to_return_to_his_father.jpg"
+  },
+  {
+    "id": "illus_dore_gustadoretheascensio",
+    "kind": "scene",
+    "title": {
+      "en": "The Ascension (Doré)",
+      "zh-Hans": "升天 (多雷)",
+      "zh-Hant": "升天 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — The Ascension (Acts 1).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——升天。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——升天。"
+    },
+    "books": {
+      "Acts": [
+        1,
+        1
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/2/25/Gusta_Dore_-_The_Ascension.jpg"
+  },
+  {
+    "id": "illus_dore_thedeathofstephenbyg",
+    "kind": "scene",
+    "title": {
+      "en": "Death of Stephen (Doré)",
+      "zh-Hans": "司提反殉道 (多雷)",
+      "zh-Hant": "司提反殉道 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Death of Stephen (Acts 7).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——司提反殉道。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——司提反殉道。"
+    },
+    "books": {
+      "Acts": [
+        7,
+        7
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/8/82/The_Death_of_Stephen_by_Gustave_Dor%C3%A9.jpg"
+  },
+  {
+    "id": "illus_dore_pauladdressesthecrow",
+    "kind": "scene",
+    "title": {
+      "en": "Paul Addresses the Crowd (Doré)",
+      "zh-Hans": "保罗向群众讲话 (多雷)",
+      "zh-Hant": "保羅向群眾講話 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Paul Addresses the Crowd (Acts 22).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——保罗向群众讲话。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——保羅向群眾講話。"
+    },
+    "books": {
+      "Acts": [
+        22,
+        22
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/9/93/Paul_Addresses_the_Crowd_After_His_Arrest_by_Gustave_Dor%C3%A9.jpg"
+  },
+  {
+    "id": "illus_dore_gustavedoredeathonth",
+    "kind": "scene",
+    "title": {
+      "en": "Death on a Pale Horse (Doré)",
+      "zh-Hans": "骑灰马的死 (多雷)",
+      "zh-Hant": "騎灰馬的死 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Death on a Pale Horse (Revelation 6).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——骑灰马的死。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——騎灰馬的死。"
+    },
+    "books": {
+      "Revelation": [
+        6,
+        6
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/67/Gustave_Dore_-_Death_on_the_Pale_Horse.png/1280px-Gustave_Dore_-_Death_on_the_Pale_Horse.png"
+  },
+  {
+    "id": "illus_dore_dorestpaulpreachingt",
+    "kind": "scene",
+    "title": {
+      "en": "Paul Preaches to Thessalonians (Doré)",
+      "zh-Hans": "保罗向帖撒罗尼迦人传道 (多雷)",
+      "zh-Hant": "保羅向帖撒羅尼迦人傳道 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Paul Preaches to Thessalonians (1 Thessalonians 1).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——保罗向帖撒罗尼迦人传道。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——保羅向帖撒羅尼迦人傳道。"
+    },
+    "books": {
+      "1 Thessalonians": [
+        1,
+        1
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/d/d7/DoreStPaulPreachingtotheThessalonians.jpg"
+  },
+  {
+    "id": "illus_dore_gustavedorejesusconv",
+    "kind": "scene",
+    "title": {
+      "en": "Jesus Among the Teachers (Doré)",
+      "zh-Hans": "耶稣与圣殿学者 (多雷)",
+      "zh-Hant": "耶穌與聖殿學者 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Jesus Among the Teachers (Luke 2).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——耶稣与圣殿学者。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——耶穌與聖殿學者。"
+    },
+    "books": {
+      "Luke": [
+        2,
+        2
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/8/8d/Gustave_Dore_-_Jesus_converses_with_the_learned_ones_in_the_Temple.jpg"
+  },
+  {
+    "id": "illus_dore_dorejesusseagalileej",
+    "kind": "scene",
+    "title": {
+      "en": "Jesus by the Sea of Galilee (Doré)",
+      "zh-Hans": "耶稣在加利利海边 (多雷)",
+      "zh-Hant": "耶穌在加利利海邊 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Jesus by the Sea of Galilee (Matthew 4).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——耶稣在加利利海边。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——耶穌在加利利海邊。"
+    },
+    "books": {
+      "Matthew": [
+        4,
+        4
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/8/81/DoreJesusSeaGalilee.jpg"
+  },
+  {
+    "id": "illus_dore_dorejohnthebaptistpr",
+    "kind": "scene",
+    "title": {
+      "en": "John the Baptist Preaching (Doré)",
+      "zh-Hans": "施洗约翰讲道 (多雷)",
+      "zh-Hant": "施洗約翰講道 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — John the Baptist Preaching (Matthew 3).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——施洗约翰讲道。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——施洗約翰講道。"
+    },
+    "books": {
+      "Matthew": [
+        3,
+        3
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/0/0f/DoreJohntheBaptistPreachingintheWilderness.jpg"
+  },
+  {
+    "id": "illus_dore_jesusfeedingmultitud",
+    "kind": "scene",
+    "title": {
+      "en": "Feeding the Multitude (Doré)",
+      "zh-Hans": "喂饱众人 (多雷)",
+      "zh-Hant": "餵飽眾人 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Feeding the Multitude (Matthew 14).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——喂饱众人。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——餵飽眾人。"
+    },
+    "books": {
+      "Matthew": [
+        14,
+        14
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/c/c2/JesusFeedingMultitude.jpg"
+  },
+  {
+    "id": "illus_dore_doreadultressjpg",
+    "kind": "scene",
+    "title": {
+      "en": "Jesus and the Adulteress (Doré)",
+      "zh-Hans": "耶稣与犯奸淫的妇人 (多雷)",
+      "zh-Hant": "耶穌與犯姦淫的婦人 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Jesus and the Adulteress (John 8).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——耶稣与犯奸淫的妇人。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——耶穌與犯姦淫的婦人。"
+    },
+    "books": {
+      "John": [
+        8,
+        8
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/1/12/Dore_adultress.jpg"
+  },
+  {
+    "id": "illus_dore_jesuscalmingthetempe",
+    "kind": "scene",
+    "title": {
+      "en": "Calming the Tempest (Doré)",
+      "zh-Hans": "平静风浪 (多雷)",
+      "zh-Hant": "平靜風浪 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — Calming the Tempest (Mark 4).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——平静风浪。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——平靜風浪。"
+    },
+    "books": {
+      "Mark": [
+        4,
+        4
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/c/c7/JesusCalmingtheTempestDore.jpg"
+  },
+  {
+    "id": "illus_dore_thecrownofthornsdore",
+    "kind": "scene",
+    "title": {
+      "en": "The Crown of Thorns (Doré)",
+      "zh-Hans": "荆棘冠冕 (多雷)",
+      "zh-Hant": "荊棘冠冕 (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — The Crown of Thorns (Matthew 27).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——荆棘冠冕。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——荊棘冠冕。"
+    },
+    "books": {
+      "Matthew": [
+        27,
+        27
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/3/36/TheCrownofThornsDore.jpg"
+  },
+  {
+    "id": "illus_dore_gustavedorétheholybi",
+    "kind": "scene",
+    "title": {
+      "en": "The Judas Kiss (alt) (Doré)",
+      "zh-Hans": "犹大之吻(另) (多雷)",
+      "zh-Hant": "猶大之吻(另) (多雷)"
+    },
+    "description": {
+      "en": "Gustave Doré, 1866 — The Judas Kiss (alt) (Matthew 26).",
+      "zh-Hans": "古斯塔夫·多雷,1866 年——犹大之吻(另)。",
+      "zh-Hant": "古斯塔夫·多雷,1866 年——猶大之吻(另)。"
+    },
+    "books": {
+      "Matthew": [
+        26,
+        26
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c7/Gustave_Dor%C3%A9_-_The_Holy_Bible_-_Plate_CXLI%2C_The_Judas_Kiss.jpg/1280px-Gustave_Dor%C3%A9_-_The_Holy_Bible_-_Plate_CXLI%2C_The_Judas_Kiss.jpg"
+  },
+  {
+    "id": "illus_extra_pieterbruegeltheelde",
+    "kind": "scene",
+    "title": {
+      "en": "Tower of Babel (Bruegel)",
+      "zh-Hans": "巴别塔(老布鲁盖尔)",
+      "zh-Hant": "巴別塔(老布魯蓋爾)"
+    },
+    "description": {
+      "en": "Public-domain artwork — Tower of Babel (Bruegel) (Genesis 11).",
+      "zh-Hans": "公共领域艺术品——巴别塔(老布鲁盖尔)。",
+      "zh-Hant": "公共領域藝術品——巴別塔(老布魯蓋爾)。"
+    },
+    "books": {
+      "Genesis": [
+        11,
+        11
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fc/Pieter_Bruegel_the_Elder_-_The_Tower_of_Babel_%28Vienna%29_-_Google_Art_Project_-_edited.jpg/1280px-Pieter_Bruegel_the_Elder_-_The_Tower_of_Babel_%28Vienna%29_-_Google_Art_Project_-_edited.jpg"
+  },
+  {
+    "id": "illus_extra_rembrandtbelsazarjpg",
+    "kind": "scene",
+    "title": {
+      "en": "Belshazzar's Feast (Rembrandt)",
+      "zh-Hans": "伯沙撒的筵席(伦勃朗)",
+      "zh-Hant": "伯沙撒的筵席(倫勃朗)"
+    },
+    "description": {
+      "en": "Public-domain artwork — Belshazzar's Feast (Rembrandt) (Daniel 5).",
+      "zh-Hans": "公共领域艺术品——伯沙撒的筵席(伦勃朗)。",
+      "zh-Hant": "公共領域藝術品——伯沙撒的筵席(倫勃朗)。"
+    },
+    "books": {
+      "Daniel": [
+        5,
+        5
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0e/Rembrandt-Belsazar.jpg/1280px-Rembrandt-Belsazar.jpg"
   }
 ]

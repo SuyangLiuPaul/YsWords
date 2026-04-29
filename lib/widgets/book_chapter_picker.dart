@@ -86,9 +86,13 @@ class _BookChapterPickerState extends State<BookChapterPicker> {
                   : !_isOldTestament(b.title))
               .toList();
           final idx = filtered.indexWhere((b) => b.title == bookEntry.title);
-          if (idx != -1) {
+          // Only scroll when the list view is actually rendered.
+          // In grid mode the AutoScrollController is unattached.
+          final currentSettings =
+              Provider.of<AppSettings>(context, listen: false);
+          if (idx != -1 && currentSettings.booksViewMode != 'grid') {
             Future.microtask(() {
-              if (mounted) {
+              if (mounted && _autoScrollController.hasClients) {
                 _autoScrollController.scrollToIndex(
                   idx,
                   preferPosition: AutoScrollPosition.begin,
@@ -139,6 +143,12 @@ class _BookChapterPickerState extends State<BookChapterPicker> {
                           setState(() {
                             _gridSelectedBook = null;
                             expandStatus.updateAll((key, _) => false);
+                            // Re-expand the current book so list view
+                            // doesn't appear empty after switching from grid.
+                            if (target == 'list' &&
+                                widget.currentBook.isNotEmpty) {
+                              expandStatus[widget.currentBook] = true;
+                            }
                           });
                         },
                         borderRadius: BorderRadius.circular(14),
@@ -162,14 +172,20 @@ class _BookChapterPickerState extends State<BookChapterPicker> {
                         ],
                       );
 
-                      final otLabel = isNarrow && settings.locale == 'en'
-                          ? 'OT'
-                          : (uiStrings['oldTestament']?[settings.locale] ??
-                              'Old Testament');
-                      final ntLabel = isNarrow && settings.locale == 'en'
-                          ? 'NT'
-                          : (uiStrings['newTestament']?[settings.locale] ??
-                              'New Testament');
+                      // Always use the full label — Hebrew Bible /
+                      // Greek Bible / 希伯来圣经 / 希腊圣经. The button
+                      // text uses FittedBox(scaleDown) (see
+                      // _testamentButton) so the label is shrunk to
+                      // fit when the button is narrow rather than
+                      // truncated with an invisible "…" that made
+                      // "希伯来圣经" look like "希伯来圣" and
+                      // "Hebrew Bible" look like "Hebrew".
+                      final otLabel =
+                          uiStrings['oldTestament']?[settings.locale] ??
+                              'Hebrew Bible';
+                      final ntLabel =
+                          uiStrings['newTestament']?[settings.locale] ??
+                              'Greek Bible';
 
                       if (isNarrow) {
                         return Column(
@@ -224,11 +240,10 @@ class _BookChapterPickerState extends State<BookChapterPicker> {
                                         context: context,
                                         settings: settings,
                                         selected: showOldTestament,
-                                        label: settings.locale == 'en'
-                                            ? 'OT'
-                                            : (uiStrings['oldTestament']
+                                        label:
+                                            uiStrings['oldTestament']
                                                     ?[settings.locale] ??
-                                                'Old Testament'),
+                                                'Hebrew Bible',
                                         onPressed: () =>
                                             _setTestament(settings, true),
                                       ),
@@ -239,11 +254,10 @@ class _BookChapterPickerState extends State<BookChapterPicker> {
                                         context: context,
                                         settings: settings,
                                         selected: !showOldTestament,
-                                        label: settings.locale == 'en'
-                                            ? 'NT'
-                                            : (uiStrings['newTestament']
+                                        label:
+                                            uiStrings['newTestament']
                                                     ?[settings.locale] ??
-                                                'New Testament'),
+                                                'Greek Bible',
                                         onPressed: () =>
                                             _setTestament(settings, false),
                                       ),
@@ -302,18 +316,27 @@ class _BookChapterPickerState extends State<BookChapterPicker> {
                 : scheme.outlineVariant.withValues(alpha: 0.45),
           ),
         ),
-        padding: EdgeInsets.symmetric(horizontal: 16 * settings.menuScale, vertical: 10 * settings.menuScale),
+        padding: EdgeInsets.symmetric(
+            horizontal: 14 * settings.menuScale,
+            vertical: 10 * settings.menuScale),
       ),
-      child: Text(
+      // FittedBox(scaleDown) shrinks the label proportionally if the
+      // button is too narrow for the natural-size text, instead of
+      // truncating with a near-invisible ellipsis that swallowed the
+      // last character ("Hebrew Bible" → "Hebrew", "希伯来圣经" → "希伯来圣").
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        child: Text(
         label,
         maxLines: 1,
-        overflow: TextOverflow.ellipsis,
+        softWrap: false,
         textAlign: TextAlign.center,
         style: TextStyle(
           fontSize: settings.fontSize.clamp(13.0, 17.0).toDouble(),
           fontFamily: settings.fontFamily,
           fontWeight: FontWeight.w700,
         ),
+      ),
       ),
     );
   }
@@ -324,7 +347,12 @@ class _BookChapterPickerState extends State<BookChapterPicker> {
       expandStatus.updateAll((key, _) => false);
       _gridSelectedBook = null;
     });
-    if (settings.booksViewMode != 'grid') {
+    // Only scroll if the controller is actually attached to a ListView.
+    // In grid mode, or during transitions before the new list mounts,
+    // the controller has no positions and scrollToIndex will throw a
+    // null check error inside the scroll_to_index package.
+    if (settings.booksViewMode != 'grid' &&
+        _autoScrollController.hasClients) {
       _autoScrollController.scrollToIndex(
         0,
         preferPosition: AutoScrollPosition.begin,
@@ -369,6 +397,7 @@ class _BookChapterPickerState extends State<BookChapterPicker> {
                   style: TextStyle(
                       fontSize: settings.fontSize,
                       fontFamily: settings.fontFamily,
+                      decoration: TextDecoration.none,
                       color: expandStatus[book.title] == true
                           ? scheme.primary
                           : scheme.onSurface),

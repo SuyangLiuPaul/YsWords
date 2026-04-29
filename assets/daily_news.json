@@ -1,0 +1,1225 @@
+{
+  "generatedAt": "2026-04-21T06:41:46.986Z",
+  "editionDate": "2026-04-21",
+  "sources": [
+    {
+      "name": "The Guardian World",
+      "url": "https://www.theguardian.com/world/rss",
+      "category": "world",
+      "categoryLabel": {
+        "en": "World",
+        "zh": "全球"
+      }
+    },
+    {
+      "name": "BBC News World",
+      "url": "https://feeds.bbci.co.uk/news/world/rss.xml",
+      "category": "world",
+      "categoryLabel": {
+        "en": "World",
+        "zh": "全球"
+      }
+    },
+    {
+      "name": "SBS News World",
+      "url": "https://www.sbs.com.au/news/topic/world/feed",
+      "category": "world",
+      "categoryLabel": {
+        "en": "World",
+        "zh": "全球"
+      }
+    },
+    {
+      "name": "DW World",
+      "url": "https://rss.dw.com/rdf/rss-en-world",
+      "category": "world",
+      "categoryLabel": {
+        "en": "World",
+        "zh": "全球"
+      }
+    },
+    {
+      "name": "The Guardian China",
+      "url": "https://www.theguardian.com/world/china/rss",
+      "category": "china",
+      "categoryLabel": {
+        "en": "China",
+        "zh": "中国"
+      }
+    },
+    {
+      "name": "BBC News China Focus",
+      "url": "https://feeds.bbci.co.uk/news/world/rss.xml",
+      "category": "china",
+      "categoryLabel": {
+        "en": "China",
+        "zh": "中国"
+      }
+    },
+    {
+      "name": "SBS News China Focus",
+      "url": "https://www.sbs.com.au/news/topic/world/feed",
+      "category": "china",
+      "categoryLabel": {
+        "en": "China",
+        "zh": "中国"
+      }
+    },
+    {
+      "name": "DW Asia China Focus",
+      "url": "https://rss.dw.com/rdf/rss-en-asia",
+      "category": "china",
+      "categoryLabel": {
+        "en": "China",
+        "zh": "中国"
+      }
+    },
+    {
+      "name": "The Guardian Australia",
+      "url": "https://www.theguardian.com/australia-news/rss",
+      "category": "australia",
+      "categoryLabel": {
+        "en": "Australia",
+        "zh": "澳洲"
+      }
+    },
+    {
+      "name": "SBS News Australia",
+      "url": "https://www.sbs.com.au/news/topic/australia/feed",
+      "category": "australia",
+      "categoryLabel": {
+        "en": "Australia",
+        "zh": "澳洲"
+      }
+    }
+  ],
+  "sections": {
+    "world": {
+      "id": "world",
+      "title": {
+        "en": "World Desk",
+        "zh": "全球焦点"
+      },
+      "strap": {
+        "en": "A fast view of global affairs, conflict, diplomacy, and human need.",
+        "zh": "快速掌握国际局势、冲突、外交与人类处境。"
+      },
+      "sourceNotes": [
+        "The Guardian World",
+        "SBS News World",
+        "BBC News World",
+        "DW World"
+      ],
+      "items": [
+        {
+          "id": "www-theguardian-com-australia-news-live-2026-apr-21-anthony-albanese-fue",
+          "section": "world",
+          "source": "The Guardian World",
+          "sourceUrl": "https://www.theguardian.com/world/rss",
+          "link": "https://www.theguardian.com/australia-news/live/2026/apr/21/anthony-albanese-fuel-crisis-jim-chalmers-budget-cost-of-living-supermarket-discount-rebel-wilson-court-hearing-ntwnfb",
+          "image": "https://i.guim.co.uk/img/media/033b62ce64b8a8c8bd8fa175db5926a51e381950/1040_0_4313_3450/master/4313.jpg?width=1200&height=630&quality=85&auto=format&fit=crop&precrop=40:21,offset-x50,offset-y0&overlay-align=bottom%2Cleft&overlay-width=100p&overlay-base64=L2ltZy9zdGF0aWMvb3ZlcmxheXMvdGctbGl2ZS5wbmc&enable=upscale&s=01ebc2a5bf0d9b61854bdd2323999f5a",
+          "publishedAt": "2026-04-21T06:31:13.000Z",
+          "title": {
+            "en": "Australia news live: Angus Taylor says 25% gas levy would shut down industry; NSW Treasury employee charged over 5,600 document data breach",
+            "zh": "澳大利亚新闻直播：安格斯·泰勒称 25% 的天然气税将导致工业关闭；新南威尔士州财政部员工因 5,600 多项文件数据泄露被指控"
+          },
+          "summary": {
+            "en": "Follow today’s news live Get our breaking news email, free app or daily news podcast NSW commission proposes heat-safe rentals to help tackle extreme temperature Heat-safe rentals and tougher workplace safety rules for outdoor workers on scorching hot days have been proposed by...",
+            "zh": "这是一则来自全球栏目的新闻，重点涉及真理、分辨与诚实。如需完整细节，请阅读英文原始报道。"
+          },
+          "reflection": {
+            "en": "This story draws attention to truth, discernment, and honest speech. Philippians 4:8 reminds us to meet sharp headlines with discernment and truthful speech, asking how faithful people can respond with wisdom instead of noise.",
+            "zh": "这则新闻让人想到真理、分辨与诚实。Philippians 4:8提醒我们，在快速变化的新闻里，仍要以分辨与诚实表达来回应，并学习用祷告与分辨代替情绪化判断。"
+          },
+          "verse": {
+            "reference": "Philippians 4:8",
+            "textEn": "Whatever is true, whatever is noble, whatever is right ... think about such things.",
+            "textZh": "凡是真实的、可敬的、公义的......这些事你们都要思念。",
+            "themeEn": "Discernment",
+            "themeZh": "分辨"
+          },
+          "translationState": "fallback"
+        },
+        {
+          "id": "www-theguardian-com-world-2026-apr-20-jd-vance-to-lead-us-delegation-in-",
+          "section": "world",
+          "source": "The Guardian World",
+          "sourceUrl": "https://www.theguardian.com/world/rss",
+          "link": "https://www.theguardian.com/world/2026/apr/20/jd-vance-to-lead-us-delegation-in-pakistan-if-iran-agrees-to-talks",
+          "image": "https://i.guim.co.uk/img/media/313ce6ed16a7422d828747ad4573903f6bc4ed5d/368_0_3686_2948/master/3686.jpg?width=1200&height=630&quality=85&auto=format&fit=crop&precrop=40:21,offset-x50,offset-y0&overlay-align=bottom%2Cleft&overlay-width=100p&overlay-base64=L2ltZy9zdGF0aWMvb3ZlcmxheXMvdGctZGVmYXVsdC5wbmc&enable=upscale&s=21c21bd713f240a56a5394797b2859cc",
+          "publishedAt": "2026-04-21T06:30:56.000Z",
+          "title": {
+            "en": "JD Vance to lead US delegation in Pakistan if Iran agrees to talks",
+            "zh": "如果伊朗同意谈判，万斯将率领美国代表团前往巴基斯坦"
+          },
+          "summary": {
+            "en": "US vice-president to travel to Islamabad with Steve Witkoff and Jared Kushner as deadline for current ceasefire looms Middle east crisis – live updates Pakistan seeks to raise its global standing in push for Middle East peace JD Vance is expected to fly to Islamabad at the head...",
+            "zh": "这是一则来自全球栏目的新闻，重点涉及和平与克制。如需完整细节，请阅读英文原始报道。"
+          },
+          "reflection": {
+            "en": "This story draws attention to peace-making and restraint. Matthew 5:9 reminds us to meet sharp headlines with mercy, truth, and restraint, asking how faithful people can respond with wisdom instead of noise.",
+            "zh": "这则新闻让人想到和平与克制。Matthew 5:9提醒我们，在快速变化的新闻里，仍要以怜悯、真实与节制来回应，并学习用祷告与分辨代替情绪化判断。"
+          },
+          "verse": {
+            "reference": "Matthew 5:9",
+            "textEn": "Blessed are the peacemakers, for they will be called children of God.",
+            "textZh": "使人和睦的人有福了，因为他们必称为神的儿子。",
+            "themeEn": "Peace",
+            "themeZh": "和平"
+          },
+          "translationState": "fallback"
+        },
+        {
+          "id": "www-theguardian-com-world-live-2026-apr-21-iran-war-live-news-updates-tr",
+          "section": "world",
+          "source": "The Guardian World",
+          "sourceUrl": "https://www.theguardian.com/world/rss",
+          "link": "https://www.theguardian.com/world/live/2026/apr/21/iran-war-live-news-updates-trump-us-hormuz-oil-middle-east-talks",
+          "image": "https://i.guim.co.uk/img/media/bd70c07f10e081dbf1b5e7bc4f56fccad481ddc6/515_0_5148_4118/master/5148.jpg?width=1200&height=630&quality=85&auto=format&fit=crop&precrop=40:21,offset-x50,offset-y0&overlay-align=bottom%2Cleft&overlay-width=100p&overlay-base64=L2ltZy9zdGF0aWMvb3ZlcmxheXMvdGctbGl2ZS5wbmc&enable=upscale&s=44ceba43016631fc5d2a95da60629814",
+          "publishedAt": "2026-04-21T06:27:08.000Z",
+          "title": {
+            "en": "Middle East crisis live: Iran weighs Pakistan talks with US, and claims it has ‘new cards for battlefield’",
+            "zh": "中东危机直播：伊朗权衡巴基斯坦与美国的谈判，并声称拥有“战场新牌”"
+          },
+          "summary": {
+            "en": "Iranian official stresses no decision made on taking part, as US vice-president JD Vance is set to travel to Islamabad for negotiations JD Vance to lead US delegation in Pakistan if Iran agrees to talks The UN security council has condemned the killing of a French peacekeeper...",
+            "zh": "这是一则来自全球栏目的新闻，重点涉及和平与克制。如需完整细节，请阅读英文原始报道。"
+          },
+          "reflection": {
+            "en": "This story draws attention to peace-making and restraint. Matthew 5:9 reminds us to meet sharp headlines with mercy, truth, and restraint, asking how faithful people can respond with wisdom instead of noise.",
+            "zh": "这则新闻让人想到和平与克制。Matthew 5:9提醒我们，在快速变化的新闻里，仍要以怜悯、真实与节制来回应，并学习用祷告与分辨代替情绪化判断。"
+          },
+          "verse": {
+            "reference": "Matthew 5:9",
+            "textEn": "Blessed are the peacemakers, for they will be called children of God.",
+            "textZh": "使人和睦的人有福了，因为他们必称为神的儿子。",
+            "themeEn": "Peace",
+            "themeZh": "和平"
+          },
+          "translationState": "fallback"
+        },
+        {
+          "id": "www-theguardian-com-business-2026-apr-21-uk-enemployment-rate-pay-growth",
+          "section": "world",
+          "source": "The Guardian World",
+          "sourceUrl": "https://www.theguardian.com/world/rss",
+          "link": "https://www.theguardian.com/business/2026/apr/21/uk-enemployment-rate-pay-growth-ons-interest-rates",
+          "image": "https://i.guim.co.uk/img/media/b25af67520744cd8c091b98467fe655b0ae92dba/773_0_5148_4119/master/5148.jpg?width=1200&height=630&quality=85&auto=format&fit=crop&precrop=40:21,offset-x50,offset-y0&overlay-align=bottom%2Cleft&overlay-width=100p&overlay-base64=L2ltZy9zdGF0aWMvb3ZlcmxheXMvdGctZGVmYXVsdC5wbmc&enable=upscale&s=9c55dee6543d9a2585ac1aebf98bffaf",
+          "publishedAt": "2026-04-21T06:21:14.000Z",
+          "title": {
+            "en": "UK unemployment shows surprise fall to 4.9% as pay growth drops to lowest in five years",
+            "zh": "英国失业率意外下降至 4.9%，薪资增速降至五年来最低"
+          },
+          "summary": {
+            "en": "ONS data for three months to February is not expected to alter Bank of England’s decision on interest rates Unemployment in the UK unexpectedly fell in the three months to February, according to official figures – but the fallout from the conflict in the Middle East is expected...",
+            "zh": "这是一则来自全球栏目的新闻，重点涉及管家责任、供应与公共福祉。如需完整细节，请阅读英文原始报道。"
+          },
+          "reflection": {
+            "en": "This story draws attention to stewardship, provision, and the common good. 1 Peter 4:10 reminds us to meet sharp headlines with stewardship that serves neighbours, asking how faithful people can respond with wisdom instead of noise.",
+            "zh": "这则新闻让人想到管家责任、供应与公共福祉。1 Peter 4:10提醒我们，在快速变化的新闻里，仍要以服事邻舍的好管家心态来回应，并学习用祷告与分辨代替情绪化判断。"
+          },
+          "verse": {
+            "reference": "1 Peter 4:10",
+            "textEn": "Each of you should use whatever gift you have received to serve others, as faithful stewards of God's grace.",
+            "textZh": "各人要照所得的恩赐彼此服事，作神百般恩赐的好管家。",
+            "themeEn": "Stewardship",
+            "themeZh": "管家"
+          },
+          "translationState": "fallback"
+        },
+        {
+          "id": "www-sbs-com-au-news-article-peter-mandelson-keir-starmer-crisis-epstein-",
+          "section": "world",
+          "source": "SBS News World",
+          "sourceUrl": "https://www.sbs.com.au/news/topic/world/feed",
+          "link": "https://www.sbs.com.au/news/article/peter-mandelson-keir-starmer-crisis-epstein/wfsgn89lx",
+          "image": "https://assets.sbs.com.au/dims4/default/bbf7c31/2147483647/strip/false/crop/5375x2470+0+557/resize/1234x567!/format/jpeg/quality/90/?url=https%3A%2F%2Fsbs-au-brightspot.s3.ap-southeast-2.amazonaws.com%2Ffe%2F18%2F775b86354e44a18d7106912aedd2%2Fgettyimages-2271696907.jpg",
+          "publishedAt": "2026-04-21T06:06:54.000Z",
+          "title": {
+            "en": "Explained: The Peter Mandelson saga and the crisis facing UK Prime Minister Keir Starmer",
+            "zh": "解释：彼得·曼德尔森传奇和英国首相凯尔·斯塔默面临的危机"
+          },
+          "summary": {
+            "en": "Keir Starmer was praised for appointing Peter Mandelson as ambassador to the US — a decision that's put his political career at risk.",
+            "zh": "这是一则来自全球栏目的新闻，重点涉及领导、智慧与公共责任。如需完整细节，请阅读英文原始报道。"
+          },
+          "reflection": {
+            "en": "This story draws attention to leadership, wisdom, and public responsibility. Proverbs 11:14 reminds us to meet sharp headlines with wisdom, integrity, and service, asking how faithful people can respond with wisdom instead of noise.",
+            "zh": "这则新闻让人想到领导、智慧与公共责任。Proverbs 11:14提醒我们，在快速变化的新闻里，仍要以智慧、正直与服事来回应，并学习用祷告与分辨代替情绪化判断。"
+          },
+          "verse": {
+            "reference": "Proverbs 11:14",
+            "textEn": "For lack of guidance a nation falls, but victory is won through many advisers.",
+            "textZh": "无智谋，民就败落；谋士多，人便安居。",
+            "themeEn": "Leadership",
+            "themeZh": "领导"
+          },
+          "translationState": "fallback"
+        },
+        {
+          "id": "www-bbc-com-news-articles-c1kr19lry18o-at-medium-rss-at-campaign-rss",
+          "section": "world",
+          "source": "BBC News World",
+          "sourceUrl": "https://feeds.bbci.co.uk/news/world/rss.xml",
+          "link": "https://www.bbc.com/news/articles/c1kr19lry18o?at_medium=RSS&at_campaign=rss",
+          "image": "https://ichef.bbci.co.uk/news/1024/branded_news/355a/live/1c690050-3cfa-11f1-a60f-41d0a7fcc620.jpg",
+          "publishedAt": "2026-04-21T05:57:56.000Z",
+          "title": {
+            "en": "New era for Apple as names new boss to replace Tim Cook after 15 years",
+            "zh": "苹果新时代任命新老板接替蒂姆·库克 15 年后"
+          },
+          "summary": {
+            "en": "John Ternus will take over running the technology giant as Cook steps up to become executive chairman.",
+            "zh": "这是一则来自全球栏目的新闻，重点涉及真理、分辨与诚实。如需完整细节，请阅读英文原始报道。"
+          },
+          "reflection": {
+            "en": "This story draws attention to truth, discernment, and honest speech. Philippians 4:8 reminds us to meet sharp headlines with discernment and truthful speech, asking how faithful people can respond with wisdom instead of noise.",
+            "zh": "这则新闻让人想到真理、分辨与诚实。Philippians 4:8提醒我们，在快速变化的新闻里，仍要以分辨与诚实表达来回应，并学习用祷告与分辨代替情绪化判断。"
+          },
+          "verse": {
+            "reference": "Philippians 4:8",
+            "textEn": "Whatever is true, whatever is noble, whatever is right ... think about such things.",
+            "textZh": "凡是真实的、可敬的、公义的......这些事你们都要思念。",
+            "themeEn": "Discernment",
+            "themeZh": "分辨"
+          },
+          "translationState": "fallback"
+        },
+        {
+          "id": "www-bbc-com-news-articles-crm1rg3ydkvo-at-medium-rss-at-campaign-rss",
+          "section": "world",
+          "source": "BBC News World",
+          "sourceUrl": "https://feeds.bbci.co.uk/news/world/rss.xml",
+          "link": "https://www.bbc.com/news/articles/crm1rg3ydkvo?at_medium=RSS&at_campaign=rss",
+          "image": "https://ichef.bbci.co.uk/news/1024/branded_news/917c/live/b6940d90-3cfb-11f1-879d-1b2f5c3919b8.jpg",
+          "publishedAt": "2026-04-21T03:33:05.000Z",
+          "title": {
+            "en": "Canadian killed in shooting at Mexico's ancient Teotihuacán pyramids",
+            "zh": "加拿大人在墨西哥古特奥蒂瓦坎金字塔枪击事件中丧生"
+          },
+          "summary": {
+            "en": "Several people were also injured in the incident on Monday at the popular tourist site, say Mexican officials, weeks before the country hosts the Fifa World Cup.",
+            "zh": "这是一则来自全球栏目的新闻，重点涉及和平与克制。如需完整细节，请阅读英文原始报道。"
+          },
+          "reflection": {
+            "en": "This story draws attention to peace-making and restraint. Matthew 5:9 reminds us to meet sharp headlines with mercy, truth, and restraint, asking how faithful people can respond with wisdom instead of noise.",
+            "zh": "这则新闻让人想到和平与克制。Matthew 5:9提醒我们，在快速变化的新闻里，仍要以怜悯、真实与节制来回应，并学习用祷告与分辨代替情绪化判断。"
+          },
+          "verse": {
+            "reference": "Matthew 5:9",
+            "textEn": "Blessed are the peacemakers, for they will be called children of God.",
+            "textZh": "使人和睦的人有福了，因为他们必称为神的儿子。",
+            "themeEn": "Peace",
+            "themeZh": "和平"
+          },
+          "translationState": "fallback"
+        },
+        {
+          "id": "www-dw-com-en-faa-grounds-blue-origin-s-new-glenn-after-orbital-setback-",
+          "section": "world",
+          "source": "DW World",
+          "sourceUrl": "https://rss.dw.com/rdf/rss-en-world",
+          "link": "https://www.dw.com/en/faa-grounds-blue-origin-s-new-glenn-after-orbital-setback/a-76874643?maca=en-rss-en-world-4025-rdf",
+          "image": null,
+          "publishedAt": "2026-04-21T01:52:00.000Z",
+          "title": {
+            "en": "FAA grounds Blue Origin's New Glenn after orbital setback",
+            "zh": "蓝色起源的新格伦号在轨道受挫后美国联邦航空局停飞"
+          },
+          "summary": {
+            "en": "US aviation regulators have ordered Blue Origin, a space company owned by billionaire Jeff Bezos, to investigate a malfunction in the upper stage of its New Glenn rocket.",
+            "zh": "这是一则来自全球栏目的新闻，重点涉及智慧、知识与追求真理。如需完整细节，请阅读英文原始报道。"
+          },
+          "reflection": {
+            "en": "This story draws attention to wisdom, knowledge, and the pursuit of truth. Proverbs 2:6 reminds us to meet sharp headlines with humble learning and wise application, asking how faithful people can respond with wisdom instead of noise.",
+            "zh": "这则新闻让人想到智慧、知识与追求真理。Proverbs 2:6提醒我们，在快速变化的新闻里，仍要以谦卑学习与智慧运用来回应，并学习用祷告与分辨代替情绪化判断。"
+          },
+          "verse": {
+            "reference": "Proverbs 2:6",
+            "textEn": "For Yahweh gives wisdom; from his mouth come knowledge and understanding.",
+            "textZh": "因为雅伟赐人智慧，知识和聪明都由他口而出。",
+            "themeEn": "Wisdom",
+            "themeZh": "智慧"
+          },
+          "translationState": "fallback"
+        },
+        {
+          "id": "www-bbc-com-news-articles-czd7m7d699do-at-medium-rss-at-campaign-rss",
+          "section": "world",
+          "source": "BBC News World",
+          "sourceUrl": "https://feeds.bbci.co.uk/news/world/rss.xml",
+          "link": "https://www.bbc.com/news/articles/czd7m7d699do?at_medium=RSS&at_campaign=rss",
+          "image": "https://ichef.bbci.co.uk/news/1024/branded_news/58c3/live/2410b500-3cc3-11f1-879d-1b2f5c3919b8.jpg",
+          "publishedAt": "2026-04-21T01:31:27.000Z",
+          "title": {
+            "en": "Japan on high alert for 'huge' second quake after lifting tsunami warning",
+            "zh": "日本解除海啸警报后对第二次“特大”地震保持高度警惕"
+          },
+          "summary": {
+            "en": "Japan's meteorological agency warns another, stronger earthquake may hit in the next week.",
+            "zh": "这是一则来自全球栏目的新闻，重点涉及和平与克制。如需完整细节，请阅读英文原始报道。"
+          },
+          "reflection": {
+            "en": "This story draws attention to peace-making and restraint. Matthew 5:9 reminds us to meet sharp headlines with mercy, truth, and restraint, asking how faithful people can respond with wisdom instead of noise.",
+            "zh": "这则新闻让人想到和平与克制。Matthew 5:9提醒我们，在快速变化的新闻里，仍要以怜悯、真实与节制来回应，并学习用祷告与分辨代替情绪化判断。"
+          },
+          "verse": {
+            "reference": "Matthew 5:9",
+            "textEn": "Blessed are the peacemakers, for they will be called children of God.",
+            "textZh": "使人和睦的人有福了，因为他们必称为神的儿子。",
+            "themeEn": "Peace",
+            "themeZh": "和平"
+          },
+          "translationState": "fallback"
+        },
+        {
+          "id": "www-bbc-com-news-articles-crr1v4gzkvlo-at-medium-rss-at-campaign-rss",
+          "section": "world",
+          "source": "BBC News World",
+          "sourceUrl": "https://feeds.bbci.co.uk/news/world/rss.xml",
+          "link": "https://www.bbc.com/news/articles/crr1v4gzkvlo?at_medium=RSS&at_campaign=rss",
+          "image": "https://ichef.bbci.co.uk/news/1024/branded_news/d1d8/live/755c8010-3cf0-11f1-8ca8-b5011b776a9f.jpg",
+          "publishedAt": "2026-04-21T01:05:41.000Z",
+          "title": {
+            "en": "US singer D4vd pleads not guilty to murder in death of missing teen girl",
+            "zh": "美国歌手 D4vd 对失踪少女死亡的谋杀罪不认罪"
+          },
+          "summary": {
+            "en": "Prosecutors say the singer, real name David Anthony Burke, could face life in prison due to the nature of the case, if convicted.",
+            "zh": "这是一则来自全球栏目的新闻，重点涉及公义、尊严与问责。如需完整细节，请阅读英文原始报道。"
+          },
+          "reflection": {
+            "en": "This story draws attention to justice, dignity, and accountability. Micah 6:8 reminds us to meet sharp headlines with justice tempered by mercy, asking how faithful people can respond with wisdom instead of noise.",
+            "zh": "这则新闻让人想到公义、尊严与问责。Micah 6:8提醒我们，在快速变化的新闻里，仍要以带着怜悯的公义来回应，并学习用祷告与分辨代替情绪化判断。"
+          },
+          "verse": {
+            "reference": "Micah 6:8",
+            "textEn": "What does Yahweh require of you? To act justly and to love mercy and to walk humbly with your God.",
+            "textZh": "雅伟向你所要的，无非是行公义，好怜悯，存谦卑的心与你的神同行。",
+            "themeEn": "Justice",
+            "themeZh": "公义"
+          },
+          "translationState": "fallback"
+        },
+        {
+          "id": "www-sbs-com-au-news-article-us-iran-peace-talks-could-go-ahead-if-one-ma",
+          "section": "world",
+          "source": "SBS News World",
+          "sourceUrl": "https://www.sbs.com.au/news/topic/world/feed",
+          "link": "https://www.sbs.com.au/news/article/us-iran-peace-talks-could-go-ahead-if-one-major-obstacle-is-overcome/9y2io0qth",
+          "image": "https://assets.sbs.com.au/dims4/default/cf529b3/2147483647/strip/false/crop/3711x1705+0+0/resize/1234x567!/format/jpeg/quality/90/?url=https%3A%2F%2Fsbs-au-brightspot.s3.ap-southeast-2.amazonaws.com%2Fad%2Fa7%2F74ef470c4b6fa7637c011aa4149c%2Fgettyimages-2271668741.jpg",
+          "publishedAt": "2026-04-21T00:06:28.000Z",
+          "title": {
+            "en": "US-Iran peace talks could go ahead, if one major obstacle is overcome",
+            "zh": "如果克服一个重大障碍，美伊和谈可能继续进行"
+          },
+          "summary": {
+            "en": "A senior Iranian source claims the country is \"positively reviewing\" whether it will attend peace talks with the US.",
+            "zh": "这是一则来自全球栏目的新闻，重点涉及真理、分辨与诚实。如需完整细节，请阅读英文原始报道。"
+          },
+          "reflection": {
+            "en": "This story draws attention to truth, discernment, and honest speech. Philippians 4:8 reminds us to meet sharp headlines with discernment and truthful speech, asking how faithful people can respond with wisdom instead of noise.",
+            "zh": "这则新闻让人想到真理、分辨与诚实。Philippians 4:8提醒我们，在快速变化的新闻里，仍要以分辨与诚实表达来回应，并学习用祷告与分辨代替情绪化判断。"
+          },
+          "verse": {
+            "reference": "Philippians 4:8",
+            "textEn": "Whatever is true, whatever is noble, whatever is right ... think about such things.",
+            "textZh": "凡是真实的、可敬的、公义的......这些事你们都要思念。",
+            "themeEn": "Discernment",
+            "themeZh": "分辨"
+          },
+          "translationState": "fallback"
+        },
+        {
+          "id": "www-sbs-com-au-news-article-tim-cook-steps-down-apple-ceo-john-ternus-uw",
+          "section": "world",
+          "source": "SBS News World",
+          "sourceUrl": "https://www.sbs.com.au/news/topic/world/feed",
+          "link": "https://www.sbs.com.au/news/article/tim-cook-steps-down-apple-ceo-john-ternus/uwi3bahe0",
+          "image": "https://assets.sbs.com.au/dims4/default/546bc23/2147483647/strip/false/crop/4000x1838+0+415/resize/1234x567!/format/jpeg/quality/90/?url=https%3A%2F%2Fsbs-au-brightspot.s3.ap-southeast-2.amazonaws.com%2F54%2Fbb%2F6d43c4974213848c62339b464a9b%2Fgettyimages-2243468030.jpg",
+          "publishedAt": "2026-04-21T00:04:39.000Z",
+          "title": {
+            "en": "Tim Cook steps down as Apple CEO, naming John Ternus as replacement",
+            "zh": "蒂姆·库克 (Tim Cook) 辞去苹果首席执行官职务，任命约翰·特努斯 (John Ternus) 接任"
+          },
+          "summary": {
+            "en": "Apple has chosen the leader who will steer it through the AI era as Tim Cook wraps up 15 years at the helm.",
+            "zh": "这是一则来自全球栏目的新闻，重点涉及和平与克制。如需完整细节，请阅读英文原始报道。"
+          },
+          "reflection": {
+            "en": "This story draws attention to peace-making and restraint. Matthew 5:9 reminds us to meet sharp headlines with mercy, truth, and restraint, asking how faithful people can respond with wisdom instead of noise.",
+            "zh": "这则新闻让人想到和平与克制。Matthew 5:9提醒我们，在快速变化的新闻里，仍要以怜悯、真实与节制来回应，并学习用祷告与分辨代替情绪化判断。"
+          },
+          "verse": {
+            "reference": "Matthew 5:9",
+            "textEn": "Blessed are the peacemakers, for they will be called children of God.",
+            "textZh": "使人和睦的人有福了，因为他们必称为神的儿子。",
+            "themeEn": "Peace",
+            "themeZh": "和平"
+          },
+          "translationState": "fallback"
+        },
+        {
+          "id": "www-dw-com-en-amnesty-international-paints-a-grim-picture-a-76837070-mac",
+          "section": "world",
+          "source": "DW World",
+          "sourceUrl": "https://rss.dw.com/rdf/rss-en-world",
+          "link": "https://www.dw.com/en/amnesty-international-paints-a-grim-picture/a-76837070?maca=en-rss-en-world-4025-rdf",
+          "image": null,
+          "publishedAt": "2026-04-20T23:04:00.000Z",
+          "title": {
+            "en": "Amnesty International paints a grim picture",
+            "zh": "国际特赦组织描绘了一幅严峻的画面"
+          },
+          "summary": {
+            "en": "In its 2025/2026 report, the human rights watchdog Amnesty International calls out the \"predatory behavior of the powerful\" and calls for action to defend the global order.",
+            "zh": "这是一则来自全球栏目的新闻，重点涉及公义、尊严与问责。如需完整细节，请阅读英文原始报道。"
+          },
+          "reflection": {
+            "en": "This story draws attention to justice, dignity, and accountability. Micah 6:8 reminds us to meet sharp headlines with justice tempered by mercy, asking how faithful people can respond with wisdom instead of noise.",
+            "zh": "这则新闻让人想到公义、尊严与问责。Micah 6:8提醒我们，在快速变化的新闻里，仍要以带着怜悯的公义来回应，并学习用祷告与分辨代替情绪化判断。"
+          },
+          "verse": {
+            "reference": "Micah 6:8",
+            "textEn": "What does Yahweh require of you? To act justly and to love mercy and to walk humbly with your God.",
+            "textZh": "雅伟向你所要的，无非是行公义，好怜悯，存谦卑的心与你的神同行。",
+            "themeEn": "Justice",
+            "themeZh": "公义"
+          },
+          "translationState": "fallback"
+        },
+        {
+          "id": "www-dw-com-en-uk-starmer-says-he-would-t-have-appointed-mandelson-as-us-",
+          "section": "world",
+          "source": "DW World",
+          "sourceUrl": "https://rss.dw.com/rdf/rss-en-world",
+          "link": "https://www.dw.com/en/uk-starmer-says-he-would-t-have-appointed-mandelson-as-us-envoy-if-he-d-known-he-failed-vetting-process/a-76864691?maca=en-rss-en-world-4025-rdf",
+          "image": null,
+          "publishedAt": "2026-04-20T18:08:00.000Z",
+          "title": {
+            "en": "UK: Starmer says he would't have appointed Mandelson as US envoy if he'd known he failed vetting process",
+            "zh": "英国：斯塔默表示，如果他知道曼德尔森未通过审查程序，他就不会任命曼德尔森为美国特使"
+          },
+          "summary": {
+            "en": "Under-fire Prime Minister Keir Starmer told the House of Commons that neither he nor his ministers were told that the former ambassador to the US and Epstein associate Peter Mandelson had failed his security vetting.",
+            "zh": "这是一则来自全球栏目的新闻，重点涉及领导、智慧与公共责任。如需完整细节，请阅读英文原始报道。"
+          },
+          "reflection": {
+            "en": "This story draws attention to leadership, wisdom, and public responsibility. Proverbs 11:14 reminds us to meet sharp headlines with wisdom, integrity, and service, asking how faithful people can respond with wisdom instead of noise.",
+            "zh": "这则新闻让人想到领导、智慧与公共责任。Proverbs 11:14提醒我们，在快速变化的新闻里，仍要以智慧、正直与服事来回应，并学习用祷告与分辨代替情绪化判断。"
+          },
+          "verse": {
+            "reference": "Proverbs 11:14",
+            "textEn": "For lack of guidance a nation falls, but victory is won through many advisers.",
+            "textZh": "无智谋，民就败落；谋士多，人便安居。",
+            "themeEn": "Leadership",
+            "themeZh": "领导"
+          },
+          "translationState": "fallback"
+        },
+        {
+          "id": "www-sbs-com-au-news-article-japan-tsunami-warning-earthquake-u5ilh8jbm",
+          "section": "world",
+          "source": "SBS News World",
+          "sourceUrl": "https://www.sbs.com.au/news/topic/world/feed",
+          "link": "https://www.sbs.com.au/news/article/japan-tsunami-warning-earthquake/u5ilh8jbm",
+          "image": "https://assets.sbs.com.au/dims4/default/b591082/2147483647/strip/false/crop/3508x1612+0+1675/resize/1234x567!/format/jpeg/quality/90/?url=https%3A%2F%2Fsbs-au-brightspot.s3.ap-southeast-2.amazonaws.com%2F61%2Fcd%2F438c572c46af9030f1c839744ab1%2Fgettyimages-2161272196.jpg",
+          "publishedAt": "2026-04-20T08:36:17.000Z",
+          "title": {
+            "en": "Tsunami warning issued after powerful earthquake strikes off northern Japan coast",
+            "zh": "日本北部海岸发生强烈地震后发布海啸警报"
+          },
+          "summary": {
+            "en": "Buildings as far away as Tokyo shook during the tremor, and authorities warned further quakes could strike in coming days.",
+            "zh": "这是一则来自全球栏目的新闻，重点涉及和平与克制。如需完整细节，请阅读英文原始报道。"
+          },
+          "reflection": {
+            "en": "This story draws attention to peace-making and restraint. Matthew 5:9 reminds us to meet sharp headlines with mercy, truth, and restraint, asking how faithful people can respond with wisdom instead of noise.",
+            "zh": "这则新闻让人想到和平与克制。Matthew 5:9提醒我们，在快速变化的新闻里，仍要以怜悯、真实与节制来回应，并学习用祷告与分辨代替情绪化判断。"
+          },
+          "verse": {
+            "reference": "Matthew 5:9",
+            "textEn": "Blessed are the peacemakers, for they will be called children of God.",
+            "textZh": "使人和睦的人有福了，因为他们必称为神的儿子。",
+            "themeEn": "Peace",
+            "themeZh": "和平"
+          },
+          "translationState": "fallback"
+        }
+      ]
+    },
+    "china": {
+      "id": "china",
+      "title": {
+        "en": "China Desk",
+        "zh": "中国观察"
+      },
+      "strap": {
+        "en": "Policy signals, social change, and national developments inside China.",
+        "zh": "聚焦中国内部政策走向、社会变化与国家动态。"
+      },
+      "sourceNotes": [
+        "The Guardian China",
+        "DW Asia China Focus",
+        "SBS News China Focus"
+      ],
+      "items": [
+        {
+          "id": "www-theguardian-com-environment-2026-apr-21-clean-energy-generation-exce",
+          "section": "china",
+          "source": "The Guardian China",
+          "sourceUrl": "https://www.theguardian.com/world/china/rss",
+          "link": "https://www.theguardian.com/environment/2026/apr/21/clean-energy-generation-exceeded-rise-global-electricity-demand-2025",
+          "image": "https://i.guim.co.uk/img/media/a9254d8e4a4432c5904c87b2e98ae7f25d3d29c9/192_0_3333_2667/master/3333.jpg?width=1200&height=630&quality=85&auto=format&fit=crop&precrop=40:21,offset-x50,offset-y0&overlay-align=bottom%2Cleft&overlay-width=100p&overlay-base64=L2ltZy9zdGF0aWMvb3ZlcmxheXMvdGctZGVmYXVsdC5wbmc&enable=upscale&s=25ffa5e5cf8af5c2727055571b06dfb6",
+          "publishedAt": "2026-04-20T23:01:08.000Z",
+          "title": {
+            "en": "Clean energy generation exceeded rise in global electricity demand in 2025",
+            "zh": "2025年清洁能源发电量将超过全球电力需求增幅"
+          },
+          "summary": {
+            "en": "Output from solar farms rose by a third while electricity from fossil fuels fell, research from thinktank reveals UK shifts older wind and solar farms to fixed-price deals to reduce price shocks All of last year’s growth in global electricity demand was met from renewable...",
+            "zh": "这是一则来自中国栏目的新闻，重点涉及管家责任、供应与公共福祉。如需完整细节，请阅读英文原始报道。"
+          },
+          "reflection": {
+            "en": "This story draws attention to stewardship, provision, and the common good. 1 Peter 4:10 reminds us to meet sharp headlines with stewardship that serves neighbours, asking how faithful people can respond with wisdom instead of noise.",
+            "zh": "这则新闻让人想到管家责任、供应与公共福祉。1 Peter 4:10提醒我们，在快速变化的新闻里，仍要以服事邻舍的好管家心态来回应，并学习用祷告与分辨代替情绪化判断。"
+          },
+          "verse": {
+            "reference": "1 Peter 4:10",
+            "textEn": "Each of you should use whatever gift you have received to serve others, as faithful stewards of God's grace.",
+            "textZh": "各人要照所得的恩赐彼此服事，作神百般恩赐的好管家。",
+            "themeEn": "Stewardship",
+            "themeZh": "管家"
+          },
+          "translationState": "fallback"
+        },
+        {
+          "id": "www-dw-com-en-is-to-lam-s-vietnam-turning-into-xi-jinping-s-china-a-7685",
+          "section": "china",
+          "source": "DW Asia China Focus",
+          "sourceUrl": "https://rss.dw.com/rdf/rss-en-asia",
+          "link": "https://www.dw.com/en/is-to-lam-s-vietnam-turning-into-xi-jinping-s-china/a-76858522?maca=en-rss-en-asia-5133-rdf",
+          "image": null,
+          "publishedAt": "2026-04-20T12:08:00.000Z",
+          "title": {
+            "en": "Is To Lam's Vietnam turning into Xi Jinping's China?",
+            "zh": "杜林领导下的越南正在变成习近平领导下的中国吗？"
+          },
+          "summary": {
+            "en": "After Vietnam's lawmakers unanimously elected Communist Party chief To Lam as the country's president, analysts are asking whether Vietnam aims to copy China's political model.",
+            "zh": "这是一则来自中国栏目的新闻，重点涉及公义、尊严与问责。如需完整细节，请阅读英文原始报道。"
+          },
+          "reflection": {
+            "en": "This story draws attention to justice, dignity, and accountability. Micah 6:8 reminds us to meet sharp headlines with justice tempered by mercy, asking how faithful people can respond with wisdom instead of noise.",
+            "zh": "这则新闻让人想到公义、尊严与问责。Micah 6:8提醒我们，在快速变化的新闻里，仍要以带着怜悯的公义来回应，并学习用祷告与分辨代替情绪化判断。"
+          },
+          "verse": {
+            "reference": "Micah 6:8",
+            "textEn": "What does Yahweh require of you? To act justly and to love mercy and to walk humbly with your God.",
+            "textZh": "雅伟向你所要的，无非是行公义，好怜悯，存谦卑的心与你的神同行。",
+            "themeEn": "Justice",
+            "themeZh": "公义"
+          },
+          "translationState": "fallback"
+        },
+        {
+          "id": "www-dw-com-en-how-china-s-chip-expansion-puts-pressure-on-global-rivals-",
+          "section": "china",
+          "source": "DW Asia China Focus",
+          "sourceUrl": "https://rss.dw.com/rdf/rss-en-asia",
+          "link": "https://www.dw.com/en/how-china-s-chip-expansion-puts-pressure-on-global-rivals/a-76056790?maca=en-rss-en-asia-5133-rdf",
+          "image": null,
+          "publishedAt": "2026-04-20T09:46:00.000Z",
+          "title": {
+            "en": "How China's chip expansion puts pressure on global rivals",
+            "zh": "中国芯片扩张如何给全球竞争对手带来压力"
+          },
+          "summary": {
+            "en": "US curbs on advanced chips pushed China to focus on its own semiconductor ecosystem. And while it trails at the very cutting edge, China's \"good‑enough\" technology is fast powering much of the global economy.",
+            "zh": "这是一则来自中国栏目的新闻，重点涉及管家责任、供应与公共福祉。如需完整细节，请阅读英文原始报道。"
+          },
+          "reflection": {
+            "en": "This story draws attention to stewardship, provision, and the common good. 1 Peter 4:10 reminds us to meet sharp headlines with stewardship that serves neighbours, asking how faithful people can respond with wisdom instead of noise.",
+            "zh": "这则新闻让人想到管家责任、供应与公共福祉。1 Peter 4:10提醒我们，在快速变化的新闻里，仍要以服事邻舍的好管家心态来回应，并学习用祷告与分辨代替情绪化判断。"
+          },
+          "verse": {
+            "reference": "1 Peter 4:10",
+            "textEn": "Each of you should use whatever gift you have received to serve others, as faithful stewards of God's grace.",
+            "textZh": "各人要照所得的恩赐彼此服事，作神百般恩赐的好管家。",
+            "themeEn": "Stewardship",
+            "themeZh": "管家"
+          },
+          "translationState": "fallback"
+        },
+        {
+          "id": "www-theguardian-com-sport-2026-apr-19-humanoid-robots-race-beijing-half-",
+          "section": "china",
+          "source": "The Guardian China",
+          "sourceUrl": "https://www.theguardian.com/world/china/rss",
+          "link": "https://www.theguardian.com/sport/2026/apr/19/humanoid-robots-race-beijing-half-marathon",
+          "image": "https://i.guim.co.uk/img/media/ae63781e6ff9172a4fc4fee2eca1dfee700fb45a/0_0_3865_3092/master/3865.jpg?width=1200&height=630&quality=85&auto=format&fit=crop&precrop=40:21,offset-x50,offset-y0&overlay-align=bottom%2Cleft&overlay-width=100p&overlay-base64=L2ltZy9zdGF0aWMvb3ZlcmxheXMvdGctZGVmYXVsdC5wbmc&enable=upscale&s=694e054b136e3c28cae945187b68f9a1",
+          "publishedAt": "2026-04-19T13:14:48.000Z",
+          "title": {
+            "en": "Humanoid robots show rapid advances as they race past humans in Beijing half marathon",
+            "zh": "仿人机器人在北京半程马拉松比赛中超越人类，展现出快速进步"
+          },
+          "summary": {
+            "en": "Winning robot runs faster time than Jacob Kiplimo’s world record More than 100 robots run in parallel tracks to avoid collisions with humans They can already carry the shopping, cook and clean. Now they can run and win half marathons. In perhaps the most unusual spectacle ever...",
+            "zh": "这是一则来自中国栏目的新闻，重点涉及和平与克制。如需完整细节，请阅读英文原始报道。"
+          },
+          "reflection": {
+            "en": "This story draws attention to peace-making and restraint. Matthew 5:9 reminds us to meet sharp headlines with mercy, truth, and restraint, asking how faithful people can respond with wisdom instead of noise.",
+            "zh": "这则新闻让人想到和平与克制。Matthew 5:9提醒我们，在快速变化的新闻里，仍要以怜悯、真实与节制来回应，并学习用祷告与分辨代替情绪化判断。"
+          },
+          "verse": {
+            "reference": "Matthew 5:9",
+            "textEn": "Blessed are the peacemakers, for they will be called children of God.",
+            "textZh": "使人和睦的人有福了，因为他们必称为神的儿子。",
+            "themeEn": "Peace",
+            "themeZh": "和平"
+          },
+          "translationState": "fallback"
+        },
+        {
+          "id": "www-theguardian-com-sport-video-2026-apr-19-humanoid-robots-race-past-hu",
+          "section": "china",
+          "source": "The Guardian China",
+          "sourceUrl": "https://www.theguardian.com/world/china/rss",
+          "link": "https://www.theguardian.com/sport/video/2026/apr/19/humanoid-robots-race-past-humans-in-beijing-half-marathon-video",
+          "image": "https://i.guim.co.uk/img/media/1fb70f64a432685f7919814a619676d2e55e4a2d/499_0_5001_4000/master/5001.jpg?width=1200&height=630&quality=85&auto=format&fit=crop&precrop=40:21,offset-x50,offset-y0&overlay-align=bottom%2Cleft&overlay-width=100p&overlay-base64=L2ltZy9zdGF0aWMvb3ZlcmxheXMvdGctZGVmYXVsdC5wbmc&enable=upscale&s=856af7209c3e429d87493527e3c49179",
+          "publishedAt": "2026-04-19T11:13:14.000Z",
+          "title": {
+            "en": "Humanoid robots race past humans in Beijing half-marathon – video",
+            "zh": "人形机器人在北京半程马拉松比赛中超越人类——视频"
+          },
+          "summary": {
+            "en": "Dozens of Chinese-made humanoid robots showed off their fast-improving athleticism as they whizzed past human runners in a half-marathon race in Beijing on Sunday. The robots and humans ran in parallel tracks to avoid collisions. The winning robot, developed by Honor, a...",
+            "zh": "这是一则来自中国栏目的新闻，重点涉及和平与克制。如需完整细节，请阅读英文原始报道。"
+          },
+          "reflection": {
+            "en": "This story draws attention to peace-making and restraint. Matthew 5:9 reminds us to meet sharp headlines with mercy, truth, and restraint, asking how faithful people can respond with wisdom instead of noise.",
+            "zh": "这则新闻让人想到和平与克制。Matthew 5:9提醒我们，在快速变化的新闻里，仍要以怜悯、真实与节制来回应，并学习用祷告与分辨代替情绪化判断。"
+          },
+          "verse": {
+            "reference": "Matthew 5:9",
+            "textEn": "Blessed are the peacemakers, for they will be called children of God.",
+            "textZh": "使人和睦的人有福了，因为他们必称为神的儿子。",
+            "themeEn": "Peace",
+            "themeZh": "和平"
+          },
+          "translationState": "fallback"
+        },
+        {
+          "id": "www-dw-com-en-robot-runners-beat-humans-in-beijing-half-marathon-a-76846",
+          "section": "china",
+          "source": "DW Asia China Focus",
+          "sourceUrl": "https://rss.dw.com/rdf/rss-en-asia",
+          "link": "https://www.dw.com/en/robot-runners-beat-humans-in-beijing-half-marathon/a-76846520?maca=en-rss-en-asia-5133-rdf",
+          "image": null,
+          "publishedAt": "2026-04-19T08:12:00.000Z",
+          "title": {
+            "en": "Robot runners beat humans in Beijing half-marathon",
+            "zh": "北京半程马拉松机器人跑者击败人类"
+          },
+          "summary": {
+            "en": "For the first time, humanoid robots have outclassed humans in a half-marathon held in Beijing. The winner beat the men's record for the distance set by Uganda’s Jacob Kiplimo in March.",
+            "zh": "这是一则来自中国栏目的新闻，重点涉及和平与克制。如需完整细节，请阅读英文原始报道。"
+          },
+          "reflection": {
+            "en": "This story draws attention to peace-making and restraint. Matthew 5:9 reminds us to meet sharp headlines with mercy, truth, and restraint, asking how faithful people can respond with wisdom instead of noise.",
+            "zh": "这则新闻让人想到和平与克制。Matthew 5:9提醒我们，在快速变化的新闻里，仍要以怜悯、真实与节制来回应，并学习用祷告与分辨代替情绪化判断。"
+          },
+          "verse": {
+            "reference": "Matthew 5:9",
+            "textEn": "Blessed are the peacemakers, for they will be called children of God.",
+            "textZh": "使人和睦的人有福了，因为他们必称为神的儿子。",
+            "themeEn": "Peace",
+            "themeZh": "和平"
+          },
+          "translationState": "fallback"
+        },
+        {
+          "id": "www-sbs-com-au-news-article-vanuatu-definitely-going-to-ask-china-for-he",
+          "section": "china",
+          "source": "SBS News China Focus",
+          "sourceUrl": "https://www.sbs.com.au/news/topic/world/feed",
+          "link": "https://www.sbs.com.au/news/article/vanuatu-definitely-going-to-ask-china-for-help-on-fuel-security/0qn7qddym",
+          "image": "https://assets.sbs.com.au/dims4/default/369f838/2147483647/strip/false/crop/1800x827+0+186/resize/1234x567!/format/jpeg/quality/90/?url=https%3A%2F%2Fsbs-au-brightspot.s3.ap-southeast-2.amazonaws.com%2Fd2%2Fc3%2Fdf83a19947e9a021c53ca3b3e0c0%2Fvanuatu-minister-of-climate-change-adaptation-ralph-regenvanu-aap.jpg",
+          "publishedAt": "2026-04-16T19:35:03.000Z",
+          "title": {
+            "en": "Australia's neighbour criticises Albanese and will 'definitely' ask China for fuel help",
+            "zh": "澳大利亚邻国批评阿尔巴内塞，“肯定”会向中国寻求燃料帮助"
+          },
+          "summary": {
+            "en": "Vanuatu has urged Australia to confront its reliance on fossil fuels, while not ruling out seeking support from Canberra.",
+            "zh": "这是一则来自中国栏目的新闻，重点涉及盼望、忍耐与重建。如需完整细节，请阅读英文原始报道。"
+          },
+          "reflection": {
+            "en": "This story draws attention to hope, endurance, and faithful rebuilding. Romans 12:12 reminds us to meet sharp headlines with steady hope and perseverance, asking how faithful people can respond with wisdom instead of noise.",
+            "zh": "这则新闻让人想到盼望、忍耐与重建。Romans 12:12提醒我们，在快速变化的新闻里，仍要以坚定盼望与忍耐来回应，并学习用祷告与分辨代替情绪化判断。"
+          },
+          "verse": {
+            "reference": "Romans 12:12",
+            "textEn": "Be joyful in hope, patient in affliction, faithful in prayer.",
+            "textZh": "在指望中要喜乐，在患难中要忍耐，祷告要恒切。",
+            "themeEn": "Hope",
+            "themeZh": "盼望"
+          },
+          "translationState": "fallback"
+        },
+        {
+          "id": "www-sbs-com-au-news-article-iran-war-china-trump-blockade-strait-of-horm",
+          "section": "china",
+          "source": "SBS News China Focus",
+          "sourceUrl": "https://www.sbs.com.au/news/topic/world/feed",
+          "link": "https://www.sbs.com.au/news/article/iran-war-china-trump-blockade-strait-of-hormuz/gg98t433k",
+          "image": "https://assets.sbs.com.au/dims4/default/1e1f41b/2147483647/strip/false/crop/1920x882+0+99/resize/1234x567!/format/jpeg/quality/90/?url=https%3A%2F%2Fsbs-au-brightspot.s3.ap-southeast-2.amazonaws.com%2F3f%2F2d%2F97ac58ef4f0386bca4cef9654e1c%2Fgfx-150426-xi-trump-header-16x9.png",
+          "publishedAt": "2026-04-15T07:54:51.000Z",
+          "title": {
+            "en": "How Trump's latest Iran war moves could bring China out of the shadows",
+            "zh": "特朗普最新的伊朗战争举措如何让中国走出阴影"
+          },
+          "summary": {
+            "en": "Chinese President Xi Jinping made a rare public comment on the war in the Middle East.",
+            "zh": "这是一则来自中国栏目的新闻，重点涉及和平与克制。如需完整细节，请阅读英文原始报道。"
+          },
+          "reflection": {
+            "en": "This story draws attention to peace-making and restraint. Matthew 5:9 reminds us to meet sharp headlines with mercy, truth, and restraint, asking how faithful people can respond with wisdom instead of noise.",
+            "zh": "这则新闻让人想到和平与克制。Matthew 5:9提醒我们，在快速变化的新闻里，仍要以怜悯、真实与节制来回应，并学习用祷告与分辨代替情绪化判断。"
+          },
+          "verse": {
+            "reference": "Matthew 5:9",
+            "textEn": "Blessed are the peacemakers, for they will be called children of God.",
+            "textZh": "使人和睦的人有福了，因为他们必称为神的儿子。",
+            "themeEn": "Peace",
+            "themeZh": "和平"
+          },
+          "translationState": "fallback"
+        }
+      ]
+    },
+    "australia": {
+      "id": "australia",
+      "title": {
+        "en": "Australia Desk",
+        "zh": "澳洲栏目"
+      },
+      "strap": {
+        "en": "Public life, policy, and community stories shaping Australia now.",
+        "zh": "关注正在影响澳洲公共生活、政策与社区的新闻。"
+      },
+      "sourceNotes": [
+        "The Guardian Australia",
+        "SBS News Australia"
+      ],
+      "items": [
+        {
+          "id": "www-theguardian-com-australia-news-live-2026-apr-21-anthony-albanese-fue",
+          "section": "australia",
+          "source": "The Guardian Australia",
+          "sourceUrl": "https://www.theguardian.com/australia-news/rss",
+          "link": "https://www.theguardian.com/australia-news/live/2026/apr/21/anthony-albanese-fuel-crisis-jim-chalmers-budget-cost-of-living-supermarket-discount-rebel-wilson-court-hearing-ntwnfb",
+          "image": "https://i.guim.co.uk/img/media/033b62ce64b8a8c8bd8fa175db5926a51e381950/1040_0_4313_3450/master/4313.jpg?width=1200&height=630&quality=85&auto=format&fit=crop&precrop=40:21,offset-x50,offset-y0&overlay-align=bottom%2Cleft&overlay-width=100p&overlay-base64=L2ltZy9zdGF0aWMvb3ZlcmxheXMvdGctbGl2ZS5wbmc&enable=upscale&s=01ebc2a5bf0d9b61854bdd2323999f5a",
+          "publishedAt": "2026-04-21T06:31:13.000Z",
+          "title": {
+            "en": "Australia news live: Angus Taylor says 25% gas levy would shut down industry; NSW Treasury employee charged over 5,600 document data breach",
+            "zh": "澳大利亚新闻直播：安格斯·泰勒称 25% 的天然气税将导致工业关闭；新南威尔士州财政部员工因 5,600 多项文件数据泄露被指控"
+          },
+          "summary": {
+            "en": "Follow today’s news live Get our breaking news email, free app or daily news podcast NSW commission proposes heat-safe rentals to help tackle extreme temperature Heat-safe rentals and tougher workplace safety rules for outdoor workers on scorching hot days have been proposed by...",
+            "zh": "这是一则来自澳洲栏目的新闻，重点涉及真理、分辨与诚实。如需完整细节，请阅读英文原始报道。"
+          },
+          "reflection": {
+            "en": "This story draws attention to truth, discernment, and honest speech. Philippians 4:8 reminds us to meet sharp headlines with discernment and truthful speech, asking how faithful people can respond with wisdom instead of noise.",
+            "zh": "这则新闻让人想到真理、分辨与诚实。Philippians 4:8提醒我们，在快速变化的新闻里，仍要以分辨与诚实表达来回应，并学习用祷告与分辨代替情绪化判断。"
+          },
+          "verse": {
+            "reference": "Philippians 4:8",
+            "textEn": "Whatever is true, whatever is noble, whatever is right ... think about such things.",
+            "textZh": "凡是真实的、可敬的、公义的......这些事你们都要思念。",
+            "themeEn": "Discernment",
+            "themeZh": "分辨"
+          },
+          "translationState": "fallback"
+        },
+        {
+          "id": "www-theguardian-com-australia-news-2026-apr-21-man-jailed-after-mimickin",
+          "section": "australia",
+          "source": "The Guardian Australia",
+          "sourceUrl": "https://www.theguardian.com/australia-news/rss",
+          "link": "https://www.theguardian.com/australia-news/2026/apr/21/man-jailed-after-mimicking-bondi-beach-terror-attack-on-footbridge-and-making-slurs-against-jewish-people-ntwnfb",
+          "image": "https://i.guim.co.uk/img/media/0896af056e2a28c0a954585a76b9352a044d4481/427_0_4639_3713/master/4639.jpg?width=1200&height=630&quality=85&auto=format&fit=crop&precrop=40:21,offset-x50,offset-y0&overlay-align=bottom%2Cleft&overlay-width=100p&overlay-base64=L2ltZy9zdGF0aWMvb3ZlcmxheXMvdGctZGVmYXVsdC5wbmc&enable=upscale&s=e000cd03d3a854d6dee071b518f8da9f",
+          "publishedAt": "2026-04-21T06:15:16.000Z",
+          "title": {
+            "en": "Man jailed after mimicking Bondi beach terror attack on footbridge and making slurs against Jewish people",
+            "zh": "一名男子因模仿邦迪海滩人行天桥恐怖袭击并诽谤犹太人而被判入狱"
+          },
+          "summary": {
+            "en": "Zayne Jason William McMillan’s lawyer says client’s tirade was antisemitic but claims he ‘does not consider himself racist against Jewish community’ Follow our Australia news live blog for latest updates Get our breaking news email, free app or daily news podcast A man seen...",
+            "zh": "这是一则来自澳洲栏目的新闻，重点涉及和平与克制。如需完整细节，请阅读英文原始报道。"
+          },
+          "reflection": {
+            "en": "This story draws attention to peace-making and restraint. Matthew 5:9 reminds us to meet sharp headlines with mercy, truth, and restraint, asking how faithful people can respond with wisdom instead of noise.",
+            "zh": "这则新闻让人想到和平与克制。Matthew 5:9提醒我们，在快速变化的新闻里，仍要以怜悯、真实与节制来回应，并学习用祷告与分辨代替情绪化判断。"
+          },
+          "verse": {
+            "reference": "Matthew 5:9",
+            "textEn": "Blessed are the peacemakers, for they will be called children of God.",
+            "textZh": "使人和睦的人有福了，因为他们必称为神的儿子。",
+            "themeEn": "Peace",
+            "themeZh": "和平"
+          },
+          "translationState": "fallback"
+        },
+        {
+          "id": "www-theguardian-com-australia-news-2026-apr-21-woolworths-price-drop-mar",
+          "section": "australia",
+          "source": "The Guardian Australia",
+          "sourceUrl": "https://www.theguardian.com/australia-news/rss",
+          "link": "https://www.theguardian.com/australia-news/2026/apr/21/woolworths-price-drop-marketing-trick-customers-accc-court",
+          "image": "https://i.guim.co.uk/img/media/dbfa82ef35d121c87fc7b0b6d27d8a39e5933a79/331_0_3333_2667/master/3333.jpg?width=1200&height=630&quality=85&auto=format&fit=crop&precrop=40:21,offset-x50,offset-y0&overlay-align=bottom%2Cleft&overlay-width=100p&overlay-base64=L2ltZy9zdGF0aWMvb3ZlcmxheXMvdGctZGVmYXVsdC5wbmc&enable=upscale&s=6ebfb0609292224f8de89e20e807a583",
+          "publishedAt": "2026-04-21T04:51:13.000Z",
+          "title": {
+            "en": "Woolworths engaged in ‘marketing magic’ to trick customers, consumer watchdog tells court",
+            "zh": "消费者监管机构告诉法庭，Woolworths 运用“营销魔法”来欺骗顾客"
+          },
+          "summary": {
+            "en": "The trial between the Australian Competition and Consumer Commission and the supermarket giant began in the federal court in Sydney on Tuesday Follow our Australia news live blog for latest updates Get our breaking news email, free app or daily news podcast Woolworths engaged in...",
+            "zh": "这是一则来自澳洲栏目的新闻，重点涉及公义、尊严与问责。如需完整细节，请阅读英文原始报道。"
+          },
+          "reflection": {
+            "en": "This story draws attention to justice, dignity, and accountability. Micah 6:8 reminds us to meet sharp headlines with justice tempered by mercy, asking how faithful people can respond with wisdom instead of noise.",
+            "zh": "这则新闻让人想到公义、尊严与问责。Micah 6:8提醒我们，在快速变化的新闻里，仍要以带着怜悯的公义来回应，并学习用祷告与分辨代替情绪化判断。"
+          },
+          "verse": {
+            "reference": "Micah 6:8",
+            "textEn": "What does Yahweh require of you? To act justly and to love mercy and to walk humbly with your God.",
+            "textZh": "雅伟向你所要的，无非是行公义，好怜悯，存谦卑的心与你的神同行。",
+            "themeEn": "Justice",
+            "themeZh": "公义"
+          },
+          "translationState": "fallback"
+        },
+        {
+          "id": "www-theguardian-com-commentisfree-2026-apr-21-death-bikram-lama-homeless",
+          "section": "australia",
+          "source": "The Guardian Australia",
+          "sourceUrl": "https://www.theguardian.com/australia-news/rss",
+          "link": "https://www.theguardian.com/commentisfree/2026/apr/21/death-bikram-lama-homeless-man-sydney-st-james-tunnel-ntwnfb",
+          "image": "https://i.guim.co.uk/img/media/e8f54b366f2d33f2d01fc47a161385e51bd77de1/452_114_6681_5347/master/6681.jpg?width=1200&height=630&quality=85&auto=format&fit=crop&precrop=40:21,offset-x50,offset-y0&overlay-align=bottom%2Cleft&overlay-width=100p&overlay-base64=L2ltZy9zdGF0aWMvb3ZlcmxheXMvdGctb3BpbmlvbnMucG5n&enable=upscale&s=22214db248af332c6459883f3805d024",
+          "publishedAt": "2026-04-21T04:27:50.000Z",
+          "title": {
+            "en": "The death of Bikram Lama – Sydney’s ‘birdman’ of St James tunnel – has shaken me. What is happening to our city? | Brigid Delaney",
+            "zh": "比克拉姆·喇嘛（Bikram Lama）——悉尼圣詹姆斯隧道的“鸟人”——的去世震惊了我。我们的城市发生了什么事？ |布里吉德·德莱尼"
+          },
+          "summary": {
+            "en": "As individualistic as this place often is, I thought there still existed minimum standards when it came to how we see each other When ‘the birdman’ of St James tunnel died, Sydney commuters streamed past his body for days A homeless man died in public in Sydney. How did his...",
+            "zh": "这是一则来自澳洲栏目的新闻，重点涉及和平与克制。如需完整细节，请阅读英文原始报道。"
+          },
+          "reflection": {
+            "en": "This story draws attention to peace-making and restraint. Matthew 5:9 reminds us to meet sharp headlines with mercy, truth, and restraint, asking how faithful people can respond with wisdom instead of noise.",
+            "zh": "这则新闻让人想到和平与克制。Matthew 5:9提醒我们，在快速变化的新闻里，仍要以怜悯、真实与节制来回应，并学习用祷告与分辨代替情绪化判断。"
+          },
+          "verse": {
+            "reference": "Matthew 5:9",
+            "textEn": "Blessed are the peacemakers, for they will be called children of God.",
+            "textZh": "使人和睦的人有福了，因为他们必称为神的儿子。",
+            "themeEn": "Peace",
+            "themeZh": "和平"
+          },
+          "translationState": "fallback"
+        },
+        {
+          "id": "www-theguardian-com-australia-news-2026-apr-21-teachers-plead-not-guilty",
+          "section": "australia",
+          "source": "The Guardian Australia",
+          "sourceUrl": "https://www.theguardian.com/australia-news/rss",
+          "link": "https://www.theguardian.com/australia-news/2026/apr/21/teachers-plead-not-guilty-assaulting-students-regional-nsw-school-ntwnfb",
+          "image": "https://i.guim.co.uk/img/media/d4a32b64146847fd401e0fa5e5eba390c3e366cd/0_0_2461_1969/master/2461.jpg?width=1200&height=630&quality=85&auto=format&fit=crop&precrop=40:21,offset-x50,offset-y0&overlay-align=bottom%2Cleft&overlay-width=100p&overlay-base64=L2ltZy9zdGF0aWMvb3ZlcmxheXMvdGctZGVmYXVsdC5wbmc&enable=upscale&s=970555b1230a732d8c4d75f3578ce667",
+          "publishedAt": "2026-04-21T04:25:51.000Z",
+          "title": {
+            "en": "Principal and three teachers plead not guilty to assaulting students at regional NSW school",
+            "zh": "新南威尔士州地区学校校长和三名教师对袭击学生的行为表示无罪"
+          },
+          "summary": {
+            "en": "Police allege educators, two men and two women, attacked boys at school between August 2024 and June 2025 Follow our Australia news live blog for latest updates Get our breaking news email, free app or daily news podcast Four teachers, including the principal of a regional New...",
+            "zh": "这是一则来自澳洲栏目的新闻，重点涉及智慧、知识与追求真理。如需完整细节，请阅读英文原始报道。"
+          },
+          "reflection": {
+            "en": "This story draws attention to wisdom, knowledge, and the pursuit of truth. Proverbs 2:6 reminds us to meet sharp headlines with humble learning and wise application, asking how faithful people can respond with wisdom instead of noise.",
+            "zh": "这则新闻让人想到智慧、知识与追求真理。Proverbs 2:6提醒我们，在快速变化的新闻里，仍要以谦卑学习与智慧运用来回应，并学习用祷告与分辨代替情绪化判断。"
+          },
+          "verse": {
+            "reference": "Proverbs 2:6",
+            "textEn": "For Yahweh gives wisdom; from his mouth come knowledge and understanding.",
+            "textZh": "因为雅伟赐人智慧，知识和聪明都由他口而出。",
+            "themeEn": "Wisdom",
+            "themeZh": "智慧"
+          },
+          "translationState": "fallback"
+        },
+        {
+          "id": "www-theguardian-com-environment-video-2026-apr-21-punters-politics-front",
+          "section": "australia",
+          "source": "The Guardian Australia",
+          "sourceUrl": "https://www.theguardian.com/australia-news/rss",
+          "link": "https://www.theguardian.com/environment/video/2026/apr/21/punters-politics-fronts-inquiry-into-gas-export-tax-video",
+          "image": "https://i.guim.co.uk/img/media/9d731a8bc002c6d9164cc6d8aae688b0a1d6ccbf/529_77_1019_816/master/1019.jpg?width=1200&height=630&quality=85&auto=format&fit=crop&precrop=40:21,offset-x50,offset-y0&overlay-align=bottom%2Cleft&overlay-width=100p&overlay-base64=L2ltZy9zdGF0aWMvb3ZlcmxheXMvdGctZGVmYXVsdC5wbmc&enable=upscale&s=aaa84181561922c1eba233bff4bc6b7c",
+          "publishedAt": "2026-04-21T02:27:30.000Z",
+          "title": {
+            "en": "'We've been sold out': Punters Politics fronts inquiry into gas export tax – video",
+            "zh": "“我们已经被卖光了”：赌客政治前沿对天然气出口税的调查 - 视频"
+          },
+          "summary": {
+            "en": "Konrad Benjamin, a former school teacher who is behind the social media account Punters Politics, tells a Senate inquiry into taxing gas that the issue has fired up his near million followers. Meanwhile the executive director of the Australia Institute, Richard Denniss, says...",
+            "zh": "这是一则来自澳洲栏目的新闻，重点涉及管家责任、供应与公共福祉。如需完整细节，请阅读英文原始报道。"
+          },
+          "reflection": {
+            "en": "This story draws attention to stewardship, provision, and the common good. 1 Peter 4:10 reminds us to meet sharp headlines with stewardship that serves neighbours, asking how faithful people can respond with wisdom instead of noise.",
+            "zh": "这则新闻让人想到管家责任、供应与公共福祉。1 Peter 4:10提醒我们，在快速变化的新闻里，仍要以服事邻舍的好管家心态来回应，并学习用祷告与分辨代替情绪化判断。"
+          },
+          "verse": {
+            "reference": "1 Peter 4:10",
+            "textEn": "Each of you should use whatever gift you have received to serve others, as faithful stewards of God's grace.",
+            "textZh": "各人要照所得的恩赐彼此服事，作神百般恩赐的好管家。",
+            "themeEn": "Stewardship",
+            "themeZh": "管家"
+          },
+          "translationState": "fallback"
+        },
+        {
+          "id": "www-theguardian-com-commentisfree-picture-2026-apr-21-whos-really-puttin",
+          "section": "australia",
+          "source": "The Guardian Australia",
+          "sourceUrl": "https://www.theguardian.com/australia-news/rss",
+          "link": "https://www.theguardian.com/commentisfree/picture/2026/apr/21/whos-really-putting-the-heat-on-the-budget-bottom-line",
+          "image": "https://i.guim.co.uk/img/media/4f244625cf2afe2f25f4d31782635f3974166449/0_0_1181_945/master/1181.jpg?width=1200&height=630&quality=85&auto=format&fit=crop&precrop=40:21,offset-x50,offset-y0&overlay-align=bottom%2Cleft&overlay-width=100p&overlay-base64=L2ltZy9zdGF0aWMvb3ZlcmxheXMvdGctb3BpbmlvbnMucG5n&enable=upscale&s=41ad98276229caaae0991fd98ddfb893",
+          "publishedAt": "2026-04-21T02:00:12.000Z",
+          "title": {
+            "en": "Who’s really putting the heat on the budget bottom line? | Fiona Katauskas",
+            "zh": "谁真正关注预算底线？ |菲奥娜·卡陶斯卡斯"
+          },
+          "summary": {
+            "en": "It’s not just the inflation dragon who’s fired up See more of Fiona Katauskas’s cartoons here Continue reading...",
+            "zh": "这是一则来自澳洲栏目的新闻，重点涉及管家责任、供应与公共福祉。如需完整细节，请阅读英文原始报道。"
+          },
+          "reflection": {
+            "en": "This story draws attention to stewardship, provision, and the common good. 1 Peter 4:10 reminds us to meet sharp headlines with stewardship that serves neighbours, asking how faithful people can respond with wisdom instead of noise.",
+            "zh": "这则新闻让人想到管家责任、供应与公共福祉。1 Peter 4:10提醒我们，在快速变化的新闻里，仍要以服事邻舍的好管家心态来回应，并学习用祷告与分辨代替情绪化判断。"
+          },
+          "verse": {
+            "reference": "1 Peter 4:10",
+            "textEn": "Each of you should use whatever gift you have received to serve others, as faithful stewards of God's grace.",
+            "textZh": "各人要照所得的恩赐彼此服事，作神百般恩赐的好管家。",
+            "themeEn": "Stewardship",
+            "themeZh": "管家"
+          },
+          "translationState": "fallback"
+        },
+        {
+          "id": "www-sbs-com-au-news-article-wong-talks-albanese-warns-australians-long-t",
+          "section": "australia",
+          "source": "SBS News Australia",
+          "sourceUrl": "https://www.sbs.com.au/news/topic/australia/feed",
+          "link": "https://www.sbs.com.au/news/article/wong-talks-albanese-warns-australians-long-tail-war-impact/3o6n188dd",
+          "image": "https://assets.sbs.com.au/dims4/default/0aa307c/2147483647/strip/false/crop/9428x4332+0+977/resize/1234x567!/format/jpeg/quality/90/?url=https%3A%2F%2Fsbs-au-brightspot.s3.ap-southeast-2.amazonaws.com%2F06%2Fda%2F3b2873984dfbba02a8be8092c1a7%2F20260415146579750187-original.jpg",
+          "publishedAt": "2026-04-21T01:54:07.000Z",
+          "title": {
+            "en": "Wong's flurry of talks as Albanese warns Australians will feel 'long tail' of war",
+            "zh": "阿尔巴尼斯警告澳大利亚人将感受到战争的“长尾”，黄的一系列谈话"
+          },
+          "summary": {
+            "en": "Rising global instability threatens fuel supplies and trade, with leaders warning of lasting economic impacts in Australia.",
+            "zh": "这是一则来自澳洲栏目的新闻，重点涉及和平与克制。如需完整细节，请阅读英文原始报道。"
+          },
+          "reflection": {
+            "en": "This story draws attention to peace-making and restraint. Matthew 5:9 reminds us to meet sharp headlines with mercy, truth, and restraint, asking how faithful people can respond with wisdom instead of noise.",
+            "zh": "这则新闻让人想到和平与克制。Matthew 5:9提醒我们，在快速变化的新闻里，仍要以怜悯、真实与节制来回应，并学习用祷告与分辨代替情绪化判断。"
+          },
+          "verse": {
+            "reference": "Matthew 5:9",
+            "textEn": "Blessed are the peacemakers, for they will be called children of God.",
+            "textZh": "使人和睦的人有福了，因为他们必称为神的儿子。",
+            "themeEn": "Peace",
+            "themeZh": "和平"
+          },
+          "translationState": "fallback"
+        },
+        {
+          "id": "www-sbs-com-au-news-article-woolworths-to-face-court-over-allegedly-fake",
+          "section": "australia",
+          "source": "SBS News Australia",
+          "sourceUrl": "https://www.sbs.com.au/news/topic/australia/feed",
+          "link": "https://www.sbs.com.au/news/article/woolworths-to-face-court-over-allegedly-fake-discounts-on-tim-tams/vkp7yjp4i",
+          "image": "https://assets.sbs.com.au/dims4/default/5c566f8/2147483647/strip/false/crop/7019x3225+0+294/resize/1234x567!/format/jpeg/quality/90/?url=https%3A%2F%2Fsbs-au-brightspot.s3.ap-southeast-2.amazonaws.com%2F1e%2Fdb%2Fc54bd0dd4a408be6fc286638c4a3%2Fwoolworths-coles-supermarket-price-gouging.jpg",
+          "publishedAt": "2026-04-20T21:01:46.000Z",
+          "title": {
+            "en": "Woolworths hits back at allegations it misled customers with 'prices dropped' campaign",
+            "zh": "Woolworths 反击其通过“降价”活动误导顾客的指控"
+          },
+          "summary": {
+            "en": "The consumer watchdog is alleging the supermarket giant used \"illusory discounts\" to sell Tim Tams and 11 other popular items.",
+            "zh": "这是一则来自澳洲栏目的新闻，重点涉及管家责任、供应与公共福祉。如需完整细节，请阅读英文原始报道。"
+          },
+          "reflection": {
+            "en": "This story draws attention to stewardship, provision, and the common good. 1 Peter 4:10 reminds us to meet sharp headlines with stewardship that serves neighbours, asking how faithful people can respond with wisdom instead of noise.",
+            "zh": "这则新闻让人想到管家责任、供应与公共福祉。1 Peter 4:10提醒我们，在快速变化的新闻里，仍要以服事邻舍的好管家心态来回应，并学习用祷告与分辨代替情绪化判断。"
+          },
+          "verse": {
+            "reference": "1 Peter 4:10",
+            "textEn": "Each of you should use whatever gift you have received to serve others, as faithful stewards of God's grace.",
+            "textZh": "各人要照所得的恩赐彼此服事，作神百般恩赐的好管家。",
+            "themeEn": "Stewardship",
+            "themeZh": "管家"
+          },
+          "translationState": "fallback"
+        },
+        {
+          "id": "www-sbs-com-au-news-article-australia-food-system-in-trouble-j7lsbghby",
+          "section": "australia",
+          "source": "SBS News Australia",
+          "sourceUrl": "https://www.sbs.com.au/news/topic/australia/feed",
+          "link": "https://www.sbs.com.au/news/article/australia-food-system-in-trouble/j7lsbghby",
+          "image": "https://assets.sbs.com.au/dims4/default/097d56f/2147483647/strip/false/crop/6000x2757+0+524/resize/1234x567!/format/jpeg/quality/90/?url=https%3A%2F%2Fsbs-au-brightspot.s3.ap-southeast-2.amazonaws.com%2F2e%2F5b%2F0edb5fd14278827da8c7aba806a3%2Fgettyimages-2254583338.jpg",
+          "publishedAt": "2026-04-20T20:32:35.000Z",
+          "title": {
+            "en": "Already under pressure, Australia’s food system could now be in big trouble",
+            "zh": "已经面临压力的澳大利亚食品系统现在可能陷入大麻烦"
+          },
+          "summary": {
+            "en": "Australia should be a rich global food bowl, but the future is looking more uncertain — for a range of reasons.",
+            "zh": "这是一则来自澳洲栏目的新闻，重点涉及盼望、忍耐与重建。如需完整细节，请阅读英文原始报道。"
+          },
+          "reflection": {
+            "en": "This story draws attention to hope, endurance, and faithful rebuilding. Romans 12:12 reminds us to meet sharp headlines with steady hope and perseverance, asking how faithful people can respond with wisdom instead of noise.",
+            "zh": "这则新闻让人想到盼望、忍耐与重建。Romans 12:12提醒我们，在快速变化的新闻里，仍要以坚定盼望与忍耐来回应，并学习用祷告与分辨代替情绪化判断。"
+          },
+          "verse": {
+            "reference": "Romans 12:12",
+            "textEn": "Be joyful in hope, patient in affliction, faithful in prayer.",
+            "textZh": "在指望中要喜乐，在患难中要忍耐，祷告要恒切。",
+            "themeEn": "Hope",
+            "themeZh": "盼望"
+          },
+          "translationState": "fallback"
+        },
+        {
+          "id": "www-sbs-com-au-news-insight-article-its-actually-panic-the-financial-str",
+          "section": "australia",
+          "source": "SBS News Australia",
+          "sourceUrl": "https://www.sbs.com.au/news/topic/australia/feed",
+          "link": "https://www.sbs.com.au/news/insight/article/its-actually-panic-the-financial-stress-of-parenting-triplets-in-australia/aypikamii",
+          "image": "https://assets.sbs.com.au/dims4/default/81fe9ee/2147483647/strip/false/crop/2560x1176+0+132/resize/1234x567!/format/jpeg/quality/90/?url=https%3A%2F%2Fsbs-au-brightspot.s3.ap-southeast-2.amazonaws.com%2F8b%2Fd1%2F1cbe420e44f09133702f982257cb%2Fmyfanwy-triplets.jpg",
+          "publishedAt": "2026-04-20T19:47:58.000Z",
+          "title": {
+            "en": "Inside the 'military operation' of one of Australia's rarest parenting experiences",
+            "zh": "澳大利亚最罕见的育儿经历之一的“军事行动”"
+          },
+          "summary": {
+            "en": "Parents of triplets face heavy financial and emotional pressures. Are Australia's support systems built for families like theirs?",
+            "zh": "这是一则来自澳洲栏目的新闻，重点涉及和平与克制。如需完整细节，请阅读英文原始报道。"
+          },
+          "reflection": {
+            "en": "This story draws attention to peace-making and restraint. Matthew 5:9 reminds us to meet sharp headlines with mercy, truth, and restraint, asking how faithful people can respond with wisdom instead of noise.",
+            "zh": "这则新闻让人想到和平与克制。Matthew 5:9提醒我们，在快速变化的新闻里，仍要以怜悯、真实与节制来回应，并学习用祷告与分辨代替情绪化判断。"
+          },
+          "verse": {
+            "reference": "Matthew 5:9",
+            "textEn": "Blessed are the peacemakers, for they will be called children of God.",
+            "textZh": "使人和睦的人有福了，因为他们必称为神的儿子。",
+            "themeEn": "Peace",
+            "themeZh": "和平"
+          },
+          "translationState": "fallback"
+        },
+        {
+          "id": "www-sbs-com-au-news-article-antisemitism-royal-commission-interim-report",
+          "section": "australia",
+          "source": "SBS News Australia",
+          "sourceUrl": "https://www.sbs.com.au/news/topic/australia/feed",
+          "link": "https://www.sbs.com.au/news/article/antisemitism-royal-commission-interim-report-preview/455f3han4",
+          "image": "https://assets.sbs.com.au/dims4/default/19e9451/2147483647/strip/false/crop/4357x2002+0+452/resize/1234x567!/format/jpeg/quality/90/?url=https%3A%2F%2Fsbs-au-brightspot.s3.ap-southeast-2.amazonaws.com%2F85%2Fa5%2Ff94a4aa24cef95470584266e065b%2F20260224135923945564-original-1.jpg",
+          "publishedAt": "2026-04-20T19:47:30.000Z",
+          "title": {
+            "en": "New details reveal possible 'urgent' recommendations in antisemitism interim report",
+            "zh": "新细节揭示了反犹太主义临时报告中可能提出的“紧急”建议"
+          },
+          "summary": {
+            "en": "The first public hearings from the royal commission into antisemitism will be held days after an interim report from the inquiry is due.",
+            "zh": "这是一则来自澳洲栏目的新闻，重点涉及真理、分辨与诚实。如需完整细节，请阅读英文原始报道。"
+          },
+          "reflection": {
+            "en": "This story draws attention to truth, discernment, and honest speech. Philippians 4:8 reminds us to meet sharp headlines with discernment and truthful speech, asking how faithful people can respond with wisdom instead of noise.",
+            "zh": "这则新闻让人想到真理、分辨与诚实。Philippians 4:8提醒我们，在快速变化的新闻里，仍要以分辨与诚实表达来回应，并学习用祷告与分辨代替情绪化判断。"
+          },
+          "verse": {
+            "reference": "Philippians 4:8",
+            "textEn": "Whatever is true, whatever is noble, whatever is right ... think about such things.",
+            "textZh": "凡是真实的、可敬的、公义的......这些事你们都要思念。",
+            "themeEn": "Discernment",
+            "themeZh": "分辨"
+          },
+          "translationState": "fallback"
+        },
+        {
+          "id": "www-sbs-com-au-news-article-a-country-under-strain-australians-life-sati",
+          "section": "australia",
+          "source": "SBS News Australia",
+          "sourceUrl": "https://www.sbs.com.au/news/topic/australia/feed",
+          "link": "https://www.sbs.com.au/news/article/a-country-under-strain-australians-life-satisfaction-hits-record-low/u69wd9mge",
+          "image": "https://assets.sbs.com.au/dims4/default/d8be7fa/2147483647/strip/false/crop/8192x3764+0+850/resize/1234x567!/format/jpeg/quality/90/?url=https%3A%2F%2Fsbs-au-brightspot.s3.ap-southeast-2.amazonaws.com%2Fcd%2F9f%2Fefefb4684851a7db47997f477a98%2Fgettyimages-1499348973.jpg",
+          "publishedAt": "2026-04-20T07:56:07.000Z",
+          "title": {
+            "en": "A country under 'strain': Australians' life satisfaction hits record low",
+            "zh": "国家面临“压力”：澳大利亚人的生活满意度创历史新低"
+          },
+          "summary": {
+            "en": "New data shows life satisfaction has hit a record low, dipping below levels seen during COVID-19 lockdowns.",
+            "zh": "这是一则来自澳洲栏目的新闻，重点涉及真理、分辨与诚实。如需完整细节，请阅读英文原始报道。"
+          },
+          "reflection": {
+            "en": "This story draws attention to truth, discernment, and honest speech. Philippians 4:8 reminds us to meet sharp headlines with discernment and truthful speech, asking how faithful people can respond with wisdom instead of noise.",
+            "zh": "这则新闻让人想到真理、分辨与诚实。Philippians 4:8提醒我们，在快速变化的新闻里，仍要以分辨与诚实表达来回应，并学习用祷告与分辨代替情绪化判断。"
+          },
+          "verse": {
+            "reference": "Philippians 4:8",
+            "textEn": "Whatever is true, whatever is noble, whatever is right ... think about such things.",
+            "textZh": "凡是真实的、可敬的、公义的......这些事你们都要思念。",
+            "themeEn": "Discernment",
+            "themeZh": "分辨"
+          },
+          "translationState": "fallback"
+        },
+        {
+          "id": "www-sbs-com-au-news-article-viva-energy-oil-refinery-fire-geelong-produc",
+          "section": "australia",
+          "source": "SBS News Australia",
+          "sourceUrl": "https://www.sbs.com.au/news/topic/australia/feed",
+          "link": "https://www.sbs.com.au/news/article/viva-energy-oil-refinery-fire-geelong-production-resumes/gm4qo3flw",
+          "image": "https://assets.sbs.com.au/dims4/default/a37628f/2147483647/strip/false/crop/2160x992+0+224/resize/1234x567!/format/jpeg/quality/90/?url=https%3A%2F%2Fsbs-au-brightspot.s3.ap-southeast-2.amazonaws.com%2F42%2Ff4%2Fef6b9b3d4740abca6908a9fc845c%2F20260416189942731728-original.jpg",
+          "publishedAt": "2026-04-20T05:39:11.000Z",
+          "title": {
+            "en": "Fire-hit refinery set to return to near full capacity in weeks, owner says",
+            "zh": "业主称，遭受火灾的炼油厂将在几周内恢复到接近满负荷运转"
+          },
+          "summary": {
+            "en": "The Geelong oil refinery was ravaged by a blaze last week, sparking further supply fears amid a global fuel crisis.",
+            "zh": "这是一则来自澳洲栏目的新闻，重点涉及对脆弱群体的怜悯。如需完整细节，请阅读英文原始报道。"
+          },
+          "reflection": {
+            "en": "This story draws attention to compassion for vulnerable people. Galatians 6:2 reminds us to meet sharp headlines with practical compassion and welcome, asking how faithful people can respond with wisdom instead of noise.",
+            "zh": "这则新闻让人想到对脆弱群体的怜悯。Galatians 6:2提醒我们，在快速变化的新闻里，仍要以具体的怜悯与接纳来回应，并学习用祷告与分辨代替情绪化判断。"
+          },
+          "verse": {
+            "reference": "Galatians 6:2",
+            "textEn": "Carry each other's burdens, and in this way you will fulfill the law of Christ.",
+            "textZh": "你们各人的重担要互相担当，如此就完全了基督的律法。",
+            "themeEn": "Compassion",
+            "themeZh": "怜悯"
+          },
+          "translationState": "fallback"
+        }
+      ]
+    }
+  }
+}

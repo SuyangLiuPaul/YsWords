@@ -12,6 +12,15 @@ const _kParagraphMode = 'paragraphMode';
 const _kMenuScale = 'menuScale';
 const _kOfflineMode = 'offlineMode';
 const _kBooksViewMode = 'booksViewMode';
+const _kBoldVerseText = 'boldVerseText';
+const _kShowStrongsInOriginals = 'showStrongsInOriginals';
+const _kAutoExpandFirstRef = 'autoExpandFirstRef';
+const _kShowDailyNews = 'showDailyNews';
+const _kShowBibleEvidence = 'showBibleEvidence';
+const _kShowReadingPlan = 'showReadingPlan';
+const _kNotificationsEnabled = 'notificationsEnabled';
+const _kShowSectionTitles = 'showSectionTitles';
+const _kShowBookIntro = 'showBookIntro';
 
 class AppSettings extends ChangeNotifier {
   String _fontFamily = 'Roboto';
@@ -26,6 +35,43 @@ class AppSettings extends ChangeNotifier {
   bool _offlineMode = true;
   /// 'list' or 'grid' — persisted choice for the books picker.
   String _booksViewMode = 'grid';
+  /// Render verse text with FontWeight.w700 instead of normal weight.
+  bool _boldVerseText = false;
+  /// Show the Strong's # badge inside each word chip in the originals
+  /// (exegesis) sheet — handy for power users, distracting for some.
+  bool _showStrongsInOriginals = true;
+  /// Auto-expand the first book group in the concordance section of
+  /// each Strong's entry so the user sees verse refs immediately.
+  bool _autoExpandFirstRef = false;
+
+  /// Show the Today's Headlines card + Daily News quick-link tile +
+  /// the Daily News page entry. Default ON.
+  bool _showDailyNews = true;
+
+  /// Show the Today's Evidence card + Bible Evidence quick-link tile +
+  /// the Bible Evidence page entry. Default ON.
+  bool _showBibleEvidence = true;
+
+  /// Show the Today's Reading card on the dashboard. Default ON.
+  /// Reading-plan picker remains accessible from settings regardless.
+  bool _showReadingPlan = true;
+
+  /// Whether the user has opted into notifications. When true, the
+  /// app requests browser Notification permission on next launch and
+  /// fires local reminders (today's verse, today's reading missed,
+  /// etc.). Default OFF — must be explicit user opt-in.
+  bool _notificationsEnabled = false;
+
+  /// Render section / paragraph headings (e.g. "The Sermon on the
+  /// Mount" / "登山宝训") above the matched verse in the reading
+  /// pane. Default ON — gives chapters useful structure. Toggle in
+  /// Settings → Reading.
+  bool _showSectionTitles = true;
+
+  /// Render the collapsible book-intro card at the top of chapter 1
+  /// when an intro is authored for that book. Default ON. Toggle in
+  /// Settings → Reading.
+  bool _showBookIntro = true;
 
   String get fontFamily => _fontFamily;
   double get fontSize => _fontSize;
@@ -38,6 +84,15 @@ class AppSettings extends ChangeNotifier {
   double get menuScale => _menuScale;
   bool get offlineMode => _offlineMode;
   String get booksViewMode => _booksViewMode;
+  bool get boldVerseText => _boldVerseText;
+  bool get showStrongsInOriginals => _showStrongsInOriginals;
+  bool get autoExpandFirstRef => _autoExpandFirstRef;
+  bool get showDailyNews => _showDailyNews;
+  bool get showBibleEvidence => _showBibleEvidence;
+  bool get showReadingPlan => _showReadingPlan;
+  bool get notificationsEnabled => _notificationsEnabled;
+  bool get showSectionTitles => _showSectionTitles;
+  bool get showBookIntro => _showBookIntro;
 
   Future<void> setFontFamily(String family) async {
     if (_fontFamily == family) return;
@@ -120,6 +175,78 @@ class AppSettings extends ChangeNotifier {
     await prefs.setString(_kBooksViewMode, normalized);
   }
 
+  Future<void> setBoldVerseText(bool enabled) async {
+    if (_boldVerseText == enabled) return;
+    _boldVerseText = enabled;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_kBoldVerseText, enabled);
+  }
+
+  Future<void> setShowStrongsInOriginals(bool enabled) async {
+    if (_showStrongsInOriginals == enabled) return;
+    _showStrongsInOriginals = enabled;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_kShowStrongsInOriginals, enabled);
+  }
+
+  Future<void> setAutoExpandFirstRef(bool enabled) async {
+    if (_autoExpandFirstRef == enabled) return;
+    _autoExpandFirstRef = enabled;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_kAutoExpandFirstRef, enabled);
+  }
+
+  Future<void> setShowDailyNews(bool enabled) async {
+    if (_showDailyNews == enabled) return;
+    _showDailyNews = enabled;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_kShowDailyNews, enabled);
+  }
+
+  Future<void> setShowBibleEvidence(bool enabled) async {
+    if (_showBibleEvidence == enabled) return;
+    _showBibleEvidence = enabled;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_kShowBibleEvidence, enabled);
+  }
+
+  Future<void> setShowReadingPlan(bool enabled) async {
+    if (_showReadingPlan == enabled) return;
+    _showReadingPlan = enabled;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_kShowReadingPlan, enabled);
+  }
+
+  Future<void> setNotificationsEnabled(bool enabled) async {
+    if (_notificationsEnabled == enabled) return;
+    _notificationsEnabled = enabled;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_kNotificationsEnabled, enabled);
+  }
+
+  Future<void> setShowSectionTitles(bool enabled) async {
+    if (_showSectionTitles == enabled) return;
+    _showSectionTitles = enabled;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_kShowSectionTitles, enabled);
+  }
+
+  Future<void> setShowBookIntro(bool enabled) async {
+    if (_showBookIntro == enabled) return;
+    _showBookIntro = enabled;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_kShowBookIntro, enabled);
+  }
+
   Future<void> setMenuScale(double scale) async {
     final clamped = scale.clamp(0.7, 1.5);
     if (_menuScale == clamped) return;
@@ -148,6 +275,16 @@ class AppSettings extends ChangeNotifier {
     _offlineMode = prefs.getBool(_kOfflineMode) ?? true;
     final rawBooksView = prefs.getString(_kBooksViewMode) ?? 'grid';
     _booksViewMode = rawBooksView == 'grid' ? 'grid' : 'list';
+    _boldVerseText = prefs.getBool(_kBoldVerseText) ?? false;
+    _showStrongsInOriginals =
+        prefs.getBool(_kShowStrongsInOriginals) ?? true;
+    _autoExpandFirstRef = prefs.getBool(_kAutoExpandFirstRef) ?? false;
+    _showDailyNews = prefs.getBool(_kShowDailyNews) ?? true;
+    _showBibleEvidence = prefs.getBool(_kShowBibleEvidence) ?? true;
+    _showReadingPlan = prefs.getBool(_kShowReadingPlan) ?? true;
+    _notificationsEnabled = prefs.getBool(_kNotificationsEnabled) ?? false;
+    _showSectionTitles = prefs.getBool(_kShowSectionTitles) ?? true;
+    _showBookIntro = prefs.getBool(_kShowBookIntro) ?? true;
     notifyListeners();
   }
 

@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:yswords/models/verse.dart';
 import 'package:yswords/models/book.dart';
 import 'package:yswords/services/fetch_books.dart' show bookNameToEnglish;
+import 'package:yswords/services/cloud_sync_service.dart';
+import 'package:yswords/services/profile_service.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -12,7 +14,27 @@ import 'package:shared_preferences/shared_preferences.dart';
 class MainProvider extends ChangeNotifier {
   final String _storagePrefix;
 
-  MainProvider({String storagePrefix = ''}) : _storagePrefix = storagePrefix;
+  MainProvider({String storagePrefix = ''}) : _storagePrefix = storagePrefix {
+    // When the active profile changes, reload all profile-scoped
+    // user data (highlights / notes / bookmarks) so the UI flips
+    // atomically. Both panes in split-view share the same profile,
+    // so each pane needs its own subscription.
+    ProfileService.instance.addListener(_onProfileChanged);
+  }
+
+  @override
+  void dispose() {
+    ProfileService.instance.removeListener(_onProfileChanged);
+    super.dispose();
+  }
+
+  Future<void> _onProfileChanged() async {
+    await _loadHighlights();
+    await _loadNotes();
+    await _loadBookmarks();
+    onHighlightsMutated?.call();
+    notifyListeners();
+  }
 
   bool get isPrimary => _storagePrefix.isEmpty;
 
@@ -77,6 +99,15 @@ class MainProvider extends ChangeNotifier {
 
   // Map to store verse highlight colors (verse ID → ARGB int)
   Map<String, int> _highlights = {};
+
+  // Map of verse ID → user note text. Notes are persisted in
+  // SharedPreferences globally (no prefix) the same way highlights
+  // are, so split-view panes share them.
+  Map<String, String> _verseNotes = {};
+
+  // Set of bookmarked verse IDs. Same global persistence as
+  // highlights and notes.
+  Set<String> _bookmarks = {};
 
   // List of Store Verse Objects
   List<Verse> get selectedVerses =>
@@ -147,16 +178,42 @@ class MainProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  // Fire-and-forget local save. Errors from SharedPreferences are
+  // exceedingly rare (quota / corrupt platform store) but we still
+  // surface them via debugPrint so a regression is visible in the
+  // browser console rather than silently swallowed.
   void _saveHighlights() async {
-    final prefs = await SharedPreferences.getInstance();
-    // No prefix — highlights are global annotations shared across panes/versions.
-    prefs.setString('highlights', jsonEncode(_highlights));
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      // Profile-scoped — different signed-in users keep their own
+      // annotations even when they share the same browser. Both
+      // split-view panes share the same profile so they still see
+      // the same set.
+      await prefs.setString(
+          ProfileService.instance.scopedKey('highlights'),
+          jsonEncode(_highlights));
+      CloudSyncService.instance.requestUpload();
+    } catch (e, st) {
+      debugPrint('MainProvider._saveHighlights failed: $e\n$st');
+    }
   }
+
+  // Static guard for the legacy-key migration in _loadHighlights.
+  // Without this, every cloud-sync pull re-runs migration → re-saves
+  // → re-triggers a cloud upload → next snapshot pull re-runs
+  // migration → infinite syncing/synced flash. We only ever need to
+  // migrate once per app session; after the first save the cloud
+  // copy gets normalized and subsequent loads are no-ops.
+  static bool _didMigrateHighlightKeys = false;
 
   Future<void> _loadHighlights() async {
     final prefs = await SharedPreferences.getInstance();
-    // No prefix — both panes load the same store so split view stays in sync.
-    final json = prefs.getString('highlights');
+    // Reload from the active profile's namespace. Reset the in-memory
+    // map first so switching from a profile with highlights to one
+    // without doesn't leave stale entries.
+    _highlights = {};
+    final json =
+        prefs.getString(ProfileService.instance.scopedKey('highlights'));
     if (json == null) return;
     final decoded = jsonDecode(json) as Map<String, dynamic>;
 
@@ -174,9 +231,102 @@ class MainProvider extends ChangeNotifier {
       out[normalized] = entry.value as int;
     }
     _highlights = out;
-    if (migrated && isPrimary) {
+    if (migrated && isPrimary && !_didMigrateHighlightKeys) {
+      _didMigrateHighlightKeys = true;
       _saveHighlights();
     }
+  }
+
+  // ── Verse notes ─────────────────────────────────────────────────
+
+  /// Read-only snapshot for UI rendering (e.g. notes-list page).
+  Map<String, String> get verseNotes => Map.unmodifiable(_verseNotes);
+
+  /// Returns true if the verse has any note text attached.
+  bool isVerseNoted(Verse v) => (_verseNotes[v.id]?.isNotEmpty ?? false);
+
+  /// Returns the note text for [v], or null if no note exists.
+  String? getVerseNote(Verse v) => _verseNotes[v.id];
+
+  /// Set or replace the note for [verse]. Pass an empty string to
+  /// remove the note. Persists to SharedPreferences and notifies.
+  void setVerseNote({required Verse verse, required String text}) {
+    final trimmed = text.trim();
+    if (trimmed.isEmpty) {
+      _verseNotes.remove(verse.id);
+    } else {
+      _verseNotes[verse.id] = trimmed;
+    }
+    _saveNotes();
+    notifyListeners();
+  }
+
+  /// Same as [setVerseNote] but for an empty string — convenience.
+  void clearVerseNote({required Verse verse}) {
+    if (_verseNotes.remove(verse.id) != null) {
+      _saveNotes();
+      notifyListeners();
+    }
+  }
+
+  // ── Bookmarks ───────────────────────────────────────────────────
+
+  /// Read-only snapshot of bookmarked verse IDs.
+  Set<String> get bookmarks => Set.unmodifiable(_bookmarks);
+
+  bool isBookmarked(Verse v) => _bookmarks.contains(v.id);
+
+  void toggleBookmark({required Verse verse}) {
+    if (_bookmarks.contains(verse.id)) {
+      _bookmarks.remove(verse.id);
+    } else {
+      _bookmarks.add(verse.id);
+    }
+    _saveBookmarks();
+    notifyListeners();
+  }
+
+  void _saveNotes() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(ProfileService.instance.scopedKey('verseNotes'),
+          jsonEncode(_verseNotes));
+      CloudSyncService.instance.requestUpload();
+    } catch (e, st) {
+      debugPrint('MainProvider._saveNotes failed: $e\n$st');
+    }
+  }
+
+  Future<void> _loadNotes() async {
+    final prefs = await SharedPreferences.getInstance();
+    _verseNotes = {};
+    final json =
+        prefs.getString(ProfileService.instance.scopedKey('verseNotes'));
+    if (json == null) return;
+    final decoded = jsonDecode(json) as Map<String, dynamic>;
+    _verseNotes = {
+      for (final e in decoded.entries) e.key: e.value as String,
+    };
+  }
+
+  void _saveBookmarks() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setStringList(ProfileService.instance.scopedKey('bookmarks'),
+          _bookmarks.toList());
+      CloudSyncService.instance.requestUpload();
+    } catch (e, st) {
+      debugPrint('MainProvider._saveBookmarks failed: $e\n$st');
+    }
+  }
+
+  Future<void> _loadBookmarks() async {
+    final prefs = await SharedPreferences.getInstance();
+    _bookmarks = {};
+    final list =
+        prefs.getStringList(ProfileService.instance.scopedKey('bookmarks'));
+    if (list == null) return;
+    _bookmarks = list.toSet();
   }
 
   /// Maps a highlight ID like "历代志上-3-19" → "1 Chronicles-3-19".
@@ -298,6 +448,8 @@ class MainProvider extends ChangeNotifier {
     if (savedChapter != null) currentChapter = savedChapter;
 
     await _loadHighlights();
+    await _loadNotes();
+    await _loadBookmarks();
 
     notifyListeners();
   }
