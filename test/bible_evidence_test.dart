@@ -102,10 +102,37 @@ void main() {
         [6, 7, 8, 9],
       );
 
+      // Comma-separated verse spans within one chapter
+      expect(
+        BibleEvidenceService.chaptersInReference('John 18:31-33, 37-38'),
+        [18],
+      );
+      expect(
+        BibleEvidenceService.chaptersInReference('Acts 19:11-20, 23-41'),
+        [19],
+      );
+      expect(
+        BibleEvidenceService.chaptersInReference('1 Samuel 17:1-3, 52'),
+        [17],
+      );
+
+      // Semicolon-separated cross-book references — the first colon
+      // pair wins for the bibleBooks[0] context (the second book only
+      // matches when the entry's bibleBooks lists it too).
+      expect(
+        BibleEvidenceService.chaptersInReference(
+            'Exodus 14:21-22; 1 Kings 5-7'),
+        [14],
+      );
+
       // Unparseable references → empty (caller treats as book-wide match).
       expect(BibleEvidenceService.chaptersInReference(''), isEmpty);
       expect(
         BibleEvidenceService.chaptersInReference('Multiple Books'),
+        isEmpty,
+      );
+      expect(
+        BibleEvidenceService.chaptersInReference('Various NT references'),
         isEmpty,
       );
     });

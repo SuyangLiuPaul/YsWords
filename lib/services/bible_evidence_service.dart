@@ -151,40 +151,39 @@ class BibleEvidenceService {
   /// string. Returns the inclusive list of chapter numbers covered,
   /// or empty when no chapter is parseable (e.g. "Multiple Books").
   ///
-  /// Handles all of these formats observed in the corpus:
-  ///   "Isaiah 40:8"           -> [40]
-  ///   "2 Samuel 7:11-16"      -> [7]            (verse range, single ch)
-  ///   "Genesis 1:1-2:3"       -> [1, 2]         (multi-chapter range)
-  ///   "Numbers 22-24"         -> [22, 23, 24]
-  ///   "Leviticus 23"          -> [23]
-  ///   "Multiple Books"        -> []             (no parseable number)
+  /// Handles every format observed in the 225-entry corpus:
+  ///   "Isaiah 40:8"                -> [40]
+  ///   "2 Samuel 7:11-16"           -> [7]     (verse range tail ignored)
+  ///   "Genesis 1:1-2:3"            -> [1, 2]  (cross-chapter range)
+  ///   "John 18:31-33, 37-38"       -> [18]    (two verse spans, one ch)
+  ///   "Acts 19:11-20, 23-41"       -> [19]
+  ///   "1 Samuel 17:1-3, 52"        -> [17]
+  ///   "Exodus 14:21-22; 1 Kings 5-7" -> [14]  (multi-book; first ch wins)
+  ///   "Numbers 22-24"              -> [22, 23, 24]
+  ///   "Leviticus 23"               -> [23]
+  ///   "Multiple Books"             -> []
   ///
-  /// Branches on whether the reference contains a colon. With a colon
-  /// the dashed tail can be either verses ("7:11-16" → still ch 7) or
-  /// a multi-chapter range ("1:1-2:3" → chs 1 + 2). Without a colon
-  /// any dashed tail is unambiguously a chapter range.
+  /// Strategy:
+  /// - If the string has any "chapter:verse" pair (the colon disambiguates
+  ///   chapter prefixes from verse ranges), enumerate every such pair and
+  ///   return the inclusive range from the smallest to the largest chapter
+  ///   prefix. Verse-only dashes ("31-33") never match `\d+:\d+`, so they
+  ///   can't accidentally pollute the chapter set.
+  /// - Otherwise, fall through to bare chapter / chapter-range parsing
+  ///   ("Numbers 22-24" -> [22..24]).
   static List<int> chaptersInReference(String reference) {
     if (reference.isEmpty) return const [];
 
     if (reference.contains(':')) {
-      // Try a cross-chapter colon range first: "1:1-2:3".
-      final cross = RegExp(r'(\d+):\d+-(\d+):\d+\s*$').firstMatch(reference);
-      if (cross != null) {
-        final first = int.tryParse(cross.group(1) ?? '');
-        final second = int.tryParse(cross.group(2) ?? '');
-        if (first != null && second != null && second >= first) {
-          return [for (var i = first; i <= second; i++) i];
-        }
-      }
-      // Single chapter:verse, optionally with a verse range
-      // ("Isaiah 40:8", "2 Samuel 7:11-16"). The verse range tail is
-      // intentionally ignored — those still resolve to one chapter.
-      final single = RegExp(r'(\d+):\d+(?:-\d+)?\s*$').firstMatch(reference);
-      if (single != null) {
-        final first = int.tryParse(single.group(1) ?? '');
-        if (first != null) return [first];
-      }
-      return const [];
+      final chapters = RegExp(r'(\d+):\d+')
+          .allMatches(reference)
+          .map((m) => int.tryParse(m.group(1) ?? ''))
+          .whereType<int>()
+          .toList();
+      if (chapters.isEmpty) return const [];
+      final lo = chapters.reduce((a, b) => a < b ? a : b);
+      final hi = chapters.reduce((a, b) => a > b ? a : b);
+      return [for (var i = lo; i <= hi; i++) i];
     }
 
     // No colon → bare chapter or chapter range.
