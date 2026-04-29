@@ -420,6 +420,120 @@ The app adapts its layout to all device sizes using `lib/utils/responsive.dart`:
 
 ## What Has Been Fixed (2026-04-30)
 
+### News pipeline: full body + bilingual translation + hourly cadence (rounds 42–45)
+
+A run of news-tab fixes the user surfaced over the same day:
+
+1. **Full article body on the detail page (round 42).** The detail
+   page used to show only the 280-char summary. Pipeline now extracts
+   the long-form text from RSS `content:encoded` (~2800 chars cap)
+   into `article.body.en`; AI deep-match call additionally emits a
+   Chinese translation as `article.body.zh`. Flutter `NewsArticle`
+   gains `bodyEn`/`bodyZh` fields + a `body(locale)` accessor that
+   prefers the requested side and falls back to whichever is
+   populated. New `_ArticleBody` widget on the detail page renders
+   it below the bold summary, splitting on blank lines for
+   paragraph spacing.
+
+2. **Image fallback chain (round 42).** RSS feeds carry photos in
+   four different slots; the pipeline now tries them in order
+   (`enclosure` → `media:content` → `media:thumbnail` → first
+   `<img>` in `content:encoded`). When all fail, the detail page
+   shows a section-tinted gradient placeholder with a newspaper
+   icon instead of the empty void it used to render.
+
+3. **Skip duplicate body (round 43).** BBC / SBS / DW headline-ticker
+   feeds don't include `content:encoded`; the pipeline used to fall
+   through and emit body == summary, which the detail page then
+   rendered as duplicate text ("lede in bold + identical lede").
+   `deriveBody` now requires `content:encoded` to be ≥ 320 chars
+   AND ≥ 1.5× the summary length; otherwise body is empty and the
+   detail page hides the section. `_shouldShowBody` on the Flutter
+   side defensively handles older cached payloads with the same
+   logic.
+
+4. **Auto-deploy + cron reliability (round 44).** Three real bugs
+   were keeping fresh content off the CDN:
+   - Netlify ↔ GitHub link broken on the yswords-data site for ~17h
+     (`Host key verification failed` on clone), so every cron commit
+     succeeded but Netlify never built. Workflow now CLI-deploys
+     directly via `netlify-cli` using a `NETLIFY_AUTH_TOKEN` repo
+     secret (set programmatically via the GitHub API).
+   - Conditional gate (`if: env.NETLIFY_AUTH_TOKEN != ''`) was
+     unreadable from a step's own env. Promoted the secret to
+     job-level env so the gate works.
+   - `Commit + push` step failed with non-fast-forward whenever a
+     human pushed concurrently. Now does `git pull --rebase
+     --autostash` + retry on push rejection.
+
+5. **Gemini free-tier throttle (round 45).** Every deep-match was
+   hitting `HTTP 429` because the pipeline slammed the API at
+   ~120 RPM while `gemini-2.5-pro` free tier caps at 5 RPM. Result:
+   38/38 stories fell through to the keyword fallback per cron, no
+   body translation. Fixed by:
+   - `AI_CALL_DELAY_MS`: 500ms → 13s (matches 5 RPM)
+   - retry backoff: `[1s, 3s]` → `[12s, 30s]`
+   - body translation now uses `gemini-2.5-flash` (10 RPM, separate
+     quota pool) via new `aiTranslateBodyToZh` function
+
+6. **Schedule simplification.** Cron switched from `*/30` to `0 *
+   * * *` (hourly). Source RSS feeds update on a 1–3h rhythm anyway;
+   hourly halves AI calls + Netlify rebuilds without affecting
+   perceived freshness, and gives the cold-cache 10–16 min run
+   comfortable headroom before the next fire queues.
+
+7. **Viewer-local timestamps.** "Last updated" line in both Flutter
+   and the Astro newsbible site now renders in the *viewer's*
+   timezone (browser-local), with Melbourne as the fallback when
+   the device can't resolve a zone. New
+   `lib/utils/sydney_time.dart#formatViewerLocalStamp` returns
+   `(stamp, tzLabel)` derived from `DateTime.toLocal()`. Astro
+   server-renders Melbourne text and JS rewrites with
+   `Intl.DateTimeFormat().resolvedOptions().timeZone` on hydration.
+
+### One-tap Reload everywhere "no verse" can show (round 42)
+
+User: "sometimes it says no verse but should have. can you have a
+button for reload if happens to have no verse. otherwise I need to
+quit and open app again."
+
+Three traps fixed:
+
+1. **Splash screen.** When `mainProvider.verses` had loaded but
+   `_splashVerse` couldn't resolve, the loading page showed bare
+   "No verses available" text without the retry button. Now routes
+   to `_buildErrorScaffold` (which has Retry) in that case. Plus
+   `_lockRandom` now reads `context.read<MainProvider>().verses`
+   when its widget snapshot is empty, so the random fallback
+   succeeds even when `widget.verses` was constructed before
+   `FetchVerses` completed.
+
+2. **Reader.** Empty `mainProvider.verses` mid-session (failed
+   version switch, network blip, race) used to render an empty
+   list with no recovery. New `_emptyReaderScaffold` shows a book
+   icon + explainer + big Reload button.
+
+3. **Always-available menu.** New `Reload` entry in the floating-
+   header overflow menu via a new `onReload` callback on
+   `_FloatingHeader`. Reload is one tap away from anywhere in the
+   reader.
+
+`_reloadVerses` re-runs `FetchVerses` + `FetchBooks`, snaps the
+cursor to a valid verse, and shows snackbar feedback ("Reloading…"
+→ "Reloaded" / error).
+
+### Verse tap target + Copy button UX (round 41½)
+
+- Verse tap target was ~24dp tall at small fonts; bumped padding
+  to ~32–44dp, restored subtle splash + highlight tint.
+- Copy button used to call `ShareService.shareText` first, popping
+  the OS share sheet on mobile. Now the Copy button just copies +
+  shows a snackbar — sharing remains available via the system
+  text-selection menu.
+- Paragraph-mode dead-zone tap fix: inter-verse separator
+  whitespace and first-line indent placeholder now carry tap
+  recognizers so any pixel inside a paragraph toggles selection.
+
 ### Time-of-day greeting + Sydney DST display (round 41)
 
 Two display bugs caught the same day:
