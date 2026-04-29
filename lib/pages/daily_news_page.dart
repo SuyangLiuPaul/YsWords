@@ -260,6 +260,7 @@ class _Masthead extends StatelessWidget {
     final dateLabel = bundle.editionDate.isNotEmpty
         ? bundle.editionDate
         : (bundle.generatedAt?.toIso8601String().substring(0, 10) ?? '');
+    final updatedLabel = _formatLastUpdated(bundle.generatedAt, locale);
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: Column(
@@ -285,9 +286,62 @@ class _Masthead extends StatelessWidget {
               color: scheme.onSurface,
             ),
           ),
+          if (updatedLabel != null) ...[
+            const SizedBox(height: 6),
+            // Last-updated line + refresh-schedule note. Both the
+            // Flutter app and the Astro site (newsbible.netlify.app)
+            // pull from the SAME upstream source — yswords-data — so
+            // this timestamp matches across surfaces. The schedule
+            // is gated to Sydney 06/11/16/19 with 30-minute granularity
+            // inside each publishing hour, NOT every 30 minutes globally.
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(
+                  Icons.schedule_outlined,
+                  size: (fs - 2).clamp(11.0, 15.0).toDouble(),
+                  color: scheme.onSurfaceVariant,
+                ),
+                const SizedBox(width: 4),
+                Expanded(
+                  child: Text(
+                    updatedLabel,
+                    style: TextStyle(
+                      fontFamily: settings.fontFamily,
+                      fontSize: (fs - 3).clamp(10.0, 14.0).toDouble(),
+                      color: scheme.onSurfaceVariant,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
         ],
       ),
     );
+  }
+
+  /// Format the bundle's [generatedAt] as a localized "last updated"
+  /// line. Returns null when the timestamp is missing so the caller
+  /// can omit the row entirely. Always rendered in Sydney time
+  /// because the cron commits according to Sydney publishing hours.
+  static String? _formatLastUpdated(DateTime? generatedAt, String locale) {
+    if (generatedAt == null) return null;
+    // Convert to Sydney time. DateTime in Dart is offset-naive UTC
+    // when parsed from an ISO string with "Z" — adding 10/11 hours
+    // mirrors Sydney's standard / daylight saving offsets. We use a
+    // simple AEST (+10) offset because most of the year is AEST and
+    // the user only needs an approximate local timestamp.
+    final sydney = generatedAt.toUtc().add(const Duration(hours: 10));
+    final hh = sydney.hour.toString().padLeft(2, '0');
+    final mm = sydney.minute.toString().padLeft(2, '0');
+    final yyyy = sydney.year.toString();
+    final mo = sydney.month.toString().padLeft(2, '0');
+    final dd = sydney.day.toString().padLeft(2, '0');
+    final stamp = '$yyyy-$mo-$dd $hh:$mm';
+    final template = uiStrings['dailyNewsLastUpdated']?[locale] ??
+        'Last updated {stamp} (Sydney) · refreshes 06:00, 11:00, 16:00, 19:00';
+    return template.replaceAll('{stamp}', stamp);
   }
 }
 

@@ -761,6 +761,17 @@ const uiStrings = {
     'zh-Hant': '共 {n} 條',
     'en': '{n} results',
   },
+  // Daily News masthead — "last updated" line. {stamp} is the Sydney
+  // local timestamp of the daily_news.json's generatedAt field.
+  // Both the Flutter app and the Astro site at newsbible.netlify.app
+  // pull from the same upstream source (yswords-data) so this matches
+  // across surfaces.
+  'dailyNewsLastUpdated': {
+    'zh-Hans': '最近更新 {stamp}（悉尼时间） · 每日 06:00 / 11:00 / 16:00 / 19:00 刷新',
+    'zh-Hant': '最近更新 {stamp}（雪梨時間） · 每日 06:00 / 11:00 / 16:00 / 19:00 重新整理',
+    'en':
+        'Last updated {stamp} (Sydney) · refreshes at 06:00 / 11:00 / 16:00 / 19:00',
+  },
   // Evidence scope-disclosure banner (chapter / book / archive).
   // Use {n}, {book}, {chapter} as placeholders; the widget does the
   // .replaceAll so we don't have to format here.
