@@ -340,7 +340,7 @@ class _Masthead extends StatelessWidget {
     final dd = sydney.day.toString().padLeft(2, '0');
     final stamp = '$yyyy-$mo-$dd $hh:$mm';
     final template = uiStrings['dailyNewsLastUpdated']?[locale] ??
-        'Last updated {stamp} (Sydney) · refreshes 06:00, 11:00, 16:00, 19:00';
+        'Last updated {stamp} (Sydney) · refreshes every 30 minutes';
     return template.replaceAll('{stamp}', stamp);
   }
 }
