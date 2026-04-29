@@ -1,3 +1,4 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -35,14 +36,27 @@ class ParagraphGroupWidget extends StatelessWidget {
         final isReference = group.first.paragraphType == 'reference';
         final isParagraphStart = group.first.isParagraphStart == true;
 
-        // Build flowing spans for the whole group
+        // Build flowing spans for the whole group. Every span — including
+        // the indent placeholder and inter-verse separators — gets a tap
+        // recognizer so there are NO dead zones between verses. Pre-fix
+        // bug: the gap-spans had no recognizer, so taps that landed on
+        // whitespace fell through to the InkWell whose onTap was `null`
+        // when the paragraph had >1 verse, requiring users to retry.
         final allSpans = <InlineSpan>[];
 
         // First-line indent for paragraph starts (true Chinese book style).
         // Reference blocks use a deeper indent on every line via container padding.
         if (isParagraphStart && !isReference) {
           allSpans.add(WidgetSpan(
-            child: SizedBox(width: settings.fontSize * 1.6),
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: () =>
+                  mainProvider.toggleVerse(verse: group.first),
+              child: SizedBox(
+                width: settings.fontSize * 1.6,
+                height: settings.fontSize * settings.lineSpacing,
+              ),
+            ),
           ));
         }
 
@@ -74,10 +88,15 @@ class ParagraphGroupWidget extends StatelessWidget {
             spanBgColor: bgColor,
           ));
 
-          // Add a small visual breather between consecutive verses inside the
-          // same paragraph — keeps numbers from glueing onto preceding text.
+          // Inter-verse separator — assign tap to the verse just rendered
+          // so a tap on the whitespace toggles that verse instead of
+          // doing nothing.
           if (i < group.length - 1) {
-            allSpans.add(const TextSpan(text: ' '));
+            allSpans.add(TextSpan(
+              text: ' ',
+              recognizer: TapGestureRecognizer()
+                ..onTap = () => mainProvider.toggleVerse(verse: verse),
+            ));
           }
         }
 
@@ -101,8 +120,21 @@ class ParagraphGroupWidget extends StatelessWidget {
           color: Colors.transparent,
           clipBehavior: Clip.hardEdge,
           child: InkWell(
-            highlightColor: Colors.transparent,
-            splashColor: Colors.transparent,
+            // Subtle splash so taps that land on the block margins
+            // (outside any text span) still give visible feedback.
+            // The actual selection is handled by the per-verse span
+            // recognizers above when the tap is on text.
+            highlightColor: Theme.of(context)
+                .colorScheme
+                .primary
+                .withValues(alpha: 0.05),
+            splashColor: Theme.of(context)
+                .colorScheme
+                .primary
+                .withValues(alpha: 0.08),
+            // Single-verse paragraphs: tap anywhere in the block toggles.
+            // Multi-verse paragraphs: leave it null so the per-verse span
+            // recognizers can disambiguate which verse to toggle.
             onTap: group.length == 1
                 ? () => mainProvider.toggleVerse(verse: group.first)
                 : null,
