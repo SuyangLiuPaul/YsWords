@@ -131,8 +131,21 @@ class _LoadingPageState extends State<LoadingPage> {
 
   void _lockRandom() {
     if (_splashVerseLocked) return;
-    if (widget.verses.isEmpty) return;
-    _splashVerse = (List<Verse>.from(widget.verses)..shuffle()).first;
+    // Prefer the live provider list — widget.verses is a snapshot
+    // taken at LoadingPage construction time and can be empty if the
+    // FetchVerses future hadn't completed yet. Falling back to the
+    // provider lets us still pick a random verse instead of stranding
+    // the user on the bare "No verses available" screen.
+    var pool = widget.verses;
+    if (pool.isEmpty) {
+      try {
+        pool = context.read<MainProvider>().verses;
+      } catch (_) {
+        pool = const [];
+      }
+    }
+    if (pool.isEmpty) return;
+    _splashVerse = (List<Verse>.from(pool)..shuffle()).first;
     _splashVerseLocked = true;
   }
 
@@ -223,15 +236,20 @@ class _LoadingPageState extends State<LoadingPage> {
     final s = ResponsiveBreakpoints.spacingScale(dc);
     final logoSize = ResponsiveBreakpoints.loadingLogoSize(dc);
 
+    // When _splashVerse is null but mainProvider.verses isn't empty,
+    // we'd otherwise sit with bare text and no way out — the auto-
+    // advance timer might also be cancelled. Reuse the error scaffold
+    // (with retry button) so the user always has a way to recover
+    // without quit-and-relaunch. This is the path the user hit when
+    // they reported "sometimes it says no verse but should have".
+    if (verse == null) {
+      return _buildErrorScaffold(context, settings);
+    }
+
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
       body: Center(
-        child: verse == null
-            ? Text(
-                uiStrings['noVersesAvailable']?[settings.locale] ??
-                    'No verses available',
-              )
-            : Column(
+        child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Image.asset(

@@ -1622,6 +1622,25 @@ const uiStrings = {
     'zh-Hant': '重試',
     'en': 'Retry',
   },
+  // Reload-from-anywhere action — surfaces in the floating-header
+  // overflow menu and the empty-reader recovery screen so the user
+  // always has a one-tap fix when verses fail to load mid-session
+  // (instead of having to relaunch the app).
+  'reload': {
+    'zh-Hans': '重新加载',
+    'zh-Hant': '重新載入',
+    'en': 'Reload',
+  },
+  'reloading': {
+    'zh-Hans': '正在重新加载…',
+    'zh-Hant': '正在重新載入…',
+    'en': 'Reloading…',
+  },
+  'reloaded': {
+    'zh-Hans': '已重新加载',
+    'zh-Hant': '已重新載入',
+    'en': 'Reloaded',
+  },
   'offlineMode': {
     'zh-Hans': '离线模式',
     'zh-Hant': '離線模式',

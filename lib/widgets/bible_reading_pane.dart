@@ -466,6 +466,129 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
     return _formatVerseRange(verses.map((v) => v.verse).toList());
   }
 
+  /// Empty-reader scaffold — shown when verses come back empty
+  /// (failed version switch, network blip, race) so the user always
+  /// has a visible Reload button instead of being stuck on a blank
+  /// list. The popup-menu Reload entry is also available, but
+  /// surfacing the button right where the eye lands is friendlier.
+  Widget _emptyReaderScaffold(BuildContext context, AppSettings settings) {
+    final scheme = Theme.of(context).colorScheme;
+    final locale = settings.locale;
+    return Scaffold(
+      body: SafeArea(
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 32),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.menu_book_outlined,
+                    size: 56, color: scheme.primary.withValues(alpha: 0.7)),
+                const SizedBox(height: 16),
+                Text(
+                  uiStrings['noVersesAvailable']?[locale] ??
+                      'No verses available',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontFamily: settings.fontFamily,
+                    fontSize: settings.fontSize * 1.1,
+                    fontWeight: FontWeight.w600,
+                    color: scheme.onSurface,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  uiStrings['loadErrorBody']?[locale] ??
+                      'Could not load Bible verses. Please check your connection and retry.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontFamily: settings.fontFamily,
+                    fontSize: settings.fontSize * 0.95,
+                    color: scheme.onSurfaceVariant,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                ElevatedButton.icon(
+                  onPressed: _reloadVerses,
+                  icon: const Icon(Icons.refresh),
+                  label: Text(
+                    uiStrings['reload']?[locale] ?? 'Reload',
+                    style: TextStyle(
+                      fontFamily: settings.fontFamily,
+                      fontSize: settings.fontSize,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// User-initiated reload. Re-fetches the current Bible version's
+  /// verses + books and resets the reader to the current chapter (or
+  /// the first chapter when the reader was empty). Used by the
+  /// "Reload" menu item AND by the empty-state widget shown when the
+  /// reader has no verses for the current selection.
+  ///
+  /// Pre-fix the only recovery from a failed FetchVerses was quit-
+  /// and-relaunch.
+  Future<void> _reloadVerses() async {
+    if (!mounted) return;
+    final p = context.read<MainProvider>();
+    final settings = context.read<AppSettings>();
+    final messenger = _messengerKey.currentState;
+    final reloadingMsg =
+        uiStrings['reloading']?[settings.locale] ?? 'Reloading…';
+    messenger?.showSnackBar(SnackBar(
+      content: Text(reloadingMsg),
+      duration: const Duration(seconds: 2),
+    ));
+    try {
+      await FetchVerses.execute(mainProvider: p);
+      if (!mounted) return;
+      await FetchBooks.execute(mainProvider: p);
+      if (!mounted) return;
+      if (p.verses.isEmpty) {
+        messenger?.showSnackBar(SnackBar(
+          content: Text(uiStrings['loadErrorBody']?[settings.locale] ??
+              'Could not load verses. Please retry.'),
+          duration: const Duration(seconds: 3),
+        ));
+        return;
+      }
+      // Settle the cursor on a verse that actually exists. Prefer the
+      // current selection; fall through to the bundle's first verse
+      // when the previous book/chapter no longer matches anything.
+      final keepBook = p.currentBook;
+      final keepChapter = p.currentChapter;
+      final match = p.verses.firstWhere(
+        (v) => v.book == keepBook && v.chapter == keepChapter,
+        orElse: () => p.verses.first,
+      );
+      p.setCurrentChapter(book: match.book, chapter: match.chapter);
+      p.updateCurrentVerse(verse: match);
+      p.setLoadError(null);
+      messenger?.showSnackBar(SnackBar(
+        content: Text(uiStrings['reloaded']?[settings.locale] ?? 'Reloaded'),
+        duration: const Duration(milliseconds: 1500),
+      ));
+    } catch (e) {
+      if (!mounted) return;
+      final base = uiStrings['loadErrorBody']?[settings.locale] ??
+          'Could not load verses.';
+      final detail = e.toString();
+      final detailShort =
+          detail.substring(0, detail.length.clamp(0, 100));
+      messenger?.showSnackBar(SnackBar(
+        content: Text('$base $detailShort'),
+        duration: const Duration(seconds: 3),
+      ));
+    }
+  }
+
   Future<void> _copySelectedVerses({
     required MainProvider mainProvider,
     required AppSettings settings,
@@ -542,6 +665,14 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
               child: CircularProgressIndicator(),
             ),
           );
+        }
+
+        // The reader has no verses at all → show an empty state with
+        // a Reload button so the user has a one-tap recovery path
+        // instead of having to relaunch the app. Pre-fix this
+        // rendered an empty list silently.
+        if (mainProvider.verses.isEmpty) {
+          return _emptyReaderScaffold(context, settings);
         }
 
         final verses = mainProvider.verses
@@ -885,6 +1016,11 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                         () => const HighlightsPage(),
                         transition: Transition.rightToLeft,
                       ),
+                      // Reload — re-runs FetchVerses+FetchBooks on the
+                      // current version. User asked for this so they
+                      // don't have to relaunch the app when verses
+                      // fail to load mid-session.
+                      onReload: _reloadVerses,
                       // TTS read-aloud — only on web (or any platform
                       // where the SpeechSynthesis API is available).
                       // The state class also self-stops the utterance
@@ -2184,6 +2320,10 @@ class _FloatingHeader extends StatelessWidget {
   final String locale;
   final int highlightCount;
   final VoidCallback? onHighlights;
+  /// One-tap reload triggered from the overflow menu. Re-runs
+  /// FetchVerses + FetchBooks on the current Bible version. Null
+  /// hides the menu item.
+  final VoidCallback? onReload;
   /// Toggles read-aloud (web TTS) for the current chapter. Null hides
   /// the menu item — set to null on platforms / browsers without
   /// SpeechSynthesis support.
@@ -2220,6 +2360,7 @@ class _FloatingHeader extends StatelessWidget {
     this.locale = 'en',
     this.highlightCount = 0,
     this.onHighlights,
+    this.onReload,
     this.onToggleListen,
     this.isListening = false,
     this.belowHeader,
@@ -2501,6 +2642,24 @@ class _FloatingHeader extends StatelessWidget {
                             label: uiStrings['home']?[locale] ?? 'Home',
                           ),
                         ));
+                        // Reload — always available so the user has
+                        // a one-tap recovery when the reader ends up
+                        // empty (failed version switch, network blip,
+                        // race condition). User asked for this
+                        // explicitly: "I need to quit and open app
+                        // again" was their previous workaround.
+                        if (onReload != null) {
+                          items.add(PopupMenuItem(
+                            value: 'reload',
+                            onTap: () => onReload!(),
+                            child: _menuRow(
+                              context,
+                              icon: Icons.refresh,
+                              label:
+                                  uiStrings['reload']?[locale] ?? 'Reload',
+                            ),
+                          ));
+                        }
                         // Library entry — always shown so the user
                         // can discover Notes / Bookmarks even before
                         // creating any.
