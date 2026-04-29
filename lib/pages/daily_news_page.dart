@@ -334,7 +334,7 @@ class _Masthead extends StatelessWidget {
     if (generatedAt == null) return null;
     final formatted = formatViewerLocalStamp(generatedAt);
     final template = uiStrings['dailyNewsLastUpdated']?[locale] ??
-        'Last updated {stamp} {tz} · refreshes every 30 minutes';
+        'Last updated {stamp} {tz} · refreshes hourly';
     return template
         .replaceAll('{stamp}', formatted.stamp)
         .replaceAll('{tz}', formatted.tzLabel);
