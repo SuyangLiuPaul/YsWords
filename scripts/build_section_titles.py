@@ -1892,6 +1892,714 @@ SECTION_CONTEXTS: dict[tuple[str, int, int], tuple[str, str, str]] = {
         "保羅從「神為我們做了什麼」轉到「我們當如何回應」——將身體獻作活祭，是合理的事奉。",
         "The pivot from doctrine to ethics. In view of God's mercy, we offer ourselves as living sacrifices — and the rest of life flows from that response.",
     ),
+    # ── PHASE-4 EXPANSION — backgrounds across the canon ─────────
+    # Genesis (extra)
+    ("Genesis", 4, 1): (
+        "亚当离开伊甸园外的第一个家庭：兄弟相残，是堕落最早的果效之一。",
+        "亞當離開伊甸園外的第一個家庭：兄弟相殘，是墮落最早的果效之一。",
+        "The first family outside Eden — and the first murder. Sin's poison spreads quickly: from disobedience in the garden to a brother killed in the field.",
+    ),
+    ("Genesis", 7, 1): (
+        "神的审判与拯救并存：洪水洗净大地，但方舟保全挪亚一家，预表更大的救赎。",
+        "神的審判與拯救並存：洪水洗淨大地，但方舟保全挪亞一家，預表更大的救贖。",
+        "Judgment and salvation in one event: the flood cleanses the earth while the ark preserves Noah's family — a pattern Peter later sees as foreshadowing baptism.",
+    ),
+    ("Genesis", 14, 17): (
+        "「至高神的祭司」麦基洗德接受亚伯拉罕的十一奉献——希伯来书第七章详述他预表基督。",
+        "「至高神的祭司」麥基洗德接受亞伯拉罕的十一奉獻——希伯來書第七章詳述他預表基督。",
+        "Melchizedek — 'priest of God Most High' — receives Abraham's tithe. Hebrews 7 spends an entire chapter on this brief encounter as a foretaste of Christ's priesthood.",
+    ),
+    ("Genesis", 15, 1): (
+        "神的立约异象：神「自下而过」，独自承担违约的咒诅，预示基督担当我们的罪。",
+        "神的立約異象：神「自下而過」，獨自承擔違約的咒詛，預示基督擔當我們的罪。",
+        "God seals his covenant by passing through the divided animals alone — taking on himself the curse of any breach. A breathtaking preview of Calvary.",
+    ),
+    ("Genesis", 17, 1): (
+        "割礼之约——身体上的印记，标记神立约之民的身份。后世保罗指出真割礼是心里的。",
+        "割禮之約——身體上的印記，標記神立約之民的身份。後世保羅指出真割禮是心裡的。",
+        "The covenant of circumcision — a sign in the body marking God's covenant people. Paul will later teach that the true circumcision is of the heart.",
+    ),
+    ("Genesis", 19, 1): (
+        "所多玛的毁灭——圣经中最著名的审判事件之一，也是新约屡次提及的警戒。",
+        "所多瑪的毀滅——聖經中最著名的審判事件之一，也是新約屢次提及的警戒。",
+        "The destruction of Sodom — one of the Bible's most famous judgments, repeatedly cited in the New Testament as a warning of God's holiness.",
+    ),
+    ("Genesis", 21, 1): (
+        "二十五年后的应许成就：以撒出生。神的应许从不落空，只是按祂的时间。",
+        "二十五年後的應許成就：以撒出生。神的應許從不落空，只是按祂的時間。",
+        "Twenty-five years after the promise, Isaac is born. God's word never fails — but it operates on his timetable, not ours.",
+    ),
+    ("Genesis", 28, 10): (
+        "雅各逃亡的第一夜在旷野枕石而眠，却梦见天梯——耶稣在约翰福音1:51 引用。",
+        "雅各逃亡的第一夜在曠野枕石而眠，卻夢見天梯——耶穌在約翰福音1:51 引用。",
+        "Fleeing for his life, Jacob dreams of a stairway joining heaven and earth. Jesus picks up this image in John 1:51 — saying he himself is the bridge.",
+    ),
+    ("Genesis", 32, 22): (
+        "雅各在雅博渡口与神角力，得新名「以色列」，亦得跛行——伤痕成为他一生的祝福记号。",
+        "雅各在雅博渡口與神角力，得新名「以色列」，亦得跛行——傷痕成為他一生的祝福記號。",
+        "Jacob wrestles with God at the Jabbok ford and emerges with a new name (Israel) and a permanent limp — a wound that becomes his lifelong sign of blessing.",
+    ),
+    ("Genesis", 39, 1): (
+        "约瑟的人生从私室到深井再到囚牢，神「与他同在」始终未变——一个从不放弃的应许。",
+        "約瑟的人生從私室到深井再到囚牢，神「與他同在」始終未變——一個從不放棄的應許。",
+        "Joseph's life moves from pit to prison — yet at every stage, 'the LORD was with Joseph.' One unbroken thread through every reversal.",
+    ),
+    ("Genesis", 45, 1): (
+        "二十年的分离与误会，化为兄弟流泪相拥。约瑟从不诅咒兄弟，反而看见神的护理。",
+        "二十年的分離與誤會，化為兄弟流淚相擁。約瑟從不詛咒兄弟，反而看見神的護理。",
+        "Twenty years of separation and silence collapse into tears and embrace. Joseph never curses his brothers — he sees God's providence behind every betrayal.",
+    ),
+    # Exodus
+    ("Exodus", 3, 1): (
+        "燃烧而不烧毁的荆棘——四十年寂静后神向摩西显现，开启出埃及的故事。",
+        "燃燒而不燒毀的荊棘——四十年寂靜後神向摩西顯現，開啟出埃及的故事。",
+        "After forty years of silence, God appears to Moses in a bush that burns without being consumed. The whole Exodus story begins here.",
+    ),
+    ("Exodus", 12, 1): (
+        "逾越节的设立——羔羊的血涂在门上，神「越过」以色列家。预表基督被钉的那夜。",
+        "逾越節的設立——羔羊的血塗在門上，神「越過」以色列家。預表基督被釘的那夜。",
+        "The Passover instituted — lamb's blood marks each home, and the angel of death 'passes over.' Jesus dies on Passover, fulfilling every detail.",
+    ),
+    ("Exodus", 14, 1): (
+        "过红海——出埃及救赎的高峰。法老追兵在后，红海在前，神开道路。",
+        "過紅海——出埃及救贖的高峰。法老追兵在後，紅海在前，神開道路。",
+        "Crossing the Red Sea — the climax of the Exodus rescue. With Pharaoh's army behind and the sea ahead, God makes a way through impossibility.",
+    ),
+    ("Exodus", 19, 1): (
+        "西奈山——神向以色列显现立约的地点。从此他们成为「祭司的国度，圣洁的国民」。",
+        "西奈山——神向以色列顯現立約的地點。從此他們成為「祭司的國度，聖潔的國民」。",
+        "Mount Sinai — where the redeemed people meet their God to enter into covenant. They become 'a kingdom of priests and a holy nation.'",
+    ),
+    ("Exodus", 20, 1): (
+        "十诫——神立约关系的核心：先表明祂的拯救，再赐下顺服祂的方式。",
+        "十誡——神立約關係的核心：先表明祂的拯救，再賜下順服祂的方式。",
+        "The Ten Commandments — the heart of the covenant. God first declares his rescue ('I brought you out…'), then gives the shape of obedience that follows.",
+    ),
+    ("Exodus", 25, 1): (
+        "会幕的设计——神要住在祂百姓中间。每一个细节都预表更美的「圣所」（基督和教会）。",
+        "會幕的設計——神要住在祂百姓中間。每一個細節都預表更美的「聖所」（基督和教會）。",
+        "The tabernacle's design — God will dwell among his people. Every detail later finds fulfillment in Christ and his church (Heb 8-10).",
+    ),
+    ("Exodus", 32, 1): (
+        "金牛犊事件——摩西在山上四十天，山下百姓已离弃神。圣经核心叛逆事件之一。",
+        "金牛犢事件——摩西在山上四十天，山下百姓已離棄神。聖經核心叛逆事件之一。",
+        "The golden calf — while Moses is on the mountain, the people fashion a god they can see. One of Scripture's core stories of human idolatry.",
+    ),
+    ("Exodus", 40, 1): (
+        "出埃及记的高峰：神的荣光充满会幕。神实在与祂的百姓同住——主题贯穿整本圣经。",
+        "出埃及記的高峰：神的榮光充滿會幕。神實在與祂的百姓同住——主題貫穿整本聖經。",
+        "Exodus reaches its climax: God's glory fills the tabernacle. God really does dwell with his people — a thread that runs through every book of the Bible.",
+    ),
+    # Leviticus
+    ("Leviticus", 16, 1): (
+        "赎罪日——以色列圣历中最庄严的一天。两只山羊：一献为祭，一被赶到旷野作替罪羊。",
+        "贖罪日——以色列聖曆中最莊嚴的一天。兩隻山羊：一獻為祭，一被趕到曠野作替罪羊。",
+        "The Day of Atonement — the most solemn day in Israel's calendar. Two goats: one sacrificed, one driven into the wilderness — both pictures of Christ's work.",
+    ),
+    ("Leviticus", 19, 1): (
+        "「你们要圣洁，因为我耶和华你们的神是圣洁的」——利未记的核心，彼得前书1:16 直接引用。",
+        "「你們要聖潔，因為我耶和華你們的神是聖潔的」——利未記的核心，彼得前書1:16 直接引用。",
+        "'Be holy, because I, the LORD your God, am holy.' The heart of Leviticus — quoted by Peter (1 Pet 1:16) as the church's calling.",
+    ),
+    # Numbers
+    ("Numbers", 13, 1): (
+        "十二探子的报告：十人传恶信、二人凭信靠。一代以色列因不信而失去应许之地。",
+        "十二探子的報告：十人傳惡信、二人憑信靠。一代以色列因不信而失去應許之地。",
+        "The twelve spies — ten see giants, two see God. A whole generation forfeits the promised land because of unbelief at the threshold.",
+    ),
+    ("Numbers", 21, 4): (
+        "铜蛇的事件——耶稣在约翰福音3:14 引用此事，预示祂自己被举起。",
+        "銅蛇的事件——耶穌在約翰福音3:14 引用此事，預示祂自己被舉起。",
+        "Snake-bitten Israelites look at the bronze serpent and live. Jesus picks up this story in John 3:14 to foreshadow his own being lifted up on the cross.",
+    ),
+    # Deuteronomy
+    ("Deuteronomy", 6, 1): (
+        "示玛——「以色列啊你要听！」每个虔诚犹太人每日的宣告。耶稣称之为「最大的诫命」。",
+        "示瑪——「以色列啊你要聽！」每個虔誠猶太人每日的宣告。耶穌稱之為「最大的誡命」。",
+        "The Shema — 'Hear, O Israel.' The daily confession of every devout Jew. Jesus calls it the greatest commandment.",
+    ),
+    ("Deuteronomy", 30, 1): (
+        "悔改与归回——出埃及记的高潮——神应许在被掳之后将祂的子民重新带回，赐他们新心。",
+        "悔改與歸回——出埃及記的高潮——神應許在被擄之後將祂的子民重新帶回，賜他們新心。",
+        "Even before the exile happens, God promises return. After judgment will come restoration — and a new heart that loves him.",
+    ),
+    # Joshua
+    ("Joshua", 1, 1): (
+        "摩西去世后，约书亚承接领导。神三次重复「刚强壮胆」——一句使他能面对未知的应许。",
+        "摩西去世後，約書亞承接領導。神三次重複「剛強壯膽」——一句使他能面對未知的應許。",
+        "After Moses' death, Joshua takes the lead. God says 'Be strong and courageous' three times — a promise that carries him through the unknown.",
+    ),
+    ("Joshua", 2, 1): (
+        "喇合是耶利哥城的妓女，却因信加入神的子民——基督家谱中的第一位外邦女子。",
+        "喇合是耶利哥城的妓女，卻因信加入神的子民——基督家譜中的第一位外邦女子。",
+        "Rahab — a Canaanite prostitute — believes the rumors of YHWH and saves her family. She ends up in the genealogy of Jesus (Matt 1:5).",
+    ),
+    ("Joshua", 6, 1): (
+        "耶利哥城的城墙倒塌——以色列以「七天围城、围圈呼喊」战胜，靠的是神，不是兵器。",
+        "耶利哥城的城牆倒塌——以色列以「七天圍城、圍圈呼喊」戰勝，靠的是神，不是兵器。",
+        "Jericho's walls collapse — Israel wins not by weapons but by seven days of marching and a single shout. The first conquest battle is God's work.",
+    ),
+    ("Joshua", 24, 1): (
+        "约书亚在示剑发出最后挑战：「至于我和我家，我们必定事奉耶和华。」",
+        "約書亞在示劍發出最後挑戰：「至於我和我家，我們必定事奉耶和華。」",
+        "Joshua's final covenant renewal at Shechem — and his famous personal declaration: 'As for me and my house, we will serve the LORD.'",
+    ),
+    # Judges
+    ("Judges", 4, 1): (
+        "底波拉——士师中唯一的女先知，与雅亿一同打败迦南强敌西西拉。",
+        "底波拉——士師中唯一的女先知，與雅億一同打敗迦南強敵西西拉。",
+        "Deborah — the only female judge — and Jael team up to defeat Sisera. The story celebrates God using unexpected people for unexpected victories.",
+    ),
+    ("Judges", 6, 1): (
+        "基甸——一个胆怯的农夫，神称他为「大能的勇士」。神所看见的，远超我们所是。",
+        "基甸——一個膽怯的農夫，神稱他為「大能的勇士」。神所看見的，遠超我們所是。",
+        "Gideon — a fearful farmer hiding from raiders — is called 'mighty warrior' by God. What God sees in us is greater than what we see in ourselves.",
+    ),
+    # Ruth
+    ("Ruth", 1, 16): (
+        "「你的国就是我的国，你的神就是我的神」——一位摩押女子立誓向以色列的神，加入立约之家。",
+        "「你的國就是我的國，你的神就是我的神」——一位摩押女子立誓向以色列的神，加入立約之家。",
+        "'Your people will be my people and your God my God.' A Moabite woman pledges her life — and ends up the great-grandmother of King David.",
+    ),
+    # 1 Samuel
+    ("1 Samuel", 1, 1): (
+        "哈拿不孕之痛与切切的祷告——撒母耳的诞生应验了神听见破碎之心的应许。",
+        "哈拿不孕之痛與切切的禱告——撒母耳的誕生應驗了神聽見破碎之心的應許。",
+        "Hannah's barren grief and desperate prayer give birth to Samuel. The story whispers what God will say openly: he hears broken hearts.",
+    ),
+    ("1 Samuel", 3, 1): (
+        "「主啊请说，仆人敬听」——少年撒母耳的回应，成为历世历代敬虔者的祷告范本。",
+        "「主啊請說，僕人敬聽」——少年撒母耳的回應，成為歷世歷代敬虔者的禱告範本。",
+        "'Speak, LORD, your servant is listening.' Young Samuel's reply has shaped the prayer of faithful believers ever since.",
+    ),
+    ("1 Samuel", 8, 1): (
+        "百姓求一个人间的王——他们拒绝的不是撒母耳，而是神祂自己。神依然祝福，但有警戒。",
+        "百姓求一個人間的王——他們拒絕的不是撒母耳，而是神祂自己。神依然祝福，但有警戒。",
+        "The people demand a human king — rejecting not Samuel but God himself. God grants the request, but warns what kings will cost them.",
+    ),
+    ("1 Samuel", 16, 1): (
+        "神拣选最小的儿子大卫——「人是看外貌，耶和华是看内心」。圣经最重要的拣选原则之一。",
+        "神揀選最小的兒子大衛——「人是看外貌，耶和華是看內心」。聖經最重要的揀選原則之一。",
+        "God chooses David — the youngest, overlooked son. 'Man looks at the outside; the LORD looks at the heart.' One of the Bible's central truths.",
+    ),
+    ("1 Samuel", 17, 1): (
+        "大卫与歌利亚——一个少年凭信靠神击败巨人，成为以色列乃至历世历代信心的象征。",
+        "大衛與歌利亞——一個少年憑信靠神擊敗巨人，成為以色列乃至歷世歷代信心的象徵。",
+        "David and Goliath — a boy with a sling defeats a giant. The story has become the universal symbol of faith taking on the impossible.",
+    ),
+    # 2 Samuel
+    ("2 Samuel", 7, 1): (
+        "大卫之约——神应许大卫的王位永远长存。所有弥赛亚预言的源头，新约称耶稣为「大卫的子孙」即在此。",
+        "大衛之約——神應許大衛的王位永遠長存。所有彌賽亞預言的源頭，新約稱耶穌為「大衛的子孫」即在此。",
+        "The Davidic covenant — God promises David an eternal throne. The fountainhead of every messianic prophecy. Every NT 'Son of David' title flows from here.",
+    ),
+    ("2 Samuel", 11, 1): (
+        "大卫的最大失败——与拔示巴犯罪并谋杀乌利亚。圣经从不美化英雄；它告诉真相。",
+        "大衛的最大失敗——與拔示巴犯罪並謀殺烏利亞。聖經從不美化英雄；它告訴真相。",
+        "David's greatest failure — adultery with Bathsheba, murder of Uriah. The Bible never sanitizes its heroes. It tells the truth.",
+    ),
+    # 1 Kings
+    ("1 Kings", 3, 1): (
+        "所罗门求智慧而非财富——成为后世数千年「祈求得当」的典范。",
+        "所羅門求智慧而非財富——成為後世數千年「祈求得當」的典範。",
+        "Solomon asks for wisdom rather than wealth — and becomes the model for 'asking for the right thing' for three millennia.",
+    ),
+    ("1 Kings", 18, 1): (
+        "迦密山的对决——以利亚单独面对四百五十名巴力先知。神以火回应，百姓宣告：「耶和华是神！」",
+        "迦密山的對決——以利亞單獨面對四百五十名巴力先知。神以火回應，百姓宣告：「耶和華是神！」",
+        "The showdown at Mount Carmel — Elijah alone against 450 prophets of Baal. God answers with fire, and the people cry: 'The LORD, he is God!'",
+    ),
+    ("1 Kings", 19, 1): (
+        "迦密山大胜后，以利亚却陷入忧郁。神以「微小的声音」陪伴他——疲惫的事奉者读了都得安慰。",
+        "迦密山大勝後，以利亞卻陷入憂鬱。神以「微小的聲音」陪伴他——疲憊的事奉者讀了都得安慰。",
+        "After his greatest victory, Elijah crashes into despair. God meets him not in wind or fire but in 'a still small voice' — comfort for every weary servant.",
+    ),
+    # 2 Kings
+    ("2 Kings", 2, 1): (
+        "以利亚乘旋风升天——只有以诺与他在圣经中未尝死亡。以利沙得双倍的灵承接事工。",
+        "以利亞乘旋風升天——只有以諾與他在聖經中未嘗死亡。以利沙得雙倍的靈承接事工。",
+        "Elijah taken up by chariots of fire — one of only two figures in Scripture who never tasted death. Elisha receives a double portion of the Spirit.",
+    ),
+    ("2 Kings", 5, 1): (
+        "亚兰大将乃缦因长大痲疯而忍辱在约旦河浸七次得医——预表外邦人也得救恩。",
+        "亞蘭大將乃縵因長大痲瘋而忍辱在約旦河浸七次得醫——預表外邦人也得救恩。",
+        "Naaman, a foreign general, has to swallow his pride and dip seven times in the Jordan. Jesus cites the story to show God's mercy reaches beyond Israel.",
+    ),
+    # Psalms (more)
+    ("Psalms", 8, 1): (
+        "在浩瀚星空之下默想：「人算什么？你竟眷顾他？」希伯来书第二章引用此节描述基督。",
+        "在浩瀚星空之下默想：「人算什麼？你竟眷顧他？」希伯來書第二章引用此節描述基督。",
+        "A meditation under the stars: 'What is man that you are mindful of him?' Quoted in Hebrews 2 to describe Christ — the true Son of Man.",
+    ),
+    ("Psalms", 27, 1): (
+        "「耶和华是我的亮光，是我的拯救，我还怕谁呢？」——黑暗中的信心宣告。",
+        "「耶和華是我的亮光，是我的拯救，我還怕誰呢？」——黑暗中的信心宣告。",
+        "'The LORD is my light and my salvation; whom shall I fear?' A psalm of bold trust spoken into the darkness.",
+    ),
+    ("Psalms", 42, 1): (
+        "「我的心切慕你，如鹿切慕溪水。」忧郁中的诗人，仍指着神说话。",
+        "「我的心切慕你，如鹿切慕溪水。」憂鬱中的詩人，仍指著神說話。",
+        "'As the deer pants for streams of water, so my soul pants for you, O God.' A psalm of depression that still preaches to its own soul.",
+    ),
+    ("Psalms", 46, 1): (
+        "「神是我们的避难所，是我们的力量，是我们在患难中随时的帮助。」马丁路德的「坚固保障」赞美诗源自此。",
+        "「神是我們的避難所，是我們的力量，是我們在患難中隨時的幫助。」馬丁路德的「堅固保障」讚美詩源自此。",
+        "'God is our refuge and strength, an ever-present help in trouble.' Martin Luther's 'A Mighty Fortress' draws its language from this psalm.",
+    ),
+    ("Psalms", 90, 1): (
+        "摩西所作的诗——感叹人生的短暂，求神「使我们得着智慧的心」。",
+        "摩西所作的詩——感嘆人生的短暫，求神「使我們得著智慧的心」。",
+        "A psalm of Moses — a meditation on life's brevity. 'Teach us to number our days, that we may gain a heart of wisdom.'",
+    ),
+    ("Psalms", 91, 1): (
+        "投靠至高者的人有特殊保护的应许——魔鬼在试探耶稣时也曾错引此诗。",
+        "投靠至高者的人有特殊保護的應許——魔鬼在試探耶穌時也曾錯引此詩。",
+        "A psalm of the safest of all places — under the shadow of the Almighty. Satan misquoted these lines tempting Jesus in the wilderness.",
+    ),
+    ("Psalms", 100, 1): (
+        "向耶和华唱新歌——欢乐颂赞之诗，西方教会千年来在崇拜中颂唱。",
+        "向耶和華唱新歌——歡樂頌讚之詩，西方教會千年來在崇拜中頌唱。",
+        "A bright song of universal worship. For a thousand years, Christian congregations have begun their services with these joyful lines.",
+    ),
+    ("Psalms", 121, 1): (
+        "「我的帮助从何而来？我的帮助从造天地的耶和华而来。」上行之诗的代表。",
+        "「我的幫助從何而來？我的幫助從造天地的耶和華而來。」上行之詩的代表。",
+        "'I lift up my eyes to the hills — where does my help come from? My help comes from the LORD.' The most beloved of the pilgrim psalms.",
+    ),
+    ("Psalms", 130, 1): (
+        "「我从深处向你求告」——悔罪诗篇的核心，路德称之为「保罗式诗篇」。",
+        "「我從深處向你求告」——悔罪詩篇的核心，路德稱之為「保羅式詩篇」。",
+        "'Out of the depths I cry to you, O LORD.' The penitential psalm Luther called 'a Pauline psalm' — every line drips with grace.",
+    ),
+    ("Psalms", 150, 1): (
+        "诗篇的最后一首——纯粹的颂赞。从最深的哀歌（诗22）到最高的赞美（诗150），一切都归于祂。",
+        "詩篇的最後一首——純粹的頌讚。從最深的哀歌（詩22）到最高的讚美（詩150），一切都歸於祂。",
+        "The final psalm — pure, distilled praise. From the deepest lament (Psalm 22) to the highest acclamation (Psalm 150), all of life ends in worship.",
+    ),
+    # Proverbs
+    ("Proverbs", 31, 10): (
+        "才德妇人——希伯来文按字母离合诗写成，是箴言对家庭与生活智慧的总结。",
+        "才德婦人——希伯來文按字母離合詩寫成，是箴言對家庭與生活智慧的總結。",
+        "The 'wife of noble character' — written as a Hebrew acrostic. The summation of Proverbs' picture of skillful, godly living.",
+    ),
+    # Ecclesiastes
+    ("Ecclesiastes", 3, 1): (
+        "「凡事都有定时」——人生节奏的诗篇，提醒我们神在万有之上。",
+        "「凡事都有定時」——人生節奏的詩篇，提醒我們神在萬有之上。",
+        "'For everything there is a season.' A meditation on life's rhythms — a reminder that God reigns over every season we live through.",
+    ),
+    ("Ecclesiastes", 12, 1): (
+        "全卷的高峰：在年轻时记念创造主。诗意地描绘衰老与死亡。",
+        "全卷的高峰：在年輕時記念創造主。詩意地描繪衰老與死亡。",
+        "The book's peak: 'Remember your Creator in the days of your youth.' Then a stunning poetic portrait of aging and death.",
+    ),
+    # Isaiah (more)
+    ("Isaiah", 6, 1): (
+        "以赛亚见到神坐在宝座上——一次彻底改变其一生的异象。也启发了「圣哉、圣哉、圣哉」的颂歌。",
+        "以賽亞見到神坐在寶座上——一次徹底改變其一生的異象。也啟發了「聖哉、聖哉、聖哉」的頌歌。",
+        "Isaiah's call vision — God on the throne, seraphim crying 'Holy, holy, holy.' One encounter that reshapes the rest of his life.",
+    ),
+    ("Isaiah", 9, 1): (
+        "「因有一婴孩为我们而生……他名称为奇妙策士、全能的神、永在的父、和平的君」。圣诞经文之一。",
+        "「因有一嬰孩為我們而生……他名稱為奇妙策士、全能的神、永在的父、和平的君」。聖誕經文之一。",
+        "'For unto us a child is born…' The classic Christmas text — and one of the Old Testament's most explicit messianic titles for Jesus.",
+    ),
+    ("Isaiah", 11, 1): (
+        "弥赛亚君王从「耶西的根」长出——日后以赛亚再三回到这棵君王的「枝子」。",
+        "彌賽亞君王從「耶西的根」長出——日後以賽亞再三回到這棵君王的「枝子」。",
+        "The messianic 'Branch from Jesse's root' — a recurring image in Isaiah, fulfilled in Jesus, son of David, son of Jesse.",
+    ),
+    ("Isaiah", 40, 1): (
+        "以赛亚书第二部分的开场——「我的百姓哪，要得安慰！」从审判转入安慰。新约以此宣告施洗约翰。",
+        "以賽亞書第二部分的開場——「我的百姓哪，要得安慰！」從審判轉入安慰。新約以此宣告施洗約翰。",
+        "Isaiah pivots from judgment to comfort: 'Comfort my people.' The New Testament uses these very words to introduce John the Baptist.",
+    ),
+    ("Isaiah", 53, 1): (
+        "在公元前700年所写的代赎预言——耶稣的钉痕、被弃、为我们的过犯受害，每一句都映照各各他。",
+        "在公元前700年所寫的代贖預言——耶穌的釘痕、被棄、為我們的過犯受害，每一句都映照各各他。",
+        "Written 700 years before Calvary — the most detailed prophecy of substitutionary atonement in the Old Testament. Every line maps onto Christ's cross.",
+    ),
+    ("Isaiah", 65, 17): (
+        "「看哪，我造新天新地」——指向启示录21章。圣经最大的盼望首先在以赛亚发声。",
+        "「看哪，我造新天新地」——指向啟示錄21章。聖經最大的盼望首先在以賽亞發聲。",
+        "'Behold, I create new heavens and a new earth.' Isaiah voices the Bible's greatest hope — fulfilled in Revelation 21.",
+    ),
+    # Jeremiah
+    ("Jeremiah", 1, 1): (
+        "耶利米被神拣选「在腹中尚未成形」之时——历世历代呼召年轻人事奉的有力提醒。",
+        "耶利米被神揀選「在腹中尚未成形」之時——歷世歷代呼召年輕人事奉的有力提醒。",
+        "Jeremiah called before he was even born: 'Before I formed you in the womb I knew you.' A powerful reminder that God's calling precedes our awareness.",
+    ),
+    ("Jeremiah", 31, 31): (
+        "新约的预言——希伯来书第八章直接引用，证其在基督里得着应验。",
+        "新約的預言——希伯來書第八章直接引用，證其在基督裡得著應驗。",
+        "The new covenant prophecy. Hebrews 8 quotes it in full, declaring it fulfilled in Christ — the law written on the heart, sin remembered no more.",
+    ),
+    # Lamentations
+    ("Lamentations", 3, 22): (
+        "在国家最大的悲剧中央，先知发出最伟大的恩典宣告：「他的怜悯不止息」。",
+        "在國家最大的悲劇中央，先知發出最偉大的恩典宣告：「他的憐憫不止息」。",
+        "At the heart of the city's grief stands one of Scripture's greatest declarations of grace: 'His mercies never come to an end; they are new every morning.'",
+    ),
+    # Ezekiel
+    ("Ezekiel", 36, 22): (
+        "「我要赐给你们一颗新心，将新灵放在你们里面」——五旬节圣灵降临的预表。",
+        "「我要賜給你們一顆新心，將新靈放在你們裡面」——五旬節聖靈降臨的預表。",
+        "'I will give you a new heart… I will put my Spirit within you.' The Old Testament's clearest preview of Pentecost — and the heart of New Covenant living.",
+    ),
+    ("Ezekiel", 37, 1): (
+        "枯骨复活的异象——一个被毁灭的国家如何能重生？神说，借着祂的话语和祂的灵。",
+        "枯骨復活的異象——一個被毀滅的國家如何能重生？神說，藉著祂的話語和祂的靈。",
+        "The valley of dry bones — can a destroyed nation live again? God's answer: yes, by my Word and my Spirit. The image still speaks today.",
+    ),
+    # Daniel (more)
+    ("Daniel", 3, 1): (
+        "三个犹太青年宁死也不拜金像——「即或不然」的信心：神能救我们，但即使祂不救，我们仍信。",
+        "三個猶太青年寧死也不拜金像——「即或不然」的信心：神能救我們，但即使祂不救，我們仍信。",
+        "Three young men refuse to bow to a golden image. Their faith reads 'God can save us — but even if he does not, we will not bow.' One of Scripture's bravest moments.",
+    ),
+    ("Daniel", 6, 1): (
+        "但以理在狮子坑中——晚年仍然每日三次面向耶路撒冷祷告。忠贞胜过自保。",
+        "但以理在獅子坑中——晚年仍然每日三次面向耶路撒冷禱告。忠貞勝過自保。",
+        "Daniel in the lions' den — already an old man, still praying three times a day toward Jerusalem. Loyalty over self-preservation.",
+    ),
+    ("Daniel", 7, 1): (
+        "「人子」乘云而来——但以理见到基督最深的预表。耶稣最常用的自称即出此处。",
+        "「人子」乘雲而來——但以理見到基督最深的預表。耶穌最常用的自稱即出此處。",
+        "'One like a son of man' coming on the clouds — Daniel's deepest preview of Christ. Jesus' favorite self-designation comes straight from this vision.",
+    ),
+    ("Daniel", 9, 1): (
+        "但以理逐字读耶利米的预言而醒悟——这位先知教我们如何因圣经的应许而祷告。",
+        "但以理逐字讀耶利米的預言而醒悟——這位先知教我們如何因聖經的應許而禱告。",
+        "Daniel reads Jeremiah's prophecy and his prayer awakens. This prophet teaches us how to pray Scripture's promises back to God.",
+    ),
+    # Jonah
+    ("Jonah", 1, 1): (
+        "约拿不是逃避使命，而是逃避神的怜悯——他不愿尼尼微悔改。圣经中最诚实的先知。",
+        "約拿不是逃避使命，而是逃避神的憐憫——他不願尼尼微悔改。聖經中最誠實的先知。",
+        "Jonah doesn't flee the mission — he flees God's mercy. He doesn't want Nineveh to repent. Perhaps the Bible's most honest prophet.",
+    ),
+    ("Jonah", 3, 1): (
+        "尼尼微全城悔改——耶稣称约拿的事工为祂复活的预表（太12:40）。",
+        "尼尼微全城悔改——耶穌稱約拿的事工為祂復活的預表（太12:40）。",
+        "Nineveh repents — pagan Assyrians outdo God's own people in turning from sin. Jesus cites Jonah as a sign of his own resurrection (Matt 12:40).",
+    ),
+    # Micah
+    ("Micah", 5, 1): (
+        "在被掳的阴影下，弥迦预言伯利恒——基督出生的小镇。希律王的祭司在马太福音2章引用此节。",
+        "在被擄的陰影下，彌迦預言伯利恆——基督出生的小鎮。希律王的祭司在馬太福音2章引用此節。",
+        "Under the shadow of exile, Micah names Bethlehem — the small town where the Messiah will be born. Cited in Matthew 2 to Herod's wise men.",
+    ),
+    # Habakkuk
+    ("Habakkuk", 2, 1): (
+        "「义人必因信得生」——新约引用三次，是宗教改革的根基经文。",
+        "「義人必因信得生」——新約引用三次，是宗教改革的根基經文。",
+        "'The righteous shall live by his faith' — quoted three times in the New Testament. The seedbed of the Reformation's central doctrine.",
+    ),
+    # Zechariah
+    ("Zechariah", 9, 9): (
+        "「看哪，你的王来到！谦谦和和地骑着驴」——预言500年后耶稣骑驴进耶路撒冷。",
+        "「看哪，你的王來到！謙謙和和地騎著驢」——預言500年後耶穌騎驢進耶路撒冷。",
+        "'Behold, your king comes… humble and riding on a donkey.' Prophesied 500 years before Palm Sunday — fulfilled to the letter in Matthew 21.",
+    ),
+    # Malachi
+    ("Malachi", 4, 1): (
+        "旧约的最后预言：以利亚要再来。施洗约翰来履行这预言（太11:14）。然后是400年的沉默。",
+        "舊約的最後預言：以利亞要再來。施洗約翰來履行這預言（太11:14）。然後是400年的沉默。",
+        "The Old Testament's final prophecy: Elijah will come. John the Baptist fulfills it (Matt 11:14). Then 400 years of silence — until the angel speaks to Zechariah in Luke 1.",
+    ),
+    # Matthew (more)
+    ("Matthew", 5, 13): (
+        "盐与光——耶稣对门徒身份的核心宣告。这不是命令，而是事实：你们已经是。",
+        "鹽與光——耶穌對門徒身份的核心宣告。這不是命令，而是事實：你們已經是。",
+        "Salt and light — Jesus' core declaration of disciple identity. Not a command but a statement of fact: you ARE these things; now live like it.",
+    ),
+    ("Matthew", 6, 25): (
+        "「不要忧虑」——耶稣三次重复这句话。天父养活地上的飞鸟，岂不更照顾你？",
+        "「不要憂慮」——耶穌三次重複這句話。天父養活地上的飛鳥，豈不更照顧你？",
+        "'Do not be anxious' — Jesus says it three times. If your Father feeds the birds, will he not also feed you?",
+    ),
+    ("Matthew", 13, 1): (
+        "天国的比喻：耶稣以日常生活的图画启示天国的奥秘。第七章是教师；这里是讲故事的人。",
+        "天國的比喻：耶穌以日常生活的圖畫啟示天國的奧秘。第七章是教師；這裡是講故事的人。",
+        "The kingdom parables — Jesus reveals heavenly mysteries through earthly stories. Chapter 7 was the teacher; this chapter is the storyteller.",
+    ),
+    ("Matthew", 14, 13): (
+        "在听到施洗约翰被斩首的消息后，耶稣退到旷野却被群众跟随——祂以五饼二鱼喂饱五千人。",
+        "在聽到施洗約翰被斬首的消息後，耶穌退到曠野卻被群眾跟隨——祂以五餅二魚餵飽五千人。",
+        "After hearing of John the Baptist's death, Jesus withdraws — but the crowd follows. He feeds 5,000 with five loaves and two fish.",
+    ),
+    ("Matthew", 21, 1): (
+        "棕树主日：耶稣骑驴进耶路撒冷——应验撒迦利亚书9:9 的预言，公开宣告祂是弥赛亚君王。",
+        "棕樹主日：耶穌騎驢進耶路撒冷——應驗撒迦利亞書9:9 的預言，公開宣告祂是彌賽亞君王。",
+        "Palm Sunday — Jesus enters Jerusalem riding a donkey, fulfilling Zechariah 9:9. A public declaration: I am the messianic King.",
+    ),
+    ("Matthew", 25, 31): (
+        "末日审判的画面——耶稣按我们如何对待「祂的弟兄中最小的」来审判。",
+        "末日審判的畫面——耶穌按我們如何對待「祂的弟兄中最小的」來審判。",
+        "The final judgment — Jesus judges by how we treated 'the least of these.' Faith is real when it shows up at the side of the suffering.",
+    ),
+    # Mark (more)
+    ("Mark", 5, 21): (
+        "睚鲁的女儿与血漏妇人——两个绝望的故事相互交织：一位会堂主管的女儿与一位被社会遗弃的妇女。",
+        "睚魯的女兒與血漏婦人——兩個絕望的故事相互交織：一位會堂主管的女兒與一位被社會遺棄的婦女。",
+        "Two desperate stories interlock: the synagogue ruler's daughter and the bleeding woman. Jesus has time for both — the prominent and the outcast.",
+    ),
+    ("Mark", 9, 1): (
+        "登山变像——耶稣在山上向三位门徒短暂展现祂神性的荣光，与摩西、以利亚同立。",
+        "登山變像——耶穌在山上向三位門徒短暫展現祂神性的榮光，與摩西、以利亞同立。",
+        "The Transfiguration — Jesus' divine glory breaks through, with Moses (Law) and Elijah (Prophets) appearing alongside. The veil lifts for one moment.",
+    ),
+    ("Mark", 14, 32): (
+        "客西马尼园祷告——完全的人性面对受苦的恐惧，却仍说：「不要照我的意思，只要照你的意思。」",
+        "客西馬尼園禱告——完全的人性面對受苦的恐懼，卻仍說：「不要照我的意思，只要照你的意思。」",
+        "Gethsemane — Jesus' full humanity wrestles with the cup before him, but yields: 'Not my will, but yours be done.' The hour of redemption begins.",
+    ),
+    ("Mark", 16, 1): (
+        "基督教信仰的根基：耶稣从死里复活。马可的简短记述充满了亲历目击者的细节。",
+        "基督教信仰的根基：耶穌從死裡復活。馬可的簡短記述充滿了親歷目擊者的細節。",
+        "The foundation of Christian faith. Mark's brief account is full of eyewitness texture — running, fear, breathlessness — the sound of life-altering news.",
+    ),
+    # Luke
+    ("Luke", 2, 1): (
+        "耶稣的降生——在罗马帝国的人口普查中，弥赛亚生于伯利恒的客店外。神的故事在历史中。",
+        "耶穌的降生——在羅馬帝國的人口普查中，彌賽亞生於伯利恆的客店外。神的故事在歷史中。",
+        "The birth of Jesus — in the middle of a Roman census, the Messiah is born outside a Bethlehem inn. God's story unfolds in real history.",
+    ),
+    ("Luke", 4, 1): (
+        "耶稣受洗后立即被引到旷野受试探——四十天对应以色列人四十年。第二个亚当在魔鬼面前胜利。",
+        "耶穌受洗後立即被引到曠野受試探——四十天對應以色列人四十年。第二個亞當在魔鬼面前勝利。",
+        "Jesus, baptized, is led into the wilderness — forty days mirroring Israel's forty years. The Second Adam succeeds where the first Israel failed.",
+    ),
+    ("Luke", 10, 25): (
+        "好撒玛利亚人的比喻——耶稣破除种族偏见，定义「邻舍」是任何有需要的人。",
+        "好撒瑪利亞人的比喻——耶穌破除種族偏見，定義「鄰舍」是任何有需要的人。",
+        "The Good Samaritan — Jesus shatters racial prejudice, redefining 'neighbor' as anyone in need. The hated foreigner becomes the hero.",
+    ),
+    ("Luke", 15, 1): (
+        "三个失而复得的比喻——失羊、失钱、浪子——教导神主动寻找、欢喜接纳的心。",
+        "三個失而復得的比喻——失羊、失錢、浪子——教導神主動尋找、歡喜接納的心。",
+        "Three parables of lost things found — sheep, coin, son. Each shows God actively seeking and joyfully receiving. The heart of the gospel in story form.",
+    ),
+    ("Luke", 19, 1): (
+        "撒该是耶利哥的税吏长，被人轻视。耶稣主动到他家——「人子来为要寻找拯救失丧的人。」",
+        "撒該是耶利哥的稅吏長，被人輕視。耶穌主動到他家——「人子來為要尋找拯救失喪的人。」",
+        "Zacchaeus — chief tax collector of Jericho, despised by all. Jesus invites himself to dinner. 'The Son of Man came to seek and save the lost.'",
+    ),
+    ("Luke", 24, 13): (
+        "以马忤斯路上——两位灰心的门徒在路上遇见复活的主，回顾整本旧约都指向祂。",
+        "以馬忤斯路上——兩位灰心的門徒在路上遇見復活的主，回顧整本舊約都指向祂。",
+        "On the road to Emmaus — two discouraged disciples meet the risen Christ, who shows them how all of Scripture points to himself.",
+    ),
+    # John (more)
+    ("John", 6, 1): (
+        "喂饱五千人——四福音都记载的唯一神迹（除复活外）。约翰用这事件展开「我是生命的粮」的讲论。",
+        "餵飽五千人——四福音都記載的唯一神蹟（除復活外）。約翰用這事件展開「我是生命的糧」的講論。",
+        "Feeding the 5,000 — the only miracle (besides the resurrection) recorded in all four Gospels. John uses it to open the 'I am the bread of life' discourse.",
+    ),
+    ("John", 8, 1): (
+        "行淫的妇人被带到耶稣面前——「你们中间谁是没有罪的，谁就可以先拿石头打她。」",
+        "行淫的婦人被帶到耶穌面前——「你們中間誰是沒有罪的，誰就可以先拿石頭打她。」",
+        "The woman caught in adultery — 'Let any one of you who is without sin cast the first stone.' One of Jesus' most famous defenses of mercy.",
+    ),
+    ("John", 9, 1): (
+        "生来瞎眼的人得医——但故事的高峰不是身体的得医，而是属灵眼睛的开启。",
+        "生來瞎眼的人得醫——但故事的高峰不是身體的得醫，而是屬靈眼睛的開啟。",
+        "A man born blind sees — but the climax is not physical sight but spiritual vision. 'Lord, I believe.' Both eyes finally open.",
+    ),
+    ("John", 10, 1): (
+        "「我是好牧人」——耶稣引用以西结34章对失败牧者的责备，宣告自己来作真牧人。",
+        "「我是好牧人」——耶穌引用以西結34章對失敗牧者的責備，宣告自己來作真牧人。",
+        "'I am the good shepherd' — Jesus echoes Ezekiel 34's rebuke of failed shepherds and steps into the role himself. The Lord is my shepherd.",
+    ),
+    ("John", 14, 1): (
+        "最后的晚餐之夜，耶稣以爱心安慰惊惶的门徒：「我就是道路、真理、生命。」",
+        "最後的晚餐之夜，耶穌以愛心安慰驚惶的門徒：「我就是道路、真理、生命。」",
+        "On the night of his betrayal, Jesus comforts his frightened disciples: 'I am the way, the truth, and the life.' Words still anchoring believers today.",
+    ),
+    ("John", 15, 1): (
+        "「我是真葡萄树」——耶稣以以色列经常的形象（葡萄树）描绘信徒与祂之间的生命联合。",
+        "「我是真葡萄樹」——耶穌以以色列經常的形象（葡萄樹）描繪信徒與祂之間的生命聯合。",
+        "'I am the true vine' — Jesus uses Israel's classic self-image to describe the life-union between himself and his followers.",
+    ),
+    # Acts (more)
+    ("Acts", 7, 54): (
+        "司提反殉道——教会史上第一位殉道者。在他被石头打死之时，扫罗（保罗）在旁观看。",
+        "司提反殉道——教會史上第一位殉道者。在他被石頭打死之時，掃羅（保羅）在旁觀看。",
+        "Stephen's martyrdom — the church's first martyr. As stones rain down, a young man named Saul looks on. The persecutor will become an apostle.",
+    ),
+    ("Acts", 8, 26): (
+        "腓利与埃塞俄比亚太监——福音首次明确传给非洲。一个外邦官长读以赛亚53章而归主。",
+        "腓利與埃塞俄比亞太監——福音首次明確傳給非洲。一個外邦官長讀以賽亞53章而歸主。",
+        "Philip and the Ethiopian — the gospel reaches Africa explicitly. A high official reading Isaiah 53 finds his answer in Christ.",
+    ),
+    ("Acts", 16, 11): (
+        "吕底亚信主——欧洲教会的第一颗种子。一位经商的妇人，全家受洗，成立腓立比教会。",
+        "呂底亞信主——歐洲教會的第一顆種子。一位經商的婦人，全家受洗，成立腓立比教會。",
+        "Lydia believes — the first seed of European Christianity. A businesswoman in Philippi opens her home and her family enters the kingdom.",
+    ),
+    ("Acts", 27, 1): (
+        "保罗向罗马的航行——一位囚犯在大风暴中成为众水手的安慰。最准确的古代航海记述之一。",
+        "保羅向羅馬的航行——一位囚犯在大風暴中成為眾水手的安慰。最準確的古代航海記述之一。",
+        "Paul's voyage to Rome — a prisoner becomes the calmest man on a sinking ship. One of the most accurate ancient sea-voyage narratives anywhere.",
+    ),
+    # 1 Corinthians
+    ("1 Corinthians", 11, 17): (
+        "圣餐的意义——保罗修正哥林多教会滥用主餐的问题：圣餐是「宣告主的死，直等到祂来」。",
+        "聖餐的意義——保羅修正哥林多教會濫用主餐的問題：聖餐是「宣告主的死，直等到祂來」。",
+        "Paul corrects abuses of the Lord's Supper at Corinth. The meal proclaims Christ's death until he comes — a constant rehearsal of the gospel.",
+    ),
+    ("1 Corinthians", 13, 1): (
+        "爱的篇章——婚礼中常诵读，但本是写给一间分裂的教会，提醒爱才是真属灵的标志。",
+        "愛的篇章——婚禮中常誦讀，但本是寫給一間分裂的教會，提醒愛才是真屬靈的標誌。",
+        "The love chapter — read at countless weddings, but originally written to a divided church to remind them love is the only true mark of being Spirit-filled.",
+    ),
+    ("1 Corinthians", 15, 1): (
+        "复活的章节——基督教信仰的根基。「若基督没有复活，你们的信便是徒然」。",
+        "復活的章節——基督教信仰的根基。「若基督沒有復活，你們的信便是徒然」。",
+        "The resurrection chapter — the foundation of Christian faith. 'If Christ has not been raised, your faith is futile.' The most fundamental defense in Scripture.",
+    ),
+    # 2 Corinthians
+    ("2 Corinthians", 4, 1): (
+        "瓦器中的宝贝——保罗最深刻的事工自画像：脆弱的器皿盛装永恒的荣耀。",
+        "瓦器中的寶貝——保羅最深刻的事工自畫像：脆弱的器皿盛裝永恆的榮耀。",
+        "'We have this treasure in jars of clay' — Paul's deepest portrait of ministry: fragile vessels carrying eternal glory.",
+    ),
+    ("2 Corinthians", 12, 1): (
+        "保罗的肉中刺——三次求神挪去都被拒绝。神说：「我的恩典够你用的，因为我的能力是在人的软弱上显得完全。」",
+        "保羅的肉中刺——三次求神挪去都被拒絕。神說：「我的恩典夠你用的，因為我的能力是在人的軟弱上顯得完全。」",
+        "Paul's thorn in the flesh — three times he begs God to remove it. The answer: 'My grace is sufficient for you. My power is made perfect in weakness.'",
+    ),
+    # Galatians
+    ("Galatians", 3, 1): (
+        "保罗以此向加拉太人发问：「你们这无知的加拉太人哪……」继续阐明因信称义的道理。",
+        "保羅以此向加拉太人發問：「你們這無知的加拉太人哪……」繼續闡明因信稱義的道理。",
+        "Paul's exasperated cry: 'You foolish Galatians!' The argument that justification comes by faith and faith alone — an argument that fired the Reformation.",
+    ),
+    ("Galatians", 5, 22): (
+        "圣灵的果子——九重特质：仁爱、喜乐、和平、忍耐、恩慈、良善、信实、温柔、节制。基督徒成长的标志。",
+        "聖靈的果子——九重特質：仁愛、喜樂、和平、忍耐、恩慈、良善、信實、溫柔、節制。基督徒成長的標誌。",
+        "The fruit of the Spirit — nine traits that mark the Spirit-shaped life. Not nine separate fruits, but one fruit with nine flavors of Christlikeness.",
+    ),
+    # Ephesians
+    ("Ephesians", 2, 1): (
+        "「你们死在过犯罪恶之中，祂叫你们活过来」——保罗最深刻地描述救恩从死到生的转变。",
+        "「你們死在過犯罪惡之中，祂叫你們活過來」——保羅最深刻地描述救恩從死到生的轉變。",
+        "'You were dead in your transgressions and sins… but God made us alive with Christ.' Paul's most striking picture of salvation as resurrection.",
+    ),
+    ("Ephesians", 6, 10): (
+        "属灵的军装——基督徒不是在与人打仗，乃是与「天空属灵气的恶魔」争战。",
+        "屬靈的軍裝——基督徒不是在與人打仗，乃是與「天空屬靈氣的惡魔」爭戰。",
+        "The armor of God — the Christian's struggle is not against flesh and blood, but against spiritual forces. Paul's battle gear is mostly defensive.",
+    ),
+    # Philippians
+    ("Philippians", 2, 1): (
+        "基督颂歌——新约中关于耶稣身份与使命最浓缩的诗。可能是早期教会的赞美诗。",
+        "基督頌歌——新約中關於耶穌身份與使命最濃縮的詩。可能是早期教會的讚美詩。",
+        "The Christ-hymn — the New Testament's most condensed declaration of who Jesus is and what he did. Likely an early church hymn Paul incorporated.",
+    ),
+    ("Philippians", 4, 4): (
+        "「应当一无挂虑，只要凡事祷告」——保罗在监牢中所写的喜乐宣告。",
+        "「應當一無掛慮，只要凡事禱告」——保羅在監牢中所寫的喜樂宣告。",
+        "'Do not be anxious about anything, but pray about everything.' A prison letter's prescription for peace — written by a man in chains.",
+    ),
+    # Colossians
+    ("Colossians", 1, 15): (
+        "歌罗西基督颂歌——宣告基督是创造者、托住者、教会元首、万有的和好者。",
+        "歌羅西基督頌歌——宣告基督是創造者、托住者、教會元首、萬有的和好者。",
+        "The Colossian Christ-hymn — declaring Christ as creator, sustainer, head of the church, and reconciler of all things. Christology in poetic compression.",
+    ),
+    # Hebrews
+    ("Hebrews", 4, 14): (
+        "「我们的大祭司」——希伯来书的中心。耶稣完全体会我们的软弱，又永远活着为我们代求。",
+        "「我們的大祭司」——希伯來書的中心。耶穌完全體會我們的軟弱，又永遠活著為我們代求。",
+        "'Our great high priest' — the heart of Hebrews. Jesus fully understands our weakness AND lives forever to intercede for us. The best of both.",
+    ),
+    ("Hebrews", 11, 1): (
+        "「信心的英雄榜」——从亚伯到摩西，由旧约群圣构成。「这些人是世界不配有的」。",
+        "「信心的英雄榜」——從亞伯到摩西，由舊約群聖構成。「這些人是世界不配有的」。",
+        "The 'hall of faith' — from Abel to Moses to the unnamed sufferers. 'The world was not worthy of them.' A roll-call of those who lived by faith.",
+    ),
+    ("Hebrews", 12, 1): (
+        "「奔那摆在我们前头的路程」——希伯来书的牧养高峰。仰望耶稣，因祂忍受了十架。",
+        "「奔那擺在我們前頭的路程」——希伯來書的牧養高峰。仰望耶穌，因祂忍受了十架。",
+        "'Run with endurance the race set before us' — Hebrews' pastoral climax. Look to Jesus, who endured the cross for the joy set before him.",
+    ),
+    # James
+    ("James", 1, 1): (
+        "雅各以「试炼当为大喜乐」开篇——颠覆人对苦难的理解：试炼成全信心。",
+        "雅各以「試煉當為大喜樂」開篇——顛覆人對苦難的理解：試煉成全信心。",
+        "James opens with a paradox: count trials all joy. Why? Because they produce the very steadfastness that completes faith.",
+    ),
+    ("James", 2, 14): (
+        "「信心若没有行为就是死的」——雅各的核心论点：补足、不是反驳保罗的因信称义。",
+        "「信心若沒有行為就是死的」——雅各的核心論點：補足、不是反駁保羅的因信稱義。",
+        "'Faith without works is dead' — James's central thesis. Not contradicting Paul's 'justified by faith' but completing it: real faith always works.",
+    ),
+    ("James", 3, 1): (
+        "舌头的危险——雅各以鲜明的图画警告言语的杀伤力：火、毒、不可驯服的舌头。",
+        "舌頭的危險——雅各以鮮明的圖畫警告言語的殺傷力：火、毒、不可馴服的舌頭。",
+        "The tongue — James's vivid warning about the destructive power of speech: fire, poison, an untamable beast hanging in our jaws.",
+    ),
+    # 1 Peter
+    ("1 Peter", 1, 1): (
+        "彼得致信散居的「客旅」——基督徒的共同身份。我们的家不在此处，乃在天上。",
+        "彼得致信散居的「客旅」——基督徒的共同身份。我們的家不在此處，乃在天上。",
+        "Peter writes to 'exiles scattered abroad' — every Christian's true identity. Our home is not here; we live as resident aliens until Christ returns.",
+    ),
+    ("1 Peter", 2, 1): (
+        "「你们是被拣选的族类、有君尊的祭司」——出埃及记19章对以色列的话语，如今给教会。",
+        "「你們是被揀選的族類、有君尊的祭司」——出埃及記19章對以色列的話語，如今給教會。",
+        "'You are a chosen race, a royal priesthood' — Exodus 19's words for Israel are now spoken over the church. We inherit Sinai through Christ.",
+    ),
+    ("1 Peter", 4, 12): (
+        "「不要以试炼为奇怪的事」——苦难是基督徒生活的一部分，不是反常。彼得本人深知此事。",
+        "「不要以試煉為奇怪的事」——苦難是基督徒生活的一部分，不是反常。彼得本人深知此事。",
+        "'Do not be surprised at the fiery trial.' Suffering is part of Christian life, not an interruption to it. Peter — soon to die for Christ — knows this firsthand.",
+    ),
+    # 2 Peter
+    ("2 Peter", 3, 1): (
+        "为何主迟迟不来？「主所应许的尚未成就……乃是宽容你们」。延迟即是怜悯。",
+        "為何主遲遲不來？「主所應許的尚未成就……乃是寬容你們」。延遲即是憐憫。",
+        "Why does the Lord delay? 'He is patient with you, not wishing that any should perish.' What looks like silence is actually mercy.",
+    ),
+    # 1 John
+    ("1 John", 4, 7): (
+        "「神就是爱」——圣经中对神本性最深刻的两句话之一（另一处是约翰福音4:24「神是灵」）。",
+        "「神就是愛」——聖經中對神本性最深刻的兩句話之一（另一處是約翰福音4:24「神是靈」）。",
+        "'God is love' — one of two of Scripture's deepest declarations of God's essence (the other: 'God is spirit', John 4:24).",
+    ),
+    # Revelation
+    ("Revelation", 1, 1): (
+        "启示录开篇——在拔摩岛被流放的约翰得到异象，揭开宇宙历史的帷幕。",
+        "啟示錄開篇——在拔摩島被流放的約翰得到異象，揭開宇宙歷史的帷幕。",
+        "Revelation opens — exiled John on Patmos receives visions that pull back the curtain on cosmic history. The Bible's most symbolic book begins.",
+    ),
+    ("Revelation", 4, 1): (
+        "天上的宝座异象——一切混乱与失败的世界以下，神依然作王。崇拜的中心。",
+        "天上的寶座異象——一切混亂與失敗的世界以下，神依然作王。崇拜的中心。",
+        "The throne vision — beneath all the chaos of history, God still reigns. Heaven's first response is worship: 'Holy, holy, holy.'",
+    ),
+    ("Revelation", 5, 1): (
+        "羔羊揭开七印——「曾被杀的羔羊」是唯一配开书卷的，宇宙历史的钥匙。",
+        "羔羊揭開七印——「曾被殺的羔羊」是唯一配開書卷的，宇宙歷史的鑰匙。",
+        "The Lamb opens the seals — only 'the Lamb who was slain' is worthy. The key to all history is the cross.",
+    ),
+    ("Revelation", 19, 11): (
+        "白马骑士——基督的得胜归回。新约的第一画面是马槽，最后画面是宝座。",
+        "白馬騎士——基督的得勝歸回。新約的第一畫面是馬槽，最後畫面是寶座。",
+        "The rider on the white horse — Christ's triumphant return. The New Testament begins with a manger and ends with a throne.",
+    ),
+    ("Revelation", 21, 1): (
+        "「新天新地」——圣经最大的盼望应验。神与子民同住，再没有眼泪、死亡、痛苦。",
+        "「新天新地」——聖經最大的盼望應驗。神與子民同住，再沒有眼淚、死亡、痛苦。",
+        "'A new heaven and a new earth' — the Bible's deepest hope fulfilled. God dwells with his people; tears, death, and pain are undone forever.",
+    ),
+    ("Revelation", 22, 12): (
+        "圣经最后的应许：「我必快来！」教会两千年来的回应：「主耶稣啊，我愿祢来！」",
+        "聖經最後的應許：「我必快來！」教會兩千年來的回應：「主耶穌啊，我願祢來！」",
+        "Scripture's final promise: 'Behold, I am coming soon!' The church's two-millennium response: 'Come, Lord Jesus.'",
+    ),
 }
 
 
