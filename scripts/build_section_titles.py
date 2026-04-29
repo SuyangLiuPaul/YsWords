@@ -3848,6 +3848,167 @@ SECTION_CONTEXTS: dict[tuple[str, int, int], tuple[str, str, str]] = {
     ("Psalms", 149, 1): ("向耶和华唱新歌——倒数第二篇，仍然新歌。", "向耶和華唱新歌——倒數第二篇，仍然新歌。", "Sing a new song — even the second-to-last psalm calls for newness."),
     # Final fill — Job (any remaining minor titles)
     ("Job", 5, 14): ("赎愆祭的条例——这里实际是Leviticus的内容；Job没有此节，可忽略。", "贖愆祭的條例——這裡實際是Leviticus的內容；Job沒有此節，可忽略。", "Skip"),
+    # ── PHASE-6 final fill — last 32 sections to 100% coverage ────
+    ("Judges", 16, 1): (
+        "参孙与大利拉——士师记最悲剧的故事之一。一位最强壮的人因感情软弱而失败。",
+        "參孫與大利拉——士師記最悲劇的故事之一。一位最強壯的人因感情軟弱而失敗。",
+        "Samson and Delilah — one of the Bible's saddest stories. The strongest man falls through the weakest spot — his heart.",
+    ),
+    ("2 Samuel", 1, 1): (
+        "大卫为扫罗约拿单哀歌——「英雄何竟仆倒」。即使被仇敌追杀，大卫仍以荣耀对待死去的敌人。",
+        "大衛為掃羅約拿單哀歌——「英雄何竟仆倒」。即使被仇敵追殺，大衛仍以榮耀對待死去的敵人。",
+        "David's lament — 'How the mighty have fallen!' Even after years of being hunted, David honors the fallen Saul.",
+    ),
+    ("2 Samuel", 4, 1): (
+        "伊施波设之死——扫罗最后的儿子被刺杀。大卫不庆祝，反而处死刺客。",
+        "伊施波設之死——掃羅最後的兒子被刺殺。大衛不慶祝，反而處死刺客。",
+        "Ish-Bosheth murdered — Saul's last son killed in his bed. David refuses to celebrate; he executes the assassins.",
+    ),
+    ("1 Kings", 8, 22): (
+        "所罗门献殿祷告——圣经最长、最丰盛的祷告之一。预先为外邦人代求。",
+        "所羅門獻殿禱告——聖經最長、最豐盛的禱告之一。預先為外邦人代求。",
+        "Solomon's dedication prayer — one of the longest prayers in Scripture. Even foreigners are interceded for in advance.",
+    ),
+    ("1 Kings", 11, 1): (
+        "所罗门的妻子使他离开神——一位最有智慧的人因许多妻妾陷入拜偶像。智慧不能保人脱离感情之愚。",
+        "所羅門的妻子使他離開神——一位最有智慧的人因許多妻妾陷入拜偶像。智慧不能保人脫離感情之愚。",
+        "Solomon's wives — even the wisest king on earth was led astray. Wisdom cannot protect us from the heart's foolishness.",
+    ),
+    ("2 Kings", 2, 12): (
+        "以利沙接续以利亚——「我父啊！我父啊！以色列的战车马兵啊！」属灵传承的最深表达。",
+        "以利沙接續以利亞——「我父啊！我父啊！以色列的戰車馬兵啊！」屬靈傳承的最深表達。",
+        "Elisha succeeds Elijah — 'My father! The chariots of Israel!' One of the deepest cries of spiritual succession.",
+    ),
+    ("2 Kings", 17, 7): (
+        "北国被掳的因由——圣经罕见的明文解释：以色列因背道被掳，不是因运气不好。",
+        "北國被擄的因由——聖經罕見的明文解釋：以色列因背道被擄，不是因運氣不好。",
+        "Why Israel was exiled — a rare moment when Scripture pauses to explain. They went into exile not from bad luck but for forsaking the LORD.",
+    ),
+    ("1 Chronicles", 11, 1): (
+        "大卫作全以色列王——历代志的视角直接跳到大卫的得胜。神的应许必应验。",
+        "大衛作全以色列王——歷代志的視角直接跳到大衛的得勝。神的應許必應驗。",
+        "David anointed king — Chronicles skips ahead to David's triumph. God's promises always come true.",
+    ),
+    ("Nehemiah", 2, 1): (
+        "尼希米求王差遣——四个月的祷告之后，他在王面前作出关键决定。「我向天上的神默祷」。",
+        "尼希米求王差遣——四個月的禱告之後，他在王面前作出關鍵決定。「我向天上的神默禱」。",
+        "Nehemiah's request — after four months of prayer, he speaks. 'I prayed to the God of heaven' — even mid-conversation with the king.",
+    ),
+    ("Esther", 4, 12): (
+        "「为现今的机会」——末底改的挑战推动以斯帖采取最危险的行动。神的护理与人的勇敢相会。",
+        "「為現今的機會」——末底改的挑戰推動以斯帖採取最危險的行動。神的護理與人的勇敢相會。",
+        "'For such a time as this' — Mordecai's challenge propels Esther toward her riskiest act. God's providence meets human courage.",
+    ),
+    ("Job", 19, 1): (
+        "我的救赎主活着——在最深的灰烬中，约伯瞥见复活的盼望，预表基督的工作。",
+        "我的救贖主活著——在最深的灰燼中，約伯瞥見復活的盼望，預表基督的工作。",
+        "'I know my Redeemer lives' — from his ash heap, Job sees through to resurrection. A stunning preview of Christ's work.",
+    ),
+    ("Job", 38, 1): (
+        "耶和华从旋风中回答——37章争论之后，神出场。祂不解释为何，却显明祂自己。",
+        "耶和華從旋風中回答——37章爭論之後，神出場。祂不解釋為何，卻顯明祂自己。",
+        "The LORD answers from the whirlwind — after 37 chapters of debate, God appears. He doesn't explain why, but reveals himself.",
+    ),
+    ("Psalms", 19, 1): (
+        "诸天述说神荣耀——「自然」与「圣经」是神的两本书。诗人由前者过渡到后者。",
+        "諸天述說神榮耀——「自然」與「聖經」是神的兩本書。詩人由前者過渡到後者。",
+        "The heavens declare God's glory — creation and Scripture are God's two books. The psalmist moves from one to the other.",
+    ),
+    ("Psalms", 84, 1): (
+        "渴慕神的居所——「在你的院宇住一日，胜似在别处住千日」。一个朝圣者的心。",
+        "渴慕神的居所——「在你的院宇住一日，勝似在別處住千日」。一個朝聖者的心。",
+        "How lovely is your dwelling place — 'Better one day in your courts than a thousand elsewhere'. A pilgrim's heart.",
+    ),
+    ("Song of Solomon", 8, 1): (
+        "爱情如死之坚强——这首爱情诗的高峰。爱不能被任何力量消灭。",
+        "愛情如死之堅強——這首愛情詩的高峰。愛不能被任何力量消滅。",
+        "Love strong as death — the song's climactic declaration. Love cannot be quenched by any force.",
+    ),
+    ("Isaiah", 55, 1): (
+        "白白的恩典——「你们一切干渴的，都当就近水来」。耶稣后来引用此节。",
+        "白白的恩典——「你們一切乾渴的，都當就近水來」。耶穌後來引用此節。",
+        "Come, buy without money — 'All who thirst, come to the waters'. Jesus echoes this invitation in John 7.",
+    ),
+    ("Hosea", 6, 1): (
+        "归向耶和华——百姓自己的话：「来吧，我们归向耶和华！」何西阿一直盼望的悔改。",
+        "歸向耶和華——百姓自己的話：「來吧，我們歸向耶和華！」何西阿一直盼望的悔改。",
+        "Return to the LORD — the people's own words: 'Come, let us return!' The repentance Hosea has been pleading for.",
+    ),
+    ("Joel", 2, 28): (
+        "圣灵浇灌的应许——彼得在五旬节明引此节，证应验在新约教会身上。",
+        "聖靈澆灌的應許——彼得在五旬節明引此節，證應驗在新約教會身上。",
+        "The Spirit poured out — Peter quotes this on Pentecost, proclaiming it fulfilled in the church.",
+    ),
+    ("Amos", 5, 21): (
+        "真敬拜与公义——「我厌恶你们的节期」。形式没有公义，敬拜就成虚伪。",
+        "真敬拜與公義——「我厭惡你們的節期」。形式沒有公義，敬拜就成虛偽。",
+        "Let justice roll down — 'I hate, I despise your festivals'. Without justice, even worship becomes hypocrisy.",
+    ),
+    ("Micah", 6, 1): (
+        "耶和华向你所要的——旧约对真宗教最清晰的总结：「行公义，好怜悯，存谦卑的心」。",
+        "耶和華向你所要的——舊約對真宗教最清晰的總結：「行公義，好憐憫，存謙卑的心」。",
+        "What does the LORD require? — Scripture's clearest summary of true religion: 'Do justice, love kindness, walk humbly with your God'.",
+    ),
+    ("Matthew", 1, 18): (
+        "耶稣降生——一位童女、一位顺从的木匠、一个被预言的婴孩。神的最大故事在最小的家中开始。",
+        "耶穌降生——一位童女、一位順從的木匠、一個被預言的嬰孩。神的最大故事在最小的家中開始。",
+        "The birth of Jesus — a virgin, an obedient carpenter, a prophesied baby. The greatest story begins in the smallest home.",
+    ),
+    ("Matthew", 2, 1): (
+        "博士来朝——外邦的智者率先认出弥赛亚。福音从一开始就跨越族界。",
+        "博士來朝——外邦的智者率先認出彌賽亞。福音從一開始就跨越族界。",
+        "The Magi visit — Gentile wise men recognize the Messiah first. The gospel crossed ethnic lines from day one.",
+    ),
+    ("Matthew", 16, 21): (
+        "首次预言受难——彼得说：「主啊，万不可如此」。耶稣以最严厉的话责备他：「撒但，退我后边去」。",
+        "首次預言受難——彼得說：「主啊，萬不可如此」。耶穌以最嚴厲的話責備他：「撒但，退我後邊去」。",
+        "Jesus predicts his death — Peter rebukes him. Jesus answers with the harshest word: 'Get behind me, Satan!'",
+    ),
+    ("Luke", 24, 1): (
+        "耶稣复活——妇女们清早到墓前，遇见两位天使。基督教信仰的根基在此。",
+        "耶穌復活——婦女們清早到墓前，遇見兩位天使。基督教信仰的根基在此。",
+        "The Resurrection — women arrive at dawn, meet two angels. The foundation of Christian faith.",
+    ),
+    ("Galatians", 2, 15): (
+        "因信称义——保罗最经典的神学宣言：「人称义不是因行律法，乃是因信耶稣基督」。",
+        "因信稱義——保羅最經典的神學宣言：「人稱義不是因行律法，乃是因信耶穌基督」。",
+        "Justification by faith — Paul's classic statement: 'A person is justified not by works of the law but by faith in Jesus Christ'.",
+    ),
+    ("Galatians", 3, 15): (
+        "律法与应许——保罗澄清律法与应许的关系。律法不能取消应许，反而是「训蒙的师傅」引人到基督。",
+        "律法與應許——保羅澄清律法與應許的關係。律法不能取消應許，反而是「訓蒙的師傅」引人到基督。",
+        "Law and promise — Paul clarifies. The law doesn't cancel the promise; it serves as a guardian leading us to Christ.",
+    ),
+    ("Ephesians", 1, 1): (
+        "在基督里的属灵福气——以弗所书最壮观的开篇。「在创立世界以前」就被拣选。",
+        "在基督裡的屬靈福氣——以弗所書最壯觀的開篇。「在創立世界以前」就被揀選。",
+        "Spiritual blessings in Christ — Ephesians' breathtaking opening. Chosen 'before the creation of the world'.",
+    ),
+    ("1 Thessalonians", 4, 13): (
+        "主的再来——保罗最详细描写基督再来的经文之一。「主必从天降临」。",
+        "主的再來——保羅最詳細描寫基督再來的經文之一。「主必從天降臨」。",
+        "The coming of the Lord — one of Paul's fullest descriptions of Christ's return. 'The Lord himself will descend from heaven'.",
+    ),
+    ("2 Thessalonians", 2, 1): (
+        "主日尚未到——保罗校正错误教训：那不法的人必先显露。",
+        "主日尚未到——保羅校正錯誤教訓：那不法的人必先顯露。",
+        "The Man of Lawlessness — Paul corrects false teaching: the rebellion must come first; the antichrist must be revealed.",
+    ),
+    ("2 Timothy", 4, 6): (
+        "保罗的临别遗言——「那美好的仗我已经打过了」。一位殉道者临死的总结。",
+        "保羅的臨別遺言——「那美好的仗我已經打過了」。一位殉道者臨死的總結。",
+        "Paul's final words — 'I have fought the good fight'. A martyr's deathbed summary of life lived for Christ.",
+    ),
+    ("Titus", 2, 11): (
+        "神的恩典教训我们——「除去不敬虔的心」。恩典不只赦免，还改变。",
+        "神的恩典教訓我們——「除去不敬虔的心」。恩典不只赦免，還改變。",
+        "Grace that trains us — 'to renounce ungodliness'. Grace doesn't just forgive; it transforms behavior.",
+    ),
+    ("Hebrews", 1, 1): (
+        "末后藉着儿子说话——希伯来书的开篇宣告：神过去的启示是片段的，如今在基督里是完全的。",
+        "末後藉著兒子說話——希伯來書的開篇宣告：神過去的啟示是片段的，如今在基督裡是完全的。",
+        "God has spoken by his Son — Hebrews' opening declaration: God's revelation, once partial, is now complete in Christ.",
+    ),
 }
 
 

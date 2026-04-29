@@ -69,7 +69,7 @@
       "Jude",
       "Revelation"
     ],
-    "generatedAt": "2026-04-29T02:54:35Z",
+    "generatedAt": "2026-04-29T02:59:59Z",
     "description": "Section / paragraph titles. Loaded by SectionTitleService and rendered above the matched verse in the reading pane. Three title sets in this Phase-1 file: cuv (simplified), cuv-tr (traditional), english-classic (English). The version-to-set mapping lives in lib/constants/section_title_map.dart."
   },
   "sets": {
@@ -1583,7 +1583,8 @@
         "16": [
           {
             "verse": 1,
-            "title": "参孙与大利拉"
+            "title": "参孙与大利拉",
+            "context": "参孙与大利拉——士师记最悲剧的故事之一。一位最强壮的人因感情软弱而失败。"
           },
           {
             "verse": 23,
@@ -1900,7 +1901,8 @@
         "1": [
           {
             "verse": 1,
-            "title": "大卫为扫罗约拿单哀歌"
+            "title": "大卫为扫罗约拿单哀歌",
+            "context": "大卫为扫罗约拿单哀歌——「英雄何竟仆倒」。即使被仇敌追杀，大卫仍以荣耀对待死去的敌人。"
           }
         ],
         "2": [
@@ -1920,7 +1922,8 @@
         "4": [
           {
             "verse": 1,
-            "title": "伊施波设之死"
+            "title": "伊施波设之死",
+            "context": "伊施波设之死——扫罗最后的儿子被刺杀。大卫不庆祝，反而处死刺客。"
           }
         ],
         "5": [
@@ -2130,7 +2133,8 @@
           },
           {
             "verse": 22,
-            "title": "所罗门献殿祷告"
+            "title": "所罗门献殿祷告",
+            "context": "所罗门献殿祷告——圣经最长、最丰盛的祷告之一。预先为外邦人代求。"
           }
         ],
         "9": [
@@ -2150,7 +2154,8 @@
         "11": [
           {
             "verse": 1,
-            "title": "所罗门的妻子使他离开神"
+            "title": "所罗门的妻子使他离开神",
+            "context": "所罗门的妻子使他离开神——一位最有智慧的人因许多妻妾陷入拜偶像。智慧不能保人脱离感情之愚。"
           },
           {
             "verse": 26,
@@ -2272,7 +2277,8 @@
           },
           {
             "verse": 12,
-            "title": "以利沙接续以利亚"
+            "title": "以利沙接续以利亚",
+            "context": "以利沙接续以利亚——「我父啊！我父啊！以色列的战车马兵啊！」属灵传承的最深表达。"
           }
         ],
         "3": [
@@ -2387,7 +2393,8 @@
           },
           {
             "verse": 7,
-            "title": "北国被掳的因由"
+            "title": "北国被掳的因由",
+            "context": "北国被掳的因由——圣经罕见的明文解释：以色列因背道被掳，不是因运气不好。"
           }
         ],
         "18": [
@@ -2513,7 +2520,8 @@
         "11": [
           {
             "verse": 1,
-            "title": "大卫作全以色列王"
+            "title": "大卫作全以色列王",
+            "context": "大卫作全以色列王——历代志的视角直接跳到大卫的得胜。神的应许必应验。"
           },
           {
             "verse": 10,
@@ -2809,7 +2817,8 @@
         "2": [
           {
             "verse": 1,
-            "title": "尼希米求王差遣"
+            "title": "尼希米求王差遣",
+            "context": "尼希米求王差遣——四个月的祷告之后，他在王面前作出关键决定。「我向天上的神默祷」。"
           },
           {
             "verse": 11,
@@ -2909,7 +2918,8 @@
           },
           {
             "verse": 12,
-            "title": "「为现今的机会」"
+            "title": "「为现今的机会」",
+            "context": "「为现今的机会」——末底改的挑战推动以斯帖采取最危险的行动。神的护理与人的勇敢相会。"
           }
         ],
         "5": [
@@ -3016,7 +3026,8 @@
         "19": [
           {
             "verse": 1,
-            "title": "我的救赎主活着"
+            "title": "我的救赎主活着",
+            "context": "我的救赎主活着——在最深的灰烬中，约伯瞥见复活的盼望，预表基督的工作。"
           }
         ],
         "28": [
@@ -3036,7 +3047,8 @@
         "38": [
           {
             "verse": 1,
-            "title": "耶和华从旋风中回答"
+            "title": "耶和华从旋风中回答",
+            "context": "耶和华从旋风中回答——37章争论之后，神出场。祂不解释为何，却显明祂自己。"
           }
         ],
         "40": [
@@ -3189,7 +3201,8 @@
         "19": [
           {
             "verse": 1,
-            "title": "诸天述说神荣耀"
+            "title": "诸天述说神荣耀",
+            "context": "诸天述说神荣耀——「自然」与「圣经」是神的两本书。诗人由前者过渡到后者。"
           }
         ],
         "20": [
@@ -3643,7 +3656,8 @@
         "84": [
           {
             "verse": 1,
-            "title": "渴慕神的居所"
+            "title": "渴慕神的居所",
+            "context": "渴慕神的居所——「在你的院宇住一日，胜似在别处住千日」。一个朝圣者的心。"
           }
         ],
         "85": [
@@ -4340,7 +4354,8 @@
         "8": [
           {
             "verse": 1,
-            "title": "爱情如死之坚强"
+            "title": "爱情如死之坚强",
+            "context": "爱情如死之坚强——这首爱情诗的高峰。爱不能被任何力量消灭。"
           }
         ]
       },
@@ -4507,7 +4522,8 @@
         "55": [
           {
             "verse": 1,
-            "title": "白白的恩典"
+            "title": "白白的恩典",
+            "context": "白白的恩典——「你们一切干渴的，都当就近水来」。耶稣后来引用此节。"
           }
         ],
         "58": [
@@ -4976,7 +4992,8 @@
         "6": [
           {
             "verse": 1,
-            "title": "归向耶和华"
+            "title": "归向耶和华",
+            "context": "归向耶和华——百姓自己的话：「来吧，我们归向耶和华！」何西阿一直盼望的悔改。"
           }
         ],
         "11": [
@@ -5010,7 +5027,8 @@
           },
           {
             "verse": 28,
-            "title": "圣灵浇灌的应许"
+            "title": "圣灵浇灌的应许",
+            "context": "圣灵浇灌的应许——彼得在五旬节明引此节，证应验在新约教会身上。"
           }
         ],
         "3": [
@@ -5051,7 +5069,8 @@
           },
           {
             "verse": 21,
-            "title": "真敬拜与公义"
+            "title": "真敬拜与公义",
+            "context": "真敬拜与公义——「我厌恶你们的节期」。形式没有公义，敬拜就成虚伪。"
           }
         ],
         "7": [
@@ -5150,7 +5169,8 @@
         "6": [
           {
             "verse": 1,
-            "title": "耶和华向你所要的"
+            "title": "耶和华向你所要的",
+            "context": "耶和华向你所要的——旧约对真宗教最清晰的总结：「行公义，好怜悯，存谦卑的心」。"
           }
         ],
         "7": [
@@ -5368,13 +5388,15 @@
           },
           {
             "verse": 18,
-            "title": "耶稣降生"
+            "title": "耶稣降生",
+            "context": "耶稣降生——一位童女、一位顺从的木匠、一个被预言的婴孩。神的最大故事在最小的家中开始。"
           }
         ],
         "2": [
           {
             "verse": 1,
-            "title": "博士来朝"
+            "title": "博士来朝",
+            "context": "博士来朝——外邦的智者率先认出弥赛亚。福音从一开始就跨越族界。"
           },
           {
             "verse": 13,
@@ -5706,7 +5728,8 @@
           },
           {
             "verse": 21,
-            "title": "首次预言受难"
+            "title": "首次预言受难",
+            "context": "首次预言受难——彼得说：「主啊，万不可如此」。耶稣以最严厉的话责备他：「撒但，退我后边去」。"
           }
         ],
         "17": [
@@ -6679,7 +6702,8 @@
         "24": [
           {
             "verse": 1,
-            "title": "耶稣复活"
+            "title": "耶稣复活",
+            "context": "耶稣复活——妇女们清早到墓前，遇见两位天使。基督教信仰的根基在此。"
           },
           {
             "verse": 13,
@@ -7936,7 +7960,8 @@
           },
           {
             "verse": 15,
-            "title": "因信称义"
+            "title": "因信称义",
+            "context": "因信称义——保罗最经典的神学宣言：「人称义不是因行律法，乃是因信耶稣基督」。"
           }
         ],
         "3": [
@@ -7947,7 +7972,8 @@
           },
           {
             "verse": 15,
-            "title": "律法与应许"
+            "title": "律法与应许",
+            "context": "律法与应许——保罗澄清律法与应许的关系。律法不能取消应许，反而是「训蒙的师傅」引人到基督。"
           }
         ],
         "4": [
@@ -7991,7 +8017,8 @@
         "1": [
           {
             "verse": 1,
-            "title": "在基督里的属灵福气"
+            "title": "在基督里的属灵福气",
+            "context": "在基督里的属灵福气——以弗所书最壮观的开篇。「在创立世界以前」就被拣选。"
           },
           {
             "verse": 15,
@@ -8210,7 +8237,8 @@
           },
           {
             "verse": 13,
-            "title": "主的再来"
+            "title": "主的再来",
+            "context": "主的再来——保罗最详细描写基督再来的经文之一。「主必从天降临」。"
           }
         ],
         "5": [
@@ -8237,7 +8265,8 @@
         "2": [
           {
             "verse": 1,
-            "title": "主日尚未到"
+            "title": "主日尚未到",
+            "context": "主日尚未到——保罗校正错误教训：那不法的人必先显露。"
           },
           {
             "verse": 13,
@@ -8362,7 +8391,8 @@
           },
           {
             "verse": 6,
-            "title": "保罗的临别遗言"
+            "title": "保罗的临别遗言",
+            "context": "保罗的临别遗言——「那美好的仗我已经打过了」。一位殉道者临死的总结。"
           }
         ]
       },
@@ -8382,7 +8412,8 @@
           },
           {
             "verse": 11,
-            "title": "神的恩典教训我们"
+            "title": "神的恩典教训我们",
+            "context": "神的恩典教训我们——「除去不敬虔的心」。恩典不只赦免，还改变。"
           }
         ],
         "3": [
@@ -8416,7 +8447,8 @@
         "1": [
           {
             "verse": 1,
-            "title": "末后藉着儿子说话"
+            "title": "末后藉着儿子说话",
+            "context": "末后藉着儿子说话——希伯来书的开篇宣告：神过去的启示是片段的，如今在基督里是完全的。"
           },
           {
             "verse": 4,
@@ -10494,7 +10526,8 @@
         "16": [
           {
             "verse": 1,
-            "title": "參孫與大利拉"
+            "title": "參孫與大利拉",
+            "context": "參孫與大利拉——士師記最悲劇的故事之一。一位最強壯的人因感情軟弱而失敗。"
           },
           {
             "verse": 23,
@@ -10811,7 +10844,8 @@
         "1": [
           {
             "verse": 1,
-            "title": "大衛為掃羅約拿單哀歌"
+            "title": "大衛為掃羅約拿單哀歌",
+            "context": "大衛為掃羅約拿單哀歌——「英雄何竟仆倒」。即使被仇敵追殺，大衛仍以榮耀對待死去的敵人。"
           }
         ],
         "2": [
@@ -10831,7 +10865,8 @@
         "4": [
           {
             "verse": 1,
-            "title": "伊施波設之死"
+            "title": "伊施波設之死",
+            "context": "伊施波設之死——掃羅最後的兒子被刺殺。大衛不慶祝，反而處死刺客。"
           }
         ],
         "5": [
@@ -11041,7 +11076,8 @@
           },
           {
             "verse": 22,
-            "title": "所羅門獻殿禱告"
+            "title": "所羅門獻殿禱告",
+            "context": "所羅門獻殿禱告——聖經最長、最豐盛的禱告之一。預先為外邦人代求。"
           }
         ],
         "9": [
@@ -11061,7 +11097,8 @@
         "11": [
           {
             "verse": 1,
-            "title": "所羅門的妻子使他離開神"
+            "title": "所羅門的妻子使他離開神",
+            "context": "所羅門的妻子使他離開神——一位最有智慧的人因許多妻妾陷入拜偶像。智慧不能保人脫離感情之愚。"
           },
           {
             "verse": 26,
@@ -11183,7 +11220,8 @@
           },
           {
             "verse": 12,
-            "title": "以利沙接續以利亞"
+            "title": "以利沙接續以利亞",
+            "context": "以利沙接續以利亞——「我父啊！我父啊！以色列的戰車馬兵啊！」屬靈傳承的最深表達。"
           }
         ],
         "3": [
@@ -11298,7 +11336,8 @@
           },
           {
             "verse": 7,
-            "title": "北國被擄的因由"
+            "title": "北國被擄的因由",
+            "context": "北國被擄的因由——聖經罕見的明文解釋：以色列因背道被擄，不是因運氣不好。"
           }
         ],
         "18": [
@@ -11424,7 +11463,8 @@
         "11": [
           {
             "verse": 1,
-            "title": "大衛作全以色列王"
+            "title": "大衛作全以色列王",
+            "context": "大衛作全以色列王——歷代志的視角直接跳到大衛的得勝。神的應許必應驗。"
           },
           {
             "verse": 10,
@@ -11720,7 +11760,8 @@
         "2": [
           {
             "verse": 1,
-            "title": "尼希米求王差遣"
+            "title": "尼希米求王差遣",
+            "context": "尼希米求王差遣——四個月的禱告之後，他在王面前作出關鍵決定。「我向天上的神默禱」。"
           },
           {
             "verse": 11,
@@ -11820,7 +11861,8 @@
           },
           {
             "verse": 12,
-            "title": "「為現今的機會」"
+            "title": "「為現今的機會」",
+            "context": "「為現今的機會」——末底改的挑戰推動以斯帖採取最危險的行動。神的護理與人的勇敢相會。"
           }
         ],
         "5": [
@@ -11927,7 +11969,8 @@
         "19": [
           {
             "verse": 1,
-            "title": "我的救贖主活著"
+            "title": "我的救贖主活著",
+            "context": "我的救贖主活著——在最深的灰燼中，約伯瞥見復活的盼望，預表基督的工作。"
           }
         ],
         "28": [
@@ -11947,7 +11990,8 @@
         "38": [
           {
             "verse": 1,
-            "title": "耶和華從旋風中回答"
+            "title": "耶和華從旋風中回答",
+            "context": "耶和華從旋風中回答——37章爭論之後，神出場。祂不解釋為何，卻顯明祂自己。"
           }
         ],
         "40": [
@@ -12100,7 +12144,8 @@
         "19": [
           {
             "verse": 1,
-            "title": "諸天述說神榮耀"
+            "title": "諸天述說神榮耀",
+            "context": "諸天述說神榮耀——「自然」與「聖經」是神的兩本書。詩人由前者過渡到後者。"
           }
         ],
         "20": [
@@ -12554,7 +12599,8 @@
         "84": [
           {
             "verse": 1,
-            "title": "渴慕神的居所"
+            "title": "渴慕神的居所",
+            "context": "渴慕神的居所——「在你的院宇住一日，勝似在別處住千日」。一個朝聖者的心。"
           }
         ],
         "85": [
@@ -13251,7 +13297,8 @@
         "8": [
           {
             "verse": 1,
-            "title": "愛情如死之堅強"
+            "title": "愛情如死之堅強",
+            "context": "愛情如死之堅強——這首愛情詩的高峰。愛不能被任何力量消滅。"
           }
         ]
       },
@@ -13418,7 +13465,8 @@
         "55": [
           {
             "verse": 1,
-            "title": "白白的恩典"
+            "title": "白白的恩典",
+            "context": "白白的恩典——「你們一切乾渴的，都當就近水來」。耶穌後來引用此節。"
           }
         ],
         "58": [
@@ -13887,7 +13935,8 @@
         "6": [
           {
             "verse": 1,
-            "title": "歸向耶和華"
+            "title": "歸向耶和華",
+            "context": "歸向耶和華——百姓自己的話：「來吧，我們歸向耶和華！」何西阿一直盼望的悔改。"
           }
         ],
         "11": [
@@ -13921,7 +13970,8 @@
           },
           {
             "verse": 28,
-            "title": "聖靈澆灌的應許"
+            "title": "聖靈澆灌的應許",
+            "context": "聖靈澆灌的應許——彼得在五旬節明引此節，證應驗在新約教會身上。"
           }
         ],
         "3": [
@@ -13962,7 +14012,8 @@
           },
           {
             "verse": 21,
-            "title": "真敬拜與公義"
+            "title": "真敬拜與公義",
+            "context": "真敬拜與公義——「我厭惡你們的節期」。形式沒有公義，敬拜就成虛偽。"
           }
         ],
         "7": [
@@ -14061,7 +14112,8 @@
         "6": [
           {
             "verse": 1,
-            "title": "耶和華向你所要的"
+            "title": "耶和華向你所要的",
+            "context": "耶和華向你所要的——舊約對真宗教最清晰的總結：「行公義，好憐憫，存謙卑的心」。"
           }
         ],
         "7": [
@@ -14279,13 +14331,15 @@
           },
           {
             "verse": 18,
-            "title": "耶穌降生"
+            "title": "耶穌降生",
+            "context": "耶穌降生——一位童女、一位順從的木匠、一個被預言的嬰孩。神的最大故事在最小的家中開始。"
           }
         ],
         "2": [
           {
             "verse": 1,
-            "title": "博士來朝"
+            "title": "博士來朝",
+            "context": "博士來朝——外邦的智者率先認出彌賽亞。福音從一開始就跨越族界。"
           },
           {
             "verse": 13,
@@ -14617,7 +14671,8 @@
           },
           {
             "verse": 21,
-            "title": "首次預言受難"
+            "title": "首次預言受難",
+            "context": "首次預言受難——彼得說：「主啊，萬不可如此」。耶穌以最嚴厲的話責備他：「撒但，退我後邊去」。"
           }
         ],
         "17": [
@@ -15590,7 +15645,8 @@
         "24": [
           {
             "verse": 1,
-            "title": "耶穌復活"
+            "title": "耶穌復活",
+            "context": "耶穌復活——婦女們清早到墓前，遇見兩位天使。基督教信仰的根基在此。"
           },
           {
             "verse": 13,
@@ -16847,7 +16903,8 @@
           },
           {
             "verse": 15,
-            "title": "因信稱義"
+            "title": "因信稱義",
+            "context": "因信稱義——保羅最經典的神學宣言：「人稱義不是因行律法，乃是因信耶穌基督」。"
           }
         ],
         "3": [
@@ -16858,7 +16915,8 @@
           },
           {
             "verse": 15,
-            "title": "律法與應許"
+            "title": "律法與應許",
+            "context": "律法與應許——保羅澄清律法與應許的關係。律法不能取消應許，反而是「訓蒙的師傅」引人到基督。"
           }
         ],
         "4": [
@@ -16902,7 +16960,8 @@
         "1": [
           {
             "verse": 1,
-            "title": "在基督裡的屬靈福氣"
+            "title": "在基督裡的屬靈福氣",
+            "context": "在基督裡的屬靈福氣——以弗所書最壯觀的開篇。「在創立世界以前」就被揀選。"
           },
           {
             "verse": 15,
@@ -17121,7 +17180,8 @@
           },
           {
             "verse": 13,
-            "title": "主的再來"
+            "title": "主的再來",
+            "context": "主的再來——保羅最詳細描寫基督再來的經文之一。「主必從天降臨」。"
           }
         ],
         "5": [
@@ -17148,7 +17208,8 @@
         "2": [
           {
             "verse": 1,
-            "title": "主日尚未到"
+            "title": "主日尚未到",
+            "context": "主日尚未到——保羅校正錯誤教訓：那不法的人必先顯露。"
           },
           {
             "verse": 13,
@@ -17273,7 +17334,8 @@
           },
           {
             "verse": 6,
-            "title": "保羅的臨別遺言"
+            "title": "保羅的臨別遺言",
+            "context": "保羅的臨別遺言——「那美好的仗我已經打過了」。一位殉道者臨死的總結。"
           }
         ]
       },
@@ -17293,7 +17355,8 @@
           },
           {
             "verse": 11,
-            "title": "神的恩典教訓我們"
+            "title": "神的恩典教訓我們",
+            "context": "神的恩典教訓我們——「除去不敬虔的心」。恩典不只赦免，還改變。"
           }
         ],
         "3": [
@@ -17327,7 +17390,8 @@
         "1": [
           {
             "verse": 1,
-            "title": "末後藉著兒子說話"
+            "title": "末後藉著兒子說話",
+            "context": "末後藉著兒子說話——希伯來書的開篇宣告：神過去的啟示是片段的，如今在基督裡是完全的。"
           },
           {
             "verse": 4,
@@ -19405,7 +19469,8 @@
         "16": [
           {
             "verse": 1,
-            "title": "Samson and Delilah"
+            "title": "Samson and Delilah",
+            "context": "Samson and Delilah — one of the Bible's saddest stories. The strongest man falls through the weakest spot — his heart."
           },
           {
             "verse": 23,
@@ -19722,7 +19787,8 @@
         "1": [
           {
             "verse": 1,
-            "title": "David's Lament for Saul and Jonathan"
+            "title": "David's Lament for Saul and Jonathan",
+            "context": "David's lament — 'How the mighty have fallen!' Even after years of being hunted, David honors the fallen Saul."
           }
         ],
         "2": [
@@ -19742,7 +19808,8 @@
         "4": [
           {
             "verse": 1,
-            "title": "The Death of Ish-Bosheth"
+            "title": "The Death of Ish-Bosheth",
+            "context": "Ish-Bosheth murdered — Saul's last son killed in his bed. David refuses to celebrate; he executes the assassins."
           }
         ],
         "5": [
@@ -19952,7 +20019,8 @@
           },
           {
             "verse": 22,
-            "title": "Solomon's Prayer of Dedication"
+            "title": "Solomon's Prayer of Dedication",
+            "context": "Solomon's dedication prayer — one of the longest prayers in Scripture. Even foreigners are interceded for in advance."
           }
         ],
         "9": [
@@ -19972,7 +20040,8 @@
         "11": [
           {
             "verse": 1,
-            "title": "Solomon's Wives"
+            "title": "Solomon's Wives",
+            "context": "Solomon's wives — even the wisest king on earth was led astray. Wisdom cannot protect us from the heart's foolishness."
           },
           {
             "verse": 26,
@@ -20094,7 +20163,8 @@
           },
           {
             "verse": 12,
-            "title": "Elisha Succeeds Elijah"
+            "title": "Elisha Succeeds Elijah",
+            "context": "Elisha succeeds Elijah — 'My father! The chariots of Israel!' One of the deepest cries of spiritual succession."
           }
         ],
         "3": [
@@ -20209,7 +20279,8 @@
           },
           {
             "verse": 7,
-            "title": "Why Israel Was Exiled"
+            "title": "Why Israel Was Exiled",
+            "context": "Why Israel was exiled — a rare moment when Scripture pauses to explain. They went into exile not from bad luck but for forsaking the LORD."
           }
         ],
         "18": [
@@ -20335,7 +20406,8 @@
         "11": [
           {
             "verse": 1,
-            "title": "David Anointed King"
+            "title": "David Anointed King",
+            "context": "David anointed king — Chronicles skips ahead to David's triumph. God's promises always come true."
           },
           {
             "verse": 10,
@@ -20631,7 +20703,8 @@
         "2": [
           {
             "verse": 1,
-            "title": "Artaxerxes Sends Nehemiah"
+            "title": "Artaxerxes Sends Nehemiah",
+            "context": "Nehemiah's request — after four months of prayer, he speaks. 'I prayed to the God of heaven' — even mid-conversation with the king."
           },
           {
             "verse": 11,
@@ -20731,7 +20804,8 @@
           },
           {
             "verse": 12,
-            "title": "For Such a Time as This"
+            "title": "For Such a Time as This",
+            "context": "'For such a time as this' — Mordecai's challenge propels Esther toward her riskiest act. God's providence meets human courage."
           }
         ],
         "5": [
@@ -20838,7 +20912,8 @@
         "19": [
           {
             "verse": 1,
-            "title": "My Redeemer Lives"
+            "title": "My Redeemer Lives",
+            "context": "'I know my Redeemer lives' — from his ash heap, Job sees through to resurrection. A stunning preview of Christ's work."
           }
         ],
         "28": [
@@ -20858,7 +20933,8 @@
         "38": [
           {
             "verse": 1,
-            "title": "The LORD Speaks from the Whirlwind"
+            "title": "The LORD Speaks from the Whirlwind",
+            "context": "The LORD answers from the whirlwind — after 37 chapters of debate, God appears. He doesn't explain why, but reveals himself."
           }
         ],
         "40": [
@@ -21011,7 +21087,8 @@
         "19": [
           {
             "verse": 1,
-            "title": "The Heavens Declare God's Glory"
+            "title": "The Heavens Declare God's Glory",
+            "context": "The heavens declare God's glory — creation and Scripture are God's two books. The psalmist moves from one to the other."
           }
         ],
         "20": [
@@ -21465,7 +21542,8 @@
         "84": [
           {
             "verse": 1,
-            "title": "How Lovely Is Your Dwelling Place"
+            "title": "How Lovely Is Your Dwelling Place",
+            "context": "How lovely is your dwelling place — 'Better one day in your courts than a thousand elsewhere'. A pilgrim's heart."
           }
         ],
         "85": [
@@ -22162,7 +22240,8 @@
         "8": [
           {
             "verse": 1,
-            "title": "Love Strong as Death"
+            "title": "Love Strong as Death",
+            "context": "Love strong as death — the song's climactic declaration. Love cannot be quenched by any force."
           }
         ]
       },
@@ -22329,7 +22408,8 @@
         "55": [
           {
             "verse": 1,
-            "title": "Come, Buy Without Money"
+            "title": "Come, Buy Without Money",
+            "context": "Come, buy without money — 'All who thirst, come to the waters'. Jesus echoes this invitation in John 7."
           }
         ],
         "58": [
@@ -22798,7 +22878,8 @@
         "6": [
           {
             "verse": 1,
-            "title": "Return to the LORD"
+            "title": "Return to the LORD",
+            "context": "Return to the LORD — the people's own words: 'Come, let us return!' The repentance Hosea has been pleading for."
           }
         ],
         "11": [
@@ -22832,7 +22913,8 @@
           },
           {
             "verse": 28,
-            "title": "The Spirit Poured Out"
+            "title": "The Spirit Poured Out",
+            "context": "The Spirit poured out — Peter quotes this on Pentecost, proclaiming it fulfilled in the church."
           }
         ],
         "3": [
@@ -22873,7 +22955,8 @@
           },
           {
             "verse": 21,
-            "title": "Let Justice Roll Down"
+            "title": "Let Justice Roll Down",
+            "context": "Let justice roll down — 'I hate, I despise your festivals'. Without justice, even worship becomes hypocrisy."
           }
         ],
         "7": [
@@ -22972,7 +23055,8 @@
         "6": [
           {
             "verse": 1,
-            "title": "What Does the LORD Require?"
+            "title": "What Does the LORD Require?",
+            "context": "What does the LORD require? — Scripture's clearest summary of true religion: 'Do justice, love kindness, walk humbly with your God'."
           }
         ],
         "7": [
@@ -23190,13 +23274,15 @@
           },
           {
             "verse": 18,
-            "title": "The Birth of Jesus"
+            "title": "The Birth of Jesus",
+            "context": "The birth of Jesus — a virgin, an obedient carpenter, a prophesied baby. The greatest story begins in the smallest home."
           }
         ],
         "2": [
           {
             "verse": 1,
-            "title": "The Visit of the Magi"
+            "title": "The Visit of the Magi",
+            "context": "The Magi visit — Gentile wise men recognize the Messiah first. The gospel crossed ethnic lines from day one."
           },
           {
             "verse": 13,
@@ -23528,7 +23614,8 @@
           },
           {
             "verse": 21,
-            "title": "Jesus Predicts His Death"
+            "title": "Jesus Predicts His Death",
+            "context": "Jesus predicts his death — Peter rebukes him. Jesus answers with the harshest word: 'Get behind me, Satan!'"
           }
         ],
         "17": [
@@ -24501,7 +24588,8 @@
         "24": [
           {
             "verse": 1,
-            "title": "The Resurrection"
+            "title": "The Resurrection",
+            "context": "The Resurrection — women arrive at dawn, meet two angels. The foundation of Christian faith."
           },
           {
             "verse": 13,
@@ -25758,7 +25846,8 @@
           },
           {
             "verse": 15,
-            "title": "Justification by Faith"
+            "title": "Justification by Faith",
+            "context": "Justification by faith — Paul's classic statement: 'A person is justified not by works of the law but by faith in Jesus Christ'."
           }
         ],
         "3": [
@@ -25769,7 +25858,8 @@
           },
           {
             "verse": 15,
-            "title": "The Law and the Promise"
+            "title": "The Law and the Promise",
+            "context": "Law and promise — Paul clarifies. The law doesn't cancel the promise; it serves as a guardian leading us to Christ."
           }
         ],
         "4": [
@@ -25813,7 +25903,8 @@
         "1": [
           {
             "verse": 1,
-            "title": "Spiritual Blessings in Christ"
+            "title": "Spiritual Blessings in Christ",
+            "context": "Spiritual blessings in Christ — Ephesians' breathtaking opening. Chosen 'before the creation of the world'."
           },
           {
             "verse": 15,
@@ -26032,7 +26123,8 @@
           },
           {
             "verse": 13,
-            "title": "The Coming of the Lord"
+            "title": "The Coming of the Lord",
+            "context": "The coming of the Lord — one of Paul's fullest descriptions of Christ's return. 'The Lord himself will descend from heaven'."
           }
         ],
         "5": [
@@ -26059,7 +26151,8 @@
         "2": [
           {
             "verse": 1,
-            "title": "The Man of Lawlessness"
+            "title": "The Man of Lawlessness",
+            "context": "The Man of Lawlessness — Paul corrects false teaching: the rebellion must come first; the antichrist must be revealed."
           },
           {
             "verse": 13,
@@ -26184,7 +26277,8 @@
           },
           {
             "verse": 6,
-            "title": "Paul's Final Words"
+            "title": "Paul's Final Words",
+            "context": "Paul's final words — 'I have fought the good fight'. A martyr's deathbed summary of life lived for Christ."
           }
         ]
       },
@@ -26204,7 +26298,8 @@
           },
           {
             "verse": 11,
-            "title": "Grace That Trains Us"
+            "title": "Grace That Trains Us",
+            "context": "Grace that trains us — 'to renounce ungodliness'. Grace doesn't just forgive; it transforms behavior."
           }
         ],
         "3": [
@@ -26238,7 +26333,8 @@
         "1": [
           {
             "verse": 1,
-            "title": "God Has Spoken by His Son"
+            "title": "God Has Spoken by His Son",
+            "context": "God has spoken by his Son — Hebrews' opening declaration: God's revelation, once partial, is now complete in Christ."
           },
           {
             "verse": 4,
