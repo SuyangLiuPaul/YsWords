@@ -37,8 +37,23 @@ class EvidencePage extends StatefulWidget {
   State<EvidencePage> createState() => _EvidencePageState();
 }
 
+/// What scope of evidences the page is currently showing. Drives the
+/// disclosure banner so the user always knows whether the list is
+/// chapter-narrowed, book-narrowed, or showing the full archive.
+enum _EvidenceScope { chapter, book, archive }
+
 class _EvidencePageState extends State<EvidencePage> {
+  /// The complete archive — kept around so the user can widen out
+  /// from chapter -> book -> archive without re-fetching.
+  List<BibleEvidence> _allEntries = const [];
+  /// The currently shown subset, scoped by [_scope].
   List<BibleEvidence> _all = const [];
+  _EvidenceScope _scope = _EvidenceScope.archive;
+  /// True when the current [_scope] is the result of falling back
+  /// from a more-specific scope that came up empty. Drives the
+  /// "showing book-wide because chapter has no curated entries"
+  /// hint in the banner.
+  bool _scopeWasFallback = false;
   bool _loading = true;
   final _searchController = TextEditingController();
   String _query = '';
@@ -65,6 +80,8 @@ class _EvidencePageState extends State<EvidencePage> {
     // strand the user on an empty page; better to show neighbouring
     // entries than nothing at all when curated coverage is thin.
     var filtered = list;
+    var scope = _EvidenceScope.archive;
+    var fallback = false;
     if (widget.filterBook != null) {
       if (widget.filterChapter != null) {
         final byChapter = BibleEvidenceService.forChapter(
@@ -74,25 +91,65 @@ class _EvidencePageState extends State<EvidencePage> {
         );
         if (byChapter.isNotEmpty) {
           filtered = byChapter;
+          scope = _EvidenceScope.chapter;
         } else {
           final byBook = BibleEvidenceService.forBook(
             list,
             widget.filterBook!,
           );
-          filtered = byBook.isNotEmpty ? byBook : list;
+          if (byBook.isNotEmpty) {
+            filtered = byBook;
+            scope = _EvidenceScope.book;
+            fallback = true; // chapter -> book widening
+          } else {
+            filtered = list;
+            scope = _EvidenceScope.archive;
+            fallback = true; // chapter -> archive widening
+          }
         }
       } else {
         final byBook = BibleEvidenceService.forBook(
           list,
           widget.filterBook!,
         );
-        filtered = byBook.isNotEmpty ? byBook : list;
+        if (byBook.isNotEmpty) {
+          filtered = byBook;
+          scope = _EvidenceScope.book;
+        } else {
+          filtered = list;
+          scope = _EvidenceScope.archive;
+          fallback = true; // book -> archive widening
+        }
       }
     }
     setState(() {
+      _allEntries = list;
       _all = filtered;
+      _scope = scope;
+      _scopeWasFallback = fallback;
       _loading = false;
     });
+  }
+
+  /// User taps the banner to widen scope by one step.
+  void _widenScope() {
+    if (_scope == _EvidenceScope.chapter && widget.filterBook != null) {
+      final byBook =
+          BibleEvidenceService.forBook(_allEntries, widget.filterBook!);
+      setState(() {
+        _all = byBook.isNotEmpty ? byBook : _allEntries;
+        _scope = byBook.isNotEmpty
+            ? _EvidenceScope.book
+            : _EvidenceScope.archive;
+        _scopeWasFallback = false;
+      });
+    } else if (_scope == _EvidenceScope.book) {
+      setState(() {
+        _all = _allEntries;
+        _scope = _EvidenceScope.archive;
+        _scopeWasFallback = false;
+      });
+    }
   }
 
   List<BibleEvidence> _filtered(String locale) {
@@ -147,6 +204,21 @@ class _EvidencePageState extends State<EvidencePage> {
                 constraints: BoxConstraints(maxWidth: maxW),
                 child: Column(
                   children: [
+                    // Scope disclosure banner — only shown when the
+                    // page is narrowed (chapter or book scope) so the
+                    // user knows the list isn't the full archive and
+                    // can widen out with one tap. Hidden in the
+                    // archive-wide default state.
+                    if (_scope != _EvidenceScope.archive)
+                      _ScopeBanner(
+                        scope: _scope,
+                        wasFallback: _scopeWasFallback,
+                        book: widget.filterBook,
+                        chapter: widget.filterChapter,
+                        locale: locale,
+                        count: _all.length,
+                        onWiden: _widenScope,
+                      ),
                     // Search.
                     Padding(
                       padding:
@@ -896,3 +968,102 @@ class _CitationTile extends StatelessWidget {
     );
   }
 }
+
+class _ScopeBanner extends StatelessWidget {
+  final _EvidenceScope scope;
+  final bool wasFallback;
+  final String? book;
+  final int? chapter;
+  final String locale;
+  final int count;
+  final VoidCallback onWiden;
+
+  const _ScopeBanner({
+    required this.scope,
+    required this.wasFallback,
+    required this.book,
+    required this.chapter,
+    required this.locale,
+    required this.count,
+    required this.onWiden,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final tone = wasFallback
+        ? scheme.surfaceContainerHighest
+        : scheme.primaryContainer.withValues(alpha: 0.45);
+    final onTone = wasFallback ? scheme.onSurface : scheme.onPrimaryContainer;
+
+    String fmt(String key, String fallback) {
+      final raw = uiStrings[key]?[locale] ?? fallback;
+      return raw
+          .replaceAll('{n}', '$count')
+          .replaceAll('{book}', book ?? '')
+          .replaceAll('{chapter}', '${chapter ?? ''}');
+    }
+
+    String headline;
+    String widenLabel;
+    switch (scope) {
+      case _EvidenceScope.chapter:
+        headline = fmt('evidenceScopeChapter', '$count entries for ${book ?? ""} $chapter');
+        widenLabel = fmt('evidenceWidenBook', 'Show all in ${book ?? ""}');
+        break;
+      case _EvidenceScope.book:
+        if (wasFallback && chapter != null) {
+          headline = fmt(
+            'evidenceScopeBookFallback',
+            'No entries for ${book ?? ""} $chapter — showing all $count from ${book ?? ""}',
+          );
+        } else {
+          headline = fmt('evidenceScopeBook', '$count entries for ${book ?? ""}');
+        }
+        widenLabel = fmt('evidenceWidenArchive', 'Show full archive');
+        break;
+      case _EvidenceScope.archive:
+        return const SizedBox.shrink();
+    }
+
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.fromLTRB(12, 8, 12, 0),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: tone,
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            wasFallback ? Icons.info_outline : Icons.tune,
+            size: 16,
+            color: onTone,
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              headline,
+              style: TextStyle(fontSize: 13, color: onTone),
+            ),
+          ),
+          const SizedBox(width: 8),
+          TextButton(
+            onPressed: onWiden,
+            style: TextButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              minimumSize: const Size(0, 32),
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            ),
+            child: Text(
+              widenLabel,
+              style: const TextStyle(fontSize: 13),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+

@@ -761,6 +761,35 @@ const uiStrings = {
     'zh-Hant': '共 {n} 條',
     'en': '{n} results',
   },
+  // Evidence scope-disclosure banner (chapter / book / archive).
+  // Use {n}, {book}, {chapter} as placeholders; the widget does the
+  // .replaceAll so we don't have to format here.
+  'evidenceScopeChapter': {
+    'zh-Hans': '为 {book} 第 {chapter} 章筛选 {n} 条',
+    'zh-Hant': '為 {book} 第 {chapter} 章篩選 {n} 條',
+    'en': '{n} entries for {book} {chapter}',
+  },
+  'evidenceScopeBook': {
+    'zh-Hans': '为 {book} 筛选 {n} 条',
+    'zh-Hant': '為 {book} 篩選 {n} 條',
+    'en': '{n} entries for {book}',
+  },
+  'evidenceScopeBookFallback': {
+    'zh-Hans': '{book} 第 {chapter} 章暂无相关条目 — 显示 {book} 全部 {n} 条',
+    'zh-Hant': '{book} 第 {chapter} 章暫無相關條目 — 顯示 {book} 全部 {n} 條',
+    'en':
+        'No entries for {book} {chapter} — showing all {n} from {book}',
+  },
+  'evidenceWidenBook': {
+    'zh-Hans': '查看 {book} 全部',
+    'zh-Hant': '查看 {book} 全部',
+    'en': 'Show all in {book}',
+  },
+  'evidenceWidenArchive': {
+    'zh-Hans': '查看完整档案',
+    'zh-Hant': '查看完整檔案',
+    'en': 'Show full archive',
+  },
   // Categories.
   'categoryArchaeology': {
     'zh-Hans': '考古',
