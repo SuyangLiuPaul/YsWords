@@ -1161,6 +1161,11 @@ const uiStrings = {
     'zh-Hant': '關於此卷書',
     'en': 'About this book',
   },
+  'sectionContextTooltip': {
+    'zh-Hans': '背景说明',
+    'zh-Hant': '背景說明',
+    'en': 'Background',
+  },
   'readMore': {
     'zh-Hans': '展开',
     'zh-Hant': '展開',

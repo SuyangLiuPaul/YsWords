@@ -3254,9 +3254,11 @@ class _RefChip extends StatelessWidget {
 /// verse in the reading pane. Title text comes from
 /// `SectionTitleService` — the version-to-set mapping in
 /// `lib/constants/section_title_map.dart` decides which set is used
-/// for the active translation. Optional `context` is a 1-2 sentence
-/// background note rendered as italic helper text under the title.
-class _SectionHeading extends StatelessWidget {
+/// for the active translation. When optional `context` is present an
+/// info-icon button next to the title toggles a 1-2 sentence
+/// background note. Default state is collapsed — readers who want
+/// the context tap to reveal it; everyone else gets a clean heading.
+class _SectionHeading extends StatefulWidget {
   final String title;
   final String? context;
   final bool isFirst;
@@ -3269,25 +3271,33 @@ class _SectionHeading extends StatelessWidget {
   });
 
   @override
+  State<_SectionHeading> createState() => _SectionHeadingState();
+}
+
+class _SectionHeadingState extends State<_SectionHeading> {
+  bool _expanded = false;
+
+  @override
   Widget build(BuildContext buildContext) {
     final settings = buildContext.watch<AppSettings>();
     final scheme = Theme.of(buildContext).colorScheme;
     final fs = settings.fontSize;
+    final hasContext =
+        widget.context != null && widget.context!.isNotEmpty;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          // Larger top spacing between sections; a tighter top gap
-          // when this is the very first paragraph in the chapter so
-          // the heading doesn't push the chapter content too far down.
+          // Larger top spacing between sections; tighter when this
+          // is the very first paragraph in the chapter so the
+          // heading doesn't push the body too far down.
           padding: EdgeInsets.fromLTRB(
-            12, isFirst ? 6 : 18, 12, context != null ? 4 : 8),
+            12, widget.isFirst ? 6 : 18, 12, _expanded ? 4 : 8),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              // Small accent bar on the left, matches the app's
-              // primary colour. Visually anchors the heading without
-              // making it shout.
+              // Small accent bar — anchors the heading without
+              // shouting.
               Container(
                 width: 3,
                 height: (fs + 2).clamp(14.0, 20.0).toDouble(),
@@ -3299,7 +3309,7 @@ class _SectionHeading extends StatelessWidget {
               ),
               Expanded(
                 child: Text(
-                  title,
+                  widget.title,
                   style: TextStyle(
                     fontFamily: settings.fontFamily,
                     fontSize:
@@ -3310,27 +3320,66 @@ class _SectionHeading extends StatelessWidget {
                   ),
                 ),
               ),
+              if (hasContext) ...[
+                const SizedBox(width: 6),
+                IconButton(
+                  visualDensity: VisualDensity.compact,
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(
+                      minWidth: 32, minHeight: 32),
+                  iconSize: 18,
+                  splashRadius: 18,
+                  tooltip: uiStrings['sectionContextTooltip']
+                          ?[settings.locale] ??
+                      'Background',
+                  icon: Icon(
+                    _expanded
+                        ? Icons.info
+                        : Icons.info_outline,
+                    color: scheme.primary,
+                  ),
+                  onPressed: () =>
+                      setState(() => _expanded = !_expanded),
+                ),
+              ],
             ],
           ),
         ),
-        if (context != null && context!.isNotEmpty)
-          Padding(
-            // Indented to line up with the title text (3 px bar + 8
-            // px margin = 11 px). Italic + softer colour signals
-            // "background, not scripture itself".
-            padding: const EdgeInsets.fromLTRB(23, 0, 12, 8),
-            child: Text(
-              context!,
-              style: TextStyle(
-                fontFamily: settings.fontFamily,
-                fontSize: (fs - 3).clamp(12.0, 15.0).toDouble(),
-                fontStyle: FontStyle.italic,
-                color: scheme.onSurfaceVariant,
-                height: 1.45,
-              ),
-            ),
+        if (hasContext)
+          AnimatedSize(
+            duration: const Duration(milliseconds: 180),
+            curve: Curves.easeOut,
+            alignment: Alignment.topLeft,
+            child: _expanded
+                ? Padding(
+                    padding:
+                        const EdgeInsets.fromLTRB(23, 0, 12, 10),
+                    child: Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: scheme.surfaceContainerHigh,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                            color: scheme.outlineVariant
+                                .withValues(alpha: 0.6)),
+                      ),
+                      child: Text(
+                        widget.context!,
+                        style: TextStyle(
+                          fontFamily: settings.fontFamily,
+                          fontSize: (fs - 3)
+                              .clamp(12.0, 15.0)
+                              .toDouble(),
+                          fontStyle: FontStyle.italic,
+                          color: scheme.onSurface,
+                          height: 1.5,
+                        ),
+                      ),
+                    ),
+                  )
+                : const SizedBox(width: double.infinity),
           ),
-        child,
+        widget.child,
       ],
     );
   }
@@ -3394,139 +3443,164 @@ class _BookIntroCardState extends State<_BookIntroCard> {
 
     final themes = intro.getThemes(locale);
 
-    return Container(
-      margin: const EdgeInsets.fromLTRB(12, 8, 12, 16),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: scheme.surfaceContainerHigh,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: scheme.outlineVariant),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(Icons.menu_book_rounded,
-                  size: 16, color: scheme.primary),
-              const SizedBox(width: 6),
-              Text(
-                uiStrings['aboutThisBook']?[locale] ?? 'About this book',
-                style: labelStyle,
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Text(
-            intro.getSubtitle(locale),
-            style: TextStyle(
-              fontFamily: settings.fontFamily,
-              fontSize: (fs).clamp(14.0, 19.0).toDouble(),
-              fontWeight: FontWeight.w700,
-              color: scheme.onSurface,
-              height: 1.35,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            intro.getSummary(locale),
-            style: textStyle,
-          ),
-          if (_expanded) ...[
-            metaRow('authorLabel', intro.getAuthor(locale)),
-            metaRow('dateLabel', intro.getDate(locale)),
-            metaRow('audienceLabel', intro.getAudience(locale)),
-            if (themes.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.only(top: 8),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      (uiStrings['themesLabel']?[locale] ?? 'Themes')
-                          .toUpperCase(),
-                      style: labelStyle,
-                    ),
-                    const SizedBox(height: 6),
-                    Wrap(
-                      spacing: 6,
-                      runSpacing: 6,
-                      children: [
-                        for (final t in themes)
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 10, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: scheme.primary.withValues(alpha: 0.10),
-                              borderRadius: BorderRadius.circular(99),
-                            ),
-                            child: Text(
-                              t,
-                              style: TextStyle(
-                                fontFamily: settings.fontFamily,
-                                fontSize:
-                                    (fs - 4).clamp(11.0, 14.0).toDouble(),
-                                color: scheme.primary,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            if (intro.keyPassage.isNotEmpty) ...[
-              const SizedBox(height: 12),
-              Text(
-                (uiStrings['keyPassageLabel']?[locale] ?? 'Key passage')
-                    .toUpperCase(),
-                style: labelStyle,
-              ),
-              const SizedBox(height: 4),
-              Text(
-                intro.keyPassage,
-                style: TextStyle(
-                  fontFamily: settings.fontFamily,
-                  fontSize: (fs - 1).clamp(13.0, 17.0).toDouble(),
-                  fontWeight: FontWeight.w700,
-                  color: scheme.onSurface,
-                ),
-              ),
-              if (intro.getKeyPassageDescription(locale).isNotEmpty) ...[
-                const SizedBox(height: 4),
-                Text(
-                  intro.getKeyPassageDescription(locale),
-                  style: textStyle.copyWith(
-                    fontStyle: FontStyle.italic,
-                    color: scheme.onSurfaceVariant,
+    // Default-collapsed: a slim banner — book icon + "About this
+    // book" label, the subtitle, and a "Background ▾" chip-button
+    // that reveals everything else on tap. Keeps the chapter's
+    // first verses immediately reachable for users who don't want
+    // the metadata.
+    return InkWell(
+      onTap: () => setState(() => _expanded = !_expanded),
+      borderRadius: BorderRadius.circular(14),
+      child: Container(
+        margin: const EdgeInsets.fromLTRB(12, 8, 12, 16),
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: scheme.surfaceContainerHigh,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: scheme.outlineVariant),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Header row: icon + label on the left, expand chevron
+            // on the right. Whole card is tappable, but the chevron
+            // makes the affordance obvious.
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Icon(Icons.menu_book_rounded,
+                    size: 16, color: scheme.primary),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    uiStrings['aboutThisBook']?[locale] ??
+                        'About this book',
+                    style: labelStyle,
                   ),
                 ),
+                Icon(
+                  _expanded
+                      ? Icons.keyboard_arrow_up
+                      : Icons.keyboard_arrow_down,
+                  size: 22,
+                  color: scheme.onSurfaceVariant,
+                ),
               ],
-            ],
-          ],
-          const SizedBox(height: 6),
-          Align(
-            alignment: Alignment.centerLeft,
-            child: TextButton.icon(
-              onPressed: () => setState(() => _expanded = !_expanded),
-              icon: Icon(
-                _expanded ? Icons.expand_less : Icons.expand_more,
-                size: 16,
-              ),
-              label: Text(
-                _expanded
-                    ? (uiStrings['showLess']?[locale] ?? 'Show less')
-                    : (uiStrings['readMore']?[locale] ?? 'Read more'),
-              ),
-              style: TextButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                minimumSize: const Size(0, 32),
-                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            ),
+            const SizedBox(height: 6),
+            Text(
+              intro.getSubtitle(locale),
+              style: TextStyle(
+                fontFamily: settings.fontFamily,
+                fontSize: (fs).clamp(14.0, 19.0).toDouble(),
+                fontWeight: FontWeight.w700,
+                color: scheme.onSurface,
+                height: 1.35,
               ),
             ),
-          ),
-        ],
+            // Collapsed state stops here. Expanded state reveals
+            // summary + author / date / audience / themes / key
+            // passage. AnimatedSize gives a soft expand/collapse
+            // motion without dropping into the verse layout.
+            AnimatedSize(
+              duration: const Duration(milliseconds: 200),
+              curve: Curves.easeOut,
+              alignment: Alignment.topLeft,
+              child: _expanded
+                  ? Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const SizedBox(height: 10),
+                        Text(intro.getSummary(locale), style: textStyle),
+                        metaRow('authorLabel', intro.getAuthor(locale)),
+                        metaRow('dateLabel', intro.getDate(locale)),
+                        metaRow('audienceLabel', intro.getAudience(locale)),
+                        if (themes.isNotEmpty)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 8),
+                            child: Column(
+                              crossAxisAlignment:
+                                  CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  (uiStrings['themesLabel']?[locale] ??
+                                          'Themes')
+                                      .toUpperCase(),
+                                  style: labelStyle,
+                                ),
+                                const SizedBox(height: 6),
+                                Wrap(
+                                  spacing: 6,
+                                  runSpacing: 6,
+                                  children: [
+                                    for (final t in themes)
+                                      Container(
+                                        padding: const EdgeInsets
+                                            .symmetric(
+                                            horizontal: 10,
+                                            vertical: 4),
+                                        decoration: BoxDecoration(
+                                          color: scheme.primary
+                                              .withValues(alpha: 0.10),
+                                          borderRadius:
+                                              BorderRadius.circular(99),
+                                        ),
+                                        child: Text(
+                                          t,
+                                          style: TextStyle(
+                                            fontFamily:
+                                                settings.fontFamily,
+                                            fontSize: (fs - 4)
+                                                .clamp(11.0, 14.0)
+                                                .toDouble(),
+                                            color: scheme.primary,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                      ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        if (intro.keyPassage.isNotEmpty) ...[
+                          const SizedBox(height: 12),
+                          Text(
+                            (uiStrings['keyPassageLabel']?[locale] ??
+                                    'Key passage')
+                                .toUpperCase(),
+                            style: labelStyle,
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            intro.keyPassage,
+                            style: TextStyle(
+                              fontFamily: settings.fontFamily,
+                              fontSize:
+                                  (fs - 1).clamp(13.0, 17.0).toDouble(),
+                              fontWeight: FontWeight.w700,
+                              color: scheme.onSurface,
+                            ),
+                          ),
+                          if (intro
+                              .getKeyPassageDescription(locale)
+                              .isNotEmpty) ...[
+                            const SizedBox(height: 4),
+                            Text(
+                              intro.getKeyPassageDescription(locale),
+                              style: textStyle.copyWith(
+                                fontStyle: FontStyle.italic,
+                                color: scheme.onSurfaceVariant,
+                              ),
+                            ),
+                          ],
+                        ],
+                      ],
+                    )
+                  : const SizedBox(width: double.infinity),
+            ),
+          ],
+        ),
       ),
     );
   }
