@@ -878,16 +878,29 @@ class _GreetingCard extends StatelessWidget {
                 children: [
                   Text(
                     greeting,
+                    maxLines: 1,
+                    softWrap: false,
+                    overflow: TextOverflow.ellipsis,
+                    textDirection: TextDirection.ltr,
                     style: TextStyle(
                       fontFamily: settings.fontFamily,
                       fontSize: (fs - 3).clamp(11.0, 16.0).toDouble(),
                       color: scheme.onSurfaceVariant,
                     ),
                   ),
+                  // iPhone 14 (iOS 17/18 Safari) bug: under specific
+                  // font-fallback conditions the profile name can
+                  // render with each glyph stacked vertically. Forcing
+                  // softWrap:false + LTR direction + maxLines:1 with
+                  // ellipsis prevents Safari from line-breaking
+                  // between every character, even when a fallback
+                  // CJK font has misconfigured horizontal advances.
                   Text(
                     profileName,
                     maxLines: 1,
+                    softWrap: false,
                     overflow: TextOverflow.ellipsis,
+                    textDirection: TextDirection.ltr,
                     style: TextStyle(
                       fontFamily: settings.fontFamily,
                       fontSize: (fs + 3).clamp(16.0, 28.0).toDouble(),

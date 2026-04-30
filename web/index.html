@@ -100,6 +100,24 @@
     * {
       -webkit-tap-highlight-color: transparent;
     }
+    /* iPhone 14 (iOS 17/18 Safari) sometimes renders certain glyphs in
+       the profile / greeting card stacked vertically — happens when a
+       fallback CJK font's OpenType `vert` feature gets applied or
+       Safari's data-detector wraps the text in a way that flips
+       writing-mode.  Force horizontal layout globally so the bug
+       can't surface on any device.  Other phones already render
+       horizontally, so this is a no-op for them. */
+    html, body, flutter-view, flt-glass-pane, flt-scene-host {
+      writing-mode: horizontal-tb !important;
+      text-orientation: mixed !important;
+      -webkit-text-orientation: mixed !important;
+      -webkit-locale: auto;
+    }
+    /* Belt-and-braces: nuke any inherited `vert` font-feature setting
+       that ships in Microsoft YaHei or other CJK fallbacks. */
+    body, body * {
+      font-feature-settings: "vert" off;
+    }
   </style>
 
   <!-- PWA Settings -->
