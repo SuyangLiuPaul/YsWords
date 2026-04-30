@@ -140,10 +140,14 @@ class VerseWidget extends StatelessWidget {
                         ),
                       ),
                     ),
-                    // Tiny note / bookmark badges anchored to the right
-                    // edge of the verse container. Only render when the
-                    // verse has the corresponding annotation, so the
-                    // reading view stays clean for un-annotated verses.
+                    // Note / bookmark badges anchored to the right
+                    // edge of the verse container. Only render when
+                    // the verse has the corresponding annotation, so
+                    // the reading view stays clean for un-annotated
+                    // verses.  Sized off the user's font so they
+                    // scale with the reading text — pre-fix the
+                    // hardcoded 14px + 60% opacity made them hard to
+                    // spot, especially on bigger fonts.
                     if (isNoted || isBookmarked)
                       Positioned(
                         top: 2,
@@ -156,21 +160,22 @@ class VerseWidget extends StatelessWidget {
                                 padding: const EdgeInsets.only(right: 4),
                                 child: Icon(
                                   Icons.sticky_note_2,
-                                  size: 14,
+                                  size: (settings.fontSize * 0.95)
+                                      .clamp(14.0, 22.0)
+                                      .toDouble(),
                                   color: Theme.of(context)
                                       .colorScheme
                                       .primary
-                                      .withValues(alpha: 0.6),
+                                      .withValues(alpha: 0.85),
                                 ),
                               ),
                             if (isBookmarked)
                               Icon(
                                 Icons.bookmark_rounded,
-                                size: 14,
-                                color: Theme.of(context)
-                                    .colorScheme
-                                    .primary
-                                    .withValues(alpha: 0.6),
+                                size: (settings.fontSize * 1.05)
+                                    .clamp(16.0, 24.0)
+                                    .toDouble(),
+                                color: Theme.of(context).colorScheme.primary,
                               ),
                           ],
                         ),
