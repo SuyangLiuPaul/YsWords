@@ -120,12 +120,12 @@
     }
   </style>
 
-  <!-- PWA Settings -->
-  <meta name="theme-color" content="#2196F3">
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="YsWords">
+  <!-- Windows tile metadata — kept here, NOT the iOS / generic PWA
+       meta tags which already appear earlier in <head> with their
+       intended values.  The previous duplicates redefined
+       theme-color / status-bar-style with conflicting values
+       ('default' vs 'black-translucent') and the LAST one won,
+       producing the wrong status-bar tint on iOS PWAs. -->
   <meta name="msapplication-TileImage" content="assets/app_icon.png">
   <meta name="msapplication-TileColor" content="#2196F3">
 </head>
