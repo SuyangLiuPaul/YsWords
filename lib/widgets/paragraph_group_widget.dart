@@ -65,6 +65,14 @@ class ParagraphGroupWidget extends StatelessWidget {
           final isSelected = mainProvider.isSelected(verse);
           final isHighlighted =
               mainProvider.highlightIndex == startVerseIndex + i;
+          // Bookmark + note indicators — verse-by-verse mode shows
+          // them as a positioned icon in the top-right corner of
+          // each verse container; paragraph mode has no per-verse
+          // container, so we render tiny inline glyphs right before
+          // the verse number instead. Pre-fix paragraph mode was
+          // silent about which verses were bookmarked.
+          final isBookmarked = mainProvider.isBookmarked(verse);
+          final isNoted = mainProvider.isVerseNoted(verse);
 
           Color? bgColor;
           final highlightColor = mainProvider.getHighlightColor(verse);
@@ -75,6 +83,36 @@ class ParagraphGroupWidget extends StatelessWidget {
                 Theme.of(context).colorScheme.secondary.withValues(alpha: 0.3);
           } else if (highlightColor != null) {
             bgColor = highlightColor.withValues(alpha: 0.35);
+          }
+
+          if (isBookmarked) {
+            allSpans.add(WidgetSpan(
+              alignment: PlaceholderAlignment.middle,
+              child: Padding(
+                padding: const EdgeInsets.only(right: 1),
+                child: Icon(
+                  Icons.bookmark_rounded,
+                  size: settings.fontSize * 0.85,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+              ),
+            ));
+          }
+          if (isNoted) {
+            allSpans.add(WidgetSpan(
+              alignment: PlaceholderAlignment.middle,
+              child: Padding(
+                padding: const EdgeInsets.only(right: 1),
+                child: Icon(
+                  Icons.sticky_note_2,
+                  size: settings.fontSize * 0.78,
+                  color: Theme.of(context)
+                      .colorScheme
+                      .primary
+                      .withValues(alpha: 0.7),
+                ),
+              ),
+            ));
           }
 
           allSpans.addAll(buildVerseContentSpans(
