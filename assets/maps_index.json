@@ -12119,5 +12119,4884 @@
       ]
     },
     "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/08/Rembrandt_Harmensz._van_Rijn_-_The_Blinding_of_Samson_-_Google_Art_Project.jpg/1280px-Rembrandt_Harmensz._van_Rijn_-_The_Blinding_of_Samson_-_Google_Art_Project.jpg"
+  },
+  {
+    "id": "illus_tissot_brooklyn_museum_-_agnus-dei_the_scapegoat_agnus-dei._le_bouc_émissaire",
+    "kind": "scene",
+    "title": {
+      "en": "Agnus-Dei The Scapegoat (Tissot)",
+      "zh-Hans": "迪索圣经插图——利未记第16章",
+      "zh-Hant": "迪索聖經插圖——利未記第16章"
+    },
+    "description": {
+      "en": "James Tissot — Agnus-Dei The Scapegoat (Leviticus 16-16; John 1-1).",
+      "zh-Hans": "詹姆斯·迪索——利未记第16章圣经场景（利未记第16-16章;约翰福音第1-1章）。",
+      "zh-Hant": "詹姆斯·迪索——利未記第16章聖經場景（利未記第16-16章;約翰福音第1-1章）。"
+    },
+    "books": {
+      "Leviticus": [
+        16,
+        16
+      ],
+      "John": [
+        1,
+        1
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/39/Brooklyn_Museum_-_Agnus-Dei_The_Scapegoat_%28Agnus-Dei._Le_bouc_%C3%A9missaire.%29_-_James_Tissot.jpg/1280px-Brooklyn_Museum_-_Agnus-Dei_The_Scapegoat_%28Agnus-Dei._Le_bouc_%C3%A9missaire.%29_-_James_Tissot.jpg"
+  },
+  {
+    "id": "illus_tissot_brooklyn_museum_-_ancient_tombs_valley_of_hinnom_-_james_tissot_-_2",
+    "kind": "scene",
+    "title": {
+      "en": "Ancient Tombs Valley of Hinnom (Tissot)",
+      "zh-Hans": "迪索圣经插图——约书亚记第15章",
+      "zh-Hant": "迪索聖經插圖——約書亞記第15章"
+    },
+    "description": {
+      "en": "James Tissot — Ancient Tombs Valley of Hinnom (Joshua 15-15).",
+      "zh-Hans": "詹姆斯·迪索——约书亚记第15章圣经场景（约书亚记第15-15章）。",
+      "zh-Hant": "詹姆斯·迪索——約書亞記第15章聖經場景（約書亞記第15-15章）。"
+    },
+    "books": {
+      "Joshua": [
+        15,
+        15
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/73/Brooklyn_Museum_-_Ancient_Tombs_Valley_of_Hinnom_-_James_Tissot_-_2.jpg/1280px-Brooklyn_Museum_-_Ancient_Tombs_Valley_of_Hinnom_-_James_Tissot_-_2.jpg"
+  },
+  {
+    "id": "illus_tissot_brooklyn_museum_-_ancient_tombs_valley_of_hinnom_-_james_tissot",
+    "kind": "scene",
+    "title": {
+      "en": "Ancient Tombs Valley of Hinnom (Tissot)",
+      "zh-Hans": "迪索圣经插图——约书亚记第15章",
+      "zh-Hant": "迪索聖經插圖——約書亞記第15章"
+    },
+    "description": {
+      "en": "James Tissot — Ancient Tombs Valley of Hinnom (Joshua 15-15).",
+      "zh-Hans": "詹姆斯·迪索——约书亚记第15章圣经场景（约书亚记第15-15章）。",
+      "zh-Hant": "詹姆斯·迪索——約書亞記第15章聖經場景（約書亞記第15-15章）。"
+    },
+    "books": {
+      "Joshua": [
+        15,
+        15
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/72/Brooklyn_Museum_-_Ancient_Tombs_Valley_of_Hinnom_-_James_Tissot.jpg/1280px-Brooklyn_Museum_-_Ancient_Tombs_Valley_of_Hinnom_-_James_Tissot.jpg"
+  },
+  {
+    "id": "illus_tissot_brooklyn_museum_-_apparition_of_our_lord_to_saint_peter_apparition_de_",
+    "kind": "scene",
+    "title": {
+      "en": "Apparition of Our Lord to Saint Peter (Tissot)",
+      "zh-Hans": "迪索圣经插图——路加福音第24章",
+      "zh-Hant": "迪索聖經插圖——路加福音第24章"
+    },
+    "description": {
+      "en": "James Tissot — Apparition of Our Lord to Saint Peter (Luke 24-24; 1 Corinthians 15-15).",
+      "zh-Hans": "詹姆斯·迪索——路加福音第24章圣经场景（路加福音第24-24章;哥林多前书第15-15章）。",
+      "zh-Hant": "詹姆斯·迪索——路加福音第24章聖經場景（路加福音第24-24章;哥林多前書第15-15章）。"
+    },
+    "books": {
+      "Luke": [
+        24,
+        24
+      ],
+      "1 Corinthians": [
+        15,
+        15
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/97/Brooklyn_Museum_-_Apparition_of_Our_Lord_to_Saint_Peter_%28Apparition_de_Notre-Seigneur_%C3%A0_St-Pierre%29_-_James_Tissot.jpg/1280px-Brooklyn_Museum_-_Apparition_of_Our_Lord_to_Saint_Peter_%28Apparition_de_Notre-Seigneur_%C3%A0_St-Pierre%29_-_James_Tissot.jpg"
+  },
+  {
+    "id": "illus_tissot_brooklyn_museum_-_fig-tree_valley_of_hinnom_-_james_tissot",
+    "kind": "scene",
+    "title": {
+      "en": "Fig-tree Valley of Hinnom (Tissot)",
+      "zh-Hans": "迪索圣经插图——约书亚记第15章",
+      "zh-Hant": "迪索聖經插圖——約書亞記第15章"
+    },
+    "description": {
+      "en": "James Tissot — Fig-tree Valley of Hinnom (Joshua 15-15).",
+      "zh-Hans": "詹姆斯·迪索——约书亚记第15章圣经场景（约书亚记第15-15章）。",
+      "zh-Hant": "詹姆斯·迪索——約書亞記第15章聖經場景（約書亞記第15-15章）。"
+    },
+    "books": {
+      "Joshua": [
+        15,
+        15
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/ba/Brooklyn_Museum_-_Fig-tree_Valley_of_Hinnom_-_James_Tissot.jpg/1280px-Brooklyn_Museum_-_Fig-tree_Valley_of_Hinnom_-_James_Tissot.jpg"
+  },
+  {
+    "id": "illus_tissot_brooklyn_museum_-_jesus_looking_through_a_lattice_jésus_regardant_à_tr",
+    "kind": "scene",
+    "title": {
+      "en": "Jesus Looking through a Lattice (Tissot)",
+      "zh-Hans": "迪索圣经插图——雅歌第2章",
+      "zh-Hant": "迪索聖經插圖——雅歌第2章"
+    },
+    "description": {
+      "en": "James Tissot — Jesus Looking through a Lattice (Song of Solomon 2-2).",
+      "zh-Hans": "詹姆斯·迪索——雅歌第2章圣经场景（雅歌第2-2章）。",
+      "zh-Hant": "詹姆斯·迪索——雅歌第2章聖經場景（雅歌第2-2章）。"
+    },
+    "books": {
+      "Song of Solomon": [
+        2,
+        2
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/09/Brooklyn_Museum_-_Jesus_Looking_through_a_Lattice_%28J%C3%A9sus_regardant_%C3%A0_travers_le_treillis%29_-_James_Tissot_-_overall.jpg/1280px-Brooklyn_Museum_-_Jesus_Looking_through_a_Lattice_%28J%C3%A9sus_regardant_%C3%A0_travers_le_treillis%29_-_James_Tissot_-_overall.jpg"
+  },
+  {
+    "id": "illus_tissot_brooklyn_museum_-_judaic_ornament_menorah_-_james_tissot",
+    "kind": "scene",
+    "title": {
+      "en": "Judaic Ornament (Tissot)",
+      "zh-Hans": "迪索圣经插图——出埃及记第25章",
+      "zh-Hant": "迪索聖經插圖——出埃及記第25章"
+    },
+    "description": {
+      "en": "James Tissot — Judaic Ornament (Exodus 25-25).",
+      "zh-Hans": "詹姆斯·迪索——出埃及记第25章圣经场景（出埃及记第25-25章）。",
+      "zh-Hant": "詹姆斯·迪索——出埃及記第25章聖經場景（出埃及記第25-25章）。"
+    },
+    "books": {
+      "Exodus": [
+        25,
+        25
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b2/Brooklyn_Museum_-_Judaic_Ornament_%28Menorah%29_-_James_Tissot.jpg/1280px-Brooklyn_Museum_-_Judaic_Ornament_%28Menorah%29_-_James_Tissot.jpg"
+  },
+  {
+    "id": "illus_tissot_brooklyn_museum_-_judaic_ornament_-_james_tissot_-_2",
+    "kind": "scene",
+    "title": {
+      "en": "Judaic Ornament (Tissot)",
+      "zh-Hans": "迪索圣经插图——出埃及记第25章",
+      "zh-Hant": "迪索聖經插圖——出埃及記第25章"
+    },
+    "description": {
+      "en": "James Tissot — Judaic Ornament (Exodus 25-25).",
+      "zh-Hans": "詹姆斯·迪索——出埃及记第25章圣经场景（出埃及记第25-25章）。",
+      "zh-Hant": "詹姆斯·迪索——出埃及記第25章聖經場景（出埃及記第25-25章）。"
+    },
+    "books": {
+      "Exodus": [
+        25,
+        25
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/89/Brooklyn_Museum_-_Judaic_Ornament_-_James_Tissot_-_2.jpg/1280px-Brooklyn_Museum_-_Judaic_Ornament_-_James_Tissot_-_2.jpg"
+  },
+  {
+    "id": "illus_tissot_brooklyn_museum_-_judaic_ornament_-_james_tissot_-_3",
+    "kind": "scene",
+    "title": {
+      "en": "Judaic Ornament (Tissot)",
+      "zh-Hans": "迪索圣经插图——出埃及记第25章",
+      "zh-Hant": "迪索聖經插圖——出埃及記第25章"
+    },
+    "description": {
+      "en": "James Tissot — Judaic Ornament (Exodus 25-25).",
+      "zh-Hans": "詹姆斯·迪索——出埃及记第25章圣经场景（出埃及记第25-25章）。",
+      "zh-Hant": "詹姆斯·迪索——出埃及記第25章聖經場景（出埃及記第25-25章）。"
+    },
+    "books": {
+      "Exodus": [
+        25,
+        25
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/18/Brooklyn_Museum_-_Judaic_Ornament_-_James_Tissot_-_3.jpg/1280px-Brooklyn_Museum_-_Judaic_Ornament_-_James_Tissot_-_3.jpg"
+  },
+  {
+    "id": "illus_tissot_brooklyn_museum_-_judaic_ornament_-_james_tissot_-_4",
+    "kind": "scene",
+    "title": {
+      "en": "Judaic Ornament (Tissot)",
+      "zh-Hans": "迪索圣经插图——出埃及记第25章",
+      "zh-Hant": "迪索聖經插圖——出埃及記第25章"
+    },
+    "description": {
+      "en": "James Tissot — Judaic Ornament (Exodus 25-25).",
+      "zh-Hans": "詹姆斯·迪索——出埃及记第25章圣经场景（出埃及记第25-25章）。",
+      "zh-Hant": "詹姆斯·迪索——出埃及記第25章聖經場景（出埃及記第25-25章）。"
+    },
+    "books": {
+      "Exodus": [
+        25,
+        25
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/02/Brooklyn_Museum_-_Judaic_Ornament_-_James_Tissot_-_4.jpg/1280px-Brooklyn_Museum_-_Judaic_Ornament_-_James_Tissot_-_4.jpg"
+  },
+  {
+    "id": "illus_tissot_brooklyn_museum_-_judaic_ornament_-_james_tissot",
+    "kind": "scene",
+    "title": {
+      "en": "Judaic Ornament (Tissot)",
+      "zh-Hans": "迪索圣经插图——出埃及记第25章",
+      "zh-Hant": "迪索聖經插圖——出埃及記第25章"
+    },
+    "description": {
+      "en": "James Tissot — Judaic Ornament (Exodus 25-25).",
+      "zh-Hans": "詹姆斯·迪索——出埃及记第25章圣经场景（出埃及记第25-25章）。",
+      "zh-Hant": "詹姆斯·迪索——出埃及記第25章聖經場景（出埃及記第25-25章）。"
+    },
+    "books": {
+      "Exodus": [
+        25,
+        25
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e2/Brooklyn_Museum_-_Judaic_Ornament_-_James_Tissot.jpg/1280px-Brooklyn_Museum_-_Judaic_Ornament_-_James_Tissot.jpg"
+  },
+  {
+    "id": "illus_tissot_brooklyn_museum_-_tombs_in_the_valley_of_hinnom_-_james_tissot",
+    "kind": "scene",
+    "title": {
+      "en": "Tombs in the Valley of Hinnom (Tissot)",
+      "zh-Hans": "迪索圣经插图——约书亚记第15章",
+      "zh-Hant": "迪索聖經插圖——約書亞記第15章"
+    },
+    "description": {
+      "en": "James Tissot — Tombs in the Valley of Hinnom (Joshua 15-15).",
+      "zh-Hans": "詹姆斯·迪索——约书亚记第15章圣经场景（约书亚记第15-15章）。",
+      "zh-Hant": "詹姆斯·迪索——約書亞記第15章聖經場景（約書亞記第15-15章）。"
+    },
+    "books": {
+      "Joshua": [
+        15,
+        15
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3b/Brooklyn_Museum_-_Tombs_in_the_Valley_of_Hinnom_-_James_Tissot.jpg/1280px-Brooklyn_Museum_-_Tombs_in_the_Valley_of_Hinnom_-_James_Tissot.jpg"
+  },
+  {
+    "id": "illus_tissot_brooklyn_museum_-_valley_of_hinnom_vallée_de_hinon_-_james_tissot",
+    "kind": "scene",
+    "title": {
+      "en": "Valley of Hinnom (Tissot)",
+      "zh-Hans": "迪索圣经插图——约书亚记第15章",
+      "zh-Hant": "迪索聖經插圖——約書亞記第15章"
+    },
+    "description": {
+      "en": "James Tissot — Valley of Hinnom (Joshua 15-15).",
+      "zh-Hans": "詹姆斯·迪索——约书亚记第15章圣经场景（约书亚记第15-15章）。",
+      "zh-Hant": "詹姆斯·迪索——約書亞記第15章聖經場景（約書亞記第15-15章）。"
+    },
+    "books": {
+      "Joshua": [
+        15,
+        15
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/32/Brooklyn_Museum_-_Valley_of_Hinnom_%28Vall%C3%A9e_de_Hinon%29_-_James_Tissot.jpg/1280px-Brooklyn_Museum_-_Valley_of_Hinnom_%28Vall%C3%A9e_de_Hinon%29_-_James_Tissot.jpg"
+  },
+  {
+    "id": "illus_tissot_038.3_403_les_filles_de_lot_genesis_19_30_•_invenit_james_tissot_•_pin",
+    "kind": "scene",
+    "title": {
+      "en": "Les filles de Lot (Genesis 19:30) (Tissot)",
+      "zh-Hans": "迪索圣经插图——创世记第19章",
+      "zh-Hant": "迪索聖經插圖——創世記第19章"
+    },
+    "description": {
+      "en": "James Tissot — Les filles de Lot (Genesis 19:30) (Genesis 19-19).",
+      "zh-Hans": "詹姆斯·迪索——创世记第19章圣经场景（创世记第19-19章）。",
+      "zh-Hant": "詹姆斯·迪索——創世記第19章聖經場景（創世記第19-19章）。"
+    },
+    "books": {
+      "Genesis": [
+        19,
+        19
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fd/038.3_403_Les_filles_de_Lot_%28Genesis_19_30%29_%E2%80%A2_invenit_James_Tissot_%E2%80%A2_pinxit_James_Tissot_%E2%80%A2_excudit_Maurice_de_Brunoff_apud_Philip_de_Vere_%E2%80%A2_praesentat_Phillip_Medhurst.jpg/1280px-thumbnail.jpg"
+  },
+  {
+    "id": "illus_tissot_040.3_402_agar_quitte_abraham_genesis_21_14_•_invenit_james_tissot_•_p",
+    "kind": "scene",
+    "title": {
+      "en": "Agar quitte Abraham (Genesis 21:14) (Tissot)",
+      "zh-Hans": "迪索圣经插图——创世记第21章",
+      "zh-Hant": "迪索聖經插圖——創世記第21章"
+    },
+    "description": {
+      "en": "James Tissot — Agar quitte Abraham (Genesis 21:14) (Genesis 21-21).",
+      "zh-Hans": "詹姆斯·迪索——创世记第21章圣经场景（创世记第21-21章）。",
+      "zh-Hant": "詹姆斯·迪索——創世記第21章聖經場景（創世記第21-21章）。"
+    },
+    "books": {
+      "Genesis": [
+        21,
+        21
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/35/040.3_402_Agar_quitte_Abraham_%28Genesis_21_14%29_%E2%80%A2_invenit_James_Tissot_%E2%80%A2_pinxit_James_Tissot_%E2%80%A2_excudit_Maurice_de_Brunoff_apud_Philip_de_Vere_%E2%80%A2_praesentat_Phillip_Medhurst.jpg/1280px-thumbnail.jpg"
+  },
+  {
+    "id": "illus_tissot_041.3_402_ismaël_tire_de_larc_genesis_21_20_•_invenit_james_tissot_•_p",
+    "kind": "scene",
+    "title": {
+      "en": "Ismaël tire de l'arc (Genesis 21:20) (Tissot)",
+      "zh-Hans": "迪索圣经插图——创世记第21章",
+      "zh-Hant": "迪索聖經插圖——創世記第21章"
+    },
+    "description": {
+      "en": "James Tissot — Ismaël tire de l'arc (Genesis 21:20) (Genesis 21-21).",
+      "zh-Hans": "詹姆斯·迪索——创世记第21章圣经场景（创世记第21-21章）。",
+      "zh-Hant": "詹姆斯·迪索——創世記第21章聖經場景（創世記第21-21章）。"
+    },
+    "books": {
+      "Genesis": [
+        21,
+        21
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9d/041.3_402_Isma%C3%ABl_tire_de_l%27arc_%28Genesis_21_20%29_%E2%80%A2_invenit_James_Tissot_%E2%80%A2_pinxit_James_Tissot_%E2%80%A2_excudit_Maurice_de_Brunoff_apud_Philip_de_Vere_%E2%80%A2_praesentat_Phillip_Medhurst.jpg/1280px-thumbnail.jpg"
+  },
+  {
+    "id": "illus_tissot_042.3_402_isaac_porte_le_bois_pour_son_sacrifice_genesis_22_6_•_inveni",
+    "kind": "scene",
+    "title": {
+      "en": "Isaac porte le bois pour son sacrifice (Genesis 22:6) (Tissot)",
+      "zh-Hans": "迪索圣经插图——创世记第22章",
+      "zh-Hant": "迪索聖經插圖——創世記第22章"
+    },
+    "description": {
+      "en": "James Tissot — Isaac porte le bois pour son sacrifice (Genesis 22:6) (Genesis 22-22).",
+      "zh-Hans": "詹姆斯·迪索——创世记第22章圣经场景（创世记第22-22章）。",
+      "zh-Hant": "詹姆斯·迪索——創世記第22章聖經場景（創世記第22-22章）。"
+    },
+    "books": {
+      "Genesis": [
+        22,
+        22
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cb/042.3_402_Isaac_porte_le_bois_pour_son_sacrifice_%28Genesis_22_6%29_%E2%80%A2_invenit_James_Tissot_%E2%80%A2_pinxit_James_Tissot_%E2%80%A2_excudit_Maurice_de_Brunoff_apud_Philip_de_Vere_%E2%80%A2_praesentat_Phillip_Medhurst.jpg/1280px-thumbnail.jpg"
+  },
+  {
+    "id": "illus_tissot_043.3_403_le_sacrifice_dabraham_genesis_22_12_•_invenit_james_tissot_•",
+    "kind": "scene",
+    "title": {
+      "en": "Le sacrifice d'Abraham (Genesis 22:12) (Tissot)",
+      "zh-Hans": "迪索圣经插图——创世记第22章",
+      "zh-Hant": "迪索聖經插圖——創世記第22章"
+    },
+    "description": {
+      "en": "James Tissot — Le sacrifice d'Abraham (Genesis 22:12) (Genesis 22-22).",
+      "zh-Hans": "詹姆斯·迪索——创世记第22章圣经场景（创世记第22-22章）。",
+      "zh-Hant": "詹姆斯·迪索——創世記第22章聖經場景（創世記第22-22章）。"
+    },
+    "books": {
+      "Genesis": [
+        22,
+        22
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2e/043.3_403_Le_sacrifice_d%27Abraham_%28Genesis_22_12%29_%E2%80%A2_invenit_James_Tissot_%E2%80%A2_pinxit_James_Tissot_%E2%80%A2_excudit_Maurice_de_Brunoff_apud_Philip_de_Vere_%E2%80%A2_praesentat_Phillip_Medhurst.jpg/1280px-thumbnail.jpg"
+  },
+  {
+    "id": "illus_tissot_044.3_402_le_serviteur_dabraham_rencontre_rébecca_genesis_24_17_•_inve",
+    "kind": "scene",
+    "title": {
+      "en": "Le serviteur d'Abraham rencontre Rébecca (Genesis 24:17) (Tissot)",
+      "zh-Hans": "迪索圣经插图——创世记第24章",
+      "zh-Hant": "迪索聖經插圖——創世記第24章"
+    },
+    "description": {
+      "en": "James Tissot — Le serviteur d'Abraham rencontre Rébecca (Genesis 24:17) (Genesis 24-24).",
+      "zh-Hans": "詹姆斯·迪索——创世记第24章圣经场景（创世记第24-24章）。",
+      "zh-Hant": "詹姆斯·迪索——創世記第24章聖經場景（創世記第24-24章）。"
+    },
+    "books": {
+      "Genesis": [
+        24,
+        24
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d1/044.3_402_Le_serviteur_d%27Abraham_rencontre_R%C3%A9becca_%28Genesis_24_17%29_%E2%80%A2_invenit_James_Tissot_%E2%80%A2_pinxit_James_Tissot_%E2%80%A2_excudit_Maurice_de_Brunoff_apud_Philip_de_Vere_%E2%80%A2_praesentat_Phillip_Medhurst.jpg/1280px-thumbnail.jpg"
+  },
+  {
+    "id": "illus_tissot_045.3_402_rébecca_rencontre_sur_le_chemin_isaac_genesis_24_65_•_inveni",
+    "kind": "scene",
+    "title": {
+      "en": "Rébecca rencontre sur le chemin Isaac (Genesis 24:65) (Tissot)",
+      "zh-Hans": "迪索圣经插图——创世记第24章",
+      "zh-Hant": "迪索聖經插圖——創世記第24章"
+    },
+    "description": {
+      "en": "James Tissot — Rébecca rencontre sur le chemin Isaac (Genesis 24:65) (Genesis 24-24).",
+      "zh-Hans": "詹姆斯·迪索——创世记第24章圣经场景（创世记第24-24章）。",
+      "zh-Hant": "詹姆斯·迪索——創世記第24章聖經場景（創世記第24-24章）。"
+    },
+    "books": {
+      "Genesis": [
+        24,
+        24
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/77/045.3_402_R%C3%A9becca_rencontre_sur_le_chemin_Isaac_%28Genesis_24_65%29_%E2%80%A2_invenit_James_Tissot_%E2%80%A2_pinxit_James_Tissot_%E2%80%A2_excudit_Maurice_de_Brunoff_apud_Philip_de_Vere_%E2%80%A2_praesentat_Phillip_Medhurst.jpg/1280px-thumbnail.jpg"
+  },
+  {
+    "id": "illus_tissot_048.3_402_recommandations_disaac_à_esaü_genesis_27_21_•_invenit_james_",
+    "kind": "scene",
+    "title": {
+      "en": "Recommandations d'Isaac à Esaü (Genesis 27:21) (Tissot)",
+      "zh-Hans": "迪索圣经插图——创世记第27章",
+      "zh-Hant": "迪索聖經插圖——創世記第27章"
+    },
+    "description": {
+      "en": "James Tissot — Recommandations d'Isaac à Esaü (Genesis 27:21) (Genesis 27-27).",
+      "zh-Hans": "詹姆斯·迪索——创世记第27章圣经场景（创世记第27-27章）。",
+      "zh-Hant": "詹姆斯·迪索——創世記第27章聖經場景（創世記第27-27章）。"
+    },
+    "books": {
+      "Genesis": [
+        27,
+        27
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d8/048.3_402_Recommandations_d%27Isaac_%C3%A0_Esa%C3%BC_%28Genesis_27_21%29_%E2%80%A2_invenit_James_Tissot_%E2%80%A2_pinxit_James_Tissot_%E2%80%A2_excudit_Maurice_de_Brunoff_apud_Philip_de_Vere_%E2%80%A2_praesentat_Phillip_Medhurst.jpg/1280px-thumbnail.jpg"
+  },
+  {
+    "id": "illus_tissot_049.3_403_jacob_prend_la_place_de_esaü_genesis_27_21_•_invenit_james_t",
+    "kind": "scene",
+    "title": {
+      "en": "Jacob prend la place de Esaü (Genesis 27:21) (Tissot)",
+      "zh-Hans": "迪索圣经插图——创世记第27章",
+      "zh-Hant": "迪索聖經插圖——創世記第27章"
+    },
+    "description": {
+      "en": "James Tissot — Jacob prend la place de Esaü (Genesis 27:21) (Genesis 27-27).",
+      "zh-Hans": "詹姆斯·迪索——创世记第27章圣经场景（创世记第27-27章）。",
+      "zh-Hant": "詹姆斯·迪索——創世記第27章聖經場景（創世記第27-27章）。"
+    },
+    "books": {
+      "Genesis": [
+        27,
+        27
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f6/049.3_403_Jacob_prend_la_place_de_Esa%C3%BC_%28Genesis_27_21%29_%E2%80%A2_invenit_James_Tissot_%E2%80%A2_pinxit_James_Tissot_%E2%80%A2_excudit_Maurice_de_Brunoff_apud_Philip_de_Vere_%E2%80%A2_praesentat_Phillip_Medhurst.jpg/1280px-thumbnail.jpg"
+  },
+  {
+    "id": "illus_tissot_050.3_402_le_songe_de_jacob_genesis_28_12_•_invenit_james_tissot_•_pin",
+    "kind": "scene",
+    "title": {
+      "en": "Le songe de Jacob (Genesis 28:12) (Tissot)",
+      "zh-Hans": "迪索圣经插图——创世记第28章",
+      "zh-Hant": "迪索聖經插圖——創世記第28章"
+    },
+    "description": {
+      "en": "James Tissot — Le songe de Jacob (Genesis 28:12) (Genesis 28-28).",
+      "zh-Hans": "詹姆斯·迪索——创世记第28章圣经场景（创世记第28-28章）。",
+      "zh-Hant": "詹姆斯·迪索——創世記第28章聖經場景（創世記第28-28章）。"
+    },
+    "books": {
+      "Genesis": [
+        28,
+        28
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/34/050.3_402_Le_songe_de_Jacob_%28Genesis_28_12%29_%E2%80%A2_invenit_James_Tissot_%E2%80%A2_pinxit_James_Tissot_%E2%80%A2_excudit_Maurice_de_Brunoff_apud_Philip_de_Vere_%E2%80%A2_praesentat_Phillip_Medhurst.jpg/1280px-thumbnail.jpg"
+  },
+  {
+    "id": "illus_tissot_051.3_402_jacob_et_rachel_à_la_fontaine_genesis_29_9_•_invenit_james_t",
+    "kind": "scene",
+    "title": {
+      "en": "Jacob et Rachel à la fontaine (Genesis 29:9) (Tissot)",
+      "zh-Hans": "迪索圣经插图——创世记第29章",
+      "zh-Hant": "迪索聖經插圖——創世記第29章"
+    },
+    "description": {
+      "en": "James Tissot — Jacob et Rachel à la fontaine (Genesis 29:9) (Genesis 29-29).",
+      "zh-Hans": "詹姆斯·迪索——创世记第29章圣经场景（创世记第29-29章）。",
+      "zh-Hant": "詹姆斯·迪索——創世記第29章聖經場景（創世記第29-29章）。"
+    },
+    "books": {
+      "Genesis": [
+        29,
+        29
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ec/051.3_402_Jacob_et_Rachel_%C3%A0_la_fontaine_%28Genesis_29_9%29_%E2%80%A2_invenit_James_Tissot_%E2%80%A2_pinxit_James_Tissot_%E2%80%A2_excudit_Maurice_de_Brunoff_apud_Philip_de_Vere_%E2%80%A2_praesentat_Phillip_Medhurst.jpg/1280px-thumbnail.jpg"
+  },
+  {
+    "id": "illus_tissot_052.3_402_rachel_et_lia_genesis_29_16_•_invenit_james_tissot_•_pinxit_",
+    "kind": "scene",
+    "title": {
+      "en": "Rachel et Lia (Genesis 29:16) (Tissot)",
+      "zh-Hans": "迪索圣经插图——创世记第29章",
+      "zh-Hant": "迪索聖經插圖——創世記第29章"
+    },
+    "description": {
+      "en": "James Tissot — Rachel et Lia (Genesis 29:16) (Genesis 29-29).",
+      "zh-Hans": "詹姆斯·迪索——创世记第29章圣经场景（创世记第29-29章）。",
+      "zh-Hant": "詹姆斯·迪索——創世記第29章聖經場景（創世記第29-29章）。"
+    },
+    "books": {
+      "Genesis": [
+        29,
+        29
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3c/052.3_402_Rachel_et_Lia_%28Genesis_29_16%29_%E2%80%A2_invenit_James_Tissot_%E2%80%A2_pinxit_James_Tissot_%E2%80%A2_excudit_Maurice_de_Brunoff_apud_Philip_de_Vere_%E2%80%A2_praesentat_Phillip_Medhurst.jpg/1280px-thumbnail.jpg"
+  },
+  {
+    "id": "illus_tissot_053.3_402_la_lutte_de_lange_avec_jacob_genesis_32_24_•_invenit_james_t",
+    "kind": "scene",
+    "title": {
+      "en": "La lutte de l'Ange avec Jacob (Genesis 32:24) (Tissot)",
+      "zh-Hans": "迪索圣经插图——创世记第32章",
+      "zh-Hant": "迪索聖經插圖——創世記第32章"
+    },
+    "description": {
+      "en": "James Tissot — La lutte de l'Ange avec Jacob (Genesis 32:24) (Genesis 32-32).",
+      "zh-Hans": "詹姆斯·迪索——创世记第32章圣经场景（创世记第32-32章）。",
+      "zh-Hant": "詹姆斯·迪索——創世記第32章聖經場景（創世記第32-32章）。"
+    },
+    "books": {
+      "Genesis": [
+        32,
+        32
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/db/053.3_402_La_lutte_de_l%27Ange_avec_Jacob_%28Genesis_32_24%29_%E2%80%A2_invenit_James_Tissot_%E2%80%A2_pinxit_James_Tissot_%E2%80%A2_excudit_Maurice_de_Brunoff_apud_Philip_de_Vere_%E2%80%A2_praesentat_Phillip_Medhurst.jpg/1280px-thumbnail.jpg"
+  },
+  {
+    "id": "illus_tissot_054.3_402_jacob_voit_venir_à_lui_esaü_genesis_33_1_•_invenit_james_tis",
+    "kind": "scene",
+    "title": {
+      "en": "Jacob voit venir à lui Esaü (Genesis 33:1) (Tissot)",
+      "zh-Hans": "迪索圣经插图——创世记第33章",
+      "zh-Hant": "迪索聖經插圖——創世記第33章"
+    },
+    "description": {
+      "en": "James Tissot — Jacob voit venir à lui Esaü (Genesis 33:1) (Genesis 33-33).",
+      "zh-Hans": "詹姆斯·迪索——创世记第33章圣经场景（创世记第33-33章）。",
+      "zh-Hant": "詹姆斯·迪索——創世記第33章聖經場景（創世記第33-33章）。"
+    },
+    "books": {
+      "Genesis": [
+        33,
+        33
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fd/054.3_402_Jacob_voit_venir_%C3%A0_lui_Esa%C3%BC_%28Genesis_33_1%29_%E2%80%A2_invenit_James_Tissot_%E2%80%A2_pinxit_James_Tissot_%E2%80%A2_excudit_Maurice_de_Brunoff_apud_Philip_de_Vere_%E2%80%A2_praesentat_Phillip_Medhurst.jpg/1280px-thumbnail.jpg"
+  },
+  {
+    "id": "illus_tissot_055.3_402_la_rencontre_desaü_et_de_jacob_genesis_33_4_•_invenit_james_",
+    "kind": "scene",
+    "title": {
+      "en": "La rencontre d'Esaü et de Jacob (Genesis 33:4) (Tissot)",
+      "zh-Hans": "迪索圣经插图——创世记第33章",
+      "zh-Hant": "迪索聖經插圖——創世記第33章"
+    },
+    "description": {
+      "en": "James Tissot — La rencontre d'Esaü et de Jacob (Genesis 33:4) (Genesis 33-33).",
+      "zh-Hans": "詹姆斯·迪索——创世记第33章圣经场景（创世记第33-33章）。",
+      "zh-Hant": "詹姆斯·迪索——創世記第33章聖經場景（創世記第33-33章）。"
+    },
+    "books": {
+      "Genesis": [
+        33,
+        33
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0b/055.3_402_La_rencontre_d%27Esa%C3%BC_et_de_Jacob_%28Genesis_33_4%29_%E2%80%A2_invenit_James_Tissot_%E2%80%A2_pinxit_James_Tissot_%E2%80%A2_excudit_Maurice_de_Brunoff_apud_Philip_de_Vere_%E2%80%A2_praesentat_Phillip_Medhurst.jpg/1280px-thumbnail.jpg"
+  },
+  {
+    "id": "illus_tissot_056.3_402_enlèvement_de_dinah_fille_de_lia_genesis_34_2_•_invenit_jame",
+    "kind": "scene",
+    "title": {
+      "en": "Enlèvement de Dinah, fille de Lia (Genesis 34:2) (Tissot)",
+      "zh-Hans": "迪索圣经插图——创世记第34章",
+      "zh-Hant": "迪索聖經插圖——創世記第34章"
+    },
+    "description": {
+      "en": "James Tissot — Enlèvement de Dinah, fille de Lia (Genesis 34:2) (Genesis 34-34).",
+      "zh-Hans": "詹姆斯·迪索——创世记第34章圣经场景（创世记第34-34章）。",
+      "zh-Hant": "詹姆斯·迪索——創世記第34章聖經場景（創世記第34-34章）。"
+    },
+    "books": {
+      "Genesis": [
+        34,
+        34
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/61/056.3_402_Enl%C3%A8vement_de_Dinah%2C_fille_de_Lia_%28Genesis_34_2%29_%E2%80%A2_invenit_James_Tissot_%E2%80%A2_pinxit_James_Tissot_%E2%80%A2_excudit_Maurice_de_Brunoff_apud_Philip_de_Vere_%E2%80%A2_praesentat_Phillip_Medhurst.jpg/1280px-thumbnail.jpg"
+  },
+  {
+    "id": "illus_tissot_057.3_402_le_massacre_des_sichémites_genesis_35_5_•_invenit_james_tiss",
+    "kind": "scene",
+    "title": {
+      "en": "Le massacre des Sichémites (Genesis 35:5) (Tissot)",
+      "zh-Hans": "迪索圣经插图——创世记第35章",
+      "zh-Hant": "迪索聖經插圖——創世記第35章"
+    },
+    "description": {
+      "en": "James Tissot — Le massacre des Sichémites (Genesis 35:5) (Genesis 35-35).",
+      "zh-Hans": "詹姆斯·迪索——创世记第35章圣经场景（创世记第35-35章）。",
+      "zh-Hant": "詹姆斯·迪索——創世記第35章聖經場景（創世記第35-35章）。"
+    },
+    "books": {
+      "Genesis": [
+        35,
+        35
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/75/057.3_402_Le_massacre_des_Sich%C3%A9mites_%28Genesis_35_5%29_%E2%80%A2_invenit_James_Tissot_%E2%80%A2_pinxit_James_Tissot_%E2%80%A2_excudit_Maurice_de_Brunoff_apud_Philip_de_Vere_%E2%80%A2_praesentat_Phillip_Medhurst.jpg/1280px-thumbnail.jpg"
+  },
+  {
+    "id": "illus_tissot_058_403_joseph_raconte_ses_songes_genesis_37_8_•_invenit_james_tissot_",
+    "kind": "scene",
+    "title": {
+      "en": "058 403 Joseph raconte ses songes (Genesis 37 8) • invenit James Tissot • pinxit (Tissot)",
+      "zh-Hans": "迪索圣经插图——创世记第37章",
+      "zh-Hant": "迪索聖經插圖——創世記第37章"
+    },
+    "description": {
+      "en": "James Tissot — 058 403 Joseph raconte ses songes (Genesis 37 8) • invenit James Tissot • pinxit James Tissot et alia • excudit Maurice de Brunoff apud Philip de Vere • praesentat Phillip Medhurst (Genesis 37-37).",
+      "zh-Hans": "詹姆斯·迪索——创世记第37章圣经场景（创世记第37-37章）。",
+      "zh-Hant": "詹姆斯·迪索——創世記第37章聖經場景（創世記第37-37章）。"
+    },
+    "books": {
+      "Genesis": [
+        37,
+        37
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d6/058_403_Joseph_raconte_ses_songes_%28Genesis_37_8%29_%E2%80%A2_invenit_James_Tissot_%E2%80%A2_pinxit_James_Tissot_et_alia_%E2%80%A2_excudit_Maurice_de_Brunoff_apud_Philip_de_Vere_%E2%80%A2_praesentat_Phillip_Medhurst.jpg/1280px-thumbnail.jpg"
+  },
+  {
+    "id": "illus_tissot_059.3_402_joseph_cherche_ses_frères_genesis_37_15_•_invenit_james_tiss",
+    "kind": "scene",
+    "title": {
+      "en": "Joseph cherche ses frères (Genesis 37:15) (Tissot)",
+      "zh-Hans": "迪索圣经插图——创世记第37章",
+      "zh-Hant": "迪索聖經插圖——創世記第37章"
+    },
+    "description": {
+      "en": "James Tissot — Joseph cherche ses frères (Genesis 37:15) (Genesis 37-37).",
+      "zh-Hans": "詹姆斯·迪索——创世记第37章圣经场景（创世记第37-37章）。",
+      "zh-Hant": "詹姆斯·迪索——創世記第37章聖經場景（創世記第37-37章）。"
+    },
+    "books": {
+      "Genesis": [
+        37,
+        37
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3d/059.3_402_Joseph_cherche_ses_fr%C3%A8res_%28Genesis_37_15%29_%E2%80%A2_invenit_James_Tissot_%E2%80%A2_pinxit_James_Tissot_%E2%80%A2_excudit_Maurice_de_Brunoff_apud_Philip_de_Vere_%E2%80%A2_praesentat_Phillip_Medhurst.jpg/1280px-thumbnail.jpg"
+  },
+  {
+    "id": "illus_tissot_060.3_402_joseph_descendu_dans_la_citerne_genesis_37_24_•_invenit_jame",
+    "kind": "scene",
+    "title": {
+      "en": "Joseph descendu dans la citerne (Genesis 37:24) (Tissot)",
+      "zh-Hans": "迪索圣经插图——创世记第37章",
+      "zh-Hant": "迪索聖經插圖——創世記第37章"
+    },
+    "description": {
+      "en": "James Tissot — Joseph descendu dans la citerne (Genesis 37:24) (Genesis 37-37).",
+      "zh-Hans": "詹姆斯·迪索——创世记第37章圣经场景（创世记第37-37章）。",
+      "zh-Hant": "詹姆斯·迪索——創世記第37章聖經場景（創世記第37-37章）。"
+    },
+    "books": {
+      "Genesis": [
+        37,
+        37
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/44/060.3_402_Joseph_descendu_dans_la_citerne_%28Genesis_37_24%29_%E2%80%A2_invenit_James_Tissot_%E2%80%A2_pinxit_James_Tissot_%E2%80%A2_excudit_Maurice_de_Brunoff_apud_Philip_de_Vere_%E2%80%A2_praesentat_Phillip_Medhurst.jpg/1280px-thumbnail.jpg"
+  },
+  {
+    "id": "illus_tissot_061.3_402_la_douleur_de_jacob_genesis_37_35_•_invenit_james_tissot_•_p",
+    "kind": "scene",
+    "title": {
+      "en": "La douleur de Jacob (Genesis 37:35) (Tissot)",
+      "zh-Hans": "迪索圣经插图——创世记第37章",
+      "zh-Hant": "迪索聖經插圖——創世記第37章"
+    },
+    "description": {
+      "en": "James Tissot — La douleur de Jacob (Genesis 37:35) (Genesis 37-37).",
+      "zh-Hans": "詹姆斯·迪索——创世记第37章圣经场景（创世记第37-37章）。",
+      "zh-Hant": "詹姆斯·迪索——創世記第37章聖經場景（創世記第37-37章）。"
+    },
+    "books": {
+      "Genesis": [
+        37,
+        37
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b8/061.3_402_La_douleur_de_Jacob_%28Genesis_37_35%29_%E2%80%A2_invenit_James_Tissot_%E2%80%A2_pinxit_James_Tissot_%E2%80%A2_excudit_Maurice_de_Brunoff_apud_Philip_de_Vere_%E2%80%A2_praesentat_Phillip_Medhurst.jpg/1280px-thumbnail.jpg"
+  },
+  {
+    "id": "illus_tissot_062.3_402_thamar_et_juda_se_rencontrent_genesis_38_18_•_invenit_james_",
+    "kind": "scene",
+    "title": {
+      "en": "Thamar et Juda se rencontrent (Genesis 38:18) (Tissot)",
+      "zh-Hans": "迪索圣经插图——创世记第38章",
+      "zh-Hant": "迪索聖經插圖——創世記第38章"
+    },
+    "description": {
+      "en": "James Tissot — Thamar et Juda se rencontrent (Genesis 38:18) (Genesis 38-38).",
+      "zh-Hans": "詹姆斯·迪索——创世记第38章圣经场景（创世记第38-38章）。",
+      "zh-Hant": "詹姆斯·迪索——創世記第38章聖經場景（創世記第38-38章）。"
+    },
+    "books": {
+      "Genesis": [
+        38,
+        38
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d0/062.3_402_Thamar_et_Juda_se_rencontrent_%28Genesis_38_18%29_%E2%80%A2_invenit_James_Tissot_%E2%80%A2_pinxit_James_Tissot_%E2%80%A2_excudit_Maurice_de_Brunoff_apud_Philip_de_Vere_%E2%80%A2_praesentat_Phillip_Medhurst.jpg/1280px-thumbnail.jpg"
+  },
+  {
+    "id": "illus_tissot_063.3_403_joseph_vendu_en_egypt_genesis_39_1_•_invenit_james_tissot_•_",
+    "kind": "scene",
+    "title": {
+      "en": "Joseph vendu en Egypt (Genesis 39:1) (Tissot)",
+      "zh-Hans": "迪索圣经插图——创世记第39章",
+      "zh-Hant": "迪索聖經插圖——創世記第39章"
+    },
+    "description": {
+      "en": "James Tissot — Joseph vendu en Egypt (Genesis 39:1) (Genesis 39-39).",
+      "zh-Hans": "詹姆斯·迪索——创世记第39章圣经场景（创世记第39-39章）。",
+      "zh-Hant": "詹姆斯·迪索——創世記第39章聖經場景（創世記第39-39章）。"
+    },
+    "books": {
+      "Genesis": [
+        39,
+        39
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d7/063.3_403_Joseph_vendu_en_Egypt_%28Genesis_39_1%29_%E2%80%A2_invenit_James_Tissot_%E2%80%A2_pinxit_James_Tissot_%E2%80%A2_excudit_Maurice_de_Brunoff_apud_Philip_de_Vere_%E2%80%A2_praesentat_Phillip_Medhurst.jpg/1280px-thumbnail.jpg"
+  },
+  {
+    "id": "illus_tissot_abraham_et_les_trois_anges_genesis_18_2_•_invenit_james_tissot_•_pinxi",
+    "kind": "scene",
+    "title": {
+      "en": "Abraham et les trois Anges (Genesis 18 2) • invenit James Tissot • pinxit James  (Tissot)",
+      "zh-Hans": "迪索圣经插图——创世记第18章",
+      "zh-Hant": "迪索聖經插圖——創世記第18章"
+    },
+    "description": {
+      "en": "James Tissot — Abraham et les trois Anges (Genesis 18 2) • invenit James Tissot • pinxit James Tissot • excudit Maurice de Brunoff apud Philip de Vere • praesentat Phillip Medhurst. (Genesis 18-18).",
+      "zh-Hans": "詹姆斯·迪索——创世记第18章圣经场景（创世记第18-18章）。",
+      "zh-Hant": "詹姆斯·迪索——創世記第18章聖經場景（創世記第18-18章）。"
+    },
+    "books": {
+      "Genesis": [
+        18,
+        18
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/43/Abraham_et_les_trois_Anges_%28Genesis_18_2%29_%E2%80%A2_invenit_James_Tissot_%E2%80%A2_pinxit_James_Tissot_%E2%80%A2_excudit_Maurice_de_Brunoff_apud_Philip_de_Vere_%E2%80%A2_praesentat_Phillip_Medhurst..jpg/1280px-thumbnail.jpg"
+  },
+  {
+    "id": "illus_tissot_abram_chasse_les_oiseaux_de_proie_genesis_15_11_•_invenit_james_tissot",
+    "kind": "scene",
+    "title": {
+      "en": "Abram chasse les oiseaux de proie (Genesis 15 11) • invenit James Tissot • pinxi (Tissot)",
+      "zh-Hans": "迪索圣经插图——创世记第15章",
+      "zh-Hant": "迪索聖經插圖——創世記第15章"
+    },
+    "description": {
+      "en": "James Tissot — Abram chasse les oiseaux de proie (Genesis 15 11) • invenit James Tissot • pinxit James Tissot • excudit Maurice de Brunoff apud Philip de Vere • praesentat Phillip Medhurst. (Genesis 15-15).",
+      "zh-Hans": "詹姆斯·迪索——创世记第15章圣经场景（创世记第15-15章）。",
+      "zh-Hant": "詹姆斯·迪索——創世記第15章聖經場景（創世記第15-15章）。"
+    },
+    "books": {
+      "Genesis": [
+        15,
+        15
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/99/Abram_chasse_les_oiseaux_de_proie_%28Genesis_15_11%29_%E2%80%A2_invenit_James_Tissot_%E2%80%A2_pinxit_James_Tissot_%E2%80%A2_excudit_Maurice_de_Brunoff_apud_Philip_de_Vere_%E2%80%A2_praesentat_Phillip_Medhurst..jpg/1280px-thumbnail.jpg"
+  },
+  {
+    "id": "illus_tissot_abram_voit_sodome_en_flammes_genesis_19_28_•_invenit_james_tissot_•_pi",
+    "kind": "scene",
+    "title": {
+      "en": "Abram voit Sodome en flammes (Genesis 19 28) • invenit James Tissot • pinxit Jam (Tissot)",
+      "zh-Hans": "迪索圣经插图——创世记第19章",
+      "zh-Hant": "迪索聖經插圖——創世記第19章"
+    },
+    "description": {
+      "en": "James Tissot — Abram voit Sodome en flammes (Genesis 19 28) • invenit James Tissot • pinxit James Tissot • excudit Maurice de Brunoff apud Philip de Vere • praesentat Phillip Medhurst. (Genesis 19-19).",
+      "zh-Hans": "詹姆斯·迪索——创世记第19章圣经场景（创世记第19-19章）。",
+      "zh-Hant": "詹姆斯·迪索——創世記第19章聖經場景（創世記第19-19章）。"
+    },
+    "books": {
+      "Genesis": [
+        19,
+        19
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/90/Abram_voit_Sodome_en_flammes_%28Genesis_19_28%29_%E2%80%A2_invenit_James_Tissot_%E2%80%A2_pinxit_James_Tissot_%E2%80%A2_excudit_Maurice_de_Brunoff_apud_Philip_de_Vere_%E2%80%A2_praesentat_Phillip_Medhurst..jpg/1280px-thumbnail.jpg"
+  },
+  {
+    "id": "illus_tissot_adam_et_éve_chassés_du_paradis_terrestre_genesis_3_24_•_invenit_james_",
+    "kind": "scene",
+    "title": {
+      "en": "Adam et Éve chassés du Paradis terrestre (Genesis 3 24) • invenit James Tissot • (Tissot)",
+      "zh-Hans": "迪索圣经插图——创世记第3章",
+      "zh-Hant": "迪索聖經插圖——創世記第3章"
+    },
+    "description": {
+      "en": "James Tissot — Adam et Éve chassés du Paradis terrestre (Genesis 3 24) • invenit James Tissot • pinxit James Tissot • excudit Maurice de Brunoff apud Philip de Vere • praesentat Phillip Medhurst. (Genesis 3-3).",
+      "zh-Hans": "詹姆斯·迪索——创世记第3章圣经场景（创世记第3-3章）。",
+      "zh-Hant": "詹姆斯·迪索——創世記第3章聖經場景（創世記第3-3章）。"
+    },
+    "books": {
+      "Genesis": [
+        3,
+        3
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/43/Adam_et_%C3%89ve_chass%C3%A9s_du_Paradis_terrestre_%28Genesis_3_24%29_%E2%80%A2_invenit_James_Tissot_%E2%80%A2_pinxit_James_Tissot_%E2%80%A2_excudit_Maurice_de_Brunoff_apud_Philip_de_Vere_%E2%80%A2_praesentat_Phillip_Medhurst..jpg/1280px-thumbnail.jpg"
+  },
+  {
+    "id": "illus_tissot_adam_et_éve_dans_le_paradis_terrestre_genesis_2_25_•_invenit_james_tis",
+    "kind": "scene",
+    "title": {
+      "en": "Adam et Éve dans le Paradis terrestre (Genesis 2 25) • invenit James Tissot • pi (Tissot)",
+      "zh-Hans": "迪索圣经插图——创世记第2章",
+      "zh-Hant": "迪索聖經插圖——創世記第2章"
+    },
+    "description": {
+      "en": "James Tissot — Adam et Éve dans le Paradis terrestre (Genesis 2 25) • invenit James Tissot • pinxit James Tissot • excudit Maurice de Brunoff apud Philip de Vere • praesentat Phillip Medhurst. (Genesis 2-2).",
+      "zh-Hans": "詹姆斯·迪索——创世记第2章圣经场景（创世记第2-2章）。",
+      "zh-Hant": "詹姆斯·迪索——創世記第2章聖經場景（創世記第2-2章）。"
+    },
+    "books": {
+      "Genesis": [
+        2,
+        2
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/33/Adam_et_%C3%89ve_dans_le_Paradis_terrestre_%28Genesis_2_25%29_%E2%80%A2_invenit_James_Tissot_%E2%80%A2_pinxit_James_Tissot_%E2%80%A2_excudit_Maurice_de_Brunoff_apud_Philip_de_Vere_%E2%80%A2_praesentat_Phillip_Medhurst..jpg/1280px-thumbnail.jpg"
+  },
+  {
+    "id": "illus_tissot_adam_et_éve_saperçoivent_quils_sont_nus_genesis_3_7_•_invenit_james_ti",
+    "kind": "scene",
+    "title": {
+      "en": "Adam et Éve s'aperçoivent qu'ils sont nus (Genesis 3 7) • invenit James Tissot • (Tissot)",
+      "zh-Hans": "迪索圣经插图——创世记第3章",
+      "zh-Hant": "迪索聖經插圖——創世記第3章"
+    },
+    "description": {
+      "en": "James Tissot — Adam et Éve s'aperçoivent qu'ils sont nus (Genesis 3 7) • invenit James Tissot • pinxit James Tissot • excudit Maurice de Brunoff apud Philip de Vere • praesentat Phillip Medhurst. (Genesis 3-3).",
+      "zh-Hans": "詹姆斯·迪索——创世记第3章圣经场景（创世记第3-3章）。",
+      "zh-Hant": "詹姆斯·迪索——創世記第3章聖經場景（創世記第3-3章）。"
+    },
+    "books": {
+      "Genesis": [
+        3,
+        3
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9c/Adam_et_%C3%89ve_s%27aper%C3%A7oivent_qu%27ils_sont_nus_%28Genesis_3_7%29_%E2%80%A2_invenit_James_Tissot_%E2%80%A2_pinxit_James_Tissot_%E2%80%A2_excudit_Maurice_de_Brunoff_apud_Philip_de_Vere_%E2%80%A2_praesentat_Phillip_Medhurst..jpg/1280px-thumbnail.jpg"
+  },
+  {
+    "id": "illus_tissot_apparition_de_dieu_à_noé_genesis_6_14_•_invenit_james_tissot_•_pinxit_",
+    "kind": "scene",
+    "title": {
+      "en": "Apparition de Dieu à Noé (Genesis 6 14) • invenit James Tissot • pinxit James Ti (Tissot)",
+      "zh-Hans": "迪索圣经插图——创世记第6章",
+      "zh-Hant": "迪索聖經插圖——創世記第6章"
+    },
+    "description": {
+      "en": "James Tissot — Apparition de Dieu à Noé (Genesis 6 14) • invenit James Tissot • pinxit James Tissot • excudit Maurice de Brunoff apud Philip de Vere • praesentat Phillip Medhurst. (Genesis 6-6).",
+      "zh-Hans": "詹姆斯·迪索——创世记第6章圣经场景（创世记第6-6章）。",
+      "zh-Hant": "詹姆斯·迪索——創世記第6章聖經場景（創世記第6-6章）。"
+    },
+    "books": {
+      "Genesis": [
+        6,
+        6
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7f/Apparition_de_Dieu_%C3%A0_No%C3%A9_%28Genesis_6_14%29_%E2%80%A2_invenit_James_Tissot_%E2%80%A2_pinxit_James_Tissot_%E2%80%A2_excudit_Maurice_de_Brunoff_apud_Philip_de_Vere_%E2%80%A2_praesentat_Phillip_Medhurst..jpg/1280px-thumbnail.jpg"
+  },
+  {
+    "id": "illus_tissot_birth_of_noah",
+    "kind": "scene",
+    "title": {
+      "en": "Birth of Noah (Tissot)",
+      "zh-Hans": "迪索圣经插图——创世记第5章",
+      "zh-Hant": "迪索聖經插圖——創世記第5章"
+    },
+    "description": {
+      "en": "James Tissot — Birth of Noah (Genesis 5-5).",
+      "zh-Hans": "詹姆斯·迪索——创世记第5章圣经场景（创世记第5-5章）。",
+      "zh-Hant": "詹姆斯·迪索——創世記第5章聖經場景（創世記第5-5章）。"
+    },
+    "books": {
+      "Genesis": [
+        5,
+        5
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a3/Birth_of_Noah.jpg/1280px-Birth_of_Noah.jpg"
+  },
+  {
+    "id": "illus_tissot_cain_leadeth_abel_to_death_tissot",
+    "kind": "scene",
+    "title": {
+      "en": "Cain leadeth abel to death tissot (Tissot)",
+      "zh-Hans": "迪索圣经插图——创世记第4章",
+      "zh-Hant": "迪索聖經插圖——創世記第4章"
+    },
+    "description": {
+      "en": "James Tissot — Cain leadeth abel to death tissot (Genesis 4-4).",
+      "zh-Hans": "詹姆斯·迪索——创世记第4章圣经场景（创世记第4-4章）。",
+      "zh-Hant": "詹姆斯·迪索——創世記第4章聖經場景（創世記第4-4章）。"
+    },
+    "books": {
+      "Genesis": [
+        4,
+        4
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/82/Cain_leadeth_abel_to_death_tissot.jpg/1280px-Cain_leadeth_abel_to_death_tissot.jpg"
+  },
+  {
+    "id": "illus_tissot_caïn_entraîne_abel_genesis_4_8_•_invenit_james_tissot_•_pinxit_james_t",
+    "kind": "scene",
+    "title": {
+      "en": "Caïn entraîne Abel (Genesis 4 8) • invenit James Tissot • pinxit James Tissot •  (Tissot)",
+      "zh-Hans": "迪索圣经插图——创世记第4章",
+      "zh-Hant": "迪索聖經插圖——創世記第4章"
+    },
+    "description": {
+      "en": "James Tissot — Caïn entraîne Abel (Genesis 4 8) • invenit James Tissot • pinxit James Tissot • excudit Maurice de Brunoff apud Philip de Vere • praesentat Phillip Medhurst. (Genesis 4-4).",
+      "zh-Hans": "詹姆斯·迪索——创世记第4章圣经场景（创世记第4-4章）。",
+      "zh-Hant": "詹姆斯·迪索——創世記第4章聖經場景（創世記第4-4章）。"
+    },
+    "books": {
+      "Genesis": [
+        4,
+        4
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/25/Ca%C3%AFn_entra%C3%AEne_Abel_%28Genesis_4_8%29_%E2%80%A2_invenit_James_Tissot_%E2%80%A2_pinxit_James_Tissot_%E2%80%A2_excudit_Maurice_de_Brunoff_apud_Philip_de_Vere_%E2%80%A2_praesentat_Phillip_Medhurst..jpg/1280px-thumbnail.jpg"
+  },
+  {
+    "id": "illus_tissot_châtiment_de_caïn_genesis_4_13_•_invenit_james_tissot_•_pinxit_james_t",
+    "kind": "scene",
+    "title": {
+      "en": "Châtiment de Caïn (Genesis 4 13) • invenit James Tissot • pinxit James Tissot •  (Tissot)",
+      "zh-Hans": "迪索圣经插图——创世记第4章",
+      "zh-Hant": "迪索聖經插圖——創世記第4章"
+    },
+    "description": {
+      "en": "James Tissot — Châtiment de Caïn (Genesis 4 13) • invenit James Tissot • pinxit James Tissot • excudit Maurice de Brunoff apud Philip de Vere • praesentat Phillip Medhurst. (Genesis 4-4).",
+      "zh-Hans": "詹姆斯·迪索——创世记第4章圣经场景（创世记第4-4章）。",
+      "zh-Hant": "詹姆斯·迪索——創世記第4章聖經場景（創世記第4-4章）。"
+    },
+    "books": {
+      "Genesis": [
+        4,
+        4
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/37/Ch%C3%A2timent_de_Ca%C3%AFn_%28Genesis_4_13%29_%E2%80%A2_invenit_James_Tissot_%E2%80%A2_pinxit_James_Tissot_%E2%80%A2_excudit_Maurice_de_Brunoff_apud_Philip_de_Vere_%E2%80%A2_praesentat_Phillip_Medhurst..jpg/1280px-thumbnail.jpg"
+  },
+  {
+    "id": "illus_tissot_david_mourns_his_son_amnon_by_j.tissot",
+    "kind": "scene",
+    "title": {
+      "en": "David Mourns His Son Amnon (Tissot)",
+      "zh-Hans": "迪索圣经插图——撒母耳记下第13章",
+      "zh-Hant": "迪索聖經插圖——撒母耳記下第13章"
+    },
+    "description": {
+      "en": "James Tissot — David Mourns His Son Amnon (2 Samuel 13-13).",
+      "zh-Hans": "詹姆斯·迪索——撒母耳记下第13章圣经场景（撒母耳记下第13-13章）。",
+      "zh-Hant": "詹姆斯·迪索——撒母耳記下第13章聖經場景（撒母耳記下第13-13章）。"
+    },
+    "books": {
+      "2 Samuel": [
+        13,
+        13
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/14/David_Mourns_His_Son_Amnon_by_J.Tissot.jpg/1280px-David_Mourns_His_Son_Amnon_by_J.Tissot.jpg"
+  },
+  {
+    "id": "illus_tissot_david_returns_to_achish",
+    "kind": "scene",
+    "title": {
+      "en": "David returns to Achish (Tissot)",
+      "zh-Hans": "迪索圣经插图——撒母耳记上第27章",
+      "zh-Hant": "迪索聖經插圖——撒母耳記上第27章"
+    },
+    "description": {
+      "en": "James Tissot — David returns to Achish (1 Samuel 27-29).",
+      "zh-Hans": "詹姆斯·迪索——撒母耳记上第27章圣经场景（撒母耳记上第27-29章）。",
+      "zh-Hant": "詹姆斯·迪索——撒母耳記上第27章聖經場景（撒母耳記上第27-29章）。"
+    },
+    "books": {
+      "1 Samuel": [
+        27,
+        29
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/David_returns_to_Achish.jpg/1280px-David_returns_to_Achish.jpg"
+  },
+  {
+    "id": "illus_tissot_death_of_amnon_by_j.tissot",
+    "kind": "scene",
+    "title": {
+      "en": "Death of Amnon (Tissot)",
+      "zh-Hans": "迪索圣经插图——撒母耳记下第13章",
+      "zh-Hant": "迪索聖經插圖——撒母耳記下第13章"
+    },
+    "description": {
+      "en": "James Tissot — Death of Amnon (2 Samuel 13-13).",
+      "zh-Hans": "詹姆斯·迪索——撒母耳记下第13章圣经场景（撒母耳记下第13-13章）。",
+      "zh-Hant": "詹姆斯·迪索——撒母耳記下第13章聖經場景（撒母耳記下第13-13章）。"
+    },
+    "books": {
+      "2 Samuel": [
+        13,
+        13
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7e/Death_of_Amnon_by_J.Tissot.jpg/1280px-Death_of_Amnon_by_J.Tissot.jpg"
+  },
+  {
+    "id": "illus_tissot_desolation_of_tamar_by_j.tissot",
+    "kind": "scene",
+    "title": {
+      "en": "Desolation of Tamar (Tissot)",
+      "zh-Hans": "迪索圣经插图——撒母耳记下第13章",
+      "zh-Hant": "迪索聖經插圖——撒母耳記下第13章"
+    },
+    "description": {
+      "en": "James Tissot — Desolation of Tamar (2 Samuel 13-13).",
+      "zh-Hans": "詹姆斯·迪索——撒母耳记下第13章圣经场景（撒母耳记下第13-13章）。",
+      "zh-Hant": "詹姆斯·迪索——撒母耳記下第13章聖經場景（撒母耳記下第13-13章）。"
+    },
+    "books": {
+      "2 Samuel": [
+        13,
+        13
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/00/Desolation_of_Tamar_by_J.Tissot.jpg/1280px-Desolation_of_Tamar_by_J.Tissot.jpg"
+  },
+  {
+    "id": "illus_tissot_dinah_tissot",
+    "kind": "scene",
+    "title": {
+      "en": "Dinah tissot (Tissot)",
+      "zh-Hans": "迪索圣经插图——创世记第34章",
+      "zh-Hant": "迪索聖經插圖——創世記第34章"
+    },
+    "description": {
+      "en": "James Tissot — Dinah tissot (Genesis 34-34).",
+      "zh-Hans": "詹姆斯·迪索——创世记第34章圣经场景（创世记第34-34章）。",
+      "zh-Hant": "詹姆斯·迪索——創世記第34章聖經場景（創世記第34-34章）。"
+    },
+    "books": {
+      "Genesis": [
+        34,
+        34
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/15/Dinah_tissot.jpg/1280px-Dinah_tissot.jpg"
+  },
+  {
+    "id": "illus_tissot_dispute_de_saraï_et_dagar_genesis_16_6_•_invenit_james_tissot_•_pinxit",
+    "kind": "scene",
+    "title": {
+      "en": "Dispute de Saraï et d'Agar (Genesis 16 6) • invenit James Tissot • pinxit James  (Tissot)",
+      "zh-Hans": "迪索圣经插图——创世记第16章",
+      "zh-Hant": "迪索聖經插圖——創世記第16章"
+    },
+    "description": {
+      "en": "James Tissot — Dispute de Saraï et d'Agar (Genesis 16 6) • invenit James Tissot • pinxit James Tissot • excudit Maurice de Brunoff apud Philip de Vere • praesentat Phillip Medhurst. (Genesis 16-16).",
+      "zh-Hans": "詹姆斯·迪索——创世记第16章圣经场景（创世记第16-16章）。",
+      "zh-Hant": "詹姆斯·迪索——創世記第16章聖經場景（創世記第16-16章）。"
+    },
+    "books": {
+      "Genesis": [
+        16,
+        16
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Dispute_de_Sara%C3%AF_et_d%27Agar_%28Genesis_16_6%29_%E2%80%A2_invenit_James_Tissot_%E2%80%A2_pinxit_James_Tissot_%E2%80%A2_excudit_Maurice_de_Brunoff_apud_Philip_de_Vere_%E2%80%A2_praesentat_Phillip_Medhurst..jpg/1280px-thumbnail.jpg"
+  },
+  {
+    "id": "illus_tissot_hosea_by_james_tissot_cropped",
+    "kind": "scene",
+    "title": {
+      "en": "Hosea (Tissot)",
+      "zh-Hans": "迪索圣经插图——何西阿书第1章",
+      "zh-Hant": "迪索聖經插圖——何西阿書第1章"
+    },
+    "description": {
+      "en": "James Tissot — Hosea (Hosea 1-1).",
+      "zh-Hans": "詹姆斯·迪索——何西阿书第1章圣经场景（何西阿书第1-1章）。",
+      "zh-Hant": "詹姆斯·迪索——何西阿書第1章聖經場景（何西阿書第1-1章）。"
+    },
+    "books": {
+      "Hosea": [
+        1,
+        1
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b3/Hosea_by_James_Tissot_%28cropped%29.jpg/1280px-Hosea_by_James_Tissot_%28cropped%29.jpg"
+  },
+  {
+    "id": "illus_tissot_hosea_by_james_tissot",
+    "kind": "scene",
+    "title": {
+      "en": "Hosea (Tissot)",
+      "zh-Hans": "迪索圣经插图——何西阿书第1章",
+      "zh-Hant": "迪索聖經插圖——何西阿書第1章"
+    },
+    "description": {
+      "en": "James Tissot — Hosea (Hosea 1-1).",
+      "zh-Hans": "詹姆斯·迪索——何西阿书第1章圣经场景（何西阿书第1-1章）。",
+      "zh-Hant": "詹姆斯·迪索——何西阿書第1章聖經場景（何西阿書第1-1章）。"
+    },
+    "books": {
+      "Hosea": [
+        1,
+        1
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/18/Hosea_by_James_Tissot.jpg/1280px-Hosea_by_James_Tissot.jpg"
+  },
+  {
+    "id": "illus_tissot_jacobs_dream_james_tissot",
+    "kind": "scene",
+    "title": {
+      "en": "Jacobs Dream James Tissot (Tissot)",
+      "zh-Hans": "迪索圣经插图——创世记第28章",
+      "zh-Hant": "迪索聖經插圖——創世記第28章"
+    },
+    "description": {
+      "en": "James Tissot — Jacobs Dream James Tissot (Genesis 28-28).",
+      "zh-Hans": "詹姆斯·迪索——创世记第28章圣经场景（创世记第28-28章）。",
+      "zh-Hant": "詹姆斯·迪索——創世記第28章聖經場景（創世記第28-28章）。"
+    },
+    "books": {
+      "Genesis": [
+        28,
+        28
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/81/Jacobs_Dream_James_Tissot.jpg/1280px-Jacobs_Dream_James_Tissot.jpg"
+  },
+  {
+    "id": "illus_tissot_james_jacques_joseph_tissot_-_adam_and_eve_driven_from_paradise_-_goog",
+    "kind": "scene",
+    "title": {
+      "en": "James Jacques Joseph Tissot - Adam and Eve Driven From Paradise - Google Art Pro (Tissot)",
+      "zh-Hans": "迪索圣经插图——创世记第3章",
+      "zh-Hant": "迪索聖經插圖——創世記第3章"
+    },
+    "description": {
+      "en": "James Tissot — James Jacques Joseph Tissot - Adam and Eve Driven From Paradise - Google Art Project (Genesis 3-3).",
+      "zh-Hans": "詹姆斯·迪索——创世记第3章圣经场景（创世记第3-3章）。",
+      "zh-Hant": "詹姆斯·迪索——創世記第3章聖經場景（創世記第3-3章）。"
+    },
+    "books": {
+      "Genesis": [
+        3,
+        3
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6f/James_Jacques_Joseph_Tissot_-_Adam_and_Eve_Driven_From_Paradise_-_Google_Art_Project.jpg/1280px-James_Jacques_Joseph_Tissot_-_Adam_and_Eve_Driven_From_Paradise_-_Google_Art_Project.jpg"
+  },
+  {
+    "id": "illus_tissot_james_jacques_joseph_tissot_-_joseph_dwelleth_in_egypt_-_google_art_pr",
+    "kind": "scene",
+    "title": {
+      "en": "James Jacques Joseph Tissot - Joseph Dwelleth in Egypt - Google Art Project (Tissot)",
+      "zh-Hans": "迪索圣经插图——创世记第39章",
+      "zh-Hant": "迪索聖經插圖——創世記第39章"
+    },
+    "description": {
+      "en": "James Tissot — James Jacques Joseph Tissot - Joseph Dwelleth in Egypt - Google Art Project (Genesis 39-39).",
+      "zh-Hans": "詹姆斯·迪索——创世记第39章圣经场景（创世记第39-39章）。",
+      "zh-Hant": "詹姆斯·迪索——創世記第39章聖經場景（創世記第39-39章）。"
+    },
+    "books": {
+      "Genesis": [
+        39,
+        39
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c4/James_Jacques_Joseph_Tissot_-_Joseph_Dwelleth_in_Egypt_-_Google_Art_Project.jpg/1280px-James_Jacques_Joseph_Tissot_-_Joseph_Dwelleth_in_Egypt_-_Google_Art_Project.jpg"
+  },
+  {
+    "id": "illus_tissot_james_jacques_joseph_tissot_-_rebecca_meets_isaac_by_the_way_-_google_",
+    "kind": "scene",
+    "title": {
+      "en": "James Jacques Joseph Tissot - Rebecca Meets Isaac by the Way - Google Art Projec (Tissot)",
+      "zh-Hans": "迪索圣经插图——创世记第24章",
+      "zh-Hant": "迪索聖經插圖——創世記第24章"
+    },
+    "description": {
+      "en": "James Tissot — James Jacques Joseph Tissot - Rebecca Meets Isaac by the Way - Google Art Project (Genesis 24-24).",
+      "zh-Hans": "詹姆斯·迪索——创世记第24章圣经场景（创世记第24-24章）。",
+      "zh-Hant": "詹姆斯·迪索——創世記第24章聖經場景（創世記第24-24章）。"
+    },
+    "books": {
+      "Genesis": [
+        24,
+        24
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6d/James_Jacques_Joseph_Tissot_-_Rebecca_Meets_Isaac_by_the_Way_-_Google_Art_Project.jpg/1280px-James_Jacques_Joseph_Tissot_-_Rebecca_Meets_Isaac_by_the_Way_-_Google_Art_Project.jpg"
+  },
+  {
+    "id": "illus_tissot_james_jacques_joseph_tissot_-_the_ark_passes_over_the_jordan_-_google_",
+    "kind": "scene",
+    "title": {
+      "en": "James Jacques Joseph Tissot - The Ark Passes Over the Jordan - Google Art Projec (Tissot)",
+      "zh-Hans": "迪索圣经插图——约书亚记第3章",
+      "zh-Hant": "迪索聖經插圖——約書亞記第3章"
+    },
+    "description": {
+      "en": "James Tissot — James Jacques Joseph Tissot - The Ark Passes Over the Jordan - Google Art Project (Joshua 3-4).",
+      "zh-Hans": "詹姆斯·迪索——约书亚记第3章圣经场景（约书亚记第3-4章）。",
+      "zh-Hant": "詹姆斯·迪索——約書亞記第3章聖經場景（約書亞記第3-4章）。"
+    },
+    "books": {
+      "Joshua": [
+        3,
+        4
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/37/James_Jacques_Joseph_Tissot_-_The_Ark_Passes_Over_the_Jordan_-_Google_Art_Project.jpg/1280px-James_Jacques_Joseph_Tissot_-_The_Ark_Passes_Over_the_Jordan_-_Google_Art_Project.jpg"
+  },
+  {
+    "id": "illus_tissot_james_tissot_-_sacrifice_of_noah",
+    "kind": "scene",
+    "title": {
+      "en": "James Tissot - Sacrifice of Noah (Tissot)",
+      "zh-Hans": "迪索圣经插图——创世记第8章",
+      "zh-Hant": "迪索聖經插圖——創世記第8章"
+    },
+    "description": {
+      "en": "James Tissot — James Tissot - Sacrifice of Noah (Genesis 8-8).",
+      "zh-Hans": "詹姆斯·迪索——创世记第8章圣经场景（创世记第8-8章）。",
+      "zh-Hant": "詹姆斯·迪索——創世記第8章聖經場景（創世記第8-8章）。"
+    },
+    "books": {
+      "Genesis": [
+        8,
+        8
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/15/James_Tissot_-_Sacrifice_of_Noah.jpg/1280px-James_Tissot_-_Sacrifice_of_Noah.jpg"
+  },
+  {
+    "id": "illus_tissot_james_tissot_caravan_of_abram_circa_1900",
+    "kind": "scene",
+    "title": {
+      "en": "James Tissot Caravan of Abram circa 1900 (Tissot)",
+      "zh-Hans": "迪索圣经插图——创世记第12章",
+      "zh-Hant": "迪索聖經插圖——創世記第12章"
+    },
+    "description": {
+      "en": "James Tissot — James Tissot Caravan of Abram circa 1900 (Genesis 12-12).",
+      "zh-Hans": "詹姆斯·迪索——创世记第12章圣经场景（创世记第12-12章）。",
+      "zh-Hant": "詹姆斯·迪索——創世記第12章聖經場景（創世記第12-12章）。"
+    },
+    "books": {
+      "Genesis": [
+        12,
+        12
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/bb/James_Tissot_Caravan_of_Abram_circa_1900.jpg/1280px-James_Tissot_Caravan_of_Abram_circa_1900.jpg"
+  },
+  {
+    "id": "illus_tissot_jephthah’s_daughter_by_james_tissot",
+    "kind": "scene",
+    "title": {
+      "en": "Jephthah’s Daughter (Tissot)",
+      "zh-Hans": "迪索圣经插图——士师记第11章",
+      "zh-Hant": "迪索聖經插圖——士師記第11章"
+    },
+    "description": {
+      "en": "James Tissot — Jephthah’s Daughter (Judges 11-11).",
+      "zh-Hans": "詹姆斯·迪索——士师记第11章圣经场景（士师记第11-11章）。",
+      "zh-Hant": "詹姆斯·迪索——士師記第11章聖經場景（士師記第11-11章）。"
+    },
+    "books": {
+      "Judges": [
+        11,
+        11
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fa/Jephthah%E2%80%99s_Daughter_by_James_Tissot.jpg/1280px-Jephthah%E2%80%99s_Daughter_by_James_Tissot.jpg"
+  },
+  {
+    "id": "illus_tissot_judah_and_tamar_by_j.tissot",
+    "kind": "scene",
+    "title": {
+      "en": "Judah and Tamar (Tissot)",
+      "zh-Hans": "迪索圣经插图——创世记第38章",
+      "zh-Hant": "迪索聖經插圖——創世記第38章"
+    },
+    "description": {
+      "en": "James Tissot — Judah and Tamar (Genesis 38-38).",
+      "zh-Hans": "詹姆斯·迪索——创世记第38章圣经场景（创世记第38-38章）。",
+      "zh-Hant": "詹姆斯·迪索——創世記第38章聖經場景（創世記第38-38章）。"
+    },
+    "books": {
+      "Genesis": [
+        38,
+        38
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d2/Judah_and_Tamar_by_J.Tissot.jpg/1280px-Judah_and_Tamar_by_J.Tissot.jpg"
+  },
+  {
+    "id": "illus_tissot_lambassade_des_égyptiens_à_saraï_genesis_12_15_•_invenit_james_tissot_",
+    "kind": "scene",
+    "title": {
+      "en": "L'ambassade des Égyptiens à Saraï (Genesis 12 15) • invenit James Tissot • pinxi (Tissot)",
+      "zh-Hans": "迪索圣经插图——创世记第12章",
+      "zh-Hant": "迪索聖經插圖——創世記第12章"
+    },
+    "description": {
+      "en": "James Tissot — L'ambassade des Égyptiens à Saraï (Genesis 12 15) • invenit James Tissot • pinxit James Tissot • excudit Maurice de Brunoff apud Philip de Vere • praesentat Phillip Medhurst. (Genesis 12-12).",
+      "zh-Hans": "詹姆斯·迪索——创世记第12章圣经场景（创世记第12-12章）。",
+      "zh-Hant": "詹姆斯·迪索——創世記第12章聖經場景（創世記第12-12章）。"
+    },
+    "books": {
+      "Genesis": [
+        12,
+        12
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f4/L%27ambassade_des_%C3%89gyptiens_%C3%A0_Sara%C3%AF_%28Genesis_12_15%29_%E2%80%A2_invenit_James_Tissot_%E2%80%A2_pinxit_James_Tissot_%E2%80%A2_excudit_Maurice_de_Brunoff_apud_Philip_de_Vere_%E2%80%A2_praesentat_Phillip_Medhurst..jpg/1280px-thumbnail.jpg"
+  },
+  {
+    "id": "illus_tissot_lange_et_agar_dans_le_désert_genesis_16_6_•_invenit_james_tissot_•_pin",
+    "kind": "scene",
+    "title": {
+      "en": "L'Ange et Agar dans le désert (Genesis 16 6) • invenit James Tissot • pinxit Jam (Tissot)",
+      "zh-Hans": "迪索圣经插图——创世记第16章",
+      "zh-Hant": "迪索聖經插圖——創世記第16章"
+    },
+    "description": {
+      "en": "James Tissot — L'Ange et Agar dans le désert (Genesis 16 6) • invenit James Tissot • pinxit James Tissot • excudit Maurice de Brunoff apud Philip de Vere • praesentat Phillip Medhurst. (Genesis 16-16).",
+      "zh-Hans": "詹姆斯·迪索——创世记第16章圣经场景（创世记第16-16章）。",
+      "zh-Hant": "詹姆斯·迪索——創世記第16章聖經場景（創世記第16-16章）。"
+    },
+    "books": {
+      "Genesis": [
+        16,
+        16
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/28/L%27Ange_et_Agar_dans_le_d%C3%A9sert_%28Genesis_16_6%29_%E2%80%A2_invenit_James_Tissot_%E2%80%A2_pinxit_James_Tissot_%E2%80%A2_excudit_Maurice_de_Brunoff_apud_Philip_de_Vere_%E2%80%A2_praesentat_Phillip_Medhurst..jpg/1280px-thumbnail.jpg"
+  },
+  {
+    "id": "illus_tissot_livresse_de_noé_genesis_9_23_•_invenit_james_tissot_•_pinxit_james_tis",
+    "kind": "scene",
+    "title": {
+      "en": "L'ivresse de Noé (Genesis 9 23) • invenit James Tissot • pinxit James Tissot • e (Tissot)",
+      "zh-Hans": "迪索圣经插图——创世记第9章",
+      "zh-Hant": "迪索聖經插圖——創世記第9章"
+    },
+    "description": {
+      "en": "James Tissot — L'ivresse de Noé (Genesis 9 23) • invenit James Tissot • pinxit James Tissot • excudit Maurice de Brunoff apud Philip de Vere • praesentat Phillip Medhurst. (Genesis 9-9).",
+      "zh-Hans": "詹姆斯·迪索——创世记第9章圣经场景（创世记第9-9章）。",
+      "zh-Hant": "詹姆斯·迪索——創世記第9章聖經場景（創世記第9-9章）。"
+    },
+    "books": {
+      "Genesis": [
+        9,
+        9
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ed/L%27ivresse_de_No%C3%A9_%28Genesis_9_23%29_%E2%80%A2_invenit_James_Tissot_%E2%80%A2_pinxit_James_Tissot_%E2%80%A2_excudit_Maurice_de_Brunoff_apud_Philip_de_Vere_%E2%80%A2_praesentat_Phillip_Medhurst..jpg/1280px-thumbnail.jpg"
+  },
+  {
+    "id": "illus_tissot_loffrande_de_melchisédech_genesis_14_18_•_invenit_james_tissot_•_pinxi",
+    "kind": "scene",
+    "title": {
+      "en": "L'offrande de Melchisédech (Genesis 14 18) • invenit James Tissot • pinxit James (Tissot)",
+      "zh-Hans": "迪索圣经插图——创世记第14章",
+      "zh-Hant": "迪索聖經插圖——創世記第14章"
+    },
+    "description": {
+      "en": "James Tissot — L'offrande de Melchisédech (Genesis 14 18) • invenit James Tissot • pinxit James Tissot • excudit Maurice de Brunoff apud Philip de Vere • praesentat Phillip Medhurst. (Genesis 14-14).",
+      "zh-Hans": "詹姆斯·迪索——创世记第14章圣经场景（创世记第14-14章）。",
+      "zh-Hant": "詹姆斯·迪索——創世記第14章聖經場景（創世記第14-14章）。"
+    },
+    "books": {
+      "Genesis": [
+        14,
+        14
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/55/L%27offrande_de_Melchis%C3%A9dech_%28Genesis_14_18%29_%E2%80%A2_invenit_James_Tissot_%E2%80%A2_pinxit_James_Tissot_%E2%80%A2_excudit_Maurice_de_Brunoff_apud_Philip_de_Vere_%E2%80%A2_praesentat_Phillip_Medhurst..jpg/1280px-thumbnail.jpg"
+  },
+  {
+    "id": "illus_tissot_la_caravane_dabram_genesis_12_6_•_invenit_james_tissot_•_pinxit_james_",
+    "kind": "scene",
+    "title": {
+      "en": "La caravane d'Abram (Genesis 12 6) • invenit James Tissot • pinxit James Tissot  (Tissot)",
+      "zh-Hans": "迪索圣经插图——创世记第12章",
+      "zh-Hant": "迪索聖經插圖——創世記第12章"
+    },
+    "description": {
+      "en": "James Tissot — La caravane d'Abram (Genesis 12 6) • invenit James Tissot • pinxit James Tissot • excudit Maurice de Brunoff apud Philip de Vere • praesentat Phillip Medhurst. (Genesis 12-12).",
+      "zh-Hans": "詹姆斯·迪索——创世记第12章圣经场景（创世记第12-12章）。",
+      "zh-Hant": "詹姆斯·迪索——創世記第12章聖經場景（創世記第12-12章）。"
+    },
+    "books": {
+      "Genesis": [
+        12,
+        12
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d8/La_caravane_d%27Abram_%28Genesis_12_6%29_%E2%80%A2_invenit_James_Tissot_%E2%80%A2_pinxit_James_Tissot_%E2%80%A2_excudit_Maurice_de_Brunoff_apud_Philip_de_Vere_%E2%80%A2_praesentat_Phillip_Medhurst..jpg/1280px-thumbnail.jpg"
+  },
+  {
+    "id": "illus_tissot_la_tour_de_babel_genesis_11_4_•_invenit_james_tissot_•_pinxit_james_ti",
+    "kind": "scene",
+    "title": {
+      "en": "La tour de Babel (Genesis 11 4) • invenit James Tissot • pinxit James Tissot • e (Tissot)",
+      "zh-Hans": "迪索圣经插图——创世记第11章",
+      "zh-Hant": "迪索聖經插圖——創世記第11章"
+    },
+    "description": {
+      "en": "James Tissot — La tour de Babel (Genesis 11 4) • invenit James Tissot • pinxit James Tissot • excudit Maurice de Brunoff apud Philip de Vere • praesentat Phillip Medhurst. (Genesis 11-11).",
+      "zh-Hans": "詹姆斯·迪索——创世记第11章圣经场景（创世记第11-11章）。",
+      "zh-Hant": "詹姆斯·迪索——創世記第11章聖經場景（創世記第11-11章）。"
+    },
+    "books": {
+      "Genesis": [
+        11,
+        11
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/bf/La_tour_de_Babel_%28Genesis_11_4%29_%E2%80%A2_invenit_James_Tissot_%E2%80%A2_pinxit_James_Tissot_%E2%80%A2_excudit_Maurice_de_Brunoff_apud_Philip_de_Vere_%E2%80%A2_praesentat_Phillip_Medhurst..jpg/1280px-thumbnail.jpg"
+  },
+  {
+    "id": "illus_tissot_le_chantier_de_larche_genesis_6_14_•_invenit_james_tissot_•_pinxit_jam",
+    "kind": "scene",
+    "title": {
+      "en": "Le chantier de l'Arche (Genesis 6 14) • invenit James Tissot • pinxit James Tiss (Tissot)",
+      "zh-Hans": "迪索圣经插图——创世记第6章",
+      "zh-Hant": "迪索聖經插圖——創世記第6章"
+    },
+    "description": {
+      "en": "James Tissot — Le chantier de l'Arche (Genesis 6 14) • invenit James Tissot • pinxit James Tissot • excudit Maurice de Brunoff apud Philip de Vere • praesentat Phillip Medhurst. (Genesis 6-6).",
+      "zh-Hans": "詹姆斯·迪索——创世记第6章圣经场景（创世记第6-6章）。",
+      "zh-Hant": "詹姆斯·迪索——創世記第6章聖經場景（創世記第6-6章）。"
+    },
+    "books": {
+      "Genesis": [
+        6,
+        6
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/89/Le_chantier_de_l%27Arche_%28Genesis_6_14%29_%E2%80%A2_invenit_James_Tissot_%E2%80%A2_pinxit_James_Tissot_%E2%80%A2_excudit_Maurice_de_Brunoff_apud_Philip_de_Vere_%E2%80%A2_praesentat_Phillip_Medhurst..jpg/1280px-thumbnail.jpg"
+  },
+  {
+    "id": "illus_tissot_le_déluge_genesis_7_23_•_invenit_james_tissot_•_pinxit_james_tissot_•_",
+    "kind": "scene",
+    "title": {
+      "en": "Le Déluge (Genesis 7 23) • invenit James Tissot • pinxit James Tissot • excudit  (Tissot)",
+      "zh-Hans": "迪索圣经插图——创世记第7章",
+      "zh-Hant": "迪索聖經插圖——創世記第7章"
+    },
+    "description": {
+      "en": "James Tissot — Le Déluge (Genesis 7 23) • invenit James Tissot • pinxit James Tissot • excudit Maurice de Brunoff apud Philip de Vere • praesentat Phillip Medhurst. (Genesis 7-7).",
+      "zh-Hans": "詹姆斯·迪索——创世记第7章圣经场景（创世记第7-7章）。",
+      "zh-Hant": "詹姆斯·迪索——創世記第7章聖經場景（創世記第7-7章）。"
+    },
+    "books": {
+      "Genesis": [
+        7,
+        7
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f1/Le_D%C3%A9luge_%28Genesis_7_23%29_%E2%80%A2_invenit_James_Tissot_%E2%80%A2_pinxit_James_Tissot_%E2%80%A2_excudit_Maurice_de_Brunoff_apud_Philip_de_Vere_%E2%80%A2_praesentat_Phillip_Medhurst..jpg/1280px-thumbnail.jpg"
+  },
+  {
+    "id": "illus_tissot_le_sacrifice_de_larc-en-ciel_genesis_8_20_•_invenit_james_tissot_•_pin",
+    "kind": "scene",
+    "title": {
+      "en": "Le sacrifice de l'arc-en-ciel (Genesis 8 20) • invenit James Tissot • pinxit Jam (Tissot)",
+      "zh-Hans": "迪索圣经插图——创世记第8章",
+      "zh-Hant": "迪索聖經插圖——創世記第8章"
+    },
+    "description": {
+      "en": "James Tissot — Le sacrifice de l'arc-en-ciel (Genesis 8 20) • invenit James Tissot • pinxit James Tissot • excudit Maurice de Brunoff apud Philip de Vere • praesentat Phillip Medhurst. (Genesis 8-8).",
+      "zh-Hans": "詹姆斯·迪索——创世记第8章圣经场景（创世记第8-8章）。",
+      "zh-Hant": "詹姆斯·迪索——創世記第8章聖經場景（創世記第8-8章）。"
+    },
+    "books": {
+      "Genesis": [
+        8,
+        8
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/Le_sacrifice_de_l%27arc-en-ciel_%28Genesis_8_20%29_%E2%80%A2_invenit_James_Tissot_%E2%80%A2_pinxit_James_Tissot_%E2%80%A2_excudit_Maurice_de_Brunoff_apud_Philip_de_Vere_%E2%80%A2_praesentat_Phillip_Medhurst..jpg/1280px-thumbnail.jpg"
+  },
+  {
+    "id": "illus_tissot_les_animaux_entrant_dans_larche_genesis_7_14-15_•_invenit_james_tissot",
+    "kind": "scene",
+    "title": {
+      "en": "Les animaux entrant dans l'Arche (Genesis 7 14-15) • invenit James Tissot • pinx (Tissot)",
+      "zh-Hans": "迪索圣经插图——创世记第7章",
+      "zh-Hant": "迪索聖經插圖——創世記第7章"
+    },
+    "description": {
+      "en": "James Tissot — Les animaux entrant dans l'Arche (Genesis 7 14-15) • invenit James Tissot • pinxit James Tissot • excudit Maurice de Brunoff apud Philip de Vere • praesentat Phillip Medhurst. (Genesis 7-7).",
+      "zh-Hans": "詹姆斯·迪索——创世记第7章圣经场景（创世记第7-7章）。",
+      "zh-Hant": "詹姆斯·迪索——創世記第7章聖經場景（創世記第7-7章）。"
+    },
+    "books": {
+      "Genesis": [
+        7,
+        7
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b1/Les_animaux_entrant_dans_l%27Arche_%28Genesis_7_14-15%29_%E2%80%A2_invenit_James_Tissot_%E2%80%A2_pinxit_James_Tissot_%E2%80%A2_excudit_Maurice_de_Brunoff_apud_Philip_de_Vere_%E2%80%A2_praesentat_Phillip_Medhurst..jpg/1280px-thumbnail.jpg"
+  },
+  {
+    "id": "illus_tissot_les_cinq_rois_de_la_pentapole_genesis_14_1_•_invenit_james_tissot_•_pi",
+    "kind": "scene",
+    "title": {
+      "en": "Les cinq rois de la Pentapole (Genesis 14 1) • invenit James Tissot • pinxit Jam (Tissot)",
+      "zh-Hans": "迪索圣经插图——创世记第14章",
+      "zh-Hant": "迪索聖經插圖——創世記第14章"
+    },
+    "description": {
+      "en": "James Tissot — Les cinq rois de la Pentapole (Genesis 14 1) • invenit James Tissot • pinxit James Tissot • excudit Maurice de Brunoff apud Philip de Vere • praesentat Phillip Medhurst. (Genesis 14-14).",
+      "zh-Hans": "詹姆斯·迪索——创世记第14章圣经场景（创世记第14-14章）。",
+      "zh-Hant": "詹姆斯·迪索——創世記第14章聖經場景（創世記第14-14章）。"
+    },
+    "books": {
+      "Genesis": [
+        14,
+        14
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/19/Les_cinq_rois_de_la_Pentapole_%28Genesis_14_1%29_%E2%80%A2_invenit_James_Tissot_%E2%80%A2_pinxit_James_Tissot_%E2%80%A2_excudit_Maurice_de_Brunoff_apud_Philip_de_Vere_%E2%80%A2_praesentat_Phillip_Medhurst..jpg/1280px-thumbnail.jpg"
+  },
+  {
+    "id": "illus_tissot_les_sodomites_genesis_19_5_•_invenit_james_tissot_•_pinxit_james_tisso",
+    "kind": "scene",
+    "title": {
+      "en": "Les Sodomites (Genesis 19 5) • invenit James Tissot • pinxit James Tissot • excu (Tissot)",
+      "zh-Hans": "迪索圣经插图——创世记第19章",
+      "zh-Hant": "迪索聖經插圖——創世記第19章"
+    },
+    "description": {
+      "en": "James Tissot — Les Sodomites (Genesis 19 5) • invenit James Tissot • pinxit James Tissot • excudit Maurice de Brunoff apud Philip de Vere • praesentat Phillip Medhurst. (Genesis 19-19).",
+      "zh-Hans": "詹姆斯·迪索——创世记第19章圣经场景（创世记第19-19章）。",
+      "zh-Hant": "詹姆斯·迪索——創世記第19章聖經場景（創世記第19-19章）。"
+    },
+    "books": {
+      "Genesis": [
+        19,
+        19
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9d/Les_Sodomites_%28Genesis_19_5%29_%E2%80%A2_invenit_James_Tissot_%E2%80%A2_pinxit_James_Tissot_%E2%80%A2_excudit_Maurice_de_Brunoff_apud_Philip_de_Vere_%E2%80%A2_praesentat_Phillip_Medhurst..jpg/1280px-thumbnail.jpg"
+  },
+  {
+    "id": "illus_tissot_les_égyptiens_trouvent_saraï_belle_genesis_12_14_•_invenit_james_tisso",
+    "kind": "scene",
+    "title": {
+      "en": "Les Égyptiens trouvent Saraï belle (Genesis 12 14) • invenit James Tissot • pinx (Tissot)",
+      "zh-Hans": "迪索圣经插图——创世记第12章",
+      "zh-Hant": "迪索聖經插圖——創世記第12章"
+    },
+    "description": {
+      "en": "James Tissot — Les Égyptiens trouvent Saraï belle (Genesis 12 14) • invenit James Tissot • pinxit James Tissot • excudit Maurice de Brunoff apud Philip de Vere • praesentat Phillip Medhurst. (Genesis 12-12).",
+      "zh-Hans": "詹姆斯·迪索——创世记第12章圣经场景（创世记第12-12章）。",
+      "zh-Hant": "詹姆斯·迪索——創世記第12章聖經場景（創世記第12-12章）。"
+    },
+    "books": {
+      "Genesis": [
+        12,
+        12
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ed/Les_%C3%89gyptiens_trouvent_Sara%C3%AF_belle_%28Genesis_12_14%29_%E2%80%A2_invenit_James_Tissot_%E2%80%A2_pinxit_James_Tissot_%E2%80%A2_excudit_Maurice_de_Brunoff_apud_Philip_de_Vere_%E2%80%A2_praesentat_Phillip_Medhurst..jpg/1280px-thumbnail.jpg"
+  },
+  {
+    "id": "illus_tissot_meuble_héraldique_arche_dalliance.svg",
+    "kind": "scene",
+    "title": {
+      "en": "Meuble héraldique Arche d'alliance (Tissot)",
+      "zh-Hans": "迪索圣经插图——出埃及记第25章",
+      "zh-Hant": "迪索聖經插圖——出埃及記第25章"
+    },
+    "description": {
+      "en": "James Tissot — Meuble héraldique Arche d'alliance (Exodus 25-25).",
+      "zh-Hans": "詹姆斯·迪索——出埃及记第25章圣经场景（出埃及记第25-25章）。",
+      "zh-Hant": "詹姆斯·迪索——出埃及記第25章聖經場景（出埃及記第25-25章）。"
+    },
+    "books": {
+      "Exodus": [
+        25,
+        25
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b8/Meuble_h%C3%A9raldique_Arche_d%27alliance.svg/1280px-Meuble_h%C3%A9raldique_Arche_d%27alliance.svg.png"
+  },
+  {
+    "id": "illus_tissot_micah_by_james_tissot_cropped",
+    "kind": "scene",
+    "title": {
+      "en": "Micah (Tissot)",
+      "zh-Hans": "迪索圣经插图——弥迦书第1章",
+      "zh-Hant": "迪索聖經插圖——彌迦書第1章"
+    },
+    "description": {
+      "en": "James Tissot — Micah (Micah 1-1).",
+      "zh-Hans": "詹姆斯·迪索——弥迦书第1章圣经场景（弥迦书第1-1章）。",
+      "zh-Hant": "詹姆斯·迪索——彌迦書第1章聖經場景（彌迦書第1-1章）。"
+    },
+    "books": {
+      "Micah": [
+        1,
+        1
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1c/Micah_by_James_Tissot_%28cropped%29.jpg/1280px-Micah_by_James_Tissot_%28cropped%29.jpg"
+  },
+  {
+    "id": "illus_tissot_micah_by_james_tissot",
+    "kind": "scene",
+    "title": {
+      "en": "Micah (Tissot)",
+      "zh-Hans": "迪索圣经插图——弥迦书第1章",
+      "zh-Hant": "迪索聖經插圖——彌迦書第1章"
+    },
+    "description": {
+      "en": "James Tissot — Micah (Micah 1-1).",
+      "zh-Hans": "詹姆斯·迪索——弥迦书第1章圣经场景（弥迦书第1-1章）。",
+      "zh-Hant": "詹姆斯·迪索——彌迦書第1章聖經場景（彌迦書第1-1章）。"
+    },
+    "books": {
+      "Micah": [
+        1,
+        1
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f5/Micah_by_James_Tissot.jpg/1280px-Micah_by_James_Tissot.jpg"
+  },
+  {
+    "id": "illus_tissot_nahum_black&white",
+    "kind": "scene",
+    "title": {
+      "en": "Nahum (Black&White) (Tissot)",
+      "zh-Hans": "迪索圣经插图——那鸿书第1章",
+      "zh-Hant": "迪索聖經插圖——那鴻書第1章"
+    },
+    "description": {
+      "en": "James Tissot — Nahum (Black&White) (Nahum 1-1).",
+      "zh-Hans": "詹姆斯·迪索——那鸿书第1章圣经场景（那鸿书第1-1章）。",
+      "zh-Hant": "詹姆斯·迪索——那鴻書第1章聖經場景（那鴻書第1-1章）。"
+    },
+    "books": {
+      "Nahum": [
+        1,
+        1
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e6/Nahum_%28Black%26White%29.jpg/1280px-Nahum_%28Black%26White%29.jpg"
+  },
+  {
+    "id": "illus_tissot_nahum",
+    "kind": "scene",
+    "title": {
+      "en": "Nahum (Tissot)",
+      "zh-Hans": "迪索圣经插图——那鸿书第1章",
+      "zh-Hant": "迪索聖經插圖——那鴻書第1章"
+    },
+    "description": {
+      "en": "James Tissot — Nahum (Nahum 1-1).",
+      "zh-Hans": "詹姆斯·迪索——那鸿书第1章圣经场景（那鸿书第1-1章）。",
+      "zh-Hant": "詹姆斯·迪索——那鴻書第1章聖經場景（那鴻書第1-1章）。"
+    },
+    "books": {
+      "Nahum": [
+        1,
+        1
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/40/Nahum.jpg/1280px-Nahum.jpg"
+  },
+  {
+    "id": "illus_tissot_naissance_de_noé_genesis_5_20_•_invenit_james_tissot_•_pinxit_james_ti",
+    "kind": "scene",
+    "title": {
+      "en": "Naissance de Noé (Genesis 5 20) • invenit James Tissot • pinxit James Tissot • e (Tissot)",
+      "zh-Hans": "迪索圣经插图——创世记第5章",
+      "zh-Hant": "迪索聖經插圖——創世記第5章"
+    },
+    "description": {
+      "en": "James Tissot — Naissance de Noé (Genesis 5 20) • invenit James Tissot • pinxit James Tissot • excudit Maurice de Brunoff apud Philip de Vere • praesentat Phillip Medhurst. (Genesis 5-5).",
+      "zh-Hans": "詹姆斯·迪索——创世记第5章圣经场景（创世记第5-5章）。",
+      "zh-Hant": "詹姆斯·迪索——創世記第5章聖經場景（創世記第5-5章）。"
+    },
+    "books": {
+      "Genesis": [
+        5,
+        5
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/aa/Naissance_de_No%C3%A9_%28Genesis_5_20%29_%E2%80%A2_invenit_James_Tissot_%E2%80%A2_pinxit_James_Tissot_%E2%80%A2_excudit_Maurice_de_Brunoff_apud_Philip_de_Vere_%E2%80%A2_praesentat_Phillip_Medhurst..jpg/1280px-thumbnail.jpg"
+  },
+  {
+    "id": "illus_tissot_nemrod_genesis_10_8_•_invenit_james_tissot_•_pinxit_james_tissot_•_exc",
+    "kind": "scene",
+    "title": {
+      "en": "Nemrod (Genesis 10 8) • invenit James Tissot • pinxit James Tissot • excudit Mau (Tissot)",
+      "zh-Hans": "迪索圣经插图——创世记第10章",
+      "zh-Hant": "迪索聖經插圖——創世記第10章"
+    },
+    "description": {
+      "en": "James Tissot — Nemrod (Genesis 10 8) • invenit James Tissot • pinxit James Tissot • excudit Maurice de Brunoff apud Philip de Vere • praesentat Phillip Medhurst. (Genesis 10-10).",
+      "zh-Hans": "詹姆斯·迪索——创世记第10章圣经场景（创世记第10-10章）。",
+      "zh-Hant": "詹姆斯·迪索——創世記第10章聖經場景（創世記第10-10章）。"
+    },
+    "books": {
+      "Genesis": [
+        10,
+        10
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8f/Nemrod_%28Genesis_10_8%29_%E2%80%A2_invenit_James_Tissot_%E2%80%A2_pinxit_James_Tissot_%E2%80%A2_excudit_Maurice_de_Brunoff_apud_Philip_de_Vere_%E2%80%A2_praesentat_Phillip_Medhurst..jpg/1280px-Nemrod_%28Genesis_10_8%29_%E2%80%A2_invenit_James_Tissot_%E2%80%A2_pinxit_James_Tissot_%E2%80%A2_excudit_Maurice_de_Brunoff_apud_Philip_de_Vere_%E2%80%A2_praesentat_Phillip_Medhurst..jpg"
+  },
+  {
+    "id": "illus_tissot_nouvelles_promesses_de_dieu_à_abraham_genesis_17_19_•_invenit_james_ti",
+    "kind": "scene",
+    "title": {
+      "en": "Nouvelles promesses de Dieu à Abraham (Genesis 17 19) • invenit James Tissot • p (Tissot)",
+      "zh-Hans": "迪索圣经插图——创世记第17章",
+      "zh-Hant": "迪索聖經插圖——創世記第17章"
+    },
+    "description": {
+      "en": "James Tissot — Nouvelles promesses de Dieu à Abraham (Genesis 17 19) • invenit James Tissot • pinxit James Tissot • excudit Maurice de Brunoff apud Philip de Vere • praesentat Phillip Medhurst. (Genesis 17-17).",
+      "zh-Hans": "詹姆斯·迪索——创世记第17章圣经场景（创世记第17-17章）。",
+      "zh-Hant": "詹姆斯·迪索——創世記第17章聖經場景（創世記第17-17章）。"
+    },
+    "books": {
+      "Genesis": [
+        17,
+        17
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Nouvelles_promesses_de_Dieu_%C3%A0_Abraham_%28Genesis_17_19%29_%E2%80%A2_invenit_James_Tissot_%E2%80%A2_pinxit_James_Tissot_%E2%80%A2_excudit_Maurice_de_Brunoff_apud_Philip_de_Vere_%E2%80%A2_praesentat_Phillip_Medhurst..jpg/1280px-thumbnail.jpg"
+  },
+  {
+    "id": "illus_tissot_noé_genesis_6_9_•_invenit_james_tissot_•_pinxit_james_tissot_•_excudit",
+    "kind": "scene",
+    "title": {
+      "en": "Noé (Genesis 6 9) • invenit James Tissot • pinxit James Tissot • excudit Maurice (Tissot)",
+      "zh-Hans": "迪索圣经插图——创世记第6章",
+      "zh-Hant": "迪索聖經插圖——創世記第6章"
+    },
+    "description": {
+      "en": "James Tissot — Noé (Genesis 6 9) • invenit James Tissot • pinxit James Tissot • excudit Maurice de Brunoff apud Philip de Vere • praesentat Phillip Medhurst. (Genesis 6-6).",
+      "zh-Hans": "詹姆斯·迪索——创世记第6章圣经场景（创世记第6-6章）。",
+      "zh-Hant": "詹姆斯·迪索——創世記第6章聖經場景（創世記第6-6章）。"
+    },
+    "books": {
+      "Genesis": [
+        6,
+        6
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cf/No%C3%A9_%28Genesis_6_9%29_%E2%80%A2_invenit_James_Tissot_%E2%80%A2_pinxit_James_Tissot_%E2%80%A2_excudit_Maurice_de_Brunoff_apud_Philip_de_Vere_%E2%80%A2_praesentat_Phillip_Medhurst..jpg/1280px-No%C3%A9_%28Genesis_6_9%29_%E2%80%A2_invenit_James_Tissot_%E2%80%A2_pinxit_James_Tissot_%E2%80%A2_excudit_Maurice_de_Brunoff_apud_Philip_de_Vere_%E2%80%A2_praesentat_Phillip_Medhurst..jpg"
+  },
+  {
+    "id": "illus_tissot_obadiah_by_james_tissot_cropped",
+    "kind": "scene",
+    "title": {
+      "en": "Obadiah (Tissot)",
+      "zh-Hans": "迪索圣经插图——俄巴底亚书第1章",
+      "zh-Hant": "迪索聖經插圖——俄巴底亞書第1章"
+    },
+    "description": {
+      "en": "James Tissot — Obadiah (Obadiah 1-1).",
+      "zh-Hans": "詹姆斯·迪索——俄巴底亚书第1章圣经场景（俄巴底亚书第1-1章）。",
+      "zh-Hant": "詹姆斯·迪索——俄巴底亞書第1章聖經場景（俄巴底亞書第1-1章）。"
+    },
+    "books": {
+      "Obadiah": [
+        1,
+        1
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7f/Obadiah_by_James_Tissot_%28cropped%29.jpg/1280px-Obadiah_by_James_Tissot_%28cropped%29.jpg"
+  },
+  {
+    "id": "illus_tissot_obadiah_by_james_tissot",
+    "kind": "scene",
+    "title": {
+      "en": "Obadiah (Tissot)",
+      "zh-Hans": "迪索圣经插图——俄巴底亚书第1章",
+      "zh-Hant": "迪索聖經插圖——俄巴底亞書第1章"
+    },
+    "description": {
+      "en": "James Tissot — Obadiah (Obadiah 1-1).",
+      "zh-Hans": "詹姆斯·迪索——俄巴底亚书第1章圣经场景（俄巴底亚书第1-1章）。",
+      "zh-Hant": "詹姆斯·迪索——俄巴底亞書第1章聖經場景（俄巴底亞書第1-1章）。"
+    },
+    "books": {
+      "Obadiah": [
+        1,
+        1
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f3/Obadiah_by_James_Tissot.jpg/1280px-Obadiah_by_James_Tissot.jpg"
+  },
+  {
+    "id": "illus_tissot_promesses_de_dieu_à_abram_genesis_13_16_•_invenit_james_tissot_•_pinxi",
+    "kind": "scene",
+    "title": {
+      "en": "Promesses de Dieu à Abram (Genesis 13 16) • invenit James Tissot • pinxit James  (Tissot)",
+      "zh-Hans": "迪索圣经插图——创世记第13章",
+      "zh-Hant": "迪索聖經插圖——創世記第13章"
+    },
+    "description": {
+      "en": "James Tissot — Promesses de Dieu à Abram (Genesis 13 16) • invenit James Tissot • pinxit James Tissot • excudit Maurice de Brunoff apud Philip de Vere • praesentat Phillip Medhurst. (Genesis 13-13).",
+      "zh-Hans": "詹姆斯·迪索——创世记第13章圣经场景（创世记第13-13章）。",
+      "zh-Hant": "詹姆斯·迪索——創世記第13章聖經場景（創世記第13-13章）。"
+    },
+    "books": {
+      "Genesis": [
+        13,
+        13
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/aa/Promesses_de_Dieu_%C3%A0_Abram_%28Genesis_13_16%29_%E2%80%A2_invenit_James_Tissot_%E2%80%A2_pinxit_James_Tissot_%E2%80%A2_excudit_Maurice_de_Brunoff_apud_Philip_de_Vere_%E2%80%A2_praesentat_Phillip_Medhurst..jpg/1280px-thumbnail.jpg"
+  },
+  {
+    "id": "illus_tissot_remontrances_de_dieu_genesis_3_16_•_invenit_james_tissot_•_pinxit_jame",
+    "kind": "scene",
+    "title": {
+      "en": "Remontrances de Dieu (Genesis 3 16) • invenit James Tissot • pinxit James Tissot (Tissot)",
+      "zh-Hans": "迪索圣经插图——创世记第3章",
+      "zh-Hant": "迪索聖經插圖——創世記第3章"
+    },
+    "description": {
+      "en": "James Tissot — Remontrances de Dieu (Genesis 3 16) • invenit James Tissot • pinxit James Tissot • excudit Maurice de Brunoff apud Philip de Vere • praesentat Phillip Medhurst. (Genesis 3-3).",
+      "zh-Hans": "詹姆斯·迪索——创世记第3章圣经场景（创世记第3-3章）。",
+      "zh-Hant": "詹姆斯·迪索——創世記第3章聖經場景（創世記第3-3章）。"
+    },
+    "books": {
+      "Genesis": [
+        3,
+        3
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/46/Remontrances_de_Dieu_%28Genesis_3_16%29_%E2%80%A2_invenit_James_Tissot_%E2%80%A2_pinxit_James_Tissot_%E2%80%A2_excudit_Maurice_de_Brunoff_apud_Philip_de_Vere_%E2%80%A2_praesentat_Phillip_Medhurst..jpg/1280px-thumbnail.jpg"
+  },
+  {
+    "id": "illus_tissot_sara_rit_en_écoutant_genesis_18_10_•_invenit_james_tissot_•_pinxit_jam",
+    "kind": "scene",
+    "title": {
+      "en": "Sara rit en écoutant (Genesis 18 10) • invenit James Tissot • pinxit James Tisso (Tissot)",
+      "zh-Hans": "迪索圣经插图——创世记第18章",
+      "zh-Hant": "迪索聖經插圖——創世記第18章"
+    },
+    "description": {
+      "en": "James Tissot — Sara rit en écoutant (Genesis 18 10) • invenit James Tissot • pinxit James Tissot • excudit Maurice de Brunoff apud Philip de Vere • praesentat Phillip Medhurst. (Genesis 18-18).",
+      "zh-Hans": "詹姆斯·迪索——创世记第18章圣经场景（创世记第18-18章）。",
+      "zh-Hant": "詹姆斯·迪索——創世記第18章聖經場景（創世記第18-18章）。"
+    },
+    "books": {
+      "Genesis": [
+        18,
+        18
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/52/Sara_rit_en_%C3%A9coutant_%28Genesis_18_10%29_%E2%80%A2_invenit_James_Tissot_%E2%80%A2_pinxit_James_Tissot_%E2%80%A2_excudit_Maurice_de_Brunoff_apud_Philip_de_Vere_%E2%80%A2_praesentat_Phillip_Medhurst..jpg/1280px-thumbnail.jpg"
+  },
+  {
+    "id": "illus_tissot_saul_meets_samuel",
+    "kind": "scene",
+    "title": {
+      "en": "Saul meets Samuel (Tissot)",
+      "zh-Hans": "迪索圣经插图——撒母耳记上第9章",
+      "zh-Hant": "迪索聖經插圖——撒母耳記上第9章"
+    },
+    "description": {
+      "en": "James Tissot — Saul meets Samuel (1 Samuel 9-9).",
+      "zh-Hans": "詹姆斯·迪索——撒母耳记上第9章圣经场景（撒母耳记上第9-9章）。",
+      "zh-Hant": "詹姆斯·迪索——撒母耳記上第9章聖經場景（撒母耳記上第9-9章）。"
+    },
+    "books": {
+      "1 Samuel": [
+        9,
+        9
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f9/Saul_meets_Samuel.jpg/1280px-Saul_meets_Samuel.jpg"
+  },
+  {
+    "id": "illus_tissot_sem_cham_et_japhet_genesis_9_18_•_invenit_james_tissot_•_pinxit_james_",
+    "kind": "scene",
+    "title": {
+      "en": "Sem, Cham et Japhet (Genesis 9 18) • invenit James Tissot • pinxit James Tissot  (Tissot)",
+      "zh-Hans": "迪索圣经插图——创世记第9章",
+      "zh-Hant": "迪索聖經插圖——創世記第9章"
+    },
+    "description": {
+      "en": "James Tissot — Sem, Cham et Japhet (Genesis 9 18) • invenit James Tissot • pinxit James Tissot • excudit Maurice de Brunoff apud Philip de Vere • praesentat Phillip Medhurst. (Genesis 9-9).",
+      "zh-Hans": "詹姆斯·迪索——创世记第9章圣经场景（创世记第9-9章）。",
+      "zh-Hant": "詹姆斯·迪索——創世記第9章聖經場景（創世記第9-9章）。"
+    },
+    "books": {
+      "Genesis": [
+        9,
+        9
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dc/Sem%2C_Cham_et_Japhet_%28Genesis_9_18%29_%E2%80%A2_invenit_James_Tissot_%E2%80%A2_pinxit_James_Tissot_%E2%80%A2_excudit_Maurice_de_Brunoff_apud_Philip_de_Vere_%E2%80%A2_praesentat_Phillip_Medhurst..jpg/1280px-thumbnail.jpg"
+  },
+  {
+    "id": "illus_tissot_shem_ham_and_japheth_cropped",
+    "kind": "scene",
+    "title": {
+      "en": "Shem, Ham and Japheth (Tissot)",
+      "zh-Hans": "迪索圣经插图——创世记第9章",
+      "zh-Hant": "迪索聖經插圖——創世記第9章"
+    },
+    "description": {
+      "en": "James Tissot — Shem, Ham and Japheth (Genesis 9-9).",
+      "zh-Hans": "詹姆斯·迪索——创世记第9章圣经场景（创世记第9-9章）。",
+      "zh-Hant": "詹姆斯·迪索——創世記第9章聖經場景（創世記第9-9章）。"
+    },
+    "books": {
+      "Genesis": [
+        9,
+        9
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/25/Shem%2C_Ham_and_Japheth_%28cropped%29.jpg/1280px-Shem%2C_Ham_and_Japheth_%28cropped%29.jpg"
+  },
+  {
+    "id": "illus_tissot_shem_ham_and_japheth_cropped2",
+    "kind": "scene",
+    "title": {
+      "en": "Shem, Ham and Japheth2 (Tissot)",
+      "zh-Hans": "迪索圣经插图——创世记第9章",
+      "zh-Hant": "迪索聖經插圖——創世記第9章"
+    },
+    "description": {
+      "en": "James Tissot — Shem, Ham and Japheth2 (Genesis 9-9).",
+      "zh-Hans": "詹姆斯·迪索——创世记第9章圣经场景（创世记第9-9章）。",
+      "zh-Hant": "詹姆斯·迪索——創世記第9章聖經場景（創世記第9-9章）。"
+    },
+    "books": {
+      "Genesis": [
+        9,
+        9
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fc/Shem%2C_Ham_and_Japheth_%28cropped%292.jpg/1280px-Shem%2C_Ham_and_Japheth_%28cropped%292.jpg"
+  },
+  {
+    "id": "illus_tissot_shem_ham_and_japheth_cropped3",
+    "kind": "scene",
+    "title": {
+      "en": "Shem, Ham and Japheth3 (Tissot)",
+      "zh-Hans": "迪索圣经插图——创世记第9章",
+      "zh-Hant": "迪索聖經插圖——創世記第9章"
+    },
+    "description": {
+      "en": "James Tissot — Shem, Ham and Japheth3 (Genesis 9-9).",
+      "zh-Hans": "詹姆斯·迪索——创世记第9章圣经场景（创世记第9-9章）。",
+      "zh-Hant": "詹姆斯·迪索——創世記第9章聖經場景（創世記第9-9章）。"
+    },
+    "books": {
+      "Genesis": [
+        9,
+        9
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d7/Shem%2C_Ham_and_Japheth_%28cropped%293.jpg/1280px-Shem%2C_Ham_and_Japheth_%28cropped%293.jpg"
+  },
+  {
+    "id": "illus_tissot_shem_ham_and_japheth",
+    "kind": "scene",
+    "title": {
+      "en": "Shem, Ham and Japheth (Tissot)",
+      "zh-Hans": "迪索圣经插图——创世记第9章",
+      "zh-Hant": "迪索聖經插圖——創世記第9章"
+    },
+    "description": {
+      "en": "James Tissot — Shem, Ham and Japheth (Genesis 9-9).",
+      "zh-Hans": "詹姆斯·迪索——创世记第9章圣经场景（创世记第9-9章）。",
+      "zh-Hant": "詹姆斯·迪索——創世記第9章聖經場景（創世記第9-9章）。"
+    },
+    "books": {
+      "Genesis": [
+        9,
+        9
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ed/Shem%2C_Ham_and_Japheth.jpg/1280px-Shem%2C_Ham_and_Japheth.jpg"
+  },
+  {
+    "id": "illus_tissot_tentation_dadam_par_éve_genesis_3_6_•_invenit_james_tissot_•_pinxit_ja",
+    "kind": "scene",
+    "title": {
+      "en": "Tentation d'Adam par Éve (Genesis 3 6) • invenit James Tissot • pinxit James Tis (Tissot)",
+      "zh-Hans": "迪索圣经插图——创世记第3章",
+      "zh-Hant": "迪索聖經插圖——創世記第3章"
+    },
+    "description": {
+      "en": "James Tissot — Tentation d'Adam par Éve (Genesis 3 6) • invenit James Tissot • pinxit James Tissot • excudit Maurice de Brunoff apud Philip de Vere • praesentat Phillip Medhurst. (Genesis 3-3).",
+      "zh-Hans": "詹姆斯·迪索——创世记第3章圣经场景（创世记第3-3章）。",
+      "zh-Hant": "詹姆斯·迪索——創世記第3章聖經場景（創世記第3-3章）。"
+    },
+    "books": {
+      "Genesis": [
+        3,
+        3
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fc/Tentation_d%27Adam_par_%C3%89ve_%28Genesis_3_6%29_%E2%80%A2_invenit_James_Tissot_%E2%80%A2_pinxit_James_Tissot_%E2%80%A2_excudit_Maurice_de_Brunoff_apud_Philip_de_Vere_%E2%80%A2_praesentat_Phillip_Medhurst..jpg/1280px-thumbnail.jpg"
+  },
+  {
+    "id": "illus_tissot_tentation_déve_par_le_serpent_genesis_3_1_•_invenit_james_tissot_•_pin",
+    "kind": "scene",
+    "title": {
+      "en": "Tentation d'Éve par le serpent (Genesis 3 1) • invenit James Tissot • pinxit Jam (Tissot)",
+      "zh-Hans": "迪索圣经插图——创世记第3章",
+      "zh-Hant": "迪索聖經插圖——創世記第3章"
+    },
+    "description": {
+      "en": "James Tissot — Tentation d'Éve par le serpent (Genesis 3 1) • invenit James Tissot • pinxit James Tissot • excudit Maurice de Brunoff apud Philip de Vere • praesentat Phillip Medhurst. (Genesis 3-3).",
+      "zh-Hans": "詹姆斯·迪索——创世记第3章圣经场景（创世记第3-3章）。",
+      "zh-Hant": "詹姆斯·迪索——創世記第3章聖經場景（創世記第3-3章）。"
+    },
+    "books": {
+      "Genesis": [
+        3,
+        3
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/24/Tentation_d%27%C3%89ve_par_le_serpent_%28Genesis_3_1%29_%E2%80%A2_invenit_James_Tissot_%E2%80%A2_pinxit_James_Tissot_%E2%80%A2_excudit_Maurice_de_Brunoff_apud_Philip_de_Vere_%E2%80%A2_praesentat_Phillip_Medhurst..jpg/1280px-thumbnail.jpg"
+  },
+  {
+    "id": "illus_tissot_the_levite_before_the_corpse_of_his_wife_by_james_tissot",
+    "kind": "scene",
+    "title": {
+      "en": "The Levite Before The Corpse Of His Wife (Tissot)",
+      "zh-Hans": "迪索圣经插图——士师记第19章",
+      "zh-Hant": "迪索聖經插圖——士師記第19章"
+    },
+    "description": {
+      "en": "James Tissot — The Levite Before The Corpse Of His Wife (Judges 19-19).",
+      "zh-Hans": "詹姆斯·迪索——士师记第19章圣经场景（士师记第19-19章）。",
+      "zh-Hant": "詹姆斯·迪索——士師記第19章聖經場景（士師記第19-19章）。"
+    },
+    "books": {
+      "Judges": [
+        19,
+        19
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b7/The_Levite_Before_The_Corpse_Of_His_Wife_by_James_Tissot.jpg/1280px-The_Levite_Before_The_Corpse_Of_His_Wife_by_James_Tissot.jpg"
+  },
+  {
+    "id": "illus_tissot_the_levite_finds_his_concubine_lying_on_the_doorstep_james_tissot",
+    "kind": "scene",
+    "title": {
+      "en": "The Levite finds his concubine lying on the doorstep, James Tissot (Tissot)",
+      "zh-Hans": "迪索圣经插图——士师记第19章",
+      "zh-Hant": "迪索聖經插圖——士師記第19章"
+    },
+    "description": {
+      "en": "James Tissot — The Levite finds his concubine lying on the doorstep, James Tissot (Judges 19-19).",
+      "zh-Hans": "詹姆斯·迪索——士师记第19章圣经场景（士师记第19-19章）。",
+      "zh-Hant": "詹姆斯·迪索——士師記第19章聖經場景（士師記第19-19章）。"
+    },
+    "books": {
+      "Judges": [
+        19,
+        19
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c7/The_Levite_finds_his_concubine_lying_on_the_doorstep%2C_James_Tissot.jpg/1280px-The_Levite_finds_his_concubine_lying_on_the_doorstep%2C_James_Tissot.jpg"
+  },
+  {
+    "id": "illus_tissot_the_levites_wife_dies_at_the_door_by_j.tissot.jpeg",
+    "kind": "scene",
+    "title": {
+      "en": "The Levite's Wife Dies at the Door (Tissot)",
+      "zh-Hans": "迪索圣经插图——士师记第19章",
+      "zh-Hant": "迪索聖經插圖——士師記第19章"
+    },
+    "description": {
+      "en": "James Tissot — The Levite's Wife Dies at the Door (Judges 19-19).",
+      "zh-Hans": "詹姆斯·迪索——士师记第19章圣经场景（士师记第19-19章）。",
+      "zh-Hant": "詹姆斯·迪索——士師記第19章聖經場景（士師記第19-19章）。"
+    },
+    "books": {
+      "Judges": [
+        19,
+        19
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3d/The_Levite%27s_Wife_Dies_at_the_Door_by_J.Tissot.jpeg/1280px-The_Levite%27s_Wife_Dies_at_the_Door_by_J.Tissot.jpeg"
+  },
+  {
+    "id": "illus_tissot_tisjorda",
+    "kind": "scene",
+    "title": {
+      "en": "Tisjorda (Tissot)",
+      "zh-Hans": "迪索圣经插图——约书亚记第3章",
+      "zh-Hant": "迪索聖經插圖——約書亞記第3章"
+    },
+    "description": {
+      "en": "James Tissot — Tisjorda (Joshua 3-3).",
+      "zh-Hans": "詹姆斯·迪索——约书亚记第3章圣经场景（约书亚记第3-3章）。",
+      "zh-Hant": "詹姆斯·迪索——約書亞記第3章聖經場景（約書亞記第3-3章）。"
+    },
+    "books": {
+      "Joshua": [
+        3,
+        3
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e2/Tisjorda.jpg/1280px-Tisjorda.jpg"
+  },
+  {
+    "id": "illus_tissot_tissark",
+    "kind": "scene",
+    "title": {
+      "en": "Tissark (Tissot)",
+      "zh-Hans": "迪索圣经插图——约书亚记第3章",
+      "zh-Hant": "迪索聖經插圖——約書亞記第3章"
+    },
+    "description": {
+      "en": "James Tissot — Tissark (Joshua 3-3).",
+      "zh-Hans": "詹姆斯·迪索——约书亚记第3章圣经场景（约书亚记第3-3章）。",
+      "zh-Hant": "詹姆斯·迪索——約書亞記第3章聖經場景（約書亞記第3-3章）。"
+    },
+    "books": {
+      "Joshua": [
+        3,
+        3
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5d/Tissark.jpg/1280px-Tissark.jpg"
+  },
+  {
+    "id": "illus_tissot_tissot_abraham_and_the_three_angels",
+    "kind": "scene",
+    "title": {
+      "en": "Abraham and the Three Angels (Tissot)",
+      "zh-Hans": "迪索圣经插图——创世记第18章",
+      "zh-Hant": "迪索聖經插圖——創世記第18章"
+    },
+    "description": {
+      "en": "James Tissot — Abraham and the Three Angels (Genesis 18-18).",
+      "zh-Hans": "詹姆斯·迪索——创世记第18章圣经场景（创世记第18-18章）。",
+      "zh-Hant": "詹姆斯·迪索——創世記第18章聖經場景（創世記第18-18章）。"
+    },
+    "books": {
+      "Genesis": [
+        18,
+        18
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ec/Tissot_Abraham_and_the_Three_Angels.jpg/1280px-Tissot_Abraham_and_the_Three_Angels.jpg"
+  },
+  {
+    "id": "illus_tissot_tissot_abraham_sees_sodom_in_flames",
+    "kind": "scene",
+    "title": {
+      "en": "Abraham Sees Sodom in Flames (Tissot)",
+      "zh-Hans": "迪索圣经插图——创世记第19章",
+      "zh-Hant": "迪索聖經插圖——創世記第19章"
+    },
+    "description": {
+      "en": "James Tissot — Abraham Sees Sodom in Flames (Genesis 19-19).",
+      "zh-Hans": "詹姆斯·迪索——创世记第19章圣经场景（创世记第19-19章）。",
+      "zh-Hant": "詹姆斯·迪索——創世記第19章聖經場景（創世記第19-19章）。"
+    },
+    "books": {
+      "Genesis": [
+        19,
+        19
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/74/Tissot_Abraham_Sees_Sodom_in_Flames.jpg/1280px-Tissot_Abraham_Sees_Sodom_in_Flames.jpg"
+  },
+  {
+    "id": "illus_tissot_tissot_abrahams_servant_meets_rebecca",
+    "kind": "scene",
+    "title": {
+      "en": "Abraham's Servant Meets Rebecca (Tissot)",
+      "zh-Hans": "迪索圣经插图——创世记第24章",
+      "zh-Hant": "迪索聖經插圖——創世記第24章"
+    },
+    "description": {
+      "en": "James Tissot — Abraham's Servant Meets Rebecca (Genesis 24-24).",
+      "zh-Hans": "詹姆斯·迪索——创世记第24章圣经场景（创世记第24-24章）。",
+      "zh-Hant": "詹姆斯·迪索——創世記第24章聖經場景（創世記第24-24章）。"
+    },
+    "books": {
+      "Genesis": [
+        24,
+        24
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/05/Tissot_Abraham%27s_Servant_Meets_Rebecca.jpg/1280px-Tissot_Abraham%27s_Servant_Meets_Rebecca.jpg"
+  },
+  {
+    "id": "illus_tissot_tissot_abram_guarding_his_sacrifice",
+    "kind": "scene",
+    "title": {
+      "en": "Abram Guarding His Sacrifice (Tissot)",
+      "zh-Hans": "迪索圣经插图——创世记第15章",
+      "zh-Hant": "迪索聖經插圖——創世記第15章"
+    },
+    "description": {
+      "en": "James Tissot — Abram Guarding His Sacrifice (Genesis 15-15).",
+      "zh-Hans": "詹姆斯·迪索——创世记第15章圣经场景（创世记第15-15章）。",
+      "zh-Hant": "詹姆斯·迪索——創世記第15章聖經場景（創世記第15-15章）。"
+    },
+    "books": {
+      "Genesis": [
+        15,
+        15
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8e/Tissot_Abram_Guarding_His_Sacrifice.jpg/1280px-Tissot_Abram_Guarding_His_Sacrifice.jpg"
+  },
+  {
+    "id": "illus_tissot_tissot_adam_and_eve_driven_from_paradise",
+    "kind": "scene",
+    "title": {
+      "en": "Adam and Eve Driven from Paradise (Tissot)",
+      "zh-Hans": "迪索圣经插图——创世记第3章",
+      "zh-Hant": "迪索聖經插圖——創世記第3章"
+    },
+    "description": {
+      "en": "James Tissot — Adam and Eve Driven from Paradise (Genesis 3-3).",
+      "zh-Hans": "詹姆斯·迪索——创世记第3章圣经场景（创世记第3-3章）。",
+      "zh-Hant": "詹姆斯·迪索——創世記第3章聖經場景（創世記第3-3章）。"
+    },
+    "books": {
+      "Genesis": [
+        3,
+        3
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0c/Tissot_Adam_and_Eve_Driven_from_Paradise.jpg/1280px-Tissot_Adam_and_Eve_Driven_from_Paradise.jpg"
+  },
+  {
+    "id": "illus_tissot_tissot_adam_is_tempted_by_eve",
+    "kind": "scene",
+    "title": {
+      "en": "Adam Is Tempted by Eve (Tissot)",
+      "zh-Hans": "迪索圣经插图——创世记第3章",
+      "zh-Hant": "迪索聖經插圖——創世記第3章"
+    },
+    "description": {
+      "en": "James Tissot — Adam Is Tempted by Eve (Genesis 3-3).",
+      "zh-Hans": "詹姆斯·迪索——创世记第3章圣经场景（创世记第3-3章）。",
+      "zh-Hant": "詹姆斯·迪索——創世記第3章聖經場景（創世記第3-3章）。"
+    },
+    "books": {
+      "Genesis": [
+        3,
+        3
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/76/Tissot_Adam_Is_Tempted_by_Eve.jpg/1280px-Tissot_Adam_Is_Tempted_by_Eve.jpg"
+  },
+  {
+    "id": "illus_tissot_tissot_amos_cropped",
+    "kind": "scene",
+    "title": {
+      "en": "Amos (Tissot)",
+      "zh-Hans": "迪索圣经插图——阿摩司书第1章",
+      "zh-Hant": "迪索聖經插圖——阿摩司書第1章"
+    },
+    "description": {
+      "en": "James Tissot — Amos (Amos 1-1).",
+      "zh-Hans": "詹姆斯·迪索——阿摩司书第1章圣经场景（阿摩司书第1-1章）。",
+      "zh-Hant": "詹姆斯·迪索——阿摩司書第1章聖經場景（阿摩司書第1-1章）。"
+    },
+    "books": {
+      "Amos": [
+        1,
+        1
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/db/Tissot_Amos_%28cropped%29.jpg/1280px-Tissot_Amos_%28cropped%29.jpg"
+  },
+  {
+    "id": "illus_tissot_tissot_amos",
+    "kind": "scene",
+    "title": {
+      "en": "Amos (Tissot)",
+      "zh-Hans": "迪索圣经插图——阿摩司书第1章",
+      "zh-Hant": "迪索聖經插圖——阿摩司書第1章"
+    },
+    "description": {
+      "en": "James Tissot — Amos (Amos 1-1).",
+      "zh-Hans": "詹姆斯·迪索——阿摩司书第1章圣经场景（阿摩司书第1-1章）。",
+      "zh-Hant": "詹姆斯·迪索——阿摩司書第1章聖經場景（阿摩司書第1-1章）。"
+    },
+    "books": {
+      "Amos": [
+        1,
+        1
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f4/Tissot_Amos.jpg/1280px-Tissot_Amos.jpg"
+  },
+  {
+    "id": "illus_tissot_tissot_baalites",
+    "kind": "scene",
+    "title": {
+      "en": "Baalites (Tissot)",
+      "zh-Hans": "迪索圣经插图——民数记第25章",
+      "zh-Hant": "迪索聖經插圖——民數記第25章"
+    },
+    "description": {
+      "en": "James Tissot — Baalites (Numbers 25-25).",
+      "zh-Hans": "詹姆斯·迪索——民数记第25章圣经场景（民数记第25-25章）。",
+      "zh-Hant": "詹姆斯·迪索——民數記第25章聖經場景（民數記第25-25章）。"
+    },
+    "books": {
+      "Numbers": [
+        25,
+        25
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/36/Tissot_Baalites.jpg/1280px-Tissot_Baalites.jpg"
+  },
+  {
+    "id": "illus_tissot_tissot_balaam_and_the_ass",
+    "kind": "scene",
+    "title": {
+      "en": "Balaam and the Ass (Tissot)",
+      "zh-Hans": "迪索圣经插图——民数记第22章",
+      "zh-Hant": "迪索聖經插圖——民數記第22章"
+    },
+    "description": {
+      "en": "James Tissot — Balaam and the Ass (Numbers 22-22).",
+      "zh-Hans": "詹姆斯·迪索——民数记第22章圣经场景（民数记第22-22章）。",
+      "zh-Hant": "詹姆斯·迪索——民數記第22章聖經場景（民數記第22-22章）。"
+    },
+    "books": {
+      "Numbers": [
+        22,
+        22
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8e/Tissot_Balaam_and_the_Ass.jpg/1280px-Tissot_Balaam_and_the_Ass.jpg"
+  },
+  {
+    "id": "illus_tissot_tissot_bezalel",
+    "kind": "scene",
+    "title": {
+      "en": "Bezalel (Tissot)",
+      "zh-Hans": "迪索圣经插图——出埃及记第31章",
+      "zh-Hant": "迪索聖經插圖——出埃及記第31章"
+    },
+    "description": {
+      "en": "James Tissot — Bezalel (Exodus 31-31).",
+      "zh-Hans": "詹姆斯·迪索——出埃及记第31章圣经场景（出埃及记第31-31章）。",
+      "zh-Hant": "詹姆斯·迪索——出埃及記第31章聖經場景（出埃及記第31-31章）。"
+    },
+    "books": {
+      "Exodus": [
+        31,
+        31
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/11/Tissot_Bezalel.jpg/1280px-Tissot_Bezalel.jpg"
+  },
+  {
+    "id": "illus_tissot_tissot_building_the_ark",
+    "kind": "scene",
+    "title": {
+      "en": "Building the Ark (Tissot)",
+      "zh-Hans": "迪索圣经插图——创世记第6章",
+      "zh-Hant": "迪索聖經插圖——創世記第6章"
+    },
+    "description": {
+      "en": "James Tissot — Building the Ark (Genesis 6-6).",
+      "zh-Hans": "詹姆斯·迪索——创世记第6章圣经场景（创世记第6-6章）。",
+      "zh-Hant": "詹姆斯·迪索——創世記第6章聖經場景（創世記第6-6章）。"
+    },
+    "books": {
+      "Genesis": [
+        6,
+        6
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3f/Tissot_Building_the_Ark.jpg/1280px-Tissot_Building_the_Ark.jpg"
+  },
+  {
+    "id": "illus_tissot_tissot_building_the_tower_of_babel",
+    "kind": "scene",
+    "title": {
+      "en": "Building the Tower of Babel (Tissot)",
+      "zh-Hans": "迪索圣经插图——创世记第11章",
+      "zh-Hant": "迪索聖經插圖——創世記第11章"
+    },
+    "description": {
+      "en": "James Tissot — Building the Tower of Babel (Genesis 11-11).",
+      "zh-Hans": "詹姆斯·迪索——创世记第11章圣经场景（创世记第11-11章）。",
+      "zh-Hant": "詹姆斯·迪索——創世記第11章聖經場景（創世記第11-11章）。"
+    },
+    "books": {
+      "Genesis": [
+        11,
+        11
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/81/Tissot_Building_the_Tower_of_Babel.jpg/1280px-Tissot_Building_the_Tower_of_Babel.jpg"
+  },
+  {
+    "id": "illus_tissot_tissot_daniel_in_the_lions_den",
+    "kind": "scene",
+    "title": {
+      "en": "Daniel in the Lion's Den (Tissot)",
+      "zh-Hans": "迪索圣经插图——但以理书第6章",
+      "zh-Hant": "迪索聖經插圖——但以理書第6章"
+    },
+    "description": {
+      "en": "James Tissot — Daniel in the Lion's Den (Daniel 6-6).",
+      "zh-Hans": "詹姆斯·迪索——但以理书第6章圣经场景（但以理书第6-6章）。",
+      "zh-Hant": "詹姆斯·迪索——但以理書第6章聖經場景（但以理書第6-6章）。"
+    },
+    "books": {
+      "Daniel": [
+        6,
+        6
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5f/Tissot_Daniel_in_the_Lion%27s_Den.jpg/1280px-Tissot_Daniel_in_the_Lion%27s_Den.jpg"
+  },
+  {
+    "id": "illus_tissot_tissot_david_danced_before_the_lord_with_all_his_might",
+    "kind": "scene",
+    "title": {
+      "en": "David Danced Before the Lord with All His Might (Tissot)",
+      "zh-Hans": "迪索圣经插图——撒母耳记下第6章",
+      "zh-Hant": "迪索聖經插圖——撒母耳記下第6章"
+    },
+    "description": {
+      "en": "James Tissot — David Danced Before the Lord with All His Might (2 Samuel 6-6).",
+      "zh-Hans": "詹姆斯·迪索——撒母耳记下第6章圣经场景（撒母耳记下第6-6章）。",
+      "zh-Hant": "詹姆斯·迪索——撒母耳記下第6章聖經場景（撒母耳記下第6-6章）。"
+    },
+    "books": {
+      "2 Samuel": [
+        6,
+        6
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3b/Tissot_David_Danced_Before_the_Lord_with_All_His_Might.jpg/1280px-Tissot_David_Danced_Before_the_Lord_with_All_His_Might.jpg"
+  },
+  {
+    "id": "illus_tissot_tissot_deborah_beneath_the_palm_tree",
+    "kind": "scene",
+    "title": {
+      "en": "Deborah Beneath the Palm Tree (Tissot)",
+      "zh-Hans": "迪索圣经插图——士师记第4章",
+      "zh-Hant": "迪索聖經插圖——士師記第4章"
+    },
+    "description": {
+      "en": "James Tissot — Deborah Beneath the Palm Tree (Judges 4-4).",
+      "zh-Hans": "詹姆斯·迪索——士师记第4章圣经场景（士师记第4-4章）。",
+      "zh-Hant": "詹姆斯·迪索——士師記第4章聖經場景（士師記第4-4章）。"
+    },
+    "books": {
+      "Judges": [
+        4,
+        4
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d4/Tissot_Deborah_Beneath_the_Palm_Tree.jpg/1280px-Tissot_Deborah_Beneath_the_Palm_Tree.jpg"
+  },
+  {
+    "id": "illus_tissot_tissot_elijah",
+    "kind": "scene",
+    "title": {
+      "en": "Elijah (Tissot)",
+      "zh-Hans": "迪索圣经插图——列王纪上第17章",
+      "zh-Hant": "迪索聖經插圖——列王紀上第17章"
+    },
+    "description": {
+      "en": "James Tissot — Elijah (1 Kings 17-19).",
+      "zh-Hans": "詹姆斯·迪索——列王纪上第17章圣经场景（列王纪上第17-19章）。",
+      "zh-Hant": "詹姆斯·迪索——列王紀上第17章聖經場景（列王紀上第17-19章）。"
+    },
+    "books": {
+      "1 Kings": [
+        17,
+        19
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3b/Tissot_Elijah.jpg/1280px-Tissot_Elijah.jpg"
+  },
+  {
+    "id": "illus_tissot_tissot_ezekiel",
+    "kind": "scene",
+    "title": {
+      "en": "Ezekiel (Tissot)",
+      "zh-Hans": "迪索圣经插图——以西结书第1章",
+      "zh-Hant": "迪索聖經插圖——以西結書第1章"
+    },
+    "description": {
+      "en": "James Tissot — Ezekiel (Ezekiel 1-1).",
+      "zh-Hans": "詹姆斯·迪索——以西结书第1章圣经场景（以西结书第1-1章）。",
+      "zh-Hant": "詹姆斯·迪索——以西結書第1章聖經場景（以西結書第1-1章）。"
+    },
+    "books": {
+      "Ezekiel": [
+        1,
+        1
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9c/Tissot_Ezekiel.jpg/1280px-Tissot_Ezekiel.jpg"
+  },
+  {
+    "id": "illus_tissot_tissot_gleaners",
+    "kind": "scene",
+    "title": {
+      "en": "Gleaners (Tissot)",
+      "zh-Hans": "迪索圣经插图——路得记第2章",
+      "zh-Hant": "迪索聖經插圖——路得記第2章"
+    },
+    "description": {
+      "en": "James Tissot — Gleaners (Ruth 2-2).",
+      "zh-Hans": "詹姆斯·迪索——路得记第2章圣经场景（路得记第2-2章）。",
+      "zh-Hant": "詹姆斯·迪索——路得記第2章聖經場景（路得記第2-2章）。"
+    },
+    "books": {
+      "Ruth": [
+        2,
+        2
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/03/Tissot_Gleaners.jpg/1280px-Tissot_Gleaners.jpg"
+  },
+  {
+    "id": "illus_tissot_tissot_god_appears_to_noah",
+    "kind": "scene",
+    "title": {
+      "en": "God Appears to Noah (Tissot)",
+      "zh-Hans": "迪索圣经插图——创世记第6章",
+      "zh-Hant": "迪索聖經插圖——創世記第6章"
+    },
+    "description": {
+      "en": "James Tissot — God Appears to Noah (Genesis 6-6).",
+      "zh-Hans": "詹姆斯·迪索——创世记第6章圣经场景（创世记第6-6章）。",
+      "zh-Hant": "詹姆斯·迪索——創世記第6章聖經場景（創世記第6-6章）。"
+    },
+    "books": {
+      "Genesis": [
+        6,
+        6
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/bb/Tissot_God_Appears_to_Noah.jpg/1280px-Tissot_God_Appears_to_Noah.jpg"
+  },
+  {
+    "id": "illus_tissot_tissot_god_renews_his_promises_to_abraham",
+    "kind": "scene",
+    "title": {
+      "en": "God Renews His Promises to Abraham (Tissot)",
+      "zh-Hans": "迪索圣经插图——创世记第17章",
+      "zh-Hant": "迪索聖經插圖——創世記第17章"
+    },
+    "description": {
+      "en": "James Tissot — God Renews His Promises to Abraham (Genesis 17-17).",
+      "zh-Hans": "詹姆斯·迪索——创世记第17章圣经场景（创世记第17-17章）。",
+      "zh-Hant": "詹姆斯·迪索——創世記第17章聖經場景（創世記第17-17章）。"
+    },
+    "books": {
+      "Genesis": [
+        17,
+        17
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6a/Tissot_God_Renews_His_Promises_to_Abraham.jpg/1280px-Tissot_God_Renews_His_Promises_to_Abraham.jpg"
+  },
+  {
+    "id": "illus_tissot_tissot_gods_curse",
+    "kind": "scene",
+    "title": {
+      "en": "God's Curse (Tissot)",
+      "zh-Hans": "迪索圣经插图——创世记第3章",
+      "zh-Hant": "迪索聖經插圖——創世記第3章"
+    },
+    "description": {
+      "en": "James Tissot — God's Curse (Genesis 3-3).",
+      "zh-Hans": "詹姆斯·迪索——创世记第3章圣经场景（创世记第3-3章）。",
+      "zh-Hant": "詹姆斯·迪索——創世記第3章聖經場景（創世記第3-3章）。"
+    },
+    "books": {
+      "Genesis": [
+        3,
+        3
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/75/Tissot_God%27s_Curse.jpg/1280px-Tissot_God%27s_Curse.jpg"
+  },
+  {
+    "id": "illus_tissot_tissot_gods_promises_to_abram",
+    "kind": "scene",
+    "title": {
+      "en": "God's Promises to Abram (Tissot)",
+      "zh-Hans": "迪索圣经插图——创世记第13章",
+      "zh-Hant": "迪索聖經插圖——創世記第13章"
+    },
+    "description": {
+      "en": "James Tissot — God's Promises to Abram (Genesis 13-13).",
+      "zh-Hans": "詹姆斯·迪索——创世记第13章圣经场景（创世记第13-13章）。",
+      "zh-Hant": "詹姆斯·迪索——創世記第13章聖經場景（創世記第13-13章）。"
+    },
+    "books": {
+      "Genesis": [
+        13,
+        13
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0f/Tissot_God%27s_Promises_to_Abram.jpg/1280px-Tissot_God%27s_Promises_to_Abram.jpg"
+  },
+  {
+    "id": "illus_tissot_tissot_habakkuk",
+    "kind": "scene",
+    "title": {
+      "en": "Habakkuk (Tissot)",
+      "zh-Hans": "迪索圣经插图——哈巴谷书第1章",
+      "zh-Hant": "迪索聖經插圖——哈巴谷書第1章"
+    },
+    "description": {
+      "en": "James Tissot — Habakkuk (Habakkuk 1-1).",
+      "zh-Hans": "詹姆斯·迪索——哈巴谷书第1章圣经场景（哈巴谷书第1-1章）。",
+      "zh-Hant": "詹姆斯·迪索——哈巴谷書第1章聖經場景（哈巴谷書第1-1章）。"
+    },
+    "books": {
+      "Habakkuk": [
+        1,
+        1
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/38/Tissot_Habakkuk.jpg/1280px-Tissot_Habakkuk.jpg"
+  },
+  {
+    "id": "illus_tissot_tissot_hagar_and_the_angel_in_the_desert",
+    "kind": "scene",
+    "title": {
+      "en": "Hagar and the Angel in the Desert (Tissot)",
+      "zh-Hans": "迪索圣经插图——创世记第16章",
+      "zh-Hant": "迪索聖經插圖——創世記第16章"
+    },
+    "description": {
+      "en": "James Tissot — Hagar and the Angel in the Desert (Genesis 16-16).",
+      "zh-Hans": "詹姆斯·迪索——创世记第16章圣经场景（创世记第16-16章）。",
+      "zh-Hant": "詹姆斯·迪索——創世記第16章聖經場景（創世記第16-16章）。"
+    },
+    "books": {
+      "Genesis": [
+        16,
+        16
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/29/Tissot_Hagar_and_the_Angel_in_the_Desert.jpg/1280px-Tissot_Hagar_and_the_Angel_in_the_Desert.jpg"
+  },
+  {
+    "id": "illus_tissot_tissot_haggai",
+    "kind": "scene",
+    "title": {
+      "en": "Haggai (Tissot)",
+      "zh-Hans": "迪索圣经插图——哈该书第1章",
+      "zh-Hant": "迪索聖經插圖——哈該書第1章"
+    },
+    "description": {
+      "en": "James Tissot — Haggai (Haggai 1-1).",
+      "zh-Hans": "詹姆斯·迪索——哈该书第1章圣经场景（哈该书第1-1章）。",
+      "zh-Hant": "詹姆斯·迪索——哈該書第1章聖經場景（哈該書第1-1章）。"
+    },
+    "books": {
+      "Haggai": [
+        1,
+        1
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c3/Tissot_Haggai.jpg/1280px-Tissot_Haggai.jpg"
+  },
+  {
+    "id": "illus_tissot_tissot_isaac_bears_the_wood_for_his_sacrifice",
+    "kind": "scene",
+    "title": {
+      "en": "Isaac Bears the Wood for His Sacrifice (Tissot)",
+      "zh-Hans": "迪索圣经插图——创世记第22章",
+      "zh-Hant": "迪索聖經插圖——創世記第22章"
+    },
+    "description": {
+      "en": "James Tissot — Isaac Bears the Wood for His Sacrifice (Genesis 22-22).",
+      "zh-Hans": "詹姆斯·迪索——创世记第22章圣经场景（创世记第22-22章）。",
+      "zh-Hant": "詹姆斯·迪索——創世記第22章聖經場景（創世記第22-22章）。"
+    },
+    "books": {
+      "Genesis": [
+        22,
+        22
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/Tissot_Isaac_Bears_the_Wood_for_His_Sacrifice.jpg/1280px-Tissot_Isaac_Bears_the_Wood_for_His_Sacrifice.jpg"
+  },
+  {
+    "id": "illus_tissot_tissot_isaac_jacob_rebekah.gif",
+    "kind": "scene",
+    "title": {
+      "en": "Isaac Jacob Rebekah (Tissot)",
+      "zh-Hans": "迪索圣经插图——创世记第27章",
+      "zh-Hant": "迪索聖經插圖——創世記第27章"
+    },
+    "description": {
+      "en": "James Tissot — Isaac Jacob Rebekah (Genesis 27-27).",
+      "zh-Hans": "詹姆斯·迪索——创世记第27章圣经场景（创世记第27-27章）。",
+      "zh-Hant": "詹姆斯·迪索——創世記第27章聖經場景（創世記第27-27章）。"
+    },
+    "books": {
+      "Genesis": [
+        27,
+        27
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6f/Tissot_Isaac_Jacob_Rebekah.gif/1280px-Tissot_Isaac_Jacob_Rebekah.gif"
+  },
+  {
+    "id": "illus_tissot_tissot_isaiah",
+    "kind": "scene",
+    "title": {
+      "en": "Isaiah (Tissot)",
+      "zh-Hans": "迪索圣经插图——以赛亚书第1章",
+      "zh-Hant": "迪索聖經插圖——以賽亞書第1章"
+    },
+    "description": {
+      "en": "James Tissot — Isaiah (Isaiah 1-1).",
+      "zh-Hans": "詹姆斯·迪索——以赛亚书第1章圣经场景（以赛亚书第1-1章）。",
+      "zh-Hant": "詹姆斯·迪索——以賽亞書第1章聖經場景（以賽亞書第1-1章）。"
+    },
+    "books": {
+      "Isaiah": [
+        1,
+        1
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e8/Tissot_Isaiah.jpg/1280px-Tissot_Isaiah.jpg"
+  },
+  {
+    "id": "illus_tissot_tissot_ishmael",
+    "kind": "scene",
+    "title": {
+      "en": "Ishmael (Tissot)",
+      "zh-Hans": "迪索圣经插图——创世记第21章",
+      "zh-Hant": "迪索聖經插圖——創世記第21章"
+    },
+    "description": {
+      "en": "James Tissot — Ishmael (Genesis 21-21).",
+      "zh-Hans": "詹姆斯·迪索——创世记第21章圣经场景（创世记第21-21章）。",
+      "zh-Hant": "詹姆斯·迪索——創世記第21章聖經場景（創世記第21-21章）。"
+    },
+    "books": {
+      "Genesis": [
+        21,
+        21
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5d/Tissot_Ishmael.jpg/1280px-Tissot_Ishmael.jpg"
+  },
+  {
+    "id": "illus_tissot_tissot_jacob_and_rachel_at_the_well",
+    "kind": "scene",
+    "title": {
+      "en": "Jacob and Rachel at the Well (Tissot)",
+      "zh-Hans": "迪索圣经插图——创世记第29章",
+      "zh-Hant": "迪索聖經插圖——創世記第29章"
+    },
+    "description": {
+      "en": "James Tissot — Jacob and Rachel at the Well (Genesis 29-29).",
+      "zh-Hans": "詹姆斯·迪索——创世记第29章圣经场景（创世记第29-29章）。",
+      "zh-Hant": "詹姆斯·迪索——創世記第29章聖經場景（創世記第29-29章）。"
+    },
+    "books": {
+      "Genesis": [
+        29,
+        29
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b7/Tissot_Jacob_and_Rachel_at_the_Well.jpg/1280px-Tissot_Jacob_and_Rachel_at_the_Well.jpg"
+  },
+  {
+    "id": "illus_tissot_tissot_jacob_deceives_isaac",
+    "kind": "scene",
+    "title": {
+      "en": "Jacob Deceives Isaac (Tissot)",
+      "zh-Hans": "迪索圣经插图——创世记第27章",
+      "zh-Hant": "迪索聖經插圖——創世記第27章"
+    },
+    "description": {
+      "en": "James Tissot — Jacob Deceives Isaac (Genesis 27-27).",
+      "zh-Hans": "詹姆斯·迪索——创世记第27章圣经场景（创世记第27-27章）。",
+      "zh-Hant": "詹姆斯·迪索——創世記第27章聖經場景（創世記第27-27章）。"
+    },
+    "books": {
+      "Genesis": [
+        27,
+        27
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3b/Tissot_Jacob_Deceives_Isaac.jpg/1280px-Tissot_Jacob_Deceives_Isaac.jpg"
+  },
+  {
+    "id": "illus_tissot_tissot_jacob_mourns_his_son_joseph",
+    "kind": "scene",
+    "title": {
+      "en": "Jacob Mourns His Son Joseph (Tissot)",
+      "zh-Hans": "迪索圣经插图——创世记第37章",
+      "zh-Hant": "迪索聖經插圖——創世記第37章"
+    },
+    "description": {
+      "en": "James Tissot — Jacob Mourns His Son Joseph (Genesis 37-37).",
+      "zh-Hans": "詹姆斯·迪索——创世记第37章圣经场景（创世记第37-37章）。",
+      "zh-Hant": "詹姆斯·迪索——創世記第37章聖經場景（創世記第37-37章）。"
+    },
+    "books": {
+      "Genesis": [
+        37,
+        37
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1b/Tissot_Jacob_Mourns_His_Son_Joseph.jpg/1280px-Tissot_Jacob_Mourns_His_Son_Joseph.jpg"
+  },
+  {
+    "id": "illus_tissot_tissot_jacob_sees_esau_coming_to_meet_him",
+    "kind": "scene",
+    "title": {
+      "en": "Jacob Sees Esau Coming to Meet Him (Tissot)",
+      "zh-Hans": "迪索圣经插图——创世记第33章",
+      "zh-Hant": "迪索聖經插圖——創世記第33章"
+    },
+    "description": {
+      "en": "James Tissot — Jacob Sees Esau Coming to Meet Him (Genesis 33-33).",
+      "zh-Hans": "詹姆斯·迪索——创世记第33章圣经场景（创世记第33-33章）。",
+      "zh-Hant": "詹姆斯·迪索——創世記第33章聖經場景（創世記第33-33章）。"
+    },
+    "books": {
+      "Genesis": [
+        33,
+        33
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b5/Tissot_Jacob_Sees_Esau_Coming_to_Meet_Him.jpg/1280px-Tissot_Jacob_Sees_Esau_Coming_to_Meet_Him.jpg"
+  },
+  {
+    "id": "illus_tissot_tissot_jacob",
+    "kind": "scene",
+    "title": {
+      "en": "Jacob (Tissot)",
+      "zh-Hans": "迪索圣经插图——创世记第28章",
+      "zh-Hant": "迪索聖經插圖——創世記第28章"
+    },
+    "description": {
+      "en": "James Tissot — Jacob (Genesis 28-28).",
+      "zh-Hans": "詹姆斯·迪索——创世记第28章圣经场景（创世记第28-28章）。",
+      "zh-Hant": "詹姆斯·迪索——創世記第28章聖經場景（創世記第28-28章）。"
+    },
+    "books": {
+      "Genesis": [
+        28,
+        28
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/63/Tissot_Jacob.jpg/1280px-Tissot_Jacob.jpg"
+  },
+  {
+    "id": "illus_tissot_tissot_jael_shows_to_barak_sisera_lying_dead",
+    "kind": "scene",
+    "title": {
+      "en": "Jael Shows to Barak, Sisera Lying Dead (Tissot)",
+      "zh-Hans": "迪索圣经插图——士师记第4章",
+      "zh-Hant": "迪索聖經插圖——士師記第4章"
+    },
+    "description": {
+      "en": "James Tissot — Jael Shows to Barak, Sisera Lying Dead (Judges 4-4).",
+      "zh-Hans": "詹姆斯·迪索——士师记第4章圣经场景（士师记第4-4章）。",
+      "zh-Hant": "詹姆斯·迪索——士師記第4章聖經場景（士師記第4-4章）。"
+    },
+    "books": {
+      "Judges": [
+        4,
+        4
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f7/Tissot_Jael_Shows_to_Barak%2C_Sisera_Lying_Dead.jpg/1280px-Tissot_Jael_Shows_to_Barak%2C_Sisera_Lying_Dead.jpg"
+  },
+  {
+    "id": "illus_tissot_tissot_jael_smote_sisera_and_slew_him",
+    "kind": "scene",
+    "title": {
+      "en": "Jael Smote Sisera, and Slew Him (Tissot)",
+      "zh-Hans": "迪索圣经插图——士师记第4章",
+      "zh-Hant": "迪索聖經插圖——士師記第4章"
+    },
+    "description": {
+      "en": "James Tissot — Jael Smote Sisera, and Slew Him (Judges 4-4).",
+      "zh-Hans": "詹姆斯·迪索——士师记第4章圣经场景（士师记第4-4章）。",
+      "zh-Hant": "詹姆斯·迪索——士師記第4章聖經場景（士師記第4-4章）。"
+    },
+    "books": {
+      "Judges": [
+        4,
+        4
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/28/Tissot_Jael_Smote_Sisera%2C_and_Slew_Him.jpg/1280px-Tissot_Jael_Smote_Sisera%2C_and_Slew_Him.jpg"
+  },
+  {
+    "id": "illus_tissot_tissot_jephthahs_daughter",
+    "kind": "scene",
+    "title": {
+      "en": "Jephthah's Daughter (Tissot)",
+      "zh-Hans": "迪索圣经插图——士师记第11章",
+      "zh-Hant": "迪索聖經插圖——士師記第11章"
+    },
+    "description": {
+      "en": "James Tissot — Jephthah's Daughter (Judges 11-11).",
+      "zh-Hans": "詹姆斯·迪索——士师记第11章圣经场景（士师记第11-11章）。",
+      "zh-Hant": "詹姆斯·迪索——士師記第11章聖經場景（士師記第11-11章）。"
+    },
+    "books": {
+      "Judges": [
+        11,
+        11
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0c/Tissot_Jephthah%27s_Daughter.jpg/1280px-Tissot_Jephthah%27s_Daughter.jpg"
+  },
+  {
+    "id": "illus_tissot_tissot_joel",
+    "kind": "scene",
+    "title": {
+      "en": "Joel (Tissot)",
+      "zh-Hans": "迪索圣经插图——约珥书第1章",
+      "zh-Hant": "迪索聖經插圖——約珥書第1章"
+    },
+    "description": {
+      "en": "James Tissot — Joel (Joel 1-1).",
+      "zh-Hans": "詹姆斯·迪索——约珥书第1章圣经场景（约珥书第1-1章）。",
+      "zh-Hant": "詹姆斯·迪索——約珥書第1章聖經場景（約珥書第1-1章）。"
+    },
+    "books": {
+      "Joel": [
+        1,
+        1
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/49/Tissot_Joel.jpg/1280px-Tissot_Joel.jpg"
+  },
+  {
+    "id": "illus_tissot_tissot_jonah",
+    "kind": "scene",
+    "title": {
+      "en": "Jonah (Tissot)",
+      "zh-Hans": "迪索圣经插图——约拿书第1章",
+      "zh-Hant": "迪索聖經插圖——約拿書第1章"
+    },
+    "description": {
+      "en": "James Tissot — Jonah (Jonah 1-2).",
+      "zh-Hans": "詹姆斯·迪索——约拿书第1章圣经场景（约拿书第1-2章）。",
+      "zh-Hant": "詹姆斯·迪索——約拿書第1章聖經場景（約拿書第1-2章）。"
+    },
+    "books": {
+      "Jonah": [
+        1,
+        2
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/be/Tissot_Jonah.jpg/1280px-Tissot_Jonah.jpg"
+  },
+  {
+    "id": "illus_tissot_tissot_joseph_and_his_brethren_welcomed_by_pharaoh",
+    "kind": "scene",
+    "title": {
+      "en": "Joseph and His Brethren Welcomed by Pharaoh (Tissot)",
+      "zh-Hans": "迪索圣经插图——创世记第47章",
+      "zh-Hant": "迪索聖經插圖——創世記第47章"
+    },
+    "description": {
+      "en": "James Tissot — Joseph and His Brethren Welcomed by Pharaoh (Genesis 47-47).",
+      "zh-Hans": "詹姆斯·迪索——创世记第47章圣经场景（创世记第47-47章）。",
+      "zh-Hant": "詹姆斯·迪索——創世記第47章聖經場景（創世記第47-47章）。"
+    },
+    "books": {
+      "Genesis": [
+        47,
+        47
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/48/Tissot_Joseph_and_His_Brethren_Welcomed_by_Pharaoh.jpg/1280px-Tissot_Joseph_and_His_Brethren_Welcomed_by_Pharaoh.jpg"
+  },
+  {
+    "id": "illus_tissot_tissot_joseph_converses_with_judah_his_brother",
+    "kind": "scene",
+    "title": {
+      "en": "Joseph Converses With Judah, His Brother (Tissot)",
+      "zh-Hans": "迪索圣经插图——创世记第44章",
+      "zh-Hant": "迪索聖經插圖——創世記第44章"
+    },
+    "description": {
+      "en": "James Tissot — Joseph Converses With Judah, His Brother (Genesis 44-44).",
+      "zh-Hans": "詹姆斯·迪索——创世记第44章圣经场景（创世记第44-44章）。",
+      "zh-Hant": "詹姆斯·迪索——創世記第44章聖經場景（創世記第44-44章）。"
+    },
+    "books": {
+      "Genesis": [
+        44,
+        44
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/29/Tissot_Joseph_Converses_With_Judah%2C_His_Brother.jpg/1280px-Tissot_Joseph_Converses_With_Judah%2C_His_Brother.jpg"
+  },
+  {
+    "id": "illus_tissot_tissot_joseph_dwells_in_egypt",
+    "kind": "scene",
+    "title": {
+      "en": "Joseph Dwells in Egypt (Tissot)",
+      "zh-Hans": "迪索圣经插图——创世记第39章",
+      "zh-Hant": "迪索聖經插圖——創世記第39章"
+    },
+    "description": {
+      "en": "James Tissot — Joseph Dwells in Egypt (Genesis 39-39).",
+      "zh-Hans": "詹姆斯·迪索——创世记第39章圣经场景（创世记第39-39章）。",
+      "zh-Hant": "詹姆斯·迪索——創世記第39章聖經場景（創世記第39-39章）。"
+    },
+    "books": {
+      "Genesis": [
+        39,
+        39
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d1/Tissot_Joseph_Dwells_in_Egypt.jpg/1280px-Tissot_Joseph_Dwells_in_Egypt.jpg"
+  },
+  {
+    "id": "illus_tissot_tissot_joseph_interprets_pharaohs_dream",
+    "kind": "scene",
+    "title": {
+      "en": "Joseph Interprets Pharaoh's Dream (Tissot)",
+      "zh-Hans": "迪索圣经插图——创世记第41章",
+      "zh-Hant": "迪索聖經插圖——創世記第41章"
+    },
+    "description": {
+      "en": "James Tissot — Joseph Interprets Pharaoh's Dream (Genesis 41-41).",
+      "zh-Hans": "詹姆斯·迪索——创世记第41章圣经场景（创世记第41-41章）。",
+      "zh-Hant": "詹姆斯·迪索——創世記第41章聖經場景（創世記第41-41章）。"
+    },
+    "books": {
+      "Genesis": [
+        41,
+        41
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c9/Tissot_Joseph_Interprets_Pharaoh%27s_Dream.jpg/1280px-Tissot_Joseph_Interprets_Pharaoh%27s_Dream.jpg"
+  },
+  {
+    "id": "illus_tissot_tissot_joseph_interprets_the_dreams_while_in_prison",
+    "kind": "scene",
+    "title": {
+      "en": "Joseph Interprets the Dreams While in Prison (Tissot)",
+      "zh-Hans": "迪索圣经插图——创世记第40章",
+      "zh-Hant": "迪索聖經插圖——創世記第40章"
+    },
+    "description": {
+      "en": "James Tissot — Joseph Interprets the Dreams While in Prison (Genesis 40-40).",
+      "zh-Hans": "詹姆斯·迪索——创世记第40章圣经场景（创世记第40-40章）。",
+      "zh-Hant": "詹姆斯·迪索——創世記第40章聖經場景（創世記第40-40章）。"
+    },
+    "books": {
+      "Genesis": [
+        40,
+        40
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d0/Tissot_Joseph_Interprets_the_Dreams_While_in_Prison.jpg/1280px-Tissot_Joseph_Interprets_the_Dreams_While_in_Prison.jpg"
+  },
+  {
+    "id": "illus_tissot_tissot_joseph_makes_himself_known_to_his_brethren",
+    "kind": "scene",
+    "title": {
+      "en": "Joseph Makes Himself Known to His Brethren (Tissot)",
+      "zh-Hans": "迪索圣经插图——创世记第45章",
+      "zh-Hant": "迪索聖經插圖——創世記第45章"
+    },
+    "description": {
+      "en": "James Tissot — Joseph Makes Himself Known to His Brethren (Genesis 45-45).",
+      "zh-Hans": "詹姆斯·迪索——创世记第45章圣经场景（创世记第45-45章）。",
+      "zh-Hant": "詹姆斯·迪索——創世記第45章聖經場景（創世記第45-45章）。"
+    },
+    "books": {
+      "Genesis": [
+        45,
+        45
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/25/Tissot_Joseph_Makes_Himself_Known_to_His_Brethren.jpg/1280px-Tissot_Joseph_Makes_Himself_Known_to_His_Brethren.jpg"
+  },
+  {
+    "id": "illus_tissot_tissot_joseph_reveals_his_dream_to_his_brethren",
+    "kind": "scene",
+    "title": {
+      "en": "Joseph Reveals His Dream to His Brethren (Tissot)",
+      "zh-Hans": "迪索圣经插图——创世记第37章",
+      "zh-Hant": "迪索聖經插圖——創世記第37章"
+    },
+    "description": {
+      "en": "James Tissot — Joseph Reveals His Dream to His Brethren (Genesis 37-37).",
+      "zh-Hans": "詹姆斯·迪索——创世记第37章圣经场景（创世记第37-37章）。",
+      "zh-Hant": "詹姆斯·迪索——創世記第37章聖經場景（創世記第37-37章）。"
+    },
+    "books": {
+      "Genesis": [
+        37,
+        37
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/Tissot_Joseph_Reveals_His_Dream_to_His_Brethren.jpg/1280px-Tissot_Joseph_Reveals_His_Dream_to_His_Brethren.jpg"
+  },
+  {
+    "id": "illus_tissot_tissot_joseph_sold_into_egypt",
+    "kind": "scene",
+    "title": {
+      "en": "Joseph Sold into Egypt (Tissot)",
+      "zh-Hans": "迪索圣经插图——创世记第37章",
+      "zh-Hant": "迪索聖經插圖——創世記第37章"
+    },
+    "description": {
+      "en": "James Tissot — Joseph Sold into Egypt (Genesis 37-37).",
+      "zh-Hans": "詹姆斯·迪索——创世记第37章圣经场景（创世记第37-37章）。",
+      "zh-Hant": "詹姆斯·迪索——創世記第37章聖經場景（創世記第37-37章）。"
+    },
+    "books": {
+      "Genesis": [
+        37,
+        37
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/Tissot_Joseph_Sold_into_Egypt.jpg/1280px-Tissot_Joseph_Sold_into_Egypt.jpg"
+  },
+  {
+    "id": "illus_tissot_tissot_josephs_brothers_raise_him_from_the_pit_in_order_to_sell_him.gi",
+    "kind": "scene",
+    "title": {
+      "en": "Joseph's Brothers Raise Him from the Pit in Order To Sell Him (Tissot)",
+      "zh-Hans": "迪索圣经插图——创世记第37章",
+      "zh-Hant": "迪索聖經插圖——創世記第37章"
+    },
+    "description": {
+      "en": "James Tissot — Joseph's Brothers Raise Him from the Pit in Order To Sell Him (Genesis 37-37).",
+      "zh-Hans": "詹姆斯·迪索——创世记第37章圣经场景（创世记第37-37章）。",
+      "zh-Hant": "詹姆斯·迪索——創世記第37章聖經場景（創世記第37-37章）。"
+    },
+    "books": {
+      "Genesis": [
+        37,
+        37
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/bb/Tissot_Joseph%27s_Brothers_Raise_Him_from_the_Pit_in_Order_To_Sell_Him.gif/1280px-Tissot_Joseph%27s_Brothers_Raise_Him_from_the_Pit_in_Order_To_Sell_Him.gif"
+  },
+  {
+    "id": "illus_tissot_tissot_malachi",
+    "kind": "scene",
+    "title": {
+      "en": "Malachi (Tissot)",
+      "zh-Hans": "迪索圣经插图——玛拉基书第1章",
+      "zh-Hant": "迪索聖經插圖——瑪拉基書第1章"
+    },
+    "description": {
+      "en": "James Tissot — Malachi (Malachi 1-1).",
+      "zh-Hans": "詹姆斯·迪索——玛拉基书第1章圣经场景（玛拉基书第1-1章）。",
+      "zh-Hant": "詹姆斯·迪索——瑪拉基書第1章聖經場景（瑪拉基書第1-1章）。"
+    },
+    "books": {
+      "Malachi": [
+        1,
+        1
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6d/Tissot_Malachi.jpg/1280px-Tissot_Malachi.jpg"
+  },
+  {
+    "id": "illus_tissot_tissot_micah",
+    "kind": "scene",
+    "title": {
+      "en": "Micah (Tissot)",
+      "zh-Hans": "迪索圣经插图——弥迦书第1章",
+      "zh-Hant": "迪索聖經插圖——彌迦書第1章"
+    },
+    "description": {
+      "en": "James Tissot — Micah (Micah 1-1).",
+      "zh-Hans": "詹姆斯·迪索——弥迦书第1章圣经场景（弥迦书第1-1章）。",
+      "zh-Hant": "詹姆斯·迪索——彌迦書第1章聖經場景（彌迦書第1-1章）。"
+    },
+    "books": {
+      "Micah": [
+        1,
+        1
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/33/Tissot_Micah.jpg/1280px-Tissot_Micah.jpg"
+  },
+  {
+    "id": "illus_tissot_tissot_michal_watching_david_from_a_window",
+    "kind": "scene",
+    "title": {
+      "en": "Michal Watching David from a Window (Tissot)",
+      "zh-Hans": "迪索圣经插图——撒母耳记下第6章",
+      "zh-Hant": "迪索聖經插圖——撒母耳記下第6章"
+    },
+    "description": {
+      "en": "James Tissot — Michal Watching David from a Window (2 Samuel 6-6).",
+      "zh-Hans": "詹姆斯·迪索——撒母耳记下第6章圣经场景（撒母耳记下第6-6章）。",
+      "zh-Hant": "詹姆斯·迪索——撒母耳記下第6章聖經場景（撒母耳記下第6-6章）。"
+    },
+    "books": {
+      "2 Samuel": [
+        6,
+        6
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e4/Tissot_Michal_Watching_David_from_a_Window.jpg/1280px-Tissot_Michal_Watching_David_from_a_Window.jpg"
+  },
+  {
+    "id": "illus_tissot_tissot_miriam_shut_out_from_the_camp",
+    "kind": "scene",
+    "title": {
+      "en": "Miriam Shut Out from the Camp (Tissot)",
+      "zh-Hans": "迪索圣经插图——民数记第12章",
+      "zh-Hant": "迪索聖經插圖——民數記第12章"
+    },
+    "description": {
+      "en": "James Tissot — Miriam Shut Out from the Camp (Numbers 12-12).",
+      "zh-Hans": "詹姆斯·迪索——民数记第12章圣经场景（民数记第12-12章）。",
+      "zh-Hant": "詹姆斯·迪索——民數記第12章聖經場景（民數記第12-12章）。"
+    },
+    "books": {
+      "Numbers": [
+        12,
+        12
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/Tissot_Miriam_Shut_Out_from_the_Camp.jpg/1280px-Tissot_Miriam_Shut_Out_from_the_Camp.jpg"
+  },
+  {
+    "id": "illus_tissot_tissot_moses_and_the_ten_commandments",
+    "kind": "scene",
+    "title": {
+      "en": "Moses and the Ten Commandments (Tissot)",
+      "zh-Hans": "迪索圣经插图——出埃及记第20章",
+      "zh-Hant": "迪索聖經插圖——出埃及記第20章"
+    },
+    "description": {
+      "en": "James Tissot — Moses and the Ten Commandments (Exodus 20-20).",
+      "zh-Hans": "詹姆斯·迪索——出埃及记第20章圣经场景（出埃及记第20-20章）。",
+      "zh-Hant": "詹姆斯·迪索——出埃及記第20章聖經場景（出埃及記第20-20章）。"
+    },
+    "books": {
+      "Exodus": [
+        20,
+        20
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/Tissot_Moses_and_the_Ten_Commandments.jpg/1280px-Tissot_Moses_and_the_Ten_Commandments.jpg"
+  },
+  {
+    "id": "illus_tissot_tissot_moses_laid_amid_the_flags",
+    "kind": "scene",
+    "title": {
+      "en": "Moses Laid Amid the Flags (Tissot)",
+      "zh-Hans": "迪索圣经插图——出埃及记第2章",
+      "zh-Hant": "迪索聖經插圖——出埃及記第2章"
+    },
+    "description": {
+      "en": "James Tissot — Moses Laid Amid the Flags (Exodus 2-2).",
+      "zh-Hans": "詹姆斯·迪索——出埃及记第2章圣经场景（出埃及记第2-2章）。",
+      "zh-Hant": "詹姆斯·迪索——出埃及記第2章聖經場景（出埃及記第2-2章）。"
+    },
+    "books": {
+      "Exodus": [
+        2,
+        2
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/17/Tissot_Moses_Laid_Amid_the_Flags.jpg/1280px-Tissot_Moses_Laid_Amid_the_Flags.jpg"
+  },
+  {
+    "id": "illus_tissot_tissot_moses_smites_the_rock_in_the_desert",
+    "kind": "scene",
+    "title": {
+      "en": "Moses Smites the Rock in the Desert (Tissot)",
+      "zh-Hans": "迪索圣经插图——出埃及记第17章",
+      "zh-Hant": "迪索聖經插圖——出埃及記第17章"
+    },
+    "description": {
+      "en": "James Tissot — Moses Smites the Rock in the Desert (Exodus 17-17).",
+      "zh-Hans": "詹姆斯·迪索——出埃及记第17章圣经场景（出埃及记第17-17章）。",
+      "zh-Hant": "詹姆斯·迪索——出埃及記第17章聖經場景（出埃及記第17-17章）。"
+    },
+    "books": {
+      "Exodus": [
+        17,
+        17
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/ba/Tissot_Moses_Smites_the_Rock_in_the_Desert.jpg/1280px-Tissot_Moses_Smites_the_Rock_in_the_Desert.jpg"
+  },
+  {
+    "id": "illus_tissot_tissot_moses_strikes_the_rock",
+    "kind": "scene",
+    "title": {
+      "en": "Moses Strikes the Rock (Tissot)",
+      "zh-Hans": "迪索圣经插图——出埃及记第17章",
+      "zh-Hant": "迪索聖經插圖——出埃及記第17章"
+    },
+    "description": {
+      "en": "James Tissot — Moses Strikes the Rock (Exodus 17-17).",
+      "zh-Hans": "詹姆斯·迪索——出埃及记第17章圣经场景（出埃及记第17-17章）。",
+      "zh-Hant": "詹姆斯·迪索——出埃及記第17章聖經場景（出埃及記第17-17章）。"
+    },
+    "books": {
+      "Exodus": [
+        17,
+        17
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0e/Tissot_Moses_Strikes_the_Rock.jpg/1280px-Tissot_Moses_Strikes_the_Rock.jpg"
+  },
+  {
+    "id": "illus_tissot_tissot_nathan_rebukes_david",
+    "kind": "scene",
+    "title": {
+      "en": "Nathan Rebukes David (Tissot)",
+      "zh-Hans": "迪索圣经插图——撒母耳记下第12章",
+      "zh-Hant": "迪索聖經插圖——撒母耳記下第12章"
+    },
+    "description": {
+      "en": "James Tissot — Nathan Rebukes David (2 Samuel 12-12).",
+      "zh-Hans": "詹姆斯·迪索——撒母耳记下第12章圣经场景（撒母耳记下第12-12章）。",
+      "zh-Hant": "詹姆斯·迪索——撒母耳記下第12章聖經場景（撒母耳記下第12-12章）。"
+    },
+    "books": {
+      "2 Samuel": [
+        12,
+        12
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6c/Tissot_Nathan_Rebukes_David.jpg/1280px-Tissot_Nathan_Rebukes_David.jpg"
+  },
+  {
+    "id": "illus_tissot_tissot_noahs_drunkenness",
+    "kind": "scene",
+    "title": {
+      "en": "Noah's Drunkenness (Tissot)",
+      "zh-Hans": "迪索圣经插图——创世记第9章",
+      "zh-Hant": "迪索聖經插圖——創世記第9章"
+    },
+    "description": {
+      "en": "James Tissot — Noah's Drunkenness (Genesis 9-9).",
+      "zh-Hans": "詹姆斯·迪索——创世记第9章圣经场景（创世记第9-9章）。",
+      "zh-Hant": "詹姆斯·迪索——創世記第9章聖經場景（創世記第9-9章）。"
+    },
+    "books": {
+      "Genesis": [
+        9,
+        9
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8f/Tissot_Noah%27s_Drunkenness.jpg/1280px-Tissot_Noah%27s_Drunkenness.jpg"
+  },
+  {
+    "id": "illus_tissot_tissot_noahs_sacrifice",
+    "kind": "scene",
+    "title": {
+      "en": "Noah's Sacrifice (Tissot)",
+      "zh-Hans": "迪索圣经插图——创世记第8章",
+      "zh-Hant": "迪索聖經插圖——創世記第8章"
+    },
+    "description": {
+      "en": "James Tissot — Noah's Sacrifice (Genesis 8-8).",
+      "zh-Hans": "詹姆斯·迪索——创世记第8章圣经场景（创世记第8-8章）。",
+      "zh-Hant": "詹姆斯·迪索——創世記第8章聖經場景（創世記第8-8章）。"
+    },
+    "books": {
+      "Genesis": [
+        8,
+        8
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Tissot_Noah%27s_Sacrifice.jpg/1280px-Tissot_Noah%27s_Sacrifice.jpg"
+  },
+  {
+    "id": "illus_tissot_tissot_obadiah",
+    "kind": "scene",
+    "title": {
+      "en": "Obadiah (Tissot)",
+      "zh-Hans": "迪索圣经插图——俄巴底亚书第1章",
+      "zh-Hant": "迪索聖經插圖——俄巴底亞書第1章"
+    },
+    "description": {
+      "en": "James Tissot — Obadiah (Obadiah 1-1).",
+      "zh-Hans": "詹姆斯·迪索——俄巴底亚书第1章圣经场景（俄巴底亚书第1-1章）。",
+      "zh-Hant": "詹姆斯·迪索——俄巴底亞書第1章聖經場景（俄巴底亞書第1-1章）。"
+    },
+    "books": {
+      "Obadiah": [
+        1,
+        1
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/80/Tissot_Obadiah.jpg/1280px-Tissot_Obadiah.jpg"
+  },
+  {
+    "id": "illus_tissot_tissot_passover",
+    "kind": "scene",
+    "title": {
+      "en": "Passover (Tissot)",
+      "zh-Hans": "迪索圣经插图——出埃及记第12章",
+      "zh-Hant": "迪索聖經插圖——出埃及記第12章"
+    },
+    "description": {
+      "en": "James Tissot — Passover (Exodus 12-12).",
+      "zh-Hans": "詹姆斯·迪索——出埃及记第12章圣经场景（出埃及记第12-12章）。",
+      "zh-Hant": "詹姆斯·迪索——出埃及記第12章聖經場景（出埃及記第12-12章）。"
+    },
+    "books": {
+      "Exodus": [
+        12,
+        12
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e5/Tissot_Passover.jpg/1280px-Tissot_Passover.jpg"
+  },
+  {
+    "id": "illus_tissot_tissot_pharaoh_and_the_midwives",
+    "kind": "scene",
+    "title": {
+      "en": "Pharaoh and the Midwives (Tissot)",
+      "zh-Hans": "迪索圣经插图——出埃及记第1章",
+      "zh-Hant": "迪索聖經插圖——出埃及記第1章"
+    },
+    "description": {
+      "en": "James Tissot — Pharaoh and the Midwives (Exodus 1-1).",
+      "zh-Hans": "詹姆斯·迪索——出埃及记第1章圣经场景（出埃及记第1-1章）。",
+      "zh-Hant": "詹姆斯·迪索——出埃及記第1章聖經場景（出埃及記第1-1章）。"
+    },
+    "books": {
+      "Exodus": [
+        1,
+        1
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f1/Tissot_Pharaoh_and_the_Midwives.jpg/1280px-Tissot_Pharaoh_and_the_Midwives.jpg"
+  },
+  {
+    "id": "illus_tissot_tissot_pharaoh_notes_the_importance_of_the_jewish_people",
+    "kind": "scene",
+    "title": {
+      "en": "Pharaoh Notes the Importance of the Jewish People (Tissot)",
+      "zh-Hans": "迪索圣经插图——出埃及记第1章",
+      "zh-Hant": "迪索聖經插圖——出埃及記第1章"
+    },
+    "description": {
+      "en": "James Tissot — Pharaoh Notes the Importance of the Jewish People (Exodus 1-1).",
+      "zh-Hans": "詹姆斯·迪索——出埃及记第1章圣经场景（出埃及记第1-1章）。",
+      "zh-Hant": "詹姆斯·迪索——出埃及記第1章聖經場景（出埃及記第1-1章）。"
+    },
+    "books": {
+      "Exodus": [
+        1,
+        1
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/74/Tissot_Pharaoh_Notes_the_Importance_of_the_Jewish_People.jpg/1280px-Tissot_Pharaoh_Notes_the_Importance_of_the_Jewish_People.jpg"
+  },
+  {
+    "id": "illus_tissot_tissot_pharaoh_pursues_the_israelites",
+    "kind": "scene",
+    "title": {
+      "en": "Pharaoh Pursues the Israelites (Tissot)",
+      "zh-Hans": "迪索圣经插图——出埃及记第14章",
+      "zh-Hant": "迪索聖經插圖——出埃及記第14章"
+    },
+    "description": {
+      "en": "James Tissot — Pharaoh Pursues the Israelites (Exodus 14-14).",
+      "zh-Hans": "詹姆斯·迪索——出埃及记第14章圣经场景（出埃及记第14-14章）。",
+      "zh-Hant": "詹姆斯·迪索——出埃及記第14章聖經場景（出埃及記第14-14章）。"
+    },
+    "books": {
+      "Exodus": [
+        14,
+        14
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8b/Tissot_Pharaoh_Pursues_the_Israelites.jpg/1280px-Tissot_Pharaoh_Pursues_the_Israelites.jpg"
+  },
+  {
+    "id": "illus_tissot_tissot_pharaohs_daughter_has_moses_brought_to_her",
+    "kind": "scene",
+    "title": {
+      "en": "Pharaoh's Daughter Has Moses Brought to Her (Tissot)",
+      "zh-Hans": "迪索圣经插图——出埃及记第2章",
+      "zh-Hant": "迪索聖經插圖——出埃及記第2章"
+    },
+    "description": {
+      "en": "James Tissot — Pharaoh's Daughter Has Moses Brought to Her (Exodus 2-2).",
+      "zh-Hans": "詹姆斯·迪索——出埃及记第2章圣经场景（出埃及记第2-2章）。",
+      "zh-Hant": "詹姆斯·迪索——出埃及記第2章聖經場景（出埃及記第2-2章）。"
+    },
+    "books": {
+      "Exodus": [
+        2,
+        2
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/20/Tissot_Pharaoh%27s_Daughter_Has_Moses_Brought_to_Her.jpg/1280px-Tissot_Pharaoh%27s_Daughter_Has_Moses_Brought_to_Her.jpg"
+  },
+  {
+    "id": "illus_tissot_tissot_pharaohs_daughter_receives_the_mother_of_moses",
+    "kind": "scene",
+    "title": {
+      "en": "Pharaoh's Daughter Receives the Mother of Moses (Tissot)",
+      "zh-Hans": "迪索圣经插图——出埃及记第2章",
+      "zh-Hant": "迪索聖經插圖——出埃及記第2章"
+    },
+    "description": {
+      "en": "James Tissot — Pharaoh's Daughter Receives the Mother of Moses (Exodus 2-2).",
+      "zh-Hans": "詹姆斯·迪索——出埃及记第2章圣经场景（出埃及记第2-2章）。",
+      "zh-Hant": "詹姆斯·迪索——出埃及記第2章聖經場景（出埃及記第2-2章）。"
+    },
+    "books": {
+      "Exodus": [
+        2,
+        2
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/bf/Tissot_Pharaoh%27s_Daughter_Receives_the_Mother_of_Moses.jpg/1280px-Tissot_Pharaoh%27s_Daughter_Receives_the_Mother_of_Moses.jpg"
+  },
+  {
+    "id": "illus_tissot_tissot_pharaohs_dreams",
+    "kind": "scene",
+    "title": {
+      "en": "Pharaoh's Dreams (Tissot)",
+      "zh-Hans": "迪索圣经插图——创世记第41章",
+      "zh-Hant": "迪索聖經插圖——創世記第41章"
+    },
+    "description": {
+      "en": "James Tissot — Pharaoh's Dreams (Genesis 41-41).",
+      "zh-Hans": "詹姆斯·迪索——创世记第41章圣经场景（创世记第41-41章）。",
+      "zh-Hant": "詹姆斯·迪索——創世記第41章聖經場景（創世記第41-41章）。"
+    },
+    "books": {
+      "Genesis": [
+        41,
+        41
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/80/Tissot_Pharaoh%27s_Dreams.jpg/1280px-Tissot_Pharaoh%27s_Dreams.jpg"
+  },
+  {
+    "id": "illus_tissot_tissot_rachel_and_leah",
+    "kind": "scene",
+    "title": {
+      "en": "Rachel and Leah (Tissot)",
+      "zh-Hans": "迪索圣经插图——创世记第29章",
+      "zh-Hant": "迪索聖經插圖——創世記第29章"
+    },
+    "description": {
+      "en": "James Tissot — Rachel and Leah (Genesis 29-29).",
+      "zh-Hans": "詹姆斯·迪索——创世记第29章圣经场景（创世记第29-29章）。",
+      "zh-Hant": "詹姆斯·迪索——創世記第29章聖經場景（創世記第29-29章）。"
+    },
+    "books": {
+      "Genesis": [
+        29,
+        29
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8b/Tissot_Rachel_and_Leah.jpg/1280px-Tissot_Rachel_and_Leah.jpg"
+  },
+  {
+    "id": "illus_tissot_tissot_sabbath_breaker_stoned",
+    "kind": "scene",
+    "title": {
+      "en": "Sabbath Breaker Stoned (Tissot)",
+      "zh-Hans": "迪索圣经插图——民数记第15章",
+      "zh-Hant": "迪索聖經插圖——民數記第15章"
+    },
+    "description": {
+      "en": "James Tissot — Sabbath Breaker Stoned (Numbers 15-15).",
+      "zh-Hans": "詹姆斯·迪索——民数记第15章圣经场景（民数记第15-15章）。",
+      "zh-Hant": "詹姆斯·迪索——民數記第15章聖經場景（民數記第15-15章）。"
+    },
+    "books": {
+      "Numbers": [
+        15,
+        15
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0e/Tissot_Sabbath_Breaker_Stoned.jpg/1280px-Tissot_Sabbath_Breaker_Stoned.jpg"
+  },
+  {
+    "id": "illus_tissot_tissot_samson_slays_a_thousand_men",
+    "kind": "scene",
+    "title": {
+      "en": "Samson Slays a Thousand Men (Tissot)",
+      "zh-Hans": "迪索圣经插图——士师记第15章",
+      "zh-Hant": "迪索聖經插圖——士師記第15章"
+    },
+    "description": {
+      "en": "James Tissot — Samson Slays a Thousand Men (Judges 15-15).",
+      "zh-Hans": "詹姆斯·迪索——士师记第15章圣经场景（士师记第15-15章）。",
+      "zh-Hant": "詹姆斯·迪索——士師記第15章聖經場景（士師記第15-15章）。"
+    },
+    "books": {
+      "Judges": [
+        15,
+        15
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4f/Tissot_Samson_Slays_a_Thousand_Men.jpg/1280px-Tissot_Samson_Slays_a_Thousand_Men.jpg"
+  },
+  {
+    "id": "illus_tissot_tissot_sarah_hears_and_laughs.gif",
+    "kind": "scene",
+    "title": {
+      "en": "Sarah Hears and Laughs (Tissot)",
+      "zh-Hans": "迪索圣经插图——创世记第18章",
+      "zh-Hant": "迪索聖經插圖——創世記第18章"
+    },
+    "description": {
+      "en": "James Tissot — Sarah Hears and Laughs (Genesis 18-18).",
+      "zh-Hans": "詹姆斯·迪索——创世记第18章圣经场景（创世记第18-18章）。",
+      "zh-Hant": "詹姆斯·迪索——創世記第18章聖經場景（創世記第18-18章）。"
+    },
+    "books": {
+      "Genesis": [
+        18,
+        18
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/24/Tissot_Sarah_Hears_and_Laughs.gif/1280px-Tissot_Sarah_Hears_and_Laughs.gif"
+  },
+  {
+    "id": "illus_tissot_tissot_sarai_sends_hagar_away",
+    "kind": "scene",
+    "title": {
+      "en": "Sarai Sends Hagar Away (Tissot)",
+      "zh-Hans": "迪索圣经插图——创世记第16章",
+      "zh-Hant": "迪索聖經插圖——創世記第16章"
+    },
+    "description": {
+      "en": "James Tissot — Sarai Sends Hagar Away (Genesis 16-16).",
+      "zh-Hans": "詹姆斯·迪索——创世记第16章圣经场景（创世记第16-16章）。",
+      "zh-Hant": "詹姆斯·迪索——創世記第16章聖經場景（創世記第16-16章）。"
+    },
+    "books": {
+      "Genesis": [
+        16,
+        16
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ec/Tissot_Sarai_Sends_Hagar_Away.jpg/1280px-Tissot_Sarai_Sends_Hagar_Away.jpg"
+  },
+  {
+    "id": "illus_tissot_tissot_shem_ham_and_japheth",
+    "kind": "scene",
+    "title": {
+      "en": "Shem, Ham and Japheth (Tissot)",
+      "zh-Hans": "迪索圣经插图——创世记第9章",
+      "zh-Hant": "迪索聖經插圖——創世記第9章"
+    },
+    "description": {
+      "en": "James Tissot — Shem, Ham and Japheth (Genesis 9-9).",
+      "zh-Hans": "詹姆斯·迪索——创世记第9章圣经场景（创世记第9-9章）。",
+      "zh-Hant": "詹姆斯·迪索——創世記第9章聖經場景（創世記第9-9章）。"
+    },
+    "books": {
+      "Genesis": [
+        9,
+        9
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/06/Tissot_Shem%2C_Ham_and_Japheth.jpg/1280px-Tissot_Shem%2C_Ham_and_Japheth.jpg"
+  },
+  {
+    "id": "illus_tissot_tissot_signs_on_the_door",
+    "kind": "scene",
+    "title": {
+      "en": "Signs on the Door (Tissot)",
+      "zh-Hans": "迪索圣经插图——出埃及记第12章",
+      "zh-Hant": "迪索聖經插圖——出埃及記第12章"
+    },
+    "description": {
+      "en": "James Tissot — Signs on the Door (Exodus 12-12).",
+      "zh-Hans": "詹姆斯·迪索——出埃及记第12章圣经场景（出埃及记第12-12章）。",
+      "zh-Hant": "詹姆斯·迪索——出埃及記第12章聖經場景（出埃及記第12-12章）。"
+    },
+    "books": {
+      "Exodus": [
+        12,
+        12
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/86/Tissot_Signs_on_the_Door.jpg/1280px-Tissot_Signs_on_the_Door.jpg"
+  },
+  {
+    "id": "illus_tissot_tissot_solomon_dedicates_the_temple_at_jerusalem",
+    "kind": "scene",
+    "title": {
+      "en": "Solomon Dedicates the Temple at Jerusalem (Tissot)",
+      "zh-Hans": "迪索圣经插图——列王纪上第8章",
+      "zh-Hant": "迪索聖經插圖——列王紀上第8章"
+    },
+    "description": {
+      "en": "James Tissot — Solomon Dedicates the Temple at Jerusalem (1 Kings 8-8).",
+      "zh-Hans": "詹姆斯·迪索——列王纪上第8章圣经场景（列王纪上第8-8章）。",
+      "zh-Hant": "詹姆斯·迪索——列王紀上第8章聖經場景（列王紀上第8-8章）。"
+    },
+    "books": {
+      "1 Kings": [
+        8,
+        8
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0a/Tissot_Solomon_Dedicates_the_Temple_at_Jerusalem.jpg/1280px-Tissot_Solomon_Dedicates_the_Temple_at_Jerusalem.jpg"
+  },
+  {
+    "id": "illus_tissot_tissot_tailor",
+    "kind": "scene",
+    "title": {
+      "en": "Tailor (Tissot)",
+      "zh-Hans": "迪索圣经插图——出埃及记第28章",
+      "zh-Hant": "迪索聖經插圖——出埃及記第28章"
+    },
+    "description": {
+      "en": "James Tissot — Tailor (Exodus 28-28).",
+      "zh-Hans": "詹姆斯·迪索——出埃及记第28章圣经场景（出埃及记第28-28章）。",
+      "zh-Hant": "詹姆斯·迪索——出埃及記第28章聖經場景（出埃及記第28-28章）。"
+    },
+    "books": {
+      "Exodus": [
+        28,
+        28
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f4/Tissot_Tailor.jpg/1280px-Tissot_Tailor.jpg"
+  },
+  {
+    "id": "illus_tissot_tissot_the_animals_enter_the_ark",
+    "kind": "scene",
+    "title": {
+      "en": "The Animals Enter the Ark (Tissot)",
+      "zh-Hans": "迪索圣经插图——约书亚记第3章",
+      "zh-Hant": "迪索聖經插圖——約書亞記第3章"
+    },
+    "description": {
+      "en": "James Tissot — The Animals Enter the Ark (Joshua 3-3).",
+      "zh-Hans": "詹姆斯·迪索——约书亚记第3章圣经场景（约书亚记第3-3章）。",
+      "zh-Hant": "詹姆斯·迪索——約書亞記第3章聖經場景（約書亞記第3-3章）。"
+    },
+    "books": {
+      "Joshua": [
+        3,
+        3
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/96/Tissot_The_Animals_Enter_the_Ark.jpg/1280px-Tissot_The_Animals_Enter_the_Ark.jpg"
+  },
+  {
+    "id": "illus_tissot_tissot_the_ark_of_the_covenant",
+    "kind": "scene",
+    "title": {
+      "en": "The Ark of the Covenant (Tissot)",
+      "zh-Hans": "迪索圣经插图——出埃及记第25章",
+      "zh-Hant": "迪索聖經插圖——出埃及記第25章"
+    },
+    "description": {
+      "en": "James Tissot — The Ark of the Covenant (Exodus 25-25).",
+      "zh-Hans": "詹姆斯·迪索——出埃及记第25章圣经场景（出埃及记第25-25章）。",
+      "zh-Hant": "詹姆斯·迪索——出埃及記第25章聖經場景（出埃及記第25-25章）。"
+    },
+    "books": {
+      "Exodus": [
+        25,
+        25
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dc/Tissot_The_Ark_of_the_Covenant.jpg/1280px-Tissot_The_Ark_of_the_Covenant.jpg"
+  },
+  {
+    "id": "illus_tissot_tissot_the_caravan_of_abraham",
+    "kind": "scene",
+    "title": {
+      "en": "The Caravan of Abraham (Tissot)",
+      "zh-Hans": "迪索圣经插图——创世记第12章",
+      "zh-Hant": "迪索聖經插圖——創世記第12章"
+    },
+    "description": {
+      "en": "James Tissot — The Caravan of Abraham (Genesis 12-12).",
+      "zh-Hans": "詹姆斯·迪索——创世记第12章圣经场景（创世记第12-12章）。",
+      "zh-Hant": "詹姆斯·迪索——創世記第12章聖經場景（創世記第12-12章）。"
+    },
+    "books": {
+      "Genesis": [
+        12,
+        12
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d2/Tissot_The_Caravan_of_Abraham.jpg/1280px-Tissot_The_Caravan_of_Abraham.jpg"
+  },
+  {
+    "id": "illus_tissot_tissot_the_chaldees_destroy_the_brazen_sea",
+    "kind": "scene",
+    "title": {
+      "en": "The Chaldees Destroy the Brazen Sea (Tissot)",
+      "zh-Hans": "迪索圣经插图——列王纪下第25章",
+      "zh-Hant": "迪索聖經插圖——列王紀下第25章"
+    },
+    "description": {
+      "en": "James Tissot — The Chaldees Destroy the Brazen Sea (2 Kings 25-25).",
+      "zh-Hans": "詹姆斯·迪索——列王纪下第25章圣经场景（列王纪下第25-25章）。",
+      "zh-Hant": "詹姆斯·迪索——列王紀下第25章聖經場景（列王紀下第25-25章）。"
+    },
+    "books": {
+      "2 Kings": [
+        25,
+        25
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7e/Tissot_The_Chaldees_Destroy_the_Brazen_Sea.jpg/1280px-Tissot_The_Chaldees_Destroy_the_Brazen_Sea.jpg"
+  },
+  {
+    "id": "illus_tissot_tissot_the_conquest_of_the_amorites",
+    "kind": "scene",
+    "title": {
+      "en": "The Conquest of the Amorites (Tissot)",
+      "zh-Hans": "迪索圣经插图——约书亚记第10章",
+      "zh-Hant": "迪索聖經插圖——約書亞記第10章"
+    },
+    "description": {
+      "en": "James Tissot — The Conquest of the Amorites (Joshua 10-10).",
+      "zh-Hans": "詹姆斯·迪索——约书亚记第10章圣经场景（约书亚记第10-10章）。",
+      "zh-Hant": "詹姆斯·迪索——約書亞記第10章聖經場景（約書亞記第10-10章）。"
+    },
+    "books": {
+      "Joshua": [
+        10,
+        10
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1f/Tissot_The_Conquest_of_the_Amorites.jpg/1280px-Tissot_The_Conquest_of_the_Amorites.jpg"
+  },
+  {
+    "id": "illus_tissot_tissot_the_creation",
+    "kind": "scene",
+    "title": {
+      "en": "The Creation (Tissot)",
+      "zh-Hans": "迪索圣经插图——创世记第1章",
+      "zh-Hant": "迪索聖經插圖——創世記第1章"
+    },
+    "description": {
+      "en": "James Tissot — The Creation (Genesis 1-1).",
+      "zh-Hans": "詹姆斯·迪索——创世记第1章圣经场景（创世记第1-1章）。",
+      "zh-Hant": "詹姆斯·迪索——創世記第1章聖經場景（創世記第1-1章）。"
+    },
+    "books": {
+      "Genesis": [
+        1,
+        1
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c7/Tissot_The_Creation.jpg/1280px-Tissot_The_Creation.jpg"
+  },
+  {
+    "id": "illus_tissot_tissot_the_cup_found",
+    "kind": "scene",
+    "title": {
+      "en": "The Cup Found (Tissot)",
+      "zh-Hans": "迪索圣经插图——创世记第44章",
+      "zh-Hant": "迪索聖經插圖——創世記第44章"
+    },
+    "description": {
+      "en": "James Tissot — The Cup Found (Genesis 44-44).",
+      "zh-Hans": "詹姆斯·迪索——创世记第44章圣经场景（创世记第44-44章）。",
+      "zh-Hant": "詹姆斯·迪索——創世記第44章聖經場景（創世記第44-44章）。"
+    },
+    "books": {
+      "Genesis": [
+        44,
+        44
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fb/Tissot_The_Cup_Found.jpg/1280px-Tissot_The_Cup_Found.jpg"
+  },
+  {
+    "id": "illus_tissot_tissot_the_dead_bodies_carried_away",
+    "kind": "scene",
+    "title": {
+      "en": "The Dead Bodies Carried Away (Tissot)",
+      "zh-Hans": "迪索圣经插图——民数记第14章",
+      "zh-Hant": "迪索聖經插圖——民數記第14章"
+    },
+    "description": {
+      "en": "James Tissot — The Dead Bodies Carried Away (Numbers 14-14).",
+      "zh-Hans": "詹姆斯·迪索——民数记第14章圣经场景（民数记第14-14章）。",
+      "zh-Hant": "詹姆斯·迪索——民數記第14章聖經場景（民數記第14-14章）。"
+    },
+    "books": {
+      "Numbers": [
+        14,
+        14
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/75/Tissot_The_Dead_Bodies_Carried_Away.jpg/1280px-Tissot_The_Dead_Bodies_Carried_Away.jpg"
+  },
+  {
+    "id": "illus_tissot_tissot_the_deluge",
+    "kind": "scene",
+    "title": {
+      "en": "The Deluge (Tissot)",
+      "zh-Hans": "迪索圣经插图——创世记第7章",
+      "zh-Hant": "迪索聖經插圖——創世記第7章"
+    },
+    "description": {
+      "en": "James Tissot — The Deluge (Genesis 7-7).",
+      "zh-Hans": "詹姆斯·迪索——创世记第7章圣经场景（创世记第7-7章）。",
+      "zh-Hant": "詹姆斯·迪索——創世記第7章聖經場景（創世記第7-7章）。"
+    },
+    "books": {
+      "Genesis": [
+        7,
+        7
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f6/Tissot_The_Deluge.jpg/1280px-Tissot_The_Deluge.jpg"
+  },
+  {
+    "id": "illus_tissot_tissot_the_dove_returns_to_noah",
+    "kind": "scene",
+    "title": {
+      "en": "The Dove Returns to Noah (Tissot)",
+      "zh-Hans": "迪索圣经插图——创世记第8章",
+      "zh-Hant": "迪索聖經插圖——創世記第8章"
+    },
+    "description": {
+      "en": "James Tissot — The Dove Returns to Noah (Genesis 8-8).",
+      "zh-Hans": "詹姆斯·迪索——创世记第8章圣经场景（创世记第8-8章）。",
+      "zh-Hant": "詹姆斯·迪索——創世記第8章聖經場景（創世記第8-8章）。"
+    },
+    "books": {
+      "Genesis": [
+        8,
+        8
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/Tissot_The_Dove_Returns_to_Noah.jpg/1280px-Tissot_The_Dove_Returns_to_Noah.jpg"
+  },
+  {
+    "id": "illus_tissot_tissot_the_egyptians_admire_sarais_beauty",
+    "kind": "scene",
+    "title": {
+      "en": "The Egyptians Admire Sarai's Beauty (Tissot)",
+      "zh-Hans": "迪索圣经插图——创世记第12章",
+      "zh-Hant": "迪索聖經插圖——創世記第12章"
+    },
+    "description": {
+      "en": "James Tissot — The Egyptians Admire Sarai's Beauty (Genesis 12-12).",
+      "zh-Hans": "詹姆斯·迪索——创世记第12章圣经场景（创世记第12-12章）。",
+      "zh-Hant": "詹姆斯·迪索——創世記第12章聖經場景（創世記第12-12章）。"
+    },
+    "books": {
+      "Genesis": [
+        12,
+        12
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/bc/Tissot_The_Egyptians_Admire_Sarai%27s_Beauty.jpg/1280px-Tissot_The_Egyptians_Admire_Sarai%27s_Beauty.jpg"
+  },
+  {
+    "id": "illus_tissot_tissot_the_egyptians_are_destroyed",
+    "kind": "scene",
+    "title": {
+      "en": "The Egyptians Are Destroyed (Tissot)",
+      "zh-Hans": "迪索圣经插图——出埃及记第14章",
+      "zh-Hant": "迪索聖經插圖——出埃及記第14章"
+    },
+    "description": {
+      "en": "James Tissot — The Egyptians Are Destroyed (Exodus 14-14).",
+      "zh-Hans": "詹姆斯·迪索——出埃及记第14章圣经场景（出埃及记第14-14章）。",
+      "zh-Hant": "詹姆斯·迪索——出埃及記第14章聖經場景（出埃及記第14-14章）。"
+    },
+    "books": {
+      "Exodus": [
+        14,
+        14
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f0/Tissot_The_Egyptians_Are_Destroyed.jpg/1280px-Tissot_The_Egyptians_Are_Destroyed.jpg"
+  },
+  {
+    "id": "illus_tissot_tissot_the_exodus",
+    "kind": "scene",
+    "title": {
+      "en": "The Exodus (Tissot)",
+      "zh-Hans": "迪索圣经插图——出埃及记第12章",
+      "zh-Hant": "迪索聖經插圖——出埃及記第12章"
+    },
+    "description": {
+      "en": "James Tissot — The Exodus (Exodus 12-13).",
+      "zh-Hans": "詹姆斯·迪索——出埃及记第12章圣经场景（出埃及记第12-13章）。",
+      "zh-Hant": "詹姆斯·迪索——出埃及記第12章聖經場景（出埃及記第12-13章）。"
+    },
+    "books": {
+      "Exodus": [
+        12,
+        13
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/93/Tissot_The_Exodus.jpg/1280px-Tissot_The_Exodus.jpg"
+  },
+  {
+    "id": "illus_tissot_tissot_the_fire_of_atonement",
+    "kind": "scene",
+    "title": {
+      "en": "The Fire of Atonement (Tissot)",
+      "zh-Hans": "迪索圣经插图——利未记第9章",
+      "zh-Hant": "迪索聖經插圖——利未記第9章"
+    },
+    "description": {
+      "en": "James Tissot — The Fire of Atonement (Leviticus 9-9).",
+      "zh-Hans": "詹姆斯·迪索——利未记第9章圣经场景（利未记第9-9章）。",
+      "zh-Hant": "詹姆斯·迪索——利未記第9章聖經場景（利未記第9-9章）。"
+    },
+    "books": {
+      "Leviticus": [
+        9,
+        9
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d7/Tissot_The_Fire_of_Atonement.jpg/1280px-Tissot_The_Fire_of_Atonement.jpg"
+  },
+  {
+    "id": "illus_tissot_tissot_the_flight_of_the_prisoners",
+    "kind": "scene",
+    "title": {
+      "en": "The Flight of the Prisoners (Tissot)",
+      "zh-Hans": "迪索圣经插图——诗篇第78章",
+      "zh-Hant": "迪索聖經插圖——詩篇第78章"
+    },
+    "description": {
+      "en": "James Tissot — The Flight of the Prisoners (Psalms 78-78).",
+      "zh-Hans": "詹姆斯·迪索——诗篇第78章圣经场景（诗篇第78-78章）。",
+      "zh-Hant": "詹姆斯·迪索——詩篇第78章聖經場景（詩篇第78-78章）。"
+    },
+    "books": {
+      "Psalms": [
+        78,
+        78
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8f/Tissot_The_Flight_of_the_Prisoners.jpg/1280px-Tissot_The_Flight_of_the_Prisoners.jpg"
+  },
+  {
+    "id": "illus_tissot_tissot_the_flight_of_the_spies_color",
+    "kind": "scene",
+    "title": {
+      "en": "The Flight of the Spies (color) (Tissot)",
+      "zh-Hans": "迪索圣经插图——约书亚记第2章",
+      "zh-Hant": "迪索聖經插圖——約書亞記第2章"
+    },
+    "description": {
+      "en": "James Tissot — The Flight of the Spies (color) (Joshua 2-2).",
+      "zh-Hans": "詹姆斯·迪索——约书亚记第2章圣经场景（约书亚记第2-2章）。",
+      "zh-Hant": "詹姆斯·迪索——約書亞記第2章聖經場景（約書亞記第2-2章）。"
+    },
+    "books": {
+      "Joshua": [
+        2,
+        2
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Tissot_The_Flight_of_the_Spies_%28color%29.jpg/1280px-Tissot_The_Flight_of_the_Spies_%28color%29.jpg"
+  },
+  {
+    "id": "illus_tissot_tissot_the_flight_of_the_spies",
+    "kind": "scene",
+    "title": {
+      "en": "The Flight of the Spies (Tissot)",
+      "zh-Hans": "迪索圣经插图——约书亚记第2章",
+      "zh-Hant": "迪索聖經插圖——約書亞記第2章"
+    },
+    "description": {
+      "en": "James Tissot — The Flight of the Spies (Joshua 2-2).",
+      "zh-Hans": "詹姆斯·迪索——约书亚记第2章圣经场景（约书亚记第2-2章）。",
+      "zh-Hant": "詹姆斯·迪索——約書亞記第2章聖經場景（約書亞記第2-2章）。"
+    },
+    "books": {
+      "Joshua": [
+        2,
+        2
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f1/Tissot_The_Flight_of_the_Spies.jpg/1280px-Tissot_The_Flight_of_the_Spies.jpg"
+  },
+  {
+    "id": "illus_tissot_tissot_the_gathering_of_the_manna",
+    "kind": "scene",
+    "title": {
+      "en": "The Gathering of the Manna (Tissot)",
+      "zh-Hans": "迪索圣经插图——出埃及记第16章",
+      "zh-Hant": "迪索聖經插圖——出埃及記第16章"
+    },
+    "description": {
+      "en": "James Tissot — The Gathering of the Manna (Exodus 16-16).",
+      "zh-Hans": "詹姆斯·迪索——出埃及记第16章圣经场景（出埃及记第16-16章）。",
+      "zh-Hant": "詹姆斯·迪索——出埃及記第16章聖經場景（出埃及記第16-16章）。"
+    },
+    "books": {
+      "Exodus": [
+        16,
+        16
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6d/Tissot_The_Gathering_of_the_Manna.jpg/1280px-Tissot_The_Gathering_of_the_Manna.jpg"
+  },
+  {
+    "id": "illus_tissot_tissot_the_glory_of_joseph",
+    "kind": "scene",
+    "title": {
+      "en": "The Glory of Joseph (Tissot)",
+      "zh-Hans": "迪索圣经插图——创世记第41章",
+      "zh-Hant": "迪索聖經插圖——創世記第41章"
+    },
+    "description": {
+      "en": "James Tissot — The Glory of Joseph (Genesis 41-41).",
+      "zh-Hans": "詹姆斯·迪索——创世记第41章圣经场景（创世记第41-41章）。",
+      "zh-Hant": "詹姆斯·迪索——創世記第41章聖經場景（創世記第41-41章）。"
+    },
+    "books": {
+      "Genesis": [
+        41,
+        41
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/48/Tissot_The_Glory_of_Joseph.jpg/1280px-Tissot_The_Glory_of_Joseph.jpg"
+  },
+  {
+    "id": "illus_tissot_tissot_the_golden_calf",
+    "kind": "scene",
+    "title": {
+      "en": "The Golden Calf (Tissot)",
+      "zh-Hans": "迪索圣经插图——出埃及记第32章",
+      "zh-Hant": "迪索聖經插圖——出埃及記第32章"
+    },
+    "description": {
+      "en": "James Tissot — The Golden Calf (Exodus 32-32).",
+      "zh-Hans": "詹姆斯·迪索——出埃及记第32章圣经场景（出埃及记第32-32章）。",
+      "zh-Hant": "詹姆斯·迪索——出埃及記第32章聖經場景（出埃及記第32-32章）。"
+    },
+    "books": {
+      "Exodus": [
+        32,
+        32
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/Tissot_The_Golden_Calf.jpg/1280px-Tissot_The_Golden_Calf.jpg"
+  },
+  {
+    "id": "illus_tissot_tissot_the_grapes_of_canaan",
+    "kind": "scene",
+    "title": {
+      "en": "The Grapes of Canaan (Tissot)",
+      "zh-Hans": "迪索圣经插图——民数记第13章",
+      "zh-Hant": "迪索聖經插圖——民數記第13章"
+    },
+    "description": {
+      "en": "James Tissot — The Grapes of Canaan (Numbers 13-13).",
+      "zh-Hans": "詹姆斯·迪索——民数记第13章圣经场景（民数记第13-13章）。",
+      "zh-Hant": "詹姆斯·迪索——民數記第13章聖經場景（民數記第13-13章）。"
+    },
+    "books": {
+      "Numbers": [
+        13,
+        13
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/19/Tissot_The_Grapes_of_Canaan.jpg/1280px-Tissot_The_Grapes_of_Canaan.jpg"
+  },
+  {
+    "id": "illus_tissot_tissot_the_harlot_of_jericho_and_the_two_spies",
+    "kind": "scene",
+    "title": {
+      "en": "The Harlot of Jericho and the Two Spies (Tissot)",
+      "zh-Hans": "迪索圣经插图——约书亚记第2章",
+      "zh-Hant": "迪索聖經插圖——約書亞記第2章"
+    },
+    "description": {
+      "en": "James Tissot — The Harlot of Jericho and the Two Spies (Joshua 2-2).",
+      "zh-Hans": "詹姆斯·迪索——约书亚记第2章圣经场景（约书亚记第2-2章）。",
+      "zh-Hant": "詹姆斯·迪索——約書亞記第2章聖經場景（約書亞記第2-2章）。"
+    },
+    "books": {
+      "Joshua": [
+        2,
+        2
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/59/Tissot_The_Harlot_of_Jericho_and_the_Two_Spies.jpg/1280px-Tissot_The_Harlot_of_Jericho_and_the_Two_Spies.jpg"
+  },
+  {
+    "id": "illus_tissot_tissot_the_meeting_of_esau_and_jacob",
+    "kind": "scene",
+    "title": {
+      "en": "The Meeting of Esau and Jacob (Tissot)",
+      "zh-Hans": "迪索圣经插图——创世记第33章",
+      "zh-Hant": "迪索聖經插圖——創世記第33章"
+    },
+    "description": {
+      "en": "James Tissot — The Meeting of Esau and Jacob (Genesis 33-33).",
+      "zh-Hans": "詹姆斯·迪索——创世记第33章圣经场景（创世记第33-33章）。",
+      "zh-Hant": "詹姆斯·迪索——創世記第33章聖經場景（創世記第33-33章）。"
+    },
+    "books": {
+      "Genesis": [
+        33,
+        33
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/60/Tissot_The_Meeting_of_Esau_and_Jacob.jpg/1280px-Tissot_The_Meeting_of_Esau_and_Jacob.jpg"
+  },
+  {
+    "id": "illus_tissot_tissot_the_mess_of_pottage",
+    "kind": "scene",
+    "title": {
+      "en": "The Mess of Pottage (Tissot)",
+      "zh-Hans": "迪索圣经插图——创世记第25章",
+      "zh-Hant": "迪索聖經插圖——創世記第25章"
+    },
+    "description": {
+      "en": "James Tissot — The Mess of Pottage (Genesis 25-25).",
+      "zh-Hans": "詹姆斯·迪索——创世记第25章圣经场景（创世记第25-25章）。",
+      "zh-Hant": "詹姆斯·迪索——創世記第25章聖經場景（創世記第25-25章）。"
+    },
+    "books": {
+      "Genesis": [
+        25,
+        25
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/05/Tissot_The_Mess_of_Pottage.jpg/1280px-Tissot_The_Mess_of_Pottage.jpg"
+  },
+  {
+    "id": "illus_tissot_tissot_the_plague_of_flies",
+    "kind": "scene",
+    "title": {
+      "en": "The Plague of Flies (Tissot)",
+      "zh-Hans": "迪索圣经插图——出埃及记第8章",
+      "zh-Hant": "迪索聖經插圖——出埃及記第8章"
+    },
+    "description": {
+      "en": "James Tissot — The Plague of Flies (Exodus 8-8).",
+      "zh-Hans": "詹姆斯·迪索——出埃及记第8章圣经场景（出埃及记第8-8章）。",
+      "zh-Hant": "詹姆斯·迪索——出埃及記第8章聖經場景（出埃及記第8-8章）。"
+    },
+    "books": {
+      "Exodus": [
+        8,
+        8
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/65/Tissot_The_Plague_of_Flies.jpg/1280px-Tissot_The_Plague_of_Flies.jpg"
+  },
+  {
+    "id": "illus_tissot_tissot_the_plague_of_locusts",
+    "kind": "scene",
+    "title": {
+      "en": "The Plague of Locusts (Tissot)",
+      "zh-Hans": "迪索圣经插图——出埃及记第10章",
+      "zh-Hant": "迪索聖經插圖——出埃及記第10章"
+    },
+    "description": {
+      "en": "James Tissot — The Plague of Locusts (Exodus 10-10).",
+      "zh-Hans": "詹姆斯·迪索——出埃及记第10章圣经场景（出埃及记第10-10章）。",
+      "zh-Hant": "詹姆斯·迪索——出埃及記第10章聖經場景（出埃及記第10-10章）。"
+    },
+    "books": {
+      "Exodus": [
+        10,
+        10
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b3/Tissot_The_Plague_of_Locusts.jpg/1280px-Tissot_The_Plague_of_Locusts.jpg"
+  },
+  {
+    "id": "illus_tissot_tissot_the_sabbath-breaker_stoned",
+    "kind": "scene",
+    "title": {
+      "en": "The Sabbath-Breaker Stoned (Tissot)",
+      "zh-Hans": "迪索圣经插图——民数记第15章",
+      "zh-Hant": "迪索聖經插圖——民數記第15章"
+    },
+    "description": {
+      "en": "James Tissot — The Sabbath-Breaker Stoned (Numbers 15-15).",
+      "zh-Hans": "詹姆斯·迪索——民数记第15章圣经场景（民数记第15-15章）。",
+      "zh-Hant": "詹姆斯·迪索——民數記第15章聖經場景（民數記第15-15章）。"
+    },
+    "books": {
+      "Numbers": [
+        15,
+        15
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d5/Tissot_The_Sabbath-Breaker_Stoned.jpg/1280px-Tissot_The_Sabbath-Breaker_Stoned.jpg"
+  },
+  {
+    "id": "illus_tissot_tissot_the_seven_trumpets_of_jericho",
+    "kind": "scene",
+    "title": {
+      "en": "The Seven Trumpets of Jericho (Tissot)",
+      "zh-Hans": "迪索圣经插图——约书亚记第6章",
+      "zh-Hant": "迪索聖經插圖——約書亞記第6章"
+    },
+    "description": {
+      "en": "James Tissot — The Seven Trumpets of Jericho (Joshua 6-6).",
+      "zh-Hans": "詹姆斯·迪索——约书亚记第6章圣经场景（约书亚记第6-6章）。",
+      "zh-Hant": "詹姆斯·迪索——約書亞記第6章聖經場景（約書亞記第6-6章）。"
+    },
+    "books": {
+      "Joshua": [
+        6,
+        6
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0d/Tissot_The_Seven_Trumpets_of_Jericho.jpg/1280px-Tissot_The_Seven_Trumpets_of_Jericho.jpg"
+  },
+  {
+    "id": "illus_tissot_tissot_the_signs_on_the_door",
+    "kind": "scene",
+    "title": {
+      "en": "The Signs on the Door (Tissot)",
+      "zh-Hans": "迪索圣经插图——出埃及记第12章",
+      "zh-Hant": "迪索聖經插圖——出埃及記第12章"
+    },
+    "description": {
+      "en": "James Tissot — The Signs on the Door (Exodus 12-12).",
+      "zh-Hans": "詹姆斯·迪索——出埃及记第12章圣经场景（出埃及记第12-12章）。",
+      "zh-Hant": "詹姆斯·迪索——出埃及記第12章聖經場景（出埃及記第12-12章）。"
+    },
+    "books": {
+      "Exodus": [
+        12,
+        12
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/df/Tissot_The_Signs_on_the_Door.jpg/1280px-Tissot_The_Signs_on_the_Door.jpg"
+  },
+  {
+    "id": "illus_tissot_tissot_the_songs_of_joy",
+    "kind": "scene",
+    "title": {
+      "en": "The Songs of Joy (Tissot)",
+      "zh-Hans": "迪索圣经插图——诗篇第126章",
+      "zh-Hant": "迪索聖經插圖——詩篇第126章"
+    },
+    "description": {
+      "en": "James Tissot — The Songs of Joy (Psalms 126-126).",
+      "zh-Hans": "詹姆斯·迪索——诗篇第126章圣经场景（诗篇第126-126章）。",
+      "zh-Hant": "詹姆斯·迪索——詩篇第126章聖經場景（詩篇第126-126章）。"
+    },
+    "books": {
+      "Psalms": [
+        126,
+        126
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c4/Tissot_The_Songs_of_Joy.jpg/1280px-Tissot_The_Songs_of_Joy.jpg"
+  },
+  {
+    "id": "illus_tissot_tissot_the_taking_of_jericho",
+    "kind": "scene",
+    "title": {
+      "en": "The Taking of Jericho (Tissot)",
+      "zh-Hans": "迪索圣经插图——约书亚记第6章",
+      "zh-Hant": "迪索聖經插圖——約書亞記第6章"
+    },
+    "description": {
+      "en": "James Tissot — The Taking of Jericho (Joshua 6-6).",
+      "zh-Hans": "詹姆斯·迪索——约书亚记第6章圣经场景（约书亚记第6-6章）。",
+      "zh-Hant": "詹姆斯·迪索——約書亞記第6章聖經場景（約書亞記第6-6章）。"
+    },
+    "books": {
+      "Joshua": [
+        6,
+        6
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/63/Tissot_The_Taking_of_Jericho.jpg/1280px-Tissot_The_Taking_of_Jericho.jpg"
+  },
+  {
+    "id": "illus_tissot_tissot_the_two_priests_are_destroyed",
+    "kind": "scene",
+    "title": {
+      "en": "The Two Priests Are Destroyed (Tissot)",
+      "zh-Hans": "迪索圣经插图——利未记第10章",
+      "zh-Hant": "迪索聖經插圖——利未記第10章"
+    },
+    "description": {
+      "en": "James Tissot — The Two Priests Are Destroyed (Leviticus 10-10).",
+      "zh-Hans": "詹姆斯·迪索——利未记第10章圣经场景（利未记第10-10章）。",
+      "zh-Hant": "詹姆斯·迪索——利未記第10章聖經場景（利未記第10-10章）。"
+    },
+    "books": {
+      "Leviticus": [
+        10,
+        10
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/bb/Tissot_The_Two_Priests_Are_Destroyed.jpg/1280px-Tissot_The_Two_Priests_Are_Destroyed.jpg"
+  },
+  {
+    "id": "illus_tissot_tissot_the_waters_are_divided",
+    "kind": "scene",
+    "title": {
+      "en": "The Waters Are Divided (Tissot)",
+      "zh-Hans": "迪索圣经插图——出埃及记第14章",
+      "zh-Hant": "迪索聖經插圖——出埃及記第14章"
+    },
+    "description": {
+      "en": "James Tissot — The Waters Are Divided (Exodus 14-14).",
+      "zh-Hans": "詹姆斯·迪索——出埃及记第14章圣经场景（出埃及记第14-14章）。",
+      "zh-Hant": "詹姆斯·迪索——出埃及記第14章聖經場景（出埃及記第14-14章）。"
+    },
+    "books": {
+      "Exodus": [
+        14,
+        14
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Tissot_The_Waters_Are_Divided.jpg/1280px-Tissot_The_Waters_Are_Divided.jpg"
+  },
+  {
+    "id": "illus_tissot_tissot_the_wisdom_of_solomon",
+    "kind": "scene",
+    "title": {
+      "en": "The Wisdom of Solomon (Tissot)",
+      "zh-Hans": "迪索圣经插图——列王纪上第3章",
+      "zh-Hant": "迪索聖經插圖——列王紀上第3章"
+    },
+    "description": {
+      "en": "James Tissot — The Wisdom of Solomon (1 Kings 3-3).",
+      "zh-Hans": "詹姆斯·迪索——列王纪上第3章圣经场景（列王纪上第3-3章）。",
+      "zh-Hant": "詹姆斯·迪索——列王紀上第3章聖經場景（列王紀上第3-3章）。"
+    },
+    "books": {
+      "1 Kings": [
+        3,
+        3
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0d/Tissot_The_Wisdom_of_Solomon.jpg/1280px-Tissot_The_Wisdom_of_Solomon.jpg"
+  },
+  {
+    "id": "illus_tissot_tissot_the_women_of_midian_led_captive_by_the_hebrews",
+    "kind": "scene",
+    "title": {
+      "en": "The Women of Midian Led Captive by the Hebrews (Tissot)",
+      "zh-Hans": "迪索圣经插图——民数记第31章",
+      "zh-Hant": "迪索聖經插圖——民數記第31章"
+    },
+    "description": {
+      "en": "James Tissot — The Women of Midian Led Captive by the Hebrews (Numbers 31-31).",
+      "zh-Hans": "詹姆斯·迪索——民数记第31章圣经场景（民数记第31-31章）。",
+      "zh-Hant": "詹姆斯·迪索——民數記第31章聖經場景（民數記第31-31章）。"
+    },
+    "books": {
+      "Numbers": [
+        31,
+        31
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/85/Tissot_The_Women_of_Midian_Led_Captive_by_the_Hebrews.jpg/1280px-Tissot_The_Women_of_Midian_Led_Captive_by_the_Hebrews.jpg"
+  },
+  {
+    "id": "illus_tissot_tissot_zechariah",
+    "kind": "scene",
+    "title": {
+      "en": "Zechariah (Tissot)",
+      "zh-Hans": "迪索圣经插图——撒迦利亚书第1章",
+      "zh-Hant": "迪索聖經插圖——撒迦利亞書第1章"
+    },
+    "description": {
+      "en": "James Tissot — Zechariah (Zechariah 1-1).",
+      "zh-Hans": "詹姆斯·迪索——撒迦利亚书第1章圣经场景（撒迦利亚书第1-1章）。",
+      "zh-Hant": "詹姆斯·迪索——撒迦利亞書第1章聖經場景（撒迦利亞書第1-1章）。"
+    },
+    "books": {
+      "Zechariah": [
+        1,
+        1
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e8/Tissot_Zechariah.jpg/1280px-Tissot_Zechariah.jpg"
+  },
+  {
+    "id": "illus_tissot_tissot_the_gathering_of_the_manna_color",
+    "kind": "scene",
+    "title": {
+      "en": "The Gathering of the Manna (color) (Tissot)",
+      "zh-Hans": "迪索圣经插图——出埃及记第16章",
+      "zh-Hant": "迪索聖經插圖——出埃及記第16章"
+    },
+    "description": {
+      "en": "James Tissot — The Gathering of the Manna (color) (Exodus 16-16).",
+      "zh-Hans": "詹姆斯·迪索——出埃及记第16章圣经场景（出埃及记第16-16章）。",
+      "zh-Hant": "詹姆斯·迪索——出埃及記第16章聖經場景（出埃及記第16-16章）。"
+    },
+    "books": {
+      "Exodus": [
+        16,
+        16
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/51/Tissot_The_Gathering_of_the_Manna_%28color%29.jpg/1280px-Tissot_The_Gathering_of_the_Manna_%28color%29.jpg"
+  },
+  {
+    "id": "illus_tissot_tissot-jacobs-body-is-taken-to-canaan-445x291",
+    "kind": "scene",
+    "title": {
+      "en": "jacobs-body-is-taken-to-canaan- (Tissot)",
+      "zh-Hans": "迪索圣经插图——创世记第50章",
+      "zh-Hant": "迪索聖經插圖——創世記第50章"
+    },
+    "description": {
+      "en": "James Tissot — jacobs-body-is-taken-to-canaan- (Genesis 50-50).",
+      "zh-Hans": "詹姆斯·迪索——创世记第50章圣经场景（创世记第50-50章）。",
+      "zh-Hant": "詹姆斯·迪索——創世記第50章聖經場景（創世記第50-50章）。"
+    },
+    "books": {
+      "Genesis": [
+        50,
+        50
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9b/Tissot-jacobs-body-is-taken-to-canaan-445x291.jpg/1280px-Tissot-jacobs-body-is-taken-to-canaan-445x291.jpg"
+  },
+  {
+    "id": "illus_tissot_tissot_sarai_is_taken_to_pharaohs_palace",
+    "kind": "scene",
+    "title": {
+      "en": "Sarai Is Taken to Pharaoh's Palace (Tissot)",
+      "zh-Hans": "迪索圣经插图——创世记第12章",
+      "zh-Hant": "迪索聖經插圖——創世記第12章"
+    },
+    "description": {
+      "en": "James Tissot — Sarai Is Taken to Pharaoh's Palace (Genesis 12-12).",
+      "zh-Hans": "詹姆斯·迪索——创世记第12章圣经场景（创世记第12-12章）。",
+      "zh-Hant": "詹姆斯·迪索——創世記第12章聖經場景（創世記第12-12章）。"
+    },
+    "books": {
+      "Genesis": [
+        12,
+        12
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/Tissot_Sarai_Is_Taken_to_Pharaoh%27s_Palace.jpg/1280px-Tissot_Sarai_Is_Taken_to_Pharaoh%27s_Palace.jpg"
+  },
+  {
+    "id": "illus_tissot_tissuzah",
+    "kind": "scene",
+    "title": {
+      "en": "TissUzah (Tissot)",
+      "zh-Hans": "迪索圣经插图——撒母耳记下第6章",
+      "zh-Hant": "迪索聖經插圖——撒母耳記下第6章"
+    },
+    "description": {
+      "en": "James Tissot — TissUzah (2 Samuel 6-6).",
+      "zh-Hans": "詹姆斯·迪索——撒母耳记下第6章圣经场景（撒母耳记下第6-6章）。",
+      "zh-Hant": "詹姆斯·迪索——撒母耳記下第6章聖經場景（撒母耳記下第6-6章）。"
+    },
+    "books": {
+      "2 Samuel": [
+        6,
+        6
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e5/TissUzah.jpg/1280px-TissUzah.jpg"
+  },
+  {
+    "id": "illus_tissot_tubalcaïn_genesis_4_22_•_invenit_james_tissot_•_pinxit_james_tissot_•_",
+    "kind": "scene",
+    "title": {
+      "en": "Tubalcaïn (Genesis 4 22) • invenit James Tissot • pinxit James Tissot • excudit  (Tissot)",
+      "zh-Hans": "迪索圣经插图——创世记第4章",
+      "zh-Hant": "迪索聖經插圖——創世記第4章"
+    },
+    "description": {
+      "en": "James Tissot — Tubalcaïn (Genesis 4 22) • invenit James Tissot • pinxit James Tissot • excudit Maurice de Brunoff apud Philip de Vere • praesentat Phillip Medhurst (Genesis 4-4).",
+      "zh-Hans": "詹姆斯·迪索——创世记第4章圣经场景（创世记第4-4章）。",
+      "zh-Hant": "詹姆斯·迪索——創世記第4章聖經場景（創世記第4-4章）。"
+    },
+    "books": {
+      "Genesis": [
+        4,
+        4
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/24/Tubalca%C3%AFn_%28Genesis_4_22%29_%E2%80%A2_invenit_James_Tissot_%E2%80%A2_pinxit_James_Tissot_%E2%80%A2_excudit_Maurice_de_Brunoff_apud_Philip_de_Vere_%E2%80%A2_praesentat_Phillip_Medhurst.jpg/1280px-thumbnail.jpg"
+  },
+  {
+    "id": "illus_tissot_осия",
+    "kind": "scene",
+    "title": {
+      "en": "Осия (Tissot)",
+      "zh-Hans": "迪索圣经插图——何西阿书第1章",
+      "zh-Hant": "迪索聖經插圖——何西阿書第1章"
+    },
+    "description": {
+      "en": "James Tissot — Осия (Hosea 1-1).",
+      "zh-Hans": "詹姆斯·迪索——何西阿书第1章圣经场景（何西阿书第1-1章）。",
+      "zh-Hant": "詹姆斯·迪索——何西阿書第1章聖經場景（何西阿書第1-1章）。"
+    },
+    "books": {
+      "Hosea": [
+        1,
+        1
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/01/%D0%9E%D1%81%D0%B8%D1%8F.jpg/1280px-%D0%9E%D1%81%D0%B8%D1%8F.jpg"
+  },
+  {
+    "id": "illus_extra_dore_solomon_proverbs.png",
+    "kind": "scene",
+    "title": {
+      "en": "Solomon and Wisdom (Doré)",
+      "zh-Hans": "所罗门与智慧 (多雷)",
+      "zh-Hant": "所羅門與智慧 (多雷)"
+    },
+    "description": {
+      "en": "Public-domain artwork — Solomon and Wisdom (Doré) (Proverbs 1).",
+      "zh-Hans": "公共领域艺术品——所罗门与智慧 (多雷)（箴言第1章）。",
+      "zh-Hant": "公共領域藝術品——所羅門與智慧 (多雷)（箴言第1章）。"
+    },
+    "books": {
+      "Proverbs": [
+        1,
+        1
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/a/a2/Dore_Solomon_Proverbs.png"
+  },
+  {
+    "id": "illus_extra_dore_solomon_proverbs.png",
+    "kind": "scene",
+    "title": {
+      "en": "Ecclesiastes (Doré)",
+      "zh-Hans": "传道书 (多雷)",
+      "zh-Hant": "傳道書 (多雷)"
+    },
+    "description": {
+      "en": "Public-domain artwork — Ecclesiastes (Doré) (Ecclesiastes 1).",
+      "zh-Hans": "公共领域艺术品——传道书 (多雷)（传道书第1章）。",
+      "zh-Hant": "公共領域藝術品——傳道書 (多雷)（傳道書第1章）。"
+    },
+    "books": {
+      "Ecclesiastes": [
+        1,
+        1
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/a/a2/Dore_Solomon_Proverbs.png"
+  },
+  {
+    "id": "illus_extra_saint_peter_denying_christ_.png",
+    "kind": "scene",
+    "title": {
+      "en": "Peter Denies Christ",
+      "zh-Hans": "彼得否认基督",
+      "zh-Hant": "彼得否認基督"
+    },
+    "description": {
+      "en": "Public-domain artwork — Peter Denies Christ (1 Peter 1; 2 Peter 1; Matthew 26).",
+      "zh-Hans": "公共领域艺术品——彼得否认基督（彼得前书第1章;彼得后书第1章;马太福音第26章）。",
+      "zh-Hant": "公共領域藝術品——彼得否認基督（彼得前書第1章;彼得後書第1章;馬太福音第26章）。"
+    },
+    "books": {
+      "1 Peter": [
+        1,
+        1
+      ],
+      "2 Peter": [
+        1,
+        1
+      ],
+      "Matthew": [
+        26,
+        26
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/6/61/Saint_Peter_Denying_Christ_.PNG"
+  },
+  {
+    "id": "illus_extra_(albi)_saint_jude_thaddée_1620_-_georges_de_la_tour_inv.166",
+    "kind": "scene",
+    "title": {
+      "en": "Saint Jude the Apostle",
+      "zh-Hans": "使徒犹大",
+      "zh-Hant": "使徒猶大"
+    },
+    "description": {
+      "en": "Public-domain artwork — Saint Jude the Apostle (Jude 1).",
+      "zh-Hans": "公共领域艺术品——使徒犹大（犹大书第1章）。",
+      "zh-Hant": "公共領域藝術品——使徒猶大（猶大書第1章）。"
+    },
+    "books": {
+      "Jude": [
+        1,
+        1
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f5/%28Albi%29_Saint_Jude_Thadd%C3%A9e_1620_-_Georges_de_La_Tour_Inv.166.jpg/1280px-%28Albi%29_Saint_Jude_Thadd%C3%A9e_1620_-_Georges_de_La_Tour_Inv.166.jpg"
+  },
+  {
+    "id": "illus_extra_grandes_heures_anne_de_bretagne_saint_jean",
+    "kind": "scene",
+    "title": {
+      "en": "John the Evangelist Writing",
+      "zh-Hans": "约翰书写书信",
+      "zh-Hant": "約翰書寫書信"
+    },
+    "description": {
+      "en": "Public-domain artwork — John the Evangelist Writing (2 John 1; 3 John 1; 1 John 1).",
+      "zh-Hans": "公共领域艺术品——约翰书写书信（约翰二书第1章;约翰三书第1章;约翰一书第1章）。",
+      "zh-Hant": "公共領域藝術品——約翰書寫書信（約翰二書第1章;約翰三書第1章;約翰一書第1章）。"
+    },
+    "books": {
+      "2 John": [
+        1,
+        1
+      ],
+      "3 John": [
+        1,
+        1
+      ],
+      "1 John": [
+        1,
+        1
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a5/Grandes_Heures_Anne_de_Bretagne_Saint_Jean.jpg/1280px-Grandes_Heures_Anne_de_Bretagne_Saint_Jean.jpg"
+  },
+  {
+    "id": "illus_extra_alles_ist_eitel",
+    "kind": "scene",
+    "title": {
+      "en": "Vanity of Vanities (Ecclesiastes)",
+      "zh-Hans": "虚空的虚空 (传道书)",
+      "zh-Hant": "虛空的虛空 (傳道書)"
+    },
+    "description": {
+      "en": "Public-domain artwork — Vanity of Vanities (Ecclesiastes) (Ecclesiastes 1).",
+      "zh-Hans": "公共领域艺术品——虚空的虚空 (传道书)（传道书第1章）。",
+      "zh-Hant": "公共領域藝術品——虛空的虛空 (傳道書)（傳道書第1章）。"
+    },
+    "books": {
+      "Ecclesiastes": [
+        1,
+        1
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8e/Alles_ist_eitel.jpg/1280px-Alles_ist_eitel.jpg"
+  },
+  {
+    "id": "illus_extra_accademia_-_crucifixion_of_st._peter_by_luca_giordano",
+    "kind": "scene",
+    "title": {
+      "en": "Martyrdom of Saint Peter",
+      "zh-Hans": "彼得殉道",
+      "zh-Hant": "彼得殉道"
+    },
+    "description": {
+      "en": "Public-domain artwork — Martyrdom of Saint Peter (1 Peter 5; 2 Peter 1).",
+      "zh-Hans": "公共领域艺术品——彼得殉道（彼得前书第5章;彼得后书第1章）。",
+      "zh-Hant": "公共領域藝術品——彼得殉道（彼得前書第5章;彼得後書第1章）。"
+    },
+    "books": {
+      "1 Peter": [
+        5,
+        5
+      ],
+      "2 Peter": [
+        1,
+        1
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/19/Accademia_-_Crucifixion_of_St._Peter_by_Luca_Giordano.jpg/1280px-Accademia_-_Crucifixion_of_St._Peter_by_Luca_Giordano.jpg"
+  },
+  {
+    "id": "illus_extra_zephaniah_prophet",
+    "kind": "scene",
+    "title": {
+      "en": "The Prophet Zephaniah",
+      "zh-Hans": "先知西番雅",
+      "zh-Hant": "先知西番雅"
+    },
+    "description": {
+      "en": "Public-domain artwork — The Prophet Zephaniah (Zephaniah 1).",
+      "zh-Hans": "公共领域艺术品——先知西番雅（西番雅书第1章）。",
+      "zh-Hant": "公共領域藝術品——先知西番雅（西番雅書第1章）。"
+    },
+    "books": {
+      "Zephaniah": [
+        1,
+        1
+      ]
+    },
+    "file": "https://upload.wikimedia.org/wikipedia/commons/f/f0/Zephaniah.jpg"
   }
 ]
