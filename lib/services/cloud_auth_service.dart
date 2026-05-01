@@ -198,6 +198,25 @@ class CloudAuthService extends ChangeNotifier {
       }, onError: (Object e) {
         debugPrint('CloudAuthService: userChanges stream error: $e');
       });
+      // Pick up any pending sign-in result from a redirect flow that
+      // ran on the previous page load. Without this, the redirect
+      // fallback in signInWithGoogle() would lose the credential
+      // (page navigates back from Google but nothing reads the
+      // stashed result). Soft-fail — most loads have no pending
+      // redirect and getRedirectResult returns a null user; we only
+      // care about the success path.
+      if (kIsWeb) {
+        step = 'FirebaseAuth.getRedirectResult';
+        try {
+          final pending = await auth.getRedirectResult();
+          if (pending.user != null) {
+            _user = pending.user;
+            debugPrint('CloudAuthService: picked up redirect sign-in for ${pending.user!.email}');
+          }
+        } catch (e) {
+          debugPrint('CloudAuthService: getRedirectResult skipped: $e');
+        }
+      }
       _configured = true;
       _initError = null;
     } catch (e, st) {
@@ -228,36 +247,105 @@ class CloudAuthService extends ChangeNotifier {
     }
   }
 
-  /// Sign in with Google via Firebase's web popup flow. Uses
-  /// `signInWithPopup(GoogleAuthProvider)` which opens a Google
-  /// accounts window, completes OAuth via the project's authDomain
-  /// (ysword.firebaseapp.com), and returns a Firebase credential
-  /// without us having to wire up the `google_sign_in` package or
-  /// add SDK script tags to web/index.html.
+  /// Sign in with Google via Firebase's web flow.
   ///
-  /// Requirements (one-time):
+  /// **Two-tier strategy** — see `docs/google-signin-troubleshooting.md`
+  /// for the full story:
+  ///
+  /// 1. **Popup** (`signInWithPopup`) is tried first. Fast, in-place,
+  ///    no navigation. Works in most desktop browsers.
+  ///
+  /// 2. **Redirect** (`signInWithRedirect`) is the fallback when
+  ///    popup fails for any reason that suggests it CAN'T succeed
+  ///    on this browser — popup-blocker, third-party cookies blocked
+  ///    (Safari especially in PWA mode), web-storage unsupported, or
+  ///    any of Firebase's catch-all internal errors that historically
+  ///    correlate with cross-origin handshake failures.
+  ///
+  ///    Redirect navigates the WHOLE PAGE to Google. After the user
+  ///    consents and Google bounces back to ysword.firebaseapp.com →
+  ///    yswords.netlify.app, `_doInit()` picks up the credential via
+  ///    `getRedirectResult()`. This call returns BEFORE the redirect
+  ///    happens; the user sees the page navigate away and the result
+  ///    text "Redirecting to Google…" briefly before they're gone.
+  ///
+  /// Requirements (one-time, see troubleshooting doc):
   ///   1. Firebase Console → Authentication → Sign-in method →
   ///      Google → Enable.
-  ///   2. The popup is initiated by a user click — modern browsers
+  ///   2. Firebase Console → Authentication → Settings → Authorized
+  ///      domains → must include `yswords.netlify.app` (and any
+  ///      preview-deploy URLs you use).
+  ///   3. The popup is initiated by a user click — modern browsers
   ///      block popups otherwise. Calling this from a button's
   ///      onPressed handler satisfies the gesture requirement.
   Future<CloudAuthResult> signInWithGoogle() async {
     if (!_configured) {
       return const CloudAuthResult.error('Cloud sync not configured.');
     }
+    final provider = GoogleAuthProvider();
+    // Always show the chooser even if there's a single signed-in
+    // Google account, so users on shared devices can pick the
+    // right one.
+    provider.setCustomParameters({'prompt': 'select_account'});
+
+    // 1. Popup first.
     try {
-      final provider = GoogleAuthProvider();
-      // Always show the chooser even if there's a single signed-in
-      // Google account, so users on shared devices can pick the
-      // right one.
-      provider.setCustomParameters({'prompt': 'select_account'});
       final cred =
           await FirebaseAuth.instance.signInWithPopup(provider);
       return CloudAuthResult.ok(cred.user);
     } on FirebaseAuthException catch (e) {
+      // Some failure codes mean popup CAN'T complete on this browser
+      // — try redirect instead. Others mean the user explicitly
+      // declined or there's a config problem we shouldn't paper over.
+      if (kIsWeb && _isRetryableAsRedirect(e)) {
+        debugPrint('signInWithPopup failed (${e.code}); falling back to redirect.');
+        try {
+          await FirebaseAuth.instance.signInWithRedirect(provider);
+          // Page navigates here; the credential will be captured by
+          // getRedirectResult() during the next init. The line below
+          // only runs in browsers that don't actually navigate (rare
+          // — usually means the redirect itself was blocked).
+          return const CloudAuthResult.error(
+              'Redirecting to Google…');
+        } on FirebaseAuthException catch (e2) {
+          return CloudAuthResult.error(_friendlyError(e2));
+        } catch (e2) {
+          return CloudAuthResult.error(e2.toString());
+        }
+      }
       return CloudAuthResult.error(_friendlyError(e));
     } catch (e) {
+      // Non-FirebaseAuthException failures (web-only crashes, JS
+      // interop errors). Try redirect once before giving up — these
+      // sometimes also indicate the popup mechanism is unhealthy.
+      if (kIsWeb) {
+        debugPrint('signInWithPopup non-Firebase error: $e — trying redirect.');
+        try {
+          await FirebaseAuth.instance.signInWithRedirect(provider);
+          return const CloudAuthResult.error(
+              'Redirecting to Google…');
+        } catch (e2) {
+          return CloudAuthResult.error(e2.toString());
+        }
+      }
       return CloudAuthResult.error(e.toString());
+    }
+  }
+
+  /// Whether a popup failure looks like a "this browser can't do
+  /// popup OAuth, retry with redirect" situation. See
+  /// docs/google-signin-troubleshooting.md §1, §5.
+  bool _isRetryableAsRedirect(FirebaseAuthException e) {
+    switch (e.code) {
+      case 'popup-blocked':            // browser popup blocker
+      case 'popup-closed-by-user':     // Safari third-party-cookie
+      case 'cancelled-popup-request':  // multiple-popup race
+      case 'web-storage-unsupported':  // localStorage/IndexedDB blocked
+      case 'internal-error':           // catch-all that often = above
+      case 'network-request-failed':   // sometimes the popup window
+        return true;
+      default:
+        return false;
     }
   }
 
