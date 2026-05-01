@@ -220,24 +220,15 @@ class CloudAuthService extends ChangeNotifier {
     }
   }
 
-  /// Sign in with Google via Firebase's web popup flow. Uses
-  /// `signInWithPopup(GoogleAuthProvider)` which opens a Google
-  /// accounts window, completes OAuth via the project's authDomain
-  /// (ysword.firebaseapp.com), and returns a Firebase credential
-  /// without us having to wire up the `google_sign_in` package or
-  /// add SDK script tags to web/index.html.
+  /// Sign in with Google via Firebase Auth.
   ///
-  /// Requirements (one-time):
-  ///   1. Firebase Console → Authentication → Sign-in method →
-  ///      Google → Enable.
-  ///   2. The popup is initiated by a user click — modern browsers
-  ///      block popups otherwise. Calling this from a button's
-  ///      onPressed handler satisfies the gesture requirement.
+  /// On web, uses signInWithRedirect (full-page redirect to Google
+  /// then back) which works on all browsers including iOS Safari
+  /// and Android Chrome. signInWithPopup does NOT work on mobile
+  /// browsers (throws UnimplementedError).
   ///
-  ///      On mobile browsers signInWithPopup throws UnimplementedError,
-  ///      so we fall back to signInWithRedirect which works on all
-  ///      platforms. After the redirect returns to the page,
-  ///      getRedirectResult picks up the credential in [_doInit].
+  /// After the redirect returns, getRedirectResult in [_doInit]
+  /// resolves the pending credential.
   Future<CloudAuthResult> signInWithGoogle() async {
     if (!_configured) {
       return const CloudAuthResult.error('Cloud sync not configured.');
@@ -245,24 +236,17 @@ class CloudAuthService extends ChangeNotifier {
     try {
       final provider = GoogleAuthProvider();
       provider.setCustomParameters({'prompt': 'select_account'});
+      if (kIsWeb) {
+        // Redirect works everywhere (desktop + mobile browsers).
+        await FirebaseAuth.instance.signInWithRedirect(provider);
+        // Never reached — browser navigates away. On return,
+        // _doInit's getRedirectResult() picks up the credential.
+        return const CloudAuthResult.error('Redirecting…');
+      }
+      // Non-web platforms use popup (if ever needed).
       final cred =
           await FirebaseAuth.instance.signInWithPopup(provider);
       return CloudAuthResult.ok(cred.user);
-    } on UnimplementedError {
-      // Mobile browsers (iOS Safari, Android Chrome) don't support
-      // popups — fall back to full-page redirect.
-      try {
-        final provider = GoogleAuthProvider();
-        provider.setCustomParameters({'prompt': 'select_account'});
-        await FirebaseAuth.instance.signInWithRedirect(provider);
-        // This line never executes — the browser navigates away.
-        // On return, _onRedirectReturn handles the result.
-        return const CloudAuthResult.error('Redirecting…');
-      } on FirebaseAuthException catch (e) {
-        return CloudAuthResult.error(_friendlyError(e));
-      } catch (e) {
-        return CloudAuthResult.error(e.toString());
-      }
     } on FirebaseAuthException catch (e) {
       return CloudAuthResult.error(_friendlyError(e));
     } catch (e) {
