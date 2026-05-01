@@ -145,12 +145,16 @@ class CloudAuthService extends ChangeNotifier {
           // error than mask it with this one.
           debugPrint('CloudAuthService: web delegate setup failed: $e');
         }
-        // Register the FirebaseAuth web delegate. In some builds the
-        // auto-generated plugin registrant doesn't run or gets tree-
-        // shaken, leaving FirebaseAuthPlatform.instance pointing at
-        // MethodChannelFirebaseAuth (which throws UnimplementedError
-        // for signInWithPopup/Redirect). Manually setting the web
-        // delegate ensures FirebaseAuth.instance uses the JS SDK.
+      }
+      step = 'Firebase.initializeApp';
+      await Firebase.initializeApp(
+        options: DefaultFirebaseOptions.web,
+      );
+      // Register the FirebaseAuth web delegate AFTER initializeApp.
+      // FirebaseAuthWeb.instance is a null stub before the JS SDK is
+      // loaded; setting it before initializeApp causes "Null check
+      // operator used on a null value" on FirebaseAuth.instance access.
+      if (kIsWeb) {
         try {
           if (FirebaseAuthPlatform.instance is! FirebaseAuthWeb) {
             FirebaseAuthPlatform.instance = FirebaseAuthWeb.instance;
@@ -159,10 +163,6 @@ class CloudAuthService extends ChangeNotifier {
           debugPrint('CloudAuthService: FirebaseAuthWeb setup: $e');
         }
       }
-      step = 'Firebase.initializeApp';
-      await Firebase.initializeApp(
-        options: DefaultFirebaseOptions.web,
-      );
       // Tell Firestore to auto-detect when the WebChannel transport
       // is being blocked (some browser extensions, corporate
       // proxies, mobile carrier networks) and fall back to long-
