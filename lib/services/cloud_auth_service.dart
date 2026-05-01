@@ -1,10 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-// ignore: depend_on_referenced_packages
-import 'package:firebase_auth_platform_interface/firebase_auth_platform_interface.dart'
-    show FirebaseAuthPlatform;
-// ignore: depend_on_referenced_packages
-import 'package:firebase_auth_web/firebase_auth_web.dart' show FirebaseAuthWeb;
 import 'package:firebase_core/firebase_core.dart';
 // ignore: depend_on_referenced_packages
 import 'package:firebase_core_platform_interface/firebase_core_platform_interface.dart'
@@ -150,19 +145,6 @@ class CloudAuthService extends ChangeNotifier {
       await Firebase.initializeApp(
         options: DefaultFirebaseOptions.web,
       );
-      // Register the FirebaseAuth web delegate AFTER initializeApp.
-      // FirebaseAuthWeb.instance is a null stub before the JS SDK is
-      // loaded; setting it before initializeApp causes "Null check
-      // operator used on a null value" on FirebaseAuth.instance access.
-      if (kIsWeb) {
-        try {
-          if (FirebaseAuthPlatform.instance is! FirebaseAuthWeb) {
-            FirebaseAuthPlatform.instance = FirebaseAuthWeb.instance;
-          }
-        } catch (e) {
-          debugPrint('CloudAuthService: FirebaseAuthWeb setup: $e');
-        }
-      }
       // Tell Firestore to auto-detect when the WebChannel transport
       // is being blocked (some browser extensions, corporate
       // proxies, mobile carrier networks) and fall back to long-
@@ -186,27 +168,35 @@ class CloudAuthService extends ChangeNotifier {
       step = 'FirebaseAuth.instance';
       final auth = FirebaseAuth.instance;
       step = 'FirebaseAuth.currentUser';
-      _user = auth.currentUser;
-      // Resolve any pending redirect sign-in from a previous page load
-      // (signInWithRedirect on mobile browsers navigates away and back).
-      // On desktop or when there's no pending redirect, this returns
-      // null immediately.
+      // firebase_auth_web has been observed to throw 'Null check
+      // operator used on a null value' from inside `currentUser`
+      // when the persisted JS auth state is corrupted (browser
+      // privacy mode, blocked localStorage, ad-blocker resetting
+      // IndexedDB). Treat that as "no current user" instead of
+      // letting it mark the whole init as failed — the userChanges
+      // stream below will deliver the real user once the SDK
+      // settles, OR the user can sign in fresh.
       try {
-        step = 'FirebaseAuth.getRedirectResult';
-        final redirectResult = await auth.getRedirectResult();
-        if (redirectResult.user != null) {
-          _user = redirectResult.user;
-        }
-      } catch (e) {
-        // Non-fatal — the redirect result may fail if no redirect
-        // happened or if the credential expired. Just log and continue.
-        debugPrint('CloudAuthService: getRedirectResult: $e');
+        _user = auth.currentUser;
+      } catch (e, st) {
+        debugPrint('CloudAuthService: currentUser threw, treating as null: $e\n$st');
+        _user = null;
       }
       step = 'FirebaseAuth.userChanges';
       // Reflect future sign-in / sign-out events into our notifier.
+      // Same defensive try/catch on each emission — once we've seen
+      // currentUser misbehave, individual stream events can also
+      // arrive in weird shapes. We never want a single bad event to
+      // break the listener for the rest of the session.
       auth.userChanges().listen((u) {
-        _user = u;
-        notifyListeners();
+        try {
+          _user = u;
+          notifyListeners();
+        } catch (e) {
+          debugPrint('CloudAuthService: userChanges handler error: $e');
+        }
+      }, onError: (Object e) {
+        debugPrint('CloudAuthService: userChanges stream error: $e');
       });
       _configured = true;
       _initError = null;
@@ -238,30 +228,29 @@ class CloudAuthService extends ChangeNotifier {
     }
   }
 
-  /// Sign in with Google via Firebase Auth.
+  /// Sign in with Google via Firebase's web popup flow. Uses
+  /// `signInWithPopup(GoogleAuthProvider)` which opens a Google
+  /// accounts window, completes OAuth via the project's authDomain
+  /// (ysword.firebaseapp.com), and returns a Firebase credential
+  /// without us having to wire up the `google_sign_in` package or
+  /// add SDK script tags to web/index.html.
   ///
-  /// On web, uses signInWithRedirect (full-page redirect to Google
-  /// then back) which works on all browsers including iOS Safari
-  /// and Android Chrome. signInWithPopup does NOT work on mobile
-  /// browsers (throws UnimplementedError).
-  ///
-  /// After the redirect returns, getRedirectResult in [_doInit]
-  /// resolves the pending credential.
+  /// Requirements (one-time):
+  ///   1. Firebase Console → Authentication → Sign-in method →
+  ///      Google → Enable.
+  ///   2. The popup is initiated by a user click — modern browsers
+  ///      block popups otherwise. Calling this from a button's
+  ///      onPressed handler satisfies the gesture requirement.
   Future<CloudAuthResult> signInWithGoogle() async {
     if (!_configured) {
       return const CloudAuthResult.error('Cloud sync not configured.');
     }
     try {
       final provider = GoogleAuthProvider();
+      // Always show the chooser even if there's a single signed-in
+      // Google account, so users on shared devices can pick the
+      // right one.
       provider.setCustomParameters({'prompt': 'select_account'});
-      if (kIsWeb) {
-        // Redirect works everywhere (desktop + mobile browsers).
-        await FirebaseAuth.instance.signInWithRedirect(provider);
-        // Never reached — browser navigates away. On return,
-        // _doInit's getRedirectResult() picks up the credential.
-        return const CloudAuthResult.error('Redirecting…');
-      }
-      // Non-web platforms use popup (if ever needed).
       final cred =
           await FirebaseAuth.instance.signInWithPopup(provider);
       return CloudAuthResult.ok(cred.user);
