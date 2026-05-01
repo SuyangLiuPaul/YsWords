@@ -168,12 +168,35 @@ class CloudAuthService extends ChangeNotifier {
       step = 'FirebaseAuth.instance';
       final auth = FirebaseAuth.instance;
       step = 'FirebaseAuth.currentUser';
-      _user = auth.currentUser;
+      // firebase_auth_web has been observed to throw 'Null check
+      // operator used on a null value' from inside `currentUser`
+      // when the persisted JS auth state is corrupted (browser
+      // privacy mode, blocked localStorage, ad-blocker resetting
+      // IndexedDB). Treat that as "no current user" instead of
+      // letting it mark the whole init as failed — the userChanges
+      // stream below will deliver the real user once the SDK
+      // settles, OR the user can sign in fresh.
+      try {
+        _user = auth.currentUser;
+      } catch (e, st) {
+        debugPrint('CloudAuthService: currentUser threw, treating as null: $e\n$st');
+        _user = null;
+      }
       step = 'FirebaseAuth.userChanges';
       // Reflect future sign-in / sign-out events into our notifier.
+      // Same defensive try/catch on each emission — once we've seen
+      // currentUser misbehave, individual stream events can also
+      // arrive in weird shapes. We never want a single bad event to
+      // break the listener for the rest of the session.
       auth.userChanges().listen((u) {
-        _user = u;
-        notifyListeners();
+        try {
+          _user = u;
+          notifyListeners();
+        } catch (e) {
+          debugPrint('CloudAuthService: userChanges handler error: $e');
+        }
+      }, onError: (Object e) {
+        debugPrint('CloudAuthService: userChanges stream error: $e');
       });
       _configured = true;
       _initError = null;

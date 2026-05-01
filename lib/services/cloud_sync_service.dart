@@ -178,7 +178,17 @@ class CloudSyncService extends ChangeNotifier {
       _subscribedUid = null;
       return;
     }
-    final uid = auth.currentUser!.uid;
+    // Read currentUser once into a local + null-check, instead of
+    // force-unwrapping. The cached _user inside CloudAuthService
+    // can race with userChanges() events firing on background
+    // token refreshes; pre-fix we were throwing 'Null check
+    // operator used on a null value' from this exact line.
+    final user = auth.currentUser;
+    if (user == null) {
+      _setStatus(CloudSyncStatus.disabled);
+      return;
+    }
+    final uid = user.uid;
     // Dedupe re-fires for the same user. CloudAuthService notifies on
     // every userChanges() event from FirebaseAuth — that includes
     // silent token refreshes triggered by every Firestore write.
@@ -477,6 +487,13 @@ class CloudSyncService extends ChangeNotifier {
   Future<void> _uploadFromLocal({bool bypassSuppress = false}) async {
     final auth = CloudAuthService.instance;
     if (!auth.isSignedIn) return;
+    // Pin the user once at upload start. Same race-free pattern as
+    // _onAuthChanged — currentUser can flip to null between the
+    // isSignedIn check above and the .doc(uid) line below, e.g.
+    // when a token refresh fails mid-sync.
+    final user = auth.currentUser;
+    if (user == null) return;
+    final uid = user.uid;
     // Fast-fail when the browser already knows it has no network. The
     // 30 s Firestore timeout is helpful when the connection is just
     // slow — but pointless when the user is plain offline. The local
@@ -520,7 +537,7 @@ class CloudSyncService extends ChangeNotifier {
       // and 15 s was tripping under normal conditions.
       await FirebaseFirestore.instance
           .collection('users')
-          .doc(auth.currentUser!.uid)
+          .doc(uid)
           .collection('profileData')
           .doc('main')
           .set({
