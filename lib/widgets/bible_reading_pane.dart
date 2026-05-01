@@ -2171,7 +2171,15 @@ class _MapPickerSheetState extends State<_MapPickerSheet>
         if (_allLoading) {
           return const Center(child: CircularProgressIndicator());
         }
-        return _mapList(_allMaps);
+        // Group by canonical book and render collapsible sections
+        // — pre-fix this dumped 200+ tiles in a single flat list
+        // which "had too many when opened" per user feedback.
+        return _AllIllustrationsByBook(
+          all: _allMaps,
+          locale: widget.locale,
+          related: [...widget.chapterMaps, ...widget.bookMaps],
+          onCloseSheet: () => Navigator.of(context).pop(),
+        );
     }
   }
 
@@ -2241,6 +2249,192 @@ class _FallbackNote extends StatelessWidget {
               ),
             ),
           ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Groups all illustrations by canonical book and renders each group
+/// as a collapsible section with "{Book} ({n})" header. Supports a
+/// quick search field that filters by book name OR illustration title.
+class _AllIllustrationsByBook extends StatefulWidget {
+  final List<BibleMap> all;
+  final String locale;
+  final List<BibleMap> related;
+  final VoidCallback onCloseSheet;
+  const _AllIllustrationsByBook({
+    required this.all,
+    required this.locale,
+    required this.related,
+    required this.onCloseSheet,
+  });
+
+  @override
+  State<_AllIllustrationsByBook> createState() =>
+      _AllIllustrationsByBookState();
+}
+
+class _AllIllustrationsByBookState extends State<_AllIllustrationsByBook> {
+  final _query = TextEditingController();
+
+  @override
+  void dispose() {
+    _query.dispose();
+    super.dispose();
+  }
+
+  /// Build [book → maps] map preserving canonical OT/NT order.
+  /// A single illustration can map to multiple books (cross-period
+  /// world maps); each book group lists it under that book's section.
+  Map<String, List<BibleMap>> _groupByBook() {
+    final order = standardBookOrder;
+    final groups = <String, List<BibleMap>>{
+      for (final b in order) b: <BibleMap>[],
+    };
+    for (final m in widget.all) {
+      for (final book in m.books.keys) {
+        if (groups.containsKey(book)) groups[book]!.add(m);
+      }
+    }
+    return groups;
+  }
+
+  bool _bookMatches(String book, String q) {
+    if (q.isEmpty) return true;
+    final qLower = q.toLowerCase();
+    if (book.toLowerCase().contains(qLower)) return true;
+    final localized = translateBookName(book, 'zh-Hans').toLowerCase();
+    if (localized.contains(qLower)) return true;
+    return false;
+  }
+
+  bool _illustrationMatches(BibleMap m, String q) {
+    if (q.isEmpty) return true;
+    final qLower = q.toLowerCase();
+    final title = (m.title[widget.locale] ?? m.title['en'] ?? '').toLowerCase();
+    return title.contains(qLower);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final q = _query.text.trim();
+    final groups = _groupByBook();
+
+    return Column(
+      children: [
+        // Search field — filters by book name OR illustration title.
+        Padding(
+          padding: const EdgeInsets.fromLTRB(12, 8, 12, 4),
+          child: TextField(
+            controller: _query,
+            onChanged: (_) => setState(() {}),
+            decoration: InputDecoration(
+              prefixIcon: const Icon(Icons.search, size: 18),
+              hintText: uiStrings['search']?[widget.locale] ?? 'Search',
+              isDense: true,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+              suffixIcon: q.isEmpty
+                  ? null
+                  : IconButton(
+                      icon: const Icon(Icons.clear, size: 16),
+                      onPressed: () {
+                        _query.clear();
+                        setState(() {});
+                      },
+                    ),
+            ),
+          ),
+        ),
+        Expanded(
+          child: ListView(
+            children: [
+              for (final entry in groups.entries)
+                if (entry.value.isNotEmpty &&
+                    (_bookMatches(entry.key, q) ||
+                        entry.value.any((m) => _illustrationMatches(m, q))))
+                  _BookIllustrationGroup(
+                    book: entry.key,
+                    locale: widget.locale,
+                    maps: q.isEmpty
+                        ? entry.value
+                        : entry.value
+                            .where((m) =>
+                                _bookMatches(entry.key, q) ||
+                                _illustrationMatches(m, q))
+                            .toList(),
+                    related: widget.related,
+                    onCloseSheet: widget.onCloseSheet,
+                    initiallyExpanded: q.isNotEmpty,
+                    accentColor: scheme.primary,
+                  ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// Single book's ExpansionTile in the All-illustrations list.
+/// Header shows "{LocalizedBook} ({count})" with the count tinted
+/// in the primary color; body is the per-illustration list.
+class _BookIllustrationGroup extends StatelessWidget {
+  final String book;
+  final String locale;
+  final List<BibleMap> maps;
+  final List<BibleMap> related;
+  final VoidCallback onCloseSheet;
+  final bool initiallyExpanded;
+  final Color accentColor;
+  const _BookIllustrationGroup({
+    required this.book,
+    required this.locale,
+    required this.maps,
+    required this.related,
+    required this.onCloseSheet,
+    required this.initiallyExpanded,
+    required this.accentColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final localizedBook = translateBookName(book, locale);
+    final headerTpl = uiStrings['illustrationsBookCount']?[locale] ??
+        '{book} ({n})';
+    final headerText = headerTpl
+        .replaceAll('{book}', localizedBook)
+        .replaceAll('{n}', maps.length.toString());
+    return Theme(
+      // Strip the default ExpansionTile divider; we have our own.
+      data: Theme.of(context).copyWith(
+        dividerColor: Colors.transparent,
+      ),
+      child: ExpansionTile(
+        initiallyExpanded: initiallyExpanded,
+        tilePadding: const EdgeInsets.symmetric(horizontal: 16),
+        childrenPadding: EdgeInsets.zero,
+        title: Text(
+          headerText,
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+            color: scheme.onSurface,
+          ),
+        ),
+        children: [
+          for (final m in maps)
+            _MapTile(
+              map: m,
+              locale: locale,
+              related: related,
+              onClose: onCloseSheet,
+            ),
+          const Divider(height: 1, indent: 16, endIndent: 16),
         ],
       ),
     );

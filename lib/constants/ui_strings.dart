@@ -1711,38 +1711,45 @@ const uiStrings = {
   },
   'noMapsForChapter': {
     'zh-Hans': '本章暂无插图',
-    'zh-Hant': '本章暫無地圖',
-    'en': 'No maps for this chapter',
+    'zh-Hant': '本章暫無插畫',
+    'en': 'No illustrations for this chapter',
   },
   'mapsForThisChapter': {
-    'zh-Hans': '本章相关地图',
-    'zh-Hant': '本章相關地圖',
+    'zh-Hans': '本章相关插图',
+    'zh-Hant': '本章相關插畫',
     'en': 'For this chapter',
   },
   'mapsForThisBook': {
-    'zh-Hans': '本卷相关地图',
-    'zh-Hant': '本卷相關地圖',
+    'zh-Hans': '本卷相关插图',
+    'zh-Hant': '本卷相關插畫',
     'en': 'For this book',
   },
   'mapsAll': {
-    'zh-Hans': '全部地图',
-    'zh-Hant': '全部地圖',
-    'en': 'All maps',
+    'zh-Hans': '全部插图',
+    'zh-Hant': '全部插畫',
+    'en': 'All illustrations',
   },
   'mapsRelated': {
-    'zh-Hans': '相关地图',
-    'zh-Hant': '相關地圖',
-    'en': 'Related maps',
+    'zh-Hans': '相关插图',
+    'zh-Hant': '相關插畫',
+    'en': 'Related illustrations',
   },
   'mapsBrowseLibrary': {
-    'zh-Hans': '浏览全部地图',
-    'zh-Hant': '瀏覽全部地圖',
-    'en': 'Browse all maps',
+    'zh-Hans': '浏览全部插图',
+    'zh-Hant': '瀏覽全部插畫',
+    'en': 'Browse all illustrations',
   },
   'mapsNoneForChapterFallback': {
-    'zh-Hans': '本章无专属地图，以下是相关地图：',
-    'zh-Hant': '本章無專屬地圖，以下是相關地圖：',
-    'en': 'No map specifically for this chapter — here are related maps:',
+    'zh-Hans': '本章无专属插图，以下是相关内容：',
+    'zh-Hant': '本章無專屬插畫，以下是相關內容：',
+    'en': 'No illustration specifically for this chapter — here are related ones:',
+  },
+  // Per-book group label in the All-illustrations tab. {book} is the
+  // localized book name; {n} is the count.
+  'illustrationsBookCount': {
+    'zh-Hans': '{book}（{n} 张）',
+    'zh-Hant': '{book}（{n} 張）',
+    'en': '{book} ({n})',
   },
   'openSplitView': {
     'zh-Hans': '打开分屏阅读',
