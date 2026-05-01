@@ -169,6 +169,21 @@ class CloudAuthService extends ChangeNotifier {
       final auth = FirebaseAuth.instance;
       step = 'FirebaseAuth.currentUser';
       _user = auth.currentUser;
+      // Resolve any pending redirect sign-in from a previous page load
+      // (signInWithRedirect on mobile browsers navigates away and back).
+      // On desktop or when there's no pending redirect, this returns
+      // null immediately.
+      try {
+        step = 'FirebaseAuth.getRedirectResult';
+        final redirectResult = await auth.getRedirectResult();
+        if (redirectResult.user != null) {
+          _user = redirectResult.user;
+        }
+      } catch (e) {
+        // Non-fatal — the redirect result may fail if no redirect
+        // happened or if the credential expired. Just log and continue.
+        debugPrint('CloudAuthService: getRedirectResult: $e');
+      }
       step = 'FirebaseAuth.userChanges';
       // Reflect future sign-in / sign-out events into our notifier.
       auth.userChanges().listen((u) {
@@ -218,19 +233,36 @@ class CloudAuthService extends ChangeNotifier {
   ///   2. The popup is initiated by a user click — modern browsers
   ///      block popups otherwise. Calling this from a button's
   ///      onPressed handler satisfies the gesture requirement.
+  ///
+  ///      On mobile browsers signInWithPopup throws UnimplementedError,
+  ///      so we fall back to signInWithRedirect which works on all
+  ///      platforms. After the redirect returns to the page,
+  ///      getRedirectResult picks up the credential in [_doInit].
   Future<CloudAuthResult> signInWithGoogle() async {
     if (!_configured) {
       return const CloudAuthResult.error('Cloud sync not configured.');
     }
     try {
       final provider = GoogleAuthProvider();
-      // Always show the chooser even if there's a single signed-in
-      // Google account, so users on shared devices can pick the
-      // right one.
       provider.setCustomParameters({'prompt': 'select_account'});
       final cred =
           await FirebaseAuth.instance.signInWithPopup(provider);
       return CloudAuthResult.ok(cred.user);
+    } on UnimplementedError {
+      // Mobile browsers (iOS Safari, Android Chrome) don't support
+      // popups — fall back to full-page redirect.
+      try {
+        final provider = GoogleAuthProvider();
+        provider.setCustomParameters({'prompt': 'select_account'});
+        await FirebaseAuth.instance.signInWithRedirect(provider);
+        // This line never executes — the browser navigates away.
+        // On return, _onRedirectReturn handles the result.
+        return const CloudAuthResult.error('Redirecting…');
+      } on FirebaseAuthException catch (e) {
+        return CloudAuthResult.error(_friendlyError(e));
+      } catch (e) {
+        return CloudAuthResult.error(e.toString());
+      }
     } on FirebaseAuthException catch (e) {
       return CloudAuthResult.error(_friendlyError(e));
     } catch (e) {
