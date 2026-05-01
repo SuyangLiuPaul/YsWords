@@ -53,8 +53,34 @@ class BibleReference {
 ///   - Verse range: "John 3:16-18", "约 3:16-18"
 ///   - Tightly typed: "jn3:16", "约3:16", "mt5:3"
 BibleReference? parseReference(String input) {
-  final raw = input.trim();
+  var raw = input.trim();
   if (raw.isEmpty) return null;
+
+  // Comma-separated verse spans (e.g. "John 18:31-33, 37-38") or
+  // comma-separated chapters (e.g. "Daniel 2, 7, 8, 11"). Strip
+  // everything after the first comma — navigating to the first
+  // segment is the right UX.
+  final commaIdx = raw.indexOf(',');
+  if (commaIdx > 0) {
+    raw = raw.substring(0, commaIdx).trim();
+  }
+
+  // Cross-chapter verse range: "Book Ch1:Vs1-Ch2:Vs2"
+  // (e.g. "2 Kings 22:8-23:25", "Acts 27:27-28:1").
+  // Must be tried before the single-chapter patterns because the
+  // trailing "Ch2:Vs2" would otherwise absorb into the book name.
+  final xc = RegExp(
+    r'^\s*(.*?)\s+(\d+)\s*[:：.]\s*(\d+)\s*[-–—]\s*(\d+)\s*[:：.]\s*(\d+)\s*$',
+  ).firstMatch(raw);
+  if (xc != null) {
+    final ref = _buildRef(
+      xc.group(1)?.trim() ?? '',
+      int.tryParse(xc.group(2)!) ?? 0,
+      int.tryParse(xc.group(3)!),
+      null,
+    );
+    if (ref != null) return ref;
+  }
 
   // Pattern: <book><whitespace?><chapter>(:<verseStart>(-<verseEnd>)?)?
   // Book is any non-digit prefix. Capture greedily then resolve.
@@ -87,6 +113,13 @@ BibleReference? parseReference(String input) {
   return null;
 }
 
+/// Books that have only one chapter. When a reference like "Jude 14-15"
+/// is parsed as chapter 14 (because the chapter-range regex fires), the
+/// chapter number actually refers to a verse in chapter 1.
+const _singleChapterBooks = {
+  'Obadiah', 'Philemon', '2 John', '3 John', 'Jude',
+};
+
 BibleReference? _buildRef(
     String bookPart, int chapter, int? verseStart, int? verseEnd) {
   if (chapter <= 0) return null;
@@ -96,6 +129,17 @@ BibleReference? _buildRef(
 
   final canonical = _resolveBookName(bookPart);
   if (canonical == null) return null;
+
+  // Single-chapter book: "Jude 14-15" parses as ch 14 ve 15, but Jude
+  // has only 1 chapter — re-interpret as ch 1 vs 14-15.
+  if (_singleChapterBooks.contains(canonical) && chapter > 1) {
+    return BibleReference(
+      englishBook: canonical,
+      chapter: 1,
+      verseStart: chapter,
+      verseEnd: verseStart,
+    );
+  }
 
   return BibleReference(
     englishBook: canonical,
