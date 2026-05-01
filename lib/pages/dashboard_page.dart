@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:provider/provider.dart';
 
+import 'package:yswords/constants/bible_versions.dart';
 import 'package:yswords/constants/text_patterns.dart' show sanitizeForSearch;
 import 'package:yswords/constants/ui_strings.dart';
 import 'package:yswords/utils/greeting.dart';
@@ -1737,8 +1738,24 @@ class _ContinueReadingHero extends StatelessWidget {
         ? (uiStrings['continueReading']?[locale] ?? 'Continue reading')
         : (uiStrings['startReading']?[locale] ?? 'Start reading');
 
+    // Position line reads e.g. "Genesis 1 · 和合本雅伟版(简体)".
+    // We resolve the version code to its menuLabel (full localised
+    // name) instead of dumping the raw value like "cuvs-yhwh" —
+    // user feedback on round 49: "cuv-yhwh this doesn't look good".
+    String? versionLabel;
+    if (currentVersion != null && currentVersion!.isNotEmpty) {
+      final info = bibleVersions.firstWhere(
+        (v) => v.value == currentVersion,
+        orElse: () => BibleVersionInfo(
+          value: currentVersion!,
+          shortLabel: currentVersion!,
+          menuLabel: currentVersion!,
+        ),
+      );
+      versionLabel = info.menuLabel;
+    }
     final positionLine = hasPosition
-        ? '$book $chapter${currentVersion != null && currentVersion!.isNotEmpty ? "  ·  $currentVersion" : ""}'
+        ? '$book $chapter${versionLabel != null ? "  ·  $versionLabel" : ""}'
         : (uiStrings['continueReadingHint']?[locale] ??
             'Open the Bible from the beginning.');
 

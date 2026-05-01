@@ -438,9 +438,16 @@ const uiStrings = {
     'en': 'Recent bookmarks',
   },
   'continueReading': {
-    'zh-Hans': '继续阅读',
-    'zh-Hant': '繼續閱讀',
-    'en': 'Continue reading',
+    // The hero CTA on the dashboard. Earlier copy was '继续阅读 /
+    // Continue reading' which felt generic for a Bible-first app.
+    // '读经' is the natural Chinese phrase for "read scripture";
+    // 'Read Bible' is the English equivalent — direct, on-brand,
+    // and pairs with the book + chapter line below the CTA without
+    // sounding redundant ("Continue reading: Genesis 1" vs "Read
+    // Bible: Genesis 1").
+    'zh-Hans': '读经',
+    'zh-Hant': '讀經',
+    'en': 'Read Bible',
   },
   'dailyVerse': {
     'zh-Hans': '每日金句',
@@ -461,10 +468,10 @@ const uiStrings = {
     'en': 'Welcome to YsWords',
   },
   'onboardWelcomeBody': {
-    'zh-Hans': '双语圣经阅读应用。随时点击「继续阅读」可打开经文列表、侧栏、搜索、原文和相互参照。',
-    'zh-Hant': '雙語聖經閱讀應用。隨時點擊「繼續閱讀」可打開經文列表、側欄、搜索、原文和相互參照。',
+    'zh-Hans': '双语圣经阅读应用。随时点击「读经」可打开经文列表、侧栏、搜索、原文和相互参照。',
+    'zh-Hant': '雙語聖經閱讀應用。隨時點擊「讀經」可打開經文列表、側欄、搜索、原文和相互參照。',
     'en':
-        'A bilingual Bible reader. Tap "Continue reading" any time to open the verse list with sidebar, search, originals, and cross-references.',
+        'A bilingual Bible reader. Tap "Read Bible" any time to open the verse list with sidebar, search, originals, and cross-references.',
   },
   'onboardPlansTitle': {
     'zh-Hans': '读经计划',
@@ -601,9 +608,12 @@ const uiStrings = {
     'en': "Today's headlines updated.",
   },
   'startReading': {
-    'zh-Hans': '开始阅读',
-    'zh-Hant': '開始閱讀',
-    'en': 'Start reading',
+    // Hero CTA shown when the user has no saved reading position
+    // yet (fresh install). Mirrors continueReading's voice but
+    // signals "first time".
+    'zh-Hans': '开始读经',
+    'zh-Hant': '開始讀經',
+    'en': 'Read Bible',
   },
   'continueReadingHint': {
     'zh-Hans': '从头开始阅读圣经。',
