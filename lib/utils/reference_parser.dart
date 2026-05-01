@@ -61,14 +61,35 @@ BibleReference? parseReference(String input) {
   final m = RegExp(
     r'^\s*(.*?)\s*(\d+)(?:\s*[:：.]\s*(\d+)(?:\s*[-–—]\s*(\d+))?)?\s*$',
   ).firstMatch(raw);
-  if (m == null) return null;
+  if (m != null) {
+    return _buildRef(
+      m.group(1)?.trim() ?? '',
+      int.tryParse(m.group(2)!) ?? 0,
+      m.group(3) == null ? null : int.tryParse(m.group(3)!),
+      m.group(4) == null ? null : int.tryParse(m.group(4)!),
+    );
+  }
 
-  final bookPart = m.group(1)?.trim() ?? '';
-  final chapter = int.tryParse(m.group(2)!) ?? 0;
+  // Fallback: <book> <chapter>-<chapterEnd> (whole-chapter range like
+  // "Genesis 6-9" or "Mat 1-2"). Navigate to the start chapter.
+  final cm = RegExp(
+    r'^\s*(.*?)\s+(\d+)\s*[-–—]\s*(\d+)\s*$',
+  ).firstMatch(raw);
+  if (cm != null) {
+    return _buildRef(
+      cm.group(1)?.trim() ?? '',
+      int.tryParse(cm.group(2)!) ?? 0,
+      null,
+      null,
+    );
+  }
+
+  return null;
+}
+
+BibleReference? _buildRef(
+    String bookPart, int chapter, int? verseStart, int? verseEnd) {
   if (chapter <= 0) return null;
-
-  final verseStart = m.group(3) == null ? null : int.tryParse(m.group(3)!);
-  final verseEnd = m.group(4) == null ? null : int.tryParse(m.group(4)!);
 
   // Empty book part is invalid — "3:16" alone needs a book.
   if (bookPart.isEmpty) return null;
@@ -316,6 +337,7 @@ const Map<String, String> _chineseShortAliases = {
   '雅': 'James',
   '彼前': '1 Peter', '彼后': '2 Peter',
   '约一': '1 John', '约二': '2 John', '约三': '3 John',
+  '1约': '1 John', '2约': '2 John', '3约': '3 John',
   '犹': 'Jude', '启': 'Revelation',
   // Traditional Chinese variants
   '書': 'Joshua', '師': 'Judges',

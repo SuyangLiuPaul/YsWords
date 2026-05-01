@@ -44,7 +44,8 @@ class BibleMap {
 
   bool matchesBookChapter(String englishBook, int chapter) {
     final range = books[englishBook];
-    if (range == null || range.length != 2) return false;
+    if (range == null || range.isEmpty) return false;
+    if (range.length == 1) return chapter == range[0];
     return chapter >= range[0] && chapter <= range[1];
   }
 

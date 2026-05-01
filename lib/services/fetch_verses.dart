@@ -114,9 +114,6 @@ class FetchVerses {
     final version = mainProvider.currentVersion.toLowerCase();
     final path = 'assets/$version.json';
 
-    mainProvider.setVerses([]);
-    mainProvider.setBooks([]);
-
     try {
       final paraMap = await _loadParagraphMap();
       final verses = await _loadAndParse(path, paraMap);

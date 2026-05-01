@@ -232,16 +232,27 @@ class EvidenceDetailPage extends StatelessWidget {
   }
 
   void _openReference(BuildContext context) {
-    final ref = parseReference(evidence.scriptureReference);
+    // Handle multi-reference strings like "Isaiah 53; Psalm 22; Micah 5:2"
+    // by trying the first semicolon-separated segment first, then the full
+    // string, then each remaining segment until one parses.
+    final raw = evidence.scriptureReference;
+    BibleReference? ref = parseReference(raw);
+    if (ref == null && raw.contains(';')) {
+      for (final part in raw.split(';')) {
+        ref = parseReference(part.trim());
+        if (ref != null) break;
+      }
+    }
     if (ref == null) return;
+    final resolved = ref;
     final mp = context.read<MainProvider>();
-    final localBook = translateBookName(ref.englishBook, mp.currentVersion);
+    final localBook = translateBookName(resolved.englishBook, mp.currentVersion);
     final matches = mp.verses
-        .where((v) => v.book == localBook && v.chapter == ref.chapter)
+        .where((v) => v.book == localBook && v.chapter == resolved.chapter)
         .toList()
       ..sort((a, b) => a.verse.compareTo(b.verse));
     if (matches.isEmpty) return;
-    final target = ref.verseStart ?? matches.first.verse;
+    final target = resolved.verseStart ?? matches.first.verse;
     final hit = matches.firstWhere(
       (v) => v.verse == target,
       orElse: () => matches.first,

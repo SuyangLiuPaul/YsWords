@@ -4,9 +4,15 @@ import 'package:yswords/models/bible_map.dart';
 
 class MapService {
   static List<BibleMap>? _cache;
+  static Future<List<BibleMap>>? _loading;
 
-  static Future<List<BibleMap>> loadMaps() async {
-    if (_cache != null) return _cache!;
+  static Future<List<BibleMap>> loadMaps() {
+    if (_cache != null) return Future.value(_cache!);
+    _loading ??= _doLoad();
+    return _loading!;
+  }
+
+  static Future<List<BibleMap>> _doLoad() async {
     final jsonString = await rootBundle.loadString('assets/maps_index.json');
     final list = jsonDecode(jsonString) as List;
     _cache = list

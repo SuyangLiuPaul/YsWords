@@ -70,19 +70,24 @@ abstract class RemoteDataService<T> {
   }
 
   Future<T> _firstLoad() async {
-    final fromCache = await _loadFromPrefs();
-    if (fromCache != null) {
-      _cached = fromCache;
+    try {
+      final fromCache = await _loadFromPrefs();
+      if (fromCache != null) {
+        _cached = fromCache;
+        // ignore: unawaited_futures
+        refresh();
+        return fromCache;
+      }
+      final raw = await rootBundle.loadString(bundledAssetPath);
+      final bundled = parse(jsonDecode(raw) as Map<String, dynamic>);
+      _cached = bundled;
       // ignore: unawaited_futures
       refresh();
-      return fromCache;
+      return bundled;
+    } catch (e) {
+      _inflight = null;
+      rethrow;
     }
-    final raw = await rootBundle.loadString(bundledAssetPath);
-    final bundled = parse(jsonDecode(raw) as Map<String, dynamic>);
-    _cached = bundled;
-    // ignore: unawaited_futures
-    refresh();
-    return bundled;
   }
 
   /// Best-effort network refresh. Updates in-memory + prefs cache on

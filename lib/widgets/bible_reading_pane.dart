@@ -336,6 +336,7 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
   void _goToNextChapter() {
     final provider = context.read<MainProvider>();
     provider.clearSelectedVerses();
+    provider.clearHighlightIndex();
     final books = provider.books;
     final currentBook = provider.currentBook;
     final currentChapter = provider.currentChapter;
@@ -363,6 +364,7 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
   void _goToPreviousChapter() {
     final provider = context.read<MainProvider>();
     provider.clearSelectedVerses();
+    provider.clearHighlightIndex();
     final books = provider.books;
     final currentBook = provider.currentBook;
     final currentChapter = provider.currentChapter;
@@ -954,12 +956,20 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                         final p = context.read<MainProvider>();
                         final messenger = _messengerKey.currentState;
                         p.clearSelectedVerses();
+                        final prevVersion = p.currentVersion;
                         final prevEn = toEnglish(p.currentBook);
                         p.setVersion(version);
                         await FetchVerses.execute(mainProvider: p);
                         if (!mounted) return;
                         await FetchBooks.execute(mainProvider: p);
                         if (!mounted) return;
+                        // If the new version failed to load, revert so
+                        // the user keeps reading the previous version.
+                        if (p.verses.isEmpty && prevVersion.isNotEmpty) {
+                          p.setVersion(prevVersion);
+                          await FetchVerses.execute(mainProvider: p);
+                          await FetchBooks.execute(mainProvider: p);
+                        }
                         if (p.verses.isEmpty) {
                           messenger?.showSnackBar(
                             SnackBar(
