@@ -15,12 +15,19 @@
 | Versions     | KJV, LEB, NASB, NIV, 和合本雅伟版 (简 / 繁), 和合本 (简 / 繁), 新译本 (简 / 繁), 原文释经圣经 (简 / 繁)                              |
 | Reading      | Apple-glass reader controls; Light / Dark / System theme; Adjustable font family, size, line spacing, menu scale; Verse-by-verse or Paragraph Flow reading mode (default); Full-width reading on all devices; Grid view default for new users; Reading mode toggle in header on tablet+ |
 | Highlights   | Mark verses with 6 colors (yellow, green, blue, pink, orange, purple); persistent across sessions                      |
+| Bookmarks    | Bookmark + per-verse notes; visible inline indicator next to every flagged verse in both verse-by-verse and paragraph mode |
 | Navigation   | Swipe left/right to change chapter; Floating chapter picker; Previous/next chapter buttons; Grid/List view for books with compact English/Chinese labels; Responsive grid for tablets/desktops; Collapsible sidebar for wide screens (≥600px) |
 | Split View   | Two fully independent Bible panes; Side-by-side on tablet/desktop (≥600px) with draggable divider; Top-bottom on phone with draggable divider; Each pane has its own book, chapter, and version; Toggle in header |
 | Search       | Book-only or whole-Bible search; Highlighted results with book summary                                                  |
 | Annotations  | `{...}` inline badges with linked `<note:...>` pop-ups; `[...]` dotted-underline keywords; Book icon notes              |
+| Section titles | Inline scripture-section headings with optional ⓘ context popovers — covers all 14 versions × 66 books                  |
+| Book intros  | Collapsible historical-context card at the top of every chapter 1, bilingual                                            |
+| Bible Evidence | Browsable archive of 225 archaeology / manuscript / science / history finds with bilingual descriptions and scripture cross-link; chapter-aware filter from inside the reader |
+| Daily News   | Bilingual world / China / Australia headlines with full article body, AI-picked Bible verse, and reflection — refreshed hourly from the central data CDN |
+| Cloud Sync   | Optional Google sign-in syncs highlights + bookmarks + notes via Firestore; offline-first with last-writer-wins reconciliation |
+| Reload       | One-tap Reload from the floating-header overflow menu and the empty-reader scaffold so users never have to relaunch the app to recover from a load failure |
 | Copy & Share | Tap verses to multi-select; Copy in **Plain**, **With Reference**, or **Devotional** formats                            |
-| Persistence  | Last-read position, highlights & user settings stored with `shared_preferences`                                         |
+| Persistence  | Last-read position, highlights & user settings stored with `shared_preferences`; cloud sync layered on top              |
 | Platforms    | Android, iOS, Web, macOS, Windows, Linux                                                                                |
 
 ---

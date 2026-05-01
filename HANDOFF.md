@@ -1,6 +1,6 @@
 # YsWords — AI Agent Handoff Document
 
-> Last updated: 2026-04-30
+> Last updated: 2026-05-01
 > Project: YsWords (Yahweh's Words) — bilingual Bible reader
 > Stack: Flutter 3.41.7 / Dart 3.11.5 / Provider + GetX
 > Repo: https://github.com/SuyangLiuPaul/YsWords
@@ -418,7 +418,84 @@ The app adapts its layout to all device sizes using `lib/utils/responsive.dart`:
 
 ---
 
-## What Has Been Fixed (2026-04-30)
+## What Has Been Fixed (2026-05-01)
+
+### News bilingual full body — free Google Translate + article-HTML fetcher (round 46)
+
+User audit revealed 2/3 of stories were missing `body.en` because most
+RSS feeds (BBC, SBS, DW) don't carry `<content:encoded>`. Even the
+ones that did had `body.zh` empty because the Gemini free-tier daily
+quota kept exhausting. Three fixes brought the pipeline to 38/38
+bilingual coverage:
+
+1. **Article-HTML body fetcher** (`fetchArticleBody` in
+   `scripts/refresh-news.mjs`). When the RSS body is empty/short, fetch
+   the article URL directly and extract paragraphs via a readability
+   heuristic: locate `<article>` (or `<main>`) → take every `<p>` ≥80
+   chars → reject low-punctuation-density nav/CTA blobs → trim to 2800
+   chars. Smoke-tested live against BBC, SBS, DW URLs — all yield
+   clean 2200–2800 char bodies with the lede paragraphs intact.
+
+2. **Free Google Translate for body.zh** (`freeTranslateToZh`). The
+   pipeline already used `translate.googleapis.com/translate_a/single`
+   for titles; extracted into a shared helper that handles long-form
+   too (~5000 char limit per request, our bodies cap at 2800 anyway).
+   No API key, no quota, ~750 ms per call. Gemini stays for the
+   substantive editorial work — picking the right verse from the 149-
+   verse corpus, writing the bilingual reflection — and free Google
+   Translate handles mechanical body translation.
+
+3. **Decoupled body translation from Gemini state.** Original code
+   gated the translation step on `deep` (the Gemini deep-match result)
+   being non-null. When Gemini quota was exhausted, `deep === null`
+   for those stories so even the free translator was skipped. Body
+   translation now fires whenever `body.en` exists and `body.zh`
+   doesn't, completely independent of Gemini outcome.
+
+Final per-source coverage: **38/38 body.en, 38/38 body.zh** across
+Guardian / BBC / SBS / DW for both World / China / Australia desks.
+
+### Bookmark indicators in paragraph mode + bigger badges (round 47)
+
+User: "bookmark in the bible reader doesn't have bookmark one so don't
+know which verses bookmarked".
+
+Two missing pieces:
+
+1. **Paragraph mode rendered no bookmark/note indicators at all** —
+   verse-by-verse mode had them but paragraph mode (one continuous
+   `RichText`) was silent. Bookmarked verses were invisible in
+   paragraph mode. Fix: `ParagraphGroupWidget` now reads
+   `isBookmarked + isVerseNoted` per verse and emits a tiny
+   `WidgetSpan` glyph right before the verse number, scaled to font.
+
+2. **Verse-by-verse badges were 14 px @ 60 % opacity, hardcoded** —
+   easy to miss on bigger fonts. Now scale with `settings.fontSize`
+   (clamp 14-22 for notes, 16-24 for bookmarks) at full primary
+   opacity.
+
+### iPhone 14 vertical-text fix on profile card (round 47)
+
+User: "iphone14 the word for profile all put vertically and go up.
+unlike other phone shows correctly".
+
+iOS 17/18 Safari quirk where a fallback CJK font's OpenType `vert`
+feature can flip glyph orientation in Flutter web's HTML renderer.
+Two-layer defensive fix:
+
+- CSS: `writing-mode: horizontal-tb !important` on `html, body,
+  flutter-view, flt-glass-pane, flt-scene-host`; `font-feature-
+  settings: "vert" off` on `body *`.
+- Flutter `Text` widgets on the dashboard greeting card now have
+  `softWrap: false`, `maxLines: 1`, `textDirection: TextDirection.ltr`
+  so the layout engine can't line-break between every character.
+
+Plus: PWA meta tags deduplicated (round 47). Two competing sets of
+`theme-color` / `apple-mobile-web-app-status-bar-style` made the iOS
+status bar render with the wrong tint when the user adds the app to
+their home screen via Safari → Share → Add to Home Screen. The
+duplicate near `<meta name="msapplication-TileImage">` is removed;
+the iOS-correct values near top-of-head win.
 
 ### News pipeline: full body + bilingual translation + hourly cadence (rounds 42–45)
 
