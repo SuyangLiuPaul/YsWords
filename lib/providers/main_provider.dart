@@ -389,6 +389,34 @@ class MainProvider extends ChangeNotifier {
     // Intentionally no notifyListeners() — called during build
   }
 
+  /// Pending cross-page jump request. Set by news/evidence/cross-ref
+  /// detail pages BEFORE navigating to the reader; consumed by
+  /// `BibleReadingPane` once the `ScrollablePositionedList`
+  /// controller is attached AND `verseToItemMap` has been built for
+  /// the requested book + chapter. Lets the source page hand off
+  /// the navigation without guessing how long the build will take —
+  /// pre-fix the 320ms delay was too short for cold-start /
+  /// version-switch paths and the jump silently no-op'd.
+  ///
+  /// Cleared by `consumePendingJump` after the reader executes the
+  /// jump + highlight, so subsequent unrelated chapter switches
+  /// don't accidentally re-trigger the jump.
+  int? _pendingJumpChapterVerseIndex;
+  int get pendingJumpVerseIndex => _pendingJumpChapterVerseIndex ?? -1;
+  bool get hasPendingJump => _pendingJumpChapterVerseIndex != null;
+
+  void setPendingJump({required int chapterVerseIndex}) {
+    _pendingJumpChapterVerseIndex = chapterVerseIndex;
+  }
+
+  /// Returns the pending verse index and clears it. Reader calls
+  /// this once it's actually performed the jump.
+  int? consumePendingJump() {
+    final v = _pendingJumpChapterVerseIndex;
+    _pendingJumpChapterVerseIndex = null;
+    return v;
+  }
+
   // Method to scroll to a specific index in the list and notify listeners
   void scrollToIndex({required int index}) {
     final mapped = _verseToItemMap[index] ?? index;

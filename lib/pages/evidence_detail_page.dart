@@ -231,6 +231,11 @@ class EvidenceDetailPage extends StatelessWidget {
         title: evidence.localizedTitle(locale));
   }
 
+  /// Cross-link to the reader at the cited verse. Uses the
+  /// `MainProvider.setPendingJump` handshake so the scroll +
+  /// highlight fire whenever the reader is actually ready, instead
+  /// of relying on a fragile timer. See
+  /// `lib/widgets/bible_reading_pane.dart` for the consumer side.
   void _openReference(BuildContext context) {
     // Handle multi-reference strings like "Isaiah 53; Psalm 22; Micah 5:2"
     // by trying the first semicolon-separated segment first, then the full
@@ -257,21 +262,16 @@ class EvidenceDetailPage extends StatelessWidget {
       (v) => v.verse == target,
       orElse: () => matches.first,
     );
+    final relIdx = matches.indexWhere((v) => v.verse == hit.verse);
     mp.setCurrentChapter(book: hit.book, chapter: hit.chapter);
     mp.updateCurrentVerse(verse: hit);
+    if (relIdx >= 0) {
+      mp.setPendingJump(chapterVerseIndex: relIdx);
+    }
     Get.to(
       () => const HomePage(),
       transition: Transition.rightToLeft,
     );
-    Future.delayed(const Duration(milliseconds: 320), () {
-      final relIdx =
-          matches.indexWhere((v) => v.verse == hit.verse);
-      if (relIdx < 0) return;
-      mp.jumpToIndex(index: relIdx);
-      mp.setHighlightIndex(relIdx);
-      Future.delayed(const Duration(milliseconds: 900),
-          () => mp.clearHighlightIndex());
-    });
   }
 }
 
