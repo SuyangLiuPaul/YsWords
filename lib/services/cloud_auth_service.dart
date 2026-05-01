@@ -1,5 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+// ignore: depend_on_referenced_packages
+import 'package:firebase_auth_platform_interface/firebase_auth_platform_interface.dart'
+    show FirebaseAuthPlatform;
+// ignore: depend_on_referenced_packages
+import 'package:firebase_auth_web/firebase_auth_web.dart' show FirebaseAuthWeb;
 import 'package:firebase_core/firebase_core.dart';
 // ignore: depend_on_referenced_packages
 import 'package:firebase_core_platform_interface/firebase_core_platform_interface.dart'
@@ -139,6 +144,19 @@ class CloudAuthService extends ChangeNotifier {
           // try its luck. We'd rather report the *real* downstream
           // error than mask it with this one.
           debugPrint('CloudAuthService: web delegate setup failed: $e');
+        }
+        // Register the FirebaseAuth web delegate. In some builds the
+        // auto-generated plugin registrant doesn't run or gets tree-
+        // shaken, leaving FirebaseAuthPlatform.instance pointing at
+        // MethodChannelFirebaseAuth (which throws UnimplementedError
+        // for signInWithPopup/Redirect). Manually setting the web
+        // delegate ensures FirebaseAuth.instance uses the JS SDK.
+        try {
+          if (FirebaseAuthPlatform.instance is! FirebaseAuthWeb) {
+            FirebaseAuthPlatform.instance = FirebaseAuthWeb.instance;
+          }
+        } catch (e) {
+          debugPrint('CloudAuthService: FirebaseAuthWeb setup: $e');
         }
       }
       step = 'Firebase.initializeApp';
