@@ -25,6 +25,7 @@ import 'package:yswords/services/daily_news_service.dart';
 import 'package:yswords/providers/main_provider.dart';
 import 'package:yswords/services/cloud_auth_service.dart';
 import 'package:yswords/services/cloud_sync_service.dart';
+import 'package:yswords/services/daily_verse_fallback.dart';
 import 'package:yswords/services/daily_verse_service.dart';
 import 'package:yswords/services/profile_service.dart';
 import 'package:yswords/services/reading_plan_service.dart';
@@ -57,6 +58,12 @@ class _DashboardPageState extends State<DashboardPage> {
   int _planDay = 1;
   Set<int> _planDone = const {};
   Verse? _dailyVerse;
+  /// Set when [_dailyVerse] was resolved from a fallback bundle
+  /// (e.g. user is on LJK1, today's verse is OT, we pulled it from
+  /// CUVS-YHWH). Holds the friendly label of the source version so
+  /// the UI can show a "via {version}" note. null when the verse
+  /// came from the user's own selected version as normal.
+  String? _dailyVerseFromVersionLabel;
   /// Cached canonical English ref ("John 3:16") loaded once from the
   /// asset. Kept separate from [_dailyVerse] so a Bible-version
   /// switch can re-resolve the verse text without re-fetching the
@@ -213,14 +220,41 @@ class _DashboardPageState extends State<DashboardPage> {
       }
     }
     if (!mounted) return;
-    // Only setState when the resolved verse actually changes (book
-    // field carries the locale-specific name, so a version switch
-    // always produces a different match.book even if id is the
-    // same canonical English form).
-    if (match?.book != _dailyVerse?.book ||
-        match?.text != _dailyVerse?.text) {
-      setState(() => _dailyVerse = match);
+    if (match != null) {
+      if (match.book != _dailyVerse?.book ||
+          match.text != _dailyVerse?.text) {
+        setState(() {
+          _dailyVerse = match;
+          _dailyVerseFromVersionLabel = null;
+        });
+      }
+      return;
     }
+    // Primary lookup missed — usually because the user is reading on
+    // an NT-only edition (LJK1 / LJK2) and today's verse is OT.
+    // Pull from the same-language full-canon fallback (CUVS-YHWH /
+    // CUVS-YHWH-TR) and label the card so the user knows the text
+    // came from a different version than what they're reading.
+    DailyVerseFallback.resolve(
+      englishBook: parsed.englishBook,
+      chapter: parsed.chapter,
+      verseNumber: targetVerse,
+      currentVersion: mp.currentVersion,
+    ).then((result) {
+      if (!mounted) return;
+      if (result == null) {
+        setState(() {
+          _dailyVerse = null;
+          _dailyVerseFromVersionLabel = null;
+        });
+        return;
+      }
+      setState(() {
+        _dailyVerse = result.verse;
+        _dailyVerseFromVersionLabel =
+            DailyVerseFallback.fallbackVersionLabel(mp.currentVersion);
+      });
+    });
   }
 
   @override
@@ -406,6 +440,8 @@ class _DashboardPageState extends State<DashboardPage> {
               verse: _dailyVerse!,
               fontFamily: settings.fontFamily,
               fontSize: settings.fontSize,
+              locale: locale,
+              fromVersionLabel: _dailyVerseFromVersionLabel,
               onTap: () {
                 final v = _dailyVerse!;
                 mainProvider.setCurrentChapter(
@@ -1223,12 +1259,21 @@ class _DailyVerseCard extends StatelessWidget {
   /// User's reading font size — daily verse text uses it directly so
   /// the verse renders at the same scale as their Bible reading.
   final double fontSize;
+  /// Non-null when the verse text came from a fallback Bible bundle
+  /// because the user's selected version doesn't carry that book
+  /// (e.g. on LJK1/LJK2 + an OT verse). Drives a small "via {label}"
+  /// note under the citation so the user knows the text isn't from
+  /// their primary reading version.
+  final String? fromVersionLabel;
+  final String locale;
   final VoidCallback onTap;
   const _DailyVerseCard({
     required this.verse,
     required this.fontFamily,
     required this.fontSize,
+    required this.locale,
     required this.onTap,
+    this.fromVersionLabel,
   });
 
   @override
@@ -1273,15 +1318,38 @@ class _DailyVerseCard extends StatelessWidget {
                 Row(
                   children: [
                     Expanded(
-                      child: Text(
-                        '— ${verse.book} ${verse.chapter}:${verse.verseLabel}',
-                        style: TextStyle(
-                          fontFamily: fontFamily,
-                          fontSize:
-                              (fontSize - 3).clamp(11.0, 18.0).toDouble(),
-                          fontWeight: FontWeight.w600,
-                          color: scheme.primary,
-                        ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            '— ${verse.book} ${verse.chapter}:${verse.verseLabel}',
+                            style: TextStyle(
+                              fontFamily: fontFamily,
+                              fontSize:
+                                  (fontSize - 3).clamp(11.0, 18.0).toDouble(),
+                              fontWeight: FontWeight.w600,
+                              color: scheme.primary,
+                            ),
+                          ),
+                          if (fromVersionLabel != null)
+                            Padding(
+                              padding: const EdgeInsets.only(top: 2),
+                              child: Text(
+                                (uiStrings['dailyVerseFromFallback']
+                                            ?[locale] ??
+                                        'Shown from {version}')
+                                    .replaceAll('{version}', fromVersionLabel!),
+                                style: TextStyle(
+                                  fontFamily: fontFamily,
+                                  fontSize: (fontSize - 5)
+                                      .clamp(10.0, 14.0)
+                                      .toDouble(),
+                                  color: scheme.onSurfaceVariant,
+                                  fontStyle: FontStyle.italic,
+                                ),
+                              ),
+                            ),
+                        ],
                       ),
                     ),
                     Icon(Icons.arrow_forward,
