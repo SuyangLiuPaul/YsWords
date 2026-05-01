@@ -102,3 +102,25 @@ String shortBibleVersionLabel(String version) {
       )
       .shortLabel;
 }
+
+/// Some bundled versions only ship one Testament — most notably the
+/// LJK1 / LJK2 (梁家铿译本) editions are NT-only because the
+/// translator's OT work isn't published yet.  When the daily-verse
+/// lookup hits a book that doesn't exist in those bundles (e.g. an
+/// OT reference for a user reading on LJK1), we fall back to a
+/// same-language full-canon bundle instead of showing an empty
+/// daily-verse card.
+///
+/// Returns the version code to fall back to, or null when [version]
+/// already has full OT+NT coverage.
+String? bibleVersionFullCanonFallback(String version) {
+  switch (version) {
+    case 'biblexg':       // LJK1 (Simplified Chinese, NT only)
+    case 'biblexg-v2':    // LJK2 (Simplified Chinese, NT only)
+      return 'cuvs-yhwh';      // 和合本雅伟版 (Simplified, full canon)
+    case 'biblexg-tr':    // LJK1 (Traditional Chinese, NT only)
+    case 'biblexg-v2-tr': // LJK2 (Traditional Chinese, NT only)
+      return 'cuvs-yhwh-tr';   // 和合本雅伟版 (Traditional, full canon)
+  }
+  return null;
+}

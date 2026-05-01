@@ -454,6 +454,15 @@ const uiStrings = {
     'zh-Hant': '每日金句',
     'en': 'Verse of the Day',
   },
+  // Shown beneath the daily-verse citation when the verse text was
+  // pulled from a fallback Bible (e.g. user is on LJK1, today's
+  // verse is OT, we display the CUVS-YHWH text). {version} is the
+  // friendly menuLabel of the fallback bundle.
+  'dailyVerseFromFallback': {
+    'zh-Hans': '本句显示自《{version}》',
+    'zh-Hant': '本句顯示自《{version}》',
+    'en': 'Shown from {version}',
+  },
   // ── Onboarding tour (Round 34) ──────────────────────────────────
   'skip': {'zh-Hans': '跳过', 'zh-Hant': '跳過', 'en': 'Skip'},
   'next': {'zh-Hans': '下一步', 'zh-Hant': '下一步', 'en': 'Next'},

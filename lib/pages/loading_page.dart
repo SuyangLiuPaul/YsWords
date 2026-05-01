@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../models/app_settings.dart';
 import '../models/verse.dart';
 import '../providers/main_provider.dart';
+import '../services/daily_verse_fallback.dart';
 import '../services/daily_verse_service.dart';
 import '../services/fetch_verses.dart';
 import '../services/fetch_books.dart';
@@ -85,7 +86,19 @@ class _LoadingPageState extends State<LoadingPage> {
           _splashVerse = v;
           _splashVerseLocked = true;
         } else {
-          _lockRandom();
+          // Same logic the dashboard uses: when the user is on an
+          // NT-only edition (LJK1 / LJK2) and today's verse is OT,
+          // pull the text from the same-language full-canon bundle
+          // (CUVS-YHWH). Falls back to a random local pick if the
+          // fallback bundle also can't resolve (e.g. malformed ref).
+          final v2 = await _resolveRefViaFallback(ref);
+          if (_splashVerseLocked) return;
+          if (v2 != null) {
+            _splashVerse = v2;
+            _splashVerseLocked = true;
+          } else {
+            _lockRandom();
+          }
         }
       }
     } catch (_) {
@@ -127,6 +140,27 @@ class _LoadingPageState extends State<LoadingPage> {
       }
     }
     return null;
+  }
+
+  /// Try resolving the reference via DailyVerseFallback. Used when
+  /// the primary version (e.g. LJK1) doesn't ship the requested
+  /// book. Returns null when no fallback exists OR the fallback
+  /// bundle also doesn't contain the verse.
+  Future<Verse?> _resolveRefViaFallback(String ref) async {
+    final parsed = parseReference(ref);
+    if (parsed == null) return null;
+    String? activeVersion;
+    try {
+      activeVersion = context.read<MainProvider>().currentVersion;
+    } catch (_) {}
+    if (activeVersion == null) return null;
+    final result = await DailyVerseFallback.resolve(
+      englishBook: parsed.englishBook,
+      chapter: parsed.chapter,
+      verseNumber: parsed.verseStart ?? 1,
+      currentVersion: activeVersion,
+    );
+    return result?.verse;
   }
 
   void _lockRandom() {
