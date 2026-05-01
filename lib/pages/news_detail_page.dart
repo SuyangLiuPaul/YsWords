@@ -347,6 +347,12 @@ class NewsDetailPage extends StatelessWidget {
   }
 
   /// Same cross-link mechanic as `EvidenceDetailPage._openReference`.
+  /// Hands the target verse off to the reader via
+  /// `MainProvider.setPendingJump`; the reader executes the scroll
+  /// + highlight on its first build that has both the scroll-list
+  /// controller attached AND the verseToItemMap populated. This
+  /// replaces a fragile 320ms timer that often missed cold-start
+  /// and version-switch builds.
   void _openReference(BuildContext context) {
     final ref = parseReference(article.verse.reference);
     if (ref == null) return;
@@ -362,20 +368,16 @@ class NewsDetailPage extends StatelessWidget {
       (v) => v.verse == target,
       orElse: () => matches.first,
     );
+    final relIdx = matches.indexWhere((v) => v.verse == hit.verse);
     mp.setCurrentChapter(book: hit.book, chapter: hit.chapter);
     mp.updateCurrentVerse(verse: hit);
+    if (relIdx >= 0) {
+      mp.setPendingJump(chapterVerseIndex: relIdx);
+    }
     Get.to(
       () => const HomePage(),
       transition: Transition.rightToLeft,
     );
-    Future.delayed(const Duration(milliseconds: 320), () {
-      final relIdx = matches.indexWhere((v) => v.verse == hit.verse);
-      if (relIdx < 0) return;
-      mp.jumpToIndex(index: relIdx);
-      mp.setHighlightIndex(relIdx);
-      Future.delayed(const Duration(milliseconds: 900),
-          () => mp.clearHighlightIndex());
-    });
   }
 }
 

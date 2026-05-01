@@ -703,6 +703,44 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
         }
         mainProvider.setVerseToItemMap(verseToItemMap);
 
+        // Drain a pending cross-page jump (e.g. from a Daily News
+        // verse-reference tap or a Bible Evidence "scripture
+        // correlation" tap). The map we just built is the missing
+        // ingredient those pages couldn't wait for, so this is the
+        // first frame where we can actually scroll + highlight
+        // accurately. Schedule it AFTER this build completes so the
+        // ScrollablePositionedList has had a chance to attach its
+        // controller; without the post-frame deferral we'd hit
+        // `isAttached == false` and silently no-op.
+        if (mainProvider.hasPendingJump && verses.isNotEmpty) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (!mounted) return;
+            final mp = context.read<MainProvider>();
+            final pendingIdx = mp.consumePendingJump();
+            if (pendingIdx == null) return;
+            // Defensive clamp: a stale pending jump from a
+            // different chapter could land out-of-range.
+            if (pendingIdx < 0 || pendingIdx >= verses.length) return;
+            // Wait for the controller to attach. ScrollablePositionedList
+            // attaches in its first build but not always synchronously
+            // — we poll briefly. 30 × 50ms = 1.5s budget.
+            void tryJump([int attempt = 0]) {
+              if (!mounted) return;
+              if (mp.itemScrollController.isAttached) {
+                mp.jumpToIndex(index: pendingIdx);
+                mp.setHighlightIndex(pendingIdx);
+                Future.delayed(const Duration(milliseconds: 1200),
+                    () => mp.clearHighlightIndex());
+                return;
+              }
+              if (attempt > 30) return;
+              Future.delayed(const Duration(milliseconds: 50),
+                  () => tryJump(attempt + 1));
+            }
+            tryJump();
+          });
+        }
+
         final currentVerse = mainProvider.currentVerse ??
             (verses.isNotEmpty ? verses.first : null);
         if (currentVerse != null) {
