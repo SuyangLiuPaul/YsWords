@@ -29,7 +29,20 @@
 // Error:
 //   { error: 'human-readable reason' }
 
-const MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
+// Default to gemini-2.5-flash-lite (round 55):
+//   - 4× daily free quota of 2.5-flash (1000 vs 250 per key)
+//   - 1.5× per-minute (15 vs 10)
+//   - No "thinking" tokens — the entire max_tokens budget goes to
+//     the visible answer, eliminating round-54's truncation class
+//   - Quality is plenty for "explain this Greek/Hebrew word in this
+//     verse" — the model has seen extensive biblical-language data
+//     in training and produces solid exegesis paragraphs.
+//
+// Override at the Netlify project level by setting GEMINI_MODEL —
+// e.g. 'gemini-2.5-flash' for higher quality on chapters where
+// reasoning helps more, or 'gemini-2.5-pro' (very limited quota,
+// 5 RPM / 100 RPD).
+const MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash-lite';
 const BASE_URL =
 	(process.env.GEMINI_BASE_URL ||
 		'https://generativelanguage.googleapis.com/v1beta/openai').replace(/\/$/, '');

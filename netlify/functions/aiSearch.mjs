@@ -27,7 +27,10 @@ import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
-const MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
+// Default to gemini-2.5-flash-lite (round 55) — see aiExplainWord.mjs
+// for the rationale: 4× daily free quota, no thinking-token budget
+// to fight, fast enough for the brief 1-3 sentence search answers.
+const MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash-lite';
 const BASE_URL =
 	(process.env.GEMINI_BASE_URL ||
 		'https://generativelanguage.googleapis.com/v1beta/openai').replace(/\/$/, '');
