@@ -170,7 +170,7 @@ class _SermonDetailPageState extends State<SermonDetailPage> {
           padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
           children: [
             Text(
-              s.title,
+              s.localizedTitle(settings.locale),
               style: const TextStyle(
                 fontSize: 22,
                 fontWeight: FontWeight.w700,

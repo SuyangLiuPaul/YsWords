@@ -54,7 +54,15 @@ class SermonRecord:
     date: str          # "1979-04-08" or "yyyy-mmdd" when undated
     parts: str         # "A/B", "A/B/C", "" for single-part
     passage: str       # raw passage hint from index ("Luke 4:5-13"), may be ""
-    title: str         # English title from the index
+    title: str         # English title from the index (short)
+    # Per-language localised titles, extracted from the first
+    # markdown H1 line of each body file. The body H1 is the formal
+    # sermon title written by the proofreader and is the single best
+    # source of a localised title — way better than auto-translating
+    # the short English index title. May differ stylistically from
+    # `title`: H1 typically includes the part letter ("(Part A)"), a
+    # subtitle after an em-dash, and a passage suffix in parens.
+    titles: dict[str, str]
     hasEn: bool
     hasZhCn: bool
     hasZhTw: bool
@@ -90,6 +98,7 @@ def parse_index(md_path: Path) -> list[SermonRecord]:
             parts=parts,
             passage=passage,
             title=title,
+            titles={},
             hasEn=False, hasZhCn=False, hasZhTw=False,
         ))
     return records
@@ -143,6 +152,18 @@ def normalize_body(text: str) -> str:
     return text
 
 
+def extract_h1_title(body: str) -> str:
+    """Return the first markdown-H1 line ('# ...') stripped of the
+    leading hashes, or empty string if no H1 in the first 5 lines."""
+    for line in body.split("\n", 5)[:5]:
+        line = line.strip()
+        if line.startswith("# "):
+            return line[2:].strip()
+        if line.startswith("#\t"):
+            return line[2:].strip()
+    return ""
+
+
 def main() -> int:
     if not INDEX_MD.exists():
         print(f"ERROR: {INDEX_MD} not found", file=sys.stderr)
@@ -174,16 +195,25 @@ def main() -> int:
             (OUT / "en" / f"{rec.id}.txt").write_text(body, encoding="utf-8")
             bytes_written["en"] += len(body.encode("utf-8"))
             rec.hasEn = True
+            t = extract_h1_title(body)
+            if t:
+                rec.titles["en"] = t
         if zh_cn:
             body = normalize_body(zh_cn.read_text(encoding="utf-8"))
             (OUT / "zh-CN" / f"{rec.id}.txt").write_text(body, encoding="utf-8")
             bytes_written["zh-CN"] += len(body.encode("utf-8"))
             rec.hasZhCn = True
+            t = extract_h1_title(body)
+            if t:
+                rec.titles["zh-CN"] = t
         if zh_tw:
             body = normalize_body(zh_tw.read_text(encoding="utf-8"))
             (OUT / "zh-TW" / f"{rec.id}.txt").write_text(body, encoding="utf-8")
             bytes_written["zh-TW"] += len(body.encode("utf-8"))
             rec.hasZhTw = True
+            t = extract_h1_title(body)
+            if t:
+                rec.titles["zh-TW"] = t
         if not (en or zh_cn or zh_tw):
             skipped.append(f"{rec.id}: no body files found in {rec.topicSlug}")
 

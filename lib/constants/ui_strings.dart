@@ -1758,6 +1758,41 @@ const uiStrings = {
     'zh-Hant': '沒有講道引用這些經文。',
     'en': 'No sermons reference these verses.',
   },
+  'sermonFilterByPassage': {
+    'zh-Hans': '按经文筛选',
+    'zh-Hant': '按經文篩選',
+    'en': 'Filter by passage',
+  },
+  'sermonFilterBookLabel': {
+    'zh-Hans': '书卷',
+    'zh-Hant': '書卷',
+    'en': 'Book',
+  },
+  'sermonFilterChapterLabel': {
+    'zh-Hans': '章',
+    'zh-Hant': '章',
+    'en': 'Chapter',
+  },
+  'sermonFilterAllChapters': {
+    'zh-Hans': '全部章节',
+    'zh-Hant': '全部章節',
+    'en': 'All chapters',
+  },
+  'sermonNoMatches': {
+    'zh-Hans': '没有讲道符合当前筛选条件。',
+    'zh-Hant': '沒有講道符合當前篩選條件。',
+    'en': 'No sermons match your filters.',
+  },
+  'clearFilter': {
+    'zh-Hans': '清除',
+    'zh-Hant': '清除',
+    'en': 'Clear',
+  },
+  'apply': {
+    'zh-Hans': '应用',
+    'zh-Hant': '套用',
+    'en': 'Apply',
+  },
   'viewMap': {
     'zh-Hans': '查看插图',
     'zh-Hant': '查看插畫',

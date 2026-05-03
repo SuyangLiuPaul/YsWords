@@ -1909,7 +1909,7 @@ class _RelatedSermonsSheetBodyState extends State<_RelatedSermonsSheetBody> {
                   final s = sermons[i];
                   return ListTile(
                     title: Text(
-                      s.title.isEmpty ? '#${s.id}' : s.title,
+                      s.localizedTitle(widget.locale),
                       style: const TextStyle(fontWeight: FontWeight.w500),
                     ),
                     subtitle: Padding(

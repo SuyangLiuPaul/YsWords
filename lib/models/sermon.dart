@@ -33,10 +33,16 @@ class Sermon {
   /// many topical sermons have no single passage.
   final String passage;
 
-  /// English title from the index — used as the canonical title.
-  /// Localized titles for zh-CN/zh-TW are pulled from the body's first
-  /// line (which is a Markdown H1) when the user toggles language.
+  /// Short English title from the SERMON_INDEX.md row. Used as the
+  /// fallback when no per-language title was extractable from the
+  /// body H1.
   final String title;
+
+  /// Per-language titles extracted from each body file's first
+  /// markdown-H1 line. Keys are body-language codes: `'en'`,
+  /// `'zh-CN'`, `'zh-TW'`. Missing keys mean we couldn't extract one
+  /// — caller should fall back to [title].
+  final Map<String, String> titles;
 
   final bool hasEn;
   final bool hasZhCn;
@@ -50,23 +56,54 @@ class Sermon {
     required this.parts,
     required this.passage,
     required this.title,
+    required this.titles,
     required this.hasEn,
     required this.hasZhCn,
     required this.hasZhTw,
   });
 
-  factory Sermon.fromJson(Map<String, dynamic> j) => Sermon(
-        id: j['id'] as String,
-        topic: j['topic'] as String,
-        topicSlug: j['topicSlug'] as String,
-        date: j['date'] as String,
-        parts: j['parts'] as String? ?? '',
-        passage: j['passage'] as String? ?? '',
-        title: j['title'] as String,
-        hasEn: j['hasEn'] as bool? ?? false,
-        hasZhCn: j['hasZhCn'] as bool? ?? false,
-        hasZhTw: j['hasZhTw'] as bool? ?? false,
-      );
+  factory Sermon.fromJson(Map<String, dynamic> j) {
+    final raw = j['titles'] as Map<String, dynamic>? ?? const {};
+    final titles = <String, String>{
+      for (final e in raw.entries) e.key: e.value.toString(),
+    };
+    return Sermon(
+      id: j['id'] as String,
+      topic: j['topic'] as String,
+      topicSlug: j['topicSlug'] as String,
+      date: j['date'] as String,
+      parts: j['parts'] as String? ?? '',
+      passage: j['passage'] as String? ?? '',
+      title: j['title'] as String,
+      titles: titles,
+      hasEn: j['hasEn'] as bool? ?? false,
+      hasZhCn: j['hasZhCn'] as bool? ?? false,
+      hasZhTw: j['hasZhTw'] as bool? ?? false,
+    );
+  }
+
+  /// Best title to display given the user's app locale, falling back
+  /// across languages so we always return something non-empty.
+  /// `appLocale` is the AppSettings.locale value: `'en'`, `'zh-Hans'`,
+  /// `'zh-Hant'`.
+  String localizedTitle(String appLocale) {
+    final preferred = appLocale == 'zh-Hant'
+        ? 'zh-TW'
+        : appLocale == 'zh-Hans'
+            ? 'zh-CN'
+            : 'en';
+    final fallbacks = <String>[
+      preferred,
+      if (preferred != 'zh-CN') 'zh-CN',
+      if (preferred != 'zh-TW') 'zh-TW',
+      if (preferred != 'en') 'en',
+    ];
+    for (final lang in fallbacks) {
+      final t = titles[lang];
+      if (t != null && t.trim().isNotEmpty) return t.trim();
+    }
+    return title.isNotEmpty ? title : '#$id';
+  }
 
   /// True when the sermon has at least one body file in some language.
   /// (Always true post-ingest; we filter empties out at write time.)

@@ -6,7 +6,9 @@ import 'package:yswords/constants/ui_strings.dart';
 import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/models/sermon.dart';
 import 'package:yswords/pages/sermon_detail_page.dart';
+import 'package:yswords/services/fetch_books.dart' show standardBookOrder;
 import 'package:yswords/services/sermon_service.dart';
+import 'package:yswords/utils/version_mapper.dart' show localeAwareBookName;
 import 'package:yswords/widgets/home_icon_button.dart';
 import 'package:yswords/widgets/localized_back_button.dart';
 
@@ -15,8 +17,8 @@ import 'package:yswords/widgets/localized_back_button.dart';
 /// Layout mirrors the illustrations page and Bible-evidence page so
 /// the UX is consistent:
 ///   - sticky AppBar with search field
-///   - 20 collapsible topic groups (`ExpansionTile`), each showing
-///     the sermon count in the header
+///   - Free-text search + structured book/chapter filter
+///   - 20 collapsible topic groups (`ExpansionTile`)
 ///   - tap a sermon row → opens [SermonDetailPage] in the user's
 ///     preferred language (with cross-language fallback)
 class SermonsPage extends StatefulWidget {
@@ -27,13 +29,27 @@ class SermonsPage extends StatefulWidget {
 }
 
 class _SermonsPageState extends State<SermonsPage> {
-  Future<Map<String, List<Sermon>>>? _future;
+  Future<_PageData>? _future;
   String _query = '';
+
+  /// Currently-active passage filter. Both null = no filter; book set
+  /// alone = filter to any sermon citing that book; book + chapter =
+  /// filter to that specific chapter.
+  String? _filterBook;
+  int? _filterChapter;
 
   @override
   void initState() {
     super.initState();
-    _future = SermonService.instance.loadByTopic();
+    _future = _loadAll();
+  }
+
+  Future<_PageData> _loadAll() async {
+    final svc = SermonService.instance;
+    // Parallel: refs.json is independent of index.json
+    final groups = await svc.loadByTopic();
+    final refs = await svc.loadRefs();
+    return _PageData(groups: groups, refs: refs);
   }
 
   @override
@@ -50,7 +66,7 @@ class _SermonsPageState extends State<SermonsPage> {
         ),
         actions: const [HomeIconButton()],
       ),
-      body: FutureBuilder<Map<String, List<Sermon>>>(
+      body: FutureBuilder<_PageData>(
         future: _future,
         builder: (context, snap) {
           if (!snap.hasData) {
@@ -65,24 +81,73 @@ class _SermonsPageState extends State<SermonsPage> {
               ),
             );
           }
-          final groups = _filtered(snap.data!, _query);
+          final data = snap.data!;
+          final groups = _filtered(data, _query, locale);
           return Column(
             children: [
               Padding(
                 padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
-                child: TextField(
-                  decoration: InputDecoration(
-                    isDense: true,
-                    prefixIcon: const Icon(Icons.search, size: 20),
-                    hintText: uiStrings['sermonSearchHint']?[locale] ??
-                        'Search sermons by title or passage…',
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        decoration: InputDecoration(
+                          isDense: true,
+                          prefixIcon: const Icon(Icons.search, size: 20),
+                          hintText:
+                              uiStrings['sermonSearchHint']?[locale] ??
+                                  'Search sermons by title or passage…',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                        onChanged: (v) =>
+                            setState(() => _query = v.trim()),
+                      ),
                     ),
-                  ),
-                  onChanged: (v) => setState(() => _query = v.trim()),
+                    const SizedBox(width: 8),
+                    OutlinedButton.icon(
+                      onPressed: () => _openFilterSheet(data, locale),
+                      icon: Icon(
+                        _filterBook == null
+                            ? Icons.filter_list
+                            : Icons.filter_list_alt,
+                        size: 18,
+                      ),
+                      label: Text(
+                        uiStrings['sermonFilterByPassage']?[locale] ??
+                            'Filter',
+                        style: const TextStyle(fontSize: 13),
+                      ),
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        backgroundColor: _filterBook == null
+                            ? null
+                            : scheme.primaryContainer
+                                .withValues(alpha: 0.4),
+                      ),
+                    ),
+                  ],
                 ),
               ),
+              if (_filterBook != null)
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: InputChip(
+                      avatar: Icon(Icons.bookmark, size: 16,
+                          color: scheme.primary),
+                      label: Text(_activeFilterLabel(locale)),
+                      onDeleted: () => setState(() {
+                        _filterBook = null;
+                        _filterChapter = null;
+                      }),
+                      backgroundColor:
+                          scheme.primaryContainer.withValues(alpha: 0.5),
+                    ),
+                  ),
+                ),
               Padding(
                 padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
                 child: Row(
@@ -98,13 +163,27 @@ class _SermonsPageState extends State<SermonsPage> {
                 ),
               ),
               Expanded(
-                child: ListView(
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
-                  children: [
-                    for (final entry in groups.entries)
-                      _TopicGroup(topic: entry.key, sermons: entry.value),
-                  ],
-                ),
+                child: groups.isEmpty
+                    ? Center(
+                        child: Padding(
+                          padding: const EdgeInsets.all(32),
+                          child: Text(
+                            uiStrings['sermonNoMatches']?[locale] ??
+                                'No sermons match your filters.',
+                            style: TextStyle(
+                                color: scheme.onSurface
+                                    .withValues(alpha: 0.6)),
+                          ),
+                        ),
+                      )
+                    : ListView(
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                        children: [
+                          for (final entry in groups.entries)
+                            _TopicGroup(
+                                topic: entry.key, sermons: entry.value),
+                        ],
+                      ),
               ),
             ],
           );
@@ -113,20 +192,49 @@ class _SermonsPageState extends State<SermonsPage> {
     );
   }
 
+  /// Apply both the free-text query and the active passage filter.
+  /// Filters interact via AND (sermon must match both).
   Map<String, List<Sermon>> _filtered(
-      Map<String, List<Sermon>> groups, String query) {
-    if (query.isEmpty) return groups;
-    final q = query.toLowerCase();
+      _PageData data, String query, String locale) {
     final out = <String, List<Sermon>>{};
-    for (final e in groups.entries) {
+    final q = query.toLowerCase();
+    for (final e in data.groups.entries) {
       final hits = e.value.where((s) {
-        return s.title.toLowerCase().contains(q) ||
-            s.passage.toLowerCase().contains(q) ||
-            s.id.toLowerCase().contains(q);
+        // Passage filter (refs index lookup)
+        if (_filterBook != null && !_passageMatches(s, data.refs)) {
+          return false;
+        }
+        // Free-text query
+        if (q.isEmpty) return true;
+        if (s.title.toLowerCase().contains(q)) return true;
+        if (s.passage.toLowerCase().contains(q)) return true;
+        if (s.id.toLowerCase().contains(q)) return true;
+        for (final t in s.titles.values) {
+          if (t.toLowerCase().contains(q)) return true;
+        }
+        return false;
       }).toList();
       if (hits.isNotEmpty) out[e.key] = hits;
     }
     return out;
+  }
+
+  bool _passageMatches(Sermon s, SermonRefs refs) {
+    final book = _filterBook!;
+    final ch = _filterChapter;
+    final list = refs.bySermon[s.id];
+    if (list == null) return false;
+    for (final ref in list) {
+      // refs are "Book chapter" or "Book chapter:verse"
+      if (!ref.startsWith('$book ')) continue;
+      if (ch == null) return true;
+      final tail = ref.substring(book.length + 1);
+      // tail is "<chapter>" or "<chapter>:<verse>"
+      final colonIdx = tail.indexOf(':');
+      final chPart = colonIdx == -1 ? tail : tail.substring(0, colonIdx);
+      if (int.tryParse(chPart.trim()) == ch) return true;
+    }
+    return false;
   }
 
   String _summaryLine(Map<String, List<Sermon>> groups, String locale) {
@@ -139,6 +247,266 @@ class _SermonsPageState extends State<SermonsPage> {
           .replaceAll('{topics}', t.toString());
     }
     return '$n sermons across $t topics';
+  }
+
+  String _activeFilterLabel(String locale) {
+    final book = _filterBook;
+    if (book == null) return '';
+    final localBook = _displayBookName(book, locale);
+    return _filterChapter == null
+        ? localBook
+        : '$localBook $_filterChapter';
+  }
+
+  String _displayBookName(String englishBook, String locale) {
+    return localeAwareBookName(englishBook, locale, '');
+  }
+
+  void _openFilterSheet(_PageData data, String locale) {
+    // Pre-compute, for each canonical book, which chapters appear in
+    // any sermon's refs — so the chapter chooser shows only chapters
+    // that actually have sermons. Books with no sermons get dimmed
+    // and become non-tappable.
+    final perBook = <String, Set<int>>{};
+    for (final refs in data.refs.bySermon.values) {
+      for (final ref in refs) {
+        final spaceIdx = ref.lastIndexOf(' ');
+        if (spaceIdx == -1) continue;
+        final book = ref.substring(0, spaceIdx);
+        final tail = ref.substring(spaceIdx + 1);
+        final colon = tail.indexOf(':');
+        final chStr = colon == -1 ? tail : tail.substring(0, colon);
+        final ch = int.tryParse(chStr);
+        if (ch == null) continue;
+        perBook.putIfAbsent(book, () => <int>{}).add(ch);
+      }
+    }
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Theme.of(context).colorScheme.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (sheetCtx) {
+        return _PassageFilterSheet(
+          locale: locale,
+          chaptersByBook: perBook,
+          initialBook: _filterBook,
+          initialChapter: _filterChapter,
+          onApply: (book, chapter) {
+            setState(() {
+              _filterBook = book;
+              _filterChapter = chapter;
+            });
+            Navigator.of(sheetCtx).pop();
+          },
+          onClear: () {
+            setState(() {
+              _filterBook = null;
+              _filterChapter = null;
+            });
+            Navigator.of(sheetCtx).pop();
+          },
+        );
+      },
+    );
+  }
+}
+
+class _PageData {
+  final Map<String, List<Sermon>> groups;
+  final SermonRefs refs;
+  const _PageData({required this.groups, required this.refs});
+}
+
+class _PassageFilterSheet extends StatefulWidget {
+  final String locale;
+  final Map<String, Set<int>> chaptersByBook;
+  final String? initialBook;
+  final int? initialChapter;
+  final void Function(String book, int? chapter) onApply;
+  final VoidCallback onClear;
+
+  const _PassageFilterSheet({
+    required this.locale,
+    required this.chaptersByBook,
+    required this.initialBook,
+    required this.initialChapter,
+    required this.onApply,
+    required this.onClear,
+  });
+
+  @override
+  State<_PassageFilterSheet> createState() => _PassageFilterSheetState();
+}
+
+class _PassageFilterSheetState extends State<_PassageFilterSheet> {
+  String? _selectedBook;
+  int? _selectedChapter;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedBook = widget.initialBook;
+    _selectedChapter = widget.initialChapter;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final locale = widget.locale;
+    final chapters = _selectedBook == null
+        ? <int>[]
+        : (widget.chaptersByBook[_selectedBook!]?.toList() ?? <int>[])
+      ..sort();
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.bookmark, size: 18, color: scheme.primary),
+                const SizedBox(width: 8),
+                Text(
+                  uiStrings['sermonFilterByPassage']?[locale] ??
+                      'Filter by passage',
+                  style: const TextStyle(
+                      fontSize: 16, fontWeight: FontWeight.w600),
+                ),
+                const Spacer(),
+                if (widget.initialBook != null)
+                  TextButton(
+                    onPressed: widget.onClear,
+                    child: Text(
+                        uiStrings['clearFilter']?[locale] ?? 'Clear'),
+                  ),
+                IconButton(
+                  icon: const Icon(Icons.close, size: 20),
+                  onPressed: () => Navigator.of(context).maybePop(),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Text(
+              uiStrings['sermonFilterBookLabel']?[locale] ?? 'Book',
+              style: TextStyle(
+                  fontSize: 12,
+                  color: scheme.onSurface.withValues(alpha: 0.65)),
+            ),
+            const SizedBox(height: 6),
+            ConstrainedBox(
+              constraints: BoxConstraints(
+                maxHeight: MediaQuery.of(context).size.height * 0.35,
+              ),
+              child: SingleChildScrollView(
+                child: Wrap(
+                  spacing: 6,
+                  runSpacing: 6,
+                  children: [
+                    for (final book in standardBookOrder)
+                      _BookChip(
+                        book: book,
+                        locale: locale,
+                        hasSermons:
+                            widget.chaptersByBook.containsKey(book),
+                        selected: _selectedBook == book,
+                        onTap: () => setState(() {
+                          if (_selectedBook == book) {
+                            _selectedBook = null;
+                            _selectedChapter = null;
+                          } else {
+                            _selectedBook = book;
+                            _selectedChapter = null;
+                          }
+                        }),
+                      ),
+                  ],
+                ),
+              ),
+            ),
+            if (_selectedBook != null && chapters.isNotEmpty) ...[
+              const SizedBox(height: 14),
+              Text(
+                uiStrings['sermonFilterChapterLabel']?[locale] ?? 'Chapter',
+                style: TextStyle(
+                    fontSize: 12,
+                    color: scheme.onSurface.withValues(alpha: 0.65)),
+              ),
+              const SizedBox(height: 6),
+              ConstrainedBox(
+                constraints: BoxConstraints(
+                  maxHeight: MediaQuery.of(context).size.height * 0.18,
+                ),
+                child: SingleChildScrollView(
+                  child: Wrap(
+                    spacing: 6,
+                    runSpacing: 6,
+                    children: [
+                      ChoiceChip(
+                        label: Text(
+                            uiStrings['sermonFilterAllChapters']?[locale] ??
+                                'All'),
+                        selected: _selectedChapter == null,
+                        onSelected: (_) =>
+                            setState(() => _selectedChapter = null),
+                      ),
+                      for (final ch in chapters)
+                        ChoiceChip(
+                          label: Text('$ch'),
+                          selected: _selectedChapter == ch,
+                          onSelected: (_) =>
+                              setState(() => _selectedChapter = ch),
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+            const SizedBox(height: 14),
+            FilledButton(
+              onPressed: _selectedBook == null
+                  ? null
+                  : () => widget.onApply(_selectedBook!, _selectedChapter),
+              child: Text(uiStrings['apply']?[locale] ?? 'Apply'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _BookChip extends StatelessWidget {
+  final String book;
+  final String locale;
+  final bool hasSermons;
+  final bool selected;
+  final VoidCallback onTap;
+
+  const _BookChip({
+    required this.book,
+    required this.locale,
+    required this.hasSermons,
+    required this.selected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final localized = localeAwareBookName(book, locale, '');
+    return ChoiceChip(
+      label: Text(localized,
+          style: TextStyle(
+            fontSize: 13,
+            color: hasSermons ? null : Theme.of(context).disabledColor,
+          )),
+      selected: selected,
+      onSelected: hasSermons ? (_) => onTap() : null,
+    );
   }
 }
 
@@ -193,9 +561,16 @@ class _SermonRow extends StatelessWidget {
     return ListTile(
       dense: true,
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
-      title: Text(
-        sermon.title.isEmpty ? '#${sermon.id}' : sermon.title,
-        style: const TextStyle(fontWeight: FontWeight.w500),
+      title: Builder(
+        builder: (ctx) {
+          final locale = ctx.watch<AppSettings>().locale;
+          return Text(
+            sermon.localizedTitle(locale),
+            style: const TextStyle(fontWeight: FontWeight.w500),
+            maxLines: 3,
+            overflow: TextOverflow.ellipsis,
+          );
+        },
       ),
       subtitle: Padding(
         padding: const EdgeInsets.only(top: 2),
