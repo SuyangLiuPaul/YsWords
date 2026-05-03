@@ -92,6 +92,14 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
   List<BibleMap> _bookMaps = [];
   String _lastBookChapter = '';
 
+  /// Pastor Eric sermons that cite a verse anywhere in the current
+  /// (book, chapter). Pre-loaded the same moment the maps are loaded
+  /// so the floating-header sermon icon can show a count badge
+  /// without a per-frame async lookup. Updated whenever the user
+  /// turns to a new chapter — see [_updateSermonsForBookChapter].
+  List<Sermon> _chapterSermons = const [];
+  String _lastSermonsBookChapter = '';
+
   /// Polled flag mirroring `TtsService.speaking` so the floating-header
   /// menu can swap its icon/label without recomputing on every frame.
   /// Updated by a 500 ms ticker that runs only while a TTS utterance
@@ -332,6 +340,28 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
         _chapterMaps = chapterMaps;
         _bookMaps = extraBookMaps;
       });
+    });
+    _updateSermonsForBookChapter(book, chapter);
+  }
+
+  /// Mirror of [_updateMapsForBookChapter] for the Pastor Eric sermon
+  /// corpus. Listing sermons that cite *any* verse in the current
+  /// chapter is a chapter-level question, so we resolve it once per
+  /// chapter change rather than re-querying every time the floating
+  /// header rebuilds.
+  void _updateSermonsForBookChapter(String book, int chapter) {
+    final key = '$book:$chapter';
+    if (key == _lastSermonsBookChapter) return;
+    _lastSermonsBookChapter = key;
+    final en = bookNameToEnglish[book] ?? book;
+    // verse=0 ensures no exact-verse priority hits — the service
+    // returns every sermon citing any verse in this chapter.
+    SermonService.instance
+        .sermonsForVerse(englishBook: en, chapter: chapter, verse: 0)
+        .then((sermons) {
+      if (!mounted) return;
+      if (_lastSermonsBookChapter != key) return;
+      setState(() => _chapterSermons = sermons);
     });
   }
 
@@ -967,6 +997,7 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                       showSearchAndSettings: widget.showSearchAndSettings,
                       chapterMaps: _chapterMaps,
                       bookMaps: _bookMaps,
+                      chapterSermons: _chapterSermons,
                       locale: settings.locale,
                       onBookTap: isWideScreen && widget.showSidebarToggle
                           ? () {
@@ -1780,6 +1811,165 @@ void _showCrossRefsSheet({
 /// rather than refusing to open: the user just tapped a deliberate
 /// affordance, so giving them a "no sermons reference these verses"
 /// confirmation is more useful than silent no-op.
+/// Sister of [_showRelatedSermonsSheet] but driven by the chapter
+/// header rather than verse-selection. Caller passes the already-
+/// loaded list of sermons (computed in
+/// [_BibleReadingPaneState._updateSermonsForBookChapter]) so the
+/// sheet opens instantly — no spinner, no per-tap async fan-out.
+///
+/// Empty list still opens the sheet so the user gets a friendly
+/// "no sermons reference this chapter" message instead of the menu
+/// item just doing nothing on tap.
+void _showChapterSermonsSheet({
+  required BuildContext context,
+  required List<Sermon> sermons,
+  required String locale,
+  required String book,
+  required int chapter,
+}) {
+  showModalBottomSheet<void>(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Theme.of(context).colorScheme.surface,
+    constraints: const BoxConstraints(maxWidth: 800),
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+    ),
+    builder: (sheetCtx) => DraggableScrollableSheet(
+      initialChildSize: 0.55,
+      minChildSize: 0.3,
+      maxChildSize: 0.95,
+      expand: false,
+      builder: (_, scrollController) => _PreloadedSermonsSheetBody(
+        sermons: sermons,
+        locale: locale,
+        title: '$book $chapter',
+        scrollController: scrollController,
+      ),
+    ),
+  );
+}
+
+class _PreloadedSermonsSheetBody extends StatelessWidget {
+  final List<Sermon> sermons;
+  final String locale;
+  final String title;
+  final ScrollController scrollController;
+
+  const _PreloadedSermonsSheetBody({
+    required this.sermons,
+    required this.locale,
+    required this.title,
+    required this.scrollController,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final headerLabel = uiStrings['relatedSermons']?[locale] ??
+        'Related sermons';
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(20, 14, 20, 4),
+          child: Row(
+            children: [
+              Icon(Icons.menu_book_rounded, size: 20, color: scheme.primary),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(headerLabel,
+                        style: const TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.w600)),
+                    Text(title,
+                        style: TextStyle(
+                            fontSize: 12,
+                            color:
+                                scheme.onSurface.withValues(alpha: 0.6))),
+                  ],
+                ),
+              ),
+              IconButton(
+                icon: const Icon(Icons.close, size: 20),
+                onPressed: () => Navigator.of(context).maybePop(),
+              ),
+            ],
+          ),
+        ),
+        Expanded(
+          child: sermons.isEmpty
+              ? Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: Text(
+                      uiStrings['noRelatedSermons']?[locale] ??
+                          'No sermons reference this chapter.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                          color: scheme.onSurface.withValues(alpha: 0.65)),
+                    ),
+                  ),
+                )
+              : ListView.separated(
+                  controller: scrollController,
+                  padding: const EdgeInsets.fromLTRB(8, 4, 8, 24),
+                  itemCount: sermons.length,
+                  separatorBuilder: (_, __) => const Divider(height: 1),
+                  itemBuilder: (_, i) {
+                    final s = sermons[i];
+                    return ListTile(
+                      title: Text(
+                        s.localizedTitle(locale),
+                        style: const TextStyle(fontWeight: FontWeight.w500),
+                        maxLines: 3,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      subtitle: Padding(
+                        padding: const EdgeInsets.only(top: 2),
+                        child: Wrap(
+                          spacing: 8,
+                          children: [
+                            Text('#${s.id}',
+                                style: TextStyle(
+                                    fontSize: 11,
+                                    color: scheme.onSurface
+                                        .withValues(alpha: 0.55))),
+                            if (s.displayDate != '—')
+                              Text(s.displayDate,
+                                  style: TextStyle(
+                                      fontSize: 11,
+                                      color: scheme.onSurface
+                                          .withValues(alpha: 0.55))),
+                            Text(localizedSermonTopic(s.topic, locale),
+                                style: TextStyle(
+                                    fontSize: 11,
+                                    color: scheme.primary
+                                        .withValues(alpha: 0.85),
+                                    fontWeight: FontWeight.w500)),
+                          ],
+                        ),
+                      ),
+                      trailing:
+                          const Icon(Icons.chevron_right, size: 20),
+                      onTap: () {
+                        Navigator.of(context).maybePop();
+                        Get.to(
+                          () => SermonDetailPage(sermon: s),
+                          transition: Transition.rightToLeft,
+                        );
+                      },
+                    );
+                  },
+                ),
+        ),
+      ],
+    );
+  }
+}
+
 void _showRelatedSermonsSheet({
   required BuildContext context,
   required List<Verse> verses,
@@ -2764,6 +2954,10 @@ class _FloatingHeader extends StatelessWidget {
   final bool showSearchAndSettings;
   final List<BibleMap> chapterMaps;
   final List<BibleMap> bookMaps;
+  /// Pastor Eric sermons whose body or passage hint cites any verse
+  /// in the current (book, chapter). Drives the "Related sermons"
+  /// menu item — count badge + tap-to-open sheet.
+  final List<Sermon> chapterSermons;
   final String locale;
   final int highlightCount;
   final VoidCallback? onHighlights;
@@ -2804,6 +2998,7 @@ class _FloatingHeader extends StatelessWidget {
     this.showSearchAndSettings = true,
     this.chapterMaps = const [],
     this.bookMaps = const [],
+    this.chapterSermons = const [],
     this.locale = 'en',
     this.highlightCount = 0,
     this.onHighlights,
@@ -3224,6 +3419,31 @@ class _FloatingHeader extends StatelessWidget {
                             label: uiStrings['maps']?[locale] ?? 'Maps',
                             trailing: chapterMaps.isNotEmpty
                                 ? chapterMaps.length.toString()
+                                : null,
+                          ),
+                        ));
+                        items.add(PopupMenuItem(
+                          value: 'sermons',
+                          onTap: () =>
+                              _showChapterSermonsSheet(
+                                context: context,
+                                sermons: chapterSermons,
+                                locale: locale,
+                                book: book,
+                                chapter: chapter,
+                              ),
+                          child: _menuRow(
+                            context,
+                            icon: chapterSermons.isNotEmpty
+                                ? Icons.menu_book_rounded
+                                : Icons.menu_book_outlined,
+                            iconColor: chapterSermons.isNotEmpty
+                                ? scheme.primary
+                                : null,
+                            label: uiStrings['relatedSermons']?[locale] ??
+                                'Related sermons',
+                            trailing: chapterSermons.isNotEmpty
+                                ? chapterSermons.length.toString()
                                 : null,
                           ),
                         ));
