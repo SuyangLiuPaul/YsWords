@@ -283,6 +283,13 @@ class CloudAuthService extends ChangeNotifier {
       return const CloudAuthResult.error('Cloud sync not configured.');
     }
     final provider = GoogleAuthProvider();
+    // Explicit OAuth scopes — Firebase defaults are usually fine, but
+    // some older client configurations omit `email`/`profile` which
+    // makes the resulting User have null displayName/email and breaks
+    // the local-profile reconciliation in
+    // signInWithGoogleAndAdoptProfile().
+    provider.addScope('email');
+    provider.addScope('profile');
     // Always show the chooser even if there's a single signed-in
     // Google account, so users on shared devices can pick the
     // right one.
@@ -292,6 +299,19 @@ class CloudAuthService extends ChangeNotifier {
     try {
       final cred =
           await FirebaseAuth.instance.signInWithPopup(provider);
+      // Manually mirror the user into our notifier in case
+      // `userChanges()` doesn't fire — Chrome 115+ third-party cookie
+      // partitioning can prevent the auth iframe (running on
+      // ysword.firebaseapp.com) from syncing IndexedDB back to the
+      // host (yswords.netlify.app), so onAuthStateChanged silently
+      // never fires even though the popup returned a valid
+      // UserCredential. Without this, the popup closes successfully
+      // but the UI keeps showing "signed out" — the symptom matching
+      // the user's "Google auth not working" report after deploy.
+      if (cred.user != null) {
+        _user = cred.user;
+        notifyListeners();
+      }
       return CloudAuthResult.ok(cred.user);
     } on FirebaseAuthException catch (e) {
       // Some failure codes mean popup CAN'T complete on this browser
