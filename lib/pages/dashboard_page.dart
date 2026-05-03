@@ -13,6 +13,7 @@ import 'package:yswords/models/news_article.dart';
 import 'package:yswords/pages/daily_news_page.dart';
 import 'package:yswords/pages/evidence_detail_page.dart';
 import 'package:yswords/pages/evidence_page.dart';
+import 'package:yswords/pages/sermons_page.dart';
 import 'package:yswords/pages/news_detail_page.dart';
 import 'package:yswords/pages/highlights_page.dart';
 import 'package:yswords/pages/home_page.dart';
@@ -737,6 +738,14 @@ class _DashboardPageState extends State<DashboardPage> {
                   onTap: () => Get.to(
                     () => const EvidencePage(),
                     transition: Transition.rightToLeft,
+                ),
+              ),
+              _LinkTile(
+                icon: Icons.menu_book_outlined,
+                label: uiStrings['sermons']?[locale] ?? 'Sermons',
+                onTap: () => Get.to(
+                  () => const SermonsPage(),
+                  transition: Transition.rightToLeft,
                 ),
               ),
               _LinkTile(

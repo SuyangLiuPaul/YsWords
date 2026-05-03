@@ -1723,6 +1723,31 @@ const uiStrings = {
     'zh-Hant': '插畫',
     'en': 'Illustrations',
   },
+  'sermons': {
+    'zh-Hans': '讲道',
+    'zh-Hant': '講道',
+    'en': 'Sermons',
+  },
+  'sermon': {
+    'zh-Hans': '讲道',
+    'zh-Hant': '講道',
+    'en': 'Sermon',
+  },
+  'sermonsTagline': {
+    'zh-Hans': '张熙和牧师讲道集',
+    'zh-Hant': '張熙和牧師講道集',
+    'en': "Pastor Eric Chang's sermon library",
+  },
+  'sermonSearchHint': {
+    'zh-Hans': '按标题、经文或编号搜索讲道…',
+    'zh-Hant': '按標題、經文或編號搜尋講道…',
+    'en': 'Search sermons by title, passage or ID…',
+  },
+  'sermonCountTemplate': {
+    'zh-Hans': '{count} 篇讲道,共 {topics} 个主题',
+    'zh-Hant': '{count} 篇講道,共 {topics} 個主題',
+    'en': '{count} sermons across {topics} topics',
+  },
   'viewMap': {
     'zh-Hans': '查看插图',
     'zh-Hant': '查看插畫',

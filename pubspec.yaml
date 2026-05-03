@@ -71,6 +71,10 @@ flutter:
     - assets/daily_news.json
     - assets/strongs/
     - assets/originals/
+    - assets/sermons/index.json
+    - assets/sermons/en/
+    - assets/sermons/zh-CN/
+    - assets/sermons/zh-TW/
   fonts:
     - family: Roboto
       fonts:
