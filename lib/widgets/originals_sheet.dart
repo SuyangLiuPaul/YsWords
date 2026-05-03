@@ -1003,12 +1003,28 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
             ),
           ],
           if (hasResult) ...[
-            SelectableText(
-              _aiExplanation ?? '',
-              style: TextStyle(
-                fontSize: 14,
-                color: scheme.onSurface,
-                height: 1.55,
+            // Bounded inner scroller so a long Gemini paragraph
+            // (the prompt now targets 150-260 words / ~1.5 KB Chinese)
+            // doesn't force the surrounding originals sheet to grow
+            // huge. Cap at ~280 px and enable internal scroll with a
+            // visible thumb so the user can scan the whole answer
+            // without losing the rest of the entry below it. Round 53.
+            ConstrainedBox(
+              constraints: const BoxConstraints(maxHeight: 280),
+              child: Scrollbar(
+                thumbVisibility: true,
+                child: SingleChildScrollView(
+                  primary: false,
+                  padding: const EdgeInsets.only(right: 6),
+                  child: SelectableText(
+                    _aiExplanation ?? '',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: scheme.onSurface,
+                      height: 1.55,
+                    ),
+                  ),
+                ),
               ),
             ),
             const SizedBox(height: 8),
