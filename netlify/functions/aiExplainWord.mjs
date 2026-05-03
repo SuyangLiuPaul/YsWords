@@ -107,6 +107,24 @@ async function callGemini(prompt) {
 	});
 	if (!resp.ok) {
 		const txt = await resp.text();
+		// Translate Gemini upstream errors into user-friendly messages
+		// the client can render directly. We pass `publicReason` so the
+		// catch-all in the handler doesn't append the raw error blob.
+		if (resp.status === 429) {
+			const err = new Error(
+				'The free Gemini quota was exceeded (20 requests per minute, '
+				+ '250 per day). Please wait a moment and try again.');
+			err.publicReason = err.message;
+			err.statusCode = 429;
+			throw err;
+		}
+		if (resp.status === 401 || resp.status === 403) {
+			const err = new Error(
+				'AI key rejected. The GEMINI_API_KEY needs to be re-issued.');
+			err.publicReason = err.message;
+			err.statusCode = 503;
+			throw err;
+		}
 		throw new Error(`Gemini ${resp.status}: ${txt.slice(0, 400)}`);
 	}
 	const json = await resp.json();

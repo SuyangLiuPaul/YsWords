@@ -67,16 +67,16 @@ class AiWordService {
         'AI explanation is not available yet (function not deployed).',
       );
     }
-    if (resp.statusCode == 503) {
+    // Surface the function's `error` field directly when it provided
+    // one (covers 429 quota, 503 not-configured, 401/403 bad key).
+    if (resp.statusCode != 200) {
       try {
         final j = jsonDecode(resp.body) as Map<String, dynamic>;
-        return AiWordResult.unavailable(
-            (j['error'] as String?) ?? 'AI explanation is not configured.');
-      } catch (_) {
-        return AiWordResult.unavailable('AI explanation is not configured.');
-      }
-    }
-    if (resp.statusCode != 200) {
+        final reason = (j['error'] as String?)?.trim();
+        if (reason != null && reason.isNotEmpty) {
+          return AiWordResult.unavailable(reason);
+        }
+      } catch (_) {/* fall through to generic message */}
       return AiWordResult.unavailable(
         'AI explanation returned an error (${resp.statusCode}).',
       );
