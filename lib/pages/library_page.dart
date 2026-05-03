@@ -6,6 +6,7 @@ import 'package:yswords/constants/text_patterns.dart' show sanitizeForSearch;
 import 'package:yswords/constants/ui_strings.dart';
 import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/models/verse.dart';
+import 'package:yswords/pages/home_page.dart';
 import 'package:yswords/providers/main_provider.dart';
 import 'package:yswords/services/profile_service.dart';
 import 'package:yswords/services/reading_plan_service.dart';
@@ -294,10 +295,20 @@ List<Verse> _resolveAnnotations(MainProvider mp, Iterable<String> ids) {
 
 void _navigateToVerse(Verse v, MainProvider mp) {
   // pendingJump handshake — see lib/utils/jump_to_reference.dart for
-  // the rationale. Replaces the previous Future.delayed(300ms) which
-  // often missed on cold start and slow devices.
+  // the rationale.
   jumper.prepareJumpToVerse(v, mp);
-  Get.back();
+  // `Get.off(HomePage)` replaces the current Library route with the
+  // bible reader. Critical because Library can be reached from EITHER
+  // the dashboard (most common) OR the reader's overflow menu — and
+  // we want the user to land in the reader at the verse in both
+  // cases. Previous `Get.back()` only worked from the reader path; it
+  // sent the user back to the dashboard from the dashboard path,
+  // which the user reported as "clicking the verse goes back to home
+  // page instead of the bible reader".
+  Get.off(
+    () => const HomePage(),
+    transition: Transition.rightToLeft,
+  );
 }
 
 // ── Plan tab ───────────────────────────────────────────────────────
@@ -403,7 +414,13 @@ class _PlanTabState extends State<_PlanTab> {
     if (!mounted) return;
     final ok = await jumper.showJumpResultSnackBar(context, result);
     if (!ok) return;
-    Get.back();
+    // Replace Library with the reader so the user lands at the verse
+    // regardless of whether Library was opened from the dashboard or
+    // from the reader's own overflow menu (see _navigateToVerse).
+    Get.off(
+      () => const HomePage(),
+      transition: Transition.rightToLeft,
+    );
   }
 
   @override
