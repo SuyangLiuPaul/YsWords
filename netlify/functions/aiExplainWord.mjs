@@ -47,25 +47,35 @@ function buildPrompt({ strongs, lemma, translit, gloss, book, chapter, verse, ve
 	const ref = `${book} ${chapter}:${verse}`;
 	const parts = [];
 	parts.push(`You are a careful biblical-language exegete.`);
-	parts.push(`Explain the original-language word **${lemma}**` +
+	parts.push(`The reader is studying ${ref} and has already seen the ` +
+		`lexicon entry for **${lemma}**` +
 		(translit ? ` (${translit})` : '') +
-		` (Strong's ${strongs}) as it is used in ${ref}.`);
-	if (gloss) parts.push(`Lexicon gloss for context: ${gloss}.`);
-	if (verseText) parts.push(`Verse text: "${verseText}"`);
+		` (Strong's ${strongs})${gloss ? ` whose core meaning is "${gloss}"` : ''}.`);
+	parts.push(`Your job: explain HOW THIS WORD APPLIES IN ${ref} ` +
+		`specifically — its nuance, grammatical aspect, theological weight, ` +
+		`and what the reader gains by noticing this word in this verse.`);
+	if (verseText) parts.push(`The verse reads: "${verseText}"`);
 	parts.push('');
-	parts.push(`Reply in ${lang}. 80-180 words. Plain prose, no headings, no bullets.`);
+	parts.push(`Reply in ${lang}. Aim for 150-260 words. Plain prose, no `
+		+ `headings, no bullets, no markdown. Always finish your final `
+		+ `sentence — never trail off mid-thought.`);
 	parts.push(`Cover, in this order:`);
-	parts.push(`  1. The word's core lexical meaning (1-2 sentences).`);
-	parts.push(`  2. How it specifically functions in this verse — what nuance, ` +
-		`grammatical aspect, or theological weight it carries here.`);
-	parts.push(`  3. One related observation that helps the reader understand ` +
-		`the verse better (e.g. a near-synonym distinction, a frequent NT ` +
-		`pairing, a pattern across the same book).`);
+	parts.push(`  1. (One concise sentence) the word's core meaning, framed ` +
+		`for this verse.`);
+	parts.push(`  2. (The bulk of your answer) how the word actually `
+		+ `functions in ${ref}: what nuance, tense/voice/mood (Greek) or ` +
+		`stem/binyan (Hebrew), syntactic role, or theological weight does ` +
+		`the author intend here? What would the verse lose if a near-synonym ` +
+		`were used instead?`);
+	parts.push(`  3. One related observation that deepens the reader's ` +
+		`understanding of the verse (e.g. a near-synonym contrast, a `
+		+ `frequent pairing in this book, an OT or NT echo, a pattern in ` +
+		`the same chapter).`);
 	parts.push('');
-	parts.push(`Stay rigorous. Don't invent etymology. Don't moralize. Don't ` +
-		`hedge with "scholars debate" unless there's a real exegetical split. ` +
-		`If the word is a proper name, focus on the name's significance in ` +
-		`THIS narrative rather than its etymological gloss.`);
+	parts.push(`Stay rigorous. Don't invent etymology. Don't moralize. ` +
+		`Don't hedge with "scholars debate" unless there's a real exegetical ` +
+		`split. If the word is a proper name, focus on the name's ` +
+		`significance in THIS narrative rather than its etymological gloss.`);
 	return parts.join('\n');
 }
 
@@ -122,7 +132,11 @@ async function callGeminiWithKey(apiKey, prompt) {
 				{ role: 'user', content: prompt },
 			],
 			temperature: 0.2,
-			max_tokens: 480,
+			// 1024 tokens ≈ 700-800 English words / 1500 Chinese chars,
+			// well above the 150-260 target so the model is never forced
+			// to cut off mid-sentence at a ceiling. Round 53 fix —
+			// previous 480 truncated longer Chinese explanations.
+			max_tokens: 1024,
 		}),
 		signal: AbortSignal.timeout(20_000),
 	});
