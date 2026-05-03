@@ -10,6 +10,7 @@ import 'package:yswords/providers/main_provider.dart';
 import 'package:yswords/services/profile_service.dart';
 import 'package:yswords/services/reading_plan_service.dart';
 import 'package:yswords/utils/clipboard_helper.dart';
+import 'package:yswords/utils/jump_to_reference.dart' as jumper;
 import 'package:yswords/utils/reference_parser.dart';
 import 'package:yswords/utils/version_mapper.dart' show translateBookName;
 import 'package:yswords/widgets/home_icon_button.dart';
@@ -396,10 +397,24 @@ class _PlanTabState extends State<_PlanTab> {
     setState(() => _done = done);
   }
 
-  void _jumpToReading(String canonical) {
+  Future<void> _jumpToReading(String canonical) async {
     final ref = parseReference(canonical);
-    if (ref == null) return;
-    _navigateToReference(widget.mainProvider, ref);
+    if (ref == null) {
+      if (!mounted) return;
+      ScaffoldMessenger.maybeOf(context)?.showSnackBar(SnackBar(
+        content: Text("Couldn't parse reference: $canonical"),
+        duration: const Duration(seconds: 3),
+      ));
+      return;
+    }
+    final result = await jumper.resolveAndPrepareJump(
+      reference: ref,
+      mp: widget.mainProvider,
+    );
+    if (!mounted) return;
+    final ok = await jumper.showJumpResultSnackBar(context, result);
+    if (!ok) return;
+    Get.back();
   }
 
   @override
@@ -615,31 +630,10 @@ class _PlanReadingChip extends StatelessWidget {
   }
 }
 
-void _navigateToReference(MainProvider mp, BibleReference ref) {
-  final localBook = translateBookName(ref.englishBook, mp.currentVersion);
-  final matches = mp.verses
-      .where((v) => v.book == localBook && v.chapter == ref.chapter)
-      .toList()
-    ..sort((a, b) => a.verse.compareTo(b.verse));
-  if (matches.isEmpty) return;
-  final targetVerse = ref.verseStart ?? matches.first.verse;
-  final hit = matches.firstWhere(
-    (v) => v.verse == targetVerse,
-    orElse: () => matches.first,
-  );
-  mp.setCurrentChapter(book: hit.book, chapter: hit.chapter);
-  mp.updateCurrentVerse(verse: hit);
-  Get.back();
-  Future.delayed(const Duration(milliseconds: 300), () {
-    final relIdx = matches.indexWhere((v) => v.verse == hit.verse);
-    if (relIdx < 0) return;
-    mp.jumpToIndex(index: relIdx);
-    mp.setHighlightIndex(relIdx);
-    Future.delayed(const Duration(milliseconds: 800), () {
-      mp.clearHighlightIndex();
-    });
-  });
-}
+// Removed: _navigateToReference. Replaced by `_jumpToReading` which
+// uses the shared `resolveAndPrepareJump` helper from
+// `lib/utils/jump_to_reference.dart` so the OT-fallback (CUVS-YHWH on
+// LJK1/LJK2) is consistent with the other cross-link surfaces.
 
 Widget _emptyState(BuildContext context, IconData icon, String text) {
   final scheme = Theme.of(context).colorScheme;

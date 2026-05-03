@@ -8,8 +8,8 @@ import 'package:yswords/models/bible_evidence.dart';
 import 'package:yswords/pages/home_page.dart';
 import 'package:yswords/providers/main_provider.dart';
 import 'package:yswords/utils/clipboard_helper.dart';
+import 'package:yswords/utils/jump_to_reference.dart';
 import 'package:yswords/utils/reference_parser.dart';
-import 'package:yswords/utils/version_mapper.dart' show translateBookName;
 import 'package:yswords/widgets/confidence_badge.dart';
 import 'package:yswords/widgets/home_icon_button.dart';
 import 'package:yswords/widgets/localized_back_button.dart';
@@ -236,7 +236,22 @@ class EvidenceDetailPage extends StatelessWidget {
   /// highlight fire whenever the reader is actually ready, instead
   /// of relying on a fragile timer. See
   /// `lib/widgets/bible_reading_pane.dart` for the consumer side.
-  void _openReference(BuildContext context) {
+  ///
+  /// **Version fallback**: many evidence entries cite OT books
+  /// (`2 Kings 25:27-30`, `1 Chronicles 29:1`, `Nehemiah 3:26-27`, …),
+  /// but the user might be reading an NT-only translation like LJK1
+  /// or LJK2. In that case the verse simply isn't in `mp.verses` and
+  /// the previous version of this method silently returned with no
+  /// navigation — looking like the link was dead.
+  ///
+  /// We now mirror the daily-verse fallback strategy: if the current
+  /// version doesn't have the book, transparently switch to a
+  /// full-canon companion (CUVS-YHWH for Simplified, CUVS-YHWH-TR
+  /// for Traditional, ESV for English) for the duration of this jump,
+  /// reload verses, retry the lookup, then navigate. A SnackBar tells
+  /// the user we switched so they're not confused when the version
+  /// label changes in the reader header.
+  Future<void> _openReference(BuildContext context) async {
     // Handle multi-reference strings like "Isaiah 53; Psalm 22; Micah 5:2"
     // by trying the first semicolon-separated segment first, then the full
     // string, then each remaining segment until one parses.
@@ -248,26 +263,18 @@ class EvidenceDetailPage extends StatelessWidget {
         if (ref != null) break;
       }
     }
-    if (ref == null) return;
-    final resolved = ref;
-    final mp = context.read<MainProvider>();
-    final localBook = translateBookName(resolved.englishBook, mp.currentVersion);
-    final matches = mp.verses
-        .where((v) => v.book == localBook && v.chapter == resolved.chapter)
-        .toList()
-      ..sort((a, b) => a.verse.compareTo(b.verse));
-    if (matches.isEmpty) return;
-    final target = resolved.verseStart ?? matches.first.verse;
-    final hit = matches.firstWhere(
-      (v) => v.verse == target,
-      orElse: () => matches.first,
-    );
-    final relIdx = matches.indexWhere((v) => v.verse == hit.verse);
-    mp.setCurrentChapter(book: hit.book, chapter: hit.chapter);
-    mp.updateCurrentVerse(verse: hit);
-    if (relIdx >= 0) {
-      mp.setPendingJump(chapterVerseIndex: relIdx);
+    if (ref == null) {
+      ScaffoldMessenger.maybeOf(context)?.showSnackBar(SnackBar(
+        content: Text("Couldn't parse reference: $raw"),
+        duration: const Duration(seconds: 3),
+      ));
+      return;
     }
+    final mp = context.read<MainProvider>();
+    final result = await resolveAndPrepareJump(reference: ref, mp: mp);
+    if (!context.mounted) return;
+    final ok = await showJumpResultSnackBar(context, result);
+    if (!ok || !context.mounted) return;
     Get.to(
       () => const HomePage(),
       transition: Transition.rightToLeft,

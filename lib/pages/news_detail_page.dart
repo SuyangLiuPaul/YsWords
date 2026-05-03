@@ -9,8 +9,8 @@ import 'package:yswords/pages/home_page.dart';
 import 'package:yswords/providers/main_provider.dart';
 import 'package:yswords/services/link_opener.dart';
 import 'package:yswords/utils/clipboard_helper.dart';
+import 'package:yswords/utils/jump_to_reference.dart';
 import 'package:yswords/utils/reference_parser.dart' show parseReference;
-import 'package:yswords/utils/version_mapper.dart' show translateBookName;
 import 'package:yswords/widgets/home_icon_button.dart';
 import 'package:yswords/widgets/localized_back_button.dart';
 
@@ -353,27 +353,20 @@ class NewsDetailPage extends StatelessWidget {
   /// controller attached AND the verseToItemMap populated. This
   /// replaces a fragile 320ms timer that often missed cold-start
   /// and version-switch builds.
-  void _openReference(BuildContext context) {
+  Future<void> _openReference(BuildContext context) async {
     final ref = parseReference(article.verse.reference);
-    if (ref == null) return;
-    final mp = context.read<MainProvider>();
-    final localBook = translateBookName(ref.englishBook, mp.currentVersion);
-    final matches = mp.verses
-        .where((v) => v.book == localBook && v.chapter == ref.chapter)
-        .toList()
-      ..sort((a, b) => a.verse.compareTo(b.verse));
-    if (matches.isEmpty) return;
-    final target = ref.verseStart ?? matches.first.verse;
-    final hit = matches.firstWhere(
-      (v) => v.verse == target,
-      orElse: () => matches.first,
-    );
-    final relIdx = matches.indexWhere((v) => v.verse == hit.verse);
-    mp.setCurrentChapter(book: hit.book, chapter: hit.chapter);
-    mp.updateCurrentVerse(verse: hit);
-    if (relIdx >= 0) {
-      mp.setPendingJump(chapterVerseIndex: relIdx);
+    if (ref == null) {
+      ScaffoldMessenger.maybeOf(context)?.showSnackBar(SnackBar(
+        content: Text("Couldn't parse reference: ${article.verse.reference}"),
+        duration: const Duration(seconds: 3),
+      ));
+      return;
     }
+    final mp = context.read<MainProvider>();
+    final result = await resolveAndPrepareJump(reference: ref, mp: mp);
+    if (!context.mounted) return;
+    final ok = await showJumpResultSnackBar(context, result);
+    if (!ok || !context.mounted) return;
     Get.to(
       () => const HomePage(),
       transition: Transition.rightToLeft,

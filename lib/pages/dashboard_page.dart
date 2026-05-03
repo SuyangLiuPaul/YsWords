@@ -29,6 +29,7 @@ import 'package:yswords/services/daily_verse_fallback.dart';
 import 'package:yswords/services/daily_verse_service.dart';
 import 'package:yswords/services/profile_service.dart';
 import 'package:yswords/services/reading_plan_service.dart';
+import 'package:yswords/utils/jump_to_reference.dart' as jumper;
 import 'package:yswords/utils/reference_parser.dart';
 import 'package:yswords/utils/responsive.dart';
 import 'package:yswords/utils/version_mapper.dart' show translateBookName;
@@ -477,13 +478,29 @@ class _DashboardPageState extends State<DashboardPage> {
                 isDone: _planDone.contains(_planDay),
                 currentVersion: mainProvider.currentVersion,
                 locale: locale,
-                onJump: (canonical) {
+                onJump: (canonical) async {
                   final ref = parseReference(canonical);
-                  if (ref == null) return;
-                  // Mutate provider first so the reader picks up the
-                  // new chapter on its first build; then push the
-                  // reader on top of the dashboard.
-                  _navigateToReference(mainProvider, ref);
+                  if (ref == null) {
+                    if (!context.mounted) return;
+                    ScaffoldMessenger.maybeOf(context)?.showSnackBar(SnackBar(
+                      content: Text("Couldn't parse reference: $canonical"),
+                      duration: const Duration(seconds: 3),
+                    ));
+                    return;
+                  }
+                  // Resolve + prepare the jump (with OT-fallback to
+                  // CUVS-YHWH on NT-only versions); then push the
+                  // reader on top of the dashboard. The pendingJump
+                  // handshake set by `resolveAndPrepareJump` makes
+                  // the reader scroll + highlight on first build.
+                  final result = await jumper.resolveAndPrepareJump(
+                    reference: ref,
+                    mp: mainProvider,
+                  );
+                  if (!context.mounted) return;
+                  final ok =
+                      await jumper.showJumpResultSnackBar(context, result);
+                  if (!ok || !context.mounted) return;
                   Get.to(
                     () => const HomePage(),
                     transition: Transition.rightToLeft,
@@ -769,30 +786,10 @@ class _DashboardPageState extends State<DashboardPage> {
   }
 }
 
-void _navigateToReference(MainProvider mp, BibleReference ref) {
-  final localBook = translateBookName(ref.englishBook, mp.currentVersion);
-  final matches = mp.verses
-      .where((v) => v.book == localBook && v.chapter == ref.chapter)
-      .toList()
-    ..sort((a, b) => a.verse.compareTo(b.verse));
-  if (matches.isEmpty) return;
-  final targetVerse = ref.verseStart ?? matches.first.verse;
-  final hit = matches.firstWhere(
-    (v) => v.verse == targetVerse,
-    orElse: () => matches.first,
-  );
-  mp.setCurrentChapter(book: hit.book, chapter: hit.chapter);
-  mp.updateCurrentVerse(verse: hit);
-  Future.delayed(const Duration(milliseconds: 300), () {
-    final relIdx = matches.indexWhere((v) => v.verse == hit.verse);
-    if (relIdx < 0) return;
-    mp.jumpToIndex(index: relIdx);
-    mp.setHighlightIndex(relIdx);
-    Future.delayed(const Duration(milliseconds: 800), () {
-      mp.clearHighlightIndex();
-    });
-  });
-}
+// Removed: _navigateToReference. Replaced inline above with
+// `jumper.resolveAndPrepareJump` so the OT-fallback (CUVS-YHWH on
+// NT-only versions like LJK1/LJK2) is consistent across every
+// cross-link surface — see `lib/utils/jump_to_reference.dart`.
 
 class _GreetingCard extends StatelessWidget {
   final String greeting;
