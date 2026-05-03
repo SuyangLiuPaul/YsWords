@@ -1863,6 +1863,71 @@ const uiStrings = {
     'zh-Hant': '新約對應',
     'en': 'NT echoes',
   },
+  'familyTree': {
+    'zh-Hans': '圣经家谱',
+    'zh-Hant': '聖經家譜',
+    'en': 'Family Tree',
+  },
+  'familyTreeSearchHint': {
+    'zh-Hans': '按姓名或简介搜索…',
+    'zh-Hant': '按姓名或簡介搜尋…',
+    'en': 'Search by name or biography…',
+  },
+  'familyTreeFilterCount': {
+    'zh-Hans': '匹配 {count} / 共 {total} 人',
+    'zh-Hant': '匹配 {count} / 共 {total} 人',
+    'en': '{count} of {total} people',
+  },
+  'familyTreeTotalCount': {
+    'zh-Hans': '共 {total} 位人物',
+    'zh-Hant': '共 {total} 位人物',
+    'en': '{total} people',
+  },
+  'familyTreeNoMatches': {
+    'zh-Hans': '没有匹配的人物',
+    'zh-Hant': '沒有匹配的人物',
+    'en': 'No one matches that search.',
+  },
+  'familyTreeParents': {
+    'zh-Hans': '父母',
+    'zh-Hant': '父母',
+    'en': 'Parents',
+  },
+  'familyTreeFather': {
+    'zh-Hans': '父',
+    'zh-Hant': '父',
+    'en': 'Father',
+  },
+  'familyTreeMother': {
+    'zh-Hans': '母',
+    'zh-Hant': '母',
+    'en': 'Mother',
+  },
+  'familyTreeSpouse': {
+    'zh-Hans': '配偶',
+    'zh-Hant': '配偶',
+    'en': 'Spouse',
+  },
+  'familyTreeSpouses': {
+    'zh-Hans': '配偶',
+    'zh-Hant': '配偶',
+    'en': 'Spouses',
+  },
+  'familyTreeChildren': {
+    'zh-Hans': '子女',
+    'zh-Hant': '子女',
+    'en': 'Children',
+  },
+  'familyTreeReferences': {
+    'zh-Hans': '相关经文',
+    'zh-Hant': '相關經文',
+    'en': 'Verse references',
+  },
+  'familyTreeAncestry': {
+    'zh-Hans': '父系家谱',
+    'zh-Hant': '父系家譜',
+    'en': 'Patrilineal ancestry',
+  },
   'sermonFilterBookLabel': {
     'zh-Hans': '书卷',
     'zh-Hant': '書卷',
