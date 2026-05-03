@@ -1,8 +1,9 @@
 # Google Sign-In Troubleshooting
 
-> Last updated: 2026-05-01
+> Last updated: 2026-05-03 (added §9 stale-registrant failure mode)
 > Owner: `lib/services/cloud_auth_service.dart`
-> Related: `lib/firebase_options.dart`, `lib/services/cloud_sync_service.dart`
+> Related: `lib/firebase_options.dart`, `lib/services/cloud_sync_service.dart`,
+> `.dart_tool/flutter_build/<hash>/web_plugin_registrant.dart` (generated)
 
 This is the canonical document for diagnosing and fixing Google sign-in
 failures on YsWords. The flow has broken many times, in many different
@@ -48,6 +49,7 @@ CloudSyncService.start() — subscribes to Firestore /users/{uid}/profileData/ma
 | `lib/firebase_options.dart` | Project ID `ysword`, authDomain `ysword.firebaseapp.com` |
 | `lib/services/profile_service.dart` | Local profile adopt logic |
 | `web/index.html` | Cache-bust + service-worker self-heal that can interfere with the OAuth callback |
+| `.dart_tool/flutter_build/<hash>/web_plugin_registrant.dart` | **Generated**, **cached**. Must contain `FirebaseCoreWeb`, `FirebaseAuthWeb`, `FirebaseFirestoreWeb` — see §9. We also self-register defensively in `init()` |
 
 ---
 
@@ -188,6 +190,107 @@ the user is offline at the moment of self-heal it can stall.
 - Or in any browser: open the site in a Private window once to see
   if a fresh build resolves it.
 
+### 9. `UnimplementedError: signInWithPopup() is only supported on web based platforms` (or `getRedirectResult() is not implemented`)
+
+**Symptom**: Console shows one or both of these literal errors when
+the Sign-in button is tapped, on web:
+
+```
+UnimplementedError: signInWithPopup() is only supported on web based platforms
+UnimplementedError: getRedirectResult() is not implemented
+CloudAuthService: getRedirectResult skipped: UnimplementedError: ...
+signInWithPopup non-Firebase error: UnimplementedError: ...
+```
+
+The popup never opens. Both popup and redirect fallback throw the
+same error. The user sees "Sign-in not working" with no popup at all.
+This affects every browser, not just Safari or iOS PWA — the
+"third-party cookie" red herring (#1) does not apply here.
+
+**Real cause**: Flutter's auto-generated web plugin registrant —
+`.dart_tool/flutter_build/<hash>/web_plugin_registrant.dart` —
+shipped stale. The file is **cached per build hash** and a stale
+cache can ship containing only `SharedPreferencesPlugin.registerWith(registrar)`,
+omitting all the Firebase web delegates. With no `FirebaseAuthWeb`
+registered, `FirebaseAuthPlatform.instance` stays at the default
+`MethodChannelFirebaseAuth`, which throws `UnimplementedError` on
+every web-only OAuth method (`signInWithPopup`, `signInWithRedirect`,
+`getRedirectResult`).
+
+A healthy registrant looks like:
+
+```dart
+import 'package:cloud_firestore_web/cloud_firestore_web.dart';
+import 'package:firebase_auth_web/firebase_auth_web.dart';
+import 'package:firebase_core_web/firebase_core_web.dart';
+import 'package:shared_preferences_web/shared_preferences_web.dart';
+
+void registerPlugins([final Registrar? pluginRegistrar]) {
+  final Registrar registrar = pluginRegistrar ?? webPluginRegistrar;
+  FirebaseFirestoreWeb.registerWith(registrar);
+  FirebaseAuthWeb.registerWith(registrar);
+  FirebaseCoreWeb.registerWith(registrar);
+  SharedPreferencesPlugin.registerWith(registrar);
+  registrar.registerMessageHandler();
+}
+```
+
+**Verification on disk**:
+
+```bash
+find .dart_tool -name "web_plugin_registrant.dart" -exec cat {} \;
+# Must list all four .registerWith(...) lines above. If only
+# SharedPreferencesPlugin is present, you have this bug.
+```
+
+**Verification in deployed bundle** (dart2js minifies, but the
+class name `FirebaseAuthWeb` is retained as a runtime-type string
+for our defensive check):
+
+```bash
+curl -sL https://yswords.netlify.app/main.dart.js \
+  | grep -o "FirebaseAuthWeb" | head -1
+# Should print: FirebaseAuthWeb
+# If empty, the build shipped without the web plugin.
+```
+
+**Fix path** — two layers, both shipped:
+
+1. **Immediate** (manual recovery):
+
+   ```bash
+   flutter clean
+   flutter pub get        # regenerates web_plugin_registrant.dart
+   flutter build web --release
+   ```
+
+   Verify the registrant on disk before deploying. The `flutter clean`
+   is the critical step — `pub get` alone won't always rewrite a
+   cached registrant.
+
+2. **Permanent** (commit `3222acd`, May 2026):
+   `CloudAuthService._doInit()` self-registers all three Firebase web
+   delegates via their `registerWith()` methods, guarded by a
+   `runtimeType.toString() != 'FirebaseAuthWeb'` check so we don't
+   double-register when the auto-registrant DID run. `registerWith`
+   is idempotent so it's safe in both cases. This means a future
+   stale `.dart_tool` cannot resurface the bug — Firebase web
+   delegates will always be present at runtime.
+
+**Why this happened**: The auto-registrant cache is keyed on a hash
+that doesn't always invalidate when the dependency graph changes
+under it (Flutter pub-dep upgrades, branch switches, partial
+`flutter clean`). Once a registrant is generated without the
+Firebase plugins for *any* reason — e.g. a transient `pub get`
+failure — the cached file persists and ships with the next build
+unless something explicitly invalidates it. The defensive
+self-registration in `init()` makes this a non-issue going forward.
+
+**How to keep it that way**: Don't remove the
+`FirebaseAuthWeb.registerWith(...)` block from
+`CloudAuthService._doInit()` even if the registrant looks correct
+on disk. The whole point is that we no longer trust the registrant.
+
 ---
 
 ## Diagnostic checklist for the next bug report
@@ -234,7 +337,22 @@ attempt should produce one of:
   failure modes above
 - A "Null check operator" stack — see #2 above
 
-### F. Test on a different network
+### F. Is the web plugin registrant intact?
+
+```bash
+find .dart_tool -name "web_plugin_registrant.dart" -exec cat {} \;
+```
+
+Must list `FirebaseCoreWeb.registerWith`, `FirebaseAuthWeb.registerWith`,
+`FirebaseFirestoreWeb.registerWith`. If any are missing, `flutter clean
+&& flutter pub get` regenerates it. See §9.
+
+(For deployed builds, the defensive self-registration in `init()`
+makes this less critical — but a stale registrant during *local
+dev* will still bite you with the same UnimplementedError until
+`init()` runs.)
+
+### G. Test on a different network
 
 If a user reports it fails on their corporate wifi, confirm by
 asking them to try on cellular or home wifi. Firewall / TLS
@@ -279,3 +397,23 @@ Things to keep an eye on:
 - **Apple's third-party cookie crackdown** — every iOS major bump
   puts another bullet in popup OAuth. Redirect is the long-term
   answer.
+- **Flutter web plugin registrant cache** — even with our defensive
+  self-registration, if the registrant ever omits Firebase plugins
+  the **local dev experience** will throw UnimplementedError before
+  `init()` runs. If a future `flutter` upgrade changes the registrant
+  format and breaks our `runtimeType.toString() != 'FirebaseAuthWeb'`
+  check, sign-in will break silently. Whenever pubspec or Flutter
+  major versions change, re-verify with the §9 disk + bundle checks.
+
+---
+
+## Change history
+
+| Date | Commit | Failure mode | Fix |
+|---|---|---|---|
+| 2026-05-03 | `3222acd` | §9 stale registrant — UnimplementedError on every OAuth call | Self-register Firebase web delegates in `init()`, idempotently |
+| 2026-05-03 | `ebd1e92` | Popup succeeds but `_user` stays null | Manually mirror `cred.user` into notifier after `signInWithPopup` returns |
+| 2026-05-03 | (this doc) | – | Added §9, §F.G, change history |
+| 2026-05-01 | `c147cfe` | §1 popup-closed-by-user / Safari third-party cookies | Redirect fallback + retryable-as-redirect codes |
+| 2026-04-28 | – | §2 currentUser null-check | try/catch around `auth.currentUser` |
+| 2026-04-15 | – | §6 channel-error / Pigeon | Force `FirebaseCoreWeb` delegate in init |
