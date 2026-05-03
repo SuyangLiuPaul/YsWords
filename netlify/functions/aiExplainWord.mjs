@@ -69,17 +69,38 @@ function buildPrompt({ strongs, lemma, translit, gloss, book, chapter, verse, ve
 	return parts.join('\n');
 }
 
-async function callGemini(prompt) {
-	const apiKey = process.env.GEMINI_API_KEY;
-	if (!apiKey) {
-		const err = new Error(
-			'AI explanations are not configured yet. Set GEMINI_API_KEY in '
-			+ 'the Netlify dashboard (free tier; generate at '
-			+ 'https://aistudio.google.com/app/apikey).');
-		err.publicReason = err.message;
-		err.statusCode = 503;
-		throw err;
+// Build the ordered list of API keys to try. Each entry has its own
+// per-minute and per-day quota in the free tier, so falling back to a
+// secondary key when the primary hits 429 effectively doubles (or
+// triples …) the throughput without needing a paid plan.
+//
+// Env vars (in priority order):
+//   GEMINI_API_KEYS        — optional, comma-separated explicit list
+//   GEMINI_API_KEY         — primary
+//   GEMINI_API_KEY_BACKUP  — secondary
+//   GEMINI_API_KEY_BACKUP_2 … _9 — tertiary onward, optional
+//
+// Returned list is de-duplicated and trimmed; falsy entries skipped.
+function geminiKeys() {
+	const seen = new Set();
+	const out = [];
+	const push = (s) => {
+		const k = (s || '').trim();
+		if (k && !seen.has(k)) {
+			seen.add(k);
+			out.push(k);
+		}
+	};
+	if (process.env.GEMINI_API_KEYS) {
+		for (const part of process.env.GEMINI_API_KEYS.split(',')) push(part);
 	}
+	push(process.env.GEMINI_API_KEY);
+	push(process.env.GEMINI_API_KEY_BACKUP);
+	for (let i = 2; i <= 9; i++) push(process.env[`GEMINI_API_KEY_BACKUP_${i}`]);
+	return out;
+}
+
+async function callGeminiWithKey(apiKey, prompt) {
 	const url = `${BASE_URL}/chat/completions`;
 	const resp = await fetch(url, {
 		method: 'POST',
@@ -105,36 +126,68 @@ async function callGemini(prompt) {
 		}),
 		signal: AbortSignal.timeout(20_000),
 	});
-	if (!resp.ok) {
+	return resp;
+}
+
+async function callGemini(prompt) {
+	const keys = geminiKeys();
+	if (keys.length === 0) {
+		const err = new Error(
+			'AI explanations are not configured yet. Set GEMINI_API_KEY in '
+			+ 'the Netlify dashboard (free tier; generate at '
+			+ 'https://aistudio.google.com/app/apikey).');
+		err.publicReason = err.message;
+		err.statusCode = 503;
+		throw err;
+	}
+	let lastQuotaError = null;
+	let lastError = null;
+	for (let i = 0; i < keys.length; i++) {
+		const apiKey = keys[i];
+		const isLast = i === keys.length - 1;
+		const resp = await callGeminiWithKey(apiKey, prompt);
+		if (resp.ok) {
+			const json = await resp.json();
+			const choice = json.choices?.[0];
+			const content = choice?.message?.content;
+			if (typeof content === 'string') return content;
+			if (Array.isArray(content)) {
+				return content.map((p) =>
+					(typeof p === 'string' ? p : (p?.text || ''))).join('');
+			}
+			return '';
+		}
 		const txt = await resp.text();
-		// Translate Gemini upstream errors into user-friendly messages
-		// the client can render directly. We pass `publicReason` so the
-		// catch-all in the handler doesn't append the raw error blob.
 		if (resp.status === 429) {
-			const err = new Error(
-				'The free Gemini quota was exceeded (20 requests per minute, '
-				+ '250 per day). Please wait a moment and try again.');
-			err.publicReason = err.message;
-			err.statusCode = 429;
-			throw err;
+			// This key is rate-limited — try the next one.
+			lastQuotaError = new Error(
+				'All Gemini API keys are rate-limited (20 RPM / 250 RPD '
+				+ 'free tier each). Please wait a moment and try again.');
+			lastQuotaError.publicReason = lastQuotaError.message;
+			lastQuotaError.statusCode = 429;
+			continue;
 		}
 		if (resp.status === 401 || resp.status === 403) {
-			const err = new Error(
-				'AI key rejected. The GEMINI_API_KEY needs to be re-issued.');
-			err.publicReason = err.message;
-			err.statusCode = 503;
-			throw err;
+			// Bad key. Skip and try the next one in case it's just one
+			// key that got revoked / expired.
+			lastError = new Error(
+				`Gemini key #${i + 1} rejected (${resp.status}). `
+				+ (isLast
+					? 'No working keys remaining; re-issue or rotate.'
+					: 'Trying next key…'));
+			continue;
 		}
+		// Non-quota, non-auth error — abort the chain (likely the prompt
+		// is malformed or the upstream is down).
 		throw new Error(`Gemini ${resp.status}: ${txt.slice(0, 400)}`);
 	}
-	const json = await resp.json();
-	const choice = json.choices?.[0];
-	const content = choice?.message?.content;
-	if (typeof content === 'string') return content;
-	if (Array.isArray(content)) {
-		return content.map((p) => (typeof p === 'string' ? p : (p?.text || ''))).join('');
+	if (lastQuotaError) throw lastQuotaError;
+	if (lastError) {
+		lastError.publicReason = lastError.message;
+		lastError.statusCode = 503;
+		throw lastError;
 	}
-	return '';
+	throw new Error('Gemini call failed without a status code.');
 }
 
 export default async (req) => {

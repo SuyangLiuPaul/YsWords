@@ -90,19 +90,33 @@ function localPrefilter(query, locale, dataset, limit = 12) {
 	return scored.slice(0, limit).map((x) => x.e);
 }
 
-async function callGemini(prompt) {
-	const apiKey = process.env.GEMINI_API_KEY;
-	if (!apiKey) {
-		const err = new Error(
-			'AI search is not configured yet. Set GEMINI_API_KEY in '
-			+ 'the Netlify dashboard (free tier; generate at '
-			+ 'https://aistudio.google.com/app/apikey).');
-		err.publicReason = err.message;
-		err.statusCode = 503;
-		throw err;
+// Build the ordered list of API keys to try. See aiExplainWord.mjs
+// for the env-var convention; the same chain is used here so both
+// functions share quota across keys: GEMINI_API_KEY (primary),
+// GEMINI_API_KEY_BACKUP (secondary), GEMINI_API_KEY_BACKUP_2..9, and
+// optional comma-separated GEMINI_API_KEYS that takes precedence.
+function geminiKeys() {
+	const seen = new Set();
+	const out = [];
+	const push = (s) => {
+		const k = (s || '').trim();
+		if (k && !seen.has(k)) {
+			seen.add(k);
+			out.push(k);
+		}
+	};
+	if (process.env.GEMINI_API_KEYS) {
+		for (const part of process.env.GEMINI_API_KEYS.split(',')) push(part);
 	}
+	push(process.env.GEMINI_API_KEY);
+	push(process.env.GEMINI_API_KEY_BACKUP);
+	for (let i = 2; i <= 9; i++) push(process.env[`GEMINI_API_KEY_BACKUP_${i}`]);
+	return out;
+}
+
+async function callGeminiWithKey(apiKey, prompt) {
 	const url = `${BASE_URL}/chat/completions`;
-	const resp = await fetch(url, {
+	return fetch(url, {
 		method: 'POST',
 		headers: {
 			Authorization: `Bearer ${apiKey}`,
@@ -125,18 +139,54 @@ async function callGemini(prompt) {
 		}),
 		signal: AbortSignal.timeout(20_000),
 	});
-	if (!resp.ok) {
+}
+
+async function callGemini(prompt) {
+	const keys = geminiKeys();
+	if (keys.length === 0) {
+		const err = new Error(
+			'AI search is not configured yet. Set GEMINI_API_KEY in '
+			+ 'the Netlify dashboard (free tier; generate at '
+			+ 'https://aistudio.google.com/app/apikey).');
+		err.publicReason = err.message;
+		err.statusCode = 503;
+		throw err;
+	}
+	let quotaError = null;
+	for (let i = 0; i < keys.length; i++) {
+		const apiKey = keys[i];
+		const resp = await callGeminiWithKey(apiKey, prompt);
+		if (resp.ok) {
+			const json = await resp.json();
+			const choice = json.choices?.[0];
+			const content = choice?.message?.content;
+			if (typeof content === 'string') return content;
+			if (Array.isArray(content)) {
+				return content.map((p) =>
+					(typeof p === 'string' ? p : (p?.text || ''))).join('');
+			}
+			return '';
+		}
 		const txt = await resp.text();
+		if (resp.status === 429) {
+			quotaError = new Error(
+				'All Gemini API keys are rate-limited (20 RPM / 250 RPD '
+				+ 'free tier each). Please wait a moment and try again.');
+			quotaError.publicReason = quotaError.message;
+			quotaError.statusCode = 429;
+			continue;
+		}
+		if (resp.status === 401 || resp.status === 403) {
+			// Bad key — try the next one in the chain.
+			continue;
+		}
 		throw new Error(`Gemini ${resp.status}: ${txt.slice(0, 400)}`);
 	}
-	const json = await resp.json();
-	const choice = json.choices?.[0];
-	const content = choice?.message?.content;
-	if (typeof content === 'string') return content;
-	if (Array.isArray(content)) {
-		return content.map((p) => (typeof p === 'string' ? p : (p?.text || ''))).join('');
-	}
-	return '';
+	if (quotaError) throw quotaError;
+	const err = new Error('All Gemini keys failed authentication.');
+	err.publicReason = err.message;
+	err.statusCode = 503;
+	throw err;
 }
 
 function buildPrompt(query, locale, hits) {
