@@ -1,5 +1,13 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+// ignore: depend_on_referenced_packages
+import 'package:cloud_firestore_web/cloud_firestore_web.dart'
+    show FirebaseFirestoreWeb;
 import 'package:firebase_auth/firebase_auth.dart';
+// ignore: depend_on_referenced_packages
+import 'package:firebase_auth_platform_interface/firebase_auth_platform_interface.dart'
+    show FirebaseAuthPlatform;
+// ignore: depend_on_referenced_packages
+import 'package:firebase_auth_web/firebase_auth_web.dart' show FirebaseAuthWeb;
 import 'package:firebase_core/firebase_core.dart';
 // ignore: depend_on_referenced_packages
 import 'package:firebase_core_platform_interface/firebase_core_platform_interface.dart'
@@ -7,6 +15,8 @@ import 'package:firebase_core_platform_interface/firebase_core_platform_interfac
 // ignore: depend_on_referenced_packages
 import 'package:firebase_core_web/firebase_core_web.dart' show FirebaseCoreWeb;
 import 'package:flutter/foundation.dart';
+// ignore: depend_on_referenced_packages
+import 'package:flutter_web_plugins/flutter_web_plugins.dart' show webPluginRegistrar;
 
 import 'package:yswords/firebase_options.dart';
 import 'package:yswords/services/profile_service.dart';
@@ -111,34 +121,42 @@ class CloudAuthService extends ChangeNotifier {
       // firebase_core) guarantees the web delegate is used regardless
       // of registrant timing.
       if (kIsWeb) {
-        step = 'FirebaseCoreWeb delegate setup';
+        step = 'web plugin registrants';
+        // Belt-and-braces: register every Firebase web delegate
+        // ourselves. Flutter's generated `web_plugin_registrant.dart`
+        // is supposed to do this on app boot, but the file is *cached*
+        // in `.dart_tool/flutter_build/<hash>/` and we've seen builds
+        // ship with a stale cache where only `SharedPreferencesPlugin`
+        // got registered — leaving `FirebaseAuthPlatform.instance` at
+        // the default `MethodChannelFirebaseAuth`, which throws
+        // `UnimplementedError: signInWithPopup() is only supported on
+        // web based platforms` for every OAuth call. The symptom on
+        // production was Google sign-in silently failing in iOS PWA
+        // and Chrome alike. Re-registering here is idempotent — each
+        // plugin's `registerWith` is safe to call again — so we're
+        // safe even when the cache *did* run.
         try {
-          // Only force-set the delegate if the auto-registrant didn't
-          // run for any reason. Creating a NEW FirebaseCoreWeb when
-          // the auto-registered one is already the active delegate
-          // produces two distinct Dart-side instances, which
-          // Firestore can race against (Firestore plugin uses the
-          // delegate that was active at its own registerWith time)
-          // and that race showed up as 30 s sync timeouts.
           if (FirebasePlatform.instance is! FirebaseCoreWeb) {
-            final web = FirebaseCoreWeb();
-            FirebasePlatform.instance = web;
-            // ignore: invalid_use_of_visible_for_testing_member
-            Firebase.delegatePackingProperty = web;
+            FirebaseCoreWeb.registerWith(webPluginRegistrar);
           } else {
-            // Auto-registrant already wired things up — just clear
-            // any previously-cached Firebase delegate so it picks
-            // up the live one rather than a stale instance.
+            // Auto-registrant already wired things up — clear the
+            // lazy delegate cache so Firebase picks up the live one.
             // ignore: invalid_use_of_visible_for_testing_member
             Firebase.delegatePackingProperty = FirebasePlatform.instance;
           }
+          if (FirebaseAuthPlatform.instance.runtimeType.toString() !=
+              'FirebaseAuthWeb') {
+            FirebaseAuthWeb.registerWith(webPluginRegistrar);
+          }
+          // Firestore: cheap to re-register; ensures the web delegate
+          // is the one Firestore uses for Channel transport.
+          FirebaseFirestoreWeb.registerWith(webPluginRegistrar);
         } catch (e) {
-          // Soft-fail: if for any reason instantiating FirebaseCoreWeb
-          // throws (e.g. it's already wired correctly and the setter
-          // verification trips), fall through and let initializeApp
-          // try its luck. We'd rather report the *real* downstream
-          // error than mask it with this one.
-          debugPrint('CloudAuthService: web delegate setup failed: $e');
+          // Soft-fail: if registration throws because the plugin is
+          // already wired and the setter verification trips, fall
+          // through. We'd rather report the *real* downstream error
+          // (initializeApp etc.) than mask it with this one.
+          debugPrint('CloudAuthService: web registrant setup: $e');
         }
       }
       step = 'Firebase.initializeApp';
