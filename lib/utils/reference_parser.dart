@@ -56,6 +56,15 @@ BibleReference? parseReference(String input) {
   var raw = input.trim();
   if (raw.isEmpty) return null;
 
+  // Multi-book chain: take the first reference only. Common in Bible-
+  // Evidence entries like "Isaiah 53; Psalm 22; Micah 5:2; Zechariah
+  // 11:12-13" — without this split, the trailing books would absorb
+  // into the book name and the whole reference fails to parse.
+  final semiIdx = raw.indexOf(';');
+  if (semiIdx > 0) {
+    raw = raw.substring(0, semiIdx).trim();
+  }
+
   // Comma-separated verse spans (e.g. "John 18:31-33, 37-38") or
   // comma-separated chapters (e.g. "Daniel 2, 7, 8, 11"). Strip
   // everything after the first comma — navigating to the first
