@@ -357,6 +357,7 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
       'book' => 'aiScopeBook',
       'wholeBible' => 'aiScopeWholeBible',
       'otherChapters' => 'aiScopeOtherChapters',
+      'crossTestament' => 'aiScopeCrossTestament',
       _ => 'aiScopeVerse',
     };
     final scopeLabel = uiStrings[scopeKey]?[locale] ?? scope;
@@ -1277,10 +1278,37 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
               () => _loadAiExplanation(scope: 'wholeBible'),
               primary: true,
             ),
+            // Cross-testament chip is direction-aware: for a Greek
+            // (NT) word it offers "OT background → here"; for a Hebrew
+            // (OT) word it offers "this → NT echoes". The function
+            // figures out the direction from the Strong's prefix.
+            chip(
+              _crossTestamentLabel(locale),
+              () => _loadAiExplanation(scope: 'crossTestament'),
+              primary: true,
+            ),
           ],
         ),
       ],
     );
+  }
+
+  /// Pick the user-facing label for the cross-testament chip based
+  /// on whether the selected Strong's # is Greek (NT, "G…") or
+  /// Hebrew (OT, "H…"). Falls back to a neutral label when no word
+  /// is selected.
+  String _crossTestamentLabel(String locale) {
+    final n = _selectedWord?.strongs;
+    if (n != null && n.startsWith('G')) {
+      return uiStrings['aiScopeCrossTestamentNtToOt']?[locale] ??
+          'OT background';
+    }
+    if (n != null && n.startsWith('H')) {
+      return uiStrings['aiScopeCrossTestamentOtToNt']?[locale] ??
+          'NT echoes';
+    }
+    return uiStrings['aiScopeCrossTestament']?[locale] ??
+        'Across testaments';
   }
 
   /// Copy the entire AI transcript to clipboard with a toast.

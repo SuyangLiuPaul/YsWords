@@ -1848,6 +1848,21 @@ const uiStrings = {
     'zh-Hant': '全本聖經',
     'en': 'Whole Bible',
   },
+  'aiScopeCrossTestament': {
+    'zh-Hans': '跨新旧约',
+    'zh-Hant': '跨新舊約',
+    'en': 'Across testaments',
+  },
+  'aiScopeCrossTestamentNtToOt': {
+    'zh-Hans': '旧约背景',
+    'zh-Hant': '舊約背景',
+    'en': 'OT background',
+  },
+  'aiScopeCrossTestamentOtToNt': {
+    'zh-Hans': '新约对应',
+    'zh-Hant': '新約對應',
+    'en': 'NT echoes',
+  },
   'sermonFilterBookLabel': {
     'zh-Hans': '书卷',
     'zh-Hant': '書卷',

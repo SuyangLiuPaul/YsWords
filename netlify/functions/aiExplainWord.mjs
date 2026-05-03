@@ -80,6 +80,22 @@ function styleProfile(length, scope) {
 				`describing the nuance in each, then explain what those ` +
 				`other usages teach the reader about its meaning in {ref}.`;
 			break;
+		case 'crossTestament':
+			// The function decides direction based on the Strong's
+			// prefix (G* = Greek/NT, H* = Hebrew/OT). For NT readers
+			// we surface the OT concept the word inherits; for OT
+			// readers we trace forward to NT usage via the LXX.
+			focus = `Trace this word ACROSS THE TWO TESTAMENTS. ` +
+				`If this is a NT (Greek) word, identify the Hebrew/OT ` +
+				`word(s) it most often translates in the LXX, list 2-3 ` +
+				`key OT passages where that concept appears, and explain ` +
+				`how the OT background shapes the meaning in {ref}. ` +
+				`If this is an OT (Hebrew) word, identify the Greek ` +
+				`word(s) the LXX uses to render it, list 2-3 key NT ` +
+				`passages where it carries the same idea, and explain ` +
+				`how the NT picks up the OT theme in {ref}. ` +
+				`Be specific with verse references.`;
+			break;
 		default: // 'verse'
 			focus = `Focus tightly on **this verse** ({ref}). Cover, in ` +
 				`order: (1) one concise sentence on the word's core meaning ` +
@@ -170,16 +186,30 @@ async function callGeminiWithKey(apiKey, prompt) {
 						'You are a precise biblical-language exegete. You ' +
 						'reply with concise, accurate explanations grounded ' +
 						'in the cited verse. You do not invent details or ' +
-						'cite sources you have not seen.',
+						'cite sources you have not seen. ' +
+						'Think briefly (a few seconds at most), then ' +
+						'produce the full answer in one go. Always finish ' +
+						'every sentence — never trail off mid-thought, ' +
+						'never end with a comma or with text like "the " ' +
+						'or "之"; if the response is being truncated, ' +
+						'wrap up with a complete final sentence.',
 				},
 				{ role: 'user', content: prompt },
 			],
 			temperature: 0.2,
-			// 1024 tokens ≈ 700-800 English words / 1500 Chinese chars,
-			// well above the 150-260 target so the model is never forced
-			// to cut off mid-sentence at a ceiling. Round 53 fix —
-			// previous 480 truncated longer Chinese explanations.
-			max_tokens: 1024,
+			// 4096 tokens. Round 54 fix: gemini-2.5-flash uses
+			// "thinking" tokens INTERNALLY before producing the visible
+			// reply, and `max_tokens` is the COMBINED budget (thinking
+			// + output), not just output. With 1024 the thinking phase
+			// could eat 800+ tokens leaving the answer truncated to
+			// 60-150 chars (user reported "got cuts off" with every
+			// chunk ending mid-sentence). 4096 leaves >2500 tokens for
+			// the actual answer even when thinking burns 1500.
+			//
+			// We also tell the model explicitly to keep thinking short
+			// in the prompt; this header shaves another few hundred
+			// tokens off the thinking phase.
+			max_tokens: 4096,
 		}),
 		signal: AbortSignal.timeout(20_000),
 	});

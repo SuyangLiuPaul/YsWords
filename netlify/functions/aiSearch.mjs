@@ -135,7 +135,13 @@ async function callGeminiWithKey(apiKey, prompt) {
 				{ role: 'user', content: prompt },
 			],
 			temperature: 0.2,
-			max_tokens: 512,
+			// 4096 — gemini-2.5-flash uses "thinking" tokens that
+			// share max_tokens with the output. Round 54 fix
+			// (originally 512); see aiExplainWord.mjs for the full
+			// rationale. AI-search answers themselves stay short
+			// (1-3 sentences) so the model just gets headroom to
+			// think rather than producing more text.
+			max_tokens: 4096,
 		}),
 		signal: AbortSignal.timeout(20_000),
 	});
