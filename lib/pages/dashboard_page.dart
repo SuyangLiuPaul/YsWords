@@ -445,10 +445,11 @@ class _DashboardPageState extends State<DashboardPage> {
               locale: locale,
               fromVersionLabel: _dailyVerseFromVersionLabel,
               onTap: () {
-                final v = _dailyVerse!;
-                mainProvider.setCurrentChapter(
-                    book: v.book, chapter: v.chapter);
-                mainProvider.updateCurrentVerse(verse: v);
+                // Same pendingJump handshake the rest of the
+                // cross-link surfaces use, so the reader scrolls
+                // to the actual daily verse rather than dropping
+                // the user at the top of the chapter.
+                jumper.prepareJumpToVerse(_dailyVerse!, mainProvider);
                 Get.to(
                   () => const HomePage(),
                   transition: Transition.rightToLeft,
@@ -602,10 +603,13 @@ class _DashboardPageState extends State<DashboardPage> {
                   overflow: TextOverflow.ellipsis,
                 ),
                 onTap: () {
-                  // Mutate provider first; push reader on top.
-                  mainProvider.setCurrentChapter(
-                      book: v.book, chapter: v.chapter);
-                  mainProvider.updateCurrentVerse(verse: v);
+                  // Use the pendingJump handshake so the reader
+                  // actually scrolls to the verse — not just opens
+                  // the chapter. The previous setCurrentChapter +
+                  // updateCurrentVerse pair without setPendingJump
+                  // landed the user at the top of the chapter
+                  // (round 52 home-page-bookmarks bug).
+                  jumper.prepareJumpToVerse(v, mainProvider);
                   Get.to(
                     () => const HomePage(),
                     transition: Transition.rightToLeft,

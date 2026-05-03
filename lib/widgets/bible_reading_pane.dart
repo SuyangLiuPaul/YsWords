@@ -2356,22 +2356,8 @@ void _showHighlightsSheet({
               v.verse == verse,
         );
         if (match.isEmpty) return;
-        final v = match.first;
-        mainProvider.setCurrentChapter(book: v.book, chapter: v.chapter);
-        mainProvider.updateCurrentVerse(verse: v);
-        Future.delayed(const Duration(milliseconds: 250), () {
-          final chapterVerses = mainProvider.verses
-              .where((cv) => cv.book == v.book && cv.chapter == v.chapter)
-              .toList()
-            ..sort((a, b) => a.verse.compareTo(b.verse));
-          final relIdx = chapterVerses.indexWhere((cv) => cv.verse == v.verse);
-          if (relIdx < 0) return;
-          mainProvider.jumpToIndex(index: relIdx);
-          mainProvider.setHighlightIndex(relIdx);
-          Future.delayed(const Duration(milliseconds: 1200), () {
-            mainProvider.clearHighlightIndex();
-          });
-        });
+        // pendingJump handshake — see lib/utils/jump_to_reference.dart
+        prepareJumpToVerse(match.first, mainProvider);
       },
     ),
   );
@@ -2395,23 +2381,8 @@ void _navigateToConcordanceRef({
         v.verse == ref.verse,
   );
   if (match.isEmpty) return;
-  final verse = match.first;
-  mainProvider.setCurrentChapter(book: verse.book, chapter: verse.chapter);
-  mainProvider.updateCurrentVerse(verse: verse);
-  Future.delayed(const Duration(milliseconds: 250), () {
-    final chapterVerses = mainProvider.verses
-        .where((v) => v.book == verse.book && v.chapter == verse.chapter)
-        .toList()
-      ..sort((a, b) => a.verse.compareTo(b.verse));
-    final relIdx =
-        chapterVerses.indexWhere((v) => v.verse == verse.verse);
-    if (relIdx < 0) return;
-    mainProvider.jumpToIndex(index: relIdx);
-    mainProvider.setHighlightIndex(relIdx);
-    Future.delayed(const Duration(milliseconds: 1200), () {
-      mainProvider.clearHighlightIndex();
-    });
-  });
+  // pendingJump handshake — see lib/utils/jump_to_reference.dart
+  prepareJumpToVerse(match.first, mainProvider);
 }
 
 /// Shows the map picker as a tabbed sheet.
