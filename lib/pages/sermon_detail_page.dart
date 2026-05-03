@@ -39,21 +39,60 @@ class _SermonDetailPageState extends State<SermonDetailPage> {
   bool _loading = true;
   String? _error;
 
+  /// True once the user has manually picked a language via the
+  /// toggle. Until then we mirror the app's UI locale, so a user who
+  /// just changed the app to 简体 sees Simplified Chinese sermons by
+  /// default — and a user opening a fresh sermon while the app is on
+  /// English sees English. After a manual pick we stop tracking the
+  /// app locale so we don't yank the user back when they're reading.
+  bool _userPickedLang = false;
+
+  /// Cached app locale we've already loaded against. Prevents a
+  /// redundant reload on every AppSettings notify (e.g. font-size
+  /// change which also fires `notifyListeners`).
+  String? _loadedForAppLocale;
+
+  AppSettings? _settings;
+
   @override
-  void initState() {
-    super.initState();
-    // First-load uses the user's UI locale to choose the best body.
-    _loadForLocale();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final s = Provider.of<AppSettings>(context, listen: false);
+    if (_settings != s) {
+      _settings?.removeListener(_onSettingsChanged);
+      _settings = s;
+      _settings!.addListener(_onSettingsChanged);
+      // First entry: load against the app locale.
+      _maybeReloadForAppLocale();
+    }
   }
 
-  Future<void> _loadForLocale() async {
+  @override
+  void dispose() {
+    _settings?.removeListener(_onSettingsChanged);
+    super.dispose();
+  }
+
+  void _onSettingsChanged() {
+    if (!mounted || _userPickedLang) return;
+    _maybeReloadForAppLocale();
+  }
+
+  void _maybeReloadForAppLocale() {
+    final s = _settings;
+    if (s == null) return;
+    if (s.locale == _loadedForAppLocale) return;
+    _loadedForAppLocale = s.locale;
+    _loadForAppLocale(s.locale);
+  }
+
+  Future<void> _loadForAppLocale(String appLocale) async {
     if (!mounted) return;
     setState(() {
       _loading = true;
       _error = null;
     });
-    final settings = context.read<AppSettings>();
-    final loc = _localeToBodyLang(settings.locale);
+    final loc = _localeToBodyLang(appLocale);
     try {
       final res = await SermonService.instance.loadBestBody(
         sermon: widget.sermon,
@@ -83,6 +122,7 @@ class _SermonDetailPageState extends State<SermonDetailPage> {
 
   Future<void> _switchTo(String lang) async {
     if (lang == _lang) return;
+    _userPickedLang = true;
     final has = lang == 'en'
         ? widget.sermon.hasEn
         : lang == 'zh-CN'
@@ -163,6 +203,7 @@ class _SermonDetailPageState extends State<SermonDetailPage> {
             _LanguageToggle(
               sermon: s,
               currentLang: _lang,
+              appLocale: settings.locale,
               onSelect: _switchTo,
             ),
             const SizedBox(height: 16),
@@ -215,22 +256,39 @@ class _MetaChip extends StatelessWidget {
 class _LanguageToggle extends StatelessWidget {
   final Sermon sermon;
   final String? currentLang;
+  final String appLocale;
   final void Function(String lang) onSelect;
 
   const _LanguageToggle({
     required this.sermon,
     required this.currentLang,
+    required this.appLocale,
     required this.onSelect,
   });
 
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final entries = <(String, String, bool)>[
+    // Order entries so the user's UI-locale-matched language appears
+    // first — reinforces that it's the visual default and matches
+    // their reading preference. The user can still pick the others;
+    // they just don't lead the row.
+    final allEntries = <(String, String, bool)>[
       ('en', 'English', sermon.hasEn),
       ('zh-CN', '简体', sermon.hasZhCn),
       ('zh-TW', '繁體', sermon.hasZhTw),
     ];
+    final preferred = appLocale == 'zh-Hant'
+        ? 'zh-TW'
+        : appLocale == 'zh-Hans'
+            ? 'zh-CN'
+            : 'en';
+    allEntries.sort((a, b) {
+      if (a.$1 == preferred) return -1;
+      if (b.$1 == preferred) return 1;
+      return 0;
+    });
+    final entries = allEntries;
     return Wrap(
       spacing: 8,
       children: [
