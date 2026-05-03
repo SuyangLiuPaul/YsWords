@@ -407,6 +407,20 @@ class MainProvider extends ChangeNotifier {
 
   void setPendingJump({required int chapterVerseIndex}) {
     _pendingJumpChapterVerseIndex = chapterVerseIndex;
+    // Always notify, even if other state didn't change — round 52
+    // bug: when the user tapped a note for a verse in the *current*
+    // chapter, [prepareJumpToVerse] called setCurrentChapter (which
+    // notifies, but for an unchanged chapter), updateCurrentVerse
+    // (notifies for currentVerse change, fine), then setPendingJump
+    // (NO notify). The reader's pendingJump consumer in
+    // bible_reading_pane.dart only runs when the Consumer rebuilds,
+    // and there was nothing that *forced* a rebuild after the
+    // pendingJump was set. The user landed at the top of the chapter
+    // because the post-frame callback was never scheduled. Notifying
+    // here closes that race — any caller that sets a pending jump
+    // gets a guaranteed reader rebuild, regardless of whether the
+    // chapter actually changed.
+    notifyListeners();
   }
 
   /// Returns the pending verse index and clears it. Reader calls
