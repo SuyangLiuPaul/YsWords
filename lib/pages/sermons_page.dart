@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:provider/provider.dart';
 
+import 'package:yswords/constants/sermon_topics.dart';
 import 'package:yswords/constants/ui_strings.dart';
 import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/models/sermon.dart';
@@ -519,6 +520,7 @@ class _TopicGroup extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final locale = context.watch<AppSettings>().locale;
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 4),
       elevation: 0,
@@ -532,11 +534,11 @@ class _TopicGroup extends StatelessWidget {
         tilePadding: const EdgeInsets.symmetric(horizontal: 16),
         childrenPadding: const EdgeInsets.only(bottom: 4),
         title: Text(
-          topic,
+          localizedSermonTopic(topic, locale),
           style: const TextStyle(fontWeight: FontWeight.w600),
         ),
         subtitle: Text(
-          '${sermons.length} sermon${sermons.length == 1 ? '' : 's'}',
+          _subtitle(sermons.length, locale),
           style: TextStyle(
             fontSize: 12,
             color: scheme.onSurface.withValues(alpha: 0.6),
@@ -547,6 +549,12 @@ class _TopicGroup extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  String _subtitle(int n, String locale) {
+    final tmpl = uiStrings['sermonGroupCount']?[locale];
+    if (tmpl != null) return tmpl.replaceAll('{count}', '$n');
+    return '$n sermon${n == 1 ? '' : 's'}';
   }
 }
 

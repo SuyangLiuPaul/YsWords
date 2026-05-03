@@ -1748,6 +1748,11 @@ const uiStrings = {
     'zh-Hant': '{count} 篇講道,共 {topics} 個主題',
     'en': '{count} sermons across {topics} topics',
   },
+  'sermonGroupCount': {
+    'zh-Hans': '{count} 篇',
+    'zh-Hant': '{count} 篇',
+    'en': '{count} sermon(s)',
+  },
   'relatedSermons': {
     'zh-Hans': '相关讲道',
     'zh-Hant': '相關講道',

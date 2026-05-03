@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:provider/provider.dart';
 
+import 'package:yswords/constants/sermon_topics.dart';
 import 'package:yswords/constants/ui_strings.dart';
 import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/models/sermon.dart';
@@ -194,7 +195,7 @@ class _SermonDetailPageState extends State<SermonDetailPage> {
                     fg: scheme.onPrimaryContainer,
                   ),
                 _MetaChip(
-                  label: s.topic,
+                  label: localizedSermonTopic(s.topic, settings.locale),
                   color: scheme.surfaceContainerHigh,
                 ),
               ],

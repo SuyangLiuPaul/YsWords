@@ -90,12 +90,24 @@ class SermonService {
     return refs.bySermon[sermonId] ?? const [];
   }
 
-  /// Sermons whose passage hint OR body cites a reference whose book
-  /// + chapter + verse match the given (book, chapter, verse). The
-  /// matcher is permissive: a sermon citing only "Romans 8" (chapter)
-  /// matches a tap on Romans 8:1 *or* 8:2 *or* …; a sermon citing
-  /// "Romans 8:1" matches only that verse. Bible-reading-pane uses
-  /// this to surface a chip per verse.
+  /// Sermons that cite ANY verse in the same chapter as the given
+  /// (book, chapter, verse). Uses chapter-level matching because:
+  ///
+  ///   1. A sermon's natural unit is the chapter, not the verse — a
+  ///      sermon expounding Genesis 1:1-5 is just as relevant when
+  ///      the user has selected Genesis 1:7 as when they've selected
+  ///      Genesis 1:1. Verse-exact matching (the previous semantic)
+  ///      meant most sermons were invisible: the refs index records
+  ///      the verses *cited* in the body, but the user might be
+  ///      reading any verse of that chapter.
+  ///   2. Cross-version / cross-language coverage: every Bible
+  ///      version uses the same chapter numbering, so chapter-level
+  ///      lookup is robust regardless of whether the user is reading
+  ///      ESV, NIV, CUVS-YHWH, LJK1/2 or anything else.
+  ///
+  /// Verse exactness is preserved as a *priority signal*: sermons
+  /// whose refs include the exact `englishBook chapter:verse` come
+  /// first in the returned list; chapter-only matches follow.
   Future<List<Sermon>> sermonsForVerse({
     required String englishBook,
     required int chapter,
@@ -104,18 +116,36 @@ class SermonService {
     final refs = await loadRefs();
     final all = await loadIndex();
     final byId = {for (final s in all) s.id: s};
-    final out = <Sermon>{};
-    final wholeChapter = '$englishBook $chapter';
-    final exactVerse = '$englishBook $chapter:$verse';
+    final exactVerseKey = '$englishBook $chapter:$verse';
+    final wholeChapterKey = '$englishBook $chapter';
+    final chapterPrefix = '$englishBook $chapter:';
+    final exactHits = <Sermon>{};
+    final chapterHits = <Sermon>{};
     refs.byVerse.forEach((key, ids) {
-      if (key == wholeChapter || key == exactVerse) {
-        for (final id in ids) {
-          final s = byId[id];
-          if (s != null) out.add(s);
+      bool exact = false;
+      bool chapterMatch = false;
+      if (key == exactVerseKey) {
+        exact = true;
+      } else if (key == wholeChapterKey || key.startsWith(chapterPrefix)) {
+        chapterMatch = true;
+      }
+      if (!exact && !chapterMatch) return;
+      for (final id in ids) {
+        final s = byId[id];
+        if (s == null) continue;
+        if (exact) {
+          exactHits.add(s);
+        } else {
+          chapterHits.add(s);
         }
       }
     });
-    return out.toList();
+    final out = <Sermon>[];
+    out.addAll(exactHits);
+    for (final s in chapterHits) {
+      if (!exactHits.contains(s)) out.add(s);
+    }
+    return out;
   }
 
   /// Load the metadata index, parsing the bundled JSON on first call.

@@ -25,6 +25,7 @@ import 'package:yswords/providers/main_provider.dart';
 import 'package:yswords/services/fetch_books.dart';
 import 'package:yswords/services/concordance_service.dart';
 import 'package:yswords/services/cloud_auth_service.dart';
+import 'package:yswords/constants/sermon_topics.dart';
 import 'package:yswords/models/sermon.dart';
 import 'package:yswords/pages/sermon_detail_page.dart';
 import 'package:yswords/services/cross_reference_service.dart';
@@ -1928,7 +1929,7 @@ class _RelatedSermonsSheetBodyState extends State<_RelatedSermonsSheetBody> {
                                     fontSize: 11,
                                     color: scheme.onSurface
                                         .withValues(alpha: 0.55))),
-                          Text(s.topic,
+                          Text(localizedSermonTopic(s.topic, widget.locale),
                               style: TextStyle(
                                   fontSize: 11,
                                   color: scheme.primary
