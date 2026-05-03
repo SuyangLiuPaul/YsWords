@@ -4,6 +4,17 @@ import 'package:flutter/services.dart' show rootBundle;
 
 import 'package:yswords/models/sermon.dart';
 
+/// Reverse-index payload loaded from `assets/sermons/refs.json`.
+/// `byVerse` maps a canonical "Book chapter[:verse]" string to the
+/// list of sermon ids that cite it; `bySermon` is the inverse.
+class SermonRefs {
+  final Map<String, List<String>> byVerse;
+  final Map<String, List<String>> bySermon;
+  const SermonRefs({required this.byVerse, required this.bySermon});
+
+  bool get isEmpty => byVerse.isEmpty && bySermon.isEmpty;
+}
+
 /// Loads and caches the Pastor Eric sermon corpus.
 ///
 /// The full corpus is 289 sermons × 3 languages = 867 body files
@@ -23,6 +34,89 @@ class SermonService {
 
   List<Sermon>? _index;
   final Map<String, String> _bodyCache = {};
+
+  /// Cached reverse index from `assets/sermons/refs.json` — the
+  /// output of `scripts/extract_sermon_refs.py`. Populated lazily on
+  /// first call to [loadRefs] and shared across the rest of the
+  /// service so both surfaces (sermon-detail body links + bible-pane
+  /// "related sermons" chip) hit the same data.
+  SermonRefs? _refs;
+
+  /// Reverse index from "Book chapter[:verse]" → list of sermon ids,
+  /// plus the inverse list per sermon. Loaded once per process.
+  Future<SermonRefs> loadRefs() async {
+    final cached = _refs;
+    if (cached != null) return cached;
+    try {
+      final raw = await rootBundle.loadString('assets/sermons/refs.json');
+      final j = json.decode(raw) as Map<String, dynamic>;
+      final byVerse = <String, List<String>>{};
+      final byVerseRaw = j['byVerse'] as Map<String, dynamic>? ?? {};
+      byVerseRaw.forEach((k, v) {
+        byVerse[k] = (v as List).cast<String>();
+      });
+      final bySermon = <String, List<String>>{};
+      final bySermonRaw = j['bySermon'] as Map<String, dynamic>? ?? {};
+      bySermonRaw.forEach((k, v) {
+        bySermon[k] = (v as List).cast<String>();
+      });
+      _refs = SermonRefs(byVerse: byVerse, bySermon: bySermon);
+    } catch (_) {
+      // Refs file missing / corrupt — degrade gracefully (no chips,
+      // no body links). Cache the empty index so we don't re-parse
+      // on every UI rebuild.
+      _refs = const SermonRefs(byVerse: {}, bySermon: {});
+    }
+    return _refs!;
+  }
+
+  /// Sermons whose body or passage hint cites the given canonical
+  /// reference (`"Romans 8:1"`, `"Matthew 24"`). Resolves to actual
+  /// `Sermon` objects via the loaded index. Returns empty when no
+  /// match or when refs aren't loaded yet.
+  Future<List<Sermon>> sermonsForReference(String canonical) async {
+    final refs = await loadRefs();
+    final all = await loadIndex();
+    final ids = refs.byVerse[canonical];
+    if (ids == null || ids.isEmpty) return const [];
+    final byId = {for (final s in all) s.id: s};
+    return [for (final id in ids) if (byId[id] != null) byId[id]!];
+  }
+
+  /// All verse references known for one sermon — used by the sermon
+  /// detail page to make those refs tappable.
+  Future<List<String>> referencesInSermon(String sermonId) async {
+    final refs = await loadRefs();
+    return refs.bySermon[sermonId] ?? const [];
+  }
+
+  /// Sermons whose passage hint OR body cites a reference whose book
+  /// + chapter + verse match the given (book, chapter, verse). The
+  /// matcher is permissive: a sermon citing only "Romans 8" (chapter)
+  /// matches a tap on Romans 8:1 *or* 8:2 *or* …; a sermon citing
+  /// "Romans 8:1" matches only that verse. Bible-reading-pane uses
+  /// this to surface a chip per verse.
+  Future<List<Sermon>> sermonsForVerse({
+    required String englishBook,
+    required int chapter,
+    required int verse,
+  }) async {
+    final refs = await loadRefs();
+    final all = await loadIndex();
+    final byId = {for (final s in all) s.id: s};
+    final out = <Sermon>{};
+    final wholeChapter = '$englishBook $chapter';
+    final exactVerse = '$englishBook $chapter:$verse';
+    refs.byVerse.forEach((key, ids) {
+      if (key == wholeChapter || key == exactVerse) {
+        for (final id in ids) {
+          final s = byId[id];
+          if (s != null) out.add(s);
+        }
+      }
+    });
+    return out.toList();
+  }
 
   /// Load the metadata index, parsing the bundled JSON on first call.
   /// Subsequent calls are O(1).

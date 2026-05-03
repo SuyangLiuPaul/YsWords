@@ -25,11 +25,14 @@ import 'package:yswords/providers/main_provider.dart';
 import 'package:yswords/services/fetch_books.dart';
 import 'package:yswords/services/concordance_service.dart';
 import 'package:yswords/services/cloud_auth_service.dart';
+import 'package:yswords/models/sermon.dart';
+import 'package:yswords/pages/sermon_detail_page.dart';
 import 'package:yswords/services/cross_reference_service.dart';
 import 'package:yswords/services/fetch_verses.dart';
 import 'package:yswords/services/book_intro_service.dart';
 import 'package:yswords/services/map_service.dart';
 import 'package:yswords/services/section_title_service.dart';
+import 'package:yswords/services/sermon_service.dart';
 import 'package:yswords/services/synopsis_service.dart';
 import 'package:yswords/services/tts_service.dart';
 import 'package:yswords/utils/clipboard_helper.dart';
@@ -1159,6 +1162,12 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                                 locale: settings.locale,
                                 mainProvider: mainProvider,
                               ),
+                              onSermons: () => _showRelatedSermonsSheet(
+                                context: context,
+                                verses: mainProvider.selectedVerses,
+                                locale: settings.locale,
+                                currentVersion: mainProvider.currentVersion,
+                              ),
                               anyNoted: mainProvider.selectedVerses
                                   .any(mainProvider.isVerseNoted),
                               anyBookmarked: mainProvider.selectedVerses
@@ -1419,6 +1428,7 @@ class _SelectionActionBar extends StatelessWidget {
   final VoidCallback onRemoveHighlight;
   final VoidCallback onOriginal;
   final VoidCallback onCrossRefs;
+  final VoidCallback onSermons;
   final VoidCallback onNote;
   final VoidCallback onBookmark;
   /// True when at least one of the currently-selected verses is
@@ -1438,6 +1448,7 @@ class _SelectionActionBar extends StatelessWidget {
     required this.onRemoveHighlight,
     required this.onOriginal,
     required this.onCrossRefs,
+    required this.onSermons,
     required this.onNote,
     required this.onBookmark,
     required this.anyBookmarked,
@@ -1547,6 +1558,13 @@ class _SelectionActionBar extends StatelessWidget {
             'Cross-references',
         onPressed: onCrossRefs,
         icon: const Icon(Icons.hub_outlined),
+        visualDensity: VisualDensity.compact,
+      ),
+      IconButton(
+        tooltip: uiStrings['relatedSermons']?[settings.locale] ??
+            'Related sermons',
+        onPressed: onSermons,
+        icon: const Icon(Icons.menu_book_outlined),
         visualDensity: VisualDensity.compact,
       ),
       IconButton(
@@ -1750,6 +1768,192 @@ void _showCrossRefsSheet({
     ),
   );
   mainProvider.clearSelectedVerses();
+}
+
+/// Bottom sheet listing every Pastor Eric sermon that cites at least
+/// one of the currently-selected verses. Reads the precomputed
+/// reverse index from `assets/sermons/refs.json` (~66 KB) loaded by
+/// [SermonService] — no per-verse async work in the build path.
+///
+/// Empty result is handled with a friendly message inside the sheet
+/// rather than refusing to open: the user just tapped a deliberate
+/// affordance, so giving them a "no sermons reference these verses"
+/// confirmation is more useful than silent no-op.
+void _showRelatedSermonsSheet({
+  required BuildContext context,
+  required List<Verse> verses,
+  required String locale,
+  required String currentVersion,
+}) {
+  if (verses.isEmpty) return;
+  showModalBottomSheet<void>(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Theme.of(context).colorScheme.surface,
+    constraints: const BoxConstraints(maxWidth: 800),
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+    ),
+    builder: (sheetCtx) => DraggableScrollableSheet(
+      initialChildSize: 0.55,
+      minChildSize: 0.3,
+      maxChildSize: 0.95,
+      expand: false,
+      builder: (_, scrollController) => _RelatedSermonsSheetBody(
+        verses: verses,
+        locale: locale,
+        scrollController: scrollController,
+      ),
+    ),
+  );
+}
+
+class _RelatedSermonsSheetBody extends StatefulWidget {
+  final List<Verse> verses;
+  final String locale;
+  final ScrollController scrollController;
+
+  const _RelatedSermonsSheetBody({
+    required this.verses,
+    required this.locale,
+    required this.scrollController,
+  });
+
+  @override
+  State<_RelatedSermonsSheetBody> createState() =>
+      _RelatedSermonsSheetBodyState();
+}
+
+class _RelatedSermonsSheetBodyState extends State<_RelatedSermonsSheetBody> {
+  Future<List<Sermon>>? _future;
+
+  @override
+  void initState() {
+    super.initState();
+    _future = _loadRelated();
+  }
+
+  Future<List<Sermon>> _loadRelated() async {
+    final svc = SermonService.instance;
+    final seen = <String>{};
+    final out = <Sermon>[];
+    for (final v in widget.verses) {
+      final englishBook = toEnglish(v.book) ?? v.book;
+      final hits = await svc.sermonsForVerse(
+        englishBook: englishBook,
+        chapter: v.chapter,
+        verse: v.verse,
+      );
+      for (final s in hits) {
+        if (seen.add(s.id)) out.add(s);
+      }
+    }
+    return out;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final title = uiStrings['relatedSermons']?[widget.locale] ??
+        'Related sermons';
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(20, 14, 20, 4),
+          child: Row(
+            children: [
+              Icon(Icons.menu_book_outlined,
+                  size: 20, color: scheme.primary),
+              const SizedBox(width: 8),
+              Text(title,
+                  style: const TextStyle(
+                      fontSize: 16, fontWeight: FontWeight.w600)),
+              const Spacer(),
+              IconButton(
+                icon: const Icon(Icons.close, size: 20),
+                onPressed: () => Navigator.of(context).maybePop(),
+              ),
+            ],
+          ),
+        ),
+        Expanded(
+          child: FutureBuilder<List<Sermon>>(
+            future: _future,
+            builder: (context, snap) {
+              if (!snap.hasData) {
+                return const Center(child: CircularProgressIndicator());
+              }
+              final sermons = snap.data!;
+              if (sermons.isEmpty) {
+                return Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: Text(
+                      uiStrings['noRelatedSermons']?[widget.locale] ??
+                          'No Pastor Eric sermons reference these verses.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                          color:
+                              scheme.onSurface.withValues(alpha: 0.65)),
+                    ),
+                  ),
+                );
+              }
+              return ListView.separated(
+                controller: widget.scrollController,
+                padding: const EdgeInsets.fromLTRB(8, 4, 8, 24),
+                itemCount: sermons.length,
+                separatorBuilder: (_, __) => const Divider(height: 1),
+                itemBuilder: (_, i) {
+                  final s = sermons[i];
+                  return ListTile(
+                    title: Text(
+                      s.title.isEmpty ? '#${s.id}' : s.title,
+                      style: const TextStyle(fontWeight: FontWeight.w500),
+                    ),
+                    subtitle: Padding(
+                      padding: const EdgeInsets.only(top: 2),
+                      child: Wrap(
+                        spacing: 8,
+                        children: [
+                          Text('#${s.id}',
+                              style: TextStyle(
+                                  fontSize: 11,
+                                  color: scheme.onSurface
+                                      .withValues(alpha: 0.55))),
+                          if (s.displayDate != '—')
+                            Text(s.displayDate,
+                                style: TextStyle(
+                                    fontSize: 11,
+                                    color: scheme.onSurface
+                                        .withValues(alpha: 0.55))),
+                          Text(s.topic,
+                              style: TextStyle(
+                                  fontSize: 11,
+                                  color: scheme.primary
+                                      .withValues(alpha: 0.85),
+                                  fontWeight: FontWeight.w500)),
+                        ],
+                      ),
+                    ),
+                    trailing: const Icon(Icons.chevron_right, size: 20),
+                    onTap: () {
+                      Navigator.of(context).maybePop();
+                      Get.to(
+                        () => SermonDetailPage(sermon: s),
+                        transition: Transition.rightToLeft,
+                      );
+                    },
+                  );
+                },
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
 }
 
 /// Navigate to a free-form parsed [BibleReference] from a cross-ref

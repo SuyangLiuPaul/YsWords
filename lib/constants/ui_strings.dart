@@ -1748,6 +1748,16 @@ const uiStrings = {
     'zh-Hant': '{count} 篇講道,共 {topics} 個主題',
     'en': '{count} sermons across {topics} topics',
   },
+  'relatedSermons': {
+    'zh-Hans': '相关讲道',
+    'zh-Hant': '相關講道',
+    'en': 'Related sermons',
+  },
+  'noRelatedSermons': {
+    'zh-Hans': '没有讲道引用这些经文。',
+    'zh-Hant': '沒有講道引用這些經文。',
+    'en': 'No sermons reference these verses.',
+  },
   'viewMap': {
     'zh-Hans': '查看插图',
     'zh-Hant': '查看插畫',

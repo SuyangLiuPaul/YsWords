@@ -1,10 +1,16 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:provider/provider.dart';
 
 import 'package:yswords/constants/ui_strings.dart';
 import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/models/sermon.dart';
+import 'package:yswords/pages/home_page.dart';
+import 'package:yswords/providers/main_provider.dart';
 import 'package:yswords/services/sermon_service.dart';
+import 'package:yswords/utils/jump_to_reference.dart' as jumper;
+import 'package:yswords/utils/reference_parser.dart';
 import 'package:yswords/widgets/home_icon_button.dart';
 import 'package:yswords/widgets/localized_back_button.dart';
 
@@ -255,6 +261,28 @@ class _SermonBody extends StatelessWidget {
 
   const _SermonBody({required this.text, required this.settings});
 
+  /// Pattern for inline Bible references the body might mention.
+  /// Conservative — book + chapter:verse(-verse?), so we don't
+  /// underline numbers that aren't actually scripture refs.
+  /// Built once per build instead of compiled each paragraph.
+  static final RegExp _refPattern = RegExp(
+    r'\b(?:[1-3]\s?)?'
+    r'(?:Genesis|Exodus|Leviticus|Numbers|Deuteronomy|Joshua|Judges|Ruth|'
+    r'Samuel|Kings|Chronicles|Ezra|Nehemiah|Esther|Job|Psalms?|Proverbs|'
+    r'Ecclesiastes|Song(?:\s+of\s+(?:Solomon|Songs))?|Isaiah|Jeremiah|'
+    r'Lamentations|Ezekiel|Daniel|Hosea|Joel|Amos|Obadiah|Jonah|Micah|'
+    r'Nahum|Habakkuk|Zephaniah|Haggai|Zechariah|Malachi|Matthew|Mark|'
+    r'Luke|John|Acts|Romans|Corinthians|Galatians|Ephesians|Philippians|'
+    r'Colossians|Thessalonians|Timothy|Titus|Philemon|Hebrews|James|'
+    r'Peter|Jude|Revelation|'
+    r'Gen|Exo|Exod|Lev|Num|Deut|Josh|Judg|Ru|1Sam|2Sam|1Kgs|2Kgs|1Chr|'
+    r'2Chr|Neh|Est|Ps|Prv|Prov|Eccl|Isa|Jer|Lam|Ezek|Eze|Dan|Hos|Jl|'
+    r'Am|Obad|Jonah|Mic|Nah|Hab|Zeph|Hag|Zech|Mal|Matt|Mt|Mk|Lk|Jn|'
+    r'Rom|Cor|Gal|Eph|Phil|Col|Thess|Tim|Heb|Pet|Rev)'
+    r'\.?\s*\d+(?:\s*[:.]\s*\d+(?:\s*[-–]\s*\d+)?)?',
+    caseSensitive: false,
+  );
+
   @override
   Widget build(BuildContext context) {
     // The first line is a Markdown H1 already shown in the page title.
@@ -271,6 +299,7 @@ class _SermonBody extends StatelessWidget {
     // Split on blank lines for paragraph spacing.
     final paragraphs = body.split(RegExp(r'\n\s*\n'));
     final fontSize = settings.fontSize;
+    final scheme = Theme.of(context).colorScheme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -278,8 +307,8 @@ class _SermonBody extends StatelessWidget {
           if (p.trim().isNotEmpty)
             Padding(
               padding: const EdgeInsets.only(bottom: 14),
-              child: SelectableText(
-                p.trim(),
+              child: SelectableText.rich(
+                _buildSpans(context, p.trim(), fontSize, scheme),
                 style: TextStyle(
                   fontSize: fontSize,
                   height: 1.55,
@@ -287,6 +316,62 @@ class _SermonBody extends StatelessWidget {
               ),
             ),
       ],
+    );
+  }
+
+  /// Build a [TextSpan] tree where every Bible-reference match
+  /// becomes a tappable underlined span. Non-matching slices are
+  /// plain text so the user can still select-and-copy normally.
+  TextSpan _buildSpans(
+    BuildContext context,
+    String paragraph,
+    double fontSize,
+    ColorScheme scheme,
+  ) {
+    final spans = <InlineSpan>[];
+    var idx = 0;
+    for (final match in _refPattern.allMatches(paragraph)) {
+      if (match.start > idx) {
+        spans.add(TextSpan(text: paragraph.substring(idx, match.start)));
+      }
+      final matched = match.group(0)!;
+      // Only treat as a link if our parser actually recognises it —
+      // this filters out false positives like "Mark sat down" that
+      // the regex catches but the alias index rejects.
+      final parsed = parseReference(matched);
+      if (parsed == null) {
+        spans.add(TextSpan(text: matched));
+      } else {
+        spans.add(TextSpan(
+          text: matched,
+          style: TextStyle(
+            color: scheme.primary,
+            decoration: TextDecoration.underline,
+            decorationColor: scheme.primary.withValues(alpha: 0.4),
+            decorationStyle: TextDecorationStyle.dotted,
+          ),
+          recognizer: TapGestureRecognizer()
+            ..onTap = () => _jumpToParsedRef(context, parsed),
+        ));
+      }
+      idx = match.end;
+    }
+    if (idx < paragraph.length) {
+      spans.add(TextSpan(text: paragraph.substring(idx)));
+    }
+    return TextSpan(children: spans);
+  }
+
+  Future<void> _jumpToParsedRef(
+      BuildContext context, BibleReference ref) async {
+    final mp = context.read<MainProvider>();
+    final result = await jumper.resolveAndPrepareJump(reference: ref, mp: mp);
+    if (!context.mounted) return;
+    final ok = await jumper.showJumpResultSnackBar(context, result);
+    if (!ok || !context.mounted) return;
+    Get.to(
+      () => const HomePage(),
+      transition: Transition.rightToLeft,
     );
   }
 }
