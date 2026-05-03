@@ -743,7 +743,11 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
                 const SizedBox(height: 8),
                 Text(
                   // CC-BY-NC-SA 4.0 attribution required by the source.
-                  '中文释义来源：CBOL · bible.fhl.net (CC-BY-NC-SA 4.0)',
+                  // Traditional users see the converted attribution
+                  // string too — no script-mixing inside the panel.
+                  locale == 'zh-Hant'
+                      ? '中文釋義來源:CBOL · bible.fhl.net (CC-BY-NC-SA 4.0)'
+                      : '中文释义来源:CBOL · bible.fhl.net (CC-BY-NC-SA 4.0)',
                   style: TextStyle(
                     fontSize: 10,
                     color: scheme.onSurfaceVariant.withValues(alpha: 0.7),
