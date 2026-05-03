@@ -8,6 +8,7 @@ import 'package:yswords/services/strongs_service.dart';
 import 'package:yswords/pages/strongs_entry_page.dart';
 import 'package:yswords/services/recent_searches_service.dart';
 import 'package:yswords/utils/format_searched_text.dart';
+import 'package:yswords/utils/jump_to_reference.dart';
 import 'package:yswords/utils/reference_parser.dart';
 import 'package:yswords/utils/version_mapper.dart'
     show localeAwareBookName, toEnglish, translateBookName;
@@ -524,41 +525,18 @@ class _SearchPageState extends State<SearchPage> {
                           ),
                           child: ListTile(
                             onTap: () {
-                              // Capture the provider synchronously — by
-                              // the time the delayed callbacks run we'll
-                              // have popped this page so context lookups
-                              // would be unsafe.
+                              // pendingJump handshake — see
+                              // lib/utils/jump_to_reference.dart for
+                              // the rationale. Replaces the previous
+                              // Future.delayed(300ms) which often
+                              // missed cold-start and slow-device
+                              // builds, leaving the user at the top
+                              // of the chapter.
                               final mainProv = Provider.of<MainProvider>(
                                   context,
                                   listen: false);
-                              mainProv.setCurrentChapter(
-                                  book: verse.book, chapter: verse.chapter);
-                              mainProv.updateCurrentVerse(verse: verse);
+                              prepareJumpToVerse(verse, mainProv);
                               Get.back();
-                              Future.delayed(
-                                  const Duration(milliseconds: 300), () {
-                                // Provider is captured; we don't touch
-                                // BuildContext after this point.
-                                final chapterVerses = mainProv.verses
-                                    .where((v) =>
-                                        v.book == verse.book &&
-                                        v.chapter == verse.chapter)
-                                    .toList()
-                                  ..sort((a, b) =>
-                                      a.verse.compareTo(b.verse));
-                                final relIdx = chapterVerses
-                                    .indexWhere((v) => v.verse == verse.verse);
-                                if (relIdx < 0) return;
-                                mainProv.jumpToIndex(index: relIdx);
-                                mainProv.setHighlightIndex(relIdx);
-                                Future.delayed(
-                                    const Duration(milliseconds: 800), () {
-                                  // It's safe to clear regardless of this
-                                  // widget's lifetime — provider survives
-                                  // the page pop.
-                                  mainProv.clearHighlightIndex();
-                                });
-                              });
                             },
                             // Sanitize verse text: remove <note:…> and {...}, leave […]
                             title: Builder(
@@ -794,23 +772,8 @@ class _SearchPageState extends State<SearchPage> {
     );
     if (match.isEmpty) return;
     final verse = match.first;
-    mainProv.setCurrentChapter(book: verse.book, chapter: verse.chapter);
-    mainProv.updateCurrentVerse(verse: verse);
+    prepareJumpToVerse(verse, mainProv);
     Get.back();
-    Future.delayed(const Duration(milliseconds: 300), () {
-      final chapterVerses = mainProv.verses
-          .where((v) => v.book == verse.book && v.chapter == verse.chapter)
-          .toList()
-        ..sort((a, b) => a.verse.compareTo(b.verse));
-      final relIdx =
-          chapterVerses.indexWhere((v) => v.verse == verse.verse);
-      if (relIdx < 0) return;
-      mainProv.jumpToIndex(index: relIdx);
-      mainProv.setHighlightIndex(relIdx);
-      Future.delayed(const Duration(milliseconds: 800), () {
-        mainProv.clearHighlightIndex();
-      });
-    });
   }
 
   /// Navigate to a free-form parsed [BibleReference]. Returns true
@@ -837,19 +800,8 @@ class _SearchPageState extends State<SearchPage> {
       orElse: () => chapterMatches.first,
     );
 
-    mainProv.setCurrentChapter(book: hit.book, chapter: hit.chapter);
-    mainProv.updateCurrentVerse(verse: hit);
+    prepareJumpToVerse(hit, mainProv);
     Get.back();
-    Future.delayed(const Duration(milliseconds: 300), () {
-      final relIdx =
-          chapterMatches.indexWhere((v) => v.verse == hit.verse);
-      if (relIdx < 0) return;
-      mainProv.jumpToIndex(index: relIdx);
-      mainProv.setHighlightIndex(relIdx);
-      Future.delayed(const Duration(milliseconds: 800), () {
-        mainProv.clearHighlightIndex();
-      });
-    });
     return true;
   }
 }

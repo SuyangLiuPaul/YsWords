@@ -37,6 +37,7 @@ import 'package:yswords/services/sermon_service.dart';
 import 'package:yswords/services/synopsis_service.dart';
 import 'package:yswords/services/tts_service.dart';
 import 'package:yswords/utils/clipboard_helper.dart';
+import 'package:yswords/utils/jump_to_reference.dart' show prepareJumpToVerse;
 import 'package:yswords/utils/reference_parser.dart';
 import 'package:yswords/utils/responsive.dart';
 import 'package:yswords/widgets/google_g_logo.dart';
@@ -977,6 +978,21 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                             mainProvider.scrollOffsetController,
                         scrollOffsetListener:
                             mainProvider.scrollOffsetListener,
+                        // Preserve scroll position across layout
+                        // changes (e.g. opening or closing split
+                        // view). The SPL widget gets recreated when
+                        // its parent's layout structure changes —
+                        // single-pane → side-by-side / top-bottom —
+                        // and it consults `initialScrollIndex` once
+                        // on each mount. We've been tracking
+                        // `_visibleItemIndex` from
+                        // [_attachPositionsListener] all along, so
+                        // feeding it back here makes the new SPL
+                        // restore the user's previous reading
+                        // position instead of slamming back to top
+                        // (the user-reported "open split window, why
+                        // the top window goes back to top" bug).
+                        initialScrollIndex: _visibleItemIndex,
                       ),
                     ),
                     _FloatingHeader(
@@ -2167,17 +2183,9 @@ void _navigateToBibleReference({
     (v) => v.verse == targetVerse,
     orElse: () => chapterMatches.first,
   );
-  mainProvider.setCurrentChapter(book: hit.book, chapter: hit.chapter);
-  mainProvider.updateCurrentVerse(verse: hit);
-  Future.delayed(const Duration(milliseconds: 300), () {
-    final relIdx = chapterMatches.indexWhere((v) => v.verse == hit.verse);
-    if (relIdx < 0) return;
-    mainProvider.jumpToIndex(index: relIdx);
-    mainProvider.setHighlightIndex(relIdx);
-    Future.delayed(const Duration(milliseconds: 800), () {
-      mainProvider.clearHighlightIndex();
-    });
-  });
+  // pendingJump handshake — see lib/utils/jump_to_reference.dart for
+  // the rationale. Replaces the previous Future.delayed(300ms).
+  prepareJumpToVerse(hit, mainProvider);
 }
 
 /// Modal text-editing sheet for attaching a note to a single verse.

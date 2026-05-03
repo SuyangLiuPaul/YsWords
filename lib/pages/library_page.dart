@@ -293,22 +293,11 @@ List<Verse> _resolveAnnotations(MainProvider mp, Iterable<String> ids) {
 }
 
 void _navigateToVerse(Verse v, MainProvider mp) {
-  mp.setCurrentChapter(book: v.book, chapter: v.chapter);
-  mp.updateCurrentVerse(verse: v);
+  // pendingJump handshake — see lib/utils/jump_to_reference.dart for
+  // the rationale. Replaces the previous Future.delayed(300ms) which
+  // often missed on cold start and slow devices.
+  jumper.prepareJumpToVerse(v, mp);
   Get.back();
-  Future.delayed(const Duration(milliseconds: 300), () {
-    final chapterVerses = mp.verses
-        .where((x) => x.book == v.book && x.chapter == v.chapter)
-        .toList()
-      ..sort((a, b) => a.verse.compareTo(b.verse));
-    final relIdx = chapterVerses.indexWhere((x) => x.verse == v.verse);
-    if (relIdx < 0) return;
-    mp.jumpToIndex(index: relIdx);
-    mp.setHighlightIndex(relIdx);
-    Future.delayed(const Duration(milliseconds: 800), () {
-      mp.clearHighlightIndex();
-    });
-  });
 }
 
 // ── Plan tab ───────────────────────────────────────────────────────

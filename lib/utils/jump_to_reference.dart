@@ -125,6 +125,36 @@ Future<JumpResolution> resolveAndPrepareJump({
   );
 }
 
+/// Set up [mp] to scroll to a specific [verse] when the reader pane
+/// next builds with both a populated `verseToItemMap` and an attached
+/// `itemScrollController`. Use this whenever you have a concrete
+/// `Verse` object (highlights, bookmarks, notes, search results) —
+/// it's the modern handshake-based equivalent of the old
+/// `Future.delayed(300ms) → jumpToIndex` pattern.
+///
+/// Why this exists: the previous pattern would silently miss the
+/// scroll on cold-start, after a version switch, or on slow devices
+/// (the 300 ms wasn't always enough for the `ScrollablePositionedList`
+/// controller to attach), and the user would land at the top of the
+/// chapter. The pendingJump handshake (drained by
+/// `bible_reading_pane.dart`'s post-frame consumer) waits for the
+/// controller and the verse map to both be ready, so the scroll
+/// always fires correctly.
+void prepareJumpToVerse(Verse verse, MainProvider mp) {
+  mp.setCurrentChapter(book: verse.book, chapter: verse.chapter);
+  mp.updateCurrentVerse(verse: verse);
+  // Find the verse's index within its (book, chapter) ordering.
+  // Sort defensively in case mp.verses isn't strictly ordered.
+  final chapterVerses = mp.verses
+      .where((v) => v.book == verse.book && v.chapter == verse.chapter)
+      .toList()
+    ..sort((a, b) => a.verse.compareTo(b.verse));
+  final relIdx = chapterVerses.indexWhere((v) => v.verse == verse.verse);
+  if (relIdx >= 0) {
+    mp.setPendingJump(chapterVerseIndex: relIdx);
+  }
+}
+
 /// Convenience wrapper that surfaces the result of
 /// [resolveAndPrepareJump] as a SnackBar via the messenger looked up
 /// from [context]. Returns true if the caller should proceed with

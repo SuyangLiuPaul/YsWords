@@ -9,6 +9,7 @@ import 'package:yswords/models/verse.dart';
 import 'package:yswords/pages/home_page.dart';
 import 'package:yswords/providers/main_provider.dart';
 import 'package:yswords/utils/clipboard_helper.dart';
+import 'package:yswords/utils/jump_to_reference.dart';
 import 'package:yswords/widgets/home_icon_button.dart';
 import 'package:yswords/widgets/localized_back_button.dart';
 
@@ -183,24 +184,17 @@ class _HighlightsPageState extends State<HighlightsPage> {
   }
 
   void _navigateToVerse(Verse v, MainProvider mp) {
-    mp.setCurrentChapter(book: v.book, chapter: v.chapter);
-    mp.updateCurrentVerse(verse: v);
+    // Prepare the pendingJump handshake BEFORE pushing the route, so
+    // the reader's post-frame consumer drains it on the very first
+    // build that has both the controller attached and the
+    // verseToItemMap populated. The previous pattern used a fragile
+    // 300 ms `Future.delayed` that often missed cold-start and slow
+    // devices, leaving the user stranded at the top of the chapter.
+    prepareJumpToVerse(v, mp);
     Get.to(
       () => const HomePage(),
       transition: Transition.rightToLeft,
     );
-    Future.delayed(const Duration(milliseconds: 300), () {
-      final chapterVerses = mp.verses
-          .where((x) => x.book == v.book && x.chapter == v.chapter)
-          .toList()
-        ..sort((a, b) => a.verse.compareTo(b.verse));
-      final relIdx = chapterVerses.indexWhere((x) => x.verse == v.verse);
-      if (relIdx < 0) return;
-      mp.jumpToIndex(index: relIdx);
-      mp.setHighlightIndex(relIdx);
-      Future.delayed(const Duration(milliseconds: 800),
-          () => mp.clearHighlightIndex());
-    });
   }
 
   Future<void> _copyAll(

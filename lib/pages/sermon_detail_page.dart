@@ -1,7 +1,10 @@
+import 'dart:async';
+
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:yswords/constants/sermon_topics.dart';
 import 'package:yswords/constants/ui_strings.dart';
@@ -55,6 +58,28 @@ class _SermonDetailPageState extends State<SermonDetailPage> {
 
   AppSettings? _settings;
 
+  /// Scroll controller for the sermon body. Owned by this State so we
+  /// can both observe scroll progress (for the Scrollbar + position
+  /// persistence) and programmatically restore the saved offset on
+  /// re-entry.
+  final ScrollController _scrollController = ScrollController();
+
+  /// Debounced timer for persisting the scroll offset. We don't want
+  /// to write SharedPreferences on every pixel of scroll — coalesce
+  /// rapid changes into a single write 600 ms after the user stops
+  /// scrolling.
+  Timer? _saveOffsetDebounce;
+
+  /// True once we've attempted to restore the user's last-saved
+  /// scroll offset for the currently-loaded body. Prevents repeated
+  /// restores when the body finishes loading after the controller has
+  /// already attached.
+  bool _restoredOffset = false;
+
+  /// Best-known reading progress (0.0–1.0). Updated as the user
+  /// scrolls so the AppBar progress indicator reflects it live.
+  double _progress = 0.0;
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -69,9 +94,96 @@ class _SermonDetailPageState extends State<SermonDetailPage> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_onScroll);
+  }
+
+  @override
   void dispose() {
+    _scrollController.removeListener(_onScroll);
+    _saveOffsetDebounce?.cancel();
+    _flushSaveOffset(); // Save synchronously on dispose
+    _scrollController.dispose();
     _settings?.removeListener(_onSettingsChanged);
     super.dispose();
+  }
+
+  // ── Scroll persistence ───────────────────────────────────────────
+
+  /// Build the SharedPreferences key for this sermon's saved offset.
+  /// Includes the language so flipping between EN/简/繁 doesn't yank
+  /// the user from a familiar position to a stale one in the other
+  /// language. (Body lengths differ across languages so a raw offset
+  /// would be meaningless across lang switches.)
+  String _offsetKey(String lang) => 'sermonScroll:${widget.sermon.id}:$lang';
+
+  Future<void> _saveOffset() async {
+    final lang = _lang;
+    if (lang == null) return;
+    if (!_scrollController.hasClients) return;
+    final pos = _scrollController.position;
+    final pixels = pos.pixels;
+    final max = pos.maxScrollExtent;
+    final prefs = await SharedPreferences.getInstance();
+    // Avoid writing tiny values — there's no point persisting "almost
+    // top". Lets the user "reset" by scrolling to top.
+    if (pixels < 24) {
+      await prefs.remove(_offsetKey(lang));
+    } else {
+      await prefs.setDouble(_offsetKey(lang), pixels);
+    }
+    // Stash the max separately so a future restore can compare and
+    // refuse to restore an offset past the end of a now-truncated
+    // body (e.g. after a re-ingestion).
+    await prefs.setDouble('${_offsetKey(lang)}:max', max);
+  }
+
+  void _flushSaveOffset() {
+    if (!_scrollController.hasClients) return;
+    final pixels = _scrollController.position.pixels;
+    if (pixels < 24) return;
+    // Fire-and-forget on dispose; no await available.
+    SharedPreferences.getInstance().then((prefs) {
+      final lang = _lang;
+      if (lang == null) return;
+      prefs.setDouble(_offsetKey(lang), pixels);
+    });
+  }
+
+  void _onScroll() {
+    if (!_scrollController.hasClients) return;
+    final pos = _scrollController.position;
+    if (pos.maxScrollExtent <= 0) return;
+    final newProgress = (pos.pixels / pos.maxScrollExtent).clamp(0.0, 1.0);
+    if ((newProgress - _progress).abs() > 0.005) {
+      // Avoid rebuilding for sub-percent scroll movement. The
+      // progress indicator at the top of the body re-renders on
+      // every setState — keep it cheap.
+      setState(() => _progress = newProgress);
+    }
+    _saveOffsetDebounce?.cancel();
+    _saveOffsetDebounce =
+        Timer(const Duration(milliseconds: 600), _saveOffset);
+  }
+
+  Future<void> _restoreOffsetIfAny() async {
+    final lang = _lang;
+    if (lang == null || _restoredOffset) return;
+    _restoredOffset = true;
+    final prefs = await SharedPreferences.getInstance();
+    final saved = prefs.getDouble(_offsetKey(lang));
+    if (saved == null || saved < 24) return;
+    // Wait until the ListView has laid out and reported its
+    // maxScrollExtent — only then is jumpTo meaningful.
+    await Future<void>.delayed(const Duration(milliseconds: 50));
+    if (!mounted || !_scrollController.hasClients) return;
+    final maxNow = _scrollController.position.maxScrollExtent;
+    final clamped = saved.clamp(0.0, maxNow);
+    _scrollController.jumpTo(clamped);
+    if (mounted) {
+      setState(() => _progress = maxNow > 0 ? clamped / maxNow : 0.0);
+    }
   }
 
   void _onSettingsChanged() {
@@ -111,6 +223,11 @@ class _SermonDetailPageState extends State<SermonDetailPage> {
         _lang = res.lang;
         _body = res.body;
         _loading = false;
+        _restoredOffset = false; // Allow restore for the new body.
+      });
+      // Restore on the next frame, after the ListView has laid out.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _restoreOffsetIfAny();
       });
     } catch (e) {
       if (!mounted) return;
@@ -130,6 +247,11 @@ class _SermonDetailPageState extends State<SermonDetailPage> {
             ? widget.sermon.hasZhCn
             : widget.sermon.hasZhTw;
     if (!has) return;
+    // Save the current language's offset before switching, so the
+    // user can return to where they were in language A while reading
+    // in language B.
+    _saveOffsetDebounce?.cancel();
+    _saveOffset();
     setState(() => _loading = true);
     final body = await SermonService.instance
         .loadBody(id: widget.sermon.id, lang: lang);
@@ -138,6 +260,10 @@ class _SermonDetailPageState extends State<SermonDetailPage> {
       _lang = lang;
       _body = body ?? '';
       _loading = false;
+      _restoredOffset = false; // Restore for the new language's body.
+    });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _restoreOffsetIfAny();
     });
   }
 
@@ -165,10 +291,38 @@ class _SermonDetailPageState extends State<SermonDetailPage> {
           style: const TextStyle(fontWeight: FontWeight.w600),
         ),
         actions: const [HomeIconButton()],
+        // Reading-progress strip under the AppBar — width-tracks the
+        // user's scroll through the body. Visible whenever the body
+        // has actually scrolled (avoids a stale "0%" bar above
+        // un-scrollable content like the metadata header on small
+        // bodies). Updates live via _onScroll.
+        bottom: _progress > 0
+            ? PreferredSize(
+                preferredSize: const Size.fromHeight(2),
+                child: LinearProgressIndicator(
+                  value: _progress,
+                  minHeight: 2,
+                  backgroundColor:
+                      scheme.surfaceContainerHigh.withValues(alpha: 0.5),
+                  valueColor:
+                      AlwaysStoppedAnimation<Color>(scheme.primary),
+                ),
+              )
+            : null,
       ),
       body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
+        // The Scrollbar gives the user a persistent visual indicator
+        // of where they are in a long body — important because a
+        // sermon transcript can run 30–50 paragraphs and is easy to
+        // get lost in. Always-visible thumb (vs Flutter's default
+        // hover-only) per round-51 user feedback "there should be a
+        // bar at the right".
+        child: Scrollbar(
+          controller: _scrollController,
+          thumbVisibility: true,
+          child: ListView(
+            controller: _scrollController,
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
           children: [
             Text(
               s.localizedTitle(settings.locale),
@@ -220,7 +374,8 @@ class _SermonDetailPageState extends State<SermonDetailPage> {
               )
             else
               _SermonBody(text: _body ?? '', settings: settings),
-          ],
+            ],
+          ),
         ),
       ),
     );
