@@ -126,7 +126,13 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
   // Tap-to-load (not auto) so we don't burn API calls every time the
   // user pokes at a chip. Keyed by Strong's # so we don't re-show a
   // stale explanation when the user switches words.
-  String? _aiExplanation;
+  //
+  // The panel keeps a *list* of explanation chunks so follow-up
+  // requests (different length / scope) APPEND rather than replace —
+  // the user builds up a longer study by tapping multiple directions.
+  // Each chunk has a label (e.g. "In this chapter") shown as a small
+  // header, and the full transcript can be copied to clipboard.
+  final List<_AiChunk> _aiChunks = [];
   String? _aiError;
   bool _aiLoading = false;
   String? _aiForStrongs;
@@ -200,7 +206,7 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
       _hebrewSources = const [];
       // Clear any AI explanation from a previous word — keep the panel
       // tightly scoped to the currently-selected lemma.
-      _aiExplanation = null;
+      _aiChunks.clear();
       _aiError = null;
       _aiLoading = false;
       _aiForStrongs = null;
@@ -286,26 +292,28 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
   }
 
   /// Asks the AI service to explain the currently-selected original
-  /// word as it functions in the first verse of the user's selection.
-  /// Tap-to-load (not auto) so we don't burn API quota on every chip
-  /// poke. Result is cached against [_aiForStrongs] so revisiting the
-  /// same word in the same panel session doesn't re-fetch.
-  Future<void> _loadAiExplanation() async {
+  /// word as it functions in [scope] (defaulting to the verse). Each
+  /// call APPENDS a new labeled chunk to [_aiChunks] so the user can
+  /// stack multiple angles (verse → chapter → book → cross-refs) in
+  /// one session. Tap-to-load — never auto-fired.
+  ///
+  /// [length] is one of `default` / `concise` / `longer`.
+  /// [scope]  is one of `verse` / `chapter` / `book` / `wholeBible` /
+  /// `otherChapters`.
+  Future<void> _loadAiExplanation({
+    String length = 'default',
+    String scope = 'verse',
+  }) async {
     final w = _selectedWord;
     if (w == null) return;
     final entry = _selectedEntry;
     if (entry == null) return;
-    // Use the first verse in the user's selection as the context.
-    // For multi-verse selections this is a small imprecision but the
-    // explanation still applies — the verse text gives the model
-    // enough context to be specific.
     final v = widget.verses.isNotEmpty ? widget.verses.first : null;
     if (v == null) return;
     final englishBook = toEnglish(v.book) ?? v.book;
     setState(() {
       _aiLoading = true;
       _aiError = null;
-      _aiExplanation = null;
       _aiForStrongs = w.strongs;
     });
     final result = await AiWordService.explain(
@@ -318,6 +326,8 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
       verse: v.verse,
       verseText: sanitizeForSearch(v.text),
       locale: widget.locale,
+      length: length,
+      scope: scope,
     );
     if (!mounted || _selectedWord?.strongs != w.strongs) return;
     setState(() {
@@ -325,9 +335,59 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
       if (result.unavailable) {
         _aiError = result.unavailableReason;
       } else {
-        _aiExplanation = result.explanation;
+        _aiChunks.add(_AiChunk(
+          label: _chunkLabel(length: length, scope: scope, locale: widget.locale),
+          text: result.explanation,
+        ));
       }
     });
+  }
+
+  /// Build the small header shown above each appended explanation —
+  /// e.g. "本节经文" / "In this chapter (more detail)". Uses the
+  /// existing uiStrings entries so all three locales get the right
+  /// label without duplicate logic in the widget tree.
+  String _chunkLabel({
+    required String length,
+    required String scope,
+    required String locale,
+  }) {
+    final scopeKey = switch (scope) {
+      'chapter' => 'aiScopeChapter',
+      'book' => 'aiScopeBook',
+      'wholeBible' => 'aiScopeWholeBible',
+      'otherChapters' => 'aiScopeOtherChapters',
+      _ => 'aiScopeVerse',
+    };
+    final scopeLabel = uiStrings[scopeKey]?[locale] ?? scope;
+    if (length == 'concise') {
+      final s = uiStrings['aiLengthConcise']?[locale] ?? 'shorter';
+      return '$scopeLabel · $s';
+    }
+    if (length == 'longer') {
+      final s = uiStrings['aiLengthLonger']?[locale] ?? 'more detail';
+      return '$scopeLabel · $s';
+    }
+    return scopeLabel;
+  }
+
+  /// Concatenate every appended chunk for clipboard copy. Plain text
+  /// — labeled headers separated by blank lines so it pastes well
+  /// into Notes / Word / chat.
+  String _aiTranscript() {
+    final w = _selectedWord;
+    final v = widget.verses.isNotEmpty ? widget.verses.first : null;
+    if (w == null || v == null || _aiChunks.isEmpty) return '';
+    final ref = '${v.book} ${v.chapter}:${v.verseLabel} · ${w.text} (${w.strongs})';
+    final buf = StringBuffer()
+      ..writeln(ref)
+      ..writeln();
+    for (final c in _aiChunks) {
+      buf.writeln('— ${c.label} —');
+      buf.writeln(c.text);
+      buf.writeln();
+    }
+    return buf.toString().trim();
   }
 
   Future<void> _loadRelations(String number, {String? pivotFromNumber}) async {
@@ -898,12 +958,15 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
     );
   }
 
-  /// AI explanation block. Three states:
+  /// AI explanation block. Four logical states:
   ///   - idle: shows the "Explain in this verse with AI" button
   ///   - loading: spinner + "Asking Gemini…" hint
-  ///   - resolved: the explanation text (or an error message if the
-  ///     service returned unavailable). The "Regenerate" button lets
-  ///     the user re-ask if they're not happy with the answer.
+  ///   - error: shows the unavailable message + a Try again button
+  ///   - has chunks: renders the appended transcript inside a bounded
+  ///     scroll container, with direction chips below to extend the
+  ///     answer (length: more concise / more detail; scope: this
+  ///     chapter / this book / whole Bible / other chapters) and a
+  ///     Copy button to grab the full transcript.
   ///
   /// Always shows a small AI-generated disclaimer below the result so
   /// the reader doesn't mistake a Gemini paragraph for hand-curated
@@ -913,17 +976,15 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
     final v = widget.verses.isNotEmpty ? widget.verses.first : null;
     if (w == null || v == null) return const SizedBox.shrink();
     final ref = '${v.book} ${v.chapter}:${v.verseLabel}';
-    final hasResult =
-        _aiForStrongs == w.strongs && _aiExplanation != null;
+    final hasChunks =
+        _aiForStrongs == w.strongs && _aiChunks.isNotEmpty;
     final hasError =
         _aiForStrongs == w.strongs && _aiError != null;
 
-    final buttonLabel = _aiLoading
+    final initialLabel = _aiLoading
         ? (uiStrings['aiExplainAsking']?[locale] ?? 'Asking Gemini…')
-        : (hasResult || hasError
-            ? (uiStrings['aiExplainRegenerate']?[locale] ?? 'Regenerate')
-            : (uiStrings['aiExplainButton']?[locale] ??
-                'Explain in this verse with AI'));
+        : (uiStrings['aiExplainButton']?[locale] ??
+            'Explain in this verse with AI');
 
     return Container(
       decoration: BoxDecoration(
@@ -956,11 +1017,13 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
             ],
           ),
           const SizedBox(height: 6),
-          if (!hasResult && !hasError)
+          if (!hasChunks && !hasError)
             Align(
               alignment: Alignment.centerLeft,
               child: TextButton.icon(
-                onPressed: _aiLoading ? null : _loadAiExplanation,
+                onPressed: _aiLoading
+                    ? null
+                    : () => _loadAiExplanation(),
                 icon: _aiLoading
                     ? const SizedBox(
                         width: 14,
@@ -968,7 +1031,7 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
                         child: CircularProgressIndicator(strokeWidth: 2),
                       )
                     : const Icon(Icons.auto_awesome, size: 16),
-                label: Text(buttonLabel,
+                label: Text(initialLabel,
                     style: const TextStyle(fontSize: 13)),
                 style: TextButton.styleFrom(
                   visualDensity: VisualDensity.compact,
@@ -990,10 +1053,14 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
             Align(
               alignment: Alignment.centerLeft,
               child: TextButton.icon(
-                onPressed: _aiLoading ? null : _loadAiExplanation,
+                onPressed: _aiLoading
+                    ? null
+                    : () => _loadAiExplanation(),
                 icon: const Icon(Icons.refresh, size: 16),
-                label: Text(buttonLabel,
-                    style: const TextStyle(fontSize: 13)),
+                label: Text(
+                  uiStrings['aiExplainTryAgain']?[locale] ?? 'Try again',
+                  style: const TextStyle(fontSize: 13),
+                ),
                 style: TextButton.styleFrom(
                   visualDensity: VisualDensity.compact,
                   padding: const EdgeInsets.symmetric(
@@ -1002,31 +1069,87 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
               ),
             ),
           ],
-          if (hasResult) ...[
-            // Bounded inner scroller so a long Gemini paragraph
-            // (the prompt now targets 150-260 words / ~1.5 KB Chinese)
-            // doesn't force the surrounding originals sheet to grow
-            // huge. Cap at ~280 px and enable internal scroll with a
-            // visible thumb so the user can scan the whole answer
-            // without losing the rest of the entry below it. Round 53.
+          if (hasChunks) ...[
+            // Bounded transcript — long answers scroll inside the
+            // panel. Each direction tap APPENDS a new labeled chunk
+            // so the user builds up a multi-angle study (verse →
+            // chapter → cross-refs) without losing earlier sections.
             ConstrainedBox(
-              constraints: const BoxConstraints(maxHeight: 280),
+              constraints: const BoxConstraints(maxHeight: 320),
               child: Scrollbar(
                 thumbVisibility: true,
                 child: SingleChildScrollView(
                   primary: false,
                   padding: const EdgeInsets.only(right: 6),
-                  child: SelectableText(
-                    _aiExplanation ?? '',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: scheme.onSurface,
-                      height: 1.55,
-                    ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      for (int i = 0; i < _aiChunks.length; i++) ...[
+                        if (i > 0)
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 8),
+                            child: Divider(
+                              color: scheme.outlineVariant
+                                  .withValues(alpha: 0.6),
+                              height: 1,
+                            ),
+                          ),
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 4),
+                          child: Text(
+                            _aiChunks[i].label,
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700,
+                              color: scheme.primary,
+                              letterSpacing: 0.3,
+                            ),
+                          ),
+                        ),
+                        SelectableText(
+                          _aiChunks[i].text,
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: scheme.onSurface,
+                            height: 1.55,
+                          ),
+                        ),
+                      ],
+                      if (_aiLoading) ...[
+                        const SizedBox(height: 10),
+                        Row(
+                          children: [
+                            const SizedBox(
+                              width: 14,
+                              height: 14,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              uiStrings['aiExplainAsking']?[locale] ??
+                                  'Asking Gemini…',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color:
+                                    scheme.onSurfaceVariant,
+                                fontStyle: FontStyle.italic,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ],
                   ),
                 ),
               ),
             ),
+            const SizedBox(height: 10),
+            // Direction chips — each tap appends a new chunk in the
+            // requested direction. The first row tunes the LENGTH of
+            // the next response; the second row tunes the SCOPE.
+            // Disabled while a request is in-flight so we don't
+            // queue duplicates.
+            _buildAiDirectionChips(scheme, locale),
             const SizedBox(height: 8),
             Row(
               children: [
@@ -1043,10 +1166,12 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
                   ),
                 ),
                 TextButton.icon(
-                  onPressed: _aiLoading ? null : _loadAiExplanation,
-                  icon: const Icon(Icons.refresh, size: 14),
-                  label: Text(buttonLabel,
-                      style: const TextStyle(fontSize: 12)),
+                  onPressed: _aiLoading ? null : _copyAiTranscript,
+                  icon: const Icon(Icons.copy_all_outlined, size: 14),
+                  label: Text(
+                    uiStrings['aiExplainCopy']?[locale] ?? 'Copy',
+                    style: const TextStyle(fontSize: 12),
+                  ),
                   style: TextButton.styleFrom(
                     visualDensity: VisualDensity.compact,
                     padding: const EdgeInsets.symmetric(
@@ -1059,6 +1184,111 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
         ],
       ),
     );
+  }
+
+  /// Two rows of chips below the transcript. Length first (small,
+  /// orthogonal tweak) then Scope (the meatier "where is this word
+  /// used?" question). Tapping any chip appends a new explanation
+  /// chunk via [_loadAiExplanation].
+  Widget _buildAiDirectionChips(ColorScheme scheme, String locale) {
+    final disabled = _aiLoading;
+    Widget chip(String label, VoidCallback onTap, {bool primary = false}) {
+      return ActionChip(
+        avatar: primary
+            ? Icon(Icons.auto_awesome, size: 14, color: scheme.primary)
+            : null,
+        label: Text(label, style: const TextStyle(fontSize: 12)),
+        onPressed: disabled ? null : onTap,
+        visualDensity: VisualDensity.compact,
+        backgroundColor: primary
+            ? scheme.primary.withValues(alpha: 0.10)
+            : scheme.surfaceContainerHighest.withValues(alpha: 0.6),
+        side: BorderSide(
+          color: primary
+              ? scheme.primary.withValues(alpha: 0.4)
+              : scheme.outlineVariant,
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 0),
+      );
+    }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Length row
+        Wrap(
+          spacing: 6,
+          runSpacing: 6,
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(top: 6, right: 4),
+              child: Text(
+                uiStrings['aiLengthLabel']?[locale] ?? 'Length',
+                style: TextStyle(
+                  fontSize: 11,
+                  color: scheme.onSurfaceVariant,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+            chip(
+              uiStrings['aiLengthConcise']?[locale] ?? 'More concise',
+              () => _loadAiExplanation(length: 'concise'),
+            ),
+            chip(
+              uiStrings['aiLengthLonger']?[locale] ?? 'More detail',
+              () => _loadAiExplanation(length: 'longer'),
+            ),
+          ],
+        ),
+        const SizedBox(height: 6),
+        // Scope row
+        Wrap(
+          spacing: 6,
+          runSpacing: 6,
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(top: 6, right: 4),
+              child: Text(
+                uiStrings['aiScopeLabel']?[locale] ?? 'Scope',
+                style: TextStyle(
+                  fontSize: 11,
+                  color: scheme.onSurfaceVariant,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+            chip(
+              uiStrings['aiScopeChapter']?[locale] ?? 'In this chapter',
+              () => _loadAiExplanation(scope: 'chapter'),
+              primary: true,
+            ),
+            chip(
+              uiStrings['aiScopeBook']?[locale] ?? 'In this book',
+              () => _loadAiExplanation(scope: 'book'),
+              primary: true,
+            ),
+            chip(
+              uiStrings['aiScopeOtherChapters']?[locale] ?? 'Other chapters',
+              () => _loadAiExplanation(scope: 'otherChapters'),
+              primary: true,
+            ),
+            chip(
+              uiStrings['aiScopeWholeBible']?[locale] ?? 'Whole Bible',
+              () => _loadAiExplanation(scope: 'wholeBible'),
+              primary: true,
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  /// Copy the entire AI transcript to clipboard with a toast.
+  Future<void> _copyAiTranscript() async {
+    final text = _aiTranscript();
+    if (text.isEmpty) return;
+    if (!mounted) return;
+    await ClipboardHelper.copyWithFeedback(context, text);
   }
 
   /// Renders [text] with any Strong's refs ([GH]\d+) as tappable blue links.
@@ -1876,4 +2106,13 @@ class _VerseOriginals {
   final Verse verse;
   final List<OriginalWord>? words;
   _VerseOriginals({required this.verse, required this.words});
+}
+
+/// One labeled segment in the AI explanation transcript. Multiple
+/// chunks accumulate in [_OriginalsSheetState._aiChunks] as the user
+/// taps successive direction chips (this verse → this chapter → …).
+class _AiChunk {
+  final String label;
+  final String text;
+  const _AiChunk({required this.label, required this.text});
 }

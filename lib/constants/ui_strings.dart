@@ -1793,6 +1793,61 @@ const uiStrings = {
     'zh-Hant': 'AI 生成內容,如用於研經或教導請核對原始資料。',
     'en': 'AI-generated. Verify with primary sources for study or teaching use.',
   },
+  'aiExplainTryAgain': {
+    'zh-Hans': '重试',
+    'zh-Hant': '重試',
+    'en': 'Try again',
+  },
+  'aiExplainCopy': {
+    'zh-Hans': '复制',
+    'zh-Hant': '複製',
+    'en': 'Copy',
+  },
+  'aiLengthLabel': {
+    'zh-Hans': '长度',
+    'zh-Hant': '長度',
+    'en': 'Length',
+  },
+  'aiLengthConcise': {
+    'zh-Hans': '更简短',
+    'zh-Hant': '更簡短',
+    'en': 'More concise',
+  },
+  'aiLengthLonger': {
+    'zh-Hans': '更详细',
+    'zh-Hant': '更詳細',
+    'en': 'More detail',
+  },
+  'aiScopeLabel': {
+    'zh-Hans': '范围',
+    'zh-Hant': '範圍',
+    'en': 'Scope',
+  },
+  'aiScopeVerse': {
+    'zh-Hans': '本节经文',
+    'zh-Hant': '本節經文',
+    'en': 'In this verse',
+  },
+  'aiScopeChapter': {
+    'zh-Hans': '本章',
+    'zh-Hant': '本章',
+    'en': 'In this chapter',
+  },
+  'aiScopeBook': {
+    'zh-Hans': '本书卷',
+    'zh-Hant': '本書卷',
+    'en': 'In this book',
+  },
+  'aiScopeOtherChapters': {
+    'zh-Hans': '其他章节',
+    'zh-Hant': '其他章節',
+    'en': 'Other chapters',
+  },
+  'aiScopeWholeBible': {
+    'zh-Hans': '全本圣经',
+    'zh-Hant': '全本聖經',
+    'en': 'Whole Bible',
+  },
   'sermonFilterBookLabel': {
     'zh-Hans': '书卷',
     'zh-Hant': '書卷',

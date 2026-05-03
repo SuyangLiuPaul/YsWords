@@ -22,6 +22,10 @@ class AiWordService {
   /// reachable / not deployed / errored — callers can render the
   /// reason as a SnackBar without the underlying network details
   /// leaking through.
+  /// [length] is one of `default` / `concise` / `longer` and [scope]
+  /// is one of `verse` / `chapter` / `book` / `wholeBible` /
+  /// `otherChapters`. Defaults match round-53 behaviour: a focused
+  /// 150-260 word explanation grounded in the cited verse.
   static Future<AiWordResult> explain({
     required String strongs,
     required String lemma,
@@ -32,6 +36,8 @@ class AiWordService {
     required int verse,
     String? verseText,
     required String locale,
+    String length = 'default',
+    String scope = 'verse',
   }) async {
     final body = <String, dynamic>{
       'strongs': strongs,
@@ -43,6 +49,8 @@ class AiWordService {
       'verse': verse,
       if (verseText != null && verseText.isNotEmpty) 'verseText': verseText,
       'locale': locale,
+      'length': length,
+      'scope': scope,
     };
     final http.Response resp;
     try {

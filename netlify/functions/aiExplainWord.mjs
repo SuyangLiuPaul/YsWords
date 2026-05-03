@@ -42,40 +42,83 @@ function langName(locale) {
 	}
 }
 
-function buildPrompt({ strongs, lemma, translit, gloss, book, chapter, verse, verseText, locale }) {
+// Map a (length, scope) selection to a target word range and the
+// scope-specific framing the prompt builder should use. The defaults
+// (length='default', scope='verse') reproduce the round-53 behaviour
+// — a focused 150-260 word explanation grounded in the cited verse.
+function styleProfile(length, scope) {
+	let words;
+	switch (length) {
+		case 'concise': words = '60-110 words'; break;
+		case 'longer':  words = '300-450 words'; break;
+		default:        words = '150-260 words';
+	}
+	let focus;
+	switch (scope) {
+		case 'chapter':
+			focus = `Focus the explanation on how this word functions across ` +
+				`the **whole chapter** of {book} {chapter} — its other ` +
+				`occurrences (if any) in this chapter, the chapter's ` +
+				`argument or narrative arc, and how this word advances it.`;
+			break;
+		case 'book':
+			focus = `Focus the explanation on how this word functions across ` +
+				`the **whole book** of {book} — major occurrences and the ` +
+				`book's overall theology, narrative arc, or rhetorical ` +
+				`structure. Connect them back to {ref}.`;
+			break;
+		case 'wholeBible':
+			focus = `Trace this word across the **whole Bible** — its OT ` +
+				`(Hebrew) and NT (Greek) usage, key passages, and how the ` +
+				`canonical pattern illuminates {ref}. If the word is a ` +
+				`Greek term, note any LXX use of the corresponding Hebrew. ` +
+				`If Hebrew, note any NT echoes via the LXX.`;
+			break;
+		case 'otherChapters':
+			focus = `List 2-4 other notable verses (in other chapters or ` +
+				`other books) where this same lemma is used, briefly ` +
+				`describing the nuance in each, then explain what those ` +
+				`other usages teach the reader about its meaning in {ref}.`;
+			break;
+		default: // 'verse'
+			focus = `Focus tightly on **this verse** ({ref}). Cover, in ` +
+				`order: (1) one concise sentence on the word's core meaning ` +
+				`framed for this verse; (2) the bulk: how the word ` +
+				`actually functions in {ref} — nuance, tense/voice/mood ` +
+				`(Greek) or stem/binyan (Hebrew), syntactic role, ` +
+				`theological weight, what the verse would lose if a ` +
+				`near-synonym were used; (3) one related observation that ` +
+				`deepens understanding of the verse.`;
+	}
+	return { words, focus };
+}
+
+function buildPrompt({ strongs, lemma, translit, gloss, book, chapter, verse, verseText, locale, length, scope }) {
 	const lang = langName(locale);
 	const ref = `${book} ${chapter}:${verse}`;
+	const profile = styleProfile(length, scope);
+	const focus = profile.focus
+		.replaceAll('{book}', book)
+		.replaceAll('{chapter}', String(chapter))
+		.replaceAll('{ref}', ref);
 	const parts = [];
 	parts.push(`You are a careful biblical-language exegete.`);
 	parts.push(`The reader is studying ${ref} and has already seen the ` +
 		`lexicon entry for **${lemma}**` +
 		(translit ? ` (${translit})` : '') +
 		` (Strong's ${strongs})${gloss ? ` whose core meaning is "${gloss}"` : ''}.`);
-	parts.push(`Your job: explain HOW THIS WORD APPLIES IN ${ref} ` +
-		`specifically — its nuance, grammatical aspect, theological weight, ` +
-		`and what the reader gains by noticing this word in this verse.`);
+	parts.push(focus);
 	if (verseText) parts.push(`The verse reads: "${verseText}"`);
 	parts.push('');
-	parts.push(`Reply in ${lang}. Aim for 150-260 words. Plain prose, no `
-		+ `headings, no bullets, no markdown. Always finish your final `
-		+ `sentence — never trail off mid-thought.`);
-	parts.push(`Cover, in this order:`);
-	parts.push(`  1. (One concise sentence) the word's core meaning, framed ` +
-		`for this verse.`);
-	parts.push(`  2. (The bulk of your answer) how the word actually `
-		+ `functions in ${ref}: what nuance, tense/voice/mood (Greek) or ` +
-		`stem/binyan (Hebrew), syntactic role, or theological weight does ` +
-		`the author intend here? What would the verse lose if a near-synonym ` +
-		`were used instead?`);
-	parts.push(`  3. One related observation that deepens the reader's ` +
-		`understanding of the verse (e.g. a near-synonym contrast, a `
-		+ `frequent pairing in this book, an OT or NT echo, a pattern in ` +
-		`the same chapter).`);
+	parts.push(`Reply in ${lang}. Target length: **${profile.words}**. ` +
+		`Plain prose, no headings, no bullets, no markdown. Always ` +
+		`finish your final sentence — never trail off mid-thought.`);
 	parts.push('');
 	parts.push(`Stay rigorous. Don't invent etymology. Don't moralize. ` +
 		`Don't hedge with "scholars debate" unless there's a real exegetical ` +
 		`split. If the word is a proper name, focus on the name's ` +
-		`significance in THIS narrative rather than its etymological gloss.`);
+		`significance in the relevant narrative(s) rather than its ` +
+		`etymological gloss.`);
 	return parts.join('\n');
 }
 
@@ -229,6 +272,10 @@ export default async (req) => {
 		const verse = Number(body?.verse || 0);
 		const verseText = (body?.verseText || '').toString();
 		const locale = (body?.locale || 'en').toString();
+		// Round 54: optional length + scope tuning. Defaults preserve
+		// the round-53 behaviour ('default' length / 'verse' scope).
+		const length = (body?.length || 'default').toString();
+		const scope = (body?.scope || 'verse').toString();
 		if (!strongs || !lemma || !book || !chapter || !verse) {
 			return new Response(
 				JSON.stringify({ error: 'strongs, lemma, book, chapter, verse required' }),
@@ -236,6 +283,7 @@ export default async (req) => {
 		}
 		const explanation = await callGemini(buildPrompt({
 			strongs, lemma, translit, gloss, book, chapter, verse, verseText, locale,
+			length, scope,
 		}));
 		return new Response(
 			JSON.stringify({ explanation }),
