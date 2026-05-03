@@ -1768,6 +1768,31 @@ const uiStrings = {
     'zh-Hant': '按經文篩選',
     'en': 'Filter by passage',
   },
+  'aiExplainHeader': {
+    'zh-Hans': 'AI 释义',
+    'zh-Hant': 'AI 釋義',
+    'en': 'AI explanation',
+  },
+  'aiExplainButton': {
+    'zh-Hans': '让 AI 在这节经文中解释此词',
+    'zh-Hant': '讓 AI 在這節經文中解釋此詞',
+    'en': 'Explain in this verse with AI',
+  },
+  'aiExplainAsking': {
+    'zh-Hans': '正在询问 Gemini…',
+    'zh-Hant': '正在詢問 Gemini…',
+    'en': 'Asking Gemini…',
+  },
+  'aiExplainRegenerate': {
+    'zh-Hans': '重新生成',
+    'zh-Hant': '重新生成',
+    'en': 'Regenerate',
+  },
+  'aiExplainDisclaimer': {
+    'zh-Hans': 'AI 生成内容,如用于研经或教导请核对原始资料。',
+    'zh-Hant': 'AI 生成內容,如用於研經或教導請核對原始資料。',
+    'en': 'AI-generated. Verify with primary sources for study or teaching use.',
+  },
   'sermonFilterBookLabel': {
     'zh-Hans': '书卷',
     'zh-Hant': '書卷',

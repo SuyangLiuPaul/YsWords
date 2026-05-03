@@ -11,6 +11,7 @@ import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/models/original_word.dart';
 import 'package:yswords/models/strongs.dart';
 import 'package:yswords/models/verse.dart';
+import 'package:yswords/services/ai_word_service.dart';
 import 'package:yswords/services/concordance_service.dart';
 import 'package:yswords/services/lxx_service.dart';
 import 'package:yswords/services/originals_service.dart';
@@ -120,6 +121,16 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
   // back to where they came from — confusing right after navigation).
   String? _pivotFromNumber;
 
+  // ── AI explanation panel ─────────────────────────────────────────
+  // Gemini-powered "explain this word in this verse" feature.
+  // Tap-to-load (not auto) so we don't burn API calls every time the
+  // user pokes at a chip. Keyed by Strong's # so we don't re-show a
+  // stale explanation when the user switches words.
+  String? _aiExplanation;
+  String? _aiError;
+  bool _aiLoading = false;
+  String? _aiForStrongs;
+
   @override
   void initState() {
     super.initState();
@@ -187,6 +198,12 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
       _refsShowAll.clear();
       _lxxEquivalents = const [];
       _hebrewSources = const [];
+      // Clear any AI explanation from a previous word — keep the panel
+      // tightly scoped to the currently-selected lemma.
+      _aiExplanation = null;
+      _aiError = null;
+      _aiLoading = false;
+      _aiForStrongs = null;
     });
     // Fire both lookups in parallel — Strong's entry is per-language,
     // concordance is a single shared file that gets warmed by the
@@ -266,6 +283,51 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
     if (_selectedWord != null) {
       unawaited(_loadRelations(_selectedWord!.strongs));
     }
+  }
+
+  /// Asks the AI service to explain the currently-selected original
+  /// word as it functions in the first verse of the user's selection.
+  /// Tap-to-load (not auto) so we don't burn API quota on every chip
+  /// poke. Result is cached against [_aiForStrongs] so revisiting the
+  /// same word in the same panel session doesn't re-fetch.
+  Future<void> _loadAiExplanation() async {
+    final w = _selectedWord;
+    if (w == null) return;
+    final entry = _selectedEntry;
+    if (entry == null) return;
+    // Use the first verse in the user's selection as the context.
+    // For multi-verse selections this is a small imprecision but the
+    // explanation still applies — the verse text gives the model
+    // enough context to be specific.
+    final v = widget.verses.isNotEmpty ? widget.verses.first : null;
+    if (v == null) return;
+    final englishBook = toEnglish(v.book) ?? v.book;
+    setState(() {
+      _aiLoading = true;
+      _aiError = null;
+      _aiExplanation = null;
+      _aiForStrongs = w.strongs;
+    });
+    final result = await AiWordService.explain(
+      strongs: w.strongs,
+      lemma: entry.lemma,
+      translit: entry.translit,
+      gloss: entry.gloss,
+      englishBook: englishBook,
+      chapter: v.chapter,
+      verse: v.verse,
+      verseText: sanitizeForSearch(v.text),
+      locale: widget.locale,
+    );
+    if (!mounted || _selectedWord?.strongs != w.strongs) return;
+    setState(() {
+      _aiLoading = false;
+      if (result.unavailable) {
+        _aiError = result.unavailableReason;
+      } else {
+        _aiExplanation = result.explanation;
+      }
+    });
   }
 
   Future<void> _loadRelations(String number, {String? pivotFromNumber}) async {
@@ -756,6 +818,13 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
                 ),
               ],
             ],
+            // ── AI explanation (Gemini, opt-in) ───────────────────
+            // Renders a button below the lexicon definition; tap to
+            // request an 80-180 word explanation of the lemma in the
+            // selected verse's specific context. Doesn't auto-fire
+            // on word tap so we don't burn API quota on idle browsing.
+            const SizedBox(height: 12),
+            _buildAiExplainSection(scheme, locale),
             // Derivation / etymology line with tappable Strong's refs.
             if ((entry.derivation ?? '').isNotEmpty) ...[
               const SizedBox(height: 10),
@@ -823,6 +892,153 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
                 height: 1, color: scheme.outlineVariant.withValues(alpha: 0.5)),
             const SizedBox(height: 12),
             _buildConcordance(scheme, locale, concordance),
+          ],
+        ],
+      ),
+    );
+  }
+
+  /// AI explanation block. Three states:
+  ///   - idle: shows the "Explain in this verse with AI" button
+  ///   - loading: spinner + "Asking Gemini…" hint
+  ///   - resolved: the explanation text (or an error message if the
+  ///     service returned unavailable). The "Regenerate" button lets
+  ///     the user re-ask if they're not happy with the answer.
+  ///
+  /// Always shows a small AI-generated disclaimer below the result so
+  /// the reader doesn't mistake a Gemini paragraph for hand-curated
+  /// scholarship.
+  Widget _buildAiExplainSection(ColorScheme scheme, String locale) {
+    final w = _selectedWord;
+    final v = widget.verses.isNotEmpty ? widget.verses.first : null;
+    if (w == null || v == null) return const SizedBox.shrink();
+    final ref = '${v.book} ${v.chapter}:${v.verseLabel}';
+    final hasResult =
+        _aiForStrongs == w.strongs && _aiExplanation != null;
+    final hasError =
+        _aiForStrongs == w.strongs && _aiError != null;
+
+    final buttonLabel = _aiLoading
+        ? (uiStrings['aiExplainAsking']?[locale] ?? 'Asking Gemini…')
+        : (hasResult || hasError
+            ? (uiStrings['aiExplainRegenerate']?[locale] ?? 'Regenerate')
+            : (uiStrings['aiExplainButton']?[locale] ??
+                'Explain in this verse with AI'));
+
+    return Container(
+      decoration: BoxDecoration(
+        color: scheme.primaryContainer.withValues(alpha: 0.18),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+          color: scheme.primary.withValues(alpha: 0.18),
+          width: 1,
+        ),
+      ),
+      padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.auto_awesome,
+                  size: 16, color: scheme.primary),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  '${uiStrings['aiExplainHeader']?[locale] ?? 'AI explanation'} · $ref',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: scheme.primary,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          if (!hasResult && !hasError)
+            Align(
+              alignment: Alignment.centerLeft,
+              child: TextButton.icon(
+                onPressed: _aiLoading ? null : _loadAiExplanation,
+                icon: _aiLoading
+                    ? const SizedBox(
+                        width: 14,
+                        height: 14,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Icon(Icons.auto_awesome, size: 16),
+                label: Text(buttonLabel,
+                    style: const TextStyle(fontSize: 13)),
+                style: TextButton.styleFrom(
+                  visualDensity: VisualDensity.compact,
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 10, vertical: 6),
+                ),
+              ),
+            ),
+          if (hasError) ...[
+            Text(
+              _aiError ?? '',
+              style: TextStyle(
+                fontSize: 12.5,
+                color: scheme.error,
+                height: 1.4,
+              ),
+            ),
+            const SizedBox(height: 6),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: TextButton.icon(
+                onPressed: _aiLoading ? null : _loadAiExplanation,
+                icon: const Icon(Icons.refresh, size: 16),
+                label: Text(buttonLabel,
+                    style: const TextStyle(fontSize: 13)),
+                style: TextButton.styleFrom(
+                  visualDensity: VisualDensity.compact,
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 10, vertical: 6),
+                ),
+              ),
+            ),
+          ],
+          if (hasResult) ...[
+            SelectableText(
+              _aiExplanation ?? '',
+              style: TextStyle(
+                fontSize: 14,
+                color: scheme.onSurface,
+                height: 1.55,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    uiStrings['aiExplainDisclaimer']?[locale] ??
+                        'AI-generated. Verify with primary sources for '
+                        'study or teaching use.',
+                    style: TextStyle(
+                      fontSize: 10,
+                      color: scheme.onSurfaceVariant.withValues(alpha: 0.7),
+                      fontStyle: FontStyle.italic,
+                    ),
+                  ),
+                ),
+                TextButton.icon(
+                  onPressed: _aiLoading ? null : _loadAiExplanation,
+                  icon: const Icon(Icons.refresh, size: 14),
+                  label: Text(buttonLabel,
+                      style: const TextStyle(fontSize: 12)),
+                  style: TextButton.styleFrom(
+                    visualDensity: VisualDensity.compact,
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 8, vertical: 4),
+                  ),
+                ),
+              ],
+            ),
           ],
         ],
       ),
