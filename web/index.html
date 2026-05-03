@@ -53,39 +53,21 @@
   <title>YsWords</title>
   <link rel="manifest" href="manifest.json">
 
-  <!-- Preload fonts -->
-  <link rel="preload" href="assets/fonts/Roboto-VariableFont_wdth,wght.ttf" as="font" type="font/ttf" crossorigin="anonymous">
-  <link rel="preload" href="assets/fonts/Roboto-Italic-VariableFont_wdth,wght.ttf" as="font" type="font/ttf" crossorigin="anonymous">
-  <!-- <link rel="preload" href="assets/fonts/Microsoft Yahei.ttf" as="font" type="font/ttf" crossorigin="anonymous">
-  <link rel="preload" href="assets/fonts/Arial.ttf" as="font" type="font/ttf" crossorigin="anonymous">
-  <link rel="preload" href="assets/fonts/helvetica.ttf" as="font" type="font/ttf" crossorigin="anonymous">
-  <link rel="preload" href="assets/fonts/kaiti.ttf" as="font" type="font/ttf" crossorigin="anonymous">
-  <link rel="preload" href="assets/fonts/Lato-Regular.ttf" as="font" type="font/ttf" crossorigin="anonymous">
-  <link rel="preload" href="assets/fonts/Lato-Bold.ttf" as="font" type="font/ttf" crossorigin="anonymous">
-  <link rel="preload" href="assets/fonts/Lato-Light.ttf" as="font" type="font/ttf" crossorigin="anonymous">
-  <link rel="preload" href="assets/fonts/Lato-Thin.ttf" as="font" type="font/ttf" crossorigin="anonymous">
-  <link rel="preload" href="assets/fonts/Merriweather-VariableFont_opsz,wdth,wght.ttf" as="font" type="font/ttf" crossorigin="anonymous">
-  <link rel="preload" href="assets/fonts/Merriweather-Italic-VariableFont_opsz,wdth,wght.ttf" as="font" type="font/ttf" crossorigin="anonymous">
-  <link rel="preload" href="assets/fonts/Montserrat-VariableFont_wght.ttf" as="font" type="font/ttf" crossorigin="anonymous">
-  <link rel="preload" href="assets/fonts/Montserrat-Italic-VariableFont_wght.ttf" as="font" type="font/ttf" crossorigin="anonymous">
-  <link rel="preload" href="assets/fonts/Nunito-VariableFont_wght.ttf" as="font" type="font/ttf" crossorigin="anonymous">
-  <link rel="preload" href="assets/fonts/Nunito-Italic-VariableFont_wght.ttf" as="font" type="font/ttf" crossorigin="anonymous">
-  <link rel="preload" href="assets/fonts/PingFang Regular.ttf" as="font" type="font/ttf" crossorigin="anonymous">
-  <link rel="preload" href="assets/fonts/Raleway-VariableFont_wght.ttf" as="font" type="font/ttf" crossorigin="anonymous">
-  <link rel="preload" href="assets/fonts/SourceSans3-VariableFont_wght.ttf" as="font" type="font/ttf" crossorigin="anonymous"> -->
+  <!--
+    Preload tags removed (round 51).
 
-  <!-- Preload JSON assets -->
-  <link rel="preload" href="assets/kjv.json" as="fetch" crossorigin="anonymous">
-  <link rel="preload" href="assets/cuvs-yhwh.json" as="fetch" crossorigin="anonymous">
-  <link rel="preload" href="assets/cuvs-yhwh-tr.json" as="fetch" crossorigin="anonymous">
-  <link rel="preload" href="assets/biblexg.json" as="fetch" crossorigin="anonymous">
-  <link rel="preload" href="assets/biblexg-tr.json" as="fetch" crossorigin="anonymous">
-
-  <!-- Preload image asset -->
-  <link rel="preload" href="assets/loading.png" as="image">
-
-  <!-- Preload app icon -->
-  <link rel="preload" href="assets/app_icon.png" as="image">
+    The previous preloads pointed at `assets/<file>` (e.g.
+    `assets/kjv.json`, `assets/loading.png`), but Flutter web
+    actually fetches bundled assets from `assets/assets/<file>`
+    (the user-facing `assets/` directory is itself nested under
+    Flutter's `assets/` URL prefix). The browser preloaded the
+    WRONG URLs, never used them, and fired ~198 "preloaded but not
+    used within a few seconds" warnings on every page load. We do
+    not need preloads anyway — Flutter's own asset loader handles
+    the fetch, and the bundle is service-worker-cached after the
+    first visit. Keeping this comment here so the rationale is
+    obvious if anyone considers re-adding them.
+  -->
 
   <style>
     /* Strip browser-injected styling from iOS Safari data-detector <a> tags
