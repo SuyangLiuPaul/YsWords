@@ -113,15 +113,25 @@ def find_body(topic_dir: Path, sid: str, suffix: str) -> Path | None:
 def find_body_with_fallback(topic_dir: Path, sid: str) -> tuple[Path | None, Path | None, Path | None]:
     """Locate (en, zh-CN, zh-TW) bodies for one sermon.
 
-    Chinese-Simplified strategy: prefer .zh-proofread.txt (the post-pipeline
-    proofread copy, 589/589 done) and fall back to .zh-CN.txt.
+    Pipeline reminder (from PIPELINE.md):
+      Phase 3 produces .zh-CN.txt   (Simplified)
+      Phase 4 produces .zh-TW.txt   (Traditional, opencc-converted)
+      Phase 5 produces .zh-proofread.txt  (proofread Traditional)
+
+    So .zh-proofread.txt is *Traditional* — using it for the
+    Simplified bundle is wrong (and was the cause of the round-49
+    bug where 简体 sermons rendered as 繁體). Correct mapping:
+
+      zh-CN  → .zh-CN.txt     (the only Simplified file we have)
+      zh-TW  → .zh-proofread.txt preferred, .zh-TW.txt fallback
+              (proofread > opencc-auto)
     """
     en = find_body(topic_dir, sid, "formatted.txt")
-    zh_cn = (
+    zh_cn = find_body(topic_dir, sid, "zh-CN.txt")
+    zh_tw = (
         find_body(topic_dir, sid, "zh-proofread.txt")
-        or find_body(topic_dir, sid, "zh-CN.txt")
+        or find_body(topic_dir, sid, "zh-TW.txt")
     )
-    zh_tw = find_body(topic_dir, sid, "zh-TW.txt")
     return en, zh_cn, zh_tw
 
 
