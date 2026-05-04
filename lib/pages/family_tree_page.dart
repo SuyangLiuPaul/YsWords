@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -64,6 +66,18 @@ class _FamilyTreePageState extends State<FamilyTreePage> {
   /// view when tapped.
   final Map<String, GlobalKey> _eraKeys = {};
 
+  /// Per-person row keys, populated lazily as rows render. Used so
+  /// a bridge-leaf tap can scroll *the destination person's row*
+  /// into view (not just the section header) and so we can
+  /// highlight that row with a flash for a few seconds.
+  final Map<String, GlobalKey> _personKeys = {};
+
+  /// Person id currently being flashed as "you just jumped here".
+  /// Cleared by [_highlightTimer] after [_kHighlightDuration].
+  String? _recentlyJumpedTo;
+  Timer? _highlightTimer;
+  static const Duration _kHighlightDuration = Duration(seconds: 3);
+
   /// Bridge map: "at the end of era X, link to person Y (and Z) who
   /// continues the lineage in the next era." Drives the
   /// "Continues with: …" footer row inside each expanded section.
@@ -120,9 +134,13 @@ class _FamilyTreePageState extends State<FamilyTreePage> {
 
   @override
   void dispose() {
+    _highlightTimer?.cancel();
     _searchController.dispose();
     super.dispose();
   }
+
+  GlobalKey _personKeyFor(String id) =>
+      _personKeys.putIfAbsent(id, () => GlobalKey());
 
   Future<_TreeData> _load() async {
     final svc = FamilyTreeService.instance;
@@ -446,6 +464,8 @@ class _FamilyTreePageState extends State<FamilyTreePage> {
           onTapPerson: _showDetail,
           bridges: bridges,
           onJumpToEra: _jumpToEra,
+          recentlyJumpedTo: _recentlyJumpedTo,
+          personKeyFor: _personKeyFor,
         ),
       ));
     }
@@ -492,21 +512,54 @@ class _FamilyTreePageState extends State<FamilyTreePage> {
     return out.reversed.toList();
   }
 
-  /// Bridge-chip tap handler: uncollapse the target era and scroll
-  /// its section into view. Used by the "Continues with: …" footer
-  /// row at the end of each expanded section.
-  void _jumpToEra(String era) {
-    setState(() => _collapsedEras.remove(era));
+  /// Bridge-chip / bridge-leaf tap handler. Uncollapses the target
+  /// era, scrolls the destination's row into view, and flashes
+  /// the destination person with a temporary highlight tint so the
+  /// user gets unambiguous "you landed here" feedback (the scroll
+  /// alone often felt invisible — that's the bug the user reported
+  /// with "Perez click doesn't work").
+  ///
+  /// [personId] is the bridge person whose row we want to centre on.
+  /// We try its row's GlobalKey first; if the row isn't laid out
+  /// yet (the section just uncollapsed and Flutter hasn't finished
+  /// the layout pass), fall back to the era section's wrapper key.
+  void _jumpToEra(String era, {String? personId}) {
+    setState(() {
+      _collapsedEras.remove(era);
+      _recentlyJumpedTo = personId;
+    });
+
+    // Re-arm the highlight clear timer.
+    _highlightTimer?.cancel();
+    if (personId != null) {
+      _highlightTimer = Timer(_kHighlightDuration, () {
+        if (!mounted) return;
+        setState(() => _recentlyJumpedTo = null);
+      });
+    }
+
+    // Two-frame deferred scroll: frame 1 finishes the rebuild from
+    // the setState above; frame 2 lets the layout settle on the
+    // newly-uncollapsed (and now taller) section so the target's
+    // RenderObject has a real position. Without this the scroll
+    // sometimes targeted the OLD pre-uncollapse position.
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final ctx = _eraKeys[era]?.currentContext;
-      if (ctx != null) {
-        Scrollable.ensureVisible(
-          ctx,
-          alignment: 0.05,
-          duration: const Duration(milliseconds: 320),
-          curve: Curves.easeOutCubic,
-        );
-      }
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        BuildContext? ctx;
+        if (personId != null) {
+          ctx = _personKeys[personId]?.currentContext;
+        }
+        ctx ??= _eraKeys[era]?.currentContext;
+        if (ctx != null) {
+          Scrollable.ensureVisible(
+            ctx,
+            alignment: 0.18,
+            duration: const Duration(milliseconds: 360),
+            curve: Curves.easeOutCubic,
+          );
+        }
+      });
     });
   }
 
@@ -557,7 +610,9 @@ class _EraSection extends StatelessWidget {
   final void Function(String id) onTogglePerson;
   final void Function(BiblicalPerson) onTapPerson;
   final List<BiblicalPerson> bridges;
-  final void Function(String era) onJumpToEra;
+  final void Function(String era, {String? personId}) onJumpToEra;
+  final String? recentlyJumpedTo;
+  final GlobalKey Function(String id) personKeyFor;
 
   const _EraSection({
     required this.era,
@@ -574,6 +629,8 @@ class _EraSection extends StatelessWidget {
     required this.onTapPerson,
     required this.bridges,
     required this.onJumpToEra,
+    required this.recentlyJumpedTo,
+    required this.personKeyFor,
   });
 
   @override
@@ -738,12 +795,13 @@ class _EraSection extends StatelessWidget {
                       scheme: scheme,
                       eraColor: color,
                       onTapBridge: (target) {
-                        // Tap = jump only. (No detail sheet — that
-                        // would block the scroll animation and the
-                        // user would experience "nothing happens".)
+                        // Tap = jump only. Pass the person id so
+                        // the destination row gets a flash highlight
+                        // and the scroll lands on the row, not just
+                        // the section header.
                         final targetEra = target.era;
                         if (targetEra != null) {
-                          onJumpToEra(targetEra);
+                          onJumpToEra(targetEra, personId: target.id);
                         }
                       },
                     ),
@@ -792,26 +850,33 @@ class _EraSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _PersonRow(
-          person: p,
-          depth: depth,
-          locale: locale,
-          scheme: scheme,
-          svc: svc,
-          showExpander: hasAnyKids,
-          isExpanded: isExpanded,
-          isMatch: matchIds.contains(p.id),
-          onToggleExpand:
-              hasAnyKids ? () => onTogglePerson(p.id) : null,
-          // Tap row body = expand/collapse children when this
-          // person has any. For leaf nodes (no kids) tap falls
-          // back to opening the detail sheet so the action isn't
-          // a no-op.
-          onTap: hasAnyKids
-              ? () => onTogglePerson(p.id)
-              : () => onTapPerson(p),
-          onOpenDetail: () => onTapPerson(p),
-          onTapSpouse: onTapPerson,
+        KeyedSubtree(
+          // Per-person key so _jumpToEra(..., personId: ...) can
+          // scroll directly to this row and the flash-highlight
+          // can re-target on each rebuild.
+          key: personKeyFor(p.id),
+          child: _PersonRow(
+            person: p,
+            depth: depth,
+            locale: locale,
+            scheme: scheme,
+            svc: svc,
+            showExpander: hasAnyKids,
+            isExpanded: isExpanded,
+            isMatch: matchIds.contains(p.id),
+            isRecentlyJumped: recentlyJumpedTo == p.id,
+            onToggleExpand:
+                hasAnyKids ? () => onTogglePerson(p.id) : null,
+            // Tap row body = expand/collapse children when this
+            // person has any. For leaf nodes (no kids) tap falls
+            // back to opening the detail sheet so the action isn't
+            // a no-op.
+            onTap: hasAnyKids
+                ? () => onTogglePerson(p.id)
+                : () => onTapPerson(p),
+            onOpenDetail: () => onTapPerson(p),
+            onTapSpouse: onTapPerson,
+          ),
         ),
         if (isExpanded) ...[
           for (final c in inEraKids)
@@ -830,6 +895,7 @@ class _EraSection extends StatelessWidget {
               svc: svc,
               onTapPerson: onTapPerson,
               onJumpToEra: onJumpToEra,
+              isRecentlyJumped: recentlyJumpedTo == c.id,
             ),
         ],
       ],
@@ -967,6 +1033,7 @@ class _PersonRow extends StatelessWidget {
   final bool showExpander;
   final bool isExpanded;
   final bool isMatch;
+  final bool isRecentlyJumped;
   final VoidCallback? onToggleExpand;
   final VoidCallback onTap;
   final VoidCallback onOpenDetail;
@@ -981,6 +1048,7 @@ class _PersonRow extends StatelessWidget {
     required this.showExpander,
     required this.isExpanded,
     required this.isMatch,
+    required this.isRecentlyJumped,
     required this.onToggleExpand,
     required this.onTap,
     required this.onOpenDetail,
@@ -1001,14 +1069,31 @@ class _PersonRow extends StatelessWidget {
 
     return Padding(
       padding: EdgeInsets.only(left: indent),
-      child: Material(
-        color: isMatch
-            ? scheme.tertiaryContainer.withValues(alpha: 0.45)
-            : Colors.transparent,
-        child: InkWell(
-          onTap: onTap,
-          child: Container(
-            decoration: BoxDecoration(
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 320),
+        curve: Curves.easeOut,
+        decoration: BoxDecoration(
+          color: isRecentlyJumped
+              ? scheme.primaryContainer.withValues(alpha: 0.7)
+              : isMatch
+                  ? scheme.tertiaryContainer.withValues(alpha: 0.45)
+                  : Colors.transparent,
+          // Subtle outline ring during the highlight so it really
+          // pops — answers "I tapped Perez and nothing happened".
+          border: isRecentlyJumped
+              ? Border.all(
+                  color: scheme.primary.withValues(alpha: 0.6),
+                  width: 1.5,
+                )
+              : null,
+          borderRadius: BorderRadius.circular(6),
+        ),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: onTap,
+            child: Container(
+              decoration: BoxDecoration(
               border: Border(
                 left: BorderSide(
                   color: accent != null
@@ -1106,6 +1191,7 @@ class _PersonRow extends StatelessWidget {
           ),
         ),
       ),
+      ),
     );
   }
 
@@ -1155,7 +1241,8 @@ class _BridgeLeafRow extends StatelessWidget {
   final ColorScheme scheme;
   final FamilyTreeService svc;
   final void Function(BiblicalPerson) onTapPerson;
-  final void Function(String era) onJumpToEra;
+  final void Function(String era, {String? personId}) onJumpToEra;
+  final bool isRecentlyJumped;
 
   const _BridgeLeafRow({
     required this.person,
@@ -1165,6 +1252,7 @@ class _BridgeLeafRow extends StatelessWidget {
     required this.svc,
     required this.onTapPerson,
     required this.onJumpToEra,
+    required this.isRecentlyJumped,
   });
 
   @override
@@ -1187,10 +1275,12 @@ class _BridgeLeafRow extends StatelessWidget {
         child: InkWell(
           // Tap = jump only. Opening the detail sheet here would
           // cover the scroll animation and make the jump feel like
-          // it didn't fire. Long-press opens the detail sheet for
-          // users who want it.
+          // it didn't fire. The trailing ⓘ button opens the
+          // detail sheet without jumping.
           onTap: () {
-            if (targetEra.isNotEmpty) onJumpToEra(targetEra);
+            if (targetEra.isNotEmpty) {
+              onJumpToEra(targetEra, personId: person.id);
+            }
           },
           onLongPress: () => onTapPerson(person),
           child: Container(
