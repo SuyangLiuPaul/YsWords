@@ -408,8 +408,11 @@ class _SermonDetailPageState extends State<SermonDetailPage> {
               children: [
                 _MetaChip(label: '#${s.id}'),
                 if (s.displayDate != '—') _MetaChip(label: s.displayDate),
-                if (s.parts.isNotEmpty)
-                  _MetaChip(label: '${s.parts} ${s.parts.contains('/') ? 'parts' : 'part'}'),
+                // The "A/B parts" chip used to live here. Removed in
+                // Round 56 — the sermons are already concatenated for
+                // display, so showing "A/B parts" only confused users
+                // into thinking the body was incomplete. The `parts`
+                // field stays on the model for audit / future use.
                 if (s.passage.isNotEmpty)
                   _MetaChip(
                     label: _localizedPassage(s.passage, settings.locale),
