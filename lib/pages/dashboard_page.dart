@@ -17,6 +17,7 @@ import 'package:yswords/pages/daily_news_page.dart';
 import 'package:yswords/pages/evidence_detail_page.dart';
 import 'package:yswords/pages/evidence_page.dart';
 import 'package:yswords/pages/bible_timeline_page.dart';
+import 'package:yswords/pages/bible_trivia_page.dart';
 import 'package:yswords/pages/family_tree_page.dart';
 import 'package:yswords/pages/sermon_detail_page.dart';
 import 'package:yswords/pages/sermons_page.dart';
@@ -936,6 +937,14 @@ class _DashboardPageState extends State<DashboardPage> {
               label: uiStrings['bibleTimeline']?[locale] ?? 'Bible Timeline',
               onTap: () => Get.to(
                 () => const BibleTimelinePage(),
+                transition: Transition.rightToLeft,
+              ),
+            ),
+            _LinkTile(
+              icon: Icons.auto_awesome_rounded,
+              label: uiStrings['bibleTrivia']?[locale] ?? 'Bible Trivia',
+              onTap: () => Get.to(
+                () => const BibleTriviaPage(),
                 transition: Transition.rightToLeft,
               ),
             ),

@@ -750,6 +750,23 @@ const uiStrings = {
     'en':
         'After picking a chapter, show a verse-number grid so you can land on a specific verse. Off by default.',
   },
+  // ── Bible Trivia (冷知识) — Round 56 ────────────────────────────
+  'bibleTrivia': {
+    'zh-Hans': '冷知识',
+    'zh-Hant': '冷知識',
+    'en': 'Bible Trivia',
+  },
+  'bibleTriviaIntro': {
+    'zh-Hans': '原文中隐藏的离合体、神名暗藏、数字结构和双关——多数读者错过的彩蛋。点击任意条目可在阅读器中查看相关经文。',
+    'zh-Hant': '原文中隱藏的離合體、神名暗藏、數字結構和雙關——多數讀者錯過的彩蛋。點擊任意條目可在閱讀器中查看相關經文。',
+    'en':
+        'Hidden patterns, acrostics, divine-name codes, and numerical structures most readers miss. Tap any entry to read the related passage in the reader.',
+  },
+  'bibleTriviaOpenRef': {
+    'zh-Hans': '在圣经中查看',
+    'zh-Hant': '在聖經中查看',
+    'en': 'Read in Bible',
+  },
   'confirm': {
     'zh-Hans': '确认',
     'zh-Hant': '確認',

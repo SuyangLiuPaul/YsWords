@@ -480,6 +480,34 @@ keep where the verse number was?"*
   primary AND seeds secondary at the same verse number so both
   panes start looking at the same passage.
 
+**Bible Trivia (冷知识) page — Phase 1**
+(`lib/pages/bible_trivia_page.dart`). User request: *"there are
+so many 冷知识 in the bible like 路得记, so many verses if look
+at words in original words, it has God's name and worship God
+etc, like in Psalm longest chapter, from verse one to verse one
+hundred something, it is from similar a to z something — find
+as much as you can do possible."*
+
+New page accessible from Dashboard → Quick Links → "Bible
+Trivia" / 冷知识. Phase 1 ships 9 hand-curated entries across
+4 categories:
+
+| Category | Examples shipped |
+|---|---|
+| **Acrostic** (离合体) | Psalm 119 (22 sections × 8 verses through Hebrew alphabet); Lamentations 1-4 (3 acrostics + chapter 5 deliberately broken to mirror destruction); Proverbs 31:10-31 (the noble wife — 22 verses, A through Z) |
+| **YHWH pattern** (神名暗藏) | Esther's 4 hidden Tetragrammaton acrostics (1:20, 5:4, 5:13, 7:7); Ruth 2:4 (Boaz invokes the LORD in greeting workers, who reply in kind — Tetragrammaton appears 2× in one verse) |
+| **Numerical structure** (数字结构) | Genesis 1:1 (7 words / 28 letters / 14+14 split); Matthew's genealogy (3×14 generations = "David" in Hebrew gematria) |
+| **Wordplay** (原文双关) | Jeremiah's almond branch / "watching" (shaqed / shoqed); Adam / adamah (man / ground share root) |
+
+Each entry is fully localized (en / zh-Hans / zh-Hant) with
+~150-word body explaining the pattern, AND a tappable
+reference that opens the related passage in the reader. Tile is
+expandable via tap (collapsed by default, tap to read body).
+
+The data model (`_TriviaEntry`) is a flat list — adding a new
+entry is one append in `_triviaEntries`, no other code changes
+needed. Future rounds will expand the catalogue.
+
 **Verse-picker toggle after chapter**
 (`lib/widgets/book_chapter_picker.dart`,
 `lib/models/app_settings.dart`,
