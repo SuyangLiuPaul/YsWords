@@ -3476,13 +3476,39 @@ class _FloatingHeader extends StatelessWidget {
                                     // long labels (e.g.
                                     // "原文释经圣经第二版 (繁)") never push
                                     // the popup past the screen edge.
+                                    // Round 56: show editionYear as a
+                                    // dim secondary line so users know
+                                    // which published edition each
+                                    // asset corresponds to (1989 CUV,
+                                    // 2011 CNV, 2020 NASB, …).
                                     child: ConstrainedBox(
                                       constraints: const BoxConstraints(
                                           maxWidth: 280),
-                                      child: Text(
-                                        v.menuLabel,
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Text(
+                                            v.menuLabel,
+                                            maxLines: 1,
+                                            overflow:
+                                                TextOverflow.ellipsis,
+                                          ),
+                                          if (v.editionYear.isNotEmpty)
+                                            Text(
+                                              v.editionYear,
+                                              maxLines: 1,
+                                              overflow:
+                                                  TextOverflow.ellipsis,
+                                              style: TextStyle(
+                                                fontSize: 11,
+                                                color: scheme.onSurface
+                                                    .withValues(
+                                                        alpha: 0.55),
+                                              ),
+                                            ),
+                                        ],
                                       ),
                                     ),
                                   ))

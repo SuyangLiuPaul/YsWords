@@ -70,7 +70,9 @@
       "Revelation"
     ],
     "generatedAt": "2026-04-29T02:59:59Z",
-    "description": "Section / paragraph titles. Loaded by SectionTitleService and rendered above the matched verse in the reading pane. Three title sets in this Phase-1 file: cuv (simplified), cuv-tr (traditional), english-classic (English). The version-to-set mapping lives in lib/constants/section_title_map.dart."
+    "description": "App-curated section titles + study context blurbs. NOT extracted from any published Bible edition — the published 和合本 (1989 现代标点) and 新译本 (2011 三版) section titles are copyrighted by the Hong Kong Bible Society and Worldwide Bible Society respectively. Set keys (cuv, cuv-tr, english-classic) reflect which version the title set is mapped to in section_title_map.dart, not the source of the headings. Each entry has: verse (start verse), title (short heading), context (study-aid summary unique to this app).",
+    "source": "app-curated",
+    "notPublishedHeadings": true
   },
   "sets": {
     "cuv": {
