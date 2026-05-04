@@ -807,6 +807,19 @@ const uiStrings = {
     'zh-Hant': '全部',
     'en': 'All',
   },
+  'statsOriginalsHideStopwordsTitle': {
+    'zh-Hans': '隐藏常用虚词',
+    'zh-Hant': '隱藏常用虛詞',
+    'en': 'Hide common particles',
+  },
+  'statsOriginalsHideStopwordsDesc': {
+    'zh-Hans':
+        '过滤"the/and/in/of/who/that"等高频虚词与冠词，让真正有意义的圣经词汇浮上来。',
+    'zh-Hant':
+        '過濾「the/and/in/of/who/that」等高頻虛詞與冠詞，讓真正有意義的聖經詞彙浮上來。',
+    'en':
+        'Filter out high-frequency function words like the, and, in, of, who, that — surfacing the meaningful content vocabulary instead.',
+  },
   'statsOriginalsHebrew': {
     'zh-Hans': '希伯来文',
     'zh-Hant': '希伯來文',

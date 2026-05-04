@@ -803,6 +803,14 @@ class _OriginalsOverviewTabState extends State<_OriginalsOverviewTab>
   // on hover; explicit Scrollbar + thumbVisibility makes the scroll
   // affordance always visible so users know more content is below.
   final ScrollController _scrollCtrl = ScrollController();
+  // Round 56 (continued): user feedback "最频繁使用应该也有一个
+  // toggle, 把这些没有意义的字 filter out". When ON, hide function
+  // words / particles (the, and, in, of, who, that, …) so genuinely
+  // meaningful theology words rise to the top. Default ON because
+  // the unfiltered top-25 is dominated by particles that aren't
+  // useful for study. See `_stopwordStrongs` in
+  // originals_stats_service.dart for the exact filter set.
+  bool _hideStopwords = true;
 
   @override
   bool get wantKeepAlive => true;
@@ -895,15 +903,28 @@ class _OriginalsOverviewTabState extends State<_OriginalsOverviewTab>
               ],
             ),
             const SizedBox(height: 20),
+            _StopwordToggleCard(
+              value: _hideStopwords,
+              locale: locale,
+              scheme: scheme,
+              settings: settings,
+              onChanged: (v) => setState(() => _hideStopwords = v),
+            ),
+            const SizedBox(height: 12),
             // Round 56 (continued): user feedback "most frequent used
             // words can be more in statistics" — bumped 5 → 25 each so
             // the Overview tab actually shows a meaningful slice of
             // the vocabulary (the Vocabulary tab still shows the full
-            // 100/100 with filters).
+            // 100/100 with filters). Plus an optional stopword filter
+            // (`_hideStopwords`) so meaningless particles (the, and,
+            // in, of, …) don't crowd out the genuinely interesting
+            // theological vocabulary.
             _TopLemmasCard(
               title: uiStrings['statsOriginalsTopHebrew']?[locale] ??
                   'Top Hebrew (OT)',
-              lemmas: stats.topHebrew.take(25).toList(),
+              lemmas: _applyStopwordFilter(stats.topHebrew)
+                  .take(25)
+                  .toList(),
               isHebrew: true,
               scheme: scheme,
               settings: settings,
@@ -913,7 +934,9 @@ class _OriginalsOverviewTabState extends State<_OriginalsOverviewTab>
             _TopLemmasCard(
               title: uiStrings['statsOriginalsTopGreek']?[locale] ??
                   'Top Greek (NT)',
-              lemmas: stats.topGreek.take(25).toList(),
+              lemmas: _applyStopwordFilter(stats.topGreek)
+                  .take(25)
+                  .toList(),
               isHebrew: false,
               scheme: scheme,
               settings: settings,
@@ -924,6 +947,14 @@ class _OriginalsOverviewTabState extends State<_OriginalsOverviewTab>
         );
       },
     );
+  }
+
+  /// Apply the [_hideStopwords] toggle: when ON, drops entries flagged
+  /// as `isStopword` (the curated set of grammatical particles). When
+  /// OFF, returns the input list unchanged.
+  List<OriginalsLemma> _applyStopwordFilter(List<OriginalsLemma> input) {
+    if (!_hideStopwords) return input;
+    return input.where((l) => !l.isStopword).toList();
   }
 }
 
@@ -998,6 +1029,88 @@ class _StatTile extends StatelessWidget {
               height: 1.3,
             ),
           ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Round 56 (continued): toggle card that controls whether grammatical
+/// particles ("the", "and", "of", "who", "that", …) are hidden from
+/// the most-frequent-words lists on the Overview tab. Default ON so
+/// the Top 25 actually surfaces interesting theology vocabulary.
+class _StopwordToggleCard extends StatelessWidget {
+  final bool value;
+  final String locale;
+  final ColorScheme scheme;
+  final AppSettings settings;
+  final ValueChanged<bool> onChanged;
+  const _StopwordToggleCard({
+    required this.value,
+    required this.locale,
+    required this.scheme,
+    required this.settings,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final title = uiStrings['statsOriginalsHideStopwordsTitle']
+            ?[locale] ??
+        'Hide common particles';
+    final desc = uiStrings['statsOriginalsHideStopwordsDesc']?[locale] ??
+        'Filter out high-frequency function words like the, and, in, of, who, that — surfacing the meaningful content vocabulary instead.';
+    return Container(
+      padding: const EdgeInsets.fromLTRB(14, 10, 8, 10),
+      decoration: BoxDecoration(
+        color: scheme.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+          color: value
+              ? scheme.primary.withValues(alpha: 0.4)
+              : scheme.outlineVariant,
+          width: value ? 1.4 : 1,
+        ),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            value
+                ? Icons.filter_alt_rounded
+                : Icons.filter_alt_off_rounded,
+            color: value
+                ? scheme.primary
+                : scheme.onSurfaceVariant,
+            size: 22,
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontFamily: settings.fontFamily,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    color: scheme.onSurface,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  desc,
+                  style: TextStyle(
+                    fontFamily: settings.fontFamily,
+                    fontSize: 11,
+                    color: scheme.onSurfaceVariant,
+                    height: 1.35,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Switch(value: value, onChanged: onChanged),
         ],
       ),
     );
@@ -1344,6 +1457,10 @@ class _OriginalsTabState extends State<_OriginalsTab>
     with AutomaticKeepAliveClientMixin {
   String _filter = 'all'; // 'all' | 'hebrew' | 'greek'
   bool _showAll = false;
+  // Round 56: hide grammatical particles (the/and/in/who/that/…) so
+  // the meaningful theology vocabulary surfaces. Default ON; flip via
+  // the toggle in the header.
+  bool _hideStopwords = true;
   Future<List<OriginalsLemma>>? _future;
   String _query = '';
   final ScrollController _scrollCtrl = ScrollController();
@@ -1393,6 +1510,9 @@ class _OriginalsTabState extends State<_OriginalsTab>
           filtered = all.where((e) => e.isHebrew);
         } else if (_filter == 'greek') {
           filtered = all.where((e) => !e.isHebrew);
+        }
+        if (_hideStopwords) {
+          filtered = filtered.where((e) => !e.isStopword);
         }
         if (_query.trim().isNotEmpty) {
           final q = _query.trim().toLowerCase();
@@ -1497,6 +1617,18 @@ class _OriginalsTabState extends State<_OriginalsTab>
             onSelectionChanged: (s) => setState(() => _filter = s.first),
             multiSelectionEnabled: false,
             showSelectedIcon: false,
+          ),
+          const SizedBox(height: 8),
+          // Round 56 (continued): hide-stopwords toggle so the
+          // Vocabulary tab table doesn't lead with the / and / of /
+          // who etc. — function words that crowd out the meaningful
+          // theological vocabulary.
+          _StopwordToggleCard(
+            value: _hideStopwords,
+            locale: locale,
+            scheme: scheme,
+            settings: settings,
+            onChanged: (v) => setState(() => _hideStopwords = v),
           ),
         ],
       ),

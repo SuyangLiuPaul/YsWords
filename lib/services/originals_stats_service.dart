@@ -53,7 +53,60 @@ class OriginalsLemma {
     if (locale.startsWith('zh') && glossZhHans.isNotEmpty) return glossZhHans;
     return glossEn;
   }
+
+  /// True when this lemma is a "stopword" — a high-frequency
+  /// grammatical particle (the, and, of, who, that, in, …) rather
+  /// than a content word. Round 56 user feedback: "最频繁使用应该
+  /// 也有一个 toggle, 把这些没有意义的字 filter out". The Stats UI
+  /// exposes a switch that hides these so meaningful theological
+  /// words rise to the top.
+  ///
+  /// We list specific Strong's numbers (not heuristics on the gloss
+  /// string) so the filter is deterministic and easy to audit.
+  /// Proper nouns and verbs of saying/seeing/doing are deliberately
+  /// LEFT IN — they're high-frequency but semantically meaningful.
+  bool get isStopword => _stopwordStrongs.contains(strongs);
 }
+
+/// Strong's numbers for grammatical particles / structural markers
+/// that dominate raw frequency tables but carry no theological
+/// content on their own. Filtering these surfaces verbs, nouns, and
+/// proper names that the user actually wants to study.
+const Set<String> _stopwordStrongs = {
+  // ── Hebrew (OT) ────────────────────────────────────────────────
+  'H834',  // ʾăšer — relative pronoun (which/who/that)
+  'H853',  // ʾēṯ    — direct-object marker (untranslated)
+  'H3588', // kî     — conjunction (because/that/when)
+  'H3605', // kōl    — pronoun (all/every/whole)
+  'H1961', // hāyâ   — copula (to be / it came to pass)
+  'H1909', // hēn    — particle (behold / lo)
+  'H6213', // ʿāśâ   — borderline; common verb of doing
+  'H559',  // ʾāmar  — borderline; "said" in narrative
+  // ── Greek (NT) ─────────────────────────────────────────────────
+  'G2532', // kaí        — conjunction (and)
+  'G3588', // ho         — definite article (the)
+  'G1161', // dé         — conjunction (but / and / now)
+  'G1722', // en         — preposition (in)
+  'G1519', // eis        — preposition (into)
+  'G1537', // ek         — preposition (out of)
+  'G1909', // epi        — preposition (upon / on)
+  'G2596', // katá       — preposition (according to / down)
+  'G3326', // metá       — preposition (with / after)
+  'G4314', // prós       — preposition (to / toward)
+  'G575',  // apó        — preposition (from)
+  'G846',  // autós      — pronoun (he / she / it / same)
+  'G3739', // hós        — relative pronoun (who / which / that)
+  'G3754', // hóti       — conjunction (that / because)
+  'G1063', // gár        — conjunction (for)
+  'G3756', // ou         — negation (not)
+  'G3361', // mḗ         — negation (not)
+  'G5613', // hōs        — adverb (as / like)
+  'G1510', // eimí       — copula (to be)
+  'G3956', // pás        — pronoun (all / every)
+  'G3303', // mén        — particle (indeed / on the one hand)
+  'G3779', // hoútōs     — adverb (so / thus)
+  'G2192', // échō       — borderline; "to have"
+};
 
 /// Aggregate stats over the original Hebrew + Greek text. Loads
 /// `assets/strongs/concordance.json` for occurrence counts +
