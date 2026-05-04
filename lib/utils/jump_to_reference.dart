@@ -77,6 +77,15 @@ Future<JumpResolution> resolveAndPrepareJump({
   bool switched = false;
   String? switchedLabel;
 
+  // If the current version's verses haven't been loaded yet (e.g.
+  // user navigated straight from dashboard → timeline → ref tap
+  // before the bootstrap FetchVerses settled), force-load now
+  // before declaring failure.
+  if (matches.isEmpty && mp.verses.isEmpty) {
+    await FetchVerses.execute(mainProvider: mp);
+    matches = findMatches();
+  }
+
   if (matches.isEmpty) {
     final fallback = bibleVersionFullCanonFallback(mp.currentVersion);
     if (fallback != null && fallback != mp.currentVersion) {

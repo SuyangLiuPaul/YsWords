@@ -2205,8 +2205,8 @@ const uiStrings = {
   },
   'sermonAttribution': {
     'en': "From YsWords (Yahweh's Words) — bilingual Bible app",
-    'zh-Hans': '来自 YsWords（耶和华的话）— 双语圣经应用',
-    'zh-Hant': '來自 YsWords（耶和華的話）— 雙語聖經應用',
+    'zh-Hans': '来自 YsWords 雅伟之言 — 双语圣经应用',
+    'zh-Hant': '來自 YsWords 雅偉之言 — 雙語聖經應用',
   },
   // Verse popup sheet
   'versePopupExpand': {
