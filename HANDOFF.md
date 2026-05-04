@@ -458,7 +458,11 @@ Wikipedia-article shape: clean, reading-oriented, scholarly.
   Luke 3); cells show ✓ when the person's `refs` start with that
   book/chapter. Tappable name cells open the detail sheet.
   Width-adaptive via `LayoutBuilder` — phones horizontally scroll,
-  iPad/desktop expand proportionally.
+  iPad/desktop expand proportionally. The header row also has a
+  **copy-table icon** that exports all rows as tab-separated text
+  (Gen / Name / Years / 6 source columns × `✓` or empty), pasting
+  cleanly into Excel / Google Sheets / Numbers / Notion. All
+  headers / names / years localize before serialization.
 
 **Per-row info**: name + `═ Spouse` chips + role pill (PATRIARCH /
 KING / TRIBE / etc.) + verse-ref count badge + accent colour stripe
@@ -467,12 +471,33 @@ span. Indent caps at depth 6 to keep deep lineages readable on a
 phone. Every entry has a year stub — recent audit fixed 62 entries
 that were missing `birthYear` / `deathYear`.
 
+**Year display is locale-aware**.
+`BiblicalPerson.displayYears(locale)` renders Chinese conventions:
+* `am` → `创世后 N 年` (vs English `AM N`)
+* `bc` negative → `公元前 N 年` (vs English `N BC`)
+* `bc` positive (post-Christ) → `公元 N 年` (vs English `AD N`)
+* `lifespan` → `N 岁` / `N 歲` (vs English `N years`)
+
+**Role labels are also localized** via
+`lib/utils/biblical_role.dart::localizedRole`. The dataset stores
+roles as English uppercase canonical values (PATRIARCH, MATRIARCH,
+KING, MOTHER OF JESUS, etc.); the UI translates 25 known role
+strings into zh-Hans / zh-Hant. So Mary's `MOTHER OF JESUS` pill
+renders as `耶稣的母亲` / `耶穌的母親` in Chinese locales.
+Unknown roles pass through verbatim.
+
 **Detail sheet** (`lib/widgets/person_detail_sheet.dart`): clean
 modal bottom sheet (max 720 px wide) with:
 * Drag handle
-* **Name + year + copy-all icon** (top-right; copies the entire
-  rendered detail content as plain text to the system clipboard,
-  with a confirmation SnackBar)
+* **Name + year + copy-all icon** (top-right). The icon is a
+  `_CopyAllButton` StatefulWidget that flips to a green ✓
+  check-circle for 2 seconds after a successful copy
+  (`AnimatedSwitcher` scale transition). Tapping the icon copies
+  the full rendered detail content as plain text to the system
+  clipboard, including the **patrilineal ancestry trail**
+  (Adam → … → person, top-down). `Clipboard.setData` is wrapped
+  in try/catch — if write fails (some restricted web contexts)
+  the icon does NOT flash and an error toast appears instead.
 * Localized summary
 * Parents (Father / Mother chips, tappable)
 * Spouse(s)
@@ -482,12 +507,25 @@ modal bottom sheet (max 720 px wide) with:
   e.g. for Aaron: Levi (PRIESTLY TRIBE); for Solomon: Judah
   (ROYAL TRIBE))
 * Verse references (tappable chips routing through
-  `prepareJumpToVerse` so the reader scrolls to the verse)
+  `prepareJumpToVerse` so the reader scrolls to the verse).
+  References are **locale-aware**: book names render via
+  `localeAwareBookName` so "Genesis 1:26-27" displays as
+  "创世记 1:26-27" in zh-Hans / "創世記 1:26-27" in zh-Hant.
 * Collapsible patrilineal trail
 
 All chips inside the detail sheet open the detail sheet for the
 target person, allowing free lateral navigation through the
 lineage.
+
+**Toast feedback uses the root Overlay**, not `ScaffoldMessenger`
+(which renders SnackBars at the Scaffold level — modal bottom
+sheets cover that area, so the user wouldn't see "Copied" toasts).
+`_showFloatingToast` (duplicated in `family_tree_page.dart` and
+`person_detail_sheet.dart`) inserts an `OverlayEntry` via
+`Overlay.maybeOf(context, rootOverlay: true)` so the toast pill
+sits absolutely above any modal sheet on any platform. 2-second
+auto-dismiss, primary-tinted background (or error-red), white
+icon + text.
 
 **Tap behaviour matrix** (final, after several iterations of user
 feedback):
@@ -549,12 +587,17 @@ Coverage breakdown by era:
 | Kings | 36 | Full chain David → Jehoiakim with all 13 intermediate kings restored (Matthew 1 compressed several) + David's 7 other wives + 9 other sons + daughter Tamar |
 | Exile | 11 | Matthean post-exile chain: Shealtiel → Matthan → Jacob (per Matthew 1:13-16) |
 | **Lukan Lineage** | **39** | Mary's lineage per **Luke 3:23-31**: Mattatha (son of Nathan, son of David ~1010 BC) → 33 intermediate names → Heli → Mary's parents (Janna, Melki, Levi (NT), Matthat, Heli) |
-| NT | 7 | Joseph (husband of Mary) + Mary + Jesus + Jesus's 4 siblings (James, Joses, Simon, Jude per Mark 6:3) |
+| NT | 7 | Joseph (husband of Mary) + Mary + Jesus + Jesus's 4 siblings (James, Joses, Simon, Jude per Mark 6:3). All 4 siblings have `fatherId = joseph_father_of_jesus` and `motherId = mary` so they appear under both parents on tree expansion. |
 
 Model field additions in `lib/models/biblical_person.dart`:
 `role` (e.g. "PATRIARCH"), `accent` (e.g. "priestly"), `era` (e.g.
 "patriarchs"). All 277 entries have these fields populated where
 appropriate.
+
+New utility `lib/utils/biblical_role.dart::localizedRole(role,
+locale)` translates the 25 dataset role values into zh-Hans /
+zh-Hant. Used by both `_RolePill` in the article view and the
+copy-all payload in the detail sheet.
 
 **Bridge mapping** (which person bridges from one era to the next):
 
