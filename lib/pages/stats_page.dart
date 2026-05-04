@@ -5,6 +5,7 @@ import 'package:yswords/constants/ui_strings.dart';
 import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/providers/main_provider.dart';
 import 'package:yswords/services/bible_stats_service.dart';
+import 'package:yswords/services/originals_stats_service.dart';
 import 'package:yswords/utils/clipboard_helper.dart';
 import 'package:yswords/utils/version_mapper.dart' show toEnglish, localeAwareBookName;
 import 'package:yswords/widgets/home_icon_button.dart';
@@ -26,7 +27,7 @@ class StatsPage extends StatelessWidget {
         mainProvider.currentVersion, mainProvider.verses);
 
     return DefaultTabController(
-      length: 3,
+      length: 4,
       child: Scaffold(
         appBar: AppBar(
           leading: const LocalizedBackButton(),
@@ -34,15 +35,6 @@ class StatsPage extends StatelessWidget {
           bottom: TabBar(
             isScrollable: true,
             tabAlignment: TabAlignment.start,
-            // Round 56 user feedback: "统计分析的几个 tab 的字看不清，
-            // 颜色搭配有问题". The default TabBar inherits AppBar
-            // foreground colors, but with the new primary AppBar
-            // (Round 56 theme update) the unselected-tab colour
-            // ended up with low contrast against the primary
-            // background. Force explicit high-contrast colors:
-            // selected = full onPrimary, unselected = onPrimary at
-            // 78% opacity (clearly distinct from selected but still
-            // readable).
             labelColor: Theme.of(context).colorScheme.onPrimary,
             unselectedLabelColor: Theme.of(context)
                 .colorScheme
@@ -61,6 +53,10 @@ class StatsPage extends StatelessWidget {
               Tab(
                 icon: const Icon(Icons.spellcheck),
                 text: uiStrings['statsVocabulary']?[locale] ?? 'Vocabulary',
+              ),
+              Tab(
+                icon: const Icon(Icons.translate_rounded),
+                text: uiStrings['statsOriginals']?[locale] ?? 'Originals',
               ),
             ],
           ),
@@ -85,6 +81,7 @@ class StatsPage extends StatelessWidget {
                 stats: stats,
                 locale: locale,
                 currentVersion: mainProvider.currentVersion),
+            _OriginalsTab(locale: locale, settings: settings),
           ],
         ),
       ),
@@ -778,4 +775,470 @@ String _humanNum(int n) {
     return '${(n / 1000).toStringAsFixed(n < 10000 ? 1 : 0)}K';
   }
   return '${(n / 1000000).toStringAsFixed(1)}M';
+}
+
+/// Round 56: Hebrew + Greek originals frequency tab. User feedback:
+/// "for 统计分析 should not use the chinese or english. should have
+/// hebrew and greek and then view the result and with related
+/// chinese or english translation next to it."
+///
+/// Loads pre-computed `assets/strongs/concordance.json` (Strong's #
+/// → total occurrence count + per-book breakdown) and joins with
+/// `hebrew.json` / `greek.json` lexicons to render lemma + transliter
+/// + locale-aware gloss alongside each frequency. Filterable by
+/// language (All / Hebrew / Greek). Cap at 200 by default — users
+/// can tap "Show all" to see the full ~14k Strong's corpus.
+class _OriginalsTab extends StatefulWidget {
+  final String locale;
+  final AppSettings settings;
+  const _OriginalsTab({required this.locale, required this.settings});
+
+  @override
+  State<_OriginalsTab> createState() => _OriginalsTabState();
+}
+
+class _OriginalsTabState extends State<_OriginalsTab>
+    with AutomaticKeepAliveClientMixin {
+  String _filter = 'all'; // 'all' | 'hebrew' | 'greek'
+  bool _showAll = false;
+  Future<List<OriginalsLemma>>? _future;
+  String _query = '';
+
+  @override
+  bool get wantKeepAlive => true;
+
+  @override
+  void initState() {
+    super.initState();
+    _future = OriginalsStatsService.load();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    super.build(context);
+    final scheme = Theme.of(context).colorScheme;
+    final locale = widget.locale;
+    final settings = widget.settings;
+    return FutureBuilder<List<OriginalsLemma>>(
+      future: _future,
+      builder: (context, snap) {
+        if (snap.connectionState != ConnectionState.done) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        final all = snap.data ?? const <OriginalsLemma>[];
+        if (all.isEmpty) {
+          return Center(
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Text(
+                uiStrings['statsOriginalsEmpty']?[locale] ??
+                    'Original-language data not loaded.',
+                style: TextStyle(color: scheme.onSurfaceVariant),
+              ),
+            ),
+          );
+        }
+        Iterable<OriginalsLemma> filtered = all;
+        if (_filter == 'hebrew') {
+          filtered = all.where((e) => e.isHebrew);
+        } else if (_filter == 'greek') {
+          filtered = all.where((e) => !e.isHebrew);
+        }
+        if (_query.trim().isNotEmpty) {
+          final q = _query.trim().toLowerCase();
+          filtered = filtered.where((e) =>
+              e.strongs.toLowerCase().contains(q) ||
+              e.lemma.contains(_query.trim()) ||
+              e.translit.toLowerCase().contains(q) ||
+              e.glossEn.toLowerCase().contains(q) ||
+              e.glossZhHans.contains(_query.trim()) ||
+              e.glossZhHant.contains(_query.trim()));
+        }
+        var rows = filtered.toList();
+        final total = rows.length;
+        if (!_showAll && _query.isEmpty && rows.length > 200) {
+          rows = rows.take(200).toList();
+        }
+        return ListView.separated(
+          padding: const EdgeInsets.fromLTRB(12, 8, 12, 24),
+          itemCount: rows.length + 2, // header + rows + footer
+          separatorBuilder: (_, __) => const SizedBox(height: 4),
+          itemBuilder: (_, i) {
+            if (i == 0) {
+              return _buildHeader(scheme, locale, settings, total);
+            }
+            if (i == rows.length + 1) {
+              return _buildFooter(scheme, locale, total, rows.length);
+            }
+            return _OriginalsRow(
+              entry: rows[i - 1],
+              locale: locale,
+              settings: settings,
+              scheme: scheme,
+              rank: i,
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildHeader(ColorScheme scheme, String locale,
+      AppSettings settings, int total) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            uiStrings['statsOriginalsHint']?[locale] ??
+                'Frequency of every Strong\'s number in the original Hebrew (OT) and Greek (NT) text. Tap a row to see book breakdown.',
+            style: TextStyle(
+              fontSize: (settings.fontSize - 3).clamp(11.0, 14.0),
+              color: scheme.onSurface.withValues(alpha: 0.7),
+              fontStyle: FontStyle.italic,
+              height: 1.4,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  decoration: InputDecoration(
+                    hintText: uiStrings['statsOriginalsSearchHint']
+                            ?[locale] ??
+                        'Search by Strong\'s, lemma, or gloss…',
+                    isDense: true,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    prefixIcon: const Icon(Icons.search, size: 20),
+                  ),
+                  onChanged: (v) => setState(() => _query = v),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          SegmentedButton<String>(
+            segments: [
+              ButtonSegment(
+                value: 'all',
+                label: Text(uiStrings['statsOriginalsAll']?[locale] ?? 'All'),
+              ),
+              ButtonSegment(
+                value: 'hebrew',
+                label: Text(uiStrings['statsOriginalsHebrew']?[locale] ??
+                    'Hebrew'),
+              ),
+              ButtonSegment(
+                value: 'greek',
+                label: Text(
+                    uiStrings['statsOriginalsGreek']?[locale] ?? 'Greek'),
+              ),
+            ],
+            selected: {_filter},
+            onSelectionChanged: (s) => setState(() => _filter = s.first),
+            multiSelectionEnabled: false,
+            showSelectedIcon: false,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFooter(
+      ColorScheme scheme, String locale, int total, int shown) {
+    if (_query.isNotEmpty) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        child: Center(
+          child: Text(
+            (uiStrings['statsOriginalsMatchCount']?[locale] ??
+                    '{shown} matches')
+                .replaceAll('{shown}', '$shown'),
+            style: TextStyle(color: scheme.onSurfaceVariant),
+          ),
+        ),
+      );
+    }
+    if (_showAll || total <= 200) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        child: Center(
+          child: Text(
+            (uiStrings['statsOriginalsTotal']?[locale] ??
+                    '{total} unique Strong\'s numbers')
+                .replaceAll('{total}', '$total'),
+            style: TextStyle(color: scheme.onSurfaceVariant),
+          ),
+        ),
+      );
+    }
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Center(
+        child: TextButton.icon(
+          icon: const Icon(Icons.expand_more_rounded),
+          label: Text(
+            (uiStrings['statsOriginalsShowAll']?[locale] ??
+                    'Show all {total} entries')
+                .replaceAll('{total}', '$total'),
+          ),
+          onPressed: () => setState(() => _showAll = true),
+        ),
+      ),
+    );
+  }
+}
+
+class _OriginalsRow extends StatelessWidget {
+  final OriginalsLemma entry;
+  final String locale;
+  final AppSettings settings;
+  final ColorScheme scheme;
+  final int rank;
+
+  const _OriginalsRow({
+    required this.entry,
+    required this.locale,
+    required this.settings,
+    required this.scheme,
+    required this.rank,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final isHebrew = entry.isHebrew;
+    final tagColor = isHebrew
+        ? Colors.indigo.shade100
+        : Colors.deepPurple.shade100;
+    final tagFg = isHebrew
+        ? Colors.indigo.shade900
+        : Colors.deepPurple.shade900;
+    return Material(
+      color: scheme.surfaceContainerLow,
+      borderRadius: BorderRadius.circular(10),
+      elevation: 0,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(10),
+        onTap: () => _showBookBreakdown(context),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  // Rank badge
+                  SizedBox(
+                    width: 28,
+                    child: Text(
+                      '#$rank',
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: scheme.onSurface.withValues(alpha: 0.55),
+                        fontFeatures: const [FontFeature.tabularFigures()],
+                      ),
+                    ),
+                  ),
+                  // Strong's # tag
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 8, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: tagColor,
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Text(
+                      entry.strongs,
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        color: tagFg,
+                        fontFeatures: const [FontFeature.tabularFigures()],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  // Lemma + transliteration
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          entry.lemma,
+                          style: TextStyle(
+                            fontSize: (settings.fontSize + 2)
+                                .clamp(16.0, 22.0)
+                                .toDouble(),
+                            fontWeight: FontWeight.w700,
+                            color: scheme.onSurface,
+                            // Force LTR even for Hebrew RTL text so
+                            // the lemma + count line stays in a
+                            // predictable order; native rendering
+                            // still draws Hebrew right-to-left
+                            // within the run.
+                            height: 1.3,
+                          ),
+                        ),
+                        if (entry.translit.isNotEmpty)
+                          Text(
+                            entry.translit,
+                            style: TextStyle(
+                              fontSize:
+                                  (settings.fontSize - 4).clamp(11.0, 14.0),
+                              color: scheme.onSurfaceVariant,
+                              fontStyle: FontStyle.italic,
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  // Count
+                  Text(
+                    '${entry.count}',
+                    style: TextStyle(
+                      fontSize: (settings.fontSize)
+                          .clamp(14.0, 18.0)
+                          .toDouble(),
+                      fontWeight: FontWeight.w700,
+                      color: scheme.primary,
+                      fontFeatures: const [FontFeature.tabularFigures()],
+                    ),
+                  ),
+                ],
+              ),
+              if (entry.glossFor(locale).isNotEmpty) ...[
+                const SizedBox(height: 6),
+                Padding(
+                  padding: const EdgeInsets.only(left: 28),
+                  child: Text(
+                    entry.glossFor(locale),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize:
+                          (settings.fontSize - 2).clamp(12.0, 16.0),
+                      color: scheme.onSurface.withValues(alpha: 0.85),
+                      height: 1.4,
+                    ),
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showBookBreakdown(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: scheme.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (sheetCtx) {
+        final entries = entry.byBook.entries.toList()
+          ..sort((a, b) => b.value.compareTo(a.value));
+        return SafeArea(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+                maxHeight: MediaQuery.of(sheetCtx).size.height * 0.7),
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 40,
+                      height: 4,
+                      margin: const EdgeInsets.only(bottom: 12),
+                      decoration: BoxDecoration(
+                        color: scheme.outlineVariant,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                  ),
+                  Text(
+                    '${entry.lemma}  ·  ${entry.strongs}',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                      color: scheme.onSurface,
+                    ),
+                  ),
+                  if (entry.translit.isNotEmpty)
+                    Text(
+                      entry.translit,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: scheme.onSurfaceVariant,
+                        fontStyle: FontStyle.italic,
+                      ),
+                    ),
+                  const SizedBox(height: 6),
+                  Text(
+                    entry.glossFor(locale),
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: scheme.onSurface.withValues(alpha: 0.85),
+                      height: 1.4,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    '${uiStrings['statsOriginalsByBook']?[locale] ?? 'By book'} (${entry.count})',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      color: scheme.primary,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Flexible(
+                    child: SingleChildScrollView(
+                      child: Wrap(
+                        spacing: 6,
+                        runSpacing: 6,
+                        children: [
+                          for (final e in entries)
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 8, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: scheme.primaryContainer
+                                    .withValues(alpha: 0.4),
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: Text(
+                                '${localeAwareBookName(toEnglish(e.key) ?? e.key, locale)} · ${e.value}',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: scheme.onPrimaryContainer,
+                                  fontFeatures: const [
+                                    FontFeature.tabularFigures()
+                                  ],
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
 }

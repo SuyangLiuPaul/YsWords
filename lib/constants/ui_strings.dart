@@ -773,6 +773,65 @@ const uiStrings = {
     'zh-Hant': '正在切換譯本…',
     'en': 'Loading version…',
   },
+  // ── Originals stats tab (Round 56) ─────────────────────────────
+  'statsOriginals': {
+    'zh-Hans': '原文',
+    'zh-Hant': '原文',
+    'en': 'Originals',
+  },
+  'statsOriginalsHint': {
+    'zh-Hans': '希伯来文（旧约）和希腊文（新约）原文中每个 Strong\'s 编号的出现频率。'
+        '点击行可查看各书卷分布。',
+    'zh-Hant': '希伯來文（舊約）和希臘文（新約）原文中每個 Strong\'s 編號的出現頻率。'
+        '點擊行可查看各書卷分佈。',
+    'en':
+        'Frequency of every Strong\'s number in the original Hebrew (OT) and Greek (NT) text. Tap a row to see book breakdown.',
+  },
+  'statsOriginalsAll': {
+    'zh-Hans': '全部',
+    'zh-Hant': '全部',
+    'en': 'All',
+  },
+  'statsOriginalsHebrew': {
+    'zh-Hans': '希伯来文',
+    'zh-Hant': '希伯來文',
+    'en': 'Hebrew',
+  },
+  'statsOriginalsGreek': {
+    'zh-Hans': '希腊文',
+    'zh-Hant': '希臘文',
+    'en': 'Greek',
+  },
+  'statsOriginalsSearchHint': {
+    'zh-Hans': '按 Strong\'s 编号、原文或释义搜索…',
+    'zh-Hant': '按 Strong\'s 編號、原文或釋義搜索…',
+    'en': 'Search by Strong\'s, lemma, or gloss…',
+  },
+  'statsOriginalsByBook': {
+    'zh-Hans': '各书卷分布',
+    'zh-Hant': '各書卷分佈',
+    'en': 'By book',
+  },
+  'statsOriginalsTotal': {
+    'zh-Hans': '共 {total} 个 Strong\'s 编号',
+    'zh-Hant': '共 {total} 個 Strong\'s 編號',
+    'en': '{total} unique Strong\'s numbers',
+  },
+  'statsOriginalsMatchCount': {
+    'zh-Hans': '找到 {shown} 条',
+    'zh-Hant': '找到 {shown} 條',
+    'en': '{shown} matches',
+  },
+  'statsOriginalsShowAll': {
+    'zh-Hans': '显示全部 {total} 条',
+    'zh-Hant': '顯示全部 {total} 條',
+    'en': 'Show all {total} entries',
+  },
+  'statsOriginalsEmpty': {
+    'zh-Hans': '原文数据未加载。',
+    'zh-Hant': '原文資料未載入。',
+    'en': 'Original-language data not loaded.',
+  },
   'fontFamilyHint': {
     'zh-Hans': '"Roboto" 和 "微软雅黑" 是应用自带的字体，到处都能用。'
         '其他选项使用您设备上已安装的系统字体——中文用户推荐微软雅黑、苹方、思源黑体；'
