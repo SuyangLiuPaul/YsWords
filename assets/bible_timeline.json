@@ -305,6 +305,25 @@
       ]
     },
     {
+      "id": "job_trial",
+      "year": -2000,
+      "era": "patriarchs",
+      "titleEn": "Job's Trial of Faith",
+      "titleZhHans": "约伯的信心受试炼",
+      "titleZhHant": "約伯的信心受試煉",
+      "descEn": "A righteous man from Uz loses his children, wealth, and health in a single day, then is challenged by three friends with a flawed retribution theology. God answers from a whirlwind; Job is restored. The book belongs in the patriarchal era — Job offers sacrifices as the family head (Job 1:5) with no Mosaic law, Tabernacle, or Levitical priesthood in view; Ezekiel 14:14 lists him with Noah and Daniel as one of the great righteous men.",
+      "descZhHans": "乌斯地的义人在一日之间失去儿女、财产与健康，又被三位朋友用偏颇的因果报应神学指责。神从旋风中应答，约伯最终得复兴。本书归在族长时期——约伯如亚伯拉罕一样，以家长身份献祭（约伯记1:5），书中未涉及摩西律法、会幕或利未祭司制度；以西结书14:14将他与挪亚、但以理并列为三位大义人。",
+      "descZhHant": "烏斯地的義人在一日之間失去兒女、財產與健康，又被三位朋友用偏頗的因果報應神學指責。神從旋風中應答，約伯最終得復興。本書歸在族長時期——約伯如亞伯拉罕一樣，以家長身分獻祭（約伯記1:5），書中未涉及摩西律法、會幕或利未祭司制度；以西結書14:14將他與挪亞、但以理並列為三位大義人。",
+      "refs": [
+        "Job 1",
+        "Job 2",
+        "Job 38",
+        "Job 42",
+        "Ezekiel 14:14"
+      ],
+      "personIds": []
+    },
+    {
       "id": "jacob_blessing",
       "year": -1929,
       "era": "patriarchs",

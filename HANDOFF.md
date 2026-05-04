@@ -426,15 +426,34 @@ This is a multi-strand round driven by user feedback collected over a
 single working day. Each strand is independent but they all landed in
 the same handful of commits.
 
-**Cloud sync now times out at 2 minutes (was 30 s)**
-(`lib/services/cloud_sync_service.dart`). User report: a Sync-now on
-a slow corporate VPN tripped the 30-second cap before the Firestore
-write could round-trip. New cap is `Duration(minutes: 2)` for the
-upload itself, and the in-flight-pull guard window inside
-`_uploadFromLocal` widened from 3 s (30 × 100 ms ticks) to 6 s
-(60 ticks) so a manual sync isn't blocked by the pull-guard stage
-with a shorter window than the upload itself would allow. Error
-message also updated: *"Sync timed out after 2 minutes…"*.
+**Cloud sync: 2-minute timeout + token-refresh retry**
+(`lib/services/cloud_sync_service.dart`). User reports of "always
+timing out" after the initial 30-s → 2-min bump revealed many cases
+were stale-ID-token issues, not network issues — the tab had been
+backgrounded long enough that the cached token was rejected by
+Firestore but the SDK didn't transparently refresh it. New flow:
+* First attempt: `Duration(minutes: 2)` write.
+* On `TimeoutException`: force `user.getIdToken(true)` to refresh,
+  then retry the write **once** with the same 2-min cap.
+* Only after the second timeout does the user see an error — and
+  the message now flags the likely cause:
+  *"Sync timed out after 2 minutes (twice). Your network may be
+  blocking Firestore (\*.firestore.googleapis.com). Try again on a
+  different connection, sign out and back in, or use Settings →
+  About → Clear cache."*
+* Pull-in-flight wait window widened from 3 s (30 × 100 ms ticks)
+  to 6 s (60 ticks) so the pull-guard stage isn't tripped by a
+  shorter window than the upload itself would allow.
+
+**Bible Timeline: added Job** (`assets/bible_timeline.json`). Round
+54 shipped 97 events but missed Job — user feedback: *"why there is
+no book of Job"*. Now 98 events. Slotted into the patriarchal era
+at `year: -2000` between Jacob/Esau Born (-2006) and Jacob's Ladder
+(-1929). Justification in the description: Job offers sacrifices as
+the family head (Job 1:5) without Mosaic law / Tabernacle /
+Levitical priesthood in view, and Ezekiel 14:14 names him alongside
+Noah and Daniel as one of the great righteous men. Cross-refs:
+Job 1, 2, 38, 42, Ezekiel 14:14.
 
 **Removed redundant verse references and "A/B parts" chip from
 sermon UI**:

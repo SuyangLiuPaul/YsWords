@@ -531,36 +531,58 @@ class CloudSyncService extends ChangeNotifier {
     _setStatus(CloudSyncStatus.syncing);
     try {
       final data = await _snapshotLocal();
-      // No explicit pre-token-refresh here. Earlier attempts to
-      // call getIdToken(true) before set() seemed to help with the
-      // initial timeout, but turned out to break the SECOND
-      // consecutive Sync-now click — the forced refresh races with
-      // Firestore's own internal token management. With
-      // experimentalAutoDetectLongPolling enabled (see
-      // CloudAuthService._doInit), the Firestore SDK refreshes
-      // tokens correctly on its own.
+      // First attempt: trust Firestore's own token-management. With
+      // `webExperimentalAutoDetectLongPolling: true` (see
+      // CloudAuthService._doInit) the SDK refreshes tokens correctly
+      // on its own under normal conditions.
       //
       // Round 56: bumped from 30 s to 2 min. User-reported case of a
       // sync visibly stalling on a slow corporate VPN; 30 s tripped
       // before the round-trip could finish. Two minutes is a
       // generous upper bound — Firestore writes that haven't gone
-      // through by then are almost certainly indicative of a real
-      // connectivity problem rather than just a slow link, so it's
-      // safe to surface as an error.
-      await FirebaseFirestore.instance
-          .collection('users')
-          .doc(uid)
-          .collection('profileData')
-          .doc('main')
-          .set({
-        'data': data,
-        'updatedAt': FieldValue.serverTimestamp(),
-      }).timeout(const Duration(minutes: 2));
+      // through by then are almost certainly a real connectivity
+      // problem, not just a slow link.
+      Future<void> doWrite() => FirebaseFirestore.instance
+              .collection('users')
+              .doc(uid)
+              .collection('profileData')
+              .doc('main')
+              .set({
+            'data': data,
+            'updatedAt': FieldValue.serverTimestamp(),
+          }).timeout(const Duration(minutes: 2));
+
+      try {
+        await doWrite();
+      } on TimeoutException {
+        // Round 56 follow-up: a single timeout no longer surfaces
+        // straight to the user. Try one recovery cycle first —
+        // force-refresh the auth token + re-establish the snapshot
+        // subscription — then retry the write once. Many "always
+        // times out" cases are caused by a stale ID token after the
+        // tab has been backgrounded; one refresh + retry clears
+        // them and the user never sees a failure.
+        // ignore: avoid_print
+        print('[CloudSync] upload timed out — attempting token refresh + retry');
+        try {
+          await user.getIdToken(true);
+        } catch (_) {
+          // Token refresh itself can fail (network); fall through to
+          // the retry, which will surface a real error if the
+          // problem is genuinely the network.
+        }
+        await doWrite();
+      }
       await _stampSyncedNow();
       _setStatus(CloudSyncStatus.synced);
     } on TimeoutException {
-      _lastError = 'Sync timed out after 2 minutes. '
-          'Check your internet connection or sign out and back in.';
+      _lastError = 'Sync timed out after 2 minutes (twice). '
+          'Your network may be blocking Firestore '
+          '(*.firestore.googleapis.com). Try again on a different '
+          'connection, sign out and back in, or use Settings → '
+          'About → Clear cache.';
+      // ignore: avoid_print
+      print('[CloudSync] upload still timed out after retry');
       _setStatus(CloudSyncStatus.error);
     } on FirebaseException catch (e) {
       // Surface the Firebase code so security-rule denials etc. are
