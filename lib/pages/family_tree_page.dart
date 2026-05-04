@@ -549,34 +549,17 @@ class _FamilyTreePageState extends State<FamilyTreePage> {
       });
     }
 
-    // Show a transient SnackBar so the user has unambiguous
-    // confirmation that the tap fired — even if the scroll itself
-    // is short or fails to register visibly. This is the
-    // diagnostic-but-also-UX-improving fix for the "tap doesn't
-    // do anything" reports on Perez / Kohath / etc.
-    if (personId != null) {
-      final p = FamilyTreeService.instance.byId(personId);
-      if (p != null) {
-        final settings = context.read<AppSettings>();
-        final eraLabel = _eraLabelShort(era, settings.locale);
-        ScaffoldMessenger.of(context).hideCurrentSnackBar();
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('→ ${p.localizedName(settings.locale)} · $eraLabel'),
-            duration: const Duration(milliseconds: 1400),
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-      }
-    }
+    // The diagnostic SnackBar that fires post-scroll covers both
+    // "tap reached us" and "scroll succeeded" feedback in one
+    // message, so we don't need a separate immediate one here.
 
-    // Aggressive deferral chain: postFrame → another postFrame →
-    // 120 ms wall-clock delay. Layout for a 30-row Davidic Line
-    // body completes well within this on phones, so the row
-    // RenderBox always has a settled position before we measure.
+    // Aggressive deferral chain: postFrame → postFrame → 250 ms.
+    // Layout for a 40-row Lukan Lineage body completes well
+    // within this on phones, so the destination row's RenderBox
+    // always has a settled non-zero position before we measure.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        Future.delayed(const Duration(milliseconds: 120), () {
+        Future.delayed(const Duration(milliseconds: 250), () {
           if (!mounted) return;
           _scrollToTarget(era: era, personId: personId);
         });
@@ -604,21 +587,44 @@ class _FamilyTreePageState extends State<FamilyTreePage> {
       ctx = _personKeys[personId]?.currentContext;
     }
     ctx ??= _eraKeys[era]?.currentContext;
-    if (ctx == null) return;
+    if (ctx == null) {
+      // Diagnostic SnackBar so the user knows the tap fired but
+      // the destination context wasn't ready.
+      _showJumpDebug('no context for $era / $personId');
+      return;
+    }
     final box = ctx.findRenderObject();
-    if (box is! RenderBox) return;
+    if (box is! RenderBox) {
+      _showJumpDebug('no RenderBox for $era / $personId');
+      return;
+    }
     final viewport = RenderAbstractViewport.of(box);
-    final reveal = viewport.getOffsetToReveal(box, 0.18);
+    final reveal = viewport.getOffsetToReveal(box, 0.05);
     final position = _scrollController.position;
-    final offset = reveal.offset.clamp(
+    final raw = reveal.offset;
+    final clamped = raw.clamp(
       position.minScrollExtent,
       position.maxScrollExtent,
     );
-    // jumpTo first to land *exactly* at the target offset (the
-    // animated path was sometimes interrupted by other layout
-    // changes in flight), then reveal-animate from there for the
-    // visual smoothness. If we're already in flight, jumpTo wins.
-    _scrollController.jumpTo(offset);
+    final wasAt = position.pixels;
+    _scrollController.jumpTo(clamped);
+    _showJumpDebug(
+        'jumped: was=${wasAt.toInt()} → ${clamped.toInt()} (raw=${raw.toInt()})');
+  }
+
+  /// Show a debug SnackBar describing what the jump did. Helps
+  /// pinpoint whether the issue is missing context, missing render
+  /// box, wrong offset, or no scrolling at all.
+  void _showJumpDebug(String message) {
+    if (!mounted) return;
+    final messenger = ScaffoldMessenger.maybeOf(context);
+    if (messenger == null) return;
+    messenger.hideCurrentSnackBar();
+    messenger.showSnackBar(SnackBar(
+      content: Text(message, style: const TextStyle(fontSize: 11)),
+      duration: const Duration(milliseconds: 2400),
+      behavior: SnackBarBehavior.floating,
+    ));
   }
 
   // ── Detail sheet ───────────────────────────────────────────────
