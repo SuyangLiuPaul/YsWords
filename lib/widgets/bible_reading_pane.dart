@@ -13,6 +13,7 @@ import 'package:yswords/constants/ui_strings.dart';
 import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/models/bible_map.dart';
 import 'package:yswords/models/verse.dart';
+import 'package:yswords/pages/bible_trivia_page.dart' as trivia;
 import 'package:yswords/pages/books_page.dart';
 import 'package:yswords/pages/evidence_page.dart';
 import 'package:yswords/pages/highlights_page.dart';
@@ -3793,6 +3794,42 @@ class _FloatingHeader extends StatelessWidget {
                                 'Related sermons',
                             trailing: chapterSermons.isNotEmpty
                                 ? chapterSermons.length.toString()
+                                : null,
+                          ),
+                        ));
+                        // Round 56: chapter-aware Bible Trivia. Per
+                        // user request, the trivia catalogue should
+                        // also surface inline from the reader (like
+                        // the illustrations / sermons / synopsis
+                        // entries above) so users discover relevant
+                        // entries without having to leave their
+                        // reading.
+                        final triviaCount = trivia.triviaForChapter(
+                          englishBook: toEnglish(book) ?? book,
+                          chapter: chapter,
+                        ).length;
+                        items.add(PopupMenuItem(
+                          value: 'trivia',
+                          onTap: () => trivia.showBibleTriviaSheet(
+                            context: context,
+                            englishBook: toEnglish(book) ?? book,
+                            chapter: chapter,
+                            locale: locale,
+                            settings: context.read<AppSettings>(),
+                          ),
+                          child: _menuRow(
+                            context,
+                            icon: triviaCount > 0
+                                ? Icons.auto_awesome_rounded
+                                : Icons.auto_awesome_outlined,
+                            iconColor: triviaCount > 0
+                                ? scheme.primary
+                                : null,
+                            label:
+                                uiStrings['bibleTrivia']?[locale] ??
+                                    'Bible Trivia',
+                            trailing: triviaCount > 0
+                                ? '$triviaCount'
                                 : null,
                           ),
                         ));

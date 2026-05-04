@@ -25,7 +25,7 @@ import 'package:yswords/widgets/localized_back_button.dart';
 /// well-known acrostics, hidden Tetragrammaton patterns, and
 /// numerical structures.
 ///
-/// To add a new entry: append to `_triviaEntries` below with
+/// To add a new entry: append to `bibleTriviaEntries` below with
 /// the same shape. No code changes required elsewhere.
 class BibleTriviaPage extends StatelessWidget {
   const BibleTriviaPage({super.key});
@@ -50,14 +50,14 @@ class BibleTriviaPage extends StatelessWidget {
           constraints: BoxConstraints(maxWidth: maxW),
           child: ListView.separated(
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
-            itemCount: _triviaEntries.length + 1,
+            itemCount: bibleTriviaEntries.length + 1,
             separatorBuilder: (_, __) => const SizedBox(height: 12),
             itemBuilder: (_, i) {
               if (i == 0) {
                 return _IntroCard(settings: settings, scheme: scheme);
               }
               return _TriviaTile(
-                entry: _triviaEntries[i - 1],
+                entry: bibleTriviaEntries[i - 1],
                 settings: settings,
                 scheme: scheme,
               );
@@ -113,7 +113,7 @@ class _IntroCard extends StatelessWidget {
 }
 
 class _TriviaTile extends StatefulWidget {
-  final _TriviaEntry entry;
+  final BibleTriviaEntry entry;
   final AppSettings settings;
   final ColorScheme scheme;
   const _TriviaTile({
@@ -265,12 +265,12 @@ class _TriviaTileState extends State<_TriviaTile> {
 }
 
 /// One Bible-trivia entry. Localized in 3 languages.
-class _TriviaEntry {
+class BibleTriviaEntry {
   final Map<String, String> tag;
   final Map<String, String> title;
   final Map<String, String> body;
   final String? reference;
-  const _TriviaEntry({
+  const BibleTriviaEntry({
     required this.tag,
     required this.title,
     required this.body,
@@ -278,11 +278,226 @@ class _TriviaEntry {
   });
 }
 
+/// Round 56: filter the catalogue to entries that reference a
+/// specific English book + chapter. Used by the reader's "Trivia
+/// for this chapter" sheet.
+///
+/// An entry is considered relevant when its parsed reference's
+/// englishBook matches AND either:
+///   - the parsed chapter equals [chapter], OR
+///   - the parsed reference is book-only (no chapter info — treat
+///     as applying to every chapter of that book)
+List<BibleTriviaEntry> triviaForChapter({
+  required String englishBook,
+  required int chapter,
+}) {
+  final result = <BibleTriviaEntry>[];
+  for (final e in bibleTriviaEntries) {
+    final ref = e.reference;
+    if (ref == null || ref.trim().isEmpty) continue;
+    final parsed = parseReference(ref);
+    if (parsed == null) continue;
+    if (parsed.englishBook != englishBook) continue;
+    // chapter == 0 means parser couldn't extract a chapter — apply
+    // to all chapters of the book. Otherwise only match if the
+    // reference's chapter == the requested chapter.
+    if (parsed.chapter == 0 || parsed.chapter == chapter) {
+      result.add(e);
+    }
+  }
+  return result;
+}
+
+/// Round 56: show a bottom sheet of trivia entries relevant to
+/// the current book/chapter. Used from the reader's floating-
+/// header overflow menu. When no entries match, shows a "no
+/// trivia for this chapter — view all" link to the full
+/// [BibleTriviaPage].
+Future<void> showBibleTriviaSheet({
+  required BuildContext context,
+  required String englishBook,
+  required int chapter,
+  required String locale,
+  required AppSettings settings,
+}) {
+  final entries =
+      triviaForChapter(englishBook: englishBook, chapter: chapter);
+  final scheme = Theme.of(context).colorScheme;
+  return showModalBottomSheet<void>(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: scheme.surface,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+    ),
+    builder: (sheetCtx) {
+      return SafeArea(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+              maxHeight: MediaQuery.of(sheetCtx).size.height * 0.85),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(0, 12, 0, 8),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Center(
+                  child: Container(
+                    width: 40,
+                    height: 4,
+                    margin: const EdgeInsets.only(bottom: 12),
+                    decoration: BoxDecoration(
+                      color: scheme.outlineVariant,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 0, 12, 8),
+                  child: Row(
+                    children: [
+                      Icon(Icons.auto_awesome_rounded,
+                          color: scheme.primary, size: 22),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              uiStrings['bibleTrivia']?[locale] ??
+                                  'Bible Trivia',
+                              style: TextStyle(
+                                fontFamily: settings.fontFamily,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w700,
+                                color: scheme.onSurface,
+                              ),
+                            ),
+                            Text(
+                              '$englishBook  $chapter',
+                              style: TextStyle(
+                                fontFamily: settings.fontFamily,
+                                fontSize: 12,
+                                color: scheme.onSurfaceVariant,
+                                fontFeatures: const [
+                                  FontFeature.tabularFigures()
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.close_rounded),
+                        onPressed: () =>
+                            Navigator.of(sheetCtx).maybePop(),
+                      ),
+                    ],
+                  ),
+                ),
+                const Divider(height: 1),
+                Flexible(
+                  child: entries.isEmpty
+                      ? Padding(
+                          padding: const EdgeInsets.all(24),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.search_off_rounded,
+                                size: 36,
+                                color: scheme.onSurface
+                                    .withValues(alpha: 0.4),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                uiStrings['bibleTriviaNoneForChapter']
+                                        ?[locale] ??
+                                    'No trivia entries for this chapter yet.',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontFamily: settings.fontFamily,
+                                  fontSize: 13,
+                                  color: scheme.onSurface
+                                      .withValues(alpha: 0.6),
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                              TextButton.icon(
+                                icon: const Icon(
+                                    Icons.auto_awesome_rounded,
+                                    size: 18),
+                                label: Text(
+                                  uiStrings['bibleTriviaViewAll']
+                                          ?[locale] ??
+                                      'View all trivia',
+                                ),
+                                onPressed: () {
+                                  Navigator.of(sheetCtx).maybePop();
+                                  Get.to(
+                                    () => const BibleTriviaPage(),
+                                    transition: Transition.rightToLeft,
+                                  );
+                                },
+                              ),
+                            ],
+                          ),
+                        )
+                      : ListView.separated(
+                          padding: const EdgeInsets.fromLTRB(
+                              16, 12, 16, 16),
+                          itemCount: entries.length + 1,
+                          separatorBuilder: (_, __) =>
+                              const SizedBox(height: 10),
+                          itemBuilder: (_, i) {
+                            if (i == entries.length) {
+                              return Padding(
+                                padding: const EdgeInsets.only(top: 4),
+                                child: Center(
+                                  child: TextButton.icon(
+                                    icon: const Icon(
+                                        Icons.auto_awesome_rounded,
+                                        size: 18),
+                                    label: Text(
+                                      uiStrings['bibleTriviaViewAll']
+                                              ?[locale] ??
+                                          'View all trivia',
+                                    ),
+                                    onPressed: () {
+                                      Navigator.of(sheetCtx)
+                                          .maybePop();
+                                      Get.to(
+                                        () => const BibleTriviaPage(),
+                                        transition:
+                                            Transition.rightToLeft,
+                                      );
+                                    },
+                                  ),
+                                ),
+                              );
+                            }
+                            return _TriviaTile(
+                              entry: entries[i],
+                              settings: settings,
+                              scheme: scheme,
+                            );
+                          },
+                        ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    },
+  );
+}
+
 /// Phase-1 starter set. Add more entries here over time — they
 /// auto-render in the page in declaration order.
-const List<_TriviaEntry> _triviaEntries = [
+const List<BibleTriviaEntry> bibleTriviaEntries = [
   // ── Acrostics ────────────────────────────────────────────────
-  _TriviaEntry(
+  BibleTriviaEntry(
     tag: {
       'en': 'ACROSTIC',
       'zh-Hans': '离合体',
@@ -317,7 +532,7 @@ const List<_TriviaEntry> _triviaEntries = [
     },
     reference: 'Psalm 119',
   ),
-  _TriviaEntry(
+  BibleTriviaEntry(
     tag: {
       'en': 'ACROSTIC',
       'zh-Hans': '离合体',
@@ -347,7 +562,7 @@ const List<_TriviaEntry> _triviaEntries = [
     },
     reference: 'Lamentations 3',
   ),
-  _TriviaEntry(
+  BibleTriviaEntry(
     tag: {
       'en': 'ACROSTIC',
       'zh-Hans': '离合体',
@@ -377,7 +592,7 @@ const List<_TriviaEntry> _triviaEntries = [
   ),
 
   // ── YHWH name patterns ───────────────────────────────────────
-  _TriviaEntry(
+  BibleTriviaEntry(
     tag: {
       'en': 'YHWH PATTERN',
       'zh-Hans': '神名暗藏',
@@ -411,7 +626,7 @@ const List<_TriviaEntry> _triviaEntries = [
     },
     reference: 'Esther 5:4',
   ),
-  _TriviaEntry(
+  BibleTriviaEntry(
     tag: {
       'en': 'YHWH PATTERN',
       'zh-Hans': '神名暗藏',
@@ -450,7 +665,7 @@ const List<_TriviaEntry> _triviaEntries = [
   ),
 
   // ── Numerical structures ─────────────────────────────────────
-  _TriviaEntry(
+  BibleTriviaEntry(
     tag: {
       'en': 'STRUCTURE',
       'zh-Hans': '数字结构',
@@ -484,7 +699,7 @@ const List<_TriviaEntry> _triviaEntries = [
     },
     reference: 'Genesis 1:1',
   ),
-  _TriviaEntry(
+  BibleTriviaEntry(
     tag: {
       'en': 'STRUCTURE',
       'zh-Hans': '数字结构',
@@ -519,7 +734,7 @@ const List<_TriviaEntry> _triviaEntries = [
   ),
 
   // ── Linguistic curiosities ───────────────────────────────────
-  _TriviaEntry(
+  BibleTriviaEntry(
     tag: {
       'en': 'WORDPLAY',
       'zh-Hans': '原文双关',
@@ -553,7 +768,7 @@ const List<_TriviaEntry> _triviaEntries = [
     },
     reference: 'Jeremiah 1:11',
   ),
-  _TriviaEntry(
+  BibleTriviaEntry(
     tag: {
       'en': 'WORDPLAY',
       'zh-Hans': '原文双关',
@@ -594,7 +809,7 @@ const List<_TriviaEntry> _triviaEntries = [
 
   // ── Old Testament ────────────────────────────────────────────
 
-  _TriviaEntry(
+  BibleTriviaEntry(
     tag: {'en': 'STRUCTURE', 'zh-Hans': '数字结构', 'zh-Hant': '數字結構'},
     title: {
       'en': 'Exodus: 7 chapters of tabernacle, mirroring 7 days of creation',
@@ -613,7 +828,7 @@ const List<_TriviaEntry> _triviaEntries = [
     },
     reference: 'Exodus 31:12',
   ),
-  _TriviaEntry(
+  BibleTriviaEntry(
     tag: {'en': 'STRUCTURE', 'zh-Hans': '结构对称', 'zh-Hant': '結構對稱'},
     title: {
       'en': 'Leviticus: A chiasm centered on the Day of Atonement',
@@ -634,7 +849,7 @@ const List<_TriviaEntry> _triviaEntries = [
     },
     reference: 'Leviticus 16',
   ),
-  _TriviaEntry(
+  BibleTriviaEntry(
     tag: {'en': 'WORDPLAY', 'zh-Hans': '原文双关', 'zh-Hant': '原文雙關'},
     title: {
       'en': 'Numbers: Aaronic blessing — increasing letter count, 3-5-7',
@@ -653,7 +868,7 @@ const List<_TriviaEntry> _triviaEntries = [
     },
     reference: 'Numbers 6:24',
   ),
-  _TriviaEntry(
+  BibleTriviaEntry(
     tag: {'en': 'STRUCTURE', 'zh-Hans': '主题数据', 'zh-Hant': '主題數據'},
     title: {
       'en': 'Deuteronomy: "Hear, O Israel" 30+ times — a sermon in form',
@@ -674,7 +889,7 @@ const List<_TriviaEntry> _triviaEntries = [
     },
     reference: 'Deuteronomy 6:4',
   ),
-  _TriviaEntry(
+  BibleTriviaEntry(
     tag: {'en': 'WORDPLAY', 'zh-Hans': '神名暗藏', 'zh-Hant': '神名暗藏'},
     title: {
       'en': 'Joshua: His Hebrew name = "Yeshua" = "Jesus"',
@@ -695,7 +910,7 @@ const List<_TriviaEntry> _triviaEntries = [
     },
     reference: 'Joshua 1:1',
   ),
-  _TriviaEntry(
+  BibleTriviaEntry(
     tag: {'en': 'STRUCTURE', 'zh-Hans': '主题数据', 'zh-Hant': '主題數據'},
     title: {
       'en': 'Judges: A repeating cycle of sin → oppression → cry → deliverance',
@@ -716,7 +931,7 @@ const List<_TriviaEntry> _triviaEntries = [
     },
     reference: 'Judges 21:25',
   ),
-  _TriviaEntry(
+  BibleTriviaEntry(
     tag: {'en': 'STRUCTURE', 'zh-Hans': '叙事呼应', 'zh-Hant': '敘事呼應'},
     title: {
       'en': '1 Samuel: Hannah\'s prayer is a template for Mary\'s Magnificat',
@@ -737,7 +952,7 @@ const List<_TriviaEntry> _triviaEntries = [
     },
     reference: '1 Samuel 2:1',
   ),
-  _TriviaEntry(
+  BibleTriviaEntry(
     tag: {'en': 'POETRY', 'zh-Hans': '诗歌挽歌', 'zh-Hant': '詩歌輓歌'},
     title: {
       'en': '2 Samuel: David\'s lament has refrain "How the mighty have fallen"',
@@ -758,7 +973,7 @@ const List<_TriviaEntry> _triviaEntries = [
     },
     reference: '2 Samuel 1:19',
   ),
-  _TriviaEntry(
+  BibleTriviaEntry(
     tag: {'en': 'STRUCTURE', 'zh-Hans': '建筑神学', 'zh-Hant': '建築神學'},
     title: {
       'en': '1 Kings: Solomon\'s temple has 3-zone structure (court / holy / most holy)',
@@ -779,7 +994,7 @@ const List<_TriviaEntry> _triviaEntries = [
     },
     reference: '1 Kings 6',
   ),
-  _TriviaEntry(
+  BibleTriviaEntry(
     tag: {'en': 'NARRATIVE', 'zh-Hans': '叙事呼应', 'zh-Hant': '敘事呼應'},
     title: {
       'en': '2 Kings: Elisha\'s "double portion" of Elijah\'s spirit',
@@ -800,7 +1015,7 @@ const List<_TriviaEntry> _triviaEntries = [
     },
     reference: '2 Kings 2:9',
   ),
-  _TriviaEntry(
+  BibleTriviaEntry(
     tag: {'en': 'STRUCTURE', 'zh-Hans': '族谱奇观', 'zh-Hant': '族譜奇觀'},
     title: {
       'en': '1 Chronicles: 9 chapters of genealogies — longest in the Bible',
@@ -821,7 +1036,7 @@ const List<_TriviaEntry> _triviaEntries = [
     },
     reference: '1 Chronicles 1:1',
   ),
-  _TriviaEntry(
+  BibleTriviaEntry(
     tag: {'en': 'STRUCTURE', 'zh-Hans': '书卷连接', 'zh-Hant': '書卷連接'},
     title: {
       'en': '2 Chronicles ends with the same words Ezra begins with',
@@ -840,7 +1055,7 @@ const List<_TriviaEntry> _triviaEntries = [
     },
     reference: '2 Chronicles 36:22',
   ),
-  _TriviaEntry(
+  BibleTriviaEntry(
     tag: {'en': 'LANGUAGE', 'zh-Hans': '语言切换', 'zh-Hant': '語言切換'},
     title: {
       'en': 'Ezra: Mid-book switches from Hebrew to Aramaic',
@@ -861,7 +1076,7 @@ const List<_TriviaEntry> _triviaEntries = [
     },
     reference: 'Ezra 4:8',
   ),
-  _TriviaEntry(
+  BibleTriviaEntry(
     tag: {'en': 'NARRATIVE', 'zh-Hans': '结尾意味深长', 'zh-Hant': '結尾意味深長'},
     title: {
       'en': 'Nehemiah: Last words are "Remember me, O my God, for good"',
@@ -882,7 +1097,7 @@ const List<_TriviaEntry> _triviaEntries = [
     },
     reference: 'Nehemiah 13:31',
   ),
-  _TriviaEntry(
+  BibleTriviaEntry(
     tag: {'en': 'AUTHOR', 'zh-Hans': '成书时代', 'zh-Hant': '成書時代'},
     title: {
       'en': 'Job: Possibly the oldest book in the Bible',
@@ -903,7 +1118,7 @@ const List<_TriviaEntry> _triviaEntries = [
     },
     reference: 'Job 1:5',
   ),
-  _TriviaEntry(
+  BibleTriviaEntry(
     tag: {'en': 'STRUCTURE', 'zh-Hans': '五卷结构', 'zh-Hant': '五卷結構'},
     title: {
       'en': 'Psalms: 5 books mirror the 5 books of Moses',
@@ -922,7 +1137,7 @@ const List<_TriviaEntry> _triviaEntries = [
     },
     reference: 'Psalm 1',
   ),
-  _TriviaEntry(
+  BibleTriviaEntry(
     tag: {'en': 'STRUCTURE', 'zh-Hans': '主题数据', 'zh-Hant': '主題數據'},
     title: {
       'en': 'Ecclesiastes: "Vanity" appears 38 times',
@@ -943,7 +1158,7 @@ const List<_TriviaEntry> _triviaEntries = [
     },
     reference: 'Ecclesiastes 1:2',
   ),
-  _TriviaEntry(
+  BibleTriviaEntry(
     tag: {'en': 'NARRATIVE', 'zh-Hans': '神名缺席', 'zh-Hant': '神名缺席'},
     title: {
       'en': 'Song of Solomon: God is never mentioned by name',
@@ -964,7 +1179,7 @@ const List<_TriviaEntry> _triviaEntries = [
     },
     reference: 'Song of Solomon 8:6',
   ),
-  _TriviaEntry(
+  BibleTriviaEntry(
     tag: {'en': 'STRUCTURE', 'zh-Hans': '镜像结构', 'zh-Hant': '鏡像結構'},
     title: {
       'en': 'Isaiah: 66 chapters mirror the 66 books of the Bible',
@@ -985,7 +1200,7 @@ const List<_TriviaEntry> _triviaEntries = [
     },
     reference: 'Isaiah 40:1',
   ),
-  _TriviaEntry(
+  BibleTriviaEntry(
     tag: {'en': 'VISION', 'zh-Hans': '异象奇观', 'zh-Hant': '異象奇觀'},
     title: {
       'en': 'Ezekiel: Begins with the most elaborate vision in the OT',
@@ -1006,7 +1221,7 @@ const List<_TriviaEntry> _triviaEntries = [
     },
     reference: 'Ezekiel 1:4',
   ),
-  _TriviaEntry(
+  BibleTriviaEntry(
     tag: {'en': 'LANGUAGE', 'zh-Hans': '语言切换', 'zh-Hant': '語言切換'},
     title: {
       'en': 'Daniel: Switches between Hebrew and Aramaic at chapter borders',
@@ -1027,7 +1242,7 @@ const List<_TriviaEntry> _triviaEntries = [
     },
     reference: 'Daniel 2:4',
   ),
-  _TriviaEntry(
+  BibleTriviaEntry(
     tag: {'en': 'NARRATIVE', 'zh-Hans': '生命比喻', 'zh-Hant': '生命比喻'},
     title: {
       'en': 'Hosea: His marriage IS the prophecy',
@@ -1048,7 +1263,7 @@ const List<_TriviaEntry> _triviaEntries = [
     },
     reference: 'Hosea 1:2',
   ),
-  _TriviaEntry(
+  BibleTriviaEntry(
     tag: {'en': 'PROPHECY', 'zh-Hans': '主题数据', 'zh-Hant': '主題數據'},
     title: {
       'en': 'Joel: Quoted by Peter at Pentecost',
@@ -1069,7 +1284,7 @@ const List<_TriviaEntry> _triviaEntries = [
     },
     reference: 'Joel 2:28',
   ),
-  _TriviaEntry(
+  BibleTriviaEntry(
     tag: {'en': 'STRUCTURE', 'zh-Hans': '主题数据', 'zh-Hant': '主題數據'},
     title: {
       'en': 'Amos: "I will not turn away its punishment" repeats 8 times',
@@ -1090,7 +1305,7 @@ const List<_TriviaEntry> _triviaEntries = [
     },
     reference: 'Amos 2:6',
   ),
-  _TriviaEntry(
+  BibleTriviaEntry(
     tag: {'en': 'STRUCTURE', 'zh-Hans': '书卷之最', 'zh-Hant': '書卷之最'},
     title: {
       'en': 'Obadiah: The shortest book in the OT — 21 verses, no chapters',
@@ -1111,7 +1326,7 @@ const List<_TriviaEntry> _triviaEntries = [
     },
     reference: 'Obadiah 1:21',
   ),
-  _TriviaEntry(
+  BibleTriviaEntry(
     tag: {'en': 'NARRATIVE', 'zh-Hans': '反转结构', 'zh-Hant': '反轉結構'},
     title: {
       'en': 'Jonah: The only prophet who runs FROM God',
@@ -1132,7 +1347,7 @@ const List<_TriviaEntry> _triviaEntries = [
     },
     reference: 'Jonah 1:3',
   ),
-  _TriviaEntry(
+  BibleTriviaEntry(
     tag: {'en': 'PROPHECY', 'zh-Hans': '弥赛亚预言', 'zh-Hant': '彌賽亞預言'},
     title: {
       'en': 'Micah: Names Bethlehem 700 years before Jesus is born there',
@@ -1153,7 +1368,7 @@ const List<_TriviaEntry> _triviaEntries = [
     },
     reference: 'Micah 5:2',
   ),
-  _TriviaEntry(
+  BibleTriviaEntry(
     tag: {'en': 'ACROSTIC', 'zh-Hans': '半离合体', 'zh-Hant': '半離合體'},
     title: {
       'en': 'Nahum: Begins with a partial alphabet acrostic',
@@ -1174,7 +1389,7 @@ const List<_TriviaEntry> _triviaEntries = [
     },
     reference: 'Nahum 1:2',
   ),
-  _TriviaEntry(
+  BibleTriviaEntry(
     tag: {'en': 'NT QUOTE', 'zh-Hans': '新约引用', 'zh-Hant': '新約引用'},
     title: {
       'en': 'Habakkuk: "The just shall live by faith" — quoted 3× in the NT',
@@ -1195,7 +1410,7 @@ const List<_TriviaEntry> _triviaEntries = [
     },
     reference: 'Habakkuk 2:4',
   ),
-  _TriviaEntry(
+  BibleTriviaEntry(
     tag: {'en': 'STRUCTURE', 'zh-Hans': '主题数据', 'zh-Hant': '主題數據'},
     title: {
       'en': 'Zephaniah: "Day of the LORD" appears 21 times in 3 chapters',
@@ -1216,7 +1431,7 @@ const List<_TriviaEntry> _triviaEntries = [
     },
     reference: 'Zephaniah 1:14',
   ),
-  _TriviaEntry(
+  BibleTriviaEntry(
     tag: {'en': 'AUTHOR', 'zh-Hans': '精确历法', 'zh-Hant': '精確曆法'},
     title: {
       'en': 'Haggai: Most precisely dated book — every oracle is timestamped',
@@ -1237,7 +1452,7 @@ const List<_TriviaEntry> _triviaEntries = [
     },
     reference: 'Haggai 1:1',
   ),
-  _TriviaEntry(
+  BibleTriviaEntry(
     tag: {'en': 'VISION', 'zh-Hans': '异象数', 'zh-Hant': '異象數'},
     title: {
       'en': 'Zechariah: 8 night visions in a single night',
@@ -1256,7 +1471,7 @@ const List<_TriviaEntry> _triviaEntries = [
     },
     reference: 'Zechariah 1:8',
   ),
-  _TriviaEntry(
+  BibleTriviaEntry(
     tag: {'en': 'CANON', 'zh-Hans': '正典末句', 'zh-Hant': '正典末句'},
     title: {
       'en': 'Malachi: The last word in the OT is "curse" — then 400 years of silence',
@@ -1278,7 +1493,7 @@ const List<_TriviaEntry> _triviaEntries = [
 
   // ── New Testament ────────────────────────────────────────────
 
-  _TriviaEntry(
+  BibleTriviaEntry(
     tag: {'en': 'STRUCTURE', 'zh-Hans': '主题数据', 'zh-Hant': '主題數據'},
     title: {
       'en': 'Mark: "Immediately" appears 41 times — fastest-paced gospel',
@@ -1299,7 +1514,7 @@ const List<_TriviaEntry> _triviaEntries = [
     },
     reference: 'Mark 1:10',
   ),
-  _TriviaEntry(
+  BibleTriviaEntry(
     tag: {'en': 'AUTHOR', 'zh-Hans': '原文水准', 'zh-Hant': '原文水準'},
     title: {
       'en': 'Luke: Most polished Greek prologue in the NT',
@@ -1320,7 +1535,7 @@ const List<_TriviaEntry> _triviaEntries = [
     },
     reference: 'Luke 1:1',
   ),
-  _TriviaEntry(
+  BibleTriviaEntry(
     tag: {'en': 'STRUCTURE', 'zh-Hans': '七的结构', 'zh-Hant': '七的結構'},
     title: {
       'en': 'John: 7 "I am" sayings + 7 signs — built around 7s',
@@ -1341,7 +1556,7 @@ const List<_TriviaEntry> _triviaEntries = [
     },
     reference: 'John 6:35',
   ),
-  _TriviaEntry(
+  BibleTriviaEntry(
     tag: {'en': 'STRUCTURE', 'zh-Hans': '叙事结构', 'zh-Hant': '敘事結構'},
     title: {
       'en': 'Acts: The book ends mid-story',
@@ -1362,7 +1577,7 @@ const List<_TriviaEntry> _triviaEntries = [
     },
     reference: 'Acts 28:31',
   ),
-  _TriviaEntry(
+  BibleTriviaEntry(
     tag: {'en': 'AUTHOR', 'zh-Hans': '主题数据', 'zh-Hant': '主題數據'},
     title: {
       'en': 'Romans: The most systematic exposition of the gospel in the NT',
@@ -1383,7 +1598,7 @@ const List<_TriviaEntry> _triviaEntries = [
     },
     reference: 'Romans 1:16',
   ),
-  _TriviaEntry(
+  BibleTriviaEntry(
     tag: {'en': 'POETRY', 'zh-Hans': '爱的诗章', 'zh-Hant': '愛的詩章'},
     title: {
       'en': '1 Corinthians 13: "Love" appears 9 times in 13 verses',
@@ -1404,7 +1619,7 @@ const List<_TriviaEntry> _triviaEntries = [
     },
     reference: '1 Corinthians 13',
   ),
-  _TriviaEntry(
+  BibleTriviaEntry(
     tag: {'en': 'AUTHOR', 'zh-Hans': '自传性', 'zh-Hant': '自傳性'},
     title: {
       'en': '2 Corinthians: Paul\'s most personal letter',
@@ -1425,7 +1640,7 @@ const List<_TriviaEntry> _triviaEntries = [
     },
     reference: '2 Corinthians 11:23',
   ),
-  _TriviaEntry(
+  BibleTriviaEntry(
     tag: {'en': 'AUTHOR', 'zh-Hans': '保罗笔迹', 'zh-Hant': '保羅筆跡'},
     title: {
       'en': 'Galatians: Paul writes the closing himself "in large letters"',
@@ -1446,7 +1661,7 @@ const List<_TriviaEntry> _triviaEntries = [
     },
     reference: 'Galatians 6:11',
   ),
-  _TriviaEntry(
+  BibleTriviaEntry(
     tag: {'en': 'STRUCTURE', 'zh-Hans': '主题数据', 'zh-Hant': '主題數據'},
     title: {
       'en': 'Ephesians: "In Christ" / "in Him" appears 27 times',
@@ -1467,7 +1682,7 @@ const List<_TriviaEntry> _triviaEntries = [
     },
     reference: 'Ephesians 1:3',
   ),
-  _TriviaEntry(
+  BibleTriviaEntry(
     tag: {'en': 'STRUCTURE', 'zh-Hans': '主题数据', 'zh-Hant': '主題數據'},
     title: {
       'en': 'Philippians: Paul writes about "joy/rejoice" 16 times — from prison',
@@ -1488,7 +1703,7 @@ const List<_TriviaEntry> _triviaEntries = [
     },
     reference: 'Philippians 4:4',
   ),
-  _TriviaEntry(
+  BibleTriviaEntry(
     tag: {'en': 'POETRY', 'zh-Hans': '基督颂歌', 'zh-Hant': '基督頌歌'},
     title: {
       'en': 'Colossians: Christological hymn — possibly an early church song',
@@ -1509,7 +1724,7 @@ const List<_TriviaEntry> _triviaEntries = [
     },
     reference: 'Colossians 1:15',
   ),
-  _TriviaEntry(
+  BibleTriviaEntry(
     tag: {'en': 'AUTHOR', 'zh-Hans': '最早书信', 'zh-Hant': '最早書信'},
     title: {
       'en': '1 Thessalonians: Paul\'s earliest surviving letter',
@@ -1530,7 +1745,7 @@ const List<_TriviaEntry> _triviaEntries = [
     },
     reference: '1 Thessalonians 4:13',
   ),
-  _TriviaEntry(
+  BibleTriviaEntry(
     tag: {'en': 'PROPHECY', 'zh-Hans': '末世预言', 'zh-Hant': '末世預言'},
     title: {
       'en': '2 Thessalonians: The most detailed antichrist prophecy in Paul',
@@ -1551,7 +1766,7 @@ const List<_TriviaEntry> _triviaEntries = [
     },
     reference: '2 Thessalonians 2:3',
   ),
-  _TriviaEntry(
+  BibleTriviaEntry(
     tag: {'en': 'STRUCTURE', 'zh-Hans': '主题数据', 'zh-Hant': '主題數據'},
     title: {
       'en': '1 Timothy: "Faithful saying" formula appears 5 times',
@@ -1572,7 +1787,7 @@ const List<_TriviaEntry> _triviaEntries = [
     },
     reference: '1 Timothy 1:15',
   ),
-  _TriviaEntry(
+  BibleTriviaEntry(
     tag: {'en': 'AUTHOR', 'zh-Hans': '保罗遗言', 'zh-Hant': '保羅遺言'},
     title: {
       'en': '2 Timothy: Paul\'s last letter — written before his execution',
@@ -1595,7 +1810,7 @@ const List<_TriviaEntry> _triviaEntries = [
     },
     reference: '2 Timothy 4:6',
   ),
-  _TriviaEntry(
+  BibleTriviaEntry(
     tag: {'en': 'AUTHOR', 'zh-Hans': '宣教视野', 'zh-Hant': '宣教視野'},
     title: {
       'en': 'Titus: Mentions Crete — Christianity reached the island within a generation',
@@ -1618,7 +1833,7 @@ const List<_TriviaEntry> _triviaEntries = [
     },
     reference: 'Titus 1:5',
   ),
-  _TriviaEntry(
+  BibleTriviaEntry(
     tag: {'en': 'NARRATIVE', 'zh-Hans': '一封私信', 'zh-Hant': '一封私信'},
     title: {
       'en': 'Philemon: A 25-verse letter that quietly undermines slavery',
@@ -1641,7 +1856,7 @@ const List<_TriviaEntry> _triviaEntries = [
     },
     reference: 'Philemon 16',
   ),
-  _TriviaEntry(
+  BibleTriviaEntry(
     tag: {'en': 'STRUCTURE', 'zh-Hans': '主题数据', 'zh-Hant': '主題數據'},
     title: {
       'en': 'Hebrews: "Better" appears 13 times — argument by superiority',
@@ -1664,7 +1879,7 @@ const List<_TriviaEntry> _triviaEntries = [
     },
     reference: 'Hebrews 1:4',
   ),
-  _TriviaEntry(
+  BibleTriviaEntry(
     tag: {'en': 'STRUCTURE', 'zh-Hans': '主题数据', 'zh-Hant': '主題數據'},
     title: {
       'en': 'James: ~50 imperatives in 108 verses — most action-driven epistle',
@@ -1685,7 +1900,7 @@ const List<_TriviaEntry> _triviaEntries = [
     },
     reference: 'James 2:17',
   ),
-  _TriviaEntry(
+  BibleTriviaEntry(
     tag: {'en': 'AUTHOR', 'zh-Hans': '历史背景', 'zh-Hant': '歷史背景'},
     title: {
       'en': '1 Peter: Written from Rome during Nero\'s persecution',
@@ -1706,7 +1921,7 @@ const List<_TriviaEntry> _triviaEntries = [
     },
     reference: '1 Peter 5:13',
   ),
-  _TriviaEntry(
+  BibleTriviaEntry(
     tag: {'en': 'CANON', 'zh-Hans': '正典互证', 'zh-Hant': '正典互證'},
     title: {
       'en': '2 Peter: Calls Paul\'s letters "Scripture" already in the 1st century',
@@ -1727,7 +1942,7 @@ const List<_TriviaEntry> _triviaEntries = [
     },
     reference: '2 Peter 3:16',
   ),
-  _TriviaEntry(
+  BibleTriviaEntry(
     tag: {'en': 'STRUCTURE', 'zh-Hans': '主题数据', 'zh-Hant': '主題數據'},
     title: {
       'en': '1 John: "Know" appears 38 times — confidence theology',
@@ -1750,7 +1965,7 @@ const List<_TriviaEntry> _triviaEntries = [
     },
     reference: '1 John 5:13',
   ),
-  _TriviaEntry(
+  BibleTriviaEntry(
     tag: {'en': 'NARRATIVE', 'zh-Hans': '一篇短信', 'zh-Hant': '一篇短信'},
     title: {
       'en': '2 John: Personal letter to "the elect lady"',
@@ -1771,7 +1986,7 @@ const List<_TriviaEntry> _triviaEntries = [
     },
     reference: '2 John 1:4',
   ),
-  _TriviaEntry(
+  BibleTriviaEntry(
     tag: {'en': 'STRUCTURE', 'zh-Hans': '书卷之最', 'zh-Hant': '書卷之最'},
     title: {
       'en': '3 John: The shortest book in the Bible (219 Greek words / 14 verses)',
@@ -1792,7 +2007,7 @@ const List<_TriviaEntry> _triviaEntries = [
     },
     reference: '3 John 1:13',
   ),
-  _TriviaEntry(
+  BibleTriviaEntry(
     tag: {'en': 'CANON', 'zh-Hans': '引用次经', 'zh-Hant': '引用次經'},
     title: {
       'en': 'Jude: Quotes 1 Enoch — the only NT book to cite a non-canonical work',
@@ -1815,7 +2030,7 @@ const List<_TriviaEntry> _triviaEntries = [
     },
     reference: 'Jude 1:14',
   ),
-  _TriviaEntry(
+  BibleTriviaEntry(
     tag: {'en': 'STRUCTURE', 'zh-Hans': '七的结构', 'zh-Hant': '七的結構'},
     title: {
       'en': 'Revelation: Sevens everywhere — 7 churches, seals, trumpets, bowls',

@@ -767,6 +767,16 @@ const uiStrings = {
     'zh-Hant': '在聖經中查看',
     'en': 'Read in Bible',
   },
+  'bibleTriviaNoneForChapter': {
+    'zh-Hans': '本章暂无冷知识。',
+    'zh-Hant': '本章暫無冷知識。',
+    'en': 'No trivia entries for this chapter yet.',
+  },
+  'bibleTriviaViewAll': {
+    'zh-Hans': '查看全部冷知识',
+    'zh-Hant': '查看全部冷知識',
+    'en': 'View all trivia',
+  },
   // Round 56: hint shown under expanded font dropdown.
   'loadingVersion': {
     'zh-Hans': '正在切换译本…',
