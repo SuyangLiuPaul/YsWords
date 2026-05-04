@@ -1091,12 +1091,12 @@ const List<BibleTriviaEntry> bibleTriviaEntries = [
               '(1:20, 5:4, 5:13, 7:7). The pattern alternates forward and '
               'reversed direction, marking moments where God\'s hidden '
               'providence breaks through the narrative.',
-      'zh-Hans': '以斯帖记从头到尾**没有一次明确出现"神"或"耶和华"这个词**——'
+      'zh-Hans': '以斯帖记从头到尾**没有一次明确出现"神"或"雅伟"这个词**——'
           '这在整本希伯来圣经里非常罕见。但古代抄经士指出，'
           '神的四字圣名（YHWH，יהוה）以**离合形式暗藏 4 次**：'
           '在 1:20、5:4、5:13、7:7 这四节经文的连续词语首字母或末字母处依次出现，'
           '方向交替正读 / 倒读。这四处被认为是神隐藏护理在叙事中悄悄"显现"的关键时刻。',
-      'zh-Hant': '以斯帖記從頭到尾**沒有一次明確出現「神」或「耶和華」這個詞**——'
+      'zh-Hant': '以斯帖記從頭到尾**沒有一次明確出現「神」或「雅威」這個詞**——'
           '這在整本希伯來聖經裡非常罕見。但古代抄經士指出，'
           '神的四字聖名（YHWH，יהוה）以**離合形式暗藏 4 次**：'
           '在 1:20、5:4、5:13、7:7 這四節經文的連續詞語首字母或末字母處依次出現，'
@@ -1111,14 +1111,14 @@ const List<BibleTriviaEntry> bibleTriviaEntries = [
       'zh-Hant': '神名暗藏',
     },
     title: {
-      'en': 'Ruth: Boaz greets the workers with the LORD\'s name',
+      'en': 'Ruth: Boaz greets the workers with Yahweh\'s name',
       'zh-Hans': '路得记：波阿斯一句问安，连读神名两次',
       'zh-Hant': '路得記：波阿斯一句問安，連讀神名兩次',
     },
     body: {
       'en':
           'Ruth 2:4 — "Boaz arrived from Bethlehem and said to the '
-              'harvesters, \'The LORD be with you!\' \'The LORD bless '
+              'harvesters, \'Yahweh be with you!\' \'Yahweh bless '
               'you!\' they answered." In Hebrew, the Tetragrammaton '
               '(YHWH, יהוה) appears TWICE in the same verse — Boaz\'s '
               'greeting and the workers\' response. In ancient Near East '
@@ -1126,14 +1126,14 @@ const List<BibleTriviaEntry> bibleTriviaEntries = [
               'wealthy landowner invoking God\'s name on his hired '
               'harvesters, who reply in kind. A small textual moment, a '
               'huge theological statement about godly leadership.',
-      'zh-Hans': '路得记 2:4 ——"波阿斯从伯利恒来，对收割的人说：『愿耶和华与你们同在！』'
-          '他们回答说：『愿耶和华赐福与你！』"原文希伯来文里，**神的圣名（YHWH，יהוה）'
+      'zh-Hans': '路得记 2:4 ——"波阿斯从伯利恒来，对收割的人说：『愿雅伟与你们同在！』'
+          '他们回答说：『愿雅伟赐福与你！』"原文希伯来文里，**神的圣名（YHWH，יהוה）'
           '在同一节经文里出现两次**——波阿斯打的招呼，以及工人的回应。'
           '古代近东主仆关系中这极为罕见：富有的地主直接以神的名向雇工问安，'
           '雇工也以神的名回应。一节经文中的小细节，'
           '却**蕴含整个旧约对"敬虔领导力"的神学**。',
-      'zh-Hant': '路得記 2:4 ——「波阿斯從伯利恆來，對收割的人說：『願耶和華與你們同在！』'
-          '他們回答說：『願耶和華賜福與你！』」原文希伯來文裡，**神的聖名（YHWH，יהוה）'
+      'zh-Hant': '路得記 2:4 ——「波阿斯從伯利恆來，對收割的人說：『願雅威與你們同在！』'
+          '他們回答說：『願雅威賜福與你！』」原文希伯來文裡，**神的聖名（YHWH，יהוה）'
           '在同一節經文裡出現兩次**——波阿斯打的招呼，以及工人的回應。'
           '古代近東主僕關係中這極為罕見：富有的地主直接以神的名向雇工問安，'
           '雇工也以神的名回應。一節經文中的小細節，'
@@ -1378,11 +1378,11 @@ const List<BibleTriviaEntry> bibleTriviaEntries = [
       'en':
           'The book\'s hero, Joshua (יְהוֹשֻׁעַ / Yehoshua), means "YHWH saves." His shortened name is Yeshua — the same Hebrew name later borne by Jesus Christ. Joshua leading Israel into the Promised Land is the OT type that the NT applies to Jesus leading believers into eternal rest (Hebrews 4:8).',
       'zh-Hans':
-          '约书亚（יְהוֹשֻׁעַ，Yehoshua）希伯来名意为"耶和华是拯救"。这个名字的简写形式 **Yeshua**'
+          '约书亚（יְהוֹשֻׁעַ，Yehoshua）希伯来名意为"雅伟是拯救"。这个名字的简写形式 **Yeshua**'
               '——正是后来耶稣基督在世时所用的希伯来名。**约书亚**带领以色列人进入应许之地，是新约中**耶稣**带领信徒'
               '进入永远安息的预表（希伯来书 4:8）。',
       'zh-Hant':
-          '約書亞（יְהוֹשֻׁעַ，Yehoshua）希伯來名意為「耶和華是拯救」。這個名字的簡寫形式 **Yeshua**'
+          '約書亞（יְהוֹשֻׁעַ，Yehoshua）希伯來名意為「雅威是拯救」。這個名字的簡寫形式 **Yeshua**'
               '——正是後來耶穌基督在世時所用的希伯來名。**約書亞**帶領以色列人進入應許之地，是新約中**耶穌**帶領信徒'
               '進入永遠安息的預表（希伯來書 4:8）。',
     },
@@ -1647,11 +1647,11 @@ const List<BibleTriviaEntry> bibleTriviaEntries = [
       'en':
           'The Song never names God explicitly (the closest mention is a "flame of YHWH" wordplay in 8:6, debated). Yet Jewish and Christian tradition has read the Song as the most intimate picture of divine love — God\'s pursuit of Israel, Christ\'s love for the church. God\'s presence is felt without being named.',
       'zh-Hans':
-          '雅歌全书从未明确提到神的名字（最接近的是 8:6 中可能的"耶和华的烈焰"双关，至今有争议）。'
+          '雅歌全书从未明确提到神的名字（最接近的是 8:6 中可能的"雅伟的烈焰"双关，至今有争议）。'
               '但犹太和基督教传统都把雅歌读作神圣之爱**最亲密的画像**——神追求以色列，'
               '基督爱教会。**神的同在被感受到，但名字未被说出**。',
       'zh-Hant':
-          '雅歌全書從未明確提到神的名字（最接近的是 8:6 中可能的「耶和華的烈焰」雙關，至今有爭議）。'
+          '雅歌全書從未明確提到神的名字（最接近的是 8:6 中可能的「雅威的烈焰」雙關，至今有爭議）。'
               '但猶太和基督教傳統都把雅歌讀作神聖之愛**最親密的畫像**——神追求以色列，'
               '基督愛教會。**神的同在被感受到，但名字未被說出**。',
     },
@@ -1750,15 +1750,15 @@ const List<BibleTriviaEntry> bibleTriviaEntries = [
     },
     body: {
       'en':
-          'When the Spirit fell at Pentecost (Acts 2), Peter\'s first sermon explained what was happening by quoting Joel 2:28–32 — "I will pour out my Spirit on all flesh." Joel\'s small 3-chapter book hands the New Testament its template for Spirit-empowered ministry. The "day of the LORD" he warns about is also re-applied throughout the NT.',
+          'When the Spirit fell at Pentecost (Acts 2), Peter\'s first sermon explained what was happening by quoting Joel 2:28–32 — "I will pour out my Spirit on all flesh." Joel\'s small 3-chapter book hands the New Testament its template for Spirit-empowered ministry. The "day of Yahweh" he warns about is also re-applied throughout the NT.',
       'zh-Hans':
           '五旬节圣灵降下时（使徒行传 2 章），彼得的第一篇讲道直接引用约珥书 2:28–32 来解释——'
               '"我要将我的灵浇灌凡有血气的"。约珥书短短 3 章为新约提供了**圣灵充满事奉的范本**。'
-              '他所警告的"耶和华的日子"也被新约反复引用。',
+              '他所警告的"雅伟的日子"也被新约反复引用。',
       'zh-Hant':
           '五旬節聖靈降下時（使徒行傳 2 章），彼得的第一篇講道直接引用約珥書 2:28–32 來解釋——'
               '「我要將我的靈澆灌凡有血氣的」。約珥書短短 3 章為新約提供了**聖靈充滿事奉的範本**。'
-              '他所警告的「耶和華的日子」也被新約反覆引用。',
+              '他所警告的「雅威的日子」也被新約反覆引用。',
     },
     reference: 'Joel 2:28',
   ),
@@ -1792,15 +1792,15 @@ const List<BibleTriviaEntry> bibleTriviaEntries = [
     },
     body: {
       'en':
-          'Obadiah is the shortest book in the Old Testament — only 21 verses, never split into chapters. Its content is a single sustained oracle of judgment against Edom (Esau\'s descendants) for the way they treated their cousin Israel. The book\'s last word is "the kingdom shall be the LORD\'s."',
+          'Obadiah is the shortest book in the Old Testament — only 21 verses, never split into chapters. Its content is a single sustained oracle of judgment against Edom (Esau\'s descendants) for the way they treated their cousin Israel. The book\'s last word is "the kingdom shall be Yahweh\'s."',
       'zh-Hans':
           '俄巴底亚书是旧约最短的书——只有 **21 节**，从未被分章。全书内容是一篇持续的预言，'
               '审判**以东**（以扫的后裔）如何对待"亲表兄"以色列。'
-              '全书最后一句："国度归与耶和华。"',
+              '全书最后一句："国度归与雅伟。"',
       'zh-Hant':
           '俄巴底亞書是舊約最短的書——只有 **21 節**，從未被分章。全書內容是一篇持續的預言，'
               '審判**以東**（以掃的後裔）如何對待「親表兄」以色列。'
-              '全書最後一句：「國度歸與耶和華。」',
+              '全書最後一句：「國度歸與雅威。」',
     },
     reference: 'Obadiah 1:21',
   ),
@@ -1891,19 +1891,19 @@ const List<BibleTriviaEntry> bibleTriviaEntries = [
   BibleTriviaEntry(
     tag: {'en': 'STRUCTURE', 'zh-Hans': '主题数据', 'zh-Hant': '主題數據'},
     title: {
-      'en': 'Zephaniah: "Day of the LORD" appears 21 times in 3 chapters',
-      'zh-Hans': '西番雅书：3 章中"耶和华的日子"出现 21 次',
-      'zh-Hant': '西番雅書：3 章中「耶和華的日子」出現 21 次',
+      'en': 'Zephaniah: "Day of Yahweh" appears 21 times in 3 chapters',
+      'zh-Hans': '西番雅书：3 章中"雅伟的日子"出现 21 次',
+      'zh-Hant': '西番雅書：3 章中「雅威的日子」出現 21 次',
     },
     body: {
       'en':
-          'In just 53 verses Zephaniah uses "the day of the LORD" or "that day" 21 times — the highest density of any prophetic book. The medieval Latin hymn Dies Irae ("Day of Wrath"), still sung at funerals today, is built directly from Zephaniah 1:14–18. A small book with outsized cultural footprint.',
+          'In just 53 verses Zephaniah uses "the day of Yahweh" or "that day" 21 times — the highest density of any prophetic book. The medieval Latin hymn Dies Irae ("Day of Wrath"), still sung at funerals today, is built directly from Zephaniah 1:14–18. A small book with outsized cultural footprint.',
       'zh-Hans':
-          '西番雅书全书只有 53 节，却使用"耶和华的日子"或"那日"**21 次**——是所有先知书中频率最高的。'
+          '西番雅书全书只有 53 节，却使用"雅伟的日子"或"那日"**21 次**——是所有先知书中频率最高的。'
               '中世纪拉丁文圣咏《震怒之日》（Dies Irae）——至今仍在葬礼上吟唱——直接取材于西番雅 1:14–18。'
               '一卷小书，文化影响远远超出体量。',
       'zh-Hant':
-          '西番雅書全書只有 53 節，卻使用「耶和華的日子」或「那日」**21 次**——是所有先知書中頻率最高的。'
+          '西番雅書全書只有 53 節，卻使用「雅威的日子」或「那日」**21 次**——是所有先知書中頻率最高的。'
               '中世紀拉丁文聖詠《震怒之日》（Dies Irae）——至今仍在葬禮上吟唱——直接取材於西番雅 1:14–18。'
               '一卷小書，文化影響遠遠超出體量。',
     },
