@@ -2320,62 +2320,81 @@ void _showNoteEditor({
       text: mainProvider.getVerseNote(verse) ?? '');
   final ref = '${verse.book} ${verse.chapter}:${verse.verseLabel}';
 
-  // Round 56 round 4: derive `savedIndex` directly from the
-  // SELECTED verse, NOT from the positions listener snapshot.
-  // The previous attempts trusted the listener but the listener's
-  // value was sometimes empty (or stale from a recent layout
-  // shift) at the moment the sheet opened — making `savedIndex`
-  // fall back to 0 and every restore become a no-op (because
-  // restoreScroll's `<= 0` guard short-circuited). The user
-  // selected this exact verse to add a note, so anchoring to its
-  // chapter-relative index is the most semantically correct
-  // target anyway: when the editor closes, the user expects to
-  // be looking at that verse.
-  int savedIndex = 0;
+  // Round 56 round 5: actually-correct index handling.
+  //
+  // Bug in round 4: `savedIndex` was set from
+  // `chapterVerses.indexWhere(...)` — which is a 0-based VERSE
+  // index — but `restoreScroll` then called
+  // `itemScrollController.jumpTo(index: savedIndex)` which
+  // expects an ITEM index. The two spaces differ:
+  //
+  //   - Item index:   header(0), paragraphGroup(1)...(N), trailer
+  //   - Verse index:  verse_0...verse_N within chapter
+  //
+  // With paragraph mode (default ON), one item can wrap several
+  // verses, so verse N maps to a substantially smaller item
+  // index. So my restore was landing on a WRONG (higher) item —
+  // looking like "scroll to top + tiny scroll down" because we
+  // were scrolling back to a near-top item that wasn't where the
+  // user actually was. That's the user's exact symptom.
+  //
+  // Fix: capture the topmost-visible ITEM index directly from
+  // the positions listener (already in item space — perfect for
+  // jumpTo), and fall back to verse-derived only when the
+  // listener is empty AND go through `mainProvider.jumpToIndex`
+  // which routes through `_verseToItemMap`.
+  int? savedItemIndex;
+  int? savedVerseIndex;
+
+  // Primary: read item index from positions listener.
+  try {
+    final positions = mainProvider.itemPositionsListener.itemPositions.value;
+    if (positions.isNotEmpty) {
+      final visible = positions
+          .where((p) => p.itemTrailingEdge > 0 && p.itemLeadingEdge < 1)
+          .toList()
+        ..sort((a, b) => a.itemLeadingEdge.compareTo(b.itemLeadingEdge));
+      if (visible.isNotEmpty) savedItemIndex = visible.first.index;
+    }
+  } catch (_) {}
+
+  // Backup: derive verse-relative index from the selected verse,
+  // for cases where the positions listener was empty (rare —
+  // cold-mount races mostly).
   try {
     final chapterVerses = mainProvider.verses
         .where((v) => v.book == verse.book && v.chapter == verse.chapter)
         .toList()
       ..sort((a, b) => a.verse.compareTo(b.verse));
     final relIdx = chapterVerses.indexWhere((v) => v.verse == verse.verse);
-    if (relIdx >= 0) savedIndex = relIdx;
-  } catch (_) {
-    // verses list may be empty during cold-start race; fall back
-    // to positions listener.
-  }
-
-  // Backup: if the chapter-relative computation came up empty,
-  // try the positions listener too.
-  if (savedIndex <= 0) {
-    try {
-      final positions = mainProvider.itemPositionsListener.itemPositions.value;
-      final visible = positions
-          .where((p) => p.itemTrailingEdge > 0 && p.itemLeadingEdge < 1)
-          .toList()
-        ..sort((a, b) => a.itemLeadingEdge.compareTo(b.itemLeadingEdge));
-      if (visible.isNotEmpty) savedIndex = visible.first.index;
-    } catch (_) {}
-  }
+    if (relIdx >= 0) savedVerseIndex = relIdx;
+  } catch (_) {}
 
   void restoreScroll() {
     if (!mainProvider.itemScrollController.isAttached) return;
-    if (savedIndex <= 0) return;
     try {
-      // jumpTo (NOT scrollTo) so the user never sees the
-      // "scroll-to-top then animate back" jitter. Instant teleport
-      // — any spurious shift is corrected within the same frame.
-      mainProvider.itemScrollController.jumpTo(index: savedIndex);
+      final itemIdx = savedItemIndex;
+      final verseIdx = savedVerseIndex;
+      if (itemIdx != null && itemIdx > 0) {
+        // Direct item-index path: positions listener already
+        // gave us the item index, no map translation needed.
+        mainProvider.itemScrollController.jumpTo(index: itemIdx);
+      } else if (verseIdx != null) {
+        // Fall back to mp.jumpToIndex which translates verse
+        // index through `_verseToItemMap` to land on the right
+        // paragraph group / single-verse item.
+        mainProvider.jumpToIndex(index: verseIdx);
+      }
     } catch (_) {}
   }
 
   // Watch the reader's item positions while the sheet is open.
   // If the topmost visible item suddenly becomes 0 (or close to
-  // it) while we had snapshotted a much-deeper position, restore.
-  // This catches whatever the underlying browser/keyboard quirk
-  // is doing without us having to identify it precisely.
+  // it) while our saved position was deep, restore.
   void onPositionsChanged() {
     if (!mainProvider.itemScrollController.isAttached) return;
-    if (savedIndex <= 5) return; // already near top; nothing to defend
+    final saved = savedItemIndex ?? -1;
+    if (saved <= 5) return; // already near top; nothing to defend
     try {
       final positions =
           mainProvider.itemPositionsListener.itemPositions.value;
@@ -2386,16 +2405,10 @@ void _showNoteEditor({
         ..sort((a, b) => a.itemLeadingEdge.compareTo(b.itemLeadingEdge));
       if (visible.isEmpty) return;
       final currentTop = visible.first.index;
-      // If we drifted to the top region (within 3 items of 0)
-      // while our snapshot was deep, treat it as the bug and
-      // restore. Defer one microtask so we don't fight a still-in-
-      // progress scroll animation.
       if (currentTop <= 2) {
         Future.microtask(restoreScroll);
       }
-    } catch (_) {
-      // Listener throws if positions are detached — ignore.
-    }
+    } catch (_) {}
   }
 
   mainProvider.itemPositionsListener.itemPositions

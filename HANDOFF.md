@@ -455,6 +455,34 @@ Levitical priesthood in view, and Ezekiel 14:14 names him alongside
 Noah and Daniel as one of the great righteous men. Cross-refs:
 Job 1, 2, 38, 42, Ezekiel 14:14.
 
+**Reader stays put when the note-editor keyboard opens — round 5**
+After 4 unsuccessful rounds, finally read the code carefully:
+the bug was an **index-space mismatch**, not a timing issue.
+
+`savedIndex` was being computed from
+`chapterVerses.indexWhere(...)` — a 0-based VERSE index — but
+`restoreScroll` then called
+`itemScrollController.jumpTo(index: savedIndex)` which expects
+an ITEM index. With paragraph mode (default ON) one item wraps
+several verses, so:
+
+  - User on verse 21 of a 32-verse chapter → relIdx = 20
+  - SPL has: header(0), 8 paragraph groups(1-8), trailer(9)
+  - `jumpTo(20)` → out of range, lands somewhere weird (or
+    clamped to last). On non-paragraph mode it lands on item
+    20, which is verse 19 — visually "near top of chapter".
+
+Symptom matches the user's report exactly: "click textfield → goes
+to top → scrolls down a bit → fixed at wrong-ish position".
+
+Fix: capture the topmost-visible ITEM index directly from the
+positions listener (already in item-space — perfect for jumpTo),
+and only fall back to verse-derived index if the listener was
+empty AND go through `mainProvider.jumpToIndex(...)` which
+routes through `_verseToItemMap` to convert to item-space.
+
+Now `restoreScroll` actually lands on the right item.
+
 **Reader stays put when the note-editor keyboard opens — round 4**
 (`lib/widgets/bible_reading_pane.dart`). Round 3 still didn't
 solve it: *"click textfkeld then jumped"*. Two underlying issues
