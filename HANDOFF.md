@@ -455,6 +455,34 @@ Levitical priesthood in view, and Ezekiel 14:14 names him alongside
 Noah and Daniel as one of the great righteous men. Cross-refs:
 Job 1, 2, 38, 42, Ezekiel 14:14.
 
+**Reader stays put when the note-editor keyboard opens — round 3**
+(`lib/widgets/bible_reading_pane.dart`). Round 2 caught the
+symptom but the user could still SEE the visible jump
+("when click yhe text field it goes to top and scroll down a bit
+then fixed"). Round 3 makes the restore invisible:
+
+* Switched the restore from `scrollTo(... duration: 1ms)` →
+  `jumpTo(...)`. `jumpTo` is instant (no animation pipeline), so
+  the spurious scroll-to-top is corrected within the same frame
+  and the user shouldn't see it.
+* Hooked the TextField's `onTap`, `Focus.onFocusChange(true)`,
+  and `onChanged` to fire `restoreScroll` at multiple time slots
+  (0 / 16 / 50 / 150 / 350 ms). The browser/keyboard quirk that
+  causes the jump can fire on any frame between tap and "keyboard
+  fully settled" — restoring on every plausible frame beats it
+  without us having to identify which frame.
+
+Three-layer defense overall:
+1. `resizeToAvoidBottomInset: false` on the reader Scaffold
+   (mitigates the issue on Android / desktop / wherever Flutter
+   sees the keyboard).
+2. `_showNoteEditor` snapshots scroll, watches positions, and
+   `jumpTo`s back if currentTop drifts to the top region while
+   the snapshot was deep.
+3. TextField tap/focus/change callbacks ALSO fire restoreScroll
+   on a multi-tick schedule so the restore lands BEFORE the user
+   ever sees the jump.
+
 **Reader stays put when the note-editor keyboard opens**
 (`lib/widgets/bible_reading_pane.dart`). Two-layer defense for
 the user-reported *"after click notes and click and typing, that

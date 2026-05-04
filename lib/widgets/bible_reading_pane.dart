@@ -2345,10 +2345,14 @@ void _showNoteEditor({
     // Guard against silly out-of-range values from a stale snapshot.
     if (savedIndex <= 0) return;
     try {
-      mainProvider.itemScrollController.scrollTo(
-        index: savedIndex,
-        duration: const Duration(milliseconds: 1),
-      );
+      // jumpTo (NOT scrollTo) so the user never sees the
+      // "scroll-to-top then animate back" jitter. Round 56 user
+      // feedback after the previous fix: "when click the text
+      // field it goes to top and scroll down a bit then fixed —
+      // please prevent the visible jump." `jumpTo` is instant
+      // (no animation), so any spurious scroll-to-top is corrected
+      // within the same frame and the user shouldn't see it.
+      mainProvider.itemScrollController.jumpTo(index: savedIndex);
     } catch (_) {
       // Detached between check and call — ignore.
     }
@@ -2457,17 +2461,60 @@ void _showNoteEditor({
               ],
             ),
             const SizedBox(height: 12),
-            TextField(
-              controller: controller,
-              autofocus: true,
-              maxLines: 8,
-              minLines: 4,
-              textInputAction: TextInputAction.newline,
-              decoration: InputDecoration(
-                hintText: uiStrings['noteHint']?[locale] ??
-                    'Type your note for this verse…',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
+            // Wrap in a Focus so we can detect the moment the user
+            // taps / focuses the field. That's the exact instant the
+            // browser/keyboard quirk that fires the underlying
+            // jump-to-top happens; calling restoreScroll() at the
+            // same moment locks the position in BEFORE the jump
+            // becomes visible. Combined with `jumpTo` (instant, no
+            // animation) inside restoreScroll, the user never sees
+            // the reader leave the verse.
+            Focus(
+              onFocusChange: (hasFocus) {
+                if (hasFocus) {
+                  // Fire several restores in quick succession to
+                  // beat whatever frame is causing the spurious
+                  // jump — at 0, 16, 50, 150, 350 ms. Cheap (jumpTo
+                  // is essentially free when already at the right
+                  // position) and bullet-proof against timing
+                  // variation between devices/browsers.
+                  restoreScroll();
+                  for (final delayMs in const [16, 50, 150, 350]) {
+                    Future.delayed(
+                        Duration(milliseconds: delayMs), restoreScroll);
+                  }
+                }
+              },
+              child: TextField(
+                controller: controller,
+                autofocus: true,
+                maxLines: 8,
+                minLines: 4,
+                textInputAction: TextInputAction.newline,
+                onTap: () {
+                  // Tap fires once when the user touches the field.
+                  // Same multi-shot defense — the keyboard /
+                  // viewport changes that follow can take several
+                  // frames to settle, so we restore until they do.
+                  restoreScroll();
+                  for (final delayMs in const [16, 50, 150, 350]) {
+                    Future.delayed(
+                        Duration(milliseconds: delayMs), restoreScroll);
+                  }
+                },
+                onChanged: (_) {
+                  // First keystroke triggers IME / autocomplete on
+                  // some platforms which can shift the viewport
+                  // again. Restore one more time on the very first
+                  // change.
+                  restoreScroll();
+                },
+                decoration: InputDecoration(
+                  hintText: uiStrings['noteHint']?[locale] ??
+                      'Type your note for this verse…',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
                 ),
               ),
             ),
