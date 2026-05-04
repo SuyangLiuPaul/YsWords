@@ -398,28 +398,61 @@ class _BookChapterPickerState extends State<BookChapterPicker> {
                   ),
                   Flexible(
                     child: SingleChildScrollView(
-                      child: Wrap(
-                        spacing: 6,
-                        runSpacing: 6,
-                        children: [
-                          // "Top of chapter" shortcut
-                          _VersePickerChip(
-                            label: uiStrings['versePickerTop']?[locale] ??
-                                'Top',
-                            color: scheme.surfaceContainerHigh,
-                            fg: scheme.onSurface,
-                            onTap: () =>
-                                Navigator.of(sheetCtx).maybePop(0),
-                          ),
-                          for (final v in chapterVerses)
-                            _VersePickerChip(
-                              label: '${v.verse}',
-                              color: scheme.primaryContainer,
-                              fg: scheme.onPrimaryContainer,
-                              onTap: () => Navigator.of(sheetCtx)
-                                  .maybePop(v.verse),
-                            ),
-                        ],
+                      child: LayoutBuilder(
+                        builder: (gridCtx, constraints) {
+                          // Responsive grid: pick a column count
+                          // based on width so verse-number tiles
+                          // stay square-ish on every screen.
+                          // Phone (<360 px): 6 cols; phone wide
+                          // (<480): 7 cols; small tablet
+                          // (<640): 8 cols; tablet (<800): 10 cols;
+                          // desktop: 12 cols. Tile width =
+                          // (available width − gaps) / cols.
+                          final w = constraints.maxWidth;
+                          final cols = w < 360
+                              ? 6
+                              : w < 480
+                                  ? 7
+                                  : w < 640
+                                      ? 8
+                                      : w < 800
+                                          ? 10
+                                          : 12;
+                          const gap = 6.0;
+                          final tileW =
+                              (w - gap * (cols - 1)) / cols;
+                          return Wrap(
+                            spacing: gap,
+                            runSpacing: gap,
+                            children: [
+                              // "Top of chapter" shortcut — spans 2
+                              // columns to make the action obvious.
+                              SizedBox(
+                                width: tileW * 2 + gap,
+                                child: _VersePickerChip(
+                                  label:
+                                      uiStrings['versePickerTop']?[locale] ??
+                                          'Top',
+                                  color: scheme.surfaceContainerHigh,
+                                  fg: scheme.onSurface,
+                                  onTap: () =>
+                                      Navigator.of(sheetCtx).maybePop(0),
+                                ),
+                              ),
+                              for (final v in chapterVerses)
+                                SizedBox(
+                                  width: tileW,
+                                  child: _VersePickerChip(
+                                    label: '${v.verse}',
+                                    color: scheme.primaryContainer,
+                                    fg: scheme.onPrimaryContainer,
+                                    onTap: () => Navigator.of(sheetCtx)
+                                        .maybePop(v.verse),
+                                  ),
+                                ),
+                            ],
+                          );
+                        },
                       ),
                     ),
                   ),

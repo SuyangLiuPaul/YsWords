@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import 'package:yswords/constants/bible_versions.dart'
@@ -168,9 +170,17 @@ int? captureCurrentVerseNum(MainProvider mp) {
   }
 }
 
-/// Schedule a post-frame scroll on [mp]'s reader to verse number
+/// Schedule a robust scroll on [mp]'s reader to verse number
 /// [verseNum] within the currently-loaded chapter. No-op when
 /// [verseNum] doesn't exist (cross-version numbering edge cases).
+///
+/// Round 56 update: wraps the call in a `Timer.periodic(16ms)` loop
+/// for up to ~1.5s. The previous one-shot post-frame callback fired
+/// before the SPL had its controller attached + items measured (most
+/// common after a version-switch — `setVerses` triggers a remount
+/// of the verse list, and the controller takes 1-3 frames to attach
+/// AND measure). Per-frame retry guarantees the jump lands as soon
+/// as the SPL is ready, regardless of how long the rebuild takes.
 void scrollToVerseNumInChapter(MainProvider mp, int verseNum) {
   final book = mp.currentBook;
   final chapter = mp.currentChapter;
@@ -186,9 +196,29 @@ void scrollToVerseNumInChapter(MainProvider mp, int verseNum) {
     relIdx = verses.indexWhere((v) => v.verse >= verseNum);
     if (relIdx < 0) return;
   }
-  WidgetsBinding.instance.addPostFrameCallback((_) {
-    if (mp.itemScrollController.isAttached) {
+  // Per-frame retry. Stop as soon as a jumpTo lands successfully OR
+  // ~1.5 s have elapsed (94 ticks × 16 ms).
+  var attempts = 0;
+  var settled = 0;
+  Timer.periodic(const Duration(milliseconds: 16), (timer) {
+    attempts++;
+    if (attempts > 94) {
+      timer.cancel();
+      return;
+    }
+    if (!mp.itemScrollController.isAttached) return;
+    try {
       mp.jumpToIndex(index: relIdx);
+      // Once we've successfully fired 3 jumps in a row, declare
+      // settled and stop. Multiple jumps cover the case where the
+      // SPL is mid-build: the first jumpTo might no-op silently,
+      // the next frame succeeds, the one after locks it in.
+      settled++;
+      if (settled >= 3) {
+        timer.cancel();
+      }
+    } catch (_) {
+      settled = 0;
     }
   });
 }
