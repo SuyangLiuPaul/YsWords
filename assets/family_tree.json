@@ -1950,7 +1950,9 @@
       "spouseIds": [
         "mary"
       ],
-      "childIds": [],
+      "childIds": [
+        "jesus"
+      ],
       "yearSystem": "bc",
       "summary": "Carpenter of Nazareth; husband of Mary; legal father of Jesus, securing his Davidic descent.",
       "summaryZhHans": "拿撒勒木匠;马利亚之夫;耶稣的法定父亲,使其承袭大卫王统。",
@@ -3697,7 +3699,9 @@
       "fatherId": null,
       "motherId": null,
       "spouseIds": [],
-      "childIds": [],
+      "childIds": [
+        "saul"
+      ],
       "yearSystem": "bc",
       "birthYear": -1100,
       "deathYear": null,
@@ -3722,7 +3726,11 @@
       "spouseIds": [
         "ahinoam_saul"
       ],
-      "childIds": [],
+      "childIds": [
+        "jonathan",
+        "michal",
+        "ish_bosheth"
+      ],
       "yearSystem": "bc",
       "birthYear": -1080,
       "deathYear": -1010,
@@ -3746,7 +3754,11 @@
       "spouseIds": [
         "saul"
       ],
-      "childIds": [],
+      "childIds": [
+        "jonathan",
+        "michal",
+        "ish_bosheth"
+      ],
       "yearSystem": "bc",
       "birthYear": -1075,
       "deathYear": null,
@@ -3768,7 +3780,9 @@
       "fatherId": "saul",
       "motherId": "ahinoam_saul",
       "spouseIds": [],
-      "childIds": [],
+      "childIds": [
+        "mephibosheth"
+      ],
       "yearSystem": "bc",
       "birthYear": -1050,
       "deathYear": -1010,

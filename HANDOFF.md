@@ -520,6 +520,20 @@ scan eras and click into the one that interests them. Search
 auto-uncollapses any section containing a match. Bridge chips also
 auto-uncollapse the target section.
 
+**Cross-era children appear as bridge leaves.** Inside any era
+section, when a person has a child whose era is different (the
+child belongs to the next section), that child renders as a
+single-row "bridge leaf" with a trailing `→ {next era}` tag and
+a soft tinted background in the next era's colour. Spouses of the
+bridge person appear inline as `═ Spouse` chips so e.g. Lamech →
+Noah, Terah → Abraham (with `═ Sarah ═ Hagar ═ Keturah`), Levi →
+Kohath / Jochebed (with `→ Mosaic`), Jeconiah → Shealtiel (with
+`→ Exile`), Jacob → Joseph (with `═ Mary` and `→ NT`). Tap any
+bridge leaf → uncollapses + scrolls to that next section AND
+opens the detail sheet, so reading the lineage Adam → Noah →
+Abraham → David → Jesus across sections feels continuous instead
+of "the chain ends mid-row, scroll to find the rest".
+
 **Bridge chips between sections.** When a section is opened, the
 bottom of its body shows a "Continues with: [Person]" chip pointing
 to the canonical successor in the next era. Mapping in

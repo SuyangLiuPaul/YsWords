@@ -758,9 +758,13 @@ class _EraSection extends StatelessWidget {
     );
   }
 
-  /// Recursively render a node's subtree, but only descend into
-  /// children whose era matches this section. Each person renders
-  /// at most once per section via [seen].
+  /// Recursively render a node's subtree. In-era children expand
+  /// recursively (full subtree); **cross-era** children render as
+  /// "bridge leaves" — single-row markers with a `→ {next era}`
+  /// indicator that tap-jumps the user to that next section. So
+  /// the user sees Lamech → Noah (→ Post-Flood) inside the
+  /// Antediluvian section, instead of the chain abruptly ending
+  /// at Lamech.
   Widget _buildSubtree(
     BiblicalPerson p, {
     required int depth,
@@ -768,13 +772,26 @@ class _EraSection extends StatelessWidget {
     required Set<String> seen,
   }) {
     if (!seen.add(p.id)) return const SizedBox.shrink();
-    final hasKidsInEra = p.childIds.any((id) {
-      if (seen.contains(id)) return false;
-      return eraIds.contains(id) && svc.byId(id) != null;
-    });
-    final isExpanded = !hasKidsInEra
+
+    final allKids = <BiblicalPerson>[];
+    final inEraKids = <BiblicalPerson>[];
+    final crossEraKids = <BiblicalPerson>[];
+    for (final cid in p.childIds) {
+      final c = svc.byId(cid);
+      if (c == null) continue;
+      allKids.add(c);
+      if (eraIds.contains(cid)) {
+        if (!seen.contains(cid)) inEraKids.add(c);
+      } else if ((c.era ?? '').isNotEmpty) {
+        crossEraKids.add(c);
+      }
+    }
+    final hasAnyKids =
+        inEraKids.isNotEmpty || crossEraKids.isNotEmpty;
+    final isExpanded = !hasAnyKids
         ? false
         : (expanded.contains(p.id) || ancestorIds.contains(p.id));
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -784,24 +801,33 @@ class _EraSection extends StatelessWidget {
           locale: locale,
           scheme: scheme,
           svc: svc,
-          showExpander: hasKidsInEra,
+          showExpander: hasAnyKids,
           isExpanded: isExpanded,
           isMatch: matchIds.contains(p.id),
           onToggleExpand:
-              hasKidsInEra ? () => onTogglePerson(p.id) : null,
+              hasAnyKids ? () => onTogglePerson(p.id) : null,
           onTap: () => onTapPerson(p),
           onTapSpouse: onTapPerson,
         ),
-        if (isExpanded)
-          for (final cid in p.childIds)
-            if (eraIds.contains(cid))
-              if (svc.byId(cid) != null)
-                _buildSubtree(
-                  svc.byId(cid)!,
-                  depth: depth + 1,
-                  eraIds: eraIds,
-                  seen: seen,
-                ),
+        if (isExpanded) ...[
+          for (final c in inEraKids)
+            _buildSubtree(
+              c,
+              depth: depth + 1,
+              eraIds: eraIds,
+              seen: seen,
+            ),
+          for (final c in crossEraKids)
+            _BridgeLeafRow(
+              person: c,
+              depth: depth + 1,
+              locale: locale,
+              scheme: scheme,
+              svc: svc,
+              onTapPerson: onTapPerson,
+              onJumpToEra: onJumpToEra,
+            ),
+        ],
       ],
     );
   }
@@ -1071,6 +1097,203 @@ class _PersonRow extends StatelessWidget {
     );
   }
 
+}
+
+// ── Bridge leaf row ──────────────────────────────────────────
+
+/// A single-row marker rendered inside a parent section to surface
+/// children whose era is different from the section's era. Shows
+/// the person + their spouses inline + a trailing `→ {next era}`
+/// tag. Tapping the row jumps to the target era's section AND
+/// opens the detail sheet for that person.
+class _BridgeLeafRow extends StatelessWidget {
+  final BiblicalPerson person;
+  final int depth;
+  final String locale;
+  final ColorScheme scheme;
+  final FamilyTreeService svc;
+  final void Function(BiblicalPerson) onTapPerson;
+  final void Function(String era) onJumpToEra;
+
+  const _BridgeLeafRow({
+    required this.person,
+    required this.depth,
+    required this.locale,
+    required this.scheme,
+    required this.svc,
+    required this.onTapPerson,
+    required this.onJumpToEra,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final clampedDepth = depth > 6 ? 6 : depth;
+    final indent = clampedDepth * 14.0;
+    final years = person.displayYears(locale);
+    final accent = _accentTheme(person.accent);
+    final accentLine = accent?.line ?? scheme.outline;
+    final spouses = [for (final id in person.spouseIds) svc.byId(id)]
+        .whereType<BiblicalPerson>()
+        .toList();
+    final targetEra = person.era ?? '';
+    final targetEraColor = _eraColor(targetEra);
+
+    return Padding(
+      padding: EdgeInsets.only(left: indent),
+      child: Material(
+        color: targetEraColor.withValues(alpha: 0.04),
+        child: InkWell(
+          onTap: () {
+            if (targetEra.isNotEmpty) onJumpToEra(targetEra);
+            onTapPerson(person);
+          },
+          child: Container(
+            decoration: BoxDecoration(
+              border: Border(
+                left: BorderSide(
+                  color: accent != null
+                      ? accentLine.withValues(alpha: 0.55)
+                      : targetEraColor.withValues(alpha: 0.55),
+                  width: accent != null ? 3 : 2,
+                ),
+              ),
+            ),
+            padding:
+                const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
+            child: Row(
+              children: [
+                // Same width as the chevron column on a regular row,
+                // for vertical alignment with siblings.
+                SizedBox(
+                  width: 30,
+                  child: Center(
+                    child: Icon(
+                      Icons.subdirectory_arrow_right_rounded,
+                      size: 16,
+                      color:
+                          scheme.onSurface.withValues(alpha: 0.45),
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Wrap(
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        spacing: 6,
+                        runSpacing: 4,
+                        children: [
+                          Text(
+                            person.localizedName(locale),
+                            style: TextStyle(
+                              fontSize: 14.5,
+                              fontWeight: FontWeight.w700,
+                              color: scheme.onSurface,
+                            ),
+                          ),
+                          for (final s in spouses)
+                            _SpouseChip(
+                              spouse: s,
+                              locale: locale,
+                              scheme: scheme,
+                              onTap: () => onTapPerson(s),
+                            ),
+                          if ((person.role ?? '').isNotEmpty)
+                            _RolePill(
+                              label: person.role!,
+                              accent: accent,
+                              scheme: scheme,
+                            ),
+                          // The trailing "→ {next era}" tag. This
+                          // is the visual cue that the lineage
+                          // continues in another section.
+                          _NextEraTag(
+                            targetEra: targetEra,
+                            targetEraColor: targetEraColor,
+                            locale: locale,
+                          ),
+                        ],
+                      ),
+                      if (years.isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 2),
+                          child: Text(
+                            years,
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: scheme.onSurface
+                                  .withValues(alpha: 0.55),
+                              fontFeatures: const [
+                                FontFeature.tabularFigures(),
+                              ],
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+                Icon(Icons.east_rounded,
+                    size: 16, color: targetEraColor),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _NextEraTag extends StatelessWidget {
+  final String targetEra;
+  final Color targetEraColor;
+  final String locale;
+  const _NextEraTag({
+    required this.targetEra,
+    required this.targetEraColor,
+    required this.locale,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+      decoration: BoxDecoration(
+        color: targetEraColor.withValues(alpha: 0.13),
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(
+          color: targetEraColor.withValues(alpha: 0.5),
+          width: 0.7,
+        ),
+      ),
+      child: Text(
+        '→ ${_eraLabelShort(targetEra, locale)}',
+        style: TextStyle(
+          fontSize: 9,
+          fontWeight: FontWeight.w700,
+          letterSpacing: 0.4,
+          color: targetEraColor,
+        ),
+      ),
+    );
+  }
+}
+
+/// Shorter, single-word labels for the trailing era tag (so the
+/// row stays compact when wrapped). Falls back to the full era
+/// label when no short form is registered.
+String _eraLabelShort(String era, String locale) {
+  const labels = {
+    'antediluvian': {'en': 'Antediluvian', 'zh-Hans': '洪水之前', 'zh-Hant': '洪水之前'},
+    'post_flood': {'en': 'Post-Flood', 'zh-Hans': '洪水之后', 'zh-Hant': '洪水之後'},
+    'patriarchs': {'en': 'Patriarchs', 'zh-Hans': '列祖', 'zh-Hant': '列祖'},
+    'mosaic': {'en': 'Mosaic', 'zh-Hans': '摩西时代', 'zh-Hant': '摩西時代'},
+    'davidic_line': {'en': 'Davidic Line', 'zh-Hans': '大卫世系', 'zh-Hant': '大衛世系'},
+    'kings': {'en': 'Kings', 'zh-Hans': '列王', 'zh-Hant': '列王'},
+    'exile': {'en': 'Exile', 'zh-Hans': '被掳', 'zh-Hant': '被擄'},
+    'nt': {'en': 'NT', 'zh-Hans': '新约', 'zh-Hant': '新約'},
+  };
+  return labels[era]?[locale] ?? _eraLabel(era, locale);
 }
 
 // ── Comparison table ──────────────────────────────────────────
