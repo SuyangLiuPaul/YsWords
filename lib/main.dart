@@ -138,6 +138,25 @@ class _MainAppState extends State<MainApp> {
   Widget build(BuildContext context) {
     return Consumer<AppSettings>(
       builder: (context, settings, _) {
+        // Round 56: switched from `colorSchemeSeed` (default
+        // tonal-palette variant) to an explicit
+        // `ColorScheme.fromSeed(... vibrant ...)`. The default
+        // Material-3 mapping desaturates the seed quite hard, so a
+        // user picking pure red would see a muted brick on the app —
+        // the user's complaint of "the color doesn't seem to affect
+        // the app much". The `vibrant` variant pushes primary much
+        // closer to the seed, with high-chroma accents on every
+        // Material widget that uses `scheme.primary`.
+        final lightScheme = ColorScheme.fromSeed(
+          seedColor: settings.primaryColor,
+          brightness: Brightness.light,
+          dynamicSchemeVariant: DynamicSchemeVariant.vibrant,
+        );
+        final darkScheme = ColorScheme.fromSeed(
+          seedColor: settings.primaryColor,
+          brightness: Brightness.dark,
+          dynamicSchemeVariant: DynamicSchemeVariant.vibrant,
+        );
         return GetMaterialApp(
           debugShowCheckedModeBanner: false,
           themeMode: settings.themeMode,
@@ -158,7 +177,17 @@ class _MainAppState extends State<MainApp> {
                         fontSize: settings.fontSize + 4,
                       ),
                 ),
-            colorSchemeSeed: settings.primaryColor,
+            colorScheme: lightScheme,
+            // Tint the AppBar with primary so the user's chosen color
+            // is immediately visible at the top of every page, not
+            // just on FAB / Switch / Slider accents. Foreground is
+            // `onPrimary` (white on saturated colors, dark on light
+            // pastels — ColorScheme.fromSeed picks the right contrast).
+            appBarTheme: AppBarTheme(
+              backgroundColor: lightScheme.primary,
+              foregroundColor: lightScheme.onPrimary,
+              elevation: 0,
+            ),
           ),
           darkTheme: ThemeData(
             fontFamily: settings.fontFamily,
@@ -189,7 +218,7 @@ class _MainAppState extends State<MainApp> {
               ),
               hintStyle: TextStyle(color: Color(0xFFAAAAAA)),
             ),
-            colorSchemeSeed: settings.primaryColor,
+            colorScheme: darkScheme,
             brightness: Brightness.dark,
             cardTheme: CardThemeData(
               color: Color(0xFF1F1F1F),
@@ -198,9 +227,15 @@ class _MainAppState extends State<MainApp> {
                 borderRadius: BorderRadius.circular(8),
               ),
             ),
-            appBarTheme: const AppBarTheme(
-              backgroundColor: Color(0xFF121212),
-              foregroundColor: Color(0xFFCCCCCC),
+            // Dark AppBar uses primaryContainer (a low-chroma dark
+            // tint of the user's color) instead of primary itself —
+            // a saturated AppBar bg in dark mode reads as garish. The
+            // primary still shows up on FAB / Switch / Slider /
+            // selected chips / section headers via scheme.primary.
+            appBarTheme: AppBarTheme(
+              backgroundColor: darkScheme.primaryContainer,
+              foregroundColor: darkScheme.onPrimaryContainer,
+              elevation: 0,
             ),
             sliderTheme: const SliderThemeData(
               inactiveTrackColor: Color(0xFF424242),
