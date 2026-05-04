@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:yswords/models/dashboard_section.dart';
+
 const _kFontFamily = 'fontFamily';
 const _kFontSize = 'fontSize';
 const _kLineSpacing = 'lineSpacing';
@@ -21,6 +23,13 @@ const _kShowReadingPlan = 'showReadingPlan';
 const _kNotificationsEnabled = 'notificationsEnabled';
 const _kShowSectionTitles = 'showSectionTitles';
 const _kShowBookIntro = 'showBookIntro';
+
+// Dashboard layout (Round 55). Every section has its own
+// `dashboard_section_visible_<name>` flag plus a single
+// `dashboard_section_order` list that drives the render order.
+const _kDashboardSectionOrder = 'dashboard_section_order';
+String _kDashboardVisible(DashboardSection s) =>
+    'dashboard_section_visible_${s.name}';
 
 class AppSettings extends ChangeNotifier {
   String _fontFamily = 'Roboto';
@@ -73,6 +82,24 @@ class AppSettings extends ChangeNotifier {
   /// Settings → Reading.
   bool _showBookIntro = true;
 
+  // ── Dashboard layout (Round 55) ─────────────────────────────────
+  // The dashboard now ships with reorder + per-section visibility
+  // controls (Settings → Dashboard layout). The user's order is
+  // stored as a list of [DashboardSection.name] strings; each
+  // section also has its own visibility bool. We seed both from
+  // [defaultDashboardOrder] / [defaultVisibility] and migrate the
+  // legacy `showDailyNews` / `showBibleEvidence` / `showReadingPlan`
+  // flags into the new map on first load (see [loadSettings]).
+
+  /// Current render order of dashboard sections.
+  List<DashboardSection> _dashboardSectionOrder =
+      List.of(defaultDashboardOrder);
+
+  /// Per-section visibility. Always contains an entry for every
+  /// [DashboardSection] value (filled in by [loadSettings]).
+  final Map<DashboardSection, bool> _dashboardVisibility =
+      Map.of(defaultVisibility);
+
   String get fontFamily => _fontFamily;
   double get fontSize => _fontSize;
   double get lineSpacing => _lineSpacing;
@@ -93,6 +120,17 @@ class AppSettings extends ChangeNotifier {
   bool get notificationsEnabled => _notificationsEnabled;
   bool get showSectionTitles => _showSectionTitles;
   bool get showBookIntro => _showBookIntro;
+
+  /// The current dashboard render order. Returns a defensive copy so
+  /// callers can't mutate internal state directly.
+  List<DashboardSection> get dashboardSectionOrder =>
+      List.unmodifiable(_dashboardSectionOrder);
+
+  /// Whether [section] should render on the dashboard. Combines the
+  /// user's stored preference with [defaultVisibility] when no entry
+  /// has been written yet.
+  bool isDashboardSectionVisible(DashboardSection section) =>
+      _dashboardVisibility[section] ?? defaultVisibility[section] ?? true;
 
   Future<void> setFontFamily(String family) async {
     if (_fontFamily == family) return;
@@ -256,6 +294,104 @@ class AppSettings extends ChangeNotifier {
     await prefs.setDouble(_kMenuScale, clamped);
   }
 
+  /// Persist a new dashboard render order. Caller is responsible for
+  /// passing a complete list (containing every [DashboardSection]
+  /// value exactly once) — typically the result of a
+  /// [ReorderableListView] drag in the Settings page. The list is
+  /// re-normalized here as a defensive measure.
+  Future<void> setDashboardSectionOrder(
+      List<DashboardSection> order) async {
+    final normalized = normalizeDashboardOrder(
+      order.map((s) => s.name).toList(),
+    );
+    // Cheap equality check — bail when nothing changed so we don't
+    // notify listeners on a no-op reorder (e.g. drag-and-drop back
+    // to the same slot).
+    final unchanged =
+        normalized.length == _dashboardSectionOrder.length &&
+            List.generate(normalized.length, (i) => i)
+                .every((i) => normalized[i] == _dashboardSectionOrder[i]);
+    if (unchanged) return;
+    _dashboardSectionOrder = normalized;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList(
+      _kDashboardSectionOrder,
+      normalized.map((s) => s.name).toList(),
+    );
+  }
+
+  /// Toggle visibility of one dashboard section. Mirrors the legacy
+  /// `setShowDailyNews` / `setShowReadingPlan` / etc. for any new
+  /// section; the legacy setters remain available and stay in sync.
+  Future<void> setDashboardSectionVisible(
+      DashboardSection section, bool visible) async {
+    final current = isDashboardSectionVisible(section);
+    if (current == visible) return;
+    _dashboardVisibility[section] = visible;
+    // Mirror into the legacy bools where they exist so any code path
+    // still reading the old field gets the same answer.
+    switch (section) {
+      case DashboardSection.todayHeadlines:
+        _showDailyNews = visible;
+        break;
+      case DashboardSection.todayEvidence:
+        _showBibleEvidence = visible;
+        break;
+      case DashboardSection.todayReading:
+        _showReadingPlan = visible;
+        break;
+      default:
+        break;
+    }
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_kDashboardVisible(section), visible);
+    // Mirror legacy keys so a downgrade still picks up the user's
+    // intent on these three (the only ones that pre-dated round 55).
+    switch (section) {
+      case DashboardSection.todayHeadlines:
+        await prefs.setBool(_kShowDailyNews, visible);
+        break;
+      case DashboardSection.todayEvidence:
+        await prefs.setBool(_kShowBibleEvidence, visible);
+        break;
+      case DashboardSection.todayReading:
+        await prefs.setBool(_kShowReadingPlan, visible);
+        break;
+      default:
+        break;
+    }
+  }
+
+  /// Restore the canonical default order + visibility (every section
+  /// on, in [defaultDashboardOrder] order). Used by the Settings
+  /// "Reset to default" button.
+  Future<void> resetDashboardLayout() async {
+    _dashboardSectionOrder = List.of(defaultDashboardOrder);
+    _dashboardVisibility
+      ..clear()
+      ..addAll(defaultVisibility);
+    _showDailyNews = defaultVisibility[DashboardSection.todayHeadlines] ?? true;
+    _showBibleEvidence =
+        defaultVisibility[DashboardSection.todayEvidence] ?? true;
+    _showReadingPlan =
+        defaultVisibility[DashboardSection.todayReading] ?? true;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList(
+      _kDashboardSectionOrder,
+      _dashboardSectionOrder.map((s) => s.name).toList(),
+    );
+    for (final s in DashboardSection.values) {
+      await prefs.setBool(
+          _kDashboardVisible(s), defaultVisibility[s] ?? true);
+    }
+    await prefs.setBool(_kShowDailyNews, _showDailyNews);
+    await prefs.setBool(_kShowBibleEvidence, _showBibleEvidence);
+    await prefs.setBool(_kShowReadingPlan, _showReadingPlan);
+  }
+
   Future<void> loadSettings() async {
     final prefs = await SharedPreferences.getInstance();
     _fontFamily = prefs.getString(_kFontFamily) ?? 'Roboto';
@@ -285,6 +421,29 @@ class AppSettings extends ChangeNotifier {
     _notificationsEnabled = prefs.getBool(_kNotificationsEnabled) ?? false;
     _showSectionTitles = prefs.getBool(_kShowSectionTitles) ?? true;
     _showBookIntro = prefs.getBool(_kShowBookIntro) ?? true;
+
+    // Dashboard layout (Round 55): load order list + per-section
+    // visibility. Missing entries fall back to defaults; the legacy
+    // showDailyNews / showBibleEvidence / showReadingPlan flags
+    // win over the new keys when both are set so a user upgrading
+    // from Round 54 keeps their existing toggles.
+    final storedOrder = prefs.getStringList(_kDashboardSectionOrder) ?? const [];
+    _dashboardSectionOrder = normalizeDashboardOrder(storedOrder);
+    _dashboardVisibility.clear();
+    for (final s in DashboardSection.values) {
+      // Prefer the new key; fall back to legacy keys for the three
+      // sections that pre-dated round 55; final fall-back to
+      // defaultVisibility.
+      bool? v = prefs.getBool(_kDashboardVisible(s));
+      v ??= switch (s) {
+        DashboardSection.todayHeadlines => prefs.getBool(_kShowDailyNews),
+        DashboardSection.todayEvidence => prefs.getBool(_kShowBibleEvidence),
+        DashboardSection.todayReading => prefs.getBool(_kShowReadingPlan),
+        _ => null,
+      };
+      _dashboardVisibility[s] = v ?? defaultVisibility[s] ?? true;
+    }
+
     notifyListeners();
   }
 

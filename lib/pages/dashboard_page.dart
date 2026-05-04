@@ -8,6 +8,7 @@ import 'package:yswords/constants/text_patterns.dart' show sanitizeForSearch;
 import 'package:yswords/constants/ui_strings.dart';
 import 'package:yswords/utils/greeting.dart';
 import 'package:yswords/models/app_settings.dart';
+import 'package:yswords/models/dashboard_section.dart';
 import 'package:yswords/models/sermon.dart';
 import 'package:yswords/models/verse.dart';
 import 'package:yswords/models/bible_evidence.dart';
@@ -518,44 +519,109 @@ class _DashboardPageState extends State<DashboardPage> {
           ),
           const SizedBox(height: 16),
 
-          // ── PRIMARY ACTION ─────────────────────────────────────
-          // YsWords is first and foremost a Bible reading app. The
-          // hero "Continue reading" card belongs at the top of the
-          // dashboard, right under the greeting. Everything below
-          // (verse, plan, news, evidence) is supporting context.
-          _ContinueReadingHero(
-            book: mainProvider.currentBook,
-            chapter: mainProvider.currentChapter,
-            currentVersion: mainProvider.currentVersion,
-            locale: locale,
+          // ── DASHBOARD SECTIONS (customizable order + visibility) ──
+          // The user controls both the render order and which blocks
+          // are visible via Settings → "Dashboard layout" (round 55).
+          // We walk `settings.dashboardSectionOrder` and emit each
+          // section that is both explicitly enabled AND has content
+          // to show. Spacing is inserted between non-null blocks.
+          ..._buildOrderedSections(
+            order: settings.dashboardSectionOrder,
             settings: settings,
-            onTap: () => Get.to(
-              () => const HomePage(),
-              transition: Transition.rightToLeft,
-            ),
+            mainProvider: mainProvider,
+            scheme: scheme,
+            locale: locale,
+            isWide: isWide,
+            headerSize: headerSize,
           ),
-          // ── RESUME SERMON ──────────────────────────────────────
-          // Mirrors the Bible "Continue reading" CTA: shows the
-          // sermon the user was last reading + how far through it
-          // they got, with a single tap to jump back. Hidden when
-          // the user has never opened a sermon (no saved id) or the
-          // saved id no longer maps to a known sermon.
-          if (_resumeSermon != null) ...[
-            const SizedBox(height: 12),
-            _ResumeSermonHero(
-              sermon: _resumeSermon!,
-              progress: _resumeProgress,
-              locale: locale,
-              settings: settings,
-              onTap: () => _openResumeSermon(_resumeSermon!),
-            ),
-          ],
-          const SizedBox(height: 20),
+        ],
+      ),
+        ),
+        ),
+      ),
+    );
+  }
 
-          // Daily verse — one curated verse per day, deterministic
-          // by day-of-year so two devices on the same calendar day
-          // show the same one. Hidden until the verse text resolves.
-          if (_dailyVerse != null) ...[
+  /// Walk the user's [DashboardSection] order, build each visible
+  /// section, and intersperse spacing. Sections with no content
+  /// (e.g. resumeSermon when no sermon was opened, dailyVerse before
+  /// first paint, recentBookmarks when bookmarks are empty) emit
+  /// `null` and are skipped — the spacing is only inserted between
+  /// adjacent non-null blocks so a hidden section doesn't leave a
+  /// dead gap.
+  List<Widget> _buildOrderedSections({
+    required List<DashboardSection> order,
+    required AppSettings settings,
+    required MainProvider mainProvider,
+    required ColorScheme scheme,
+    required String locale,
+    required bool isWide,
+    required double headerSize,
+  }) {
+    final widgets = <Widget>[];
+    var first = true;
+    for (final section in order) {
+      if (!settings.isDashboardSectionVisible(section)) continue;
+      final w = _buildSection(
+        section: section,
+        settings: settings,
+        mainProvider: mainProvider,
+        scheme: scheme,
+        locale: locale,
+        isWide: isWide,
+        headerSize: headerSize,
+      );
+      if (w == null) continue;
+      if (!first) {
+        widgets.add(const SizedBox(height: 20));
+      }
+      first = false;
+      widgets.add(w);
+    }
+    return widgets;
+  }
+
+  /// Build one [DashboardSection] block. Returns null when the
+  /// section has no content to show (so the caller can skip the
+  /// inter-section spacing).
+  Widget? _buildSection({
+    required DashboardSection section,
+    required AppSettings settings,
+    required MainProvider mainProvider,
+    required ColorScheme scheme,
+    required String locale,
+    required bool isWide,
+    required double headerSize,
+  }) {
+    switch (section) {
+      case DashboardSection.readBible:
+        return _ContinueReadingHero(
+          book: mainProvider.currentBook,
+          chapter: mainProvider.currentChapter,
+          currentVersion: mainProvider.currentVersion,
+          locale: locale,
+          settings: settings,
+          onTap: () => Get.to(
+            () => const HomePage(),
+            transition: Transition.rightToLeft,
+          ),
+        );
+
+      case DashboardSection.resumeSermon:
+        if (_resumeSermon == null) return null;
+        return _ResumeSermonHero(
+          sermon: _resumeSermon!,
+          progress: _resumeProgress,
+          locale: locale,
+          settings: settings,
+          onTap: () => _openResumeSermon(_resumeSermon!),
+        );
+
+      case DashboardSection.dailyVerse:
+        if (_dailyVerse == null) return null;
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
             Text(
               uiStrings['dailyVerse']?[locale] ?? 'Verse of the Day',
               style: TextStyle(
@@ -573,10 +639,6 @@ class _DashboardPageState extends State<DashboardPage> {
               locale: locale,
               fromVersionLabel: _dailyVerseFromVersionLabel,
               onTap: () {
-                // Same pendingJump handshake the rest of the
-                // cross-link surfaces use, so the reader scrolls
-                // to the actual daily verse rather than dropping
-                // the user at the top of the chapter.
                 jumper.prepareJumpToVerse(_dailyVerse!, mainProvider);
                 Get.to(
                   () => const HomePage(),
@@ -584,13 +646,13 @@ class _DashboardPageState extends State<DashboardPage> {
                 );
               },
             ),
-            const SizedBox(height: 16),
           ],
+        );
 
-          // Today's reading (from active reading plan). Hidden when
-          // the user opts out via Settings → Dashboard sections; the
-          // reading-plan picker is still reachable from Settings.
-          if (settings.showReadingPlan) ...[
+      case DashboardSection.todayReading:
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
             Text(
               uiStrings['todayReading']?[locale] ?? "Today's Reading",
               style: TextStyle(
@@ -611,26 +673,21 @@ class _DashboardPageState extends State<DashboardPage> {
                 onJump: (canonical) async {
                   final ref = parseReference(canonical);
                   if (ref == null) {
-                    if (!context.mounted) return;
+                    if (!mounted) return;
                     ScaffoldMessenger.maybeOf(context)?.showSnackBar(SnackBar(
                       content: Text("Couldn't parse reference: $canonical"),
                       duration: const Duration(seconds: 3),
                     ));
                     return;
                   }
-                  // Resolve + prepare the jump (with OT-fallback to
-                  // CUVS-YHWH on NT-only versions); then push the
-                  // reader on top of the dashboard. The pendingJump
-                  // handshake set by `resolveAndPrepareJump` makes
-                  // the reader scroll + highlight on first build.
                   final result = await jumper.resolveAndPrepareJump(
                     reference: ref,
                     mp: mainProvider,
                   );
-                  if (!context.mounted) return;
+                  if (!mounted) return;
                   final ok =
                       await jumper.showJumpResultSnackBar(context, result);
-                  if (!ok || !context.mounted) return;
+                  if (!ok || !mounted) return;
                   Get.to(
                     () => const HomePage(),
                     transition: Transition.rightToLeft,
@@ -654,57 +711,57 @@ class _DashboardPageState extends State<DashboardPage> {
                   transition: Transition.rightToLeft,
                 ),
               ),
-            const SizedBox(height: 24),
           ],
+        );
 
-          // Counts row — bookmarks / notes / highlights
-          Row(
-            children: [
-              Expanded(
-                child: _CountTile(
-                  icon: Icons.bookmark_outline_rounded,
-                  count: mainProvider.bookmarks.length,
-                  label:
-                      uiStrings['tabBookmarks']?[locale] ?? 'Bookmarks',
-                  onTap: () => Get.to(
-                    () => const LibraryPage(),
-                    transition: Transition.rightToLeft,
-                  ),
+      case DashboardSection.counts:
+        return Row(
+          children: [
+            Expanded(
+              child: _CountTile(
+                icon: Icons.bookmark_outline_rounded,
+                count: mainProvider.bookmarks.length,
+                label: uiStrings['tabBookmarks']?[locale] ?? 'Bookmarks',
+                onTap: () => Get.to(
+                  () => const LibraryPage(),
+                  transition: Transition.rightToLeft,
                 ),
               ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: _CountTile(
-                  icon: Icons.sticky_note_2_outlined,
-                  count: mainProvider.verseNotes.length,
-                  label: uiStrings['tabNotes']?[locale] ?? 'Notes',
-                  onTap: () => Get.to(
-                    () => const LibraryPage(),
-                    transition: Transition.rightToLeft,
-                  ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: _CountTile(
+                icon: Icons.sticky_note_2_outlined,
+                count: mainProvider.verseNotes.length,
+                label: uiStrings['tabNotes']?[locale] ?? 'Notes',
+                onTap: () => Get.to(
+                  () => const LibraryPage(),
+                  transition: Transition.rightToLeft,
                 ),
               ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: _CountTile(
-                  icon: Icons.format_color_fill,
-                  count: mainProvider.highlights.length,
-                  label: uiStrings['highlights']?[locale] ?? 'Highlights',
-                  onTap: () => Get.to(
-                    () => const HighlightsPage(),
-                    transition: Transition.rightToLeft,
-                  ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: _CountTile(
+                icon: Icons.format_color_fill,
+                count: mainProvider.highlights.length,
+                label: uiStrings['highlights']?[locale] ?? 'Highlights',
+                onTap: () => Get.to(
+                  () => const HighlightsPage(),
+                  transition: Transition.rightToLeft,
                 ),
               ),
-            ],
-          ),
-          const SizedBox(height: 24),
+            ),
+          ],
+        );
 
-          // Recent bookmarks (last 5)
-          if (mainProvider.bookmarks.isNotEmpty) ...[
+      case DashboardSection.recentBookmarks:
+        if (mainProvider.bookmarks.isEmpty) return null;
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
             Text(
-              uiStrings['homeRecentBookmarks']?[locale] ??
-                  'Recent bookmarks',
+              uiStrings['homeRecentBookmarks']?[locale] ?? 'Recent bookmarks',
               style: TextStyle(
                 fontFamily: settings.fontFamily,
                 fontSize: headerSize,
@@ -731,12 +788,6 @@ class _DashboardPageState extends State<DashboardPage> {
                   overflow: TextOverflow.ellipsis,
                 ),
                 onTap: () {
-                  // Use the pendingJump handshake so the reader
-                  // actually scrolls to the verse — not just opens
-                  // the chapter. The previous setCurrentChapter +
-                  // updateCurrentVerse pair without setPendingJump
-                  // landed the user at the top of the chapter
-                  // (round 52 home-page-bookmarks bug).
                   jumper.prepareJumpToVerse(v, mainProvider);
                   Get.to(
                     () => const HomePage(),
@@ -744,19 +795,14 @@ class _DashboardPageState extends State<DashboardPage> {
                   );
                 },
               ),
-            const SizedBox(height: 16),
           ],
+        );
 
-          // ── DISCOVER (supplementary) ───────────────────────────
-          // Today's Headlines and Today's Evidence sit below the
-          // reading-related content (verse, plan, counts, bookmarks)
-          // because they're discovery surfaces — interesting but not
-          // why most users opened the app.
-
-          // Today's headlines — top 3 stories (one per section)
-          // from the migrated DailyNews dataset. Respects the
-          // user's opt-out (Settings → Dashboard sections).
-          if (settings.showDailyNews && _todayHeadlines.isNotEmpty) ...[
+      case DashboardSection.todayHeadlines:
+        if (_todayHeadlines.isEmpty) return null;
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
             Row(
               children: [
                 Expanded(
@@ -780,8 +826,7 @@ class _DashboardPageState extends State<DashboardPage> {
                     uiStrings['viewAll']?[locale] ?? 'View all',
                     style: TextStyle(
                         fontFamily: settings.fontFamily,
-                        fontSize:
-                            (settings.fontSize - 2).clamp(11.0, 14.0)),
+                        fontSize: (settings.fontSize - 2).clamp(11.0, 14.0)),
                   ),
                 ),
               ],
@@ -796,15 +841,16 @@ class _DashboardPageState extends State<DashboardPage> {
                   transition: Transition.rightToLeft,
                 ),
               ),
-            const SizedBox(height: 16),
           ],
+        );
 
-          // Today's evidence — one of 225 archaeological / manuscript
-          // / scientific / historical findings rotating by day-of-year.
-          if (settings.showBibleEvidence && _dailyEvidence != null) ...[
+      case DashboardSection.todayEvidence:
+        if (_dailyEvidence == null) return null;
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
             Text(
-              uiStrings['todayEvidence']?[locale] ??
-                  "Today's Evidence",
+              uiStrings['todayEvidence']?[locale] ?? "Today's Evidence",
               style: TextStyle(
                 fontFamily: settings.fontFamily,
                 fontSize: headerSize,
@@ -821,98 +867,89 @@ class _DashboardPageState extends State<DashboardPage> {
                 transition: Transition.rightToLeft,
               ),
             ),
-            const SizedBox(height: 16),
           ],
+        );
 
-          // Quick-link tiles. The primary "Continue reading" CTA
-          // moved to the top of the dashboard — see _ContinueReadingHero
-          // above the daily verse.
-          GridView.count(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            // 3-up on iPad/desktop so the tiles feel balanced;
-            // 2-up on phones where 3 columns would be cramped.
-            crossAxisCount: isWide ? 3 : 2,
-            childAspectRatio: isWide ? 3.2 : 2.6,
-            mainAxisSpacing: 8,
-            crossAxisSpacing: 8,
-            children: [
+      case DashboardSection.quickLinks:
+        return GridView.count(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          crossAxisCount: isWide ? 3 : 2,
+          childAspectRatio: isWide ? 3.2 : 2.6,
+          mainAxisSpacing: 8,
+          crossAxisSpacing: 8,
+          children: [
+            _LinkTile(
+              icon: Icons.collections_bookmark_outlined,
+              label: uiStrings['library']?[locale] ?? 'Library',
+              onTap: () => Get.to(
+                () => const LibraryPage(),
+                transition: Transition.rightToLeft,
+              ),
+            ),
+            _LinkTile(
+              icon: Icons.insights_outlined,
+              label: uiStrings['statistics']?[locale] ?? 'Statistics',
+              onTap: () => Get.to(
+                () => const StatsPage(),
+                transition: Transition.rightToLeft,
+              ),
+            ),
+            if (settings.isDashboardSectionVisible(
+                DashboardSection.todayHeadlines))
               _LinkTile(
-                icon: Icons.collections_bookmark_outlined,
-                label: uiStrings['library']?[locale] ?? 'Library',
+                icon: Icons.newspaper_outlined,
+                label: uiStrings['dailyNews']?[locale] ?? 'Daily News',
                 onTap: () => Get.to(
-                  () => const LibraryPage(),
+                  () => const DailyNewsPage(),
                   transition: Transition.rightToLeft,
                 ),
               ),
+            if (settings.isDashboardSectionVisible(
+                DashboardSection.todayEvidence))
               _LinkTile(
-                icon: Icons.insights_outlined,
-                label: uiStrings['statistics']?[locale] ?? 'Statistics',
+                icon: Icons.museum_outlined,
+                label: uiStrings['bibleEvidence']?[locale] ?? 'Bible Evidence',
                 onTap: () => Get.to(
-                  () => const StatsPage(),
+                  () => const EvidencePage(),
                   transition: Transition.rightToLeft,
                 ),
               ),
-              if (settings.showDailyNews)
-                _LinkTile(
-                  icon: Icons.newspaper_outlined,
-                  label: uiStrings['dailyNews']?[locale] ?? 'Daily News',
-                  onTap: () => Get.to(
-                    () => const DailyNewsPage(),
-                    transition: Transition.rightToLeft,
-                  ),
-                ),
-              if (settings.showBibleEvidence)
-                _LinkTile(
-                  icon: Icons.museum_outlined,
-                  label: uiStrings['bibleEvidence']?[locale] ??
-                      'Bible Evidence',
-                  onTap: () => Get.to(
-                    () => const EvidencePage(),
-                    transition: Transition.rightToLeft,
-                ),
+            _LinkTile(
+              icon: Icons.menu_book_outlined,
+              label: uiStrings['sermons']?[locale] ?? 'Sermons',
+              onTap: () => Get.to(
+                () => const SermonsPage(),
+                transition: Transition.rightToLeft,
               ),
-              _LinkTile(
-                icon: Icons.menu_book_outlined,
-                label: uiStrings['sermons']?[locale] ?? 'Sermons',
-                onTap: () => Get.to(
-                  () => const SermonsPage(),
-                  transition: Transition.rightToLeft,
-                ),
+            ),
+            _LinkTile(
+              icon: Icons.account_tree_outlined,
+              label: uiStrings['familyTree']?[locale] ?? 'Family Tree',
+              onTap: () => Get.to(
+                () => const FamilyTreePage(),
+                transition: Transition.rightToLeft,
               ),
-              _LinkTile(
-                icon: Icons.account_tree_outlined,
-                label: uiStrings['familyTree']?[locale] ?? 'Family Tree',
-                onTap: () => Get.to(
-                  () => const FamilyTreePage(),
-                  transition: Transition.rightToLeft,
-                ),
+            ),
+            _LinkTile(
+              icon: Icons.timeline_rounded,
+              label: uiStrings['bibleTimeline']?[locale] ?? 'Bible Timeline',
+              onTap: () => Get.to(
+                () => const BibleTimelinePage(),
+                transition: Transition.rightToLeft,
               ),
-              _LinkTile(
-                icon: Icons.timeline_rounded,
-                label: uiStrings['bibleTimeline']?[locale] ??
-                    'Bible Timeline',
-                onTap: () => Get.to(
-                  () => const BibleTimelinePage(),
-                  transition: Transition.rightToLeft,
-                ),
+            ),
+            _LinkTile(
+              icon: Icons.settings_outlined,
+              label: uiStrings['settings']?[locale] ?? 'Settings',
+              onTap: () => Get.to(
+                () => const SettingsPage(),
+                transition: Transition.rightToLeft,
               ),
-              _LinkTile(
-                icon: Icons.settings_outlined,
-                label: uiStrings['settings']?[locale] ?? 'Settings',
-                onTap: () => Get.to(
-                  () => const SettingsPage(),
-                  transition: Transition.rightToLeft,
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-        ),
-        ),
-      ),
-    );
+            ),
+          ],
+        );
+    }
   }
 
   /// Pull-to-refresh: re-pull every dynamic dashboard tile from its
