@@ -1,6 +1,6 @@
 # YsWords — AI Agent Handoff Document
 
-> Last updated: 2026-05-01
+> Last updated: 2026-05-04
 > Project: YsWords (Yahweh's Words) — bilingual Bible reader
 > Stack: Flutter 3.41.7 / Dart 3.11.5 / Provider + GetX
 > Repo: https://github.com/SuyangLiuPaul/YsWords
@@ -417,6 +417,91 @@ The app adapts its layout to all device sizes using `lib/utils/responsive.dart`:
 **Affected areas**: settings (max 640px), books page (max 800px), search (max 720px), chapter tiles (44–72px), loading logo (100–240px), all spacing gaps. Reading view uses phone-level padding/indent on all devices (8px reading padding, 16px verse indent, 10px header inset).
 
 ---
+
+## What Has Been Fixed (2026-05-04)
+
+### Family tree feature — Wikipedia-article style (round 60+)
+
+The Bible family tree page evolved through many iterations (visual SVG
+chart with bus connectors → recursive expand-on-tap tree → flat
+indented outline → per-era sectioned article). Final state is modelled
+on Wikipedia's *"Genealogies in the Bible"* article: clean,
+reading-oriented, scholarly.
+
+**Page structure** (`lib/pages/family_tree_page.dart`):
+
+* **Search bar** at top — filter-as-you-type across name (en/zh-Hans/
+  zh-Hant), id, role text, and summary.
+* **Summary line** with total / matching count + an
+  "Expand all / Collapse all sections" `TextButton`.
+* **8 collapsible per-era sections** in canonical order:
+  Antediluvian / Post-Flood Patriarchs / Patriarchs of Israel /
+  Mosaic-Levitical / Pre-Monarchy Davidic Line / Kings of Judah /
+  Exile & Return / New Testament. Each section has a localized title,
+  one-line subtitle (description + date range like "AM 0 – 1656" or
+  "BC 1010 – 586"), and people-count badge. Walks descend only into
+  same-era children — Levi appears in Patriarchs but his Mosaic
+  descendants (Aaron, Moses, Miriam) live in the Mosaic section.
+* **Comparison table** at the bottom (collapsed by default) — Adam → Jesus
+  spine (63 generations) × six Bible-source columns
+  (Genesis 5 / Genesis 11 / 1 Chronicles 1 / Ruth 4 / Matthew 1 /
+  Luke 3); cells show ✓ when the person's `refs` start with that book/
+  chapter. Tappable name cells open the detail sheet. Width-adaptive
+  via `LayoutBuilder` — phones horizontally scroll, iPad/desktop expand
+  proportionally.
+
+**Per-row info**: name + `═ Spouse` chips + role pill (PATRIARCH /
+KING / TRIBE / etc.) + verse-ref count badge + accent colour stripe
+(priestly red, royal blue, messianic gold, prophetic purple) + year
+span. Indent caps at depth 6 to keep deep lineages readable on a
+phone.
+
+**Detail sheet** (`lib/widgets/person_detail_sheet.dart`): adds Logos-
+style "Siblings" + closest "Tribe / line" (closest TRIBE-tagged
+ancestor) sections beneath Parents / Spouses / Children for one-tap
+lateral navigation.
+
+**Tap behaviour** (universal genealogy UX, mirrors FamilySearch /
+Ancestry):
+* Tap the **chevron** → toggle that person's children only.
+* Tap the **row body** → opens the detail sheet (modal bottom sheet).
+* **Section-header tap** → collapse / expand the whole era.
+* Ancestors auto-expand only when the user lands somewhere via search,
+  detail-sheet chip-tap, or expand-all toggle. Descendants never
+  auto-expand (least-surprise principle, per the round-60 UX research).
+
+**Responsive design**: page content capped at 960 px wide via
+`Center` + `ConstrainedBox`. Modal bottom sheet caps at 720 px. Indent
+compression (depth 6 cap). All pills wrap with `Wrap`.
+
+**Dataset** (`assets/family_tree.json`): 151 curated entries covering
+Adam → Jesus (Matthew 1 line) plus extended Genesis branches and the
+Mosaic / Levitical line. Each entry carries: id, en/zh-Hans/zh-Hant
+name + summary, fatherId / motherId / spouseIds / childIds, yearSystem
+(`am` for antediluvian, `bc` for Abraham onward), birth/death years,
+verse refs, optional `role` / `accent` / `era` annotations.
+
+Coverage breakdown by era:
+
+| Era | Count | Notes |
+|---|---|---|
+| Antediluvian | 23 | Adam → Lamech + Cain's full line (Lamech's wives + 4 children) |
+| Post-Flood | 12 | Shem → Terah |
+| Patriarchs | 58 | Abraham + brothers + Lot's children + Ishmael's 12 sons + Keturah's 5 sons + 12 tribes + Esau & descendants |
+| Mosaic | 13 | Levi's 3 sons + Amram & Jochebed + Moses (with Zipporah + 2 sons) + Aaron (with 4 sons) + Miriam |
+| Davidic Line | 11 | Perez → Jesse |
+| Kings | 20 | Full chain David → Jehoiakim including Abijah, Asa, Jehoshaphat, Jehoram, Ahaziah, Joash, Amaziah, Uzziah, Jotham, Ahaz, Manasseh, Amon (Matthew 1 compresses these — full canonical chain restored) |
+| Exile | 11 | Shealtiel → Matthan → Jacob (per Matthew 1:13-16) |
+| NT | 3 | Joseph + Mary + Jesus |
+
+Model field additions in `lib/models/biblical_person.dart`:
+`role` (e.g. "PATRIARCH"), `accent` (e.g. "priestly"), `era` (e.g.
+"patriarchs").
+
+The previous visual-tree widget at `lib/widgets/family_visual_tree.dart`
+was removed entirely. A spawned task chip remains available to embed
+SanichKotikov's `relatives-tree` JS library via `HtmlElementView` for
+ancestry-grade SVG rendering if a later round wants that fidelity.
 
 ## What Has Been Fixed (2026-05-01)
 

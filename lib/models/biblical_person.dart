@@ -48,6 +48,28 @@ class BiblicalPerson {
   /// OT-fallback for NT-only versions.
   final List<String> refs;
 
+  /// Optional role/title pill rendered below the name on the visual
+  /// tree. Examples: "PATRIARCH", "MATRIARCH", "JUDGE", "KING",
+  /// "PROPHET". Tribe/people-group labels (e.g. "EDOMITES",
+  /// "MIDIANITES") also go here. Free-form short string; the widget
+  /// just renders it as a small uppercase tag.
+  final String? role;
+
+  /// Optional accent style for the card tint. Drives a colour theme
+  /// on the visual tree so the user can see the priestly (Levi) and
+  /// royal (Judah) lines pop out of the dataset. Values:
+  /// `priestly` (red-ish), `royal` (blue-ish), `messianic` (gold),
+  /// `prophetic` (purple). Anything else falls back to the default.
+  final String? accent;
+
+  /// Optional canonical biblical era this person belongs to.
+  /// Stable string id used by the family-tree page to group rows
+  /// under section headers and emit per-row era badges. Values:
+  /// `antediluvian`, `post_flood`, `patriarchs`, `mosaic`,
+  /// `davidic_line`, `kings`, `exile`, `nt`. Anything else /
+  /// missing falls back to "unknown" with no header / badge.
+  final String? era;
+
   const BiblicalPerson({
     required this.id,
     required this.name,
@@ -65,6 +87,9 @@ class BiblicalPerson {
     this.summaryZhHans,
     this.summaryZhHant,
     this.refs = const [],
+    this.role,
+    this.accent,
+    this.era,
   });
 
   /// Locale-aware display name. Falls back across languages so we
@@ -142,6 +167,9 @@ class BiblicalPerson {
       summaryZhHans: j['summaryZhHans'] as String?,
       summaryZhHant: j['summaryZhHant'] as String?,
       refs: (j['refs'] as List?)?.cast<String>() ?? const [],
+      role: j['role'] as String?,
+      accent: j['accent'] as String?,
+      era: j['era'] as String?,
     );
   }
 }

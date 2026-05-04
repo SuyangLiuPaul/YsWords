@@ -16,8 +16,14 @@
       "nameZhHant": "亞當",
       "fatherId": null,
       "motherId": null,
-      "spouseIds": ["eve"],
-      "childIds": ["cain", "abel", "seth"],
+      "spouseIds": [
+        "eve"
+      ],
+      "childIds": [
+        "cain",
+        "abel",
+        "seth"
+      ],
       "yearSystem": "am",
       "birthYear": 0,
       "deathYear": 930,
@@ -25,7 +31,14 @@
       "summary": "First man, created from the dust of the earth and placed in Eden.",
       "summaryZhHans": "首位人类,被神用尘土所造,安置在伊甸园中。",
       "summaryZhHant": "首位人類,被神用塵土所造,安置在伊甸園中。",
-      "refs": ["Genesis 1:26-27", "Genesis 2:7-25", "Genesis 3", "Genesis 5:1-5"]
+      "refs": [
+        "Genesis 1:26-27",
+        "Genesis 2:7-25",
+        "Genesis 3",
+        "Genesis 5:1-5"
+      ],
+      "role": "FIRST MAN",
+      "era": "antediluvian"
     },
     {
       "id": "eve",
@@ -34,13 +47,26 @@
       "nameZhHant": "夏娃",
       "fatherId": null,
       "motherId": null,
-      "spouseIds": ["adam"],
-      "childIds": ["cain", "abel", "seth"],
+      "spouseIds": [
+        "adam"
+      ],
+      "childIds": [
+        "cain",
+        "abel",
+        "seth"
+      ],
       "yearSystem": "am",
       "summary": "The mother of all the living; formed by God from Adam's side.",
       "summaryZhHans": "众生之母;神从亚当身上取出造成的女人。",
       "summaryZhHant": "眾生之母;神從亞當身上取出造成的女人。",
-      "refs": ["Genesis 2:18-25", "Genesis 3:20", "Genesis 4:1-2", "Genesis 4:25"]
+      "refs": [
+        "Genesis 2:18-25",
+        "Genesis 3:20",
+        "Genesis 4:1-2",
+        "Genesis 4:25"
+      ],
+      "role": "FIRST WOMAN",
+      "era": "antediluvian"
     },
     {
       "id": "cain",
@@ -50,12 +76,20 @@
       "fatherId": "adam",
       "motherId": "eve",
       "spouseIds": [],
-      "childIds": ["enoch_son_of_cain"],
+      "childIds": [
+        "enoch_cain"
+      ],
       "yearSystem": "am",
       "summary": "Adam and Eve's firstborn; first murderer, killed his brother Abel out of envy.",
       "summaryZhHans": "亚当与夏娃的长子;首位凶手,因嫉妒杀害弟弟亚伯。",
       "summaryZhHant": "亞當與夏娃的長子;首位兇手,因嫉妒殺害弟弟亞伯。",
-      "refs": ["Genesis 4:1-16", "Hebrews 11:4", "1 John 3:12", "Jude 11"]
+      "refs": [
+        "Genesis 4:1-16",
+        "Hebrews 11:4",
+        "1 John 3:12",
+        "Jude 11"
+      ],
+      "era": "antediluvian"
     },
     {
       "id": "abel",
@@ -70,7 +104,13 @@
       "summary": "Adam and Eve's second son; offered an acceptable sacrifice and was killed by Cain.",
       "summaryZhHans": "亚当与夏娃的次子;献上蒙悦纳之祭,被该隐所杀。",
       "summaryZhHant": "亞當與夏娃的次子;獻上蒙悅納之祭,被該隱所殺。",
-      "refs": ["Genesis 4:2-10", "Hebrews 11:4", "Hebrews 12:24", "Matthew 23:35"]
+      "refs": [
+        "Genesis 4:2-10",
+        "Hebrews 11:4",
+        "Hebrews 12:24",
+        "Matthew 23:35"
+      ],
+      "era": "antediluvian"
     },
     {
       "id": "seth",
@@ -80,7 +120,9 @@
       "fatherId": "adam",
       "motherId": "eve",
       "spouseIds": [],
-      "childIds": ["enosh"],
+      "childIds": [
+        "enosh"
+      ],
       "yearSystem": "am",
       "birthYear": 130,
       "deathYear": 1042,
@@ -88,7 +130,12 @@
       "summary": "Born when Adam was 130; the appointed seed through whom the godly line continued.",
       "summaryZhHans": "亚当一百三十岁时所生;承接敬虔后裔的应许之子。",
       "summaryZhHant": "亞當一百三十歲時所生;承接敬虔後裔的應許之子。",
-      "refs": ["Genesis 4:25-26", "Genesis 5:3-8", "Luke 3:38"]
+      "refs": [
+        "Genesis 4:25-26",
+        "Genesis 5:3-8",
+        "Luke 3:38"
+      ],
+      "era": "antediluvian"
     },
     {
       "id": "enosh",
@@ -98,7 +145,9 @@
       "fatherId": "seth",
       "motherId": null,
       "spouseIds": [],
-      "childIds": ["kenan"],
+      "childIds": [
+        "kenan"
+      ],
       "yearSystem": "am",
       "birthYear": 235,
       "deathYear": 1140,
@@ -106,7 +155,12 @@
       "summary": "Seth's son; in his days people began to call upon the name of the LORD.",
       "summaryZhHans": "塞特之子;那时人开始呼求耶和华的名。",
       "summaryZhHant": "塞特之子;那時人開始呼求耶和華的名。",
-      "refs": ["Genesis 4:26", "Genesis 5:6-11", "Luke 3:38"]
+      "refs": [
+        "Genesis 4:26",
+        "Genesis 5:6-11",
+        "Luke 3:38"
+      ],
+      "era": "antediluvian"
     },
     {
       "id": "kenan",
@@ -116,7 +170,9 @@
       "fatherId": "enosh",
       "motherId": null,
       "spouseIds": [],
-      "childIds": ["mahalalel"],
+      "childIds": [
+        "mahalalel"
+      ],
       "yearSystem": "am",
       "birthYear": 325,
       "deathYear": 1235,
@@ -124,7 +180,12 @@
       "summary": "Born when Enosh was 90; lived 910 years.",
       "summaryZhHans": "以挪士九十岁时所生;享寿九百一十岁。",
       "summaryZhHant": "以挪士九十歲時所生;享壽九百一十歲。",
-      "refs": ["Genesis 5:9-14", "1 Chronicles 1:2", "Luke 3:37"]
+      "refs": [
+        "Genesis 5:9-14",
+        "1 Chronicles 1:2",
+        "Luke 3:37"
+      ],
+      "era": "antediluvian"
     },
     {
       "id": "mahalalel",
@@ -134,7 +195,9 @@
       "fatherId": "kenan",
       "motherId": null,
       "spouseIds": [],
-      "childIds": ["jared"],
+      "childIds": [
+        "jared"
+      ],
       "yearSystem": "am",
       "birthYear": 395,
       "deathYear": 1290,
@@ -142,7 +205,12 @@
       "summary": "Born when Kenan was 70; lived 895 years.",
       "summaryZhHans": "该南七十岁时所生;享寿八百九十五岁。",
       "summaryZhHant": "該南七十歲時所生;享壽八百九十五歲。",
-      "refs": ["Genesis 5:12-17", "1 Chronicles 1:2", "Luke 3:37"]
+      "refs": [
+        "Genesis 5:12-17",
+        "1 Chronicles 1:2",
+        "Luke 3:37"
+      ],
+      "era": "antediluvian"
     },
     {
       "id": "jared",
@@ -152,7 +220,9 @@
       "fatherId": "mahalalel",
       "motherId": null,
       "spouseIds": [],
-      "childIds": ["enoch"],
+      "childIds": [
+        "enoch"
+      ],
       "yearSystem": "am",
       "birthYear": 460,
       "deathYear": 1422,
@@ -160,7 +230,12 @@
       "summary": "Father of Enoch the prophet; lived 962 years.",
       "summaryZhHans": "先知以诺之父;享寿九百六十二岁。",
       "summaryZhHant": "先知以諾之父;享壽九百六十二歲。",
-      "refs": ["Genesis 5:15-20", "1 Chronicles 1:2", "Luke 3:37"]
+      "refs": [
+        "Genesis 5:15-20",
+        "1 Chronicles 1:2",
+        "Luke 3:37"
+      ],
+      "era": "antediluvian"
     },
     {
       "id": "enoch",
@@ -170,7 +245,9 @@
       "fatherId": "jared",
       "motherId": null,
       "spouseIds": [],
-      "childIds": ["methuselah"],
+      "childIds": [
+        "methuselah"
+      ],
       "yearSystem": "am",
       "birthYear": 622,
       "deathYear": 987,
@@ -178,7 +255,15 @@
       "summary": "Walked with God; was taken by God without seeing death. Prophet who foretold the Lord's coming.",
       "summaryZhHans": "与神同行;被神接去未尝死味。预言主再来的先知。",
       "summaryZhHant": "與神同行;被神接去未嘗死味。預言主再來的先知。",
-      "refs": ["Genesis 5:18-24", "Hebrews 11:5", "Jude 14-15", "Luke 3:37"]
+      "refs": [
+        "Genesis 5:18-24",
+        "Hebrews 11:5",
+        "Jude 14-15",
+        "Luke 3:37"
+      ],
+      "role": "PROPHET",
+      "accent": "prophetic",
+      "era": "antediluvian"
     },
     {
       "id": "methuselah",
@@ -188,7 +273,9 @@
       "fatherId": "enoch",
       "motherId": null,
       "spouseIds": [],
-      "childIds": ["lamech"],
+      "childIds": [
+        "lamech"
+      ],
       "yearSystem": "am",
       "birthYear": 687,
       "deathYear": 1656,
@@ -196,7 +283,12 @@
       "summary": "Longest-lived person in Scripture (969 years); died the year of the Flood.",
       "summaryZhHans": "圣经中寿数最长之人(九百六十九岁);洪水之年去世。",
       "summaryZhHant": "聖經中壽數最長之人(九百六十九歲);洪水之年去世。",
-      "refs": ["Genesis 5:21-27", "1 Chronicles 1:3", "Luke 3:37"]
+      "refs": [
+        "Genesis 5:21-27",
+        "1 Chronicles 1:3",
+        "Luke 3:37"
+      ],
+      "era": "antediluvian"
     },
     {
       "id": "lamech",
@@ -206,7 +298,9 @@
       "fatherId": "methuselah",
       "motherId": null,
       "spouseIds": [],
-      "childIds": ["noah"],
+      "childIds": [
+        "noah"
+      ],
       "yearSystem": "am",
       "birthYear": 874,
       "deathYear": 1651,
@@ -214,7 +308,12 @@
       "summary": "Father of Noah; named him 'Noah' (rest), prophesying comfort from the cursed ground.",
       "summaryZhHans": "挪亚之父;为他取名挪亚(安息),预言从受咒诅之地得安慰。",
       "summaryZhHant": "挪亞之父;為他取名挪亞(安息),預言從受咒詛之地得安慰。",
-      "refs": ["Genesis 5:25-31", "1 Chronicles 1:3", "Luke 3:36"]
+      "refs": [
+        "Genesis 5:25-31",
+        "1 Chronicles 1:3",
+        "Luke 3:36"
+      ],
+      "era": "antediluvian"
     },
     {
       "id": "noah",
@@ -224,7 +323,11 @@
       "fatherId": "lamech",
       "motherId": null,
       "spouseIds": [],
-      "childIds": ["shem", "ham", "japheth"],
+      "childIds": [
+        "shem",
+        "ham",
+        "japheth"
+      ],
       "yearSystem": "am",
       "birthYear": 1056,
       "deathYear": 2006,
@@ -232,7 +335,18 @@
       "summary": "Righteous man preserved through the Flood; built the ark; covenant of the rainbow.",
       "summaryZhHans": "义人,藉方舟在洪水中得保全;立彩虹之约。",
       "summaryZhHant": "義人,藉方舟在洪水中得保全;立彩虹之約。",
-      "refs": ["Genesis 5:28-32", "Genesis 6", "Genesis 7", "Genesis 8", "Genesis 9", "Hebrews 11:7", "1 Peter 3:20", "Luke 3:36"]
+      "refs": [
+        "Genesis 5:28-32",
+        "Genesis 6",
+        "Genesis 7",
+        "Genesis 8",
+        "Genesis 9",
+        "Hebrews 11:7",
+        "1 Peter 3:20",
+        "Luke 3:36"
+      ],
+      "role": "PATRIARCH",
+      "era": "post_flood"
     },
     {
       "id": "shem",
@@ -242,7 +356,9 @@
       "fatherId": "noah",
       "motherId": null,
       "spouseIds": [],
-      "childIds": ["arphaxad"],
+      "childIds": [
+        "arphaxad"
+      ],
       "yearSystem": "am",
       "birthYear": 1558,
       "deathYear": 2158,
@@ -250,7 +366,15 @@
       "summary": "Eldest son of Noah; ancestor of the Semitic peoples and of the Messianic line.",
       "summaryZhHans": "挪亚的长子;闪族的祖先,弥赛亚血脉所自出。",
       "summaryZhHant": "挪亞的長子;閃族的祖先,彌賽亞血脈所自出。",
-      "refs": ["Genesis 5:32", "Genesis 9:18-27", "Genesis 10:21-31", "Genesis 11:10-11", "Luke 3:36"]
+      "refs": [
+        "Genesis 5:32",
+        "Genesis 9:18-27",
+        "Genesis 10:21-31",
+        "Genesis 11:10-11",
+        "Luke 3:36"
+      ],
+      "role": "PATRIARCH",
+      "era": "post_flood"
     },
     {
       "id": "ham",
@@ -265,7 +389,13 @@
       "summary": "Second son of Noah; ancestor of the African and Canaanite peoples; cursed through Canaan.",
       "summaryZhHans": "挪亚的次子;非洲与迦南诸族的祖先;咒诅由迦南承受。",
       "summaryZhHant": "挪亞的次子;非洲與迦南諸族的祖先;咒詛由迦南承受。",
-      "refs": ["Genesis 5:32", "Genesis 9:22-25", "Genesis 10:6-20"]
+      "refs": [
+        "Genesis 5:32",
+        "Genesis 9:22-25",
+        "Genesis 10:6-20"
+      ],
+      "role": "PATRIARCH",
+      "era": "post_flood"
     },
     {
       "id": "japheth",
@@ -280,7 +410,13 @@
       "summary": "Third son of Noah; ancestor of the Indo-European peoples per the Table of Nations.",
       "summaryZhHans": "挪亚的第三子;印欧诸族的祖先(列国志)。",
       "summaryZhHant": "挪亞的第三子;印歐諸族的祖先(列國志)。",
-      "refs": ["Genesis 5:32", "Genesis 9:27", "Genesis 10:1-5"]
+      "refs": [
+        "Genesis 5:32",
+        "Genesis 9:27",
+        "Genesis 10:1-5"
+      ],
+      "role": "PATRIARCH",
+      "era": "post_flood"
     },
     {
       "id": "arphaxad",
@@ -290,7 +426,9 @@
       "fatherId": "shem",
       "motherId": null,
       "spouseIds": [],
-      "childIds": ["shelah"],
+      "childIds": [
+        "shelah"
+      ],
       "yearSystem": "am",
       "birthYear": 1658,
       "deathYear": 2096,
@@ -298,7 +436,12 @@
       "summary": "Born two years after the Flood; first of the post-Flood patriarchs in the Messianic line.",
       "summaryZhHans": "生于洪水后两年;洪水后弥赛亚血脉中的首位先祖。",
       "summaryZhHant": "生於洪水後兩年;洪水後彌賽亞血脈中的首位先祖。",
-      "refs": ["Genesis 10:22", "Genesis 11:10-13", "Luke 3:36"]
+      "refs": [
+        "Genesis 10:22",
+        "Genesis 11:10-13",
+        "Luke 3:36"
+      ],
+      "era": "post_flood"
     },
     {
       "id": "shelah",
@@ -308,7 +451,9 @@
       "fatherId": "arphaxad",
       "motherId": null,
       "spouseIds": [],
-      "childIds": ["eber"],
+      "childIds": [
+        "eber"
+      ],
       "yearSystem": "am",
       "birthYear": 1693,
       "deathYear": 2126,
@@ -316,7 +461,12 @@
       "summary": "Born when Arphaxad was 35; father of Eber.",
       "summaryZhHans": "亚法撒三十五岁时所生;希伯之父。",
       "summaryZhHant": "亞法撒三十五歲時所生;希伯之父。",
-      "refs": ["Genesis 10:24", "Genesis 11:14-15", "Luke 3:35"]
+      "refs": [
+        "Genesis 10:24",
+        "Genesis 11:14-15",
+        "Luke 3:35"
+      ],
+      "era": "post_flood"
     },
     {
       "id": "eber",
@@ -326,7 +476,9 @@
       "fatherId": "shelah",
       "motherId": null,
       "spouseIds": [],
-      "childIds": ["peleg"],
+      "childIds": [
+        "peleg"
+      ],
       "yearSystem": "am",
       "birthYear": 1723,
       "deathYear": 2187,
@@ -334,7 +486,12 @@
       "summary": "Eponymous ancestor of the Hebrews; lived 464 years.",
       "summaryZhHans": "希伯来人之祖,族名所由出;享寿四百六十四岁。",
       "summaryZhHant": "希伯來人之祖,族名所由出;享壽四百六十四歲。",
-      "refs": ["Genesis 10:24-25", "Genesis 11:14-17", "Luke 3:35"]
+      "refs": [
+        "Genesis 10:24-25",
+        "Genesis 11:14-17",
+        "Luke 3:35"
+      ],
+      "era": "post_flood"
     },
     {
       "id": "peleg",
@@ -344,7 +501,9 @@
       "fatherId": "eber",
       "motherId": null,
       "spouseIds": [],
-      "childIds": ["reu"],
+      "childIds": [
+        "reu"
+      ],
       "yearSystem": "am",
       "birthYear": 1757,
       "deathYear": 1996,
@@ -352,7 +511,12 @@
       "summary": "His name means 'division' — in his days the earth was divided (Babel).",
       "summaryZhHans": "其名意为'分散'——他的日子,地被分裂(巴别塔)。",
       "summaryZhHant": "其名意為「分散」——他的日子,地被分裂(巴別塔)。",
-      "refs": ["Genesis 10:25", "Genesis 11:16-19", "Luke 3:35"]
+      "refs": [
+        "Genesis 10:25",
+        "Genesis 11:16-19",
+        "Luke 3:35"
+      ],
+      "era": "post_flood"
     },
     {
       "id": "reu",
@@ -362,7 +526,9 @@
       "fatherId": "peleg",
       "motherId": null,
       "spouseIds": [],
-      "childIds": ["serug"],
+      "childIds": [
+        "serug"
+      ],
       "yearSystem": "am",
       "birthYear": 1787,
       "deathYear": 2026,
@@ -370,7 +536,12 @@
       "summary": "Patriarch in the line from Shem to Abraham.",
       "summaryZhHans": "由闪到亚伯拉罕谱系中的列祖。",
       "summaryZhHant": "由閃到亞伯拉罕譜系中的列祖。",
-      "refs": ["Genesis 11:18-21", "1 Chronicles 1:25", "Luke 3:35"]
+      "refs": [
+        "Genesis 11:18-21",
+        "1 Chronicles 1:25",
+        "Luke 3:35"
+      ],
+      "era": "post_flood"
     },
     {
       "id": "serug",
@@ -380,7 +551,9 @@
       "fatherId": "reu",
       "motherId": null,
       "spouseIds": [],
-      "childIds": ["nahor_elder"],
+      "childIds": [
+        "nahor_elder"
+      ],
       "yearSystem": "am",
       "birthYear": 1819,
       "deathYear": 2049,
@@ -388,7 +561,12 @@
       "summary": "Patriarch in the line from Shem to Abraham.",
       "summaryZhHans": "由闪到亚伯拉罕谱系中的列祖。",
       "summaryZhHant": "由閃到亞伯拉罕譜系中的列祖。",
-      "refs": ["Genesis 11:20-23", "1 Chronicles 1:26", "Luke 3:35"]
+      "refs": [
+        "Genesis 11:20-23",
+        "1 Chronicles 1:26",
+        "Luke 3:35"
+      ],
+      "era": "post_flood"
     },
     {
       "id": "nahor_elder",
@@ -398,7 +576,9 @@
       "fatherId": "serug",
       "motherId": null,
       "spouseIds": [],
-      "childIds": ["terah"],
+      "childIds": [
+        "terah"
+      ],
       "yearSystem": "am",
       "birthYear": 1849,
       "deathYear": 1997,
@@ -406,7 +586,12 @@
       "summary": "Father of Terah; grandfather of Abraham. (Distinct from Abraham's brother Nahor.)",
       "summaryZhHans": "他拉之父;亚伯拉罕的祖父。(与亚伯拉罕之兄弟拿鹤同名,异人。)",
       "summaryZhHant": "他拉之父;亞伯拉罕的祖父。(與亞伯拉罕之兄弟拿鶴同名,異人。)",
-      "refs": ["Genesis 11:22-25", "1 Chronicles 1:26", "Luke 3:34"]
+      "refs": [
+        "Genesis 11:22-25",
+        "1 Chronicles 1:26",
+        "Luke 3:34"
+      ],
+      "era": "post_flood"
     },
     {
       "id": "terah",
@@ -416,7 +601,11 @@
       "fatherId": "nahor_elder",
       "motherId": null,
       "spouseIds": [],
-      "childIds": ["abraham", "nahor_younger", "haran"],
+      "childIds": [
+        "abraham",
+        "nahor_younger",
+        "haran"
+      ],
       "yearSystem": "am",
       "birthYear": 1878,
       "deathYear": 2083,
@@ -424,7 +613,13 @@
       "summary": "Father of Abraham; led the family from Ur of the Chaldees toward Canaan; settled in Haran.",
       "summaryZhHans": "亚伯拉罕之父;率家由迦勒底的吾珥往迦南,定居于哈兰。",
       "summaryZhHant": "亞伯拉罕之父;率家由迦勒底的吾珥往迦南,定居於哈蘭。",
-      "refs": ["Genesis 11:26-32", "Joshua 24:2", "Acts 7:2-4", "Luke 3:34"]
+      "refs": [
+        "Genesis 11:26-32",
+        "Joshua 24:2",
+        "Acts 7:2-4",
+        "Luke 3:34"
+      ],
+      "era": "post_flood"
     },
     {
       "id": "abraham",
@@ -433,8 +628,20 @@
       "nameZhHant": "亞伯拉罕",
       "fatherId": "terah",
       "motherId": null,
-      "spouseIds": ["sarah", "hagar", "keturah"],
-      "childIds": ["isaac", "ishmael"],
+      "spouseIds": [
+        "sarah",
+        "hagar",
+        "keturah"
+      ],
+      "childIds": [
+        "isaac",
+        "ishmael",
+        "zimran",
+        "jokshan",
+        "medan",
+        "ishbak",
+        "shuah"
+      ],
       "yearSystem": "bc",
       "birthYear": -2166,
       "deathYear": -1991,
@@ -442,7 +649,17 @@
       "summary": "Father of the faithful; called from Ur, given the covenant of land, seed, and blessing for all nations through his offspring.",
       "summaryZhHans": "信心之父;蒙召离开吾珥,领受地业、子孙与万族蒙福之约。",
       "summaryZhHant": "信心之父;蒙召離開吾珥,領受地業、子孫與萬族蒙福之約。",
-      "refs": ["Genesis 12", "Genesis 15", "Genesis 17", "Genesis 22", "Romans 4", "Galatians 3:6-9", "Hebrews 11:8-19"]
+      "refs": [
+        "Genesis 12",
+        "Genesis 15",
+        "Genesis 17",
+        "Genesis 22",
+        "Romans 4",
+        "Galatians 3:6-9",
+        "Hebrews 11:8-19"
+      ],
+      "role": "PATRIARCH",
+      "era": "patriarchs"
     },
     {
       "id": "sarah",
@@ -451,8 +668,12 @@
       "nameZhHant": "撒拉",
       "fatherId": null,
       "motherId": null,
-      "spouseIds": ["abraham"],
-      "childIds": ["isaac"],
+      "spouseIds": [
+        "abraham"
+      ],
+      "childIds": [
+        "isaac"
+      ],
       "yearSystem": "bc",
       "birthYear": -2156,
       "deathYear": -2029,
@@ -460,7 +681,16 @@
       "summary": "Wife of Abraham; bore Isaac in her old age — a child of promise.",
       "summaryZhHans": "亚伯拉罕之妻;高龄生以撒——应许之子。",
       "summaryZhHant": "亞伯拉罕之妻;高齡生以撒——應許之子。",
-      "refs": ["Genesis 17:15-21", "Genesis 18:9-15", "Genesis 21:1-7", "Genesis 23", "Hebrews 11:11", "1 Peter 3:6"]
+      "refs": [
+        "Genesis 17:15-21",
+        "Genesis 18:9-15",
+        "Genesis 21:1-7",
+        "Genesis 23",
+        "Hebrews 11:11",
+        "1 Peter 3:6"
+      ],
+      "role": "MATRIARCH",
+      "era": "patriarchs"
     },
     {
       "id": "hagar",
@@ -469,13 +699,23 @@
       "nameZhHant": "夏甲",
       "fatherId": null,
       "motherId": null,
-      "spouseIds": ["abraham"],
-      "childIds": ["ishmael"],
+      "spouseIds": [
+        "abraham"
+      ],
+      "childIds": [
+        "ishmael"
+      ],
       "yearSystem": "bc",
       "summary": "Egyptian maidservant of Sarah; mother of Ishmael; saw God in the wilderness ('El-Roi').",
       "summaryZhHans": "撒拉的埃及使女;以实玛利之母;在旷野见神,称之为'看顾人的神'。",
       "summaryZhHant": "撒拉的埃及使女;以實瑪利之母;在曠野見神,稱之為「看顧人的神」。",
-      "refs": ["Genesis 16", "Genesis 21:9-21", "Galatians 4:21-31"]
+      "refs": [
+        "Genesis 16",
+        "Genesis 21:9-21",
+        "Galatians 4:21-31"
+      ],
+      "role": "CONCUBINE",
+      "era": "patriarchs"
     },
     {
       "id": "keturah",
@@ -484,13 +724,26 @@
       "nameZhHant": "基土拉",
       "fatherId": null,
       "motherId": null,
-      "spouseIds": ["abraham"],
-      "childIds": [],
+      "spouseIds": [
+        "abraham"
+      ],
+      "childIds": [
+        "zimran",
+        "jokshan",
+        "medan",
+        "ishbak",
+        "shuah"
+      ],
       "yearSystem": "bc",
       "summary": "Abraham's wife after Sarah's death; mother of six sons including Midian.",
       "summaryZhHans": "撒拉死后亚伯拉罕之妻;生六子,其中包括米甸。",
       "summaryZhHant": "撒拉死後亞伯拉罕之妻;生六子,其中包括米甸。",
-      "refs": ["Genesis 25:1-6", "1 Chronicles 1:32-33"]
+      "refs": [
+        "Genesis 25:1-6",
+        "1 Chronicles 1:32-33"
+      ],
+      "role": "WIFE",
+      "era": "patriarchs"
     },
     {
       "id": "ishmael",
@@ -500,7 +753,20 @@
       "fatherId": "abraham",
       "motherId": "hagar",
       "spouseIds": [],
-      "childIds": [],
+      "childIds": [
+        "nebaioth",
+        "kedar",
+        "adbeel",
+        "mibsam",
+        "mishma",
+        "dumah",
+        "massa",
+        "hadad_ish",
+        "tema",
+        "jetur",
+        "naphish",
+        "kedemah"
+      ],
       "yearSystem": "bc",
       "birthYear": -2080,
       "deathYear": -1943,
@@ -508,7 +774,14 @@
       "summary": "Abraham's elder son by Hagar; ancestor of twelve tribes; promise of becoming a great nation.",
       "summaryZhHans": "亚伯拉罕由夏甲所生之长子;十二族之祖;蒙应许成为大国。",
       "summaryZhHant": "亞伯拉罕由夏甲所生之長子;十二族之祖;蒙應許成為大國。",
-      "refs": ["Genesis 16:11-16", "Genesis 17:18-21", "Genesis 21:9-21", "Genesis 25:12-18"]
+      "refs": [
+        "Genesis 16:11-16",
+        "Genesis 17:18-21",
+        "Genesis 21:9-21",
+        "Genesis 25:12-18"
+      ],
+      "role": "ARABS",
+      "era": "patriarchs"
     },
     {
       "id": "isaac",
@@ -517,8 +790,13 @@
       "nameZhHant": "以撒",
       "fatherId": "abraham",
       "motherId": "sarah",
-      "spouseIds": ["rebekah"],
-      "childIds": ["esau", "jacob"],
+      "spouseIds": [
+        "rebekah"
+      ],
+      "childIds": [
+        "esau",
+        "jacob"
+      ],
       "yearSystem": "bc",
       "birthYear": -2066,
       "deathYear": -1886,
@@ -526,22 +804,43 @@
       "summary": "Child of promise; offered up by Abraham on Mount Moriah; received the covenant blessing.",
       "summaryZhHans": "应许之子;父亚伯拉罕在摩利亚山献上;承受立约之福。",
       "summaryZhHant": "應許之子;父亞伯拉罕在摩利亞山獻上;承受立約之福。",
-      "refs": ["Genesis 21:1-7", "Genesis 22", "Genesis 24", "Genesis 26", "Genesis 27", "Hebrews 11:17-20"]
+      "refs": [
+        "Genesis 21:1-7",
+        "Genesis 22",
+        "Genesis 24",
+        "Genesis 26",
+        "Genesis 27",
+        "Hebrews 11:17-20"
+      ],
+      "role": "PATRIARCH",
+      "era": "patriarchs"
     },
     {
       "id": "rebekah",
       "name": "Rebekah",
       "nameZhHans": "利百加",
       "nameZhHant": "利百加",
-      "fatherId": null,
+      "fatherId": "bethuel",
       "motherId": null,
-      "spouseIds": ["isaac"],
-      "childIds": ["esau", "jacob"],
+      "spouseIds": [
+        "isaac"
+      ],
+      "childIds": [
+        "esau",
+        "jacob"
+      ],
       "yearSystem": "bc",
       "summary": "Isaac's wife; mother of Esau and Jacob; received the oracle that the elder would serve the younger.",
       "summaryZhHans": "以撒之妻;以扫与雅各之母;蒙启示——大的将服事小的。",
       "summaryZhHant": "以撒之妻;以掃與雅各之母;蒙啟示——大的將服事小的。",
-      "refs": ["Genesis 24", "Genesis 25:19-26", "Genesis 27", "Romans 9:10-13"]
+      "refs": [
+        "Genesis 24",
+        "Genesis 25:19-26",
+        "Genesis 27",
+        "Romans 9:10-13"
+      ],
+      "role": "MATRIARCH",
+      "era": "patriarchs"
     },
     {
       "id": "esau",
@@ -551,13 +850,24 @@
       "fatherId": "isaac",
       "motherId": "rebekah",
       "spouseIds": [],
-      "childIds": [],
+      "childIds": [
+        "eliphaz",
+        "reuel"
+      ],
       "yearSystem": "bc",
       "birthYear": -2006,
       "summary": "Isaac's elder son; sold his birthright for a pottage of lentils; ancestor of Edom.",
       "summaryZhHans": "以撒的长子;为一碗红豆汤卖了长子的名分;以东族之祖。",
       "summaryZhHant": "以撒的長子;為一碗紅豆湯賣了長子的名分;以東族之祖。",
-      "refs": ["Genesis 25:25-34", "Genesis 27", "Genesis 36", "Hebrews 12:16-17", "Romans 9:13"]
+      "refs": [
+        "Genesis 25:25-34",
+        "Genesis 27",
+        "Genesis 36",
+        "Hebrews 12:16-17",
+        "Romans 9:13"
+      ],
+      "role": "EDOMITES",
+      "era": "patriarchs"
     },
     {
       "id": "jacob",
@@ -566,8 +876,27 @@
       "nameZhHant": "雅各(以色列)",
       "fatherId": "isaac",
       "motherId": "rebekah",
-      "spouseIds": ["leah", "rachel", "bilhah", "zilpah"],
-      "childIds": ["reuben", "simeon", "levi", "judah", "dan", "naphtali", "gad", "asher", "issachar", "zebulun", "joseph", "benjamin", "dinah"],
+      "spouseIds": [
+        "leah",
+        "rachel",
+        "bilhah",
+        "zilpah"
+      ],
+      "childIds": [
+        "reuben",
+        "simeon",
+        "levi",
+        "judah",
+        "dan",
+        "naphtali",
+        "gad",
+        "asher",
+        "issachar",
+        "zebulun",
+        "joseph",
+        "benjamin",
+        "dinah"
+      ],
       "yearSystem": "bc",
       "birthYear": -2006,
       "deathYear": -1859,
@@ -575,37 +904,76 @@
       "summary": "Wrestled with God and was renamed Israel; father of the twelve tribes; died in Egypt.",
       "summaryZhHans": "与神较力,改名以色列;十二支派之祖;客死埃及。",
       "summaryZhHant": "與神較力,改名以色列;十二支派之祖;客死埃及。",
-      "refs": ["Genesis 25:26", "Genesis 27", "Genesis 28", "Genesis 32:22-32", "Genesis 35", "Genesis 49", "Hebrews 11:21"]
+      "refs": [
+        "Genesis 25:26",
+        "Genesis 27",
+        "Genesis 28",
+        "Genesis 32:22-32",
+        "Genesis 35",
+        "Genesis 49",
+        "Hebrews 11:21"
+      ],
+      "role": "PATRIARCH",
+      "era": "patriarchs"
     },
     {
       "id": "leah",
       "name": "Leah",
       "nameZhHans": "利亚",
       "nameZhHant": "利亞",
-      "fatherId": null,
+      "fatherId": "laban",
       "motherId": null,
-      "spouseIds": ["jacob"],
-      "childIds": ["reuben", "simeon", "levi", "judah", "issachar", "zebulun", "dinah"],
+      "spouseIds": [
+        "jacob"
+      ],
+      "childIds": [
+        "reuben",
+        "simeon",
+        "levi",
+        "judah",
+        "issachar",
+        "zebulun",
+        "dinah"
+      ],
       "yearSystem": "bc",
       "summary": "Jacob's first wife; mother of Reuben, Simeon, Levi, Judah, Issachar, Zebulun, and Dinah.",
       "summaryZhHans": "雅各的元配;吕便、西缅、利未、犹大、以萨迦、西布伦、底拿之母。",
       "summaryZhHant": "雅各的元配;呂便、西緬、利未、猶大、以薩迦、西布倫、底拿之母。",
-      "refs": ["Genesis 29:16-35", "Genesis 30:14-21", "Genesis 49:31"]
+      "refs": [
+        "Genesis 29:16-35",
+        "Genesis 30:14-21",
+        "Genesis 49:31"
+      ],
+      "role": "MATRIARCH",
+      "era": "patriarchs"
     },
     {
       "id": "rachel",
       "name": "Rachel",
       "nameZhHans": "拉结",
       "nameZhHant": "拉結",
-      "fatherId": null,
+      "fatherId": "laban",
       "motherId": null,
-      "spouseIds": ["jacob"],
-      "childIds": ["joseph", "benjamin"],
+      "spouseIds": [
+        "jacob"
+      ],
+      "childIds": [
+        "joseph",
+        "benjamin"
+      ],
       "yearSystem": "bc",
       "summary": "Jacob's beloved wife; mother of Joseph and Benjamin; died at Benjamin's birth.",
       "summaryZhHans": "雅各所爱之妻;约瑟与便雅悯之母;生便雅悯时去世。",
       "summaryZhHant": "雅各所愛之妻;約瑟與便雅憫之母;生便雅憫時去世。",
-      "refs": ["Genesis 29:6-30", "Genesis 30:1-8", "Genesis 35:16-20", "Jeremiah 31:15", "Matthew 2:18"]
+      "refs": [
+        "Genesis 29:6-30",
+        "Genesis 30:1-8",
+        "Genesis 35:16-20",
+        "Jeremiah 31:15",
+        "Matthew 2:18"
+      ],
+      "role": "MATRIARCH",
+      "era": "patriarchs"
     },
     {
       "id": "bilhah",
@@ -614,13 +982,23 @@
       "nameZhHant": "辟拉",
       "fatherId": null,
       "motherId": null,
-      "spouseIds": ["jacob"],
-      "childIds": ["dan", "naphtali"],
+      "spouseIds": [
+        "jacob"
+      ],
+      "childIds": [
+        "dan",
+        "naphtali"
+      ],
       "yearSystem": "bc",
       "summary": "Rachel's maidservant; mother of Dan and Naphtali.",
       "summaryZhHans": "拉结的使女;但与拿弗他利之母。",
       "summaryZhHant": "拉結的使女;但與拿弗他利之母。",
-      "refs": ["Genesis 30:3-8", "Genesis 35:25"]
+      "refs": [
+        "Genesis 30:3-8",
+        "Genesis 35:25"
+      ],
+      "role": "CONCUBINE",
+      "era": "patriarchs"
     },
     {
       "id": "zilpah",
@@ -629,13 +1007,23 @@
       "nameZhHant": "悉帕",
       "fatherId": null,
       "motherId": null,
-      "spouseIds": ["jacob"],
-      "childIds": ["gad", "asher"],
+      "spouseIds": [
+        "jacob"
+      ],
+      "childIds": [
+        "gad",
+        "asher"
+      ],
       "yearSystem": "bc",
       "summary": "Leah's maidservant; mother of Gad and Asher.",
       "summaryZhHans": "利亚的使女;迦得与亚设之母。",
       "summaryZhHant": "利亞的使女;迦得與亞設之母。",
-      "refs": ["Genesis 30:9-13", "Genesis 35:26"]
+      "refs": [
+        "Genesis 30:9-13",
+        "Genesis 35:26"
+      ],
+      "role": "CONCUBINE",
+      "era": "patriarchs"
     },
     {
       "id": "reuben",
@@ -650,7 +1038,14 @@
       "summary": "Firstborn of Jacob; lost his preeminence through sin with Bilhah.",
       "summaryZhHans": "雅各的长子;因与辟拉相犯失去长子尊荣。",
       "summaryZhHant": "雅各的長子;因與辟拉相犯失去長子尊榮。",
-      "refs": ["Genesis 29:32", "Genesis 35:22", "Genesis 49:3-4", "1 Chronicles 5:1"]
+      "refs": [
+        "Genesis 29:32",
+        "Genesis 35:22",
+        "Genesis 49:3-4",
+        "1 Chronicles 5:1"
+      ],
+      "role": "TRIBE",
+      "era": "patriarchs"
     },
     {
       "id": "simeon",
@@ -665,7 +1060,13 @@
       "summary": "Second son of Jacob; with Levi avenged Dinah at Shechem.",
       "summaryZhHans": "雅各的次子;偕利未在示剑为底拿报仇。",
       "summaryZhHant": "雅各的次子;偕利未在示劍為底拿報仇。",
-      "refs": ["Genesis 29:33", "Genesis 34", "Genesis 49:5-7"]
+      "refs": [
+        "Genesis 29:33",
+        "Genesis 34",
+        "Genesis 49:5-7"
+      ],
+      "role": "TRIBE",
+      "era": "patriarchs"
     },
     {
       "id": "levi",
@@ -675,12 +1076,25 @@
       "fatherId": "jacob",
       "motherId": "leah",
       "spouseIds": [],
-      "childIds": [],
+      "childIds": [
+        "gershon",
+        "kohath",
+        "merari",
+        "jochebed"
+      ],
       "yearSystem": "bc",
       "summary": "Third son of Jacob; ancestor of the priestly tribe — Moses, Aaron, and the Levites.",
       "summaryZhHans": "雅各的第三子;祭司支派之祖——摩西、亚伦及利未人由此出。",
       "summaryZhHant": "雅各的第三子;祭司支派之祖——摩西、亞倫及利未人由此出。",
-      "refs": ["Genesis 29:34", "Genesis 49:5-7", "Numbers 3", "Malachi 2:4-7"]
+      "refs": [
+        "Genesis 29:34",
+        "Genesis 49:5-7",
+        "Numbers 3",
+        "Malachi 2:4-7"
+      ],
+      "role": "PRIESTLY TRIBE",
+      "accent": "priestly",
+      "era": "patriarchs"
     },
     {
       "id": "judah",
@@ -690,12 +1104,23 @@
       "fatherId": "jacob",
       "motherId": "leah",
       "spouseIds": [],
-      "childIds": ["perez"],
+      "childIds": [
+        "perez"
+      ],
       "yearSystem": "bc",
       "summary": "Fourth son of Jacob; received the kingly blessing — 'the scepter shall not depart from Judah'. Ancestor of David and of Christ.",
       "summaryZhHans": "雅各的第四子;领受王者之福——'圭必不离犹大'。大卫与基督由此出。",
       "summaryZhHant": "雅各的第四子;領受王者之福——「圭必不離猶大」。大衛與基督由此出。",
-      "refs": ["Genesis 29:35", "Genesis 38", "Genesis 49:8-12", "Matthew 1:2-3", "Hebrews 7:14"]
+      "refs": [
+        "Genesis 29:35",
+        "Genesis 38",
+        "Genesis 49:8-12",
+        "Matthew 1:2-3",
+        "Hebrews 7:14"
+      ],
+      "role": "ROYAL TRIBE",
+      "accent": "royal",
+      "era": "patriarchs"
     },
     {
       "id": "dan",
@@ -710,7 +1135,12 @@
       "summary": "Son of Bilhah; tribal patriarch.",
       "summaryZhHans": "辟拉所生;十二支派之一的族长。",
       "summaryZhHant": "辟拉所生;十二支派之一的族長。",
-      "refs": ["Genesis 30:6", "Genesis 49:16-17"]
+      "refs": [
+        "Genesis 30:6",
+        "Genesis 49:16-17"
+      ],
+      "role": "TRIBE",
+      "era": "patriarchs"
     },
     {
       "id": "naphtali",
@@ -725,7 +1155,12 @@
       "summary": "Son of Bilhah; tribal patriarch.",
       "summaryZhHans": "辟拉所生;十二支派之一的族长。",
       "summaryZhHant": "辟拉所生;十二支派之一的族長。",
-      "refs": ["Genesis 30:8", "Genesis 49:21"]
+      "refs": [
+        "Genesis 30:8",
+        "Genesis 49:21"
+      ],
+      "role": "TRIBE",
+      "era": "patriarchs"
     },
     {
       "id": "gad",
@@ -740,7 +1175,12 @@
       "summary": "Son of Zilpah; tribal patriarch.",
       "summaryZhHans": "悉帕所生;十二支派之一的族长。",
       "summaryZhHant": "悉帕所生;十二支派之一的族長。",
-      "refs": ["Genesis 30:11", "Genesis 49:19"]
+      "refs": [
+        "Genesis 30:11",
+        "Genesis 49:19"
+      ],
+      "role": "TRIBE",
+      "era": "patriarchs"
     },
     {
       "id": "asher",
@@ -755,7 +1195,12 @@
       "summary": "Son of Zilpah; tribal patriarch.",
       "summaryZhHans": "悉帕所生;十二支派之一的族长。",
       "summaryZhHant": "悉帕所生;十二支派之一的族長。",
-      "refs": ["Genesis 30:13", "Genesis 49:20"]
+      "refs": [
+        "Genesis 30:13",
+        "Genesis 49:20"
+      ],
+      "role": "TRIBE",
+      "era": "patriarchs"
     },
     {
       "id": "issachar",
@@ -770,7 +1215,12 @@
       "summary": "Fifth son of Leah; tribal patriarch.",
       "summaryZhHans": "利亚的第五子;十二支派之一的族长。",
       "summaryZhHant": "利亞的第五子;十二支派之一的族長。",
-      "refs": ["Genesis 30:18", "Genesis 49:14-15"]
+      "refs": [
+        "Genesis 30:18",
+        "Genesis 49:14-15"
+      ],
+      "role": "TRIBE",
+      "era": "patriarchs"
     },
     {
       "id": "zebulun",
@@ -785,7 +1235,13 @@
       "summary": "Sixth son of Leah; tribal patriarch; territory along the sea.",
       "summaryZhHans": "利亚的第六子;十二支派之一的族长;地业临海。",
       "summaryZhHant": "利亞的第六子;十二支派之一的族長;地業臨海。",
-      "refs": ["Genesis 30:20", "Genesis 49:13", "Matthew 4:13-15"]
+      "refs": [
+        "Genesis 30:20",
+        "Genesis 49:13",
+        "Matthew 4:13-15"
+      ],
+      "role": "TRIBE",
+      "era": "patriarchs"
     },
     {
       "id": "joseph",
@@ -795,7 +1251,10 @@
       "fatherId": "jacob",
       "motherId": "rachel",
       "spouseIds": [],
-      "childIds": ["manasseh", "ephraim"],
+      "childIds": [
+        "manasseh",
+        "ephraim"
+      ],
       "yearSystem": "bc",
       "birthYear": -1915,
       "deathYear": -1805,
@@ -803,7 +1262,16 @@
       "summary": "Sold into Egypt by his brothers; rose to be vizier; preserved his family in famine. Type of Christ.",
       "summaryZhHans": "被弟兄卖到埃及;升为宰相;饥荒中保全家族。基督之预表。",
       "summaryZhHant": "被弟兄賣到埃及;升為宰相;饑荒中保全家族。基督之預表。",
-      "refs": ["Genesis 37", "Genesis 39", "Genesis 41", "Genesis 45", "Genesis 50", "Hebrews 11:22"]
+      "refs": [
+        "Genesis 37",
+        "Genesis 39",
+        "Genesis 41",
+        "Genesis 45",
+        "Genesis 50",
+        "Hebrews 11:22"
+      ],
+      "role": "TRIBE",
+      "era": "patriarchs"
     },
     {
       "id": "manasseh",
@@ -818,7 +1286,12 @@
       "summary": "Joseph's elder son; tribal patriarch (one of the half-tribes of Joseph).",
       "summaryZhHans": "约瑟的长子;约瑟两半支派之一的族长。",
       "summaryZhHant": "約瑟的長子;約瑟兩半支派之一的族長。",
-      "refs": ["Genesis 41:51", "Genesis 48:8-20"]
+      "refs": [
+        "Genesis 41:51",
+        "Genesis 48:8-20"
+      ],
+      "role": "HALF-TRIBE",
+      "era": "patriarchs"
     },
     {
       "id": "ephraim",
@@ -833,7 +1306,13 @@
       "summary": "Joseph's younger son; received the firstborn's blessing from Jacob; tribal patriarch.",
       "summaryZhHans": "约瑟的次子;雅各按手赐其长子之福;支派族长。",
       "summaryZhHant": "約瑟的次子;雅各按手賜其長子之福;支派族長。",
-      "refs": ["Genesis 41:52", "Genesis 48:8-20", "Hosea 11"]
+      "refs": [
+        "Genesis 41:52",
+        "Genesis 48:8-20",
+        "Hosea 11"
+      ],
+      "role": "HALF-TRIBE",
+      "era": "patriarchs"
     },
     {
       "id": "benjamin",
@@ -848,7 +1327,13 @@
       "summary": "Youngest son of Jacob; Rachel died at his birth; tribe of Saul and the apostle Paul.",
       "summaryZhHans": "雅各的小儿子;拉结生他时去世;扫罗与使徒保罗皆出此支派。",
       "summaryZhHant": "雅各的小兒子;拉結生他時去世;掃羅與使徒保羅皆出此支派。",
-      "refs": ["Genesis 35:16-20", "Genesis 49:27", "Philippians 3:5"]
+      "refs": [
+        "Genesis 35:16-20",
+        "Genesis 49:27",
+        "Philippians 3:5"
+      ],
+      "role": "TRIBE",
+      "era": "patriarchs"
     },
     {
       "id": "dinah",
@@ -863,7 +1348,12 @@
       "summary": "Jacob's only named daughter; defiled at Shechem, avenged by Simeon and Levi.",
       "summaryZhHans": "雅各唯一被提名之女;在示剑受辱,西缅与利未为之报仇。",
       "summaryZhHant": "雅各唯一被提名之女;在示劍受辱,西緬與利未為之報仇。",
-      "refs": ["Genesis 30:21", "Genesis 34"]
+      "refs": [
+        "Genesis 30:21",
+        "Genesis 34"
+      ],
+      "role": "DAUGHTER",
+      "era": "patriarchs"
     },
     {
       "id": "perez",
@@ -873,12 +1363,21 @@
       "fatherId": "judah",
       "motherId": null,
       "spouseIds": [],
-      "childIds": ["hezron"],
+      "childIds": [
+        "hezron"
+      ],
       "yearSystem": "bc",
       "summary": "Son of Judah by Tamar; ancestor of David and Christ.",
       "summaryZhHans": "犹大与他玛之子;大卫与基督的先祖。",
       "summaryZhHant": "猶大與他瑪之子;大衛與基督的先祖。",
-      "refs": ["Genesis 38:29", "Ruth 4:18", "Matthew 1:3", "Luke 3:33"]
+      "refs": [
+        "Genesis 38:29",
+        "Ruth 4:18",
+        "Matthew 1:3",
+        "Luke 3:33"
+      ],
+      "accent": "royal",
+      "era": "davidic_line"
     },
     {
       "id": "hezron",
@@ -888,12 +1387,21 @@
       "fatherId": "perez",
       "motherId": null,
       "spouseIds": [],
-      "childIds": ["ram"],
+      "childIds": [
+        "ram"
+      ],
       "yearSystem": "bc",
       "summary": "Son of Perez; in the line from Judah to David.",
       "summaryZhHans": "法勒斯之子;由犹大至大卫的谱系。",
       "summaryZhHant": "法勒斯之子;由猶大至大衛的譜系。",
-      "refs": ["Genesis 46:12", "Ruth 4:18-19", "Matthew 1:3", "Luke 3:33"]
+      "refs": [
+        "Genesis 46:12",
+        "Ruth 4:18-19",
+        "Matthew 1:3",
+        "Luke 3:33"
+      ],
+      "accent": "royal",
+      "era": "davidic_line"
     },
     {
       "id": "ram",
@@ -903,12 +1411,20 @@
       "fatherId": "hezron",
       "motherId": null,
       "spouseIds": [],
-      "childIds": ["amminadab"],
+      "childIds": [
+        "amminadab"
+      ],
       "yearSystem": "bc",
       "summary": "Father of Amminadab; in the Davidic line.",
       "summaryZhHans": "亚米拿达之父;大卫谱系。",
       "summaryZhHant": "亞米拿達之父;大衛譜系。",
-      "refs": ["Ruth 4:19", "1 Chronicles 2:9-10", "Matthew 1:3-4"]
+      "refs": [
+        "Ruth 4:19",
+        "1 Chronicles 2:9-10",
+        "Matthew 1:3-4"
+      ],
+      "accent": "royal",
+      "era": "davidic_line"
     },
     {
       "id": "amminadab",
@@ -918,12 +1434,20 @@
       "fatherId": "ram",
       "motherId": null,
       "spouseIds": [],
-      "childIds": ["nahshon"],
+      "childIds": [
+        "nahshon"
+      ],
       "yearSystem": "bc",
       "summary": "Father of Nahshon, the prince of Judah at the Exodus.",
       "summaryZhHans": "拿顺之父;拿顺为出埃及时犹大支派之首领。",
       "summaryZhHant": "拿順之父;拿順為出埃及時猶大支派之首領。",
-      "refs": ["Numbers 1:7", "Ruth 4:19-20", "Matthew 1:4"]
+      "refs": [
+        "Numbers 1:7",
+        "Ruth 4:19-20",
+        "Matthew 1:4"
+      ],
+      "accent": "royal",
+      "era": "davidic_line"
     },
     {
       "id": "nahshon",
@@ -933,12 +1457,22 @@
       "fatherId": "amminadab",
       "motherId": null,
       "spouseIds": [],
-      "childIds": ["salmon"],
+      "childIds": [
+        "salmon"
+      ],
       "yearSystem": "bc",
       "summary": "Prince of the tribe of Judah at the Exodus; brother-in-law of Aaron through his sister Elisheba.",
       "summaryZhHans": "出埃及时犹大支派的首领;其妹以利沙巴为亚伦之妻。",
       "summaryZhHant": "出埃及時猶大支派的首領;其妹以利沙巴為亞倫之妻。",
-      "refs": ["Numbers 1:7", "Numbers 7:12", "Ruth 4:20", "Matthew 1:4", "Luke 3:32"]
+      "refs": [
+        "Numbers 1:7",
+        "Numbers 7:12",
+        "Ruth 4:20",
+        "Matthew 1:4",
+        "Luke 3:32"
+      ],
+      "accent": "royal",
+      "era": "davidic_line"
     },
     {
       "id": "salmon",
@@ -947,13 +1481,23 @@
       "nameZhHant": "撒門",
       "fatherId": "nahshon",
       "motherId": null,
-      "spouseIds": ["rahab"],
-      "childIds": ["boaz"],
+      "spouseIds": [
+        "rahab"
+      ],
+      "childIds": [
+        "boaz"
+      ],
       "yearSystem": "bc",
       "summary": "Husband of Rahab the Canaanite; father of Boaz; settlement-era patriarch.",
       "summaryZhHans": "迦南女子喇合之夫;波阿斯之父;入迦南时代的先祖。",
       "summaryZhHant": "迦南女子喇合之夫;波阿斯之父;入迦南時代的先祖。",
-      "refs": ["Ruth 4:20-21", "Matthew 1:4-5", "Luke 3:32"]
+      "refs": [
+        "Ruth 4:20-21",
+        "Matthew 1:4-5",
+        "Luke 3:32"
+      ],
+      "accent": "royal",
+      "era": "davidic_line"
     },
     {
       "id": "rahab",
@@ -962,13 +1506,26 @@
       "nameZhHant": "喇合",
       "fatherId": null,
       "motherId": null,
-      "spouseIds": ["salmon"],
-      "childIds": ["boaz"],
+      "spouseIds": [
+        "salmon"
+      ],
+      "childIds": [
+        "boaz"
+      ],
       "yearSystem": "bc",
       "summary": "The Canaanite of Jericho who hid Israel's spies; counted in Christ's genealogy.",
       "summaryZhHans": "耶利哥的迦南女子,藏匿以色列探子;列于基督的家谱中。",
       "summaryZhHant": "耶利哥的迦南女子,藏匿以色列探子;列於基督的家譜中。",
-      "refs": ["Joshua 2", "Joshua 6:22-25", "Matthew 1:5", "Hebrews 11:31", "James 2:25"]
+      "refs": [
+        "Joshua 2",
+        "Joshua 6:22-25",
+        "Matthew 1:5",
+        "Hebrews 11:31",
+        "James 2:25"
+      ],
+      "role": "GENTILE",
+      "accent": "royal",
+      "era": "davidic_line"
     },
     {
       "id": "boaz",
@@ -977,13 +1534,25 @@
       "nameZhHant": "波阿斯",
       "fatherId": "salmon",
       "motherId": "rahab",
-      "spouseIds": ["ruth"],
-      "childIds": ["obed"],
+      "spouseIds": [
+        "ruth"
+      ],
+      "childIds": [
+        "obed"
+      ],
       "yearSystem": "bc",
       "summary": "Wealthy kinsman-redeemer who married Ruth; great-grandfather of David.",
       "summaryZhHans": "至亲救赎者,娶路得为妻;大卫的曾祖父。",
       "summaryZhHant": "至親救贖者,娶路得為妻;大衛的曾祖父。",
-      "refs": ["Ruth 2", "Ruth 3", "Ruth 4", "Matthew 1:5", "Luke 3:32"]
+      "refs": [
+        "Ruth 2",
+        "Ruth 3",
+        "Ruth 4",
+        "Matthew 1:5",
+        "Luke 3:32"
+      ],
+      "accent": "royal",
+      "era": "davidic_line"
     },
     {
       "id": "ruth",
@@ -992,13 +1561,26 @@
       "nameZhHant": "路得",
       "fatherId": null,
       "motherId": null,
-      "spouseIds": ["boaz"],
-      "childIds": ["obed"],
+      "spouseIds": [
+        "boaz"
+      ],
+      "childIds": [
+        "obed"
+      ],
       "yearSystem": "bc",
       "summary": "Moabitess who left her people for Naomi's God; married Boaz; great-grandmother of David.",
       "summaryZhHans": "摩押女子,撇下本族归向拿俄米的神;嫁波阿斯;大卫的曾祖母。",
       "summaryZhHant": "摩押女子,撇下本族歸向拿俄米的神;嫁波阿斯;大衛的曾祖母。",
-      "refs": ["Ruth 1", "Ruth 2", "Ruth 3", "Ruth 4", "Matthew 1:5"]
+      "refs": [
+        "Ruth 1",
+        "Ruth 2",
+        "Ruth 3",
+        "Ruth 4",
+        "Matthew 1:5"
+      ],
+      "role": "GENTILE",
+      "accent": "royal",
+      "era": "davidic_line"
     },
     {
       "id": "obed",
@@ -1008,12 +1590,20 @@
       "fatherId": "boaz",
       "motherId": "ruth",
       "spouseIds": [],
-      "childIds": ["jesse"],
+      "childIds": [
+        "jesse"
+      ],
       "yearSystem": "bc",
       "summary": "Son of Boaz and Ruth; grandfather of David.",
       "summaryZhHans": "波阿斯与路得之子;大卫的祖父。",
       "summaryZhHant": "波阿斯與路得之子;大衛的祖父。",
-      "refs": ["Ruth 4:13-22", "Matthew 1:5", "Luke 3:32"]
+      "refs": [
+        "Ruth 4:13-22",
+        "Matthew 1:5",
+        "Luke 3:32"
+      ],
+      "accent": "royal",
+      "era": "davidic_line"
     },
     {
       "id": "jesse",
@@ -1023,12 +1613,22 @@
       "fatherId": "obed",
       "motherId": null,
       "spouseIds": [],
-      "childIds": ["david"],
+      "childIds": [
+        "david"
+      ],
       "yearSystem": "bc",
       "summary": "Father of David; the 'stem of Jesse' from which Messiah springs.",
       "summaryZhHans": "大卫之父;弥赛亚由'耶西的根'而出。",
       "summaryZhHant": "大衛之父;彌賽亞由「耶西的根」而出。",
-      "refs": ["1 Samuel 16", "Isaiah 11:1", "Isaiah 11:10", "Matthew 1:5-6", "Romans 15:12"]
+      "refs": [
+        "1 Samuel 16",
+        "Isaiah 11:1",
+        "Isaiah 11:10",
+        "Matthew 1:5-6",
+        "Romans 15:12"
+      ],
+      "accent": "royal",
+      "era": "davidic_line"
     },
     {
       "id": "david",
@@ -1037,8 +1637,12 @@
       "nameZhHant": "大衛",
       "fatherId": "jesse",
       "motherId": null,
-      "spouseIds": ["bathsheba"],
-      "childIds": ["solomon"],
+      "spouseIds": [
+        "bathsheba"
+      ],
+      "childIds": [
+        "solomon"
+      ],
       "yearSystem": "bc",
       "birthYear": -1040,
       "deathYear": -970,
@@ -1046,7 +1650,19 @@
       "summary": "Shepherd, psalmist, king of Israel; received the Davidic covenant promising an eternal throne.",
       "summaryZhHans": "牧人、诗人、以色列王;受大卫之约,应许永远的王位。",
       "summaryZhHant": "牧人、詩人、以色列王;受大衛之約,應許永遠的王位。",
-      "refs": ["1 Samuel 16", "1 Samuel 17", "2 Samuel 7", "Psalm 23", "Psalm 51", "Matthew 1:6", "Acts 13:22", "Romans 1:3"]
+      "refs": [
+        "1 Samuel 16",
+        "1 Samuel 17",
+        "2 Samuel 7",
+        "Psalm 23",
+        "Psalm 51",
+        "Matthew 1:6",
+        "Acts 13:22",
+        "Romans 1:3"
+      ],
+      "role": "KING",
+      "accent": "royal",
+      "era": "kings"
     },
     {
       "id": "bathsheba",
@@ -1055,13 +1671,25 @@
       "nameZhHant": "拔示巴",
       "fatherId": null,
       "motherId": null,
-      "spouseIds": ["david"],
-      "childIds": ["solomon"],
+      "spouseIds": [
+        "david"
+      ],
+      "childIds": [
+        "solomon"
+      ],
       "yearSystem": "bc",
       "summary": "Wife of Uriah, taken by David; later mother of Solomon and queen mother of his court.",
       "summaryZhHans": "原为乌利亚之妻,大卫所夺;后为所罗门之母与太后。",
       "summaryZhHant": "原為烏利亞之妻,大衛所奪;後為所羅門之母與太后。",
-      "refs": ["2 Samuel 11", "2 Samuel 12:24", "1 Kings 1:11-31", "Matthew 1:6"]
+      "refs": [
+        "2 Samuel 11",
+        "2 Samuel 12:24",
+        "1 Kings 1:11-31",
+        "Matthew 1:6"
+      ],
+      "role": "QUEEN",
+      "accent": "royal",
+      "era": "kings"
     },
     {
       "id": "solomon",
@@ -1071,14 +1699,26 @@
       "fatherId": "david",
       "motherId": "bathsheba",
       "spouseIds": [],
-      "childIds": ["rehoboam"],
+      "childIds": [
+        "rehoboam"
+      ],
       "yearSystem": "bc",
       "birthYear": -1010,
       "deathYear": -931,
       "summary": "Wisest king of Israel; built the first Temple; reigned at the height of the kingdom.",
       "summaryZhHans": "以色列最有智慧的王;建造第一圣殿;国势鼎盛之时在位。",
       "summaryZhHant": "以色列最有智慧的王;建造第一聖殿;國勢鼎盛之時在位。",
-      "refs": ["1 Kings 1-11", "2 Chronicles 1-9", "Proverbs 1:1", "Ecclesiastes 1:1", "Song of Solomon 1:1", "Matthew 1:6-7"]
+      "refs": [
+        "1 Kings 1-11",
+        "2 Chronicles 1-9",
+        "Proverbs 1:1",
+        "Ecclesiastes 1:1",
+        "Song of Solomon 1:1",
+        "Matthew 1:6-7"
+      ],
+      "role": "KING",
+      "accent": "royal",
+      "era": "kings"
     },
     {
       "id": "rehoboam",
@@ -1088,65 +1728,105 @@
       "fatherId": "solomon",
       "motherId": null,
       "spouseIds": [],
-      "childIds": [],
+      "childIds": [
+        "abijah"
+      ],
       "yearSystem": "bc",
       "birthYear": -971,
       "deathYear": -913,
       "summary": "Solomon's son; harsh reply to the elders precipitated the kingdom's split into Judah and Israel.",
       "summaryZhHans": "所罗门之子;以暴言答覆长老,致王国分裂为犹大与以色列。",
       "summaryZhHant": "所羅門之子;以暴言答覆長老,致王國分裂為猶大與以色列。",
-      "refs": ["1 Kings 11:43-12:24", "1 Kings 14:21-31", "2 Chronicles 10-12", "Matthew 1:7"]
+      "refs": [
+        "1 Kings 11:43-12:24",
+        "1 Kings 14:21-31",
+        "2 Chronicles 10-12",
+        "Matthew 1:7"
+      ],
+      "role": "KING",
+      "accent": "royal",
+      "era": "kings"
     },
     {
       "id": "hezekiah",
       "name": "Hezekiah",
       "nameZhHans": "希西家",
       "nameZhHant": "希西家",
-      "fatherId": null,
+      "fatherId": "ahaz",
       "motherId": null,
       "spouseIds": [],
-      "childIds": [],
+      "childIds": [
+        "manasseh_king"
+      ],
       "yearSystem": "bc",
       "birthYear": -741,
       "deathYear": -686,
       "summary": "Reforming king of Judah; trusted the LORD against Sennacherib; granted 15 added years of life.",
       "summaryZhHans": "犹大改革之王;倚靠耶和华抵挡西拿基立;蒙赐多活十五年。",
       "summaryZhHant": "猶大改革之王;倚靠耶和華抵擋西拿基立;蒙賜多活十五年。",
-      "refs": ["2 Kings 18-20", "2 Chronicles 29-32", "Isaiah 36-39", "Matthew 1:9-10"]
+      "refs": [
+        "2 Kings 18-20",
+        "2 Chronicles 29-32",
+        "Isaiah 36-39",
+        "Matthew 1:9-10"
+      ],
+      "role": "KING",
+      "accent": "royal",
+      "era": "kings"
     },
     {
       "id": "josiah",
       "name": "Josiah",
       "nameZhHans": "约西亚",
       "nameZhHant": "約西亞",
-      "fatherId": null,
+      "fatherId": "amon",
       "motherId": null,
       "spouseIds": [],
-      "childIds": [],
+      "childIds": [
+        "jehoiakim"
+      ],
       "yearSystem": "bc",
       "birthYear": -648,
       "deathYear": -609,
       "summary": "Last godly king of Judah; recovered the Book of the Law and led a great covenant renewal.",
       "summaryZhHans": "犹大末代敬虔之王;寻见律法书,带领国民立约更新。",
       "summaryZhHant": "猶大末代敬虔之王;尋見律法書,帶領國民立約更新。",
-      "refs": ["2 Kings 22-23", "2 Chronicles 34-35", "Jeremiah 1:2", "Matthew 1:10-11"]
+      "refs": [
+        "2 Kings 22-23",
+        "2 Chronicles 34-35",
+        "Jeremiah 1:2",
+        "Matthew 1:10-11"
+      ],
+      "role": "KING",
+      "accent": "royal",
+      "era": "kings"
     },
     {
       "id": "jeconiah",
       "name": "Jeconiah (Jehoiachin)",
       "nameZhHans": "耶哥尼雅(约雅斤)",
       "nameZhHant": "耶哥尼雅(約雅斤)",
-      "fatherId": null,
+      "fatherId": "jehoiakim",
       "motherId": null,
       "spouseIds": [],
-      "childIds": ["shealtiel"],
+      "childIds": [
+        "shealtiel"
+      ],
       "yearSystem": "bc",
       "birthYear": -616,
       "deathYear": -560,
       "summary": "King of Judah deported to Babylon; final king before the exile in the southern kingdom's main line.",
       "summaryZhHans": "被掳到巴比伦的犹大王;南国主脉中被掳前的末代君王。",
       "summaryZhHant": "被擄到巴比倫的猶大王;南國主脈中被擄前的末代君王。",
-      "refs": ["2 Kings 24:8-17", "2 Chronicles 36:9-10", "Jeremiah 22:24-30", "Matthew 1:11-12"]
+      "refs": [
+        "2 Kings 24:8-17",
+        "2 Chronicles 36:9-10",
+        "Jeremiah 22:24-30",
+        "Matthew 1:11-12"
+      ],
+      "role": "KING",
+      "accent": "royal",
+      "era": "kings"
     },
     {
       "id": "shealtiel",
@@ -1156,12 +1836,22 @@
       "fatherId": "jeconiah",
       "motherId": null,
       "spouseIds": [],
-      "childIds": ["zerubbabel"],
+      "childIds": [
+        "zerubbabel"
+      ],
       "yearSystem": "bc",
       "summary": "Son of Jeconiah in exile; in the line from David to Joseph (Matthew 1).",
       "summaryZhHans": "被掳期间耶哥尼雅之子;由大卫至约瑟谱系(马太福音第一章)。",
       "summaryZhHant": "被擄期間耶哥尼雅之子;由大衛至約瑟譜系(馬太福音第一章)。",
-      "refs": ["1 Chronicles 3:17", "Ezra 3:2", "Haggai 1:1", "Matthew 1:12", "Luke 3:27"]
+      "refs": [
+        "1 Chronicles 3:17",
+        "Ezra 3:2",
+        "Haggai 1:1",
+        "Matthew 1:12",
+        "Luke 3:27"
+      ],
+      "accent": "royal",
+      "era": "exile"
     },
     {
       "id": "zerubbabel",
@@ -1171,27 +1861,51 @@
       "fatherId": "shealtiel",
       "motherId": null,
       "spouseIds": [],
-      "childIds": [],
+      "childIds": [
+        "abiud"
+      ],
       "yearSystem": "bc",
       "summary": "Governor of post-exilic Judah who led the rebuilding of the Second Temple.",
       "summaryZhHans": "归回时期的犹大省长,领导第二圣殿之重建。",
       "summaryZhHant": "歸回時期的猶大省長,領導第二聖殿之重建。",
-      "refs": ["Ezra 2:2", "Ezra 3", "Haggai 1", "Haggai 2:23", "Zechariah 4:6-10", "Matthew 1:12-13"]
+      "refs": [
+        "Ezra 2:2",
+        "Ezra 3",
+        "Haggai 1",
+        "Haggai 2:23",
+        "Zechariah 4:6-10",
+        "Matthew 1:12-13"
+      ],
+      "role": "GOVERNOR",
+      "accent": "royal",
+      "era": "exile"
     },
     {
       "id": "joseph_father_of_jesus",
       "name": "Joseph (husband of Mary)",
       "nameZhHans": "约瑟(马利亚之夫)",
       "nameZhHant": "約瑟(馬利亞之夫)",
-      "fatherId": null,
+      "fatherId": "jacob_father_of_joseph",
       "motherId": null,
-      "spouseIds": ["mary"],
+      "spouseIds": [
+        "mary"
+      ],
       "childIds": [],
       "yearSystem": "bc",
       "summary": "Carpenter of Nazareth; husband of Mary; legal father of Jesus, securing his Davidic descent.",
       "summaryZhHans": "拿撒勒木匠;马利亚之夫;耶稣的法定父亲,使其承袭大卫王统。",
       "summaryZhHant": "拿撒勒木匠;馬利亞之夫;耶穌的法定父親,使其承襲大衛王統。",
-      "refs": ["Matthew 1:18-25", "Matthew 2:13-23", "Luke 1:27", "Luke 2:1-7", "Luke 2:41-52", "Luke 3:23"]
+      "refs": [
+        "Matthew 1:18-25",
+        "Matthew 2:13-23",
+        "Luke 1:27",
+        "Luke 2:1-7",
+        "Luke 2:41-52",
+        "Luke 3:23"
+      ],
+      "role": "CARPENTER",
+      "accent": "messianic",
+      "era": "nt"
     },
     {
       "id": "mary",
@@ -1200,13 +1914,27 @@
       "nameZhHant": "馬利亞",
       "fatherId": null,
       "motherId": null,
-      "spouseIds": ["joseph_father_of_jesus"],
-      "childIds": ["jesus"],
+      "spouseIds": [
+        "joseph_father_of_jesus"
+      ],
+      "childIds": [
+        "jesus"
+      ],
       "yearSystem": "bc",
       "summary": "Virgin mother of Jesus; chosen of God to bear the Messiah.",
       "summaryZhHans": "童贞女,生主耶稣;蒙神拣选,孕育弥赛亚。",
       "summaryZhHant": "童貞女,生主耶穌;蒙神揀選,孕育彌賽亞。",
-      "refs": ["Luke 1:26-56", "Luke 2", "Matthew 1:18-25", "John 2:1-12", "John 19:25-27", "Acts 1:14"]
+      "refs": [
+        "Luke 1:26-56",
+        "Luke 2",
+        "Matthew 1:18-25",
+        "John 2:1-12",
+        "John 19:25-27",
+        "Acts 1:14"
+      ],
+      "role": "MOTHER OF JESUS",
+      "accent": "messianic",
+      "era": "nt"
     },
     {
       "id": "jesus",
@@ -1223,7 +1951,1679 @@
       "summary": "The Christ; eternal Son of God, born of Mary; crucified, raised, ascended; fulfillment of every preceding promise.",
       "summaryZhHans": "基督;神永恒的儿子,由马利亚所生;被钉、复活、升天——所有前应许的成就。",
       "summaryZhHant": "基督;神永恆的兒子,由馬利亞所生;被釘、復活、升天——所有前應許的成就。",
-      "refs": ["Matthew 1", "Luke 1-2", "Luke 24", "John 1:1-18", "Acts 1:9", "Romans 1:3-4", "Hebrews 1:1-3", "Revelation 22:13"]
+      "refs": [
+        "Matthew 1",
+        "Luke 1-2",
+        "Luke 24",
+        "John 1:1-18",
+        "Acts 1:9",
+        "Romans 1:3-4",
+        "Hebrews 1:1-3",
+        "Revelation 22:13"
+      ],
+      "role": "MESSIAH",
+      "accent": "messianic",
+      "era": "nt"
+    },
+    {
+      "id": "haran",
+      "name": "Haran",
+      "nameZhHans": "哈兰",
+      "nameZhHant": "哈蘭",
+      "fatherId": "terah",
+      "spouseIds": [],
+      "childIds": [
+        "lot",
+        "milcah"
+      ],
+      "yearSystem": "bc",
+      "birthYear": -2200,
+      "deathYear": -2150,
+      "summary": "Son of Terah; brother of Abraham; father of Lot, Milcah, and (per Genesis 11) Iscah. Died in Ur of the Chaldeans before the family migrated.",
+      "summaryZhHans": "他拉之子；亚伯拉罕的兄弟；罗得、密迦和以斯迦的父亲。在迦勒底的吾珥死去，全家因此迁徙。",
+      "summaryZhHant": "他拉之子；亞伯拉罕的兄弟；羅得、密迦和以斯迦的父親。在迦勒底的吾珥死去，全家因此遷徙。",
+      "refs": [
+        "Genesis 11:27",
+        "Genesis 11:28"
+      ],
+      "era": "patriarchs"
+    },
+    {
+      "id": "nahor_younger",
+      "name": "Nahor",
+      "nameZhHans": "拿鹤",
+      "nameZhHant": "拿鶴",
+      "fatherId": "terah",
+      "spouseIds": [
+        "milcah"
+      ],
+      "childIds": [
+        "bethuel"
+      ],
+      "yearSystem": "bc",
+      "birthYear": -2180,
+      "summary": "Son of Terah; brother of Abraham. Married Milcah (daughter of his brother Haran). Grandfather of Rebekah through Bethuel.",
+      "summaryZhHans": "他拉之子；亚伯拉罕的兄弟。娶了他兄弟哈兰的女儿密迦为妻。利百加的祖父（透过彼土利）。",
+      "summaryZhHant": "他拉之子；亞伯拉罕的兄弟。娶了他兄弟哈蘭的女兒密迦為妻。利百加的祖父（透過彼土利）。",
+      "refs": [
+        "Genesis 11:27",
+        "Genesis 11:29",
+        "Genesis 22:20-23"
+      ],
+      "era": "patriarchs"
+    },
+    {
+      "id": "lot",
+      "name": "Lot",
+      "nameZhHans": "罗得",
+      "nameZhHant": "羅得",
+      "fatherId": "haran",
+      "spouseIds": [],
+      "childIds": [
+        "moab",
+        "ben_ammi"
+      ],
+      "yearSystem": "bc",
+      "birthYear": -2170,
+      "summary": "Abraham's nephew; son of Haran. Travelled from Ur with Abraham, settled in Sodom, was rescued by angels before its destruction. Father of Moab and Ben-Ammi (Moabites and Ammonites).",
+      "summaryZhHans": "亚伯拉罕的侄子；哈兰之子。从吾珥与亚伯拉罕同行，定居所多玛，在城被毁前被天使救出。摩押和便亚米的父亲（摩押人和亚扪人的祖先）。",
+      "summaryZhHant": "亞伯拉罕的姪子；哈蘭之子。從吾珥與亞伯拉罕同行，定居所多瑪，在城被毀前被天使救出。摩押和便亞米的父親（摩押人和亞捫人的祖先）。",
+      "refs": [
+        "Genesis 11:31",
+        "Genesis 13:5-13",
+        "Genesis 19:1-38"
+      ],
+      "era": "patriarchs"
+    },
+    {
+      "id": "milcah",
+      "name": "Milcah",
+      "nameZhHans": "密迦",
+      "nameZhHant": "密迦",
+      "fatherId": "haran",
+      "spouseIds": [
+        "nahor_younger"
+      ],
+      "childIds": [
+        "bethuel"
+      ],
+      "yearSystem": "bc",
+      "birthYear": -2170,
+      "summary": "Daughter of Haran; married her uncle Nahor. Mother of Bethuel and grandmother of Rebekah and Laban.",
+      "summaryZhHans": "哈兰之女；嫁给她的叔叔拿鹤。彼土利的母亲，利百加和拉班的祖母。",
+      "summaryZhHant": "哈蘭之女；嫁給她的叔叔拿鶴。彼土利的母親，利百加和拉班的祖母。",
+      "refs": [
+        "Genesis 11:29",
+        "Genesis 22:20-23",
+        "Genesis 24:15"
+      ],
+      "role": "MATRIARCH",
+      "era": "patriarchs"
+    },
+    {
+      "id": "bethuel",
+      "name": "Bethuel",
+      "nameZhHans": "彼土利",
+      "nameZhHant": "彼土利",
+      "fatherId": "nahor_younger",
+      "motherId": "milcah",
+      "spouseIds": [],
+      "childIds": [
+        "rebekah",
+        "laban"
+      ],
+      "yearSystem": "bc",
+      "birthYear": -2150,
+      "summary": "Son of Nahor and Milcah; father of Rebekah (who married Isaac) and Laban (Jacob's father-in-law).",
+      "summaryZhHans": "拿鹤与密迦之子；利百加（嫁给以撒）和拉班（雅各的岳父）的父亲。",
+      "summaryZhHant": "拿鶴與密迦之子；利百加（嫁給以撒）和拉班（雅各的岳父）的父親。",
+      "refs": [
+        "Genesis 22:22-23",
+        "Genesis 24:15-50",
+        "Genesis 25:20"
+      ],
+      "era": "patriarchs"
+    },
+    {
+      "id": "laban",
+      "name": "Laban",
+      "nameZhHans": "拉班",
+      "nameZhHant": "拉班",
+      "fatherId": "bethuel",
+      "spouseIds": [],
+      "childIds": [
+        "leah",
+        "rachel"
+      ],
+      "yearSystem": "bc",
+      "birthYear": -2120,
+      "summary": "Son of Bethuel; brother of Rebekah; father of Leah and Rachel. Jacob worked 14 years to marry his daughters and 6 more for flocks.",
+      "summaryZhHans": "彼土利之子；利百加的兄弟；利亚和拉结的父亲。雅各为娶他的女儿做工十四年，又为牲畜做工六年。",
+      "summaryZhHant": "彼土利之子；利百加的兄弟；利亞和拉結的父親。雅各為娶他的女兒做工十四年，又為牲畜做工六年。",
+      "refs": [
+        "Genesis 24:29",
+        "Genesis 29:1-30",
+        "Genesis 31:1-55"
+      ],
+      "era": "patriarchs"
+    },
+    {
+      "id": "kohath",
+      "name": "Kohath",
+      "nameZhHans": "哥辖",
+      "nameZhHant": "哥轄",
+      "fatherId": "levi",
+      "spouseIds": [],
+      "childIds": [
+        "amram"
+      ],
+      "yearSystem": "bc",
+      "birthYear": -1850,
+      "summary": "Second son of Levi; ancestor of Moses, Aaron, and Miriam. The Kohathites carried the Ark in the wilderness.",
+      "summaryZhHans": "利未的次子；摩西、亚伦、米利暗的祖先。哥辖人在旷野中抬约柜。",
+      "summaryZhHant": "利未的次子；摩西、亞倫、米利暗的祖先。哥轄人在曠野中抬約櫃。",
+      "refs": [
+        "Genesis 46:11",
+        "Exodus 6:16-18",
+        "Numbers 4:1-20"
+      ],
+      "accent": "priestly",
+      "era": "mosaic"
+    },
+    {
+      "id": "amram",
+      "name": "Amram",
+      "nameZhHans": "暗兰",
+      "nameZhHant": "暗蘭",
+      "fatherId": "kohath",
+      "spouseIds": [
+        "jochebed"
+      ],
+      "childIds": [
+        "aaron",
+        "moses",
+        "miriam"
+      ],
+      "yearSystem": "bc",
+      "birthYear": -1570,
+      "summary": "Son of Kohath; husband of Jochebed; father of Aaron, Moses, and Miriam.",
+      "summaryZhHans": "哥辖之子；约基别的丈夫；亚伦、摩西、米利暗的父亲。",
+      "summaryZhHant": "哥轄之子；約基別的丈夫；亞倫、摩西、米利暗的父親。",
+      "refs": [
+        "Exodus 6:18-20",
+        "Numbers 26:59"
+      ],
+      "accent": "priestly",
+      "era": "mosaic"
+    },
+    {
+      "id": "jochebed",
+      "name": "Jochebed",
+      "nameZhHans": "约基别",
+      "nameZhHant": "約基別",
+      "fatherId": "levi",
+      "spouseIds": [
+        "amram"
+      ],
+      "childIds": [
+        "aaron",
+        "moses",
+        "miriam"
+      ],
+      "yearSystem": "bc",
+      "birthYear": -1550,
+      "summary": "Daughter of Levi; wife of her nephew Amram; mother of Aaron, Moses, and Miriam. Hid Moses in the basket on the Nile.",
+      "summaryZhHans": "利未之女；她侄子暗兰的妻子；亚伦、摩西、米利暗的母亲。把摩西藏在尼罗河的篮中。",
+      "summaryZhHant": "利未之女；她姪子暗蘭的妻子；亞倫、摩西、米利暗的母親。把摩西藏在尼羅河的籃中。",
+      "refs": [
+        "Exodus 2:1-10",
+        "Exodus 6:20",
+        "Numbers 26:59"
+      ],
+      "role": "MATRIARCH",
+      "accent": "priestly",
+      "era": "mosaic"
+    },
+    {
+      "id": "aaron",
+      "name": "Aaron",
+      "nameZhHans": "亚伦",
+      "nameZhHant": "亞倫",
+      "fatherId": "amram",
+      "motherId": "jochebed",
+      "spouseIds": [],
+      "childIds": [
+        "nadab",
+        "abihu",
+        "eleazar_priest",
+        "ithamar"
+      ],
+      "yearSystem": "bc",
+      "birthYear": -1530,
+      "deathYear": -1407,
+      "summary": "Older brother of Moses; first High Priest of Israel; spokesman to Pharaoh. Founded the Aaronic priesthood that served until the New Covenant.",
+      "summaryZhHans": "摩西的哥哥；以色列的第一位大祭司；对法老的发言人。开创了亚伦的祭司体系，事奉直到新约。",
+      "summaryZhHant": "摩西的哥哥；以色列的第一位大祭司；對法老的發言人。開創了亞倫的祭司體系，事奉直到新約。",
+      "refs": [
+        "Exodus 4:14",
+        "Exodus 28:1-43",
+        "Leviticus 10:1-7",
+        "Numbers 20:22-29"
+      ],
+      "role": "HIGH PRIEST",
+      "accent": "priestly",
+      "era": "mosaic"
+    },
+    {
+      "id": "moses",
+      "name": "Moses",
+      "nameZhHans": "摩西",
+      "nameZhHant": "摩西",
+      "fatherId": "amram",
+      "motherId": "jochebed",
+      "spouseIds": [
+        "zipporah"
+      ],
+      "childIds": [
+        "gershom_son",
+        "eliezer_son"
+      ],
+      "yearSystem": "bc",
+      "birthYear": -1525,
+      "deathYear": -1405,
+      "summary": "Lawgiver of Israel; led the Exodus from Egypt; received the Ten Commandments at Sinai. Author of the Pentateuch (Genesis–Deuteronomy).",
+      "summaryZhHans": "以色列的律法颁布者；带领出埃及；在西奈山领受十诫。摩西五经（创世记—申命记）的作者。",
+      "summaryZhHant": "以色列的律法頒布者；帶領出埃及；在西奈山領受十誡。摩西五經（創世記—申命記）的作者。",
+      "refs": [
+        "Exodus 2:1-10",
+        "Exodus 3:1-22",
+        "Exodus 20:1-17",
+        "Deuteronomy 34:1-12"
+      ],
+      "role": "PROPHET",
+      "accent": "prophetic",
+      "era": "mosaic"
+    },
+    {
+      "id": "miriam",
+      "name": "Miriam",
+      "nameZhHans": "米利暗",
+      "nameZhHant": "米利暗",
+      "fatherId": "amram",
+      "motherId": "jochebed",
+      "spouseIds": [],
+      "childIds": [],
+      "yearSystem": "bc",
+      "birthYear": -1535,
+      "deathYear": -1406,
+      "summary": "Older sister of Moses and Aaron. Watched over the basket on the Nile; led the women in song after crossing the Red Sea; struck with leprosy for opposing Moses.",
+      "summaryZhHans": "摩西和亚伦的姐姐。在尼罗河边看守篮子；过红海后带领妇女歌唱；因反对摩西被罚患大麻风。",
+      "summaryZhHant": "摩西和亞倫的姐姐。在尼羅河邊看守籃子；過紅海後帶領婦女歌唱；因反對摩西被罰患大痲瘋。",
+      "refs": [
+        "Exodus 2:4-8",
+        "Exodus 15:20-21",
+        "Numbers 12:1-15",
+        "Numbers 20:1"
+      ],
+      "role": "PROPHETESS",
+      "accent": "prophetic",
+      "era": "mosaic"
+    },
+    {
+      "id": "abiud",
+      "name": "Abiud",
+      "nameZhHans": "亚比玉",
+      "nameZhHant": "亞比玉",
+      "fatherId": "zerubbabel",
+      "spouseIds": [],
+      "childIds": [
+        "eliakim2"
+      ],
+      "yearSystem": "bc",
+      "summary": "Listed in the genealogy of Jesus per Matthew 1:13-16; descendant of David through Solomon.",
+      "summaryZhHans": "马太福音 1:13-16 所列耶稣家谱中的祖先；大卫透过所罗门的后裔。",
+      "summaryZhHant": "馬太福音 1:13-16 所列耶穌家譜中的祖先；大衛透過所羅門的後裔。",
+      "refs": [
+        "Matthew 1:13-16"
+      ],
+      "accent": "royal",
+      "era": "exile"
+    },
+    {
+      "id": "eliakim2",
+      "name": "Eliakim",
+      "nameZhHans": "以利亚敬",
+      "nameZhHant": "以利亞敬",
+      "fatherId": "abiud",
+      "spouseIds": [],
+      "childIds": [
+        "azor"
+      ],
+      "yearSystem": "bc",
+      "summary": "Listed in the genealogy of Jesus per Matthew 1:13-16; descendant of David through Solomon.",
+      "summaryZhHans": "马太福音 1:13-16 所列耶稣家谱中的祖先；大卫透过所罗门的后裔。",
+      "summaryZhHant": "馬太福音 1:13-16 所列耶穌家譜中的祖先；大衛透過所羅門的後裔。",
+      "refs": [
+        "Matthew 1:13-16"
+      ],
+      "accent": "royal",
+      "era": "exile"
+    },
+    {
+      "id": "azor",
+      "name": "Azor",
+      "nameZhHans": "亚所",
+      "nameZhHant": "亞所",
+      "fatherId": "eliakim2",
+      "spouseIds": [],
+      "childIds": [
+        "zadok2"
+      ],
+      "yearSystem": "bc",
+      "summary": "Listed in the genealogy of Jesus per Matthew 1:13-16; descendant of David through Solomon.",
+      "summaryZhHans": "马太福音 1:13-16 所列耶稣家谱中的祖先；大卫透过所罗门的后裔。",
+      "summaryZhHant": "馬太福音 1:13-16 所列耶穌家譜中的祖先；大衛透過所羅門的後裔。",
+      "refs": [
+        "Matthew 1:13-16"
+      ],
+      "accent": "royal",
+      "era": "exile"
+    },
+    {
+      "id": "zadok2",
+      "name": "Zadok",
+      "nameZhHans": "撒督",
+      "nameZhHant": "撒督",
+      "fatherId": "azor",
+      "spouseIds": [],
+      "childIds": [
+        "achim"
+      ],
+      "yearSystem": "bc",
+      "summary": "Listed in the genealogy of Jesus per Matthew 1:13-16; descendant of David through Solomon.",
+      "summaryZhHans": "马太福音 1:13-16 所列耶稣家谱中的祖先；大卫透过所罗门的后裔。",
+      "summaryZhHant": "馬太福音 1:13-16 所列耶穌家譜中的祖先；大衛透過所羅門的後裔。",
+      "refs": [
+        "Matthew 1:13-16"
+      ],
+      "accent": "royal",
+      "era": "exile"
+    },
+    {
+      "id": "achim",
+      "name": "Achim",
+      "nameZhHans": "亚金",
+      "nameZhHant": "亞金",
+      "fatherId": "zadok2",
+      "spouseIds": [],
+      "childIds": [
+        "eliud"
+      ],
+      "yearSystem": "bc",
+      "summary": "Listed in the genealogy of Jesus per Matthew 1:13-16; descendant of David through Solomon.",
+      "summaryZhHans": "马太福音 1:13-16 所列耶稣家谱中的祖先；大卫透过所罗门的后裔。",
+      "summaryZhHant": "馬太福音 1:13-16 所列耶穌家譜中的祖先；大衛透過所羅門的後裔。",
+      "refs": [
+        "Matthew 1:13-16"
+      ],
+      "accent": "royal",
+      "era": "exile"
+    },
+    {
+      "id": "eliud",
+      "name": "Eliud",
+      "nameZhHans": "以律",
+      "nameZhHant": "以律",
+      "fatherId": "achim",
+      "spouseIds": [],
+      "childIds": [
+        "eleazar2"
+      ],
+      "yearSystem": "bc",
+      "summary": "Listed in the genealogy of Jesus per Matthew 1:13-16; descendant of David through Solomon.",
+      "summaryZhHans": "马太福音 1:13-16 所列耶稣家谱中的祖先；大卫透过所罗门的后裔。",
+      "summaryZhHant": "馬太福音 1:13-16 所列耶穌家譜中的祖先；大衛透過所羅門的後裔。",
+      "refs": [
+        "Matthew 1:13-16"
+      ],
+      "accent": "royal",
+      "era": "exile"
+    },
+    {
+      "id": "eleazar2",
+      "name": "Eleazar",
+      "nameZhHans": "以利亚撒",
+      "nameZhHant": "以利亞撒",
+      "fatherId": "eliud",
+      "spouseIds": [],
+      "childIds": [
+        "matthan"
+      ],
+      "yearSystem": "bc",
+      "summary": "Listed in the genealogy of Jesus per Matthew 1:13-16; descendant of David through Solomon.",
+      "summaryZhHans": "马太福音 1:13-16 所列耶稣家谱中的祖先；大卫透过所罗门的后裔。",
+      "summaryZhHant": "馬太福音 1:13-16 所列耶穌家譜中的祖先；大衛透過所羅門的後裔。",
+      "refs": [
+        "Matthew 1:13-16"
+      ],
+      "accent": "royal",
+      "era": "exile"
+    },
+    {
+      "id": "matthan",
+      "name": "Matthan",
+      "nameZhHans": "马但",
+      "nameZhHant": "馬但",
+      "fatherId": "eleazar2",
+      "spouseIds": [],
+      "childIds": [
+        "jacob_father_of_joseph"
+      ],
+      "yearSystem": "bc",
+      "summary": "Listed in the genealogy of Jesus per Matthew 1:13-16; descendant of David through Solomon.",
+      "summaryZhHans": "马太福音 1:13-16 所列耶稣家谱中的祖先；大卫透过所罗门的后裔。",
+      "summaryZhHant": "馬太福音 1:13-16 所列耶穌家譜中的祖先；大衛透過所羅門的後裔。",
+      "refs": [
+        "Matthew 1:13-16"
+      ],
+      "accent": "royal",
+      "era": "exile"
+    },
+    {
+      "id": "jacob_father_of_joseph",
+      "name": "Jacob",
+      "nameZhHans": "雅各",
+      "nameZhHant": "雅各",
+      "fatherId": "matthan",
+      "spouseIds": [],
+      "childIds": [
+        "joseph_father_of_jesus"
+      ],
+      "yearSystem": "bc",
+      "summary": "Listed in the genealogy of Jesus per Matthew 1:13-16; descendant of David through Solomon.",
+      "summaryZhHans": "马太福音 1:13-16 所列耶稣家谱中的祖先；大卫透过所罗门的后裔。",
+      "summaryZhHant": "馬太福音 1:13-16 所列耶穌家譜中的祖先；大衛透過所羅門的後裔。",
+      "refs": [
+        "Matthew 1:13-16"
+      ],
+      "accent": "royal",
+      "era": "exile"
+    },
+    {
+      "id": "abijah",
+      "name": "Abijah",
+      "nameZhHans": "亚比央",
+      "nameZhHant": "亞比央",
+      "fatherId": "rehoboam",
+      "spouseIds": [],
+      "childIds": [
+        "asa"
+      ],
+      "yearSystem": "bc",
+      "birthYear": -913,
+      "summary": "3rd king of Judah; reigned 3 years; warred with Jeroboam of Israel.",
+      "summaryZhHans": "犹大第三位王；在位三年；与以色列王耶罗波安交战。",
+      "summaryZhHant": "猶大第三位王；在位三年；與以色列王耶羅波安交戰。",
+      "refs": [
+        "1 Kings 14:31",
+        "1 Kings 15:1-8",
+        "2 Chronicles 13:1-22"
+      ],
+      "role": "KING",
+      "accent": "royal",
+      "era": "kings"
+    },
+    {
+      "id": "asa",
+      "name": "Asa",
+      "nameZhHans": "亚撒",
+      "nameZhHant": "亞撒",
+      "fatherId": "abijah",
+      "spouseIds": [],
+      "childIds": [
+        "jehoshaphat"
+      ],
+      "yearSystem": "bc",
+      "birthYear": -911,
+      "summary": "Reforming king of Judah; tore down high places and removed idols; reigned 41 years.",
+      "summaryZhHans": "改革派的犹大王；拆毁丘坛，除掉偶像；在位四十一年。",
+      "summaryZhHant": "改革派的猶大王；拆毀丘壇，除掉偶像；在位四十一年。",
+      "refs": [
+        "1 Kings 15:8-24",
+        "2 Chronicles 14-16"
+      ],
+      "role": "KING",
+      "accent": "royal",
+      "era": "kings"
+    },
+    {
+      "id": "jehoshaphat",
+      "name": "Jehoshaphat",
+      "nameZhHans": "约沙法",
+      "nameZhHant": "約沙法",
+      "fatherId": "asa",
+      "spouseIds": [],
+      "childIds": [
+        "jehoram_judah"
+      ],
+      "yearSystem": "bc",
+      "birthYear": -870,
+      "summary": "Godly king of Judah; allied with Ahab; sent priests to teach the Law throughout Judah.",
+      "summaryZhHans": "敬虔的犹大王；与亚哈结盟；差祭司在犹大遍地教导律法。",
+      "summaryZhHant": "敬虔的猶大王；與亞哈結盟；差祭司在猶大遍地教導律法。",
+      "refs": [
+        "1 Kings 22:41-50",
+        "2 Chronicles 17-20"
+      ],
+      "role": "KING",
+      "accent": "royal",
+      "era": "kings"
+    },
+    {
+      "id": "jehoram_judah",
+      "name": "Jehoram",
+      "nameZhHans": "约兰",
+      "nameZhHant": "約蘭",
+      "fatherId": "jehoshaphat",
+      "spouseIds": [],
+      "childIds": [
+        "ahaziah_judah"
+      ],
+      "yearSystem": "bc",
+      "birthYear": -848,
+      "summary": "King of Judah; married Athaliah daughter of Ahab; killed his brothers; died of disease per Elijah's prophecy.",
+      "summaryZhHans": "犹大王；娶亚哈之女亚他利雅；杀害众兄弟；按以利亚的预言因病而死。",
+      "summaryZhHant": "猶大王；娶亞哈之女亞他利雅；殺害眾兄弟；按以利亞的預言因病而死。",
+      "refs": [
+        "2 Kings 8:16-24",
+        "2 Chronicles 21"
+      ],
+      "role": "KING",
+      "accent": "royal",
+      "era": "kings"
+    },
+    {
+      "id": "ahaziah_judah",
+      "name": "Ahaziah",
+      "nameZhHans": "亚哈谢",
+      "nameZhHant": "亞哈謝",
+      "fatherId": "jehoram_judah",
+      "spouseIds": [],
+      "childIds": [
+        "joash_judah"
+      ],
+      "yearSystem": "bc",
+      "birthYear": -841,
+      "summary": "King of Judah; reigned one year; killed by Jehu along with Joram of Israel.",
+      "summaryZhHans": "犹大王；在位一年；与以色列王约兰一同被耶户所杀。",
+      "summaryZhHant": "猶大王；在位一年；與以色列王約蘭一同被耶戶所殺。",
+      "refs": [
+        "2 Kings 8:25-9:29",
+        "2 Chronicles 22"
+      ],
+      "role": "KING",
+      "accent": "royal",
+      "era": "kings"
+    },
+    {
+      "id": "joash_judah",
+      "name": "Joash",
+      "nameZhHans": "约阿施",
+      "nameZhHant": "約阿施",
+      "fatherId": "ahaziah_judah",
+      "spouseIds": [],
+      "childIds": [
+        "amaziah"
+      ],
+      "yearSystem": "bc",
+      "birthYear": -835,
+      "summary": "Hidden as a child by his aunt Jehosheba; crowned king at age seven by Jehoiada the priest; restored the Temple.",
+      "summaryZhHans": "幼年由姑母约示巴所藏；七岁时由祭司耶何耶大立为王；重修圣殿。",
+      "summaryZhHant": "幼年由姑母約示巴所藏；七歲時由祭司耶何耶大立為王；重修聖殿。",
+      "refs": [
+        "2 Kings 11-12",
+        "2 Chronicles 22:10-24:27"
+      ],
+      "role": "KING",
+      "accent": "royal",
+      "era": "kings"
+    },
+    {
+      "id": "amaziah",
+      "name": "Amaziah",
+      "nameZhHans": "亚玛谢",
+      "nameZhHant": "亞瑪謝",
+      "fatherId": "joash_judah",
+      "spouseIds": [],
+      "childIds": [
+        "uzziah"
+      ],
+      "yearSystem": "bc",
+      "birthYear": -796,
+      "summary": "King of Judah; defeated Edom but later defeated by Joash of Israel; killed in conspiracy.",
+      "summaryZhHans": "犹大王；击败以东，却后来被以色列王约阿施所败；死于谋反。",
+      "summaryZhHant": "猶大王；擊敗以東，卻後來被以色列王約阿施所敗；死於謀反。",
+      "refs": [
+        "2 Kings 14:1-22",
+        "2 Chronicles 25"
+      ],
+      "role": "KING",
+      "accent": "royal",
+      "era": "kings"
+    },
+    {
+      "id": "uzziah",
+      "name": "Uzziah",
+      "nameZhHans": "乌西雅",
+      "nameZhHant": "烏西雅",
+      "fatherId": "amaziah",
+      "spouseIds": [],
+      "childIds": [
+        "jotham"
+      ],
+      "yearSystem": "bc",
+      "birthYear": -767,
+      "summary": "Also called Azariah; powerful king who built towers and engines of war; struck with leprosy for offering incense in the Temple.",
+      "summaryZhHans": "又名亚撒利雅；建造塔楼和战争器械的大能王；因擅自在殿中烧香被罚长大麻风。",
+      "summaryZhHant": "又名亞撒利雅；建造塔樓和戰爭器械的大能王；因擅自在殿中燒香被罰長大痲瘋。",
+      "refs": [
+        "2 Kings 15:1-7",
+        "2 Chronicles 26",
+        "Isaiah 6:1"
+      ],
+      "role": "KING",
+      "accent": "royal",
+      "era": "kings"
+    },
+    {
+      "id": "jotham",
+      "name": "Jotham",
+      "nameZhHans": "约坦",
+      "nameZhHant": "約坦",
+      "fatherId": "uzziah",
+      "spouseIds": [],
+      "childIds": [
+        "ahaz"
+      ],
+      "yearSystem": "bc",
+      "birthYear": -740,
+      "summary": "Co-regent during his father Uzziah’s leprosy; built the Upper Gate of the Temple; right in the eyes of the Lord.",
+      "summaryZhHans": "父亲乌西雅长大麻风期间共同摄政；建造圣殿的上门；行耶和华看为正的事。",
+      "summaryZhHant": "父親烏西雅長大痲瘋期間共同攝政；建造聖殿的上門；行耶和華看為正的事。",
+      "refs": [
+        "2 Kings 15:32-38",
+        "2 Chronicles 27"
+      ],
+      "role": "KING",
+      "accent": "royal",
+      "era": "kings"
+    },
+    {
+      "id": "ahaz",
+      "name": "Ahaz",
+      "nameZhHans": "亚哈斯",
+      "nameZhHant": "亞哈斯",
+      "fatherId": "jotham",
+      "spouseIds": [],
+      "childIds": [
+        "hezekiah"
+      ],
+      "yearSystem": "bc",
+      "birthYear": -732,
+      "summary": "Wicked king of Judah; sacrificed sons to Molech; brought Assyrian altar into the Temple; received the Immanuel sign from Isaiah.",
+      "summaryZhHans": "邪恶的犹大王；将儿子献给摩洛；将亚述祭坛搬入圣殿；以赛亚向他宣告以马内利的兆头。",
+      "summaryZhHant": "邪惡的猶大王；將兒子獻給摩洛；將亞述祭壇搬入聖殿；以賽亞向他宣告以馬內利的兆頭。",
+      "refs": [
+        "2 Kings 16",
+        "2 Chronicles 28",
+        "Isaiah 7"
+      ],
+      "role": "KING",
+      "accent": "royal",
+      "era": "kings"
+    },
+    {
+      "id": "manasseh_king",
+      "name": "Manasseh",
+      "nameZhHans": "玛拿西",
+      "nameZhHant": "瑪拿西",
+      "fatherId": "hezekiah",
+      "spouseIds": [],
+      "childIds": [
+        "amon"
+      ],
+      "yearSystem": "bc",
+      "birthYear": -697,
+      "summary": "Most wicked king of Judah; reigned 55 years; later humbled himself in Babylonian captivity and was restored.",
+      "summaryZhHans": "犹大最邪恶的王；在位五十五年；后在巴比伦被掳期间自卑悔改，得以回国。",
+      "summaryZhHant": "猶大最邪惡的王；在位五十五年；後在巴比倫被擄期間自卑悔改，得以回國。",
+      "refs": [
+        "2 Kings 21:1-18",
+        "2 Chronicles 33:1-20"
+      ],
+      "role": "KING",
+      "accent": "royal",
+      "era": "kings"
+    },
+    {
+      "id": "amon",
+      "name": "Amon",
+      "nameZhHans": "亚们",
+      "nameZhHant": "亞們",
+      "fatherId": "manasseh_king",
+      "spouseIds": [],
+      "childIds": [
+        "josiah"
+      ],
+      "yearSystem": "bc",
+      "birthYear": -642,
+      "summary": "Wicked king of Judah; reigned 2 years; assassinated by his own servants.",
+      "summaryZhHans": "邪恶的犹大王；在位两年；被臣仆杀害。",
+      "summaryZhHant": "邪惡的猶大王；在位兩年；被臣僕殺害。",
+      "refs": [
+        "2 Kings 21:19-26",
+        "2 Chronicles 33:21-25"
+      ],
+      "role": "KING",
+      "accent": "royal",
+      "era": "kings"
+    },
+    {
+      "id": "jehoiakim",
+      "name": "Jehoiakim",
+      "nameZhHans": "约雅敬",
+      "nameZhHant": "約雅敬",
+      "fatherId": "josiah",
+      "spouseIds": [],
+      "childIds": [
+        "jeconiah"
+      ],
+      "yearSystem": "bc",
+      "birthYear": -609,
+      "summary": "Son of Josiah; placed on the throne by Pharaoh Necho; rebelled against Nebuchadnezzar; burned the scroll Jeremiah dictated.",
+      "summaryZhHans": "约西亚之子；被埃及法老尼哥立为王；背叛尼布甲尼撒；烧毁耶利米所述写的书卷。",
+      "summaryZhHant": "約西亞之子；被埃及法老尼哥立為王；背叛尼布甲尼撒；燒毀耶利米所述寫的書卷。",
+      "refs": [
+        "2 Kings 23:34-24:6",
+        "2 Chronicles 36:4-8",
+        "Jeremiah 36"
+      ],
+      "role": "KING",
+      "accent": "royal",
+      "era": "kings"
+    },
+    {
+      "id": "nadab",
+      "name": "Nadab",
+      "nameZhHans": "拿答",
+      "nameZhHant": "拿答",
+      "fatherId": "aaron",
+      "spouseIds": [],
+      "childIds": [],
+      "yearSystem": "bc",
+      "birthYear": -1500,
+      "summary": "Aaron's eldest son; struck dead with his brother Abihu for offering 'strange fire' before the Lord.",
+      "summaryZhHans": "亚伦的长子；与兄弟亚比户因献凡火被耶和华击杀。",
+      "summaryZhHant": "亞倫的長子；與兄弟亞比戶因獻凡火被耶和華擊殺。",
+      "refs": [
+        "Exodus 6:23",
+        "Leviticus 10:1-2",
+        "Numbers 3:4"
+      ],
+      "accent": "priestly",
+      "era": "mosaic"
+    },
+    {
+      "id": "abihu",
+      "name": "Abihu",
+      "nameZhHans": "亚比户",
+      "nameZhHant": "亞比戶",
+      "fatherId": "aaron",
+      "spouseIds": [],
+      "childIds": [],
+      "yearSystem": "bc",
+      "birthYear": -1500,
+      "summary": "Second son of Aaron; struck dead with Nadab for offering 'strange fire'.",
+      "summaryZhHans": "亚伦的次子；与拿答因献凡火被击杀。",
+      "summaryZhHant": "亞倫的次子；與拿答因獻凡火被擊殺。",
+      "refs": [
+        "Exodus 6:23",
+        "Leviticus 10:1-2",
+        "Numbers 3:4"
+      ],
+      "accent": "priestly",
+      "era": "mosaic"
+    },
+    {
+      "id": "eleazar_priest",
+      "name": "Eleazar",
+      "nameZhHans": "以利亚撒",
+      "nameZhHant": "以利亞撒",
+      "fatherId": "aaron",
+      "spouseIds": [],
+      "childIds": [],
+      "yearSystem": "bc",
+      "birthYear": -1500,
+      "summary": "Aaron's third son; succeeded him as High Priest; allotted the Promised Land with Joshua.",
+      "summaryZhHans": "亚伦的三子；继承父亲为大祭司；与约书亚一同分配应许之地。",
+      "summaryZhHant": "亞倫的三子；繼承父親為大祭司；與約書亞一同分配應許之地。",
+      "refs": [
+        "Exodus 6:23",
+        "Numbers 20:25-29",
+        "Joshua 14:1"
+      ],
+      "accent": "priestly",
+      "era": "mosaic"
+    },
+    {
+      "id": "ithamar",
+      "name": "Ithamar",
+      "nameZhHans": "以他玛",
+      "nameZhHant": "以他瑪",
+      "fatherId": "aaron",
+      "spouseIds": [],
+      "childIds": [],
+      "yearSystem": "bc",
+      "birthYear": -1500,
+      "summary": "Aaron's youngest son; oversaw the Levites in the wilderness; ancestor of Eli the priest.",
+      "summaryZhHans": "亚伦的幼子；在旷野管理利未人；祭司以利的祖先。",
+      "summaryZhHant": "亞倫的幼子；在曠野管理利未人；祭司以利的祖先。",
+      "refs": [
+        "Exodus 6:23",
+        "Numbers 4:28",
+        "Numbers 4:33"
+      ],
+      "accent": "priestly",
+      "era": "mosaic"
+    },
+    {
+      "id": "zipporah",
+      "name": "Zipporah",
+      "nameZhHans": "西坡拉",
+      "nameZhHant": "西坡拉",
+      "fatherId": null,
+      "motherId": null,
+      "spouseIds": [
+        "moses"
+      ],
+      "childIds": [
+        "gershom_son",
+        "eliezer_son"
+      ],
+      "yearSystem": "bc",
+      "birthYear": -1520,
+      "summary": "Daughter of Jethro the Midianite priest; wife of Moses; mother of Gershom and Eliezer.",
+      "summaryZhHans": "米甸祭司叶忒罗的女儿；摩西的妻子；革舜与以利以谢的母亲。",
+      "summaryZhHant": "米甸祭司葉忒羅的女兒；摩西的妻子；革舜與以利以謝的母親。",
+      "refs": [
+        "Exodus 2:21-22",
+        "Exodus 4:24-26",
+        "Exodus 18:2"
+      ],
+      "role": "MATRIARCH",
+      "accent": "prophetic",
+      "era": "mosaic"
+    },
+    {
+      "id": "gershom_son",
+      "name": "Gershom",
+      "nameZhHans": "革舜",
+      "nameZhHant": "革舜",
+      "fatherId": "moses",
+      "motherId": "zipporah",
+      "spouseIds": [],
+      "childIds": [],
+      "yearSystem": "bc",
+      "birthYear": -1505,
+      "summary": "Eldest son of Moses; his name means 'sojourner there'.",
+      "summaryZhHans": "摩西的长子；名字意为「在那里寄居」。",
+      "summaryZhHant": "摩西的長子；名字意為「在那裡寄居」。",
+      "refs": [
+        "Exodus 2:22",
+        "Exodus 18:3",
+        "1 Chronicles 23:15-16"
+      ],
+      "accent": "prophetic",
+      "era": "mosaic"
+    },
+    {
+      "id": "eliezer_son",
+      "name": "Eliezer",
+      "nameZhHans": "以利以谢",
+      "nameZhHant": "以利以謝",
+      "fatherId": "moses",
+      "motherId": "zipporah",
+      "spouseIds": [],
+      "childIds": [],
+      "yearSystem": "bc",
+      "birthYear": -1503,
+      "summary": "Younger son of Moses; his name means 'My God is help'.",
+      "summaryZhHans": "摩西的次子；名字意为「我的神是帮助」。",
+      "summaryZhHant": "摩西的次子；名字意為「我的神是幫助」。",
+      "refs": [
+        "Exodus 18:4",
+        "1 Chronicles 23:15-17"
+      ],
+      "accent": "prophetic",
+      "era": "mosaic"
+    },
+    {
+      "id": "enoch_cain",
+      "name": "Enoch (Cain’s son)",
+      "nameZhHans": "以诺（该隐之子）",
+      "nameZhHant": "以諾（該隱之子）",
+      "fatherId": "cain",
+      "motherId": null,
+      "spouseIds": [],
+      "childIds": [
+        "irad"
+      ],
+      "yearSystem": "am",
+      "birthYear": null,
+      "summary": "Son of Cain; the city Cain built was named after him.",
+      "summaryZhHans": "该隐之子；该隐所建的城以他为名。",
+      "summaryZhHant": "該隱之子；該隱所建的城以他為名。",
+      "refs": [
+        "Genesis 4:17"
+      ],
+      "era": "antediluvian"
+    },
+    {
+      "id": "irad",
+      "name": "Irad",
+      "nameZhHans": "以拿",
+      "nameZhHant": "以拿",
+      "fatherId": "enoch_cain",
+      "motherId": null,
+      "spouseIds": [],
+      "childIds": [
+        "mehujael"
+      ],
+      "yearSystem": "am",
+      "birthYear": null,
+      "summary": "Son of Enoch (Cain’s line).",
+      "summaryZhHans": "以诺之子（该隐家系）。",
+      "summaryZhHant": "以諾之子（該隱家系）。",
+      "refs": [
+        "Genesis 4:18"
+      ],
+      "era": "antediluvian"
+    },
+    {
+      "id": "mehujael",
+      "name": "Mehujael",
+      "nameZhHans": "米户雅利",
+      "nameZhHant": "米戶雅利",
+      "fatherId": "irad",
+      "motherId": null,
+      "spouseIds": [],
+      "childIds": [
+        "methushael"
+      ],
+      "yearSystem": "am",
+      "birthYear": null,
+      "summary": "Son of Irad in Cain’s line.",
+      "summaryZhHans": "以拿之子，属该隐家系。",
+      "summaryZhHant": "以拿之子，屬該隱家系。",
+      "refs": [
+        "Genesis 4:18"
+      ],
+      "era": "antediluvian"
+    },
+    {
+      "id": "methushael",
+      "name": "Methushael",
+      "nameZhHans": "玛土撒利",
+      "nameZhHant": "瑪土撒利",
+      "fatherId": "mehujael",
+      "motherId": null,
+      "spouseIds": [],
+      "childIds": [
+        "lamech_cain"
+      ],
+      "yearSystem": "am",
+      "birthYear": null,
+      "summary": "Son of Mehujael in Cain’s line.",
+      "summaryZhHans": "米户雅利之子，属该隐家系。",
+      "summaryZhHant": "米戶雅利之子，屬該隱家系。",
+      "refs": [
+        "Genesis 4:18"
+      ],
+      "era": "antediluvian"
+    },
+    {
+      "id": "lamech_cain",
+      "name": "Lamech (of Cain)",
+      "nameZhHans": "拉麦（该隐家系）",
+      "nameZhHant": "拉麥（該隱家系）",
+      "fatherId": "methushael",
+      "motherId": null,
+      "spouseIds": [
+        "adah",
+        "zillah"
+      ],
+      "childIds": [
+        "jabal",
+        "jubal",
+        "tubal_cain",
+        "naamah"
+      ],
+      "yearSystem": "am",
+      "birthYear": null,
+      "summary": "Sixth generation in Cain’s line; took two wives Adah and Zillah; sang the first recorded song of vengeance.",
+      "summaryZhHans": "该隐家系的第六代；娶亚大与洗拉为妻；唱出经文记载的最早一首报复之歌。",
+      "summaryZhHant": "該隱家系的第六代；娶亞大與洗拉為妻；唱出經文記載的最早一首報復之歌。",
+      "refs": [
+        "Genesis 4:18-24"
+      ],
+      "era": "antediluvian"
+    },
+    {
+      "id": "adah",
+      "name": "Adah",
+      "nameZhHans": "亚大",
+      "nameZhHant": "亞大",
+      "fatherId": null,
+      "motherId": null,
+      "spouseIds": [
+        "lamech_cain"
+      ],
+      "childIds": [
+        "jabal",
+        "jubal"
+      ],
+      "yearSystem": "am",
+      "birthYear": null,
+      "summary": "Wife of Lamech in Cain’s line; mother of Jabal and Jubal.",
+      "summaryZhHans": "该隐家系拉麦之妻；雅八与犹八之母。",
+      "summaryZhHant": "該隱家系拉麥之妻；雅八與猶八之母。",
+      "refs": [
+        "Genesis 4:19-20"
+      ],
+      "era": "antediluvian"
+    },
+    {
+      "id": "zillah",
+      "name": "Zillah",
+      "nameZhHans": "洗拉",
+      "nameZhHant": "洗拉",
+      "fatherId": null,
+      "motherId": null,
+      "spouseIds": [
+        "lamech_cain"
+      ],
+      "childIds": [
+        "tubal_cain",
+        "naamah"
+      ],
+      "yearSystem": "am",
+      "birthYear": null,
+      "summary": "Wife of Lamech in Cain’s line; mother of Tubal-cain and Naamah.",
+      "summaryZhHans": "该隐家系拉麦之妻；土八该隐与拿玛之母。",
+      "summaryZhHant": "該隱家系拉麥之妻；土八該隱與拿瑪之母。",
+      "refs": [
+        "Genesis 4:19, 22"
+      ],
+      "era": "antediluvian"
+    },
+    {
+      "id": "jabal",
+      "name": "Jabal",
+      "nameZhHans": "雅八",
+      "nameZhHant": "雅八",
+      "fatherId": "lamech_cain",
+      "motherId": "adah",
+      "spouseIds": [],
+      "childIds": [],
+      "yearSystem": "am",
+      "birthYear": null,
+      "summary": "Father of those who dwell in tents and have livestock.",
+      "summaryZhHans": "住帐篷牧养牲畜之人的祖师。",
+      "summaryZhHant": "住帳篷牧養牲畜之人的祖師。",
+      "refs": [
+        "Genesis 4:20"
+      ],
+      "era": "antediluvian"
+    },
+    {
+      "id": "jubal",
+      "name": "Jubal",
+      "nameZhHans": "犹八",
+      "nameZhHant": "猶八",
+      "fatherId": "lamech_cain",
+      "motherId": "adah",
+      "spouseIds": [],
+      "childIds": [],
+      "yearSystem": "am",
+      "birthYear": null,
+      "summary": "Father of all who play the lyre and pipe.",
+      "summaryZhHans": "一切弹琴吹箫之人的祖师。",
+      "summaryZhHant": "一切彈琴吹簫之人的祖師。",
+      "refs": [
+        "Genesis 4:21"
+      ],
+      "era": "antediluvian"
+    },
+    {
+      "id": "tubal_cain",
+      "name": "Tubal-cain",
+      "nameZhHans": "土八该隐",
+      "nameZhHant": "土八該隱",
+      "fatherId": "lamech_cain",
+      "motherId": "zillah",
+      "spouseIds": [],
+      "childIds": [],
+      "yearSystem": "am",
+      "birthYear": null,
+      "summary": "Forger of all instruments of bronze and iron.",
+      "summaryZhHans": "打造各样铜铁利器之人的祖师。",
+      "summaryZhHant": "打造各樣銅鐵利器之人的祖師。",
+      "refs": [
+        "Genesis 4:22"
+      ],
+      "era": "antediluvian"
+    },
+    {
+      "id": "naamah",
+      "name": "Naamah",
+      "nameZhHans": "拿玛",
+      "nameZhHant": "拿瑪",
+      "fatherId": "lamech_cain",
+      "motherId": "zillah",
+      "spouseIds": [],
+      "childIds": [],
+      "yearSystem": "am",
+      "birthYear": null,
+      "summary": "Sister of Tubal-cain.",
+      "summaryZhHans": "土八该隐的妹妹。",
+      "summaryZhHant": "土八該隱的妹妹。",
+      "refs": [
+        "Genesis 4:22"
+      ],
+      "era": "antediluvian"
+    },
+    {
+      "id": "nebaioth",
+      "name": "Nebaioth",
+      "nameZhHans": "尼拜约",
+      "nameZhHant": "尼拜約",
+      "fatherId": "ishmael",
+      "spouseIds": [],
+      "childIds": [],
+      "yearSystem": "bc",
+      "birthYear": -1990,
+      "summary": "Ishmael's firstborn; chief of an Arab tribe.",
+      "summaryZhHans": "以实玛利长子；阿拉伯部族的族长。",
+      "summaryZhHant": "以實瑪利長子；阿拉伯部族的族長。",
+      "refs": [
+        "Genesis 25:13-15",
+        "1 Chronicles 1:29-31"
+      ],
+      "role": "ARABS",
+      "era": "patriarchs"
+    },
+    {
+      "id": "kedar",
+      "name": "Kedar",
+      "nameZhHans": "基达",
+      "nameZhHant": "基達",
+      "fatherId": "ishmael",
+      "spouseIds": [],
+      "childIds": [],
+      "yearSystem": "bc",
+      "birthYear": -1990,
+      "summary": "Second son of Ishmael; the Kedarites became a major Arab tribe in Scripture.",
+      "summaryZhHans": "以实玛利次子；基达人是经文中重要的阿拉伯部族。",
+      "summaryZhHant": "以實瑪利次子；基達人是經文中重要的阿拉伯部族。",
+      "refs": [
+        "Genesis 25:13-15",
+        "1 Chronicles 1:29-31"
+      ],
+      "role": "ARABS",
+      "era": "patriarchs"
+    },
+    {
+      "id": "adbeel",
+      "name": "Adbeel",
+      "nameZhHans": "亚德别",
+      "nameZhHant": "亞德別",
+      "fatherId": "ishmael",
+      "spouseIds": [],
+      "childIds": [],
+      "yearSystem": "bc",
+      "birthYear": -1990,
+      "summary": "Son of Ishmael.",
+      "summaryZhHans": "以实玛利之子。",
+      "summaryZhHant": "以實瑪利之子。",
+      "refs": [
+        "Genesis 25:13-15",
+        "1 Chronicles 1:29-31"
+      ],
+      "role": "ARABS",
+      "era": "patriarchs"
+    },
+    {
+      "id": "mibsam",
+      "name": "Mibsam",
+      "nameZhHans": "米比衫",
+      "nameZhHant": "米比衫",
+      "fatherId": "ishmael",
+      "spouseIds": [],
+      "childIds": [],
+      "yearSystem": "bc",
+      "birthYear": -1990,
+      "summary": "Son of Ishmael.",
+      "summaryZhHans": "以实玛利之子。",
+      "summaryZhHant": "以實瑪利之子。",
+      "refs": [
+        "Genesis 25:13-15",
+        "1 Chronicles 1:29-31"
+      ],
+      "role": "ARABS",
+      "era": "patriarchs"
+    },
+    {
+      "id": "mishma",
+      "name": "Mishma",
+      "nameZhHans": "米施玛",
+      "nameZhHant": "米施瑪",
+      "fatherId": "ishmael",
+      "spouseIds": [],
+      "childIds": [],
+      "yearSystem": "bc",
+      "birthYear": -1990,
+      "summary": "Son of Ishmael.",
+      "summaryZhHans": "以实玛利之子。",
+      "summaryZhHant": "以實瑪利之子。",
+      "refs": [
+        "Genesis 25:13-15",
+        "1 Chronicles 1:29-31"
+      ],
+      "role": "ARABS",
+      "era": "patriarchs"
+    },
+    {
+      "id": "dumah",
+      "name": "Dumah",
+      "nameZhHans": "度玛",
+      "nameZhHant": "度瑪",
+      "fatherId": "ishmael",
+      "spouseIds": [],
+      "childIds": [],
+      "yearSystem": "bc",
+      "birthYear": -1990,
+      "summary": "Son of Ishmael; an oasis tribe.",
+      "summaryZhHans": "以实玛利之子；绿洲部族。",
+      "summaryZhHant": "以實瑪利之子；綠洲部族。",
+      "refs": [
+        "Genesis 25:13-15",
+        "1 Chronicles 1:29-31"
+      ],
+      "role": "ARABS",
+      "era": "patriarchs"
+    },
+    {
+      "id": "massa",
+      "name": "Massa",
+      "nameZhHans": "玛撒",
+      "nameZhHant": "瑪撒",
+      "fatherId": "ishmael",
+      "spouseIds": [],
+      "childIds": [],
+      "yearSystem": "bc",
+      "birthYear": -1990,
+      "summary": "Son of Ishmael.",
+      "summaryZhHans": "以实玛利之子。",
+      "summaryZhHant": "以實瑪利之子。",
+      "refs": [
+        "Genesis 25:13-15",
+        "1 Chronicles 1:29-31"
+      ],
+      "role": "ARABS",
+      "era": "patriarchs"
+    },
+    {
+      "id": "hadad_ish",
+      "name": "Hadad",
+      "nameZhHans": "哈大",
+      "nameZhHant": "哈大",
+      "fatherId": "ishmael",
+      "spouseIds": [],
+      "childIds": [],
+      "yearSystem": "bc",
+      "birthYear": -1990,
+      "summary": "Son of Ishmael.",
+      "summaryZhHans": "以实玛利之子。",
+      "summaryZhHant": "以實瑪利之子。",
+      "refs": [
+        "Genesis 25:13-15",
+        "1 Chronicles 1:29-31"
+      ],
+      "role": "ARABS",
+      "era": "patriarchs"
+    },
+    {
+      "id": "tema",
+      "name": "Tema",
+      "nameZhHans": "提玛",
+      "nameZhHant": "提瑪",
+      "fatherId": "ishmael",
+      "spouseIds": [],
+      "childIds": [],
+      "yearSystem": "bc",
+      "birthYear": -1990,
+      "summary": "Son of Ishmael; namesake of the oasis Tema.",
+      "summaryZhHans": "以实玛利之子；提玛绿洲以他为名。",
+      "summaryZhHant": "以實瑪利之子；提瑪綠洲以他為名。",
+      "refs": [
+        "Genesis 25:13-15",
+        "1 Chronicles 1:29-31"
+      ],
+      "role": "ARABS",
+      "era": "patriarchs"
+    },
+    {
+      "id": "jetur",
+      "name": "Jetur",
+      "nameZhHans": "伊突",
+      "nameZhHant": "伊突",
+      "fatherId": "ishmael",
+      "spouseIds": [],
+      "childIds": [],
+      "yearSystem": "bc",
+      "birthYear": -1990,
+      "summary": "Son of Ishmael.",
+      "summaryZhHans": "以实玛利之子。",
+      "summaryZhHant": "以實瑪利之子。",
+      "refs": [
+        "Genesis 25:13-15",
+        "1 Chronicles 1:29-31"
+      ],
+      "role": "ARABS",
+      "era": "patriarchs"
+    },
+    {
+      "id": "naphish",
+      "name": "Naphish",
+      "nameZhHans": "拿非施",
+      "nameZhHant": "拿非施",
+      "fatherId": "ishmael",
+      "spouseIds": [],
+      "childIds": [],
+      "yearSystem": "bc",
+      "birthYear": -1990,
+      "summary": "Son of Ishmael.",
+      "summaryZhHans": "以实玛利之子。",
+      "summaryZhHant": "以實瑪利之子。",
+      "refs": [
+        "Genesis 25:13-15",
+        "1 Chronicles 1:29-31"
+      ],
+      "role": "ARABS",
+      "era": "patriarchs"
+    },
+    {
+      "id": "kedemah",
+      "name": "Kedemah",
+      "nameZhHans": "基底玛",
+      "nameZhHant": "基底瑪",
+      "fatherId": "ishmael",
+      "spouseIds": [],
+      "childIds": [],
+      "yearSystem": "bc",
+      "birthYear": -1990,
+      "summary": "Son of Ishmael.",
+      "summaryZhHans": "以实玛利之子。",
+      "summaryZhHant": "以實瑪利之子。",
+      "refs": [
+        "Genesis 25:13-15",
+        "1 Chronicles 1:29-31"
+      ],
+      "role": "ARABS",
+      "era": "patriarchs"
+    },
+    {
+      "id": "moab",
+      "name": "Moab",
+      "nameZhHans": "摩押",
+      "nameZhHant": "摩押",
+      "fatherId": "lot",
+      "motherId": null,
+      "spouseIds": [],
+      "childIds": [],
+      "yearSystem": "bc",
+      "birthYear": -2080,
+      "summary": "Born of Lot and his elder daughter after Sodom's destruction; ancestor of the Moabites.",
+      "summaryZhHans": "所多玛被毁后，由罗得与长女所生；摩押人的祖先。",
+      "summaryZhHant": "所多瑪被毀後，由羅得與長女所生；摩押人的祖先。",
+      "refs": [
+        "Genesis 19:30-37"
+      ],
+      "role": "MOABITES",
+      "era": "patriarchs"
+    },
+    {
+      "id": "ben_ammi",
+      "name": "Ben-Ammi",
+      "nameZhHans": "便亚米",
+      "nameZhHant": "便亞米",
+      "fatherId": "lot",
+      "motherId": null,
+      "spouseIds": [],
+      "childIds": [],
+      "yearSystem": "bc",
+      "birthYear": -2080,
+      "summary": "Born of Lot and his younger daughter; ancestor of the Ammonites.",
+      "summaryZhHans": "罗得与小女所生；亚扪人的祖先。",
+      "summaryZhHant": "羅得與小女所生；亞捫人的祖先。",
+      "refs": [
+        "Genesis 19:30-38"
+      ],
+      "role": "AMMONITES",
+      "era": "patriarchs"
+    },
+    {
+      "id": "zimran",
+      "name": "Zimran",
+      "nameZhHans": "心兰",
+      "nameZhHant": "心蘭",
+      "fatherId": "abraham",
+      "motherId": "keturah",
+      "spouseIds": [],
+      "childIds": [],
+      "yearSystem": "bc",
+      "birthYear": -2030,
+      "summary": "Son of Abraham by Keturah; ancestor of an Arabian tribal people.",
+      "summaryZhHans": "亚伯拉罕与基土拉所生之子；阿拉伯部族的祖先。",
+      "summaryZhHant": "亞伯拉罕與基土拉所生之子；阿拉伯部族的祖先。",
+      "refs": [
+        "Genesis 25:1-4",
+        "1 Chronicles 1:32-33"
+      ],
+      "era": "patriarchs"
+    },
+    {
+      "id": "jokshan",
+      "name": "Jokshan",
+      "nameZhHans": "约珊",
+      "nameZhHant": "約珊",
+      "fatherId": "abraham",
+      "motherId": "keturah",
+      "spouseIds": [],
+      "childIds": [],
+      "yearSystem": "bc",
+      "birthYear": -2030,
+      "summary": "Son of Abraham by Keturah; ancestor of an Arabian tribal people.",
+      "summaryZhHans": "亚伯拉罕与基土拉所生之子；阿拉伯部族的祖先。",
+      "summaryZhHant": "亞伯拉罕與基土拉所生之子；阿拉伯部族的祖先。",
+      "refs": [
+        "Genesis 25:1-4",
+        "1 Chronicles 1:32-33"
+      ],
+      "era": "patriarchs"
+    },
+    {
+      "id": "medan",
+      "name": "Medan",
+      "nameZhHans": "米但",
+      "nameZhHant": "米但",
+      "fatherId": "abraham",
+      "motherId": "keturah",
+      "spouseIds": [],
+      "childIds": [],
+      "yearSystem": "bc",
+      "birthYear": -2030,
+      "summary": "Son of Abraham by Keturah; ancestor of an Arabian tribal people.",
+      "summaryZhHans": "亚伯拉罕与基土拉所生之子；阿拉伯部族的祖先。",
+      "summaryZhHant": "亞伯拉罕與基土拉所生之子；阿拉伯部族的祖先。",
+      "refs": [
+        "Genesis 25:1-4",
+        "1 Chronicles 1:32-33"
+      ],
+      "era": "patriarchs"
+    },
+    {
+      "id": "ishbak",
+      "name": "Ishbak",
+      "nameZhHans": "伊施巴",
+      "nameZhHant": "伊施巴",
+      "fatherId": "abraham",
+      "motherId": "keturah",
+      "spouseIds": [],
+      "childIds": [],
+      "yearSystem": "bc",
+      "birthYear": -2030,
+      "summary": "Son of Abraham by Keturah; ancestor of an Arabian tribal people.",
+      "summaryZhHans": "亚伯拉罕与基土拉所生之子；阿拉伯部族的祖先。",
+      "summaryZhHant": "亞伯拉罕與基土拉所生之子；阿拉伯部族的祖先。",
+      "refs": [
+        "Genesis 25:1-4",
+        "1 Chronicles 1:32-33"
+      ],
+      "era": "patriarchs"
+    },
+    {
+      "id": "shuah",
+      "name": "Shuah",
+      "nameZhHans": "书亚",
+      "nameZhHant": "書亞",
+      "fatherId": "abraham",
+      "motherId": "keturah",
+      "spouseIds": [],
+      "childIds": [],
+      "yearSystem": "bc",
+      "birthYear": -2030,
+      "summary": "Son of Abraham by Keturah; ancestor of an Arabian tribal people.",
+      "summaryZhHans": "亚伯拉罕与基土拉所生之子；阿拉伯部族的祖先。",
+      "summaryZhHant": "亞伯拉罕與基土拉所生之子；阿拉伯部族的祖先。",
+      "refs": [
+        "Genesis 25:1-4",
+        "1 Chronicles 1:32-33"
+      ],
+      "era": "patriarchs"
+    },
+    {
+      "id": "gershon",
+      "name": "Gershon",
+      "nameZhHans": "革顺",
+      "nameZhHant": "革順",
+      "fatherId": "levi",
+      "spouseIds": [],
+      "childIds": [],
+      "yearSystem": "bc",
+      "birthYear": -1860,
+      "summary": "Eldest son of Levi; founded the Gershonite clan of priests, who carried the Tabernacle's curtains.",
+      "summaryZhHans": "利未的长子；革顺族的祖先，会幕的幔子由他们抬运。",
+      "summaryZhHant": "利未的長子；革順族的祖先，會幕的幔子由他們抬運。",
+      "refs": [
+        "Genesis 46:11",
+        "Numbers 3:17-26"
+      ],
+      "accent": "priestly",
+      "era": "patriarchs"
+    },
+    {
+      "id": "merari",
+      "name": "Merari",
+      "nameZhHans": "米拉利",
+      "nameZhHant": "米拉利",
+      "fatherId": "levi",
+      "spouseIds": [],
+      "childIds": [],
+      "yearSystem": "bc",
+      "birthYear": -1840,
+      "summary": "Youngest son of Levi; founded the Merarite clan, who carried the Tabernacle's frames and bars.",
+      "summaryZhHans": "利未的幼子；米拉利族的祖先，会幕的板和闩由他们抬运。",
+      "summaryZhHant": "利未的幼子；米拉利族的祖先，會幕的板和閂由他們抬運。",
+      "refs": [
+        "Genesis 46:11",
+        "Numbers 3:33-37"
+      ],
+      "accent": "priestly",
+      "era": "patriarchs"
+    },
+    {
+      "id": "eliphaz",
+      "name": "Eliphaz",
+      "nameZhHans": "以利法",
+      "nameZhHant": "以利法",
+      "fatherId": "esau",
+      "spouseIds": [],
+      "childIds": [
+        "amalek"
+      ],
+      "yearSystem": "bc",
+      "birthYear": -1820,
+      "summary": "Esau's firstborn; ancestor of several Edomite chiefs; father of Amalek by Timna.",
+      "summaryZhHans": "以扫的长子；以东多个族长的祖先；与亭纳生亚玛力。",
+      "summaryZhHant": "以掃的長子；以東多個族長的祖先；與亭納生亞瑪力。",
+      "refs": [
+        "Genesis 36:4",
+        "Genesis 36:10-12"
+      ],
+      "role": "EDOMITES",
+      "era": "patriarchs"
+    },
+    {
+      "id": "reuel",
+      "name": "Reuel",
+      "nameZhHans": "流珥",
+      "nameZhHant": "流珥",
+      "fatherId": "esau",
+      "spouseIds": [],
+      "childIds": [],
+      "yearSystem": "bc",
+      "birthYear": -1820,
+      "summary": "Son of Esau; chief of an Edomite clan.",
+      "summaryZhHans": "以扫之子；以东族长之一。",
+      "summaryZhHant": "以掃之子；以東族長之一。",
+      "refs": [
+        "Genesis 36:4",
+        "Genesis 36:13"
+      ],
+      "role": "EDOMITES",
+      "era": "patriarchs"
+    },
+    {
+      "id": "amalek",
+      "name": "Amalek",
+      "nameZhHans": "亚玛力",
+      "nameZhHant": "亞瑪力",
+      "fatherId": "eliphaz",
+      "spouseIds": [],
+      "childIds": [],
+      "yearSystem": "bc",
+      "birthYear": -1820,
+      "summary": "Son of Eliphaz by his concubine Timna; ancestor of the Amalekites, perpetual enemies of Israel.",
+      "summaryZhHans": "以利法与妾亭纳所生；亚玛力人的祖先，以色列世代的敌人。",
+      "summaryZhHant": "以利法與妾亭納所生；亞瑪力人的祖先，以色列世代的敵人。",
+      "refs": [
+        "Genesis 36:12",
+        "Exodus 17:8-16",
+        "1 Samuel 15:2-3"
+      ],
+      "role": "EDOMITES",
+      "era": "patriarchs"
     }
   ]
 }

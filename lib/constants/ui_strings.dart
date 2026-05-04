@@ -1943,6 +1943,188 @@ const uiStrings = {
     'zh-Hant': '點擊查看詳情 · 長按聚焦此人',
     'en': 'Tap for details · long-press to focus',
   },
+  'familyTreeTapRefocus': {
+    'zh-Hans': '点击展开此人 · 点击 ⓘ 查看详情',
+    'zh-Hant': '點擊展開此人 · 點擊 ⓘ 查看詳情',
+    'en': 'Tap to expand · ⓘ for details',
+  },
+  'familyTreeOpenDetails': {
+    'zh-Hans': '查看详情',
+    'zh-Hant': '查看詳情',
+    'en': 'Details',
+  },
+  'familyTreeOrphanMatches': {
+    'zh-Hans': '其他匹配（不在亚当谱系中）',
+    'zh-Hant': '其他匹配（不在亞當譜系中）',
+    'en': 'Other matches (not in the Adam lineage)',
+  },
+  'familyTreePrevMatch': {
+    'zh-Hans': '上一个匹配',
+    'zh-Hant': '上一個匹配',
+    'en': 'Previous match',
+  },
+  'familyTreeNextMatch': {
+    'zh-Hans': '下一个匹配',
+    'zh-Hant': '下一個匹配',
+    'en': 'Next match',
+  },
+  'familyTreeSiblings': {
+    'zh-Hans': '兄弟姐妹',
+    'zh-Hant': '兄弟姐妹',
+    'en': 'Siblings',
+  },
+  'familyTreeTribeLine': {
+    'zh-Hans': '所属支派 / 世系',
+    'zh-Hant': '所屬支派 / 世系',
+    'en': 'Tribe / line',
+  },
+  'familyTreeJumpAdam': {
+    'zh-Hans': '亚当',
+    'zh-Hant': '亞當',
+    'en': 'Adam',
+  },
+  'familyTreeJumpNoah': {
+    'zh-Hans': '挪亚',
+    'zh-Hant': '挪亞',
+    'en': 'Noah',
+  },
+  'familyTreeJumpAbraham': {
+    'zh-Hans': '亚伯拉罕',
+    'zh-Hant': '亞伯拉罕',
+    'en': 'Abraham',
+  },
+  'familyTreeJumpMoses': {
+    'zh-Hans': '摩西',
+    'zh-Hant': '摩西',
+    'en': 'Moses',
+  },
+  'familyTreeJumpDavid': {
+    'zh-Hans': '大卫',
+    'zh-Hant': '大衛',
+    'en': 'David',
+  },
+  'familyTreeJumpExile': {
+    'zh-Hans': '被掳',
+    'zh-Hant': '被擄',
+    'en': 'Exile',
+  },
+  'familyTreeJumpJesus': {
+    'zh-Hans': '耶稣',
+    'zh-Hant': '耶穌',
+    'en': 'Jesus',
+  },
+  'familyTreeComparisonTitle': {
+    'zh-Hans': '族谱对照表',
+    'zh-Hant': '族譜對照表',
+    'en': 'Comparison of genealogies',
+  },
+  'familyTreeComparisonSubtitle': {
+    'zh-Hans': '亚当 → 耶稣，按经文出处对照',
+    'zh-Hant': '亞當 → 耶穌，按經文出處對照',
+    'en': 'Adam → Jesus by canonical Bible source',
+  },
+  'familyTreeColGen': {
+    'zh-Hans': '世代',
+    'zh-Hant': '世代',
+    'en': 'Gen',
+  },
+  'familyTreeColName': {
+    'zh-Hans': '姓名',
+    'zh-Hant': '姓名',
+    'en': 'Name',
+  },
+  'familyTreeColYears': {
+    'zh-Hans': '年代',
+    'zh-Hant': '年代',
+    'en': 'Years',
+  },
+  'familyTreeColGen5': {
+    'zh-Hans': '创 5',
+    'zh-Hant': '創 5',
+    'en': 'Gen 5',
+  },
+  'familyTreeColGen11': {
+    'zh-Hans': '创 11',
+    'zh-Hant': '創 11',
+    'en': 'Gen 11',
+  },
+  'familyTreeColChron1': {
+    'zh-Hans': '代上 1',
+    'zh-Hant': '代上 1',
+    'en': '1 Chr 1',
+  },
+  'familyTreeColRuth4': {
+    'zh-Hans': '得 4',
+    'zh-Hant': '得 4',
+    'en': 'Ruth 4',
+  },
+  'familyTreeColMatt1': {
+    'zh-Hans': '太 1',
+    'zh-Hant': '太 1',
+    'en': 'Matt 1',
+  },
+  'familyTreeColLuke3': {
+    'zh-Hans': '路 3',
+    'zh-Hant': '路 3',
+    'en': 'Luke 3',
+  },
+  // Era subtitles — one short line of orientation per section
+  // (description + date range), shown under the section header.
+  'familyTreeEraSubAntediluvian': {
+    'en': 'Ten generations from Adam to Noah · AM 0 – 1656',
+    'zh-Hans': '从亚当到挪亚十代 · 创世以来 0 – 1656 年',
+    'zh-Hant': '從亞當到挪亞十代 · 創世以來 0 – 1656 年',
+  },
+  'familyTreeEraSubPostFlood': {
+    'en': 'Shem to Terah, post-Flood patriarchs · ~BC 2400 – 2000',
+    'zh-Hans': '闪到他拉，洪水后的列祖 · 约公元前 2400 – 2000',
+    'zh-Hant': '閃到他拉，洪水後的列祖 · 約公元前 2400 – 2000',
+  },
+  'familyTreeEraSubPatriarchs': {
+    'en': 'Abraham, Isaac, Jacob & the twelve tribes · ~BC 2200 – 1700',
+    'zh-Hans': '亚伯拉罕、以撒、雅各与十二支派 · 约公元前 2200 – 1700',
+    'zh-Hant': '亞伯拉罕、以撒、雅各與十二支派 · 約公元前 2200 – 1700',
+  },
+  'familyTreeEraSubMosaic': {
+    'en': 'Aaron the High Priest, Moses the Lawgiver & Miriam · ~BC 1500 – 1400',
+    'zh-Hans': '大祭司亚伦、律法颁布者摩西、米利暗 · 约公元前 1500 – 1400',
+    'zh-Hant': '大祭司亞倫、律法頒布者摩西、米利暗 · 約公元前 1500 – 1400',
+  },
+  'familyTreeEraSubDavidic': {
+    'en': 'Perez through Boaz & Ruth to Jesse, father of David · ~BC 1900 – 1050',
+    'zh-Hans': '法勒斯经波阿斯和路得到大卫之父耶西 · 约公元前 1900 – 1050',
+    'zh-Hant': '法勒斯經波阿斯和路得到大衛之父耶西 · 約公元前 1900 – 1050',
+  },
+  'familyTreeEraSubKings': {
+    'en': 'Kings of Judah from David to Jeconiah · BC 1010 – 586',
+    'zh-Hans': '犹大列王，从大卫到耶哥尼雅 · 公元前 1010 – 586',
+    'zh-Hant': '猶大列王，從大衛到耶哥尼雅 · 公元前 1010 – 586',
+  },
+  'familyTreeEraSubExile': {
+    'en': 'Shealtiel through Matthan to Joseph (Matthew 1:13–16)',
+    'zh-Hans': '撒拉铁经马但到约瑟（马太福音 1:13–16）',
+    'zh-Hant': '撒拉鐵經馬但到約瑟（馬太福音 1:13–16）',
+  },
+  'familyTreeEraSubNt': {
+    'en': 'The earthly family of Jesus the Messiah · ~BC 5 – AD 30',
+    'zh-Hans': '弥赛亚耶稣的地上家庭 · 约公元前 5 – 公元 30',
+    'zh-Hant': '彌賽亞耶穌的地上家庭 · 約公元前 5 – 公元 30',
+  },
+  'familyTreeExpandAll': {
+    'en': 'Expand all',
+    'zh-Hans': '全部展开',
+    'zh-Hant': '全部展開',
+  },
+  'familyTreeCollapseAll': {
+    'en': 'Collapse all',
+    'zh-Hans': '全部收起',
+    'zh-Hant': '全部收起',
+  },
+  'familyTreeMatchCount': {
+    'zh-Hans': '第 {index}/{total} 个匹配',
+    'zh-Hant': '第 {index}/{total} 個匹配',
+    'en': 'Match {index} of {total}',
+  },
   'familyTreeExpand': {
     'zh-Hans': '展开',
     'zh-Hant': '展開',

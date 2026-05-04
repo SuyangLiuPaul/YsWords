@@ -53,6 +53,14 @@ class PersonDetailSheet extends StatelessWidget {
     ];
     final years = person.displayYears(locale);
 
+    // Logos-style "associated trees" surface — sibling chips plus
+    // a chip for the closest tribe / role-tagged ancestor (e.g.
+    // for Aaron: Levi (PRIESTLY TRIBE); for Solomon: Judah (ROYAL
+    // TRIBE)). These act as one-tap shortcuts to lateral context
+    // without the user having to walk back up the chain manually.
+    final siblings = _siblingsOf(person, svc);
+    final tribeAncestor = _closestTribeAncestor(person, svc);
+
     return ListView(
       controller: scrollController,
       padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
@@ -129,6 +137,22 @@ class PersonDetailSheet extends StatelessWidget {
               for (final c in children) _personChip(context, c, scheme),
             ],
           ),
+        if (siblings.isNotEmpty)
+          _section(
+            scheme: scheme,
+            label: uiStrings['familyTreeSiblings']?[locale] ?? 'Siblings',
+            children: [
+              for (final s in siblings) _personChip(context, s, scheme),
+            ],
+          ),
+        if (tribeAncestor != null)
+          _section(
+            scheme: scheme,
+            label: uiStrings['familyTreeTribeLine']?[locale] ?? 'Tribe / line',
+            children: [
+              _personChip(context, tribeAncestor, scheme),
+            ],
+          ),
         if (person.refs.isNotEmpty) ...[
           const SizedBox(height: 4),
           _section(
@@ -145,6 +169,49 @@ class PersonDetailSheet extends StatelessWidget {
         _AncestryTrail(person: person, locale: locale, scheme: scheme),
       ],
     );
+  }
+
+  /// People with the same father OR mother as [p], excluding [p].
+  /// Walks both parents' childIds + dedupes; preserves ordering.
+  List<BiblicalPerson> _siblingsOf(
+      BiblicalPerson p, FamilyTreeService svc) {
+    final out = <BiblicalPerson>[];
+    final seen = <String>{p.id};
+    void addSiblingsFrom(String? parentId) {
+      if (parentId == null) return;
+      final parent = svc.byId(parentId);
+      if (parent == null) return;
+      for (final cid in parent.childIds) {
+        if (seen.add(cid)) {
+          final c = svc.byId(cid);
+          if (c != null) out.add(c);
+        }
+      }
+    }
+    addSiblingsFrom(p.fatherId);
+    addSiblingsFrom(p.motherId);
+    return out;
+  }
+
+  /// Walk up the father / mother chain and return the closest
+  /// ancestor whose [BiblicalPerson.role] contains "TRIBE" — i.e.
+  /// the named tribe / line this person belongs to. e.g. Aaron →
+  /// Levi (PRIESTLY TRIBE); Solomon → Judah (ROYAL TRIBE). Returns
+  /// null when no ancestor is tribe-labelled (Adam → Noah etc.).
+  BiblicalPerson? _closestTribeAncestor(
+      BiblicalPerson p, FamilyTreeService svc) {
+    var cur = p;
+    for (var i = 0; i < 200; i++) {
+      final pid = cur.fatherId ?? cur.motherId;
+      if (pid == null) return null;
+      final next = svc.byId(pid);
+      if (next == null) return null;
+      if ((next.role ?? '').toUpperCase().contains('TRIBE')) {
+        return next;
+      }
+      cur = next;
+    }
+    return null;
   }
 
   Widget _section({
