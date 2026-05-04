@@ -12,6 +12,7 @@ import 'package:yswords/providers/main_provider.dart';
 import 'package:yswords/services/family_tree_service.dart';
 import 'package:yswords/utils/jump_to_reference.dart' as jumper;
 import 'package:yswords/utils/reference_parser.dart';
+import 'package:yswords/utils/version_mapper.dart' show localeAwareBookName;
 
 /// Bottom sheet showing the full record for one [BiblicalPerson].
 /// Sections (in render order):
@@ -288,7 +289,7 @@ class PersonDetailSheet extends StatelessWidget {
       buf.writeln(
           '${uiStrings['familyTreeReferences']?[locale] ?? 'Verse references'}:');
       for (final r in person.refs) {
-        buf.writeln('  • $r');
+        buf.writeln('  • ${_localizedRef(r)}');
       }
     }
 
@@ -296,49 +297,96 @@ class PersonDetailSheet extends StatelessWidget {
     try {
       await Clipboard.setData(ClipboardData(text: payload));
     } catch (_) {
-      // Clipboard write can fail on some restricted web contexts.
-      // Surface the failure so the user knows.
       if (!context.mounted) return false;
-      final messenger = ScaffoldMessenger.maybeOf(context);
-      messenger?.showSnackBar(SnackBar(
-        content: Text(
-          uiStrings['familyTreeCopyFailedToast']?[locale] ??
-              'Copy failed — clipboard not available',
-          style: const TextStyle(color: Colors.white),
-        ),
-        backgroundColor: Theme.of(context).colorScheme.error,
-        duration: const Duration(milliseconds: 2000),
-        behavior: SnackBarBehavior.floating,
-      ));
+      _showFloatingToast(
+        context,
+        message: uiStrings['familyTreeCopyFailedToast']?[locale] ??
+            'Copy failed — clipboard not available',
+        icon: Icons.error_outline_rounded,
+        background: Theme.of(context).colorScheme.error,
+      );
       return false;
     }
     if (!context.mounted) return true;
-    // Toast is also shown (in addition to the icon's green-check
-    // flash), so users on wide screens see both confirmations.
-    final messenger = ScaffoldMessenger.maybeOf(context);
-    messenger?.hideCurrentSnackBar();
-    messenger?.showSnackBar(SnackBar(
-      content: Row(
-        children: [
-          const Icon(Icons.check_circle_rounded,
-              color: Colors.white, size: 18),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              uiStrings['familyTreeCopiedToast']?[locale] ??
-                  'Copied to clipboard',
-              style: const TextStyle(
-                  fontWeight: FontWeight.w600, color: Colors.white),
+    _showFloatingToast(
+      context,
+      message: uiStrings['familyTreeCopiedToast']?[locale] ??
+          'Copied to clipboard',
+      icon: Icons.check_circle_rounded,
+      background: Theme.of(context).colorScheme.primary,
+    );
+    return true;
+  }
+
+  /// Shows a transient toast in the **root overlay** so it appears
+  /// ABOVE the modal bottom sheet (the default
+  /// ScaffoldMessenger.showSnackBar renders at the Scaffold level
+  /// which the modal sheet covers — that's why the user wasn't
+  /// seeing the "copied" confirmation).
+  void _showFloatingToast(
+    BuildContext context, {
+    required String message,
+    required IconData icon,
+    required Color background,
+  }) {
+    final overlay = Overlay.maybeOf(context, rootOverlay: true);
+    if (overlay == null) return;
+    final OverlayEntry entry;
+    entry = OverlayEntry(
+      builder: (ctx) {
+        final media = MediaQuery.of(ctx);
+        return Positioned(
+          left: 0,
+          right: 0,
+          top: media.padding.top + 24,
+          child: IgnorePointer(
+            child: Center(
+              child: Material(
+                color: Colors.transparent,
+                child: Container(
+                  constraints: const BoxConstraints(maxWidth: 360),
+                  margin: const EdgeInsets.symmetric(horizontal: 24),
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 18, vertical: 14),
+                  decoration: BoxDecoration(
+                    color: background,
+                    borderRadius: BorderRadius.circular(28),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.25),
+                        blurRadius: 16,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(icon, color: Colors.white, size: 20),
+                      const SizedBox(width: 10),
+                      Flexible(
+                        child: Text(
+                          message,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
             ),
           ),
-        ],
-      ),
-      backgroundColor: Theme.of(context).colorScheme.primary,
-      duration: const Duration(milliseconds: 2000),
-      behavior: SnackBarBehavior.floating,
-      margin: const EdgeInsets.fromLTRB(16, 8, 16, 80),
-    ));
-    return true;
+        );
+      },
+    );
+    overlay.insert(entry);
+    Future.delayed(const Duration(milliseconds: 2000), () {
+      entry.remove();
+    });
   }
 
   /// People with the same father OR mother as [p], excluding [p].
@@ -440,13 +488,26 @@ class PersonDetailSheet extends StatelessWidget {
   Widget _refChip(BuildContext context, String ref, ColorScheme scheme) {
     return ActionChip(
       avatar: Icon(Icons.menu_book_outlined, size: 14, color: scheme.primary),
-      label: Text(ref, style: const TextStyle(fontSize: 12)),
+      label: Text(_localizedRef(ref),
+          style: const TextStyle(fontSize: 12)),
       onPressed: () => _jumpToRef(context, ref),
       visualDensity: VisualDensity.compact,
       backgroundColor: scheme.primaryContainer.withValues(alpha: 0.18),
       side: BorderSide(color: scheme.primary.withValues(alpha: 0.3)),
       padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 0),
     );
+  }
+
+  /// Translate the ref's English book name into the user's UI
+  /// locale's name. Original is passed through unchanged when
+  /// parsing fails.  e.g. "Genesis 1:26-27" → "创世记 1:26-27" /
+  /// "創世記 1:26-27".
+  String _localizedRef(String raw) {
+    final parsed = parseReference(raw);
+    if (parsed == null) return raw;
+    final book = localeAwareBookName(parsed.englishBook, locale);
+    final tail = parsed.toString().replaceFirst(parsed.englishBook, '');
+    return '$book$tail';
   }
 
   Future<void> _jumpToRef(BuildContext context, String raw) async {

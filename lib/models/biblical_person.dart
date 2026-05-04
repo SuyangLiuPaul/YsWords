@@ -120,10 +120,22 @@ class BiblicalPerson {
   /// Returns empty when no birth or death year is set.
   String displayYears(String locale) {
     final am = yearSystem == 'am';
+    final isZh = locale.startsWith('zh');
     String fmt(int? y) {
       if (y == null) return '';
-      if (am) return 'AM $y';
-      if (y < 0) return '${-y} BC';
+      if (am) {
+        if (isZh) return '创世后 $y 年';
+        return 'AM $y';
+      }
+      if (y < 0) {
+        // BC → 公元前 (Simplified) / 公元前 (Traditional, same chars)
+        if (isZh) return '公元前 ${-y} 年';
+        return '${-y} BC';
+      }
+      // AD → 公元 (Simplified) / 西元 (sometimes used in Traditional;
+      // 公元 is also widely accepted on Taiwan / HK so use it for
+      // consistency with 公元前 above).
+      if (isZh) return '公元 $y 年';
       return 'AD $y';
     }
     final b = fmt(birthYear);
