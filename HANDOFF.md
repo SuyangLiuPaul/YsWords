@@ -511,9 +511,37 @@ Model field additions in `lib/models/biblical_person.dart`:
 2. **Default state too sparse.** Each era previously rendered just
    its root row with everything below collapsed behind chevrons —
    "Adam alone" in antediluvian. Fix: in `_load()`, populate
-   `_expanded` with every parent's id so each section's mini-tree
-   renders fully expanded by default (Wikipedia-style "everything
-   visible"). User can collapse via chevrons to taste.
+   `_expanded` with every parent's id so when a section is opened,
+   its full mini-tree is visible.
+
+**Default: all sections collapsed.** First impression is a clean
+TOC of the 8 era headers + the comparison table, so the user can
+scan eras and click into the one that interests them. Search
+auto-uncollapses any section containing a match. Bridge chips also
+auto-uncollapse the target section.
+
+**Bridge chips between sections.** When a section is opened, the
+bottom of its body shows a "Continues with: [Person]" chip pointing
+to the canonical successor in the next era. Mapping in
+`_eraBridges`:
+
+* Antediluvian → Noah (Post-Flood)
+* Post-Flood → Abraham (Patriarchs)
+* Patriarchs → Kohath (Mosaic) + Perez (Davidic Line) — two
+  branches because the patriarchal era continues both into the
+  Levitical priestly line and into the Judaic / Davidic line
+* Mosaic → (dead end — Aaron / Moses descendants don't continue
+  forward in our dataset)
+* Davidic Line → David (Kings)
+* Kings → Shealtiel (Exile)
+* Exile → Joseph (NT)
+* NT → (final)
+
+Tapping a bridge chip uncollapses the target section, scrolls to
+it via `Scrollable.ensureVisible` (per-era `GlobalKey`s in
+`_eraKeys`), and opens the detail sheet for that bridge person —
+so the user reads the lineage as one continuous story Adam →
+Noah → Abraham → David → Jesus.
 
 The previous visual-tree widget at `lib/widgets/family_visual_tree.dart`
 was removed entirely. A spawned task chip remains available to embed

@@ -52,11 +52,33 @@ class _FamilyTreePageState extends State<FamilyTreePage> {
   /// in ancestor chains so matches are revealed in context.
   final Set<String> _expanded = {};
 
-  /// Era keys that the user has manually collapsed. Inverted from
-  /// the more typical "expanded" set so the default state is "all
-  /// sections open" without having to enumerate every era at
-  /// startup.
+  /// Era keys that are currently collapsed. Default state is "all
+  /// sections collapsed" so the page opens as a clean TOC view of
+  /// 8 era headers + comparison table — the user clicks into the
+  /// era they're interested in. Once a section is opened, every
+  /// person inside is rendered in full (see `_load`).
   final Set<String> _collapsedEras = {};
+
+  /// Per-era anchor keys so the bridge chips at the end of one
+  /// section can `Scrollable.ensureVisible` the next section into
+  /// view when tapped.
+  final Map<String, GlobalKey> _eraKeys = {};
+
+  /// Bridge map: "at the end of era X, link to person Y (and Z) who
+  /// continues the lineage in the next era." Drives the
+  /// "Continues with: …" footer row inside each expanded section.
+  /// Mosaic and NT are dead-ends (no canonical continuation), so
+  /// their lists are empty.
+  static const Map<String, List<String>> _eraBridges = {
+    'antediluvian': ['noah'],
+    'post_flood': ['abraham'],
+    'patriarchs': ['kohath', 'perez'],
+    'mosaic': [],
+    'davidic_line': ['david'],
+    'kings': ['shealtiel'],
+    'exile': ['joseph_father_of_jesus'],
+    'nt': [],
+  };
 
   /// Canonical era ordering — drives the order of section blocks.
   static const List<String> _eraOrder = [
@@ -88,6 +110,12 @@ class _FamilyTreePageState extends State<FamilyTreePage> {
     super.initState();
     _future = _load();
     _searchController = TextEditingController();
+    // Default-collapse every section. User opens what they're
+    // interested in; a search match auto-uncollapses its section.
+    _collapsedEras.addAll(_eraOrder);
+    for (final e in _eraOrder) {
+      _eraKeys[e] = GlobalKey();
+    }
   }
 
   @override
@@ -380,31 +408,45 @@ class _FamilyTreePageState extends State<FamilyTreePage> {
           eraPeople.any((p) => p.id == id));
       // Auto-uncollapse any section that contains a match.
       final isCollapsed = _collapsedEras.contains(era) && !hasMatch;
-      sections.add(_EraSection(
-        era: era,
-        people: eraPeople,
-        svc: data.svc,
-        locale: locale,
-        scheme: scheme,
-        isCollapsed: isCollapsed,
-        onToggle: () => setState(() {
-          if (_collapsedEras.contains(era)) {
-            _collapsedEras.remove(era);
-          } else {
-            _collapsedEras.add(era);
-          }
-        }),
-        expanded: _expanded,
-        ancestorIds: ancestorIds,
-        matchIds: matchIds,
-        onTogglePerson: (id) => setState(() {
-          if (_expanded.contains(id)) {
-            _expanded.remove(id);
-          } else {
-            _expanded.add(id);
-          }
-        }),
-        onTapPerson: _showDetail,
+      // Resolve bridge people to objects for the "continues with"
+      // footer chips. Bridges may live in a different era than the
+      // current one (that's the whole point — they link forward).
+      final bridges = <BiblicalPerson>[];
+      final bridgeIds = _eraBridges[era] ?? const <String>[];
+      for (final bid in bridgeIds) {
+        final bp = data.svc.byId(bid);
+        if (bp != null) bridges.add(bp);
+      }
+      sections.add(KeyedSubtree(
+        key: _eraKeys[era],
+        child: _EraSection(
+          era: era,
+          people: eraPeople,
+          svc: data.svc,
+          locale: locale,
+          scheme: scheme,
+          isCollapsed: isCollapsed,
+          onToggle: () => setState(() {
+            if (_collapsedEras.contains(era)) {
+              _collapsedEras.remove(era);
+            } else {
+              _collapsedEras.add(era);
+            }
+          }),
+          expanded: _expanded,
+          ancestorIds: ancestorIds,
+          matchIds: matchIds,
+          onTogglePerson: (id) => setState(() {
+            if (_expanded.contains(id)) {
+              _expanded.remove(id);
+            } else {
+              _expanded.add(id);
+            }
+          }),
+          onTapPerson: _showDetail,
+          bridges: bridges,
+          onJumpToEra: _jumpToEra,
+        ),
       ));
     }
 
@@ -448,6 +490,24 @@ class _FamilyTreePageState extends State<FamilyTreePage> {
       cur = next;
     }
     return out.reversed.toList();
+  }
+
+  /// Bridge-chip tap handler: uncollapse the target era and scroll
+  /// its section into view. Used by the "Continues with: …" footer
+  /// row at the end of each expanded section.
+  void _jumpToEra(String era) {
+    setState(() => _collapsedEras.remove(era));
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final ctx = _eraKeys[era]?.currentContext;
+      if (ctx != null) {
+        Scrollable.ensureVisible(
+          ctx,
+          alignment: 0.05,
+          duration: const Duration(milliseconds: 320),
+          curve: Curves.easeOutCubic,
+        );
+      }
+    });
   }
 
   // ── Detail sheet ───────────────────────────────────────────────
@@ -496,6 +556,8 @@ class _EraSection extends StatelessWidget {
   final Set<String> matchIds;
   final void Function(String id) onTogglePerson;
   final void Function(BiblicalPerson) onTapPerson;
+  final List<BiblicalPerson> bridges;
+  final void Function(String era) onJumpToEra;
 
   const _EraSection({
     required this.era,
@@ -510,6 +572,8 @@ class _EraSection extends StatelessWidget {
     required this.matchIds,
     required this.onTogglePerson,
     required this.onTapPerson,
+    required this.bridges,
+    required this.onJumpToEra,
   });
 
   @override
@@ -667,6 +731,25 @@ class _EraSection extends StatelessWidget {
                       eraIds: eraIds,
                       seen: <String>{},
                     ),
+                  if (bridges.isNotEmpty)
+                    _BridgeFooter(
+                      bridges: bridges,
+                      locale: locale,
+                      scheme: scheme,
+                      eraColor: color,
+                      onTapBridge: (target) {
+                        // Tap a bridge person → jump to whichever
+                        // era they belong to (the next section in
+                        // the canonical order).
+                        final targetEra = target.era;
+                        if (targetEra != null) {
+                          onJumpToEra(targetEra);
+                        }
+                        // Also open their detail sheet so the user
+                        // sees who they just bridged into.
+                        onTapPerson(target);
+                      },
+                    ),
                 ],
               ),
             ),
@@ -720,6 +803,125 @@ class _EraSection extends StatelessWidget {
                   seen: seen,
                 ),
       ],
+    );
+  }
+}
+
+// ── Bridge footer ──────────────────────────────────────────────
+
+/// "Continues with: [Person] [Person]" footer at the bottom of an
+/// expanded era section. Each person chip is tappable — tap to
+/// uncollapse + scroll to whichever section they live in (the next
+/// era in canonical order) and open the detail sheet for them.
+class _BridgeFooter extends StatelessWidget {
+  final List<BiblicalPerson> bridges;
+  final String locale;
+  final ColorScheme scheme;
+  final Color eraColor;
+  final void Function(BiblicalPerson) onTapBridge;
+
+  const _BridgeFooter({
+    required this.bridges,
+    required this.locale,
+    required this.scheme,
+    required this.eraColor,
+    required this.onTapBridge,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(top: 8, left: 8, right: 8, bottom: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      decoration: BoxDecoration(
+        color: eraColor.withValues(alpha: 0.07),
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(
+          color: eraColor.withValues(alpha: 0.3),
+          width: 0.7,
+        ),
+      ),
+      child: Wrap(
+        crossAxisAlignment: WrapCrossAlignment.center,
+        spacing: 6,
+        runSpacing: 4,
+        children: [
+          Icon(Icons.east_rounded, size: 14, color: eraColor),
+          const SizedBox(width: 2),
+          Text(
+            uiStrings['familyTreeContinuesWith']?[locale] ??
+                'Continues with',
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 0.4,
+              color: eraColor,
+            ),
+          ),
+          for (final p in bridges)
+            _BridgeChip(
+              person: p,
+              locale: locale,
+              scheme: scheme,
+              eraColor: eraColor,
+              onTap: () => onTapBridge(p),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class _BridgeChip extends StatelessWidget {
+  final BiblicalPerson person;
+  final String locale;
+  final ColorScheme scheme;
+  final Color eraColor;
+  final VoidCallback onTap;
+
+  const _BridgeChip({
+    required this.person,
+    required this.locale,
+    required this.scheme,
+    required this.eraColor,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(4),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+          decoration: BoxDecoration(
+            color: eraColor.withValues(alpha: 0.12),
+            borderRadius: BorderRadius.circular(4),
+            border: Border.all(
+              color: eraColor.withValues(alpha: 0.5),
+              width: 0.7,
+            ),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.person_pin_rounded,
+                  size: 11, color: eraColor),
+              const SizedBox(width: 3),
+              Text(
+                person.localizedName(locale),
+                style: TextStyle(
+                  fontSize: 11.5,
+                  fontWeight: FontWeight.w700,
+                  color: eraColor,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

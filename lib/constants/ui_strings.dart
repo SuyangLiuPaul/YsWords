@@ -2120,6 +2120,11 @@ const uiStrings = {
     'zh-Hans': '全部收起',
     'zh-Hant': '全部收起',
   },
+  'familyTreeContinuesWith': {
+    'en': 'Continues with',
+    'zh-Hans': '下一位',
+    'zh-Hant': '下一位',
+  },
   'familyTreeMatchCount': {
     'zh-Hans': '第 {index}/{total} 个匹配',
     'zh-Hant': '第 {index}/{total} 個匹配',
