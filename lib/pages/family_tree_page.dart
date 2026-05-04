@@ -167,22 +167,83 @@ class _FamilyTreePageState extends State<FamilyTreePage> {
 
   // ── Filter helpers ───────────────────────────────────────────────
 
+  /// Tiered relevance search. Returns only the **best non-empty
+  /// tier** of matches so a search for "Jesus" returns just Jesus
+  /// (exact name match) rather than every ancestor whose summary
+  /// happens to mention Him.
+  ///
+  /// Tiers, in priority order:
+  ///   1. Exact name match (any of en / zh-Hans / zh-Hant)
+  ///   2. Name starts with
+  ///   3. Name contains
+  ///   4. Role contains (e.g. "PATRIARCH" → all patriarchs)
+  ///   5. Summary contains (catch-all — only used if all earlier
+  ///      tiers are empty)
+  ///
+  /// Within a tier, results are sorted by canonical era order so
+  /// the user sees the chronological flow (Adam first, NT last).
   List<BiblicalPerson> _filtered(
       List<BiblicalPerson> all, String query) {
     final q = sanitizeForSearch(query).toLowerCase();
-    return all.where((p) {
-      final hay = [
-        p.name,
-        p.nameZhHans ?? '',
-        p.nameZhHant ?? '',
-        p.id,
-        p.role ?? '',
+    if (q.isEmpty) return const [];
+
+    int eraIndexOf(BiblicalPerson p) {
+      final i = _eraOrder.indexOf(p.era ?? '');
+      return i < 0 ? _eraOrder.length : i;
+    }
+
+    final tiers = <int, List<BiblicalPerson>>{};
+    void addTier(int tier, BiblicalPerson p) {
+      tiers.putIfAbsent(tier, () => <BiblicalPerson>[]).add(p);
+    }
+
+    for (final p in all) {
+      final names = <String>[
+        p.name.toLowerCase(),
+        (p.nameZhHans ?? '').toLowerCase(),
+        (p.nameZhHant ?? '').toLowerCase(),
+      ];
+      final role = (p.role ?? '').toLowerCase();
+      final summary = [
         p.summary,
         p.summaryZhHans ?? '',
         p.summaryZhHant ?? '',
       ].join(' ').toLowerCase();
-      return hay.contains(q);
-    }).toList();
+
+      if (names.any((n) => n.isNotEmpty && n == q)) {
+        addTier(1, p);
+      } else if (names.any((n) => n.startsWith(q))) {
+        addTier(2, p);
+      } else if (names.any((n) => n.contains(q))) {
+        addTier(3, p);
+      } else if (role.isNotEmpty && role.contains(q)) {
+        addTier(4, p);
+      } else if (summary.contains(q)) {
+        addTier(5, p);
+      }
+    }
+
+    // Aggregation rules:
+    //   • If ANY name match (tiers 1-3): return all name matches.
+    //     "Joseph" → 4 results (tribe + father of Jesus + 2 Lukan
+    //     Josephs); "Jesus" → 1 result (only Jesus exactly).
+    //   • Otherwise role matches (tier 4) — e.g. "PATRIARCH"
+    //     surfaces every patriarch.
+    //   • Otherwise summary matches (tier 5) as a last-resort
+    //     catch-all so users can find people by topic keywords.
+    List<BiblicalPerson> sortByEra(List<BiblicalPerson> xs) {
+      xs.sort((a, b) => eraIndexOf(a).compareTo(eraIndexOf(b)));
+      return xs;
+    }
+
+    final nameHits = <BiblicalPerson>[
+      for (final t in [1, 2, 3])
+        if (tiers.containsKey(t)) ...tiers[t]!,
+    ];
+    if (nameHits.isNotEmpty) return sortByEra(nameHits);
+    if (tiers.containsKey(4)) return sortByEra(tiers[4]!);
+    if (tiers.containsKey(5)) return sortByEra(tiers[5]!);
+    return const [];
   }
 
   Set<String> _ancestorsOf(BiblicalPerson p, FamilyTreeService svc) {
