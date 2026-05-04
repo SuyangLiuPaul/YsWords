@@ -2299,6 +2299,17 @@ void _navigateToBibleReference({
 /// Modal text-editing sheet for attaching a note to a single verse.
 /// If the verse already has a note, the editor pre-fills with it
 /// and shows a Delete button.
+///
+/// Round 56 hardening for "after click notes and click and typing,
+/// that moment it goes to top": the underlying Bible reading pane
+/// can lose its scroll position when the modal sheet animates in
+/// and the on-screen keyboard appears (iOS Safari PWA, native
+/// Android with `resizeToAvoidBottomInset` cascading effects, and
+/// some desktop browser layouts). Defense in depth: capture the
+/// topmost-visible item index before the sheet shows, and on
+/// completion restore the scroll if it has shifted unexpectedly.
+/// This treats the symptom regardless of which underlying browser
+/// quirk caused it.
 void _showNoteEditor({
   required BuildContext context,
   required Verse verse,
@@ -2308,6 +2319,74 @@ void _showNoteEditor({
   final controller = TextEditingController(
       text: mainProvider.getVerseNote(verse) ?? '');
   final ref = '${verse.book} ${verse.chapter}:${verse.verseLabel}';
+
+  // Snapshot the current scroll position. Read it from the
+  // positions listener (most reliable source) and fall back to 0
+  // when no positions are available (very-fresh mount).
+  int savedIndex = 0;
+  try {
+    final positions = mainProvider.itemPositionsListener.itemPositions.value;
+    if (positions.isNotEmpty) {
+      final visible = positions
+          .where((p) => p.itemTrailingEdge > 0 && p.itemLeadingEdge < 1)
+          .toList()
+        ..sort((a, b) => a.itemLeadingEdge.compareTo(b.itemLeadingEdge));
+      if (visible.isNotEmpty) {
+        savedIndex = visible.first.index;
+      }
+    }
+  } catch (_) {
+    // Positions listener throws on certain detached states. Treat
+    // as "no snapshot" — the worst case is restoreScroll skipping.
+  }
+
+  void restoreScroll() {
+    if (!mainProvider.itemScrollController.isAttached) return;
+    // Guard against silly out-of-range values from a stale snapshot.
+    if (savedIndex <= 0) return;
+    try {
+      mainProvider.itemScrollController.scrollTo(
+        index: savedIndex,
+        duration: const Duration(milliseconds: 1),
+      );
+    } catch (_) {
+      // Detached between check and call — ignore.
+    }
+  }
+
+  // Watch the reader's item positions while the sheet is open.
+  // If the topmost visible item suddenly becomes 0 (or close to
+  // it) while we had snapshotted a much-deeper position, restore.
+  // This catches whatever the underlying browser/keyboard quirk
+  // is doing without us having to identify it precisely.
+  void onPositionsChanged() {
+    if (!mainProvider.itemScrollController.isAttached) return;
+    if (savedIndex <= 5) return; // already near top; nothing to defend
+    try {
+      final positions =
+          mainProvider.itemPositionsListener.itemPositions.value;
+      if (positions.isEmpty) return;
+      final visible = positions
+          .where((p) => p.itemTrailingEdge > 0 && p.itemLeadingEdge < 1)
+          .toList()
+        ..sort((a, b) => a.itemLeadingEdge.compareTo(b.itemLeadingEdge));
+      if (visible.isEmpty) return;
+      final currentTop = visible.first.index;
+      // If we drifted to the top region (within 3 items of 0)
+      // while our snapshot was deep, treat it as the bug and
+      // restore. Defer one microtask so we don't fight a still-in-
+      // progress scroll animation.
+      if (currentTop <= 2) {
+        Future.microtask(restoreScroll);
+      }
+    } catch (_) {
+      // Listener throws if positions are detached — ignore.
+    }
+  }
+
+  mainProvider.itemPositionsListener.itemPositions
+      .addListener(onPositionsChanged);
+
   showModalBottomSheet<void>(
     context: context,
     isScrollControlled: true,
@@ -2427,7 +2506,19 @@ void _showNoteEditor({
         ),
       );
     },
-  );
+  ).whenComplete(() {
+    // Sheet closed — stop watching positions, do one last
+    // defensive restore in case the close animation itself
+    // shifted scroll to top.
+    mainProvider.itemPositionsListener.itemPositions
+        .removeListener(onPositionsChanged);
+    Future.delayed(const Duration(milliseconds: 50), restoreScroll);
+  });
+  // After the sheet has had time to animate up + the keyboard to
+  // settle, do a one-shot defensive restore. This catches the
+  // most common "click textfield → keyboard pops up → reader
+  // jumps" timing, even before the user types a single character.
+  Future.delayed(const Duration(milliseconds: 350), restoreScroll);
 }
 
 // Round 34 replaced this modal sheet with a dedicated

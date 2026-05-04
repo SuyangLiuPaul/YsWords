@@ -456,20 +456,34 @@ Noah and Daniel as one of the great righteous men. Cross-refs:
 Job 1, 2, 38, 42, Ezekiel 14:14.
 
 **Reader stays put when the note-editor keyboard opens**
-(`lib/widgets/bible_reading_pane.dart`). User feedback: *"after
-click notes and click and typing, that moment it goes to top"*.
-Cause: the BibleReadingPane's `Scaffold` defaulted to
-`resizeToAvoidBottomInset: true`, so when the modal note-editor
-sheet opened and the system keyboard appeared, the Scaffold body
-shrank, the inner LayoutBuilder rebuilt with a smaller height,
-and on some devices the
-`ScrollablePositionedList` snapped back to `initialScrollIndex`
-(which can be 0 in cold-mount cases). Fix: explicitly
-`resizeToAvoidBottomInset: false` on the reader Scaffold. The
-note editor keeps its own keyboard avoidance via
-`MediaQuery.viewInsets.bottom` in its bottom-sheet padding, so
-the editor still sits above the keyboard — but the reader behind
-it stays at the verse the user was looking at.
+(`lib/widgets/bible_reading_pane.dart`). Two-layer defense for
+the user-reported *"after click notes and click and typing, that
+moment it goes to top"* — first attempt
+(`resizeToAvoidBottomInset: false` on the reader Scaffold) was
+right in spirit but didn't fully fix the symptom on certain
+browser/keyboard combinations (iOS Safari PWA in particular
+treats the keyboard as a viewport overlay outside Flutter's
+control, and the Scaffold flag has no effect on web). Round 2:
+
+* Layer 1: `resizeToAvoidBottomInset: false` on the reader
+  Scaffold — prevents the Scaffold body from shrinking when the
+  keyboard appears on platforms where Flutter knows about it.
+* Layer 2 (the actual symptom-killer):
+  `_showNoteEditor` now snapshots the topmost-visible item index
+  via `mainProvider.itemPositionsListener` BEFORE showing the
+  modal. While the sheet is open, a position-listener watches
+  for unexpected jumps to the top region (currentTop ≤ 2 when
+  savedIndex > 5) and immediately scrolls back via
+  `itemScrollController.scrollTo(... duration: 1ms)`. A 350 ms
+  one-shot defensive restore also fires after the sheet has
+  animated in + the keyboard has settled. On sheet close the
+  listener is removed and one final restore runs for good
+  measure.
+
+Symptom-level defense beats trying to chase the exact root
+cause across every browser quirk. The user no longer sees the
+reader jump to the top regardless of which underlying mechanism
+triggered the original shift.
 
 **Notes / Bookmarks: "first tap goes to top, second tap works" fix**
 (`lib/widgets/bible_reading_pane.dart`,
