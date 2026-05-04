@@ -1928,6 +1928,21 @@ const uiStrings = {
     'zh-Hant': '父系家譜',
     'en': 'Patrilineal ancestry',
   },
+  'familyTreeViewList': {
+    'zh-Hans': '列表视图',
+    'zh-Hant': '列表檢視',
+    'en': 'List view',
+  },
+  'familyTreeViewChart': {
+    'zh-Hans': '图表视图',
+    'zh-Hant': '圖表檢視',
+    'en': 'Chart view',
+  },
+  'familyTreeLongPressRefocus': {
+    'zh-Hans': '点击查看详情 · 长按聚焦此人',
+    'zh-Hant': '點擊查看詳情 · 長按聚焦此人',
+    'en': 'Tap for details · long-press to focus',
+  },
   'sermonFilterBookLabel': {
     'zh-Hans': '书卷',
     'zh-Hant': '書卷',

@@ -6,6 +6,7 @@ import 'package:yswords/constants/ui_strings.dart';
 import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/models/biblical_person.dart';
 import 'package:yswords/services/family_tree_service.dart';
+import 'package:yswords/widgets/family_tree_chart.dart';
 import 'package:yswords/widgets/home_icon_button.dart';
 import 'package:yswords/widgets/localized_back_button.dart';
 import 'package:yswords/widgets/person_detail_sheet.dart';
@@ -26,10 +27,23 @@ class FamilyTreePage extends StatefulWidget {
 class _FamilyTreePageState extends State<FamilyTreePage> {
   Future<_TreeData>? _future;
   String _query = '';
-  // Persons whose children are currently visible. Adam is opened by
-  // default so the user sees the immediate descendants without
-  // having to expand first.
+  // Persons whose children are currently visible in LIST mode.
+  // Adam is opened by default so the user sees the immediate
+  // descendants without having to expand first.
   final Set<String> _expanded = {'adam'};
+
+  // Display mode. Tree = visual descendant chart with focus reframe.
+  // List = the indented expandable outline (the round-56 default).
+  // Tree is now the default because it makes the lineage immediately
+  // legible; list stays available as a fallback for deep linear
+  // browsing or for users who prefer outline-style data.
+  _ViewMode _viewMode = _ViewMode.tree;
+
+  // Current focus person in tree mode. Defaults to Adam (the root
+  // of the dataset). Tapping a non-focus card sets a new focus and
+  // rebuilds the chart; the breadcrumb keeps the trail back to Adam
+  // so the user always knows where they are.
+  String _treeFocusId = 'adam';
 
   @override
   void initState() {
@@ -53,7 +67,27 @@ class _FamilyTreePageState extends State<FamilyTreePage> {
       appBar: AppBar(
         leading: const LocalizedBackButton(),
         title: Text(uiStrings['familyTree']?[locale] ?? 'Family Tree'),
-        actions: const [HomeIconButton()],
+        actions: [
+          // Tree / List toggle. Single icon flips between modes; the
+          // tooltip describes the OTHER mode (the one tapping will
+          // switch you to) — that's the standard pattern for a
+          // mode-flip control. The toggle sits in the AppBar where
+          // the user can find it without scrolling.
+          IconButton(
+            icon: Icon(_viewMode == _ViewMode.tree
+                ? Icons.list_alt_rounded
+                : Icons.account_tree_outlined),
+            tooltip: _viewMode == _ViewMode.tree
+                ? (uiStrings['familyTreeViewList']?[locale] ?? 'List view')
+                : (uiStrings['familyTreeViewChart']?[locale] ?? 'Chart view'),
+            onPressed: () => setState(() {
+              _viewMode = _viewMode == _ViewMode.tree
+                  ? _ViewMode.list
+                  : _ViewMode.tree;
+            }),
+          ),
+          const HomeIconButton(),
+        ],
       ),
       body: FutureBuilder<_TreeData>(
         future: _future,
@@ -112,14 +146,9 @@ class _FamilyTreePageState extends State<FamilyTreePage> {
               Expanded(
                 child: filtered != null
                     ? _buildSearchResults(filtered, locale, scheme)
-                    : ListView(
-                        padding: const EdgeInsets.symmetric(horizontal: 8),
-                        children: [
-                          for (final root in data.roots)
-                            _buildNode(root, depth: 0, locale: locale,
-                                scheme: scheme),
-                        ],
-                      ),
+                    : (_viewMode == _ViewMode.tree
+                        ? _buildChart(data, locale, scheme)
+                        : _buildListMode(data, locale, scheme)),
               ),
             ],
           );
@@ -169,6 +198,52 @@ class _FamilyTreePageState extends State<FamilyTreePage> {
       return tmpl.replaceAll('{total}', all.length.toString());
     }
     return '${all.length} people';
+  }
+
+  /// Tree (chart) mode body. Pulls the focus person from
+  /// [_treeFocusId], computes the patrilineal breadcrumb up to the
+  /// nearest ancestor that's also in the dataset, and hands both to
+  /// [FamilyTreeChart].
+  Widget _buildChart(
+      _TreeData data, String locale, ColorScheme scheme) {
+    final svc = FamilyTreeService.instance;
+    final focus = svc.byId(_treeFocusId) ?? data.roots.first;
+    // Walk up the father chain so the breadcrumb shows the path
+    // from the dataset's root down to the focus. Mother lines are
+    // omitted from the breadcrumb to keep it readable; the detail
+    // sheet shows both parents explicitly.
+    final breadcrumb = <BiblicalPerson>[];
+    var cur = focus;
+    final seen = <String>{cur.id};
+    while (cur.fatherId != null) {
+      final f = svc.byId(cur.fatherId!);
+      if (f == null || seen.contains(f.id)) break;
+      breadcrumb.add(f);
+      seen.add(f.id);
+      cur = f;
+    }
+    return FamilyTreeChart(
+      focus: focus,
+      locale: locale,
+      ancestry: breadcrumb,
+      onPersonTap: _showDetail,
+      onRefocus: (p) => setState(() => _treeFocusId = p.id),
+    );
+  }
+
+  /// List (outline) mode body. Same indented expandable tree the
+  /// page used to render exclusively — kept as the alternative view
+  /// for users who prefer outline-style data or want to scroll
+  /// through long unbroken lineages.
+  Widget _buildListMode(
+      _TreeData data, String locale, ColorScheme scheme) {
+    return ListView(
+      padding: const EdgeInsets.symmetric(horizontal: 8),
+      children: [
+        for (final root in data.roots)
+          _buildNode(root, depth: 0, locale: locale, scheme: scheme),
+      ],
+    );
   }
 
   Widget _buildSearchResults(
@@ -347,11 +422,14 @@ class _FamilyTreePageState extends State<FamilyTreePage> {
           onPersonTap: (other) {
             Navigator.of(sheetCtx).maybePop();
             // Expand path so the navigated-to person is visible in
-            // the tree when the sheet closes.
+            // LIST mode, and refocus the chart so TREE mode lands on
+            // the new person too. Both states stay coherent
+            // regardless of which mode the user is in.
             setState(() {
               if (other.fatherId != null) _expanded.add(other.fatherId!);
               if (other.motherId != null) _expanded.add(other.motherId!);
               _expanded.add(other.id);
+              _treeFocusId = other.id;
             });
             _showDetail(other);
           },
@@ -366,3 +444,6 @@ class _TreeData {
   final List<BiblicalPerson> roots;
   const _TreeData({required this.all, required this.roots});
 }
+
+/// Display mode for the page body. Controlled by the AppBar toggle.
+enum _ViewMode { tree, list }
