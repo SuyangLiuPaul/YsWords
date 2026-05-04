@@ -2171,6 +2171,22 @@ const uiStrings = {
     'zh-Hans': '未找到符合的事件。',
     'zh-Hant': '未找到符合的事件。',
   },
+  // Share-link toasts (sermons + bible verses)
+  'shareLink': {
+    'en': 'Share',
+    'zh-Hans': '分享',
+    'zh-Hant': '分享',
+  },
+  'shareLinkCopied': {
+    'en': 'Share link copied',
+    'zh-Hans': '分享链接已复制',
+    'zh-Hant': '分享連結已複製',
+  },
+  'shareLinkFailed': {
+    'en': 'Copy failed — clipboard unavailable',
+    'zh-Hans': '复制失败 — 剪贴板不可用',
+    'zh-Hant': '複製失敗 — 剪貼簿不可用',
+  },
   'familyTreeMatchCount': {
     'zh-Hans': '第 {index}/{total} 个匹配',
     'zh-Hant': '第 {index}/{total} 個匹配',

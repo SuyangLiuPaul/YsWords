@@ -420,6 +420,58 @@ The app adapts its layout to all device sizes using `lib/utils/responsive.dart`:
 
 ## What Has Been Fixed (2026-05-04)
 
+### Bible Timeline + Sermon share / last-read memory + verse share
+
+**Bible Timeline page** (`lib/pages/bible_timeline_page.dart`,
+`lib/services/timeline_service.dart`,
+`lib/models/timeline_event.dart`,
+`assets/bible_timeline.json`): 97 curated events from Creation
+(~4000 BC) to John on Patmos (~95 AD), grouped into 8 era
+sections sharing the family-tree palette. Locale-aware year
+display (`公元前 4000 年` / `4000 BC`), tap-to-expand
+descriptions, tap verse-ref chips to jump to scripture, search
+filter, dashboard tile.
+
+**Sermon "Part A" labels stripped** from 492 title fields in
+`assets/sermons/index.json`. Regex-replaced `(Part A)` /
+`(A部分)` / `(第一部分)` plus surrounding em-dash punctuation.
+Users no longer feel sermons are cut into pieces.
+
+**Sermon share button** in the detail AppBar
+(`lib/pages/sermon_detail_page.dart`). Copies a deep-link URL
+(`https://yswords.netlify.app/#/sermons/{id}`) plus the
+localized title to the clipboard. Floating toast confirms
+"Share link copied" / "分享链接已复制" / "分享連結已複製".
+
+**Bible verse share button** in the selection action bar
+(`lib/widgets/bible_reading_pane.dart::_SelectionActionBar`).
+Copies a deep-link URL plus the formatted verse text. Same
+floating toast.
+
+**Sermons list scroll persistence + last-read flash**
+(`lib/pages/sermons_page.dart`): when the user opens a sermon,
+the sermon id is persisted to SharedPreferences (key
+`sermons_last_read`). On return to the list, the matching tile
+gets a primary-tinted background + outlined ring for 4 seconds
+(AnimatedContainer fade) so the user can find their place at a
+glance. The containing topic group auto-expands. List scroll
+offset is also persisted (key `sermons_list_scroll`,
+debounced 600 ms) and restored on next visit.
+
+**Sermon detail scroll persistence** was already shipped earlier
+— per-sermon offset under `sermonScroll_<id>`.
+
+**Floating-toast utility** extracted to
+`lib/utils/floating_toast.dart::showFloatingToast`. Inserts an
+`OverlayEntry` via `Overlay.maybeOf(context, rootOverlay: true)`
+so the toast pill renders ABOVE any modal sheet on any
+platform — auto-dismisses after 2 s by default. Used by the
+copy-all button on the family-tree detail sheet, the new sermon
+share button, the new verse share button, and the comparison-
+table copy button.
+
+
+
 ### Family tree feature — Wikipedia-article style (final, 277 people)
 
 The Bible family tree page evolved through many iterations (visual SVG

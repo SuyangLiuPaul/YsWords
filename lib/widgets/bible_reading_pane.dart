@@ -42,6 +42,7 @@ import 'package:yswords/utils/reference_parser.dart';
 import 'package:yswords/utils/responsive.dart';
 import 'package:yswords/widgets/google_g_logo.dart';
 import 'package:yswords/widgets/today_reading_card.dart';
+import 'package:yswords/utils/floating_toast.dart' show showFloatingToast;
 import 'package:yswords/utils/version_mapper.dart'
     show translateBookName, toEnglish, localeAwareBookName;
 import 'package:yswords/widgets/highlights_sheet.dart';
@@ -626,6 +627,46 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
     }
   }
 
+  /// Build a deep-link URL for the first selected verse + the
+  /// formatted verse text, copy to clipboard, fire a floating
+  /// toast confirming "Share link copied". Used by the new Share
+  /// icon in the selection action bar.
+  Future<void> _shareSelectedVerses({
+    required BuildContext context,
+    required MainProvider mainProvider,
+    required AppSettings settings,
+  }) async {
+    final verses = mainProvider.selectedVerses;
+    if (verses.isEmpty) return;
+    final v = verses.first;
+    final book = Uri.encodeComponent(v.book);
+    final url =
+        'https://yswords.netlify.app/#/verse/$book/${v.chapter}/${v.verse}';
+    final text =
+        _formattedSelectedVerses(verses: mainProvider.selectedVerses);
+    final payload = '$text\n\n$url';
+    bool ok = true;
+    try {
+      await ClipboardHelper.copyText(payload);
+    } catch (_) {
+      ok = false;
+    }
+    if (!context.mounted) return;
+    final scheme = Theme.of(context).colorScheme;
+    showFloatingToast(
+      context,
+      message: ok
+          ? (uiStrings['shareLinkCopied']?[settings.locale] ??
+              'Share link copied')
+          : (uiStrings['shareLinkFailed']?[settings.locale] ??
+              'Copy failed — clipboard unavailable'),
+      icon: ok
+          ? Icons.check_circle_rounded
+          : Icons.error_outline_rounded,
+      background: ok ? scheme.primary : scheme.error,
+    );
+  }
+
   Future<void> _copySelectedVerses({
     required MainProvider mainProvider,
     required AppSettings settings,
@@ -1185,6 +1226,11 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                                 mainProvider: mainProvider,
                                 settings: settings,
                               ),
+                              onShare: () => _shareSelectedVerses(
+                                context: context,
+                                mainProvider: mainProvider,
+                                settings: settings,
+                              ),
                               onClear: mainProvider.clearSelectedVerses,
                               onHighlight: (color) {
                                 mainProvider.setHighlightsForVerses(
@@ -1471,6 +1517,7 @@ class _SelectionActionBar extends StatelessWidget {
   final int selectedCount;
   final bool anyHighlighted;
   final VoidCallback onCopy;
+  final VoidCallback onShare;
   final VoidCallback onClear;
   final ValueChanged<int> onHighlight;
   final VoidCallback onRemoveHighlight;
@@ -1491,6 +1538,7 @@ class _SelectionActionBar extends StatelessWidget {
     required this.selectedCount,
     required this.anyHighlighted,
     required this.onCopy,
+    required this.onShare,
     required this.onClear,
     required this.onHighlight,
     required this.onRemoveHighlight,
@@ -1667,6 +1715,12 @@ class _SelectionActionBar extends StatelessWidget {
         overflow: TextOverflow.ellipsis,
       ),
     );
+    final shareBtn = IconButton(
+      onPressed: onShare,
+      tooltip: uiStrings['shareLink']?[settings.locale] ?? 'Share',
+      icon: const Icon(Icons.ios_share_rounded),
+      color: scheme.primary,
+    );
 
     return SafeArea(
       top: false,
@@ -1693,6 +1747,7 @@ class _SelectionActionBar extends StatelessWidget {
                         children: [
                           clearBtn,
                           Expanded(child: countLabel),
+                          shareBtn,
                           const SizedBox(width: 4),
                           Flexible(child: copyBtn),
                         ],
@@ -1710,6 +1765,7 @@ class _SelectionActionBar extends StatelessWidget {
                     clearBtn,
                     Expanded(child: countLabel),
                     ...actionButtons,
+                    shareBtn,
                     const SizedBox(width: 4),
                     Flexible(child: copyBtn),
                   ],

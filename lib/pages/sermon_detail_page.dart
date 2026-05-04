@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -10,6 +11,7 @@ import 'package:yswords/constants/sermon_topics.dart';
 import 'package:yswords/constants/ui_strings.dart';
 import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/models/sermon.dart';
+import 'package:yswords/utils/floating_toast.dart' show showFloatingToast;
 import 'package:yswords/pages/home_page.dart';
 import 'package:yswords/providers/main_provider.dart';
 import 'package:yswords/services/sermon_service.dart';
@@ -290,7 +292,15 @@ class _SermonDetailPageState extends State<SermonDetailPage> {
           uiStrings['sermon']?[settings.locale] ?? 'Sermon',
           style: const TextStyle(fontWeight: FontWeight.w600),
         ),
-        actions: const [HomeIconButton()],
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.ios_share_rounded, size: 20),
+            tooltip: uiStrings['shareLink']?[settings.locale] ??
+                'Share link',
+            onPressed: () => _shareSermon(s, settings.locale),
+          ),
+          const HomeIconButton(),
+        ],
         // Reading-progress strip under the AppBar — width-tracks the
         // user's scroll through the body. Visible whenever the body
         // has actually scrolled (avoids a stale "0%" bar above
@@ -379,6 +389,43 @@ class _SermonDetailPageState extends State<SermonDetailPage> {
         ),
       ),
     );
+  }
+
+  /// Build a deep-link URL for this sermon and copy it (plus the
+  /// localized title) to the clipboard, with a floating toast
+  /// confirming "Share link copied" / "分享链接已复制" /
+  /// "分享連結已複製".
+  Future<void> _shareSermon(Sermon s, String locale) async {
+    final title = s.titles[_titleLocaleKey(locale)] ?? s.title;
+    final url =
+        'https://yswords.netlify.app/#/sermons/${Uri.encodeComponent(s.id)}';
+    final payload = '$title\n$url';
+    bool ok = true;
+    try {
+      await Clipboard.setData(ClipboardData(text: payload));
+    } catch (_) {
+      ok = false;
+    }
+    if (!mounted) return;
+    final scheme = Theme.of(context).colorScheme;
+    showFloatingToast(
+      context,
+      message: ok
+          ? (uiStrings['shareLinkCopied']?[locale] ??
+              'Share link copied')
+          : (uiStrings['shareLinkFailed']?[locale] ??
+              'Copy failed — clipboard unavailable'),
+      icon: ok
+          ? Icons.check_circle_rounded
+          : Icons.error_outline_rounded,
+      background: ok ? scheme.primary : scheme.error,
+    );
+  }
+
+  String _titleLocaleKey(String locale) {
+    if (locale == 'zh-Hant') return 'zh-TW';
+    if (locale.startsWith('zh')) return 'zh-CN';
+    return 'en';
   }
 }
 

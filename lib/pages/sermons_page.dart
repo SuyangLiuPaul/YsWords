@@ -1,6 +1,9 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:yswords/constants/sermon_topics.dart';
 import 'package:yswords/constants/ui_strings.dart';
@@ -39,10 +42,111 @@ class _SermonsPageState extends State<SermonsPage> {
   String? _filterBook;
   int? _filterChapter;
 
+  /// Last-read sermon id, loaded from SharedPreferences on init and
+  /// re-fetched whenever this page becomes visible. Drives the
+  /// "you were last reading this" flash highlight on the matching
+  /// sermon tile so the user can find their place at a glance.
+  String? _lastReadSermonId;
+  Timer? _flashTimer;
+  bool _flashActive = false;
+
+  /// Sermons-list scroll controller. Scroll offset is persisted to
+  /// SharedPreferences as the user scrolls (debounced) and restored
+  /// in initState so re-opening the list lands them where they were.
+  late final ScrollController _scrollController;
+  Timer? _scrollPersistTimer;
+  static const String _kListScrollKey = 'sermons_list_scroll';
+  static const String _kLastReadKey = 'sermons_last_read';
+
   @override
   void initState() {
     super.initState();
     _future = _loadAll();
+    _scrollController = ScrollController()..addListener(_onScroll);
+    _restoreState();
+  }
+
+  @override
+  void dispose() {
+    _scrollPersistTimer?.cancel();
+    _flashTimer?.cancel();
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _restoreState() async {
+    final prefs = await SharedPreferences.getInstance();
+    final lastId = prefs.getString(_kLastReadKey);
+    final savedOffset = prefs.getDouble(_kListScrollKey);
+    if (!mounted) return;
+    setState(() {
+      _lastReadSermonId = lastId;
+      _flashActive = lastId != null;
+    });
+    if (lastId != null) {
+      _flashTimer?.cancel();
+      _flashTimer = Timer(const Duration(seconds: 4), () {
+        if (mounted) setState(() => _flashActive = false);
+      });
+    }
+    // Wait for the list to render, then restore scroll position.
+    if (savedOffset != null && savedOffset > 0) {
+      await Future.delayed(const Duration(milliseconds: 350));
+      if (!mounted || !_scrollController.hasClients) return;
+      final max = _scrollController.position.maxScrollExtent;
+      _scrollController.jumpTo(savedOffset.clamp(0.0, max));
+    }
+  }
+
+  void _onScroll() {
+    // Coalesce frequent scroll events into one SharedPreferences
+    // write per ~600 ms so we don't thrash on every pixel.
+    _scrollPersistTimer?.cancel();
+    _scrollPersistTimer =
+        Timer(const Duration(milliseconds: 600), _persistScroll);
+  }
+
+  Future<void> _persistScroll() async {
+    if (!_scrollController.hasClients) return;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setDouble(
+        _kListScrollKey, _scrollController.position.pixels);
+  }
+
+  /// Called when the user taps a sermon tile — navigates to the
+  /// detail page AND records the chosen id so the next time this
+  /// page rebuilds we know which row to flash.
+  Future<void> _openSermon(Sermon sermon) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_kLastReadKey, sermon.id);
+    if (!mounted) return;
+    setState(() {
+      _lastReadSermonId = sermon.id;
+      _flashActive = false; // Don't flash the tile they're leaving
+    });
+    await Get.to(
+      () => SermonDetailPage(sermon: sermon),
+      transition: Transition.rightToLeft,
+    );
+    // Returned from detail — re-arm the flash for THIS sermon's row
+    // so the user immediately sees where they were.
+    if (!mounted) return;
+    setState(() => _flashActive = true);
+    _flashTimer?.cancel();
+    _flashTimer = Timer(const Duration(seconds: 4), () {
+      if (mounted) setState(() => _flashActive = false);
+    });
+    // Also restore scroll position after returning from detail.
+    final savedOffset =
+        (await SharedPreferences.getInstance()).getDouble(_kListScrollKey);
+    if (!mounted ||
+        savedOffset == null ||
+        !_scrollController.hasClients) {
+      return;
+    }
+    final max = _scrollController.position.maxScrollExtent;
+    _scrollController.jumpTo(savedOffset.clamp(0.0, max));
   }
 
   Future<_PageData> _loadAll() async {
@@ -178,11 +282,16 @@ class _SermonsPageState extends State<SermonsPage> {
                         ),
                       )
                     : ListView(
+                        controller: _scrollController,
                         padding: const EdgeInsets.symmetric(horizontal: 8),
                         children: [
                           for (final entry in groups.entries)
                             _TopicGroup(
-                                topic: entry.key, sermons: entry.value),
+                                topic: entry.key,
+                                sermons: entry.value,
+                                lastReadId: _lastReadSermonId,
+                                flashActive: _flashActive,
+                                onSermonTap: _openSermon),
                         ],
                       ),
               ),
@@ -514,8 +623,17 @@ class _BookChip extends StatelessWidget {
 class _TopicGroup extends StatelessWidget {
   final String topic;
   final List<Sermon> sermons;
+  final String? lastReadId;
+  final bool flashActive;
+  final Future<void> Function(Sermon) onSermonTap;
 
-  const _TopicGroup({required this.topic, required this.sermons});
+  const _TopicGroup({
+    required this.topic,
+    required this.sermons,
+    required this.lastReadId,
+    required this.flashActive,
+    required this.onSermonTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -544,8 +662,18 @@ class _TopicGroup extends StatelessWidget {
             color: scheme.onSurface.withValues(alpha: 0.6),
           ),
         ),
+        // Auto-expand when one of OUR sermons matches lastReadId so
+        // the flash-highlighted tile is visible without an extra tap.
+        initiallyExpanded:
+            lastReadId != null && sermons.any((s) => s.id == lastReadId),
         children: [
-          for (final s in sermons) _SermonRow(sermon: s),
+          for (final s in sermons)
+            _SermonRow(
+              sermon: s,
+              isLastRead: s.id == lastReadId,
+              flashActive: flashActive,
+              onTap: () => onSermonTap(s),
+            ),
         ],
       ),
     );
@@ -560,15 +688,40 @@ class _TopicGroup extends StatelessWidget {
 
 class _SermonRow extends StatelessWidget {
   final Sermon sermon;
+  final bool isLastRead;
+  final bool flashActive;
+  final VoidCallback onTap;
 
-  const _SermonRow({required this.sermon});
+  const _SermonRow({
+    required this.sermon,
+    required this.isLastRead,
+    required this.flashActive,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    return ListTile(
-      dense: true,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
+    final showFlash = isLastRead && flashActive;
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 320),
+      curve: Curves.easeOutCubic,
+      decoration: BoxDecoration(
+        color: showFlash
+            ? scheme.primaryContainer.withValues(alpha: 0.55)
+            : Colors.transparent,
+        border: showFlash
+            ? Border.all(
+                color: scheme.primary.withValues(alpha: 0.6),
+                width: 1.5,
+              )
+            : null,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+      child: ListTile(
+        dense: true,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
       title: Builder(
         builder: (ctx) {
           final locale = ctx.watch<AppSettings>().locale;
@@ -622,11 +775,9 @@ class _SermonRow extends StatelessWidget {
           ],
         ),
       ),
-      trailing: Icon(Icons.chevron_right,
-          size: 20, color: scheme.onSurface.withValues(alpha: 0.4)),
-      onTap: () => Get.to(
-        () => SermonDetailPage(sermon: sermon),
-        transition: Transition.rightToLeft,
+        trailing: Icon(Icons.chevron_right,
+            size: 20, color: scheme.onSurface.withValues(alpha: 0.4)),
+        onTap: onTap,
       ),
     );
   }
