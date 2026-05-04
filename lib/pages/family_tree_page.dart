@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:provider/provider.dart';
 
 import 'package:yswords/constants/text_patterns.dart' show sanitizeForSearch;
@@ -49,6 +50,7 @@ class _FamilyTreePageState extends State<FamilyTreePage> {
   Future<_TreeData>? _future;
   String _query = '';
   late final TextEditingController _searchController;
+  late final ScrollController _scrollController;
 
   /// Persons whose children rows are visible. Search auto-unions
   /// in ancestor chains so matches are revealed in context.
@@ -124,6 +126,7 @@ class _FamilyTreePageState extends State<FamilyTreePage> {
     super.initState();
     _future = _load();
     _searchController = TextEditingController();
+    _scrollController = ScrollController();
     // Default-collapse every section. User opens what they're
     // interested in; a search match auto-uncollapses its section.
     _collapsedEras.addAll(_eraOrder);
@@ -136,6 +139,7 @@ class _FamilyTreePageState extends State<FamilyTreePage> {
   void dispose() {
     _highlightTimer?.cancel();
     _searchController.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -471,6 +475,7 @@ class _FamilyTreePageState extends State<FamilyTreePage> {
     }
 
     return ListView(
+      controller: _scrollController,
       padding: const EdgeInsets.only(bottom: 32),
       children: [
         ...sections,
@@ -515,21 +520,21 @@ class _FamilyTreePageState extends State<FamilyTreePage> {
   /// Bridge-chip / bridge-leaf tap handler. Uncollapses the target
   /// era, scrolls the destination's row into view, and flashes
   /// the destination person with a temporary highlight tint so the
-  /// user gets unambiguous "you landed here" feedback (the scroll
-  /// alone often felt invisible — that's the bug the user reported
-  /// with "Perez click doesn't work").
+  /// user gets unambiguous "you landed here" feedback.
   ///
-  /// [personId] is the bridge person whose row we want to centre on.
-  /// We try its row's GlobalKey first; if the row isn't laid out
-  /// yet (the section just uncollapsed and Flutter hasn't finished
-  /// the layout pass), fall back to the era section's wrapper key.
+  /// Uses an explicit [ScrollController.animateTo] with offset
+  /// computed from `RenderAbstractViewport.getOffsetToReveal` —
+  /// this is more reliable across Flutter web than the older
+  /// `Scrollable.ensureVisible` path, which had a timing bug where
+  /// jumps to deeper sections (Perez → Davidic Line, Kohath under
+  /// Levi) would silently no-op while jumps to closer sections
+  /// (Kohath via the bridge footer chip) happened to fire.
   void _jumpToEra(String era, {String? personId}) {
     setState(() {
       _collapsedEras.remove(era);
       _recentlyJumpedTo = personId;
     });
 
-    // Re-arm the highlight clear timer.
     _highlightTimer?.cancel();
     if (personId != null) {
       _highlightTimer = Timer(_kHighlightDuration, () {
@@ -538,29 +543,39 @@ class _FamilyTreePageState extends State<FamilyTreePage> {
       });
     }
 
-    // Two-frame deferred scroll: frame 1 finishes the rebuild from
-    // the setState above; frame 2 lets the layout settle on the
-    // newly-uncollapsed (and now taller) section so the target's
-    // RenderObject has a real position. Without this the scroll
-    // sometimes targeted the OLD pre-uncollapse position.
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (!mounted) return;
-        BuildContext? ctx;
-        if (personId != null) {
-          ctx = _personKeys[personId]?.currentContext;
-        }
-        ctx ??= _eraKeys[era]?.currentContext;
-        if (ctx != null) {
-          Scrollable.ensureVisible(
-            ctx,
-            alignment: 0.18,
-            duration: const Duration(milliseconds: 360),
-            curve: Curves.easeOutCubic,
-          );
-        }
-      });
+    // Defer to two post-frame callbacks plus a small wall-clock
+    // delay so the just-uncollapsed (and possibly large)
+    // destination section has finished its layout pass before we
+    // measure the row's RenderBox. 80 ms is enough for Davidic
+    // Line's 30-row body on phones and is invisible to the user.
+    Future.delayed(const Duration(milliseconds: 80), () {
+      if (!mounted) return;
+      _scrollToTarget(era: era, personId: personId);
     });
+  }
+
+  void _scrollToTarget({required String era, String? personId}) {
+    if (!_scrollController.hasClients) return;
+    BuildContext? ctx;
+    if (personId != null) {
+      ctx = _personKeys[personId]?.currentContext;
+    }
+    ctx ??= _eraKeys[era]?.currentContext;
+    if (ctx == null) return;
+    final box = ctx.findRenderObject();
+    if (box is! RenderBox) return;
+    final viewport = RenderAbstractViewport.of(box);
+    final reveal = viewport.getOffsetToReveal(box, 0.18);
+    final position = _scrollController.position;
+    final offset = reveal.offset.clamp(
+      position.minScrollExtent,
+      position.maxScrollExtent,
+    );
+    _scrollController.animateTo(
+      offset,
+      duration: const Duration(milliseconds: 420),
+      curve: Curves.easeOutCubic,
+    );
   }
 
   // ── Detail sheet ───────────────────────────────────────────────

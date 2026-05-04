@@ -1974,7 +1974,7 @@
       "name": "Mary",
       "nameZhHans": "马利亚",
       "nameZhHant": "馬利亞",
-      "fatherId": null,
+      "fatherId": "heli",
       "motherId": null,
       "spouseIds": [
         "joseph_father_of_jesus"
@@ -5764,6 +5764,111 @@
         "Numbers 26:20"
       ],
       "era": "patriarchs"
+    },
+    {
+      "id": "heli",
+      "name": "Heli",
+      "nameZhHans": "希里",
+      "nameZhHant": "希里",
+      "fatherId": "matthat_nt",
+      "spouseIds": [],
+      "childIds": [
+        "mary"
+      ],
+      "yearSystem": "bc",
+      "birthYear": -100,
+      "summary": "Father of Mary per Luke 3:23 (traditional reading where Heli is the father-in-law of Joseph and biological father of Mary).",
+      "summaryZhHans": "按路加福音 3:23 的传统解释，希里是马利亚的父亲（约瑟的岳父）。",
+      "summaryZhHant": "按路加福音 3:23 的傳統解釋，希里是馬利亞的父親（約瑟的岳父）。",
+      "refs": [
+        "Luke 3:23"
+      ],
+      "accent": "messianic",
+      "era": "nt"
+    },
+    {
+      "id": "matthat_nt",
+      "name": "Matthat",
+      "nameZhHans": "玛塔",
+      "nameZhHant": "瑪塔",
+      "fatherId": "levi_nt",
+      "spouseIds": [],
+      "childIds": [
+        "heli"
+      ],
+      "yearSystem": "bc",
+      "birthYear": -100,
+      "summary": "Father of Heli; ancestor of Mary per Luke 3:24.",
+      "summaryZhHans": "希里之父；按路加福音 3:24，是马利亚的祖先。",
+      "summaryZhHant": "希里之父；按路加福音 3:24，是馬利亞的祖先。",
+      "refs": [
+        "Luke 3:24"
+      ],
+      "accent": "messianic",
+      "era": "nt"
+    },
+    {
+      "id": "levi_nt",
+      "name": "Levi (NT)",
+      "nameZhHans": "利未（新约）",
+      "nameZhHant": "利未（新約）",
+      "fatherId": "melki_nt",
+      "spouseIds": [],
+      "childIds": [
+        "matthat_nt"
+      ],
+      "yearSystem": "bc",
+      "birthYear": -100,
+      "summary": "Father of Matthat; ancestor of Mary per Luke 3:24.",
+      "summaryZhHans": "玛塔之父；按路加福音 3:24，是马利亚的祖先。",
+      "summaryZhHant": "瑪塔之父；按路加福音 3:24，是馬利亞的祖先。",
+      "refs": [
+        "Luke 3:24"
+      ],
+      "accent": "messianic",
+      "era": "nt"
+    },
+    {
+      "id": "melki_nt",
+      "name": "Melki",
+      "nameZhHans": "麦基",
+      "nameZhHant": "麥基",
+      "fatherId": "janna",
+      "spouseIds": [],
+      "childIds": [
+        "levi_nt"
+      ],
+      "yearSystem": "bc",
+      "birthYear": -100,
+      "summary": "Father of Levi; ancestor of Mary per Luke 3:24.",
+      "summaryZhHans": "利未之父；按路加福音 3:24，是马利亚的祖先。",
+      "summaryZhHant": "利未之父；按路加福音 3:24，是馬利亞的祖先。",
+      "refs": [
+        "Luke 3:24"
+      ],
+      "accent": "messianic",
+      "era": "nt"
+    },
+    {
+      "id": "janna",
+      "name": "Janna",
+      "nameZhHans": "雅拿",
+      "nameZhHant": "雅拿",
+      "fatherId": null,
+      "spouseIds": [],
+      "childIds": [
+        "melki_nt"
+      ],
+      "yearSystem": "bc",
+      "birthYear": -100,
+      "summary": "Father of Melki; listed in Mary's Lukan ancestry.",
+      "summaryZhHans": "麦基之父；列于马利亚的路加家谱。",
+      "summaryZhHant": "麥基之父；列於馬利亞的路加家譜。",
+      "refs": [
+        "Luke 3:24"
+      ],
+      "accent": "messianic",
+      "era": "nt"
     }
   ]
 }
