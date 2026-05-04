@@ -58,8 +58,30 @@ String getDevotionalFormattedText(
   return '$fullText\n($ref)';
 }
 
+/// Top-level page identifier for the dashboard / external surfaces
+/// that want to deep-link into a specific settings section.
+///
+/// Currently only `account` is wired up (greeting-card profile tap →
+/// Account / cloud-sync section), but adding more is mechanical: drop
+/// a [GlobalKey] on the section header in [SettingsPage.build] and add
+/// a case in [_SettingsPageBody._scrollToInitialSection].
+enum SettingsSection {
+  display,
+  reading,
+  account,
+  readingPlan,
+  dashboardLayout,
+  notifications,
+  about,
+}
+
 class SettingsPage extends StatelessWidget {
-  const SettingsPage({super.key});
+  /// When non-null, the page scrolls to that section on first build.
+  /// Used by the dashboard greeting-card profile tap to land the user
+  /// directly on Account / cloud-sync.
+  final SettingsSection? initialSection;
+
+  const SettingsPage({super.key, this.initialSection});
 
   @override
   Widget build(BuildContext context) {
@@ -80,7 +102,77 @@ class SettingsPage extends StatelessWidget {
         ),
         actions: const [HomeIconButton()],
       ),
-      body: Consumer<AppSettings>(
+      body: _SettingsPageBody(initialSection: initialSection),
+    ),
+    );
+  }
+}
+
+/// Stateful body so we can hold the per-section keys + run a
+/// post-frame `Scrollable.ensureVisible` when the page is opened with
+/// a deep-link target. Keeps the StatelessWidget API intact for the
+/// 99% of callers that just want plain Settings.
+class _SettingsPageBody extends StatefulWidget {
+  final SettingsSection? initialSection;
+  const _SettingsPageBody({this.initialSection});
+
+  @override
+  State<_SettingsPageBody> createState() => _SettingsPageBodyState();
+}
+
+class _SettingsPageBodyState extends State<_SettingsPageBody> {
+  final _displayKey = GlobalKey();
+  final _readingKey = GlobalKey();
+  final _accountKey = GlobalKey();
+  final _planKey = GlobalKey();
+  final _dashboardKey = GlobalKey();
+  final _notificationsKey = GlobalKey();
+  final _aboutKey = GlobalKey();
+
+  GlobalKey? _keyFor(SettingsSection? section) {
+    switch (section) {
+      case SettingsSection.display:
+        return _displayKey;
+      case SettingsSection.reading:
+        return _readingKey;
+      case SettingsSection.account:
+        return _accountKey;
+      case SettingsSection.readingPlan:
+        return _planKey;
+      case SettingsSection.dashboardLayout:
+        return _dashboardKey;
+      case SettingsSection.notifications:
+        return _notificationsKey;
+      case SettingsSection.about:
+        return _aboutKey;
+      case null:
+        return null;
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    final target = _keyFor(widget.initialSection);
+    if (target == null) return;
+    // Wait for the first frame so the target has a render box, then
+    // smooth-scroll to it. Using ensureVisible keeps us inside the
+    // existing ListView controller without us needing to manage one.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final ctx = target.currentContext;
+      if (ctx == null) return;
+      Scrollable.ensureVisible(
+        ctx,
+        duration: const Duration(milliseconds: 380),
+        curve: Curves.easeOutCubic,
+        alignment: 0.05, // header just below the AppBar
+      );
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<AppSettings>(
         builder: (context, settings, _) {
           final mainProvider = Provider.of<MainProvider>(context);
           final currentBook = mainProvider.currentBook;
@@ -129,9 +221,12 @@ class SettingsPage extends StatelessWidget {
               child: ListView(
             padding: EdgeInsets.all(16 * s),
             children: [
-              _SectionHeader(
-                  uiStrings['settingsSectionDisplay']?[settings.locale] ??
-                      'Display'),
+              KeyedSubtree(
+                key: _displayKey,
+                child: _SectionHeader(
+                    uiStrings['settingsSectionDisplay']?[settings.locale] ??
+                        'Display'),
+              ),
               Card(
                 child: Padding(
                   padding:
@@ -499,9 +594,12 @@ class SettingsPage extends StatelessWidget {
                 ),
                 SizedBox(height: 16 * s),
               SizedBox(height: 16 * s),
-              _SectionHeader(
-                  uiStrings['settingsSectionReading']?[settings.locale] ??
-                      'Reading'),
+              KeyedSubtree(
+                key: _readingKey,
+                child: _SectionHeader(
+                    uiStrings['settingsSectionReading']?[settings.locale] ??
+                        'Reading'),
+              ),
               Card(
                 child: Padding(
                   padding:
@@ -852,30 +950,45 @@ class SettingsPage extends StatelessWidget {
                 ),
               ),
               SizedBox(height: 16 * s),
-              _SectionHeader(
-                  uiStrings['settingsSectionAccount']?[settings.locale] ??
-                      'Account'),
+              KeyedSubtree(
+                key: _accountKey,
+                child: _SectionHeader(
+                    uiStrings['settingsSectionAccount']?[settings.locale] ??
+                        'Account'),
+              ),
               _AccountSection(settings: settings, s: s),
               SizedBox(height: 16 * s),
-              _SectionHeader(
-                  uiStrings['settingsSectionPlan']?[settings.locale] ??
-                      'Reading plans'),
+              KeyedSubtree(
+                key: _planKey,
+                child: _SectionHeader(
+                    uiStrings['settingsSectionPlan']?[settings.locale] ??
+                        'Reading plans'),
+              ),
               _ReadingPlanSection(settings: settings, s: s),
               SizedBox(height: 16 * s),
-              _SectionHeader(
-                  uiStrings['settingsSectionDashboard']?[settings.locale] ??
-                      'Dashboard sections'),
+              KeyedSubtree(
+                key: _dashboardKey,
+                child: _SectionHeader(
+                    uiStrings['settingsSectionDashboard']?[settings.locale] ??
+                        'Dashboard sections'),
+              ),
               _DashboardSectionsCard(settings: settings, s: s),
               SizedBox(height: 16 * s),
-              _SectionHeader(
-                  uiStrings['settingsSectionNotifications']
-                          ?[settings.locale] ??
-                      'Notifications'),
+              KeyedSubtree(
+                key: _notificationsKey,
+                child: _SectionHeader(
+                    uiStrings['settingsSectionNotifications']
+                            ?[settings.locale] ??
+                        'Notifications'),
+              ),
               _NotificationsCard(settings: settings, s: s),
               SizedBox(height: 16 * s),
-              _SectionHeader(
-                  uiStrings['settingsSectionAbout']?[settings.locale] ??
-                      'About'),
+              KeyedSubtree(
+                key: _aboutKey,
+                child: _SectionHeader(
+                    uiStrings['settingsSectionAbout']?[settings.locale] ??
+                        'About'),
+              ),
               _AboutCard(settings: settings, s: s),
               SizedBox(height: 16 * s),
             ],
@@ -883,8 +996,6 @@ class SettingsPage extends StatelessWidget {
             ),
           );
         },
-      ),
-    ),
     );
   }
 
@@ -1813,6 +1924,13 @@ class _DashboardSectionsCard extends StatelessWidget {
               itemBuilder: (ctx, i) {
                 final section = order[i];
                 final visible = settings.isDashboardSectionVisible(section);
+                // Read Bible is the app's primary entry point — it
+                // stays mandatory so a user who hides every other
+                // block can still open the Bible. Switch is rendered
+                // disabled with a small "always on" caption beneath
+                // the description.
+                final isMandatory =
+                    section == DashboardSection.readBible;
                 return Padding(
                   // Each tile gets a unique key — required by
                   // ReorderableListView so the framework can match
@@ -1851,20 +1969,39 @@ class _DashboardSectionsCard extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Text(
-                              section.label(locale),
-                              style: TextStyle(
-                                fontFamily: settings.fontFamily,
-                                fontSize: (15 * s).clamp(13.0, 16.0),
-                                fontWeight: FontWeight.w600,
-                                color: scheme.onSurface.withValues(
-                                  alpha: visible ? 1.0 : 0.55,
+                            Row(
+                              children: [
+                                Flexible(
+                                  child: Text(
+                                    section.label(locale),
+                                    style: TextStyle(
+                                      fontFamily: settings.fontFamily,
+                                      fontSize: (15 * s).clamp(13.0, 16.0),
+                                      fontWeight: FontWeight.w600,
+                                      color: scheme.onSurface.withValues(
+                                        alpha: visible ? 1.0 : 0.55,
+                                      ),
+                                    ),
+                                  ),
                                 ),
-                              ),
+                                if (isMandatory) ...[
+                                  SizedBox(width: 6 * s),
+                                  Icon(
+                                    Icons.lock_outline_rounded,
+                                    size: 14,
+                                    color: scheme.onSurface
+                                        .withValues(alpha: 0.45),
+                                  ),
+                                ],
+                              ],
                             ),
                             SizedBox(height: 2 * s),
                             Text(
-                              section.description(locale),
+                              isMandatory
+                                  ? (uiStrings['dashboardSection_readBible_locked']
+                                          ?[locale] ??
+                                      'Always visible — primary entry point.')
+                                  : section.description(locale),
                               style: TextStyle(
                                 fontFamily: settings.fontFamily,
                                 fontSize: (12.5 * s).clamp(10.5, 13.0),
@@ -1878,8 +2015,13 @@ class _DashboardSectionsCard extends StatelessWidget {
                       ),
                       Switch.adaptive(
                         value: visible,
-                        onChanged: (v) =>
-                            settings.setDashboardSectionVisible(section, v),
+                        // Disabled (null onChanged) for mandatory
+                        // sections so the user gets a clear "you
+                        // can't turn this off" affordance.
+                        onChanged: isMandatory
+                            ? null
+                            : (v) => settings.setDashboardSectionVisible(
+                                section, v),
                       ),
                     ],
                   ),

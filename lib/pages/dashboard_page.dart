@@ -1101,64 +1101,85 @@ class _GreetingCard extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 12),
+            // Tap on the greeting / profile name / email area routes
+            // to Settings → Account. That section hosts cloud sync,
+            // sign-in/out, profile picker, and Firestore status — the
+            // surface a user is most likely looking for when they
+            // press their own profile. Kept as InkWell + Material
+            // `borderRadius` so the ripple stays inside the card's
+            // visual hit-target. The avatar (with the small edit-
+            // pencil chip) keeps its existing local-profile-edit
+            // affordance — that's a separate intent.
             Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    greeting,
-                    maxLines: 1,
-                    softWrap: false,
-                    overflow: TextOverflow.ellipsis,
-                    textDirection: TextDirection.ltr,
-                    style: TextStyle(
-                      fontFamily: settings.fontFamily,
-                      fontSize: (fs - 3).clamp(11.0, 16.0).toDouble(),
-                      color: scheme.onSurfaceVariant,
-                    ),
+              child: InkWell(
+                borderRadius: BorderRadius.circular(8),
+                onTap: () => Get.to(
+                  () => const SettingsPage(
+                    initialSection: SettingsSection.account,
                   ),
-                  // iPhone 14 (iOS 17/18 Safari) bug: under specific
-                  // font-fallback conditions the profile name can
-                  // render with each glyph stacked vertically. Forcing
-                  // softWrap:false + LTR direction + maxLines:1 with
-                  // ellipsis prevents Safari from line-breaking
-                  // between every character, even when a fallback
-                  // CJK font has misconfigured horizontal advances.
-                  Text(
-                    profileName,
-                    maxLines: 1,
-                    softWrap: false,
-                    overflow: TextOverflow.ellipsis,
-                    textDirection: TextDirection.ltr,
-                    style: TextStyle(
-                      fontFamily: settings.fontFamily,
-                      fontSize: (fs + 3).clamp(16.0, 28.0).toDouble(),
-                      fontWeight: FontWeight.w700,
-                      color: scheme.onSurface,
-                    ),
-                  ),
-                  if (isSignedIn && email != null)
-                    Row(
-                      children: [
-                        Icon(Icons.cloud_done_outlined,
-                            size: 12, color: scheme.primary),
-                        const SizedBox(width: 4),
-                        Flexible(
-                          child: Text(
-                            email!,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              fontFamily: settings.fontFamily,
-                              fontSize:
-                                  (fs - 4).clamp(11.0, 14.0).toDouble(),
-                              color: scheme.onSurfaceVariant,
-                            ),
-                          ),
+                  transition: Transition.rightToLeft,
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 4),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        greeting,
+                        maxLines: 1,
+                        softWrap: false,
+                        overflow: TextOverflow.ellipsis,
+                        textDirection: TextDirection.ltr,
+                        style: TextStyle(
+                          fontFamily: settings.fontFamily,
+                          fontSize: (fs - 3).clamp(11.0, 16.0).toDouble(),
+                          color: scheme.onSurfaceVariant,
                         ),
-                      ],
-                    ),
-                ],
+                      ),
+                      // iPhone 14 (iOS 17/18 Safari) bug: under specific
+                      // font-fallback conditions the profile name can
+                      // render with each glyph stacked vertically. Forcing
+                      // softWrap:false + LTR direction + maxLines:1 with
+                      // ellipsis prevents Safari from line-breaking
+                      // between every character, even when a fallback
+                      // CJK font has misconfigured horizontal advances.
+                      Text(
+                        profileName,
+                        maxLines: 1,
+                        softWrap: false,
+                        overflow: TextOverflow.ellipsis,
+                        textDirection: TextDirection.ltr,
+                        style: TextStyle(
+                          fontFamily: settings.fontFamily,
+                          fontSize: (fs + 3).clamp(16.0, 28.0).toDouble(),
+                          fontWeight: FontWeight.w700,
+                          color: scheme.onSurface,
+                        ),
+                      ),
+                      if (isSignedIn && email != null)
+                        Row(
+                          children: [
+                            Icon(Icons.cloud_done_outlined,
+                                size: 12, color: scheme.primary),
+                            const SizedBox(width: 4),
+                            Flexible(
+                              child: Text(
+                                email!,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  fontFamily: settings.fontFamily,
+                                  fontSize:
+                                      (fs - 4).clamp(11.0, 14.0).toDouble(),
+                                  color: scheme.onSurfaceVariant,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                    ],
+                  ),
+                ),
               ),
             ),
             const SizedBox(width: 8),

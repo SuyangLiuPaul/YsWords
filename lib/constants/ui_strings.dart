@@ -680,6 +680,15 @@ const uiStrings = {
     'zh-Hant': '主操作 — 跳回上次讀經位置。',
     'en': 'Primary CTA — jump back to your last reading position.',
   },
+  // Shown beneath the Read Bible row in Settings → Dashboard layout
+  // when the user tries to hide it (the Switch is disabled). Round 55
+  // user feedback: "if all invisible then can't use the app" — so
+  // Read Bible is locked on as the primary entry point.
+  'dashboardSection_readBible_locked': {
+    'zh-Hans': '常驻显示 — 应用主入口。',
+    'zh-Hant': '常駐顯示 — 應用主入口。',
+    'en': 'Always visible — primary entry point.',
+  },
   'dashboardSection_resumeSermon_label': {
     'zh-Hans': '继续讲道',
     'zh-Hant': '繼續講道',

@@ -129,8 +129,16 @@ class AppSettings extends ChangeNotifier {
   /// Whether [section] should render on the dashboard. Combines the
   /// user's stored preference with [defaultVisibility] when no entry
   /// has been written yet.
-  bool isDashboardSectionVisible(DashboardSection section) =>
-      _dashboardVisibility[section] ?? defaultVisibility[section] ?? true;
+  ///
+  /// Special case: [DashboardSection.readBible] is *always* visible.
+  /// It's the primary entry point into the app — if the user hides
+  /// every other section AND this one, they'd have no way to open
+  /// the Bible. So we lock its visibility on at the model layer
+  /// (Settings UI also disables the Switch for it).
+  bool isDashboardSectionVisible(DashboardSection section) {
+    if (section == DashboardSection.readBible) return true;
+    return _dashboardVisibility[section] ?? defaultVisibility[section] ?? true;
+  }
 
   Future<void> setFontFamily(String family) async {
     if (_fontFamily == family) return;
@@ -324,8 +332,13 @@ class AppSettings extends ChangeNotifier {
   /// Toggle visibility of one dashboard section. Mirrors the legacy
   /// `setShowDailyNews` / `setShowReadingPlan` / etc. for any new
   /// section; the legacy setters remain available and stay in sync.
+  ///
+  /// No-op for [DashboardSection.readBible] — it's the app's primary
+  /// entry point and stays mandatory regardless of what the caller
+  /// passes in.
   Future<void> setDashboardSectionVisible(
       DashboardSection section, bool visible) async {
+    if (section == DashboardSection.readBible) return;
     final current = isDashboardSectionVisible(section);
     if (current == visible) return;
     _dashboardVisibility[section] = visible;
