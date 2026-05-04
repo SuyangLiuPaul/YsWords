@@ -40,6 +40,13 @@ class _BookChapterPickerState extends State<BookChapterPicker> {
   Map<String, bool> expandStatus = {};
   String? _gridSelectedBook;
 
+  /// Round 56: when the user picks a chapter we transition the
+  /// picker IN-PLACE to a verse grid for that chapter (instead of
+  /// firing onChapterSelected immediately). Tracks the chapter
+  /// being verse-picked. Null = books/chapters mode.
+  String? _verseStepBook;
+  int? _verseStepChapter;
+
   @override
   void dispose() {
     _autoScrollController.dispose();
@@ -113,6 +120,19 @@ class _BookChapterPickerState extends State<BookChapterPicker> {
 
     return Consumer<MainProvider>(
       builder: (context, mainProvider, child) {
+        // Round 56: when a chapter has been picked, switch the entire
+        // picker contents to the verse-grid step. Books / chapters
+        // disappear; user gets a focused full-width grid of every
+        // verse in the chosen chapter, plus a back button to return
+        // to chapters and a "Top of chapter" tile to skip verse-pick.
+        if (_verseStepBook != null && _verseStepChapter != null) {
+          return _buildVerseStep(
+            context: context,
+            mainProvider: mainProvider,
+            settings: settings,
+          );
+        }
+
         final books = mainProvider.books;
         final filteredBooks = books.where((book) {
           return showOldTestament
@@ -291,168 +311,87 @@ class _BookChapterPickerState extends State<BookChapterPicker> {
 
   Future<void> _selectChapter(
       MainProvider mainProvider, String bookTitle, int chapter) async {
-    final settings = context.read<AppSettings>();
-    if (settings.pickVerseAfterChapter) {
-      // Round 56: optional second-step verse picker. Toggle in
-      // Settings → Reading. When the user picks a chapter via the
-      // sidebar / book-chapter picker, we now offer a verse-number
-      // grid so they can land directly on a specific verse instead
-      // of the chapter header.
-      final picked = await _showVersePicker(
-        context: context,
-        mainProvider: mainProvider,
-        bookTitle: bookTitle,
-        chapter: chapter,
-      );
-      if (picked == null) {
-        // User dismissed the verse picker without choosing — abort
-        // the navigation entirely. Lets the user back out without
-        // changing chapter.
-        return;
-      }
-      if (picked > 0) {
-        // Set up a pending jump to the picked verse. The reader
-        // pane consumes it on its next build (see
-        // bible_reading_pane.dart's pendingJump handler).
-        final chapterVerses = mainProvider.verses
-            .where((v) => v.book == bookTitle && v.chapter == chapter)
-            .toList()
-          ..sort((a, b) => a.verse.compareTo(b.verse));
-        final relIdx =
-            chapterVerses.indexWhere((v) => v.verse == picked);
-        if (relIdx >= 0) {
-          mainProvider.setPendingJump(chapterVerseIndex: relIdx);
-        }
-      }
-    }
-    widget.onChapterSelected(bookTitle, chapter);
+    // Round 56: ALWAYS transition to the in-place verse-grid step
+    // (no Settings toggle — the user wants this as default UX,
+    // mirroring how YouVersion / Bible Hub etc. flow). Setting
+    // these state fields swaps the picker view from books+chapters
+    // to a full verse grid for the picked chapter.
+    setState(() {
+      _verseStepBook = bookTitle;
+      _verseStepChapter = chapter;
+    });
   }
 
-  /// Modal grid of verse numbers for the just-picked chapter.
-  /// Returns the chosen verse number, 0 for "top of chapter", or
-  /// null if the user dismissed without choosing.
-  Future<int?> _showVersePicker({
+  /// Called when the user picks a verse on the in-place verse grid.
+  /// Sets a pendingJump and fires the original onChapterSelected so
+  /// the host page (BooksPage / sidebar) closes the picker and
+  /// navigates the reader. `verseNum == 0` means "top of chapter".
+  void _onVersePicked(MainProvider mainProvider, int verseNum) {
+    final book = _verseStepBook;
+    final chapter = _verseStepChapter;
+    if (book == null || chapter == null) return;
+    if (verseNum > 0) {
+      final chapterVerses = mainProvider.verses
+          .where((v) => v.book == book && v.chapter == chapter)
+          .toList()
+        ..sort((a, b) => a.verse.compareTo(b.verse));
+      final relIdx = chapterVerses.indexWhere((v) => v.verse == verseNum);
+      if (relIdx >= 0) {
+        mainProvider.setPendingJump(chapterVerseIndex: relIdx);
+      }
+    }
+    widget.onChapterSelected(book, chapter);
+  }
+
+  void _backFromVerseStep() {
+    setState(() {
+      _verseStepBook = null;
+      _verseStepChapter = null;
+    });
+  }
+
+  /// Verse-grid step. Full-width responsive grid of all verse
+  /// numbers in the chosen chapter. Tap a number → onVersePicked.
+  /// Tap "Top of chapter" → onVersePicked(0) (skip verse pick).
+  /// Tap back arrow → returns to books/chapters view.
+  Widget _buildVerseStep({
     required BuildContext context,
     required MainProvider mainProvider,
-    required String bookTitle,
-    required int chapter,
-  }) async {
-    final chapterVerses = mainProvider.verses
-        .where((v) => v.book == bookTitle && v.chapter == chapter)
-        .toList()
-      ..sort((a, b) => a.verse.compareTo(b.verse));
-    if (chapterVerses.isEmpty) return 0;
-    final settings = context.read<AppSettings>();
+    required AppSettings settings,
+  }) {
     final scheme = Theme.of(context).colorScheme;
     final locale = settings.locale;
-    return showModalBottomSheet<int>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: scheme.surface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-      ),
-      builder: (sheetCtx) {
-        final maxH = MediaQuery.of(sheetCtx).size.height * 0.6;
-        return SafeArea(
-          child: ConstrainedBox(
-            constraints: BoxConstraints(maxHeight: maxH),
+    final book = _verseStepBook!;
+    final chapter = _verseStepChapter!;
+    final verses = mainProvider.verses
+        .where((v) => v.book == book && v.chapter == chapter)
+        .toList()
+      ..sort((a, b) => a.verse.compareTo(b.verse));
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(12, 8, 12, 6),
+          child: BooksGlassSurface(
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
+              padding: const EdgeInsets.symmetric(
+                  horizontal: 8, vertical: 6),
+              child: Row(
                 children: [
-                  Center(
-                    child: Container(
-                      width: 40,
-                      height: 4,
-                      margin: const EdgeInsets.only(bottom: 12),
-                      decoration: BoxDecoration(
-                        color: scheme.outlineVariant,
-                        borderRadius: BorderRadius.circular(2),
-                      ),
-                    ),
+                  IconButton(
+                    icon: const Icon(Icons.arrow_back_rounded),
+                    tooltip:
+                        uiStrings['back']?[locale] ?? 'Back',
+                    onPressed: _backFromVerseStep,
                   ),
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 8),
+                  Expanded(
                     child: Text(
                       uiStrings['versePickerTitle']?[locale] ??
                           'Pick a verse',
                       style: TextStyle(
-                        fontSize: 16,
+                        fontFamily: settings.fontFamily,
+                        fontSize: settings.fontSize,
                         fontWeight: FontWeight.w700,
                         color: scheme.onSurface,
-                      ),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 12),
-                    child: Text(
-                      '$bookTitle  $chapter',
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: scheme.onSurfaceVariant,
-                      ),
-                    ),
-                  ),
-                  Flexible(
-                    child: SingleChildScrollView(
-                      child: LayoutBuilder(
-                        builder: (gridCtx, constraints) {
-                          // Responsive grid: pick a column count
-                          // based on width so verse-number tiles
-                          // stay square-ish on every screen.
-                          // Phone (<360 px): 6 cols; phone wide
-                          // (<480): 7 cols; small tablet
-                          // (<640): 8 cols; tablet (<800): 10 cols;
-                          // desktop: 12 cols. Tile width =
-                          // (available width − gaps) / cols.
-                          final w = constraints.maxWidth;
-                          final cols = w < 360
-                              ? 6
-                              : w < 480
-                                  ? 7
-                                  : w < 640
-                                      ? 8
-                                      : w < 800
-                                          ? 10
-                                          : 12;
-                          const gap = 6.0;
-                          final tileW =
-                              (w - gap * (cols - 1)) / cols;
-                          return Wrap(
-                            spacing: gap,
-                            runSpacing: gap,
-                            children: [
-                              // "Top of chapter" shortcut — spans 2
-                              // columns to make the action obvious.
-                              SizedBox(
-                                width: tileW * 2 + gap,
-                                child: _VersePickerChip(
-                                  label:
-                                      uiStrings['versePickerTop']?[locale] ??
-                                          'Top',
-                                  color: scheme.surfaceContainerHigh,
-                                  fg: scheme.onSurface,
-                                  onTap: () =>
-                                      Navigator.of(sheetCtx).maybePop(0),
-                                ),
-                              ),
-                              for (final v in chapterVerses)
-                                SizedBox(
-                                  width: tileW,
-                                  child: _VersePickerChip(
-                                    label: '${v.verse}',
-                                    color: scheme.primaryContainer,
-                                    fg: scheme.onPrimaryContainer,
-                                    onTap: () => Navigator.of(sheetCtx)
-                                        .maybePop(v.verse),
-                                  ),
-                                ),
-                            ],
-                          );
-                        },
                       ),
                     ),
                   ),
@@ -460,8 +399,70 @@ class _BookChapterPickerState extends State<BookChapterPicker> {
               ),
             ),
           ),
-        );
-      },
+        ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: Text(
+              '$book  $chapter',
+              style: TextStyle(
+                fontFamily: settings.fontFamily,
+                fontSize: (settings.fontSize - 2).clamp(12.0, 16.0),
+                color: scheme.onSurfaceVariant,
+              ),
+            ),
+          ),
+        ),
+        Expanded(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+            child: LayoutBuilder(
+              builder: (gridCtx, constraints) {
+                final w = constraints.maxWidth;
+                final cols = w < 360
+                    ? 6
+                    : w < 480
+                        ? 7
+                        : w < 640
+                            ? 8
+                            : w < 800
+                                ? 10
+                                : 12;
+                const gap = 6.0;
+                final tileW = (w - gap * (cols - 1)) / cols;
+                return Wrap(
+                  spacing: gap,
+                  runSpacing: gap,
+                  children: [
+                    SizedBox(
+                      width: tileW * 2 + gap,
+                      child: _VersePickerChip(
+                        label: uiStrings['versePickerTop']?[locale] ??
+                            'Top',
+                        color: scheme.surfaceContainerHigh,
+                        fg: scheme.onSurface,
+                        onTap: () => _onVersePicked(mainProvider, 0),
+                      ),
+                    ),
+                    for (final v in verses)
+                      SizedBox(
+                        width: tileW,
+                        child: _VersePickerChip(
+                          label: '${v.verse}',
+                          color: scheme.primaryContainer,
+                          fg: scheme.onPrimaryContainer,
+                          onTap: () =>
+                              _onVersePicked(mainProvider, v.verse),
+                        ),
+                      ),
+                  ],
+                );
+              },
+            ),
+          ),
+        ),
+      ],
     );
   }
 

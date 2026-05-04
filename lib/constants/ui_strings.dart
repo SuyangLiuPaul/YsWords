@@ -768,6 +768,11 @@ const uiStrings = {
     'en': 'Read in Bible',
   },
   // Round 56: hint shown under expanded font dropdown.
+  'loadingVersion': {
+    'zh-Hans': '正在切换译本…',
+    'zh-Hant': '正在切換譯本…',
+    'en': 'Loading version…',
+  },
   'fontFamilyHint': {
     'zh-Hans': '"Roboto" 和 "微软雅黑" 是应用自带的字体，到处都能用。'
         '其他选项使用您设备上已安装的系统字体——中文用户推荐微软雅黑、苹方、思源黑体；'

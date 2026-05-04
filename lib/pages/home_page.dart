@@ -42,7 +42,12 @@ class _HomePageState extends State<HomePage> {
     if (matched.isEmpty) return;
     provider.setCurrentChapter(book: book, chapter: chapter);
     provider.updateCurrentVerse(verse: matched.first);
-    provider.jumpToTop();
+    // Round 56 fix: don't clobber a pendingJump set by the picker's
+    // verse-pick step. Only slam to chapter top when no specific
+    // verse jump was queued.
+    if (!provider.hasPendingJump) {
+      provider.jumpToTop();
+    }
     setState(() {
       _sidebarOpen = false;
     });

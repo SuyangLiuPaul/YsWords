@@ -1160,12 +1160,45 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                         // relative verse number BEFORE swapping
                         // versions, then re-scroll to the same
                         // verse on the new version after load.
-                        // Without this, every version change
-                        // would slam the user back to chapter
-                        // top — bad UX when comparing
-                        // translations of a specific passage.
                         final preservedVerseNum =
                             _captureChapterRelativeVerseNum(p);
+                        // Round 56: show a loading snackbar — the
+                        // synchronous json.decode for a 5-10 MB
+                        // version file blocks the UI for 1-3 s on
+                        // a slow device, and user feedback was
+                        // "frozen for a while then change one by
+                        // one. very bad experience". A snackbar
+                        // lets them know what's happening even
+                        // when the thread isn't responsive.
+                        messenger?.showSnackBar(
+                          SnackBar(
+                            content: Row(
+                              children: [
+                                const SizedBox(
+                                  width: 16,
+                                  height: 16,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Text(
+                                    uiStrings['loadingVersion']
+                                            ?[settings.locale] ??
+                                        'Loading version…',
+                                  ),
+                                ),
+                              ],
+                            ),
+                            duration: const Duration(seconds: 8),
+                          ),
+                        );
+                        // Yield to event loop so the snackbar
+                        // actually paints before the heavy parse
+                        // blocks the UI.
+                        await Future<void>.delayed(Duration.zero);
                         p.setVersion(version);
                         await FetchVerses.execute(mainProvider: p);
                         if (!mounted) return;
@@ -1222,9 +1255,18 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                         } else {
                           p.jumpToTop();
                         }
-                        if (mounted) {
-                          setState(() => _visibleItemIndex = 0);
-                        }
+                        // Round 56: dismiss the "Loading version…"
+                        // snackbar now that everything has settled.
+                        messenger?.hideCurrentSnackBar();
+                        // NB: we deliberately do NOT reset
+                        // `_visibleItemIndex` to 0 here. The old
+                        // code did, which made the SPL's
+                        // `initialScrollIndex` hint snap back to
+                        // top on the next remount — directly
+                        // contradicting the verse-preservation
+                        // we just restored. Leaving _visibleItemIndex
+                        // alone lets the position-listener update
+                        // it organically once the SPL settles.
                       },
                       onSearch: () {
                         mainProvider.clearSelectedVerses();

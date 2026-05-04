@@ -69,7 +69,14 @@ class BooksPage extends StatelessWidget {
                 if (matched.isEmpty) return;
                 mainProvider.setCurrentChapter(book: book, chapter: chapter);
                 mainProvider.updateCurrentVerse(verse: matched.first);
-                mainProvider.jumpToTop();
+                // Round 56 fix: don't slam to top if a pendingJump
+                // was set by the picker's verse-pick step. The
+                // previous unconditional jumpToTop was clobbering
+                // the user's verse-level pick. Only jump-to-top when
+                // there's nothing more specific queued.
+                if (!mainProvider.hasPendingJump) {
+                  mainProvider.jumpToTop();
+                }
                 Get.back();
               },
             ),

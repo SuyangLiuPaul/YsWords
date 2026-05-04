@@ -829,33 +829,11 @@ class _SettingsPageBodyState extends State<_SettingsPageBody> {
                       value: settings.showBookIntro,
                       onChanged: (val) => settings.setShowBookIntro(val),
                     ),
-                    const Divider(height: 1),
-                    SwitchListTile(
-                      title: Text(
-                        uiStrings['settingsPickVerseAfterChapter']
-                                ?[settings.locale] ??
-                            'Pick verse after chapter',
-                        style: TextStyle(
-                          fontSize: settings.fontSize + 2,
-                          fontWeight: FontWeight.w600,
-                          fontFamily: settings.fontFamily,
-                        ),
-                      ),
-                      subtitle: Text(
-                        uiStrings['settingsPickVerseAfterChapterHint']
-                                ?[settings.locale] ??
-                            'After picking a chapter, show a verse-'
-                                'number grid so you can land on a '
-                                'specific verse.',
-                        style: TextStyle(
-                          fontSize: settings.fontSize,
-                          fontFamily: settings.fontFamily,
-                        ),
-                      ),
-                      value: settings.pickVerseAfterChapter,
-                      onChanged: (val) =>
-                          settings.setPickVerseAfterChapter(val),
-                    ),
+                    // Round 56: removed the "Pick verse after
+                    // chapter" toggle. The picker now always shows
+                    // book → chapter → verse as 3-step grid flow,
+                    // matching how YouVersion / Bible Hub etc. work
+                    // and per user request: "选择节应该全部用 grid mode".
                     const Divider(height: 1),
                     SwitchListTile(
                       title: Text(
