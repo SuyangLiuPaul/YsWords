@@ -137,7 +137,15 @@ extension AppStylePresetExt on AppStylePreset {
 AppStylePreset? detectActivePreset(AppSettings s) {
   for (final entry in presetDefinitions.entries) {
     final d = entry.value;
-    if (s.fontFamily == d.fontFamily &&
+    // Round 56 fix: compare against `fontSelection` (the catalogue
+    // key, e.g. 'EB Garamond') NOT `fontFamily` (the resolved
+    // Google-Fonts-registered family, e.g. 'EBGaramond_regular').
+    // After the Google Fonts integration these two diverged, so
+    // tapping Modern / Reverent / Reader correctly applied the
+    // settings but the active-preset check always returned null,
+    // leaving the card looking unselected. User feedback: "why
+    // clicked modern or jingqian not showing selected".
+    if (s.fontSelection == d.fontFamily &&
         (s.fontSize - d.fontSize).abs() < 0.01 &&
         (s.lineSpacing - d.lineSpacing).abs() < 0.01 &&
         (s.menuScale - d.menuScale).abs() < 0.01 &&
