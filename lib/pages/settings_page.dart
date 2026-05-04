@@ -23,6 +23,7 @@ import 'package:yswords/services/fetch_verses.dart';
 import 'package:yswords/services/profile_service.dart';
 import 'package:yswords/services/reading_plan_service.dart';
 
+import 'package:yswords/services/offline_pack_service.dart';
 import 'package:yswords/widgets/home_icon_button.dart';
 import 'package:yswords/widgets/localized_back_button.dart';
 import 'package:yswords/widgets/onboarding_dialog.dart';
@@ -2611,6 +2612,14 @@ class _AboutCard extends StatelessWidget {
                 fontStyle: FontStyle.italic,
               ),
             ),
+            SizedBox(height: 16 * s),
+            // ── Offline Pack (Round 56) ─────────────────────────
+            // Bulk pre-fetch every Bible / sermon / tool the user
+            // checks so the app launches instantly + works without
+            // network. Lives in its own card section because the
+            // download flow (categories + progress + clear) needs
+            // its own state surface.
+            _OfflinePackCard(settings: settings, s: s),
             SizedBox(height: 12 * s),
             // Show-tour-again — clears the v2 onboarding-seen flag and
             // immediately shows the dialog so the user can re-walk the
@@ -2751,3 +2760,249 @@ class _AboutCard extends StatelessWidget {
 // JS interop binding: defined in web/index.html.
 @JS('yswordsClearCacheAndReload')
 external void _clearCacheAndReload();
+
+/// Settings → About → "Offline Pack" card. Bulk pre-fetches the
+/// content the user wants available offline (Bibles / Sermons /
+/// Tools). Once downloaded, the app launches instantly + works
+/// without network — Service Worker serves cached responses.
+///
+/// Three checkboxes (Bibles / Sermons / Tools) so the user can
+/// pick a subset; default selection is all three for a one-click
+/// "make this offline" experience.
+class _OfflinePackCard extends StatefulWidget {
+  final AppSettings settings;
+  final double s;
+  const _OfflinePackCard({required this.settings, required this.s});
+
+  @override
+  State<_OfflinePackCard> createState() => _OfflinePackCardState();
+}
+
+class _OfflinePackCardState extends State<_OfflinePackCard> {
+  // Default: every category checked. User can uncheck before
+  // hitting Download.
+  final Set<OfflinePackCategory> _selected = {
+    OfflinePackCategory.bibles,
+    OfflinePackCategory.sermons,
+    OfflinePackCategory.tools,
+  };
+
+  @override
+  void initState() {
+    super.initState();
+    OfflinePackService.instance.addListener(_onChanged);
+  }
+
+  @override
+  void dispose() {
+    OfflinePackService.instance.removeListener(_onChanged);
+    super.dispose();
+  }
+
+  void _onChanged() {
+    if (mounted) setState(() {});
+  }
+
+  String _categoryLabel(OfflinePackCategory c, String locale) {
+    switch (c) {
+      case OfflinePackCategory.bibles:
+        return uiStrings['offlinePackBibles']?[locale] ?? 'Bibles';
+      case OfflinePackCategory.sermons:
+        return uiStrings['offlinePackSermons']?[locale] ?? 'Sermons';
+      case OfflinePackCategory.tools:
+        return uiStrings['offlinePackTools']?[locale] ?? 'Tools & references';
+    }
+  }
+
+  String _statusLine(String locale, OfflinePackService svc) {
+    if (svc.downloading) {
+      final pct = (svc.progress * 100).clamp(0, 100).round();
+      final tmpl = uiStrings['offlinePackDownloading']?[locale] ??
+          'Downloading… {done}/{total} ({pct}%)';
+      return tmpl
+          .replaceAll('{done}', '${svc.done}')
+          .replaceAll('{total}', '${svc.total}')
+          .replaceAll('{pct}', '$pct');
+    }
+    if (svc.lastCompletedAt != null && svc.lastDownloaded.isNotEmpty) {
+      final cats = svc.lastDownloaded
+          .map((c) => _categoryLabel(c, locale))
+          .join(' · ');
+      final tmpl = uiStrings['offlinePackReady']?[locale] ??
+          'Ready offline · {categories}';
+      return tmpl.replaceAll('{categories}', cats);
+    }
+    return uiStrings['offlinePackHint']?[locale] ??
+        'Pre-download Bibles, sermons, and tools so the app launches instantly and works without network.';
+  }
+
+  int _selectedTotalMb() {
+    final svc = OfflinePackService.instance;
+    return _selected.fold<int>(0, (sum, c) => sum + svc.approximateMbFor(c));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final locale = widget.settings.locale;
+    final scheme = Theme.of(context).colorScheme;
+    final svc = OfflinePackService.instance;
+    final s = widget.s;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: scheme.surfaceContainerHigh.withValues(alpha: 0.45),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+          color: scheme.outlineVariant.withValues(alpha: 0.5),
+        ),
+      ),
+      padding: EdgeInsets.fromLTRB(12 * s, 10 * s, 12 * s, 10 * s),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.cloud_download_outlined,
+                  size: 18, color: scheme.primary),
+              SizedBox(width: 8 * s),
+              Expanded(
+                child: Text(
+                  uiStrings['offlinePackTitle']?[locale] ?? 'Offline pack',
+                  style: TextStyle(
+                    fontFamily: widget.settings.fontFamily,
+                    fontSize: (widget.settings.fontSize - 1)
+                        .clamp(13.0, 17.0)
+                        .toDouble(),
+                    fontWeight: FontWeight.w700,
+                    color: scheme.onSurface,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 4 * s),
+          Text(
+            _statusLine(locale, svc),
+            style: TextStyle(
+              fontFamily: widget.settings.fontFamily,
+              fontSize:
+                  (widget.settings.fontSize - 5).clamp(11.0, 13.0),
+              color: scheme.onSurface.withValues(alpha: 0.7),
+              fontStyle:
+                  svc.downloading ? FontStyle.normal : FontStyle.italic,
+              height: 1.35,
+            ),
+          ),
+          // Live progress bar while downloading.
+          if (svc.downloading) ...[
+            SizedBox(height: 8 * s),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(2),
+              child: LinearProgressIndicator(
+                value: svc.progress,
+                minHeight: 4,
+                backgroundColor:
+                    scheme.surfaceContainerHighest.withValues(alpha: 0.7),
+                valueColor: AlwaysStoppedAnimation<Color>(scheme.primary),
+              ),
+            ),
+            if (svc.failed > 0) ...[
+              SizedBox(height: 4 * s),
+              Text(
+                (uiStrings['offlinePackSomeFailed']?[locale] ??
+                        '{n} files skipped (will retry on next download).')
+                    .replaceAll('{n}', '${svc.failed}'),
+                style: TextStyle(
+                  fontFamily: widget.settings.fontFamily,
+                  fontSize:
+                      (widget.settings.fontSize - 6).clamp(10.0, 12.0),
+                  color: scheme.error,
+                ),
+              ),
+            ],
+          ],
+          SizedBox(height: 8 * s),
+          // Category checkboxes (hidden during download to keep the
+          // card calm).
+          if (!svc.downloading)
+            ...OfflinePackCategory.values.map((c) {
+              return CheckboxListTile(
+                contentPadding: EdgeInsets.zero,
+                dense: true,
+                visualDensity: VisualDensity.compact,
+                title: Text(
+                  _categoryLabel(c, locale),
+                  style: TextStyle(
+                    fontFamily: widget.settings.fontFamily,
+                    fontSize: (widget.settings.fontSize - 3)
+                        .clamp(12.0, 15.0),
+                  ),
+                ),
+                subtitle: Text(
+                  '~${svc.approximateMbFor(c)} MB',
+                  style: TextStyle(
+                    fontFamily: widget.settings.fontFamily,
+                    fontSize: (widget.settings.fontSize - 6)
+                        .clamp(10.0, 12.0),
+                    color: scheme.onSurface.withValues(alpha: 0.6),
+                  ),
+                ),
+                value: _selected.contains(c),
+                onChanged: (v) {
+                  setState(() {
+                    if (v == true) {
+                      _selected.add(c);
+                    } else {
+                      _selected.remove(c);
+                    }
+                  });
+                },
+                controlAffinity: ListTileControlAffinity.leading,
+              );
+            }),
+          SizedBox(height: 4 * s),
+          Row(
+            children: [
+              Expanded(
+                child: svc.downloading
+                    ? OutlinedButton.icon(
+                        icon: const Icon(Icons.close_rounded, size: 18),
+                        label: Text(
+                          uiStrings['cancel']?[locale] ?? 'Cancel',
+                        ),
+                        onPressed: () => svc.cancel(),
+                      )
+                    : FilledButton.icon(
+                        icon: const Icon(Icons.download_rounded, size: 18),
+                        label: Text(
+                          _selected.isEmpty
+                              ? (uiStrings['offlinePackPickCategory']
+                                      ?[locale] ??
+                                  'Pick a category')
+                              : '${uiStrings['offlinePackDownload']?[locale] ?? 'Download'} '
+                                  '(~${_selectedTotalMb()} MB)',
+                        ),
+                        onPressed: _selected.isEmpty
+                            ? null
+                            : () => svc.download(categories: _selected),
+                      ),
+              ),
+              if (!svc.downloading &&
+                  svc.lastCompletedAt != null &&
+                  svc.lastDownloaded.isNotEmpty) ...[
+                SizedBox(width: 8 * s),
+                IconButton(
+                  tooltip: uiStrings['offlinePackClear']?[locale] ??
+                      'Clear offline pack',
+                  icon: Icon(Icons.delete_outline_rounded,
+                      size: 20, color: scheme.error),
+                  onPressed: () => svc.clear(),
+                ),
+              ],
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}

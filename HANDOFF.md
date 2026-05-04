@@ -455,6 +455,41 @@ Levitical priesthood in view, and Ezekiel 14:14 names him alongside
 Noah and Daniel as one of the great righteous men. Cross-refs:
 Job 1, 2, 38, 42, Ezekiel 14:14.
 
+**Offline Pack — bulk pre-fetch for fast launch + offline use**
+(`lib/services/offline_pack_service.dart`,
+`lib/pages/settings_page.dart::_OfflinePackCard`). User feedback:
+*"can you have a download package so web app users can install
+locally — faster + offline-safe"*. Settings → About now hosts an
+"Offline pack" card with three category checkboxes:
+
+| Category | Approx size | Files |
+|---|---|---|
+| Bibles (14 translations) | ~77 MB | 14 |
+| Pastor Eric's sermons | ~26 MB | 867 (587 × up to 3 langs) |
+| Tools & references | ~9 MB | 11 (tree / timeline / evidence etc.) |
+
+Click a checkbox combo + "Download (~X MB)" → 8-way concurrent
+fetch loop pre-warms the Flutter web service worker cache. Once
+done, every subsequent launch is instant + works without network.
+Live progress (X/Y, percent), cancel button mid-flight, "Clear"
+button to reset bookkeeping.
+
+Implementation notes:
+* No custom service worker — relies on Flutter's existing SW to
+  intercept + cache the fetches. One code path on every Flutter
+  web build, no fragile post-process step needed.
+* JS interop: a thin `@JS('fetch') external JSPromise` binding;
+  no body read (the SW caching is the side-effect we want).
+* Concurrency capped at 8 (Chrome's per-origin limit is ~6;
+  going higher just queues at the browser).
+* Sermon URL list is built dynamically from
+  `assets/sermons/index.json` so future content drops auto-flow
+  in without code changes.
+* Persisted bookmark in SharedPreferences:
+  `offlinePack.lastDownloadedCategories` +
+  `offlinePack.lastCompletedAt` so the Settings card label is
+  accurate on next app launch.
+
 **Splash watchdog Timer was not cancellable**
 (`lib/main.dart`). A focused 25-pattern bug audit (Round 56)
 turned up a single high-severity finding: `_MainAppState.initState`

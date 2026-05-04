@@ -659,6 +659,68 @@ const uiStrings = {
     'zh-Hant': '重新查看導覽',
     'en': 'Show tour again',
   },
+  // ── Offline Pack (Round 56) ─────────────────────────────────────
+  // Bulk pre-fetch UI in Settings → About. Lets the user download
+  // every Bible / sermon / tool asset into the browser's HTTP +
+  // service-worker cache so the app launches instantly + works
+  // without network. Three categories (bibles / sermons / tools)
+  // each user-toggleable.
+  'offlinePackTitle': {
+    'zh-Hans': '离线包',
+    'zh-Hant': '離線包',
+    'en': 'Offline pack',
+  },
+  'offlinePackHint': {
+    'zh-Hans': '预先下载圣经、讲道与工具数据，应用立即打开，断网也能用。',
+    'zh-Hant': '預先下載聖經、講道與工具資料，應用立即打開，斷網也能用。',
+    'en':
+        'Pre-download Bibles, sermons, and tools so the app launches instantly and works without network.',
+  },
+  'offlinePackBibles': {
+    'zh-Hans': '圣经译本（共 14 部）',
+    'zh-Hant': '聖經譯本（共 14 部）',
+    'en': 'Bibles (14 translations)',
+  },
+  'offlinePackSermons': {
+    'zh-Hans': '张熙和牧师讲道（587 篇 ×3 语）',
+    'zh-Hant': '張熙和牧師講道（587 篇 ×3 語）',
+    'en': "Pastor Eric's sermons (587 × 3 langs)",
+  },
+  'offlinePackTools': {
+    'zh-Hans': '研经工具（家谱 / 时间轴 / 圣经证据 / 互参等）',
+    'zh-Hant': '研經工具（家譜 / 時間軸 / 聖經證據 / 互參等）',
+    'en': 'Tools & references (tree / timeline / evidence / cross-refs)',
+  },
+  'offlinePackDownload': {
+    'zh-Hans': '下载',
+    'zh-Hant': '下載',
+    'en': 'Download',
+  },
+  'offlinePackPickCategory': {
+    'zh-Hans': '请勾选一个类别',
+    'zh-Hant': '請勾選一個類別',
+    'en': 'Pick a category',
+  },
+  'offlinePackDownloading': {
+    'zh-Hans': '下载中… {done} / {total}（{pct}%）',
+    'zh-Hant': '下載中… {done} / {total}（{pct}%）',
+    'en': 'Downloading… {done}/{total} ({pct}%)',
+  },
+  'offlinePackReady': {
+    'zh-Hans': '已可离线使用 · {categories}',
+    'zh-Hant': '已可離線使用 · {categories}',
+    'en': 'Ready offline · {categories}',
+  },
+  'offlinePackSomeFailed': {
+    'zh-Hans': '已跳过 {n} 个文件（下次下载时重试）。',
+    'zh-Hant': '已跳過 {n} 個檔案（下次下載時重試）。',
+    'en': '{n} files skipped (will retry on next download).',
+  },
+  'offlinePackClear': {
+    'zh-Hans': '清除离线包记录',
+    'zh-Hant': '清除離線包記錄',
+    'en': 'Clear offline pack',
+  },
   'confirm': {
     'zh-Hans': '确认',
     'zh-Hant': '確認',

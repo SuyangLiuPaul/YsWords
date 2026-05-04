@@ -16,6 +16,7 @@ import 'package:yswords/utils/jump_to_reference.dart' as jumper;
 import 'package:yswords/utils/reference_parser.dart' show BibleReference;
 import 'package:yswords/services/cloud_auth_service.dart';
 import 'package:yswords/services/cloud_sync_service.dart';
+import 'package:yswords/services/offline_pack_service.dart';
 import 'package:yswords/services/fetch_books.dart';
 import 'package:yswords/services/fetch_verses.dart';
 import 'package:yswords/services/profile_service.dart';
@@ -96,6 +97,11 @@ class _MainAppState extends State<MainApp> {
       // local changes mirror to Firestore (when signed in).
       await CloudAuthService.instance.init();
       CloudSyncService.instance.init();
+      // Restore "what's been pre-downloaded for offline" so the
+      // Settings → Offline Pack card can render an accurate label
+      // on first paint instead of flickering "Not downloaded".
+      // ignore: unawaited_futures
+      OfflinePackService.instance.hydrate();
       // Pre-warm the section-titles cache so the first chapter
       // render already has paragraph headings ready.
       // ignore: unawaited_futures
