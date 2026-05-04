@@ -38,7 +38,6 @@ class VersePopupSheet extends StatefulWidget {
 
 class _VersePopupSheetState extends State<VersePopupSheet> {
   bool _fullChapter = false;
-  late final ScrollController _scrollController;
 
   /// True while a force-load of mp.verses is in flight. Used to swap
   /// the empty-state placeholder for a spinner so users don't see a
@@ -48,7 +47,6 @@ class _VersePopupSheetState extends State<VersePopupSheet> {
   @override
   void initState() {
     super.initState();
-    _scrollController = ScrollController();
     // If the user lands here before bootstrap fetched verses (e.g.
     // tapped a sermon ref straight off the dashboard, or the version
     // hasn't been loaded yet for the cited book), kick off a load so
@@ -97,11 +95,10 @@ class _VersePopupSheetState extends State<VersePopupSheet> {
     }
   }
 
-  @override
-  void dispose() {
-    _scrollController.dispose();
-    super.dispose();
-  }
+  // No dispose() override needed — the sheet's scroll controller is
+  // owned by DraggableScrollableSheet (passed in via `draggable`),
+  // and the post-frame `_ensureVersesLoaded` future already guards on
+  // `mounted` before touching state.
 
   /// Resolve the cited verses out of MainProvider's loaded
   /// dataset. We match by english book + chapter (+ verse range
@@ -148,7 +145,8 @@ class _VersePopupSheetState extends State<VersePopupSheet> {
 
   Future<void> _copyAll(List<Verse> verses, String locale) async {
     if (verses.isEmpty) return;
-    final book = localeAwareBookName(widget.reference.englishBook, locale);
+    // _refLabel already pulls the locale-aware book name; no need to
+    // recompute it separately.
     final buf = StringBuffer();
     buf.writeln('${_refLabel(locale)}\n');
     for (final v in verses) {
@@ -173,8 +171,6 @@ class _VersePopupSheetState extends State<VersePopupSheet> {
           : Icons.error_outline_rounded,
       background: ok ? scheme.primary : scheme.error,
     );
-    // Reference unused param warning suppression.
-    book.length;
   }
 
   Future<void> _openInReader() async {

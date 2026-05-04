@@ -24,12 +24,17 @@ import 'package:yswords/widgets/localized_back_button.dart';
 /// language-toggle (EN / 简 / 繁) at the top.
 ///
 /// The body is plain prose (Markdown H1 first line + paragraphs).
-/// We render it with one Text widget per paragraph and the user's
-/// reader font-size from AppSettings so it matches the Bible reader.
+/// Each paragraph renders via `SelectableText.rich` with one
+/// [TextSpan] per matched Bible reference (regex from
+/// `lib/utils/passage_localizer.dart`). Tapping a reference opens a
+/// `VersePopupSheet` modal so the user can peek at the cited verses
+/// without losing their place in the sermon. In zh locales the
+/// matched span text is rewritten to the locale's preferred book
+/// name (e.g. "Mt5:27-30" → "马太福音 5:27-30").
 ///
-/// Phase-2 stub (TODO): once `assets/sermons/refs.json` ships, every
-/// detected Bible reference in the body will be tappable. For now
-/// the body is rendered as plain text.
+/// Font size + family follow the user's reader settings via
+/// `AppSettings`, so sermon text matches the look of the Bible
+/// reader.
 class SermonDetailPage extends StatefulWidget {
   final Sermon sermon;
   const SermonDetailPage({super.key, required this.sermon});
