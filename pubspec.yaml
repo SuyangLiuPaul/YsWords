@@ -74,6 +74,7 @@ flutter:
     - assets/sermons/index.json
     - assets/sermons/refs.json
     - assets/family_tree.json
+    - assets/bible_timeline.json
     - assets/sermons/en/
     - assets/sermons/zh-CN/
     - assets/sermons/zh-TW/

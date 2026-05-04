@@ -2150,6 +2150,27 @@ const uiStrings = {
     'zh-Hans': '身份',
     'zh-Hant': '身份',
   },
+  // Bible timeline page
+  'bibleTimeline': {
+    'en': 'Bible Timeline',
+    'zh-Hans': '圣经时间轴',
+    'zh-Hant': '聖經時間軸',
+  },
+  'bibleTimelineSearchHint': {
+    'en': 'Search events…',
+    'zh-Hans': '搜索事件…',
+    'zh-Hant': '搜尋事件…',
+  },
+  'bibleTimelineCount': {
+    'en': '{count} events',
+    'zh-Hans': '{count} 项事件',
+    'zh-Hant': '{count} 項事件',
+  },
+  'bibleTimelineNoMatches': {
+    'en': 'No events match.',
+    'zh-Hans': '未找到符合的事件。',
+    'zh-Hant': '未找到符合的事件。',
+  },
   'familyTreeMatchCount': {
     'zh-Hans': '第 {index}/{total} 个匹配',
     'zh-Hant': '第 {index}/{total} 個匹配',

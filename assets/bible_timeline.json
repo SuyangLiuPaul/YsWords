@@ -1,0 +1,1628 @@
+{
+  "_meta": {
+    "count": 97,
+    "source": "YsWords curated"
+  },
+  "events": [
+    {
+      "id": "creation",
+      "year": -4000,
+      "era": "antediluvian",
+      "titleEn": "The Creation",
+      "titleZhHans": "创造",
+      "titleZhHant": "創造",
+      "descEn": "God creates the heavens, earth, and all life in six days; rests on the seventh.",
+      "descZhHans": "神在六天内创造天地万物；第七日歇息。",
+      "descZhHant": "神在六天內創造天地萬物；第七日歇息。",
+      "refs": [
+        "Genesis 1",
+        "Genesis 2"
+      ],
+      "personIds": []
+    },
+    {
+      "id": "eden",
+      "year": -4000,
+      "era": "antediluvian",
+      "titleEn": "Adam & Eve in Eden",
+      "titleZhHans": "亚当夏娃在伊甸园",
+      "titleZhHant": "亞當夏娃在伊甸園",
+      "descEn": "God places Adam in the Garden of Eden; forms Eve from his side.",
+      "descZhHans": "神将亚当置于伊甸园，并以他的肋骨造夏娃。",
+      "descZhHant": "神將亞當置於伊甸園，並以他的肋骨造夏娃。",
+      "refs": [
+        "Genesis 2:8-25"
+      ],
+      "personIds": [
+        "adam",
+        "eve"
+      ]
+    },
+    {
+      "id": "fall",
+      "year": -3990,
+      "era": "antediluvian",
+      "titleEn": "The Fall",
+      "titleZhHans": "人类堕落",
+      "titleZhHant": "人類墮落",
+      "descEn": "Adam and Eve disobey God; expelled from Eden; sin enters the world.",
+      "descZhHans": "亚当夏娃违背神命；被逐出伊甸园；罪进入世界。",
+      "descZhHant": "亞當夏娃違背神命；被逐出伊甸園；罪進入世界。",
+      "refs": [
+        "Genesis 3",
+        "Romans 5:12"
+      ],
+      "personIds": [
+        "adam",
+        "eve"
+      ]
+    },
+    {
+      "id": "cain_abel",
+      "year": -3950,
+      "era": "antediluvian",
+      "titleEn": "Cain Murders Abel",
+      "titleZhHans": "该隐杀亚伯",
+      "titleZhHant": "該隱殺亞伯",
+      "descEn": "Cain kills his brother Abel out of envy; first murder in Scripture.",
+      "descZhHans": "该隐因嫉妒杀害弟弟亚伯；圣经记载的第一桩谋杀。",
+      "descZhHant": "該隱因嫉妒殺害弟弟亞伯；聖經記載的第一樁謀殺。",
+      "refs": [
+        "Genesis 4:1-16"
+      ],
+      "personIds": [
+        "cain",
+        "abel"
+      ]
+    },
+    {
+      "id": "seth_born",
+      "year": -3870,
+      "era": "antediluvian",
+      "titleEn": "Birth of Seth",
+      "titleZhHans": "塞特出生",
+      "titleZhHant": "塞特出生",
+      "descEn": "Adam's son Seth is born; through his line the godly remnant continues.",
+      "descZhHans": "亚当之子塞特出生；敬虔的余民由其家系延续。",
+      "descZhHant": "亞當之子塞特出生；敬虔的餘民由其家系延續。",
+      "refs": [
+        "Genesis 4:25-26",
+        "Genesis 5:3"
+      ],
+      "personIds": [
+        "seth"
+      ]
+    },
+    {
+      "id": "enoch_walks",
+      "year": -3000,
+      "era": "antediluvian",
+      "titleEn": "Enoch Walks with God",
+      "titleZhHans": "以诺与神同行",
+      "titleZhHant": "以諾與神同行",
+      "descEn": "Enoch walks with God for 300 years; God takes him without death.",
+      "descZhHans": "以诺与神同行三百年；神将他取去，未经死亡。",
+      "descZhHant": "以諾與神同行三百年；神將他取去，未經死亡。",
+      "refs": [
+        "Genesis 5:21-24",
+        "Hebrews 11:5"
+      ],
+      "personIds": [
+        "enoch"
+      ]
+    },
+    {
+      "id": "flood",
+      "year": -2348,
+      "era": "antediluvian",
+      "titleEn": "Noah's Flood",
+      "titleZhHans": "挪亚洪水",
+      "titleZhHant": "挪亞洪水",
+      "descEn": "God floods the earth in judgement; Noah and his family + animals saved in the ark.",
+      "descZhHans": "神以洪水审判全地；挪亚一家与各样动物在方舟中得救。",
+      "descZhHant": "神以洪水審判全地；挪亞一家與各樣動物在方舟中得救。",
+      "refs": [
+        "Genesis 6-9"
+      ],
+      "personIds": [
+        "noah"
+      ]
+    },
+    {
+      "id": "babel",
+      "year": -2200,
+      "era": "antediluvian",
+      "titleEn": "Tower of Babel",
+      "titleZhHans": "巴别塔",
+      "titleZhHant": "巴別塔",
+      "descEn": "Humanity builds a tower to make a name for themselves; God confounds languages and scatters them.",
+      "descZhHans": "人类建塔以扬名；神变乱口音并使其分散。",
+      "descZhHant": "人類建塔以揚名；神變亂口音並使其分散。",
+      "refs": [
+        "Genesis 11:1-9"
+      ],
+      "personIds": []
+    },
+    {
+      "id": "abram_called",
+      "year": -2091,
+      "era": "patriarchs",
+      "titleEn": "Call of Abram",
+      "titleZhHans": "亚伯兰蒙召",
+      "titleZhHant": "亞伯蘭蒙召",
+      "descEn": "God calls Abram out of Ur; promises to make him a great nation.",
+      "descZhHans": "神召亚伯兰离开吾珥；应许使他成为大国。",
+      "descZhHant": "神召亞伯蘭離開吾珥；應許使他成為大國。",
+      "refs": [
+        "Genesis 12:1-9"
+      ],
+      "personIds": [
+        "abraham"
+      ]
+    },
+    {
+      "id": "lot_separates",
+      "year": -2086,
+      "era": "patriarchs",
+      "titleEn": "Abram and Lot Separate",
+      "titleZhHans": "亚伯兰与罗得分开",
+      "titleZhHant": "亞伯蘭與羅得分開",
+      "descEn": "Abram and Lot part ways; Lot chooses the plain of Sodom.",
+      "descZhHans": "亚伯兰与罗得分手；罗得选择所多玛平原。",
+      "descZhHant": "亞伯蘭與羅得分手；羅得選擇所多瑪平原。",
+      "refs": [
+        "Genesis 13"
+      ],
+      "personIds": [
+        "abraham",
+        "lot"
+      ]
+    },
+    {
+      "id": "abrahamic_covenant",
+      "year": -2080,
+      "era": "patriarchs",
+      "titleEn": "Abrahamic Covenant",
+      "titleZhHans": "与亚伯拉罕立约",
+      "titleZhHant": "與亞伯拉罕立約",
+      "descEn": "God formally covenants with Abram; promises offspring as numerous as the stars.",
+      "descZhHans": "神与亚伯兰正式立约；应许后裔如天上的星。",
+      "descZhHant": "神與亞伯蘭正式立約；應許後裔如天上的星。",
+      "refs": [
+        "Genesis 15",
+        "Genesis 17"
+      ],
+      "personIds": [
+        "abraham"
+      ]
+    },
+    {
+      "id": "ishmael_born",
+      "year": -2080,
+      "era": "patriarchs",
+      "titleEn": "Birth of Ishmael",
+      "titleZhHans": "以实玛利出生",
+      "titleZhHant": "以實瑪利出生",
+      "descEn": "Hagar bears Ishmael to Abram; ancestor of the Arab peoples.",
+      "descZhHans": "夏甲为亚伯兰生以实玛利；阿拉伯民族的祖先。",
+      "descZhHant": "夏甲為亞伯蘭生以實瑪利；阿拉伯民族的祖先。",
+      "refs": [
+        "Genesis 16"
+      ],
+      "personIds": [
+        "ishmael",
+        "hagar"
+      ]
+    },
+    {
+      "id": "sodom_destroyed",
+      "year": -2067,
+      "era": "patriarchs",
+      "titleEn": "Destruction of Sodom & Gomorrah",
+      "titleZhHans": "所多玛蛾摩拉被毁",
+      "titleZhHant": "所多瑪蛾摩拉被毀",
+      "descEn": "God destroys Sodom and Gomorrah for their wickedness; rescues Lot.",
+      "descZhHans": "神因所多玛蛾摩拉的罪恶将其毁灭；救出罗得。",
+      "descZhHant": "神因所多瑪蛾摩拉的罪惡將其毀滅；救出羅得。",
+      "refs": [
+        "Genesis 19"
+      ],
+      "personIds": [
+        "lot"
+      ]
+    },
+    {
+      "id": "isaac_born",
+      "year": -2066,
+      "era": "patriarchs",
+      "titleEn": "Birth of Isaac",
+      "titleZhHans": "以撒出生",
+      "titleZhHant": "以撒出生",
+      "descEn": "Sarah bears Isaac to Abraham; the promised son.",
+      "descZhHans": "撒拉为亚伯拉罕生以撒；应许之子。",
+      "descZhHant": "撒拉為亞伯拉罕生以撒；應許之子。",
+      "refs": [
+        "Genesis 21:1-7"
+      ],
+      "personIds": [
+        "isaac",
+        "abraham",
+        "sarah"
+      ]
+    },
+    {
+      "id": "isaac_offered",
+      "year": -2055,
+      "era": "patriarchs",
+      "titleEn": "Sacrifice of Isaac",
+      "titleZhHans": "献以撒",
+      "titleZhHant": "獻以撒",
+      "descEn": "Abraham obeys God to offer Isaac; God provides a ram instead.",
+      "descZhHans": "亚伯拉罕顺从神献上以撒；神以一只公羊代替。",
+      "descZhHant": "亞伯拉罕順從神獻上以撒；神以一隻公羊代替。",
+      "refs": [
+        "Genesis 22"
+      ],
+      "personIds": [
+        "abraham",
+        "isaac"
+      ]
+    },
+    {
+      "id": "rebekah_marries",
+      "year": -2026,
+      "era": "patriarchs",
+      "titleEn": "Rebekah Marries Isaac",
+      "titleZhHans": "利百加嫁以撒",
+      "titleZhHant": "利百加嫁以撒",
+      "descEn": "Abraham's servant brings Rebekah from Haran to be Isaac's wife.",
+      "descZhHans": "亚伯拉罕的仆人从哈兰把利百加带来给以撒为妻。",
+      "descZhHant": "亞伯拉罕的僕人從哈蘭把利百加帶來給以撒為妻。",
+      "refs": [
+        "Genesis 24"
+      ],
+      "personIds": [
+        "isaac",
+        "rebekah"
+      ]
+    },
+    {
+      "id": "jacob_esau_born",
+      "year": -2006,
+      "era": "patriarchs",
+      "titleEn": "Jacob & Esau Born",
+      "titleZhHans": "雅各以扫出生",
+      "titleZhHant": "雅各以掃出生",
+      "descEn": "Twins Jacob and Esau born to Isaac and Rebekah.",
+      "descZhHans": "以撒和利百加生孪生子雅各与以扫。",
+      "descZhHant": "以撒和利百加生孿生子雅各與以掃。",
+      "refs": [
+        "Genesis 25:21-26"
+      ],
+      "personIds": [
+        "jacob",
+        "esau"
+      ]
+    },
+    {
+      "id": "jacob_blessing",
+      "year": -1929,
+      "era": "patriarchs",
+      "titleEn": "Jacob Steals Esau's Blessing",
+      "titleZhHans": "雅各夺以扫祝福",
+      "titleZhHant": "雅各奪以掃祝福",
+      "descEn": "Jacob deceives Isaac to receive Esau's blessing; flees to Haran.",
+      "descZhHans": "雅各欺骗以撒得以扫的祝福；逃往哈兰。",
+      "descZhHant": "雅各欺騙以撒得以掃的祝福；逃往哈蘭。",
+      "refs": [
+        "Genesis 27"
+      ],
+      "personIds": [
+        "jacob",
+        "esau"
+      ]
+    },
+    {
+      "id": "jacobs_ladder",
+      "year": -1929,
+      "era": "patriarchs",
+      "titleEn": "Jacob's Ladder",
+      "titleZhHans": "雅各天梯",
+      "titleZhHant": "雅各天梯",
+      "descEn": "Jacob dreams of a ladder reaching heaven at Bethel; God renews the covenant.",
+      "descZhHans": "雅各在伯特利梦见通天的梯子；神重申应许。",
+      "descZhHant": "雅各在伯特利夢見通天的梯子；神重申應許。",
+      "refs": [
+        "Genesis 28:10-22"
+      ],
+      "personIds": [
+        "jacob"
+      ]
+    },
+    {
+      "id": "jacob_marries",
+      "year": -1922,
+      "era": "patriarchs",
+      "titleEn": "Jacob Marries Leah & Rachel",
+      "titleZhHans": "雅各娶利亚拉结",
+      "titleZhHant": "雅各娶利亞拉結",
+      "descEn": "Jacob serves Laban 14 years; marries both Leah and Rachel.",
+      "descZhHans": "雅各为拉班作工十四年；娶利亚和拉结为妻。",
+      "descZhHant": "雅各為拉班作工十四年；娶利亞和拉結為妻。",
+      "refs": [
+        "Genesis 29"
+      ],
+      "personIds": [
+        "jacob",
+        "leah",
+        "rachel"
+      ]
+    },
+    {
+      "id": "joseph_sold",
+      "year": -1898,
+      "era": "patriarchs",
+      "titleEn": "Joseph Sold to Egypt",
+      "titleZhHans": "约瑟被卖到埃及",
+      "titleZhHant": "約瑟被賣到埃及",
+      "descEn": "Joseph's brothers sell him into slavery; he ends up in Egypt.",
+      "descZhHans": "约瑟被兄弟卖为奴；最终被带到埃及。",
+      "descZhHant": "約瑟被兄弟賣為奴；最終被帶到埃及。",
+      "refs": [
+        "Genesis 37"
+      ],
+      "personIds": [
+        "joseph"
+      ]
+    },
+    {
+      "id": "joseph_rises",
+      "year": -1885,
+      "era": "patriarchs",
+      "titleEn": "Joseph Rises in Egypt",
+      "titleZhHans": "约瑟升为宰相",
+      "titleZhHant": "約瑟升為宰相",
+      "descEn": "Joseph interprets Pharaoh's dreams; becomes second-in-command of Egypt.",
+      "descZhHans": "约瑟为法老解梦；升为埃及宰相。",
+      "descZhHant": "約瑟為法老解夢；升為埃及宰相。",
+      "refs": [
+        "Genesis 41"
+      ],
+      "personIds": [
+        "joseph"
+      ]
+    },
+    {
+      "id": "israel_egypt",
+      "year": -1876,
+      "era": "patriarchs",
+      "titleEn": "Jacob's Family Enters Egypt",
+      "titleZhHans": "雅各全家下埃及",
+      "titleZhHant": "雅各全家下埃及",
+      "descEn": "Joseph brings 70 of his father's household into Egypt during the famine.",
+      "descZhHans": "约瑟在饥荒中把父家七十人接到埃及。",
+      "descZhHant": "約瑟在饑荒中把父家七十人接到埃及。",
+      "refs": [
+        "Genesis 46-47",
+        "Exodus 1:1-7"
+      ],
+      "personIds": [
+        "jacob",
+        "joseph"
+      ]
+    },
+    {
+      "id": "israel_oppressed",
+      "year": -1700,
+      "era": "mosaic",
+      "titleEn": "Israel Oppressed in Egypt",
+      "titleZhHans": "以色列在埃及受苦",
+      "titleZhHant": "以色列在埃及受苦",
+      "descEn": "Egyptians enslave the multiplying Israelites for ~400 years.",
+      "descZhHans": "埃及人奴役不断增多的以色列人约四百年。",
+      "descZhHant": "埃及人奴役不斷增多的以色列人約四百年。",
+      "refs": [
+        "Exodus 1",
+        "Genesis 15:13"
+      ],
+      "personIds": []
+    },
+    {
+      "id": "moses_born",
+      "year": -1526,
+      "era": "mosaic",
+      "titleEn": "Moses Born",
+      "titleZhHans": "摩西出生",
+      "titleZhHant": "摩西出生",
+      "descEn": "Hebrew boy Moses is rescued from the Nile by Pharaoh's daughter.",
+      "descZhHans": "希伯来男婴摩西被法老女儿从尼罗河救起。",
+      "descZhHant": "希伯來男嬰摩西被法老女兒從尼羅河救起。",
+      "refs": [
+        "Exodus 2:1-10"
+      ],
+      "personIds": [
+        "moses",
+        "jochebed",
+        "amram"
+      ]
+    },
+    {
+      "id": "burning_bush",
+      "year": -1446,
+      "era": "mosaic",
+      "titleEn": "Burning Bush",
+      "titleZhHans": "荆棘焚烧",
+      "titleZhHant": "荊棘焚燒",
+      "descEn": "God appears to Moses in a flaming bush; commissions him to deliver Israel.",
+      "descZhHans": "神在燃烧的荆棘中向摩西显现；差遣他拯救以色列。",
+      "descZhHant": "神在燃燒的荊棘中向摩西顯現；差遣他拯救以色列。",
+      "refs": [
+        "Exodus 3-4"
+      ],
+      "personIds": [
+        "moses"
+      ]
+    },
+    {
+      "id": "plagues",
+      "year": -1446,
+      "era": "mosaic",
+      "titleEn": "Ten Plagues of Egypt",
+      "titleZhHans": "埃及十灾",
+      "titleZhHant": "埃及十災",
+      "descEn": "God strikes Egypt with ten plagues; Pharaoh hardens his heart until the firstborn die.",
+      "descZhHans": "神以十灾打击埃及；法老心硬直到长子被杀。",
+      "descZhHant": "神以十災打擊埃及；法老心硬直到長子被殺。",
+      "refs": [
+        "Exodus 7-12"
+      ],
+      "personIds": [
+        "moses",
+        "aaron"
+      ]
+    },
+    {
+      "id": "exodus",
+      "year": -1446,
+      "era": "mosaic",
+      "titleEn": "The Exodus",
+      "titleZhHans": "出埃及",
+      "titleZhHant": "出埃及",
+      "descEn": "Israel leaves Egypt under Moses' leadership; Passover lamb instituted.",
+      "descZhHans": "以色列在摩西带领下离开埃及；设立逾越节羊羔。",
+      "descZhHant": "以色列在摩西帶領下離開埃及；設立逾越節羊羔。",
+      "refs": [
+        "Exodus 12-13"
+      ],
+      "personIds": [
+        "moses",
+        "aaron"
+      ]
+    },
+    {
+      "id": "red_sea",
+      "year": -1446,
+      "era": "mosaic",
+      "titleEn": "Crossing the Red Sea",
+      "titleZhHans": "过红海",
+      "titleZhHant": "過紅海",
+      "descEn": "God parts the Red Sea; Israel crosses on dry ground; Pharaoh's army drowns.",
+      "descZhHans": "神分开红海；以色列走干地过去；法老军兵被海淹没。",
+      "descZhHant": "神分開紅海；以色列走乾地過去；法老軍兵被海淹沒。",
+      "refs": [
+        "Exodus 14"
+      ],
+      "personIds": [
+        "moses"
+      ]
+    },
+    {
+      "id": "manna",
+      "year": -1446,
+      "era": "mosaic",
+      "titleEn": "Manna from Heaven",
+      "titleZhHans": "天降吗哪",
+      "titleZhHant": "天降嗎哪",
+      "descEn": "God provides manna and quail in the wilderness for 40 years.",
+      "descZhHans": "神在旷野为以色列降下吗哪和鹌鹑达四十年。",
+      "descZhHant": "神在曠野為以色列降下嗎哪和鵪鶉達四十年。",
+      "refs": [
+        "Exodus 16"
+      ],
+      "personIds": [
+        "moses"
+      ]
+    },
+    {
+      "id": "sinai",
+      "year": -1446,
+      "era": "mosaic",
+      "titleEn": "Ten Commandments at Sinai",
+      "titleZhHans": "西奈山十诫",
+      "titleZhHant": "西奈山十誡",
+      "descEn": "God gives Moses the Ten Commandments and the Law at Mount Sinai.",
+      "descZhHans": "神在西奈山赐摩西十诫与律法。",
+      "descZhHant": "神在西奈山賜摩西十誡與律法。",
+      "refs": [
+        "Exodus 19-20",
+        "Exodus 24"
+      ],
+      "personIds": [
+        "moses"
+      ]
+    },
+    {
+      "id": "tabernacle",
+      "year": -1445,
+      "era": "mosaic",
+      "titleEn": "Tabernacle Built",
+      "titleZhHans": "建造会幕",
+      "titleZhHant": "建造會幕",
+      "descEn": "Israel constructs the Tabernacle as God's dwelling among them.",
+      "descZhHans": "以色列建造会幕，作为神在他们中间的居所。",
+      "descZhHant": "以色列建造會幕，作為神在他們中間的居所。",
+      "refs": [
+        "Exodus 25-40",
+        "Leviticus"
+      ],
+      "personIds": [
+        "moses"
+      ]
+    },
+    {
+      "id": "wilderness_40",
+      "year": -1406,
+      "era": "mosaic",
+      "titleEn": "40 Years in the Wilderness",
+      "titleZhHans": "旷野四十年",
+      "titleZhHant": "曠野四十年",
+      "descEn": "Israel wanders 40 years in the wilderness due to unbelief; the older generation dies.",
+      "descZhHans": "以色列因不信在旷野漂流四十年；老一代倒毙旷野。",
+      "descZhHant": "以色列因不信在曠野漂流四十年；老一代倒斃曠野。",
+      "refs": [
+        "Numbers 13-14",
+        "Numbers 32:13"
+      ],
+      "personIds": [
+        "moses",
+        "aaron",
+        "miriam"
+      ]
+    },
+    {
+      "id": "moses_dies",
+      "year": -1406,
+      "era": "mosaic",
+      "titleEn": "Death of Moses",
+      "titleZhHans": "摩西之死",
+      "titleZhHant": "摩西之死",
+      "descEn": "Moses dies on Mount Nebo at 120; Joshua succeeds him.",
+      "descZhHans": "摩西在尼波山去世，享寿一百二十岁；约书亚接任。",
+      "descZhHant": "摩西在尼波山去世，享壽一百二十歲；約書亞接任。",
+      "refs": [
+        "Deuteronomy 34"
+      ],
+      "personIds": [
+        "moses"
+      ]
+    },
+    {
+      "id": "jordan_crossed",
+      "year": -1406,
+      "era": "conquest",
+      "titleEn": "Israel Crosses Jordan",
+      "titleZhHans": "过约旦河",
+      "titleZhHant": "過約旦河",
+      "descEn": "Joshua leads Israel into Canaan; God parts the Jordan.",
+      "descZhHans": "约书亚带领以色列进迦南；神分开约旦河。",
+      "descZhHant": "約書亞帶領以色列進迦南；神分開約旦河。",
+      "refs": [
+        "Joshua 3-4"
+      ],
+      "personIds": []
+    },
+    {
+      "id": "jericho",
+      "year": -1406,
+      "era": "conquest",
+      "titleEn": "Fall of Jericho",
+      "titleZhHans": "耶利哥城陷",
+      "titleZhHant": "耶利哥城陷",
+      "descEn": "Jericho's walls collapse after Israel marches around them seven days.",
+      "descZhHans": "以色列绕城七日，耶利哥城墙倒塌。",
+      "descZhHant": "以色列繞城七日，耶利哥城牆倒塌。",
+      "refs": [
+        "Joshua 6"
+      ],
+      "personIds": []
+    },
+    {
+      "id": "land_divided",
+      "year": -1399,
+      "era": "conquest",
+      "titleEn": "Land Divided to Tribes",
+      "titleZhHans": "分地给十二支派",
+      "titleZhHant": "分地給十二支派",
+      "descEn": "Joshua divides the Promised Land among the twelve tribes by lot.",
+      "descZhHans": "约书亚以拈阄方式将应许之地分给十二支派。",
+      "descZhHant": "約書亞以拈鬮方式將應許之地分給十二支派。",
+      "refs": [
+        "Joshua 13-22"
+      ],
+      "personIds": []
+    },
+    {
+      "id": "judges_period",
+      "year": -1380,
+      "era": "conquest",
+      "titleEn": "Period of the Judges",
+      "titleZhHans": "士师时代",
+      "titleZhHant": "士師時代",
+      "descEn": "About 350 years of cycles: sin → oppression → cry → deliverance via judges.",
+      "descZhHans": "约三百五十年：犯罪 → 受压迫 → 呼求 → 由士师拯救的循环。",
+      "descZhHant": "約三百五十年：犯罪 → 受壓迫 → 呼求 → 由士師拯救的循環。",
+      "refs": [
+        "Judges 1-21"
+      ],
+      "personIds": []
+    },
+    {
+      "id": "deborah",
+      "year": -1240,
+      "era": "conquest",
+      "titleEn": "Deborah & Barak Defeat Sisera",
+      "titleZhHans": "底波拉与巴拉胜西西拉",
+      "titleZhHant": "底波拉與巴拉勝西西拉",
+      "descEn": "The prophetess Deborah leads Israel to victory over Canaanite king Jabin.",
+      "descZhHans": "女先知底波拉带领以色列战胜迦南王耶宾。",
+      "descZhHant": "女先知底波拉帶領以色列戰勝迦南王耶賓。",
+      "refs": [
+        "Judges 4-5"
+      ],
+      "personIds": []
+    },
+    {
+      "id": "gideon",
+      "year": -1191,
+      "era": "conquest",
+      "titleEn": "Gideon's 300",
+      "titleZhHans": "基甸三百勇士",
+      "titleZhHant": "基甸三百勇士",
+      "descEn": "Gideon defeats the Midianites with only 300 men.",
+      "descZhHans": "基甸仅以三百勇士击败米甸人。",
+      "descZhHant": "基甸僅以三百勇士擊敗米甸人。",
+      "refs": [
+        "Judges 6-8"
+      ],
+      "personIds": []
+    },
+    {
+      "id": "samson",
+      "year": -1100,
+      "era": "conquest",
+      "titleEn": "Samson vs Philistines",
+      "titleZhHans": "参孙战非利士",
+      "titleZhHant": "參孫戰非利士",
+      "descEn": "Samson, last of the judges, fights the Philistines until his death at Dagon's temple.",
+      "descZhHans": "末代士师参孙与非利士人征战，最终死在大衮庙。",
+      "descZhHant": "末代士師參孫與非利士人征戰，最終死在大袞廟。",
+      "refs": [
+        "Judges 13-16"
+      ],
+      "personIds": []
+    },
+    {
+      "id": "ruth",
+      "year": -1100,
+      "era": "conquest",
+      "titleEn": "Story of Ruth",
+      "titleZhHans": "路得记",
+      "titleZhHant": "路得記",
+      "descEn": "Moabite Ruth marries Boaz; great-grandmother of King David.",
+      "descZhHans": "摩押女子路得嫁给波阿斯；大卫王的曾祖母。",
+      "descZhHant": "摩押女子路得嫁給波阿斯；大衛王的曾祖母。",
+      "refs": [
+        "Ruth 1-4"
+      ],
+      "personIds": [
+        "ruth",
+        "boaz"
+      ]
+    },
+    {
+      "id": "samuel_called",
+      "year": -1080,
+      "era": "conquest",
+      "titleEn": "Samuel Called by God",
+      "titleZhHans": "撒母耳蒙召",
+      "titleZhHant": "撒母耳蒙召",
+      "descEn": "The boy Samuel hears God's voice in the Tabernacle; becomes Israel's last judge.",
+      "descZhHans": "童子撒母耳在会幕中听见神的声音；成为以色列末代士师。",
+      "descZhHant": "童子撒母耳在會幕中聽見神的聲音；成為以色列末代士師。",
+      "refs": [
+        "1 Samuel 3"
+      ],
+      "personIds": []
+    },
+    {
+      "id": "saul_anointed",
+      "year": -1050,
+      "era": "monarchy",
+      "titleEn": "Saul Anointed First King",
+      "titleZhHans": "扫罗膏立为王",
+      "titleZhHant": "掃羅膏立為王",
+      "descEn": "Samuel anoints Saul; Israel's first monarchy begins.",
+      "descZhHans": "撒母耳膏立扫罗；以色列王朝开始。",
+      "descZhHant": "撒母耳膏立掃羅；以色列王朝開始。",
+      "refs": [
+        "1 Samuel 9-10"
+      ],
+      "personIds": [
+        "saul"
+      ]
+    },
+    {
+      "id": "david_anointed",
+      "year": -1025,
+      "era": "monarchy",
+      "titleEn": "David Anointed",
+      "titleZhHans": "大卫被膏",
+      "titleZhHant": "大衛被膏",
+      "descEn": "Samuel secretly anoints young David as future king.",
+      "descZhHans": "撒母耳秘密膏立少年大卫为未来的王。",
+      "descZhHant": "撒母耳秘密膏立少年大衛為未來的王。",
+      "refs": [
+        "1 Samuel 16"
+      ],
+      "personIds": [
+        "david"
+      ]
+    },
+    {
+      "id": "david_goliath",
+      "year": -1024,
+      "era": "monarchy",
+      "titleEn": "David vs Goliath",
+      "titleZhHans": "大卫战歌利亚",
+      "titleZhHant": "大衛戰歌利亞",
+      "descEn": "David, a shepherd boy, kills the Philistine giant with a sling.",
+      "descZhHans": "少年牧羊人大卫以投石索击毙非利士巨人歌利亚。",
+      "descZhHant": "少年牧羊人大衛以投石索擊斃非利士巨人歌利亞。",
+      "refs": [
+        "1 Samuel 17"
+      ],
+      "personIds": [
+        "david"
+      ]
+    },
+    {
+      "id": "david_king",
+      "year": -1010,
+      "era": "monarchy",
+      "titleEn": "David Becomes King",
+      "titleZhHans": "大卫登基",
+      "titleZhHant": "大衛登基",
+      "descEn": "After Saul's death, David is anointed king over all Israel.",
+      "descZhHans": "扫罗死后，大卫被膏立为以色列全国的王。",
+      "descZhHant": "掃羅死後，大衛被膏立為以色列全國的王。",
+      "refs": [
+        "2 Samuel 5"
+      ],
+      "personIds": [
+        "david"
+      ]
+    },
+    {
+      "id": "jerusalem_captured",
+      "year": -1003,
+      "era": "monarchy",
+      "titleEn": "Jerusalem Captured",
+      "titleZhHans": "攻取耶路撒冷",
+      "titleZhHant": "攻取耶路撒冷",
+      "descEn": "David captures Jerusalem from the Jebusites; makes it Israel's capital.",
+      "descZhHans": "大卫从耶布斯人手中夺取耶路撒冷；定为以色列首都。",
+      "descZhHant": "大衛從耶布斯人手中奪取耶路撒冷；定為以色列首都。",
+      "refs": [
+        "2 Samuel 5:6-9"
+      ],
+      "personIds": [
+        "david"
+      ]
+    },
+    {
+      "id": "davidic_covenant",
+      "year": -1000,
+      "era": "monarchy",
+      "titleEn": "Davidic Covenant",
+      "titleZhHans": "与大卫立约",
+      "titleZhHant": "與大衛立約",
+      "descEn": "God promises David an everlasting throne through his offspring.",
+      "descZhHans": "神应许大卫的后裔国位永远坚立。",
+      "descZhHant": "神應許大衛的後裔國位永遠堅立。",
+      "refs": [
+        "2 Samuel 7"
+      ],
+      "personIds": [
+        "david"
+      ]
+    },
+    {
+      "id": "solomon_king",
+      "year": -970,
+      "era": "monarchy",
+      "titleEn": "Solomon Becomes King",
+      "titleZhHans": "所罗门登基",
+      "titleZhHant": "所羅門登基",
+      "descEn": "Solomon succeeds David; God gives him unmatched wisdom.",
+      "descZhHans": "所罗门继承大卫为王；神赐他超凡智慧。",
+      "descZhHant": "所羅門繼承大衛為王；神賜他超凡智慧。",
+      "refs": [
+        "1 Kings 1-3"
+      ],
+      "personIds": [
+        "solomon"
+      ]
+    },
+    {
+      "id": "temple_built",
+      "year": -966,
+      "era": "monarchy",
+      "titleEn": "Solomon's Temple Built",
+      "titleZhHans": "所罗门建圣殿",
+      "titleZhHant": "所羅門建聖殿",
+      "descEn": "Solomon constructs the First Temple in Jerusalem (7 years).",
+      "descZhHans": "所罗门在耶路撒冷建造第一圣殿（用时七年）。",
+      "descZhHant": "所羅門在耶路撒冷建造第一聖殿（用時七年）。",
+      "refs": [
+        "1 Kings 6",
+        "2 Chronicles 3-4"
+      ],
+      "personIds": [
+        "solomon"
+      ]
+    },
+    {
+      "id": "kingdom_divided",
+      "year": -931,
+      "era": "monarchy",
+      "titleEn": "Kingdom Divided",
+      "titleZhHans": "王国分裂",
+      "titleZhHant": "王國分裂",
+      "descEn": "After Solomon's death, the kingdom splits: Israel (north) under Jeroboam, Judah (south) under Rehoboam.",
+      "descZhHans": "所罗门死后王国分裂：北国以色列由耶罗波安统治，南国犹大由罗波安统治。",
+      "descZhHant": "所羅門死後王國分裂：北國以色列由耶羅波安統治，南國猶大由羅波安統治。",
+      "refs": [
+        "1 Kings 12"
+      ],
+      "personIds": [
+        "rehoboam"
+      ]
+    },
+    {
+      "id": "elijah_carmel",
+      "year": -860,
+      "era": "monarchy",
+      "titleEn": "Elijah on Mount Carmel",
+      "titleZhHans": "以利亚在迦密山",
+      "titleZhHant": "以利亞在迦密山",
+      "descEn": "Elijah challenges 450 prophets of Baal; God sends fire from heaven.",
+      "descZhHans": "以利亚挑战巴力四百五十先知；神降火显能。",
+      "descZhHant": "以利亞挑戰巴力四百五十先知；神降火顯能。",
+      "refs": [
+        "1 Kings 18"
+      ],
+      "personIds": []
+    },
+    {
+      "id": "elisha_succeeds",
+      "year": -848,
+      "era": "monarchy",
+      "titleEn": "Elijah Taken Up; Elisha Succeeds",
+      "titleZhHans": "以利亚被接升天；以利沙继任",
+      "titleZhHant": "以利亞被接升天；以利沙繼任",
+      "descEn": "Elijah taken up in a whirlwind; Elisha receives a double portion of his spirit.",
+      "descZhHans": "以利亚乘旋风被接升天；以利沙得加倍灵感。",
+      "descZhHant": "以利亞乘旋風被接升天；以利沙得加倍靈感。",
+      "refs": [
+        "2 Kings 2"
+      ],
+      "personIds": []
+    },
+    {
+      "id": "jonah",
+      "year": -780,
+      "era": "monarchy",
+      "titleEn": "Jonah Preaches at Nineveh",
+      "titleZhHans": "约拿在尼尼微传道",
+      "titleZhHant": "約拿在尼尼微傳道",
+      "descEn": "After being swallowed by a great fish, Jonah preaches and Nineveh repents.",
+      "descZhHans": "约拿被大鱼吞下后，前往尼尼微传道，全城悔改。",
+      "descZhHant": "約拿被大魚吞下後，前往尼尼微傳道，全城悔改。",
+      "refs": [
+        "Jonah 1-4"
+      ],
+      "personIds": []
+    },
+    {
+      "id": "israel_falls",
+      "year": -722,
+      "era": "monarchy",
+      "titleEn": "Northern Kingdom Falls to Assyria",
+      "titleZhHans": "北国以色列亡于亚述",
+      "titleZhHant": "北國以色列亡於亞述",
+      "descEn": "Assyria conquers the Northern Kingdom of Israel; the ten tribes are deported.",
+      "descZhHans": "亚述灭北国以色列；十支派被掳。",
+      "descZhHant": "亞述滅北國以色列；十支派被擄。",
+      "refs": [
+        "2 Kings 17"
+      ],
+      "personIds": []
+    },
+    {
+      "id": "hezekiah_reform",
+      "year": -715,
+      "era": "monarchy",
+      "titleEn": "Hezekiah's Reform",
+      "titleZhHans": "希西家的改革",
+      "titleZhHant": "希西家的改革",
+      "descEn": "King Hezekiah of Judah destroys idolatry; restores Temple worship.",
+      "descZhHans": "犹大王希西家除去偶像；恢复圣殿敬拜。",
+      "descZhHant": "猶大王希西家除去偶像；恢復聖殿敬拜。",
+      "refs": [
+        "2 Kings 18-20",
+        "2 Chronicles 29-32"
+      ],
+      "personIds": [
+        "hezekiah"
+      ]
+    },
+    {
+      "id": "isaiah",
+      "year": -700,
+      "era": "monarchy",
+      "titleEn": "Isaiah Prophesies",
+      "titleZhHans": "以赛亚预言",
+      "titleZhHant": "以賽亞預言",
+      "descEn": "The prophet Isaiah ministers ~740-680 BC; foretells the suffering Servant.",
+      "descZhHans": "先知以赛亚在公元前约 740-680 年事奉；预言受苦仆人。",
+      "descZhHant": "先知以賽亞在公元前約 740-680 年事奉；預言受苦僕人。",
+      "refs": [
+        "Isaiah 1-66"
+      ],
+      "personIds": []
+    },
+    {
+      "id": "josiah_reform",
+      "year": -622,
+      "era": "monarchy",
+      "titleEn": "Josiah Finds the Law",
+      "titleZhHans": "约西亚发现律法书",
+      "titleZhHant": "約西亞發現律法書",
+      "descEn": "Hilkiah finds the Book of the Law during temple repairs; Josiah leads sweeping reforms.",
+      "descZhHans": "希勒家修殿时发现律法书；约西亚带领全面改革。",
+      "descZhHant": "希勒家修殿時發現律法書；約西亞帶領全面改革。",
+      "refs": [
+        "2 Kings 22-23"
+      ],
+      "personIds": [
+        "josiah"
+      ]
+    },
+    {
+      "id": "jeremiah",
+      "year": -627,
+      "era": "monarchy",
+      "titleEn": "Jeremiah Prophesies",
+      "titleZhHans": "耶利米预言",
+      "titleZhHant": "耶利米預言",
+      "descEn": "Jeremiah, the weeping prophet, warns Judah of coming exile (~627-580 BC).",
+      "descZhHans": "哀哭先知耶利米警告犹大将临的被掳之事（公元前约 627-580 年）。",
+      "descZhHant": "哀哭先知耶利米警告猶大將臨的被擄之事（公元前約 627-580 年）。",
+      "refs": [
+        "Jeremiah 1-52"
+      ],
+      "personIds": []
+    },
+    {
+      "id": "judah_falls",
+      "year": -586,
+      "era": "exile",
+      "titleEn": "Judah Falls; Temple Destroyed",
+      "titleZhHans": "犹大亡国；圣殿被毁",
+      "titleZhHant": "猶大亡國；聖殿被毀",
+      "descEn": "Babylon under Nebuchadnezzar destroys Jerusalem and the Temple; Judah exiled.",
+      "descZhHans": "巴比伦尼布甲尼撒攻陷耶路撒冷，圣殿被毁；犹大被掳。",
+      "descZhHant": "巴比倫尼布甲尼撒攻陷耶路撒冷，聖殿被毀；猶大被擄。",
+      "refs": [
+        "2 Kings 25",
+        "2 Chronicles 36",
+        "Jeremiah 52"
+      ],
+      "personIds": [
+        "jeconiah"
+      ]
+    },
+    {
+      "id": "daniel_lions",
+      "year": -540,
+      "era": "exile",
+      "titleEn": "Daniel in the Lions' Den",
+      "titleZhHans": "但以理与狮子",
+      "titleZhHant": "但以理與獅子",
+      "descEn": "Daniel survives the lions' den; God shuts their mouths.",
+      "descZhHans": "但以理在狮子坑中蒙保守；神封住狮子的口。",
+      "descZhHant": "但以理在獅子坑中蒙保守；神封住獅子的口。",
+      "refs": [
+        "Daniel 6"
+      ],
+      "personIds": []
+    },
+    {
+      "id": "return_zerubbabel",
+      "year": -538,
+      "era": "exile",
+      "titleEn": "First Return under Zerubbabel",
+      "titleZhHans": "所罗巴伯第一次回归",
+      "titleZhHant": "所羅巴伯第一次回歸",
+      "descEn": "Cyrus decrees the return; ~50,000 Jews return under Zerubbabel.",
+      "descZhHans": "古列下诏归回；约五万犹太人在所罗巴伯带领下回归。",
+      "descZhHant": "古列下詔歸回；約五萬猶太人在所羅巴伯帶領下回歸。",
+      "refs": [
+        "Ezra 1-2"
+      ],
+      "personIds": [
+        "zerubbabel"
+      ]
+    },
+    {
+      "id": "temple_rebuilt",
+      "year": -516,
+      "era": "exile",
+      "titleEn": "Second Temple Rebuilt",
+      "titleZhHans": "重建第二圣殿",
+      "titleZhHant": "重建第二聖殿",
+      "descEn": "Despite opposition, the rebuilt Temple is finished and dedicated.",
+      "descZhHans": "虽遭反对，第二圣殿建成并献殿。",
+      "descZhHant": "雖遭反對，第二聖殿建成並獻殿。",
+      "refs": [
+        "Ezra 6"
+      ],
+      "personIds": [
+        "zerubbabel"
+      ]
+    },
+    {
+      "id": "esther",
+      "year": -478,
+      "era": "exile",
+      "titleEn": "Esther Saves the Jews",
+      "titleZhHans": "以斯帖救犹太人",
+      "titleZhHant": "以斯帖救猶太人",
+      "descEn": "Esther becomes queen of Persia; thwarts Haman's plot to destroy the Jews.",
+      "descZhHans": "以斯帖成为波斯王后；挫败哈曼灭绝犹太人的阴谋。",
+      "descZhHant": "以斯帖成為波斯王后；挫敗哈曼滅絕猶太人的陰謀。",
+      "refs": [
+        "Esther 1-10"
+      ],
+      "personIds": []
+    },
+    {
+      "id": "ezra_returns",
+      "year": -458,
+      "era": "exile",
+      "titleEn": "Ezra's Return",
+      "titleZhHans": "以斯拉回归",
+      "titleZhHant": "以斯拉回歸",
+      "descEn": "Ezra leads a second return; teaches the Law and reforms intermarriage.",
+      "descZhHans": "以斯拉带领第二次回归；教导律法并改革通婚之弊。",
+      "descZhHant": "以斯拉帶領第二次回歸；教導律法並改革通婚之弊。",
+      "refs": [
+        "Ezra 7-10"
+      ],
+      "personIds": []
+    },
+    {
+      "id": "nehemiah_walls",
+      "year": -445,
+      "era": "exile",
+      "titleEn": "Nehemiah Rebuilds the Walls",
+      "titleZhHans": "尼希米重建城墙",
+      "titleZhHant": "尼希米重建城牆",
+      "descEn": "Nehemiah leads Jerusalem's wall reconstruction in 52 days.",
+      "descZhHans": "尼希米带领五十二天内重建耶路撒冷城墙。",
+      "descZhHant": "尼希米帶領五十二天內重建耶路撒冷城牆。",
+      "refs": [
+        "Nehemiah 1-6"
+      ],
+      "personIds": []
+    },
+    {
+      "id": "malachi",
+      "year": -430,
+      "era": "exile",
+      "titleEn": "Malachi: Last OT Prophet",
+      "titleZhHans": "玛拉基：旧约最后先知",
+      "titleZhHant": "瑪拉基：舊約最後先知",
+      "descEn": "Malachi closes the Old Testament; foretells the messenger before the Messiah.",
+      "descZhHans": "玛拉基关闭旧约；预言弥赛亚先有使者来。",
+      "descZhHant": "瑪拉基關閉舊約；預言彌賽亞先有使者來。",
+      "refs": [
+        "Malachi 1-4"
+      ],
+      "personIds": []
+    },
+    {
+      "id": "intertestamental",
+      "year": -400,
+      "era": "intertestamental",
+      "titleEn": "400 Silent Years",
+      "titleZhHans": "四百年沉默期",
+      "titleZhHant": "四百年沉默期",
+      "descEn": "No biblical prophet speaks for ~400 years between Malachi and John the Baptist.",
+      "descZhHans": "玛拉基与施洗约翰之间约四百年没有圣经先知。",
+      "descZhHant": "瑪拉基與施洗約翰之間約四百年沒有聖經先知。",
+      "refs": [],
+      "personIds": []
+    },
+    {
+      "id": "greek_period",
+      "year": -333,
+      "era": "intertestamental",
+      "titleEn": "Alexander the Great Conquers Persia",
+      "titleZhHans": "亚历山大征服波斯",
+      "titleZhHant": "亞歷山大征服波斯",
+      "descEn": "Alexander conquers the Persian Empire, spreading Greek culture (Hellenism).",
+      "descZhHans": "亚历山大征服波斯帝国，推广希腊文化（希腊化）。",
+      "descZhHant": "亞歷山大征服波斯帝國，推廣希臘文化（希臘化）。",
+      "refs": [],
+      "personIds": []
+    },
+    {
+      "id": "septuagint",
+      "year": -250,
+      "era": "intertestamental",
+      "titleEn": "Septuagint Translation Begins",
+      "titleZhHans": "七十士译本开始翻译",
+      "titleZhHant": "七十士譯本開始翻譯",
+      "descEn": "The Hebrew Scriptures are translated into Greek (LXX) in Alexandria.",
+      "descZhHans": "希伯来圣经在亚历山大被译为希腊文（七十士译本）。",
+      "descZhHant": "希伯來聖經在亞歷山大被譯為希臘文（七十士譯本）。",
+      "refs": [],
+      "personIds": []
+    },
+    {
+      "id": "maccabees",
+      "year": -167,
+      "era": "intertestamental",
+      "titleEn": "Maccabean Revolt",
+      "titleZhHans": "马加比起义",
+      "titleZhHant": "馬加比起義",
+      "descEn": "Judas Maccabeus leads a revolt against Greek Seleucid rule; rededicates the Temple.",
+      "descZhHans": "犹大·马加比领导反抗希腊塞琉古王朝的起义；重新洁净圣殿。",
+      "descZhHant": "猶大·馬加比領導反抗希臘塞琉古王朝的起義；重新潔淨聖殿。",
+      "refs": [],
+      "personIds": []
+    },
+    {
+      "id": "rome_judea",
+      "year": -63,
+      "era": "intertestamental",
+      "titleEn": "Rome Conquers Judea",
+      "titleZhHans": "罗马征服犹太",
+      "titleZhHant": "羅馬征服猶太",
+      "descEn": "Pompey takes Jerusalem; Judea becomes a Roman province.",
+      "descZhHans": "庞培攻陷耶路撒冷；犹太成为罗马行省。",
+      "descZhHant": "龐培攻陷耶路撒冷；猶太成為羅馬行省。",
+      "refs": [],
+      "personIds": []
+    },
+    {
+      "id": "john_baptist_born",
+      "year": -6,
+      "era": "nt",
+      "titleEn": "Birth of John the Baptist",
+      "titleZhHans": "施洗约翰出生",
+      "titleZhHant": "施洗約翰出生",
+      "descEn": "John the Baptist born to elderly Zechariah and Elizabeth; forerunner of Messiah.",
+      "descZhHans": "施洗约翰由年长的撒迦利亚和伊利莎白所生；弥赛亚的先锋。",
+      "descZhHant": "施洗約翰由年長的撒迦利亞和伊利莎白所生；彌賽亞的先鋒。",
+      "refs": [
+        "Luke 1:5-25, 57-80"
+      ],
+      "personIds": []
+    },
+    {
+      "id": "jesus_born",
+      "year": -5,
+      "era": "nt",
+      "titleEn": "Birth of Jesus Christ",
+      "titleZhHans": "耶稣基督降生",
+      "titleZhHant": "耶穌基督降生",
+      "descEn": "Jesus is born in Bethlehem; angels announce to shepherds.",
+      "descZhHans": "耶稣在伯利恒降生；天使向牧人报佳音。",
+      "descZhHant": "耶穌在伯利恆降生；天使向牧人報佳音。",
+      "refs": [
+        "Luke 2:1-20",
+        "Matthew 1:18-25"
+      ],
+      "personIds": [
+        "jesus",
+        "mary",
+        "joseph_father_of_jesus"
+      ]
+    },
+    {
+      "id": "magi",
+      "year": -4,
+      "era": "nt",
+      "titleEn": "Magi Visit Jesus",
+      "titleZhHans": "博士来朝",
+      "titleZhHant": "博士來朝",
+      "descEn": "Wise men from the East follow a star to worship the child Jesus.",
+      "descZhHans": "东方博士跟随星朝拜婴孩耶稣。",
+      "descZhHant": "東方博士跟隨星朝拜嬰孩耶穌。",
+      "refs": [
+        "Matthew 2:1-12"
+      ],
+      "personIds": [
+        "jesus"
+      ]
+    },
+    {
+      "id": "flight_egypt",
+      "year": -4,
+      "era": "nt",
+      "titleEn": "Flight to Egypt",
+      "titleZhHans": "逃往埃及",
+      "titleZhHant": "逃往埃及",
+      "descEn": "Joseph takes Mary and Jesus to Egypt to escape Herod's massacre.",
+      "descZhHans": "约瑟带马利亚和耶稣逃往埃及，躲避希律屠杀。",
+      "descZhHant": "約瑟帶馬利亞和耶穌逃往埃及，躲避希律屠殺。",
+      "refs": [
+        "Matthew 2:13-23"
+      ],
+      "personIds": [
+        "joseph_father_of_jesus",
+        "mary",
+        "jesus"
+      ]
+    },
+    {
+      "id": "jesus_temple_12",
+      "year": 8,
+      "era": "nt",
+      "titleEn": "Jesus in the Temple at 12",
+      "titleZhHans": "耶稣十二岁在圣殿",
+      "titleZhHant": "耶穌十二歲在聖殿",
+      "descEn": "Twelve-year-old Jesus astonishes the teachers in the Temple.",
+      "descZhHans": "十二岁的耶稣在圣殿令教师们惊奇。",
+      "descZhHant": "十二歲的耶穌在聖殿令教師們驚奇。",
+      "refs": [
+        "Luke 2:41-52"
+      ],
+      "personIds": [
+        "jesus"
+      ]
+    },
+    {
+      "id": "jesus_baptized",
+      "year": 26,
+      "era": "nt",
+      "titleEn": "Baptism of Jesus",
+      "titleZhHans": "耶稣受洗",
+      "titleZhHant": "耶穌受洗",
+      "descEn": "John baptizes Jesus in the Jordan; the Father speaks, the Spirit descends.",
+      "descZhHans": "约翰在约旦河为耶稣施洗；父神发声，圣灵降临。",
+      "descZhHant": "約翰在約旦河為耶穌施洗；父神發聲，聖靈降臨。",
+      "refs": [
+        "Matthew 3:13-17",
+        "Mark 1:9-11"
+      ],
+      "personIds": [
+        "jesus"
+      ]
+    },
+    {
+      "id": "temptation",
+      "year": 26,
+      "era": "nt",
+      "titleEn": "Wilderness Temptation",
+      "titleZhHans": "旷野受试探",
+      "titleZhHant": "曠野受試探",
+      "descEn": "Jesus fasts 40 days in the wilderness; resists Satan's three temptations.",
+      "descZhHans": "耶稣在旷野禁食四十天；抵挡撒但三次试探。",
+      "descZhHant": "耶穌在曠野禁食四十天；抵擋撒但三次試探。",
+      "refs": [
+        "Matthew 4:1-11",
+        "Luke 4:1-13"
+      ],
+      "personIds": [
+        "jesus"
+      ]
+    },
+    {
+      "id": "disciples_called",
+      "year": 27,
+      "era": "nt",
+      "titleEn": "Calling of the Twelve",
+      "titleZhHans": "呼召十二门徒",
+      "titleZhHant": "呼召十二門徒",
+      "descEn": "Jesus calls the Twelve to follow him.",
+      "descZhHans": "耶稣呼召十二门徒跟从他。",
+      "descZhHant": "耶穌呼召十二門徒跟從他。",
+      "refs": [
+        "Matthew 4:18-22",
+        "Mark 3:13-19",
+        "Luke 6:12-16"
+      ],
+      "personIds": [
+        "jesus"
+      ]
+    },
+    {
+      "id": "sermon_mount",
+      "year": 28,
+      "era": "nt",
+      "titleEn": "Sermon on the Mount",
+      "titleZhHans": "登山宝训",
+      "titleZhHant": "登山寶訓",
+      "descEn": "Jesus delivers the Beatitudes and teaches the Law's true meaning.",
+      "descZhHans": "耶稣讲述八福，并阐明律法的真义。",
+      "descZhHant": "耶穌講述八福，並闡明律法的真義。",
+      "refs": [
+        "Matthew 5-7"
+      ],
+      "personIds": [
+        "jesus"
+      ]
+    },
+    {
+      "id": "5000_fed",
+      "year": 29,
+      "era": "nt",
+      "titleEn": "Feeding the 5000",
+      "titleZhHans": "五饼二鱼",
+      "titleZhHant": "五餅二魚",
+      "descEn": "Jesus feeds 5,000 men with five loaves and two fish.",
+      "descZhHans": "耶稣以五饼二鱼喂饱五千人。",
+      "descZhHant": "耶穌以五餅二魚餵飽五千人。",
+      "refs": [
+        "Matthew 14:13-21",
+        "John 6:1-14"
+      ],
+      "personIds": [
+        "jesus"
+      ]
+    },
+    {
+      "id": "transfiguration",
+      "year": 30,
+      "era": "nt",
+      "titleEn": "Transfiguration",
+      "titleZhHans": "登山变像",
+      "titleZhHant": "登山變像",
+      "descEn": "Jesus is transfigured before Peter, James, and John; Moses and Elijah appear.",
+      "descZhHans": "耶稣在彼得、雅各、约翰面前改变形象；摩西和以利亚显现。",
+      "descZhHant": "耶穌在彼得、雅各、約翰面前改變形象；摩西和以利亞顯現。",
+      "refs": [
+        "Matthew 17:1-13"
+      ],
+      "personIds": [
+        "jesus",
+        "moses"
+      ]
+    },
+    {
+      "id": "triumphal_entry",
+      "year": 33,
+      "era": "nt",
+      "titleEn": "Triumphal Entry",
+      "titleZhHans": "荣进圣城",
+      "titleZhHant": "榮進聖城",
+      "descEn": "Jesus enters Jerusalem on a donkey; crowds shout 'Hosanna'.",
+      "descZhHans": "耶稣骑驴进入耶路撒冷；众人高呼“和散那”。",
+      "descZhHant": "耶穌騎驢進入耶路撒冷；眾人高呼「和散那」。",
+      "refs": [
+        "Matthew 21:1-11"
+      ],
+      "personIds": [
+        "jesus"
+      ]
+    },
+    {
+      "id": "last_supper",
+      "year": 33,
+      "era": "nt",
+      "titleEn": "Last Supper",
+      "titleZhHans": "最后的晚餐",
+      "titleZhHant": "最後的晚餐",
+      "descEn": "Jesus institutes the Lord's Supper with His disciples on Passover.",
+      "descZhHans": "耶稣在逾越节与门徒共进最后晚餐，设立圣餐。",
+      "descZhHant": "耶穌在逾越節與門徒共進最後晚餐，設立聖餐。",
+      "refs": [
+        "Matthew 26:17-30",
+        "Luke 22:7-23",
+        "1 Corinthians 11:23-26"
+      ],
+      "personIds": [
+        "jesus"
+      ]
+    },
+    {
+      "id": "crucifixion",
+      "year": 33,
+      "era": "nt",
+      "titleEn": "Crucifixion of Jesus",
+      "titleZhHans": "耶稣被钉十字架",
+      "titleZhHant": "耶穌被釘十字架",
+      "descEn": "Jesus is crucified on Golgotha; bears the sin of the world.",
+      "descZhHans": "耶稣被钉十字架于各各他；担当世人罪孽。",
+      "descZhHant": "耶穌被釘十字架於各各他；擔當世人罪孽。",
+      "refs": [
+        "Matthew 27",
+        "John 19"
+      ],
+      "personIds": [
+        "jesus"
+      ]
+    },
+    {
+      "id": "resurrection",
+      "year": 33,
+      "era": "nt",
+      "titleEn": "Resurrection",
+      "titleZhHans": "耶稣复活",
+      "titleZhHant": "耶穌復活",
+      "descEn": "Jesus rises from the dead on the third day; appears to Mary, the disciples, and 500+.",
+      "descZhHans": "耶稣第三日从死里复活；向马利亚、门徒和五百多人显现。",
+      "descZhHant": "耶穌第三日從死裡復活；向馬利亞、門徒和五百多人顯現。",
+      "refs": [
+        "Matthew 28",
+        "John 20-21",
+        "1 Corinthians 15"
+      ],
+      "personIds": [
+        "jesus",
+        "mary"
+      ]
+    },
+    {
+      "id": "ascension",
+      "year": 33,
+      "era": "nt",
+      "titleEn": "Ascension",
+      "titleZhHans": "耶稣升天",
+      "titleZhHant": "耶穌升天",
+      "descEn": "After 40 days, Jesus ascends to heaven from the Mount of Olives.",
+      "descZhHans": "耶稣复活四十日后从橄榄山升天。",
+      "descZhHant": "耶穌復活四十日後從橄欖山升天。",
+      "refs": [
+        "Acts 1:9-11"
+      ],
+      "personIds": [
+        "jesus"
+      ]
+    },
+    {
+      "id": "pentecost",
+      "year": 33,
+      "era": "nt",
+      "titleEn": "Pentecost: Holy Spirit Poured Out",
+      "titleZhHans": "五旬节圣灵降临",
+      "titleZhHant": "五旬節聖靈降臨",
+      "descEn": "The Holy Spirit comes upon the disciples; the church is born; 3,000 converted.",
+      "descZhHans": "圣灵降在门徒身上；教会诞生；三千人悔改归主。",
+      "descZhHant": "聖靈降在門徒身上；教會誕生；三千人悔改歸主。",
+      "refs": [
+        "Acts 2"
+      ],
+      "personIds": []
+    },
+    {
+      "id": "stephen_martyred",
+      "year": 35,
+      "era": "nt",
+      "titleEn": "Stephen Martyred",
+      "titleZhHans": "司提反殉道",
+      "titleZhHant": "司提反殉道",
+      "descEn": "Stephen, first Christian martyr, is stoned; Saul approves.",
+      "descZhHans": "司提反成为首位基督徒殉道者；扫罗赞同。",
+      "descZhHant": "司提反成為首位基督徒殉道者；掃羅贊同。",
+      "refs": [
+        "Acts 6-7"
+      ],
+      "personIds": []
+    },
+    {
+      "id": "paul_converted",
+      "year": 35,
+      "era": "nt",
+      "titleEn": "Paul's Conversion on Damascus Road",
+      "titleZhHans": "保罗大马色路上悔改",
+      "titleZhHant": "保羅大馬色路上悔改",
+      "descEn": "The risen Christ appears to Saul on the way to Damascus; he is converted.",
+      "descZhHans": "复活的基督在前往大马色的路上向扫罗显现；他悔改归主。",
+      "descZhHant": "復活的基督在前往大馬色的路上向掃羅顯現；他悔改歸主。",
+      "refs": [
+        "Acts 9"
+      ],
+      "personIds": []
+    },
+    {
+      "id": "paul_journeys",
+      "year": 47,
+      "era": "nt",
+      "titleEn": "Paul's First Missionary Journey",
+      "titleZhHans": "保罗第一次宣教旅行",
+      "titleZhHant": "保羅第一次宣教旅行",
+      "descEn": "Paul and Barnabas evangelize Cyprus and Asia Minor (~47-48 AD).",
+      "descZhHans": "保罗与巴拿巴在塞浦路斯和小亚细亚传福音（约公元 47-48 年）。",
+      "descZhHant": "保羅與巴拿巴在塞浦路斯和小亞細亞傳福音（約公元 47-48 年）。",
+      "refs": [
+        "Acts 13-14"
+      ],
+      "personIds": []
+    },
+    {
+      "id": "jerusalem_council",
+      "year": 49,
+      "era": "nt",
+      "titleEn": "Jerusalem Council",
+      "titleZhHans": "耶路撒冷会议",
+      "titleZhHant": "耶路撒冷會議",
+      "descEn": "The apostles affirm that Gentiles need not keep Mosaic Law to be saved.",
+      "descZhHans": "使徒确认外邦人不必守摩西律法即可得救。",
+      "descZhHant": "使徒確認外邦人不必守摩西律法即可得救。",
+      "refs": [
+        "Acts 15"
+      ],
+      "personIds": []
+    },
+    {
+      "id": "paul_rome",
+      "year": 60,
+      "era": "nt",
+      "titleEn": "Paul in Rome",
+      "titleZhHans": "保罗在罗马",
+      "titleZhHant": "保羅在羅馬",
+      "descEn": "Paul reaches Rome under house arrest; preaches freely.",
+      "descZhHans": "保罗在罗马受软禁，仍自由传道。",
+      "descZhHant": "保羅在羅馬受軟禁，仍自由傳道。",
+      "refs": [
+        "Acts 28"
+      ],
+      "personIds": []
+    },
+    {
+      "id": "temple_destroyed",
+      "year": 70,
+      "era": "nt",
+      "titleEn": "Destruction of the Temple",
+      "titleZhHans": "圣殿被毁",
+      "titleZhHant": "聖殿被毀",
+      "descEn": "Roman general Titus destroys Jerusalem and the Second Temple, fulfilling Jesus' prophecy.",
+      "descZhHans": "罗马将军提多攻陷耶路撒冷，毁掉第二圣殿，应验耶稣预言。",
+      "descZhHant": "羅馬將軍提多攻陷耶路撒冷，毀掉第二聖殿，應驗耶穌預言。",
+      "refs": [
+        "Matthew 24:1-2",
+        "Mark 13:1-2"
+      ],
+      "personIds": []
+    },
+    {
+      "id": "john_patmos",
+      "year": 95,
+      "era": "nt",
+      "titleEn": "John Exiled to Patmos; Revelation Written",
+      "titleZhHans": "约翰被流放拔摩；写启示录",
+      "titleZhHant": "約翰被流放拔摩；寫啟示錄",
+      "descEn": "The apostle John, exiled to Patmos, receives the Revelation of Jesus Christ.",
+      "descZhHans": "使徒约翰被流放拔摩岛，领受耶稣基督的启示。",
+      "descZhHant": "使徒約翰被流放拔摩島，領受耶穌基督的啟示。",
+      "refs": [
+        "Revelation 1:9"
+      ],
+      "personIds": []
+    }
+  ]
+}

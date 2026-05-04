@@ -13,6 +13,7 @@ import 'package:yswords/models/news_article.dart';
 import 'package:yswords/pages/daily_news_page.dart';
 import 'package:yswords/pages/evidence_detail_page.dart';
 import 'package:yswords/pages/evidence_page.dart';
+import 'package:yswords/pages/bible_timeline_page.dart';
 import 'package:yswords/pages/family_tree_page.dart';
 import 'package:yswords/pages/sermons_page.dart';
 import 'package:yswords/pages/news_detail_page.dart';
@@ -758,6 +759,15 @@ class _DashboardPageState extends State<DashboardPage> {
                 label: uiStrings['familyTree']?[locale] ?? 'Family Tree',
                 onTap: () => Get.to(
                   () => const FamilyTreePage(),
+                  transition: Transition.rightToLeft,
+                ),
+              ),
+              _LinkTile(
+                icon: Icons.timeline_rounded,
+                label: uiStrings['bibleTimeline']?[locale] ??
+                    'Bible Timeline',
+                onTap: () => Get.to(
+                  () => const BibleTimelinePage(),
                   transition: Transition.rightToLeft,
                 ),
               ),
