@@ -66,7 +66,8 @@
         "Genesis 4:25"
       ],
       "role": "FIRST WOMAN",
-      "era": "antediluvian"
+      "era": "antediluvian",
+      "birthYear": 0
     },
     {
       "id": "cain",
@@ -89,7 +90,8 @@
         "1 John 3:12",
         "Jude 11"
       ],
-      "era": "antediluvian"
+      "era": "antediluvian",
+      "birthYear": 30
     },
     {
       "id": "abel",
@@ -110,7 +112,9 @@
         "Hebrews 12:24",
         "Matthew 23:35"
       ],
-      "era": "antediluvian"
+      "era": "antediluvian",
+      "birthYear": 35,
+      "deathYear": 75
     },
     {
       "id": "seth",
@@ -395,7 +399,8 @@
         "Genesis 10:6-20"
       ],
       "role": "PATRIARCH",
-      "era": "post_flood"
+      "era": "post_flood",
+      "birthYear": 1559
     },
     {
       "id": "japheth",
@@ -416,7 +421,8 @@
         "Genesis 10:1-5"
       ],
       "role": "PATRIARCH",
-      "era": "post_flood"
+      "era": "post_flood",
+      "birthYear": 1556
     },
     {
       "id": "arphaxad",
@@ -690,7 +696,8 @@
         "Galatians 4:21-31"
       ],
       "role": "CONCUBINE",
-      "era": "patriarchs"
+      "era": "patriarchs",
+      "birthYear": -2090
     },
     {
       "id": "keturah",
@@ -718,7 +725,8 @@
         "1 Chronicles 1:32-33"
       ],
       "role": "WIFE",
-      "era": "patriarchs"
+      "era": "patriarchs",
+      "birthYear": -2050
     },
     {
       "id": "ishmael",
@@ -815,7 +823,9 @@
         "Romans 9:10-13"
       ],
       "role": "MATRIARCH",
-      "era": "patriarchs"
+      "era": "patriarchs",
+      "birthYear": -2030,
+      "deathYear": -1900
     },
     {
       "id": "esau",
@@ -920,7 +930,9 @@
         "Genesis 49:31"
       ],
       "role": "MATRIARCH",
-      "era": "patriarchs"
+      "era": "patriarchs",
+      "birthYear": -1980,
+      "deathYear": -1880
     },
     {
       "id": "rachel",
@@ -948,7 +960,9 @@
         "Matthew 2:18"
       ],
       "role": "MATRIARCH",
-      "era": "patriarchs"
+      "era": "patriarchs",
+      "birthYear": -1975,
+      "deathYear": -1898
     },
     {
       "id": "bilhah",
@@ -973,7 +987,8 @@
         "Genesis 35:25"
       ],
       "role": "CONCUBINE",
-      "era": "patriarchs"
+      "era": "patriarchs",
+      "birthYear": -1970
     },
     {
       "id": "zilpah",
@@ -998,7 +1013,8 @@
         "Genesis 35:26"
       ],
       "role": "CONCUBINE",
-      "era": "patriarchs"
+      "era": "patriarchs",
+      "birthYear": -1968
     },
     {
       "id": "reuben",
@@ -1025,7 +1041,8 @@
         "1 Chronicles 5:1"
       ],
       "role": "TRIBE",
-      "era": "patriarchs"
+      "era": "patriarchs",
+      "birthYear": -1928
     },
     {
       "id": "simeon",
@@ -1053,7 +1070,8 @@
         "Genesis 49:5-7"
       ],
       "role": "TRIBE",
-      "era": "patriarchs"
+      "era": "patriarchs",
+      "birthYear": -1925
     },
     {
       "id": "levi",
@@ -1081,7 +1099,9 @@
       ],
       "role": "PRIESTLY TRIBE",
       "accent": "priestly",
-      "era": "patriarchs"
+      "era": "patriarchs",
+      "birthYear": -1923,
+      "deathYear": -1716
     },
     {
       "id": "judah",
@@ -1111,7 +1131,8 @@
       ],
       "role": "ROYAL TRIBE",
       "accent": "royal",
-      "era": "patriarchs"
+      "era": "patriarchs",
+      "birthYear": -1920
     },
     {
       "id": "dan",
@@ -1133,7 +1154,8 @@
         "Genesis 49:16-17"
       ],
       "role": "TRIBE",
-      "era": "patriarchs"
+      "era": "patriarchs",
+      "birthYear": -1918
     },
     {
       "id": "naphtali",
@@ -1158,7 +1180,8 @@
         "Genesis 49:21"
       ],
       "role": "TRIBE",
-      "era": "patriarchs"
+      "era": "patriarchs",
+      "birthYear": -1916
     },
     {
       "id": "gad",
@@ -1186,7 +1209,8 @@
         "Genesis 49:19"
       ],
       "role": "TRIBE",
-      "era": "patriarchs"
+      "era": "patriarchs",
+      "birthYear": -1914
     },
     {
       "id": "asher",
@@ -1212,7 +1236,8 @@
         "Genesis 49:20"
       ],
       "role": "TRIBE",
-      "era": "patriarchs"
+      "era": "patriarchs",
+      "birthYear": -1912
     },
     {
       "id": "issachar",
@@ -1237,7 +1262,8 @@
         "Genesis 49:14-15"
       ],
       "role": "TRIBE",
-      "era": "patriarchs"
+      "era": "patriarchs",
+      "birthYear": -1910
     },
     {
       "id": "zebulun",
@@ -1262,7 +1288,8 @@
         "Matthew 4:13-15"
       ],
       "role": "TRIBE",
-      "era": "patriarchs"
+      "era": "patriarchs",
+      "birthYear": -1908
     },
     {
       "id": "joseph",
@@ -1312,7 +1339,8 @@
         "Genesis 48:8-20"
       ],
       "role": "HALF-TRIBE",
-      "era": "patriarchs"
+      "era": "patriarchs",
+      "birthYear": -1880
     },
     {
       "id": "ephraim",
@@ -1333,7 +1361,8 @@
         "Hosea 11"
       ],
       "role": "HALF-TRIBE",
-      "era": "patriarchs"
+      "era": "patriarchs",
+      "birthYear": -1878
     },
     {
       "id": "benjamin",
@@ -1365,7 +1394,8 @@
         "Philippians 3:5"
       ],
       "role": "TRIBE",
-      "era": "patriarchs"
+      "era": "patriarchs",
+      "birthYear": -1900
     },
     {
       "id": "dinah",
@@ -1385,7 +1415,8 @@
         "Genesis 34"
       ],
       "role": "DAUGHTER",
-      "era": "patriarchs"
+      "era": "patriarchs",
+      "birthYear": -1905
     },
     {
       "id": "perez",
@@ -1409,7 +1440,8 @@
         "Luke 3:33"
       ],
       "accent": "royal",
-      "era": "davidic_line"
+      "era": "davidic_line",
+      "birthYear": -1880
     },
     {
       "id": "hezron",
@@ -1433,7 +1465,8 @@
         "Luke 3:33"
       ],
       "accent": "royal",
-      "era": "davidic_line"
+      "era": "davidic_line",
+      "birthYear": -1850
     },
     {
       "id": "ram",
@@ -1456,7 +1489,8 @@
         "Matthew 1:3-4"
       ],
       "accent": "royal",
-      "era": "davidic_line"
+      "era": "davidic_line",
+      "birthYear": -1820
     },
     {
       "id": "amminadab",
@@ -1479,7 +1513,8 @@
         "Matthew 1:4"
       ],
       "accent": "royal",
-      "era": "davidic_line"
+      "era": "davidic_line",
+      "birthYear": -1530
     },
     {
       "id": "nahshon",
@@ -1504,7 +1539,8 @@
         "Luke 3:32"
       ],
       "accent": "royal",
-      "era": "davidic_line"
+      "era": "davidic_line",
+      "birthYear": -1490
     },
     {
       "id": "salmon",
@@ -1529,7 +1565,8 @@
         "Luke 3:32"
       ],
       "accent": "royal",
-      "era": "davidic_line"
+      "era": "davidic_line",
+      "birthYear": -1450
     },
     {
       "id": "rahab",
@@ -1557,7 +1594,8 @@
       ],
       "role": "GENTILE",
       "accent": "royal",
-      "era": "davidic_line"
+      "era": "davidic_line",
+      "birthYear": -1450
     },
     {
       "id": "boaz",
@@ -1584,7 +1622,8 @@
         "Luke 3:32"
       ],
       "accent": "royal",
-      "era": "davidic_line"
+      "era": "davidic_line",
+      "birthYear": -1150
     },
     {
       "id": "ruth",
@@ -1612,7 +1651,8 @@
       ],
       "role": "GENTILE",
       "accent": "royal",
-      "era": "davidic_line"
+      "era": "davidic_line",
+      "birthYear": -1140
     },
     {
       "id": "obed",
@@ -1635,7 +1675,8 @@
         "Luke 3:32"
       ],
       "accent": "royal",
-      "era": "davidic_line"
+      "era": "davidic_line",
+      "birthYear": -1120
     },
     {
       "id": "jesse",
@@ -1668,7 +1709,8 @@
         "Romans 15:12"
       ],
       "accent": "royal",
-      "era": "davidic_line"
+      "era": "davidic_line",
+      "birthYear": -1090
     },
     {
       "id": "david",
@@ -1749,7 +1791,8 @@
       ],
       "role": "QUEEN",
       "accent": "royal",
-      "era": "kings"
+      "era": "kings",
+      "birthYear": -1040
     },
     {
       "id": "solomon",
@@ -1911,7 +1954,9 @@
         "Luke 3:27"
       ],
       "accent": "royal",
-      "era": "exile"
+      "era": "exile",
+      "birthYear": -597,
+      "deathYear": -550
     },
     {
       "id": "zerubbabel",
@@ -1938,7 +1983,9 @@
       ],
       "role": "GOVERNOR",
       "accent": "royal",
-      "era": "exile"
+      "era": "exile",
+      "birthYear": -560,
+      "deathYear": -490
     },
     {
       "id": "joseph_father_of_jesus",
@@ -1967,7 +2014,9 @@
       ],
       "role": "CARPENTER",
       "accent": "messianic",
-      "era": "nt"
+      "era": "nt",
+      "birthYear": -30,
+      "deathYear": 18
     },
     {
       "id": "mary",
@@ -2000,7 +2049,9 @@
       ],
       "role": "MOTHER OF JESUS",
       "accent": "messianic",
-      "era": "nt"
+      "era": "nt",
+      "birthYear": -20,
+      "deathYear": 48
     },
     {
       "id": "jesus",
@@ -2353,7 +2404,8 @@
         "Matthew 1:13-16"
       ],
       "accent": "royal",
-      "era": "exile"
+      "era": "exile",
+      "birthYear": -500
     },
     {
       "id": "eliakim2",
@@ -2373,7 +2425,8 @@
         "Matthew 1:13-16"
       ],
       "accent": "royal",
-      "era": "exile"
+      "era": "exile",
+      "birthYear": -460
     },
     {
       "id": "azor",
@@ -2393,7 +2446,8 @@
         "Matthew 1:13-16"
       ],
       "accent": "royal",
-      "era": "exile"
+      "era": "exile",
+      "birthYear": -420
     },
     {
       "id": "zadok2",
@@ -2413,7 +2467,8 @@
         "Matthew 1:13-16"
       ],
       "accent": "royal",
-      "era": "exile"
+      "era": "exile",
+      "birthYear": -380
     },
     {
       "id": "achim",
@@ -2433,7 +2488,8 @@
         "Matthew 1:13-16"
       ],
       "accent": "royal",
-      "era": "exile"
+      "era": "exile",
+      "birthYear": -340
     },
     {
       "id": "eliud",
@@ -2453,7 +2509,8 @@
         "Matthew 1:13-16"
       ],
       "accent": "royal",
-      "era": "exile"
+      "era": "exile",
+      "birthYear": -300
     },
     {
       "id": "eleazar2",
@@ -2473,7 +2530,8 @@
         "Matthew 1:13-16"
       ],
       "accent": "royal",
-      "era": "exile"
+      "era": "exile",
+      "birthYear": -260
     },
     {
       "id": "matthan",
@@ -2493,7 +2551,8 @@
         "Matthew 1:13-16"
       ],
       "accent": "royal",
-      "era": "exile"
+      "era": "exile",
+      "birthYear": -100
     },
     {
       "id": "jacob_father_of_joseph",
@@ -2513,7 +2572,8 @@
         "Matthew 1:13-16"
       ],
       "accent": "royal",
-      "era": "exile"
+      "era": "exile",
+      "birthYear": -70
     },
     {
       "id": "abijah",
@@ -2985,7 +3045,7 @@
         "irad"
       ],
       "yearSystem": "am",
-      "birthYear": null,
+      "birthYear": 100,
       "summary": "Son of Cain; the city Cain built was named after him.",
       "summaryZhHans": "该隐之子；该隐所建的城以他为名。",
       "summaryZhHant": "該隱之子；該隱所建的城以他為名。",
@@ -3006,7 +3066,7 @@
         "mehujael"
       ],
       "yearSystem": "am",
-      "birthYear": null,
+      "birthYear": 200,
       "summary": "Son of Enoch (Cain’s line).",
       "summaryZhHans": "以诺之子（该隐家系）。",
       "summaryZhHant": "以諾之子（該隱家系）。",
@@ -3027,7 +3087,7 @@
         "methushael"
       ],
       "yearSystem": "am",
-      "birthYear": null,
+      "birthYear": 300,
       "summary": "Son of Irad in Cain’s line.",
       "summaryZhHans": "以拿之子，属该隐家系。",
       "summaryZhHant": "以拿之子，屬該隱家系。",
@@ -3048,7 +3108,7 @@
         "lamech_cain"
       ],
       "yearSystem": "am",
-      "birthYear": null,
+      "birthYear": 400,
       "summary": "Son of Mehujael in Cain’s line.",
       "summaryZhHans": "米户雅利之子，属该隐家系。",
       "summaryZhHant": "米戶雅利之子，屬該隱家系。",
@@ -3075,7 +3135,7 @@
         "naamah"
       ],
       "yearSystem": "am",
-      "birthYear": null,
+      "birthYear": 500,
       "summary": "Sixth generation in Cain’s line; took two wives Adah and Zillah; sang the first recorded song of vengeance.",
       "summaryZhHans": "该隐家系的第六代；娶亚大与洗拉为妻；唱出经文记载的最早一首报复之歌。",
       "summaryZhHant": "該隱家系的第六代；娶亞大與洗拉為妻；唱出經文記載的最早一首報復之歌。",
@@ -3099,7 +3159,7 @@
         "jubal"
       ],
       "yearSystem": "am",
-      "birthYear": null,
+      "birthYear": 520,
       "summary": "Wife of Lamech in Cain’s line; mother of Jabal and Jubal.",
       "summaryZhHans": "该隐家系拉麦之妻；雅八与犹八之母。",
       "summaryZhHant": "該隱家系拉麥之妻；雅八與猶八之母。",
@@ -3123,7 +3183,7 @@
         "naamah"
       ],
       "yearSystem": "am",
-      "birthYear": null,
+      "birthYear": 520,
       "summary": "Wife of Lamech in Cain’s line; mother of Tubal-cain and Naamah.",
       "summaryZhHans": "该隐家系拉麦之妻；土八该隐与拿玛之母。",
       "summaryZhHant": "該隱家系拉麥之妻；土八該隱與拿瑪之母。",
@@ -3142,7 +3202,7 @@
       "spouseIds": [],
       "childIds": [],
       "yearSystem": "am",
-      "birthYear": null,
+      "birthYear": 540,
       "summary": "Father of those who dwell in tents and have livestock.",
       "summaryZhHans": "住帐篷牧养牲畜之人的祖师。",
       "summaryZhHant": "住帳篷牧養牲畜之人的祖師。",
@@ -3161,7 +3221,7 @@
       "spouseIds": [],
       "childIds": [],
       "yearSystem": "am",
-      "birthYear": null,
+      "birthYear": 540,
       "summary": "Father of all who play the lyre and pipe.",
       "summaryZhHans": "一切弹琴吹箫之人的祖师。",
       "summaryZhHant": "一切彈琴吹簫之人的祖師。",
@@ -3180,7 +3240,7 @@
       "spouseIds": [],
       "childIds": [],
       "yearSystem": "am",
-      "birthYear": null,
+      "birthYear": 540,
       "summary": "Forger of all instruments of bronze and iron.",
       "summaryZhHans": "打造各样铜铁利器之人的祖师。",
       "summaryZhHant": "打造各樣銅鐵利器之人的祖師。",
@@ -3199,7 +3259,7 @@
       "spouseIds": [],
       "childIds": [],
       "yearSystem": "am",
-      "birthYear": null,
+      "birthYear": 545,
       "summary": "Sister of Tubal-cain.",
       "summaryZhHans": "土八该隐的妹妹。",
       "summaryZhHant": "土八該隱的妹妹。",
