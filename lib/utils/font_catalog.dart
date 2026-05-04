@@ -1,0 +1,308 @@
+import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+
+/// Round 56: central font catalogue for the Settings → Font Family
+/// dropdown.
+///
+/// Why this file exists:
+/// Flutter on web (CanvasKit) cannot render CSS-only system fonts
+/// — picking "Times New Roman" or "Georgia" used to silently fall
+/// back to Roboto because no font asset was loaded for those names.
+/// We now ship two bundled fonts (Roboto, Microsoft YaHei) plus a
+/// curated set of Google Fonts that the `google_fonts` package
+/// downloads + registers at runtime. The user's selection still
+/// roundtrips as a stable string key in SharedPreferences (e.g.
+/// `'EB Garamond'`), and [resolveFontFamily] turns that key into
+/// the actual registered family name (e.g. `'EBGaramond_regular'`)
+/// that TextStyle's `fontFamily` field needs.
+///
+/// User-facing behaviour:
+/// • Roboto + Microsoft YaHei always work (bundled; offline-safe).
+/// • Google Fonts work as long as the device has internet on first
+///   use; afterwards the package caches them locally.
+/// • System-only options (PingFang SC, SimSun, Heiti SC, …) are
+///   marked as `isSystemFont: true` and rendered with a CSS-style
+///   family name; on Apple/Windows where the font is installed the
+///   browser will use it, otherwise they fall back to the engine's
+///   default. We keep them so users on those platforms can still
+///   pick their preferred local font.
+
+class FontOption {
+  /// Stable identifier — what gets persisted in SharedPreferences.
+  final String key;
+
+  /// Display label shown in the dropdown row.
+  final Map<String, String> label;
+
+  /// True for fonts shipped as bundled assets in pubspec.yaml.
+  /// These work offline and on all platforms.
+  final bool isBundled;
+
+  /// True for fonts pulled from Google Fonts at runtime.
+  /// Require internet on first use.
+  final bool isGoogleFont;
+
+  /// Loose category for the optional grouping divider.
+  final FontCategory category;
+
+  const FontOption({
+    required this.key,
+    required this.label,
+    this.isBundled = false,
+    this.isGoogleFont = false,
+    this.category = FontCategory.englishSerif,
+  });
+
+  String labelFor(String locale) =>
+      label[locale] ?? label['en'] ?? key;
+}
+
+enum FontCategory { bundled, englishSerif, englishSans, chinese, system }
+
+const List<FontOption> _catalog = [
+  // ── Bundled (works everywhere, offline) ──────────────────────────
+  FontOption(
+    key: 'Roboto',
+    label: {
+      'en': 'Roboto (default)',
+      'zh-Hans': 'Roboto（默认）',
+      'zh-Hant': 'Roboto（預設）',
+    },
+    isBundled: true,
+    category: FontCategory.bundled,
+  ),
+  FontOption(
+    key: 'Microsoft YaHei',
+    label: {
+      'en': 'Microsoft YaHei (Chinese)',
+      'zh-Hans': '微软雅黑（中文）',
+      'zh-Hant': '微軟雅黑（中文）',
+    },
+    isBundled: true,
+    category: FontCategory.bundled,
+  ),
+
+  // ── Google Fonts (English serif) ─────────────────────────────────
+  FontOption(
+    key: 'EB Garamond',
+    label: {
+      'en': 'EB Garamond (serif / classic)',
+      'zh-Hans': 'EB Garamond（衬线 / 经典）',
+      'zh-Hant': 'EB Garamond（襯線 / 經典）',
+    },
+    isGoogleFont: true,
+    category: FontCategory.englishSerif,
+  ),
+  FontOption(
+    key: 'Lora',
+    label: {
+      'en': 'Lora (serif / readable)',
+      'zh-Hans': 'Lora（衬线 / 易读）',
+      'zh-Hant': 'Lora（襯線 / 易讀）',
+    },
+    isGoogleFont: true,
+    category: FontCategory.englishSerif,
+  ),
+  FontOption(
+    key: 'Merriweather',
+    label: {
+      'en': 'Merriweather (serif / book)',
+      'zh-Hans': 'Merriweather（衬线 / 书本）',
+      'zh-Hant': 'Merriweather（襯線 / 書本）',
+    },
+    isGoogleFont: true,
+    category: FontCategory.englishSerif,
+  ),
+  FontOption(
+    key: 'Crimson Pro',
+    label: {
+      'en': 'Crimson Pro (serif / elegant)',
+      'zh-Hans': 'Crimson Pro（衬线 / 优雅）',
+      'zh-Hant': 'Crimson Pro（襯線 / 優雅）',
+    },
+    isGoogleFont: true,
+    category: FontCategory.englishSerif,
+  ),
+  FontOption(
+    key: 'Playfair Display',
+    label: {
+      'en': 'Playfair Display (serif / display)',
+      'zh-Hans': 'Playfair Display（衬线 / 展示）',
+      'zh-Hant': 'Playfair Display（襯線 / 展示）',
+    },
+    isGoogleFont: true,
+    category: FontCategory.englishSerif,
+  ),
+
+  // ── Google Fonts (English sans-serif) ────────────────────────────
+  FontOption(
+    key: 'Open Sans',
+    label: {
+      'en': 'Open Sans (sans-serif / friendly)',
+      'zh-Hans': 'Open Sans（无衬线 / 友好）',
+      'zh-Hant': 'Open Sans（無襯線 / 友好）',
+    },
+    isGoogleFont: true,
+    category: FontCategory.englishSans,
+  ),
+  FontOption(
+    key: 'Inter',
+    label: {
+      'en': 'Inter (sans-serif / modern)',
+      'zh-Hans': 'Inter（无衬线 / 现代）',
+      'zh-Hant': 'Inter（無襯線 / 現代）',
+    },
+    isGoogleFont: true,
+    category: FontCategory.englishSans,
+  ),
+  FontOption(
+    key: 'Lato',
+    label: {
+      'en': 'Lato (sans-serif / neutral)',
+      'zh-Hans': 'Lato（无衬线 / 中性）',
+      'zh-Hant': 'Lato（無襯線 / 中性）',
+    },
+    isGoogleFont: true,
+    category: FontCategory.englishSans,
+  ),
+  FontOption(
+    key: 'Nunito',
+    label: {
+      'en': 'Nunito (sans-serif / soft)',
+      'zh-Hans': 'Nunito（无衬线 / 柔和）',
+      'zh-Hant': 'Nunito（無襯線 / 柔和）',
+    },
+    isGoogleFont: true,
+    category: FontCategory.englishSans,
+  ),
+  FontOption(
+    key: 'Montserrat',
+    label: {
+      'en': 'Montserrat (sans-serif / geometric)',
+      'zh-Hans': 'Montserrat（无衬线 / 几何）',
+      'zh-Hant': 'Montserrat（無襯線 / 幾何）',
+    },
+    isGoogleFont: true,
+    category: FontCategory.englishSans,
+  ),
+
+  // ── Google Fonts (Chinese / CJK) ─────────────────────────────────
+  FontOption(
+    key: 'Noto Serif SC',
+    label: {
+      'en': 'Noto Serif SC (Chinese serif)',
+      'zh-Hans': '思源宋体（中文衬线）',
+      'zh-Hant': '思源宋體（中文襯線）',
+    },
+    isGoogleFont: true,
+    category: FontCategory.chinese,
+  ),
+  FontOption(
+    key: 'Noto Sans SC',
+    label: {
+      'en': 'Noto Sans SC (Chinese sans-serif)',
+      'zh-Hans': '思源黑体（中文黑体）',
+      'zh-Hant': '思源黑體（中文黑體）',
+    },
+    isGoogleFont: true,
+    category: FontCategory.chinese,
+  ),
+  FontOption(
+    key: 'ZCOOL XiaoWei',
+    label: {
+      'en': 'ZCOOL XiaoWei (Chinese stylish)',
+      'zh-Hans': '站酷小薇（中文）',
+      'zh-Hant': '站酷小薇（中文）',
+    },
+    isGoogleFont: true,
+    category: FontCategory.chinese,
+  ),
+  FontOption(
+    key: 'Ma Shan Zheng',
+    label: {
+      'en': 'Ma Shan Zheng (Chinese brush)',
+      'zh-Hans': '马善政楷书（中文毛笔）',
+      'zh-Hant': '馬善政楷書（中文毛筆）',
+    },
+    isGoogleFont: true,
+    category: FontCategory.chinese,
+  ),
+
+  // ── System fonts (best-effort fallback) ──────────────────────────
+  // Kept for users on platforms that ship them locally; if the
+  // engine can't find them it falls back to the theme default.
+  FontOption(
+    key: 'PingFang SC',
+    label: {
+      'en': 'PingFang SC (Apple devices)',
+      'zh-Hans': '苹方（Apple 设备）',
+      'zh-Hant': '蘋方（Apple 設備）',
+    },
+    category: FontCategory.system,
+  ),
+  FontOption(
+    key: 'SimSun',
+    label: {
+      'en': 'SimSun (Windows classic)',
+      'zh-Hans': '宋体（Windows 经典）',
+      'zh-Hant': '宋體（Windows 經典）',
+    },
+    category: FontCategory.system,
+  ),
+];
+
+/// Public list ordered for the dropdown.
+List<FontOption> availableFontOptions() =>
+    List.unmodifiable(_catalog);
+
+/// Look up the catalogue entry for a stored key. Falls back to the
+/// first entry (Roboto) if the key isn't recognized — defensive
+/// against schema drift if a Google Font option is later removed
+/// from the catalogue.
+FontOption fontOptionFor(String key) {
+  for (final f in _catalog) {
+    if (f.key == key) return f;
+  }
+  return _catalog.first;
+}
+
+/// Resolve a stored selection key to the actual font family name
+/// that TextStyle's `fontFamily` parameter expects.
+///
+/// • For bundled fonts ([FontOption.isBundled]) the key matches the
+///   pubspec `family:` declaration, so we return it as-is.
+/// • For Google Fonts we ask the package to register the font and
+///   return the family name it assigned (this is a synchronous call
+///   that kicks off an async download in the background; the
+///   TextStyle remains valid even before the bytes arrive — the
+///   font just appears once they do).
+/// • For system fonts we return the key directly; the engine /
+///   browser will pick it up if installed locally.
+String resolveFontFamily(String key) {
+  final option = fontOptionFor(key);
+  if (option.isGoogleFont) {
+    try {
+      final ts = GoogleFonts.getFont(option.key);
+      return ts.fontFamily ?? option.key;
+    } catch (_) {
+      return option.key;
+    }
+  }
+  return option.key;
+}
+
+/// Build a TextStyle that previews [key] in its own font, so the
+/// dropdown row physically looks like the font it advertises. The
+/// caller passes a base style (size/color) and we layer the family
+/// on top.
+TextStyle previewTextStyle(String key, TextStyle base) {
+  final option = fontOptionFor(key);
+  if (option.isGoogleFont) {
+    try {
+      return GoogleFonts.getFont(option.key, textStyle: base);
+    } catch (_) {
+      return base.copyWith(fontFamily: option.key);
+    }
+  }
+  return base.copyWith(fontFamily: option.key);
+}

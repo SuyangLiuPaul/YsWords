@@ -170,6 +170,79 @@ class _BibleTriviaPageState extends State<BibleTriviaPage> {
   }
 }
 
+/// Round 56 (continued): localized labels for the 11 canonical tag
+/// values. Without this, the filter chips on the trivia page rendered
+/// the raw English uppercase tags (ACROSTIC, AUTHOR, …) even when the
+/// user's locale was Chinese — user feedback: "冷知识 and so many more
+/// havent applied language setting". Each entry has its own per-locale
+/// tag (with subject-specific phrasing like "诗篇结构"), so we can't
+/// just reuse one entry's tag map for the whole filter row. This
+/// const map gives a single canonical localized chip label per
+/// English tag.
+const Map<String, Map<String, String>> _tagDisplayLabels = {
+  'ACROSTIC': {
+    'en': 'Acrostic',
+    'zh-Hans': '离合体',
+    'zh-Hant': '離合體',
+  },
+  'AUTHOR': {
+    'en': 'Author',
+    'zh-Hans': '作者',
+    'zh-Hant': '作者',
+  },
+  'CANON': {
+    'en': 'Canon',
+    'zh-Hans': '正典',
+    'zh-Hant': '正典',
+  },
+  'LANGUAGE': {
+    'en': 'Language',
+    'zh-Hans': '语言',
+    'zh-Hant': '語言',
+  },
+  'NARRATIVE': {
+    'en': 'Narrative',
+    'zh-Hans': '叙事',
+    'zh-Hant': '敘事',
+  },
+  'NT QUOTE': {
+    'en': 'NT Quote',
+    'zh-Hans': '新约引用',
+    'zh-Hant': '新約引用',
+  },
+  'POETRY': {
+    'en': 'Poetry',
+    'zh-Hans': '诗体',
+    'zh-Hant': '詩體',
+  },
+  'PROPHECY': {
+    'en': 'Prophecy',
+    'zh-Hans': '预言',
+    'zh-Hant': '預言',
+  },
+  'STRUCTURE': {
+    'en': 'Structure',
+    'zh-Hans': '结构',
+    'zh-Hant': '結構',
+  },
+  'VISION': {
+    'en': 'Vision',
+    'zh-Hans': '异象',
+    'zh-Hant': '異象',
+  },
+  'WORDPLAY': {
+    'en': 'Wordplay',
+    'zh-Hans': '文字游戏',
+    'zh-Hant': '文字遊戲',
+  },
+};
+
+String _localizedTagLabel(String englishTag, String locale) {
+  final m = _tagDisplayLabels[englishTag.trim().toUpperCase()];
+  if (m == null) return englishTag;
+  return m[locale] ?? m['en'] ?? englishTag;
+}
+
 /// Canonical OT book set used by the testament filter. Keeping it
 /// inline (not pulling from MainProvider) so the trivia page works
 /// without bible data loaded.
@@ -269,7 +342,7 @@ class _TriviaFilterBar extends StatelessWidget {
               ),
               for (final t in availableTags)
                 _TagChip(
-                  label: t,
+                  label: _localizedTagLabel(t, locale),
                   selected: tagFilter == t,
                   onTap: () => onTagChanged(t),
                   scheme: scheme,

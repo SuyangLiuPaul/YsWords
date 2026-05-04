@@ -31,6 +31,13 @@ dependencies:
   cloud_firestore: ^6.0.0
   # Used by AiSearchService to call the Cloud Functions Gemini proxy.
   http: ^1.2.2
+  # Round 56: dynamically loads Google Fonts at runtime so the
+  # font picker's English serif / sans-serif options actually
+  # render. Without this, only the two bundled fonts (Roboto +
+  # Microsoft YaHei) work — picking "EB Garamond", "Lora",
+  # "Merriweather" etc. silently fell back to Roboto on web
+  # (CanvasKit can't pull from system fonts).
+  google_fonts: ^6.2.1
 
 dev_dependencies:
   flutter_test:

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:yswords/models/dashboard_section.dart';
+import 'package:yswords/utils/font_catalog.dart';
 
 const _kFontFamily = 'fontFamily';
 const _kFontSize = 'fontSize';
@@ -33,6 +34,16 @@ String _kDashboardVisible(DashboardSection s) =>
     'dashboard_section_visible_${s.name}';
 
 class AppSettings extends ChangeNotifier {
+  /// User's selected font key — what gets persisted in
+  /// SharedPreferences (e.g. `'EB Garamond'`). Drives the dropdown
+  /// `value:` and the visible label.
+  String _fontSelection = 'Roboto';
+  /// Resolved family name passed to TextStyle's `fontFamily`. For
+  /// bundled fonts this equals [_fontSelection]; for Google Fonts
+  /// it's the registered family name (e.g. `'EBGaramond_regular'`)
+  /// that the engine actually recognises. Round 56 split: previously
+  /// these were the same string and Google Fonts options silently
+  /// fell back to Roboto.
   String _fontFamily = 'Roboto';
   double _fontSize = 20.0;
   double _lineSpacing = 1.5;
@@ -109,7 +120,13 @@ class AppSettings extends ChangeNotifier {
   final Map<DashboardSection, bool> _dashboardVisibility =
       Map.of(defaultVisibility);
 
+  /// The resolved family for TextStyle.fontFamily. Existing call
+  /// sites (`fontFamily: settings.fontFamily`) automatically get the
+  /// Google-Fonts-registered name without code changes elsewhere.
   String get fontFamily => _fontFamily;
+  /// The user's stored selection key — use this for the dropdown
+  /// `value:` and for round-tripping back into [setFontFamily].
+  String get fontSelection => _fontSelection;
   double get fontSize => _fontSize;
   double get lineSpacing => _lineSpacing;
   Color get primaryColor => _primaryColor;
@@ -150,12 +167,17 @@ class AppSettings extends ChangeNotifier {
     return _dashboardVisibility[section] ?? defaultVisibility[section] ?? true;
   }
 
-  Future<void> setFontFamily(String family) async {
-    if (_fontFamily == family) return;
-    _fontFamily = family;
+  /// [selection] is a catalogue key like `'EB Garamond'` (see
+  /// [availableFontOptions]). We persist the key as-is and resolve
+  /// it through the Google Fonts package when needed so the rest of
+  /// the codebase keeps using `settings.fontFamily` unchanged.
+  Future<void> setFontFamily(String selection) async {
+    if (_fontSelection == selection) return;
+    _fontSelection = selection;
+    _fontFamily = resolveFontFamily(selection);
     notifyListeners();
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_kFontFamily, family);
+    await prefs.setString(_kFontFamily, selection);
   }
 
   Future<void> setFontSize(double size) async {
@@ -414,6 +436,7 @@ class AppSettings extends ChangeNotifier {
   /// Caller (Settings page) is responsible for showing a confirm
   /// dialog before calling this — it's idempotent but visible.
   Future<void> resetAllSettings() async {
+    _fontSelection = 'Roboto';
     _fontFamily = 'Roboto';
     _fontSize = 20.0;
     _lineSpacing = 1.5;
@@ -508,7 +531,8 @@ class AppSettings extends ChangeNotifier {
 
   Future<void> loadSettings() async {
     final prefs = await SharedPreferences.getInstance();
-    _fontFamily = prefs.getString(_kFontFamily) ?? 'Roboto';
+    _fontSelection = prefs.getString(_kFontFamily) ?? 'Roboto';
+    _fontFamily = resolveFontFamily(_fontSelection);
     // Round to nearest step to avoid Slider assertion with stale values
     final rawFontSize = prefs.getDouble(_kFontSize) ?? 20.0;
     _fontSize = (rawFontSize - 12).roundToDouble() + 12;

@@ -23,6 +23,7 @@ import 'package:yswords/services/fetch_books.dart';
 import 'package:yswords/services/fetch_verses.dart';
 import 'package:yswords/services/profile_service.dart';
 import 'package:yswords/services/reading_plan_service.dart';
+import 'package:yswords/utils/font_catalog.dart';
 
 import 'package:yswords/services/offline_pack_service.dart';
 import 'package:yswords/widgets/home_icon_button.dart';
@@ -515,27 +516,31 @@ class _SettingsPageBodyState extends State<_SettingsPageBody> {
                       ),
                       SizedBox(height: 12 * s),
                       DropdownButton<String>(
-                        value: settings.fontFamily,
+                        value: settings.fontSelection,
+                        isExpanded: true,
                         onChanged: (val) {
                           if (val != null) settings.setFontFamily(val);
                         },
-                        // Round 56: expanded font choice. Two
-                        // bundled fonts (Roboto + Microsoft YaHei)
-                        // plus system-available fallbacks. On web
-                        // these map to the user's installed
-                        // system fonts; on mobile they fall back
-                        // to the platform default if not present.
-                        // Grouped: bundled / Chinese-friendly /
-                        // English-friendly.
+                        // Round 56 (continued): each row physically
+                        // renders in its own font via
+                        // [previewTextStyle], so the user can
+                        // visually compare options before picking.
+                        // Bundled fonts always work; Google Fonts
+                        // are downloaded on demand by the
+                        // `google_fonts` package; system-only
+                        // entries fall back to the engine default
+                        // when not installed locally.
                         items: [
-                          for (final f in _availableFonts(settings.locale))
+                          for (final f in availableFontOptions())
                             DropdownMenuItem(
-                              value: f.value,
+                              value: f.key,
                               child: Text(
-                                f.label,
-                                style: TextStyle(
-                                  fontSize: settings.fontSize,
-                                  fontFamily: f.value,
+                                f.labelFor(settings.locale),
+                                style: previewTextStyle(
+                                  f.key,
+                                  TextStyle(
+                                    fontSize: settings.fontSize,
+                                  ),
                                 ),
                               ),
                             ),
@@ -2935,27 +2940,26 @@ class _StylePresetCard extends StatelessWidget {
 }
 
 /// One row in the Settings → Display font dropdown.
+// Round 56 (continued): the dropdown options now live in
+// `lib/utils/font_catalog.dart` (FontOption, availableFontOptions,
+// previewTextStyle, resolveFontFamily). The legacy `_FontOption`
+// + `_availableFonts(locale)` defined here used CSS-style family
+// names that CanvasKit can't actually load — Times New Roman /
+// Georgia / Arial silently fell back to Roboto on web. The new
+// catalogue swaps them for Google Fonts equivalents pulled at
+// runtime by the `google_fonts` package, which works on every
+// Flutter target.
+//
+// Kept the legacy helper below behind `// ignore: unused_element`
+// for one release in case Settings rollback is needed; remove it
+// once the new catalogue has been validated.
 class _FontOption {
   final String value;
   final String label;
   const _FontOption({required this.value, required this.label});
 }
 
-/// Round 56: expanded font catalogue. Returns the dropdown
-/// options in a sensible grouped order:
-///   1. Bundled fonts shipped with the app (always work)
-///   2. System-Chinese fonts (Microsoft YaHei, PingFang SC, etc.)
-///   3. System-English fonts (Times, Georgia, Arial, etc.)
-///
-/// On Flutter web a "fontFamily" string like 'Times New Roman' is
-/// passed through to the browser's CSS font-family attribute, so
-/// the option works whenever the user has that font installed.
-/// On mobile/desktop Flutter, missing fonts gracefully fall back
-/// to the platform default.
-///
-/// Labels are localized — Chinese labels include the original
-/// English name in parens for users who want to know what to look
-/// for online.
+// ignore: unused_element
 List<_FontOption> _availableFonts(String locale) {
   final isZh = locale.startsWith('zh');
   return [
