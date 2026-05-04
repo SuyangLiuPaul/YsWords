@@ -274,9 +274,15 @@ class _FamilyTreePageState extends State<FamilyTreePage> {
                     scheme: scheme,
                   ),
                   Expanded(
-                    child: filtered != null && filtered.isEmpty
-                        ? _buildNoMatches(locale, scheme)
-                        : _buildArticle(
+                    // Search-active: show a clean flat search-results
+                    // list instead of the article. Tapping a result
+                    // clears the query and jumps to that person in
+                    // their era's section. This is what the user
+                    // asked for — search should "just show the one"
+                    // matched person, not auto-expand the whole
+                    // article inline.
+                    child: filtered == null
+                        ? _buildArticle(
                             data: data,
                             byEra: byEra,
                             spine: spine,
@@ -284,7 +290,14 @@ class _FamilyTreePageState extends State<FamilyTreePage> {
                             ancestorIds: ancestorIds,
                             locale: locale,
                             scheme: scheme,
-                          ),
+                          )
+                        : filtered.isEmpty
+                            ? _buildNoMatches(locale, scheme)
+                            : _buildSearchResults(
+                                matches: filtered,
+                                locale: locale,
+                                scheme: scheme,
+                              ),
                   ),
                 ],
               ),
@@ -416,6 +429,44 @@ class _FamilyTreePageState extends State<FamilyTreePage> {
     );
   }
 
+  // ── Search results panel ────────────────────────────────────────
+
+  /// Flat list of matched persons shown WHILE search is active.
+  /// Replaces the article body so the user sees only the matches —
+  /// addresses the "search shows nothing useful" report. Tapping a
+  /// result clears the query and jumps to that person's row in the
+  /// era's section (which auto-uncollapses).
+  Widget _buildSearchResults({
+    required List<BiblicalPerson> matches,
+    required String locale,
+    required ColorScheme scheme,
+  }) {
+    return ListView.builder(
+      padding: const EdgeInsets.fromLTRB(8, 4, 8, 24),
+      itemCount: matches.length,
+      itemBuilder: (_, i) => _SearchResultTile(
+        person: matches[i],
+        locale: locale,
+        scheme: scheme,
+        onTap: () {
+          final p = matches[i];
+          // Clear the query so the article body comes back, then
+          // post-frame jump to this person's row + flash highlight.
+          _searchController.clear();
+          setState(() => _query = '');
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            final era = p.era;
+            if (era != null && era.isNotEmpty) {
+              _jumpToEra(era, personId: p.id);
+            } else {
+              _showDetail(p);
+            }
+          });
+        },
+      ),
+    );
+  }
+
   // ── Article body ────────────────────────────────────────────────
 
   Widget _buildArticle({
@@ -482,6 +533,15 @@ class _FamilyTreePageState extends State<FamilyTreePage> {
 
     return ListView(
       controller: _scrollController,
+      // Force every section to be laid out eagerly (instead of
+      // lazily as items scroll into view). Without this, sections
+      // below the viewport don't have a settled RenderBox, so
+      // their GlobalKey.currentContext is null and bridge jumps
+      // (e.g. Patriarchs → Lukan Lineage) silently no-op with a
+      // "no context for lukan_lineage / mattatha_lk_31" debug.
+      // We only have 9 list items (8 sections + comparison table)
+      // so the memory cost is trivial.
+      cacheExtent: double.infinity,
       padding: const EdgeInsets.only(bottom: 32),
       children: [
         ...sections,
@@ -1272,6 +1332,138 @@ class _PersonRow extends StatelessWidget {
     );
   }
 
+}
+
+class _SearchResultTile extends StatelessWidget {
+  final BiblicalPerson person;
+  final String locale;
+  final ColorScheme scheme;
+  final VoidCallback onTap;
+
+  const _SearchResultTile({
+    required this.person,
+    required this.locale,
+    required this.scheme,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final accent = _accentTheme(person.accent);
+    final accentColor = accent?.line ?? scheme.primary;
+    final years = person.displayYears(locale);
+    final era = person.era ?? '';
+    final eraColor = _eraColor(era);
+    return Container(
+      margin: const EdgeInsets.only(bottom: 6),
+      decoration: BoxDecoration(
+        color: scheme.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: scheme.outlineVariant.withValues(alpha: 0.5),
+        ),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(8),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(10, 12, 10, 12),
+            child: Row(
+              children: [
+                Container(
+                  width: 4,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: accentColor,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Wrap(
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        spacing: 6,
+                        runSpacing: 4,
+                        children: [
+                          Text(
+                            person.localizedName(locale),
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                              color: scheme.onSurface,
+                            ),
+                          ),
+                          // Era pill in the era's colour.
+                          if (era.isNotEmpty)
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 6, vertical: 1.5),
+                              decoration: BoxDecoration(
+                                color:
+                                    eraColor.withValues(alpha: 0.13),
+                                borderRadius:
+                                    BorderRadius.circular(4),
+                                border: Border.all(
+                                  color:
+                                      eraColor.withValues(alpha: 0.4),
+                                  width: 0.7,
+                                ),
+                              ),
+                              child: Text(
+                                _eraLabelShort(era, locale),
+                                style: TextStyle(
+                                  fontSize: 9.5,
+                                  fontWeight: FontWeight.w700,
+                                  letterSpacing: 0.5,
+                                  color: eraColor,
+                                ),
+                              ),
+                            ),
+                          if ((person.role ?? '').isNotEmpty)
+                            _RolePill(
+                              label: person.role!,
+                              accent: accent,
+                              scheme: scheme,
+                            ),
+                          if (person.refs.isNotEmpty)
+                            _RefBadge(
+                              count: person.refs.length,
+                              scheme: scheme,
+                            ),
+                        ],
+                      ),
+                      if (years.isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 4),
+                          child: Text(
+                            years,
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: scheme.onSurface
+                                  .withValues(alpha: 0.62),
+                              fontFeatures: const [
+                                FontFeature.tabularFigures(),
+                              ],
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+                Icon(Icons.east_rounded,
+                    size: 18, color: scheme.primary),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 class _RowInfoButton extends StatelessWidget {
