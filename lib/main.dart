@@ -53,10 +53,17 @@ class MainApp extends StatefulWidget {
 class _MainAppState extends State<MainApp> {
   bool _loading = true;
 
+  /// Watchdog that forces the splash off after 4 s even if bootstrap
+  /// is still grinding. Stored in a field (Round 56 audit fix) so we
+  /// can cancel it on dispose — without this, hot-restart in dev or
+  /// a fast unmount in prod would still tick and try to call
+  /// setState on a disposed State.
+  Timer? _splashWatchdog;
+
   @override
   void initState() {
     super.initState();
-    Timer(const Duration(seconds: 4), () {
+    _splashWatchdog = Timer(const Duration(seconds: 4), () {
       if (_loading && mounted) {
         setState(() {
           _loading = false;
@@ -64,6 +71,12 @@ class _MainAppState extends State<MainApp> {
       }
     });
     Future.microtask(_bootstrap);
+  }
+
+  @override
+  void dispose() {
+    _splashWatchdog?.cancel();
+    super.dispose();
   }
 
   Future<void> _bootstrap() async {

@@ -455,6 +455,24 @@ Levitical priesthood in view, and Ezekiel 14:14 names him alongside
 Noah and Daniel as one of the great righteous men. Cross-refs:
 Job 1, 2, 38, 42, Ezekiel 14:14.
 
+**Splash watchdog Timer was not cancellable**
+(`lib/main.dart`). A focused 25-pattern bug audit (Round 56)
+turned up a single high-severity finding: `_MainAppState.initState`
+created a 4-second watchdog `Timer` to force the splash off if
+bootstrap stalled, but didn't store it in a field — so `dispose()`
+couldn't cancel it. On hot-restart in dev or a fast unmount in
+prod, the timer would still fire and try to `setState` on a
+disposed State. Now stored in `_splashWatchdog` and cancelled in
+the new `dispose()` override.
+
+The audit verified the rest of the codebase is clean on every
+checked dimension: force-unwraps are all guarded, `setState`
+after async always pre-checks `mounted`, all controllers / timers
+/ subscriptions in State classes are disposed, all `firstWhere`
+calls have an `orElse`, and listener registrations are paired
+with `removeListener` in dispose. No medium- or low-severity
+bugs found.
+
 **Loading-page Retry button now works without page refresh**
 (`lib/services/fetch_verses.dart`, `lib/pages/loading_page.dart`).
 User feedback: *"loading retry doesn't work, must refresh page"*.
