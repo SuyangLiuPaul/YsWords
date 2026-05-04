@@ -2187,6 +2187,27 @@ const uiStrings = {
     'zh-Hans': '复制失败 — 剪贴板不可用',
     'zh-Hant': '複製失敗 — 剪貼簿不可用',
   },
+  // Sermon copy-all (full body + attribution footer)
+  'sermonCopyAll': {
+    'en': 'Copy sermon',
+    'zh-Hans': '复制讲道',
+    'zh-Hant': '複製講道',
+  },
+  'sermonCopied': {
+    'en': 'Sermon copied to clipboard',
+    'zh-Hans': '讲道已复制到剪贴板',
+    'zh-Hant': '講道已複製到剪貼簿',
+  },
+  'sermonCopyEmpty': {
+    'en': 'Sermon not loaded yet — wait for content to appear',
+    'zh-Hans': '讲道尚未加载完成 — 请等待内容显示',
+    'zh-Hant': '講道尚未載入完成 — 請等待內容顯示',
+  },
+  'sermonAttribution': {
+    'en': "From YsWords (Yahweh's Words) — bilingual Bible app",
+    'zh-Hans': '来自 YsWords（耶和华的话）— 双语圣经应用',
+    'zh-Hant': '來自 YsWords（耶和華的話）— 雙語聖經應用',
+  },
   // Verse popup sheet
   'versePopupExpand': {
     'en': 'Show full chapter',

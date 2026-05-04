@@ -291,6 +291,12 @@ class _SermonDetailPageState extends State<SermonDetailPage> {
         ),
         actions: [
           IconButton(
+            icon: const Icon(Icons.copy_rounded, size: 20),
+            tooltip: uiStrings['sermonCopyAll']?[settings.locale] ??
+                'Copy sermon',
+            onPressed: () => _copySermonBody(s, settings.locale),
+          ),
+          IconButton(
             icon: const Icon(Icons.ios_share_rounded, size: 20),
             tooltip: uiStrings['shareLink']?[settings.locale] ??
                 'Share link',
@@ -385,6 +391,65 @@ class _SermonDetailPageState extends State<SermonDetailPage> {
           ),
         ),
       ),
+    );
+  }
+
+  /// Copy the full sermon — title + metadata + body + attribution
+  /// footer — to the clipboard so users can paste into their
+  /// notes / Word / messaging apps. Always appends a "From
+  /// YsWords (Yahweh's Words)" line with the deep-link URL so
+  /// recipients know the source. Floating toast confirms.
+  Future<void> _copySermonBody(Sermon s, String locale) async {
+    final body = _body ?? '';
+    if (body.isEmpty) {
+      // Body still loading — surface a clear message rather than
+      // copying an empty payload.
+      showFloatingToast(
+        context,
+        message:
+            uiStrings['sermonCopyEmpty']?[locale] ?? 'Sermon not loaded yet',
+        icon: Icons.error_outline_rounded,
+        background: Theme.of(context).colorScheme.error,
+      );
+      return;
+    }
+    final title = s.titles[_titleLocaleKey(locale)] ?? s.title;
+    final url =
+        'https://yswords.netlify.app/?sermon=${Uri.encodeComponent(s.id)}';
+    final attribution = uiStrings['sermonAttribution']?[locale] ??
+        'From YsWords (Yahweh\'s Words)';
+    final buf = StringBuffer();
+    buf.writeln(title);
+    final metaParts = <String>[];
+    if (s.displayDate.isNotEmpty && s.displayDate != '—') {
+      metaParts.add(s.displayDate);
+    }
+    if (s.passage.isNotEmpty) metaParts.add(s.passage);
+    if (metaParts.isNotEmpty) buf.writeln(metaParts.join(' · '));
+    buf.writeln();
+    buf.writeln(body.trim());
+    buf.writeln();
+    buf.writeln('— $attribution');
+    buf.writeln(url);
+
+    bool ok = true;
+    try {
+      await Clipboard.setData(ClipboardData(text: buf.toString().trim()));
+    } catch (_) {
+      ok = false;
+    }
+    if (!mounted) return;
+    final scheme = Theme.of(context).colorScheme;
+    showFloatingToast(
+      context,
+      message: ok
+          ? (uiStrings['sermonCopied']?[locale] ?? 'Sermon copied')
+          : (uiStrings['shareLinkFailed']?[locale] ??
+              'Copy failed — clipboard unavailable'),
+      icon: ok
+          ? Icons.check_circle_rounded
+          : Icons.error_outline_rounded,
+      background: ok ? scheme.primary : scheme.error,
     );
   }
 
