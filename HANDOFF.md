@@ -418,6 +418,145 @@ The app adapts its layout to all device sizes using `lib/utils/responsive.dart`:
 
 ---
 
+## What Has Been Fixed (2026-05-04, Round 54)
+
+### Verse-popup polish + locale-aware sermon refs + Genesis book-name fix
+
+This round closed every loose end on the sermon → verse-popup flow that
+shipped in Round 53, plus a critical book-name mismatch that broke
+Genesis lookups for the default `cuvs-yhwh` reading version.
+
+**Genesis book-name fix** (`lib/constants/book_name_mapping.dart`).
+The `englishToChinese` map had `"Genesis": "创世记"` (with 记 — record
+character), but every shipped Chinese data file (`cuvs-yhwh.json`,
+`cuvs-yhwh-tr.json`, `cuv-tr.json`, `cnv-tr.json`) actually uses
+`创世纪` / `創世紀` (with 纪 / 紀 — chronicle character) for Genesis.
+This caused `resolveAndPrepareJump`'s `translateBookName(...)` to
+produce `创世记`, which then filtered `mp.verses` by a string that
+no row matched — surfacing as *"Couldn't find Genesis 1 in any
+available Bible version"* whenever a user tapped a Genesis ref in
+the Bible Timeline, the Family-tree person sheet, or a sermon body.
+Fixed by aligning the map to the data (`"Genesis": "创世纪"`).
+Traditional was already correct (`創世紀`). Other books were
+already aligned (e.g. `列王纪上` matches the data).
+
+**Shared passage-localizer utility** (`lib/utils/passage_localizer.dart`).
+New file with two exports:
+* `passageRefPattern` — single regex matching English (full + abbr.)
+  and full Chinese book names (Simplified + Traditional) followed by
+  chapter / chapter:verse / chapter:verse-verse. Used by sermon
+  detail body (`_SermonBody._buildSpans`), sermon detail passage chip
+  + AppBar opener (`_SermonDetailPageState._localizedPassage`,
+  `_openPassagePopup`), and the sermons-list passage badge (`_SermonRow`
+  subtitle in `lib/pages/sermons_page.dart`). Single source of truth so
+  the three surfaces can't drift.
+* `localizePassage(passage, locale)` — rewrites a free-form passage
+  like `"Mt 7:21-27 and Lk 6:46-49"` into the reader's locale
+  (`"马太福音 7:21-27 and 路加福音 6:46-49"` for `zh-Hans`,
+  `"馬太福音 7:21-27 and 路加福音 6:46-49"` for `zh-Hant`). Each
+  detected ref is replaced with the locale-aware book name +
+  chapter / verse tail; non-ref fragments (` and `, commas,
+  surrounding prose) are left untouched. English locale returns
+  the input unchanged.
+
+**Sermon body refs are now tappable AND localized**
+(`lib/pages/sermon_detail_page.dart::_SermonBody._buildSpans`).
+The dotted-underline span text now reads `"马太福音 5:27-30"` instead
+of `"Mt5:27-30"` when the reader's UI locale starts with `zh`. The
+underlying `BibleReference` parsed by `parseReference(matched)` is
+unchanged so `showVersePopup` still resolves the correct verses.
+Chinese refs in the body (e.g. `"约翰福音 3:16"`) are also detected
+because the regex now has Simplified + Traditional book-name
+alternations.
+
+**Sermon detail passage chip is tappable + locale-aware**
+(`_MetaChip` gained an `onTap` callback). The primary-tinted passage
+chip in the meta row now has a dotted underline + `InkWell` ripple;
+tap → `showVersePopup(ref)` for the first parsed ref in the passage.
+Multi-ref passages like `"Mt 7:21-27 and Lk 6:46-49"` popup the first
+ref; the user can then hit "Open in reader" inside the popup to
+navigate fully. Chip label uses `localizePassage` so a Chinese
+reader sees `"马太福音 7:21-27 and 路加福音 6:46-49"`.
+
+**Sermons-list passage badge is locale-aware**
+(`lib/pages/sermons_page.dart::_SermonRow`'s subtitle). Now wraps
+the subtitle Wrap in a `Builder` that watches `AppSettings.locale`
+and pipes `sermon.passage` through `localizePassage`. Expanding a
+topic group in Chinese mode now shows `"路加福音 9:62"` not `"Lk 9:62"`.
+
+**Verse popup race-condition fix** (`lib/widgets/verse_popup_sheet.dart`).
+The popup used to render the empty-state placeholder when
+`mp.verses` hadn't loaded yet (race: user opened a sermon ref before
+bootstrap `FetchVerses` settled, or the cited book wasn't in the
+current version). New `_ensureVersesLoaded()` runs in a post-frame
+callback on first build: if no verse matches the cited book/chapter,
+it calls `jumper.resolveAndPrepareJump(reference, mp)` (which
+force-loads + falls back to a full-canon companion when needed),
+then re-resolves on rebuild. While loading, a centered
+`CircularProgressIndicator` replaces the placeholder so the user
+sees activity instead of "verse text not loaded". When the resolver
+silently switches versions (NT-only translation + OT ref), a
+SnackBar surfaces *"Switched to {label} for this verse"* — same
+language as the reader.
+
+**Verse popup strips annotation markup**
+(`_buildVerseTile` + `_copyAll`). The reader pane has rich rendering
+for `<note:...>`, `{...}` cross-refs, and `[...]` brackets via
+`build_verse_content_spans.dart`. The popup is a peek surface — it
+now pipes `v.text` through `sanitizeVerseText` from
+`lib/constants/text_patterns.dart` before display and copy. Users
+no longer see literal `<note:...>` debris in the popup.
+
+**Sermon detail AppBar shows the title when scrolled**
+(`_SermonDetailPageState`). Added `_titleScrolledOff` bool flipped by
+`_onScroll` when `pos.pixels > 110` (past the inline title + meta
+chips + language toggle block). AppBar `title` is now an
+`AnimatedSwitcher` (220 ms fade + slight upward slide) between the
+generic `"Sermon" / "讲道" / "講道"` label (when at top) and
+`s.localizedTitle(locale)` capped at 1 line + ellipsis (when
+scrolled). The user always knows what they're reading without
+scrolling back up, but the AppBar doesn't compete with the inline
+H1 when both would be visible.
+
+**Sermon body translation markers stripped — 63 files modified**.
+Two redundant patterns appeared across the corpus:
+
+1. **Standalone marker lines** like `[双语：英文/中文]` /
+   `[雙語：英文/中文]` / `[Bilingual: English/Chinese]` sitting on
+   their own line below the H1 title. **40 instances removed** across
+   `assets/sermons/{en,zh-CN,zh-TW}/*.txt`.
+2. **Inline title markers** like `——[双语：英语/中文]——` baked into
+   the H1 title (e.g. sermons 393, 397-1, 397-2, 407, 408, 421, 422).
+   **57 instances stripped**, replaced with a single em-dash so titles
+   still flow nicely.
+
+Once the user has selected EN / 简 / 繁 the language is implicit; a
+`[双语：…]` marker only added noise. Preserved the informative
+`[注：…]` / `[Note: …]` block that explains the recording style
+(*"这是一篇双语讲道。牧师用英语讲道，内容由翻译员译成中文。"*) — that
+content is useful even when the user has picked a single language.
+
+The cleanup script logic (lives in this repo's git history, not
+checked in):
+
+```python
+import re, glob
+standalone = re.compile(r'^\s*\[(?:双语|雙語|Bilingual|bilingual)[^\]]*\]\s*$')
+inline     = re.compile(r'\s*[—–\-]{1,3}\s*\[(?:双语|雙語|Bilingual|bilingual)[^\]]*\]\s*[—–\-]{1,3}\s*')
+for d in ['en','zh-CN','zh-TW']:
+    for fp in sorted(glob.glob(f'assets/sermons/{d}/*.txt')):
+        text = open(fp).read()
+        text = inline.sub(' — ', text)              # title em-dash
+        text = '\n'.join(l for l in text.splitlines() if not standalone.match(l))
+        text = re.sub(r'\n{3,}', '\n\n', text)      # collapse blank runs
+        open(fp,'w').write(text)
+```
+
+If new bilingual sermons land later with the same pattern, re-run
+this and they'll be cleaned consistently.
+
+---
+
 ## What Has Been Fixed (2026-05-04)
 
 ### Bible Timeline + Sermon share / last-read memory + verse share

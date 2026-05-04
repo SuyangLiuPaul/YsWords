@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:provider/provider.dart';
 
+import 'package:yswords/constants/text_patterns.dart' show sanitizeVerseText;
 import 'package:yswords/constants/ui_strings.dart';
 import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/models/verse.dart';
@@ -39,10 +40,61 @@ class _VersePopupSheetState extends State<VersePopupSheet> {
   bool _fullChapter = false;
   late final ScrollController _scrollController;
 
+  /// True while a force-load of mp.verses is in flight. Used to swap
+  /// the empty-state placeholder for a spinner so users don't see a
+  /// "Verse text not loaded" message while data is actually loading.
+  bool _loadingVerses = false;
+
   @override
   void initState() {
     super.initState();
     _scrollController = ScrollController();
+    // If the user lands here before bootstrap fetched verses (e.g.
+    // tapped a sermon ref straight off the dashboard, or the version
+    // hasn't been loaded yet for the cited book), kick off a load so
+    // the popup can resolve the citation instead of showing the
+    // empty "verse text not loaded" placeholder.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _ensureVersesLoaded();
+    });
+  }
+
+  Future<void> _ensureVersesLoaded() async {
+    if (!mounted) return;
+    final mp = context.read<MainProvider>();
+    final hasMatch = mp.verses.any((v) {
+      final enBook = bookNameToEnglish[v.book] ?? v.book;
+      return enBook == widget.reference.englishBook &&
+          v.chapter == widget.reference.chapter;
+    });
+    if (hasMatch) return;
+    setState(() => _loadingVerses = true);
+    try {
+      // First try: if the version is loaded but the book isn't there
+      // (NT-only translation, OT reference), fall back to a full-canon
+      // companion via the same resolver the reader uses.
+      final result = await jumper.resolveAndPrepareJump(
+        reference: widget.reference,
+        mp: mp,
+      );
+      // The resolver may have switched versions to find the verse.
+      // We don't navigate here (this is a popup) — we just rely on
+      // the side-effects (mp.verses populated) so the rebuild picks
+      // up the data.
+      if (!mounted) return;
+      // Surface a soft notice if a version switch happened, mirroring
+      // the reader's "Switched to ..." snackbar.
+      if (result.switchedVersion && result.switchedToLabel != null) {
+        ScaffoldMessenger.maybeOf(context)?.showSnackBar(SnackBar(
+          content: Text(
+            'Switched to ${result.switchedToLabel} for this verse.',
+          ),
+          duration: const Duration(seconds: 3),
+        ));
+      }
+    } finally {
+      if (mounted) setState(() => _loadingVerses = false);
+    }
   }
 
   @override
@@ -100,7 +152,7 @@ class _VersePopupSheetState extends State<VersePopupSheet> {
     final buf = StringBuffer();
     buf.writeln('${_refLabel(locale)}\n');
     for (final v in verses) {
-      buf.writeln('${v.verse}. ${v.text}');
+      buf.writeln('${v.verse}. ${sanitizeVerseText(v.text)}');
     }
     final scheme = Theme.of(context).colorScheme;
     bool ok = true;
@@ -218,7 +270,14 @@ class _VersePopupSheetState extends State<VersePopupSheet> {
             // Body: verse list.
             Expanded(
               child: verses.isEmpty
-                  ? _buildEmpty(locale, scheme)
+                  ? (_loadingVerses
+                      ? const Center(
+                          child: Padding(
+                            padding: EdgeInsets.all(24),
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          ),
+                        )
+                      : _buildEmpty(locale, scheme))
                   : ListView.builder(
                       controller: draggable,
                       padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
@@ -297,7 +356,11 @@ class _VersePopupSheetState extends State<VersePopupSheet> {
                   fontFeatures: const [FontFeature.tabularFigures()],
                 ),
               ),
-              TextSpan(text: v.text),
+              // Sanitize annotation markup so the popup shows clean
+              // readable prose. The reading pane has rich rendering
+              // for `<note:...>` / `{...}` / `[...]`; the popup is
+              // a peek surface and renders plain text only.
+              TextSpan(text: sanitizeVerseText(v.text)),
             ],
           ),
         ),

@@ -1,6 +1,6 @@
 const englishToChinese = {
   // Old Testament (Simplified)
-  "Genesis": "创世记",
+  "Genesis": "创世纪",
   "Exodus": "出埃及记",
   "Leviticus": "利未记",
   "Numbers": "民数记",

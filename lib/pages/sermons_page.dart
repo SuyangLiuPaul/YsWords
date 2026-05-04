@@ -12,6 +12,7 @@ import 'package:yswords/models/sermon.dart';
 import 'package:yswords/pages/sermon_detail_page.dart';
 import 'package:yswords/services/fetch_books.dart' show standardBookOrder;
 import 'package:yswords/services/sermon_service.dart';
+import 'package:yswords/utils/passage_localizer.dart' show localizePassage;
 import 'package:yswords/utils/version_mapper.dart' show localeAwareBookName;
 import 'package:yswords/widgets/home_icon_button.dart';
 import 'package:yswords/widgets/localized_back_button.dart';
@@ -733,47 +734,53 @@ class _SermonRow extends StatelessWidget {
           );
         },
       ),
-      subtitle: Padding(
-        padding: const EdgeInsets.only(top: 2),
-        child: Wrap(
-          spacing: 8,
-          runSpacing: 4,
-          crossAxisAlignment: WrapCrossAlignment.center,
-          children: [
-            Text(
-              '#${sermon.id}',
-              style: TextStyle(
-                fontSize: 11,
-                color: scheme.onSurface.withValues(alpha: 0.55),
-                fontFeatures: const [FontFeature.tabularFigures()],
-              ),
-            ),
-            if (sermon.displayDate != '—')
-              Text(
-                sermon.displayDate,
-                style: TextStyle(
-                  fontSize: 11,
-                  color: scheme.onSurface.withValues(alpha: 0.55),
-                ),
-              ),
-            if (sermon.passage.isNotEmpty)
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
-                decoration: BoxDecoration(
-                  color: scheme.primaryContainer.withValues(alpha: 0.5),
-                  borderRadius: BorderRadius.circular(4),
-                ),
-                child: Text(
-                  sermon.passage,
+      subtitle: Builder(
+        builder: (ctx) {
+          final locale = ctx.watch<AppSettings>().locale;
+          return Padding(
+            padding: const EdgeInsets.only(top: 2),
+            child: Wrap(
+              spacing: 8,
+              runSpacing: 4,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              children: [
+                Text(
+                  '#${sermon.id}',
                   style: TextStyle(
                     fontSize: 11,
-                    fontWeight: FontWeight.w500,
-                    color: scheme.onPrimaryContainer,
+                    color: scheme.onSurface.withValues(alpha: 0.55),
+                    fontFeatures: const [FontFeature.tabularFigures()],
                   ),
                 ),
-              ),
-          ],
-        ),
+                if (sermon.displayDate != '—')
+                  Text(
+                    sermon.displayDate,
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: scheme.onSurface.withValues(alpha: 0.55),
+                    ),
+                  ),
+                if (sermon.passage.isNotEmpty)
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 6, vertical: 1),
+                    decoration: BoxDecoration(
+                      color: scheme.primaryContainer.withValues(alpha: 0.5),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Text(
+                      localizePassage(sermon.passage, locale),
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w500,
+                        color: scheme.onPrimaryContainer,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          );
+        },
       ),
         trailing: Icon(Icons.chevron_right,
             size: 20, color: scheme.onSurface.withValues(alpha: 0.4)),

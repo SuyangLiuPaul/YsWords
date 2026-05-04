@@ -11,9 +11,12 @@ import 'package:yswords/constants/ui_strings.dart';
 import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/models/sermon.dart';
 import 'package:yswords/utils/floating_toast.dart' show showFloatingToast;
+import 'package:yswords/utils/passage_localizer.dart'
+    show localizePassage, passageRefPattern;
 import 'package:yswords/widgets/verse_popup_sheet.dart' show showVersePopup;
 import 'package:yswords/services/sermon_service.dart';
 import 'package:yswords/utils/reference_parser.dart';
+import 'package:yswords/utils/version_mapper.dart' show localeAwareBookName;
 import 'package:yswords/widgets/home_icon_button.dart';
 import 'package:yswords/widgets/localized_back_button.dart';
 
@@ -78,6 +81,13 @@ class _SermonDetailPageState extends State<SermonDetailPage> {
   /// Best-known reading progress (0.0–1.0). Updated as the user
   /// scrolls so the AppBar progress indicator reflects it live.
   double _progress = 0.0;
+
+  /// True once the user has scrolled past the inline header (title +
+  /// meta chips + language toggle). Drives the AppBar title swap from
+  /// the generic "Sermon" label to the actual sermon title — a single
+  /// source of truth for "where am I" once the inline title scrolls
+  /// off-screen.
+  bool _titleScrolledOff = false;
 
   @override
   void didChangeDependencies() {
@@ -155,11 +165,22 @@ class _SermonDetailPageState extends State<SermonDetailPage> {
     final pos = _scrollController.position;
     if (pos.maxScrollExtent <= 0) return;
     final newProgress = (pos.pixels / pos.maxScrollExtent).clamp(0.0, 1.0);
-    if ((newProgress - _progress).abs() > 0.005) {
+    // The inline title block (title + meta chips + language toggle)
+    // takes roughly the first 110 px of the body. Past that, swap
+    // the AppBar's generic "Sermon" label for the actual title so
+    // the user always knows what they're reading without scrolling
+    // back up.
+    final shouldShowTitle = pos.pixels > 110;
+    final progressChanged = (newProgress - _progress).abs() > 0.005;
+    final titleChanged = shouldShowTitle != _titleScrolledOff;
+    if (progressChanged || titleChanged) {
       // Avoid rebuilding for sub-percent scroll movement. The
       // progress indicator at the top of the body re-renders on
       // every setState — keep it cheap.
-      setState(() => _progress = newProgress);
+      setState(() {
+        if (progressChanged) _progress = newProgress;
+        if (titleChanged) _titleScrolledOff = shouldShowTitle;
+      });
     }
     _saveOffsetDebounce?.cancel();
     _saveOffsetDebounce =
@@ -285,9 +306,38 @@ class _SermonDetailPageState extends State<SermonDetailPage> {
     return Scaffold(
       appBar: AppBar(
         leading: const LocalizedBackButton(),
-        title: Text(
-          uiStrings['sermon']?[settings.locale] ?? 'Sermon',
-          style: const TextStyle(fontWeight: FontWeight.w600),
+        // Generic "Sermon" label when the inline title is still on-
+        // screen, the actual sermon title once it scrolls off — gives
+        // the user a persistent reminder of what they're reading
+        // without stealing horizontal space when not needed.
+        title: AnimatedSwitcher(
+          duration: const Duration(milliseconds: 220),
+          transitionBuilder: (child, anim) => FadeTransition(
+            opacity: anim,
+            child: SlideTransition(
+              position: Tween<Offset>(
+                begin: const Offset(0, 0.15),
+                end: Offset.zero,
+              ).animate(anim),
+              child: child,
+            ),
+          ),
+          child: _titleScrolledOff
+              ? Text(
+                  s.localizedTitle(settings.locale),
+                  key: ValueKey('title-${s.id}'),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                )
+              : Text(
+                  uiStrings['sermon']?[settings.locale] ?? 'Sermon',
+                  key: const ValueKey('label-sermon'),
+                  style: const TextStyle(fontWeight: FontWeight.w600),
+                ),
         ),
         actions: [
           IconButton(
@@ -357,9 +407,10 @@ class _SermonDetailPageState extends State<SermonDetailPage> {
                   _MetaChip(label: '${s.parts} ${s.parts.contains('/') ? 'parts' : 'part'}'),
                 if (s.passage.isNotEmpty)
                   _MetaChip(
-                    label: s.passage,
+                    label: _localizedPassage(s.passage, settings.locale),
                     color: scheme.primaryContainer,
                     fg: scheme.onPrimaryContainer,
+                    onTap: () => _openPassagePopup(s.passage),
                   ),
                 _MetaChip(
                   label: localizedSermonTopic(s.topic, settings.locale),
@@ -489,22 +540,58 @@ class _SermonDetailPageState extends State<SermonDetailPage> {
     if (locale.startsWith('zh')) return 'zh-CN';
     return 'en';
   }
+
+  /// Rewrite a passage like `Mt 7:21-27 and Lk 6:46-49` into the
+  /// reader's locale (`马太福音 7:21-27 and 路加福音 6:46-49`). Thin
+  /// wrapper around the shared [localizePassage] utility so the
+  /// sermon list and detail page stay in sync.
+  String _localizedPassage(String passage, String locale) =>
+      localizePassage(passage, locale);
+
+  /// Tap the passage chip → open the [VersePopupSheet] for the first
+  /// reference in the passage. Multi-ref passages like
+  /// `Mt 7:21-27 and Lk 6:46-49` only popup the first ref; the user
+  /// can hit "Open in reader" if they want to navigate further.
+  Future<void> _openPassagePopup(String passage) async {
+    if (passage.trim().isEmpty) return;
+    BibleReference? ref;
+    final m = _SermonBody._refPattern.firstMatch(passage);
+    if (m != null) {
+      ref = parseReference(m.group(0)!);
+    }
+    ref ??= parseReference(passage);
+    if (ref == null) return;
+    if (!mounted) return;
+    await showVersePopup(context, ref);
+  }
 }
 
 class _MetaChip extends StatelessWidget {
   final String label;
   final Color? color;
   final Color? fg;
-  const _MetaChip({required this.label, this.color, this.fg});
+
+  /// Optional tap handler. When non-null, the chip becomes
+  /// interactive (cursor pointer, ripple) — used for the passage
+  /// chip so a tap opens the verse popup.
+  final VoidCallback? onTap;
+
+  const _MetaChip({required this.label, this.color, this.fg, this.onTap});
 
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    return Container(
+    final body = Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(
         color: color ?? scheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(6),
+        border: onTap == null
+            ? null
+            : Border.all(
+                color: scheme.primary.withValues(alpha: 0.3),
+                width: 0.7,
+              ),
       ),
       child: Text(
         label,
@@ -512,8 +599,18 @@ class _MetaChip extends StatelessWidget {
           fontSize: 11.5,
           fontWeight: FontWeight.w500,
           color: fg ?? scheme.onSurface.withValues(alpha: 0.75),
+          decoration: onTap == null ? null : TextDecoration.underline,
+          decorationColor:
+              onTap == null ? null : (fg ?? scheme.primary).withValues(alpha: 0.4),
+          decorationStyle: TextDecorationStyle.dotted,
         ),
       ),
+    );
+    if (onTap == null) return body;
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(6),
+      child: body,
     );
   }
 }
@@ -584,27 +681,10 @@ class _SermonBody extends StatelessWidget {
 
   const _SermonBody({required this.text, required this.settings});
 
-  /// Pattern for inline Bible references the body might mention.
-  /// Conservative — book + chapter:verse(-verse?), so we don't
-  /// underline numbers that aren't actually scripture refs.
-  /// Built once per build instead of compiled each paragraph.
-  static final RegExp _refPattern = RegExp(
-    r'\b(?:[1-3]\s?)?'
-    r'(?:Genesis|Exodus|Leviticus|Numbers|Deuteronomy|Joshua|Judges|Ruth|'
-    r'Samuel|Kings|Chronicles|Ezra|Nehemiah|Esther|Job|Psalms?|Proverbs|'
-    r'Ecclesiastes|Song(?:\s+of\s+(?:Solomon|Songs))?|Isaiah|Jeremiah|'
-    r'Lamentations|Ezekiel|Daniel|Hosea|Joel|Amos|Obadiah|Jonah|Micah|'
-    r'Nahum|Habakkuk|Zephaniah|Haggai|Zechariah|Malachi|Matthew|Mark|'
-    r'Luke|John|Acts|Romans|Corinthians|Galatians|Ephesians|Philippians|'
-    r'Colossians|Thessalonians|Timothy|Titus|Philemon|Hebrews|James|'
-    r'Peter|Jude|Revelation|'
-    r'Gen|Exo|Exod|Lev|Num|Deut|Josh|Judg|Ru|1Sam|2Sam|1Kgs|2Kgs|1Chr|'
-    r'2Chr|Neh|Est|Ps|Prv|Prov|Eccl|Isa|Jer|Lam|Ezek|Eze|Dan|Hos|Jl|'
-    r'Am|Obad|Jonah|Mic|Nah|Hab|Zeph|Hag|Zech|Mal|Matt|Mt|Mk|Lk|Jn|'
-    r'Rom|Cor|Gal|Eph|Phil|Col|Thess|Tim|Heb|Pet|Rev)'
-    r'\.?\s*\d+(?:\s*[:.]\s*\d+(?:\s*[-–]\s*\d+)?)?',
-    caseSensitive: false,
-  );
+  /// Pattern for inline Bible references — shared with the sermon
+  /// list and any other surface that wants to detect/rewrite refs.
+  /// See `lib/utils/passage_localizer.dart` for the full pattern.
+  static final RegExp _refPattern = passageRefPattern;
 
   @override
   Widget build(BuildContext context) {
@@ -645,12 +725,18 @@ class _SermonBody extends StatelessWidget {
   /// Build a [TextSpan] tree where every Bible-reference match
   /// becomes a tappable underlined span. Non-matching slices are
   /// plain text so the user can still select-and-copy normally.
+  ///
+  /// Display form follows the user's UI locale: in `zh-Hans`/`zh-Hant`
+  /// the matched text is rewritten to the locale's preferred book
+  /// name (e.g. "Mt5:27-30" → "马太福音 5:27-30"), so a Chinese
+  /// reader doesn't see raw English abbreviations like "Mt".
   TextSpan _buildSpans(
     BuildContext context,
     String paragraph,
     double fontSize,
     ColorScheme scheme,
   ) {
+    final locale = settings.locale;
     final spans = <InlineSpan>[];
     var idx = 0;
     for (final match in _refPattern.allMatches(paragraph)) {
@@ -665,8 +751,25 @@ class _SermonBody extends StatelessWidget {
       if (parsed == null) {
         spans.add(TextSpan(text: matched));
       } else {
+        // Prefer the user's locale for display. We only rewrite when
+        // the locale name actually differs from what's already in
+        // the body text — otherwise the display would jitter (e.g.
+        // English body in English locale stays as-is).
+        final localizedBook = localeAwareBookName(parsed.englishBook, locale);
+        var displayText = matched;
+        if (locale.startsWith('zh')) {
+          final tail = StringBuffer();
+          tail.write(' ${parsed.chapter}');
+          if (parsed.verseStart != null) {
+            tail.write(':${parsed.verseStart}');
+            if (parsed.verseEnd != null && parsed.verseEnd! > parsed.verseStart!) {
+              tail.write('-${parsed.verseEnd}');
+            }
+          }
+          displayText = '$localizedBook${tail.toString()}';
+        }
         spans.add(TextSpan(
-          text: matched,
+          text: displayText,
           style: TextStyle(
             color: scheme.primary,
             decoration: TextDecoration.underline,
