@@ -99,6 +99,14 @@ class _FamilyTreePageState extends State<FamilyTreePage> {
   Future<_TreeData> _load() async {
     final svc = FamilyTreeService.instance;
     final all = await svc.loadAll();
+    // Default-expand every parent in the dataset so each section's
+    // mini-tree shows its full lineage on first load (Wikipedia-
+    // style "everything visible"). User can collapse via chevrons.
+    for (final p in all) {
+      if (p.childIds.isNotEmpty) {
+        _expanded.add(p.id);
+      }
+    }
     return _TreeData(all: all, svc: svc);
   }
 
@@ -512,16 +520,44 @@ class _EraSection extends StatelessWidget {
     // shown inline as chips on their husband's row, so we exclude
     // anyone who is in someone-else-in-era's spouseIds.
     final eraIds = people.map((p) => p.id).toSet();
-    final spouseOfEraMember = <String>{};
-    for (final p in people) {
-      spouseOfEraMember.addAll(p.spouseIds);
+    final indexOf = <String, int>{
+      for (var i = 0; i < people.length; i++) people[i].id: i,
+    };
+
+    // "Inline spouse" = someone who married into the lineage and
+    // should appear as a `═ Spouse` chip on their husband's row,
+    // not as a separate section root. Two cases:
+    //
+    //   1. Their partner has a parent in the dataset → partner is
+    //      the anchor, this person is the chip.
+    //   2. Mutual no-parent pair (e.g. Adam ↔ Eve, where both
+    //      reciprocate spouseIds but neither has a parent). Without
+    //      a tiebreaker BOTH would be filtered → the section ends
+    //      up with zero roots (the antediluvian bug). Resolve by
+    //      keeping whichever person appears earlier in the dataset
+    //      and filtering the other.
+    bool isInlineSpouse(BiblicalPerson p) {
+      if (p.fatherId != null || p.motherId != null) return false;
+      for (final s in people) {
+        if (s.id == p.id) continue;
+        if (!s.spouseIds.contains(p.id)) continue;
+        // s claims p as spouse.
+        if (s.fatherId != null || s.motherId != null) {
+          // s has parent → s is anchor, p is the chip.
+          return true;
+        }
+        // Mutual no-parent pair → keep the earlier-indexed one.
+        final pi = indexOf[p.id] ?? 0;
+        final si = indexOf[s.id] ?? 0;
+        if (pi > si) return true;
+      }
+      return false;
     }
+
     final roots = people.where((p) {
       final pid = p.fatherId ?? p.motherId;
       final hasParentInEra = pid != null && eraIds.contains(pid);
-      final isInlineSpouse =
-          spouseOfEraMember.contains(p.id) && pid == null;
-      return !hasParentInEra && !isInlineSpouse;
+      return !hasParentInEra && !isInlineSpouse(p);
     }).toList();
 
     return Container(

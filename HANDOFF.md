@@ -474,10 +474,11 @@ Ancestry):
 `Center` + `ConstrainedBox`. Modal bottom sheet caps at 720 px. Indent
 compression (depth 6 cap). All pills wrap with `Wrap`.
 
-**Dataset** (`assets/family_tree.json`): 151 curated entries covering
-Adam → Jesus (Matthew 1 line) plus extended Genesis branches and the
-Mosaic / Levitical line. Each entry carries: id, en/zh-Hans/zh-Hant
-name + summary, fatherId / motherId / spouseIds / childIds, yearSystem
+**Dataset** (`assets/family_tree.json`): 238 curated entries covering
+Adam → Jesus (Matthew 1 line) plus extended Genesis branches, the
+Mosaic / Levitical line, Saul's family, David's full family, and
+Jesus's siblings. Each entry carries: id, en/zh-Hans/zh-Hant name +
+summary, fatherId / motherId / spouseIds / childIds, yearSystem
 (`am` for antediluvian, `bc` for Abraham onward), birth/death years,
 verse refs, optional `role` / `accent` / `era` annotations.
 
@@ -487,16 +488,32 @@ Coverage breakdown by era:
 |---|---|---|
 | Antediluvian | 23 | Adam → Lamech + Cain's full line (Lamech's wives + 4 children) |
 | Post-Flood | 12 | Shem → Terah |
-| Patriarchs | 58 | Abraham + brothers + Lot's children + Ishmael's 12 sons + Keturah's 5 sons + 12 tribes + Esau & descendants |
+| Patriarchs | 106 | Abraham + brothers + Lot's children + Ishmael's 12 sons + Keturah's 5 sons + Judah's 5 sons + Esau & descendants + Genesis 46 immediate sons of all 12 tribes (Reuben, Simeon, Issachar, Zebulun, Dan, Naphtali, Gad, Asher, Benjamin) |
 | Mosaic | 13 | Levi's 3 sons + Amram & Jochebed + Moses (with Zipporah + 2 sons) + Aaron (with 4 sons) + Miriam |
-| Davidic Line | 11 | Perez → Jesse |
-| Kings | 20 | Full chain David → Jehoiakim including Abijah, Asa, Jehoshaphat, Jehoram, Ahaziah, Joash, Amaziah, Uzziah, Jotham, Ahaz, Manasseh, Amon (Matthew 1 compresses these — full canonical chain restored) |
+| Davidic Line | 30 | Perez → Jesse + Saul's family (Kish, Saul, Ahinoam, Jonathan, Michal, Ish-bosheth, Mephibosheth) + David's 7 brothers, 2 sisters, Zeruiah's sons (Joab/Abishai/Asahel) and Abigail's son (Amasa) |
+| Kings | 36 | Full chain David → Jehoiakim including Abijah, Asa, Jehoshaphat, Jehoram, Ahaziah, Joash, Amaziah, Uzziah, Jotham, Ahaz, Manasseh, Amon (Matthew 1 compresses these — full canonical chain restored) + David's 7 wives (Michal, Ahinoam-Jezreel, Abigail-wife, Maacah, Haggith, Abital, Eglah, Bathsheba) + 9 other sons (Amnon, Chileab, Absalom, Adonijah, Shephatiah, Ithream, Shammua, Shobab, Nathan-son-of-David) + daughter Tamar |
 | Exile | 11 | Shealtiel → Matthan → Jacob (per Matthew 1:13-16) |
-| NT | 3 | Joseph + Mary + Jesus |
+| NT | 7 | Joseph + Mary + Jesus + Jesus's 4 siblings (James, Joses, Simon, Jude per Mark 6:3) |
 
 Model field additions in `lib/models/biblical_person.dart`:
 `role` (e.g. "PATRIARCH"), `accent` (e.g. "priestly"), `era` (e.g.
 "patriarchs").
+
+**Two subtle bugs fixed in this round:**
+
+1. **Antediluvian section showed empty.** The "inline spouse" filter
+   in `_EraSection.build()` was symmetric — Adam is in Eve's
+   `spouseIds` AND Eve is in Adam's `spouseIds`, so both got marked
+   as "inline" and the section had zero roots. Fix: when both
+   partners of a couple have null parents (mutual no-parent pair),
+   keep whichever appears earlier in the dataset and filter the
+   other. See `isInlineSpouse` helper in family_tree_page.dart.
+2. **Default state too sparse.** Each era previously rendered just
+   its root row with everything below collapsed behind chevrons —
+   "Adam alone" in antediluvian. Fix: in `_load()`, populate
+   `_expanded` with every parent's id so each section's mini-tree
+   renders fully expanded by default (Wikipedia-style "everything
+   visible"). User can collapse via chevrons to taste.
 
 The previous visual-tree widget at `lib/widgets/family_visual_tree.dart`
 was removed entirely. A spawned task chip remains available to embed
