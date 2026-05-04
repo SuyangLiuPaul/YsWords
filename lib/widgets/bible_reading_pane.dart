@@ -929,6 +929,22 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                   child: Focus(
                     autofocus: true,
                     child: Scaffold(
+                // Round 56 fix: when the user opens the note editor
+                // (modal bottom sheet) and the keyboard appears, the
+                // default `resizeToAvoidBottomInset: true` shrinks
+                // the Scaffold body. The LayoutBuilder rebuilds with
+                // a smaller height, the Stack/Padding/SPL chain
+                // re-lays out, and on certain devices the SPL ends
+                // up snapping back to its `initialScrollIndex`
+                // (which can be 0 in cold-mount cases) — user
+                // reports "after click notes and click and typing,
+                // that moment it goes to top". Setting this false
+                // means the keyboard appears OVER the reader; the
+                // bottom sheet handles its own keyboard-avoidance
+                // via `MediaQuery.viewInsets.bottom` in
+                // `_showNoteEditor`'s padding, so the editor still
+                // sits above the keyboard. The reader stays put.
+                resizeToAvoidBottomInset: false,
                 body: LayoutBuilder(
                   builder: (context, constraints) {
                     final paneWidth = constraints.maxWidth;

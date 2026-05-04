@@ -455,6 +455,22 @@ Levitical priesthood in view, and Ezekiel 14:14 names him alongside
 Noah and Daniel as one of the great righteous men. Cross-refs:
 Job 1, 2, 38, 42, Ezekiel 14:14.
 
+**Reader stays put when the note-editor keyboard opens**
+(`lib/widgets/bible_reading_pane.dart`). User feedback: *"after
+click notes and click and typing, that moment it goes to top"*.
+Cause: the BibleReadingPane's `Scaffold` defaulted to
+`resizeToAvoidBottomInset: true`, so when the modal note-editor
+sheet opened and the system keyboard appeared, the Scaffold body
+shrank, the inner LayoutBuilder rebuilt with a smaller height,
+and on some devices the
+`ScrollablePositionedList` snapped back to `initialScrollIndex`
+(which can be 0 in cold-mount cases). Fix: explicitly
+`resizeToAvoidBottomInset: false` on the reader Scaffold. The
+note editor keeps its own keyboard avoidance via
+`MediaQuery.viewInsets.bottom` in its bottom-sheet padding, so
+the editor still sits above the keyboard — but the reader behind
+it stays at the verse the user was looking at.
+
 **Notes / Bookmarks: "first tap goes to top, second tap works" fix**
 (`lib/widgets/bible_reading_pane.dart`,
 `lib/providers/main_provider.dart`). User feedback after the
