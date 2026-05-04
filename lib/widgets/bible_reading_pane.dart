@@ -2320,42 +2320,52 @@ void _showNoteEditor({
       text: mainProvider.getVerseNote(verse) ?? '');
   final ref = '${verse.book} ${verse.chapter}:${verse.verseLabel}';
 
-  // Snapshot the current scroll position. Read it from the
-  // positions listener (most reliable source) and fall back to 0
-  // when no positions are available (very-fresh mount).
+  // Round 56 round 4: derive `savedIndex` directly from the
+  // SELECTED verse, NOT from the positions listener snapshot.
+  // The previous attempts trusted the listener but the listener's
+  // value was sometimes empty (or stale from a recent layout
+  // shift) at the moment the sheet opened — making `savedIndex`
+  // fall back to 0 and every restore become a no-op (because
+  // restoreScroll's `<= 0` guard short-circuited). The user
+  // selected this exact verse to add a note, so anchoring to its
+  // chapter-relative index is the most semantically correct
+  // target anyway: when the editor closes, the user expects to
+  // be looking at that verse.
   int savedIndex = 0;
   try {
-    final positions = mainProvider.itemPositionsListener.itemPositions.value;
-    if (positions.isNotEmpty) {
+    final chapterVerses = mainProvider.verses
+        .where((v) => v.book == verse.book && v.chapter == verse.chapter)
+        .toList()
+      ..sort((a, b) => a.verse.compareTo(b.verse));
+    final relIdx = chapterVerses.indexWhere((v) => v.verse == verse.verse);
+    if (relIdx >= 0) savedIndex = relIdx;
+  } catch (_) {
+    // verses list may be empty during cold-start race; fall back
+    // to positions listener.
+  }
+
+  // Backup: if the chapter-relative computation came up empty,
+  // try the positions listener too.
+  if (savedIndex <= 0) {
+    try {
+      final positions = mainProvider.itemPositionsListener.itemPositions.value;
       final visible = positions
           .where((p) => p.itemTrailingEdge > 0 && p.itemLeadingEdge < 1)
           .toList()
         ..sort((a, b) => a.itemLeadingEdge.compareTo(b.itemLeadingEdge));
-      if (visible.isNotEmpty) {
-        savedIndex = visible.first.index;
-      }
-    }
-  } catch (_) {
-    // Positions listener throws on certain detached states. Treat
-    // as "no snapshot" — the worst case is restoreScroll skipping.
+      if (visible.isNotEmpty) savedIndex = visible.first.index;
+    } catch (_) {}
   }
 
   void restoreScroll() {
     if (!mainProvider.itemScrollController.isAttached) return;
-    // Guard against silly out-of-range values from a stale snapshot.
     if (savedIndex <= 0) return;
     try {
       // jumpTo (NOT scrollTo) so the user never sees the
-      // "scroll-to-top then animate back" jitter. Round 56 user
-      // feedback after the previous fix: "when click the text
-      // field it goes to top and scroll down a bit then fixed —
-      // please prevent the visible jump." `jumpTo` is instant
-      // (no animation), so any spurious scroll-to-top is corrected
-      // within the same frame and the user shouldn't see it.
+      // "scroll-to-top then animate back" jitter. Instant teleport
+      // — any spurious shift is corrected within the same frame.
       mainProvider.itemScrollController.jumpTo(index: savedIndex);
-    } catch (_) {
-      // Detached between check and call — ignore.
-    }
+    } catch (_) {}
   }
 
   // Watch the reader's item positions while the sheet is open.
@@ -2390,6 +2400,23 @@ void _showNoteEditor({
 
   mainProvider.itemPositionsListener.itemPositions
       .addListener(onPositionsChanged);
+
+  // Aggressive enforcement: every 16 ms (≈ one frame at 60 fps)
+  // for 1.5 s after the sheet opens, jumpTo the saved index. This
+  // brute-force approach guarantees that no matter which frame
+  // some browser/keyboard quirk fires the jump-to-top, the next
+  // tick puts us back. After 1.5 s the keyboard / sheet animation
+  // should be fully settled; we stop the periodic timer and rely
+  // on the position-listener watch + close-time restore.
+  Timer? enforceTimer;
+  enforceTimer = Timer.periodic(const Duration(milliseconds: 16), (t) {
+    if (t.tick >= 94) {
+      // ~1.5 s elapsed (94 × 16 ≈ 1504 ms). Stop hammering.
+      t.cancel();
+      return;
+    }
+    restoreScroll();
+  });
 
   showModalBottomSheet<void>(
     context: context,
@@ -2554,9 +2581,10 @@ void _showNoteEditor({
       );
     },
   ).whenComplete(() {
-    // Sheet closed — stop watching positions, do one last
-    // defensive restore in case the close animation itself
-    // shifted scroll to top.
+    // Sheet closed — stop watching positions and stop the
+    // per-frame enforcement, do one last defensive restore in
+    // case the close animation itself shifted scroll to top.
+    enforceTimer?.cancel();
     mainProvider.itemPositionsListener.itemPositions
         .removeListener(onPositionsChanged);
     Future.delayed(const Duration(milliseconds: 50), restoreScroll);

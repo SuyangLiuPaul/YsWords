@@ -455,6 +455,29 @@ Levitical priesthood in view, and Ezekiel 14:14 names him alongside
 Noah and Daniel as one of the great righteous men. Cross-refs:
 Job 1, 2, 38, 42, Ezekiel 14:14.
 
+**Reader stays put when the note-editor keyboard opens — round 4**
+(`lib/widgets/bible_reading_pane.dart`). Round 3 still didn't
+solve it: *"click textfkeld then jumped"*. Two underlying issues
+diagnosed:
+
+1. **`savedIndex` was sometimes 0**, making restoreScroll's
+   `<= 0` guard short-circuit and turn every restore into a
+   no-op. The previous snapshot via positions listener could
+   come back empty if the listener hadn't published positions
+   yet (or had been transiently cleared by a rebuild).
+   * Fix: `savedIndex` now derived FIRST from the SELECTED
+     verse's chapter-relative index. The user tapped that exact
+     verse to add a note, so anchoring there is semantically
+     correct. Positions-listener falls in only as a backup.
+
+2. **The multi-tick schedule (0/16/50/150/350 ms) had gaps**
+   that the underlying jump frame could fall through.
+   * Fix: `Timer.periodic(16ms)` for the first 1.5 s after the
+     sheet opens, calling `jumpTo(savedIndex)` every frame.
+     94 ticks × 16 ms ≈ 1.5 s — guaranteed to corral any
+     spurious scroll within one frame regardless of which frame
+     the bug fires on. Cancelled on sheet close.
+
 **Reader stays put when the note-editor keyboard opens — round 3**
 (`lib/widgets/bible_reading_pane.dart`). Round 2 caught the
 symptom but the user could still SEE the visible jump
