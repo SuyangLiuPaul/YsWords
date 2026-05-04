@@ -65,15 +65,20 @@ const Map<AppStylePreset, AppStylePresetDef> presetDefinitions = {
     menuScale: 1.0,
     paragraphMode: true,
   ),
+  // Round 56 (continued): preset font keys must come from the new
+  // [availableFontOptions] catalogue in lib/utils/font_catalog.dart.
+  // The previous keys (`system-ui`, `Garamond`, `Georgia`) were
+  // CSS-only system fonts that CanvasKit can't load — picking
+  // those presets silently rendered everything in Roboto.
   AppStylePreset.modern: AppStylePresetDef(
-    fontFamily: 'system-ui',
+    fontFamily: 'Inter',
     fontSize: 19.0,
     lineSpacing: 1.45,
     menuScale: 0.95,
     paragraphMode: true,
   ),
   AppStylePreset.reverent: AppStylePresetDef(
-    fontFamily: 'Garamond',
+    fontFamily: 'EB Garamond',
     fontSize: 21.0,
     lineSpacing: 1.7,
     menuScale: 1.0,
@@ -87,7 +92,7 @@ const Map<AppStylePreset, AppStylePresetDef> presetDefinitions = {
     paragraphMode: false,
   ),
   AppStylePreset.reader: AppStylePresetDef(
-    fontFamily: 'Georgia',
+    fontFamily: 'Merriweather',
     fontSize: 22.0,
     lineSpacing: 1.6,
     menuScale: 1.0,

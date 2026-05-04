@@ -531,8 +531,16 @@ class AppSettings extends ChangeNotifier {
 
   Future<void> loadSettings() async {
     final prefs = await SharedPreferences.getInstance();
-    _fontSelection = prefs.getString(_kFontFamily) ?? 'Roboto';
+    // Round 56: migrate legacy keys (Times New Roman, Garamond, …)
+    // before resolving — DropdownButton would otherwise crash on a
+    // value that doesn't match any item.
+    final stored = prefs.getString(_kFontFamily) ?? 'Roboto';
+    _fontSelection = migrateLegacyFontKey(stored);
     _fontFamily = resolveFontFamily(_fontSelection);
+    // Persist the migrated key so the next launch is clean.
+    if (_fontSelection != stored) {
+      await prefs.setString(_kFontFamily, _fontSelection);
+    }
     // Round to nearest step to avoid Slider assertion with stale values
     final rawFontSize = prefs.getDouble(_kFontSize) ?? 20.0;
     _fontSize = (rawFontSize - 12).roundToDouble() + 12;

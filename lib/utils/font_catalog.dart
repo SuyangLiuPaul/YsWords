@@ -255,6 +255,46 @@ const List<FontOption> _catalog = [
 List<FontOption> availableFontOptions() =>
     List.unmodifiable(_catalog);
 
+/// Whether [key] points at a real entry in the catalogue.
+/// Used by [AppSettings.loadSettings] to migrate users whose stored
+/// `fontFamily` came from the legacy catalogue (Times New Roman,
+/// Garamond, system-ui, …) — those keys would crash the dropdown
+/// because no item matches the assigned `value:`.
+bool isValidFontKey(String key) {
+  for (final f in _catalog) {
+    if (f.key == key) return true;
+  }
+  return false;
+}
+
+/// Migrate a legacy / unknown selection key to the closest catalogue
+/// entry. Used at startup to repair settings stored before the
+/// Round 56 font-catalogue refresh. Falls back to Roboto when nothing
+/// reasonable matches.
+String migrateLegacyFontKey(String stored) {
+  if (isValidFontKey(stored)) return stored;
+  // Map known legacy keys to their nearest current equivalent.
+  const migrations = {
+    // Old serif options → closest Google Font serif.
+    'Times New Roman': 'EB Garamond',
+    'Garamond': 'EB Garamond',
+    'Georgia': 'Lora',
+    'Palatino': 'Merriweather',
+    // Old sans-serif options.
+    'Arial': 'Open Sans',
+    'Helvetica': 'Inter',
+    'Verdana': 'Lato',
+    'system-ui': 'Inter',
+    // Chinese options that were dropped.
+    'Source Han Sans CN': 'Noto Sans SC',
+    'Heiti SC': 'Noto Sans SC',
+    'KaiTi': 'Noto Serif SC',
+  };
+  final mapped = migrations[stored];
+  if (mapped != null && isValidFontKey(mapped)) return mapped;
+  return 'Roboto';
+}
+
 /// Look up the catalogue entry for a stored key. Falls back to the
 /// first entry (Roboto) if the key isn't recognized — defensive
 /// against schema drift if a Google Font option is later removed
