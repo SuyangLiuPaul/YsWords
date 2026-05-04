@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:yswords/providers/main_provider.dart';
 import 'package:yswords/services/fetch_books.dart';
 import 'package:yswords/services/fetch_verses.dart';
+import 'package:yswords/utils/jump_to_reference.dart' as jumper;
 import 'package:yswords/widgets/sidebar_panel.dart';
 import 'package:yswords/widgets/bible_reading_pane.dart';
 import 'package:yswords/utils/responsive.dart';
@@ -51,13 +52,22 @@ class _HomePageState extends State<HomePage> {
 
   Future<void> _activateSplitView() async {
     if (_splitViewActive) return;
+    final primary = context.read<MainProvider>();
+    // Round 56: capture primary's current verse position BEFORE
+    // the layout switches to side-by-side. The pane's State gets
+    // remounted (parent type changes from Center → Row), so its
+    // `_visibleItemIndex` resets to 0 and the SPL would otherwise
+    // slam back to chapter top. We restore primary AND seed
+    // secondary at the same verse number so both panes start
+    // looking at the verse the user was reading.
+    final preservedVerseNum = jumper.captureCurrentVerseNum(primary);
+
     final sp = MainProvider(storagePrefix: 'secondary_');
     setState(() {
       _splitViewActive = true;
       _secondaryProvider = sp;
     });
 
-    final primary = context.read<MainProvider>();
     sp.currentVersion = primary.currentVersion;
     await FetchVerses.execute(mainProvider: sp);
     await FetchBooks.execute(mainProvider: sp);
@@ -92,6 +102,16 @@ class _HomePageState extends State<HomePage> {
     }
 
     if (mounted && _secondaryProvider == sp) setState(() {});
+
+    // After both panes have remounted in the new side-by-side
+    // layout, scroll each to the preserved verse number. The
+    // scroll fires through `addPostFrameCallback` inside
+    // `scrollToVerseNumInChapter`, so it lands after the SPLs
+    // finish their first layout pass.
+    if (preservedVerseNum != null) {
+      jumper.scrollToVerseNumInChapter(primary, preservedVerseNum);
+      jumper.scrollToVerseNumInChapter(sp, preservedVerseNum);
+    }
   }
 
   void _deactivateSplitView() {

@@ -455,6 +455,48 @@ Levitical priesthood in view, and Ezekiel 14:14 names him alongside
 Noah and Daniel as one of the great righteous men. Cross-refs:
 Job 1, 2, 38, 42, Ezekiel 14:14.
 
+**Preserve reading position on version-switch + split-screen open**
+(`lib/utils/jump_to_reference.dart`,
+`lib/widgets/bible_reading_pane.dart`,
+`lib/pages/home_page.dart`). User feedback: *"when I change
+version or do an action, the chapter goes back to the top — also
+when opening split screen the original goes to the top. Can you
+keep where the verse number was?"*
+
+* New shared utilities `captureCurrentVerseNum(MainProvider)` +
+  `scrollToVerseNumInChapter(MainProvider, int)` in
+  `jump_to_reference.dart`. Capture computes the topmost-visible
+  verse NUMBER (1-based) for the current chapter; scroll-to
+  schedules a post-frame `jumpToIndex` to that verse.
+* Version-switch path (`onVersionSelected` in
+  `bible_reading_pane.dart`): captures verse number BEFORE swap,
+  scrolls to the same verse number AFTER load. Falls back to
+  `jumpToTop` when the version doesn't have that verse number
+  (rare cross-version numbering edge case).
+* Split-screen activation (`_activateSplitView` in
+  `home_page.dart`): captures primary's verse number before the
+  layout transition (which remounts the BibleReadingPane State
+  and resets `_visibleItemIndex` to 0), then post-mount restores
+  primary AND seeds secondary at the same verse number so both
+  panes start looking at the same passage.
+
+**Verse-picker toggle after chapter**
+(`lib/widgets/book_chapter_picker.dart`,
+`lib/models/app_settings.dart`,
+`lib/pages/settings_page.dart`). User request: *"there should be
+a toggle whether can click verse after clicking book chapter."*
+
+* New AppSetting `pickVerseAfterChapter` (default off) +
+  Settings → Reading switch. When on, picking a chapter from the
+  book/chapter sidebar shows a second-step modal grid of all
+  verse numbers in that chapter. Tapping a number sets a
+  pendingJump to that verse before navigating, so the reader
+  lands directly on the chosen verse instead of the chapter
+  header. A "Top" chip is always present for users who want
+  chapter-top behavior on a per-tap basis.
+* uiStrings: `versePickerTitle`, `versePickerTop`,
+  `settingsPickVerseAfterChapter`, +Hint, all three locales.
+
 **Reader stays put when the note-editor keyboard opens — round 5**
 After 4 unsuccessful rounds, finally read the code carefully:
 the bug was an **index-space mismatch**, not a timing issue.

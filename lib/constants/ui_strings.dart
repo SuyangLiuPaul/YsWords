@@ -726,6 +726,30 @@ const uiStrings = {
     'zh-Hant': '✓ 離線包就緒 —— 現在斷網也能用了。',
     'en': '✓ Offline pack ready — the app now works without network.',
   },
+  // ── Verse picker (Round 56) ─────────────────────────────────────
+  // Optional second-step picker shown after the user selects a
+  // chapter. Toggle in Settings → Reading "Pick verse after chapter".
+  'versePickerTitle': {
+    'zh-Hans': '选择经节',
+    'zh-Hant': '選擇經節',
+    'en': 'Pick a verse',
+  },
+  'versePickerTop': {
+    'zh-Hans': '本章开头',
+    'zh-Hant': '本章開頭',
+    'en': 'Top',
+  },
+  'settingsPickVerseAfterChapter': {
+    'zh-Hans': '选完章再选节',
+    'zh-Hant': '選完章再選節',
+    'en': 'Pick verse after chapter',
+  },
+  'settingsPickVerseAfterChapterHint': {
+    'zh-Hans': '选完章节后弹出经节列表，可直接定位到具体一节。默认关闭。',
+    'zh-Hant': '選完章節後彈出經節列表，可直接定位到具體一節。預設關閉。',
+    'en':
+        'After picking a chapter, show a verse-number grid so you can land on a specific verse. Off by default.',
+  },
   'confirm': {
     'zh-Hans': '确认',
     'zh-Hant': '確認',

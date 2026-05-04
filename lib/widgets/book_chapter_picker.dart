@@ -289,8 +289,147 @@ class _BookChapterPickerState extends State<BookChapterPicker> {
     );
   }
 
-  void _selectChapter(MainProvider mainProvider, String bookTitle, int chapter) {
+  Future<void> _selectChapter(
+      MainProvider mainProvider, String bookTitle, int chapter) async {
+    final settings = context.read<AppSettings>();
+    if (settings.pickVerseAfterChapter) {
+      // Round 56: optional second-step verse picker. Toggle in
+      // Settings → Reading. When the user picks a chapter via the
+      // sidebar / book-chapter picker, we now offer a verse-number
+      // grid so they can land directly on a specific verse instead
+      // of the chapter header.
+      final picked = await _showVersePicker(
+        context: context,
+        mainProvider: mainProvider,
+        bookTitle: bookTitle,
+        chapter: chapter,
+      );
+      if (picked == null) {
+        // User dismissed the verse picker without choosing — abort
+        // the navigation entirely. Lets the user back out without
+        // changing chapter.
+        return;
+      }
+      if (picked > 0) {
+        // Set up a pending jump to the picked verse. The reader
+        // pane consumes it on its next build (see
+        // bible_reading_pane.dart's pendingJump handler).
+        final chapterVerses = mainProvider.verses
+            .where((v) => v.book == bookTitle && v.chapter == chapter)
+            .toList()
+          ..sort((a, b) => a.verse.compareTo(b.verse));
+        final relIdx =
+            chapterVerses.indexWhere((v) => v.verse == picked);
+        if (relIdx >= 0) {
+          mainProvider.setPendingJump(chapterVerseIndex: relIdx);
+        }
+      }
+    }
     widget.onChapterSelected(bookTitle, chapter);
+  }
+
+  /// Modal grid of verse numbers for the just-picked chapter.
+  /// Returns the chosen verse number, 0 for "top of chapter", or
+  /// null if the user dismissed without choosing.
+  Future<int?> _showVersePicker({
+    required BuildContext context,
+    required MainProvider mainProvider,
+    required String bookTitle,
+    required int chapter,
+  }) async {
+    final chapterVerses = mainProvider.verses
+        .where((v) => v.book == bookTitle && v.chapter == chapter)
+        .toList()
+      ..sort((a, b) => a.verse.compareTo(b.verse));
+    if (chapterVerses.isEmpty) return 0;
+    final settings = context.read<AppSettings>();
+    final scheme = Theme.of(context).colorScheme;
+    final locale = settings.locale;
+    return showModalBottomSheet<int>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: scheme.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (sheetCtx) {
+        final maxH = MediaQuery.of(sheetCtx).size.height * 0.6;
+        return SafeArea(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(maxHeight: maxH),
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 40,
+                      height: 4,
+                      margin: const EdgeInsets.only(bottom: 12),
+                      decoration: BoxDecoration(
+                        color: scheme.outlineVariant,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: Text(
+                      uiStrings['versePickerTitle']?[locale] ??
+                          'Pick a verse',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        color: scheme.onSurface,
+                      ),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: Text(
+                      '$bookTitle  $chapter',
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: scheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ),
+                  Flexible(
+                    child: SingleChildScrollView(
+                      child: Wrap(
+                        spacing: 6,
+                        runSpacing: 6,
+                        children: [
+                          // "Top of chapter" shortcut
+                          _VersePickerChip(
+                            label: uiStrings['versePickerTop']?[locale] ??
+                                'Top',
+                            color: scheme.surfaceContainerHigh,
+                            fg: scheme.onSurface,
+                            onTap: () =>
+                                Navigator.of(sheetCtx).maybePop(0),
+                          ),
+                          for (final v in chapterVerses)
+                            _VersePickerChip(
+                              label: '${v.verse}',
+                              color: scheme.primaryContainer,
+                              fg: scheme.onPrimaryContainer,
+                              onTap: () => Navigator.of(sheetCtx)
+                                  .maybePop(v.verse),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
   }
 
   Widget _testamentButton({
@@ -786,6 +925,48 @@ class BooksGlassSurface extends StatelessWidget {
             ],
           ),
           child: child,
+        ),
+      ),
+    );
+  }
+}
+
+/// Small tappable verse-number chip used in the verse picker
+/// modal. Mirrors the styling of the chapter chips so users
+/// can transfer their muscle memory.
+class _VersePickerChip extends StatelessWidget {
+  final String label;
+  final Color color;
+  final Color fg;
+  final VoidCallback onTap;
+  const _VersePickerChip({
+    required this.label,
+    required this.color,
+    required this.fg,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(8),
+      child: Container(
+        constraints: const BoxConstraints(minWidth: 38, minHeight: 36),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: color,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w700,
+            color: fg,
+            fontFeatures: const [FontFeature.tabularFigures()],
+          ),
         ),
       ),
     );

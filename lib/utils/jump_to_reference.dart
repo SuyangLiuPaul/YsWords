@@ -135,6 +135,64 @@ Future<JumpResolution> resolveAndPrepareJump({
   );
 }
 
+/// Capture the topmost-visible verse NUMBER (1-based) for [mp]'s
+/// current chapter. Returns null when no positions are tracked yet
+/// (cold mount race), or when the topmost item is the chapter
+/// header (returns 1 for "user is at the top of chapter").
+///
+/// Used by version-switch and split-view-open paths to preserve
+/// scroll position across BibleReadingPane re-mounts.
+int? captureCurrentVerseNum(MainProvider mp) {
+  try {
+    final positions = mp.itemPositionsListener.itemPositions.value;
+    if (positions.isEmpty) return null;
+    final visible = positions
+        .where((p) => p.itemTrailingEdge > 0 && p.itemLeadingEdge < 1)
+        .toList()
+      ..sort((a, b) => a.itemLeadingEdge.compareTo(b.itemLeadingEdge));
+    if (visible.isEmpty) return null;
+    final itemIdx = visible.first.index;
+    if (itemIdx == 0) return 1; // chapter header → "at the top"
+    final book = mp.currentBook;
+    final chapter = mp.currentChapter;
+    if (book == null || chapter == null) return null;
+    final verses = mp.verses
+        .where((v) => v.book == book && v.chapter == chapter)
+        .toList()
+      ..sort((a, b) => a.verse.compareTo(b.verse));
+    if (verses.isEmpty) return null;
+    final relIdx = (itemIdx - 1).clamp(0, verses.length - 1);
+    return verses[relIdx].verse;
+  } catch (_) {
+    return null;
+  }
+}
+
+/// Schedule a post-frame scroll on [mp]'s reader to verse number
+/// [verseNum] within the currently-loaded chapter. No-op when
+/// [verseNum] doesn't exist (cross-version numbering edge cases).
+void scrollToVerseNumInChapter(MainProvider mp, int verseNum) {
+  final book = mp.currentBook;
+  final chapter = mp.currentChapter;
+  if (book == null || chapter == null) return;
+  final verses = mp.verses
+      .where((v) => v.book == book && v.chapter == chapter)
+      .toList()
+    ..sort((a, b) => a.verse.compareTo(b.verse));
+  if (verses.isEmpty) return;
+  var relIdx = verses.indexWhere((v) => v.verse == verseNum);
+  if (relIdx < 0) {
+    // Verse number doesn't exist — closest greater-than-or-equal.
+    relIdx = verses.indexWhere((v) => v.verse >= verseNum);
+    if (relIdx < 0) return;
+  }
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    if (mp.itemScrollController.isAttached) {
+      mp.jumpToIndex(index: relIdx);
+    }
+  });
+}
+
 /// Set up [mp] to scroll to a specific [verse] when the reader pane
 /// next builds with both a populated `verseToItemMap` and an attached
 /// `itemScrollController`. Use this whenever you have a concrete

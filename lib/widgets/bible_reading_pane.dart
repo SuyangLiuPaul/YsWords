@@ -37,6 +37,7 @@ import 'package:yswords/services/sermon_service.dart';
 import 'package:yswords/services/synopsis_service.dart';
 import 'package:yswords/services/tts_service.dart';
 import 'package:yswords/utils/clipboard_helper.dart';
+import 'package:yswords/utils/jump_to_reference.dart' as jumper;
 import 'package:yswords/utils/jump_to_reference.dart' show prepareJumpToVerse;
 import 'package:yswords/utils/reference_parser.dart';
 import 'package:yswords/utils/responsive.dart';
@@ -423,6 +424,19 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
       return;
     }
     _switchTo(provider, prevBook, prevChap);
+  }
+
+  // Round 56: helpers extracted to `lib/utils/jump_to_reference.dart`
+  // (`captureCurrentVerseNum` / `scrollToVerseNumInChapter`) so the
+  // version-switch path here AND the split-view-open path in
+  // `home_page.dart::_activateSplitView` can share the same logic.
+  // Thin wrappers below preserve the call signatures used elsewhere
+  // in this file.
+  int? _captureChapterRelativeVerseNum(MainProvider p) =>
+      jumper.captureCurrentVerseNum(p);
+
+  void _scrollToVerseInChapter(MainProvider p, int verseNum) {
+    jumper.scrollToVerseNumInChapter(p, verseNum);
   }
 
   void _switchTo(MainProvider provider, String book, int chap) {
@@ -1140,6 +1154,18 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                         p.clearSelectedVerses();
                         final prevVersion = p.currentVersion;
                         final prevEn = toEnglish(p.currentBook);
+                        // Round 56: preserve the user's reading
+                        // position across a version switch. We
+                        // capture the topmost-visible chapter-
+                        // relative verse number BEFORE swapping
+                        // versions, then re-scroll to the same
+                        // verse on the new version after load.
+                        // Without this, every version change
+                        // would slam the user back to chapter
+                        // top — bad UX when comparing
+                        // translations of a specific passage.
+                        final preservedVerseNum =
+                            _captureChapterRelativeVerseNum(p);
                         p.setVersion(version);
                         await FetchVerses.execute(mainProvider: p);
                         if (!mounted) return;
@@ -1180,7 +1206,22 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                         p.setCurrentChapter(
                             book: match.book, chapter: match.chapter);
                         p.updateCurrentVerse(verse: match);
-                        p.jumpToTop();
+                        // Round 56: scroll to the captured verse
+                        // number in the new version, NOT to the
+                        // top. The chapter-relative ordering is
+                        // shared across versions (verse N in
+                        // chapter K is verse N regardless of
+                        // translation), so we can map straight
+                        // through. Falls back to top when the
+                        // captured number doesn't exist (rare —
+                        // e.g. cross-version verse numbering
+                        // differences in the few books where
+                        // they diverge).
+                        if (preservedVerseNum != null) {
+                          _scrollToVerseInChapter(p, preservedVerseNum);
+                        } else {
+                          p.jumpToTop();
+                        }
                         if (mounted) {
                           setState(() => _visibleItemIndex = 0);
                         }

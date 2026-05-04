@@ -23,6 +23,7 @@ const _kShowReadingPlan = 'showReadingPlan';
 const _kNotificationsEnabled = 'notificationsEnabled';
 const _kShowSectionTitles = 'showSectionTitles';
 const _kShowBookIntro = 'showBookIntro';
+const _kPickVerseAfterChapter = 'pickVerseAfterChapter';
 
 // Dashboard layout (Round 55). Every section has its own
 // `dashboard_section_visible_<name>` flag plus a single
@@ -82,6 +83,14 @@ class AppSettings extends ChangeNotifier {
   /// Settings → Reading.
   bool _showBookIntro = true;
 
+  /// When ON, picking a chapter from the book/chapter sidebar shows
+  /// a second-step verse-number grid so the user can land directly
+  /// on a specific verse instead of the chapter header. Default
+  /// OFF (chapter-level navigation is the established UX). Round
+  /// 56 user request: "should have a toggle whether can click verse
+  /// after clicking book chapter".
+  bool _pickVerseAfterChapter = false;
+
   // ── Dashboard layout (Round 55) ─────────────────────────────────
   // The dashboard now ships with reorder + per-section visibility
   // controls (Settings → Dashboard layout). The user's order is
@@ -120,6 +129,7 @@ class AppSettings extends ChangeNotifier {
   bool get notificationsEnabled => _notificationsEnabled;
   bool get showSectionTitles => _showSectionTitles;
   bool get showBookIntro => _showBookIntro;
+  bool get pickVerseAfterChapter => _pickVerseAfterChapter;
 
   /// The current dashboard render order. Returns a defensive copy so
   /// callers can't mutate internal state directly.
@@ -293,6 +303,14 @@ class AppSettings extends ChangeNotifier {
     await prefs.setBool(_kShowBookIntro, enabled);
   }
 
+  Future<void> setPickVerseAfterChapter(bool enabled) async {
+    if (_pickVerseAfterChapter == enabled) return;
+    _pickVerseAfterChapter = enabled;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_kPickVerseAfterChapter, enabled);
+  }
+
   Future<void> setMenuScale(double scale) async {
     final clamped = scale.clamp(0.7, 1.5);
     if (_menuScale == clamped) return;
@@ -415,6 +433,7 @@ class AppSettings extends ChangeNotifier {
     _notificationsEnabled = false;
     _showSectionTitles = true;
     _showBookIntro = true;
+    _pickVerseAfterChapter = false;
     _dashboardSectionOrder = List.of(defaultDashboardOrder);
     _dashboardVisibility
       ..clear()
@@ -444,6 +463,7 @@ class AppSettings extends ChangeNotifier {
       _kNotificationsEnabled,
       _kShowSectionTitles,
       _kShowBookIntro,
+      _kPickVerseAfterChapter,
       _kDashboardSectionOrder,
       for (final s in DashboardSection.values) _kDashboardVisible(s),
       // Re-show the onboarding tour after a reset so the user can
@@ -515,6 +535,8 @@ class AppSettings extends ChangeNotifier {
     _notificationsEnabled = prefs.getBool(_kNotificationsEnabled) ?? false;
     _showSectionTitles = prefs.getBool(_kShowSectionTitles) ?? true;
     _showBookIntro = prefs.getBool(_kShowBookIntro) ?? true;
+    _pickVerseAfterChapter =
+        prefs.getBool(_kPickVerseAfterChapter) ?? false;
 
     // Dashboard layout (Round 55): load order list + per-section
     // visibility. Missing entries fall back to defaults; the legacy
