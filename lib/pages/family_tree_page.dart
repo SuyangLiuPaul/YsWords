@@ -543,14 +543,38 @@ class _FamilyTreePageState extends State<FamilyTreePage> {
       });
     }
 
-    // Defer to two post-frame callbacks plus a small wall-clock
-    // delay so the just-uncollapsed (and possibly large)
-    // destination section has finished its layout pass before we
-    // measure the row's RenderBox. 80 ms is enough for Davidic
-    // Line's 30-row body on phones and is invisible to the user.
-    Future.delayed(const Duration(milliseconds: 80), () {
-      if (!mounted) return;
-      _scrollToTarget(era: era, personId: personId);
+    // Show a transient SnackBar so the user has unambiguous
+    // confirmation that the tap fired — even if the scroll itself
+    // is short or fails to register visibly. This is the
+    // diagnostic-but-also-UX-improving fix for the "tap doesn't
+    // do anything" reports on Perez / Kohath / etc.
+    if (personId != null) {
+      final p = FamilyTreeService.instance.byId(personId);
+      if (p != null) {
+        final settings = context.read<AppSettings>();
+        final eraLabel = _eraLabelShort(era, settings.locale);
+        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('→ ${p.localizedName(settings.locale)} · $eraLabel'),
+            duration: const Duration(milliseconds: 1400),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    }
+
+    // Aggressive deferral chain: postFrame → another postFrame →
+    // 120 ms wall-clock delay. Layout for a 30-row Davidic Line
+    // body completes well within this on phones, so the row
+    // RenderBox always has a settled position before we measure.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Future.delayed(const Duration(milliseconds: 120), () {
+          if (!mounted) return;
+          _scrollToTarget(era: era, personId: personId);
+        });
+      });
     });
   }
 
@@ -571,11 +595,11 @@ class _FamilyTreePageState extends State<FamilyTreePage> {
       position.minScrollExtent,
       position.maxScrollExtent,
     );
-    _scrollController.animateTo(
-      offset,
-      duration: const Duration(milliseconds: 420),
-      curve: Curves.easeOutCubic,
-    );
+    // jumpTo first to land *exactly* at the target offset (the
+    // animated path was sometimes interrupted by other layout
+    // changes in flight), then reveal-animate from there for the
+    // visual smoothness. If we're already in flight, jumpTo wins.
+    _scrollController.jumpTo(offset);
   }
 
   // ── Detail sheet ───────────────────────────────────────────────

@@ -4509,7 +4509,9 @@
       "fatherId": "david",
       "motherId": "bathsheba",
       "spouseIds": [],
-      "childIds": [],
+      "childIds": [
+        "mattatha_lk_31"
+      ],
       "yearSystem": "bc",
       "birthYear": -1010,
       "deathYear": null,
@@ -5854,7 +5856,7 @@
       "name": "Janna",
       "nameZhHans": "雅拿",
       "nameZhHant": "雅拿",
-      "fatherId": null,
+      "fatherId": "joseph_lk_24",
       "spouseIds": [],
       "childIds": [
         "melki_nt"
@@ -5866,6 +5868,720 @@
       "summaryZhHant": "麥基之父；列於馬利亞的路加家譜。",
       "refs": [
         "Luke 3:24"
+      ],
+      "accent": "messianic",
+      "era": "nt"
+    },
+    {
+      "id": "joseph_lk_24",
+      "name": "Joseph (Lukan)",
+      "nameZhHans": "约瑟（路加家谱）",
+      "nameZhHant": "約瑟（路加家譜）",
+      "fatherId": "mattathias_lk_25",
+      "spouseIds": [],
+      "childIds": [
+        "janna"
+      ],
+      "yearSystem": "bc",
+      "birthYear": -100,
+      "summary": "Listed in Mary's Lukan ancestry per Luke 3:24; descendant of David through Nathan.",
+      "summaryZhHans": "按路加福音 3:24记载，是马利亚路加家谱中的祖先；大卫透过拿单的后裔。",
+      "summaryZhHant": "按路加福音 3:24記載，是馬利亞路加家譜中的祖先；大衛透過拿單的後裔。",
+      "refs": [
+        "Luke 3:24"
+      ],
+      "accent": "messianic",
+      "era": "nt"
+    },
+    {
+      "id": "mattathias_lk_25",
+      "name": "Mattathias",
+      "nameZhHans": "玛他提亚",
+      "nameZhHant": "瑪他提亞",
+      "fatherId": "amos_lk_25",
+      "spouseIds": [],
+      "childIds": [
+        "joseph_lk_24"
+      ],
+      "yearSystem": "bc",
+      "birthYear": -100,
+      "summary": "Listed in Mary's Lukan ancestry per Luke 3:25; descendant of David through Nathan.",
+      "summaryZhHans": "按路加福音 3:25记载，是马利亚路加家谱中的祖先；大卫透过拿单的后裔。",
+      "summaryZhHant": "按路加福音 3:25記載，是馬利亞路加家譜中的祖先；大衛透過拿單的後裔。",
+      "refs": [
+        "Luke 3:25"
+      ],
+      "accent": "messianic",
+      "era": "nt"
+    },
+    {
+      "id": "amos_lk_25",
+      "name": "Amos (Lukan)",
+      "nameZhHans": "亚摩斯",
+      "nameZhHant": "亞摩斯",
+      "fatherId": "nahum_lk_25",
+      "spouseIds": [],
+      "childIds": [
+        "mattathias_lk_25"
+      ],
+      "yearSystem": "bc",
+      "birthYear": -100,
+      "summary": "Listed in Mary's Lukan ancestry per Luke 3:25; descendant of David through Nathan.",
+      "summaryZhHans": "按路加福音 3:25记载，是马利亚路加家谱中的祖先；大卫透过拿单的后裔。",
+      "summaryZhHant": "按路加福音 3:25記載，是馬利亞路加家譜中的祖先；大衛透過拿單的後裔。",
+      "refs": [
+        "Luke 3:25"
+      ],
+      "accent": "messianic",
+      "era": "nt"
+    },
+    {
+      "id": "nahum_lk_25",
+      "name": "Nahum (Lukan)",
+      "nameZhHans": "拿鸿",
+      "nameZhHant": "拿鴻",
+      "fatherId": "esli_lk_25",
+      "spouseIds": [],
+      "childIds": [
+        "amos_lk_25"
+      ],
+      "yearSystem": "bc",
+      "birthYear": -100,
+      "summary": "Listed in Mary's Lukan ancestry per Luke 3:25; descendant of David through Nathan.",
+      "summaryZhHans": "按路加福音 3:25记载，是马利亚路加家谱中的祖先；大卫透过拿单的后裔。",
+      "summaryZhHant": "按路加福音 3:25記載，是馬利亞路加家譜中的祖先；大衛透過拿單的後裔。",
+      "refs": [
+        "Luke 3:25"
+      ],
+      "accent": "messianic",
+      "era": "nt"
+    },
+    {
+      "id": "esli_lk_25",
+      "name": "Esli",
+      "nameZhHans": "以斯利",
+      "nameZhHant": "以斯利",
+      "fatherId": "naggai_lk_25",
+      "spouseIds": [],
+      "childIds": [
+        "nahum_lk_25"
+      ],
+      "yearSystem": "bc",
+      "birthYear": -100,
+      "summary": "Listed in Mary's Lukan ancestry per Luke 3:25; descendant of David through Nathan.",
+      "summaryZhHans": "按路加福音 3:25记载，是马利亚路加家谱中的祖先；大卫透过拿单的后裔。",
+      "summaryZhHant": "按路加福音 3:25記載，是馬利亞路加家譜中的祖先；大衛透過拿單的後裔。",
+      "refs": [
+        "Luke 3:25"
+      ],
+      "accent": "messianic",
+      "era": "nt"
+    },
+    {
+      "id": "naggai_lk_25",
+      "name": "Naggai",
+      "nameZhHans": "拿该",
+      "nameZhHant": "拿該",
+      "fatherId": "maath_lk_26",
+      "spouseIds": [],
+      "childIds": [
+        "esli_lk_25"
+      ],
+      "yearSystem": "bc",
+      "birthYear": -100,
+      "summary": "Listed in Mary's Lukan ancestry per Luke 3:25; descendant of David through Nathan.",
+      "summaryZhHans": "按路加福音 3:25记载，是马利亚路加家谱中的祖先；大卫透过拿单的后裔。",
+      "summaryZhHant": "按路加福音 3:25記載，是馬利亞路加家譜中的祖先；大衛透過拿單的後裔。",
+      "refs": [
+        "Luke 3:25"
+      ],
+      "accent": "messianic",
+      "era": "nt"
+    },
+    {
+      "id": "maath_lk_26",
+      "name": "Maath",
+      "nameZhHans": "玛押",
+      "nameZhHant": "瑪押",
+      "fatherId": "mattathias_lk_26",
+      "spouseIds": [],
+      "childIds": [
+        "naggai_lk_25"
+      ],
+      "yearSystem": "bc",
+      "birthYear": -100,
+      "summary": "Listed in Mary's Lukan ancestry per Luke 3:26; descendant of David through Nathan.",
+      "summaryZhHans": "按路加福音 3:26记载，是马利亚路加家谱中的祖先；大卫透过拿单的后裔。",
+      "summaryZhHant": "按路加福音 3:26記載，是馬利亞路加家譜中的祖先；大衛透過拿單的後裔。",
+      "refs": [
+        "Luke 3:26"
+      ],
+      "accent": "messianic",
+      "era": "nt"
+    },
+    {
+      "id": "mattathias_lk_26",
+      "name": "Mattathias (II)",
+      "nameZhHans": "玛他提亚（二）",
+      "nameZhHant": "瑪他提亞（二）",
+      "fatherId": "semein_lk_26",
+      "spouseIds": [],
+      "childIds": [
+        "maath_lk_26"
+      ],
+      "yearSystem": "bc",
+      "birthYear": -100,
+      "summary": "Listed in Mary's Lukan ancestry per Luke 3:26; descendant of David through Nathan.",
+      "summaryZhHans": "按路加福音 3:26记载，是马利亚路加家谱中的祖先；大卫透过拿单的后裔。",
+      "summaryZhHant": "按路加福音 3:26記載，是馬利亞路加家譜中的祖先；大衛透過拿單的後裔。",
+      "refs": [
+        "Luke 3:26"
+      ],
+      "accent": "messianic",
+      "era": "nt"
+    },
+    {
+      "id": "semein_lk_26",
+      "name": "Semein",
+      "nameZhHans": "西美音",
+      "nameZhHant": "西美音",
+      "fatherId": "josek_lk_26",
+      "spouseIds": [],
+      "childIds": [
+        "mattathias_lk_26"
+      ],
+      "yearSystem": "bc",
+      "birthYear": -100,
+      "summary": "Listed in Mary's Lukan ancestry per Luke 3:26; descendant of David through Nathan.",
+      "summaryZhHans": "按路加福音 3:26记载，是马利亚路加家谱中的祖先；大卫透过拿单的后裔。",
+      "summaryZhHant": "按路加福音 3:26記載，是馬利亞路加家譜中的祖先；大衛透過拿單的後裔。",
+      "refs": [
+        "Luke 3:26"
+      ],
+      "accent": "messianic",
+      "era": "nt"
+    },
+    {
+      "id": "josek_lk_26",
+      "name": "Josek",
+      "nameZhHans": "约瑟克",
+      "nameZhHant": "約瑟克",
+      "fatherId": "joda_lk_26",
+      "spouseIds": [],
+      "childIds": [
+        "semein_lk_26"
+      ],
+      "yearSystem": "bc",
+      "birthYear": -100,
+      "summary": "Listed in Mary's Lukan ancestry per Luke 3:26; descendant of David through Nathan.",
+      "summaryZhHans": "按路加福音 3:26记载，是马利亚路加家谱中的祖先；大卫透过拿单的后裔。",
+      "summaryZhHant": "按路加福音 3:26記載，是馬利亞路加家譜中的祖先；大衛透過拿單的後裔。",
+      "refs": [
+        "Luke 3:26"
+      ],
+      "accent": "messianic",
+      "era": "nt"
+    },
+    {
+      "id": "joda_lk_26",
+      "name": "Joda",
+      "nameZhHans": "约大",
+      "nameZhHant": "約大",
+      "fatherId": "joanan_lk_27",
+      "spouseIds": [],
+      "childIds": [
+        "josek_lk_26"
+      ],
+      "yearSystem": "bc",
+      "birthYear": -100,
+      "summary": "Listed in Mary's Lukan ancestry per Luke 3:26; descendant of David through Nathan.",
+      "summaryZhHans": "按路加福音 3:26记载，是马利亚路加家谱中的祖先；大卫透过拿单的后裔。",
+      "summaryZhHant": "按路加福音 3:26記載，是馬利亞路加家譜中的祖先；大衛透過拿單的後裔。",
+      "refs": [
+        "Luke 3:26"
+      ],
+      "accent": "messianic",
+      "era": "nt"
+    },
+    {
+      "id": "joanan_lk_27",
+      "name": "Joanan",
+      "nameZhHans": "约亚拿",
+      "nameZhHant": "約亞拿",
+      "fatherId": "rhesa_lk_27",
+      "spouseIds": [],
+      "childIds": [
+        "joda_lk_26"
+      ],
+      "yearSystem": "bc",
+      "birthYear": -100,
+      "summary": "Listed in Mary's Lukan ancestry per Luke 3:27; descendant of David through Nathan.",
+      "summaryZhHans": "按路加福音 3:27记载，是马利亚路加家谱中的祖先；大卫透过拿单的后裔。",
+      "summaryZhHant": "按路加福音 3:27記載，是馬利亞路加家譜中的祖先；大衛透過拿單的後裔。",
+      "refs": [
+        "Luke 3:27"
+      ],
+      "accent": "messianic",
+      "era": "nt"
+    },
+    {
+      "id": "rhesa_lk_27",
+      "name": "Rhesa",
+      "nameZhHans": "利撒",
+      "nameZhHant": "利撒",
+      "fatherId": "zerubbabel_lk_27",
+      "spouseIds": [],
+      "childIds": [
+        "joanan_lk_27"
+      ],
+      "yearSystem": "bc",
+      "birthYear": -100,
+      "summary": "Listed in Mary's Lukan ancestry per Luke 3:27; descendant of David through Nathan.",
+      "summaryZhHans": "按路加福音 3:27记载，是马利亚路加家谱中的祖先；大卫透过拿单的后裔。",
+      "summaryZhHant": "按路加福音 3:27記載，是馬利亞路加家譜中的祖先；大衛透過拿單的後裔。",
+      "refs": [
+        "Luke 3:27"
+      ],
+      "accent": "messianic",
+      "era": "nt"
+    },
+    {
+      "id": "zerubbabel_lk_27",
+      "name": "Zerubbabel (Lukan)",
+      "nameZhHans": "所罗巴伯（路加家谱）",
+      "nameZhHant": "所羅巴伯（路加家譜）",
+      "fatherId": "shealtiel_lk_27",
+      "spouseIds": [],
+      "childIds": [
+        "rhesa_lk_27"
+      ],
+      "yearSystem": "bc",
+      "birthYear": -100,
+      "summary": "Listed in Mary's Lukan ancestry per Luke 3:27; descendant of David through Nathan.",
+      "summaryZhHans": "按路加福音 3:27记载，是马利亚路加家谱中的祖先；大卫透过拿单的后裔。",
+      "summaryZhHant": "按路加福音 3:27記載，是馬利亞路加家譜中的祖先；大衛透過拿單的後裔。",
+      "refs": [
+        "Luke 3:27"
+      ],
+      "accent": "messianic",
+      "era": "nt"
+    },
+    {
+      "id": "shealtiel_lk_27",
+      "name": "Shealtiel (Lukan)",
+      "nameZhHans": "撒拉铁（路加家谱）",
+      "nameZhHant": "撒拉鐵（路加家譜）",
+      "fatherId": "neri_lk_27",
+      "spouseIds": [],
+      "childIds": [
+        "zerubbabel_lk_27"
+      ],
+      "yearSystem": "bc",
+      "birthYear": -100,
+      "summary": "Listed in Mary's Lukan ancestry per Luke 3:27; descendant of David through Nathan.",
+      "summaryZhHans": "按路加福音 3:27记载，是马利亚路加家谱中的祖先；大卫透过拿单的后裔。",
+      "summaryZhHant": "按路加福音 3:27記載，是馬利亞路加家譜中的祖先；大衛透過拿單的後裔。",
+      "refs": [
+        "Luke 3:27"
+      ],
+      "accent": "messianic",
+      "era": "nt"
+    },
+    {
+      "id": "neri_lk_27",
+      "name": "Neri",
+      "nameZhHans": "尼利",
+      "nameZhHant": "尼利",
+      "fatherId": "melchi_lk_28",
+      "spouseIds": [],
+      "childIds": [
+        "shealtiel_lk_27"
+      ],
+      "yearSystem": "bc",
+      "birthYear": -100,
+      "summary": "Listed in Mary's Lukan ancestry per Luke 3:27; descendant of David through Nathan.",
+      "summaryZhHans": "按路加福音 3:27记载，是马利亚路加家谱中的祖先；大卫透过拿单的后裔。",
+      "summaryZhHant": "按路加福音 3:27記載，是馬利亞路加家譜中的祖先；大衛透過拿單的後裔。",
+      "refs": [
+        "Luke 3:27"
+      ],
+      "accent": "messianic",
+      "era": "nt"
+    },
+    {
+      "id": "melchi_lk_28",
+      "name": "Melchi (II)",
+      "nameZhHans": "麦基（二）",
+      "nameZhHant": "麥基（二）",
+      "fatherId": "addi_lk_28",
+      "spouseIds": [],
+      "childIds": [
+        "neri_lk_27"
+      ],
+      "yearSystem": "bc",
+      "birthYear": -100,
+      "summary": "Listed in Mary's Lukan ancestry per Luke 3:28; descendant of David through Nathan.",
+      "summaryZhHans": "按路加福音 3:28记载，是马利亚路加家谱中的祖先；大卫透过拿单的后裔。",
+      "summaryZhHant": "按路加福音 3:28記載，是馬利亞路加家譜中的祖先；大衛透過拿單的後裔。",
+      "refs": [
+        "Luke 3:28"
+      ],
+      "accent": "messianic",
+      "era": "nt"
+    },
+    {
+      "id": "addi_lk_28",
+      "name": "Addi",
+      "nameZhHans": "亚底",
+      "nameZhHant": "亞底",
+      "fatherId": "cosam_lk_28",
+      "spouseIds": [],
+      "childIds": [
+        "melchi_lk_28"
+      ],
+      "yearSystem": "bc",
+      "birthYear": -100,
+      "summary": "Listed in Mary's Lukan ancestry per Luke 3:28; descendant of David through Nathan.",
+      "summaryZhHans": "按路加福音 3:28记载，是马利亚路加家谱中的祖先；大卫透过拿单的后裔。",
+      "summaryZhHant": "按路加福音 3:28記載，是馬利亞路加家譜中的祖先；大衛透過拿單的後裔。",
+      "refs": [
+        "Luke 3:28"
+      ],
+      "accent": "messianic",
+      "era": "nt"
+    },
+    {
+      "id": "cosam_lk_28",
+      "name": "Cosam",
+      "nameZhHans": "哥桑",
+      "nameZhHant": "哥桑",
+      "fatherId": "elmadam_lk_28",
+      "spouseIds": [],
+      "childIds": [
+        "addi_lk_28"
+      ],
+      "yearSystem": "bc",
+      "birthYear": -100,
+      "summary": "Listed in Mary's Lukan ancestry per Luke 3:28; descendant of David through Nathan.",
+      "summaryZhHans": "按路加福音 3:28记载，是马利亚路加家谱中的祖先；大卫透过拿单的后裔。",
+      "summaryZhHant": "按路加福音 3:28記載，是馬利亞路加家譜中的祖先；大衛透過拿單的後裔。",
+      "refs": [
+        "Luke 3:28"
+      ],
+      "accent": "messianic",
+      "era": "nt"
+    },
+    {
+      "id": "elmadam_lk_28",
+      "name": "Elmadam",
+      "nameZhHans": "以摩太",
+      "nameZhHant": "以摩太",
+      "fatherId": "er_lk_28",
+      "spouseIds": [],
+      "childIds": [
+        "cosam_lk_28"
+      ],
+      "yearSystem": "bc",
+      "birthYear": -100,
+      "summary": "Listed in Mary's Lukan ancestry per Luke 3:28; descendant of David through Nathan.",
+      "summaryZhHans": "按路加福音 3:28记载，是马利亚路加家谱中的祖先；大卫透过拿单的后裔。",
+      "summaryZhHant": "按路加福音 3:28記載，是馬利亞路加家譜中的祖先；大衛透過拿單的後裔。",
+      "refs": [
+        "Luke 3:28"
+      ],
+      "accent": "messianic",
+      "era": "nt"
+    },
+    {
+      "id": "er_lk_28",
+      "name": "Er (Lukan)",
+      "nameZhHans": "珥（路加家谱）",
+      "nameZhHant": "珥（路加家譜）",
+      "fatherId": "joshua_lk_29",
+      "spouseIds": [],
+      "childIds": [
+        "elmadam_lk_28"
+      ],
+      "yearSystem": "bc",
+      "birthYear": -100,
+      "summary": "Listed in Mary's Lukan ancestry per Luke 3:28; descendant of David through Nathan.",
+      "summaryZhHans": "按路加福音 3:28记载，是马利亚路加家谱中的祖先；大卫透过拿单的后裔。",
+      "summaryZhHant": "按路加福音 3:28記載，是馬利亞路加家譜中的祖先；大衛透過拿單的後裔。",
+      "refs": [
+        "Luke 3:28"
+      ],
+      "accent": "messianic",
+      "era": "nt"
+    },
+    {
+      "id": "joshua_lk_29",
+      "name": "Joshua / Jose",
+      "nameZhHans": "约细",
+      "nameZhHant": "約細",
+      "fatherId": "eliezer_lk_29",
+      "spouseIds": [],
+      "childIds": [
+        "er_lk_28"
+      ],
+      "yearSystem": "bc",
+      "birthYear": -100,
+      "summary": "Listed in Mary's Lukan ancestry per Luke 3:29; descendant of David through Nathan.",
+      "summaryZhHans": "按路加福音 3:29记载，是马利亚路加家谱中的祖先；大卫透过拿单的后裔。",
+      "summaryZhHant": "按路加福音 3:29記載，是馬利亞路加家譜中的祖先；大衛透過拿單的後裔。",
+      "refs": [
+        "Luke 3:29"
+      ],
+      "accent": "messianic",
+      "era": "nt"
+    },
+    {
+      "id": "eliezer_lk_29",
+      "name": "Eliezer (Lukan)",
+      "nameZhHans": "以列以谢",
+      "nameZhHant": "以列以謝",
+      "fatherId": "jorim_lk_29",
+      "spouseIds": [],
+      "childIds": [
+        "joshua_lk_29"
+      ],
+      "yearSystem": "bc",
+      "birthYear": -100,
+      "summary": "Listed in Mary's Lukan ancestry per Luke 3:29; descendant of David through Nathan.",
+      "summaryZhHans": "按路加福音 3:29记载，是马利亚路加家谱中的祖先；大卫透过拿单的后裔。",
+      "summaryZhHant": "按路加福音 3:29記載，是馬利亞路加家譜中的祖先；大衛透過拿單的後裔。",
+      "refs": [
+        "Luke 3:29"
+      ],
+      "accent": "messianic",
+      "era": "nt"
+    },
+    {
+      "id": "jorim_lk_29",
+      "name": "Jorim",
+      "nameZhHans": "约令",
+      "nameZhHant": "約令",
+      "fatherId": "matthat_lk_29",
+      "spouseIds": [],
+      "childIds": [
+        "eliezer_lk_29"
+      ],
+      "yearSystem": "bc",
+      "birthYear": -100,
+      "summary": "Listed in Mary's Lukan ancestry per Luke 3:29; descendant of David through Nathan.",
+      "summaryZhHans": "按路加福音 3:29记载，是马利亚路加家谱中的祖先；大卫透过拿单的后裔。",
+      "summaryZhHant": "按路加福音 3:29記載，是馬利亞路加家譜中的祖先；大衛透過拿單的後裔。",
+      "refs": [
+        "Luke 3:29"
+      ],
+      "accent": "messianic",
+      "era": "nt"
+    },
+    {
+      "id": "matthat_lk_29",
+      "name": "Matthat (II)",
+      "nameZhHans": "玛塔（二）",
+      "nameZhHant": "瑪塔（二）",
+      "fatherId": "levi_lk_29",
+      "spouseIds": [],
+      "childIds": [
+        "jorim_lk_29"
+      ],
+      "yearSystem": "bc",
+      "birthYear": -100,
+      "summary": "Listed in Mary's Lukan ancestry per Luke 3:29; descendant of David through Nathan.",
+      "summaryZhHans": "按路加福音 3:29记载，是马利亚路加家谱中的祖先；大卫透过拿单的后裔。",
+      "summaryZhHant": "按路加福音 3:29記載，是馬利亞路加家譜中的祖先；大衛透過拿單的後裔。",
+      "refs": [
+        "Luke 3:29"
+      ],
+      "accent": "messianic",
+      "era": "nt"
+    },
+    {
+      "id": "levi_lk_29",
+      "name": "Levi (II)",
+      "nameZhHans": "利未（二）",
+      "nameZhHant": "利未（二）",
+      "fatherId": "simeon_lk_30",
+      "spouseIds": [],
+      "childIds": [
+        "matthat_lk_29"
+      ],
+      "yearSystem": "bc",
+      "birthYear": -100,
+      "summary": "Listed in Mary's Lukan ancestry per Luke 3:29; descendant of David through Nathan.",
+      "summaryZhHans": "按路加福音 3:29记载，是马利亚路加家谱中的祖先；大卫透过拿单的后裔。",
+      "summaryZhHant": "按路加福音 3:29記載，是馬利亞路加家譜中的祖先；大衛透過拿單的後裔。",
+      "refs": [
+        "Luke 3:29"
+      ],
+      "accent": "messianic",
+      "era": "nt"
+    },
+    {
+      "id": "simeon_lk_30",
+      "name": "Simeon (Lukan)",
+      "nameZhHans": "西缅（路加家谱）",
+      "nameZhHant": "西緬（路加家譜）",
+      "fatherId": "judah_lk_30",
+      "spouseIds": [],
+      "childIds": [
+        "levi_lk_29"
+      ],
+      "yearSystem": "bc",
+      "birthYear": -100,
+      "summary": "Listed in Mary's Lukan ancestry per Luke 3:30; descendant of David through Nathan.",
+      "summaryZhHans": "按路加福音 3:30记载，是马利亚路加家谱中的祖先；大卫透过拿单的后裔。",
+      "summaryZhHant": "按路加福音 3:30記載，是馬利亞路加家譜中的祖先；大衛透過拿單的後裔。",
+      "refs": [
+        "Luke 3:30"
+      ],
+      "accent": "messianic",
+      "era": "nt"
+    },
+    {
+      "id": "judah_lk_30",
+      "name": "Judah (Lukan)",
+      "nameZhHans": "犹大（路加家谱）",
+      "nameZhHant": "猶大（路加家譜）",
+      "fatherId": "joseph_lk_30",
+      "spouseIds": [],
+      "childIds": [
+        "simeon_lk_30"
+      ],
+      "yearSystem": "bc",
+      "birthYear": -100,
+      "summary": "Listed in Mary's Lukan ancestry per Luke 3:30; descendant of David through Nathan.",
+      "summaryZhHans": "按路加福音 3:30记载，是马利亚路加家谱中的祖先；大卫透过拿单的后裔。",
+      "summaryZhHant": "按路加福音 3:30記載，是馬利亞路加家譜中的祖先；大衛透過拿單的後裔。",
+      "refs": [
+        "Luke 3:30"
+      ],
+      "accent": "messianic",
+      "era": "nt"
+    },
+    {
+      "id": "joseph_lk_30",
+      "name": "Joseph (Lukan, II)",
+      "nameZhHans": "约瑟（路加家谱二）",
+      "nameZhHant": "約瑟（路加家譜二）",
+      "fatherId": "jonam_lk_30",
+      "spouseIds": [],
+      "childIds": [
+        "judah_lk_30"
+      ],
+      "yearSystem": "bc",
+      "birthYear": -100,
+      "summary": "Listed in Mary's Lukan ancestry per Luke 3:30; descendant of David through Nathan.",
+      "summaryZhHans": "按路加福音 3:30记载，是马利亚路加家谱中的祖先；大卫透过拿单的后裔。",
+      "summaryZhHant": "按路加福音 3:30記載，是馬利亞路加家譜中的祖先；大衛透過拿單的後裔。",
+      "refs": [
+        "Luke 3:30"
+      ],
+      "accent": "messianic",
+      "era": "nt"
+    },
+    {
+      "id": "jonam_lk_30",
+      "name": "Jonam",
+      "nameZhHans": "约南",
+      "nameZhHant": "約南",
+      "fatherId": "eliakim_lk_30",
+      "spouseIds": [],
+      "childIds": [
+        "joseph_lk_30"
+      ],
+      "yearSystem": "bc",
+      "birthYear": -100,
+      "summary": "Listed in Mary's Lukan ancestry per Luke 3:30; descendant of David through Nathan.",
+      "summaryZhHans": "按路加福音 3:30记载，是马利亚路加家谱中的祖先；大卫透过拿单的后裔。",
+      "summaryZhHant": "按路加福音 3:30記載，是馬利亞路加家譜中的祖先；大衛透過拿單的後裔。",
+      "refs": [
+        "Luke 3:30"
+      ],
+      "accent": "messianic",
+      "era": "nt"
+    },
+    {
+      "id": "eliakim_lk_30",
+      "name": "Eliakim (Lukan)",
+      "nameZhHans": "以利亚敬（路加家谱）",
+      "nameZhHant": "以利亞敬（路加家譜）",
+      "fatherId": "melea_lk_31",
+      "spouseIds": [],
+      "childIds": [
+        "jonam_lk_30"
+      ],
+      "yearSystem": "bc",
+      "birthYear": -100,
+      "summary": "Listed in Mary's Lukan ancestry per Luke 3:30; descendant of David through Nathan.",
+      "summaryZhHans": "按路加福音 3:30记载，是马利亚路加家谱中的祖先；大卫透过拿单的后裔。",
+      "summaryZhHant": "按路加福音 3:30記載，是馬利亞路加家譜中的祖先；大衛透過拿單的後裔。",
+      "refs": [
+        "Luke 3:30"
+      ],
+      "accent": "messianic",
+      "era": "nt"
+    },
+    {
+      "id": "melea_lk_31",
+      "name": "Melea",
+      "nameZhHans": "米利亚",
+      "nameZhHant": "米利亞",
+      "fatherId": "menna_lk_31",
+      "spouseIds": [],
+      "childIds": [
+        "eliakim_lk_30"
+      ],
+      "yearSystem": "bc",
+      "birthYear": -100,
+      "summary": "Listed in Mary's Lukan ancestry per Luke 3:31; descendant of David through Nathan.",
+      "summaryZhHans": "按路加福音 3:31记载，是马利亚路加家谱中的祖先；大卫透过拿单的后裔。",
+      "summaryZhHant": "按路加福音 3:31記載，是馬利亞路加家譜中的祖先；大衛透過拿單的後裔。",
+      "refs": [
+        "Luke 3:31"
+      ],
+      "accent": "messianic",
+      "era": "nt"
+    },
+    {
+      "id": "menna_lk_31",
+      "name": "Menna",
+      "nameZhHans": "米拿",
+      "nameZhHant": "米拿",
+      "fatherId": "mattatha_lk_31",
+      "spouseIds": [],
+      "childIds": [
+        "melea_lk_31"
+      ],
+      "yearSystem": "bc",
+      "birthYear": -100,
+      "summary": "Listed in Mary's Lukan ancestry per Luke 3:31; descendant of David through Nathan.",
+      "summaryZhHans": "按路加福音 3:31记载，是马利亚路加家谱中的祖先；大卫透过拿单的后裔。",
+      "summaryZhHant": "按路加福音 3:31記載，是馬利亞路加家譜中的祖先；大衛透過拿單的後裔。",
+      "refs": [
+        "Luke 3:31"
+      ],
+      "accent": "messianic",
+      "era": "nt"
+    },
+    {
+      "id": "mattatha_lk_31",
+      "name": "Mattatha",
+      "nameZhHans": "玛达他",
+      "nameZhHant": "瑪達他",
+      "fatherId": "nathan_son_of_david",
+      "spouseIds": [],
+      "childIds": [
+        "menna_lk_31"
+      ],
+      "yearSystem": "bc",
+      "birthYear": -100,
+      "summary": "Listed in Mary's Lukan ancestry per Luke 3:31; descendant of David through Nathan.",
+      "summaryZhHans": "按路加福音 3:31记载，是马利亚路加家谱中的祖先；大卫透过拿单的后裔。",
+      "summaryZhHant": "按路加福音 3:31記載，是馬利亞路加家譜中的祖先；大衛透過拿單的後裔。",
+      "refs": [
+        "Luke 3:31"
       ],
       "accent": "messianic",
       "era": "nt"
