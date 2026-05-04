@@ -2130,6 +2130,21 @@ const uiStrings = {
     'zh-Hans': '下一位',
     'zh-Hant': '下一位',
   },
+  'familyTreeCopyAll': {
+    'en': 'Copy all info',
+    'zh-Hans': '复制全部信息',
+    'zh-Hant': '複製全部資訊',
+  },
+  'familyTreeCopiedToast': {
+    'en': 'Copied to clipboard',
+    'zh-Hans': '已复制到剪贴板',
+    'zh-Hant': '已複製到剪貼簿',
+  },
+  'familyTreeRole': {
+    'en': 'Role',
+    'zh-Hans': '身份',
+    'zh-Hant': '身份',
+  },
   'familyTreeMatchCount': {
     'zh-Hans': '第 {index}/{total} 个匹配',
     'zh-Hant': '第 {index}/{total} 個匹配',

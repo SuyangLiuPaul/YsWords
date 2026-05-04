@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:provider/provider.dart';
 
@@ -77,25 +78,60 @@ class PersonDetailSheet extends StatelessWidget {
             ),
           ),
         ),
-        Text(
-          person.localizedName(locale),
-          style: const TextStyle(
-            fontSize: 22,
-            fontWeight: FontWeight.w700,
-            height: 1.25,
-          ),
-        ),
-        if (years.isNotEmpty) ...[
-          const SizedBox(height: 4),
-          Text(
-            years,
-            style: TextStyle(
-              fontSize: 13,
-              color: scheme.onSurfaceVariant,
-              fontFeatures: const [FontFeature.tabularFigures()],
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    person.localizedName(locale),
+                    style: const TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w700,
+                      height: 1.25,
+                    ),
+                  ),
+                  if (years.isNotEmpty) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      years,
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: scheme.onSurfaceVariant,
+                        fontFeatures: const [
+                          FontFeature.tabularFigures(),
+                        ],
+                      ),
+                    ),
+                  ],
+                ],
+              ),
             ),
-          ),
-        ],
+            // Copy-all button: copies the rendered detail content as
+            // plain text to the clipboard so the user can paste into
+            // notes / messages / docs.
+            IconButton(
+              icon: const Icon(Icons.copy_rounded, size: 20),
+              tooltip: uiStrings['familyTreeCopyAll']?[locale] ??
+                  'Copy all info',
+              onPressed: () => _copyAll(
+                context: context,
+                father: father,
+                mother: mother,
+                spouses: spouses,
+                children: children,
+                siblings: siblings,
+                tribeAncestor: tribeAncestor,
+              ),
+              style: IconButton.styleFrom(
+                foregroundColor: scheme.primary,
+                visualDensity: VisualDensity.compact,
+              ),
+            ),
+          ],
+        ),
         const SizedBox(height: 12),
         Text(
           person.localizedSummary(locale),
@@ -168,6 +204,81 @@ class PersonDetailSheet extends StatelessWidget {
         const SizedBox(height: 16),
         _AncestryTrail(person: person, locale: locale, scheme: scheme),
       ],
+    );
+  }
+
+  /// Format the visible detail-sheet content as plain text and
+  /// copy to the system clipboard. Uses the user's current locale
+  /// for all names + summary + section labels.
+  Future<void> _copyAll({
+    required BuildContext context,
+    required BiblicalPerson? father,
+    required BiblicalPerson? mother,
+    required List<BiblicalPerson> spouses,
+    required List<BiblicalPerson> children,
+    required List<BiblicalPerson> siblings,
+    required BiblicalPerson? tribeAncestor,
+  }) async {
+    String namesOf(List<BiblicalPerson> xs) =>
+        xs.map((p) => p.localizedName(locale)).join(', ');
+
+    final years = person.displayYears(locale);
+    final buf = StringBuffer();
+    buf.writeln(person.localizedName(locale));
+    if (years.isNotEmpty) buf.writeln(years);
+    if ((person.role ?? '').isNotEmpty) {
+      buf.writeln('${uiStrings['familyTreeRole']?[locale] ?? 'Role'}: ${person.role}');
+    }
+    buf.writeln();
+    buf.writeln(person.localizedSummary(locale));
+    buf.writeln();
+
+    if (father != null || mother != null) {
+      final parts = <String>[];
+      if (father != null) {
+        parts.add('${uiStrings['familyTreeFather']?[locale] ?? 'Father'}: ${father.localizedName(locale)}');
+      }
+      if (mother != null) {
+        parts.add('${uiStrings['familyTreeMother']?[locale] ?? 'Mother'}: ${mother.localizedName(locale)}');
+      }
+      buf.writeln('${uiStrings['familyTreeParents']?[locale] ?? 'Parents'}: ${parts.join(' · ')}');
+    }
+    if (spouses.isNotEmpty) {
+      final label = spouses.length == 1
+          ? (uiStrings['familyTreeSpouse']?[locale] ?? 'Spouse')
+          : (uiStrings['familyTreeSpouses']?[locale] ?? 'Spouses');
+      buf.writeln('$label: ${namesOf(spouses)}');
+    }
+    if (children.isNotEmpty) {
+      buf.writeln(
+          '${uiStrings['familyTreeChildren']?[locale] ?? 'Children'}: ${namesOf(children)}');
+    }
+    if (siblings.isNotEmpty) {
+      buf.writeln(
+          '${uiStrings['familyTreeSiblings']?[locale] ?? 'Siblings'}: ${namesOf(siblings)}');
+    }
+    if (tribeAncestor != null) {
+      buf.writeln(
+          '${uiStrings['familyTreeTribeLine']?[locale] ?? 'Tribe / line'}: ${tribeAncestor.localizedName(locale)}');
+    }
+    if (person.refs.isNotEmpty) {
+      buf.writeln();
+      buf.writeln(
+          '${uiStrings['familyTreeReferences']?[locale] ?? 'Verse references'}:');
+      for (final r in person.refs) {
+        buf.writeln('  • $r');
+      }
+    }
+
+    await Clipboard.setData(ClipboardData(text: buf.toString().trim()));
+    if (!context.mounted) return;
+    ScaffoldMessenger.maybeOf(context)?.showSnackBar(
+      SnackBar(
+        content: Text(
+            uiStrings['familyTreeCopiedToast']?[locale] ?? 'Copied to clipboard'),
+        duration: const Duration(milliseconds: 1400),
+        behavior: SnackBarBehavior.floating,
+      ),
     );
   }
 
