@@ -6,7 +6,7 @@ import 'package:yswords/constants/ui_strings.dart';
 import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/models/biblical_person.dart';
 import 'package:yswords/services/family_tree_service.dart';
-import 'package:yswords/widgets/family_spine_tree.dart';
+import 'package:yswords/widgets/family_visual_tree.dart';
 import 'package:yswords/widgets/home_icon_button.dart';
 import 'package:yswords/widgets/localized_back_button.dart';
 import 'package:yswords/widgets/person_detail_sheet.dart';
@@ -204,19 +204,22 @@ class _FamilyTreePageState extends State<FamilyTreePage> {
     return '${all.length} people';
   }
 
-  /// Tree mode body — the round-58 spine tree. Renders from the
-  /// dataset root (Adam) down, with only the spine to the current
-  /// focus expanded; off-spine siblings collapse to single rows
-  /// with a chevron the user can crack open. Search auto-expands
-  /// ancestor paths to every match so query results are visible
-  /// without manual hunting.
+  /// Tree mode body — the round-59 visual tree. Renders top-down
+  /// from the dataset root (Adam) as a vertical generational
+  /// cascade. The spine path stays as a single column of large
+  /// cards connected by short vertical lines; off-spine siblings
+  /// of each spine member render as compact chips just above their
+  /// generation (with a "+N" badge when they have children of their
+  /// own); the focus's own children fan out below the focus card.
+  /// Pinch-zoom and pan via InteractiveViewer make it usable on
+  /// small screens for the deep canonical lineage.
   Widget _buildChart(
       _TreeData data, String locale, ColorScheme scheme, String query) {
     final svc = FamilyTreeService.instance;
     final root = data.roots.isNotEmpty ? data.roots.first : null;
     if (root == null) return const SizedBox.shrink();
     final focus = svc.byId(_treeFocusId) ?? root;
-    return FamilySpineTree(
+    return FamilyVisualTree(
       root: root,
       focus: focus,
       locale: locale,

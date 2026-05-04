@@ -1953,6 +1953,16 @@ const uiStrings = {
     'zh-Hant': '收起',
     'en': 'Collapse',
   },
+  'familyTreeRootLabel': {
+    'zh-Hans': '始祖',
+    'zh-Hant': '始祖',
+    'en': 'ROOT',
+  },
+  'familyTreeFocusLeaf': {
+    'zh-Hans': '此人物在数据集中暂无后裔。',
+    'zh-Hant': '此人物在資料集中暫無後裔。',
+    'en': 'No descendants in this dataset.',
+  },
   'sermonFilterBookLabel': {
     'zh-Hans': '书卷',
     'zh-Hant': '書卷',
