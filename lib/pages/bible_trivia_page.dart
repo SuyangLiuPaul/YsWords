@@ -8,6 +8,7 @@ import 'package:yswords/providers/main_provider.dart';
 import 'package:yswords/utils/jump_to_reference.dart' as jumper;
 import 'package:yswords/utils/reference_parser.dart';
 import 'package:yswords/utils/responsive.dart';
+import 'package:yswords/utils/version_mapper.dart' show localeAwareBookName;
 import 'package:yswords/pages/home_page.dart';
 import 'package:yswords/widgets/home_icon_button.dart';
 import 'package:yswords/widgets/localized_back_button.dart';
@@ -51,6 +52,13 @@ class _BibleTriviaPageState extends State<BibleTriviaPage> {
   // 'all' | 'ot' | 'nt' — uses the parsed reference's englishBook to
   // bucket. Entries with no parseable reference fall through to 'all'.
   String _testamentFilter = 'all';
+  // 'all' | English book name (e.g. 'Psalms', 'Genesis'). Round 56
+  // user feedback: "冷知识需要有book filter related". Filter chips
+  // surface every book referenced by at least one entry, sorted in
+  // canonical Bible order. Display labels are localized via
+  // [localeAwareBookName] so 'Psalms' renders as '诗篇' / '詩篇' /
+  // 'Psalms' to match the user's language setting.
+  String _bookFilter = 'all';
   String _query = '';
 
   @override
@@ -68,6 +76,30 @@ class _BibleTriviaPageState extends State<BibleTriviaPage> {
       if (t != null && t.trim().isNotEmpty) set.add(t.trim());
     }
     final list = set.toList()..sort();
+    return list;
+  }
+
+  /// Pull every distinct English book referenced by an entry's
+  /// `reference` field, in canonical Bible order. Used by the book
+  /// filter chip row.
+  List<String> get _availableBooks {
+    final set = <String>{};
+    for (final e in bibleTriviaEntries) {
+      final ref = e.reference;
+      if (ref == null || ref.trim().isEmpty) continue;
+      final parsed = parseReference(ref);
+      if (parsed == null) continue;
+      set.add(parsed.englishBook);
+    }
+    final list = set.toList();
+    list.sort((a, b) {
+      final ai = _canonicalBookOrder.indexOf(a);
+      final bi = _canonicalBookOrder.indexOf(b);
+      if (ai == -1 && bi == -1) return a.compareTo(b);
+      if (ai == -1) return 1;
+      if (bi == -1) return -1;
+      return ai.compareTo(bi);
+    });
     return list;
   }
 
@@ -109,15 +141,28 @@ class _BibleTriviaPageState extends State<BibleTriviaPage> {
                     settings: settings,
                     scheme: scheme,
                     availableTags: _availableTags,
+                    availableBooks: _availableBooks,
                     tagFilter: _tagFilter,
                     testamentFilter: _testamentFilter,
+                    bookFilter: _bookFilter,
                     query: _query,
                     matchCount: entries.length,
                     totalCount: bibleTriviaEntries.length,
                     onTagChanged: (v) =>
                         setState(() => _tagFilter = v),
-                    onTestamentChanged: (v) =>
-                        setState(() => _testamentFilter = v),
+                    onTestamentChanged: (v) => setState(() {
+                      _testamentFilter = v;
+                      // Switching testament invalidates the book
+                      // filter if it sits on the other testament,
+                      // so reset to 'all' to avoid an empty list.
+                      if (_bookFilter != 'all') {
+                        final isOt = _isOtBook(_bookFilter);
+                        if (v == 'ot' && !isOt) _bookFilter = 'all';
+                        if (v == 'nt' && isOt) _bookFilter = 'all';
+                      }
+                    }),
+                    onBookChanged: (v) =>
+                        setState(() => _bookFilter = v),
                     onQueryChanged: (v) => setState(() => _query = v),
                   );
                 }
@@ -150,6 +195,15 @@ class _BibleTriviaPageState extends State<BibleTriviaPage> {
         if (parsed == null) return false;
         final isOt = _isOtBook(parsed.englishBook);
         return _testamentFilter == 'ot' ? isOt : !isOt;
+      });
+    }
+    if (_bookFilter != 'all') {
+      out = out.where((e) {
+        final ref = e.reference;
+        if (ref == null) return false;
+        final parsed = parseReference(ref);
+        if (parsed == null) return false;
+        return parsed.englishBook == _bookFilter;
       });
     }
     final q = _query.trim().toLowerCase();
@@ -243,6 +297,24 @@ String _localizedTagLabel(String englishTag, String locale) {
   return m[locale] ?? m['en'] ?? englishTag;
 }
 
+/// Full canonical Bible book order — used to sort the book filter
+/// chips so Genesis comes first and Revelation last, regardless of
+/// the order entries appear in the catalogue.
+const List<String> _canonicalBookOrder = [
+  'Genesis', 'Exodus', 'Leviticus', 'Numbers', 'Deuteronomy', 'Joshua',
+  'Judges', 'Ruth', '1 Samuel', '2 Samuel', '1 Kings', '2 Kings',
+  '1 Chronicles', '2 Chronicles', 'Ezra', 'Nehemiah', 'Esther', 'Job',
+  'Psalms', 'Proverbs', 'Ecclesiastes', 'Song of Solomon', 'Isaiah',
+  'Jeremiah', 'Lamentations', 'Ezekiel', 'Daniel', 'Hosea', 'Joel',
+  'Amos', 'Obadiah', 'Jonah', 'Micah', 'Nahum', 'Habakkuk', 'Zephaniah',
+  'Haggai', 'Zechariah', 'Malachi',
+  'Matthew', 'Mark', 'Luke', 'John', 'Acts', 'Romans', '1 Corinthians',
+  '2 Corinthians', 'Galatians', 'Ephesians', 'Philippians', 'Colossians',
+  '1 Thessalonians', '2 Thessalonians', '1 Timothy', '2 Timothy',
+  'Titus', 'Philemon', 'Hebrews', 'James', '1 Peter', '2 Peter',
+  '1 John', '2 John', '3 John', 'Jude', 'Revelation',
+];
+
 /// Canonical OT book set used by the testament filter. Keeping it
 /// inline (not pulling from MainProvider) so the trivia page works
 /// without bible data loaded.
@@ -266,13 +338,16 @@ class _TriviaFilterBar extends StatelessWidget {
   final AppSettings settings;
   final ColorScheme scheme;
   final List<String> availableTags;
+  final List<String> availableBooks;
   final String tagFilter;
   final String testamentFilter;
+  final String bookFilter;
   final String query;
   final int matchCount;
   final int totalCount;
   final ValueChanged<String> onTagChanged;
   final ValueChanged<String> onTestamentChanged;
+  final ValueChanged<String> onBookChanged;
   final ValueChanged<String> onQueryChanged;
 
   const _TriviaFilterBar({
@@ -280,13 +355,16 @@ class _TriviaFilterBar extends StatelessWidget {
     required this.settings,
     required this.scheme,
     required this.availableTags,
+    required this.availableBooks,
     required this.tagFilter,
     required this.testamentFilter,
+    required this.bookFilter,
     required this.query,
     required this.matchCount,
     required this.totalCount,
     required this.onTagChanged,
     required this.onTestamentChanged,
+    required this.onBookChanged,
     required this.onQueryChanged,
   });
 
@@ -327,6 +405,35 @@ class _TriviaFilterBar extends StatelessWidget {
           onSelectionChanged: (s) => onTestamentChanged(s.first),
           multiSelectionEnabled: false,
           showSelectedIcon: false,
+        ),
+        const SizedBox(height: 10),
+        // Book filter row — Round 56 user feedback "冷知识需要有
+        // book filter related makesure different language setting
+        // applied". Each chip's display label runs through
+        // [localeAwareBookName] so 'Psalms' shows as 诗篇 / 詩篇 /
+        // Psalms depending on the user's locale (CUVS book names
+        // for zh-Hans, traditional CUVS for zh-Hant, English
+        // otherwise — exactly the same naming the reader uses).
+        SizedBox(
+          height: 38,
+          child: ListView(
+            scrollDirection: Axis.horizontal,
+            children: [
+              _TagChip(
+                label: allLabel,
+                selected: bookFilter == 'all',
+                onTap: () => onBookChanged('all'),
+                scheme: scheme,
+              ),
+              for (final b in availableBooks)
+                _TagChip(
+                  label: localeAwareBookName(b, locale),
+                  selected: bookFilter == b,
+                  onTap: () => onBookChanged(b),
+                  scheme: scheme,
+                ),
+            ],
+          ),
         ),
         const SizedBox(height: 10),
         SizedBox(
