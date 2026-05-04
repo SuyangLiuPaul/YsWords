@@ -34,6 +34,21 @@ class StatsPage extends StatelessWidget {
           bottom: TabBar(
             isScrollable: true,
             tabAlignment: TabAlignment.start,
+            // Round 56 user feedback: "统计分析的几个 tab 的字看不清，
+            // 颜色搭配有问题". The default TabBar inherits AppBar
+            // foreground colors, but with the new primary AppBar
+            // (Round 56 theme update) the unselected-tab colour
+            // ended up with low contrast against the primary
+            // background. Force explicit high-contrast colors:
+            // selected = full onPrimary, unselected = onPrimary at
+            // 78% opacity (clearly distinct from selected but still
+            // readable).
+            labelColor: Theme.of(context).colorScheme.onPrimary,
+            unselectedLabelColor: Theme.of(context)
+                .colorScheme
+                .onPrimary
+                .withValues(alpha: 0.78),
+            indicatorColor: Theme.of(context).colorScheme.onPrimary,
             tabs: [
               Tab(
                 icon: const Icon(Icons.dashboard_outlined),

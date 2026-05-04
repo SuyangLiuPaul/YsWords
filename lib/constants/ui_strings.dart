@@ -767,6 +767,17 @@ const uiStrings = {
     'zh-Hant': '在聖經中查看',
     'en': 'Read in Bible',
   },
+  // Round 56: hint shown under expanded font dropdown.
+  'fontFamilyHint': {
+    'zh-Hans': '"Roboto" 和 "微软雅黑" 是应用自带的字体，到处都能用。'
+        '其他选项使用您设备上已安装的系统字体——中文用户推荐微软雅黑、苹方、思源黑体；'
+        '英文用户推荐 Times New Roman、Georgia、Garamond（衬线）或 Helvetica、Arial（无衬线）。',
+    'zh-Hant': '「Roboto」與「微軟雅黑」是應用內建字體，到處都能用。'
+        '其他選項使用您裝置上已安裝的系統字體——中文使用者推薦微軟雅黑、蘋方、思源黑體；'
+        '英文使用者推薦 Times New Roman、Georgia、Garamond（襯線）或 Helvetica、Arial（無襯線）。',
+    'en':
+        'Roboto and Microsoft YaHei are bundled with the app and always available. The other options use the system fonts installed on your device — for Chinese try Microsoft YaHei / PingFang SC / Source Han Sans; for English try Times New Roman / Georgia / Garamond (serif) or Helvetica / Arial (sans-serif).',
+  },
   'confirm': {
     'zh-Hans': '确认',
     'zh-Hant': '確認',

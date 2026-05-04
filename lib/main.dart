@@ -207,6 +207,19 @@ class _MainAppState extends State<MainApp> {
               foregroundColor: lightScheme.onPrimary,
               elevation: 0,
             ),
+            // Round 56: explicit TabBar colours so tabs hosted in
+            // a primary-coloured AppBar stay readable. Default
+            // labelColor inherits AppBar foreground but unselected
+            // tabs get a low-opacity treatment that user reported
+            // as "看不清". Force selected = full onPrimary,
+            // unselected = onPrimary @ 78% — clearly distinct
+            // states without sacrificing contrast.
+            tabBarTheme: TabBarThemeData(
+              labelColor: lightScheme.onPrimary,
+              unselectedLabelColor:
+                  lightScheme.onPrimary.withValues(alpha: 0.78),
+              indicatorColor: lightScheme.onPrimary,
+            ),
           ),
           darkTheme: ThemeData(
             fontFamily: settings.fontFamily,
@@ -255,6 +268,12 @@ class _MainAppState extends State<MainApp> {
               backgroundColor: darkScheme.primaryContainer,
               foregroundColor: darkScheme.onPrimaryContainer,
               elevation: 0,
+            ),
+            tabBarTheme: TabBarThemeData(
+              labelColor: darkScheme.onPrimaryContainer,
+              unselectedLabelColor:
+                  darkScheme.onPrimaryContainer.withValues(alpha: 0.78),
+              indicatorColor: darkScheme.onPrimaryContainer,
             ),
             sliderTheme: const SliderThemeData(
               inactiveTrackColor: Color(0xFF424242),

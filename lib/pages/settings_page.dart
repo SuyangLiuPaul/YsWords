@@ -511,24 +511,42 @@ class _SettingsPageBodyState extends State<_SettingsPageBody> {
                         onChanged: (val) {
                           if (val != null) settings.setFontFamily(val);
                         },
+                        // Round 56: expanded font choice. Two
+                        // bundled fonts (Roboto + Microsoft YaHei)
+                        // plus system-available fallbacks. On web
+                        // these map to the user's installed
+                        // system fonts; on mobile they fall back
+                        // to the platform default if not present.
+                        // Grouped: bundled / Chinese-friendly /
+                        // English-friendly.
                         items: [
-                          DropdownMenuItem(
-                            value: 'Roboto',
-                            child: Text('Roboto',
+                          for (final f in _availableFonts(settings.locale))
+                            DropdownMenuItem(
+                              value: f.value,
+                              child: Text(
+                                f.label,
                                 style: TextStyle(
                                   fontSize: settings.fontSize,
-                                  fontFamily: 'Roboto',
-                                )),
-                          ),
-                          DropdownMenuItem(
-                            value: 'Microsoft YaHei',
-                            child: Text('Microsoft YaHei',
-                                style: TextStyle(
-                                  fontSize: settings.fontSize,
-                                  fontFamily: 'Microsoft Yahei',
-                                )),
-                          ),
+                                  fontFamily: f.value,
+                                ),
+                              ),
+                            ),
                         ],
+                      ),
+                      SizedBox(height: 6 * s),
+                      Text(
+                        uiStrings['fontFamilyHint']?[settings.locale] ??
+                            'Bundled fonts (Roboto, Microsoft YaHei) work everywhere. Other choices use the system fonts installed on your device.',
+                        style: TextStyle(
+                          fontSize:
+                              (settings.fontSize - 4).clamp(11.0, 13.0),
+                          color: Theme.of(context)
+                              .colorScheme
+                              .onSurface
+                              .withValues(alpha: 0.6),
+                          fontStyle: FontStyle.italic,
+                          fontFamily: settings.fontFamily,
+                        ),
                       ),
                     ],
                   ),
@@ -2787,6 +2805,97 @@ class _AboutCard extends StatelessWidget {
 // JS interop binding: defined in web/index.html.
 @JS('yswordsClearCacheAndReload')
 external void _clearCacheAndReload();
+
+/// One row in the Settings → Display font dropdown.
+class _FontOption {
+  final String value;
+  final String label;
+  const _FontOption({required this.value, required this.label});
+}
+
+/// Round 56: expanded font catalogue. Returns the dropdown
+/// options in a sensible grouped order:
+///   1. Bundled fonts shipped with the app (always work)
+///   2. System-Chinese fonts (Microsoft YaHei, PingFang SC, etc.)
+///   3. System-English fonts (Times, Georgia, Arial, etc.)
+///
+/// On Flutter web a "fontFamily" string like 'Times New Roman' is
+/// passed through to the browser's CSS font-family attribute, so
+/// the option works whenever the user has that font installed.
+/// On mobile/desktop Flutter, missing fonts gracefully fall back
+/// to the platform default.
+///
+/// Labels are localized — Chinese labels include the original
+/// English name in parens for users who want to know what to look
+/// for online.
+List<_FontOption> _availableFonts(String locale) {
+  final isZh = locale.startsWith('zh');
+  return [
+    // ── Bundled (works everywhere) ────────────────────────────
+    _FontOption(
+      value: 'Roboto',
+      label: isZh ? 'Roboto（默认）' : 'Roboto (default)',
+    ),
+    _FontOption(
+      value: 'Microsoft YaHei',
+      label: isZh ? '微软雅黑（中文）' : 'Microsoft YaHei (Chinese)',
+    ),
+    // ── System Chinese fonts ──────────────────────────────────
+    _FontOption(
+      value: 'PingFang SC',
+      label: isZh ? '苹方（Apple 设备）' : 'PingFang SC (Apple devices)',
+    ),
+    _FontOption(
+      value: 'Source Han Sans CN',
+      label: isZh ? '思源黑体（Adobe）' : 'Source Han Sans CN',
+    ),
+    _FontOption(
+      value: 'Heiti SC',
+      label: isZh ? '黑体' : 'Heiti SC',
+    ),
+    _FontOption(
+      value: 'SimSun',
+      label: isZh ? '宋体（Windows 经典）' : 'SimSun (Windows classic)',
+    ),
+    _FontOption(
+      value: 'KaiTi',
+      label: isZh ? '楷体（书法风）' : 'KaiTi (calligraphic)',
+    ),
+    // ── System English / Latin fonts ──────────────────────────
+    _FontOption(
+      value: 'Times New Roman',
+      label: isZh ? 'Times New Roman（衬线 / 经典）' : 'Times New Roman (serif / classic)',
+    ),
+    _FontOption(
+      value: 'Georgia',
+      label: isZh ? 'Georgia（衬线 / 友好）' : 'Georgia (serif / friendly)',
+    ),
+    _FontOption(
+      value: 'Garamond',
+      label: isZh ? 'Garamond（衬线 / 优雅）' : 'Garamond (serif / elegant)',
+    ),
+    _FontOption(
+      value: 'Arial',
+      label: isZh ? 'Arial（无衬线 / 通用）' : 'Arial (sans-serif / universal)',
+    ),
+    _FontOption(
+      value: 'Helvetica',
+      label: isZh ? 'Helvetica（无衬线 / 极简）' : 'Helvetica (sans-serif / minimal)',
+    ),
+    _FontOption(
+      value: 'Verdana',
+      label: isZh ? 'Verdana（无衬线 / 易读）' : 'Verdana (sans-serif / readable)',
+    ),
+    _FontOption(
+      value: 'Palatino',
+      label: isZh ? 'Palatino（衬线 / 书本风）' : 'Palatino (serif / book)',
+    ),
+    _FontOption(
+      value: 'system-ui',
+      label: isZh ? '系统默认' : 'System default',
+    ),
+  ];
+}
 
 /// Settings → About → "Offline Pack" card. Bulk pre-fetches the
 /// content the user wants available offline (Bibles / Sermons /
