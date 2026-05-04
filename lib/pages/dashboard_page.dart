@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:yswords/constants/bible_versions.dart';
 import 'package:yswords/constants/text_patterns.dart' show sanitizeForSearch;
 import 'package:yswords/constants/ui_strings.dart';
 import 'package:yswords/utils/greeting.dart';
 import 'package:yswords/models/app_settings.dart';
+import 'package:yswords/models/sermon.dart';
 import 'package:yswords/models/verse.dart';
 import 'package:yswords/models/bible_evidence.dart';
 import 'package:yswords/models/news_article.dart';
@@ -15,6 +17,7 @@ import 'package:yswords/pages/evidence_detail_page.dart';
 import 'package:yswords/pages/evidence_page.dart';
 import 'package:yswords/pages/bible_timeline_page.dart';
 import 'package:yswords/pages/family_tree_page.dart';
+import 'package:yswords/pages/sermon_detail_page.dart';
 import 'package:yswords/pages/sermons_page.dart';
 import 'package:yswords/pages/news_detail_page.dart';
 import 'package:yswords/pages/highlights_page.dart';
@@ -25,6 +28,7 @@ import 'package:yswords/pages/settings_page.dart';
 import 'package:yswords/pages/stats_page.dart';
 import 'package:yswords/services/bible_evidence_service.dart';
 import 'package:yswords/services/daily_news_service.dart';
+import 'package:yswords/services/sermon_service.dart';
 import 'package:yswords/providers/main_provider.dart';
 import 'package:yswords/services/cloud_auth_service.dart';
 import 'package:yswords/services/cloud_sync_service.dart';
@@ -33,6 +37,7 @@ import 'package:yswords/services/daily_verse_service.dart';
 import 'package:yswords/services/profile_service.dart';
 import 'package:yswords/services/reading_plan_service.dart';
 import 'package:yswords/utils/jump_to_reference.dart' as jumper;
+import 'package:yswords/utils/passage_localizer.dart' show localizePassage;
 import 'package:yswords/utils/reference_parser.dart';
 import 'package:yswords/utils/responsive.dart';
 import 'package:yswords/utils/version_mapper.dart' show translateBookName;
@@ -84,6 +89,20 @@ class _DashboardPageState extends State<DashboardPage> {
   /// refresh so the user sees fresher data as they keep the app open.
   List<NewsArticle> _todayHeadlines = const [];
 
+  /// The sermon the user was most recently reading (persisted in
+  /// SharedPreferences as `sermons_last_read`). null when the user
+  /// has never opened a sermon. Drives the "Resume sermon" hero just
+  /// below the Bible "Continue reading" CTA.
+  Sermon? _resumeSermon;
+
+  /// Best-known scroll progress for [_resumeSermon] in the user's UI
+  /// locale (0.0–1.0). Computed from the per-sermon
+  /// `sermonScroll:<id>:<lang>` + `:max` keys written by
+  /// `sermon_detail_page.dart`. Null when no offset has been saved
+  /// for that sermon (just opened, never scrolled, or the body is
+  /// shorter than the 24 px threshold the detail page bypasses).
+  double? _resumeProgress;
+
   @override
   void initState() {
     super.initState();
@@ -94,6 +113,7 @@ class _DashboardPageState extends State<DashboardPage> {
     _loadDailyVerse();
     _loadDailyEvidence();
     _loadTodayHeadlines();
+    _loadResumeSermon();
     _maybeShowOnboarding();
   }
 
@@ -103,6 +123,96 @@ class _DashboardPageState extends State<DashboardPage> {
     setState(() {
       _dailyEvidence = BibleEvidenceService.todayEvidence(list);
     });
+  }
+
+  /// Resolve the user's last-read sermon (if any) for the "Resume
+  /// sermon" hero. We read [`sermons_last_read`] from
+  /// SharedPreferences (written by `sermons_page.dart::_openSermon`),
+  /// look up that id in the bundled index, and compute scroll
+  /// progress from the per-sermon
+  /// `sermonScroll:<id>:<lang>` / `:max` keys written by
+  /// `sermon_detail_page.dart`.
+  ///
+  /// All three reads happen in parallel via SharedPreferences's
+  /// in-memory cache (the singleton is initialised by `main.dart` /
+  /// `AppSettings`), so this is sub-millisecond and safe to call on
+  /// every dashboard mount + locale change.
+  Future<void> _loadResumeSermon() async {
+    final prefs = await SharedPreferences.getInstance();
+    final lastId = prefs.getString('sermons_last_read');
+    if (lastId == null || lastId.isEmpty) {
+      if (!mounted) return;
+      if (_resumeSermon != null) {
+        setState(() {
+          _resumeSermon = null;
+          _resumeProgress = null;
+        });
+      }
+      return;
+    }
+    Sermon? hit;
+    try {
+      final all = await SermonService.instance.loadIndex();
+      // Use a manual loop instead of firstWhere with `orElse` so we
+      // can return null cleanly when the saved id no longer matches
+      // any sermon (e.g. corpus re-ingestion dropped that id).
+      for (final s in all) {
+        if (s.id == lastId) {
+          hit = s;
+          break;
+        }
+      }
+    } catch (_) {
+      hit = null;
+    }
+    if (!mounted) return;
+    if (hit == null) {
+      setState(() {
+        _resumeSermon = null;
+        _resumeProgress = null;
+      });
+      return;
+    }
+    // Pick the language code that the sermon detail page most likely
+    // wrote against, falling back so a user who reads in 简 but
+    // briefly toggled to 繁 still sees a non-zero meter.
+    final settings = context.read<AppSettings>();
+    final preferred = settings.locale == 'zh-Hant'
+        ? 'zh-TW'
+        : settings.locale.startsWith('zh')
+            ? 'zh-CN'
+            : 'en';
+    final candidates = <String>{preferred, 'en', 'zh-CN', 'zh-TW'};
+    double? progress;
+    for (final lang in candidates) {
+      final key = 'sermonScroll:${hit.id}:$lang';
+      final px = prefs.getDouble(key);
+      final max = prefs.getDouble('$key:max');
+      if (px != null && max != null && max > 0) {
+        progress = (px / max).clamp(0.0, 1.0);
+        break;
+      }
+    }
+    setState(() {
+      _resumeSermon = hit;
+      _resumeProgress = progress;
+    });
+  }
+
+  /// Open the saved sermon and refresh the resume state when the
+  /// user returns. Mirrors `sermons_page._openSermon` so the same
+  /// session-progress invariants apply (id is already saved; the
+  /// detail page will write a fresh offset on dispose).
+  Future<void> _openResumeSermon(Sermon s) async {
+    await Get.to(
+      () => SermonDetailPage(sermon: s),
+      transition: Transition.rightToLeft,
+    );
+    if (!mounted) return;
+    // Pull the new scroll offset (the detail page wrote it on
+    // dispose) so the meter on the dashboard immediately reflects
+    // what the user just did.
+    await _loadResumeSermon();
   }
 
   Future<void> _loadTodayHeadlines() async {
@@ -424,6 +534,22 @@ class _DashboardPageState extends State<DashboardPage> {
               transition: Transition.rightToLeft,
             ),
           ),
+          // ── RESUME SERMON ──────────────────────────────────────
+          // Mirrors the Bible "Continue reading" CTA: shows the
+          // sermon the user was last reading + how far through it
+          // they got, with a single tap to jump back. Hidden when
+          // the user has never opened a sermon (no saved id) or the
+          // saved id no longer maps to a known sermon.
+          if (_resumeSermon != null) ...[
+            const SizedBox(height: 12),
+            _ResumeSermonHero(
+              sermon: _resumeSermon!,
+              progress: _resumeProgress,
+              locale: locale,
+              settings: settings,
+              onTap: () => _openResumeSermon(_resumeSermon!),
+            ),
+          ],
           const SizedBox(height: 20),
 
           // Daily verse — one curated verse per day, deterministic
@@ -1913,6 +2039,136 @@ class _ContinueReadingHero extends StatelessWidget {
                 color: scheme.onPrimary,
                 size: 22,
               ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Companion to [_ContinueReadingHero] — same shape and density, but
+/// for the user's last-read sermon. Renders only when a sermon id is
+/// persisted and still resolvable; the dashboard hides this card
+/// otherwise (so first-time users don't see an empty placeholder).
+///
+/// Visual hierarchy: the Bible CTA on top is primary-coloured (the
+/// app's main job), this card sits just under it in
+/// `surfaceContainerHigh` so it doesn't compete — but with a primary-
+/// tinted icon + thin progress bar so it still reads as
+/// "you can pick up where you left off".
+class _ResumeSermonHero extends StatelessWidget {
+  final Sermon sermon;
+  final double? progress;
+  final String locale;
+  final AppSettings settings;
+  final VoidCallback onTap;
+
+  const _ResumeSermonHero({
+    required this.sermon,
+    required this.progress,
+    required this.locale,
+    required this.settings,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final fs = settings.fontSize;
+    final ctaTitle = uiStrings['resumeSermon']?[locale] ?? 'Resume sermon';
+
+    // Subtitle: localized passage (matches the sermons-list / detail
+    // page) + percent read when we have a meter.
+    final passage = sermon.passage.trim().isEmpty
+        ? null
+        : localizePassage(sermon.passage.trim(), locale);
+    final percent =
+        progress == null ? null : '${(progress!.clamp(0.0, 1.0) * 100).round()}%';
+    final subtitleParts = <String>[
+      sermon.localizedTitle(locale),
+      if (passage != null) passage,
+      if (percent != null) percent,
+    ];
+    final subtitle = subtitleParts.join('  ·  ');
+
+    return Material(
+      color: scheme.surfaceContainerHigh,
+      borderRadius: BorderRadius.circular(16),
+      elevation: 0,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 14, 18, 14),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: scheme.primaryContainer.withValues(alpha: 0.55),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Icons.headset_mic_rounded,
+                      color: scheme.primary,
+                      size: (fs + 6).clamp(18.0, 26.0).toDouble(),
+                    ),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          ctaTitle,
+                          style: TextStyle(
+                            fontFamily: settings.fontFamily,
+                            fontSize: (fs + 1).clamp(14.0, 20.0).toDouble(),
+                            fontWeight: FontWeight.w700,
+                            color: scheme.onSurface,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          subtitle,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontFamily: settings.fontFamily,
+                            fontSize: (fs - 2).clamp(11.0, 15.0).toDouble(),
+                            color: scheme.onSurface.withValues(alpha: 0.75),
+                            fontWeight: FontWeight.w500,
+                            height: 1.35,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Icon(
+                    Icons.arrow_forward_rounded,
+                    color: scheme.onSurface.withValues(alpha: 0.55),
+                    size: 20,
+                  ),
+                ],
+              ),
+              if (progress != null) ...[
+                const SizedBox(height: 10),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(2),
+                  child: LinearProgressIndicator(
+                    value: progress!.clamp(0.0, 1.0),
+                    minHeight: 3,
+                    backgroundColor:
+                        scheme.surfaceContainerHighest.withValues(alpha: 0.7),
+                    valueColor:
+                        AlwaysStoppedAnimation<Color>(scheme.primary),
+                  ),
+                ),
+              ],
             ],
           ),
         ),

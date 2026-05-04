@@ -449,6 +449,14 @@ const uiStrings = {
     'zh-Hant': '讀經',
     'en': 'Read Bible',
   },
+  // Companion CTA below the Bible "Read Bible" hero — the "pick up
+  // where you left off in your last sermon" card. Wording mirrors
+  // the existing "继续阅读 / Resume" idiom for tracked content.
+  'resumeSermon': {
+    'zh-Hans': '继续讲道',
+    'zh-Hant': '繼續講道',
+    'en': 'Resume sermon',
+  },
   'dailyVerse': {
     'zh-Hans': '每日金句',
     'zh-Hant': '每日金句',
