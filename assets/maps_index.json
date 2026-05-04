@@ -10461,9 +10461,9 @@
     "id": "illus_sweet_ezra_9_1",
     "kind": "scene",
     "title": {
-      "en": "Ezra Chapter 9 (Sweet Publishing) (image 1/3)",
-      "zh-Hans": "以斯拉记第9章 (Sweet Publishing)（图 1/3）",
-      "zh-Hant": "以斯拉記第9章 (Sweet Publishing)（圖 1/3）"
+      "en": "Ezra Chapter 9 (Sweet Publishing)",
+      "zh-Hans": "以斯拉记第9章 (Sweet Publishing)",
+      "zh-Hant": "以斯拉記第9章 (Sweet Publishing)"
     },
     "description": {
       "en": "Sweet Publishing, 1984 — Bible illustration, Ezra Chapter 9.",
@@ -10479,54 +10479,12 @@
     "file": "https://upload.wikimedia.org/wikipedia/commons/b/b1/Book_of_Ezra_Chapter_9-1_%28Bible_Illustrations_by_Sweet_Media%29.jpg"
   },
   {
-    "id": "illus_sweet_ezra_9_2",
-    "kind": "scene",
-    "title": {
-      "en": "Ezra Chapter 9 (Sweet Publishing) (image 2/3)",
-      "zh-Hans": "以斯拉记第9章 (Sweet Publishing)（图 2/3）",
-      "zh-Hant": "以斯拉記第9章 (Sweet Publishing)（圖 2/3）"
-    },
-    "description": {
-      "en": "Sweet Publishing, 1984 — Bible illustration, Ezra Chapter 9.",
-      "zh-Hans": "Sweet Publishing,1984年——圣经插图，以斯拉记第9章。",
-      "zh-Hant": "Sweet Publishing,1984年——聖經插圖，以斯拉記第9章。"
-    },
-    "books": {
-      "Ezra": [
-        9,
-        9
-      ]
-    },
-    "file": "https://upload.wikimedia.org/wikipedia/commons/2/22/Book_of_Ezra_Chapter_9-2_%28Bible_Illustrations_by_Sweet_Media%29.jpg"
-  },
-  {
-    "id": "illus_sweet_ezra_9_3",
-    "kind": "scene",
-    "title": {
-      "en": "Ezra Chapter 9 (Sweet Publishing) (image 3/3)",
-      "zh-Hans": "以斯拉记第9章 (Sweet Publishing)（图 3/3）",
-      "zh-Hant": "以斯拉記第9章 (Sweet Publishing)（圖 3/3）"
-    },
-    "description": {
-      "en": "Sweet Publishing, 1984 — Bible illustration, Ezra Chapter 9.",
-      "zh-Hans": "Sweet Publishing,1984年——圣经插图，以斯拉记第9章。",
-      "zh-Hant": "Sweet Publishing,1984年——聖經插圖，以斯拉記第9章。"
-    },
-    "books": {
-      "Ezra": [
-        9,
-        9
-      ]
-    },
-    "file": "https://upload.wikimedia.org/wikipedia/commons/e/e9/Book_of_Ezra_Chapter_9-3_%28Bible_Illustrations_by_Sweet_Media%29.jpg"
-  },
-  {
     "id": "illus_sweet_ezra_10_1",
     "kind": "scene",
     "title": {
-      "en": "Ezra Chapter 10 (Sweet Publishing) (image 1/6)",
-      "zh-Hans": "以斯拉记第10章 (Sweet Publishing)（图 1/6）",
-      "zh-Hant": "以斯拉記第10章 (Sweet Publishing)（圖 1/6）"
+      "en": "Ezra Chapter 10 (Sweet Publishing)",
+      "zh-Hans": "以斯拉记第10章 (Sweet Publishing)",
+      "zh-Hant": "以斯拉記第10章 (Sweet Publishing)"
     },
     "description": {
       "en": "Sweet Publishing, 1984 — Bible illustration, Ezra Chapter 10.",
@@ -10540,111 +10498,6 @@
       ]
     },
     "file": "https://upload.wikimedia.org/wikipedia/commons/4/47/Book_of_Ezra_Chapter_10-1_%28Bible_Illustrations_by_Sweet_Media%29.jpg"
-  },
-  {
-    "id": "illus_sweet_ezra_10_2",
-    "kind": "scene",
-    "title": {
-      "en": "Ezra Chapter 10 (Sweet Publishing) (image 2/6)",
-      "zh-Hans": "以斯拉记第10章 (Sweet Publishing)（图 2/6）",
-      "zh-Hant": "以斯拉記第10章 (Sweet Publishing)（圖 2/6）"
-    },
-    "description": {
-      "en": "Sweet Publishing, 1984 — Bible illustration, Ezra Chapter 10.",
-      "zh-Hans": "Sweet Publishing,1984年——圣经插图，以斯拉记第10章。",
-      "zh-Hant": "Sweet Publishing,1984年——聖經插圖，以斯拉記第10章。"
-    },
-    "books": {
-      "Ezra": [
-        10,
-        10
-      ]
-    },
-    "file": "https://upload.wikimedia.org/wikipedia/commons/0/0c/Book_of_Ezra_Chapter_10-2_%28Bible_Illustrations_by_Sweet_Media%29.jpg"
-  },
-  {
-    "id": "illus_sweet_ezra_10_3",
-    "kind": "scene",
-    "title": {
-      "en": "Ezra Chapter 10 (Sweet Publishing) (image 3/6)",
-      "zh-Hans": "以斯拉记第10章 (Sweet Publishing)（图 3/6）",
-      "zh-Hant": "以斯拉記第10章 (Sweet Publishing)（圖 3/6）"
-    },
-    "description": {
-      "en": "Sweet Publishing, 1984 — Bible illustration, Ezra Chapter 10.",
-      "zh-Hans": "Sweet Publishing,1984年——圣经插图，以斯拉记第10章。",
-      "zh-Hant": "Sweet Publishing,1984年——聖經插圖，以斯拉記第10章。"
-    },
-    "books": {
-      "Ezra": [
-        10,
-        10
-      ]
-    },
-    "file": "https://upload.wikimedia.org/wikipedia/commons/3/3c/Book_of_Ezra_Chapter_10-3_%28Bible_Illustrations_by_Sweet_Media%29.jpg"
-  },
-  {
-    "id": "illus_sweet_ezra_10_4",
-    "kind": "scene",
-    "title": {
-      "en": "Ezra Chapter 10 (Sweet Publishing) (image 4/6)",
-      "zh-Hans": "以斯拉记第10章 (Sweet Publishing)（图 4/6）",
-      "zh-Hant": "以斯拉記第10章 (Sweet Publishing)（圖 4/6）"
-    },
-    "description": {
-      "en": "Sweet Publishing, 1984 — Bible illustration, Ezra Chapter 10.",
-      "zh-Hans": "Sweet Publishing,1984年——圣经插图，以斯拉记第10章。",
-      "zh-Hant": "Sweet Publishing,1984年——聖經插圖，以斯拉記第10章。"
-    },
-    "books": {
-      "Ezra": [
-        10,
-        10
-      ]
-    },
-    "file": "https://upload.wikimedia.org/wikipedia/commons/e/e6/Book_of_Ezra_Chapter_10-4_%28Bible_Illustrations_by_Sweet_Media%29.jpg"
-  },
-  {
-    "id": "illus_sweet_ezra_10_5",
-    "kind": "scene",
-    "title": {
-      "en": "Ezra Chapter 10 (Sweet Publishing) (image 5/6)",
-      "zh-Hans": "以斯拉记第10章 (Sweet Publishing)（图 5/6）",
-      "zh-Hant": "以斯拉記第10章 (Sweet Publishing)（圖 5/6）"
-    },
-    "description": {
-      "en": "Sweet Publishing, 1984 — Bible illustration, Ezra Chapter 10.",
-      "zh-Hans": "Sweet Publishing,1984年——圣经插图，以斯拉记第10章。",
-      "zh-Hant": "Sweet Publishing,1984年——聖經插圖，以斯拉記第10章。"
-    },
-    "books": {
-      "Ezra": [
-        10,
-        10
-      ]
-    },
-    "file": "https://upload.wikimedia.org/wikipedia/commons/b/b3/Book_of_Ezra_Chapter_10-5_%28Bible_Illustrations_by_Sweet_Media%29.jpg"
-  },
-  {
-    "id": "illus_sweet_ezra_10_6",
-    "kind": "scene",
-    "title": {
-      "en": "Ezra Chapter 10 (Sweet Publishing) (image 6/6)",
-      "zh-Hans": "以斯拉记第10章 (Sweet Publishing)（图 6/6）",
-      "zh-Hant": "以斯拉記第10章 (Sweet Publishing)（圖 6/6）"
-    },
-    "description": {
-      "en": "Sweet Publishing, 1984 — Bible illustration, Ezra Chapter 10.",
-      "zh-Hans": "Sweet Publishing,1984年——圣经插图，以斯拉记第10章。",
-      "zh-Hant": "Sweet Publishing,1984年——聖經插圖，以斯拉記第10章。"
-    },
-    "books": {
-      "Ezra": [
-        10,
-        10
-      ]
-    },
-    "file": "https://upload.wikimedia.org/wikipedia/commons/0/06/Book_of_Ezra_Chapter_10-6_%28Bible_Illustrations_by_Sweet_Media%29.jpg"
   },
   {
     "id": "illus_sweet_nehemiah_1_1",
@@ -10671,9 +10524,9 @@
     "id": "illus_sweet_nehemiah_2_1",
     "kind": "scene",
     "title": {
-      "en": "Nehemiah Chapter 2 (Sweet Publishing) (image 1/5)",
-      "zh-Hans": "尼希米记第2章 (Sweet Publishing)（图 1/5）",
-      "zh-Hant": "尼希米記第2章 (Sweet Publishing)（圖 1/5）"
+      "en": "Nehemiah Chapter 2 (Sweet Publishing)",
+      "zh-Hans": "尼希米记第2章 (Sweet Publishing)",
+      "zh-Hant": "尼希米記第2章 (Sweet Publishing)"
     },
     "description": {
       "en": "Sweet Publishing, 1984 — Bible illustration, Nehemiah Chapter 2.",
@@ -10687,90 +10540,6 @@
       ]
     },
     "file": "https://upload.wikimedia.org/wikipedia/commons/d/d8/Book_of_Nehemiah_Chapter_2-1_%28Bible_Illustrations_by_Sweet_Media%29.jpg"
-  },
-  {
-    "id": "illus_sweet_nehemiah_2_2",
-    "kind": "scene",
-    "title": {
-      "en": "Nehemiah Chapter 2 (Sweet Publishing) (image 2/5)",
-      "zh-Hans": "尼希米记第2章 (Sweet Publishing)（图 2/5）",
-      "zh-Hant": "尼希米記第2章 (Sweet Publishing)（圖 2/5）"
-    },
-    "description": {
-      "en": "Sweet Publishing, 1984 — Bible illustration, Nehemiah Chapter 2.",
-      "zh-Hans": "Sweet Publishing,1984年——圣经插图，尼希米记第2章。",
-      "zh-Hant": "Sweet Publishing,1984年——聖經插圖，尼希米記第2章。"
-    },
-    "books": {
-      "Nehemiah": [
-        2,
-        2
-      ]
-    },
-    "file": "https://upload.wikimedia.org/wikipedia/commons/c/c8/Book_of_Nehemiah_Chapter_2-2_%28Bible_Illustrations_by_Sweet_Media%29.jpg"
-  },
-  {
-    "id": "illus_sweet_nehemiah_2_3",
-    "kind": "scene",
-    "title": {
-      "en": "Nehemiah Chapter 2 (Sweet Publishing) (image 3/5)",
-      "zh-Hans": "尼希米记第2章 (Sweet Publishing)（图 3/5）",
-      "zh-Hant": "尼希米記第2章 (Sweet Publishing)（圖 3/5）"
-    },
-    "description": {
-      "en": "Sweet Publishing, 1984 — Bible illustration, Nehemiah Chapter 2.",
-      "zh-Hans": "Sweet Publishing,1984年——圣经插图，尼希米记第2章。",
-      "zh-Hant": "Sweet Publishing,1984年——聖經插圖，尼希米記第2章。"
-    },
-    "books": {
-      "Nehemiah": [
-        2,
-        2
-      ]
-    },
-    "file": "https://upload.wikimedia.org/wikipedia/commons/c/ce/Book_of_Nehemiah_Chapter_2-3_%28Bible_Illustrations_by_Sweet_Media%29.jpg"
-  },
-  {
-    "id": "illus_sweet_nehemiah_2_4",
-    "kind": "scene",
-    "title": {
-      "en": "Nehemiah Chapter 2 (Sweet Publishing) (image 4/5)",
-      "zh-Hans": "尼希米记第2章 (Sweet Publishing)（图 4/5）",
-      "zh-Hant": "尼希米記第2章 (Sweet Publishing)（圖 4/5）"
-    },
-    "description": {
-      "en": "Sweet Publishing, 1984 — Bible illustration, Nehemiah Chapter 2.",
-      "zh-Hans": "Sweet Publishing,1984年——圣经插图，尼希米记第2章。",
-      "zh-Hant": "Sweet Publishing,1984年——聖經插圖，尼希米記第2章。"
-    },
-    "books": {
-      "Nehemiah": [
-        2,
-        2
-      ]
-    },
-    "file": "https://upload.wikimedia.org/wikipedia/commons/0/04/Book_of_Nehemiah_Chapter_2-4_%28Bible_Illustrations_by_Sweet_Media%29.jpg"
-  },
-  {
-    "id": "illus_sweet_nehemiah_2_5",
-    "kind": "scene",
-    "title": {
-      "en": "Nehemiah Chapter 2 (Sweet Publishing) (image 5/5)",
-      "zh-Hans": "尼希米记第2章 (Sweet Publishing)（图 5/5）",
-      "zh-Hant": "尼希米記第2章 (Sweet Publishing)（圖 5/5）"
-    },
-    "description": {
-      "en": "Sweet Publishing, 1984 — Bible illustration, Nehemiah Chapter 2.",
-      "zh-Hans": "Sweet Publishing,1984年——圣经插图，尼希米记第2章。",
-      "zh-Hant": "Sweet Publishing,1984年——聖經插圖，尼希米記第2章。"
-    },
-    "books": {
-      "Nehemiah": [
-        2,
-        2
-      ]
-    },
-    "file": "https://upload.wikimedia.org/wikipedia/commons/2/2d/Book_of_Nehemiah_Chapter_2-5_%28Bible_Illustrations_by_Sweet_Media%29.jpg"
   },
   {
     "id": "illus_sweet_nehemiah_3_1",
@@ -10797,9 +10566,9 @@
     "id": "illus_sweet_nehemiah_4_1",
     "kind": "scene",
     "title": {
-      "en": "Nehemiah Chapter 4 (Sweet Publishing) (image 1/2)",
-      "zh-Hans": "尼希米记第4章 (Sweet Publishing)（图 1/2）",
-      "zh-Hant": "尼希米記第4章 (Sweet Publishing)（圖 1/2）"
+      "en": "Nehemiah Chapter 4 (Sweet Publishing)",
+      "zh-Hans": "尼希米记第4章 (Sweet Publishing)",
+      "zh-Hant": "尼希米記第4章 (Sweet Publishing)"
     },
     "description": {
       "en": "Sweet Publishing, 1984 — Bible illustration, Nehemiah Chapter 4.",
@@ -10815,33 +10584,12 @@
     "file": "https://upload.wikimedia.org/wikipedia/commons/0/0f/Book_of_Nehemiah_Chapter_4-2_%28Bible_Illustrations_by_Sweet_Media%29.jpg"
   },
   {
-    "id": "illus_sweet_nehemiah_4_2",
-    "kind": "scene",
-    "title": {
-      "en": "Nehemiah Chapter 4 (Sweet Publishing) (image 2/2)",
-      "zh-Hans": "尼希米记第4章 (Sweet Publishing)（图 2/2）",
-      "zh-Hant": "尼希米記第4章 (Sweet Publishing)（圖 2/2）"
-    },
-    "description": {
-      "en": "Sweet Publishing, 1984 — Bible illustration, Nehemiah Chapter 4.",
-      "zh-Hans": "Sweet Publishing,1984年——圣经插图，尼希米记第4章。",
-      "zh-Hant": "Sweet Publishing,1984年——聖經插圖，尼希米記第4章。"
-    },
-    "books": {
-      "Nehemiah": [
-        4,
-        4
-      ]
-    },
-    "file": "https://upload.wikimedia.org/wikipedia/commons/6/64/Book_of_Nehemiah_Chapter_4-3_%28Bible_Illustrations_by_Sweet_Media%29.jpg"
-  },
-  {
     "id": "illus_sweet_nehemiah_6_1",
     "kind": "scene",
     "title": {
-      "en": "Nehemiah Chapter 6 (Sweet Publishing) (image 1/2)",
-      "zh-Hans": "尼希米记第6章 (Sweet Publishing)（图 1/2）",
-      "zh-Hant": "尼希米記第6章 (Sweet Publishing)（圖 1/2）"
+      "en": "Nehemiah Chapter 6 (Sweet Publishing)",
+      "zh-Hans": "尼希米记第6章 (Sweet Publishing)",
+      "zh-Hant": "尼希米記第6章 (Sweet Publishing)"
     },
     "description": {
       "en": "Sweet Publishing, 1984 — Bible illustration, Nehemiah Chapter 6.",
@@ -10857,33 +10605,12 @@
     "file": "https://upload.wikimedia.org/wikipedia/commons/c/c4/Book_of_Nehemiah_Chapter_6-1_%28Bible_Illustrations_by_Sweet_Media%29.jpg"
   },
   {
-    "id": "illus_sweet_nehemiah_6_2",
-    "kind": "scene",
-    "title": {
-      "en": "Nehemiah Chapter 6 (Sweet Publishing) (image 2/2)",
-      "zh-Hans": "尼希米记第6章 (Sweet Publishing)（图 2/2）",
-      "zh-Hant": "尼希米記第6章 (Sweet Publishing)（圖 2/2）"
-    },
-    "description": {
-      "en": "Sweet Publishing, 1984 — Bible illustration, Nehemiah Chapter 6.",
-      "zh-Hans": "Sweet Publishing,1984年——圣经插图，尼希米记第6章。",
-      "zh-Hant": "Sweet Publishing,1984年——聖經插圖，尼希米記第6章。"
-    },
-    "books": {
-      "Nehemiah": [
-        6,
-        6
-      ]
-    },
-    "file": "https://upload.wikimedia.org/wikipedia/commons/e/e6/Book_of_Nehemiah_Chapter_6-2_%28Bible_Illustrations_by_Sweet_Media%29.jpg"
-  },
-  {
     "id": "illus_sweet_1_chronicles_10_1",
     "kind": "scene",
     "title": {
-      "en": "1 Chronicles Chapter 10 (Sweet Publishing) (image 1/3)",
-      "zh-Hans": "历代志上第10章 (Sweet Publishing)（图 1/3）",
-      "zh-Hant": "歷代志上第10章 (Sweet Publishing)（圖 1/3）"
+      "en": "1 Chronicles Chapter 10 (Sweet Publishing)",
+      "zh-Hans": "历代志上第10章 (Sweet Publishing)",
+      "zh-Hant": "歷代志上第10章 (Sweet Publishing)"
     },
     "description": {
       "en": "Sweet Publishing, 1984 — Bible illustration, 1 Chronicles Chapter 10.",
@@ -10897,48 +10624,6 @@
       ]
     },
     "file": "https://upload.wikimedia.org/wikipedia/commons/7/7c/First_Book_of_Chronicles_Chapter_10-1_%28Bible_Illustrations_by_Sweet_Media%29.jpg"
-  },
-  {
-    "id": "illus_sweet_1_chronicles_10_2",
-    "kind": "scene",
-    "title": {
-      "en": "1 Chronicles Chapter 10 (Sweet Publishing) (image 2/3)",
-      "zh-Hans": "历代志上第10章 (Sweet Publishing)（图 2/3）",
-      "zh-Hant": "歷代志上第10章 (Sweet Publishing)（圖 2/3）"
-    },
-    "description": {
-      "en": "Sweet Publishing, 1984 — Bible illustration, 1 Chronicles Chapter 10.",
-      "zh-Hans": "Sweet Publishing,1984年——圣经插图，历代志上第10章。",
-      "zh-Hant": "Sweet Publishing,1984年——聖經插圖，歷代志上第10章。"
-    },
-    "books": {
-      "1 Chronicles": [
-        10,
-        10
-      ]
-    },
-    "file": "https://upload.wikimedia.org/wikipedia/commons/a/a4/First_Book_of_Chronicles_Chapter_10-2_%28Bible_Illustrations_by_Sweet_Media%29.jpg"
-  },
-  {
-    "id": "illus_sweet_1_chronicles_10_3",
-    "kind": "scene",
-    "title": {
-      "en": "1 Chronicles Chapter 10 (Sweet Publishing) (image 3/3)",
-      "zh-Hans": "历代志上第10章 (Sweet Publishing)（图 3/3）",
-      "zh-Hant": "歷代志上第10章 (Sweet Publishing)（圖 3/3）"
-    },
-    "description": {
-      "en": "Sweet Publishing, 1984 — Bible illustration, 1 Chronicles Chapter 10.",
-      "zh-Hans": "Sweet Publishing,1984年——圣经插图，历代志上第10章。",
-      "zh-Hant": "Sweet Publishing,1984年——聖經插圖，歷代志上第10章。"
-    },
-    "books": {
-      "1 Chronicles": [
-        10,
-        10
-      ]
-    },
-    "file": "https://upload.wikimedia.org/wikipedia/commons/d/d7/First_Book_of_Chronicles_Chapter_10-3_%28Bible_Illustrations_by_Sweet_Media%29.jpg"
   },
   {
     "id": "illus_sweet_1_chronicles_11_1",
@@ -10965,9 +10650,9 @@
     "id": "illus_sweet_1_chronicles_13_1",
     "kind": "scene",
     "title": {
-      "en": "1 Chronicles Chapter 13 (Sweet Publishing) (image 1/3)",
-      "zh-Hans": "历代志上第13章 (Sweet Publishing)（图 1/3）",
-      "zh-Hant": "歷代志上第13章 (Sweet Publishing)（圖 1/3）"
+      "en": "1 Chronicles Chapter 13 (Sweet Publishing)",
+      "zh-Hans": "历代志上第13章 (Sweet Publishing)",
+      "zh-Hant": "歷代志上第13章 (Sweet Publishing)"
     },
     "description": {
       "en": "Sweet Publishing, 1984 — Bible illustration, 1 Chronicles Chapter 13.",
@@ -10983,54 +10668,12 @@
     "file": "https://upload.wikimedia.org/wikipedia/commons/3/3e/First_Book_of_Chronicles_Chapter_13-1_%28Bible_Illustrations_by_Sweet_Media%29.jpg"
   },
   {
-    "id": "illus_sweet_1_chronicles_13_2",
-    "kind": "scene",
-    "title": {
-      "en": "1 Chronicles Chapter 13 (Sweet Publishing) (image 2/3)",
-      "zh-Hans": "历代志上第13章 (Sweet Publishing)（图 2/3）",
-      "zh-Hant": "歷代志上第13章 (Sweet Publishing)（圖 2/3）"
-    },
-    "description": {
-      "en": "Sweet Publishing, 1984 — Bible illustration, 1 Chronicles Chapter 13.",
-      "zh-Hans": "Sweet Publishing,1984年——圣经插图，历代志上第13章。",
-      "zh-Hant": "Sweet Publishing,1984年——聖經插圖，歷代志上第13章。"
-    },
-    "books": {
-      "1 Chronicles": [
-        13,
-        13
-      ]
-    },
-    "file": "https://upload.wikimedia.org/wikipedia/commons/c/c7/First_Book_of_Chronicles_Chapter_13-2_%28Bible_Illustrations_by_Sweet_Media%29.jpg"
-  },
-  {
-    "id": "illus_sweet_1_chronicles_13_4",
-    "kind": "scene",
-    "title": {
-      "en": "1 Chronicles Chapter 13 (Sweet Publishing) (image 3/3)",
-      "zh-Hans": "历代志上第13章 (Sweet Publishing)（图 3/3）",
-      "zh-Hant": "歷代志上第13章 (Sweet Publishing)（圖 3/3）"
-    },
-    "description": {
-      "en": "Sweet Publishing, 1984 — Bible illustration, 1 Chronicles Chapter 13.",
-      "zh-Hans": "Sweet Publishing,1984年——圣经插图，历代志上第13章。",
-      "zh-Hant": "Sweet Publishing,1984年——聖經插圖，歷代志上第13章。"
-    },
-    "books": {
-      "1 Chronicles": [
-        13,
-        13
-      ]
-    },
-    "file": "https://upload.wikimedia.org/wikipedia/commons/e/ef/First_Book_of_Chronicles_Chapter_13-4_%28Bible_Illustrations_by_Sweet_Media%29.jpg"
-  },
-  {
     "id": "illus_sweet_1_chronicles_15_1",
     "kind": "scene",
     "title": {
-      "en": "1 Chronicles Chapter 15 (Sweet Publishing) (image 1/2)",
-      "zh-Hans": "历代志上第15章 (Sweet Publishing)（图 1/2）",
-      "zh-Hant": "歷代志上第15章 (Sweet Publishing)（圖 1/2）"
+      "en": "1 Chronicles Chapter 15 (Sweet Publishing)",
+      "zh-Hans": "历代志上第15章 (Sweet Publishing)",
+      "zh-Hant": "歷代志上第15章 (Sweet Publishing)"
     },
     "description": {
       "en": "Sweet Publishing, 1984 — Bible illustration, 1 Chronicles Chapter 15.",
@@ -11044,27 +10687,6 @@
       ]
     },
     "file": "https://upload.wikimedia.org/wikipedia/commons/9/9a/First_Book_of_Chronicles_Chapter_15-1_%28Bible_Illustrations_by_Sweet_Media%29.jpg"
-  },
-  {
-    "id": "illus_sweet_1_chronicles_15_2",
-    "kind": "scene",
-    "title": {
-      "en": "1 Chronicles Chapter 15 (Sweet Publishing) (image 2/2)",
-      "zh-Hans": "历代志上第15章 (Sweet Publishing)（图 2/2）",
-      "zh-Hant": "歷代志上第15章 (Sweet Publishing)（圖 2/2）"
-    },
-    "description": {
-      "en": "Sweet Publishing, 1984 — Bible illustration, 1 Chronicles Chapter 15.",
-      "zh-Hans": "Sweet Publishing,1984年——圣经插图，历代志上第15章。",
-      "zh-Hant": "Sweet Publishing,1984年——聖經插圖，歷代志上第15章。"
-    },
-    "books": {
-      "1 Chronicles": [
-        15,
-        15
-      ]
-    },
-    "file": "https://upload.wikimedia.org/wikipedia/commons/6/66/First_Book_of_Chronicles_Chapter_15-2_%28Bible_Illustrations_by_Sweet_Media%29.jpg"
   },
   {
     "id": "illus_sweet_1_chronicles_17_1",
@@ -11133,9 +10755,9 @@
     "id": "illus_sweet_1_chronicles_24_1",
     "kind": "scene",
     "title": {
-      "en": "1 Chronicles Chapter 24 (Sweet Publishing) (image 1/2)",
-      "zh-Hans": "历代志上第24章 (Sweet Publishing)（图 1/2）",
-      "zh-Hant": "歷代志上第24章 (Sweet Publishing)（圖 1/2）"
+      "en": "1 Chronicles Chapter 24 (Sweet Publishing)",
+      "zh-Hans": "历代志上第24章 (Sweet Publishing)",
+      "zh-Hant": "歷代志上第24章 (Sweet Publishing)"
     },
     "description": {
       "en": "Sweet Publishing, 1984 — Bible illustration, 1 Chronicles Chapter 24.",
@@ -11149,27 +10771,6 @@
       ]
     },
     "file": "https://upload.wikimedia.org/wikipedia/commons/9/9d/First_Book_of_Chronicles_Chapter_24-1_%28Bible_Illustrations_by_Sweet_Media%29.jpg"
-  },
-  {
-    "id": "illus_sweet_1_chronicles_24_2",
-    "kind": "scene",
-    "title": {
-      "en": "1 Chronicles Chapter 24 (Sweet Publishing) (image 2/2)",
-      "zh-Hans": "历代志上第24章 (Sweet Publishing)（图 2/2）",
-      "zh-Hant": "歷代志上第24章 (Sweet Publishing)（圖 2/2）"
-    },
-    "description": {
-      "en": "Sweet Publishing, 1984 — Bible illustration, 1 Chronicles Chapter 24.",
-      "zh-Hans": "Sweet Publishing,1984年——圣经插图，历代志上第24章。",
-      "zh-Hant": "Sweet Publishing,1984年——聖經插圖，歷代志上第24章。"
-    },
-    "books": {
-      "1 Chronicles": [
-        24,
-        24
-      ]
-    },
-    "file": "https://upload.wikimedia.org/wikipedia/commons/0/0d/First_Book_of_Chronicles_Chapter_24-2_%28Bible_Illustrations_by_Sweet_Media%29.jpg"
   },
   {
     "id": "illus_sweet_2_chronicles_1_1",
@@ -11259,9 +10860,9 @@
     "id": "illus_sweet_2_chronicles_10_1",
     "kind": "scene",
     "title": {
-      "en": "2 Chronicles Chapter 10 (Sweet Publishing) (image 1/3)",
-      "zh-Hans": "历代志下第10章 (Sweet Publishing)（图 1/3）",
-      "zh-Hant": "歷代志下第10章 (Sweet Publishing)（圖 1/3）"
+      "en": "2 Chronicles Chapter 10 (Sweet Publishing)",
+      "zh-Hans": "历代志下第10章 (Sweet Publishing)",
+      "zh-Hant": "歷代志下第10章 (Sweet Publishing)"
     },
     "description": {
       "en": "Sweet Publishing, 1984 — Bible illustration, 2 Chronicles Chapter 10.",
@@ -11275,48 +10876,6 @@
       ]
     },
     "file": "https://upload.wikimedia.org/wikipedia/commons/4/4e/Second_Book_of_Chronicles_Chapter_10-1_%28Bible_Illustrations_by_Sweet_Media%29.jpg"
-  },
-  {
-    "id": "illus_sweet_2_chronicles_10_2",
-    "kind": "scene",
-    "title": {
-      "en": "2 Chronicles Chapter 10 (Sweet Publishing) (image 2/3)",
-      "zh-Hans": "历代志下第10章 (Sweet Publishing)（图 2/3）",
-      "zh-Hant": "歷代志下第10章 (Sweet Publishing)（圖 2/3）"
-    },
-    "description": {
-      "en": "Sweet Publishing, 1984 — Bible illustration, 2 Chronicles Chapter 10.",
-      "zh-Hans": "Sweet Publishing,1984年——圣经插图，历代志下第10章。",
-      "zh-Hant": "Sweet Publishing,1984年——聖經插圖，歷代志下第10章。"
-    },
-    "books": {
-      "2 Chronicles": [
-        10,
-        10
-      ]
-    },
-    "file": "https://upload.wikimedia.org/wikipedia/commons/b/b9/Second_Book_of_Chronicles_Chapter_10-2_%28Bible_Illustrations_by_Sweet_Media%29.jpg"
-  },
-  {
-    "id": "illus_sweet_2_chronicles_10_3",
-    "kind": "scene",
-    "title": {
-      "en": "2 Chronicles Chapter 10 (Sweet Publishing) (image 3/3)",
-      "zh-Hans": "历代志下第10章 (Sweet Publishing)（图 3/3）",
-      "zh-Hant": "歷代志下第10章 (Sweet Publishing)（圖 3/3）"
-    },
-    "description": {
-      "en": "Sweet Publishing, 1984 — Bible illustration, 2 Chronicles Chapter 10.",
-      "zh-Hans": "Sweet Publishing,1984年——圣经插图，历代志下第10章。",
-      "zh-Hant": "Sweet Publishing,1984年——聖經插圖，歷代志下第10章。"
-    },
-    "books": {
-      "2 Chronicles": [
-        10,
-        10
-      ]
-    },
-    "file": "https://upload.wikimedia.org/wikipedia/commons/7/77/Second_Book_of_Chronicles_Chapter_10-3_%28Bible_Illustrations_by_Sweet_Media%29.jpg"
   },
   {
     "id": "illus_sweet_2_chronicles_24_1",
@@ -11343,9 +10902,9 @@
     "id": "illus_sweet_2_chronicles_34_1",
     "kind": "scene",
     "title": {
-      "en": "2 Chronicles Chapter 34 (Sweet Publishing) (image 1/2)",
-      "zh-Hans": "历代志下第34章 (Sweet Publishing)（图 1/2）",
-      "zh-Hant": "歷代志下第34章 (Sweet Publishing)（圖 1/2）"
+      "en": "2 Chronicles Chapter 34 (Sweet Publishing)",
+      "zh-Hans": "历代志下第34章 (Sweet Publishing)",
+      "zh-Hant": "歷代志下第34章 (Sweet Publishing)"
     },
     "description": {
       "en": "Sweet Publishing, 1984 — Bible illustration, 2 Chronicles Chapter 34.",
@@ -11359,27 +10918,6 @@
       ]
     },
     "file": "https://upload.wikimedia.org/wikipedia/commons/5/51/Second_Book_of_Chronicles_Chapter_34-4_%28Bible_Illustrations_by_Sweet_Media%29.jpg"
-  },
-  {
-    "id": "illus_sweet_2_chronicles_34_2",
-    "kind": "scene",
-    "title": {
-      "en": "2 Chronicles Chapter 34 (Sweet Publishing) (image 2/2)",
-      "zh-Hans": "历代志下第34章 (Sweet Publishing)（图 2/2）",
-      "zh-Hant": "歷代志下第34章 (Sweet Publishing)（圖 2/2）"
-    },
-    "description": {
-      "en": "Sweet Publishing, 1984 — Bible illustration, 2 Chronicles Chapter 34.",
-      "zh-Hans": "Sweet Publishing,1984年——圣经插图，历代志下第34章。",
-      "zh-Hant": "Sweet Publishing,1984年——聖經插圖，歷代志下第34章。"
-    },
-    "books": {
-      "2 Chronicles": [
-        34,
-        34
-      ]
-    },
-    "file": "https://upload.wikimedia.org/wikipedia/commons/2/28/Second_Book_of_Chronicles_Chapter_34-5_%28Bible_Illustrations_by_Sweet_Media%29.jpg"
   },
   {
     "id": "illus_sweet_2_chronicles_35_1",
@@ -11406,9 +10944,9 @@
     "id": "illus_sweet_psalms_23_1",
     "kind": "scene",
     "title": {
-      "en": "Psalms Chapter 23 (Sweet Publishing) (image 1/3)",
-      "zh-Hans": "诗篇第23章 (Sweet Publishing)（图 1/3）",
-      "zh-Hant": "詩篇第23章 (Sweet Publishing)（圖 1/3）"
+      "en": "Psalms Chapter 23 (Sweet Publishing)",
+      "zh-Hans": "诗篇第23章 (Sweet Publishing)",
+      "zh-Hant": "詩篇第23章 (Sweet Publishing)"
     },
     "description": {
       "en": "Sweet Publishing, 1984 — Bible illustration, Psalms Chapter 23.",
@@ -11422,48 +10960,6 @@
       ]
     },
     "file": "https://upload.wikimedia.org/wikipedia/commons/c/ce/Psalms_Chapter_23-1_%28Bible_Illustrations_by_Sweet_Media%29.jpg"
-  },
-  {
-    "id": "illus_sweet_psalms_23_2",
-    "kind": "scene",
-    "title": {
-      "en": "Psalms Chapter 23 (Sweet Publishing) (image 2/3)",
-      "zh-Hans": "诗篇第23章 (Sweet Publishing)（图 2/3）",
-      "zh-Hant": "詩篇第23章 (Sweet Publishing)（圖 2/3）"
-    },
-    "description": {
-      "en": "Sweet Publishing, 1984 — Bible illustration, Psalms Chapter 23.",
-      "zh-Hans": "Sweet Publishing,1984年——圣经插图，诗篇第23章。",
-      "zh-Hant": "Sweet Publishing,1984年——聖經插圖，詩篇第23章。"
-    },
-    "books": {
-      "Psalms": [
-        23,
-        23
-      ]
-    },
-    "file": "https://upload.wikimedia.org/wikipedia/commons/0/0e/Psalms_Chapter_23-2_%28Bible_Illustrations_by_Sweet_Media%29.jpg"
-  },
-  {
-    "id": "illus_sweet_psalms_23_3",
-    "kind": "scene",
-    "title": {
-      "en": "Psalms Chapter 23 (Sweet Publishing) (image 3/3)",
-      "zh-Hans": "诗篇第23章 (Sweet Publishing)（图 3/3）",
-      "zh-Hant": "詩篇第23章 (Sweet Publishing)（圖 3/3）"
-    },
-    "description": {
-      "en": "Sweet Publishing, 1984 — Bible illustration, Psalms Chapter 23.",
-      "zh-Hans": "Sweet Publishing,1984年——圣经插图，诗篇第23章。",
-      "zh-Hant": "Sweet Publishing,1984年——聖經插圖，詩篇第23章。"
-    },
-    "books": {
-      "Psalms": [
-        23,
-        23
-      ]
-    },
-    "file": "https://upload.wikimedia.org/wikipedia/commons/b/b2/Psalms_Chapter_23-3_%28Bible_Illustrations_by_Sweet_Media%29.jpg"
   },
   {
     "id": "illus_sweet_psalms_25_1",
@@ -11553,9 +11049,9 @@
     "id": "illus_sweet_psalms_119_1",
     "kind": "scene",
     "title": {
-      "en": "Psalms Chapter 119 (Sweet Publishing) (image 1/2)",
-      "zh-Hans": "诗篇第119章 (Sweet Publishing)（图 1/2）",
-      "zh-Hant": "詩篇第119章 (Sweet Publishing)（圖 1/2）"
+      "en": "Psalms Chapter 119 (Sweet Publishing)",
+      "zh-Hans": "诗篇第119章 (Sweet Publishing)",
+      "zh-Hant": "詩篇第119章 (Sweet Publishing)"
     },
     "description": {
       "en": "Sweet Publishing, 1984 — Bible illustration, Psalms Chapter 119.",
@@ -11569,27 +11065,6 @@
       ]
     },
     "file": "https://upload.wikimedia.org/wikipedia/commons/3/3e/Psalms_Chapter_119-1_%28Bible_Illustrations_by_Sweet_Media%29.jpg"
-  },
-  {
-    "id": "illus_sweet_psalms_119_2",
-    "kind": "scene",
-    "title": {
-      "en": "Psalms Chapter 119 (Sweet Publishing) (image 2/2)",
-      "zh-Hans": "诗篇第119章 (Sweet Publishing)（图 2/2）",
-      "zh-Hant": "詩篇第119章 (Sweet Publishing)（圖 2/2）"
-    },
-    "description": {
-      "en": "Sweet Publishing, 1984 — Bible illustration, Psalms Chapter 119.",
-      "zh-Hans": "Sweet Publishing,1984年——圣经插图，诗篇第119章。",
-      "zh-Hant": "Sweet Publishing,1984年——聖經插圖，詩篇第119章。"
-    },
-    "books": {
-      "Psalms": [
-        119,
-        119
-      ]
-    },
-    "file": "https://upload.wikimedia.org/wikipedia/commons/a/a7/Psalms_Chapter_119-2_%28Bible_Illustrations_by_Sweet_Media%29.jpg"
   },
   {
     "id": "illus_sweet_1_timothy_1_1",
@@ -11637,9 +11112,9 @@
     "id": "illus_sweet_2_timothy_2_1",
     "kind": "scene",
     "title": {
-      "en": "2 Timothy Chapter 2 (Sweet Publishing) (image 1/3)",
-      "zh-Hans": "提摩太后书第2章 (Sweet Publishing)（图 1/3）",
-      "zh-Hant": "提摩太後書第2章 (Sweet Publishing)（圖 1/3）"
+      "en": "2 Timothy Chapter 2 (Sweet Publishing)",
+      "zh-Hans": "提摩太后书第2章 (Sweet Publishing)",
+      "zh-Hant": "提摩太後書第2章 (Sweet Publishing)"
     },
     "description": {
       "en": "Sweet Publishing, 1984 — Bible illustration, 2 Timothy Chapter 2.",
@@ -11655,54 +11130,12 @@
     "file": "https://upload.wikimedia.org/wikipedia/commons/d/de/Second_Epistle_to_Timothy_Chapter_2-1_%28Bible_Illustrations_by_Sweet_Media%29.jpg"
   },
   {
-    "id": "illus_sweet_2_timothy_2_2",
-    "kind": "scene",
-    "title": {
-      "en": "2 Timothy Chapter 2 (Sweet Publishing) (image 2/3)",
-      "zh-Hans": "提摩太后书第2章 (Sweet Publishing)（图 2/3）",
-      "zh-Hant": "提摩太後書第2章 (Sweet Publishing)（圖 2/3）"
-    },
-    "description": {
-      "en": "Sweet Publishing, 1984 — Bible illustration, 2 Timothy Chapter 2.",
-      "zh-Hans": "Sweet Publishing,1984年——圣经插图，提摩太后书第2章。",
-      "zh-Hant": "Sweet Publishing,1984年——聖經插圖，提摩太後書第2章。"
-    },
-    "books": {
-      "2 Timothy": [
-        2,
-        2
-      ]
-    },
-    "file": "https://upload.wikimedia.org/wikipedia/commons/b/bf/Second_Epistle_to_Timothy_Chapter_2-2_%28Bible_Illustrations_by_Sweet_Media%29.jpg"
-  },
-  {
-    "id": "illus_sweet_2_timothy_2_3",
-    "kind": "scene",
-    "title": {
-      "en": "2 Timothy Chapter 2 (Sweet Publishing) (image 3/3)",
-      "zh-Hans": "提摩太后书第2章 (Sweet Publishing)（图 3/3）",
-      "zh-Hant": "提摩太後書第2章 (Sweet Publishing)（圖 3/3）"
-    },
-    "description": {
-      "en": "Sweet Publishing, 1984 — Bible illustration, 2 Timothy Chapter 2.",
-      "zh-Hans": "Sweet Publishing,1984年——圣经插图，提摩太后书第2章。",
-      "zh-Hant": "Sweet Publishing,1984年——聖經插圖，提摩太後書第2章。"
-    },
-    "books": {
-      "2 Timothy": [
-        2,
-        2
-      ]
-    },
-    "file": "https://upload.wikimedia.org/wikipedia/commons/6/67/Second_Epistle_to_Timothy_Chapter_2-3_%28Bible_Illustrations_by_Sweet_Media%29.jpg"
-  },
-  {
     "id": "illus_sweet_2_timothy_4_1",
     "kind": "scene",
     "title": {
-      "en": "2 Timothy Chapter 4 (Sweet Publishing) (image 1/4)",
-      "zh-Hans": "提摩太后书第4章 (Sweet Publishing)（图 1/4）",
-      "zh-Hant": "提摩太後書第4章 (Sweet Publishing)（圖 1/4）"
+      "en": "2 Timothy Chapter 4 (Sweet Publishing)",
+      "zh-Hans": "提摩太后书第4章 (Sweet Publishing)",
+      "zh-Hant": "提摩太後書第4章 (Sweet Publishing)"
     },
     "description": {
       "en": "Sweet Publishing, 1984 — Bible illustration, 2 Timothy Chapter 4.",
@@ -11716,69 +11149,6 @@
       ]
     },
     "file": "https://upload.wikimedia.org/wikipedia/commons/3/38/Second_Epistle_to_Timothy_Chapter_4-1_%28Bible_Illustrations_by_Sweet_Media%29.jpg"
-  },
-  {
-    "id": "illus_sweet_2_timothy_4_2",
-    "kind": "scene",
-    "title": {
-      "en": "2 Timothy Chapter 4 (Sweet Publishing) (image 2/4)",
-      "zh-Hans": "提摩太后书第4章 (Sweet Publishing)（图 2/4）",
-      "zh-Hant": "提摩太後書第4章 (Sweet Publishing)（圖 2/4）"
-    },
-    "description": {
-      "en": "Sweet Publishing, 1984 — Bible illustration, 2 Timothy Chapter 4.",
-      "zh-Hans": "Sweet Publishing,1984年——圣经插图，提摩太后书第4章。",
-      "zh-Hant": "Sweet Publishing,1984年——聖經插圖，提摩太後書第4章。"
-    },
-    "books": {
-      "2 Timothy": [
-        4,
-        4
-      ]
-    },
-    "file": "https://upload.wikimedia.org/wikipedia/commons/8/80/Second_Epistle_to_Timothy_Chapter_4-2_%28Bible_Illustrations_by_Sweet_Media%29.jpg"
-  },
-  {
-    "id": "illus_sweet_2_timothy_4_3",
-    "kind": "scene",
-    "title": {
-      "en": "2 Timothy Chapter 4 (Sweet Publishing) (image 3/4)",
-      "zh-Hans": "提摩太后书第4章 (Sweet Publishing)（图 3/4）",
-      "zh-Hant": "提摩太後書第4章 (Sweet Publishing)（圖 3/4）"
-    },
-    "description": {
-      "en": "Sweet Publishing, 1984 — Bible illustration, 2 Timothy Chapter 4.",
-      "zh-Hans": "Sweet Publishing,1984年——圣经插图，提摩太后书第4章。",
-      "zh-Hant": "Sweet Publishing,1984年——聖經插圖，提摩太後書第4章。"
-    },
-    "books": {
-      "2 Timothy": [
-        4,
-        4
-      ]
-    },
-    "file": "https://upload.wikimedia.org/wikipedia/commons/0/0d/Second_Epistle_to_Timothy_Chapter_4-3_%28Bible_Illustrations_by_Sweet_Media%29.jpg"
-  },
-  {
-    "id": "illus_sweet_2_timothy_4_4",
-    "kind": "scene",
-    "title": {
-      "en": "2 Timothy Chapter 4 (Sweet Publishing) (image 4/4)",
-      "zh-Hans": "提摩太后书第4章 (Sweet Publishing)（图 4/4）",
-      "zh-Hant": "提摩太後書第4章 (Sweet Publishing)（圖 4/4）"
-    },
-    "description": {
-      "en": "Sweet Publishing, 1984 — Bible illustration, 2 Timothy Chapter 4.",
-      "zh-Hans": "Sweet Publishing,1984年——圣经插图，提摩太后书第4章。",
-      "zh-Hant": "Sweet Publishing,1984年——聖經插圖，提摩太後書第4章。"
-    },
-    "books": {
-      "2 Timothy": [
-        4,
-        4
-      ]
-    },
-    "file": "https://upload.wikimedia.org/wikipedia/commons/b/bb/Second_Epistle_to_Timothy_Chapter_4-4_%28Bible_Illustrations_by_Sweet_Media%29.jpg"
   },
   {
     "id": "illus_sweet_titus_1_1",
@@ -11826,9 +11196,9 @@
     "id": "illus_sweet_james_2_1",
     "kind": "scene",
     "title": {
-      "en": "James Chapter 2 (Sweet Publishing) (image 1/4)",
-      "zh-Hans": "雅各书第2章 (Sweet Publishing)（图 1/4）",
-      "zh-Hant": "雅各書第2章 (Sweet Publishing)（圖 1/4）"
+      "en": "James Chapter 2 (Sweet Publishing)",
+      "zh-Hans": "雅各书第2章 (Sweet Publishing)",
+      "zh-Hant": "雅各書第2章 (Sweet Publishing)"
     },
     "description": {
       "en": "Sweet Publishing, 1984 — Bible illustration, James Chapter 2.",
@@ -11842,69 +11212,6 @@
       ]
     },
     "file": "https://upload.wikimedia.org/wikipedia/commons/f/f2/Epistle_of_James_Chapter_2-1_%28Bible_Illustrations_by_Sweet_Media%29.jpg"
-  },
-  {
-    "id": "illus_sweet_james_2_2",
-    "kind": "scene",
-    "title": {
-      "en": "James Chapter 2 (Sweet Publishing) (image 2/4)",
-      "zh-Hans": "雅各书第2章 (Sweet Publishing)（图 2/4）",
-      "zh-Hant": "雅各書第2章 (Sweet Publishing)（圖 2/4）"
-    },
-    "description": {
-      "en": "Sweet Publishing, 1984 — Bible illustration, James Chapter 2.",
-      "zh-Hans": "Sweet Publishing,1984年——圣经插图，雅各书第2章。",
-      "zh-Hant": "Sweet Publishing,1984年——聖經插圖，雅各書第2章。"
-    },
-    "books": {
-      "James": [
-        2,
-        2
-      ]
-    },
-    "file": "https://upload.wikimedia.org/wikipedia/commons/3/3f/Epistle_of_James_Chapter_2-2_%28Bible_Illustrations_by_Sweet_Media%29.jpg"
-  },
-  {
-    "id": "illus_sweet_james_2_3",
-    "kind": "scene",
-    "title": {
-      "en": "James Chapter 2 (Sweet Publishing) (image 3/4)",
-      "zh-Hans": "雅各书第2章 (Sweet Publishing)（图 3/4）",
-      "zh-Hant": "雅各書第2章 (Sweet Publishing)（圖 3/4）"
-    },
-    "description": {
-      "en": "Sweet Publishing, 1984 — Bible illustration, James Chapter 2.",
-      "zh-Hans": "Sweet Publishing,1984年——圣经插图，雅各书第2章。",
-      "zh-Hant": "Sweet Publishing,1984年——聖經插圖，雅各書第2章。"
-    },
-    "books": {
-      "James": [
-        2,
-        2
-      ]
-    },
-    "file": "https://upload.wikimedia.org/wikipedia/commons/4/4f/Epistle_of_James_Chapter_2-3_%28Bible_Illustrations_by_Sweet_Media%29.jpg"
-  },
-  {
-    "id": "illus_sweet_james_2_4",
-    "kind": "scene",
-    "title": {
-      "en": "James Chapter 2 (Sweet Publishing) (image 4/4)",
-      "zh-Hans": "雅各书第2章 (Sweet Publishing)（图 4/4）",
-      "zh-Hant": "雅各書第2章 (Sweet Publishing)（圖 4/4）"
-    },
-    "description": {
-      "en": "Sweet Publishing, 1984 — Bible illustration, James Chapter 2.",
-      "zh-Hans": "Sweet Publishing,1984年——圣经插图，雅各书第2章。",
-      "zh-Hant": "Sweet Publishing,1984年——聖經插圖，雅各書第2章。"
-    },
-    "books": {
-      "James": [
-        2,
-        2
-      ]
-    },
-    "file": "https://upload.wikimedia.org/wikipedia/commons/0/06/Epistle_of_James_Chapter_2-4_%28Bible_Illustrations_by_Sweet_Media%29.jpg"
   },
   {
     "id": "illus_sweet_1_john_2_1",
@@ -11931,9 +11238,9 @@
     "id": "illus_sweet_1_john_3_1",
     "kind": "scene",
     "title": {
-      "en": "1 John Chapter 3 (Sweet Publishing) (image 1/3)",
-      "zh-Hans": "约翰一书第3章 (Sweet Publishing)（图 1/3）",
-      "zh-Hant": "約翰一書第3章 (Sweet Publishing)（圖 1/3）"
+      "en": "1 John Chapter 3 (Sweet Publishing)",
+      "zh-Hans": "约翰一书第3章 (Sweet Publishing)",
+      "zh-Hant": "約翰一書第3章 (Sweet Publishing)"
     },
     "description": {
       "en": "Sweet Publishing, 1984 — Bible illustration, 1 John Chapter 3.",
@@ -11947,48 +11254,6 @@
       ]
     },
     "file": "https://upload.wikimedia.org/wikipedia/commons/9/9f/First_Epistle_of_John_Chapter_3-1_%28Bible_Illustrations_by_Sweet_Media%29.jpg"
-  },
-  {
-    "id": "illus_sweet_1_john_3_2",
-    "kind": "scene",
-    "title": {
-      "en": "1 John Chapter 3 (Sweet Publishing) (image 2/3)",
-      "zh-Hans": "约翰一书第3章 (Sweet Publishing)（图 2/3）",
-      "zh-Hant": "約翰一書第3章 (Sweet Publishing)（圖 2/3）"
-    },
-    "description": {
-      "en": "Sweet Publishing, 1984 — Bible illustration, 1 John Chapter 3.",
-      "zh-Hans": "Sweet Publishing,1984年——圣经插图，约翰一书第3章。",
-      "zh-Hant": "Sweet Publishing,1984年——聖經插圖，約翰一書第3章。"
-    },
-    "books": {
-      "1 John": [
-        3,
-        3
-      ]
-    },
-    "file": "https://upload.wikimedia.org/wikipedia/commons/3/3f/First_Epistle_of_John_Chapter_3-2_%28Bible_Illustrations_by_Sweet_Media%29.jpg"
-  },
-  {
-    "id": "illus_sweet_1_john_3_3",
-    "kind": "scene",
-    "title": {
-      "en": "1 John Chapter 3 (Sweet Publishing) (image 3/3)",
-      "zh-Hans": "约翰一书第3章 (Sweet Publishing)（图 3/3）",
-      "zh-Hant": "約翰一書第3章 (Sweet Publishing)（圖 3/3）"
-    },
-    "description": {
-      "en": "Sweet Publishing, 1984 — Bible illustration, 1 John Chapter 3.",
-      "zh-Hans": "Sweet Publishing,1984年——圣经插图，约翰一书第3章。",
-      "zh-Hant": "Sweet Publishing,1984年——聖經插圖，約翰一書第3章。"
-    },
-    "books": {
-      "1 John": [
-        3,
-        3
-      ]
-    },
-    "file": "https://upload.wikimedia.org/wikipedia/commons/8/8c/First_Epistle_of_John_Chapter_3-3_%28Bible_Illustrations_by_Sweet_Media%29.jpg"
   },
   {
     "id": "illus_sweet_1_john_4_1",
@@ -12149,9 +11414,9 @@
     "id": "illus_tissot_brooklyn_museum_-_ancient_tombs_valley_of_hinnom_-_james_tissot_-_2",
     "kind": "scene",
     "title": {
-      "en": "Ancient Tombs Valley of Hinnom (Tissot) (image 2/2)",
-      "zh-Hans": "迪索圣经插图——约书亚记第15章（图 2/2）",
-      "zh-Hant": "迪索聖經插圖——約書亞記第15章（圖 2/2）"
+      "en": "Ancient Tombs Valley of Hinnom (Tissot)",
+      "zh-Hans": "迪索圣经插图——约书亚记第15章",
+      "zh-Hant": "迪索聖經插圖——約書亞記第15章"
     },
     "description": {
       "en": "James Tissot — Ancient Tombs Valley of Hinnom (Joshua 15-15).",
@@ -12165,27 +11430,6 @@
       ]
     },
     "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/73/Brooklyn_Museum_-_Ancient_Tombs_Valley_of_Hinnom_-_James_Tissot_-_2.jpg/1280px-Brooklyn_Museum_-_Ancient_Tombs_Valley_of_Hinnom_-_James_Tissot_-_2.jpg"
-  },
-  {
-    "id": "illus_tissot_brooklyn_museum_-_ancient_tombs_valley_of_hinnom_-_james_tissot",
-    "kind": "scene",
-    "title": {
-      "en": "Ancient Tombs Valley of Hinnom (Tissot) (image 1/2)",
-      "zh-Hans": "迪索圣经插图——约书亚记第15章（图 1/2）",
-      "zh-Hant": "迪索聖經插圖——約書亞記第15章（圖 1/2）"
-    },
-    "description": {
-      "en": "James Tissot — Ancient Tombs Valley of Hinnom (Joshua 15-15).",
-      "zh-Hans": "詹姆斯·迪索——约书亚记第15章圣经场景（约书亚记第15-15章）。",
-      "zh-Hant": "詹姆斯·迪索——約書亞記第15章聖經場景（約書亞記第15-15章）。"
-    },
-    "books": {
-      "Joshua": [
-        15,
-        15
-      ]
-    },
-    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/72/Brooklyn_Museum_-_Ancient_Tombs_Valley_of_Hinnom_-_James_Tissot.jpg/1280px-Brooklyn_Museum_-_Ancient_Tombs_Valley_of_Hinnom_-_James_Tissot.jpg"
   },
   {
     "id": "illus_tissot_brooklyn_museum_-_apparition_of_our_lord_to_saint_peter_apparition_de_",
@@ -12258,9 +11502,9 @@
     "id": "illus_tissot_brooklyn_museum_-_judaic_ornament_menorah_-_james_tissot",
     "kind": "scene",
     "title": {
-      "en": "Judaic Ornament (Tissot) (image 5/5)",
-      "zh-Hans": "迪索圣经插图——出埃及记第25章（图 5/5）",
-      "zh-Hant": "迪索聖經插圖——出埃及記第25章（圖 5/5）"
+      "en": "Judaic Ornament (Tissot)",
+      "zh-Hans": "迪索圣经插图——出埃及记第25章",
+      "zh-Hant": "迪索聖經插圖——出埃及記第25章"
     },
     "description": {
       "en": "James Tissot — Judaic Ornament (Exodus 25-25).",
@@ -12274,90 +11518,6 @@
       ]
     },
     "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b2/Brooklyn_Museum_-_Judaic_Ornament_%28Menorah%29_-_James_Tissot.jpg/1280px-Brooklyn_Museum_-_Judaic_Ornament_%28Menorah%29_-_James_Tissot.jpg"
-  },
-  {
-    "id": "illus_tissot_brooklyn_museum_-_judaic_ornament_-_james_tissot_-_2",
-    "kind": "scene",
-    "title": {
-      "en": "Judaic Ornament (Tissot) (image 2/5)",
-      "zh-Hans": "迪索圣经插图——出埃及记第25章（图 2/5）",
-      "zh-Hant": "迪索聖經插圖——出埃及記第25章（圖 2/5）"
-    },
-    "description": {
-      "en": "James Tissot — Judaic Ornament (Exodus 25-25).",
-      "zh-Hans": "詹姆斯·迪索——出埃及记第25章圣经场景（出埃及记第25-25章）。",
-      "zh-Hant": "詹姆斯·迪索——出埃及記第25章聖經場景（出埃及記第25-25章）。"
-    },
-    "books": {
-      "Exodus": [
-        25,
-        25
-      ]
-    },
-    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/89/Brooklyn_Museum_-_Judaic_Ornament_-_James_Tissot_-_2.jpg/1280px-Brooklyn_Museum_-_Judaic_Ornament_-_James_Tissot_-_2.jpg"
-  },
-  {
-    "id": "illus_tissot_brooklyn_museum_-_judaic_ornament_-_james_tissot_-_3",
-    "kind": "scene",
-    "title": {
-      "en": "Judaic Ornament (Tissot) (image 3/5)",
-      "zh-Hans": "迪索圣经插图——出埃及记第25章（图 3/5）",
-      "zh-Hant": "迪索聖經插圖——出埃及記第25章（圖 3/5）"
-    },
-    "description": {
-      "en": "James Tissot — Judaic Ornament (Exodus 25-25).",
-      "zh-Hans": "詹姆斯·迪索——出埃及记第25章圣经场景（出埃及记第25-25章）。",
-      "zh-Hant": "詹姆斯·迪索——出埃及記第25章聖經場景（出埃及記第25-25章）。"
-    },
-    "books": {
-      "Exodus": [
-        25,
-        25
-      ]
-    },
-    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/18/Brooklyn_Museum_-_Judaic_Ornament_-_James_Tissot_-_3.jpg/1280px-Brooklyn_Museum_-_Judaic_Ornament_-_James_Tissot_-_3.jpg"
-  },
-  {
-    "id": "illus_tissot_brooklyn_museum_-_judaic_ornament_-_james_tissot_-_4",
-    "kind": "scene",
-    "title": {
-      "en": "Judaic Ornament (Tissot) (image 4/5)",
-      "zh-Hans": "迪索圣经插图——出埃及记第25章（图 4/5）",
-      "zh-Hant": "迪索聖經插圖——出埃及記第25章（圖 4/5）"
-    },
-    "description": {
-      "en": "James Tissot — Judaic Ornament (Exodus 25-25).",
-      "zh-Hans": "詹姆斯·迪索——出埃及记第25章圣经场景（出埃及记第25-25章）。",
-      "zh-Hant": "詹姆斯·迪索——出埃及記第25章聖經場景（出埃及記第25-25章）。"
-    },
-    "books": {
-      "Exodus": [
-        25,
-        25
-      ]
-    },
-    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/02/Brooklyn_Museum_-_Judaic_Ornament_-_James_Tissot_-_4.jpg/1280px-Brooklyn_Museum_-_Judaic_Ornament_-_James_Tissot_-_4.jpg"
-  },
-  {
-    "id": "illus_tissot_brooklyn_museum_-_judaic_ornament_-_james_tissot",
-    "kind": "scene",
-    "title": {
-      "en": "Judaic Ornament (Tissot) (image 1/5)",
-      "zh-Hans": "迪索圣经插图——出埃及记第25章（图 1/5）",
-      "zh-Hant": "迪索聖經插圖——出埃及記第25章（圖 1/5）"
-    },
-    "description": {
-      "en": "James Tissot — Judaic Ornament (Exodus 25-25).",
-      "zh-Hans": "詹姆斯·迪索——出埃及记第25章圣经场景（出埃及记第25-25章）。",
-      "zh-Hant": "詹姆斯·迪索——出埃及記第25章聖經場景（出埃及記第25-25章）。"
-    },
-    "books": {
-      "Exodus": [
-        25,
-        25
-      ]
-    },
-    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e2/Brooklyn_Museum_-_Judaic_Ornament_-_James_Tissot.jpg/1280px-Brooklyn_Museum_-_Judaic_Ornament_-_James_Tissot.jpg"
   },
   {
     "id": "illus_tissot_brooklyn_museum_-_tombs_in_the_valley_of_hinnom_-_james_tissot",
@@ -13245,9 +12405,9 @@
     "id": "illus_tissot_hosea_by_james_tissot_cropped",
     "kind": "scene",
     "title": {
-      "en": "Hosea (Tissot) (image 2/2)",
-      "zh-Hans": "迪索圣经插图——何西阿书第1章（图 2/2）",
-      "zh-Hant": "迪索聖經插圖——何西阿書第1章（圖 2/2）"
+      "en": "Hosea (Tissot)",
+      "zh-Hans": "迪索圣经插图——何西阿书第1章",
+      "zh-Hant": "迪索聖經插圖——何西阿書第1章"
     },
     "description": {
       "en": "James Tissot — Hosea (Hosea 1-1).",
@@ -13261,27 +12421,6 @@
       ]
     },
     "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b3/Hosea_by_James_Tissot_%28cropped%29.jpg/1280px-Hosea_by_James_Tissot_%28cropped%29.jpg"
-  },
-  {
-    "id": "illus_tissot_hosea_by_james_tissot",
-    "kind": "scene",
-    "title": {
-      "en": "Hosea (Tissot) (image 1/2)",
-      "zh-Hans": "迪索圣经插图——何西阿书第1章（图 1/2）",
-      "zh-Hant": "迪索聖經插圖——何西阿書第1章（圖 1/2）"
-    },
-    "description": {
-      "en": "James Tissot — Hosea (Hosea 1-1).",
-      "zh-Hans": "詹姆斯·迪索——何西阿书第1章圣经场景（何西阿书第1-1章）。",
-      "zh-Hant": "詹姆斯·迪索——何西阿書第1章聖經場景（何西阿書第1-1章）。"
-    },
-    "books": {
-      "Hosea": [
-        1,
-        1
-      ]
-    },
-    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/18/Hosea_by_James_Tissot.jpg/1280px-Hosea_by_James_Tissot.jpg"
   },
   {
     "id": "illus_tissot_jacobs_dream_james_tissot",
@@ -13770,9 +12909,9 @@
     "id": "illus_tissot_micah_by_james_tissot_cropped",
     "kind": "scene",
     "title": {
-      "en": "Micah (Tissot) (image 2/3)",
-      "zh-Hans": "迪索圣经插图——弥迦书第1章（图 2/3）",
-      "zh-Hant": "迪索聖經插圖——彌迦書第1章（圖 2/3）"
+      "en": "Micah (Tissot)",
+      "zh-Hans": "迪索圣经插图——弥迦书第1章",
+      "zh-Hant": "迪索聖經插圖——彌迦書第1章"
     },
     "description": {
       "en": "James Tissot — Micah (Micah 1-1).",
@@ -13786,27 +12925,6 @@
       ]
     },
     "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1c/Micah_by_James_Tissot_%28cropped%29.jpg/1280px-Micah_by_James_Tissot_%28cropped%29.jpg"
-  },
-  {
-    "id": "illus_tissot_micah_by_james_tissot",
-    "kind": "scene",
-    "title": {
-      "en": "Micah (Tissot) (image 1/3)",
-      "zh-Hans": "迪索圣经插图——弥迦书第1章（图 1/3）",
-      "zh-Hant": "迪索聖經插圖——彌迦書第1章（圖 1/3）"
-    },
-    "description": {
-      "en": "James Tissot — Micah (Micah 1-1).",
-      "zh-Hans": "詹姆斯·迪索——弥迦书第1章圣经场景（弥迦书第1-1章）。",
-      "zh-Hant": "詹姆斯·迪索——彌迦書第1章聖經場景（彌迦書第1-1章）。"
-    },
-    "books": {
-      "Micah": [
-        1,
-        1
-      ]
-    },
-    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f5/Micah_by_James_Tissot.jpg/1280px-Micah_by_James_Tissot.jpg"
   },
   {
     "id": "illus_tissot_nahum_black&white",
@@ -13938,9 +13056,9 @@
     "id": "illus_tissot_obadiah_by_james_tissot_cropped",
     "kind": "scene",
     "title": {
-      "en": "Obadiah (Tissot) (image 2/3)",
-      "zh-Hans": "迪索圣经插图——俄巴底亚书第1章（图 2/3）",
-      "zh-Hant": "迪索聖經插圖——俄巴底亞書第1章（圖 2/3）"
+      "en": "Obadiah (Tissot)",
+      "zh-Hans": "迪索圣经插图——俄巴底亚书第1章",
+      "zh-Hant": "迪索聖經插圖——俄巴底亞書第1章"
     },
     "description": {
       "en": "James Tissot — Obadiah (Obadiah 1-1).",
@@ -13954,27 +13072,6 @@
       ]
     },
     "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7f/Obadiah_by_James_Tissot_%28cropped%29.jpg/1280px-Obadiah_by_James_Tissot_%28cropped%29.jpg"
-  },
-  {
-    "id": "illus_tissot_obadiah_by_james_tissot",
-    "kind": "scene",
-    "title": {
-      "en": "Obadiah (Tissot) (image 1/3)",
-      "zh-Hans": "迪索圣经插图——俄巴底亚书第1章（图 1/3）",
-      "zh-Hant": "迪索聖經插圖——俄巴底亞書第1章（圖 1/3）"
-    },
-    "description": {
-      "en": "James Tissot — Obadiah (Obadiah 1-1).",
-      "zh-Hans": "詹姆斯·迪索——俄巴底亚书第1章圣经场景（俄巴底亚书第1-1章）。",
-      "zh-Hant": "詹姆斯·迪索——俄巴底亞書第1章聖經場景（俄巴底亞書第1-1章）。"
-    },
-    "books": {
-      "Obadiah": [
-        1,
-        1
-      ]
-    },
-    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f3/Obadiah_by_James_Tissot.jpg/1280px-Obadiah_by_James_Tissot.jpg"
   },
   {
     "id": "illus_tissot_promesses_de_dieu_à_abram_genesis_13_16_•_invenit_james_tissot_•_pinxi",
@@ -14085,9 +13182,9 @@
     "id": "illus_tissot_shem_ham_and_japheth_cropped",
     "kind": "scene",
     "title": {
-      "en": "Shem, Ham and Japheth (Tissot) (image 2/3)",
-      "zh-Hans": "迪索圣经插图——创世记第9章（图 2/3）",
-      "zh-Hant": "迪索聖經插圖——創世記第9章（圖 2/3）"
+      "en": "Shem, Ham and Japheth (Tissot)",
+      "zh-Hans": "迪索圣经插图——创世记第9章",
+      "zh-Hant": "迪索聖經插圖——創世記第9章"
     },
     "description": {
       "en": "James Tissot — Shem, Ham and Japheth (Genesis 9-9).",
@@ -14143,27 +13240,6 @@
       ]
     },
     "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d7/Shem%2C_Ham_and_Japheth_%28cropped%293.jpg/1280px-Shem%2C_Ham_and_Japheth_%28cropped%293.jpg"
-  },
-  {
-    "id": "illus_tissot_shem_ham_and_japheth",
-    "kind": "scene",
-    "title": {
-      "en": "Shem, Ham and Japheth (Tissot) (image 1/3)",
-      "zh-Hans": "迪索圣经插图——创世记第9章（图 1/3）",
-      "zh-Hant": "迪索聖經插圖——創世記第9章（圖 1/3）"
-    },
-    "description": {
-      "en": "James Tissot — Shem, Ham and Japheth (Genesis 9-9).",
-      "zh-Hans": "詹姆斯·迪索——创世记第9章圣经场景（创世记第9-9章）。",
-      "zh-Hant": "詹姆斯·迪索——創世記第9章聖經場景（創世記第9-9章）。"
-    },
-    "books": {
-      "Genesis": [
-        9,
-        9
-      ]
-    },
-    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ed/Shem%2C_Ham_and_Japheth.jpg/1280px-Shem%2C_Ham_and_Japheth.jpg"
   },
   {
     "id": "illus_tissot_tentation_dadam_par_éve_genesis_3_6_•_invenit_james_tissot_•_pinxit_ja",
@@ -14442,9 +13518,9 @@
     "id": "illus_tissot_tissot_amos_cropped",
     "kind": "scene",
     "title": {
-      "en": "Amos (Tissot) (image 2/2)",
-      "zh-Hans": "迪索圣经插图——阿摩司书第1章（图 2/2）",
-      "zh-Hant": "迪索聖經插圖——阿摩司書第1章（圖 2/2）"
+      "en": "Amos (Tissot)",
+      "zh-Hans": "迪索圣经插图——阿摩司书第1章",
+      "zh-Hant": "迪索聖經插圖——阿摩司書第1章"
     },
     "description": {
       "en": "James Tissot — Amos (Amos 1-1).",
@@ -14458,27 +13534,6 @@
       ]
     },
     "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/db/Tissot_Amos_%28cropped%29.jpg/1280px-Tissot_Amos_%28cropped%29.jpg"
-  },
-  {
-    "id": "illus_tissot_tissot_amos",
-    "kind": "scene",
-    "title": {
-      "en": "Amos (Tissot) (image 1/2)",
-      "zh-Hans": "迪索圣经插图——阿摩司书第1章（图 1/2）",
-      "zh-Hant": "迪索聖經插圖——阿摩司書第1章（圖 1/2）"
-    },
-    "description": {
-      "en": "James Tissot — Amos (Amos 1-1).",
-      "zh-Hans": "詹姆斯·迪索——阿摩司书第1章圣经场景（阿摩司书第1-1章）。",
-      "zh-Hant": "詹姆斯·迪索——阿摩司書第1章聖經場景（阿摩司書第1-1章）。"
-    },
-    "books": {
-      "Amos": [
-        1,
-        1
-      ]
-    },
-    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f4/Tissot_Amos.jpg/1280px-Tissot_Amos.jpg"
   },
   {
     "id": "illus_tissot_tissot_baalites",
@@ -15363,27 +14418,6 @@
     "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6d/Tissot_Malachi.jpg/1280px-Tissot_Malachi.jpg"
   },
   {
-    "id": "illus_tissot_tissot_micah",
-    "kind": "scene",
-    "title": {
-      "en": "Micah (Tissot) (image 3/3)",
-      "zh-Hans": "迪索圣经插图——弥迦书第1章（图 3/3）",
-      "zh-Hant": "迪索聖經插圖——彌迦書第1章（圖 3/3）"
-    },
-    "description": {
-      "en": "James Tissot — Micah (Micah 1-1).",
-      "zh-Hans": "詹姆斯·迪索——弥迦书第1章圣经场景（弥迦书第1-1章）。",
-      "zh-Hant": "詹姆斯·迪索——彌迦書第1章聖經場景（彌迦書第1-1章）。"
-    },
-    "books": {
-      "Micah": [
-        1,
-        1
-      ]
-    },
-    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/33/Tissot_Micah.jpg/1280px-Tissot_Micah.jpg"
-  },
-  {
     "id": "illus_tissot_tissot_michal_watching_david_from_a_window",
     "kind": "scene",
     "title": {
@@ -15571,27 +14605,6 @@
       ]
     },
     "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Tissot_Noah%27s_Sacrifice.jpg/1280px-Tissot_Noah%27s_Sacrifice.jpg"
-  },
-  {
-    "id": "illus_tissot_tissot_obadiah",
-    "kind": "scene",
-    "title": {
-      "en": "Obadiah (Tissot) (image 3/3)",
-      "zh-Hans": "迪索圣经插图——俄巴底亚书第1章（图 3/3）",
-      "zh-Hant": "迪索聖經插圖——俄巴底亞書第1章（圖 3/3）"
-    },
-    "description": {
-      "en": "James Tissot — Obadiah (Obadiah 1-1).",
-      "zh-Hans": "詹姆斯·迪索——俄巴底亚书第1章圣经场景（俄巴底亚书第1-1章）。",
-      "zh-Hant": "詹姆斯·迪索——俄巴底亞書第1章聖經場景（俄巴底亞書第1-1章）。"
-    },
-    "books": {
-      "Obadiah": [
-        1,
-        1
-      ]
-    },
-    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/80/Tissot_Obadiah.jpg/1280px-Tissot_Obadiah.jpg"
   },
   {
     "id": "illus_tissot_tissot_passover",
@@ -15844,27 +14857,6 @@
       ]
     },
     "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ec/Tissot_Sarai_Sends_Hagar_Away.jpg/1280px-Tissot_Sarai_Sends_Hagar_Away.jpg"
-  },
-  {
-    "id": "illus_tissot_tissot_shem_ham_and_japheth",
-    "kind": "scene",
-    "title": {
-      "en": "Shem, Ham and Japheth (Tissot) (image 3/3)",
-      "zh-Hans": "迪索圣经插图——创世记第9章（图 3/3）",
-      "zh-Hant": "迪索聖經插圖——創世記第9章（圖 3/3）"
-    },
-    "description": {
-      "en": "James Tissot — Shem, Ham and Japheth (Genesis 9-9).",
-      "zh-Hans": "詹姆斯·迪索——创世记第9章圣经场景（创世记第9-9章）。",
-      "zh-Hant": "詹姆斯·迪索——創世記第9章聖經場景（創世記第9-9章）。"
-    },
-    "books": {
-      "Genesis": [
-        9,
-        9
-      ]
-    },
-    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/06/Tissot_Shem%2C_Ham_and_Japheth.jpg/1280px-Tissot_Shem%2C_Ham_and_Japheth.jpg"
   },
   {
     "id": "illus_tissot_tissot_signs_on_the_door",
@@ -16982,9 +15974,9 @@
     "id": "illus_tissot_barabbas",
     "kind": "scene",
     "title": {
-      "en": "Barabbas (Tissot) (image 1/2)",
-      "zh-Hans": "Barabbas (蒂索)（图 1/2）",
-      "zh-Hant": "Barabbas (蒂索)（圖 1/2）"
+      "en": "Barabbas (Tissot)",
+      "zh-Hans": "Barabbas (蒂索)",
+      "zh-Hant": "Barabbas (蒂索)"
     },
     "description": {
       "en": "James Tissot — Barabbas (Matthew 27, Matthew 27, Mark 15, Mark 15, Luke 23, Luke 23, John 18, John 18).",
@@ -17204,9 +16196,9 @@
     "id": "illus_tissot_an_armenian",
     "kind": "scene",
     "title": {
-      "en": "An Armenian (Tissot) (image 1/2)",
-      "zh-Hans": "An Armenian (蒂索)（图 1/2）",
-      "zh-Hant": "An Armenian (蒂索)（圖 1/2）"
+      "en": "An Armenian (Tissot)",
+      "zh-Hans": "An Armenian (蒂索)",
+      "zh-Hant": "An Armenian (蒂索)"
     },
     "description": {
       "en": "James Tissot — An Armenian (Luke 23, Luke 23).",
@@ -17220,27 +16212,6 @@
       ]
     },
     "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7d/Brooklyn_Museum_-_An_Armenian_-_James_Tissot_-_2.jpg/1280px-Brooklyn_Museum_-_An_Armenian_-_James_Tissot_-_2.jpg"
-  },
-  {
-    "id": "illus_tissot_an_armenian_2",
-    "kind": "scene",
-    "title": {
-      "en": "An Armenian (Tissot) (image 2/2)",
-      "zh-Hans": "An Armenian (蒂索)（图 2/2）",
-      "zh-Hant": "An Armenian (蒂索)（圖 2/2）"
-    },
-    "description": {
-      "en": "James Tissot — An Armenian (Luke 23, Luke 23).",
-      "zh-Hans": "詹姆斯·蒂索 — An Armenian (路加福音 23, 路加福音 23)。",
-      "zh-Hant": "詹姆斯·蒂索 — An Armenian (路加福音 23, 路加福音 23)。"
-    },
-    "books": {
-      "Luke": [
-        23,
-        23
-      ]
-    },
-    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f0/Brooklyn_Museum_-_An_Armenian_-_James_Tissot.jpg/1280px-Brooklyn_Museum_-_An_Armenian_-_James_Tissot.jpg"
   },
   {
     "id": "illus_tissot_angels_holding_a_dial_indicating_the_different_hours_of_the_acts_of_the_passion",
@@ -17287,39 +16258,6 @@
       ]
     },
     "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/55/Brooklyn_Museum_-_Annas_and_Caiaphas_%28Anne_et_Ca%C3%AFphe%29_-_James_Tissot.jpg/1280px-Brooklyn_Museum_-_Annas_and_Caiaphas_%28Anne_et_Ca%C3%AFphe%29_-_James_Tissot.jpg"
-  },
-  {
-    "id": "illus_tissot_barabbas_2",
-    "kind": "scene",
-    "title": {
-      "en": "Barabbas (Tissot) (image 2/2)",
-      "zh-Hans": "Barabbas (蒂索)（图 2/2）",
-      "zh-Hant": "Barabbas (蒂索)（圖 2/2）"
-    },
-    "description": {
-      "en": "James Tissot — Barabbas (Matthew 27, Matthew 27, Mark 15, Mark 15, Luke 23, Luke 23, John 18, John 18).",
-      "zh-Hans": "詹姆斯·蒂索 — Barabbas (马太福音 27, 马太福音 27, 马可福音 15, 马可福音 15, 路加福音 23, 路加福音 23, 约翰福音 18, 约翰福音 18)。",
-      "zh-Hant": "詹姆斯·蒂索 — Barabbas (馬太福音 27, 馬太福音 27, 馬可福音 15, 馬可福音 15, 路加福音 23, 路加福音 23, 約翰福音 18, 約翰福音 18)。"
-    },
-    "books": {
-      "Matthew": [
-        27,
-        27
-      ],
-      "Mark": [
-        15,
-        15
-      ],
-      "Luke": [
-        23,
-        23
-      ],
-      "John": [
-        18,
-        18
-      ]
-    },
-    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/ff/Brooklyn_Museum_-_Barabbas_-_James_Tissot.jpg/1280px-Brooklyn_Museum_-_Barabbas_-_James_Tissot.jpg"
   },
   {
     "id": "illus_tissot_behold_the_man",
@@ -17434,9 +16372,9 @@
     "id": "illus_tissot_column_jerusalem",
     "kind": "scene",
     "title": {
-      "en": "Column Jerusalem (Tissot) (image 1/2)",
-      "zh-Hans": "Column Jerusalem (蒂索)（图 1/2）",
-      "zh-Hant": "Column Jerusalem (蒂索)（圖 1/2）"
+      "en": "Column Jerusalem (Tissot)",
+      "zh-Hans": "Column Jerusalem (蒂索)",
+      "zh-Hant": "Column Jerusalem (蒂索)"
     },
     "description": {
       "en": "James Tissot — Column Jerusalem (Matthew 24, Matthew 24).",
@@ -17450,27 +16388,6 @@
       ]
     },
     "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ae/Brooklyn_Museum_-_Column_Jerusalem_-_James_Tissot_-_2.jpg/1280px-Brooklyn_Museum_-_Column_Jerusalem_-_James_Tissot_-_2.jpg"
-  },
-  {
-    "id": "illus_tissot_column_jerusalem_2",
-    "kind": "scene",
-    "title": {
-      "en": "Column Jerusalem (Tissot) (image 2/2)",
-      "zh-Hans": "Column Jerusalem (蒂索)（图 2/2）",
-      "zh-Hant": "Column Jerusalem (蒂索)（圖 2/2）"
-    },
-    "description": {
-      "en": "James Tissot — Column Jerusalem (Matthew 24, Matthew 24).",
-      "zh-Hans": "詹姆斯·蒂索 — Column Jerusalem (马太福音 24, 马太福音 24)。",
-      "zh-Hant": "詹姆斯·蒂索 — Column Jerusalem (馬太福音 24, 馬太福音 24)。"
-    },
-    "books": {
-      "Matthew": [
-        24,
-        24
-      ]
-    },
-    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/36/Brooklyn_Museum_-_Column_Jerusalem_-_James_Tissot.jpg/1280px-Brooklyn_Museum_-_Column_Jerusalem_-_James_Tissot.jpg"
   },
   {
     "id": "illus_tissot_conspiracy_of_the_jews",
@@ -17589,9 +16506,9 @@
     "id": "illus_tissot_garden_of_the_dancing_dervishes_cairo",
     "kind": "scene",
     "title": {
-      "en": "Garden of the Dancing Dervishes Cairo (Tissot) (image 1/2)",
-      "zh-Hans": "Garden of the Dancing Dervishes Cairo (蒂索)（图 1/2）",
-      "zh-Hant": "Garden of the Dancing Dervishes Cairo (蒂索)（圖 1/2）"
+      "en": "Garden of the Dancing Dervishes Cairo (Tissot)",
+      "zh-Hans": "Garden of the Dancing Dervishes Cairo (蒂索)",
+      "zh-Hant": "Garden of the Dancing Dervishes Cairo (蒂索)"
     },
     "description": {
       "en": "James Tissot — Garden of the Dancing Dervishes Cairo (Matthew 2, Matthew 2).",
@@ -17605,27 +16522,6 @@
       ]
     },
     "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6d/Brooklyn_Museum_-_Garden_of_the_Dancing_Dervishes_Cairo_%28Jardin_des_derviches_tourneurs_au_Caire%29_-_James_Tissot_-_2.jpg/1280px-Brooklyn_Museum_-_Garden_of_the_Dancing_Dervishes_Cairo_%28Jardin_des_derviches_tourneurs_au_Caire%29_-_James_Tissot_-_2.jpg"
-  },
-  {
-    "id": "illus_tissot_garden_of_the_dancing_dervishes_cairo_2",
-    "kind": "scene",
-    "title": {
-      "en": "Garden of the Dancing Dervishes Cairo (Tissot) (image 2/2)",
-      "zh-Hans": "Garden of the Dancing Dervishes Cairo (蒂索)（图 2/2）",
-      "zh-Hant": "Garden of the Dancing Dervishes Cairo (蒂索)（圖 2/2）"
-    },
-    "description": {
-      "en": "James Tissot — Garden of the Dancing Dervishes Cairo (Matthew 2, Matthew 2).",
-      "zh-Hans": "詹姆斯·蒂索 — Garden of the Dancing Dervishes Cairo (马太福音 2, 马太福音 2)。",
-      "zh-Hant": "詹姆斯·蒂索 — Garden of the Dancing Dervishes Cairo (馬太福音 2, 馬太福音 2)。"
-    },
-    "books": {
-      "Matthew": [
-        2,
-        2
-      ]
-    },
-    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/42/Brooklyn_Museum_-_Garden_of_the_Dancing_Dervishes_Cairo_%28Jardin_des_derviches_tourneurs_au_Caire%29_-_James_Tissot.jpg/1280px-Brooklyn_Museum_-_Garden_of_the_Dancing_Dervishes_Cairo_%28Jardin_des_derviches_tourneurs_au_Caire%29_-_James_Tissot.jpg"
   },
   {
     "id": "illus_tissot_get_thee_behind_me_satan",
@@ -18589,9 +17485,9 @@
     "id": "illus_tissot_jesus_heals_a_mute_possessed_man",
     "kind": "scene",
     "title": {
-      "en": "Jesus Heals a Mute Possessed Man (Tissot) (image 1/2)",
-      "zh-Hans": "Jesus Heals a Mute Possessed Man (蒂索)（图 1/2）",
-      "zh-Hant": "Jesus Heals a Mute Possessed Man (蒂索)（圖 1/2）"
+      "en": "Jesus Heals a Mute Possessed Man (Tissot)",
+      "zh-Hans": "Jesus Heals a Mute Possessed Man (蒂索)",
+      "zh-Hant": "Jesus Heals a Mute Possessed Man (蒂索)"
     },
     "description": {
       "en": "James Tissot — Jesus Heals a Mute Possessed Man (Matthew 9, Matthew 9, Luke 11, Luke 11).",
@@ -18609,31 +17505,6 @@
       ]
     },
     "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/22/Brooklyn_Museum_-_Jesus_Heals_a_Mute_Possessed_Man_%28J%C3%A9sus_gu%C3%A9rit_un_poss%C3%A9d%C3%A9_muet%29_-_James_Tissot_%28cropped%29.jpg/1280px-Brooklyn_Museum_-_Jesus_Heals_a_Mute_Possessed_Man_%28J%C3%A9sus_gu%C3%A9rit_un_poss%C3%A9d%C3%A9_muet%29_-_James_Tissot_%28cropped%29.jpg"
-  },
-  {
-    "id": "illus_tissot_jesus_heals_a_mute_possessed_man_2",
-    "kind": "scene",
-    "title": {
-      "en": "Jesus Heals a Mute Possessed Man (Tissot) (image 2/2)",
-      "zh-Hans": "Jesus Heals a Mute Possessed Man (蒂索)（图 2/2）",
-      "zh-Hant": "Jesus Heals a Mute Possessed Man (蒂索)（圖 2/2）"
-    },
-    "description": {
-      "en": "James Tissot — Jesus Heals a Mute Possessed Man (Matthew 9, Matthew 9, Luke 11, Luke 11).",
-      "zh-Hans": "詹姆斯·蒂索 — Jesus Heals a Mute Possessed Man (马太福音 9, 马太福音 9, 路加福音 11, 路加福音 11)。",
-      "zh-Hant": "詹姆斯·蒂索 — Jesus Heals a Mute Possessed Man (馬太福音 9, 馬太福音 9, 路加福音 11, 路加福音 11)。"
-    },
-    "books": {
-      "Matthew": [
-        9,
-        9
-      ],
-      "Luke": [
-        11,
-        11
-      ]
-    },
-    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6f/Brooklyn_Museum_-_Jesus_Heals_a_Mute_Possessed_Man_%28J%C3%A9sus_gu%C3%A9rit_un_poss%C3%A9d%C3%A9_muet%29_-_James_Tissot.jpg/1280px-Brooklyn_Museum_-_Jesus_Heals_a_Mute_Possessed_Man_%28J%C3%A9sus_gu%C3%A9rit_un_poss%C3%A9d%C3%A9_muet%29_-_James_Tissot.jpg"
   },
   {
     "id": "illus_tissot_jesus_heals_the_blind_and_lame_on_the_mountain",
@@ -18818,9 +17689,9 @@
     "id": "illus_tissot_jesus_ministered_to_by_angels",
     "kind": "scene",
     "title": {
-      "en": "Jesus Ministered to by Angels (Tissot) (image 1/2)",
-      "zh-Hans": "Jesus Ministered to by Angels (蒂索)（图 1/2）",
-      "zh-Hant": "Jesus Ministered to by Angels (蒂索)（圖 1/2）"
+      "en": "Jesus Ministered to by Angels (Tissot)",
+      "zh-Hans": "Jesus Ministered to by Angels (蒂索)",
+      "zh-Hant": "Jesus Ministered to by Angels (蒂索)"
     },
     "description": {
       "en": "James Tissot — Jesus Ministered to by Angels (Matthew 4, Matthew 4, Mark 1, Mark 1).",
@@ -18838,31 +17709,6 @@
       ]
     },
     "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8c/Brooklyn_Museum_-_Jesus_Ministered_to_by_Angels_%28J%C3%A9sus_assist%C3%A9_par_les_anges%29_-_James_Tissot_-_overall.jpg/1280px-Brooklyn_Museum_-_Jesus_Ministered_to_by_Angels_%28J%C3%A9sus_assist%C3%A9_par_les_anges%29_-_James_Tissot_-_overall.jpg"
-  },
-  {
-    "id": "illus_tissot_jesus_ministered_to_by_angels_2",
-    "kind": "scene",
-    "title": {
-      "en": "Jesus Ministered to by Angels (Tissot) (image 2/2)",
-      "zh-Hans": "Jesus Ministered to by Angels (蒂索)（图 2/2）",
-      "zh-Hant": "Jesus Ministered to by Angels (蒂索)（圖 2/2）"
-    },
-    "description": {
-      "en": "James Tissot — Jesus Ministered to by Angels (Matthew 4, Matthew 4, Mark 1, Mark 1).",
-      "zh-Hans": "詹姆斯·蒂索 — Jesus Ministered to by Angels (马太福音 4, 马太福音 4, 马可福音 1, 马可福音 1)。",
-      "zh-Hant": "詹姆斯·蒂索 — Jesus Ministered to by Angels (馬太福音 4, 馬太福音 4, 馬可福音 1, 馬可福音 1)。"
-    },
-    "books": {
-      "Matthew": [
-        4,
-        4
-      ],
-      "Mark": [
-        1,
-        1
-      ]
-    },
-    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8e/Brooklyn_Museum_-_Jesus_Ministered_to_by_Angels_%28J%C3%A9sus_assist%C3%A9_par_les_anges%29_-_James_Tissot_-_overallFXD.jpg/1280px-Brooklyn_Museum_-_Jesus_Ministered_to_by_Angels_%28J%C3%A9sus_assist%C3%A9_par_les_anges%29_-_James_Tissot_-_overallFXD.jpg"
   },
   {
     "id": "illus_tissot_jesus_preaches_in_a_ship",
@@ -19377,9 +18223,9 @@
     "id": "illus_tissot_judas_iscariot",
     "kind": "scene",
     "title": {
-      "en": "Judas Iscariot (Tissot) (image 1/2)",
-      "zh-Hans": "Judas Iscariot (蒂索)（图 1/2）",
-      "zh-Hant": "Judas Iscariot (蒂索)（圖 1/2）"
+      "en": "Judas Iscariot (Tissot)",
+      "zh-Hans": "Judas Iscariot (蒂索)",
+      "zh-Hant": "Judas Iscariot (蒂索)"
     },
     "description": {
       "en": "James Tissot — Judas Iscariot (Matthew 26, Matthew 26, Mark 14, Mark 14, John 12, John 13).",
@@ -19401,35 +18247,6 @@
       ]
     },
     "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3a/Brooklyn_Museum_-_Judas_Iscariot_%28Judas_Iscariote%29_-_James_Tissot_%28cropped%29.jpg/1280px-Brooklyn_Museum_-_Judas_Iscariot_%28Judas_Iscariote%29_-_James_Tissot_%28cropped%29.jpg"
-  },
-  {
-    "id": "illus_tissot_judas_iscariot_2",
-    "kind": "scene",
-    "title": {
-      "en": "Judas Iscariot (Tissot) (image 2/2)",
-      "zh-Hans": "Judas Iscariot (蒂索)（图 2/2）",
-      "zh-Hant": "Judas Iscariot (蒂索)（圖 2/2）"
-    },
-    "description": {
-      "en": "James Tissot — Judas Iscariot (Matthew 26, Matthew 26, Mark 14, Mark 14, John 12, John 13).",
-      "zh-Hans": "詹姆斯·蒂索 — Judas Iscariot (马太福音 26, 马太福音 26, 马可福音 14, 马可福音 14, 约翰福音 12, 约翰福音 13)。",
-      "zh-Hant": "詹姆斯·蒂索 — Judas Iscariot (馬太福音 26, 馬太福音 26, 馬可福音 14, 馬可福音 14, 約翰福音 12, 約翰福音 13)。"
-    },
-    "books": {
-      "Matthew": [
-        26,
-        26
-      ],
-      "Mark": [
-        14,
-        14
-      ],
-      "John": [
-        12,
-        13
-      ]
-    },
-    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f3/Brooklyn_Museum_-_Judas_Iscariot_%28Judas_Iscariote%29_-_James_Tissot.jpg/1280px-Brooklyn_Museum_-_Judas_Iscariot_%28Judas_Iscariote%29_-_James_Tissot.jpg"
   },
   {
     "id": "illus_tissot_judas_leaves_the_cenacle",
@@ -19986,9 +18803,9 @@
     "id": "illus_tissot_pilate_washes_his_hands",
     "kind": "scene",
     "title": {
-      "en": "Pilate Washes His Hands (Tissot) (image 1/2)",
-      "zh-Hans": "Pilate Washes His Hands (蒂索)（图 1/2）",
-      "zh-Hant": "Pilate Washes His Hands (蒂索)（圖 1/2）"
+      "en": "Pilate Washes His Hands (Tissot)",
+      "zh-Hans": "Pilate Washes His Hands (蒂索)",
+      "zh-Hant": "Pilate Washes His Hands (蒂索)"
     },
     "description": {
       "en": "James Tissot — Pilate Washes His Hands (Matthew 27, Matthew 27).",
@@ -20002,27 +18819,6 @@
       ]
     },
     "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8c/Brooklyn_Museum_-_Pilate_Washes_His_Hands_%28Pilate_se_lave_les_mains%29_-_James_Tissot_%28cropped%29.jpg/1280px-Brooklyn_Museum_-_Pilate_Washes_His_Hands_%28Pilate_se_lave_les_mains%29_-_James_Tissot_%28cropped%29.jpg"
-  },
-  {
-    "id": "illus_tissot_pilate_washes_his_hands_2",
-    "kind": "scene",
-    "title": {
-      "en": "Pilate Washes His Hands (Tissot) (image 2/2)",
-      "zh-Hans": "Pilate Washes His Hands (蒂索)（图 2/2）",
-      "zh-Hant": "Pilate Washes His Hands (蒂索)（圖 2/2）"
-    },
-    "description": {
-      "en": "James Tissot — Pilate Washes His Hands (Matthew 27, Matthew 27).",
-      "zh-Hans": "詹姆斯·蒂索 — Pilate Washes His Hands (马太福音 27, 马太福音 27)。",
-      "zh-Hant": "詹姆斯·蒂索 — Pilate Washes His Hands (馬太福音 27, 馬太福音 27)。"
-    },
-    "books": {
-      "Matthew": [
-        27,
-        27
-      ]
-    },
-    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8e/Brooklyn_Museum_-_Pilate_Washes_His_Hands_%28Pilate_se_lave_les_mains%29_-_James_Tissot.jpg/1280px-Brooklyn_Museum_-_Pilate_Washes_His_Hands_%28Pilate_se_lave_les_mains%29_-_James_Tissot.jpg"
   },
   {
     "id": "illus_tissot_place_of_the_gentiles_court_haram",
@@ -21091,9 +19887,9 @@
     "id": "illus_tissot_the_ascension",
     "kind": "scene",
     "title": {
-      "en": "The Ascension (Tissot) (image 1/2)",
-      "zh-Hans": "The Ascension (蒂索)（图 1/2）",
-      "zh-Hant": "The Ascension (蒂索)（圖 1/2）"
+      "en": "The Ascension (Tissot)",
+      "zh-Hans": "The Ascension (蒂索)",
+      "zh-Hant": "The Ascension (蒂索)"
     },
     "description": {
       "en": "James Tissot — The Ascension (Luke 24, Luke 24, Acts 1, Acts 1).",
@@ -21111,31 +19907,6 @@
       ]
     },
     "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/Brooklyn_Museum_-_The_Ascension_%28L%27Ascension%29_-_James_Tissot.jpg/1280px-Brooklyn_Museum_-_The_Ascension_%28L%27Ascension%29_-_James_Tissot.jpg"
-  },
-  {
-    "id": "illus_tissot_the_ascension_2",
-    "kind": "scene",
-    "title": {
-      "en": "The Ascension (Tissot) (image 2/2)",
-      "zh-Hans": "The Ascension (蒂索)（图 2/2）",
-      "zh-Hant": "The Ascension (蒂索)（圖 2/2）"
-    },
-    "description": {
-      "en": "James Tissot — The Ascension (Luke 24, Luke 24, Acts 1, Acts 1).",
-      "zh-Hans": "詹姆斯·蒂索 — The Ascension (路加福音 24, 路加福音 24, 使徒行传 1, 使徒行传 1)。",
-      "zh-Hant": "詹姆斯·蒂索 — The Ascension (路加福音 24, 路加福音 24, 使徒行傳 1, 使徒行傳 1)。"
-    },
-    "books": {
-      "Luke": [
-        24,
-        24
-      ],
-      "Acts": [
-        1,
-        1
-      ]
-    },
-    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7c/Brooklyn_Museum_-_The_Ascension_-_James_Tissot.jpg/1280px-Brooklyn_Museum_-_The_Ascension_-_James_Tissot.jpg"
   },
   {
     "id": "illus_tissot_the_axe_in_the_trunk_of_the_tree",
@@ -21291,9 +20062,9 @@
     "id": "illus_tissot_the_blind_and_mute_man_possessed_by_devils",
     "kind": "scene",
     "title": {
-      "en": "The Blind and Mute Man Possessed by Devils (Tissot) (image 1/2)",
-      "zh-Hans": "The Blind and Mute Man Possessed by Devils (蒂索)（图 1/2）",
-      "zh-Hant": "The Blind and Mute Man Possessed by Devils (蒂索)（圖 1/2）"
+      "en": "The Blind and Mute Man Possessed by Devils (Tissot)",
+      "zh-Hans": "The Blind and Mute Man Possessed by Devils (蒂索)",
+      "zh-Hant": "The Blind and Mute Man Possessed by Devils (蒂索)"
     },
     "description": {
       "en": "James Tissot — The Blind and Mute Man Possessed by Devils (Matthew 12, Matthew 12).",
@@ -21307,27 +20078,6 @@
       ]
     },
     "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2e/Brooklyn_Museum_-_The_Blind_and_Mute_Man_Possessed_by_Devils_%28Le_d%C3%A9moniaque_aveugle_et_muet%29_-_James_Tissot_%28cropped%29.jpg/1280px-Brooklyn_Museum_-_The_Blind_and_Mute_Man_Possessed_by_Devils_%28Le_d%C3%A9moniaque_aveugle_et_muet%29_-_James_Tissot_%28cropped%29.jpg"
-  },
-  {
-    "id": "illus_tissot_the_blind_and_mute_man_possessed_by_devils_2",
-    "kind": "scene",
-    "title": {
-      "en": "The Blind and Mute Man Possessed by Devils (Tissot) (image 2/2)",
-      "zh-Hans": "The Blind and Mute Man Possessed by Devils (蒂索)（图 2/2）",
-      "zh-Hant": "The Blind and Mute Man Possessed by Devils (蒂索)（圖 2/2）"
-    },
-    "description": {
-      "en": "James Tissot — The Blind and Mute Man Possessed by Devils (Matthew 12, Matthew 12).",
-      "zh-Hans": "詹姆斯·蒂索 — The Blind and Mute Man Possessed by Devils (马太福音 12, 马太福音 12)。",
-      "zh-Hant": "詹姆斯·蒂索 — The Blind and Mute Man Possessed by Devils (馬太福音 12, 馬太福音 12)。"
-    },
-    "books": {
-      "Matthew": [
-        12,
-        12
-      ]
-    },
-    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/ba/Brooklyn_Museum_-_The_Blind_and_Mute_Man_Possessed_by_Devils_%28Le_d%C3%A9moniaque_aveugle_et_muet%29_-_James_Tissot.jpg/1280px-Brooklyn_Museum_-_The_Blind_and_Mute_Man_Possessed_by_Devils_%28Le_d%C3%A9moniaque_aveugle_et_muet%29_-_James_Tissot.jpg"
   },
   {
     "id": "illus_tissot_the_blind_in_the_ditch",
@@ -22592,9 +21342,9 @@
     "id": "illus_tissot_the_foolish_virgins",
     "kind": "scene",
     "title": {
-      "en": "The Foolish Virgins (Tissot) (image 1/2)",
-      "zh-Hans": "The Foolish Virgins (蒂索)（图 1/2）",
-      "zh-Hant": "The Foolish Virgins (蒂索)（圖 1/2）"
+      "en": "The Foolish Virgins (Tissot)",
+      "zh-Hans": "The Foolish Virgins (蒂索)",
+      "zh-Hant": "The Foolish Virgins (蒂索)"
     },
     "description": {
       "en": "James Tissot — The Foolish Virgins (Matthew 25, Matthew 25).",
@@ -22608,27 +21358,6 @@
       ]
     },
     "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d1/Brooklyn_Museum_-_The_Foolish_Virgins_%28Les_vierges_folles%29_-_James_Tissot_%28cropped%29.jpg/1280px-Brooklyn_Museum_-_The_Foolish_Virgins_%28Les_vierges_folles%29_-_James_Tissot_%28cropped%29.jpg"
-  },
-  {
-    "id": "illus_tissot_the_foolish_virgins_2",
-    "kind": "scene",
-    "title": {
-      "en": "The Foolish Virgins (Tissot) (image 2/2)",
-      "zh-Hans": "The Foolish Virgins (蒂索)（图 2/2）",
-      "zh-Hant": "The Foolish Virgins (蒂索)（圖 2/2）"
-    },
-    "description": {
-      "en": "James Tissot — The Foolish Virgins (Matthew 25, Matthew 25).",
-      "zh-Hans": "詹姆斯·蒂索 — The Foolish Virgins (马太福音 25, 马太福音 25)。",
-      "zh-Hant": "詹姆斯·蒂索 — The Foolish Virgins (馬太福音 25, 馬太福音 25)。"
-    },
-    "books": {
-      "Matthew": [
-        25,
-        25
-      ]
-    },
-    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/04/Brooklyn_Museum_-_The_Foolish_Virgins_%28Les_vierges_folles%29_-_James_Tissot.jpg/1280px-Brooklyn_Museum_-_The_Foolish_Virgins_%28Les_vierges_folles%29_-_James_Tissot.jpg"
   },
   {
     "id": "illus_tissot_the_four_guards_sat_down_and_watched_him",
@@ -23277,9 +22006,9 @@
     "id": "illus_tissot_the_last_supper_judas_dipping_his_hand_in_the_dish",
     "kind": "scene",
     "title": {
-      "en": "The Last Supper Judas Dipping his Hand in the Dish (Tissot) (image 1/2)",
-      "zh-Hans": "The Last Supper Judas Dipping his Hand in the Dish (蒂索)（图 1/2）",
-      "zh-Hant": "The Last Supper Judas Dipping his Hand in the Dish (蒂索)（圖 1/2）"
+      "en": "The Last Supper Judas Dipping his Hand in the Dish (Tissot)",
+      "zh-Hans": "The Last Supper Judas Dipping his Hand in the Dish (蒂索)",
+      "zh-Hant": "The Last Supper Judas Dipping his Hand in the Dish (蒂索)"
     },
     "description": {
       "en": "James Tissot — The Last Supper Judas Dipping his Hand in the Dish (Matthew 26, Matthew 26, Mark 14, Mark 14, John 13, John 13).",
@@ -23301,35 +22030,6 @@
       ]
     },
     "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/42/Brooklyn_Museum_-_The_Last_Supper_Judas_Dipping_his_Hand_in_the_Dish_%28La_C%C3%A9ne._Judas_met_la_main_dans_le_plat%29_-_James_Tissot_%28cropped%29.jpg/1280px-Brooklyn_Museum_-_The_Last_Supper_Judas_Dipping_his_Hand_in_the_Dish_%28La_C%C3%A9ne._Judas_met_la_main_dans_le_plat%29_-_James_Tissot_%28cropped%29.jpg"
-  },
-  {
-    "id": "illus_tissot_the_last_supper_judas_dipping_his_hand_in_the_dish_2",
-    "kind": "scene",
-    "title": {
-      "en": "The Last Supper Judas Dipping his Hand in the Dish (Tissot) (image 2/2)",
-      "zh-Hans": "The Last Supper Judas Dipping his Hand in the Dish (蒂索)（图 2/2）",
-      "zh-Hant": "The Last Supper Judas Dipping his Hand in the Dish (蒂索)（圖 2/2）"
-    },
-    "description": {
-      "en": "James Tissot — The Last Supper Judas Dipping his Hand in the Dish (Matthew 26, Matthew 26, Mark 14, Mark 14, John 13, John 13).",
-      "zh-Hans": "詹姆斯·蒂索 — The Last Supper Judas Dipping his Hand in the Dish (马太福音 26, 马太福音 26, 马可福音 14, 马可福音 14, 约翰福音 13, 约翰福音 13)。",
-      "zh-Hant": "詹姆斯·蒂索 — The Last Supper Judas Dipping his Hand in the Dish (馬太福音 26, 馬太福音 26, 馬可福音 14, 馬可福音 14, 約翰福音 13, 約翰福音 13)。"
-    },
-    "books": {
-      "Matthew": [
-        26,
-        26
-      ],
-      "Mark": [
-        14,
-        14
-      ],
-      "John": [
-        13,
-        13
-      ]
-    },
-    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/79/Brooklyn_Museum_-_The_Last_Supper_Judas_Dipping_his_Hand_in_the_Dish_%28La_C%C3%A9ne._Judas_met_la_main_dans_le_plat%29_-_James_Tissot.jpg/1280px-Brooklyn_Museum_-_The_Last_Supper_Judas_Dipping_his_Hand_in_the_Dish_%28La_C%C3%A9ne._Judas_met_la_main_dans_le_plat%29_-_James_Tissot.jpg"
   },
   {
     "id": "illus_tissot_the_lord_wept",
@@ -23486,9 +22186,9 @@
     "id": "illus_tissot_the_magnificat",
     "kind": "scene",
     "title": {
-      "en": "The Magnificat (Tissot) (image 1/2)",
-      "zh-Hans": "The Magnificat (蒂索)（图 1/2）",
-      "zh-Hant": "The Magnificat (蒂索)（圖 1/2）"
+      "en": "The Magnificat (Tissot)",
+      "zh-Hans": "The Magnificat (蒂索)",
+      "zh-Hant": "The Magnificat (蒂索)"
     },
     "description": {
       "en": "James Tissot — The Magnificat (Luke 1, Luke 1).",
@@ -23502,27 +22202,6 @@
       ]
     },
     "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/75/Brooklyn_Museum_-_The_Magnificat_%28Le_magnificat%29_-_James_Tissot_-_overall_.jpg/1280px-Brooklyn_Museum_-_The_Magnificat_%28Le_magnificat%29_-_James_Tissot_-_overall_.jpg"
-  },
-  {
-    "id": "illus_tissot_the_magnificat_2",
-    "kind": "scene",
-    "title": {
-      "en": "The Magnificat (Tissot) (image 2/2)",
-      "zh-Hans": "The Magnificat (蒂索)（图 2/2）",
-      "zh-Hant": "The Magnificat (蒂索)（圖 2/2）"
-    },
-    "description": {
-      "en": "James Tissot — The Magnificat (Luke 1, Luke 1).",
-      "zh-Hans": "詹姆斯·蒂索 — The Magnificat (路加福音 1, 路加福音 1)。",
-      "zh-Hant": "詹姆斯·蒂索 — The Magnificat (路加福音 1, 路加福音 1)。"
-    },
-    "books": {
-      "Luke": [
-        1,
-        1
-      ]
-    },
-    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c9/Brooklyn_Museum_-_The_Magnificat_%28Le_magnificat%29_-_James_Tissot_-_overall.jpg/1280px-Brooklyn_Museum_-_The_Magnificat_%28Le_magnificat%29_-_James_Tissot_-_overall.jpg"
   },
   {
     "id": "illus_tissot_the_man_at_the_plough",
@@ -25085,9 +23764,9 @@
     "id": "illus_tissot_the_tower_of_siloam",
     "kind": "scene",
     "title": {
-      "en": "The Tower of Siloam (Tissot) (image 1/2)",
-      "zh-Hans": "The Tower of Siloam (蒂索)（图 1/2）",
-      "zh-Hant": "The Tower of Siloam (蒂索)（圖 1/2）"
+      "en": "The Tower of Siloam (Tissot)",
+      "zh-Hans": "The Tower of Siloam (蒂索)",
+      "zh-Hant": "The Tower of Siloam (蒂索)"
     },
     "description": {
       "en": "James Tissot — The Tower of Siloam (Luke 13, Luke 13).",
@@ -25101,27 +23780,6 @@
       ]
     },
     "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6b/Brooklyn_Museum_-_The_Tower_of_Siloam_%28Le_tour_de_Silo%C3%AB%29_-_James_Tissot_%28cropped%29.jpg/1280px-Brooklyn_Museum_-_The_Tower_of_Siloam_%28Le_tour_de_Silo%C3%AB%29_-_James_Tissot_%28cropped%29.jpg"
-  },
-  {
-    "id": "illus_tissot_the_tower_of_siloam_2",
-    "kind": "scene",
-    "title": {
-      "en": "The Tower of Siloam (Tissot) (image 2/2)",
-      "zh-Hans": "The Tower of Siloam (蒂索)（图 2/2）",
-      "zh-Hant": "The Tower of Siloam (蒂索)（圖 2/2）"
-    },
-    "description": {
-      "en": "James Tissot — The Tower of Siloam (Luke 13, Luke 13).",
-      "zh-Hans": "詹姆斯·蒂索 — The Tower of Siloam (路加福音 13, 路加福音 13)。",
-      "zh-Hant": "詹姆斯·蒂索 — The Tower of Siloam (路加福音 13, 路加福音 13)。"
-    },
-    "books": {
-      "Luke": [
-        13,
-        13
-      ]
-    },
-    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d0/Brooklyn_Museum_-_The_Tower_of_Siloam_%28Le_tour_de_Silo%C3%AB%29_-_James_Tissot.jpg/1280px-Brooklyn_Museum_-_The_Tower_of_Siloam_%28Le_tour_de_Silo%C3%AB%29_-_James_Tissot.jpg"
   },
   {
     "id": "illus_tissot_the_transfiguration",
@@ -25728,9 +24386,9 @@
     "id": "illus_tissot_type_of_jew",
     "kind": "scene",
     "title": {
-      "en": "Type of Jew (Tissot) (image 1/5)",
-      "zh-Hans": "Type of Jew (蒂索)（图 1/5）",
-      "zh-Hant": "Type of Jew (蒂索)（圖 1/5）"
+      "en": "Type of Jew (Tissot)",
+      "zh-Hans": "Type of Jew (蒂索)",
+      "zh-Hant": "Type of Jew (蒂索)"
     },
     "description": {
       "en": "James Tissot — Type of Jew (Matthew 23, Matthew 23).",
@@ -25744,90 +24402,6 @@
       ]
     },
     "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0b/Brooklyn_Museum_-_Type_of_Jew_-_James_Tissot_-_2.jpg/1280px-Brooklyn_Museum_-_Type_of_Jew_-_James_Tissot_-_2.jpg"
-  },
-  {
-    "id": "illus_tissot_type_of_jew_2",
-    "kind": "scene",
-    "title": {
-      "en": "Type of Jew (Tissot) (image 2/5)",
-      "zh-Hans": "Type of Jew (蒂索)（图 2/5）",
-      "zh-Hant": "Type of Jew (蒂索)（圖 2/5）"
-    },
-    "description": {
-      "en": "James Tissot — Type of Jew (Matthew 23, Matthew 23).",
-      "zh-Hans": "詹姆斯·蒂索 — Type of Jew (马太福音 23, 马太福音 23)。",
-      "zh-Hant": "詹姆斯·蒂索 — Type of Jew (馬太福音 23, 馬太福音 23)。"
-    },
-    "books": {
-      "Matthew": [
-        23,
-        23
-      ]
-    },
-    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/67/Brooklyn_Museum_-_Type_of_Jew_-_James_Tissot_-_3.jpg/1280px-Brooklyn_Museum_-_Type_of_Jew_-_James_Tissot_-_3.jpg"
-  },
-  {
-    "id": "illus_tissot_type_of_jew_3",
-    "kind": "scene",
-    "title": {
-      "en": "Type of Jew (Tissot) (image 3/5)",
-      "zh-Hans": "Type of Jew (蒂索)（图 3/5）",
-      "zh-Hant": "Type of Jew (蒂索)（圖 3/5）"
-    },
-    "description": {
-      "en": "James Tissot — Type of Jew (Matthew 23, Matthew 23).",
-      "zh-Hans": "詹姆斯·蒂索 — Type of Jew (马太福音 23, 马太福音 23)。",
-      "zh-Hant": "詹姆斯·蒂索 — Type of Jew (馬太福音 23, 馬太福音 23)。"
-    },
-    "books": {
-      "Matthew": [
-        23,
-        23
-      ]
-    },
-    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/eb/Brooklyn_Museum_-_Type_of_Jew_-_James_Tissot_-_4.jpg/1280px-Brooklyn_Museum_-_Type_of_Jew_-_James_Tissot_-_4.jpg"
-  },
-  {
-    "id": "illus_tissot_type_of_jew_4",
-    "kind": "scene",
-    "title": {
-      "en": "Type of Jew (Tissot) (image 4/5)",
-      "zh-Hans": "Type of Jew (蒂索)（图 4/5）",
-      "zh-Hant": "Type of Jew (蒂索)（圖 4/5）"
-    },
-    "description": {
-      "en": "James Tissot — Type of Jew (Matthew 23, Matthew 23).",
-      "zh-Hans": "詹姆斯·蒂索 — Type of Jew (马太福音 23, 马太福音 23)。",
-      "zh-Hant": "詹姆斯·蒂索 — Type of Jew (馬太福音 23, 馬太福音 23)。"
-    },
-    "books": {
-      "Matthew": [
-        23,
-        23
-      ]
-    },
-    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d3/Brooklyn_Museum_-_Type_of_Jew_-_James_Tissot_-_5.jpg/1280px-Brooklyn_Museum_-_Type_of_Jew_-_James_Tissot_-_5.jpg"
-  },
-  {
-    "id": "illus_tissot_type_of_jew_5",
-    "kind": "scene",
-    "title": {
-      "en": "Type of Jew (Tissot) (image 5/5)",
-      "zh-Hans": "Type of Jew (蒂索)（图 5/5）",
-      "zh-Hant": "Type of Jew (蒂索)（圖 5/5）"
-    },
-    "description": {
-      "en": "James Tissot — Type of Jew (Matthew 23, Matthew 23).",
-      "zh-Hans": "詹姆斯·蒂索 — Type of Jew (马太福音 23, 马太福音 23)。",
-      "zh-Hant": "詹姆斯·蒂索 — Type of Jew (馬太福音 23, 馬太福音 23)。"
-    },
-    "books": {
-      "Matthew": [
-        23,
-        23
-      ]
-    },
-    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/54/Brooklyn_Museum_-_Type_of_Jew_-_James_Tissot.jpg/1280px-Brooklyn_Museum_-_Type_of_Jew_-_James_Tissot.jpg"
   },
   {
     "id": "illus_tissot_type_of_jew_jerusalem",
@@ -25854,9 +24428,9 @@
     "id": "illus_tissot_types_of_jews",
     "kind": "scene",
     "title": {
-      "en": "Types of Jews (Tissot) (image 1/4)",
-      "zh-Hans": "Types of Jews (蒂索)（图 1/4）",
-      "zh-Hant": "Types of Jews (蒂索)（圖 1/4）"
+      "en": "Types of Jews (Tissot)",
+      "zh-Hans": "Types of Jews (蒂索)",
+      "zh-Hant": "Types of Jews (蒂索)"
     },
     "description": {
       "en": "James Tissot — Types of Jews (Matthew 23, Matthew 23).",
@@ -25870,69 +24444,6 @@
       ]
     },
     "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4e/Brooklyn_Museum_-_Types_of_Jews_-_James_Tissot_-_2.jpg/1280px-Brooklyn_Museum_-_Types_of_Jews_-_James_Tissot_-_2.jpg"
-  },
-  {
-    "id": "illus_tissot_types_of_jews_2",
-    "kind": "scene",
-    "title": {
-      "en": "Types of Jews (Tissot) (image 2/4)",
-      "zh-Hans": "Types of Jews (蒂索)（图 2/4）",
-      "zh-Hant": "Types of Jews (蒂索)（圖 2/4）"
-    },
-    "description": {
-      "en": "James Tissot — Types of Jews (Matthew 23, Matthew 23).",
-      "zh-Hans": "詹姆斯·蒂索 — Types of Jews (马太福音 23, 马太福音 23)。",
-      "zh-Hant": "詹姆斯·蒂索 — Types of Jews (馬太福音 23, 馬太福音 23)。"
-    },
-    "books": {
-      "Matthew": [
-        23,
-        23
-      ]
-    },
-    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d9/Brooklyn_Museum_-_Types_of_Jews_-_James_Tissot_-_3.jpg/1280px-Brooklyn_Museum_-_Types_of_Jews_-_James_Tissot_-_3.jpg"
-  },
-  {
-    "id": "illus_tissot_types_of_jews_3",
-    "kind": "scene",
-    "title": {
-      "en": "Types of Jews (Tissot) (image 3/4)",
-      "zh-Hans": "Types of Jews (蒂索)（图 3/4）",
-      "zh-Hant": "Types of Jews (蒂索)（圖 3/4）"
-    },
-    "description": {
-      "en": "James Tissot — Types of Jews (Matthew 23, Matthew 23).",
-      "zh-Hans": "詹姆斯·蒂索 — Types of Jews (马太福音 23, 马太福音 23)。",
-      "zh-Hant": "詹姆斯·蒂索 — Types of Jews (馬太福音 23, 馬太福音 23)。"
-    },
-    "books": {
-      "Matthew": [
-        23,
-        23
-      ]
-    },
-    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/38/Brooklyn_Museum_-_Types_of_Jews_-_James_Tissot_-_4.jpg/1280px-Brooklyn_Museum_-_Types_of_Jews_-_James_Tissot_-_4.jpg"
-  },
-  {
-    "id": "illus_tissot_types_of_jews_4",
-    "kind": "scene",
-    "title": {
-      "en": "Types of Jews (Tissot) (image 4/4)",
-      "zh-Hans": "Types of Jews (蒂索)（图 4/4）",
-      "zh-Hant": "Types of Jews (蒂索)（圖 4/4）"
-    },
-    "description": {
-      "en": "James Tissot — Types of Jews (Matthew 23, Matthew 23).",
-      "zh-Hans": "詹姆斯·蒂索 — Types of Jews (马太福音 23, 马太福音 23)。",
-      "zh-Hant": "詹姆斯·蒂索 — Types of Jews (馬太福音 23, 馬太福音 23)。"
-    },
-    "books": {
-      "Matthew": [
-        23,
-        23
-      ]
-    },
-    "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/88/Brooklyn_Museum_-_Types_of_Jews_-_James_Tissot.jpg/1280px-Brooklyn_Museum_-_Types_of_Jews_-_James_Tissot.jpg"
   },
   {
     "id": "illus_tissot_types_of_jews_jerusalem",

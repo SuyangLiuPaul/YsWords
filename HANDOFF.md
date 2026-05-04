@@ -636,11 +636,16 @@ Two follow-ups to the offline-pack feature:
     2. **109 same-title bursts** — Sweet Publishing entries like
        "James Chapter 2 (Sweet Publishing)" appeared 4× because
        each chapter has 4 sequential illustrations from the same
-       publisher. They are NOT duplicates (different file URLs +
-       different scenes), but the identical title made them
-       look duplicated. Now suffixed with " (image N/M)" / "
-       （图 N/M）" / "（圖 N/M）" so each is independently
-       distinguishable.
+       publisher. Initially round 1 of dedupe just added
+       "(image N/M)" suffixes to distinguish them. User feedback
+       after that: *"check fully. just like james 2 has few
+       james 2 illustrations. remove all duplicate ones"* — they
+       wanted the redundant entries gone even though the
+       underlying images differed. Round 2: collapsed each
+       (title-without-image-suffix, book range) group to its
+       FIRST entry; dropped the rest. **James 2 now has 1
+       illustration** instead of 4. **69 entries removed**.
+       Three-round dedupe totals: 1262 → 1165 → 1096 entries.
 
 **Offline Pack — bulk pre-fetch for fast launch + offline use**
 (`lib/services/offline_pack_service.dart`,
