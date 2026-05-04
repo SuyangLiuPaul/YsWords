@@ -721,6 +721,11 @@ const uiStrings = {
     'zh-Hant': '清除離線包記錄',
     'en': 'Clear offline pack',
   },
+  'offlinePackDoneToast': {
+    'zh-Hans': '✓ 离线包就绪 —— 现在断网也能用了。',
+    'zh-Hant': '✓ 離線包就緒 —— 現在斷網也能用了。',
+    'en': '✓ Offline pack ready — the app now works without network.',
+  },
   'confirm': {
     'zh-Hans': '确认',
     'zh-Hant': '確認',

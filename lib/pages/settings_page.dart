@@ -2787,10 +2787,19 @@ class _OfflinePackCardState extends State<_OfflinePackCard> {
     OfflinePackCategory.tools,
   };
 
+  /// Tracks whether we've already shown the "✓ Offline pack ready"
+  /// snackbar for the current `lastCompletedAt` timestamp. Without
+  /// this guard the snackbar fires every rebuild.
+  DateTime? _ackedCompletion;
+
   @override
   void initState() {
     super.initState();
     OfflinePackService.instance.addListener(_onChanged);
+    // Pre-acknowledge whatever was already complete on entry so we
+    // don't flash the "ready" snackbar for a download that
+    // completed in a previous session.
+    _ackedCompletion = OfflinePackService.instance.lastCompletedAt;
   }
 
   @override
@@ -2800,7 +2809,36 @@ class _OfflinePackCardState extends State<_OfflinePackCard> {
   }
 
   void _onChanged() {
-    if (mounted) setState(() {});
+    if (!mounted) return;
+    setState(() {});
+    // Surface a brief success snackbar the first time we see a
+    // fresh completion timestamp. User feedback (Round 56):
+    // "after downloading how do i know it's done — no green tick
+    // or anything".
+    final svc = OfflinePackService.instance;
+    final ts = svc.lastCompletedAt;
+    if (!svc.downloading && ts != null && ts != _ackedCompletion) {
+      _ackedCompletion = ts;
+      final locale = widget.settings.locale;
+      final messenger = ScaffoldMessenger.maybeOf(context);
+      messenger?.hideCurrentSnackBar();
+      messenger?.showSnackBar(SnackBar(
+        content: Row(
+          children: [
+            const Icon(Icons.check_circle_outline, color: Colors.white),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                uiStrings['offlinePackDoneToast']?[locale] ??
+                    'Offline pack ready — the app now works without network.',
+              ),
+            ),
+          ],
+        ),
+        duration: const Duration(seconds: 3),
+        behavior: SnackBarBehavior.floating,
+      ));
+    }
   }
 
   String _categoryLabel(OfflinePackCategory c, String locale) {
@@ -2881,17 +2919,49 @@ class _OfflinePackCardState extends State<_OfflinePackCard> {
             ],
           ),
           SizedBox(height: 4 * s),
-          Text(
-            _statusLine(locale, svc),
-            style: TextStyle(
-              fontFamily: widget.settings.fontFamily,
-              fontSize:
-                  (widget.settings.fontSize - 5).clamp(11.0, 13.0),
-              color: scheme.onSurface.withValues(alpha: 0.7),
-              fontStyle:
-                  svc.downloading ? FontStyle.normal : FontStyle.italic,
-              height: 1.35,
-            ),
+          // Status line. When a completed download exists we prepend
+          // a green check icon so "Ready offline" reads as a
+          // positive state, not just another italic line.
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (!svc.downloading &&
+                  svc.lastCompletedAt != null &&
+                  svc.lastDownloaded.isNotEmpty) ...[
+                Icon(
+                  Icons.check_circle_rounded,
+                  size: 16,
+                  color: Colors.green.shade600,
+                ),
+                SizedBox(width: 6 * s),
+              ],
+              Expanded(
+                child: Text(
+                  _statusLine(locale, svc),
+                  style: TextStyle(
+                    fontFamily: widget.settings.fontFamily,
+                    fontSize:
+                        (widget.settings.fontSize - 5).clamp(11.0, 13.0),
+                    color: !svc.downloading &&
+                            svc.lastCompletedAt != null &&
+                            svc.lastDownloaded.isNotEmpty
+                        ? Colors.green.shade800
+                        : scheme.onSurface.withValues(alpha: 0.7),
+                    fontStyle: svc.downloading
+                        ? FontStyle.normal
+                        : (svc.lastCompletedAt != null
+                            ? FontStyle.normal
+                            : FontStyle.italic),
+                    fontWeight: !svc.downloading &&
+                            svc.lastCompletedAt != null &&
+                            svc.lastDownloaded.isNotEmpty
+                        ? FontWeight.w600
+                        : FontWeight.normal,
+                    height: 1.35,
+                  ),
+                ),
+              ),
+            ],
           ),
           // Live progress bar while downloading.
           if (svc.downloading) ...[

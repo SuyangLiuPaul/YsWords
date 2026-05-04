@@ -455,6 +455,52 @@ Levitical priesthood in view, and Ezekiel 14:14 names him alongside
 Noah and Daniel as one of the great righteous men. Cross-refs:
 Job 1, 2, 38, 42, Ezekiel 14:14.
 
+**Notes / Bookmarks click navigates correctly across versions**
+(`lib/utils/jump_to_reference.dart::prepareJumpToVerse`). User
+feedback: *"clicking notes goes to top of chapter, can't find the
+right verse"*. Root cause: a note saved while reading KJV had
+`verse.book == "Genesis"`, but when the user clicked it later
+while reading cuvs-yhwh (where the same book is `"创世纪"`),
+`mp.verses.where(v.book == "Genesis")` returned an empty list,
+`relIdx` was -1, no pending jump fired, and the reader landed at
+the top of whatever chapter was current. Fix: translate
+`verse.book` through `bookNameToEnglish → translateBookName(...,
+mp.currentVersion)` to get the matching book name in the loaded
+version, with fallbacks to the raw and English names. Also
+swapped `updateCurrentVerse` to use the canonical Verse object
+from `mp.verses` (so the reader's selection state lines up with
+its highlights), and bails cleanly when no version contains the
+referenced book/chapter (instead of leaving the reader on a
+broken state).
+
+**Offline Pack — visible "ready" feedback + dedupe of illustrations**.
+
+Two follow-ups to the offline-pack feature:
+
+* **Success state is now obvious** — user feedback: *"after
+  downloading how do I know? no green tick."* The Settings card
+  now shows a green check + bold label *"Ready offline · ..."*
+  when a completion timestamp exists, and a floating snackbar
+  *"✓ Offline pack ready — the app now works without network"*
+  fires once when the download finishes (guarded by an
+  `_ackedCompletion` timestamp so it doesn't spam on rebuild).
+
+* **Illustration data cleanup**
+  (`assets/maps_index.json`). User feedback: *"why some
+  illustrations have duplicates like James 2"*. The 1262-entry
+  illustration index had two distinct issues:
+    1. **97 real duplicates** — different ids pointing to the
+       same `file` URL (same image attached to multiple chapter
+       ranges). Removed; now 1165 entries.
+    2. **109 same-title bursts** — Sweet Publishing entries like
+       "James Chapter 2 (Sweet Publishing)" appeared 4× because
+       each chapter has 4 sequential illustrations from the same
+       publisher. They are NOT duplicates (different file URLs +
+       different scenes), but the identical title made them
+       look duplicated. Now suffixed with " (image N/M)" / "
+       （图 N/M）" / "（圖 N/M）" so each is independently
+       distinguishable.
+
 **Offline Pack — bulk pre-fetch for fast launch + offline use**
 (`lib/services/offline_pack_service.dart`,
 `lib/pages/settings_page.dart::_OfflinePackCard`). User feedback:

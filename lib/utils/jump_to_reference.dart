@@ -4,6 +4,7 @@ import 'package:yswords/constants/bible_versions.dart'
     show bibleVersionFullCanonFallback, bibleVersions, BibleVersionInfo;
 import 'package:yswords/models/verse.dart';
 import 'package:yswords/providers/main_provider.dart';
+import 'package:yswords/services/fetch_books.dart' show bookNameToEnglish;
 import 'package:yswords/services/fetch_verses.dart';
 import 'package:yswords/utils/reference_parser.dart';
 import 'package:yswords/utils/version_mapper.dart' show translateBookName;
@@ -150,14 +151,56 @@ Future<JumpResolution> resolveAndPrepareJump({
 /// controller and the verse map to both be ready, so the scroll
 /// always fires correctly.
 void prepareJumpToVerse(Verse verse, MainProvider mp) {
-  mp.setCurrentChapter(book: verse.book, chapter: verse.chapter);
-  mp.updateCurrentVerse(verse: verse);
-  // Find the verse's index within its (book, chapter) ordering.
-  // Sort defensively in case mp.verses isn't strictly ordered.
+  // Round 56 fix: don't use `verse.book` directly. The verse may
+  // have been captured against a Bible version whose book-name
+  // language differs from what the user is currently reading
+  // (e.g. note saved while on KJV with `book == "Genesis"`, but
+  // user is now on cuvs-yhwh where the same book is `"创世纪"`).
+  // The previous code used the raw English book name which had
+  // zero matches in the loaded `mp.verses`, so `relIdx == -1` and
+  // no pending jump fired — the reader just opened at the top of
+  // whatever chapter was current. Fix: translate the verse's book
+  // through `bookNameToEnglish → currentVersion`'s book name so
+  // we land on the right verse regardless of which version the
+  // annotation came from.
+  final englishBook = bookNameToEnglish[verse.book] ?? verse.book;
+  final localBook = translateBookName(englishBook, mp.currentVersion);
+  // Try the localized book name first (current-version match),
+  // fall back to the raw verse.book for older annotations made on
+  // the same version, fall back finally to English.
+  final candidates = <String>{
+    localBook,
+    verse.book,
+    englishBook,
+  };
+  String? matchedBook;
+  for (final book in candidates) {
+    if (mp.verses.any((v) => v.book == book && v.chapter == verse.chapter)) {
+      matchedBook = book;
+      break;
+    }
+  }
+  if (matchedBook == null) {
+    // Couldn't find a matching book in the loaded version. Bail —
+    // setting an invalid currentBook would leave the reader on a
+    // broken state. Caller will see the unchanged scroll position
+    // which is preferable to landing on an empty chapter.
+    return;
+  }
+  mp.setCurrentChapter(book: matchedBook, chapter: verse.chapter);
+  // Find the canonical Verse in the loaded version that
+  // corresponds to the same chapter:verse. updateCurrentVerse
+  // wants a Verse from `mp.verses` so highlights line up; falling
+  // back to the original `verse` would cause a mismatch on the
+  // reader's selection state.
+  Verse current = verse;
   final chapterVerses = mp.verses
-      .where((v) => v.book == verse.book && v.chapter == verse.chapter)
+      .where((v) => v.book == matchedBook && v.chapter == verse.chapter)
       .toList()
     ..sort((a, b) => a.verse.compareTo(b.verse));
+  final hit = chapterVerses.where((v) => v.verse == verse.verse).toList();
+  if (hit.isNotEmpty) current = hit.first;
+  mp.updateCurrentVerse(verse: current);
   final relIdx = chapterVerses.indexWhere((v) => v.verse == verse.verse);
   if (relIdx >= 0) {
     mp.setPendingJump(chapterVerseIndex: relIdx);
