@@ -455,6 +455,38 @@ Levitical priesthood in view, and Ezekiel 14:14 names him alongside
 Noah and Daniel as one of the great righteous men. Cross-refs:
 Job 1, 2, 38, 42, Ezekiel 14:14.
 
+**Sermon-title cleanup (round 3)** — user feedback: *"some are
+translated correctly and some has like ; and format and looking
+weird issue"*. Found 49 leftover patterns in `index.json` titles
+and 11 in body H1s, all from previous incomplete strips:
+
+* **24 entries** still had `[Bilingual: English/Chinese]` /
+  `[双语：英文/中文]` / `[雙語：英文/中文]` markers wrapped in
+  em-dashes mid-title (e.g. sermons 421, 422, EC010). The Round-53
+  strip handled the standalone-line form but missed the inline
+  em-dash-wrapped form. Now stripped along with the surrounding
+  em-dashes.
+* **21 entries** had `— ; —` / `— ， —` / `— : —` patterns where
+  the verse-ref strip removed the reference but left the
+  surrounding punctuation between em-dashes (e.g. sermon 109:
+  *"Love and Hatred — ; — Human Love Versus..."* → *"Love and
+  Hatred — Human Love Versus..."*). Sandwich punct collapsed to a
+  single em-dash.
+* **3 entries (151)** had orphan numeric ranges like `— , 34–36 —`
+  left from a partial strip of patterns like `Mark 12:33, 34–36`
+  where my regex matched the `Mark 12:33` part but left the
+  `, 34–36` continuation. Now stripped.
+* **1 entry (164)** had a trailing semicolon `Galatians;` →
+  `Galatians`.
+* **1 manual fix (421/zh-CN)** — stray English word `precede`
+  inside a Chinese title; corrected to `先兆事件` matching the
+  existing zh-TW form.
+
+Greek/Latin scholarly terms (`Sacramentum`, `Ptoma`, `Soma`,
+`Dianoia`) inside Chinese titles were intentionally **preserved** —
+those are legitimate transliterations the author uses, not
+translation gaps.
+
 **Removed redundant verse references and "A/B parts" chip from
 sermon UI**:
 * Dropped the `_MetaChip(label: 'A/B parts')` from the sermon detail
