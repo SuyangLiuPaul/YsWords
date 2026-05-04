@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -109,14 +111,16 @@ class PersonDetailSheet extends StatelessWidget {
                 ],
               ),
             ),
-            // Copy-all button: copies the rendered detail content as
-            // plain text to the clipboard so the user can paste into
-            // notes / messages / docs.
-            IconButton(
-              icon: const Icon(Icons.copy_rounded, size: 20),
-              tooltip: uiStrings['familyTreeCopyAll']?[locale] ??
-                  'Copy all info',
-              onPressed: () => _copyAll(
+            // Copy-all button: copies the rendered detail content
+            // as plain text to the clipboard. The button is a
+            // StatefulWidget so we can flip its icon to a green
+            // check-mark for 2 seconds — visible feedback that
+            // doesn't depend on the SnackBar showing through the
+            // modal sheet's surface.
+            _CopyAllButton(
+              locale: locale,
+              scheme: scheme,
+              onCopy: () => _copyAll(
                 context: context,
                 father: father,
                 mother: mother,
@@ -124,10 +128,6 @@ class PersonDetailSheet extends StatelessWidget {
                 children: children,
                 siblings: siblings,
                 tribeAncestor: tribeAncestor,
-              ),
-              style: IconButton.styleFrom(
-                foregroundColor: scheme.primary,
-                visualDensity: VisualDensity.compact,
               ),
             ),
           ],
@@ -211,7 +211,7 @@ class PersonDetailSheet extends StatelessWidget {
   /// copy to the system clipboard. Includes the patrilineal trail
   /// (Adam → … → person) per the user's request. Uses the user's
   /// current locale for all names + summary + section labels.
-  Future<void> _copyAll({
+  Future<bool> _copyAll({
     required BuildContext context,
     required BiblicalPerson? father,
     required BiblicalPerson? mother,
@@ -292,12 +292,29 @@ class PersonDetailSheet extends StatelessWidget {
       }
     }
 
-    await Clipboard.setData(ClipboardData(text: buf.toString().trim()));
-    if (!context.mounted) return;
-    // Use rootScaffoldMessenger so the SnackBar shows above the
-    // modal bottom sheet (otherwise it can be hidden behind the
-    // sheet's surface). 2-second duration gives clear visibility
-    // in all three locales.
+    final payload = buf.toString().trim();
+    try {
+      await Clipboard.setData(ClipboardData(text: payload));
+    } catch (_) {
+      // Clipboard write can fail on some restricted web contexts.
+      // Surface the failure so the user knows.
+      if (!context.mounted) return false;
+      final messenger = ScaffoldMessenger.maybeOf(context);
+      messenger?.showSnackBar(SnackBar(
+        content: Text(
+          uiStrings['familyTreeCopyFailedToast']?[locale] ??
+              'Copy failed — clipboard not available',
+          style: const TextStyle(color: Colors.white),
+        ),
+        backgroundColor: Theme.of(context).colorScheme.error,
+        duration: const Duration(milliseconds: 2000),
+        behavior: SnackBarBehavior.floating,
+      ));
+      return false;
+    }
+    if (!context.mounted) return true;
+    // Toast is also shown (in addition to the icon's green-check
+    // flash), so users on wide screens see both confirmations.
     final messenger = ScaffoldMessenger.maybeOf(context);
     messenger?.hideCurrentSnackBar();
     messenger?.showSnackBar(SnackBar(
@@ -321,6 +338,7 @@ class PersonDetailSheet extends StatelessWidget {
       behavior: SnackBarBehavior.floating,
       margin: const EdgeInsets.fromLTRB(16, 8, 16, 80),
     ));
+    return true;
   }
 
   /// People with the same father OR mother as [p], excluding [p].
@@ -451,6 +469,78 @@ class PersonDetailSheet extends StatelessWidget {
     Get.to(
       () => const HomePage(),
       transition: Transition.rightToLeft,
+    );
+  }
+}
+
+/// Copy-all icon button with built-in success feedback. After a
+/// successful copy, the icon flips to a green check-mark for 2
+/// seconds — visible feedback that doesn't depend on the toast
+/// SnackBar being on top of the bottom sheet.
+class _CopyAllButton extends StatefulWidget {
+  final String locale;
+  final ColorScheme scheme;
+  final Future<bool> Function() onCopy;
+  const _CopyAllButton({
+    required this.locale,
+    required this.scheme,
+    required this.onCopy,
+  });
+
+  @override
+  State<_CopyAllButton> createState() => _CopyAllButtonState();
+}
+
+class _CopyAllButtonState extends State<_CopyAllButton> {
+  bool _justCopied = false;
+  Timer? _timer;
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  Future<void> _handleTap() async {
+    final ok = await widget.onCopy();
+    if (!mounted || !ok) return;
+    setState(() => _justCopied = true);
+    _timer?.cancel();
+    _timer = Timer(const Duration(milliseconds: 2000), () {
+      if (mounted) setState(() => _justCopied = false);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return IconButton(
+      tooltip: _justCopied
+          ? (uiStrings['familyTreeCopiedToast']?[widget.locale] ??
+              'Copied')
+          : (uiStrings['familyTreeCopyAll']?[widget.locale] ??
+              'Copy all info'),
+      onPressed: _justCopied ? null : _handleTap,
+      icon: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 200),
+        transitionBuilder: (child, anim) =>
+            ScaleTransition(scale: anim, child: child),
+        child: _justCopied
+            ? Icon(
+                Icons.check_circle_rounded,
+                key: const ValueKey('check'),
+                size: 22,
+                color: Colors.green.shade600,
+              )
+            : Icon(
+                Icons.copy_rounded,
+                key: const ValueKey('copy'),
+                size: 20,
+                color: widget.scheme.primary,
+              ),
+      ),
+      style: IconButton.styleFrom(
+        visualDensity: VisualDensity.compact,
+      ),
     );
   }
 }

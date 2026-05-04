@@ -2140,6 +2140,11 @@ const uiStrings = {
     'zh-Hans': '已复制到剪贴板',
     'zh-Hant': '已複製到剪貼簿',
   },
+  'familyTreeCopyFailedToast': {
+    'en': 'Copy failed — clipboard not available',
+    'zh-Hans': '复制失败 — 剪贴板不可用',
+    'zh-Hant': '複製失敗 — 剪貼簿不可用',
+  },
   'familyTreeRole': {
     'en': 'Role',
     'zh-Hans': '身份',
