@@ -639,9 +639,9 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
     final verses = mainProvider.selectedVerses;
     if (verses.isEmpty) return;
     final v = verses.first;
-    final book = Uri.encodeComponent(v.book);
+    final ref = '${v.book}:${v.chapter}:${v.verse}';
     final url =
-        'https://yswords.netlify.app/#/verse/$book/${v.chapter}/${v.verse}';
+        'https://yswords.netlify.app/?verse=${Uri.encodeComponent(ref)}';
     final text =
         _formattedSelectedVerses(verses: mainProvider.selectedVerses);
     final payload = '$text\n\n$url';

@@ -1,12 +1,19 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:yswords/models/sermon.dart';
 import 'package:yswords/pages/dashboard_page.dart';
+import 'package:yswords/pages/home_page.dart';
 import 'package:yswords/pages/loading_page.dart';
+import 'package:yswords/pages/sermon_detail_page.dart';
 import 'package:yswords/models/verse.dart';
 import 'package:yswords/providers/main_provider.dart';
 import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/pages/welcome_page.dart';
+import 'package:yswords/services/sermon_service.dart';
+import 'package:yswords/utils/jump_to_reference.dart' as jumper;
+import 'package:yswords/utils/reference_parser.dart' show BibleReference;
 import 'package:yswords/services/cloud_auth_service.dart';
 import 'package:yswords/services/cloud_sync_service.dart';
 import 'package:yswords/services/fetch_books.dart';
@@ -15,7 +22,6 @@ import 'package:yswords/services/profile_service.dart';
 import 'package:yswords/services/book_intro_service.dart';
 import 'package:yswords/services/section_title_service.dart';
 import 'package:provider/provider.dart';
-import 'package:get/get.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -274,10 +280,70 @@ class _RootRouter extends StatefulWidget {
 class _RootRouterState extends State<_RootRouter> {
   bool _showHome = false;
   bool _welcomeDone = false;
+  bool _deepLinkHandled = false;
 
   void _advance() {
     if (!mounted || _showHome) return;
     setState(() => _showHome = true);
+    _handleDeepLink();
+  }
+
+  /// On first show of the home page, inspect the URL for share
+  /// query parameters (`?sermon=ID` or
+  /// `?verse=Book:Chapter:Verse`) and auto-navigate to the
+  /// referenced content. Lets shared links from the app's share
+  /// buttons actually open what they promise.
+  Future<void> _handleDeepLink() async {
+    if (_deepLinkHandled) return;
+    _deepLinkHandled = true;
+    Uri? uri;
+    try {
+      uri = Uri.base;
+    } catch (_) {
+      return;
+    }
+    final params = uri.queryParameters;
+    final sermonId = params['sermon'];
+    if (sermonId != null && sermonId.isNotEmpty) {
+      // Deferred so the dashboard finishes building first.
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        final svc = SermonService.instance;
+        final all = await svc.loadIndex();
+        Sermon? s;
+        for (final c in all) {
+          if (c.id == sermonId) {
+            s = c;
+            break;
+          }
+        }
+        if (s != null && mounted) {
+          Get.to(() => SermonDetailPage(sermon: s!),
+              transition: Transition.rightToLeft);
+        }
+      });
+      return;
+    }
+    final verse = params['verse'];
+    if (verse != null && verse.isNotEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        final parts = verse.split(':');
+        if (parts.length != 3) return;
+        final book = parts[0];
+        final ch = int.tryParse(parts[1]);
+        final v = int.tryParse(parts[2]);
+        if (ch == null || v == null || !mounted) return;
+        final ref = BibleReference(
+            englishBook: book, chapter: ch, verseStart: v, verseEnd: v);
+        final mp = context.read<MainProvider>();
+        final result = await jumper.resolveAndPrepareJump(
+            reference: ref, mp: mp);
+        if (!mounted) return;
+        await jumper.showJumpResultSnackBar(context, result);
+        if (!mounted) return;
+        Get.to(() => const HomePage(),
+            transition: Transition.rightToLeft);
+      });
+    }
   }
 
   @override

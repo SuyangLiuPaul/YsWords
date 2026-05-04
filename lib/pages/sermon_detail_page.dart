@@ -398,7 +398,7 @@ class _SermonDetailPageState extends State<SermonDetailPage> {
   Future<void> _shareSermon(Sermon s, String locale) async {
     final title = s.titles[_titleLocaleKey(locale)] ?? s.title;
     final url =
-        'https://yswords.netlify.app/#/sermons/${Uri.encodeComponent(s.id)}';
+        'https://yswords.netlify.app/?sermon=${Uri.encodeComponent(s.id)}';
     final payload = '$title\n$url';
     bool ok = true;
     try {
