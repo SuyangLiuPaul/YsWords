@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 import 'package:yswords/constants/text_patterns.dart' show sanitizeForSearch;
@@ -9,6 +10,7 @@ import 'package:yswords/constants/ui_strings.dart';
 import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/models/biblical_person.dart';
 import 'package:yswords/services/family_tree_service.dart';
+import 'package:yswords/utils/biblical_role.dart' show localizedRole;
 import 'package:yswords/widgets/home_icon_button.dart';
 import 'package:yswords/widgets/localized_back_button.dart';
 import 'package:yswords/widgets/person_detail_sheet.dart';
@@ -1349,6 +1351,7 @@ class _PersonRow extends StatelessWidget {
                               label: person.role!,
                               accent: accent,
                               scheme: scheme,
+                              locale: locale,
                             ),
                           if (person.refs.isNotEmpty)
                             _RefBadge(
@@ -1490,6 +1493,7 @@ class _SearchResultTile extends StatelessWidget {
                               label: person.role!,
                               accent: accent,
                               scheme: scheme,
+                              locale: locale,
                             ),
                           if (person.refs.isNotEmpty)
                             _RefBadge(
@@ -1670,6 +1674,7 @@ class _BridgeLeafRow extends StatelessWidget {
                               label: person.role!,
                               accent: accent,
                               scheme: scheme,
+                              locale: locale,
                             ),
                           // The trailing "→ {next era}" tag. This
                           // is the visual cue that the lineage
@@ -1953,6 +1958,19 @@ class _ComparisonTableState extends State<_ComparisonTable> {
                         ],
                       ),
                     ),
+                    // Copy-table button: copies the entire
+                    // comparison table as a tab-separated text
+                    // payload that pastes cleanly into Excel /
+                    // Sheets / Numbers / Notion. Tap stops
+                    // bubbling so the header's expand/collapse
+                    // toggle isn't fired at the same time.
+                    _ComparisonCopyButton(
+                      spine: spine,
+                      comparisonColumns: comparisonColumns,
+                      locale: locale,
+                      scheme: scheme,
+                    ),
+                    const SizedBox(width: 4),
                     Container(
                       padding: const EdgeInsets.symmetric(
                           horizontal: 6, vertical: 2),
@@ -2208,6 +2226,202 @@ Color _eraColor(String era) {
   return const Color(0xFF555555);
 }
 
+// ── Comparison-table copy button + floating toast ────────────────
+
+class _ComparisonCopyButton extends StatefulWidget {
+  final List<BiblicalPerson> spine;
+  final List<(String, List<String>)> comparisonColumns;
+  final String locale;
+  final ColorScheme scheme;
+  const _ComparisonCopyButton({
+    required this.spine,
+    required this.comparisonColumns,
+    required this.locale,
+    required this.scheme,
+  });
+
+  @override
+  State<_ComparisonCopyButton> createState() =>
+      _ComparisonCopyButtonState();
+}
+
+class _ComparisonCopyButtonState extends State<_ComparisonCopyButton> {
+  bool _justCopied = false;
+  Timer? _timer;
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  bool _hasSourceRef(BiblicalPerson p, List<String> prefixes) {
+    for (final r in p.refs) {
+      for (final prefix in prefixes) {
+        if (r.startsWith(prefix)) return true;
+      }
+    }
+    return false;
+  }
+
+  String _buildTsv() {
+    final loc = widget.locale;
+    // Header row: Gen, Name, Years + each source column.
+    final cols = <String>[
+      uiStrings['familyTreeColGen']?[loc] ?? 'Gen',
+      uiStrings['familyTreeColName']?[loc] ?? 'Name',
+      uiStrings['familyTreeColYears']?[loc] ?? 'Years',
+      for (final col in widget.comparisonColumns)
+        uiStrings[col.$1]?[loc] ?? col.$1,
+    ];
+    final buf = StringBuffer(cols.join('\t'));
+    buf.writeln();
+    for (var i = 0; i < widget.spine.length; i++) {
+      final p = widget.spine[i];
+      final row = <String>[
+        '${i + 1}',
+        p.localizedName(loc),
+        p.displayYears(loc),
+        for (final col in widget.comparisonColumns)
+          _hasSourceRef(p, col.$2) ? '✓' : '',
+      ];
+      buf.writeln(row.join('\t'));
+    }
+    return buf.toString().trim();
+  }
+
+  Future<void> _handleTap() async {
+    final tsv = _buildTsv();
+    bool ok = true;
+    try {
+      await Clipboard.setData(ClipboardData(text: tsv));
+    } catch (_) {
+      ok = false;
+    }
+    if (!mounted) return;
+    if (!ok) {
+      _showFloatingToast(
+        context,
+        message: uiStrings['familyTreeCopyFailedToast']?[widget.locale] ??
+            'Copy failed — clipboard not available',
+        icon: Icons.error_outline_rounded,
+        background: Theme.of(context).colorScheme.error,
+      );
+      return;
+    }
+    _showFloatingToast(
+      context,
+      message:
+          uiStrings['familyTreeCopiedToast']?[widget.locale] ??
+              'Copied to clipboard',
+      icon: Icons.check_circle_rounded,
+      background: Theme.of(context).colorScheme.primary,
+    );
+    setState(() => _justCopied = true);
+    _timer?.cancel();
+    _timer = Timer(const Duration(milliseconds: 2000), () {
+      if (mounted) setState(() => _justCopied = false);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return IconButton(
+      tooltip: _justCopied
+          ? (uiStrings['familyTreeCopiedToast']?[widget.locale] ??
+              'Copied')
+          : (uiStrings['familyTreeCopyAll']?[widget.locale] ??
+              'Copy table'),
+      onPressed: _justCopied ? null : _handleTap,
+      icon: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 200),
+        transitionBuilder: (c, a) =>
+            ScaleTransition(scale: a, child: c),
+        child: _justCopied
+            ? Icon(Icons.check_circle_rounded,
+                key: const ValueKey('chk'),
+                size: 22,
+                color: Colors.green.shade600)
+            : Icon(Icons.copy_rounded,
+                key: const ValueKey('cp'),
+                size: 18,
+                color: widget.scheme.primary),
+      ),
+      visualDensity: VisualDensity.compact,
+      padding: EdgeInsets.zero,
+      constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+    );
+  }
+}
+
+/// Floating toast pinned to the root overlay so it appears above
+/// any modal sheet / dialog. Used by the comparison-table copy
+/// button (the detail-sheet uses its own copy of this in
+/// person_detail_sheet.dart — same shape).
+void _showFloatingToast(
+  BuildContext context, {
+  required String message,
+  required IconData icon,
+  required Color background,
+}) {
+  final overlay = Overlay.maybeOf(context, rootOverlay: true);
+  if (overlay == null) return;
+  final OverlayEntry entry;
+  entry = OverlayEntry(builder: (ctx) {
+    final media = MediaQuery.of(ctx);
+    return Positioned(
+      left: 0,
+      right: 0,
+      top: media.padding.top + 24,
+      child: IgnorePointer(
+        child: Center(
+          child: Material(
+            color: Colors.transparent,
+            child: Container(
+              constraints: const BoxConstraints(maxWidth: 360),
+              margin: const EdgeInsets.symmetric(horizontal: 24),
+              padding: const EdgeInsets.symmetric(
+                  horizontal: 18, vertical: 14),
+              decoration: BoxDecoration(
+                color: background,
+                borderRadius: BorderRadius.circular(28),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.25),
+                    blurRadius: 16,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(icon, color: Colors.white, size: 20),
+                  const SizedBox(width: 10),
+                  Flexible(
+                    child: Text(
+                      message,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  });
+  overlay.insert(entry);
+  Future.delayed(const Duration(milliseconds: 2000), () {
+    entry.remove();
+  });
+}
+
 // ── Accent palette / pills / badges ──────────────────────────────
 
 class _AccentTheme {
@@ -2234,10 +2448,12 @@ class _RolePill extends StatelessWidget {
   final String label;
   final _AccentTheme? accent;
   final ColorScheme scheme;
+  final String locale;
   const _RolePill({
     required this.label,
     required this.accent,
     required this.scheme,
+    required this.locale,
   });
 
   @override
@@ -2254,7 +2470,7 @@ class _RolePill extends StatelessWidget {
         ),
       ),
       child: Text(
-        label,
+        localizedRole(label, locale),
         style: TextStyle(
           fontSize: 9,
           fontWeight: FontWeight.w700,
@@ -2265,6 +2481,8 @@ class _RolePill extends StatelessWidget {
     );
   }
 }
+
+// localizedRole imported from utils/biblical_role.dart
 
 class _SpouseChip extends StatelessWidget {
   final BiblicalPerson spouse;

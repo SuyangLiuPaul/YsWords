@@ -1998,7 +1998,11 @@
         "mary"
       ],
       "childIds": [
-        "jesus"
+        "jesus",
+        "james_brother",
+        "joses",
+        "simon_brother",
+        "jude_brother"
       ],
       "yearSystem": "bc",
       "summary": "Carpenter of Nazareth; husband of Mary; legal father of Jesus, securing his Davidic descent.",
@@ -5694,7 +5698,7 @@
       "name": "James",
       "nameZhHans": "雅各（耶稣的弟弟）",
       "nameZhHant": "雅各（耶穌的弟弟）",
-      "fatherId": null,
+      "fatherId": "joseph_father_of_jesus",
       "motherId": "mary",
       "spouseIds": [],
       "childIds": [],
@@ -5717,7 +5721,7 @@
       "name": "Joses",
       "nameZhHans": "约西",
       "nameZhHant": "約西",
-      "fatherId": null,
+      "fatherId": "joseph_father_of_jesus",
       "motherId": "mary",
       "spouseIds": [],
       "childIds": [],
@@ -5740,7 +5744,7 @@
       "name": "Simon (brother of Jesus)",
       "nameZhHans": "西门（耶稣的弟弟）",
       "nameZhHant": "西門（耶穌的弟弟）",
-      "fatherId": null,
+      "fatherId": "joseph_father_of_jesus",
       "motherId": "mary",
       "spouseIds": [],
       "childIds": [],
@@ -5763,7 +5767,7 @@
       "name": "Jude",
       "nameZhHans": "犹大（耶稣的弟弟）",
       "nameZhHant": "猶大（耶穌的弟弟）",
-      "fatherId": null,
+      "fatherId": "joseph_father_of_jesus",
       "motherId": "mary",
       "spouseIds": [],
       "childIds": [],

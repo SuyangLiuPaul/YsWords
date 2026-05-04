@@ -10,6 +10,7 @@ import 'package:yswords/models/biblical_person.dart';
 import 'package:yswords/pages/home_page.dart';
 import 'package:yswords/providers/main_provider.dart';
 import 'package:yswords/services/family_tree_service.dart';
+import 'package:yswords/utils/biblical_role.dart' show localizedRole;
 import 'package:yswords/utils/jump_to_reference.dart' as jumper;
 import 'package:yswords/utils/reference_parser.dart';
 import 'package:yswords/utils/version_mapper.dart' show localeAwareBookName;
@@ -234,7 +235,7 @@ class PersonDetailSheet extends StatelessWidget {
     if (years.isNotEmpty) buf.writeln(years);
     if ((person.role ?? '').isNotEmpty) {
       buf.writeln(
-          '${uiStrings['familyTreeRole']?[locale] ?? 'Role'}: ${person.role}');
+          '${uiStrings['familyTreeRole']?[locale] ?? 'Role'}: ${localizedRole(person.role!, locale)}');
     }
     buf.writeln();
     buf.writeln(person.localizedSummary(locale));
