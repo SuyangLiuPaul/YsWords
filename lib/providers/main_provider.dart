@@ -450,6 +450,23 @@ class MainProvider extends ChangeNotifier {
     }
   }
 
+  /// Like [jumpToIndex] but uses `scrollTo` with a 1 ms duration.
+  /// Round 56: fixes a "first tap from Library goes to top of
+  /// chapter" bug — `jumpTo` silently no-ops when the
+  /// `ScrollablePositionedList` is `isAttached` but hasn't yet
+  /// finished measuring its items (true on a fresh HomePage
+  /// mount). `scrollTo` with a tiny duration handles that case
+  /// gracefully and lands on the right item.
+  void scrollToIndexAnimated({required int index, Duration duration = const Duration(milliseconds: 1)}) {
+    final mapped = _verseToItemMap[index] ?? index;
+    if (itemScrollController.isAttached) {
+      itemScrollController.scrollTo(
+        index: mapped,
+        duration: duration,
+      );
+    }
+  }
+
   /// Jump to the very top of the chapter (chapter header).
   /// Use when switching chapters/books.
   void jumpToTop() {

@@ -455,6 +455,38 @@ Levitical priesthood in view, and Ezekiel 14:14 names him alongside
 Noah and Daniel as one of the great righteous men. Cross-refs:
 Job 1, 2, 38, 42, Ezekiel 14:14.
 
+**Notes / Bookmarks: "first tap goes to top, second tap works" fix**
+(`lib/widgets/bible_reading_pane.dart`,
+`lib/providers/main_provider.dart`). User feedback after the
+cross-version fix: *"first press goes to top, second is fine"*.
+Two distinct issues were colliding here:
+
+1. **Multiple HomePage instances racing for the pendingJump.**
+   When Library was reached from the reader's overflow menu,
+   the navigator stack held both the original HomePage (now
+   obscured) and a fresh HomePage pushed via `Get.off`. The
+   obscured one's `BibleReadingPane.Consumer` rebuilt on the
+   chapter-change notify, scheduled a post-frame, and consumed
+   `pendingJump` first — its `ScrollablePositionedList`
+   controller was already attached, so its `tryJump` succeeded
+   on a hidden widget. The visible (new) HomePage then saw
+   `pendingJump = null` and opened at the top of the chapter.
+
+   Fix: the post-frame callback now checks
+   `ModalRoute.of(context)?.isCurrent` and bails out for any
+   non-topmost reader. Only the visible HomePage consumes the
+   flag.
+
+2. **`jumpTo` silently no-ops on a freshly-mounted SPL** that's
+   `isAttached` but hasn't yet finished measuring its items —
+   true in cold-mount cases like "tap a note from Library".
+   Switched to `itemScrollController.scrollTo(index: ...,
+   duration: 1ms)` via a new `MainProvider.scrollToIndexAnimated`
+   method. `scrollTo` handles the not-fully-laid-out case
+   gracefully and lands on the right item. Also widened the
+   poll budget from 1.5 s (30 ticks) to 3 s (60 ticks) for slow
+   cold-start cases.
+
 **Notes / Bookmarks click navigates correctly across versions**
 (`lib/utils/jump_to_reference.dart::prepareJumpToVerse`). User
 feedback: *"clicking notes goes to top of chapter, can't find the

@@ -793,25 +793,61 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
         if (mainProvider.hasPendingJump && verses.isNotEmpty) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
             if (!mounted) return;
+            // Round 56 fix for "first note tap goes to top, second
+            // works": when Library was reached from the reader's
+            // overflow menu, two HomePage instances coexist (the
+            // OLD reader still in the navigator stack, plus the
+            // NEW reader pushed via Get.off). The OLD reader's
+            // BibleReadingPane Consumer also fires this build path
+            // and races to consume `pendingJump` first — its
+            // ScrollablePositionedList controller is already
+            // attached, so its `tryJump` succeeds and scrolls a
+            // hidden widget. The NEW (visible) reader then sees
+            // pendingJump=null and lands at the top of the chapter.
+            //
+            // Defense: only the *current* (topmost) route consumes
+            // the jump. Any non-topmost reader silently leaves
+            // the flag untouched so the visible reader can take
+            // it on the next post-frame tick.
+            final route = ModalRoute.of(context);
+            if (route != null && !route.isCurrent) return;
+
             final mp = context.read<MainProvider>();
             final pendingIdx = mp.consumePendingJump();
             if (pendingIdx == null) return;
             // Defensive clamp: a stale pending jump from a
             // different chapter could land out-of-range.
             if (pendingIdx < 0 || pendingIdx >= verses.length) return;
-            // Wait for the controller to attach. ScrollablePositionedList
-            // attaches in its first build but not always synchronously
-            // — we poll briefly. 30 × 50ms = 1.5s budget.
+            // Wait for the controller to attach AND for the SPL
+            // to have finished its first layout pass. On a fresh
+            // HomePage mount the controller can be `isAttached`
+            // before the items are measured, so a `jumpTo` would
+            // silently land at index 0. Use `scrollTo` (not
+            // `jumpTo`) with a 1 ms duration — SPL handles the
+            // not-fully-laid-out case more gracefully than
+            // `jumpTo`. Plus widen the poll budget to 3 s
+            // (60 × 50 ms) for slow-cold-start cases.
             void tryJump([int attempt = 0]) {
               if (!mounted) return;
               if (mp.itemScrollController.isAttached) {
-                mp.jumpToIndex(index: pendingIdx);
+                try {
+                  mp.scrollToIndexAnimated(index: pendingIdx);
+                } catch (_) {
+                  // If scrollTo can't run yet (very rare — e.g.
+                  // controller detached between the isAttached
+                  // check and this call), fall through to retry.
+                  if (attempt < 60) {
+                    Future.delayed(const Duration(milliseconds: 50),
+                        () => tryJump(attempt + 1));
+                  }
+                  return;
+                }
                 mp.setHighlightIndex(pendingIdx);
                 Future.delayed(const Duration(milliseconds: 1200),
                     () => mp.clearHighlightIndex());
                 return;
               }
-              if (attempt > 30) return;
+              if (attempt > 60) return;
               Future.delayed(const Duration(milliseconds: 50),
                   () => tryJump(attempt + 1));
             }
