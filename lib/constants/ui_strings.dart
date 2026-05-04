@@ -2187,6 +2187,27 @@ const uiStrings = {
     'zh-Hans': '复制失败 — 剪贴板不可用',
     'zh-Hant': '複製失敗 — 剪貼簿不可用',
   },
+  // Verse popup sheet
+  'versePopupExpand': {
+    'en': 'Show full chapter',
+    'zh-Hans': '展开整章',
+    'zh-Hant': '展開整章',
+  },
+  'versePopupCollapse': {
+    'en': 'Show only cited verses',
+    'zh-Hans': '只显示引用的经文',
+    'zh-Hant': '只顯示引用的經文',
+  },
+  'versePopupOpenReader': {
+    'en': 'Open in reader',
+    'zh-Hans': '在阅读器中打开',
+    'zh-Hant': '在閱讀器中開啟',
+  },
+  'versePopupNotFound': {
+    'en': 'Verse text not loaded — try "Open in reader".',
+    'zh-Hans': '经文未加载 — 请尝试"在阅读器中打开"。',
+    'zh-Hant': '經文未載入 — 請嘗試「在閱讀器中開啟」。',
+  },
   'familyTreeMatchCount': {
     'zh-Hans': '第 {index}/{total} 个匹配',
     'zh-Hant': '第 {index}/{total} 個匹配',

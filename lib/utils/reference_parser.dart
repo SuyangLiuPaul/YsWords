@@ -91,32 +91,46 @@ BibleReference? parseReference(String input) {
     if (ref != null) return ref;
   }
 
+  // Fallback: <book> <chapter>-<chapterEnd> (whole-chapter range like
+  // "Genesis 6-9" or "Mat 1-2"). Navigate to the start chapter.
+  // **This is tried BEFORE the main pattern below** because the main
+  // pattern's lazy `.*?` will otherwise greedily absorb the trailing
+  // "-9" into the book part (so the ref looks like "Genesis 6-" with
+  // chapter 9), then `_buildRef` fails the book lookup and we'd
+  // return null instead of falling through.
+  final cm = RegExp(
+    r'^\s*(.*?)\s+(\d+)\s*[-–—]\s*(\d+)\s*$',
+  ).firstMatch(raw);
+  if (cm != null) {
+    final ref = _buildRef(
+      cm.group(1)?.trim() ?? '',
+      int.tryParse(cm.group(2)!) ?? 0,
+      null,
+      null,
+    );
+    if (ref != null) return ref;
+  }
+
   // Pattern: <book><whitespace?><chapter>(:<verseStart>(-<verseEnd>)?)?
   // Book is any non-digit prefix. Capture greedily then resolve.
   final m = RegExp(
     r'^\s*(.*?)\s*(\d+)(?:\s*[:：.]\s*(\d+)(?:\s*[-–—]\s*(\d+))?)?\s*$',
   ).firstMatch(raw);
   if (m != null) {
-    return _buildRef(
+    final ref = _buildRef(
       m.group(1)?.trim() ?? '',
       int.tryParse(m.group(2)!) ?? 0,
       m.group(3) == null ? null : int.tryParse(m.group(3)!),
       m.group(4) == null ? null : int.tryParse(m.group(4)!),
     );
+    if (ref != null) return ref;
   }
 
-  // Fallback: <book> <chapter>-<chapterEnd> (whole-chapter range like
-  // "Genesis 6-9" or "Mat 1-2"). Navigate to the start chapter.
-  final cm = RegExp(
-    r'^\s*(.*?)\s+(\d+)\s*[-–—]\s*(\d+)\s*$',
-  ).firstMatch(raw);
-  if (cm != null) {
-    return _buildRef(
-      cm.group(1)?.trim() ?? '',
-      int.tryParse(cm.group(2)!) ?? 0,
-      null,
-      null,
-    );
+  // Last-ditch fallback: bare book name with no chapter (e.g.
+  // "Leviticus" or "创世记") — default to chapter 1.
+  final canonical = _resolveBookName(raw.trim());
+  if (canonical != null) {
+    return BibleReference(englishBook: canonical, chapter: 1);
   }
 
   return null;

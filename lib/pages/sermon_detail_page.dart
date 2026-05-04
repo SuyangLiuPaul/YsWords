@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:get/get.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -12,10 +11,8 @@ import 'package:yswords/constants/ui_strings.dart';
 import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/models/sermon.dart';
 import 'package:yswords/utils/floating_toast.dart' show showFloatingToast;
-import 'package:yswords/pages/home_page.dart';
-import 'package:yswords/providers/main_provider.dart';
+import 'package:yswords/widgets/verse_popup_sheet.dart' show showVersePopup;
 import 'package:yswords/services/sermon_service.dart';
-import 'package:yswords/utils/jump_to_reference.dart' as jumper;
 import 'package:yswords/utils/reference_parser.dart';
 import 'package:yswords/widgets/home_icon_button.dart';
 import 'package:yswords/widgets/localized_back_button.dart';
@@ -623,16 +620,12 @@ class _SermonBody extends StatelessWidget {
     return TextSpan(children: spans);
   }
 
+  /// Tap a verse-ref chip in a sermon → show a [VersePopupSheet]
+  /// modal so the user can peek at the cited verse(s) without
+  /// losing their place in the sermon. The popup itself has
+  /// "expand to full chapter" and "open in reader" actions.
   Future<void> _jumpToParsedRef(
       BuildContext context, BibleReference ref) async {
-    final mp = context.read<MainProvider>();
-    final result = await jumper.resolveAndPrepareJump(reference: ref, mp: mp);
-    if (!context.mounted) return;
-    final ok = await jumper.showJumpResultSnackBar(context, result);
-    if (!ok || !context.mounted) return;
-    Get.to(
-      () => const HomePage(),
-      transition: Transition.rightToLeft,
-    );
+    await showVersePopup(context, ref);
   }
 }
