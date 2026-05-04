@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import 'package:yswords/constants/ui_strings.dart';
 import 'package:yswords/models/app_settings.dart';
+// ignore: unused_import
 import 'package:yswords/providers/main_provider.dart';
 import 'package:yswords/services/bible_stats_service.dart';
 import 'package:yswords/services/originals_stats_service.dart';
@@ -21,13 +22,13 @@ class StatsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final settings = context.watch<AppSettings>();
-    final mainProvider = context.watch<MainProvider>();
     final locale = settings.locale;
-    final stats = BibleStatsService.compute(
-        mainProvider.currentVersion, mainProvider.verses);
+    // Round 56: stats are now computed from Hebrew/Greek originals
+    // via OriginalsStatsService, not from the current Bible version.
+    // The old BibleStatsService translation-text counts are dead.
 
     return DefaultTabController(
-      length: 4,
+      length: 3,
       child: Scaffold(
         appBar: AppBar(
           leading: const LocalizedBackButton(),
@@ -52,35 +53,27 @@ class StatsPage extends StatelessWidget {
               ),
               Tab(
                 icon: const Icon(Icons.spellcheck),
-                text: uiStrings['statsVocabulary']?[locale] ?? 'Vocabulary',
-              ),
-              Tab(
-                icon: const Icon(Icons.translate_rounded),
-                text: uiStrings['statsOriginals']?[locale] ?? 'Originals',
+                text:
+                    uiStrings['statsVocabulary']?[locale] ?? 'Vocabulary',
               ),
             ],
           ),
-          actions: [
-            IconButton(
-              tooltip: uiStrings['copyTable']?[locale] ?? 'Copy table',
-              icon: const Icon(Icons.copy_outlined),
-              onPressed: () => _copyAllStats(context, stats, locale,
-                  mainProvider.currentVersion),
-            ),
-            const HomeIconButton(),
+          actions: const [
+            HomeIconButton(),
           ],
         ),
+        // Round 56: every tab now sources from
+        // `OriginalsStatsService.aggregate()` per user request:
+        // "统计分析、词汇、书卷总揽都需要基于原文". The translation-text
+        // word counts (BibleStatsService) are gone — those varied
+        // per-version and conflated translator choices with the
+        // underlying text. Hebrew + Greek lemma counts give a
+        // consistent, version-independent view of "what's actually
+        // in the Bible."
         body: TabBarView(
           children: [
-            _OverviewTab(stats: stats, locale: locale, version: mainProvider.currentVersion),
-            _BooksTab(
-                stats: stats,
-                locale: locale,
-                currentVersion: mainProvider.currentVersion),
-            _VocabularyTab(
-                stats: stats,
-                locale: locale,
-                currentVersion: mainProvider.currentVersion),
+            _OriginalsOverviewTab(locale: locale, settings: settings),
+            _OriginalsBooksTab(locale: locale, settings: settings),
             _OriginalsTab(locale: locale, settings: settings),
           ],
         ),
@@ -88,6 +81,7 @@ class StatsPage extends StatelessWidget {
     );
   }
 
+  // ignore: unused_element
   Future<void> _copyAllStats(BuildContext ctx, BibleStats stats,
       String locale, String version) async {
     final buf = StringBuffer();
@@ -108,6 +102,9 @@ class StatsPage extends StatelessWidget {
   }
 }
 
+// Round 56: dead — replaced by _OriginalsOverviewTab. Kept for
+// reference; safe to remove in a future cleanup pass.
+// ignore: unused_element
 class _OverviewTab extends StatelessWidget {
   final BibleStats stats;
   final String locale;
@@ -775,6 +772,517 @@ String _humanNum(int n) {
     return '${(n / 1000).toStringAsFixed(n < 10000 ? 1 : 0)}K';
   }
   return '${(n / 1000000).toStringAsFixed(1)}M';
+}
+
+/// Round 56: Overview tab — originals-based summary.
+///
+/// User: "统计分析、词汇、书卷总揽都需要基于原文". Drops the prior
+/// translation-text word counts (which varied per-version) and
+/// shows version-independent Hebrew/Greek lemma stats:
+///   - Total Hebrew + Greek words (raw occurrences)
+///   - Unique Hebrew + Greek lemmas (Strong's #s)
+///   - Hapax (lemmas appearing exactly once)
+///   - Top 5 Hebrew + 5 Greek lemmas with counts
+class _OriginalsOverviewTab extends StatefulWidget {
+  final String locale;
+  final AppSettings settings;
+  const _OriginalsOverviewTab(
+      {required this.locale, required this.settings});
+
+  @override
+  State<_OriginalsOverviewTab> createState() =>
+      _OriginalsOverviewTabState();
+}
+
+class _OriginalsOverviewTabState extends State<_OriginalsOverviewTab>
+    with AutomaticKeepAliveClientMixin {
+  Future<OriginalsAggregateStats>? _future;
+  @override
+  bool get wantKeepAlive => true;
+
+  @override
+  void initState() {
+    super.initState();
+    _future = OriginalsStatsService.aggregate();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    super.build(context);
+    final scheme = Theme.of(context).colorScheme;
+    final locale = widget.locale;
+    final settings = widget.settings;
+    return FutureBuilder<OriginalsAggregateStats>(
+      future: _future,
+      builder: (context, snap) {
+        if (snap.connectionState != ConnectionState.done) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        final stats = snap.data;
+        if (stats == null) {
+          return Center(
+            child: Text(
+              uiStrings['statsOriginalsEmpty']?[locale] ??
+                  'Original-language data not loaded.',
+              style: TextStyle(color: scheme.onSurfaceVariant),
+            ),
+          );
+        }
+        return ListView(
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+          children: [
+            _StatGrid(
+              settings: settings,
+              scheme: scheme,
+              tiles: [
+                _StatTile(
+                  label: uiStrings['statsOriginalsHebrewTotal']
+                          ?[locale] ??
+                      'Hebrew words',
+                  value: _humanNum(stats.totalHebrewWords),
+                  scheme: scheme,
+                ),
+                _StatTile(
+                  label: uiStrings['statsOriginalsGreekTotal']?[locale] ??
+                      'Greek words',
+                  value: _humanNum(stats.totalGreekWords),
+                  scheme: scheme,
+                ),
+                _StatTile(
+                  label: uiStrings['statsOriginalsHebrewUnique']
+                          ?[locale] ??
+                      'Hebrew lemmas',
+                  value: _humanNum(stats.uniqueHebrewLemmas),
+                  scheme: scheme,
+                ),
+                _StatTile(
+                  label: uiStrings['statsOriginalsGreekUnique']?[locale] ??
+                      'Greek lemmas',
+                  value: _humanNum(stats.uniqueGreekLemmas),
+                  scheme: scheme,
+                ),
+                _StatTile(
+                  label: uiStrings['statsOriginalsHapax']?[locale] ??
+                      'Hapax legomena',
+                  value:
+                      '${stats.hebrewHapaxCount} + ${stats.greekHapaxCount}',
+                  scheme: scheme,
+                ),
+                _StatTile(
+                  label: uiStrings['statsOriginalsBooksCount']
+                          ?[locale] ??
+                      'Books covered',
+                  value: '${stats.bookStats.length}',
+                  scheme: scheme,
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+            _TopLemmasCard(
+              title: uiStrings['statsOriginalsTopHebrew']?[locale] ??
+                  'Top Hebrew (OT)',
+              lemmas: stats.topHebrew.take(5).toList(),
+              isHebrew: true,
+              scheme: scheme,
+              settings: settings,
+              locale: locale,
+            ),
+            const SizedBox(height: 12),
+            _TopLemmasCard(
+              title: uiStrings['statsOriginalsTopGreek']?[locale] ??
+                  'Top Greek (NT)',
+              lemmas: stats.topGreek.take(5).toList(),
+              isHebrew: false,
+              scheme: scheme,
+              settings: settings,
+              locale: locale,
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+class _StatGrid extends StatelessWidget {
+  final AppSettings settings;
+  final ColorScheme scheme;
+  final List<_StatTile> tiles;
+  const _StatGrid({
+    required this.settings,
+    required this.scheme,
+    required this.tiles,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (ctx, c) {
+        final cols = c.maxWidth < 380 ? 2 : 3;
+        return GridView.count(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          crossAxisCount: cols,
+          childAspectRatio: 1.6,
+          crossAxisSpacing: 8,
+          mainAxisSpacing: 8,
+          children: tiles,
+        );
+      },
+    );
+  }
+}
+
+class _StatTile extends StatelessWidget {
+  final String label;
+  final String value;
+  final ColorScheme scheme;
+  const _StatTile({
+    required this.label,
+    required this.value,
+    required this.scheme,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
+      decoration: BoxDecoration(
+        color: scheme.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.w800,
+              color: scheme.primary,
+              fontFeatures: const [FontFeature.tabularFigures()],
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            label,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              fontSize: 12,
+              color: scheme.onSurface.withValues(alpha: 0.7),
+              height: 1.3,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _TopLemmasCard extends StatelessWidget {
+  final String title;
+  final List<OriginalsLemma> lemmas;
+  final bool isHebrew;
+  final ColorScheme scheme;
+  final AppSettings settings;
+  final String locale;
+  const _TopLemmasCard({
+    required this.title,
+    required this.lemmas,
+    required this.isHebrew,
+    required this.scheme,
+    required this.settings,
+    required this.locale,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final tagColor = isHebrew
+        ? Colors.indigo.shade100
+        : Colors.deepPurple.shade100;
+    final tagFg = isHebrew
+        ? Colors.indigo.shade900
+        : Colors.deepPurple.shade900;
+    return Container(
+      padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+      decoration: BoxDecoration(
+        color: scheme.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w700,
+              color: scheme.primary,
+            ),
+          ),
+          const SizedBox(height: 8),
+          for (var i = 0; i < lemmas.length; i++) ...[
+            if (i > 0) const Divider(height: 12),
+            Row(
+              children: [
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: tagColor,
+                    borderRadius: BorderRadius.circular(5),
+                  ),
+                  child: Text(
+                    lemmas[i].strongs,
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w700,
+                      color: tagFg,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    lemmas[i].lemma,
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                      color: scheme.onSurface,
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: Text(
+                    lemmas[i].glossFor(locale),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: scheme.onSurface.withValues(alpha: 0.75),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  '${lemmas[i].count}',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    color: scheme.primary,
+                    fontFeatures: const [FontFeature.tabularFigures()],
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+/// Round 56: Books tab — per-book originals stats.
+class _OriginalsBooksTab extends StatefulWidget {
+  final String locale;
+  final AppSettings settings;
+  const _OriginalsBooksTab(
+      {required this.locale, required this.settings});
+
+  @override
+  State<_OriginalsBooksTab> createState() => _OriginalsBooksTabState();
+}
+
+class _OriginalsBooksTabState extends State<_OriginalsBooksTab>
+    with AutomaticKeepAliveClientMixin {
+  Future<OriginalsAggregateStats>? _future;
+  String _filter = 'all'; // all / ot / nt
+
+  @override
+  bool get wantKeepAlive => true;
+
+  @override
+  void initState() {
+    super.initState();
+    _future = OriginalsStatsService.aggregate();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    super.build(context);
+    final scheme = Theme.of(context).colorScheme;
+    final locale = widget.locale;
+    final settings = widget.settings;
+    return FutureBuilder<OriginalsAggregateStats>(
+      future: _future,
+      builder: (context, snap) {
+        if (snap.connectionState != ConnectionState.done) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        final stats = snap.data;
+        if (stats == null) {
+          return Center(
+            child: Text(
+              uiStrings['statsOriginalsEmpty']?[locale] ??
+                  'Original-language data not loaded.',
+              style: TextStyle(color: scheme.onSurfaceVariant),
+            ),
+          );
+        }
+        var rows = stats.bookStats;
+        if (_filter == 'ot') {
+          rows = rows.where((b) => b.isOt).toList();
+        } else if (_filter == 'nt') {
+          rows = rows.where((b) => !b.isOt).toList();
+        }
+        return ListView.separated(
+          padding: const EdgeInsets.fromLTRB(12, 8, 12, 24),
+          itemCount: rows.length + 1,
+          separatorBuilder: (_, __) => const SizedBox(height: 4),
+          itemBuilder: (_, i) {
+            if (i == 0) {
+              return Padding(
+                padding: const EdgeInsets.fromLTRB(0, 4, 0, 12),
+                child: SegmentedButton<String>(
+                  segments: [
+                    ButtonSegment(
+                      value: 'all',
+                      label: Text(uiStrings['statsOriginalsAll']?[locale] ??
+                          'All'),
+                    ),
+                    ButtonSegment(
+                      value: 'ot',
+                      label: Text(uiStrings['statsBooksOT']?[locale] ??
+                          'OT'),
+                    ),
+                    ButtonSegment(
+                      value: 'nt',
+                      label: Text(uiStrings['statsBooksNT']?[locale] ??
+                          'NT'),
+                    ),
+                  ],
+                  selected: {_filter},
+                  onSelectionChanged: (s) =>
+                      setState(() => _filter = s.first),
+                  multiSelectionEnabled: false,
+                  showSelectedIcon: false,
+                ),
+              );
+            }
+            final book = rows[i - 1];
+            return _BookOriginalsRow(
+              book: book,
+              scheme: scheme,
+              settings: settings,
+              locale: locale,
+            );
+          },
+        );
+      },
+    );
+  }
+}
+
+class _BookOriginalsRow extends StatelessWidget {
+  final OriginalsBookStat book;
+  final ColorScheme scheme;
+  final AppSettings settings;
+  final String locale;
+  const _BookOriginalsRow({
+    required this.book,
+    required this.scheme,
+    required this.settings,
+    required this.locale,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final localizedName =
+        localeAwareBookName(book.englishBook, locale);
+    final tagColor =
+        book.isOt ? Colors.indigo.shade100 : Colors.deepPurple.shade100;
+    final tagFg =
+        book.isOt ? Colors.indigo.shade900 : Colors.deepPurple.shade900;
+    final tagLabel = book.isOt
+        ? (uiStrings['statsBooksOT']?[locale] ?? 'OT')
+        : (uiStrings['statsBooksNT']?[locale] ?? 'NT');
+    return Material(
+      color: scheme.surfaceContainerLow,
+      borderRadius: BorderRadius.circular(10),
+      elevation: 0,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.symmetric(
+                  horizontal: 6, vertical: 2),
+              decoration: BoxDecoration(
+                color: tagColor,
+                borderRadius: BorderRadius.circular(5),
+              ),
+              child: Text(
+                tagLabel,
+                style: TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w700,
+                  color: tagFg,
+                ),
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    localizedName,
+                    style: TextStyle(
+                      fontFamily: settings.fontFamily,
+                      fontSize: settings.fontSize,
+                      fontWeight: FontWeight.w600,
+                      color: scheme.onSurface,
+                    ),
+                  ),
+                  Text(
+                    book.englishBook,
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: scheme.onSurfaceVariant,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(
+                  '${_humanNum(book.totalWords)} ${uiStrings['statsOriginalsWordsShort']?[locale] ?? 'words'}',
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: scheme.primary,
+                    fontFeatures: const [FontFeature.tabularFigures()],
+                  ),
+                ),
+                Text(
+                  '${book.uniqueLemmas} ${uiStrings['statsOriginalsLemmasShort']?[locale] ?? 'lemmas'}',
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: scheme.onSurfaceVariant,
+                    fontFeatures: const [FontFeature.tabularFigures()],
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
 /// Round 56: Hebrew + Greek originals frequency tab. User feedback:

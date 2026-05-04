@@ -842,6 +842,66 @@ const uiStrings = {
     'zh-Hant': '原文資料未載入。',
     'en': 'Original-language data not loaded.',
   },
+  'statsOriginalsHebrewTotal': {
+    'zh-Hans': '希伯来文总字数',
+    'zh-Hant': '希伯來文總字數',
+    'en': 'Hebrew words',
+  },
+  'statsOriginalsGreekTotal': {
+    'zh-Hans': '希腊文总字数',
+    'zh-Hant': '希臘文總字數',
+    'en': 'Greek words',
+  },
+  'statsOriginalsHebrewUnique': {
+    'zh-Hans': '希伯来文词条',
+    'zh-Hant': '希伯來文詞條',
+    'en': 'Hebrew lemmas',
+  },
+  'statsOriginalsGreekUnique': {
+    'zh-Hans': '希腊文词条',
+    'zh-Hant': '希臘文詞條',
+    'en': 'Greek lemmas',
+  },
+  'statsOriginalsHapax': {
+    'zh-Hans': '仅出现一次的字',
+    'zh-Hant': '僅出現一次的字',
+    'en': 'Hapax legomena',
+  },
+  'statsOriginalsBooksCount': {
+    'zh-Hans': '涉及书卷数',
+    'zh-Hant': '涉及書卷數',
+    'en': 'Books covered',
+  },
+  'statsOriginalsTopHebrew': {
+    'zh-Hans': '希伯来文使用最频繁（旧约）',
+    'zh-Hant': '希伯來文使用最頻繁（舊約）',
+    'en': 'Top Hebrew (OT)',
+  },
+  'statsOriginalsTopGreek': {
+    'zh-Hans': '希腊文使用最频繁（新约）',
+    'zh-Hant': '希臘文使用最頻繁（新約）',
+    'en': 'Top Greek (NT)',
+  },
+  'statsOriginalsWordsShort': {
+    'zh-Hans': '字',
+    'zh-Hant': '字',
+    'en': 'words',
+  },
+  'statsOriginalsLemmasShort': {
+    'zh-Hans': '词条',
+    'zh-Hant': '詞條',
+    'en': 'lemmas',
+  },
+  'statsBooksOT': {
+    'zh-Hans': '旧约',
+    'zh-Hant': '舊約',
+    'en': 'OT',
+  },
+  'statsBooksNT': {
+    'zh-Hans': '新约',
+    'zh-Hant': '新約',
+    'en': 'NT',
+  },
   // ── Style presets (Round 56) ──────────────────────────────────
   'stylePresetTitle': {
     'zh-Hans': '风格预设',

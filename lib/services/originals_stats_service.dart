@@ -162,4 +162,191 @@ class OriginalsStatsService {
     }
     return list;
   }
+
+  /// Aggregate stats over the entire Bible's original text.
+  /// Used by the Overview / Books / Vocabulary tabs of the Stats
+  /// page (Round 56 — user request: "统计分析、词汇、书卷总揽都需要
+  /// 基于原文").
+  static OriginalsAggregateStats? _aggregateCache;
+  static Future<OriginalsAggregateStats> aggregate() async {
+    if (_aggregateCache != null) return _aggregateCache!;
+    final all = await load();
+
+    int totalHebrew = 0;
+    int totalGreek = 0;
+    int uniqueHebrew = 0;
+    int uniqueGreek = 0;
+    final hebrewHapax = <OriginalsLemma>[];
+    final greekHapax = <OriginalsLemma>[];
+
+    // Per-book aggregate: total words + unique lemmas + top N
+    final perBookTotals = <String, int>{};
+    final perBookUnique = <String, Set<String>>{};
+    final perBookTop = <String, List<MapEntry<String, int>>>{};
+
+    for (final lemma in all) {
+      if (lemma.isHebrew) {
+        totalHebrew += lemma.count;
+        uniqueHebrew++;
+        if (lemma.count == 1) hebrewHapax.add(lemma);
+      } else {
+        totalGreek += lemma.count;
+        uniqueGreek++;
+        if (lemma.count == 1) greekHapax.add(lemma);
+      }
+      for (final entry in lemma.byBook.entries) {
+        perBookTotals[entry.key] =
+            (perBookTotals[entry.key] ?? 0) + entry.value;
+        perBookUnique
+            .putIfAbsent(entry.key, () => <String>{})
+            .add(lemma.strongs);
+      }
+    }
+
+    // Build per-book top-5 lemma lists. We need to walk all again
+    // tracking each book's top contributors.
+    final perBookSorted = <String, List<OriginalsLemma>>{};
+    for (final lemma in all) {
+      for (final book in lemma.byBook.keys) {
+        perBookSorted.putIfAbsent(book, () => <OriginalsLemma>[]).add(lemma);
+      }
+    }
+    perBookSorted.forEach((book, lemmas) {
+      lemmas.sort(
+          (a, b) => (b.byBook[book] ?? 0).compareTo(a.byBook[book] ?? 0));
+      perBookTop[book] = lemmas
+          .take(5)
+          .map((l) => MapEntry(l.strongs, l.byBook[book] ?? 0))
+          .toList();
+    });
+
+    // First 100 Hebrew + 100 Greek for the Vocabulary tab default.
+    final topHebrew =
+        all.where((l) => l.isHebrew).take(100).toList();
+    final topGreek =
+        all.where((l) => !l.isHebrew).take(100).toList();
+
+    final bookStats = <OriginalsBookStat>[];
+    perBookTotals.forEach((book, total) {
+      final unique = perBookUnique[book]?.length ?? 0;
+      final isOt = _otBooks.contains(book);
+      bookStats.add(OriginalsBookStat(
+        englishBook: book,
+        isOt: isOt,
+        totalWords: total,
+        uniqueLemmas: unique,
+        topInBook: perBookTop[book] ?? const [],
+      ));
+    });
+    // Canonical order
+    bookStats.sort((a, b) {
+      final ai = _canonicalIndex(a.englishBook);
+      final bi = _canonicalIndex(b.englishBook);
+      return ai.compareTo(bi);
+    });
+
+    _aggregateCache = OriginalsAggregateStats(
+      totalHebrewWords: totalHebrew,
+      totalGreekWords: totalGreek,
+      uniqueHebrewLemmas: uniqueHebrew,
+      uniqueGreekLemmas: uniqueGreek,
+      hebrewHapaxCount: hebrewHapax.length,
+      greekHapaxCount: greekHapax.length,
+      topHebrew: topHebrew,
+      topGreek: topGreek,
+      bookStats: bookStats,
+    );
+    return _aggregateCache!;
+  }
+
+  static int _canonicalIndex(String book) {
+    final i = _canonicalOrder.indexOf(book);
+    return i < 0 ? 999 : i;
+  }
+}
+
+/// 39 OT books (Hebrew). Used to flag book entries in the
+/// aggregate stats.
+const _otBooks = <String>{
+  'Genesis', 'Exodus', 'Leviticus', 'Numbers', 'Deuteronomy',
+  'Joshua', 'Judges', 'Ruth', '1 Samuel', '2 Samuel',
+  '1 Kings', '2 Kings', '1 Chronicles', '2 Chronicles',
+  'Ezra', 'Nehemiah', 'Esther', 'Job', 'Psalms', 'Proverbs',
+  'Ecclesiastes', 'Song of Solomon', 'Isaiah', 'Jeremiah',
+  'Lamentations', 'Ezekiel', 'Daniel', 'Hosea', 'Joel',
+  'Amos', 'Obadiah', 'Jonah', 'Micah', 'Nahum', 'Habakkuk',
+  'Zephaniah', 'Haggai', 'Zechariah', 'Malachi',
+};
+
+const List<String> _canonicalOrder = [
+  'Genesis', 'Exodus', 'Leviticus', 'Numbers', 'Deuteronomy',
+  'Joshua', 'Judges', 'Ruth', '1 Samuel', '2 Samuel',
+  '1 Kings', '2 Kings', '1 Chronicles', '2 Chronicles',
+  'Ezra', 'Nehemiah', 'Esther', 'Job', 'Psalms', 'Proverbs',
+  'Ecclesiastes', 'Song of Solomon', 'Isaiah', 'Jeremiah',
+  'Lamentations', 'Ezekiel', 'Daniel', 'Hosea', 'Joel',
+  'Amos', 'Obadiah', 'Jonah', 'Micah', 'Nahum', 'Habakkuk',
+  'Zephaniah', 'Haggai', 'Zechariah', 'Malachi',
+  'Matthew', 'Mark', 'Luke', 'John', 'Acts',
+  'Romans', '1 Corinthians', '2 Corinthians', 'Galatians',
+  'Ephesians', 'Philippians', 'Colossians',
+  '1 Thessalonians', '2 Thessalonians',
+  '1 Timothy', '2 Timothy', 'Titus', 'Philemon',
+  'Hebrews', 'James', '1 Peter', '2 Peter',
+  '1 John', '2 John', '3 John', 'Jude', 'Revelation',
+];
+
+/// Per-book originals statistic.
+class OriginalsBookStat {
+  final String englishBook;
+  final bool isOt;
+  final int totalWords;
+  final int uniqueLemmas;
+
+  /// Top 5 Strong's #s by occurrence in this book — value is the
+  /// count for that book only, not global.
+  final List<MapEntry<String, int>> topInBook;
+
+  const OriginalsBookStat({
+    required this.englishBook,
+    required this.isOt,
+    required this.totalWords,
+    required this.uniqueLemmas,
+    required this.topInBook,
+  });
+}
+
+/// Aggregate stats over the entire Bible's original text.
+class OriginalsAggregateStats {
+  final int totalHebrewWords;
+  final int totalGreekWords;
+  final int uniqueHebrewLemmas;
+  final int uniqueGreekLemmas;
+  final int hebrewHapaxCount;
+  final int greekHapaxCount;
+
+  /// Top 100 most-frequent Hebrew lemmas (descending).
+  final List<OriginalsLemma> topHebrew;
+
+  /// Top 100 most-frequent Greek lemmas (descending).
+  final List<OriginalsLemma> topGreek;
+
+  /// Per-book originals statistics, in canonical Bible order.
+  final List<OriginalsBookStat> bookStats;
+
+  const OriginalsAggregateStats({
+    required this.totalHebrewWords,
+    required this.totalGreekWords,
+    required this.uniqueHebrewLemmas,
+    required this.uniqueGreekLemmas,
+    required this.hebrewHapaxCount,
+    required this.greekHapaxCount,
+    required this.topHebrew,
+    required this.topGreek,
+    required this.bookStats,
+  });
+
+  int get totalWords => totalHebrewWords + totalGreekWords;
+  int get uniqueLemmas => uniqueHebrewLemmas + uniqueGreekLemmas;
+  int get totalHapax => hebrewHapaxCount + greekHapaxCount;
 }
