@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:yswords/constants/ui_strings.dart';
 import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/providers/main_provider.dart';
+import 'package:yswords/services/fetch_books.dart' show standardBookOrder;
 import 'package:yswords/utils/jump_to_reference.dart' as jumper;
 import 'package:yswords/utils/reference_parser.dart';
 import 'package:yswords/utils/responsive.dart';
@@ -376,24 +377,73 @@ class _TriviaFilterBar extends StatelessWidget {
     final allLabel = uiStrings['statsOriginalsAll']?[locale] ?? 'All';
     final otLabel = uiStrings['statsBooksOT']?[locale] ?? 'OT';
     final ntLabel = uiStrings['statsBooksNT']?[locale] ?? 'NT';
+    final filterLabel =
+        uiStrings['sermonFilterByPassage']?[locale] ?? 'Filter';
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        TextField(
-          decoration: InputDecoration(
-            hintText: searchHint,
-            prefixIcon: const Icon(Icons.search),
-            isDense: true,
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
+        // Round 56 (continued): book filter aligned with the sermons
+        // page pattern. User feedback "bible trivia filter by book
+        // should learn from sermon and others. all the filter should
+        // be aligned and standard". Search field + Filter button
+        // sits inline; tapping Filter opens a modal sheet that lists
+        // every book in canonical order, dimming books that have no
+        // entries (same affordance as sermons_page._BookChip).
+        Row(
+          children: [
+            Expanded(
+              child: TextField(
+                decoration: InputDecoration(
+                  hintText: searchHint,
+                  prefixIcon: const Icon(Icons.search),
+                  isDense: true,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                onChanged: onQueryChanged,
+                style: TextStyle(
+                  fontFamily: settings.fontFamily,
+                  fontSize: (settings.fontSize - 1).clamp(13.0, 17.0),
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            OutlinedButton.icon(
+              onPressed: () => _openBookFilterSheet(context),
+              icon: Icon(
+                bookFilter == 'all'
+                    ? Icons.filter_list
+                    : Icons.filter_list_alt,
+                size: 18,
+              ),
+              label: Text(
+                filterLabel,
+                style: const TextStyle(fontSize: 13),
+              ),
+              style: OutlinedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                backgroundColor: bookFilter == 'all'
+                    ? null
+                    : scheme.primaryContainer.withValues(alpha: 0.4),
+              ),
+            ),
+          ],
+        ),
+        if (bookFilter != 'all') ...[
+          const SizedBox(height: 8),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: InputChip(
+              avatar:
+                  Icon(Icons.bookmark, size: 16, color: scheme.primary),
+              label: Text(localeAwareBookName(bookFilter, locale)),
+              onDeleted: () => onBookChanged('all'),
+              backgroundColor:
+                  scheme.primaryContainer.withValues(alpha: 0.5),
             ),
           ),
-          onChanged: onQueryChanged,
-          style: TextStyle(
-            fontFamily: settings.fontFamily,
-            fontSize: (settings.fontSize - 1).clamp(13.0, 17.0),
-          ),
-        ),
+        ],
         const SizedBox(height: 10),
         SegmentedButton<String>(
           segments: [
@@ -405,35 +455,6 @@ class _TriviaFilterBar extends StatelessWidget {
           onSelectionChanged: (s) => onTestamentChanged(s.first),
           multiSelectionEnabled: false,
           showSelectedIcon: false,
-        ),
-        const SizedBox(height: 10),
-        // Book filter row — Round 56 user feedback "冷知识需要有
-        // book filter related makesure different language setting
-        // applied". Each chip's display label runs through
-        // [localeAwareBookName] so 'Psalms' shows as 诗篇 / 詩篇 /
-        // Psalms depending on the user's locale (CUVS book names
-        // for zh-Hans, traditional CUVS for zh-Hant, English
-        // otherwise — exactly the same naming the reader uses).
-        SizedBox(
-          height: 38,
-          child: ListView(
-            scrollDirection: Axis.horizontal,
-            children: [
-              _TagChip(
-                label: allLabel,
-                selected: bookFilter == 'all',
-                onTap: () => onBookChanged('all'),
-                scheme: scheme,
-              ),
-              for (final b in availableBooks)
-                _TagChip(
-                  label: localeAwareBookName(b, locale),
-                  selected: bookFilter == b,
-                  onTap: () => onBookChanged(b),
-                  scheme: scheme,
-                ),
-            ],
-          ),
         ),
         const SizedBox(height: 10),
         SizedBox(
@@ -468,6 +489,183 @@ class _TriviaFilterBar extends StatelessWidget {
         ),
         const SizedBox(height: 4),
       ],
+    );
+  }
+
+  /// Open the modal sheet that mirrors the sermons-page pattern
+  /// (`_PassageFilterSheet`): all 66 books in canonical order, books
+  /// without trivia entries dimmed, single-select, Apply / Clear /
+  /// Close. Keeps trivia and sermons feeling consistent so muscle
+  /// memory carries between the two pages.
+  void _openBookFilterSheet(BuildContext context) {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Theme.of(context).colorScheme.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (sheetCtx) {
+        return _TriviaBookFilterSheet(
+          locale: locale,
+          availableBooks: availableBooks.toSet(),
+          initialBook: bookFilter == 'all' ? null : bookFilter,
+          onApply: (book) {
+            onBookChanged(book ?? 'all');
+            Navigator.of(sheetCtx).pop();
+          },
+          onClear: () {
+            onBookChanged('all');
+            Navigator.of(sheetCtx).pop();
+          },
+        );
+      },
+    );
+  }
+}
+
+/// Modal book-filter sheet for the trivia page — mirrors
+/// `_PassageFilterSheet` in sermons_page.dart so the experience is
+/// consistent across pages. Differences from sermons:
+///   • Trivia has no chapter granularity (entries reference whole
+///     chapters or whole books) so the chapter row is omitted.
+///   • Books without any trivia entry are dimmed (cannot be tapped),
+///     same affordance as sermons.
+class _TriviaBookFilterSheet extends StatefulWidget {
+  final String locale;
+  final Set<String> availableBooks;
+  final String? initialBook;
+  final void Function(String? book) onApply;
+  final VoidCallback onClear;
+
+  const _TriviaBookFilterSheet({
+    required this.locale,
+    required this.availableBooks,
+    required this.initialBook,
+    required this.onApply,
+    required this.onClear,
+  });
+
+  @override
+  State<_TriviaBookFilterSheet> createState() =>
+      _TriviaBookFilterSheetState();
+}
+
+class _TriviaBookFilterSheetState extends State<_TriviaBookFilterSheet> {
+  String? _selectedBook;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedBook = widget.initialBook;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final locale = widget.locale;
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.bookmark, size: 18, color: scheme.primary),
+                const SizedBox(width: 8),
+                Text(
+                  uiStrings['sermonFilterByPassage']?[locale] ??
+                      'Filter by passage',
+                  style: const TextStyle(
+                      fontSize: 16, fontWeight: FontWeight.w600),
+                ),
+                const Spacer(),
+                if (widget.initialBook != null)
+                  TextButton(
+                    onPressed: widget.onClear,
+                    child: Text(
+                        uiStrings['clearFilter']?[locale] ?? 'Clear'),
+                  ),
+                IconButton(
+                  icon: const Icon(Icons.close, size: 20),
+                  onPressed: () => Navigator.of(context).maybePop(),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Text(
+              uiStrings['sermonFilterBookLabel']?[locale] ?? 'Book',
+              style: TextStyle(
+                  fontSize: 12,
+                  color: scheme.onSurface.withValues(alpha: 0.65)),
+            ),
+            const SizedBox(height: 6),
+            ConstrainedBox(
+              constraints: BoxConstraints(
+                maxHeight: MediaQuery.of(context).size.height * 0.50,
+              ),
+              child: SingleChildScrollView(
+                child: Wrap(
+                  spacing: 6,
+                  runSpacing: 6,
+                  children: [
+                    for (final book in standardBookOrder)
+                      _TriviaBookChip(
+                        book: book,
+                        locale: locale,
+                        hasEntries: widget.availableBooks.contains(book),
+                        selected: _selectedBook == book,
+                        onTap: () => setState(() {
+                          _selectedBook =
+                              _selectedBook == book ? null : book;
+                        }),
+                      ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 14),
+            FilledButton(
+              onPressed: () => widget.onApply(_selectedBook),
+              child: Text(uiStrings['apply']?[locale] ?? 'Apply'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _TriviaBookChip extends StatelessWidget {
+  final String book;
+  final String locale;
+  final bool hasEntries;
+  final bool selected;
+  final VoidCallback onTap;
+
+  const _TriviaBookChip({
+    required this.book,
+    required this.locale,
+    required this.hasEntries,
+    required this.selected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final localized = localeAwareBookName(book, locale, '');
+    return ChoiceChip(
+      label: Text(
+        localized,
+        style: TextStyle(
+          fontSize: 13,
+          color: hasEntries ? null : Theme.of(context).disabledColor,
+        ),
+      ),
+      selected: selected,
+      onSelected: hasEntries ? (_) => onTap() : null,
     );
   }
 }
