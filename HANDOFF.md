@@ -420,151 +420,180 @@ The app adapts its layout to all device sizes using `lib/utils/responsive.dart`:
 
 ## What Has Been Fixed (2026-05-04)
 
-### Family tree feature — Wikipedia-article style (round 60+)
+### Family tree feature — Wikipedia-article style (final, 277 people)
 
 The Bible family tree page evolved through many iterations (visual SVG
 chart with bus connectors → recursive expand-on-tap tree → flat
-indented outline → per-era sectioned article). Final state is modelled
-on Wikipedia's *"Genealogies in the Bible"* article: clean,
-reading-oriented, scholarly.
+indented outline → per-era sectioned article) and converged on a
+Wikipedia-article shape: clean, reading-oriented, scholarly.
 
 **Page structure** (`lib/pages/family_tree_page.dart`):
 
-* **Search bar** at top — filter-as-you-type across name (en/zh-Hans/
-  zh-Hant), id, role text, and summary.
+* **Search bar** at top with **tiered name-first relevance** matching:
+  * Tier 1: exact name match (any locale)
+  * Tier 2: name starts with
+  * Tier 3: name contains
+  * Tier 4: role contains (e.g. "PATRIARCH" → all 14 patriarchs)
+  * Tier 5: summary contains (catch-all, last resort)
+
+  When ANY name match exists (tiers 1-3) we return all of them and
+  ignore lower-priority tiers. Otherwise fall back to role then
+  summary. So `Jesus` returns just Jesus alone, not 30+ ancestors
+  whose summaries mention him. While a query is active the article
+  body is replaced with a flat **search-results panel** — clean
+  rows showing name + era pill + role pill + year + ref count.
+  Tap a result → clears the query AND jumps to that person's row
+  in their era's section.
 * **Summary line** with total / matching count + an
-  "Expand all / Collapse all sections" `TextButton`.
-* **8 collapsible per-era sections** in canonical order:
-  Antediluvian / Post-Flood Patriarchs / Patriarchs of Israel /
-  Mosaic-Levitical / Pre-Monarchy Davidic Line / Kings of Judah /
-  Exile & Return / New Testament. Each section has a localized title,
-  one-line subtitle (description + date range like "AM 0 – 1656" or
-  "BC 1010 – 586"), and people-count badge. Walks descend only into
-  same-era children — Levi appears in Patriarchs but his Mosaic
-  descendants (Aaron, Moses, Miriam) live in the Mosaic section.
-* **Comparison table** at the bottom (collapsed by default) — Adam → Jesus
-  spine (63 generations) × six Bible-source columns
+  "Expand all / Collapse all sections" toggle.
+* **9 collapsible per-era sections** in canonical chronological
+  order — see era table below. Each section has a localized title,
+  a one-line subtitle (description + date range), people-count
+  badge, and accent colour. Walks descend only into same-era
+  children, so cross-era continuations render as **bridge leaves**
+  (see below).
+* **Comparison table** at the bottom (collapsed by default) —
+  Adam → Jesus spine × six Bible-source columns
   (Genesis 5 / Genesis 11 / 1 Chronicles 1 / Ruth 4 / Matthew 1 /
-  Luke 3); cells show ✓ when the person's `refs` start with that book/
-  chapter. Tappable name cells open the detail sheet. Width-adaptive
-  via `LayoutBuilder` — phones horizontally scroll, iPad/desktop expand
-  proportionally.
+  Luke 3); cells show ✓ when the person's `refs` start with that
+  book/chapter. Tappable name cells open the detail sheet.
+  Width-adaptive via `LayoutBuilder` — phones horizontally scroll,
+  iPad/desktop expand proportionally.
 
 **Per-row info**: name + `═ Spouse` chips + role pill (PATRIARCH /
 KING / TRIBE / etc.) + verse-ref count badge + accent colour stripe
 (priestly red, royal blue, messianic gold, prophetic purple) + year
 span. Indent caps at depth 6 to keep deep lineages readable on a
-phone.
+phone. Every entry has a year stub — recent audit fixed 62 entries
+that were missing `birthYear` / `deathYear`.
 
-**Detail sheet** (`lib/widgets/person_detail_sheet.dart`): adds Logos-
-style "Siblings" + closest "Tribe / line" (closest TRIBE-tagged
-ancestor) sections beneath Parents / Spouses / Children for one-tap
-lateral navigation.
+**Detail sheet** (`lib/widgets/person_detail_sheet.dart`): clean
+modal bottom sheet (max 720 px wide) with:
+* Drag handle
+* **Name + year + copy-all icon** (top-right; copies the entire
+  rendered detail content as plain text to the system clipboard,
+  with a confirmation SnackBar)
+* Localized summary
+* Parents (Father / Mother chips, tappable)
+* Spouse(s)
+* Children
+* **Siblings** (Logos-style — same father OR same mother, deduped)
+* **Tribe / line** (closest ancestor with a TRIBE-tagged role —
+  e.g. for Aaron: Levi (PRIESTLY TRIBE); for Solomon: Judah
+  (ROYAL TRIBE))
+* Verse references (tappable chips routing through
+  `prepareJumpToVerse` so the reader scrolls to the verse)
+* Collapsible patrilineal trail
 
-**Tap behaviour** (final form after user feedback):
-* Tap the **row body / name** → expand or collapse this person's
-  children. For leaf rows (no children) it falls back to opening the
-  detail sheet so the tap isn't a no-op.
-* Tap the small **ⓘ info button** on the right → opens the detail
-  sheet. This is the explicit "show me the popup" affordance.
-* Tap the **chevron** → same as tapping the row (toggle children).
-* Tap a **bridge leaf** (cross-era child rendered in the parent
-  section) → uncollapses + scrolls to the target era's section. Its
-  ⓘ info button still opens the detail sheet without jumping.
-* Tap a **bridge chip** in the "Continues with: …" footer → same
-  jump behaviour, no detail-sheet popup. Detail popups don't open
-  on jumps because they would visually block the scroll animation
-  and make the jump feel like nothing happened.
-* **Section-header tap** → collapse / expand the whole era.
-* Default: every era section starts collapsed (TOC view); search
-  matches auto-uncollapse the containing section.
+All chips inside the detail sheet open the detail sheet for the
+target person, allowing free lateral navigation through the
+lineage.
+
+**Tap behaviour matrix** (final, after several iterations of user
+feedback):
+
+| Where you tap | What happens |
+|---|---|
+| Section header | Collapse / expand the era |
+| Row body / name | Toggle children expansion. Leaf rows fall back to opening detail. |
+| Chevron | Same as row body |
+| ⓘ info button (right of every row) | Opens detail sheet |
+| Spouse chip (`═ Eve`, `═ Mary`, etc.) | Jump to that spouse's row in their era's section (with flash highlight) |
+| Bridge leaf (cross-era child rendered in parent section) | Uncollapse + scroll to target era's section, jump-and-flash that person |
+| Bridge footer chip ("Continues with: …") | Same jump behaviour |
+| Comparison-table name cell | Opens detail sheet |
+
+Default: every era section starts collapsed (TOC view). Search
+matches auto-uncollapse the containing section. Bridge taps also
+auto-uncollapse + scroll.
 
 **Responsive design**: page content capped at 960 px wide via
-`Center` + `ConstrainedBox`. Modal bottom sheet caps at 720 px. Indent
-compression (depth 6 cap). All pills wrap with `Wrap`.
+`Center` + `ConstrainedBox`. Modal bottom sheet caps at 720 px.
+Indent compression (depth 6 cap). All pills wrap with `Wrap`.
 
-**Dataset** (`assets/family_tree.json`): 238 curated entries covering
-Adam → Jesus (Matthew 1 line) plus extended Genesis branches, the
-Mosaic / Levitical line, Saul's family, David's full family, and
-Jesus's siblings. Each entry carries: id, en/zh-Hans/zh-Hant name +
-summary, fatherId / motherId / spouseIds / childIds, yearSystem
-(`am` for antediluvian, `bc` for Abraham onward), birth/death years,
+**Scroll mechanism** (the gnarly bit — fixed in commit `b4664a4`):
+* `ListView` uses `cacheExtent: double.infinity` so all 9 list
+  items are laid out eagerly. Without this, sections below the
+  viewport had `GlobalKey.currentContext == null`, which made
+  bridge jumps from Patriarchs to Lukan Lineage / Davidic Line
+  silently fail with a "no context for X" diagnostic.
+* `_jumpToEra` uses an explicit `ScrollController` + chained
+  `addPostFrameCallback` × 2 + 250 ms `Future.delayed` to ensure
+  the destination section's layout has fully settled before we
+  measure the row's `RenderBox`. Then computes scroll offset via
+  `RenderAbstractViewport.getOffsetToReveal` and `jumpTo`s
+  directly (animated paths were sometimes interrupted by
+  concurrent layouts).
+* On every jump the destination row gets a static
+  `primaryContainer`-tinted background + outlined ring for 3
+  seconds (the `_recentlyJumpedTo` state, cleared by a `Timer`)
+  for unambiguous "you landed here" feedback.
+
+**Dataset** (`assets/family_tree.json`): **277 curated entries**
+covering Adam → Jesus through both the Matthean Solomonic line
+AND the Lukan Nathan line. Each entry carries: id,
+en/zh-Hans/zh-Hant name + summary, fatherId / motherId /
+spouseIds / childIds, yearSystem (`am` for antediluvian, `bc` for
+Abraham onward), birth/death years (every entry has at least one),
 verse refs, optional `role` / `accent` / `era` annotations.
 
 Coverage breakdown by era:
 
 | Era | Count | Notes |
 |---|---|---|
-| Antediluvian | 23 | Adam → Lamech + Cain's full line (Lamech's wives + 4 children) |
+| Antediluvian | 23 | Adam → Lamech + Cain's full line (Lamech's wives Adah/Zillah + 4 children Jabal/Jubal/Tubal-cain/Naamah) |
 | Post-Flood | 12 | Shem → Terah |
-| Patriarchs | 106 | Abraham + brothers + Lot's children + Ishmael's 12 sons + Keturah's 5 sons + Judah's 5 sons + Esau & descendants + Genesis 46 immediate sons of all 12 tribes (Reuben, Simeon, Issachar, Zebulun, Dan, Naphtali, Gad, Asher, Benjamin) |
-| Mosaic | 13 | Levi's 3 sons + Amram & Jochebed + Moses (with Zipporah + 2 sons) + Aaron (with 4 sons) + Miriam |
-| Davidic Line | 30 | Perez → Jesse + Saul's family (Kish, Saul, Ahinoam, Jonathan, Michal, Ish-bosheth, Mephibosheth) + David's 7 brothers, 2 sisters, Zeruiah's sons (Joab/Abishai/Asahel) and Abigail's son (Amasa) |
-| Kings | 36 | Full chain David → Jehoiakim including Abijah, Asa, Jehoshaphat, Jehoram, Ahaziah, Joash, Amaziah, Uzziah, Jotham, Ahaz, Manasseh, Amon (Matthew 1 compresses these — full canonical chain restored) + David's 7 wives (Michal, Ahinoam-Jezreel, Abigail-wife, Maacah, Haggith, Abital, Eglah, Bathsheba) + 9 other sons (Amnon, Chileab, Absalom, Adonijah, Shephatiah, Ithream, Shammua, Shobab, Nathan-son-of-David) + daughter Tamar |
-| Exile | 11 | Shealtiel → Matthan → Jacob (per Matthew 1:13-16) |
-| NT | 7 | Joseph + Mary + Jesus + Jesus's 4 siblings (James, Joses, Simon, Jude per Mark 6:3) |
+| Patriarchs | 106 | Abraham + brothers Nahor/Haran + Lot's 2 children + Ishmael's 12 sons + Keturah's 5 sons + Judah's 5 sons + Esau & descendants Eliphaz/Reuel/Amalek + Genesis 46 immediate sons of all 12 tribes |
+| Mosaic | 13 | Levi's 3 sons + Amram & Jochebed + Moses (with Zipporah + 2 sons) + Aaron (with 4 sons Nadab/Abihu/Eleazar/Ithamar) + Miriam |
+| Davidic Line | 30 | Perez → Jesse + Saul's family (Kish, Saul, Ahinoam, Jonathan, Michal, Ish-bosheth, Mephibosheth) + David's 7 brothers, 2 sisters, Zeruiah's sons Joab/Abishai/Asahel + Abigail's son Amasa |
+| Kings | 36 | Full chain David → Jehoiakim with all 13 intermediate kings restored (Matthew 1 compressed several) + David's 7 other wives + 9 other sons + daughter Tamar |
+| Exile | 11 | Matthean post-exile chain: Shealtiel → Matthan → Jacob (per Matthew 1:13-16) |
+| **Lukan Lineage** | **39** | Mary's lineage per **Luke 3:23-31**: Mattatha (son of Nathan, son of David ~1010 BC) → 33 intermediate names → Heli → Mary's parents (Janna, Melki, Levi (NT), Matthat, Heli) |
+| NT | 7 | Joseph (husband of Mary) + Mary + Jesus + Jesus's 4 siblings (James, Joses, Simon, Jude per Mark 6:3) |
 
 Model field additions in `lib/models/biblical_person.dart`:
 `role` (e.g. "PATRIARCH"), `accent` (e.g. "priestly"), `era` (e.g.
-"patriarchs").
+"patriarchs"). All 277 entries have these fields populated where
+appropriate.
 
-**Two subtle bugs fixed in this round:**
+**Bridge mapping** (which person bridges from one era to the next):
 
-1. **Antediluvian section showed empty.** The "inline spouse" filter
-   in `_EraSection.build()` was symmetric — Adam is in Eve's
-   `spouseIds` AND Eve is in Adam's `spouseIds`, so both got marked
-   as "inline" and the section had zero roots. Fix: when both
-   partners of a couple have null parents (mutual no-parent pair),
-   keep whichever appears earlier in the dataset and filter the
-   other. See `isInlineSpouse` helper in family_tree_page.dart.
-2. **Default state too sparse.** Each era previously rendered just
-   its root row with everything below collapsed behind chevrons —
-   "Adam alone" in antediluvian. Fix: in `_load()`, populate
-   `_expanded` with every parent's id so when a section is opened,
-   its full mini-tree is visible.
+| From | To | Bridge |
+|---|---|---|
+| Antediluvian | Post-Flood | Noah |
+| Post-Flood | Patriarchs | Abraham |
+| Patriarchs | Mosaic | Kohath, Jochebed |
+| Patriarchs | Davidic Line | Perez |
+| Davidic Line | Kings | David |
+| Kings | Exile | Shealtiel (Matthean branch) |
+| Kings | Lukan Lineage | Mattatha (Lukan branch) |
+| Exile | NT | Joseph (husband of Mary) |
+| Lukan Lineage | NT | Mary |
 
-**Default: all sections collapsed.** First impression is a clean
-TOC of the 8 era headers + the comparison table, so the user can
-scan eras and click into the one that interests them. Search
-auto-uncollapses any section containing a match. Bridge chips also
-auto-uncollapse the target section.
+So Mary's lineage now traces all the way back to Adam through
+**74 generations** — Adam → Seth → … → Noah → … → Abraham → …
+→ David → Nathan → Mattatha → … → Heli → Mary, parallel to
+Joseph's chain through Solomon.
 
-**Cross-era children appear as bridge leaves.** Inside any era
-section, when a person has a child whose era is different (the
-child belongs to the next section), that child renders as a
-single-row "bridge leaf" with a trailing `→ {next era}` tag and
-a soft tinted background in the next era's colour. Spouses of the
-bridge person appear inline as `═ Spouse` chips so e.g. Lamech →
-Noah, Terah → Abraham (with `═ Sarah ═ Hagar ═ Keturah`), Levi →
-Kohath / Jochebed (with `→ Mosaic`), Jeconiah → Shealtiel (with
-`→ Exile`), Jacob → Joseph (with `═ Mary` and `→ NT`). Tap any
-bridge leaf → uncollapses + scrolls to that next section AND
-opens the detail sheet, so reading the lineage Adam → Noah →
-Abraham → David → Jesus across sections feels continuous instead
-of "the chain ends mid-row, scroll to find the rest".
+**Subtle bugs fixed along the way**:
 
-**Bridge chips between sections.** When a section is opened, the
-bottom of its body shows a "Continues with: [Person]" chip pointing
-to the canonical successor in the next era. Mapping in
-`_eraBridges`:
-
-* Antediluvian → Noah (Post-Flood)
-* Post-Flood → Abraham (Patriarchs)
-* Patriarchs → Kohath (Mosaic) + Perez (Davidic Line) — two
-  branches because the patriarchal era continues both into the
-  Levitical priestly line and into the Judaic / Davidic line
-* Mosaic → (dead end — Aaron / Moses descendants don't continue
-  forward in our dataset)
-* Davidic Line → David (Kings)
-* Kings → Shealtiel (Exile)
-* Exile → Joseph (NT)
-* NT → (final)
-
-Tapping a bridge chip uncollapses the target section, scrolls to
-it via `Scrollable.ensureVisible` (per-era `GlobalKey`s in
-`_eraKeys`), and opens the detail sheet for that bridge person —
-so the user reads the lineage as one continuous story Adam →
-Noah → Abraham → David → Jesus.
+1. **Antediluvian empty roots.** Adam ↔ Eve are mutual `spouseIds`
+   so the symmetric "inline spouse" filter dropped both → 0
+   section roots. Fix in `isInlineSpouse`: among mutual
+   no-parent pairs, keep the earlier-indexed person.
+2. **Bridge "no context" jumps.** ListView's lazy layout meant
+   sections below the viewport had no `currentContext`. Fix:
+   `cacheExtent: double.infinity`.
+3. **Search noise.** Old filter matched against summary text so
+   "Jesus" returned 30+ ancestors whose summaries mention him.
+   Fix: tiered relevance, return only best non-empty tier.
+4. **62 entries had no year data.** Fix: filled with biblical
+   chronology (Levi 137 yr per Ex 6:16, Genesis 5 dates) +
+   scholarly approximations.
+5. **Mary disconnected from Adam.** Fix: added 5 immediate
+   ancestors (Heli, Matthat-NT, Levi-NT, Melki-NT, Janna) +
+   34 Luke 3 chain entries (Joseph-Lukan → Mattatha) connecting
+   her via Nathan-son-of-David.
 
 The previous visual-tree widget at `lib/widgets/family_visual_tree.dart`
 was removed entirely. A spawned task chip remains available to embed

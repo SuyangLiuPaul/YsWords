@@ -208,8 +208,9 @@ class PersonDetailSheet extends StatelessWidget {
   }
 
   /// Format the visible detail-sheet content as plain text and
-  /// copy to the system clipboard. Uses the user's current locale
-  /// for all names + summary + section labels.
+  /// copy to the system clipboard. Includes the patrilineal trail
+  /// (Adam → … → person) per the user's request. Uses the user's
+  /// current locale for all names + summary + section labels.
   Future<void> _copyAll({
     required BuildContext context,
     required BiblicalPerson? father,
@@ -222,12 +223,17 @@ class PersonDetailSheet extends StatelessWidget {
     String namesOf(List<BiblicalPerson> xs) =>
         xs.map((p) => p.localizedName(locale)).join(', ');
 
+    // Patrilineal trail Adam → … → person, awaited up-front.
+    final svc = FamilyTreeService.instance;
+    final trail = await svc.patrilineage(person);
+
     final years = person.displayYears(locale);
     final buf = StringBuffer();
     buf.writeln(person.localizedName(locale));
     if (years.isNotEmpty) buf.writeln(years);
     if ((person.role ?? '').isNotEmpty) {
-      buf.writeln('${uiStrings['familyTreeRole']?[locale] ?? 'Role'}: ${person.role}');
+      buf.writeln(
+          '${uiStrings['familyTreeRole']?[locale] ?? 'Role'}: ${person.role}');
     }
     buf.writeln();
     buf.writeln(person.localizedSummary(locale));
@@ -236,12 +242,15 @@ class PersonDetailSheet extends StatelessWidget {
     if (father != null || mother != null) {
       final parts = <String>[];
       if (father != null) {
-        parts.add('${uiStrings['familyTreeFather']?[locale] ?? 'Father'}: ${father.localizedName(locale)}');
+        parts.add(
+            '${uiStrings['familyTreeFather']?[locale] ?? 'Father'}: ${father.localizedName(locale)}');
       }
       if (mother != null) {
-        parts.add('${uiStrings['familyTreeMother']?[locale] ?? 'Mother'}: ${mother.localizedName(locale)}');
+        parts.add(
+            '${uiStrings['familyTreeMother']?[locale] ?? 'Mother'}: ${mother.localizedName(locale)}');
       }
-      buf.writeln('${uiStrings['familyTreeParents']?[locale] ?? 'Parents'}: ${parts.join(' · ')}');
+      buf.writeln(
+          '${uiStrings['familyTreeParents']?[locale] ?? 'Parents'}: ${parts.join(' · ')}');
     }
     if (spouses.isNotEmpty) {
       final label = spouses.length == 1
@@ -261,6 +270,19 @@ class PersonDetailSheet extends StatelessWidget {
       buf.writeln(
           '${uiStrings['familyTreeTribeLine']?[locale] ?? 'Tribe / line'}: ${tribeAncestor.localizedName(locale)}');
     }
+
+    // Patrilineal ancestry — Adam → … → father → person, top-down.
+    if (trail.isNotEmpty) {
+      buf.writeln();
+      buf.writeln(
+          '${uiStrings['familyTreeAncestry']?[locale] ?? 'Patrilineal ancestry'}:');
+      final chainTopDown = [
+        for (final a in trail.reversed) a.localizedName(locale),
+        person.localizedName(locale),
+      ];
+      buf.writeln('  ${chainTopDown.join(' → ')}');
+    }
+
     if (person.refs.isNotEmpty) {
       buf.writeln();
       buf.writeln(
@@ -272,14 +294,33 @@ class PersonDetailSheet extends StatelessWidget {
 
     await Clipboard.setData(ClipboardData(text: buf.toString().trim()));
     if (!context.mounted) return;
-    ScaffoldMessenger.maybeOf(context)?.showSnackBar(
-      SnackBar(
-        content: Text(
-            uiStrings['familyTreeCopiedToast']?[locale] ?? 'Copied to clipboard'),
-        duration: const Duration(milliseconds: 1400),
-        behavior: SnackBarBehavior.floating,
+    // Use rootScaffoldMessenger so the SnackBar shows above the
+    // modal bottom sheet (otherwise it can be hidden behind the
+    // sheet's surface). 2-second duration gives clear visibility
+    // in all three locales.
+    final messenger = ScaffoldMessenger.maybeOf(context);
+    messenger?.hideCurrentSnackBar();
+    messenger?.showSnackBar(SnackBar(
+      content: Row(
+        children: [
+          const Icon(Icons.check_circle_rounded,
+              color: Colors.white, size: 18),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              uiStrings['familyTreeCopiedToast']?[locale] ??
+                  'Copied to clipboard',
+              style: const TextStyle(
+                  fontWeight: FontWeight.w600, color: Colors.white),
+            ),
+          ),
+        ],
       ),
-    );
+      backgroundColor: Theme.of(context).colorScheme.primary,
+      duration: const Duration(milliseconds: 2000),
+      behavior: SnackBarBehavior.floating,
+      margin: const EdgeInsets.fromLTRB(16, 8, 16, 80),
+    ));
   }
 
   /// People with the same father OR mother as [p], excluding [p].
