@@ -413,13 +413,21 @@ class _SermonDetailPageState extends State<SermonDetailPage> {
                 // display, so showing "A/B parts" only confused users
                 // into thinking the body was incomplete. The `parts`
                 // field stays on the model for audit / future use.
-                if (s.passage.isNotEmpty)
-                  _MetaChip(
-                    label: _localizedPassage(s.passage, settings.locale),
-                    color: scheme.primaryContainer,
-                    fg: scheme.onPrimaryContainer,
-                    onTap: () => _openPassagePopup(s.passage),
-                  ),
+                // Multi-passage sermons (e.g. sermon 005's
+                // "Mt 3:15 and Mt 4:17", sermon 046/047's
+                // "Mt 7:21-27 and Lk 6:46-49") render as ONE chip per
+                // ref so each is independently tappable + localized.
+                // Splits on " and " / " 和 " / " 與 " / "; " — the
+                // common ways sermon refs are joined in the index.
+                ...[
+                  for (final segment in _splitPassageSegments(s.passage))
+                    _MetaChip(
+                      label: _localizedPassage(segment, settings.locale),
+                      color: scheme.primaryContainer,
+                      fg: scheme.onPrimaryContainer,
+                      onTap: () => _openPassagePopup(segment),
+                    ),
+                ],
                 _MetaChip(
                   label: localizedSermonTopic(s.topic, settings.locale),
                   color: scheme.surfaceContainerHigh,
@@ -555,6 +563,28 @@ class _SermonDetailPageState extends State<SermonDetailPage> {
   /// sermon list and detail page stay in sync.
   String _localizedPassage(String passage, String locale) =>
       localizePassage(passage, locale);
+
+  /// Split a multi-citation passage string into individual segments
+  /// that each contain (at most) one Bible reference. Recognises
+  /// the join words / punctuation actually used in the sermon index:
+  ///   • English: " and " / " AND " / " & " / "; "
+  ///   • Chinese: " 和 " / " 與 " / "；"
+  ///
+  /// Returns a list of trimmed non-empty segments. Single-ref
+  /// passages return a single-element list; empty input returns
+  /// an empty list.
+  static final RegExp _passageSplitPattern = RegExp(
+    r'\s+and\s+|\s+&\s+|\s*;\s*|\s+和\s+|\s+與\s+|\s*；\s*',
+    caseSensitive: false,
+  );
+  List<String> _splitPassageSegments(String passage) {
+    if (passage.trim().isEmpty) return const [];
+    final parts = passage.split(_passageSplitPattern);
+    return [
+      for (final p in parts)
+        if (p.trim().isNotEmpty) p.trim(),
+    ];
+  }
 
   /// Tap the passage chip → open the [VersePopupSheet] for the first
   /// reference in the passage. Multi-ref passages like

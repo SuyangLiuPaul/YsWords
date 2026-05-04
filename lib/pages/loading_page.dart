@@ -207,6 +207,21 @@ class _LoadingPageState extends State<LoadingPage> {
     if (_retrying) return;
     setState(() => _retrying = true);
     final mainProvider = context.read<MainProvider>();
+    // Clear the previous error first so the UI immediately reflects
+    // that retry has started — without this, a retry that lands on
+    // the same error string never triggers a rebuild and the user
+    // can't tell whether the button did anything.
+    mainProvider.setLoadError(null);
+    // Bust the paragraph-map cache. If the FIRST load failed mid-way
+    // (e.g. service worker returned a partial response, network
+    // hiccup) the cache may have stuck a corrupt-or-incomplete copy
+    // that subsequent retries would happily reuse, making the
+    // button feel broken until the user did a full page refresh.
+    // Round 56 user feedback: "if you press retry it doesn't work,
+    // do you have to refresh the page". Clearing the cache is
+    // exactly the recovery step that a page refresh produced
+    // implicitly.
+    FetchVerses.clearParagraphCache();
     try {
       await FetchVerses.execute(mainProvider: mainProvider);
       await FetchBooks.execute(mainProvider: mainProvider);
@@ -223,6 +238,10 @@ class _LoadingPageState extends State<LoadingPage> {
         mainProvider.setLoadError('empty');
       }
     } catch (e) {
+      // Now that FetchVerses.execute rethrows (it used to swallow),
+      // the user gets the actual cause — e.g. an asset-load failure
+      // that includes the path that 404'd, instead of a generic
+      // "verses are empty" message.
       mainProvider.setLoadError(e.toString());
     }
     if (!mounted) return;

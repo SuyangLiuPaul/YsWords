@@ -687,6 +687,24 @@ class _TopicGroup extends StatelessWidget {
   }
 }
 
+/// Split a multi-citation sermon passage on the join words/punct
+/// commonly used in the index ("and", "&", "; ", " 和 ", "；"). One
+/// shared helper across the list page + detail page so they always
+/// chunk the same way. (The detail page has its own copy named
+/// _splitPassageSegments — same logic, kept private to that file
+/// because it lives on a stateful widget.)
+List<String> _splitSermonPassage(String passage) {
+  if (passage.trim().isEmpty) return const [];
+  final pat = RegExp(
+    r'\s+and\s+|\s+&\s+|\s*;\s*|\s+和\s+|\s+與\s+|\s*；\s*',
+    caseSensitive: false,
+  );
+  return [
+    for (final p in passage.split(pat))
+      if (p.trim().isNotEmpty) p.trim(),
+  ];
+}
+
 class _SermonRow extends StatelessWidget {
   final Sermon sermon;
   final bool isLastRead;
@@ -760,7 +778,10 @@ class _SermonRow extends StatelessWidget {
                       color: scheme.onSurface.withValues(alpha: 0.55),
                     ),
                   ),
-                if (sermon.passage.isNotEmpty)
+                // Multi-passage sermons (e.g. "Mt 3:15 and Mt 4:17")
+                // render as one badge per ref so each reads cleanly
+                // and the user isn't confused by an "and" tag.
+                for (final seg in _splitSermonPassage(sermon.passage))
                   Container(
                     padding: const EdgeInsets.symmetric(
                         horizontal: 6, vertical: 1),
@@ -769,7 +790,7 @@ class _SermonRow extends StatelessWidget {
                       borderRadius: BorderRadius.circular(4),
                     ),
                     child: Text(
-                      localizePassage(sermon.passage, locale),
+                      localizePassage(seg, locale),
                       style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w500,

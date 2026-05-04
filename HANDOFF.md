@@ -455,6 +455,55 @@ Levitical priesthood in view, and Ezekiel 14:14 names him alongside
 Noah and Daniel as one of the great righteous men. Cross-refs:
 Job 1, 2, 38, 42, Ezekiel 14:14.
 
+**Loading-page Retry button now works without page refresh**
+(`lib/services/fetch_verses.dart`, `lib/pages/loading_page.dart`).
+User feedback: *"loading retry doesn't work, must refresh page"*.
+Two root causes:
+* `FetchVerses.execute` previously caught any error and returned
+  silently — the Retry button would call execute(), execute() would
+  log to debugPrint and exit cleanly with the verses still empty,
+  and the loading page would re-show the same error UI without
+  surfacing the actual cause. Now `rethrow`s so callers can see and
+  display the real error.
+* The static `_paragraphMapCache` could stick a corrupt-on-first-
+  load reference, making subsequent retries reuse it. New
+  `FetchVerses.clearParagraphCache()` is called by `_retry()` so
+  the next attempt starts fresh — exactly the recovery a page
+  refresh produced implicitly.
+* Retry now also clears the previous error string immediately
+  (`setLoadError(null)`) so the UI rebuilds visibly even when the
+  retry lands on the same error string.
+
+**Pastor Eric's Testimony (sermon EC003) showed English title in
+Chinese mode**. User feedback: *"张熙和牧师见证里面为什么一个全部是英文
+在中文，类似于这种没翻译"*. Two related bugs:
+* Index.json `titles` map for EC003 only had the `en` key — the
+  zh-CN / zh-TW values weren't extracted at ingestion. The
+  `localizedTitle()` fallback chain showed the English title for
+  Chinese readers.
+* The zh-CN and zh-TW body files for EC003 were missing the
+  Markdown `# ` prefix on the title line — they had the title text
+  but not as a header — so the H1 extractor in earlier rounds
+  silently skipped them.
+Fix: prefixed both files with `# `, then backfilled the missing
+zh-CN / zh-TW titles into the index.json from the (now-correct)
+H1s. Also caught 190 other body H1s where `（A部分）`/`（B部分）`
+markers slipped through earlier strips because the previous regex
+used a single-character class `[篇部]` that matched `部` but not
+the two-character `部分`. Pattern broadened, all 190 cleaned.
+
+**Multi-passage sermons render as separate chips** — user feedback:
+*"sermon #005 马太福音 and 马可福音 should be two tags, why is
+there an 'and'"*. Sermons with multi-citation passages (`Mt 3:15
+and Mt 4:17`, `Mt 7:21-27 and Lk 6:46-49`, etc.) used to render as
+one big chip with the conjunction visible. Now split on " and " /
+" & " / "; " / " 和 " / " 與 " / "；" so each ref is its own
+tappable, locale-aware `_MetaChip` (or sermons-list badge). Same
+helper logic in both surfaces — list page (`_splitSermonPassage`)
+and detail page (`_splitPassageSegments`). Also stripped the
+orphan `— and —` / `— 与 —` segments left in titles when both
+sides of the conjunction were stripped (sermon 005 had this).
+
 **Sermon-title cleanup (round 3)** — user feedback: *"some are
 translated correctly and some has like ; and format and looking
 weird issue"*. Found 49 leftover patterns in `index.json` titles

@@ -119,8 +119,25 @@ class FetchVerses {
       final verses = await _loadAndParse(path, paraMap);
       mainProvider.setVerses(verses);
     } catch (e) {
+      // Round 56: rethrow instead of swallowing. The previous
+      // "log + return" pattern made the Retry button on the loading
+      // page useless — it would call execute(), execute() would log
+      // the error to debugPrint and return cleanly, the loading
+      // page would see verses still empty and re-show the same
+      // error UI without telling the user what actually failed.
+      // Propagating lets the caller surface the real error message
+      // AND attempt recovery (cache-bust, re-fetch, etc.).
       debugPrint('Error loading verses from $path: $e');
+      rethrow;
     }
+  }
+
+  /// Wipe the cached paragraph map. Used by the Retry path on the
+  /// loading page so a corrupt-on-first-load paragraph reference (a
+  /// likely cause of "always-empty after retry" reports) can recover
+  /// without a full page refresh.
+  static void clearParagraphCache() {
+    _paragraphMapCache = null;
   }
 
   static Future<List<Verse>> _loadAndParse(
