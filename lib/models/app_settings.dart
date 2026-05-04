@@ -364,6 +364,87 @@ class AppSettings extends ChangeNotifier {
     }
   }
 
+  /// Restore every visual / preference setting to its factory default
+  /// (round 55 "Reset settings" button). Resets fonts, theme, primary
+  /// color, copy format, theme mode, paragraph mode, menu scale,
+  /// books view mode, the show-* flags, dashboard order +
+  /// visibility, AND the onboarding-seen flag (so the user can re-
+  /// walk the tour after resetting).
+  ///
+  /// Deliberately preserves:
+  ///   • [_locale] — wiping it would yank the user back to the system
+  ///     default mid-session, which is jarring and not what users
+  ///     expect from a "Reset settings" button.
+  ///   • Bookmarks, notes, highlights, profile, last-read positions,
+  ///     sermon scroll positions — these are user *content*, not
+  ///     preferences. Lives in MainProvider / SermonService /
+  ///     ProfileService and is owned by those services.
+  ///
+  /// Caller (Settings page) is responsible for showing a confirm
+  /// dialog before calling this — it's idempotent but visible.
+  Future<void> resetAllSettings() async {
+    _fontFamily = 'Roboto';
+    _fontSize = 20.0;
+    _lineSpacing = 1.5;
+    _primaryColor = Colors.lightBlue;
+    _copyFormat = 'withRef';
+    _themeMode = ThemeMode.system;
+    _paragraphMode = true;
+    _menuScale = 1.0;
+    _offlineMode = true;
+    _booksViewMode = 'grid';
+    _boldVerseText = false;
+    _showStrongsInOriginals = true;
+    _autoExpandFirstRef = false;
+    _showDailyNews = true;
+    _showBibleEvidence = true;
+    _showReadingPlan = true;
+    _notificationsEnabled = false;
+    _showSectionTitles = true;
+    _showBookIntro = true;
+    _dashboardSectionOrder = List.of(defaultDashboardOrder);
+    _dashboardVisibility
+      ..clear()
+      ..addAll(defaultVisibility);
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    // Wipe every preference key we've ever written. Loop is the
+    // safest implementation — additions to AppSettings won't drift
+    // out of sync the way an explicit list would.
+    final managedKeys = <String>{
+      _kFontFamily,
+      _kFontSize,
+      _kLineSpacing,
+      _kPrimaryColor,
+      _kCopyFormat,
+      _kThemeMode,
+      _kParagraphMode,
+      _kMenuScale,
+      _kOfflineMode,
+      _kBooksViewMode,
+      _kBoldVerseText,
+      _kShowStrongsInOriginals,
+      _kAutoExpandFirstRef,
+      _kShowDailyNews,
+      _kShowBibleEvidence,
+      _kShowReadingPlan,
+      _kNotificationsEnabled,
+      _kShowSectionTitles,
+      _kShowBookIntro,
+      _kDashboardSectionOrder,
+      for (final s in DashboardSection.values) _kDashboardVisible(s),
+      // Re-show the onboarding tour after a reset so the user can
+      // re-discover any features they hid by accident.
+      'onboarding.seen.v2',
+      // And the older v1 key in case they're upgrading from before
+      // round 55 — keep them in lockstep.
+      'onboarding.seen.v1',
+    };
+    for (final k in managedKeys) {
+      await prefs.remove(k);
+    }
+  }
+
   /// Restore the canonical default order + visibility (every section
   /// on, in [defaultDashboardOrder] order). Used by the Settings
   /// "Reset to default" button.

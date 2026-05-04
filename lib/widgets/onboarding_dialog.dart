@@ -17,11 +17,14 @@ import 'package:provider/provider.dart';
 class OnboardingDialog extends StatefulWidget {
   const OnboardingDialog({super.key});
 
-  static const _kSeen = 'onboarding.seen.v1';
+  /// Storage key for the "I've seen the tour" flag. Bumped to `v2` in
+  /// Round 55 — the v1 tour pre-dated Sermons, Family Tree, Timeline,
+  /// Evidence, Daily News, and dashboard customization, so existing
+  /// users now see the refreshed 5-slide tour once before their flag
+  /// migrates to `v2`. Future bumps (v3+) re-introduce the tour for
+  /// returning users when major surfaces ship.
+  static const _kSeen = 'onboarding.seen.v2';
 
-  /// Whether the user has already dismissed the tour. Bumped to
-  /// `.v2` etc. when a future round wants to re-introduce it for
-  /// returning users.
   static Future<bool> hasSeen() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getBool(_kSeen) ?? false;
@@ -30,6 +33,17 @@ class OnboardingDialog extends StatefulWidget {
   static Future<void> markSeen() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_kSeen, true);
+  }
+
+  /// Manually re-trigger the tour from Settings → About → "Show tour
+  /// again". Clears the v2 seen flag and lets the dashboard's auto-
+  /// open path show the dialog the next time the user lands there.
+  /// We don't pop the dialog directly here so the caller can choose
+  /// to open it inline (without leaving Settings) or just let the
+  /// next dashboard mount handle it.
+  static Future<void> markUnseen() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_kSeen);
   }
 
   @override
@@ -191,32 +205,37 @@ class _OnboardingDialogState extends State<OnboardingDialog> {
 
   List<_Slide> _slides(String locale) => [
         _Slide(
-          icon: Icons.menu_book_outlined,
+          icon: Icons.menu_book_rounded,
           title: uiStrings['onboardWelcomeTitle']?[locale] ??
               'Welcome to YsWords',
           body: uiStrings['onboardWelcomeBody']?[locale] ??
-              'A bilingual Bible reader. Tap "Continue reading" any time to open the verse list with sidebar, search, originals, and cross-references.',
+              'A bilingual Bible reader with 14 translations across English and Chinese. The "Read Bible" card on Home picks up exactly where you left off.',
         ),
         _Slide(
-          icon: Icons.event_available_outlined,
-          title: uiStrings['onboardPlansTitle']?[locale] ??
-              'Reading plans',
-          body: uiStrings['onboardPlansBody']?[locale] ??
-              'Pick a one-year, chronological, or McCheyne plan in Settings — today\'s readings show on this Home page automatically.',
+          icon: Icons.format_color_fill,
+          title: uiStrings['onboardReadTitle']?[locale] ??
+              'Read, highlight, study',
+          body: uiStrings['onboardReadBody']?[locale] ??
+              'Long-press a verse for color highlights, bookmarks, and notes. Tap any reference to jump; tap a Strong\'s word for originals. Search the whole Bible from the header.',
         ),
         _Slide(
-          icon: Icons.collections_bookmark_outlined,
-          title: uiStrings['onboardLibraryTitle']?[locale] ??
-              'Notes & bookmarks',
-          body: uiStrings['onboardLibraryBody']?[locale] ??
-              'Long-press a verse to add a note, bookmark, or color highlight. Find them all in Library and Highlights.',
+          icon: Icons.headset_mic_rounded,
+          title: uiStrings['onboardSermonsTitle']?[locale] ?? 'Sermons',
+          body: uiStrings['onboardSermonsBody']?[locale] ??
+              '587 expository sermons in EN / 简 / 繁. Verse refs in the body open a popup so you can peek at scripture without leaving. Home shows a "Resume sermon" card with your progress.',
         ),
         _Slide(
-          icon: Icons.cloud_outlined,
-          title:
-              uiStrings['onboardCloudTitle']?[locale] ?? 'Sync & profiles',
-          body: uiStrings['onboardCloudBody']?[locale] ??
-              'Sign in with Google to sync everything across devices, or use a local profile to keep things on this device only.',
+          icon: Icons.explore_outlined,
+          title: uiStrings['onboardDiscoverTitle']?[locale] ?? 'Discover',
+          body: uiStrings['onboardDiscoverBody']?[locale] ??
+              'Bible Timeline (97 events), Family Tree (277 people), Bible Evidence (225 archaeology / manuscript / science finds), and bilingual Daily News with an AI-picked verse — all reachable from Home.',
+        ),
+        _Slide(
+          icon: Icons.tune_rounded,
+          title: uiStrings['onboardCustomizeTitle']?[locale] ??
+              'Customize & sync',
+          body: uiStrings['onboardCustomizeBody']?[locale] ??
+              'Drag-reorder or hide any block under Settings → Dashboard layout. Pick a reading plan. Sign in with Google to sync bookmarks, notes, and highlights across devices.',
         ),
       ];
 }

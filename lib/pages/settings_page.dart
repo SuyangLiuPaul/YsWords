@@ -25,6 +25,7 @@ import 'package:yswords/services/reading_plan_service.dart';
 
 import 'package:yswords/widgets/home_icon_button.dart';
 import 'package:yswords/widgets/localized_back_button.dart';
+import 'package:yswords/widgets/onboarding_dialog.dart';
 import 'package:yswords/utils/responsive.dart';
 
 String getDevotionalFormattedText(
@@ -2468,10 +2469,105 @@ class _AboutCard extends StatelessWidget {
                 fontStyle: FontStyle.italic,
               ),
             ),
+            SizedBox(height: 12 * s),
+            // Show-tour-again — clears the v2 onboarding-seen flag and
+            // immediately shows the dialog so the user can re-walk the
+            // 5-slide tour without leaving Settings. Useful for users
+            // who skipped the tour on first run.
+            OutlinedButton.icon(
+              icon: const Icon(Icons.school_outlined, size: 18),
+              label: Text(
+                uiStrings['showTourAgain']?[locale] ?? 'Show tour again',
+              ),
+              onPressed: () => _showTour(context, locale),
+            ),
+            SizedBox(height: 12 * s),
+            // Reset settings — wipes visual / preference state back to
+            // defaults but leaves user CONTENT alone. Locale is also
+            // preserved so we don't yank the user out of their language.
+            // Wrapped in a confirm dialog because there's no undo.
+            OutlinedButton.icon(
+              icon: Icon(Icons.restart_alt_rounded,
+                  size: 18, color: scheme.error),
+              label: Text(
+                uiStrings['resetSettings']?[locale] ?? 'Reset settings',
+                style: TextStyle(color: scheme.error),
+              ),
+              style: OutlinedButton.styleFrom(
+                side: BorderSide(color: scheme.error.withValues(alpha: 0.5)),
+              ),
+              onPressed: () => _confirmResetSettings(context, locale),
+            ),
+            SizedBox(height: 4 * s),
+            Text(
+              uiStrings['resetSettingsNote']?[locale] ??
+                  'Restores fonts, theme, color, dashboard layout, and '
+                      'other preferences. Your bookmarks, notes, '
+                      'highlights, profile, and language are kept.',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontFamily: settings.fontFamily,
+                fontSize: (settings.fontSize - 6).clamp(11.0, 13.0),
+                color: scheme.onSurfaceVariant,
+                fontStyle: FontStyle.italic,
+              ),
+            ),
           ],
         ),
       ),
     );
+  }
+
+  Future<void> _showTour(BuildContext context, String locale) async {
+    // Clear the seen flag first so subsequent dashboard mounts also
+    // pick it up; then immediately show the dialog inline.
+    await OnboardingDialog.markUnseen();
+    if (!context.mounted) return;
+    await showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const OnboardingDialog(),
+    );
+  }
+
+  Future<void> _confirmResetSettings(
+      BuildContext context, String locale) async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (dialogCtx) => AlertDialog(
+        title: Text(uiStrings['resetSettings']?[locale] ?? 'Reset settings'),
+        content: Text(
+          uiStrings['resetSettingsConfirm']?[locale] ??
+              'This restores fonts, theme, color, dashboard layout, '
+                  'and other preferences. Your bookmarks, notes, '
+                  'highlights, profile, and language stay the same. '
+                  'Continue?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogCtx).pop(false),
+            child: Text(uiStrings['cancel']?[locale] ?? 'Cancel'),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(
+              backgroundColor: Theme.of(dialogCtx).colorScheme.error,
+              foregroundColor: Theme.of(dialogCtx).colorScheme.onError,
+            ),
+            onPressed: () => Navigator.of(dialogCtx).pop(true),
+            child:
+                Text(uiStrings['resetSettings']?[locale] ?? 'Reset settings'),
+          ),
+        ],
+      ),
+    );
+    if (ok != true) return;
+    await settings.resetAllSettings();
+    if (!context.mounted) return;
+    ScaffoldMessenger.maybeOf(context)?.showSnackBar(SnackBar(
+      content: Text(uiStrings['resetSettingsDone']?[locale] ??
+          'Settings restored to defaults.'),
+      duration: const Duration(seconds: 2),
+    ));
   }
 
   Future<void> _confirmClearCache(

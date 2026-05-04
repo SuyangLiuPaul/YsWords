@@ -479,17 +479,71 @@ const uiStrings = {
     'zh-Hant': '開始使用',
     'en': 'Get started',
   },
+  // Onboarding tour copy. Bumped for v2 (Round 55) so the tour
+  // covers the full app surface — sermons, family tree, timeline,
+  // evidence, news, and the new dashboard customization. Original
+  // v1 strings (welcome / plans / library / cloud) are kept above
+  // for any localizations downstream that might still reference
+  // them.
   'onboardWelcomeTitle': {
     'zh-Hans': '欢迎使用 YsWords',
     'zh-Hant': '歡迎使用 YsWords',
     'en': 'Welcome to YsWords',
   },
   'onboardWelcomeBody': {
-    'zh-Hans': '双语圣经阅读应用。随时点击「读经」可打开经文列表、侧栏、搜索、原文和相互参照。',
-    'zh-Hant': '雙語聖經閱讀應用。隨時點擊「讀經」可打開經文列表、側欄、搜索、原文和相互參照。',
+    'zh-Hans': '双语圣经阅读应用，14 个译本（英文／简体／繁体）。主页的「读经」卡片会带你回到上次离开的位置。',
+    'zh-Hant': '雙語聖經閱讀應用，14 個譯本（英文／簡體／繁體）。主頁的「讀經」卡片會帶你回到上次離開的位置。',
     'en':
-        'A bilingual Bible reader. Tap "Read Bible" any time to open the verse list with sidebar, search, originals, and cross-references.',
+        'A bilingual Bible reader with 14 translations across English and Chinese. The "Read Bible" card on Home picks up exactly where you left off.',
   },
+  'onboardReadTitle': {
+    'zh-Hans': '阅读、高亮、研经',
+    'zh-Hant': '閱讀、高亮、研經',
+    'en': 'Read, highlight, study',
+  },
+  'onboardReadBody': {
+    'zh-Hans': '长按经文可添加彩色高亮、书签和笔记；点击经文引用即可跳转，点击 Strong\'s 字可查原文。顶部搜索覆盖整本圣经。',
+    'zh-Hant': '長按經文可添加彩色高亮、書籤和筆記；點擊經文引用即可跳轉，點擊 Strong\'s 字可查原文。頂部搜索覆蓋整本聖經。',
+    'en':
+        'Long-press a verse for color highlights, bookmarks, and notes. Tap any reference to jump; tap a Strong\'s word for originals. Search the whole Bible from the header.',
+  },
+  'onboardSermonsTitle': {
+    'zh-Hans': '讲道',
+    'zh-Hant': '講道',
+    'en': 'Sermons',
+  },
+  'onboardSermonsBody': {
+    'zh-Hans': '587 篇解经讲道（英／简／繁）。讲道中的经文引用可弹出小窗预览，无需离开。主页有「继续讲道」卡片显示上次进度。',
+    'zh-Hant': '587 篇解經講道（英／簡／繁）。講道中的經文引用可彈出小窗預覽，無需離開。主頁有「繼續講道」卡片顯示上次進度。',
+    'en':
+        '587 expository sermons in EN / 简 / 繁. Verse refs in the body open a popup so you can peek at scripture without leaving. Home shows a "Resume sermon" card with your progress.',
+  },
+  'onboardDiscoverTitle': {
+    'zh-Hans': '探索工具',
+    'zh-Hant': '探索工具',
+    'en': 'Discover',
+  },
+  'onboardDiscoverBody': {
+    'zh-Hans': '圣经时间轴（97 个事件）、家谱（277 位人物）、圣经证据（225 项考古／抄本／科学发现）、双语每日新闻 + AI 选经文，都可在主页打开。',
+    'zh-Hant': '聖經時間軸（97 個事件）、家譜（277 位人物）、聖經證據（225 項考古／抄本／科學發現）、雙語每日新聞 + AI 選經文，都可在主頁打開。',
+    'en':
+        'Bible Timeline (97 events), Family Tree (277 people), Bible Evidence (225 archaeology / manuscript / science finds), and bilingual Daily News with an AI-picked verse — all reachable from Home.',
+  },
+  'onboardCustomizeTitle': {
+    'zh-Hans': '自定义与同步',
+    'zh-Hant': '自訂與同步',
+    'en': 'Customize & sync',
+  },
+  'onboardCustomizeBody': {
+    'zh-Hans': '在「设置 → 主页布局」中拖动排序或隐藏任意板块；选择读经计划；用 Google 登录即可在所有设备同步书签、笔记和高亮。',
+    'zh-Hant': '在「設定 → 主頁佈局」中拖動排序或隱藏任意板塊；選擇讀經計劃；用 Google 登入即可在所有裝置同步書籤、筆記和高亮。',
+    'en':
+        'Drag-reorder or hide any block under Settings → Dashboard layout. Pick a reading plan. Sign in with Google to sync bookmarks, notes, and highlights across devices.',
+  },
+
+  // Legacy v1 onboarding strings — kept for backward compatibility
+  // with any external translation file that still references these
+  // keys. The active tour uses the v2 keys above.
   'onboardPlansTitle': {
     'zh-Hans': '读经计划',
     'zh-Hant': '讀經計劃',
@@ -573,6 +627,37 @@ const uiStrings = {
     'zh-Hans': '恢复默认',
     'zh-Hant': '恢復預設',
     'en': 'Reset to default',
+  },
+  // ── App-level reset (Round 55) ──────────────────────────────────
+  // Used by Settings → About → "Reset settings". Wipes visual /
+  // preference state back to defaults but preserves user content
+  // (bookmarks, notes, highlights, profile, language).
+  'resetSettings': {
+    'zh-Hans': '恢复设置',
+    'zh-Hant': '恢復設定',
+    'en': 'Reset settings',
+  },
+  'resetSettingsConfirm': {
+    'zh-Hans': '将恢复字体、主题、颜色、主页布局等所有偏好设置。您的书签、笔记、高亮、账号和语言不会改变。是否继续？',
+    'zh-Hant': '將恢復字體、主題、顏色、主頁佈局等所有偏好設定。您的書籤、筆記、高亮、帳號和語言不會改變。是否繼續？',
+    'en':
+        'This restores fonts, theme, color, dashboard layout, and other preferences. Your bookmarks, notes, highlights, profile, and language stay the same. Continue?',
+  },
+  'resetSettingsNote': {
+    'zh-Hans': '恢复字体、主题、颜色、主页布局等偏好设置。您的书签、笔记、高亮、账号和语言不会改变。',
+    'zh-Hant': '恢復字體、主題、顏色、主頁佈局等偏好設定。您的書籤、筆記、高亮、帳號和語言不會改變。',
+    'en':
+        'Restores fonts, theme, color, dashboard layout, and other preferences. Your bookmarks, notes, highlights, profile, and language are kept.',
+  },
+  'resetSettingsDone': {
+    'zh-Hans': '设置已恢复默认。',
+    'zh-Hant': '設定已恢復預設。',
+    'en': 'Settings restored to defaults.',
+  },
+  'showTourAgain': {
+    'zh-Hans': '重新查看导览',
+    'zh-Hant': '重新查看導覽',
+    'en': 'Show tour again',
   },
   'confirm': {
     'zh-Hans': '确认',
