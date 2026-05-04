@@ -797,6 +797,13 @@ class _OriginalsOverviewTab extends StatefulWidget {
 class _OriginalsOverviewTabState extends State<_OriginalsOverviewTab>
     with AutomaticKeepAliveClientMixin {
   Future<OriginalsAggregateStats>? _future;
+  // Round 56 (continued): user feedback "can you have scroll bars
+  // because there are so many blocks that hasn't got bar scroll yet".
+  // Default Material ListViews on web/desktop only show a scrollbar
+  // on hover; explicit Scrollbar + thumbVisibility makes the scroll
+  // affordance always visible so users know more content is below.
+  final ScrollController _scrollCtrl = ScrollController();
+
   @override
   bool get wantKeepAlive => true;
 
@@ -804,6 +811,12 @@ class _OriginalsOverviewTabState extends State<_OriginalsOverviewTab>
   void initState() {
     super.initState();
     _future = OriginalsStatsService.aggregate();
+  }
+
+  @override
+  void dispose() {
+    _scrollCtrl.dispose();
+    super.dispose();
   }
 
   @override
@@ -828,7 +841,11 @@ class _OriginalsOverviewTabState extends State<_OriginalsOverviewTab>
             ),
           );
         }
-        return ListView(
+        return Scrollbar(
+          controller: _scrollCtrl,
+          thumbVisibility: true,
+          child: ListView(
+          controller: _scrollCtrl,
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
           children: [
             _StatGrid(
@@ -878,10 +895,15 @@ class _OriginalsOverviewTabState extends State<_OriginalsOverviewTab>
               ],
             ),
             const SizedBox(height: 20),
+            // Round 56 (continued): user feedback "most frequent used
+            // words can be more in statistics" — bumped 5 → 25 each so
+            // the Overview tab actually shows a meaningful slice of
+            // the vocabulary (the Vocabulary tab still shows the full
+            // 100/100 with filters).
             _TopLemmasCard(
               title: uiStrings['statsOriginalsTopHebrew']?[locale] ??
                   'Top Hebrew (OT)',
-              lemmas: stats.topHebrew.take(5).toList(),
+              lemmas: stats.topHebrew.take(25).toList(),
               isHebrew: true,
               scheme: scheme,
               settings: settings,
@@ -891,13 +913,14 @@ class _OriginalsOverviewTabState extends State<_OriginalsOverviewTab>
             _TopLemmasCard(
               title: uiStrings['statsOriginalsTopGreek']?[locale] ??
                   'Top Greek (NT)',
-              lemmas: stats.topGreek.take(5).toList(),
+              lemmas: stats.topGreek.take(25).toList(),
               isHebrew: false,
               scheme: scheme,
               settings: settings,
               locale: locale,
             ),
           ],
+          ),
         );
       },
     );
@@ -1099,6 +1122,7 @@ class _OriginalsBooksTabState extends State<_OriginalsBooksTab>
     with AutomaticKeepAliveClientMixin {
   Future<OriginalsAggregateStats>? _future;
   String _filter = 'all'; // all / ot / nt
+  final ScrollController _scrollCtrl = ScrollController();
 
   @override
   bool get wantKeepAlive => true;
@@ -1107,6 +1131,12 @@ class _OriginalsBooksTabState extends State<_OriginalsBooksTab>
   void initState() {
     super.initState();
     _future = OriginalsStatsService.aggregate();
+  }
+
+  @override
+  void dispose() {
+    _scrollCtrl.dispose();
+    super.dispose();
   }
 
   @override
@@ -1137,7 +1167,11 @@ class _OriginalsBooksTabState extends State<_OriginalsBooksTab>
         } else if (_filter == 'nt') {
           rows = rows.where((b) => !b.isOt).toList();
         }
-        return ListView.separated(
+        return Scrollbar(
+          controller: _scrollCtrl,
+          thumbVisibility: true,
+          child: ListView.separated(
+          controller: _scrollCtrl,
           padding: const EdgeInsets.fromLTRB(12, 8, 12, 24),
           itemCount: rows.length + 1,
           separatorBuilder: (_, __) => const SizedBox(height: 4),
@@ -1179,6 +1213,7 @@ class _OriginalsBooksTabState extends State<_OriginalsBooksTab>
               locale: locale,
             );
           },
+          ),
         );
       },
     );
@@ -1311,6 +1346,7 @@ class _OriginalsTabState extends State<_OriginalsTab>
   bool _showAll = false;
   Future<List<OriginalsLemma>>? _future;
   String _query = '';
+  final ScrollController _scrollCtrl = ScrollController();
 
   @override
   bool get wantKeepAlive => true;
@@ -1319,6 +1355,12 @@ class _OriginalsTabState extends State<_OriginalsTab>
   void initState() {
     super.initState();
     _future = OriginalsStatsService.load();
+  }
+
+  @override
+  void dispose() {
+    _scrollCtrl.dispose();
+    super.dispose();
   }
 
   @override
@@ -1367,7 +1409,11 @@ class _OriginalsTabState extends State<_OriginalsTab>
         if (!_showAll && _query.isEmpty && rows.length > 200) {
           rows = rows.take(200).toList();
         }
-        return ListView.separated(
+        return Scrollbar(
+          controller: _scrollCtrl,
+          thumbVisibility: true,
+          child: ListView.separated(
+          controller: _scrollCtrl,
           padding: const EdgeInsets.fromLTRB(12, 8, 12, 24),
           itemCount: rows.length + 2, // header + rows + footer
           separatorBuilder: (_, __) => const SizedBox(height: 4),
@@ -1386,6 +1432,7 @@ class _OriginalsTabState extends State<_OriginalsTab>
               rank: i,
             );
           },
+          ),
         );
       },
     );

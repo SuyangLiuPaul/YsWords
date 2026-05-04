@@ -27,8 +27,49 @@ import 'package:yswords/widgets/localized_back_button.dart';
 ///
 /// To add a new entry: append to `bibleTriviaEntries` below with
 /// the same shape. No code changes required elsewhere.
-class BibleTriviaPage extends StatelessWidget {
+class BibleTriviaPage extends StatefulWidget {
   const BibleTriviaPage({super.key});
+
+  @override
+  State<BibleTriviaPage> createState() => _BibleTriviaPageState();
+}
+
+/// Round 56 (continued): user feedback "冷知识 also need to have
+/// filter just like scroll bar make sure folter should be applied
+/// to all those necessary tabs". Stateful now so we can host:
+///   • a tag filter (All / Acrostic / Author / Canon / Narrative …)
+///   • OT/NT toggle (derived from each entry's parsed reference)
+///   • a free-text search box
+///   • a free-text query
+///   • an always-visible Scrollbar
+class _BibleTriviaPageState extends State<BibleTriviaPage> {
+  final ScrollController _scrollCtrl = ScrollController();
+  // 'all' | one of the canonical English tag values defined in the
+  // catalogue (ACROSTIC, AUTHOR, CANON, LANGUAGE, NARRATIVE, NT QUOTE,
+  // POETRY, PROPHECY, STRUCTURE, VISION, WORDPLAY).
+  String _tagFilter = 'all';
+  // 'all' | 'ot' | 'nt' — uses the parsed reference's englishBook to
+  // bucket. Entries with no parseable reference fall through to 'all'.
+  String _testamentFilter = 'all';
+  String _query = '';
+
+  @override
+  void dispose() {
+    _scrollCtrl.dispose();
+    super.dispose();
+  }
+
+  /// Pull every distinct English tag from the catalogue so the chip
+  /// row stays in sync as new entries are added without code changes.
+  List<String> get _availableTags {
+    final set = <String>{};
+    for (final e in bibleTriviaEntries) {
+      final t = e.tag['en'];
+      if (t != null && t.trim().isNotEmpty) set.add(t.trim());
+    }
+    final list = set.toList()..sort();
+    return list;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -39,6 +80,8 @@ class BibleTriviaPage extends StatelessWidget {
         MediaQuery.of(context).size.width);
     final maxW = ResponsiveBreakpoints.settingsMaxWidth(dc);
 
+    final entries = _filterEntries(bibleTriviaEntries, locale);
+
     return Scaffold(
       appBar: AppBar(
         leading: const LocalizedBackButton(),
@@ -48,22 +91,226 @@ class BibleTriviaPage extends StatelessWidget {
       body: Center(
         child: ConstrainedBox(
           constraints: BoxConstraints(maxWidth: maxW),
-          child: ListView.separated(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
-            itemCount: bibleTriviaEntries.length + 1,
-            separatorBuilder: (_, __) => const SizedBox(height: 12),
-            itemBuilder: (_, i) {
-              if (i == 0) {
-                return _IntroCard(settings: settings, scheme: scheme);
-              }
-              return _TriviaTile(
-                entry: bibleTriviaEntries[i - 1],
-                settings: settings,
-                scheme: scheme,
-              );
-            },
+          child: Scrollbar(
+            controller: _scrollCtrl,
+            thumbVisibility: true,
+            child: ListView.separated(
+              controller: _scrollCtrl,
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+              itemCount: entries.length + 2,
+              separatorBuilder: (_, __) => const SizedBox(height: 12),
+              itemBuilder: (_, i) {
+                if (i == 0) {
+                  return _IntroCard(settings: settings, scheme: scheme);
+                }
+                if (i == 1) {
+                  return _TriviaFilterBar(
+                    locale: locale,
+                    settings: settings,
+                    scheme: scheme,
+                    availableTags: _availableTags,
+                    tagFilter: _tagFilter,
+                    testamentFilter: _testamentFilter,
+                    query: _query,
+                    matchCount: entries.length,
+                    totalCount: bibleTriviaEntries.length,
+                    onTagChanged: (v) =>
+                        setState(() => _tagFilter = v),
+                    onTestamentChanged: (v) =>
+                        setState(() => _testamentFilter = v),
+                    onQueryChanged: (v) => setState(() => _query = v),
+                  );
+                }
+                return _TriviaTile(
+                  entry: entries[i - 2],
+                  settings: settings,
+                  scheme: scheme,
+                );
+              },
+            ),
           ),
         ),
+      ),
+    );
+  }
+
+  List<BibleTriviaEntry> _filterEntries(
+      List<BibleTriviaEntry> all, String locale) {
+    Iterable<BibleTriviaEntry> out = all;
+    if (_tagFilter != 'all') {
+      out = out.where((e) =>
+          (e.tag['en'] ?? '').trim().toUpperCase() ==
+          _tagFilter.toUpperCase());
+    }
+    if (_testamentFilter != 'all') {
+      out = out.where((e) {
+        final ref = e.reference;
+        if (ref == null) return false;
+        final parsed = parseReference(ref);
+        if (parsed == null) return false;
+        final isOt = _isOtBook(parsed.englishBook);
+        return _testamentFilter == 'ot' ? isOt : !isOt;
+      });
+    }
+    final q = _query.trim().toLowerCase();
+    if (q.isNotEmpty) {
+      out = out.where((e) {
+        bool matches(String? s) =>
+            s != null && s.toLowerCase().contains(q);
+        return matches(e.title[locale]) ||
+            matches(e.title['en']) ||
+            matches(e.body[locale]) ||
+            matches(e.body['en']) ||
+            matches(e.tag[locale]) ||
+            matches(e.tag['en']) ||
+            matches(e.reference);
+      });
+    }
+    return out.toList();
+  }
+}
+
+/// Canonical OT book set used by the testament filter. Keeping it
+/// inline (not pulling from MainProvider) so the trivia page works
+/// without bible data loaded.
+const Set<String> _otBookSet = {
+  'Genesis', 'Exodus', 'Leviticus', 'Numbers', 'Deuteronomy', 'Joshua',
+  'Judges', 'Ruth', '1 Samuel', '2 Samuel', '1 Kings', '2 Kings',
+  '1 Chronicles', '2 Chronicles', 'Ezra', 'Nehemiah', 'Esther', 'Job',
+  'Psalms', 'Proverbs', 'Ecclesiastes', 'Song of Solomon', 'Isaiah',
+  'Jeremiah', 'Lamentations', 'Ezekiel', 'Daniel', 'Hosea', 'Joel',
+  'Amos', 'Obadiah', 'Jonah', 'Micah', 'Nahum', 'Habakkuk', 'Zephaniah',
+  'Haggai', 'Zechariah', 'Malachi',
+};
+
+bool _isOtBook(String englishBook) => _otBookSet.contains(englishBook);
+
+/// Filter row for [BibleTriviaPage]: search field + tag chips +
+/// OT/NT toggle. Sits above the trivia tiles inside the same ListView
+/// so it scrolls with the content rather than pinning to the top.
+class _TriviaFilterBar extends StatelessWidget {
+  final String locale;
+  final AppSettings settings;
+  final ColorScheme scheme;
+  final List<String> availableTags;
+  final String tagFilter;
+  final String testamentFilter;
+  final String query;
+  final int matchCount;
+  final int totalCount;
+  final ValueChanged<String> onTagChanged;
+  final ValueChanged<String> onTestamentChanged;
+  final ValueChanged<String> onQueryChanged;
+
+  const _TriviaFilterBar({
+    required this.locale,
+    required this.settings,
+    required this.scheme,
+    required this.availableTags,
+    required this.tagFilter,
+    required this.testamentFilter,
+    required this.query,
+    required this.matchCount,
+    required this.totalCount,
+    required this.onTagChanged,
+    required this.onTestamentChanged,
+    required this.onQueryChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final searchHint =
+        uiStrings['bibleTriviaSearchHint']?[locale] ??
+            'Search trivia…';
+    final allLabel = uiStrings['statsOriginalsAll']?[locale] ?? 'All';
+    final otLabel = uiStrings['statsBooksOT']?[locale] ?? 'OT';
+    final ntLabel = uiStrings['statsBooksNT']?[locale] ?? 'NT';
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        TextField(
+          decoration: InputDecoration(
+            hintText: searchHint,
+            prefixIcon: const Icon(Icons.search),
+            isDense: true,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+          ),
+          onChanged: onQueryChanged,
+          style: TextStyle(
+            fontFamily: settings.fontFamily,
+            fontSize: (settings.fontSize - 1).clamp(13.0, 17.0),
+          ),
+        ),
+        const SizedBox(height: 10),
+        SegmentedButton<String>(
+          segments: [
+            ButtonSegment(value: 'all', label: Text(allLabel)),
+            ButtonSegment(value: 'ot', label: Text(otLabel)),
+            ButtonSegment(value: 'nt', label: Text(ntLabel)),
+          ],
+          selected: {testamentFilter},
+          onSelectionChanged: (s) => onTestamentChanged(s.first),
+          multiSelectionEnabled: false,
+          showSelectedIcon: false,
+        ),
+        const SizedBox(height: 10),
+        SizedBox(
+          height: 38,
+          child: ListView(
+            scrollDirection: Axis.horizontal,
+            children: [
+              _TagChip(
+                label: allLabel,
+                selected: tagFilter == 'all',
+                onTap: () => onTagChanged('all'),
+                scheme: scheme,
+              ),
+              for (final t in availableTags)
+                _TagChip(
+                  label: t,
+                  selected: tagFilter == t,
+                  onTap: () => onTagChanged(t),
+                  scheme: scheme,
+                ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 6),
+        Text(
+          '$matchCount / $totalCount',
+          style: TextStyle(
+            fontSize: 11,
+            color: scheme.onSurfaceVariant,
+            fontFeatures: const [FontFeature.tabularFigures()],
+          ),
+        ),
+        const SizedBox(height: 4),
+      ],
+    );
+  }
+}
+
+class _TagChip extends StatelessWidget {
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+  final ColorScheme scheme;
+  const _TagChip({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+    required this.scheme,
+  });
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(right: 6),
+      child: ChoiceChip(
+        label: Text(label),
+        selected: selected,
+        onSelected: (_) => onTap(),
       ),
     );
   }
@@ -228,14 +475,26 @@ class _TriviaTileState extends State<_TriviaTile> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        body,
-                        style: TextStyle(
-                          fontFamily: settings.fontFamily,
-                          fontSize:
-                              (settings.fontSize - 1).clamp(12.0, 17.0),
-                          color: scheme.onSurface.withValues(alpha: 0.85),
-                          height: 1.55,
+                      // Round 56 (continued): user feedback "format
+                      // for 冷知识 is like ** ** and not be applied
+                      // properly". Many entries have markdown-style
+                      // **bold** in their body (e.g. **YHWH**,
+                      // **22 sections**); previously they rendered as
+                      // literal asterisks. Now parsed into TextSpans.
+                      Text.rich(
+                        TextSpan(
+                          children: _parseInlineMarkdown(
+                            body,
+                            base: TextStyle(
+                              fontFamily: settings.fontFamily,
+                              fontSize: (settings.fontSize - 1)
+                                  .clamp(12.0, 17.0),
+                              color: scheme.onSurface
+                                  .withValues(alpha: 0.85),
+                              height: 1.55,
+                            ),
+                            scheme: scheme,
+                          ),
                         ),
                       ),
                       if (entry.reference != null) ...[
@@ -262,6 +521,45 @@ class _TriviaTileState extends State<_TriviaTile> {
       ),
     );
   }
+}
+
+/// Round 56 (continued): parse minimal inline markdown — currently
+/// just `**bold**` segments — into TextSpans so trivia bodies render
+/// the way they were authored. Anything else passes through verbatim.
+///
+/// Why so small: the trivia bodies are short, and the only marker
+/// that's visibly broken in the UI today is paired `**`. We
+/// deliberately do NOT try to handle full Markdown (links, italics,
+/// lists) — that would warrant pulling in a `flutter_markdown` style
+/// dependency.
+List<TextSpan> _parseInlineMarkdown(
+  String input, {
+  required TextStyle base,
+  required ColorScheme scheme,
+}) {
+  final spans = <TextSpan>[];
+  final boldStyle = base.copyWith(
+    fontWeight: FontWeight.w800,
+    color: base.color != null
+        ? base.color!.withValues(alpha: 1.0)
+        : scheme.onSurface,
+  );
+  final pattern = RegExp(r'\*\*([^*]+)\*\*');
+  int idx = 0;
+  for (final m in pattern.allMatches(input)) {
+    if (m.start > idx) {
+      spans.add(TextSpan(
+        text: input.substring(idx, m.start),
+        style: base,
+      ));
+    }
+    spans.add(TextSpan(text: m.group(1) ?? '', style: boldStyle));
+    idx = m.end;
+  }
+  if (idx < input.length) {
+    spans.add(TextSpan(text: input.substring(idx), style: base));
+  }
+  return spans;
 }
 
 /// One Bible-trivia entry. Localized in 3 languages.

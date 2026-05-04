@@ -6,8 +6,12 @@ import 'package:yswords/constants/ui_strings.dart';
 import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/models/bible_evidence.dart';
 import 'package:yswords/pages/evidence_detail_page.dart';
+import 'package:yswords/pages/home_page.dart';
+import 'package:yswords/providers/main_provider.dart';
 import 'package:yswords/services/ai_search_service.dart';
 import 'package:yswords/services/bible_evidence_service.dart';
+import 'package:yswords/utils/jump_to_reference.dart';
+import 'package:yswords/utils/reference_parser.dart';
 import 'package:yswords/widgets/confidence_badge.dart';
 import 'package:yswords/widgets/home_icon_button.dart';
 import 'package:yswords/widgets/localized_back_button.dart';
@@ -512,27 +516,53 @@ class _EvidenceCard extends StatelessWidget {
                       ),
                     ),
                     const Spacer(),
-                    Row(
-                      children: [
-                        Icon(Icons.menu_book_outlined,
-                            size: 13, color: scheme.primary),
-                        const SizedBox(width: 4),
-                        Flexible(
-                          child: Text(
-                            evidence.scriptureReference,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              fontFamily: settings.fontFamily,
-                              fontSize: (settings.fontSize - 4)
-                                  .clamp(11.0, 14.0)
-                                  .toDouble(),
-                              fontWeight: FontWeight.w600,
-                              color: scheme.primary,
+                    // Round 56: scripture-reference row is now its
+                    // own tappable surface — tap takes the user
+                    // straight to the cited verse in the reader,
+                    // bypassing the detail page. User feedback:
+                    // "圣经实证不是跟 bible 有关 — fix". Was: card
+                    // showed the ref as plain text and only the
+                    // detail page exposed a tappable chip, so the
+                    // direct connection to scripture was buried.
+                    InkWell(
+                      onTap: () =>
+                          _openReferenceFromCard(context, evidence),
+                      borderRadius: BorderRadius.circular(6),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 4, vertical: 4),
+                        child: Row(
+                          children: [
+                            Icon(Icons.menu_book_rounded,
+                                size: 14, color: scheme.primary),
+                            const SizedBox(width: 4),
+                            Flexible(
+                              child: Text(
+                                evidence.scriptureReference,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  fontFamily: settings.fontFamily,
+                                  fontSize: (settings.fontSize - 4)
+                                      .clamp(11.0, 14.0)
+                                      .toDouble(),
+                                  fontWeight: FontWeight.w700,
+                                  color: scheme.primary,
+                                  decoration: TextDecoration.underline,
+                                  decorationColor: scheme.primary
+                                      .withValues(alpha: 0.4),
+                                  decorationStyle:
+                                      TextDecorationStyle.dotted,
+                                ),
+                              ),
                             ),
-                          ),
+                            Icon(Icons.arrow_forward_rounded,
+                                size: 12,
+                                color: scheme.primary
+                                    .withValues(alpha: 0.65)),
+                          ],
                         ),
-                      ],
+                      ),
                     ),
                   ],
                 ),
@@ -541,6 +571,39 @@ class _EvidenceCard extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+
+  /// Tapping the scripture-reference row on a card jumps the reader
+  /// straight to the cited verse, bypassing the detail page. Mirrors
+  /// `EvidenceDetailPage._openReference`: parse → resolveAndPrepareJump
+  /// (with full-canon companion fallback for OT refs in NT-only
+  /// versions) → SnackBar feedback → push HomePage.
+  Future<void> _openReferenceFromCard(
+      BuildContext context, BibleEvidence evidence) async {
+    final raw = evidence.scriptureReference;
+    BibleReference? ref = parseReference(raw);
+    if (ref == null && raw.contains(';')) {
+      for (final part in raw.split(';')) {
+        ref = parseReference(part.trim());
+        if (ref != null) break;
+      }
+    }
+    if (ref == null) {
+      ScaffoldMessenger.maybeOf(context)?.showSnackBar(SnackBar(
+        content: Text("Couldn't parse reference: $raw"),
+        duration: const Duration(seconds: 3),
+      ));
+      return;
+    }
+    final mp = context.read<MainProvider>();
+    final result = await resolveAndPrepareJump(reference: ref, mp: mp);
+    if (!context.mounted) return;
+    final ok = await showJumpResultSnackBar(context, result);
+    if (!ok || !context.mounted) return;
+    Get.to(
+      () => const HomePage(),
+      transition: Transition.rightToLeft,
     );
   }
 }

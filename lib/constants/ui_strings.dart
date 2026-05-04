@@ -777,6 +777,11 @@ const uiStrings = {
     'zh-Hant': '查看全部冷知識',
     'en': 'View all trivia',
   },
+  'bibleTriviaSearchHint': {
+    'zh-Hans': '搜索冷知识…',
+    'zh-Hant': '搜尋冷知識…',
+    'en': 'Search trivia…',
+  },
   // Round 56: hint shown under expanded font dropdown.
   'loadingVersion': {
     'zh-Hans': '正在切换译本…',
