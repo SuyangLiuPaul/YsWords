@@ -461,14 +461,23 @@ style "Siblings" + closest "Tribe / line" (closest TRIBE-tagged
 ancestor) sections beneath Parents / Spouses / Children for one-tap
 lateral navigation.
 
-**Tap behaviour** (universal genealogy UX, mirrors FamilySearch /
-Ancestry):
-* Tap the **chevron** → toggle that person's children only.
-* Tap the **row body** → opens the detail sheet (modal bottom sheet).
+**Tap behaviour** (final form after user feedback):
+* Tap the **row body / name** → expand or collapse this person's
+  children. For leaf rows (no children) it falls back to opening the
+  detail sheet so the tap isn't a no-op.
+* Tap the small **ⓘ info button** on the right → opens the detail
+  sheet. This is the explicit "show me the popup" affordance.
+* Tap the **chevron** → same as tapping the row (toggle children).
+* Tap a **bridge leaf** (cross-era child rendered in the parent
+  section) → uncollapses + scrolls to the target era's section. Its
+  ⓘ info button still opens the detail sheet without jumping.
+* Tap a **bridge chip** in the "Continues with: …" footer → same
+  jump behaviour, no detail-sheet popup. Detail popups don't open
+  on jumps because they would visually block the scroll animation
+  and make the jump feel like nothing happened.
 * **Section-header tap** → collapse / expand the whole era.
-* Ancestors auto-expand only when the user lands somewhere via search,
-  detail-sheet chip-tap, or expand-all toggle. Descendants never
-  auto-expand (least-surprise principle, per the round-60 UX research).
+* Default: every era section starts collapsed (TOC view); search
+  matches auto-uncollapse the containing section.
 
 **Responsive design**: page content capped at 960 px wide via
 `Center` + `ConstrainedBox`. Modal bottom sheet caps at 720 px. Indent

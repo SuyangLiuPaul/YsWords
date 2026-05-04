@@ -738,16 +738,13 @@ class _EraSection extends StatelessWidget {
                       scheme: scheme,
                       eraColor: color,
                       onTapBridge: (target) {
-                        // Tap a bridge person → jump to whichever
-                        // era they belong to (the next section in
-                        // the canonical order).
+                        // Tap = jump only. (No detail sheet — that
+                        // would block the scroll animation and the
+                        // user would experience "nothing happens".)
                         final targetEra = target.era;
                         if (targetEra != null) {
                           onJumpToEra(targetEra);
                         }
-                        // Also open their detail sheet so the user
-                        // sees who they just bridged into.
-                        onTapPerson(target);
                       },
                     ),
                 ],
@@ -806,7 +803,14 @@ class _EraSection extends StatelessWidget {
           isMatch: matchIds.contains(p.id),
           onToggleExpand:
               hasAnyKids ? () => onTogglePerson(p.id) : null,
-          onTap: () => onTapPerson(p),
+          // Tap row body = expand/collapse children when this
+          // person has any. For leaf nodes (no kids) tap falls
+          // back to opening the detail sheet so the action isn't
+          // a no-op.
+          onTap: hasAnyKids
+              ? () => onTogglePerson(p.id)
+              : () => onTapPerson(p),
+          onOpenDetail: () => onTapPerson(p),
           onTapSpouse: onTapPerson,
         ),
         if (isExpanded) ...[
@@ -965,6 +969,7 @@ class _PersonRow extends StatelessWidget {
   final bool isMatch;
   final VoidCallback? onToggleExpand;
   final VoidCallback onTap;
+  final VoidCallback onOpenDetail;
   final void Function(BiblicalPerson) onTapSpouse;
 
   const _PersonRow({
@@ -978,6 +983,7 @@ class _PersonRow extends StatelessWidget {
     required this.isMatch,
     required this.onToggleExpand,
     required this.onTap,
+    required this.onOpenDetail,
     required this.onTapSpouse,
   });
 
@@ -1086,9 +1092,15 @@ class _PersonRow extends StatelessWidget {
                     ],
                   ),
                 ),
-                Icon(Icons.chevron_right,
-                    size: 18,
-                    color: scheme.onSurface.withValues(alpha: 0.35)),
+                // Info button — explicit, discoverable path to the
+                // detail sheet. Tap row body = expand/collapse.
+                // Tap this little box = open popup. Matches the
+                // human-natural pattern the user asked for.
+                _RowInfoButton(
+                  scheme: scheme,
+                  onPressed: onOpenDetail,
+                  locale: locale,
+                ),
               ],
             ),
           ),
@@ -1097,6 +1109,36 @@ class _PersonRow extends StatelessWidget {
     );
   }
 
+}
+
+class _RowInfoButton extends StatelessWidget {
+  final ColorScheme scheme;
+  final VoidCallback onPressed;
+  final String locale;
+  const _RowInfoButton({
+    required this.scheme,
+    required this.onPressed,
+    required this.locale,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Tooltip(
+      message: uiStrings['familyTreeOpenDetails']?[locale] ?? 'Details',
+      child: InkResponse(
+        onTap: onPressed,
+        radius: 18,
+        child: Padding(
+          padding: const EdgeInsets.all(4),
+          child: Icon(
+            Icons.info_outline_rounded,
+            size: 18,
+            color: scheme.primary.withValues(alpha: 0.7),
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 // ── Bridge leaf row ──────────────────────────────────────────
@@ -1143,10 +1185,14 @@ class _BridgeLeafRow extends StatelessWidget {
       child: Material(
         color: targetEraColor.withValues(alpha: 0.04),
         child: InkWell(
+          // Tap = jump only. Opening the detail sheet here would
+          // cover the scroll animation and make the jump feel like
+          // it didn't fire. Long-press opens the detail sheet for
+          // users who want it.
           onTap: () {
             if (targetEra.isNotEmpty) onJumpToEra(targetEra);
-            onTapPerson(person);
           },
+          onLongPress: () => onTapPerson(person),
           child: Container(
             decoration: BoxDecoration(
               border: Border(
@@ -1235,6 +1281,14 @@ class _BridgeLeafRow extends StatelessWidget {
                 ),
                 Icon(Icons.east_rounded,
                     size: 16, color: targetEraColor),
+                // Info button — opens detail without jumping. Tap
+                // row body = jump to next era; this little box =
+                // peek at details first.
+                _RowInfoButton(
+                  scheme: scheme,
+                  onPressed: () => onTapPerson(person),
+                  locale: locale,
+                ),
               ],
             ),
           ),
