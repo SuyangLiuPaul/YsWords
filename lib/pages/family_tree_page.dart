@@ -91,8 +91,12 @@ class _FamilyTreePageState extends State<FamilyTreePage> {
     'patriarchs': ['kohath', 'perez'],
     'mosaic': [],
     'davidic_line': ['david'],
-    'kings': ['shealtiel'],
+    // Kings era bridges to BOTH Matthew's exile chain (via
+    // Shealtiel, son of Jeconiah) and Luke's Lukan Lineage (via
+    // Mattatha, descendant of Nathan son of David).
+    'kings': ['shealtiel', 'mattatha_lk_31'],
     'exile': ['joseph_father_of_jesus'],
+    'lukan_lineage': ['mary'],
     'nt': [],
   };
 
@@ -105,6 +109,7 @@ class _FamilyTreePageState extends State<FamilyTreePage> {
     'davidic_line',
     'kings',
     'exile',
+    'lukan_lineage',
     'nt',
   ];
 
@@ -468,6 +473,7 @@ class _FamilyTreePageState extends State<FamilyTreePage> {
           onTapPerson: _showDetail,
           bridges: bridges,
           onJumpToEra: _jumpToEra,
+          onJumpToSpouse: _jumpToSpouse,
           recentlyJumpedTo: _recentlyJumpedTo,
           personKeyFor: _personKeyFor,
         ),
@@ -578,6 +584,19 @@ class _FamilyTreePageState extends State<FamilyTreePage> {
     });
   }
 
+  /// Spouse-chip tap handler. If the spouse has an era assigned,
+  /// jump-and-highlight their row in that era's section. Otherwise
+  /// fall back to opening the detail sheet (for orphan spouses
+  /// without era data — rare in our dataset).
+  void _jumpToSpouse(BiblicalPerson s) {
+    final era = s.era;
+    if (era != null && era.isNotEmpty) {
+      _jumpToEra(era, personId: s.id);
+    } else {
+      _showDetail(s);
+    }
+  }
+
   void _scrollToTarget({required String era, String? personId}) {
     if (!_scrollController.hasClients) return;
     BuildContext? ctx;
@@ -650,6 +669,7 @@ class _EraSection extends StatelessWidget {
   final void Function(BiblicalPerson) onTapPerson;
   final List<BiblicalPerson> bridges;
   final void Function(String era, {String? personId}) onJumpToEra;
+  final void Function(BiblicalPerson) onJumpToSpouse;
   final String? recentlyJumpedTo;
   final GlobalKey Function(String id) personKeyFor;
 
@@ -668,6 +688,7 @@ class _EraSection extends StatelessWidget {
     required this.onTapPerson,
     required this.bridges,
     required this.onJumpToEra,
+    required this.onJumpToSpouse,
     required this.recentlyJumpedTo,
     required this.personKeyFor,
   });
@@ -915,6 +936,7 @@ class _EraSection extends StatelessWidget {
                 : () => onTapPerson(p),
             onOpenDetail: () => onTapPerson(p),
             onTapSpouse: onTapPerson,
+            onJumpToSpouse: onJumpToSpouse,
           ),
         ),
         if (isExpanded) ...[
@@ -1077,6 +1099,7 @@ class _PersonRow extends StatelessWidget {
   final VoidCallback onTap;
   final VoidCallback onOpenDetail;
   final void Function(BiblicalPerson) onTapSpouse;
+  final void Function(BiblicalPerson) onJumpToSpouse;
 
   const _PersonRow({
     required this.person,
@@ -1092,6 +1115,7 @@ class _PersonRow extends StatelessWidget {
     required this.onTap,
     required this.onOpenDetail,
     required this.onTapSpouse,
+    required this.onJumpToSpouse,
   });
 
   @override
@@ -1108,17 +1132,19 @@ class _PersonRow extends StatelessWidget {
 
     return Padding(
       padding: EdgeInsets.only(left: indent),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 320),
-        curve: Curves.easeOut,
+      // Static (non-animated) highlight wrapper. We tried
+      // AnimatedContainer here but the 320 ms animation could
+      // shift the row's RenderBox during scroll-offset
+      // measurement, making the jump land at a stale offset.
+      // Switching to a static Container keeps the highlight
+      // visible (just no fade-in) and the layout deterministic.
+      child: Container(
         decoration: BoxDecoration(
           color: isRecentlyJumped
               ? scheme.primaryContainer.withValues(alpha: 0.7)
               : isMatch
                   ? scheme.tertiaryContainer.withValues(alpha: 0.45)
                   : Colors.transparent,
-          // Subtle outline ring during the highlight so it really
-          // pops — answers "I tapped Perez and nothing happened".
           border: isRecentlyJumped
               ? Border.all(
                   color: scheme.primary.withValues(alpha: 0.6),
@@ -1183,7 +1209,13 @@ class _PersonRow extends StatelessWidget {
                               spouse: s,
                               locale: locale,
                               scheme: scheme,
-                              onTap: () => onTapSpouse(s),
+                              // Tap a spouse chip → jump to that
+                              // person's row in their own era
+                              // section (so e.g. Mary on Joseph's
+                              // row jumps to Mary in NT section).
+                              // Falls back to detail sheet if the
+                              // spouse has no era to jump to.
+                              onTap: () => onJumpToSpouse(s),
                             ),
                           if ((person.role ?? '').isNotEmpty)
                             _RolePill(
@@ -1474,6 +1506,7 @@ String _eraLabelShort(String era, String locale) {
     'davidic_line': {'en': 'Davidic Line', 'zh-Hans': '大卫世系', 'zh-Hant': '大衛世系'},
     'kings': {'en': 'Kings', 'zh-Hans': '列王', 'zh-Hant': '列王'},
     'exile': {'en': 'Exile', 'zh-Hans': '被掳', 'zh-Hant': '被擄'},
+    'lukan_lineage': {'en': 'Lukan', 'zh-Hans': '路加家谱', 'zh-Hant': '路加家譜'},
     'nt': {'en': 'NT', 'zh-Hans': '新约', 'zh-Hant': '新約'},
   };
   return labels[era]?[locale] ?? _eraLabel(era, locale);
@@ -1833,6 +1866,7 @@ String _eraSubtitle(String era, String locale) {
     'davidic_line': 'familyTreeEraSubDavidic',
     'kings': 'familyTreeEraSubKings',
     'exile': 'familyTreeEraSubExile',
+    'lukan_lineage': 'familyTreeEraSubLukan',
     'nt': 'familyTreeEraSubNt',
   };
   final key = map[era];
@@ -1877,6 +1911,11 @@ String _eraLabel(String era, String locale) {
       'zh-Hans': '被掳与回归',
       'zh-Hant': '被擄與回歸',
     },
+    'lukan_lineage': {
+      'en': "Lukan Lineage (Mary's line through Nathan)",
+      'zh-Hans': '路加家谱（马利亚透过拿单的世系）',
+      'zh-Hant': '路加家譜（馬利亞透過拿單的世系）',
+    },
     'nt': {
       'en': 'New Testament',
       'zh-Hans': '新约',
@@ -1902,6 +1941,8 @@ Color _eraColor(String era) {
       return const Color(0xFF2A4FB0);
     case 'exile':
       return const Color(0xFF5F3F86);
+    case 'lukan_lineage':
+      return const Color(0xFF8B3A62);
     case 'nt':
       return const Color(0xFFB8860B);
   }

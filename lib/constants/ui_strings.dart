@@ -2105,6 +2105,11 @@ const uiStrings = {
     'zh-Hans': '撒拉铁经马但到约瑟（马太福音 1:13–16）',
     'zh-Hant': '撒拉鐵經馬但到約瑟（馬太福音 1:13–16）',
   },
+  'familyTreeEraSubLukan': {
+    'en': "Mary's lineage per Luke 3:23–31 (Nathan → … → Heli → Mary)",
+    'zh-Hans': '路加福音 3:23–31 所记马利亚的家谱（拿单 → … → 希里 → 马利亚）',
+    'zh-Hant': '路加福音 3:23–31 所記馬利亞的家譜（拿單 → … → 希里 → 馬利亞）',
+  },
   'familyTreeEraSubNt': {
     'en': 'The earthly family of Jesus the Messiah · ~BC 5 – AD 30',
     'zh-Hans': '弥赛亚耶稣的地上家庭 · 约公元前 5 – 公元 30',
