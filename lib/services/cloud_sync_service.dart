@@ -10,8 +10,8 @@ import 'package:yswords/services/cloud_auth_service.dart';
 import 'package:yswords/services/profile_service.dart';
 
 // Tiny JS-interop binding for `navigator.onLine`. Lets us short-circuit
-// uploads with a clear "offline" message instead of sitting through a
-// 30-second Firestore timeout when the user has no network at all.
+// uploads with a clear "offline" message instead of sitting through the
+// 2-minute Firestore timeout when the user has no network at all.
 @JS('navigator.onLine')
 external bool get _navigatorOnLine;
 
@@ -511,7 +511,14 @@ class CloudSyncService extends ChangeNotifier {
       // path is fine to no-op silently — but a user-initiated
       // syncNow() should NOT look like a hang. Wait briefly for
       // the pull to finish, then proceed.
-      for (var i = 0; i < 30 && _suppressLocalListener; i++) {
+      //
+      // Round 56: bumped pull-wait window from 3 s to 6 s (60 ticks
+      // × 100 ms) so a slow network has the same headroom as the
+      // upload itself before we surface the "pull taking longer"
+      // error. The upload timeout is now 2 min — we don't want a
+      // user-initiated Sync to fail at the pull-guard stage with a
+      // shorter window than the upload would have allowed.
+      for (var i = 0; i < 60 && _suppressLocalListener; i++) {
         await Future.delayed(const Duration(milliseconds: 100));
       }
       if (_suppressLocalListener) {
@@ -532,9 +539,14 @@ class CloudSyncService extends ChangeNotifier {
       // experimentalAutoDetectLongPolling enabled (see
       // CloudAuthService._doInit), the Firestore SDK refreshes
       // tokens correctly on its own.
-      // 30 s instead of 15 — slow networks (mobile, cafe wifi, etc.)
-      // routinely take 10-20 s for a Firestore write to round-trip,
-      // and 15 s was tripping under normal conditions.
+      //
+      // Round 56: bumped from 30 s to 2 min. User-reported case of a
+      // sync visibly stalling on a slow corporate VPN; 30 s tripped
+      // before the round-trip could finish. Two minutes is a
+      // generous upper bound — Firestore writes that haven't gone
+      // through by then are almost certainly indicative of a real
+      // connectivity problem rather than just a slow link, so it's
+      // safe to surface as an error.
       await FirebaseFirestore.instance
           .collection('users')
           .doc(uid)
@@ -543,11 +555,11 @@ class CloudSyncService extends ChangeNotifier {
           .set({
         'data': data,
         'updatedAt': FieldValue.serverTimestamp(),
-      }).timeout(const Duration(seconds: 30));
+      }).timeout(const Duration(minutes: 2));
       await _stampSyncedNow();
       _setStatus(CloudSyncStatus.synced);
     } on TimeoutException {
-      _lastError = 'Sync timed out after 30 seconds. '
+      _lastError = 'Sync timed out after 2 minutes. '
           'Check your internet connection or sign out and back in.';
       _setStatus(CloudSyncStatus.error);
     } on FirebaseException catch (e) {

@@ -1,6 +1,6 @@
 # YsWords — AI Agent Handoff Document
 
-> Last updated: 2026-05-04
+> Last updated: 2026-05-04 (Round 56)
 > Project: YsWords (Yahweh's Words) — bilingual Bible reader
 > Stack: Flutter 3.41.7 / Dart 3.11.5 / Provider + GetX
 > Repo: https://github.com/SuyangLiuPaul/YsWords
@@ -415,6 +415,128 @@ The app adapts its layout to all device sizes using `lib/utils/responsive.dart`:
 **How it works**: `ResponsiveBreakpoints.classOf(width)` returns a `DeviceClass` enum. The reading view fills the full screen width on all devices (no max-width constraint) for an iPhone-like experience. Padding, indents, tile sizes, and spacing multiply by device-class-specific scale factors. Phone layouts are byte-identical to the pre-responsive code (scale 1.0).
 
 **Affected areas**: settings (max 640px), books page (max 800px), search (max 720px), chapter tiles (44–72px), loading logo (100–240px), all spacing gaps. Reading view uses phone-level padding/indent on all devices (8px reading padding, 16px verse indent, 10px header inset).
+
+---
+
+## What Has Been Fixed (2026-05-04, Round 56)
+
+### Cloud-sync timeout + sermon title cleanup + dashboard customization + theme vibrance
+
+This is a multi-strand round driven by user feedback collected over a
+single working day. Each strand is independent but they all landed in
+the same handful of commits.
+
+**Cloud sync now times out at 2 minutes (was 30 s)**
+(`lib/services/cloud_sync_service.dart`). User report: a Sync-now on
+a slow corporate VPN tripped the 30-second cap before the Firestore
+write could round-trip. New cap is `Duration(minutes: 2)` for the
+upload itself, and the in-flight-pull guard window inside
+`_uploadFromLocal` widened from 3 s (30 × 100 ms ticks) to 6 s
+(60 ticks) so a manual sync isn't blocked by the pull-guard stage
+with a shorter window than the upload itself would allow. Error
+message also updated: *"Sync timed out after 2 minutes…"*.
+
+**Removed redundant verse references and "A/B parts" chip from
+sermon UI**:
+* Dropped the `_MetaChip(label: 'A/B parts')` from the sermon detail
+  meta row. Sermons are already concatenated in the body, so showing
+  "A/B parts" only made users think the body was incomplete. The
+  `parts` field stays on the model for audit but no longer renders.
+* Stripped verse references from sermon TITLES across the corpus —
+  426 fields in `assets/sermons/index.json` (`title` + per-locale
+  `titles` map) and 413 H1 lines in
+  `assets/sermons/{en,zh-CN,zh-TW}/<id>.txt`. The detail page
+  already shows the passage as a tappable chip in the meta row, so
+  embedding the same reference inside the title was redundant.
+
+  Examples:
+    Before: `火的洗礼（A篇）——路加福音12:49-50：火作为神的生命...`
+    After:  `火的洗礼 — 火作为神的生命...`
+
+    Before: `Submission — Matthew 3:13–17 (Part A) — The Greater...`
+    After:  `Submission — The Greater...`
+
+  Cleanup script (Python) handled: full English book names + abbrs,
+  full Simplified + Traditional Chinese book names, parenthesised
+  refs `(Luke 4:5–13)` (whole paren group removed), em-dash collapse
+  for the `A — REF — B` → `A — B` case, dangling `— :` / `——：`
+  cleanup, and ensure-space-after-em-dash so `——与` doesn't render
+  as `—与` (no space, hard to read in zh).
+
+**Resume Sermon hero on the dashboard**
+(`lib/pages/dashboard_page.dart`). Mirrors the Bible "Read Bible"
+hero, but for the user's last-read sermon. Shows the localized
+title, the localized passage, and a percent-read meter computed
+from the per-sermon `sermonScroll:<id>:<lang>:max` keys the detail
+page writes. State refreshes when the user returns from the detail
+page so the meter is always live. Hidden when no sermon has been
+opened or the saved id no longer resolves (corpus re-ingest).
+
+**Customizable dashboard layout**
+(`lib/models/dashboard_section.dart`, `_DashboardSectionsCard` in
+`lib/pages/settings_page.dart`). Settings → "Dashboard layout":
+drag-handle reorder + Switch per row + reset-to-default button.
+Covers all 9 sections (Read Bible, Resume Sermon, Verse of the Day,
+Today's Reading, Counts row, Recent Bookmarks, Today's Headlines,
+Today's Evidence, Quick Links). New `dashboard_section_order` +
+`dashboard_section_visible_<name>` SharedPrefs keys; legacy
+`showDailyNews` / `showBibleEvidence` / `showReadingPlan` mirror
+into the new map so a user upgrading from Round 54 keeps their
+toggles.
+
+`DashboardSection.readBible` is **mandatory** —
+`isDashboardSectionVisible(readBible)` always returns true and
+`setDashboardSectionVisible(readBible, ...)` is a no-op. The
+Settings row stays draggable but the Switch is disabled with a small
+lock icon + caption *"Always visible — primary entry point"* (round
+55 user feedback: hiding everything would leave no way to open the
+Bible).
+
+**Greeting card → Settings → Account**. Tapping the greeting / name
+/ email column on the dashboard now navigates to Settings with a
+deep-link to the Account section (cloud sync, sign-in/out, profile
+picker). Added `SettingsSection` enum, `SettingsPage({initialSection})`
+constructor param, and a `_SettingsPageBody` Stateful body that
+holds per-section `GlobalKey`s and runs `Scrollable.ensureVisible`
+on first frame. The avatar (with the small edit-pencil chip) keeps
+its existing local-profile-edit affordance — separate intent.
+
+**Reset settings button** (Settings → About). Conservative app-level
+reset: wipes fonts, theme, primary color, copy format, paragraph
+mode, menu scale, books view mode, all show-* flags, dashboard
+layout, AND the onboarding-seen flag. **Preserves** locale (so the
+user doesn't get yanked back to system default mid-session) and
+every piece of user *content* (bookmarks, notes, highlights,
+profile, last-read positions, sermon scroll positions). Confirm
+dialog with red FilledButton; success snackbar.
+
+**Refreshed onboarding tour (v2)**. The v1 tour pre-dated Sermons,
+Family Tree, Timeline, Evidence, Daily News, and dashboard
+customization. Bumped seen-flag `onboarding.seen.v1` →
+`onboarding.seen.v2` so existing users see the refreshed 5-slide
+tour once. New slides: Welcome (14 translations + Read Bible
+resume), Read/highlight/study, Sermons (587 + popup peek + Resume
+card), Discover (Timeline / Tree / Evidence / News), Customize &
+sync (Dashboard layout + plans + Google sign-in). Added
+`OnboardingDialog.markUnseen()` + a "Show tour again" button in
+Settings → About so users can replay it on demand.
+
+**Primary color now noticeably affects the app** (`lib/main.dart`).
+User feedback: "the primary color in Settings doesn't seem to
+affect the app much, and some colors are inconsistent." Root cause
+was `colorSchemeSeed:` — Material 3's default tonal-palette mapping
+desaturates the seed quite hard, so a pure-red pick rendered as a
+muted brick. Fix:
+* Both light and dark themes now build the scheme via explicit
+  `ColorScheme.fromSeed(seedColor: ..., dynamicSchemeVariant:
+  DynamicSchemeVariant.vibrant)`. Vibrant pushes primary much
+  closer to the seed, giving high-chroma accents on every widget
+  using `scheme.primary` (~255 places).
+* Light AppBar: `backgroundColor = scheme.primary` /
+  `foregroundColor = scheme.onPrimary`.
+* Dark AppBar: `backgroundColor = scheme.primaryContainer` (low-
+  chroma dark tint, not full primary, which would be garish on
+  dark surfaces).
 
 ---
 
