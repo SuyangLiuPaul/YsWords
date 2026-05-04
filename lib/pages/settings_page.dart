@@ -6,6 +6,7 @@ import 'package:flutter/services.dart' show Clipboard, ClipboardData;
 import 'package:yswords/constants/ui_strings.dart';
 import 'package:provider/provider.dart';
 import 'package:yswords/models/app_settings.dart';
+import 'package:yswords/models/app_style_preset.dart';
 import 'package:yswords/models/dashboard_section.dart';
 import 'package:yswords/providers/main_provider.dart';
 import 'package:get/get.dart';
@@ -488,6 +489,13 @@ class _SettingsPageBodyState extends State<_SettingsPageBody> {
                   ),
                 ),
               ),
+              SizedBox(height: 16 * s),
+              // Round 56: Style preset picker. Bundles font + size +
+              // line spacing + menu scale + paragraph mode into
+              // named one-tap presets (Classic / Modern / Reverent
+              // / Compact / Reader). Sits at the top of Display so
+              // users see it before manually tuning each setting.
+              _StylePresetCard(settings: settings, s: s),
               SizedBox(height: 16 * s),
               Card(
                 child: Padding(
@@ -2783,6 +2791,148 @@ class _AboutCard extends StatelessWidget {
 // JS interop binding: defined in web/index.html.
 @JS('yswordsClearCacheAndReload')
 external void _clearCacheAndReload();
+
+/// Round 56: Style-preset picker card. One-tap bundles of
+/// fontFamily / fontSize / lineSpacing / menuScale /
+/// paragraphMode for users who want a coordinated look without
+/// tuning each setting individually.
+class _StylePresetCard extends StatelessWidget {
+  final AppSettings settings;
+  final double s;
+  const _StylePresetCard({required this.settings, required this.s});
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final locale = settings.locale;
+    final active = detectActivePreset(settings);
+    return Card(
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 12 * s, vertical: 12 * s),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: EdgeInsets.fromLTRB(4 * s, 0, 4 * s, 6 * s),
+              child: Text(
+                uiStrings['stylePresetTitle']?[locale] ?? 'Style preset',
+                style: TextStyle(
+                  fontFamily: settings.fontFamily,
+                  fontSize: settings.fontSize + 2,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+            Padding(
+              padding: EdgeInsets.fromLTRB(4 * s, 0, 4 * s, 10 * s),
+              child: Text(
+                active == null
+                    ? (uiStrings['stylePresetCustom']?[locale] ??
+                        'Custom — manually tuned settings')
+                    : (uiStrings['stylePresetActive']?[locale] ??
+                            'Active: {name}')
+                        .replaceAll(
+                            '{name}',
+                            uiStrings[
+                                        'stylePreset_${active.name}_label']
+                                    ?[locale] ??
+                                active.name),
+                style: TextStyle(
+                  fontFamily: settings.fontFamily,
+                  fontSize: (settings.fontSize - 4).clamp(11.0, 13.0),
+                  color: scheme.onSurfaceVariant,
+                  fontStyle: FontStyle.italic,
+                ),
+              ),
+            ),
+            ...AppStylePreset.values.map((preset) {
+              final selected = preset == active;
+              final label = uiStrings['stylePreset_${preset.name}_label']
+                      ?[locale] ??
+                  preset.name;
+              final desc = uiStrings[
+                      'stylePreset_${preset.name}_description']?[locale] ??
+                  '';
+              return Padding(
+                padding: EdgeInsets.symmetric(vertical: 2 * s),
+                child: Material(
+                  color: selected
+                      ? scheme.primaryContainer.withValues(alpha: 0.55)
+                      : scheme.surfaceContainerLow,
+                  borderRadius: BorderRadius.circular(10),
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(10),
+                    onTap: () => preset.apply(settings),
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 36,
+                            height: 36,
+                            decoration: BoxDecoration(
+                              color: selected
+                                  ? scheme.primary
+                                  : scheme.surfaceContainerHighest,
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Icon(
+                              preset.icon,
+                              size: 20,
+                              color: selected
+                                  ? scheme.onPrimary
+                                  : scheme.onSurface
+                                      .withValues(alpha: 0.7),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  label,
+                                  style: TextStyle(
+                                    fontFamily: settings.fontFamily,
+                                    fontSize:
+                                        (settings.fontSize).clamp(14.0, 18.0),
+                                    fontWeight: FontWeight.w600,
+                                    color: scheme.onSurface,
+                                  ),
+                                ),
+                                if (desc.isNotEmpty) ...[
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    desc,
+                                    style: TextStyle(
+                                      fontFamily: settings.fontFamily,
+                                      fontSize: (settings.fontSize - 4)
+                                          .clamp(11.0, 13.0),
+                                      color: scheme.onSurface
+                                          .withValues(alpha: 0.7),
+                                      height: 1.35,
+                                    ),
+                                  ),
+                                ],
+                              ],
+                            ),
+                          ),
+                          if (selected)
+                            Icon(Icons.check_rounded,
+                                color: scheme.primary, size: 22),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            }),
+          ],
+        ),
+      ),
+    );
+  }
+}
 
 /// One row in the Settings → Display font dropdown.
 class _FontOption {

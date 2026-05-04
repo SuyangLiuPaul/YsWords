@@ -832,6 +832,77 @@ const uiStrings = {
     'zh-Hant': '原文資料未載入。',
     'en': 'Original-language data not loaded.',
   },
+  // ── Style presets (Round 56) ──────────────────────────────────
+  'stylePresetTitle': {
+    'zh-Hans': '风格预设',
+    'zh-Hant': '風格預設',
+    'en': 'Style preset',
+  },
+  'stylePresetCustom': {
+    'zh-Hans': '自定义 —— 手动调整的设置',
+    'zh-Hant': '自訂 —— 手動調整的設定',
+    'en': 'Custom — manually tuned settings',
+  },
+  'stylePresetActive': {
+    'zh-Hans': '当前：{name}',
+    'zh-Hant': '當前：{name}',
+    'en': 'Active: {name}',
+  },
+  'stylePreset_classic_label': {
+    'zh-Hans': '经典',
+    'zh-Hant': '經典',
+    'en': 'Classic',
+  },
+  'stylePreset_classic_description': {
+    'zh-Hans': 'Roboto 无衬线字体，段落模式开启，标准间距 —— 默认外观。',
+    'zh-Hant': 'Roboto 無襯線字體，段落模式開啟，標準間距 —— 預設外觀。',
+    'en':
+        'Roboto sans-serif, paragraph mode on, normal density — the default look.',
+  },
+  'stylePreset_modern_label': {
+    'zh-Hans': '现代',
+    'zh-Hant': '現代',
+    'en': 'Modern',
+  },
+  'stylePreset_modern_description': {
+    'zh-Hans': '系统无衬线字体，紧凑一些，段落模式开启 —— 类似 Kindle 阅读器风格。',
+    'zh-Hant': '系統無襯線字體，緊湊一些，段落模式開啟 —— 類似 Kindle 閱讀器風格。',
+    'en':
+        'System sans-serif, slightly compact, paragraph mode — like a modern reading app.',
+  },
+  'stylePreset_reverent_label': {
+    'zh-Hans': '虔敬',
+    'zh-Hant': '虔敬',
+    'en': 'Reverent',
+  },
+  'stylePreset_reverent_description': {
+    'zh-Hans': 'Garamond 衬线字体，宽行距，段落模式 —— 接近印刷版圣经的感觉。',
+    'zh-Hant': 'Garamond 襯線字體，寬行距，段落模式 —— 接近印刷版聖經的感覺。',
+    'en':
+        'Garamond serif, generous line spacing, paragraph mode — feels like a printed Bible.',
+  },
+  'stylePreset_compact_label': {
+    'zh-Hans': '紧凑',
+    'zh-Hant': '緊湊',
+    'en': 'Compact',
+  },
+  'stylePreset_compact_description': {
+    'zh-Hans': '小字号、低菜单缩放、逐节模式 —— 信息密度最高，适合查考使用。',
+    'zh-Hant': '小字號、低選單縮放、逐節模式 —— 資訊密度最高，適合查考使用。',
+    'en':
+        'Smaller fonts, lower menu scale, verse-by-verse mode — maximum density for reference use.',
+  },
+  'stylePreset_reader_label': {
+    'zh-Hans': '阅读',
+    'zh-Hant': '閱讀',
+    'en': 'Reader',
+  },
+  'stylePreset_reader_description': {
+    'zh-Hans': 'Georgia 衬线字体，大字号，宽行距，段落模式 —— 长时间阅读最舒适。',
+    'zh-Hant': 'Georgia 襯線字體，大字號，寬行距，段落模式 —— 長時間閱讀最舒適。',
+    'en':
+        'Georgia serif, larger font, wide line spacing, paragraph mode — comfortable for long reading.',
+  },
   'fontFamilyHint': {
     'zh-Hans': '"Roboto" 和 "微软雅黑" 是应用自带的字体，到处都能用。'
         '其他选项使用您设备上已安装的系统字体——中文用户推荐微软雅黑、苹方、思源黑体；'
