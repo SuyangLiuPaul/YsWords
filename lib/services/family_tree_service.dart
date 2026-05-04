@@ -35,6 +35,11 @@ class FamilyTreeService {
   /// Synchronous lookup — caller must have awaited [loadAll] first.
   BiblicalPerson? byId(String id) => _byId?[id];
 
+  /// Synchronous full-list accessor for callers that need every
+  /// person but don't want to await. Returns `[]` when [loadAll]
+  /// hasn't completed yet, so the result is always safe to iterate.
+  List<BiblicalPerson> allOrEmpty() => _list ?? const [];
+
   Future<BiblicalPerson?> lookup(String id) async {
     await loadAll();
     return _byId?[id];

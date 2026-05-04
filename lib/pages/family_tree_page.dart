@@ -6,7 +6,7 @@ import 'package:yswords/constants/ui_strings.dart';
 import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/models/biblical_person.dart';
 import 'package:yswords/services/family_tree_service.dart';
-import 'package:yswords/widgets/family_tree_chart.dart';
+import 'package:yswords/widgets/family_spine_tree.dart';
 import 'package:yswords/widgets/home_icon_button.dart';
 import 'package:yswords/widgets/localized_back_button.dart';
 import 'package:yswords/widgets/person_detail_sheet.dart';
@@ -144,10 +144,14 @@ class _FamilyTreePageState extends State<FamilyTreePage> {
                 ),
               ),
               Expanded(
-                child: filtered != null
-                    ? _buildSearchResults(filtered, locale, scheme)
-                    : (_viewMode == _ViewMode.tree
-                        ? _buildChart(data, locale, scheme)
+                // Tree mode handles search inline (auto-expands
+                // ancestor paths to every match). List mode doesn't
+                // do path-expansion so it falls back to the flat
+                // search-results panel.
+                child: _viewMode == _ViewMode.tree
+                    ? _buildChart(data, locale, scheme, _query)
+                    : (filtered != null
+                        ? _buildSearchResults(filtered, locale, scheme)
                         : _buildListMode(data, locale, scheme)),
               ),
             ],
@@ -200,32 +204,23 @@ class _FamilyTreePageState extends State<FamilyTreePage> {
     return '${all.length} people';
   }
 
-  /// Tree (chart) mode body. Pulls the focus person from
-  /// [_treeFocusId], computes the patrilineal breadcrumb up to the
-  /// nearest ancestor that's also in the dataset, and hands both to
-  /// [FamilyTreeChart].
+  /// Tree mode body — the round-58 spine tree. Renders from the
+  /// dataset root (Adam) down, with only the spine to the current
+  /// focus expanded; off-spine siblings collapse to single rows
+  /// with a chevron the user can crack open. Search auto-expands
+  /// ancestor paths to every match so query results are visible
+  /// without manual hunting.
   Widget _buildChart(
-      _TreeData data, String locale, ColorScheme scheme) {
+      _TreeData data, String locale, ColorScheme scheme, String query) {
     final svc = FamilyTreeService.instance;
-    final focus = svc.byId(_treeFocusId) ?? data.roots.first;
-    // Walk up the father chain so the breadcrumb shows the path
-    // from the dataset's root down to the focus. Mother lines are
-    // omitted from the breadcrumb to keep it readable; the detail
-    // sheet shows both parents explicitly.
-    final breadcrumb = <BiblicalPerson>[];
-    var cur = focus;
-    final seen = <String>{cur.id};
-    while (cur.fatherId != null) {
-      final f = svc.byId(cur.fatherId!);
-      if (f == null || seen.contains(f.id)) break;
-      breadcrumb.add(f);
-      seen.add(f.id);
-      cur = f;
-    }
-    return FamilyTreeChart(
+    final root = data.roots.isNotEmpty ? data.roots.first : null;
+    if (root == null) return const SizedBox.shrink();
+    final focus = svc.byId(_treeFocusId) ?? root;
+    return FamilySpineTree(
+      root: root,
       focus: focus,
       locale: locale,
-      ancestry: breadcrumb,
+      query: query,
       onPersonTap: _showDetail,
       onRefocus: (p) => setState(() => _treeFocusId = p.id),
     );

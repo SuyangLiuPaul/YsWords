@@ -1943,6 +1943,16 @@ const uiStrings = {
     'zh-Hant': '點擊查看詳情 · 長按聚焦此人',
     'en': 'Tap for details · long-press to focus',
   },
+  'familyTreeExpand': {
+    'zh-Hans': '展开',
+    'zh-Hant': '展開',
+    'en': 'Expand',
+  },
+  'familyTreeCollapse': {
+    'zh-Hans': '收起',
+    'zh-Hant': '收起',
+    'en': 'Collapse',
+  },
   'sermonFilterBookLabel': {
     'zh-Hans': '书卷',
     'zh-Hant': '書卷',
