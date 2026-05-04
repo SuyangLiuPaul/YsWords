@@ -73,13 +73,13 @@ const bibleVersions = <BibleVersionInfo>[
   ),
   BibleVersionInfo(
     value: 'cnv',
-    shortLabel: '新译本(简)',
-    menuLabel: '新译本(简体)',
+    shortLabel: '新译本·雅伟',
+    menuLabel: '新译本（简体·雅伟版）',
   ),
   BibleVersionInfo(
     value: 'cnv-tr',
-    shortLabel: '新译本(繁)',
-    menuLabel: '新译本(繁體)',
+    shortLabel: '新譯本·雅威',
+    menuLabel: '新譯本（繁體·雅威版）',
   ),
 ];
 
