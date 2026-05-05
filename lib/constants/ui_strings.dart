@@ -887,6 +887,26 @@ const uiStrings = {
     'zh-Hant': '隱藏常用虛詞',
     'en': 'Hide common particles',
   },
+  'statsOriginalsScopeAll': {
+    'zh-Hans': '全圣经',
+    'zh-Hant': '全聖經',
+    'en': 'Whole Bible',
+  },
+  'statsOriginalsScopeBook': {
+    'zh-Hans': '当前：{book}',
+    'zh-Hant': '當前：{book}',
+    'en': 'Showing: {book}',
+  },
+  'statsOriginalsBookTotalWords': {
+    'zh-Hans': '本卷词数',
+    'zh-Hant': '本卷詞數',
+    'en': 'Total words in book',
+  },
+  'statsOriginalsBookUniqueLemmas': {
+    'zh-Hans': '本卷词条数',
+    'zh-Hant': '本卷詞條數',
+    'en': 'Unique lemmas in book',
+  },
   'statsOriginalsHideStopwordsDesc': {
     'zh-Hans':
         '过滤"the/and/in/of/who/that"等高频虚词与冠词，让真正有意义的圣经词汇浮上来。',

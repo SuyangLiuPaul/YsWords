@@ -6,6 +6,7 @@ import 'package:yswords/models/app_settings.dart';
 // ignore: unused_import
 import 'package:yswords/providers/main_provider.dart';
 import 'package:yswords/services/bible_stats_service.dart';
+import 'package:yswords/services/fetch_books.dart' show standardBookOrder;
 import 'package:yswords/services/originals_stats_service.dart';
 import 'package:yswords/utils/clipboard_helper.dart';
 import 'package:yswords/utils/version_mapper.dart' show toEnglish, localeAwareBookName;
@@ -796,20 +797,23 @@ class _OriginalsOverviewTab extends StatefulWidget {
 
 class _OriginalsOverviewTabState extends State<_OriginalsOverviewTab>
     with AutomaticKeepAliveClientMixin {
-  Future<OriginalsAggregateStats>? _future;
-  // Round 56 (continued): user feedback "can you have scroll bars
-  // because there are so many blocks that hasn't got bar scroll yet".
-  // Default Material ListViews on web/desktop only show a scrollbar
-  // on hover; explicit Scrollbar + thumbVisibility makes the scroll
-  // affordance always visible so users know more content is below.
+  // Round 56 (continued — wide-screen + book filter redesign):
+  //
+  // Two futures load in parallel. `_aggregateFuture` gives the
+  // whole-Bible totals + canonical bookStats list. `_lemmasFuture`
+  // gives every lemma with its per-book occurrence map (`byBook`),
+  // which is what powers the per-book filtered Top-25 lists.
+  // Both are cached at the service layer so the second open is
+  // instant.
+  Future<OriginalsAggregateStats>? _aggregateFuture;
+  Future<List<OriginalsLemma>>? _lemmasFuture;
   final ScrollController _scrollCtrl = ScrollController();
-  // Round 56 (continued): user feedback "最频繁使用应该也有一个
-  // toggle, 把这些没有意义的字 filter out". When ON, hide function
-  // words / particles (the, and, in, of, who, that, …) so genuinely
-  // meaningful theology words rise to the top. Default ON because
-  // the unfiltered top-25 is dominated by particles that aren't
-  // useful for study. See `_stopwordStrongs` in
-  // originals_stats_service.dart for the exact filter set.
+
+  // 'all' = whole-Bible aggregate; otherwise an English book name
+  // ('Genesis', 'Romans', …). When set, every stat tile + Top-25
+  // list recomputes from `lemma.byBook[bookName]`.
+  String _bookFilter = 'all';
+
   bool _hideStopwords = true;
 
   @override
@@ -818,7 +822,8 @@ class _OriginalsOverviewTabState extends State<_OriginalsOverviewTab>
   @override
   void initState() {
     super.initState();
-    _future = OriginalsStatsService.aggregate();
+    _aggregateFuture = OriginalsStatsService.aggregate();
+    _lemmasFuture = OriginalsStatsService.load();
   }
 
   @override
@@ -834,127 +839,677 @@ class _OriginalsOverviewTabState extends State<_OriginalsOverviewTab>
     final locale = widget.locale;
     final settings = widget.settings;
     return FutureBuilder<OriginalsAggregateStats>(
-      future: _future,
-      builder: (context, snap) {
-        if (snap.connectionState != ConnectionState.done) {
-          return const Center(child: CircularProgressIndicator());
-        }
-        final stats = snap.data;
-        if (stats == null) {
-          return Center(
-            child: Text(
-              uiStrings['statsOriginalsEmpty']?[locale] ??
-                  'Original-language data not loaded.',
-              style: TextStyle(color: scheme.onSurfaceVariant),
-            ),
-          );
-        }
-        return Scrollbar(
-          controller: _scrollCtrl,
-          thumbVisibility: true,
-          child: ListView(
-          controller: _scrollCtrl,
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
-          children: [
-            _StatGrid(
-              settings: settings,
-              scheme: scheme,
-              tiles: [
-                _StatTile(
-                  label: uiStrings['statsOriginalsHebrewTotal']
-                          ?[locale] ??
-                      'Hebrew words',
-                  value: _humanNum(stats.totalHebrewWords),
-                  scheme: scheme,
+      future: _aggregateFuture,
+      builder: (context, aggSnap) {
+        return FutureBuilder<List<OriginalsLemma>>(
+          future: _lemmasFuture,
+          builder: (context, lemmasSnap) {
+            if (aggSnap.connectionState != ConnectionState.done ||
+                lemmasSnap.connectionState != ConnectionState.done) {
+              return const Center(child: CircularProgressIndicator());
+            }
+            final stats = aggSnap.data;
+            final allLemmas = lemmasSnap.data;
+            if (stats == null || allLemmas == null) {
+              return Center(
+                child: Text(
+                  uiStrings['statsOriginalsEmpty']?[locale] ??
+                      'Original-language data not loaded.',
+                  style: TextStyle(color: scheme.onSurfaceVariant),
                 ),
-                _StatTile(
-                  label: uiStrings['statsOriginalsGreekTotal']?[locale] ??
-                      'Greek words',
-                  value: _humanNum(stats.totalGreekWords),
-                  scheme: scheme,
+              );
+            }
+            // Compute the view-model. When _bookFilter == 'all' this
+            // is the whole-Bible aggregate; otherwise it's a derived
+            // slice keyed off lemma.byBook[bookName].
+            final view = _buildViewModel(stats, allLemmas);
+            return Scrollbar(
+              controller: _scrollCtrl,
+              thumbVisibility: true,
+              child: SingleChildScrollView(
+                controller: _scrollCtrl,
+                child: Center(
+                  child: ConstrainedBox(
+                    // Round 56: cap layout width at 1200 so the
+                    // Overview doesn't sprawl edge-to-edge on
+                    // 4K monitors. Below 1200 the layout fluidly
+                    // fills available width via LayoutBuilder
+                    // inside _StatGrid + the side-by-side lemma
+                    // row.
+                    constraints:
+                        const BoxConstraints(maxWidth: 1200),
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(
+                          16, 16, 16, 24),
+                      child: _buildBody(
+                        view: view,
+                        locale: locale,
+                        settings: settings,
+                        scheme: scheme,
+                        availableBooks: stats.bookStats
+                            .map((b) => b.englishBook)
+                            .toSet(),
+                      ),
+                    ),
+                  ),
                 ),
-                _StatTile(
-                  label: uiStrings['statsOriginalsHebrewUnique']
-                          ?[locale] ??
-                      'Hebrew lemmas',
-                  value: _humanNum(stats.uniqueHebrewLemmas),
-                  scheme: scheme,
-                ),
-                _StatTile(
-                  label: uiStrings['statsOriginalsGreekUnique']?[locale] ??
-                      'Greek lemmas',
-                  value: _humanNum(stats.uniqueGreekLemmas),
-                  scheme: scheme,
-                ),
-                _StatTile(
-                  label: uiStrings['statsOriginalsHapax']?[locale] ??
-                      'Hapax legomena',
-                  value:
-                      '${stats.hebrewHapaxCount} + ${stats.greekHapaxCount}',
-                  scheme: scheme,
-                ),
-                _StatTile(
-                  label: uiStrings['statsOriginalsBooksCount']
-                          ?[locale] ??
-                      'Books covered',
-                  value: '${stats.bookStats.length}',
-                  scheme: scheme,
-                ),
-              ],
-            ),
-            const SizedBox(height: 20),
-            _StopwordToggleCard(
-              value: _hideStopwords,
-              locale: locale,
-              scheme: scheme,
-              settings: settings,
-              onChanged: (v) => setState(() => _hideStopwords = v),
-            ),
-            const SizedBox(height: 12),
-            // Round 56 (continued): user feedback "most frequent used
-            // words can be more in statistics" — bumped 5 → 25 each so
-            // the Overview tab actually shows a meaningful slice of
-            // the vocabulary (the Vocabulary tab still shows the full
-            // 100/100 with filters). Plus an optional stopword filter
-            // (`_hideStopwords`) so meaningless particles (the, and,
-            // in, of, …) don't crowd out the genuinely interesting
-            // theological vocabulary.
-            _TopLemmasCard(
-              title: uiStrings['statsOriginalsTopHebrew']?[locale] ??
-                  'Top Hebrew (OT)',
-              lemmas: _applyStopwordFilter(stats.topHebrew)
-                  .take(25)
-                  .toList(),
-              isHebrew: true,
-              scheme: scheme,
-              settings: settings,
-              locale: locale,
-            ),
-            const SizedBox(height: 12),
-            _TopLemmasCard(
-              title: uiStrings['statsOriginalsTopGreek']?[locale] ??
-                  'Top Greek (NT)',
-              lemmas: _applyStopwordFilter(stats.topGreek)
-                  .take(25)
-                  .toList(),
-              isHebrew: false,
-              scheme: scheme,
-              settings: settings,
-              locale: locale,
-            ),
-          ],
-          ),
+              ),
+            );
+          },
         );
       },
     );
   }
 
-  /// Apply the [_hideStopwords] toggle: when ON, drops entries flagged
-  /// as `isStopword` (the curated set of grammatical particles). When
-  /// OFF, returns the input list unchanged.
+  Widget _buildBody({
+    required _OverviewView view,
+    required String locale,
+    required AppSettings settings,
+    required ColorScheme scheme,
+    required Set<String> availableBooks,
+  }) {
+    return LayoutBuilder(
+      builder: (ctx, c) {
+        // ≥ 900px → render the two Top-25 lemma cards side-by-side
+        // (each in a 50% column). Below that, stack vertically.
+        // The threshold matches the iPad-portrait breakpoint where
+        // a single column starts wasting horizontal space.
+        final wide = c.maxWidth >= 900;
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            _OverviewFilterBar(
+              locale: locale,
+              settings: settings,
+              scheme: scheme,
+              bookFilter: _bookFilter,
+              hideStopwords: _hideStopwords,
+              availableBooks: availableBooks,
+              onBookChanged: (v) =>
+                  setState(() => _bookFilter = v),
+              onStopwordChanged: (v) =>
+                  setState(() => _hideStopwords = v),
+            ),
+            const SizedBox(height: 16),
+            _StatGrid(
+              settings: settings,
+              scheme: scheme,
+              tiles: _statTilesFor(view, locale, scheme),
+            ),
+            const SizedBox(height: 20),
+            if (wide)
+              IntrinsicHeight(
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (view.showHebrew)
+                      Expanded(
+                        child: _TopLemmasCard(
+                          title: _topHebrewTitle(view, locale),
+                          lemmas: _applyStopwordFilter(view.topHebrew)
+                              .take(25)
+                              .toList(),
+                          isHebrew: true,
+                          scheme: scheme,
+                          settings: settings,
+                          locale: locale,
+                          countContext: view.bookFilter,
+                        ),
+                      ),
+                    if (view.showHebrew && view.showGreek)
+                      const SizedBox(width: 12),
+                    if (view.showGreek)
+                      Expanded(
+                        child: _TopLemmasCard(
+                          title: _topGreekTitle(view, locale),
+                          lemmas: _applyStopwordFilter(view.topGreek)
+                              .take(25)
+                              .toList(),
+                          isHebrew: false,
+                          scheme: scheme,
+                          settings: settings,
+                          locale: locale,
+                          countContext: view.bookFilter,
+                        ),
+                      ),
+                  ],
+                ),
+              )
+            else ...[
+              if (view.showHebrew)
+                _TopLemmasCard(
+                  title: _topHebrewTitle(view, locale),
+                  lemmas: _applyStopwordFilter(view.topHebrew)
+                      .take(25)
+                      .toList(),
+                  isHebrew: true,
+                  scheme: scheme,
+                  settings: settings,
+                  locale: locale,
+                  countContext: view.bookFilter,
+                ),
+              if (view.showHebrew && view.showGreek)
+                const SizedBox(height: 12),
+              if (view.showGreek)
+                _TopLemmasCard(
+                  title: _topGreekTitle(view, locale),
+                  lemmas: _applyStopwordFilter(view.topGreek)
+                      .take(25)
+                      .toList(),
+                  isHebrew: false,
+                  scheme: scheme,
+                  settings: settings,
+                  locale: locale,
+                  countContext: view.bookFilter,
+                ),
+            ],
+          ],
+        );
+      },
+    );
+  }
+
+  String _topHebrewTitle(_OverviewView view, String locale) {
+    final base = uiStrings['statsOriginalsTopHebrew']?[locale] ??
+        'Top Hebrew (OT)';
+    if (view.bookFilter == null) return base;
+    return '$base · ${localeAwareBookName(view.bookFilter!, locale)}';
+  }
+
+  String _topGreekTitle(_OverviewView view, String locale) {
+    final base = uiStrings['statsOriginalsTopGreek']?[locale] ??
+        'Top Greek (NT)';
+    if (view.bookFilter == null) return base;
+    return '$base · ${localeAwareBookName(view.bookFilter!, locale)}';
+  }
+
+  List<_StatTile> _statTilesFor(
+      _OverviewView view, String locale, ColorScheme scheme) {
+    final tiles = <_StatTile>[];
+    if (view.showHebrew) {
+      tiles.add(_StatTile(
+        label: uiStrings['statsOriginalsHebrewTotal']?[locale] ??
+            'Hebrew words',
+        value: _humanNum(view.hebrewWords),
+        scheme: scheme,
+      ));
+      tiles.add(_StatTile(
+        label: uiStrings['statsOriginalsHebrewUnique']?[locale] ??
+            'Hebrew lemmas',
+        value: _humanNum(view.hebrewUnique),
+        scheme: scheme,
+      ));
+    }
+    if (view.showGreek) {
+      tiles.add(_StatTile(
+        label: uiStrings['statsOriginalsGreekTotal']?[locale] ??
+            'Greek words',
+        value: _humanNum(view.greekWords),
+        scheme: scheme,
+      ));
+      tiles.add(_StatTile(
+        label: uiStrings['statsOriginalsGreekUnique']?[locale] ??
+            'Greek lemmas',
+        value: _humanNum(view.greekUnique),
+        scheme: scheme,
+      ));
+    }
+    if (view.bookFilter == null) {
+      tiles.add(_StatTile(
+        label: uiStrings['statsOriginalsHapax']?[locale] ??
+            'Hapax legomena',
+        value: '${view.hebrewHapax} + ${view.greekHapax}',
+        scheme: scheme,
+      ));
+      tiles.add(_StatTile(
+        label: uiStrings['statsOriginalsBooksCount']?[locale] ??
+            'Books covered',
+        value: '${view.booksCovered}',
+        scheme: scheme,
+      ));
+    } else {
+      // Per-book tile: total words across both languages (only one
+      // will be non-zero for any single OT or NT book).
+      tiles.add(_StatTile(
+        label: uiStrings['statsOriginalsBookTotalWords']?[locale] ??
+            'Total words in book',
+        value: _humanNum(view.hebrewWords + view.greekWords),
+        scheme: scheme,
+      ));
+      tiles.add(_StatTile(
+        label: uiStrings['statsOriginalsBookUniqueLemmas']?[locale] ??
+            'Unique lemmas in book',
+        value: _humanNum(view.hebrewUnique + view.greekUnique),
+        scheme: scheme,
+      ));
+    }
+    return tiles;
+  }
+
+  /// Compute the view model for the current filter setting.
+  /// When `_bookFilter == 'all'` returns the whole-Bible figures
+  /// from [stats]. When set to a specific book, recomputes:
+  ///   • word totals: sum of `lemma.byBook[book]` across that
+  ///     language's lemmas
+  ///   • unique lemmas: how many lemmas appear at least once in
+  ///     that book
+  ///   • Top lemmas: re-sorted by `byBook[book]` count
+  /// `showHebrew` / `showGreek` flip off when the selected book is
+  /// pure-OT or pure-NT respectively, so we don't waste rows on
+  /// "Greek words: 0" when the user is reading Genesis.
+  _OverviewView _buildViewModel(
+      OriginalsAggregateStats stats, List<OriginalsLemma> allLemmas) {
+    if (_bookFilter == 'all') {
+      return _OverviewView(
+        bookFilter: null,
+        hebrewWords: stats.totalHebrewWords,
+        greekWords: stats.totalGreekWords,
+        hebrewUnique: stats.uniqueHebrewLemmas,
+        greekUnique: stats.uniqueGreekLemmas,
+        hebrewHapax: stats.hebrewHapaxCount,
+        greekHapax: stats.greekHapaxCount,
+        booksCovered: stats.bookStats.length,
+        topHebrew: stats.topHebrew,
+        topGreek: stats.topGreek,
+        showHebrew: true,
+        showGreek: true,
+      );
+    }
+    final book = _bookFilter;
+    int hebrewWords = 0;
+    int greekWords = 0;
+    int hebrewUnique = 0;
+    int greekUnique = 0;
+    final hebrewBookHits = <_BookHit>[];
+    final greekBookHits = <_BookHit>[];
+    for (final l in allLemmas) {
+      final c = l.byBook[book] ?? 0;
+      if (c == 0) continue;
+      if (l.isHebrew) {
+        hebrewWords += c;
+        hebrewUnique += 1;
+        hebrewBookHits.add(_BookHit(l, c));
+      } else {
+        greekWords += c;
+        greekUnique += 1;
+        greekBookHits.add(_BookHit(l, c));
+      }
+    }
+    hebrewBookHits.sort((a, b) => b.count.compareTo(a.count));
+    greekBookHits.sort((a, b) => b.count.compareTo(a.count));
+    // Build virtual lemmas with the book-specific count overlaid
+    // onto a fresh `byBook` so the rendered count column reflects
+    // the in-book frequency, not the global one. The original lemma
+    // metadata (lemma string, gloss, transliteration) stays
+    // untouched.
+    final topHebrew = hebrewBookHits
+        .map((h) => OriginalsLemma(
+              strongs: h.lemma.strongs,
+              isHebrew: true,
+              lemma: h.lemma.lemma,
+              translit: h.lemma.translit,
+              glossEn: h.lemma.glossEn,
+              glossZhHans: h.lemma.glossZhHans,
+              glossZhHant: h.lemma.glossZhHant,
+              count: h.count,
+              byBook: h.lemma.byBook,
+            ))
+        .toList();
+    final topGreek = greekBookHits
+        .map((h) => OriginalsLemma(
+              strongs: h.lemma.strongs,
+              isHebrew: false,
+              lemma: h.lemma.lemma,
+              translit: h.lemma.translit,
+              glossEn: h.lemma.glossEn,
+              glossZhHans: h.lemma.glossZhHans,
+              glossZhHant: h.lemma.glossZhHant,
+              count: h.count,
+              byBook: h.lemma.byBook,
+            ))
+        .toList();
+    return _OverviewView(
+      bookFilter: book,
+      hebrewWords: hebrewWords,
+      greekWords: greekWords,
+      hebrewUnique: hebrewUnique,
+      greekUnique: greekUnique,
+      hebrewHapax: 0,
+      greekHapax: 0,
+      booksCovered: 1,
+      topHebrew: topHebrew,
+      topGreek: topGreek,
+      // Auto-hide the testament that has no presence in this book.
+      showHebrew: hebrewWords > 0,
+      showGreek: greekWords > 0,
+    );
+  }
+
+  /// Apply the [_hideStopwords] toggle: when ON, drops entries
+  /// flagged as `isStopword`. When OFF, returns the input list
+  /// unchanged.
   List<OriginalsLemma> _applyStopwordFilter(List<OriginalsLemma> input) {
     if (!_hideStopwords) return input;
     return input.where((l) => !l.isStopword).toList();
+  }
+}
+
+/// Rendered view-model for one Overview frame. The `_buildViewModel`
+/// helper produces this from either the whole-Bible aggregate or a
+/// per-book derivation. Keeping the rendering pure-from-this-struct
+/// keeps `build()` short and makes the wide-screen layout trivial
+/// to reason about.
+class _OverviewView {
+  final String? bookFilter; // null = whole Bible
+  final int hebrewWords;
+  final int greekWords;
+  final int hebrewUnique;
+  final int greekUnique;
+  final int hebrewHapax;
+  final int greekHapax;
+  final int booksCovered;
+  final List<OriginalsLemma> topHebrew;
+  final List<OriginalsLemma> topGreek;
+  final bool showHebrew;
+  final bool showGreek;
+
+  const _OverviewView({
+    required this.bookFilter,
+    required this.hebrewWords,
+    required this.greekWords,
+    required this.hebrewUnique,
+    required this.greekUnique,
+    required this.hebrewHapax,
+    required this.greekHapax,
+    required this.booksCovered,
+    required this.topHebrew,
+    required this.topGreek,
+    required this.showHebrew,
+    required this.showGreek,
+  });
+}
+
+class _BookHit {
+  final OriginalsLemma lemma;
+  final int count;
+  const _BookHit(this.lemma, this.count);
+}
+
+/// Round 56: filter row at the top of the Overview tab. Holds the
+/// book-filter button + active-filter chip + stopword toggle.
+/// Same modal-sheet pattern as the songs / trivia pages so users
+/// see consistent affordances across the app.
+class _OverviewFilterBar extends StatelessWidget {
+  final String locale;
+  final AppSettings settings;
+  final ColorScheme scheme;
+  final String bookFilter;
+  final bool hideStopwords;
+  final Set<String> availableBooks;
+  final ValueChanged<String> onBookChanged;
+  final ValueChanged<bool> onStopwordChanged;
+
+  const _OverviewFilterBar({
+    required this.locale,
+    required this.settings,
+    required this.scheme,
+    required this.bookFilter,
+    required this.hideStopwords,
+    required this.availableBooks,
+    required this.onBookChanged,
+    required this.onStopwordChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final filterLabel =
+        uiStrings['sermonFilterByPassage']?[locale] ?? 'Filter';
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                bookFilter == 'all'
+                    ? (uiStrings['statsOriginalsScopeAll']?[locale] ??
+                        'Whole Bible')
+                    : (uiStrings['statsOriginalsScopeBook']?[locale] ??
+                            'Showing: {book}')
+                        .replaceAll('{book}',
+                            localeAwareBookName(bookFilter, locale)),
+                style: TextStyle(
+                  fontSize: 13,
+                  color: scheme.onSurface.withValues(alpha: 0.65),
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+            // Hide-stopwords toggle moved inline as a compact chip
+            // button — frees vertical space the old card took up.
+            FilterChip(
+              avatar: Icon(
+                hideStopwords
+                    ? Icons.filter_alt
+                    : Icons.filter_alt_off,
+                size: 16,
+              ),
+              label: Text(
+                uiStrings['statsOriginalsHideStopwordsTitle']
+                        ?[locale] ??
+                    'Hide common particles',
+                style: const TextStyle(fontSize: 12),
+              ),
+              selected: hideStopwords,
+              onSelected: onStopwordChanged,
+            ),
+            const SizedBox(width: 6),
+            OutlinedButton.icon(
+              onPressed: () => _openBookSheet(context),
+              icon: Icon(
+                bookFilter == 'all'
+                    ? Icons.filter_list
+                    : Icons.filter_list_alt,
+                size: 18,
+              ),
+              label: Text(filterLabel,
+                  style: const TextStyle(fontSize: 13)),
+              style: OutlinedButton.styleFrom(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12),
+                backgroundColor: bookFilter == 'all'
+                    ? null
+                    : scheme.primaryContainer
+                        .withValues(alpha: 0.4),
+              ),
+            ),
+          ],
+        ),
+        if (bookFilter != 'all') ...[
+          const SizedBox(height: 8),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: InputChip(
+              avatar: Icon(Icons.bookmark,
+                  size: 16, color: scheme.primary),
+              label: Text(
+                  localeAwareBookName(bookFilter, locale)),
+              onDeleted: () => onBookChanged('all'),
+              backgroundColor:
+                  scheme.primaryContainer.withValues(alpha: 0.5),
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+
+  void _openBookSheet(BuildContext context) {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Theme.of(context).colorScheme.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius:
+            BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (sheetCtx) {
+        return _OverviewBookFilterSheet(
+          locale: locale,
+          availableBooks: availableBooks,
+          initialBook:
+              bookFilter == 'all' ? null : bookFilter,
+          onApply: (book) {
+            onBookChanged(book ?? 'all');
+            Navigator.of(sheetCtx).pop();
+          },
+          onClear: () {
+            onBookChanged('all');
+            Navigator.of(sheetCtx).pop();
+          },
+        );
+      },
+    );
+  }
+}
+
+/// Modal book picker for the Overview filter — copies the layout
+/// of `_TriviaBookFilterSheet` so the affordance is the same
+/// everywhere.
+class _OverviewBookFilterSheet extends StatefulWidget {
+  final String locale;
+  final Set<String> availableBooks;
+  final String? initialBook;
+  final void Function(String? book) onApply;
+  final VoidCallback onClear;
+
+  const _OverviewBookFilterSheet({
+    required this.locale,
+    required this.availableBooks,
+    required this.initialBook,
+    required this.onApply,
+    required this.onClear,
+  });
+
+  @override
+  State<_OverviewBookFilterSheet> createState() =>
+      _OverviewBookFilterSheetState();
+}
+
+class _OverviewBookFilterSheetState
+    extends State<_OverviewBookFilterSheet> {
+  String? _selectedBook;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedBook = widget.initialBook;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final locale = widget.locale;
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.bookmark,
+                    size: 18, color: scheme.primary),
+                const SizedBox(width: 8),
+                Text(
+                  uiStrings['sermonFilterByPassage']?[locale] ??
+                      'Filter by passage',
+                  style: const TextStyle(
+                      fontSize: 16, fontWeight: FontWeight.w600),
+                ),
+                const Spacer(),
+                if (widget.initialBook != null)
+                  TextButton(
+                    onPressed: widget.onClear,
+                    child: Text(
+                        uiStrings['clearFilter']?[locale] ?? 'Clear'),
+                  ),
+                IconButton(
+                  icon: const Icon(Icons.close, size: 20),
+                  onPressed: () =>
+                      Navigator.of(context).maybePop(),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            ConstrainedBox(
+              constraints: BoxConstraints(
+                maxHeight:
+                    MediaQuery.of(context).size.height * 0.55,
+              ),
+              child: SingleChildScrollView(
+                child: Wrap(
+                  spacing: 6,
+                  runSpacing: 6,
+                  children: [
+                    for (final b in standardBookOrder)
+                      _OverviewBookChip(
+                        book: b,
+                        locale: locale,
+                        hasData: widget.availableBooks.contains(b),
+                        selected: _selectedBook == b,
+                        onTap: () => setState(() {
+                          _selectedBook =
+                              _selectedBook == b ? null : b;
+                        }),
+                      ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 14),
+            FilledButton(
+              onPressed: () => widget.onApply(_selectedBook),
+              child: Text(
+                  uiStrings['apply']?[locale] ?? 'Apply'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _OverviewBookChip extends StatelessWidget {
+  final String book;
+  final String locale;
+  final bool hasData;
+  final bool selected;
+  final VoidCallback onTap;
+  const _OverviewBookChip({
+    required this.book,
+    required this.locale,
+    required this.hasData,
+    required this.selected,
+    required this.onTap,
+  });
+  @override
+  Widget build(BuildContext context) {
+    final localized = localeAwareBookName(book, locale, '');
+    return ChoiceChip(
+      label: Text(
+        localized,
+        style: TextStyle(
+          fontSize: 13,
+          color: hasData
+              ? null
+              : Theme.of(context).disabledColor,
+        ),
+      ),
+      selected: selected,
+      onSelected: hasData ? (_) => onTap() : null,
+    );
   }
 }
 
@@ -972,7 +1527,25 @@ class _StatGrid extends StatelessWidget {
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (ctx, c) {
-        final cols = c.maxWidth < 380 ? 2 : 3;
+        // Round 56 (continued — wide-screen redesign): scale the
+        // column count with available width so tiles stay roughly
+        // 200-240 px wide on every device class, instead of getting
+        // stretched into wide rectangles on iPad / desktop.
+        //   <  380 → 2 cols  (compact phone)
+        //   < 600  → 3       (phone landscape / small tablet)
+        //   < 900  → 4       (iPad portrait)
+        //   < 1200 → 5       (iPad landscape)
+        //   ≥ 1200 → 6       (desktop / 4K capped at 1200 by parent)
+        final w = c.maxWidth;
+        final int cols = w < 380
+            ? 2
+            : w < 600
+                ? 3
+                : w < 900
+                    ? 4
+                    : w < 1200
+                        ? 5
+                        : 6;
         return GridView.count(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
@@ -1124,6 +1697,10 @@ class _TopLemmasCard extends StatelessWidget {
   final ColorScheme scheme;
   final AppSettings settings;
   final String locale;
+  /// When set, shown as a small caption under the title — e.g.
+  /// 'Genesis' so the user knows the count column reflects in-book
+  /// frequency, not global. Null = whole-Bible scope.
+  final String? countContext;
   const _TopLemmasCard({
     required this.title,
     required this.lemmas,
@@ -1131,6 +1708,7 @@ class _TopLemmasCard extends StatelessWidget {
     required this.scheme,
     required this.settings,
     required this.locale,
+    this.countContext,
   });
 
   @override
@@ -1280,52 +1858,66 @@ class _OriginalsBooksTabState extends State<_OriginalsBooksTab>
         } else if (_filter == 'nt') {
           rows = rows.where((b) => !b.isOt).toList();
         }
+        // Round 56 (continued — wide-screen): center the list
+        // and cap at 1200 px so it doesn't stretch edge-to-edge
+        // on iPad / desktop.
         return Scrollbar(
           controller: _scrollCtrl,
           thumbVisibility: true,
-          child: ListView.separated(
-          controller: _scrollCtrl,
-          padding: const EdgeInsets.fromLTRB(12, 8, 12, 24),
-          itemCount: rows.length + 1,
-          separatorBuilder: (_, __) => const SizedBox(height: 4),
-          itemBuilder: (_, i) {
-            if (i == 0) {
-              return Padding(
-                padding: const EdgeInsets.fromLTRB(0, 4, 0, 12),
-                child: SegmentedButton<String>(
-                  segments: [
-                    ButtonSegment(
-                      value: 'all',
-                      label: Text(uiStrings['statsOriginalsAll']?[locale] ??
-                          'All'),
-                    ),
-                    ButtonSegment(
-                      value: 'ot',
-                      label: Text(uiStrings['statsBooksOT']?[locale] ??
-                          'OT'),
-                    ),
-                    ButtonSegment(
-                      value: 'nt',
-                      label: Text(uiStrings['statsBooksNT']?[locale] ??
-                          'NT'),
-                    ),
-                  ],
-                  selected: {_filter},
-                  onSelectionChanged: (s) =>
-                      setState(() => _filter = s.first),
-                  multiSelectionEnabled: false,
-                  showSelectedIcon: false,
-                ),
-              );
-            }
-            final book = rows[i - 1];
-            return _BookOriginalsRow(
-              book: book,
-              scheme: scheme,
-              settings: settings,
-              locale: locale,
-            );
-          },
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 1200),
+              child: ListView.separated(
+                controller: _scrollCtrl,
+                padding:
+                    const EdgeInsets.fromLTRB(12, 8, 12, 24),
+                itemCount: rows.length + 1,
+                separatorBuilder: (_, __) =>
+                    const SizedBox(height: 4),
+                itemBuilder: (_, i) {
+                  if (i == 0) {
+                    return Padding(
+                      padding:
+                          const EdgeInsets.fromLTRB(0, 4, 0, 12),
+                      child: SegmentedButton<String>(
+                        segments: [
+                          ButtonSegment(
+                            value: 'all',
+                            label: Text(
+                                uiStrings['statsOriginalsAll']?[locale] ??
+                                    'All'),
+                          ),
+                          ButtonSegment(
+                            value: 'ot',
+                            label: Text(
+                                uiStrings['statsBooksOT']?[locale] ??
+                                    'OT'),
+                          ),
+                          ButtonSegment(
+                            value: 'nt',
+                            label: Text(
+                                uiStrings['statsBooksNT']?[locale] ??
+                                    'NT'),
+                          ),
+                        ],
+                        selected: {_filter},
+                        onSelectionChanged: (s) =>
+                            setState(() => _filter = s.first),
+                        multiSelectionEnabled: false,
+                        showSelectedIcon: false,
+                      ),
+                    );
+                  }
+                  final book = rows[i - 1];
+                  return _BookOriginalsRow(
+                    book: book,
+                    scheme: scheme,
+                    settings: settings,
+                    locale: locale,
+                  );
+                },
+              ),
+            ),
           ),
         );
       },
@@ -1532,7 +2124,10 @@ class _OriginalsTabState extends State<_OriginalsTab>
         return Scrollbar(
           controller: _scrollCtrl,
           thumbVisibility: true,
-          child: ListView.separated(
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 1200),
+              child: ListView.separated(
           controller: _scrollCtrl,
           padding: const EdgeInsets.fromLTRB(12, 8, 12, 24),
           itemCount: rows.length + 2, // header + rows + footer
@@ -1552,6 +2147,8 @@ class _OriginalsTabState extends State<_OriginalsTab>
               rank: i,
             );
           },
+              ),
+            ),
           ),
         );
       },
