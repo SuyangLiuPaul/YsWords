@@ -324,6 +324,95 @@ const uiStrings = {
     'zh-Hant': '在分布表中查看',
     'en': 'View in Distribution',
   },
+  // Round 56: Lookup tab redesign — popular-passages quick picks +
+  // features card. Topic descriptors are short factual hints
+  // (single phrase) so the user knows what each passage is about
+  // before tapping.
+  'lookupPopularTitle': {
+    'zh-Hans': '推荐经文',
+    'zh-Hant': '推薦經文',
+    'en': 'Suggested passages',
+  },
+  'lookupPopularDesc': {
+    'zh-Hans': '点击直接进入释经面板。',
+    'zh-Hant': '點擊直接進入釋經面板。',
+    'en': 'Tap to jump straight into the exegesis sheet.',
+  },
+  'lookupTopicCreation': {
+    'zh-Hans': '创造',
+    'zh-Hant': '創造',
+    'en': 'Creation',
+  },
+  'lookupTopicShepherd': {
+    'zh-Hans': '牧人',
+    'zh-Hant': '牧人',
+    'en': 'The Shepherd',
+  },
+  'lookupTopicServant': {
+    'zh-Hans': '受苦的仆人',
+    'zh-Hant': '受苦的僕人',
+    'en': 'Suffering Servant',
+  },
+  'lookupTopicLogos': {
+    'zh-Hans': '道',
+    'zh-Hant': '道',
+    'en': 'The Word',
+  },
+  'lookupTopicLove': {
+    'zh-Hans': '神的爱',
+    'zh-Hant': '神的愛',
+    'en': "God's love",
+  },
+  'lookupTopicProvidence': {
+    'zh-Hans': '万事互相效力',
+    'zh-Hant': '萬事互相效力',
+    'en': 'All things together',
+  },
+  'lookupTopicTriad': {
+    'zh-Hans': '信望爱',
+    'zh-Hant': '信望愛',
+    'en': 'Faith, hope, love',
+  },
+  'lookupTopicFaith': {
+    'zh-Hans': '信',
+    'zh-Hant': '信',
+    'en': 'Faith',
+  },
+  'lookupFeaturesTitle': {
+    'zh-Hans': '释经面板里你能做什么',
+    'zh-Hant': '釋經面板裡你能做什麼',
+    'en': 'Inside the exegesis sheet',
+  },
+  'lookupFeatureWords': {
+    'zh-Hans': '字字对照原文（希伯来文 / 希腊文）+ 音译 + 字义',
+    'zh-Hant': '字字對照原文（希伯來文 / 希臘文）+ 音譯 + 字義',
+    'en':
+        'Word-by-word original-language breakdown with transliteration and gloss.',
+  },
+  'lookupFeatureTap': {
+    'zh-Hans': '点击任一原文字，看完整 Strong\'s 词条 — 字义、词源、出现次数',
+    'zh-Hant': '點擊任一原文字，看完整 Strong\'s 詞條 — 字義、詞源、出現次數',
+    'en':
+        "Tap any word for the full Strong's entry — meaning, derivation, occurrence count.",
+  },
+  'lookupFeatureFamily': {
+    'zh-Hans': '词族（亲属词）+ 同义词对比，相关字根一目了然',
+    'zh-Hant': '詞族（親屬詞）+ 同義詞對比，相關字根一目了然',
+    'en':
+        'Word family + synonym comparison — see related lemmas at a glance.',
+  },
+  'lookupFeatureConcordance': {
+    'zh-Hans': '可点击的经文索引（concordance），该字出现的每一节经文一键直达',
+    'zh-Hant': '可點擊的經文索引（concordance），該字出現的每一節經文一鍵直達',
+    'en':
+        'Tappable concordance — every verse the word appears in, one tap to navigate.',
+  },
+  'lookupFeatureCopy': {
+    'zh-Hans': '一键复制原文对照表格，方便讲道预备或笔记',
+    'zh-Hant': '一鍵複製原文對照表格，方便講道預備或筆記',
+    'en':
+        'Copy the interlinear table to clipboard for sermon prep or notes.',
+  },
   // Round 56: Word Distribution tab — exposes the
   // WordDistributionTable widget (previously only reachable via
   // tap-a-verse → originals sheet → tap a word → "show

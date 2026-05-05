@@ -1999,16 +1999,53 @@ class _StrongsLookupTabState extends State<_StrongsLookupTab>
     final scheme = Theme.of(context).colorScheme;
     final locale = widget.locale;
     final settings = widget.settings;
-    return Center(
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 900),
-        child: SingleChildScrollView(
-          child: _PassageStudyCard(
-            locale: locale,
-            settings: settings,
-            scheme: scheme,
-            onPickVerse: () => _openVersePicker(context),
-            onContinueReading: () => _continueReading(context),
+    // Round 56 (continued — Lookup tab redesign): the previous
+    // single-card centered layout looked sparse on iPad / desktop
+    // (one small card floating in a wide empty page). User feedback:
+    // "感觉原文查询，middle aligned 感觉看起来不好看". Page is now a
+    // top-aligned column of three sections: hero CTA, popular-
+    // passages quick picks, exegesis features card. Still capped at
+    // 900 px so a 4K monitor doesn't sprawl, but the column is now
+    // dense enough that the centered layout feels intentional.
+    return Scrollbar(
+      thumbVisibility: true,
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 900),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                _PassageStudyCard(
+                  locale: locale,
+                  settings: settings,
+                  scheme: scheme,
+                  onPickVerse: () => _openVersePicker(context),
+                  onContinueReading: () =>
+                      _continueReading(context),
+                ),
+                const SizedBox(height: 16),
+                _PopularPassagesCard(
+                  locale: locale,
+                  settings: settings,
+                  scheme: scheme,
+                  onTap: (book, chapter, verse) =>
+                      _openOriginalsSheetFor(
+                    context,
+                    book: book,
+                    chapter: chapter,
+                    verse: verse,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                _ExegesisFeaturesCard(
+                  locale: locale,
+                  settings: settings,
+                  scheme: scheme,
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -2806,6 +2843,303 @@ class _PassageStudyCard extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// Round 56 (continued — Lookup redesign): one entry in the
+/// popular-passages quick-pick row. The reference itself is a
+/// factual citation; the topic hint is my own short descriptor
+/// so users have a hint of what the passage is about without
+/// having to know it cold.
+class _PopularPassage {
+  final String englishBook;
+  final int chapter;
+  final int verse;
+  /// Short topic descriptor key from uiStrings; localised via
+  /// the same map as the rest of the page.
+  final String topicKey;
+  const _PopularPassage(
+      this.englishBook, this.chapter, this.verse, this.topicKey);
+}
+
+const List<_PopularPassage> _popularPassages = [
+  _PopularPassage('Genesis', 1, 1, 'lookupTopicCreation'),
+  _PopularPassage('Psalms', 23, 1, 'lookupTopicShepherd'),
+  _PopularPassage('Isaiah', 53, 5, 'lookupTopicServant'),
+  _PopularPassage('John', 1, 1, 'lookupTopicLogos'),
+  _PopularPassage('John', 3, 16, 'lookupTopicLove'),
+  _PopularPassage('Romans', 8, 28, 'lookupTopicProvidence'),
+  _PopularPassage('1 Corinthians', 13, 13, 'lookupTopicTriad'),
+  _PopularPassage('Hebrews', 11, 1, 'lookupTopicFaith'),
+];
+
+/// Quick-pick row of well-known passages. Tapping a chip opens
+/// the OriginalsSheet directly without going through the full
+/// 3-step picker — saves a few taps for the passages users come
+/// back to most often.
+class _PopularPassagesCard extends StatelessWidget {
+  final String locale;
+  final AppSettings settings;
+  final ColorScheme scheme;
+  /// (book, chapter, verse) → caller resolves through
+  /// MainProvider.verses + opens the sheet.
+  final void Function(String book, int chapter, int verse) onTap;
+
+  const _PopularPassagesCard({
+    required this.locale,
+    required this.settings,
+    required this.scheme,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final mp = context.read<MainProvider>();
+    final title = uiStrings['lookupPopularTitle']?[locale] ??
+        'Suggested passages';
+    final desc = uiStrings['lookupPopularDesc']?[locale] ??
+        'Tap to jump straight into the exegesis sheet.';
+    return Container(
+      padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+      decoration: BoxDecoration(
+        color: scheme.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+            color: scheme.outlineVariant.withValues(alpha: 0.5)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.auto_awesome_rounded,
+                  color: scheme.primary, size: 20),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  title,
+                  style: TextStyle(
+                    fontFamily: settings.fontFamily,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    color: scheme.onSurface,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Text(
+            desc,
+            style: TextStyle(
+              fontFamily: settings.fontFamily,
+              fontSize: 12,
+              color: scheme.onSurface.withValues(alpha: 0.65),
+              height: 1.4,
+            ),
+          ),
+          const SizedBox(height: 12),
+          LayoutBuilder(builder: (ctx, c) {
+            // 4 columns on wide, 2 on phone — keeps each chip's
+            // text readable without truncation.
+            final cols = c.maxWidth >= 600 ? 4 : 2;
+            return Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                for (final p in _popularPassages)
+                  SizedBox(
+                    width: (c.maxWidth - (cols - 1) * 8) / cols,
+                    child: _PopularPassageChip(
+                      passage: p,
+                      locale: locale,
+                      settings: settings,
+                      scheme: scheme,
+                      onTap: () => onTap(
+                        _resolveLocalBook(mp, p.englishBook),
+                        p.chapter,
+                        p.verse,
+                      ),
+                    ),
+                  ),
+              ],
+            );
+          }),
+        ],
+      ),
+    );
+  }
+
+  /// Convert the canonical English book to the localized name the
+  /// MainProvider verse list uses (e.g. 'Genesis' → '创世记' for
+  /// CUVS). Falls back to the English name when no match.
+  String _resolveLocalBook(MainProvider mp, String englishBook) {
+    if (mp.verses.isEmpty) return englishBook;
+    return mp.verses
+        .firstWhere(
+          (v) => (toEnglish(v.book) ?? v.book) == englishBook,
+          orElse: () => mp.verses.first,
+        )
+        .book;
+  }
+}
+
+class _PopularPassageChip extends StatelessWidget {
+  final _PopularPassage passage;
+  final String locale;
+  final AppSettings settings;
+  final ColorScheme scheme;
+  final VoidCallback onTap;
+  const _PopularPassageChip({
+    required this.passage,
+    required this.locale,
+    required this.settings,
+    required this.scheme,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final ref =
+        '${localeAwareBookName(passage.englishBook, locale)} ${passage.chapter}:${passage.verse}';
+    final topic = uiStrings[passage.topicKey]?[locale] ?? '';
+    return Material(
+      color: scheme.primaryContainer.withValues(alpha: 0.30),
+      borderRadius: BorderRadius.circular(10),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(10),
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(10, 9, 10, 9),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                ref,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontFamily: settings.fontFamily,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  color: scheme.primary,
+                  fontFeatures: const [FontFeature.tabularFigures()],
+                ),
+              ),
+              if (topic.isNotEmpty) ...[
+                const SizedBox(height: 2),
+                Text(
+                  topic,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontFamily: settings.fontFamily,
+                    fontSize: 11,
+                    color: scheme.onSurface.withValues(alpha: 0.7),
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Static educational card explaining what the user can do once
+/// the OriginalsSheet pops. Adds visual weight to the otherwise
+/// sparse Lookup tab and answers the implicit "what is this for"
+/// question for first-time visitors.
+class _ExegesisFeaturesCard extends StatelessWidget {
+  final String locale;
+  final AppSettings settings;
+  final ColorScheme scheme;
+  const _ExegesisFeaturesCard({
+    required this.locale,
+    required this.settings,
+    required this.scheme,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final title = uiStrings['lookupFeaturesTitle']?[locale] ??
+        'Inside the exegesis sheet';
+    final features = <(IconData, String)>[
+      (Icons.translate_rounded,
+          uiStrings['lookupFeatureWords']?[locale] ??
+              'Word-by-word original-language breakdown with transliteration and gloss.'),
+      (Icons.touch_app_rounded,
+          uiStrings['lookupFeatureTap']?[locale] ??
+              'Tap any word for the full Strong\'s entry — meaning, derivation, occurrence count.'),
+      (Icons.diversity_3_rounded,
+          uiStrings['lookupFeatureFamily']?[locale] ??
+              'Word family + synonym comparison — see related lemmas at a glance.'),
+      (Icons.format_list_numbered_rounded,
+          uiStrings['lookupFeatureConcordance']?[locale] ??
+              'Tappable concordance — every verse the word appears in, one tap to navigate.'),
+      (Icons.copy_rounded,
+          uiStrings['lookupFeatureCopy']?[locale] ??
+              'Copy the interlinear table to clipboard for sermon prep or notes.'),
+    ];
+    return Container(
+      padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+      decoration: BoxDecoration(
+        color: scheme.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+            color: scheme.outlineVariant.withValues(alpha: 0.5)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.lightbulb_outline,
+                  color: scheme.primary, size: 20),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  title,
+                  style: TextStyle(
+                    fontFamily: settings.fontFamily,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    color: scheme.onSurface,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          for (var i = 0; i < features.length; i++) ...[
+            if (i > 0) const SizedBox(height: 10),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(features[i].$1,
+                    size: 18,
+                    color:
+                        scheme.primary.withValues(alpha: 0.85)),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    features[i].$2,
+                    style: TextStyle(
+                      fontFamily: settings.fontFamily,
+                      fontSize: 12,
+                      height: 1.45,
+                      color: scheme.onSurface.withValues(alpha: 0.8),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ],
       ),
     );
   }
