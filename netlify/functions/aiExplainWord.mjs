@@ -55,6 +55,25 @@ function langName(locale) {
 	}
 }
 
+// Round 56 (continued — locale fix): a locale-targeted system
+// preamble that the LLM reads BEFORE the user prompt. Putting the
+// language instruction here (in addition to repeating it at the
+// top of the user prompt) is what actually makes Gemini honour
+// 'zh-Hans' / 'zh-Hant' — when the directive sits at line 142 of
+// an otherwise-English prompt the model defaults to matching the
+// dominant context language. A locale-aware system message sets
+// the language frame *before* any English context arrives.
+function languageDirective(locale) {
+	switch (locale) {
+		case 'zh-Hans':
+			return '你必须用简体中文回答。整个回答都用简体中文，不要用英文（除了希伯来文 / 希腊文原文、Strong\'s 编号、地名人名等不可避免的部分）。';
+		case 'zh-Hant':
+			return '你必須用繁體中文回答。整個回答都用繁體中文，不要用英文（除了希伯來文 / 希臘文原文、Strong\'s 編號、地名人名等不可避免的部分）。';
+		default:
+			return 'Reply ONLY in English.';
+	}
+}
+
 // Map a (length, scope) selection to a target word range and the
 // scope-specific framing the prompt builder should use. The defaults
 // (length='default', scope='verse') reproduce the round-53 behaviour
@@ -124,6 +143,7 @@ function styleProfile(length, scope) {
 
 function buildPrompt({ strongs, lemma, translit, gloss, book, chapter, verse, verseText, locale, length, scope }) {
 	const lang = langName(locale);
+	const langDirective = languageDirective(locale);
 	const ref = `${book} ${chapter}:${verse}`;
 	const profile = styleProfile(length, scope);
 	const focus = profile.focus
@@ -131,6 +151,16 @@ function buildPrompt({ strongs, lemma, translit, gloss, book, chapter, verse, ve
 		.replaceAll('{chapter}', String(chapter))
 		.replaceAll('{ref}', ref);
 	const parts = [];
+	// Round 56 (continued — locale fix): the language directive is
+	// now the FIRST line of the user prompt + repeated as the LAST
+	// line + planted in the system message. This is the only
+	// configuration that reliably gets Gemini to switch off the
+	// English default for zh-Hans / zh-Hant — earlier we put it
+	// only in the middle of the prompt and the model kept defaulting
+	// to English because the surrounding context is overwhelmingly
+	// English.
+	parts.push(langDirective);
+	parts.push('');
 	parts.push(`You are a careful biblical-language exegete.`);
 	parts.push(`The reader is studying ${ref} and has already seen the ` +
 		`lexicon entry for **${lemma}**` +
@@ -139,7 +169,7 @@ function buildPrompt({ strongs, lemma, translit, gloss, book, chapter, verse, ve
 	parts.push(focus);
 	if (verseText) parts.push(`The verse reads: "${verseText}"`);
 	parts.push('');
-	parts.push(`Reply in ${lang}. Target length: **${profile.words}**. ` +
+	parts.push(`Target length: **${profile.words}**. ` +
 		`Plain prose, no headings, no bullets, no markdown. Always ` +
 		`finish your final sentence — never trail off mid-thought.`);
 	parts.push('');
@@ -148,6 +178,10 @@ function buildPrompt({ strongs, lemma, translit, gloss, book, chapter, verse, ve
 		`split. If the word is a proper name, focus on the name's ` +
 		`significance in the relevant narrative(s) rather than its ` +
 		`etymological gloss.`);
+	parts.push('');
+	// Repeat the language directive at the very end so the last
+	// thing the model sees before generating is "answer in X".
+	parts.push(`【${lang}】 ${langDirective}`);
 	return parts.join('\n');
 }
 
@@ -182,7 +216,30 @@ function geminiKeys() {
 	return out;
 }
 
-async function callGeminiWithKey(apiKey, prompt) {
+// Round 56 (continued — locale fix): system message now starts with
+// the language directive in the target language, so the model has
+// already locked in the response language by the time it reaches
+// any English context in the user prompt.
+function buildSystemMessage(locale) {
+	const langPrefix = locale === 'zh-Hans'
+		? '【请用简体中文回答】所有回答必须用简体中文。'
+		: locale === 'zh-Hant'
+			? '【請用繁體中文回答】所有回答必須用繁體中文。'
+			: '[Reply in English]';
+	return langPrefix + ' ' +
+		'You are a precise biblical-language exegete. You ' +
+		'reply with concise, accurate explanations grounded ' +
+		'in the cited verse. You do not invent details or ' +
+		'cite sources you have not seen. ' +
+		'Think briefly (a few seconds at most), then ' +
+		'produce the full answer in one go. Always finish ' +
+		'every sentence — never trail off mid-thought, ' +
+		'never end with a comma or with text like "the " ' +
+		'or "之"; if the response is being truncated, ' +
+		'wrap up with a complete final sentence.';
+}
+
+async function callGeminiWithKey(apiKey, prompt, locale) {
 	const url = `${BASE_URL}/chat/completions`;
 	const resp = await fetch(url, {
 		method: 'POST',
@@ -193,20 +250,7 @@ async function callGeminiWithKey(apiKey, prompt) {
 		body: JSON.stringify({
 			model: MODEL,
 			messages: [
-				{
-					role: 'system',
-					content:
-						'You are a precise biblical-language exegete. You ' +
-						'reply with concise, accurate explanations grounded ' +
-						'in the cited verse. You do not invent details or ' +
-						'cite sources you have not seen. ' +
-						'Think briefly (a few seconds at most), then ' +
-						'produce the full answer in one go. Always finish ' +
-						'every sentence — never trail off mid-thought, ' +
-						'never end with a comma or with text like "the " ' +
-						'or "之"; if the response is being truncated, ' +
-						'wrap up with a complete final sentence.',
-				},
+				{ role: 'system', content: buildSystemMessage(locale) },
 				{ role: 'user', content: prompt },
 			],
 			temperature: 0.2,
@@ -229,7 +273,7 @@ async function callGeminiWithKey(apiKey, prompt) {
 	return resp;
 }
 
-async function callGemini(prompt) {
+async function callGemini(prompt, locale) {
 	const keys = geminiKeys();
 	if (keys.length === 0) {
 		const err = new Error(
@@ -245,7 +289,7 @@ async function callGemini(prompt) {
 	for (let i = 0; i < keys.length; i++) {
 		const apiKey = keys[i];
 		const isLast = i === keys.length - 1;
-		const resp = await callGeminiWithKey(apiKey, prompt);
+		const resp = await callGeminiWithKey(apiKey, prompt, locale);
 		if (resp.ok) {
 			const json = await resp.json();
 			const choice = json.choices?.[0];
@@ -327,7 +371,7 @@ export default async (req) => {
 		const explanation = await callGemini(buildPrompt({
 			strongs, lemma, translit, gloss, book, chapter, verse, verseText, locale,
 			length, scope,
-		}));
+		}), locale);
 		return new Response(
 			JSON.stringify({ explanation }),
 			{ status: 200, headers: cors });

@@ -117,7 +117,23 @@ function geminiKeys() {
 	return out;
 }
 
-async function callGeminiWithKey(apiKey, prompt) {
+// Round 56 (continued — locale fix): system message prefixed with
+// the language directive in the target language so the model
+// locks in the response language before encountering any English
+// context. Same fix as aiExplainWord.mjs.
+function buildSystemMessage(locale) {
+	const langPrefix = locale === 'zh-Hans'
+		? '【请用简体中文回答】所有回答必须用简体中文。'
+		: locale === 'zh-Hant'
+			? '【請用繁體中文回答】所有回答必須用繁體中文。'
+			: '[Reply in English]';
+	return langPrefix + ' ' +
+		'You are a Bible-evidence research assistant. Stay '
+		+ 'factual, concise, and avoid partisan rhetoric or '
+		+ 'invented details.';
+}
+
+async function callGeminiWithKey(apiKey, prompt, locale) {
 	const url = `${BASE_URL}/chat/completions`;
 	return fetch(url, {
 		method: 'POST',
@@ -128,13 +144,7 @@ async function callGeminiWithKey(apiKey, prompt) {
 		body: JSON.stringify({
 			model: MODEL,
 			messages: [
-				{
-					role: 'system',
-					content:
-						'You are a Bible-evidence research assistant. Stay '
-						+ 'factual, concise, and avoid partisan rhetoric or '
-						+ 'invented details.',
-				},
+				{ role: 'system', content: buildSystemMessage(locale) },
 				{ role: 'user', content: prompt },
 			],
 			temperature: 0.2,
@@ -150,7 +160,7 @@ async function callGeminiWithKey(apiKey, prompt) {
 	});
 }
 
-async function callGemini(prompt) {
+async function callGemini(prompt, locale) {
 	const keys = geminiKeys();
 	if (keys.length === 0) {
 		const err = new Error(
@@ -164,7 +174,7 @@ async function callGemini(prompt) {
 	let quotaError = null;
 	for (let i = 0; i < keys.length; i++) {
 		const apiKey = keys[i];
-		const resp = await callGeminiWithKey(apiKey, prompt);
+		const resp = await callGeminiWithKey(apiKey, prompt, locale);
 		if (resp.ok) {
 			const json = await resp.json();
 			const choice = json.choices?.[0];
@@ -199,11 +209,16 @@ async function callGemini(prompt) {
 }
 
 function buildPrompt(query, locale, hits) {
-	const langName = locale === 'zh-Hans'
-		? 'Simplified Chinese'
+	// Round 56 (continued — locale fix): the language directive now
+	// leads the prompt AND repeats at the tail, in the target
+	// language. With the directive only at line 216 of an
+	// otherwise-English prompt the model defaulted to English; this
+	// configuration makes Gemini reliably honour zh-Hans / zh-Hant.
+	const langDirective = locale === 'zh-Hans'
+		? '你必须用简体中文回答，不要用英文（除了书卷名、Strong\'s 编号、人名地名等不可避免的部分）。'
 		: locale === 'zh-Hant'
-		? 'Traditional Chinese'
-		: 'English';
+			? '你必須用繁體中文回答，不要用英文（除了書卷名、Strong\'s 編號、人名地名等不可避免的部分）。'
+			: 'Reply ONLY in English.';
 	const ctx = hits
 		.map((e, i) =>
 			`[${i + 1}] id=${e.id}\n` +
@@ -212,15 +227,19 @@ function buildPrompt(query, locale, hits) {
 			`  summary: ${flat(pickLocalized(e.summary, locale))}`,
 		)
 		.join('\n');
-	return `Answer the user's question using ONLY the numbered context entries below.
-Reply in ${langName}. Be concise (1-3 sentences). End with bracketed citations
-like [1] [3] matching the entry numbers you used. If the context doesn't
-answer the question, say so plainly.
+	return `${langDirective}
+
+Answer the user's question using ONLY the numbered context entries below.
+Be concise (1-3 sentences). End with bracketed citations like [1] [3]
+matching the entry numbers you used. If the context doesn't answer the
+question, say so plainly.
 
 USER QUESTION: ${query}
 
 CONTEXT:
-${ctx}`;
+${ctx}
+
+${langDirective}`;
 }
 
 export default async (req) => {
@@ -252,7 +271,7 @@ export default async (req) => {
 				JSON.stringify({ answer: '', citations: [], hits: 0 }),
 				{ status: 200, headers: cors });
 		}
-		const answer = await callGemini(buildPrompt(query, locale, hits));
+		const answer = await callGemini(buildPrompt(query, locale, hits), locale);
 		const citations = hits.map((e) => {
 			const t = pickLocalized(e.title, locale);
 			return {
