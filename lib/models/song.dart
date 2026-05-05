@@ -57,6 +57,18 @@ class Song {
   /// as [audioUrl].
   final String? pdfUrl;
 
+  /// ISO-8601 UTC timestamp recording when this entry first showed
+  /// up in the sync. Stable across cron runs — only set when the
+  /// entry is new. Drives the "Recently added" sort.
+  final String? firstSeenAt;
+
+  /// ISO-8601 UTC timestamp recording the most recent run that
+  /// actually changed something on this entry (title fix, new
+  /// audio URL, freshly populated verse, …). Drives the
+  /// "Recently updated" sort. Equals [firstSeenAt] for entries
+  /// that haven't been touched since they were first imported.
+  final String? updatedAt;
+
   const Song({
     required this.id,
     required this.title,
@@ -69,6 +81,8 @@ class Song {
     this.verse,
     this.audioUrl,
     this.pdfUrl,
+    this.firstSeenAt,
+    this.updatedAt,
   });
 
   factory Song.fromJson(Map<String, dynamic> j) {
@@ -86,6 +100,8 @@ class Song {
       verse: j['verse'] as String?,
       audioUrl: j['audioUrl'] as String?,
       pdfUrl: j['pdfUrl'] as String?,
+      firstSeenAt: j['firstSeenAt'] as String?,
+      updatedAt: j['updatedAt'] as String?,
     );
   }
 

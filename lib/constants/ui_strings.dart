@@ -832,6 +832,31 @@ const uiStrings = {
     'zh-Hant': '主題',
     'en': 'Theme',
   },
+  'songsSortTooltip': {
+    'zh-Hans': '排序',
+    'zh-Hant': '排序',
+    'en': 'Sort',
+  },
+  'songsSortRecent': {
+    'zh-Hans': '最近更新',
+    'zh-Hant': '最近更新',
+    'en': 'Recently updated',
+  },
+  'songsSortAdded': {
+    'zh-Hans': '最近添加',
+    'zh-Hant': '最近添加',
+    'en': 'Recently added',
+  },
+  'songsSortTitle': {
+    'zh-Hans': '按标题',
+    'zh-Hant': '按標題',
+    'en': 'Title (A-Z)',
+  },
+  'songsSortSource': {
+    'zh-Hans': '按来源 / 编号',
+    'zh-Hant': '按來源 / 編號',
+    'en': 'Source / catalogue',
+  },
   // Round 56: hint shown under expanded font dropdown.
   'loadingVersion': {
     'zh-Hans': '正在切换译本…',

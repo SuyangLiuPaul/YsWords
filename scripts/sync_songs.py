@@ -347,6 +347,10 @@ def _is_bad_title(t):
     return False
 
 
+def _now_iso():
+    return time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())
+
+
 def merge(existing, new):
     """Merge a freshly-scraped entry over the existing one. Preserves
     user-curated fields (`verse` set by hand, `themes` overrides) so
@@ -355,36 +359,54 @@ def merge(existing, new):
     fresh one when the new scrape produced a real human-readable
     name."""
     if not existing:
-        return new
+        # Brand-new entry — stamp first-seen + updated.
+        out = dict(new)
+        out['firstSeenAt'] = _now_iso()
+        out['updatedAt'] = out['firstSeenAt']
+        return out
     merged = dict(existing)
+    # Carry over the existing first-seen timestamp (or backfill if
+    # the row pre-dates timestamping).
+    merged.setdefault('firstSeenAt', _now_iso())
+    # Track whether anything substantive actually changed; only
+    # then bump updatedAt. (Otherwise re-running the cron would
+    # bump the timestamp on every song every week even when
+    # upstream hasn't changed, ruining the "Recently updated" sort.)
+    changed = False
     # Title: prefer fresh scrape if it's better.
     new_title = new.get('title')
     cur_title = merged.get('title')
-    if new_title:
-        if _is_bad_title(cur_title) or new_title == cur_title:
-            merged['title'] = new_title
-        # Otherwise keep the existing title (likely user-edited).
+    if new_title and _is_bad_title(cur_title) and new_title != cur_title:
+        merged['title'] = new_title
+        changed = True
     # Always refresh URL/audio/pdf/code/source-label/language.
     for k in ('url', 'audioUrl', 'pdfUrl', 'sourceLabel',
               'language', 'code'):
         v = new.get(k)
-        if v:
+        if v and merged.get(k) != v:
             merged[k] = v
+            changed = True
     # Themes: keep existing if non-empty.
-    if not merged.get('themes'):
-        merged['themes'] = new.get('themes', [])
+    if not merged.get('themes') and new.get('themes'):
+        merged['themes'] = new['themes']
+        changed = True
     # Verse: prefer fresh scrape when (a) we don't already have one
-    # and (b) the scrape returned a structured citation. The
-    # title-keyword inference remains the fallback. We deliberately
-    # do NOT overwrite an existing verse — if the user/community
-    # has hand-curated a more specific reference, that wins.
+    # and (b) the scrape returned a structured citation. We do NOT
+    # overwrite an existing verse — hand-curated values stick.
     if not merged.get('verse') and new.get('verse'):
         merged['verse'] = new['verse']
+        changed = True
     # Re-derive themes from the (possibly improved) title when the
-    # current entry has none. Rerunning the sync should fill themes
-    # for the ~256 CDC entries that previously had only a code.
+    # current entry has none.
     if not merged.get('themes') and merged.get('title'):
-        merged['themes'] = infer_themes(merged['title'])
+        derived = infer_themes(merged['title'])
+        if derived:
+            merged['themes'] = derived
+            changed = True
+    if changed:
+        merged['updatedAt'] = _now_iso()
+    else:
+        merged.setdefault('updatedAt', merged['firstSeenAt'])
     return merged
 
 

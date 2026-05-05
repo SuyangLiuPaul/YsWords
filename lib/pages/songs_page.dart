@@ -45,6 +45,11 @@ class _SongsPageState extends State<SongsPage> {
   /// the UX is consistent across the app.
   String _bookFilter = 'all';
   String _query = '';
+  /// 'recent' (default — newest first by updatedAt) |
+  /// 'added'  (newest first by firstSeenAt) |
+  /// 'title'  (A→Z by title) |
+  /// 'source' (catalogue order: source then code/title)
+  String _sort = 'recent';
 
   @override
   void initState() {
@@ -125,6 +130,7 @@ class _SongsPageState extends State<SongsPage> {
                         sourceFilter: _sourceFilter,
                         themeFilter: _themeFilter,
                         bookFilter: _bookFilter,
+                        sort: _sort,
                         availableThemes: themes,
                         availableBooks: availableBooks,
                         matchCount: filtered.length,
@@ -144,6 +150,8 @@ class _SongsPageState extends State<SongsPage> {
                             setState(() => _themeFilter = v),
                         onBookChanged: (v) =>
                             setState(() => _bookFilter = v),
+                        onSortChanged: (v) =>
+                            setState(() => _sort = v),
                       );
                     }
                     return _SongTile(
@@ -197,7 +205,47 @@ class _SongsPageState extends State<SongsPage> {
             s.themes.any((t) => t.toLowerCase().contains(q));
       });
     }
-    return out.toList();
+    final list = out.toList();
+    _applySort(list);
+    return list;
+  }
+
+  /// Order the matched songs by the user's chosen sort key.
+  /// Implemented in-place so we don't allocate a second list.
+  void _applySort(List<Song> list) {
+    switch (_sort) {
+      case 'recent':
+        // Newest updatedAt first; ties broken by title for
+        // stable ordering. Songs without timestamps (legacy
+        // entries) sink to the bottom.
+        list.sort((a, b) {
+          final ax = a.updatedAt ?? '';
+          final bx = b.updatedAt ?? '';
+          final cmp = bx.compareTo(ax);
+          return cmp != 0 ? cmp : a.title.compareTo(b.title);
+        });
+        break;
+      case 'added':
+        list.sort((a, b) {
+          final ax = a.firstSeenAt ?? '';
+          final bx = b.firstSeenAt ?? '';
+          final cmp = bx.compareTo(ax);
+          return cmp != 0 ? cmp : a.title.compareTo(b.title);
+        });
+        break;
+      case 'title':
+        list.sort((a, b) => a.title.compareTo(b.title));
+        break;
+      case 'source':
+        list.sort((a, b) {
+          final src = a.source.compareTo(b.source);
+          if (src != 0) return src;
+          final ac = a.code ?? a.title;
+          final bc = b.code ?? b.title;
+          return ac.compareTo(bc);
+        });
+        break;
+    }
   }
 }
 
@@ -275,6 +323,7 @@ class _SearchAndFilterBar extends StatelessWidget {
   final String sourceFilter;
   final String themeFilter;
   final String bookFilter;
+  final String sort;
   final List<String> availableThemes;
   final Set<String> availableBooks;
   final int matchCount;
@@ -285,6 +334,7 @@ class _SearchAndFilterBar extends StatelessWidget {
   final ValueChanged<String> onSourceChanged;
   final ValueChanged<String> onThemeChanged;
   final ValueChanged<String> onBookChanged;
+  final ValueChanged<String> onSortChanged;
 
   const _SearchAndFilterBar({
     required this.settings,
@@ -296,6 +346,7 @@ class _SearchAndFilterBar extends StatelessWidget {
     required this.sourceFilter,
     required this.themeFilter,
     required this.bookFilter,
+    required this.sort,
     required this.availableThemes,
     required this.availableBooks,
     required this.matchCount,
@@ -306,6 +357,7 @@ class _SearchAndFilterBar extends StatelessWidget {
     required this.onSourceChanged,
     required this.onThemeChanged,
     required this.onBookChanged,
+    required this.onSortChanged,
   });
 
   @override
@@ -356,6 +408,36 @@ class _SearchAndFilterBar extends StatelessWidget {
                         .withValues(alpha: 0.4)
                     : null,
               ),
+            ),
+            const SizedBox(width: 4),
+            // Round 56: sort picker. Compact PopupMenuButton — same
+            // affordance as the IconButton+Menu pattern used in
+            // sermon_detail_page.dart so the songs page feels
+            // consistent with the rest of the app.
+            PopupMenuButton<String>(
+              tooltip: uiStrings['songsSortTooltip']?[locale] ??
+                  'Sort',
+              icon: const Icon(Icons.sort, size: 20),
+              initialValue: sort,
+              onSelected: onSortChanged,
+              itemBuilder: (_) => [
+                _sortItem('recent',
+                    uiStrings['songsSortRecent']?[locale] ??
+                        'Recently updated',
+                    Icons.update),
+                _sortItem('added',
+                    uiStrings['songsSortAdded']?[locale] ??
+                        'Recently added',
+                    Icons.fiber_new),
+                _sortItem('title',
+                    uiStrings['songsSortTitle']?[locale] ??
+                        'Title (A-Z)',
+                    Icons.sort_by_alpha),
+                _sortItem('source',
+                    uiStrings['songsSortSource']?[locale] ??
+                        'Source / catalogue',
+                    Icons.library_books),
+              ],
             ),
           ],
         ),
@@ -411,6 +493,24 @@ class _SearchAndFilterBar extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+
+  PopupMenuItem<String> _sortItem(
+      String value, String label, IconData icon) {
+    return PopupMenuItem<String>(
+      value: value,
+      child: Row(
+        children: [
+          Icon(icon, size: 18, color: scheme.primary),
+          const SizedBox(width: 10),
+          Text(label),
+          if (sort == value) ...[
+            const Spacer(),
+            Icon(Icons.check, size: 16, color: scheme.primary),
+          ],
+        ],
+      ),
     );
   }
 
