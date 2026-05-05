@@ -40,8 +40,22 @@ class Song {
 
   /// Bible reference, only when the title makes the association
   /// unambiguous (e.g. "诗篇 23" → "Psalms 23"). Null otherwise —
-  /// we deliberately don't fabricate verse links.
+  /// we deliberately don't fabricate verse links. The sync script
+  /// also populates this when the per-song page exposes a verse
+  /// citation in HTML.
   final String? verse;
+
+  /// Direct mp3 URL on the source site, when known. CDC URLs are
+  /// derived deterministically from `code`; fydt URLs come from the
+  /// sync script's per-page scrape. The app today still uses
+  /// link-out (opens [url]) — these are pre-populated so the
+  /// listing can flip to inline playback if/when the church
+  /// authorises redistribution.
+  final String? audioUrl;
+
+  /// Direct PDF URL on the source site, when known. Same caveats
+  /// as [audioUrl].
+  final String? pdfUrl;
 
   const Song({
     required this.id,
@@ -53,6 +67,8 @@ class Song {
     required this.url,
     required this.themes,
     this.verse,
+    this.audioUrl,
+    this.pdfUrl,
   });
 
   factory Song.fromJson(Map<String, dynamic> j) {
@@ -68,6 +84,60 @@ class Song {
           .map((e) => e.toString())
           .toList(),
       verse: j['verse'] as String?,
+      audioUrl: j['audioUrl'] as String?,
+      pdfUrl: j['pdfUrl'] as String?,
     );
   }
+
+  /// Parse the `verse` field into an English book name (used for
+  /// the sermon-style book filter). Returns null if no parseable
+  /// reference is present.
+  String? get verseBook {
+    final v = verse;
+    if (v == null || v.trim().isEmpty) return null;
+    // Match "Psalms 23", "Genesis 1:1", "1 Corinthians 13:1-13"
+    final m = RegExp(r'^([1-3]?\s*[A-Za-z]+(?:\s+[A-Za-z]+)*)')
+        .firstMatch(v.trim());
+    return m?.group(1)?.trim();
+  }
+}
+
+/// Localised theme tag labels. Keys are the canonical Chinese tag
+/// stored in songs.json (`敬拜`, `救恩`, etc.); values are the
+/// per-locale display labels. Falls back to the raw key if a locale
+/// is missing. The keys mirror fydt.org's own song_category
+/// taxonomy plus a few inferred categories used by the title-keyword
+/// classifier.
+const Map<String, Map<String, String>> songThemeLabels = {
+  '敬拜': {'en': 'Worship', 'zh-Hans': '敬拜', 'zh-Hant': '敬拜'},
+  '赞美': {'en': 'Praise', 'zh-Hans': '赞美', 'zh-Hant': '讚美'},
+  '救恩': {'en': 'Salvation', 'zh-Hans': '救恩', 'zh-Hant': '救恩'},
+  '圣灵': {'en': 'Holy Spirit', 'zh-Hans': '圣灵', 'zh-Hant': '聖靈'},
+  '委身': {'en': 'Commitment', 'zh-Hans': '委身', 'zh-Hant': '委身'},
+  '顺服': {'en': 'Obedience', 'zh-Hans': '顺服', 'zh-Hant': '順服'},
+  '得胜': {'en': 'Victory', 'zh-Hans': '得胜', 'zh-Hant': '得勝'},
+  '重生': {'en': 'New Life', 'zh-Hans': '重生', 'zh-Hant': '重生'},
+  '圣洁': {'en': 'Holiness', 'zh-Hans': '圣洁', 'zh-Hant': '聖潔'},
+  '平安': {'en': 'Peace', 'zh-Hans': '平安', 'zh-Hant': '平安'},
+  '感恩': {'en': 'Thanksgiving', 'zh-Hans': '感恩', 'zh-Hant': '感恩'},
+  '警醒': {'en': 'Watchful', 'zh-Hans': '警醒', 'zh-Hant': '警醒'},
+  '信心': {'en': 'Faith', 'zh-Hans': '信心', 'zh-Hant': '信心'},
+  '爱': {'en': 'Love', 'zh-Hans': '爱', 'zh-Hant': '愛'},
+  '仰望': {'en': 'Hope', 'zh-Hans': '仰望', 'zh-Hant': '仰望'},
+  '门徒': {'en': 'Discipleship', 'zh-Hans': '门徒', 'zh-Hant': '門徒'},
+  '祷告': {'en': 'Prayer', 'zh-Hans': '祷告', 'zh-Hant': '禱告'},
+  '真理': {'en': 'Truth', 'zh-Hans': '真理', 'zh-Hant': '真理'},
+  '心': {'en': 'Heart', 'zh-Hans': '心', 'zh-Hant': '心'},
+  '神的名': {'en': 'God\'s Name', 'zh-Hans': '神的名', 'zh-Hant': '神的名'},
+  '教会': {'en': 'Church', 'zh-Hans': '教会', 'zh-Hant': '教會'},
+  '见证': {'en': 'Witness', 'zh-Hans': '见证', 'zh-Hant': '見證'},
+  '生命': {'en': 'Life', 'zh-Hans': '生命', 'zh-Hant': '生命'},
+  '诗篇': {'en': 'Psalm Setting', 'zh-Hans': '诗篇', 'zh-Hant': '詩篇'},
+  '儿童': {'en': 'Children', 'zh-Hans': '儿童', 'zh-Hant': '兒童'},
+};
+
+String localizedSongTheme(String themeKey, String locale) {
+  final m = songThemeLabels[themeKey];
+  if (m == null) return themeKey;
+  return m[locale] ?? m['en'] ?? themeKey;
 }

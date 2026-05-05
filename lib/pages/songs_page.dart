@@ -4,9 +4,11 @@ import 'package:provider/provider.dart';
 import 'package:yswords/constants/ui_strings.dart';
 import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/models/song.dart';
+import 'package:yswords/services/fetch_books.dart' show standardBookOrder;
 import 'package:yswords/services/link_opener.dart';
 import 'package:yswords/services/song_service.dart';
 import 'package:yswords/utils/responsive.dart';
+import 'package:yswords/utils/version_mapper.dart' show localeAwareBookName;
 import 'package:yswords/widgets/home_icon_button.dart';
 import 'package:yswords/widgets/localized_back_button.dart';
 
@@ -36,8 +38,12 @@ class _SongsPageState extends State<SongsPage> {
   String _langFilter = 'all';
   /// 'all' | one of the source ids in songs.json (`fydt`, `cdc`).
   String _sourceFilter = 'all';
-  /// 'all' | one of the auto-derived theme tags.
+  /// 'all' | one of the auto-derived theme tags (Chinese key).
   String _themeFilter = 'all';
+  /// 'all' | English book name when the song's verse field maps to
+  /// a recognised Bible book. Aligned with sermons-page filter so
+  /// the UX is consistent across the app.
+  String _bookFilter = 'all';
   String _query = '';
 
   @override
@@ -84,7 +90,12 @@ class _SongsPageState extends State<SongsPage> {
             );
           }
           final themes = SongService.distinctThemes(all);
+          final availableBooks = _booksWithSongs(all);
           final filtered = _filter(all);
+          final hasFilter = _langFilter != 'all' ||
+              _sourceFilter != 'all' ||
+              _themeFilter != 'all' ||
+              _bookFilter != 'all';
           return Center(
             child: ConstrainedBox(
               constraints: BoxConstraints(maxWidth: maxW),
@@ -104,24 +115,35 @@ class _SongsPageState extends State<SongsPage> {
                           settings: settings, scheme: scheme);
                     }
                     if (i == 1) {
-                      return _FilterBar(
+                      return _SearchAndFilterBar(
                         settings: settings,
                         scheme: scheme,
                         locale: locale,
-                        availableThemes: themes,
+                        query: _query,
+                        hasActiveFilter: hasFilter,
                         langFilter: _langFilter,
                         sourceFilter: _sourceFilter,
                         themeFilter: _themeFilter,
-                        query: _query,
+                        bookFilter: _bookFilter,
+                        availableThemes: themes,
+                        availableBooks: availableBooks,
                         matchCount: filtered.length,
                         totalCount: all.length,
-                        onLang: (v) =>
-                            setState(() => _langFilter = v),
-                        onSource: (v) =>
-                            setState(() => _sourceFilter = v),
-                        onTheme: (v) =>
-                            setState(() => _themeFilter = v),
                         onQuery: (v) => setState(() => _query = v),
+                        onClearAll: () => setState(() {
+                          _langFilter = 'all';
+                          _sourceFilter = 'all';
+                          _themeFilter = 'all';
+                          _bookFilter = 'all';
+                        }),
+                        onLangChanged: (v) =>
+                            setState(() => _langFilter = v),
+                        onSourceChanged: (v) =>
+                            setState(() => _sourceFilter = v),
+                        onThemeChanged: (v) =>
+                            setState(() => _themeFilter = v),
+                        onBookChanged: (v) =>
+                            setState(() => _bookFilter = v),
                       );
                     }
                     return _SongTile(
@@ -140,6 +162,18 @@ class _SongsPageState extends State<SongsPage> {
     );
   }
 
+  /// Set of English book names that at least one song's `verse`
+  /// field maps to. Drives the book chip row in the filter sheet —
+  /// books with no songs render dimmed (sermons-page parity).
+  Set<String> _booksWithSongs(List<Song> all) {
+    final out = <String>{};
+    for (final s in all) {
+      final b = s.verseBook;
+      if (b != null) out.add(b);
+    }
+    return out;
+  }
+
   List<Song> _filter(List<Song> all) {
     Iterable<Song> out = all;
     if (_langFilter != 'all') {
@@ -150,6 +184,9 @@ class _SongsPageState extends State<SongsPage> {
     }
     if (_themeFilter != 'all') {
       out = out.where((s) => s.themes.contains(_themeFilter));
+    }
+    if (_bookFilter != 'all') {
+      out = out.where((s) => s.verseBook == _bookFilter);
     }
     final q = _query.trim().toLowerCase();
     if (q.isNotEmpty) {
@@ -222,112 +259,148 @@ class _IntroCard extends StatelessWidget {
   }
 }
 
-class _FilterBar extends StatelessWidget {
+/// Round 56 (continued): refactored to mirror the sermons-page
+/// pattern. Search field + Filter button inline; tapping the
+/// button opens a modal sheet that hosts every filter (language,
+/// source, theme, book). Active filters render below as deletable
+/// InputChips. Theme labels run through `localizedSongTheme` so
+/// 敬拜 displays as "Worship" / "敬拜" / "敬拜" depending on locale.
+class _SearchAndFilterBar extends StatelessWidget {
   final AppSettings settings;
   final ColorScheme scheme;
   final String locale;
-  final List<String> availableThemes;
+  final String query;
+  final bool hasActiveFilter;
   final String langFilter;
   final String sourceFilter;
   final String themeFilter;
-  final String query;
+  final String bookFilter;
+  final List<String> availableThemes;
+  final Set<String> availableBooks;
   final int matchCount;
   final int totalCount;
-  final ValueChanged<String> onLang;
-  final ValueChanged<String> onSource;
-  final ValueChanged<String> onTheme;
   final ValueChanged<String> onQuery;
+  final VoidCallback onClearAll;
+  final ValueChanged<String> onLangChanged;
+  final ValueChanged<String> onSourceChanged;
+  final ValueChanged<String> onThemeChanged;
+  final ValueChanged<String> onBookChanged;
 
-  const _FilterBar({
+  const _SearchAndFilterBar({
     required this.settings,
     required this.scheme,
     required this.locale,
-    required this.availableThemes,
+    required this.query,
+    required this.hasActiveFilter,
     required this.langFilter,
     required this.sourceFilter,
     required this.themeFilter,
-    required this.query,
+    required this.bookFilter,
+    required this.availableThemes,
+    required this.availableBooks,
     required this.matchCount,
     required this.totalCount,
-    required this.onLang,
-    required this.onSource,
-    required this.onTheme,
     required this.onQuery,
+    required this.onClearAll,
+    required this.onLangChanged,
+    required this.onSourceChanged,
+    required this.onThemeChanged,
+    required this.onBookChanged,
   });
 
   @override
   Widget build(BuildContext context) {
-    final allLabel =
-        uiStrings['statsOriginalsAll']?[locale] ?? 'All';
     final searchHint = uiStrings['songsSearchHint']?[locale] ??
         'Search song title, theme, or code…';
+    final filterLabel =
+        uiStrings['sermonFilterByPassage']?[locale] ?? 'Filter';
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        TextField(
-          decoration: InputDecoration(
-            hintText: searchHint,
-            prefixIcon: const Icon(Icons.search),
-            isDense: true,
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-            ),
-          ),
-          onChanged: onQuery,
-          style: TextStyle(
-            fontFamily: settings.fontFamily,
-            fontSize: (settings.fontSize - 1).clamp(13.0, 17.0),
-          ),
-        ),
-        const SizedBox(height: 10),
-        // Language toggle
-        SegmentedButton<String>(
-          segments: [
-            ButtonSegment(value: 'all', label: Text(allLabel)),
-            const ButtonSegment(value: 'zh', label: Text('中文')),
-            const ButtonSegment(value: 'en', label: Text('English')),
-          ],
-          selected: {langFilter},
-          onSelectionChanged: (s) => onLang(s.first),
-          multiSelectionEnabled: false,
-          showSelectedIcon: false,
-        ),
-        const SizedBox(height: 10),
-        // Source toggle
-        SegmentedButton<String>(
-          segments: [
-            ButtonSegment(value: 'all', label: Text(allLabel)),
-            const ButtonSegment(value: 'fydt', label: Text('福音电台')),
-            const ButtonSegment(value: 'cdc', label: Text('CDC')),
-          ],
-          selected: {sourceFilter},
-          onSelectionChanged: (s) => onSource(s.first),
-          multiSelectionEnabled: false,
-          showSelectedIcon: false,
-        ),
-        const SizedBox(height: 10),
-        // Theme chip row
-        SizedBox(
-          height: 38,
-          child: ListView(
-            scrollDirection: Axis.horizontal,
-            children: [
-              _Chip(
-                label: allLabel,
-                selected: themeFilter == 'all',
-                onTap: () => onTheme('all'),
-                scheme: scheme,
-              ),
-              for (final t in availableThemes)
-                _Chip(
-                  label: t,
-                  selected: themeFilter == t,
-                  onTap: () => onTheme(t),
-                  scheme: scheme,
+        Row(
+          children: [
+            Expanded(
+              child: TextField(
+                decoration: InputDecoration(
+                  hintText: searchHint,
+                  prefixIcon: const Icon(Icons.search),
+                  isDense: true,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
                 ),
+                onChanged: onQuery,
+                style: TextStyle(
+                  fontFamily: settings.fontFamily,
+                  fontSize:
+                      (settings.fontSize - 1).clamp(13.0, 17.0),
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            OutlinedButton.icon(
+              onPressed: () => _openFilterSheet(context),
+              icon: Icon(
+                hasActiveFilter
+                    ? Icons.filter_list_alt
+                    : Icons.filter_list,
+                size: 18,
+              ),
+              label: Text(filterLabel,
+                  style: const TextStyle(fontSize: 13)),
+              style: OutlinedButton.styleFrom(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12),
+                backgroundColor: hasActiveFilter
+                    ? scheme.primaryContainer
+                        .withValues(alpha: 0.4)
+                    : null,
+              ),
+            ),
+          ],
+        ),
+        if (hasActiveFilter) ...[
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 6,
+            runSpacing: 4,
+            children: [
+              if (langFilter != 'all')
+                InputChip(
+                  avatar: const Icon(Icons.language, size: 16),
+                  label: Text(_langDisplayLabel(langFilter)),
+                  onDeleted: () => onLangChanged('all'),
+                ),
+              if (sourceFilter != 'all')
+                InputChip(
+                  avatar: const Icon(Icons.public, size: 16),
+                  label: Text(_sourceDisplayLabel(sourceFilter)),
+                  onDeleted: () => onSourceChanged('all'),
+                ),
+              if (themeFilter != 'all')
+                InputChip(
+                  avatar: const Icon(Icons.label_outline, size: 16),
+                  label: Text(localizedSongTheme(
+                      themeFilter, locale)),
+                  onDeleted: () => onThemeChanged('all'),
+                ),
+              if (bookFilter != 'all')
+                InputChip(
+                  avatar: Icon(Icons.bookmark,
+                      size: 16, color: scheme.primary),
+                  label: Text(
+                      localeAwareBookName(bookFilter, locale)),
+                  onDeleted: () => onBookChanged('all'),
+                ),
+              ActionChip(
+                avatar: const Icon(Icons.clear_all, size: 16),
+                label: Text(
+                    uiStrings['clearFilter']?[locale] ?? 'Clear'),
+                onPressed: onClearAll,
+              ),
             ],
           ),
-        ),
+        ],
         const SizedBox(height: 6),
         Text(
           '$matchCount / $totalCount',
@@ -340,29 +413,310 @@ class _FilterBar extends StatelessWidget {
       ],
     );
   }
+
+  String _langDisplayLabel(String key) {
+    if (key == 'zh') return '中文';
+    if (key == 'en') return 'English';
+    if (key == 'th') return 'ไทย';
+    return key;
+  }
+
+  String _sourceDisplayLabel(String key) {
+    if (key == 'fydt') return '福音电台';
+    if (key == 'cdc') return 'CDC';
+    return key;
+  }
+
+  void _openFilterSheet(BuildContext context) {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Theme.of(context).colorScheme.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (sheetCtx) {
+        return _SongFilterSheet(
+          locale: locale,
+          settings: settings,
+          availableThemes: availableThemes,
+          availableBooks: availableBooks,
+          initialLang: langFilter,
+          initialSource: sourceFilter,
+          initialTheme: themeFilter,
+          initialBook: bookFilter,
+          onApply: (lang, source, theme, book) {
+            onLangChanged(lang);
+            onSourceChanged(source);
+            onThemeChanged(theme);
+            onBookChanged(book);
+            Navigator.of(sheetCtx).pop();
+          },
+          onClear: () {
+            onLangChanged('all');
+            onSourceChanged('all');
+            onThemeChanged('all');
+            onBookChanged('all');
+            Navigator.of(sheetCtx).pop();
+          },
+        );
+      },
+    );
+  }
 }
 
-class _Chip extends StatelessWidget {
-  final String label;
-  final bool selected;
-  final VoidCallback onTap;
-  final ColorScheme scheme;
-  const _Chip({
-    required this.label,
-    required this.selected,
-    required this.onTap,
-    required this.scheme,
+/// Modal-sheet filter — mirrors `_PassageFilterSheet` from
+/// sermons_page.dart so users get the same affordance across pages.
+/// Hosts every song filter so the inline bar above stays clean.
+class _SongFilterSheet extends StatefulWidget {
+  final String locale;
+  final AppSettings settings;
+  final List<String> availableThemes;
+  final Set<String> availableBooks;
+  final String initialLang;
+  final String initialSource;
+  final String initialTheme;
+  final String initialBook;
+  final void Function(String lang, String source, String theme,
+      String book) onApply;
+  final VoidCallback onClear;
+
+  const _SongFilterSheet({
+    required this.locale,
+    required this.settings,
+    required this.availableThemes,
+    required this.availableBooks,
+    required this.initialLang,
+    required this.initialSource,
+    required this.initialTheme,
+    required this.initialBook,
+    required this.onApply,
+    required this.onClear,
   });
 
   @override
+  State<_SongFilterSheet> createState() => _SongFilterSheetState();
+}
+
+class _SongFilterSheetState extends State<_SongFilterSheet> {
+  late String _lang;
+  late String _source;
+  late String _theme;
+  late String _book;
+
+  @override
+  void initState() {
+    super.initState();
+    _lang = widget.initialLang;
+    _source = widget.initialSource;
+    _theme = widget.initialTheme;
+    _book = widget.initialBook;
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(right: 6),
-      child: ChoiceChip(
-        label: Text(label),
-        selected: selected,
-        onSelected: (_) => onTap(),
+    final scheme = Theme.of(context).colorScheme;
+    final locale = widget.locale;
+    final allLabel =
+        uiStrings['statsOriginalsAll']?[locale] ?? 'All';
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Row(
+                children: [
+                  Icon(Icons.tune,
+                      size: 18, color: scheme.primary),
+                  const SizedBox(width: 8),
+                  Text(
+                    uiStrings['sermonFilterByPassage']?[locale] ??
+                        'Filter',
+                    style: const TextStyle(
+                        fontSize: 16, fontWeight: FontWeight.w600),
+                  ),
+                  const Spacer(),
+                  TextButton(
+                    onPressed: widget.onClear,
+                    child: Text(
+                        uiStrings['clearFilter']?[locale] ?? 'Clear'),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close, size: 20),
+                    onPressed: () =>
+                        Navigator.of(context).maybePop(),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              _SectionLabel(
+                  text: uiStrings['songsFilterLanguage']?[locale] ??
+                      'Language',
+                  scheme: scheme),
+              const SizedBox(height: 6),
+              SegmentedButton<String>(
+                segments: [
+                  ButtonSegment(value: 'all', label: Text(allLabel)),
+                  const ButtonSegment(value: 'zh', label: Text('中文')),
+                  const ButtonSegment(
+                      value: 'en', label: Text('English')),
+                ],
+                selected: {_lang},
+                onSelectionChanged: (s) =>
+                    setState(() => _lang = s.first),
+                multiSelectionEnabled: false,
+                showSelectedIcon: false,
+              ),
+              const SizedBox(height: 14),
+              _SectionLabel(
+                  text: uiStrings['songsFilterSource']?[locale] ??
+                      'Source',
+                  scheme: scheme),
+              const SizedBox(height: 6),
+              SegmentedButton<String>(
+                segments: [
+                  ButtonSegment(value: 'all', label: Text(allLabel)),
+                  const ButtonSegment(
+                      value: 'fydt', label: Text('福音电台')),
+                  const ButtonSegment(value: 'cdc', label: Text('CDC')),
+                ],
+                selected: {_source},
+                onSelectionChanged: (s) =>
+                    setState(() => _source = s.first),
+                multiSelectionEnabled: false,
+                showSelectedIcon: false,
+              ),
+              const SizedBox(height: 14),
+              _SectionLabel(
+                  text: uiStrings['songsFilterTheme']?[locale] ??
+                      'Theme',
+                  scheme: scheme),
+              const SizedBox(height: 6),
+              ConstrainedBox(
+                constraints: BoxConstraints(
+                    maxHeight:
+                        MediaQuery.of(context).size.height * 0.22),
+                child: SingleChildScrollView(
+                  child: Wrap(
+                    spacing: 6,
+                    runSpacing: 6,
+                    children: [
+                      ChoiceChip(
+                        label: Text(allLabel),
+                        selected: _theme == 'all',
+                        onSelected: (_) =>
+                            setState(() => _theme = 'all'),
+                      ),
+                      for (final t in widget.availableThemes)
+                        ChoiceChip(
+                          label: Text(localizedSongTheme(t, locale)),
+                          selected: _theme == t,
+                          onSelected: (_) =>
+                              setState(() => _theme = t),
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 14),
+              _SectionLabel(
+                  text: uiStrings['sermonFilterBookLabel']
+                              ?[locale] ??
+                      'Book',
+                  scheme: scheme),
+              const SizedBox(height: 6),
+              ConstrainedBox(
+                constraints: BoxConstraints(
+                    maxHeight:
+                        MediaQuery.of(context).size.height * 0.30),
+                child: SingleChildScrollView(
+                  child: Wrap(
+                    spacing: 6,
+                    runSpacing: 6,
+                    children: [
+                      ChoiceChip(
+                        label: Text(allLabel),
+                        selected: _book == 'all',
+                        onSelected: (_) =>
+                            setState(() => _book = 'all'),
+                      ),
+                      for (final b in standardBookOrder)
+                        _BookChip(
+                          book: b,
+                          locale: locale,
+                          hasSongs:
+                              widget.availableBooks.contains(b),
+                          selected: _book == b,
+                          onTap: () => setState(() {
+                            _book = _book == b ? 'all' : b;
+                          }),
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              FilledButton(
+                onPressed: () => widget.onApply(
+                    _lang, _source, _theme, _book),
+                child: Text(
+                    uiStrings['apply']?[locale] ?? 'Apply'),
+              ),
+            ],
+          ),
+        ),
       ),
+    );
+  }
+}
+
+class _SectionLabel extends StatelessWidget {
+  final String text;
+  final ColorScheme scheme;
+  const _SectionLabel({required this.text, required this.scheme});
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      text,
+      style: TextStyle(
+        fontSize: 12,
+        fontWeight: FontWeight.w600,
+        color: scheme.onSurface.withValues(alpha: 0.65),
+      ),
+    );
+  }
+}
+
+class _BookChip extends StatelessWidget {
+  final String book;
+  final String locale;
+  final bool hasSongs;
+  final bool selected;
+  final VoidCallback onTap;
+  const _BookChip({
+    required this.book,
+    required this.locale,
+    required this.hasSongs,
+    required this.selected,
+    required this.onTap,
+  });
+  @override
+  Widget build(BuildContext context) {
+    final localized = localeAwareBookName(book, locale, '');
+    return ChoiceChip(
+      label: Text(
+        localized,
+        style: TextStyle(
+          fontSize: 13,
+          color:
+              hasSongs ? null : Theme.of(context).disabledColor,
+        ),
+      ),
+      selected: selected,
+      onSelected: hasSongs ? (_) => onTap() : null,
     );
   }
 }
@@ -483,7 +837,7 @@ class _SongTile extends StatelessWidget {
                                   BorderRadius.circular(4),
                             ),
                             child: Text(
-                              t,
+                              localizedSongTheme(t, locale),
                               style: TextStyle(
                                 fontSize: 10,
                                 color:

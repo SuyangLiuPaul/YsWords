@@ -817,6 +817,21 @@ const uiStrings = {
     'zh-Hant': '無法開啟原站頁面，請稍後再試。',
     'en': 'Could not open the original page. Please try again.',
   },
+  'songsFilterLanguage': {
+    'zh-Hans': '语言',
+    'zh-Hant': '語言',
+    'en': 'Language',
+  },
+  'songsFilterSource': {
+    'zh-Hans': '来源',
+    'zh-Hant': '來源',
+    'en': 'Source',
+  },
+  'songsFilterTheme': {
+    'zh-Hans': '主题',
+    'zh-Hant': '主題',
+    'en': 'Theme',
+  },
   // Round 56: hint shown under expanded font dropdown.
   'loadingVersion': {
     'zh-Hans': '正在切换译本…',
