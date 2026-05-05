@@ -27,6 +27,7 @@ Exit code 0 = no change. Exit code 1 = file updated (CI uses this
 to decide whether to commit).
 """
 
+import html
 import json
 import os
 import re
@@ -147,24 +148,38 @@ def fetch_fydt_song_urls():
     return [u.text for u in root.findall('.//sm:url/sm:loc', ns) if u.text]
 
 
+def clean_title(raw):
+    """Decode HTML entities + collapse whitespace + strip the
+    fydt site suffix (' - FYDT 福音电台', ' – FYDT', etc.) that
+    creeps in via the <title> tag."""
+    if not raw:
+        return None
+    t = html.unescape(raw).strip()
+    # Strip every variant of the fydt site suffix we've seen.
+    # Common separators: hyphen, en-dash (–), em-dash (—), pipe (|).
+    t = re.sub(r'\s*[\-–—|]\s*FYDT.*$', '', t,
+               flags=re.IGNORECASE).strip()
+    t = re.sub(r'\s*[\-–—|]\s*福音电台.*$', '', t).strip()
+    t = re.sub(r'\s+', ' ', t)
+    return t or None
+
+
 def fetch_fydt_song_meta(url):
     """For one fydt song page, extract (title, audio_url, pdf_url).
     Returns (None, None, None) on failure — caller skips the entry."""
-    html = http_get(url)
-    if not html:
+    page_html = http_get(url)
+    if not page_html:
         return None, None, None
     title = None
-    m = TITLE_RE.search(html)
+    m = TITLE_RE.search(page_html)
     if m:
-        title = m.group(1).strip()
-        # Strip site suffix that fydt appends.
-        title = re.sub(r'\s*[-|]\s*福音电台.*$', '', title).strip()
+        title = clean_title(m.group(1))
     audio = None
-    a = AUDIO_RE.search(html)
+    a = AUDIO_RE.search(page_html)
     if a:
         audio = a.group(0)
     pdf = None
-    p = PDF_RE.search(html)
+    p = PDF_RE.search(page_html)
     if p:
         pdf = p.group(0)
     return title, audio, pdf
@@ -176,52 +191,106 @@ def slug_from_url(url, prefix='fydt'):
     return f'{prefix}:{path.replace("/", "_")}'
 
 
+CDC_ROW_RE = re.compile(
+    # Two-cell pattern observed on the integrated-list-songs page:
+    #   <td class="views-field views-field-field-song-title ...">
+    #     <human-readable title>
+    #   </td>
+    #   <td class="views-field views-field-title ...">
+    #     <a href="/content/<code>"><CODE></a>
+    #   </td>
+    # Greedy-but-bounded match; (.*?) is lazy so we don't run away.
+    r'<td[^>]*views-field-field-song-title[^>]*>'
+    r'\s*([^<]+?)\s*</td>'
+    r'\s*<td[^>]*views-field-title[^>]*>'
+    r'\s*<a[^>]+href="(/content/([defDEF]\d{3,5}))"',
+    flags=re.IGNORECASE | re.DOTALL,
+)
+
+
 def fetch_cdc_index_codes():
-    """Pull the CDC integrated-list-songs page → set of (title, code).
-    The page renders as a long alphabetical table; we look for any
-    /content/<code> link with a visible anchor text."""
-    html = http_get(CDC_INDEX)
-    if not html:
-        return []
+    """Pull every CDC integrated-list-songs page (the index is
+    paginated; we walk page=0,1,2,… until a page yields no new
+    rows). Returns list of (title, code, path) tuples with the
+    *real* titles parsed out of the song-title cell that sits
+    next to each /content/<code> link."""
     out = []
     seen_codes = set()
-    # Anchor pattern: <a href="/content/d0210">title</a>
-    for m in re.finditer(
-            r'<a[^>]+href="(/content/[defDEF]\d{3,5})"[^>]*>([^<]+)</a>',
-            html, flags=re.IGNORECASE):
-        path = m.group(1)
-        title = re.sub(r'\s+', ' ', m.group(2)).strip()
-        code_match = CDC_CODE_RE.search(path)
-        if not code_match:
+    for page in range(0, 10):  # safety cap; today's index spans 2 pages
+        url = f'{CDC_INDEX}?page={page}'
+        page_html = http_get(url)
+        if not page_html:
             continue
-        code = code_match.group(1).upper()
-        if code in seen_codes:
-            continue
-        seen_codes.add(code)
-        out.append((title, code, path))
+        before = len(seen_codes)
+        for m in CDC_ROW_RE.finditer(page_html):
+            title_raw, path, code = m.group(1), m.group(2), m.group(3)
+            code = code.upper()
+            if code in seen_codes:
+                continue
+            title = clean_title(title_raw)
+            if not title:
+                continue
+            seen_codes.add(code)
+            out.append((title, code, path))
+        if len(seen_codes) == before:
+            break  # this page added nothing new — end of pagination
     return out
+
+
+_BAD_TITLE_RE = re.compile(
+    r'^[DEF]\d{3,5}$|&#\d+;|&amp;|&quot;|&#x[0-9a-f]+;',
+    flags=re.IGNORECASE,
+)
+
+
+def _is_bad_title(t):
+    """Recognise titles that should be replaced by a fresh scrape:
+    HTML-entity-laden ('&#8211;'), site-suffix-padded
+    ('… - FYDT 福音电台'), or a bare catalogue code ('E1060')."""
+    if not t:
+        return True
+    if _BAD_TITLE_RE.search(t):
+        return True
+    # Suffix that survived the older sync cycle.
+    if 'FYDT' in t.upper() or '福音电台' in t:
+        return True
+    return False
 
 
 def merge(existing, new):
     """Merge a freshly-scraped entry over the existing one. Preserves
     user-curated fields (`verse` set by hand, `themes` overrides) so
-    rerunning the sync never wipes manual work."""
+    rerunning the sync never wipes manual work — but always replaces
+    a 'bad' title (entity-laden / code-only / suffix-padded) with the
+    fresh one when the new scrape produced a real human-readable
+    name."""
     if not existing:
         return new
     merged = dict(existing)
-    # Always refresh the source-derived fields.
-    for k in ('title', 'url', 'audioUrl', 'pdfUrl', 'sourceLabel',
+    # Title: prefer fresh scrape if it's better.
+    new_title = new.get('title')
+    cur_title = merged.get('title')
+    if new_title:
+        if _is_bad_title(cur_title) or new_title == cur_title:
+            merged['title'] = new_title
+        # Otherwise keep the existing title (likely user-edited).
+    # Always refresh URL/audio/pdf/code/source-label/language.
+    for k in ('url', 'audioUrl', 'pdfUrl', 'sourceLabel',
               'language', 'code'):
         v = new.get(k)
         if v:
             merged[k] = v
-    # Themes: keep existing if non-empty (user may have curated),
-    # otherwise take auto-derived.
+    # Themes: keep existing if non-empty.
     if not merged.get('themes'):
         merged['themes'] = new.get('themes', [])
     # Verse: keep existing if set; otherwise take auto-derived.
     if not merged.get('verse'):
         merged['verse'] = new.get('verse')
+    # Re-derive themes from the (possibly improved) title when the
+    # current entry has none. Rerunning the sync should fill themes
+    # for the ~256 CDC entries that previously had only a code.
+    if not merged.get('themes') and merged.get('title'):
+        merged['themes'] = infer_themes(merged['title'])
     return merged
 
 
@@ -240,10 +309,14 @@ def main():
     for u in fydt_urls:
         sid = slug_from_url(u, 'fydt')
         existing_entry = existing.get(sid)
-        # If we already have audio+pdf+title, skip the per-page hit.
+        # If we already have audio+pdf+a clean title, skip the
+        # per-page hit. Otherwise re-fetch so we can repair the
+        # entry. _is_bad_title catches HTML entities, site suffixes,
+        # and bare catalogue codes.
         if existing_entry and existing_entry.get('audioUrl') \
                 and existing_entry.get('pdfUrl') \
-                and existing_entry.get('title'):
+                and existing_entry.get('title') \
+                and not _is_bad_title(existing_entry.get('title')):
             continue
         title, audio, pdf = fetch_fydt_song_meta(u)
         if not title:
