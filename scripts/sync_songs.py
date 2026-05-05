@@ -84,6 +84,57 @@ AUDIO_RE = re.compile(r'https?://[^\s"\'<>]+\.(?:mp3|m4a)', re.IGNORECASE)
 # PDF link pattern.
 PDF_RE = re.compile(r'https?://[^\s"\'<>]+\.pdf', re.IGNORECASE)
 
+# fydt.org renders the per-song Bible verse citation inside an
+# Elementor ACF-repeater div, e.g.:
+#   <div class="dce-acf-repeater">罗马书(Rom) 5:1-11</div>
+# This is a structured metadata field (the church's own
+# categorisation), not lyrics — perfectly safe to extract as a
+# factual citation.
+FYDT_VERSE_RE = re.compile(
+    r'<div[^>]*class="[^"]*dce-acf-repeater[^"]*"[^>]*>\s*([^<]+?)\s*</div>',
+    flags=re.IGNORECASE,
+)
+
+# Canonical English-name lookup keyed off the Chinese book name
+# that fydt.org uses in its citation field. Saves shipping the
+# raw Chinese citation into the JSON — we normalise to the same
+# form Song.verseBook already understands ("Romans 5:1-11" rather
+# than "罗马书 5:1-11"), which keeps the book filter chip row
+# matching the rest of the app's English-canonical convention.
+ZH_TO_EN_BOOK = {
+    '创世记': 'Genesis', '出埃及记': 'Exodus', '利未记': 'Leviticus',
+    '民数记': 'Numbers', '申命记': 'Deuteronomy', '约书亚记': 'Joshua',
+    '士师记': 'Judges', '路得记': 'Ruth',
+    '撒母耳记上': '1 Samuel', '撒母耳记下': '2 Samuel',
+    '列王纪上': '1 Kings', '列王纪下': '2 Kings',
+    '列王记上': '1 Kings', '列王记下': '2 Kings',
+    '历代志上': '1 Chronicles', '历代志下': '2 Chronicles',
+    '以斯拉记': 'Ezra', '尼希米记': 'Nehemiah', '以斯帖记': 'Esther',
+    '约伯记': 'Job', '诗篇': 'Psalms', '箴言': 'Proverbs',
+    '传道书': 'Ecclesiastes', '雅歌': 'Song of Solomon',
+    '以赛亚书': 'Isaiah', '耶利米书': 'Jeremiah',
+    '耶利米哀歌': 'Lamentations', '哀歌': 'Lamentations',
+    '以西结书': 'Ezekiel', '但以理书': 'Daniel',
+    '何西阿书': 'Hosea', '约珥书': 'Joel', '阿摩司书': 'Amos',
+    '俄巴底亚书': 'Obadiah', '约拿书': 'Jonah', '弥迦书': 'Micah',
+    '那鸿书': 'Nahum', '哈巴谷书': 'Habakkuk',
+    '西番雅书': 'Zephaniah', '哈该书': 'Haggai',
+    '撒迦利亚书': 'Zechariah', '玛拉基书': 'Malachi',
+    '马太福音': 'Matthew', '马可福音': 'Mark', '路加福音': 'Luke',
+    '约翰福音': 'John', '使徒行传': 'Acts', '罗马书': 'Romans',
+    '哥林多前书': '1 Corinthians', '哥林多后书': '2 Corinthians',
+    '加拉太书': 'Galatians', '以弗所书': 'Ephesians',
+    '腓立比书': 'Philippians', '歌罗西书': 'Colossians',
+    '帖撒罗尼迦前书': '1 Thessalonians',
+    '帖撒罗尼迦后书': '2 Thessalonians',
+    '提摩太前书': '1 Timothy', '提摩太后书': '2 Timothy',
+    '提多书': 'Titus', '腓利门书': 'Philemon', '希伯来书': 'Hebrews',
+    '雅各书': 'James', '彼得前书': '1 Peter', '彼得后书': '2 Peter',
+    '约翰一书': '1 John', '约翰二书': '2 John', '约翰三书': '3 John',
+    '约翰壹书': '1 John', '约翰贰书': '2 John', '约翰叁书': '3 John',
+    '犹大书': 'Jude', '启示录': 'Revelation',
+}
+
 USER_AGENT = 'YsWordsSongsSyncBot/1.0 (+https://yswords.netlify.app)'
 
 
@@ -164,12 +215,47 @@ def clean_title(raw):
     return t or None
 
 
+def parse_fydt_verse(raw):
+    """Normalise fydt's verse-field text into the English-canonical
+    citation form the app uses ('Romans 5:1-11'). The site renders
+    citations like:
+        罗马书(Rom) 5:1-11
+        诗篇 23
+        马太福音 6:9-13
+    We split on the first run of digits/colons, look up the Chinese
+    book name in ZH_TO_EN_BOOK, and stitch back together. If the
+    book isn't recognised we fall through to None — better empty
+    than wrong.
+
+    Stores ONLY the parsed citation string; never any other text
+    from the page.
+    """
+    if not raw:
+        return None
+    # Strip parenthetical English aliases like '(Rom)'.
+    cleaned = re.sub(r'\(([^)]*)\)', '', raw).strip()
+    # Pattern: <Chinese book name> <chapter[:verse[-range]]>
+    m = re.match(
+        r'^([一-鿿]+)\s*(\d+(?::\d+(?:\s*[\-–—]\s*\d+)?)?)?',
+        cleaned,
+    )
+    if not m:
+        return None
+    zh_book, locator = m.group(1), m.group(2) or ''
+    en_book = ZH_TO_EN_BOOK.get(zh_book)
+    if not en_book:
+        return None
+    return (en_book + ' ' + locator).strip() if locator else en_book
+
+
 def fetch_fydt_song_meta(url):
-    """For one fydt song page, extract (title, audio_url, pdf_url).
-    Returns (None, None, None) on failure — caller skips the entry."""
+    """For one fydt song page, extract (title, audio_url, pdf_url,
+    verse). Returns (None, None, None, None) on failure — caller
+    skips the entry. Verse is the structured ACF citation field,
+    parsed into English-canonical form via parse_fydt_verse."""
     page_html = http_get(url)
     if not page_html:
-        return None, None, None
+        return None, None, None, None
     title = None
     m = TITLE_RE.search(page_html)
     if m:
@@ -182,7 +268,11 @@ def fetch_fydt_song_meta(url):
     p = PDF_RE.search(page_html)
     if p:
         pdf = p.group(0)
-    return title, audio, pdf
+    verse = None
+    v = FYDT_VERSE_RE.search(page_html)
+    if v:
+        verse = parse_fydt_verse(html.unescape(v.group(1)).strip())
+    return title, audio, pdf, verse
 
 
 def slug_from_url(url, prefix='fydt'):
@@ -283,9 +373,13 @@ def merge(existing, new):
     # Themes: keep existing if non-empty.
     if not merged.get('themes'):
         merged['themes'] = new.get('themes', [])
-    # Verse: keep existing if set; otherwise take auto-derived.
-    if not merged.get('verse'):
-        merged['verse'] = new.get('verse')
+    # Verse: prefer fresh scrape when (a) we don't already have one
+    # and (b) the scrape returned a structured citation. The
+    # title-keyword inference remains the fallback. We deliberately
+    # do NOT overwrite an existing verse — if the user/community
+    # has hand-curated a more specific reference, that wins.
+    if not merged.get('verse') and new.get('verse'):
+        merged['verse'] = new['verse']
     # Re-derive themes from the (possibly improved) title when the
     # current entry has none. Rerunning the sync should fill themes
     # for the ~256 CDC entries that previously had only a code.
@@ -309,19 +403,26 @@ def main():
     for u in fydt_urls:
         sid = slug_from_url(u, 'fydt')
         existing_entry = existing.get(sid)
-        # If we already have audio+pdf+a clean title, skip the
-        # per-page hit. Otherwise re-fetch so we can repair the
-        # entry. _is_bad_title catches HTML entities, site suffixes,
-        # and bare catalogue codes.
+        # Skip the per-page hit only when every interesting field
+        # is already populated and clean: audio+pdf URLs, a
+        # human-readable title (not a bare code or HTML-entity
+        # string), AND a verse citation (so we can run a
+        # backfill pass for the ~ 200 entries that don't yet
+        # have one).
         if existing_entry and existing_entry.get('audioUrl') \
                 and existing_entry.get('pdfUrl') \
                 and existing_entry.get('title') \
-                and not _is_bad_title(existing_entry.get('title')):
+                and not _is_bad_title(existing_entry.get('title')) \
+                and existing_entry.get('verse'):
             continue
-        title, audio, pdf = fetch_fydt_song_meta(u)
+        title, audio, pdf, verse = fetch_fydt_song_meta(u)
         if not title:
             print(f'  skip (no title): {u}')
             continue
+        # Fall back to the title-derived verse if the page didn't
+        # surface a structured citation.
+        if not verse:
+            verse = infer_verse(title)
         new_entry = {
             'id': sid,
             'title': title,
@@ -332,7 +433,7 @@ def main():
             'audioUrl': audio,
             'pdfUrl': pdf,
             'themes': infer_themes(title),
-            'verse': infer_verse(title),
+            'verse': verse,
         }
         existing[sid] = merge(existing_entry, new_entry)
         time.sleep(0.5)  # be polite

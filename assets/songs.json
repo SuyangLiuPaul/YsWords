@@ -19,7 +19,7 @@
     "totalSongs": 510,
     "note": "Theme tags are auto-derived from the title text using a keyword map; they are best-effort, not authoritative. The verse field is only populated for unambiguous cases like Psalm 23 settings.",
     "mediaUrlNote": "CDC entries have audioUrl + pdfUrl derived deterministically from the catalogue code; fydt entries have these populated by the sync script when it scrapes per-song pages. The app today still uses link-out (opening url in a new tab) — these direct media URLs are pre-populated so the app can switch to inline playback or PDF download once licensing is documented, with no further data work.",
-    "lastSyncedAt": "2026-05-05T01:33:10Z"
+    "lastSyncedAt": "2026-05-05T01:47:11Z"
   },
   "songs": [
     {
@@ -4152,7 +4152,7 @@
       "themes": [
         "生命"
       ],
-      "verse": null
+      "verse": "Deuteronomy 6:5"
     },
     {
       "id": "fydt:content_yishengzhuiganyaweidexinyixianchangban",
@@ -4194,7 +4194,7 @@
       "themes": [
         "教会"
       ],
-      "verse": null
+      "verse": "John 15:5"
     },
     {
       "id": "fydt:content_yuzhutongxin",
@@ -4223,7 +4223,7 @@
       "themes": [
         "教会"
       ],
-      "verse": null
+      "verse": "Psalms 139:17"
     },
     {
       "id": "fydt:ge_yujidulianhe",
@@ -4237,7 +4237,7 @@
       "themes": [
         "教会"
       ],
-      "verse": null
+      "verse": "Romans 6:4-5"
     },
     {
       "id": "fydt:content_yuwotongzhuxianchangban",
@@ -4273,7 +4273,7 @@
       "audioUrl": "https://fydt.org/wp-content/uploads/2019/07/S01_016.mp3",
       "pdfUrl": "https://fydt.org/wp-content/uploads/2019/07/S01_016.pdf",
       "themes": [],
-      "verse": null
+      "verse": "John 8:12"
     },
     {
       "id": "fydt:content_fengshengluchengxianchangban",
@@ -4285,7 +4285,7 @@
       "audioUrl": "https://fydt.org/wp-content/uploads/2019/06/S03_018.mp3",
       "pdfUrl": "https://fydt.org/wp-content/uploads/2019/06/S03_018.pdf",
       "themes": [],
-      "verse": null
+      "verse": "Colossians 2:9-10"
     },
     {
       "id": "fydt:content_weini",
@@ -4299,7 +4299,7 @@
       "themes": [
         "委身"
       ],
-      "verse": null
+      "verse": "Isaiah 62:3"
     },
     {
       "id": "fydt:ge_zhuhuirenniweizhongchengderenma",
@@ -4311,7 +4311,7 @@
       "audioUrl": "https://fydt.org/wp-content/uploads/2019/07/S02_014.mp3",
       "pdfUrl": "https://fydt.org/wp-content/uploads/2019/07/S02_014.pdf",
       "themes": [],
-      "verse": null
+      "verse": "Luke 18:8"
     },
     {
       "id": "fydt:content_zhubangzhuwomen0",
@@ -4337,7 +4337,7 @@
       "themes": [
         "祷告"
       ],
-      "verse": null
+      "verse": "Psalms 103:1-22"
     },
     {
       "id": "fydt:ge_zhugandongni",
@@ -4373,7 +4373,7 @@
       "audioUrl": "https://fydt.org/wp-content/uploads/2019/07/S01_018.mp3",
       "pdfUrl": "https://fydt.org/wp-content/uploads/2019/07/S01_018.pdf",
       "themes": [],
-      "verse": null
+      "verse": "Psalms 36:6"
     },
     {
       "id": "fydt:song_乐意行你旨意",
@@ -4401,7 +4401,7 @@
       "themes": [
         "顺服"
       ],
-      "verse": null
+      "verse": "Psalms 40:8"
     },
     {
       "id": "fydt:song_亏欠你真多更新版",
@@ -4431,7 +4431,7 @@
         "真理",
         "重生"
       ],
-      "verse": null
+      "verse": "Isaiah 53:3"
     },
     {
       "id": "fydt:song_仆人之歌",
@@ -4469,7 +4469,7 @@
       "themes": [
         "见证"
       ],
-      "verse": null
+      "verse": "John 12:32"
     },
     {
       "id": "fydt:content_yinixinweixin",
@@ -4483,7 +4483,7 @@
       "themes": [
         "心"
       ],
-      "verse": null
+      "verse": "Psalms 40:1-17"
     },
     {
       "id": "fydt:ge_yizhengjiuweiyi",
@@ -4497,7 +4497,7 @@
       "themes": [
         "救恩"
       ],
-      "verse": null
+      "verse": "Isaiah 61:10-11"
     },
     {
       "id": "fydt:content_yiselienimenyaolingting",
@@ -4509,7 +4509,7 @@
       "audioUrl": "https://fydt.org/wp-content/uploads/2019/10/S04_003.mp3",
       "pdfUrl": "https://fydt.org/wp-content/uploads/2019/10/S04_003.pdf",
       "themes": [],
-      "verse": null
+      "verse": "Deuteronomy 6:4"
     },
     {
       "id": "fydt:song_以雅伟为乐",
@@ -4537,7 +4537,7 @@
       "themes": [
         "神的名"
       ],
-      "verse": null
+      "verse": "Romans 5:1-11"
     },
     {
       "id": "fydt:content_chuanqidejiaohui",
@@ -4551,7 +4551,7 @@
       "themes": [
         "教会"
       ],
-      "verse": null
+      "verse": "Matthew 4:16"
     },
     {
       "id": "fydt:ge_chuanai",
@@ -4577,7 +4577,7 @@
       "audioUrl": null,
       "pdfUrl": "https://fydt.org/wp-content/uploads/2019/06/S01_038.pdf",
       "themes": [],
-      "verse": null
+      "verse": "Matthew 5:14-16"
     },
     {
       "id": "fydt:content_nichuitingwoqiqiu0",
@@ -4615,7 +4615,7 @@
       "audioUrl": "https://fydt.org/wp-content/uploads/2019/07/S01_041female.mp3",
       "pdfUrl": "https://fydt.org/wp-content/uploads/2019/07/S01_041.pdf",
       "themes": [],
-      "verse": null
+      "verse": "Psalms 139:1-4"
     },
     {
       "id": "fydt:content_nishiwopanwang",
@@ -4629,7 +4629,7 @@
       "themes": [
         "仰望"
       ],
-      "verse": null
+      "verse": "Deuteronomy 32:2"
     },
     {
       "id": "fydt:content_%E4%BD%A0%E6%98%AF%E9%85%8D%E5%BE%97",
@@ -4643,7 +4643,7 @@
       "themes": [
         "重生"
       ],
-      "verse": null
+      "verse": "Revelation 4:8-9"
     },
     {
       "id": "fydt:ge_nimianqianyouxile",
@@ -4655,7 +4655,7 @@
       "audioUrl": "https://fydt.org/wp-content/uploads/2019/07/S01_040.mp3",
       "pdfUrl": "https://fydt.org/wp-content/uploads/2019/07/S01_040.pdf",
       "themes": [],
-      "verse": null
+      "verse": "Psalms 16:1-11"
     },
     {
       "id": "fydt:ge_baoshouneixin",
@@ -4669,7 +4669,7 @@
       "themes": [
         "心"
       ],
-      "verse": null
+      "verse": "Proverbs 4:23"
     },
     {
       "id": "fydt:content_xinxindetiaoyue",
@@ -4684,7 +4684,7 @@
         "信心",
         "心"
       ],
-      "verse": null
+      "verse": "Hebrews 11:1"
     },
     {
       "id": "fydt:ge_zuogezhenzhengcongmingren",
@@ -4698,7 +4698,7 @@
       "themes": [
         "真理"
       ],
-      "verse": null
+      "verse": "Proverbs 3:5"
     },
     {
       "id": "fydt:ge_zuozhujingbing",
@@ -4739,7 +4739,7 @@
         "心",
         "祷告"
       ],
-      "verse": null
+      "verse": "Jeremiah 29:13"
     },
     {
       "id": "fydt:ge_quanrandiaini",
@@ -4765,7 +4765,7 @@
       "audioUrl": "https://fydt.org/wp-content/uploads/2019/07/S01_028.mp3",
       "pdfUrl": "https://fydt.org/wp-content/uploads/2019/07/S01_028.pdf",
       "themes": [],
-      "verse": null
+      "verse": "Ephesians 5:14-16"
     },
     {
       "id": "fydt:content_fanyouqixidezanmeiyawei",
@@ -4780,7 +4780,7 @@
         "神的名",
         "赞美"
       ],
-      "verse": null
+      "verse": "Psalms 150:1-6"
     },
     {
       "id": "fydt:content_chusirusheng",
@@ -4794,7 +4794,7 @@
       "themes": [
         "生命"
       ],
-      "verse": null
+      "verse": "John 5:19"
     },
     {
       "id": "fydt:ge_lishangjiali",
@@ -4806,7 +4806,7 @@
       "audioUrl": "https://fydt.org/wp-content/uploads/2019/07/S01_002.mp3",
       "pdfUrl": "https://fydt.org/wp-content/uploads/2019/07/S01_002.pdf",
       "themes": [],
-      "verse": null
+      "verse": "Isaiah 30:15"
     },
     {
       "id": "fydt:content_jiazengwomendexinxin",
@@ -4833,7 +4833,7 @@
       "audioUrl": "https://fydt.org/wp-content/uploads/2019/07/S03_014.mp3",
       "pdfUrl": "https://fydt.org/wp-content/uploads/2019/07/S03_014.pdf",
       "themes": [],
-      "verse": null
+      "verse": "Joshua 14:6-14"
     },
     {
       "id": "fydt:content_huameixinyi",
@@ -4859,7 +4859,7 @@
       "audioUrl": "https://fydt.org/wp-content/uploads/2019/07/S01_023.mp3",
       "pdfUrl": "https://fydt.org/wp-content/uploads/2019/07/S01_023.pdf",
       "themes": [],
-      "verse": null
+      "verse": "Song of Solomon 1:14"
     },
     {
       "id": "fydt:ge_kexikelezhicheng",
@@ -4871,7 +4871,7 @@
       "audioUrl": "https://fydt.org/wp-content/uploads/2019/07/S02_022.mp3",
       "pdfUrl": "https://fydt.org/wp-content/uploads/2019/07/S02_022.pdf",
       "themes": [],
-      "verse": null
+      "verse": "Jeremiah 33:1-26"
     },
     {
       "id": "fydt:content_tongdejiye",
@@ -4883,7 +4883,7 @@
       "audioUrl": "https://fydt.org/wp-content/uploads/2019/07/S03_012.mp3",
       "pdfUrl": "https://fydt.org/wp-content/uploads/2019/07/S03_012.pdf",
       "themes": [],
-      "verse": null
+      "verse": "Joshua 3:13"
     },
     {
       "id": "fydt:song_content_tongxinren",
@@ -4896,7 +4896,7 @@
         "心",
         "教会"
       ],
-      "verse": null,
+      "verse": "Philippians 2:1-5",
       "audioUrl": "https://fydt.org/wp-content/uploads/2022/01/S01_031R.mp3",
       "pdfUrl": "https://fydt.org/wp-content/uploads/2022/01/S01_031RL.pdf"
     },
@@ -4928,7 +4928,7 @@
         "神的名",
         "重生"
       ],
-      "verse": null
+      "verse": "Psalms 96:4"
     },
     {
       "id": "fydt:content_xiangyaweichangxingexianchangban",
@@ -4943,7 +4943,7 @@
         "神的名",
         "重生"
       ],
-      "verse": null
+      "verse": "Psalms 96:1-3"
     },
     {
       "id": "fydt:content_xiangyaweidedaogao",
@@ -4972,7 +4972,7 @@
       "themes": [
         "祷告"
       ],
-      "verse": null
+      "verse": "Psalms 5:1-3"
     },
     {
       "id": "fydt:content_hemutongzhu",
@@ -4984,7 +4984,7 @@
       "audioUrl": "https://fydt.org/wp-content/uploads/2020/12/S03_050.mp3",
       "pdfUrl": "https://fydt.org/wp-content/uploads/2020/12/S03_050.pdf",
       "themes": [],
-      "verse": null
+      "verse": "Psalms 133:1"
     },
     {
       "id": "fydt:ge_eyesukuaikuailai",
@@ -5020,7 +5020,7 @@
       "audioUrl": "https://fydt.org/wp-content/uploads/2019/07/S01_032.mp3",
       "pdfUrl": "https://fydt.org/wp-content/uploads/2019/07/S01_032.pdf",
       "themes": [],
-      "verse": null
+      "verse": "Psalms 13:5-6"
     },
     {
       "id": "fydt:content_zainixinhuaili",
@@ -5046,7 +5046,7 @@
       "audioUrl": "https://fydt.org/wp-content/uploads/2019/07/S01_034.mp3",
       "pdfUrl": "https://fydt.org/wp-content/uploads/2019/07/S01_034.pdf",
       "themes": [],
-      "verse": null
+      "verse": "Psalms 16:7-8"
     },
     {
       "id": "fydt:song_content-zailingliheyi",
@@ -5059,7 +5059,7 @@
         "圣灵",
         "教会"
       ],
-      "verse": null,
+      "verse": "1 Timothy 12:13",
       "audioUrl": "https://fydt.org/wp-content/uploads/2022/01/S03_056.mp3",
       "pdfUrl": "https://fydt.org/wp-content/uploads/2022/01/S03_056.pdf"
     },
@@ -5089,7 +5089,7 @@
       "themes": [
         "心"
       ],
-      "verse": null
+      "verse": "Philippians 2:1-5"
     },
     {
       "id": "fydt:song_基督的香气",
@@ -5113,7 +5113,7 @@
       "audioUrl": "https://fydt.org/wp-content/uploads/2025/08/S04_020.mp3",
       "pdfUrl": "https://fydt.org/wp-content/uploads/2025/08/S04_020.pdf",
       "themes": [],
-      "verse": null
+      "verse": "Galatians 2:20"
     },
     {
       "id": "fydt:song_基督被高举",
@@ -5141,7 +5141,7 @@
       "themes": [
         "赞美"
       ],
-      "verse": null
+      "verse": "Matthew 20:28"
     },
     {
       "id": "fydt:ge_fuhuo",
@@ -5155,7 +5155,7 @@
       "themes": [
         "重生"
       ],
-      "verse": null
+      "verse": "Matthew 16:24"
     },
     {
       "id": "fydt:ge_fuhuoheshengming",
@@ -5170,7 +5170,7 @@
         "生命",
         "重生"
       ],
-      "verse": null
+      "verse": "John 11:25-26"
     },
     {
       "id": "fydt:content_fuhuobiaoji0",
@@ -5184,7 +5184,7 @@
       "themes": [
         "重生"
       ],
-      "verse": null
+      "verse": "Song of Solomon 2:11-13"
     },
     {
       "id": "fydt:http_wwwfydtorg_content_fuhuodenengli",
@@ -5198,7 +5198,7 @@
       "themes": [
         "重生"
       ],
-      "verse": null
+      "verse": "Ecclesiastes 1:3-4"
     },
     {
       "id": "fydt:ge_tiantianchengsongni",
@@ -5211,7 +5211,7 @@
         "赞美",
         "重生"
       ],
-      "verse": null,
+      "verse": "John 1:16",
       "audioUrl": "https://fydt.org/wp-content/uploads/2014/06/S01_010R.mp3",
       "pdfUrl": "https://fydt.org/wp-content/uploads/2014/06/S01_010R.pdf"
     },
@@ -5227,7 +5227,7 @@
       "themes": [
         "祷告"
       ],
-      "verse": null
+      "verse": "John 14:26"
     },
     {
       "id": "fydt:content_tianlulicheng",
@@ -5239,7 +5239,7 @@
       "audioUrl": "https://fydt.org/wp-content/uploads/2019/07/S02_008.mp3",
       "pdfUrl": "https://fydt.org/wp-content/uploads/2019/07/S02_008.pdf",
       "themes": [],
-      "verse": null
+      "verse": "Matthew 11:29"
     },
     {
       "id": "fydt:content_fenjinchuanyang",
@@ -5265,7 +5265,7 @@
       "themes": [
         "得胜"
       ],
-      "verse": null,
+      "verse": "Hebrews 12:1-2",
       "audioUrl": "https://fydt.org/wp-content/uploads/2022/01/S02_074.mp3",
       "pdfUrl": "https://fydt.org/wp-content/uploads/2022/01/S02_074.pdf"
     },
@@ -5279,7 +5279,7 @@
       "themes": [
         "得胜"
       ],
-      "verse": null,
+      "verse": "Philippians 3:8-14",
       "audioUrl": "https://fydt.org/wp-content/uploads/2024/06/S03_065.mp3",
       "pdfUrl": "https://fydt.org/wp-content/uploads/2024/06/S03_065.pdf"
     },
@@ -5291,7 +5291,7 @@
       "sourceLabel": "福音电台",
       "url": "https://fydt.org/jiangshang/",
       "themes": [],
-      "verse": null,
+      "verse": "Habakkuk 2:13",
       "audioUrl": "https://fydt.org/wp-content/uploads/2024/12/S03_068.mp3",
       "pdfUrl": "https://fydt.org/wp-content/uploads/2024/12/S03_068.pdf"
     },
@@ -5305,7 +5305,7 @@
       "audioUrl": "https://fydt.org/wp-content/uploads/2019/07/S02_034.mp3",
       "pdfUrl": "https://fydt.org/wp-content/uploads/2019/07/S02_034-1.pdf",
       "themes": [],
-      "verse": null
+      "verse": "John 10:1-18"
     },
     {
       "id": "fydt:content_xizaiquannengzhedeyinxia",
@@ -5319,7 +5319,7 @@
       "themes": [
         "平安"
       ],
-      "verse": null
+      "verse": "Psalms 91:1-16"
     },
     {
       "id": "fydt:ge_wanquandeai",
@@ -5334,7 +5334,7 @@
         "圣洁",
         "爱"
       ],
-      "verse": null
+      "verse": "Genesis 22:14"
     },
     {
       "id": "fydt:song_定意跟随",
@@ -5398,7 +5398,7 @@
       "audioUrl": "https://fydt.org/wp-content/uploads/2024/01/S03_061.mp3",
       "pdfUrl": "https://fydt.org/wp-content/uploads/2024/01/S03_061.pdf",
       "themes": [],
-      "verse": null
+      "verse": "Isaiah 60:1-5"
     },
     {
       "id": "fydt:ge_huanyuchuanyangniderongyao",
@@ -5413,7 +5413,7 @@
         "见证",
         "赞美"
       ],
-      "verse": null
+      "verse": "Romans 1:20"
     },
     {
       "id": "fydt:content_duinishuoshi",
@@ -5425,7 +5425,7 @@
       "audioUrl": "https://fydt.org/wp-content/uploads/2019/06/S03_032A.mp3",
       "pdfUrl": "https://fydt.org/wp-content/uploads/2019/06/S03_032.pdf",
       "themes": [],
-      "verse": null
+      "verse": "Isaiah 50:4"
     },
     {
       "id": "fydt:ge_zunchongjingbaini",
@@ -5440,7 +5440,7 @@
         "敬拜",
         "神的名"
       ],
-      "verse": null
+      "verse": "1 Samuel 15:22"
     },
     {
       "id": "fydt:content_jinzhongge",
@@ -5450,7 +5450,7 @@
       "sourceLabel": "福音电台",
       "url": "https://fydt.org/content/jinzhongge/",
       "themes": [],
-      "verse": null,
+      "verse": "Matthew 22:37-39",
       "audioUrl": "https://fydt.org/wp-content/uploads/2024/04/S04_011R.mp3",
       "pdfUrl": "https://fydt.org/wp-content/uploads/2024/01/S04_011.pdf"
     },
@@ -5464,7 +5464,7 @@
       "audioUrl": "https://fydt.org/wp-content/uploads/2019/07/S03_008.mp3",
       "pdfUrl": "https://fydt.org/wp-content/uploads/2019/07/S03_008.pdf",
       "themes": [],
-      "verse": null
+      "verse": "Jeremiah 4:3"
     },
     {
       "id": "fydt:ge_kaiwoxiner",
@@ -5478,7 +5478,7 @@
       "themes": [
         "心"
       ],
-      "verse": null
+      "verse": "1 Kings 19:12"
     },
     {
       "id": "fydt:song_当刚强非常壮胆",
@@ -5502,7 +5502,7 @@
       "audioUrl": "https://fydt.org/wp-content/uploads/2024/10/S04_017.mp3",
       "pdfUrl": "https://fydt.org/wp-content/uploads/2024/10/S04_017.pdf",
       "themes": [],
-      "verse": null
+      "verse": "2 Timothy 1:7"
     },
     {
       "id": "fydt:content_bicijinian",
@@ -5514,7 +5514,7 @@
       "audioUrl": "https://fydt.org/wp-content/uploads/2021/08/S03_054.mp3",
       "pdfUrl": "https://fydt.org/wp-content/uploads/2021/08/S03_054.pdf",
       "themes": [],
-      "verse": null
+      "verse": "Philippians 1:3-8"
     },
     {
       "id": "fydt:ge_dejiannimian",
@@ -5526,7 +5526,7 @@
       "audioUrl": "https://fydt.org/wp-content/uploads/2019/07/S03_001.mp3",
       "pdfUrl": "https://fydt.org/wp-content/uploads/2019/07/S03_001.pdf",
       "themes": [],
-      "verse": null
+      "verse": "Psalms 123:1-2"
     },
     {
       "id": "fydt:content_deyaweichengxudokimosxianchangban",
@@ -5584,7 +5584,7 @@
         "圣灵",
         "心"
       ],
-      "verse": null
+      "verse": "Matthew 5:3"
     },
     {
       "id": "fydt:ge_bidezhaoshengming",
@@ -5598,7 +5598,7 @@
       "themes": [
         "生命"
       ],
-      "verse": null
+      "verse": "Matthew 10:37-39"
     },
     {
       "id": "fydt:ge_kuailaijingbai",
@@ -5636,7 +5636,7 @@
       "audioUrl": "https://fydt.org/wp-content/uploads/2019/07/S01_085.mp3",
       "pdfUrl": "https://fydt.org/wp-content/uploads/2019/07/S01_085.pdf",
       "themes": [],
-      "verse": null
+      "verse": "Psalms 90:10"
     },
     {
       "id": "fydt:content_weiduni",
@@ -5660,7 +5660,7 @@
       "audioUrl": "https://fydt.org/wp-content/uploads/2019/10/S03_040.mp3",
       "pdfUrl": "https://fydt.org/wp-content/uploads/2019/08/S03_040.pdf",
       "themes": [],
-      "verse": null
+      "verse": "Nehemiah 9:5-6"
     },
     {
       "id": "fydt:ge_yuanenzhu",
@@ -5672,7 +5672,7 @@
       "audioUrl": "https://fydt.org/wp-content/uploads/2019/07/S01_100.mp3",
       "pdfUrl": "https://fydt.org/wp-content/uploads/2019/07/S01_100.pdf",
       "themes": [],
-      "verse": null
+      "verse": "Numbers 6:24"
     },
     {
       "id": "fydt:ge_yuanyehehuasifugeini",
@@ -5698,7 +5698,7 @@
       "audioUrl": "https://fydt.org/wp-content/uploads/2019/07/S01_046.mp3",
       "pdfUrl": "https://fydt.org/wp-content/uploads/2019/07/S01_046.pdf",
       "themes": [],
-      "verse": null
+      "verse": "Ephesians 4:13"
     },
     {
       "id": "fydt:ge_womendepanwanghexile",
@@ -5712,7 +5712,7 @@
       "themes": [
         "仰望"
       ],
-      "verse": null
+      "verse": "1 Thessalonians 2:12"
     },
     {
       "id": "fydt:ge_woxinkaodeshishui",
@@ -5750,7 +5750,7 @@
       "audioUrl": "https://fydt.org/wp-content/uploads/2025/01/S04_018.mp3",
       "pdfUrl": "https://fydt.org/wp-content/uploads/2025/01/S04_018.pdf",
       "themes": [],
-      "verse": null
+      "verse": "1 Corinthians 15:28"
     },
     {
       "id": "fydt:ge_woxinyangwangshenyawei",
@@ -5766,7 +5766,7 @@
         "心",
         "神的名"
       ],
-      "verse": null
+      "verse": "Psalms 131:2-3"
     },
     {
       "id": "fydt:content_woxinsuoxu",
@@ -5780,7 +5780,7 @@
       "themes": [
         "心"
       ],
-      "verse": null
+      "verse": "Luke 5:18-19"
     },
     {
       "id": "fydt:content_woxinlingdefusheng",
@@ -5796,7 +5796,7 @@
         "心",
         "生命"
       ],
-      "verse": null
+      "verse": "John 3:16"
     },
     {
       "id": "fydt:ge_woshifoukaojinzhudexin",
@@ -5810,7 +5810,7 @@
       "themes": [
         "心"
       ],
-      "verse": null
+      "verse": "John 17:9"
     },
     {
       "id": "fydt:content_woqiugaoyijianshi",
@@ -5824,7 +5824,7 @@
       "themes": [
         "祷告"
       ],
-      "verse": null
+      "verse": "Psalms 27:4"
     },
     {
       "id": "fydt:ge_woshenainiwodeliliang",
@@ -5838,7 +5838,7 @@
       "themes": [
         "爱"
       ],
-      "verse": null
+      "verse": "Psalms 18:1-2"
     },
     {
       "id": "fydt:content_wodelilianghedunpai",
@@ -5850,7 +5850,7 @@
       "audioUrl": "https://fydt.org/wp-content/uploads/2019/07/S01_052.mp3",
       "pdfUrl": "https://fydt.org/wp-content/uploads/2019/07/S01_052.pdf",
       "themes": [],
-      "verse": null
+      "verse": "Psalms 28:7"
     },
     {
       "id": "fydt:content_wodexinnazanmeiyehehua",
@@ -5865,7 +5865,7 @@
         "心",
         "赞美"
       ],
-      "verse": null
+      "verse": "Psalms 100:1-5"
     },
     {
       "id": "fydt:ge_woyaoxiangshanjumu",
@@ -5877,7 +5877,7 @@
       "audioUrl": "https://fydt.org/wp-content/uploads/2019/07/S01_056.mp3",
       "pdfUrl": "https://fydt.org/wp-content/uploads/2019/07/S01_056.pdf",
       "themes": [],
-      "verse": null
+      "verse": "Psalms 121:1-8"
     },
     {
       "id": "fydt:ge_shipian77715",
@@ -5891,7 +5891,7 @@
       "themes": [
         "神的名"
       ],
-      "verse": null
+      "verse": "Psalms 77:7-15"
     },
     {
       "id": "fydt:ge_wohuanyaoguicongshui",
@@ -5903,7 +5903,7 @@
       "audioUrl": "https://fydt.org/wp-content/uploads/2019/07/S01_051.mp3",
       "pdfUrl": "https://fydt.org/wp-content/uploads/2019/07/S01_051.pdf",
       "themes": [],
-      "verse": null
+      "verse": "John 6:68"
     },
     {
       "id": "fydt:ge_woxuanzeyaweidaolu",
@@ -5917,7 +5917,7 @@
       "themes": [
         "神的名"
       ],
-      "verse": null
+      "verse": "Isaiah 55:8-9"
     },
     {
       "id": "fydt:song_我醒来-仰望你",
@@ -5959,7 +5959,7 @@
       "audioUrl": "https://fydt.org/wp-content/uploads/2019/06/S03_038.mp3",
       "pdfUrl": "https://fydt.org/wp-content/uploads/2019/06/S03_038.pdf",
       "themes": [],
-      "verse": null
+      "verse": "Zechariah 8:2"
     },
     {
       "id": "fydt:song_taiqitoulai",
@@ -5985,7 +5985,7 @@
       "themes": [
         "见证"
       ],
-      "verse": null
+      "verse": "Isaiah 11:1-16"
     },
     {
       "id": "fydt:content_jiebang",
@@ -5997,7 +5997,7 @@
       "audioUrl": "https://fydt.org/wp-content/uploads/2019/07/S03_021.mp3",
       "pdfUrl": "https://fydt.org/wp-content/uploads/2019/07/S03_021.pdf",
       "themes": [],
-      "verse": null
+      "verse": "2 Kings 5:26"
     },
     {
       "id": "fydt:ge_jiuzhuen",
@@ -6025,7 +6025,7 @@
       "themes": [
         "顺服"
       ],
-      "verse": null
+      "verse": "Psalms 143:5"
     },
     {
       "id": "fydt:ge_jingbaizhu",
@@ -6039,7 +6039,7 @@
       "themes": [
         "敬拜"
       ],
-      "verse": null
+      "verse": "Psalms 77:12"
     },
     {
       "id": "fydt:content_jingweiyehehuaderen",
@@ -6051,7 +6051,7 @@
       "audioUrl": "https://fydt.org/wp-content/uploads/2019/07/S02_108.mp3",
       "pdfUrl": "https://fydt.org/wp-content/uploads/2019/07/S02_108.pdf",
       "themes": [],
-      "verse": null
+      "verse": "Proverbs 1:33"
     },
     {
       "id": "fydt:ge_xinsheng0",
@@ -6066,7 +6066,7 @@
         "生命",
         "重生"
       ],
-      "verse": null
+      "verse": "Micah 6:8"
     },
     {
       "id": "fydt:ge_2168",
@@ -6078,7 +6078,7 @@
       "audioUrl": "https://fydt.org/wp-content/uploads/2020/06/S03_047.mp3",
       "pdfUrl": "https://fydt.org/wp-content/uploads/2020/06/S03_047.pdf",
       "themes": [],
-      "verse": null
+      "verse": "Deuteronomy 8:2-3"
     },
     {
       "id": "fydt:content_zhouyebuzhudehuqiu",
@@ -6092,7 +6092,7 @@
       "themes": [
         "祷告"
       ],
-      "verse": null
+      "verse": "Psalms 113:1"
     },
     {
       "id": "fydt:song_智慧",
@@ -6120,7 +6120,7 @@
       "themes": [
         "真理"
       ],
-      "verse": null
+      "verse": "Proverbs 8:14"
     },
     {
       "id": "fydt:song_更美的盼望",
@@ -6148,7 +6148,7 @@
       "themes": [
         "仰望"
       ],
-      "verse": null
+      "verse": "Hebrews 11:40"
     },
     {
       "id": "fydt:ge_meitian",
@@ -6174,7 +6174,7 @@
       "themes": [
         "祷告"
       ],
-      "verse": null
+      "verse": "Psalms 43:3-4"
     },
     {
       "id": "fydt:ge_qiuzhulianaixianzhang",
@@ -6203,7 +6203,7 @@
       "themes": [
         "祷告"
       ],
-      "verse": null
+      "verse": "Psalms 121:2"
     },
     {
       "id": "fydt:ge_qiuzhuraoshu",
@@ -6246,7 +6246,7 @@
         "真理",
         "重生"
       ],
-      "verse": null
+      "verse": "Proverbs 3:5"
     },
     {
       "id": "fydt:content_huoshuijianghe",
@@ -6260,7 +6260,7 @@
       "themes": [
         "重生"
       ],
-      "verse": null
+      "verse": "John 7:38"
     },
     {
       "id": "fydt:song_深切的回应",
@@ -6284,7 +6284,7 @@
       "audioUrl": "https://fydt.org/wp-content/uploads/2024/01/S03_059.mp3",
       "pdfUrl": "https://fydt.org/wp-content/uploads/2024/01/S03_059.pdf",
       "themes": [],
-      "verse": null
+      "verse": "Ephesians 5:1-2"
     },
     {
       "id": "fydt:content_qingchenderiguang",
@@ -6296,7 +6296,7 @@
       "audioUrl": "https://fydt.org/wp-content/uploads/2019/07/S03_020.mp3",
       "pdfUrl": "https://fydt.org/wp-content/uploads/2019/07/S03_020.pdf",
       "themes": [],
-      "verse": null
+      "verse": "Luke 1:78-79"
     },
     {
       "id": "fydt:content_qingchendeganlu",
@@ -6308,7 +6308,7 @@
       "audioUrl": "https://fydt.org/wp-content/uploads/2019/07/S03_005.mp3",
       "pdfUrl": "https://fydt.org/wp-content/uploads/2019/07/S03_005.pdf",
       "themes": [],
-      "verse": null
+      "verse": "Psalms 84:11"
     },
     {
       "id": "fydt:content_wenroujingdeling",
@@ -6323,7 +6323,7 @@
         "圣灵",
         "平安"
       ],
-      "verse": null
+      "verse": "1 Peter 3:4"
     },
     {
       "id": "fydt:content_xishuipangdeshu",
@@ -6335,7 +6335,7 @@
       "audioUrl": "https://fydt.org/wp-content/uploads/2019/07/S04_001.mp3",
       "pdfUrl": "https://fydt.org/wp-content/uploads/2019/07/S04_001.pdf",
       "themes": [],
-      "verse": null
+      "verse": "Psalms 1:1-3"
     },
     {
       "id": "fydt:content_manxinganen",
@@ -6350,7 +6350,7 @@
         "心",
         "感恩"
       ],
-      "verse": null
+      "verse": "1 Thessalonians 5:18"
     },
     {
       "id": "fydt:ge_lingdezhudao",
@@ -6364,7 +6364,7 @@
       "themes": [
         "圣灵"
       ],
-      "verse": null
+      "verse": "Psalms 133:1"
     },
     {
       "id": "fydt:ge_dianranwomendexin",
@@ -6378,7 +6378,7 @@
       "themes": [
         "心"
       ],
-      "verse": null
+      "verse": "John 2:17"
     },
     {
       "id": "fydt:song_aidaodi",
@@ -6390,7 +6390,7 @@
       "themes": [
         "爱"
       ],
-      "verse": null,
+      "verse": "John 21:15-17",
       "audioUrl": "https://fydt.org/wp-content/uploads/2024/09/S03_066.mp3",
       "pdfUrl": "https://fydt.org/wp-content/uploads/2024/09/S03_066.pdf"
     },
@@ -6407,7 +6407,7 @@
         "得胜",
         "爱"
       ],
-      "verse": null
+      "verse": "Matthew 22:37"
     },
     {
       "id": "fydt:content_aidetuanju",
@@ -6435,7 +6435,7 @@
       "themes": [
         "爱"
       ],
-      "verse": null
+      "verse": "1 John 4:16-18"
     },
     {
       "id": "fydt:ge_muyuan",
@@ -6461,7 +6461,7 @@
       "themes": [
         "生命"
       ],
-      "verse": null
+      "verse": "John 6:33"
     },
     {
       "id": "fydt:content_kannayaweiderongguangzhaoyao",
@@ -6475,7 +6475,7 @@
       "themes": [
         "神的名"
       ],
-      "verse": null
+      "verse": "Matthew 4:4"
     },
     {
       "id": "fydt:song_kanjian",
@@ -6499,7 +6499,7 @@
       "audioUrl": "https://fydt.org/wp-content/uploads/2019/06/S03_039.mp3",
       "pdfUrl": "https://fydt.org/wp-content/uploads/2019/06/S03_039.pdf",
       "themes": [],
-      "verse": null
+      "verse": "Matthew 6:22-23"
     },
     {
       "id": "fydt:ge_qidao",
@@ -6565,7 +6565,7 @@
       "themes": [
         "圣灵"
       ],
-      "verse": null
+      "verse": "Hebrews 12:29"
     },
     {
       "id": "fydt:song_神的爱-2",
@@ -6593,7 +6593,7 @@
       "themes": [
         "爱"
       ],
-      "verse": null
+      "verse": "1 Corinthians 13:4"
     },
     {
       "id": "fydt:ge_chengxie",
@@ -6621,7 +6621,7 @@
       "themes": [
         "感恩"
       ],
-      "verse": null
+      "verse": "Psalms 8:1-9"
     },
     {
       "id": "fydt:ge_denghouzhu",
@@ -6633,7 +6633,7 @@
       "audioUrl": "https://fydt.org/wp-content/uploads/2019/07/S01_093.mp3",
       "pdfUrl": "https://fydt.org/wp-content/uploads/2019/07/S01_093.pdf",
       "themes": [],
-      "verse": null
+      "verse": "Psalms 27:14"
     },
     {
       "id": "fydt:content_denghouyehehua",
@@ -6645,7 +6645,7 @@
       "audioUrl": "https://fydt.org/wp-content/uploads/2019/07/S02_112.mp3",
       "pdfUrl": "https://fydt.org/wp-content/uploads/2019/07/S02_112.pdf",
       "themes": [],
-      "verse": null
+      "verse": "Lamentations 3:23"
     },
     {
       "id": "fydt:song_耶稣-神的羔羊",
@@ -6669,7 +6669,7 @@
       "audioUrl": "https://fydt.org/wp-content/uploads/2025/03/S04_019.mp3",
       "pdfUrl": "https://fydt.org/wp-content/uploads/2025/03/S04_019.pdf",
       "themes": [],
-      "verse": null
+      "verse": "Acts 2:24"
     },
     {
       "id": "fydt:song_ziyou",
@@ -6679,7 +6679,7 @@
       "sourceLabel": "福音电台",
       "url": "https://fydt.org/song/ziyou/",
       "themes": [],
-      "verse": null,
+      "verse": "John 3:8",
       "audioUrl": "https://fydt.org/wp-content/uploads/2024/05/S03_064.mp3",
       "pdfUrl": "https://fydt.org/wp-content/uploads/2024/05/S03_064.pdf"
     },
@@ -6693,7 +6693,7 @@
       "audioUrl": "https://fydt.org/wp-content/uploads/2020/07/S01_036R.mp3",
       "pdfUrl": "https://fydt.org/wp-content/uploads/2020/07/S01_036R_L.pdf",
       "themes": [],
-      "verse": null
+      "verse": "John 8:36"
     },
     {
       "id": "fydt:ge_ruobushizhubangzhu",
@@ -6705,7 +6705,7 @@
       "audioUrl": "https://fydt.org/wp-content/uploads/2019/07/S01_071.mp3",
       "pdfUrl": "https://fydt.org/wp-content/uploads/2019/07/S01_071.pdf",
       "themes": [],
-      "verse": null
+      "verse": "Psalms 94:17-19"
     },
     {
       "id": "fydt:ge_mengenfuderen",
@@ -6717,7 +6717,7 @@
       "audioUrl": "https://fydt.org/wp-content/uploads/2019/07/S02_125.mp3",
       "pdfUrl": "https://fydt.org/wp-content/uploads/2019/07/S02_125.pdf",
       "themes": [],
-      "verse": null
+      "verse": "Psalms 32:1-2"
     },
     {
       "id": "fydt:content_tuibian",
@@ -6729,7 +6729,7 @@
       "audioUrl": "https://fydt.org/wp-content/uploads/2020/06/S03_046.mp3",
       "pdfUrl": "https://fydt.org/wp-content/uploads/2020/06/S03_046.pdf",
       "themes": [],
-      "verse": null
+      "verse": "Isaiah 41:14"
     },
     {
       "id": "fydt:content_yaoxiangyaweichangxinge",
@@ -6744,7 +6744,7 @@
         "神的名",
         "重生"
       ],
-      "verse": null
+      "verse": "Psalms 96:4"
     },
     {
       "id": "fydt:content_yaowanquanxiangtianfuwanquan",
@@ -6771,7 +6771,7 @@
         "祷告",
         "警醒"
       ],
-      "verse": null,
+      "verse": "Daniel 10:12",
       "audioUrl": "https://fydt.org/wp-content/uploads/2025/02/S03_069.mp3",
       "pdfUrl": "https://fydt.org/wp-content/uploads/2025/02/S03_069.pdf"
     },
@@ -6785,7 +6785,7 @@
       "audioUrl": "https://fydt.org/wp-content/uploads/2019/07/S01_015.mp3",
       "pdfUrl": "https://fydt.org/wp-content/uploads/2019/07/S01_015.pdf",
       "themes": [],
-      "verse": null
+      "verse": "1 Corinthians 2:2"
     },
     {
       "id": "fydt:ge_shipian100",
@@ -6851,7 +6851,7 @@
       "sourceLabel": "福音电台",
       "url": "https://fydt.org/song/qianbeishifeng/",
       "themes": [],
-      "verse": null,
+      "verse": "Matthew 11:29",
       "audioUrl": "https://fydt.org/wp-content/uploads/2025/06/S03_070.mp3",
       "pdfUrl": "https://fydt.org/wp-content/uploads/2025/06/S03_070.pdf"
     },
@@ -6869,7 +6869,7 @@
         "神的名",
         "重生"
       ],
-      "verse": null
+      "verse": "Psalms 37:3"
     },
     {
       "id": "fydt:song_起来-arise",
@@ -6893,7 +6893,7 @@
       "audioUrl": "https://fydt.org/wp-content/uploads/2024/01/S03_063.mp3",
       "pdfUrl": "https://fydt.org/wp-content/uploads/2024/01/S03_063.pdf",
       "themes": [],
-      "verse": null
+      "verse": "Isaiah 11:9-10"
     },
     {
       "id": "fydt:ge_gencongyesu",
@@ -6907,7 +6907,7 @@
       "themes": [
         "顺服"
       ],
-      "verse": null
+      "verse": "John 14:6"
     },
     {
       "id": "fydt:song_跟随神的灵",
@@ -6937,7 +6937,7 @@
         "圣灵",
         "顺服"
       ],
-      "verse": null
+      "verse": "Matthew 24:13"
     },
     {
       "id": "fydt:content_biandiyaorenshiyawei",
@@ -6951,7 +6951,7 @@
       "themes": [
         "神的名"
       ],
-      "verse": null
+      "verse": "Deuteronomy 28:58"
     },
     {
       "id": "fydt:content_mentuge",
@@ -6965,7 +6965,7 @@
       "themes": [
         "门徒"
       ],
-      "verse": null
+      "verse": "Isaiah 50:4-5"
     },
     {
       "id": "fydt:ge_wen",
@@ -6991,7 +6991,7 @@
       "themes": [
         "神的名"
       ],
-      "verse": null
+      "verse": "Psalms 83:18"
     },
     {
       "id": "fydt:content_yaweishixinshi",
@@ -7020,7 +7020,7 @@
       "themes": [
         "神的名"
       ],
-      "verse": null
+      "verse": "Psalms 8:1"
     },
     {
       "id": "fydt:content_yaweidemingshicongmogu",
@@ -7049,7 +7049,7 @@
         "真理",
         "神的名"
       ],
-      "verse": null
+      "verse": "Deuteronomy 8:3"
     },
     {
       "id": "fydt:content_yaweidenenglixiandewanquan",
@@ -7064,7 +7064,7 @@
         "圣洁",
         "神的名"
       ],
-      "verse": null
+      "verse": "2 Corinthians 12:9"
     },
     {
       "id": "fydt:content_yaweiderongmei",
@@ -7079,7 +7079,7 @@
         "神的名",
         "赞美"
       ],
-      "verse": null
+      "verse": "Psalms 63:7-8"
     },
     {
       "id": "fydt:content_yaweidehuayuhadavaryahweh",
@@ -7094,7 +7094,7 @@
         "真理",
         "神的名"
       ],
-      "verse": null
+      "verse": "Isaiah 55:10-11"
     },
     {
       "id": "fydt:ge_yaweiyanzhongmeiyounanshi",
@@ -7108,7 +7108,7 @@
       "themes": [
         "神的名"
       ],
-      "verse": null
+      "verse": "Mark 10:27"
     },
     {
       "id": "fydt:yaweirongyaodeguangyizhangxianxianchangban",
@@ -7123,7 +7123,7 @@
         "神的名",
         "赞美"
       ],
-      "verse": null
+      "verse": "2 Corinthians 4:5-7"
     },
     {
       "id": "fydt:song_yaweisiyuwomendezhiyi",
@@ -7135,7 +7135,7 @@
       "themes": [
         "神的名"
       ],
-      "verse": null,
+      "verse": "1 Thessalonians 5:16-18",
       "audioUrl": "https://fydt.org/wp-content/uploads/2021/01/S04_007.mp3",
       "pdfUrl": "https://fydt.org/wp-content/uploads/2021/01/S04_007.pdf"
     },
@@ -7179,7 +7179,7 @@
       "themes": [
         "神的名"
       ],
-      "verse": null
+      "verse": "Psalms 46:10"
     },
     {
       "id": "fydt:http_wwwfydtorg_ge_songzanwozhu",
@@ -7208,7 +7208,7 @@
       "themes": [
         "圣灵"
       ],
-      "verse": null
+      "verse": "Zechariah 10:3-8"
     }
   ]
 }
