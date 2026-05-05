@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:provider/provider.dart';
 
 import 'package:yswords/pages/strongs_entry_page.dart';
+import 'package:yswords/widgets/word_distribution_table.dart';
 
 import 'package:yswords/constants/ui_strings.dart';
 import 'package:yswords/models/app_settings.dart';
@@ -32,7 +33,7 @@ class StatsPage extends StatelessWidget {
     // The old BibleStatsService translation-text counts are dead.
 
     return DefaultTabController(
-      length: 3,
+      length: 4,
       child: Scaffold(
         appBar: AppBar(
           leading: const LocalizedBackButton(),
@@ -64,6 +65,17 @@ class StatsPage extends StatelessWidget {
                 text:
                     uiStrings['statsLookup']?[locale] ?? 'Lookup',
               ),
+              // Round 56 (continued): Word Distribution tab —
+              // exposes the WordDistributionTable widget that
+              // previously was only reachable via tap-a-verse →
+              // originals sheet → tap a word → "show distribution".
+              // User feedback: "ALSo there is a table, can you
+              // have another tab for that table from exegesis?"
+              Tab(
+                icon: const Icon(Icons.table_chart_outlined),
+                text: uiStrings['statsDistribution']?[locale] ??
+                    'Distribution',
+              ),
               Tab(
                 icon: const Icon(Icons.spellcheck),
                 text:
@@ -87,6 +99,7 @@ class StatsPage extends StatelessWidget {
           children: [
             _OriginalsOverviewTab(locale: locale, settings: settings),
             _StrongsLookupTab(locale: locale, settings: settings),
+            _WordDistributionTab(locale: locale, settings: settings),
             _OriginalsTab(locale: locale, settings: settings),
           ],
         ),
@@ -2894,6 +2907,538 @@ class _StrongsLookupTabState extends State<_StrongsLookupTab>
                       size: 18,
                       color: scheme.onSurface.withValues(alpha: 0.4)),
                 ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Round 56 (continued — exegesis-table tab): wraps the
+/// `WordDistributionTable` widget so users can reach it from a
+/// dedicated Bible Tools tab instead of having to tap a verse →
+/// originals sheet → tap a word → "show distribution".
+///
+/// The widget itself renders only lexical metadata (Strong's
+/// number, lemma, gloss, per-book occurrence counts for the word
+/// + its family + synonyms). No verse text or extended
+/// commentary is shown by this tab — that's `OriginalsSheet`'s
+/// job.
+class _WordDistributionTab extends StatefulWidget {
+  final String locale;
+  final AppSettings settings;
+  const _WordDistributionTab(
+      {required this.locale, required this.settings});
+
+  @override
+  State<_WordDistributionTab> createState() =>
+      _WordDistributionTabState();
+}
+
+class _WordDistributionTabState extends State<_WordDistributionTab>
+    with AutomaticKeepAliveClientMixin {
+  // Default to H3068 — יהוה, the Tetragrammaton — so the table
+  // arrives populated with an interesting OT distribution rather
+  // than an empty state. Users immediately see what the tab does
+  // before they touch the picker.
+  String _strongs = 'H3068';
+  Future<List<OriginalsLemma>>? _lemmasFuture;
+
+  @override
+  bool get wantKeepAlive => true;
+
+  @override
+  void initState() {
+    super.initState();
+    _lemmasFuture = OriginalsStatsService.load();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    super.build(context);
+    final scheme = Theme.of(context).colorScheme;
+    final locale = widget.locale;
+    final settings = widget.settings;
+    return Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 1200),
+        child: Column(
+          children: [
+            // Sticky picker header — current focus word + change
+            // button. Fits on one line; doesn't scroll with the
+            // table body.
+            Padding(
+              padding: const EdgeInsets.fromLTRB(12, 12, 12, 6),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    uiStrings['statsDistributionHint']?[locale] ??
+                        'Pick a Strong\'s word to see its distribution across books, plus word-family + synonym comparison.',
+                    style: TextStyle(
+                      fontSize: (settings.fontSize - 3)
+                          .clamp(11.0, 14.0),
+                      color: scheme.onSurface.withValues(alpha: 0.65),
+                      fontStyle: FontStyle.italic,
+                      height: 1.4,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  _CurrentWordBar(
+                    strongs: _strongs,
+                    locale: locale,
+                    settings: settings,
+                    scheme: scheme,
+                    onChange: () => _openPicker(context),
+                  ),
+                ],
+              ),
+            ),
+            const Divider(height: 1),
+            Expanded(
+              child: WordDistributionTable(
+                // Re-key on every selection so the widget runs
+                // its initState (which fires _loadAll) — without
+                // this, switching words would leave the previous
+                // rows visible until the user manually scrolled.
+                key: ValueKey(_strongs),
+                strongsNumber: _strongs,
+                locale: locale,
+                currentVersion: null,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _openPicker(BuildContext context) async {
+    final all = await _lemmasFuture;
+    if (!context.mounted) return;
+    final picked = await showModalBottomSheet<String>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Theme.of(context).colorScheme.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (sheetCtx) {
+        return _StrongsPickerSheet(
+          allLemmas: all ?? const [],
+          locale: widget.locale,
+          settings: widget.settings,
+          initialQuery: '',
+          onPick: (strongs) =>
+              Navigator.of(sheetCtx).pop(strongs),
+        );
+      },
+    );
+    if (picked != null && picked.isNotEmpty) {
+      setState(() => _strongs = picked);
+    }
+  }
+}
+
+/// Compact header showing which Strong's word the distribution
+/// table is currently focused on, plus a "Change word" button
+/// that opens the picker sheet.
+class _CurrentWordBar extends StatefulWidget {
+  final String strongs;
+  final String locale;
+  final AppSettings settings;
+  final ColorScheme scheme;
+  final VoidCallback onChange;
+  const _CurrentWordBar({
+    required this.strongs,
+    required this.locale,
+    required this.settings,
+    required this.scheme,
+    required this.onChange,
+  });
+
+  @override
+  State<_CurrentWordBar> createState() => _CurrentWordBarState();
+}
+
+class _CurrentWordBarState extends State<_CurrentWordBar> {
+  Future<OriginalsLemma?>? _future;
+
+  @override
+  void initState() {
+    super.initState();
+    _future = _lookup(widget.strongs);
+  }
+
+  @override
+  void didUpdateWidget(covariant _CurrentWordBar old) {
+    super.didUpdateWidget(old);
+    if (old.strongs != widget.strongs) {
+      _future = _lookup(widget.strongs);
+    }
+  }
+
+  Future<OriginalsLemma?> _lookup(String s) async {
+    final all = await OriginalsStatsService.load();
+    for (final l in all) {
+      if (l.strongs == s) return l;
+    }
+    return null;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isHebrew = widget.strongs.startsWith('H');
+    final tagColor = isHebrew
+        ? Colors.indigo.shade100
+        : Colors.deepPurple.shade100;
+    final tagFg = isHebrew
+        ? Colors.indigo.shade900
+        : Colors.deepPurple.shade900;
+    return Material(
+      color: widget.scheme.surfaceContainerLow,
+      borderRadius: BorderRadius.circular(10),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(12, 8, 8, 8),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.symmetric(
+                  horizontal: 8, vertical: 3),
+              decoration: BoxDecoration(
+                color: tagColor,
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: Text(
+                widget.strongs,
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                  color: tagFg,
+                  fontFeatures: const [FontFeature.tabularFigures()],
+                ),
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: FutureBuilder<OriginalsLemma?>(
+                future: _future,
+                builder: (ctx, snap) {
+                  final lemma = snap.data;
+                  if (lemma == null) {
+                    return Text(
+                      widget.strongs,
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        color: widget.scheme.onSurface,
+                      ),
+                    );
+                  }
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.baseline,
+                        textBaseline: TextBaseline.alphabetic,
+                        children: [
+                          Flexible(
+                            child: Text(
+                              lemma.lemma,
+                              style: TextStyle(
+                                fontFamily: widget.settings.fontFamily,
+                                fontSize: 18,
+                                fontWeight: FontWeight.w700,
+                                color: widget.scheme.onSurface,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          if (lemma.translit.isNotEmpty) ...[
+                            const SizedBox(width: 8),
+                            Flexible(
+                              child: Text(
+                                lemma.translit,
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontStyle: FontStyle.italic,
+                                  color: widget.scheme.onSurface
+                                      .withValues(alpha: 0.6),
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                      Text(
+                        lemma.glossFor(widget.locale),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontFamily: widget.settings.fontFamily,
+                          fontSize: 12,
+                          color: widget.scheme.onSurface
+                              .withValues(alpha: 0.7),
+                        ),
+                      ),
+                    ],
+                  );
+                },
+              ),
+            ),
+            const SizedBox(width: 8),
+            TextButton.icon(
+              onPressed: widget.onChange,
+              icon: const Icon(Icons.swap_horiz, size: 18),
+              label: Text(
+                uiStrings['statsDistributionPicker']?[widget.locale] ??
+                    'Change word',
+                style: const TextStyle(fontSize: 13),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Modal-sheet picker that lets the user choose a Strong's word
+/// for the distribution table. Same fuzzy-search vocabulary as
+/// the Lookup tab; selection returns a Strong's number string
+/// via Navigator.pop.
+class _StrongsPickerSheet extends StatefulWidget {
+  final List<OriginalsLemma> allLemmas;
+  final String locale;
+  final AppSettings settings;
+  final String initialQuery;
+  final ValueChanged<String> onPick;
+
+  const _StrongsPickerSheet({
+    required this.allLemmas,
+    required this.locale,
+    required this.settings,
+    required this.initialQuery,
+    required this.onPick,
+  });
+
+  @override
+  State<_StrongsPickerSheet> createState() => _StrongsPickerSheetState();
+}
+
+class _StrongsPickerSheetState extends State<_StrongsPickerSheet> {
+  late String _query;
+  String _filter = 'all';
+  bool _hideStopwords = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _query = widget.initialQuery;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final locale = widget.locale;
+    final allLabel =
+        uiStrings['statsOriginalsAll']?[locale] ?? 'All';
+    Iterable<OriginalsLemma> filtered = widget.allLemmas;
+    if (_filter == 'hebrew') {
+      filtered = filtered.where((e) => e.isHebrew);
+    } else if (_filter == 'greek') {
+      filtered = filtered.where((e) => !e.isHebrew);
+    }
+    if (_hideStopwords) {
+      filtered = filtered.where((e) => !e.isStopword);
+    }
+    final q = _query.trim().toLowerCase();
+    if (q.isNotEmpty) {
+      filtered = filtered.where((e) =>
+          e.strongs.toLowerCase().contains(q) ||
+          e.lemma.contains(_query.trim()) ||
+          e.translit.toLowerCase().contains(q) ||
+          e.glossEn.toLowerCase().contains(q) ||
+          e.glossZhHans.contains(_query.trim()) ||
+          e.glossZhHant.contains(_query.trim()));
+    }
+    final rows = filtered.toList();
+    // Cap at 60 visible rows so the sheet doesn't laggy-scroll
+    // through 14k entries; the search box is the primary tool.
+    final showRows =
+        (q.isEmpty && rows.length > 60) ? rows.take(60).toList() : rows;
+    return SafeArea(
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(context).size.height * 0.85),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 14, 16, 8),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Row(
+                children: [
+                  Icon(Icons.swap_horiz,
+                      size: 18, color: scheme.primary),
+                  const SizedBox(width: 8),
+                  Text(
+                    uiStrings['statsDistributionPicker']?[locale] ??
+                        'Change word',
+                    style: const TextStyle(
+                        fontSize: 16, fontWeight: FontWeight.w600),
+                  ),
+                  const Spacer(),
+                  IconButton(
+                    icon: const Icon(Icons.close, size: 20),
+                    onPressed: () =>
+                        Navigator.of(context).maybePop(),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              TextField(
+                autofocus: true,
+                decoration: InputDecoration(
+                  hintText: uiStrings['statsLookupHint']?[locale] ??
+                      'Search by Strong\'s, lemma, transliteration, or gloss',
+                  isDense: true,
+                  prefixIcon: const Icon(Icons.search, size: 20),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                onChanged: (v) => setState(() => _query = v),
+              ),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Expanded(
+                    child: SegmentedButton<String>(
+                      segments: [
+                        ButtonSegment(
+                            value: 'all', label: Text(allLabel)),
+                        ButtonSegment(
+                          value: 'hebrew',
+                          label: Text(uiStrings['statsOriginalsHebrew']
+                                  ?[locale] ??
+                              'Hebrew'),
+                        ),
+                        ButtonSegment(
+                          value: 'greek',
+                          label: Text(uiStrings['statsOriginalsGreek']
+                                  ?[locale] ??
+                              'Greek'),
+                        ),
+                      ],
+                      selected: {_filter},
+                      onSelectionChanged: (s) =>
+                          setState(() => _filter = s.first),
+                      multiSelectionEnabled: false,
+                      showSelectedIcon: false,
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  FilterChip(
+                    avatar: Icon(
+                      _hideStopwords
+                          ? Icons.filter_alt
+                          : Icons.filter_alt_off,
+                      size: 16,
+                    ),
+                    label: Text(
+                      uiStrings['statsOriginalsHideStopwordsTitle']
+                              ?[locale] ??
+                          'Hide common particles',
+                      style: const TextStyle(fontSize: 12),
+                    ),
+                    selected: _hideStopwords,
+                    onSelected: (v) =>
+                        setState(() => _hideStopwords = v),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Expanded(
+                child: showRows.isEmpty
+                    ? Center(
+                        child: Text(
+                          uiStrings['statsLookupEmpty']?[locale] ??
+                              'No matching entries.',
+                          style: TextStyle(
+                              color: scheme.onSurfaceVariant),
+                        ),
+                      )
+                    : ListView.separated(
+                        itemCount: showRows.length,
+                        separatorBuilder: (_, __) =>
+                            const SizedBox(height: 4),
+                        itemBuilder: (_, i) {
+                          final e = showRows[i];
+                          final tagColor = e.isHebrew
+                              ? Colors.indigo.shade100
+                              : Colors.deepPurple.shade100;
+                          final tagFg = e.isHebrew
+                              ? Colors.indigo.shade900
+                              : Colors.deepPurple.shade900;
+                          return InkWell(
+                            onTap: () => widget.onPick(e.strongs),
+                            borderRadius: BorderRadius.circular(8),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 8, vertical: 8),
+                              child: Row(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 6, vertical: 2),
+                                    decoration: BoxDecoration(
+                                      color: tagColor,
+                                      borderRadius:
+                                          BorderRadius.circular(5),
+                                    ),
+                                    child: Text(
+                                      e.strongs,
+                                      style: TextStyle(
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.w700,
+                                        color: tagFg,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text(
+                                      '${e.lemma}  ·  ${e.glossFor(locale)}',
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                        fontFamily:
+                                            widget.settings.fontFamily,
+                                        fontSize: 14,
+                                        color: scheme.onSurface,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    '${e.count}',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w700,
+                                      color: scheme.primary,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      ),
               ),
             ],
           ),

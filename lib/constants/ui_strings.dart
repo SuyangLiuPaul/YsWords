@@ -275,6 +275,31 @@ const uiStrings = {
     'zh-Hant': '未找到匹配的字根',
     'en': 'No matching entries.',
   },
+  // Round 56: Word Distribution tab — exposes the
+  // WordDistributionTable widget (previously only reachable via
+  // tap-a-verse → originals sheet → tap a word → "show
+  // distribution") as a standalone tab.
+  'statsDistribution': {
+    'zh-Hans': '字词分布',
+    'zh-Hant': '字詞分布',
+    'en': 'Distribution',
+  },
+  'statsDistributionHint': {
+    'zh-Hans': '选择字根查看其在各书卷的分布及词族对照',
+    'zh-Hant': '選擇字根查看其在各書卷的分布及詞族對照',
+    'en':
+        'Pick a Strong\'s word to see its distribution across books, plus word-family + synonym comparison.',
+  },
+  'statsDistributionPicker': {
+    'zh-Hans': '更换字根',
+    'zh-Hant': '更換字根',
+    'en': 'Change word',
+  },
+  'statsDistributionEmpty': {
+    'zh-Hans': '请选择一个字根',
+    'zh-Hant': '請選擇一個字根',
+    'en': 'Pick a Strong\'s word to begin.',
+  },
   'statsBook': {'zh-Hans': '书卷', 'zh-Hant': '書卷', 'en': 'Book'},
   'statsChapters': {'zh-Hans': '章数', 'zh-Hant': '章數', 'en': 'Chapters'},
   'statsVerses': {'zh-Hans': '节数', 'zh-Hant': '節數', 'en': 'Verses'},
