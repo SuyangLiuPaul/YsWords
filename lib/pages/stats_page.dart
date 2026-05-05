@@ -14,18 +14,36 @@ import 'package:yswords/services/bible_stats_service.dart';
 import 'package:yswords/services/fetch_books.dart' show standardBookOrder;
 import 'package:yswords/services/originals_stats_service.dart';
 import 'package:yswords/utils/clipboard_helper.dart';
+import 'package:yswords/services/concordance_service.dart' show ConcordanceRef;
 import 'package:yswords/utils/jump_to_reference.dart' show resolveAndPrepareJump;
 import 'package:yswords/utils/reference_parser.dart' show BibleReference;
 import 'package:yswords/utils/version_mapper.dart' show toEnglish, localeAwareBookName;
 import 'package:yswords/widgets/home_icon_button.dart';
 import 'package:yswords/widgets/localized_back_button.dart';
 
-/// Statistical analysis of the currently-loaded Bible version —
-/// vocabulary frequency, per-book size, hapax legomena, reading
-/// time. Computes lazily once per version and renders three tabs:
-/// Overview / Books / Vocabulary.
-class StatsPage extends StatelessWidget {
+/// Bible Tools page — three tabs (Overview / Lookup / Distribution
+/// / Vocabulary) plus a shared focus-Strong's that lets the tabs
+/// reflect each other. Tapping a row anywhere updates [_focusStrongs];
+/// switching to Distribution shows the picked word's table without
+/// the user having to re-pick.
+class StatsPage extends StatefulWidget {
   const StatsPage({super.key});
+
+  @override
+  State<StatsPage> createState() => _StatsPageState();
+}
+
+class _StatsPageState extends State<StatsPage> {
+  // Shared "currently focused Strong's number" across tabs. Default
+  // to H3068 (יהוה / Yahweh) so the Distribution tab arrives
+  // populated when the user opens it cold. Updated by row taps in
+  // Lookup / Vocabulary and by the Distribution tab's own picker.
+  String _focusStrongs = 'H3068';
+
+  void _setFocus(String s) {
+    if (s == _focusStrongs) return;
+    setState(() => _focusStrongs = s);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -101,9 +119,22 @@ class StatsPage extends StatelessWidget {
         body: TabBarView(
           children: [
             _OriginalsOverviewTab(locale: locale, settings: settings),
-            _StrongsLookupTab(locale: locale, settings: settings),
-            _WordDistributionTab(locale: locale, settings: settings),
-            _OriginalsTab(locale: locale, settings: settings),
+            _StrongsLookupTab(
+              locale: locale,
+              settings: settings,
+              onFocusChanged: _setFocus,
+            ),
+            _WordDistributionTab(
+              locale: locale,
+              settings: settings,
+              focusStrongs: _focusStrongs,
+              onFocusChanged: _setFocus,
+            ),
+            _OriginalsTab(
+              locale: locale,
+              settings: settings,
+              onFocusChanged: _setFocus,
+            ),
           ],
         ),
       ),
@@ -2067,7 +2098,15 @@ class _BookOriginalsRow extends StatelessWidget {
 class _OriginalsTab extends StatefulWidget {
   final String locale;
   final AppSettings settings;
-  const _OriginalsTab({required this.locale, required this.settings});
+  /// Round 56 (continued — cross-tab linking): tapping a row sets
+  /// the shared focus so switching to the Distribution tab shows
+  /// the same word the user just inspected here.
+  final ValueChanged<String> onFocusChanged;
+  const _OriginalsTab({
+    required this.locale,
+    required this.settings,
+    required this.onFocusChanged,
+  });
 
   @override
   State<_OriginalsTab> createState() => _OriginalsTabState();
@@ -2173,6 +2212,7 @@ class _OriginalsTabState extends State<_OriginalsTab>
               settings: settings,
               scheme: scheme,
               rank: i,
+              onFocus: widget.onFocusChanged,
             );
           },
               ),
@@ -2311,6 +2351,10 @@ class _OriginalsRow extends StatelessWidget {
   final AppSettings settings;
   final ColorScheme scheme;
   final int rank;
+  /// Round 56 (continued — cross-tab linking): tapping a row also
+  /// updates the parent StatsPage's focus state so switching to
+  /// the Distribution tab shows this same word.
+  final ValueChanged<String> onFocus;
 
   const _OriginalsRow({
     required this.entry,
@@ -2318,6 +2362,7 @@ class _OriginalsRow extends StatelessWidget {
     required this.settings,
     required this.scheme,
     required this.rank,
+    required this.onFocus,
   });
 
   @override
@@ -2335,7 +2380,10 @@ class _OriginalsRow extends StatelessWidget {
       elevation: 0,
       child: InkWell(
         borderRadius: BorderRadius.circular(10),
-        onTap: () => _showBookBreakdown(context),
+        onTap: () {
+          onFocus(entry.strongs);
+          _showBookBreakdown(context);
+        },
         child: Padding(
           padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
           child: Column(
@@ -2571,8 +2619,17 @@ class _OriginalsRow extends StatelessWidget {
 class _StrongsLookupTab extends StatefulWidget {
   final String locale;
   final AppSettings settings;
-  const _StrongsLookupTab(
-      {required this.locale, required this.settings});
+  /// Round 56 (continued — cross-tab linking): called whenever the
+  /// user taps a Strong's row, so the parent StatsPage can carry
+  /// that selection over to the Distribution tab. Tapping the row
+  /// itself still pushes the full StrongsEntryPage; this is a
+  /// side-effect that keeps the page state coherent across tabs.
+  final ValueChanged<String> onFocusChanged;
+  const _StrongsLookupTab({
+    required this.locale,
+    required this.settings,
+    required this.onFocusChanged,
+  });
 
   @override
   State<_StrongsLookupTab> createState() => _StrongsLookupTabState();
@@ -2795,7 +2852,47 @@ class _StrongsLookupTabState extends State<_StrongsLookupTab>
         allVerses: mp.verses,
         locale: widget.locale,
         currentVersion: mp.currentVersion,
+        // Round 56 (continued — issue 1): without this callback
+        // OriginalsSheet renders concordance references as plain
+        // text instead of tappable links — user feedback "after
+        // clicking the word, it doesn't show the same as how it
+        // shows in bible reader". The reader passes onNavigateRef;
+        // we need to pass it too. The cross-ref click pops the
+        // current sheet and opens a fresh one for the new verse,
+        // keeping the user in the Bible Tools exegesis flow rather
+        // than dropping them out into the reader.
+        onNavigateRef: (ref) {
+          Navigator.of(sheetCtx).maybePop();
+          _hopToConcordanceRef(context, ref);
+        },
       ),
+    );
+  }
+
+  /// Re-target the OriginalsSheet at the verse a concordance ref
+  /// points to. Filters MainProvider.verses; if the verse isn't in
+  /// the current version, falls through to _resolveAndOpen which
+  /// handles cross-version fallback.
+  void _hopToConcordanceRef(
+      BuildContext context, ConcordanceRef ref) {
+    final mp = context.read<MainProvider>();
+    // ConcordanceRef carries the canonical English book; the
+    // MainProvider verse list uses whatever the current version's
+    // book name is (e.g. '创世记' for CUVS). Match either.
+    final localBook = mp.verses.isEmpty
+        ? null
+        : mp.verses
+            .firstWhere(
+              (v) => (toEnglish(v.book) ?? v.book) == ref.englishBook,
+              orElse: () => mp.verses.first,
+            )
+            .book;
+    final book = localBook ?? ref.englishBook;
+    _openOriginalsSheetFor(
+      context,
+      book: book,
+      chapter: ref.chapter,
+      verse: ref.verse,
     );
   }
 
@@ -2838,6 +2935,10 @@ class _StrongsLookupTabState extends State<_StrongsLookupTab>
         allVerses: mp.verses,
         locale: widget.locale,
         currentVersion: mp.currentVersion,
+        onNavigateRef: (ref) {
+          Navigator.of(sheetCtx).maybePop();
+          _hopToConcordanceRef(context, ref);
+        },
       ),
     );
   }
@@ -2973,11 +3074,15 @@ class _StrongsLookupTabState extends State<_StrongsLookupTab>
         // Round 56: tap pushes the existing StrongsEntryPage which
         // shows the full lexicon entry, word family, and
         // concordance — far richer than the inline book breakdown
-        // the Vocabulary tab opens.
-        onTap: () => Get.to(
-          () => StrongsEntryPage(number: e.strongs),
-          transition: Transition.rightToLeft,
-        ),
+        // the Vocabulary tab opens. Also sets the shared focus so
+        // switching to the Distribution tab shows this same word.
+        onTap: () {
+          widget.onFocusChanged(e.strongs);
+          Get.to(
+            () => StrongsEntryPage(number: e.strongs),
+            transition: Transition.rightToLeft,
+          );
+        },
         child: Padding(
           padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
           child: Row(
@@ -3067,6 +3172,27 @@ class _StrongsLookupTabState extends State<_StrongsLookupTab>
                       color: scheme.onSurface.withValues(alpha: 0.4)),
                 ],
               ),
+              // Round 56 (continued — cross-tab linking): explicit
+              // "view distribution" affordance. Sets the shared
+              // focus AND animates the page to the Distribution
+              // tab so the user lands on the chart for this word
+              // without pushing a separate entry page.
+              const SizedBox(width: 4),
+              IconButton(
+                icon: const Icon(Icons.bar_chart_rounded),
+                tooltip:
+                    uiStrings['statsLookupViewDistribution']?[locale] ??
+                        'View in Distribution',
+                iconSize: 18,
+                visualDensity: VisualDensity.compact,
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(
+                    minWidth: 32, minHeight: 32),
+                onPressed: () {
+                  widget.onFocusChanged(e.strongs);
+                  DefaultTabController.of(context).animateTo(2);
+                },
+              ),
             ],
           ),
         ),
@@ -3088,8 +3214,19 @@ class _StrongsLookupTabState extends State<_StrongsLookupTab>
 class _WordDistributionTab extends StatefulWidget {
   final String locale;
   final AppSettings settings;
-  const _WordDistributionTab(
-      {required this.locale, required this.settings});
+  /// Round 56 (continued — cross-tab linking): the focus Strong's
+  /// is now owned by the parent StatsPage so taps in Lookup or
+  /// Vocabulary surface here automatically. Passing through
+  /// `widget.focusStrongs` instead of internal state lets the
+  /// table update the moment the parent calls setFocus.
+  final String focusStrongs;
+  final ValueChanged<String> onFocusChanged;
+  const _WordDistributionTab({
+    required this.locale,
+    required this.settings,
+    required this.focusStrongs,
+    required this.onFocusChanged,
+  });
 
   @override
   State<_WordDistributionTab> createState() =>
@@ -3098,11 +3235,6 @@ class _WordDistributionTab extends StatefulWidget {
 
 class _WordDistributionTabState extends State<_WordDistributionTab>
     with AutomaticKeepAliveClientMixin {
-  // Default to H3068 — יהוה, the Tetragrammaton — so the table
-  // arrives populated with an interesting OT distribution rather
-  // than an empty state. Users immediately see what the tab does
-  // before they touch the picker.
-  String _strongs = 'H3068';
   Future<List<OriginalsLemma>>? _lemmasFuture;
 
   @override
@@ -3146,7 +3278,7 @@ class _WordDistributionTabState extends State<_WordDistributionTab>
                   ),
                   const SizedBox(height: 10),
                   _CurrentWordBar(
-                    strongs: _strongs,
+                    strongs: widget.focusStrongs,
                     locale: locale,
                     settings: settings,
                     scheme: scheme,
@@ -3162,8 +3294,8 @@ class _WordDistributionTabState extends State<_WordDistributionTab>
                 // its initState (which fires _loadAll) — without
                 // this, switching words would leave the previous
                 // rows visible until the user manually scrolled.
-                key: ValueKey(_strongs),
-                strongsNumber: _strongs,
+                key: ValueKey(widget.focusStrongs),
+                strongsNumber: widget.focusStrongs,
                 locale: locale,
                 currentVersion: null,
               ),
@@ -3196,7 +3328,7 @@ class _WordDistributionTabState extends State<_WordDistributionTab>
       },
     );
     if (picked != null && picked.isNotEmpty) {
-      setState(() => _strongs = picked);
+      widget.onFocusChanged(picked);
     }
   }
 }
@@ -3977,9 +4109,21 @@ class _NumberGrid extends StatelessWidget {
               children: [
                 for (final n in numbers)
                   SizedBox(
-                    width: 44,
+                    // Round 56 (continued): widened 44 → 56 because
+                    // two-digit verses (10, 11, 100, 119:176) were
+                    // getting ellipsised to "1.." in the picker.
+                    // FittedBox.scaleDown is a safety net for the
+                    // longest book Psalms 119 (verse 176).
+                    width: 56,
                     child: ChoiceChip(
-                      label: Center(child: Text('$n')),
+                      labelPadding: const EdgeInsets.symmetric(
+                          horizontal: 2),
+                      label: Center(
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text('$n'),
+                        ),
+                      ),
                       selected: false,
                       onSelected: (_) => onPick(n),
                     ),

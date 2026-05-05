@@ -319,6 +319,11 @@ const uiStrings = {
     'zh-Hant': '請先在閱讀頁打開一段經文，再回來這裡繼續。',
     'en': 'Open a passage in the reader first to continue here.',
   },
+  'statsLookupViewDistribution': {
+    'zh-Hans': '在分布表中查看',
+    'zh-Hant': '在分布表中查看',
+    'en': 'View in Distribution',
+  },
   // Round 56: Word Distribution tab — exposes the
   // WordDistributionTable widget (previously only reachable via
   // tap-a-verse → originals sheet → tap a word → "show
