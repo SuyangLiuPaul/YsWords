@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:provider/provider.dart';
 
-import 'package:yswords/pages/strongs_entry_page.dart';
 import 'package:yswords/widgets/originals_sheet.dart';
 import 'package:yswords/widgets/word_distribution_table.dart';
 
@@ -21,29 +19,16 @@ import 'package:yswords/utils/version_mapper.dart' show toEnglish, localeAwareBo
 import 'package:yswords/widgets/home_icon_button.dart';
 import 'package:yswords/widgets/localized_back_button.dart';
 
-/// Bible Tools page — three tabs (Overview / Lookup / Distribution
-/// / Vocabulary) plus a shared focus-Strong's that lets the tabs
-/// reflect each other. Tapping a row anywhere updates [_focusStrongs];
-/// switching to Distribution shows the picked word's table without
-/// the user having to re-pick.
-class StatsPage extends StatefulWidget {
+/// Bible Tools page — three tabs (Overview / Lookup / Distribution).
+/// Round 56 cleanup: the Vocabulary tab and the Strong's-search
+/// section of the Lookup tab were both pulled out. User feedback:
+/// "原文查询感觉下面的点任意... 下面的都没有用，上面的选择经文已经
+/// 出来的popup窗口那个强多了。包括词汇其实也没有用那个tab，remove
+/// those". The two removed surfaces re-implemented search affordances
+/// the Distribution-tab's own picker already covers; keeping them
+/// just gave users three near-identical search lists.
+class StatsPage extends StatelessWidget {
   const StatsPage({super.key});
-
-  @override
-  State<StatsPage> createState() => _StatsPageState();
-}
-
-class _StatsPageState extends State<StatsPage> {
-  // Shared "currently focused Strong's number" across tabs. Default
-  // to H3068 (יהוה / Yahweh) so the Distribution tab arrives
-  // populated when the user opens it cold. Updated by row taps in
-  // Lookup / Vocabulary and by the Distribution tab's own picker.
-  String _focusStrongs = 'H3068';
-
-  void _setFocus(String s) {
-    if (s == _focusStrongs) return;
-    setState(() => _focusStrongs = s);
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -54,7 +39,7 @@ class _StatsPageState extends State<StatsPage> {
     // The old BibleStatsService translation-text counts are dead.
 
     return DefaultTabController(
-      length: 4,
+      length: 3,
       child: Scaffold(
         appBar: AppBar(
           leading: const LocalizedBackButton(),
@@ -97,11 +82,6 @@ class _StatsPageState extends State<StatsPage> {
                 text: uiStrings['statsDistribution']?[locale] ??
                     'Distribution',
               ),
-              Tab(
-                icon: const Icon(Icons.spellcheck),
-                text:
-                    uiStrings['statsVocabulary']?[locale] ?? 'Vocabulary',
-              ),
             ],
           ),
           actions: const [
@@ -119,22 +99,8 @@ class _StatsPageState extends State<StatsPage> {
         body: TabBarView(
           children: [
             _OriginalsOverviewTab(locale: locale, settings: settings),
-            _StrongsLookupTab(
-              locale: locale,
-              settings: settings,
-              onFocusChanged: _setFocus,
-            ),
-            _WordDistributionTab(
-              locale: locale,
-              settings: settings,
-              focusStrongs: _focusStrongs,
-              onFocusChanged: _setFocus,
-            ),
-            _OriginalsTab(
-              locale: locale,
-              settings: settings,
-              onFocusChanged: _setFocus,
-            ),
+            _StrongsLookupTab(locale: locale, settings: settings),
+            _WordDistributionTab(locale: locale, settings: settings),
           ],
         ),
       ),
@@ -1667,87 +1633,6 @@ class _StatTile extends StatelessWidget {
   }
 }
 
-/// Round 56 (continued): toggle card that controls whether grammatical
-/// particles ("the", "and", "of", "who", "that", …) are hidden from
-/// the most-frequent-words lists on the Overview tab. Default ON so
-/// the Top 25 actually surfaces interesting theology vocabulary.
-class _StopwordToggleCard extends StatelessWidget {
-  final bool value;
-  final String locale;
-  final ColorScheme scheme;
-  final AppSettings settings;
-  final ValueChanged<bool> onChanged;
-  const _StopwordToggleCard({
-    required this.value,
-    required this.locale,
-    required this.scheme,
-    required this.settings,
-    required this.onChanged,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final title = uiStrings['statsOriginalsHideStopwordsTitle']
-            ?[locale] ??
-        'Hide common particles';
-    final desc = uiStrings['statsOriginalsHideStopwordsDesc']?[locale] ??
-        'Filter out high-frequency function words like the, and, in, of, who, that — surfacing the meaningful content vocabulary instead.';
-    return Container(
-      padding: const EdgeInsets.fromLTRB(14, 10, 8, 10),
-      decoration: BoxDecoration(
-        color: scheme.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(
-          color: value
-              ? scheme.primary.withValues(alpha: 0.4)
-              : scheme.outlineVariant,
-          width: value ? 1.4 : 1,
-        ),
-      ),
-      child: Row(
-        children: [
-          Icon(
-            value
-                ? Icons.filter_alt_rounded
-                : Icons.filter_alt_off_rounded,
-            color: value
-                ? scheme.primary
-                : scheme.onSurfaceVariant,
-            size: 22,
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: TextStyle(
-                    fontFamily: settings.fontFamily,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                    color: scheme.onSurface,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  desc,
-                  style: TextStyle(
-                    fontFamily: settings.fontFamily,
-                    fontSize: 11,
-                    color: scheme.onSurfaceVariant,
-                    height: 1.35,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Switch(value: value, onChanged: onChanged),
-        ],
-      ),
-    );
-  }
-}
 
 class _TopLemmasCard extends StatelessWidget {
   final String title;
@@ -2084,552 +1969,20 @@ class _BookOriginalsRow extends StatelessWidget {
   }
 }
 
-/// Round 56: Hebrew + Greek originals frequency tab. User feedback:
-/// "for 统计分析 should not use the chinese or english. should have
-/// hebrew and greek and then view the result and with related
-/// chinese or english translation next to it."
-///
-/// Loads pre-computed `assets/strongs/concordance.json` (Strong's #
-/// → total occurrence count + per-book breakdown) and joins with
-/// `hebrew.json` / `greek.json` lexicons to render lemma + transliter
-/// + locale-aware gloss alongside each frequency. Filterable by
-/// language (All / Hebrew / Greek). Cap at 200 by default — users
-/// can tap "Show all" to see the full ~14k Strong's corpus.
-class _OriginalsTab extends StatefulWidget {
-  final String locale;
-  final AppSettings settings;
-  /// Round 56 (continued — cross-tab linking): tapping a row sets
-  /// the shared focus so switching to the Distribution tab shows
-  /// the same word the user just inspected here.
-  final ValueChanged<String> onFocusChanged;
-  const _OriginalsTab({
-    required this.locale,
-    required this.settings,
-    required this.onFocusChanged,
-  });
-
-  @override
-  State<_OriginalsTab> createState() => _OriginalsTabState();
-}
-
-class _OriginalsTabState extends State<_OriginalsTab>
-    with AutomaticKeepAliveClientMixin {
-  String _filter = 'all'; // 'all' | 'hebrew' | 'greek'
-  bool _showAll = false;
-  // Round 56: hide grammatical particles (the/and/in/who/that/…) so
-  // the meaningful theology vocabulary surfaces. Default ON; flip via
-  // the toggle in the header.
-  bool _hideStopwords = true;
-  Future<List<OriginalsLemma>>? _future;
-  String _query = '';
-  final ScrollController _scrollCtrl = ScrollController();
-
-  @override
-  bool get wantKeepAlive => true;
-
-  @override
-  void initState() {
-    super.initState();
-    _future = OriginalsStatsService.load();
-  }
-
-  @override
-  void dispose() {
-    _scrollCtrl.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    super.build(context);
-    final scheme = Theme.of(context).colorScheme;
-    final locale = widget.locale;
-    final settings = widget.settings;
-    return FutureBuilder<List<OriginalsLemma>>(
-      future: _future,
-      builder: (context, snap) {
-        if (snap.connectionState != ConnectionState.done) {
-          return const Center(child: CircularProgressIndicator());
-        }
-        final all = snap.data ?? const <OriginalsLemma>[];
-        if (all.isEmpty) {
-          return Center(
-            child: Padding(
-              padding: const EdgeInsets.all(24),
-              child: Text(
-                uiStrings['statsOriginalsEmpty']?[locale] ??
-                    'Original-language data not loaded.',
-                style: TextStyle(color: scheme.onSurfaceVariant),
-              ),
-            ),
-          );
-        }
-        Iterable<OriginalsLemma> filtered = all;
-        if (_filter == 'hebrew') {
-          filtered = all.where((e) => e.isHebrew);
-        } else if (_filter == 'greek') {
-          filtered = all.where((e) => !e.isHebrew);
-        }
-        if (_hideStopwords) {
-          filtered = filtered.where((e) => !e.isStopword);
-        }
-        if (_query.trim().isNotEmpty) {
-          final q = _query.trim().toLowerCase();
-          filtered = filtered.where((e) =>
-              e.strongs.toLowerCase().contains(q) ||
-              e.lemma.contains(_query.trim()) ||
-              e.translit.toLowerCase().contains(q) ||
-              e.glossEn.toLowerCase().contains(q) ||
-              e.glossZhHans.contains(_query.trim()) ||
-              e.glossZhHant.contains(_query.trim()));
-        }
-        var rows = filtered.toList();
-        final total = rows.length;
-        if (!_showAll && _query.isEmpty && rows.length > 200) {
-          rows = rows.take(200).toList();
-        }
-        return Scrollbar(
-          controller: _scrollCtrl,
-          thumbVisibility: true,
-          child: Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 1200),
-              child: ListView.separated(
-          controller: _scrollCtrl,
-          padding: const EdgeInsets.fromLTRB(12, 8, 12, 24),
-          itemCount: rows.length + 2, // header + rows + footer
-          separatorBuilder: (_, __) => const SizedBox(height: 4),
-          itemBuilder: (_, i) {
-            if (i == 0) {
-              return _buildHeader(scheme, locale, settings, total);
-            }
-            if (i == rows.length + 1) {
-              return _buildFooter(scheme, locale, total, rows.length);
-            }
-            return _OriginalsRow(
-              entry: rows[i - 1],
-              locale: locale,
-              settings: settings,
-              scheme: scheme,
-              rank: i,
-              onFocus: widget.onFocusChanged,
-            );
-          },
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildHeader(ColorScheme scheme, String locale,
-      AppSettings settings, int total) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Text(
-            uiStrings['statsOriginalsHint']?[locale] ??
-                'Frequency of every Strong\'s number in the original Hebrew (OT) and Greek (NT) text. Tap a row to see book breakdown.',
-            style: TextStyle(
-              fontSize: (settings.fontSize - 3).clamp(11.0, 14.0),
-              color: scheme.onSurface.withValues(alpha: 0.7),
-              fontStyle: FontStyle.italic,
-              height: 1.4,
-            ),
-          ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: TextField(
-                  decoration: InputDecoration(
-                    hintText: uiStrings['statsOriginalsSearchHint']
-                            ?[locale] ??
-                        'Search by Strong\'s, lemma, or gloss…',
-                    isDense: true,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    prefixIcon: const Icon(Icons.search, size: 20),
-                  ),
-                  onChanged: (v) => setState(() => _query = v),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          SegmentedButton<String>(
-            segments: [
-              ButtonSegment(
-                value: 'all',
-                label: Text(uiStrings['statsOriginalsAll']?[locale] ?? 'All'),
-              ),
-              ButtonSegment(
-                value: 'hebrew',
-                label: Text(uiStrings['statsOriginalsHebrew']?[locale] ??
-                    'Hebrew'),
-              ),
-              ButtonSegment(
-                value: 'greek',
-                label: Text(
-                    uiStrings['statsOriginalsGreek']?[locale] ?? 'Greek'),
-              ),
-            ],
-            selected: {_filter},
-            onSelectionChanged: (s) => setState(() => _filter = s.first),
-            multiSelectionEnabled: false,
-            showSelectedIcon: false,
-          ),
-          const SizedBox(height: 8),
-          // Round 56 (continued): hide-stopwords toggle so the
-          // Vocabulary tab table doesn't lead with the / and / of /
-          // who etc. — function words that crowd out the meaningful
-          // theological vocabulary.
-          _StopwordToggleCard(
-            value: _hideStopwords,
-            locale: locale,
-            scheme: scheme,
-            settings: settings,
-            onChanged: (v) => setState(() => _hideStopwords = v),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildFooter(
-      ColorScheme scheme, String locale, int total, int shown) {
-    if (_query.isNotEmpty) {
-      return Padding(
-        padding: const EdgeInsets.symmetric(vertical: 12),
-        child: Center(
-          child: Text(
-            (uiStrings['statsOriginalsMatchCount']?[locale] ??
-                    '{shown} matches')
-                .replaceAll('{shown}', '$shown'),
-            style: TextStyle(color: scheme.onSurfaceVariant),
-          ),
-        ),
-      );
-    }
-    if (_showAll || total <= 200) {
-      return Padding(
-        padding: const EdgeInsets.symmetric(vertical: 12),
-        child: Center(
-          child: Text(
-            (uiStrings['statsOriginalsTotal']?[locale] ??
-                    '{total} unique Strong\'s numbers')
-                .replaceAll('{total}', '$total'),
-            style: TextStyle(color: scheme.onSurfaceVariant),
-          ),
-        ),
-      );
-    }
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Center(
-        child: TextButton.icon(
-          icon: const Icon(Icons.expand_more_rounded),
-          label: Text(
-            (uiStrings['statsOriginalsShowAll']?[locale] ??
-                    'Show all {total} entries')
-                .replaceAll('{total}', '$total'),
-          ),
-          onPressed: () => setState(() => _showAll = true),
-        ),
-      ),
-    );
-  }
-}
-
-class _OriginalsRow extends StatelessWidget {
-  final OriginalsLemma entry;
-  final String locale;
-  final AppSettings settings;
-  final ColorScheme scheme;
-  final int rank;
-  /// Round 56 (continued — cross-tab linking): tapping a row also
-  /// updates the parent StatsPage's focus state so switching to
-  /// the Distribution tab shows this same word.
-  final ValueChanged<String> onFocus;
-
-  const _OriginalsRow({
-    required this.entry,
-    required this.locale,
-    required this.settings,
-    required this.scheme,
-    required this.rank,
-    required this.onFocus,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final isHebrew = entry.isHebrew;
-    final tagColor = isHebrew
-        ? Colors.indigo.shade100
-        : Colors.deepPurple.shade100;
-    final tagFg = isHebrew
-        ? Colors.indigo.shade900
-        : Colors.deepPurple.shade900;
-    return Material(
-      color: scheme.surfaceContainerLow,
-      borderRadius: BorderRadius.circular(10),
-      elevation: 0,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(10),
-        onTap: () {
-          onFocus(entry.strongs);
-          _showBookBreakdown(context);
-        },
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  // Rank badge
-                  SizedBox(
-                    width: 28,
-                    child: Text(
-                      '#$rank',
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: scheme.onSurface.withValues(alpha: 0.55),
-                        fontFeatures: const [FontFeature.tabularFigures()],
-                      ),
-                    ),
-                  ),
-                  // Strong's # tag
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 8, vertical: 3),
-                    decoration: BoxDecoration(
-                      color: tagColor,
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                    child: Text(
-                      entry.strongs,
-                      style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w700,
-                        color: tagFg,
-                        fontFeatures: const [FontFeature.tabularFigures()],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  // Lemma + transliteration
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          entry.lemma,
-                          style: TextStyle(
-                            fontSize: (settings.fontSize + 2)
-                                .clamp(16.0, 22.0)
-                                .toDouble(),
-                            fontWeight: FontWeight.w700,
-                            color: scheme.onSurface,
-                            // Force LTR even for Hebrew RTL text so
-                            // the lemma + count line stays in a
-                            // predictable order; native rendering
-                            // still draws Hebrew right-to-left
-                            // within the run.
-                            height: 1.3,
-                          ),
-                        ),
-                        if (entry.translit.isNotEmpty)
-                          Text(
-                            entry.translit,
-                            style: TextStyle(
-                              fontSize:
-                                  (settings.fontSize - 4).clamp(11.0, 14.0),
-                              color: scheme.onSurfaceVariant,
-                              fontStyle: FontStyle.italic,
-                            ),
-                          ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  // Count
-                  Text(
-                    '${entry.count}',
-                    style: TextStyle(
-                      fontSize: (settings.fontSize)
-                          .clamp(14.0, 18.0)
-                          .toDouble(),
-                      fontWeight: FontWeight.w700,
-                      color: scheme.primary,
-                      fontFeatures: const [FontFeature.tabularFigures()],
-                    ),
-                  ),
-                ],
-              ),
-              if (entry.glossFor(locale).isNotEmpty) ...[
-                const SizedBox(height: 6),
-                Padding(
-                  padding: const EdgeInsets.only(left: 28),
-                  child: Text(
-                    entry.glossFor(locale),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontSize:
-                          (settings.fontSize - 2).clamp(12.0, 16.0),
-                      color: scheme.onSurface.withValues(alpha: 0.85),
-                      height: 1.4,
-                    ),
-                  ),
-                ),
-              ],
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  void _showBookBreakdown(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: scheme.surface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-      ),
-      builder: (sheetCtx) {
-        final entries = entry.byBook.entries.toList()
-          ..sort((a, b) => b.value.compareTo(a.value));
-        return SafeArea(
-          child: ConstrainedBox(
-            constraints: BoxConstraints(
-                maxHeight: MediaQuery.of(sheetCtx).size.height * 0.7),
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Center(
-                    child: Container(
-                      width: 40,
-                      height: 4,
-                      margin: const EdgeInsets.only(bottom: 12),
-                      decoration: BoxDecoration(
-                        color: scheme.outlineVariant,
-                        borderRadius: BorderRadius.circular(2),
-                      ),
-                    ),
-                  ),
-                  Text(
-                    '${entry.lemma}  ·  ${entry.strongs}',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w700,
-                      color: scheme.onSurface,
-                    ),
-                  ),
-                  if (entry.translit.isNotEmpty)
-                    Text(
-                      entry.translit,
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: scheme.onSurfaceVariant,
-                        fontStyle: FontStyle.italic,
-                      ),
-                    ),
-                  const SizedBox(height: 6),
-                  Text(
-                    entry.glossFor(locale),
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: scheme.onSurface.withValues(alpha: 0.85),
-                      height: 1.4,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    '${uiStrings['statsOriginalsByBook']?[locale] ?? 'By book'} (${entry.count})',
-                    style: TextStyle(
-                      fontWeight: FontWeight.w600,
-                      color: scheme.primary,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Flexible(
-                    child: SingleChildScrollView(
-                      child: Wrap(
-                        spacing: 6,
-                        runSpacing: 6,
-                        children: [
-                          for (final e in entries)
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 8, vertical: 4),
-                              decoration: BoxDecoration(
-                                color: scheme.primaryContainer
-                                    .withValues(alpha: 0.4),
-                                borderRadius: BorderRadius.circular(6),
-                              ),
-                              child: Text(
-                                '${localeAwareBookName(toEnglish(e.key) ?? e.key, locale)} · ${e.value}',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: scheme.onPrimaryContainer,
-                                  fontFeatures: const [
-                                    FontFeature.tabularFigures()
-                                  ],
-                                ),
-                              ),
-                            ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
-}
-// Round 56 (continued): Strong's lookup tab — replaces the
-// per-book Statistics tab whose data is now exposed through the
-// Overview tab's book filter. Purpose: give users a fast path to
-// the StrongsEntryPage (full lexicon entry + word family +
-// concordance) for any Hebrew or Greek lemma without first
-// having to tap a verse.
-//
-// All data on screen is lexical metadata — Strong's #, lemma,
-// transliteration, brief gloss, occurrence count. No verse text
-// or extended commentary lives here; tapping a row pushes the
-// full StrongsEntryPage which already has its own copyright-safe
-// rendering. Same vocabulary as the Vocabulary tab; the
-// difference is what the row's onTap does (push entry page vs
-// show book breakdown sheet).
+/// Round 56 cleanup: trimmed to just the Passage Study launcher.
+/// User feedback: '原文查询感觉下面的点任意... 下面的都没有用，
+/// 上面的选择经文已经出来的popup窗口那个强多了'. The previous
+/// Strong's-search list duplicated the picker the Distribution
+/// tab already exposes. The Lookup tab is now a single card that
+/// opens the in-reader OriginalsSheet (word-by-word breakdown,
+/// tap-a-word entry, family + synonyms + concordance) for any
+/// verse the user picks. All the rich exegesis affordances live
+/// inside that sheet.
 class _StrongsLookupTab extends StatefulWidget {
   final String locale;
   final AppSettings settings;
-  /// Round 56 (continued — cross-tab linking): called whenever the
-  /// user taps a Strong's row, so the parent StatsPage can carry
-  /// that selection over to the Distribution tab. Tapping the row
-  /// itself still pushes the full StrongsEntryPage; this is a
-  /// side-effect that keeps the page state coherent across tabs.
-  final ValueChanged<String> onFocusChanged;
-  const _StrongsLookupTab({
-    required this.locale,
-    required this.settings,
-    required this.onFocusChanged,
-  });
+  const _StrongsLookupTab(
+      {required this.locale, required this.settings});
 
   @override
   State<_StrongsLookupTab> createState() => _StrongsLookupTabState();
@@ -2637,29 +1990,8 @@ class _StrongsLookupTab extends StatefulWidget {
 
 class _StrongsLookupTabState extends State<_StrongsLookupTab>
     with AutomaticKeepAliveClientMixin {
-  Future<List<OriginalsLemma>>? _future;
-  String _filter = 'all'; // 'all' | 'hebrew' | 'greek'
-  String _query = '';
-  // Hide grammatical particles by default — same toggle as the
-  // Overview tab. Most useful when the user is exploring meaningful
-  // theology vocabulary; flip off to see all 14k Strong's entries.
-  bool _hideStopwords = true;
-  final ScrollController _scrollCtrl = ScrollController();
-
   @override
   bool get wantKeepAlive => true;
-
-  @override
-  void initState() {
-    super.initState();
-    _future = OriginalsStatsService.load();
-  }
-
-  @override
-  void dispose() {
-    _scrollCtrl.dispose();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -2667,98 +1999,19 @@ class _StrongsLookupTabState extends State<_StrongsLookupTab>
     final scheme = Theme.of(context).colorScheme;
     final locale = widget.locale;
     final settings = widget.settings;
-    return FutureBuilder<List<OriginalsLemma>>(
-      future: _future,
-      builder: (context, snap) {
-        if (snap.connectionState != ConnectionState.done) {
-          return const Center(child: CircularProgressIndicator());
-        }
-        final all = snap.data ?? const <OriginalsLemma>[];
-        if (all.isEmpty) {
-          return Center(
-            child: Padding(
-              padding: const EdgeInsets.all(24),
-              child: Text(
-                uiStrings['statsOriginalsEmpty']?[locale] ??
-                    'Original-language data not loaded.',
-                style: TextStyle(color: scheme.onSurfaceVariant),
-              ),
-            ),
-          );
-        }
-        Iterable<OriginalsLemma> filtered = all;
-        if (_filter == 'hebrew') {
-          filtered = all.where((e) => e.isHebrew);
-        } else if (_filter == 'greek') {
-          filtered = all.where((e) => !e.isHebrew);
-        }
-        if (_hideStopwords) {
-          filtered = filtered.where((e) => !e.isStopword);
-        }
-        final q = _query.trim().toLowerCase();
-        if (q.isNotEmpty) {
-          filtered = filtered.where((e) =>
-              e.strongs.toLowerCase().contains(q) ||
-              e.lemma.contains(_query.trim()) ||
-              e.translit.toLowerCase().contains(q) ||
-              e.glossEn.toLowerCase().contains(q) ||
-              e.glossZhHans.contains(_query.trim()) ||
-              e.glossZhHant.contains(_query.trim()));
-        }
-        final rows = filtered.toList();
-        // Cap at 100 when no query so the user lands on the most
-        // useful starter set; full list is one search away.
-        final showRows =
-            (q.isEmpty && rows.length > 100) ? rows.take(100).toList() : rows;
-        return Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 900),
-            child: Column(
-              children: [
-                // Round 56 (continued — exegesis features parity):
-                // user feedback "原文查询，在 bible reader 里面可以
-                // 按出很多，但是这个工具很多用不到... 也包括选一个经文
-                // 来学习". The Lookup tab now leads with a passage-
-                // study card that matches the in-reader exegesis
-                // experience: pick a verse → opens the same
-                // OriginalsSheet (word-by-word breakdown, tap-a-word
-                // entry card, family + synonyms + concordance) the
-                // reader uses. Below it stays the per-word search
-                // for users who already know which Strong's they
-                // want.
-                _PassageStudyCard(
-                  locale: locale,
-                  settings: settings,
-                  scheme: scheme,
-                  onPickVerse: () => _openVersePicker(context),
-                  onContinueReading: () =>
-                      _continueReading(context),
-                ),
-                _buildHeader(scheme, locale, settings, rows.length, q),
-                Expanded(
-                  child: Scrollbar(
-                    controller: _scrollCtrl,
-                    thumbVisibility: true,
-                    child: showRows.isEmpty
-                        ? _buildEmpty(scheme, locale)
-                        : ListView.separated(
-                            controller: _scrollCtrl,
-                            padding: const EdgeInsets.fromLTRB(
-                                12, 4, 12, 24),
-                            itemCount: showRows.length,
-                            separatorBuilder: (_, __) =>
-                                const SizedBox(height: 4),
-                            itemBuilder: (_, i) =>
-                                _buildLookupRow(showRows[i], scheme,
-                                    settings, locale),
-                          ),
-                  ),
-                ),
-              ],
-            ),
+    return Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 900),
+        child: SingleChildScrollView(
+          child: _PassageStudyCard(
+            locale: locale,
+            settings: settings,
+            scheme: scheme,
+            onPickVerse: () => _openVersePicker(context),
+            onContinueReading: () => _continueReading(context),
           ),
-        );
-      },
+        ),
+      ),
     );
   }
 
@@ -2832,9 +2085,6 @@ class _StrongsLookupTabState extends State<_StrongsLookupTab>
             v.book == book && v.chapter == chapter && v.verse == verse)
         .toList();
     if (matches.isEmpty) {
-      // Verse not yet loaded into the current version — try a jump
-      // resolve which will switch versions if needed and return
-      // verses from the new corpus.
       _resolveAndOpen(context,
           book: book, chapter: chapter, verse: verse);
       return;
@@ -2852,15 +2102,6 @@ class _StrongsLookupTabState extends State<_StrongsLookupTab>
         allVerses: mp.verses,
         locale: widget.locale,
         currentVersion: mp.currentVersion,
-        // Round 56 (continued — issue 1): without this callback
-        // OriginalsSheet renders concordance references as plain
-        // text instead of tappable links — user feedback "after
-        // clicking the word, it doesn't show the same as how it
-        // shows in bible reader". The reader passes onNavigateRef;
-        // we need to pass it too. The cross-ref click pops the
-        // current sheet and opens a fresh one for the new verse,
-        // keeping the user in the Bible Tools exegesis flow rather
-        // than dropping them out into the reader.
         onNavigateRef: (ref) {
           Navigator.of(sheetCtx).maybePop();
           _hopToConcordanceRef(context, ref);
@@ -2876,9 +2117,6 @@ class _StrongsLookupTabState extends State<_StrongsLookupTab>
   void _hopToConcordanceRef(
       BuildContext context, ConcordanceRef ref) {
     final mp = context.read<MainProvider>();
-    // ConcordanceRef carries the canonical English book; the
-    // MainProvider verse list uses whatever the current version's
-    // book name is (e.g. '创世记' for CUVS). Match either.
     final localBook = mp.verses.isEmpty
         ? null
         : mp.verses
@@ -2942,263 +2180,6 @@ class _StrongsLookupTabState extends State<_StrongsLookupTab>
       ),
     );
   }
-
-  Widget _buildHeader(ColorScheme scheme, String locale,
-      AppSettings settings, int matchCount, String query) {
-    final allLabel =
-        uiStrings['statsOriginalsAll']?[locale] ?? 'All';
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(12, 12, 12, 8),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Text(
-            uiStrings['statsLookupTapHint']?[locale] ??
-                'Tap any entry for full meaning, word family, and concordance.',
-            style: TextStyle(
-              fontSize: (settings.fontSize - 3).clamp(11.0, 14.0),
-              color: scheme.onSurface.withValues(alpha: 0.65),
-              fontStyle: FontStyle.italic,
-              height: 1.4,
-            ),
-          ),
-          const SizedBox(height: 10),
-          TextField(
-            decoration: InputDecoration(
-              hintText: uiStrings['statsLookupHint']?[locale] ??
-                  'Search by Strong\'s number, lemma, transliteration, or gloss',
-              isDense: true,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
-              prefixIcon: const Icon(Icons.search, size: 20),
-            ),
-            onChanged: (v) => setState(() => _query = v),
-          ),
-          const SizedBox(height: 8),
-          Row(
-            children: [
-              Expanded(
-                child: SegmentedButton<String>(
-                  segments: [
-                    ButtonSegment(value: 'all', label: Text(allLabel)),
-                    ButtonSegment(
-                      value: 'hebrew',
-                      label: Text(uiStrings['statsOriginalsHebrew']
-                              ?[locale] ??
-                          'Hebrew'),
-                    ),
-                    ButtonSegment(
-                      value: 'greek',
-                      label: Text(uiStrings['statsOriginalsGreek']
-                              ?[locale] ??
-                          'Greek'),
-                    ),
-                  ],
-                  selected: {_filter},
-                  onSelectionChanged: (s) =>
-                      setState(() => _filter = s.first),
-                  multiSelectionEnabled: false,
-                  showSelectedIcon: false,
-                ),
-              ),
-              const SizedBox(width: 6),
-              FilterChip(
-                avatar: Icon(
-                  _hideStopwords
-                      ? Icons.filter_alt
-                      : Icons.filter_alt_off,
-                  size: 16,
-                ),
-                label: Text(
-                  uiStrings['statsOriginalsHideStopwordsTitle']
-                          ?[locale] ??
-                      'Hide common particles',
-                  style: const TextStyle(fontSize: 12),
-                ),
-                selected: _hideStopwords,
-                onSelected: (v) => setState(() => _hideStopwords = v),
-              ),
-            ],
-          ),
-          const SizedBox(height: 6),
-          Text(
-            query.isEmpty
-                ? '$matchCount ${uiStrings['statsOriginalsTotal']?[locale]?.replaceAll(' {total}', '').replaceAll('{total} ', '') ?? 'entries'}'
-                : '$matchCount ${uiStrings['searchMatchesLabel']?[locale] ?? 'matches'}',
-            style: TextStyle(
-              fontSize: 11,
-              color: scheme.onSurfaceVariant,
-              fontFeatures: const [FontFeature.tabularFigures()],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildEmpty(ColorScheme scheme, String locale) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.search_off,
-                size: 36, color: scheme.onSurfaceVariant),
-            const SizedBox(height: 8),
-            Text(
-              uiStrings['statsLookupEmpty']?[locale] ??
-                  'No matching entries.',
-              style: TextStyle(color: scheme.onSurfaceVariant),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildLookupRow(OriginalsLemma e, ColorScheme scheme,
-      AppSettings settings, String locale) {
-    final tagColor = e.isHebrew
-        ? Colors.indigo.shade100
-        : Colors.deepPurple.shade100;
-    final tagFg = e.isHebrew
-        ? Colors.indigo.shade900
-        : Colors.deepPurple.shade900;
-    return Material(
-      color: scheme.surfaceContainerLow,
-      borderRadius: BorderRadius.circular(10),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(10),
-        // Round 56: tap pushes the existing StrongsEntryPage which
-        // shows the full lexicon entry, word family, and
-        // concordance — far richer than the inline book breakdown
-        // the Vocabulary tab opens. Also sets the shared focus so
-        // switching to the Distribution tab shows this same word.
-        onTap: () {
-          widget.onFocusChanged(e.strongs);
-          Get.to(
-            () => StrongsEntryPage(number: e.strongs),
-            transition: Transition.rightToLeft,
-          );
-        },
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 8, vertical: 3),
-                decoration: BoxDecoration(
-                  color: tagColor,
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                child: Text(
-                  e.strongs,
-                  style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
-                    color: tagFg,
-                    fontFeatures: const [FontFeature.tabularFigures()],
-                  ),
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Flexible(
-                          child: Text(
-                            e.lemma,
-                            style: TextStyle(
-                              fontFamily: settings.fontFamily,
-                              fontSize: 18,
-                              fontWeight: FontWeight.w700,
-                              color: scheme.onSurface,
-                            ),
-                          ),
-                        ),
-                        if (e.translit.isNotEmpty) ...[
-                          const SizedBox(width: 8),
-                          Flexible(
-                            child: Text(
-                              e.translit,
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontStyle: FontStyle.italic,
-                                color: scheme.onSurface
-                                    .withValues(alpha: 0.6),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      e.glossFor(locale),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontFamily: settings.fontFamily,
-                        fontSize: 13,
-                        color: scheme.onSurface.withValues(alpha: 0.85),
-                        height: 1.35,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 10),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text(
-                    '${e.count}',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
-                      color: scheme.primary,
-                      fontFeatures: const [FontFeature.tabularFigures()],
-                    ),
-                  ),
-                  Icon(Icons.chevron_right,
-                      size: 18,
-                      color: scheme.onSurface.withValues(alpha: 0.4)),
-                ],
-              ),
-              // Round 56 (continued — cross-tab linking): explicit
-              // "view distribution" affordance. Sets the shared
-              // focus AND animates the page to the Distribution
-              // tab so the user lands on the chart for this word
-              // without pushing a separate entry page.
-              const SizedBox(width: 4),
-              IconButton(
-                icon: const Icon(Icons.bar_chart_rounded),
-                tooltip:
-                    uiStrings['statsLookupViewDistribution']?[locale] ??
-                        'View in Distribution',
-                iconSize: 18,
-                visualDensity: VisualDensity.compact,
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(
-                    minWidth: 32, minHeight: 32),
-                onPressed: () {
-                  widget.onFocusChanged(e.strongs);
-                  DefaultTabController.of(context).animateTo(2);
-                },
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
 }
 
 /// Round 56 (continued — exegesis-table tab): wraps the
@@ -3214,19 +2195,8 @@ class _StrongsLookupTabState extends State<_StrongsLookupTab>
 class _WordDistributionTab extends StatefulWidget {
   final String locale;
   final AppSettings settings;
-  /// Round 56 (continued — cross-tab linking): the focus Strong's
-  /// is now owned by the parent StatsPage so taps in Lookup or
-  /// Vocabulary surface here automatically. Passing through
-  /// `widget.focusStrongs` instead of internal state lets the
-  /// table update the moment the parent calls setFocus.
-  final String focusStrongs;
-  final ValueChanged<String> onFocusChanged;
-  const _WordDistributionTab({
-    required this.locale,
-    required this.settings,
-    required this.focusStrongs,
-    required this.onFocusChanged,
-  });
+  const _WordDistributionTab(
+      {required this.locale, required this.settings});
 
   @override
   State<_WordDistributionTab> createState() =>
@@ -3235,6 +2205,10 @@ class _WordDistributionTab extends StatefulWidget {
 
 class _WordDistributionTabState extends State<_WordDistributionTab>
     with AutomaticKeepAliveClientMixin {
+  // Default to H3068 — יהוה, the Tetragrammaton — so the table
+  // arrives populated with an interesting OT distribution rather
+  // than an empty state.
+  String _strongs = 'H3068';
   Future<List<OriginalsLemma>>? _lemmasFuture;
 
   @override
@@ -3278,7 +2252,7 @@ class _WordDistributionTabState extends State<_WordDistributionTab>
                   ),
                   const SizedBox(height: 10),
                   _CurrentWordBar(
-                    strongs: widget.focusStrongs,
+                    strongs: _strongs,
                     locale: locale,
                     settings: settings,
                     scheme: scheme,
@@ -3294,8 +2268,8 @@ class _WordDistributionTabState extends State<_WordDistributionTab>
                 // its initState (which fires _loadAll) — without
                 // this, switching words would leave the previous
                 // rows visible until the user manually scrolled.
-                key: ValueKey(widget.focusStrongs),
-                strongsNumber: widget.focusStrongs,
+                key: ValueKey(_strongs),
+                strongsNumber: _strongs,
                 locale: locale,
                 currentVersion: null,
               ),
@@ -3328,7 +2302,7 @@ class _WordDistributionTabState extends State<_WordDistributionTab>
       },
     );
     if (picked != null && picked.isNotEmpty) {
-      widget.onFocusChanged(picked);
+      setState(() => _strongs = picked);
     }
   }
 }
