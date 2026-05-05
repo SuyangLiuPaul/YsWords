@@ -1,6 +1,6 @@
 # YsWords — AI Agent Handoff Document
 
-> Last updated: 2026-05-04 (Round 56)
+> Last updated: 2026-05-05 (Round 56 continued — see new section after the Round-56 day-1 entry)
 > Project: YsWords (Yahweh's Words) — bilingual Bible reader
 > Stack: Flutter 3.41.7 / Dart 3.11.5 / Provider + GetX
 > Repo: https://github.com/SuyangLiuPaul/YsWords
@@ -952,6 +952,279 @@ muted brick. Fix:
 * Dark AppBar: `backgroundColor = scheme.primaryContainer` (low-
   chroma dark tint, not full primary, which would be garish on
   dark surfaces).
+
+---
+
+## What Has Been Fixed (2026-05-05, Round 56 continued)
+
+A second working day on Round 56 — independent strands, all in
+HEAD..origin/main (18 commits) until the docs push.
+
+### Strand: Reading-pane polish (Stats / Trivia / Evidence / fonts)
+
+**Bible Evidence cards: tappable scripture row**
+(`lib/pages/evidence_page.dart`). The list-page tile previously
+rendered the verse reference as plain text; only the detail page
+exposed a tappable chip. Now the row is its own InkWell that calls
+`_openReferenceFromCard` → `resolveAndPrepareJump` and pushes
+HomePage. Underline + arrow icon signal tappability. User feedback:
+*"圣经实证不是跟 bible 有关"*.
+
+**Statistics: scrollbars, top-25, hide-stopwords toggle**
+(`lib/pages/stats_page.dart`,
+`lib/services/originals_stats_service.dart`).
+* Top Hebrew / Top Greek bumped 5 → **25** entries on the Overview
+  tab. Vocabulary tab still shows 100/100 with full search.
+* All three originals tabs got always-visible Scrollbars
+  (`thumbVisibility: true` + dedicated `ScrollController`). Default
+  Material ListView only flashes the bar on hover/scroll on
+  web/desktop, leaving users unsure whether more is below.
+* New `OriginalsLemma.isStopword` flag backed by `_stopwordStrongs`
+  set (~24 grammatical particles: H834 ʾăšer, H853 DDO marker,
+  H3588 kî, G2532 kaí, G3588 ho, G1722 en, …). New
+  `_StopwordToggleCard` widget on Overview + Vocabulary tabs;
+  default ON. Proper nouns (YHWH, Israel, God) deliberately left in.
+
+**Bible Trivia: book filter (sermon-style modal) + tag filter +
+OT/NT toggle + search + bold-markdown rendering**
+(`lib/pages/bible_trivia_page.dart`).
+* Inline horizontal book chip row replaced with a Filter button +
+  modal sheet matching the sermons-page pattern
+  (`_TriviaBookFilterSheet`). Books with no entries dim via
+  `Theme.disabledColor`. Active book filter renders as deletable
+  InputChip.
+* Tag chips localised via `_localizedTagLabel` for all 11 canonical
+  tags (Acrostic / 离合体 / 離合體, etc.). Previously rendered raw
+  English uppercase regardless of locale.
+* Trivia bodies render `**bold**` markdown via `Text.rich` +
+  TextSpan instead of literal asterisks. Helper:
+  `_parseInlineMarkdown(input, base, scheme)`.
+
+**App style preset detection fix**
+(`lib/models/app_style_preset.dart`). After the Google Fonts
+integration, `settings.fontFamily` returns the resolved family name
+like `'EBGaramond_regular'`, while preset definitions store the
+catalogue key like `'EB Garamond'`. The active-preset check
+compared against `fontFamily` and always returned null — tapping
+Modern / Reverent / Reader correctly applied the settings but the
+card never showed selected. Fix: compare against
+`settings.fontSelection`.
+
+### Strand: Google Fonts integration
+
+**Why**: Flutter web (CanvasKit) can't render CSS-only system
+fonts. The previous catalogue listed Times New Roman, Georgia,
+Arial … which silently fell back to Roboto. Symptom: "font is not
+working".
+
+**`lib/utils/font_catalog.dart`** — new module. Curated list:
+Bundled (Roboto, Microsoft YaHei) + English serif (EB Garamond,
+Lora, Merriweather, Crimson Pro, Playfair Display) + English sans
+(Open Sans, Inter, Lato, Nunito, Montserrat) + Chinese (Noto Serif
+SC, Noto Sans SC, ZCOOL XiaoWei, Ma Shan Zheng) + system fallback
+(PingFang SC, SimSun).
+
+`google_fonts: ^6.2.1` added to pubspec — fonts download at runtime
+on first use, cache afterwards. `resolveFontFamily(key)` registers
+the font and returns the actual family name
+(`'EBGaramond_regular'`) that TextStyle expects.
+`previewTextStyle(key, base)` renders each dropdown row in its own
+font so users can visually compare.
+
+**`AppSettings` split**: `fontSelection` (persisted catalogue key —
+the dropdown `value:`) vs `fontFamily` (resolved family name — what
+TextStyle reads). All 258 existing
+`fontFamily: settings.fontFamily` call sites kept working without
+edits.
+
+**Legacy migration** (`migrateLegacyFontKey`): Times New Roman →
+EB Garamond, Garamond → EB Garamond, Georgia → Lora, Palatino →
+Merriweather, Arial → Open Sans, Helvetica → Inter, Verdana → Lato,
+system-ui → Inter, Heiti SC → Noto Sans SC, KaiTi → Noto Serif SC.
+Runs at load; persists the cleaned key.
+
+**Style presets updated**: Modern → Inter, Reverent → EB Garamond,
+Reader → Merriweather (was system-ui / Garamond / Georgia).
+
+### Strand: Divine-name normalization + pilcrow stripping
+
+**`lib/constants/text_patterns.dart`** — render-time sanitizer
+extended:
+* Strips `¶` and `§` paragraph markers some Bible versions ship in
+  asset JSON (KJV-style). User feedback: *"有的 bible version 里面
+  有 ¶ 看起来很不舒服"*.
+* Rewrites `耶和华` → `雅伟` (Simplified), `耶和華` → `雅威`
+  (Traditional), all-caps `the LORD` / `LORD` → `Yahweh`. Mixed-
+  case "Lord" (Adonai / kyrios / Jesus) deliberately left as-is.
+* Two paths: existing `sanitizeForSearch` / `sanitizeVerseText`
+  helpers get the rewrite for clipboard + search. New
+  `displayCleanup` preserves leading/trailing whitespace between
+  adjacent InlineSpan chunks — wired into
+  `buildVerseContentSpans` for the live reader.
+
+**CNV asset bake** (`assets/cnv.json`, `assets/cnv-tr.json`): in-
+place rewrite of every `耶和华` → `雅伟` (5,942 verses) and
+`耶和華` → `雅威` (5,941 verses). Permanent in the bundle now.
+Version labels updated to `新译本（简体·雅伟版）` /
+`新譯本（繁體·雅威版）`.
+
+### Strand: Version picker — edition-year metadata
+
+**`lib/constants/bible_versions.dart`**: new
+`BibleVersionInfo.editionYear` field. Version picker popup renders
+it as a dim secondary line under each `menuLabel`:
+* CUV / CUVS-YHWH → `1919 / 现代标点 1989`
+* CNV → `基于新译本 1992 / 三版 2011`
+* KJV → `1611 / 1769 revision`, LEB → `2012`,
+  NASB → `2020 update`, NIV → `2011`
+
+**Section titles `_meta` reality-check**: `assets/section_titles.json`
+description now says **app-curated** (not extracted from any
+published 和合本 / 新译本 — those headings are © Hong Kong Bible
+Society and Worldwide Bible Society respectively, can't be
+redistributed). Set keys (`cuv`, `cuv-tr`, `english-classic`)
+reflect the version-mapping in `section_title_map.dart`, not the
+source of the headings.
+
+### Strand: Section-title refinement (Acts + Hebrews)
+
+**Acts** — all 28 chapters rewritten. Per-pericope scene
+descriptors (who / where / what happens) authored fresh. **95**
+total sections (was ~75); sub-scenes like Sons of Sceva (19:13),
+the Philippian jailer (16:25), Tertullus's accusation (24:1) now
+have their own headings instead of being buried inside larger
+blocks. cuv / cuv-tr / english-classic sets all updated together.
+
+**Hebrews** — all 13 chapters rewritten. **43** total sections
+(was 17 across 11 chapters; chapters 5 + 6 had no headings before).
+Pericope breaks follow the natural argument turns of the letter
+(each new "therefore", new OT quotation, new warning). The five
+warning passages (2:1-4, 3:7-19, 6:4-8, 10:26-31, 12:25-29) now
+each have their own heading. Chapter 11 split by exemplar cluster
+(antediluvians / patriarchs / Exodus / later judges & prophets).
+
+### Strand: Songs page (link-out directory) + weekly sync cron
+
+**Why link-out, not embed**: even though the user reports the
+church gave verbal authorisation, written documentation hasn't
+been provided. Embedding audio + lyrics + PDFs into a publicly-
+distributed app needs cleared rights at the audio / lyric /
+typesetting / translation layers separately. The link-out
+architecture stores only metadata; tapping a song opens the
+original page on fydt.org / christiandiscipleschurch.org where
+the church's own publishing arrangements handle delivery.
+
+**`assets/songs.json`** — 510 entries (228 fydt + 282 CDC). Each
+row: `id`, `title`, `language` (zh/en/th), `source`, `code`, `url`,
+`audioUrl`, `pdfUrl`, `themes` (auto-derived), `verse` (only when
+unambiguous), `firstSeenAt`, `updatedAt`.
+
+**`lib/models/song.dart`** — Song data class +
+`localizedSongTheme(key, locale)` resolver + `Song.verseBook`
+getter (parses `'Romans 5:1-11'` → `'Romans'` for the book filter).
+
+**`lib/services/song_service.dart`** — load + cache + theme
+histogram.
+
+**`lib/pages/songs_page.dart`** — full UI:
+* Search field + Filter button (sermons-page pattern) + Sort
+  PopupMenuButton (4 options).
+* Modal `_SongFilterSheet`: language toggle, source toggle, theme
+  chip row, full 66-book chip grid via `standardBookOrder` (books
+  with no songs dim).
+* Active filters render as deletable InputChips below the search
+  field; one-tap Clear All.
+* Song tile: language badge, source label, verse, theme tags,
+  `Icons.open_in_new_rounded`. Tapping calls
+  `LinkOpener.open(song.url)`.
+
+**Verse extraction (fydt only)**: fydt.org renders the per-song
+verse citation in a structured Elementor ACF-repeater div:
+`<div class="dce-acf-repeater">罗马书(Rom) 5:1-11</div>`. The sync
+script regex-matches that div, strips the parenthetical alias,
+normalises the Chinese book name to the English-canonical form via
+`ZH_TO_EN_BOOK` (66 books) → `'Romans 5:1-11'`. Coverage:
+**161 / 510** entries (154 fydt + 7 CDC from titles).
+
+**CDC verse extraction is a dead end**: PDFs use custom CJK font
+encoding that pypdf decodes as Private Use Area glyphs; per-song
+HTML pages don't expose the verse. Hand-curation is the only path.
+The merge logic preserves any value already in `songs.json` so
+manual edits stick across cron runs.
+
+**Sync script + GitHub Actions cron**:
+* `scripts/sync_songs.py` walks `wp-sitemap-posts-song-1.xml`
+  (211 fydt URLs) + `christiandiscipleschurch.org/content/integrated-list-songs?page=N`
+  (282 CDC entries across 2 pages). For new entries: scrapes the
+  per-page audio/PDF URLs (fydt) or derives them deterministically
+  from the catalogue code (CDC:
+  `/sites/default/files/music/{mp3,pdf}/<CODE>.X`).
+* Title cleanup: `clean_title()` runs `html.unescape()` then
+  strips every variant of the FYDT site suffix
+  (`&#8211; FYDT 福音电台`).
+* CDC titles previously came from the anchor text of
+  `/content/<code>` links — which on the index page is just the
+  code itself. New `CDC_ROW_RE` matches the **sibling**
+  `<td class="views-field-field-song-title">` cell where the human
+  title actually lives.
+* `_is_bad_title()` recognises HTML-entity-laden / suffix-padded /
+  code-only titles. `merge()` automatically replaces a "bad"
+  existing title with a fresh scrape; user-edited titles
+  preserved.
+* `_now_iso()` stamps `firstSeenAt` on first appearance,
+  `updatedAt` only when something substantive actually changed (so
+  re-running with no upstream changes doesn't re-stamp every song).
+* `.github/workflows/sync-songs.yml` — Sundays 18:00 UTC +
+  workflow_dispatch. Auto-commits + pushes when the file changed.
+
+**Sort options on the songs page**:
+* Recently updated (default) — `updatedAt` desc
+* Recently added — `firstSeenAt` desc
+* Title (A-Z)
+* Source / catalogue (group by source then code/title)
+
+### Files added / changed this strand
+
+```
+A  lib/models/song.dart
+A  lib/services/song_service.dart
+A  lib/pages/songs_page.dart
+A  lib/utils/font_catalog.dart
+A  scripts/sync_songs.py
+A  .github/workflows/sync-songs.yml
+A  assets/songs.json
+M  assets/cnv.json + cnv-tr.json   (Yahweh substitution)
+M  assets/section_titles.json       (Acts + Hebrews refined)
+M  pubspec.yaml                     (+ google_fonts)
+M  lib/constants/bible_versions.dart (editionYear, CNV labels)
+M  lib/constants/text_patterns.dart  (pilcrow + divine-name sanitiser)
+M  lib/constants/ui_strings.dart     (~30 new keys)
+M  lib/models/app_settings.dart     (fontSelection vs fontFamily)
+M  lib/models/app_style_preset.dart (preset detection fix)
+M  lib/services/originals_stats_service.dart (isStopword)
+M  lib/pages/stats_page.dart        (toggle + scrollbars + top 25)
+M  lib/pages/bible_trivia_page.dart (modal book filter, bold render)
+M  lib/pages/evidence_page.dart     (tappable scripture row)
+M  lib/pages/settings_page.dart     (Google Fonts dropdown)
+M  lib/pages/dashboard_page.dart    (Songs link tile)
+M  lib/widgets/bible_reading_pane.dart (editionYear in popup)
+M  lib/utils/build_verse_content_spans.dart (displayCleanup)
+M  linux/flutter/generated_plugins.cmake   (jni — google_fonts dep)
+M  windows/flutter/generated_plugins.cmake (same)
+```
+
+### Known limitations
+
+* **CDC verse refs**: 275 / 282 CDC songs lack a verse citation
+  because their PDFs use scrambled CJK fonts and their per-song
+  HTML doesn't expose the field. Hand-curation needed.
+* **74 fydt verse refs**: empty on fydt's own back-end (the
+  `dce-acf-repeater` div renders nothing). Nothing to extract.
+* **Songs page is link-out only**. Building inline playback / PDF
+  viewer requires written authorisation from each rights-holder
+  layer (composer / lyricist / recording / typesetter). The data
+  shape (`audioUrl`, `pdfUrl` already populated for 489 / 490
+  entries) is ready when authorisation is documented.
 
 ---
 
