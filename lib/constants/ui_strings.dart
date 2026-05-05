@@ -246,10 +246,35 @@ const uiStrings = {
   'noteDelete': {'zh-Hans': '删除', 'zh-Hant': '刪除', 'en': 'Delete'},
   'bookmark': {'zh-Hans': '书签', 'zh-Hant': '書籤', 'en': 'Bookmark'},
   'library': {'zh-Hans': '我的标记', 'zh-Hant': '我的標記', 'en': 'Library'},
-  'statistics': {'zh-Hans': '统计分析', 'zh-Hant': '統計分析', 'en': 'Statistics'},
+  'statistics': {'zh-Hans': '圣经工具', 'zh-Hant': '聖經工具', 'en': 'Bible Tools'},
   'statsOverview':
       {'zh-Hans': '总览', 'zh-Hant': '總覽', 'en': 'Overview'},
   'statsBooks': {'zh-Hans': '书卷', 'zh-Hant': '書卷', 'en': 'Books'},
+  // Round 56: replaces the per-book Statistics tab with a
+  // Strong's-first lookup tool. Tapping a result opens the full
+  // StrongsEntryPage (entry + concordance + word family). Same
+  // search vocabulary as the Vocabulary tab — by Strong's #, lemma,
+  // transliteration, or gloss in any locale.
+  'statsLookup': {
+    'zh-Hans': '原文查询',
+    'zh-Hant': '原文查詢',
+    'en': 'Lookup',
+  },
+  'statsLookupHint': {
+    'zh-Hans': '输入 Strong\'s 编号、原文、音译、字义任一项查找',
+    'zh-Hant': '輸入 Strong\'s 編號、原文、音譯、字義任一項查找',
+    'en': 'Search by Strong\'s number, lemma, transliteration, or gloss',
+  },
+  'statsLookupTapHint': {
+    'zh-Hans': '点击任一字根查看完整释义、词族、经文索引',
+    'zh-Hant': '點擊任一字根查看完整釋義、詞族、經文索引',
+    'en': 'Tap any entry for full meaning, word family, and concordance.',
+  },
+  'statsLookupEmpty': {
+    'zh-Hans': '未找到匹配的字根',
+    'zh-Hant': '未找到匹配的字根',
+    'en': 'No matching entries.',
+  },
   'statsBook': {'zh-Hans': '书卷', 'zh-Hant': '書卷', 'en': 'Book'},
   'statsChapters': {'zh-Hans': '章数', 'zh-Hant': '章數', 'en': 'Chapters'},
   'statsVerses': {'zh-Hans': '节数', 'zh-Hant': '節數', 'en': 'Verses'},

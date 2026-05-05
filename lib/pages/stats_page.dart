@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:provider/provider.dart';
+
+import 'package:yswords/pages/strongs_entry_page.dart';
 
 import 'package:yswords/constants/ui_strings.dart';
 import 'package:yswords/models/app_settings.dart';
@@ -48,9 +51,18 @@ class StatsPage extends StatelessWidget {
                 icon: const Icon(Icons.dashboard_outlined),
                 text: uiStrings['statsOverview']?[locale] ?? 'Overview',
               ),
+              // Round 56 (continued — Bible Tools rename): the
+              // 'Books' tab was per-book originals stats — same data
+              // the Overview now exposes via its book filter, so it
+              // wasn't earning its slot. Replaced with a Strong's
+              // lookup tool that opens the full StrongsEntryPage
+              // (entry + word-family + concordance) for any tapped
+              // result. User feedback: "书卷这一个tab感觉没有什么用，
+              // 但是在经文里面的释经，里面的全部内容可以搬过来".
               Tab(
-                icon: const Icon(Icons.menu_book_outlined),
-                text: uiStrings['statsBooks']?[locale] ?? 'Books',
+                icon: const Icon(Icons.search_rounded),
+                text:
+                    uiStrings['statsLookup']?[locale] ?? 'Lookup',
               ),
               Tab(
                 icon: const Icon(Icons.spellcheck),
@@ -74,7 +86,7 @@ class StatsPage extends StatelessWidget {
         body: TabBarView(
           children: [
             _OriginalsOverviewTab(locale: locale, settings: settings),
-            _OriginalsBooksTab(locale: locale, settings: settings),
+            _StrongsLookupTab(locale: locale, settings: settings),
             _OriginalsTab(locale: locale, settings: settings),
           ],
         ),
@@ -2523,6 +2535,370 @@ class _OriginalsRow extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+}
+// Round 56 (continued): Strong's lookup tab — replaces the
+// per-book Statistics tab whose data is now exposed through the
+// Overview tab's book filter. Purpose: give users a fast path to
+// the StrongsEntryPage (full lexicon entry + word family +
+// concordance) for any Hebrew or Greek lemma without first
+// having to tap a verse.
+//
+// All data on screen is lexical metadata — Strong's #, lemma,
+// transliteration, brief gloss, occurrence count. No verse text
+// or extended commentary lives here; tapping a row pushes the
+// full StrongsEntryPage which already has its own copyright-safe
+// rendering. Same vocabulary as the Vocabulary tab; the
+// difference is what the row's onTap does (push entry page vs
+// show book breakdown sheet).
+class _StrongsLookupTab extends StatefulWidget {
+  final String locale;
+  final AppSettings settings;
+  const _StrongsLookupTab(
+      {required this.locale, required this.settings});
+
+  @override
+  State<_StrongsLookupTab> createState() => _StrongsLookupTabState();
+}
+
+class _StrongsLookupTabState extends State<_StrongsLookupTab>
+    with AutomaticKeepAliveClientMixin {
+  Future<List<OriginalsLemma>>? _future;
+  String _filter = 'all'; // 'all' | 'hebrew' | 'greek'
+  String _query = '';
+  // Hide grammatical particles by default — same toggle as the
+  // Overview tab. Most useful when the user is exploring meaningful
+  // theology vocabulary; flip off to see all 14k Strong's entries.
+  bool _hideStopwords = true;
+  final ScrollController _scrollCtrl = ScrollController();
+
+  @override
+  bool get wantKeepAlive => true;
+
+  @override
+  void initState() {
+    super.initState();
+    _future = OriginalsStatsService.load();
+  }
+
+  @override
+  void dispose() {
+    _scrollCtrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    super.build(context);
+    final scheme = Theme.of(context).colorScheme;
+    final locale = widget.locale;
+    final settings = widget.settings;
+    return FutureBuilder<List<OriginalsLemma>>(
+      future: _future,
+      builder: (context, snap) {
+        if (snap.connectionState != ConnectionState.done) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        final all = snap.data ?? const <OriginalsLemma>[];
+        if (all.isEmpty) {
+          return Center(
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Text(
+                uiStrings['statsOriginalsEmpty']?[locale] ??
+                    'Original-language data not loaded.',
+                style: TextStyle(color: scheme.onSurfaceVariant),
+              ),
+            ),
+          );
+        }
+        Iterable<OriginalsLemma> filtered = all;
+        if (_filter == 'hebrew') {
+          filtered = all.where((e) => e.isHebrew);
+        } else if (_filter == 'greek') {
+          filtered = all.where((e) => !e.isHebrew);
+        }
+        if (_hideStopwords) {
+          filtered = filtered.where((e) => !e.isStopword);
+        }
+        final q = _query.trim().toLowerCase();
+        if (q.isNotEmpty) {
+          filtered = filtered.where((e) =>
+              e.strongs.toLowerCase().contains(q) ||
+              e.lemma.contains(_query.trim()) ||
+              e.translit.toLowerCase().contains(q) ||
+              e.glossEn.toLowerCase().contains(q) ||
+              e.glossZhHans.contains(_query.trim()) ||
+              e.glossZhHant.contains(_query.trim()));
+        }
+        final rows = filtered.toList();
+        // Cap at 100 when no query so the user lands on the most
+        // useful starter set; full list is one search away.
+        final showRows =
+            (q.isEmpty && rows.length > 100) ? rows.take(100).toList() : rows;
+        return Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 900),
+            child: Column(
+              children: [
+                _buildHeader(scheme, locale, settings, rows.length, q),
+                Expanded(
+                  child: Scrollbar(
+                    controller: _scrollCtrl,
+                    thumbVisibility: true,
+                    child: showRows.isEmpty
+                        ? _buildEmpty(scheme, locale)
+                        : ListView.separated(
+                            controller: _scrollCtrl,
+                            padding: const EdgeInsets.fromLTRB(
+                                12, 4, 12, 24),
+                            itemCount: showRows.length,
+                            separatorBuilder: (_, __) =>
+                                const SizedBox(height: 4),
+                            itemBuilder: (_, i) =>
+                                _buildLookupRow(showRows[i], scheme,
+                                    settings, locale),
+                          ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildHeader(ColorScheme scheme, String locale,
+      AppSettings settings, int matchCount, String query) {
+    final allLabel =
+        uiStrings['statsOriginalsAll']?[locale] ?? 'All';
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(12, 12, 12, 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            uiStrings['statsLookupTapHint']?[locale] ??
+                'Tap any entry for full meaning, word family, and concordance.',
+            style: TextStyle(
+              fontSize: (settings.fontSize - 3).clamp(11.0, 14.0),
+              color: scheme.onSurface.withValues(alpha: 0.65),
+              fontStyle: FontStyle.italic,
+              height: 1.4,
+            ),
+          ),
+          const SizedBox(height: 10),
+          TextField(
+            decoration: InputDecoration(
+              hintText: uiStrings['statsLookupHint']?[locale] ??
+                  'Search by Strong\'s number, lemma, transliteration, or gloss',
+              isDense: true,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+              prefixIcon: const Icon(Icons.search, size: 20),
+            ),
+            onChanged: (v) => setState(() => _query = v),
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Expanded(
+                child: SegmentedButton<String>(
+                  segments: [
+                    ButtonSegment(value: 'all', label: Text(allLabel)),
+                    ButtonSegment(
+                      value: 'hebrew',
+                      label: Text(uiStrings['statsOriginalsHebrew']
+                              ?[locale] ??
+                          'Hebrew'),
+                    ),
+                    ButtonSegment(
+                      value: 'greek',
+                      label: Text(uiStrings['statsOriginalsGreek']
+                              ?[locale] ??
+                          'Greek'),
+                    ),
+                  ],
+                  selected: {_filter},
+                  onSelectionChanged: (s) =>
+                      setState(() => _filter = s.first),
+                  multiSelectionEnabled: false,
+                  showSelectedIcon: false,
+                ),
+              ),
+              const SizedBox(width: 6),
+              FilterChip(
+                avatar: Icon(
+                  _hideStopwords
+                      ? Icons.filter_alt
+                      : Icons.filter_alt_off,
+                  size: 16,
+                ),
+                label: Text(
+                  uiStrings['statsOriginalsHideStopwordsTitle']
+                          ?[locale] ??
+                      'Hide common particles',
+                  style: const TextStyle(fontSize: 12),
+                ),
+                selected: _hideStopwords,
+                onSelected: (v) => setState(() => _hideStopwords = v),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Text(
+            query.isEmpty
+                ? '$matchCount ${uiStrings['statsOriginalsTotal']?[locale]?.replaceAll(' {total}', '').replaceAll('{total} ', '') ?? 'entries'}'
+                : '$matchCount ${uiStrings['searchMatchesLabel']?[locale] ?? 'matches'}',
+            style: TextStyle(
+              fontSize: 11,
+              color: scheme.onSurfaceVariant,
+              fontFeatures: const [FontFeature.tabularFigures()],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEmpty(ColorScheme scheme, String locale) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.search_off,
+                size: 36, color: scheme.onSurfaceVariant),
+            const SizedBox(height: 8),
+            Text(
+              uiStrings['statsLookupEmpty']?[locale] ??
+                  'No matching entries.',
+              style: TextStyle(color: scheme.onSurfaceVariant),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLookupRow(OriginalsLemma e, ColorScheme scheme,
+      AppSettings settings, String locale) {
+    final tagColor = e.isHebrew
+        ? Colors.indigo.shade100
+        : Colors.deepPurple.shade100;
+    final tagFg = e.isHebrew
+        ? Colors.indigo.shade900
+        : Colors.deepPurple.shade900;
+    return Material(
+      color: scheme.surfaceContainerLow,
+      borderRadius: BorderRadius.circular(10),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(10),
+        // Round 56: tap pushes the existing StrongsEntryPage which
+        // shows the full lexicon entry, word family, and
+        // concordance — far richer than the inline book breakdown
+        // the Vocabulary tab opens.
+        onTap: () => Get.to(
+          () => StrongsEntryPage(number: e.strongs),
+          transition: Transition.rightToLeft,
+        ),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: tagColor,
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Text(
+                  e.strongs,
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                    color: tagFg,
+                    fontFeatures: const [FontFeature.tabularFigures()],
+                  ),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Flexible(
+                          child: Text(
+                            e.lemma,
+                            style: TextStyle(
+                              fontFamily: settings.fontFamily,
+                              fontSize: 18,
+                              fontWeight: FontWeight.w700,
+                              color: scheme.onSurface,
+                            ),
+                          ),
+                        ),
+                        if (e.translit.isNotEmpty) ...[
+                          const SizedBox(width: 8),
+                          Flexible(
+                            child: Text(
+                              e.translit,
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontStyle: FontStyle.italic,
+                                color: scheme.onSurface
+                                    .withValues(alpha: 0.6),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      e.glossFor(locale),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontFamily: settings.fontFamily,
+                        fontSize: 13,
+                        color: scheme.onSurface.withValues(alpha: 0.85),
+                        height: 1.35,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 10),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    '${e.count}',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                      color: scheme.primary,
+                      fontFeatures: const [FontFeature.tabularFigures()],
+                    ),
+                  ),
+                  Icon(Icons.chevron_right,
+                      size: 18,
+                      color: scheme.onSurface.withValues(alpha: 0.4)),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
