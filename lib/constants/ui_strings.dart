@@ -275,6 +275,50 @@ const uiStrings = {
     'zh-Hant': '未找到匹配的字根',
     'en': 'No matching entries.',
   },
+  // Round 56 (continued — exegesis parity): Lookup tab now leads
+  // with a passage-study card so users can start from a verse,
+  // matching the in-reader exegesis experience.
+  'statsLookupPassageTitle': {
+    'zh-Hans': '选经文研读',
+    'zh-Hant': '選經文研讀',
+    'en': 'Study a passage',
+  },
+  'statsLookupPassageDesc': {
+    'zh-Hans': '选择任一节经文，查看其字字对照原文释经——与阅读时点击经文弹出的完全一致。',
+    'zh-Hant': '選擇任一節經文，查看其字字對照原文釋經——與閱讀時點擊經文彈出的完全一致。',
+    'en':
+        'Pick any verse to see its word-by-word original-language breakdown — same view the reader pops when you tap a verse.',
+  },
+  'statsLookupPickVerse': {
+    'zh-Hans': '选择经文',
+    'zh-Hant': '選擇經文',
+    'en': 'Pick a verse',
+  },
+  'statsLookupContinueReading': {
+    'zh-Hans': '从阅读继续',
+    'zh-Hant': '從閱讀繼續',
+    'en': 'Continue from reader',
+  },
+  'statsLookupStepBook': {
+    'zh-Hans': '选择书卷',
+    'zh-Hant': '選擇書卷',
+    'en': 'Pick a book',
+  },
+  'statsLookupStepChapter': {
+    'zh-Hans': '选择章',
+    'zh-Hant': '選擇章',
+    'en': 'Pick a chapter',
+  },
+  'statsLookupStepVerse': {
+    'zh-Hans': '选择节',
+    'zh-Hant': '選擇節',
+    'en': 'Pick a verse',
+  },
+  'statsLookupNoCurrentReading': {
+    'zh-Hans': '请先在阅读页打开一段经文，再回来这里继续。',
+    'zh-Hant': '請先在閱讀頁打開一段經文，再回來這裡繼續。',
+    'en': 'Open a passage in the reader first to continue here.',
+  },
   // Round 56: Word Distribution tab — exposes the
   // WordDistributionTable widget (previously only reachable via
   // tap-a-verse → originals sheet → tap a word → "show

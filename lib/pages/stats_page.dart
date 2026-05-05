@@ -3,16 +3,19 @@ import 'package:get/get.dart';
 import 'package:provider/provider.dart';
 
 import 'package:yswords/pages/strongs_entry_page.dart';
+import 'package:yswords/widgets/originals_sheet.dart';
 import 'package:yswords/widgets/word_distribution_table.dart';
 
 import 'package:yswords/constants/ui_strings.dart';
 import 'package:yswords/models/app_settings.dart';
-// ignore: unused_import
+import 'package:yswords/models/verse.dart';
 import 'package:yswords/providers/main_provider.dart';
 import 'package:yswords/services/bible_stats_service.dart';
 import 'package:yswords/services/fetch_books.dart' show standardBookOrder;
 import 'package:yswords/services/originals_stats_service.dart';
 import 'package:yswords/utils/clipboard_helper.dart';
+import 'package:yswords/utils/jump_to_reference.dart' show resolveAndPrepareJump;
+import 'package:yswords/utils/reference_parser.dart' show BibleReference;
 import 'package:yswords/utils/version_mapper.dart' show toEnglish, localeAwareBookName;
 import 'package:yswords/widgets/home_icon_button.dart';
 import 'package:yswords/widgets/localized_back_button.dart';
@@ -2655,6 +2658,25 @@ class _StrongsLookupTabState extends State<_StrongsLookupTab>
             constraints: const BoxConstraints(maxWidth: 900),
             child: Column(
               children: [
+                // Round 56 (continued — exegesis features parity):
+                // user feedback "原文查询，在 bible reader 里面可以
+                // 按出很多，但是这个工具很多用不到... 也包括选一个经文
+                // 来学习". The Lookup tab now leads with a passage-
+                // study card that matches the in-reader exegesis
+                // experience: pick a verse → opens the same
+                // OriginalsSheet (word-by-word breakdown, tap-a-word
+                // entry card, family + synonyms + concordance) the
+                // reader uses. Below it stays the per-word search
+                // for users who already know which Strong's they
+                // want.
+                _PassageStudyCard(
+                  locale: locale,
+                  settings: settings,
+                  scheme: scheme,
+                  onPickVerse: () => _openVersePicker(context),
+                  onContinueReading: () =>
+                      _continueReading(context),
+                ),
                 _buildHeader(scheme, locale, settings, rows.length, q),
                 Expanded(
                   child: Scrollbar(
@@ -2680,6 +2702,143 @@ class _StrongsLookupTabState extends State<_StrongsLookupTab>
           ),
         );
       },
+    );
+  }
+
+  /// Open the 3-step modal picker (book → chapter → verse). When
+  /// the user lands on a verse, dismiss the picker and open the
+  /// shared OriginalsSheet — same widget the reader pops when you
+  /// tap a verse in the reading pane.
+  Future<void> _openVersePicker(BuildContext context) async {
+    final mp = context.read<MainProvider>();
+    final picked = await showModalBottomSheet<_PickedRef>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Theme.of(context).colorScheme.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (sheetCtx) => _VersePickerSheet(
+        mp: mp,
+        locale: widget.locale,
+        settings: widget.settings,
+      ),
+    );
+    if (picked != null && context.mounted) {
+      _openOriginalsSheetFor(
+        context,
+        book: picked.book,
+        chapter: picked.chapter,
+        verse: picked.verse,
+      );
+    }
+  }
+
+  /// "继续阅读" action: open OriginalsSheet for the verse the user
+  /// last read in the main reader. Falls back to chapter:1 verse:1
+  /// when the reader hasn't been opened yet this session.
+  Future<void> _continueReading(BuildContext context) async {
+    final mp = context.read<MainProvider>();
+    final book = mp.currentBook;
+    final chapter = mp.currentChapter;
+    if (book == null || chapter == null) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(
+          uiStrings['statsLookupNoCurrentReading']?[widget.locale] ??
+              'Open a passage in the reader first to continue here.',
+        ),
+      ));
+      return;
+    }
+    final firstVerse = mp.currentVerse?.verse ?? 1;
+    _openOriginalsSheetFor(
+      context,
+      book: book,
+      chapter: chapter,
+      verse: firstVerse,
+    );
+  }
+
+  /// Filter MainProvider.verses down to a single (book, chapter,
+  /// verse) and pop the OriginalsSheet. The sheet itself handles the
+  /// "no original-language data" empty state, so the affordance
+  /// always opens.
+  void _openOriginalsSheetFor(
+    BuildContext context, {
+    required String book,
+    required int chapter,
+    required int verse,
+  }) {
+    final mp = context.read<MainProvider>();
+    final matches = mp.verses
+        .where((v) =>
+            v.book == book && v.chapter == chapter && v.verse == verse)
+        .toList();
+    if (matches.isEmpty) {
+      // Verse not yet loaded into the current version — try a jump
+      // resolve which will switch versions if needed and return
+      // verses from the new corpus.
+      _resolveAndOpen(context,
+          book: book, chapter: chapter, verse: verse);
+      return;
+    }
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Theme.of(context).colorScheme.surface,
+      constraints: const BoxConstraints(maxWidth: 1100),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (sheetCtx) => OriginalsSheet(
+        verses: matches,
+        allVerses: mp.verses,
+        locale: widget.locale,
+        currentVersion: mp.currentVersion,
+      ),
+    );
+  }
+
+  Future<void> _resolveAndOpen(BuildContext context,
+      {required String book,
+      required int chapter,
+      required int verse}) async {
+    final mp = context.read<MainProvider>();
+    final ref = BibleReference(
+      englishBook: toEnglish(book) ?? book,
+      chapter: chapter,
+      verseStart: verse,
+      verseEnd: verse,
+    );
+    final result = await resolveAndPrepareJump(reference: ref, mp: mp);
+    if (!context.mounted || !result.ready) return;
+    final v = mp.verses.firstWhere(
+      (x) =>
+          x.chapter == chapter &&
+          x.verse == verse &&
+          (x.book == book || toEnglish(x.book) == toEnglish(book)),
+      orElse: () => mp.verses.isNotEmpty ? mp.verses.first : Verse(
+        book: book,
+        chapter: chapter,
+        verse: verse,
+        verseLabel: '$verse',
+        text: '',
+      ),
+    );
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Theme.of(context).colorScheme.surface,
+      constraints: const BoxConstraints(maxWidth: 1100),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (sheetCtx) => OriginalsSheet(
+        verses: [v],
+        allVerses: mp.verses,
+        locale: widget.locale,
+        currentVersion: mp.currentVersion,
+      ),
     );
   }
 
@@ -3444,6 +3603,392 @@ class _StrongsPickerSheetState extends State<_StrongsPickerSheet> {
           ),
         ),
       ),
+    );
+  }
+}
+
+/// Round 56 (continued — exegesis parity): card at the top of the
+/// Lookup tab inviting the user to start an exegesis study from
+/// a passage rather than from a Strong's number. Mirrors the
+/// in-reader experience (tap-a-verse → originals sheet) but
+/// reachable directly from Bible Tools without first opening the
+/// reader.
+class _PassageStudyCard extends StatelessWidget {
+  final String locale;
+  final AppSettings settings;
+  final ColorScheme scheme;
+  final VoidCallback onPickVerse;
+  final VoidCallback onContinueReading;
+
+  const _PassageStudyCard({
+    required this.locale,
+    required this.settings,
+    required this.scheme,
+    required this.onPickVerse,
+    required this.onContinueReading,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final title = uiStrings['statsLookupPassageTitle']?[locale] ??
+        'Study a passage';
+    final desc = uiStrings['statsLookupPassageDesc']?[locale] ??
+        'Pick any verse to see its word-by-word original-language breakdown — same view the reader pops when you tap a verse.';
+    final pickLabel =
+        uiStrings['statsLookupPickVerse']?[locale] ?? 'Pick a verse';
+    final continueLabel =
+        uiStrings['statsLookupContinueReading']?[locale] ??
+            'Continue from reader';
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(12, 12, 12, 4),
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(14, 12, 12, 12),
+        decoration: BoxDecoration(
+          color: scheme.primaryContainer.withValues(alpha: 0.35),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+              color: scheme.primary.withValues(alpha: 0.3)),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.menu_book_rounded,
+                    color: scheme.primary, size: 22),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    title,
+                    style: TextStyle(
+                      fontFamily: settings.fontFamily,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                      color: scheme.onPrimaryContainer,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 6),
+            Text(
+              desc,
+              style: TextStyle(
+                fontFamily: settings.fontFamily,
+                fontSize: 12,
+                height: 1.45,
+                color: scheme.onSurface.withValues(alpha: 0.75),
+              ),
+            ),
+            const SizedBox(height: 10),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                FilledButton.icon(
+                  onPressed: onPickVerse,
+                  icon: const Icon(Icons.bookmark_outline, size: 18),
+                  label: Text(pickLabel),
+                ),
+                OutlinedButton.icon(
+                  onPressed: onContinueReading,
+                  icon: const Icon(Icons.history_edu_rounded,
+                      size: 18),
+                  label: Text(continueLabel),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Result of the verse-picker modal — the three coordinates needed
+/// to filter MainProvider.verses to a single row before opening
+/// OriginalsSheet.
+class _PickedRef {
+  final String book;
+  final int chapter;
+  final int verse;
+  const _PickedRef(this.book, this.chapter, this.verse);
+}
+
+/// Three-step verse picker: book chips → chapter chips → verse
+/// chips. Returns the picked (book, chapter, verse) triple via
+/// Navigator.pop. Designed to be lightweight — uses
+/// MainProvider.books for the structure rather than re-loading.
+/// Falls back to the verse list when MainProvider.books is empty
+/// (e.g. user opened Bible Tools before the reader loaded).
+class _VersePickerSheet extends StatefulWidget {
+  final MainProvider mp;
+  final String locale;
+  final AppSettings settings;
+  const _VersePickerSheet({
+    required this.mp,
+    required this.locale,
+    required this.settings,
+  });
+
+  @override
+  State<_VersePickerSheet> createState() => _VersePickerSheetState();
+}
+
+class _VersePickerSheetState extends State<_VersePickerSheet> {
+  String? _book; // English book name
+  int? _chapter;
+
+  /// Books the loaded version actually has. Built from the verse
+  /// list so we never offer a book that has no data.
+  late final List<String> _availableEnglishBooks = _computeBooks();
+
+  List<String> _computeBooks() {
+    final set = <String>{};
+    for (final v in widget.mp.verses) {
+      final en = toEnglish(v.book) ?? v.book;
+      set.add(en);
+    }
+    final ordered = standardBookOrder
+        .where((b) => set.contains(b))
+        .toList();
+    return ordered;
+  }
+
+  /// Chapters available in the selected book.
+  List<int> _chaptersFor(String englishBook) {
+    final set = <int>{};
+    for (final v in widget.mp.verses) {
+      final en = toEnglish(v.book) ?? v.book;
+      if (en == englishBook) set.add(v.chapter);
+    }
+    final list = set.toList()..sort();
+    return list;
+  }
+
+  /// Verses available in the selected book + chapter.
+  List<int> _versesFor(String englishBook, int chapter) {
+    final set = <int>{};
+    for (final v in widget.mp.verses) {
+      final en = toEnglish(v.book) ?? v.book;
+      if (en == englishBook && v.chapter == chapter) {
+        set.add(v.verse);
+      }
+    }
+    final list = set.toList()..sort();
+    return list;
+  }
+
+  /// Localized version of `englishBook` to display in chips,
+  /// matching the rest of the app's naming convention.
+  String _displayBook(String englishBook) =>
+      localeAwareBookName(englishBook, widget.locale);
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final locale = widget.locale;
+    return SafeArea(
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(context).size.height * 0.85),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 14, 16, 12),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              _PickerHeader(
+                step: _book == null
+                    ? 1
+                    : _chapter == null
+                        ? 2
+                        : 3,
+                locale: locale,
+                onBack: _book == null
+                    ? null
+                    : () => setState(() {
+                          if (_chapter != null) {
+                            _chapter = null;
+                          } else {
+                            _book = null;
+                          }
+                        }),
+              ),
+              const SizedBox(height: 10),
+              if (_book == null)
+                Expanded(
+                  child: _BookGrid(
+                    books: _availableEnglishBooks,
+                    locale: locale,
+                    onPick: (b) => setState(() => _book = b),
+                  ),
+                )
+              else if (_chapter == null)
+                Expanded(
+                  child: _NumberGrid(
+                    label: _displayBook(_book!),
+                    numbers: _chaptersFor(_book!),
+                    onPick: (c) => setState(() => _chapter = c),
+                  ),
+                )
+              else
+                Expanded(
+                  child: _NumberGrid(
+                    label:
+                        '${_displayBook(_book!)} ${_chapter!}',
+                    numbers: _versesFor(_book!, _chapter!),
+                    onPick: (v) => Navigator.of(context)
+                        .pop(_PickedRef(_book!, _chapter!, v)),
+                  ),
+                ),
+              const SizedBox(height: 4),
+              if (_availableEnglishBooks.isEmpty)
+                Text(
+                  uiStrings['statsLookupNoCurrentReading']?[locale] ??
+                      'Open a passage in the reader first to continue here.',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: scheme.onSurfaceVariant,
+                    fontStyle: FontStyle.italic,
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _PickerHeader extends StatelessWidget {
+  final int step; // 1 = book, 2 = chapter, 3 = verse
+  final String locale;
+  final VoidCallback? onBack;
+  const _PickerHeader({
+    required this.step,
+    required this.locale,
+    required this.onBack,
+  });
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final stepText = step == 1
+        ? (uiStrings['statsLookupStepBook']?[locale] ?? 'Pick a book')
+        : step == 2
+            ? (uiStrings['statsLookupStepChapter']?[locale] ??
+                'Pick a chapter')
+            : (uiStrings['statsLookupStepVerse']?[locale] ??
+                'Pick a verse');
+    return Row(
+      children: [
+        if (onBack != null)
+          IconButton(
+            icon: const Icon(Icons.arrow_back, size: 20),
+            onPressed: onBack,
+          ),
+        Icon(Icons.bookmark_outline,
+            size: 18, color: scheme.primary),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            stepText,
+            style: const TextStyle(
+                fontSize: 16, fontWeight: FontWeight.w600),
+          ),
+        ),
+        Text(
+          '$step / 3',
+          style: TextStyle(
+            fontSize: 12,
+            color: scheme.onSurfaceVariant,
+            fontFeatures: const [FontFeature.tabularFigures()],
+          ),
+        ),
+        const SizedBox(width: 8),
+        IconButton(
+          icon: const Icon(Icons.close, size: 20),
+          onPressed: () => Navigator.of(context).maybePop(),
+        ),
+      ],
+    );
+  }
+}
+
+class _BookGrid extends StatelessWidget {
+  final List<String> books;
+  final String locale;
+  final ValueChanged<String> onPick;
+  const _BookGrid({
+    required this.books,
+    required this.locale,
+    required this.onPick,
+  });
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      child: Wrap(
+        spacing: 6,
+        runSpacing: 6,
+        children: [
+          for (final b in books)
+            ChoiceChip(
+              label: Text(localeAwareBookName(b, locale)),
+              selected: false,
+              onSelected: (_) => onPick(b),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class _NumberGrid extends StatelessWidget {
+  final String label;
+  final List<int> numbers;
+  final ValueChanged<int> onPick;
+  const _NumberGrid({
+    required this.label,
+    required this.numbers,
+    required this.onPick,
+  });
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(bottom: 8, left: 4),
+          child: Text(
+            label,
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: scheme.primary,
+            ),
+          ),
+        ),
+        Expanded(
+          child: SingleChildScrollView(
+            child: Wrap(
+              spacing: 6,
+              runSpacing: 6,
+              children: [
+                for (final n in numbers)
+                  SizedBox(
+                    width: 44,
+                    child: ChoiceChip(
+                      label: Center(child: Text('$n')),
+                      selected: false,
+                      onSelected: (_) => onPick(n),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
