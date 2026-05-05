@@ -7328,18 +7328,33 @@
         "19": [
           {
             "verse": 1,
-            "title": "在以弗所",
-            "context": "在以弗所——保罗最长的一站，三年。神迹奇事。"
+            "title": "保罗在以弗所",
+            "context": "保罗到以弗所，遇见十二位只受过约翰洗礼的门徒，按主耶稣的名给他们施洗。"
+          },
+          {
+            "verse": 8,
+            "title": "推喇奴的讲堂",
+            "context": "保罗在会堂讲了三个月，转到推喇奴的学房，每日辩论，历时两年。"
           },
           {
             "verse": 11,
-            "title": "保罗的非常神迹",
-            "context": "保罗的非常神迹——连他的手帕、围裙都能医病。"
+            "title": "保罗行的神迹",
+            "context": "神藉保罗的手行非常的奇事，连手巾、围裙搭在病人身上都得医治。"
+          },
+          {
+            "verse": 13,
+            "title": "士基瓦七个儿子",
+            "context": "犹太祭司士基瓦的七个儿子擅自奉耶稣的名赶鬼，反被恶鬼制伏。"
+          },
+          {
+            "verse": 18,
+            "title": "悔改焚烧邪术书",
+            "context": "众人惧怕，悔改认罪；行邪术的把书拿来当众焚烧，价值五万银钱。"
           },
           {
             "verse": 23,
-            "title": "以弗所的暴动",
-            "context": "以弗所的暴动——「大哉，以弗所人的亚底米啊！」金钱和宗教的可怕组合。"
+            "title": "以弗所银匠的暴动",
+            "context": "银匠底米丢因偶像生意受损，煽动众人扰乱全城，呼喊「亚底米女神」。"
           }
         ],
         "20": [
@@ -16271,18 +16286,33 @@
         "19": [
           {
             "verse": 1,
-            "title": "在以弗所",
-            "context": "在以弗所——保羅最長的一站，三年。神蹟奇事。"
+            "title": "保羅在以弗所",
+            "context": "保羅到以弗所，遇見十二位只受過約翰洗禮的門徒，按主耶穌的名給他們施洗。"
+          },
+          {
+            "verse": 8,
+            "title": "推喇奴的講堂",
+            "context": "保羅在會堂講了三個月，轉到推喇奴的學房，每日辯論，歷時兩年。"
           },
           {
             "verse": 11,
-            "title": "保羅的非常神蹟",
-            "context": "保羅的非常神蹟——連他的手帕、圍裙都能醫病。"
+            "title": "保羅行的神蹟",
+            "context": "神藉保羅的手行非常的奇事，連手巾、圍裙搭在病人身上都得醫治。"
+          },
+          {
+            "verse": 13,
+            "title": "士基瓦七個兒子",
+            "context": "猶太祭司士基瓦的七個兒子擅自奉耶穌的名趕鬼，反被惡鬼制伏。"
+          },
+          {
+            "verse": 18,
+            "title": "悔改焚燒邪術書",
+            "context": "眾人懼怕，悔改認罪；行邪術的把書拿來當眾焚燒，價值五萬銀錢。"
           },
           {
             "verse": 23,
-            "title": "以弗所的暴動",
-            "context": "以弗所的暴動——「大哉，以弗所人的亞底米啊！」金錢和宗教的可怕組合。"
+            "title": "以弗所銀匠的暴動",
+            "context": "銀匠底米丟因偶像生意受損，煽動眾人擾亂全城，呼喊「亞底米女神」。"
           }
         ],
         "20": [
@@ -25215,17 +25245,32 @@
           {
             "verse": 1,
             "title": "Paul in Ephesus",
-            "context": "Paul in Ephesus — his longest stop, three years. Miraculous works."
+            "context": "Paul finds twelve disciples in Ephesus who knew only John's baptism, and baptises them in the name of Jesus."
+          },
+          {
+            "verse": 8,
+            "title": "The Hall of Tyrannus",
+            "context": "After three months in the synagogue Paul moves to the lecture hall of Tyrannus and reasons there daily for two years."
           },
           {
             "verse": 11,
             "title": "Extraordinary Miracles",
-            "context": "Extraordinary miracles — even handkerchiefs from his body heal."
+            "context": "God works unusual miracles through Paul’s hands; even handkerchiefs touched to him heal the sick."
+          },
+          {
+            "verse": 13,
+            "title": "The Sons of Sceva",
+            "context": "Seven sons of Sceva, a Jewish chief priest, try to invoke Jesus’ name to drive out an evil spirit and are overpowered."
+          },
+          {
+            "verse": 18,
+            "title": "Burning of Magic Books",
+            "context": "Believers confess and bring their sorcery scrolls together to burn publicly — fifty thousand pieces of silver in value."
           },
           {
             "verse": 23,
-            "title": "The Riot in Ephesus",
-            "context": "The Ephesian riot — 'Great is Artemis!' Money and religion combined."
+            "title": "The Riot of the Silversmiths",
+            "context": "Demetrius, a silversmith, stirs up Ephesus against Paul over the loss of his Artemis idol trade."
           }
         ],
         "20": [
