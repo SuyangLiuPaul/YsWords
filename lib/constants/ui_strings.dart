@@ -782,6 +782,41 @@ const uiStrings = {
     'zh-Hant': '搜尋冷知識…',
     'en': 'Search trivia…',
   },
+  // ── Songs directory (Round 56) ────────────────────────────────
+  'songsPageTitle': {
+    'zh-Hans': '诗歌',
+    'zh-Hant': '詩歌',
+    'en': 'Songs',
+  },
+  'songsIntroTitle': {
+    'zh-Hans': '诗歌目录',
+    'zh-Hant': '詩歌目錄',
+    'en': 'Church Songs Directory',
+  },
+  'songsIntroBody': {
+    'zh-Hans': '浏览来自福音电台 (fydt.org) 与 Christian Disciples Church 的诗歌。'
+        '点击条目跳转到原站收听音频、阅读歌词、下载 PDF。',
+    'zh-Hant': '瀏覽來自福音電台 (fydt.org) 與 Christian Disciples Church 的詩歌。'
+        '點擊條目跳轉到原站收聽音訊、閱讀歌詞、下載 PDF。',
+    'en':
+        'Browse songs from 福音电台 (fydt.org) and Christian Disciples Church. '
+            'Tap an entry to open the original page where you can listen, read lyrics and download the PDF.',
+  },
+  'songsSearchHint': {
+    'zh-Hans': '搜索歌名、主题或编号…',
+    'zh-Hant': '搜尋歌名、主題或編號…',
+    'en': 'Search song title, theme, or code…',
+  },
+  'songsEmpty': {
+    'zh-Hans': '暂无诗歌数据。',
+    'zh-Hant': '暫無詩歌資料。',
+    'en': 'No songs available.',
+  },
+  'songsOpenFailed': {
+    'zh-Hans': '无法打开原站页面，请稍后再试。',
+    'zh-Hant': '無法開啟原站頁面，請稍後再試。',
+    'en': 'Could not open the original page. Please try again.',
+  },
   // Round 56: hint shown under expanded font dropdown.
   'loadingVersion': {
     'zh-Hans': '正在切换译本…',

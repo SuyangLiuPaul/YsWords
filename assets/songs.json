@@ -1,0 +1,3974 @@
+{
+  "_meta": {
+    "version": 1,
+    "description": "Songs directory — link-out only. Each entry contains title + URL + auto-derived language and theme tags. The app does not host audio, lyrics, or PDFs; clicking an entry opens the original site (fydt.org / christiandiscipleschurch.org) where the church publishes its own content under its own license.",
+    "sources": [
+      {
+        "id": "fydt",
+        "name": "福音电台",
+        "homepage": "https://fydt.org/",
+        "songIndex": "https://fydt.org/xinge"
+      },
+      {
+        "id": "cdc",
+        "name": "Christian Disciples Church",
+        "homepage": "https://www.christiandiscipleschurch.org/",
+        "songIndex": "https://www.christiandiscipleschurch.org/content/integrated-list-songs"
+      }
+    ],
+    "totalSongs": 317,
+    "note": "Theme tags are auto-derived from the title text using a keyword map; they are best-effort, not authoritative. The verse field is only populated for unambiguous cases like Psalm 23 settings."
+  },
+  "songs": [
+    {
+      "id": "fydt:song_yaweisiyuwomendezhiyi",
+      "title": "雅伟是与我们的之一",
+      "language": "zh",
+      "source": "fydt",
+      "sourceLabel": "福音电台",
+      "url": "https://fydt.org/song/yaweisiyuwomendezhiyi/",
+      "themes": [
+        "神的名"
+      ],
+      "verse": null
+    },
+    {
+      "id": "fydt:song_智慧",
+      "title": "智慧",
+      "language": "zh",
+      "source": "fydt",
+      "sourceLabel": "福音电台",
+      "url": "https://fydt.org/song/智慧/",
+      "themes": [
+        "真理"
+      ],
+      "verse": null
+    },
+    {
+      "id": "fydt:song_content-benpaoqianmiandelu0",
+      "title": "奔跑前面的路",
+      "language": "zh",
+      "source": "fydt",
+      "sourceLabel": "福音电台",
+      "url": "https://fydt.org/song/content-benpaoqianmiandelu0/",
+      "themes": [
+        "得胜"
+      ],
+      "verse": null
+    },
+    {
+      "id": "fydt:song_content-zailingliheyi",
+      "title": "在灵里合一",
+      "language": "zh",
+      "source": "fydt",
+      "sourceLabel": "福音电台",
+      "url": "https://fydt.org/song/content-zailingliheyi/",
+      "themes": [
+        "圣灵",
+        "教会"
+      ],
+      "verse": null
+    },
+    {
+      "id": "fydt:song_content_tongxinren",
+      "title": "同行人",
+      "language": "zh",
+      "source": "fydt",
+      "sourceLabel": "福音电台",
+      "url": "https://fydt.org/song/content/tongxinren/",
+      "themes": [],
+      "verse": null
+    },
+    {
+      "id": "fydt:song_亏欠你真多更新版",
+      "title": "亏欠你真多 (更新版)",
+      "language": "zh",
+      "source": "fydt",
+      "sourceLabel": "福音电台",
+      "url": "https://fydt.org/song/亏欠你真多更新版/",
+      "themes": [
+        "真理",
+        "重生"
+      ],
+      "verse": null
+    },
+    {
+      "id": "fydt:song_以雅伟为乐",
+      "title": "以雅伟为乐",
+      "language": "zh",
+      "source": "fydt",
+      "sourceLabel": "福音电台",
+      "url": "https://fydt.org/song/以雅伟为乐/",
+      "themes": [
+        "神的名"
+      ],
+      "verse": null
+    },
+    {
+      "id": "fydt:song_更美的盼望",
+      "title": "更美的盼望",
+      "language": "zh",
+      "source": "fydt",
+      "sourceLabel": "福音电台",
+      "url": "https://fydt.org/song/更美的盼望/",
+      "themes": [
+        "仰望"
+      ],
+      "verse": null
+    },
+    {
+      "id": "fydt:song_跟随神的灵",
+      "title": "跟随神的灵",
+      "language": "zh",
+      "source": "fydt",
+      "sourceLabel": "福音电台",
+      "url": "https://fydt.org/song/跟随神的灵/",
+      "themes": [
+        "圣灵",
+        "顺服"
+      ],
+      "verse": null
+    },
+    {
+      "id": "fydt:song_我醒来-仰望你",
+      "title": "我醒来 仰望你",
+      "language": "zh",
+      "source": "fydt",
+      "sourceLabel": "福音电台",
+      "url": "https://fydt.org/song/我醒来-仰望你/",
+      "themes": [
+        "仰望",
+        "警醒"
+      ],
+      "verse": null
+    },
+    {
+      "id": "fydt:song_起来-arise",
+      "title": "起来 Arise",
+      "language": "zh",
+      "source": "fydt",
+      "sourceLabel": "福音电台",
+      "url": "https://fydt.org/song/起来-arise/",
+      "themes": [],
+      "verse": null
+    },
+    {
+      "id": "fydt:song_靠近雅伟",
+      "title": "靠近雅伟",
+      "language": "zh",
+      "source": "fydt",
+      "sourceLabel": "福音电台",
+      "url": "https://fydt.org/song/靠近雅伟/",
+      "themes": [
+        "神的名"
+      ],
+      "verse": null
+    },
+    {
+      "id": "fydt:song_仆人之歌",
+      "title": "仆人之歌",
+      "language": "zh",
+      "source": "fydt",
+      "sourceLabel": "福音电台",
+      "url": "https://fydt.org/song/仆人之歌/",
+      "themes": [],
+      "verse": null
+    },
+    {
+      "id": "fydt:song_乐意行你旨意",
+      "title": "乐意行你旨意",
+      "language": "zh",
+      "source": "fydt",
+      "sourceLabel": "福音电台",
+      "url": "https://fydt.org/song/乐意行你旨意/",
+      "themes": [
+        "顺服"
+      ],
+      "verse": null
+    },
+    {
+      "id": "fydt:song_宽畅跳动",
+      "title": "宽畅跳动",
+      "language": "zh",
+      "source": "fydt",
+      "sourceLabel": "福音电台",
+      "url": "https://fydt.org/song/宽畅跳动/",
+      "themes": [],
+      "verse": null
+    },
+    {
+      "id": "fydt:song_定意跟随",
+      "title": "定意跟随",
+      "language": "zh",
+      "source": "fydt",
+      "sourceLabel": "福音电台",
+      "url": "https://fydt.org/song/定意跟随/",
+      "themes": [
+        "顺服"
+      ],
+      "verse": null
+    },
+    {
+      "id": "fydt:song_深切的回应",
+      "title": "深切的回应",
+      "language": "zh",
+      "source": "fydt",
+      "sourceLabel": "福音电台",
+      "url": "https://fydt.org/song/深切的回应/",
+      "themes": [],
+      "verse": null
+    },
+    {
+      "id": "fydt:song_基督的心",
+      "title": "基督的心",
+      "language": "zh",
+      "source": "fydt",
+      "sourceLabel": "福音电台",
+      "url": "https://fydt.org/song/基督的心/",
+      "themes": [
+        "心"
+      ],
+      "verse": null
+    },
+    {
+      "id": "fydt:song_ziyou",
+      "title": "自由",
+      "language": "zh",
+      "source": "fydt",
+      "sourceLabel": "福音电台",
+      "url": "https://fydt.org/song/ziyou/",
+      "themes": [],
+      "verse": null
+    },
+    {
+      "id": "fydt:song_benpaotongdesheng",
+      "title": "奔跑同得胜",
+      "language": "zh",
+      "source": "fydt",
+      "sourceLabel": "福音电台",
+      "url": "https://fydt.org/song/benpaotongdesheng/",
+      "themes": [
+        "得胜"
+      ],
+      "verse": null
+    },
+    {
+      "id": "fydt:song_yaweinishiwomendeshennishiwomendezhu",
+      "title": "雅伟，你是我们的神，你是我们的主",
+      "language": "zh",
+      "source": "fydt",
+      "sourceLabel": "福音电台",
+      "url": "https://fydt.org/song/yaweinishiwomendeshennishiwomendezhu/",
+      "themes": [
+        "神的名"
+      ],
+      "verse": null
+    },
+    {
+      "id": "fydt:song_aidaodi",
+      "title": "爱到底",
+      "language": "zh",
+      "source": "fydt",
+      "sourceLabel": "福音电台",
+      "url": "https://fydt.org/song/aidaodi/",
+      "themes": [
+        "爱"
+      ],
+      "verse": null
+    },
+    {
+      "id": "fydt:song_当刚强非常壮胆",
+      "title": "当刚强非常壮胆",
+      "language": "zh",
+      "source": "fydt",
+      "sourceLabel": "福音电台",
+      "url": "https://fydt.org/song/当刚强非常壮胆/",
+      "themes": [],
+      "verse": null
+    },
+    {
+      "id": "fydt:song_kanjian",
+      "title": "看见",
+      "language": "zh",
+      "source": "fydt",
+      "sourceLabel": "福音电台",
+      "url": "https://fydt.org/song/kanjian/",
+      "themes": [],
+      "verse": null
+    },
+    {
+      "id": "fydt:song_我唯一所需要",
+      "title": "我唯一所需要",
+      "language": "zh",
+      "source": "fydt",
+      "sourceLabel": "福音电台",
+      "url": "https://fydt.org/song/我唯一所需要/",
+      "themes": [],
+      "verse": null
+    },
+    {
+      "id": "fydt:song_jingxingdaogao",
+      "title": "警醒祷告",
+      "language": "zh",
+      "source": "fydt",
+      "sourceLabel": "福音电台",
+      "url": "https://fydt.org/song/jingxingdaogao/",
+      "themes": [
+        "祷告",
+        "警醒"
+      ],
+      "verse": null
+    },
+    {
+      "id": "fydt:song_耶稣-神的羔羊",
+      "title": "耶稣 神的羔羊",
+      "language": "zh",
+      "source": "fydt",
+      "sourceLabel": "福音电台",
+      "url": "https://fydt.org/song/耶稣-神的羔羊/",
+      "themes": [],
+      "verse": null
+    },
+    {
+      "id": "fydt:song_qianbeishifeng",
+      "title": "谦卑事奉",
+      "language": "zh",
+      "source": "fydt",
+      "sourceLabel": "福音电台",
+      "url": "https://fydt.org/song/qianbeishifeng/",
+      "themes": [],
+      "verse": null
+    },
+    {
+      "id": "fydt:song_基督的香气",
+      "title": "基督的香气",
+      "language": "zh",
+      "source": "fydt",
+      "sourceLabel": "福音电台",
+      "url": "https://fydt.org/song/基督的香气/",
+      "themes": [],
+      "verse": null
+    },
+    {
+      "id": "fydt:song_神的爱-2",
+      "title": "神的爱",
+      "language": "zh",
+      "source": "fydt",
+      "sourceLabel": "福音电台",
+      "url": "https://fydt.org/song/神的爱-2/",
+      "themes": [
+        "爱"
+      ],
+      "verse": null
+    },
+    {
+      "id": "fydt:song_taiqitoulai",
+      "title": "抬起头来 (现场版)",
+      "language": "zh",
+      "source": "fydt",
+      "sourceLabel": "福音电台",
+      "url": "https://fydt.org/song/taiqitoulai/",
+      "themes": [],
+      "verse": null
+    },
+    {
+      "id": "fydt:song_基督被高举",
+      "title": "基督被高举",
+      "language": "zh",
+      "source": "fydt",
+      "sourceLabel": "福音电台",
+      "url": "https://fydt.org/song/基督被高举/",
+      "themes": [
+        "赞美"
+      ],
+      "verse": null
+    },
+    {
+      "id": "fydt:ge_tiantianchengsongni",
+      "title": "天天称颂你 (更新版)",
+      "language": "zh",
+      "source": "fydt",
+      "sourceLabel": "福音电台",
+      "url": "https://fydt.org/ge/tiantianchengsongni/",
+      "themes": [
+        "赞美",
+        "重生"
+      ],
+      "verse": null
+    },
+    {
+      "id": "fydt:jiangshang",
+      "title": "奖赏",
+      "language": "zh",
+      "source": "fydt",
+      "sourceLabel": "福音电台",
+      "url": "https://fydt.org/jiangshang/",
+      "themes": [],
+      "verse": null
+    },
+    {
+      "id": "fydt:content_jinzhongge",
+      "title": "尽忠歌",
+      "language": "zh",
+      "source": "fydt",
+      "sourceLabel": "福音电台",
+      "url": "https://fydt.org/content/jinzhongge/",
+      "themes": [],
+      "verse": null
+    },
+    {
+      "id": "cdc:d0180",
+      "title": "A Consecrated Soul",
+      "code": "D0180",
+      "language": "en",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/d0180",
+      "themes": [
+        "委身"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:d0415",
+      "title": "A Free Man",
+      "code": "D0415",
+      "language": "en",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/d0415",
+      "themes": [],
+      "verse": null
+    },
+    {
+      "id": "cdc:d0505",
+      "title": "Accept My Love for You",
+      "code": "D0505",
+      "language": "en",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/d0505",
+      "themes": [
+        "爱"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:d0460",
+      "title": "Against the Current",
+      "code": "D0460",
+      "language": "en",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/d0460",
+      "themes": [],
+      "verse": null
+    },
+    {
+      "id": "cdc:d0325",
+      "title": "All I Want",
+      "code": "D0325",
+      "language": "en",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/d0325",
+      "themes": [],
+      "verse": null
+    },
+    {
+      "id": "cdc:d0375",
+      "title": "Arise and Shine",
+      "code": "D0375",
+      "language": "en",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/d0375",
+      "themes": [],
+      "verse": null
+    },
+    {
+      "id": "cdc:d0445",
+      "title": "Be Perfect as the Father is Perfect",
+      "code": "D0445",
+      "language": "en",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/d0445",
+      "themes": [
+        "圣洁"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:d0204",
+      "title": "Be Strong And Very Bold",
+      "code": "D0204",
+      "language": "en",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/d0204",
+      "themes": [
+        "得胜"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:d0430",
+      "title": "Blessed Be Yahweh, Our Creator",
+      "code": "D0430",
+      "language": "en",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/d0430",
+      "themes": [
+        "感恩",
+        "敬拜",
+        "神的名"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:d0559",
+      "title": "Blessed is the Man",
+      "code": "D0559",
+      "language": "en",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/d0559",
+      "themes": [
+        "感恩",
+        "敬拜"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:d0365",
+      "title": "By Yahweh's Every Word",
+      "code": "D0365",
+      "language": "en",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/d0365",
+      "themes": [
+        "真理",
+        "神的名"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:d0184",
+      "title": "Christ Be Lifted Up",
+      "code": "D0184",
+      "language": "en",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/d0184",
+      "themes": [
+        "赞美"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:d0186",
+      "title": "Cleanse My Heart",
+      "code": "D0186",
+      "language": "en",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/d0186",
+      "themes": [
+        "圣洁",
+        "心"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:d0270",
+      "title": "Clothed With Salvation",
+      "code": "D0270",
+      "language": "en",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/d0270",
+      "themes": [
+        "救恩"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:d0410",
+      "title": "Come, Call on Yahweh",
+      "code": "D0410",
+      "language": "en",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/d0410",
+      "themes": [
+        "神的名"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:d0455",
+      "title": "Different Now",
+      "code": "D0455",
+      "language": "en",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/d0455",
+      "themes": [],
+      "verse": null
+    },
+    {
+      "id": "cdc:d0210",
+      "title": "Draw Near To Yahweh",
+      "code": "D0210",
+      "language": "en",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/d0210",
+      "themes": [
+        "神的名"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:d0435",
+      "title": "Empowered by Your Love",
+      "code": "D0435",
+      "language": "en",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/d0435",
+      "themes": [
+        "圣灵",
+        "爱"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:d0275",
+      "title": "Eternal Blessings",
+      "code": "D0275",
+      "language": "en",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/d0275",
+      "themes": [
+        "感恩",
+        "敬拜"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:d0190",
+      "title": "Everyday We Bless You",
+      "code": "D0190",
+      "language": "en",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/d0190",
+      "themes": [
+        "感恩",
+        "敬拜"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:d0200",
+      "title": "Fight the Good Fight of the Faith",
+      "code": "D0200",
+      "language": "en",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/d0200",
+      "themes": [
+        "信心",
+        "得胜"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:d0220",
+      "title": "Follow God's Spirit",
+      "code": "D0220",
+      "language": "en",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/d0220",
+      "themes": [
+        "圣灵",
+        "顺服"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:d0238",
+      "title": "Fragrance of Christ",
+      "code": "D0238",
+      "language": "en",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/d0238",
+      "themes": [],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0017",
+      "title": "Give Thanks",
+      "code": "E0017",
+      "language": "en",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0017",
+      "themes": [
+        "感恩"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0057",
+      "title": "God's Children",
+      "code": "E0057",
+      "language": "en",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0057",
+      "themes": [
+        "儿童"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:d0196",
+      "title": "God's House We Raise",
+      "code": "D0196",
+      "language": "en",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/d0196",
+      "themes": [],
+      "verse": null
+    },
+    {
+      "id": "cdc:d0495",
+      "title": "God's Love",
+      "code": "D0495",
+      "language": "en",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/d0495",
+      "themes": [
+        "爱"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:d0420",
+      "title": "God's Peace",
+      "code": "D0420",
+      "language": "en",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/d0420",
+      "themes": [
+        "平安"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0037",
+      "title": "God's Sheepfold",
+      "code": "E0037",
+      "language": "en",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0037",
+      "themes": [],
+      "verse": null
+    },
+    {
+      "id": "cdc:d0260",
+      "title": "Guard Your Heart With All Diligence",
+      "code": "D0260",
+      "language": "en",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/d0260",
+      "themes": [
+        "心"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:d0214",
+      "title": "Have Mercy On Me",
+      "code": "D0214",
+      "language": "en",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/d0214",
+      "themes": [
+        "祷告"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:d0395",
+      "title": "Heartbeat",
+      "code": "D0395",
+      "language": "en",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/d0395",
+      "themes": [
+        "心"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:d0310",
+      "title": "Heaven on Earth",
+      "code": "D0310",
+      "language": "en",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/d0310",
+      "themes": [],
+      "verse": null
+    },
+    {
+      "id": "cdc:d0255",
+      "title": "Heaven Shall Declare Your Glory",
+      "code": "D0255",
+      "language": "en",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/d0255",
+      "themes": [
+        "见证",
+        "赞美"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:d0500",
+      "title": "Here I Am, As I Wake",
+      "code": "D0500",
+      "language": "en",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/d0500",
+      "themes": [
+        "警醒"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:d0164",
+      "title": "Here In Your Presence",
+      "code": "D0164",
+      "language": "en",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/d0164",
+      "themes": [],
+      "verse": null
+    },
+    {
+      "id": "cdc:d0244",
+      "title": "How Majestic Is Your Name",
+      "code": "D0244",
+      "language": "en",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/d0244",
+      "themes": [],
+      "verse": null
+    },
+    {
+      "id": "cdc:d0530",
+      "title": "How Much I Owe You",
+      "code": "D0530",
+      "language": "en",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/d0530",
+      "themes": [],
+      "verse": null
+    },
+    {
+      "id": "cdc:d0176",
+      "title": "I am the Work of Your Hand",
+      "code": "D0176",
+      "language": "en",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/d0176",
+      "themes": [],
+      "verse": null
+    },
+    {
+      "id": "cdc:d0320",
+      "title": "I Am With You",
+      "code": "D0320",
+      "language": "en",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/d0320",
+      "themes": [],
+      "verse": null
+    },
+    {
+      "id": "cdc:d0560",
+      "title": "I Can't Stop From Loving You",
+      "code": "D0560",
+      "language": "en",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/d0560",
+      "themes": [],
+      "verse": null
+    },
+    {
+      "id": "cdc:d0162",
+      "title": "I Love You LORD, My Strength",
+      "code": "D0162",
+      "language": "en",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/d0162",
+      "themes": [
+        "爱",
+        "神的名"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:d0178",
+      "title": "I Want a Principle",
+      "code": "D0178",
+      "language": "en",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/d0178",
+      "themes": [],
+      "verse": null
+    },
+    {
+      "id": "cdc:d0385",
+      "title": "I Will Extol Yahweh",
+      "code": "D0385",
+      "language": "en",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/d0385",
+      "themes": [
+        "敬拜",
+        "神的名"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:d0540",
+      "title": "I'll Be There",
+      "code": "D0540",
+      "language": "en",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/d0540",
+      "themes": [],
+      "verse": null
+    },
+    {
+      "id": "cdc:d0345",
+      "title": "Imitate Christ",
+      "code": "D0345",
+      "language": "en",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/d0345",
+      "themes": [
+        "顺服"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:d0417",
+      "title": "In Your Presence is Fullness of Joy",
+      "code": "D0417",
+      "language": "en",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/d0417",
+      "themes": [],
+      "verse": null
+    },
+    {
+      "id": "cdc:d0475",
+      "title": "It's Your Love",
+      "code": "D0475",
+      "language": "en",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/d0475",
+      "themes": [
+        "爱"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:d0335",
+      "title": "Jesus Taught Us To Pray",
+      "code": "D0335",
+      "language": "en",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/d0335",
+      "themes": [
+        "祷告"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:d0305",
+      "title": "Jesus, Lamb of God",
+      "code": "D0305",
+      "language": "en",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/d0305",
+      "themes": [],
+      "verse": null
+    },
+    {
+      "id": "cdc:d0248",
+      "title": "Joy In Your Presence",
+      "code": "D0248",
+      "language": "en",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/d0248",
+      "themes": [],
+      "verse": null
+    },
+    {
+      "id": "cdc:d0485",
+      "title": "Keep Our Minds On These",
+      "code": "D0485",
+      "language": "en",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/d0485",
+      "themes": [
+        "心"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:d0400",
+      "title": "Let All That Breathes Praise Yahweh",
+      "code": "D0400",
+      "language": "en",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/d0400",
+      "themes": [
+        "敬拜",
+        "神的名",
+        "赞美"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:d0156",
+      "title": "Make Disciples Of All Nations",
+      "code": "D0156",
+      "language": "en",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/d0156",
+      "themes": [
+        "门徒"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:d0557",
+      "title": "Make My Life a Miracle",
+      "code": "D0557",
+      "language": "en",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/d0557",
+      "themes": [
+        "生命"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:d0350",
+      "title": "May Yahweh Bless You",
+      "code": "D0350",
+      "language": "en",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/d0350",
+      "themes": [
+        "感恩",
+        "敬拜",
+        "神的名"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:d0480",
+      "title": "Mission Song",
+      "code": "D0480",
+      "language": "en",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/d0480",
+      "themes": [
+        "门徒"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:d0440",
+      "title": "My Goal is Yahweh Himself",
+      "code": "D0440",
+      "language": "en",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/d0440",
+      "themes": [
+        "神的名"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:d0234",
+      "title": "My Heart Delights To Do Your Will",
+      "code": "D0234",
+      "language": "en",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/d0234",
+      "themes": [
+        "心"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0067",
+      "title": "My Heart Hopes in God",
+      "code": "E0067",
+      "language": "en",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0067",
+      "themes": [
+        "仰望",
+        "心"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:d0192",
+      "title": "Nothing Is Difficult For Yahweh",
+      "code": "D0192",
+      "language": "en",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/d0192",
+      "themes": [
+        "神的名"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:d0285",
+      "title": "Now I Understand",
+      "code": "D0285",
+      "language": "en",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/d0285",
+      "themes": [],
+      "verse": null
+    },
+    {
+      "id": "cdc:d0240",
+      "title": "O My Strength, I Sing Your Praise",
+      "code": "D0240",
+      "language": "en",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/d0240",
+      "themes": [
+        "敬拜",
+        "赞美"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:d0218",
+      "title": "One Cheering Word",
+      "code": "D0218",
+      "language": "en",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/d0218",
+      "themes": [
+        "真理"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:d0550",
+      "title": "Open My Eyes",
+      "code": "D0550",
+      "language": "en",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/d0550",
+      "themes": [],
+      "verse": null
+    },
+    {
+      "id": "cdc:d0226",
+      "title": "Our Father in Heaven",
+      "code": "D0226",
+      "language": "en",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/d0226",
+      "themes": [],
+      "verse": "Matthew 6:9-13"
+    },
+    {
+      "id": "cdc:d0194",
+      "title": "Overcome Sin With Holiness",
+      "code": "D0194",
+      "language": "en",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/d0194",
+      "themes": [
+        "圣洁",
+        "得胜"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:d0390",
+      "title": "Praise God, The Holy One",
+      "code": "D0390",
+      "language": "en",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/d0390",
+      "themes": [
+        "圣洁",
+        "敬拜",
+        "赞美"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0005",
+      "title": "Praise my Lord",
+      "code": "E0005",
+      "language": "en",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0005",
+      "themes": [
+        "敬拜",
+        "赞美"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:d0315",
+      "title": "Prayer of Commitment",
+      "code": "D0315",
+      "language": "en",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/d0315",
+      "themes": [
+        "委身",
+        "祷告"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0003",
+      "title": "Press on to Know the Lord",
+      "code": "E0003",
+      "language": "en",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0003",
+      "themes": [],
+      "verse": null
+    },
+    {
+      "id": "cdc:d0405",
+      "title": "Renew Our Bond in You",
+      "code": "D0405",
+      "language": "en",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/d0405",
+      "themes": [
+        "教会",
+        "重生"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:d0206",
+      "title": "Run The Race Before Us",
+      "code": "D0206",
+      "language": "en",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/d0206",
+      "themes": [
+        "得胜"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0002",
+      "title": "See the Glory of Yahweh Shining",
+      "code": "E0002",
+      "language": "en",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0002",
+      "themes": [
+        "神的名",
+        "赞美"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:d0188",
+      "title": "Serve Yahweh With Gladness",
+      "code": "D0188",
+      "language": "en",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/d0188",
+      "themes": [
+        "神的名"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:d0483",
+      "title": "Set Our Hearts Ablaze",
+      "code": "D0483",
+      "language": "en",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/d0483",
+      "themes": [
+        "心"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:d0470",
+      "title": "Shema Israel",
+      "code": "D0470",
+      "language": "en",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/d0470",
+      "themes": [],
+      "verse": "Deuteronomy 6:4"
+    },
+    {
+      "id": "cdc:d0172",
+      "title": "Shema Yisrael",
+      "code": "D0172",
+      "language": "en",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/d0172",
+      "themes": [],
+      "verse": "Deuteronomy 6:4"
+    },
+    {
+      "id": "cdc:d0228",
+      "title": "Signs of Resurrection",
+      "code": "D0228",
+      "language": "en",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/d0228",
+      "themes": [
+        "重生"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:d0465",
+      "title": "Song of Allegiance",
+      "code": "D0465",
+      "language": "en",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/d0465",
+      "themes": [
+        "委身"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:d0202",
+      "title": "Spring Of Living Water",
+      "code": "D0202",
+      "language": "en",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/d0202",
+      "themes": [
+        "重生"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:d0198",
+      "title": "Still in the Storm",
+      "code": "D0198",
+      "language": "en",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/d0198",
+      "themes": [
+        "平安"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:d0168",
+      "title": "Sweeter Than Honey",
+      "code": "D0168",
+      "language": "en",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/d0168",
+      "themes": [],
+      "verse": null
+    },
+    {
+      "id": "cdc:d0558",
+      "title": "Teach Me to Do Your Will",
+      "code": "D0558",
+      "language": "en",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/d0558",
+      "themes": [],
+      "verse": null
+    },
+    {
+      "id": "cdc:d0380",
+      "title": "That's What I'd Rather Be",
+      "code": "D0380",
+      "language": "en",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/d0380",
+      "themes": [],
+      "verse": null
+    },
+    {
+      "id": "cdc:d0154",
+      "title": "The Goodness of Yahweh",
+      "code": "D0154",
+      "language": "en",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/d0154",
+      "themes": [
+        "神的名"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:d0290",
+      "title": "The Harvest Is Near",
+      "code": "D0290",
+      "language": "en",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/d0290",
+      "themes": [],
+      "verse": null
+    },
+    {
+      "id": "cdc:d0242",
+      "title": "The Hope in Hopelessness",
+      "code": "D0242",
+      "language": "en",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/d0242",
+      "themes": [
+        "仰望"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:d0265",
+      "title": "The Immortal Yahweh",
+      "code": "D0265",
+      "language": "en",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/d0265",
+      "themes": [
+        "神的名"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:d0160",
+      "title": "The LORD Weaves On Patiently",
+      "code": "D0160",
+      "language": "en",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/d0160",
+      "themes": [
+        "神的名"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:d0250",
+      "title": "The Meek Shall Live By Yahweh's Spirit",
+      "code": "D0250",
+      "language": "en",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/d0250",
+      "themes": [
+        "圣灵",
+        "神的名"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:d0246",
+      "title": "The Mind of Christ",
+      "code": "D0246",
+      "language": "en",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/d0246",
+      "themes": [
+        "心"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0004",
+      "title": "To Adore and to Worship You",
+      "code": "E0004",
+      "language": "en",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0004",
+      "themes": [
+        "敬拜"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:d0360",
+      "title": "To Fear the LORD is to Live",
+      "code": "D0360",
+      "language": "en",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/d0360",
+      "themes": [
+        "神的名"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:d0300",
+      "title": "To Know Christ",
+      "code": "D0300",
+      "language": "en",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/d0300",
+      "themes": [],
+      "verse": null
+    },
+    {
+      "id": "cdc:d0166",
+      "title": "United With Christ",
+      "code": "D0166",
+      "language": "en",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/d0166",
+      "themes": [
+        "教会"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0105",
+      "title": "Wait on God",
+      "code": "E0105",
+      "language": "en",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0105",
+      "themes": [
+        "仰望"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:d0340",
+      "title": "We Belong to You",
+      "code": "D0340",
+      "language": "en",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/d0340",
+      "themes": [],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0155",
+      "title": "We Belong to You",
+      "code": "E0155",
+      "language": "en",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0155",
+      "themes": [],
+      "verse": null
+    },
+    {
+      "id": "cdc:d0174",
+      "title": "What Yahweh Has Chosen",
+      "code": "D0174",
+      "language": "en",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/d0174",
+      "themes": [
+        "神的名"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:d0295",
+      "title": "Who Is Like You, Yahweh",
+      "code": "D0295",
+      "language": "en",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/d0295",
+      "themes": [
+        "神的名"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:d0208",
+      "title": "Wholly Devoted To You",
+      "code": "D0208",
+      "language": "en",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/d0208",
+      "themes": [
+        "委身"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:d0224",
+      "title": "With One Heart and Voice",
+      "code": "D0224",
+      "language": "en",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/d0224",
+      "themes": [
+        "心",
+        "教会"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:d0225",
+      "title": "With One Heart And Voice (Thai language)",
+      "code": "D0225",
+      "language": "th",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/d0225",
+      "themes": [
+        "心",
+        "教会"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:d0355",
+      "title": "Yahweh is Our God",
+      "code": "D0355",
+      "language": "en",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/d0355",
+      "themes": [
+        "神的名"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:d0462",
+      "title": "Yahweh Shall be Known by All",
+      "code": "D0462",
+      "language": "en",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/d0462",
+      "themes": [
+        "神的名"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:d0182",
+      "title": "Yahweh You Are Our God and Lord",
+      "code": "D0182",
+      "language": "en",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/d0182",
+      "themes": [
+        "神的名"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:d0370",
+      "title": "Yahweh's Glory",
+      "code": "D0370",
+      "language": "en",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/d0370",
+      "themes": [
+        "神的名",
+        "赞美"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:d0158",
+      "title": "Yahweh's Name is Everlasting",
+      "code": "D0158",
+      "language": "en",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/d0158",
+      "themes": [
+        "神的名"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:d0510",
+      "title": "Yahweh's Power is Made Perfect",
+      "code": "D0510",
+      "language": "en",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/d0510",
+      "themes": [
+        "圣洁",
+        "神的名"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:d0330",
+      "title": "Yahweh's Ransomed Shall Return",
+      "code": "D0330",
+      "language": "en",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/d0330",
+      "themes": [
+        "救恩",
+        "神的名"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:d0230",
+      "title": "Yahweh's Steadfast Love Endures",
+      "code": "D0230",
+      "language": "en",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/d0230",
+      "themes": [
+        "爱",
+        "神的名"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:d0492",
+      "title": "Yahweh's Will For Us",
+      "code": "D0492",
+      "language": "en",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/d0492",
+      "themes": [
+        "神的名"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:d0450",
+      "title": "Yahweh, You Alone are God",
+      "code": "D0450",
+      "language": "en",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/d0450",
+      "themes": [
+        "神的名"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:d0232",
+      "title": "You Alone",
+      "code": "D0232",
+      "language": "en",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/d0232",
+      "themes": [],
+      "verse": null
+    },
+    {
+      "id": "cdc:d0170",
+      "title": "You Are All I Ever Need",
+      "code": "D0170",
+      "language": "en",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/d0170",
+      "themes": [],
+      "verse": null
+    },
+    {
+      "id": "cdc:d0490",
+      "title": "You are Faithful, Yahweh",
+      "code": "D0490",
+      "language": "en",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/d0490",
+      "themes": [
+        "信心",
+        "神的名"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:d0216",
+      "title": "You Are Worthy",
+      "code": "D0216",
+      "language": "en",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/d0216",
+      "themes": [],
+      "verse": null
+    },
+    {
+      "id": "cdc:d0212",
+      "title": "You Do Wondrous Things",
+      "code": "D0212",
+      "language": "en",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/d0212",
+      "themes": [],
+      "verse": null
+    },
+    {
+      "id": "cdc:d0280",
+      "title": "Your Place In My Heart",
+      "code": "D0280",
+      "language": "en",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/d0280",
+      "themes": [
+        "心"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:d0222",
+      "title": "Your Thoughts Your Ways",
+      "code": "D0222",
+      "language": "en",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/d0222",
+      "themes": [],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0185",
+      "title": "一生一世",
+      "code": "E0185",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0185",
+      "themes": [
+        "生命"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0089",
+      "title": "一生追赶雅伟的心意",
+      "code": "E0089",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0089",
+      "themes": [
+        "心",
+        "生命",
+        "神的名"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0500",
+      "title": "不再是我",
+      "code": "E0500",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0500",
+      "themes": [],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0870",
+      "title": "与主合一",
+      "code": "E0870",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0870",
+      "themes": [
+        "教会"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0095",
+      "title": "与主同心",
+      "code": "E0095",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0095",
+      "themes": [
+        "心",
+        "教会"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0560",
+      "title": "与你一致",
+      "code": "E0560",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0560",
+      "themes": [
+        "教会"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:d0541",
+      "title": "与你相会",
+      "code": "D0541",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/d0541",
+      "themes": [],
+      "verse": null
+    },
+    {
+      "id": "cdc:e1110",
+      "title": "与基督联合",
+      "code": "E1110",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e1110",
+      "themes": [
+        "教会"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0195",
+      "title": "与神同行",
+      "code": "E0195",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0195",
+      "themes": [],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0360",
+      "title": "世界的光",
+      "code": "E0360",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0360",
+      "themes": [],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0086",
+      "title": "丰盛旅程",
+      "code": "E0086",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0086",
+      "themes": [],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0245",
+      "title": "为你",
+      "code": "E0245",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0245",
+      "themes": [
+        "委身"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0690",
+      "title": "主会认你为忠诚的人吗",
+      "code": "E0690",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0690",
+      "themes": [],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0014",
+      "title": "主啊帮助我们",
+      "code": "E0014",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0014",
+      "themes": [],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0520",
+      "title": "主啊我恳求你",
+      "code": "E0520",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0520",
+      "themes": [
+        "祷告"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0730",
+      "title": "主感动你",
+      "code": "E0730",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0730",
+      "themes": [],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0240",
+      "title": "主的光",
+      "code": "E0240",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0240",
+      "themes": [],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0285",
+      "title": "主的公义",
+      "code": "E0285",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0285",
+      "themes": [],
+      "verse": null
+    },
+    {
+      "id": "cdc:e1120",
+      "title": "主的意念非同我的意念",
+      "code": "E1120",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e1120",
+      "themes": [],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0310",
+      "title": "他吸引万民",
+      "code": "E0310",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0310",
+      "themes": [
+        "见证"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0056",
+      "title": "以你心为心",
+      "code": "E0056",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0056",
+      "themes": [
+        "心"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:e1070",
+      "title": "以拯救为衣",
+      "code": "E1070",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e1070",
+      "themes": [
+        "救恩"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0760",
+      "title": "传爱",
+      "code": "E0760",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0760",
+      "themes": [
+        "爱"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0110",
+      "title": "你们是世上的光",
+      "code": "E0110",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0110",
+      "themes": [],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0054",
+      "title": "你垂听我祈求",
+      "code": "E0054",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0054",
+      "themes": [
+        "祷告"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0405",
+      "title": "你当刚强壮胆",
+      "code": "E0405",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0405",
+      "themes": [],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0390",
+      "title": "你意念宝贵",
+      "code": "E0390",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0390",
+      "themes": [],
+      "verse": null
+    },
+    {
+      "id": "cdc:d0476",
+      "title": "你的爱",
+      "code": "D0476",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/d0476",
+      "themes": [
+        "爱"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0840",
+      "title": "你面前有喜乐",
+      "code": "E0840",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0840",
+      "themes": [],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0600",
+      "title": "保守内心",
+      "code": "E0600",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0600",
+      "themes": [
+        "心"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0620",
+      "title": "做个真正聪明人",
+      "code": "E0620",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0620",
+      "themes": [
+        "真理"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0810",
+      "title": "做主精兵",
+      "code": "E0810",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0810",
+      "themes": [],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0460",
+      "title": "做你忠心朋友",
+      "code": "E0460",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0460",
+      "themes": [
+        "心"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0190",
+      "title": "全心寻求主",
+      "code": "E0190",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0190",
+      "themes": [
+        "心",
+        "祷告"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0020",
+      "title": "全然地爱你",
+      "code": "E0020",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0020",
+      "themes": [
+        "爱"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0630",
+      "title": "兴起发光",
+      "code": "E0630",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0630",
+      "themes": [],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0215",
+      "title": "凡有气息的赞美雅伟",
+      "code": "E0215",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0215",
+      "themes": [
+        "神的名",
+        "赞美"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0114",
+      "title": "出死入生",
+      "code": "E0114",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0114",
+      "themes": [
+        "生命"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0010",
+      "title": "力上加力",
+      "code": "E0010",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0010",
+      "themes": [],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0098",
+      "title": "勇者无惧",
+      "code": "E0098",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0098",
+      "themes": [],
+      "verse": null
+    },
+    {
+      "id": "cdc:d0513",
+      "title": "华美新衣",
+      "code": "D0513",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/d0513",
+      "themes": [
+        "重生"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0210",
+      "title": "古韵雅歌",
+      "code": "E0210",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0210",
+      "themes": [],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0950",
+      "title": "可喜可乐之城",
+      "code": "E0950",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0950",
+      "themes": [],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0235",
+      "title": "同得基業",
+      "code": "E0235",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0235",
+      "themes": [],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0094",
+      "title": "同心合意",
+      "code": "E0094",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0094",
+      "themes": [
+        "心",
+        "教会"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:d0516",
+      "title": "同心同行",
+      "code": "D0516",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/d0516",
+      "themes": [
+        "心",
+        "教会"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:d0520",
+      "title": "向神雅伟唱新歌",
+      "code": "D0520",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/d0520",
+      "themes": [
+        "神的名",
+        "重生"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0046",
+      "title": "向雅伟唱新歌",
+      "code": "E0046",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0046",
+      "themes": [
+        "神的名",
+        "重生"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0164",
+      "title": "向雅伟的祷告",
+      "code": "E0164",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0164",
+      "themes": [
+        "神的名",
+        "祷告"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0435",
+      "title": "呼求",
+      "code": "E0435",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0435",
+      "themes": [
+        "祷告"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0455",
+      "title": "哦耶稣快快来",
+      "code": "E0455",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0455",
+      "themes": [],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0200",
+      "title": "回家",
+      "code": "E0200",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0200",
+      "themes": [],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0305",
+      "title": "因他以厚恩待我",
+      "code": "E0305",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0305",
+      "themes": [],
+      "verse": null
+    },
+    {
+      "id": "cdc:d0526",
+      "title": "在你心怀里",
+      "code": "D0526",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/d0526",
+      "themes": [
+        "心"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0315",
+      "title": "在你面前有满足喜乐",
+      "code": "E0315",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0315",
+      "themes": [],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0290",
+      "title": "复活",
+      "code": "E0290",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0290",
+      "themes": [
+        "重生"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0790",
+      "title": "复活和生命",
+      "code": "E0790",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0790",
+      "themes": [
+        "生命",
+        "重生"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0074",
+      "title": "复活标记",
+      "code": "E0074",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0074",
+      "themes": [
+        "重生"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0395",
+      "title": "天路历程",
+      "code": "E0395",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0395",
+      "themes": [],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0134",
+      "title": "奋进传扬",
+      "code": "E0134",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0134",
+      "themes": [
+        "见证"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0064",
+      "title": "奔跑前面的路",
+      "code": "E0064",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0064",
+      "themes": [
+        "得胜"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0550",
+      "title": "好牧人",
+      "code": "E0550",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0550",
+      "themes": [],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0225",
+      "title": "安息在全能者的荫下",
+      "code": "E0225",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0225",
+      "themes": [
+        "平安"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0030",
+      "title": "完全的爱",
+      "code": "E0030",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0030",
+      "themes": [
+        "圣洁",
+        "爱"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0680",
+      "title": "宝贵",
+      "code": "E0680",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0680",
+      "themes": [],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0470",
+      "title": "寰宇传扬你的荣耀",
+      "code": "E0470",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0470",
+      "themes": [
+        "见证",
+        "赞美"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:d0523",
+      "title": "对你说是",
+      "code": "D0523",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/d0523",
+      "themes": [],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0440",
+      "title": "尊崇敬拜你",
+      "code": "E0440",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0440",
+      "themes": [
+        "敬拜"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0205",
+      "title": "开垦荒地",
+      "code": "E0205",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0205",
+      "themes": [],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0012",
+      "title": "开我心耳",
+      "code": "E0012",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0012",
+      "themes": [
+        "心"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:d0551",
+      "title": "开我眼睛",
+      "code": "D0551",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/d0551",
+      "themes": [],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0700",
+      "title": "得见你面",
+      "code": "E0700",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0700",
+      "themes": [],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0052",
+      "title": "得雅伟称许 Dokimos",
+      "code": "E0052",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0052",
+      "themes": [
+        "神的名"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0860",
+      "title": "心声",
+      "code": "E0860",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0860",
+      "themes": [
+        "心"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0026",
+      "title": "心存永恆的盼望",
+      "code": "E0026",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0026",
+      "themes": [
+        "仰望",
+        "心"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0530",
+      "title": "心灵贫乏",
+      "code": "E0530",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0530",
+      "themes": [
+        "圣灵",
+        "心"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0660",
+      "title": "必得着生命",
+      "code": "E0660",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0660",
+      "themes": [
+        "生命"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0260",
+      "title": "快来敬拜",
+      "code": "E0260",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0260",
+      "themes": [
+        "敬拜"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0650",
+      "title": "悟",
+      "code": "E0650",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0650",
+      "themes": [],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0044",
+      "title": "我们一起长成",
+      "code": "E0044",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0044",
+      "themes": [],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0300",
+      "title": "我们的盼望和喜乐",
+      "code": "E0300",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0300",
+      "themes": [
+        "仰望"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:e1080",
+      "title": "我心仰望神雅伟",
+      "code": "E1080",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e1080",
+      "themes": [
+        "仰望",
+        "心",
+        "神的名"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0830",
+      "title": "我心灵得复生",
+      "code": "E0830",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0830",
+      "themes": [
+        "圣灵",
+        "心",
+        "生命"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:e1100",
+      "title": "我是否靠近主的心",
+      "code": "E1100",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e1100",
+      "themes": [
+        "心"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:d0561",
+      "title": "我永永远远的深爱你",
+      "code": "D0561",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/d0561",
+      "themes": [
+        "爱"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0325",
+      "title": "我求告一件事",
+      "code": "E0325",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0325",
+      "themes": [
+        "祷告"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0740",
+      "title": "我深爱你，我的力量",
+      "code": "E0740",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0740",
+      "themes": [
+        "爱"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0335",
+      "title": "我的力量和盾牌",
+      "code": "E0335",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0335",
+      "themes": [],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0345",
+      "title": "我的心哪赞美雅伟",
+      "code": "E0345",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0345",
+      "themes": [
+        "心",
+        "神的名",
+        "赞美"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:e1050",
+      "title": "我要向山举目",
+      "code": "E1050",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e1050",
+      "themes": [],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0355",
+      "title": "我要称谢雅伟",
+      "code": "E0355",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0355",
+      "themes": [
+        "感恩",
+        "神的名"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0084",
+      "title": "我要纪念雅伟",
+      "code": "E0084",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0084",
+      "themes": [
+        "神的名"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0330",
+      "title": "我还要归从谁",
+      "code": "E0330",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0330",
+      "themes": [],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0400",
+      "title": "我选择雅伟道路",
+      "code": "E0400",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0400",
+      "themes": [
+        "神的名"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0770",
+      "title": "招聚万民的大旗",
+      "code": "E0770",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0770",
+      "themes": [
+        "见证"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0059",
+      "title": "接棒",
+      "code": "E0059",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0059",
+      "themes": [],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0880",
+      "title": "效法基督",
+      "code": "E0880",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0880",
+      "themes": [],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0750",
+      "title": "救主恩",
+      "code": "E0750",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0750",
+      "themes": [
+        "救恩"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:e1010",
+      "title": "教我行你旨意",
+      "code": "E1010",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e1010",
+      "themes": [
+        "顺服"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:e1090",
+      "title": "敬拜主",
+      "code": "E1090",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e1090",
+      "themes": [
+        "敬拜"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0465",
+      "title": "敬畏雅伟的人",
+      "code": "E0465",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0465",
+      "themes": [
+        "神的名"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:e1040",
+      "title": "新生",
+      "code": "E1040",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e1040",
+      "themes": [
+        "生命",
+        "重生"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:e1060",
+      "title": "新造的人",
+      "code": "E1060",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e1060",
+      "themes": [
+        "重生"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0036",
+      "title": "昼夜不住的呼求",
+      "code": "E0036",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0036",
+      "themes": [
+        "祷告"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0385",
+      "title": "晓得雅伟是神",
+      "code": "E0385",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0385",
+      "themes": [
+        "神的名"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0970",
+      "title": "来呼求雅伟",
+      "code": "E0970",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0970",
+      "themes": [
+        "神的名",
+        "祷告"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0107",
+      "title": "来靠近真神",
+      "code": "E0107",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0107",
+      "themes": [
+        "真理"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0890",
+      "title": "歌颂你，我的力量",
+      "code": "E0890",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0890",
+      "themes": [
+        "赞美"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0940",
+      "title": "每一天",
+      "code": "E0940",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0940",
+      "themes": [],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0039",
+      "title": "求主发光",
+      "code": "E0039",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0039",
+      "themes": [
+        "祷告"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0130",
+      "title": "求主怜爱显彰",
+      "code": "E0130",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0130",
+      "themes": [
+        "爱",
+        "祷告"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0320",
+      "title": "求主扶助",
+      "code": "E0320",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0320",
+      "themes": [
+        "祷告"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0420",
+      "title": "求主饶恕",
+      "code": "E0420",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0420",
+      "themes": [
+        "祷告"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0370",
+      "title": "求开放的灵",
+      "code": "E0370",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0370",
+      "themes": [
+        "圣灵",
+        "祷告"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0415",
+      "title": "求耶稣作我主",
+      "code": "E0415",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0415",
+      "themes": [
+        "祷告"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0375",
+      "title": "活在主智慧中",
+      "code": "E0375",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0375",
+      "themes": [
+        "真理",
+        "重生"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0069",
+      "title": "清晨的日光",
+      "code": "E0069",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0069",
+      "themes": [],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0175",
+      "title": "清晨的甘露",
+      "code": "E0175",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0175",
+      "themes": [],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0029",
+      "title": "温柔安静的灵",
+      "code": "E0029",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0029",
+      "themes": [
+        "圣灵",
+        "平安"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0510",
+      "title": "渴望生命之律",
+      "code": "E0510",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0510",
+      "themes": [
+        "生命"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0042",
+      "title": "溪水旁的树",
+      "code": "E0042",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0042",
+      "themes": [],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0022",
+      "title": "满心感恩",
+      "code": "E0022",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0022",
+      "themes": [
+        "心",
+        "感恩"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0900",
+      "title": "灵的祝祷",
+      "code": "E0900",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0900",
+      "themes": [
+        "圣灵"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0990",
+      "title": "点燃我们的心",
+      "code": "E0990",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0990",
+      "themes": [
+        "心"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0024",
+      "title": "爱的团聚",
+      "code": "E0024",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0024",
+      "themes": [
+        "爱"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0640",
+      "title": "牧园",
+      "code": "E0640",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0640",
+      "themes": [],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0410",
+      "title": "生命的粮",
+      "code": "E0410",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0410",
+      "themes": [
+        "生命"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:d0481",
+      "title": "短宣歌",
+      "code": "D0481",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/d0481",
+      "themes": [
+        "见证"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0850",
+      "title": "祈祷",
+      "code": "E0850",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0850",
+      "themes": [
+        "祷告"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0070",
+      "title": "神是我的目标",
+      "code": "E0070",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0070",
+      "themes": [],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0220",
+      "title": "神的儿女",
+      "code": "E0220",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0220",
+      "themes": [],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0450",
+      "title": "神的平安－毫无忧虑",
+      "code": "E0450",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0450",
+      "themes": [
+        "平安"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0780",
+      "title": "神的灵火燃烧",
+      "code": "E0780",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0780",
+      "themes": [
+        "圣灵"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0670",
+      "title": "称谢",
+      "code": "E0670",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0670",
+      "themes": [
+        "感恩"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0145",
+      "title": "称谢你手所造的一切",
+      "code": "E0145",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0145",
+      "themes": [
+        "感恩"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0980",
+      "title": "等候主",
+      "code": "E0980",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0980",
+      "themes": [],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0477",
+      "title": "等候雅伟",
+      "code": "E0477",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0477",
+      "themes": [
+        "神的名"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0080",
+      "title": "背你十架",
+      "code": "E0080",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0080",
+      "themes": [],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0590",
+      "title": "若不是主帮助",
+      "code": "E0590",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0590",
+      "themes": [],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0380",
+      "title": "蒙主祝福的人",
+      "code": "E0380",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0380",
+      "themes": [],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0610",
+      "title": "蒙恩福的人",
+      "code": "E0610",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0610",
+      "themes": [],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0076",
+      "title": "要完全像天父完全",
+      "code": "E0076",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0076",
+      "themes": [
+        "圣洁"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0120",
+      "title": "要得雅伟的喜悦",
+      "code": "E0120",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0120",
+      "themes": [
+        "神的名"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0910",
+      "title": "认识基督",
+      "code": "E0910",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0910",
+      "themes": [],
+      "verse": null
+    },
+    {
+      "id": "cdc:e1130",
+      "title": "诗篇100",
+      "code": "E1130",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e1130",
+      "themes": [
+        "诗篇"
+      ],
+      "verse": "Psalms 100"
+    },
+    {
+      "id": "cdc:e0365",
+      "title": "诗篇23",
+      "code": "E0365",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0365",
+      "themes": [
+        "诗篇"
+      ],
+      "verse": "Psalms 23"
+    },
+    {
+      "id": "cdc:e0050",
+      "title": "诗篇43",
+      "code": "E0050",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0050",
+      "themes": [
+        "诗篇"
+      ],
+      "verse": "Psalms 43"
+    },
+    {
+      "id": "cdc:e0490",
+      "title": "诗篇51",
+      "code": "E0490",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0490",
+      "themes": [
+        "诗篇"
+      ],
+      "verse": "Psalms 51"
+    },
+    {
+      "id": "cdc:d0506",
+      "title": "请接纳我的爱",
+      "code": "D0506",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/d0506",
+      "themes": [
+        "爱"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0019",
+      "title": "谦卑的人靠雅伟的灵而活",
+      "code": "E0019",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0019",
+      "themes": [
+        "圣灵",
+        "神的名",
+        "重生"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0820",
+      "title": "跟从耶稣",
+      "code": "E0820",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0820",
+      "themes": [
+        "顺服"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0255",
+      "title": "门徒歌",
+      "code": "E0255",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0255",
+      "themes": [
+        "门徒"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0049",
+      "title": "雅伟的名是从万古",
+      "code": "E0049",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0049",
+      "themes": [
+        "神的名"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0079",
+      "title": "雅伟的每一句话",
+      "code": "E0079",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0079",
+      "themes": [
+        "真理",
+        "神的名"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0250",
+      "title": "雅伟的美善",
+      "code": "E0250",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0250",
+      "themes": [
+        "神的名"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0034",
+      "title": "雅伟的荣美",
+      "code": "E0034",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0034",
+      "themes": [
+        "神的名",
+        "赞美"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0092",
+      "title": "雅伟的话语 (Hadavar Yahweh)",
+      "code": "E0092",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0092",
+      "themes": [
+        "真理",
+        "神的名"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0710",
+      "title": "雅伟眼中没有难事",
+      "code": "E0710",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0710",
+      "themes": [
+        "神的名"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0032",
+      "title": "雅伟荣耀的光已彰显",
+      "code": "E0032",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0032",
+      "themes": [
+        "神的名",
+        "赞美"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0140",
+      "title": "颂赞我主",
+      "code": "E0140",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0140",
+      "themes": [
+        "敬拜",
+        "赞美"
+      ],
+      "verse": null
+    },
+    {
+      "id": "cdc:e0016",
+      "title": "风随意吹",
+      "code": "E0016",
+      "language": "zh",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/e0016",
+      "themes": [
+        "圣灵"
+      ],
+      "verse": null
+    }
+  ]
+}

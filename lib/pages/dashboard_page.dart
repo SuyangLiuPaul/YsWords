@@ -18,6 +18,7 @@ import 'package:yswords/pages/evidence_detail_page.dart';
 import 'package:yswords/pages/evidence_page.dart';
 import 'package:yswords/pages/bible_timeline_page.dart';
 import 'package:yswords/pages/bible_trivia_page.dart';
+import 'package:yswords/pages/songs_page.dart';
 import 'package:yswords/pages/family_tree_page.dart';
 import 'package:yswords/pages/sermon_detail_page.dart';
 import 'package:yswords/pages/sermons_page.dart';
@@ -945,6 +946,14 @@ class _DashboardPageState extends State<DashboardPage> {
               label: uiStrings['bibleTrivia']?[locale] ?? 'Bible Trivia',
               onTap: () => Get.to(
                 () => const BibleTriviaPage(),
+                transition: Transition.rightToLeft,
+              ),
+            ),
+            _LinkTile(
+              icon: Icons.library_music_rounded,
+              label: uiStrings['songsPageTitle']?[locale] ?? 'Songs',
+              onTap: () => Get.to(
+                () => const SongsPage(),
                 transition: Transition.rightToLeft,
               ),
             ),

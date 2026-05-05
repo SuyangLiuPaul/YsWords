@@ -76,6 +76,7 @@ flutter:
     - assets/daily_verses.json
     - assets/bible_evidence.json
     - assets/daily_news.json
+    - assets/songs.json
     - assets/strongs/
     - assets/originals/
     - assets/sermons/index.json
