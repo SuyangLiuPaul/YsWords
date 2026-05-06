@@ -1673,6 +1673,11 @@ const uiStrings = {
     'zh-Hant': 'AI 釋義',
     'en': 'AI',
   },
+  'aboutSectionAi': {
+    'zh-Hans': 'AI（高级 · 可选）',
+    'zh-Hant': 'AI（進階 · 可選）',
+    'en': 'AI (advanced · optional)',
+  },
   'aiByokTitle': {
     'zh-Hans': '使用我自己的 Gemini API 密钥',
     'zh-Hant': '使用我自己的 Gemini API 金鑰',

@@ -259,6 +259,20 @@ class CloudAuthService extends ChangeNotifier {
           final pending = await auth.getRedirectResult();
           if (pending.user != null) {
             _user = pending.user;
+            // 2026-05 fix: also capture the Drive OAuth access token
+            // from the redirect result — same as the popup path does.
+            // Missing this meant Safari/PWA users (which fall back to
+            // redirect signin) signed in successfully but Drive sync
+            // immediately reported "Reconnect Google Drive" because
+            // _driveAccessToken was never populated.
+            final c = pending.credential;
+            if (c is OAuthCredential && c.accessToken != null) {
+              _driveAccessToken = c.accessToken;
+              _driveTokenExpiresAt =
+                  DateTime.now().add(const Duration(minutes: 55));
+              debugPrint(
+                  'CloudAuthService: captured Drive access token from redirect result');
+            }
             debugPrint('CloudAuthService: picked up redirect sign-in for ${pending.user!.email}');
           }
         } catch (e) {
@@ -337,10 +351,20 @@ class CloudAuthService extends ChangeNotifier {
         _driveTokenExpiresAt =
             DateTime.now().add(const Duration(minutes: 55));
         notifyListeners();
+        // ignore: avoid_print
+        print(
+            '[CloudAuth] refreshDriveAccessToken (interactive=$interactive): '
+            'OK, captured ${c.accessToken!.length} chars');
         return true;
       }
+      // ignore: avoid_print
+      print(
+          '[CloudAuth] refreshDriveAccessToken (interactive=$interactive): '
+          'no accessToken in credential. cred type=${c?.runtimeType}');
       return false;
     } catch (e) {
+      // ignore: avoid_print
+      print('[CloudAuth] refreshDriveAccessToken failed: $e');
       debugPrint('refreshDriveAccessToken failed: $e');
       return false;
     }
@@ -421,6 +445,17 @@ class CloudAuthService extends ChangeNotifier {
         // refresh slightly early.
         _driveTokenExpiresAt =
             DateTime.now().add(const Duration(minutes: 55));
+        // ignore: avoid_print
+        print(
+            '[CloudAuth] popup signin: captured Drive access token '
+            '(${c.accessToken!.length} chars)');
+      } else {
+        // ignore: avoid_print
+        print(
+            '[CloudAuth] popup signin: NO Drive access token in '
+            'credential. credential type=${c?.runtimeType}, '
+            'accessToken=${c is OAuthCredential ? c.accessToken : "n/a"}. '
+            'Will fall back to silent-refresh on first Drive call.');
       }
       // Manually mirror the user into our notifier in case
       // `userChanges()` doesn't fire — Chrome 115+ third-party cookie

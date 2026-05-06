@@ -150,11 +150,26 @@ class DriveSyncService extends ChangeNotifier {
   /// 3. Cloud has data + empty local → write cloud into local
   Future<void> _initialPull() async {
     if (!_ensureToken()) {
-      _needsReconnect = true;
-      _setStatus(CloudSyncStatus.error);
-      _lastError =
-          'Reconnect Google Drive to enable cloud sync.';
-      return;
+      // 2026-05 fix: silently try a token refresh before giving up.
+      // Two cases this handles:
+      //   1. User signed in BEFORE the Drive scope was added — their
+      //      cached Firebase session has no Drive permission. Silent
+      //      refresh re-runs sign-in with the new scope; if Google's
+      //      OAuth state still has them logged into the same account,
+      //      the popup closes near-instantly without showing UI.
+      //   2. Page reloaded — token was in memory only, so _ensureToken
+      //      returns false even though the user has previously
+      //      consented. Silent refresh re-acquires it.
+      // Falls back to the "Reconnect" UI only if even silent fails.
+      final ok = await CloudAuthService.instance
+          .refreshDriveAccessToken(interactive: false);
+      if (!ok) {
+        _needsReconnect = true;
+        _setStatus(CloudSyncStatus.error);
+        _lastError =
+            'Reconnect Google Drive to enable cloud sync.';
+        return;
+      }
     }
     _setStatus(CloudSyncStatus.syncing);
     try {
@@ -202,6 +217,16 @@ class DriveSyncService extends ChangeNotifier {
     );
     final r = await http.get(uri, headers: {'Authorization': 'Bearer $t'});
     if (r.statusCode == 401) throw _DriveAuthException();
+    if (r.statusCode == 403) {
+      // 403 most commonly means "Drive API not enabled in the GCP
+      // project" or "OAuth consent screen doesn't include the
+      // drive.appdata scope". Surface a hint so the developer can
+      // act, rather than the generic "Drive list failed" string.
+      throw 'Drive API access denied (403). Likely the Drive API '
+          "isn't enabled in the Firebase project's GCP Console, "
+          'or the OAuth consent screen is missing the '
+          'drive.appdata scope. Server said: ${r.body}';
+    }
     if (r.statusCode != 200) {
       throw 'Drive list failed (${r.statusCode}): ${r.body}';
     }
@@ -245,10 +270,19 @@ class DriveSyncService extends ChangeNotifier {
   Future<void> _uploadFromLocal() async {
     if (!CloudAuthService.instance.isSignedIn) return;
     if (!_ensureToken()) {
-      _needsReconnect = true;
-      _setStatus(CloudSyncStatus.error);
-      _lastError = 'Reconnect Google Drive to resume sync.';
-      return;
+      // Same silent-refresh fallback as _initialPull. Important for
+      // the requestUpload path — every local edit (highlight, note,
+      // bookmark) calls it, so if the in-memory token expires while
+      // the user is reading, we want the next save to silently
+      // re-acquire instead of stamping the whole sync as broken.
+      final ok = await CloudAuthService.instance
+          .refreshDriveAccessToken(interactive: false);
+      if (!ok) {
+        _needsReconnect = true;
+        _setStatus(CloudSyncStatus.error);
+        _lastError = 'Reconnect Google Drive to resume sync.';
+        return;
+      }
     }
     _setStatus(CloudSyncStatus.syncing);
     try {
