@@ -11,6 +11,7 @@ import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/models/biblical_person.dart';
 import 'package:yswords/services/family_tree_service.dart';
 import 'package:yswords/utils/biblical_role.dart' show localizedRole;
+import 'package:yswords/utils/theme_color_helpers.dart';
 import 'package:yswords/widgets/home_icon_button.dart';
 import 'package:yswords/widgets/localized_back_button.dart';
 import 'package:yswords/widgets/person_detail_sheet.dart';
@@ -2341,7 +2342,10 @@ class _ComparisonCopyButtonState extends State<_ComparisonCopyButton> {
             ? Icon(Icons.check_circle_rounded,
                 key: const ValueKey('chk'),
                 size: 22,
-                color: Colors.green.shade600)
+                // Theme-aware green so the "copied" indicator stays
+                // vivid in dark mode (was using fixed shade600 which
+                // is too dim against dark surfaces).
+                color: paletteAccent(context, Colors.green))
             : Icon(Icons.copy_rounded,
                 key: const ValueKey('cp'),
                 size: 18,

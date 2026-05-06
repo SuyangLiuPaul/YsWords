@@ -11,6 +11,7 @@ import 'package:yswords/models/dashboard_section.dart';
 import 'package:yswords/providers/main_provider.dart';
 import 'package:get/get.dart';
 import 'package:yswords/pages/about_page.dart';
+import 'package:yswords/utils/theme_color_helpers.dart';
 import 'package:yswords/widgets/cloud_setup_diagnostic.dart';
 import 'package:yswords/widgets/setup_instructions_card.dart';
 import 'package:yswords/pages/profiles_page.dart';
@@ -3276,7 +3277,9 @@ class _OfflinePackCardState extends State<_OfflinePackCard> {
                 Icon(
                   Icons.check_circle_rounded,
                   size: 16,
-                  color: Colors.green.shade600,
+                  // Theme-aware green: paletteAccent gives shade700
+                  // light, shade300 dark — visible in both modes.
+                  color: paletteAccent(context, Colors.green),
                 ),
                 SizedBox(width: 6 * s),
               ],
@@ -3290,7 +3293,8 @@ class _OfflinePackCardState extends State<_OfflinePackCard> {
                     color: !svc.downloading &&
                             svc.lastCompletedAt != null &&
                             svc.lastDownloaded.isNotEmpty
-                        ? Colors.green.shade800
+                        // Same fix for the "Ready offline" status text.
+                        ? paletteFg(context, Colors.green)
                         : scheme.onSurface.withValues(alpha: 0.7),
                     fontStyle: svc.downloading
                         ? FontStyle.normal

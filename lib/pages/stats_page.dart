@@ -50,12 +50,14 @@ class StatsPage extends StatelessWidget {
           bottom: TabBar(
             isScrollable: true,
             tabAlignment: TabAlignment.start,
-            labelColor: Theme.of(context).colorScheme.onPrimary,
-            unselectedLabelColor: Theme.of(context)
-                .colorScheme
-                .onPrimary
-                .withValues(alpha: 0.78),
-            indicatorColor: Theme.of(context).colorScheme.onPrimary,
+            // 2026-05 dark-mode fix: was explicitly setting labelColor
+            // / unselectedLabelColor / indicatorColor to onPrimary —
+            // tuned for the light-mode primary-coloured AppBar. In
+            // dark mode the AppBar uses primaryContainer (different
+            // contrast pair), so onPrimary text was invisible.
+            // Removing the override lets the global tabBarTheme in
+            // main.dart handle both modes correctly (it sets
+            // onPrimary in light + onPrimaryContainer in dark).
             tabs: [
               Tab(
                 icon: const Icon(Icons.dashboard_outlined),

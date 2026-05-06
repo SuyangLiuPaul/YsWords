@@ -36,6 +36,7 @@ import 'package:yswords/providers/main_provider.dart';
 import 'package:yswords/services/cloud_auth_service.dart';
 import 'package:yswords/services/cloud_sync_service.dart' show CloudSyncStatus;
 import 'package:yswords/services/drive_sync_service.dart';
+import 'package:yswords/utils/theme_color_helpers.dart';
 import 'package:yswords/services/daily_verse_fallback.dart';
 import 'package:yswords/services/daily_verse_service.dart';
 import 'package:yswords/services/profile_service.dart';
@@ -1984,10 +1985,13 @@ class _NewsThumbFallback extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    // Theme-aware fallback thumbnail — paletteBg returns shade100 in
+    // light mode (was washed out in dark) and shade900 with alpha in
+    // dark mode so the thumbnail still has a visible tint either way.
     final color = sectionId == 'china'
-        ? Colors.red.shade100
+        ? paletteBg(context, Colors.red)
         : sectionId == 'australia'
-            ? Colors.green.shade100
+            ? paletteBg(context, Colors.green)
             : scheme.primary.withValues(alpha: 0.12);
     final icon = sectionId == 'china'
         ? '🌏'

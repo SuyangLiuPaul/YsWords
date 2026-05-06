@@ -10,6 +10,7 @@ import 'package:yswords/models/biblical_person.dart';
 import 'package:yswords/pages/home_page.dart';
 import 'package:yswords/providers/main_provider.dart';
 import 'package:yswords/services/family_tree_service.dart';
+import 'package:yswords/utils/theme_color_helpers.dart';
 import 'package:yswords/utils/biblical_role.dart' show localizedRole;
 import 'package:yswords/utils/jump_to_reference.dart' as jumper;
 import 'package:yswords/utils/reference_parser.dart';
@@ -591,7 +592,8 @@ class _CopyAllButtonState extends State<_CopyAllButton> {
                 Icons.check_circle_rounded,
                 key: const ValueKey('check'),
                 size: 22,
-                color: Colors.green.shade600,
+                // Theme-aware green for visibility in both modes.
+                color: paletteAccent(context, Colors.green),
               )
             : Icon(
                 Icons.copy_rounded,

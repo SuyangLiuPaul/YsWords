@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import 'package:yswords/constants/ui_strings.dart';
 import 'package:yswords/models/app_settings.dart';
+import 'package:yswords/utils/theme_color_helpers.dart';
 import 'package:yswords/models/bible_evidence.dart';
 import 'package:yswords/pages/evidence_detail_page.dart';
 import 'package:yswords/pages/home_page.dart';
@@ -406,14 +407,19 @@ class _EvidencePageState extends State<EvidencePage> {
       uiStrings['confidence$c']?[locale] ?? c;
 
   Color _confidenceColor(String c) {
+    // Theme-aware confidence colors — paletteAccent gives shade700 in
+    // light (deep green/orange = vivid against light surface) and
+    // shade300 in dark (lighter so the indicator pops on dark
+    // scaffold). Previously hardcoded shade800 hex values that were
+    // too dark to read in dark mode.
     switch (c) {
       case 'Definitive':
-        return const Color(0xFF2E7D32);
+        return paletteAccent(context, Colors.green);
       case 'Strong':
         return Theme.of(context).colorScheme.primary;
       case 'Circumstantial':
       default:
-        return const Color(0xFFEF6C00);
+        return paletteAccent(context, Colors.orange);
     }
   }
 }

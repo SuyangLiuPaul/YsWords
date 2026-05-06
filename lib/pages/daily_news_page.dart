@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import 'package:yswords/constants/ui_strings.dart';
 import 'package:yswords/utils/sydney_time.dart';
+import 'package:yswords/utils/theme_color_helpers.dart';
 import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/models/news_article.dart';
 import 'package:yswords/pages/news_detail_page.dart';
@@ -355,7 +356,7 @@ class _SectionHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final fs = settings.fontSize;
-    final accent = _sectionAccent(section.id, scheme);
+    final accent = _sectionAccent(section.id, scheme, context);
     return Padding(
       padding: const EdgeInsets.fromLTRB(0, 12, 0, 6),
       child: Row(
@@ -387,12 +388,17 @@ class _SectionHeader extends StatelessWidget {
   }
 }
 
-Color _sectionAccent(String sectionId, ColorScheme scheme) {
+Color _sectionAccent(
+    String sectionId, ColorScheme scheme, BuildContext ctx) {
+  // Theme-aware accent — paletteAccent gives shade700 in light mode
+  // (deep red/green for vivid contrast) and shade300 in dark mode
+  // (brighter so the accent pops against the dark scaffold). Fixes
+  // the previously-too-dim red/green stripes in dark mode.
   switch (sectionId) {
     case 'china':
-      return Colors.red.shade700;
+      return paletteAccent(ctx, Colors.red);
     case 'australia':
-      return Colors.green.shade700;
+      return paletteAccent(ctx, Colors.green);
     case 'world':
     default:
       return scheme.primary;
