@@ -73,5 +73,14 @@ class DefaultFirebaseOptions {
     authDomain: 'ysword.firebaseapp.com',
     storageBucket: 'ysword.firebasestorage.app',
     measurementId: 'G-1TB1F4XNB8',
+    // 2026-05-06: Realtime Database URL for cross-device sync.
+    // The standard default-region URL pattern is
+    //   https://<project-id>-default-rtdb.firebaseio.com
+    // but US-region projects may instead get
+    //   https://<project-id>-default-rtdb.firebasedatabase.app
+    // If sign-in works but sync is silently failing, double-check
+    // this value matches what Firebase Console → Realtime Database
+    // shows in the data-tab URL bar.
+    databaseURL: 'https://ysword-default-rtdb.firebaseio.com',
   );
 }

@@ -1741,34 +1741,38 @@ const uiStrings = {
     'en': 'Got it',
   },
   'setupStep1Detail': {
-    'zh-Hans': '【作用】在 ysword 这个 Google Cloud 项目里启用 Drive REST API。\n\n'
-        '【为什么需要】应用要在每个用户的 Google 云端硬盘中存放一个 YsWords.json 文件'
-        '来同步高亮、书签、笔记和读经计划。这些操作（列出文件、创建文件、修改文件）都通过 Drive REST API 完成。'
-        'API 必须在拥有 OAuth 客户端的项目（ysword）中启用，启用一次即可，对所有用户生效。\n\n'
-        '【不启用会怎样】所有 Drive API 调用都会返回 403 错误："Drive API has not been used in project ysword"，'
-        '同步功能完全不可用。\n\n'
-        '【是否影响最终用户】不影响。这是项目级别的设置，不需要每个用户做任何事。',
-    'zh-Hant': '【作用】在 ysword 這個 Google Cloud 專案裡啟用 Drive REST API。\n\n'
-        '【為什麼需要】應用要在每個使用者的 Google 雲端硬碟中存放一個 YsWords.json 檔案'
-        '來同步標亮、書籤、筆記和讀經計劃。這些操作（列出檔案、建立檔案、修改檔案）都透過 Drive REST API 完成。'
-        'API 必須在擁有 OAuth 客戶端的專案（ysword）中啟用，啟用一次即可，對所有使用者生效。\n\n'
-        '【不啟用會怎樣】所有 Drive API 呼叫都會回傳 403 錯誤："Drive API has not been used in project ysword"，'
-        '同步功能完全不可用。\n\n'
-        '【是否影響最終使用者】不影響。這是專案級別的設定，不需要每個使用者做任何事。',
+    'zh-Hans': '【作用】在 Firebase Console 中启用 Realtime Database。\n\n'
+        '【为什么需要】同步功能（高亮、书签、笔记、读经计划）将每个用户的数据'
+        '存放在 RTDB 的 users/{uid}/sync 路径下。RTDB 是 Firebase 的"实时云数据库"——'
+        '与 Firestore 是不同的产品，使用 WebSocket 传输（更可靠地穿透防火墙），'
+        '而且不需要任何额外的 OAuth 范围。\n\n'
+        '【不启用会怎样】用户登录后同步会失败，错误码 database-disabled。\n\n'
+        '【是否影响最终用户】不影响。一次性的项目级别设置。'
+        '点击 "Create Database" 然后选择 "United States (us-central1)" 区域和 "Start in locked mode"。'
+        '步骤 3 设置安全规则后才能真正读写。',
+    'zh-Hant': '【作用】在 Firebase Console 中啟用 Realtime Database。\n\n'
+        '【為什麼需要】同步功能（標亮、書籤、筆記、讀經計劃）將每個使用者的資料'
+        '存放在 RTDB 的 users/{uid}/sync 路徑下。RTDB 是 Firebase 的「即時雲資料庫」——'
+        '與 Firestore 是不同的產品，使用 WebSocket 傳輸（更可靠地穿透防火牆），'
+        '而且不需要任何額外的 OAuth 範圍。\n\n'
+        '【不啟用會怎樣】使用者登入後同步會失敗，錯誤碼 database-disabled。\n\n'
+        '【是否影響最終使用者】不影響。一次性的專案級別設定。'
+        '點擊「Create Database」然後選擇「United States (us-central1)」區域和「Start in locked mode」。'
+        '步驟 3 設定安全規則後才能真正讀寫。',
     'en':
-        'WHAT: Enables the Drive REST API in the `ysword` Google '
-            'Cloud project.\n\n'
-            "WHY: The app stores a YsWords.json file in each user's "
-            'own Drive to sync highlights / bookmarks / notes / '
-            'reading-plan progress. All file operations (list, '
-            'create, update) go through the Drive REST API. The API '
-            'must be enabled in the project that owns the OAuth '
-            'client. Enable once → works for every user worldwide.\n\n'
-            "WHAT BREAKS WITHOUT IT: Every Drive call returns "
-            '403 "Drive API has not been used in project ysword". '
-            'Sync is completely non-functional.\n\n'
-            "DOES IT AFFECT END USERS: No. This is a project-level "
-            'setting; users never need to do anything.',
+        'WHAT: Enables Firebase Realtime Database in the project. '
+            'It\'s a separate product from Firestore — uses '
+            'WebSocket transport (works through more firewalls) and '
+            'doesn\'t need any extra OAuth scope at sign-in.\n\n'
+            "WHY: Sync (highlights / bookmarks / notes / reading-plan "
+            "progress) stores each user's data at "
+            "users/{uid}/sync.\n\n"
+            "WHAT BREAKS WITHOUT IT: Sign-in works but sync fails "
+            "with code `database-disabled`. AI features still work.\n\n"
+            "DOES IT AFFECT END USERS: No — one-time project-level "
+            'setting. Click "Create Database" → pick a region (US '
+            'is fine) → "Start in locked mode" (Step 3 opens up '
+            'rules afterwards).',
   },
   'setupStep2Detail': {
     'zh-Hans': '【作用】在 ysword 项目里启用 Generative Language API（即 Gemini API）。\n\n'
@@ -1795,39 +1799,60 @@ const uiStrings = {
             "DOES IT AFFECT END USERS: No. Project-level setting.",
   },
   'setupStep3Detail': {
-    'zh-Hans': '【作用】在 OAuth 同意屏幕上添加 drive.file 范围（scope）。\n\n'
-        '【为什么需要】应用在用户登录时请求"管理由本应用创建的文件"权限。Google 拒绝任何'
-        '没有在同意屏幕中预先列出的 scope 请求。所以即使代码请求 drive.file，'
-        '也必须在同意屏幕上声明它。\n\n'
-        '【为什么是 drive.file 而不是 drive】drive.file 是"按文件"范围：应用只能访问'
-        '它自己创建的文件，看不到用户的其他 Drive 内容。隐私友好。\n\n'
-        '【不启用会怎样】登录时弹窗会显示"this scope is not approved"，'
-        '同步无法启动。\n\n'
-        '【是否影响最终用户】不影响。这是 OAuth 同意屏幕级别的设定。',
-    'zh-Hant': '【作用】在 OAuth 同意畫面上加入 drive.file 範圍（scope）。\n\n'
-        '【為什麼需要】應用在使用者登入時請求「管理由本應用建立的檔案」權限。Google 拒絕任何'
-        '沒有在同意畫面中預先列出的 scope 請求。所以即使程式碼請求 drive.file，'
-        '也必須在同意畫面上聲明它。\n\n'
-        '【為什麼是 drive.file 而不是 drive】drive.file 是「按檔案」範圍：應用只能存取'
-        '它自己建立的檔案，看不到使用者的其他 Drive 內容。隱私友善。\n\n'
-        '【不啟用會怎樣】登入時彈窗會顯示「this scope is not approved」，'
-        '同步無法啟動。\n\n'
-        '【是否影響最終使用者】不影響。這是 OAuth 同意畫面級別的設定。',
+    'zh-Hans': '【作用】配置 Realtime Database 的安全规则，允许已登录用户读写自己的数据。\n\n'
+        '【为什么需要】Firebase 启用 RTDB 后默认规则是 ".read": false / ".write": false——'
+        '完全锁死。必须开放给已登录用户才能同步。\n\n'
+        '【推荐规则】只允许用户读写自己 uid 下的路径：\n'
+        '{\n'
+        '  "rules": {\n'
+        '    "users": {\n'
+        '      "\$uid": {\n'
+        '        ".read": "auth != null && auth.uid == \$uid",\n'
+        '        ".write": "auth != null && auth.uid == \$uid"\n'
+        '      }\n'
+        '    }\n'
+        '  }\n'
+        '}\n\n'
+        '【不设置会怎样】所有同步操作返回 permission_denied 错误。\n\n'
+        '【是否影响最终用户】不影响。一次性的服务端设置。',
+    'zh-Hant': '【作用】配置 Realtime Database 的安全規則，允許已登入使用者讀寫自己的資料。\n\n'
+        '【為什麼需要】Firebase 啟用 RTDB 後預設規則是 ".read": false / ".write": false——'
+        '完全鎖死。必須開放給已登入使用者才能同步。\n\n'
+        '【推薦規則】只允許使用者讀寫自己 uid 下的路徑：\n'
+        '{\n'
+        '  "rules": {\n'
+        '    "users": {\n'
+        '      "\$uid": {\n'
+        '        ".read": "auth != null && auth.uid == \$uid",\n'
+        '        ".write": "auth != null && auth.uid == \$uid"\n'
+        '      }\n'
+        '    }\n'
+        '  }\n'
+        '}\n\n'
+        '【不設定會怎樣】所有同步操作回傳 permission_denied 錯誤。\n\n'
+        '【是否影響最終使用者】不影響。一次性的伺服器端設定。',
     'en':
-        'WHAT: Adds the `drive.file` scope to the OAuth consent '
-            'screen.\n\n'
-            "WHY: The app asks each user, at sign-in, for permission "
-            'to manage files it creates in their Drive. Google '
-            "rejects any scope that isn't pre-listed on the consent "
-            "screen. The code requesting `drive.file` isn't enough — "
-            'the consent screen has to declare it too.\n\n'
-            "WHY drive.file (NOT drive): drive.file is per-file "
-            "scope — the app can only see files it created, never "
-            "the user's other Drive content. Privacy-preserving.\n\n"
-            "WHAT BREAKS WITHOUT IT: Sign-in popup shows 'this "
-            "scope is not approved' and sync never starts.\n\n"
-            "DOES IT AFFECT END USERS: No. OAuth-consent-screen "
-            'level setting.',
+        'WHAT: Configures Realtime Database security rules so '
+            'authenticated users can read & write their own data.\n\n'
+            "WHY: Firebase ships RTDB with default rules denying "
+            "everything (.read: false / .write: false). Sync needs "
+            "the path users/<uid>/* opened up to that user only.\n\n"
+            'RECOMMENDED RULES (paste into the Rules tab):\n'
+            '{\n'
+            '  "rules": {\n'
+            '    "users": {\n'
+            '      "\$uid": {\n'
+            '        ".read": "auth != null && auth.uid == \$uid",\n'
+            '        ".write": "auth != null && auth.uid == \$uid"\n'
+            '      }\n'
+            '    }\n'
+            '  }\n'
+            '}\n\n'
+            "WHAT BREAKS WITHOUT IT: Every sync operation returns "
+            '`permission_denied`. The diagnostic surfaces this with '
+            "an 'Open RTDB rules' fix-link.\n\n"
+            "DOES IT AFFECT END USERS: No — one-time server-side "
+            'setting.',
   },
   'setupStep4Detail': {
     'zh-Hans': '【作用】把 yswords.netlify.app 加到 Firebase Auth 的"已授权域名"列表。\n\n'
@@ -2030,6 +2055,65 @@ const uiStrings = {
     'zh-Hans': '（未知邮箱）',
     'zh-Hant': '（未知信箱）',
     'en': '(unknown email)',
+  },
+  // ── RTDB diagnostic probe (replaces Drive scope + Drive REST) ──
+  'cloudDiagRtdbTitle': {
+    'zh-Hans': '实时数据库（Realtime Database）',
+    'zh-Hant': '即時資料庫（Realtime Database）',
+    'en': 'Realtime Database',
+  },
+  'cloudDiagRtdbSkip': {
+    'zh-Hans': '未登录。',
+    'zh-Hant': '未登入。',
+    'en': 'Not signed in.',
+  },
+  'cloudDiagRtdbSkipNoUid': {
+    'zh-Hans': '没有 uid。',
+    'zh-Hant': '沒有 uid。',
+    'en': 'No uid.',
+  },
+  'cloudDiagRtdbOk': {
+    'zh-Hans': '读写测试通过。同步数据存放在 users/{uid}/sync 下。',
+    'zh-Hant': '讀寫測試通過。同步資料存放在 users/{uid}/sync 下。',
+    'en':
+        'Read + write OK. Sync data lives at users/{uid}/sync.',
+  },
+  'cloudDiagRtdbReadback': {
+    'zh-Hans': '探针写入成功，但读回的值不一致。可能是监听器过期或规则禁止读取。',
+    'zh-Hant': '探針寫入成功，但讀回的值不一致。可能是監聽器過期或規則禁止讀取。',
+    'en':
+        'Wrote a probe value but readback returned a different value. '
+            'Could be a stale listener or rules denying read.',
+  },
+  'cloudDiagRtdbPermissionDenied': {
+    'zh-Hans': '权限被拒。打开 Firebase 控制台 → Realtime Database → Rules，'
+        '允许已登录用户读写自己的 users/{uid}/* 路径。',
+    'zh-Hant': '權限被拒。打開 Firebase 控制台 → Realtime Database → Rules，'
+        '允許已登入使用者讀寫自己的 users/{uid}/* 路徑。',
+    'en':
+        'Permission denied. Open Firebase Console → Realtime '
+            'Database → Rules and ensure authenticated users can '
+            'read/write their own users/<uid>/* path.',
+  },
+  'cloudDiagRtdbNotEnabled': {
+    'zh-Hans': '该项目尚未启用 Realtime Database。请在 Firebase 控制台的 '
+        'Realtime Database 标签页中点击 "Create Database"。',
+    'zh-Hant': '該專案尚未啟用 Realtime Database。請在 Firebase 控制台的 '
+        'Realtime Database 標籤頁中點擊「Create Database」。',
+    'en':
+        "Realtime Database isn't enabled yet for this project. "
+            'Open Firebase Console and click "Create Database" on '
+            'the Realtime Database tab.',
+  },
+  'cloudDiagRtdbOpenRules': {
+    'zh-Hans': '打开 RTDB 规则',
+    'zh-Hant': '打開 RTDB 規則',
+    'en': 'Open RTDB rules',
+  },
+  'cloudDiagRtdbOpenConsole': {
+    'zh-Hans': '打开 RTDB 控制台',
+    'zh-Hant': '打開 RTDB 控制台',
+    'en': 'Open RTDB console',
   },
   'aiByokTitle': {
     'zh-Hans': '使用我自己的 Gemini API 密钥',

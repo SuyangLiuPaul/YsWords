@@ -14,8 +14,8 @@
 Open <https://yswords.netlify.app>. Read the Bible immediately
 (no sign-in needed). Optional: sign in with Google to sync
 highlights / bookmarks / notes / reading-plan progress across your
-devices via your own Drive (one click "Allow" on the consent
-screen, no setup).
+devices (one click "Allow" on the standard Google sign-in dialog —
+no Drive permissions, no setup).
 
 ### For developers — clone, run, ship
 ```bash

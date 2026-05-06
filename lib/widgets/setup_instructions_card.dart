@@ -112,17 +112,25 @@ class SetupInstructionsCard extends StatelessWidget {
             const SizedBox(height: 12),
             _step(
                 ctx: context,
+                // 2026-05-06: Drive API + drive.file scope steps were
+                // both removed when sync moved off Drive. Replaced
+                // Step 1 with "enable Realtime Database" — the
+                // backend the new RealtimeDbSyncService writes to.
                 n: 1,
-                title: isZh ? '启用 Drive API' : 'Enable Drive API',
+                title: isZh
+                    ? '启用 Firebase Realtime Database'
+                    : 'Enable Firebase Realtime Database',
                 body: isZh
-                    ? '应用使用 Drive REST 在用户的 My Drive 中读写 YsWords.json '
-                        '同步文件。Drive API 必须在 OAuth 客户端所属的项目中启用。'
-                    : 'The app reads & writes YsWords.json in each '
-                        "user's My Drive via Drive REST. The API must be "
-                        'enabled in the project that owns the OAuth client.',
+                    ? '同步将每位用户的高亮 / 书签 / 笔记存放在 RTDB 的 '
+                        'users/{uid}/sync 路径。在 Firebase 控制台中点击 '
+                        '"Create Database" 即可启用。'
+                    : 'Sync stores each user\'s highlights / bookmarks / '
+                        'notes at users/{uid}/sync in Realtime Database. '
+                        'One click on "Create Database" in the Firebase '
+                        'Console enables it.',
                 url:
-                    'https://console.cloud.google.com/apis/library/drive.googleapis.com?project=ysword',
-                action: isZh ? '打开启用页' : 'Open enable page',
+                    'https://console.firebase.google.com/project/ysword/database',
+                action: isZh ? '打开 RTDB 控制台' : 'Open RTDB console',
                 detailKey: 'setupStep1Detail'),
             _step(
                 ctx: context,
@@ -144,16 +152,17 @@ class SetupInstructionsCard extends StatelessWidget {
                 ctx: context,
                 n: 3,
                 title: isZh
-                    ? '在 OAuth 同意屏幕添加 drive.file 范围'
-                    : 'Add the drive.file scope to OAuth consent screen',
+                    ? '设置 Realtime Database 安全规则'
+                    : 'Set Realtime Database security rules',
                 body: isZh
-                    ? '应用在登录时请求 drive.file 范围。Google 拒绝未在同意屏幕中预先列出的范围授权。'
-                    : 'The app requests drive.file at sign-in time. '
-                        "Google rejects scope grants that aren't "
-                        'pre-listed on the consent screen.',
+                    ? '在 RTDB 规则中允许已登录用户读写自己的 users/<uid>/* 路径。'
+                        '默认规则会拒绝所有访问，必须先放开。'
+                    : 'Allow authenticated users to read/write their '
+                        'own users/<uid>/* path. Default rules deny '
+                        'everything — has to be opened up first.',
                 url:
-                    'https://console.cloud.google.com/apis/credentials/consent?project=ysword',
-                action: isZh ? '打开同意屏幕' : 'Open consent screen',
+                    'https://console.firebase.google.com/project/ysword/database/ysword-default-rtdb/rules',
+                action: isZh ? '打开 RTDB 规则' : 'Open RTDB rules',
                 detailKey: 'setupStep3Detail'),
             _step(
                 ctx: context,
@@ -234,8 +243,13 @@ class SetupInstructionsCard extends StatelessWidget {
   Widget _quickActions(BuildContext ctx, bool isZh) {
     const cloudShellUrl =
         'https://shell.cloud.google.com/?cloudshell_print=https%3A%2F%2Fraw.githubusercontent.com%2FSuyangLiuPaul%2FYsWords%2Fmain%2Fscripts%2Fenable-cloud-apis.sh';
+    // 2026-05-06: Drive API removed from the gcloud command when sync
+    // moved off Drive onto Firebase Realtime Database. Only the Gemini
+    // API needs CLI enablement now; RTDB is enabled inside the Firebase
+    // Console (one click) instead. The shell script still has the
+    // older command form for back-compat.
     const gcloudCmd =
-        'gcloud services enable drive.googleapis.com generativelanguage.googleapis.com --project=ysword';
+        'gcloud services enable generativelanguage.googleapis.com --project=ysword';
     return Container(
       padding: const EdgeInsets.fromLTRB(10, 10, 10, 10),
       decoration: BoxDecoration(

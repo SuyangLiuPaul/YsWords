@@ -426,15 +426,15 @@ class CloudAuthService extends ChangeNotifier {
     // signInWithGoogleAndAdoptProfile().
     provider.addScope('email');
     provider.addScope('profile');
-    // Drive AppData scope — added 2026-05 alongside the migration
-    // from Firestore to Google Drive sync. Asks for write access to
-    // a hidden, app-private folder in the user's Drive (NOT their
-    // main Drive content). Used by `DriveSyncService` to read/write
-    // the single `yswords-sync.json` file that holds highlights /
-    // bookmarks / notes / reading-plan progress. The user grants
-    // this once at sign-in time and never has to pick a folder —
-    // `appDataFolder` is automatic.
-    provider.addScope(driveFileScope);
+    // 2026-05-06: Drive scope was previously requested here for the
+    // Drive-based sync. We dropped it when sync moved to Firebase
+    // Realtime Database (RealtimeDbSyncService). Other users now see
+    // a normal Google sign-in dialog (just email + profile) instead
+    // of the more alarming "this app wants to manage your Drive
+    // files" prompt — significantly better UX for a Bible-study
+    // tool. The driveFileScope constant + refreshDriveAccessToken
+    // are kept around in case we ever re-enable Drive as an opt-in
+    // backup, but no UI requests them today.
     // Always show the chooser even if there's a single signed-in
     // Google account, so users on shared devices can pick the
     // right one.

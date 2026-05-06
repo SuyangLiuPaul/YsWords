@@ -29,6 +29,11 @@ dependencies:
   firebase_core: ^4.0.0
   firebase_auth: ^6.0.0
   cloud_firestore: ^6.0.0
+  # 2026-05-06: Realtime Database replaces the previous Drive sync.
+  # Different transport from Firestore (WebSocket vs WebChannel) and
+  # generally more reliable on web; doesn't require any extra OAuth
+  # scope at sign-in (Firebase Auth + email/profile scopes is enough).
+  firebase_database: ^12.0.0
   # Used by AiSearchService to call the Cloud Functions Gemini proxy.
   http: ^1.2.2
   # Round 56: dynamically loads Google Fonts at runtime so the

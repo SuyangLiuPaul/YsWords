@@ -20,7 +20,7 @@ import 'package:yswords/widgets/google_g_logo.dart';
 import 'dart:async' show Timer;
 
 import "package:yswords/services/cloud_sync_service.dart" show CloudSyncStatus;
-import "package:yswords/services/drive_sync_service.dart";
+import "package:yswords/services/realtime_db_sync_service.dart";
 import 'package:yswords/services/notification_service.dart';
 import 'package:yswords/widgets/contact_line.dart';
 import 'package:yswords/widgets/profile_avatar.dart';
@@ -1460,14 +1460,14 @@ class _AccountSectionState extends State<_AccountSection> {
     super.initState();
     ProfileService.instance.addListener(_onChanged);
     CloudAuthService.instance.addListener(_onChanged);
-    DriveSyncService.instance.addListener(_onChanged);
+    RealtimeDbSyncService.instance.addListener(_onChanged);
   }
 
   @override
   void dispose() {
     ProfileService.instance.removeListener(_onChanged);
     CloudAuthService.instance.removeListener(_onChanged);
-    DriveSyncService.instance.removeListener(_onChanged);
+    RealtimeDbSyncService.instance.removeListener(_onChanged);
     super.dispose();
   }
 
@@ -1480,7 +1480,7 @@ class _AccountSectionState extends State<_AccountSection> {
   /// at a glance.
   Widget _syncBadge(BuildContext context, String locale) {
     final auth = CloudAuthService.instance;
-    final sync = DriveSyncService.instance;
+    final sync = RealtimeDbSyncService.instance;
     final scheme = Theme.of(context).colorScheme;
     if (!auth.isConfigured) {
       return _badge(
@@ -2214,7 +2214,7 @@ class _SyncStatusRowState extends State<_SyncStatusRow> {
   @override
   void initState() {
     super.initState();
-    DriveSyncService.instance.addListener(_onSyncChange);
+    RealtimeDbSyncService.instance.addListener(_onSyncChange);
     // Refresh the relative-time label every 30s so "5 minutes ago"
     // doesn't go stale while the user stares at the Settings page.
     _ticker = Timer.periodic(const Duration(seconds: 30), (_) {
@@ -2224,7 +2224,7 @@ class _SyncStatusRowState extends State<_SyncStatusRow> {
 
   @override
   void dispose() {
-    DriveSyncService.instance.removeListener(_onSyncChange);
+    RealtimeDbSyncService.instance.removeListener(_onSyncChange);
     _ticker?.cancel();
     super.dispose();
   }
@@ -2237,7 +2237,7 @@ class _SyncStatusRowState extends State<_SyncStatusRow> {
     if (_busy) return;
     setState(() => _busy = true);
     final messenger = ScaffoldMessenger.maybeOf(context);
-    final ok = await DriveSyncService.instance.syncNow();
+    final ok = await RealtimeDbSyncService.instance.syncNow();
     if (!mounted) return;
     setState(() => _busy = false);
     if (messenger != null) {
@@ -2269,7 +2269,7 @@ class _SyncStatusRowState extends State<_SyncStatusRow> {
         // the actual error message from CloudSyncService so the user
         // knows WHY (timeout vs not-signed-in vs Firestore rule
         // denial vs network blip).
-        final actual = DriveSyncService.instance.lastError;
+        final actual = RealtimeDbSyncService.instance.lastError;
         final fallback = uiStrings['syncFailed']?[locale] ??
             'Sync failed. Check your connection and try again.';
         messenger.showSnackBar(SnackBar(
@@ -2330,7 +2330,7 @@ class _SyncStatusRowState extends State<_SyncStatusRow> {
     final scheme = Theme.of(context).colorScheme;
     final settings = widget.settings;
     final locale = settings.locale;
-    final sync = DriveSyncService.instance;
+    final sync = RealtimeDbSyncService.instance;
     final last = sync.lastSyncedAt;
     final status = sync.status;
 
@@ -2402,30 +2402,12 @@ class _SyncStatusRowState extends State<_SyncStatusRow> {
               ),
             ),
             // Round 56 day-3 fix (2026-05): when Drive sync needs the
-            // user to re-authorize (token expired AND silent refresh
-            // failed, OR they signed in before the Drive scope was
-            // added), swap the "Sync now" button for "Reconnect Drive"
-            // so they have an obvious path to fix it. Reconnect runs
-            // an interactive popup (consent screen) and on success
-            // re-runs the initial pull.
-            if (sync.needsReconnect && !isSyncing)
-              FilledButton.icon(
-                onPressed: () async {
-                  await DriveSyncService.instance.reconnect();
-                  if (mounted) setState(() {});
-                },
-                icon: const Icon(Icons.cloud_sync_outlined, size: 16),
-                label: Text(
-                  uiStrings['driveSyncReconnect']?[locale] ??
-                      'Reconnect Google Drive',
-                  style: TextStyle(
-                    fontFamily: settings.fontFamily,
-                    fontSize: (settings.fontSize - 3).clamp(11.0, 14.0),
-                  ),
-                ),
-              )
-            else
-              FilledButton.tonalIcon(
+            // 2026-05-06: Reconnect-Drive button removed when sync
+            // moved from Drive to Firebase Realtime Database. RTDB
+            // uses Firebase Auth tokens which auto-refresh — no
+            // separate OAuth scope to re-grant, so the button has
+            // nothing to do.
+            FilledButton.tonalIcon(
                 onPressed: isSyncing ? null : _trigger,
                 icon: isSyncing
                     ? SizedBox(

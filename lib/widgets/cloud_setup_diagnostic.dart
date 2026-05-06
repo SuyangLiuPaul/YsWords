@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
 import 'package:yswords/constants/ui_strings.dart';
+import 'package:firebase_core/firebase_core.dart' show FirebaseException;
+import 'package:firebase_database/firebase_database.dart';
 import 'package:yswords/services/cloud_auth_service.dart';
 import 'package:yswords/services/link_opener.dart';
 import 'package:yswords/utils/theme_color_helpers.dart';
@@ -59,11 +61,14 @@ class _CloudSetupDiagnosticState extends State<CloudSetupDiagnostic> {
       _running = true;
       _results.clear();
     });
+    // 2026-05-06: dropped Drive scope + Drive REST probes when sync
+    // moved off Drive onto Firebase Realtime Database. Added an RTDB
+    // probe that does a 1-byte write/read to verify the database is
+    // reachable + writable for the signed-in user.
     final probes = <_ProbeFn>[
       _probeFirebaseAuth,
       _probeSignedIn,
-      _probeDriveScope,
-      _probeDriveApi,
+      _probeRealtimeDb,
       _probeAiProxy,
     ];
     for (final p in probes) {
@@ -131,6 +136,107 @@ class _CloudSetupDiagnosticState extends State<CloudSetupDiagnostic> {
     );
   }
 
+  /// Verify Firebase Realtime Database is enabled + the signed-in
+  /// user can read & write their own `users/{uid}/sync` path. Does a
+  /// 1-byte ping write and reads it back, then leaves the existing
+  /// data alone (we write to a sentinel `__diag` field, not the
+  /// `data` map RealtimeDbSyncService manages).
+  Future<_ProbeResult> _probeRealtimeDb() async {
+    final tt = _l('cloudDiagRtdbTitle', _loc, 'Realtime Database');
+    final auth = CloudAuthService.instance;
+    if (!auth.isSignedIn) {
+      return _ProbeResult.skip(
+          title: tt,
+          message: _l(
+              'cloudDiagRtdbSkip', _loc, 'Not signed in.'));
+    }
+    final uid = auth.currentUser?.uid;
+    if (uid == null) {
+      return _ProbeResult.skip(
+          title: tt,
+          message: _l(
+              'cloudDiagRtdbSkipNoUid', _loc, 'No uid.'));
+    }
+    try {
+      // Late-bound import via a function reference so we don't pull
+      // firebase_database into the diagnostic's compile-time deps —
+      // mirroring how the existing services use it.
+      final ref = FirebaseDatabase.instance
+          .ref('users/$uid/sync/__diag');
+      final stamp = DateTime.now().toUtc().toIso8601String();
+      await ref.set(stamp).timeout(const Duration(seconds: 8));
+      final readback = await ref.get().timeout(const Duration(seconds: 8));
+      if (readback.value == stamp) {
+        return _ProbeResult.ok(
+          title: tt,
+          message: _l(
+              'cloudDiagRtdbOk',
+              _loc,
+              'Read + write OK. Sync data lives at users/$uid/sync.'),
+        );
+      }
+      return _ProbeResult.warning(
+        title: tt,
+        message: _l(
+            'cloudDiagRtdbReadback',
+            _loc,
+            'Wrote a probe value but readback returned a different '
+                'value. Could be a stale listener or rules denying read.'),
+      );
+    } on FirebaseException catch (e) {
+      // Most common failure: Realtime Database not enabled in the
+      // Firebase project, or rules deny access.
+      final msg = (e.message ?? '').toLowerCase();
+      if (e.code == 'permission-denied' ||
+          msg.contains('permission_denied')) {
+        return _ProbeResult.fail(
+          title: tt,
+          message: _l(
+              'cloudDiagRtdbPermissionDenied',
+              _loc,
+              'Permission denied. Open Firebase Console → Realtime '
+                  'Database → Rules and ensure authenticated users '
+                  'can read/write their own users/<uid>/* path.'),
+          fixUrl:
+              'https://console.firebase.google.com/project/$_projectId/database/$_projectId-default-rtdb/rules',
+          fixLabel: _l('cloudDiagRtdbOpenRules', _loc, 'Open RTDB rules'),
+        );
+      }
+      if (e.code == 'database/database-disabled' ||
+          msg.contains('not been enabled') ||
+          msg.contains('not exist') ||
+          msg.contains('database-disabled')) {
+        return _ProbeResult.fail(
+          title: tt,
+          message: _l(
+              'cloudDiagRtdbNotEnabled',
+              _loc,
+              "Realtime Database isn't enabled yet for this project. "
+                  'Open Firebase Console and click "Create Database" '
+                  'on the Realtime Database tab.'),
+          fixUrl:
+              'https://console.firebase.google.com/project/$_projectId/database',
+          fixLabel: _l(
+              'cloudDiagRtdbOpenConsole', _loc, 'Open RTDB console'),
+        );
+      }
+      return _ProbeResult.fail(
+        title: tt,
+        message: '[${e.code}] ${e.message ?? ""}',
+      );
+    } on TimeoutException {
+      return _ProbeResult.fail(
+          title: tt,
+          message: _l('cloudDiagTimeout', _loc, 'Timed out after 8s.'));
+    } catch (e) {
+      return _ProbeResult.fail(title: tt, message: e.toString());
+    }
+  }
+
+  // Drive-specific probes kept here as private helpers in case we
+  // ever re-enable Drive as an opt-in advanced sync path. Not invoked
+  // by the default probe list.
+  // ignore: unused_element
   Future<_ProbeResult> _probeDriveScope() async {
     final t = _l('cloudDiagDriveScopeTitle', _loc, 'Drive scope');
     final auth = CloudAuthService.instance;
@@ -157,6 +263,7 @@ class _CloudSetupDiagnosticState extends State<CloudSetupDiagnostic> {
     );
   }
 
+  // ignore: unused_element
   Future<_ProbeResult> _probeDriveApi() async {
     final tt = _l('cloudDiagDriveApiTitle', _loc, 'Drive REST API');
     final auth = CloudAuthService.instance;

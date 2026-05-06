@@ -14,46 +14,59 @@ degraded mode:
 
 ## TL;DR — fastest path (≤2 minutes)
 
-You actually don't have to walk through five pages. Two of the
-five steps (the API enablements) can be automated. Three are
-UI-only by Google design.
+The walkthrough has 5 steps. Only **Step 2 (Gemini API enable)**
+has a CLI equivalent — the rest are UI-only by Firebase / Google
+design.
 
-**Automate steps 1 + 2 — pick one of:**
+**Run this for Step 2:**
 
 | If you have… | Do this |
 | --- | --- |
 | nothing installed | Open <https://shell.cloud.google.com>, paste:<br>`bash <(curl -s https://raw.githubusercontent.com/SuyangLiuPaul/YsWords/main/scripts/enable-cloud-apis.sh)` |
 | `gcloud` CLI installed | Run `bash scripts/enable-cloud-apis.sh` from the repo root |
-| just like clicking | Use the in-app diagnostic — Settings → Account → "Run check" → "Open in Cloud Shell" button |
+| prefer clicking | Use the in-app diagnostic — Settings → Account → "Run check" → "Open in Cloud Shell" button |
 
-**Then do steps 3, 4, 5 (no CLI exists for these — UI only):**
+**Then do steps 1, 3, 4, 5 (UI only):**
 
 Open the in-app diagnostic — **Settings → Account → "Run check"**
-— each failure shows a one-click Cloud Console deep-link. The
-"Cloud setup walkthrough" card (collapsible, just below the
+— each failure shows a one-click Firebase / Netlify deep-link.
+The "Cloud setup walkthrough" card (collapsible, just below the
 diagnostic) has all 5 steps with ⓘ icons explaining why each
 matters and what breaks without it.
+
+## What changed in 2026-05-06
+
+Sync moved off Google Drive onto **Firebase Realtime Database**.
+- ✅ End users sign in with Google → instantly synced (no Drive
+  permission dialog)
+- ✅ Other users can use the app freely (no OAuth scope verification
+  needed for >100 users)
+- ✅ Different transport from Firestore (WebSocket vs WebChannel)
+  so it works on more networks
+
+Trade-off: data lives at `users/{uid}/sync` in Firebase, not in
+the user's own Drive. The "user owns their data" story is weaker,
+but the UX is dramatically cleaner for non-technical users.
 
 ## Manual checklist
 
 If you want to do it yourself without the diagnostic, here's the
 full walkthrough.
 
-### 1. Enable the Drive API
+### 1. Enable Firebase Realtime Database
 
-The app calls `https://www.googleapis.com/drive/v3/files` to read &
-write the `YsWords.json` sync file in each user's Drive. The Drive
-API has to be enabled in the project that owns the OAuth client.
+Sync writes each user's highlights / bookmarks / notes / reading-plan
+progress to `users/{uid}/sync` in Realtime Database. RTDB is a
+**separate product** from Firestore — uses WebSocket transport
+(works on more networks), and doesn't need any extra OAuth scope.
 
-→ **Open https://console.cloud.google.com/apis/library/drive.googleapis.com?project=ysword**
+→ **Open https://console.firebase.google.com/project/ysword/database**
 
-→ Click **Enable**. Takes ~30 seconds to propagate.
+→ Click **Create Database** → pick a region (US-central is fine) →
+   **Start in locked mode** (we'll open the rules in Step 3).
 
-Without this, every Drive REST call returns:
-```
-403 Forbidden — Drive API has not been used in project ysword before
-or it is disabled. Enable it by visiting …
-```
+Without this, sign-in works but every sync write fails with code
+`database-disabled`.
 
 ### 2. Enable the Generative Language API (Gemini)
 
@@ -69,27 +82,42 @@ must be enabled in whichever project owns the API key.
 the API is auto-enabled in the project that key was generated in.
 Worth double-checking.)
 
-### 3. Add the `drive.file` scope to the OAuth consent screen
+### 3. Set Realtime Database security rules
 
-The app requests `https://www.googleapis.com/auth/drive.file` at
-sign-in time. Google rejects scope grants that aren't pre-listed on
-the consent screen.
+Default rules deny everything. Open them up so authenticated users
+can read/write their own `users/<uid>/*` path.
 
-→ **Open https://console.cloud.google.com/apis/credentials/consent?project=ysword**
+→ **Open https://console.firebase.google.com/project/ysword/database/ysword-default-rtdb/rules**
 
-→ Click **Edit App** (or the equivalent for your consent screen)
+→ Replace the rules JSON with:
 
-→ On the **Scopes** step, click **Add or Remove Scopes**
+```json
+{
+  "rules": {
+    "users": {
+      "$uid": {
+        ".read": "auth != null && auth.uid == $uid",
+        ".write": "auth != null && auth.uid == $uid"
+      }
+    }
+  }
+}
+```
 
-→ Search for `drive.file` and check
-  `https://www.googleapis.com/auth/drive.file`. Description:
-  *"See, edit, create, and delete only the specific Google Drive
-  files you use with this app"*
+→ **Publish**.
 
-→ Save & continue.
+Without this, every sync operation returns `permission_denied`.
+The in-app diagnostic surfaces this with an "Open RTDB rules"
+fix-link.
 
-(If you previously added `drive.appdata`, remove it — we switched on
-2026-05-06.)
+#### Why no OAuth scope verification anymore?
+
+The previous setup used Drive's `drive.file` scope which is
+"sensitive" — apps in Production mode may show a "this app isn't
+verified" warning until they're submitted for review. Switching to
+Firebase Realtime Database means we use **only `email + profile`
+scopes** at sign-in, neither of which is classified sensitive. Any
+Google user can sign in without verification gymnastics.
 
 ### 4. Add `yswords.netlify.app` to Firebase Authorized domains
 
@@ -136,7 +164,7 @@ most cases. Common failures:
 
 | Symptom | Most likely cause | Fix step |
 | --- | --- | --- |
-| `[CloudAuth] popup signin: NO Drive access token` | Step 3 missed | Add `drive.file` to consent screen |
+| Sync silently fails with `permission_denied` | Step 3 missed | Set RTDB security rules |
 | Drive REST shows 403 + "API has not been used" | Step 1 missed | Enable Drive API |
 | `auth/unauthorized-domain` | Step 4 missed | Add yswords.netlify.app to Firebase |
 | AI proxy returns 503 | Step 5 missed | Set GEMINI_API_KEY in Netlify |
