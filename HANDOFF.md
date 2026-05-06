@@ -1,6 +1,6 @@
 # YsWords — AI Agent Handoff Document
 
-> Last updated: 2026-05-05 (Round 56 continued — see new section after the Round-56 day-1 entry)
+> Last updated: 2026-05-06 (Round 56 continued day 3 — Bible Tools / biblical-languages card / Aramaic deep-dive)
 > Project: YsWords (Yahweh's Words) — bilingual Bible reader
 > Stack: Flutter 3.41.7 / Dart 3.11.5 / Provider + GetX
 > Repo: https://github.com/SuyangLiuPaul/YsWords
@@ -1225,6 +1225,108 @@ M  windows/flutter/generated_plugins.cmake (same)
   layer (composer / lyricist / recording / typesetter). The data
   shape (`audioUrl`, `pdfUrl` already populated for 489 / 490
   entries) is ready when authorisation is documented.
+
+### Strand: Bible Tools — biblical-languages card + Aramaic deep-dive (2026-05-06)
+
+Stats page renamed to **Bible Tools**. The Overview tab's stat-block
+grid (verse counts, lemma counts, etc.) was replaced with an
+educational card listing the three original languages of Scripture
+plus a tappable affordance per language so the reader can launch
+exegesis without leaving the tab. The Aramaic strand needed extra
+work because the corpus is small enough to enumerate.
+
+**`lib/pages/stats_page.dart` — `_BibleLanguagesCard` + `_LanguageRow`**
+* Hebrew / Aramaic / Greek rows. Each row carries a `scriptColor`
+  (Hebrew → indigo, Aramaic → teal, Greek → deepOrange), a one-line
+  role, the canon sections it appears in, and a 1-paragraph
+  background note. All copy lives in `uiStrings.dart`
+  (`languageHebrew*`, `languageAramaic*`, `languageGreek*`).
+* Rows are tappable. Hebrew / Greek launch
+  `_ExegesisLauncher.pickAndStudy()` — a verse picker that resolves
+  to the OriginalsSheet for the chosen reference. Aramaic instead
+  opens `_AramaicPassagesSheet` (full curated list, see below).
+
+**`_aramaicPassages` — curated 11-entry list**
+The Aramaic corpus is small enough to enumerate fully:
+* OT: Genesis 31:47, Jeremiah 10:11, Daniel 2:4–7:28, Ezra 4:8–6:18,
+  Ezra 7:12–26.
+* NT phrases (Aramaic transliterated into Greek): ῥακά (Matt 5:22),
+  ταλιθα κουμ (Mark 5:41), εφφαθα (Mark 7:34), ἀββα (Mark 14:36),
+  ελωι ελωι λεμα σαβαχθανι (Mark 15:34), μαραν αθα (1 Cor 16:22).
+
+`_AramaicEntry` carries `englishBook / chapter / verse / labelKey /
+descKey / transliteration?`. `_AramaicPassagesSheet` renders them in
+two grouped sections (OT sections / NT phrases). Tapping a tile
+closes the sheet and calls `_ExegesisLauncher.study()` →
+OriginalsSheet at the starting verse.
+
+**Aramaic-word highlighting in `OriginalsSheet`**
+The Strong's lexicon in `assets/strongs/hebrew.json` doesn't carry a
+separate Aramaic flag (Aramaic entries are mixed into the H#### range
+without a marker). Detection is by reference instead, in the new
+top-level `isAramaicWord({englishBook, chapter, verse, strongs})`
+helper inside `lib/widgets/originals_sheet.dart`:
+* **OT rule** — chapter/verse falls in a known Aramaic section AND
+  Strong's # starts with `H`. Section ranges hard-coded against
+  Daniel 2:4–7:28, Ezra 4:8–6:18, Ezra 7:12–26, Genesis 31:47,
+  Jeremiah 10:11.
+* **NT rule** — Strong's # is in `_aramaicGreekStrongs` (G4469 raca,
+  G5008 talitha, G2891 koum, G2188 ephphatha, G5 abba, G1682 eloi,
+  G2982 lema, G4518 sabachthani, G3134 maranatha).
+
+`_wordChip` was updated to take verse context and applies a teal
+background + teal border + a tiny "亚兰文 / 亞蘭文 / Aramaic" pill
+above the lemma when the chip is Aramaic. `_buildEntryCard` does the
+same — the side panel that opens when you tap a chip now renders an
+"Aramaic" badge next to the Strong's # so the reader can confirm
+which entry is the Aramaic transliteration vs. the surrounding
+Greek/Hebrew. UI string: `aramaicWordBadge`.
+
+**Copy-list button on `_AramaicPassagesSheet`**
+A `copy_outlined` IconButton next to the close icon copies a
+locale-appropriate plain-text outline of the 11-entry list (sheet
+title + subtitle + OT group with bullets + NT group with bullets,
+each row showing `<ref> [transliteration] — <description>`). Uses
+`ClipboardHelper.copyWithFeedback` for the snackbar. UI strings:
+`aramCopyTooltip`, `aramCopiedToast`.
+
+### Strand: Daily-verse rotation (Fisher-Yates shuffle) + theme labels
+
+**`lib/services/daily_verse_service.dart`** — fixed-seed Fisher-Yates
+shuffle at load time. Source list (`assets/daily_verses.json`) was
+book-grouped, which made consecutive `dayOfYear` indices march
+through Psalms then Jeremiah etc. — 17 % of consecutive day-pairs
+landed on the same book. The shuffle (seed `20260506`) gives
+book-mixed days while keeping every device deterministic on the same
+calendar day. Bumping the seed re-shuffles if the curated list ever
+gets a v2.
+
+`themeKeyFor(englishBook, chapter)` returns a `uiStrings` key for a
+short topical label (Creation, Shepherd, Resurrection, Salvation, …)
+via a layered classifier: per-(book, chapter) overrides for ~70
+famous chapters first, then a 66-book fallback. Used by the
+"recommended verse" chips on the dashboard so each day's chip shows
+its theme rather than today / yesterday / 2 days ago.
+
+### Strand: Distribution polish — localised columns + book abbrevs
+
+**`lib/widgets/word_distribution_table.dart`** — column header `Strong's`
+now resolves via `uiStrings['colStrongs']` (编号 / 編號 / Strong's)
+both inside the rendered table and the copy-table TSV. Book
+abbreviation helper switched from English-only to
+`_shortBook(book, locale)` with `_shortBooksHans` /
+`_shortBooksHant` lookup maps so Chinese locales no longer render
+"Mat" / "Mar" alongside Chinese book names.
+
+### Files changed this strand
+
+```
+M  lib/constants/ui_strings.dart   (languages*, aram*, verseTheme*, colStrongs, aramaicWordBadge)
+M  lib/pages/stats_page.dart       (Bible Tools rename, languages card, Aramaic sheet, copy button)
+M  lib/services/daily_verse_service.dart (Fisher-Yates shuffle, themeKeyFor)
+M  lib/widgets/originals_sheet.dart (Aramaic detection + chip/entry-card highlight)
+M  lib/widgets/word_distribution_table.dart (localised abbrevs + colStrongs)
+```
 
 ---
 

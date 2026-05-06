@@ -574,6 +574,10 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
     final ref = '${vo.verse.book} ${vo.verse.chapter}:${vo.verse.verse}';
     final isHebrew = (vo.words ?? const []).isNotEmpty &&
         vo.words!.first.strongs.startsWith('H');
+    // Round 56 (continued — Aramaic highlight): English book name for
+    // [isAramaicWord] lookup. `vo.verse.book` may already be localised
+    // depending on the source path, so canonicalise it.
+    final englishBook = toEnglish(vo.verse.book) ?? vo.verse.book;
     final words = vo.words;
     // Verse text from the user's current Bible version, with `{...}`
     // emphasis braces and `<note:...>` markers stripped so the panel
@@ -640,7 +644,14 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
                 runSpacing: 8,
                 alignment: isHebrew ? WrapAlignment.end : WrapAlignment.start,
                 children: [
-                  for (final w in words) _wordChip(w, scheme),
+                  for (final w in words)
+                    _wordChip(
+                      w,
+                      scheme,
+                      englishBook: englishBook,
+                      chapter: vo.verse.chapter,
+                      verse: vo.verse.verse,
+                    ),
                 ],
               ),
             ),
@@ -649,9 +660,25 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
     );
   }
 
-  Widget _wordChip(OriginalWord w, ColorScheme scheme) {
+  Widget _wordChip(
+    OriginalWord w,
+    ColorScheme scheme, {
+    required String englishBook,
+    required int chapter,
+    required int verse,
+  }) {
     final isSelected = _selectedWord?.strongs == w.strongs &&
         _selectedWord?.text == w.text;
+    // Round 56 (continued — Aramaic highlight): tag chips whose word
+    // is Aramaic so the reader can see at a glance which embedded
+    // tokens are Aramaic vs. surrounding Hebrew/Greek. Teal matches
+    // the Aramaic accent on the Bible Languages card.
+    final isAramaic = isAramaicWord(
+      englishBook: englishBook,
+      chapter: chapter,
+      verse: verse,
+      strongs: w.strongs,
+    );
     // Interlinear gloss row — the Strong's entry's primary meaning in
     // the user's locale (English `gloss` or Chinese `glossZh`). Shown
     // beneath the original word so a reader who doesn't know
@@ -659,6 +686,21 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
     final entry = _glossCache[w.strongs];
     final gloss =
         entry?.localizedGloss(widget.locale) ?? '';
+    // Aramaic chips: teal-tinted background + 1.5px teal border, even
+    // when not selected. Selected Aramaic chips switch to the primary
+    // colour scheme so the selection cue stays unambiguous.
+    final Color bgColor;
+    final Color borderColor;
+    if (isSelected) {
+      bgColor = scheme.primaryContainer;
+      borderColor = scheme.primary;
+    } else if (isAramaic) {
+      bgColor = Colors.teal.withValues(alpha: 0.13);
+      borderColor = Colors.teal.withValues(alpha: 0.55);
+    } else {
+      bgColor = scheme.surfaceContainerHighest.withValues(alpha: 0.5);
+      borderColor = Colors.transparent;
+    }
     return InkWell(
       onTap: () => _onWordTap(w),
       borderRadius: BorderRadius.circular(8),
@@ -666,12 +708,10 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
         constraints: const BoxConstraints(minWidth: 56, maxWidth: 140),
         decoration: BoxDecoration(
-          color: isSelected
-              ? scheme.primaryContainer
-              : scheme.surfaceContainerHighest.withValues(alpha: 0.5),
+          color: bgColor,
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
-            color: isSelected ? scheme.primary : Colors.transparent,
+            color: borderColor,
             width: 1.5,
           ),
         ),
@@ -679,6 +719,33 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
+            // Round 56 (continued — Aramaic highlight): tiny teal pill
+            // above the lemma reading "亚兰文 / 亞蘭文 / Aramaic" so the
+            // distinction is visible without relying on colour alone.
+            if (isAramaic) ...[
+              Directionality(
+                textDirection: TextDirection.ltr,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 5, vertical: 1),
+                  decoration: BoxDecoration(
+                    color: Colors.teal.withValues(alpha: 0.18),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    uiStrings['aramaicWordBadge']?[widget.locale] ??
+                        'Aramaic',
+                    style: const TextStyle(
+                      fontSize: 8,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.teal,
+                      letterSpacing: 0.3,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 2),
+            ],
             Text(
               w.text,
               textAlign: TextAlign.center,
@@ -767,6 +834,27 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
     final concordance = isBrowsingRoot ? _rootConcordance : _selectedConcordance;
     // The displayed number: root number when browsing, otherwise the word's.
     final displayNumber = entry?.number ?? w.strongs;
+    // Round 56 (continued — Aramaic highlight, entry card): tag the
+    // header row when this Strong's entry is Aramaic. Detection
+    // mirrors the chip-side rule: NT entries → curated Greek
+    // transliteration set; OT entries → first verse falls inside a
+    // known Aramaic section AND the entry is H-numbered. Browsing a
+    // root pivoted away from the original verse keeps the badge as
+    // long as the displayed number itself is in the Aramaic set
+    // (true for the NT transliteration roots; false for plain OT
+    // roots, which is the right behaviour — those roots aren't
+    // exclusively Aramaic).
+    bool entryIsAramaic = _aramaicGreekStrongs.contains(displayNumber);
+    if (!entryIsAramaic && !isBrowsingRoot && widget.verses.isNotEmpty) {
+      final v = widget.verses.first;
+      final eb = toEnglish(v.book) ?? v.book;
+      entryIsAramaic = isAramaicWord(
+        englishBook: eb,
+        chapter: v.chapter,
+        verse: v.verse,
+        strongs: displayNumber,
+      );
+    }
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -808,6 +896,30 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
                   ),
                 ),
               ),
+              if (entryIsAramaic) ...[
+                const SizedBox(width: 6),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: Colors.teal.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(6),
+                    border: Border.all(
+                      color: Colors.teal.withValues(alpha: 0.55),
+                      width: 0.8,
+                    ),
+                  ),
+                  child: Text(
+                    uiStrings['aramaicWordBadge']?[locale] ?? 'Aramaic',
+                    style: const TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.teal,
+                      letterSpacing: 0.4,
+                    ),
+                  ),
+                ),
+              ],
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
@@ -2290,3 +2402,72 @@ List<TextSpan> _parseAiMarkdown(
   }
   return spans;
 }
+
+/// Round 56 (continued — Aramaic highlight): when the user taps into
+/// an Aramaic passage from the Bible Tools page, the OriginalsSheet
+/// should visually distinguish the Aramaic words. The Strong's lexicon
+/// in `assets/strongs/hebrew.json` doesn't carry a separate Aramaic
+/// flag (Aramaic entries are mixed into the H#### range), so we
+/// detect by reference instead. Two rules:
+///
+///   1) **OT verses inside known Aramaic sections** — every H-numbered
+///      word in Daniel 2:4–7:28, Ezra 4:8–6:18, Ezra 7:12–26,
+///      Genesis 31:47, and Jeremiah 10:11 is Aramaic. (Daniel 2:4a is
+///      Hebrew but the whole verse switches mid-line; we still flag
+///      every word in 2:4 because the chip view is per-word.)
+///   2) **NT Aramaic transliterations** — specific Greek Strong's
+///      numbers that are actually transliterated Aramaic on the lips
+///      of Jesus / the early church (raca, talitha koum, ephphatha,
+///      abba, eloi/lema/sabachthani, maranatha).
+///
+/// Only H-numbered words inside the OT ranges are flagged; G-numbered
+/// words there (rare cross-references) are not. NT detection is
+/// strictly by Strong's # — surrounding Greek words remain Greek.
+bool isAramaicWord({
+  required String englishBook,
+  required int chapter,
+  required int verse,
+  required String strongs,
+}) {
+  // NT rule: known Aramaic transliterations carry a fixed set of
+  // Greek Strong's #s regardless of the verse they appear in.
+  if (_aramaicGreekStrongs.contains(strongs)) return true;
+  // OT rule: chapter/verse falls inside a curated Aramaic section
+  // AND the word is H-numbered (Hebrew/Aramaic side of the lexicon).
+  if (!strongs.startsWith('H')) return false;
+  switch (englishBook) {
+    case 'Genesis':
+      return chapter == 31 && verse == 47;
+    case 'Jeremiah':
+      return chapter == 10 && verse == 11;
+    case 'Daniel':
+      // 2:4b – 7:28. We accept the whole of 2:4 (per-word view).
+      if (chapter < 2 || chapter > 7) return false;
+      if (chapter == 2) return verse >= 4;
+      if (chapter == 7) return verse <= 28;
+      return true;
+    case 'Ezra':
+      if (chapter == 4) return verse >= 8;
+      if (chapter == 5) return true;
+      if (chapter == 6) return verse <= 18;
+      if (chapter == 7) return verse >= 12 && verse <= 26;
+      return false;
+    default:
+      return false;
+  }
+}
+
+/// Greek Strong's numbers whose underlying word is Aramaic
+/// transliterated into Greek script. These appear in the NT
+/// embedded inside otherwise-Greek verses.
+const Set<String> _aramaicGreekStrongs = {
+  'G4469', // ῥακά (raca)
+  'G5008', // ταλιθα (talitha)
+  'G2891', // κουμι / κουμ (koumi/koum)
+  'G2188', // εφφαθα (ephphatha)
+  'G5',    // ἀββα (abba)
+  'G1682', // ἐλωΐ (eloi)
+  'G2982', // λεμα (lema)
+  'G4518', // σαβαχθανι (sabachthani)
+  'G3134', // μαρὰν ἀθά (maranatha)
+};

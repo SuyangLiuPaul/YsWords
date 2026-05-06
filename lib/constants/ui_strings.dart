@@ -926,6 +926,27 @@ const uiStrings = {
     'en':
         'Koine ("common") Greek, the everyday register of the Hellenistic Mediterranean after Alexander the Great\'s conquests. The NT authors deliberately wrote in this accessible form — the Greek of the marketplace — rather than the polished Attic of classical literature, so the gospel could travel through ordinary readers to the ends of the empire.',
   },
+  // Round 56 (continued — Aramaic highlight): badge label rendered on
+  // word chips inside the OriginalsSheet for words detected as
+  // Aramaic. Kept short (a single character couplet in Chinese) so it
+  // fits inside the 56–140 px chip width without wrapping.
+  'aramaicWordBadge': {
+    'zh-Hans': '亚兰文',
+    'zh-Hant': '亞蘭文',
+    'en': 'Aramaic',
+  },
+  // Round 56 (continued — Aramaic copy): tooltip + toast for the
+  // copy-list button on the Aramaic passages sheet.
+  'aramCopyTooltip': {
+    'zh-Hans': '复制亚兰文经文列表',
+    'zh-Hant': '複製亞蘭文經文列表',
+    'en': 'Copy Aramaic passage list',
+  },
+  'aramCopiedToast': {
+    'zh-Hans': '亚兰文经文列表已复制',
+    'zh-Hant': '亞蘭文經文列表已複製',
+    'en': 'Aramaic passage list copied',
+  },
   // ── Aramaic sheet (full passage list) ─────────────────────────
   'aramSheetTitle': {
     'zh-Hans': '圣经中的亚兰文',

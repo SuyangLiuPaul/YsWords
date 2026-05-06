@@ -2056,6 +2056,17 @@ class _AramaicPassagesSheet extends StatelessWidget {
                           fontSize: 16, fontWeight: FontWeight.w700),
                     ),
                   ),
+                  // Round 56 (continued — Aramaic copy): one-tap export
+                  // of the full curated list (OT sections + NT phrases)
+                  // as a plain-text outline. Uses copyWithFeedback so
+                  // the user gets a "Copied!" snack and the sheet stays
+                  // open in case they want to study a passage too.
+                  IconButton(
+                    icon: const Icon(Icons.copy_outlined, size: 18),
+                    tooltip: uiStrings['aramCopyTooltip']?[locale] ??
+                        'Copy Aramaic passage list',
+                    onPressed: () => _copyAramaicList(context),
+                  ),
                   IconButton(
                     icon: const Icon(Icons.close, size: 20),
                     onPressed: () =>
@@ -2167,6 +2178,67 @@ class _AramaicPassagesSheet extends StatelessWidget {
         englishBook == 'Jeremiah' ||
         englishBook == 'Daniel' ||
         englishBook == 'Ezra';
+  }
+
+  /// Round 56 (continued — Aramaic copy): builds a plain-text outline
+  /// of the curated 11-passage list and copies it to the clipboard.
+  /// Layout — sheet title, subtitle, OT group header with bullets
+  /// (ref label — description), then NT group header with bullets
+  /// (ref label, optional transliteration in brackets, description).
+  ///
+  /// All strings are rendered in the user's current locale so the
+  /// copied output matches what they see on screen.
+  void _copyAramaicList(BuildContext context) {
+    final title =
+        uiStrings['aramSheetTitle']?[locale] ?? 'Aramaic in the Bible';
+    final subtitle = uiStrings['aramSheetSubtitle']?[locale] ?? '';
+    final otHeader = uiStrings['aramGroupOt']?[locale] ??
+        'Old Testament sections';
+    final ntHeader = uiStrings['aramGroupNt']?[locale] ??
+        'New Testament phrases';
+    final buf = StringBuffer();
+    buf.writeln(title);
+    if (subtitle.isNotEmpty) buf.writeln(subtitle);
+    buf.writeln();
+
+    final otEntries = _aramaicPassages
+        .where((e) => _isOtBookForAramaic(e.englishBook))
+        .toList();
+    final ntEntries = _aramaicPassages
+        .where((e) => !_isOtBookForAramaic(e.englishBook))
+        .toList();
+
+    void writeGroup(String header, List<_AramaicEntry> entries) {
+      buf.writeln(header);
+      for (final e in entries) {
+        final ref = uiStrings[e.labelKey]?[locale] ?? e.labelKey;
+        final desc = uiStrings[e.descKey]?[locale] ?? '';
+        final tl = e.transliteration ?? '';
+        buf.write('  • ');
+        buf.write(ref);
+        if (tl.isNotEmpty) {
+          buf.write('  [');
+          buf.write(tl);
+          buf.write(']');
+        }
+        if (desc.isNotEmpty) {
+          buf.write(' — ');
+          buf.write(desc);
+        }
+        buf.writeln();
+      }
+      buf.writeln();
+    }
+
+    writeGroup(otHeader, otEntries);
+    writeGroup(ntHeader, ntEntries);
+
+    final text = buf.toString().trimRight();
+    ClipboardHelper.copyWithFeedback(
+      context,
+      text,
+      messageOverride: uiStrings['aramCopiedToast']?[locale],
+    );
   }
 }
 
