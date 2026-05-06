@@ -2328,34 +2328,39 @@ class _SyncStatusRowState extends State<_SyncStatusRow> {
     final last = sync.lastSyncedAt;
     final status = sync.status;
 
+    // 2026-05-07: when sync is in a "setup not done" state (RTDB
+    // not enabled / region mismatch / network blocking firebaseio.
+    // com / regional firewall), HIDE the entire sync row from the
+    // user-facing UI. They get a clean Account section that just
+    // shows "signed in as X" and the sign-out button — no scary
+    // error text, no broken "Sync now" button. The full technical
+    // error remains visible to the developer in
+    // Settings → About → Run check.
+    final actual = sync.lastError ?? '';
+    final lower = actual.toLowerCase();
+    final isSyncSetupError = status == CloudSyncStatus.error &&
+        (lower.contains('database') ||
+            lower.contains('permission') ||
+            lower.contains('set error') ||
+            lower.contains('-disabled') ||
+            lower.contains('unavailable') ||
+            lower.contains('timeout') ||
+            lower.contains('timed out') ||
+            lower.contains('channel'));
+    if (isSyncSetupError && !_busy) {
+      // Render nothing — sync silently disabled, app keeps working
+      // local-only.
+      return const SizedBox.shrink();
+    }
+
     String stamp;
     if (status == CloudSyncStatus.syncing || _busy) {
       stamp = uiStrings['syncingNow']?[locale] ?? 'Syncing now…';
     } else if (status == CloudSyncStatus.error) {
-      // 2026-05-06: friendlier error for the most common failure
-      // (RTDB not enabled in Firebase Console). Show a one-line
-      // user-readable message instead of dumping the raw Firebase
-      // exception (which mentioned "database reference set error"
-      // and confused users). Developers can still see the detailed
-      // error in About → Cloud setup status.
-      final actual = sync.lastError ?? '';
-      final lower = actual.toLowerCase();
-      final isRtdbSetupError = lower.contains('database') ||
-          lower.contains('permission') ||
-          lower.contains('set error') ||
-          lower.contains('-disabled') ||
-          lower.contains('unavailable');
-      if (isRtdbSetupError) {
-        stamp = uiStrings['syncNotConfigured']?[locale] ??
-            'Cloud sync isn\'t set up for this device yet. Local '
-                'highlights / bookmarks still work — see About → '
-                'Cloud setup if you\'re the developer.';
-      } else if (actual.isNotEmpty) {
-        stamp = actual;
-      } else {
-        stamp = uiStrings['syncFailed']?[locale] ??
-            'Sync failed. Check your connection and try again.';
-      }
+      // Non-setup error (genuine transient failure). Show a friendly
+      // one-liner with retry. Developers see full detail via About.
+      stamp = uiStrings['syncFailed']?[locale] ??
+          'Sync paused — tap "Sync now" to try again.';
     } else if (last != null) {
       stamp = (uiStrings['lastSyncedAt']?[locale] ?? 'Last synced {when}')
           .replaceAll('{when}', _relative(last, locale));
