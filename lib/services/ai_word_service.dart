@@ -38,6 +38,12 @@ class AiWordService {
     required String locale,
     String length = 'default',
     String scope = 'verse',
+    /// User-supplied Gemini API key (BYOK). When non-empty, the
+    /// Netlify function uses this key instead of the developer's,
+    /// so the user's own AI Studio quota is consumed rather than
+    /// the shared one. Caller (OriginalsSheet) reads this from
+    /// `AppSettings.geminiApiKey`.
+    String? userApiKey,
   }) async {
     final body = <String, dynamic>{
       'strongs': strongs,
@@ -51,6 +57,8 @@ class AiWordService {
       'locale': locale,
       'length': length,
       'scope': scope,
+      if (userApiKey != null && userApiKey.isNotEmpty)
+        'userApiKey': userApiKey,
     };
     final http.Response resp;
     try {

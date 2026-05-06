@@ -709,7 +709,14 @@ class _AiSearchDialogState extends State<_AiSearchDialog> {
       _result = null;
       _localMatches = const [];
     });
-    final r = await AiSearchService.ask(query: q, locale: widget.locale);
+    // BYOK (2026-05): forward the user's Gemini key when set so AI
+    // search runs against their own AI Studio quota.
+    final userKey = context.read<AppSettings>().geminiApiKey;
+    final r = await AiSearchService.ask(
+      query: q,
+      locale: widget.locale,
+      userApiKey: userKey.isEmpty ? null : userKey,
+    );
     if (!mounted) return;
 
     if (r.unavailable) {

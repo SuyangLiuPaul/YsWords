@@ -34,7 +34,8 @@ import 'package:yswords/services/daily_news_service.dart';
 import 'package:yswords/services/sermon_service.dart';
 import 'package:yswords/providers/main_provider.dart';
 import 'package:yswords/services/cloud_auth_service.dart';
-import 'package:yswords/services/cloud_sync_service.dart';
+import 'package:yswords/services/cloud_sync_service.dart' show CloudSyncStatus;
+import 'package:yswords/services/drive_sync_service.dart';
 import 'package:yswords/services/daily_verse_fallback.dart';
 import 'package:yswords/services/daily_verse_service.dart';
 import 'package:yswords/services/profile_service.dart';
@@ -111,7 +112,7 @@ class _DashboardPageState extends State<DashboardPage> {
     super.initState();
     ProfileService.instance.addListener(_onProfileOrAuthChanged);
     CloudAuthService.instance.addListener(_onProfileOrAuthChanged);
-    CloudSyncService.instance.addListener(_onProfileOrAuthChanged);
+    DriveSyncService.instance.addListener(_onProfileOrAuthChanged);
     _loadPlan();
     _loadDailyVerse();
     _loadDailyEvidence();
@@ -378,7 +379,7 @@ class _DashboardPageState extends State<DashboardPage> {
   void dispose() {
     ProfileService.instance.removeListener(_onProfileOrAuthChanged);
     CloudAuthService.instance.removeListener(_onProfileOrAuthChanged);
-    CloudSyncService.instance.removeListener(_onProfileOrAuthChanged);
+    DriveSyncService.instance.removeListener(_onProfileOrAuthChanged);
     super.dispose();
   }
 
@@ -504,7 +505,7 @@ class _DashboardPageState extends State<DashboardPage> {
             // initial. Pass both URLs; the card picks one.
             photoUrl: auth.currentUser?.photoURL ?? profile.photoDataUrl,
             avatarColor: profile.avatarColorArgb,
-            syncStatus: CloudSyncService.instance.status,
+            syncStatus: DriveSyncService.instance.status,
             locale: locale,
             onSignIn: () async {
               final messenger = ScaffoldMessenger.of(context);

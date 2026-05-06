@@ -1667,6 +1667,56 @@ const uiStrings = {
     'zh-Hant': '聖經歷史地圖（55 張圖）',
     'en': 'Bible-history maps (55 images)',
   },
+  // ── AI BYOK + Drive sync (2026-05-06) ────────────────────────
+  'settingsSectionAi': {
+    'zh-Hans': 'AI 释义',
+    'zh-Hant': 'AI 釋義',
+    'en': 'AI',
+  },
+  'aiByokTitle': {
+    'zh-Hans': '使用我自己的 Gemini API 密钥',
+    'zh-Hant': '使用我自己的 Gemini API 金鑰',
+    'en': 'Use my own Gemini API key',
+  },
+  'aiByokBody': {
+    'zh-Hans': '从 Google AI Studio 获取免费密钥并粘贴在这里——之后 AI 功能（原文释义、AI 搜索）'
+        '将走您自己的额度（每分钟 15 次，每日 1500 次），而不是与开发者池共享。'
+        '密钥仅保存在本设备本地，不会上传到我们的服务器或同步到其他设备。',
+    'zh-Hant': '從 Google AI Studio 取得免費金鑰並貼在這裡——之後 AI 功能（原文釋義、AI 搜尋）'
+        '將走您自己的配額（每分鐘 15 次，每日 1500 次），而不是與開發者池共享。'
+        '金鑰僅保存在本裝置本地，不會上傳到我們的伺服器或同步到其他裝置。',
+    'en':
+        'Paste your free Gemini API key from AI Studio so AI features '
+            '(word explanations, AI search) use your own quota (15 RPM / '
+            '1500 RPD) instead of the shared developer pool. The key '
+            'lives on this device only — never uploaded to our server '
+            'or synced across devices.',
+  },
+  'aiByokGetKey': {
+    'zh-Hans': '获取免费密钥',
+    'zh-Hant': '取得免費金鑰',
+    'en': 'Get free key',
+  },
+  'show': {'zh-Hans': '显示', 'zh-Hant': '顯示', 'en': 'Show'},
+  'hide': {'zh-Hans': '隐藏', 'zh-Hant': '隱藏', 'en': 'Hide'},
+  // 'save' and 'clear' already exist elsewhere in this map; reuse them.
+  'saved': {'zh-Hans': '已保存', 'zh-Hant': '已儲存', 'en': 'Saved'},
+  // Drive sync — appears in the Account / Sync card.
+  'driveSyncReconnect': {
+    'zh-Hans': '重新连接 Google Drive',
+    'zh-Hant': '重新連接 Google Drive',
+    'en': 'Reconnect Google Drive',
+  },
+  'driveSyncReconnectBody': {
+    'zh-Hans': 'Google Drive 授权已过期。点击下方按钮重新授权以恢复同步——'
+        '您的高亮 / 笔记 / 书签存放在您自己的 Drive 隐藏应用文件夹（appDataFolder）中。',
+    'zh-Hant': 'Google Drive 授權已過期。點擊下方按鈕重新授權以恢復同步——'
+        '您的標亮 / 筆記 / 書籤存放在您自己的 Drive 隱藏應用資料夾（appDataFolder）中。',
+    'en':
+        'Google Drive authorization expired. Click below to reconnect '
+            'and resume sync — your highlights / notes / bookmarks live '
+            'in your own Drive AppData folder (hidden, app-private).',
+  },
   'offlinePackNetworkNote': {
     'zh-Hans': '以下功能仍需要网络：AI 释义 / AI 搜索、云端同步登录、新闻实时更新，'
         '以及首次加载非 Roboto 字体（Google Fonts 在线下载，下载后会被浏览器缓存）。',

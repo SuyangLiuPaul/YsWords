@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:yswords/models/verse.dart';
 import 'package:yswords/models/book.dart';
 import 'package:yswords/services/fetch_books.dart' show bookNameToEnglish;
-import 'package:yswords/services/cloud_sync_service.dart';
+import 'package:yswords/services/drive_sync_service.dart';
 import 'package:yswords/services/profile_service.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -192,7 +192,7 @@ class MainProvider extends ChangeNotifier {
       await prefs.setString(
           ProfileService.instance.scopedKey('highlights'),
           jsonEncode(_highlights));
-      CloudSyncService.instance.requestUpload();
+      DriveSyncService.instance.requestUpload();
     } catch (e, st) {
       debugPrint('MainProvider._saveHighlights failed: $e\n$st');
     }
@@ -291,7 +291,7 @@ class MainProvider extends ChangeNotifier {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString(ProfileService.instance.scopedKey('verseNotes'),
           jsonEncode(_verseNotes));
-      CloudSyncService.instance.requestUpload();
+      DriveSyncService.instance.requestUpload();
     } catch (e, st) {
       debugPrint('MainProvider._saveNotes failed: $e\n$st');
     }
@@ -314,7 +314,7 @@ class MainProvider extends ChangeNotifier {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setStringList(ProfileService.instance.scopedKey('bookmarks'),
           _bookmarks.toList());
-      CloudSyncService.instance.requestUpload();
+      DriveSyncService.instance.requestUpload();
     } catch (e, st) {
       debugPrint('MainProvider._saveBookmarks failed: $e\n$st');
     }

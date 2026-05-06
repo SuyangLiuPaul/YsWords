@@ -47,6 +47,36 @@ class CloudAuthService extends ChangeNotifier {
   String? _initError;
   User? _user;
 
+  /// OAuth access token captured during the most recent Google sign-in
+  /// — used by DriveSyncService to call the Drive REST API on the
+  /// user's behalf without requiring them to set up anything in
+  /// Google Cloud. Lives in memory only (don't persist; can be
+  /// re-acquired via [refreshDriveAccessToken] which trigger
+  /// a silent popup with `prompt:''` so Google skips the consent
+  /// dialog when the user already granted the scope).
+  String? _driveAccessToken;
+  DateTime? _driveTokenExpiresAt;
+
+  /// Drive AppData scope — gives the app a hidden, app-private
+  /// folder in the user's Drive. Users don't see the file in their
+  /// Drive UI; uninstalling the app cleans it up. This is the
+  /// canonical scope for "app-managed user data" — see
+  /// https://developers.google.com/drive/api/guides/appdata
+  static const String driveAppDataScope =
+      'https://www.googleapis.com/auth/drive.appdata';
+
+  /// Latest captured Drive OAuth access token, or null if we don't
+  /// have one (never signed in, or expired). Caller should call
+  /// [refreshDriveAccessToken] when it gets a 401 from Drive.
+  String? get driveAccessToken {
+    if (_driveAccessToken == null) return null;
+    final exp = _driveTokenExpiresAt;
+    if (exp != null && DateTime.now().isAfter(exp)) return null;
+    return _driveAccessToken;
+  }
+
+  bool get hasDriveAccessToken => driveAccessToken != null;
+
   /// True once [init] has finished (regardless of success/failure).
   bool get ready => _ready;
 
@@ -258,10 +288,61 @@ class CloudAuthService extends ChangeNotifier {
   /// sync until they sign back in.
   Future<void> signOut() async {
     if (!_configured) return;
+    _driveAccessToken = null;
+    _driveTokenExpiresAt = null;
     try {
       await FirebaseAuth.instance.signOut();
     } catch (e) {
       debugPrint('signOut failed: $e');
+    }
+  }
+
+  /// Re-acquire the Drive OAuth access token without requiring user
+  /// interaction (most of the time). Uses a silent popup with
+  /// `prompt:''` — Google skips the consent screen when the user has
+  /// already granted the requested scopes, so the popup closes
+  /// almost instantly. Falls back to a normal popup if the silent
+  /// path fails (e.g. user revoked the grant from their Google
+  /// account settings).
+  ///
+  /// Called by DriveSyncService when:
+  /// 1. App boots with a signed-in user but no in-memory access
+  ///    token (we don't persist it across reloads for safety).
+  /// 2. A Drive REST call returns 401 (token expired).
+  ///
+  /// Returns true on success, false when even the interactive popup
+  /// failed — caller surfaces "Reconnect Google Drive" UI.
+  Future<bool> refreshDriveAccessToken({bool interactive = false}) async {
+    if (!_configured) return false;
+    if (!isSignedIn) return false;
+    final provider = GoogleAuthProvider();
+    provider.addScope('email');
+    provider.addScope('profile');
+    provider.addScope(driveAppDataScope);
+    // `prompt: ''` (empty) lets Google skip the consent screen when
+    // the user already granted these scopes. Switch to `consent` for
+    // forced re-consent (interactive=true means user explicitly hit
+    // "Reconnect Drive").
+    provider.setCustomParameters({
+      'prompt': interactive ? 'consent' : '',
+      // Hint to silently use the currently-signed-in user without
+      // showing the account picker.
+      if (currentUser?.email != null) 'login_hint': currentUser!.email!,
+    });
+    try {
+      final cred = await FirebaseAuth.instance.signInWithPopup(provider);
+      final c = cred.credential;
+      if (c is OAuthCredential && c.accessToken != null) {
+        _driveAccessToken = c.accessToken;
+        _driveTokenExpiresAt =
+            DateTime.now().add(const Duration(minutes: 55));
+        notifyListeners();
+        return true;
+      }
+      return false;
+    } catch (e) {
+      debugPrint('refreshDriveAccessToken failed: $e');
+      return false;
     }
   }
 
@@ -308,6 +389,15 @@ class CloudAuthService extends ChangeNotifier {
     // signInWithGoogleAndAdoptProfile().
     provider.addScope('email');
     provider.addScope('profile');
+    // Drive AppData scope — added 2026-05 alongside the migration
+    // from Firestore to Google Drive sync. Asks for write access to
+    // a hidden, app-private folder in the user's Drive (NOT their
+    // main Drive content). Used by `DriveSyncService` to read/write
+    // the single `yswords-sync.json` file that holds highlights /
+    // bookmarks / notes / reading-plan progress. The user grants
+    // this once at sign-in time and never has to pick a folder —
+    // `appDataFolder` is automatic.
+    provider.addScope(driveAppDataScope);
     // Always show the chooser even if there's a single signed-in
     // Google account, so users on shared devices can pick the
     // right one.
@@ -317,6 +407,21 @@ class CloudAuthService extends ChangeNotifier {
     try {
       final cred =
           await FirebaseAuth.instance.signInWithPopup(provider);
+      // Capture the Drive OAuth access token from the credential
+      // object. firebase_auth_web exposes it via OAuthCredential's
+      // accessToken field. Tokens are typically valid for ~1 hour;
+      // we stamp an expiry so DriveSyncService can pre-emptively
+      // refresh before hitting a 401. If credential is null (some
+      // browsers' redirect flow doesn't carry it), we fall back to
+      // refreshDriveAccessToken on first Drive call.
+      final c = cred.credential;
+      if (c is OAuthCredential && c.accessToken != null) {
+        _driveAccessToken = c.accessToken;
+        // Conservative 55-min expiry (real token is ~1 hour) so we
+        // refresh slightly early.
+        _driveTokenExpiresAt =
+            DateTime.now().add(const Duration(minutes: 55));
+      }
       // Manually mirror the user into our notifier in case
       // `userChanges()` doesn't fire — Chrome 115+ third-party cookie
       // partitioning can prevent the auth iframe (running on

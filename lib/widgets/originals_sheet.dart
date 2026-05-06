@@ -339,6 +339,12 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
       _aiError = null;
       _aiForStrongs = entryNumber;
     });
+    // BYOK (2026-05): if the user has pasted their own Gemini API
+    // key in Settings → AI, route the request through that key so
+    // their AI Studio quota is consumed instead of the developer's
+    // shared one. Passed as a body field; the Netlify function
+    // prefers it over the env-var key when present.
+    final userKey = context.read<AppSettings>().geminiApiKey;
     final result = await AiWordService.explain(
       strongs: entryNumber,
       lemma: entry.lemma,
@@ -351,6 +357,7 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
       locale: widget.locale,
       length: length,
       scope: scope,
+      userApiKey: userKey.isEmpty ? null : userKey,
     );
     // Race-check: if the user navigated to another entry while we
     // were waiting for Gemini, drop the response on the floor — the

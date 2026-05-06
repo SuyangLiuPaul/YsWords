@@ -25,6 +25,14 @@ const _kNotificationsEnabled = 'notificationsEnabled';
 const _kShowSectionTitles = 'showSectionTitles';
 const _kShowBookIntro = 'showBookIntro';
 const _kPickVerseAfterChapter = 'pickVerseAfterChapter';
+// User-supplied Gemini API key (BYOK). When non-empty, AI calls are
+// routed through the user's own AI Studio key — gives them their own
+// quota (15 RPM / 1500 RPD on the free tier) and keeps the app
+// developer's shared quota for users who haven't pasted a key. The
+// key never leaves this device's localStorage; the AI service only
+// adds it to outbound POST bodies destined for our own Netlify
+// function (which forwards to Google without persisting).
+const _kGeminiApiKey = 'geminiApiKey';
 
 // Dashboard layout (Round 55). Every section has its own
 // `dashboard_section_visible_<name>` flag plus a single
@@ -82,6 +90,11 @@ class AppSettings extends ChangeNotifier {
   /// fires local reminders (today's verse, today's reading missed,
   /// etc.). Default OFF — must be explicit user opt-in.
   bool _notificationsEnabled = false;
+
+  /// User-supplied Gemini API key. When non-empty, AI calls (word
+  /// explanations, AI search) are billed against the user's own
+  /// AI Studio quota instead of the developer-shared key.
+  String _geminiApiKey = '';
 
   /// Render section / paragraph headings (e.g. "The Sermon on the
   /// Mount" / "登山宝训") above the matched verse in the reading
@@ -147,6 +160,26 @@ class AppSettings extends ChangeNotifier {
   bool get showSectionTitles => _showSectionTitles;
   bool get showBookIntro => _showBookIntro;
   bool get pickVerseAfterChapter => _pickVerseAfterChapter;
+
+  /// User-supplied Gemini API key. Empty string when the user is on
+  /// the developer-shared key. Caller services (AiWordService /
+  /// AiSearchService) read this and include it in their request body
+  /// when set. Never persisted off-device.
+  String get geminiApiKey => _geminiApiKey;
+  bool get hasUserGeminiKey => _geminiApiKey.trim().isNotEmpty;
+
+  Future<void> setGeminiApiKey(String key) async {
+    final trimmed = key.trim();
+    if (_geminiApiKey == trimmed) return;
+    _geminiApiKey = trimmed;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    if (trimmed.isEmpty) {
+      await prefs.remove(_kGeminiApiKey);
+    } else {
+      await prefs.setString(_kGeminiApiKey, trimmed);
+    }
+  }
 
   /// The current dashboard render order. Returns a defensive copy so
   /// callers can't mutate internal state directly.
@@ -569,6 +602,7 @@ class AppSettings extends ChangeNotifier {
     _showBookIntro = prefs.getBool(_kShowBookIntro) ?? true;
     _pickVerseAfterChapter =
         prefs.getBool(_kPickVerseAfterChapter) ?? false;
+    _geminiApiKey = prefs.getString(_kGeminiApiKey) ?? '';
 
     // Dashboard layout (Round 55): load order list + per-section
     // visibility. Missing entries fall back to defaults; the legacy

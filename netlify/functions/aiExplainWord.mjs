@@ -277,8 +277,13 @@ async function callGeminiWithKey(apiKey, prompt, locale) {
 	return resp;
 }
 
-async function callGemini(prompt, locale) {
-	const keys = geminiKeys();
+async function callGemini(prompt, locale, overrideKey = null) {
+	// BYOK: when the client provided a valid-shape user key, use ONLY
+	// that key — don't fall back to the developer's shared key, since
+	// the user explicitly chose to spend their own quota. If their
+	// key fails (quota / invalid), surface the error directly so they
+	// can fix it on their side.
+	const keys = overrideKey ? [overrideKey] : geminiKeys();
 	if (keys.length === 0) {
 		const err = new Error(
 			'AI explanations are not configured yet. Set GEMINI_API_KEY in '
@@ -367,15 +372,25 @@ export default async (req) => {
 		// the round-53 behaviour ('default' length / 'verse' scope).
 		const length = (body?.length || 'default').toString();
 		const scope = (body?.scope || 'verse').toString();
+		// BYOK (2026-05): client may pass `userApiKey` to use the
+		// user's own Gemini key (from AI Studio) instead of the
+		// developer's shared key. We validate the shape before
+		// forwarding (must match Google's `AIza...` API-key format).
+		const _userKey = (body?.userApiKey || '').toString().trim();
+		const _useUserKey = /^AIza[A-Za-z0-9_-]{20,80}$/.test(_userKey);
 		if (!strongs || !lemma || !book || !chapter || !verse) {
 			return new Response(
 				JSON.stringify({ error: 'strongs, lemma, book, chapter, verse required' }),
 				{ status: 400, headers: cors });
 		}
-		const explanation = await callGemini(buildPrompt({
-			strongs, lemma, translit, gloss, book, chapter, verse, verseText, locale,
-			length, scope,
-		}), locale);
+		const explanation = await callGemini(
+			buildPrompt({
+				strongs, lemma, translit, gloss, book, chapter, verse, verseText, locale,
+				length, scope,
+			}),
+			locale,
+			_useUserKey ? _userKey : null,
+		);
 		return new Response(
 			JSON.stringify({ explanation }),
 			{ status: 200, headers: cors });

@@ -15,7 +15,7 @@ import 'package:yswords/services/sermon_service.dart';
 import 'package:yswords/utils/jump_to_reference.dart' as jumper;
 import 'package:yswords/utils/reference_parser.dart' show BibleReference;
 import 'package:yswords/services/cloud_auth_service.dart';
-import 'package:yswords/services/cloud_sync_service.dart';
+import 'package:yswords/services/drive_sync_service.dart';
 import 'package:yswords/services/offline_pack_service.dart';
 import 'package:yswords/services/fetch_books.dart';
 import 'package:yswords/services/fetch_verses.dart';
@@ -96,7 +96,18 @@ class _MainAppState extends State<MainApp> {
       // After auth init we wire up CloudSyncService so any future
       // local changes mirror to Firestore (when signed in).
       await CloudAuthService.instance.init();
-      CloudSyncService.instance.init();
+      // Round 56 day-3 (2026-05-06): switched cloud sync from
+      // Firestore (CloudSyncService) to Google Drive AppData
+      // (DriveSyncService). User reported the Firestore path was
+      // not actually syncing across devices reliably — likely
+      // because Flutter web's Firestore WebChannel transport is
+      // blocked on some networks and the IndexedDB cross-tab sync
+      // is fragile. Drive AppData is plain HTTPS to drive.googleapis
+      // .com, lives in the user's own Drive (no Firebase costs),
+      // and needs zero setup ("appDataFolder" is automatic — no
+      // folder picker). CloudSyncService is left in place as a
+      // legacy migration source but no longer init'd.
+      DriveSyncService.instance.init();
       // Restore "what's been pre-downloaded for offline" so the
       // Settings → Offline Pack card can render an accurate label
       // on first paint instead of flickering "Not downloaded".

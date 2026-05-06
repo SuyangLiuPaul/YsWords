@@ -160,8 +160,10 @@ async function callGeminiWithKey(apiKey, prompt, locale) {
 	});
 }
 
-async function callGemini(prompt, locale) {
-	const keys = geminiKeys();
+async function callGemini(prompt, locale, overrideKey = null) {
+	// BYOK: same pattern as aiExplainWord — when the client passes a
+	// validated user API key, use only that key.
+	const keys = overrideKey ? [overrideKey] : geminiKeys();
 	if (keys.length === 0) {
 		const err = new Error(
 			'AI search is not configured yet. Set GEMINI_API_KEY in '
@@ -260,6 +262,10 @@ export default async (req) => {
 		const body = await req.json();
 		const query = (body?.query || '').toString();
 		const locale = (body?.locale || 'en').toString();
+		// BYOK (2026-05): client may pass `userApiKey` — validate
+		// shape against Google's key format before forwarding.
+		const _userKey = (body?.userApiKey || '').toString().trim();
+		const _useUserKey = /^AIza[A-Za-z0-9_-]{20,80}$/.test(_userKey);
 		if (query.trim().length < 2) {
 			return new Response(JSON.stringify({ error: 'query required' }),
 				{ status: 400, headers: cors });
@@ -271,7 +277,11 @@ export default async (req) => {
 				JSON.stringify({ answer: '', citations: [], hits: 0 }),
 				{ status: 200, headers: cors });
 		}
-		const answer = await callGemini(buildPrompt(query, locale, hits), locale);
+		const answer = await callGemini(
+			buildPrompt(query, locale, hits),
+			locale,
+			_useUserKey ? _userKey : null,
+		);
 		const citations = hits.map((e) => {
 			const t = pickLocalized(e.title, locale);
 			return {

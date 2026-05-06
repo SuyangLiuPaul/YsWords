@@ -50,6 +50,10 @@ class AiSearchService {
   static Future<AiSearchResult> ask({
     required String query,
     required String locale,
+    /// User-supplied Gemini API key (BYOK). When non-empty, the
+    /// Netlify function uses this key instead of the developer's
+    /// shared key. See AiWordService.explain for the rationale.
+    String? userApiKey,
   }) async {
     if (query.trim().length < 2) {
       return AiSearchResult.empty();
@@ -60,7 +64,12 @@ class AiSearchService {
           .post(
             Uri.parse(endpoint),
             headers: const {'Content-Type': 'application/json'},
-            body: jsonEncode({'query': query, 'locale': locale}),
+            body: jsonEncode({
+              'query': query,
+              'locale': locale,
+              if (userApiKey != null && userApiKey.isNotEmpty)
+                'userApiKey': userApiKey,
+            }),
           )
           .timeout(const Duration(seconds: 25));
     } on TimeoutException {

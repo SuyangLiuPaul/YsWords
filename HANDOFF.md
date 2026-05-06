@@ -1226,6 +1226,103 @@ M  windows/flutter/generated_plugins.cmake (same)
   shape (`audioUrl`, `pdfUrl` already populated for 489 / 490
   entries) is ready when authorisation is documented.
 
+### Strand: Drive sync (replaces Firestore) + Gemini BYOK (2026-05-06)
+
+User feedback: *"sync is not really working. maybe by connecting
+to account, then you can save it in your related google drive
+instead"*. Plus: *"once get authority for the account, use their
+google account gemini token access for their app use"*.
+
+**Diagnosis**: the Firestore-based `CloudSyncService` looked logically
+correct on paper but had two real-world problems:
+* Firestore's WebChannel transport gets blocked on some networks
+  / browser extensions, leading to writes that hang indefinitely
+  even with `webExperimentalAutoDetectLongPolling`.
+* The cross-device sync experience felt unreliable — multiple
+  devices on the same Google account weren't seeing each other's
+  highlights / bookmarks.
+
+**Migration**: replaced Firestore with **Google Drive AppData**:
+* `lib/services/drive_sync_service.dart` — new `DriveSyncService`
+  with the same public API (requestUpload / syncNow / status /
+  lastError / lastSyncedAt) so all callers in MainProvider /
+  ReadingPlanService / Settings / Dashboard kept working with a
+  one-line import + identifier swap.
+* Storage: a single `yswords-sync.json` file in the user's own
+  Drive `appDataFolder` — hidden from their normal Drive UI but
+  lives in their Drive quota. `appDataFolder` is automatic; user
+  never picks a folder.
+* Same merge semantics as before (highlights / bookmarks / notes /
+  reading-plan progress, last-write-wins per top-level key,
+  union for bookmarks + plan.completed lists).
+* Drive REST API (plain HTTPS to `drive.googleapis.com`) — works
+  on networks that block Firestore's WebChannel.
+* Auth: existing Firebase Auth Google sign-in flow extended to
+  request `https://www.googleapis.com/auth/drive.appdata`.
+  `CloudAuthService.signInWithGoogle` captures the OAuth access
+  token off the returned `OAuthCredential` and stamps a 55-min
+  expiry. `refreshDriveAccessToken({interactive})` does silent
+  popup re-auth (`prompt:''` + `login_hint`) when the token
+  expires; surfaces a "Reconnect Google Drive" path when even
+  silent fails.
+
+**Why this is a real improvement**: user owns their data
+(no Firebase costs), works on more networks, no separate sync
+backend to maintain, and the user grants once at sign-in (no
+folder picker, no separate scope dialog).
+
+**Migration story**: existing users sign in again (the Drive
+scope is a new permission so the consent screen will appear once);
+their first Drive sync seeds the AppData file from local prefs.
+Firestore data is no longer read or written but stays where it is
+on their existing user docs (`users/<uid>/profileData/main`) — we
+can purge it with a server-side script later if needed.
+
+**Gemini BYOK** — *"once get authority for the account, use their
+google account gemini token access"*. Honest answer: there is no
+working OAuth-based Gemini quota for consumer accounts (would
+require each user to set up a Google Cloud project with billing).
+What works in practice is **BYOK**: user pastes their personal
+AI Studio API key.
+
+* `AppSettings.geminiApiKey` — new persisted string, empty by
+  default. Stored in SharedPreferences, never transmitted off-
+  device except as a body field on outbound AI requests.
+* Settings → AI → "Use my own Gemini API key" card with masked
+  input + "Get free key" button linking to
+  https://aistudio.google.com/apikey. Save / Clear / Show / Hide.
+* `AiWordService.explain` and `AiSearchService.ask` accept a
+  `userApiKey` parameter; callers (OriginalsSheet, evidence_page)
+  read it from AppSettings.
+* Netlify functions (`aiExplainWord.mjs`, `aiSearch.mjs`) honour
+  the `userApiKey` body field with shape validation
+  (`/^AIza[A-Za-z0-9_-]{20,80}$/`); when valid it overrides the
+  developer's key fallback chain so the user's quota is consumed
+  rather than the shared pool.
+* No key is ever logged — the function passes it through to Google
+  in the same request and lets it die in the response chain.
+
+**Files added / changed this strand**:
+
+```
+A  lib/services/drive_sync_service.dart  (new — Drive AppData replacement for Firestore)
+M  lib/services/cloud_auth_service.dart  (Drive scope + access-token capture + refresh)
+M  lib/main.dart                         (init DriveSyncService, drop CloudSyncService.init)
+M  lib/providers/main_provider.dart      (import + requestUpload swap)
+M  lib/services/reading_plan_service.dart (same swap)
+M  lib/pages/dashboard_page.dart         (status reader swap)
+M  lib/pages/settings_page.dart          (sync card swap + new _GeminiKeyCard)
+M  lib/services/ai_word_service.dart     (userApiKey param)
+M  lib/services/ai_search_service.dart   (userApiKey param)
+M  lib/widgets/originals_sheet.dart      (forward AppSettings.geminiApiKey)
+M  lib/pages/evidence_page.dart          (forward AppSettings.geminiApiKey)
+M  lib/models/app_settings.dart          (geminiApiKey field + persist)
+M  lib/constants/ui_strings.dart         (~10 new keys: aiByokTitle/Body/GetKey, settingsSectionAi, driveSyncReconnect{Body}, show/hide/saved)
+M  netlify/functions/aiExplainWord.mjs   (userApiKey override path)
+M  netlify/functions/aiSearch.mjs        (same)
+   lib/services/cloud_sync_service.dart  (untouched — kept for CloudSyncStatus enum + as legacy reference; no longer init'd)
+```
+
 ### Strand: Offline pack — really-works-offline audit (2026-05-06)
 
 User question: *"离线包都全包了吗，真的可以离线使用 toggle on 可以用吗"*.
