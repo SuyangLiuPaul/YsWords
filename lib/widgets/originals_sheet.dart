@@ -832,6 +832,48 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
     );
   }
 
+  /// Tiny helper for the proper-noun gloss block — renders one row
+  /// with a small italic label on the left and the gloss text on the
+  /// right. Used for both "Etymology / 词源" and "Identification / 此处指"
+  /// rows so they have a consistent shape.
+  Widget _properNounRow({
+    required ColorScheme scheme,
+    required String label,
+    required String value,
+    required bool bold,
+  }) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(
+          width: 60,
+          child: Text(
+            label,
+            style: TextStyle(
+              fontSize: 11,
+              color: scheme.onSurfaceVariant,
+              fontStyle: FontStyle.italic,
+              letterSpacing: 0.3,
+            ),
+          ),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            value,
+            style: TextStyle(
+              fontSize: bold ? 15 : 13.5,
+              fontWeight: bold ? FontWeight.w600 : FontWeight.w400,
+              color:
+                  bold ? scheme.onSurface : scheme.onSurface.withValues(alpha: 0.85),
+              height: 1.4,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _buildEntryCard(BuildContext context, ColorScheme scheme, String locale) {
     final w = _selectedWord!;
     if (_loadingEntry) {
@@ -980,7 +1022,81 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
             // Headline gloss and full definition follow the user's
             // current locale: Chinese for zh-Hans / zh-Hant when CBOL
             // has data, English fallback otherwise.
-            if (entry.localizedGloss(locale).isNotEmpty) ...[
+            //
+            // 2026-05-07: for proper nouns (people, places, deities),
+            // the two lexicon sources emphasise different aspects —
+            // English Strong's gives the **etymology** (e.g. "Sceva"
+            // → Latin "left-handed"), CBOL Chinese gives the **biblical
+            // identification** (e.g. "一个祭司长，住在以弗所"). Showing
+            // only one made users think the data contradicted itself.
+            // Now we render BOTH with role labels so it reads as
+            // "etymology + identification" — complementary, not
+            // contradictory. Plus a small 👤 badge above so the user
+            // knows this is a proper-noun entry.
+            if (entry.isProperNoun &&
+                entry.complementaryGloss(locale).isNotEmpty) ...[
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: scheme.tertiaryContainer.withValues(alpha: 0.55),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Text(
+                      uiStrings['exegesisProperNounBadge']?[locale] ??
+                          'Proper noun',
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w700,
+                        color: scheme.onTertiaryContainer,
+                        letterSpacing: 0.4,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      uiStrings['exegesisProperNounNote']?[locale] ??
+                          'Etymology + identification (both correct).',
+                      style: TextStyle(
+                        fontSize: 10.5,
+                        color: scheme.onSurfaceVariant,
+                        fontStyle: FontStyle.italic,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 6),
+              // Primary gloss (locale-preferred). For ZH this is the
+              // CBOL identification; for EN this is the Strong's
+              // etymology. Render with a subtle label.
+              _properNounRow(
+                scheme: scheme,
+                label: locale.startsWith('zh')
+                    ? (uiStrings['exegesisProperNounRoleLabel']?[locale] ??
+                        '此处指')
+                    : (uiStrings['exegesisProperNounEtymLabel']?['en'] ??
+                        'Etymology'),
+                value: entry.localizedGloss(locale),
+                bold: true,
+              ),
+              const SizedBox(height: 4),
+              // Complementary gloss (the "other" perspective).
+              _properNounRow(
+                scheme: scheme,
+                label: locale.startsWith('zh')
+                    ? (uiStrings['exegesisProperNounEtymLabel']?[locale] ??
+                        '词源')
+                    : (uiStrings['exegesisProperNounRoleLabel']?['en'] ??
+                        'Identification'),
+                value: entry.complementaryGloss(locale),
+                bold: false,
+              ),
+            ] else if (entry.localizedGloss(locale).isNotEmpty) ...[
               const SizedBox(height: 8),
               Text(
                 entry.localizedGloss(locale),

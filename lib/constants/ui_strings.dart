@@ -2136,6 +2136,35 @@ const uiStrings = {
     'zh-Hant': '打開 RTDB 控制台',
     'en': 'Open RTDB console',
   },
+  // ── Exegesis sheet — proper-noun complementary glosses ────────
+  // 2026-05-07: for proper nouns (people, places, deities) the
+  // English Strong's lexicon gives etymology while the Chinese CBOL
+  // gives biblical identification. Showing only the locale-preferred
+  // one made users feel the data was inconsistent. Now both are
+  // rendered side-by-side with these labels so the user understands
+  // they're complementary, not contradictory.
+  'exegesisProperNounBadge': {
+    'zh-Hans': '专有名词',
+    'zh-Hant': '專有名詞',
+    'en': 'Proper noun',
+  },
+  'exegesisProperNounNote': {
+    'zh-Hans': '英文给词源，中文给身份——都是对的，互相补充。',
+    'zh-Hant': '英文給詞源，中文給身份——都是對的，互相補充。',
+    'en':
+        'English gives etymology; Chinese gives biblical identification — '
+            'both correct, complementary perspectives.',
+  },
+  'exegesisProperNounRoleLabel': {
+    'zh-Hans': '此处指',
+    'zh-Hant': '此處指',
+    'en': 'Identification',
+  },
+  'exegesisProperNounEtymLabel': {
+    'zh-Hans': '词源',
+    'zh-Hant': '詞源',
+    'en': 'Etymology',
+  },
   // ── AI Bible search (2026-05-07) ─────────────────────────────
   // Triggered from the search page's no-results state. Lets the
   // user ask Gemini for Bible references that match a fuzzy /

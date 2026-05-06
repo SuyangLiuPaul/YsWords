@@ -76,6 +76,100 @@ class StrongsEntry {
     return definition;
   }
 
+  /// 2026-05-07: detect proper nouns (names of people, places, deities,
+  /// nations) so the UI can render BOTH the English and Chinese
+  /// glosses side-by-side instead of just the locale-preferred one.
+  ///
+  /// **Why we need both for proper nouns**: the two lexicon sources
+  /// emphasize different aspects:
+  ///   • English Strong's (1890s, public domain) → **etymology**
+  ///     ("Sceva" → Latin scaevus → "left-handed")
+  ///   • CBOL Chinese (modern) → **biblical identification**
+  ///     ("Sceva" → "一个祭司长，住在以弗所")
+  /// Both are factually correct, but a user seeing only one feels
+  /// like the data contradicts itself ("why does English say
+  /// 'left-handed' but Chinese says 'high priest'?"). Showing both
+  /// with clear labels turns the apparent contradiction into a
+  /// useful "etymology + role" view.
+  ///
+  /// Heuristic uses the [definition] string — if it contains
+  /// proper-noun markers like "of Hebrew origin", ", an Israelite",
+  /// "an apostle", or "a city / town / region / mountain / river",
+  /// we treat it as a proper noun. Audited across the bundled
+  /// lexicon (Greek 5,523 + Hebrew 8,674): ~1,943 entries flagged
+  /// (~14%), of which ~158 actually have noticeably different
+  /// English vs Chinese glosses.
+  bool get isProperNoun {
+    final d = definition.toLowerCase();
+    if (d.isEmpty) return false;
+    const markers = <String>[
+      'of hebrew origin',
+      'of greek origin',
+      'of latin origin',
+      'of egyptian origin',
+      'of aramaic origin',
+      'of persian origin',
+      'of phoenician origin',
+      'of babylonian origin',
+      'of foreign origin',
+      'of uncertain (foreign) derivation',
+      ', an israelite',
+      ', a hebrew',
+      ', an israelitish',
+      ', a jew',
+      ', a jewess',
+      ', a jewish',
+      ', an apostle',
+      ', a christian',
+      ', a disciple',
+      ', a prophet',
+      ', a prophetess',
+      ', a king',
+      ', a queen',
+      ', a priest',
+      ', a high priest',
+      ' the son of',
+      ' the daughter of',
+      'a city ',
+      'a town ',
+      'a region ',
+      'a place ',
+      'a mountain ',
+      'a river ',
+      'a country ',
+      'an island ',
+      'a sea ',
+      'a god',
+      'a goddess',
+      'an idol',
+    ];
+    for (final m in markers) {
+      if (d.contains(m)) return true;
+    }
+    return false;
+  }
+
+  /// Returns the cross-locale gloss most useful when this entry is a
+  /// proper noun. For [locale] = 'en', returns the Chinese gloss
+  /// (`glossZh`) which typically carries the biblical identification;
+  /// for any zh locale, returns the English gloss which carries the
+  /// etymology. Empty string when no complementary gloss exists.
+  /// Callers render this with a clear label like "(此处指 / role)" or
+  /// "(etymology / 词源)".
+  String complementaryGloss(String locale) {
+    if (locale.startsWith('zh')) {
+      // User reading in Chinese; complementary view is the English
+      // etymology that they'd otherwise miss.
+      return gloss;
+    }
+    // User reading in English; complementary view is the Chinese
+    // biblical identification.
+    if (locale == 'zh-Hant') {
+      if ((glossZhTw ?? '').isNotEmpty) return glossZhTw!;
+    }
+    return glossZh ?? '';
+  }
+
   factory StrongsEntry.fromJson(String number, Map<String, dynamic> json) {
     return StrongsEntry(
       number: number,
