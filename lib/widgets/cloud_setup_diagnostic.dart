@@ -158,11 +158,18 @@ class _CloudSetupDiagnosticState extends State<CloudSetupDiagnostic> {
               'cloudDiagRtdbSkipNoUid', _loc, 'No uid.'));
     }
     try {
-      // Late-bound import via a function reference so we don't pull
-      // firebase_database into the diagnostic's compile-time deps —
-      // mirroring how the existing services use it.
+      // 2026-05-07: write to users/$uid/__diag (sibling of /sync),
+      // NOT users/$uid/sync/__diag. The previous path was a child of
+      // /sync where RealtimeDbSyncService keeps a live listener — its
+      // _onRemoteSnapshot fired the moment we wrote the probe value,
+      // pulled the snapshot, then overwrote /sync entirely with the
+      // local data map (which doesn't contain __diag), wiping our
+      // probe before readback. Result: the readback got a different
+      // value than what we wrote and we surfaced a confusing "stale
+      // listener" warning even though sync was actually fine.
+      // Sibling path bypasses the listener entirely.
       final ref = FirebaseDatabase.instance
-          .ref('users/$uid/sync/__diag');
+          .ref('users/$uid/__diag');
       final stamp = DateTime.now().toUtc().toIso8601String();
       await ref.set(stamp).timeout(const Duration(seconds: 8));
       final readback = await ref.get().timeout(const Duration(seconds: 8));
