@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show LogicalKeyboardKey;
 import 'package:get/get.dart';
 import 'package:provider/provider.dart';
 
@@ -675,6 +676,15 @@ class _Chip extends StatelessWidget {
 /// 404/CORS error surfaces as a SnackBar inside the dialog rather than
 /// crashing or blocking the page. Citations link straight to the
 /// matching `EvidenceDetailPage`.
+/// 2026-05-07: Intent fired by the Shortcuts wrapper when the user
+/// presses Enter inside the Ask AI text field. Captured by an Actions
+/// CallbackAction so we can call _ask() instead of letting the Enter
+/// key insert a literal newline (the default for multi-line
+/// TextFields).
+class _SubmitIntent extends Intent {
+  const _SubmitIntent();
+}
+
 class _AiSearchDialog extends StatefulWidget {
   final String locale;
   final List<BibleEvidence> all;
@@ -692,6 +702,12 @@ class _AiSearchDialog extends StatefulWidget {
 
 class _AiSearchDialogState extends State<_AiSearchDialog> {
   final _ctrl = TextEditingController();
+  // 2026-05-07: dialog opened — pick a placeholder query that is
+  // (a) different each time and (b) tied to today's evidence so
+  // the example feels relevant rather than the stale hardcoded
+  // "What evidence supports the Exodus?" the user complained about.
+  // Resolved once per dialog mount via [_pickHint] in initState.
+  late final String _hintText;
   bool _busy = false;
   String? _notice; // shown when AI was unavailable but local matches found
   AiSearchResult? _result;
@@ -699,6 +715,80 @@ class _AiSearchDialogState extends State<_AiSearchDialog> {
   // feature still does something useful. These are domain entries
   // matched by `BibleEvidenceService.search()`, not Gemini citations.
   List<BibleEvidence> _localMatches = const [];
+
+  @override
+  void initState() {
+    super.initState();
+    _hintText = _pickHint();
+  }
+
+  /// Build a placeholder query for the input. 50 % of the time we
+  /// pick a question phrased around **today's evidence** (which the
+  /// dashboard surfaces via `BibleEvidenceService.todayEvidence`),
+  /// so the example feels timely. The other 50 % is a random pick
+  /// from a small curated pool of broad questions — keeps the prompt
+  /// fresh on repeat opens. Both paths are deterministic by date so
+  /// rapid open/close on the same day shows a stable hint instead of
+  /// flickering.
+  String _pickHint() {
+    final locale = widget.locale;
+    final isZh = locale.startsWith('zh');
+    final isHant = locale == 'zh-Hant';
+    final today = BibleEvidenceService.todayEvidence(widget.all);
+    final todayTitle =
+        today?.title[locale] ?? today?.title['en'] ?? '';
+    // Date-based seed so the hint stays stable through the day but
+    // rotates the next morning.
+    final n = DateTime.now();
+    final start = DateTime(n.year, 1, 1);
+    final dayOfYear = n.difference(start).inDays;
+    final useToday = (dayOfYear % 2 == 0) && todayTitle.isNotEmpty;
+    if (useToday) {
+      // Question shaped around today's actual evidence entry.
+      if (isZh) {
+        return isHant
+            ? '例如：「$todayTitle」是怎麼證實聖經記載的？'
+            : '例如：「$todayTitle」是怎么证实圣经记载的？';
+      }
+      return 'e.g. How does "$todayTitle" support the biblical record?';
+    }
+    // Curated pool of broad questions — covers different categories
+    // (archaeology, manuscript, science, history) so consecutive
+    // openings feel varied even when not riding today's evidence.
+    final poolEn = <String>[
+      'What evidence supports the Exodus?',
+      'How do we know the Bible was preserved accurately?',
+      'What archaeological finds confirm King David existed?',
+      'Is there evidence outside the Bible for Jesus?',
+      'What manuscripts establish the New Testament text?',
+      'How does the Tel Dan stele relate to the Bible?',
+      'What science is consistent with biblical creation?',
+      'What history confirms Pontius Pilate was real?',
+    ];
+    final poolHans = <String>[
+      '出埃及记有什么考古证据？',
+      '圣经文本是怎么准确流传至今的？',
+      '哪些考古发现证实了大卫王的存在？',
+      '圣经之外还有哪些关于耶稣的史料？',
+      '哪些抄本确立了新约的文本？',
+      '泰勒丹石碑跟圣经有什么关系？',
+      '哪些科学发现与圣经的创世记载相符？',
+      '哪些史料证明本丢·彼拉多是真实人物？',
+    ];
+    final poolHant = <String>[
+      '出埃及記有什麼考古證據？',
+      '聖經文本是怎麼準確流傳至今的？',
+      '哪些考古發現證實了大衛王的存在？',
+      '聖經之外還有哪些關於耶穌的史料？',
+      '哪些抄本確立了新約的文本？',
+      '泰勒丹石碑跟聖經有什麼關係？',
+      '哪些科學發現與聖經的創世記載相符？',
+      '哪些史料證明本丟・彼拉多是真實人物？',
+    ];
+    final pool = isHant ? poolHant : (isZh ? poolHans : poolEn);
+    final raw = pool[dayOfYear % pool.length];
+    return isZh ? '例如：$raw' : 'e.g. $raw';
+  }
 
   @override
   void dispose() {
@@ -777,23 +867,48 @@ class _AiSearchDialogState extends State<_AiSearchDialog> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            TextField(
-              controller: _ctrl,
-              autofocus: true,
-              minLines: 1,
-              maxLines: 3,
-              style: TextStyle(
-                fontFamily: settings.fontFamily,
-                fontSize: settings.fontSize,
-              ),
-              decoration: InputDecoration(
-                hintText: uiStrings['askAiHint']?[locale] ??
-                    'e.g. What evidence supports the Exodus?',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
+            // 2026-05-07: wrap the TextField in a Shortcuts/Actions
+            // pair so Enter submits, Shift+Enter inserts a newline.
+            // Plain `onSubmitted` doesn't fire when maxLines > 1 —
+            // Flutter treats Enter as a literal newline character in
+            // that case. The Shortcuts intercept handles Enter
+            // explicitly while letting Shift+Enter fall through to
+            // the default newline behaviour for users who want a
+            // multi-line query.
+            Shortcuts(
+              shortcuts: const <ShortcutActivator, Intent>{
+                SingleActivator(LogicalKeyboardKey.enter): _SubmitIntent(),
+                SingleActivator(LogicalKeyboardKey.numpadEnter):
+                    _SubmitIntent(),
+              },
+              child: Actions(
+                actions: <Type, Action<Intent>>{
+                  _SubmitIntent: CallbackAction<_SubmitIntent>(
+                    onInvoke: (_) {
+                      _ask();
+                      return null;
+                    },
+                  ),
+                },
+                child: TextField(
+                  controller: _ctrl,
+                  autofocus: true,
+                  minLines: 1,
+                  maxLines: 3,
+                  textInputAction: TextInputAction.send,
+                  style: TextStyle(
+                    fontFamily: settings.fontFamily,
+                    fontSize: settings.fontSize,
+                  ),
+                  decoration: InputDecoration(
+                    hintText: _hintText,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  onSubmitted: (_) => _ask(),
                 ),
               ),
-              onSubmitted: (_) => _ask(),
             ),
             const SizedBox(height: 12),
             if (_busy)
