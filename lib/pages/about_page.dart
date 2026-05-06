@@ -6,7 +6,6 @@ import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/services/link_opener.dart';
 import 'package:yswords/utils/clipboard_helper.dart';
 import 'package:yswords/utils/responsive.dart';
-import 'package:yswords/widgets/gemini_key_card.dart';
 import 'package:yswords/widgets/home_icon_button.dart';
 import 'package:yswords/widgets/localized_back_button.dart';
 
@@ -54,20 +53,13 @@ class AboutPage extends StatelessWidget {
               _DisclaimerCard(scheme: scheme, locale: locale),
               const SizedBox(height: 12),
               _ContactCard(scheme: scheme, locale: locale),
-              const SizedBox(height: 20),
-              _SectionTitle(
-                  text: uiStrings['aboutSectionAi']?[locale] ??
-                      'AI (advanced)',
-                  scheme: scheme),
-              const SizedBox(height: 6),
-              // Round 56 day-3 (2026-05-06): BYOK lives here
-              // — surfaced from AboutPage rather than the main
-              // Settings list because the developer-shared Gemini
-              // key already covers AI features for normal users
-              // automatically. BYOK is the escape valve for the
-              // case when shared quota is exhausted; users who never
-              // need it never see it.
-              GeminiKeyCard(settings: settings, s: 1.0),
+              // 2026-05-06: BYOK card was here briefly but the user
+              // wanted AI to be fully automatic ("auth gemini for
+              // them"). The developer-shared Gemini key already
+              // handles AI for everyone after sign-in — no setup
+              // needed. The BYOK widget (lib/widgets/gemini_key_card)
+              // and Netlify function userApiKey support remain in
+              // case we need to re-enable BYOK later.
               const SizedBox(height: 20),
               _SectionTitle(
                   text: uiStrings['aboutSectionScriptures']?[locale] ??

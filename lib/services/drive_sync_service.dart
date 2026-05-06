@@ -10,24 +10,25 @@ import 'package:yswords/services/cloud_sync_service.dart' show CloudSyncStatus;
 import 'package:yswords/services/profile_service.dart';
 
 /// Mirrors the user's profile-scoped local data to **the user's own
-/// Google Drive** (AppData folder), replacing the previous Firestore
-/// path. AppData folder is hidden from the user's normal Drive UI but
-/// lives in their Drive quota — meaning:
+/// Google Drive** as a visible `YsWords.json` file at the root of
+/// their My Drive. Replaces the previous Firestore path.
 ///
-///   • The user owns the data — uninstalling the app doesn't lose it
-///     unless they delete the whole Drive blob.
-///   • No Firebase / Firestore quotas to manage.
+///   • The user owns the data and can SEE the file in their Drive —
+///     they always know what the app is storing on their behalf.
 ///   • Plain HTTPS to drive.googleapis.com — works on networks that
 ///     block Firestore's WebChannel transport.
-///   • No setup needed: the file path is **automatic**
-///     (`appDataFolder/yswords-sync.json`); user never picks a folder.
+///   • No folder picker: file is created at the root of My Drive on
+///     first sync; subsequent reads/writes find it by name.
 ///
-/// Scope: `https://www.googleapis.com/auth/drive.appdata` is requested
-/// at Google sign-in time (see `CloudAuthService.signInWithGoogle`).
-/// The user grants once and never sees a folder picker.
+/// Scope: `https://www.googleapis.com/auth/drive.file` is requested
+/// at Google sign-in time. This is a **per-file** scope: the app can
+/// only see files it created (or files the user opened via a Drive
+/// picker UI). It cannot read arbitrary user files. Switched from
+/// `drive.appdata` (hidden) to `drive.file` (visible) on 2026-05-06
+/// at user request — they wanted "YsWords" visible in their Drive.
 ///
-/// File layout in AppData:
-///   `yswords-sync.json` → `{ "data": {...}, "updatedAt": "<iso>" }`
+/// File layout in My Drive:
+///   `/YsWords.json` → `{ "data": {...}, "updatedAt": "<iso>" }`
 ///   The same `data` map shape the previous Firestore document used,
 ///   so existing merge / conflict logic carries over byte-for-byte.
 ///
@@ -38,10 +39,11 @@ class DriveSyncService extends ChangeNotifier {
   static final DriveSyncService instance = DriveSyncService._();
   DriveSyncService._();
 
-  /// AppData filename. Kept short and obvious so a hypothetical
-  /// future debugging tool can find it via the Drive API. Not visible
-  /// to the user in their normal Drive UI.
-  static const String _filename = 'yswords-sync.json';
+  /// File name as it appears in the user's My Drive. Kept simple and
+  /// obvious — `YsWords.json` matches the app name so the user knows
+  /// what it is at a glance. Lives at the root of My Drive (no
+  /// parents in the create call → Drive defaults to root).
+  static const String _filename = 'YsWords.json';
 
   /// Last-known Drive file id, cached in memory so subsequent
   /// upload calls go straight to PATCH instead of re-listing.
@@ -209,10 +211,13 @@ class DriveSyncService extends ChangeNotifier {
   Future<String?> _findFileId({String? token}) async {
     final t = token ?? CloudAuthService.instance.driveAccessToken;
     if (t == null) return null;
+    // List files visible to this OAuth client (drive.file scope —
+    // returns only files the app created, regardless of where they
+    // sit in the user's Drive). No `spaces` parameter so we look in
+    // My Drive (not appDataFolder, which we no longer use).
     final uri = Uri.parse(
       'https://www.googleapis.com/drive/v3/files'
-      '?spaces=appDataFolder'
-      '&q=${Uri.encodeQueryComponent("name='$_filename' and trashed=false")}'
+      '?q=${Uri.encodeQueryComponent("name='$_filename' and trashed=false")}'
       '&fields=files(id,modifiedTime)',
     );
     final r = await http.get(uri, headers: {'Authorization': 'Bearer $t'});
@@ -309,14 +314,17 @@ class DriveSyncService extends ChangeNotifier {
   }
 
   /// Multipart create — first request gets metadata + body in a
-  /// single round-trip. Sets `parents: ['appDataFolder']` so the
-  /// file lands in the hidden app folder, not the user's main Drive.
+  /// single round-trip. No `parents` field so the file lands at the
+  /// **root of My Drive** — visible to the user in drive.google.com.
+  /// (Drive defaults to root when `parents` is omitted.)
   Future<void> _createFile(String body) async {
     final t = CloudAuthService.instance.driveAccessToken!;
     const boundary = 'yswords_drive_boundary';
     final metadata = jsonEncode({
       'name': _filename,
-      'parents': ['appDataFolder'],
+      // No 'parents' key — file is created at root of My Drive,
+      // visible alongside the user's other files. Drive API treats
+      // the absence of `parents` as "put in My Drive root".
     });
     final multipart =
         '--$boundary\r\n'

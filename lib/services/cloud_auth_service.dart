@@ -57,13 +57,26 @@ class CloudAuthService extends ChangeNotifier {
   String? _driveAccessToken;
   DateTime? _driveTokenExpiresAt;
 
-  /// Drive AppData scope — gives the app a hidden, app-private
-  /// folder in the user's Drive. Users don't see the file in their
-  /// Drive UI; uninstalling the app cleans it up. This is the
-  /// canonical scope for "app-managed user data" — see
-  /// https://developers.google.com/drive/api/guides/appdata
-  static const String driveAppDataScope =
-      'https://www.googleapis.com/auth/drive.appdata';
+  /// Drive scope — `drive.file` instead of `drive.appdata` so the
+  /// sync file is **visible** in the user's My Drive (a single
+  /// `YsWords.json` at the root). Per-file scope: app can only see
+  /// files it created or files the user explicitly opened via a
+  /// Drive picker, NOT arbitrary user files. Same sensitivity tier
+  /// as `drive.appdata` for OAuth-consent verification purposes.
+  ///
+  /// Why visible (`drive.file`) over hidden (`drive.appdata`):
+  /// the user explicitly wanted to see "YsWords" in their Drive
+  /// rather than have an invisible app-private blob. Trade-off: the
+  /// user can manually delete the file (which would reset sync) but
+  /// they always know what data the app is storing on their behalf.
+  static const String driveFileScope =
+      'https://www.googleapis.com/auth/drive.file';
+
+  /// Backwards-compat alias — kept so existing call sites that
+  /// imported `driveAppDataScope` keep compiling. New code should
+  /// use [driveFileScope].
+  @Deprecated('Use driveFileScope instead — switched 2026-05')
+  static const String driveAppDataScope = driveFileScope;
 
   /// Latest captured Drive OAuth access token, or null if we don't
   /// have one (never signed in, or expired). Caller should call
@@ -332,7 +345,7 @@ class CloudAuthService extends ChangeNotifier {
     final provider = GoogleAuthProvider();
     provider.addScope('email');
     provider.addScope('profile');
-    provider.addScope(driveAppDataScope);
+    provider.addScope(driveFileScope);
     // `prompt: ''` (empty) lets Google skip the consent screen when
     // the user already granted these scopes. Switch to `consent` for
     // forced re-consent (interactive=true means user explicitly hit
@@ -421,7 +434,7 @@ class CloudAuthService extends ChangeNotifier {
     // bookmarks / notes / reading-plan progress. The user grants
     // this once at sign-in time and never has to pick a folder —
     // `appDataFolder` is automatic.
-    provider.addScope(driveAppDataScope);
+    provider.addScope(driveFileScope);
     // Always show the chooser even if there's a single signed-in
     // Google account, so users on shared devices can pick the
     // right one.

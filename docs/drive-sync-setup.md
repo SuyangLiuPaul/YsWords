@@ -28,14 +28,20 @@ Without this, every Drive REST call returns:
 or it is disabled. Enable it by visiting https://console.developers...
 ```
 
-## Step 2 — Add the `drive.appdata` scope to the OAuth consent screen
+## Step 2 — Add the `drive.file` scope to the OAuth consent screen
+
+(2026-05-06: scope changed from `drive.appdata` to `drive.file` so the
+sync file is **visible** in the user's My Drive as `YsWords.json`.
+If you previously added `drive.appdata`, replace it with `drive.file`
+— or keep both during a transition.)
 
 1. Open https://console.cloud.google.com/apis/credentials/consent
 2. Click **Edit App** (or the equivalent for your consent screen)
 3. On the **Scopes** step, click **Add or Remove Scopes**
-4. Search for `drive.appdata` and check
-   `https://www.googleapis.com/auth/drive.appdata`. Description:
-   *"See, create, and delete its own configuration data in your Google Drive"*
+4. Search for `drive.file` and check
+   `https://www.googleapis.com/auth/drive.file`. Description:
+   *"See, edit, create, and delete only the specific Google Drive
+   files you use with this app"*
 5. Save & continue
 
 Without this, the OAuth popup shows the "verifications required" /
@@ -44,7 +50,7 @@ silently — `cred.credential` comes back without a Drive access token.
 
 ### Verification status — do I need to submit for review?
 
-`drive.appdata` is classified as a **sensitive scope** (not
+`drive.file` is classified as a **sensitive scope** (not
 restricted). For apps in **Testing** mode (default for personal
 projects), it works for any account on your test-users list without
 verification. For apps in **Production** mode with public users,
@@ -87,7 +93,21 @@ without it.
 | Sync silently does nothing | Auth state cached but no Drive permission | Sign out / sign in to re-grant |
 | `auth/unauthorized-domain` | Step 3 not done | Add yswords.netlify.app to Firebase Authorized domains |
 
-## Why Drive AppData and not Firestore?
+## Visible vs hidden file location
+
+The current implementation uses the **`drive.file`** scope — files are
+created at the root of My Drive as `YsWords.json`, **visible** in
+the user's normal Drive UI alongside their other files.
+
+Why visible (vs. the originally-shipped hidden `appDataFolder`):
+* User explicitly wanted to see the file in their Drive — they want
+  to know what data the app stores on their behalf
+* `drive.file` is per-file scope (app can only see files it created),
+  so the privacy story is the same
+* User can manually delete the file (which would reset sync) — that's
+  a feature, not a bug
+
+## Why Drive and not Firestore?
 
 The previous `CloudSyncService` (Firestore-based) was unreliable in
 practice — Firestore's WebChannel transport gets blocked on some
