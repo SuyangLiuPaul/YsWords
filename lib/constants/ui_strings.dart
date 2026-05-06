@@ -3411,6 +3411,21 @@ const uiStrings = {
     'zh-Hant': '基於公有領域形態學資料庫。',
     'en': 'Public-domain morphological databases.',
   },
+  'aboutLexTsk': {
+    'zh-Hans': '互参资料库（TSK）',
+    'zh-Hant': '互參資料庫（TSK）',
+    'en': 'Treasury of Scripture Knowledge (TSK) cross-references',
+  },
+  'aboutLicenseTsk': {
+    'zh-Hans': '公有领域（R.A. Torrey, 1834）· 与 OpenBible.info 社群投票数据合并（CC-BY）。'
+        '共 29,319 条经文索引。',
+    'zh-Hant': '公有領域（R.A. Torrey, 1834）· 與 OpenBible.info 社群投票資料合併（CC-BY）。'
+        '共 29,319 條經文索引。',
+    'en':
+        'Public domain (R.A. Torrey, 1834) · merged with '
+            'OpenBible.info community votes (CC-BY). 29,319 source '
+            'verses indexed.',
+  },
   // Other resources.
   'aboutMaps': {
     'zh-Hans': '圣经历史地图（assets/maps/）',

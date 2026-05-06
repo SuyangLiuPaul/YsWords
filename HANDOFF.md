@@ -1,6 +1,6 @@
 # YsWords — AI Agent Handoff Document
 
-> Last updated: 2026-05-06 (Round 56 continued day 3 — copyright clean-up: NIV/YaHei removed, About page added, plus Bible Tools / Aramaic / Trivia diagrams strands)
+> Last updated: 2026-05-07 (Round 56 day-7+: sync moved Firestore → Drive → Realtime DB; AI Bible search; AI deep exegesis; lemma search; proper-noun complementary glosses; offline pack expanded to 5 categories)
 > Project: YsWords (Yahweh's Words) — bilingual Bible reader
 > Stack: Flutter 3.41.7 / Dart 3.11.5 / Provider + GetX
 > Repo: https://github.com/SuyangLiuPaul/YsWords
@@ -1322,6 +1322,217 @@ M  netlify/functions/aiExplainWord.mjs   (userApiKey override path)
 M  netlify/functions/aiSearch.mjs        (same)
    lib/services/cloud_sync_service.dart  (untouched — kept for CloudSyncStatus enum + as legacy reference; no longer init'd)
 ```
+
+### Strand: Cloud sync architecture pivots (2026-05-06 → 2026-05-07)
+
+Three iterations on cross-device sync within ~36 hours, driven by
+real user-facing failures.
+
+**Round 1 — Firestore (original) was unreliable on web.** User
+reported "I sync on my phone, my laptop never sees it". Suspect
+causes: Firestore's WebChannel transport getting blocked by some
+networks / browser extensions, IndexedDB cross-tab sync flakiness.
+
+**Round 2 — Drive sync** (commit `60e3933`): switched from Firestore
+to Google Drive AppData → later to `drive.file` (visible
+`YsWords.json` at the root of My Drive per user preference). Fixed
+the transport issue but introduced new friction: the OAuth scope
+`drive.file` is "sensitive" → Google shows "this app isn't
+verified" warnings on Production consent screens until verified
+(weeks-long process), and the user-facing permission dialog was
+intimidating ("see, edit, create, and delete files in your Drive").
+
+**Round 3 — Firebase Realtime Database** (commit `73a99cf`,
+2026-05-07): final architecture. Sign-in only requests
+`email + profile` scopes (normal Google login dialog, no scary
+permission). Uses RTDB's WebSocket transport (different from
+Firestore's WebChannel — works on more networks). Storage at
+`users/{uid}/sync` with rules limiting each user to their own
+path.
+
+**Bug-fix follow-ups (commits `296344b`, `9068beb`, `4db826b`,
+`8a40936`, `8207c30`):**
+* Diagnostic page that probes Firebase Auth + RTDB + AI proxy
+  with one-click "Open Cloud Console" deep-links for any failure.
+* Plugin registration: explicit `FirebaseDatabaseWeb.registerWith
+  (webPluginRegistrar)` in `_doInit` after the user hit
+  "Unable to establish connection on channel: ...
+  databaseReferenceSet" — same Pigeon channel-registration bug
+  we fixed previously for `firebase_auth_web` /
+  `cloud_firestore_web`.
+* Probe path moved from `users/{uid}/sync/__diag` (child of the
+  sync listener path → triggered the listener which then wiped
+  the probe value) to `users/{uid}/__diag` (sibling path → no
+  listener).
+* Three-stack flicker fix in commit `8207c30`:
+  - Race: `_ourLastUploadedAt` set BEFORE the network write so
+    the echo guard wins the race against the inbound onValue.
+  - Single timestamp → ring buffer of 8 recent uploads, so
+    overlapping uploads (T1 echo arriving after T2 fired) still
+    get matched.
+  - **Hash-skip in `requestUpload`**: when the local snapshot
+    hashes to the same value we last uploaded, no-op entirely.
+    This was the root fix for the visible "Synced ↔ Syncing"
+    flicker — the cascade was applying remote → ProfileService
+    notify → MainProvider rebuild → some listener re-firing
+    requestUpload with identical data → another upload → echo →
+    loop. Hash check breaks the cycle.
+* Apply-remote also stamps `_lastUploadedDataHash` so the next
+  requestUpload skips the redundant re-upload of data we just
+  received.
+
+**Sync UI hidden when sync isn't configured** (commit `34535af`):
+when the sync error message contains setup-related substrings
+(`database` / `permission` / `set error` / `-disabled` /
+`unavailable` / `timeout` / `channel`), the entire sync row is
+hidden from the user-facing UI. Users see a clean Account
+section with just their email + sign-out; developers see the
+full error in the diagnostic. App keeps working local-only.
+
+**Files**:
+* `lib/services/realtime_db_sync_service.dart` (new, ~430 lines)
+* `lib/services/cloud_auth_service.dart` (drive scope removed
+  from sign-in path; FirebaseDatabaseWeb registration added)
+* `lib/widgets/cloud_setup_diagnostic.dart` (probes RTDB now,
+  not Drive REST)
+* `lib/widgets/setup_instructions_card.dart` (Step 1 swap:
+  "Enable Drive API" → "Enable Realtime Database")
+* `lib/services/drive_sync_service.dart` deleted
+
+### Strand: AI Bible search — fuzzy/thematic verse lookup (2026-05-07)
+
+Commit `1122ccb`. New search affordance for the Bible search
+page: when keyword search returns 0 results AND the user typed
+≥ 2 chars, an "Ask AI for related passages" button appears.
+Tapping it sends the query to a new Netlify function that asks
+Gemini for up to 10 most-relevant Bible references. Refs are
+resolved against `MainProvider.verses` (the user's currently-
+loaded Bible version) via `toEnglish` reverse-map and rendered
+as normal verse search results.
+
+Use case: "the love chapter" → 1 Cor 13. "雅各信仰" → James 2.
+"Sermon on the Mount" → Matt 5-7. Exact-text search returns 0;
+AI fills the gap.
+
+**Files**:
+* `netlify/functions/aiBibleSearch.mjs` (new function)
+* `lib/services/ai_bible_search_service.dart` (new service)
+* `lib/pages/search_page.dart` (`_askAi()` method + button)
+
+### Strand: AI Deep Exegesis (BDAG-level structured analysis, 2026-05-07)
+
+Commit `ed54202`. New chip in the AI scope row of the originals
+sheet: "Deep exegesis (BDAG-level)". Pairs `length='deep'`
+(500-750 words) with `scope='deepExegesis'` driving a 5-section
+prompt:
+1. Lexical core (semantics + morphology)
+2. Usage in this verse (syntax + nuance)
+3. Cultural/historical context (LXX, DSS, Josephus, Philo, ANE)
+4. Canonical pattern (2-3 other key passages with the same lemma)
+5. Theological weight
+
+Free-tier substitute for what Logos/Accordance charge $200+ for
+via BDAG/HALOT integration. Quality varies with Gemini model
+output but generally produces a useful commentary-grade
+explanation.
+
+**Files**: `netlify/functions/aiExplainWord.mjs` (new
+length+scope), `lib/widgets/originals_sheet.dart` (new chip),
+`lib/constants/ui_strings.dart` (new key `aiScopeDeepExegesis`).
+
+### Strand: Lemma search (Greek / Hebrew / transliteration, 2026-05-07)
+
+Commit `ed54202`. Search bar now accepts Greek script (`ἀγάπη`),
+Hebrew script (`אהבה`), or romanised transliteration
+(`agape`, `Skeuâs`) and resolves to a Strong's # via the
+lexicon's `lemma` + `translit` fields. On hit, falls into the
+same Strong's-# rendering as if user had typed `G26` directly.
+
+Algorithm in `StrongsService.searchByLemma`:
+1. Normalise (lowercase + strip combining diacritics) so
+   "Agápē" / "agape" / "AGAPÉ" hash to the same key.
+2. Detect script: Greek-only input scans Greek lexicon only;
+   Hebrew-only scans Hebrew only; Latin-letter input scans both.
+3. Score: exact-lemma > exact-translit > prefix > contains.
+4. Return top 12 (best first).
+
+`search_page.dart`'s `search()` method gets a new branch
+ahead of the plain-text path: when input has Greek/Hebrew script
+OR is a 3-25 char Latin-letter token, try lemma search first;
+on success render as Strong's # entry; on miss for Greek/Hebrew
+show "no results"; on miss for Latin fall through to text
+search.
+
+`TextField` `inputFormatter` extended to allow Greek
+(`Ͱ-Ͽ`, `ἀ-῿`), Hebrew (`֐-׿`, `יִ-ﭏ`), and Latin Extended
+(`À-ɏ`, `Ḁ-ỿ` — for transliteration diacritics).
+
+### Strand: Proper-noun complementary glosses (2026-05-06 → 2026-05-07)
+
+Commits `8366542` + `ed54202`. Audit of the Strong's lexicon
+showed that for proper nouns (names of people, places, deities),
+English Strong's gives **etymology** while CBOL Chinese gives
+**biblical identification** — both correct, complementary
+perspectives, but users seeing only one perceived a
+contradiction.
+
+Audit numbers: 14,197 total entries / 1,943 proper nouns /
+~158 with EN-ZH "mismatch" (≈1.1%).
+
+`StrongsEntry.isProperNoun` heuristic detects ~35 markers
+(`of Hebrew/Greek/Latin/... origin`, `, an Israelite`,
+`, an apostle`, `a city/town/region`, `a god/goddess`, etc.).
+For proper-noun entries the entry card now renders BOTH glosses
+side-by-side with labels (`此处指 / Identification` and
+`词源 / Etymology`) and BOTH definition bodies in a tertiary-
+tinted "complementary view" callout. Plus a small
+`专有名词 / Proper noun` badge above with the explanatory note
+"英文给词源，中文给身份——都是对的，互相补充。"
+
+Non-proper-nouns render the same as before (single gloss in
+user's locale).
+
+### Strand: AI Ask UI improvements (Bible Evidence, 2026-05-07)
+
+Commit `838b5c8`. Two fixes for the Bible Evidence "Ask AI"
+popup:
+1. Enter key now submits (was hitting newline because
+   `maxLines: 3` swallows Enter). Wrapped in a Shortcuts/Actions
+   pair that intercepts `LogicalKeyboardKey.enter` /
+   `numpadEnter`, dispatching to a `CallbackAction` that runs
+   `_ask()`. Shift+Enter still inserts a newline.
+2. Placeholder rotates daily and ties to today's evidence.
+   `_pickHint()` builds a date-stable hint:
+   - Even days: question shaped around today's actual evidence
+     entry (`How does "{Dead Sea Scrolls}" support the biblical
+     record?`).
+   - Odd days: rotate from a per-locale curated pool of 8 broad
+     questions (archaeology / manuscripts / science / history).
+
+### Strand: Settings + theming polish (2026-05-07)
+
+Commits `91f3aca` + `934049b` + `683f1a0` + `5c90fdb`. Several
+small UX fixes:
+* Account section moved to TOP of Settings (was buried after
+  Display/Reading/App). Tapping a profile chip from the
+  dashboard navigates here, so sync/sign-in should be the first
+  thing users see.
+* Cloud Setup Diagnostic + walkthrough cards moved BACK to
+  AboutPage (after briefly living in Settings → Account). User
+  feedback: they read as developer instructions and shouldn't
+  sit in the user-facing Settings flow.
+* Setup walkthrough now distinguishes Hans/Hant properly via a
+  `_t(hans, hant, en)` helper. All step titles, bodies, action
+  labels, and the long footer paragraph have proper Traditional
+  Chinese variants.
+* Dark-mode color audit: paletteBg/Fg/Accent/Border helpers
+  applied to Bible Tools tabs, Aramaic chip, Hebrew/Greek tag
+  chips in Top Lemmas / Distribution / Lookup, language card
+  script tile, daily news section accents, dashboard news thumb
+  fallback, evidence confidence badges, family tree /
+  person-detail "copied" indicators, and offline-pack ready
+  badge. Stats page TabBar override removed entirely so the
+  global tabBarTheme (with proper dark-mode variant) takes over.
 
 ### Strand: Offline pack — really-works-offline audit (2026-05-06)
 

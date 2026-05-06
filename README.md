@@ -32,22 +32,25 @@ netlify deploy --prod --dir=build/web
 ```
 
 For cloud features (sync + AI) to work in production, see
-[**SETUP.md**](SETUP.md) for the one-time Google Cloud Console
+[**SETUP.md**](SETUP.md) for the one-time Firebase / Netlify
 configuration. The fastest path:
 
-1. Run `bash scripts/enable-cloud-apis.sh` (or paste it into
-   <https://shell.cloud.google.com> if you don't have gcloud
-   installed locally) — enables Drive + Gemini APIs in your
-   project.
-2. Open the deployed app → Settings → Account → "Run check"
-   diagnostic. Any remaining UI-only steps (OAuth scope, Firebase
-   authorized domains, Netlify env vars) get one-click deep-links
-   straight to the Cloud Console pages that fix them.
-3. Verify: every probe row should turn ✅.
+1. Open the deployed app → Settings → About → bottom →
+   **"Run check"** diagnostic. It probes Firebase Auth, Realtime
+   Database, and the AI proxy.
+2. Any failing rows give one-click "Open Cloud Console" / "Open
+   Firebase Console" / "Open Netlify env vars" deep-links straight
+   to the page that fixes them.
+3. The collapsible "One-time cloud setup walkthrough" right below
+   the diagnostic explains each step with ⓘ details on why it
+   matters and what breaks without it.
+4. Optional: `bash scripts/enable-cloud-apis.sh` (or paste it into
+   <https://shell.cloud.google.com>) auto-enables the Gemini API
+   in one command.
 
 The diagnostic + walkthrough live inside the app permanently —
-once set up, you can ignore them. End users never need to enable
-any APIs themselves; everything is at the project level.
+once set up, you can ignore them. **End users never need to enable
+any APIs themselves**; everything is at the Firebase project level.
 
 ---
 
@@ -61,13 +64,18 @@ any APIs themselves; everything is at the project level.
 | Bookmarks    | Bookmark + per-verse notes; visible inline indicator next to every flagged verse in both verse-by-verse and paragraph mode |
 | Navigation   | Swipe left/right to change chapter; Floating chapter picker; Previous/next chapter buttons; Grid/List view for books with compact English/Chinese labels; Responsive grid for tablets/desktops; Collapsible sidebar for wide screens (≥600px) |
 | Split View   | Two fully independent Bible panes; Side-by-side on tablet/desktop (≥600px) with draggable divider; Top-bottom on phone with draggable divider; Each pane has its own book, chapter, and version; Toggle in header |
-| Search       | Book-only or whole-Bible search; Highlighted results with book summary                                                  |
+| Search       | Book-only or whole-Bible search · **Lemma search** (type Greek `ἀγάπη` / Hebrew `אהבה` / transliteration `agape` → resolves to Strong's # + concordance) · Strong's-# search (type `G2316` / `H7200`) · **AI-powered Bible search** (Gemini suggests passages for fuzzy / thematic queries when keyword search returns nothing) |
+| Word Study   | Tap any verse → "Original" → word-by-word interlinear with Strong's, transliteration, gloss · Tap a chip → full lexicon entry, word family, synonyms, LXX cross-testament refs, concordance · **AI explanation** with adjustable scope: this verse / chapter / book / whole Bible / cross-testament / **deep exegesis (BDAG-level structured analysis)** · **Aramaic words highlighted** in Daniel 2:4-7:28, Ezra 4:8-6:18 + 7:12-26, Genesis 31:47, Jeremiah 10:11, plus NT transliterations (raca, talitha koum, abba, eloi, ephphatha, maranatha) · **Proper-noun complementary glosses** (English etymology + Chinese biblical identification side-by-side) |
 | Annotations  | `{...}` inline badges with linked `<note:...>` pop-ups; `[...]` dotted-underline keywords; Book icon notes              |
-| Section titles | Inline scripture-section headings with optional ⓘ context popovers — covers all 14 versions × 66 books                  |
+| Section titles | Inline scripture-section headings with optional ⓘ context popovers — covers all 13 versions × 66 books                  |
 | Book intros  | Collapsible historical-context card at the top of every chapter 1, bilingual                                            |
-| Bible Evidence | Browsable archive of 225 archaeology / manuscript / science / history finds with bilingual descriptions and scripture cross-link; chapter-aware filter from inside the reader |
+| Cross-refs   | Treasury of Scripture Knowledge (TSK) + OpenBible.info community votes — 29,319 source verses with their highest-voted to-references; surfaced via the cross-refs sheet on any selected verse |
+| Bible Tools  | Originals overview · Strong's lookup · Word distribution table · Daily verse rotation (curated) · Languages card (Hebrew / Aramaic / Greek deep-dives with tappable passage links) |
+| Bible Trivia | 68 curated entries on hidden patterns, acrostics, divine-name codes, numerical structures · Sorted by canonical Bible order · 4 schematic diagram types (Hebrew alphabet grid, chapter-counts bar chart, threefold sequence, numbered Hebrew words) for the most pattern-heavy entries |
+| Bible Evidence | Browsable archive of 225 archaeology / manuscript / science / history finds with bilingual descriptions and scripture cross-link · **AI-powered evidence search** (Ask AI with daily-rotating example queries based on today's evidence; Enter key submits) · Chapter-aware filter from inside the reader |
 | Daily News   | Bilingual world / China / Australia headlines with full article body, AI-picked Bible verse, and reflection — refreshed hourly from the central data CDN |
-| Cloud Sync   | Optional Google sign-in syncs highlights + bookmarks + notes via Firestore; offline-first with last-writer-wins reconciliation |
+| Cloud Sync   | Optional Google sign-in syncs highlights + bookmarks + notes via Firebase Realtime Database (own-write echo guard + content-hash skip — no flicker, minimal traffic); offline-first with merge-then-overwrite reconciliation |
+| Offline Pack | 5-category pre-fetch (Bibles 70 MB / Sermons 26 MB / Tools 10 MB / Originals 31 MB / Maps 29 MB) — full offline use after one-tap download |
 | Reload       | One-tap Reload from the floating-header overflow menu and the empty-reader scaffold so users never have to relaunch the app to recover from a load failure |
 | Copy & Share | Tap verses to multi-select; Copy in **Plain**, **With Reference**, or **Devotional** formats                            |
 | Persistence  | Last-read position, highlights & user settings stored with `shared_preferences`; cloud sync layered on top              |

@@ -512,6 +512,13 @@ class _LexiconsTable extends StatelessWidget {
             'Greek + Hebrew interlinear (Strong\'s-tagged)',
         licence: uiStrings['aboutLicenseInterlinear']?[locale] ??
             'Public-domain morphological databases.',
+      ),
+      _AttribRow(
+        name: uiStrings['aboutLexTsk']?[locale] ??
+            'Treasury of Scripture Knowledge (TSK) cross-references',
+        licence: uiStrings['aboutLicenseTsk']?[locale] ??
+            'Public domain (R.A. Torrey, 1834) · merged with OpenBible.info community votes (CC-BY).',
+        url: 'https://www.openbible.info/labs/cross-references',
         last: true,
       ),
     ];

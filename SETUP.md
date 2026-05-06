@@ -1,11 +1,13 @@
 # YsWords — One-time cloud setup
 
 This is the **developer setup** required to make cloud features
-(Drive sync, Gemini AI) work in production. It only has to be done
-once, by the project owner, in Google Cloud Console.
+(Realtime Database sync + Gemini AI) work in production. It only
+has to be done once, by the project owner, mostly in the Firebase
+Console + Netlify dashboard.
 
 End users never need to enable any APIs — they just sign in with
-Google and click "Allow" on the OAuth consent screen.
+Google and click "Allow" on the standard sign-in dialog (no
+Drive permissions, no extra scopes).
 
 If cloud features are broken, the app **still works** — just in
 degraded mode:
