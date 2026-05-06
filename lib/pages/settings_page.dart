@@ -3064,11 +3064,15 @@ class _OfflinePackCard extends StatefulWidget {
 
 class _OfflinePackCardState extends State<_OfflinePackCard> {
   // Default: every category checked. User can uncheck before
-  // hitting Download.
+  // hitting Download. Adding `originals` + `maps` (introduced
+  // 2026-05) means a fresh download truly covers every offline-
+  // capable feature instead of leaving exegesis + maps broken.
   final Set<OfflinePackCategory> _selected = {
     OfflinePackCategory.bibles,
     OfflinePackCategory.sermons,
     OfflinePackCategory.tools,
+    OfflinePackCategory.originals,
+    OfflinePackCategory.maps,
   };
 
   /// Tracks whether we've already shown the "✓ Offline pack ready"
@@ -3133,6 +3137,12 @@ class _OfflinePackCardState extends State<_OfflinePackCard> {
         return uiStrings['offlinePackSermons']?[locale] ?? 'Sermons';
       case OfflinePackCategory.tools:
         return uiStrings['offlinePackTools']?[locale] ?? 'Tools & references';
+      case OfflinePackCategory.originals:
+        return uiStrings['offlinePackOriginals']?[locale] ??
+            'Originals (Strong\'s + interlinear)';
+      case OfflinePackCategory.maps:
+        return uiStrings['offlinePackMaps']?[locale] ??
+            'Bible-history maps (images)';
     }
   }
 
@@ -3354,6 +3364,41 @@ class _OfflinePackCardState extends State<_OfflinePackCard> {
                 ),
               ],
             ],
+          ),
+          // Round 56 day-3 (2026-05-06): network-only feature note.
+          // Some features genuinely cannot be cached because they
+          // depend on a live API call — be upfront about that so the
+          // "ready offline" label isn't read as "everything works".
+          SizedBox(height: 8 * s),
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: 10 * s, vertical: 8 * s),
+            decoration: BoxDecoration(
+              color: scheme.tertiaryContainer.withValues(alpha: 0.35),
+              borderRadius: BorderRadius.circular(6),
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(Icons.cloud_outlined,
+                    size: 14, color: scheme.tertiary),
+                SizedBox(width: 6 * s),
+                Expanded(
+                  child: Text(
+                    uiStrings['offlinePackNetworkNote']?[locale] ??
+                        'Network is still required for AI explanations / search, '
+                            'cloud sync (sign-in), live news refresh, and the first '
+                            'load of any non-Roboto font.',
+                    style: TextStyle(
+                      fontFamily: widget.settings.fontFamily,
+                      fontSize: (widget.settings.fontSize - 6)
+                          .clamp(10.0, 12.0),
+                      color: scheme.onSurface.withValues(alpha: 0.78),
+                      height: 1.45,
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),

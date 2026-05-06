@@ -6,19 +6,41 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-/// Three categories the user can pre-download for offline use.
-/// Sizes below are approximate as of Round 56 — used for the
+/// Five categories the user can pre-download for offline use.
+/// Sizes below are approximate as of 2026-05 — used for the
 /// Settings UI label only; the actual fetch is byte-accurate.
+///
+/// Categories were reorganised in 2026-05 after a "really works
+/// offline?" audit — the previous split into bibles / sermons /
+/// tools left out the Strong's lexicons, the per-book interlinear
+/// JSONs, and the 55 map images, so word-study and map features
+/// silently failed offline. The new `originals` and `maps`
+/// categories give the user explicit control over those (large)
+/// downloads.
 enum OfflinePackCategory {
-  /// All 14 Bible translations (~77 MB).
+  /// All 13 Bible translations (~70 MB after NIV removal).
   bibles,
 
   /// 587 sermons × up to 3 languages = ~867 files (~26 MB).
   sermons,
 
   /// Family tree / timeline / evidence / cross-refs / section
-  /// titles / book intros / daily verses / sermon refs (~9 MB).
+  /// titles / book intros / daily verses / sermon refs / songs /
+  /// reading plans / gospel synopsis / daily news fallback /
+  /// loading + app icon (~10 MB).
   tools,
+
+  /// Strong's lexicon (concordance, Hebrew, Greek, LXX cross-
+  /// references) plus the per-book Hebrew/Greek interlinear JSONs
+  /// (66 files). Required for the exegesis word-study sheet,
+  /// vocabulary tab, and word distribution table to work offline
+  /// (~31 MB).
+  originals,
+
+  /// 55 Bible-history map images (~29 MB). The maps_index JSON is
+  /// in the `tools` category, so without this category the map
+  /// picker shows titles but tap → blank.
+  maps,
 }
 
 /// Bulk pre-fetcher for the assets the app reads from
@@ -179,11 +201,18 @@ class OfflinePackService extends ChangeNotifier {
     if (categories.contains(OfflinePackCategory.tools)) {
       urls.addAll(_toolsUrls);
     }
+    if (categories.contains(OfflinePackCategory.originals)) {
+      urls.addAll(_originalsUrls());
+    }
+    if (categories.contains(OfflinePackCategory.maps)) {
+      urls.addAll(await _mapUrls());
+    }
     if (categories.contains(OfflinePackCategory.sermons)) {
       urls.addAll(await _sermonUrls());
     }
-    // Dedupe in case categories overlap (they don't today, but
-    // future categories might).
+    // Dedupe in case categories overlap (e.g. tools + originals
+    // both reference maps_index.json indirectly via different
+    // services).
     return urls.toSet().toList();
   }
 
@@ -217,7 +246,76 @@ class OfflinePackService extends ChangeNotifier {
     'assets/web-ot-paragraphs.json',
     'assets/sermons/index.json',
     'assets/sermons/refs.json',
+    // Added 2026-05 after the "really offline?" audit — these were
+    // missing and caused the songs page / reading-plan picker /
+    // gospel synopsis / daily-news fallback to fail offline.
+    'assets/songs.json',
+    'assets/reading_plans.json',
+    'assets/gospel_synopsis.json',
+    'assets/daily_news.json',
+    'assets/app_icon.png',
+    'assets/loading.png',
   ];
+
+  /// 4 Strong's lexicon files + 66 per-book Hebrew/Greek interlinear
+  /// files. The interlinear list is hard-coded against the actual
+  /// asset filenames — adding a new book requires editing this list,
+  /// the same constraint as `pubspec.yaml` already imposes (the
+  /// directory is registered as `assets/originals/` so any new file
+  /// drops into the bundle automatically; keeping the offline list in
+  /// sync is a manual step).
+  List<String> _originalsUrls() {
+    const lexicon = <String>[
+      'assets/strongs/concordance.json',
+      'assets/strongs/hebrew.json',
+      'assets/strongs/greek.json',
+      'assets/strongs/lxx_hebrew_to_greek.json',
+    ];
+    const books = <String>[
+      // OT (39)
+      'genesis', 'exodus', 'leviticus', 'numbers', 'deuteronomy',
+      'joshua', 'judges', 'ruth', '1_samuel', '2_samuel',
+      '1_kings', '2_kings', '1_chronicles', '2_chronicles',
+      'ezra', 'nehemiah', 'esther', 'job', 'psalms', 'proverbs',
+      'ecclesiastes', 'song_of_solomon', 'isaiah', 'jeremiah',
+      'lamentations', 'ezekiel', 'daniel', 'hosea', 'joel', 'amos',
+      'obadiah', 'jonah', 'micah', 'nahum', 'habakkuk', 'zephaniah',
+      'haggai', 'zechariah', 'malachi',
+      // NT (27)
+      'matthew', 'mark', 'luke', 'john', 'acts', 'romans',
+      '1_corinthians', '2_corinthians', 'galatians', 'ephesians',
+      'philippians', 'colossians', '1_thessalonians',
+      '2_thessalonians', '1_timothy', '2_timothy', 'titus',
+      'philemon', 'hebrews', 'james', '1_peter', '2_peter',
+      '1_john', '2_john', '3_john', 'jude', 'revelation',
+    ];
+    return [
+      ...lexicon,
+      for (final b in books) 'assets/originals/$b.json',
+    ];
+  }
+
+  /// Map images come from `assets/maps_index.json`'s `file` field
+  /// per entry. Reading the index dynamically means we don't need to
+  /// re-edit this file every time a map is added or renamed.
+  Future<List<String>> _mapUrls() async {
+    try {
+      final raw = await rootBundle.loadString('assets/maps_index.json');
+      final list = json.decode(raw);
+      if (list is! List) return const [];
+      final out = <String>[];
+      for (final m in list) {
+        if (m is! Map) continue;
+        final f = m['file'];
+        if (f is String && f.isNotEmpty) {
+          out.add('assets/maps/$f');
+        }
+      }
+      return out;
+    } catch (_) {
+      return const [];
+    }
+  }
 
   /// Build the full sermon-body URL list by reading
   /// `assets/sermons/index.json` and emitting one URL per
@@ -247,11 +345,15 @@ class OfflinePackService extends ChangeNotifier {
   int approximateMbFor(OfflinePackCategory c) {
     switch (c) {
       case OfflinePackCategory.bibles:
-        return 77;
+        return 70; // 13 versions after NIV removal
       case OfflinePackCategory.sermons:
         return 26;
       case OfflinePackCategory.tools:
-        return 9;
+        return 10; // includes songs/reading_plans/synopsis/daily_news/icons
+      case OfflinePackCategory.originals:
+        return 31; // 14 MB Strong's + 17 MB per-book interlinear
+      case OfflinePackCategory.maps:
+        return 29; // 55 jpg/png images
     }
   }
 }

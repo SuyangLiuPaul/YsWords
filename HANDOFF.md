@@ -1226,6 +1226,61 @@ M  windows/flutter/generated_plugins.cmake (same)
   shape (`audioUrl`, `pdfUrl` already populated for 489 / 490
   entries) is ready when authorisation is documented.
 
+### Strand: Offline pack — really-works-offline audit (2026-05-06)
+
+User question: *"离线包都全包了吗，真的可以离线使用 toggle on 可以用吗"*.
+Audit found three significant gaps in the previous 3-category split.
+
+**Gaps the previous offline pack left out**:
+1. `assets/strongs/{concordance,greek,hebrew,lxx_…}.json` (~14 MB) —
+   Strong's lexicon. Without it the exegesis word-study sheet,
+   vocabulary tab, and word-distribution table return nothing.
+2. `assets/originals/<book>.json` × 66 (~17 MB) — per-book
+   Hebrew/Greek interlinear. Without it every "original" tap on a
+   verse gets the "Original-language data not available" placeholder.
+3. `assets/maps/<file>.{jpg,png}` × 55 (~29 MB) — map images.
+   `maps_index.json` was already cached so the picker rendered
+   titles, but tapping a tile opened a blank Image.asset.
+4. `assets/songs.json`, `reading_plans.json`, `gospel_synopsis.json`,
+   `daily_news.json`, `app_icon.png`, `loading.png` — small but used
+   by reachable features.
+
+**Two new categories added** to `OfflinePackCategory`:
+* `originals` (~31 MB) — covers all Strong's lexicons + the 66
+  interlinear book files. Generated via a static 66-book slug list
+  matched against the actual `assets/originals/` filenames.
+* `maps` (~29 MB) — list built dynamically by reading
+  `assets/maps_index.json` and walking each entry's `file` field, so
+  adding a new map only needs an index update — no offline-pack code
+  edit.
+
+`tools` was extended with the 6 missing static files. The download
+default now selects all 5 categories (was 3) so a fresh user
+toggling Download really gets a complete offline-capable build.
+
+**Network-only feature disclosure**: the offline-pack card now ends
+with a tertiary-tinted info row listing what *cannot* be cached —
+AI explanations / search (Gemini API), cloud sync sign-in
+(Firebase), live news refresh, and the first load of any non-Roboto
+font (Google Fonts download on demand and cache in the browser).
+This sets correct expectations: "ready offline" doesn't mean
+"every feature works without internet", and being upfront about it
+prevents the user thinking the offline pack is broken when AI
+explanations time out on a plane.
+
+**Approximate totals after the rework**:
+| Category | Approx. size | Files |
+| --- | --- | --- |
+| Bibles | 70 MB | 13 versions JSON |
+| Sermons | 26 MB | 587 × up to 3 languages |
+| Tools | 10 MB | 17 small JSONs + 2 PNGs |
+| Originals | 31 MB | 4 lexicon JSONs + 66 interlinear JSONs |
+| Maps | 29 MB | 55 jpg/png |
+| **Full pack** | **~166 MB** | (no NIV after the licensing strand) |
+
+`approximateMbFor()` updated for both new categories + bibles
+adjusted from 77 → 70 MB after the NIV removal.
+
 ### Strand: Copyright clean-up — remove NIV + YaHei, add About page (2026-05-06)
 
 User decision after a copyright-risk audit: keep the app web-only on

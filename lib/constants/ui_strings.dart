@@ -1641,9 +1641,9 @@ const uiStrings = {
         'Pre-download Bibles, sermons, and tools so the app launches instantly and works without network.',
   },
   'offlinePackBibles': {
-    'zh-Hans': '圣经译本（共 14 部）',
-    'zh-Hant': '聖經譯本（共 14 部）',
-    'en': 'Bibles (14 translations)',
+    'zh-Hans': '圣经译本（共 13 部）',
+    'zh-Hant': '聖經譯本（共 13 部）',
+    'en': 'Bibles (13 translations)',
   },
   'offlinePackSermons': {
     'zh-Hans': '张熙和牧师讲道（587 篇 ×3 语）',
@@ -1651,9 +1651,32 @@ const uiStrings = {
     'en': "Pastor Eric's sermons (587 × 3 langs)",
   },
   'offlinePackTools': {
-    'zh-Hans': '研经工具（家谱 / 时间轴 / 圣经证据 / 互参等）',
-    'zh-Hant': '研經工具（家譜 / 時間軸 / 聖經證據 / 互參等）',
-    'en': 'Tools & references (tree / timeline / evidence / cross-refs)',
+    'zh-Hans': '研经工具（家谱 / 时间轴 / 证据 / 诗歌 / 互参 / 读经计划等）',
+    'zh-Hant': '研經工具（家譜 / 時間軸 / 證據 / 詩歌 / 互參 / 讀經計劃等）',
+    'en': 'Tools & references (tree / timeline / evidence / songs / refs / plans)',
+  },
+  // Added 2026-05 — exegesis word study + Bible-history maps were
+  // previously not pre-cached, so they silently failed offline.
+  'offlinePackOriginals': {
+    'zh-Hans': '原文研究（Strong\'s 编号 + 希伯来 / 希腊原文逐字对照）',
+    'zh-Hant': '原文研究（Strong\'s 編號 + 希伯來 / 希臘原文逐字對照）',
+    'en': "Originals (Strong's lexicon + Hebrew/Greek interlinear)",
+  },
+  'offlinePackMaps': {
+    'zh-Hans': '圣经历史地图（55 张图）',
+    'zh-Hant': '聖經歷史地圖（55 張圖）',
+    'en': 'Bible-history maps (55 images)',
+  },
+  'offlinePackNetworkNote': {
+    'zh-Hans': '以下功能仍需要网络：AI 释义 / AI 搜索、云端同步登录、新闻实时更新，'
+        '以及首次加载非 Roboto 字体（Google Fonts 在线下载，下载后会被浏览器缓存）。',
+    'zh-Hant': '以下功能仍需要網路：AI 釋義 / AI 搜尋、雲端同步登入、新聞即時更新，'
+        '以及首次載入非 Roboto 字體（Google Fonts 線上下載，下載後會被瀏覽器快取）。',
+    'en':
+        'Network is still required for: AI explanations / search, '
+            'cloud-sync sign-in, live news refresh, and the first load '
+            'of any non-Roboto font (Google Fonts download once, then '
+            'cache in the browser).',
   },
   'offlinePackDownload': {
     'zh-Hans': '下载',
