@@ -12,12 +12,27 @@ degraded mode:
 * Sync goes local-only (highlights / bookmarks stay on the device)
 * AI features show *"not available right now"* friendly messages
 
-## TL;DR — fastest way
+## TL;DR — fastest path (≤2 minutes)
 
-Open **Settings → About → "Run check"** (the Cloud Setup
-Diagnostic). It probes Firebase Auth, Drive REST, and the AI proxy,
-and shows ✅ / ❌ for each plus one-click "Open Cloud Console"
-buttons that deep-link to the exact page that fixes any failure.
+You actually don't have to walk through five pages. Two of the
+five steps (the API enablements) can be automated. Three are
+UI-only by Google design.
+
+**Automate steps 1 + 2 — pick one of:**
+
+| If you have… | Do this |
+| --- | --- |
+| nothing installed | Open <https://shell.cloud.google.com>, paste:<br>`bash <(curl -s https://raw.githubusercontent.com/SuyangLiuPaul/YsWords/main/scripts/enable-cloud-apis.sh)` |
+| `gcloud` CLI installed | Run `bash scripts/enable-cloud-apis.sh` from the repo root |
+| just like clicking | Use the in-app diagnostic — Settings → Account → "Run check" → "Open in Cloud Shell" button |
+
+**Then do steps 3, 4, 5 (no CLI exists for these — UI only):**
+
+Open the in-app diagnostic — **Settings → Account → "Run check"**
+— each failure shows a one-click Cloud Console deep-link. The
+"Cloud setup walkthrough" card (collapsible, just below the
+diagnostic) has all 5 steps with ⓘ icons explaining why each
+matters and what breaks without it.
 
 ## Manual checklist
 

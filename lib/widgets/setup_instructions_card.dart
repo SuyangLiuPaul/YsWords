@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show Clipboard, ClipboardData;
 
 import 'package:yswords/constants/ui_strings.dart';
 import 'package:yswords/services/link_opener.dart';
@@ -100,6 +101,15 @@ class SetupInstructionsCard extends StatelessWidget {
             ),
           ),
           children: [
+            // 2026-05-06: "Auto-enable via Cloud Shell" shortcut.
+            // Steps 1 + 2 (enabling the two APIs) are the only ones
+            // that have a CLI equivalent — `gcloud services enable …`.
+            // We surface a one-click "Open in Cloud Shell" button
+            // that loads the script straight from the GitHub raw URL,
+            // and a "Copy command" fallback for devs running gcloud
+            // locally. This shaves ~8 clicks off the manual flow.
+            _quickActions(context, isZh),
+            const SizedBox(height: 12),
             _step(
                 ctx: context,
                 n: 1,
@@ -205,6 +215,123 @@ class SetupInstructionsCard extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  /// One-click shortcut that opens Google Cloud Shell with the
+  /// `enable-cloud-apis.sh` script preloaded — the developer hits
+  /// Enter and both Drive + Gemini APIs are enabled in ~30 seconds
+  /// without leaving the browser. Falls back to a "copy gcloud
+  /// command" button for developers who already have gcloud
+  /// installed locally.
+  ///
+  /// Why this exists: research showed that of the 5 setup steps,
+  /// only steps 1 + 2 (API enablement) have a CLI equivalent. The
+  /// other 3 (OAuth scope, Firebase domains, Netlify env vars) are
+  /// UI-only by Google design. So this button automates the only
+  /// thing that *can* be automated for the developer.
+  Widget _quickActions(BuildContext ctx, bool isZh) {
+    const cloudShellUrl =
+        'https://shell.cloud.google.com/?cloudshell_print=https%3A%2F%2Fraw.githubusercontent.com%2FSuyangLiuPaul%2FYsWords%2Fmain%2Fscripts%2Fenable-cloud-apis.sh';
+    const gcloudCmd =
+        'gcloud services enable drive.googleapis.com generativelanguage.googleapis.com --project=ysword';
+    return Container(
+      padding: const EdgeInsets.fromLTRB(10, 10, 10, 10),
+      decoration: BoxDecoration(
+        color: scheme.primaryContainer.withValues(alpha: 0.45),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: scheme.primary.withValues(alpha: 0.35),
+          width: 0.6,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.bolt_outlined,
+                  size: 16, color: scheme.primary),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  isZh
+                      ? '快速操作：一键启用步骤 1+2 的 API'
+                      : 'Quick action — auto-enable APIs for steps 1 + 2',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    color: scheme.onSurface,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Text(
+            isZh
+                ? '在 Cloud Shell 中运行 gcloud 命令——无需在本地安装任何东西。'
+                    '\n步骤 3、4、5（OAuth 范围、Firebase 域名、Netlify 密钥）'
+                    '仅可手动完成，请按下方步骤操作。'
+                : 'Runs the gcloud command inside Cloud Shell — no '
+                    'local install needed. Steps 3, 4, 5 (OAuth scope, '
+                    'Firebase domains, Netlify key) are UI-only — see '
+                    'the steps below.',
+            style: TextStyle(
+              fontSize: 11,
+              color: scheme.onSurface.withValues(alpha: 0.78),
+              height: 1.5,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 8,
+            runSpacing: 4,
+            children: [
+              FilledButton.tonalIcon(
+                icon: const Icon(Icons.terminal_rounded, size: 16),
+                label: Text(
+                  isZh
+                      ? '在 Cloud Shell 打开'
+                      : 'Open in Cloud Shell',
+                  style: const TextStyle(fontSize: 11.5),
+                ),
+                onPressed: () => _open(cloudShellUrl),
+                style: FilledButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 10, vertical: 6),
+                  visualDensity: VisualDensity.compact,
+                ),
+              ),
+              OutlinedButton.icon(
+                icon: const Icon(Icons.content_copy_rounded, size: 14),
+                label: Text(
+                  isZh ? '复制 gcloud 命令' : 'Copy gcloud command',
+                  style: const TextStyle(fontSize: 11.5),
+                ),
+                onPressed: () async {
+                  await Clipboard.setData(
+                      const ClipboardData(text: gcloudCmd));
+                  if (!ctx.mounted) return;
+                  ScaffoldMessenger.of(ctx).hideCurrentSnackBar();
+                  ScaffoldMessenger.of(ctx).showSnackBar(SnackBar(
+                    content: Text(
+                      isZh ? '已复制 gcloud 命令' : 'gcloud command copied',
+                    ),
+                    behavior: SnackBarBehavior.floating,
+                    duration: const Duration(seconds: 2),
+                  ));
+                },
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 10, vertical: 6),
+                  visualDensity: VisualDensity.compact,
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }

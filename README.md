@@ -8,6 +8,49 @@
 
 ---
 
+## Quick start
+
+### For users — nothing to install
+Open <https://yswords.netlify.app>. Read the Bible immediately
+(no sign-in needed). Optional: sign in with Google to sync
+highlights / bookmarks / notes / reading-plan progress across your
+devices via your own Drive (one click "Allow" on the consent
+screen, no setup).
+
+### For developers — clone, run, ship
+```bash
+git clone https://github.com/SuyangLiuPaul/YsWords
+cd YsWords
+flutter pub get
+flutter run -d chrome
+```
+
+To deploy to your own Netlify project:
+```bash
+flutter build web --release
+netlify deploy --prod --dir=build/web
+```
+
+For cloud features (sync + AI) to work in production, see
+[**SETUP.md**](SETUP.md) for the one-time Google Cloud Console
+configuration. The fastest path:
+
+1. Run `bash scripts/enable-cloud-apis.sh` (or paste it into
+   <https://shell.cloud.google.com> if you don't have gcloud
+   installed locally) — enables Drive + Gemini APIs in your
+   project.
+2. Open the deployed app → Settings → Account → "Run check"
+   diagnostic. Any remaining UI-only steps (OAuth scope, Firebase
+   authorized domains, Netlify env vars) get one-click deep-links
+   straight to the Cloud Console pages that fix them.
+3. Verify: every probe row should turn ✅.
+
+The diagnostic + walkthrough live inside the app permanently —
+once set up, you can ignore them. End users never need to enable
+any APIs themselves; everything is at the project level.
+
+---
+
 ## Features
 
 | Category     | Details                                                                                                                 |
