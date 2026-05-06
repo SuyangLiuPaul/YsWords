@@ -50,6 +50,16 @@ class RealtimeDbSyncService extends ChangeNotifier {
   DateTime? _lastSyncedAt;
   bool _firstPullAfterSignIn = true;
   Timer? _debounce;
+  /// 2026-05-07: tracks the `updatedAt` ISO string of our most recent
+  /// upload. RTDB fires onValue for OUR OWN writes too — when we
+  /// echo back the value we just uploaded, we'd otherwise re-apply
+  /// it to local prefs, fire ProfileService.notifyListeners, and
+  /// potentially trigger a fresh requestUpload via downstream
+  /// listeners. That created the visible "Synced ↔ Syncing" flicker
+  /// the user reported. By comparing the incoming snapshot's
+  /// updatedAt against this field we can short-circuit the echo
+  /// without losing remote-change detection from OTHER devices.
+  String? _ourLastUploadedAt;
 
   static const String _kLastSyncedAt = 'rtdbSync.lastSyncedAt';
 
@@ -191,6 +201,23 @@ class RealtimeDbSyncService extends ChangeNotifier {
         await _uploadFromLocal();
         return;
       }
+      // Echo guard — if the snapshot's `updatedAt` matches the
+      // timestamp we just stamped on our most recent upload, this is
+      // RTDB echoing our own write back at us. No-op (don't apply,
+      // don't re-stamp synced, don't re-fire listeners). Without this
+      // guard, the echo triggered a redundant prefs write →
+      // ProfileService.notifyListeners → MainProvider rebuild → some
+      // listener's data-changed-detection re-fired requestUpload →
+      // visible flicker between Syncing and Synced states.
+      final remoteUpdatedAt = outer['updatedAt'];
+      if (remoteUpdatedAt is String &&
+          _ourLastUploadedAt != null &&
+          remoteUpdatedAt == _ourLastUploadedAt) {
+        // Echo. Just confirm "synced" status (in case it was
+        // mid-transition) and bail.
+        _setStatus(CloudSyncStatus.synced);
+        return;
+      }
       final remote = _coerceMap(dataNode);
 
       if (_firstPullAfterSignIn) {
@@ -245,11 +272,17 @@ class RealtimeDbSyncService extends ChangeNotifier {
     _setStatus(CloudSyncStatus.syncing);
     try {
       final data = await _snapshotLocal();
+      final stampedAt = DateTime.now().toUtc().toIso8601String();
       final body = {
         'data': data,
-        'updatedAt': DateTime.now().toUtc().toIso8601String(),
+        'updatedAt': stampedAt,
       };
       await FirebaseDatabase.instance.ref('users/$uid/sync').set(body);
+      // Record the timestamp we wrote so the echo-guard in
+      // _onRemoteSnapshot can recognise the inbound echo of this
+      // upload and skip the apply path. Setting AFTER the await so
+      // we never claim ownership of a write that didn't go through.
+      _ourLastUploadedAt = stampedAt;
       await _stampSyncedNow();
       _setStatus(CloudSyncStatus.synced);
     } on FirebaseException catch (e) {
