@@ -50,16 +50,20 @@ class RealtimeDbSyncService extends ChangeNotifier {
   DateTime? _lastSyncedAt;
   bool _firstPullAfterSignIn = true;
   Timer? _debounce;
-  /// 2026-05-07: tracks the `updatedAt` ISO string of our most recent
-  /// upload. RTDB fires onValue for OUR OWN writes too — when we
-  /// echo back the value we just uploaded, we'd otherwise re-apply
-  /// it to local prefs, fire ProfileService.notifyListeners, and
-  /// potentially trigger a fresh requestUpload via downstream
-  /// listeners. That created the visible "Synced ↔ Syncing" flicker
-  /// the user reported. By comparing the incoming snapshot's
-  /// updatedAt against this field we can short-circuit the echo
-  /// without losing remote-change detection from OTHER devices.
-  String? _ourLastUploadedAt;
+  /// 2026-05-07: small ring-buffer of `updatedAt` ISO strings from
+  /// our recent uploads. Plural (not single) because rapid uploads
+  /// can stack (T1 upload → echo of T1 still in flight → T2 upload).
+  /// We need to recognise echoes of ANY recent write, not just the
+  /// most recent. Capped at 8 entries — enough for any realistic
+  /// burst, never grows unboundedly.
+  final List<String> _ourRecentUploads = [];
+
+  /// 2026-05-07: hash of the data we last uploaded. requestUpload
+  /// computes a fresh hash on each call; if it matches, we skip the
+  /// upload entirely (no point pushing identical data, especially
+  /// when something in the listener cascade is firing requestUpload
+  /// repeatedly without actual user edits).
+  String? _lastUploadedDataHash;
 
   static const String _kLastSyncedAt = 'rtdbSync.lastSyncedAt';
 
@@ -201,18 +205,21 @@ class RealtimeDbSyncService extends ChangeNotifier {
         await _uploadFromLocal();
         return;
       }
-      // Echo guard — if the snapshot's `updatedAt` matches the
-      // timestamp we just stamped on our most recent upload, this is
-      // RTDB echoing our own write back at us. No-op (don't apply,
-      // don't re-stamp synced, don't re-fire listeners). Without this
-      // guard, the echo triggered a redundant prefs write →
-      // ProfileService.notifyListeners → MainProvider rebuild → some
-      // listener's data-changed-detection re-fired requestUpload →
-      // visible flicker between Syncing and Synced states.
+      // Echo guard — if the snapshot's `updatedAt` matches ANY
+      // timestamp from our recent uploads, this is RTDB echoing one
+      // of our own writes back at us. No-op (don't apply, don't
+      // re-stamp synced, don't re-fire listeners).
+      //
+      // Without this guard, every echo triggered a redundant prefs
+      // write → ProfileService.notifyListeners → MainProvider
+      // rebuild → some listener's data-changed-detection re-fired
+      // requestUpload → visible flicker between Syncing and Synced.
+      // Use a ring buffer (vs. just the latest timestamp) to handle
+      // overlapping uploads where the echo of T1 arrives AFTER we've
+      // already stamped T2.
       final remoteUpdatedAt = outer['updatedAt'];
       if (remoteUpdatedAt is String &&
-          _ourLastUploadedAt != null &&
-          remoteUpdatedAt == _ourLastUploadedAt) {
+          _ourRecentUploads.contains(remoteUpdatedAt)) {
         // Echo. Just confirm "synced" status (in case it was
         // mid-transition) and bail.
         _setStatus(CloudSyncStatus.synced);
@@ -226,7 +233,8 @@ class RealtimeDbSyncService extends ChangeNotifier {
         if (_localHasUserData(local)) {
           final merged = _mergeSnapshots(local: local, remote: remote);
           await _applyRemoteSuppressed(merged);
-          await _uploadFromLocal();
+          await _uploadFromLocal(data: merged);
+          // _uploadFromLocal already updated _lastUploadedDataHash.
           await _stampSyncedNow();
           _setStatus(CloudSyncStatus.synced);
           return;
@@ -234,6 +242,15 @@ class RealtimeDbSyncService extends ChangeNotifier {
       }
 
       await _applyRemoteSuppressed(remote);
+      // 2026-05-07: mark the just-applied remote snapshot as our
+      // "already synced" state. Without this, a subsequent
+      // requestUpload (potentially triggered by the apply path's
+      // ProfileService.notifyListeners cascade) would compute a
+      // local hash differing from what we last uploaded → trigger
+      // an unnecessary re-upload of data we literally just received.
+      // That wasn't a flicker per se but a wasted round-trip and
+      // possible feedback loop with another device.
+      _lastUploadedDataHash = jsonEncode(remote);
       await _stampSyncedNow();
       _setStatus(CloudSyncStatus.synced);
     } catch (e) {
@@ -264,25 +281,35 @@ class RealtimeDbSyncService extends ChangeNotifier {
   /// `update`) is used so deletes propagate cleanly — if the user
   /// removes a highlight on Device A, the absence of that key in
   /// the upload signals the deletion to Device B.
-  Future<void> _uploadFromLocal() async {
+  Future<void> _uploadFromLocal({Map<String, dynamic>? data}) async {
     if (!CloudAuthService.instance.isSignedIn) return;
     final user = CloudAuthService.instance.currentUser;
     if (user == null) return;
     final uid = user.uid;
+    final payload = data ?? await _snapshotLocal();
+    final stampedAt = DateTime.now().toUtc().toIso8601String();
+    // 2026-05-07 race fix: record the timestamp in our recent-uploads
+    // ring BEFORE awaiting the network write. RTDB's listener can
+    // fire as soon as the server confirms the write — between the
+    // await completing and the next statement running, the echo can
+    // arrive. If we set _ourRecentUploads AFTER the await, the echo
+    // sometimes hits _onRemoteSnapshot before we've registered the
+    // timestamp → echo guard misses → apply path runs → visible
+    // flicker.
+    _ourRecentUploads.add(stampedAt);
+    if (_ourRecentUploads.length > 8) {
+      _ourRecentUploads.removeAt(0);
+    }
     _setStatus(CloudSyncStatus.syncing);
     try {
-      final data = await _snapshotLocal();
-      final stampedAt = DateTime.now().toUtc().toIso8601String();
       final body = {
-        'data': data,
+        'data': payload,
         'updatedAt': stampedAt,
       };
       await FirebaseDatabase.instance.ref('users/$uid/sync').set(body);
-      // Record the timestamp we wrote so the echo-guard in
-      // _onRemoteSnapshot can recognise the inbound echo of this
-      // upload and skip the apply path. Setting AFTER the await so
-      // we never claim ownership of a write that didn't go through.
-      _ourLastUploadedAt = stampedAt;
+      // Remember the data we successfully uploaded so requestUpload
+      // can skip subsequent calls that don't actually change content.
+      _lastUploadedDataHash = jsonEncode(payload);
       await _stampSyncedNow();
       _setStatus(CloudSyncStatus.synced);
     } on FirebaseException catch (e) {
@@ -321,13 +348,37 @@ class RealtimeDbSyncService extends ChangeNotifier {
   /// Public API for MainProvider / ReadingPlanService — debounced
   /// auto-upload after a local change. 600 ms gives a typical multi-
   /// verse highlight stroke time to coalesce into a single upload.
+  ///
+  /// 2026-05-07: when the timer fires, snapshot local data and hash
+  /// it. If the hash matches what we last uploaded, **skip the
+  /// upload entirely** — no point pushing identical data, and this
+  /// is the root fix for the visible "Synced ↔ Syncing" flicker.
+  /// The cascade was:
+  ///   1. user edit → requestUpload → upload → status syncing/synced
+  ///   2. RTDB echo back → _onRemoteSnapshot writes prefs
+  ///      (data didn't actually change) → ProfileService notifyListeners
+  ///   3. some downstream listener fired requestUpload again
+  ///   4. step 2's data wasn't a real change but the hash check now
+  ///      catches that and stops the loop here at step 4.
   void requestUpload() {
     if (!CloudAuthService.instance.isSignedIn) return;
     if (_suppressLocalListener) return;
     _debounce?.cancel();
-    _debounce = Timer(const Duration(milliseconds: 600), () {
+    _debounce = Timer(const Duration(milliseconds: 600), () async {
       if (_suppressLocalListener) return;
-      _uploadFromLocal();
+      // Hash the current snapshot. If it matches what we just
+      // uploaded, no-op — saves a round-trip AND prevents the
+      // status flicker for "uploads" that wouldn't have changed
+      // anything.
+      final data = await _snapshotLocal();
+      final hash = jsonEncode(data);
+      if (hash == _lastUploadedDataHash) {
+        // Nothing actually changed; stay on whatever status we have.
+        // ignore: avoid_print
+        print('[RTDBSync] requestUpload skipped — data unchanged.');
+        return;
+      }
+      _uploadFromLocal(data: data);
     });
   }
 
