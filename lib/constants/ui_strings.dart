@@ -1678,6 +1678,40 @@ const uiStrings = {
     'zh-Hant': 'AI（進階 · 可選）',
     'en': 'AI (advanced · optional)',
   },
+  'cloudDiagSection': {
+    'zh-Hans': '云端配置自检（开发者 / 诊断用）',
+    'zh-Hant': '雲端配置自檢（開發者 / 診斷用）',
+    'en': 'Cloud setup status (developer / diagnostic)',
+  },
+  'cloudDiagTitle': {
+    'zh-Hans': '云端配置自检',
+    'zh-Hant': '雲端配置自檢',
+    'en': 'Cloud setup diagnostic',
+  },
+  'cloudDiagBody': {
+    'zh-Hans': '自动检测 Firebase Auth、Google Drive 同步、Gemini AI 是否正常。'
+        '一般用户无需启用任何 API——只有应用作者需要在 Google Cloud Console 启用一次。'
+        '若有问题，应用仍能在降级模式下使用（同步退化为本地保存，AI 显示"不可用"）。',
+    'zh-Hant': '自動檢測 Firebase Auth、Google Drive 同步、Gemini AI 是否正常。'
+        '一般使用者無需啟用任何 API——只有應用作者需要在 Google Cloud Console 啟用一次。'
+        '若有問題，應用仍能在降級模式下使用（同步退化為本地保存，AI 顯示「不可用」）。',
+    'en':
+        'Probes Firebase Auth, Drive sync, and the AI proxy. End '
+            'users never need to enable anything — these are '
+            'developer-side checks for the YsWords project. The app '
+            'keeps working in degraded mode either way (sync goes '
+            'local-only, AI shows "not available").',
+  },
+  'cloudDiagRun': {
+    'zh-Hans': '运行检查',
+    'zh-Hant': '執行檢查',
+    'en': 'Run check',
+  },
+  'cloudDiagRerun': {
+    'zh-Hans': '重新检查',
+    'zh-Hant': '重新檢查',
+    'en': 'Re-run',
+  },
   'aiByokTitle': {
     'zh-Hans': '使用我自己的 Gemini API 密钥',
     'zh-Hant': '使用我自己的 Gemini API 金鑰',

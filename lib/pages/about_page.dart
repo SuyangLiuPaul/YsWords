@@ -6,6 +6,7 @@ import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/services/link_opener.dart';
 import 'package:yswords/utils/clipboard_helper.dart';
 import 'package:yswords/utils/responsive.dart';
+import 'package:yswords/widgets/cloud_setup_diagnostic.dart';
 import 'package:yswords/widgets/home_icon_button.dart';
 import 'package:yswords/widgets/localized_back_button.dart';
 
@@ -88,6 +89,19 @@ class AboutPage extends StatelessWidget {
                   scheme: scheme),
               const SizedBox(height: 6),
               _AppLicenseCard(scheme: scheme, locale: locale),
+              const SizedBox(height: 20),
+              // 2026-05-06 — Cloud setup diagnostic. Probes Firebase
+              // Auth, Drive REST, Gemini proxy. Lives at the bottom
+              // of AboutPage so it doesn't clutter the main flow but
+              // the developer (or anyone hitting "sync isn't working")
+              // can run it and see exactly which API isn't enabled,
+              // with one-click fix links to Cloud Console.
+              _SectionTitle(
+                  text: uiStrings['cloudDiagSection']?[locale] ??
+                      'Cloud setup status (developer / diagnostic)',
+                  scheme: scheme),
+              const SizedBox(height: 6),
+              CloudSetupDiagnostic(locale: locale),
               const SizedBox(height: 24),
               Center(
                 child: Text(

@@ -225,12 +225,25 @@ class DriveSyncService extends ChangeNotifier {
     if (r.statusCode == 403) {
       // 403 most commonly means "Drive API not enabled in the GCP
       // project" or "OAuth consent screen doesn't include the
-      // drive.appdata scope". Surface a hint so the developer can
+      // drive.file scope". Surface a hint so the developer can
       // act, rather than the generic "Drive list failed" string.
-      throw 'Drive API access denied (403). Likely the Drive API '
-          "isn't enabled in the Firebase project's GCP Console, "
-          'or the OAuth consent screen is missing the '
-          'drive.appdata scope. Server said: ${r.body}';
+      // The Cloud Setup Diagnostic widget on AboutPage runs the
+      // same probe and shows a clickable Cloud Console link, but
+      // we surface the URL inline here too for users who hit the
+      // failure outside that widget.
+      final body = r.body.toLowerCase();
+      if (body.contains('has not been used') ||
+          body.contains('drive.googleapis.com') &&
+              body.contains('disabled')) {
+        throw "Drive API isn't enabled in the YsWords Cloud project. "
+            'Open Settings → About → "Run check" to fix in one click, '
+            'or go to '
+            'https://console.cloud.google.com/apis/library/drive.googleapis.com?project=ysword';
+      }
+      throw 'Drive API access denied (403). Likely the OAuth consent '
+          "screen is missing the drive.file scope, or your account is "
+          'on a Google Workspace that blocks third-party apps. '
+          'Server said: ${r.body}';
     }
     if (r.statusCode != 200) {
       throw 'Drive list failed (${r.statusCode}): ${r.body}';
