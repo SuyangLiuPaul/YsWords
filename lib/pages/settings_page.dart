@@ -12,8 +12,6 @@ import 'package:yswords/providers/main_provider.dart';
 import 'package:get/get.dart';
 import 'package:yswords/pages/about_page.dart';
 import 'package:yswords/utils/theme_color_helpers.dart';
-import 'package:yswords/widgets/cloud_setup_diagnostic.dart';
-import 'package:yswords/widgets/setup_instructions_card.dart';
 import 'package:yswords/pages/profiles_page.dart';
 import 'package:yswords/services/cloud_auth_service.dart';
 import 'package:yswords/widgets/google_g_logo.dart';
@@ -999,18 +997,12 @@ class _SettingsPageBodyState extends State<_SettingsPageBody> {
                         'Account'),
               ),
               _AccountSection(settings: settings, s: s),
-              SizedBox(height: 8 * s),
-              // 2026-05-06: Cloud Setup Diagnostic + walkthrough
-              // moved here (under Account) per user feedback —
-              // diagnostics belong with the section that's actually
-              // about sync/sign-in, not buried in About. The cards
-              // are still defensive (don't pretend to work for
-              // local-only / signed-out users).
-              CloudSetupDiagnostic(locale: settings.locale),
-              SizedBox(height: 8 * s),
-              SetupInstructionsCard(
-                  scheme: Theme.of(context).colorScheme,
-                  locale: settings.locale),
+              // 2026-05-06: Cloud setup diagnostic + walkthrough
+              // moved BACK to AboutPage. User feedback: they read as
+              // developer instructions and shouldn't sit in the main
+              // Settings flow. Regular users never need to see them;
+              // developers can still find them via Settings → About
+              // → bottom of the page.
               SizedBox(height: 16 * s),
               KeyedSubtree(
                 key: _planKey,
@@ -2338,15 +2330,30 @@ class _SyncStatusRowState extends State<_SyncStatusRow> {
     if (status == CloudSyncStatus.syncing || _busy) {
       stamp = uiStrings['syncingNow']?[locale] ?? 'Syncing now…';
     } else if (status == CloudSyncStatus.error) {
-      // Prefer the actual error message from CloudSyncService so
-      // users can see "Sync timed out after 15 seconds." or
-      // "Permission denied" rather than a generic catch-all. Falls
-      // back to the localized friendly string when no detail.
-      final actual = sync.lastError;
-      stamp = (actual != null && actual.isNotEmpty)
-          ? actual
-          : (uiStrings['syncFailed']?[locale] ??
-              'Sync failed. Check your connection and try again.');
+      // 2026-05-06: friendlier error for the most common failure
+      // (RTDB not enabled in Firebase Console). Show a one-line
+      // user-readable message instead of dumping the raw Firebase
+      // exception (which mentioned "database reference set error"
+      // and confused users). Developers can still see the detailed
+      // error in About → Cloud setup status.
+      final actual = sync.lastError ?? '';
+      final lower = actual.toLowerCase();
+      final isRtdbSetupError = lower.contains('database') ||
+          lower.contains('permission') ||
+          lower.contains('set error') ||
+          lower.contains('-disabled') ||
+          lower.contains('unavailable');
+      if (isRtdbSetupError) {
+        stamp = uiStrings['syncNotConfigured']?[locale] ??
+            'Cloud sync isn\'t set up for this device yet. Local '
+                'highlights / bookmarks still work — see About → '
+                'Cloud setup if you\'re the developer.';
+      } else if (actual.isNotEmpty) {
+        stamp = actual;
+      } else {
+        stamp = uiStrings['syncFailed']?[locale] ??
+            'Sync failed. Check your connection and try again.';
+      }
     } else if (last != null) {
       stamp = (uiStrings['lastSyncedAt']?[locale] ?? 'Last synced {when}')
           .replaceAll('{when}', _relative(last, locale));

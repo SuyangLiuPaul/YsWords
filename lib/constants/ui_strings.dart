@@ -2115,6 +2115,20 @@ const uiStrings = {
     'zh-Hant': '打開 RTDB 控制台',
     'en': 'Open RTDB console',
   },
+  // Friendly fallback when sync errors are clearly setup-related
+  // (RTDB not enabled / permission denied). Replaces the raw
+  // Firebase exception message in user-facing UI.
+  'syncNotConfigured': {
+    'zh-Hans': '云端同步尚未配置完成。本地高亮 / 书签 / 笔记仍可正常使用。'
+        '若您是开发者，请在 设置 → 关于 → 底部 查看云端配置状态。',
+    'zh-Hant': '雲端同步尚未配置完成。本地標亮 / 書籤 / 筆記仍可正常使用。'
+        '若您是開發者，請在 設定 → 關於 → 底部 查看雲端配置狀態。',
+    'en':
+        "Cloud sync isn't fully set up for this app yet. Local "
+            'highlights / bookmarks / notes still work as normal. '
+            'If you\'re the developer, see Settings → About → '
+            'bottom for the setup walkthrough.',
+  },
   'aiByokTitle': {
     'zh-Hans': '使用我自己的 Gemini API 密钥',
     'zh-Hant': '使用我自己的 Gemini API 金鑰',

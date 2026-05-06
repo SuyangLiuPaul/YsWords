@@ -20,6 +20,16 @@ class SetupInstructionsCard extends StatelessWidget {
     await LinkOpener.open(url);
   }
 
+  /// Three-locale picker. Previously the inline strings used
+  /// `isZh ? ... : ...` which collapsed Hans + Hant onto the same
+  /// (Simplified) text — Traditional users saw simplified copy. This
+  /// helper distinguishes the three cleanly.
+  String _t(String hans, String hant, String en) {
+    if (locale == 'zh-Hans') return hans;
+    if (locale == 'zh-Hant') return hant;
+    return en;
+  }
+
   /// Pops a "why this step?" dialog with the long-form explanation
   /// resolved from `uiStrings[detailKey][locale]`. Triggered by the
   /// info icon next to each step's title.
@@ -69,7 +79,7 @@ class SetupInstructionsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isZh = locale.startsWith('zh');
+    // _t() handles per-locale strings now (Hans / Hant / English).
     return Card(
       margin: EdgeInsets.zero,
       child: Theme(
@@ -84,7 +94,8 @@ class SetupInstructionsCard extends StatelessWidget {
           leading: Icon(Icons.menu_book_outlined,
               size: 18, color: scheme.primary),
           title: Text(
-            isZh ? '一次性云端配置说明（开发者）' : 'One-time cloud setup walkthrough (developer)',
+            _t('一次性云端配置说明（开发者）', '一次性雲端配置說明（開發者）',
+                'One-time cloud setup walkthrough (developer)'),
             style: TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.w700,
@@ -92,9 +103,10 @@ class SetupInstructionsCard extends StatelessWidget {
             ),
           ),
           subtitle: Text(
-            isZh
-                ? '点击展开。普通用户无需阅读此处。'
-                : 'Tap to expand. Normal users never need to read this.',
+            _t(
+                '点击展开。普通用户无需阅读此处。',
+                '點擊展開。一般使用者無需閱讀此處。',
+                'Tap to expand. Normal users never need to read this.'),
             style: TextStyle(
               fontSize: 11,
               color: scheme.onSurfaceVariant,
@@ -108,7 +120,7 @@ class SetupInstructionsCard extends StatelessWidget {
             // that loads the script straight from the GitHub raw URL,
             // and a "Copy command" fallback for devs running gcloud
             // locally. This shaves ~8 clicks off the manual flow.
-            _quickActions(context, isZh),
+            _quickActions(context),
             const SizedBox(height: 12),
             _step(
                 ctx: context,
@@ -117,81 +129,99 @@ class SetupInstructionsCard extends StatelessWidget {
                 // Step 1 with "enable Realtime Database" — the
                 // backend the new RealtimeDbSyncService writes to.
                 n: 1,
-                title: isZh
-                    ? '启用 Firebase Realtime Database'
-                    : 'Enable Firebase Realtime Database',
-                body: isZh
-                    ? '同步将每位用户的高亮 / 书签 / 笔记存放在 RTDB 的 '
+                title: _t('启用 Firebase Realtime Database',
+                    '啟用 Firebase Realtime Database',
+                    'Enable Firebase Realtime Database'),
+                body: _t(
+                    '同步将每位用户的高亮 / 书签 / 笔记存放在 RTDB 的 '
                         'users/{uid}/sync 路径。在 Firebase 控制台中点击 '
-                        '"Create Database" 即可启用。'
-                    : 'Sync stores each user\'s highlights / bookmarks / '
+                        '"Create Database" 即可启用。',
+                    '同步將每位使用者的標亮 / 書籤 / 筆記存放在 RTDB 的 '
+                        'users/{uid}/sync 路徑。在 Firebase 控制台中點擊 '
+                        '「Create Database」即可啟用。',
+                    'Sync stores each user\'s highlights / bookmarks / '
                         'notes at users/{uid}/sync in Realtime Database. '
                         'One click on "Create Database" in the Firebase '
-                        'Console enables it.',
+                        'Console enables it.'),
                 url:
                     'https://console.firebase.google.com/project/ysword/database',
-                action: isZh ? '打开 RTDB 控制台' : 'Open RTDB console',
+                action: _t('打开 RTDB 控制台', '打開 RTDB 控制台',
+                    'Open RTDB console'),
                 detailKey: 'setupStep1Detail'),
             _step(
                 ctx: context,
                 n: 2,
-                title: isZh
-                    ? '启用 Generative Language API（Gemini）'
-                    : 'Enable Generative Language API (Gemini)',
-                body: isZh
-                    ? 'Netlify 函数（aiExplainWord、aiSearch）通过 API 密钥调用 '
-                        '生成式语言 API。该 API 必须在密钥所属项目中启用。'
-                    : 'Netlify functions call generativelanguage.googleapis.com '
+                title: _t(
+                    '启用 Generative Language API（Gemini）',
+                    '啟用 Generative Language API（Gemini）',
+                    'Enable Generative Language API (Gemini)'),
+                body: _t(
+                    'Netlify 函数（aiExplainWord、aiSearch）通过 API 密钥调用 '
+                        '生成式语言 API。该 API 必须在密钥所属项目中启用。',
+                    'Netlify 函數（aiExplainWord、aiSearch）透過 API 金鑰呼叫 '
+                        '生成式語言 API。該 API 必須在金鑰所屬專案中啟用。',
+                    'Netlify functions call generativelanguage.googleapis.com '
                         'via API key. The API has to be enabled in '
-                        "whichever project owns the key.",
+                        "whichever project owns the key."),
                 url:
                     'https://console.cloud.google.com/apis/library/generativelanguage.googleapis.com?project=ysword',
-                action: isZh ? '打开启用页' : 'Open enable page',
+                action: _t('打开启用页', '打開啟用頁', 'Open enable page'),
                 detailKey: 'setupStep2Detail'),
             _step(
                 ctx: context,
                 n: 3,
-                title: isZh
-                    ? '设置 Realtime Database 安全规则'
-                    : 'Set Realtime Database security rules',
-                body: isZh
-                    ? '在 RTDB 规则中允许已登录用户读写自己的 users/<uid>/* 路径。'
-                        '默认规则会拒绝所有访问，必须先放开。'
-                    : 'Allow authenticated users to read/write their '
+                title: _t(
+                    '设置 Realtime Database 安全规则',
+                    '設定 Realtime Database 安全規則',
+                    'Set Realtime Database security rules'),
+                body: _t(
+                    '在 RTDB 规则中允许已登录用户读写自己的 users/<uid>/* 路径。'
+                        '默认规则会拒绝所有访问，必须先放开。',
+                    '在 RTDB 規則中允許已登入使用者讀寫自己的 users/<uid>/* 路徑。'
+                        '預設規則會拒絕所有存取，必須先放開。',
+                    'Allow authenticated users to read/write their '
                         'own users/<uid>/* path. Default rules deny '
-                        'everything — has to be opened up first.',
+                        'everything — has to be opened up first.'),
                 url:
                     'https://console.firebase.google.com/project/ysword/database/ysword-default-rtdb/rules',
-                action: isZh ? '打开 RTDB 规则' : 'Open RTDB rules',
+                action: _t('打开 RTDB 规则', '打開 RTDB 規則',
+                    'Open RTDB rules'),
                 detailKey: 'setupStep3Detail'),
             _step(
                 ctx: context,
                 n: 4,
-                title: isZh
-                    ? '把 yswords.netlify.app 加入 Firebase Authorized domains'
-                    : 'Add yswords.netlify.app to Firebase Authorized domains',
-                body: isZh
-                    ? 'Firebase Auth 会拒绝来自非授权来源的登录请求。'
-                    : 'Firebase Auth rejects sign-in attempts from '
-                        'non-authorized origins.',
+                title: _t(
+                    '把 yswords.netlify.app 加入 Firebase Authorized domains',
+                    '把 yswords.netlify.app 加入 Firebase Authorized domains',
+                    'Add yswords.netlify.app to Firebase Authorized domains'),
+                body: _t(
+                    'Firebase Auth 会拒绝来自非授权来源的登录请求。',
+                    'Firebase Auth 會拒絕來自非授權來源的登入請求。',
+                    'Firebase Auth rejects sign-in attempts from '
+                        'non-authorized origins.'),
                 url:
                     'https://console.firebase.google.com/project/ysword/authentication/settings',
-                action: isZh ? '打开 Firebase Auth 设置' : 'Open Firebase Auth settings',
+                action: _t('打开 Firebase Auth 设置',
+                    '打開 Firebase Auth 設定',
+                    'Open Firebase Auth settings'),
                 detailKey: 'setupStep4Detail'),
             _step(
                 ctx: context,
                 n: 5,
-                title: isZh
-                    ? '在 Netlify 环境变量中设置 GEMINI_API_KEY'
-                    : 'Set GEMINI_API_KEY in Netlify env vars',
-                body: isZh
-                    ? '在 Netlify 仪表盘中设置 GEMINI_API_KEY 环境变量。可选：GEMINI_API_KEY_BACKUP_2..9 用于备用密钥链。'
-                    : 'Set the GEMINI_API_KEY env var in the Netlify '
+                title: _t(
+                    '在 Netlify 环境变量中设置 GEMINI_API_KEY',
+                    '在 Netlify 環境變數中設定 GEMINI_API_KEY',
+                    'Set GEMINI_API_KEY in Netlify env vars'),
+                body: _t(
+                    '在 Netlify 仪表盘中设置 GEMINI_API_KEY 环境变量。可选：GEMINI_API_KEY_BACKUP_2..9 用于备用密钥链。',
+                    '在 Netlify 儀表板中設定 GEMINI_API_KEY 環境變數。可選：GEMINI_API_KEY_BACKUP_2..9 用於備用金鑰鏈。',
+                    'Set the GEMINI_API_KEY env var in the Netlify '
                         'dashboard. Optional: GEMINI_API_KEY_BACKUP_2..9 '
-                        'for additional fallback keys.',
+                        'for additional fallback keys.'),
                 url:
                     'https://app.netlify.com/projects/yswords/configuration/env',
-                action: isZh ? '打开 Netlify 环境变量' : 'Open Netlify env vars',
+                action: _t('打开 Netlify 环境变量',
+                    '打開 Netlify 環境變數', 'Open Netlify env vars'),
                 detailKey: 'setupStep5Detail'),
             const SizedBox(height: 8),
             Container(
@@ -201,12 +231,16 @@ class SetupInstructionsCard extends StatelessWidget {
                 borderRadius: BorderRadius.circular(6),
               ),
               child: Text(
-                isZh
-                    ? '完成后回到上方运行"配置自检"——所有项应显示 ✅。'
+                _t(
+                    '完成后回到上方运行"配置自检"——所有项应显示 ✅。'
                         '\n\n说明：终端用户无需启用任何 API。所有 API 在项目级（ysword）启用，与 OAuth 客户端绑定，'
                         '不与个人 Google 账号关联。Google Cloud 不允许应用以编程方式启用自身的 API'
-                        '——这是项目所有者的权限，所以以上步骤无法完全自动化。'
-                    : 'When done, scroll up to "Run check" — all '
+                        '——这是项目所有者的权限，所以以上步骤无法完全自动化。',
+                    '完成後回到上方執行「配置自檢」——所有項應顯示 ✅。'
+                        '\n\n說明：終端使用者無需啟用任何 API。所有 API 在專案級（ysword）啟用，與 OAuth 客戶端綁定，'
+                        '不與個人 Google 帳號關聯。Google Cloud 不允許應用以程式化方式啟用自身的 API'
+                        '——這是專案擁有者的權限，所以以上步驟無法完全自動化。',
+                    'When done, scroll up to "Run check" — all '
                         'rows should show ✅.'
                         '\n\nNote: end users never enable any API. All '
                         'APIs are enabled at project level (ysword) and '
@@ -214,7 +248,7 @@ class SetupInstructionsCard extends StatelessWidget {
                         'Google accounts. Google Cloud does not allow '
                         'apps to programmatically enable their own APIs '
                         '— that is a project-owner action by design, so '
-                        'the steps above cannot be fully automated.',
+                        'the steps above cannot be fully automated.'),
                 style: TextStyle(
                   fontSize: 11.5,
                   color: scheme.onSurface.withValues(alpha: 0.85),
@@ -240,7 +274,7 @@ class SetupInstructionsCard extends StatelessWidget {
   /// other 3 (OAuth scope, Firebase domains, Netlify env vars) are
   /// UI-only by Google design. So this button automates the only
   /// thing that *can* be automated for the developer.
-  Widget _quickActions(BuildContext ctx, bool isZh) {
+  Widget _quickActions(BuildContext ctx) {
     const cloudShellUrl =
         'https://shell.cloud.google.com/?cloudshell_print=https%3A%2F%2Fraw.githubusercontent.com%2FSuyangLiuPaul%2FYsWords%2Fmain%2Fscripts%2Fenable-cloud-apis.sh';
     // 2026-05-06: Drive API removed from the gcloud command when sync
@@ -270,9 +304,10 @@ class SetupInstructionsCard extends StatelessWidget {
               const SizedBox(width: 6),
               Expanded(
                 child: Text(
-                  isZh
-                      ? '快速操作：一键启用步骤 1+2 的 API'
-                      : 'Quick action — auto-enable APIs for steps 1 + 2',
+                  _t(
+                      '快速操作：一键启用步骤 2 的 API（Gemini）',
+                      '快速操作：一鍵啟用步驟 2 的 API（Gemini）',
+                      'Quick action — auto-enable Step 2 API (Gemini)'),
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w700,
@@ -284,14 +319,14 @@ class SetupInstructionsCard extends StatelessWidget {
           ),
           const SizedBox(height: 4),
           Text(
-            isZh
-                ? '在 Cloud Shell 中运行 gcloud 命令——无需在本地安装任何东西。'
-                    '\n步骤 3、4、5（OAuth 范围、Firebase 域名、Netlify 密钥）'
-                    '仅可手动完成，请按下方步骤操作。'
-                : 'Runs the gcloud command inside Cloud Shell — no '
-                    'local install needed. Steps 3, 4, 5 (OAuth scope, '
-                    'Firebase domains, Netlify key) are UI-only — see '
-                    'the steps below.',
+            _t(
+                '在 Cloud Shell 中运行 gcloud 命令——无需在本地安装任何东西。'
+                    '\n步骤 1、3、4、5（RTDB、规则、Firebase 域名、Netlify 密钥）仅可手动完成。',
+                '在 Cloud Shell 中執行 gcloud 命令——無需在本地安裝任何東西。'
+                    '\n步驟 1、3、4、5（RTDB、規則、Firebase 網域、Netlify 金鑰）僅可手動完成。',
+                'Runs the gcloud command inside Cloud Shell — no '
+                    'local install needed. Steps 1, 3, 4, 5 (RTDB, '
+                    'rules, Firebase domains, Netlify key) are UI-only.'),
             style: TextStyle(
               fontSize: 11,
               color: scheme.onSurface.withValues(alpha: 0.78),
@@ -306,9 +341,9 @@ class SetupInstructionsCard extends StatelessWidget {
               FilledButton.tonalIcon(
                 icon: const Icon(Icons.terminal_rounded, size: 16),
                 label: Text(
-                  isZh
-                      ? '在 Cloud Shell 打开'
-                      : 'Open in Cloud Shell',
+                  _t('在 Cloud Shell 打开',
+                      '在 Cloud Shell 打開',
+                      'Open in Cloud Shell'),
                   style: const TextStyle(fontSize: 11.5),
                 ),
                 onPressed: () => _open(cloudShellUrl),
@@ -321,7 +356,8 @@ class SetupInstructionsCard extends StatelessWidget {
               OutlinedButton.icon(
                 icon: const Icon(Icons.content_copy_rounded, size: 14),
                 label: Text(
-                  isZh ? '复制 gcloud 命令' : 'Copy gcloud command',
+                  _t('复制 gcloud 命令', '複製 gcloud 命令',
+                      'Copy gcloud command'),
                   style: const TextStyle(fontSize: 11.5),
                 ),
                 onPressed: () async {
@@ -331,7 +367,9 @@ class SetupInstructionsCard extends StatelessWidget {
                   ScaffoldMessenger.of(ctx).hideCurrentSnackBar();
                   ScaffoldMessenger.of(ctx).showSnackBar(SnackBar(
                     content: Text(
-                      isZh ? '已复制 gcloud 命令' : 'gcloud command copied',
+                      _t('已复制 gcloud 命令',
+                          '已複製 gcloud 命令',
+                          'gcloud command copied'),
                     ),
                     behavior: SnackBarBehavior.floating,
                     duration: const Duration(seconds: 2),

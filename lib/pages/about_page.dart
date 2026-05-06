@@ -6,7 +6,9 @@ import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/services/link_opener.dart';
 import 'package:yswords/utils/clipboard_helper.dart';
 import 'package:yswords/utils/responsive.dart';
+import 'package:yswords/widgets/cloud_setup_diagnostic.dart';
 import 'package:yswords/widgets/home_icon_button.dart';
+import 'package:yswords/widgets/setup_instructions_card.dart';
 import 'package:yswords/widgets/localized_back_button.dart';
 
 /// Settings → About → "About / 关于" — full attributions + licensing
@@ -88,12 +90,26 @@ class AboutPage extends StatelessWidget {
                   scheme: scheme),
               const SizedBox(height: 6),
               _AppLicenseCard(scheme: scheme, locale: locale),
-              // 2026-05-06: Cloud Setup Diagnostic + walkthrough
-              // moved to Settings → Account (under the sign-in /
-              // sync card) per user feedback — they belong with
-              // the section that's actually about sync, not in
-              // attribution-land. AboutPage now stays focused on
-              // copyright / licensing / contact.
+              const SizedBox(height: 24),
+              // 2026-05-06 second iteration: Cloud setup diagnostic +
+              // walkthrough live here — at the bottom of AboutPage,
+              // collapsed by default. Regular users never see them
+              // (they don't need to). The developer can still find
+              // them when they go to "About" to investigate sync
+              // issues. User feedback: "开发者说明不用" — developer
+              // setup info shouldn't be in the user-facing Settings
+              // flow.
+              _SectionTitle(
+                  text: uiStrings['cloudDiagSection']?[locale] ??
+                      'Cloud setup status (developer)',
+                  scheme: scheme),
+              const SizedBox(height: 6),
+              CloudSetupDiagnostic(locale: locale),
+              const SizedBox(height: 8),
+              SetupInstructionsCard(
+                scheme: scheme,
+                locale: locale,
+              ),
               const SizedBox(height: 24),
               Center(
                 child: Text(
