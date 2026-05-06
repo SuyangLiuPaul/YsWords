@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:yswords/models/strongs.dart';
 import 'package:yswords/models/verse.dart';
 import 'package:yswords/providers/main_provider.dart';
+import 'package:yswords/services/ai_bible_search_service.dart';
 import 'package:yswords/services/concordance_service.dart';
 import 'package:yswords/services/strongs_service.dart';
 import 'package:yswords/pages/strongs_entry_page.dart';
@@ -55,6 +56,17 @@ class _SearchPageState extends State<SearchPage> {
   StrongsEntry? _strongsEntry;
   ConcordanceResult? _strongsResult;
 
+  // 2026-05-07: AI Bible search state. The user can hit "Ask AI"
+  // when keyword search returns no results, or use it as their
+  // first attempt for fuzzy / thematic queries (e.g. "the love
+  // chapter", "雅各信仰", "Sermon on the Mount"). Gemini returns
+  // up to 10 references; we resolve them against the user's
+  // currently-loaded Bible version and display the verses in the
+  // same shape regular keyword results take.
+  bool _aiBusy = false;
+  String? _aiNotice; // "AI not available" / "no matches" — small inline note.
+  bool _lastResultsFromAi = false; // toggles header above _results.
+
   @override
   void initState() {
     super.initState();
@@ -65,6 +77,96 @@ class _SearchPageState extends State<SearchPage> {
     final list = await RecentSearchesService.list();
     if (!mounted) return;
     setState(() => _recents = list);
+  }
+
+  /// Run an AI-powered Bible reference lookup for the current query.
+  /// Resolves the LLM's references against `MainProvider.verses`
+  /// (the user's currently-loaded Bible version) so the displayed
+  /// verses use whatever translation they're reading. The `book`
+  /// field on AI refs is canonical English, mapped to the user's
+  /// version's book name via `toEnglish` reverse-comparison.
+  Future<void> _askAi() async {
+    final query = _textEditingController.text.trim();
+    if (query.length < 2) return;
+    final settings = Provider.of<AppSettings>(context, listen: false);
+    final mp = Provider.of<MainProvider>(context, listen: false);
+    setState(() {
+      _aiBusy = true;
+      _aiNotice = null;
+    });
+    final result = await AiBibleSearchService.ask(
+      query: query,
+      locale: settings.locale,
+      userApiKey: settings.geminiApiKey.isEmpty ? null : settings.geminiApiKey,
+    );
+    if (!mounted) return;
+    if (result.unavailable) {
+      setState(() {
+        _aiBusy = false;
+        _aiNotice = result.unavailableReason;
+      });
+      return;
+    }
+    if (result.refs.isEmpty) {
+      setState(() {
+        _aiBusy = false;
+        _aiNotice = uiStrings['aiBibleSearchNoMatches']?[settings.locale] ??
+            'AI didn\'t find any Bible passages for that query.';
+      });
+      return;
+    }
+    // Resolve refs to actual Verse objects from the user's loaded
+    // Bible version. The AI returns canonical English book names —
+    // we walk the user's verses and reverse-map book name to English
+    // via toEnglish() to find matches that work for any localized
+    // version (CUV, CNV, NASB, etc.).
+    final resolved = <Verse>[];
+    final missing = <AiBibleRef>[];
+    final byBookChapter = <String, List<Verse>>{};
+    for (final v in mp.verses) {
+      final eb = toEnglish(v.book) ?? v.book;
+      final key = '$eb|${v.chapter}';
+      (byBookChapter[key] ??= []).add(v);
+    }
+    for (final ref in result.refs) {
+      final key = '${ref.book}|${ref.chapter}';
+      final candidates = byBookChapter[key];
+      if (candidates == null) {
+        missing.add(ref);
+        continue;
+      }
+      bool found = false;
+      for (final v in candidates) {
+        if (v.verse < ref.verseStart || v.verse > ref.verseEnd) continue;
+        if (!resolved.contains(v)) resolved.add(v);
+        found = true;
+      }
+      if (!found) missing.add(ref);
+    }
+    setState(() {
+      _aiBusy = false;
+      _results
+        ..clear()
+        ..addAll(resolved);
+      bookCounts.clear();
+      for (final v in resolved) {
+        bookCounts[v.book] = (bookCounts[v.book] ?? 0) + 1;
+      }
+      _lastResultsFromAi = true;
+      _aiNotice = missing.isEmpty
+          ? null
+          : (uiStrings['aiBibleSearchSomeMissing']?[settings.locale] ??
+                  'AI suggested {n} more passages that aren\'t in your '
+                      'current Bible version.')
+              .replaceAll('{n}', missing.length.toString());
+      searchPerformed = true;
+      _strongsKey = null;
+      _strongsEntry = null;
+      _strongsResult = null;
+    });
+    if (_scrollController.hasClients) {
+      _scrollController.jumpTo(0.0);
+    }
   }
 
   @override
@@ -123,6 +225,10 @@ class _SearchPageState extends State<SearchPage> {
       _strongsEntry = null;
       _strongsResult = null;
       searchPerformed = false;
+      // Clear AI state — a fresh keyword search invalidates the
+      // previous AI results / notice.
+      _lastResultsFromAi = false;
+      _aiNotice = null;
     });
 
     final mainProvider = Provider.of<MainProvider>(context, listen: false);
@@ -185,14 +291,28 @@ class _SearchPageState extends State<SearchPage> {
       child: Scaffold(
         appBar: AppBar(
           leading: const LocalizedBackButton(),
-          // Search input field in the app bar
+          // Search input field in the app bar.
+          // 2026-05-07: text + hint colors derived from the AppBar's
+          // foregroundColor (not the page surface), so the input is
+          // readable on the saturated AppBar background instead of
+          // inheriting the global form-input colors which were tuned
+          // for white surfaces.
           title: TextField(
             autofocus: true,
             controller: _textEditingController,
-            style: TextStyle(fontSize: settings.fontSize),
+            style: TextStyle(
+              fontSize: settings.fontSize,
+              color: Theme.of(context).appBarTheme.foregroundColor,
+            ),
+            cursorColor: Theme.of(context).appBarTheme.foregroundColor,
             decoration: InputDecoration(
               border: InputBorder.none,
               hintText: uiStrings['search']?[settings.locale] ?? 'Search',
+              hintStyle: TextStyle(
+                color: (Theme.of(context).appBarTheme.foregroundColor ??
+                        Theme.of(context).colorScheme.onSurface)
+                    .withValues(alpha: 0.65),
+              ),
             ),
             inputFormatters: [
               // Allow alphanumerics + Chinese chars + space + the
@@ -382,7 +502,19 @@ class _SearchPageState extends State<SearchPage> {
                     }
                   },
                   child: Text(
-                    '${(uiStrings['searchResultCount']?[settings.locale] ?? 'Total {count} matches, grouped by book:').replaceAll('{count}', _results.length.toString())} ${bookCounts.entries.take(3).map((e) => '${e.key}(${e.value})').join(settings.locale == 'en' ? ', ' : '，')}${bookCounts.length > 3 ? '...' : ''}${bookCounts.length > 3 ? '\n${uiStrings['viewMoreBooksHint']?[settings.locale] ?? ''}' : ''}',
+                    _lastResultsFromAi
+                        // AI-results header: cleaner / more inviting
+                        // than the per-book breakdown for keyword
+                        // matches. Users opt into AI search precisely
+                        // when keyword exact-match wasn't useful, so
+                        // a thematic / conceptual phrasing fits better.
+                        ? (uiStrings['aiBibleSearchHeader']
+                                    ?[settings.locale] ??
+                                'AI suggested {count} passages for "{query}"')
+                            .replaceAll('{count}', _results.length.toString())
+                            .replaceAll(
+                                '{query}', _textEditingController.text.trim())
+                        : '${(uiStrings['searchResultCount']?[settings.locale] ?? 'Total {count} matches, grouped by book:').replaceAll('{count}', _results.length.toString())} ${bookCounts.entries.take(3).map((e) => '${e.key}(${e.value})').join(settings.locale == 'en' ? ', ' : '，')}${bookCounts.length > 3 ? '...' : ''}${bookCounts.length > 3 ? '\n${uiStrings['viewMoreBooksHint']?[settings.locale] ?? ''}' : ''}',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontWeight: FontWeight.w500,
@@ -426,6 +558,55 @@ class _SearchPageState extends State<SearchPage> {
                                   .copyWith(fontSize: settings.fontSize),
                               textAlign: TextAlign.center,
                             ),
+                            // 2026-05-07: AI Bible search — when text
+                            // search returned 0 results AND the user
+                            // typed something, offer to ask Gemini for
+                            // matching references. The button only
+                            // appears in this no-results state since
+                            // that's where it adds value (exact-text
+                            // search failed → meaning-based fallback).
+                            if (searchPerformed &&
+                                _textEditingController.text.trim().length >=
+                                    2) ...[
+                              const SizedBox(height: 16),
+                              FilledButton.tonalIcon(
+                                onPressed: _aiBusy ? null : _askAi,
+                                icon: _aiBusy
+                                    ? const SizedBox(
+                                        width: 16,
+                                        height: 16,
+                                        child: CircularProgressIndicator(
+                                            strokeWidth: 2.4))
+                                    : const Icon(Icons.auto_awesome,
+                                        size: 16),
+                                label: Text(
+                                  _aiBusy
+                                      ? (uiStrings['aiSearching']
+                                              ?[settings.locale] ??
+                                          'Asking AI…')
+                                      : (uiStrings['askAiForVerses']
+                                              ?[settings.locale] ??
+                                          'Ask AI for related passages'),
+                                ),
+                              ),
+                              if (_aiNotice != null) ...[
+                                const SizedBox(height: 10),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 12),
+                                  child: Text(
+                                    _aiNotice!,
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .onSurfaceVariant,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ),
+                              ],
+                            ],
                             // Recent-searches chips: shown only on
                             // the empty pre-search state, not after a
                             // search returned 0 results (the user

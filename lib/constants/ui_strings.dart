@@ -2136,6 +2136,39 @@ const uiStrings = {
     'zh-Hant': '打開 RTDB 控制台',
     'en': 'Open RTDB console',
   },
+  // ── AI Bible search (2026-05-07) ─────────────────────────────
+  // Triggered from the search page's no-results state. Lets the
+  // user ask Gemini for Bible references that match a fuzzy /
+  // thematic query when exact-text search returns nothing.
+  'askAiForVerses': {
+    'zh-Hans': '请 AI 推荐相关经文',
+    'zh-Hant': '請 AI 推薦相關經文',
+    'en': 'Ask AI for related passages',
+  },
+  'aiSearching': {
+    'zh-Hans': '正在咨询 AI…',
+    'zh-Hant': '正在諮詢 AI…',
+    'en': 'Asking AI…',
+  },
+  'aiBibleSearchHeader': {
+    'zh-Hans': 'AI 为「{query}」推荐了 {count} 处经文',
+    'zh-Hant': 'AI 為「{query}」推薦了 {count} 處經文',
+    'en': 'AI suggested {count} passages for "{query}"',
+  },
+  'aiBibleSearchNoMatches': {
+    'zh-Hans': 'AI 没有找到与该查询相关的经文。换个说法再试试？',
+    'zh-Hant': 'AI 沒有找到與該查詢相關的經文。換個說法再試試？',
+    'en':
+        'AI didn\'t find any Bible passages for that query. Try '
+            'rephrasing.',
+  },
+  'aiBibleSearchSomeMissing': {
+    'zh-Hans': 'AI 还推荐了 {n} 处经文，但您当前的圣经版本中没有匹配。',
+    'zh-Hant': 'AI 還推薦了 {n} 處經文，但您當前的聖經版本中沒有匹配。',
+    'en':
+        'AI suggested {n} more passages that aren\'t in your '
+            'current Bible version.',
+  },
   // Friendly fallback when sync errors are clearly setup-related
   // (RTDB not enabled / permission denied). Replaces the raw
   // Firebase exception message in user-facing UI.
