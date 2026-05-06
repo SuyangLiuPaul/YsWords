@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:yswords/constants/ui_strings.dart';
 import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/services/link_opener.dart';
+import 'package:yswords/utils/theme_color_helpers.dart';
 
 /// Settings → AI → "Use my own Gemini API key" (BYOK) card.
 ///
@@ -89,7 +90,7 @@ class GeminiKeyCardState extends State<GeminiKeyCard> {
                 const Spacer(),
                 if (hasKey)
                   Icon(Icons.check_circle_outline_rounded,
-                      size: 18, color: Colors.green.shade600),
+                      size: 18, color: paletteAccent(context, Colors.green)),
               ],
             ),
             SizedBox(height: 6 * s),

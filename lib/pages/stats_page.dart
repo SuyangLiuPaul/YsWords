@@ -13,6 +13,7 @@ import 'package:yswords/services/daily_verse_service.dart';
 import 'package:yswords/services/fetch_books.dart' show standardBookOrder;
 import 'package:yswords/services/originals_stats_service.dart';
 import 'package:yswords/utils/clipboard_helper.dart';
+import 'package:yswords/utils/theme_color_helpers.dart';
 import 'package:yswords/services/concordance_service.dart' show ConcordanceRef;
 import 'package:yswords/utils/jump_to_reference.dart' show resolveAndPrepareJump;
 import 'package:yswords/utils/reference_parser.dart'
@@ -2327,7 +2328,11 @@ class _AramaicEntryTile extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w700,
-                          color: Colors.teal.shade900,
+                          // Theme-aware: shade900 in light, shade200
+                          // in dark — keeps the transliteration vivid
+                          // against either scheme without the dark-
+                          // shade-on-dark-bg invisibility problem.
+                          color: paletteFg(context, Colors.teal),
                         ),
                       ),
                     ],
@@ -2415,6 +2420,7 @@ class _LanguageRow extends StatelessWidget {
             .replaceAll('{n}', _humanNum(uniqueLemmas!))
         : null;
     final body = _buildBody(
+        context: context,
         name: name,
         role: role,
         sections: sections,
@@ -2438,6 +2444,7 @@ class _LanguageRow extends StatelessWidget {
   }
 
   Widget _buildBody({
+    required BuildContext context,
     required String name,
     required String role,
     required String sections,
@@ -2452,7 +2459,10 @@ class _LanguageRow extends StatelessWidget {
           width: 56,
           height: 56,
           decoration: BoxDecoration(
-            color: scriptColor.withValues(alpha: 0.12),
+            // Theme-aware language-script badge — paletteBg adapts
+            // to dark mode so the indigo/teal/deepOrange tile stays
+            // visible without being washed out or eye-searing.
+            color: paletteBg(context, scriptColor),
             borderRadius: BorderRadius.circular(10),
           ),
           alignment: Alignment.center,
@@ -2461,7 +2471,7 @@ class _LanguageRow extends StatelessWidget {
             style: TextStyle(
               fontSize: 22,
               fontWeight: FontWeight.w700,
-              color: scriptColor.shade900,
+              color: paletteFg(context, scriptColor),
               height: 1.0,
             ),
           ),
@@ -2665,12 +2675,13 @@ class _TopLemmasCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final tagColor = isHebrew
-        ? Colors.indigo.shade100
-        : Colors.deepPurple.shade100;
-    final tagFg = isHebrew
-        ? Colors.indigo.shade900
-        : Colors.deepPurple.shade900;
+    // Theme-aware Hebrew (indigo) / Greek (deepPurple) tag colors
+    // so the lemma chips stay vivid in dark mode (shade900 background
+    // with alpha + shade200 text) instead of shade100 bg + shade900
+    // text which becomes near-invisible on the dark scaffold.
+    final palette = isHebrew ? Colors.indigo : Colors.deepPurple;
+    final tagColor = paletteBg(context, palette);
+    final tagFg = paletteFg(context, palette);
     return Container(
       padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
       decoration: BoxDecoration(
@@ -2893,10 +2904,12 @@ class _BookOriginalsRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final localizedName =
         localeAwareBookName(book.englishBook, locale);
-    final tagColor =
-        book.isOt ? Colors.indigo.shade100 : Colors.deepPurple.shade100;
-    final tagFg =
-        book.isOt ? Colors.indigo.shade900 : Colors.deepPurple.shade900;
+    // Theme-aware OT (indigo) / NT (deepPurple) badge so the chip
+    // stays vivid in dark mode instead of the shade100 + shade900
+    // pair that washes out against the dark scaffold.
+    final palette = book.isOt ? Colors.indigo : Colors.deepPurple;
+    final tagColor = paletteBg(context, palette);
+    final tagFg = paletteFg(context, palette);
     final tagLabel = book.isOt
         ? (uiStrings['statsBooksOT']?[locale] ?? 'OT')
         : (uiStrings['statsBooksNT']?[locale] ?? 'NT');
@@ -3401,12 +3414,11 @@ class _CurrentWordBarState extends State<_CurrentWordBar> {
   @override
   Widget build(BuildContext context) {
     final isHebrew = widget.strongs.startsWith('H');
-    final tagColor = isHebrew
-        ? Colors.indigo.shade100
-        : Colors.deepPurple.shade100;
-    final tagFg = isHebrew
-        ? Colors.indigo.shade900
-        : Colors.deepPurple.shade900;
+    // Same theme-aware pattern as other Hebrew/Greek tag chips —
+    // adapts shade100/900 pair to dark mode legible variants.
+    final palette = isHebrew ? Colors.indigo : Colors.deepPurple;
+    final tagColor = paletteBg(context, palette);
+    final tagFg = paletteFg(context, palette);
     return Material(
       color: widget.scheme.surfaceContainerLow,
       borderRadius: BorderRadius.circular(10),
@@ -3689,12 +3701,11 @@ class _StrongsPickerSheetState extends State<_StrongsPickerSheet> {
                             const SizedBox(height: 4),
                         itemBuilder: (_, i) {
                           final e = showRows[i];
-                          final tagColor = e.isHebrew
-                              ? Colors.indigo.shade100
-                              : Colors.deepPurple.shade100;
-                          final tagFg = e.isHebrew
-                              ? Colors.indigo.shade900
-                              : Colors.deepPurple.shade900;
+                          final palette = e.isHebrew
+                              ? Colors.indigo
+                              : Colors.deepPurple;
+                          final tagColor = paletteBg(context, palette);
+                          final tagFg = paletteFg(context, palette);
                           return InkWell(
                             onTap: () => widget.onPick(e.strongs),
                             borderRadius: BorderRadius.circular(8),

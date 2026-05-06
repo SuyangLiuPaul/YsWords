@@ -17,6 +17,7 @@ import 'package:yswords/services/lxx_service.dart';
 import 'package:yswords/services/originals_service.dart';
 import 'package:yswords/services/strongs_service.dart';
 import 'package:yswords/utils/clipboard_helper.dart';
+import 'package:yswords/utils/theme_color_helpers.dart';
 import 'package:yswords/utils/version_mapper.dart'
     show localeAwareBookName, toEnglish;
 import 'package:yswords/widgets/word_distribution.dart';
@@ -702,8 +703,12 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
       bgColor = scheme.primaryContainer;
       borderColor = scheme.primary;
     } else if (isAramaic) {
-      bgColor = Colors.teal.withValues(alpha: 0.13);
-      borderColor = Colors.teal.withValues(alpha: 0.55);
+      // Theme-aware teal so the chip stays readable + vivid in dark
+      // mode. paletteBg = teal.shade100 (light) / teal.shade900 with
+      // alpha (dark); paletteBorder uses a brighter teal in dark
+      // mode so the border is still visible.
+      bgColor = paletteBg(context, Colors.teal);
+      borderColor = paletteBorder(context, Colors.teal);
     } else {
       bgColor = scheme.surfaceContainerHighest.withValues(alpha: 0.5);
       borderColor = Colors.transparent;
@@ -736,16 +741,16 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
                   padding: const EdgeInsets.symmetric(
                       horizontal: 5, vertical: 1),
                   decoration: BoxDecoration(
-                    color: Colors.teal.withValues(alpha: 0.18),
+                    color: paletteBg(context, Colors.teal),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
                     uiStrings['aramaicWordBadge']?[widget.locale] ??
                         'Aramaic',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 8,
                       fontWeight: FontWeight.w700,
-                      color: Colors.teal,
+                      color: paletteFg(context, Colors.teal),
                       letterSpacing: 0.3,
                     ),
                   ),
@@ -909,19 +914,19 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
                   padding: const EdgeInsets.symmetric(
                       horizontal: 6, vertical: 2),
                   decoration: BoxDecoration(
-                    color: Colors.teal.withValues(alpha: 0.15),
+                    color: paletteBg(context, Colors.teal),
                     borderRadius: BorderRadius.circular(6),
                     border: Border.all(
-                      color: Colors.teal.withValues(alpha: 0.55),
+                      color: paletteBorder(context, Colors.teal),
                       width: 0.8,
                     ),
                   ),
                   child: Text(
                     uiStrings['aramaicWordBadge']?[locale] ?? 'Aramaic',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 10,
                       fontWeight: FontWeight.w700,
-                      color: Colors.teal,
+                      color: paletteFg(context, Colors.teal),
                       letterSpacing: 0.4,
                     ),
                   ),

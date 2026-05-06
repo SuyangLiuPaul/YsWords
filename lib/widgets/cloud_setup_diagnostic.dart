@@ -7,6 +7,7 @@ import 'package:http/http.dart' as http;
 import 'package:yswords/constants/ui_strings.dart';
 import 'package:yswords/services/cloud_auth_service.dart';
 import 'package:yswords/services/link_opener.dart';
+import 'package:yswords/utils/theme_color_helpers.dart';
 
 /// Self-test panel that probes each cloud-side dependency and tells
 /// the developer (or curious user) exactly what's working.
@@ -354,12 +355,16 @@ class _ProbeRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    // Theme-aware status colors — paletteAccent gives shade300 in
+    // dark mode (vivid against dark surface) and shade700 in light
+    // mode (deep on light surface) so the ✅/❌/⚠️ indicators stay
+    // legible everywhere.
     final color = result.kind == _ProbeKind.ok
-        ? Colors.green.shade600
+        ? paletteAccent(context, Colors.green)
         : result.kind == _ProbeKind.fail
             ? scheme.error
             : result.kind == _ProbeKind.warning
-                ? Colors.orange.shade700
+                ? paletteAccent(context, Colors.orange)
                 : scheme.onSurfaceVariant;
     final icon = result.kind == _ProbeKind.ok
         ? Icons.check_circle_outline_rounded
