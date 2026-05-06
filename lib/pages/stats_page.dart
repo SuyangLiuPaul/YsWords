@@ -1555,6 +1555,288 @@ class _OverviewBookChip extends StatelessWidget {
   }
 }
 
+/// Shared launcher for the OriginalsSheet flow. Both
+/// `_StrongsLookupTabState` and `_BibleLanguagesCard` need to open
+/// the exegesis sheet for an arbitrary (book, chapter, verse), with
+/// cross-version fallback when the verse isn't in the loaded
+/// translation. Pulled out as a top-level helper so the language
+/// card can call it without going through Lookup-tab state.
+class _ExegesisLauncher {
+  /// Open OriginalsSheet for one verse. Same path the Lookup tab
+  /// uses — handles "verse missing in current version" by routing
+  /// through resolveAndPrepareJump so OT books open in CUVS-YHWH
+  /// when the user is on an NT-only translation, etc.
+  static void study({
+    required BuildContext context,
+    required String locale,
+    required String book,
+    required int chapter,
+    required int verse,
+  }) {
+    final mp = context.read<MainProvider>();
+    final matches = mp.verses
+        .where((v) =>
+            v.book == book && v.chapter == chapter && v.verse == verse)
+        .toList();
+    if (matches.isEmpty) {
+      _resolveAndOpen(context,
+          locale: locale,
+          book: book,
+          chapter: chapter,
+          verse: verse);
+      return;
+    }
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Theme.of(context).colorScheme.surface,
+      constraints: const BoxConstraints(maxWidth: 1100),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (sheetCtx) => OriginalsSheet(
+        verses: matches,
+        allVerses: mp.verses,
+        locale: locale,
+        currentVersion: mp.currentVersion,
+        onNavigateRef: (ref) {
+          Navigator.of(sheetCtx).maybePop();
+          _hopToRef(context, locale, ref);
+        },
+      ),
+    );
+  }
+
+  /// Open the 3-step verse picker, then study the picked verse.
+  /// Used by the language card's Hebrew / Greek rows, which want a
+  /// "any-verse" entry point rather than the curated Aramaic list.
+  static Future<void> pickAndStudy({
+    required BuildContext context,
+    required String locale,
+    required AppSettings settings,
+  }) async {
+    final mp = context.read<MainProvider>();
+    final picked = await showModalBottomSheet<_PickedRef>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Theme.of(context).colorScheme.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (sheetCtx) => _VersePickerSheet(
+        mp: mp,
+        locale: locale,
+        settings: settings,
+      ),
+    );
+    if (picked == null || !context.mounted) return;
+    study(
+      context: context,
+      locale: locale,
+      book: picked.book,
+      chapter: picked.chapter,
+      verse: picked.verse,
+    );
+  }
+
+  static Future<void> _resolveAndOpen(BuildContext context,
+      {required String locale,
+      required String book,
+      required int chapter,
+      required int verse}) async {
+    final mp = context.read<MainProvider>();
+    final ref = BibleReference(
+      englishBook: toEnglish(book) ?? book,
+      chapter: chapter,
+      verseStart: verse,
+      verseEnd: verse,
+    );
+    final result = await resolveAndPrepareJump(reference: ref, mp: mp);
+    if (!context.mounted || !result.ready) return;
+    final v = mp.verses.firstWhere(
+      (x) =>
+          x.chapter == chapter &&
+          x.verse == verse &&
+          (x.book == book || toEnglish(x.book) == toEnglish(book)),
+      orElse: () => mp.verses.isNotEmpty
+          ? mp.verses.first
+          : Verse(
+              book: book,
+              chapter: chapter,
+              verse: verse,
+              verseLabel: '$verse',
+              text: '',
+            ),
+    );
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Theme.of(context).colorScheme.surface,
+      constraints: const BoxConstraints(maxWidth: 1100),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (sheetCtx) => OriginalsSheet(
+        verses: [v],
+        allVerses: mp.verses,
+        locale: locale,
+        currentVersion: mp.currentVersion,
+        onNavigateRef: (ref) {
+          Navigator.of(sheetCtx).maybePop();
+          _hopToRef(context, locale, ref);
+        },
+      ),
+    );
+  }
+
+  static void _hopToRef(
+      BuildContext context, String locale, ConcordanceRef ref) {
+    final mp = context.read<MainProvider>();
+    final localBook = mp.verses.isEmpty
+        ? null
+        : mp.verses
+            .firstWhere(
+              (v) => (toEnglish(v.book) ?? v.book) == ref.englishBook,
+              orElse: () => mp.verses.first,
+            )
+            .book;
+    final book = localBook ?? ref.englishBook;
+    study(
+      context: context,
+      locale: locale,
+      book: book,
+      chapter: ref.chapter,
+      verse: ref.verse,
+    );
+  }
+}
+
+/// Round 56 (continued): one entry in the curated Aramaic-passages
+/// list. Aramaic biblical content is small enough to enumerate
+/// fully; this struct holds the reference + a one-phrase factual
+/// note about what's in the passage (NOT the verse text itself —
+/// taps open the OriginalsSheet which renders from the user's own
+/// bundled Bible). For NT phrases the [transliteration] is the
+/// actual Aramaic word as it appears transliterated in Greek text
+/// (e.g. 'abba', 'maranatha').
+class _AramaicEntry {
+  final String englishBook;
+  final int chapter;
+  /// Starting verse — what we open the OriginalsSheet at.
+  final int verse;
+  /// Localised i18n key for the reference label shown to the user
+  /// (e.g. 'aramRefDanielSection', 'aramRefMarkAbba').
+  final String labelKey;
+  /// Localised i18n key for the one-line description.
+  final String descKey;
+  /// For NT phrases, the transliterated Aramaic word/phrase.
+  /// Null for OT sections (the whole passage is Aramaic, not a
+  /// single embedded word).
+  final String? transliteration;
+  const _AramaicEntry({
+    required this.englishBook,
+    required this.chapter,
+    required this.verse,
+    required this.labelKey,
+    required this.descKey,
+    this.transliteration,
+  });
+}
+
+/// Curated full list of Aramaic biblical passages. References are
+/// factual citations; descriptions in [descKey] are short factual
+/// notes authored fresh for this app. NT entries also carry the
+/// transliterated phrase that's actually Aramaic embedded in
+/// Greek text.
+const List<_AramaicEntry> _aramaicPassages = [
+  // ── OT sections (the entire passage is Aramaic) ───────────────
+  _AramaicEntry(
+    englishBook: 'Genesis',
+    chapter: 31,
+    verse: 47,
+    labelKey: 'aramRefGenesis',
+    descKey: 'aramDescGenesis',
+    transliteration: 'יְגַר שָׂהֲדוּתָא',
+  ),
+  _AramaicEntry(
+    englishBook: 'Jeremiah',
+    chapter: 10,
+    verse: 11,
+    labelKey: 'aramRefJeremiah',
+    descKey: 'aramDescJeremiah',
+  ),
+  _AramaicEntry(
+    englishBook: 'Daniel',
+    chapter: 2,
+    verse: 4,
+    labelKey: 'aramRefDaniel',
+    descKey: 'aramDescDaniel',
+  ),
+  _AramaicEntry(
+    englishBook: 'Ezra',
+    chapter: 4,
+    verse: 8,
+    labelKey: 'aramRefEzraA',
+    descKey: 'aramDescEzraA',
+  ),
+  _AramaicEntry(
+    englishBook: 'Ezra',
+    chapter: 7,
+    verse: 12,
+    labelKey: 'aramRefEzraB',
+    descKey: 'aramDescEzraB',
+  ),
+  // ── NT phrases (single Aramaic word/phrase embedded in Greek) ─
+  _AramaicEntry(
+    englishBook: 'Matthew',
+    chapter: 5,
+    verse: 22,
+    labelKey: 'aramRefRaca',
+    descKey: 'aramDescRaca',
+    transliteration: 'ῥακά (raqa)',
+  ),
+  _AramaicEntry(
+    englishBook: 'Mark',
+    chapter: 5,
+    verse: 41,
+    labelKey: 'aramRefTalitha',
+    descKey: 'aramDescTalitha',
+    transliteration: 'ταλιθα κουμ (talitha koum)',
+  ),
+  _AramaicEntry(
+    englishBook: 'Mark',
+    chapter: 7,
+    verse: 34,
+    labelKey: 'aramRefEphphatha',
+    descKey: 'aramDescEphphatha',
+    transliteration: 'εφφαθα (ephphatha)',
+  ),
+  _AramaicEntry(
+    englishBook: 'Mark',
+    chapter: 14,
+    verse: 36,
+    labelKey: 'aramRefAbba',
+    descKey: 'aramDescAbba',
+    transliteration: 'ἀββα (abba)',
+  ),
+  _AramaicEntry(
+    englishBook: 'Mark',
+    chapter: 15,
+    verse: 34,
+    labelKey: 'aramRefSabachthani',
+    descKey: 'aramDescSabachthani',
+    transliteration: 'ελωι ελωι λεμα σαβαχθανι',
+  ),
+  _AramaicEntry(
+    englishBook: '1 Corinthians',
+    chapter: 16,
+    verse: 22,
+    labelKey: 'aramRefMaranatha',
+    descKey: 'aramDescMaranatha',
+    transliteration: 'μαραν αθα (marana tha)',
+  ),
+];
+
 /// Round 56 (continued): educational card replacing the old stat-
 /// block grid. Lists every source language the Bible was originally
 /// written in — Hebrew, Aramaic, Greek — with a one-paragraph
@@ -1562,6 +1844,12 @@ class _OverviewBookChip extends StatelessWidget {
 /// and (for Hebrew + Greek) the running word totals from the
 /// originals stats. Inline stats fold the numeric value the old
 /// blocks carried into a more meaningful context.
+///
+/// Each row is tappable: Hebrew / Greek open the standard verse
+/// picker → OriginalsSheet, Aramaic opens a curated list of all
+/// Aramaic passages (small enough to enumerate fully). The
+/// OriginalsSheet already has Gemini AI explain built in, so all
+/// three flows give the user the same exegesis affordance.
 class _BibleLanguagesCard extends StatelessWidget {
   final _OverviewView view;
   final String locale;
@@ -1621,53 +1909,380 @@ class _BibleLanguagesCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 14),
-          _LanguageRow(
-            scriptColor: Colors.indigo,
-            scriptLabel: 'אבג',
-            nameKey: 'languageHebrewName',
-            roleKey: 'languageHebrewRole',
-            sectionsKey: 'languageHebrewSections',
-            backgroundKey: 'languageHebrewBackground',
-            wordCount: view.hebrewWords > 0 ? view.hebrewWords : null,
-            uniqueLemmas:
-                view.hebrewUnique > 0 ? view.hebrewUnique : null,
-            locale: locale,
-            settings: settings,
-            scheme: scheme,
-          ),
+          Builder(builder: (rowCtx) {
+            return _LanguageRow(
+              scriptColor: Colors.indigo,
+              scriptLabel: 'אבג',
+              nameKey: 'languageHebrewName',
+              roleKey: 'languageHebrewRole',
+              sectionsKey: 'languageHebrewSections',
+              backgroundKey: 'languageHebrewBackground',
+              wordCount: view.hebrewWords > 0 ? view.hebrewWords : null,
+              uniqueLemmas:
+                  view.hebrewUnique > 0 ? view.hebrewUnique : null,
+              locale: locale,
+              settings: settings,
+              scheme: scheme,
+              // Hebrew → standard verse picker. User picks any OT
+              // verse and the OriginalsSheet shows word-by-word
+              // breakdown (with Gemini AI explain).
+              onTap: () => _ExegesisLauncher.pickAndStudy(
+                context: rowCtx,
+                locale: locale,
+                settings: settings,
+              ),
+            );
+          }),
           const SizedBox(height: 14),
-          _LanguageRow(
-            // Aramaic shares its consonantal script with Hebrew; the
-            // glyphs differ in style only. Using the same alphabet
-            // line as Hebrew is editorially honest.
-            scriptColor: Colors.teal,
-            scriptLabel: 'ܐܒܓ',
-            nameKey: 'languageAramaicName',
-            roleKey: 'languageAramaicRole',
-            sectionsKey: 'languageAramaicSections',
-            backgroundKey: 'languageAramaicBackground',
-            wordCount: null,
-            uniqueLemmas: null,
-            locale: locale,
-            settings: settings,
-            scheme: scheme,
-          ),
+          Builder(builder: (rowCtx) {
+            return _LanguageRow(
+              // Aramaic shares its consonantal script with Hebrew;
+              // the glyphs differ in style only.
+              scriptColor: Colors.teal,
+              scriptLabel: 'ܐܒܓ',
+              nameKey: 'languageAramaicName',
+              roleKey: 'languageAramaicRole',
+              sectionsKey: 'languageAramaicSections',
+              backgroundKey: 'languageAramaicBackground',
+              wordCount: null,
+              uniqueLemmas: null,
+              locale: locale,
+              settings: settings,
+              scheme: scheme,
+              // Aramaic → curated full passage list. Small enough
+              // to enumerate fully (5 OT sections + 6 NT phrases).
+              onTap: () => _openAramaicSheet(rowCtx, locale, settings),
+            );
+          }),
           const SizedBox(height: 14),
-          _LanguageRow(
-            scriptColor: Colors.deepPurple,
-            scriptLabel: 'αβγ',
-            nameKey: 'languageGreekName',
-            roleKey: 'languageGreekRole',
-            sectionsKey: 'languageGreekSections',
-            backgroundKey: 'languageGreekBackground',
-            wordCount: view.greekWords > 0 ? view.greekWords : null,
-            uniqueLemmas:
-                view.greekUnique > 0 ? view.greekUnique : null,
-            locale: locale,
-            settings: settings,
-            scheme: scheme,
-          ),
+          Builder(builder: (rowCtx) {
+            return _LanguageRow(
+              scriptColor: Colors.deepPurple,
+              scriptLabel: 'αβγ',
+              nameKey: 'languageGreekName',
+              roleKey: 'languageGreekRole',
+              sectionsKey: 'languageGreekSections',
+              backgroundKey: 'languageGreekBackground',
+              wordCount: view.greekWords > 0 ? view.greekWords : null,
+              uniqueLemmas:
+                  view.greekUnique > 0 ? view.greekUnique : null,
+              locale: locale,
+              settings: settings,
+              scheme: scheme,
+              // Greek → same standard verse picker as Hebrew.
+              onTap: () => _ExegesisLauncher.pickAndStudy(
+                context: rowCtx,
+                locale: locale,
+                settings: settings,
+              ),
+            );
+          }),
         ],
+      ),
+    );
+  }
+
+  /// Open the curated Aramaic-passages list. Each entry tap opens
+  /// the same OriginalsSheet (with Gemini AI explain) Hebrew/Greek
+  /// rows reach via the verse picker.
+  void _openAramaicSheet(
+      BuildContext context, String locale, AppSettings settings) {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Theme.of(context).colorScheme.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (sheetCtx) => _AramaicPassagesSheet(
+        locale: locale,
+        settings: settings,
+      ),
+    );
+  }
+}
+
+/// Round 56 (continued — Aramaic full list): the 5 OT sections +
+/// 6 NT phrases that are written in Aramaic rather than Hebrew or
+/// Greek. Two visual sections (OT / NT). Each entry shows:
+///   • localised reference (e.g. '但以理 2:4–7:28')
+///   • the actual Aramaic / transliterated phrase (where applicable)
+///   • a one-line factual description in the user's locale
+///   • a 'Study →' affordance that opens the OriginalsSheet for
+///     the starting verse — and from there Gemini AI explain is
+///     one tap away inside the sheet itself.
+///
+/// We deliberately don't render the verse text in this sheet —
+/// the OriginalsSheet is the single source of truth for that, and
+/// reaches it from the user's already-loaded Bible asset.
+class _AramaicPassagesSheet extends StatelessWidget {
+  final String locale;
+  final AppSettings settings;
+  const _AramaicPassagesSheet(
+      {required this.locale, required this.settings});
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    // Split into OT (5 entries) and NT (6 entries) for visual
+    // grouping; the canonical order matches the order entries are
+    // declared in `_aramaicPassages`.
+    final otEntries = _aramaicPassages
+        .where((e) => _isOtBookForAramaic(e.englishBook))
+        .toList();
+    final ntEntries = _aramaicPassages
+        .where((e) => !_isOtBookForAramaic(e.englishBook))
+        .toList();
+    return SafeArea(
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(context).size.height * 0.88),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Row(
+                children: [
+                  Icon(Icons.translate_rounded,
+                      size: 20, color: scheme.primary),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      uiStrings['aramSheetTitle']?[locale] ??
+                          'Aramaic in the Bible',
+                      style: const TextStyle(
+                          fontSize: 16, fontWeight: FontWeight.w700),
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close, size: 20),
+                    onPressed: () =>
+                        Navigator.of(context).maybePop(),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 4),
+              Text(
+                uiStrings['aramSheetSubtitle']?[locale] ??
+                    'Tap any entry to open the verse with word-by-word breakdown and Gemini AI explanation.',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: scheme.onSurface.withValues(alpha: 0.65),
+                  height: 1.4,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Expanded(
+                child: SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      _SheetGroupHeader(
+                        text:
+                            uiStrings['aramGroupOt']?[locale] ??
+                                'Old Testament sections',
+                        scheme: scheme,
+                      ),
+                      const SizedBox(height: 6),
+                      for (final e in otEntries) ...[
+                        _AramaicEntryTile(
+                          entry: e,
+                          locale: locale,
+                          settings: settings,
+                          scheme: scheme,
+                          onTap: () {
+                            Navigator.of(context).maybePop();
+                            _ExegesisLauncher.study(
+                              context: context,
+                              locale: locale,
+                              book: _resolveLocalBook(
+                                  context, e.englishBook),
+                              chapter: e.chapter,
+                              verse: e.verse,
+                            );
+                          },
+                        ),
+                        const SizedBox(height: 6),
+                      ],
+                      const SizedBox(height: 8),
+                      _SheetGroupHeader(
+                        text:
+                            uiStrings['aramGroupNt']?[locale] ??
+                                'New Testament phrases',
+                        scheme: scheme,
+                      ),
+                      const SizedBox(height: 6),
+                      for (final e in ntEntries) ...[
+                        _AramaicEntryTile(
+                          entry: e,
+                          locale: locale,
+                          settings: settings,
+                          scheme: scheme,
+                          onTap: () {
+                            Navigator.of(context).maybePop();
+                            _ExegesisLauncher.study(
+                              context: context,
+                              locale: locale,
+                              book: _resolveLocalBook(
+                                  context, e.englishBook),
+                              chapter: e.chapter,
+                              verse: e.verse,
+                            );
+                          },
+                        ),
+                        const SizedBox(height: 6),
+                      ],
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Resolve canonical English book to the localised name the
+  /// MainProvider's verse list uses (e.g. 'Daniel' → '但以理书' for
+  /// CUVS). Falls back to the English name when no match.
+  String _resolveLocalBook(BuildContext context, String englishBook) {
+    final mp = context.read<MainProvider>();
+    if (mp.verses.isEmpty) return englishBook;
+    return mp.verses
+        .firstWhere(
+          (v) => (toEnglish(v.book) ?? v.book) == englishBook,
+          orElse: () => mp.verses.first,
+        )
+        .book;
+  }
+
+  /// Tiny helper: which entries belong to the OT half vs the NT
+  /// half. Avoids a full canonical lookup for the small Aramaic
+  /// list — just spot-checks the four OT books that have Aramaic.
+  static bool _isOtBookForAramaic(String englishBook) {
+    return englishBook == 'Genesis' ||
+        englishBook == 'Jeremiah' ||
+        englishBook == 'Daniel' ||
+        englishBook == 'Ezra';
+  }
+}
+
+class _SheetGroupHeader extends StatelessWidget {
+  final String text;
+  final ColorScheme scheme;
+  const _SheetGroupHeader(
+      {required this.text, required this.scheme});
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Text(
+        text,
+        style: TextStyle(
+          fontSize: 11,
+          fontWeight: FontWeight.w800,
+          color: scheme.primary,
+          letterSpacing: 0.6,
+        ),
+      ),
+    );
+  }
+}
+
+class _AramaicEntryTile extends StatelessWidget {
+  final _AramaicEntry entry;
+  final String locale;
+  final AppSettings settings;
+  final ColorScheme scheme;
+  final VoidCallback onTap;
+  const _AramaicEntryTile({
+    required this.entry,
+    required this.locale,
+    required this.settings,
+    required this.scheme,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final label = uiStrings[entry.labelKey]?[locale] ??
+        '${entry.englishBook} ${entry.chapter}:${entry.verse}';
+    final desc = uiStrings[entry.descKey]?[locale] ?? '';
+    final ref =
+        '${localeAwareBookName(entry.englishBook, locale)} ${entry.chapter}:${entry.verse}';
+    return Material(
+      color: scheme.surfaceContainerHigh,
+      borderRadius: BorderRadius.circular(10),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(10),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      label,
+                      style: TextStyle(
+                        fontFamily: settings.fontFamily,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                        color: scheme.onSurface,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      ref,
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: scheme.primary,
+                        fontFeatures: const [
+                          FontFeature.tabularFigures()
+                        ],
+                      ),
+                    ),
+                    if (entry.transliteration != null) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        entry.transliteration!,
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.teal.shade900,
+                        ),
+                      ),
+                    ],
+                    if (desc.isNotEmpty) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        desc,
+                        style: TextStyle(
+                          fontFamily: settings.fontFamily,
+                          fontSize: 12,
+                          height: 1.4,
+                          color:
+                              scheme.onSurface.withValues(alpha: 0.75),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              Icon(Icons.chevron_right_rounded,
+                  size: 20,
+                  color:
+                      scheme.onSurface.withValues(alpha: 0.45)),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -1692,6 +2307,11 @@ class _LanguageRow extends StatelessWidget {
   final String locale;
   final AppSettings settings;
   final ColorScheme scheme;
+  /// Round 56: tappable affordance — Hebrew/Greek opens the verse
+  /// picker, Aramaic opens the curated passages sheet. Each path
+  /// ultimately lands on the OriginalsSheet which has Gemini AI
+  /// explain built in.
+  final VoidCallback? onTap;
 
   const _LanguageRow({
     required this.scriptColor,
@@ -1705,6 +2325,7 @@ class _LanguageRow extends StatelessWidget {
     required this.locale,
     required this.settings,
     required this.scheme,
+    this.onTap,
   });
 
   @override
@@ -1721,6 +2342,37 @@ class _LanguageRow extends StatelessWidget {
         ? (uiStrings['languageLemmaCount']?[locale] ?? '{n} lemmas')
             .replaceAll('{n}', _humanNum(uniqueLemmas!))
         : null;
+    final body = _buildBody(
+        name: name,
+        role: role,
+        sections: sections,
+        background: background,
+        wordsLabel: wordsLabel,
+        lemmasLabel: lemmasLabel);
+    if (onTap == null) return body;
+    // Wrap the row in an InkWell so the whole row is a target —
+    // taps anywhere on the row trigger the language's flow.
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(8),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 4),
+          child: body,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBody({
+    required String name,
+    required String role,
+    required String sections,
+    required String background,
+    required String? wordsLabel,
+    required String? lemmasLabel,
+  }) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [

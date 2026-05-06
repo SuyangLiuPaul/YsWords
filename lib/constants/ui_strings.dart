@@ -926,6 +926,173 @@ const uiStrings = {
     'en':
         'Koine ("common") Greek, the everyday register of the Hellenistic Mediterranean after Alexander the Great\'s conquests. The NT authors deliberately wrote in this accessible form — the Greek of the marketplace — rather than the polished Attic of classical literature, so the gospel could travel through ordinary readers to the ends of the empire.',
   },
+  // ── Aramaic sheet (full passage list) ─────────────────────────
+  'aramSheetTitle': {
+    'zh-Hans': '圣经中的亚兰文',
+    'zh-Hant': '聖經中的亞蘭文',
+    'en': 'Aramaic in the Bible',
+  },
+  'aramSheetSubtitle': {
+    'zh-Hans': '点击任一段进入释经面板 — 字字对照原文 + Gemini AI 解释。',
+    'zh-Hant': '點擊任一段進入釋經面板 — 字字對照原文 + Gemini AI 解釋。',
+    'en':
+        'Tap any entry to open the verse with word-by-word breakdown and Gemini AI explanation.',
+  },
+  'aramGroupOt': {
+    'zh-Hans': '旧约段落',
+    'zh-Hant': '舊約段落',
+    'en': 'Old Testament sections',
+  },
+  'aramGroupNt': {
+    'zh-Hans': '新约引用',
+    'zh-Hant': '新約引用',
+    'en': 'New Testament phrases',
+  },
+  // OT — full sections written in Aramaic.
+  'aramRefGenesis': {
+    'zh-Hans': '雅各与拉班立约的亚兰文地名',
+    'zh-Hant': '雅各與拉班立約的亞蘭文地名',
+    'en': "Jacob and Laban's covenant — Aramaic place name",
+  },
+  'aramDescGenesis': {
+    'zh-Hans':
+        '雅各与舅舅拉班立石为约时，拉班用亚兰文称那石堆为「伊迦尔撒哈杜他」(Jegar-sahadutha)，意为「见证之堆」；雅各则用希伯来文称之为「迦累得」(Galeed)。两个名字含义相同 — 圣经特地保留两种语言以反映双方各自的母语。',
+    'zh-Hant':
+        '雅各與舅舅拉班立石為約時，拉班用亞蘭文稱那石堆為「伊迦爾撒哈杜他」(Jegar-sahadutha)，意為「見證之堆」；雅各則用希伯來文稱之為「迦累得」(Galeed)。兩個名字含義相同 — 聖經特地保留兩種語言以反映雙方各自的母語。',
+    'en':
+        'When Jacob and his uncle Laban set up a stone witness to their covenant, Laban gives it the Aramaic name "Jegar-sahadutha" ("heap of witness") while Jacob gives it the Hebrew "Galeed" with the same meaning. The text preserves both names — a tiny window into the bilingual world of the patriarchs.',
+  },
+  'aramRefJeremiah': {
+    'zh-Hans': '一节亚兰文：警告偶像必灭亡',
+    'zh-Hant': '一節亞蘭文：警告偶像必滅亡',
+    'en': 'One Aramaic verse — gods that did not make the heavens',
+  },
+  'aramDescJeremiah': {
+    'zh-Hans':
+        '在以希伯来文为主的耶利米书中，第 10 章 11 节突然切换为亚兰文。这是先知给被掳百姓的「应答口诀」 — 当外邦人问他们是否要敬拜列国的偶像时，可以用亚兰文 (当时的国际通用语) 直接回应：「不是创造天地的神必从地上、从天下被除灭。」',
+    'zh-Hant':
+        '在以希伯來文為主的耶利米書中，第 10 章 11 節突然切換為亞蘭文。這是先知給被擄百姓的「應答口訣」 — 當外邦人問他們是否要敬拜列國的偶像時，可以用亞蘭文 (當時的國際通用語) 直接回應：「不是創造天地的神必從地上、從天下被除滅。」',
+    'en':
+        'A single Aramaic verse embedded in an otherwise Hebrew chapter. It functions as a ready-made reply for exiles to use against the local idols of their captors — written in Aramaic (the international language of the day) so they could quote it back directly to anyone who pressed them to worship pagan gods.',
+  },
+  'aramRefDaniel': {
+    'zh-Hans': '但以理 2:4–7:28（半本书）',
+    'zh-Hant': '但以理 2:4–7:28（半本書）',
+    'en': 'Daniel 2:4–7:28 — six chapters in Aramaic',
+  },
+  'aramDescDaniel': {
+    'zh-Hans':
+        '从迦勒底术士「用亚兰文对王说话」起 (2:4)，到第 7 章的四兽异象结束，整整六章用亚兰文写成 — 帝国的官方语言。叙事 (尼布甲尼撒梦像、火窑、狮坑) 和异象都集中在这段。1 章、8–12 章则回到希伯来文。',
+    'zh-Hant':
+        '從迦勒底術士「用亞蘭文對王說話」起 (2:4)，到第 7 章的四獸異象結束，整整六章用亞蘭文寫成 — 帝國的官方語言。敘事 (尼布甲尼撒夢像、火窯、獅坑) 和異象都集中在這段。1 章、8–12 章則回到希伯來文。',
+    'en':
+        'From the moment the Babylonian wise men reply to the king "in Aramaic" (2:4) through the apocalyptic four-beasts vision of chapter 7, six full chapters of Daniel are written in Aramaic — the language of the empire he served. The famous narratives (Nebuchadnezzar\'s dream, the fiery furnace, the lions\' den) all sit in this section. Chapter 1 and chapters 8–12 return to Hebrew.',
+  },
+  'aramRefEzraA': {
+    'zh-Hans': '以斯拉 4:8–6:18 — 波斯朝廷文书',
+    'zh-Hant': '以斯拉 4:8–6:18 — 波斯朝廷文書',
+    'en': 'Ezra 4:8–6:18 — Persian court correspondence',
+  },
+  'aramDescEzraA': {
+    'zh-Hans':
+        '以斯拉记保留了被掳归回时期，犹太人与波斯朝廷之间往来的奏章、上谕、批文，原文是亚兰文 (帝国的行政通用语)，编者直接照录。重点是关于重建圣殿的辩争 — 反对者上书阻挠，大利乌王查档批准重建。',
+    'zh-Hant':
+        '以斯拉記保留了被擄歸回時期，猶太人與波斯朝廷之間往來的奏章、上諭、批文，原文是亞蘭文 (帝國的行政通用語)，編者直接照錄。重點是關於重建聖殿的辯爭 — 反對者上書阻撓，大利烏王查檔批准重建。',
+    'en':
+        'During the post-exile period, official correspondence between the Jewish community and the Persian administration was conducted in Aramaic (the imperial language of record). Ezra preserves the original documents verbatim — including the opponents\' letter trying to halt the rebuilding of the Temple, and Darius\' decree authorising it after the imperial archives were searched.',
+  },
+  'aramRefEzraB': {
+    'zh-Hans': '以斯拉 7:12–26 — 亚达薛西王的谕旨',
+    'zh-Hant': '以斯拉 7:12–26 — 亞達薛西王的諭旨',
+    'en': "Ezra 7:12–26 — Artaxerxes' decree",
+  },
+  'aramDescEzraB': {
+    'zh-Hans':
+        '亚达薛西王亲自颁给以斯拉的谕旨全文，授权他带百姓回耶路撒冷并按照神的律法治理。原文是亚兰文，以斯拉同样照录。这道诏书是以斯拉一切事工的法律根基。',
+    'zh-Hant':
+        '亞達薛西王親自頒給以斯拉的諭旨全文，授權他帶百姓回耶路撒冷並按照神的律法治理。原文是亞蘭文，以斯拉同樣照錄。這道詔書是以斯拉一切事工的法律根基。',
+    'en':
+        "The full text of Artaxerxes' decree commissioning Ezra to lead the return to Jerusalem and to govern by the law of his God. Issued in imperial Aramaic and quoted verbatim — the legal charter underwriting Ezra's entire mission.",
+  },
+  // NT — Aramaic phrases preserved in the Greek text.
+  'aramRefRaca': {
+    'zh-Hans': '太 5:22 — 「拉加」',
+    'zh-Hant': '太 5:22 — 「拉加」',
+    'en': 'Matthew 5:22 — "raca"',
+  },
+  'aramDescRaca': {
+    'zh-Hans':
+        '亚兰文「ריקא」音译，意为「空头」「废人」 — 当时一种带轻蔑的骂语。耶稣在登山宝训中警告：骂弟兄是拉加的，难免公会的审断。',
+    'zh-Hant':
+        '亞蘭文「ריקא」音譯，意為「空頭」「廢人」 — 當時一種帶輕蔑的罵語。耶穌在登山寶訓中警告：罵弟兄是拉加的，難免公會的審斷。',
+    'en':
+        'A transliteration of the Aramaic "raqa" — roughly "empty-head" or "good-for-nothing", a contemptuous slur in Jesus\' day. In the Sermon on the Mount, Jesus warns that calling a brother "raca" makes one liable to the council\'s judgement.',
+  },
+  'aramRefTalitha': {
+    'zh-Hans': '可 5:41 — 「大利大古米」',
+    'zh-Hant': '可 5:41 — 「大利大古米」',
+    'en': 'Mark 5:41 — "talitha koum"',
+  },
+  'aramDescTalitha': {
+    'zh-Hans':
+        '耶稣对睚鲁已死的女儿说的亚兰文原话，意为「闺女，起来」。马可福音保留耶稣的原话，紧接着用希腊文翻译给读者 — 这种「保留 + 翻译」格式是马可福音的标志之一，让读者听见耶稣亲口说的方言。',
+    'zh-Hant':
+        '耶穌對睚魯已死的女兒說的亞蘭文原話，意為「閨女，起來」。馬可福音保留耶穌的原話，緊接著用希臘文翻譯給讀者 — 這種「保留 + 翻譯」格式是馬可福音的標誌之一，讓讀者聽見耶穌親口說的方言。',
+    'en':
+        'Jesus\' actual Aramaic words to the dead daughter of Jairus — "Little girl, get up." Mark preserves the Aramaic and immediately glosses it in Greek for his readers; this "quote + translate" pattern is a signature of Mark\'s gospel, letting readers hear Jesus in his own dialect.',
+  },
+  'aramRefEphphatha': {
+    'zh-Hans': '可 7:34 — 「以法大」',
+    'zh-Hant': '可 7:34 — 「以法大」',
+    'en': 'Mark 7:34 — "ephphatha"',
+  },
+  'aramDescEphphatha': {
+    'zh-Hans':
+        '亚兰文，意为「开了吧」。耶稣对一位耳聋舌结的人说话医治时所用的原话。马可同样紧接着翻译给希腊读者听。',
+    'zh-Hant':
+        '亞蘭文，意為「開了吧」。耶穌對一位耳聾舌結的人說話醫治時所用的原話。馬可同樣緊接著翻譯給希臘讀者聽。',
+    'en':
+        'Aramaic for "be opened." Spoken by Jesus over a deaf-mute man\'s ears at the moment of healing. Mark again preserves the original word and glosses it in Greek.',
+  },
+  'aramRefAbba': {
+    'zh-Hans': '可 14:36 — 「阿爸，父」',
+    'zh-Hant': '可 14:36 — 「阿爸，父」',
+    'en': 'Mark 14:36 — "abba"',
+  },
+  'aramDescAbba': {
+    'zh-Hans':
+        '亚兰文中孩童对父亲最亲昵的称呼 — 类似「爹」。耶稣在客西马尼园祷告时所用，保罗在罗马书 8:15、加拉太书 4:6 也保留这个亚兰文，强调圣灵使我们能像耶稣那样亲昵地呼喊神为父。',
+    'zh-Hant':
+        '亞蘭文中孩童對父親最親暱的稱呼 — 類似「爹」。耶穌在客西馬尼園禱告時所用，保羅在羅馬書 8:15、加拉太書 4:6 也保留這個亞蘭文，強調聖靈使我們能像耶穌那樣親暱地呼喊神為父。',
+    'en':
+        'The Aramaic word a child uses for the father — closer to "papa" than the formal "father". Jesus uses it in Gethsemane, and Paul keeps it in the original in Romans 8:15 and Galatians 4:6, emphasising that the Spirit lets believers call God by the same intimate name Jesus did.',
+  },
+  'aramRefSabachthani': {
+    'zh-Hans': '可 15:34 — 「以利以利拉马撒巴各大尼」',
+    'zh-Hant': '可 15:34 — 「以利以利拉馬撒巴各大尼」',
+    'en': 'Mark 15:34 — "eloi eloi lema sabachthani"',
+  },
+  'aramDescSabachthani': {
+    'zh-Hans':
+        '耶稣在十字架上的呼喊，意为「我的神，我的神，为什么离弃我？」 — 引自诗篇 22:1。马可保留亚兰文版本，马太 27:46 则保留略带希伯来色彩的「以利以利」版本。',
+    'zh-Hant':
+        '耶穌在十字架上的呼喊，意為「我的神，我的神，為什麼離棄我？」 — 引自詩篇 22:1。馬可保留亞蘭文版本，馬太 27:46 則保留略帶希伯來色彩的「以利以利」版本。',
+    'en':
+        "Jesus' cry from the cross — \"My God, my God, why have you forsaken me?\" — quoting Psalm 22:1. Mark preserves the Aramaic form (\"eloi\"), Matthew 27:46 the slightly more Hebrew-coloured \"eli eli\".",
+  },
+  'aramRefMaranatha': {
+    'zh-Hans': '林前 16:22 — 「玛拉那他」',
+    'zh-Hant': '林前 16:22 — 「瑪拉那他」',
+    'en': '1 Corinthians 16:22 — "marana tha"',
+  },
+  'aramDescMaranatha': {
+    'zh-Hans':
+        '保罗在哥林多前书末尾用的亚兰文教会问候语 — 「我们的主啊，你来吧」(marana tha)，或拼作 maran atha 时意为「我们的主已经来了」。是早期教会承袭自亚兰语圈的礼仪短语，被保罗原文保留下来。',
+    'zh-Hant':
+        '保羅在哥林多前書末尾用的亞蘭文教會問候語 — 「我們的主啊，你來吧」(marana tha)，或拼作 maran atha 時意為「我們的主已經來了」。是早期教會承襲自亞蘭語圈的禮儀短語，被保羅原文保留下來。',
+    'en':
+        "Paul ends 1 Corinthians with this Aramaic liturgical greeting — \"Our Lord, come!\" (marana tha) or, parsed differently, \"Our Lord has come\" (maran atha). An early-church prayer kept in its original Aramaic, a window into the language of the very first Christian gatherings.",
+  },
   'lookupTopicCreation': {
     'zh-Hans': '创造',
     'zh-Hant': '創造',
