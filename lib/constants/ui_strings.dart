@@ -1712,6 +1712,325 @@ const uiStrings = {
     'zh-Hant': '重新檢查',
     'en': 'Re-run',
   },
+  // Localised "Open …" labels reused by the diagnostic's fix-link
+  // buttons so they match the wording on the setup walkthrough.
+  'setupStep1OpenLabel': {
+    'zh-Hans': '启用 Drive API',
+    'zh-Hant': '啟用 Drive API',
+    'en': 'Enable Drive API',
+  },
+  'setupStep3OpenLabel': {
+    'zh-Hans': '打开 OAuth 同意屏幕',
+    'zh-Hant': '打開 OAuth 同意畫面',
+    'en': 'Open OAuth consent screen',
+  },
+  'setupStep5OpenLabel': {
+    'zh-Hans': '打开 Netlify 环境变量',
+    'zh-Hant': '打開 Netlify 環境變數',
+    'en': 'Open Netlify env vars',
+  },
+  // ── Setup walkthrough — info popups (2026-05-06) ──────────────
+  'setupDetailTooltip': {
+    'zh-Hans': '为什么要做这一步？',
+    'zh-Hant': '為什麼要做這一步？',
+    'en': 'Why this step?',
+  },
+  'setupDetailDialogClose': {
+    'zh-Hans': '我明白了',
+    'zh-Hant': '我明白了',
+    'en': 'Got it',
+  },
+  'setupStep1Detail': {
+    'zh-Hans': '【作用】在 ysword 这个 Google Cloud 项目里启用 Drive REST API。\n\n'
+        '【为什么需要】应用要在每个用户的 Google 云端硬盘中存放一个 YsWords.json 文件'
+        '来同步高亮、书签、笔记和读经计划。这些操作（列出文件、创建文件、修改文件）都通过 Drive REST API 完成。'
+        'API 必须在拥有 OAuth 客户端的项目（ysword）中启用，启用一次即可，对所有用户生效。\n\n'
+        '【不启用会怎样】所有 Drive API 调用都会返回 403 错误："Drive API has not been used in project ysword"，'
+        '同步功能完全不可用。\n\n'
+        '【是否影响最终用户】不影响。这是项目级别的设置，不需要每个用户做任何事。',
+    'zh-Hant': '【作用】在 ysword 這個 Google Cloud 專案裡啟用 Drive REST API。\n\n'
+        '【為什麼需要】應用要在每個使用者的 Google 雲端硬碟中存放一個 YsWords.json 檔案'
+        '來同步標亮、書籤、筆記和讀經計劃。這些操作（列出檔案、建立檔案、修改檔案）都透過 Drive REST API 完成。'
+        'API 必須在擁有 OAuth 客戶端的專案（ysword）中啟用，啟用一次即可，對所有使用者生效。\n\n'
+        '【不啟用會怎樣】所有 Drive API 呼叫都會回傳 403 錯誤："Drive API has not been used in project ysword"，'
+        '同步功能完全不可用。\n\n'
+        '【是否影響最終使用者】不影響。這是專案級別的設定，不需要每個使用者做任何事。',
+    'en':
+        'WHAT: Enables the Drive REST API in the `ysword` Google '
+            'Cloud project.\n\n'
+            "WHY: The app stores a YsWords.json file in each user's "
+            'own Drive to sync highlights / bookmarks / notes / '
+            'reading-plan progress. All file operations (list, '
+            'create, update) go through the Drive REST API. The API '
+            'must be enabled in the project that owns the OAuth '
+            'client. Enable once → works for every user worldwide.\n\n'
+            "WHAT BREAKS WITHOUT IT: Every Drive call returns "
+            '403 "Drive API has not been used in project ysword". '
+            'Sync is completely non-functional.\n\n'
+            "DOES IT AFFECT END USERS: No. This is a project-level "
+            'setting; users never need to do anything.',
+  },
+  'setupStep2Detail': {
+    'zh-Hans': '【作用】在 ysword 项目里启用 Generative Language API（即 Gemini API）。\n\n'
+        '【为什么需要】Netlify 函数（aiExplainWord、aiSearch）通过 Gemini 提供 AI 释义和 AI 搜索。'
+        '即使你已经有了 GEMINI_API_KEY 环境变量，如果该 API 在密钥所属项目中没启用，调用就会失败。\n\n'
+        '【不启用会怎样】AI 解释和 AI 搜索功能会显示"暂时不可用"消息。其他功能不受影响。\n\n'
+        '【是否影响最终用户】不影响。这是项目级别的设置。',
+    'zh-Hant': '【作用】在 ysword 專案裡啟用 Generative Language API（即 Gemini API）。\n\n'
+        '【為什麼需要】Netlify 函數（aiExplainWord、aiSearch）透過 Gemini 提供 AI 釋義和 AI 搜尋。'
+        '即使你已經有了 GEMINI_API_KEY 環境變數，如果該 API 在金鑰所屬專案中沒啟用，呼叫就會失敗。\n\n'
+        '【不啟用會怎樣】AI 釋義和 AI 搜尋功能會顯示「暫時不可用」訊息。其他功能不受影響。\n\n'
+        '【是否影響最終使用者】不影響。這是專案級別的設定。',
+    'en':
+        'WHAT: Enables the Generative Language API (the Gemini API) '
+            'in the project.\n\n'
+            "WHY: The Netlify functions (aiExplainWord, aiSearch) "
+            "call Gemini for AI word explanations + AI search. Even "
+            "if GEMINI_API_KEY is set in env vars, the call fails "
+            "if the API isn't enabled in the project that owns the "
+            'key.\n\n'
+            "WHAT BREAKS WITHOUT IT: AI explanation and AI search "
+            'show "not available right now" messages. Other '
+            'features unaffected.\n\n'
+            "DOES IT AFFECT END USERS: No. Project-level setting.",
+  },
+  'setupStep3Detail': {
+    'zh-Hans': '【作用】在 OAuth 同意屏幕上添加 drive.file 范围（scope）。\n\n'
+        '【为什么需要】应用在用户登录时请求"管理由本应用创建的文件"权限。Google 拒绝任何'
+        '没有在同意屏幕中预先列出的 scope 请求。所以即使代码请求 drive.file，'
+        '也必须在同意屏幕上声明它。\n\n'
+        '【为什么是 drive.file 而不是 drive】drive.file 是"按文件"范围：应用只能访问'
+        '它自己创建的文件，看不到用户的其他 Drive 内容。隐私友好。\n\n'
+        '【不启用会怎样】登录时弹窗会显示"this scope is not approved"，'
+        '同步无法启动。\n\n'
+        '【是否影响最终用户】不影响。这是 OAuth 同意屏幕级别的设定。',
+    'zh-Hant': '【作用】在 OAuth 同意畫面上加入 drive.file 範圍（scope）。\n\n'
+        '【為什麼需要】應用在使用者登入時請求「管理由本應用建立的檔案」權限。Google 拒絕任何'
+        '沒有在同意畫面中預先列出的 scope 請求。所以即使程式碼請求 drive.file，'
+        '也必須在同意畫面上聲明它。\n\n'
+        '【為什麼是 drive.file 而不是 drive】drive.file 是「按檔案」範圍：應用只能存取'
+        '它自己建立的檔案，看不到使用者的其他 Drive 內容。隱私友善。\n\n'
+        '【不啟用會怎樣】登入時彈窗會顯示「this scope is not approved」，'
+        '同步無法啟動。\n\n'
+        '【是否影響最終使用者】不影響。這是 OAuth 同意畫面級別的設定。',
+    'en':
+        'WHAT: Adds the `drive.file` scope to the OAuth consent '
+            'screen.\n\n'
+            "WHY: The app asks each user, at sign-in, for permission "
+            'to manage files it creates in their Drive. Google '
+            "rejects any scope that isn't pre-listed on the consent "
+            "screen. The code requesting `drive.file` isn't enough — "
+            'the consent screen has to declare it too.\n\n'
+            "WHY drive.file (NOT drive): drive.file is per-file "
+            "scope — the app can only see files it created, never "
+            "the user's other Drive content. Privacy-preserving.\n\n"
+            "WHAT BREAKS WITHOUT IT: Sign-in popup shows 'this "
+            "scope is not approved' and sync never starts.\n\n"
+            "DOES IT AFFECT END USERS: No. OAuth-consent-screen "
+            'level setting.',
+  },
+  'setupStep4Detail': {
+    'zh-Hans': '【作用】把 yswords.netlify.app 加到 Firebase Auth 的"已授权域名"列表。\n\n'
+        '【为什么需要】Firebase Auth 出于安全考虑，会拒绝任何不在白名单中的来源发起的登录请求。\n\n'
+        '【不启用会怎样】登录请求会失败，错误码 auth/unauthorized-domain。\n\n'
+        '【是否影响最终用户】不影响。这是 Firebase 项目级别的设置。'
+        '如果将来部署到新域名（比如自定义域名 yswords.com），也要把那个域名加进来。',
+    'zh-Hant': '【作用】把 yswords.netlify.app 加到 Firebase Auth 的「已授權網域」清單。\n\n'
+        '【為什麼需要】Firebase Auth 出於安全考量，會拒絕任何不在白名單中的來源發起的登入請求。\n\n'
+        '【不啟用會怎樣】登入請求會失敗，錯誤碼 auth/unauthorized-domain。\n\n'
+        '【是否影響最終使用者】不影響。這是 Firebase 專案級別的設定。'
+        '如果將來部署到新網域（比如自訂網域 yswords.com），也要把那個網域加進來。',
+    'en':
+        'WHAT: Adds yswords.netlify.app to the Firebase Auth '
+            '"Authorized domains" allow-list.\n\n'
+            'WHY: Firebase Auth rejects any sign-in attempt from a '
+            "domain not on this list, as a security measure.\n\n"
+            "WHAT BREAKS WITHOUT IT: Sign-in fails with code "
+            "`auth/unauthorized-domain`.\n\n"
+            "DOES IT AFFECT END USERS: No. Firebase-project-level "
+            'setting. If you ever deploy to a new domain (custom '
+            "domain like yswords.com), add that domain here too.",
+  },
+  'setupStep5Detail': {
+    'zh-Hans': '【作用】在 Netlify 仪表盘的环境变量中设置 GEMINI_API_KEY。\n\n'
+        '【为什么需要】Netlify 函数（aiExplainWord、aiSearch）需要这个密钥来认证 Gemini API 调用。'
+        '密钥从 https://aistudio.google.com/apikey 免费获取。\n\n'
+        '【可选】可以最多设置 9 个备用密钥（GEMINI_API_KEY_BACKUP_2..9）'
+        '形成密钥链，主密钥额度耗尽时自动切换到备用密钥，提高可用性。\n\n'
+        '【不设置会怎样】AI 功能调用时函数会返回 503 错误，提示密钥未配置。\n\n'
+        '【注意】这是 Netlify 环境变量，不是 Google Cloud 设置。修改后需要重新部署生效。',
+    'zh-Hant': '【作用】在 Netlify 儀表板的環境變數中設置 GEMINI_API_KEY。\n\n'
+        '【為什麼需要】Netlify 函數（aiExplainWord、aiSearch）需要這個金鑰來認證 Gemini API 呼叫。'
+        '金鑰從 https://aistudio.google.com/apikey 免費取得。\n\n'
+        '【可選】可以最多設置 9 個備用金鑰（GEMINI_API_KEY_BACKUP_2..9）'
+        '形成金鑰鏈，主金鑰額度耗盡時自動切換到備用金鑰，提高可用性。\n\n'
+        '【不設置會怎樣】AI 功能呼叫時函數會回傳 503 錯誤，提示金鑰未配置。\n\n'
+        '【注意】這是 Netlify 環境變數，不是 Google Cloud 設定。修改後需要重新部署生效。',
+    'en':
+        'WHAT: Sets the GEMINI_API_KEY environment variable in '
+            'the Netlify dashboard.\n\n'
+            "WHY: The Netlify functions (aiExplainWord, aiSearch) "
+            "need this credential to authenticate Gemini API calls. "
+            "Generate one for free at https://aistudio.google.com/apikey.\n\n"
+            "OPTIONAL: Set up to 9 backup keys "
+            "(GEMINI_API_KEY_BACKUP_2..9) to form a fallback chain — "
+            "when the primary key's quota is exhausted, the function "
+            "automatically tries the next one. Improves reliability.\n\n"
+            "WHAT BREAKS WITHOUT IT: AI features fail with 503 'GEMINI_"
+            "API_KEY is not configured'.\n\n"
+            "NOTE: This is a Netlify env var, not a Google Cloud "
+            "setting. Changes require a redeploy to take effect.",
+  },
+  // ── Diagnostic probe result strings (localised) ───────────────
+  'cloudDiagFirebaseAuthTitle': {
+    'zh-Hans': 'Firebase Auth',
+    'zh-Hant': 'Firebase Auth',
+    'en': 'Firebase Auth',
+  },
+  'cloudDiagFirebaseAuthOk': {
+    'zh-Hans': '已配置。',
+    'zh-Hant': '已配置。',
+    'en': 'Configured.',
+  },
+  'cloudDiagFirebaseAuthPlaceholder': {
+    'zh-Hans': 'firebase_options.dart 中仍是占位值。云同步和登录已禁用（仅本地模式）。',
+    'zh-Hant': 'firebase_options.dart 中仍是佔位值。雲同步和登入已停用（僅本地模式）。',
+    'en':
+        'firebase_options.dart still has placeholder values. Cloud '
+            'sync + sign-in are disabled (local-only mode).',
+  },
+  'cloudDiagFirebaseAuthFailed': {
+    'zh-Hans': 'Firebase 初始化失败。请在浏览器控制台中查找 [CloudAuthService] 日志。',
+    'zh-Hant': 'Firebase 初始化失敗。請在瀏覽器控制台中查找 [CloudAuthService] 日誌。',
+    'en': 'Firebase init failed. Check console for [CloudAuthService] log.',
+  },
+  'cloudDiagSignedInTitle': {
+    'zh-Hans': '已登录',
+    'zh-Hant': '已登入',
+    'en': 'Signed in',
+  },
+  'cloudDiagSignedInSkip': {
+    'zh-Hans': '未配置 Auth。',
+    'zh-Hant': '未配置 Auth。',
+    'en': 'Auth not configured.',
+  },
+  'cloudDiagSignedInWarning': {
+    'zh-Hans': '尚未登录。在 设置 → 账户 中登录后，云端同步才会启用。',
+    'zh-Hant': '尚未登入。在 設定 → 帳號 中登入後，雲端同步才會啟用。',
+    'en':
+        'Not signed in. Cloud sync stays disabled until the user '
+            'signs in via Settings → Account.',
+  },
+  'cloudDiagSignedInOk': {
+    'zh-Hans': '账号：{email}',
+    'zh-Hant': '帳號：{email}',
+    'en': 'as {email}',
+  },
+  'cloudDiagDriveScopeTitle': {
+    'zh-Hans': 'Drive 权限范围',
+    'zh-Hant': 'Drive 權限範圍',
+    'en': 'Drive scope',
+  },
+  'cloudDiagDriveScopeSkip': {
+    'zh-Hans': '未登录。',
+    'zh-Hant': '未登入。',
+    'en': 'Not signed in.',
+  },
+  'cloudDiagDriveScopeWarning': {
+    'zh-Hans': '未捕获 Drive OAuth 访问令牌。可能是用户在添加 drive.file 范围之前登录的——'
+        '请在 设置 → 账户 → 同步 中点击"重新连接 Google Drive"。',
+    'zh-Hant': '未捕獲 Drive OAuth 存取權杖。可能是使用者在加入 drive.file 範圍之前登入的——'
+        '請在 設定 → 帳號 → 同步 中點擊「重新連接 Google Drive」。',
+    'en':
+        'No Drive OAuth access token captured. User may have signed '
+            'in before the drive.file scope was added — they need to '
+            'click Reconnect Drive in Settings → Account → Sync.',
+  },
+  'cloudDiagDriveScopeOk': {
+    'zh-Hans': 'OAuth 访问令牌已捕获。',
+    'zh-Hant': 'OAuth 存取權杖已捕獲。',
+    'en': 'OAuth access token captured.',
+  },
+  'cloudDiagDriveApiTitle': {
+    'zh-Hans': 'Drive REST API',
+    'zh-Hant': 'Drive REST API',
+    'en': 'Drive REST API',
+  },
+  'cloudDiagDriveApiSkip': {
+    'zh-Hans': '没有访问令牌。',
+    'zh-Hant': '沒有存取權杖。',
+    'en': 'No access token.',
+  },
+  'cloudDiagDriveApiOkEmpty': {
+    'zh-Hans': 'API 可达；YsWords.json 还不存在（首次同步时会创建）。',
+    'zh-Hant': 'API 可達；YsWords.json 還不存在（首次同步時會建立）。',
+    'en':
+        'API reachable; no YsWords.json yet (will be created on first sync).',
+  },
+  'cloudDiagDriveApiOkExists': {
+    'zh-Hans': 'API 可达；YsWords.json 已存在。',
+    'zh-Hant': 'API 可達；YsWords.json 已存在。',
+    'en': 'API reachable; YsWords.json exists.',
+  },
+  'cloudDiagDriveApi401': {
+    'zh-Hans': '401 未授权——访问令牌已过期。下次同步会自动静默刷新。',
+    'zh-Hant': '401 未授權——存取權杖已過期。下次同步會自動靜默刷新。',
+    'en':
+        '401 unauthorized — access token expired. The next sync '
+            'will silently refresh it.',
+  },
+  'cloudDiagDriveApiNotEnabled': {
+    'zh-Hans': 'ysword 项目中未启用 Drive API。点击下方"打开 Cloud Console"一键启用。',
+    'zh-Hant': 'ysword 專案中未啟用 Drive API。點擊下方「打開 Cloud Console」一鍵啟用。',
+    'en':
+        'Drive API is NOT enabled in the ysword project. Click '
+            '"Open Cloud Console" to enable it (one click).',
+  },
+  'cloudDiagDriveApi403Other': {
+    'zh-Hans': '403——可能是 OAuth 同意屏幕缺少 drive.file 范围，或者你的账号被 Workspace 管理员禁用了第三方应用。服务器返回：{body}',
+    'zh-Hant': '403——可能是 OAuth 同意畫面缺少 drive.file 範圍，或者你的帳號被 Workspace 管理員停用了第三方應用。伺服器回傳：{body}',
+    'en':
+        '403 — likely the OAuth consent screen is missing the '
+            'drive.file scope, or your account is on a Workspace '
+            'admin that blocks third-party apps. Server said: {body}',
+  },
+  'cloudDiagAiProxyTitle': {
+    'zh-Hans': 'AI 代理（Netlify）',
+    'zh-Hant': 'AI 代理（Netlify）',
+    'en': 'AI proxy (Netlify)',
+  },
+  'cloudDiagAiProxyOk': {
+    'zh-Hans': '函数可达。AI 调用按需访问 Gemini；如有失败请查看 Netlify 控制台中 /api/aiSearch 的日志。',
+    'zh-Hant': '函數可達。AI 呼叫按需存取 Gemini；如有失敗請查看 Netlify 控制台中 /api/aiSearch 的日誌。',
+    'en':
+        'Function reachable. Real AI calls go to Gemini on demand; '
+            'if they fail, see /api/aiSearch logs in Netlify '
+            'dashboard.',
+  },
+  'cloudDiagAiProxy503': {
+    'zh-Hans': '函数报告：GEMINI_API_KEY 未配置。请在 Netlify 仪表盘中设置。',
+    'zh-Hant': '函數報告：GEMINI_API_KEY 未配置。請在 Netlify 儀表板中設置。',
+    'en':
+        'Function says GEMINI_API_KEY is not configured. Set it in '
+            'the Netlify dashboard.',
+  },
+  'cloudDiagAiProxy404': {
+    'zh-Hans': '函数返回 404——未部署，或 netlify.toml 重定向配置错误。',
+    'zh-Hant': '函數回傳 404——未部署，或 netlify.toml 重定向配置錯誤。',
+    'en':
+        'Function returns 404 — not deployed, or netlify.toml '
+            'redirects are misconfigured.',
+  },
+  'cloudDiagTimeout': {
+    'zh-Hans': '8 秒后超时。',
+    'zh-Hant': '8 秒後逾時。',
+    'en': 'Timed out after 8s.',
+  },
+  'cloudDiagUnknownEmail': {
+    'zh-Hans': '（未知邮箱）',
+    'zh-Hant': '（未知信箱）',
+    'en': '(unknown email)',
+  },
   'aiByokTitle': {
     'zh-Hans': '使用我自己的 Gemini API 密钥',
     'zh-Hant': '使用我自己的 Gemini API 金鑰',

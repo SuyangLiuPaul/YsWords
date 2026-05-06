@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'package:yswords/constants/ui_strings.dart';
 import 'package:yswords/services/link_opener.dart';
 
 /// Collapsible card that mirrors the contents of `SETUP.md` so the
@@ -16,6 +17,53 @@ class SetupInstructionsCard extends StatelessWidget {
   Future<void> _open(String url) async {
     if (!LinkOpener.isAvailable) return;
     await LinkOpener.open(url);
+  }
+
+  /// Pops a "why this step?" dialog with the long-form explanation
+  /// resolved from `uiStrings[detailKey][locale]`. Triggered by the
+  /// info icon next to each step's title.
+  void _showDetail(BuildContext ctx, String title, String detailKey) {
+    final detail = uiStrings[detailKey]?[locale] ??
+        uiStrings[detailKey]?['en'] ??
+        '';
+    showDialog<void>(
+      context: ctx,
+      builder: (dCtx) {
+        final dScheme = Theme.of(dCtx).colorScheme;
+        return AlertDialog(
+          title: Row(
+            children: [
+              Icon(Icons.info_outline_rounded,
+                  size: 20, color: dScheme.primary),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  title,
+                  style: const TextStyle(fontSize: 15),
+                ),
+              ),
+            ],
+          ),
+          content: SingleChildScrollView(
+            child: Text(
+              detail,
+              style: TextStyle(
+                fontSize: 13,
+                color: dScheme.onSurface,
+                height: 1.55,
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dCtx).pop(),
+              child: Text(
+                  uiStrings['setupDetailDialogClose']?[locale] ?? 'Got it'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -64,7 +112,8 @@ class SetupInstructionsCard extends StatelessWidget {
                         'enabled in the project that owns the OAuth client.',
                 url:
                     'https://console.cloud.google.com/apis/library/drive.googleapis.com?project=ysword',
-                action: isZh ? '打开启用页' : 'Open enable page'),
+                action: isZh ? '打开启用页' : 'Open enable page',
+                detailKey: 'setupStep1Detail'),
             _step(
                 ctx: context,
                 n: 2,
@@ -79,7 +128,8 @@ class SetupInstructionsCard extends StatelessWidget {
                         "whichever project owns the key.",
                 url:
                     'https://console.cloud.google.com/apis/library/generativelanguage.googleapis.com?project=ysword',
-                action: isZh ? '打开启用页' : 'Open enable page'),
+                action: isZh ? '打开启用页' : 'Open enable page',
+                detailKey: 'setupStep2Detail'),
             _step(
                 ctx: context,
                 n: 3,
@@ -93,7 +143,8 @@ class SetupInstructionsCard extends StatelessWidget {
                         'pre-listed on the consent screen.',
                 url:
                     'https://console.cloud.google.com/apis/credentials/consent?project=ysword',
-                action: isZh ? '打开同意屏幕' : 'Open consent screen'),
+                action: isZh ? '打开同意屏幕' : 'Open consent screen',
+                detailKey: 'setupStep3Detail'),
             _step(
                 ctx: context,
                 n: 4,
@@ -106,7 +157,8 @@ class SetupInstructionsCard extends StatelessWidget {
                         'non-authorized origins.',
                 url:
                     'https://console.firebase.google.com/project/ysword/authentication/settings',
-                action: isZh ? '打开 Firebase Auth 设置' : 'Open Firebase Auth settings'),
+                action: isZh ? '打开 Firebase Auth 设置' : 'Open Firebase Auth settings',
+                detailKey: 'setupStep4Detail'),
             _step(
                 ctx: context,
                 n: 5,
@@ -120,7 +172,8 @@ class SetupInstructionsCard extends StatelessWidget {
                         'for additional fallback keys.',
                 url:
                     'https://app.netlify.com/projects/yswords/configuration/env',
-                action: isZh ? '打开 Netlify 环境变量' : 'Open Netlify env vars'),
+                action: isZh ? '打开 Netlify 环境变量' : 'Open Netlify env vars',
+                detailKey: 'setupStep5Detail'),
             const SizedBox(height: 8),
             Container(
               padding: const EdgeInsets.fromLTRB(10, 8, 10, 8),
@@ -163,6 +216,10 @@ class SetupInstructionsCard extends StatelessWidget {
     required String body,
     required String url,
     required String action,
+    /// Locale key for the longer "what does this step actually do
+    /// and why?" explanation that appears in a popup when the user
+    /// taps the info icon. Resolved against [uiStrings].
+    required String detailKey,
   }) {
     return Padding(
       padding: const EdgeInsets.only(top: 8),
@@ -199,6 +256,17 @@ class SetupInstructionsCard extends StatelessWidget {
                     color: scheme.onSurface,
                   ),
                 ),
+              ),
+              // Info icon — taps to a dialog with the long-form
+              // explanation of WHAT this step does + WHY it's
+              // needed + WHAT BREAKS without it. Adds context for
+              // anyone unfamiliar with Cloud Console / OAuth.
+              IconButton(
+                icon: const Icon(Icons.info_outline_rounded, size: 16),
+                visualDensity: VisualDensity.compact,
+                tooltip: uiStrings['setupDetailTooltip']?[locale] ??
+                    'Why this step?',
+                onPressed: () => _showDetail(ctx, title, detailKey),
               ),
             ],
           ),

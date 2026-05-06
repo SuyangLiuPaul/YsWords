@@ -9,6 +9,11 @@ import 'package:yswords/services/cloud_auth_service.dart';
 import 'package:yswords/services/link_opener.dart';
 import 'package:yswords/utils/theme_color_helpers.dart';
 
+/// Resolve a localised uiStrings entry, with a hardcoded English
+/// fallback. Avoids null-bang access scattered through the probes.
+String _l(String key, String locale, String fallback) =>
+    uiStrings[key]?[locale] ?? uiStrings[key]?['en'] ?? fallback;
+
 /// Self-test panel that probes each cloud-side dependency and tells
 /// the developer (or curious user) exactly what's working.
 ///
@@ -72,73 +77,94 @@ class _CloudSetupDiagnosticState extends State<CloudSetupDiagnostic> {
 
   // ── Probes ────────────────────────────────────────────────────
 
+  String get _loc => widget.locale;
+
   Future<_ProbeResult> _probeFirebaseAuth() async {
+    final t = _l('cloudDiagFirebaseAuthTitle', _loc, 'Firebase Auth');
     final auth = CloudAuthService.instance;
     if (!auth.hasFirebaseCredentials) {
       return _ProbeResult.warning(
-        title: 'Firebase Auth',
-        message:
+        title: t,
+        message: _l(
+            'cloudDiagFirebaseAuthPlaceholder',
+            _loc,
             'firebase_options.dart still has placeholder values. '
-            'Cloud sync + sign-in are disabled (local-only mode).',
+                'Cloud sync + sign-in are disabled (local-only mode).'),
       );
     }
     if (!auth.isConfigured) {
       return _ProbeResult.fail(
-        title: 'Firebase Auth',
+        title: t,
         message: auth.initError ??
-            'Firebase init failed. Check console for [CloudAuthService] log.',
+            _l('cloudDiagFirebaseAuthFailed', _loc,
+                'Firebase init failed. Check console for [CloudAuthService] log.'),
       );
     }
     return _ProbeResult.ok(
-        title: 'Firebase Auth', message: 'Configured.');
+        title: t, message: _l('cloudDiagFirebaseAuthOk', _loc, 'Configured.'));
   }
 
   Future<_ProbeResult> _probeSignedIn() async {
+    final t = _l('cloudDiagSignedInTitle', _loc, 'Signed in');
     final auth = CloudAuthService.instance;
     if (!auth.isConfigured) {
       return _ProbeResult.skip(
-          title: 'Signed in', message: 'Auth not configured.');
+          title: t,
+          message: _l('cloudDiagSignedInSkip', _loc, 'Auth not configured.'));
     }
     if (!auth.isSignedIn) {
       return _ProbeResult.warning(
-        title: 'Signed in',
-        message:
+        title: t,
+        message: _l(
+            'cloudDiagSignedInWarning',
+            _loc,
             'Not signed in. Cloud sync stays disabled until the user '
-            'signs in via Settings → Account.',
+                'signs in via Settings → Account.'),
       );
     }
+    final email = auth.currentUser?.email ??
+        _l('cloudDiagUnknownEmail', _loc, '(unknown email)');
     return _ProbeResult.ok(
-        title: 'Signed in',
-        message: 'as ${auth.currentUser?.email ?? "(unknown email)"}');
+      title: t,
+      message: _l('cloudDiagSignedInOk', _loc, 'as {email}')
+          .replaceAll('{email}', email),
+    );
   }
 
   Future<_ProbeResult> _probeDriveScope() async {
+    final t = _l('cloudDiagDriveScopeTitle', _loc, 'Drive scope');
     final auth = CloudAuthService.instance;
     if (!auth.isSignedIn) {
       return _ProbeResult.skip(
-          title: 'Drive scope', message: 'Not signed in.');
+          title: t,
+          message: _l('cloudDiagDriveScopeSkip', _loc, 'Not signed in.'));
     }
     if (!auth.hasDriveAccessToken) {
       return _ProbeResult.warning(
-        title: 'Drive scope',
-        message:
+        title: t,
+        message: _l(
+            'cloudDiagDriveScopeWarning',
+            _loc,
             'No Drive OAuth access token captured. User may have signed in '
-            'before the drive.file scope was added — they need to click '
-            'Reconnect Drive in Settings → Account → Sync.',
+                'before the drive.file scope was added — they need to click '
+                'Reconnect Drive in Settings → Account → Sync.'),
       );
     }
     return _ProbeResult.ok(
-      title: 'Drive scope',
-      message: 'OAuth access token captured.',
+      title: t,
+      message: _l(
+          'cloudDiagDriveScopeOk', _loc, 'OAuth access token captured.'),
     );
   }
 
   Future<_ProbeResult> _probeDriveApi() async {
+    final tt = _l('cloudDiagDriveApiTitle', _loc, 'Drive REST API');
     final auth = CloudAuthService.instance;
     final t = auth.driveAccessToken;
     if (t == null) {
       return _ProbeResult.skip(
-          title: 'Drive REST API', message: 'No access token.');
+          title: tt,
+          message: _l('cloudDiagDriveApiSkip', _loc, 'No access token.'));
     }
     try {
       final r = await http
@@ -155,67 +181,72 @@ class _CloudSetupDiagnosticState extends State<CloudSetupDiagnostic> {
         final j = jsonDecode(r.body) as Map<String, dynamic>;
         final files = (j['files'] as List?) ?? const [];
         return _ProbeResult.ok(
-          title: 'Drive REST API',
+          title: tt,
           message: files.isEmpty
-              ? 'API reachable; no YsWords.json yet (will be created on first sync).'
-              : 'API reachable; YsWords.json exists.',
+              ? _l(
+                  'cloudDiagDriveApiOkEmpty',
+                  _loc,
+                  'API reachable; no YsWords.json yet (will be created on first sync).')
+              : _l('cloudDiagDriveApiOkExists', _loc,
+                  'API reachable; YsWords.json exists.'),
         );
       }
       if (r.statusCode == 401) {
         return _ProbeResult.warning(
-          title: 'Drive REST API',
-          message:
+          title: tt,
+          message: _l(
+              'cloudDiagDriveApi401',
+              _loc,
               '401 unauthorized — access token expired. The next sync will '
-              'silently refresh it.',
+                  'silently refresh it.'),
         );
       }
       if (r.statusCode == 403) {
-        // The two most common causes — make the message tell us which.
         final body = r.body.toLowerCase();
         if (body.contains('drive api has not been used') ||
             body.contains('drive.googleapis.com') &&
                 body.contains('disabled')) {
           return _ProbeResult.fail(
-            title: 'Drive REST API',
-            message:
-                'Drive API is NOT enabled in the $_projectId project. '
-                'Click "Open Cloud Console" to enable it (one click).',
+            title: tt,
+            message: _l(
+                'cloudDiagDriveApiNotEnabled',
+                _loc,
+                'Drive API is NOT enabled in the ysword project. '
+                    'Click "Open Cloud Console" to enable it (one click).'),
             fixUrl:
                 'https://console.cloud.google.com/apis/library/drive.googleapis.com?project=$_projectId',
-            fixLabel: 'Enable Drive API',
+            fixLabel: _l('setupStep1OpenLabel', _loc, 'Enable Drive API'),
           );
         }
         return _ProbeResult.fail(
-          title: 'Drive REST API',
-          message:
-              '403 — likely the OAuth consent screen is missing the '
-              'drive.file scope, or your account is on a Workspace '
-              'admin that blocks third-party apps. Server said: '
-              '${_truncate(r.body, 200)}',
+          title: tt,
+          message: _l(
+                  'cloudDiagDriveApi403Other',
+                  _loc,
+                  '403 — likely the OAuth consent screen is missing the '
+                      'drive.file scope. Server said: {body}')
+              .replaceAll('{body}', _truncate(r.body, 200)),
           fixUrl:
               'https://console.cloud.google.com/apis/credentials/consent?project=$_projectId',
-          fixLabel: 'Open OAuth consent screen',
+          fixLabel:
+              _l('setupStep3OpenLabel', _loc, 'Open OAuth consent screen'),
         );
       }
       return _ProbeResult.fail(
-        title: 'Drive REST API',
-        message:
-            'Unexpected ${r.statusCode}: ${_truncate(r.body, 200)}',
+        title: tt,
+        message: 'Unexpected ${r.statusCode}: ${_truncate(r.body, 200)}',
       );
     } on TimeoutException {
       return _ProbeResult.fail(
-          title: 'Drive REST API', message: 'Timed out after 8s.');
+          title: tt,
+          message: _l('cloudDiagTimeout', _loc, 'Timed out after 8s.'));
     } catch (e) {
-      return _ProbeResult.fail(
-          title: 'Drive REST API', message: e.toString());
+      return _ProbeResult.fail(title: tt, message: e.toString());
     }
   }
 
   Future<_ProbeResult> _probeAiProxy() async {
-    // Tiny POST to /api/aiSearch with an empty query — the function
-    // returns 400 "query required" which proves it's deployed AND the
-    // Gemini key chain is intact (it would 503 if `geminiKeys()`
-    // returned an empty list). This avoids burning real Gemini quota.
+    final tt = _l('cloudDiagAiProxyTitle', _loc, 'AI proxy (Netlify)');
     try {
       final r = await http
           .post(
@@ -225,45 +256,48 @@ class _CloudSetupDiagnosticState extends State<CloudSetupDiagnostic> {
           )
           .timeout(const Duration(seconds: 8));
       if (r.statusCode == 400) {
-        // Function is deployed and reachable. We didn't actually hit
-        // Gemini, so we can't be 100% sure the API is enabled — but
-        // we can say "function reachable" with confidence.
         return _ProbeResult.ok(
-          title: 'AI proxy (Netlify)',
-          message: 'Function reachable. Real AI calls go to Gemini '
-              'on demand; if they fail, see /api/aiSearch logs in '
-              'Netlify dashboard.',
+          title: tt,
+          message: _l(
+              'cloudDiagAiProxyOk',
+              _loc,
+              'Function reachable. Real AI calls go to Gemini on demand; '
+                  'if they fail, see /api/aiSearch logs in Netlify dashboard.'),
         );
       }
       if (r.statusCode == 503) {
         return _ProbeResult.fail(
-          title: 'AI proxy (Netlify)',
-          message:
-              'Function says GEMINI_API_KEY is not configured. Set it '
-              'in the Netlify dashboard.',
+          title: tt,
+          message: _l(
+              'cloudDiagAiProxy503',
+              _loc,
+              'Function says GEMINI_API_KEY is not configured. Set it in '
+                  'the Netlify dashboard.'),
           fixUrl: 'https://app.netlify.com/projects/yswords/configuration/env',
-          fixLabel: 'Open Netlify env vars',
+          fixLabel:
+              _l('setupStep5OpenLabel', _loc, 'Open Netlify env vars'),
         );
       }
       if (r.statusCode == 404) {
         return _ProbeResult.fail(
-          title: 'AI proxy (Netlify)',
-          message:
+          title: tt,
+          message: _l(
+              'cloudDiagAiProxy404',
+              _loc,
               'Function returns 404 — not deployed, or netlify.toml '
-              'redirects are misconfigured.',
+                  'redirects are misconfigured.'),
         );
       }
       return _ProbeResult.warning(
-        title: 'AI proxy (Netlify)',
-        message:
-            'Unexpected ${r.statusCode}: ${_truncate(r.body, 200)}',
+        title: tt,
+        message: 'Unexpected ${r.statusCode}: ${_truncate(r.body, 200)}',
       );
     } on TimeoutException {
       return _ProbeResult.fail(
-          title: 'AI proxy (Netlify)', message: 'Timed out after 8s.');
+          title: tt,
+          message: _l('cloudDiagTimeout', _loc, 'Timed out after 8s.'));
     } catch (e) {
-      return _ProbeResult.fail(
-          title: 'AI proxy (Netlify)', message: e.toString());
+      return _ProbeResult.fail(title: tt, message: e.toString());
     }
   }
 
