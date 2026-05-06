@@ -1746,6 +1746,77 @@ const uiStrings = {
     'zh-Hant': '搜尋冷知識…',
     'en': 'Search trivia…',
   },
+  // ── Trivia diagrams (Round 56 day-3) ──────────────────────────
+  // Captions and labels used by the inline schematic diagrams that
+  // visualise structural patterns (Hebrew acrostics, broken-acrostic
+  // chapter counts, threefold genealogies, numbered word lists).
+  'triviaAlphabetCaption': {
+    'zh-Hans': '希伯来字母表 22 个字母',
+    'zh-Hant': '希伯來字母表 22 個字母',
+    'en': 'Hebrew alphabet · 22 letters',
+  },
+  'triviaChapterCountsCaption': {
+    'zh-Hans': '每章节数（红色 = 离合体被打破）',
+    'zh-Hant': '每章節數（紅色 = 離合體被打破）',
+    'en': 'Verses per chapter (red = acrostic broken)',
+  },
+  // Genesis 1:1 — seven Hebrew words.
+  'triviaGen11Word1': {
+    'zh-Hans': '起初',
+    'zh-Hant': '起初',
+    'en': 'In the beginning',
+  },
+  'triviaGen11Word2': {
+    'zh-Hans': '创造',
+    'zh-Hant': '創造',
+    'en': 'created',
+  },
+  'triviaGen11Word3': {
+    'zh-Hans': '神（Elohim）',
+    'zh-Hant': '神（Elohim）',
+    'en': 'God (Elohim)',
+  },
+  'triviaGen11Word4': {
+    'zh-Hans': '（直接宾语标记）',
+    'zh-Hant': '（直接賓語標記）',
+    'en': '(direct-object marker)',
+  },
+  'triviaGen11Word5': {
+    'zh-Hans': '诸天',
+    'zh-Hant': '諸天',
+    'en': 'the heavens',
+  },
+  'triviaGen11Word6': {
+    'zh-Hans': '与（直接宾语标记）',
+    'zh-Hant': '與（直接賓語標記）',
+    'en': 'and (direct-object marker)',
+  },
+  'triviaGen11Word7': {
+    'zh-Hans': '大地',
+    'zh-Hant': '大地',
+    'en': 'the earth',
+  },
+  // Matthew 1:17 — three groups of 14 generations.
+  'triviaMatt117GroupA': {
+    'zh-Hans': '亚伯拉罕 → 大卫',
+    'zh-Hant': '亞伯拉罕 → 大衛',
+    'en': 'Abraham → David',
+  },
+  'triviaMatt117GroupB': {
+    'zh-Hans': '大卫 → 被掳',
+    'zh-Hant': '大衛 → 被擄',
+    'en': 'David → Exile',
+  },
+  'triviaMatt117GroupC': {
+    'zh-Hans': '被掳 → 基督',
+    'zh-Hant': '被擄 → 基督',
+    'en': 'Exile → Christ',
+  },
+  'triviaMatt117Generations': {
+    'zh-Hans': '14 代',
+    'zh-Hant': '14 代',
+    'en': '14 generations',
+  },
   // ── Songs directory (Round 56) ────────────────────────────────
   'songsPageTitle': {
     'zh-Hans': '诗歌',

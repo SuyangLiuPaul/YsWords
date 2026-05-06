@@ -1226,6 +1226,70 @@ M  windows/flutter/generated_plugins.cmake (same)
   shape (`audioUrl`, `pdfUrl` already populated for 489 / 490
   entries) is ready when authorisation is documented.
 
+### Strand: Bible Trivia — schematic diagrams + canonical sort (2026-05-06)
+
+User feedback: *"圣经里冷知识能不能更加能够明白方式类似于图片或者画出来的，
+有没有open source可以拿来用的，好好更新加进去，还有 sort 也应该根据 bible
+order"*. Two independent issues, both solved without external image
+dependencies (open-source Bible artwork carries CC-BY-NC-ND clauses
+that complicate redistribution; instead we draw schematic visuals
+with Flutter widgets, which are copyright-safe, work offline, scale
+with the user's font/theme, and stay trilingual).
+
+**Sort by canonical Bible order** (`lib/pages/bible_trivia_page.dart`,
+`_filterEntries` + new `_canonicalSortKey`). After every other
+filter, entries are now sorted by `(bookIndex, chapter, verseStart)`
+using the existing `_canonicalBookOrder` 66-book list. Stable within
+the same passage — original catalogue order is the tie-breaker. Entries
+without a parseable reference sink to the bottom keeping their
+relative order. The catalogue source still stays grouped topically
+(Acrostics / YHWH / Numerical / Linguistic) for editing convenience;
+runtime ordering is purely canonical.
+
+**`TriviaDiagram` infrastructure** — new abstract class with four
+const subclasses, all attached via the optional `diagram` field on
+`BibleTriviaEntry`:
+* `HebrewAlphabetDiagram(versesPerLetter, showLetterNames)` — 22-cell
+  grid of Hebrew consonants (א through ת). Used by Psalm 119
+  (8 verses per letter × 22 = 176) and Proverbs 31:10-31 (1 verse
+  per letter × 22 = 22).
+* `ChapterVerseCountsDiagram(chapters, brokenChapters)` — bar chart
+  with one bar per chapter. Bars in `brokenChapters` render in the
+  scheme's error colour. Used by Lamentations 3 (22 / 22 / 66 / 22 /
+  22 with chapter 5 marked broken).
+* `SequenceDiagram(segments)` — horizontal "A → B → C" layout with
+  arrows between cells. Each segment carries `labelKey` + `captionKey`
+  ui-strings keys for full localisation. Used by Matthew 1:17's three
+  groups of 14 generations.
+* `NumberedWordsDiagram(words)` — vertical numbered column. Each
+  `NumberedWord(original, translit, glossKey)` shows the
+  Hebrew/Greek glyph, romanised transliteration, and locale-resolved
+  gloss. Used by Genesis 1:1 (the seven Hebrew words: bereshit, bara,
+  Elohim, et, ha-shamayim, we-et, ha-aretz).
+
+`_TriviaDiagramView` is the renderer — a single StatelessWidget that
+switches on the concrete subtype and dispatches to a small
+per-shape builder. All visuals share `_wrapper(scheme, child,
+caption)` for the rounded card chrome + caption row.
+
+The diagram renders inside the existing `_TriviaTile` expanded
+section, **above** the body text (gated on `entry.diagram != null`)
+so the visual primes the reader before they read the prose
+explanation.
+
+**New `uiStrings` keys**: `triviaAlphabetCaption`,
+`triviaChapterCountsCaption`, `triviaGen11Word1..7`,
+`triviaMatt117Group{A,B,C}`, `triviaMatt117Generations`.
+
+**Why no external images**: BibleProject artwork is CC-BY-NC-ND (no
+derivatives — can't crop / resize / re-style), Wikimedia public-
+domain Bible art is mostly chapter-thumbnail Renaissance paintings
+(decorative only, doesn't *explain* the patterns), and OpenBible.info
+artwork is also non-commercial. Drawing schematic visuals in Flutter
+gives us exactly the right level of abstraction (the structural
+pattern itself, not a generic illustration), keeps the asset bundle
+small, and dodges every licence question.
+
 ### Strand: Bible Tools — biblical-languages card + Aramaic deep-dive (2026-05-06)
 
 Stats page renamed to **Bible Tools**. The Overview tab's stat-block

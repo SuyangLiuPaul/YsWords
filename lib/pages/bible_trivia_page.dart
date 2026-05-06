@@ -221,7 +221,50 @@ class _BibleTriviaPageState extends State<BibleTriviaPage> {
             matches(e.reference);
       });
     }
-    return out.toList();
+    // Round 56 (continued — day 3): user feedback "sort 也应该根据
+    // bible order". The catalogue source order is topical (acrostics
+    // first, etc.), but readers expect Bible order — Genesis first,
+    // Revelation last. Sort by (book index, chapter, verseStart),
+    // with reference-less entries appended at the end (they have no
+    // canonical position) keeping their original relative order so
+    // the rare entry without a reference still surfaces predictably.
+    final indexed = out.toList().asMap().entries.toList();
+    indexed.sort((a, b) {
+      final ka = _canonicalSortKey(a.value);
+      final kb = _canonicalSortKey(b.value);
+      // Reference-less entries (sortKey null) sink to the bottom.
+      if (ka == null && kb == null) return a.key.compareTo(b.key);
+      if (ka == null) return 1;
+      if (kb == null) return -1;
+      final cmp = _compareKey(ka, kb);
+      if (cmp != 0) return cmp;
+      // Stable within the same (book, chapter, verse) — preserve
+      // catalogue order so multiple entries on the same passage
+      // appear in the order they were authored.
+      return a.key.compareTo(b.key);
+    });
+    return indexed.map((e) => e.value).toList();
+  }
+
+  /// (bookIndex, chapter, verseStart) tuple for canonical sort.
+  /// Returns null when the entry has no parseable reference, so the
+  /// caller can sink those to the end without crashing.
+  static List<int>? _canonicalSortKey(BibleTriviaEntry e) {
+    final ref = e.reference;
+    if (ref == null || ref.trim().isEmpty) return null;
+    final parsed = parseReference(ref);
+    if (parsed == null) return null;
+    final bookIdx = _canonicalBookOrder.indexOf(parsed.englishBook);
+    if (bookIdx < 0) return null;
+    return [bookIdx, parsed.chapter, parsed.verseStart ?? 0];
+  }
+
+  static int _compareKey(List<int> a, List<int> b) {
+    for (int i = 0; i < a.length && i < b.length; i++) {
+      final c = a[i].compareTo(b[i]);
+      if (c != 0) return c;
+    }
+    return 0;
   }
 }
 
@@ -853,6 +896,19 @@ class _TriviaTileState extends State<_TriviaTile> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      // Round 56 (continued — day 3): if the entry
+                      // ships a schematic diagram (Hebrew alphabet
+                      // grid, chapter-counts bar chart, threefold
+                      // sequence, numbered word list), render it
+                      // above the body text so the visual primes the
+                      // reader for the explanation.
+                      if (entry.diagram != null) ...[
+                        _TriviaDiagramView(
+                          diagram: entry.diagram!,
+                          locale: locale,
+                        ),
+                        const SizedBox(height: 12),
+                      ],
                       // Round 56 (continued): user feedback "format
                       // for 冷知识 is like ** ** and not be applied
                       // properly". Many entries have markdown-style
@@ -940,17 +996,435 @@ List<TextSpan> _parseInlineMarkdown(
   return spans;
 }
 
+/// Renders a [TriviaDiagram] inline above the trivia body. Switches
+/// on diagram subtype and dispatches to the corresponding builder.
+/// Each builder is intentionally small (under 50 lines) so the visual
+/// stays readable inside the trivia tile without requiring its own
+/// dedicated page.
+class _TriviaDiagramView extends StatelessWidget {
+  final TriviaDiagram diagram;
+  final String locale;
+  const _TriviaDiagramView({required this.diagram, required this.locale});
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final d = diagram;
+    if (d is HebrewAlphabetDiagram) {
+      return _buildHebrewAlphabet(d, scheme);
+    }
+    if (d is ChapterVerseCountsDiagram) {
+      return _buildChapterCounts(d, scheme);
+    }
+    if (d is SequenceDiagram) {
+      return _buildSequence(d, scheme);
+    }
+    if (d is NumberedWordsDiagram) {
+      return _buildNumberedWords(d, scheme);
+    }
+    return const SizedBox.shrink();
+  }
+
+  Widget _wrapper(ColorScheme scheme, Widget child, {String? caption}) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
+      decoration: BoxDecoration(
+        color: scheme.surfaceContainerHigh.withValues(alpha: 0.55),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+          color: scheme.outlineVariant.withValues(alpha: 0.5),
+          width: 0.8,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          child,
+          if (caption != null && caption.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            Text(
+              caption,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 11,
+                color: scheme.onSurfaceVariant,
+                height: 1.35,
+                letterSpacing: 0.2,
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHebrewAlphabet(
+      HebrewAlphabetDiagram d, ColorScheme scheme) {
+    // Hebrew alphabet — 22 consonants. Letter glyph + romanised name.
+    const letters = <List<String>>[
+      ['א', 'Aleph'], ['ב', 'Beth'], ['ג', 'Gimel'], ['ד', 'Daleth'],
+      ['ה', 'He'], ['ו', 'Waw'], ['ז', 'Zayin'], ['ח', 'Heth'],
+      ['ט', 'Teth'], ['י', 'Yod'], ['כ', 'Kaph'], ['ל', 'Lamed'],
+      ['מ', 'Mem'], ['נ', 'Nun'], ['ס', 'Samek'], ['ע', 'Ayin'],
+      ['פ', 'Pe'], ['צ', 'Tsade'], ['ק', 'Qoph'], ['ר', 'Resh'],
+      ['ש', 'Shin'], ['ת', 'Tav'],
+    ];
+    final children = [
+      for (final pair in letters)
+        Container(
+          width: 44,
+          padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 4),
+          decoration: BoxDecoration(
+            color: scheme.primaryContainer.withValues(alpha: 0.45),
+            borderRadius: BorderRadius.circular(6),
+            border: Border.all(
+              color: scheme.primary.withValues(alpha: 0.35),
+              width: 0.8,
+            ),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                pair[0],
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                  color: scheme.onPrimaryContainer,
+                  height: 1.0,
+                ),
+              ),
+              if (d.showLetterNames) ...[
+                const SizedBox(height: 2),
+                Text(
+                  pair[1],
+                  style: TextStyle(
+                    fontSize: 8,
+                    color: scheme.onSurfaceVariant,
+                    letterSpacing: 0.2,
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+    ];
+    final caption = uiStrings['triviaAlphabetCaption']?[locale] ?? '';
+    final formula = d.versesPerLetter > 1
+        ? '$caption · ${d.versesPerLetter} × 22 = ${d.versesPerLetter * 22}'
+        : caption;
+    return _wrapper(
+      scheme,
+      Wrap(
+        spacing: 6,
+        runSpacing: 6,
+        alignment: WrapAlignment.center,
+        children: children,
+      ),
+      caption: formula,
+    );
+  }
+
+  Widget _buildChapterCounts(
+      ChapterVerseCountsDiagram d, ColorScheme scheme) {
+    final maxCount = d.chapters.fold<int>(0, (m, c) => c > m ? c : m);
+    const barAreaHeight = 96.0;
+    final bars = <Widget>[];
+    for (int i = 0; i < d.chapters.length; i++) {
+      final count = d.chapters[i];
+      final isBroken = d.brokenChapters.contains(i + 1);
+      final barH = maxCount == 0 ? 0.0 : (count / maxCount) * barAreaHeight;
+      bars.add(Expanded(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 4),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              Text(
+                '$count',
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                  color: isBroken
+                      ? scheme.error
+                      : scheme.onSurfaceVariant,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Container(
+                height: barH,
+                decoration: BoxDecoration(
+                  color: isBroken
+                      ? scheme.error.withValues(alpha: 0.55)
+                      : scheme.primary.withValues(alpha: 0.65),
+                  borderRadius: const BorderRadius.vertical(
+                      top: Radius.circular(4)),
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                '${i + 1}',
+                style: TextStyle(
+                  fontSize: 10,
+                  color: scheme.onSurfaceVariant,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ));
+    }
+    final caption = uiStrings['triviaChapterCountsCaption']?[locale] ?? '';
+    return _wrapper(
+      scheme,
+      SizedBox(
+        height: barAreaHeight + 36,
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: bars,
+        ),
+      ),
+      caption: caption,
+    );
+  }
+
+  Widget _buildSequence(SequenceDiagram d, ColorScheme scheme) {
+    final cells = <Widget>[];
+    for (int i = 0; i < d.segments.length; i++) {
+      final s = d.segments[i];
+      final label = uiStrings[s.labelKey]?[locale] ?? s.labelKey;
+      final caption = uiStrings[s.captionKey]?[locale] ?? s.captionKey;
+      cells.add(Expanded(
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
+          decoration: BoxDecoration(
+            color: scheme.primaryContainer.withValues(alpha: 0.45),
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(
+              color: scheme.primary.withValues(alpha: 0.35),
+              width: 0.8,
+            ),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                label,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                  color: scheme.onPrimaryContainer,
+                  height: 1.3,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                caption,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 10,
+                  color: scheme.onSurfaceVariant,
+                  height: 1.3,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ));
+      if (i < d.segments.length - 1) {
+        cells.add(Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 4),
+          child: Icon(Icons.arrow_forward_rounded,
+              size: 16, color: scheme.onSurfaceVariant),
+        ));
+      }
+    }
+    return _wrapper(
+      scheme,
+      Row(crossAxisAlignment: CrossAxisAlignment.center, children: cells),
+    );
+  }
+
+  Widget _buildNumberedWords(
+      NumberedWordsDiagram d, ColorScheme scheme) {
+    final rows = <Widget>[];
+    for (int i = 0; i < d.words.length; i++) {
+      final w = d.words[i];
+      final gloss = uiStrings[w.glossKey]?[locale] ?? w.glossKey;
+      rows.add(Padding(
+        padding: const EdgeInsets.symmetric(vertical: 3),
+        child: Row(
+          children: [
+            Container(
+              width: 22,
+              height: 22,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: scheme.primary.withValues(alpha: 0.18),
+                shape: BoxShape.circle,
+              ),
+              child: Text(
+                '${i + 1}',
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                  color: scheme.primary,
+                ),
+              ),
+            ),
+            const SizedBox(width: 10),
+            // Hebrew/Greek glyph — RTL-safe via Directionality at the
+            // wrapper level isn't needed here because the glyph cluster
+            // renders in its native script regardless of surrounding
+            // direction. Bump font-size for legibility.
+            Text(
+              w.original,
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
+                color: scheme.onSurface,
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                '${w.translit} · $gloss',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: scheme.onSurfaceVariant,
+                  height: 1.35,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ));
+    }
+    return _wrapper(
+      scheme,
+      Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: rows,
+      ),
+    );
+  }
+}
+
 /// One Bible-trivia entry. Localized in 3 languages.
 class BibleTriviaEntry {
   final Map<String, String> tag;
   final Map<String, String> title;
   final Map<String, String> body;
   final String? reference;
+  /// Round 56 (continued — day 3): user feedback "圣经里冷知识能不能
+  /// 更加能够明白方式类似于图片或者画出来的". When set, the trivia tile
+  /// renders a small schematic diagram above the body text inside the
+  /// expanded section. The diagrams visualise structural patterns the
+  /// body describes — Hebrew alphabet acrostics, broken-acrostic verse
+  /// counts, threefold genealogies, numbered word sequences, etc.
+  ///
+  /// We deliberately draw with Flutter widgets rather than ship raster
+  /// images: copyright-safe (no external artwork to license), works
+  /// offline, scales with the user's font/theme, and stays trilingual.
+  final TriviaDiagram? diagram;
   const BibleTriviaEntry({
     required this.tag,
     required this.title,
     required this.body,
     this.reference,
+    this.diagram,
+  });
+}
+
+// ── Trivia diagrams ──────────────────────────────────────────────
+//
+// Inline schematic diagrams that visualize the patterns described in
+// trivia bodies. All concrete diagrams have const constructors so the
+// surrounding `bibleTriviaEntries` const list keeps compiling.
+//
+// Adding a new diagram type:
+//   1. Subclass [TriviaDiagram] with a const constructor.
+//   2. Add a render branch in [_TriviaDiagramView.build].
+//   3. Attach it to a `BibleTriviaEntry(diagram: ...)` call.
+
+/// Marker base class for diagram payloads attached to a
+/// [BibleTriviaEntry]. Subclasses are pure data — rendering happens
+/// in [_TriviaDiagramView].
+abstract class TriviaDiagram {
+  const TriviaDiagram();
+}
+
+/// 22-cell Hebrew-alphabet grid. Used by Psalm 119, Proverbs 31:10-31,
+/// Lamentations 1/2/4. Each cell shows the Hebrew letter and (if
+/// [showLetterNames] is true) its romanised name.
+///
+/// [versesPerLetter] renders as a small annotation under the grid so
+/// the reader sees at a glance how the section is structured —
+/// "8 verses per letter × 22 letters = 176 verses" for Psalm 119, or
+/// "1 verse per letter × 22 letters = 22 verses" for Lamentations 1.
+class HebrewAlphabetDiagram extends TriviaDiagram {
+  final int versesPerLetter;
+  final bool showLetterNames;
+  const HebrewAlphabetDiagram({
+    this.versesPerLetter = 1,
+    this.showLetterNames = false,
+  });
+}
+
+/// Bar-chart of verse counts per chapter. Highlights chapters whose
+/// index is in [brokenChapters] with a slashed/dimmed bar so the
+/// reader sees at a glance how Lamentations 5 abandons the acrostic.
+class ChapterVerseCountsDiagram extends TriviaDiagram {
+  final List<int> chapters;
+  /// 1-indexed chapter numbers to mark as "structure broken".
+  final List<int> brokenChapters;
+  const ChapterVerseCountsDiagram({
+    required this.chapters,
+    this.brokenChapters = const [],
+  });
+}
+
+/// Three (or more) sequential boxes laid out left-to-right, each
+/// labelled. Used for Matthew 1:17's three groups of 14 generations,
+/// or any other "A → B → C" pattern.
+class SequenceDiagram extends TriviaDiagram {
+  /// Each segment carries two short label keys so we can localise.
+  final List<SequenceSegment> segments;
+  const SequenceDiagram({required this.segments});
+}
+
+class SequenceSegment {
+  /// uiStrings key for the headline label (e.g. 'triviaMatt117GroupA').
+  final String labelKey;
+  /// uiStrings key for the small caption underneath (e.g. '14 generations').
+  final String captionKey;
+  const SequenceSegment({required this.labelKey, required this.captionKey});
+}
+
+/// Numbered word/term list — e.g. Genesis 1:1's 7 Hebrew words, the
+/// 12 tribes, the 7 churches in Revelation. Renders as a vertical
+/// numbered column with the original-language form on top and the
+/// gloss below in the user's locale.
+class NumberedWordsDiagram extends TriviaDiagram {
+  /// Each item: original-language form (already locale-neutral) +
+  /// gloss key (resolved per-locale). The original form is shown as-
+  /// is in every locale because Hebrew/Greek script reads the same
+  /// way regardless of UI language.
+  final List<NumberedWord> words;
+  const NumberedWordsDiagram({required this.words});
+}
+
+class NumberedWord {
+  final String original;
+  final String translit;
+  final String glossKey;
+  const NumberedWord({
+    required this.original,
+    required this.translit,
+    required this.glossKey,
   });
 }
 
@@ -1207,6 +1681,7 @@ const List<BibleTriviaEntry> bibleTriviaEntries = [
           '但原文形式上是一部精密構思的頌讚，主題貫穿始終都是神的話語——整章都在講「聖經」本身。',
     },
     reference: 'Psalm 119',
+    diagram: HebrewAlphabetDiagram(versesPerLetter: 8, showLetterNames: true),
   ),
   BibleTriviaEntry(
     tag: {
@@ -1237,6 +1712,10 @@ const List<BibleTriviaEntry> bibleTriviaEntries = [
           '與先知所哀嘆的「耶路撒冷的毀滅」相呼應。這是一種「形式呼應內容」的修辭。',
     },
     reference: 'Lamentations 3',
+    diagram: ChapterVerseCountsDiagram(
+      chapters: [22, 22, 66, 22, 22],
+      brokenChapters: [5],
+    ),
   ),
   BibleTriviaEntry(
     tag: {
@@ -1265,6 +1744,7 @@ const List<BibleTriviaEntry> bibleTriviaEntries = [
           '這個離合體結構的修辭意義是：「這是完整的、囊括方方面面的描述」。',
     },
     reference: 'Proverbs 31:10',
+    diagram: HebrewAlphabetDiagram(versesPerLetter: 1, showLetterNames: true),
   ),
 
   // ── YHWH name patterns ───────────────────────────────────────
@@ -1374,6 +1854,36 @@ const List<BibleTriviaEntry> bibleTriviaEntries = [
           '整章經文就是以「七」為支柱搭建起來的文學會幕。',
     },
     reference: 'Genesis 1:1',
+    diagram: NumberedWordsDiagram(words: [
+      NumberedWord(
+          original: 'בְּרֵאשִׁית',
+          translit: 'bereshit',
+          glossKey: 'triviaGen11Word1'),
+      NumberedWord(
+          original: 'בָּרָא',
+          translit: 'bara',
+          glossKey: 'triviaGen11Word2'),
+      NumberedWord(
+          original: 'אֱלֹהִים',
+          translit: 'Elohim',
+          glossKey: 'triviaGen11Word3'),
+      NumberedWord(
+          original: 'אֵת',
+          translit: 'et',
+          glossKey: 'triviaGen11Word4'),
+      NumberedWord(
+          original: 'הַשָּׁמַיִם',
+          translit: 'hashamayim',
+          glossKey: 'triviaGen11Word5'),
+      NumberedWord(
+          original: 'וְאֵת',
+          translit: 'we-et',
+          glossKey: 'triviaGen11Word6'),
+      NumberedWord(
+          original: 'הָאָרֶץ',
+          translit: 'ha-aretz',
+          glossKey: 'triviaGen11Word7'),
+    ]),
   ),
   BibleTriviaEntry(
     tag: {
@@ -1407,6 +1917,17 @@ const List<BibleTriviaEntry> bibleTriviaEntries = [
           '反覆強調馬太福音的核心主張：**耶穌就是應許已久的大衛王**。',
     },
     reference: 'Matthew 1:17',
+    diagram: SequenceDiagram(segments: [
+      SequenceSegment(
+          labelKey: 'triviaMatt117GroupA',
+          captionKey: 'triviaMatt117Generations'),
+      SequenceSegment(
+          labelKey: 'triviaMatt117GroupB',
+          captionKey: 'triviaMatt117Generations'),
+      SequenceSegment(
+          labelKey: 'triviaMatt117GroupC',
+          captionKey: 'triviaMatt117Generations'),
+    ]),
   ),
 
   // ── Linguistic curiosities ───────────────────────────────────
