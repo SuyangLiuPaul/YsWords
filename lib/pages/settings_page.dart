@@ -227,6 +227,16 @@ class _SettingsPageBodyState extends State<_SettingsPageBody> {
               child: ListView(
             padding: EdgeInsets.all(16 * s),
             children: [
+              // Account section now FIRST — see comment below at the
+              // old _accountKey location for the rationale.
+              KeyedSubtree(
+                key: _accountKey,
+                child: _SectionHeader(
+                    uiStrings['settingsSectionAccount']?[settings.locale] ??
+                        'Account'),
+              ),
+              _AccountSection(settings: settings, s: s),
+              SizedBox(height: 16 * s),
               KeyedSubtree(
                 key: _displayKey,
                 child: _SectionHeader(
@@ -989,20 +999,12 @@ class _SettingsPageBodyState extends State<_SettingsPageBody> {
                   ),
                 ),
               ),
-              SizedBox(height: 16 * s),
-              KeyedSubtree(
-                key: _accountKey,
-                child: _SectionHeader(
-                    uiStrings['settingsSectionAccount']?[settings.locale] ??
-                        'Account'),
-              ),
-              _AccountSection(settings: settings, s: s),
-              // 2026-05-06: Cloud setup diagnostic + walkthrough
-              // moved BACK to AboutPage. User feedback: they read as
-              // developer instructions and shouldn't sit in the main
-              // Settings flow. Regular users never need to see them;
-              // developers can still find them via Settings → About
-              // → bottom of the page.
+              // 2026-05-06: Account section moved to TOP of Settings
+              // (was after Display/Reading/App). User feedback: tapping
+              // a profile chip on the dashboard navigates here, so
+              // sync / sign-in controls should be the first thing they
+              // see — not buried halfway down. Display/Reading/App
+              // still come right after.
               SizedBox(height: 16 * s),
               KeyedSubtree(
                 key: _planKey,

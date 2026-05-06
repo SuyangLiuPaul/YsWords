@@ -2078,6 +2078,27 @@ const uiStrings = {
     'en':
         'Read + write OK. Sync data lives at users/{uid}/sync.',
   },
+  'cloudDiagRtdbOkWithUrl': {
+    'zh-Hans': '读写测试通过 · {url}。同步数据存放在 users/{uid}/sync 下。',
+    'zh-Hant': '讀寫測試通過 · {url}。同步資料存放在 users/{uid}/sync 下。',
+    'en':
+        'Read + write OK at {url}. Sync data lives at users/{uid}/sync.',
+  },
+  'cloudDiagRtdbTimeoutDetail': {
+    'zh-Hans': '连接 {url} 超时（8 秒）。最可能的原因是 Firebase 控制台中尚未'
+        '创建数据库——打开 RTDB 标签页点击 "Create Database" 即可。'
+        '其他可能：URL 的区域和数据库所在的区域不匹配，或者网络封锁了 firebaseio.com。',
+    'zh-Hant': '連接 {url} 逾時（8 秒）。最可能的原因是 Firebase 控制台中尚未'
+        '建立資料庫——打開 RTDB 標籤頁點擊「Create Database」即可。'
+        '其他可能：URL 的區域和資料庫所在的區域不匹配，或者網路封鎖了 firebaseio.com。',
+    'en':
+        'Timed out after 8s connecting to {url}. The most likely '
+            "cause is that the database hasn't been created yet in "
+            'the Firebase Console — open the RTDB tab and click '
+            '"Create Database". Other possibilities: the URL\'s '
+            'region doesn\'t match where your database lives, or '
+            'your network is blocking firebaseio.com.',
+  },
   'cloudDiagRtdbReadback': {
     'zh-Hans': '探针写入成功，但读回的值不一致。可能是监听器过期或规则禁止读取。',
     'zh-Hant': '探針寫入成功，但讀回的值不一致。可能是監聽器過期或規則禁止讀取。',

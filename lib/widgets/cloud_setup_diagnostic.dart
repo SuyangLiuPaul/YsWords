@@ -167,12 +167,20 @@ class _CloudSetupDiagnosticState extends State<CloudSetupDiagnostic> {
       await ref.set(stamp).timeout(const Duration(seconds: 8));
       final readback = await ref.get().timeout(const Duration(seconds: 8));
       if (readback.value == stamp) {
+        // Show the actual URL we connected to so the developer can
+        // double-check it matches what Firebase Console says — a URL
+        // / region mismatch is one of the more confusing failure modes
+        // and the OK case is a good place to surface it for review.
+        final url = FirebaseDatabase.instance.databaseURL ?? '(default)';
         return _ProbeResult.ok(
           title: tt,
           message: _l(
-              'cloudDiagRtdbOk',
-              _loc,
-              'Read + write OK. Sync data lives at users/$uid/sync.'),
+                  'cloudDiagRtdbOkWithUrl',
+                  _loc,
+                  'Read + write OK at {url}. Sync data lives at '
+                      'users/{uid}/sync.')
+              .replaceAll('{url}', url)
+              .replaceAll('{uid}', uid),
         );
       }
       return _ProbeResult.warning(
@@ -344,9 +352,32 @@ class _CloudSetupDiagnosticState extends State<CloudSetupDiagnostic> {
         message: 'Unexpected ${r.statusCode}: ${_truncate(r.body, 200)}',
       );
     } on TimeoutException {
+      // 2026-05-06 (later same day): the channel-error symptom got
+      // fixed by registering FirebaseDatabaseWeb explicitly, but
+      // users started seeing this 8s timeout instead. The MOST likely
+      // cause is "the database hasn't actually been created yet in
+      // Firebase Console" — RTDB SDK silently retries connections
+      // forever to a non-existent endpoint, and we time out at 8s.
+      // Surface that hypothesis directly + show the URL we tried so
+      // the user can verify it matches what Console shows.
+      final url = FirebaseDatabase.instance.databaseURL ?? '(default)';
       return _ProbeResult.fail(
-          title: tt,
-          message: _l('cloudDiagTimeout', _loc, 'Timed out after 8s.'));
+        title: tt,
+        message: _l(
+                'cloudDiagRtdbTimeoutDetail',
+                _loc,
+                'Timed out after 8s connecting to {url}. The most '
+                    'likely cause is that the database has not been '
+                    'created yet in the Firebase Console — open the '
+                    'RTDB tab and click "Create Database". Other '
+                    'possibilities: the URL\'s region does not match '
+                    'where your database lives, or your network is '
+                    'blocking firebaseio.com.')
+            .replaceAll('{url}', url),
+        fixUrl:
+            'https://console.firebase.google.com/project/$_projectId/database',
+        fixLabel: _l('cloudDiagRtdbOpenConsole', _loc, 'Open RTDB console'),
+      );
     } catch (e) {
       return _ProbeResult.fail(title: tt, message: e.toString());
     }
