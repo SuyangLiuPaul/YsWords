@@ -218,6 +218,66 @@ class _SearchPageState extends State<SearchPage> {
       return;
     }
 
+    // 2026-05-07: lemma-by-text search path. When the input contains
+    // Greek script (Ͱ-Ͽ ἀ-῿) OR Hebrew script (֐-׿) OR a Latin-letter
+    // word that doesn't look like normal English text, look it up
+    // against Strong's lemmas / transliterations. If we find a
+    // unique-best match, treat the search as a Strong's-# search on
+    // that entry's number — i.e. show the lexicon entry + every verse
+    // where that lemma occurs (via concordance).
+    //
+    // Heuristic for "looks like a lemma":
+    //   - Contains Greek or Hebrew script characters → almost certainly
+    //   - Latin-letter input that's a single token AND matches a
+    //     known transliteration → also.
+    final hasGreek = RegExp(r'[Ͱ-Ͽἀ-῿]').hasMatch(query);
+    final hasHebrew = RegExp(r'[֐-׿יִ-ﭏ]').hasMatch(query);
+    final isShortLatinToken = RegExp(r'^[a-zA-ZÀ-ɏḀ-ỿ]+$')
+            .hasMatch(query) &&
+        query.length >= 3 &&
+        query.length <= 25;
+    if (hasGreek || hasHebrew || isShortLatinToken) {
+      final matches =
+          await StrongsService.searchByLemma(query, limit: 12);
+      if (matches.isNotEmpty) {
+        // Best match: render exactly like a Strong's-# search.
+        final best = matches.first;
+        final num = best.number;
+        setState(() {
+          _results.clear();
+          bookCounts.clear();
+          searchPerformed = false;
+          _strongsKey = num;
+          _strongsEntry = best;
+          _strongsResult = null;
+        });
+        final conc = await ConcordanceService.lookup(num);
+        if (!mounted) return;
+        setState(() {
+          _strongsResult = conc;
+          searchPerformed = true;
+        });
+        return;
+      }
+      // No lemma match — for Greek/Hebrew script input we know the
+      // text-search path won't help (verses don't contain those
+      // characters in our translations). Show "no results" cleanly.
+      if (hasGreek || hasHebrew) {
+        setState(() {
+          _results.clear();
+          bookCounts.clear();
+          searchPerformed = true;
+        });
+        return;
+      }
+      // For Latin-letter tokens: fall through to the regular text
+      // search (which IS what the user wants if they typed a normal
+      // English word).
+    }
+    // Guard before any context lookup — searchByLemma above is async
+    // and the user may have left this page during the await.
+    if (!mounted) return;
+
     setState(() {
       _results.clear();
       bookCounts.clear();
@@ -319,7 +379,7 @@ class _SearchPageState extends State<SearchPage> {
               // colon / dash / dot punctuation needed to type Bible
               // references like "John 3:16" or "约 3:16-18".
               FilteringTextInputFormatter.allow(
-                  RegExp(r'[0-9a-zA-Z\u4E00-\u9FFF :\-\.：。‐–—]')),
+                  RegExp(r'[0-9a-zA-Z\u4E00-\u9FFF\u00C0-\u024F\u0370-\u03FF\u1F00-\u1FFF\u0590-\u05FF :\-\.：。‐–—]')),
             ],
             onChanged: (text) {
               setState(() {

@@ -2165,6 +2165,16 @@ const uiStrings = {
     'zh-Hant': '詞源',
     'en': 'Etymology',
   },
+  'exegesisProperNounComplDefEn': {
+    'zh-Hans': '英文 Strong\'s 完整释义（互补视角）',
+    'zh-Hant': '英文 Strong\'s 完整釋義（互補視角）',
+    'en': "English Strong's full definition (complementary)",
+  },
+  'exegesisProperNounComplDefZh': {
+    'zh-Hans': '中文 CBOL 释义（互补视角）',
+    'zh-Hant': '中文 CBOL 釋義（互補視角）',
+    'en': 'Chinese CBOL definition (complementary)',
+  },
   // ── AI Bible search (2026-05-07) ─────────────────────────────
   // Triggered from the search page's no-results state. Lets the
   // user ask Gemini for Bible references that match a fuzzy /
@@ -4472,6 +4482,15 @@ const uiStrings = {
     'zh-Hans': '新约对应',
     'zh-Hant': '新約對應',
     'en': 'NT echoes',
+  },
+  // 2026-05-07: BDAG-level deep exegesis chip — 5-section structured
+  // analysis (lexical core / verse usage / cultural context /
+  // canonical pattern / theological weight). Free-tier substitute
+  // for what Logos+BDAG charges $200+ for.
+  'aiScopeDeepExegesis': {
+    'zh-Hans': '深度释经（BDAG 级）',
+    'zh-Hant': '深度釋經（BDAG 級）',
+    'en': 'Deep exegesis (BDAG-level)',
   },
   'familyTree': {
     'zh-Hans': '圣经家谱',

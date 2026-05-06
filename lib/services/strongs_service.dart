@@ -130,4 +130,110 @@ class StrongsService {
       return _hebrew![number];
     }
   }
+
+  /// 2026-05-07: search the lexicon by lemma OR transliteration —
+  /// the user types Greek/Hebrew text directly (e.g. "ἀγάπη",
+  /// "אהבה") OR a romanised form (e.g. "agape", "ahavah") and we
+  /// match against the entry's `lemma` and `translit` fields.
+  ///
+  /// Both lexicons are scanned when the input could plausibly match
+  /// either (Latin-letter input). For Greek-script input we only
+  /// scan the Greek lexicon; for Hebrew-script we only scan Hebrew.
+  /// Diacritics and case are normalised so "Agape" matches "agápē".
+  ///
+  /// Returns up to [limit] best matches (exact > prefix > contains)
+  /// in score order. Empty list if nothing matched. Used by the
+  /// search page when the user input doesn't look like English /
+  /// Chinese / a Strong's number.
+  static Future<List<StrongsEntry>> searchByLemma(
+    String query, {
+    int limit = 12,
+  }) async {
+    final q = query.trim();
+    if (q.isEmpty) return const [];
+    final norm = _normaliseForLemma(q);
+    if (norm.isEmpty) return const [];
+
+    final hasGreekScript = RegExp(r'[Ͱ-Ͽἀ-῿]').hasMatch(q);
+    final hasHebrewScript = RegExp(r'[֐-׿יִ-ﭏ]').hasMatch(q);
+    final scanGreek = hasGreekScript || (!hasGreekScript && !hasHebrewScript);
+    final scanHebrew =
+        hasHebrewScript || (!hasGreekScript && !hasHebrewScript);
+
+    final results = <_LemmaMatch>[];
+
+    if (scanGreek) {
+      _greek ??=
+          await (_greekLoading ??= _load('assets/strongs/greek.json'));
+      _scanLexicon(_greek!, q, norm, hasGreekScript, results);
+    }
+    if (scanHebrew) {
+      _hebrew ??=
+          await (_hebrewLoading ??= _load('assets/strongs/hebrew.json'));
+      _scanLexicon(_hebrew!, q, norm, hasHebrewScript, results);
+    }
+
+    results.sort((a, b) => a.score.compareTo(b.score));
+    return results.take(limit).map((m) => m.entry).toList();
+  }
+
+  /// Lower-case + strip combining diacritics so "Agápē" / "agape" /
+  /// "AGAPÉ" all hash to the same key. Greek ί → ι, ή → η, etc.
+  /// Hebrew vowel points (combining diacritics) stripped so the
+  /// consonantal lemma matches what users typically type.
+  static String _normaliseForLemma(String s) {
+    final lower = s.toLowerCase().trim();
+    // Strip combining marks (NFD-decompose, drop \p{Mn}-equivalents).
+    final out = StringBuffer();
+    for (final r in lower.runes) {
+      // Skip combining diacritical marks (U+0300..036F, Greek/Coptic
+      // diacritics in U+1AB0+, Hebrew points U+0591..05BD/05BF/05C1-5).
+      if (r >= 0x0300 && r <= 0x036F) continue;
+      if (r >= 0x0591 && r <= 0x05BD) continue;
+      if (r == 0x05BF) continue;
+      if (r >= 0x05C1 && r <= 0x05C7) continue;
+      if (r >= 0x1AB0 && r <= 0x1AFF) continue;
+      out.writeCharCode(r);
+    }
+    return out.toString();
+  }
+
+  static void _scanLexicon(
+    Map<String, StrongsEntry> lex,
+    String rawQuery,
+    String normQuery,
+    bool isOriginalScript,
+    List<_LemmaMatch> out,
+  ) {
+    for (final entry in lex.values) {
+      // Match against lemma (original script) and translit
+      // (romanised). Both normalised the same way so "ἀγάπη" /
+      // "agape" / "Agápē" all hit the same entry.
+      final lemmaNorm = _normaliseForLemma(entry.lemma);
+      final translitNorm = _normaliseForLemma(entry.translit);
+      int? score;
+      // 0 = exact lemma; 1 = exact translit; 2 = prefix; 3 = contains.
+      if (lemmaNorm == normQuery) {
+        score = 0;
+      } else if (translitNorm == normQuery) {
+        score = 1;
+      } else if (lemmaNorm.startsWith(normQuery) ||
+          translitNorm.startsWith(normQuery)) {
+        score = 2;
+      } else if (lemmaNorm.contains(normQuery) ||
+          translitNorm.contains(normQuery)) {
+        score = 3;
+      }
+      if (score != null) {
+        out.add(_LemmaMatch(entry: entry, score: score));
+      }
+    }
+  }
+}
+
+/// Internal scoring tuple for [StrongsService.searchByLemma].
+class _LemmaMatch {
+  final StrongsEntry entry;
+  final int score;
+  const _LemmaMatch({required this.entry, required this.score});
 }

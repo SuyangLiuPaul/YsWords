@@ -170,6 +170,24 @@ class StrongsEntry {
     return glossZh ?? '';
   }
 
+  /// 2026-05-07 follow-up: same idea as [complementaryGloss] but for
+  /// the longer DEFINITION text. The user noticed that even with the
+  /// gloss section showing both perspectives, the definition body
+  /// below still showed only the locale-preferred version, so e.g.
+  /// English readers saw the etymology paragraph and Chinese readers
+  /// saw the contextual paragraph — looking inconsistent. Returning
+  /// the cross-locale definition here lets the UI render BOTH bodies
+  /// for proper nouns.
+  String complementaryDefinition(String locale) {
+    if (locale.startsWith('zh')) {
+      return definition;
+    }
+    if (locale == 'zh-Hant') {
+      if ((definitionZhTw ?? '').isNotEmpty) return definitionZhTw!;
+    }
+    return definitionZh ?? '';
+  }
+
   factory StrongsEntry.fromJson(String number, Map<String, dynamic> json) {
     return StrongsEntry(
       number: number,

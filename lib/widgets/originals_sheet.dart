@@ -394,6 +394,7 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
       'wholeBible' => 'aiScopeWholeBible',
       'otherChapters' => 'aiScopeOtherChapters',
       'crossTestament' => 'aiScopeCrossTestament',
+      'deepExegesis' => 'aiScopeDeepExegesis',
       _ => 'aiScopeVerse',
     };
     final scopeLabel = uiStrings[scopeKey]?[locale] ?? scope;
@@ -1119,7 +1120,70 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
                 ),
               ),
             ],
-            if (entry.localizedDefinition(locale).isNotEmpty) ...[
+            // 2026-05-07 follow-up: for proper nouns also render the
+            // OTHER language's definition body below, with clear
+            // labels — same complementary-perspective philosophy as
+            // the gloss block above. Without this the long definition
+            // text still looked locale-locked (English etymology
+            // paragraph for EN readers, Chinese identification
+            // paragraph for ZH readers), making the user feel the
+            // data was inconsistent. Now both are shown so the user
+            // sees etymology + identification side by side at every
+            // level of detail.
+            if (entry.isProperNoun &&
+                entry.complementaryDefinition(locale).isNotEmpty) ...[
+              const SizedBox(height: 10),
+              if (entry.localizedDefinition(locale).isNotEmpty)
+                Text(
+                  entry.localizedDefinition(locale),
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: scheme.onSurface,
+                    height: 1.45,
+                  ),
+                ),
+              const SizedBox(height: 8),
+              Container(
+                padding: const EdgeInsets.fromLTRB(10, 8, 10, 8),
+                decoration: BoxDecoration(
+                  color: scheme.tertiaryContainer.withValues(alpha: 0.25),
+                  borderRadius: BorderRadius.circular(6),
+                  border: Border.all(
+                    color: scheme.tertiary.withValues(alpha: 0.25),
+                    width: 0.6,
+                  ),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      locale.startsWith('zh')
+                          ? (uiStrings['exegesisProperNounComplDefEn']
+                                  ?[locale] ??
+                              '英文 Strong\'s 完整释义')
+                          : (uiStrings['exegesisProperNounComplDefZh']
+                                  ?[locale] ??
+                              'Chinese CBOL definition'),
+                      style: TextStyle(
+                        fontSize: 10.5,
+                        fontWeight: FontWeight.w700,
+                        color: scheme.onTertiaryContainer,
+                        letterSpacing: 0.4,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      entry.complementaryDefinition(locale),
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: scheme.onSurface.withValues(alpha: 0.85),
+                        height: 1.45,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ] else if (entry.localizedDefinition(locale).isNotEmpty) ...[
               const SizedBox(height: 10),
               Text(
                 entry.localizedDefinition(locale),
@@ -1579,6 +1643,19 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
             chip(
               _crossTestamentLabel(locale),
               () => _loadAiExplanation(scope: 'crossTestament'),
+              primary: true,
+            ),
+            // 2026-05-07: BDAG-level deep exegesis. Pairs the new
+            // 'deep' length (~500-750 words) with a 'deepExegesis'
+            // scope that asks for a structured 5-section analysis:
+            // lexical core, usage in this verse, cultural / historical
+            // context, canonical pattern, theological weight.
+            // Acts as a free-tier substitute for what Logos / Accordance
+            // sells via BDAG / HALOT integration.
+            chip(
+              uiStrings['aiScopeDeepExegesis']?[locale] ?? 'Deep exegesis',
+              () => _loadAiExplanation(
+                  length: 'deep', scope: 'deepExegesis'),
               primary: true,
             ),
           ],

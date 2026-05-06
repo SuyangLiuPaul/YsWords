@@ -83,6 +83,14 @@ function styleProfile(length, scope) {
 	switch (length) {
 		case 'concise': words = '60-110 words'; break;
 		case 'longer':  words = '300-450 words'; break;
+		// 2026-05-07: BDAG-style deep exegesis — pushes the model to
+		// give a comprehensive multi-paragraph analysis covering
+		// etymology, lexical-semantic field, syntax, historical
+		// background, and theological weight. Roughly the depth a
+		// professional commentary entry would have. Uses the same
+		// max_tokens=4096 budget but drives output toward the upper
+		// end of it.
+		case 'deep':    words = '500-750 words'; break;
 		default:        words = '150-260 words';
 	}
 	let focus;
@@ -127,6 +135,44 @@ function styleProfile(length, scope) {
 				`passages where it carries the same idea, and explain ` +
 				`how the NT picks up the OT theme in {ref}. ` +
 				`Be specific with verse references.`;
+			break;
+		case 'deepExegesis':
+			// 2026-05-07: BDAG-level deep exegesis. Combines word
+			// analysis + verse context + chapter flow + historical /
+			// cultural background + theological significance. Mirrors
+			// what a serious commentary entry would offer. Pair with
+			// length='deep' for ~500-750 words.
+			focus = `Provide a **deep, BDAG-style exegetical analysis** ` +
+				`grounded in {ref}. Structure your answer with these ` +
+				`labelled sections (use bold headers in the user's ` +
+				`language):\n\n` +
+				`1. **Lexical core** — the word's primary meaning, ` +
+				`semantic range, and key morphology (Greek tense / ` +
+				`voice / mood / case, or Hebrew stem / binyan / ` +
+				`gender / number). Mention the etymology where it ` +
+				`illuminates the meaning.\n\n` +
+				`2. **Usage in this verse** — exactly how the word ` +
+				`functions in {ref}: syntactic role, what it modifies ` +
+				`or is modified by, the nuance it contributes that a ` +
+				`generic translation might lose.\n\n` +
+				`3. **Cultural / historical context** — relevant ` +
+				`first-century (NT) or ancient-Near-East (OT) ` +
+				`background — social customs, legal frameworks, ` +
+				`linguistic precedents, parallels in extra-biblical ` +
+				`texts (LXX, DSS, Josephus, Philo, ANE inscriptions) ` +
+				`that clarify the word's force here.\n\n` +
+				`4. **Canonical pattern** — 2-3 other key biblical ` +
+				`passages where the same lemma appears, briefly ` +
+				`noting the nuance in each, and what those usages ` +
+				`reveal when read alongside {ref}.\n\n` +
+				`5. **Theological weight** — what doctrinal or ` +
+				`pastoral significance this word carries in {ref}. ` +
+				`Be substantive but avoid partisan / denominational ` +
+				`positions.\n\n` +
+				`Be precise with references (book chapter:verse). ` +
+				`Avoid invented details. If a claim is debated among ` +
+				`scholars, note that briefly. Quality over quantity ` +
+				`within the target word range.`;
 			break;
 		default: // 'verse'
 			focus = `Focus tightly on **this verse** ({ref}). Cover, in ` +
