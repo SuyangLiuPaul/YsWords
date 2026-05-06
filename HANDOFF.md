@@ -1,6 +1,6 @@
 # YsWords — AI Agent Handoff Document
 
-> Last updated: 2026-05-06 (Round 56 continued day 3 — Bible Tools / biblical-languages card / Aramaic deep-dive)
+> Last updated: 2026-05-06 (Round 56 continued day 3 — copyright clean-up: NIV/YaHei removed, About page added, plus Bible Tools / Aramaic / Trivia diagrams strands)
 > Project: YsWords (Yahweh's Words) — bilingual Bible reader
 > Stack: Flutter 3.41.7 / Dart 3.11.5 / Provider + GetX
 > Repo: https://github.com/SuyangLiuPaul/YsWords
@@ -1225,6 +1225,68 @@ M  windows/flutter/generated_plugins.cmake (same)
   layer (composer / lyricist / recording / typesetter). The data
   shape (`audioUrl`, `pdfUrl` already populated for 489 / 490
   entries) is ready when authorisation is documented.
+
+### Strand: Copyright clean-up — remove NIV + YaHei, add About page (2026-05-06)
+
+User decision after a copyright-risk audit: keep the app web-only on
+Netlify (not iOS), add a contact + takedown page, and remove the two
+high-risk items that no amount of attribution could mitigate.
+
+**Removed assets**:
+* `assets/fonts/Microsoft Yahei.ttf` — proprietary Microsoft font,
+  redistribution forbidden by licence. Was 21 MB. Chinese readers now
+  fall back to Google Fonts' Noto Sans SC / Noto Serif SC (SIL OFL,
+  freely redistributable) and locally-installed PingFang SC / SimSun.
+  `migrateLegacyFontKey('Microsoft YaHei')` routes existing user
+  preferences to Noto Sans SC so settings don't go blank on next
+  launch. Pubspec entry + font_catalog.dart entry removed.
+* `assets/niv.json` (7 MB) — Biblica / Zondervan retain commercial
+  copyright on the full NIV text and we cannot redistribute the JSON
+  bundle without an explicit publisher licence. Removed from
+  `pubspec.yaml`, `bibleVersions`, `sectionTitleSetByVersion`,
+  `_englishVersionCodes`, and `OfflinePackService._bibleUrls`.
+  `MainProvider.restoreState` now migrates any saved `currentVersion
+  == 'niv'` to `'kjv'` so existing users don't land on an empty
+  reader.
+
+**Added: full About / Attributions page** (`lib/pages/about_page.dart`).
+Reachable from Settings → About → "Attributions & licensing"
+button. Page sections:
+1. Header (app name + tagline)
+2. Disclaimer card (non-commercial / community study, not affiliated
+   with publishers)
+3. Contact + takedown card with `paul.sy.liu@gmail.com`,
+   24-hour-acknowledge / 72-hour-action SLA stated explicitly
+4. Bundled scripture texts table (KJV, LEB, NASB, CUV 1919,
+   CUVS-YHWH, CNV, LJK1/2) — per row: name, licence, optional URL
+5. Strong's lexicons & original-language data (Strong's,
+   CBOL CC-BY-NC-SA 4.0, LXX, interlinear)
+6. Maps · Sermons · Fonts · AI · Songs · Trivia
+7. Application licence card (MIT) with "View source on GitHub" link
+8. NIV-removed footnote so readers see why it's no longer in the
+   picker
+
+All copy is trilingual via ~50 new uiStrings keys (`aboutPageTitle`,
+`aboutDisclaimer`, `aboutContactBody`, `aboutContactSla`,
+`aboutVer*`, `aboutLicense*`, `aboutLex*`, `aboutFonts*`,
+`aboutNivRemovedNote`, …).
+
+**Added: root LICENSE file** (MIT) with a prominent "Third-Party
+Content Notice" appendix that distinguishes between MIT-covered
+source code (under `lib/`, build config) and bundled assets that
+keep their own licences.
+
+**README.md updated**:
+* `Versions` row no longer lists NIV
+* `License` section rewritten with full per-version table, lexicon
+  table, and contact / takedown SLA paragraph
+* Added explicit "Disclaimer & Use" section above licence
+
+This strand is the *practical* mitigation suggested by the audit —
+not legal safe-harbor (we are the publisher, not the host, so DMCA
+§ 512 doesn't protect us) but a clear takedown channel + transparent
+attributions, which is what small Bible apps in this niche typically
+do.
 
 ### Strand: Bible Trivia — schematic diagrams + canonical sort (2026-05-06)
 

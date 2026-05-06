@@ -12,7 +12,7 @@
 
 | Category     | Details                                                                                                                 |
 | ------------ | ----------------------------------------------------------------------------------------------------------------------- |
-| Versions     | KJV, LEB, NASB, NIV, 和合本雅伟版 (简 / 繁), 和合本 (简 / 繁), 新译本 (简 / 繁), 原文释经圣经 (简 / 繁)                              |
+| Versions     | KJV, LEB, NASB, 和合本雅伟版 (简 / 繁), 和合本 (简 / 繁), 新译本 (简 / 繁), 原文释经圣经 (简 / 繁)                              |
 | Reading      | Apple-glass reader controls; Light / Dark / System theme; Adjustable font family, size, line spacing, menu scale; Verse-by-verse or Paragraph Flow reading mode (default); Full-width reading on all devices; Grid view default for new users; Reading mode toggle in header on tablet+ |
 | Highlights   | Mark verses with 6 colors (yellow, green, blue, pink, orange, purple); persistent across sessions                      |
 | Bookmarks    | Bookmark + per-verse notes; visible inline indicator next to every flagged verse in both verse-by-verse and paragraph mode |
@@ -236,23 +236,84 @@ Please run `flutter analyze` before committing.
 
 ---
 
-## License
+## Disclaimer & Use
 
-YsWords is released under the MIT License.
-Scripture texts remain copyright their respective publishers.
+YsWords is a **non-commercial personal / community Bible-study tool**.
+The application code is open source, but **scripture texts and other
+embedded resources remain the copyright of their respective rights
+holders**. They are reproduced here under fair-use / personal-study
+exemptions and the explicit licences listed below.
 
-- Lexham English Bible (c) Logos Bible Software.
-- 原文释经圣经 (c) Bible Exegesis Ministry (https://www.biblexg.com/). Used with permission.
-- 雅伟的话 和合本雅伟版 (c) Yahweh De Hua Ministry (https://yahwehdehua.net/cn). Used with permission.
-- Fonts: Roboto (Google), Microsoft YaHei.
+This project is **not affiliated with or endorsed by** any of the
+publishers, ministries, or font foundries referenced. The bundled
+asset files are subject to their own licences which take precedence
+over the MIT licence on the application code.
+
+If you are a rights holder and have any concern about content
+included here, please contact me at the address below — I commit to
+responding and, where appropriate, removing the content within
+**72 hours**.
 
 ---
 
-## Contact
+## License
 
-For questions, feedback, or licensing enquiries:
+The **application code** in this repository is released under the
+[MIT License](LICENSE). The **bundled scripture texts and other
+asset files** are licensed separately as listed below.
+
+### Bundled scripture texts
+
+| Edition | Status | Notes |
+| --- | --- | --- |
+| KJV (1611 / 1769) | Public domain | No restrictions in most jurisdictions. |
+| LEB (Lexham English Bible) | © Logos Bible Software | Used under the LEB licence; non-commercial study only. |
+| NASB 2020 | © The Lockman Foundation | Used under the publisher's free-quotation provisions; non-commercial use only. |
+| 和合本 1919 (CUV, 简/繁) | Public domain | Original 1919 text. |
+| 和合本雅伟版 (CUVS-YHWH, 简/繁) | Used with permission | © Yahweh De Hua Ministry · https://yahwehdehua.net/cn |
+| 新译本 1992 / 2011 (CNV, 简/繁) | © Worldwide Bible Society | Yahweh-substituted edition; community study version. |
+| 原文释经圣经 LJK1 / LJK2 (简/繁) | Used with permission | © Bible Exegesis Ministry · https://www.biblexg.com/ |
+
+> **NIV (New International Version) was previously bundled but
+> removed in 2026-05.** Biblica / Zondervan retain commercial
+> copyright on the full text, and we cannot redistribute the JSON
+> bundle without an explicit publisher licence. Readers seeking NIV
+> should follow Bible Gateway / YouVersion.
+
+### Strong's lexicons & original-language data
+
+| Resource | Licence |
+| --- | --- |
+| Strong's Greek + Hebrew Concordance | Public domain (1890s). |
+| CBOL Chinese definitions (`bible.fhl.net`) | CC-BY-NC-SA 4.0 — non-commercial only; all derivatives must keep this licence. |
+| LXX (Septuagint) data | Public domain. |
+| Greek + Hebrew interlinear (Strong's-tagged) | Public-domain morphological databases. |
+
+### Maps, fonts, and other assets
+
+- Bible-history maps (`assets/maps/`) — sourced from public-domain /
+  Creative Commons archives. See in-app About → Attributions for
+  per-map credits.
+- Fonts: **Roboto** (Apache 2.0, Google) bundled. All other fonts
+  (EB Garamond, Lora, Merriweather, Inter, Open Sans, Lato,
+  Noto Serif SC, Noto Sans SC, ZCOOL XiaoWei, Ma Shan Zheng, …) are
+  loaded at runtime via Google Fonts under the SIL OFL.
+- Sermons (`assets/sermons/`) — © Liang Jia-keng (LJK), used with
+  permission.
+- Songs metadata (`assets/songs.json`) — link-out only; no audio /
+  PDF / lyrics are embedded.
+
+---
+
+## Contact / Takedown Requests
+
+For questions, feedback, or licensing / takedown requests:
 
 **paul.sy.liu@gmail.com**
+
+If you are a rights holder and would like content removed, a single
+email to that address is sufficient. I will acknowledge within
+24 hours and act within 72 hours.
 
 ---
 

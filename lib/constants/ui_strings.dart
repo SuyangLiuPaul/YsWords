@@ -2598,6 +2598,298 @@ const uiStrings = {
     'zh-Hant': '問題、反饋或其他事宜：',
     'en': 'Questions, feedback, or anything else:',
   },
+  // ── About / Attributions page (Round 56 day-3, 2026-05-06) ────
+  // Standalone page reachable from Settings → About → "Attributions
+  // & Licensing". Lists every bundled / referenced third-party
+  // resource with its licence + rights holder, and surfaces the
+  // takedown / copyright contact email prominently. Added in
+  // response to a copyright-risk audit — the app bundles content
+  // owned by other parties, so being transparent + reachable is
+  // the basic mitigation.
+  'aboutPageTitle': {
+    'zh-Hans': '关于与版权说明',
+    'zh-Hant': '關於與版權說明',
+    'en': 'About & Attributions',
+  },
+  'aboutOpenButton': {
+    'zh-Hans': '版权说明与联系方式',
+    'zh-Hant': '版權說明與聯絡方式',
+    'en': 'Attributions & licensing',
+  },
+  'aboutDisclaimer': {
+    'zh-Hans': '本应用是非商业的个人 / 教会研经工具。应用代码以 MIT 许可证开源，'
+        '但圣经文本、字典数据、讲道文本、地图等资源仍由其各自版权方所有，仅在'
+        '研习用途下使用。本应用与下方列出的任何出版社、机构、字体厂商均无附属关系。',
+    'zh-Hant': '本應用是非商業的個人 / 教會研經工具。應用代碼以 MIT 授權開源，'
+        '但聖經文本、字典資料、講道文本、地圖等資源仍由其各自版權方所有，僅在'
+        '研習用途下使用。本應用與下方列出的任何出版社、機構、字體廠商均無附屬關係。',
+    'en':
+        'This is a non-commercial personal / community Bible-study tool. '
+            'The application code is open source under MIT, but bundled '
+            'scripture texts, lexicon data, sermons, maps and other '
+            'resources remain the copyright of their respective rights '
+            'holders and are reproduced under fair-use / personal-study '
+            'exemptions. This app is not affiliated with or endorsed by '
+            'any publisher, ministry, or font foundry listed below.',
+  },
+  'aboutContactTitle': {
+    'zh-Hans': '联系方式 · 版权下架请求',
+    'zh-Hant': '聯絡方式 · 版權下架請求',
+    'en': 'Contact · Takedown requests',
+  },
+  'aboutContactBody': {
+    'zh-Hans': '欢迎反馈、提问，或如果您是版权方对本应用中的任何内容有疑义，请通过下方邮箱联系我。'
+        '一封邮件即可——我会及时回复并配合处理。',
+    'zh-Hant': '歡迎反饋、提問，或如果您是版權方對本應用中的任何內容有疑義，請通過下方郵箱聯絡我。'
+        '一封郵件即可——我會及時回覆並配合處理。',
+    'en':
+        'Feedback and questions are welcome. If you are a rights '
+            'holder and have any concern about content included in this '
+            'app, a single email is sufficient — I will respond and act '
+            'promptly.',
+  },
+  'aboutContactSla': {
+    'zh-Hans': '一般 24 小时内回复 · 如确认下架，72 小时内移除。',
+    'zh-Hant': '一般 24 小時內回覆 · 如確認下架，72 小時內移除。',
+    'en':
+        'Acknowledged within 24 hours · removed within 72 hours when warranted.',
+  },
+  'aboutSectionScriptures': {
+    'zh-Hans': '内置圣经译本',
+    'zh-Hant': '內置聖經譯本',
+    'en': 'Bundled scripture texts',
+  },
+  'aboutSectionLexicons': {
+    'zh-Hans': '原文资源 · Strong\'s 编号 · 字典',
+    'zh-Hant': '原文資源 · Strong\'s 編號 · 字典',
+    'en': "Strong's lexicons & original-language data",
+  },
+  'aboutSectionOther': {
+    'zh-Hans': '地图 · 讲道 · 字体 · AI · 其他',
+    'zh-Hant': '地圖 · 講道 · 字體 · AI · 其他',
+    'en': 'Maps · Sermons · Fonts · AI · Other',
+  },
+  'aboutSectionAppLicense': {
+    'zh-Hans': '应用代码许可证',
+    'zh-Hant': '應用程式碼授權',
+    'en': 'Application licence',
+  },
+  // Per-version licence rows.
+  'aboutLicensePublicDomain': {
+    'zh-Hans': '公有领域 · 无版权限制。',
+    'zh-Hant': '公有領域 · 無版權限制。',
+    'en': 'Public domain.',
+  },
+  'aboutVerKjv': {
+    'zh-Hans': 'KJV 钦定本（1611 / 1769）',
+    'zh-Hant': 'KJV 欽定本（1611 / 1769）',
+    'en': 'KJV (1611 / 1769)',
+  },
+  'aboutVerLeb': {
+    'zh-Hans': 'LEB（Lexham 英文圣经）',
+    'zh-Hant': 'LEB（Lexham 英文聖經）',
+    'en': 'LEB (Lexham English Bible)',
+  },
+  'aboutLicenseLeb': {
+    'zh-Hans': '© Logos Bible Software · 仅限非商业研经使用。',
+    'zh-Hant': '© Logos Bible Software · 僅限非商業研經使用。',
+    'en': '© Logos Bible Software · non-commercial study only.',
+  },
+  'aboutVerNasb': {
+    'zh-Hans': 'NASB 2020 新美国标准译本',
+    'zh-Hant': 'NASB 2020 新美國標準譯本',
+    'en': 'NASB 2020',
+  },
+  'aboutLicenseNasb': {
+    'zh-Hans': '© Lockman 基金会 · 在出版方引用规定下使用。',
+    'zh-Hant': '© Lockman 基金會 · 在出版方引用規定下使用。',
+    'en':
+        '© The Lockman Foundation · used under quotation provisions.',
+  },
+  'aboutVerCuv': {
+    'zh-Hans': 'CUV 和合本 1919（简 / 繁）',
+    'zh-Hant': 'CUV 和合本 1919（簡 / 繁）',
+    'en': 'CUV 1919 (和合本, simplified / traditional)',
+  },
+  'aboutVerCuvsYhwh': {
+    'zh-Hans': 'CUVS-YHWH 和合本雅伟版（简 / 繁）',
+    'zh-Hant': 'CUVS-YHWH 和合本雅威版（簡 / 繁）',
+    'en': 'CUVS-YHWH (和合本雅伟版, simplified / traditional)',
+  },
+  'aboutLicenseCuvsYhwh': {
+    'zh-Hans': '© 雅伟的话事工 · 经授权使用。',
+    'zh-Hant': '© 雅威的話事工 · 經授權使用。',
+    'en':
+        '© Yahweh De Hua Ministry · used with permission.',
+  },
+  'aboutVerCnv': {
+    'zh-Hans': 'CNV 新译本 1992 / 2011（简 / 繁）',
+    'zh-Hant': 'CNV 新譯本 1992 / 2011（簡 / 繁）',
+    'en': 'CNV 1992 / 2011 (新译本, simplified / traditional)',
+  },
+  'aboutLicenseCnv': {
+    'zh-Hans': '© 环球圣经公会 · 雅伟版社群研经版本。',
+    'zh-Hant': '© 環球聖經公會 · 雅威版社群研經版本。',
+    'en':
+        '© Worldwide Bible Society · Yahweh-substituted community-study edition.',
+  },
+  'aboutVerLjk': {
+    'zh-Hans': 'LJK1 / LJK2 原文释经圣经（简 / 繁）',
+    'zh-Hant': 'LJK1 / LJK2 原文釋經聖經（簡 / 繁）',
+    'en': 'LJK1 / LJK2 (原文释经圣经, simplified / traditional)',
+  },
+  'aboutLicenseLjk': {
+    'zh-Hans': '© 圣经释经事工 · 经授权使用。',
+    'zh-Hant': '© 聖經釋經事工 · 經授權使用。',
+    'en': '© Bible Exegesis Ministry · used with permission.',
+  },
+  'aboutNivRemovedNote': {
+    'zh-Hans': 'NIV（新国际译本）此前曾内置，但已于 2026 年 5 月移除——'
+        'Biblica / Zondervan 对全文保有商业版权，未经出版方授权不得再分发完整文本。'
+        '需要 NIV 的读者请使用 Bible Gateway / YouVersion 等官方渠道。',
+    'zh-Hant': 'NIV（新國際譯本）此前曾內置，但已於 2026 年 5 月移除——'
+        'Biblica / Zondervan 對全文保有商業版權，未經出版方授權不得再分發完整文本。'
+        '需要 NIV 的讀者請使用 Bible Gateway / YouVersion 等官方渠道。',
+    'en':
+        'NIV (New International Version) was previously bundled but '
+            'removed in 2026-05. Biblica / Zondervan retain commercial '
+            'copyright on the full text and we cannot redistribute the '
+            'JSON bundle without an explicit publisher licence. Readers '
+            'seeking NIV should use Bible Gateway / YouVersion.',
+  },
+  // Lexicons.
+  'aboutLexStrongs': {
+    'zh-Hans': 'Strong\'s 希腊文 + 希伯来文编号',
+    'zh-Hant': 'Strong\'s 希臘文 + 希伯來文編號',
+    'en': "Strong's Greek + Hebrew Concordance",
+  },
+  'aboutLexCbol': {
+    'zh-Hans': 'CBOL 中文释义',
+    'zh-Hant': 'CBOL 中文釋義',
+    'en': 'CBOL Chinese definitions',
+  },
+  'aboutLicenseCbol': {
+    'zh-Hans': 'CC-BY-NC-SA 4.0 · 仅限非商业 · 衍生作品须沿用相同许可。',
+    'zh-Hant': 'CC-BY-NC-SA 4.0 · 僅限非商業 · 衍生作品須沿用相同授權。',
+    'en':
+        'CC-BY-NC-SA 4.0 · non-commercial only; derivatives must keep the licence.',
+  },
+  'aboutLexLxx': {
+    'zh-Hans': 'LXX 七十士译本 · 旧约↔希腊文对照',
+    'zh-Hant': 'LXX 七十士譯本 · 舊約↔希臘文對照',
+    'en': 'LXX (Septuagint) cross-references',
+  },
+  'aboutLexInterlinear': {
+    'zh-Hans': '希腊文 + 希伯来文逐字对照（含 Strong\'s 编号）',
+    'zh-Hant': '希臘文 + 希伯來文逐字對照（含 Strong\'s 編號）',
+    'en': "Greek + Hebrew interlinear (Strong's-tagged)",
+  },
+  'aboutLicenseInterlinear': {
+    'zh-Hans': '基于公有领域形态学数据库。',
+    'zh-Hant': '基於公有領域形態學資料庫。',
+    'en': 'Public-domain morphological databases.',
+  },
+  // Other resources.
+  'aboutMaps': {
+    'zh-Hans': '圣经历史地图（assets/maps/）',
+    'zh-Hant': '聖經歷史地圖（assets/maps/）',
+    'en': 'Bible-history maps (assets/maps/)',
+  },
+  'aboutLicenseMaps': {
+    'zh-Hans': '来源于公有领域 / Creative Commons 资源库。',
+    'zh-Hant': '來源於公有領域 / Creative Commons 資源庫。',
+    'en': 'Public domain / Creative Commons archives.',
+  },
+  'aboutSermons': {
+    'zh-Hans': '讲道文本（assets/sermons/）',
+    'zh-Hant': '講道文本（assets/sermons/）',
+    'en': 'Sermons (assets/sermons/)',
+  },
+  'aboutLicenseSermons': {
+    'zh-Hans': '© 梁家铿 · 经授权使用。',
+    'zh-Hant': '© 梁家鏗 · 經授權使用。',
+    'en': '© Liang Jia-keng · used with permission.',
+  },
+  'aboutFontsBundled': {
+    'zh-Hans': '内置字体：Roboto',
+    'zh-Hant': '內置字體：Roboto',
+    'en': 'Bundled font: Roboto',
+  },
+  'aboutLicenseRoboto': {
+    'zh-Hans': 'Apache 2.0 · Google。',
+    'zh-Hant': 'Apache 2.0 · Google。',
+    'en': 'Apache 2.0 · Google.',
+  },
+  'aboutFontsGoogle': {
+    'zh-Hans': '运行时字体：EB Garamond / Lora / Inter / Noto Serif SC 等',
+    'zh-Hant': '執行時字體：EB Garamond / Lora / Inter / Noto Serif SC 等',
+    'en':
+        'Runtime fonts: EB Garamond / Lora / Inter / Noto Serif SC / …',
+  },
+  'aboutLicenseOfl': {
+    'zh-Hans': 'SIL OFL · 通过 google_fonts 包按需加载。',
+    'zh-Hant': 'SIL OFL · 透過 google_fonts 套件按需載入。',
+    'en': 'SIL OFL · loaded via google_fonts.',
+  },
+  'aboutAi': {
+    'zh-Hans': 'AI 经文释义',
+    'zh-Hant': 'AI 經文釋義',
+    'en': 'AI explanations',
+  },
+  'aboutLicenseAi': {
+    'zh-Hans': 'Google Gemini API · 输出可在 API 条款下重新分发。',
+    'zh-Hant': 'Google Gemini API · 輸出可在 API 條款下重新分發。',
+    'en':
+        'Google Gemini API · output redistribution permitted under API terms.',
+  },
+  'aboutTrivia': {
+    'zh-Hans': '冷知识文本与图示',
+    'zh-Hant': '冷知識文本與圖示',
+    'en': 'Trivia text + diagrams',
+  },
+  'aboutLicenseOriginal': {
+    'zh-Hans': '本应用原创内容 · MIT（与应用代码同许可）。',
+    'zh-Hant': '本應用原創內容 · MIT（與應用程式碼同授權）。',
+    'en':
+        'Original to this app · MIT (same as application code).',
+  },
+  'aboutSongs': {
+    'zh-Hans': '诗歌列表',
+    'zh-Hant': '詩歌列表',
+    'en': 'Songs directory',
+  },
+  'aboutLicenseSongs': {
+    'zh-Hans': '仅外链 · 不嵌入任何音频 / 歌词 / PDF。',
+    'zh-Hant': '僅外鏈 · 不嵌入任何音訊 / 歌詞 / PDF。',
+    'en':
+        'Link-out only · no audio / lyrics / PDFs are embedded.',
+  },
+  'aboutAppLicenseHeading': {
+    'zh-Hans': '应用代码：MIT 许可证',
+    'zh-Hant': '應用程式碼：MIT 授權',
+    'en': 'Application code: MIT licence',
+  },
+  'aboutAppLicenseBody': {
+    'zh-Hans': '本仓库内的 Dart / Flutter 源代码（lib/ 目录及构建配置）以 MIT 许可证开源。'
+        '内置的第三方资源不在此 MIT 许可范围内——见上方各表格。',
+    'zh-Hant': '本倉庫內的 Dart / Flutter 原始碼（lib/ 目錄及建構設定）以 MIT 授權開源。'
+        '內置的第三方資源不在此 MIT 授權範圍內——見上方各表格。',
+    'en':
+        'The Dart / Flutter source code in this repository (under '
+            '`lib/` and the build configuration) is open source under '
+            'the MIT licence. Bundled third-party resources are NOT '
+            'covered by MIT — see the tables above for each item.',
+  },
+  'aboutOpenRepo': {
+    'zh-Hans': '在 GitHub 查看源代码',
+    'zh-Hant': '在 GitHub 查看原始碼',
+    'en': 'View source on GitHub',
+  },
+  'aboutFooterNote': {
+    'zh-Hans': '本页最后更新于 2026 年 5 月 6 日。',
+    'zh-Hant': '本頁最後更新於 2026 年 5 月 6 日。',
+    'en': 'Last updated 2026-05-06.',
+  },
   // Daily News (Round 40 — migrated from sibling DailyNews project).
   'dailyNews': {
     'zh-Hans': '每日新闻',

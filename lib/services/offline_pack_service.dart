@@ -191,7 +191,8 @@ class OfflinePackService extends ChangeNotifier {
     'assets/kjv.json',
     'assets/leb.json',
     'assets/nasb.json',
-    'assets/niv.json',
+    // 'assets/niv.json' removed 2026-05 — NIV asset bundle removed
+    // along with its picker entry (see bible_versions.dart).
     'assets/cuv.json',
     'assets/cuv-tr.json',
     'assets/cuvs-yhwh.json',

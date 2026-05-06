@@ -36,12 +36,12 @@ const bibleVersions = <BibleVersionInfo>[
     menuLabel: 'New American Standard Bible',
     editionYear: '2020 update',
   ),
-  BibleVersionInfo(
-    value: 'niv',
-    shortLabel: 'NIV',
-    menuLabel: 'New International Version',
-    editionYear: '2011',
-  ),
+  // NIV (New International Version) was previously listed here.
+  // Removed in 2026-05 — Biblica / Zondervan retain commercial
+  // copyright on the full text and we cannot redistribute the bundled
+  // JSON without an explicit publisher licence. Users seeking NIV
+  // should follow Bible Gateway / YouVersion. The asset file
+  // `assets/niv.json` was also removed in the same change.
   BibleVersionInfo(
     value: 'cuvs-yhwh',
     shortLabel: 'CUVS(简)',

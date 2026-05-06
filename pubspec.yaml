@@ -61,7 +61,8 @@ flutter:
     - assets/cnv.json
     - assets/cnv-tr.json
     - assets/nasb.json
-    - assets/niv.json
+    # NIV (Biblica/Zondervan) removed in 2026-05 — its complete text
+    # cannot be redistributed without a publisher licence.
     - assets/web-ot-paragraphs.json
     - assets/app_icon.png
     - assets/loading.png
@@ -90,9 +91,11 @@ flutter:
     - family: Roboto
       fonts:
         - asset: assets/fonts/Roboto-VariableFont_wdth,wght.ttf
-    - family: Microsoft YaHei
-      fonts:
-        - asset: assets/fonts/Microsoft Yahei.ttf
+    # Microsoft YaHei was previously bundled here. It is a proprietary
+    # Microsoft font (licence forbids redistribution), so we removed it
+    # in 2026-05 — Chinese readers now fall back to Google Fonts'
+    # Noto Sans SC / Noto Serif SC (SIL OFL, freely distributable) and
+    # the system installed PingFang SC / SimSun.
 
 # Note:
 # For Flutter Web, the browser tab icon (favicon) is located at:

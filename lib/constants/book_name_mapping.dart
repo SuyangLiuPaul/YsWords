@@ -238,7 +238,7 @@ const _englishVersionCodes = <String>{
   'kjv',
   'leb',
   'nasb',
-  'niv',
+  // 'niv' removed 2026-05 (see bible_versions.dart for licence rationale).
 };
 
 String toLocale(String englishKey, String version) {

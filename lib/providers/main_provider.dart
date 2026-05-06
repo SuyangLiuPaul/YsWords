@@ -502,7 +502,15 @@ class MainProvider extends ChangeNotifier {
     final savedBook = prefs.getString('${_storagePrefix}book');
     final savedChapter = prefs.getInt('${_storagePrefix}chapter');
 
-    if (savedVersion != null) currentVersion = savedVersion.toLowerCase();
+    if (savedVersion != null) {
+      var v = savedVersion.toLowerCase();
+      // Migration 2026-05: NIV asset was removed for licensing reasons.
+      // Existing users whose saved version is 'niv' would get an empty
+      // verse list, so route them to KJV (closest English fallback that
+      // is unambiguously public domain).
+      if (v == 'niv') v = 'kjv';
+      currentVersion = v;
+    }
     if (savedBook != null) currentBook = savedBook;
     if (savedChapter != null) currentChapter = savedChapter;
 

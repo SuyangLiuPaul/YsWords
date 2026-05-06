@@ -10,6 +10,7 @@ import 'package:yswords/models/app_style_preset.dart';
 import 'package:yswords/models/dashboard_section.dart';
 import 'package:yswords/providers/main_provider.dart';
 import 'package:get/get.dart';
+import 'package:yswords/pages/about_page.dart';
 import 'package:yswords/pages/profiles_page.dart';
 import 'package:yswords/services/cloud_auth_service.dart';
 import 'package:yswords/widgets/google_g_logo.dart';
@@ -2619,6 +2620,21 @@ class _AboutCard extends StatelessWidget {
             ),
             SizedBox(height: 6 * s),
             const ContactLine(),
+            SizedBox(height: 8 * s),
+            // Round 56 day-3 (2026-05-06): button into the full
+            // Attributions / Licensing / Takedown page. Copyright
+            // audit prompted listing every bundled third-party
+            // resource + per-item licence + a prominent takedown
+            // contact, which doesn't fit on the existing _AboutCard.
+            OutlinedButton.icon(
+              icon: const Icon(Icons.gavel_rounded, size: 18),
+              label: Text(
+                uiStrings['aboutOpenButton']?[locale] ??
+                    'Attributions & licensing',
+              ),
+              onPressed: () => Get.to(() => const AboutPage(),
+                  transition: Transition.rightToLeft),
+            ),
             SizedBox(height: 10 * s),
             // Clear-cache button — wipes service workers + browser
             // Cache Storage + the build-stamp localStorage entry,

@@ -8,7 +8,7 @@ import 'package:google_fonts/google_fonts.dart';
 /// Flutter on web (CanvasKit) cannot render CSS-only system fonts
 /// — picking "Times New Roman" or "Georgia" used to silently fall
 /// back to Roboto because no font asset was loaded for those names.
-/// We now ship two bundled fonts (Roboto, Microsoft YaHei) plus a
+/// We ship one bundled font (Roboto) plus a
 /// curated set of Google Fonts that the `google_fonts` package
 /// downloads + registers at runtime. The user's selection still
 /// roundtrips as a stable string key in SharedPreferences (e.g.
@@ -17,7 +17,7 @@ import 'package:google_fonts/google_fonts.dart';
 /// that TextStyle's `fontFamily` field needs.
 ///
 /// User-facing behaviour:
-/// • Roboto + Microsoft YaHei always work (bundled; offline-safe).
+/// • Roboto always works (bundled; offline-safe).
 /// • Google Fonts work as long as the device has internet on first
 ///   use; afterwards the package caches them locally.
 /// • System-only options (PingFang SC, SimSun, Heiti SC, …) are
@@ -71,16 +71,13 @@ const List<FontOption> _catalog = [
     isBundled: true,
     category: FontCategory.bundled,
   ),
-  FontOption(
-    key: 'Microsoft YaHei',
-    label: {
-      'en': 'Microsoft YaHei (Chinese)',
-      'zh-Hans': '微软雅黑（中文）',
-      'zh-Hant': '微軟雅黑（中文）',
-    },
-    isBundled: true,
-    category: FontCategory.bundled,
-  ),
+  // Microsoft YaHei was previously a bundled option here. Removed in
+  // 2026-05 because it is a proprietary Microsoft font and the
+  // licence forbids redistribution. Chinese readers should pick
+  // Noto Sans SC / Noto Serif SC instead (SIL OFL, freely
+  // distributable). The migration in [migrateLegacyFontKey] below
+  // routes any saved 'Microsoft YaHei' selection to Noto Sans SC so
+  // existing users don't see a blank font setting on next launch.
 
   // ── Google Fonts (English serif) ─────────────────────────────────
   FontOption(
@@ -289,6 +286,10 @@ String migrateLegacyFontKey(String stored) {
     'Source Han Sans CN': 'Noto Sans SC',
     'Heiti SC': 'Noto Sans SC',
     'KaiTi': 'Noto Serif SC',
+    // Microsoft YaHei removed in 2026-05 (proprietary font, licence
+    // forbids redistribution). Existing users get Noto Sans SC, the
+    // closest Chinese sans-serif equivalent.
+    'Microsoft YaHei': 'Noto Sans SC',
   };
   final mapped = migrations[stored];
   if (mapped != null && isValidFontKey(mapped)) return mapped;

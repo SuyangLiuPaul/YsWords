@@ -17,7 +17,8 @@ const sectionTitleSetByVersion = <String, String>{
   'kjv': 'english-classic',
   'leb': 'english-classic',
   'nasb': 'english-classic',
-  'niv': 'english-classic',
+  // 'niv' entry removed in 2026-05 along with the NIV version itself
+  // (see lib/constants/bible_versions.dart for the licence rationale).
 
   // CUV proper — the master Chinese set.
   'cuv': 'cuv',
