@@ -14,6 +14,9 @@ import 'package:firebase_core_platform_interface/firebase_core_platform_interfac
     show FirebasePlatform;
 // ignore: depend_on_referenced_packages
 import 'package:firebase_core_web/firebase_core_web.dart' show FirebaseCoreWeb;
+// ignore: depend_on_referenced_packages
+import 'package:firebase_database_web/firebase_database_web.dart'
+    show FirebaseDatabaseWeb;
 import 'package:flutter/foundation.dart';
 // ignore: depend_on_referenced_packages
 import 'package:flutter_web_plugins/flutter_web_plugins.dart' show webPluginRegistrar;
@@ -194,6 +197,15 @@ class CloudAuthService extends ChangeNotifier {
           // Firestore: cheap to re-register; ensures the web delegate
           // is the one Firestore uses for Channel transport.
           FirebaseFirestoreWeb.registerWith(webPluginRegistrar);
+          // 2026-05-06: Realtime Database had the same Pigeon channel-
+          // registration bug — symptom was the user-visible error
+          // "Unable to establish connection on channel: dev.flutter.
+          // pigeon.firebase_database_platform_interface.
+          // FirebaseDatabaseHostApi.databaseReferenceSet". Same fix:
+          // re-register the web delegate explicitly so the platform
+          // interface stops trying to talk to a non-existent
+          // MethodChannel receiver on web.
+          FirebaseDatabaseWeb.registerWith(webPluginRegistrar);
         } catch (e) {
           // Soft-fail: if registration throws because the plugin is
           // already wired and the setter verification trips, fall
