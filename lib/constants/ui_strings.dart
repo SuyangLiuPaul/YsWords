@@ -2216,6 +2216,16 @@ const uiStrings = {
     'en': 'Most frequent book',
   },
   'statCanon': {'zh-Hans': '正典', 'zh-Hant': '正典', 'en': 'Canon'},
+  'colStrongs': {
+    'zh-Hans': '编号',
+    'zh-Hant': '編號',
+    'en': "Strong's",
+  },
+  'bothTestaments': {
+    'zh-Hans': '新旧约对照',
+    'zh-Hant': '新舊約對照',
+    'en': 'Both Testaments',
+  },
   'colTotal': {
     'zh-Hans': '总',
     'zh-Hant': '總',

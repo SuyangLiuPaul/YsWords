@@ -5,6 +5,7 @@ import 'package:yswords/constants/book_groups.dart';
 import 'package:yswords/constants/ui_strings.dart';
 import 'package:yswords/models/strongs.dart';
 import 'package:yswords/services/concordance_service.dart';
+import 'package:yswords/services/lxx_service.dart';
 import 'package:yswords/services/strongs_service.dart';
 import 'package:yswords/utils/clipboard_helper.dart';
 import 'package:yswords/utils/version_mapper.dart' show localeAwareBookName;
@@ -73,26 +74,42 @@ class _WordDistributionTableState extends State<WordDistributionTable> {
     final mainEntry = await StrongsService.lookup(widget.strongsNumber);
     if (mainEntry == null) return const [];
 
-    // Fetch family + synonyms.
+    // Fetch family + synonyms (same-canon rows).
     final family =
         await StrongsService.wordFamily(widget.strongsNumber);
     final compare =
         await StrongsService.compareWords(widget.strongsNumber);
 
-    // Cross-language: Hebrew → LXX Greek; Greek → Hebrew sources.
-    // Note: only same-language entries are added as ROWS in the table
-    // since the column set is fixed to one canon (NT or OT). The cross-
-    // language entries appear in the exegesis panel itself.
-    // The rows here stay strictly within the current word's canon.
+    // Round 56 (continued — cross-testament): user feedback "after
+    // switching the word, can you also have related hebrew or greek
+    // also display as well... so we can see across all bibles from
+    // different languages". Hebrew word → LXX Greek translations;
+    // Greek word → Hebrew sources the LXX renders this way. Adding
+    // these as rows means the table becomes a cross-canon view —
+    // _buildScrollable detects both-canons-present and widens the
+    // column set to all 66 books accordingly.
+    final List<StrongsEntry> crossTestament;
+    if (mainEntry.number.startsWith('H')) {
+      crossTestament =
+          await LxxService.greekEntriesFor(mainEntry.number);
+    } else if (mainEntry.number.startsWith('G')) {
+      crossTestament =
+          await LxxService.hebrewSourceEntriesFor(mainEntry.number);
+    } else {
+      crossTestament = const [];
+    }
 
     // Dedupe by Strong's # while preserving order:
-    // main → family → synonyms.
+    // main → family → synonyms → cross-testament.
     final seen = <String>{mainEntry.number};
     final entries = <StrongsEntry>[mainEntry];
     for (final e in family) {
       if (seen.add(e.number)) entries.add(e);
     }
     for (final e in compare) {
+      if (seen.add(e.number)) entries.add(e);
+    }
+    for (final e in crossTestament) {
       if (seen.add(e.number)) entries.add(e);
     }
 
@@ -149,16 +166,29 @@ class _WordDistributionTableState extends State<WordDistributionTable> {
             ),
           );
         }
-        final isGreek = rows.first.entry.number.startsWith('G');
-        return _buildScrollable(rows, isGreek, scheme, locale);
+        // Round 56 (continued — cross-testament): the column set
+        // depends on which canons the row list spans. Same-canon
+        // (only Hebrew or only Greek rows) → single canon columns,
+        // matching the historical layout. Both canons present (the
+        // user's word has LXX equivalents or Hebrew sources) → all
+        // 66 books across both testaments.
+        final hasOt = rows.any((r) => r.entry.number.startsWith('H'));
+        final hasNt = rows.any((r) => r.entry.number.startsWith('G'));
+        final bothCanons = hasOt && hasNt;
+        return _buildScrollable(rows, hasNt, bothCanons, scheme, locale);
       },
     );
   }
 
   Widget _buildScrollable(
-      List<_Row> rows, bool isGreek, ColorScheme scheme, String locale) {
-    final books = isGreek ? canonicalNtBooks : canonicalOtBooks;
-    final groups = isGreek ? _ntGroups(locale) : _otGroups(locale);
+      List<_Row> rows, bool isGreek, bool bothCanons,
+      ColorScheme scheme, String locale) {
+    final books = bothCanons
+        ? <String>[...canonicalOtBooks, ...canonicalNtBooks]
+        : (isGreek ? canonicalNtBooks : canonicalOtBooks);
+    final groups = bothCanons
+        ? <_Group>[..._otGroups(locale), ..._ntGroups(locale)]
+        : (isGreek ? _ntGroups(locale) : _otGroups(locale));
     final headerCells = _headerCells(groups, books, scheme, locale);
 
     // Apply zoom: scale every column width proportionally so the
@@ -239,7 +269,7 @@ class _WordDistributionTableState extends State<WordDistributionTable> {
               ),
             ),
           ),
-          _buildSummary(rows, books, isGreek, scheme, locale),
+          _buildSummary(rows, books, isGreek, bothCanons, scheme, locale),
         ],
       ),
     );
@@ -326,7 +356,7 @@ class _WordDistributionTableState extends State<WordDistributionTable> {
     // Header row: Strong's, Lemma, Gloss, Total, sub-corpus totals,
     // then per-book counts. Book names are localized.
     final headers = <String>[
-      "Strong's",
+      uiStrings['colStrongs']?[locale] ?? "Strong's",
       uiStrings['lemma']?[locale] ?? 'Word',
       uiStrings['gloss']?[locale] ?? 'Gloss',
       uiStrings['colTotal']?[locale] ?? 'Total',
@@ -370,7 +400,7 @@ class _WordDistributionTableState extends State<WordDistributionTable> {
   // ── Summary footer ────────────────────────────────────────────────
 
   Widget _buildSummary(List<_Row> rows, List<String> books, bool isGreek,
-      ColorScheme scheme, String locale) {
+      bool bothCanons, ColorScheme scheme, String locale) {
     // Aggregate stats across every row.
     final totalOccurrences =
         rows.fold<int>(0, (a, r) => a + (r.concordance?.total ?? 0));
@@ -433,9 +463,14 @@ class _WordDistributionTableState extends State<WordDistributionTable> {
                   scheme),
               _statChip(
                   uiStrings['statCanon']?[locale] ?? 'Canon',
-                  isGreek
-                      ? (uiStrings['newTestament']?[locale] ?? 'Greek Bible')
-                      : (uiStrings['oldTestament']?[locale] ?? 'Hebrew Bible'),
+                  bothCanons
+                      ? (uiStrings['bothTestaments']?[locale] ??
+                          'Both Testaments')
+                      : (isGreek
+                          ? (uiStrings['newTestament']?[locale] ??
+                              'Greek Bible')
+                          : (uiStrings['oldTestament']?[locale] ??
+                              'Hebrew Bible')),
                   scheme),
             ],
           ),
@@ -473,7 +508,10 @@ class _WordDistributionTableState extends State<WordDistributionTable> {
   List<_Cell> _headerCells(List<_Group> groups, List<String> books,
       ColorScheme scheme, String locale) {
     final cells = <_Cell>[
-      _Cell(text: 'Strong\'s', width: 64, align: TextAlign.left),
+      _Cell(
+          text: uiStrings['colStrongs']?[locale] ?? "Strong's",
+          width: 64,
+          align: TextAlign.left),
       _Cell(
           text: uiStrings['lemma']?[locale] ?? 'Word',
           width: 96,
