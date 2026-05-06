@@ -821,6 +821,111 @@ const uiStrings = {
     'zh-Hant': '終極盼望',
     'en': 'Final Hope',
   },
+  // Round 56 (continued — bible-languages card): replaces the
+  // old stat-block grid in the Overview tab. Three source
+  // languages with role + sections + background.
+  'languagesCardTitle': {
+    'zh-Hans': '圣经的原文',
+    'zh-Hant': '聖經的原文',
+    'en': 'Original languages of the Bible',
+  },
+  'languagesCardSubtitle': {
+    'zh-Hans': '圣经原本由三种语言写成 —— 看看每一种各自承担哪些经文。',
+    'zh-Hant': '聖經原本由三種語言寫成 —— 看看每一種各自承擔哪些經文。',
+    'en':
+        'The three source languages and where each appears in the canon.',
+  },
+  'languageWordCount': {
+    'zh-Hans': '{n} 词',
+    'zh-Hant': '{n} 詞',
+    'en': '{n} words',
+  },
+  'languageLemmaCount': {
+    'zh-Hans': '{n} 词条',
+    'zh-Hant': '{n} 詞條',
+    'en': '{n} lemmas',
+  },
+  // Hebrew
+  'languageHebrewName': {
+    'zh-Hans': '希伯来文',
+    'zh-Hant': '希伯來文',
+    'en': 'Hebrew',
+  },
+  'languageHebrewRole': {
+    'zh-Hans': '旧约绝大部分',
+    'zh-Hant': '舊約絕大部分',
+    'en': 'Most of the Old Testament',
+  },
+  'languageHebrewSections': {
+    'zh-Hans':
+        '旧约 39 卷的绝大部分 —— 摩西五经、历史书、诗歌智慧书、绝大多数先知书。',
+    'zh-Hant':
+        '舊約 39 卷的絕大部分 —— 摩西五經、歷史書、詩歌智慧書、絕大多數先知書。',
+    'en':
+        'Nearly all 39 books of the Old Testament — Pentateuch, histories, poetry / wisdom, and almost the entire prophetic corpus.',
+  },
+  'languageHebrewBackground': {
+    'zh-Hans':
+        '西北闪族语系，22 个辅音字母，从右向左书写。马所拉抄本所采用的元音点系统是中古时期 (主后 7-10 世纪) 才加入的；圣经成书时只写辅音。',
+    'zh-Hant':
+        '西北閃族語系，22 個輔音字母，從右向左書寫。馬所拉抄本所採用的元音點系統是中古時期 (主後 7-10 世紀) 才加入的；聖經成書時只寫輔音。',
+    'en':
+        'Northwest Semitic language with a 22-letter consonantal alphabet, read right-to-left. The vowel-pointing system in the Masoretic manuscripts was a much later addition (7th–10th centuries AD) — when Scripture was first written, only the consonants appeared on the page.',
+  },
+  // Aramaic
+  'languageAramaicName': {
+    'zh-Hans': '亚兰文',
+    'zh-Hant': '亞蘭文',
+    'en': 'Aramaic',
+  },
+  'languageAramaicRole': {
+    'zh-Hans': '旧约若干段落 + 新约几处引文',
+    'zh-Hant': '舊約若干段落 + 新約幾處引文',
+    'en': 'Pockets of the Old Testament + a few NT quotations',
+  },
+  'languageAramaicSections': {
+    'zh-Hans':
+        '但以理 2:4b–7:28、以斯拉 4:8–6:18 与 7:12–26、创世记 31:47 (一处地名)、耶利米书 10:11 (一节)。新约中保留了几句亚兰文原文：「亚巴 父啊」(可 14:36)、「以利以利拉马撒巴各大尼」(可 15:34)、「大利大古米」(可 5:41)、「以法大」(可 7:34)、「玛拉那他」(林前 16:22)。',
+    'zh-Hant':
+        '但以理 2:4b–7:28、以斯拉 4:8–6:18 與 7:12–26、創世記 31:47 (一處地名)、耶利米書 10:11 (一節)。新約中保留了幾句亞蘭文原文：「亞巴 父啊」(可 14:36)、「以利以利拉馬撒巴各大尼」(可 15:34)、「大利大古米」(可 5:41)、「以法大」(可 7:34)、「瑪拉那他」(林前 16:22)。',
+    'en':
+        'Daniel 2:4b–7:28, Ezra 4:8–6:18 and 7:12–26, Genesis 31:47 (a place name), Jeremiah 10:11 (one verse). The New Testament preserves several Aramaic phrases on the lips of Jesus and the early church: "abba" (Mark 14:36), "eloi eloi lema sabachthani" (Mark 15:34), "talitha koum" (Mark 5:41), "ephphatha" (Mark 7:34), and "maranatha" (1 Cor 16:22).',
+  },
+  'languageAramaicBackground': {
+    'zh-Hans':
+        '与希伯来文同属西北闪族语系，是希伯来文的近亲。亚述、巴比伦、波斯帝国先后扩张后，亚兰文成为近东的通用语，被掳归回时期的犹太人多以亚兰文为日常语言；耶稣时代的加利利与犹太地仍以亚兰文交谈。',
+    'zh-Hant':
+        '與希伯來文同屬西北閃族語系，是希伯來文的近親。亞述、巴比倫、波斯帝國先後擴張後，亞蘭文成為近東的通用語，被擄歸回時期的猶太人多以亞蘭文為日常語言；耶穌時代的加利利與猶太地仍以亞蘭文交談。',
+    'en':
+        'Closely related to Hebrew (same Northwest Semitic family). After the Assyrian, Babylonian, and Persian empires successively dominated the region, Aramaic became the everyday lingua franca of the Near East. Returning exiles spoke it as their first language, and it was still the conversational tongue of Galilee and Judea in Jesus\' day.',
+  },
+  // Greek
+  'languageGreekName': {
+    'zh-Hans': '希腊文',
+    'zh-Hant': '希臘文',
+    'en': 'Greek',
+  },
+  'languageGreekRole': {
+    'zh-Hans': '新约全书 + 七十士译本',
+    'zh-Hant': '新約全書 + 七十士譯本',
+    'en': 'All of the New Testament + LXX',
+  },
+  'languageGreekSections': {
+    'zh-Hans':
+        '新约 27 卷全部用希腊文写成 —— 福音书、使徒行传、保罗书信、其他书信、启示录。此外旧约的「七十士译本」(LXX) 也是希腊文，主前 3-2 世纪在亚历山大城翻译完成，是新约作者引用旧约时最常依据的版本。',
+    'zh-Hant':
+        '新約 27 卷全部用希臘文寫成 —— 福音書、使徒行傳、保羅書信、其他書信、啟示錄。此外舊約的「七十士譯本」(LXX) 也是希臘文，主前 3-2 世紀在亞歷山大城翻譯完成，是新約作者引用舊約時最常依據的版本。',
+    'en':
+        'All 27 books of the New Testament — Gospels, Acts, Pauline epistles, the catholic letters, and Revelation. Plus the Septuagint (LXX), the Greek translation of the Hebrew Old Testament completed in Alexandria in the 3rd–2nd century BC and the version most often quoted when NT authors cite the OT.',
+  },
+  'languageGreekBackground': {
+    'zh-Hans':
+        '通用希腊文 (Koine，「平常的」)，亚历山大大帝东征后，整个地中海与近东世界的共通语言。新约作者刻意采用这种百姓都能听懂的口语形式，而不是雅典文人的古典希腊文，让福音从市井走向万民。',
+    'zh-Hant':
+        '通用希臘文 (Koine，「平常的」)，亞歷山大大帝東征後，整個地中海與近東世界的共通語言。新約作者刻意採用這種百姓都能聽懂的口語形式，而不是雅典文人的古典希臘文，讓福音從市井走向萬民。',
+    'en':
+        'Koine ("common") Greek, the everyday register of the Hellenistic Mediterranean after Alexander the Great\'s conquests. The NT authors deliberately wrote in this accessible form — the Greek of the marketplace — rather than the polished Attic of classical literature, so the gospel could travel through ordinary readers to the ends of the empire.',
+  },
   'lookupTopicCreation': {
     'zh-Hans': '创造',
     'zh-Hant': '創造',

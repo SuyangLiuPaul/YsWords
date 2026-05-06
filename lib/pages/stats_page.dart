@@ -958,10 +958,24 @@ class _OriginalsOverviewTabState extends State<_OriginalsOverviewTab>
                   setState(() => _hideStopwords = v),
             ),
             const SizedBox(height: 16),
-            _StatGrid(
+            // Round 56 (continued — languages card): user feedback
+            // 'those blocks in overview is not helpful. remove them.
+            // also apart from Greek and Hebrew but also have other
+            // languages right. I remember like Aramaic'. The
+            // numeric stat tiles (Hebrew words / Greek words /
+            // Hebrew lemmas / Greek lemmas / Hapax / Books covered)
+            // mostly duplicated information already visible from the
+            // Top-25 cards. Replaced with an educational card listing
+            // all three biblical source languages — Hebrew, Aramaic,
+            // and Greek — with a one-paragraph background each. The
+            // numbers that did add value (Hebrew/Greek totals) now
+            // appear inline within the language descriptions when
+            // we have them.
+            _BibleLanguagesCard(
+              view: view,
+              locale: locale,
               settings: settings,
               scheme: scheme,
-              tiles: _statTilesFor(view, locale, scheme),
             ),
             const SizedBox(height: 20),
             if (wide)
@@ -1050,6 +1064,7 @@ class _OriginalsOverviewTabState extends State<_OriginalsOverviewTab>
     return '$base · ${localeAwareBookName(view.bookFilter!, locale)}';
   }
 
+  // ignore: unused_element
   List<_StatTile> _statTilesFor(
       _OverviewView view, String locale, ColorScheme scheme) {
     final tiles = <_StatTile>[];
@@ -1540,6 +1555,273 @@ class _OverviewBookChip extends StatelessWidget {
   }
 }
 
+/// Round 56 (continued): educational card replacing the old stat-
+/// block grid. Lists every source language the Bible was originally
+/// written in — Hebrew, Aramaic, Greek — with a one-paragraph
+/// background each, the canonical sections each language covers,
+/// and (for Hebrew + Greek) the running word totals from the
+/// originals stats. Inline stats fold the numeric value the old
+/// blocks carried into a more meaningful context.
+class _BibleLanguagesCard extends StatelessWidget {
+  final _OverviewView view;
+  final String locale;
+  final AppSettings settings;
+  final ColorScheme scheme;
+
+  const _BibleLanguagesCard({
+    required this.view,
+    required this.locale,
+    required this.settings,
+    required this.scheme,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final title = uiStrings['languagesCardTitle']?[locale] ??
+        'Original languages of the Bible';
+    final subtitle = uiStrings['languagesCardSubtitle']?[locale] ??
+        'The three source languages and where each appears in the canon.';
+    return Container(
+      padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+      decoration: BoxDecoration(
+        color: scheme.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+            color: scheme.outlineVariant.withValues(alpha: 0.5)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.translate_rounded,
+                  color: scheme.primary, size: 20),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  title,
+                  style: TextStyle(
+                    fontFamily: settings.fontFamily,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    color: scheme.onSurface,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Text(
+            subtitle,
+            style: TextStyle(
+              fontFamily: settings.fontFamily,
+              fontSize: 12,
+              height: 1.45,
+              color: scheme.onSurface.withValues(alpha: 0.65),
+            ),
+          ),
+          const SizedBox(height: 14),
+          _LanguageRow(
+            scriptColor: Colors.indigo,
+            scriptLabel: 'אבג',
+            nameKey: 'languageHebrewName',
+            roleKey: 'languageHebrewRole',
+            sectionsKey: 'languageHebrewSections',
+            backgroundKey: 'languageHebrewBackground',
+            wordCount: view.hebrewWords > 0 ? view.hebrewWords : null,
+            uniqueLemmas:
+                view.hebrewUnique > 0 ? view.hebrewUnique : null,
+            locale: locale,
+            settings: settings,
+            scheme: scheme,
+          ),
+          const SizedBox(height: 14),
+          _LanguageRow(
+            // Aramaic shares its consonantal script with Hebrew; the
+            // glyphs differ in style only. Using the same alphabet
+            // line as Hebrew is editorially honest.
+            scriptColor: Colors.teal,
+            scriptLabel: 'ܐܒܓ',
+            nameKey: 'languageAramaicName',
+            roleKey: 'languageAramaicRole',
+            sectionsKey: 'languageAramaicSections',
+            backgroundKey: 'languageAramaicBackground',
+            wordCount: null,
+            uniqueLemmas: null,
+            locale: locale,
+            settings: settings,
+            scheme: scheme,
+          ),
+          const SizedBox(height: 14),
+          _LanguageRow(
+            scriptColor: Colors.deepPurple,
+            scriptLabel: 'αβγ',
+            nameKey: 'languageGreekName',
+            roleKey: 'languageGreekRole',
+            sectionsKey: 'languageGreekSections',
+            backgroundKey: 'languageGreekBackground',
+            wordCount: view.greekWords > 0 ? view.greekWords : null,
+            uniqueLemmas:
+                view.greekUnique > 0 ? view.greekUnique : null,
+            locale: locale,
+            settings: settings,
+            scheme: scheme,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Row inside _BibleLanguagesCard. Two columns: a script-glyph
+/// badge on the left (אבג / ܐܒܓ / αβγ) so the language is visually
+/// recognisable before the user reads the text, and the localised
+/// name + role + sections + background paragraph on the right.
+/// Stats for languages we have counts for fold into the role line.
+class _LanguageRow extends StatelessWidget {
+  /// MaterialColor (not just Color) so we can access `.shade900`
+  /// for the glyph badge text against the lightly-tinted box.
+  final MaterialColor scriptColor;
+  final String scriptLabel;
+  final String nameKey;
+  final String roleKey;
+  final String sectionsKey;
+  final String backgroundKey;
+  final int? wordCount;
+  final int? uniqueLemmas;
+  final String locale;
+  final AppSettings settings;
+  final ColorScheme scheme;
+
+  const _LanguageRow({
+    required this.scriptColor,
+    required this.scriptLabel,
+    required this.nameKey,
+    required this.roleKey,
+    required this.sectionsKey,
+    required this.backgroundKey,
+    required this.wordCount,
+    required this.uniqueLemmas,
+    required this.locale,
+    required this.settings,
+    required this.scheme,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final name = uiStrings[nameKey]?[locale] ?? '';
+    final role = uiStrings[roleKey]?[locale] ?? '';
+    final sections = uiStrings[sectionsKey]?[locale] ?? '';
+    final background = uiStrings[backgroundKey]?[locale] ?? '';
+    final wordsLabel = wordCount != null
+        ? (uiStrings['languageWordCount']?[locale] ?? '{n} words')
+            .replaceAll('{n}', _humanNum(wordCount!))
+        : null;
+    final lemmasLabel = uniqueLemmas != null
+        ? (uiStrings['languageLemmaCount']?[locale] ?? '{n} lemmas')
+            .replaceAll('{n}', _humanNum(uniqueLemmas!))
+        : null;
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          width: 56,
+          height: 56,
+          decoration: BoxDecoration(
+            color: scriptColor.withValues(alpha: 0.12),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          alignment: Alignment.center,
+          child: Text(
+            scriptLabel,
+            style: TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.w700,
+              color: scriptColor.shade900,
+              height: 1.0,
+            ),
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.baseline,
+                textBaseline: TextBaseline.alphabetic,
+                children: [
+                  Flexible(
+                    child: Text(
+                      name,
+                      style: TextStyle(
+                        fontFamily: settings.fontFamily,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                        color: scheme.onSurface,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Flexible(
+                    child: Text(
+                      role,
+                      style: TextStyle(
+                        fontFamily: settings.fontFamily,
+                        fontSize: 11,
+                        color: scheme.primary,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              if (wordsLabel != null || lemmasLabel != null) ...[
+                const SizedBox(height: 2),
+                Text(
+                  [wordsLabel, lemmasLabel]
+                      .whereType<String>()
+                      .join(' · '),
+                  style: TextStyle(
+                    fontFamily: settings.fontFamily,
+                    fontSize: 11,
+                    color: scheme.onSurface.withValues(alpha: 0.55),
+                    fontFeatures: const [FontFeature.tabularFigures()],
+                  ),
+                ),
+              ],
+              const SizedBox(height: 6),
+              if (sections.isNotEmpty) ...[
+                Text(
+                  sections,
+                  style: TextStyle(
+                    fontFamily: settings.fontFamily,
+                    fontSize: 12,
+                    height: 1.5,
+                    color: scheme.onSurface.withValues(alpha: 0.85),
+                  ),
+                ),
+                const SizedBox(height: 6),
+              ],
+              Text(
+                background,
+                style: TextStyle(
+                  fontFamily: settings.fontFamily,
+                  fontSize: 12,
+                  height: 1.5,
+                  color: scheme.onSurface.withValues(alpha: 0.7),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+// ignore: unused_element
 class _StatGrid extends StatelessWidget {
   final AppSettings settings;
   final ColorScheme scheme;
