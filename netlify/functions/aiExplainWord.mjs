@@ -169,9 +169,13 @@ function buildPrompt({ strongs, lemma, translit, gloss, book, chapter, verse, ve
 	parts.push(focus);
 	if (verseText) parts.push(`The verse reads: "${verseText}"`);
 	parts.push('');
-	parts.push(`Target length: **${profile.words}**. ` +
-		`Plain prose, no headings, no bullets, no markdown. Always ` +
-		`finish your final sentence — never trail off mid-thought.`);
+	parts.push(`Target length: ${profile.words}. ` +
+		`Use plain prose only. NEVER use markdown formatting — no ` +
+		`asterisks (*, **, ***), no underscores (_, __), no hash ` +
+		`headings (#, ##, ###), no bullet points (- or *), no ` +
+		`horizontal rules (---). If you want emphasis, use plain ` +
+		`words. Always finish your final sentence — never trail off ` +
+		`mid-thought.`);
 	parts.push('');
 	parts.push(`Stay rigorous. Don't invent etymology. Don't moralize. ` +
 		`Don't hedge with "scholars debate" unless there's a real exegetical ` +

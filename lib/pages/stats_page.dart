@@ -9,12 +9,14 @@ import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/models/verse.dart';
 import 'package:yswords/providers/main_provider.dart';
 import 'package:yswords/services/bible_stats_service.dart';
+import 'package:yswords/services/daily_verse_service.dart';
 import 'package:yswords/services/fetch_books.dart' show standardBookOrder;
 import 'package:yswords/services/originals_stats_service.dart';
 import 'package:yswords/utils/clipboard_helper.dart';
 import 'package:yswords/services/concordance_service.dart' show ConcordanceRef;
 import 'package:yswords/utils/jump_to_reference.dart' show resolveAndPrepareJump;
-import 'package:yswords/utils/reference_parser.dart' show BibleReference;
+import 'package:yswords/utils/reference_parser.dart'
+    show BibleReference, parseReference;
 import 'package:yswords/utils/version_mapper.dart' show toEnglish, localeAwareBookName;
 import 'package:yswords/widgets/home_icon_button.dart';
 import 'package:yswords/widgets/localized_back_button.dart';
@@ -2848,38 +2850,19 @@ class _PassageStudyCard extends StatelessWidget {
   }
 }
 
-/// Round 56 (continued — Lookup redesign): one entry in the
-/// popular-passages quick-pick row. The reference itself is a
-/// factual citation; the topic hint is my own short descriptor
-/// so users have a hint of what the passage is about without
-/// having to know it cold.
-class _PopularPassage {
-  final String englishBook;
-  final int chapter;
-  final int verse;
-  /// Short topic descriptor key from uiStrings; localised via
-  /// the same map as the rest of the page.
-  final String topicKey;
-  const _PopularPassage(
-      this.englishBook, this.chapter, this.verse, this.topicKey);
-}
-
-const List<_PopularPassage> _popularPassages = [
-  _PopularPassage('Genesis', 1, 1, 'lookupTopicCreation'),
-  _PopularPassage('Psalms', 23, 1, 'lookupTopicShepherd'),
-  _PopularPassage('Isaiah', 53, 5, 'lookupTopicServant'),
-  _PopularPassage('John', 1, 1, 'lookupTopicLogos'),
-  _PopularPassage('John', 3, 16, 'lookupTopicLove'),
-  _PopularPassage('Romans', 8, 28, 'lookupTopicProvidence'),
-  _PopularPassage('1 Corinthians', 13, 13, 'lookupTopicTriad'),
-  _PopularPassage('Hebrews', 11, 1, 'lookupTopicFaith'),
-];
-
-/// Quick-pick row of well-known passages. Tapping a chip opens
-/// the OriginalsSheet directly without going through the full
-/// 3-step picker — saves a few taps for the passages users come
-/// back to most often.
-class _PopularPassagesCard extends StatelessWidget {
+/// Round 56 (continued — Lookup redesign): the recommended-
+/// passages card now sources its entries from
+/// [DailyVerseService.recentRefs] instead of a hardcoded eight-
+/// passage list. User feedback: 'for recommended verse, in bible
+/// study, can you also include daily verse? also yesterday and
+/// the day before etc... to replace all current ones'.
+///
+/// Each chip shows a localised relative-date label (Today /
+/// Yesterday / 2 days ago / …) above the canonical reference.
+/// Tapping parses the reference via parseReference, resolves the
+/// book to the current Bible version's localized name, and pops
+/// the same OriginalsSheet the rest of the tab uses.
+class _PopularPassagesCard extends StatefulWidget {
   final String locale;
   final AppSettings settings;
   final ColorScheme scheme;
@@ -2895,12 +2878,29 @@ class _PopularPassagesCard extends StatelessWidget {
   });
 
   @override
+  State<_PopularPassagesCard> createState() =>
+      _PopularPassagesCardState();
+}
+
+class _PopularPassagesCardState extends State<_PopularPassagesCard> {
+  Future<List<DailyVerseEntry>>? _future;
+
+  @override
+  void initState() {
+    super.initState();
+    _future = DailyVerseService.recentRefs(8);
+  }
+
+  @override
   Widget build(BuildContext context) {
     final mp = context.read<MainProvider>();
+    final locale = widget.locale;
+    final settings = widget.settings;
+    final scheme = widget.scheme;
     final title = uiStrings['lookupPopularTitle']?[locale] ??
-        'Suggested passages';
+        'Recent daily verses';
     final desc = uiStrings['lookupPopularDesc']?[locale] ??
-        'Tap to jump straight into the exegesis sheet.';
+        'Each entry is one of the past few days of daily verse — tap to study it.';
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
       decoration: BoxDecoration(
@@ -2941,70 +2941,137 @@ class _PopularPassagesCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 12),
-          LayoutBuilder(builder: (ctx, c) {
-            // 4 columns on wide, 2 on phone — keeps each chip's
-            // text readable without truncation.
-            final cols = c.maxWidth >= 600 ? 4 : 2;
-            return Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                for (final p in _popularPassages)
-                  SizedBox(
-                    width: (c.maxWidth - (cols - 1) * 8) / cols,
-                    child: _PopularPassageChip(
-                      passage: p,
-                      locale: locale,
-                      settings: settings,
-                      scheme: scheme,
-                      onTap: () => onTap(
-                        _resolveLocalBook(mp, p.englishBook),
-                        p.chapter,
-                        p.verse,
-                      ),
-                    ),
+          FutureBuilder<List<DailyVerseEntry>>(
+            future: _future,
+            builder: (ctx, snap) {
+              if (snap.connectionState != ConnectionState.done) {
+                return const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 24),
+                  child: Center(
+                      child: SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(strokeWidth: 2))),
+                );
+              }
+              final entries = snap.data ?? const [];
+              if (entries.isEmpty) {
+                return Text(
+                  uiStrings['lookupPopularEmpty']?[locale] ??
+                      'No daily verses available yet.',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: scheme.onSurface.withValues(alpha: 0.6),
                   ),
-              ],
-            );
-          }),
+                );
+              }
+              return LayoutBuilder(builder: (ctx, c) {
+                final cols = c.maxWidth >= 600 ? 4 : 2;
+                return Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    for (final e in entries)
+                      SizedBox(
+                        width: (c.maxWidth - (cols - 1) * 8) / cols,
+                        child: _DailyVerseChip(
+                          entry: e,
+                          locale: locale,
+                          settings: settings,
+                          scheme: scheme,
+                          onTap: () => _onTap(mp, e.ref),
+                        ),
+                      ),
+                  ],
+                );
+              });
+            },
+          ),
         ],
       ),
     );
   }
 
-  /// Convert the canonical English book to the localized name the
-  /// MainProvider verse list uses (e.g. 'Genesis' → '创世记' for
-  /// CUVS). Falls back to the English name when no match.
-  String _resolveLocalBook(MainProvider mp, String englishBook) {
-    if (mp.verses.isEmpty) return englishBook;
-    return mp.verses
-        .firstWhere(
-          (v) => (toEnglish(v.book) ?? v.book) == englishBook,
-          orElse: () => mp.verses.first,
-        )
-        .book;
+  /// Parse the daily-verse reference (e.g. 'John 3:16',
+  /// 'Psalms 23:1-6', 'Genesis 1') and forward to the parent's
+  /// onTap with the localised book name + the start verse. Falls
+  /// back gracefully if the reference doesn't parse.
+  void _onTap(MainProvider mp, String ref) {
+    final parsed = parseReference(ref);
+    if (parsed == null) return;
+    final localBook = mp.verses.isEmpty
+        ? parsed.englishBook
+        : mp.verses
+            .firstWhere(
+              (v) =>
+                  (toEnglish(v.book) ?? v.book) == parsed.englishBook,
+              orElse: () => mp.verses.first,
+            )
+            .book;
+    widget.onTap(
+      localBook,
+      parsed.chapter,
+      parsed.verseStart ?? 1,
+    );
   }
 }
 
-class _PopularPassageChip extends StatelessWidget {
-  final _PopularPassage passage;
+/// Single chip in the daily-verse history grid. Top line: relative
+/// date label (Today / Yesterday / N days ago, localised). Bottom
+/// line: canonical reference re-localised via
+/// [localeAwareBookName] so 'John 3:16' shows as '约翰福音 3:16'
+/// in zh-Hans, '約翰福音 3:16' in zh-Hant.
+class _DailyVerseChip extends StatelessWidget {
+  final DailyVerseEntry entry;
   final String locale;
   final AppSettings settings;
   final ColorScheme scheme;
   final VoidCallback onTap;
-  const _PopularPassageChip({
-    required this.passage,
+  const _DailyVerseChip({
+    required this.entry,
     required this.locale,
     required this.settings,
     required this.scheme,
     required this.onTap,
   });
 
+  String _relativeDateLabel(DateTime now) {
+    final today = DateTime(now.year, now.month, now.day);
+    final d = DateTime(entry.date.year, entry.date.month, entry.date.day);
+    final daysBack = today.difference(d).inDays;
+    if (daysBack == 0) {
+      return uiStrings['relativeToday']?[locale] ?? 'Today';
+    }
+    if (daysBack == 1) {
+      return uiStrings['relativeYesterday']?[locale] ?? 'Yesterday';
+    }
+    if (daysBack == 2) {
+      return uiStrings['relativeDayBeforeYesterday']?[locale] ??
+          '2 days ago';
+    }
+    final tmpl =
+        uiStrings['relativeDaysAgo']?[locale] ?? '{days} days ago';
+    return tmpl.replaceAll('{days}', '$daysBack');
+  }
+
+  /// Reference re-formatted into the user's locale book naming.
+  /// Preserves verse range when present (e.g. 'Psalms 23:1-6').
+  String _displayRef() {
+    final parsed = parseReference(entry.ref);
+    if (parsed == null) return entry.ref;
+    final book = localeAwareBookName(parsed.englishBook, locale);
+    final tail = parsed.verseStart == null
+        ? '${parsed.chapter}'
+        : (parsed.verseEnd != null && parsed.verseEnd! > parsed.verseStart!
+            ? '${parsed.chapter}:${parsed.verseStart}-${parsed.verseEnd}'
+            : '${parsed.chapter}:${parsed.verseStart}');
+    return '$book $tail';
+  }
+
   @override
   Widget build(BuildContext context) {
-    final ref =
-        '${localeAwareBookName(passage.englishBook, locale)} ${passage.chapter}:${passage.verse}';
-    final topic = uiStrings[passage.topicKey]?[locale] ?? '';
+    final dateLabel = _relativeDateLabel(DateTime.now());
+    final ref = _displayRef();
     return Material(
       color: scheme.primaryContainer.withValues(alpha: 0.30),
       borderRadius: BorderRadius.circular(10),
@@ -3018,6 +3085,18 @@ class _PopularPassageChip extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
+                dateLabel,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontFamily: settings.fontFamily,
+                  fontSize: 11,
+                  color: scheme.onSurface.withValues(alpha: 0.65),
+                  letterSpacing: 0.2,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
                 ref,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
@@ -3029,19 +3108,6 @@ class _PopularPassageChip extends StatelessWidget {
                   fontFeatures: const [FontFeature.tabularFigures()],
                 ),
               ),
-              if (topic.isNotEmpty) ...[
-                const SizedBox(height: 2),
-                Text(
-                  topic,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontFamily: settings.fontFamily,
-                    fontSize: 11,
-                    color: scheme.onSurface.withValues(alpha: 0.7),
-                  ),
-                ),
-              ],
             ],
           ),
         ),

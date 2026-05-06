@@ -32,4 +32,43 @@ class DailyVerseService {
     final dayOfYear = n.difference(start).inDays;
     return list[dayOfYear % list.length];
   }
+
+  /// Round 56 (continued — Lookup recommended verses): returns the
+  /// last [n] days' worth of daily-verse references, newest first.
+  /// Each entry is `(date, ref)` so the caller can label chips with
+  /// "Today / Yesterday / 2 days ago" without recomputing the
+  /// rotation. Year boundaries are handled by the same modular
+  /// arithmetic [todayRef] uses, so the rotation doesn't reset on
+  /// Jan 1.
+  ///
+  /// Returns an empty list if the asset failed to load. Always at
+  /// most [n] entries; fewer when n exceeds the dataset (would
+  /// otherwise repeat).
+  static Future<List<DailyVerseEntry>> recentRefs(int n,
+      {DateTime? now}) async {
+    _cache ??= await (_loading ??= _load());
+    final list = _cache;
+    if (list == null || list.isEmpty) return const [];
+    final base = now ?? DateTime.now();
+    final cap = n.clamp(1, list.length);
+    final out = <DailyVerseEntry>[];
+    for (int back = 0; back < cap; back++) {
+      final day = DateTime(base.year, base.month, base.day)
+          .subtract(Duration(days: back));
+      final start = DateTime(day.year, 1, 1);
+      final dayOfYear = day.difference(start).inDays;
+      out.add(DailyVerseEntry(date: day, ref: list[dayOfYear % list.length]));
+    }
+    return out;
+  }
+}
+
+/// One entry in the daily-verse history surfaced by
+/// [DailyVerseService.recentRefs]. Date is the local-calendar day
+/// the rotation pegged the reference to (today, today-1, …); ref
+/// is the canonical English reference.
+class DailyVerseEntry {
+  final DateTime date;
+  final String ref;
+  const DailyVerseEntry({required this.date, required this.ref});
 }

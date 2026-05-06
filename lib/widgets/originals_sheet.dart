@@ -1107,12 +1107,26 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
                             ),
                           ),
                         ),
-                        SelectableText(
-                          _aiChunks[i].text,
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: scheme.onSurface,
-                            height: 1.55,
+                        // Round 56 (continued — markdown rendering):
+                        // Gemini ignores "no markdown" instructions
+                        // and ships **bold** / ***heading*** markers
+                        // even when told not to. Parse them into
+                        // proper TextSpans (bold/italic) instead of
+                        // showing literal asterisks. Stripped:
+                        // ##/### heading hashes, --- rules, leading
+                        // bullets. User feedback: "the exegesis when
+                        // asking gemini questions, it has *** which
+                        // indicate the format issue".
+                        SelectableText.rich(
+                          TextSpan(
+                            children: _parseAiMarkdown(
+                              _aiChunks[i].text,
+                              base: TextStyle(
+                                fontSize: 14,
+                                color: scheme.onSurface,
+                                height: 1.55,
+                              ),
+                            ),
                           ),
                         ),
                       ],
@@ -2143,4 +2157,96 @@ class _AiChunk {
   final String label;
   final String text;
   const _AiChunk({required this.label, required this.text});
+}
+
+/// Round 56 (continued): minimal inline markdown parser for AI
+/// responses. Gemini ignores explicit "no markdown" prompts and
+/// ships emphasis markers anyway — `**bold**`, `***bold-italic***`,
+/// occasional `# heading` lines. Rendering them as plain text
+/// surfaced literal asterisks in the UI ("the exegesis when asking
+/// gemini questions, it has *** which indicate the format issue").
+///
+/// Handles in order of fragility:
+///   • leading `# `, `## `, `### ` heading markers — stripped, line
+///     rendered bold instead
+///   • horizontal rules (`---` / `___` on their own line) — dropped
+///   • leading `- ` / `* ` bullet markers — replaced with `• `
+///   • inline `***x***` → bold + italic
+///   • inline `**x**` → bold
+///   • inline `*x*` / `_x_` → italic (single-char delim, narrow
+///     pattern so we don't false-match on `[Genesis 1:1]`)
+///
+/// Anything not matching falls through verbatim. Output is a list
+/// of TextSpan that can feed `SelectableText.rich`.
+List<TextSpan> _parseAiMarkdown(
+  String input, {
+  required TextStyle base,
+}) {
+  final boldItalic =
+      base.copyWith(fontWeight: FontWeight.w800, fontStyle: FontStyle.italic);
+  final bold = base.copyWith(fontWeight: FontWeight.w800);
+  final italic = base.copyWith(fontStyle: FontStyle.italic);
+
+  // Pre-process line-level markdown: headings + rules + bullets.
+  final lines = input.split('\n');
+  final cleaned = <String>[];
+  for (final ln in lines) {
+    final stripped = ln.trimRight();
+    // Horizontal rule.
+    if (RegExp(r'^\s*([-_*])\1{2,}\s*$').hasMatch(stripped)) continue;
+    // Heading — replace with `**heading**\n` so the inline pass
+    // turns it into a bold line.
+    final headingMatch =
+        RegExp(r'^\s*#{1,6}\s+(.+?)\s*#*\s*$').firstMatch(stripped);
+    if (headingMatch != null) {
+      cleaned.add('**${headingMatch.group(1)!}**');
+      continue;
+    }
+    // Bullet — turn into a • line so the inline pass keeps it
+    // visually distinct without leaving a stray asterisk.
+    final bulletMatch =
+        RegExp(r'^(\s*)[-*+]\s+(.+)$').firstMatch(stripped);
+    if (bulletMatch != null) {
+      cleaned.add('${bulletMatch.group(1)}• ${bulletMatch.group(2)}');
+      continue;
+    }
+    cleaned.add(stripped);
+  }
+  final body = cleaned.join('\n');
+
+  // Inline pass: walk left-to-right, emitting bold-italic / bold /
+  // italic / plain spans as we hit each delimiter. Greedy on the
+  // `***` pattern first so we don't mis-tokenise it as `**` + `*`.
+  final spans = <TextSpan>[];
+  final pattern = RegExp(
+    // 1: ***bold-italic*** | 2: **bold** | 3: *italic* | 4: _italic_
+    r'\*\*\*([^*\n]+?)\*\*\*'
+    r'|\*\*([^*\n]+?)\*\*'
+    r'|(?<!\w)\*([^*\n]+?)\*(?!\w)'
+    r'|(?<!\w)_([^_\n]+?)_(?!\w)',
+  );
+  int idx = 0;
+  for (final m in pattern.allMatches(body)) {
+    if (m.start > idx) {
+      spans.add(TextSpan(text: body.substring(idx, m.start), style: base));
+    }
+    final bi = m.group(1);
+    final b = m.group(2);
+    final i1 = m.group(3);
+    final i2 = m.group(4);
+    if (bi != null) {
+      spans.add(TextSpan(text: bi, style: boldItalic));
+    } else if (b != null) {
+      spans.add(TextSpan(text: b, style: bold));
+    } else if (i1 != null) {
+      spans.add(TextSpan(text: i1, style: italic));
+    } else if (i2 != null) {
+      spans.add(TextSpan(text: i2, style: italic));
+    }
+    idx = m.end;
+  }
+  if (idx < body.length) {
+    spans.add(TextSpan(text: body.substring(idx), style: base));
+  }
+  return spans;
 }

@@ -329,14 +329,40 @@ const uiStrings = {
   // (single phrase) so the user knows what each passage is about
   // before tapping.
   'lookupPopularTitle': {
-    'zh-Hans': '推荐经文',
-    'zh-Hant': '推薦經文',
-    'en': 'Suggested passages',
+    'zh-Hans': '近期每日经文',
+    'zh-Hant': '近期每日經文',
+    'en': 'Recent daily verses',
   },
   'lookupPopularDesc': {
-    'zh-Hans': '点击直接进入释经面板。',
-    'zh-Hant': '點擊直接進入釋經面板。',
-    'en': 'Tap to jump straight into the exegesis sheet.',
+    'zh-Hans': '过去几天的每日经文，点击直接进入释经面板。',
+    'zh-Hant': '過去幾天的每日經文，點擊直接進入釋經面板。',
+    'en':
+        'The past few days of daily verse — tap to study any of them in depth.',
+  },
+  'lookupPopularEmpty': {
+    'zh-Hans': '暂时没有每日经文。',
+    'zh-Hant': '暫時沒有每日經文。',
+    'en': 'No daily verses available yet.',
+  },
+  'relativeToday': {
+    'zh-Hans': '今天',
+    'zh-Hant': '今天',
+    'en': 'Today',
+  },
+  'relativeYesterday': {
+    'zh-Hans': '昨天',
+    'zh-Hant': '昨天',
+    'en': 'Yesterday',
+  },
+  'relativeDayBeforeYesterday': {
+    'zh-Hans': '前天',
+    'zh-Hant': '前天',
+    'en': '2 days ago',
+  },
+  'relativeDaysAgo': {
+    'zh-Hans': '{days} 天前',
+    'zh-Hant': '{days} 天前',
+    'en': '{days} days ago',
   },
   'lookupTopicCreation': {
     'zh-Hans': '创造',
