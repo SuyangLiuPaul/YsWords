@@ -11,6 +11,8 @@ import 'package:yswords/models/dashboard_section.dart';
 import 'package:yswords/providers/main_provider.dart';
 import 'package:get/get.dart';
 import 'package:yswords/pages/about_page.dart';
+import 'package:yswords/widgets/cloud_setup_diagnostic.dart';
+import 'package:yswords/widgets/setup_instructions_card.dart';
 import 'package:yswords/pages/profiles_page.dart';
 import 'package:yswords/services/cloud_auth_service.dart';
 import 'package:yswords/widgets/google_g_logo.dart';
@@ -996,6 +998,18 @@ class _SettingsPageBodyState extends State<_SettingsPageBody> {
                         'Account'),
               ),
               _AccountSection(settings: settings, s: s),
+              SizedBox(height: 8 * s),
+              // 2026-05-06: Cloud Setup Diagnostic + walkthrough
+              // moved here (under Account) per user feedback —
+              // diagnostics belong with the section that's actually
+              // about sync/sign-in, not buried in About. The cards
+              // are still defensive (don't pretend to work for
+              // local-only / signed-out users).
+              CloudSetupDiagnostic(locale: settings.locale),
+              SizedBox(height: 8 * s),
+              SetupInstructionsCard(
+                  scheme: Theme.of(context).colorScheme,
+                  locale: settings.locale),
               SizedBox(height: 16 * s),
               KeyedSubtree(
                 key: _planKey,
