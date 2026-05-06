@@ -3035,43 +3035,38 @@ class _DailyVerseChip extends StatelessWidget {
     required this.onTap,
   });
 
-  String _relativeDateLabel(DateTime now) {
-    final today = DateTime(now.year, now.month, now.day);
-    final d = DateTime(entry.date.year, entry.date.month, entry.date.day);
-    final daysBack = today.difference(d).inDays;
-    if (daysBack == 0) {
-      return uiStrings['relativeToday']?[locale] ?? 'Today';
-    }
-    if (daysBack == 1) {
-      return uiStrings['relativeYesterday']?[locale] ?? 'Yesterday';
-    }
-    if (daysBack == 2) {
-      return uiStrings['relativeDayBeforeYesterday']?[locale] ??
-          '2 days ago';
-    }
-    final tmpl =
-        uiStrings['relativeDaysAgo']?[locale] ?? '{days} days ago';
-    return tmpl.replaceAll('{days}', '$daysBack');
-  }
-
-  /// Reference re-formatted into the user's locale book naming.
-  /// Preserves verse range when present (e.g. 'Psalms 23:1-6').
-  String _displayRef() {
+  /// Reference re-formatted into the user's locale book naming +
+  /// the localized topical theme for the chapter. Preserves verse
+  /// range when present (e.g. 'Psalms 23:1-6').
+  ({String ref, String theme}) _displayParts() {
     final parsed = parseReference(entry.ref);
-    if (parsed == null) return entry.ref;
+    if (parsed == null) {
+      return (
+        ref: entry.ref,
+        theme: uiStrings['verseThemeGeneral']?[locale] ?? '',
+      );
+    }
     final book = localeAwareBookName(parsed.englishBook, locale);
     final tail = parsed.verseStart == null
         ? '${parsed.chapter}'
         : (parsed.verseEnd != null && parsed.verseEnd! > parsed.verseStart!
             ? '${parsed.chapter}:${parsed.verseStart}-${parsed.verseEnd}'
             : '${parsed.chapter}:${parsed.verseStart}');
-    return '$book $tail';
+    final themeKey = themeKeyFor(parsed.englishBook, parsed.chapter);
+    final theme = uiStrings[themeKey]?[locale] ??
+        uiStrings['verseThemeGeneral']?[locale] ??
+        '';
+    return (ref: '$book $tail', theme: theme);
   }
 
   @override
   Widget build(BuildContext context) {
-    final dateLabel = _relativeDateLabel(DateTime.now());
-    final ref = _displayRef();
+    // Round 56 (continued — themes): user feedback "no need to
+    // mention today yesterday etc. but show the theme of the verse
+    // somehow". Top line is now a topical label resolved through
+    // themeKeyFor() in daily_verse_service.dart instead of the
+    // relative-date label that used to live there.
+    final parts = _displayParts();
     return Material(
       color: scheme.primaryContainer.withValues(alpha: 0.30),
       borderRadius: BorderRadius.circular(10),
@@ -3085,7 +3080,7 @@ class _DailyVerseChip extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                dateLabel,
+                parts.theme,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
@@ -3097,7 +3092,7 @@ class _DailyVerseChip extends StatelessWidget {
               ),
               const SizedBox(height: 2),
               Text(
-                ref,
+                parts.ref,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(

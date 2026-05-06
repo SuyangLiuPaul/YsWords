@@ -364,6 +364,463 @@ const uiStrings = {
     'zh-Hant': '{days} 天前',
     'en': '{days} days ago',
   },
+  // Round 56 (continued — daily verse themes): topical category
+  // labels for the 'Recent daily verses' chip row. Keys assigned by
+  // themeKeyFor() in lib/services/daily_verse_service.dart based on
+  // (book, chapter). Short labels (1-3 chars CJK / 1-2 words EN)
+  // chosen so chip text fits on one line at 11pt.
+  'verseThemeGeneral': {
+    'zh-Hans': '经文',
+    'zh-Hant': '經文',
+    'en': 'Scripture',
+  },
+  // ── Famous-chapter themes ────────────────────────────────────
+  'verseThemeCreation': {
+    'zh-Hans': '创造',
+    'zh-Hant': '創造',
+    'en': 'Creation',
+  },
+  'verseThemeFall': {
+    'zh-Hans': '堕落',
+    'zh-Hant': '墮落',
+    'en': 'The Fall',
+  },
+  'verseThemeCalling': {
+    'zh-Hans': '蒙召',
+    'zh-Hant': '蒙召',
+    'en': 'Calling',
+  },
+  'verseThemeDeliverance': {
+    'zh-Hans': '拯救',
+    'zh-Hant': '拯救',
+    'en': 'Deliverance',
+  },
+  'verseThemeCommandments': {
+    'zh-Hans': '诫命',
+    'zh-Hant': '誡命',
+    'en': 'Commandments',
+  },
+  'verseThemeShema': {
+    'zh-Hans': '示玛',
+    'zh-Hant': '示瑪',
+    'en': 'Shema',
+  },
+  'verseThemeCourage': {
+    'zh-Hans': '刚强壮胆',
+    'zh-Hant': '剛強壯膽',
+    'en': 'Courage',
+  },
+  'verseThemeLoyalty': {
+    'zh-Hans': '忠贞',
+    'zh-Hant': '忠貞',
+    'en': 'Loyalty',
+  },
+  'verseThemeFaith': {
+    'zh-Hans': '信心',
+    'zh-Hant': '信心',
+    'en': 'Faith',
+  },
+  'verseThemeBlessing': {
+    'zh-Hans': '蒙福',
+    'zh-Hant': '蒙福',
+    'en': 'Blessing',
+  },
+  'verseThemeRevelation': {
+    'zh-Hans': '启示',
+    'zh-Hant': '啟示',
+    'en': 'Revelation',
+  },
+  'verseThemeServant': {
+    'zh-Hans': '受苦的仆人',
+    'zh-Hant': '受苦的僕人',
+    'en': 'Servant',
+  },
+  'verseThemeShepherd': {
+    'zh-Hans': '牧人',
+    'zh-Hant': '牧人',
+    'en': 'Shepherd',
+  },
+  'verseThemeRefuge': {
+    'zh-Hans': '避难所',
+    'zh-Hant': '避難所',
+    'en': 'Refuge',
+  },
+  'verseThemeRepentance': {
+    'zh-Hans': '悔改',
+    'zh-Hant': '悔改',
+    'en': 'Repentance',
+  },
+  'verseThemeWord': {
+    'zh-Hans': '神的话',
+    'zh-Hant': '神的話',
+    'en': "God's Word",
+  },
+  'verseThemeKnown': {
+    'zh-Hans': '被神鉴察',
+    'zh-Hant': '被神鑒察',
+    'en': 'Known by God',
+  },
+  'verseThemePraise': {
+    'zh-Hans': '赞美',
+    'zh-Hant': '讚美',
+    'en': 'Praise',
+  },
+  'verseThemeTrust': {
+    'zh-Hans': '信靠',
+    'zh-Hant': '信靠',
+    'en': 'Trust',
+  },
+  'verseThemeTime': {
+    'zh-Hans': '凡事有时',
+    'zh-Hant': '凡事有時',
+    'en': 'Times & Seasons',
+  },
+  'verseThemeMessianic': {
+    'zh-Hans': '弥赛亚',
+    'zh-Hant': '彌賽亞',
+    'en': 'Messianic',
+  },
+  'verseThemeComfort': {
+    'zh-Hans': '安慰',
+    'zh-Hant': '安慰',
+    'en': 'Comfort',
+  },
+  'verseThemeInvitation': {
+    'zh-Hans': '邀请',
+    'zh-Hant': '邀請',
+    'en': 'Invitation',
+  },
+  'verseThemeHope': {
+    'zh-Hans': '盼望',
+    'zh-Hant': '盼望',
+    'en': 'Hope',
+  },
+  'verseThemeNewCovenant': {
+    'zh-Hans': '新约',
+    'zh-Hant': '新約',
+    'en': 'New Covenant',
+  },
+  'verseThemeFaithfulness': {
+    'zh-Hans': '忠心',
+    'zh-Hant': '忠心',
+    'en': 'Faithfulness',
+  },
+  'verseThemeBeatitudes': {
+    'zh-Hans': '八福',
+    'zh-Hant': '八福',
+    'en': 'Beatitudes',
+  },
+  'verseThemePrayer': {
+    'zh-Hans': '祷告',
+    'zh-Hant': '禱告',
+    'en': 'Prayer',
+  },
+  'verseThemeNarrowWay': {
+    'zh-Hans': '窄路',
+    'zh-Hant': '窄路',
+    'en': 'Narrow Way',
+  },
+  'verseThemeCommission': {
+    'zh-Hans': '大使命',
+    'zh-Hant': '大使命',
+    'en': 'Great Commission',
+  },
+  'verseThemeReturning': {
+    'zh-Hans': '回家',
+    'zh-Hant': '回家',
+    'en': 'Returning',
+  },
+  'verseThemeResurrection': {
+    'zh-Hans': '复活',
+    'zh-Hant': '復活',
+    'en': 'Resurrection',
+  },
+  'verseThemeWordIncarnate': {
+    'zh-Hans': '道成肉身',
+    'zh-Hant': '道成肉身',
+    'en': 'The Word',
+  },
+  'verseThemeBornAgain': {
+    'zh-Hans': '重生',
+    'zh-Hant': '重生',
+    'en': 'Born Again',
+  },
+  'verseThemeWayTruthLife': {
+    'zh-Hans': '道路真理生命',
+    'zh-Hant': '道路真理生命',
+    'en': 'Way Truth Life',
+  },
+  'verseThemeAbiding': {
+    'zh-Hans': '常在',
+    'zh-Hant': '常在',
+    'en': 'Abiding',
+  },
+  'verseThemeUnity': {
+    'zh-Hans': '合一',
+    'zh-Hant': '合一',
+    'en': 'Unity',
+  },
+  'verseThemeMission': {
+    'zh-Hans': '宣教',
+    'zh-Hant': '宣教',
+    'en': 'Mission',
+  },
+  'verseThemePentecost': {
+    'zh-Hans': '五旬节',
+    'zh-Hant': '五旬節',
+    'en': 'Pentecost',
+  },
+  'verseThemeSalvation': {
+    'zh-Hans': '救恩',
+    'zh-Hant': '救恩',
+    'en': 'Salvation',
+  },
+  'verseThemeReconciliation': {
+    'zh-Hans': '和好',
+    'zh-Hant': '和好',
+    'en': 'Reconciliation',
+  },
+  'verseThemeAssurance': {
+    'zh-Hans': '得胜的确据',
+    'zh-Hant': '得勝的確據',
+    'en': 'Assurance',
+  },
+  'verseThemeLivingSacrifice': {
+    'zh-Hans': '活祭',
+    'zh-Hant': '活祭',
+    'en': 'Living Sacrifice',
+  },
+  'verseThemeLove': {
+    'zh-Hans': '爱',
+    'zh-Hant': '愛',
+    'en': 'Love',
+  },
+  'verseThemeSpiritFruit': {
+    'zh-Hans': '圣灵的果子',
+    'zh-Hant': '聖靈的果子',
+    'en': 'Fruit of the Spirit',
+  },
+  'verseThemeGrace': {
+    'zh-Hans': '恩典',
+    'zh-Hant': '恩典',
+    'en': 'Grace',
+  },
+  'verseThemeArmor': {
+    'zh-Hans': '神的全副军装',
+    'zh-Hant': '神的全副軍裝',
+    'en': 'Armor of God',
+  },
+  'verseThemeHumility': {
+    'zh-Hans': '谦卑',
+    'zh-Hant': '謙卑',
+    'en': 'Humility',
+  },
+  'verseThemePeace': {
+    'zh-Hans': '平安',
+    'zh-Hant': '平安',
+    'en': 'Peace',
+  },
+  'verseThemeNewSelf': {
+    'zh-Hans': '新人',
+    'zh-Hant': '新人',
+    'en': 'New Self',
+  },
+  'verseThemeContentment': {
+    'zh-Hans': '知足',
+    'zh-Hant': '知足',
+    'en': 'Contentment',
+  },
+  'verseThemeScripture': {
+    'zh-Hans': '圣经的功用',
+    'zh-Hant': '聖經的功用',
+    'en': 'Scripture',
+  },
+  'verseThemeRunning': {
+    'zh-Hans': '奔跑',
+    'zh-Hant': '奔跑',
+    'en': 'Running the Race',
+  },
+  'verseThemeTrials': {
+    'zh-Hans': '试炼',
+    'zh-Hant': '試煉',
+    'en': 'Trials',
+  },
+  'verseThemeChosen': {
+    'zh-Hans': '被拣选',
+    'zh-Hant': '被揀選',
+    'en': 'Chosen',
+  },
+  'verseThemeNewCreation': {
+    'zh-Hans': '新天新地',
+    'zh-Hant': '新天新地',
+    'en': 'New Creation',
+  },
+  'verseThemeReturn': {
+    'zh-Hans': '主再来',
+    'zh-Hant': '主再來',
+    'en': 'Return',
+  },
+  // ── Book-level themes ────────────────────────────────────────
+  'verseThemeBeginnings': {
+    'zh-Hans': '起源',
+    'zh-Hant': '起源',
+    'en': 'Beginnings',
+  },
+  'verseThemeHoliness': {
+    'zh-Hans': '圣洁',
+    'zh-Hant': '聖潔',
+    'en': 'Holiness',
+  },
+  'verseThemeWilderness': {
+    'zh-Hans': '旷野',
+    'zh-Hant': '曠野',
+    'en': 'Wilderness',
+  },
+  'verseThemeCovenant': {
+    'zh-Hans': '盟约',
+    'zh-Hant': '盟約',
+    'en': 'Covenant',
+  },
+  'verseThemeConquest': {
+    'zh-Hans': '得地为业',
+    'zh-Hant': '得地為業',
+    'en': 'Conquest',
+  },
+  'verseThemeJudges': {
+    'zh-Hans': '士师时代',
+    'zh-Hant': '士師時代',
+    'en': 'Judges Era',
+  },
+  'verseThemeKingdom': {
+    'zh-Hans': '国度',
+    'zh-Hant': '國度',
+    'en': 'Kingdom',
+  },
+  'verseThemeChronicle': {
+    'zh-Hans': '史记',
+    'zh-Hant': '史記',
+    'en': 'Chronicle',
+  },
+  'verseThemeRebuilding': {
+    'zh-Hans': '重建',
+    'zh-Hant': '重建',
+    'en': 'Rebuilding',
+  },
+  'verseThemeProvidence': {
+    'zh-Hans': '神的护佑',
+    'zh-Hant': '神的護佑',
+    'en': 'Providence',
+  },
+  'verseThemeSuffering': {
+    'zh-Hans': '苦难',
+    'zh-Hant': '苦難',
+    'en': 'Suffering',
+  },
+  'verseThemeWorship': {
+    'zh-Hans': '敬拜',
+    'zh-Hant': '敬拜',
+    'en': 'Worship',
+  },
+  'verseThemeWisdom': {
+    'zh-Hans': '智慧',
+    'zh-Hant': '智慧',
+    'en': 'Wisdom',
+  },
+  'verseThemeMeaning': {
+    'zh-Hans': '人生意义',
+    'zh-Hant': '人生意義',
+    'en': 'Meaning',
+  },
+  'verseThemeProphecy': {
+    'zh-Hans': '预言',
+    'zh-Hant': '預言',
+    'en': 'Prophecy',
+  },
+  'verseThemeLament': {
+    'zh-Hans': '哀歌',
+    'zh-Hant': '哀歌',
+    'en': 'Lament',
+  },
+  'verseThemeVision': {
+    'zh-Hans': '异象',
+    'zh-Hant': '異象',
+    'en': 'Vision',
+  },
+  'verseThemeJustice': {
+    'zh-Hans': '公义',
+    'zh-Hant': '公義',
+    'en': 'Justice',
+  },
+  'verseThemeMercy': {
+    'zh-Hans': '怜悯',
+    'zh-Hant': '憐憫',
+    'en': 'Mercy',
+  },
+  'verseThemeLife': {
+    'zh-Hans': '生命',
+    'zh-Hant': '生命',
+    'en': 'Life',
+  },
+  'verseThemeChurch': {
+    'zh-Hans': '教会',
+    'zh-Hant': '教會',
+    'en': 'Church',
+  },
+  'verseThemeMinistry': {
+    'zh-Hans': '事奉',
+    'zh-Hant': '事奉',
+    'en': 'Ministry',
+  },
+  'verseThemeFreedom': {
+    'zh-Hans': '自由',
+    'zh-Hant': '自由',
+    'en': 'Freedom',
+  },
+  'verseThemeJoy': {
+    'zh-Hans': '喜乐',
+    'zh-Hant': '喜樂',
+    'en': 'Joy',
+  },
+  'verseThemeChrist': {
+    'zh-Hans': '基督',
+    'zh-Hant': '基督',
+    'en': 'Christ',
+  },
+  'verseThemePastoral': {
+    'zh-Hans': '牧养',
+    'zh-Hant': '牧養',
+    'en': 'Pastoral',
+  },
+  'verseThemeForgiveness': {
+    'zh-Hans': '饶恕',
+    'zh-Hant': '饒恕',
+    'en': 'Forgiveness',
+  },
+  'verseThemeLiving': {
+    'zh-Hans': '活出信仰',
+    'zh-Hant': '活出信仰',
+    'en': 'Living Faith',
+  },
+  'verseThemePromise': {
+    'zh-Hans': '应许',
+    'zh-Hant': '應許',
+    'en': 'Promise',
+  },
+  'verseThemeTruth': {
+    'zh-Hans': '真理',
+    'zh-Hant': '真理',
+    'en': 'Truth',
+  },
+  'verseThemeContending': {
+    'zh-Hans': '争辩真道',
+    'zh-Hant': '爭辯真道',
+    'en': 'Contending',
+  },
+  'verseThemeFinalHope': {
+    'zh-Hans': '终极盼望',
+    'zh-Hant': '終極盼望',
+    'en': 'Final Hope',
+  },
   'lookupTopicCreation': {
     'zh-Hans': '创造',
     'zh-Hant': '創造',
