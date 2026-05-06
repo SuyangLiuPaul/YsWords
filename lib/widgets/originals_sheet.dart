@@ -250,6 +250,15 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
       _refsShowAll.clear();
       _lxxEquivalents = const [];
       _hebrewSources = const [];
+      // Round 56 fix: navigating to a different lemma (via 完整研经
+      // or a family/synonym chip) means any AI explanation that was
+      // generated for the PREVIOUS lemma is now irrelevant. Clear it
+      // so the AI panel starts empty on the new entry — user re-clicks
+      // to regenerate. Mirrors the clearing already done in _onWordTap.
+      _aiChunks.clear();
+      _aiError = null;
+      _aiLoading = false;
+      _aiForStrongs = null;
     });
     final entryFuture = StrongsService.lookup(strongsNumber);
     final concordanceFuture = ConcordanceService.lookup(strongsNumber);
@@ -285,6 +294,14 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
       _hebrewSources = const [];
       // Restore the word-entry's auto-opened first book.
       _expandedConcordanceBook = null;
+      // Round 56 fix: same clearing rationale as _loadRootEntry —
+      // we're showing a different entry (the original word's vs the
+      // root's), so any AI explanation generated for the root entry
+      // is no longer the right paragraph to show.
+      _aiChunks.clear();
+      _aiError = null;
+      _aiLoading = false;
+      _aiForStrongs = null;
     });
     if (_selectedWord != null) {
       unawaited(_loadRelations(_selectedWord!.strongs));
@@ -304,20 +321,26 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
     String length = 'default',
     String scope = 'verse',
   }) async {
-    final w = _selectedWord;
-    if (w == null) return;
-    final entry = _selectedEntry;
+    // Round 56 fix: the previous version always asked Gemini to
+    // explain the *original* tapped word in the verse, even when the
+    // user had since navigated to a related root entry via 完整研经
+    // or a word-family chip. The on-screen entry no longer matched
+    // what AI was being asked to explain. Now the AI tracks whichever
+    // lemma is currently displayed: _rootEntry takes precedence, with
+    // _selectedEntry as the fallback for the original word view.
+    final entry = _rootEntry ?? _selectedEntry;
     if (entry == null) return;
     final v = widget.verses.isNotEmpty ? widget.verses.first : null;
     if (v == null) return;
     final englishBook = toEnglish(v.book) ?? v.book;
+    final entryNumber = entry.number;
     setState(() {
       _aiLoading = true;
       _aiError = null;
-      _aiForStrongs = w.strongs;
+      _aiForStrongs = entryNumber;
     });
     final result = await AiWordService.explain(
-      strongs: w.strongs,
+      strongs: entryNumber,
       lemma: entry.lemma,
       translit: entry.translit,
       gloss: entry.gloss,
@@ -329,7 +352,12 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
       length: length,
       scope: scope,
     );
-    if (!mounted || _selectedWord?.strongs != w.strongs) return;
+    // Race-check: if the user navigated to another entry while we
+    // were waiting for Gemini, drop the response on the floor — the
+    // displayed entry no longer matches what we asked about.
+    final stillCurrent =
+        (_rootEntry ?? _selectedEntry)?.number == entryNumber;
+    if (!mounted || !stillCurrent) return;
     setState(() {
       _aiLoading = false;
       if (result.unavailable) {
@@ -973,14 +1001,26 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
   /// the reader doesn't mistake a Gemini paragraph for hand-curated
   /// scholarship.
   Widget _buildAiExplainSection(ColorScheme scheme, String locale) {
+    // Round 56 fix: gate the AI panel against the currently-displayed
+    // entry, not the original tapped word. Otherwise after the user
+    // hits 完整研经 / Full study to navigate to a related entry, the
+    // panel keeps showing the previous lemma's chunks (because
+    // _selectedWord doesn't change with the navigation). The chunks
+    // are also cleared in _loadRootEntry / _clearRoot, but this gate
+    // is a defensive second line — it hides any stragglers from a
+    // race or a future code path that updates state without going
+    // through those helpers.
+    final entry = _rootEntry ?? _selectedEntry;
     final w = _selectedWord;
     final v = widget.verses.isNotEmpty ? widget.verses.first : null;
-    if (w == null || v == null) return const SizedBox.shrink();
+    if (entry == null || w == null || v == null) {
+      return const SizedBox.shrink();
+    }
     final ref = '${v.book} ${v.chapter}:${v.verseLabel}';
     final hasChunks =
-        _aiForStrongs == w.strongs && _aiChunks.isNotEmpty;
+        _aiForStrongs == entry.number && _aiChunks.isNotEmpty;
     final hasError =
-        _aiForStrongs == w.strongs && _aiError != null;
+        _aiForStrongs == entry.number && _aiError != null;
 
     final initialLabel = _aiLoading
         ? (uiStrings['aiExplainAsking']?[locale] ?? 'Asking Gemini…')
