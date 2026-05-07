@@ -4438,6 +4438,102 @@ const uiStrings = {
     'zh-Hant': '設定',
     'en': 'Settings',
   },
+  // 2026-05-07 (v12): feedback page -- mailto-driven user feedback
+  // form. Strings used by the dashboard tile, the page chrome, and
+  // the form fields / hints / outcomes.
+  'feedback': {
+    'zh-Hans': '意见反馈',
+    'zh-Hant': '意見回饋',
+    'en': 'Feedback',
+  },
+  'feedbackIntro': {
+    'zh-Hans': '点击「通过邮件发送」会打开您的邮件应用，'
+        '消息已经填好，您再确认发送即可，邮件直接到开发者的邮箱。',
+    'zh-Hant': '點擊「透過郵件發送」會開啟您的郵件應用，'
+        '訊息已經填好，您再確認發送即可，郵件直接到開發者的信箱。',
+    'en':
+        'Tap "Send via Email" and your default mail app will open '
+            'with this message ready for you to send to the developer.',
+  },
+  'feedbackCategoryLabel': {
+    'zh-Hans': '反馈类别',
+    'zh-Hant': '回饋類別',
+    'en': 'What is this about?',
+  },
+  'feedbackCategoryBug': {
+    'zh-Hans': 'Bug 报告',
+    'zh-Hant': 'Bug 回報',
+    'en': 'Bug report',
+  },
+  'feedbackCategoryFeature': {
+    'zh-Hans': '功能建议',
+    'zh-Hant': '功能建議',
+    'en': 'Feature request',
+  },
+  'feedbackCategoryGeneral': {
+    'zh-Hans': '一般反馈',
+    'zh-Hant': '一般回饋',
+    'en': 'General feedback',
+  },
+  'feedbackCategoryContent': {
+    'zh-Hans': '内容/翻译问题',
+    'zh-Hant': '內容/翻譯問題',
+    'en': 'Content / translation',
+  },
+  'feedbackMessageLabel': {
+    'zh-Hans': '反馈内容 *',
+    'zh-Hant': '回饋內容 *',
+    'en': 'Your message *',
+  },
+  'feedbackMessageHint': {
+    'zh-Hans': '请描述您遇到的问题、想要的功能或想分享的想法。',
+    'zh-Hant': '請描述您遇到的問題、想要的功能或想分享的想法。',
+    'en': 'Describe the bug, feature, or thought.',
+  },
+  'feedbackMessageRequired': {
+    'zh-Hans': '请先填写反馈内容再发送。',
+    'zh-Hant': '請先填寫回饋內容再發送。',
+    'en': 'Please write a message before sending.',
+  },
+  'feedbackNameLabel': {
+    'zh-Hans': '您的名字（选填）',
+    'zh-Hant': '您的名字（選填）',
+    'en': 'Your name (optional)',
+  },
+  'feedbackReplyToLabel': {
+    'zh-Hans': '回复邮箱（选填）',
+    'zh-Hant': '回覆信箱（選填）',
+    'en': 'Reply-to email (optional)',
+  },
+  'feedbackSend': {
+    'zh-Hans': '通过邮件发送',
+    'zh-Hant': '透過郵件發送',
+    'en': 'Send via Email',
+  },
+  'feedbackOpenedMail': {
+    'zh-Hans': '已打开邮件应用，请点击发送即可送达。',
+    'zh-Hant': '已開啟郵件應用，請點擊發送即可送達。',
+    'en': 'Mail app opened. Tap Send to deliver your feedback.',
+  },
+  'feedbackCopiedFallback': {
+    'zh-Hans': '邮件应用不可用，反馈已复制到剪贴板。'
+        '请粘贴到您的邮件中发到 paulsyliu@gmail.com。',
+    'zh-Hant': '郵件應用不可用，回饋已複製到剪貼簿。'
+        '請貼到您的郵件中發到 paulsyliu@gmail.com。',
+    'en':
+        'Mail app unavailable — feedback copied to clipboard. '
+            'Paste it into your email to paulsyliu@gmail.com.',
+  },
+  'feedbackPrivacyNote': {
+    'zh-Hans': '不会自动上传任何数据。点击按钮只是把内容填到您的邮件应用里，'
+        '是否发送由您决定。',
+    'zh-Hant': '不會自動上傳任何資料。點擊按鈕只是把內容填到您的郵件應用裡，'
+        '是否發送由您決定。',
+    'en':
+        'No data is sent automatically. Pressing the button just opens '
+            'your mail app with this content pre-filled — you choose '
+            'whether to hit Send.',
+  },
   'interfaceLanguage': {
     'zh-Hans': '界面语言',
     'zh-Hant': '介面語言',

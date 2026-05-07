@@ -27,6 +27,7 @@ import 'package:yswords/pages/news_detail_page.dart';
 import 'package:yswords/pages/highlights_page.dart';
 import 'package:yswords/pages/home_page.dart';
 import 'package:yswords/pages/library_page.dart';
+import 'package:yswords/pages/feedback_page.dart';
 import 'package:yswords/pages/profile_edit_page.dart';
 import 'package:yswords/pages/search_page.dart';
 import 'package:yswords/pages/settings_page.dart';
@@ -971,6 +972,17 @@ class _DashboardPageState extends State<DashboardPage> {
               label: uiStrings['songsPageTitle']?[locale] ?? 'Songs',
               onTap: () => Get.to(
                 () => const SongsPage(),
+                transition: Transition.rightToLeft,
+              ),
+            ),
+            // 2026-05-07 (v12): feedback tile -- mailto-driven form
+            // page that lands directly in the developer's inbox via
+            // the user's mail client.
+            _LinkTile(
+              icon: Icons.feedback_outlined,
+              label: uiStrings['feedback']?[locale] ?? 'Feedback',
+              onTap: () => Get.to(
+                () => const FeedbackPage(),
                 transition: Transition.rightToLeft,
               ),
             ),
