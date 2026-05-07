@@ -2225,12 +2225,13 @@ const uiStrings = {
             'filter scope.',
   },
   // 2026-05-07: italic caveat shown directly below the AI search
-  // button so the "reference only" framing is visible at the moment
-  // of choice, not just in the result header.
+  // button. v10 wording aligned with the welcome disclaimer:
+  // AI is auxiliary; verify against Scripture; the Spirit guides.
   'aiReferenceOnly': {
-    'zh-Hans': 'AI 结果仅供参考，使用前请自行核对。',
-    'zh-Hant': 'AI 結果僅供參考，使用前請自行核對。',
-    'en': 'AI results are for reference — verify before use.',
+    'zh-Hans': 'AI 只是辅助，请以经文为准，让圣灵亲自带领你。',
+    'zh-Hant': 'AI 只是輔助，請以經文為準，讓聖靈親自帶領你。',
+    'en':
+        'AI is only an aid — verify against Scripture and let the Spirit guide you.',
   },
   // Friendly fallback when sync errors are clearly setup-related
   // (RTDB not enabled / permission denied). Replaces the raw
@@ -3924,30 +3925,35 @@ const uiStrings = {
     'zh-Hant': '隨身的個人聖經研讀工具。',
     'en': 'Personal Bible study, on every device.',
   },
-  // 2026-05-07: spiritual disclaimer shown on the welcome / onboarding
-  // page. Sets the right expectation up front: YsWords assists, the
-  // Bible itself is God's Word, the Holy Spirit is the primary
-  // teacher, AI features are reference-only and fallible.
+  // 2026-05-07 (v10): user wanted the welcome disclaimer to drive
+  // home three points clearly:
+  //   1. AI is just a helper / 辅助
+  //   2. Do not rely on it / 不要依赖
+  //   3. God's Spirit is more important / 神的灵更重要
+  // Restructured the title + body to use a tighter, more direct
+  // phrasing aimed at those three beats.
   'welcomeDisclaimerTitle': {
-    'zh-Hans': '一个研读辅助工具，不能替代神的话和圣灵',
-    'zh-Hant': '一個研讀輔助工具，不能取代神的話和聖靈',
-    'en': 'A reading companion, not a replacement',
+    'zh-Hans': '神的灵才是引导，AI 只是辅助',
+    'zh-Hant': '神的靈才是引導，AI 只是輔助',
+    'en': 'The Spirit guides; AI only assists',
   },
   'welcomeDisclaimerBody': {
-    'zh-Hans':
-        'YsWords 只是辅助研经的工具。圣经本身才是神的话，圣灵才是真正的老师。'
-            '应用中的 AI 功能（释义 / 搜索 / 深度分析）仅供参考，可能出错——'
-            '请以经文为准，并尊重圣灵在心中的引导。',
-    'zh-Hant':
-        'YsWords 只是輔助研經的工具。聖經本身才是神的話，聖靈才是真正的老師。'
-            '應用中的 AI 功能（釋義 / 搜尋 / 深度分析）僅供參考，可能出錯——'
-            '請以經文為準，並尊重聖靈在心中的引導。',
+    'zh-Hans': 'YsWords 中的 AI 功能（释义、搜索、深度分析）只是辅助研经的工具——'
+        '请不要依赖它。\n\n'
+        '圣经才是神的话，圣灵才是真正引导你的老师。'
+        'AI 可能出错，请始终以经文为根基，'
+        '让圣灵在祷告中亲自带领你认识祂。',
+    'zh-Hant': 'YsWords 中的 AI 功能（釋義、搜尋、深度分析）只是輔助研經的工具——'
+        '請不要依賴它。\n\n'
+        '聖經才是神的話，聖靈才是真正引導你的老師。'
+        'AI 可能出錯，請始終以經文為根基，'
+        '讓聖靈在禱告中親自帶領你認識祂。',
     'en':
-        'YsWords is a study companion. Scripture itself is God\'s Word, '
-            'and the Holy Spirit is the primary teacher. The AI features '
-            '(explanations, search, deep analysis) are reference-only and '
-            'can make mistakes — verify with Scripture and trust the '
-            'Spirit\'s guidance above any tool.',
+        'The AI features in YsWords (explanation, search, deep analysis) '
+            'are study aids only — do not rely on them.\n\n'
+            'Scripture is God\'s Word, and the Holy Spirit is your true '
+            'Teacher within. AI can be wrong — always anchor on the text, '
+            'and let the Spirit lead you to know Him in prayer.',
   },
   'welcomeChooseHowToUse': {
     'zh-Hans': '请选择使用方式',
