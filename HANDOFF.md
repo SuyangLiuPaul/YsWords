@@ -1,6 +1,6 @@
 # YsWords — AI Agent Handoff Document
 
-> Last updated: 2026-05-08 — **v1.0.1 perf release** (Round 56 day-7++: sync Firestore → Drive → RTDB; AI Bible search + deep exegesis + lemma + proper-noun complementary glosses; 5-category offline pack; search-page redesign culminating in v8 (Word Study removed) + v9 (live search-as-you-type) + v10 (Copy-all results); v12–v16 feedback pipeline (in-app form → Resend → developer inbox, with diagnostic block + reply-to email and mailto: fallback; v16 dropped the copy-to-user CC after the user opted out of Resend domain verification); Settings v17 cleanup (dead Offline Mode toggle and theatrical Check-for-Updates tile removed; app version surfaced on AboutPage footer); v18 audit (jump-to-reference Timer race, profiles_page TextEditingController leaks, unbounded query/verseText on three AI Netlify endpoints, silently-swallowed bootstrap futures); v1.0.1 perf (memoized search keys + paragraph grouping + bookOrder; capped Image decode dimensions; deleted 40 MB Archived/ cruft); Library Chinese label 我的标记 → 我的收藏; book-name fold uniform at 390 px; quick-links Search + Feedback tiles; CORS-suppressed news/evidence images; CJK gloss search with alias-pin for divine names)
+> Last updated: 2026-05-08 — **v1.1.0 Liquid Glass design pass** (Round 56 day-7++: sync Firestore → Drive → RTDB; AI Bible search + deep exegesis + lemma + proper-noun complementary glosses; 5-category offline pack; search-page redesign culminating in v8 (Word Study removed) + v9 (live search-as-you-type) + v10 (Copy-all results); v12–v16 feedback pipeline (in-app form → Resend → developer inbox, with diagnostic block + reply-to email and mailto: fallback; v16 dropped the copy-to-user CC after the user opted out of Resend domain verification); Settings v17 cleanup (dead Offline Mode toggle and theatrical Check-for-Updates tile removed; app version surfaced on AboutPage footer); v18 audit (jump-to-reference Timer race, profiles_page TextEditingController leaks, unbounded query/verseText on three AI Netlify endpoints, silently-swallowed bootstrap futures); v1.0.1 perf (memoized search keys + paragraph grouping + bookOrder; capped Image decode dimensions; deleted 40 MB Archived/ cruft); Library Chinese label 我的标记 → 我的收藏; book-name fold uniform at 390 px; quick-links Search + Feedback tiles; CORS-suppressed news/evidence images; CJK gloss search with alias-pin for divine names)
 > Project: YsWords (Yahweh's Words) — bilingual Bible reader
 > Stack: Flutter 3.41.7 / Dart 3.11.5 / Provider + GetX
 > Repo: https://github.com/SuyangLiuPaul/YsWords
@@ -2326,6 +2326,78 @@ v1.0.1 was perf-only.
 - Memory: image-heavy pages (Bible Evidence, Daily News) hold
   ~50% less bitmap memory.
 - Repo size: -40 MB clone footprint.
+
+### Strand: v1.1.0 — Liquid Glass design pass (2026-05-08)
+
+User asked to align the app's look with Apple's WWDC25 Liquid
+Glass design language. Researched the spec (Apple newsroom +
+developer documentation + WWDC25 session 219 "Meet Liquid
+Glass" + community references), then translated the *spirit* of
+the material to Flutter Web primitives. Apple's spec is
+intentionally non-quantitative — the system renders dynamically
+off the live backdrop — so values were derived by eye against
+WWDC screenshots and the public iOS 26 betas.
+
+**New widget set** (`lib/widgets/liquid_glass.dart`):
+
+- `LiquidGlass` — primitive surface stacking BackdropFilter
+  blur + translucent fill + specular-highlight gradient +
+  hairline gradient border + soft adaptive shadow. Two variants
+  matching Apple's `Glass.regular` / `Glass.clear`:
+  - `regular`: σ = 28, fill α ≈ 0.55 (light) / 0.40 (dark) —
+    versatile default that works on any backdrop.
+  - `clear`: σ = 36, fill α ≈ 0.25 (light) / 0.18 (dark) — for
+    media-rich backgrounds; caller dims for legibility.
+- `LiquidGlassButton` — interactive variant with hover / press
+  states. Press pushes a stronger primary tint into the glass,
+  approximating Apple's "illuminate from within" cue.
+- `LiquidGlassChip` — pill-shaped chip; selected state takes the
+  brand color as tint blend.
+- `LiquidGlassCard` — drop-in Card replacement.
+- `LiquidGlassRadius` — concentric-radius constants (outer 24,
+  inner 16, pill ∞) so nested shapes stay parallel per Apple HIG.
+
+**Surfaces converted to glass**:
+- Dashboard quick-links grid (`_LinkTile`) → `LiquidGlassButton`
+- Search page mode chips (`_ModeChip`) → `LiquidGlassButton` with
+  pill radius + active-state tint
+- Welcome page spiritual disclaimer card → `LiquidGlassCard`
+- Feedback page intro framing card → `LiquidGlassCard`
+
+**Theme tweaks** (`lib/main.dart`):
+- Card corner radius bumped 8 → 18 px (light + dark)
+- Dialog corner radius set to 20 px
+- Apple SF Pro family added to the front of the font fallback
+  chain (`-apple-system`, `BlinkMacSystemFont`, `SF Pro Text`,
+  `SF Pro`, `Helvetica Neue`, then existing fallbacks). On macOS
+  / iOS the app now renders in San Francisco; elsewhere it falls
+  through to Helvetica Neue / Roboto as before.
+
+**HIG compliance notes**:
+- Liquid Glass reserved for the navigation layer (tiles, chips,
+  cards on framing surfaces). Not nested inside content surfaces
+  (verse list, etc) per Apple's "no glass on glass" rule.
+- `BackdropFilter` always wrapped in `ClipRRect` so the blur
+  respects rounded geometry (otherwise the underlying canvas
+  bleeds past the corners).
+
+**Verified**: `flutter analyze` clean, 39/39 tests pass, web
+build succeeds, deployed to Netlify (`69fd10f4c25f11057288685b`).
+
+**Known limitations / deferred to v1.2.0**:
+- Global scenic gradient backdrop — we have the glass surfaces
+  but the page background behind them is still a flat color.
+  Apple's design assumes varied content behind the glass for
+  the refraction to read; deferred because making Scaffold
+  transparent app-wide is invasive.
+- `Tab Bar` shrink-on-scroll — Apple's iOS 26 floating tab-bar
+  behavior; the existing TabBar/AppBar pattern uses the older
+  Material edge-to-edge model.
+- Verse popup, originals sheet, AI explanation card, settings
+  cards — not yet converted; Phase 2 of the design pass.
+- 101 Card(...) instances across the app inherit the new 18 px
+  theme radius but don't yet get the glass material directly —
+  one-by-one migration is its own multi-day project.
 
 ---
 

@@ -6,6 +6,7 @@ import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/services/cloud_auth_service.dart';
 import 'package:yswords/services/profile_service.dart';
 import 'package:yswords/widgets/google_g_logo.dart';
+import 'package:yswords/widgets/liquid_glass.dart';
 
 /// One-time gate shown on first launch (and accessible later from
 /// Settings → Switch profile). Lets the user pick a name so their
@@ -171,16 +172,15 @@ class _WelcomePageState extends State<WelcomePage> {
                   // God's word and the Holy Spirit is the primary
                   // teacher. AI features (explanations, search, etc.)
                   // are for reference only and can make mistakes.
-                  Container(
+                  //
+                  // 2026-05-08 (v1.1.0 — Liquid Glass): container
+                  // upgraded to LiquidGlassCard. The disclaimer is
+                  // the user's first impression of the app, so we
+                  // want it to look premium / modern from the very
+                  // first frame.
+                  LiquidGlassCard(
                     padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
-                    decoration: BoxDecoration(
-                      color: scheme.surfaceContainerHighest
-                          .withValues(alpha: 0.5),
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(
-                        color: scheme.outlineVariant.withValues(alpha: 0.5),
-                      ),
-                    ),
+                    borderRadius: 18,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [

@@ -205,7 +205,22 @@ class _MainAppState extends State<MainApp> {
           themeMode: settings.themeMode,
           theme: ThemeData(
             fontFamily: settings.fontFamily,
-            fontFamilyFallback: ['Roboto', 'Arial', 'Helvetica'],
+            // 2026-05-08 (v1.1.0 — Liquid Glass): Apple's San
+            // Francisco family is the de-facto rendering font on
+            // Apple devices and falls through to Helvetica Neue / a
+            // good system sans on others. Putting it first in the
+            // fallback chain makes the app feel native on macOS / iOS
+            // while still rendering cleanly elsewhere.
+            fontFamilyFallback: const [
+              '-apple-system',
+              'BlinkMacSystemFont',
+              'SF Pro Text',
+              'SF Pro',
+              'Helvetica Neue',
+              'Roboto',
+              'Arial',
+              'Helvetica',
+            ],
             textTheme: ThemeData.light().textTheme.copyWith(
                   bodyLarge: ThemeData.light().textTheme.bodyLarge?.copyWith(
                         fontFamily: settings.fontFamily,
@@ -221,6 +236,22 @@ class _MainAppState extends State<MainApp> {
                       ),
                 ),
             colorScheme: lightScheme,
+            // 2026-05-08 (v1.1.0): Card & Dialog corner radii bumped
+            // to 18 to match Apple's iOS 26 shape language (concentric
+            // with the new 24-radius outer surfaces). The app's bespoke
+            // Container-backed cards (welcome disclaimer, feedback
+            // intro, etc) get the LiquidGlassCard primitive directly;
+            // every Card(...) inherits from this theme.
+            cardTheme: CardThemeData(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(18),
+              ),
+            ),
+            dialogTheme: DialogThemeData(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+            ),
             // Tint the AppBar with primary so the user's chosen color
             // is immediately visible at the top of every page, not
             // just on FAB / Switch / Slider accents. Foreground is
@@ -247,7 +278,18 @@ class _MainAppState extends State<MainApp> {
           ),
           darkTheme: ThemeData(
             fontFamily: settings.fontFamily,
-            fontFamilyFallback: ['Roboto', 'Arial', 'Helvetica'],
+            // 2026-05-08 (v1.1.0 — Liquid Glass): same SF-first
+            // fallback chain as light theme; see comment there.
+            fontFamilyFallback: const [
+              '-apple-system',
+              'BlinkMacSystemFont',
+              'SF Pro Text',
+              'SF Pro',
+              'Helvetica Neue',
+              'Roboto',
+              'Arial',
+              'Helvetica',
+            ],
             textTheme: ThemeData.dark().textTheme.copyWith(
                   bodyLarge: ThemeData.dark().textTheme.bodyLarge?.copyWith(
                         fontFamily: settings.fontFamily,
@@ -279,8 +321,10 @@ class _MainAppState extends State<MainApp> {
             cardTheme: CardThemeData(
               color: Color(0xFF1F1F1F),
               elevation: 2,
+              // 2026-05-08 (v1.1.0): bumped from 8 to 18 to match
+              // light theme's new concentric-with-Liquid-Glass radii.
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(18),
               ),
             ),
             // Dark AppBar uses primaryContainer (a low-chroma dark

@@ -10,6 +10,7 @@ import 'package:yswords/services/feedback_service.dart';
 import 'package:yswords/services/link_opener.dart';
 import 'package:yswords/utils/clipboard_helper.dart';
 import 'package:yswords/widgets/home_icon_button.dart';
+import 'package:yswords/widgets/liquid_glass.dart';
 import 'package:yswords/widgets/localized_back_button.dart';
 
 /// 2026-05-07 (v12 → v16): user-facing feedback form. The user
@@ -289,16 +290,14 @@ class _FeedbackPageState extends State<FeedbackPage> {
               // Intro / framing — sets the expectation that this
               // goes directly to the developer's inbox via the
               // user's mail client.
-              Container(
+              //
+              // 2026-05-08 (v1.1.0 — Liquid Glass): plain Container
+              // upgraded to LiquidGlassCard so the form's framing
+              // surface uses the same translucent material as the
+              // rest of the v1.1.0 design pass.
+              LiquidGlassCard(
                 padding: const EdgeInsets.fromLTRB(14, 10, 14, 10),
-                decoration: BoxDecoration(
-                  color: scheme.surfaceContainerHighest
-                      .withValues(alpha: 0.4),
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(
-                    color: scheme.outlineVariant.withValues(alpha: 0.5),
-                  ),
-                ),
+                borderRadius: 18,
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [

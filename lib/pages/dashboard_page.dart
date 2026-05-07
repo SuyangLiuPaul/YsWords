@@ -24,6 +24,7 @@ import 'package:yswords/pages/family_tree_page.dart';
 import 'package:yswords/pages/sermon_detail_page.dart';
 import 'package:yswords/pages/sermons_page.dart';
 import 'package:yswords/pages/news_detail_page.dart';
+import 'package:yswords/widgets/liquid_glass.dart';
 import 'package:yswords/pages/highlights_page.dart';
 import 'package:yswords/pages/home_page.dart';
 import 'package:yswords/pages/library_page.dart';
@@ -1742,49 +1743,39 @@ class _LinkTile extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     final settings = context.watch<AppSettings>();
     final fs = settings.fontSize;
-    return Material(
-      color: scheme.surface,
-      borderRadius: BorderRadius.circular(12),
-      child: Ink(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-              color: scheme.outlineVariant.withValues(alpha: 0.6)),
-        ),
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(12),
-          child: Padding(
-            // Tighter horizontal padding so longer labels like
-            // "Bible Evidence" don't ellipsize on phone (2-up grid).
-            padding: const EdgeInsets.symmetric(horizontal: 10),
-            child: Row(
-              children: [
-                Icon(icon, color: scheme.primary, size: 20),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    label,
-                    // Allow wrap to a 2nd line so multi-word labels
-                    // (e.g. "Bible Evidence") never truncate; single-
-                    // word labels like "Settings" still render on 1.
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontFamily: settings.fontFamily,
-                      fontSize: (fs - 2).clamp(12.0, 18.0).toDouble(),
-                      fontWeight: FontWeight.w600,
-                      color: scheme.onSurface,
-                      height: 1.15,
-                    ),
-                  ),
-                ),
-                Icon(Icons.chevron_right,
-                    size: 16, color: scheme.outline),
-              ],
+    // 2026-05-08 (v1.1.0 — Liquid Glass): replaced Material+Ink+InkWell
+    // with the LiquidGlassButton primitive. Hover / press states use
+    // the primary tint blending into the glass material rather than a
+    // hard-edged ripple; the surface itself catches the implicit
+    // "ambient light" via specular highlight + hairline border. Inner
+    // controls (icon, label, chevron) keep their geometry — only the
+    // container material changed.
+    return LiquidGlassButton(
+      onTap: onTap,
+      borderRadius: 18, // concentric to outer-card radius (24)
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      semanticLabel: label,
+      child: Row(
+        children: [
+          Icon(icon, color: scheme.primary, size: 20),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              label,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontFamily: settings.fontFamily,
+                fontSize: (fs - 2).clamp(12.0, 18.0).toDouble(),
+                fontWeight: FontWeight.w600,
+                color: scheme.onSurface,
+                height: 1.15,
+              ),
             ),
           ),
-        ),
+          Icon(Icons.chevron_right,
+              size: 16, color: scheme.outline),
+        ],
       ),
     );
   }

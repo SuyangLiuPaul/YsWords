@@ -21,6 +21,7 @@ import 'package:yswords/constants/ui_strings.dart';
 import 'package:yswords/constants/text_patterns.dart';
 import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/widgets/home_icon_button.dart';
+import 'package:yswords/widgets/liquid_glass.dart';
 import 'package:yswords/widgets/localized_back_button.dart';
 import 'package:yswords/utils/responsive.dart';
 import 'package:flutter/services.dart';
@@ -1934,50 +1935,49 @@ class _ModeChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    // 2026-05-07 (v6): active chip gets a saturated fill + white
-    // foreground so the user can see at a glance which mode their
-    // currently-displayed results came from. Inactive chips use the
-    // pale fill and dark foreground (existing look).
-    final bg = active ? color : color.withValues(alpha: 0.12);
-    final fg = active ? Colors.white : scheme.onSurface;
-    final iconColor = active ? Colors.white : color;
+    // 2026-05-08 (v1.1.0 — Liquid Glass): chip body switched to the
+    // pill-shaped `LiquidGlassButton`. Active state pushes the chip's
+    // brand colour into the glass tint, mimicking Apple's iOS 26
+    // segmented-control behaviour (the chip "fills with light"
+    // rather than being painted a flat background colour). Inactive
+    // chips remain pure glass over the page backdrop.
+    final fg = active
+        ? scheme.onPrimary
+        : (onTap != null ? scheme.onSurface : scheme.onSurfaceVariant);
+    final iconColor = active ? scheme.onPrimary : color;
     return Tooltip(
       message: tooltip,
-      child: Material(
-        color: bg,
-        borderRadius: BorderRadius.circular(20),
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(20),
-          child: Padding(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (busy)
-                  SizedBox(
-                    width: 14,
-                    height: 14,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: iconColor,
-                    ),
-                  )
-                else
-                  Icon(icon, size: 14, color: iconColor),
-                const SizedBox(width: 6),
-                Text(
-                  label,
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
-                    color: onTap != null ? fg : scheme.onSurfaceVariant,
-                  ),
+      child: LiquidGlassButton(
+        onTap: onTap,
+        borderRadius: LiquidGlassRadius.pill,
+        padding:
+            const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        tint: active ? color : null,
+        semanticLabel: label,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (busy)
+              SizedBox(
+                width: 14,
+                height: 14,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: iconColor,
                 ),
-              ],
+              )
+            else
+              Icon(icon, size: 14, color: iconColor),
+            const SizedBox(width: 6),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+                color: fg,
+              ),
             ),
-          ),
+          ],
         ),
       ),
     );

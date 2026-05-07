@@ -27,4 +27,18 @@
 /// 64 px thumbnails), and dropped the 40 MB `assets/Archived/`
 /// folder from the repo (it was never bundled, just bloating
 /// clones).
-const String kAppVersion = '1.0.1';
+///
+/// 2026-05-08 (v1.1.0 — Liquid Glass design pass): translated
+/// Apple's WWDC25 Liquid Glass material to Flutter Web. New
+/// primitives in `lib/widgets/liquid_glass.dart` (LiquidGlass /
+/// LiquidGlassButton / LiquidGlassChip / LiquidGlassCard) compose
+/// BackdropFilter blur + translucent fill + specular highlight +
+/// hairline border + soft shadows into a single material that
+/// catches and refracts whatever sits behind it. High-impact
+/// surfaces converted: dashboard quick-links grid, search-page
+/// mode chips, welcome-page disclaimer, feedback-form intro.
+/// Theme tokens bumped to Apple's iOS 26 shape language: 18 px
+/// Card radius, 20 px Dialog radius, San Francisco family at the
+/// front of the font fallback chain so macOS / iOS users get
+/// native typography out of the box.
+const String kAppVersion = '1.1.0';
