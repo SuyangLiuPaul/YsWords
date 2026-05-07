@@ -100,6 +100,13 @@ class _SearchPageState extends State<SearchPage> {
   int _loadAttempts = 0;
   int _lastVersesLength = -1; // -1 = never checked
   String _lastLoadedVersion = '';
+  // 2026-05-07 (v5 diagnostic): captured AT THE FOR LOOP so we can
+  // see whether the corpus was actually present at search time, not
+  // just at load-check time.
+  int _lastVersesAtSearch = -1;
+  bool _lastSearchAll = true;
+  String? _lastFilterBook;
+  String? _lastCurrentBook;
 
   /// On-demand verse load. Used by search(), the recent-search row
   /// tap path, and the AI search path. Returns true iff
@@ -303,9 +310,11 @@ class _SearchPageState extends State<SearchPage> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        'Bible: $_lastLoadedVersion · '
-                        'verses=$_lastVersesLength · '
-                        'attempts=$_loadAttempts',
+                        'v=$_lastLoadedVersion · load=$_lastVersesLength · '
+                        'src=$_lastVersesAtSearch · all=$_lastSearchAll · '
+                        'filter=${_lastFilterBook ?? "-"} · '
+                        'cur=${_lastCurrentBook ?? "-"} · '
+                        'tries=$_loadAttempts',
                         style: TextStyle(
                           fontSize: 10,
                           color: Theme.of(context)
@@ -667,6 +676,70 @@ class _SearchPageState extends State<SearchPage> {
     super.dispose();
   }
 
+  /// 2026-05-07 (v5): explicit "Word study" search-mode handler.
+  /// Triggered from the search-mode strip below the AppBar. Routes
+  /// the current input through the lexicon paths only (Strong's
+  /// number, Greek/Hebrew lemma, transliteration) — the regular
+  /// text-scan path is never run here, so the user gets a
+  /// predictable result regardless of whether the typed word
+  /// happens to also appear as plain text in the translation.
+  Future<void> _runWordStudy() async {
+    final query = _textEditingController.text.trim();
+    if (query.isEmpty) return;
+    final settings = Provider.of<AppSettings>(context, listen: false);
+    final loaded = await _ensureVersesLoaded();
+    if (!mounted || !loaded) return;
+
+    // Strong's-number first.
+    final strongsMatch = _strongsQueryPattern.firstMatch(query);
+    if (strongsMatch != null) {
+      final num =
+          '${strongsMatch.group(1)!.toUpperCase()}${strongsMatch.group(2)!}';
+      setState(() {
+        _resetSearchState();
+        _strongsKey = num;
+      });
+      final entry = await StrongsService.lookup(num);
+      final conc = await ConcordanceService.lookup(num);
+      if (!mounted) return;
+      setState(() {
+        _strongsEntry = entry;
+        _strongsResult = conc;
+        searchPerformed = true;
+      });
+      return;
+    }
+
+    // Lemma / transliteration.
+    final matches = await StrongsService.searchByLemma(query, limit: 4);
+    if (!mounted) return;
+    if (matches.isEmpty) {
+      setState(() {
+        _resetSearchState();
+        searchPerformed = true;
+        _aiNotice =
+            uiStrings['searchWordStudyNoMatch']?[settings.locale] ??
+                'No lexicon entry matched. Try a Strong\'s number '
+                    '(G2316 / H7200), a Greek / Hebrew word, or an '
+                    'exact transliteration ("agape").';
+      });
+      return;
+    }
+    final best = matches.first;
+    final num = best.number;
+    setState(() {
+      _resetSearchState();
+      _strongsKey = num;
+      _strongsEntry = best;
+    });
+    final conc = await ConcordanceService.lookup(num);
+    if (!mounted) return;
+    setState(() {
+      _strongsResult = conc;
+      searchPerformed = true;
+    });
+  }
+
   /// 2026-05-07 (post-fix): localized help dialog that documents
   /// every search syntax the page supports. Until now, the
   /// page accepted Strong's numbers, Bible references, lemmas, and
@@ -930,6 +1003,14 @@ class _SearchPageState extends State<SearchPage> {
 
     final mainProvider = Provider.of<MainProvider>(context, listen: false);
     final verses = mainProvider.verses;
+    // 2026-05-07 (post-fix v5): capture mp.verses.length AT THE FOR
+    // LOOP (not at the load-check) so we can tell whether the corpus
+    // was empty here, even though _lastVersesLength (set in
+    // _ensureVersesLoaded) said it was 31102.
+    _lastVersesAtSearch = verses.length;
+    _lastSearchAll = searchAll;
+    _lastFilterBook = filterBook;
+    _lastCurrentBook = mainProvider.currentBook;
     final source = filterBook != null
         ? verses.where((v) => v.book == filterBook)
         : searchAll
@@ -1190,6 +1271,25 @@ class _SearchPageState extends State<SearchPage> {
             ),
             child: Column(
           children: [
+            // 2026-05-07 (v5): three explicit search-mode chips.
+            // The user wanted clearer separation between basic text
+            // search, word-study (Strong's / Greek / Hebrew lemma /
+            // transliteration) and YsWords AI search. Enter still
+            // routes to the basic text-search path; the chips give
+            // explicit access to the other two without having to
+            // remember the syntax. Hidden during the loading state.
+            if (!_isLoadingVerses && _versesLoadError == null)
+              _SearchModeStrip(
+                onTextSearch: () async {
+                  await search();
+                },
+                onWordStudy: () async {
+                  await _runWordStudy();
+                },
+                onAiSearch: _aiBusy ? null : _askAi,
+                aiBusy: _aiBusy,
+                locale: settings.locale,
+              ),
             // 2026-05-07 (post-fix v2): "Bible loading…" / load-failed
             // banner. Replaces the silent "0 results · scanned 0"
             // state when the user opens search before the corpus is
@@ -1732,6 +1832,147 @@ class _RecentSearchRow extends StatelessWidget {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+/// 2026-05-07 (v5): horizontal strip of three search-mode chips
+/// shown directly below the AppBar. Each chip launches a different
+/// search path on the current text-input value:
+///
+///   - "Search" -> regular text scan (also bound to Enter on the
+///     TextField).
+///   - "Word study" -> Strong's lookup, Greek / Hebrew lemma, or
+///     transliteration. Skips the plain-text scan so the user
+///     always lands on the lexicon.
+///   - "YsWords AI" -> fuzzy / thematic AI search.
+///
+/// User feedback: the previous design routed every Enter through a
+/// catch-all heuristic chain (Strong's pattern -> reference parser
+/// -> lemma -> text), which was opaque. Explicit chips make the
+/// available modes discoverable and the dispatch predictable.
+class _SearchModeStrip extends StatelessWidget {
+  final Future<void> Function() onTextSearch;
+  final Future<void> Function() onWordStudy;
+  final Future<void> Function()? onAiSearch;
+  final bool aiBusy;
+  final String locale;
+
+  const _SearchModeStrip({
+    required this.onTextSearch,
+    required this.onWordStudy,
+    required this.onAiSearch,
+    required this.aiBusy,
+    required this.locale,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(8, 8, 8, 4),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          children: [
+            _ModeChip(
+              icon: Icons.menu_book_rounded,
+              label: uiStrings['searchModeText']?[locale] ?? 'Search',
+              tooltip: uiStrings['searchModeTextTip']?[locale] ??
+                  'Find verses containing this word or phrase. (Enter)',
+              onTap: () => onTextSearch(),
+              color: scheme.primary,
+            ),
+            const SizedBox(width: 8),
+            _ModeChip(
+              icon: Icons.translate_rounded,
+              label: uiStrings['searchModeWordStudy']?[locale] ??
+                  'Word study',
+              tooltip: uiStrings['searchModeWordStudyTip']?[locale] ??
+                  'Strong\'s number / Greek / Hebrew lemma / '
+                      'transliteration. Opens the lexicon directly.',
+              onTap: () => onWordStudy(),
+              color: scheme.tertiary,
+            ),
+            const SizedBox(width: 8),
+            _ModeChip(
+              icon: aiBusy ? Icons.hourglass_top_rounded : Icons.auto_awesome,
+              label: uiStrings['searchModeAi']?[locale] ?? 'YsWords AI',
+              tooltip: uiStrings['searchModeAiTip']?[locale] ??
+                  'Fuzzy / thematic search via YsWords AI. Reference '
+                      'only — verify before use.',
+              onTap: onAiSearch == null ? null : () => onAiSearch!(),
+              color: scheme.secondary,
+              busy: aiBusy,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// 2026-05-07 (v5): one chip in the search-mode strip.
+class _ModeChip extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final String tooltip;
+  final VoidCallback? onTap;
+  final Color color;
+  final bool busy;
+  const _ModeChip({
+    required this.icon,
+    required this.label,
+    required this.tooltip,
+    required this.onTap,
+    required this.color,
+    this.busy = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Tooltip(
+      message: tooltip,
+      child: Material(
+        color: color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(20),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(20),
+          child: Padding(
+            padding:
+                const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (busy)
+                  SizedBox(
+                    width: 14,
+                    height: 14,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: color,
+                    ),
+                  )
+                else
+                  Icon(icon, size: 14, color: color),
+                const SizedBox(width: 6),
+                Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: onTap != null
+                        ? scheme.onSurface
+                        : scheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );

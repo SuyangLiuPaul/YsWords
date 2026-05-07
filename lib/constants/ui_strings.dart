@@ -3159,6 +3159,60 @@ const uiStrings = {
     'zh-Hant': '您是否在找詞典條目？',
     'en': 'Did you mean this lexicon entry?',
   },
+  // 2026-05-07 (v5): three search-mode chips below the AppBar.
+  // User wanted explicit per-mode entry points instead of a single
+  // catch-all Enter handler.
+  'searchModeText': {
+    'zh-Hans': '经文搜索',
+    'zh-Hant': '經文搜尋',
+    'en': 'Search',
+  },
+  'searchModeTextTip': {
+    'zh-Hans': '在当前圣经中查找包含这个字词或短句的经节（按 Enter 也可触发）。',
+    'zh-Hant': '在當前聖經中查找包含這個字詞或短句的經節（按 Enter 也可觸發）。',
+    'en':
+        'Find verses containing this word or phrase. Pressing Enter '
+            'also triggers this mode.',
+  },
+  'searchModeWordStudy': {
+    'zh-Hans': '原文 / Strong\'s',
+    'zh-Hant': '原文 / Strong\'s',
+    'en': 'Word study',
+  },
+  'searchModeWordStudyTip': {
+    'zh-Hans': 'Strong\'s 编号（G2316 / H7200）、希腊文 / 希伯来文原文，'
+        '或音译形式（agape）。直接跳转到对应词典条目与经文索引。',
+    'zh-Hant': 'Strong\'s 編號（G2316 / H7200）、希臘文 / 希伯來文原文，'
+        '或音譯形式（agape）。直接跳轉到對應詞典條目與經文索引。',
+    'en':
+        'Strong\'s numbers (G2316 / H7200), Greek / Hebrew text, or '
+            'transliteration (agape). Jumps to the lexicon entry plus '
+            'concordance.',
+  },
+  'searchModeAi': {
+    'zh-Hans': 'YsWords AI',
+    'zh-Hant': 'YsWords AI',
+    'en': 'YsWords AI',
+  },
+  'searchModeAiTip': {
+    'zh-Hans': '通过 YsWords AI 进行模糊或主题搜索（如「最爱的章节」）。结果仅供参考，'
+        '使用前请自行核对。',
+    'zh-Hant': '透過 YsWords AI 進行模糊或主題搜尋（如「最愛的章節」）。結果僅供參考，'
+        '使用前請自行核對。',
+    'en':
+        'Fuzzy / thematic search via YsWords AI (e.g. "the love '
+            'chapter"). Results are reference-only — verify before use.',
+  },
+  'searchWordStudyNoMatch': {
+    'zh-Hans': '没有匹配的词典条目。可以尝试 Strong\'s 编号（G2316 / H7200）、'
+        '希腊文 / 希伯来文原文，或精确的音译形式（如「agape」）。',
+    'zh-Hant': '沒有匹配的詞典條目。可以嘗試 Strong\'s 編號（G2316 / H7200）、'
+        '希臘文 / 希伯來文原文，或精確的音譯形式（如「agape」）。',
+    'en':
+        'No lexicon entry matched. Try a Strong\'s number '
+            '(G2316 / H7200), a Greek / Hebrew word, or an exact '
+            'transliteration ("agape").',
+  },
   // 2026-05-07 (post-fix): scope banner shown in the no-results
   // state. Helps the user spot when a stuck filter is the reason for
   // 0 results, with a one-tap "widen" affordance.
@@ -3853,6 +3907,31 @@ const uiStrings = {
     'zh-Hans': '随身的个人圣经研读工具。',
     'zh-Hant': '隨身的個人聖經研讀工具。',
     'en': 'Personal Bible study, on every device.',
+  },
+  // 2026-05-07: spiritual disclaimer shown on the welcome / onboarding
+  // page. Sets the right expectation up front: YsWords assists, the
+  // Bible itself is God's Word, the Holy Spirit is the primary
+  // teacher, AI features are reference-only and fallible.
+  'welcomeDisclaimerTitle': {
+    'zh-Hans': '一个研读辅助工具，不能替代神的话和圣灵',
+    'zh-Hant': '一個研讀輔助工具，不能取代神的話和聖靈',
+    'en': 'A reading companion, not a replacement',
+  },
+  'welcomeDisclaimerBody': {
+    'zh-Hans':
+        'YsWords 只是辅助研经的工具。圣经本身才是神的话，圣灵才是真正的老师。'
+            '应用中的 AI 功能（释义 / 搜索 / 深度分析）仅供参考，可能出错——'
+            '请以经文为准，并尊重圣灵在心中的引导。',
+    'zh-Hant':
+        'YsWords 只是輔助研經的工具。聖經本身才是神的話，聖靈才是真正的老師。'
+            '應用中的 AI 功能（釋義 / 搜尋 / 深度分析）僅供參考，可能出錯——'
+            '請以經文為準，並尊重聖靈在心中的引導。',
+    'en':
+        'YsWords is a study companion. Scripture itself is God\'s Word, '
+            'and the Holy Spirit is the primary teacher. The AI features '
+            '(explanations, search, deep analysis) are reference-only and '
+            'can make mistakes — verify with Scripture and trust the '
+            'Spirit\'s guidance above any tool.',
   },
   'welcomeChooseHowToUse': {
     'zh-Hans': '请选择使用方式',

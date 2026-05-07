@@ -164,7 +164,72 @@ class _WelcomePageState extends State<WelcomePage> {
                       color: scheme.onSurfaceVariant,
                     ),
                   ),
-                  const SizedBox(height: 32),
+                  const SizedBox(height: 20),
+                  // 2026-05-07: spiritual disclaimer. The user wants
+                  // every onboarding path to set the right expectation:
+                  // YsWords is a tool that can help, but the Bible is
+                  // God's word and the Holy Spirit is the primary
+                  // teacher. AI features (explanations, search, etc.)
+                  // are for reference only and can make mistakes.
+                  Container(
+                    padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+                    decoration: BoxDecoration(
+                      color: scheme.surfaceContainerHighest
+                          .withValues(alpha: 0.5),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(
+                        color: scheme.outlineVariant.withValues(alpha: 0.5),
+                      ),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(Icons.auto_stories_rounded,
+                                size: 16, color: scheme.primary),
+                            const SizedBox(width: 6),
+                            Expanded(
+                              child: Text(
+                                uiStrings['welcomeDisclaimerTitle']
+                                        ?[locale] ??
+                                    'A reading companion, not a replacement',
+                                style: TextStyle(
+                                  fontFamily: settings.fontFamily,
+                                  fontSize: (settings.fontSize - 2)
+                                      .clamp(12.0, 15.0)
+                                      .toDouble(),
+                                  fontWeight: FontWeight.w700,
+                                  color: scheme.onSurface,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          uiStrings['welcomeDisclaimerBody']?[locale] ??
+                              'YsWords is a tool to help you study. The '
+                                  'Bible itself is God\'s Word, and the Holy '
+                                  'Spirit is the primary teacher. AI '
+                                  'features (explanations / search) are '
+                                  'for reference only and can make '
+                                  'mistakes — always verify with Scripture '
+                                  'and trust the Spirit\'s guidance above '
+                                  'any tool.',
+                          style: TextStyle(
+                            fontFamily: settings.fontFamily,
+                            fontSize: (settings.fontSize - 3)
+                                .clamp(11.0, 13.0)
+                                .toDouble(),
+                            color: scheme.onSurfaceVariant,
+                            height: 1.5,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 24),
                   if (!_signingIn) ...[
                     Text(
                       uiStrings['welcomeChooseHowToUse']?[locale] ??

@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:yswords/constants/bible_versions.dart';
+import 'package:yswords/utils/short_book_name.dart' show shortBookName;
 import 'package:yswords/constants/text_patterns.dart' show sanitizeForSearch;
 import 'package:yswords/constants/ui_strings.dart';
 import 'package:yswords/utils/greeting.dart';
@@ -1083,10 +1084,108 @@ class _GreetingCard extends StatelessWidget {
                           fontWeight: FontWeight.w700, fontSize: 18),
                     ),
                   );
+    // 2026-05-07: at narrow widths the Sign-in-with-Google button on
+    // the right pushes the middle column down to ~120 px, which
+    // truncates "Good morning" to "Good m..." (user complaint).
+    // Detect narrow viewports and stack the sign-in button below the
+    // name instead of side-by-side.
+    final screenW = MediaQuery.of(context).size.width;
+    final stackVertically = screenW < 420 && !isSignedIn && authConfigured;
     return Card(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(16, 12, 12, 12),
-        child: Row(
+        child: stackVertically
+            ? Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Row(
+                    children: [
+                      InkWell(
+                        customBorder: const CircleBorder(),
+                        onTap: () => Get.to(
+                          () => const ProfileEditPage(),
+                          transition: Transition.rightToLeft,
+                        ),
+                        child: avatar,
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              greeting,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              textDirection: TextDirection.ltr,
+                              style: TextStyle(
+                                fontFamily: settings.fontFamily,
+                                fontSize:
+                                    (fs - 3).clamp(11.0, 16.0).toDouble(),
+                                color: scheme.onSurfaceVariant,
+                              ),
+                            ),
+                            Text(
+                              profileName,
+                              maxLines: 1,
+                              softWrap: false,
+                              overflow: TextOverflow.ellipsis,
+                              textDirection: TextDirection.ltr,
+                              style: TextStyle(
+                                fontFamily: settings.fontFamily,
+                                fontSize:
+                                    (fs + 3).clamp(16.0, 28.0).toDouble(),
+                                fontWeight: FontWeight.w700,
+                                color: scheme.onSurface,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  OutlinedButton.icon(
+                    onPressed: onSignIn,
+                    icon: const GoogleGLogo(size: 16),
+                    label: Text(
+                      uiStrings['welcomeSignInGoogle']?[locale] ??
+                          'Sign in with Google',
+                      style: TextStyle(
+                        fontFamily: settings.fontFamily,
+                        fontSize: (fs - 2).clamp(12.0, 15.0).toDouble(),
+                      ),
+                    ),
+                    style: OutlinedButton.styleFrom(
+                      backgroundColor: Colors.white,
+                      foregroundColor: const Color(0xFF1F1F1F),
+                      side: const BorderSide(
+                          color: Color(0xFFDADCE0), width: 1),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 10),
+                    ),
+                  ),
+                ],
+              )
+            : _buildHorizontalLayout(
+                context,
+                scheme,
+                settings,
+                fs,
+                avatar,
+              ),
+      ),
+    );
+  }
+
+  Widget _buildHorizontalLayout(
+    BuildContext context,
+    ColorScheme scheme,
+    AppSettings settings,
+    double fs,
+    Widget avatar,
+  ) {
+    return Row(
           children: [
             InkWell(
               customBorder: const CircleBorder(),
@@ -1235,9 +1334,7 @@ class _GreetingCard extends StatelessWidget {
                 ),
               ),
           ],
-        ),
-      ),
-    );
+        );
   }
 }
 
@@ -2054,6 +2151,14 @@ class _ContinueReadingHero extends StatelessWidget {
     // We resolve the version code to its menuLabel (full localised
     // name) instead of dumping the raw value like "cuvs-yhwh" —
     // user feedback on round 49: "cuv-yhwh this doesn't look good".
+    //
+    // 2026-05-07 user follow-up: at < 390 px the long form
+    // "创世纪 1 · 和合本雅伟版(简体)" overflows and gets ellipsized.
+    // Below the threshold we fold both the book (帖前 / 创 / 1Th)
+    // and version (CUVS(简)) to their short labels, which still
+    // identify the location unambiguously.
+    final screenW = MediaQuery.of(context).size.width;
+    final useShort = screenW < 390;
     String? versionLabel;
     if (currentVersion != null && currentVersion!.isNotEmpty) {
       final info = bibleVersions.firstWhere(
@@ -2064,10 +2169,12 @@ class _ContinueReadingHero extends StatelessWidget {
           menuLabel: currentVersion!,
         ),
       );
-      versionLabel = info.menuLabel;
+      versionLabel = useShort ? info.shortLabel : info.menuLabel;
     }
+    final displayBook =
+        (book != null && useShort) ? shortBookName(book!, locale) : book;
     final positionLine = hasPosition
-        ? '$book $chapter${versionLabel != null ? "  ·  $versionLabel" : ""}'
+        ? '$displayBook $chapter${versionLabel != null ? "  ·  $versionLabel" : ""}'
         : (uiStrings['continueReadingHint']?[locale] ??
             'Open the Bible from the beginning.');
 

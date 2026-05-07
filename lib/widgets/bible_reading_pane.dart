@@ -3450,23 +3450,18 @@ class _FloatingHeader extends StatelessWidget {
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 8, vertical: 6),
                               // 2026-05-07: short-book-name policy.
-                              // User clarified: width-based threshold
-                              // applies uniformly to both Chinese AND
-                              // English -- show the full localized
-                              // book name when there is room, fall
-                              // back to the short form (帖前 / 1Th)
-                              // only when the screen is narrower than
-                              // the threshold. Chinese is no longer
-                              // always-short. The 450 px cutoff was
-                              // pinpointed by the user as the actual
-                              // boundary where 帖撒罗尼迦后书 starts
-                              // ellipsizing in the AppBar; English
-                              // long names like 1 Thessalonians fit
-                              // a similar pixel budget.
+                              // User refined the threshold after
+                              // testing 390 / 414 / 747 widths: the
+                              // full localized name fits at >= 390 px,
+                              // so the cutoff dropped from 450 to 390.
+                              // Below 390 we fold to the short form
+                              // (帖前 / 1Th); at or above we keep the
+                              // formal name. Applies to all locales
+                              // uniformly.
                               child: Builder(builder: (ctx) {
                                 final screenW =
                                     MediaQuery.of(ctx).size.width;
-                                final useShort = screenW < 450;
+                                final useShort = screenW < 390;
                                 return Text(
                                   useShort
                                       ? '${shortBookName(book, locale)} $chapter'
