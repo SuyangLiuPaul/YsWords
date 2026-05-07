@@ -4506,6 +4506,19 @@ const uiStrings = {
     'zh-Hant': '回覆信箱（選填）',
     'en': 'Reply-to email (optional)',
   },
+  // 2026-05-07 (v15): copy-me UI. Two shapes -- signed-in users
+  // see a checkbox tied to their auth email; guests see an editable
+  // email field that doubles as "send me a copy here".
+  'feedbackCopyToMe': {
+    'zh-Hans': '同时发送一份副本给我',
+    'zh-Hant': '同時發送一份副本給我',
+    'en': 'Send a copy to me',
+  },
+  'feedbackCopyEmailLabel': {
+    'zh-Hans': '您的邮箱（选填，会发送副本给您）',
+    'zh-Hant': '您的信箱（選填，會發送副本給您）',
+    'en': 'Your email (optional — we will send you a copy)',
+  },
   'feedbackSend': {
     'zh-Hans': '发送',
     'zh-Hant': '發送',

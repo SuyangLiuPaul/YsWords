@@ -35,12 +35,26 @@ class FeedbackService {
   /// Submit a feedback payload. [context] is required so we can
   /// pull MediaQuery.size / devicePixelRatio / platformBrightness
   /// for the diagnostic block.
+  ///
+  /// [authEmail] is the user's Firebase / cloud sign-in email when
+  /// signed in (empty for guests). It's always included in the
+  /// diagnostic block, regardless of [wantsCopy] -- so the dev
+  /// always knows who submitted feedback when the user is signed in.
+  ///
+  /// [copyEmail] + [wantsCopy] control the optional CC: the server
+  /// will attempt to CC the user at [copyEmail] when [wantsCopy] is
+  /// true, falling back gracefully if Resend rejects the CC (e.g.
+  /// the dev hasn't verified a sending domain yet, in which case
+  /// the free-tier sandbox refuses non-owner recipients).
   static Future<FeedbackResult> submit({
     required BuildContext context,
     required String category,
     required String message,
     String? name,
     String? replyTo,
+    String? copyEmail,
+    bool wantsCopy = false,
+    String? authEmail,
     String? appLocale,
     String? bibleVersion,
     String? position,
@@ -73,6 +87,14 @@ class FeedbackService {
       'message': message,
       if (name != null && name.isNotEmpty) 'name': name,
       if (replyTo != null && replyTo.isNotEmpty) 'replyTo': replyTo,
+      // v15: signed-in email + opt-in CC. authEmail is always
+      // attached when the user is signed in (so the dev knows who
+      // submitted). copyEmail + wantsCopy drive the CC attempt.
+      if (authEmail != null && authEmail.isNotEmpty)
+        'authEmail': authEmail,
+      if (copyEmail != null && copyEmail.isNotEmpty)
+        'copyEmail': copyEmail,
+      'wantsCopy': wantsCopy,
       if (appLocale != null && appLocale.isNotEmpty) 'locale': appLocale,
       if (bibleVersion != null && bibleVersion.isNotEmpty)
         'version': bibleVersion,

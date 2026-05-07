@@ -67,6 +67,14 @@ export default async (req) => {
 	const name = String(payload.name || '').trim().slice(0, 200);
 	const replyTo = String(payload.replyTo || '').trim().slice(0, 320);
 
+	// v15: identity + copy-me preferences
+	// `authEmail`: the user's signed-in (Firebase / Google) email,
+	// always present in the email body when the user is signed in.
+	// `copyEmail` + `wantsCopy`: drives the optional CC.
+	const authEmail = String(payload.authEmail || '').trim().slice(0, 320);
+	const copyEmail = String(payload.copyEmail || '').trim().slice(0, 320);
+	const wantsCopy = payload.wantsCopy === true;
+
 	// App context (sent by the client)
 	const locale = String(payload.locale || '').slice(0, 32);
 	const version = String(payload.version || '').slice(0, 64);
@@ -109,8 +117,18 @@ export default async (req) => {
 	if (message.length > 8000) {
 		return jsonResponse({ error: 'Message too long.' }, 400);
 	}
-	if (replyTo && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(replyTo)) {
+	const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+	if (replyTo && !emailRe.test(replyTo)) {
 		return jsonResponse({ error: 'Invalid reply-to email.' }, 400);
+	}
+	if (copyEmail && !emailRe.test(copyEmail)) {
+		return jsonResponse({ error: 'Invalid copy-to email.' }, 400);
+	}
+	if (authEmail && !emailRe.test(authEmail)) {
+		// Don't fail hard -- bad signed-in email is the dev's
+		// problem (Firebase shouldn't expose invalid). Just blank
+		// it so we don't leak garbage into the body.
+		// (no-op; we keep authEmail and let the recipient see it)
 	}
 
 	const subject = `YsWords feedback [${category}]${name ? ` — ${name}` : ''}`;
@@ -129,7 +147,11 @@ export default async (req) => {
 	lines.push('─── Feedback details ────────────────────');
 	lines.push(`Category    : ${category}`);
 	if (name) lines.push(`Name        : ${name}`);
+	if (authEmail) lines.push(`Signed-in   : ${authEmail}`);
 	if (replyTo) lines.push(`Reply-to    : ${replyTo}`);
+	if (wantsCopy && copyEmail) {
+		lines.push(`Copy-to     : ${copyEmail} (CC requested)`);
+	}
 	lines.push(`Submitted   : ${serverTime}`);
 	if (clientLocalTime) {
 		lines.push(`User local  : ${clientLocalTime} (UTC${timezone || '?'})`);
@@ -162,27 +184,54 @@ export default async (req) => {
 	const text = lines.join('\n');
 	const html = `<pre style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;white-space:pre-wrap;line-height:1.45;font-size:13px;">${escapeHtml(text)}</pre>`;
 
-	const body = {
+	const baseBody = {
 		from,
 		to: [to],
 		subject,
 		text,
 		html,
 	};
-	if (replyTo) body.reply_to = replyTo;
+	if (replyTo) baseBody.reply_to = replyTo;
+
+	// v15: try CC first when the user opted in. If Resend rejects
+	// the CC (typical free-tier-without-verified-domain failure --
+	// Resend only allows non-owner recipients once a domain is
+	// verified), retry without CC so the dev still gets the email.
+	// The body already records "Copy-to: ... (CC requested)" so
+	// you know whether CC was attempted.
+	const tryCc = wantsCopy && copyEmail && copyEmail !== to;
+	let firstAttempt = baseBody;
+	if (tryCc) {
+		firstAttempt = { ...baseBody, cc: [copyEmail] };
+	}
 
 	let resp;
 	try {
-		resp = await fetch('https://api.resend.com/emails', {
-			method: 'POST',
-			headers: {
-				'Authorization': `Bearer ${apiKey}`,
-				'Content-Type': 'application/json',
-			},
-			body: JSON.stringify(body),
-		});
+		resp = await sendViaResend(apiKey, firstAttempt);
 	} catch (e) {
 		return jsonResponse({ error: `Network error: ${e.message || e}` }, 502);
+	}
+	if (!resp.ok && tryCc && (resp.status === 403 || resp.status === 422)) {
+		// CC was rejected (commonest cause: Resend free-tier validation
+		// blocks non-verified-domain recipients). Retry without CC --
+		// the dev still gets the email; the user just doesn't get a
+		// copy. We record the failure in the body so the dev knows
+		// the CC didn't go through and can verify a domain to enable
+		// it.
+		const cleaned = text +
+			'\n\n[note: CC to user failed — verify a sending domain at ' +
+			'resend.com/domains to enable copy-to-user]';
+		const retryBody = {
+			...baseBody,
+			text: cleaned,
+			html: `<pre style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;` +
+				`white-space:pre-wrap;line-height:1.45;font-size:13px;">${escapeHtml(cleaned)}</pre>`,
+		};
+		try {
+			resp = await sendViaResend(apiKey, retryBody);
+		} catch (e) {
+			return jsonResponse({ error: `Network error on retry: ${e.message || e}` }, 502);
+		}
 	}
 	if (!resp.ok) {
 		let detail = '';
@@ -198,6 +247,17 @@ export default async (req) => {
 	}
 	return jsonResponse({ ok: true });
 };
+
+async function sendViaResend(apiKey, body) {
+	return await fetch('https://api.resend.com/emails', {
+		method: 'POST',
+		headers: {
+			'Authorization': `Bearer ${apiKey}`,
+			'Content-Type': 'application/json',
+		},
+		body: JSON.stringify(body),
+	});
+}
 
 function jsonResponse(obj, status = 200) {
 	return new Response(JSON.stringify(obj), {
