@@ -473,6 +473,13 @@ class _EvidenceCard extends StatelessWidget {
                           fit: BoxFit.cover,
                           webHtmlElementStrategy:
                               WebHtmlElementStrategy.prefer,
+                          // 2026-05-08 (v1.0.1 perf): card hero image
+                          // is 100 px tall, full card width (~340 px
+                          // on mobile, ~480 on tablet). 960 cache px
+                          // is 2× the largest card on retina without
+                          // holding source bitmaps.
+                          cacheWidth: 960,
+                          cacheHeight: 240,
                           errorBuilder: (_, __, ___) =>
                               _IconFallback(icon: evidence.icon),
                           loadingBuilder: (_, child, p) {

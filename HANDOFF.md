@@ -1,6 +1,6 @@
 # YsWords — AI Agent Handoff Document
 
-> Last updated: 2026-05-07 — **v1.0.0 release** (Round 56 day-7++: sync Firestore → Drive → RTDB; AI Bible search + deep exegesis + lemma + proper-noun complementary glosses; 5-category offline pack; search-page redesign culminating in v8 (Word Study removed) + v9 (live search-as-you-type) + v10 (Copy-all results); v12–v16 feedback pipeline (in-app form → Resend → developer inbox, with diagnostic block + reply-to email and mailto: fallback; v16 dropped the copy-to-user CC after the user opted out of Resend domain verification); Settings v17 cleanup (dead Offline Mode toggle and theatrical Check-for-Updates tile removed; app version surfaced on AboutPage footer); v18 audit (jump-to-reference Timer race, profiles_page TextEditingController leaks, unbounded query/verseText on three AI Netlify endpoints, silently-swallowed bootstrap futures); Library Chinese label 我的标记 → 我的收藏; book-name fold uniform at 390 px; quick-links Search + Feedback tiles; CORS-suppressed news/evidence images; CJK gloss search with alias-pin for divine names; tagged as **v1.0.0** as the first stable / public-shippable release)
+> Last updated: 2026-05-08 — **v1.0.1 perf release** (Round 56 day-7++: sync Firestore → Drive → RTDB; AI Bible search + deep exegesis + lemma + proper-noun complementary glosses; 5-category offline pack; search-page redesign culminating in v8 (Word Study removed) + v9 (live search-as-you-type) + v10 (Copy-all results); v12–v16 feedback pipeline (in-app form → Resend → developer inbox, with diagnostic block + reply-to email and mailto: fallback; v16 dropped the copy-to-user CC after the user opted out of Resend domain verification); Settings v17 cleanup (dead Offline Mode toggle and theatrical Check-for-Updates tile removed; app version surfaced on AboutPage footer); v18 audit (jump-to-reference Timer race, profiles_page TextEditingController leaks, unbounded query/verseText on three AI Netlify endpoints, silently-swallowed bootstrap futures); v1.0.1 perf (memoized search keys + paragraph grouping + bookOrder; capped Image decode dimensions; deleted 40 MB Archived/ cruft); Library Chinese label 我的标记 → 我的收藏; book-name fold uniform at 390 px; quick-links Search + Feedback tiles; CORS-suppressed news/evidence images; CJK gloss search with alias-pin for divine names)
 > Project: YsWords (Yahweh's Words) — bilingual Bible reader
 > Stack: Flutter 3.41.7 / Dart 3.11.5 / Provider + GetX
 > Repo: https://github.com/SuyangLiuPaul/YsWords
@@ -2237,6 +2237,95 @@ intentional, etc.).
 **Verification:** `flutter analyze` clean (no issues), all 39
 tests pass, `flutter build web --release` succeeds, deployed to
 Netlify (deploy `69fc54fcfa2bb20dd059958e`).
+
+### Strand: v1.0.1 perf patch (2026-05-08)
+
+User asked for a performance pass to "raise the app a whole
+level" plus a fresh bug sweep. Spawned an Explore agent for hot-
+spot analysis while running parallel grep + read passes; combined
+finding set was triaged manually (verified each claim against
+the source) and four high-value optimizations shipped.
+
+**Findings dismissed**: the agent's `compute()`-for-evidence-parse
+suggestion was rejected because Flutter web's compute() goes
+through a worker postMessage round-trip whose serialization
+overhead exceeds the actual ~50-150ms one-time parse it would
+offload. The `debugPrint` stripping was also unnecessary —
+debugPrint is already a no-op in Flutter release builds, so the
+search-page logging adds zero runtime cost in production.
+
+**v1.0.1 changes:**
+
+1. **`lib/providers/main_provider.dart`** — added three caches
+   that collapse repeated work into a single computation per
+   data change:
+   - `searchKeys` — parallel `List<String>` to `verses`, each
+     entry is the `sanitizeForSearch(text).replaceAll(' ', '').
+     toLowerCase()` form. Built lazily on first read; reused
+     across keystrokes. Before: every search keystroke ran
+     ~31,090 regex chains (notePattern + bracePattern + pilcrow
+     + divine-name normalize + trim + replaceAll + toLowerCase)
+     for the whole-Bible scope. After: those run once per
+     `setVerses` and the search loop is just `String.contains`.
+   - `cachedParagraphGrouping(...)` — keyed by `(book, chapter,
+     paragraphMode, versesLength)`. The reading pane previously
+     re-grouped verses + rebuilt `verseToItemMap` +
+     `itemToVerseIndex` on every Consumer rebuild, even when
+     only highlights or scroll position changed. Now reused
+     until the inputs actually change.
+   - `bookOrder` — getter that builds the `{title → idx}` map
+     once per `setBooks` instead of per-keystroke during search
+     sort.
+
+2. **`lib/pages/search_page.dart`** — rewrote `_searchImpl`'s
+   inner loop to walk the parallel `verses` / `searchKeys`
+   arrays by index, skipping verses that don't match the
+   filter scope before string comparison. Also reads the cached
+   `bookOrder` map. The `sourceList = source.toList()` allocation
+   that used to fire on every keystroke is gone; the loop now
+   just runs through one List<Verse> + one List<String>.
+
+3. **`lib/widgets/bible_reading_pane.dart`** — uses the cached
+   paragraph grouping when available; only computes (and stores)
+   when the cache key changes. No structural change to the
+   render output.
+
+4. **`lib/pages/dashboard_page.dart`**, **`news_detail_page.dart`**,
+   **`daily_news_page.dart`**, **`evidence_page.dart`**,
+   **`evidence_detail_page.dart`**, **`widgets/profile_avatar.dart`**
+   — added `cacheWidth`/`cacheHeight` to every `Image.network`
+   site at 2× the rendered size. Source images on news / evidence
+   CDNs are commonly 1200×800+ but the dashboard renders them at
+   64×64 thumbnails or 240px hero heights; the decoded bitmap was
+   being held at full resolution. Avatar caps at 96×96 (was
+   loading full-size Google avatars at 1024×1024 default).
+
+5. **`assets/Archived/`** — 40 MB of obsolete Bible JSONs from
+   2025-05-01 and 2025-05-02 deleted. Was not in
+   `pubspec.yaml`'s `assets:` block so never shipped to users,
+   but bloated git clones and IDE indexing.
+
+**Bug fixes layered into the same patch:**
+
+None new — the v18 audit caught the active bugs already.
+v1.0.1 was perf-only.
+
+**Verification:**
+- `flutter analyze` clean
+- 39/39 tests pass
+- `flutter build web --release` succeeds
+- Netlify deploy `69fd0482fbeb7536dd81afc5` live at
+  https://yswords.netlify.app
+
+**Estimated user-visible impact** (rough guesses, not measured):
+- Search: every keystroke goes from ~80ms scan to ~5ms scan on a
+  whole-Bible corpus. Live-search-as-you-type feels instant.
+- Reader: scroll smoothness improves when other state changes
+  (highlights, bookmarks) fire, since the paragraph grouping no
+  longer recomputes on every notify.
+- Memory: image-heavy pages (Bible Evidence, Daily News) hold
+  ~50% less bitmap memory.
+- Repo size: -40 MB clone footprint.
 
 ---
 

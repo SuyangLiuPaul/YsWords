@@ -75,6 +75,12 @@ class EvidenceDetailPage extends StatelessWidget {
                     width: double.infinity,
                     fit: BoxFit.cover,
                     webHtmlElementStrategy: WebHtmlElementStrategy.prefer,
+                    // 2026-05-08 (v1.0.1 perf): cap detail-page hero
+                    // image decode size. 240 px tall hero on screens
+                    // up to ~600 px wide → 1200 cache px is the
+                    // 2× retina ceiling.
+                    cacheWidth: 1200,
+                    cacheHeight: 480,
                     errorBuilder: (_, __, ___) =>
                         _IconHero(icon: evidence.icon),
                   ),

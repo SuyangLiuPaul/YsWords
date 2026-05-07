@@ -568,6 +568,12 @@ class _BibleLensPanel extends StatelessWidget {
                 width: double.infinity,
                 fit: BoxFit.cover,
                 webHtmlElementStrategy: WebHtmlElementStrategy.prefer,
+                // 2026-05-08 (v1.0.1 perf): cap decode dimensions
+                // for the news-card image (160 px tall, full-width
+                // cards). 800 px cache width is comfortable for
+                // retina displays without holding source bitmaps.
+                cacheWidth: 800,
+                cacheHeight: 320,
                 errorBuilder: (_, __, ___) => const SizedBox.shrink(),
               ),
             ),

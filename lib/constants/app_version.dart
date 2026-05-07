@@ -16,4 +16,15 @@
 /// 2026-05-07 (search redesign, feedback pipeline, settings
 /// cleanup, and the bug-audit fixes for Timer races / controller
 /// leaks / unbounded AI prompt inputs).
-const String kAppVersion = '1.0.0';
+///
+/// 2026-05-08 (v1.0.1 perf): pure performance patch. Memoized
+/// per-verse normalized search keys (collapses every keystroke
+/// from O(n × regex chain) to O(n × String.contains)), memoized
+/// paragraph grouping + verseToItemMap on MainProvider (was
+/// being recomputed on every Consumer rebuild), capped Image
+/// decode dimensions on every dashboard / news / evidence /
+/// avatar surface (avoids loading 4K source bitmaps for
+/// 64 px thumbnails), and dropped the 40 MB `assets/Archived/`
+/// folder from the repo (it was never bundled, just bloating
+/// clones).
+const String kAppVersion = '1.0.1';

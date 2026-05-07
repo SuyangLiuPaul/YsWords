@@ -942,38 +942,37 @@ class _SearchPageState extends State<SearchPage> {
     final verses = mp.verses;
     debugPrint('[YsWords search] for-loop verses=${verses.length} '
         'searchAll=$searchAll filter=$filterBook curBook=${mp.currentBook}');
-    final Iterable<Verse> source;
-    if (filterBook != null) {
-      source = verses.where((v) => v.book == filterBook);
-    } else if (searchAll) {
-      source = verses;
-    } else if (mp.currentBook != null) {
-      source = verses.where((v) => v.book == mp.currentBook);
-    } else {
-      // Defensive: if searchAll=false AND no currentBook, fall back
-      // to all verses rather than excluding everything.
-      source = verses;
-    }
 
-    final sourceList = source.toList();
-    debugPrint('[YsWords search] sourceList.length=${sourceList.length}');
-    // Compute matches locally — do NOT touch state until the end.
+    // 2026-05-08 (v1.0.1 perf): walk the parallel `verses` /
+    // `searchKeys` arrays by index instead of going through `.where`
+    // + `.toList()` + a fresh `sanitizeForSearch + replaceAll +
+    // toLowerCase` per verse on every keystroke. The keys array is
+    // built once per `setVerses` (lazy on first read) and reused
+    // across keystrokes — collapsing each search from O(n × regex
+    // chain) to O(n × String.contains).
+    final searchKeys = mp.searchKeys;
     final queryNorm = query.replaceAll(' ', '').toLowerCase();
     final matches = <Verse>[];
     final localCounts = <String, int>{};
-    for (final verse in sourceList) {
-      final sanitized = sanitizeForSearch(verse.text);
-      final textNorm = sanitized.replaceAll(' ', '').toLowerCase();
-      if (textNorm.contains(queryNorm)) {
+    final useFilter = filterBook != null;
+    final useCurBook = !useFilter && !searchAll && mp.currentBook != null;
+    final filterTarget = filterBook ?? mp.currentBook;
+    int scanCount = 0;
+    for (int i = 0; i < verses.length; i++) {
+      final verse = verses[i];
+      if (useFilter && verse.book != filterTarget) continue;
+      if (useCurBook && verse.book != filterTarget) continue;
+      scanCount++;
+      if (searchKeys[i].contains(queryNorm)) {
         matches.add(verse);
         localCounts[verse.book] = (localCounts[verse.book] ?? 0) + 1;
       }
     }
     debugPrint('[YsWords search] matches.length=${matches.length}');
 
-    final bookOrder = {
-      for (var i = 0; i < mp.books.length; i++) mp.books[i].title: i
-    };
+    // 2026-05-08 (v1.0.1 perf): bookOrder is cached on MainProvider
+    // and only rebuilt when `setBooks` runs.
+    final bookOrder = mp.bookOrder;
     matches.sort((a, b) {
       final orderA = bookOrder[a.book] ?? 9999;
       final orderB = bookOrder[b.book] ?? 9999;
@@ -1002,7 +1001,7 @@ class _SearchPageState extends State<SearchPage> {
       _lastSearchAll = searchAll;
       _lastFilterBook = filterBook;
       _lastCurrentBook = mp.currentBook;
-      _lastScanCount = sourceList.length;
+      _lastScanCount = scanCount;
       _lastMode = _SearchMode.text;
       searchPerformed = true;
     });

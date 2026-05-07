@@ -55,6 +55,12 @@ class ProfileAvatar extends StatelessWidget {
             width: size,
             height: size,
             fit: BoxFit.cover,
+            // 2026-05-08 (v1.0.1 perf): cap decode at 2× display
+            // size. Google account avatars can be 1024×1024 by
+            // default; without this they'd be held at full
+            // resolution for a 24-48 px circle.
+            cacheWidth: (size * 2).round(),
+            cacheHeight: (size * 2).round(),
             errorBuilder: (_, __, ___) => Text(
               initial,
               style: TextStyle(

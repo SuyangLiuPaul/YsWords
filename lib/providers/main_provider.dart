@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:yswords/constants/text_patterns.dart' show sanitizeForSearch;
 import 'package:yswords/models/verse.dart';
 import 'package:yswords/models/book.dart';
 import 'package:yswords/services/fetch_books.dart' show bookNameToEnglish;
@@ -56,6 +57,16 @@ class MainProvider extends ChangeNotifier {
   void setVerses(List<Verse> list) {
     verses = list;
     _selectedIds.clear();
+    // 2026-05-08 (v1.0.1 perf): every change to `verses` invalidates
+    // the per-verse caches we use to keep search + paragraph
+    // grouping fast. Rebuilding them lazily on first access keeps
+    // the version-switch path quick — the first interaction that
+    // needs the cache pays for it.
+    _searchKeysCache = null;
+    _searchKeysCacheLength = -1;
+    _paragraphGroupsCache = null;
+    _paragraphGroupsCacheKey = null;
+    _bookOrderCache = null;
     notifyListeners();
   }
 
@@ -63,7 +74,125 @@ class MainProvider extends ChangeNotifier {
     // Deduplicate by title while preserving first occurrence
     final seen = <String>{};
     books = list.where((b) => seen.add(b.title)).toList();
+    // Book list changed → bookOrder lookup map is stale.
+    _bookOrderCache = null;
     notifyListeners();
+  }
+
+  // ── Search-key cache (v1.0.1 perf) ────────────────────────────────
+  // Parallel array to `verses`: `_searchKeysCache[i]` is the
+  // pre-sanitized lowercase no-space form of `verses[i].text`. The
+  // search loop in `search_page.dart` used to call
+  // `sanitizeForSearch(...).replaceAll(' ', '').toLowerCase()` for
+  // every verse on every keystroke (~31,090 regex chains per stroke
+  // for a whole-Bible corpus); caching it once per `setVerses` cuts
+  // that to a single-pass O(n) the first time the user searches.
+  List<String>? _searchKeysCache;
+  int _searchKeysCacheLength = -1;
+
+  /// Returns the parallel `List<String>` of normalized, lowercased,
+  /// whitespace-stripped verse text — the form a substring search
+  /// runs against. Built lazily; reused across keystrokes.
+  List<String> get searchKeys {
+    if (_searchKeysCache != null &&
+        _searchKeysCacheLength == verses.length) {
+      return _searchKeysCache!;
+    }
+    final out = List<String>.filled(verses.length, '', growable: false);
+    for (int i = 0; i < verses.length; i++) {
+      out[i] = sanitizeForSearch(verses[i].text)
+          .replaceAll(' ', '')
+          .toLowerCase();
+    }
+    _searchKeysCache = out;
+    _searchKeysCacheLength = verses.length;
+    return out;
+  }
+
+  // ── Paragraph-grouping cache (v1.0.1 perf) ────────────────────────
+  // The reading pane re-grouped verses into paragraph blocks AND
+  // rebuilt the verseToItemMap on every Consumer rebuild — even when
+  // only an unrelated provider state (highlights, bookmarks, scroll
+  // position) changed. We cache the most-recent (book, chapter,
+  // paragraphMode, verses-length) tuple's outputs and reuse them
+  // until any of those inputs changes.
+  String? _paragraphGroupsCacheKey;
+  ({
+    List<List<Verse>> groups,
+    Map<int, int> verseToItem,
+    Map<int, int> itemToVerseIndex,
+  })? _paragraphGroupsCache;
+
+  /// Cache key encodes the inputs that affect paragraph grouping
+  /// output. Bumping `verses.length` is a fast proxy for "verses
+  /// list changed"; we also include book + chapter so a chapter
+  /// switch invalidates without needing identity comparison.
+  String _paragraphCacheKey({
+    required String? book,
+    required int? chapter,
+    required bool paragraphMode,
+    required int versesLength,
+  }) =>
+      '${book ?? ''}|${chapter ?? ''}|$paragraphMode|$versesLength';
+
+  /// Look up cached paragraph grouping for the given inputs, or
+  /// `null` if the cache is stale.
+  ({
+    List<List<Verse>> groups,
+    Map<int, int> verseToItem,
+    Map<int, int> itemToVerseIndex,
+  })? cachedParagraphGrouping({
+    required String? book,
+    required int? chapter,
+    required bool paragraphMode,
+    required int versesLength,
+  }) {
+    final key = _paragraphCacheKey(
+      book: book,
+      chapter: chapter,
+      paragraphMode: paragraphMode,
+      versesLength: versesLength,
+    );
+    if (_paragraphGroupsCacheKey == key) return _paragraphGroupsCache;
+    return null;
+  }
+
+  /// Store paragraph grouping output for the given inputs.
+  void setCachedParagraphGrouping({
+    required String? book,
+    required int? chapter,
+    required bool paragraphMode,
+    required int versesLength,
+    required List<List<Verse>> groups,
+    required Map<int, int> verseToItem,
+    required Map<int, int> itemToVerseIndex,
+  }) {
+    _paragraphGroupsCacheKey = _paragraphCacheKey(
+      book: book,
+      chapter: chapter,
+      paragraphMode: paragraphMode,
+      versesLength: versesLength,
+    );
+    _paragraphGroupsCache = (
+      groups: groups,
+      verseToItem: verseToItem,
+      itemToVerseIndex: itemToVerseIndex,
+    );
+  }
+
+  // ── Book-order cache (v1.0.1 perf) ───────────────────────────────
+  // Search sorts results by canonical book order. The map used to
+  // be rebuilt from `mp.books` on every keystroke; cached now and
+  // invalidated when `setBooks` runs.
+  Map<String, int>? _bookOrderCache;
+  Map<String, int> get bookOrder {
+    final cached = _bookOrderCache;
+    if (cached != null) return cached;
+    final m = <String, int>{
+      for (var i = 0; i < books.length; i++) books[i].title: i,
+    };
+    _bookOrderCache = m;
+    return m;
   }
 
   // Contollers and Listeners for managing scroll positions and items

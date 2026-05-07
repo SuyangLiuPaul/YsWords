@@ -778,22 +778,52 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
         final hasParagraphData =
             verses.any((v) => v.isParagraphStart == true);
 
-        List<List<Verse>> paragraphGroups;
-        if (settings.paragraphMode) {
-          paragraphGroups = _groupIntoParagraphs(verses);
-        } else {
-          paragraphGroups = verses.map((v) => [v]).toList();
-        }
+        // 2026-05-08 (v1.0.1 perf): paragraph grouping + index maps
+        // are stable for a given (book, chapter, paragraphMode,
+        // verses-length) tuple. Provider-level cache keeps us from
+        // recomputing them on every Consumer rebuild — highlights /
+        // bookmarks / scroll updates trigger notifyListeners many
+        // times per second; before the cache, each one re-grouped
+        // ~140 verses + rebuilt two int→int maps.
+        final cachedGrouping = mainProvider.cachedParagraphGrouping(
+          book: mainProvider.currentBook,
+          chapter: mainProvider.currentChapter,
+          paragraphMode: settings.paragraphMode,
+          versesLength: verses.length,
+        );
 
-        final verseToItemMap = <int, int>{};
-        final itemToVerseIndex = <int, int>{0: 0};
-        int vIdx = 0;
-        for (int g = 0; g < paragraphGroups.length; g++) {
-          itemToVerseIndex[g + 1] = vIdx;
-          for (int v = 0; v < paragraphGroups[g].length; v++) {
-            verseToItemMap[vIdx] = g + 1;
-            vIdx++;
+        late final List<List<Verse>> paragraphGroups;
+        late final Map<int, int> verseToItemMap;
+        late final Map<int, int> itemToVerseIndex;
+        if (cachedGrouping != null) {
+          paragraphGroups = cachedGrouping.groups;
+          verseToItemMap = cachedGrouping.verseToItem;
+          itemToVerseIndex = cachedGrouping.itemToVerseIndex;
+        } else {
+          paragraphGroups = settings.paragraphMode
+              ? _groupIntoParagraphs(verses)
+              : verses.map((v) => [v]).toList();
+          final vToI = <int, int>{};
+          final iToV = <int, int>{0: 0};
+          int vIdx = 0;
+          for (int g = 0; g < paragraphGroups.length; g++) {
+            iToV[g + 1] = vIdx;
+            for (int v = 0; v < paragraphGroups[g].length; v++) {
+              vToI[vIdx] = g + 1;
+              vIdx++;
+            }
           }
+          verseToItemMap = vToI;
+          itemToVerseIndex = iToV;
+          mainProvider.setCachedParagraphGrouping(
+            book: mainProvider.currentBook,
+            chapter: mainProvider.currentChapter,
+            paragraphMode: settings.paragraphMode,
+            versesLength: verses.length,
+            groups: paragraphGroups,
+            verseToItem: verseToItemMap,
+            itemToVerseIndex: itemToVerseIndex,
+          );
         }
         mainProvider.setVerseToItemMap(verseToItemMap);
 

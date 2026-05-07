@@ -113,6 +113,13 @@ class NewsDetailPage extends StatelessWidget {
                         fit: BoxFit.cover,
                         webHtmlElementStrategy:
                             WebHtmlElementStrategy.prefer,
+                        // 2026-05-08 (v1.0.1 perf): hero image is
+                        // displayed at 240 px tall on screens up to
+                        // ~600 px wide. 1200 px cache width is
+                        // generous (2× DPR) without holding the
+                        // 4K/8K source bitmap in RAM.
+                        cacheWidth: 1200,
+                        cacheHeight: 480,
                         errorBuilder: (_, __, ___) =>
                             _ImagePlaceholder(section: article.section),
                       )

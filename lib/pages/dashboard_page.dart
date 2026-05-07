@@ -1091,6 +1091,12 @@ class _GreetingCard extends StatelessWidget {
                         photoUrl!,
                         width: 48,
                         height: 48,
+                        // 2026-05-08 (v1.0.1 perf): cap decode size so
+                        // large Google avatars don't allocate a full-
+                        // resolution bitmap for a 48×48 circle.
+                        // 2× DPR ⇒ 96 cache px is the sharp ceiling.
+                        cacheWidth: 96,
+                        cacheHeight: 96,
                         fit: BoxFit.cover,
                         errorBuilder: (_, __, ___) => Text(
                           initial,
@@ -1867,6 +1873,11 @@ class _DashboardEvidenceCard extends StatelessWidget {
                             // thumbs — same CORS reason as news.
                             webHtmlElementStrategy:
                                 WebHtmlElementStrategy.prefer,
+                            // 2026-05-08 (v1.0.1 perf): cap decode
+                            // size — these are 64×64 thumbnails;
+                            // the source images can be 1500×1000+.
+                            cacheWidth: 128,
+                            cacheHeight: 128,
                             errorBuilder: (_, __, ___) =>
                                 _ThumbIcon(icon: evidence.icon),
                           )
@@ -2010,6 +2021,12 @@ class _DashboardNewsCard extends StatelessWidget {
                               // XHR + same-origin checks on news CDNs.
                               webHtmlElementStrategy:
                                   WebHtmlElementStrategy.prefer,
+                              // 2026-05-08 (v1.0.1 perf): cap decode
+                              // size for the 64×64 dashboard thumb;
+                              // upstream news photos are commonly
+                              // 1200×800+.
+                              cacheWidth: 128,
+                              cacheHeight: 128,
                               errorBuilder: (_, __, ___) =>
                                   _NewsThumbFallback(
                                       sectionId: article.section),
