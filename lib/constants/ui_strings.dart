@@ -3932,23 +3932,6 @@ const uiStrings = {
   //   3. God's Spirit is more important / 神的灵更重要
   // Restructured the title + body to use a tighter, more direct
   // phrasing aimed at those three beats.
-  // 2026-05-07 (v10): persistent spiritual reminder shown on EVERY
-  // dashboard visit (the welcome-page disclaimer is one-shot at
-  // first launch only). Tighter than the welcome version because
-  // it has to live alongside the action cards without being naggy:
-  // a single-line title + single-line subtitle, surface-tint card.
-  'dashboardSpiritReminderTitle': {
-    'zh-Hans': '神的灵才是引导，工具仅是辅助',
-    'zh-Hant': '神的靈才是引導，工具僅是輔助',
-    'en': 'The Spirit guides; tools assist',
-  },
-  'dashboardSpiritReminderBody': {
-    'zh-Hans': '请以圣经为根基，在祷告中亲近神，让圣灵亲自带领。AI 仅供参考，不要依赖。',
-    'zh-Hant': '請以聖經為根基，在禱告中親近神，讓聖靈親自帶領。AI 僅供參考，不要依賴。',
-    'en':
-        'Anchor on Scripture, draw near in prayer, and let the Spirit '
-            'lead you. AI is reference-only — do not rely on it.',
-  },
   'welcomeDisclaimerTitle': {
     'zh-Hans': '神的灵才是引导，AI 只是辅助',
     'zh-Hant': '神的靈才是引導，AI 只是輔助',
