@@ -37,4 +37,23 @@ class RecentSearchesService {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(ProfileService.instance.scopedKey(_baseKey));
   }
+
+  /// 2026-05-07: per-item delete — used by the redesigned recent-
+  /// searches list where each row has its own × button. No-op when
+  /// [query] isn't found. Case-insensitive match (mirrors how add()
+  /// dedupes).
+  static Future<void> remove(String query) async {
+    final q = query.trim();
+    if (q.isEmpty) return;
+    final prefs = await SharedPreferences.getInstance();
+    final key = ProfileService.instance.scopedKey(_baseKey);
+    final cur = prefs.getStringList(key);
+    if (cur == null || cur.isEmpty) return;
+    cur.removeWhere((e) => e.toLowerCase() == q.toLowerCase());
+    if (cur.isEmpty) {
+      await prefs.remove(key);
+    } else {
+      await prefs.setStringList(key, cur);
+    }
+  }
 }

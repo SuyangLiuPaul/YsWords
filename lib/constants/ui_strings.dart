@@ -3020,6 +3020,14 @@ const uiStrings = {
     'en': 'Recent',
   },
   'clear': {'zh-Hans': '清除', 'zh-Hant': '清除', 'en': 'Clear'},
+  // 2026-05-07: explicit "clear all" label for the redesigned recent-
+  // searches list footer. Distinct from per-item delete (× icon) and
+  // from the generic 'clear' (which is reused elsewhere).
+  'clearAllRecent': {
+    'zh-Hans': '清除全部',
+    'zh-Hant': '清除全部',
+    'en': 'Clear all',
+  },
   // Profile editing (Round 35)
   'profileEditTitle': {
     'zh-Hans': '编辑账号',

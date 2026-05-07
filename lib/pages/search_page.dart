@@ -85,6 +85,192 @@ class _SearchPageState extends State<SearchPage> {
   /// verses use whatever translation they're reading. The `book`
   /// field on AI refs is canonical English, mapped to the user's
   /// version's book name via `toEnglish` reverse-comparison.
+  /// 2026-05-07: redesigned empty / pre-search state. Three sub-cases:
+  /// 1. Search performed + no results → centered "no results" + AI
+  ///    button (unchanged).
+  /// 2. No search yet, but user has recent queries → **top-aligned**
+  ///    list of recent rows (history icon + query + per-item × +
+  ///    "Clear all" footer). The previous design centered the chips
+  ///    in the middle of the screen which felt awkward and didn't
+  ///    look like a familiar "history" UI.
+  /// 3. No search yet, no recents → centered search icon + hint
+  ///    (true empty state).
+  Widget _buildEmptyState(BuildContext context, AppSettings settings) {
+    final scheme = Theme.of(context).colorScheme;
+    final locale = settings.locale;
+
+    // Case 1 — search performed, no results.
+    if (searchPerformed) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.search_off_rounded,
+                size: settings.fontSize * 2.4,
+                color: scheme.outline,
+              ),
+              const SizedBox(height: 12),
+              Text(
+                uiStrings['noResults']?[locale] ?? 'No results found',
+                style: Theme.of(context)
+                    .textTheme
+                    .bodyLarge
+                    ?.copyWith(
+                      fontWeight: FontWeight.w500,
+                      color: scheme.outline,
+                    )
+                    .copyWith(fontSize: settings.fontSize),
+                textAlign: TextAlign.center,
+              ),
+              if (_textEditingController.text.trim().length >= 2) ...[
+                const SizedBox(height: 16),
+                FilledButton.tonalIcon(
+                  onPressed: _aiBusy ? null : _askAi,
+                  icon: _aiBusy
+                      ? const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(strokeWidth: 2.4))
+                      : const Icon(Icons.auto_awesome, size: 16),
+                  label: Text(
+                    _aiBusy
+                        ? (uiStrings['aiSearching']?[locale] ?? 'Asking AI…')
+                        : (uiStrings['askAiForVerses']?[locale] ??
+                            'Ask AI for related passages'),
+                  ),
+                ),
+                if (_aiNotice != null) ...[
+                  const SizedBox(height: 10),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    child: Text(
+                      _aiNotice!,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: scheme.onSurfaceVariant,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ],
+              ],
+            ],
+          ),
+        ),
+      );
+    }
+
+    // Case 2 — no search yet, has recent queries → top-aligned list.
+    if (_recents.isNotEmpty) {
+      return ListView(
+        padding: const EdgeInsets.fromLTRB(0, 8, 0, 24),
+        physics: const BouncingScrollPhysics(),
+        children: [
+          // Section header — left-aligned, subtle, mirrors the
+          // "Recent" / "History" header pattern from Google Search,
+          // browser address bars, etc.
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 8, 12, 4),
+            child: Row(
+              children: [
+                Icon(Icons.history_rounded,
+                    size: 14, color: scheme.onSurfaceVariant),
+                const SizedBox(width: 6),
+                Text(
+                  uiStrings['recentSearches']?[locale] ?? 'Recent',
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w800,
+                    color: scheme.onSurfaceVariant,
+                    letterSpacing: 0.6,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          // List of recent queries — each row: query text + per-item
+          // delete button. Tapping the row re-runs that query.
+          for (final q in _recents)
+            _RecentSearchRow(
+              query: q,
+              onTap: () async {
+                _textEditingController.text = q;
+                _textEditingController.selection =
+                    TextSelection.fromPosition(
+                  TextPosition(offset: q.length),
+                );
+                await RecentSearchesService.add(q);
+                await _loadRecents();
+                await search();
+                if (_scrollController.hasClients) {
+                  _scrollController.jumpTo(0.0);
+                }
+              },
+              onDelete: () async {
+                await RecentSearchesService.remove(q);
+                await _loadRecents();
+              },
+            ),
+          // Footer — "Clear all" link, dim and only there if user
+          // really wants to nuke everything.
+          const SizedBox(height: 8),
+          Center(
+            child: TextButton.icon(
+              onPressed: () async {
+                await RecentSearchesService.clear();
+                await _loadRecents();
+              },
+              icon: const Icon(Icons.delete_sweep_outlined, size: 16),
+              label: Text(
+                uiStrings['clearAllRecent']?[locale] ??
+                    uiStrings['clear']?[locale] ??
+                    'Clear all',
+                style: const TextStyle(fontSize: 12),
+              ),
+              style: TextButton.styleFrom(
+                foregroundColor: scheme.onSurfaceVariant,
+              ),
+            ),
+          ),
+        ],
+      );
+    }
+
+    // Case 3 — true empty state (no search, no recents).
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.search_rounded,
+              size: settings.fontSize * 2.4,
+              color: scheme.outline,
+            ),
+            const SizedBox(height: 12),
+            Text(
+              uiStrings['searchHint']?[locale] ??
+                  'Type a word or phrase to search',
+              style: Theme.of(context)
+                  .textTheme
+                  .bodyLarge
+                  ?.copyWith(
+                    fontWeight: FontWeight.w500,
+                    color: scheme.outline,
+                  )
+                  .copyWith(fontSize: settings.fontSize),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Future<void> _askAi() async {
     final query = _textEditingController.text.trim();
     if (query.length < 2) return;
@@ -585,172 +771,7 @@ class _SearchPageState extends State<SearchPage> {
               ),
             Expanded(
               child: _results.isEmpty
-                  ? Center(
-                      child: Padding(
-                        padding: const EdgeInsets.all(20.0),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              searchPerformed
-                                  ? Icons.search_off_rounded
-                                  : Icons.search_rounded,
-                              size: settings.fontSize * 2.4,
-                              color: Theme.of(context).colorScheme.outline,
-                            ),
-                            const SizedBox(height: 12),
-                            Text(
-                              searchPerformed
-                                  ? (uiStrings['noResults']?[settings.locale] ??
-                                      'No results found')
-                                  : (uiStrings['searchHint']
-                                          ?[settings.locale] ??
-                                      'Type a word or phrase to search'),
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .bodyLarge
-                                  ?.copyWith(
-                                    fontWeight: FontWeight.w500,
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .outline,
-                                  )
-                                  .copyWith(fontSize: settings.fontSize),
-                              textAlign: TextAlign.center,
-                            ),
-                            // 2026-05-07: AI Bible search — when text
-                            // search returned 0 results AND the user
-                            // typed something, offer to ask Gemini for
-                            // matching references. The button only
-                            // appears in this no-results state since
-                            // that's where it adds value (exact-text
-                            // search failed → meaning-based fallback).
-                            if (searchPerformed &&
-                                _textEditingController.text.trim().length >=
-                                    2) ...[
-                              const SizedBox(height: 16),
-                              FilledButton.tonalIcon(
-                                onPressed: _aiBusy ? null : _askAi,
-                                icon: _aiBusy
-                                    ? const SizedBox(
-                                        width: 16,
-                                        height: 16,
-                                        child: CircularProgressIndicator(
-                                            strokeWidth: 2.4))
-                                    : const Icon(Icons.auto_awesome,
-                                        size: 16),
-                                label: Text(
-                                  _aiBusy
-                                      ? (uiStrings['aiSearching']
-                                              ?[settings.locale] ??
-                                          'Asking AI…')
-                                      : (uiStrings['askAiForVerses']
-                                              ?[settings.locale] ??
-                                          'Ask AI for related passages'),
-                                ),
-                              ),
-                              if (_aiNotice != null) ...[
-                                const SizedBox(height: 10),
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 12),
-                                  child: Text(
-                                    _aiNotice!,
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      color: Theme.of(context)
-                                          .colorScheme
-                                          .onSurfaceVariant,
-                                    ),
-                                    textAlign: TextAlign.center,
-                                  ),
-                                ),
-                              ],
-                            ],
-                            // Recent-searches chips: shown only on
-                            // the empty pre-search state, not after a
-                            // search returned 0 results (the user
-                            // doesn't need history when they're
-                            // already mid-query).
-                            if (!searchPerformed && _recents.isNotEmpty) ...[
-                              const SizedBox(height: 24),
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text(
-                                    uiStrings['recentSearches']
-                                            ?[settings.locale] ??
-                                        'Recent',
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w700,
-                                      color: Theme.of(context)
-                                          .colorScheme
-                                          .primary,
-                                    ),
-                                  ),
-                                  TextButton.icon(
-                                    onPressed: () async {
-                                      await RecentSearchesService
-                                          .clear();
-                                      await _loadRecents();
-                                    },
-                                    icon: const Icon(
-                                        Icons.delete_sweep_outlined,
-                                        size: 16),
-                                    label: Text(
-                                      uiStrings['clear']
-                                              ?[settings.locale] ??
-                                          'Clear',
-                                      style:
-                                          const TextStyle(fontSize: 12),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 4),
-                              Wrap(
-                                spacing: 6,
-                                runSpacing: 6,
-                                alignment: WrapAlignment.center,
-                                children: [
-                                  for (final q in _recents)
-                                    InputChip(
-                                      label: Text(
-                                        q,
-                                        style:
-                                            const TextStyle(fontSize: 12.5),
-                                      ),
-                                      onPressed: () {
-                                        _textEditingController.text = q;
-                                        _textEditingController.selection =
-                                            TextSelection.fromPosition(
-                                          TextPosition(offset: q.length),
-                                        );
-                                        // Reuse the onSubmitted path
-                                        // by triggering search +
-                                        // recents-bump directly.
-                                        () async {
-                                          await RecentSearchesService
-                                              .add(q);
-                                          await _loadRecents();
-                                          await search();
-                                          if (_scrollController
-                                              .hasClients) {
-                                            _scrollController
-                                                .jumpTo(0.0);
-                                          }
-                                        }();
-                                      },
-                                    ),
-                                ],
-                              ),
-                            ],
-                          ],
-                        ),
-                      ),
-                    )
+                  ? _buildEmptyState(context, settings)
                   : ListView.builder(
                       controller: _scrollController,
                       physics: const BouncingScrollPhysics(),
@@ -1044,5 +1065,71 @@ class _SearchPageState extends State<SearchPage> {
     prepareJumpToVerse(hit, mainProv);
     Get.back();
     return true;
+  }
+}
+
+/// 2026-05-07: single recent-search row in the redesigned empty
+/// state. Mirrors the look of a Material list tile but tighter
+/// (1 line, smaller padding) so a dozen entries fit without scrolling.
+/// Tapping the body re-runs the query; tapping the × icon removes
+/// just that entry from the history.
+class _RecentSearchRow extends StatelessWidget {
+  final String query;
+  final VoidCallback onTap;
+  final VoidCallback onDelete;
+
+  const _RecentSearchRow({
+    required this.query,
+    required this.onTap,
+    required this.onDelete,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final settings = context.watch<AppSettings>();
+    return InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+        child: Row(
+          children: [
+            Icon(
+              Icons.history_rounded,
+              size: 18,
+              color: scheme.onSurfaceVariant,
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Text(
+                query,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontFamily: settings.fontFamily,
+                  fontSize: (settings.fontSize - 1).clamp(13.0, 17.0),
+                  color: scheme.onSurface,
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            // Per-item delete. Small + subtle so it doesn't compete
+            // with the row's primary tap target.
+            InkWell(
+              onTap: onDelete,
+              borderRadius: BorderRadius.circular(20),
+              child: Padding(
+                padding: const EdgeInsets.all(6),
+                child: Icon(
+                  Icons.close_rounded,
+                  size: 16,
+                  color: scheme.onSurfaceVariant.withValues(alpha: 0.7),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
