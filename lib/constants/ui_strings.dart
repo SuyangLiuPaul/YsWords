@@ -3170,6 +3170,19 @@ const uiStrings = {
     'zh-Hant': '改為搜尋整本聖經',
     'en': 'Search entire Bible instead',
   },
+  // 2026-05-07 (post-fix v2): on-demand load states. Surfaced when
+  // SearchPage is reached via a refreshed deep-link URL before the
+  // app's bootstrap loader has finished parsing the Bible asset.
+  'searchLoadingBible': {
+    'zh-Hans': '正在加载圣经…',
+    'zh-Hant': '正在載入聖經…',
+    'en': 'Loading the Bible…',
+  },
+  'searchLoadBibleFailed': {
+    'zh-Hans': '圣经加载失败',
+    'zh-Hant': '聖經載入失敗',
+    'en': 'Could not load the Bible.',
+  },
   // Profile editing (Round 35)
   'profileEditTitle': {
     'zh-Hans': '编辑账号',

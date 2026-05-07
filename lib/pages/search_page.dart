@@ -5,6 +5,7 @@ import 'package:yswords/models/verse.dart';
 import 'package:yswords/providers/main_provider.dart';
 import 'package:yswords/services/ai_bible_search_service.dart';
 import 'package:yswords/services/concordance_service.dart';
+import 'package:yswords/services/fetch_verses.dart';
 import 'package:yswords/services/strongs_service.dart';
 import 'package:yswords/pages/strongs_entry_page.dart';
 import 'package:yswords/services/recent_searches_service.dart';
@@ -85,6 +86,46 @@ class _SearchPageState extends State<SearchPage> {
   /// the query genuinely doesn't appear in any verse.
   int _lastScanCount = 0;
 
+  /// 2026-05-07 (post-fix v2): true while `_ensureVersesLoaded()` is
+  /// in flight. Replaces the misleading "no results · scanned 0"
+  /// state when the user hits search before the Bible asset has
+  /// finished parsing. Reproduces when the SearchPage is reached
+  /// via a refreshed deep-link URL (`#/minified:Ua`) where bootstrap
+  /// loading races against Get's stack restoration.
+  bool _isLoadingVerses = false;
+  String? _versesLoadError;
+
+  /// 2026-05-07 (post-fix v2): on-demand verse load. The app's
+  /// startup bootstrap *should* have populated `MainProvider.verses`
+  /// already, but if the SearchPage is the first widget the user
+  /// sees (deep-link / browser refresh) the Bible asset may still
+  /// be parsing. Auto-trigger `FetchVerses.execute` so the search
+  /// has data to scan instead of silently returning "0 results".
+  Future<bool> _ensureVersesLoaded() async {
+    final mp = Provider.of<MainProvider>(context, listen: false);
+    if (mp.verses.isNotEmpty) return true;
+    if (_isLoadingVerses) return false; // a load is already in flight
+    setState(() {
+      _isLoadingVerses = true;
+      _versesLoadError = null;
+    });
+    try {
+      await FetchVerses.execute(mainProvider: mp);
+    } catch (e) {
+      if (!mounted) return false;
+      setState(() {
+        _isLoadingVerses = false;
+        _versesLoadError = e.toString();
+      });
+      return false;
+    }
+    if (!mounted) return false;
+    setState(() {
+      _isLoadingVerses = false;
+    });
+    return mp.verses.isNotEmpty;
+  }
+
   @override
   void initState() {
     super.initState();
@@ -100,6 +141,20 @@ class _SearchPageState extends State<SearchPage> {
     // narrowing within the session.
     searchAll = true;
     filterBook = null;
+    // 2026-05-07 (post-fix v2): kick off a verse load if the bootstrap
+    // didn't run (or hasn't finished). Search is useless against an
+    // empty corpus — the user would otherwise see "no results · 0
+    // scanned" forever and assume the search itself is broken.
+    // Deferred to post-frame so the build runs before we call
+    // Provider.of inside the helper.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final mp = Provider.of<MainProvider>(context, listen: false);
+      if (mp.verses.isEmpty) {
+        // ignore: unawaited_futures
+        _ensureVersesLoaded();
+      }
+    });
   }
 
   Future<void> _loadRecents() async {
@@ -641,6 +696,21 @@ class _SearchPageState extends State<SearchPage> {
       return;
     }
 
+    // 2026-05-07 (post-fix v2): self-heal when the corpus is empty.
+    // Deep-link refreshes that land directly on the SearchPage can
+    // race ahead of the bootstrap loader — on those paths the user
+    // would otherwise type a query, get 0 results, and conclude that
+    // search itself is broken. Auto-load if needed; bail to "no
+    // results" only after a successful load that genuinely returned
+    // nothing.
+    final loaded = await _ensureVersesLoaded();
+    if (!mounted) return;
+    if (!loaded) {
+      // The loading state widget is shown by the build method; just
+      // exit so we don't render the empty/no-results path on top.
+      return;
+    }
+
     // Strong's-number search path. When the input matches "G2316" /
     // "H7200" / etc., bypass the text scan and load the bundled
     // concordance — every verse where that Strong's word appears.
@@ -985,7 +1055,66 @@ class _SearchPageState extends State<SearchPage> {
             ),
             child: Column(
           children: [
-            if (_strongsKey != null) ...[
+            // 2026-05-07 (post-fix v2): "Bible loading…" / load-failed
+            // banner. Replaces the silent "0 results · scanned 0"
+            // state when the user opens search before the corpus is
+            // ready. _ensureVersesLoaded() drives the flag.
+            if (_isLoadingVerses)
+              Expanded(
+                child: Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const CircularProgressIndicator(strokeWidth: 2.4),
+                      const SizedBox(height: 14),
+                      Text(
+                        uiStrings['searchLoadingBible']?[settings.locale] ??
+                            'Loading the Bible…',
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              )
+            else if (_versesLoadError != null)
+              Expanded(
+                child: Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(20),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.error_outline_rounded,
+                            size: 32,
+                            color: Theme.of(context).colorScheme.error),
+                        const SizedBox(height: 10),
+                        Text(
+                          uiStrings['searchLoadBibleFailed']
+                                  ?[settings.locale] ??
+                              'Could not load the Bible.',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color:
+                                Theme.of(context).colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        FilledButton.tonalIcon(
+                          onPressed: () => _ensureVersesLoaded(),
+                          icon: const Icon(Icons.refresh_rounded, size: 16),
+                          label: Text(uiStrings['retry']?[settings.locale] ??
+                              'Retry'),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              )
+            else if (_strongsKey != null) ...[
               _buildStrongsHeader(context, settings),
               Expanded(
                 child: _buildStrongsRefList(context, settings),
