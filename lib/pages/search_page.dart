@@ -575,6 +575,14 @@ class _SearchPageState extends State<SearchPage> {
     if (query.length < 2) return;
     final settings = Provider.of<AppSettings>(context, listen: false);
     final mp = Provider.of<MainProvider>(context, listen: false);
+    // 2026-05-07 (v6): refresh diagnostic so banner is not stuck on
+    // src=-1 from a previous text search.
+    _lastVersesAtSearch = mp.verses.length;
+    _lastSearchAll = searchAll;
+    _lastFilterBook = filterBook;
+    _lastCurrentBook = mp.currentBook;
+    _lastLoadedVersion = mp.currentVersion;
+    _lastVersesLength = mp.verses.length;
     setState(() {
       _aiBusy = true;
       _aiNotice = null;
@@ -699,6 +707,15 @@ class _SearchPageState extends State<SearchPage> {
     final settings = Provider.of<AppSettings>(context, listen: false);
     final loaded = await _ensureVersesLoaded();
     if (!mounted || !loaded) return;
+    // 2026-05-07 (v6): refresh diagnostic capture so the banner is
+    // not stuck on "src=-1" from a previous text search.
+    final mp = Provider.of<MainProvider>(context, listen: false);
+    _lastVersesAtSearch = mp.verses.length;
+    _lastSearchAll = searchAll;
+    _lastFilterBook = filterBook;
+    _lastCurrentBook = mp.currentBook;
+    _lastLoadedVersion = mp.currentVersion;
+    _lastVersesLength = mp.verses.length;
 
     // Strong's-number first.
     final strongsMatch = _strongsQueryPattern.firstMatch(query);

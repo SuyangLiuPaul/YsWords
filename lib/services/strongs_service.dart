@@ -145,6 +145,32 @@ class StrongsService {
   /// in score order. Empty list if nothing matched. Used by the
   /// search page when the user input doesn't look like English /
   /// Chinese / a Strong's number.
+  /// 2026-05-07 (v6): explicit alias table for high-frequency
+  /// theological terms whose CBOL Chinese gloss is descriptive
+  /// rather than a literal name. H3068 (YHWH) is the prime case:
+  /// its glossZh is "独一真神的专有名词" (a description, not the
+  /// name). User intent for 雅伟 / 耶和华 / Yahweh / YHWH is
+  /// unambiguously H3068, so we pin it.
+  static const Map<String, String> _aliasToStrongs = {
+    // YHWH (Hebrew) — divine name. All common spellings collapse
+    // to H3068, the canonical YHWH entry.
+    '雅伟': 'H3068',
+    '雅威': 'H3068',
+    '耶和华': 'H3068',
+    '耶和華': 'H3068',
+    'yahweh': 'H3068',
+    'jehovah': 'H3068',
+    'yhwh': 'H3068',
+    // Jesus — the entry for the proper name (G2424). Even though
+    // the CBOL gloss already begins with "耶稣, ...", an explicit
+    // pin guarantees the canonical entry wins regardless of
+    // ranking edge-cases.
+    '耶稣': 'G2424',
+    '耶穌': 'G2424',
+    'jesus': 'G2424',
+    'iesous': 'G2424',
+  };
+
   static Future<List<StrongsEntry>> searchByLemma(
     String query, {
     int limit = 12,
@@ -153,6 +179,12 @@ class StrongsService {
     if (q.isEmpty) return const [];
     final norm = _normaliseForLemma(q);
     if (norm.isEmpty) return const [];
+
+    // Pinned alias: explicit Chinese / English term → Strong's
+    // number (e.g. 雅伟 / Yahweh / YHWH → H3068). When a query
+    // matches one of these, surface that entry first; the regular
+    // gloss / lemma scan still runs to populate suggestions.
+    final pinned = _aliasToStrongs[q] ?? _aliasToStrongs[q.toLowerCase()];
 
     final hasGreekScript = RegExp(r'[Ͱ-Ͽἀ-῿]').hasMatch(q);
     final hasHebrewScript = RegExp(r'[֐-׿יִ-ﭏ]').hasMatch(q);
@@ -185,7 +217,27 @@ class StrongsService {
     }
 
     results.sort((a, b) => a.score.compareTo(b.score));
-    return results.take(limit).map((m) => m.entry).toList();
+    final out = results.take(limit).map((m) => m.entry).toList();
+
+    // If a pinned alias matched and the entry exists, hoist it to
+    // the front of the result list (or insert if absent).
+    if (pinned != null) {
+      _greek ??=
+          await (_greekLoading ??= _load('assets/strongs/greek.json'));
+      _hebrew ??=
+          await (_hebrewLoading ??= _load('assets/strongs/hebrew.json'));
+      final entry = pinned.startsWith('G')
+          ? _greek![pinned]
+          : pinned.startsWith('H')
+              ? _hebrew![pinned]
+              : null;
+      if (entry != null) {
+        out.removeWhere((e) => e.number == pinned);
+        out.insert(0, entry);
+        if (out.length > limit) out.removeLast();
+      }
+    }
+    return out;
   }
 
   /// Lower-case + strip combining diacritics so "Agápē" / "agape" /
@@ -246,9 +298,13 @@ class StrongsService {
       // split, both would score 2 (prefix) and ranking would be
       // arbitrary by lexicon-key order.
       if (score == null && hasCjk) {
+        // 2026-05-07 (v6): normalize the divine name in the gloss
+        // BEFORE matching, mirroring what the reader does at render
+        // time. Without this, searching 雅伟 (the app's preferred
+        // YHWH form) misses entries whose CBOL gloss says 耶和华.
         final candidates = <String>[
-          (entry.glossZh ?? '').trim(),
-          (entry.glossZhTw ?? '').trim(),
+          _normaliseDivineGloss((entry.glossZh ?? '').trim()),
+          _normaliseDivineGloss((entry.glossZhTw ?? '').trim()),
         ];
         final segSplit = RegExp(r'[,，;；、]');
         for (final gloss in candidates) {
@@ -278,6 +334,18 @@ class StrongsService {
         out.add(_LemmaMatch(entry: entry, score: score));
       }
     }
+  }
+  /// 2026-05-07 (v6): mirror of `_normalizeDivineNames` from
+  /// text_patterns.dart, applied to Strong's Chinese glosses
+  /// before matching. Maps `耶和华 → 雅伟` (Hans) and
+  /// `耶和華 → 雅威` (Hant) so the user's "雅伟" / "雅威" query
+  /// finds entries whose raw CBOL gloss still uses the older
+  /// transliteration form.
+  static String _normaliseDivineGloss(String s) {
+    if (s.isEmpty) return s;
+    return s
+        .replaceAll('耶和华', '雅伟')
+        .replaceAll('耶和華', '雅威');
   }
 }
 
