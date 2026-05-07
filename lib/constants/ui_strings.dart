@@ -245,7 +245,15 @@ const uiStrings = {
   'noteSave': {'zh-Hans': '保存', 'zh-Hant': '儲存', 'en': 'Save'},
   'noteDelete': {'zh-Hans': '删除', 'zh-Hant': '刪除', 'en': 'Delete'},
   'bookmark': {'zh-Hans': '书签', 'zh-Hant': '書籤', 'en': 'Bookmark'},
-  'library': {'zh-Hans': '我的标记', 'zh-Hant': '我的標記', 'en': 'Library'},
+  // 2026-05-07 (v11): user feedback -- the previous Chinese
+  // rendering "我的标记" (literally "My Markings") collided
+  // semantically with "我的高亮" (My Highlights, the colored-
+  // highlights page). The Library page actually contains
+  // Notes + Bookmarks + Reading Plan, so 标记/markings was
+  // misleading. "我的收藏" (My Collection / Saved Items) is
+  // broader, matches the Library content, and stays clearly
+  // distinct from "我的高亮" (Highlights).
+  'library': {'zh-Hans': '我的收藏', 'zh-Hant': '我的收藏', 'en': 'Library'},
   'statistics': {'zh-Hans': '圣经工具', 'zh-Hant': '聖經工具', 'en': 'Bible Tools'},
   'statsOverview':
       {'zh-Hans': '总览', 'zh-Hant': '總覽', 'en': 'Overview'},
@@ -1525,8 +1533,8 @@ const uiStrings = {
     'en': 'Notes & bookmarks',
   },
   'onboardLibraryBody': {
-    'zh-Hans': '长按经文可添加笔记、书签或彩色高亮，可在「我的标记」和「高亮」中查找。',
-    'zh-Hant': '長按經文可添加筆記、書籤或彩色高亮，可在「我的標記」和「高亮」中查找。',
+    'zh-Hans': '长按经文可添加笔记、书签或彩色高亮，可在「我的收藏」和「高亮」中查找。',
+    'zh-Hant': '長按經文可添加筆記、書籤或彩色高亮，可在「我的收藏」和「高亮」中查找。',
     'en':
         'Long-press a verse to add a note, bookmark, or color highlight. Find them all in Library and Highlights.',
   },

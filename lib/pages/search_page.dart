@@ -7,6 +7,7 @@ import 'package:yswords/services/ai_bible_search_service.dart';
 import 'package:yswords/services/concordance_service.dart';
 import 'package:yswords/services/fetch_verses.dart';
 import 'package:yswords/pages/strongs_entry_page.dart';
+import 'package:yswords/pages/home_page.dart';
 import 'package:yswords/services/recent_searches_service.dart';
 import 'package:yswords/utils/clipboard_helper.dart' show ClipboardHelper;
 import 'package:yswords/utils/format_searched_text.dart';
@@ -1438,11 +1439,24 @@ class _SearchPageState extends State<SearchPage> {
                               // missed cold-start and slow-device
                               // builds, leaving the user at the top
                               // of the chapter.
+                              // 2026-05-07 (v11): user reported that
+                              // tapping a verse from the dashboard-
+                              // launched search did nothing because
+                              // Get.back() returned to the dashboard
+                              // (which has no pendingJump handler).
+                              // Use Get.off(HomePage) -- the same
+                              // pattern LibraryPage uses -- so the
+                              // user lands at the verse regardless of
+                              // whether search was reached from the
+                              // reader's AppBar OR the dashboard tile.
                               final mainProv = Provider.of<MainProvider>(
                                   context,
                                   listen: false);
                               prepareJumpToVerse(verse, mainProv);
-                              Get.back();
+                              Get.off(
+                                () => const HomePage(),
+                                transition: Transition.rightToLeft,
+                              );
                             },
                             // Sanitize verse text: remove <note:…> and {...}, leave […]
                             title: Builder(
@@ -1716,7 +1730,12 @@ class _SearchPageState extends State<SearchPage> {
     if (match.isEmpty) return;
     final verse = match.first;
     prepareJumpToVerse(verse, mainProv);
-    Get.back();
+    // 2026-05-07 (v11): replace SearchPage with HomePage so the
+    // user lands on the verse regardless of how search was reached.
+    Get.off(
+      () => const HomePage(),
+      transition: Transition.rightToLeft,
+    );
   }
 
   /// Navigate to a free-form parsed [BibleReference]. Returns true
@@ -1744,7 +1763,12 @@ class _SearchPageState extends State<SearchPage> {
     );
 
     prepareJumpToVerse(hit, mainProv);
-    Get.back();
+    // 2026-05-07 (v11): replace SearchPage with HomePage so the
+    // user lands on the verse regardless of how search was reached.
+    Get.off(
+      () => const HomePage(),
+      transition: Transition.rightToLeft,
+    );
     return true;
   }
 
