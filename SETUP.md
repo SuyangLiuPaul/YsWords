@@ -144,20 +144,98 @@ The AI proxy functions read the key from `GEMINI_API_KEY`.
 
 → Trigger a redeploy or wait for the next push.
 
+### 6. Set up the in-app feedback email pipeline (optional)
+
+The dashboard has a **Feedback** tile that opens a form. When the
+user taps **Send**, the Flutter client POSTs the structured payload
+to `/api/submitFeedback`, which forwards it via [Resend](https://resend.com)
+to your inbox. If `RESEND_API_KEY` is missing, the app falls back
+to a `mailto:` link automatically — feedback is never silently lost.
+
+**Setup (~5 min):**
+
+1. Sign up free at <https://resend.com> (3 000 emails / month free
+   tier, no credit card).
+2. **API Keys → Create API Key** → copy the `re_...` value.
+3. Set the env vars in Netlify (UI or CLI):
+
+   ```bash
+   netlify env:set RESEND_API_KEY "re_..."
+   netlify env:set FEEDBACK_TO   "your-inbox@example.com"   # optional
+   netlify env:set FEEDBACK_FROM "YsWords Feedback <feedback@yourdomain.com>"  # optional
+   ```
+
+4. Redeploy: `netlify deploy --prod --dir=build/web` (or wait for
+   the next push).
+
+**Free-tier constraint:** Resend without a verified sender domain
+only allows sending **to the email tied to the API-key account**.
+That's fine for "all feedback goes to the developer's inbox"; if
+you want the user to receive a copy as well (the in-form
+*"Send a copy to me"* checkbox), you need to verify a domain at
+**Resend → Domains** (4 DNS records, ~10 min). Once verified, the
+function's CC retry kicks in automatically — no code change.
+
+**Test:**
+
+```bash
+curl -X POST https://yswords.netlify.app/api/submitFeedback \
+  -H "Content-Type: application/json" \
+  -d '{"category":"General","message":"setup test"}'
+# Expected: {"ok":true} and an email in your inbox.
+# {"error":"...RESEND_API_KEY missing..."} 503 = step 6 not done;
+# the app gracefully falls back to mailto: until you finish.
+```
+
+Email body includes a structured diagnostic block:
+```
+─── Feedback details ────────────────────
+Category    : Bug
+Name        : ...
+Signed-in   : user@example.com
+Reply-to    : ...
+Copy-to     : ... (CC requested)
+Submitted   : 2026-05-07 13:35:08 UTC
+User local  : 2026-05-07 23:35:08 (UTC+10:00)
+
+─── App context ─────────────────────────
+App locale   : zh-Hans
+Bible version: cuvs-yhwh
+Last position: 创世纪 1
+Theme        : dark
+
+─── Client environment ──────────────────
+Screen       : 1920×1080 px @ 2.00× DPR
+Browser lang : en-AU
+Browser      : Chrome on macOS
+User-Agent   : ...
+
+─── Server-side ─────────────────────────
+IP           : ...
+Country      : ...
+Referer      : ...
+Origin       : ...
+```
+
 ## Verification flow
 
-After completing steps 1–5:
+After completing steps 1–6:
 
-1. Open https://yswords.netlify.app in an incognito tab
-2. Open DevTools → Console
-3. Sign in with Google
-4. Console should log: `[CloudAuth] popup signin: captured Drive
-   access token (XXX chars)` ✅
-5. Open https://drive.google.com in another tab — you should see
-   `YsWords.json` at the top of My Drive
-6. Open Settings → About → "Run check" — every probe should be ✅
-7. Tap any Greek/Hebrew word in a verse → AI explanation should
-   appear within ~5 seconds
+1. Open <https://yswords.netlify.app> in an incognito tab.
+2. Open DevTools → Console.
+3. Sign in with Google. Console should log a successful
+   `signInWithPopup` (and **no** `auth/unauthorized-domain`).
+4. Highlight a verse → it should sync to Firebase Realtime
+   Database almost immediately. Verify in the Firebase Console
+   under **Realtime Database → users/{your uid}/sync** — you
+   should see a base64-encoded JSON blob.
+5. Open Settings → About → **Run check** — every probe should
+   be ✅ (Auth ✓, RTDB ✓, AI proxy ✓).
+6. Tap any Greek/Hebrew word in a verse → AI explanation should
+   appear within ~5 seconds.
+7. Dashboard → **Feedback** tile → type a test message → **Send**
+   → snackbar reads "Feedback sent. Thank you!" → email lands
+   in your configured inbox within seconds.
 
 ## Troubleshooting
 
@@ -167,10 +245,13 @@ most cases. Common failures:
 | Symptom | Most likely cause | Fix step |
 | --- | --- | --- |
 | Sync silently fails with `permission_denied` | Step 3 missed | Set RTDB security rules |
-| Drive REST shows 403 + "API has not been used" | Step 1 missed | Enable Drive API |
-| `auth/unauthorized-domain` | Step 4 missed | Add yswords.netlify.app to Firebase |
-| AI proxy returns 503 | Step 5 missed | Set GEMINI_API_KEY in Netlify |
+| Sync writes return `database-disabled` | Step 1 missed | Create the Realtime Database in Firebase |
+| `auth/unauthorized-domain` on sign-in | Step 4 missed | Add `yswords.netlify.app` to Firebase Authorized domains |
+| AI proxy returns 503 | Step 5 missed | Set `GEMINI_API_KEY` in Netlify env |
 | AI proxy returns 404 | Function not deployed | `netlify deploy --prod` |
+| Feedback form falls back to mailto: | Step 6 missed | Set `RESEND_API_KEY` in Netlify env |
+| Feedback `403 validation_error` from Resend | No verified sending domain | Verify a domain at resend.com/domains, then set `FEEDBACK_FROM` |
+| Feedback CC to user not delivered | Same as above | Verify a domain to allow CC to non-owner addresses |
 | OAuth says "this app isn't verified" | Consent screen in production mode without verification | Switch to Testing mode in OAuth consent screen, add yourself as test user |
 | `org_internal` workspace blocking | User on Google Workspace where admin blocks third-party apps | Out of our control; user must use a personal Google account |
 
@@ -201,11 +282,25 @@ Diagnostic gets the closest possible: it tells you exactly which
 API isn't enabled and gives you a one-click deep-link to the
 Cloud Console page that enables it.
 
+## Required env-var summary
+
+| Variable | Used by | Purpose | Without it |
+| --- | --- | --- | --- |
+| `GEMINI_API_KEY` | `aiSearch`, `aiBibleSearch`, `aiExplainWord` | Calls Gemini for AI explanations / search | All AI returns 503 → app shows "not available" |
+| `GEMINI_API_KEY_BACKUP_2..9` | same as above | Failover after free-tier quota | First key still works on quota |
+| `GEMINI_MODEL` | same as above | Override model (default `gemini-2.5-flash-lite`) | Default model used |
+| `RESEND_API_KEY` | `submitFeedback` | Sends feedback emails via Resend | Form falls back to `mailto:` |
+| `FEEDBACK_TO` | `submitFeedback` | Recipient address (default `paulsyliu@gmail.com`) | Default used |
+| `FEEDBACK_FROM` | `submitFeedback` | Sender address (default `onboarding@resend.dev`) | Default sandbox sender used |
+
 ## Reference
 
-* `lib/services/cloud_auth_service.dart` — OAuth + Drive scope handling
-* `lib/services/drive_sync_service.dart` — Drive REST calls
+* `lib/services/cloud_auth_service.dart` — Firebase Google sign-in
+* `lib/services/realtime_db_sync_service.dart` — Realtime Database sync
+* `lib/services/feedback_service.dart` — feedback POST client
 * `lib/widgets/cloud_setup_diagnostic.dart` — the Run-check widget
 * `netlify/functions/aiExplainWord.mjs` — Gemini for word study
-* `netlify/functions/aiSearch.mjs` — Gemini for AI search
-* `docs/drive-sync-setup.md` — earlier Drive-only doc (subset of this)
+* `netlify/functions/aiSearch.mjs` — Gemini for Bible-evidence AI search
+* `netlify/functions/aiBibleSearch.mjs` — Gemini for verse-ref AI search
+* `netlify/functions/submitFeedback.mjs` — Resend feedback forwarder
+* `docs/drive-sync-setup.md` — earlier Drive-only sync doc (superseded by RTDB; kept for history)

@@ -1,0 +1,84 @@
+# Screenshot capture guide
+
+The README references screenshots in `assets/screenshots/`. Several
+new ones are needed since the most recent UI overhaul (search
+mode chips, dashboard quick-links grid, feedback form). This file
+is the capture brief for whoever takes them — the URL flow,
+suggested viewport size, and the filename to save.
+
+## How to capture
+
+1. Open <https://yswords.netlify.app> in Chrome.
+2. Open DevTools → toggle the device-toolbar (`Cmd+Shift+M` /
+   `Ctrl+Shift+M`).
+3. Choose **Responsive** and set the dimensions for each shot
+   below.
+4. Right-click the page → **Capture screenshot** (or
+   `Cmd+Shift+P` → *"Capture full size screenshot"* for tall
+   pages).
+5. Save into `assets/screenshots/` with the filename listed.
+6. Commit & push.
+
+The README's *App Screenshots* table already references the
+filenames below; new entries appear automatically once the files
+exist.
+
+## Capture list
+
+> *Tip: most shots are at **414 × 819** (iPhone-ish portrait) so the
+> visual matches what most users see. Add a wide shot only when the
+> feature has a distinctly different desktop layout.*
+
+| # | Filename | Viewport | What to capture |
+|---|----------|----------|-----------------|
+| 1 | `screenshot_dashboard_home.png` | 414 × 819 | Dashboard top: greeting card + Read-Bible card + Verse of the Day. Sign in as `Guest` (so the email isn't shown). |
+| 2 | `screenshot_dashboard_quicklinks.png` | 414 × 1100 *(scroll)* | Bottom of dashboard showing the quick-links grid: Search, Library, Statistics, Daily News, Bible Evidence, Sermons, Family Tree, Bible Timeline, Bible Trivia, Songs, **Feedback**, Settings. |
+| 3 | `screenshot_search_modes.png` | 414 × 819 | SearchPage with the **Search** + **YsWords AI** chip strip visible below the AppBar. Empty state (no query typed). |
+| 4 | `screenshot_search_results.png` *(replace existing)* | 414 × 819 | Type "love" → wait for live results. Show the count header + result-list + the Copy-all icon at top right. |
+| 5 | `screenshot_search_ai.png` | 414 × 819 | Type a thematic query like "the love chapter" → tap **YsWords AI** chip → AI-suggested verses appear. The AI chip should be highlighted (active state). |
+| 6 | `screenshot_search_help_dialog.png` | 414 × 819 | Tap the **?** icon in the SearchPage AppBar → shows the localized "How to search" dialog with Basic + Advanced sections. |
+| 7 | `screenshot_feedback_form.png` | 414 × 819 | Dashboard → Feedback tile → form open with category chips, message field, name field, copy-me checkbox (signed in) or email input (guest). |
+| 8 | `screenshot_feedback_form_wide.png` | 1280 × 800 | Same form on a desktop monitor — the new `ConstrainedBox(maxWidth: 600)` should center it nicely with margin on both sides. |
+| 9 | `screenshot_word_study.png` | 414 × 819 | Inside reader → tap a verse → **Original** sheet opens → word-by-word interlinear with Strong's chips + tappable lemmas. |
+| 10 | `screenshot_ai_explanation.png` | 414 × 819 | Originals sheet → tap **AI explain** chip → AI response renders below with the *"AI is only an aid"* caveat visible at bottom. |
+| 11 | `screenshot_welcome_disclaimer.png` | 414 × 819 | First-launch welcome page: tagline + the *"The Spirit guides; AI only assists"* disclaimer card + Sign-in / Continue-as-guest buttons. |
+| 12 | `screenshot_dark_mode.png` | 414 × 819 | Reader in dark mode (Settings → Theme → Dark) showing a chapter rendered with the dark palette. |
+
+## Existing screenshots (already in `assets/screenshots/`)
+
+These should keep working as-is, but it's worth re-shooting them
+in the new dashboard / search / theme:
+
+- `screenshot_loading_page.png` — splash screen
+- `screenshot_multi_select.png` — multi-verse selection toolbar
+- `screenshot_note_popup.png` — `<note:...>` annotation popup
+- `screenshot_search_filter_zh.png` — Chinese filter dropdown
+- `screenshot_search_filter_zh_alt.png` — alternative variant
+- `screenshot_settings_page.png` — Settings page
+- `screenshot_book_chapter_picker.png` — book + chapter picker
+- `screenshot_version_switch.png` — Bible version switcher
+
+## Where they appear in the README
+
+The *App Screenshots* table in `README.md` currently has 4 rows:
+
+```
+Main Reading View | Note Popup
+Search Results    | Search Filter
+Version Switch    | Settings Page
+Book Picker       | Splash Screen
+```
+
+After capturing the new shots, replace the table with three rows
+that highlight the **most user-facing features** in this order:
+
+```
+Dashboard (home)      | Verse of the Day in context
+Search modes (chips)  | Live search results + Copy-all
+Word study sheet      | AI explanation card
+Feedback form         | Welcome disclaimer
+```
+
+The exact `<table>` markup is in `README.md` under
+`## App Screenshots`. Copy the existing pattern; just swap the
+`src=`/`alt=` strings to the new filenames.

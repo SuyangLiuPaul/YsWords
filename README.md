@@ -1,21 +1,33 @@
 <h1 align="center">YsWords – Yahweh's Words</h1>
 
 <p align="center">
-  <img src="assets/app_icon.png" alt="YsWords App Icon" width="60"/>
+  <img src="assets/app_icon.png" alt="YsWords App Icon" width="80"/>
 </p>
 
 <p align="center"><em>A bilingual Bible reader for Yahweh's words built with Flutter.</em></p>
+
+<p align="center">
+  <a href="https://yswords.netlify.app">
+    <img alt="Live demo" src="https://img.shields.io/badge/Live%20demo-yswords.netlify.app-0284c7?style=for-the-badge&logo=netlify&logoColor=white">
+  </a>
+  <img alt="Flutter" src="https://img.shields.io/badge/Flutter-3.41.7-02569B?style=for-the-badge&logo=flutter&logoColor=white">
+  <img alt="License" src="https://img.shields.io/badge/License-See%20LICENSE-555?style=for-the-badge">
+</p>
+
+---
+
+## Try it now
+
+🌐 **<https://yswords.netlify.app>** — opens in any modern browser. No install, no sign-in needed. Optional Google sign-in syncs highlights / bookmarks / notes / reading-plan progress across devices.
+
+📱 On mobile, tap your browser's menu → **Add to Home Screen** to install as a PWA — full offline reading after one tap of the *Offline Pack* in Settings.
 
 ---
 
 ## Quick start
 
 ### For users — nothing to install
-Open <https://yswords.netlify.app>. Read the Bible immediately
-(no sign-in needed). Optional: sign in with Google to sync
-highlights / bookmarks / notes / reading-plan progress across your
-devices (one click "Allow" on the standard Google sign-in dialog —
-no Drive permissions, no setup).
+Open <https://yswords.netlify.app> and start reading. Tap any verse to copy / highlight / bookmark / get an interlinear word study. The dashboard's quick-links grid puts Search, Library, Statistics, Daily News, Bible Evidence, Family Tree, Bible Trivia, Songs, **Feedback**, and Settings one tap away.
 
 ### For developers — clone, run, ship
 ```bash
@@ -28,12 +40,11 @@ flutter run -d chrome
 To deploy to your own Netlify project:
 ```bash
 flutter build web --release
-netlify deploy --prod --dir=build/web
+netlify deploy --prod --dir=build/web --site=YOUR_SITE_ID
 ```
 
-For cloud features (sync + AI) to work in production, see
-[**SETUP.md**](SETUP.md) for the one-time Firebase / Netlify
-configuration. The fastest path:
+For cloud features (sync + AI + feedback email) to work in
+production, see [**SETUP.md**](SETUP.md). The fastest path:
 
 1. Open the deployed app → Settings → About → bottom →
    **"Run check"** diagnostic. It probes Firebase Auth, Realtime
@@ -64,7 +75,7 @@ any APIs themselves**; everything is at the Firebase project level.
 | Bookmarks    | Bookmark + per-verse notes; visible inline indicator next to every flagged verse in both verse-by-verse and paragraph mode |
 | Navigation   | Swipe left/right to change chapter; Floating chapter picker; Previous/next chapter buttons; Grid/List view for books with compact English/Chinese labels; Responsive grid for tablets/desktops; Collapsible sidebar for wide screens (≥600px) |
 | Split View   | Two fully independent Bible panes; Side-by-side on tablet/desktop (≥600px) with draggable divider; Top-bottom on phone with draggable divider; Each pane has its own book, chapter, and version; Toggle in header |
-| Search       | Book-only or whole-Bible search · Direct-reference jump (`John 3:16`, `约 3:16`, `Rom 12:1-2`) · **Lemma search** (type Greek `ἀγάπη` / Hebrew `אהבה` / exact transliteration `agape` → opens Strong's # + concordance; partial transliteration matches show as a "Did you mean…" card alongside text results) · Strong's-# search (`G2316` / `H7200`) · **YsWords AI search** (Gemini-backed; suggests passages for fuzzy / thematic queries when keyword search returns nothing — results are reference-only, verify before use) · Top-aligned **recent searches** with per-item delete · Built-in **"?" help dialog** documenting every supported syntax in your locale |
+| Search       | **Live search-as-you-type** with 250 ms debounce · Two explicit modes via chip strip: **Search** (text scan, also Enter default) and **YsWords AI** (Gemini-backed fuzzy/thematic, reference-only) · Direct-reference jump (`John 3:16`, `约 3:16`, `Rom 12:1-2`) · Strong's-# pattern (`G2316` / `H7200`) opens the lexicon page · Top-aligned **recent searches** with per-item delete · Bulk **Copy all results** to clipboard · Built-in **"?" help dialog** in your locale · Filter dropdown for whole-Bible vs current-book scope · Every keystroke resets to default scope (entire Bible) |
 | Word Study   | Tap any verse → "Original" → word-by-word interlinear with Strong's, transliteration, gloss · Tap a chip → full lexicon entry, word family, synonyms, LXX cross-testament refs, concordance · **YsWords AI explanation** with adjustable scope: this verse / chapter / book / whole Bible / cross-testament / **deep exegesis (BDAG-level structured analysis)** — all reference-only · **Aramaic words highlighted** in Daniel 2:4-7:28, Ezra 4:8-6:18 + 7:12-26, Genesis 31:47, Jeremiah 10:11, plus NT transliterations (raca, talitha koum, abba, eloi, ephphatha, maranatha) · **Proper-noun complementary glosses** (English etymology + Chinese biblical identification side-by-side) |
 | Annotations  | `{...}` inline badges with linked `<note:...>` pop-ups; `[...]` dotted-underline keywords; Book icon notes              |
 | Section titles | Inline scripture-section headings with optional ⓘ context popovers — covers all 13 versions × 66 books                  |
@@ -78,12 +89,16 @@ any APIs themselves**; everything is at the Firebase project level.
 | Offline Pack | 5-category pre-fetch (Bibles 70 MB / Sermons 26 MB / Tools 10 MB / Originals 31 MB / Maps 29 MB) — full offline use after one-tap download |
 | Reload       | One-tap Reload from the floating-header overflow menu and the empty-reader scaffold so users never have to relaunch the app to recover from a load failure |
 | Copy & Share | Tap verses to multi-select; Copy in **Plain**, **With Reference**, or **Devotional** formats                            |
+| Feedback     | In-app feedback form (Dashboard → **Feedback** tile) with category chips · Submitted server-side via Resend → developer's inbox · No tab switch · Auto-attached diagnostics (locale / Bible version / position / screen / theme / timezone / browser / IP) · Signed-in users get an opt-in "Send a copy to me" checkbox; guests can type their email · Falls back gracefully to `mailto:` if the email service is unconfigured |
 | Persistence  | Last-read position, highlights & user settings stored with `shared_preferences`; cloud sync layered on top              |
 | Platforms    | Android, iOS, Web, macOS, Windows, Linux                                                                                |
 
 ---
 
 ## App Screenshots
+
+> Many of the screenshots below predate the dashboard / search / feedback overhauls. **See [SCREENSHOTS.md](SCREENSHOTS.md)** for a capture-brief covering the new UI surfaces (search mode chips, quick-links grid, feedback form, AI explanation card, etc.) and the exact filenames + viewport sizes to use.
+
 
 | Main Reading View & Multi-select                                                                   | Note Popup                                                                             |
 | -------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
@@ -137,19 +152,84 @@ https://yswords.netlify.app/
 
 ---
 
+## Architecture at a glance
+
+```
+┌────────────────────────────┐     POST /api/aiSearch
+│ Flutter Web app            ├────────────────────────┐
+│ (Provider + Get + Material)│     POST /api/aiBibleSearch
+│                            │     POST /api/aiExplainWord
+│ Bible JSON in assets/      │     POST /api/submitFeedback
+│ Strong's lexicon in assets │                        │
+│ Local storage:             │                        ▼
+│   shared_preferences       │              ┌──────────────────────┐
+└─────┬───────────┬──────────┘              │ Netlify Functions    │
+      │           │                          │ (serverless mjs)     │
+      │ Google    │ Highlights/notes         └────┬───────┬─────────┘
+      │ sign-in   │ via WebSocket                 │       │
+      ▼           ▼                               │       │
+┌──────────┐  ┌────────────────┐                  │       │
+│ Firebase │  │ Firebase RTDB  │                  ▼       ▼
+│ Auth     │  │ users/{uid}/   │       ┌───────────┐  ┌─────────────┐
+└──────────┘  │ sync           │       │ Gemini    │  │ Resend      │
+              └────────────────┘       │ (AI text) │  │ (feedback   │
+                                       └───────────┘  │  emails)    │
+                                                      └─────────────┘
+```
+
+The app itself has zero backend — it's a static Flutter web build
+served by Netlify. The four `.mjs` Netlify Functions are the only
+server-side code, each ≤200 lines. Every function returns 503 +
+falls back gracefully when its env vars aren't set, so partial
+deploys keep the offline parts of the app working.
+
+---
+
 ## Project Structure
 
 ```
-assets/                 Bible JSON files, fonts, images
+assets/                       Bible JSONs, Strong's lexicons, fonts, images,
+                              maps, sermons, screenshots
+docs/                         Setup notes (drive-sync, google-signin, etc.)
 lib/
-  models/               Verse, Book, Chapter, AppSettings
-  providers/            MainProvider (state + persistence)
-  pages/                HomePage, BooksPage, SearchPage, SettingsPage
-  widgets/              VerseWidget, ParagraphGroupWidget, BookChapterPicker, SidebarPanel, LocalizedBackButton, BibleReadingPane
-  services/             FetchVerses, FetchBooks
-  constants/            Book lists, UI strings, text patterns, Bible versions
-  utils/                Clipboard helper, search formatter, version mapper, verse span builder, responsive breakpoints
-pubspec.yaml            Dependencies & asset registration
+  main.dart                   App entry: Provider scope, GetMaterialApp,
+                              theme, bootstrap (FetchVerses + auth init).
+  models/                     Verse, Book, AppSettings, Strong's,
+                              ReadingPlan, Sermon.
+  providers/                  MainProvider (verses, current position,
+                              highlights, bookmarks, notes).
+  pages/                      DashboardPage, HomePage (reader), SearchPage,
+                              SettingsPage, LibraryPage, HighlightsPage,
+                              FeedbackPage, SermonsPage, EvidencePage,
+                              FamilyTreePage, BibleTimelinePage, etc.
+  widgets/                    BibleReadingPane, OriginalsSheet,
+                              SetupInstructionsCard, CloudSetupDiagnostic,
+                              GreetingCard, GoogleGLogo, etc.
+  services/                   Cloud (CloudAuthService,
+                              RealtimeDbSyncService), AI proxy clients
+                              (AiSearchService, AiBibleSearchService,
+                              FeedbackService, ProfileService),
+                              StrongsService, FetchVerses, FetchBooks,
+                              ConcordanceService, browser-info /
+                              link-opener / share-service stubs.
+  constants/                  Book lists, UI strings (trilingual),
+                              text patterns, Bible versions metadata.
+  utils/                      Clipboard helper, search formatter,
+                              version mapper, verse span builder,
+                              responsive breakpoints, jump-to-reference,
+                              short-book-name.
+netlify/
+  functions/                  Server-side serverless functions:
+                                aiSearch.mjs (Bible-evidence AI search)
+                                aiBibleSearch.mjs (verse-ref AI search)
+                                aiExplainWord.mjs (lexicon AI gloss)
+                                submitFeedback.mjs (feedback → Resend)
+  netlify.toml                Build config + redirects + cache headers
+scripts/
+  enable-cloud-apis.sh        One-shot Gemini API enabler for the Cloud
+                              project that owns the OAuth client.
+pubspec.yaml                  Flutter / Dart dependencies + asset
+                              registration.
 ```
 
 ---
@@ -171,7 +251,7 @@ pubspec.yaml            Dependencies & asset registration
 | Language | Version                    | Source                                             |
 | -------- | -------------------------- | -------------------------------------------------- |
 | English  | KJV, LEB                   | Public domain / Logos Bible Software               |
-| English  | NASB 2020, NIV 2011        | api.bible (requires API key)                       |
+| English  | NASB 2020                  | api.bible (requires API key)                       |
 | Chinese  | 和合本, 新译本               | getbible.net (free public API)                     |
 | Chinese  | 原文释经圣经 (BIBLEXG)      | https://www.biblexg.com/                           |
 | Chinese  | 雅伟的话 和合本雅伟版        | https://yahwehdehua.net/cn                         |
@@ -214,7 +294,6 @@ Chapter/verse may be stored as strings or integers depending on source.
 | `kjv` | King James Version | English | `assets/kjv.json` | No | OT + NT replay |
 | `leb` | Lexham English Bible | English | `assets/leb.json` | No | OT + NT replay for available verses |
 | `nasb` | New American Standard Bible 2020 | English | `assets/nasb.json` | No | OT + NT replay |
-| `niv` | New International Version 2011 | English | `assets/niv.json` | No | OT + NT replay |
 | `cuvs-yhwh` | 和合本雅伟版 (简) | Simplified Chinese | `assets/cuvs-yhwh.json` | No | OT + NT replay |
 | `cuvs-yhwh-tr` | 和合本雅伟版 (繁) | Traditional Chinese | `assets/cuvs-yhwh-tr.json` | No | OT + NT replay |
 | `cuv` | 和合本 (简) | Simplified Chinese | `assets/cuv.json` | No | OT + NT replay |

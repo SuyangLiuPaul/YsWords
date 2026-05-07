@@ -1,6 +1,6 @@
 # YsWords — AI Agent Handoff Document
 
-> Last updated: 2026-05-07 (Round 56 day-7+: sync moved Firestore → Drive → Realtime DB; YsWords AI Bible search; AI deep exegesis; lemma search; proper-noun complementary glosses; offline pack expanded to 5 categories; search-page redesign — top-aligned recent searches, lemma-hijack fix, "?" help dialog, AI → YsWords rebrand with reference-only caveat; short-book threshold tuned to 450 px)
+> Last updated: 2026-05-07 (Round 56 day-7++: sync Firestore → Drive → RTDB; AI Bible search + deep exegesis + lemma + proper-noun complementary glosses; 5-category offline pack; search-page redesign culminating in v8 (Word Study removed) + v9 (live search-as-you-type) + v10 (Copy-all results); v12–v15 feedback pipeline (in-app form → Resend → developer inbox, with diagnostic block + signed-in email + opt-in CC and mailto: fallback); Library Chinese label 我的标记 → 我的收藏; book-name fold uniform at 390 px; quick-links Search + Feedback tiles; CORS-suppressed news/evidence images; CJK gloss search with alias-pin for divine names)
 > Project: YsWords (Yahweh's Words) — bilingual Bible reader
 > Stack: Flutter 3.41.7 / Dart 3.11.5 / Provider + GetX
 > Repo: https://github.com/SuyangLiuPaul/YsWords
@@ -1881,6 +1881,195 @@ M  lib/services/daily_verse_service.dart (Fisher-Yates shuffle, themeKeyFor)
 M  lib/widgets/originals_sheet.dart (Aramaic detection + chip/entry-card highlight)
 M  lib/widgets/word_distribution_table.dart (localised abbrevs + colStrongs)
 ```
+
+### Strand: Search-page rewrite v6–v10 + live search v9 + Copy-all v10 (2026-05-07)
+
+The search page accumulated debt across v0–v7 (latch + polling
++ Strong's auto-redirect + lemma "Did you mean" suggestions +
+state leaks). User reports culminated in "search just does
+not work" with `Scanned 0 verses` for common Chinese queries.
+Bottom-up rewrite over five sub-versions:
+
+**v6** (`a7b4adb`): bare-bones rewrite. Single `_searchImpl`
+async function, single atomic `setState` at the end; debug
+prints (`[YsWords search] CHECKPOINT-N`) at every step;
+try/catch wrapper around the whole body so any exception
+surfaces in browser console. Mode-chip strip (Search /
+Word study / YsWords AI) added with active-mode highlight.
+
+**v7** (`337ecd4`, `991569c`, `d88962c`): tightened CJK
+matching in `StrongsService.searchByLemma` after user query
+"天地" hit G460 ἀνόμως via substring match against
+`无法无天地` (Chinese idiom for "lawlessly"). Removed prefix +
+substring matching for CJK input; only score 0/1
+(exact-segment / whole-field) accepted. Added
+`_aliasToStrongs` pin for divine names (`雅伟 / 耶和华 /
+Yahweh / YHWH → H3068`, `耶稣 / Jesus → G2424`) since
+H3068's CBOL gloss is a description (`独一真神的专有名词`)
+not the literal name. Apply `_normaliseDivineGloss` before
+scoring so `耶和华`-stored glosses match `雅伟` queries.
+
+**v8** (`4b9c751`): user said "i feel you keep original
+always on. so that function should be removed just search and
+ai search". Word Study mode removed entirely:
+`_runWordStudy()` deleted (~70 lines), `_LemmaSuggestionCard`
++ `_normaliseLemmaInline` + `_strongsQueryPattern` +
+`StrongsService` import dropped from search_page.dart.
+Strong's-pattern queries (`G2316` / `H7200`) still work via
+`parseStrongsNumber` → `Get.to(StrongsEntryPage)` in the
+`onSubmitted` handler — separate code path, unaffected.
+Search page is ~325 lines lighter.
+
+**v9** (`b96afe7`): user "每次搜索框有改动，都要换成全书搜索
+并且普通搜索, 而且这是 default setting, 而且搜索结果也是更新于
+搜索框随时改变的" → live search-as-you-type with 250 ms
+debounce; every keystroke resets to default scope
+(`searchAll = true; filterBook = null`); `Timer` cancelled
+in `dispose`; `onSubmitted` cancels pending debounce so
+Enter doesn't double-fire.
+
+**v10** (`4d9359f`): "搜索结果能不能一起可以copy的" → bulk
+Copy-all icon next to the result-count header. Formats every
+match as `Book Chapter:Verse  text` on its own line with a
+header `搜索：「{query}」 · 共 {n} 条结果` then dumps via
+`ClipboardHelper.copyWithFeedback` with the standard
+"Copied N matches" snackbar.
+
+**v11** (`70d9602`): two paired fixes:
+1. Search → tap-verse navigation: replaced `Get.back()` with
+   `Get.off(() => HomePage())` in three call sites
+   (results-list ListTile onTap, `_navigateToRef`,
+   `_navigateToReference`) so the user lands on the verse
+   regardless of whether search was opened from the reader's
+   AppBar OR the new dashboard Search tile. Same pattern
+   `LibraryPage._navigateToVerse` already used.
+2. Library Chinese label: `我的标记` ("My Markings", clashed
+   with `我的高亮` / Highlights) → `我的收藏` ("My
+   Collection / Saved"). Page contains Notes + Bookmarks +
+   Reading Plan, so the new label matches content.
+
+**Files**: `lib/pages/search_page.dart` (every commit);
+`lib/services/strongs_service.dart` (v7 CJK matching +
+alias pin); `lib/pages/dashboard_page.dart` (v11 Search tile
+in quick-links); `lib/constants/ui_strings.dart` (v8 mode
+labels, v10 copy strings, v11 Library rename).
+
+### Strand: Welcome / dashboard "AI as auxiliary, Spirit as primary" framing (2026-05-07)
+
+User: "quick guidance 要说ai是辅助，不要依赖，神的灵更重要".
+Three-beat copy reframe of the welcome-page disclaimer +
+the AI-button italic caveat:
+
+  1. AI is auxiliary — 辅助
+  2. Do not depend on it — 不要依赖
+  3. The Spirit is what guides — 神的灵
+
+  Title: 神的灵才是引导，AI 只是辅助 / The Spirit guides;
+         AI only assists
+  Body:  YsWords 中的 AI 功能（释义、搜索、深度分析）只是
+         辅助研经的工具——请不要依赖它。圣经才是神的话，
+         圣灵才是真正引导你的老师。
+
+Initial commit `cc41a31` re-worded only the welcome page +
+the AI-button caveat (one-shot). Follow-up `7dd9d86` added a
+`_SpiritReminderCard` between the dashboard greeting and the
+section list so returning users see the reminder every visit.
+User then said "please remove it. i mean at the bottom where
+setting is. there can have one block for search. add one
+there for search function as well" → reverted the dashboard
+card in `292a1a7`, added a Search tile to the quick-links
+grid alongside Settings (and later a Feedback tile in v12+).
+
+### Strand: Feedback pipeline v12–v15 (2026-05-07)
+
+User: "是不是应该有一个block用来收feedback的form？可以加一个
+吗？直接发email到我邮箱paulsyliu@gmail.com".
+
+**v12** (`97c78a3`): in-app `FeedbackPage` reachable from a
+new dashboard Feedback tile. Form: category chips (Bug /
+Feature / General / Content), required message field,
+optional name + reply-to. Submission opens user's mail
+client via `LinkOpener.open(mailto:...)` with subject + body
+prefilled. Auto-attached metadata in the body: locale,
+Bible version, last position, app tag.
+
+**v13** (`bedb6aa`): user asked "CAN you just send out
+straightaway with the form not pop up another tab" → backend
+submission via Resend. New `netlify/functions/submitFeedback.mjs`
+forwards the payload to Resend's `/emails` endpoint. Flutter
+client (`lib/services/feedback_service.dart`) POSTs to
+`/api/submitFeedback`, branches on result:
+- `200 ok` → snackbar "Feedback sent. Thank you!" + Get.back
+- `503 unconfigured` (no `RESEND_API_KEY`) or `404` → mailto:
+  fallback so feedback is never silently lost
+- other 4xx/5xx → snackbar with error detail; user can retry
+
+API key was set via `netlify env:set RESEND_API_KEY ...` (NOT
+committed). Resend's free-tier sandbox without a verified
+domain only allows sending TO the email tied to the API key
+(`lsy95112@gmail.com` in this case), so `FEEDBACK_TO=
+lsy95112@gmail.com` was set as a workaround.
+
+**v14** (`6f6fc88`): user pointed out three polish items:
+1. Form stretched full-width on monitors → wrapped with
+   `Center + ConstrainedBox(maxWidth: 600)`.
+2. ISO-8601 timestamp unreadable → reformatted to
+   `2026-05-07 13:35:08 UTC` + separate `User local: ...`
+   line with timezone offset.
+3. Wanted IP / browser / etc → added a four-section diagnostic
+   block (`Feedback details / App context / Client environment
+   / Server-side`). Server-side fields pulled from request
+   headers (`x-forwarded-for`, `x-country`, `referer`,
+   `origin`, `user-agent`). Client-side fields sent in the
+   payload (screen size, DPR, theme, timezone offset, browser
+   locale, browser user-agent via `dart:js_interop` on web).
+   New `lib/services/browser_info_{stub,web}.dart` pair
+   following the conditional-import pattern.
+
+**v15** (`f3aaf1a`): user "如果用户登陆了，登录邮箱呢，可以
+包含在给我的信息里面？另外如果他们要copy的话…如果有登陆，就一
+个tick，没有是guest的话，就可以填写copy的邮箱". Two paired
+features:
+1. Always-attach signed-in email: read
+   `CloudAuthService.instance.currentUser?.email`, pass as
+   `authEmail` in the payload, surface as `Signed-in:`
+   line in the email body regardless of copy preference.
+2. Opt-in CC: signed-in users see a `CheckboxListTile`
+   ("Send a copy to me" + auth email as subtitle); guests
+   see an editable email `TextField`. Both feed into
+   `(replyTo, copyEmail, wantsCopy)` triplet. Server-side
+   adds `cc: [copyEmail]` to the Resend request when
+   `wantsCopy=true`. On `403/422` from Resend (free-tier-
+   without-verified-domain rejection), retries WITHOUT cc
+   and appends a body note "[note: CC to user failed —
+   verify a sending domain at resend.com/domains]" so the
+   dev still gets the email.
+
+**Files**: `netlify/functions/submitFeedback.mjs`;
+`lib/pages/feedback_page.dart`;
+`lib/services/feedback_service.dart`;
+`lib/services/browser_info_{stub,web}.dart`;
+`lib/constants/ui_strings.dart` (16 trilingual strings:
+`feedback*` keys);
+`lib/pages/dashboard_page.dart` (Feedback quick-link tile).
+
+### Strand: Documentation refresh (2026-05-07)
+
+`README.md`: dropped Word Study mentions (removed in v8); dropped
+NIV (licensing-removed); rewrote Search row to current 2-mode
+design + live search; added Feedback feature row; refreshed
+Project Structure (services/, netlify/functions/, scripts/);
+added stack diagram; added live-demo badge.
+
+`SETUP.md`: new **Step 6 — Feedback email pipeline (Resend)**
+section; verification flow updated (RTDB instead of Drive);
+troubleshooting table covers the three new feedback failure
+modes; added env-var summary table.
+
+New `SCREENSHOTS.md`: capture brief for the 12 new screenshots
+needed (dashboard, search modes, feedback form wide + narrow,
+welcome disclaimer, etc.) with viewport sizes + filenames +
+target slots in the README.
 
 ---
 
