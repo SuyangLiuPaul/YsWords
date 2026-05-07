@@ -9,4 +9,11 @@
 /// 2026-05-07 (v17): extracted from settings_page.dart when the
 /// "Check for Updates" tile was removed; AboutPage now surfaces this
 /// in its footer.
-const String kAppVersion = '0.1.0';
+///
+/// 2026-05-07 (v1.0.0 release): bumped to 1.0.0 as the first
+/// stable / public-shippable release. This rolls together rounds
+/// 54-56 (the post-beta polish cycle) plus the v8-v18 strands of
+/// 2026-05-07 (search redesign, feedback pipeline, settings
+/// cleanup, and the bug-audit fixes for Timer races / controller
+/// leaks / unbounded AI prompt inputs).
+const String kAppVersion = '1.0.0';

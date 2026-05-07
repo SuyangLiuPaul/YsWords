@@ -10,6 +10,9 @@
   <a href="https://yswords.netlify.app">
     <img alt="Live demo" src="https://img.shields.io/badge/Live%20demo-yswords.netlify.app-0284c7?style=for-the-badge&logo=netlify&logoColor=white">
   </a>
+  <a href="https://github.com/SuyangLiuPaul/YsWords/releases/latest">
+    <img alt="Release" src="https://img.shields.io/github/v/release/SuyangLiuPaul/YsWords?style=for-the-badge&label=Release&color=22c55e">
+  </a>
   <img alt="Flutter" src="https://img.shields.io/badge/Flutter-3.41.7-02569B?style=for-the-badge&logo=flutter&logoColor=white">
   <img alt="License" src="https://img.shields.io/badge/License-See%20LICENSE-555?style=for-the-badge">
 </p>
@@ -97,7 +100,7 @@ any APIs themselves**; everything is at the Firebase project level.
 
 ## App Screenshots
 
-> Captured 2026-05-07 against the current build (v0.1.0). Top half of the table covers the new dashboard / search / feedback flow; the lower half is the deeper Bible-study surface (word-by-word originals, AI explanations) that landed across rounds 55–56.
+> Captured 2026-05-07 against the current build (v1.0.0). Top half of the table covers the new dashboard / search / feedback flow; the lower half is the deeper Bible-study surface (word-by-word originals, AI explanations) that landed across rounds 55–56.
 
 | Dashboard — greeting + Read Bible + Verse of the Day                                                                                  | Quick-links grid (Search · Library · Bible Tools · Daily News · Bible Evidence · Sermons · Family Tree · Bible Timeline · Bible Trivia · Songs · Feedback · Settings) |
 | ------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
