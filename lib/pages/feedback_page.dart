@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:yswords/constants/ui_strings.dart';
 import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/providers/main_provider.dart';
+import 'package:yswords/services/feedback_service.dart';
 import 'package:yswords/services/link_opener.dart';
 import 'package:yswords/utils/clipboard_helper.dart';
 import 'package:yswords/widgets/home_icon_button.dart';
@@ -50,6 +51,7 @@ class _FeedbackPageState extends State<FeedbackPage> {
   final _nameController = TextEditingController();
   final _replyToController = TextEditingController();
   final _messageController = TextEditingController();
+  bool _submitting = false;
 
   @override
   void dispose() {
@@ -122,13 +124,23 @@ class _FeedbackPageState extends State<FeedbackPage> {
     return 'YsWords feedback [$tag]';
   }
 
+  /// Compose a position-line metadata snippet ("创世纪 1") for the
+  /// service payload + mailto fallback body.
+  String _positionLine(MainProvider mp) {
+    if (mp.currentBook != null && mp.currentChapter != null) {
+      return '${mp.currentBook} ${mp.currentChapter}';
+    }
+    return '';
+  }
+
   Future<void> _submit() async {
     final settings = Provider.of<AppSettings>(context, listen: false);
     final mp = Provider.of<MainProvider>(context, listen: false);
     final locale = settings.locale;
+    final messenger = ScaffoldMessenger.of(context);
 
     if (_messageController.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      messenger.showSnackBar(SnackBar(
         content: Text(uiStrings['feedbackMessageRequired']?[locale] ??
             'Please write a message before sending.'),
         duration: const Duration(seconds: 2),
@@ -136,38 +148,80 @@ class _FeedbackPageState extends State<FeedbackPage> {
       return;
     }
 
-    final subject = _composeSubject(locale);
-    final body = _composeBody(settings: settings, mp: mp);
-    final mailto =
-        'mailto:$_devEmail?subject=${Uri.encodeComponent(subject)}'
-        '&body=${Uri.encodeComponent(body)}';
+    setState(() => _submitting = true);
 
-    final ok = await LinkOpener.open(mailto);
+    // 2026-05-07 (v13): POST first to /api/submitFeedback (Netlify
+    // Function backed by Resend). This sends the email server-side
+    // -- no extra tab, no mail app, the user just sees a "thanks"
+    // and gets popped back. Fall back to mailto: only if the
+    // function isn't configured (no RESEND_API_KEY) or returns 404,
+    // so feedback is never silently lost.
+    final result = await FeedbackService.submit(
+      category: _categoryShort(_category),
+      message: _messageController.text.trim(),
+      name: _nameController.text.trim(),
+      replyTo: _replyToController.text.trim(),
+      locale: settings.locale,
+      version: mp.currentVersion,
+      position: _positionLine(mp),
+    );
     if (!mounted) return;
-    if (!ok) {
-      // Mail-client launch failed (rare on web — usually means
-      // the browser had no protocol handler registered, or a
-      // popup blocker fired). Fall back to clipboard so the
-      // user can paste into webmail manually.
-      await ClipboardHelper.copyWithFeedback(
-        context,
-        'To: $_devEmail\n'
-        'Subject: $subject\n\n$body',
-        messageOverride: uiStrings['feedbackCopiedFallback']?[locale] ??
-            'Mail app unavailable — feedback copied to clipboard. '
-                'Paste it into your email to $_devEmail.',
-      );
+
+    if (result.ok) {
+      setState(() => _submitting = false);
+      messenger.showSnackBar(SnackBar(
+        content: Text(uiStrings['feedbackSent']?[locale] ??
+            'Feedback sent. Thank you!'),
+        duration: const Duration(seconds: 3),
+      ));
+      Get.back();
       return;
     }
-    // Show a "thanks" snackbar. The user still has to hit Send
-    // in their mail client; we can't confirm delivery from here.
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text(uiStrings['feedbackOpenedMail']?[locale] ??
-          'Mail app opened. Tap Send to deliver your feedback.'),
-      duration: const Duration(seconds: 3),
+
+    if (result.unconfigured) {
+      // Backend not yet wired (no RESEND_API_KEY in Netlify env).
+      // Fall back to mailto so feedback still reaches the developer.
+      final subject = _composeSubject(locale);
+      final body = _composeBody(settings: settings, mp: mp);
+      final mailto =
+          'mailto:$_devEmail?subject=${Uri.encodeComponent(subject)}'
+          '&body=${Uri.encodeComponent(body)}';
+      final opened = await LinkOpener.open(mailto);
+      if (!mounted) return;
+      setState(() => _submitting = false);
+      if (!opened) {
+        await ClipboardHelper.copyWithFeedback(
+          context,
+          'To: $_devEmail\n'
+          'Subject: $subject\n\n$body',
+          messageOverride:
+              uiStrings['feedbackCopiedFallback']?[locale] ??
+                  'Mail app unavailable — feedback copied to clipboard. '
+                      'Paste it into your email to $_devEmail.',
+        );
+        return;
+      }
+      messenger.showSnackBar(SnackBar(
+        content: Text(uiStrings['feedbackOpenedMail']?[locale] ??
+            'Mail app opened. Tap Send to deliver your feedback.'),
+        duration: const Duration(seconds: 3),
+      ));
+      Get.back();
+      return;
+    }
+
+    // Genuine error (network down, Resend rejected, etc.). Show
+    // the message inline; let the user retry without losing what
+    // they typed.
+    setState(() => _submitting = false);
+    messenger.showSnackBar(SnackBar(
+      content: Text(
+        (uiStrings['feedbackErrorPrefix']?[locale] ??
+                'Could not send feedback: ') +
+            (result.errorMessage ?? 'Unknown error'),
+      ),
+      duration: const Duration(seconds: 4),
     ));
-    // Pop back so the user lands wherever they came from.
-    Get.back();
   }
 
   @override
@@ -303,10 +357,21 @@ class _FeedbackPageState extends State<FeedbackPage> {
 
               // Send button.
               FilledButton.icon(
-                onPressed: _submit,
-                icon: const Icon(Icons.send_rounded),
+                onPressed: _submitting ? null : _submit,
+                icon: _submitting
+                    ? const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2.4,
+                          color: Colors.white,
+                        ),
+                      )
+                    : const Icon(Icons.send_rounded),
                 label: Text(
-                  uiStrings['feedbackSend']?[locale] ?? 'Send via Email',
+                  _submitting
+                      ? (uiStrings['feedbackSending']?[locale] ?? 'Sending…')
+                      : (uiStrings['feedbackSend']?[locale] ?? 'Send'),
                   style: TextStyle(
                     fontFamily: settings.fontFamily,
                     fontSize: (fs - 1).clamp(13.0, 16.0).toDouble(),

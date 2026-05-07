@@ -4447,13 +4447,14 @@ const uiStrings = {
     'en': 'Feedback',
   },
   'feedbackIntro': {
-    'zh-Hans': '点击「通过邮件发送」会打开您的邮件应用，'
-        '消息已经填好，您再确认发送即可，邮件直接到开发者的邮箱。',
-    'zh-Hant': '點擊「透過郵件發送」會開啟您的郵件應用，'
-        '訊息已經填好，您再確認發送即可，郵件直接到開發者的信箱。',
+    'zh-Hans': '点击「发送」即可直接寄到开发者的邮箱。'
+        '如果服务暂时不可用，会自动打开您的邮件应用作为备用。',
+    'zh-Hant': '點擊「發送」即可直接寄到開發者的信箱。'
+        '如果服務暫時不可用，會自動開啟您的郵件應用作為備用。',
     'en':
-        'Tap "Send via Email" and your default mail app will open '
-            'with this message ready for you to send to the developer.',
+        'Tap "Send" and your feedback goes straight to the developer\'s '
+            'inbox. If the service is temporarily unavailable, your mail '
+            'app opens as a fallback.',
   },
   'feedbackCategoryLabel': {
     'zh-Hans': '反馈类别',
@@ -4506,9 +4507,24 @@ const uiStrings = {
     'en': 'Reply-to email (optional)',
   },
   'feedbackSend': {
-    'zh-Hans': '通过邮件发送',
-    'zh-Hant': '透過郵件發送',
-    'en': 'Send via Email',
+    'zh-Hans': '发送',
+    'zh-Hant': '發送',
+    'en': 'Send',
+  },
+  'feedbackSending': {
+    'zh-Hans': '正在发送…',
+    'zh-Hant': '正在發送…',
+    'en': 'Sending…',
+  },
+  'feedbackSent': {
+    'zh-Hans': '反馈已发送，谢谢您！',
+    'zh-Hant': '回饋已發送，謝謝您！',
+    'en': 'Feedback sent. Thank you!',
+  },
+  'feedbackErrorPrefix': {
+    'zh-Hans': '发送失败：',
+    'zh-Hant': '發送失敗：',
+    'en': 'Could not send feedback: ',
   },
   'feedbackOpenedMail': {
     'zh-Hans': '已打开邮件应用，请点击发送即可送达。',
@@ -4525,14 +4541,14 @@ const uiStrings = {
             'Paste it into your email to paulsyliu@gmail.com.',
   },
   'feedbackPrivacyNote': {
-    'zh-Hans': '不会自动上传任何数据。点击按钮只是把内容填到您的邮件应用里，'
-        '是否发送由您决定。',
-    'zh-Hant': '不會自動上傳任何資料。點擊按鈕只是把內容填到您的郵件應用裡，'
-        '是否發送由您決定。',
+    'zh-Hans': '只发送您填写的内容 + 您当前的语言/版本/位置（用于调试报告），'
+        '不会上传任何其他个人数据。',
+    'zh-Hant': '只發送您填寫的內容 + 您當前的語言/版本/位置（用於除錯回報），'
+        '不會上傳任何其他個人資料。',
     'en':
-        'No data is sent automatically. Pressing the button just opens '
-            'your mail app with this content pre-filled — you choose '
-            'whether to hit Send.',
+        'Only the message you wrote plus your locale, Bible version, '
+            'and last position (to help debug reports) are sent. '
+            'No other personal data is uploaded.',
   },
   'interfaceLanguage': {
     'zh-Hans': '界面语言',
