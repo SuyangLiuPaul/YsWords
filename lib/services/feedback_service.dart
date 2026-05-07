@@ -7,16 +7,22 @@ import 'package:http/http.dart' as http;
 import 'package:yswords/services/browser_info_stub.dart'
     if (dart.library.js_interop) 'package:yswords/services/browser_info_web.dart';
 
-/// 2026-05-07 (v12 → v14): client wrapper for the
+/// 2026-05-07 (v12 → v16): client wrapper for the
 /// `/api/submitFeedback` Netlify Function. POSTs the user's
 /// feedback form, returns a structured result the UI can branch on.
 ///
-/// v14: now also bundles client-side diagnostic info (screen size,
-/// device pixel ratio, theme, timezone offset, user-local
-/// timestamp, browser language, browser user-agent) so the
-/// developer has everything needed to reproduce a bug without a
-/// follow-up. Server-side adds IP / country / referer from the
-/// request headers.
+/// v14: bundles client-side diagnostic info (screen size, device
+/// pixel ratio, theme, timezone offset, user-local timestamp,
+/// browser language, browser user-agent) so the developer has
+/// everything needed to reproduce a bug without a follow-up.
+/// Server-side adds IP / country / referer from the request
+/// headers.
+///
+/// v16: dropped the "send a copy to the user" feature. Resend's
+/// free-tier sandbox refuses non-owner recipients without a
+/// verified domain, and the user opted out of going through the
+/// DNS verification dance. The form now only collects an optional
+/// reply-to email; CC support has been removed end-to-end.
 ///
 /// Failure mode the caller should handle:
 ///   - `unconfigured == true` (HTTP 503): the function exists but
@@ -38,22 +44,18 @@ class FeedbackService {
   ///
   /// [authEmail] is the user's Firebase / cloud sign-in email when
   /// signed in (empty for guests). It's always included in the
-  /// diagnostic block, regardless of [wantsCopy] -- so the dev
-  /// always knows who submitted feedback when the user is signed in.
+  /// diagnostic block so the dev knows who submitted feedback when
+  /// the user is signed in.
   ///
-  /// [copyEmail] + [wantsCopy] control the optional CC: the server
-  /// will attempt to CC the user at [copyEmail] when [wantsCopy] is
-  /// true, falling back gracefully if Resend rejects the CC (e.g.
-  /// the dev hasn't verified a sending domain yet, in which case
-  /// the free-tier sandbox refuses non-owner recipients).
+  /// [replyTo] is the optional reply-to address — pre-filled with
+  /// the auth email for signed-in users; guests can leave it blank
+  /// or type one in.
   static Future<FeedbackResult> submit({
     required BuildContext context,
     required String category,
     required String message,
     String? name,
     String? replyTo,
-    String? copyEmail,
-    bool wantsCopy = false,
     String? authEmail,
     String? appLocale,
     String? bibleVersion,
@@ -87,14 +89,11 @@ class FeedbackService {
       'message': message,
       if (name != null && name.isNotEmpty) 'name': name,
       if (replyTo != null && replyTo.isNotEmpty) 'replyTo': replyTo,
-      // v15: signed-in email + opt-in CC. authEmail is always
-      // attached when the user is signed in (so the dev knows who
-      // submitted). copyEmail + wantsCopy drive the CC attempt.
+      // v15: signed-in email is always attached when the user is
+      // signed in so the dev knows who submitted. v16 removed the
+      // copy-to-user CC entirely (see class doc).
       if (authEmail != null && authEmail.isNotEmpty)
         'authEmail': authEmail,
-      if (copyEmail != null && copyEmail.isNotEmpty)
-        'copyEmail': copyEmail,
-      'wantsCopy': wantsCopy,
       if (appLocale != null && appLocale.isNotEmpty) 'locale': appLocale,
       if (bibleVersion != null && bibleVersion.isNotEmpty)
         'version': bibleVersion,

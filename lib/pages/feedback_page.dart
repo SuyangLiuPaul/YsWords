@@ -12,30 +12,27 @@ import 'package:yswords/utils/clipboard_helper.dart';
 import 'package:yswords/widgets/home_icon_button.dart';
 import 'package:yswords/widgets/localized_back_button.dart';
 
-/// 2026-05-07 (v12): user-facing feedback form. The user
+/// 2026-05-07 (v12 → v16): user-facing feedback form. The user
 /// (paulsyliu@gmail.com) wanted a single place inside the app
 /// where readers can report bugs, request features, or share
-/// general thoughts. Submissions go via the device's default
-/// `mailto:` handler -- no backend / no API key / no hosting
-/// cost, the email lands directly in the developer's inbox.
+/// general thoughts.
 ///
-/// Why mailto and not a web form / Netlify Function?
-/// 1. Web form would need a transactional email service
-///    (SendGrid / Resend / Mailgun) plus an API key in env, and
-///    would silently lose feedback if the function errored.
-///    mailto opens the user's mail client; if they hit Send,
-///    the email is in OUR inbox the same way any direct email
-///    would be -- no opaque middleware.
-/// 2. Browser mailto support is universal (Gmail web, Apple
-///    Mail, Outlook, etc.). On mobile most browsers prompt to
-///    pick the mail app.
-/// 3. The user keeps their privacy -- they can edit the body,
-///    pick which mail account to send from, see the full
-///    message before sending. No silent telemetry.
+/// Pipeline: POST /api/submitFeedback (Netlify Function backed
+/// by Resend) → email lands in the developer's inbox with
+/// structured app + client diagnostics attached. If the function
+/// returns 503/404 (RESEND_API_KEY missing or function not
+/// deployed), the form falls back to opening the user's mail
+/// client via `mailto:` so feedback is never silently lost.
+///
+/// v16: dropped the "send me a copy" feature -- the free-tier
+/// Resend sandbox refuses non-owner recipients without a verified
+/// sending domain, and the user opted out of the DNS verification
+/// dance. The form now only collects an optional reply-to email
+/// (pre-filled from the auth email when signed in).
 ///
 /// Auto-attached metadata (app version, locale, Bible version,
-/// profile name) helps debug the report. Users can delete it
-/// from the body before sending if they want.
+/// signed-in email when present, screen size, browser, IP, etc.)
+/// helps debug reports without a follow-up round-trip.
 class FeedbackPage extends StatefulWidget {
   const FeedbackPage({super.key});
 
@@ -50,36 +47,33 @@ class _FeedbackPageState extends State<FeedbackPage> {
 
   _FeedbackCategory _category = _FeedbackCategory.general;
   final _nameController = TextEditingController();
-  // Used by both code paths:
-  //   - Signed-in: prefilled (read-only) with the user's auth email,
-  //     visible only when the "Send me a copy" checkbox is ticked.
-  //   - Guest: editable optional email; if non-empty we treat it as
-  //     "user wants a copy at this address".
-  final _copyEmailController = TextEditingController();
+  // 2026-05-07 (v16): user dropped the "send me a copy" feature
+  // entirely (Resend domain verification was the blocker; not
+  // worth the DNS hassle). The form now just has an optional
+  // reply-to email so the developer can answer back. For
+  // signed-in users it pre-fills with their auth email; they
+  // can edit if they want replies routed elsewhere.
+  final _replyToController = TextEditingController();
   final _messageController = TextEditingController();
   bool _submitting = false;
-  /// 2026-05-07 (v15): "send me a copy" -- only meaningful for the
-  /// signed-in path. Guests have a plain email field instead and
-  /// we infer "wants copy" from `copyEmailController.text.isNotEmpty`.
-  bool _wantCopySignedIn = false;
 
   @override
   void initState() {
     super.initState();
-    // Pre-fill the copy-email field with the signed-in email so the
-    // user doesn't retype it. Read-only for the signed-in path; the
-    // guest path leaves it empty and lets them type.
+    // Pre-fill the reply-to field with the signed-in email so the
+    // user doesn't have to retype it. Editable in case they want
+    // replies routed elsewhere; guests start with an empty field.
     final user = CloudAuthService.instance.currentUser;
     final email = user?.email;
     if (email != null && email.isNotEmpty) {
-      _copyEmailController.text = email;
+      _replyToController.text = email;
     }
   }
 
   @override
   void dispose() {
     _nameController.dispose();
-    _copyEmailController.dispose();
+    _replyToController.dispose();
     _messageController.dispose();
     super.dispose();
   }
@@ -113,30 +107,6 @@ class _FeedbackPageState extends State<FeedbackPage> {
     }
   }
 
-  /// Resolve the user's email + whether they want a copy. Returns
-  /// `(email, wantsCopy)`. Signed-in users use the auth email; the
-  /// boolean tracks the checkbox. Guests rely on the typed email --
-  /// non-empty implies "send me a copy at this address". Always
-  /// returns the auth email (when present) so it can be attached
-  /// to the diagnostic block regardless of the copy preference.
-  ({String email, bool wantsCopy, String authEmail}) _resolveCopyEmail() {
-    final user = CloudAuthService.instance.currentUser;
-    final authEmail = user?.email ?? '';
-    if (authEmail.isNotEmpty) {
-      return (
-        email: authEmail,
-        wantsCopy: _wantCopySignedIn,
-        authEmail: authEmail,
-      );
-    }
-    final typed = _copyEmailController.text.trim();
-    return (
-      email: typed,
-      wantsCopy: typed.isNotEmpty,
-      authEmail: '',
-    );
-  }
-
   /// Build the email body: structured user input + auto-attached
   /// metadata. Used for the mailto: fallback only -- the server-side
   /// path builds its own (richer) body in submitFeedback.mjs.
@@ -145,7 +115,9 @@ class _FeedbackPageState extends State<FeedbackPage> {
     required MainProvider mp,
   }) {
     final name = _nameController.text.trim();
-    final copy = _resolveCopyEmail();
+    final replyTo = _replyToController.text.trim();
+    final authEmail =
+        CloudAuthService.instance.currentUser?.email ?? '';
     final msg = _messageController.text.trim();
 
     final lines = <String>[];
@@ -156,11 +128,11 @@ class _FeedbackPageState extends State<FeedbackPage> {
     lines.add('---');
     lines.add('Category: ${_categoryShort(_category)}');
     if (name.isNotEmpty) lines.add('Name: $name');
-    if (copy.authEmail.isNotEmpty) {
-      lines.add('Signed-in: ${copy.authEmail}');
+    if (authEmail.isNotEmpty) {
+      lines.add('Signed-in: $authEmail');
     }
-    if (copy.wantsCopy && copy.email.isNotEmpty) {
-      lines.add('Copy-to: ${copy.email}');
+    if (replyTo.isNotEmpty && replyTo != authEmail) {
+      lines.add('Reply-to: $replyTo');
     }
     lines.add('Locale: ${settings.locale}');
     lines.add('Bible version: ${mp.currentVersion}');
@@ -202,10 +174,13 @@ class _FeedbackPageState extends State<FeedbackPage> {
 
     setState(() => _submitting = true);
 
-    // 2026-05-07 (v15): resolve the copy-email + signed-in state
-    // ONCE here, then pass to both the service call and the
-    // mailto: fallback so they agree on what to attach.
-    final copy = _resolveCopyEmail();
+    // 2026-05-07 (v16): copy-to-user feature removed. The form now
+    // only collects an optional reply-to email (so the developer
+    // can answer back if needed). Signed-in users get this
+    // pre-filled with their auth email; guests can leave it blank.
+    final authEmail =
+        CloudAuthService.instance.currentUser?.email ?? '';
+    final replyTo = _replyToController.text.trim();
 
     // 2026-05-07 (v13/v14): POST first to /api/submitFeedback
     // (Netlify Function backed by Resend). This sends the email
@@ -214,19 +189,14 @@ class _FeedbackPageState extends State<FeedbackPage> {
     // if the function isn't configured (no RESEND_API_KEY) or
     // returns 404, so feedback is never silently lost. v14 also
     // bundles client-side diagnostic info (screen / theme / TZ /
-    // browser) for easier troubleshooting. v15 adds signed-in
-    // email + opt-in copy-to-user.
+    // browser) for easier troubleshooting.
     final result = await FeedbackService.submit(
       context: context,
       category: _categoryShort(_category),
       message: _messageController.text.trim(),
       name: _nameController.text.trim(),
-      // replyTo + copy-CC use the same address. The server-side
-      // function only attempts CC when wantsCopy is true.
-      replyTo: copy.email,
-      copyEmail: copy.email,
-      wantsCopy: copy.wantsCopy,
-      authEmail: copy.authEmail,
+      replyTo: replyTo,
+      authEmail: authEmail,
       appLocale: settings.locale,
       bibleVersion: mp.currentVersion,
       position: _positionLine(mp),
@@ -417,59 +387,23 @@ class _FeedbackPageState extends State<FeedbackPage> {
               ),
               const SizedBox(height: 12),
 
-              // 2026-05-07 (v15): "send me a copy" affordance, two
-              // shapes depending on sign-in state:
-              //   - Signed in -> a checkbox showing the auth email
-              //     (we know it; user just ticks to opt in).
-              //   - Guest    -> an editable email field; non-empty
-              //     means "send me a copy here".
-              // Both feed into the same submit-time fields
-              // (`replyTo` + `copyEmail`) so the rest of the
-              // pipeline doesn't care which case fired.
-              Builder(builder: (_) {
-                final user = CloudAuthService.instance.currentUser;
-                final signedInEmail = user?.email ?? '';
-                final isSignedIn = signedInEmail.isNotEmpty;
-                if (isSignedIn) {
-                  return CheckboxListTile(
-                    contentPadding: EdgeInsets.zero,
-                    controlAffinity: ListTileControlAffinity.leading,
-                    value: _wantCopySignedIn,
-                    onChanged: (v) =>
-                        setState(() => _wantCopySignedIn = v ?? false),
-                    title: Text(
-                      uiStrings['feedbackCopyToMe']?[locale] ??
-                          'Send a copy to me',
-                      style: TextStyle(
-                        fontFamily: settings.fontFamily,
-                        fontSize: (fs - 2).clamp(12.0, 15.0).toDouble(),
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    subtitle: Text(
-                      signedInEmail,
-                      style: TextStyle(
-                        fontFamily: settings.fontFamily,
-                        fontSize: (fs - 3).clamp(11.0, 13.0).toDouble(),
-                        color: scheme.onSurfaceVariant,
-                      ),
-                    ),
-                  );
-                }
-                // Guest path: editable email field; whatever they
-                // type is treated as "send me a copy here".
-                return TextField(
-                  controller: _copyEmailController,
-                  keyboardType: TextInputType.emailAddress,
-                  decoration: InputDecoration(
-                    labelText: uiStrings['feedbackCopyEmailLabel']?[locale] ??
-                        'Your email (optional — we will send you a copy)',
-                    hintText: 'you@example.com',
-                    border: const OutlineInputBorder(),
-                    filled: true,
-                  ),
-                );
-              }),
+              // 2026-05-07 (v16): single optional reply-to field.
+              // Pre-filled with the auth email for signed-in users;
+              // editable so they can route replies elsewhere. Guests
+              // start blank and can drop their email in if they want
+              // a response. Used only as the message's Reply-To
+              // header — no copy / CC.
+              TextField(
+                controller: _replyToController,
+                keyboardType: TextInputType.emailAddress,
+                decoration: InputDecoration(
+                  labelText: uiStrings['feedbackReplyToLabel']?[locale] ??
+                      'Reply-to email (optional)',
+                  hintText: 'you@example.com',
+                  border: const OutlineInputBorder(),
+                  filled: true,
+                ),
+              ),
               const SizedBox(height: 22),
 
               // Send button.
