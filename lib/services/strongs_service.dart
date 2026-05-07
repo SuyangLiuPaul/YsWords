@@ -156,21 +156,32 @@ class StrongsService {
 
     final hasGreekScript = RegExp(r'[Ͱ-Ͽἀ-῿]').hasMatch(q);
     final hasHebrewScript = RegExp(r'[֐-׿יִ-ﭏ]').hasMatch(q);
-    final scanGreek = hasGreekScript || (!hasGreekScript && !hasHebrewScript);
-    final scanHebrew =
-        hasHebrewScript || (!hasGreekScript && !hasHebrewScript);
+    // 2026-05-07 (v6): also accept Chinese-character queries -
+    // matched against glossZh / glossZhTw on each entry. Without
+    // this, searching "耶稣" or "神" in Word-Study returned zero
+    // because Greek / Hebrew lemmas obviously do not contain CJK.
+    // When CJK is present we scan BOTH testaments because the
+    // right Strong's number is in whichever testament that word
+    // belongs to.
+    final hasCjk = RegExp(r'[一-鿿]').hasMatch(q);
+    final scanGreek = hasGreekScript ||
+        hasCjk ||
+        (!hasGreekScript && !hasHebrewScript);
+    final scanHebrew = hasHebrewScript ||
+        hasCjk ||
+        (!hasGreekScript && !hasHebrewScript);
 
     final results = <_LemmaMatch>[];
 
     if (scanGreek) {
       _greek ??=
           await (_greekLoading ??= _load('assets/strongs/greek.json'));
-      _scanLexicon(_greek!, q, norm, hasGreekScript, results);
+      _scanLexicon(_greek!, q, norm, hasGreekScript, hasCjk, results);
     }
     if (scanHebrew) {
       _hebrew ??=
           await (_hebrewLoading ??= _load('assets/strongs/hebrew.json'));
-      _scanLexicon(_hebrew!, q, norm, hasHebrewScript, results);
+      _scanLexicon(_hebrew!, q, norm, hasHebrewScript, hasCjk, results);
     }
 
     results.sort((a, b) => a.score.compareTo(b.score));
@@ -203,6 +214,7 @@ class StrongsService {
     String rawQuery,
     String normQuery,
     bool isOriginalScript,
+    bool hasCjk,
     List<_LemmaMatch> out,
   ) {
     for (final entry in lex.values) {
@@ -223,6 +235,44 @@ class StrongsService {
       } else if (lemmaNorm.contains(normQuery) ||
           translitNorm.contains(normQuery)) {
         score = 3;
+      }
+      // 2026-05-07 (v6): CJK input also matches the Chinese gloss
+      // fields. CBOL glosses are typically comma- or semicolon-
+      // delimited lists like "耶稣, 上帝的儿子, ..." with the
+      // primary meaning first. Splitting on punctuation lets us
+      // score an exact match against the FIRST segment as score
+      // 0 (best), so G2424 ('耶稣, ...') wins over G2494
+      // ('耶稣的祖先之一 ...') for the query "耶稣". Without the
+      // split, both would score 2 (prefix) and ranking would be
+      // arbitrary by lexicon-key order.
+      if (score == null && hasCjk) {
+        final candidates = <String>[
+          (entry.glossZh ?? '').trim(),
+          (entry.glossZhTw ?? '').trim(),
+        ];
+        final segSplit = RegExp(r'[,，;；、]');
+        for (final gloss in candidates) {
+          if (gloss.isEmpty) continue;
+          // First match against the WHOLE field (prefix / contains).
+          if (gloss == rawQuery) {
+            score = (score == null || score > 1) ? 1 : score;
+          } else if (gloss.startsWith(rawQuery)) {
+            score = (score == null || score > 2) ? 2 : score;
+          } else if (gloss.contains(rawQuery)) {
+            score = (score == null || score > 3) ? 3 : score;
+          }
+          // Then try each comma-delimited segment for an EXACT
+          // hit — that's the strongest signal for CJK lookups.
+          final segs = gloss.split(segSplit).map((s) => s.trim());
+          for (final seg in segs) {
+            if (seg.isEmpty) continue;
+            if (seg == rawQuery) {
+              score = 0;
+              break;
+            }
+          }
+          if (score == 0) break;
+        }
       }
       if (score != null) {
         out.add(_LemmaMatch(entry: entry, score: score));
