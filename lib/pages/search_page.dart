@@ -908,6 +908,23 @@ class _SearchPageState extends State<SearchPage> {
   // can read it in browser DevTools console (debugPrint outputs to
   // console.log on Flutter web).
   Future<void> search() async {
+    try {
+      await _searchImpl();
+    } catch (e, st) {
+      // 2026-05-07 (v7 diag): wrap the whole body so any exception
+      // bubbles into the console with a CLEAR marker. The user's
+      // recent screenshot shows search() printing "start" + "mp"
+      // and then nothing — most likely an uncaught exception.
+      debugPrint('[YsWords search] EXCEPTION: $e\n$st');
+      if (mounted) {
+        setState(() {
+          _versesLoadError = 'Search crashed: $e';
+        });
+      }
+    }
+  }
+
+  Future<void> _searchImpl() async {
     final query = _textEditingController.text.trim();
     debugPrint('[YsWords search] start query="$query"');
     if (query.isEmpty) {
@@ -919,6 +936,7 @@ class _SearchPageState extends State<SearchPage> {
     debugPrint('[YsWords search] mp=${mp.hashCode} '
         'verses=${mp.verses.length} ver=${mp.currentVersion} '
         'curBook=${mp.currentBook}');
+    debugPrint('[YsWords search] CHECKPOINT-1');
 
     // Load corpus if missing. Direct, no latch.
     if (mp.verses.isEmpty) {
@@ -955,9 +973,11 @@ class _SearchPageState extends State<SearchPage> {
     }
     _lastVersesLength = mp.verses.length;
     _lastLoadedVersion = mp.currentVersion;
+    debugPrint('[YsWords search] CHECKPOINT-2');
 
     // Strong's number → lexicon view.
     final strongsMatch = _strongsQueryPattern.firstMatch(query);
+    debugPrint('[YsWords search] CHECKPOINT-3 strongs=$strongsMatch');
     if (strongsMatch != null) {
       final num =
           '${strongsMatch.group(1)!.toUpperCase()}${strongsMatch.group(2)!}';
@@ -983,6 +1003,9 @@ class _SearchPageState extends State<SearchPage> {
     final isLatinToken = RegExp(r'^[a-zA-ZÀ-ɏḀ-ỿ]+$').hasMatch(query) &&
         query.length >= 3 &&
         query.length <= 25;
+    debugPrint('[YsWords search] CHECKPOINT-4 '
+        'hasGreek=$hasGreek hasHebrew=$hasHebrew '
+        'isLatinToken=$isLatinToken');
 
     StrongsEntry? lemmaSuggestion;
     if (hasGreek || hasHebrew || isLatinToken) {
@@ -1033,6 +1056,7 @@ class _SearchPageState extends State<SearchPage> {
     }
     // Guard before any context lookup — searchByLemma above is async
     // and the user may have left this page during the await.
+    debugPrint('[YsWords search] CHECKPOINT-5 mounted=$mounted');
     if (!mounted) return;
 
     // We already have `mp` from the top of search(). Reuse it. No
