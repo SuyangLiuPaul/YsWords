@@ -298,10 +298,29 @@ class StrongsService {
       // split, both would score 2 (prefix) and ranking would be
       // arbitrary by lexicon-key order.
       if (score == null && hasCjk) {
-        // 2026-05-07 (v6): normalize the divine name in the gloss
-        // BEFORE matching, mirroring what the reader does at render
-        // time. Without this, searching 雅伟 (the app's preferred
-        // YHWH form) misses entries whose CBOL gloss says 耶和华.
+        // 2026-05-07 (v7): tightened CJK matching. The previous
+        // version allowed substring contains-matching, which
+        // produced false hits like "天地" matching G460
+        // glossZh "无法无天地 ..." (the idiom for "lawlessly").
+        // Chinese words combine in unpredictable ways; substring
+        // overlap is almost never a real semantic match.
+        //
+        // Policy now: ONLY allow these match grades for CJK:
+        //   0 - the query is exactly one of the comma-delimited
+        //       segments of the gloss (the strongest signal --
+        //       the user typed the canonical Chinese rendering
+        //       of this Strong's word).
+        //   1 - whole-field equality (rare but unambiguous).
+        // No prefix, no substring, no contains. If a CJK query
+        // doesn't have a clean segment-level match, fall through
+        // to "no lexicon entry" rather than surface a wrong word.
+        // The pinned alias table at the top of searchByLemma
+        // covers high-frequency theological terms whose CBOL
+        // gloss is too thin / abstract for segment matching
+        // (雅伟 / 耶稣 / etc.).
+        //
+        // Divine-name normalization still applies before matching
+        // (耶和华 -> 雅伟, 耶和華 -> 雅威).
         final candidates = <String>[
           _normaliseDivineGloss((entry.glossZh ?? '').trim()),
           _normaliseDivineGloss((entry.glossZhTw ?? '').trim()),
@@ -309,18 +328,11 @@ class StrongsService {
         final segSplit = RegExp(r'[,，;；、]');
         for (final gloss in candidates) {
           if (gloss.isEmpty) continue;
-          // First match against the WHOLE field (prefix / contains).
           if (gloss == rawQuery) {
             score = (score == null || score > 1) ? 1 : score;
-          } else if (gloss.startsWith(rawQuery)) {
-            score = (score == null || score > 2) ? 2 : score;
-          } else if (gloss.contains(rawQuery)) {
-            score = (score == null || score > 3) ? 3 : score;
           }
-          // Then try each comma-delimited segment for an EXACT
-          // hit — that's the strongest signal for CJK lookups.
-          final segs = gloss.split(segSplit).map((s) => s.trim());
-          for (final seg in segs) {
+          for (final seg
+              in gloss.split(segSplit).map((s) => s.trim())) {
             if (seg.isEmpty) continue;
             if (seg == rawQuery) {
               score = 0;
