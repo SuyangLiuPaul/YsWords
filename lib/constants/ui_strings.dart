@@ -3798,9 +3798,9 @@ const uiStrings = {
     'en': 'View source on GitHub',
   },
   'aboutFooterNote': {
-    'zh-Hans': '本页最后更新于 2026 年 5 月 6 日。',
-    'zh-Hant': '本頁最後更新於 2026 年 5 月 6 日。',
-    'en': 'Last updated 2026-05-06.',
+    'zh-Hans': '本页最后更新于 2026 年 5 月 7 日。',
+    'zh-Hant': '本頁最後更新於 2026 年 5 月 7 日。',
+    'en': 'Last updated 2026-05-07.',
   },
   // Daily News (Round 40 — migrated from sibling DailyNews project).
   'dailyNews': {
@@ -4501,23 +4501,14 @@ const uiStrings = {
     'zh-Hant': '您的名字（選填）',
     'en': 'Your name (optional)',
   },
+  // 2026-05-07 (v16): single optional reply-to field (replaces the
+  // v15 "send me a copy" UI, which depended on Resend domain
+  // verification that the user opted out of). Pre-filled with the
+  // signed-in email; guests start blank.
   'feedbackReplyToLabel': {
     'zh-Hans': '回复邮箱（选填）',
     'zh-Hant': '回覆信箱（選填）',
     'en': 'Reply-to email (optional)',
-  },
-  // 2026-05-07 (v15): copy-me UI. Two shapes -- signed-in users
-  // see a checkbox tied to their auth email; guests see an editable
-  // email field that doubles as "send me a copy here".
-  'feedbackCopyToMe': {
-    'zh-Hans': '同时发送一份副本给我',
-    'zh-Hant': '同時發送一份副本給我',
-    'en': 'Send a copy to me',
-  },
-  'feedbackCopyEmailLabel': {
-    'zh-Hans': '您的邮箱（选填，会发送副本给您）',
-    'zh-Hant': '您的信箱（選填，會發送副本給您）',
-    'en': 'Your email (optional — we will send you a copy)',
   },
   'feedbackSend': {
     'zh-Hans': '发送',
@@ -4731,40 +4722,15 @@ const uiStrings = {
     'zh-Hant': '已重新載入',
     'en': 'Reloaded',
   },
-  'offlineMode': {
-    'zh-Hans': '离线模式',
-    'zh-Hant': '離線模式',
-    'en': 'Offline Mode',
-  },
+  // 2026-05-07 (v17): offlineMode / offlineModeSubtitle /
+  // checkForUpdates / checkForUpdatesSubtitle / updatesAvailableTitle
+  // / updatesAvailableBody were removed when the matching Settings
+  // controls were deleted (the toggle was dead, the dialog was
+  // theatre). The "Offline pack" card (kept) has its own strings.
   'chapters': {
     'zh-Hans': '章',
     'zh-Hant': '章',
     'en': 'ch',
-  },
-  'checkForUpdates': {
-    'zh-Hans': '检查更新',
-    'zh-Hant': '檢查更新',
-    'en': 'Check for Updates',
-  },
-  'checkForUpdatesSubtitle': {
-    'zh-Hans': '重新加载内置圣经数据。',
-    'zh-Hant': '重新載入內建聖經數據。',
-    'en': 'Refresh bundled Bible data and reload app.',
-  },
-  'updatesAvailableTitle': {
-    'zh-Hans': '已是最新版本',
-    'zh-Hant': '已是最新版本',
-    'en': 'You\'re up to date',
-  },
-  'updatesAvailableBody': {
-    'zh-Hans': '所有圣经版本均已内置，数据已从本地重新加载。',
-    'zh-Hant': '所有聖經版本均已內建，數據已從本機重新載入。',
-    'en': 'All Bible versions are bundled with the app. Data reloaded from local assets.',
-  },
-  'offlineModeSubtitle': {
-    'zh-Hans': '所有圣经数据均已内置，无需联网即可阅读。',
-    'zh-Hant': '所有聖經數據均已內置，無需聯網即可閱讀。',
-    'en': 'All Bible data is bundled. No network connection required.',
   },
   'bible': {
     'zh-Hans': '圣经',

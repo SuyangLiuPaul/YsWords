@@ -13,7 +13,10 @@ const _kLocale = 'locale';
 const _kThemeMode = 'themeMode';
 const _kParagraphMode = 'paragraphMode';
 const _kMenuScale = 'menuScale';
-const _kOfflineMode = 'offlineMode';
+// 2026-05-07 (v17): _kOfflineMode removed; the toggle that wrote it
+// was deleted from the Settings card. The persisted bool is left in
+// SharedPreferences for users that have it -- it's harmless dead
+// data and not worth a migration step.
 const _kBooksViewMode = 'booksViewMode';
 const _kBoldVerseText = 'boldVerseText';
 const _kShowStrongsInOriginals = 'showStrongsInOriginals';
@@ -61,7 +64,6 @@ class AppSettings extends ChangeNotifier {
   ThemeMode _themeMode = ThemeMode.system;
   bool _paragraphMode = true;
   double _menuScale = 1.0;
-  bool _offlineMode = true;
   /// 'list' or 'grid' — persisted choice for the books picker.
   String _booksViewMode = 'grid';
   /// Render verse text with FontWeight.w700 instead of normal weight.
@@ -148,7 +150,6 @@ class AppSettings extends ChangeNotifier {
   ThemeMode get themeMode => _themeMode;
   bool get paragraphMode => _paragraphMode;
   double get menuScale => _menuScale;
-  bool get offlineMode => _offlineMode;
   String get booksViewMode => _booksViewMode;
   bool get boldVerseText => _boldVerseText;
   bool get showStrongsInOriginals => _showStrongsInOriginals;
@@ -267,14 +268,6 @@ class AppSettings extends ChangeNotifier {
     notifyListeners();
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_kParagraphMode, enabled);
-  }
-
-  Future<void> setOfflineMode(bool enabled) async {
-    if (_offlineMode == enabled) return;
-    _offlineMode = enabled;
-    notifyListeners();
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool(_kOfflineMode, enabled);
   }
 
   Future<void> setBooksViewMode(String mode) async {
@@ -478,7 +471,6 @@ class AppSettings extends ChangeNotifier {
     _themeMode = ThemeMode.system;
     _paragraphMode = true;
     _menuScale = 1.0;
-    _offlineMode = true;
     _booksViewMode = 'grid';
     _boldVerseText = false;
     _showStrongsInOriginals = true;
@@ -508,7 +500,10 @@ class AppSettings extends ChangeNotifier {
       _kThemeMode,
       _kParagraphMode,
       _kMenuScale,
-      _kOfflineMode,
+      // 2026-05-07 (v17): the offlineMode toggle is gone, but we
+      // still purge the stored bool on reset so users who toggled
+      // it before don't carry dead data forever.
+      'offlineMode',
       _kBooksViewMode,
       _kBoldVerseText,
       _kShowStrongsInOriginals,
@@ -587,7 +582,6 @@ class AppSettings extends ChangeNotifier {
     _paragraphMode = prefs.getBool(_kParagraphMode) ?? true;
     final rawMenuScale = prefs.getDouble(_kMenuScale) ?? 1.0;
     _menuScale = ((rawMenuScale * 10).roundToDouble() / 10).clamp(0.7, 1.5);
-    _offlineMode = prefs.getBool(_kOfflineMode) ?? true;
     final rawBooksView = prefs.getString(_kBooksViewMode) ?? 'grid';
     _booksViewMode = rawBooksView == 'grid' ? 'grid' : 'list';
     _boldVerseText = prefs.getBool(_kBoldVerseText) ?? false;

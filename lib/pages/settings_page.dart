@@ -22,8 +22,8 @@ import "package:yswords/services/realtime_db_sync_service.dart";
 import 'package:yswords/services/notification_service.dart';
 import 'package:yswords/widgets/contact_line.dart';
 import 'package:yswords/widgets/profile_avatar.dart';
-import 'package:yswords/services/fetch_books.dart';
-import 'package:yswords/services/fetch_verses.dart';
+// 2026-05-07 (v17): fetch_books / fetch_verses imports removed; the
+// only consumer was the deleted "Check for Updates" reload path.
 import 'package:yswords/services/profile_service.dart';
 import 'package:yswords/services/reading_plan_service.dart';
 import 'package:yswords/utils/font_catalog.dart';
@@ -761,31 +761,17 @@ class _SettingsPageBodyState extends State<_SettingsPageBody> {
                 ),
               ),
               SizedBox(height: 16 * s),
+              // 2026-05-07 (v17): the "Offline Mode" toggle was
+              // removed from this card. The bool was persisted in
+              // SharedPreferences but never read by any other code
+              // path -- a piece of dead UI that suggested the user
+              // could opt out of network use, which was never true.
+              // The Flutter web service worker decides what's cached;
+              // the dedicated "Offline pack" card lower in this page
+              // is the real "make this work without network" knob.
               Card(
                 child: Column(
                   children: [
-                    SwitchListTile(
-                      title: Text(
-                        uiStrings['offlineMode']?[settings.locale] ??
-                            'Offline Mode',
-                        style: TextStyle(
-                          fontSize: settings.fontSize + 2,
-                          fontWeight: FontWeight.w600,
-                          fontFamily: settings.fontFamily,
-                        ),
-                      ),
-                      subtitle: Text(
-                        uiStrings['offlineModeSubtitle']?[settings.locale] ??
-                            'All Bible data is bundled. No network connection required.',
-                        style: TextStyle(
-                          fontSize: settings.fontSize,
-                          fontFamily: settings.fontFamily,
-                        ),
-                      ),
-                      value: settings.offlineMode,
-                      onChanged: (val) => settings.setOfflineMode(val),
-                    ),
-                    const Divider(height: 1),
                     SwitchListTile(
                       title: Text(
                         uiStrings['boldVerseText']?[settings.locale] ??
@@ -908,38 +894,15 @@ class _SettingsPageBodyState extends State<_SettingsPageBody> {
                       onChanged: (val) =>
                           settings.setAutoExpandFirstRef(val),
                     ),
-                    const Divider(height: 1),
-                    ListTile(
-                      leading: Icon(
-                        Icons.refresh_rounded,
-                        color: Theme.of(context).colorScheme.primary,
-                        size: settings.fontSize + 4,
-                      ),
-                      title: Text(
-                        uiStrings['checkForUpdates']?[settings.locale] ??
-                            'Check for Updates',
-                        style: TextStyle(
-                          fontSize: settings.fontSize + 2,
-                          fontWeight: FontWeight.w600,
-                          fontFamily: settings.fontFamily,
-                        ),
-                      ),
-                      subtitle: Text(
-                        uiStrings['checkForUpdatesSubtitle']
-                                ?[settings.locale] ??
-                            'Refresh bundled Bible data and reload app.',
-                        style: TextStyle(
-                          fontSize: settings.fontSize,
-                          fontFamily: settings.fontFamily,
-                        ),
-                      ),
-                      trailing: Icon(
-                        Icons.chevron_right,
-                        size: settings.fontSize + 4,
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      ),
-                      onTap: () => _onCheckForUpdates(context, settings),
-                    ),
+                    // 2026-05-07 (v17): "Check for Updates" tile
+                    // removed. It re-ran FetchVerses against the
+                    // already-bundled assets and unconditionally
+                    // showed "You're up to date", making it pure
+                    // theatre. Real PWA updates are driven by the
+                    // service worker (replaced on next reload), and
+                    // the "Clear cache & reload" button further down
+                    // this page already provides an honest force-
+                    // refresh path.
                   ],
                 ),
               ),
@@ -1058,104 +1021,14 @@ class _SettingsPageBodyState extends State<_SettingsPageBody> {
     );
   }
 
-  /// Trigger an update check. Because Bible data is bundled with the app, an
-  /// "update" is really a reload: reset the paragraph cache, re-fetch verses
-  /// from the current bundle, and pop back to the reader. This gives users a
-  /// concrete action tied to the Offline Mode card and surfaces the current
-  /// app version so they can verify they're on the latest build.
-  Future<void> _onCheckForUpdates(
-      BuildContext context, AppSettings settings) async {
-    final messenger = ScaffoldMessenger.of(context);
-    final s = ResponsiveBreakpoints.spacingScale(
-        ResponsiveBreakpoints.classOf(MediaQuery.of(context).size.width));
-    final mainProvider = context.read<MainProvider>();
-    final localeTitle =
-        uiStrings['updatesAvailableTitle']?[settings.locale] ??
-            'You\'re up to date';
-    final localeBody = uiStrings['updatesAvailableBody']?[settings.locale] ??
-        'All Bible versions are bundled with the app. Data reloaded from local assets.';
-    final okLabel = uiStrings['ok']?[settings.locale] ?? 'OK';
-    final appVersion = _currentAppVersion;
-
-    // Reload verses from bundle (refreshes paragraph cache too).
-    try {
-      // Re-import dynamically via a dedicated helper so this stateless widget
-      // stays free of heavier imports.
-      await _reloadVerses(mainProvider);
-    } catch (e) {
-      if (!context.mounted) return;
-      messenger.showSnackBar(SnackBar(
-        content: Text('Reload failed: $e'),
-        duration: const Duration(seconds: 3),
-      ));
-      return;
-    }
-
-    if (!context.mounted) return;
-    await showDialog<void>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        icon: Icon(Icons.check_circle_outline,
-            color: Theme.of(ctx).colorScheme.primary,
-            size: settings.fontSize * 2),
-        title: Text(
-          localeTitle,
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            fontSize: settings.fontSize + 2,
-            fontWeight: FontWeight.w600,
-            fontFamily: settings.fontFamily,
-          ),
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              localeBody,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: settings.fontSize,
-                fontFamily: settings.fontFamily,
-              ),
-            ),
-            SizedBox(height: 12 * s),
-            Text(
-              'v$appVersion',
-              style: TextStyle(
-                fontSize: settings.fontSize * 0.85,
-                fontFamily: settings.fontFamily,
-                color: Theme.of(ctx).colorScheme.onSurfaceVariant,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: Text(
-              okLabel,
-              style: TextStyle(
-                fontSize: settings.fontSize,
-                fontFamily: settings.fontFamily,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// Bumped manually from pubspec.yaml. Kept at top-level so tests can read it.
-const String _currentAppVersion = '0.1.0';
-
-/// Re-fetch verses from the bundled assets so the reader re-reads the latest
-/// shipped data. Paragraph cache is preserved — it's keyed by english book
-/// name and doesn't change between reloads within the same app version.
-Future<void> _reloadVerses(MainProvider mainProvider) async {
-  await FetchVerses.execute(mainProvider: mainProvider);
-  await FetchBooks.execute(mainProvider: mainProvider);
+  // 2026-05-07 (v17): _onCheckForUpdates() and _reloadVerses() were
+  // removed. They were tied to a "Check for Updates" tile that
+  // unconditionally said "You're up to date" -- the reload only
+  // re-read the same bundled asset JSON. Real PWA updates ship via
+  // service-worker replacement on next reload; the existing
+  // "Clear cache & reload" button further down this page covers
+  // any user-initiated force-refresh need. The app version is now
+  // surfaced on the About page footer instead.
 }
 
 /// Settings card for picking a reading plan, choosing the start

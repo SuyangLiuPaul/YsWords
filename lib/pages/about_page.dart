@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import 'package:yswords/constants/app_version.dart';
 import 'package:yswords/constants/ui_strings.dart';
 import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/services/link_opener.dart';
@@ -112,9 +113,14 @@ class AboutPage extends StatelessWidget {
               ),
               const SizedBox(height: 24),
               Center(
+                // 2026-05-07 (v17): also show the running app version
+                // here. The "Check for Updates" tile in Settings used
+                // to be the only place this surfaced; that tile was
+                // removed (it was theatre — see settings_page.dart).
+                // This footer is now the canonical version display.
                 child: Text(
-                  uiStrings['aboutFooterNote']?[locale] ??
-                      'Last updated 2026-05-06.',
+                  '${uiStrings['aboutFooterNote']?[locale] ?? 'Last updated 2026-05-06.'}'
+                      ' · v$kAppVersion',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 11,

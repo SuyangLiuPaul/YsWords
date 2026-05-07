@@ -1,6 +1,6 @@
 # YsWords — AI Agent Handoff Document
 
-> Last updated: 2026-05-07 (Round 56 day-7++: sync Firestore → Drive → RTDB; AI Bible search + deep exegesis + lemma + proper-noun complementary glosses; 5-category offline pack; search-page redesign culminating in v8 (Word Study removed) + v9 (live search-as-you-type) + v10 (Copy-all results); v12–v15 feedback pipeline (in-app form → Resend → developer inbox, with diagnostic block + signed-in email + opt-in CC and mailto: fallback); Library Chinese label 我的标记 → 我的收藏; book-name fold uniform at 390 px; quick-links Search + Feedback tiles; CORS-suppressed news/evidence images; CJK gloss search with alias-pin for divine names)
+> Last updated: 2026-05-07 (Round 56 day-7++: sync Firestore → Drive → RTDB; AI Bible search + deep exegesis + lemma + proper-noun complementary glosses; 5-category offline pack; search-page redesign culminating in v8 (Word Study removed) + v9 (live search-as-you-type) + v10 (Copy-all results); v12–v16 feedback pipeline (in-app form → Resend → developer inbox, with diagnostic block + reply-to email and mailto: fallback; v16 dropped the copy-to-user CC after the user opted out of Resend domain verification); Settings v17 cleanup (dead Offline Mode toggle and theatrical Check-for-Updates tile removed; app version surfaced on AboutPage footer); Library Chinese label 我的标记 → 我的收藏; book-name fold uniform at 390 px; quick-links Search + Feedback tiles; CORS-suppressed news/evidence images; CJK gloss search with alias-pin for divine names)
 > Project: YsWords (Yahweh's Words) — bilingual Bible reader
 > Stack: Flutter 3.41.7 / Dart 3.11.5 / Provider + GetX
 > Repo: https://github.com/SuyangLiuPaul/YsWords
@@ -2070,6 +2070,95 @@ New `SCREENSHOTS.md`: capture brief for the 12 new screenshots
 needed (dashboard, search modes, feedback form wide + narrow,
 welcome disclaimer, etc.) with viewport sizes + filenames +
 target slots in the README.
+
+### Strand: Feedback v16 — drop copy-to-user CC (2026-05-07)
+
+Feedback v15 added an opt-in "send a copy of my feedback to me"
+CC, with two UI shapes (signed-in checkbox vs guest email field)
+and a server-side retry-without-CC fallback for Resend's free-tier
+sandbox refusing non-owner recipients without a verified domain.
+The user added `yswords.com` in Resend but didn't want to chase
+the DNS verification (4 records: SPF/DKIM/MX/DMARC, all
+"Not Started"); they decided receiving the feedback themselves
+was enough.
+
+v16 strips the feature end-to-end:
+- `lib/pages/feedback_page.dart`: removed `_copyEmailController` /
+  `_wantCopySignedIn` / `_resolveCopyEmail` / the dynamic
+  CheckboxListTile-vs-TextField branch. Replaced with one optional
+  Reply-to field, pre-filled from the auth email when signed in,
+  editable in case the user wants replies routed elsewhere.
+- `lib/services/feedback_service.dart`: dropped `copyEmail` /
+  `wantsCopy` params + payload fields. Class doc rewritten.
+- `netlify/functions/submitFeedback.mjs`: removed `copyEmail` /
+  `wantsCopy` parsing, the `Copy-to:` body line, the email
+  validation for `copyEmail`, and the CC retry branch. Single
+  Resend send now.
+- `lib/constants/ui_strings.dart`: removed `feedbackCopyToMe` and
+  `feedbackCopyEmailLabel`. `feedbackReplyToLabel` retained and
+  documented as the v16 replacement.
+
+If the user changes their mind later, the v15 design is in git
+(commit `f3aaf1a`); the Resend domain verification is the only
+gate to re-enabling it.
+
+### Strand: Settings v17 — drop offline-mode + check-for-updates theatre (2026-05-07)
+
+User feedback: *"離線模式和檢查更新，感覺這兩個都沒有什麼用，
+按道理我用離線模式應該是不會有任何更新的，但是一直更新，
+另一個檢查更新感覺就是一個擺設，有什麼用呢？"*
+
+Both controls were investigated and confirmed dead/theatre:
+
+1. **Offline Mode toggle.** `_offlineMode` was persisted in
+   SharedPreferences via `setOfflineMode`, but never read by any
+   other code path (verified with grep: zero references outside
+   `app_settings.dart` / `settings_page.dart` / `ui_strings.dart`).
+   It's been a vestigial bool from very early scaffolding. The
+   real "make this work without network" knob is the `Offline pack`
+   card lower in Settings (Round 56), which actually pre-fetches
+   Bibles / sermons / tools so the SW can serve them offline.
+
+2. **Check for Updates tile.** `_onCheckForUpdates` re-ran
+   `FetchVerses.execute()` against the same bundled-asset JSON,
+   then unconditionally showed an `updatesAvailableTitle` dialog
+   reading "You're up to date" — no version compare, no network
+   call, no actual update mechanism. The honest force-update
+   path is the existing `Clear cache & reload` button further
+   down the same page (calls `window.yswordsClearCacheAndReload()`
+   which unregisters the service worker, deletes Cache Storage,
+   and reloads).
+
+v17 changes:
+- `lib/pages/settings_page.dart`: deleted the Offline Mode
+  SwitchListTile, the Check for Updates ListTile, the
+  `_onCheckForUpdates` method, and the `_reloadVerses` helper.
+  Dropped now-unused `services/fetch_books` and
+  `services/fetch_verses` imports.
+- `lib/models/app_settings.dart`: removed `_kOfflineMode`,
+  `_offlineMode`, the `offlineMode` getter, `setOfflineMode`,
+  the reset-default assignment, and the load-time read. Kept a
+  one-time prefs cleanup (`'offlineMode'` literal in the
+  managed-keys set) so users who toggled it before don't carry
+  dead data after a future settings reset.
+- `lib/constants/ui_strings.dart`: removed `offlineMode`,
+  `offlineModeSubtitle`, `checkForUpdates`,
+  `checkForUpdatesSubtitle`, `updatesAvailableTitle`,
+  `updatesAvailableBody`.
+- `lib/constants/app_version.dart` (new): `kAppVersion = '0.1.0'`
+  extracted from the deleted `_currentAppVersion` in
+  settings_page.dart so it survives the cleanup.
+- `lib/pages/about_page.dart`: footer now reads
+  `Last updated YYYY-MM-DD · v0.1.0`. The Check-for-Updates
+  dialog used to be the only place version surfaced; AboutPage
+  is now the canonical version display.
+- `lib/constants/ui_strings.dart` (`aboutFooterNote`): bumped
+  date to 2026-05-07.
+
+Net effect: the Settings card that used to host these two dead
+controls is now visually shorter but every remaining toggle does
+something real. The "I want to force a fresh build" use case is
+still served by `Clear cache & reload`, just one card lower.
 
 ---
 
