@@ -29,6 +29,11 @@ import 'package:flutter/services.dart';
 /// "g 2316", "h7200", with case insensitivity.
 final _strongsQueryPattern = RegExp(r'^\s*([GHgh])\s*(\d{1,5})\s*$');
 
+/// 2026-05-07 (v6): which of the three modes the current results
+/// came from. Drives the highlight on the mode-chip strip so the
+/// user has visual confirmation of which path was used.
+enum _SearchMode { none, text, wordStudy, ai }
+
 class SearchPage extends StatefulWidget {
   const SearchPage({super.key});
 
@@ -107,6 +112,10 @@ class _SearchPageState extends State<SearchPage> {
   bool _lastSearchAll = true;
   String? _lastFilterBook;
   String? _lastCurrentBook;
+
+  /// 2026-05-07 (v6): which mode produced the currently-displayed
+  /// results. Drives the highlight on the mode-chip strip.
+  _SearchMode _lastMode = _SearchMode.none;
 
   /// On-demand verse load. Used by search(), the recent-search row
   /// tap path, and the AI search path. Returns true iff
@@ -662,6 +671,7 @@ class _SearchPageState extends State<SearchPage> {
                 .replaceAll('{n}', missing.length.toString()));
       }
       _aiNotice = notes.isEmpty ? null : notes.join('\n');
+      _lastMode = _SearchMode.ai;
       searchPerformed = true;
     });
     if (_scrollController.hasClients) {
@@ -705,6 +715,7 @@ class _SearchPageState extends State<SearchPage> {
       setState(() {
         _strongsEntry = entry;
         _strongsResult = conc;
+        _lastMode = _SearchMode.wordStudy;
         searchPerformed = true;
       });
       return;
@@ -717,6 +728,7 @@ class _SearchPageState extends State<SearchPage> {
       setState(() {
         _resetSearchState();
         searchPerformed = true;
+        _lastMode = _SearchMode.wordStudy;
         _aiNotice =
             uiStrings['searchWordStudyNoMatch']?[settings.locale] ??
                 'No lexicon entry matched. Try a Strong\'s number '
@@ -736,6 +748,7 @@ class _SearchPageState extends State<SearchPage> {
     if (!mounted) return;
     setState(() {
       _strongsResult = conc;
+      _lastMode = _SearchMode.wordStudy;
       searchPerformed = true;
     });
   }
@@ -870,43 +883,67 @@ class _SearchPageState extends State<SearchPage> {
     );
   }
 
-  // Method to perform the search
+  // 2026-05-07 (v6): bare-bones search rewrite. Earlier versions
+  // wrapped the for-loop in latch / polling / multi-step setState
+  // chains; the user kept seeing "scanned 0 verses" no matter what
+  // I tried. Strip the wrapping. Single async function, single
+  // setState at the end, print every intermediate state so the user
+  // can read it in browser DevTools console (debugPrint outputs to
+  // console.log on Flutter web).
   Future<void> search() async {
     final query = _textEditingController.text.trim();
+    debugPrint('[YsWords search] start query="$query"');
     if (query.isEmpty) {
-      // 2026-05-07 (post-fix): empty query is NOT a "search" — it just
-      // returns the user to the empty state (recents + tips). The old
-      // code set searchPerformed=true here, which made the page show
-      // "No results" with an empty bar — confusing.
+      setState(() => _resetSearchState());
+      return;
+    }
+
+    final mp = Provider.of<MainProvider>(context, listen: false);
+    debugPrint('[YsWords search] mp=${mp.hashCode} '
+        'verses=${mp.verses.length} ver=${mp.currentVersion} '
+        'curBook=${mp.currentBook}');
+
+    // Load corpus if missing. Direct, no latch.
+    if (mp.verses.isEmpty) {
+      debugPrint('[YsWords search] verses empty, loading...');
+      setState(() {
+        _isLoadingVerses = true;
+        _versesLoadError = null;
+      });
+      try {
+        await FetchVerses.execute(mainProvider: mp);
+      } catch (e) {
+        debugPrint('[YsWords search] load failed: $e');
+        if (!mounted) return;
+        setState(() {
+          _isLoadingVerses = false;
+          _versesLoadError = e.toString();
+        });
+        return;
+      }
+      if (!mounted) return;
+      setState(() => _isLoadingVerses = false);
+      debugPrint(
+          '[YsWords search] loaded; verses=${mp.verses.length}');
+    }
+    if (mp.verses.isEmpty) {
+      debugPrint(
+          '[YsWords search] still empty after load attempt — bail');
       setState(() {
         _resetSearchState();
+        _versesLoadError =
+            'Loaded but empty (version=${mp.currentVersion}).';
       });
       return;
     }
+    _lastVersesLength = mp.verses.length;
+    _lastLoadedVersion = mp.currentVersion;
 
-    // 2026-05-07 (post-fix v2): self-heal when the corpus is empty.
-    // Deep-link refreshes that land directly on the SearchPage can
-    // race ahead of the bootstrap loader — on those paths the user
-    // would otherwise type a query, get 0 results, and conclude that
-    // search itself is broken. Auto-load if needed; bail to "no
-    // results" only after a successful load that genuinely returned
-    // nothing.
-    final loaded = await _ensureVersesLoaded();
-    if (!mounted) return;
-    if (!loaded) {
-      // The loading state widget is shown by the build method; just
-      // exit so we don't render the empty/no-results path on top.
-      return;
-    }
-
-    // Strong's-number search path. When the input matches "G2316" /
-    // "H7200" / etc., bypass the text scan and load the bundled
-    // concordance — every verse where that Strong's word appears.
+    // Strong's number → lexicon view.
     final strongsMatch = _strongsQueryPattern.firstMatch(query);
     if (strongsMatch != null) {
-      final prefix = strongsMatch.group(1)!.toUpperCase();
-      final digits = strongsMatch.group(2)!;
-      final num = '$prefix$digits';
+      final num =
+          '${strongsMatch.group(1)!.toUpperCase()}${strongsMatch.group(2)!}';
       setState(() {
         _resetSearchState();
         _strongsKey = num;
@@ -922,23 +959,8 @@ class _SearchPageState extends State<SearchPage> {
       return;
     }
 
-    // 2026-05-07 (post-fix): lemma redirect policy.
-    //
-    // OLD behavior (buggy): any Latin token of length 3-25 was sent
-    // through `searchByLemma`, and ANY match (including weak
-    // contains-matches) auto-redirected to the lexicon. So typing
-    // "love" / "father" / "faith" could silently land on a Greek
-    // lexicon entry instead of doing the text search the user wanted.
-    //
-    // NEW behavior:
-    //   - Greek/Hebrew script in input → still always lemma search
-    //     (the verses don't contain those characters, text search
-    //     would always return 0).
-    //   - Latin token → only auto-redirect on EXACT match (lemma
-    //     normalised == query OR translit normalised == query, i.e.
-    //     score 0/1 from searchByLemma). Weaker matches are kept
-    //     aside and surfaced as a "Did you mean lexicon entry…"
-    //     suggestion above the regular text-search results.
+    // Lemma-search redirect (Greek/Hebrew script always; Latin only
+    // on exact translit/lemma).
     final hasGreek = RegExp(r'[Ͱ-Ͽἀ-῿]').hasMatch(query);
     final hasHebrew = RegExp(r'[֐-׿יִ-ﭏ]').hasMatch(query);
     final isLatinToken = RegExp(r'^[a-zA-ZÀ-ɏḀ-ỿ]+$').hasMatch(query) &&
@@ -996,67 +1018,76 @@ class _SearchPageState extends State<SearchPage> {
     // and the user may have left this page during the await.
     if (!mounted) return;
 
-    setState(() {
-      _resetSearchState();
-      _lemmaSuggestion = lemmaSuggestion;
-    });
+    // We already have `mp` from the top of search(). Reuse it. No
+    // setState here yet — gather everything first, single setState
+    // at the end so there is exactly one rebuild cycle and zero
+    // window for state to drift.
+    final verses = mp.verses;
+    debugPrint('[YsWords search] for-loop verses=${verses.length} '
+        'searchAll=$searchAll filter=$filterBook curBook=${mp.currentBook}');
+    final Iterable<Verse> source;
+    if (filterBook != null) {
+      source = verses.where((v) => v.book == filterBook);
+    } else if (searchAll) {
+      source = verses;
+    } else if (mp.currentBook != null) {
+      source = verses.where((v) => v.book == mp.currentBook);
+    } else {
+      // Defensive: if searchAll=false AND no currentBook, fall back
+      // to all verses rather than excluding everything.
+      source = verses;
+    }
 
-    final mainProvider = Provider.of<MainProvider>(context, listen: false);
-    final verses = mainProvider.verses;
-    // 2026-05-07 (post-fix v5): capture mp.verses.length AT THE FOR
-    // LOOP (not at the load-check) so we can tell whether the corpus
-    // was empty here, even though _lastVersesLength (set in
-    // _ensureVersesLoaded) said it was 31102.
-    _lastVersesAtSearch = verses.length;
-    _lastSearchAll = searchAll;
-    _lastFilterBook = filterBook;
-    _lastCurrentBook = mainProvider.currentBook;
-    final source = filterBook != null
-        ? verses.where((v) => v.book == filterBook)
-        : searchAll
-            ? verses
-            : verses.where((v) => v.book == mainProvider.currentBook);
-
-    // 2026-05-07 (post-fix): count what was actually scanned so the
-    // no-results banner can distinguish "Bible not loaded" from
-    // "filter excluded the match" from "query genuinely absent".
     final sourceList = source.toList();
-    _lastScanCount = sourceList.length;
-    final queryNorm =
-        _textEditingController.text.trim().replaceAll(' ', '').toLowerCase();
-    for (var verse in sourceList) {
+    debugPrint('[YsWords search] sourceList.length=${sourceList.length}');
+    // Compute matches locally — do NOT touch state until the end.
+    final queryNorm = query.replaceAll(' ', '').toLowerCase();
+    final matches = <Verse>[];
+    final localCounts = <String, int>{};
+    for (final verse in sourceList) {
       final sanitized = sanitizeForSearch(verse.text);
       final textNorm = sanitized.replaceAll(' ', '').toLowerCase();
       if (textNorm.contains(queryNorm)) {
-        if (!_results.contains(verse)) {
-          _results.add(verse);
-          bookCounts[verse.book] = (bookCounts[verse.book] ?? 0) + 1;
-        }
+        matches.add(verse);
+        localCounts[verse.book] = (localCounts[verse.book] ?? 0) + 1;
       }
     }
+    debugPrint('[YsWords search] matches.length=${matches.length}');
 
     final bookOrder = {
-      for (var i = 0; i < mainProvider.books.length; i++)
-        mainProvider.books[i].title: i
+      for (var i = 0; i < mp.books.length; i++) mp.books[i].title: i
     };
-
-    _results.sort((a, b) {
+    matches.sort((a, b) {
       final orderA = bookOrder[a.book] ?? 9999;
       final orderB = bookOrder[b.book] ?? 9999;
       if (orderA != orderB) return orderA.compareTo(orderB);
       if (a.chapter != b.chapter) return a.chapter.compareTo(b.chapter);
       return a.verse.compareTo(b.verse);
     });
-
-    final sortedEntries = bookCounts.entries.toList()
+    final sortedEntries = localCounts.entries.toList()
       ..sort((a, b) {
         final orderA = bookOrder[a.key] ?? 9999;
         final orderB = bookOrder[b.key] ?? 9999;
         return orderA.compareTo(orderB);
       });
-    bookCounts = {for (var e in sortedEntries) e.key: e.value};
+    final orderedCounts = {for (final e in sortedEntries) e.key: e.value};
 
+    if (!mounted) return;
+    // Single atomic state update — replaces the previous pattern
+    // that mutated _results / bookCounts outside setState then
+    // setState'd searchPerformed at the end. Atomic update means
+    // no half-built UI state is ever observable.
     setState(() {
+      _resetSearchState();
+      _lemmaSuggestion = lemmaSuggestion;
+      _results.addAll(matches);
+      bookCounts = orderedCounts;
+      _lastVersesAtSearch = verses.length;
+      _lastSearchAll = searchAll;
+      _lastFilterBook = filterBook;
+      _lastCurrentBook = mp.currentBook;
+      _lastScanCount = sourceList.length;
+      _lastMode = _SearchMode.text;
       searchPerformed = true;
     });
   }
@@ -1288,6 +1319,7 @@ class _SearchPageState extends State<SearchPage> {
                 },
                 onAiSearch: _aiBusy ? null : _askAi,
                 aiBusy: _aiBusy,
+                activeMode: _lastMode,
                 locale: settings.locale,
               ),
             // 2026-05-07 (post-fix v2): "Bible loading…" / load-failed
@@ -1858,6 +1890,7 @@ class _SearchModeStrip extends StatelessWidget {
   final Future<void> Function() onWordStudy;
   final Future<void> Function()? onAiSearch;
   final bool aiBusy;
+  final _SearchMode activeMode;
   final String locale;
 
   const _SearchModeStrip({
@@ -1865,6 +1898,7 @@ class _SearchModeStrip extends StatelessWidget {
     required this.onWordStudy,
     required this.onAiSearch,
     required this.aiBusy,
+    required this.activeMode,
     required this.locale,
   });
 
@@ -1884,6 +1918,7 @@ class _SearchModeStrip extends StatelessWidget {
                   'Find verses containing this word or phrase. (Enter)',
               onTap: () => onTextSearch(),
               color: scheme.primary,
+              active: activeMode == _SearchMode.text,
             ),
             const SizedBox(width: 8),
             _ModeChip(
@@ -1895,6 +1930,7 @@ class _SearchModeStrip extends StatelessWidget {
                       'transliteration. Opens the lexicon directly.',
               onTap: () => onWordStudy(),
               color: scheme.tertiary,
+              active: activeMode == _SearchMode.wordStudy,
             ),
             const SizedBox(width: 8),
             _ModeChip(
@@ -1906,6 +1942,7 @@ class _SearchModeStrip extends StatelessWidget {
               onTap: onAiSearch == null ? null : () => onAiSearch!(),
               color: scheme.secondary,
               busy: aiBusy,
+              active: activeMode == _SearchMode.ai,
             ),
           ],
         ),
@@ -1922,6 +1959,7 @@ class _ModeChip extends StatelessWidget {
   final VoidCallback? onTap;
   final Color color;
   final bool busy;
+  final bool active;
   const _ModeChip({
     required this.icon,
     required this.label,
@@ -1929,15 +1967,23 @@ class _ModeChip extends StatelessWidget {
     required this.onTap,
     required this.color,
     this.busy = false,
+    this.active = false,
   });
 
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    // 2026-05-07 (v6): active chip gets a saturated fill + white
+    // foreground so the user can see at a glance which mode their
+    // currently-displayed results came from. Inactive chips use the
+    // pale fill and dark foreground (existing look).
+    final bg = active ? color : color.withValues(alpha: 0.12);
+    final fg = active ? Colors.white : scheme.onSurface;
+    final iconColor = active ? Colors.white : color;
     return Tooltip(
       message: tooltip,
       child: Material(
-        color: color.withValues(alpha: 0.12),
+        color: bg,
         borderRadius: BorderRadius.circular(20),
         child: InkWell(
           onTap: onTap,
@@ -1954,20 +2000,18 @@ class _ModeChip extends StatelessWidget {
                     height: 14,
                     child: CircularProgressIndicator(
                       strokeWidth: 2,
-                      color: color,
+                      color: iconColor,
                     ),
                   )
                 else
-                  Icon(icon, size: 14, color: color),
+                  Icon(icon, size: 14, color: iconColor),
                 const SizedBox(width: 6),
                 Text(
                   label,
                   style: TextStyle(
                     fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: onTap != null
-                        ? scheme.onSurface
-                        : scheme.onSurfaceVariant,
+                    fontWeight: FontWeight.w700,
+                    color: onTap != null ? fg : scheme.onSurfaceVariant,
                   ),
                 ),
               ],
