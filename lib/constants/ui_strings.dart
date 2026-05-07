@@ -2212,6 +2212,18 @@ const uiStrings = {
         'YsWords AI also suggested {n} passages not in your current '
             'Bible version (reference only).',
   },
+  // 2026-05-07 (post-fix v3): AI-result note when the active search
+  // filter (e.g. "Search current book") excluded some of the
+  // passages YsWords returned. Distinct from
+  // aiBibleSearchSomeMissing which is for refs not present in the
+  // user's loaded Bible version at all.
+  'aiBibleSearchOutOfScope': {
+    'zh-Hans': 'YsWords 还推荐了 {n} 处经文，但当前筛选范围之外（仅供参考）。',
+    'zh-Hant': 'YsWords 還推薦了 {n} 處經文，但當前篩選範圍之外（僅供參考）。',
+    'en':
+        'YsWords AI also suggested {n} passages outside your current '
+            'filter scope.',
+  },
   // 2026-05-07: italic caveat shown directly below the AI search
   // button so the "reference only" framing is visible at the moment
   // of choice, not just in the result header.

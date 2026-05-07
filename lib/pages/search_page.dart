@@ -95,20 +95,36 @@ class _SearchPageState extends State<SearchPage> {
   bool _isLoadingVerses = false;
   String? _versesLoadError;
 
+  /// 2026-05-07 (post-fix v3): in-flight latch. Multiple call sites
+  /// (initState's post-frame callback + every search() invocation)
+  /// race to ensure the corpus is loaded. Without this, the v2 fix
+  /// hit a different bug: the second caller saw `_isLoadingVerses ==
+  /// true`, returned `false` immediately, and search() bailed out —
+  /// the user typed a query before init's load finished and got
+  /// "scanned 0 verses" anyway. Latching on a single Future means
+  /// all callers wait on the same load and observe the post-load
+  /// truth. Reset to null on failure so a retry can re-fire.
+  Future<bool>? _versesLoadFuture;
+
   /// 2026-05-07 (post-fix v2): on-demand verse load. The app's
   /// startup bootstrap *should* have populated `MainProvider.verses`
   /// already, but if the SearchPage is the first widget the user
   /// sees (deep-link / browser refresh) the Bible asset may still
   /// be parsing. Auto-trigger `FetchVerses.execute` so the search
   /// has data to scan instead of silently returning "0 results".
-  Future<bool> _ensureVersesLoaded() async {
+  Future<bool> _ensureVersesLoaded() {
+    return _versesLoadFuture ??= _doLoadVerses();
+  }
+
+  Future<bool> _doLoadVerses() async {
     final mp = Provider.of<MainProvider>(context, listen: false);
     if (mp.verses.isNotEmpty) return true;
-    if (_isLoadingVerses) return false; // a load is already in flight
-    setState(() {
-      _isLoadingVerses = true;
-      _versesLoadError = null;
-    });
+    if (mounted) {
+      setState(() {
+        _isLoadingVerses = true;
+        _versesLoadError = null;
+      });
+    }
     try {
       await FetchVerses.execute(mainProvider: mp);
     } catch (e) {
@@ -117,13 +133,16 @@ class _SearchPageState extends State<SearchPage> {
         _isLoadingVerses = false;
         _versesLoadError = e.toString();
       });
+      _versesLoadFuture = null; // allow retry
       return false;
     }
     if (!mounted) return false;
     setState(() {
       _isLoadingVerses = false;
     });
-    return mp.verses.isNotEmpty;
+    final ok = mp.verses.isNotEmpty;
+    if (!ok) _versesLoadFuture = null; // allow retry on suspicious empty result
+    return ok;
   }
 
   @override
@@ -509,7 +528,24 @@ class _SearchPageState extends State<SearchPage> {
       final key = '$eb|${v.chapter}';
       (byBookChapter[key] ??= []).add(v);
     }
+    // 2026-05-07 (post-fix v3): apply book filter to YsWords AI
+    // results too. The user expected the filter scope to apply to
+    // every search mode (text / Strong's / AI). Pre-compute the
+    // active scope here so refs from other books are dropped before
+    // resolution, with their count surfaced in _aiNotice so the user
+    // knows the AI suggested more.
+    final scopeEnglishBook = filterBook != null
+        ? (toEnglish(filterBook!) ?? filterBook!)
+        : (!searchAll && mp.currentBook != null
+            ? (toEnglish(mp.currentBook!) ?? mp.currentBook!)
+            : null);
+    int outOfScope = 0;
     for (final ref in result.refs) {
+      // Filter scope: book mismatch → count and skip.
+      if (scopeEnglishBook != null && ref.book != scopeEnglishBook) {
+        outOfScope += 1;
+        continue;
+      }
       final key = '${ref.book}|${ref.chapter}';
       final candidates = byBookChapter[key];
       if (candidates == null) {
@@ -532,12 +568,23 @@ class _SearchPageState extends State<SearchPage> {
         bookCounts[v.book] = (bookCounts[v.book] ?? 0) + 1;
       }
       _lastResultsFromAi = true;
-      _aiNotice = missing.isEmpty
-          ? null
-          : (uiStrings['aiBibleSearchSomeMissing']?[settings.locale] ??
-                  'YsWords AI also suggested {n} passages not in your '
-                      'current Bible version (reference only).')
-              .replaceAll('{n}', missing.length.toString());
+      // Compose an inline note that combines: out-of-scope (filter)
+      // + missing-from-version drops, when present.
+      final notes = <String>[];
+      if (outOfScope > 0) {
+        notes.add((uiStrings['aiBibleSearchOutOfScope']?[settings.locale] ??
+                'YsWords AI also suggested {n} passages outside your '
+                    'current filter scope.')
+            .replaceAll('{n}', outOfScope.toString()));
+      }
+      if (missing.isNotEmpty) {
+        notes.add(
+            (uiStrings['aiBibleSearchSomeMissing']?[settings.locale] ??
+                    'YsWords AI also suggested {n} passages not in your '
+                        'current Bible version (reference only).')
+                .replaceAll('{n}', missing.length.toString()));
+      }
+      _aiNotice = notes.isEmpty ? null : notes.join('\n');
       searchPerformed = true;
     });
     if (_scrollController.hasClients) {
@@ -909,20 +956,19 @@ class _SearchPageState extends State<SearchPage> {
                   RegExp(r'[0-9a-zA-Z\u4E00-\u9FFF\u00C0-\u024F\u0370-\u03FF\u1F00-\u1FFF\u0590-\u05FF :\-\.：。‐–—]')),
             ],
             onChanged: (text) {
-              setState(() {
-                if (text.trim().isEmpty) {
-                  searchAll = true;
-                  filterBook = null;
-                }
-              });
+              // 2026-05-07 (post-fix v3): user feedback — filter must
+              // persist across edits. Previously, deleting all chars
+              // silently reset filterBook=null + searchAll=true; the
+              // user expected their book filter to stick. setState is
+              // still needed for the X-button visibility update.
+              setState(() {});
             },
             onSubmitted: (s) async {
               final trimmed = s.trim();
               if (trimmed.isEmpty) {
-                setState(() {
-                  searchAll = true;
-                  filterBook = null;
-                });
+                // Empty submit = abandon the query but keep the
+                // user's filter selection so the next typed query
+                // honours it.
                 await search();
                 return;
               }
@@ -978,6 +1024,14 @@ class _SearchPageState extends State<SearchPage> {
               tooltip: uiStrings['showMenu']?[settings.locale] ?? 'Show menu',
               icon: const Icon(Icons.filter_list),
               onSelected: (value) async {
+                // 2026-05-07 (post-fix v3): replay the LAST search
+                // mode (text / Strong's / YsWords AI) with the new
+                // filter, instead of always defaulting to text
+                // search. Without this, a user who got AI results
+                // and changed the filter saw their AI results
+                // replaced with a (probably empty) text search.
+                final wasAi = _lastResultsFromAi;
+                final hadStrongs = _strongsKey != null;
                 setState(() {
                   _results.clear();
                   bookCounts.clear();
@@ -989,8 +1043,21 @@ class _SearchPageState extends State<SearchPage> {
                     searchAll = false;
                   }
                 });
-                // Immediately perform search and scroll to top
-                await search();
+                if (wasAi) {
+                  // Re-run YsWords AI in the new scope. The
+                  // post-resolve filter inside _askAi() drops refs
+                  // outside the active filterBook / searchAll, with
+                  // a notice line so the user can see how many were
+                  // dropped.
+                  await _askAi();
+                } else if (hadStrongs) {
+                  // Strong's mode: just rebuild — _buildStrongsRefList
+                  // re-applies the filter at render time. No need to
+                  // re-fetch the concordance.
+                  setState(() {});
+                } else {
+                  await search();
+                }
                 if (_scrollController.hasClients) {
                   _scrollController.jumpTo(0.0);
                 }
@@ -1371,23 +1438,60 @@ class _SearchPageState extends State<SearchPage> {
         ),
       );
     }
-    final refs = result.refs;
+    // 2026-05-07 (post-fix v3): apply book filter to Strong's
+    // concordance results too. The filter dropdown ("Search current
+    // book" / "Search entire Bible") used to silently apply only to
+    // the text-search path; for Strong's lookups it had no effect,
+    // which surprised users — typing G2316 while filtered to a book
+    // would show every occurrence in the whole Bible. Now: when
+    // searchAll is false (or filterBook is set) we keep only refs
+    // whose canonical English book matches the current scope.
+    final mainProv = Provider.of<MainProvider>(context, listen: false);
+    final scopeEnglishBook = filterBook != null
+        ? (toEnglish(filterBook!) ?? filterBook!)
+        : (!searchAll && mainProv.currentBook != null
+            ? (toEnglish(mainProv.currentBook!) ?? mainProv.currentBook!)
+            : null);
+    final List<ConcordanceRef> refs = scopeEnglishBook != null
+        ? result.refs.where((r) => r.englishBook == scopeEnglishBook).toList()
+        : result.refs;
     if (refs.isEmpty) {
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(20),
-          child: Text(
-            uiStrings['noResults']?[settings.locale] ?? 'No results found',
-            style: TextStyle(
-              fontSize: settings.fontSize,
-              color: Theme.of(context).colorScheme.outline,
-              fontWeight: FontWeight.w500,
-            ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                uiStrings['noResults']?[settings.locale] ?? 'No results found',
+                style: TextStyle(
+                  fontSize: settings.fontSize,
+                  color: Theme.of(context).colorScheme.outline,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              if (scopeEnglishBook != null) ...[
+                const SizedBox(height: 8),
+                _ScopeBanner(
+                  searchAll: searchAll,
+                  filterBook: filterBook,
+                  versesScanned: result.refs.length,
+                  onWiden: (filterBook != null || !searchAll)
+                      ? () {
+                          setState(() {
+                            searchAll = true;
+                            filterBook = null;
+                          });
+                        }
+                      : null,
+                  locale: settings.locale,
+                ),
+              ],
+            ],
           ),
         ),
       );
     }
-    final mainProv = Provider.of<MainProvider>(context, listen: false);
     // Build a version-independent index for verse text lookup.
     final verseIndex = <String, String>{
       for (final v in mainProv.verses)
