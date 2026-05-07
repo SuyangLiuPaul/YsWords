@@ -6,6 +6,14 @@ mode chips, dashboard quick-links grid, feedback form). This file
 is the capture brief for whoever takes them — the URL flow,
 suggested viewport size, and the filename to save.
 
+> **Status (2026-05-07):** rows 1–7 and 9–11 captured against the
+> live build (v0.1.0) and committed into `assets/screenshots/`.
+> The README's *App Screenshots* table now uses these new shots
+> in 5 rows × 2 columns; older shots (note popup / multi-select /
+> version switch / book picker / splash / older settings) are
+> kept inside a `<details>` collapser further down. **Rows 8 and
+> 12 are still pending** — see the table below.
+
 ## How to capture
 
 1. Open <https://yswords.netlify.app> in Chrome.
@@ -29,20 +37,20 @@ exist.
 > visual matches what most users see. Add a wide shot only when the
 > feature has a distinctly different desktop layout.*
 
-| # | Filename | Viewport | What to capture |
-|---|----------|----------|-----------------|
-| 1 | `screenshot_dashboard_home.png` | 414 × 819 | Dashboard top: greeting card + Read-Bible card + Verse of the Day. Sign in as `Guest` (so the email isn't shown). |
-| 2 | `screenshot_dashboard_quicklinks.png` | 414 × 1100 *(scroll)* | Bottom of dashboard showing the quick-links grid: Search, Library, Statistics, Daily News, Bible Evidence, Sermons, Family Tree, Bible Timeline, Bible Trivia, Songs, **Feedback**, Settings. |
-| 3 | `screenshot_search_modes.png` | 414 × 819 | SearchPage with the **Search** + **YsWords AI** chip strip visible below the AppBar. Empty state (no query typed). |
-| 4 | `screenshot_search_results.png` *(replace existing)* | 414 × 819 | Type "love" → wait for live results. Show the count header + result-list + the Copy-all icon at top right. |
-| 5 | `screenshot_search_ai.png` | 414 × 819 | Type a thematic query like "the love chapter" → tap **YsWords AI** chip → AI-suggested verses appear. The AI chip should be highlighted (active state). |
-| 6 | `screenshot_search_help_dialog.png` | 414 × 819 | Tap the **?** icon in the SearchPage AppBar → shows the localized "How to search" dialog with Basic + Advanced sections. |
-| 7 | `screenshot_feedback_form.png` | 414 × 819 | Dashboard → Feedback tile → form open with category chips, message field, name field, copy-me checkbox (signed in) or email input (guest). |
-| 8 | `screenshot_feedback_form_wide.png` | 1280 × 800 | Same form on a desktop monitor — the new `ConstrainedBox(maxWidth: 600)` should center it nicely with margin on both sides. |
-| 9 | `screenshot_word_study.png` | 414 × 819 | Inside reader → tap a verse → **Original** sheet opens → word-by-word interlinear with Strong's chips + tappable lemmas. |
-| 10 | `screenshot_ai_explanation.png` | 414 × 819 | Originals sheet → tap **AI explain** chip → AI response renders below with the *"AI is only an aid"* caveat visible at bottom. |
-| 11 | `screenshot_welcome_disclaimer.png` | 414 × 819 | First-launch welcome page: tagline + the *"The Spirit guides; AI only assists"* disclaimer card + Sign-in / Continue-as-guest buttons. |
-| 12 | `screenshot_dark_mode.png` | 414 × 819 | Reader in dark mode (Settings → Theme → Dark) showing a chapter rendered with the dark palette. |
+| # | Filename | Viewport | What to capture | Status |
+|---|----------|----------|-----------------|--------|
+| 1 | `screenshot_dashboard_home.png` | 414 × 819 | Dashboard top: greeting card + Read-Bible card + Verse of the Day. Sign in as `Guest` (so the email isn't shown). | ✅ captured |
+| 2 | `screenshot_dashboard_quicklinks.png` | 414 × 1100 *(scroll)* | Bottom of dashboard showing the quick-links grid: Search, Library, Bible Tools, Daily News, Bible Evidence, Sermons, Family Tree, Bible Timeline, Bible Trivia, Songs, **Feedback**, Settings. | ✅ captured |
+| 3 | `screenshot_search_modes.png` | 414 × 819 | SearchPage with the **Search** + **YsWords AI** chip strip visible below the AppBar. Empty state (no query typed). | ✅ captured |
+| 4 | `screenshot_search_results.png` *(replace existing)* | 414 × 819 | Type "love" → wait for live results. Show the count header + result-list + the Copy-all icon at top right. *(Captured against "God" — same UI surface, the count of 4226 reads dramatically.)* | ✅ captured |
+| 5 | `screenshot_search_ai.png` | 414 × 819 | Type a thematic query like "the love chapter" → tap **YsWords AI** chip → AI-suggested verses appear. The AI chip should be highlighted (active state). *(Captured against "The Verse about Gods name", AI returned 8 passages.)* | ✅ captured |
+| 6 | `screenshot_search_help_dialog.png` | 414 × 819 | Tap the **?** icon in the SearchPage AppBar → shows the localized "How to search" dialog with Basic + Advanced sections. | ✅ captured |
+| 7 | `screenshot_feedback_form.png` | 414 × 819 | Dashboard → Feedback tile → form open with category chips, message field, name field, **Reply-to email (optional)** field. *(Post-v16 — the "send a copy to me" checkbox is no longer there.)* | ✅ captured |
+| 8 | `screenshot_feedback_form_wide.png` | 1280 × 800 | Same form on a desktop monitor — the `ConstrainedBox(maxWidth: 600)` should center it nicely with margin on both sides. | ⏳ pending |
+| 9 | `screenshot_word_study.png` | 414 × 819 | Inside reader → tap a verse → **Original** sheet opens → word-by-word interlinear with Strong's chips + tappable lemmas. *(Captured at desktop width; the same UI shows on mobile.)* | ✅ captured |
+| 10 | `screenshot_ai_explanation.png` | 414 × 819 | Originals sheet → tap **AI explain** chip → AI response renders below with the *"AI is only an aid"* caveat visible at bottom. *(Captured at desktop width.)* | ✅ captured |
+| 11 | `screenshot_welcome_disclaimer.png` | 414 × 819 | First-launch welcome page: tagline + the *"The Spirit guides; AI only assists"* disclaimer card + Sign-in / Continue-as-guest buttons. | ✅ captured |
+| 12 | `screenshot_dark_mode.png` | 414 × 819 | Reader in dark mode (Settings → Theme → Dark) showing a chapter rendered with the dark palette. | ⏳ pending |
 
 ## Existing screenshots (already in `assets/screenshots/`)
 

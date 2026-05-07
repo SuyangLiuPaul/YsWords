@@ -97,24 +97,44 @@ any APIs themselves**; everything is at the Firebase project level.
 
 ## App Screenshots
 
-> Many of the screenshots below predate the dashboard / search / feedback overhauls. **See [SCREENSHOTS.md](SCREENSHOTS.md)** for a capture-brief covering the new UI surfaces (search mode chips, quick-links grid, feedback form, AI explanation card, etc.) and the exact filenames + viewport sizes to use.
+> Captured 2026-05-07 against the current build (v0.1.0). Top half of the table covers the new dashboard / search / feedback flow; the lower half is the deeper Bible-study surface (word-by-word originals, AI explanations) that landed across rounds 55–56.
 
+| Dashboard — greeting + Read Bible + Verse of the Day                                                                                  | Quick-links grid (Search · Library · Bible Tools · Daily News · Bible Evidence · Sermons · Family Tree · Bible Timeline · Bible Trivia · Songs · Feedback · Settings) |
+| ------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| <img src="assets/screenshots/screenshot_dashboard_home.png" alt="Dashboard home" height="320"/>                                       | <img src="assets/screenshots/screenshot_dashboard_quicklinks.png" alt="Dashboard quick-links grid" height="320"/>                                                     |
 
-| Main Reading View & Multi-select                                                                   | Note Popup                                                                             |
-| -------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
-| <img src="assets/screenshots/screenshot_multi_select.png" alt="Main Reading View" height="250"/>   | <img src="assets/screenshots/screenshot_note_popup.png" alt="Note popup" height="250"/> |
+| Search modes — **Search** + **YsWords AI** chip strip                                                                  | Search results — count, grouped by book, with Copy-all                                                |
+| ---------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| <img src="assets/screenshots/screenshot_search_modes.png" alt="Search modes" height="320"/>                            | <img src="assets/screenshots/screenshot_search_results.png" alt="Search results" height="320"/>       |
 
-| Search Results                                                                                    | Search Filter                                                                                         |
-| ------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| <img src="assets/screenshots/screenshot_search_results.png" alt="Search results" height="250"/>   | <img src="assets/screenshots/screenshot_search_filter_zh.png" alt="Dropdown Simplified" height="250"/> |
+| YsWords AI — fuzzy / thematic verse lookup ("AI is only an aid")                                                       | "How to search" help dialog — Basic + Advanced                                                        |
+| ---------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| <img src="assets/screenshots/screenshot_search_ai.png" alt="YsWords AI search" height="320"/>                          | <img src="assets/screenshots/screenshot_search_help_dialog.png" alt="Search help dialog" height="320"/> |
 
-| Version Switching                                                                                         | Settings Page                                                                                    |
-| --------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
-| <img src="assets/screenshots/screenshot_version_switch.png" alt="Version switching menu" height="250"/>   | <img src="assets/screenshots/screenshot_settings_page.png" alt="Settings page" height="250"/>    |
+| Word-by-word exegesis — Greek/Hebrew interlinear with Strong's chips                                                     | AI explanation card — verse-level commentary with length / scope controls                             |
+| ------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------- |
+| <img src="assets/screenshots/screenshot_word_study.png" alt="Word-by-word exegesis" height="320"/>                       | <img src="assets/screenshots/screenshot_ai_explanation.png" alt="AI explanation" height="320"/>       |
 
-| Book & Chapter Picker                                                                                         | Splash Screen                                                                                       |
-| ------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
-| <img src="assets/screenshots/screenshot_book_chapter_picker.png" alt="Book and chapter picker" height="250"/> | <img src="assets/screenshots/screenshot_loading_page.png" alt="Splash screen" height="250"/>       |
+| Feedback form — direct to developer inbox via Resend (mailto fallback)                                                  | Welcome page — *"The Spirit guides; AI only assists"* disclaimer                                       |
+| ----------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| <img src="assets/screenshots/screenshot_feedback_form.png" alt="Feedback form" height="320"/>                           | <img src="assets/screenshots/screenshot_welcome_disclaimer.png" alt="Welcome disclaimer" height="320"/>|
+
+<details>
+<summary>Earlier screenshots (still useful — note popup, multi-select, version switch, book picker, splash)</summary>
+
+| Multi-select toolbar                                                                                | Note popup                                                                             |
+| --------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| <img src="assets/screenshots/screenshot_multi_select.png" alt="Multi-select" height="250"/>         | <img src="assets/screenshots/screenshot_note_popup.png" alt="Note popup" height="250"/> |
+
+| Version switcher                                                                                          | Book & chapter picker                                                                                          |
+| --------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| <img src="assets/screenshots/screenshot_version_switch.png" alt="Version switcher" height="250"/>         | <img src="assets/screenshots/screenshot_book_chapter_picker.png" alt="Book & chapter picker" height="250"/>    |
+
+| Splash screen                                                                                       | Settings page (older capture)                                                                  |
+| --------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| <img src="assets/screenshots/screenshot_loading_page.png" alt="Splash screen" height="250"/>        | <img src="assets/screenshots/screenshot_settings_page.png" alt="Settings page" height="250"/>  |
+
+</details>
 
 ---
 
