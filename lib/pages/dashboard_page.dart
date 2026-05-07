@@ -522,6 +522,17 @@ class _DashboardPageState extends State<DashboardPage> {
               }
             },
           ),
+          const SizedBox(height: 12),
+
+          // ── SPIRITUAL REMINDER (2026-05-07 v10) ───────────────────
+          // The welcome page disclaimer is shown only once on first
+          // launch; returning users miss it. This subtle card sits
+          // between the greeting and the action sections so the
+          // reminder is in front of the user every dashboard visit
+          // without interrupting the primary Read-Bible flow.
+          // Always rendered (NOT a customizable DashboardSection) —
+          // the user explicitly wanted it always-visible.
+          _SpiritReminderCard(locale: locale, settings: settings),
           const SizedBox(height: 16),
 
           // ── DASHBOARD SECTIONS (customizable order + visibility) ──
@@ -1335,6 +1346,87 @@ class _GreetingCard extends StatelessWidget {
               ),
           ],
         );
+  }
+}
+
+/// 2026-05-07 (v10): always-on spiritual reminder card on the
+/// dashboard, sitting between the greeting and the customizable
+/// section list. The welcome-page disclaimer only appears once on
+/// first launch; returning users would otherwise never see it.
+/// This card surfaces the same three-beat message every visit
+/// without competing with the primary Read-Bible CTA:
+///
+///   1. AI is auxiliary -- 辅助
+///   2. Do not depend on it -- 不要依赖
+///   3. The Spirit is what guides -- 神的灵
+///
+/// Style: soft surface tint + outline, dove icon, single-line title
+/// + single-line subtitle. NOT dismissible (the user explicitly
+/// wanted the reminder to keep showing). NOT tappable -- a passive
+/// frame, not an action.
+class _SpiritReminderCard extends StatelessWidget {
+  final String locale;
+  final AppSettings settings;
+  const _SpiritReminderCard({required this.locale, required this.settings});
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final fs = settings.fontSize;
+    return Container(
+      padding: const EdgeInsets.fromLTRB(14, 10, 14, 10),
+      decoration: BoxDecoration(
+        color: scheme.surfaceContainerHighest.withValues(alpha: 0.45),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: scheme.outlineVariant.withValues(alpha: 0.5),
+        ),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(
+            // Dove-ish icon to evoke the Spirit. Material has no
+            // dove glyph; auto_awesome / spa / favorite_rounded all
+            // miss the mark. Using a soft "spa" leaf is the closest
+            // peaceful glyph and reads neutrally across cultures.
+            Icons.spa_rounded,
+            size: 18,
+            color: scheme.primary,
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  uiStrings['dashboardSpiritReminderTitle']?[locale] ??
+                      'The Spirit guides; tools assist',
+                  style: TextStyle(
+                    fontFamily: settings.fontFamily,
+                    fontSize: (fs - 2).clamp(12.0, 15.0).toDouble(),
+                    fontWeight: FontWeight.w700,
+                    color: scheme.onSurface,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  uiStrings['dashboardSpiritReminderBody']?[locale] ??
+                      'Anchor on Scripture, draw near in prayer, and let '
+                          'the Spirit lead you. AI is reference-only.',
+                  style: TextStyle(
+                    fontFamily: settings.fontFamily,
+                    fontSize: (fs - 3).clamp(11.0, 13.0).toDouble(),
+                    color: scheme.onSurfaceVariant,
+                    height: 1.45,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 
