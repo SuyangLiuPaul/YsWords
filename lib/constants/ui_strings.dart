@@ -2793,6 +2793,24 @@ const uiStrings = {
     'en':
         'Georgia serif, larger font, wide line spacing, paragraph mode — comfortable for long reading.',
   },
+  // 2026-05-08 (v1.1.2): top-of-list preset that pulls the user's
+  // system defaults — OS native font, system theme, system locale.
+  // The default landing experience for first-time users + reset.
+  'stylePreset_systemDefault_label': {
+    'zh-Hans': '系统默认',
+    'zh-Hant': '系統預設',
+    'en': 'System default',
+  },
+  'stylePreset_systemDefault_description': {
+    'zh-Hans': '使用您设备的系统字体（macOS/iOS 用 SF Pro，Windows 用 '
+        '雅黑，Android 用 Roboto），跟随系统深浅色和语言。'
+        '最适合大多数用户的默认选项。',
+    'zh-Hant': '使用您裝置的系統字體（macOS/iOS 用 SF Pro，Windows 用 '
+        '雅黑，Android 用 Roboto），跟隨系統深淺色與語言。'
+        '最適合大多數使用者的預設選項。',
+    'en':
+        'Uses your device\'s system font (San Francisco on Apple, Segoe UI on Windows, Roboto on Android, …) and follows the OS theme + language. The default for most users.',
+  },
   // 2026-05-08 (v1.1.1): three new style presets — Liquid Glass
   // (Apple WWDC25 frosted glass), Paper (warm sepia flat), Carbon
   // (dark high-contrast).

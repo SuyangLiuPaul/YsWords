@@ -50,4 +50,20 @@
 /// Carbon (dark high-contrast). Backed by a new CardMaterial enum
 /// + persisted setting; LiquidGlassButton / LiquidGlassCard now
 /// dispatch through the user's choice.
-const String kAppVersion = '1.1.1';
+///
+/// 2026-05-08 (v1.1.2 — system defaults + accessibility): every
+/// default that has a sensible OS-derived counterpart now flows
+/// "user setting → system detect → app fallback":
+/// • Font family: new 'system' option resolves through the CSS
+///   native font stack (-apple-system / Segoe UI / Roboto /
+///   Cantarell / 微软雅黑 / Noto Sans / …) so each platform's
+///   users get their OS UI font with no setup.
+/// • Theme mode + locale: already system-following.
+/// • New 'systemDefault' AppStylePreset bundles system font +
+///   classic material — the new default landing experience.
+/// • LiquidGlassButton respects MediaQuery.disableAnimations
+///   (skips press scale) and MediaQuery.highContrast (downgrades
+///   glass / paper / carbon material to classic).
+/// Reset settings now restores 'system' font + system theme +
+/// system locale, not hardcoded Roboto.
+const String kAppVersion = '1.1.2';

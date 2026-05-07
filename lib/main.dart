@@ -205,21 +205,39 @@ class _MainAppState extends State<MainApp> {
           themeMode: settings.themeMode,
           theme: ThemeData(
             fontFamily: settings.fontFamily,
-            // 2026-05-08 (v1.1.0 — Liquid Glass): Apple's San
-            // Francisco family is the de-facto rendering font on
-            // Apple devices and falls through to Helvetica Neue / a
-            // good system sans on others. Putting it first in the
-            // fallback chain makes the app feel native on macOS / iOS
-            // while still rendering cleanly elsewhere.
+            // 2026-05-08 (v1.1.0 — Liquid Glass / v1.1.2 — system
+            // defaults): a comprehensive OS-native font fallback
+            // chain. Each entry tries the next platform's
+            // canonical UI font; the first one Flutter / the
+            // browser can resolve wins. Order:
+            //   • Apple devices → -apple-system / SF Pro
+            //   • Windows → Segoe UI
+            //   • Android → Roboto
+            //   • Linux GNOME → Cantarell
+            //   • Linux KDE / generic → Noto Sans
+            //   • CJK fallback → 微软雅黑 / 思源黑体
+            //   • Universal → Arial / Helvetica / sans-serif
+            // The 'system' font option in the catalogue routes to
+            // the leading -apple-system token, which on every
+            // non-Apple platform falls through this list naturally.
             fontFamilyFallback: const [
               '-apple-system',
               'BlinkMacSystemFont',
               'SF Pro Text',
               'SF Pro',
+              'Segoe UI',
               'Helvetica Neue',
+              'Cantarell',
+              'Noto Sans',
+              'Microsoft YaHei',
+              '微软雅黑',
+              'Source Han Sans SC',
+              '思源黑体',
+              'PingFang SC',
               'Roboto',
               'Arial',
               'Helvetica',
+              'sans-serif',
             ],
             textTheme: ThemeData.light().textTheme.copyWith(
                   bodyLarge: ThemeData.light().textTheme.bodyLarge?.copyWith(
@@ -278,17 +296,27 @@ class _MainAppState extends State<MainApp> {
           ),
           darkTheme: ThemeData(
             fontFamily: settings.fontFamily,
-            // 2026-05-08 (v1.1.0 — Liquid Glass): same SF-first
-            // fallback chain as light theme; see comment there.
+            // 2026-05-08 (v1.1.0 / v1.1.2): same comprehensive OS-
+            // native font fallback chain as light theme. See light
+            // theme above for the rationale + per-platform mapping.
             fontFamilyFallback: const [
               '-apple-system',
               'BlinkMacSystemFont',
               'SF Pro Text',
               'SF Pro',
+              'Segoe UI',
               'Helvetica Neue',
+              'Cantarell',
+              'Noto Sans',
+              'Microsoft YaHei',
+              '微软雅黑',
+              'Source Han Sans SC',
+              '思源黑体',
+              'PingFang SC',
               'Roboto',
               'Arial',
               'Helvetica',
+              'sans-serif',
             ],
             textTheme: ThemeData.dark().textTheme.copyWith(
                   bodyLarge: ThemeData.dark().textTheme.bodyLarge?.copyWith(

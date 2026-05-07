@@ -60,13 +60,37 @@ class FontOption {
 enum FontCategory { bundled, englishSerif, englishSans, chinese, system }
 
 const List<FontOption> _catalog = [
+  // ── System default (preferred default since v1.1.2) ──────────────
+  // Routes through the OS's native UI font via the CSS font-stack
+  // chain configured in main.dart's `fontFamilyFallback`. Apple
+  // devices render in San Francisco, Windows in Segoe UI, Android
+  // in Roboto, Linux in Cantarell / Noto Sans, etc. — every user
+  // sees their own system's typography out of the box, no setting
+  // change needed.
+  //
+  // The `key` field is treated as a special token by
+  // `resolveFontFamily` below: when it equals `'system'` we return
+  // an empty string so Flutter falls all the way through the
+  // `fontFamilyFallback` list configured in `main.dart` (which
+  // starts with `-apple-system`, then `BlinkMacSystemFont`, then
+  // OS-specific candidates, then bundled Roboto as a last resort).
+  FontOption(
+    key: 'system',
+    label: {
+      'en': 'System default',
+      'zh-Hans': '系统默认',
+      'zh-Hant': '系統預設',
+    },
+    isBundled: true,
+    category: FontCategory.bundled,
+  ),
   // ── Bundled (works everywhere, offline) ──────────────────────────
   FontOption(
     key: 'Roboto',
     label: {
-      'en': 'Roboto (default)',
-      'zh-Hans': 'Roboto（默认）',
-      'zh-Hant': 'Roboto（預設）',
+      'en': 'Roboto',
+      'zh-Hans': 'Roboto',
+      'zh-Hant': 'Roboto',
     },
     isBundled: true,
     category: FontCategory.bundled,
@@ -320,6 +344,15 @@ FontOption fontOptionFor(String key) {
 /// • For system fonts we return the key directly; the engine /
 ///   browser will pick it up if installed locally.
 String resolveFontFamily(String key) {
+  // 2026-05-08 (v1.1.2): the special `'system'` key resolves to the
+  // first entry of the OS-native CSS font-stack chain. The full
+  // chain lives in `main.dart`'s `fontFamilyFallback` argument; on
+  // any platform where the leading family is missing, Flutter walks
+  // the list until it finds one. The Apple-first ordering means
+  // macOS / iOS get San Francisco, Windows gets Segoe UI, Android
+  // gets Roboto, Linux gets Cantarell / Noto Sans — without any
+  // app-side detection logic.
+  if (key == 'system') return '-apple-system';
   final option = fontOptionFor(key);
   if (option.isGoogleFont) {
     try {
@@ -337,6 +370,11 @@ String resolveFontFamily(String key) {
 /// caller passes a base style (size/color) and we layer the family
 /// on top.
 TextStyle previewTextStyle(String key, TextStyle base) {
+  if (key == 'system') {
+    // System default → preview in the leading CSS font-stack token
+    // so the row demonstrates the look the user will get.
+    return base.copyWith(fontFamily: '-apple-system');
+  }
   final option = fontOptionFor(key);
   if (option.isGoogleFont) {
     try {

@@ -1,6 +1,6 @@
 # YsWords — AI Agent Handoff Document
 
-> Last updated: 2026-05-08 — **v1.1.1 material picker** (Liquid Glass demoted from default → opt-in; added Paper + Carbon) (Round 56 day-7++: sync Firestore → Drive → RTDB; AI Bible search + deep exegesis + lemma + proper-noun complementary glosses; 5-category offline pack; search-page redesign culminating in v8 (Word Study removed) + v9 (live search-as-you-type) + v10 (Copy-all results); v12–v16 feedback pipeline (in-app form → Resend → developer inbox, with diagnostic block + reply-to email and mailto: fallback; v16 dropped the copy-to-user CC after the user opted out of Resend domain verification); Settings v17 cleanup (dead Offline Mode toggle and theatrical Check-for-Updates tile removed; app version surfaced on AboutPage footer); v18 audit (jump-to-reference Timer race, profiles_page TextEditingController leaks, unbounded query/verseText on three AI Netlify endpoints, silently-swallowed bootstrap futures); v1.0.1 perf (memoized search keys + paragraph grouping + bookOrder; capped Image decode dimensions; deleted 40 MB Archived/ cruft); Library Chinese label 我的标记 → 我的收藏; book-name fold uniform at 390 px; quick-links Search + Feedback tiles; CORS-suppressed news/evidence images; CJK gloss search with alias-pin for divine names)
+> Last updated: 2026-05-08 — **v1.1.2 system defaults + a11y** (font / theme / locale / motion / contrast all now follow user system → app fallback) (Round 56 day-7++: sync Firestore → Drive → RTDB; AI Bible search + deep exegesis + lemma + proper-noun complementary glosses; 5-category offline pack; search-page redesign culminating in v8 (Word Study removed) + v9 (live search-as-you-type) + v10 (Copy-all results); v12–v16 feedback pipeline (in-app form → Resend → developer inbox, with diagnostic block + reply-to email and mailto: fallback; v16 dropped the copy-to-user CC after the user opted out of Resend domain verification); Settings v17 cleanup (dead Offline Mode toggle and theatrical Check-for-Updates tile removed; app version surfaced on AboutPage footer); v18 audit (jump-to-reference Timer race, profiles_page TextEditingController leaks, unbounded query/verseText on three AI Netlify endpoints, silently-swallowed bootstrap futures); v1.0.1 perf (memoized search keys + paragraph grouping + bookOrder; capped Image decode dimensions; deleted 40 MB Archived/ cruft); Library Chinese label 我的标记 → 我的收藏; book-name fold uniform at 390 px; quick-links Search + Feedback tiles; CORS-suppressed news/evidence images; CJK gloss search with alias-pin for divine names)
 > Project: YsWords (Yahweh's Words) — bilingual Bible reader
 > Stack: Flutter 3.41.7 / Dart 3.11.5 / Provider + GetX
 > Repo: https://github.com/SuyangLiuPaul/YsWords
@@ -2467,6 +2467,102 @@ build succeeds, deployed to Netlify (`69fd14d969532b105eee844e`).
 - Font catalogue still doesn't have a "Default System" option
   that matches the Liquid Glass preset's intent perfectly on
   non-Apple devices. The Inter fallback works well enough.
+
+### Strand: v1.1.2 — system defaults + accessibility (2026-05-08)
+
+User request: *"字体是根据 user system 的 default 字体, language
+也是一样, 包括 font 全部都是, 还有其他的能够从 user 里面提取的都
+default 成那个. 除此以外, 如果没有, 起码都有 fallback 的设置,
+可以全部安排上吗"*.
+
+Establishes a uniform priority chain across every applicable
+setting:
+
+  **(1) User explicit choice → (2) System auto-detect → (3) App fallback**
+
+#### 1. New `'system'` font option (`lib/utils/font_catalog.dart`)
+
+A special font key whose `resolveFontFamily(...)` returns the
+leading CSS native-font-stack token (`-apple-system`). Combined
+with the comprehensive `fontFamilyFallback` chain in
+`main.dart`, the engine walks the list until something resolves:
+
+```
+-apple-system, BlinkMacSystemFont, SF Pro Text, SF Pro,
+Segoe UI, Helvetica Neue, Cantarell, Noto Sans,
+Microsoft YaHei, 微软雅黑, Source Han Sans SC, 思源黑体,
+PingFang SC, Roboto, Arial, Helvetica, sans-serif
+```
+
+  • macOS / iOS → SF Pro
+  • Windows → Segoe UI
+  • Android → Roboto
+  • Linux GNOME → Cantarell; KDE / generic → Noto Sans
+  • CJK → 微软雅黑 / 思源黑体
+  • Universal fallback → Arial / sans-serif
+
+#### 2. New `systemDefault` `AppStylePreset`
+
+Top of the picker list. Bundles `fontFamily: 'system'` +
+`cardMaterial: classic` + nominal density. Combined with
+`ThemeMode.system` (which the app already uses) and
+`_detectSystemLocale()` (already running), `systemDefault`
+becomes the truly OS-aware preset.
+
+#### 3. AppSettings defaults bumped (`lib/models/app_settings.dart`)
+
+  • `_fontSelection` default `'Roboto'` → `'system'`
+  • `_fontFamily` default → `'-apple-system'` (resolves via fallback)
+  • `loadSettings()` falls through to `'system'` on first launch
+  • `resetAllSettings()` restores `'system'` instead of `'Roboto'`
+
+The full priority chain at startup:
+
+  1. `prefs.getString(_kFontFamily)` — user's explicit pick
+  2. `'system'` — fall through to OS native via CSS chain
+  3. Within the chain, `Roboto` (bundled) is the universal last
+     resort
+
+#### 4. Accessibility hooks (`lib/widgets/liquid_glass.dart`)
+
+`LiquidGlassButton` reads `MediaQuery.of(context)` and:
+  • Skips the press AnimatedScale when `disableAnimations` is
+    true (Flutter surfaces this from
+    `prefers-reduced-motion: reduce`).
+  • Downgrades the chosen material to `classic` when
+    `highContrast` is true (Flutter surfaces this from
+    `prefers-contrast: more`). Glass / paper / carbon all rely
+    on subtle layering that fails high-contrast tests.
+
+The override only fires when no `forceMaterial:` is set — so
+the Settings preset previews still render their actual look.
+
+#### 5. Localized labels (`lib/constants/ui_strings.dart`)
+
+`stylePreset_systemDefault_label` / `_description` in three
+locales explaining what the preset does on each platform.
+
+**Verified**: `flutter analyze` clean, 39/39 tests pass, web
+build succeeds, deployed to Netlify (`69fd194f5078e1285fa397ba`).
+
+**Settings now fall back this way**:
+
+| Setting | (1) User choice | (2) System | (3) App fallback |
+|---|---|---|---|
+| Locale | SharedPrefs | `navigator.language` | `'zh-Hans'` |
+| Theme mode | SharedPrefs | `prefers-color-scheme` | light |
+| Font family | SharedPrefs | `'system'` token via CSS chain | Roboto (bundled) |
+| Card material | SharedPrefs | `prefers-contrast: more` → classic | classic |
+| Animations | SharedPrefs (none yet) | `prefers-reduced-motion` skips scale | enabled |
+
+**What's still left for v1.2.0**:
+- `prefers-reduced-transparency` isn't yet exposed by Flutter
+  Web's MediaQuery — the spec ships in iOS 17+ / macOS 14+ but
+  Flutter hasn't surfaced it. Currently we use `highContrast` as
+  a proxy. When the API lands we'll switch to the dedicated flag.
+- No system-detection for primary colour (no portable browser API
+  for the OS accent). Would need experimental `system-accent`
+  CSS once browsers stabilise it.
 
 ---
 

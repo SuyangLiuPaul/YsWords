@@ -26,9 +26,17 @@ import 'package:yswords/models/app_settings.dart';
 ///   3. Add localized labels via uiStrings (`stylePreset_<name>_label`,
 ///      `stylePreset_<name>_description`)
 enum AppStylePreset {
+  /// 2026-05-08 (v1.1.2): the new top-of-list preset. Picks up
+  /// **whatever the user's OS reports**: native UI font (San
+  /// Francisco / Segoe UI / Roboto / Cantarell etc. via the CSS
+  /// font stack), system theme mode, system locale. Material is
+  /// `classic` so it works on every device including ones where
+  /// reduced-transparency is preferred. This is what users land
+  /// on when they pick "Reset settings" or first install.
+  systemDefault,
+
   /// Sans-serif Roboto, paragraph mode on, normal density.
-  /// **The default** — recreates the look users had before the
-  /// v1.1.0 design pass.
+  /// Recreates the look users had before the v1.1.0 design pass.
   classic,
 
   /// System sans-serif font, slightly compact, paragraph mode on.
@@ -108,6 +116,21 @@ class AppStylePresetDef {
 }
 
 const Map<AppStylePreset, AppStylePresetDef> presetDefinitions = {
+  // 2026-05-08 (v1.1.2): "System default" maps to the special
+  // 'system' font key (resolves through the CSS native font stack
+  // chain in main.dart), classic material, and the same nominal
+  // density as classic. The end result on each platform: macOS /
+  // iOS users render in San Francisco; Windows in Segoe UI;
+  // Android in Roboto; Linux in Cantarell / Noto Sans — all with
+  // the familiar Material 3 cards.
+  AppStylePreset.systemDefault: AppStylePresetDef(
+    fontFamily: 'system',
+    fontSize: 20.0,
+    lineSpacing: 1.5,
+    menuScale: 1.0,
+    paragraphMode: true,
+    cardMaterial: CardMaterial.classic,
+  ),
   AppStylePreset.classic: AppStylePresetDef(
     fontFamily: 'Roboto',
     fontSize: 20.0,
@@ -200,6 +223,8 @@ extension AppStylePresetExt on AppStylePreset {
 
   IconData get icon {
     switch (this) {
+      case AppStylePreset.systemDefault:
+        return Icons.devices_rounded;
       case AppStylePreset.classic:
         return Icons.menu_book_rounded;
       case AppStylePreset.modern:

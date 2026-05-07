@@ -359,9 +359,30 @@ class _LiquidGlassButtonState extends State<LiquidGlassButton> {
 
   @override
   Widget build(BuildContext context) {
-    final material = widget.forceMaterial ??
+    var material = widget.forceMaterial ??
         context.watch<AppSettings>().cardMaterial;
     final scheme = Theme.of(context).colorScheme;
+    // 2026-05-08 (v1.1.2): respect OS accessibility preferences.
+    // Flutter / the browser surface them as MediaQueryData flags.
+    //
+    //   • disableAnimations  ← `prefers-reduced-motion: reduce`
+    //   • highContrast       ← `prefers-contrast: more`
+    //
+    // For users with reduced-motion preference, skip the AnimatedScale
+    // press feedback. For users on a system that signals reduced
+    // transparency or high contrast (Flutter exposes only highContrast
+    // on web; reduced-transparency isn't surfaced yet), force the
+    // material down to `classic` regardless of the user's pick — the
+    // glass / paper / carbon variants all rely on subtle layering
+    // that fails the high-contrast test.
+    final mq = MediaQuery.of(context);
+    final reduceMotion = mq.disableAnimations;
+    // High-contrast override only applies when we're rendering the
+    // user's chosen material (not when the caller forced one for a
+    // preview card — preview rows want to show the actual look).
+    if (mq.highContrast && widget.forceMaterial == null) {
+      material = CardMaterial.classic;
+    }
     // Press state pushes a stronger primary tint to create the
     // "illuminate from within" cue. Same idea applies across all
     // materials, just rendered differently.
@@ -430,12 +451,16 @@ class _LiquidGlassButtonState extends State<LiquidGlassButton> {
           onTapUp: (_) => setState(() => _pressed = false),
           onTapCancel: () => setState(() => _pressed = false),
           onTap: widget.onTap,
-          child: AnimatedScale(
-            scale: _pressed ? 0.985 : 1.0,
-            duration: const Duration(milliseconds: 120),
-            curve: Curves.easeOut,
-            child: surface,
-          ),
+          // 2026-05-08 (v1.1.2): skip the press-scale animation when
+          // the OS signals `prefers-reduced-motion: reduce`.
+          child: reduceMotion
+              ? surface
+              : AnimatedScale(
+                  scale: _pressed ? 0.985 : 1.0,
+                  duration: const Duration(milliseconds: 120),
+                  curve: Curves.easeOut,
+                  child: surface,
+                ),
         ),
       ),
     );

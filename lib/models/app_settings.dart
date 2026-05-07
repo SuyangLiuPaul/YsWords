@@ -54,14 +54,21 @@ class AppSettings extends ChangeNotifier {
   /// User's selected font key — what gets persisted in
   /// SharedPreferences (e.g. `'EB Garamond'`). Drives the dropdown
   /// `value:` and the visible label.
-  String _fontSelection = 'Roboto';
+  ///
+  /// 2026-05-08 (v1.1.2): default switched from `'Roboto'` to
+  /// `'system'`. The new default routes through the OS-native CSS
+  /// font-stack chain (`-apple-system` → `Segoe UI` → `Roboto` →
+  /// …), so first-launch users on every platform see their own
+  /// system's typography out of the box. `'Roboto'` remains a
+  /// pickable option in Settings if a user prefers it explicitly.
+  String _fontSelection = 'system';
   /// Resolved family name passed to TextStyle's `fontFamily`. For
   /// bundled fonts this equals [_fontSelection]; for Google Fonts
   /// it's the registered family name (e.g. `'EBGaramond_regular'`)
   /// that the engine actually recognises. Round 56 split: previously
   /// these were the same string and Google Fonts options silently
   /// fell back to Roboto.
-  String _fontFamily = 'Roboto';
+  String _fontFamily = '-apple-system';
   double _fontSize = 20.0;
   double _lineSpacing = 1.5;
   Color _primaryColor = Colors.lightBlue;
@@ -482,8 +489,13 @@ class AppSettings extends ChangeNotifier {
   /// Caller (Settings page) is responsible for showing a confirm
   /// dialog before calling this — it's idempotent but visible.
   Future<void> resetAllSettings() async {
-    _fontSelection = 'Roboto';
-    _fontFamily = 'Roboto';
+    // 2026-05-08 (v1.1.2): reset returns the user to the system
+    // default font (not hardcoded Roboto), matching the priority
+    // chain "user setting → system detect → app fallback". On
+    // every platform the system token resolves via the CSS font
+    // stack to the OS UI font.
+    _fontSelection = 'system';
+    _fontFamily = '-apple-system';
     _fontSize = 20.0;
     _lineSpacing = 1.5;
     _primaryColor = Colors.lightBlue;
@@ -584,7 +596,14 @@ class AppSettings extends ChangeNotifier {
     // Round 56: migrate legacy keys (Times New Roman, Garamond, …)
     // before resolving — DropdownButton would otherwise crash on a
     // value that doesn't match any item.
-    final stored = prefs.getString(_kFontFamily) ?? 'Roboto';
+    //
+    // 2026-05-08 (v1.1.2): when the user has no stored choice we
+    // fall through to 'system' (the new default) — which routes
+    // through the OS-native CSS font stack defined in main.dart's
+    // fontFamilyFallback. Roboto remains the **app fallback** at
+    // the end of that chain, but it's no longer the eager default
+    // for users who haven't expressed a preference.
+    final stored = prefs.getString(_kFontFamily) ?? 'system';
     _fontSelection = migrateLegacyFontKey(stored);
     _fontFamily = resolveFontFamily(_fontSelection);
     // Persist the migrated key so the next launch is clean.
