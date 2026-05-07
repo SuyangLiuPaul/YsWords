@@ -88,6 +88,8 @@ class _MapViewerPageState extends State<MapViewerPage> {
                     ? Image.network(
                         _current.file,
                         fit: BoxFit.contain,
+                        webHtmlElementStrategy:
+                            WebHtmlElementStrategy.prefer,
                         errorBuilder: (_, __, ___) => _imageFallback(scheme),
                       )
                     : Image.asset(
@@ -347,6 +349,8 @@ class _StripCard extends StatelessWidget {
                           ? Image.network(
                               map.file,
                               fit: BoxFit.cover,
+                              webHtmlElementStrategy:
+                                  WebHtmlElementStrategy.prefer,
                               errorBuilder: (_, __, ___) => Icon(
                                 Icons.collections,
                                 color: scheme.primary,

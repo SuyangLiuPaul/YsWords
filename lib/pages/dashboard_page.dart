@@ -1740,6 +1740,10 @@ class _DashboardEvidenceCard extends StatelessWidget {
                         ? Image.network(
                             imgUrl,
                             fit: BoxFit.cover,
+                            // 2026-05-07: <img> tag for evidence
+                            // thumbs — same CORS reason as news.
+                            webHtmlElementStrategy:
+                                WebHtmlElementStrategy.prefer,
                             errorBuilder: (_, __, ___) =>
                                 _ThumbIcon(icon: evidence.icon),
                           )
@@ -1879,6 +1883,10 @@ class _DashboardNewsCard extends StatelessWidget {
                           ? Image.network(
                               imgUrl,
                               fit: BoxFit.cover,
+                              // 2026-05-07: <img> tag avoids canvaskit
+                              // XHR + same-origin checks on news CDNs.
+                              webHtmlElementStrategy:
+                                  WebHtmlElementStrategy.prefer,
                               errorBuilder: (_, __, ___) =>
                                   _NewsThumbFallback(
                                       sectionId: article.section),

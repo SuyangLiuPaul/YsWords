@@ -465,9 +465,14 @@ class _EvidenceCard extends StatelessWidget {
                     ? ClipRRect(
                         borderRadius: const BorderRadius.vertical(
                             top: Radius.circular(12)),
+                        // 2026-05-07: prefer <img> tag over canvaskit
+                        // XHR fetch — external evidence-image CDNs
+                        // generally lack CORS headers.
                         child: Image.network(
                           imgUrl,
                           fit: BoxFit.cover,
+                          webHtmlElementStrategy:
+                              WebHtmlElementStrategy.prefer,
                           errorBuilder: (_, __, ___) =>
                               _IconFallback(icon: evidence.icon),
                           loadingBuilder: (_, child, p) {

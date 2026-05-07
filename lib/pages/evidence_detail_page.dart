@@ -64,11 +64,17 @@ class EvidenceDetailPage extends StatelessWidget {
               if (hasImage)
                 ClipRRect(
                   borderRadius: BorderRadius.circular(12),
+                  // 2026-05-07: <img>-tag strategy — evidence images
+                  // can come from external archaeology / museum CDNs
+                  // that don't set CORS headers; canvaskit XHR
+                  // surfaces those as console errors. <img> renders
+                  // them without same-origin checks.
                   child: Image.network(
                     evidence.images.first,
                     height: 240,
                     width: double.infinity,
                     fit: BoxFit.cover,
+                    webHtmlElementStrategy: WebHtmlElementStrategy.prefer,
                     errorBuilder: (_, __, ___) =>
                         _IconHero(icon: evidence.icon),
                   ),

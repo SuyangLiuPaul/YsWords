@@ -554,11 +554,20 @@ class _BibleLensPanel extends StatelessWidget {
             const SizedBox(height: 12),
             ClipRRect(
               borderRadius: BorderRadius.circular(8),
+              // 2026-05-07: webHtmlElementStrategy=prefer uses an
+              // <img> HTML element instead of an XHR + canvas blit.
+              // News-feed CDNs (assets.sbs.com.au, BBC, DW, etc.)
+              // typically don't set Access-Control-Allow-Origin, so
+              // the canvaskit XHR path was producing CORS errors in
+              // every news-card render. <img> tags are not subject
+              // to the same-origin policy for display, so this both
+              // shows the image AND silences the console noise.
               child: Image.network(
                 article.image!,
                 height: 160,
                 width: double.infinity,
                 fit: BoxFit.cover,
+                webHtmlElementStrategy: WebHtmlElementStrategy.prefer,
                 errorBuilder: (_, __, ___) => const SizedBox.shrink(),
               ),
             ),

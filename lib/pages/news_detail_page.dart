@@ -97,12 +97,22 @@ class NewsDetailPage extends StatelessWidget {
               // detail page just had a void where the image should be.
               ClipRRect(
                 borderRadius: BorderRadius.circular(12),
+                // 2026-05-07: webHtmlElementStrategy=prefer uses
+                // <img> HTML element instead of XHR + canvas blit.
+                // News-feed CDNs typically lack
+                // Access-Control-Allow-Origin headers, so the
+                // canvaskit XHR path was producing visible CORS
+                // errors in the browser console for every detail
+                // page open. <img> displays without same-origin
+                // restrictions and silences that noise.
                 child: (article.image != null && article.image!.isNotEmpty)
                     ? Image.network(
                         article.image!,
                         height: 240,
                         width: double.infinity,
                         fit: BoxFit.cover,
+                        webHtmlElementStrategy:
+                            WebHtmlElementStrategy.prefer,
                         errorBuilder: (_, __, ___) =>
                             _ImagePlaceholder(section: article.section),
                       )
