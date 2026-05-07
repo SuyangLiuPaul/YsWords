@@ -86,39 +86,44 @@ class _SearchPageState extends State<SearchPage> {
   /// the query genuinely doesn't appear in any verse.
   int _lastScanCount = 0;
 
-  /// 2026-05-07 (post-fix v2): true while `_ensureVersesLoaded()` is
-  /// in flight. Replaces the misleading "no results · scanned 0"
-  /// state when the user hits search before the Bible asset has
-  /// finished parsing. Reproduces when the SearchPage is reached
-  /// via a refreshed deep-link URL (`#/minified:Ua`) where bootstrap
-  /// loading races against Get's stack restoration.
+  /// 2026-05-07 (post-fix v4): simplified verse-load state. Earlier
+  /// versions tried a Future latch to coordinate post-frame and
+  /// search() callers, but the user kept seeing "scanned 0 verses"
+  /// — meaning the latch resolved before verses were truly populated
+  /// (or `mp.verses` was being read on a different context or race
+  /// path). Drop the latch entirely; just load synchronously inside
+  /// search() when needed. Adds an `_loadAttempts` counter so the
+  /// no-results banner can surface diagnostic info when something
+  /// unexpected (zero verses despite a successful load) happens.
   bool _isLoadingVerses = false;
   String? _versesLoadError;
+  int _loadAttempts = 0;
+  int _lastVersesLength = -1; // -1 = never checked
+  String _lastLoadedVersion = '';
 
-  /// 2026-05-07 (post-fix v3): in-flight latch. Multiple call sites
-  /// (initState's post-frame callback + every search() invocation)
-  /// race to ensure the corpus is loaded. Without this, the v2 fix
-  /// hit a different bug: the second caller saw `_isLoadingVerses ==
-  /// true`, returned `false` immediately, and search() bailed out —
-  /// the user typed a query before init's load finished and got
-  /// "scanned 0 verses" anyway. Latching on a single Future means
-  /// all callers wait on the same load and observe the post-load
-  /// truth. Reset to null on failure so a retry can re-fire.
-  Future<bool>? _versesLoadFuture;
-
-  /// 2026-05-07 (post-fix v2): on-demand verse load. The app's
-  /// startup bootstrap *should* have populated `MainProvider.verses`
-  /// already, but if the SearchPage is the first widget the user
-  /// sees (deep-link / browser refresh) the Bible asset may still
-  /// be parsing. Auto-trigger `FetchVerses.execute` so the search
-  /// has data to scan instead of silently returning "0 results".
-  Future<bool> _ensureVersesLoaded() {
-    return _versesLoadFuture ??= _doLoadVerses();
-  }
-
-  Future<bool> _doLoadVerses() async {
+  /// On-demand verse load. Used by search(), the recent-search row
+  /// tap path, and the AI search path. Returns true iff
+  /// `mp.verses.isNotEmpty` after the call.
+  Future<bool> _ensureVersesLoaded() async {
     final mp = Provider.of<MainProvider>(context, listen: false);
-    if (mp.verses.isNotEmpty) return true;
+    if (mp.verses.isNotEmpty) {
+      _lastVersesLength = mp.verses.length;
+      _lastLoadedVersion = mp.currentVersion;
+      return true;
+    }
+    if (_isLoadingVerses) {
+      // Another load is in flight. Poll until it completes (max
+      // 10s, 100ms tick) instead of bailing — bailing is what made
+      // search look broken in v2.
+      final deadline = DateTime.now().add(const Duration(seconds: 10));
+      while (_isLoadingVerses && DateTime.now().isBefore(deadline)) {
+        await Future.delayed(const Duration(milliseconds: 100));
+      }
+      _lastVersesLength = mp.verses.length;
+      _lastLoadedVersion = mp.currentVersion;
+      return mp.verses.isNotEmpty;
+    }
+    _loadAttempts += 1;
     if (mounted) {
       setState(() {
         _isLoadingVerses = true;
@@ -133,16 +138,15 @@ class _SearchPageState extends State<SearchPage> {
         _isLoadingVerses = false;
         _versesLoadError = e.toString();
       });
-      _versesLoadFuture = null; // allow retry
       return false;
     }
     if (!mounted) return false;
+    _lastVersesLength = mp.verses.length;
+    _lastLoadedVersion = mp.currentVersion;
     setState(() {
       _isLoadingVerses = false;
     });
-    final ok = mp.verses.isNotEmpty;
-    if (!ok) _versesLoadFuture = null; // allow retry on suspicious empty result
-    return ok;
+    return mp.verses.isNotEmpty;
   }
 
   @override
@@ -275,6 +279,70 @@ class _SearchPageState extends State<SearchPage> {
                     : null,
                 locale: locale,
               ),
+              // 2026-05-07 (post-fix v4): when scan-count is zero,
+              // surface a diagnostic line + force-reload button. The
+              // user reported repeated "scanned 0 verses" results
+              // even after the auto-load fix; this gives a manual
+              // path to recover (and tells us, via the version
+              // string, whether the corpus loaded under an unexpected
+              // version key). The banner auto-hides as soon as
+              // there's a successful scan.
+              if (_lastScanCount == 0) ...[
+                const SizedBox(height: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context)
+                        .colorScheme
+                        .errorContainer
+                        .withValues(alpha: 0.4),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'Bible: $_lastLoadedVersion · '
+                        'verses=$_lastVersesLength · '
+                        'attempts=$_loadAttempts',
+                        style: TextStyle(
+                          fontSize: 10,
+                          color: Theme.of(context)
+                              .colorScheme
+                              .onErrorContainer,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      FilledButton.tonalIcon(
+                        icon: const Icon(Icons.refresh_rounded, size: 14),
+                        label: Text(
+                          uiStrings['retry']?[locale] ?? 'Retry',
+                          style: const TextStyle(fontSize: 12),
+                        ),
+                        style: FilledButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 4),
+                          minimumSize: const Size(0, 32),
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        ),
+                        onPressed: () async {
+                          // Force a fresh load by clearing verses
+                          // first, then re-running search. Avoids
+                          // the early-return inside
+                          // _ensureVersesLoaded that returns true
+                          // immediately when mp.verses.isNotEmpty.
+                          final mp = Provider.of<MainProvider>(
+                              context,
+                              listen: false);
+                          mp.setVerses(<Verse>[]);
+                          await search();
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ],
               // 2026-05-07 (post-fix): "Did you mean lexicon entry…"
               // suggestion. Surfaces when text search returned 0 but
               // the query weakly matched a Greek/Hebrew lemma. Replaces
