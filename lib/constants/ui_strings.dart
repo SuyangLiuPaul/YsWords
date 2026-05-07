@@ -3236,6 +3236,22 @@ const uiStrings = {
     'zh-Hant': '改為搜尋整本聖經',
     'en': 'Search entire Bible instead',
   },
+  // 2026-05-07 (v10): bulk-copy of search results.
+  'copyAllResults': {
+    'zh-Hans': '复制全部结果',
+    'zh-Hant': '複製全部結果',
+    'en': 'Copy all results',
+  },
+  'copyAllResultsHeader': {
+    'zh-Hans': '搜索：「{query}」 · 共 {n} 条结果',
+    'zh-Hant': '搜尋：「{query}」 · 共 {n} 條結果',
+    'en': 'Search: "{query}" · {n} matches',
+  },
+  'copyAllResultsToast': {
+    'zh-Hans': '已复制 {n} 条结果',
+    'zh-Hant': '已複製 {n} 條結果',
+    'en': 'Copied {n} matches',
+  },
   // 2026-05-07 (post-fix v2): on-demand load states. Surfaced when
   // SearchPage is reached via a refreshed deep-link URL before the
   // app's bootstrap loader has finished parsing the Bible asset.

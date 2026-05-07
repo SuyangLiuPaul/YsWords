@@ -8,6 +8,7 @@ import 'package:yswords/services/concordance_service.dart';
 import 'package:yswords/services/fetch_verses.dart';
 import 'package:yswords/pages/strongs_entry_page.dart';
 import 'package:yswords/services/recent_searches_service.dart';
+import 'package:yswords/utils/clipboard_helper.dart' show ClipboardHelper;
 import 'package:yswords/utils/format_searched_text.dart';
 import 'package:yswords/utils/jump_to_reference.dart';
 import 'package:yswords/utils/reference_parser.dart';
@@ -681,6 +682,40 @@ class _SearchPageState extends State<SearchPage> {
     super.dispose();
   }
 
+  /// 2026-05-07 (v10): bulk-copy every search result as plain text.
+  /// Format: each verse on its own line as
+  /// "Book Chapter:Verse  text"
+  /// Heads with a "Search: 'query' · N matches" line so the user has
+  /// the search context when pasting elsewhere. Strips inline
+  /// annotations ({…}, [...], <note:...>) via sanitizeForSearch so
+  /// the pasted text is clean readable Scripture.
+  Future<void> _copyAllResults(
+      BuildContext context, AppSettings settings) async {
+    if (_results.isEmpty) return;
+    final query = _textEditingController.text.trim();
+    final header =
+        (uiStrings['copyAllResultsHeader']?[settings.locale] ??
+                'Search: "{query}" · {n} matches')
+            .replaceAll('{query}', query)
+            .replaceAll('{n}', _results.length.toString());
+    final lines = <String>[header, ''];
+    for (final v in _results) {
+      final clean = sanitizeForSearch(v.text)
+          .replaceAll('\n', ' ')
+          .replaceAll(RegExp(r' {2,}'), ' ')
+          .trim();
+      lines.add('${v.book} ${v.chapter}:${v.verseLabel}  $clean');
+    }
+    final blob = lines.join('\n');
+    await ClipboardHelper.copyWithFeedback(
+      context,
+      blob,
+      messageOverride: (uiStrings['copyAllResultsToast']?[settings.locale] ??
+              'Copied {n} matches')
+          .replaceAll('{n}', _results.length.toString()),
+    );
+  }
+
   /// 2026-05-07 (post-fix): localized help dialog that documents
   /// every search syntax the page supports. Until now, the
   /// page accepted Strong's numbers, Bible references, lemmas, and
@@ -1291,64 +1326,91 @@ class _SearchPageState extends State<SearchPage> {
             ] else ...[
             if (_results.isNotEmpty)
               Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: GestureDetector(
-                  onTap: () {
-                    if (bookCounts.isNotEmpty) {
-                      showDialog(
-                        context: context,
-                        builder: (context) {
-                          return AlertDialog(
-                            title: Text(
-                              uiStrings['bibleBooks']?[settings.locale] ??
-                                  'Bible Books',
-                              style: TextStyle(fontSize: settings.fontSize),
-                            ),
-                            content: SingleChildScrollView(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: bookCounts.entries
-                                    .map((e) => Text('${e.key} (${e.value})',
-                                        style: TextStyle(
-                                            fontSize: settings.fontSize)))
-                                    .toList(),
-                              ),
-                            ),
-                            actions: [
-                              TextButton(
-                                onPressed: () => Navigator.of(context).pop(),
-                                child: Text(
-                                    uiStrings['ok']?[settings.locale] ?? 'OK',
-                                    style:
-                                        TextStyle(fontSize: settings.fontSize)),
-                              ),
-                            ],
-                          );
+                padding: const EdgeInsets.fromLTRB(8, 8, 8, 4),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: () {
+                          if (bookCounts.isNotEmpty) {
+                            showDialog(
+                              context: context,
+                              builder: (context) {
+                                return AlertDialog(
+                                  title: Text(
+                                    uiStrings['bibleBooks']
+                                            ?[settings.locale] ??
+                                        'Bible Books',
+                                    style: TextStyle(
+                                        fontSize: settings.fontSize),
+                                  ),
+                                  content: SingleChildScrollView(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: bookCounts.entries
+                                          .map((e) => Text(
+                                              '${e.key} (${e.value})',
+                                              style: TextStyle(
+                                                  fontSize:
+                                                      settings.fontSize)))
+                                          .toList(),
+                                    ),
+                                  ),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () =>
+                                          Navigator.of(context).pop(),
+                                      child: Text(
+                                          uiStrings['ok']?[settings.locale] ??
+                                              'OK',
+                                          style: TextStyle(
+                                              fontSize: settings.fontSize)),
+                                    ),
+                                  ],
+                                );
+                              },
+                            );
+                          }
                         },
-                      );
-                    }
-                  },
-                  child: Text(
-                    _lastResultsFromAi
-                        // AI-results header: cleaner / more inviting
-                        // than the per-book breakdown for keyword
-                        // matches. Users opt into AI search precisely
-                        // when keyword exact-match wasn't useful, so
-                        // a thematic / conceptual phrasing fits better.
-                        ? (uiStrings['aiBibleSearchHeader']
-                                    ?[settings.locale] ??
-                                'YsWords AI found {count} passages for '
-                                    '"{query}" (reference only)')
-                            .replaceAll('{count}', _results.length.toString())
-                            .replaceAll(
-                                '{query}', _textEditingController.text.trim())
-                        : '${(uiStrings['searchResultCount']?[settings.locale] ?? 'Total {count} matches, grouped by book:').replaceAll('{count}', _results.length.toString())} ${bookCounts.entries.take(3).map((e) => '${e.key}(${e.value})').join(settings.locale == 'en' ? ', ' : '，')}${bookCounts.length > 3 ? '...' : ''}${bookCounts.length > 3 ? '\n${uiStrings['viewMoreBooksHint']?[settings.locale] ?? ''}' : ''}',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontWeight: FontWeight.w500,
-                      fontSize: settings.fontSize,
+                        child: Text(
+                          _lastResultsFromAi
+                              // AI-results header: cleaner / more inviting
+                              // than the per-book breakdown for keyword
+                              // matches.
+                              ? (uiStrings['aiBibleSearchHeader']
+                                          ?[settings.locale] ??
+                                      'YsWords AI found {count} passages for '
+                                          '"{query}" (reference only)')
+                                  .replaceAll(
+                                      '{count}', _results.length.toString())
+                                  .replaceAll('{query}',
+                                      _textEditingController.text.trim())
+                              : '${(uiStrings['searchResultCount']?[settings.locale] ?? 'Total {count} matches, grouped by book:').replaceAll('{count}', _results.length.toString())} ${bookCounts.entries.take(3).map((e) => '${e.key}(${e.value})').join(settings.locale == 'en' ? ', ' : '，')}${bookCounts.length > 3 ? '...' : ''}${bookCounts.length > 3 ? '\n${uiStrings['viewMoreBooksHint']?[settings.locale] ?? ''}' : ''}',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontWeight: FontWeight.w500,
+                            fontSize: settings.fontSize,
+                          ),
+                        ),
+                      ),
                     ),
-                  ),
+                    // 2026-05-07 (v10): copy-all-results button. User
+                    // wanted to copy the entire result list at once
+                    // (not tap each verse). Formats every match as
+                    // "Book Chapter:Verse  text" on its own line and
+                    // dumps the lot to the clipboard with the standard
+                    // "Copied!" snackbar.
+                    IconButton(
+                      tooltip: uiStrings['copyAllResults']
+                              ?[settings.locale] ??
+                          'Copy all results',
+                      icon: const Icon(Icons.content_copy_rounded, size: 18),
+                      onPressed: _results.isEmpty
+                          ? null
+                          : () => _copyAllResults(context, settings),
+                    ),
+                  ],
                 ),
               ),
             Expanded(
