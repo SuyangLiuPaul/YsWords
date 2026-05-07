@@ -41,6 +41,12 @@ class _SearchPageState extends State<SearchPage> {
   final ScrollController _scrollController = ScrollController();
   final TextEditingController _textEditingController = TextEditingController();
   final List<Verse> _results = [];
+  /// 2026-05-07 (v9): debounced live-search timer. Each onChanged
+  /// keystroke resets the filter to default scope (entire Bible,
+  /// text mode) and reschedules a fresh search 250 ms after the
+  /// last keystroke -- the user gets results that update as they
+  /// type without hammering the for-loop on every character.
+  Timer? _liveSearchDebounce;
 
   bool searchPerformed = false;
   bool searchAll = true;
@@ -667,6 +673,9 @@ class _SearchPageState extends State<SearchPage> {
 
   @override
   void dispose() {
+    // 2026-05-07 (v9): cancel any in-flight debounce so a fired
+    // search() doesn't try to setState after the State is gone.
+    _liveSearchDebounce?.cancel();
     _scrollController.dispose();
     _textEditingController.dispose();
     super.dispose();
@@ -1007,14 +1016,39 @@ class _SearchPageState extends State<SearchPage> {
                   RegExp(r'[0-9a-zA-Z\u4E00-\u9FFF\u00C0-\u024F\u0370-\u03FF\u1F00-\u1FFF\u0590-\u05FF :\-\.：。‐–—]')),
             ],
             onChanged: (text) {
-              // 2026-05-07 (post-fix v3): user feedback — filter must
-              // persist across edits. Previously, deleting all chars
-              // silently reset filterBook=null + searchAll=true; the
-              // user expected their book filter to stick. setState is
-              // still needed for the X-button visibility update.
-              setState(() {});
+              // 2026-05-07 (v9): live search-as-you-type. Every
+              // keystroke:
+              //   1. Resets the search to default scope (entire
+              //      Bible) and default mode (text). User wanted
+              //      "every box edit returns to the default
+              //      setting" so the filter never silently lingers
+              //      across queries.
+              //   2. Rebuilds the AppBar so the X-clear button
+              //      shows / hides based on text emptiness.
+              //   3. Reschedules a debounced search 250 ms after
+              //      the last keystroke. This is enough time to
+              //      let the user finish typing while keeping
+              //      the results live -- no Enter required.
+              setState(() {
+                searchAll = true;
+                filterBook = null;
+              });
+              _liveSearchDebounce?.cancel();
+              _liveSearchDebounce = Timer(
+                const Duration(milliseconds: 250),
+                () {
+                  if (!mounted) return;
+                  // Fire-and-forget; the search itself awaits its
+                  // own internals and updates state at the end.
+                  // ignore: unawaited_futures
+                  search();
+                },
+              );
             },
             onSubmitted: (s) async {
+              // 2026-05-07 (v9): cancel any pending debounce so the
+              // explicit Enter doesn't end up double-running search.
+              _liveSearchDebounce?.cancel();
               final trimmed = s.trim();
               if (trimmed.isEmpty) {
                 // Empty submit = abandon the query but keep the
