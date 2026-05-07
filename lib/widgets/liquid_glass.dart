@@ -1,6 +1,10 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import 'package:yswords/models/app_settings.dart';
+import 'package:yswords/models/app_style_preset.dart' show CardMaterial;
 
 /// 2026-05-08 (v1.1.0 — Liquid Glass design pass): primitive widgets
 /// that translate Apple's iOS 26 / macOS Tahoe "Liquid Glass" material
@@ -303,11 +307,22 @@ class _GlassBorderPainter extends CustomPainter {
       old.bottomColor != bottomColor;
 }
 
-/// Tappable variant of [LiquidGlass]. Adds a subtle hover/press
-/// state without disturbing the base material — Apple's spec calls
-/// for the surface to *illuminate from within* on interaction. We
-/// approximate by raising the fill alpha + boosting the tint blend
-/// during press / hover.
+/// Adaptive tappable surface. Renders **whichever material** the
+/// user has selected in Settings → Style preset:
+///
+///   • [CardMaterial.classic]    → Material 3 InkWell (the look the
+///                                 app shipped with through v1.0.x)
+///   • [CardMaterial.liquidGlass]→ Apple WWDC25 Liquid Glass (this
+///                                 file's [LiquidGlass] primitive)
+///   • [CardMaterial.paper]      → flat warm sepia with hairline
+///                                 outline; no shadow
+///   • [CardMaterial.carbon]     → dark high-contrast surface with
+///                                 sharp drop-shadow
+///
+/// 2026-05-08 (v1.1.1): the v1.1.0 hard-coded glass-only behaviour
+/// is gone. v1.1.1 makes the look user-pickable; existing call
+/// sites (dashboard tile, search chip, welcome card) don't need to
+/// change — they automatically adapt.
 class LiquidGlassButton extends StatefulWidget {
   final Widget child;
   final VoidCallback? onTap;
@@ -316,6 +331,11 @@ class LiquidGlassButton extends StatefulWidget {
   final EdgeInsets padding;
   final Color? tint;
   final String? semanticLabel;
+
+  /// Force a specific material regardless of `settings.cardMaterial`.
+  /// Useful for the Settings preset-picker preview cards (each card
+  /// shows what its associated material looks like).
+  final CardMaterial? forceMaterial;
 
   const LiquidGlassButton({
     super.key,
@@ -326,6 +346,7 @@ class LiquidGlassButton extends StatefulWidget {
     this.padding = const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
     this.tint,
     this.semanticLabel,
+    this.forceMaterial,
   });
 
   @override
@@ -338,9 +359,12 @@ class _LiquidGlassButtonState extends State<LiquidGlassButton> {
 
   @override
   Widget build(BuildContext context) {
+    final material = widget.forceMaterial ??
+        context.watch<AppSettings>().cardMaterial;
     final scheme = Theme.of(context).colorScheme;
-    // Press state pushes a stronger primary tint into the glass to
-    // create the "illuminate from within" cue Apple specs.
+    // Press state pushes a stronger primary tint to create the
+    // "illuminate from within" cue. Same idea applies across all
+    // materials, just rendered differently.
     Color? activeTint = widget.tint;
     if (_pressed) {
       activeTint = (widget.tint ?? scheme.primary).withValues(alpha: 1);
@@ -348,15 +372,50 @@ class _LiquidGlassButtonState extends State<LiquidGlassButton> {
       activeTint = (widget.tint ?? scheme.primary).withValues(alpha: 0.7);
     }
 
-    final glass = LiquidGlass(
-      variant: widget.variant,
-      borderRadius: widget.borderRadius,
-      padding: widget.padding,
-      tint: activeTint,
-      child: widget.child,
-    );
+    Widget surface;
+    switch (material) {
+      case CardMaterial.classic:
+        surface = _ClassicSurface(
+          borderRadius: widget.borderRadius,
+          padding: widget.padding,
+          tint: activeTint,
+          hover: _hover,
+          pressed: _pressed,
+          child: widget.child,
+        );
+        break;
+      case CardMaterial.liquidGlass:
+        surface = LiquidGlass(
+          variant: widget.variant,
+          borderRadius: widget.borderRadius,
+          padding: widget.padding,
+          tint: activeTint,
+          child: widget.child,
+        );
+        break;
+      case CardMaterial.paper:
+        surface = _PaperSurface(
+          borderRadius: widget.borderRadius,
+          padding: widget.padding,
+          tint: activeTint,
+          hover: _hover,
+          pressed: _pressed,
+          child: widget.child,
+        );
+        break;
+      case CardMaterial.carbon:
+        surface = _CarbonSurface(
+          borderRadius: widget.borderRadius,
+          padding: widget.padding,
+          tint: activeTint,
+          hover: _hover,
+          pressed: _pressed,
+          child: widget.child,
+        );
+        break;
+    }
 
-    final wrapped = Semantics(
+    return Semantics(
       button: true,
       label: widget.semanticLabel,
       child: MouseRegion(
@@ -375,12 +434,172 @@ class _LiquidGlassButtonState extends State<LiquidGlassButton> {
             scale: _pressed ? 0.985 : 1.0,
             duration: const Duration(milliseconds: 120),
             curve: Curves.easeOut,
-            child: glass,
+            child: surface,
           ),
         ),
       ),
     );
-    return wrapped;
+  }
+}
+
+// ── Non-glass surface variants ────────────────────────────────────
+// Each renders the same conceptual surface (a tappable rounded
+// rectangle with optional tint) with a different material vocabulary.
+// They share the surface API so [LiquidGlassButton] can swap between
+// them based on `settings.cardMaterial`.
+
+/// Material 3 — primary-tinted card with surfaceContainer fill,
+/// outlineVariant border, and a soft hover/press tint. Mirrors the
+/// look the app shipped with through v1.0.x.
+class _ClassicSurface extends StatelessWidget {
+  final Widget child;
+  final double borderRadius;
+  final EdgeInsets padding;
+  final Color? tint;
+  final bool hover;
+  final bool pressed;
+  const _ClassicSurface({
+    required this.child,
+    required this.borderRadius,
+    required this.padding,
+    required this.tint,
+    required this.hover,
+    required this.pressed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final radius = BorderRadius.circular(borderRadius);
+    final base = scheme.surface;
+    Color fill = base;
+    if (tint != null) {
+      // Press / hover state derives from the tint's alpha (set by
+      // LiquidGlassButton). Higher alpha → more saturated fill.
+      final blendAlpha = (tint!.a * 0.20).clamp(0.0, 0.35).toDouble();
+      fill = Color.alphaBlend(
+        tint!.withValues(alpha: blendAlpha),
+        base,
+      );
+    }
+    return Container(
+      decoration: BoxDecoration(
+        color: fill,
+        borderRadius: radius,
+        border: Border.all(
+          color: scheme.outlineVariant.withValues(alpha: 0.6),
+        ),
+      ),
+      child: Padding(padding: padding, child: child),
+    );
+  }
+}
+
+/// Warm sepia / cream surface with a hairline outline. No shadow,
+/// no fill blur — the whole UI reads "single sheet of paper".
+class _PaperSurface extends StatelessWidget {
+  final Widget child;
+  final double borderRadius;
+  final EdgeInsets padding;
+  final Color? tint;
+  final bool hover;
+  final bool pressed;
+  const _PaperSurface({
+    required this.child,
+    required this.borderRadius,
+    required this.padding,
+    required this.tint,
+    required this.hover,
+    required this.pressed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final radius = BorderRadius.circular(borderRadius);
+    // Warm cream in light mode, near-charcoal in dark — both with
+    // a faint warm tint so the whole UI feels like aged paper.
+    final base = isDark
+        ? const Color(0xFF1B1814)
+        : const Color(0xFFFBF7F0);
+    Color fill = base;
+    if (tint != null) {
+      final blendAlpha = (tint!.a * 0.18).clamp(0.0, 0.30).toDouble();
+      fill = Color.alphaBlend(
+        tint!.withValues(alpha: blendAlpha),
+        base,
+      );
+    }
+    final borderColor = isDark
+        ? const Color(0xFF3A332A)
+        : const Color(0xFFE6DDC9);
+    return Container(
+      decoration: BoxDecoration(
+        color: fill,
+        borderRadius: radius,
+        border: Border.all(color: borderColor, width: 1),
+      ),
+      child: Padding(padding: padding, child: child),
+    );
+  }
+}
+
+/// Dark high-contrast surface with a sharp drop-shadow. Carbon is
+/// designed to look great in dark mode but stays viable on light
+/// (the surface flips to deep slate while keeping the sharp shadow).
+class _CarbonSurface extends StatelessWidget {
+  final Widget child;
+  final double borderRadius;
+  final EdgeInsets padding;
+  final Color? tint;
+  final bool hover;
+  final bool pressed;
+  const _CarbonSurface({
+    required this.child,
+    required this.borderRadius,
+    required this.padding,
+    required this.tint,
+    required this.hover,
+    required this.pressed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final scheme = Theme.of(context).colorScheme;
+    final radius = BorderRadius.circular(borderRadius);
+    // Near-black in dark mode; deep slate in light. Carbon feels
+    // identical regardless of system theme — that's the point.
+    final base = isDark
+        ? const Color(0xFF0F1115)
+        : const Color(0xFF1F2228);
+    Color fill = base;
+    if (tint != null) {
+      final blendAlpha = (tint!.a * 0.30).clamp(0.0, 0.45).toDouble();
+      fill = Color.alphaBlend(
+        tint!.withValues(alpha: blendAlpha),
+        base,
+      );
+    }
+    return Container(
+      decoration: BoxDecoration(
+        color: fill,
+        borderRadius: radius,
+        border: Border.all(
+          color: scheme.primary.withValues(alpha: hover ? 0.7 : 0.35),
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF000000).withValues(alpha: 0.55),
+            blurRadius: 0,
+            spreadRadius: 0,
+            offset: Offset(0, pressed ? 1 : 3),
+          ),
+        ],
+      ),
+      child: Padding(padding: padding, child: child),
+    );
   }
 }
 
@@ -430,8 +649,12 @@ class LiquidGlassChip extends StatelessWidget {
   }
 }
 
-/// Convenience: a card-shaped Liquid-Glass container. Drop-in for
-/// `Card(...)` where you want the new material.
+/// Adaptive card-shaped container — picks the user's chosen
+/// [CardMaterial] from Settings. Drop-in for `Card(...)` where the
+/// app's framing surfaces want to follow the active style preset.
+///
+/// 2026-05-08 (v1.1.1): switched from glass-only to material-aware.
+/// See [LiquidGlassButton] for the full set of materials.
 class LiquidGlassCard extends StatelessWidget {
   final Widget child;
   final EdgeInsets padding;
@@ -439,6 +662,10 @@ class LiquidGlassCard extends StatelessWidget {
   final double borderRadius;
   final Color? tint;
   final EdgeInsets margin;
+
+  /// Force a specific material regardless of `settings.cardMaterial`.
+  /// Used by the Settings preset previews.
+  final CardMaterial? forceMaterial;
 
   const LiquidGlassCard({
     super.key,
@@ -448,19 +675,55 @@ class LiquidGlassCard extends StatelessWidget {
     this.borderRadius = LiquidGlassRadius.outer,
     this.tint,
     this.margin = EdgeInsets.zero,
+    this.forceMaterial,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: margin,
-      child: LiquidGlass(
-        variant: variant,
-        borderRadius: borderRadius,
-        padding: padding,
-        tint: tint,
-        child: child,
-      ),
-    );
+    final material =
+        forceMaterial ?? context.watch<AppSettings>().cardMaterial;
+    Widget surface;
+    switch (material) {
+      case CardMaterial.classic:
+        surface = _ClassicSurface(
+          borderRadius: borderRadius,
+          padding: padding,
+          tint: tint,
+          hover: false,
+          pressed: false,
+          child: child,
+        );
+        break;
+      case CardMaterial.liquidGlass:
+        surface = LiquidGlass(
+          variant: variant,
+          borderRadius: borderRadius,
+          padding: padding,
+          tint: tint,
+          child: child,
+        );
+        break;
+      case CardMaterial.paper:
+        surface = _PaperSurface(
+          borderRadius: borderRadius,
+          padding: padding,
+          tint: tint,
+          hover: false,
+          pressed: false,
+          child: child,
+        );
+        break;
+      case CardMaterial.carbon:
+        surface = _CarbonSurface(
+          borderRadius: borderRadius,
+          padding: padding,
+          tint: tint,
+          hover: false,
+          pressed: false,
+          child: child,
+        );
+        break;
+    }
+    return Padding(padding: margin, child: surface);
   }
 }

@@ -1,6 +1,6 @@
 # YsWords — AI Agent Handoff Document
 
-> Last updated: 2026-05-08 — **v1.1.0 Liquid Glass design pass** (Round 56 day-7++: sync Firestore → Drive → RTDB; AI Bible search + deep exegesis + lemma + proper-noun complementary glosses; 5-category offline pack; search-page redesign culminating in v8 (Word Study removed) + v9 (live search-as-you-type) + v10 (Copy-all results); v12–v16 feedback pipeline (in-app form → Resend → developer inbox, with diagnostic block + reply-to email and mailto: fallback; v16 dropped the copy-to-user CC after the user opted out of Resend domain verification); Settings v17 cleanup (dead Offline Mode toggle and theatrical Check-for-Updates tile removed; app version surfaced on AboutPage footer); v18 audit (jump-to-reference Timer race, profiles_page TextEditingController leaks, unbounded query/verseText on three AI Netlify endpoints, silently-swallowed bootstrap futures); v1.0.1 perf (memoized search keys + paragraph grouping + bookOrder; capped Image decode dimensions; deleted 40 MB Archived/ cruft); Library Chinese label 我的标记 → 我的收藏; book-name fold uniform at 390 px; quick-links Search + Feedback tiles; CORS-suppressed news/evidence images; CJK gloss search with alias-pin for divine names)
+> Last updated: 2026-05-08 — **v1.1.1 material picker** (Liquid Glass demoted from default → opt-in; added Paper + Carbon) (Round 56 day-7++: sync Firestore → Drive → RTDB; AI Bible search + deep exegesis + lemma + proper-noun complementary glosses; 5-category offline pack; search-page redesign culminating in v8 (Word Study removed) + v9 (live search-as-you-type) + v10 (Copy-all results); v12–v16 feedback pipeline (in-app form → Resend → developer inbox, with diagnostic block + reply-to email and mailto: fallback; v16 dropped the copy-to-user CC after the user opted out of Resend domain verification); Settings v17 cleanup (dead Offline Mode toggle and theatrical Check-for-Updates tile removed; app version surfaced on AboutPage footer); v18 audit (jump-to-reference Timer race, profiles_page TextEditingController leaks, unbounded query/verseText on three AI Netlify endpoints, silently-swallowed bootstrap futures); v1.0.1 perf (memoized search keys + paragraph grouping + bookOrder; capped Image decode dimensions; deleted 40 MB Archived/ cruft); Library Chinese label 我的标记 → 我的收藏; book-name fold uniform at 390 px; quick-links Search + Feedback tiles; CORS-suppressed news/evidence images; CJK gloss search with alias-pin for divine names)
 > Project: YsWords (Yahweh's Words) — bilingual Bible reader
 > Stack: Flutter 3.41.7 / Dart 3.11.5 / Provider + GetX
 > Repo: https://github.com/SuyangLiuPaul/YsWords
@@ -2398,6 +2398,75 @@ build succeeds, deployed to Netlify (`69fd10f4c25f11057288685b`).
 - 101 Card(...) instances across the app inherit the new 18 px
   theme radius but don't yet get the glass material directly —
   one-by-one migration is its own multi-day project.
+
+### Strand: v1.1.1 — material picker (2026-05-08)
+
+User feedback on v1.1.0: *"其实感觉还不如之前的，可以在 setting 里面
+的 style 这个部分，就是这里有不同的 style，其中一个是之前的，还有
+一个是 glass 的，并且你可以多加其他很多的".*
+
+v1.1.0 had made Liquid Glass the global default — replacing the
+familiar Material 3 cards everywhere. Some users preferred the
+old look; others liked glass. v1.1.1 pivots: instead of picking
+one, **expose every look as a user-pickable preset** in Settings
+→ Style preset, with `Classic` (the pre-v1.1 look) as the
+default so existing users see no surprises.
+
+**New `CardMaterial` enum** in `lib/models/app_style_preset.dart`:
+- `classic` — Material 3 surfaceContainer with outlineVariant
+  border. Mirrors the look the app shipped with from v0.9 → v1.0.
+- `liquidGlass` — the Apple WWDC25 frosted-glass material from
+  v1.1.0 (kept intact, just behind a setting now).
+- `paper` — warm cream / charcoal flat surface with hairline
+  outline. No shadow, no blur. Reads "single sheet of paper."
+- `carbon` — dark high-contrast surface with sharp 0-blur drop-
+  shadow + primary-coloured border. Designed for power-user
+  vibes; works in both light and dark theme.
+
+**New persisted setting** `cardMaterial` on `AppSettings`,
+default `classic`. Loaded by name (enum.name string) so future
+enum reorderings don't reshuffle user choices. Serialized via
+`SharedPreferences` under key `'cardMaterial'`.
+
+**Three new style presets** in `AppStylePreset` enum:
+- `liquidGlass`: Inter sans-serif (which falls through to SF Pro
+  via the OS fallback chain) + Liquid Glass material.
+- `paper`: EB Garamond serif + paper material.
+- `carbon`: Inter sans-serif + carbon material.
+Each preset's `apply()` now also calls `setCardMaterial()`,
+keeping font + density + material in lockstep.
+
+**Adaptive primitives** in `lib/widgets/liquid_glass.dart`:
+`LiquidGlassButton` and `LiquidGlassCard` now read the user's
+`cardMaterial` choice via `context.watch<AppSettings>()` and
+dispatch to the matching surface (`_ClassicSurface`,
+`LiquidGlass`, `_PaperSurface`, `_CarbonSurface`). Existing
+call sites (dashboard tile, search chip, welcome card, feedback
+intro) didn't need to change — the API is unchanged; only the
+internal rendering picks a different material now.
+
+A `forceMaterial: CardMaterial?` escape hatch was added so the
+Settings preset previews can render their intended look
+regardless of the user's current choice (each preview shows what
+the preset looks like before they commit to it).
+
+**Localized labels** added in `lib/constants/ui_strings.dart`:
+`stylePreset_liquidGlass_label/description`,
+`stylePreset_paper_label/description`,
+`stylePreset_carbon_label/description` — three locales each
+(zh-Hans / zh-Hant / en).
+
+**Verified**: `flutter analyze` clean, 39/39 tests pass, web
+build succeeds, deployed to Netlify (`69fd14d969532b105eee844e`).
+
+**What's still left for v1.2.0**:
+- Settings preset card UI doesn't yet render visual previews
+  (each preset is currently just the existing label + icon list).
+  v1.2.0: real mini-render of the chosen material so users can
+  see the look before committing.
+- Font catalogue still doesn't have a "Default System" option
+  that matches the Liquid Glass preset's intent perfectly on
+  non-Apple devices. The Inter fallback works well enough.
 
 ---
 

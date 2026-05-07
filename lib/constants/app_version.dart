@@ -41,4 +41,13 @@
 /// Card radius, 20 px Dialog radius, San Francisco family at the
 /// front of the font fallback chain so macOS / iOS users get
 /// native typography out of the box.
-const String kAppVersion = '1.1.0';
+///
+/// 2026-05-08 (v1.1.1 — material picker): user feedback that v1.1.0
+/// glass-everywhere felt worse than the original look. Pivoted to
+/// expose the look as one of several pickable materials in
+/// Settings → Style preset. Default is Classic (recreates pre-v1.1
+/// look). New presets: Liquid Glass, Paper (warm sepia flat),
+/// Carbon (dark high-contrast). Backed by a new CardMaterial enum
+/// + persisted setting; LiquidGlassButton / LiquidGlassCard now
+/// dispatch through the user's choice.
+const String kAppVersion = '1.1.1';

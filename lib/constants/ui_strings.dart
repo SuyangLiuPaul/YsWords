@@ -2793,6 +2793,48 @@ const uiStrings = {
     'en':
         'Georgia serif, larger font, wide line spacing, paragraph mode — comfortable for long reading.',
   },
+  // 2026-05-08 (v1.1.1): three new style presets — Liquid Glass
+  // (Apple WWDC25 frosted glass), Paper (warm sepia flat), Carbon
+  // (dark high-contrast).
+  'stylePreset_liquidGlass_label': {
+    'zh-Hans': '流光玻璃',
+    'zh-Hant': '流光玻璃',
+    'en': 'Liquid Glass',
+  },
+  'stylePreset_liquidGlass_description': {
+    'zh-Hans': '苹果 WWDC25 风格 —— 半透明毛玻璃磁贴，柔和高光与阴影，'
+        '苹果设备上自动使用 SF Pro 字体。',
+    'zh-Hant': '蘋果 WWDC25 風格 —— 半透明毛玻璃磁貼，柔和高光與陰影，'
+        '蘋果裝置上自動使用 SF Pro 字體。',
+    'en':
+        'Apple WWDC25 style — translucent frosted-glass tiles with soft specular highlights and shadows. macOS / iOS users get SF Pro automatically.',
+  },
+  'stylePreset_paper_label': {
+    'zh-Hans': '纸本',
+    'zh-Hant': '紙本',
+    'en': 'Paper',
+  },
+  'stylePreset_paper_description': {
+    'zh-Hans': '温暖米色纸张质感，发丝边框，无阴影，Garamond 衬线字体 —— '
+        '像在读一本印刷的圣经。',
+    'zh-Hant': '溫暖米色紙張質感，髮絲邊框，無陰影，Garamond 襯線字體 —— '
+        '像在讀一本印刷的聖經。',
+    'en':
+        'Warm cream paper feel — hairline borders, no shadows, EB Garamond serif. Reads like a printed Bible.',
+  },
+  'stylePreset_carbon_label': {
+    'zh-Hans': '碳黑',
+    'zh-Hant': '碳黑',
+    'en': 'Carbon',
+  },
+  'stylePreset_carbon_description': {
+    'zh-Hans': '高对比深色界面，锐利的硬阴影，紧凑布局，Inter 字体 —— '
+        '面向工具型重度用户。',
+    'zh-Hant': '高對比深色界面，銳利的硬陰影，緊湊佈局，Inter 字體 —— '
+        '面向工具型重度使用者。',
+    'en':
+        'High-contrast dark surfaces with sharp drop-shadows, compact density, Inter sans — for power-user vibes.',
+  },
   'fontFamilyHint': {
     'zh-Hans': '"Roboto" 和 "微软雅黑" 是应用自带的字体，到处都能用。'
         '其他选项使用您设备上已安装的系统字体——中文用户推荐微软雅黑、苹方、思源黑体；'

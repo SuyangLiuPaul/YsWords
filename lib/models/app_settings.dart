@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:yswords/models/app_style_preset.dart' show CardMaterial;
 import 'package:yswords/models/dashboard_section.dart';
 import 'package:yswords/utils/font_catalog.dart';
 
@@ -13,6 +14,11 @@ const _kLocale = 'locale';
 const _kThemeMode = 'themeMode';
 const _kParagraphMode = 'paragraphMode';
 const _kMenuScale = 'menuScale';
+// 2026-05-08 (v1.1.1): which card / tile material to render across
+// the app's framing surfaces. See `lib/models/app_style_preset.dart`
+// for the [CardMaterial] enum. Default `classic` keeps the look the
+// app shipped with through v1.0.x.
+const _kCardMaterial = 'cardMaterial';
 // 2026-05-07 (v17): _kOfflineMode removed; the toggle that wrote it
 // was deleted from the Settings card. The persisted bool is left in
 // SharedPreferences for users that have it -- it's harmless dead
@@ -64,6 +70,8 @@ class AppSettings extends ChangeNotifier {
   ThemeMode _themeMode = ThemeMode.system;
   bool _paragraphMode = true;
   double _menuScale = 1.0;
+  // 2026-05-08 (v1.1.1): card / tile material; classic by default.
+  CardMaterial _cardMaterial = CardMaterial.classic;
   /// 'list' or 'grid' — persisted choice for the books picker.
   String _booksViewMode = 'grid';
   /// Render verse text with FontWeight.w700 instead of normal weight.
@@ -150,6 +158,7 @@ class AppSettings extends ChangeNotifier {
   ThemeMode get themeMode => _themeMode;
   bool get paragraphMode => _paragraphMode;
   double get menuScale => _menuScale;
+  CardMaterial get cardMaterial => _cardMaterial;
   String get booksViewMode => _booksViewMode;
   bool get boldVerseText => _boldVerseText;
   bool get showStrongsInOriginals => _showStrongsInOriginals;
@@ -268,6 +277,17 @@ class AppSettings extends ChangeNotifier {
     notifyListeners();
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_kParagraphMode, enabled);
+  }
+
+  // 2026-05-08 (v1.1.1): card / tile material picker. Persisted as
+  // the enum's name string so future enum reorderings don't reshuffle
+  // user choices the way an int index would.
+  Future<void> setCardMaterial(CardMaterial material) async {
+    if (_cardMaterial == material) return;
+    _cardMaterial = material;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_kCardMaterial, material.name);
   }
 
   Future<void> setBooksViewMode(String mode) async {
@@ -471,6 +491,7 @@ class AppSettings extends ChangeNotifier {
     _themeMode = ThemeMode.system;
     _paragraphMode = true;
     _menuScale = 1.0;
+    _cardMaterial = CardMaterial.classic;
     _booksViewMode = 'grid';
     _boldVerseText = false;
     _showStrongsInOriginals = true;
@@ -500,6 +521,7 @@ class AppSettings extends ChangeNotifier {
       _kThemeMode,
       _kParagraphMode,
       _kMenuScale,
+      _kCardMaterial,
       // 2026-05-07 (v17): the offlineMode toggle is gone, but we
       // still purge the stored bool on reset so users who toggled
       // it before don't carry dead data forever.
@@ -582,6 +604,14 @@ class AppSettings extends ChangeNotifier {
     _paragraphMode = prefs.getBool(_kParagraphMode) ?? true;
     final rawMenuScale = prefs.getDouble(_kMenuScale) ?? 1.0;
     _menuScale = ((rawMenuScale * 10).roundToDouble() / 10).clamp(0.7, 1.5);
+    // 2026-05-08 (v1.1.1): card material — default `classic` so
+    // existing users see no visual change from earlier versions
+    // unless they explicitly opt into a new look.
+    final rawCardMaterial = prefs.getString(_kCardMaterial);
+    _cardMaterial = CardMaterial.values.firstWhere(
+      (m) => m.name == rawCardMaterial,
+      orElse: () => CardMaterial.classic,
+    );
     final rawBooksView = prefs.getString(_kBooksViewMode) ?? 'grid';
     _booksViewMode = rawBooksView == 'grid' ? 'grid' : 'list';
     _boldVerseText = prefs.getBool(_kBoldVerseText) ?? false;
