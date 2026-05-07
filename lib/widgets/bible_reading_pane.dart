@@ -3449,38 +3449,41 @@ class _FloatingHeader extends StatelessWidget {
                             child: Padding(
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 8, vertical: 6),
-                              // 2026-05-07: switch to the standard
-                              // 2-character abbreviation ("帖前 5"
-                              // instead of the truncated
-                              // "帖撒罗...") on **all phone-class
-                              // widths** (< 600 px). iPhone 12 mini
-                              // (375 px), iPhone 12 Pro (390 px),
-                              // and most non-Pro phones all hit
-                              // this — the AppBar leaves only ~120-
-                              // 200 px for the title slot after the
-                              // back arrow + version label + 4
-                              // trailing icons, which is too tight
-                              // for an 8-Chinese-character book name.
-                              // Tablets (≥ 600 px) keep the full
-                              // localized name. Initial fix only
-                              // covered miniPhone (< 360 px), which
-                              // missed every common phone size —
-                              // user feedback: "这个还是有问题".
-                              child: Text(
-                                (deviceClass == DeviceClass.miniPhone ||
-                                        deviceClass == DeviceClass.phone)
-                                    ? '${shortBookName(book, locale)} $chapter'
-                                    : '$book $chapter',
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                  fontFamily: settings.fontFamily,
-                                  fontSize: fontSize,
-                                  fontWeight: FontWeight.w700,
-                                  color: scheme.primary,
-                                  decoration: TextDecoration.none,
-                                ),
-                              ),
+                              // 2026-05-07: short-book-name fallback
+                              // for narrow screens. Uses MediaQuery
+                              // directly (not the propagated
+                              // deviceClass) so the threshold is
+                              // re-evaluated live on resize and
+                              // doesn't depend on whether all the
+                              // call sites correctly thread
+                              // deviceClass through. User reported
+                              // that even at 433 px on iPhone Pro
+                              // Max, "帖撒罗尼迦后书 1" was
+                              // ellipsized to "帖撒罗尼迦后..." —
+                              // raised the threshold to 600 px to
+                              // cover every phone class with
+                              // headroom. The full name only fits
+                              // comfortably at tablet widths
+                              // anyway.
+                              child: Builder(builder: (ctx) {
+                                final screenW =
+                                    MediaQuery.of(ctx).size.width;
+                                final useShort = screenW < 600;
+                                return Text(
+                                  useShort
+                                      ? '${shortBookName(book, locale)} $chapter'
+                                      : '$book $chapter',
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    fontFamily: settings.fontFamily,
+                                    fontSize: fontSize,
+                                    fontWeight: FontWeight.w700,
+                                    color: scheme.primary,
+                                    decoration: TextDecoration.none,
+                                  ),
+                                );
+                              }),
                             ),
                           ),
                         ),
