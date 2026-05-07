@@ -119,6 +119,10 @@ any APIs themselves**; everything is at the Firebase project level.
 | ----------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
 | <img src="assets/screenshots/screenshot_feedback_form.png" alt="Feedback form" height="320"/>                           | <img src="assets/screenshots/screenshot_welcome_disclaimer.png" alt="Welcome disclaimer" height="320"/>|
 
+| Dark mode — Settings → Theme → **Dark Mode**                                                                            | Feedback form on a desktop monitor — `ConstrainedBox(maxWidth: 600)` keeps the form readable           |
+| ----------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| <img src="assets/screenshots/screenshot_dark_mode.png" alt="Dark mode" height="320"/>                                   | <img src="assets/screenshots/screenshot_feedback_form_wide.png" alt="Feedback form on desktop" height="320"/> |
+
 <details>
 <summary>Earlier screenshots (still useful — note popup, multi-select, version switch, book picker, splash)</summary>
 

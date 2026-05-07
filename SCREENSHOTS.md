@@ -6,13 +6,12 @@ mode chips, dashboard quick-links grid, feedback form). This file
 is the capture brief for whoever takes them — the URL flow,
 suggested viewport size, and the filename to save.
 
-> **Status (2026-05-07):** rows 1–7 and 9–11 captured against the
+> **Status (2026-05-07):** **all 12 rows captured** against the
 > live build (v0.1.0) and committed into `assets/screenshots/`.
 > The README's *App Screenshots* table now uses these new shots
-> in 5 rows × 2 columns; older shots (note popup / multi-select /
+> in 6 rows × 2 columns; older shots (note popup / multi-select /
 > version switch / book picker / splash / older settings) are
-> kept inside a `<details>` collapser further down. **Rows 8 and
-> 12 are still pending** — see the table below.
+> kept inside a `<details>` collapser further down.
 
 ## How to capture
 
@@ -46,11 +45,11 @@ exist.
 | 5 | `screenshot_search_ai.png` | 414 × 819 | Type a thematic query like "the love chapter" → tap **YsWords AI** chip → AI-suggested verses appear. The AI chip should be highlighted (active state). *(Captured against "The Verse about Gods name", AI returned 8 passages.)* | ✅ captured |
 | 6 | `screenshot_search_help_dialog.png` | 414 × 819 | Tap the **?** icon in the SearchPage AppBar → shows the localized "How to search" dialog with Basic + Advanced sections. | ✅ captured |
 | 7 | `screenshot_feedback_form.png` | 414 × 819 | Dashboard → Feedback tile → form open with category chips, message field, name field, **Reply-to email (optional)** field. *(Post-v16 — the "send a copy to me" checkbox is no longer there.)* | ✅ captured |
-| 8 | `screenshot_feedback_form_wide.png` | 1280 × 800 | Same form on a desktop monitor — the `ConstrainedBox(maxWidth: 600)` should center it nicely with margin on both sides. | ⏳ pending |
+| 8 | `screenshot_feedback_form_wide.png` | 1280 × 800 | Same form on a desktop monitor — the `ConstrainedBox(maxWidth: 600)` should center it nicely with margin on both sides. *(Captured in dark mode — looks good either way; the centering + margins are the point.)* | ✅ captured |
 | 9 | `screenshot_word_study.png` | 414 × 819 | Inside reader → tap a verse → **Original** sheet opens → word-by-word interlinear with Strong's chips + tappable lemmas. *(Captured at desktop width; the same UI shows on mobile.)* | ✅ captured |
 | 10 | `screenshot_ai_explanation.png` | 414 × 819 | Originals sheet → tap **AI explain** chip → AI response renders below with the *"AI is only an aid"* caveat visible at bottom. *(Captured at desktop width.)* | ✅ captured |
 | 11 | `screenshot_welcome_disclaimer.png` | 414 × 819 | First-launch welcome page: tagline + the *"The Spirit guides; AI only assists"* disclaimer card + Sign-in / Continue-as-guest buttons. | ✅ captured |
-| 12 | `screenshot_dark_mode.png` | 414 × 819 | Reader in dark mode (Settings → Theme → Dark) showing a chapter rendered with the dark palette. | ⏳ pending |
+| 12 | `screenshot_dark_mode.png` | 414 × 819 | Reader in dark mode (Settings → Theme → Dark) showing a chapter rendered with the dark palette. *(Captured against the Settings page itself with the **Theme Mode = Dark Mode** dropdown visible — more illustrative than a dark-themed reader page since it shows the control + the result at once.)* | ✅ captured |
 
 ## Existing screenshots (already in `assets/screenshots/`)
 
