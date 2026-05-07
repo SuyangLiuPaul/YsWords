@@ -2266,6 +2266,23 @@ const uiStrings = {
             'and resume sync — your highlights / notes / bookmarks live '
             'in your own Drive AppData folder (hidden, app-private).',
   },
+  // 2026-05-07: improved progress + post-download UX:
+  // - "{total} files" makes the unit explicit (was just a bare number)
+  // - "{eta}" inserts a localized "~30 sec left" suffix once we have
+  //   enough samples
+  // - offlinePackRedownload is the new outlined button label that
+  //   replaces the prominent "Download" button after a successful
+  //   download — no more confusing "why is the button still here?"
+  'offlinePackEtaSuffix': {
+    'zh-Hans': ' · 剩余约 {eta}',
+    'zh-Hant': ' · 剩餘約 {eta}',
+    'en': ' · ~{eta} left',
+  },
+  'offlinePackRedownload': {
+    'zh-Hans': '重新下载以刷新',
+    'zh-Hant': '重新下載以刷新',
+    'en': 'Re-download to refresh',
+  },
   'offlinePackNetworkNote': {
     'zh-Hans': '以下功能仍需要网络：AI 释义 / AI 搜索、云端同步登录、新闻实时更新，'
         '以及首次加载非 Roboto 字体（Google Fonts 在线下载，下载后会被浏览器缓存）。',
@@ -2288,9 +2305,9 @@ const uiStrings = {
     'en': 'Pick a category',
   },
   'offlinePackDownloading': {
-    'zh-Hans': '下载中… {done} / {total}（{pct}%）',
-    'zh-Hant': '下載中… {done} / {total}（{pct}%）',
-    'en': 'Downloading… {done}/{total} ({pct}%)',
+    'zh-Hans': '下载中… {done} / {total} 个文件（{pct}%）{eta}',
+    'zh-Hant': '下載中… {done} / {total} 個檔案（{pct}%）{eta}',
+    'en': 'Downloading… {done}/{total} files ({pct}%){eta}',
   },
   'offlinePackReady': {
     'zh-Hans': '已可离线使用 · {categories}',

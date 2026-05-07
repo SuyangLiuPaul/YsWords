@@ -75,6 +75,11 @@ class OfflinePackService extends ChangeNotifier {
   String? _error;
   Set<OfflinePackCategory> _lastDownloaded = const {};
   DateTime? _lastCompletedAt;
+  /// 2026-05-07: timestamp the most recent download started — used
+  /// by [etaSeconds] to compute time-remaining ("~30 sec left",
+  /// "~2 min left") so the user knows whether they should keep the
+  /// app open. Reset to null on cancel / completion.
+  DateTime? _downloadStartedAt;
 
   bool get downloading => _downloading;
   int get done => _done;
@@ -84,6 +89,25 @@ class OfflinePackService extends ChangeNotifier {
   String? get error => _error;
   Set<OfflinePackCategory> get lastDownloaded => Set.unmodifiable(_lastDownloaded);
   DateTime? get lastCompletedAt => _lastCompletedAt;
+
+  /// Estimated seconds remaining for the current download, or null
+  /// when not enough data is available (download not in flight, or
+  /// fewer than 5 files done so the rate estimate would be noisy).
+  /// Used by the Settings UI to render "~30 sec left".
+  int? get etaSeconds {
+    if (!_downloading) return null;
+    if (_done < 5) return null; // need a stable rate sample
+    final start = _downloadStartedAt;
+    if (start == null) return null;
+    final elapsedMs = DateTime.now().difference(start).inMilliseconds;
+    if (elapsedMs <= 0) return null;
+    final remaining = _total - _done;
+    if (remaining <= 0) return 0;
+    final ratePerMs = _done / elapsedMs; // files per ms
+    if (ratePerMs <= 0) return null;
+    final etaMs = remaining / ratePerMs;
+    return (etaMs / 1000).round();
+  }
 
   /// Restore the persisted "what's already cached" + "when" state so
   /// the Settings UI can show an accurate label on app launch.
@@ -108,6 +132,7 @@ class OfflinePackService extends ChangeNotifier {
   void cancel() {
     if (!_downloading) return;
     _downloading = false;
+    _downloadStartedAt = null;
     notifyListeners();
   }
 
@@ -129,6 +154,7 @@ class OfflinePackService extends ChangeNotifier {
     _failed = 0;
     _total = urls.length;
     _error = null;
+    _downloadStartedAt = DateTime.now();
     notifyListeners();
 
     // Run up to 8 fetches in parallel — far faster than serial for
@@ -159,6 +185,7 @@ class OfflinePackService extends ChangeNotifier {
 
     final completed = _downloading; // false if user hit Cancel
     _downloading = false;
+    _downloadStartedAt = null;
     if (completed) {
       _lastDownloaded = Set.of(categories);
       _lastCompletedAt = DateTime.now();

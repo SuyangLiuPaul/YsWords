@@ -42,6 +42,7 @@ import 'package:yswords/utils/jump_to_reference.dart' as jumper;
 import 'package:yswords/utils/jump_to_reference.dart' show prepareJumpToVerse;
 import 'package:yswords/utils/reference_parser.dart';
 import 'package:yswords/utils/responsive.dart';
+import 'package:yswords/utils/short_book_name.dart';
 import 'package:yswords/widgets/google_g_logo.dart';
 import 'package:yswords/widgets/today_reading_card.dart';
 import 'package:yswords/utils/floating_toast.dart' show showFloatingToast;
@@ -3448,8 +3449,20 @@ class _FloatingHeader extends StatelessWidget {
                             child: Padding(
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 8, vertical: 6),
+                              // 2026-05-07: on narrow screens (iPhone
+                              // mini / iPhone SE) the full Chinese
+                              // book name "帖撒罗尼迦前书" got
+                              // ellipsized to "帖..." which is
+                              // unhelpful. Switch to the standard
+                              // 2-character abbreviation ("帖前") on
+                              // miniPhone class so the full
+                              // book + chapter fits in the title
+                              // slot. Phone+ tablets keep the full
+                              // localized name.
                               child: Text(
-                                '$book $chapter',
+                                deviceClass == DeviceClass.miniPhone
+                                    ? '${shortBookName(book, locale)} $chapter'
+                                    : '$book $chapter',
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: TextStyle(

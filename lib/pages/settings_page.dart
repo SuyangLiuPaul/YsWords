@@ -3197,12 +3197,26 @@ class _OfflinePackCardState extends State<_OfflinePackCard> {
   String _statusLine(String locale, OfflinePackService svc) {
     if (svc.downloading) {
       final pct = (svc.progress * 100).clamp(0, 100).round();
+      // 2026-05-07: include "files" unit so "1885 / 2063" reads as
+      // "1885 / 2063 files" — user feedback was that the bare
+      // number didn't communicate what was being measured. Plus
+      // append a localized ETA ("~30 sec left") once we have
+      // enough samples to compute a stable rate (see etaSeconds).
       final tmpl = uiStrings['offlinePackDownloading']?[locale] ??
-          'Downloading… {done}/{total} ({pct}%)';
+          'Downloading… {done}/{total} files ({pct}%){eta}';
+      String etaPart = '';
+      final eta = svc.etaSeconds;
+      if (eta != null && eta > 0) {
+        final etaText = _formatEta(eta, locale);
+        etaPart = (uiStrings['offlinePackEtaSuffix']?[locale] ??
+                ' · ~{eta} left')
+            .replaceAll('{eta}', etaText);
+      }
       return tmpl
           .replaceAll('{done}', '${svc.done}')
           .replaceAll('{total}', '${svc.total}')
-          .replaceAll('{pct}', '$pct');
+          .replaceAll('{pct}', '$pct')
+          .replaceAll('{eta}', etaPart);
     }
     if (svc.lastCompletedAt != null && svc.lastDownloaded.isNotEmpty) {
       final cats = svc.lastDownloaded
@@ -3214,6 +3228,28 @@ class _OfflinePackCardState extends State<_OfflinePackCard> {
     }
     return uiStrings['offlinePackHint']?[locale] ??
         'Pre-download Bibles, sermons, and tools so the app launches instantly and works without network.';
+  }
+
+  /// 2026-05-07: format ETA for the offline-pack download status.
+  /// "less than 10 sec" / "~30 sec" / "~2 min" / "~5 min". We round
+  /// generously so users don't see jitter (e.g. 27s → 35s → 22s
+  /// flickering). All three locales supported.
+  String _formatEta(int sec, String locale) {
+    final isZh = locale.startsWith('zh');
+    if (sec < 10) {
+      return isZh ? '不到 10 秒' : 'less than 10 sec';
+    }
+    if (sec < 60) {
+      // round to nearest 10 seconds for stability
+      final rounded = ((sec + 5) ~/ 10) * 10;
+      return isZh ? '$rounded 秒' : '$rounded sec';
+    }
+    if (sec < 3600) {
+      final mins = (sec / 60).round();
+      return isZh ? '$mins 分钟' : '$mins min';
+    }
+    final hrs = (sec / 3600).round();
+    return isZh ? '$hrs 小时' : '$hrs hr';
   }
 
   int _selectedTotalMb() {
@@ -3379,28 +3415,57 @@ class _OfflinePackCardState extends State<_OfflinePackCard> {
           Row(
             children: [
               Expanded(
-                child: svc.downloading
-                    ? OutlinedButton.icon(
-                        icon: const Icon(Icons.close_rounded, size: 18),
-                        label: Text(
-                          uiStrings['cancel']?[locale] ?? 'Cancel',
-                        ),
-                        onPressed: () => svc.cancel(),
-                      )
-                    : FilledButton.icon(
-                        icon: const Icon(Icons.download_rounded, size: 18),
-                        label: Text(
-                          _selected.isEmpty
-                              ? (uiStrings['offlinePackPickCategory']
-                                      ?[locale] ??
-                                  'Pick a category')
-                              : '${uiStrings['offlinePackDownload']?[locale] ?? 'Download'} '
-                                  '(~${_selectedTotalMb()} MB)',
-                        ),
-                        onPressed: _selected.isEmpty
-                            ? null
-                            : () => svc.download(categories: _selected),
+                child: Builder(builder: (_) {
+                  if (svc.downloading) {
+                    return OutlinedButton.icon(
+                      icon: const Icon(Icons.close_rounded, size: 18),
+                      label: Text(
+                        uiStrings['cancel']?[locale] ?? 'Cancel',
                       ),
+                      onPressed: () => svc.cancel(),
+                    );
+                  }
+                  if (_selected.isEmpty) {
+                    return FilledButton.icon(
+                      icon: const Icon(Icons.download_rounded, size: 18),
+                      label: Text(
+                          uiStrings['offlinePackPickCategory']?[locale] ??
+                              'Pick a category'),
+                      onPressed: null,
+                    );
+                  }
+                  // 2026-05-07: differentiate the action based on
+                  // whether everything in the user's current
+                  // selection has already been downloaded. When
+                  // selection ⊆ lastDownloaded → button reads
+                  // "Already downloaded · Re-download to refresh"
+                  // (outlined, not filled) so the user sees they
+                  // don't need to do anything; tapping still
+                  // re-downloads which is useful for picking up
+                  // updated assets after a deploy. When selection
+                  // contains anything NEW → button reads
+                  // "Download new (~X MB)" (filled, prominent) so
+                  // the user knows there's actual work to do.
+                  final allDownloaded = svc.lastDownloaded.isNotEmpty &&
+                      _selected.every(svc.lastDownloaded.contains);
+                  if (allDownloaded) {
+                    return OutlinedButton.icon(
+                      icon: const Icon(Icons.refresh_rounded, size: 18),
+                      label: Text(uiStrings['offlinePackRedownload']
+                              ?[locale] ??
+                          'Re-download to refresh'),
+                      onPressed: () => svc.download(categories: _selected),
+                    );
+                  }
+                  return FilledButton.icon(
+                    icon: const Icon(Icons.download_rounded, size: 18),
+                    label: Text(
+                      '${uiStrings['offlinePackDownload']?[locale] ?? 'Download'} '
+                      '(~${_selectedTotalMb()} MB)',
+                    ),
+                    onPressed: () => svc.download(categories: _selected),
+                  );
+                }),
               ),
               if (!svc.downloading &&
                   svc.lastCompletedAt != null &&
