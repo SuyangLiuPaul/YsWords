@@ -12,20 +12,23 @@
 //                       → Environment variables.
 //
 // Optional Netlify env vars:
-//   FEEDBACK_TO       — destination email (default 'paulsyliu@gmail.com')
+//   FEEDBACK_TO       — destination email (default 'paulsyliu@gmail.com').
+//                       Note: Resend's free tier without a verified domain
+//                       only allows sending TO the email tied to the API
+//                       key. Set FEEDBACK_TO to that address until you
+//                       verify a custom domain.
 //   FEEDBACK_FROM     — sender email used by Resend. Default is
 //                       'YsWords Feedback <onboarding@resend.dev>',
-//                       which works without verifying a custom domain
-//                       but limits replies. To allow `Reply` to work
-//                       from your inbox, verify a domain at Resend
-//                       and set this to e.g.
+//                       which works without verifying a custom domain.
+//                       To allow `Reply` to work from your inbox, verify
+//                       a domain at Resend and set this to e.g.
 //                       'YsWords Feedback <feedback@yourdomain.com>'.
 //
 // If RESEND_API_KEY is not set, the function returns 503 and the
 // Flutter client falls back to opening the user's mail client via
 // mailto:. Feedback is never silently lost.
 //
-// Body:  { category, message, name?, replyTo?, locale?, version?, position? }
+// Body JSON: see fields list below; all are optional except `message`.
 // Reply: { ok: true } on success
 //        { error: '...' }  + 4xx/5xx on failure
 
@@ -58,13 +61,47 @@ export default async (req) => {
 		return jsonResponse({ error: 'Invalid JSON body.' }, 400);
 	}
 
+	// User-typed fields
 	const category = String(payload.category || 'General').slice(0, 64);
 	const message = String(payload.message || '').trim();
 	const name = String(payload.name || '').trim().slice(0, 200);
 	const replyTo = String(payload.replyTo || '').trim().slice(0, 320);
+
+	// App context (sent by the client)
 	const locale = String(payload.locale || '').slice(0, 32);
 	const version = String(payload.version || '').slice(0, 64);
 	const position = String(payload.position || '').slice(0, 200);
+
+	// Client-side diagnostics
+	const screenW = numOrNull(payload.screenWidth);
+	const screenH = numOrNull(payload.screenHeight);
+	const dpr = String(payload.devicePixelRatio || '').slice(0, 16);
+	const theme = String(payload.theme || '').slice(0, 16);
+	const timezone = String(payload.timezone || '').slice(0, 16);
+	const clientLocalTime =
+		String(payload.clientLocalTime || '').slice(0, 32);
+	const browserLocale = String(payload.browserLocale || '').slice(0, 32);
+	const userAgent = String(payload.userAgent || '').slice(0, 600);
+
+	// Server-side diagnostics (from Netlify request headers).
+	// IP: Netlify exposes the edge connection IP and a chained
+	// x-forwarded-for. Take the first hop of x-forwarded-for as the
+	// real client; fall back to the connection IP.
+	const xff = req.headers.get('x-forwarded-for') || '';
+	const xffFirst = xff.split(',')[0]?.trim() || '';
+	const ip = xffFirst ||
+		req.headers.get('x-nf-client-connection-ip') ||
+		req.headers.get('client-ip') ||
+		'';
+	// Country / geo: Netlify exposes x-country and x-nf-country
+	// (with subdivision). x-nf-geo is JSON on edge functions only;
+	// we keep the simpler header for compatibility.
+	const country = req.headers.get('x-country') ||
+		req.headers.get('x-nf-country') ||
+		'';
+	const referer = req.headers.get('referer') || '';
+	const origin = req.headers.get('origin') || '';
+	const ua = userAgent || req.headers.get('user-agent') || '';
 
 	if (!message) {
 		return jsonResponse({ error: 'Message is required.' }, 400);
@@ -72,33 +109,58 @@ export default async (req) => {
 	if (message.length > 8000) {
 		return jsonResponse({ error: 'Message too long.' }, 400);
 	}
-	// Cheap reply-to email sanity check; let Resend reject if it
-	// disagrees. Empty replyTo is fine — Resend just won't set it.
 	if (replyTo && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(replyTo)) {
 		return jsonResponse({ error: 'Invalid reply-to email.' }, 400);
 	}
 
 	const subject = `YsWords feedback [${category}]${name ? ` — ${name}` : ''}`;
 
-	const lines = [
-		message,
-		'',
-		'---',
-		`Category: ${category}`,
-	];
-	if (name) lines.push(`Name: ${name}`);
-	if (replyTo) lines.push(`Reply-to: ${replyTo}`);
-	if (locale) lines.push(`Locale: ${locale}`);
+	// Server timestamp formatted human-readable: "2026-05-07 13:35:08 UTC".
+	// Easier to read at a glance than raw ISO 8601 with milliseconds.
+	const serverTime = formatUtcTimestamp(new Date());
+
+	// Build the email body. Two clearly delimited blocks: the user's
+	// message, then a structured diagnostics section. Order chosen so
+	// the human-meaningful info is at the top of the diagnostics
+	// (category / time) and the technical bits at the bottom.
+	const lines = [];
+	lines.push(message);
+	lines.push('');
+	lines.push('─── Feedback details ────────────────────');
+	lines.push(`Category    : ${category}`);
+	if (name) lines.push(`Name        : ${name}`);
+	if (replyTo) lines.push(`Reply-to    : ${replyTo}`);
+	lines.push(`Submitted   : ${serverTime}`);
+	if (clientLocalTime) {
+		lines.push(`User local  : ${clientLocalTime} (UTC${timezone || '?'})`);
+	}
+	lines.push('');
+	lines.push('─── App context ─────────────────────────');
+	if (locale) lines.push(`App locale   : ${locale}`);
 	if (version) lines.push(`Bible version: ${version}`);
 	if (position) lines.push(`Last position: ${position}`);
-	lines.push('App: YsWords (web)');
-	lines.push(
-		`Submitted: ${new Date().toISOString()} UTC`,
-	);
+	if (theme) lines.push(`Theme        : ${theme}`);
+	lines.push('');
+	lines.push('─── Client environment ──────────────────');
+	if (screenW != null && screenH != null) {
+		lines.push(`Screen       : ${screenW}×${screenH} px${dpr ? ` @ ${dpr}× DPR` : ''}`);
+	}
+	if (browserLocale) lines.push(`Browser lang : ${browserLocale}`);
+	if (ua) {
+		const brief = parseBrowserBrief(ua);
+		if (brief) lines.push(`Browser      : ${brief}`);
+		lines.push(`User-Agent   : ${ua}`);
+	}
+	lines.push('');
+	lines.push('─── Server-side ─────────────────────────');
+	if (ip) lines.push(`IP           : ${ip}`);
+	if (country) lines.push(`Country      : ${country}`);
+	if (referer) lines.push(`Referer      : ${referer}`);
+	if (origin) lines.push(`Origin       : ${origin}`);
+	lines.push(`Endpoint     : POST /api/submitFeedback`);
+
 	const text = lines.join('\n');
-	// HTML mirror of the same content with hardlinks newlines so
-	// Gmail / Apple Mail render readable paragraphs.
-	const html = `<pre style="font-family:system-ui,sans-serif;white-space:pre-wrap;line-height:1.5;">${escapeHtml(text)}</pre>`;
+	const html = `<pre style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;white-space:pre-wrap;line-height:1.45;font-size:13px;">${escapeHtml(text)}</pre>`;
 
 	const body = {
 		from,
@@ -142,9 +204,6 @@ function jsonResponse(obj, status = 200) {
 		status,
 		headers: {
 			'Content-Type': 'application/json',
-			// Allow the Flutter web app on the same origin to call us;
-			// no cross-origin needed for production but keeping a
-			// permissive default avoids surprises during local dev.
 			'Access-Control-Allow-Origin': '*',
 			'Cache-Control': 'no-store',
 		},
@@ -158,4 +217,39 @@ function escapeHtml(s) {
 		.replace(/>/g, '&gt;')
 		.replace(/"/g, '&quot;')
 		.replace(/'/g, '&#39;');
+}
+
+function numOrNull(v) {
+	const n = Number(v);
+	return Number.isFinite(n) ? Math.round(n) : null;
+}
+
+// "2026-05-07 13:35:08 UTC" -- much more readable in an email
+// than ISO 8601 with milliseconds and a Z suffix.
+function formatUtcTimestamp(d) {
+	const pad = (n) => String(n).padStart(2, '0');
+	return `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())}` +
+		` ${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}:${pad(d.getUTCSeconds())} UTC`;
+}
+
+// Cheap browser-name extractor for the email's first line.
+// Falls back to '' if nothing recognised; the full UA stays
+// in the email for forensic detail.
+function parseBrowserBrief(ua) {
+	const u = String(ua);
+	let browser = '';
+	if (/Edg\//i.test(u)) browser = 'Edge';
+	else if (/Chrome\//i.test(u) && !/Chromium\//i.test(u)) browser = 'Chrome';
+	else if (/Firefox\//i.test(u)) browser = 'Firefox';
+	else if (/Safari\//i.test(u) && !/Chrome\//i.test(u)) browser = 'Safari';
+	else if (/Opera|OPR\//i.test(u)) browser = 'Opera';
+	let os = '';
+	if (/Mac OS X/i.test(u)) os = 'macOS';
+	else if (/Windows NT/i.test(u)) os = 'Windows';
+	else if (/Android/i.test(u)) os = 'Android';
+	else if (/iPhone|iPad|iPod/i.test(u)) os = 'iOS';
+	else if (/Linux/i.test(u)) os = 'Linux';
+	if (!browser && !os) return '';
+	if (browser && os) return `${browser} on ${os}`;
+	return browser || os;
 }

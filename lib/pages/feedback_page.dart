@@ -150,19 +150,22 @@ class _FeedbackPageState extends State<FeedbackPage> {
 
     setState(() => _submitting = true);
 
-    // 2026-05-07 (v13): POST first to /api/submitFeedback (Netlify
-    // Function backed by Resend). This sends the email server-side
-    // -- no extra tab, no mail app, the user just sees a "thanks"
-    // and gets popped back. Fall back to mailto: only if the
-    // function isn't configured (no RESEND_API_KEY) or returns 404,
-    // so feedback is never silently lost.
+    // 2026-05-07 (v13/v14): POST first to /api/submitFeedback
+    // (Netlify Function backed by Resend). This sends the email
+    // server-side -- no extra tab, no mail app, the user just sees
+    // a "thanks" and gets popped back. Fall back to mailto: only
+    // if the function isn't configured (no RESEND_API_KEY) or
+    // returns 404, so feedback is never silently lost. v14 also
+    // bundles client-side diagnostic info (screen / theme / TZ /
+    // browser) for easier troubleshooting.
     final result = await FeedbackService.submit(
+      context: context,
       category: _categoryShort(_category),
       message: _messageController.text.trim(),
       name: _nameController.text.trim(),
       replyTo: _replyToController.text.trim(),
-      locale: settings.locale,
-      version: mp.currentVersion,
+      appLocale: settings.locale,
+      bibleVersion: mp.currentVersion,
       position: _positionLine(mp),
     );
     if (!mounted) return;
@@ -237,11 +240,19 @@ class _FeedbackPageState extends State<FeedbackPage> {
         actions: const [HomeIconButton()],
       ),
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
+        // 2026-05-07 (v14): center + cap the form width on wide
+        // monitors. Without this, every TextField stretched to the
+        // full viewport (~1900 px on a desktop) which is unreadable
+        // and looks unfinished. 600 px matches the comfortable
+        // line-length used on the Welcome page and the auth flow.
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 600),
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
               // Intro / framing — sets the expectation that this
               // goes directly to the developer's inbox via the
               // user's mail client.
@@ -399,6 +410,8 @@ class _FeedbackPageState extends State<FeedbackPage> {
                 textAlign: TextAlign.center,
               ),
             ],
+          ),
+            ),
           ),
         ),
       ),

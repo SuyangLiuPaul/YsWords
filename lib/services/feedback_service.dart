@@ -1,11 +1,22 @@
 import 'dart:async' show TimeoutException;
 import 'dart:convert';
 
+import 'package:flutter/widgets.dart';
 import 'package:http/http.dart' as http;
 
-/// 2026-05-07 (v12): client wrapper for the `/api/submitFeedback`
-/// Netlify Function. POSTs the user's feedback form, returns a
-/// structured result the UI can branch on.
+import 'package:yswords/services/browser_info_stub.dart'
+    if (dart.library.js_interop) 'package:yswords/services/browser_info_web.dart';
+
+/// 2026-05-07 (v12 → v14): client wrapper for the
+/// `/api/submitFeedback` Netlify Function. POSTs the user's
+/// feedback form, returns a structured result the UI can branch on.
+///
+/// v14: now also bundles client-side diagnostic info (screen size,
+/// device pixel ratio, theme, timezone offset, user-local
+/// timestamp, browser language, browser user-agent) so the
+/// developer has everything needed to reproduce a bug without a
+/// follow-up. Server-side adds IP / country / referer from the
+/// request headers.
 ///
 /// Failure mode the caller should handle:
 ///   - `unconfigured == true` (HTTP 503): the function exists but
@@ -21,27 +32,64 @@ class FeedbackService {
     defaultValue: _defaultEndpoint,
   );
 
-  /// Submit a feedback payload. Returns a [FeedbackResult] indicating
-  /// whether to show the success state, fall back to mailto, or show
-  /// an error message.
+  /// Submit a feedback payload. [context] is required so we can
+  /// pull MediaQuery.size / devicePixelRatio / platformBrightness
+  /// for the diagnostic block.
   static Future<FeedbackResult> submit({
+    required BuildContext context,
     required String category,
     required String message,
     String? name,
     String? replyTo,
-    String? locale,
-    String? version,
+    String? appLocale,
+    String? bibleVersion,
     String? position,
   }) async {
+    // Gather client-side diagnostic info. All of this gets attached
+    // to the email body server-side.
+    final mq = MediaQuery.of(context);
+    final size = mq.size;
+    final dpr = mq.devicePixelRatio;
+    final isDark =
+        MediaQuery.platformBrightnessOf(context) == Brightness.dark;
+
+    final tzOffset = DateTime.now().timeZoneOffset;
+    final tzMin = tzOffset.inMinutes;
+    final tzSign = tzMin >= 0 ? '+' : '-';
+    final tzHH = (tzMin.abs() ~/ 60).toString().padLeft(2, '0');
+    final tzMM = (tzMin.abs() % 60).toString().padLeft(2, '0');
+    final tz = '$tzSign$tzHH:$tzMM';
+
+    String two(int n) => n.toString().padLeft(2, '0');
+    final localNow = DateTime.now();
+    final localStr =
+        '${localNow.year}-${two(localNow.month)}-${two(localNow.day)} '
+        '${two(localNow.hour)}:${two(localNow.minute)}:${two(localNow.second)}';
+
+    final browser = readBrowserInfo();
+
     final body = jsonEncode({
       'category': category,
       'message': message,
       if (name != null && name.isNotEmpty) 'name': name,
       if (replyTo != null && replyTo.isNotEmpty) 'replyTo': replyTo,
-      if (locale != null && locale.isNotEmpty) 'locale': locale,
-      if (version != null && version.isNotEmpty) 'version': version,
+      if (appLocale != null && appLocale.isNotEmpty) 'locale': appLocale,
+      if (bibleVersion != null && bibleVersion.isNotEmpty)
+        'version': bibleVersion,
       if (position != null && position.isNotEmpty) 'position': position,
+      // Diagnostic block — purely informational, no PII other than
+      // what the user typed.
+      'screenWidth': size.width.round(),
+      'screenHeight': size.height.round(),
+      'devicePixelRatio': dpr.toStringAsFixed(2),
+      'theme': isDark ? 'dark' : 'light',
+      'timezone': tz,
+      'clientLocalTime': localStr,
+      if (browser.browserLocale.isNotEmpty)
+        'browserLocale': browser.browserLocale,
+      if (browser.userAgent.isNotEmpty) 'userAgent': browser.userAgent,
     });
+
     http.Response resp;
     try {
       resp = await http

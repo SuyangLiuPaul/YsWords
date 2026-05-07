@@ -4541,14 +4541,20 @@ const uiStrings = {
             'Paste it into your email to paulsyliu@gmail.com.',
   },
   'feedbackPrivacyNote': {
-    'zh-Hans': '只发送您填写的内容 + 您当前的语言/版本/位置（用于调试报告），'
-        '不会上传任何其他个人数据。',
-    'zh-Hant': '只發送您填寫的內容 + 您當前的語言/版本/位置（用於除錯回報），'
-        '不會上傳任何其他個人資料。',
+    'zh-Hans': '为方便排查问题，发送时会一并附上：界面语言、圣经版本、'
+        '当前阅读位置、屏幕尺寸与主题、时区与提交时间、'
+        '浏览器与系统信息（IP 由服务器自动记录）。'
+        '只用于回复您和定位问题，不会用于其他用途。',
+    'zh-Hant': '為方便排查問題，發送時會一併附上：介面語言、聖經版本、'
+        '當前閱讀位置、螢幕尺寸與主題、時區與提交時間、'
+        '瀏覽器與系統資訊（IP 由伺服器自動記錄）。'
+        '只用於回覆您和定位問題，不會用於其他用途。',
     'en':
-        'Only the message you wrote plus your locale, Bible version, '
-            'and last position (to help debug reports) are sent. '
-            'No other personal data is uploaded.',
+        'To help debug your report, the submission also includes: '
+            'app locale, Bible version, last position, screen size + '
+            'theme, timezone + timestamp, browser + OS (IP is logged '
+            'server-side). Used only to reply and reproduce — nothing '
+            'else.',
   },
   'interfaceLanguage': {
     'zh-Hans': '界面语言',
