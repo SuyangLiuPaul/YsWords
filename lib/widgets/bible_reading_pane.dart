@@ -3449,27 +3449,35 @@ class _FloatingHeader extends StatelessWidget {
                             child: Padding(
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 8, vertical: 6),
-                              // 2026-05-07: short-book-name fallback
-                              // for narrow screens. Uses MediaQuery
-                              // directly (not the propagated
-                              // deviceClass) so the threshold is
-                              // re-evaluated live on resize and
-                              // doesn't depend on whether all the
-                              // call sites correctly thread
-                              // deviceClass through. User pinpointed
-                              // 435 px as the actual cutoff where
-                              // "帖撒罗尼迦后书 1" starts ellipsizing
-                              // at the AppBar's available width
-                              // (after leading icon + actions are
-                              // accounted for). Use 450 to cover the
-                              // boundary plus a small safety margin
-                              // for slight font-metric drift across
-                              // platforms; wider screens render the
-                              // full name unchanged.
+                              // 2026-05-07: short-book-name policy.
+                              // Iteration history:
+                              //   - first cut: 360 px (miniPhone only)
+                              //   - bumped to 600 px after the user
+                              //     reported truncation at 433 px on
+                              //     iPhone Pro Max
+                              //   - tightened to 450 px after the user
+                              //     pinpointed 435 as the actual
+                              //     threshold
+                              //   - now: ALWAYS short for Chinese
+                              //     locales, since "帖前" / "约一" /
+                              //     "撒上" are universally understood
+                              //     and the formal 4-7 char forms make
+                              //     the AppBar label unnecessarily
+                              //     wide even on tablets ("帖撒罗尼迦
+                              //     前书" → "帖前" is 7 chars → 2).
+                              //     English locales keep the
+                              //     width-based fallback at 450 px
+                              //     because English full names are
+                              //     already short ("Romans" etc.) and
+                              //     their abbreviations (Rom / 1Th)
+                              //     are noticeably less informative
+                              //     than the Chinese single/double-
+                              //     character standards.
                               child: Builder(builder: (ctx) {
                                 final screenW =
                                     MediaQuery.of(ctx).size.width;
-                                final useShort = screenW < 450;
+                                final useShort = locale.startsWith('zh') ||
+                                    screenW < 450;
                                 return Text(
                                   useShort
                                       ? '${shortBookName(book, locale)} $chapter'
