@@ -3449,18 +3449,26 @@ class _FloatingHeader extends StatelessWidget {
                             child: Padding(
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 8, vertical: 6),
-                              // 2026-05-07: on narrow screens (iPhone
-                              // mini / iPhone SE) the full Chinese
-                              // book name "帖撒罗尼迦前书" got
-                              // ellipsized to "帖..." which is
-                              // unhelpful. Switch to the standard
-                              // 2-character abbreviation ("帖前") on
-                              // miniPhone class so the full
-                              // book + chapter fits in the title
-                              // slot. Phone+ tablets keep the full
-                              // localized name.
+                              // 2026-05-07: switch to the standard
+                              // 2-character abbreviation ("帖前 5"
+                              // instead of the truncated
+                              // "帖撒罗...") on **all phone-class
+                              // widths** (< 600 px). iPhone 12 mini
+                              // (375 px), iPhone 12 Pro (390 px),
+                              // and most non-Pro phones all hit
+                              // this — the AppBar leaves only ~120-
+                              // 200 px for the title slot after the
+                              // back arrow + version label + 4
+                              // trailing icons, which is too tight
+                              // for an 8-Chinese-character book name.
+                              // Tablets (≥ 600 px) keep the full
+                              // localized name. Initial fix only
+                              // covered miniPhone (< 360 px), which
+                              // missed every common phone size —
+                              // user feedback: "这个还是有问题".
                               child: Text(
-                                deviceClass == DeviceClass.miniPhone
+                                (deviceClass == DeviceClass.miniPhone ||
+                                        deviceClass == DeviceClass.phone)
                                     ? '${shortBookName(book, locale)} $chapter'
                                     : '$book $chapter',
                                 maxLines: 1,
