@@ -2853,15 +2853,22 @@ const uiStrings = {
     'en':
         'High-contrast dark surfaces with sharp drop-shadows, compact density, Inter sans — for power-user vibes.',
   },
+  // 2026-05-08 (v1.1.3): rewritten to reflect v1.1.2 reality —
+  // "System default" is now the recommended top option (resolves
+  // through the OS native font stack), Microsoft YaHei is no longer
+  // bundled (removed in v1.0 for licence reasons), and Google
+  // Fonts options download on first use.
   'fontFamilyHint': {
-    'zh-Hans': '"Roboto" 和 "微软雅黑" 是应用自带的字体，到处都能用。'
-        '其他选项使用您设备上已安装的系统字体——中文用户推荐微软雅黑、苹方、思源黑体；'
-        '英文用户推荐 Times New Roman、Georgia、Garamond（衬线）或 Helvetica、Arial（无衬线）。',
-    'zh-Hant': '「Roboto」與「微軟雅黑」是應用內建字體，到處都能用。'
-        '其他選項使用您裝置上已安裝的系統字體——中文使用者推薦微軟雅黑、蘋方、思源黑體；'
-        '英文使用者推薦 Times New Roman、Georgia、Garamond（襯線）或 Helvetica、Arial（無襯線）。',
+    'zh-Hans': '推荐选「系统默认」—— macOS / iOS 用 SF Pro，Windows 用雅黑，'
+        'Android 用 Roboto，跟随您设备的系统字体。Roboto 是应用内置的备用'
+        '字体，永远可用。其他选项（EB Garamond / Lora / Inter 等）首次使用'
+        '时从 Google Fonts 下载并缓存。',
+    'zh-Hant': '推薦選「系統預設」—— macOS / iOS 用 SF Pro，Windows 用雅黑，'
+        'Android 用 Roboto，跟隨您裝置的系統字體。Roboto 是應用內建的備用'
+        '字體，永遠可用。其他選項（EB Garamond / Lora / Inter 等）首次使用'
+        '時從 Google Fonts 下載並快取。',
     'en':
-        'Roboto and Microsoft YaHei are bundled with the app and always available. The other options use the system fonts installed on your device — for Chinese try Microsoft YaHei / PingFang SC / Source Han Sans; for English try Times New Roman / Georgia / Garamond (serif) or Helvetica / Arial (sans-serif).',
+        'Pick "System default" — macOS / iOS uses SF Pro, Windows uses Segoe UI, Android uses Roboto, following your device. Roboto is bundled with the app and always available. Other options (EB Garamond / Lora / Inter / …) download from Google Fonts on first use and are cached afterwards.',
   },
   'confirm': {
     'zh-Hans': '确认',

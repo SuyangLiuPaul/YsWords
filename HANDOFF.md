@@ -1,6 +1,6 @@
 # YsWords — AI Agent Handoff Document
 
-> Last updated: 2026-05-08 — **v1.1.2 system defaults + a11y** (font / theme / locale / motion / contrast all now follow user system → app fallback) (Round 56 day-7++: sync Firestore → Drive → RTDB; AI Bible search + deep exegesis + lemma + proper-noun complementary glosses; 5-category offline pack; search-page redesign culminating in v8 (Word Study removed) + v9 (live search-as-you-type) + v10 (Copy-all results); v12–v16 feedback pipeline (in-app form → Resend → developer inbox, with diagnostic block + reply-to email and mailto: fallback; v16 dropped the copy-to-user CC after the user opted out of Resend domain verification); Settings v17 cleanup (dead Offline Mode toggle and theatrical Check-for-Updates tile removed; app version surfaced on AboutPage footer); v18 audit (jump-to-reference Timer race, profiles_page TextEditingController leaks, unbounded query/verseText on three AI Netlify endpoints, silently-swallowed bootstrap futures); v1.0.1 perf (memoized search keys + paragraph grouping + bookOrder; capped Image decode dimensions; deleted 40 MB Archived/ cruft); Library Chinese label 我的标记 → 我的收藏; book-name fold uniform at 390 px; quick-links Search + Feedback tiles; CORS-suppressed news/evidence images; CJK gloss search with alias-pin for divine names)
+> Last updated: 2026-05-08 — **v1.1.3 robustness audit** (LiquidGlass widgets scoped to select cardMaterial only; fontFamilyHint corrected for v1.1.2 reality) (Round 56 day-7++: sync Firestore → Drive → RTDB; AI Bible search + deep exegesis + lemma + proper-noun complementary glosses; 5-category offline pack; search-page redesign culminating in v8 (Word Study removed) + v9 (live search-as-you-type) + v10 (Copy-all results); v12–v16 feedback pipeline (in-app form → Resend → developer inbox, with diagnostic block + reply-to email and mailto: fallback; v16 dropped the copy-to-user CC after the user opted out of Resend domain verification); Settings v17 cleanup (dead Offline Mode toggle and theatrical Check-for-Updates tile removed; app version surfaced on AboutPage footer); v18 audit (jump-to-reference Timer race, profiles_page TextEditingController leaks, unbounded query/verseText on three AI Netlify endpoints, silently-swallowed bootstrap futures); v1.0.1 perf (memoized search keys + paragraph grouping + bookOrder; capped Image decode dimensions; deleted 40 MB Archived/ cruft); Library Chinese label 我的标记 → 我的收藏; book-name fold uniform at 390 px; quick-links Search + Feedback tiles; CORS-suppressed news/evidence images; CJK gloss search with alias-pin for divine names)
 > Project: YsWords (Yahweh's Words) — bilingual Bible reader
 > Stack: Flutter 3.41.7 / Dart 3.11.5 / Provider + GetX
 > Repo: https://github.com/SuyangLiuPaul/YsWords
@@ -2563,6 +2563,66 @@ build succeeds, deployed to Netlify (`69fd194f5078e1285fa397ba`).
 - No system-detection for primary colour (no portable browser API
   for the OS accent). Would need experimental `system-accent`
   CSS once browsers stabilise it.
+
+### Strand: v1.1.3 — robustness audit (2026-05-08)
+
+User asked for an end-to-end test pass to make sure the recent
+changes (v1.1.0 / v1.1.1 / v1.1.2) didn't introduce regressions.
+`flutter analyze` was already clean and 39 tests passed, so this
+audit targeted classes the analyzer doesn't catch.
+
+Spawned an Explore agent for a deep code review of the new
+surfaces (LiquidGlass primitives, CardMaterial dispatch, system
+font fallback, MediaQuery a11y hooks, preset apply/detect).
+Combined with direct grep + file-read passes, the audit yielded
+3 real findings — all confirmed by manual verification, all
+fixed:
+
+1. **`lib/widgets/liquid_glass.dart` LiquidGlassButton (line 363)** —
+   `context.watch<AppSettings>()` rebuilt the entire button on
+   every AppSettings change, even though the build only reads
+   `.cardMaterial`. With ~12 dashboard tiles + ~10 search chips
+   + welcome / feedback cards all listening, dragging the font-
+   size slider in Settings caused a cascade of unnecessary
+   rebuilds. **Fix**: switched to
+   `context.select<AppSettings, CardMaterial>((s) => s.cardMaterial)`
+   so the button only rebuilds when `cardMaterial` changes.
+
+2. **`lib/widgets/liquid_glass.dart` LiquidGlassCard (line 709)** —
+   same `watch` → `select` fix applied to the card variant.
+
+3. **`lib/constants/ui_strings.dart` fontFamilyHint** — said
+   *"Roboto and Microsoft YaHei are bundled with the app"*. False
+   since v1.0 (YaHei was removed for licence reasons). Misleading
+   users who'd look for it in Settings. **Fix**: rewrote the hint
+   in all three locales to reflect v1.1.2 reality — recommend
+   "System default" as the top choice, document the OS mapping,
+   note that Roboto is bundled and other fonts download via
+   Google Fonts on first use.
+
+**Findings the agent surfaced but I dismissed after verification**:
+- *"`MediaQuery.of(context)` access in `LiquidGlassButton` could
+  throw"* — false positive; safe within a built widget tree.
+- *"`'Source Han Sans SC'` orphan in fontFamilyFallback"* — minor
+  / harmless; the CSS chain just skips unresolved entries.
+- *"Preset preview cards bypass `highContrast` downgrade"* —
+  intentional design choice (previews need to show actual look).
+
+**Verified**: `flutter analyze` clean, 39/39 tests pass, web
+build succeeds, deployed to Netlify (`69fd1c14bbaccf122dc34fc8`).
+
+**Net robustness state**:
+- Static analysis: ✓ no warnings or errors
+- Test suite: ✓ 39/39 pass (covers cross-references coverage,
+  divine-name normalisation, dashboard headlines dedup, Bible-
+  evidence parsing, sydney-time greeting math)
+- Bug audits since v1.0: 6 fixes in v18, 5 perf wins in v1.0.1,
+  3 fixes in v1.1.3 — total 14 real issues caught and shipped
+- Resource leaks: no remaining controller / Timer / subscription
+  leaks identified
+- A11y: respects `prefers-reduced-motion` + `prefers-contrast: more`
+  via Flutter's MediaQuery flags; downgrades visual material
+  appropriately
 
 ---
 

@@ -359,8 +359,16 @@ class _LiquidGlassButtonState extends State<LiquidGlassButton> {
 
   @override
   Widget build(BuildContext context) {
+    // 2026-05-08 (v1.1.3 robustness audit): use `context.select`
+    // instead of `context.watch` so the button only rebuilds when
+    // `cardMaterial` itself changes — not on every unrelated
+    // AppSettings field (font size, line spacing, primary colour,
+    // locale, …). With ~12 dashboard tiles + ~10 search chips +
+    // welcome / feedback cards all listening, watching the full
+    // AppSettings caused a cascade of rebuilds whenever the user
+    // dragged the font-size slider in Settings.
     var material = widget.forceMaterial ??
-        context.watch<AppSettings>().cardMaterial;
+        context.select<AppSettings, CardMaterial>((s) => s.cardMaterial);
     final scheme = Theme.of(context).colorScheme;
     // 2026-05-08 (v1.1.2): respect OS accessibility preferences.
     // Flutter / the browser surface them as MediaQueryData flags.
@@ -705,8 +713,10 @@ class LiquidGlassCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final material =
-        forceMaterial ?? context.watch<AppSettings>().cardMaterial;
+    // 2026-05-08 (v1.1.3): same `select`-not-`watch` scoping as
+    // LiquidGlassButton; avoids rebuilds on unrelated settings.
+    final material = forceMaterial ??
+        context.select<AppSettings, CardMaterial>((s) => s.cardMaterial);
     Widget surface;
     switch (material) {
       case CardMaterial.classic:

@@ -66,4 +66,18 @@
 ///   glass / paper / carbon material to classic).
 /// Reset settings now restores 'system' font + system theme +
 /// system locale, not hardcoded Roboto.
-const String kAppVersion = '1.1.2';
+///
+/// 2026-05-08 (v1.1.3 robustness audit): three real fixes from a
+/// post-v1.1.2 audit pass:
+/// • LiquidGlassButton + LiquidGlassCard switched from
+///   `context.watch<AppSettings>()` to `context.select<...>` so
+///   they only rebuild when `cardMaterial` itself changes — not
+///   on every unrelated AppSettings field. With ~12 dashboard
+///   tiles + ~10 search chips + welcome / feedback cards all
+///   listening, watching the full settings caused a cascade of
+///   rebuilds whenever the user dragged the font-size slider.
+/// • `fontFamilyHint` ui-string rewritten to reflect v1.1.2
+///   reality — "System default" is now the recommended choice;
+///   Microsoft YaHei is no longer bundled (was removed for
+///   licence reasons in v1.0).
+const String kAppVersion = '1.1.3';
