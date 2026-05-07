@@ -6,7 +6,6 @@ import 'package:yswords/providers/main_provider.dart';
 import 'package:yswords/services/ai_bible_search_service.dart';
 import 'package:yswords/services/concordance_service.dart';
 import 'package:yswords/services/fetch_verses.dart';
-import 'package:yswords/services/strongs_service.dart';
 import 'package:yswords/pages/strongs_entry_page.dart';
 import 'package:yswords/services/recent_searches_service.dart';
 import 'package:yswords/utils/format_searched_text.dart';
@@ -24,15 +23,11 @@ import 'package:yswords/widgets/localized_back_button.dart';
 import 'package:yswords/utils/responsive.dart';
 import 'package:flutter/services.dart';
 
-/// Pattern for Strong's-number queries: optional whitespace, "G" or "H",
-/// optional whitespace, digits. Matches user-typed forms like "G2316",
-/// "g 2316", "h7200", with case insensitivity.
-final _strongsQueryPattern = RegExp(r'^\s*([GHgh])\s*(\d{1,5})\s*$');
-
-/// 2026-05-07 (v6): which of the three modes the current results
-/// came from. Drives the highlight on the mode-chip strip so the
-/// user has visual confirmation of which path was used.
-enum _SearchMode { none, text, wordStudy, ai }
+/// 2026-05-07 (v8): two-mode search after Word Study removal.
+/// `none` = no search yet; `text` = plain Bible text scan;
+/// `ai` = YsWords AI fuzzy / thematic. Drives the highlight on
+/// the mode-chip strip.
+enum _SearchMode { none, text, ai }
 
 class SearchPage extends StatefulWidget {
   const SearchPage({super.key});
@@ -82,6 +77,10 @@ class _SearchPageState extends State<SearchPage> {
   /// for any short Latin token, which made common English Bible words
   /// like "love", "faith", "father" hijack themselves to the wrong
   /// view.
+  /// 2026-05-07 (v8): no longer set anywhere after Word Study
+  /// removal, but the field stays for backwards compat with the
+  /// `_resetSearchState()` clear and a possible future re-introduction.
+  // ignore: unused_field
   StrongsEntry? _lemmaSuggestion;
 
   /// 2026-05-07 (post-fix): how many verses the last `search()` call
@@ -366,27 +365,6 @@ class _SearchPageState extends State<SearchPage> {
               // the query weakly matched a Greek/Hebrew lemma. Replaces
               // the old behavior of silently auto-redirecting to that
               // lexicon entry, which hijacked common English words.
-              if (_lemmaSuggestion != null) ...[
-                const SizedBox(height: 16),
-                _LemmaSuggestionCard(
-                  entry: _lemmaSuggestion!,
-                  locale: locale,
-                  onTap: () async {
-                    final num = _lemmaSuggestion!.number;
-                    setState(() {
-                      _resetSearchState();
-                      _strongsKey = num;
-                      _strongsEntry = _lemmaSuggestion;
-                    });
-                    final conc = await ConcordanceService.lookup(num);
-                    if (!mounted) return;
-                    setState(() {
-                      _strongsResult = conc;
-                      searchPerformed = true;
-                    });
-                  },
-                ),
-              ],
               if (_textEditingController.text.trim().length >= 2) ...[
                 const SizedBox(height: 16),
                 FilledButton.tonalIcon(
@@ -694,82 +672,6 @@ class _SearchPageState extends State<SearchPage> {
     super.dispose();
   }
 
-  /// 2026-05-07 (v5): explicit "Word study" search-mode handler.
-  /// Triggered from the search-mode strip below the AppBar. Routes
-  /// the current input through the lexicon paths only (Strong's
-  /// number, Greek/Hebrew lemma, transliteration) — the regular
-  /// text-scan path is never run here, so the user gets a
-  /// predictable result regardless of whether the typed word
-  /// happens to also appear as plain text in the translation.
-  Future<void> _runWordStudy() async {
-    final query = _textEditingController.text.trim();
-    if (query.isEmpty) return;
-    final settings = Provider.of<AppSettings>(context, listen: false);
-    final loaded = await _ensureVersesLoaded();
-    if (!mounted || !loaded) return;
-    // 2026-05-07 (v6): refresh diagnostic capture so the banner is
-    // not stuck on "src=-1" from a previous text search.
-    final mp = Provider.of<MainProvider>(context, listen: false);
-    _lastVersesAtSearch = mp.verses.length;
-    _lastSearchAll = searchAll;
-    _lastFilterBook = filterBook;
-    _lastCurrentBook = mp.currentBook;
-    _lastLoadedVersion = mp.currentVersion;
-    _lastVersesLength = mp.verses.length;
-
-    // Strong's-number first.
-    final strongsMatch = _strongsQueryPattern.firstMatch(query);
-    if (strongsMatch != null) {
-      final num =
-          '${strongsMatch.group(1)!.toUpperCase()}${strongsMatch.group(2)!}';
-      setState(() {
-        _resetSearchState();
-        _strongsKey = num;
-      });
-      final entry = await StrongsService.lookup(num);
-      final conc = await ConcordanceService.lookup(num);
-      if (!mounted) return;
-      setState(() {
-        _strongsEntry = entry;
-        _strongsResult = conc;
-        _lastMode = _SearchMode.wordStudy;
-        searchPerformed = true;
-      });
-      return;
-    }
-
-    // Lemma / transliteration.
-    final matches = await StrongsService.searchByLemma(query, limit: 4);
-    if (!mounted) return;
-    if (matches.isEmpty) {
-      setState(() {
-        _resetSearchState();
-        searchPerformed = true;
-        _lastMode = _SearchMode.wordStudy;
-        _aiNotice =
-            uiStrings['searchWordStudyNoMatch']?[settings.locale] ??
-                'No lexicon entry matched. Try a Strong\'s number '
-                    '(G2316 / H7200), a Greek / Hebrew word, or an '
-                    'exact transliteration ("agape").';
-      });
-      return;
-    }
-    final best = matches.first;
-    final num = best.number;
-    setState(() {
-      _resetSearchState();
-      _strongsKey = num;
-      _strongsEntry = best;
-    });
-    final conc = await ConcordanceService.lookup(num);
-    if (!mounted) return;
-    setState(() {
-      _strongsResult = conc;
-      _lastMode = _SearchMode.wordStudy;
-      searchPerformed = true;
-    });
-  }
-
   /// 2026-05-07 (post-fix): localized help dialog that documents
   /// every search syntax the page supports. Until now, the
   /// page accepted Strong's numbers, Bible references, lemmas, and
@@ -925,6 +827,14 @@ class _SearchPageState extends State<SearchPage> {
   }
 
   Future<void> _searchImpl() async {
+    // 2026-05-07 (v8): user removed the Word Study mode. Text
+    // search is now PURE text scan -- no Strong's redirect, no
+    // lemma redirect, no "did you mean" suggestion. Just iterate
+    // mp.verses, match the sanitized text against the query, show
+    // results. The "Search" chip / Enter submit always lands here.
+    // Strong's-number queries (G2316 / H7200) still navigate to
+    // the separate StrongsEntryPage via parseStrongsNumber inside
+    // the TextField onSubmitted handler, before _searchImpl runs.
     final query = _textEditingController.text.trim();
     debugPrint('[YsWords search] start query="$query"');
     if (query.isEmpty) {
@@ -975,94 +885,15 @@ class _SearchPageState extends State<SearchPage> {
     _lastLoadedVersion = mp.currentVersion;
     debugPrint('[YsWords search] CHECKPOINT-2');
 
-    // Strong's number → lexicon view.
-    final strongsMatch = _strongsQueryPattern.firstMatch(query);
-    debugPrint('[YsWords search] CHECKPOINT-3 strongs=$strongsMatch');
-    if (strongsMatch != null) {
-      final num =
-          '${strongsMatch.group(1)!.toUpperCase()}${strongsMatch.group(2)!}';
-      setState(() {
-        _resetSearchState();
-        _strongsKey = num;
-      });
-      final entry = await StrongsService.lookup(num);
-      final conc = await ConcordanceService.lookup(num);
-      if (!mounted) return;
-      setState(() {
-        _strongsEntry = entry;
-        _strongsResult = conc;
-        searchPerformed = true;
-      });
-      return;
-    }
+    // 2026-05-07 (v8): Word Study removed at user request. Text
+    // search no longer redirects to Strong's / lemma views. The
+    // user wants the Search chip and Enter to ALWAYS produce a
+    // verse list. No detours.
 
-    // Lemma-search redirect (Greek/Hebrew script always; Latin only
-    // on exact translit/lemma).
-    final hasGreek = RegExp(r'[Ͱ-Ͽἀ-῿]').hasMatch(query);
-    final hasHebrew = RegExp(r'[֐-׿יִ-ﭏ]').hasMatch(query);
-    final isLatinToken = RegExp(r'^[a-zA-ZÀ-ɏḀ-ỿ]+$').hasMatch(query) &&
-        query.length >= 3 &&
-        query.length <= 25;
-    debugPrint('[YsWords search] CHECKPOINT-4 '
-        'hasGreek=$hasGreek hasHebrew=$hasHebrew '
-        'isLatinToken=$isLatinToken');
-
-    StrongsEntry? lemmaSuggestion;
-    if (hasGreek || hasHebrew || isLatinToken) {
-      final matches = await StrongsService.searchByLemma(query, limit: 4);
-      if (!mounted) return;
-      if (matches.isEmpty) {
-        // No lemma match. Greek/Hebrew script → bail with empty
-        // results (text search is guaranteed empty against
-        // translations). Latin token → fall through to text search.
-        if (hasGreek || hasHebrew) {
-          setState(() {
-            _resetSearchState();
-            searchPerformed = true;
-          });
-          return;
-        }
-      } else {
-        final best = matches.first;
-        // Exact-match decision: derive normalised forms inline since
-        // StrongsService._normaliseForLemma is private.
-        final qNorm = _normaliseLemmaInline(query);
-        final lemmaNorm = _normaliseLemmaInline(best.lemma);
-        final translitNorm = _normaliseLemmaInline(best.translit);
-        final isExact = qNorm == lemmaNorm || qNorm == translitNorm;
-        // Greek/Hebrew script → always redirect (verses don't contain
-        // those characters, text search would always be empty). Latin
-        // tokens → only redirect on exact lemma/translit match;
-        // weaker matches are surfaced as a "Did you mean…" chip.
-        final shouldRedirect =
-            (hasGreek || hasHebrew) || (isLatinToken && isExact);
-        if (shouldRedirect) {
-          final num = best.number;
-          setState(() {
-            _resetSearchState();
-            _strongsKey = num;
-            _strongsEntry = best;
-          });
-          final conc = await ConcordanceService.lookup(num);
-          if (!mounted) return;
-          setState(() {
-            _strongsResult = conc;
-            searchPerformed = true;
-          });
-          return;
-        }
-        lemmaSuggestion = best;
-      }
-    }
-    // Guard before any context lookup — searchByLemma above is async
-    // and the user may have left this page during the await.
-    debugPrint('[YsWords search] CHECKPOINT-5 mounted=$mounted');
-    if (!mounted) return;
-
-    // We already have `mp` from the top of search(). Reuse it. No
-    // setState here yet — gather everything first, single setState
-    // at the end so there is exactly one rebuild cycle and zero
-    // window for state to drift.
+    // We already have `mp` from the top of search(). No setState
+    // here yet — gather everything first, single setState at the
+    // end so there is exactly one rebuild cycle and zero window
+    // for state to drift.
     final verses = mp.verses;
     debugPrint('[YsWords search] for-loop verses=${verses.length} '
         'searchAll=$searchAll filter=$filterBook curBook=${mp.currentBook}');
@@ -1120,7 +951,6 @@ class _SearchPageState extends State<SearchPage> {
     // no half-built UI state is ever observable.
     setState(() {
       _resetSearchState();
-      _lemmaSuggestion = lemmaSuggestion;
       _results.addAll(matches);
       bookCounts = orderedCounts;
       _lastVersesAtSearch = verses.length;
@@ -1354,9 +1184,6 @@ class _SearchPageState extends State<SearchPage> {
               _SearchModeStrip(
                 onTextSearch: () async {
                   await search();
-                },
-                onWordStudy: () async {
-                  await _runWordStudy();
                 },
                 onAiSearch: _aiBusy ? null : _askAi,
                 aiBusy: _aiBusy,
@@ -1825,24 +1652,6 @@ class _SearchPageState extends State<SearchPage> {
     return true;
   }
 
-  /// 2026-05-07 (post-fix): in-page mirror of
-  /// `StrongsService._normaliseForLemma` (which is private). Used to
-  /// decide whether a lemma-search hit is an exact match — only
-  /// exact matches auto-redirect Latin-token queries to the lexicon
-  /// view; weaker matches are surfaced as a "Did you mean…" chip.
-  static String _normaliseLemmaInline(String s) {
-    final lower = s.toLowerCase().trim();
-    final out = StringBuffer();
-    for (final r in lower.runes) {
-      if (r >= 0x0300 && r <= 0x036F) continue;
-      if (r >= 0x0591 && r <= 0x05BD) continue;
-      if (r == 0x05BF) continue;
-      if (r >= 0x05C1 && r <= 0x05C7) continue;
-      if (r >= 0x1AB0 && r <= 0x1AFF) continue;
-      out.writeCharCode(r);
-    }
-    return out.toString();
-  }
 }
 
 /// 2026-05-07: single recent-search row in the redesigned empty
@@ -1926,9 +1735,14 @@ class _RecentSearchRow extends StatelessWidget {
 /// catch-all heuristic chain (Strong's pattern -> reference parser
 /// -> lemma -> text), which was opaque. Explicit chips make the
 /// available modes discoverable and the dispatch predictable.
+/// 2026-05-07 (v8): two-chip strip. Word Study removed at user
+/// request — text search is the catch-all (Enter or Search chip),
+/// and YsWords AI is the fuzzy / thematic fallback. Strong's-number
+/// lookups still work via parseStrongsNumber → StrongsEntryPage in
+/// the AppBar TextField onSubmitted handler (separate page push,
+/// not a chip).
 class _SearchModeStrip extends StatelessWidget {
   final Future<void> Function() onTextSearch;
-  final Future<void> Function() onWordStudy;
   final Future<void> Function()? onAiSearch;
   final bool aiBusy;
   final _SearchMode activeMode;
@@ -1936,7 +1750,6 @@ class _SearchModeStrip extends StatelessWidget {
 
   const _SearchModeStrip({
     required this.onTextSearch,
-    required this.onWordStudy,
     required this.onAiSearch,
     required this.aiBusy,
     required this.activeMode,
@@ -1960,18 +1773,6 @@ class _SearchModeStrip extends StatelessWidget {
               onTap: () => onTextSearch(),
               color: scheme.primary,
               active: activeMode == _SearchMode.text,
-            ),
-            const SizedBox(width: 8),
-            _ModeChip(
-              icon: Icons.translate_rounded,
-              label: uiStrings['searchModeWordStudy']?[locale] ??
-                  'Word study',
-              tooltip: uiStrings['searchModeWordStudyTip']?[locale] ??
-                  'Strong\'s number / Greek / Hebrew lemma / '
-                      'transliteration. Opens the lexicon directly.',
-              onTap: () => onWordStudy(),
-              color: scheme.tertiary,
-              active: activeMode == _SearchMode.wordStudy,
             ),
             const SizedBox(width: 8),
             _ModeChip(
@@ -2144,101 +1945,6 @@ class _ScopeBanner extends StatelessWidget {
           ),
         ],
       ],
-    );
-  }
-}
-
-/// 2026-05-07 (post-fix): "Did you mean lexicon entry…" suggestion
-/// shown above the no-results empty state. Surfaces when the user's
-/// query weakly matched a Greek/Hebrew lemma — tapping opens that
-/// entry in the inline Strong's view. Replaces the previous behavior
-/// of silently hijacking common English words to the lexicon.
-class _LemmaSuggestionCard extends StatelessWidget {
-  final StrongsEntry entry;
-  final String locale;
-  final VoidCallback onTap;
-  const _LemmaSuggestionCard({
-    required this.entry,
-    required this.locale,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    final gloss = entry.localizedGloss(locale);
-    return Material(
-      color: scheme.surfaceContainerHighest.withValues(alpha: 0.5),
-      borderRadius: BorderRadius.circular(10),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(10),
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                uiStrings['searchLemmaSuggestionTitle']?[locale] ??
-                    'Did you mean this lexicon entry?',
-                style: TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w700,
-                  color: scheme.onSurfaceVariant,
-                  letterSpacing: 0.4,
-                ),
-              ),
-              const SizedBox(height: 6),
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 6, vertical: 1),
-                    decoration: BoxDecoration(
-                      color: scheme.primary.withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    child: Text(
-                      entry.number,
-                      style: TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w700,
-                        color: scheme.primary,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Flexible(
-                    child: Text(
-                      entry.lemma,
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                        color: scheme.onSurface,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                ],
-              ),
-              if (gloss.isNotEmpty) ...[
-                const SizedBox(height: 4),
-                Text(
-                  gloss,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: scheme.onSurfaceVariant,
-                  ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
-            ],
-          ),
-        ),
-      ),
     );
   }
 }
