@@ -3147,6 +3147,29 @@ const uiStrings = {
     'zh-Hant': '您是否在找詞典條目？',
     'en': 'Did you mean this lexicon entry?',
   },
+  // 2026-05-07 (post-fix): scope banner shown in the no-results
+  // state. Helps the user spot when a stuck filter is the reason for
+  // 0 results, with a one-tap "widen" affordance.
+  'searchScopeWhole': {
+    'zh-Hans': '整本圣经',
+    'zh-Hant': '整本聖經',
+    'en': 'Entire Bible',
+  },
+  'searchScopeCurrentBook': {
+    'zh-Hans': '当前书卷',
+    'zh-Hant': '當前書卷',
+    'en': 'Current book',
+  },
+  'searchScopeScanned': {
+    'zh-Hans': '已扫描 {n} 节',
+    'zh-Hant': '已掃描 {n} 節',
+    'en': 'Scanned {n} verses',
+  },
+  'searchScopeWiden': {
+    'zh-Hans': '改为搜索整本圣经',
+    'zh-Hant': '改為搜尋整本聖經',
+    'en': 'Search entire Bible instead',
+  },
   // Profile editing (Round 35)
   'profileEditTitle': {
     'zh-Hans': '编辑账号',

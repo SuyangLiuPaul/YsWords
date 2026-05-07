@@ -88,3 +88,39 @@ String displayCleanup(String chunk) {
   return _normalizeDivineNames(
       chunk.replaceAll(_pilcrowPattern, ''));
 }
+
+/// 2026-05-07: collapse stray ASCII spaces that sit between an
+/// annotation marker (`[…]`, `{…}`, `<note:…>`) and adjacent CJK
+/// text. The CUVS-Yahweh asset (and a few others) ship verses like
+/// `主[雅伟] 的道` where the original translation had English-style
+/// spacing around the bracketed alternative reading; in Chinese
+/// rendering that produces an unmistakable visual gap between
+/// `雅伟` and the next character. We collapse the space whenever
+/// either side of the gap is a CJK ideograph or full-width
+/// punctuation. English contexts (`the [LORD] God`) keep their
+/// spaces because the regex matches CJK ranges only.
+///
+/// Done as a single pre-process pass on the full verse string before
+/// it is split by `combinedPattern` — saves duplicating the rule on
+/// every chunk and keeps the rendering loop simple. Search
+/// (`sanitizeForSearch`) ignores spaces anyway (the search code
+/// strips all spaces before matching), so calling this is purely a
+/// rendering cleanup.
+String collapseAnnotationSpacing(String text) {
+  // CJK ideographs: U+4E00–U+9FFF (CJK Unified) plus U+3000–U+303F
+  // (CJK punctuation: 　 、。「」 etc.) plus the full-width punctuation
+  // block U+FF00–U+FFEF where the half-width ASCII forms typically
+  // get mapped.
+  const cjkClass = r'[　-〿一-鿿＀-￯]';
+  // Drop space between annotation-close (}, ], note > ) and CJK.
+  text = text.replaceAllMapped(
+    RegExp('([}\\]>])[ \\t]+($cjkClass)'),
+    (m) => '${m.group(1)}${m.group(2)}',
+  );
+  // Drop space between CJK and annotation-open ({, [, <).
+  text = text.replaceAllMapped(
+    RegExp('($cjkClass)[ \\t]+([{\\[<])'),
+    (m) => '${m.group(1)}${m.group(2)}',
+  );
+  return text;
+}

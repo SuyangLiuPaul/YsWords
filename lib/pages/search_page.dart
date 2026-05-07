@@ -78,10 +78,28 @@ class _SearchPageState extends State<SearchPage> {
   /// view.
   StrongsEntry? _lemmaSuggestion;
 
+  /// 2026-05-07 (post-fix): how many verses the last `search()` call
+  /// actually scanned. Surfaced in the no-results state so users can
+  /// see whether the page found nothing because the Bible isn't
+  /// loaded (0 scanned), the active filter excluded everything, or
+  /// the query genuinely doesn't appear in any verse.
+  int _lastScanCount = 0;
+
   @override
   void initState() {
     super.initState();
     _loadRecents();
+    // 2026-05-07 (post-fix): defensive — always start with whole-Bible
+    // scope. If the user previously chose "Search current book" from
+    // the filter dropdown, the choice persisted on the State instance
+    // until X was pressed. That made fresh searches return 0 hits
+    // when the previously-selected book didn't contain the new query
+    // — silently and unintuitively. Now every fresh entry to the
+    // search page resets to "search the entire Bible" + no book
+    // filter; the filter dropdown is still available for explicit
+    // narrowing within the session.
+    searchAll = true;
+    filterBook = null;
   }
 
   Future<void> _loadRecents() async {
@@ -159,6 +177,29 @@ class _SearchPageState extends State<SearchPage> {
                     )
                     .copyWith(fontSize: settings.fontSize),
                 textAlign: TextAlign.center,
+              ),
+              // 2026-05-07 (post-fix): show the active search scope so
+              // the user can tell at a glance whether the 0-results
+              // came from a stuck filter (a previous "Search Current
+              // Book" choice) versus a genuinely-missing query. With
+              // the initState reset, the default scope is now always
+              // "entire Bible" — but if the user explicitly narrowed
+              // mid-session, this banner makes that visible.
+              const SizedBox(height: 8),
+              _ScopeBanner(
+                searchAll: searchAll,
+                filterBook: filterBook,
+                versesScanned: _lastScanCount,
+                onWiden: (filterBook != null || !searchAll)
+                    ? () async {
+                        setState(() {
+                          searchAll = true;
+                          filterBook = null;
+                        });
+                        await search();
+                      }
+                    : null,
+                locale: locale,
               ),
               // 2026-05-07 (post-fix): "Did you mean lexicon entry…"
               // suggestion. Surfaces when text search returned 0 but
@@ -710,11 +751,16 @@ class _SearchPageState extends State<SearchPage> {
             ? verses
             : verses.where((v) => v.book == mainProvider.currentBook);
 
-    for (var verse in source) {
+    // 2026-05-07 (post-fix): count what was actually scanned so the
+    // no-results banner can distinguish "Bible not loaded" from
+    // "filter excluded the match" from "query genuinely absent".
+    final sourceList = source.toList();
+    _lastScanCount = sourceList.length;
+    final queryNorm =
+        _textEditingController.text.trim().replaceAll(' ', '').toLowerCase();
+    for (var verse in sourceList) {
       final sanitized = sanitizeForSearch(verse.text);
-      final textNorm = sanitized.replaceAll(" ", "").toLowerCase();
-      final queryNorm =
-          _textEditingController.text.trim().replaceAll(" ", "").toLowerCase();
+      final textNorm = sanitized.replaceAll(' ', '').toLowerCase();
       if (textNorm.contains(queryNorm)) {
         if (!_results.contains(verse)) {
           _results.add(verse);
@@ -1387,6 +1433,90 @@ class _RecentSearchRow extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+/// 2026-05-07 (post-fix): scope banner shown in the no-results state
+/// so users can see at a glance whether the empty result came from a
+/// stuck filter (book scoped to one volume) versus a genuinely
+/// missing query. Includes verse-count for the scanned scope and an
+/// optional "Search entire Bible" widen button when the active scope
+/// is narrower than the whole canon.
+class _ScopeBanner extends StatelessWidget {
+  final bool searchAll;
+  final String? filterBook;
+  final int versesScanned;
+  final VoidCallback? onWiden;
+  final String locale;
+  const _ScopeBanner({
+    required this.searchAll,
+    required this.filterBook,
+    required this.versesScanned,
+    required this.onWiden,
+    required this.locale,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final isWhole = filterBook == null && searchAll;
+    final scopeLabel = filterBook != null
+        ? filterBook!
+        : (searchAll
+            ? (uiStrings['searchScopeWhole']?[locale] ?? 'Entire Bible')
+            : (uiStrings['searchScopeCurrentBook']?[locale] ??
+                'Current book'));
+    final scanLabel =
+        (uiStrings['searchScopeScanned']?[locale] ?? 'Scanned {n} verses')
+            .replaceAll('{n}', versesScanned.toString());
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+          decoration: BoxDecoration(
+            color: scheme.surfaceContainerHighest.withValues(alpha: 0.5),
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.filter_alt_outlined,
+                size: 12,
+                color: scheme.onSurfaceVariant,
+              ),
+              const SizedBox(width: 4),
+              Text(
+                '$scopeLabel · $scanLabel',
+                style: TextStyle(
+                  fontSize: 11,
+                  color: scheme.onSurfaceVariant,
+                ),
+              ),
+            ],
+          ),
+        ),
+        if (!isWhole && onWiden != null) ...[
+          const SizedBox(height: 4),
+          TextButton.icon(
+            onPressed: onWiden,
+            icon: const Icon(Icons.unfold_more_rounded, size: 14),
+            label: Text(
+              uiStrings['searchScopeWiden']?[locale] ??
+                  'Search entire Bible instead',
+              style: const TextStyle(fontSize: 12),
+            ),
+            style: TextButton.styleFrom(
+              foregroundColor: scheme.primary,
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+              minimumSize: const Size(0, 28),
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            ),
+          ),
+        ],
+      ],
     );
   }
 }

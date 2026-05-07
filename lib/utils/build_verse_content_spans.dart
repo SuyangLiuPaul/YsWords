@@ -20,7 +20,14 @@ List<InlineSpan> buildVerseContentSpans({
 }) {
   final isReferenceLine = verse.paragraphType == 'reference';
 
-  final original = verse.text.replaceAll('\n', '');
+  // 2026-05-07: pre-process the raw text to drop stray spaces sitting
+  // between a [/{/<note: annotation and adjacent CJK characters.
+  // Several CUVS-Yahweh verses ship with English-style spacing
+  // around bracketed alternatives (e.g. `主[雅伟] 的道`) which leaves
+  // a visible gap between the annotation and the following Chinese
+  // character. `collapseAnnotationSpacing` is CJK-aware so it does
+  // not affect English contexts like `the [LORD] God`.
+  final original = collapseAnnotationSpacing(verse.text.replaceAll('\n', ''));
   final raw = original.trim();
   final parts = raw
       .splitMapJoin(
@@ -188,8 +195,16 @@ List<InlineSpan> buildVerseContentSpans({
                         height: settings.lineSpacing,
                         decoration: TextDecoration.underline,
                         decorationStyle: TextDecorationStyle.dotted,
-                        decorationColor: Theme.of(context).colorScheme.primary,
-                        decorationThickness: 2.0,
+                        // 2026-05-07: same toning-down as the
+                        // top-level square-bracket case — softer
+                        // dotted underline so divine-name substitutes
+                        // and LEB editorial inserts are marked
+                        // without dominating the line.
+                        decorationColor: Theme.of(context)
+                            .colorScheme
+                            .primary
+                            .withValues(alpha: 0.5),
+                        decorationThickness: 1.0,
                         color:
                             Theme.of(context).colorScheme.onSecondaryContainer,
                       ),
@@ -231,6 +246,13 @@ List<InlineSpan> buildVerseContentSpans({
     }
     if (squarePattern.hasMatch(part)) {
       final annotation = squarePattern.firstMatch(part)!.group(1)!;
+      // 2026-05-07 (post-fix): the dotted underline used to be 2.0 px
+      // in the theme's primary color, which read as a heavy "edit
+      // mark" beneath divine-name substitutions like [雅伟] and
+      // editorial inserts in LEB. The user found this noisy. Tone
+      // down to 1.0 px with a softened (50% alpha) decoration color
+      // — still legible as a marker that the word is bracketed but
+      // no longer dominates the line.
       spans.add(TextSpan(
         text: annotation,
         recognizer: onTextTap != null
@@ -242,8 +264,11 @@ List<InlineSpan> buildVerseContentSpans({
           height: settings.lineSpacing,
           decoration: TextDecoration.underline,
           decorationStyle: TextDecorationStyle.dotted,
-          decorationColor: Theme.of(context).colorScheme.primary,
-          decorationThickness: 2.0,
+          decorationColor: Theme.of(context)
+              .colorScheme
+              .primary
+              .withValues(alpha: 0.5),
+          decorationThickness: 1.0,
           color: isSelected
               ? Theme.of(context).colorScheme.onPrimaryContainer
               : Theme.of(context).textTheme.bodyLarge?.color,
