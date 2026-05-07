@@ -1,6 +1,6 @@
 # YsWords — AI Agent Handoff Document
 
-> Last updated: 2026-05-07 (Round 56 day-7++: sync Firestore → Drive → RTDB; AI Bible search + deep exegesis + lemma + proper-noun complementary glosses; 5-category offline pack; search-page redesign culminating in v8 (Word Study removed) + v9 (live search-as-you-type) + v10 (Copy-all results); v12–v16 feedback pipeline (in-app form → Resend → developer inbox, with diagnostic block + reply-to email and mailto: fallback; v16 dropped the copy-to-user CC after the user opted out of Resend domain verification); Settings v17 cleanup (dead Offline Mode toggle and theatrical Check-for-Updates tile removed; app version surfaced on AboutPage footer); Library Chinese label 我的标记 → 我的收藏; book-name fold uniform at 390 px; quick-links Search + Feedback tiles; CORS-suppressed news/evidence images; CJK gloss search with alias-pin for divine names)
+> Last updated: 2026-05-07 (Round 56 day-7++: sync Firestore → Drive → RTDB; AI Bible search + deep exegesis + lemma + proper-noun complementary glosses; 5-category offline pack; search-page redesign culminating in v8 (Word Study removed) + v9 (live search-as-you-type) + v10 (Copy-all results); v12–v16 feedback pipeline (in-app form → Resend → developer inbox, with diagnostic block + reply-to email and mailto: fallback; v16 dropped the copy-to-user CC after the user opted out of Resend domain verification); Settings v17 cleanup (dead Offline Mode toggle and theatrical Check-for-Updates tile removed; app version surfaced on AboutPage footer); v18 audit (jump-to-reference Timer race, profiles_page TextEditingController leaks, unbounded query/verseText on three AI Netlify endpoints, silently-swallowed bootstrap futures); Library Chinese label 我的标记 → 我的收藏; book-name fold uniform at 390 px; quick-links Search + Feedback tiles; CORS-suppressed news/evidence images; CJK gloss search with alias-pin for divine names)
 > Project: YsWords (Yahweh's Words) — bilingual Bible reader
 > Stack: Flutter 3.41.7 / Dart 3.11.5 / Provider + GetX
 > Repo: https://github.com/SuyangLiuPaul/YsWords
@@ -2159,6 +2159,84 @@ Net effect: the Settings card that used to host these two dead
 controls is now visually shorter but every remaining toggle does
 something real. The "I want to force a fresh build" use case is
 still served by `Clear cache & reload`, just one card lower.
+
+### Strand: v18 audit — fix race, leaks, and unbounded prompt inputs (2026-05-07)
+
+User asked for a max-effort bug audit before shipping. `flutter
+analyze` was already clean and 39 tests passed, so the audit
+targeted classes the analyzer doesn't catch: state-management
+races, controller / subscription leaks, async-context safety,
+and unbounded inputs to public Netlify endpoints.
+
+Spawned an Explore agent for a concurrent deep-dive while doing
+direct grep + file-read passes. Combined report yielded ~11
+candidate findings; six confirmed as real bugs after manual
+verification, the rest dismissed as false positives (LoadingPage
+retry was already defensive, `strongsNotFound` ui-string already
+existed, singleton listeners on app-lifetime services are
+intentional, etc.).
+
+**Fixes shipped:**
+
+1. **`lib/utils/jump_to_reference.dart`** — `scrollToVerseNumInChapter`'s
+   `Timer.periodic(16ms)` looped for the full ~1.5 s even after
+   the user navigated to a different chapter, wasting frames and
+   producing swallowed exceptions when `jumpToIndex` ran against
+   a stale `itemScrollController`. Added an early-exit when
+   `mp.currentBook != book || mp.currentChapter != chapter ||
+   mp.verses.isEmpty` so the timer cancels as soon as the reader
+   moves away.
+
+2. **`lib/pages/profiles_page.dart`** — `_createProfile` and
+   `_rename` each created a `TextEditingController` for an
+   `AlertDialog` and never disposed it. Every "Create profile"
+   or "Rename" tap leaked a controller (and its internal change
+   listeners). Wrapped the `showDialog` calls in `try/finally`
+   so the controller is disposed regardless of how the dialog
+   closes.
+
+3. **`netlify/functions/aiBibleSearch.mjs`** — public POST
+   endpoint accepted any-length `query`. A 100 KB+ query would
+   overflow Gemini's context window, burn RPD quota for every
+   user, and amplify cost for an attacker. Added a 2000-char
+   ceiling (well above any legitimate thematic question).
+
+4. **`netlify/functions/aiSearch.mjs`** — same fix, same
+   2000-char ceiling.
+
+5. **`netlify/functions/aiExplainWord.mjs`** — capped every
+   user-provided string before it reached the prompt builder:
+   `strongs` ≤ 16, `lemma` / `translit` ≤ 200, `gloss` ≤ 500,
+   `book` ≤ 64, `verseText` ≤ 4000, `locale` / `length` /
+   `scope` ≤ 32. All values are well above realistic input
+   sizes (longest legitimate verseText is ~600 chars in NASB).
+
+6. **`lib/main.dart`** — three intentionally-unawaited
+   bootstrap calls (`OfflinePackService.hydrate`,
+   `SectionTitleService.ensureLoaded`, `BookIntroService.ensureLoaded`)
+   silently swallowed any failure — a stuck cache in production
+   never surfaced. Attached `.catchError(...)` handlers that log
+   the failure via `debugPrint` without escalating to the user.
+
+**False positives dismissed:**
+
+- `LoadingPage._autoAdvance` Timer was claimed unstored — it's
+  actually a field, cancelled in `dispose()` (line 254), and
+  the inner callback already guards on `!mounted`.
+- `strongsNotFound` claimed missing from `ui_strings.dart` — it
+  exists at line 203; the in-source fallback string is purely
+  defensive.
+- Singleton listeners on `CloudSyncService`, `RealtimeDbSyncService`,
+  `CloudAuthService` are intentional — these services live for
+  the entire app lifetime; "leaking" listeners is correct
+  behaviour for a singleton.
+- Bootstrap `unawaited` futures are intentional — these are
+  best-effort hydration calls that should not block the splash
+  → home transition. v18 only added diagnostic logging.
+
+**Verification:** `flutter analyze` clean (no issues), all 39
+tests pass, `flutter build web --release` succeeds, deployed to
+Netlify (deploy `69fc54fcfa2bb20dd059958e`).
 
 ---
 

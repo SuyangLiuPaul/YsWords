@@ -108,17 +108,30 @@ class _MainAppState extends State<MainApp> {
       // folder picker). CloudSyncService is left in place as a
       // legacy migration source but no longer init'd.
       RealtimeDbSyncService.instance.init();
+      // 2026-05-07 (v18 audit): the three pre-warm calls below are
+      // intentionally unawaited (best-effort hydration that should
+      // not block the splash → home transition). But silently
+      // dropping their failures meant a stuck cache in production
+      // never surfaced. We attach a debug-only catchError so the
+      // failure shows up in the browser console without escalating
+      // to a user-facing error.
       // Restore "what's been pre-downloaded for offline" so the
       // Settings → Offline Pack card can render an accurate label
       // on first paint instead of flickering "Not downloaded".
       // ignore: unawaited_futures
-      OfflinePackService.instance.hydrate();
+      OfflinePackService.instance.hydrate().catchError((Object e, StackTrace st) {
+        debugPrint('OfflinePackService.hydrate failed: $e\n$st');
+      });
       // Pre-warm the section-titles cache so the first chapter
       // render already has paragraph headings ready.
       // ignore: unawaited_futures
-      SectionTitleService.ensureLoaded();
+      SectionTitleService.ensureLoaded().catchError((Object e, StackTrace st) {
+        debugPrint('SectionTitleService.ensureLoaded failed: $e\n$st');
+      });
       // ignore: unawaited_futures
-      BookIntroService.ensureLoaded();
+      BookIntroService.ensureLoaded().catchError((Object e, StackTrace st) {
+        debugPrint('BookIntroService.ensureLoaded failed: $e\n$st');
+      });
       await appSettings.loadSettings();
       await mainProvider.restoreState();
 

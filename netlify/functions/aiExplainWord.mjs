@@ -405,19 +405,28 @@ export default async (req) => {
 	}
 	try {
 		const body = await req.json();
-		const strongs = (body?.strongs || '').toString();
-		const lemma = (body?.lemma || '').toString();
-		const translit = (body?.translit || '').toString();
-		const gloss = (body?.gloss || '').toString();
-		const book = (body?.book || '').toString();
+		// 2026-05-07 (v18 audit): cap every user-provided string
+		// before it reaches the prompt builder. Without these caps a
+		// 100 KB+ verseText (or any other field) would overflow the
+		// Gemini context window — abusable for cost amplification +
+		// quota burn for everyone. The slice() values are well above
+		// realistic input sizes (longest legitimate verseText is
+		// ~600 chars in NASB; longest book name including the Song
+		// of Solomon variants is under 30 chars).
+		const strongs = (body?.strongs || '').toString().slice(0, 16);
+		const lemma = (body?.lemma || '').toString().slice(0, 200);
+		const translit = (body?.translit || '').toString().slice(0, 200);
+		const gloss = (body?.gloss || '').toString().slice(0, 500);
+		const book = (body?.book || '').toString().slice(0, 64);
 		const chapter = Number(body?.chapter || 0);
 		const verse = Number(body?.verse || 0);
-		const verseText = (body?.verseText || '').toString();
-		const locale = (body?.locale || 'en').toString();
+		const verseText = (body?.verseText || '').toString().slice(0, 4000);
+		const locale = (body?.locale || 'en').toString().slice(0, 32);
 		// Round 54: optional length + scope tuning. Defaults preserve
 		// the round-53 behaviour ('default' length / 'verse' scope).
-		const length = (body?.length || 'default').toString();
-		const scope = (body?.scope || 'verse').toString();
+		// v18: tightened to 32 chars — enums never exceed that.
+		const length = (body?.length || 'default').toString().slice(0, 32);
+		const scope = (body?.scope || 'verse').toString().slice(0, 32);
 		// BYOK (2026-05): client may pass `userApiKey` to use the
 		// user's own Gemini key (from AI Studio) instead of the
 		// developer's shared key. We validate the shape before

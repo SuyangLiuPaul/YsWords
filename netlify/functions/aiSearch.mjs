@@ -270,6 +270,16 @@ export default async (req) => {
 			return new Response(JSON.stringify({ error: 'query required' }),
 				{ status: 400, headers: cors });
 		}
+		// 2026-05-07 (v18 audit): cap the upper bound. Without this an
+		// arbitrary-length query overflows the Gemini context window,
+		// burns RPD quota, and amplifies cost for an attacker. Same
+		// 2000-char ceiling as aiBibleSearch — well above any
+		// legitimate thematic question.
+		if (query.length > 2000) {
+			return new Response(
+				JSON.stringify({ error: 'query too long (max 2000 chars)' }),
+				{ status: 400, headers: cors });
+		}
 		const dataset = await loadDataset();
 		const hits = localPrefilter(query, locale, dataset, 12);
 		if (hits.length === 0) {

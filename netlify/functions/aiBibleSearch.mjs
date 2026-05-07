@@ -202,6 +202,17 @@ export default async (req) => {
 			JSON.stringify({ error: 'Query is required (≥2 chars).' }),
 			{ status: 400, headers: { 'Content-Type': 'application/json' } });
 	}
+	// 2026-05-07 (v18 audit): cap the upper bound. Without this, a
+	// 100 KB+ query would overflow Gemini's context window (resulting
+	// in slow failures + wasted RPD quota for everyone) and could be
+	// abused to amplify cost. 2000 chars is well above any realistic
+	// thematic search ("the verse where Paul talks about love" etc.)
+	// while bounding the worst case.
+	if (query.length > 2000) {
+		return new Response(
+			JSON.stringify({ error: 'Query too long (max 2000 chars).' }),
+			{ status: 400, headers: { 'Content-Type': 'application/json' } });
+	}
 	try {
 		const completion = await callGemini(
 			query, locale, userApiKey || null);

@@ -39,35 +39,45 @@ class _ProfilesPageState extends State<ProfilesPage> {
   Future<void> _createProfile() async {
     final settings = context.read<AppSettings>();
     final locale = settings.locale;
+    // 2026-05-07 (v18 audit): controller is created here for the
+    // dialog's TextField and MUST be disposed once the dialog
+    // closes — otherwise every "Create profile" tap leaks a
+    // controller (and every leaked controller leaks its internal
+    // change listeners).
     final controller = TextEditingController();
-    final name = await showDialog<String?>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(uiStrings['profileCreateTitle']?[locale] ??
-            'Create profile'),
-        content: TextField(
-          controller: controller,
-          autofocus: true,
-          textCapitalization: TextCapitalization.words,
-          decoration: InputDecoration(
-            hintText:
-                uiStrings['welcomeNameHint']?[locale] ?? 'Your name',
+    String? name;
+    try {
+      name = await showDialog<String?>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: Text(uiStrings['profileCreateTitle']?[locale] ??
+              'Create profile'),
+          content: TextField(
+            controller: controller,
+            autofocus: true,
+            textCapitalization: TextCapitalization.words,
+            decoration: InputDecoration(
+              hintText:
+                  uiStrings['welcomeNameHint']?[locale] ?? 'Your name',
+            ),
+            onSubmitted: (v) => Navigator.of(ctx).pop(v.trim()),
           ),
-          onSubmitted: (v) => Navigator.of(ctx).pop(v.trim()),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(null),
+              child: Text(uiStrings['cancel']?[locale] ?? 'Cancel'),
+            ),
+            TextButton(
+              onPressed: () =>
+                  Navigator.of(ctx).pop(controller.text.trim()),
+              child: Text(uiStrings['ok']?[locale] ?? 'OK'),
+            ),
+          ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(null),
-            child: Text(uiStrings['cancel']?[locale] ?? 'Cancel'),
-          ),
-          TextButton(
-            onPressed: () =>
-                Navigator.of(ctx).pop(controller.text.trim()),
-            child: Text(uiStrings['ok']?[locale] ?? 'OK'),
-          ),
-        ],
-      ),
-    );
+      );
+    } finally {
+      controller.dispose();
+    }
     if (name == null || name.isEmpty) return;
     final p = await ProfileService.instance.create(name);
     await ProfileService.instance.setCurrent(p.id);
@@ -76,29 +86,37 @@ class _ProfilesPageState extends State<ProfilesPage> {
   Future<void> _rename(Profile p) async {
     final settings = context.read<AppSettings>();
     final locale = settings.locale;
+    // 2026-05-07 (v18 audit): same controller-leak fix as
+    // `_createProfile`. Wrapped in try/finally so the controller
+    // is disposed even if the dialog is dismissed by an exception.
     final controller = TextEditingController(text: p.name);
-    final name = await showDialog<String?>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(uiStrings['profileRename']?[locale] ?? 'Rename'),
-        content: TextField(
-          controller: controller,
-          autofocus: true,
-          textCapitalization: TextCapitalization.words,
+    String? name;
+    try {
+      name = await showDialog<String?>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: Text(uiStrings['profileRename']?[locale] ?? 'Rename'),
+          content: TextField(
+            controller: controller,
+            autofocus: true,
+            textCapitalization: TextCapitalization.words,
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(null),
+              child: Text(uiStrings['cancel']?[locale] ?? 'Cancel'),
+            ),
+            TextButton(
+              onPressed: () =>
+                  Navigator.of(ctx).pop(controller.text.trim()),
+              child: Text(uiStrings['ok']?[locale] ?? 'OK'),
+            ),
+          ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(null),
-            child: Text(uiStrings['cancel']?[locale] ?? 'Cancel'),
-          ),
-          TextButton(
-            onPressed: () =>
-                Navigator.of(ctx).pop(controller.text.trim()),
-            child: Text(uiStrings['ok']?[locale] ?? 'OK'),
-          ),
-        ],
-      ),
-    );
+      );
+    } finally {
+      controller.dispose();
+    }
     if (name == null || name.isEmpty) return;
     await ProfileService.instance.rename(p.id, name);
   }

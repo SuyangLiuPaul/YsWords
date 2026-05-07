@@ -198,11 +198,25 @@ void scrollToVerseNumInChapter(MainProvider mp, int verseNum) {
   }
   // Per-frame retry. Stop as soon as a jumpTo lands successfully OR
   // ~1.5 s have elapsed (94 ticks × 16 ms).
+  //
+  // 2026-05-07 (v18 audit): also bail if the reader's loaded chapter
+  // changes while we're still retrying. Without this guard, the
+  // timer kept ticking for the full 1.5 s even after the user
+  // navigated away, wasting frames and producing swallowed
+  // exceptions when `jumpToIndex` ran against a stale controller.
   var attempts = 0;
   var settled = 0;
   Timer.periodic(const Duration(milliseconds: 16), (timer) {
     attempts++;
     if (attempts > 94) {
+      timer.cancel();
+      return;
+    }
+    // User moved to a different chapter (or cleared verses) — the
+    // index we computed is no longer valid. Stop retrying.
+    if (mp.currentBook != book ||
+        mp.currentChapter != chapter ||
+        mp.verses.isEmpty) {
       timer.cancel();
       return;
     }
