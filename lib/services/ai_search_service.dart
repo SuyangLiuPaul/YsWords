@@ -84,7 +84,7 @@ class AiSearchService {
       // release builds it produces minified names like "td" that
       // mean nothing to users.
       return AiSearchResult.unavailable(
-        'AI search is not available right now. Showing keyword '
+        'YsWords search is not available right now. Showing keyword '
         'matches instead.',
       );
     }
@@ -92,14 +92,14 @@ class AiSearchService {
     if (resp.statusCode == 404) {
       // Function isn't deployed at this URL yet.
       return AiSearchResult.unavailable(
-        'AI search is not available yet. Showing keyword matches '
+        'YsWords search is not available yet. Showing keyword matches '
         'instead.',
       );
     }
     if (resp.statusCode != 200) {
       return AiSearchResult.unavailable(
-        'AI search returned an error (${resp.statusCode}). Showing '
-        'keyword matches instead.',
+        'YsWords search returned an error (${resp.statusCode}). '
+        'Showing keyword matches instead.',
       );
     }
     try {
@@ -107,8 +107,8 @@ class AiSearchService {
       return AiSearchResult.fromJson(body);
     } catch (_) {
       return AiSearchResult.unavailable(
-        'AI search returned an unexpected response. Showing keyword '
-        'matches instead.',
+        'YsWords search returned an unexpected response. Showing '
+        'keyword matches instead.',
       );
     }
   }

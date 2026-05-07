@@ -56,16 +56,27 @@ class _SearchPageState extends State<SearchPage> {
   StrongsEntry? _strongsEntry;
   ConcordanceResult? _strongsResult;
 
-  // 2026-05-07: AI Bible search state. The user can hit "Ask AI"
-  // when keyword search returns no results, or use it as their
-  // first attempt for fuzzy / thematic queries (e.g. "the love
-  // chapter", "雅各信仰", "Sermon on the Mount"). Gemini returns
-  // up to 10 references; we resolve them against the user's
-  // currently-loaded Bible version and display the verses in the
-  // same shape regular keyword results take.
+  // 2026-05-07: YsWords AI Bible search state. The user can hit
+  // "Search with YsWords AI" when keyword search returns no results,
+  // or use it for fuzzy / thematic queries (e.g. "the love chapter",
+  // "雅各信仰", "Sermon on the Mount"). Gemini returns up to 10
+  // references; we resolve them against the user's currently-loaded
+  // Bible version and display the verses in the same shape regular
+  // keyword results take. Always tagged "for reference only" since
+  // LLM-generated references can be wrong.
   bool _aiBusy = false;
-  String? _aiNotice; // "AI not available" / "no matches" — small inline note.
+  String? _aiNotice; // YsWords-AI status / "no matches" — small inline note.
   bool _lastResultsFromAi = false; // toggles header above _results.
+
+  /// 2026-05-07 (post-fix): when a regular text search returns 0 or
+  /// few results AND the query also looks like it might be a Greek/
+  /// Hebrew lemma (e.g. "agape", "shalom"), we show a "Did you mean
+  /// lexicon entry: …" suggestion above the empty state. Replaces the
+  /// previous behavior of silently auto-redirecting to the lexicon
+  /// for any short Latin token, which made common English Bible words
+  /// like "love", "faith", "father" hijack themselves to the wrong
+  /// view.
+  StrongsEntry? _lemmaSuggestion;
 
   @override
   void initState() {
@@ -77,6 +88,30 @@ class _SearchPageState extends State<SearchPage> {
     final list = await RecentSearchesService.list();
     if (!mounted) return;
     setState(() => _recents = list);
+  }
+
+  /// 2026-05-07 (post-fix): single source-of-truth reset. Called by
+  /// the X clear button, the start of `search()`, and the start of
+  /// `_askAi()` so we don't leak old state from one search mode into
+  /// the next. Previously each entry-point cleared its own subset and
+  /// e.g. the X button left `_lastResultsFromAi`, `_strongsKey` and
+  /// `_aiNotice` intact, which made the next search look broken.
+  ///
+  /// `keepResultsList=true` lets `search()` keep showing the previous
+  /// results during the brief async window before new results land —
+  /// avoids a "no results" flash between the old list and the new one.
+  void _resetSearchState({bool keepResultsList = false}) {
+    if (!keepResultsList) {
+      _results.clear();
+      bookCounts.clear();
+    }
+    _strongsKey = null;
+    _strongsEntry = null;
+    _strongsResult = null;
+    _lastResultsFromAi = false;
+    _aiNotice = null;
+    _lemmaSuggestion = null;
+    searchPerformed = false;
   }
 
   /// Run an AI-powered Bible reference lookup for the current query.
@@ -125,6 +160,32 @@ class _SearchPageState extends State<SearchPage> {
                     .copyWith(fontSize: settings.fontSize),
                 textAlign: TextAlign.center,
               ),
+              // 2026-05-07 (post-fix): "Did you mean lexicon entry…"
+              // suggestion. Surfaces when text search returned 0 but
+              // the query weakly matched a Greek/Hebrew lemma. Replaces
+              // the old behavior of silently auto-redirecting to that
+              // lexicon entry, which hijacked common English words.
+              if (_lemmaSuggestion != null) ...[
+                const SizedBox(height: 16),
+                _LemmaSuggestionCard(
+                  entry: _lemmaSuggestion!,
+                  locale: locale,
+                  onTap: () async {
+                    final num = _lemmaSuggestion!.number;
+                    setState(() {
+                      _resetSearchState();
+                      _strongsKey = num;
+                      _strongsEntry = _lemmaSuggestion;
+                    });
+                    final conc = await ConcordanceService.lookup(num);
+                    if (!mounted) return;
+                    setState(() {
+                      _strongsResult = conc;
+                      searchPerformed = true;
+                    });
+                  },
+                ),
+              ],
               if (_textEditingController.text.trim().length >= 2) ...[
                 const SizedBox(height: 16),
                 FilledButton.tonalIcon(
@@ -137,10 +198,22 @@ class _SearchPageState extends State<SearchPage> {
                       : const Icon(Icons.auto_awesome, size: 16),
                   label: Text(
                     _aiBusy
-                        ? (uiStrings['aiSearching']?[locale] ?? 'Asking AI…')
+                        ? (uiStrings['aiSearching']?[locale] ??
+                            'YsWords AI searching…')
                         : (uiStrings['askAiForVerses']?[locale] ??
-                            'Ask AI for related passages'),
+                            'Search with YsWords AI (reference only)'),
                   ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  uiStrings['aiReferenceOnly']?[locale] ??
+                      'AI results are for reference — verify before use.',
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: scheme.onSurfaceVariant,
+                    fontStyle: FontStyle.italic,
+                  ),
+                  textAlign: TextAlign.center,
                 ),
                 if (_aiNotice != null) ...[
                   const SizedBox(height: 10),
@@ -239,7 +312,9 @@ class _SearchPageState extends State<SearchPage> {
       );
     }
 
-    // Case 3 — true empty state (no search, no recents).
+    // Case 3 — true empty state (no search, no recents). Adds a
+    // brief tip line to surface the most common advanced-search
+    // formats (full help is one tap away in the AppBar).
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(20.0),
@@ -264,6 +339,29 @@ class _SearchPageState extends State<SearchPage> {
                   )
                   .copyWith(fontSize: settings.fontSize),
               textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 14),
+            Text(
+              uiStrings['searchHintQuickList']?[locale] ??
+                  'Tip: try "John 3:16", "G2316", or a Greek/Hebrew word.',
+              style: TextStyle(
+                fontSize: 12,
+                color: scheme.onSurfaceVariant,
+                fontStyle: FontStyle.italic,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 4),
+            TextButton.icon(
+              icon: const Icon(Icons.help_outline_rounded, size: 14),
+              label: Text(
+                uiStrings['searchHelpTooltip']?[locale] ?? 'Search tips',
+                style: const TextStyle(fontSize: 12),
+              ),
+              onPressed: () => _showSearchHelp(context, settings),
+              style: TextButton.styleFrom(
+                foregroundColor: scheme.onSurfaceVariant,
+              ),
             ),
           ],
         ),
@@ -297,7 +395,8 @@ class _SearchPageState extends State<SearchPage> {
       setState(() {
         _aiBusy = false;
         _aiNotice = uiStrings['aiBibleSearchNoMatches']?[settings.locale] ??
-            'AI didn\'t find any Bible passages for that query.';
+            'YsWords AI didn\'t find any matching passages for that '
+                'query (reference only).';
       });
       return;
     }
@@ -331,10 +430,8 @@ class _SearchPageState extends State<SearchPage> {
     }
     setState(() {
       _aiBusy = false;
-      _results
-        ..clear()
-        ..addAll(resolved);
-      bookCounts.clear();
+      _resetSearchState();
+      _results.addAll(resolved);
       for (final v in resolved) {
         bookCounts[v.book] = (bookCounts[v.book] ?? 0) + 1;
       }
@@ -342,13 +439,10 @@ class _SearchPageState extends State<SearchPage> {
       _aiNotice = missing.isEmpty
           ? null
           : (uiStrings['aiBibleSearchSomeMissing']?[settings.locale] ??
-                  'AI suggested {n} more passages that aren\'t in your '
-                      'current Bible version.')
+                  'YsWords AI also suggested {n} passages not in your '
+                      'current Bible version (reference only).')
               .replaceAll('{n}', missing.length.toString());
       searchPerformed = true;
-      _strongsKey = null;
-      _strongsEntry = null;
-      _strongsResult = null;
     });
     if (_scrollController.hasClients) {
       _scrollController.jumpTo(0.0);
@@ -362,17 +456,146 @@ class _SearchPageState extends State<SearchPage> {
     super.dispose();
   }
 
+  /// 2026-05-07 (post-fix): localized help dialog that documents
+  /// every search syntax the page supports. Until now, the
+  /// page accepted Strong's numbers, Bible references, lemmas, and
+  /// transliterations silently — users had no way to discover those
+  /// features unless they happened to type the right thing. This
+  /// dialog is reachable from the AppBar `?` icon and from the
+  /// no-recents empty state.
+  ///
+  /// Wording adapts to locale (zh-Hans / zh-Hant / en) like the rest
+  /// of the app.
+  void _showSearchHelp(BuildContext context, AppSettings settings) {
+    final locale = settings.locale;
+    final scheme = Theme.of(context).colorScheme;
+    showDialog(
+      context: context,
+      builder: (ctx) {
+        return AlertDialog(
+          title: Text(
+            uiStrings['searchHelpTitle']?[locale] ?? 'How to search',
+            style: const TextStyle(fontWeight: FontWeight.w700),
+          ),
+          contentPadding:
+              const EdgeInsets.fromLTRB(24, 12, 24, 0),
+          content: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _SearchHelpSection(
+                  title: uiStrings['searchHelpBasicTitle']?[locale] ??
+                      'Basic',
+                  rows: [
+                    _SearchHelpRow(
+                      icon: Icons.text_fields_rounded,
+                      label: uiStrings['searchHelpBasicWord']?[locale] ??
+                          'Type a word or phrase to find every verse '
+                              'containing it.',
+                    ),
+                    _SearchHelpRow(
+                      icon: Icons.menu_book_rounded,
+                      label: uiStrings['searchHelpBasicRef']?[locale] ??
+                          'Type a reference like "John 3:16", "约 3:16", '
+                              'or "Rom 12:1-2" to jump directly.',
+                    ),
+                    _SearchHelpRow(
+                      icon: Icons.history_rounded,
+                      label: uiStrings['searchHelpBasicRecent']?[locale] ??
+                          'Tap any recent search above to repeat it. '
+                              'Tap × to remove a single entry.',
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 14),
+                _SearchHelpSection(
+                  title: uiStrings['searchHelpAdvancedTitle']?[locale] ??
+                      'Advanced',
+                  rows: [
+                    _SearchHelpRow(
+                      icon: Icons.tag_rounded,
+                      label: uiStrings['searchHelpAdvStrongs']?[locale] ??
+                          'Strong\'s number: type "G2316" / "H7200" '
+                              'to open the lexicon and concordance.',
+                    ),
+                    _SearchHelpRow(
+                      icon: Icons.translate_rounded,
+                      label: uiStrings['searchHelpAdvLemma']?[locale] ??
+                          'Greek / Hebrew word: type ἀγάπη or אהבה. '
+                              'Match → opens the lexicon entry.',
+                    ),
+                    _SearchHelpRow(
+                      icon: Icons.spellcheck_rounded,
+                      label: uiStrings['searchHelpAdvTranslit']?[locale] ??
+                          'Transliteration: type "agape", "shalom", '
+                              '"logos". Exact matches open the lexicon; '
+                              'partial matches show as a "Did you mean…" '
+                              'card alongside text results.',
+                    ),
+                    _SearchHelpRow(
+                      icon: Icons.auto_awesome,
+                      label: uiStrings['searchHelpAdvAi']?[locale] ??
+                          'YsWords AI search: when keyword search '
+                              'returns nothing, tap "Search with YsWords '
+                              'AI" for fuzzy / thematic queries (e.g. '
+                              '"the love chapter"). Results are for '
+                              'reference only — verify before use.',
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 14),
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color:
+                        scheme.surfaceContainerHighest.withValues(alpha: 0.4),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Icon(Icons.lightbulb_outline_rounded,
+                          size: 16, color: scheme.primary),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          uiStrings['searchHelpFooter']?[locale] ??
+                              'Search scans the Bible version you have '
+                                  'loaded — change versions in Settings if '
+                                  'matches feel off.',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: scheme.onSurface,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              child: Text(uiStrings['ok']?[locale] ?? 'OK'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   // Method to perform the search
   Future<void> search() async {
     final query = _textEditingController.text.trim();
     if (query.isEmpty) {
+      // 2026-05-07 (post-fix): empty query is NOT a "search" — it just
+      // returns the user to the empty state (recents + tips). The old
+      // code set searchPerformed=true here, which made the page show
+      // "No results" with an empty bar — confusing.
       setState(() {
-        _results.clear();
-        bookCounts.clear();
-        _strongsKey = null;
-        _strongsEntry = null;
-        _strongsResult = null;
-        searchPerformed = true;
+        _resetSearchState();
       });
       return;
     }
@@ -386,12 +609,8 @@ class _SearchPageState extends State<SearchPage> {
       final digits = strongsMatch.group(2)!;
       final num = '$prefix$digits';
       setState(() {
-        _results.clear();
-        bookCounts.clear();
-        searchPerformed = false;
+        _resetSearchState();
         _strongsKey = num;
-        _strongsEntry = null;
-        _strongsResult = null;
       });
       final entry = await StrongsService.lookup(num);
       final conc = await ConcordanceService.lookup(num);
@@ -404,77 +623,83 @@ class _SearchPageState extends State<SearchPage> {
       return;
     }
 
-    // 2026-05-07: lemma-by-text search path. When the input contains
-    // Greek script (Ͱ-Ͽ ἀ-῿) OR Hebrew script (֐-׿) OR a Latin-letter
-    // word that doesn't look like normal English text, look it up
-    // against Strong's lemmas / transliterations. If we find a
-    // unique-best match, treat the search as a Strong's-# search on
-    // that entry's number — i.e. show the lexicon entry + every verse
-    // where that lemma occurs (via concordance).
+    // 2026-05-07 (post-fix): lemma redirect policy.
     //
-    // Heuristic for "looks like a lemma":
-    //   - Contains Greek or Hebrew script characters → almost certainly
-    //   - Latin-letter input that's a single token AND matches a
-    //     known transliteration → also.
+    // OLD behavior (buggy): any Latin token of length 3-25 was sent
+    // through `searchByLemma`, and ANY match (including weak
+    // contains-matches) auto-redirected to the lexicon. So typing
+    // "love" / "father" / "faith" could silently land on a Greek
+    // lexicon entry instead of doing the text search the user wanted.
+    //
+    // NEW behavior:
+    //   - Greek/Hebrew script in input → still always lemma search
+    //     (the verses don't contain those characters, text search
+    //     would always return 0).
+    //   - Latin token → only auto-redirect on EXACT match (lemma
+    //     normalised == query OR translit normalised == query, i.e.
+    //     score 0/1 from searchByLemma). Weaker matches are kept
+    //     aside and surfaced as a "Did you mean lexicon entry…"
+    //     suggestion above the regular text-search results.
     final hasGreek = RegExp(r'[Ͱ-Ͽἀ-῿]').hasMatch(query);
     final hasHebrew = RegExp(r'[֐-׿יִ-ﭏ]').hasMatch(query);
-    final isShortLatinToken = RegExp(r'^[a-zA-ZÀ-ɏḀ-ỿ]+$')
-            .hasMatch(query) &&
+    final isLatinToken = RegExp(r'^[a-zA-ZÀ-ɏḀ-ỿ]+$').hasMatch(query) &&
         query.length >= 3 &&
         query.length <= 25;
-    if (hasGreek || hasHebrew || isShortLatinToken) {
-      final matches =
-          await StrongsService.searchByLemma(query, limit: 12);
-      if (matches.isNotEmpty) {
-        // Best match: render exactly like a Strong's-# search.
+
+    StrongsEntry? lemmaSuggestion;
+    if (hasGreek || hasHebrew || isLatinToken) {
+      final matches = await StrongsService.searchByLemma(query, limit: 4);
+      if (!mounted) return;
+      if (matches.isEmpty) {
+        // No lemma match. Greek/Hebrew script → bail with empty
+        // results (text search is guaranteed empty against
+        // translations). Latin token → fall through to text search.
+        if (hasGreek || hasHebrew) {
+          setState(() {
+            _resetSearchState();
+            searchPerformed = true;
+          });
+          return;
+        }
+      } else {
         final best = matches.first;
-        final num = best.number;
-        setState(() {
-          _results.clear();
-          bookCounts.clear();
-          searchPerformed = false;
-          _strongsKey = num;
-          _strongsEntry = best;
-          _strongsResult = null;
-        });
-        final conc = await ConcordanceService.lookup(num);
-        if (!mounted) return;
-        setState(() {
-          _strongsResult = conc;
-          searchPerformed = true;
-        });
-        return;
+        // Exact-match decision: derive normalised forms inline since
+        // StrongsService._normaliseForLemma is private.
+        final qNorm = _normaliseLemmaInline(query);
+        final lemmaNorm = _normaliseLemmaInline(best.lemma);
+        final translitNorm = _normaliseLemmaInline(best.translit);
+        final isExact = qNorm == lemmaNorm || qNorm == translitNorm;
+        // Greek/Hebrew script → always redirect (verses don't contain
+        // those characters, text search would always be empty). Latin
+        // tokens → only redirect on exact lemma/translit match;
+        // weaker matches are surfaced as a "Did you mean…" chip.
+        final shouldRedirect =
+            (hasGreek || hasHebrew) || (isLatinToken && isExact);
+        if (shouldRedirect) {
+          final num = best.number;
+          setState(() {
+            _resetSearchState();
+            _strongsKey = num;
+            _strongsEntry = best;
+          });
+          final conc = await ConcordanceService.lookup(num);
+          if (!mounted) return;
+          setState(() {
+            _strongsResult = conc;
+            searchPerformed = true;
+          });
+          return;
+        }
+        lemmaSuggestion = best;
       }
-      // No lemma match — for Greek/Hebrew script input we know the
-      // text-search path won't help (verses don't contain those
-      // characters in our translations). Show "no results" cleanly.
-      if (hasGreek || hasHebrew) {
-        setState(() {
-          _results.clear();
-          bookCounts.clear();
-          searchPerformed = true;
-        });
-        return;
-      }
-      // For Latin-letter tokens: fall through to the regular text
-      // search (which IS what the user wants if they typed a normal
-      // English word).
     }
     // Guard before any context lookup — searchByLemma above is async
     // and the user may have left this page during the await.
     if (!mounted) return;
 
     setState(() {
-      _results.clear();
-      bookCounts.clear();
-      _strongsKey = null;
-      _strongsEntry = null;
-      _strongsResult = null;
-      searchPerformed = false;
-      // Clear AI state — a fresh keyword search invalidates the
-      // previous AI results / notice.
-      _lastResultsFromAi = false;
-      _aiNotice = null;
+      _resetSearchState();
+      _lemmaSuggestion = lemmaSuggestion;
     });
 
     final mainProvider = Provider.of<MainProvider>(context, listen: false);
@@ -621,6 +846,18 @@ class _SearchPageState extends State<SearchPage> {
             textInputAction: TextInputAction.search,
           ),
           actions: [
+            // 2026-05-07 (post-fix): help icon. Opens a localized
+            // dialog explaining basic + advanced search syntax —
+            // direct text, Bible refs, Strong's #s, Greek/Hebrew
+            // lemmas, transliterations, and YsWords AI fallback.
+            // Replaces the implicit-only learning curve where
+            // advanced features were undiscoverable.
+            IconButton(
+              tooltip: uiStrings['searchHelpTooltip']?[settings.locale] ??
+                  'Search tips',
+              icon: const Icon(Icons.help_outline_rounded),
+              onPressed: () => _showSearchHelp(context, settings),
+            ),
             PopupMenuButton<Object>(
               tooltip: uiStrings['showMenu']?[settings.locale] ?? 'Show menu',
               icon: const Icon(Icons.filter_list),
@@ -673,16 +910,16 @@ class _SearchPageState extends State<SearchPage> {
                 return items;
               },
             ),
-            // Clear search button when there's input
+            // Clear search button when there's input. Uses the
+            // central state reset so leftover AI / Strong's / lemma
+            // suggestion state doesn't bleed into the next search.
             if (_textEditingController.text.isNotEmpty)
               IconButton(
                 onPressed: () {
                   setState(() {
                     _textEditingController.clear();
                     FocusScope.of(context).unfocus(); // 关闭键盘
-                    _results.clear();
-                    bookCounts.clear();
-                    searchPerformed = false;
+                    _resetSearchState();
                     searchAll = true; // ✅ 恢复为整本搜索
                     filterBook = null; // ✅ 清除书卷筛选
                   });
@@ -756,7 +993,8 @@ class _SearchPageState extends State<SearchPage> {
                         // a thematic / conceptual phrasing fits better.
                         ? (uiStrings['aiBibleSearchHeader']
                                     ?[settings.locale] ??
-                                'AI suggested {count} passages for "{query}"')
+                                'YsWords AI found {count} passages for '
+                                    '"{query}" (reference only)')
                             .replaceAll('{count}', _results.length.toString())
                             .replaceAll(
                                 '{query}', _textEditingController.text.trim())
@@ -1066,6 +1304,25 @@ class _SearchPageState extends State<SearchPage> {
     Get.back();
     return true;
   }
+
+  /// 2026-05-07 (post-fix): in-page mirror of
+  /// `StrongsService._normaliseForLemma` (which is private). Used to
+  /// decide whether a lemma-search hit is an exact match — only
+  /// exact matches auto-redirect Latin-token queries to the lexicon
+  /// view; weaker matches are surfaced as a "Did you mean…" chip.
+  static String _normaliseLemmaInline(String s) {
+    final lower = s.toLowerCase().trim();
+    final out = StringBuffer();
+    for (final r in lower.runes) {
+      if (r >= 0x0300 && r <= 0x036F) continue;
+      if (r >= 0x0591 && r <= 0x05BD) continue;
+      if (r == 0x05BF) continue;
+      if (r >= 0x05C1 && r <= 0x05C7) continue;
+      if (r >= 0x1AB0 && r <= 0x1AFF) continue;
+      out.writeCharCode(r);
+    }
+    return out.toString();
+  }
 }
 
 /// 2026-05-07: single recent-search row in the redesigned empty
@@ -1129,6 +1386,163 @@ class _RecentSearchRow extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// 2026-05-07 (post-fix): "Did you mean lexicon entry…" suggestion
+/// shown above the no-results empty state. Surfaces when the user's
+/// query weakly matched a Greek/Hebrew lemma — tapping opens that
+/// entry in the inline Strong's view. Replaces the previous behavior
+/// of silently hijacking common English words to the lexicon.
+class _LemmaSuggestionCard extends StatelessWidget {
+  final StrongsEntry entry;
+  final String locale;
+  final VoidCallback onTap;
+  const _LemmaSuggestionCard({
+    required this.entry,
+    required this.locale,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final gloss = entry.localizedGloss(locale);
+    return Material(
+      color: scheme.surfaceContainerHighest.withValues(alpha: 0.5),
+      borderRadius: BorderRadius.circular(10),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(10),
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                uiStrings['searchLemmaSuggestionTitle']?[locale] ??
+                    'Did you mean this lexicon entry?',
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                  color: scheme.onSurfaceVariant,
+                  letterSpacing: 0.4,
+                ),
+              ),
+              const SizedBox(height: 6),
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 6, vertical: 1),
+                    decoration: BoxDecoration(
+                      color: scheme.primary.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Text(
+                      entry.number,
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w700,
+                        color: scheme.primary,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Flexible(
+                    child: Text(
+                      entry.lemma,
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        color: scheme.onSurface,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+              if (gloss.isNotEmpty) ...[
+                const SizedBox(height: 4),
+                Text(
+                  gloss,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: scheme.onSurfaceVariant,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// 2026-05-07 (post-fix): one block in the search-help dialog ("Basic"
+/// or "Advanced"). Holds the section header + a column of icon-rows.
+class _SearchHelpSection extends StatelessWidget {
+  final String title;
+  final List<_SearchHelpRow> rows;
+  const _SearchHelpSection({required this.title, required this.rows});
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title.toUpperCase(),
+          style: TextStyle(
+            fontSize: 11,
+            fontWeight: FontWeight.w800,
+            color: scheme.primary,
+            letterSpacing: 0.8,
+          ),
+        ),
+        const SizedBox(height: 6),
+        ...rows,
+      ],
+    );
+  }
+}
+
+/// 2026-05-07 (post-fix): one row in the search-help dialog. Icon +
+/// description. Used by both the Basic and Advanced sections.
+class _SearchHelpRow extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  const _SearchHelpRow({required this.icon, required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 5),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, size: 16, color: scheme.onSurfaceVariant),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              label,
+              style: TextStyle(
+                fontSize: 13,
+                color: scheme.onSurface,
+                height: 1.4,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

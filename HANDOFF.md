@@ -1,6 +1,6 @@
 # YsWords — AI Agent Handoff Document
 
-> Last updated: 2026-05-07 (Round 56 day-7+: sync moved Firestore → Drive → Realtime DB; AI Bible search; AI deep exegesis; lemma search; proper-noun complementary glosses; offline pack expanded to 5 categories)
+> Last updated: 2026-05-07 (Round 56 day-7+: sync moved Firestore → Drive → Realtime DB; YsWords AI Bible search; AI deep exegesis; lemma search; proper-noun complementary glosses; offline pack expanded to 5 categories; search-page redesign — top-aligned recent searches, lemma-hijack fix, "?" help dialog, AI → YsWords rebrand with reference-only caveat; short-book threshold tuned to 450 px)
 > Project: YsWords (Yahweh's Words) — bilingual Bible reader
 > Stack: Flutter 3.41.7 / Dart 3.11.5 / Provider + GetX
 > Repo: https://github.com/SuyangLiuPaul/YsWords
@@ -1399,25 +1399,90 @@ full error in the diagnostic. App keeps working local-only.
   "Enable Drive API" → "Enable Realtime Database")
 * `lib/services/drive_sync_service.dart` deleted
 
-### Strand: AI Bible search — fuzzy/thematic verse lookup (2026-05-07)
+### Strand: YsWords AI Bible search — fuzzy/thematic verse lookup (2026-05-07)
 
 Commit `1122ccb`. New search affordance for the Bible search
 page: when keyword search returns 0 results AND the user typed
-≥ 2 chars, an "Ask AI for related passages" button appears.
-Tapping it sends the query to a new Netlify function that asks
-Gemini for up to 10 most-relevant Bible references. Refs are
-resolved against `MainProvider.verses` (the user's currently-
-loaded Bible version) via `toEnglish` reverse-map and rendered
-as normal verse search results.
+≥ 2 chars, a "Search with YsWords AI (reference only)" button
+appears. Tapping it sends the query to a new Netlify function
+that asks Gemini for up to 10 most-relevant Bible references.
+Refs are resolved against `MainProvider.verses` (the user's
+currently-loaded Bible version) via `toEnglish` reverse-map and
+rendered as normal verse search results.
 
 Use case: "the love chapter" → 1 Cor 13. "雅各信仰" → James 2.
 "Sermon on the Mount" → Matt 5-7. Exact-text search returns 0;
-AI fills the gap.
+YsWords AI fills the gap.
 
 **Files**:
 * `netlify/functions/aiBibleSearch.mjs` (new function)
 * `lib/services/ai_bible_search_service.dart` (new service)
 * `lib/pages/search_page.dart` (`_askAi()` method + button)
+
+### Strand: Search page redesign + bug fixes (2026-05-07)
+
+The search page had three latent bugs that surfaced after the
+YsWords AI search shipped:
+
+1. **Lemma-search hijacking**. Any 3-25 char Latin token was
+   sent through `StrongsService.searchByLemma` with
+   contains-match scoring (score 3). Common English Bible
+   words like "love", "father", "faith" could silently land on
+   a Greek lexicon entry instead of doing the user's intended
+   text search. Fixed by only auto-redirecting on EXACT
+   lemma/translit match (score 0/1) for Latin tokens; weaker
+   matches now surface as a "Did you mean lexicon entry…"
+   suggestion card above the no-results empty state.
+2. **State leaks across modes**. The X clear button only
+   reset `_textEditingController` + a few flags, leaving
+   `_lastResultsFromAi`, `_aiNotice`, `_strongsKey/Entry/Result`
+   intact — so the AI/lexicon UI persisted into the next
+   search. Fixed with a `_resetSearchState()` helper called by
+   X, search() entry, and `_askAi()` setup.
+3. **Empty query showed "no results"**. Submitting blank set
+   `searchPerformed=true` and rendered the no-results state.
+   Now blank input returns to the empty state (recents + tips).
+
+Concurrent UX work in the same commit:
+* **Top-aligned recents** (replaces centered chips). Each row
+  has a history icon, the query text, and a per-item × delete.
+  Footer "Clear all" link.
+* **"?" help dialog** in AppBar. Two sections:
+  * **Basic** — type word, type reference, tap recent searches.
+  * **Advanced** — Strong's "G2316" / "H7200", Greek/Hebrew
+    lemma input (ἀγάπη / אהבה), transliteration ("agape" /
+    "shalom"), and YsWords AI fallback for thematic queries.
+* **Inline tip** in the no-recents empty state surfaces the
+  most common formats; a "Search tips" link opens the dialog.
+* **AI → YsWords rebrand**. All user-facing AI labels updated
+  to use the YsWords brand with a "for reference only" caveat
+  ("仅供参考" / "reference only"). Exception: developer-facing
+  setup-diagnostic strings keep "AI proxy" / "Gemini API"
+  language since those identify the technical mechanism.
+
+**Files**:
+* `lib/pages/search_page.dart` (centralized state reset, lemma
+  policy, help dialog, lemma-suggestion card, top-aligned
+  recents, rebranded labels)
+* `lib/services/recent_searches_service.dart` (`remove(query)`
+  for per-item delete)
+* `lib/services/ai_bible_search_service.dart` /
+  `lib/services/ai_search_service.dart` (rebranded fallback
+  error strings)
+* `lib/constants/ui_strings.dart` (new help / rebrand strings)
+
+### Strand: Short-book-name threshold tuned to 450 px (2026-05-07)
+
+Followup on the iPhone 12 mini → iPhone 12 Pro Max book-name
+truncation fix. Initial fix used 600 px (one DeviceClass
+boundary); user pinpointed the actual cutoff as 435 px after
+the AppBar's leading icon + actions are accounted for.
+Threshold now `screenW < 450` — covers the 435 boundary plus a
+small safety margin for font-metric drift across platforms.
+Wider screens render the full localized name unchanged.
+
+**File**: `lib/widgets/bible_reading_pane.dart` (one-line change
+on the `_FloatingHeader` builder)
 
 ### Strand: AI Deep Exegesis (BDAG-level structured analysis, 2026-05-07)
 

@@ -1669,14 +1669,14 @@ const uiStrings = {
   },
   // ── AI BYOK + Drive sync (2026-05-06) ────────────────────────
   'settingsSectionAi': {
-    'zh-Hans': 'AI 释义',
-    'zh-Hant': 'AI 釋義',
-    'en': 'AI',
+    'zh-Hans': 'YsWords AI 释义',
+    'zh-Hant': 'YsWords AI 釋義',
+    'en': 'YsWords AI',
   },
   'aboutSectionAi': {
-    'zh-Hans': 'AI（高级 · 可选）',
-    'zh-Hant': 'AI（進階 · 可選）',
-    'en': 'AI (advanced · optional)',
+    'zh-Hans': 'YsWords AI（高级 · 可选）',
+    'zh-Hant': 'YsWords AI（進階 · 可選）',
+    'en': 'YsWords AI (advanced · optional)',
   },
   'cloudDiagSection': {
     'zh-Hans': '云端配置自检（开发者 / 诊断用）',
@@ -2179,34 +2179,46 @@ const uiStrings = {
   // Triggered from the search page's no-results state. Lets the
   // user ask Gemini for Bible references that match a fuzzy /
   // thematic query when exact-text search returns nothing.
+  // 2026-05-07: rebrand. The user prefers the YsWords brand to be
+  // surfaced rather than a generic "AI" label, with a "for reference
+  // only" caveat to set expectations about LLM-generated content.
+  // Older "ask AI" wording across the search page maps to the new
+  // "search with YsWords AI" copy.
   'askAiForVerses': {
-    'zh-Hans': '请 AI 推荐相关经文',
-    'zh-Hant': '請 AI 推薦相關經文',
-    'en': 'Ask AI for related passages',
+    'zh-Hans': '用 YsWords AI 智能搜索（仅供参考）',
+    'zh-Hant': '用 YsWords AI 智慧搜尋（僅供參考）',
+    'en': 'Search with YsWords AI (reference only)',
   },
   'aiSearching': {
-    'zh-Hans': '正在咨询 AI…',
-    'zh-Hant': '正在諮詢 AI…',
-    'en': 'Asking AI…',
+    'zh-Hans': 'YsWords 正在搜索…',
+    'zh-Hant': 'YsWords 正在搜尋…',
+    'en': 'YsWords AI searching…',
   },
   'aiBibleSearchHeader': {
-    'zh-Hans': 'AI 为「{query}」推荐了 {count} 处经文',
-    'zh-Hant': 'AI 為「{query}」推薦了 {count} 處經文',
-    'en': 'AI suggested {count} passages for "{query}"',
+    'zh-Hans': 'YsWords 为「{query}」找到了 {count} 处经文（仅供参考）',
+    'zh-Hant': 'YsWords 為「{query}」找到了 {count} 處經文（僅供參考）',
+    'en': 'YsWords AI found {count} passages for "{query}" (reference only)',
   },
   'aiBibleSearchNoMatches': {
-    'zh-Hans': 'AI 没有找到与该查询相关的经文。换个说法再试试？',
-    'zh-Hant': 'AI 沒有找到與該查詢相關的經文。換個說法再試試？',
+    'zh-Hans': 'YsWords 没有找到相关经文，换个说法再试一下吧。',
+    'zh-Hant': 'YsWords 沒有找到相關經文，換個說法再試一下吧。',
     'en':
-        'AI didn\'t find any Bible passages for that query. Try '
-            'rephrasing.',
+        'YsWords didn\'t find any matching passages. Try rephrasing.',
   },
   'aiBibleSearchSomeMissing': {
-    'zh-Hans': 'AI 还推荐了 {n} 处经文，但您当前的圣经版本中没有匹配。',
-    'zh-Hant': 'AI 還推薦了 {n} 處經文，但您當前的聖經版本中沒有匹配。',
+    'zh-Hans': 'YsWords 还找到 {n} 处经文，但您当前圣经版本中没有匹配（仅供参考）。',
+    'zh-Hant': 'YsWords 還找到 {n} 處經文，但您當前聖經版本中沒有匹配（僅供參考）。',
     'en':
-        'AI suggested {n} more passages that aren\'t in your '
-            'current Bible version.',
+        'YsWords AI also suggested {n} passages not in your current '
+            'Bible version (reference only).',
+  },
+  // 2026-05-07: italic caveat shown directly below the AI search
+  // button so the "reference only" framing is visible at the moment
+  // of choice, not just in the result header.
+  'aiReferenceOnly': {
+    'zh-Hans': 'AI 结果仅供参考，使用前请自行核对。',
+    'zh-Hant': 'AI 結果僅供參考，使用前請自行核對。',
+    'en': 'AI results are for reference — verify before use.',
   },
   // Friendly fallback when sync errors are clearly setup-related
   // (RTDB not enabled / permission denied). Replaces the raw
@@ -3028,6 +3040,113 @@ const uiStrings = {
     'zh-Hant': '清除全部',
     'en': 'Clear all',
   },
+
+  // ── Search help (2026-05-07) ─────────────────────────────────────
+  // Localized strings for the new "?" help dialog on the search page.
+  // Replaces the old undiscoverable feature surface — until now the
+  // page accepted Strong's numbers, Bible refs, lemmas, and translit
+  // silently, so most users only ever found the plain text-search
+  // path. Help icon lives in the AppBar; the empty state also
+  // surfaces a "Tip" line plus a small "Search tips" link.
+  'searchHelpTooltip': {
+    'zh-Hans': '搜索说明',
+    'zh-Hant': '搜尋說明',
+    'en': 'Search tips',
+  },
+  'searchHelpTitle': {
+    'zh-Hans': '如何搜索',
+    'zh-Hant': '如何搜尋',
+    'en': 'How to search',
+  },
+  'searchHelpBasicTitle': {
+    'zh-Hans': '基础',
+    'zh-Hant': '基礎',
+    'en': 'Basic',
+  },
+  'searchHelpBasicWord': {
+    'zh-Hans': '直接输入字词或短句，可在当前圣经版本中查找包含该内容的经文。',
+    'zh-Hant': '直接輸入字詞或短句，可在當前聖經版本中查找包含該內容的經文。',
+    'en':
+        'Type a word or phrase to find every verse that contains it '
+            '(in your current Bible version).',
+  },
+  'searchHelpBasicRef': {
+    'zh-Hans': '输入经文位置可直接跳转，例如「约 3:16」「John 3:16」「Rom 12:1-2」。',
+    'zh-Hant': '輸入經文位置可直接跳轉，例如「約 3:16」「John 3:16」「Rom 12:1-2」。',
+    'en':
+        'Type a reference like "John 3:16", "约 3:16", or '
+            '"Rom 12:1-2" to jump directly to that verse.',
+  },
+  'searchHelpBasicRecent': {
+    'zh-Hans': '点击上方任一最近搜索可重复查询；点击右侧 × 可单独删除某条记录。',
+    'zh-Hant': '點擊上方任一最近搜尋可重複查詢；點擊右側 × 可單獨刪除某條記錄。',
+    'en':
+        'Tap any recent search above to repeat it. Tap × to remove a '
+            'single entry, or "Clear all" to wipe history.',
+  },
+  'searchHelpAdvancedTitle': {
+    'zh-Hans': '进阶',
+    'zh-Hant': '進階',
+    'en': 'Advanced',
+  },
+  'searchHelpAdvStrongs': {
+    'zh-Hans': '输入 Strong\'s 编号（如「G2316」「H7200」）打开词典与经文索引。',
+    'zh-Hant': '輸入 Strong\'s 編號（如「G2316」「H7200」）打開詞典與經文索引。',
+    'en':
+        'Strong\'s number: type "G2316" / "H7200" to open the lexicon '
+            'entry plus every verse that uses that word.',
+  },
+  'searchHelpAdvLemma': {
+    'zh-Hans': '直接输入希腊文（ἀγάπη）或希伯来文（אהבה）原文词，匹配后会打开对应的词典条目。',
+    'zh-Hant': '直接輸入希臘文（ἀγάπη）或希伯來文（אהבה）原文詞，匹配後會打開對應的詞典條目。',
+    'en':
+        'Greek / Hebrew: type the original-language word (e.g. ἀγάπη '
+            'or אהבה). Matching opens the lexicon entry directly.',
+  },
+  'searchHelpAdvTranslit': {
+    'zh-Hans': '输入音译形式（如「agape」「shalom」「logos」）：完全匹配会直接打开词典；'
+        '部分匹配则在搜索结果上方显示「您是否在找…」提示。',
+    'zh-Hant': '輸入音譯形式（如「agape」「shalom」「logos」）：完全匹配會直接打開詞典；'
+        '部分匹配則在搜尋結果上方顯示「您是否在找…」提示。',
+    'en':
+        'Transliteration: type "agape", "shalom", "logos". Exact '
+            'matches open the lexicon; partial matches surface as a '
+            '"Did you mean…" card alongside text results.',
+  },
+  'searchHelpAdvAi': {
+    'zh-Hans': 'YsWords AI 搜索：当关键字搜索没有结果时，可以点击「用 YsWords AI 智能搜索」'
+        '让 AI 帮你查找主题或模糊查询（如「最爱的章节」）。结果仅供参考，使用前请自行核对。',
+    'zh-Hant': 'YsWords AI 搜尋：當關鍵字搜尋沒有結果時，可以點擊「用 YsWords AI 智慧搜尋」'
+        '讓 AI 幫你查找主題或模糊查詢（如「最愛的章節」）。結果僅供參考，使用前請自行核對。',
+    'en':
+        'YsWords AI search: when keyword search returns nothing, tap '
+            '"Search with YsWords AI" for fuzzy or thematic queries '
+            '(e.g. "the love chapter"). Results are for reference '
+            'only — verify before use.',
+  },
+  'searchHelpFooter': {
+    'zh-Hans': '搜索范围跟随当前阅读的圣经版本，如果结果不符合预期，可在「设置」中切换版本。',
+    'zh-Hant': '搜尋範圍跟隨當前閱讀的聖經版本，如果結果不符合預期，可在「設定」中切換版本。',
+    'en':
+        'Search scans the Bible version you currently have loaded — '
+            'change versions in Settings if matches feel off.',
+  },
+  // Inline tip shown in the no-recents empty state.
+  'searchHintQuickList': {
+    'zh-Hans': '提示：可输入字词、参考（如「约 3:16」）、Strong\'s 编号「G2316」，或直接输入希腊文 / 希伯来文。',
+    'zh-Hant': '提示：可輸入字詞、參考（如「約 3:16」）、Strong\'s 編號「G2316」，或直接輸入希臘文 / 希伯來文。',
+    'en':
+        'Tip: try a word, a reference like "John 3:16", a Strong\'s '
+            'number "G2316", or Greek/Hebrew text directly.',
+  },
+  // "Did you mean lexicon entry…" card surfaced when a Latin-token
+  // query weakly matches a Greek/Hebrew lemma (replaces the previous
+  // silent auto-redirect that hijacked common English words).
+  'searchLemmaSuggestionTitle': {
+    'zh-Hans': '您是否在找词典条目？',
+    'zh-Hant': '您是否在找詞典條目？',
+    'en': 'Did you mean this lexicon entry?',
+  },
   // Profile editing (Round 35)
   'profileEditTitle': {
     'zh-Hans': '编辑账号',
@@ -3199,11 +3318,15 @@ const uiStrings = {
     'zh-Hant': '間接證據',
     'en': 'Circumstantial',
   },
-  // AI search (Round 39, Stage 4 — Cloud Functions Gemini proxy).
+  // YsWords AI search (Round 39, Stage 4 — Cloud Functions Gemini
+  // proxy). Used by the Bible Evidence search button. Rebranded
+  // 2026-05-07 from "Ask AI" so the YsWords brand is in front of the
+  // user instead of a generic "AI" label, with reference-only caveat
+  // surfaced via the disclaimer strings.
   'askAi': {
-    'zh-Hans': 'AI 提问',
-    'zh-Hant': 'AI 提問',
-    'en': 'Ask AI',
+    'zh-Hans': '问 YsWords',
+    'zh-Hant': '問 YsWords',
+    'en': 'Ask YsWords',
   },
   'ask': {
     'zh-Hans': '提问',
@@ -3494,9 +3617,9 @@ const uiStrings = {
     'en': 'SIL OFL · loaded via google_fonts.',
   },
   'aboutAi': {
-    'zh-Hans': 'AI 经文释义',
-    'zh-Hant': 'AI 經文釋義',
-    'en': 'AI explanations',
+    'zh-Hans': 'YsWords AI 经文释义（仅供参考）',
+    'zh-Hant': 'YsWords AI 經文釋義（僅供參考）',
+    'en': 'YsWords AI explanations (reference only)',
   },
   'aboutLicenseAi': {
     'zh-Hans': 'Google Gemini API · 输出可在 API 条款下重新分发。',
@@ -4429,19 +4552,20 @@ const uiStrings = {
     'en': 'Filter by passage',
   },
   'aiExplainHeader': {
-    'zh-Hans': 'AI 释义',
-    'zh-Hant': 'AI 釋義',
-    'en': 'AI explanation',
+    'zh-Hans': 'YsWords 释义',
+    'zh-Hant': 'YsWords 釋義',
+    'en': 'YsWords explanation',
   },
   'aiExplainButton': {
-    'zh-Hans': '让 AI 在这节经文中解释此词',
-    'zh-Hant': '讓 AI 在這節經文中解釋此詞',
-    'en': 'Explain in this verse with AI',
+    'zh-Hans': '让 YsWords 解释此词在这节经文中的含义（仅供参考）',
+    'zh-Hant': '讓 YsWords 解釋此詞在這節經文中的含義（僅供參考）',
+    'en':
+        'Let YsWords explain this word in this verse (reference only)',
   },
   'aiExplainAsking': {
-    'zh-Hans': '正在询问 Gemini…',
-    'zh-Hant': '正在詢問 Gemini…',
-    'en': 'Asking Gemini…',
+    'zh-Hans': 'YsWords 正在生成解释…',
+    'zh-Hant': 'YsWords 正在生成解釋…',
+    'en': 'YsWords is generating an explanation…',
   },
   'aiExplainRegenerate': {
     'zh-Hans': '重新生成',
@@ -4449,9 +4573,11 @@ const uiStrings = {
     'en': 'Regenerate',
   },
   'aiExplainDisclaimer': {
-    'zh-Hans': 'AI 生成内容,如用于研经或教导请核对原始资料。',
-    'zh-Hant': 'AI 生成內容,如用於研經或教導請核對原始資料。',
-    'en': 'AI-generated. Verify with primary sources for study or teaching use.',
+    'zh-Hans': 'YsWords 生成内容仅供参考，如用于研经或教导请核对原始资料。',
+    'zh-Hant': 'YsWords 生成內容僅供參考，如用於研經或教導請核對原始資料。',
+    'en':
+        'YsWords-generated content for reference only — verify with '
+            'primary sources before using for study or teaching.',
   },
   'aiExplainTryAgain': {
     'zh-Hans': '重试',
@@ -4528,9 +4654,9 @@ const uiStrings = {
   // canonical pattern / theological weight). Free-tier substitute
   // for what Logos+BDAG charges $200+ for.
   'aiScopeDeepExegesis': {
-    'zh-Hans': '深度释经（BDAG 级）',
-    'zh-Hant': '深度釋經（BDAG 級）',
-    'en': 'Deep exegesis (BDAG-level)',
+    'zh-Hans': '深度释经（BDAG 级 · YsWords 智能分析，仅供参考）',
+    'zh-Hant': '深度釋經（BDAG 級 · YsWords 智慧分析，僅供參考）',
+    'en': 'Deep exegesis (BDAG-level · YsWords AI, reference only)',
   },
   'familyTree': {
     'zh-Hans': '圣经家谱',

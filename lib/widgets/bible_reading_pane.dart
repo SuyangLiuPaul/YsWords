@@ -3456,19 +3456,20 @@ class _FloatingHeader extends StatelessWidget {
                               // re-evaluated live on resize and
                               // doesn't depend on whether all the
                               // call sites correctly thread
-                              // deviceClass through. User reported
-                              // that even at 433 px on iPhone Pro
-                              // Max, "帖撒罗尼迦后书 1" was
-                              // ellipsized to "帖撒罗尼迦后..." —
-                              // raised the threshold to 600 px to
-                              // cover every phone class with
-                              // headroom. The full name only fits
-                              // comfortably at tablet widths
-                              // anyway.
+                              // deviceClass through. User pinpointed
+                              // 435 px as the actual cutoff where
+                              // "帖撒罗尼迦后书 1" starts ellipsizing
+                              // at the AppBar's available width
+                              // (after leading icon + actions are
+                              // accounted for). Use 450 to cover the
+                              // boundary plus a small safety margin
+                              // for slight font-metric drift across
+                              // platforms; wider screens render the
+                              // full name unchanged.
                               child: Builder(builder: (ctx) {
                                 final screenW =
                                     MediaQuery.of(ctx).size.width;
-                                final useShort = screenW < 600;
+                                final useShort = screenW < 450;
                                 return Text(
                                   useShort
                                       ? '${shortBookName(book, locale)} $chapter'

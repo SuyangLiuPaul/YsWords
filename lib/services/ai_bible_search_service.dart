@@ -54,32 +54,32 @@ class AiBibleSearchService {
           .timeout(const Duration(seconds: 25));
     } on TimeoutException {
       return AiBibleSearchResult.unavailable(
-          'AI search took too long. Please try again or rephrase.');
+          'YsWords search took too long. Please try again or rephrase.');
     } catch (_) {
       return AiBibleSearchResult.unavailable(
-          'AI search is not available right now.');
+          'YsWords search is not available right now.');
     }
     if (resp.statusCode == 404) {
       return AiBibleSearchResult.unavailable(
-          'AI search is not available yet (function not deployed).');
+          'YsWords search is not available yet (function not deployed).');
     }
     if (resp.statusCode == 503) {
       // Function deployed but no API key configured — surface that
       // distinct case so the developer's diagnostic catches it.
       return AiBibleSearchResult.unavailable(
-          'AI search is not configured. Developer needs to set '
+          'YsWords search is not configured. Developer needs to set '
           'GEMINI_API_KEY in Netlify env.');
     }
     if (resp.statusCode != 200) {
       return AiBibleSearchResult.unavailable(
-          'AI search returned ${resp.statusCode}.');
+          'YsWords search returned ${resp.statusCode}.');
     }
     try {
       final body = jsonDecode(resp.body) as Map<String, dynamic>;
       return AiBibleSearchResult.fromJson(body);
     } catch (_) {
       return AiBibleSearchResult.unavailable(
-          'AI search returned an unexpected response.');
+          'YsWords search returned an unexpected response.');
     }
   }
 }
