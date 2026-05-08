@@ -97,4 +97,23 @@
 /// simplified Chinese (or with disambiguating context). Did NOT
 /// touch traditional variant choices the files settled on (裏 vs
 /// 裡, 麽 vs 麼, 群 vs 羣 — all preserved as-is).
-const String kAppVersion = '1.1.4';
+///
+/// 2026-05-08 (v1.1.5 AI search UX fix): user reported "按 yswords
+/// ai 没翻译，问问题也没有经文". Backend was healthy
+/// (curl-tested aiBibleSearch returns valid refs for English +
+/// Chinese queries) but the client was hiding the AI's results
+/// when the refs didn't resolve to verses in the user's loaded
+/// Bible version — they only saw a generic "No results found"
+/// screen with a tiny notice they couldn't see.  Fixed:
+/// • `_askAi` early-returns now also set `searchPerformed = true`
+///   and reset state, so the inline `_aiNotice` always renders.
+/// • New state fields `_aiRefs` + `_aiUnresolvedRefDisplays` keep
+///   the full AI suggestion list so we can render it.
+/// • New `_buildAiRefList` widget renders every AI ref as a card
+///   (book + chapter:verseStart-verseEnd + AI's reason). Refs
+///   that resolve in the user's version → tap goes to reader;
+///   refs that don't → "reference only" tag + snackbar pointing
+///   the user to switch versions.
+/// Net: user always sees the AI's full suggestion list, never
+/// the misleading "No results found" empty state.
+const String kAppVersion = '1.1.5';

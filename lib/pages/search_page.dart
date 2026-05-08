@@ -78,6 +78,19 @@ class _SearchPageState extends State<SearchPage> {
   String? _aiNotice; // YsWords-AI status / "no matches" — small inline note.
   bool _lastResultsFromAi = false; // toggles header above _results.
 
+  // 2026-05-08 (v1.1.5): keep the FULL list of refs the AI returned —
+  // including those that don't resolve to a verse in the user's
+  // currently-loaded Bible version. Previously these went to a silent
+  // `missing` local + a tiny notice; users couldn't tell whether AI
+  // actually returned anything. Now we always render them as
+  // reference-only cards so the user sees the AI's full suggestion
+  // list regardless of whether the local corpus has matching text.
+  List<AiBibleRef> _aiRefs = const [];
+  // Subset of `_aiRefs` whose verses are NOT in the user's loaded
+  // version (so the result-list rendering knows to display them as
+  // "reference only" rather than as full Verse rows).
+  Set<String> _aiUnresolvedRefDisplays = const {};
+
   /// 2026-05-07 (post-fix): when a regular text search returns 0 or
   /// few results AND the query also looks like it might be a Greek/
   /// Hebrew lemma (e.g. "agape", "shalom"), we show a "Did you mean
@@ -230,6 +243,11 @@ class _SearchPageState extends State<SearchPage> {
     _strongsResult = null;
     _lastResultsFromAi = false;
     _aiNotice = null;
+    // 2026-05-08 (v1.1.5): clear the cached AI refs / unresolved set
+    // so a new mode (text search / Strong's) doesn't render stale AI
+    // suggestion cards.
+    _aiRefs = const [];
+    _aiUnresolvedRefDisplays = const {};
     _lemmaSuggestion = null;
     searchPerformed = false;
   }
@@ -580,19 +598,35 @@ class _SearchPageState extends State<SearchPage> {
       userApiKey: settings.geminiApiKey.isEmpty ? null : settings.geminiApiKey,
     );
     if (!mounted) return;
+    // 2026-05-08 (v1.1.5): every early-return path now also flips
+    // `searchPerformed = true` and resets stale state, so the empty
+    // state widget actually renders with the AI notice attached.
+    // The previous version left `searchPerformed = false` on the
+    // unavailable / empty-refs branches, which made `_aiNotice`
+    // invisible (it's only rendered inside `_buildEmptyState`, which
+    // only renders when `searchPerformed == true`). Symptom: user
+    // taps AI, gets no feedback, assumes the chip is broken.
     if (result.unavailable) {
       setState(() {
         _aiBusy = false;
+        _resetSearchState();
+        _lastResultsFromAi = true;
         _aiNotice = result.unavailableReason;
+        _lastMode = _SearchMode.ai;
+        searchPerformed = true;
       });
       return;
     }
     if (result.refs.isEmpty) {
       setState(() {
         _aiBusy = false;
+        _resetSearchState();
+        _lastResultsFromAi = true;
         _aiNotice = uiStrings['aiBibleSearchNoMatches']?[settings.locale] ??
             'YsWords AI didn\'t find any matching passages for that '
                 'query (reference only).';
+        _lastMode = _SearchMode.ai;
+        searchPerformed = true;
       });
       return;
     }
@@ -641,6 +675,23 @@ class _SearchPageState extends State<SearchPage> {
       }
       if (!found) missing.add(ref);
     }
+    // 2026-05-08 (v1.1.5): keep ALL the refs the AI returned, not
+    // just the ones that resolve to a Verse in the local corpus.
+    // The result-list renderer can use this to show reference-only
+    // cards so the user always sees the AI's full suggestion list,
+    // regardless of whether their loaded version has the verses.
+    final keptRefs = <AiBibleRef>[];
+    for (final ref in result.refs) {
+      // Drop refs that fall outside the user's filter scope (we
+      // already counted them as `outOfScope` above).
+      if (scopeEnglishBook != null && ref.book != scopeEnglishBook) {
+        continue;
+      }
+      keptRefs.add(ref);
+    }
+    final missingDisplaySet = <String>{
+      for (final r in missing) r.display,
+    };
     setState(() {
       _aiBusy = false;
       _resetSearchState();
@@ -649,6 +700,8 @@ class _SearchPageState extends State<SearchPage> {
         bookCounts[v.book] = (bookCounts[v.book] ?? 0) + 1;
       }
       _lastResultsFromAi = true;
+      _aiRefs = keptRefs;
+      _aiUnresolvedRefDisplays = missingDisplaySet;
       // Compose an inline note that combines: out-of-scope (filter)
       // + missing-from-version drops, when present.
       final notes = <String>[];
@@ -1414,8 +1467,39 @@ class _SearchPageState extends State<SearchPage> {
                   ],
                 ),
               ),
+            // 2026-05-08 (v1.1.5): when the AI returns refs but none
+            // resolve to verses in the user's loaded version (e.g.
+            // their Bible doesn't contain that book/range), still
+            // surface the AI's suggestion list as reference cards
+            // instead of the generic "No results found" empty state.
+            // The cards show "Book ch:verseStart-verseEnd" + the AI's
+            // one-sentence reason; tapping does best-effort navigation
+            // via the existing reference-jump helper.
+            if (_results.isEmpty && _aiRefs.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(8, 8, 8, 4),
+                child: Center(
+                  child: Text(
+                    (uiStrings['aiBibleSearchHeader']
+                                ?[settings.locale] ??
+                            'YsWords AI found {count} passages for '
+                                '"{query}" (reference only)')
+                        .replaceAll(
+                            '{count}', _aiRefs.length.toString())
+                        .replaceAll('{query}',
+                            _textEditingController.text.trim()),
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontWeight: FontWeight.w500,
+                      fontSize: settings.fontSize,
+                    ),
+                  ),
+                ),
+              ),
             Expanded(
-              child: _results.isEmpty
+              child: _results.isEmpty && _aiRefs.isNotEmpty
+                  ? _buildAiRefList(context, settings)
+                  : _results.isEmpty
                   ? _buildEmptyState(context, settings)
                   : ListView.builder(
                       controller: _scrollController,
@@ -1772,6 +1856,160 @@ class _SearchPageState extends State<SearchPage> {
     return true;
   }
 
+  /// 2026-05-08 (v1.1.5): render the full AI suggestion list as
+  /// reference cards. Used when AI returned refs but none resolved
+  /// to verses in the user's currently-loaded Bible version (or all
+  /// were dropped by the filter scope) — previously we showed a
+  /// generic "No results found" empty state with a tiny notice that
+  /// users missed, leaving them to think the AI was broken.
+  ///
+  /// Each card shows:
+  ///   • The reference (book + chapter:verseStart-verseEnd) in the
+  ///     user's locale
+  ///   • The AI's one-sentence reason for why it matches
+  ///   • A subtle "reference only" tag for refs not in the loaded
+  ///     version
+  ///
+  /// Tapping resolves the ref via [translateBookName] + the
+  /// existing `prepareJumpToVerse` dance for refs that DO exist in
+  /// the current version; for refs that don't, the tap surfaces a
+  /// snackbar explaining the user can switch Bible versions to read
+  /// the passage.
+  Widget _buildAiRefList(BuildContext context, AppSettings settings) {
+    final mp = Provider.of<MainProvider>(context, listen: false);
+    final scheme = Theme.of(context).colorScheme;
+    final locale = settings.locale;
+    return ListView.builder(
+      controller: _scrollController,
+      physics: const BouncingScrollPhysics(),
+      itemCount: _aiRefs.length + (_aiNotice != null ? 1 : 0),
+      itemBuilder: (context, index) {
+        // Render the AI notice (filter / version warnings) as the
+        // first row so users always see why some refs are
+        // reference-only.
+        if (_aiNotice != null && index == 0) {
+          return Container(
+            margin: const EdgeInsets.fromLTRB(12, 8, 12, 8),
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: scheme.surfaceContainerHighest.withValues(alpha: 0.5),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(
+                color: scheme.outlineVariant.withValues(alpha: 0.5),
+              ),
+            ),
+            child: Text(
+              _aiNotice!,
+              style: TextStyle(
+                fontSize: settings.fontSize * 0.75,
+                color: scheme.onSurfaceVariant,
+                height: 1.4,
+              ),
+            ),
+          );
+        }
+        final ref = _aiRefs[index - (_aiNotice != null ? 1 : 0)];
+        final unresolved = _aiUnresolvedRefDisplays.contains(ref.display);
+        final displayBook = localeAwareBookName(
+            ref.book, settings.locale, mp.currentVersion);
+        final displayLabel = ref.verseStart == ref.verseEnd
+            ? '$displayBook ${ref.chapter}:${ref.verseStart}'
+            : '$displayBook ${ref.chapter}:${ref.verseStart}-${ref.verseEnd}';
+        return DecoratedBox(
+          decoration: BoxDecoration(
+            border: Border(
+              bottom: BorderSide(color: Theme.of(context).hoverColor),
+            ),
+          ),
+          child: ListTile(
+            onTap: () {
+              if (unresolved) {
+                ScaffoldMessenger.maybeOf(context)?.showSnackBar(SnackBar(
+                  content: Text(
+                    uiStrings['aiRefNotInVersion']?[locale] ??
+                        'This passage isn\'t in your current Bible version. '
+                            'Switch versions in Settings to read it.',
+                  ),
+                  duration: const Duration(seconds: 3),
+                ));
+                return;
+              }
+              // Use the existing reference-jump path. Walk the local
+              // verse list to find the first verse in the ref's
+              // chapter range, then prepareJumpToVerse → swap to
+              // HomePage.
+              final localBook =
+                  translateBookName(ref.book, mp.currentVersion);
+              final chapterMatches = mp.verses
+                  .where((v) =>
+                      v.book == localBook &&
+                      v.chapter == ref.chapter &&
+                      v.verse >= ref.verseStart &&
+                      v.verse <= ref.verseEnd)
+                  .toList();
+              if (chapterMatches.isEmpty) return;
+              prepareJumpToVerse(chapterMatches.first, mp);
+              Get.off(
+                () => const HomePage(),
+                transition: Transition.rightToLeft,
+              );
+            },
+            title: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    displayLabel,
+                    style: TextStyle(
+                      fontSize: settings.fontSize * 0.95,
+                      fontWeight: FontWeight.w600,
+                      color: unresolved
+                          ? scheme.onSurfaceVariant
+                          : scheme.primary,
+                    ),
+                  ),
+                ),
+                if (unresolved)
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: scheme.surfaceContainerHighest
+                          .withValues(alpha: 0.6),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Text(
+                      uiStrings['aiRefOnlyTag']?[locale] ??
+                          'reference only',
+                      style: TextStyle(
+                        fontSize: 10,
+                        color: scheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+            subtitle: ref.reason.isEmpty
+                ? null
+                : Padding(
+                    padding: const EdgeInsets.only(top: 4),
+                    child: Text(
+                      ref.reason,
+                      style: TextStyle(
+                        fontSize: settings.fontSize * 0.78,
+                        color: scheme.onSurfaceVariant,
+                        height: 1.4,
+                      ),
+                    ),
+                  ),
+            trailing: unresolved
+                ? null
+                : Icon(Icons.chevron_right_rounded,
+                    size: 18, color: scheme.onSurfaceVariant),
+          ),
+        );
+      },
+    );
+  }
 }
 
 /// 2026-05-07: single recent-search row in the redesigned empty

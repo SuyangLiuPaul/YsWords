@@ -2213,6 +2213,19 @@ const uiStrings = {
     'en':
         'YsWords didn\'t find any matching passages. Try rephrasing.',
   },
+  // 2026-05-08 (v1.1.5): tag + snackbar for AI ref cards that don't
+  // resolve to a verse in the user's currently-loaded Bible version.
+  'aiRefOnlyTag': {
+    'zh-Hans': '仅参考',
+    'zh-Hant': '僅參考',
+    'en': 'reference only',
+  },
+  'aiRefNotInVersion': {
+    'zh-Hans': '这段经文不在您当前的圣经版本中。在「设置」里切换版本后即可阅读。',
+    'zh-Hant': '這段經文不在您當前的聖經版本中。在「設定」裡切換版本後即可閱讀。',
+    'en':
+        'This passage isn\'t in your current Bible version. Switch versions in Settings to read it.',
+  },
   'aiBibleSearchSomeMissing': {
     'zh-Hans': 'YsWords 还找到 {n} 处经文，但您当前圣经版本中没有匹配（仅供参考）。',
     'zh-Hant': 'YsWords 還找到 {n} 處經文，但您當前聖經版本中沒有匹配（僅供參考）。',
