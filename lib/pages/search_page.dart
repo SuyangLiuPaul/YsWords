@@ -21,16 +21,18 @@ import 'package:yswords/constants/ui_strings.dart';
 import 'package:yswords/constants/text_patterns.dart';
 import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/widgets/home_icon_button.dart';
-import 'package:yswords/widgets/liquid_glass.dart';
 import 'package:yswords/widgets/localized_back_button.dart';
 import 'package:yswords/utils/responsive.dart';
 import 'package:flutter/services.dart';
 
-/// 2026-05-07 (v8): two-mode search after Word Study removal.
-/// `none` = no search yet; `text` = plain Bible text scan;
-/// `ai` = YsWords AI fuzzy / thematic. Drives the highlight on
-/// the mode-chip strip.
-enum _SearchMode { none, text, ai }
+// 2026-05-08 (v1.1.7): the `_SearchMode` enum + `_lastMode` field
+// were removed. They drove the active-chip highlight on the
+// `_SearchModeStrip` widget; that strip is gone (text search runs
+// live, AI search is reachable as a fallback button inside the
+// empty state). The `_lastResultsFromAi` boolean already covers
+// the only remaining consumer — the result header copy that
+// branches "YsWords AI found N passages …" vs the per-book
+// breakdown.
 
 class SearchPage extends StatefulWidget {
   const SearchPage({super.key});
@@ -136,7 +138,6 @@ class _SearchPageState extends State<SearchPage> {
 
   /// 2026-05-07 (v6): which mode produced the currently-displayed
   /// results. Drives the highlight on the mode-chip strip.
-  _SearchMode _lastMode = _SearchMode.none;
 
   /// On-demand verse load. Used by search(), the recent-search row
   /// tap path, and the AI search path. Returns true iff
@@ -623,7 +624,6 @@ class _SearchPageState extends State<SearchPage> {
         _resetSearchState();
         _lastResultsFromAi = true;
         _aiNotice = result.unavailableReason;
-        _lastMode = _SearchMode.ai;
         searchPerformed = true;
       });
       return;
@@ -636,7 +636,6 @@ class _SearchPageState extends State<SearchPage> {
         _aiNotice = uiStrings['aiBibleSearchNoMatches']?[settings.locale] ??
             'YsWords AI didn\'t find any matching passages for that '
                 'query (reference only).';
-        _lastMode = _SearchMode.ai;
         searchPerformed = true;
       });
       return;
@@ -730,7 +729,6 @@ class _SearchPageState extends State<SearchPage> {
                 .replaceAll('{n}', missing.length.toString()));
       }
       _aiNotice = notes.isEmpty ? null : notes.join('\n');
-      _lastMode = _SearchMode.ai;
       searchPerformed = true;
     });
     if (_scrollController.hasClients) {
@@ -1077,7 +1075,6 @@ class _SearchPageState extends State<SearchPage> {
       _lastFilterBook = filterBook;
       _lastCurrentBook = mp.currentBook;
       _lastScanCount = scanCount;
-      _lastMode = _SearchMode.text;
       searchPerformed = true;
     });
   }
@@ -1329,23 +1326,29 @@ class _SearchPageState extends State<SearchPage> {
             ),
             child: Column(
           children: [
-            // 2026-05-07 (v5): three explicit search-mode chips.
-            // The user wanted clearer separation between basic text
-            // search, word-study (Strong's / Greek / Hebrew lemma /
-            // transliteration) and YsWords AI search. Enter still
-            // routes to the basic text-search path; the chips give
-            // explicit access to the other two without having to
-            // remember the syntax. Hidden during the loading state.
-            if (!_isLoadingVerses && _versesLoadError == null)
-              _SearchModeStrip(
-                onTextSearch: () async {
-                  await search();
-                },
-                onAiSearch: _aiBusy ? null : _askAi,
-                aiBusy: _aiBusy,
-                activeMode: _lastMode,
-                locale: settings.locale,
-              ),
+            // 2026-05-08 (v1.1.7): mode-chip strip removed at user
+            // request. Reasoning:
+            //
+            //   • Text search already runs live on every keystroke
+            //     (`onChanged` → 250 ms debounce → search()), so a
+            //     dedicated "Search" chip was redundant.
+            //   • AI search is a *fallback* — used when the literal
+            //     text search returns nothing. Showing it as a
+            //     peer chip next to the Search chip implied they
+            //     were equivalent modes. The user's mental model:
+            //     「找不到才用 AI 搜索」.
+            //
+            // The "Search with YsWords AI" button rendered inside
+            // `_buildEmptyState` (only when text search returns 0
+            // results) is now the single entry point for AI.
+            // Removed two ergonomic problems with the old chip:
+            //   - first-tap-no-response (the LiquidGlassButton +
+            //     MouseRegion + AnimatedScale stack can swallow
+            //     the first tap when the soft-keyboard transition
+            //     steals focus on Flutter web);
+            //   - the chip getting stuck greyed when `_aiBusy`
+            //     leaked (already defensively patched in v1.1.6,
+            //     but removing the chip removes the surface).
             // 2026-05-07 (post-fix v2): "Bible loading…" / load-failed
             // banner. Replaces the silent "0 results · scanned 0"
             // state when the user opens search before the corpus is
@@ -2111,149 +2114,24 @@ class _RecentSearchRow extends StatelessWidget {
   }
 }
 
-/// 2026-05-07 (v5): horizontal strip of three search-mode chips
-/// shown directly below the AppBar. Each chip launches a different
-/// search path on the current text-input value:
-///
-///   - "Search" -> regular text scan (also bound to Enter on the
-///     TextField).
-///   - "Word study" -> Strong's lookup, Greek / Hebrew lemma, or
-///     transliteration. Skips the plain-text scan so the user
-///     always lands on the lexicon.
-///   - "YsWords AI" -> fuzzy / thematic AI search.
-///
-/// User feedback: the previous design routed every Enter through a
-/// catch-all heuristic chain (Strong's pattern -> reference parser
-/// -> lemma -> text), which was opaque. Explicit chips make the
-/// available modes discoverable and the dispatch predictable.
-/// 2026-05-07 (v8): two-chip strip. Word Study removed at user
-/// request — text search is the catch-all (Enter or Search chip),
-/// and YsWords AI is the fuzzy / thematic fallback. Strong's-number
-/// lookups still work via parseStrongsNumber → StrongsEntryPage in
-/// the AppBar TextField onSubmitted handler (separate page push,
-/// not a chip).
-class _SearchModeStrip extends StatelessWidget {
-  final Future<void> Function() onTextSearch;
-  final Future<void> Function()? onAiSearch;
-  final bool aiBusy;
-  final _SearchMode activeMode;
-  final String locale;
-
-  const _SearchModeStrip({
-    required this.onTextSearch,
-    required this.onAiSearch,
-    required this.aiBusy,
-    required this.activeMode,
-    required this.locale,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(8, 8, 8, 4),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Row(
-          children: [
-            _ModeChip(
-              icon: Icons.menu_book_rounded,
-              label: uiStrings['searchModeText']?[locale] ?? 'Search',
-              tooltip: uiStrings['searchModeTextTip']?[locale] ??
-                  'Find verses containing this word or phrase. (Enter)',
-              onTap: () => onTextSearch(),
-              color: scheme.primary,
-              active: activeMode == _SearchMode.text,
-            ),
-            const SizedBox(width: 8),
-            _ModeChip(
-              icon: aiBusy ? Icons.hourglass_top_rounded : Icons.auto_awesome,
-              label: uiStrings['searchModeAi']?[locale] ?? 'YsWords AI',
-              tooltip: uiStrings['searchModeAiTip']?[locale] ??
-                  'Fuzzy / thematic search via YsWords AI. Reference '
-                      'only — verify before use.',
-              onTap: onAiSearch == null ? null : () => onAiSearch!(),
-              color: scheme.secondary,
-              busy: aiBusy,
-              active: activeMode == _SearchMode.ai,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-/// 2026-05-07 (v5): one chip in the search-mode strip.
-class _ModeChip extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final String tooltip;
-  final VoidCallback? onTap;
-  final Color color;
-  final bool busy;
-  final bool active;
-  const _ModeChip({
-    required this.icon,
-    required this.label,
-    required this.tooltip,
-    required this.onTap,
-    required this.color,
-    this.busy = false,
-    this.active = false,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    // 2026-05-08 (v1.1.0 — Liquid Glass): chip body switched to the
-    // pill-shaped `LiquidGlassButton`. Active state pushes the chip's
-    // brand colour into the glass tint, mimicking Apple's iOS 26
-    // segmented-control behaviour (the chip "fills with light"
-    // rather than being painted a flat background colour). Inactive
-    // chips remain pure glass over the page backdrop.
-    final fg = active
-        ? scheme.onPrimary
-        : (onTap != null ? scheme.onSurface : scheme.onSurfaceVariant);
-    final iconColor = active ? scheme.onPrimary : color;
-    return Tooltip(
-      message: tooltip,
-      child: LiquidGlassButton(
-        onTap: onTap,
-        borderRadius: LiquidGlassRadius.pill,
-        padding:
-            const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-        tint: active ? color : null,
-        semanticLabel: label,
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (busy)
-              SizedBox(
-                width: 14,
-                height: 14,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  color: iconColor,
-                ),
-              )
-            else
-              Icon(icon, size: 14, color: iconColor),
-            const SizedBox(width: 6),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w700,
-                color: fg,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
+// 2026-05-08 (v1.1.7): _SearchModeStrip + _ModeChip widgets removed
+// at user request. Reasoning:
+//
+//   • Text search runs live on every keystroke (250 ms debounce in
+//     `onChanged`), so a "Search" chip duplicated existing
+//     behaviour.
+//   • AI search is a *fallback* — used when the literal text search
+//     returns nothing. Showing it as a peer chip next to "Search"
+//     misled users into thinking they were equivalent modes. The
+//     correct mental model: 「找不到才用 AI 搜索」.
+//
+// AI is now reachable only via the "Search with YsWords AI" button
+// inside `_buildEmptyState`, which surfaces when `searchPerformed
+// == true && _results.isEmpty`. Same `_askAi` handler — only the
+// entry point changed.
+//
+// (The history of this strip lived through three iterations:
+// v5 → 3 chips, v8 → 2 chips, v1.1.7 → removed.)
 
 /// 2026-05-07 (post-fix): scope banner shown in the no-results state
 /// so users can see at a glance whether the empty result came from a

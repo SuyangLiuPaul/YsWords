@@ -127,4 +127,23 @@
 ///   `_aiBusy = false` unconditionally so an uncaught exception
 ///   inside the AI / resolve flow can never permanently grey the
 ///   chip.
-const String kAppVersion = '1.1.6';
+///
+/// 2026-05-08 (v1.1.7 — search-mode chip strip removed): user said
+/// "为什么按第一次没有反应，而且经文搜索旁边那个 YsWords AI
+/// 那个 button 不用在那里。因为找不到才用 ai 搜索的" — the AI chip
+/// up top doesn't belong there because AI is a *fallback* for when
+/// text search fails, not a peer mode. The dedicated chip ALSO
+/// suffered from a "first tap no response" bug on Flutter web (the
+/// LiquidGlassButton + MouseRegion + AnimatedScale stack
+/// occasionally swallowed the first tap when the soft-keyboard
+/// transition stole focus).
+///
+/// Removed the entire `_SearchModeStrip` (Search + YsWords AI chips
+/// row) plus the `_ModeChip` widget, the `_SearchMode` enum, and
+/// the `_lastMode` tracking field — all dead code now. AI search
+/// remains accessible via the existing "Search with YsWords AI"
+/// button rendered inside the empty state when text search returns
+/// 0 results. Same `_askAi` handler — only the entry point
+/// changed. Net: simpler search UI, no first-tap glitch, no
+/// stuck-busy chip surface.
+const String kAppVersion = '1.1.7';
