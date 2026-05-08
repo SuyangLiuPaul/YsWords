@@ -116,4 +116,15 @@
 ///   the user to switch versions.
 /// Net: user always sees the AI's full suggestion list, never
 /// the misleading "No results found" empty state.
-const String kAppVersion = '1.1.5';
+///
+/// 2026-05-08 (v1.1.6 chip-stuck-busy fix): user reported
+/// "after AI search returns no verses, deleting a char makes the
+/// AI chip un-clickable". Symptom = `_aiBusy = true` stuck after
+/// some failure path. Two defensive fixes:
+/// • `onChanged` (text edit) explicitly resets `_aiBusy = false`
+///   so any stuck busy state clears as soon as the user types.
+/// • `_askAi` is now wrapped in try/finally; the finally sets
+///   `_aiBusy = false` unconditionally so an uncaught exception
+///   inside the AI / resolve flow can never permanently grey the
+///   chip.
+const String kAppVersion = '1.1.6';

@@ -592,6 +592,17 @@ class _SearchPageState extends State<SearchPage> {
       _aiBusy = true;
       _aiNotice = null;
     });
+    // 2026-05-08 (v1.1.6): wrap the entire post-busy flow in
+    // try/finally so `_aiBusy` ALWAYS resets, regardless of how
+    // the function exits — including uncaught exceptions inside
+    // the resolve loop, the AiBibleSearchService throwing
+    // unexpectedly, etc. The previous version relied on every
+    // setState branch to reset the busy flag; one missed branch
+    // and the chip stays greyed forever. User reported exactly
+    // this: "after AI search returns no verses, deleting a char
+    // makes the AI chip un-clickable". Defensive try/finally is
+    // the safety net.
+    try {
     final result = await AiBibleSearchService.ask(
       query: query,
       locale: settings.locale,
@@ -724,6 +735,16 @@ class _SearchPageState extends State<SearchPage> {
     });
     if (_scrollController.hasClients) {
       _scrollController.jumpTo(0.0);
+    }
+    } finally {
+      // 2026-05-08 (v1.1.6): unconditional safety net — if anything
+      // above threw an uncaught exception (HTTP failure that
+      // bypassed the service's own catch, JSON parse error,
+      // resolve-loop crash …), the chip would otherwise stay
+      // greyed forever. Reset busy if it's still true here.
+      if (mounted && _aiBusy) {
+        setState(() => _aiBusy = false);
+      }
     }
   }
 
@@ -1118,9 +1139,21 @@ class _SearchPageState extends State<SearchPage> {
               //      the last keystroke. This is enough time to
               //      let the user finish typing while keeping
               //      the results live -- no Enter required.
+              //
+              // 2026-05-08 (v1.1.6): also defensively unstick
+              // `_aiBusy` here. User reported: "after AI search
+              // returns no verses, deleting a char makes the AI
+              // chip un-clickable". Without this, any edge case
+              // that left `_aiBusy = true` (uncaught exception
+              // during the AI Future, widget remount mid-flight,
+              // etc.) would persist forever, greying the chip.
+              // Editing the query is an unambiguous signal the
+              // user wants a fresh search — abandon any stuck
+              // in-flight AI state.
               setState(() {
                 searchAll = true;
                 filterBook = null;
+                _aiBusy = false;
               });
               _liveSearchDebounce?.cancel();
               _liveSearchDebounce = Timer(
