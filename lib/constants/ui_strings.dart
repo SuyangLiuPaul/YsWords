@@ -2266,6 +2266,17 @@ const uiStrings = {
     'zh-Hant': '中國版',
     'en': 'China build',
   },
+  // 2026-05-09 (v1.2.1): privacy / data-locality note shown on the
+  // Profiles tab in China mode in place of the Sign-in button.
+  // Replaces the previous Google sign-in CTA which can never succeed
+  // behind the GFW. Same message slot is used by the Profiles "cloud
+  // privacy" footnote when `kChinaMode` is true.
+  'chinaCloudUnavailable': {
+    'zh-Hans': '中国版不支持云同步 · 数据保存在本机',
+    'zh-Hant': '中國版不支持雲同步 · 資料保存在本機',
+    'en':
+        "Cloud sync isn't available in the China build. Highlights, notes, and bookmarks stay on this device.",
+  },
   'aiBibleSearchSomeMissing': {
     'zh-Hans': 'YsWords 还找到 {n} 处经文，但您当前圣经版本中没有匹配（仅供参考）。',
     'zh-Hant': 'YsWords 還找到 {n} 處經文，但您當前聖經版本中沒有匹配（僅供參考）。',

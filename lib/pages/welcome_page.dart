@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import 'package:yswords/constants/build_flags.dart';
 import 'package:yswords/constants/ui_strings.dart';
 import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/services/cloud_auth_service.dart';
@@ -248,8 +249,16 @@ class _WelcomePageState extends State<WelcomePage> {
                     // firebase_options.dart setup. Otherwise the
                     // only "Sign in" option is the local-profile
                     // path further down.
-                    if (CloudAuthService.instance.isConfigured ||
-                        CloudAuthService.instance.hasFirebaseCredentials) ...[
+                    //
+                    // 2026-05-09 (v1.2.1 China-mode UX cleanup):
+                    // hidden entirely in the China build —
+                    // `accounts.google.com` is GFW-blocked, so a
+                    // "Sign in with Google" button that can never
+                    // succeed is misleading. Users in China land
+                    // straight on the local-profile path.
+                    if (!kChinaMode &&
+                        (CloudAuthService.instance.isConfigured ||
+                            CloudAuthService.instance.hasFirebaseCredentials)) ...[
                       // Google brand button — white background +
                       // multi-color G logo + slate text — matches
                       // Google's web sign-in button guidelines. When

@@ -244,4 +244,19 @@
 /// downloaded behind the firewall), and surfaces a "中国版 /
 /// China build" tag on the AboutPage footer. International users
 /// see no change.
-const String kAppVersion = '1.2.0';
+///
+/// 2026-05-09 (v1.2.1 — China-mode UX cleanup): user asked
+/// "中国的没有 Google 登陆是吗" — yes, but v1.2.0 still rendered
+/// the static "Sign in with Google" button on the Welcome / Profiles
+/// pages even in the China build (it would just never succeed and
+/// the developer cloud-setup card would surface scary "auth not
+/// configured" warnings). v1.2.1 hides every Google-sign-in /
+/// Firebase-status surface in China mode and replaces them with a
+/// single explanatory note: "中国版不支持云同步 · 数据保存在本机".
+/// Touches `welcome_page.dart` (Sign-in CTA), `settings_page.dart`
+/// (cloud-config rows + privacy footnote), and `about_page.dart`
+/// (CloudSetupDiagnostic + SetupInstructionsCard). New
+/// `chinaCloudUnavailable` ui-string key carries the localised
+/// message in zh-Hans / zh-Hant / en. International users see no
+/// change.
+const String kAppVersion = '1.2.1';

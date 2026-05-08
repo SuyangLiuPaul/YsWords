@@ -3,6 +3,7 @@ import 'dart:js_interop';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show Clipboard, ClipboardData;
+import 'package:yswords/constants/build_flags.dart';
 import 'package:yswords/constants/ui_strings.dart';
 import 'package:provider/provider.dart';
 import 'package:yswords/models/app_settings.dart';
@@ -1551,7 +1552,17 @@ class _AccountSectionState extends State<_AccountSection> {
             //     button. Without this, a transient Firebase init
             //     failure (revoked key, network blip) silently hides
             //     the entire account section.
-            if (auth.isConfigured) ...[
+            //
+            // 2026-05-09 (v1.2.1 China-mode UX cleanup): in the
+            // China build (`kChinaMode`) Firebase init was skipped
+            // entirely (see main.dart bootstrap), so neither the
+            // sign-in surface nor the disabled-with-Retry surface
+            // are reachable. Both are hidden; a small note replaces
+            // them ("中国版不支持云同步" / "Cloud sync isn't
+            // available in the China build…"). The local-only
+            // profile flow above this block still works exactly as
+            // it does on the international build.
+            if (!kChinaMode && auth.isConfigured) ...[
               const Divider(height: 24),
               if (!auth.isSignedIn)
                 OutlinedButton(
@@ -1628,7 +1639,7 @@ class _AccountSectionState extends State<_AccountSection> {
                 SizedBox(height: 6 * s),
                 _SyncStatusRow(settings: settings),
               ],
-            ] else if (auth.hasFirebaseCredentials) ...[
+            ] else if (!kChinaMode && auth.hasFirebaseCredentials) ...[
               // Init failed — show a disabled-looking sign-in button
               // plus the error + a Retry button. Better than silently
               // hiding everything cloud-related.
@@ -1745,12 +1756,25 @@ class _AccountSectionState extends State<_AccountSection> {
             ],
             Padding(
               padding: const EdgeInsets.only(top: 4),
+              // 2026-05-09 (v1.2.1): three-way notice. China build
+              // gets its own message because Google sign-in and
+              // Firebase RTDB are both blocked, so the standard
+              // "Profiles are stored only on this device" wording
+              // (which is true on the international build only when
+              // the user opted out of Google sign-in) becomes the
+              // permanent state — and we should explain why
+              // explicitly.
               child: Text(
-                auth.isConfigured
-                    ? (uiStrings['cloudPrivacyNotice']?[locale] ??
-                        'Cloud sync uses your own Firebase project. Each user can only read their own data.')
-                    : (uiStrings["welcomeLocalOnlyNotice"]?[locale] ??
-                        "Profiles are stored only on this device. No password, no server."),
+                kChinaMode
+                    ? (uiStrings['chinaCloudUnavailable']?[locale] ??
+                        'Cloud sync isn\'t available in the China build. '
+                            'Highlights, notes, and bookmarks stay on '
+                            'this device.')
+                    : (auth.isConfigured
+                        ? (uiStrings['cloudPrivacyNotice']?[locale] ??
+                            'Cloud sync uses your own Firebase project. Each user can only read their own data.')
+                        : (uiStrings["welcomeLocalOnlyNotice"]?[locale] ??
+                            "Profiles are stored only on this device. No password, no server.")),
                 style: TextStyle(
                   fontFamily: settings.fontFamily,
                   fontSize: (settings.fontSize - 7)

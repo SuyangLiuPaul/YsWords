@@ -101,18 +101,28 @@ class AboutPage extends StatelessWidget {
               // issues. User feedback: "开发者说明不用" — developer
               // setup info shouldn't be in the user-facing Settings
               // flow.
-              _SectionTitle(
-                  text: uiStrings['cloudDiagSection']?[locale] ??
-                      'Cloud setup status (developer)',
-                  scheme: scheme),
-              const SizedBox(height: 6),
-              CloudSetupDiagnostic(locale: locale),
-              const SizedBox(height: 8),
-              SetupInstructionsCard(
-                scheme: scheme,
-                locale: locale,
-              ),
-              const SizedBox(height: 24),
+              // 2026-05-09 (v1.2.1): the cloud-diagnostic + setup-
+              // instructions cards are dev-facing and only useful
+              // when Firebase is reachable. In the China build
+              // (`kChinaMode`) Firebase init is skipped at boot, so
+              // the diagnostic would just show "init pending"
+              // forever and the setup instructions have no
+              // actionable path (the URLs they link to are blocked
+              // anyway). Hidden entirely in China mode.
+              if (!kChinaMode) ...[
+                _SectionTitle(
+                    text: uiStrings['cloudDiagSection']?[locale] ??
+                        'Cloud setup status (developer)',
+                    scheme: scheme),
+                const SizedBox(height: 6),
+                CloudSetupDiagnostic(locale: locale),
+                const SizedBox(height: 8),
+                SetupInstructionsCard(
+                  scheme: scheme,
+                  locale: locale,
+                ),
+                const SizedBox(height: 24),
+              ],
               Center(
                 // 2026-05-07 (v17): also show the running app version
                 // here. The "Check for Updates" tile in Settings used
