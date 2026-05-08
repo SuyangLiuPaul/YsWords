@@ -96,10 +96,39 @@ class AiSearchService {
         'instead.',
       );
     }
+    // 2026-05-08 (v1.1.8): surface the server's actual error body
+    // when present so users see "quota exhausted, try again later"
+    // (HTTP 429 from the function) instead of a generic
+    // "returned an error". Previous text "Showing keyword matches
+    // instead" stays as a fallback when no server-side detail is
+    // available.
+    String? serverError() {
+      try {
+        final j = jsonDecode(resp.body);
+        if (j is Map && j['error'] is String) return j['error'] as String;
+      } catch (_) {}
+      return null;
+    }
+    if (resp.statusCode == 429) {
+      return AiSearchResult.unavailable(
+        serverError() ??
+            'YsWords AI quota for the developer\'s shared key is used '
+                'up for today. Try again tomorrow, or paste your own '
+                'Gemini API key in Settings → AI.',
+      );
+    }
+    if (resp.statusCode == 503) {
+      return AiSearchResult.unavailable(
+        serverError() ??
+            'YsWords AI is not configured. The developer needs to set '
+                'GEMINI_API_KEY in Netlify env.',
+      );
+    }
     if (resp.statusCode != 200) {
       return AiSearchResult.unavailable(
-        'YsWords search returned an error (${resp.statusCode}). '
-        'Showing keyword matches instead.',
+        serverError() ??
+            'YsWords search returned an error (${resp.statusCode}). '
+                'Showing keyword matches instead.',
       );
     }
     try {

@@ -63,16 +63,41 @@ class AiBibleSearchService {
       return AiBibleSearchResult.unavailable(
           'YsWords search is not available yet (function not deployed).');
     }
+    // 2026-05-08 (v1.1.8): split the previously-conflated 503 path
+    // into two distinct cases so the user sees the actual cause:
+    //   • 503 = function deployed but no API key in Netlify env
+    //     (real "developer needs to configure")
+    //   • 429 = quota for the developer's shared key is used up
+    //     for the day. User-actionable: wait, or paste their own
+    //     Gemini API key in Settings → AI to use their own quota.
+    // Prefer the server's own `error` message body when present so
+    // we keep useful detail (which Gemini sub-status etc.).
+    String? serverError() {
+      try {
+        final j = jsonDecode(resp.body);
+        if (j is Map && j['error'] is String) return j['error'] as String;
+      } catch (_) {}
+      return null;
+    }
     if (resp.statusCode == 503) {
-      // Function deployed but no API key configured — surface that
-      // distinct case so the developer's diagnostic catches it.
       return AiBibleSearchResult.unavailable(
-          'YsWords search is not configured. Developer needs to set '
-          'GEMINI_API_KEY in Netlify env.');
+        serverError() ??
+            'YsWords AI is not configured. The developer needs to set '
+                'GEMINI_API_KEY in Netlify env.',
+      );
+    }
+    if (resp.statusCode == 429) {
+      return AiBibleSearchResult.unavailable(
+        serverError() ??
+            'YsWords AI quota for the developer\'s shared key is used '
+                'up for today. Try again tomorrow, or paste your own '
+                'Gemini API key in Settings → AI to use your own quota.',
+      );
     }
     if (resp.statusCode != 200) {
       return AiBibleSearchResult.unavailable(
-          'YsWords search returned ${resp.statusCode}.');
+        serverError() ?? 'YsWords search returned ${resp.statusCode}.',
+      );
     }
     try {
       final body = jsonDecode(resp.body) as Map<String, dynamic>;

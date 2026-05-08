@@ -146,4 +146,23 @@
 /// 0 results. Same `_askAi` handler — only the entry point
 /// changed. Net: simpler search UI, no first-tap glitch, no
 /// stuck-busy chip surface.
-const String kAppVersion = '1.1.7';
+///
+/// 2026-05-08 (v1.1.8 — error-message accuracy): user saw "YsWords
+/// search is not configured" but the API key WAS configured —
+/// the dev's free-tier Gemini quota (250 RPD) was just exhausted
+/// for the day. Backend conflated the two cases: BOTH "no API key"
+/// AND "all keys rate-limited" returned HTTP 503, which the client
+/// hardcoded to "not configured".
+///
+/// Fixes:
+/// • `netlify/functions/aiBibleSearch.mjs`: quota-exhausted now
+///   throws statusCode 429 with a `publicReason` that points the
+///   user to BYOK in Settings; 503 reserved for actual missing
+///   GEMINI_API_KEY config.
+/// • `lib/services/ai_bible_search_service.dart` +
+///   `ai_search_service.dart`: split 503 / 429 / other into
+///   distinct branches; each prefers the server's `error` body
+///   over a hardcoded fallback string.
+/// • `ai_word_service.dart`: already surfaced the server's error
+///   correctly; no change.
+const String kAppVersion = '1.1.8';

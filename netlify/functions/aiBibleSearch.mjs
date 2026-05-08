@@ -139,8 +139,15 @@ async function callGemini(query, locale, overrideKey = null) {
 			continue;
 		}
 	}
+	// 2026-05-08 (v1.1.8): use 429 for quota-exhausted distinct from
+	// 503 (= "GEMINI_API_KEY missing" / actually unconfigured). The
+	// client maps these to different user-facing messages — 503 says
+	// "developer needs to configure", 429 says "quota for today is
+	// used up, try tomorrow or paste your own Gemini key".
 	const err = new Error(`All Gemini keys exhausted. Last error: ${lastError}`);
-	err.statusCode = 503;
+	err.statusCode = 429;
+	err.publicReason = 'AI quota for the developer\'s shared key is exhausted. ' +
+		'Try again later, or paste your own Gemini API key in Settings → AI to use your own quota.';
 	throw err;
 }
 
