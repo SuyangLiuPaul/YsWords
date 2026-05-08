@@ -9,6 +9,7 @@ import 'package:yswords/utils/theme_color_helpers.dart';
 import 'package:yswords/models/bible_evidence.dart';
 import 'package:yswords/pages/evidence_detail_page.dart';
 import 'package:yswords/pages/home_page.dart';
+import 'package:yswords/pages/settings_page.dart';
 import 'package:yswords/providers/main_provider.dart';
 import 'package:yswords/services/ai_search_service.dart';
 import 'package:yswords/services/bible_evidence_service.dart';
@@ -723,6 +724,25 @@ class _AiSearchDialogState extends State<_AiSearchDialog> {
   bool _busy = false;
   String? _notice; // shown when AI was unavailable but local matches found
   AiSearchResult? _result;
+
+  /// 2026-05-08 (v1.1.10): heuristic — does this AI-failure notice
+  /// indicate a quota / not-configured failure that BYOK can solve?
+  /// Mirrors the helper in search_page.dart so the inline "Set up
+  /// your own Gemini key" button only appears for those cases (not
+  /// for e.g. network errors which BYOK won't fix).
+  bool _shouldOfferByokForNotice(String? notice) {
+    if (notice == null) return false;
+    final lower = notice.toLowerCase();
+    const triggers = [
+      'quota', 'exhausted', 'rate-limit', 'rate limit',
+      'not configured', 'gemini_api_key',
+      '配额', '用完', '没有配置',
+    ];
+    for (final t in triggers) {
+      if (lower.contains(t)) return true;
+    }
+    return false;
+  }
   // When AI is unavailable, we surface a local keyword match so the
   // feature still does something useful. These are domain entries
   // matched by `BibleEvidenceService.search()`, not Gemini citations.
@@ -942,24 +962,56 @@ class _AiSearchDialogState extends State<_AiSearchDialog> {
                       color: scheme.outlineVariant
                           .withValues(alpha: 0.4)),
                 ),
-                child: Row(
+                child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Icon(Icons.info_outline,
-                        size: 14, color: scheme.onSurfaceVariant),
-                    const SizedBox(width: 6),
-                    Expanded(
-                      child: Text(
-                        _notice!,
-                        style: TextStyle(
-                          fontFamily: settings.fontFamily,
-                          fontSize: (settings.fontSize - 2)
-                              .clamp(11.0, 14.0)
-                              .toDouble(),
-                          color: scheme.onSurfaceVariant,
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Icon(Icons.info_outline,
+                            size: 14, color: scheme.onSurfaceVariant),
+                        const SizedBox(width: 6),
+                        Expanded(
+                          child: Text(
+                            _notice!,
+                            style: TextStyle(
+                              fontFamily: settings.fontFamily,
+                              fontSize: (settings.fontSize - 2)
+                                  .clamp(11.0, 14.0)
+                                  .toDouble(),
+                              color: scheme.onSurfaceVariant,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    // 2026-05-08 (v1.1.10): deep-link to BYOK Settings
+                    // when the notice indicates a quota / not-configured
+                    // failure AND the user hasn't already set up their
+                    // own Gemini key.
+                    if (_shouldOfferByokForNotice(_notice) &&
+                        !settings.hasUserGeminiKey) ...[
+                      const SizedBox(height: 8),
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: OutlinedButton.icon(
+                          icon: const Icon(Icons.key_rounded, size: 14),
+                          label: Text(
+                            uiStrings['aiOpenByokSettings']
+                                    ?[widget.locale] ??
+                                'Set up your own Gemini API key',
+                            style: const TextStyle(fontSize: 12),
+                          ),
+                          onPressed: () {
+                            Get.to(
+                              () => const SettingsPage(
+                                  initialSection: SettingsSection.ai),
+                              transition: Transition.rightToLeft,
+                            );
+                          },
                         ),
                       ),
-                    ),
+                    ],
                   ],
                 ),
               ),

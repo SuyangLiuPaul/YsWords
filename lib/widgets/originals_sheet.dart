@@ -2,6 +2,7 @@ import 'dart:async' show unawaited;
 
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:provider/provider.dart';
 
 import 'package:yswords/constants/text_patterns.dart'
@@ -11,6 +12,7 @@ import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/models/original_word.dart';
 import 'package:yswords/models/strongs.dart';
 import 'package:yswords/models/verse.dart';
+import 'package:yswords/pages/settings_page.dart';
 import 'package:yswords/services/ai_word_service.dart';
 import 'package:yswords/services/concordance_service.dart';
 import 'package:yswords/services/lxx_service.dart';
@@ -137,6 +139,23 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
   String? _aiError;
   bool _aiLoading = false;
   String? _aiForStrongs;
+
+  /// 2026-05-08 (v1.1.10): heuristic — does this AI-failure message
+  /// indicate a quota / not-configured failure that BYOK can solve?
+  /// Mirrors the helpers in search_page.dart and evidence_page.dart.
+  bool _shouldOfferByokForError(String? msg) {
+    if (msg == null) return false;
+    final lower = msg.toLowerCase();
+    const triggers = [
+      'quota', 'exhausted', 'rate-limit', 'rate limit',
+      'not configured', 'gemini_api_key',
+      '配额', '用完', '没有配置',
+    ];
+    for (final t in triggers) {
+      if (lower.contains(t)) return true;
+    }
+    return false;
+  }
 
   @override
   void initState() {
@@ -1395,23 +1414,53 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
               ),
             ),
             const SizedBox(height: 6),
-            Align(
-              alignment: Alignment.centerLeft,
-              child: TextButton.icon(
-                onPressed: _aiLoading
-                    ? null
-                    : () => _loadAiExplanation(),
-                icon: const Icon(Icons.refresh, size: 16),
-                label: Text(
-                  uiStrings['aiExplainTryAgain']?[locale] ?? 'Try again',
-                  style: const TextStyle(fontSize: 13),
+            // 2026-05-08 (v1.1.10): Try-again is the primary action;
+            // when the failure is quota-related AND the user hasn't
+            // already pasted their own Gemini key, also show a
+            // deep-link to Settings → YsWords AI so they can keep
+            // working without waiting for the shared quota to reset.
+            Wrap(
+              spacing: 8,
+              runSpacing: 4,
+              children: [
+                TextButton.icon(
+                  onPressed: _aiLoading
+                      ? null
+                      : () => _loadAiExplanation(),
+                  icon: const Icon(Icons.refresh, size: 16),
+                  label: Text(
+                    uiStrings['aiExplainTryAgain']?[locale] ?? 'Try again',
+                    style: const TextStyle(fontSize: 13),
+                  ),
+                  style: TextButton.styleFrom(
+                    visualDensity: VisualDensity.compact,
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 10, vertical: 6),
+                  ),
                 ),
-                style: TextButton.styleFrom(
-                  visualDensity: VisualDensity.compact,
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 10, vertical: 6),
-                ),
-              ),
+                if (_shouldOfferByokForError(_aiError) &&
+                    !context.read<AppSettings>().hasUserGeminiKey)
+                  TextButton.icon(
+                    onPressed: () {
+                      Get.to(
+                        () => const SettingsPage(
+                            initialSection: SettingsSection.ai),
+                        transition: Transition.rightToLeft,
+                      );
+                    },
+                    icon: const Icon(Icons.key_rounded, size: 16),
+                    label: Text(
+                      uiStrings['aiOpenByokSettings']?[locale] ??
+                          'Set up your own Gemini API key',
+                      style: const TextStyle(fontSize: 13),
+                    ),
+                    style: TextButton.styleFrom(
+                      visualDensity: VisualDensity.compact,
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 6),
+                    ),
+                  ),
+              ],
             ),
           ],
           if (hasChunks) ...[

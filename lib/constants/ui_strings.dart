@@ -2226,6 +2226,16 @@ const uiStrings = {
     'en':
         'This passage isn\'t in your current Bible version. Switch versions in Settings to read it.',
   },
+  // 2026-05-08 (v1.1.10): deep-link CTA for the BYOK Gemini key.
+  // Shown under the AI error notice when the failure is a quota /
+  // not-configured one AND the user hasn't already set up their own
+  // key. Tapping navigates to Settings → YsWords AI section and
+  // scrolls the GeminiKeyCard into view.
+  'aiOpenByokSettings': {
+    'zh-Hans': '使用您自己的 Gemini Key',
+    'zh-Hant': '使用您自己的 Gemini Key',
+    'en': 'Set up your own Gemini API key',
+  },
   'aiBibleSearchSomeMissing': {
     'zh-Hans': 'YsWords 还找到 {n} 处经文，但您当前圣经版本中没有匹配（仅供参考）。',
     'zh-Hant': 'YsWords 還找到 {n} 處經文，但您當前聖經版本中沒有匹配（僅供參考）。',

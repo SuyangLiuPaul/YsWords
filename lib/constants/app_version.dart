@@ -176,4 +176,23 @@
 /// Settings under a dedicated "YsWords AI" section right above
 /// About — so users hitting "AI quota exhausted" can paste their
 /// own AI Studio key and keep working.
-const String kAppVersion = '1.1.9';
+///
+/// 2026-05-08 (v1.1.10 — BYOK deep-link from every AI failure UI):
+/// user asked "如果没 token 会自动引导到 BYOK 那里吧". Yes — but
+/// only as text in v1.1.9. v1.1.10 turns it into a one-tap deep
+/// link from every AI surface that can fail:
+/// • `lib/pages/search_page.dart` — under the AI fallback button
+///   in the empty state
+/// • `lib/pages/evidence_page.dart` — under the AI Q&A error
+///   notice
+/// • `lib/widgets/originals_sheet.dart` — next to the "Try again"
+///   button on the verse-explanation error card
+/// Each calls `Get.to(SettingsPage(initialSection: SettingsSection.ai))`
+/// which scrolls the GeminiKeyCard into view via the existing
+/// `Scrollable.ensureVisible` deep-link infrastructure.
+/// The button only appears when the failure heuristically looks
+/// like a quota / not-configured one (matches "quota" /
+/// "exhausted" / "rate-limit" / 配额 / 用完 / etc.) AND the user
+/// hasn't already pasted their own key. So users with BYOK
+/// already set don't see the redundant CTA.
+const String kAppVersion = '1.1.10';

@@ -79,6 +79,11 @@ enum SettingsSection {
   readingPlan,
   dashboardLayout,
   notifications,
+  // 2026-05-08 (v1.1.10): when an AI feature hits "quota exhausted"
+  // (HTTP 429) the error UI now shows a button that deep-links here
+  // so the user can paste their own Gemini key without hunting
+  // through the Settings list.
+  ai,
   about,
 }
 
@@ -134,6 +139,7 @@ class _SettingsPageBodyState extends State<_SettingsPageBody> {
   final _planKey = GlobalKey();
   final _dashboardKey = GlobalKey();
   final _notificationsKey = GlobalKey();
+  final _aiKey = GlobalKey();
   final _aboutKey = GlobalKey();
 
   GlobalKey? _keyFor(SettingsSection? section) {
@@ -150,6 +156,8 @@ class _SettingsPageBodyState extends State<_SettingsPageBody> {
         return _dashboardKey;
       case SettingsSection.notifications:
         return _notificationsKey;
+      case SettingsSection.ai:
+        return _aiKey;
       case SettingsSection.about:
         return _aboutKey;
       case null:
@@ -1018,8 +1026,11 @@ class _SettingsPageBodyState extends State<_SettingsPageBody> {
               // Putting it under its own "AI" section above About
               // so it's discoverable without crowding the daily-use
               // toggles further up.
-              _SectionHeader(
-                  uiStrings['settingsSectionAi']?[settings.locale] ?? 'AI'),
+              KeyedSubtree(
+                key: _aiKey,
+                child: _SectionHeader(
+                    uiStrings['settingsSectionAi']?[settings.locale] ?? 'AI'),
+              ),
               GeminiKeyCard(settings: settings, s: s),
               SizedBox(height: 16 * s),
               KeyedSubtree(

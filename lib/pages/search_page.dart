@@ -8,6 +8,7 @@ import 'package:yswords/services/concordance_service.dart';
 import 'package:yswords/services/fetch_verses.dart';
 import 'package:yswords/pages/strongs_entry_page.dart';
 import 'package:yswords/pages/home_page.dart';
+import 'package:yswords/pages/settings_page.dart';
 import 'package:yswords/services/recent_searches_service.dart';
 import 'package:yswords/utils/clipboard_helper.dart' show ClipboardHelper;
 import 'package:yswords/utils/format_searched_text.dart';
@@ -269,6 +270,31 @@ class _SearchPageState extends State<SearchPage> {
   ///    look like a familiar "history" UI.
   /// 3. No search yet, no recents → centered search icon + hint
   ///    (true empty state).
+  /// 2026-05-08 (v1.1.10): heuristic — does this `_aiNotice` text
+  /// indicate a quota / not-configured failure that BYOK can solve?
+  /// Used to gate the "Set up your own Gemini key" deep-link button.
+  /// We match on a few keyword fragments rather than HTTP code so
+  /// localised messages also trigger correctly.
+  bool _shouldOfferByokForNotice(String? notice) {
+    if (notice == null) return false;
+    final lower = notice.toLowerCase();
+    const triggers = [
+      'quota',
+      'exhausted',
+      'rate-limit',
+      'rate limit',
+      'not configured',
+      'gemini_api_key',
+      '配额',
+      '用完',
+      '没有配置',
+    ];
+    for (final t in triggers) {
+      if (lower.contains(t)) return true;
+    }
+    return false;
+  }
+
   Widget _buildEmptyState(BuildContext context, AppSettings settings) {
     final scheme = Theme.of(context).colorScheme;
     final locale = settings.locale;
@@ -435,6 +461,30 @@ class _SearchPageState extends State<SearchPage> {
                       textAlign: TextAlign.center,
                     ),
                   ),
+                  // 2026-05-08 (v1.1.10): when the AI notice indicates
+                  // a quota / not-configured failure AND the user
+                  // hasn't already set up their own Gemini key,
+                  // surface a one-tap deep-link to Settings → YsWords
+                  // AI so they can paste their own AI Studio key.
+                  if (_shouldOfferByokForNotice(_aiNotice) &&
+                      !settings.hasUserGeminiKey) ...[
+                    const SizedBox(height: 10),
+                    OutlinedButton.icon(
+                      icon: const Icon(Icons.key_rounded, size: 16),
+                      label: Text(
+                        uiStrings['aiOpenByokSettings']?[locale] ??
+                            'Set up your own Gemini API key',
+                        style: const TextStyle(fontSize: 12),
+                      ),
+                      onPressed: () {
+                        Get.to(
+                          () => const SettingsPage(
+                              initialSection: SettingsSection.ai),
+                          transition: Transition.rightToLeft,
+                        );
+                      },
+                    ),
+                  ],
                 ],
               ],
             ],
