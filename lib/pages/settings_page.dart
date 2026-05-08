@@ -14,6 +14,7 @@ import 'package:yswords/pages/about_page.dart';
 import 'package:yswords/utils/theme_color_helpers.dart';
 import 'package:yswords/pages/profiles_page.dart';
 import 'package:yswords/services/cloud_auth_service.dart';
+import 'package:yswords/widgets/gemini_key_card.dart';
 import 'package:yswords/widgets/google_g_logo.dart';
 import 'dart:async' show Timer;
 
@@ -1004,6 +1005,22 @@ class _SettingsPageBodyState extends State<_SettingsPageBody> {
                         'Notifications'),
               ),
               _NotificationsCard(settings: settings, s: s),
+              SizedBox(height: 16 * s),
+              // 2026-05-08 (v1.1.9): BYOK Gemini-key card re-exposed.
+              // The widget itself (lib/widgets/gemini_key_card.dart)
+              // has been live the whole time, but on 2026-05-06 the
+              // section was removed from the UI because the dev's
+              // shared key was carrying everyone with no setup
+              // friction. After 2026-05-08 the shared key started
+              // hitting the Gemini free-tier 250-RPD ceiling for the
+              // day; users who hit "AI quota exhausted" need a way
+              // to drop in their own AI Studio key and keep working.
+              // Putting it under its own "AI" section above About
+              // so it's discoverable without crowding the daily-use
+              // toggles further up.
+              _SectionHeader(
+                  uiStrings['settingsSectionAi']?[settings.locale] ?? 'AI'),
+              GeminiKeyCard(settings: settings, s: s),
               SizedBox(height: 16 * s),
               KeyedSubtree(
                 key: _aboutKey,

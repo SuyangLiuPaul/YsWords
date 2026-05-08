@@ -165,4 +165,15 @@
 ///   over a hardcoded fallback string.
 /// • `ai_word_service.dart`: already surfaced the server's error
 ///   correctly; no change.
-const String kAppVersion = '1.1.8';
+///
+/// 2026-05-08 (v1.1.9 — BYOK card re-exposed): user asked
+/// "怎么没看到 BYOK?" — the GeminiKeyCard widget had been live in
+/// `lib/widgets/gemini_key_card.dart` the whole time, but on
+/// 2026-05-06 the section was hidden from Settings because the
+/// dev's shared key was covering everyone. Once the shared-key
+/// quota started failing (today, 2026-05-08), users had no way
+/// to opt out of the shared pool. v1.1.9 puts the card back into
+/// Settings under a dedicated "YsWords AI" section right above
+/// About — so users hitting "AI quota exhausted" can paste their
+/// own AI Studio key and keep working.
+const String kAppVersion = '1.1.9';
