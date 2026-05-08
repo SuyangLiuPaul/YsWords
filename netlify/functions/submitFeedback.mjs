@@ -40,6 +40,25 @@ export const config = {
 };
 
 export default async (req) => {
+	// 2026-05-09 (v1.1.12 final-audit fix): handle CORS preflight
+	// explicitly. Same-origin requests from yswords.netlify.app
+	// don't trigger preflight, but stricter browser configurations
+	// (custom headers, mode: 'cors' fetch from extensions) would
+	// previously hit 405 here. The success path already includes
+	// `Access-Control-Allow-Origin: *` via `jsonResponse` (see
+	// further down), so existing same-origin POSTs are unaffected.
+	if (req.method === 'OPTIONS') {
+		// 2026-05-09 (v1.1.12): null body for 204 — '' triggers
+		// Netlify 502. See aiBibleSearch.mjs for the full note.
+		return new Response(null, {
+			status: 204,
+			headers: {
+				'Access-Control-Allow-Origin': '*',
+				'Access-Control-Allow-Methods': 'POST, OPTIONS',
+				'Access-Control-Allow-Headers': 'Content-Type',
+			},
+		});
+	}
 	if (req.method !== 'POST') {
 		return new Response('Method Not Allowed', { status: 405 });
 	}

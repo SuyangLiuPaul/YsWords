@@ -190,8 +190,34 @@ function parseRefs(rawJson) {
 }
 
 export default async (req) => {
+	// 2026-05-09 (v1.1.12 final-audit fix): CORS preflight + response
+	// headers. Both `aiSearch.mjs` and `aiExplainWord.mjs` already
+	// returned `Access-Control-Allow-Origin: *` on every response and
+	// answered OPTIONS preflights with 204; this function (the
+	// fuzzy/thematic verse search backing the YsWords AI button)
+	// previously returned 405 for OPTIONS and omitted CORS headers
+	// from the POST response. Same-origin from yswords.netlify.app
+	// works without them, but cross-origin (devtools probes,
+	// future embedded surfaces) and any browser running a strict
+	// preflight check would fail. This brings parity.
+	const cors = {
+		'Access-Control-Allow-Origin': '*',
+		'Access-Control-Allow-Methods': 'POST, OPTIONS',
+		'Access-Control-Allow-Headers': 'Content-Type',
+		'Content-Type': 'application/json',
+	};
+	if (req.method === 'OPTIONS') {
+		// 2026-05-09 (v1.1.12): MUST pass `null` body for HTTP 204
+		// "No Content" — `''` (empty string) is a 0-length body but
+		// the WHATWG Fetch spec says status 204 disallows ANY body,
+		// so the Response constructor throws `Invalid response
+		// status code 204` and Netlify returns 502. Same trap on
+		// the other 3 functions; all four fixed in v1.1.12.
+		return new Response(null, { status: 204, headers: cors });
+	}
 	if (req.method !== 'POST') {
-		return new Response('Method Not Allowed', { status: 405 });
+		return new Response('Method Not Allowed',
+			{ status: 405, headers: cors });
 	}
 	let body;
 	try {
@@ -199,15 +225,23 @@ export default async (req) => {
 	} catch (_) {
 		return new Response(
 			JSON.stringify({ error: 'Invalid JSON body.' }),
-			{ status: 400, headers: { 'Content-Type': 'application/json' } });
+			{ status: 400, headers: cors });
 	}
 	const query = (body.query || '').trim();
 	const locale = body.locale || 'en';
-	const userApiKey = (body.userApiKey || '').trim();
+	// 2026-05-09 (v1.1.12): validate userApiKey shape before
+	// forwarding. Mirrors aiSearch.mjs / aiExplainWord.mjs — only
+	// accepts a Gemini AI Studio key matching `AIza[20-80 chars]`.
+	// Garbage input is dropped on the floor (treated as if no
+	// userApiKey was provided) so we don't waste a Gemini call
+	// trying to authenticate with junk.
+	const _userKey = (body.userApiKey || '').trim();
+	const _useUserKey = /^AIza[A-Za-z0-9_-]{20,80}$/.test(_userKey);
+	const userApiKey = _useUserKey ? _userKey : '';
 	if (query.length < 2) {
 		return new Response(
 			JSON.stringify({ error: 'Query is required (≥2 chars).' }),
-			{ status: 400, headers: { 'Content-Type': 'application/json' } });
+			{ status: 400, headers: cors });
 	}
 	// 2026-05-07 (v18 audit): cap the upper bound. Without this, a
 	// 100 KB+ query would overflow Gemini's context window (resulting
@@ -218,7 +252,7 @@ export default async (req) => {
 	if (query.length > 2000) {
 		return new Response(
 			JSON.stringify({ error: 'Query too long (max 2000 chars).' }),
-			{ status: 400, headers: { 'Content-Type': 'application/json' } });
+			{ status: 400, headers: cors });
 	}
 	try {
 		const completion = await callGemini(
@@ -227,14 +261,14 @@ export default async (req) => {
 		const refs = parseRefs(text);
 		return new Response(
 			JSON.stringify({ refs, hits: refs.length }),
-			{ status: 200, headers: { 'Content-Type': 'application/json' } });
+			{ status: 200, headers: cors });
 	} catch (e) {
 		const status = e?.statusCode || 500;
 		const reason = e?.publicReason || e?.message ||
 			'AI Bible search failed.';
 		return new Response(
 			JSON.stringify({ error: reason }),
-			{ status, headers: { 'Content-Type': 'application/json' } });
+			{ status, headers: cors });
 	}
 };
 

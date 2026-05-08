@@ -205,4 +205,31 @@
 /// `aiQuotaExhaustedFallback` + `aiNotConfiguredFallback` (zh-Hans
 /// / zh-Hant / en). Found by a final audit Explore agent — net
 /// state is clean: no critical bugs, no resource leaks identified.
-const String kAppVersion = '1.1.11';
+///
+/// 2026-05-09 (v1.1.12 — CORS parity for backend functions): a
+/// follow-up audit pass found that `netlify/functions/aiBibleSearch.mjs`
+/// (the YsWords AI verse-search endpoint) and
+/// `netlify/functions/submitFeedback.mjs` lacked OPTIONS preflight
+/// handlers + (for aiBibleSearch) didn't set
+/// `Access-Control-Allow-Origin` on POST responses. Same-origin
+/// from yswords.netlify.app worked, but cross-origin or strict
+/// preflight checks would 405. Brought to parity with
+/// `aiSearch.mjs` + `aiExplainWord.mjs` (which already had
+/// correct CORS). Also added the missing `userApiKey` regex
+/// validation (`AIza[A-Za-z0-9_-]{20,80}`) to aiBibleSearch.mjs
+/// so garbage keys are silently dropped instead of forwarded to
+/// Gemini.
+///
+/// While testing the fix, found a SECOND bug: every `OPTIONS`
+/// handler across all 4 Netlify functions used
+/// `new Response('', { status: 204, headers: cors })`. Per the
+/// WHATWG Fetch spec, HTTP 204 (No Content) disallows ANY body —
+/// the empty string `''` is a 0-length body, so the constructor
+/// throws `Invalid response status code 204` and Netlify returns
+/// 502. None of this was visible in normal use because same-origin
+/// from yswords.netlify.app skips preflight, but cross-origin
+/// (extensions, embedded surfaces, mobile native bridges) would
+/// fail. Fixed in all four files:
+/// `Response(null, { status: 204, headers: cors })`. Verified
+/// HTTP 204 + `Access-Control-Allow-Origin: *` for OPTIONS on
+/// every endpoint live.

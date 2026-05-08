@@ -397,7 +397,9 @@ export default async (req) => {
 		'Content-Type': 'application/json',
 	};
 	if (req.method === 'OPTIONS') {
-		return new Response('', { status: 204, headers: cors });
+		// 2026-05-09 (v1.1.12): null body for 204 — '' triggers
+		// Netlify 502. See aiBibleSearch.mjs for the full note.
+		return new Response(null, { status: 204, headers: cors });
 	}
 	if (req.method !== 'POST') {
 		return new Response(JSON.stringify({ error: 'POST only' }),
