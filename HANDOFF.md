@@ -1,6 +1,6 @@
 # YsWords — AI Agent Handoff Document
 
-> Last updated: 2026-05-08 — **v1.1.3 robustness audit** (LiquidGlass widgets scoped to select cardMaterial only; fontFamilyHint corrected for v1.1.2 reality) (Round 56 day-7++: sync Firestore → Drive → RTDB; AI Bible search + deep exegesis + lemma + proper-noun complementary glosses; 5-category offline pack; search-page redesign culminating in v8 (Word Study removed) + v9 (live search-as-you-type) + v10 (Copy-all results); v12–v16 feedback pipeline (in-app form → Resend → developer inbox, with diagnostic block + reply-to email and mailto: fallback; v16 dropped the copy-to-user CC after the user opted out of Resend domain verification); Settings v17 cleanup (dead Offline Mode toggle and theatrical Check-for-Updates tile removed; app version surfaced on AboutPage footer); v18 audit (jump-to-reference Timer race, profiles_page TextEditingController leaks, unbounded query/verseText on three AI Netlify endpoints, silently-swallowed bootstrap futures); v1.0.1 perf (memoized search keys + paragraph grouping + bookOrder; capped Image decode dimensions; deleted 40 MB Archived/ cruft); Library Chinese label 我的标记 → 我的收藏; book-name fold uniform at 390 px; quick-links Search + Feedback tiles; CORS-suppressed news/evidence images; CJK gloss search with alias-pin for divine names)
+> Last updated: 2026-05-08 — **v1.1.4 simplified→traditional fix** (1,111 simplified chars contaminating 5 -tr Bible files corrected; 仆 → 僕 with 仆倒 exception; 后 → 後 preserving queen contexts; etc.) (Round 56 day-7++: sync Firestore → Drive → RTDB; AI Bible search + deep exegesis + lemma + proper-noun complementary glosses; 5-category offline pack; search-page redesign culminating in v8 (Word Study removed) + v9 (live search-as-you-type) + v10 (Copy-all results); v12–v16 feedback pipeline (in-app form → Resend → developer inbox, with diagnostic block + reply-to email and mailto: fallback; v16 dropped the copy-to-user CC after the user opted out of Resend domain verification); Settings v17 cleanup (dead Offline Mode toggle and theatrical Check-for-Updates tile removed; app version surfaced on AboutPage footer); v18 audit (jump-to-reference Timer race, profiles_page TextEditingController leaks, unbounded query/verseText on three AI Netlify endpoints, silently-swallowed bootstrap futures); v1.0.1 perf (memoized search keys + paragraph grouping + bookOrder; capped Image decode dimensions; deleted 40 MB Archived/ cruft); Library Chinese label 我的标记 → 我的收藏; book-name fold uniform at 390 px; quick-links Search + Feedback tiles; CORS-suppressed news/evidence images; CJK gloss search with alias-pin for divine names)
 > Project: YsWords (Yahweh's Words) — bilingual Bible reader
 > Stack: Flutter 3.41.7 / Dart 3.11.5 / Provider + GetX
 > Repo: https://github.com/SuyangLiuPaul/YsWords
@@ -2623,6 +2623,62 @@ build succeeds, deployed to Netlify (`69fd1c14bbaccf122dc34fc8`).
 - A11y: respects `prefers-reduced-motion` + `prefers-contrast: more`
   via Flutter's MediaQuery flags; downgrades visual material
   appropriately
+
+### Strand: v1.1.4 — simplified→traditional contamination fix (2026-05-08)
+
+User reported a specific bug in Genesis 20:14 of `cuvs-yhwh-tr.json`:
+
+> *亞比米勒把牛、羊、**仆婢**賜給亞伯拉罕…*
+
+The character `仆` is technically a valid traditional Chinese
+character (= "to fall forward"), but in this servant context it
+should be `僕`. The user asked for a comprehensive check of all
+繁體 Bible files.
+
+**Audit findings**: scanning the 5 Traditional Bible JSONs in
+`assets/` against a curated list of simplified-only characters
+revealed widespread contamination:
+
+| File | Simplified chars found |
+|---|---|
+| `cuvs-yhwh-tr.json` | 293 (almost all `仆`) |
+| `cuv-tr.json` | 37 (mostly `仆`) |
+| `cnv-tr.json` | **663** (`仆` + heavy contamination of `这`/`时`/`听`/`过`/`来`/`处`/`进`/`远`/`边`/`见`/`关`/`国`/`万`/`书`/`开`/`两`/`纱`/`颊`/`绺`/etc.) |
+| `biblexg-tr.json` | 96 (mostly `仆`) |
+| `biblexg-v2-tr.json` | 22 (mostly `仆`) |
+
+**Total**: 1,111 chars across 5 files.
+
+**Approach**: I wrote a Python conservative converter
+(`/tmp/yswords_tr_fix/fix_tr.py`) rather than running OpenCC's
+full `s2tw` blindly. Why: OpenCC `s2tw` makes 325 distinct char
+substitutions, many of which are stylistic-variant choices the
+existing Bible files made intentionally (裏 vs 裡, 麽 vs 麼, 群 vs
+羣, 念 vs 唸, etc.). Wholesale `s2tw` would change the established
+style. Instead, I built a custom dict of ~150 characters that
+exist **only** in simplified Chinese (no traditional reading) +
+context-sensitive rules for the three ambiguous cases:
+
+  • `仆` → `僕` UNLESS followed by `倒` (servant vs fall-down)
+  • `后` → `後` UNLESS preceded by `王`/`皇`/`太`/`母`/`天` (after vs queen)
+  • `发` → `髮` after `头`/`頭`/`秀`/`白`/`紅`/`红`/`長`/`长` or before `綹`/`绺` (hair vs issue/develop); else → `發`
+
+**Verified**:
+- Genesis 20:14 now reads: 「亞比米勒把牛、羊、**僕婢**賜給亞伯拉罕…」 ✓
+- 仆倒 ("fall down") preserved in 87 verses across files ✓
+- 王后 / 太后 / 母后 / 天后 (queen contexts) preserved ✓
+- All 5 JSON files still parse cleanly ✓
+- `flutter analyze` clean, 39/39 tests pass, web build succeeds
+- Deployed to Netlify (`69fd3a86f41f2e8424d8f4be`)
+
+**What I deliberately did NOT touch** (would have been
+over-conversion):
+- 裏 / 裡 — both valid traditional, files use 裏 consistently
+- 麽 / 麼 — both valid, files use 麽
+- 群 / 羣 — modern uses 群, files match
+- 念 / 唸 — files use 念 (meditation sense), 唸 is for read-aloud
+- 余 / 餘 — kept context-sensitive (already correct in source)
+- 症 / 癥 — 症 is correct in 「漏症」 etc.
 
 ---
 

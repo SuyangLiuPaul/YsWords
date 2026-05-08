@@ -80,4 +80,21 @@
 ///   reality — "System default" is now the recommended choice;
 ///   Microsoft YaHei is no longer bundled (was removed for
 ///   licence reasons in v1.0).
-const String kAppVersion = '1.1.3';
+///
+/// 2026-05-08 (v1.1.4 simplified→traditional fix): user noticed
+/// `仆婢` in 創世紀 20:14 should be `僕婢` (servant). Comprehensive
+/// audit of all 5 -tr Bible files (cuvs-yhwh-tr / cuv-tr /
+/// cnv-tr / biblexg-tr / biblexg-v2-tr) found 1,111 simplified
+/// chars contaminating the supposedly-traditional text:
+/// • 仆 (servant context) → 僕 — preserves 仆倒 (= "fall down")
+/// • 后 (after / behind) → 後 — preserves 王后 / 太后 / 母后 / 天后
+/// • 发 → 髮 (in 头发 / 秀发 / 发绺 hair contexts) or 發 (everywhere
+///   else)
+/// • Plus ~150 other simplified-only chars (这/时/听/过/来/处/进/远/
+///   边/见/关/国/万/书/开/两/纱/颊/绺/etc.) — all in cnv-tr.json
+///   which was particularly contaminated.
+/// Conservative: only fixes characters that exist ONLY in
+/// simplified Chinese (or with disambiguating context). Did NOT
+/// touch traditional variant choices the files settled on (裏 vs
+/// 裡, 麽 vs 麼, 群 vs 羣 — all preserved as-is).
+const String kAppVersion = '1.1.4';
