@@ -2236,6 +2236,27 @@ const uiStrings = {
     'zh-Hant': '使用您自己的 Gemini Key',
     'en': 'Set up your own Gemini API key',
   },
+  // 2026-05-08 (v1.1.11): client-side fallback strings for the
+  // AI services (ai_bible_search_service.dart + ai_search_service.dart).
+  // Used only when the Netlify function returns a 429/503 without
+  // a parseable `error` body — in normal operation the backend
+  // sends a user-locale message that's surfaced directly.
+  'aiQuotaExhaustedFallback': {
+    'zh-Hans': 'YsWords AI 今天的共享配额已用完。明天再试，或在「设置 → '
+        'YsWords AI」粘贴您自己的 Gemini API Key 用您的配额。',
+    'zh-Hant': 'YsWords AI 今天的共享配額已用完。明天再試，或在「設定 → '
+        'YsWords AI」貼上您自己的 Gemini API Key 用您的配額。',
+    'en':
+        'YsWords AI quota for the developer\'s shared key is used up for today. Try again tomorrow, or paste your own Gemini API key in Settings → AI to use your own quota.',
+  },
+  'aiNotConfiguredFallback': {
+    'zh-Hans': 'YsWords AI 还没有配置。开发者需要在 Netlify 环境变量里设置 '
+        'GEMINI_API_KEY。',
+    'zh-Hant': 'YsWords AI 還沒有配置。開發者需要在 Netlify 環境變數裡設置 '
+        'GEMINI_API_KEY。',
+    'en':
+        'YsWords AI is not configured. The developer needs to set GEMINI_API_KEY in Netlify env.',
+  },
   'aiBibleSearchSomeMissing': {
     'zh-Hans': 'YsWords 还找到 {n} 处经文，但您当前圣经版本中没有匹配（仅供参考）。',
     'zh-Hant': 'YsWords 還找到 {n} 處經文，但您當前聖經版本中沒有匹配（僅供參考）。',

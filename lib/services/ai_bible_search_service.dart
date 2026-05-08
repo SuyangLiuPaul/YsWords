@@ -3,6 +3,8 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 
+import 'package:yswords/constants/ui_strings.dart';
+
 /// Calls the YsWords Cloud Function that proxies Gemini for AI-
 /// powered Bible reference search. Different from `AiSearchService`
 /// (which queries the Bible Evidence corpus): this returns raw Bible
@@ -79,9 +81,15 @@ class AiBibleSearchService {
       } catch (_) {}
       return null;
     }
+    // 2026-05-08 (v1.1.11 polish): localize the fallback strings via
+    // uiStrings + the request `locale`. The server's `error` body is
+    // still preferred because the backend already produces it in the
+    // same locale; these strings only surface on the rare path where
+    // the function returns a status code without a usable body.
     if (resp.statusCode == 503) {
       return AiBibleSearchResult.unavailable(
         serverError() ??
+            uiStrings['aiNotConfiguredFallback']?[locale] ??
             'YsWords AI is not configured. The developer needs to set '
                 'GEMINI_API_KEY in Netlify env.',
       );
@@ -89,6 +97,7 @@ class AiBibleSearchService {
     if (resp.statusCode == 429) {
       return AiBibleSearchResult.unavailable(
         serverError() ??
+            uiStrings['aiQuotaExhaustedFallback']?[locale] ??
             'YsWords AI quota for the developer\'s shared key is used '
                 'up for today. Try again tomorrow, or paste your own '
                 'Gemini API key in Settings → AI to use your own quota.',

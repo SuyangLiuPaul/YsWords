@@ -3,6 +3,8 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 
+import 'package:yswords/constants/ui_strings.dart';
+
 /// Calls the YsWords Cloud Function that proxies Gemini for AI-powered
 /// search over the Bible Evidence dataset.
 ///
@@ -109,9 +111,14 @@ class AiSearchService {
       } catch (_) {}
       return null;
     }
+    // 2026-05-08 (v1.1.11 polish): localize the 429 / 503 fallback
+    // strings. Server `error` body is still preferred (backend
+    // already produces it in the user's locale); these only surface
+    // when the function returns a code without a parseable body.
     if (resp.statusCode == 429) {
       return AiSearchResult.unavailable(
         serverError() ??
+            uiStrings['aiQuotaExhaustedFallback']?[locale] ??
             'YsWords AI quota for the developer\'s shared key is used '
                 'up for today. Try again tomorrow, or paste your own '
                 'Gemini API key in Settings → AI.',
@@ -120,6 +127,7 @@ class AiSearchService {
     if (resp.statusCode == 503) {
       return AiSearchResult.unavailable(
         serverError() ??
+            uiStrings['aiNotConfiguredFallback']?[locale] ??
             'YsWords AI is not configured. The developer needs to set '
                 'GEMINI_API_KEY in Netlify env.',
       );

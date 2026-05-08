@@ -195,4 +195,14 @@
 /// "exhausted" / "rate-limit" / 配额 / 用完 / etc.) AND the user
 /// hasn't already pasted their own key. So users with BYOK
 /// already set don't see the redundant CTA.
-const String kAppVersion = '1.1.10';
+///
+/// 2026-05-08 (v1.1.11 — i18n polish from final audit): the
+/// hardcoded English fallback strings in
+/// `ai_bible_search_service.dart` + `ai_search_service.dart`
+/// (used only when the Netlify function returns 429/503 without
+/// a parseable error body — rare path) are now looked up in
+/// uiStrings via the request locale. Two new keys:
+/// `aiQuotaExhaustedFallback` + `aiNotConfiguredFallback` (zh-Hans
+/// / zh-Hant / en). Found by a final audit Explore agent — net
+/// state is clean: no critical bugs, no resource leaks identified.
+const String kAppVersion = '1.1.11';
