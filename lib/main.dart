@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:yswords/constants/build_flags.dart';
 import 'package:yswords/models/sermon.dart';
 import 'package:yswords/pages/dashboard_page.dart';
 import 'package:yswords/pages/home_page.dart';
@@ -95,19 +96,31 @@ class _MainAppState extends State<MainApp> {
       // the user hasn't filled in lib/firebase_options.dart yet.
       // After auth init we wire up CloudSyncService so any future
       // local changes mirror to Firestore (when signed in).
-      await CloudAuthService.instance.init();
-      // Round 56 day-3 (2026-05-06): switched cloud sync from
-      // Firestore (CloudSyncService) to Google Drive AppData
-      // (DriveSyncService). User reported the Firestore path was
-      // not actually syncing across devices reliably — likely
-      // because Flutter web's Firestore WebChannel transport is
-      // blocked on some networks and the IndexedDB cross-tab sync
-      // is fragile. Drive AppData is plain HTTPS to drive.googleapis
-      // .com, lives in the user's own Drive (no Firebase costs),
-      // and needs zero setup ("appDataFolder" is automatic — no
-      // folder picker). CloudSyncService is left in place as a
-      // legacy migration source but no longer init'd.
-      RealtimeDbSyncService.instance.init();
+      //
+      // 2026-05-09 (v1.2.0 — China mode): in the China build, skip
+      // Firebase init entirely. `*.googleapis.com` /
+      // `*.firebaseio.com` / `accounts.google.com` are all blocked
+      // by the Great Firewall, so the call sits there for the full
+      // 4 s watchdog window before the splash gives up. Skipping
+      // makes the boot instant. RealtimeDbSyncService and Drive
+      // sync are also no-ops in this mode — they only do anything
+      // once a Firebase user signs in, and that's impossible without
+      // Firebase Auth working.
+      if (!kChinaMode) {
+        await CloudAuthService.instance.init();
+        // Round 56 day-3 (2026-05-06): switched cloud sync from
+        // Firestore (CloudSyncService) to Google Drive AppData
+        // (DriveSyncService). User reported the Firestore path was
+        // not actually syncing across devices reliably — likely
+        // because Flutter web's Firestore WebChannel transport is
+        // blocked on some networks and the IndexedDB cross-tab sync
+        // is fragile. Drive AppData is plain HTTPS to drive.googleapis
+        // .com, lives in the user's own Drive (no Firebase costs),
+        // and needs zero setup ("appDataFolder" is automatic — no
+        // folder picker). CloudSyncService is left in place as a
+        // legacy migration source but no longer init'd.
+        RealtimeDbSyncService.instance.init();
+      }
       // 2026-05-07 (v18 audit): the three pre-warm calls below are
       // intentionally unawaited (best-effort hydration that should
       // not block the splash → home transition). But silently

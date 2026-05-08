@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import 'package:yswords/constants/build_flags.dart';
+
 /// Round 56: central font catalogue for the Settings → Font Family
 /// dropdown.
 ///
@@ -273,8 +275,19 @@ const List<FontOption> _catalog = [
 ];
 
 /// Public list ordered for the dropdown.
-List<FontOption> availableFontOptions() =>
-    List.unmodifiable(_catalog);
+///
+/// 2026-05-09 (v1.2.0 — China mode): Google Fonts options are
+/// hidden from the picker when [kChinaMode] is true.
+/// `fonts.googleapis.com` / `fonts.gstatic.com` are blocked by
+/// the Great Firewall, so picking one would silently fail. The
+/// "System default" + bundled Roboto + system-installed Chinese
+/// fonts cover every realistic case for users in mainland China.
+List<FontOption> availableFontOptions() {
+  if (!kChinaMode) return List.unmodifiable(_catalog);
+  return List.unmodifiable(
+    _catalog.where((opt) => !opt.isGoogleFont),
+  );
+}
 
 /// Whether [key] points at a real entry in the catalogue.
 /// Used by [AppSettings.loadSettings] to migrate users whose stored
@@ -293,6 +306,19 @@ bool isValidFontKey(String key) {
 /// Round 56 font-catalogue refresh. Falls back to Roboto when nothing
 /// reasonable matches.
 String migrateLegacyFontKey(String stored) {
+  // 2026-05-09 (v1.2.0 — China mode): in the China build, any
+  // Google-Fonts key the user previously picked on the
+  // international build is unreachable (`fonts.googleapis.com` is
+  // blocked). Migrate those to `'system'` so the OS-native font
+  // stack handles rendering instead of silently failing.
+  if (kChinaMode) {
+    final opt = _catalog.firstWhere(
+      (o) => o.key == stored,
+      orElse: () => const FontOption(
+          key: '__missing__', label: {}, category: FontCategory.bundled),
+    );
+    if (opt.isGoogleFont) return 'system';
+  }
   if (isValidFontKey(stored)) return stored;
   // Map known legacy keys to their nearest current equivalent.
   const migrations = {

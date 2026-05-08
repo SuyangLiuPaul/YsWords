@@ -2257,6 +2257,15 @@ const uiStrings = {
     'en':
         'YsWords AI is not configured. The developer needs to set GEMINI_API_KEY in Netlify env.',
   },
+  // 2026-05-09 (v1.2.0): tag appended to the AboutPage footer when
+  // the build was compiled with `--dart-define=CHINA_MODE=true`.
+  // Lets users + support requests instantly tell which deploy
+  // they're on (international vs China-tuned).
+  'chinaBuildTag': {
+    'zh-Hans': '中国版',
+    'zh-Hant': '中國版',
+    'en': 'China build',
+  },
   'aiBibleSearchSomeMissing': {
     'zh-Hans': 'YsWords 还找到 {n} 处经文，但您当前圣经版本中没有匹配（仅供参考）。',
     'zh-Hant': 'YsWords 還找到 {n} 處經文，但您當前聖經版本中沒有匹配（僅供參考）。',

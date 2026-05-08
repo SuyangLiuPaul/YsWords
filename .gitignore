@@ -2,6 +2,10 @@
 .packages
 .pub-cache/
 build/
+# 2026-05-09 (v1.2.0): China-mode bundle lives in build-cn/ so the
+# international build/ and China build-cn/ can sit side-by-side
+# without overwriting each other on every `flutter build`.
+build-cn/
 .flutter-plugins
 .flutter-plugins-dependencies
 .idea/

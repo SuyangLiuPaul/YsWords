@@ -233,3 +233,15 @@
 /// `Response(null, { status: 204, headers: cors })`. Verified
 /// HTTP 204 + `Access-Control-Allow-Origin: *` for OPTIONS on
 /// every endpoint live.
+///
+/// 2026-05-09 (v1.2.0 — China mode + second Netlify site): added a
+/// compile-time `kChinaMode` flag (see
+/// `lib/constants/build_flags.dart`) plus a separate Netlify site
+/// (`yswords-cn.netlify.app`) that builds with
+/// `--dart-define=CHINA_MODE=true`. The China build skips
+/// Firebase init entirely (avoids the 4 s GFW timeout on boot),
+/// hides Google-Fonts options from the picker (they can't be
+/// downloaded behind the firewall), and surfaces a "中国版 /
+/// China build" tag on the AboutPage footer. International users
+/// see no change.
+const String kAppVersion = '1.2.0';

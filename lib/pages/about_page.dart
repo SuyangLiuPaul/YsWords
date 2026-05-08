@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'package:yswords/constants/app_version.dart';
+import 'package:yswords/constants/build_flags.dart';
 import 'package:yswords/constants/ui_strings.dart';
 import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/services/link_opener.dart';
@@ -118,9 +119,16 @@ class AboutPage extends StatelessWidget {
                 // to be the only place this surfaced; that tile was
                 // removed (it was theatre — see settings_page.dart).
                 // This footer is now the canonical version display.
+                //
+                // 2026-05-09 (v1.2.0 — China mode): the China build
+                // appends a "中国版 / China build" tag so support
+                // requests aren't ambiguous about which deploy the
+                // user is on. Compile-time flag — no runtime cost
+                // in the international build.
                 child: Text(
                   '${uiStrings['aboutFooterNote']?[locale] ?? 'Last updated 2026-05-06.'}'
-                      ' · v$kAppVersion',
+                      ' · v$kAppVersion'
+                      '${kChinaMode ? ' · ${uiStrings['chinaBuildTag']?[locale] ?? 'China build'}' : ''}',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 11,
