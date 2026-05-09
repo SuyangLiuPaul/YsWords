@@ -50,6 +50,15 @@ dev_dependencies:
   flutter_lints: ^5.0.0
   flutter_launcher_icons: ^0.14.3
 
+# 2026-05-09 (v1.2.7 native-build CI): pin `web` < 1.1.1. The 1.1.x
+# series uses `dart:js_interop` extension-type signatures that don't
+# compile on Android target under Flutter 3.41.7 (web target is
+# fine). The `http` package pulls `web` transitively; this override
+# keeps Android APK builds green without affecting web behaviour.
+# Revisit when Flutter / web package compatibility is restored.
+dependency_overrides:
+  web: ">=1.0.0 <1.1.0"
+
 flutter:
   uses-material-design: true
   assets:

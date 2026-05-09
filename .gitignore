@@ -13,7 +13,12 @@ build-cn/
 *.iml
 .DS_Store
 *.log
+# 2026-05-09: pubspec.lock IS committed (Flutter app, not a package
+# — apps need reproducible installs across local + CI). Keep .lock
+# wildcard ignore for everything else though (e.g. package-lock,
+# yarn.lock from sibling repos accidentally landing here).
 *.lock
+!pubspec.lock
 .env
 .netlify/
 ljk-nt-bible-webapp
