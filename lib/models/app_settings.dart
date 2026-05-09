@@ -552,10 +552,13 @@ class AppSettings extends ChangeNotifier {
       _kDashboardSectionOrder,
       for (final s in DashboardSection.values) _kDashboardVisible(s),
       // Re-show the onboarding tour after a reset so the user can
-      // re-discover any features they hid by accident.
+      // re-discover any features they hid by accident. Clear all
+      // historical keys — `v3` is the active one (since v1.2.9), but
+      // someone resetting from a v2 / v1 install needs both legacy
+      // keys gone too so a stale flag from before this version
+      // can't suppress the refreshed tour.
+      'onboarding.seen.v3',
       'onboarding.seen.v2',
-      // And the older v1 key in case they're upgrading from before
-      // round 55 — keep them in lockstep.
       'onboarding.seen.v1',
     };
     for (final k in managedKeys) {

@@ -17,13 +17,15 @@ import 'package:provider/provider.dart';
 class OnboardingDialog extends StatefulWidget {
   const OnboardingDialog({super.key});
 
-  /// Storage key for the "I've seen the tour" flag. Bumped to `v2` in
-  /// Round 55 — the v1 tour pre-dated Sermons, Family Tree, Timeline,
-  /// Evidence, Daily News, and dashboard customization, so existing
-  /// users now see the refreshed 5-slide tour once before their flag
-  /// migrates to `v2`. Future bumps (v3+) re-introduce the tour for
-  /// returning users when major surfaces ship.
-  static const _kSeen = 'onboarding.seen.v2';
+  /// Storage key for the "I've seen the tour" flag. Bumped to `v3` in
+  /// 2026-05-09 (v1.2.9) — the v2 tour pre-dated the AI features
+  /// (AI Bible search, AI Word explanation / BDAG-style exegesis,
+  /// BYOK Test button) which are now central to the app. Existing
+  /// v2-flag users now see the refreshed 6-slide tour once before
+  /// their flag migrates to v3. Future bumps (v4+) re-introduce
+  /// the tour when more major surfaces ship. v1 → v2 was the last
+  /// such bump, in Round 55.
+  static const _kSeen = 'onboarding.seen.v3';
 
   static Future<bool> hasSeen() async {
     final prefs = await SharedPreferences.getInstance();
@@ -217,6 +219,20 @@ class _OnboardingDialogState extends State<OnboardingDialog> {
               'Read, highlight, study',
           body: uiStrings['onboardReadBody']?[locale] ??
               'Long-press a verse for color highlights, bookmarks, and notes. Tap any reference to jump; tap a Strong\'s word for originals. Search the whole Bible from the header.',
+        ),
+        // 2026-05-09 (v1.2.9): AI slide inserted between Read and
+        // Sermons. Read introduces the basic study surface (long-
+        // press / refs / Strong's), AI tells the user what they can
+        // ask the model to do on top of it, then Sermons + Discover
+        // show the rest of the content layer. Order matters — AI
+        // before Sermons so users frame Sermons as "more reading
+        // material" not "AI replaces sermons".
+        _Slide(
+          icon: Icons.smart_toy_outlined,
+          title: uiStrings['onboardAiTitle']?[locale] ??
+              'AI study helpers',
+          body: uiStrings['onboardAiBody']?[locale] ??
+              'Search the Bible by theme ("love", "faith"), tap any Greek or Hebrew word for a BDAG-style deep dive, or ask questions about archaeology and manuscripts. Powered by Gemini — paste your own free key in Settings → AI (and tap Test to verify) to skip the shared developer pool.',
         ),
         _Slide(
           icon: Icons.headset_mic_rounded,

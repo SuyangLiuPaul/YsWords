@@ -447,4 +447,19 @@
 /// First polish release shipped via the dev → qat → prod flow from
 /// the start (no shortcut to prod) — exercises the workflow under
 /// a minor change too.
-const String kAppVersion = '1.2.8';
+///
+/// 2026-05-09 (v1.2.9 — onboarding tour: AI slide added): user
+/// noticed the v2 onboarding tour didn't even mention AI even
+/// though the AI features (AI Bible search, AI Word explanation /
+/// BDAG-style exegesis, BYOK Test button) are now central to the
+/// v1.2.x line. Added a dedicated 6th slide between "Read" and
+/// "Sermons" titled "AI 研经助手 / AI study helpers" describing the
+/// three core AI surfaces (theme search / word study / evidence
+/// Q&A) and pointing at the BYOK card with the Test button.
+/// `onboarding_dialog.dart` `_kSeen` bumped from `v2` to `v3` so
+/// existing users see the refreshed tour once on next launch
+/// before their flag migrates. `app_settings.dart` reset path
+/// now clears v3 / v2 / v1 keys together so a Settings reset
+/// definitely re-shows the tour. Two new ui-string keys:
+/// `onboardAiTitle` + `onboardAiBody` (zh-Hans / zh-Hant / en).
+const String kAppVersion = '1.2.9';

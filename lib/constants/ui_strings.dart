@@ -1479,6 +1479,22 @@ const uiStrings = {
     'en':
         'Long-press a verse for color highlights, bookmarks, and notes. Tap any reference to jump; tap a Strong\'s word for originals. Search the whole Bible from the header.',
   },
+  // 2026-05-09 (v1.2.9): user pointed out the v2 tour didn't even
+  // mention AI — now central to v1.2.0–v1.2.8 (search by theme,
+  // BDAG-style word study, evidence Q&A, BYOK key-test). New slide
+  // sits between "Read" and "Sermons" so the natural reading-flow
+  // intro leads into "and here's what AI can do on top of it".
+  'onboardAiTitle': {
+    'zh-Hans': 'AI 研经助手',
+    'zh-Hant': 'AI 研經助手',
+    'en': 'AI study helpers',
+  },
+  'onboardAiBody': {
+    'zh-Hans': '按主题搜经文（"爱"、"信心"），点希腊文／希伯来文原文看 BDAG 级深度释义，对考古和手稿提具体问题。AI 由 Gemini 驱动——可在 设置 → YsWords AI 粘贴自己的免费密钥（按 Test 验证），用自己的额度跳过共享池。',
+    'zh-Hant': '按主題搜經文（「愛」、「信心」），點希臘文／希伯來文原文看 BDAG 級深度釋義，對考古和手稿提具體問題。AI 由 Gemini 驅動——可在 設定 → YsWords AI 貼上自己的免費密鑰（按 Test 驗證），用自己的額度跳過共享池。',
+    'en':
+        'Search the Bible by theme ("love", "faith"), tap any Greek or Hebrew word for a BDAG-style deep dive, or ask questions about archaeology and manuscripts. Powered by Gemini — paste your own free key in Settings → AI (and tap Test to verify) to skip the shared developer pool.',
+  },
   'onboardSermonsTitle': {
     'zh-Hans': '讲道',
     'zh-Hant': '講道',
