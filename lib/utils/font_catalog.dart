@@ -384,7 +384,14 @@ String resolveFontFamily(String key) {
     try {
       final ts = GoogleFonts.getFont(option.key);
       return ts.fontFamily ?? option.key;
-    } catch (_) {
+    } catch (e) {
+      // 2026-05-09 (v1.2.2): previously swallowed silently, which
+      // hid intermittent fonts.googleapis.com 403 / network blips
+      // from anyone watching DevTools. The CSS fallback (returning
+      // option.key) is still the right user-facing behaviour, but
+      // log it so production monitoring can catch repeated
+      // failures.
+      debugPrint('[font_catalog] GoogleFonts.getFont(${option.key}) failed: $e');
       return option.key;
     }
   }
@@ -405,7 +412,8 @@ TextStyle previewTextStyle(String key, TextStyle base) {
   if (option.isGoogleFont) {
     try {
       return GoogleFonts.getFont(option.key, textStyle: base);
-    } catch (_) {
+    } catch (e) {
+      debugPrint('[font_catalog] previewTextStyle(${option.key}) failed: $e');
       return base.copyWith(fontFamily: option.key);
     }
   }

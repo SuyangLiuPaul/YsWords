@@ -50,9 +50,16 @@ class _WelcomePageState extends State<WelcomePage> {
   /// `signInWithGoogleAndAdoptProfile` so welcome / dashboard /
   /// floating-header menu all share the same flow.
   Future<void> _signInWithGoogle() async {
+    // 2026-05-09 (v1.2.2): defensive short-circuit. The button itself
+    // is hidden in China mode (line ~259), but if a regression ever
+    // exposes it we don't want users to wait 4 s for a GFW timeout
+    // on a Firebase retry that can never succeed. Belt-and-braces
+    // alongside the visibility guard.
+    if (kChinaMode) return;
     if (_busy) return;
     setState(() => _busy = true);
     final messenger = ScaffoldMessenger.of(context);
+    final locale = context.read<AppSettings>().locale;
     // Recover from a boot-time init failure: if Firebase is not yet
     // configured but credentials are present, retry init once before
     // attempting sign-in. Clears the most common transient failure
@@ -67,7 +74,8 @@ class _WelcomePageState extends State<WelcomePage> {
         messenger.showSnackBar(SnackBar(
           content: Text(
             auth.initError ??
-                'Cloud sign-in unavailable. Check your network and retry.',
+                (uiStrings['cloudSignInUnavailable']?[locale] ??
+                    'Cloud sign-in unavailable. Check your network and retry.'),
           ),
           duration: const Duration(seconds: 4),
         ));
@@ -80,7 +88,10 @@ class _WelcomePageState extends State<WelcomePage> {
     if (!result.isOk) {
       setState(() => _busy = false);
       messenger.showSnackBar(SnackBar(
-        content: Text(result.errorMessage ?? 'Sign-in failed.'),
+        content: Text(
+          result.errorMessage ??
+              (uiStrings['signInFailed']?[locale] ?? 'Sign-in failed.'),
+        ),
         duration: const Duration(seconds: 3),
       ));
       return;

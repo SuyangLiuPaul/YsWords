@@ -228,7 +228,15 @@ export default async (req) => {
 			{ status: 400, headers: cors });
 	}
 	const query = (body.query || '').trim();
-	const locale = body.locale || 'en';
+	// 2026-05-09 (v1.2.2): clamp `locale` to the three the app
+	// actually localises (en / zh-Hans / zh-Hant). Without an
+	// allowlist a malformed or oversized `locale` string lands in
+	// the prompt template — wasted tokens at best, prompt-injection
+	// risk at worst.
+	const _rawLocale = (body.locale || 'en').toString();
+	const locale = ['en', 'zh-Hans', 'zh-Hant'].includes(_rawLocale)
+		? _rawLocale
+		: 'en';
 	// 2026-05-09 (v1.1.12): validate userApiKey shape before
 	// forwarding. Mirrors aiSearch.mjs / aiExplainWord.mjs — only
 	// accepts a Gemini AI Studio key matching `AIza[20-80 chars]`.

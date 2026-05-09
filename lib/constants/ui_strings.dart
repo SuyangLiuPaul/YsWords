@@ -4223,6 +4223,23 @@ const uiStrings = {
     'zh-Hant': '雲端登入暫時無法使用',
     'en': 'Cloud sign-in temporarily unavailable',
   },
+  // 2026-05-09 (v1.2.2): localized fallback messages for the
+  // welcome-page `_signInWithGoogle` flow. Used when Firebase init
+  // retry fails or the sign-in popup itself errors and the underlying
+  // platform message isn't human-friendly. Previously these were
+  // hardcoded English strings ("Cloud sign-in unavailable. Check your
+  // network and retry." / "Sign-in failed.") — a non-English-locale
+  // user would see English text on a transient network blip.
+  'cloudSignInUnavailable': {
+    'zh-Hans': '云端登录暂时不可用，请检查网络后重试。',
+    'zh-Hant': '雲端登入暫時無法使用，請檢查網路後重試。',
+    'en': 'Cloud sign-in unavailable. Check your network and retry.',
+  },
+  'signInFailed': {
+    'zh-Hans': '登录失败。',
+    'zh-Hant': '登入失敗。',
+    'en': 'Sign-in failed.',
+  },
   'cloudInitOk': {
     'zh-Hans': '云端登录已恢复。',
     'zh-Hant': '雲端登入已恢復。',

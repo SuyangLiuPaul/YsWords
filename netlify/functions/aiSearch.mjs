@@ -264,7 +264,16 @@ export default async (req) => {
 	try {
 		const body = await req.json();
 		const query = (body?.query || '').toString();
-		const locale = (body?.locale || 'en').toString();
+		// 2026-05-09 (v1.2.2): clamp `locale` to the three the app
+		// actually localises. Without this, a malformed/malicious
+		// `locale` from the client (e.g. a 100 KB string, or one with
+		// shell-escape chars) would land in `buildPrompt`'s template
+		// literal — wasted tokens at best, prompt-injection risk at
+		// worst. Same allowlist as aiBibleSearch.mjs.
+		const _rawLocale = (body?.locale || 'en').toString();
+		const locale = ['en', 'zh-Hans', 'zh-Hant'].includes(_rawLocale)
+			? _rawLocale
+			: 'en';
 		// BYOK (2026-05): client may pass `userApiKey` — validate
 		// shape against Google's key format before forwarding.
 		const _userKey = (body?.userApiKey || '').toString().trim();

@@ -259,4 +259,29 @@
 /// `chinaCloudUnavailable` ui-string key carries the localised
 /// message in zh-Hans / zh-Hant / en. International users see no
 /// change.
-const String kAppVersion = '1.2.1';
+///
+/// 2026-05-09 (v1.2.2 — production audit polish + dev/qat infra):
+/// user asked to harden both prod sites and stand up dev / qat
+/// flavours behind separate URLs. Code-side polish from a 5-finding
+/// audit:
+/// • welcome_page `_signInWithGoogle` now short-circuits in
+///   `kChinaMode` (defensive — the button itself is hidden, but if
+///   a regression ever exposes it we'd otherwise burn 4 s on a GFW
+///   timeout) and routes its two fallback error messages through
+///   the new `cloudSignInUnavailable` / `signInFailed` ui-string
+///   keys (zh-Hans / zh-Hant / en) instead of hardcoded English.
+/// • All three Gemini-proxy Netlify functions (`aiBibleSearch`,
+///   `aiSearch`, `aiExplainWord`) now clamp the `locale` request
+///   field to the three the app actually localises — anything else
+///   falls back to 'en' rather than landing in the prompt template
+///   verbatim.
+/// • `font_catalog.dart` now logs (not silently swallows) Google
+///   Fonts download failures via `debugPrint`, so production
+///   monitoring can spot repeated fonts.googleapis.com hiccups.
+/// Infra-side: four new Netlify sites added —
+/// `yswords-dev` + `yswords-cn-dev` (development),
+/// `yswords-qat` + `yswords-cn-qat` (QA / pre-prod). Each gets the
+/// same env-var bundle as prod (GEMINI_API_KEY × 3 + RESEND_API_KEY
+/// + FEEDBACK_TO). Initial deploys mirror the v1.2.2 prod build
+/// but later commits can land there independently for testing.
+const String kAppVersion = '1.2.2';

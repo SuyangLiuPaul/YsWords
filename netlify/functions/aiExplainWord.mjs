@@ -423,7 +423,15 @@ export default async (req) => {
 		const chapter = Number(body?.chapter || 0);
 		const verse = Number(body?.verse || 0);
 		const verseText = (body?.verseText || '').toString().slice(0, 4000);
-		const locale = (body?.locale || 'en').toString().slice(0, 32);
+		// 2026-05-09 (v1.2.2): clamp `locale` to the three the app
+		// actually localises. The previous .slice(0, 32) capped length
+		// but didn't reject e.g. arbitrary tokens that could land in
+		// the Gemini prompt template. Same allowlist as
+		// aiBibleSearch.mjs and aiSearch.mjs.
+		const _rawLocale = (body?.locale || 'en').toString();
+		const locale = ['en', 'zh-Hans', 'zh-Hant'].includes(_rawLocale)
+			? _rawLocale
+			: 'en';
 		// Round 54: optional length + scope tuning. Defaults preserve
 		// the round-53 behaviour ('default' length / 'verse' scope).
 		// v18: tightened to 32 chars — enums never exceed that.
