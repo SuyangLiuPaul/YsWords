@@ -127,30 +127,37 @@ def _load_cjk_font(size: int) -> ImageFont.ImageFont:
 
 
 def add_cn_badge(img: Image.Image) -> Image.Image:
-    """Stamp a red rounded-rectangle badge with 中 in the top-right
-    corner. Sized at ~28% of icon width so it remains legible at
-    192 px favicon scale but doesn't dominate the composition."""
+    """Stamp a small subtle 中 watermark in the top-right corner.
+
+    2026-05-09 (v1.2.4): user said the previous red rounded-rectangle
+    badge was "weird" — it dominated the composition and clashed with
+    the rest of the icon's blue/green/amber palette. Replaced with a
+    much smaller character (~14% of icon width vs 28%) drawn in the
+    *same colour family as the background* — specifically the bg
+    detected from the four corners darkened 28% so it reads as a
+    quiet shadow / watermark rather than an alert badge. No box, no
+    outline, no contrasting fill. You have to look for it, but it's
+    there for the moments when you need to tell intl from cn."""
     w, _ = img.size
     img = img.copy()
     draw = ImageDraw.Draw(img)
-    inset = int(w * 0.05)
-    badge = int(w * 0.28)
-    x0 = w - inset - badge
-    y0 = inset
-    x1 = w - inset
-    y1 = inset + badge
-    radius = badge // 5
-    draw.rounded_rectangle(
-        [x0, y0, x1, y1], radius=radius,
-        fill=(220, 30, 30), outline=(140, 15, 15),
-        width=max(2, badge // 40),
+    bg = detect_bg_color(img)
+    # Same colour family as the bg, just darker — keeps the marker
+    # tonally consistent with whatever tier-tint the rest of the icon
+    # is using (light blue prod, leaf green dev, warm amber qat).
+    marker_color = (
+        max(0, int(bg[0] * 0.72)),
+        max(0, int(bg[1] * 0.72)),
+        max(0, int(bg[2] * 0.72)),
     )
-    font = _load_cjk_font(int(badge * 0.62))
+    char_px = int(w * 0.14)
+    font = _load_cjk_font(char_px)
     bbox = draw.textbbox((0, 0), "中", font=font)
     tw, th = bbox[2] - bbox[0], bbox[3] - bbox[1]
-    tx = x0 + (badge - tw) // 2 - bbox[0]
-    ty = y0 + (badge - th) // 2 - bbox[1]
-    draw.text((tx, ty), "中", fill="white", font=font)
+    inset = int(w * 0.04)
+    tx = w - inset - tw - bbox[0]
+    ty = inset - bbox[1]
+    draw.text((tx, ty), "中", fill=marker_color, font=font)
     return img
 
 

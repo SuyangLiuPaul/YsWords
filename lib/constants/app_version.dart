@@ -301,4 +301,16 @@
 /// • New `tools/deploy_site.py` helper takes a site name and
 ///   overlays the matching variant onto the base build before
 ///   deploying — keeps the 2-build / 6-deploy split clean.
-const String kAppVersion = '1.2.3';
+///
+/// 2026-05-09 (v1.2.4 — CN marker softened): user said the v1.2.3
+/// red rounded-rectangle 中 badge was "weird" — too loud, clashed
+/// with the rest of the icon's blue/green/amber palette. Replaced
+/// with a small (~14% of icon width vs the previous 28%) 中
+/// character drawn in the same colour family as the background —
+/// specifically the auto-detected bg darkened 28% so it reads as a
+/// quiet shadow / watermark rather than an alert badge. No box, no
+/// outline, no contrasting fill. You have to look for it, but it's
+/// there for the moments when you need to tell intl from cn at
+/// a glance. Re-runs `tools/generate_site_icons.py` to refresh
+/// the 3 cn variants; intl variants unchanged.
+const String kAppVersion = '1.2.4';
