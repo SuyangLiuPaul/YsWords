@@ -284,4 +284,21 @@
 /// same env-var bundle as prod (GEMINI_API_KEY × 3 + RESEND_API_KEY
 /// + FEEDBACK_TO). Initial deploys mirror the v1.2.2 prod build
 /// but later commits can land there independently for testing.
-const String kAppVersion = '1.2.2';
+///
+/// 2026-05-09 (v1.2.3 — per-site icon variants): user asked for
+/// distinct PWA icons across the 6 deploys so a saved-to-home-screen
+/// install on each tier is visually identifiable at a glance.
+/// • Six (flavour, tier) variants now live under
+///   `tools/site-icons/<flavour>-<tier>/` — generated from the
+///   1024 px `assets/app_icon.png` master by
+///   `tools/generate_site_icons.py` (Pillow). prod-intl is the
+///   original; cn variants get a red 中 badge in the top-right;
+///   dev re-tints the background leaf-green; qat re-tints amber.
+/// • Each variant ships its own `manifest.json` with a tier-aware
+///   `name` / `short_name` so the iOS / Android home-screen label
+///   under the icon matches the colour ("YsWords (DEV)",
+///   "YsWords·中" etc).
+/// • New `tools/deploy_site.py` helper takes a site name and
+///   overlays the matching variant onto the base build before
+///   deploying — keeps the 2-build / 6-deploy split clean.
+const String kAppVersion = '1.2.3';
