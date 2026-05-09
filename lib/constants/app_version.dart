@@ -323,4 +323,52 @@
 /// don't blanket-assert it before the user has even opened the app.
 /// Cleaned up the now-unused `liquid_glass.dart` import on
 /// welcome_page.dart. All 6 sites redeployed.
-const String kAppVersion = '1.2.5';
+///
+/// 2026-05-09 (v1.2.6 — pre-dev/qat/prod hardening pass): user
+/// asked for a final all-in audit before switching to the strict
+/// dev → qat → prod release flow. Three parallel audit agents
+/// surfaced findings; verified each against the source and applied
+/// fixes for the real ones:
+///
+/// CODE
+/// • settings_page.dart:1578 — fallback "Sign-in failed." now
+///   localised via `signInFailed` ui-string key (added in v1.2.2
+///   but never wired up here; the welcome-page version was already
+///   localised).
+/// • ui_strings.dart — removed dead `welcomeDisclaimerTitle` /
+///   `welcomeDisclaimerBody` keys left over from the v1.2.5
+///   LiquidGlassCard removal.
+///
+/// NETLIFY FUNCTIONS
+/// • All three Gemini-proxy functions (aiBibleSearch / aiSearch /
+///   aiExplainWord) — Gemini 5xx response bodies were being
+///   forwarded verbatim (up to 300-400 chars) in the public error
+///   message. Fix: log the upstream body server-side via
+///   `console.error` and return a generic "Upstream AI service
+///   error (HTTP nnn)" to the client. Closes a low-severity
+///   info-disclosure (Gemini's regional / config error text).
+/// • aiExplainWord.mjs — `length` and `scope` request fields now
+///   allowlisted to the values `styleProfile()` actually
+///   recognises. Previously `.slice(0, 32)` capped length but
+///   accepted any garbage which silently fell through to defaults
+///   inside the switch — invalid input now hard-rejects so client
+///   typos surface instead of being masked at server cost.
+/// • submitFeedback.mjs — hoisted CORS headers into a shared const
+///   and applied them to the 405 method-not-allowed branch (it
+///   previously emitted a bare 405 with no `Access-Control-Allow-
+///   Origin`, breaking strict cross-origin probes). Email-validate
+///   regex tightened to require ≥2-char TLD + reject angle
+///   brackets + whitespace so a malicious reply-to can't inject
+///   email headers.
+///
+/// DOCUMENTATION
+/// • HANDOFF.md — Bible Versions table no longer lists NIV (which
+///   was removed in 2026-05); Dependencies table updated to reflect
+///   the actually-installed packages including the round-56
+///   re-addition of `google_fonts`; font_catalog strand description
+///   reflects YaHei being unbundled.
+/// • README.md — App Screenshots intro note updated for v1.2.5
+///   (welcome-disclaimer screenshot pair removed from the table).
+/// • SCREENSHOTS.md — entry 11 marked OBSOLETE; status banner
+///   updated to v1.2.5 (was stale at v0.1.0).
+const String kAppVersion = '1.2.6';

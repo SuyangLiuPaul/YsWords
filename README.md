@@ -100,7 +100,7 @@ any APIs themselves**; everything is at the Firebase project level.
 
 ## App Screenshots
 
-> Captured 2026-05-07 against the current build (v1.0.0). Top half of the table covers the new dashboard / search / feedback flow; the lower half is the deeper Bible-study surface (word-by-word originals, AI explanations) that landed across rounds 55–56.
+> Captured 2026-05-07 against the v1.0.0 build (UI surfaces are byte-identical at v1.2.5 except for the welcome-page disclaimer card which was removed in v1.2.5 and is no longer shown). Top half of the table covers the dashboard / search / feedback flow; the lower half is the deeper Bible-study surface (word-by-word originals, AI explanations) that landed across rounds 55–56.
 
 | Dashboard — greeting + Read Bible + Verse of the Day                                                                                  | Quick-links grid (Search · Library · Bible Tools · Daily News · Bible Evidence · Sermons · Family Tree · Bible Timeline · Bible Trivia · Songs · Feedback · Settings) |
 | ------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -118,13 +118,13 @@ any APIs themselves**; everything is at the Firebase project level.
 | ------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------- |
 | <img src="assets/screenshots/screenshot_word_study.png" alt="Word-by-word exegesis" height="320"/>                       | <img src="assets/screenshots/screenshot_ai_explanation.png" alt="AI explanation" height="320"/>       |
 
-| Feedback form — direct to developer inbox via Resend (mailto fallback)                                                  | Welcome page — *"The Spirit guides; AI only assists"* disclaimer                                       |
+| Feedback form — direct to developer inbox via Resend (mailto fallback)                                                  | Dark mode — Settings → Theme → **Dark Mode**                                                          |
 | ----------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
-| <img src="assets/screenshots/screenshot_feedback_form.png" alt="Feedback form" height="320"/>                           | <img src="assets/screenshots/screenshot_welcome_disclaimer.png" alt="Welcome disclaimer" height="320"/>|
+| <img src="assets/screenshots/screenshot_feedback_form.png" alt="Feedback form" height="320"/>                           | <img src="assets/screenshots/screenshot_dark_mode.png" alt="Dark mode" height="320"/>                  |
 
-| Dark mode — Settings → Theme → **Dark Mode**                                                                            | Feedback form on a desktop monitor — `ConstrainedBox(maxWidth: 600)` keeps the form readable           |
-| ----------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
-| <img src="assets/screenshots/screenshot_dark_mode.png" alt="Dark mode" height="320"/>                                   | <img src="assets/screenshots/screenshot_feedback_form_wide.png" alt="Feedback form on desktop" height="320"/> |
+| Feedback form on a desktop monitor — `ConstrainedBox(maxWidth: 600)` keeps the form readable           | _(welcome-page disclaimer card removed in v1.2.5 — see HANDOFF.md banner for details)_ |
+| ------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------- |
+| <img src="assets/screenshots/screenshot_feedback_form_wide.png" alt="Feedback form on desktop" height="320"/> |                                                                                        |
 
 <details>
 <summary>Earlier screenshots (still useful — note popup, multi-select, version switch, book picker, splash)</summary>

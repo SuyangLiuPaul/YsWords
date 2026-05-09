@@ -378,7 +378,16 @@ async function callGemini(prompt, locale, overrideKey = null) {
 		}
 		// Non-quota, non-auth error — abort the chain (likely the prompt
 		// is malformed or the upstream is down).
-		throw new Error(`Gemini ${resp.status}: ${txt.slice(0, 400)}`);
+		// 2026-05-09 (v1.2.6 audit): same upstream-leak fix as
+		// aiSearch.mjs — log internally, return a generic public
+		// message instead of forwarding Gemini's raw response body.
+		console.error(`[aiExplainWord] Gemini ${resp.status} body:`,
+			txt.slice(0, 1200));
+		const upstreamErr = new Error(
+			`Upstream AI service error (HTTP ${resp.status}). Please try again shortly.`);
+		upstreamErr.publicReason = upstreamErr.message;
+		upstreamErr.statusCode = 502;
+		throw upstreamErr;
 	}
 	if (lastQuotaError) throw lastQuotaError;
 	if (lastError) {
@@ -432,11 +441,22 @@ export default async (req) => {
 		const locale = ['en', 'zh-Hans', 'zh-Hant'].includes(_rawLocale)
 			? _rawLocale
 			: 'en';
-		// Round 54: optional length + scope tuning. Defaults preserve
-		// the round-53 behaviour ('default' length / 'verse' scope).
-		// v18: tightened to 32 chars — enums never exceed that.
-		const length = (body?.length || 'default').toString().slice(0, 32);
-		const scope = (body?.scope || 'verse').toString().slice(0, 32);
+		// 2026-05-09 (v1.2.6 audit): allowlist `length` and `scope`
+		// to the exact set `styleProfile()` recognises (see ~line 81
+		// above). Previously .slice(0, 32) capped length but accepted
+		// any 32-char garbage — Gemini would still get the request
+		// and silently fall through to default behaviour (the switch
+		// statement has no public surface for the typo). Hard-reject
+		// here so client typos surface immediately instead of being
+		// masked at server cost.
+		const _rawLength = (body?.length || 'default').toString();
+		const length = ['default', 'concise', 'longer', 'deep']
+			.includes(_rawLength) ? _rawLength : 'default';
+		const _rawScope = (body?.scope || 'verse').toString();
+		const scope = [
+			'verse', 'chapter', 'book', 'wholeBible',
+			'otherChapters', 'crossTestament', 'deepExegesis',
+		].includes(_rawScope) ? _rawScope : 'verse';
 		// BYOK (2026-05): client may pass `userApiKey` to use the
 		// user's own Gemini key (from AI Studio) instead of the
 		// developer's shared key. We validate the shape before

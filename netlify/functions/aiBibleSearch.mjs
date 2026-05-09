@@ -125,7 +125,15 @@ async function callGemini(query, locale, overrideKey = null) {
 			const r = await callGeminiWithKey(key, query, locale);
 			if (!r.ok) {
 				const text = await r.text().catch(() => '');
-				lastError = `Gemini ${r.status}: ${text.slice(0, 300)}`;
+				// 2026-05-09 (v1.2.6 audit): same upstream-leak fix
+				// as aiSearch.mjs / aiExplainWord.mjs — log Gemini's
+				// raw response server-side, surface only a generic
+				// status to the client. Previously we'd forward up
+				// to 300 chars of upstream body which can contain
+				// regional error codes / config hints.
+				console.error(`[aiBibleSearch] Gemini ${r.status} body:`,
+					text.slice(0, 1200));
+				lastError = `Upstream AI service error (HTTP ${r.status}). Please try again shortly.`;
 				// On 429 (rate limit) or 5xx, try the next key.
 				if (r.status === 429 || r.status >= 500) continue;
 				const err = new Error(lastError);

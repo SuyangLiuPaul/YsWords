@@ -6,12 +6,15 @@ mode chips, dashboard quick-links grid, feedback form). This file
 is the capture brief for whoever takes them — the URL flow,
 suggested viewport size, and the filename to save.
 
-> **Status (2026-05-07):** **all 12 rows captured** against the
-> live build (v0.1.0) and committed into `assets/screenshots/`.
-> The README's *App Screenshots* table now uses these new shots
-> in 6 rows × 2 columns; older shots (note popup / multi-select /
-> version switch / book picker / splash / older settings) are
-> kept inside a `<details>` collapser further down.
+> **Status (2026-05-09, v1.2.5):** **11 rows still relevant** —
+> all captured against the live build and committed into
+> `assets/screenshots/`. The README's *App Screenshots* table uses
+> these in 5 rows × 2 columns; older shots (note popup / multi-
+> select / version switch / book picker / splash / older settings)
+> are kept inside a `<details>` collapser further down. Row 11
+> (`screenshot_welcome_disclaimer.png`) is **OBSOLETE** as of
+> v1.2.5 — the disclaimer card was removed from the welcome page;
+> the file is no longer referenced by README.md.
 
 ## How to capture
 
@@ -48,7 +51,7 @@ exist.
 | 8 | `screenshot_feedback_form_wide.png` | 1280 × 800 | Same form on a desktop monitor — the `ConstrainedBox(maxWidth: 600)` should center it nicely with margin on both sides. *(Captured in dark mode — looks good either way; the centering + margins are the point.)* | ✅ captured |
 | 9 | `screenshot_word_study.png` | 414 × 819 | Inside reader → tap a verse → **Original** sheet opens → word-by-word interlinear with Strong's chips + tappable lemmas. *(Captured at desktop width; the same UI shows on mobile.)* | ✅ captured |
 | 10 | `screenshot_ai_explanation.png` | 414 × 819 | Originals sheet → tap **AI explain** chip → AI response renders below with the *"AI is only an aid"* caveat visible at bottom. *(Captured at desktop width.)* | ✅ captured |
-| 11 | `screenshot_welcome_disclaimer.png` | 414 × 819 | First-launch welcome page: tagline + the *"The Spirit guides; AI only assists"* disclaimer card + Sign-in / Continue-as-guest buttons. | ✅ captured |
+| 11 | `screenshot_welcome_disclaimer.png` | 414 × 819 | ~~First-launch welcome page: tagline + the *"The Spirit guides; AI only assists"* disclaimer card + Sign-in / Continue-as-guest buttons.~~ **OBSOLETE — disclaimer card removed in v1.2.5; file is kept on disk for history but no longer referenced.** | 🚫 obsolete |
 | 12 | `screenshot_dark_mode.png` | 414 × 819 | Reader in dark mode (Settings → Theme → Dark) showing a chapter rendered with the dark palette. *(Captured against the Settings page itself with the **Theme Mode = Dark Mode** dropdown visible — more illustrative than a dark-themed reader page since it shows the control + the result at once.)* | ✅ captured |
 
 ## Existing screenshots (already in `assets/screenshots/`)

@@ -1572,10 +1572,17 @@ class _AccountSectionState extends State<_AccountSection> {
                         .signInWithGoogleAndAdoptProfile();
                     if (!context.mounted) return;
                     if (!result.isOk) {
+                      // 2026-05-09 (v1.2.6 audit): localised fallback
+                      // via the `signInFailed` ui-string key added in
+                      // v1.2.2. Previously a non-English user on a
+                      // network blip would see English even though the
+                      // string is already translated.
                       messenger.showSnackBar(
                         SnackBar(
                           content: Text(
-                            result.errorMessage ?? 'Sign-in failed.',
+                            result.errorMessage ??
+                                (uiStrings['signInFailed']?[locale] ??
+                                    'Sign-in failed.'),
                           ),
                           duration: const Duration(seconds: 3),
                         ),

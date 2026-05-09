@@ -201,7 +201,18 @@ async function callGemini(prompt, locale, overrideKey = null) {
 			// Bad key — try the next one in the chain.
 			continue;
 		}
-		throw new Error(`Gemini ${resp.status}: ${txt.slice(0, 400)}`);
+		// 2026-05-09 (v1.2.6 audit): don't leak the raw upstream body
+		// to the client — Gemini's 5xx responses sometimes contain
+		// internal config hints / regional error codes / partial
+		// stack traces. Log it server-side for debugging, return a
+		// generic message to the client.
+		console.error(`[aiSearch] Gemini ${resp.status} body:`,
+			txt.slice(0, 1200));
+		const upstreamErr = new Error(
+			`Upstream AI service error (HTTP ${resp.status}). Please try again shortly.`);
+		upstreamErr.publicReason = upstreamErr.message;
+		upstreamErr.statusCode = 502;
+		throw upstreamErr;
 	}
 	if (quotaError) throw quotaError;
 	const err = new Error('All Gemini keys failed authentication.');

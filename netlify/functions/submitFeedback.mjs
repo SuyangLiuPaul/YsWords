@@ -40,27 +40,32 @@ export const config = {
 };
 
 export default async (req) => {
-	// 2026-05-09 (v1.1.12 final-audit fix): handle CORS preflight
-	// explicitly. Same-origin requests from yswords.netlify.app
-	// don't trigger preflight, but stricter browser configurations
-	// (custom headers, mode: 'cors' fetch from extensions) would
-	// previously hit 405 here. The success path already includes
-	// `Access-Control-Allow-Origin: *` via `jsonResponse` (see
-	// further down), so existing same-origin POSTs are unaffected.
+	// 2026-05-09 (v1.2.6 audit): hoisted CORS headers into a shared
+	// const so EVERY response (success / error / 405 method-not-allowed
+	// / 503 not-configured) carries `Access-Control-Allow-Origin: *`.
+	// Previously the 405 path on line 63 emitted a bare
+	// `new Response('Method Not Allowed', { status: 405 })` with no
+	// CORS, which would 405 cross-origin probes from extensions /
+	// embedded surfaces / strict browser configs even though the
+	// happy path was reachable.
+	const cors = {
+		'Access-Control-Allow-Origin': '*',
+		'Access-Control-Allow-Methods': 'POST, OPTIONS',
+		'Access-Control-Allow-Headers': 'Content-Type',
+	};
 	if (req.method === 'OPTIONS') {
 		// 2026-05-09 (v1.1.12): null body for 204 — '' triggers
 		// Netlify 502. See aiBibleSearch.mjs for the full note.
-		return new Response(null, {
-			status: 204,
-			headers: {
-				'Access-Control-Allow-Origin': '*',
-				'Access-Control-Allow-Methods': 'POST, OPTIONS',
-				'Access-Control-Allow-Headers': 'Content-Type',
-			},
-		});
+		return new Response(null, { status: 204, headers: cors });
 	}
 	if (req.method !== 'POST') {
-		return new Response('Method Not Allowed', { status: 405 });
+		return new Response(
+			JSON.stringify({ error: 'Method Not Allowed' }),
+			{
+				status: 405,
+				headers: { ...cors, 'Content-Type': 'application/json' },
+			},
+		);
 	}
 	const apiKey = (process.env.RESEND_API_KEY || '').trim();
 	if (!apiKey) {
@@ -135,7 +140,10 @@ export default async (req) => {
 	if (message.length > 8000) {
 		return jsonResponse({ error: 'Message too long.' }, 400);
 	}
-	const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+	// 2026-05-09 (v1.2.6 audit): tighter regex — require ≥2-char TLD
+	// + ban whitespace and angle brackets so an attacker can't
+	// inject newline-prefixed email-headers via the reply-to field.
+	const emailRe = /^[^\s@<>]+@[^\s@<>]+\.[a-zA-Z]{2,}$/;
 	if (replyTo && !emailRe.test(replyTo)) {
 		return jsonResponse({ error: 'Invalid reply-to email.' }, 400);
 	}
