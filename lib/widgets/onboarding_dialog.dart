@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:yswords/constants/build_flags.dart';
 import 'package:yswords/constants/ui_strings.dart';
 import 'package:yswords/models/app_settings.dart';
 import 'package:provider/provider.dart';
@@ -246,12 +247,23 @@ class _OnboardingDialogState extends State<OnboardingDialog> {
           body: uiStrings['onboardDiscoverBody']?[locale] ??
               'Bible Timeline (97 events), Family Tree (277 people), Bible Evidence (225 archaeology / manuscript / science finds), and bilingual Daily News with an AI-picked verse — all reachable from Home.',
         ),
+        // 2026-05-10 (v1.2.11): China build (`kChinaMode`) skips
+        // Firebase init at boot, so the Google-sign-in line in the
+        // default body would just confuse — the user goes looking
+        // for a button v1.2.1 deliberately hid. Swap to the China-
+        // specific copy that names the local-only reality.
         _Slide(
           icon: Icons.tune_rounded,
-          title: uiStrings['onboardCustomizeTitle']?[locale] ??
-              'Customize & sync',
-          body: uiStrings['onboardCustomizeBody']?[locale] ??
-              'Drag-reorder or hide any block under Settings → Dashboard layout. Pick a reading plan. Sign in with Google to sync bookmarks, notes, and highlights across devices.',
+          title: kChinaMode
+              ? (uiStrings['onboardCustomizeTitleChina']?[locale] ??
+                  'Customize')
+              : (uiStrings['onboardCustomizeTitle']?[locale] ??
+                  'Customize & sync'),
+          body: kChinaMode
+              ? (uiStrings['onboardCustomizeBodyChina']?[locale] ??
+                  'Drag-reorder or hide any block under Settings → Dashboard layout. Pick a reading plan. In the China build, highlights, notes, and bookmarks all stay on this device.')
+              : (uiStrings['onboardCustomizeBody']?[locale] ??
+                  'Drag-reorder or hide any block under Settings → Dashboard layout. Pick a reading plan. Sign in with Google to sync bookmarks, notes, and highlights across devices.'),
         ),
       ];
 }

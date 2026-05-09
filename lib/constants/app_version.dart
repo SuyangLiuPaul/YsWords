@@ -494,4 +494,18 @@
 /// succeeds) is byte-identical to v1.2.9 from the user's POV — the
 /// progress subtitle only paints if the load is actually slow
 /// enough to be visible.
-const String kAppVersion = '1.2.10';
+///
+/// 2026-05-10 (v1.2.11 — onboarding tour: China-mode copy fix):
+/// post-v1.2.10 QC audit caught that the v1.2.9 onboarding's last
+/// slide ("Customize & sync") still pitched "Sign in with Google
+/// to sync bookmarks…" even in the China build. v1.2.1 had hidden
+/// the Sign-in button entirely in `kChinaMode`, so a tour that
+/// promised it would just send the user looking for a button that
+/// doesn't exist. Two new ui-string keys — `onboardCustomizeTitleChina`
+/// + `onboardCustomizeBodyChina` — replace the last slide's copy
+/// in the China build with "all stays on this device". The slide-
+/// builder in `onboarding_dialog.dart` now branches on `kChinaMode`
+/// for the title + body, leaving the international tour byte-
+/// identical. New `import 'package:yswords/constants/build_flags.dart'`
+/// in onboarding_dialog.
+const String kAppVersion = '1.2.11';

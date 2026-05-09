@@ -1528,6 +1528,26 @@ const uiStrings = {
     'en':
         'Drag-reorder or hide any block under Settings → Dashboard layout. Pick a reading plan. Sign in with Google to sync bookmarks, notes, and highlights across devices.',
   },
+  // 2026-05-10 (v1.2.11): the Customize slide above explicitly
+  // pitches Google sign-in for cross-device sync — but the China
+  // build skips Firebase entirely (see main.dart line ~109's
+  // `if (!kChinaMode)`), so cloud sync is not on the table.
+  // Promising it in the tour confused early China-build users
+  // who then went looking for the Sign-in button (which v1.2.1
+  // had already hidden). The China-only variants below replace
+  // the Google-sync sentence with the local-only reality:
+  // highlights, notes, bookmarks live on this device.
+  'onboardCustomizeTitleChina': {
+    'zh-Hans': '自定义',
+    'zh-Hant': '自訂',
+    'en': 'Customize',
+  },
+  'onboardCustomizeBodyChina': {
+    'zh-Hans': '在「设置 → 主页布局」中拖动排序或隐藏任意板块。选择读经计划。中国版的所有标记、笔记和收藏都保存在本设备。',
+    'zh-Hant': '在「設定 → 主頁佈局」中拖動排序或隱藏任意板塊。選擇讀經計劃。中國版的所有標記、筆記和收藏都保存在本裝置。',
+    'en':
+        'Drag-reorder or hide any block under Settings → Dashboard layout. Pick a reading plan. In the China build, highlights, notes, and bookmarks all stay on this device.',
+  },
 
   // Legacy v1 onboarding strings — kept for backward compatibility
   // with any external translation file that still references these
