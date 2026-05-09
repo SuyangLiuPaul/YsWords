@@ -126,38 +126,64 @@ def _load_cjk_font(size: int) -> ImageFont.ImageFont:
     return ImageFont.load_default()
 
 
-def add_cn_badge(img: Image.Image) -> Image.Image:
-    """Stamp a small subtle 中 watermark in the top-right corner.
+def _logo_blue(img: Image.Image) -> tuple[int, int, int]:
+    """Return the Bible-cover blue from the source icon.
 
-    2026-05-09 (v1.2.4): user said the previous red rounded-rectangle
-    badge was "weird" — it dominated the composition and clashed with
-    the rest of the icon's blue/green/amber palette. Replaced with a
-    much smaller character (~14% of icon width vs 28%) drawn in the
-    *same colour family as the background* — specifically the bg
-    detected from the four corners darkened 28% so it reads as a
-    quiet shadow / watermark rather than an alert badge. No box, no
-    outline, no contrasting fill. You have to look for it, but it's
-    there for the moments when you need to tell intl from cn."""
+    Samples a pixel on the front cover, below the white cross, where
+    the blue is solid and unbroken. Falls back to a hardcoded
+    canonical value if the sample lands on a white edge — e.g. a
+    page-cut highlight, the cross itself, or the dove's foot — so
+    the marker colour is deterministic across asset edits."""
+    w, h = img.size
+    sample = img.getpixel((int(w * 0.40), int(h * 0.72)))
+    # Sanity: a too-bright sample means we hit white (page edge or
+    # cross). Fall back to the Bible-cover blue from the v1 source
+    # at assets/app_icon.png.
+    if sample[0] + sample[1] + sample[2] > 600:
+        return (66, 113, 168)
+    return sample
+
+
+def add_cn_badge(img: Image.Image) -> Image.Image:
+    """Stamp a small "CN" watermark in the bottom-right area of the
+    icon — in the empty background space below the dove and next to
+    the Bible's right edge.
+
+    Position history:
+    - v1.2.3: red rounded-rectangle 中 badge top-right (loud, "weird")
+    - v1.2.4: subtle 中 watermark top-right (better but still
+      visually competing with the dove which lives in that corner)
+    - v1.2.5: subtle 中 watermark bottom-right corner (clears the
+      dove but hugs the rounded edge of the launcher icon mask)
+    - v1.2.6 first cut: "CN" letters at darkened-bg colour, nudged
+      inward (clearer than 中 at favicon size, less crowded)
+    - v1.2.6 final: same position bumped up another ~6%, colour
+      switched from a darkened-bg watermark to the **same blue as
+      the Bible cover** — ties the marker visually into the icon's
+      foreground palette so it reads as part of the design instead
+      of a bolt-on tag.
+
+    The Bible stays blue on every tier variant (only the background
+    re-tints to green / amber), so a single colour-sample of the
+    cover gives a marker that looks correct on prod / dev / qat
+    without per-variant tuning."""
     w, _ = img.size
     img = img.copy()
     draw = ImageDraw.Draw(img)
-    bg = detect_bg_color(img)
-    # Same colour family as the bg, just darker — keeps the marker
-    # tonally consistent with whatever tier-tint the rest of the icon
-    # is using (light blue prod, leaf green dev, warm amber qat).
-    marker_color = (
-        max(0, int(bg[0] * 0.72)),
-        max(0, int(bg[1] * 0.72)),
-        max(0, int(bg[2] * 0.72)),
-    )
-    char_px = int(w * 0.14)
+    marker_color = _logo_blue(img)
+    char_px = int(w * 0.12)
     font = _load_cjk_font(char_px)
-    bbox = draw.textbbox((0, 0), "中", font=font)
+    bbox = draw.textbbox((0, 0), "CN", font=font)
     tw, th = bbox[2] - bbox[0], bbox[3] - bbox[1]
-    inset = int(w * 0.04)
-    tx = w - inset - tw - bbox[0]
-    ty = inset - bbox[1]
-    draw.text((tx, ty), "中", fill=marker_color, font=font)
+    # 19% bottom inset (v1.2.5 was 13%) lifts the marker out of the
+    # bottom edge zone into the clear background strip immediately
+    # below the dove; 11% right inset stays the same so the marker
+    # remains right-anchored.
+    inset_right = int(w * 0.11)
+    inset_bottom = int(w * 0.19)
+    tx = w - inset_right - tw - bbox[0]
+    ty = w - inset_bottom - th - bbox[1]
+    draw.text((tx, ty), "CN", fill=marker_color, font=font)
     return img
 
 

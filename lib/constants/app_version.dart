@@ -395,4 +395,34 @@
 ///   to yswords-dev + yswords-cn-dev only on the first push;
 ///   promoted to qat then prod after the user verified the
 ///   feature works on dev.
+///
+/// During the same v1.2.7 cycle (after the BYOK Test landed on
+/// dev), the China-version icon marker was iterated three more
+/// times based on user feedback:
+///   1. The v1.2.4 中 watermark in the top-right was visually
+///      competing with the dove which lives in that corner.
+///   2. Moved 中 to the bottom-right corner — clears the dove but
+///      hugs the rounded-square edge of the launcher icon mask.
+///   3. Switched 中 → "CN" Latin letters (more legible at favicon
+///      size and language-agnostic) and nudged the position
+///      ~6% inward so the marker sits in the clear background
+///      strip below the dove rather than against the corner.
+///   4. Final colour pass: switched from a darkened-bg watermark
+///      to the same blue as the Bible cover (auto-sampled at
+///      generation time from the source icon, with a hardcoded
+///      fallback). The marker now reads as part of the icon's
+///      foreground palette rather than a bolt-on tag.
+/// All three CN tier variants (cn-prod / cn-dev / cn-qat) share
+/// the same marker logic in `tools/generate_site_icons.py`; only
+/// the background tint differs per tier.
+///
+/// Native APKs were attempted via a GitHub Actions workflow but
+/// the codebase has direct `dart:js_interop` imports that don't
+/// compile on Android target (offline_pack_service +
+/// cloud_sync_service + settings_page). The workflow + the
+/// transitive web-package pin were reverted; deferred to v1.3.
+/// HANDOFF.md → "Known Issues" carries the full revival
+/// instructions. PWA Add-to-Home-Screen is documented as the
+/// recommended mobile install path in the meantime — the per-
+/// site icons (v1.2.3+) were specifically designed for it.
 const String kAppVersion = '1.2.7';
