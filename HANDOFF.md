@@ -3875,6 +3875,53 @@ Paragraph mode was shipped but felt loose compared to WeDevote 微读圣经. Ret
 
 ## Known Issues & Remaining Work
 
+### Native installers (Android APK / Mac / Windows / iOS) — deferred
+
+User asked in v1.2.7 for native packages downloadable from the GitHub
+release page. Tried to set up a GitHub Actions workflow that builds
+Android APK in two flavours; the build failed because the codebase
+has direct `dart:js_interop` imports that don't compile against the
+Android target:
+
+- `lib/services/offline_pack_service.dart` — `JSPromise<JSAny?>` for
+  fetch (web cache pre-population)
+- `lib/services/cloud_sync_service.dart` — `@JS('navigator.onLine')`
+  for online-status check
+- `lib/pages/settings_page.dart` — `@JS('yswordsClearCacheAndReload')`
+  for the Settings → Clear cache button
+
+The Firebase web sub-packages (`firebase_core_web`,
+`firebase_auth_web`, `cloud_firestore_web`, `firebase_database_web`)
+also pull `dart:js_interop` and would need to be excluded on Android
+target. This is a real refactor (conditional imports across all 3
+files + Firebase plugin handling), estimated ~1–2 hours of careful
+work + risk of breaking the web build.
+
+**Mobile install path that already works**: PWA via "Add to Home
+Screen". Both iOS Safari and Chrome Android can install
+yswords*.netlify.app as a PWA — full-screen icon on the home screen,
+opens without browser chrome, looks identical to a native app from
+the user's perspective. No app store review, no signing, no
+sideloading. The per-site icons (v1.2.3) were specifically designed
+for this — when a user installs `yswords-cn.netlify.app` they get
+the China-version icon with the subtle 中 watermark.
+
+iOS-specific: TrollStore is dead on iOS 17.1+; the only "free
+permanent native install" path on a current iPhone is PWA. Apple
+Developer Program ($99/yr) would unlock real `.ipa`. See memory
+note from round 47.
+
+If the dev wants to revive the native APK build effort:
+1. Refactor the three files above to use conditional imports
+   (`import 'foo_web.dart' if (dart.library.io) 'foo_io.dart';`) or
+   move web-specific code into a separate file.
+2. Add a `--dart-define=NATIVE_BUILD=true` flag in `build_flags.dart`
+   that decouples Firebase init from `kChinaMode` (so an intl APK
+   doesn't show the "China build" footer label).
+3. Restore the `.github/workflows/build-native.yml` from
+   `git log --diff-filter=D` (it was committed once at
+   `57ddf555` then reverted).
+
 ### No Tests
 There is no `test/` directory. The README references tests but none exist. Adding unit tests for models, services, and providers would significantly improve robustness.
 
