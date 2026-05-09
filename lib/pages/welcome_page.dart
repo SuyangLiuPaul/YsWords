@@ -7,7 +7,6 @@ import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/services/cloud_auth_service.dart';
 import 'package:yswords/services/profile_service.dart';
 import 'package:yswords/widgets/google_g_logo.dart';
-import 'package:yswords/widgets/liquid_glass.dart';
 
 /// One-time gate shown on first launch (and accessible later from
 /// Settings → Switch profile). Lets the user pick a name so their
@@ -177,70 +176,13 @@ class _WelcomePageState extends State<WelcomePage> {
                       color: scheme.onSurfaceVariant,
                     ),
                   ),
-                  const SizedBox(height: 20),
-                  // 2026-05-07: spiritual disclaimer. The user wants
-                  // every onboarding path to set the right expectation:
-                  // YsWords is a tool that can help, but the Bible is
-                  // God's word and the Holy Spirit is the primary
-                  // teacher. AI features (explanations, search, etc.)
-                  // are for reference only and can make mistakes.
-                  //
-                  // 2026-05-08 (v1.1.0 — Liquid Glass): container
-                  // upgraded to LiquidGlassCard. The disclaimer is
-                  // the user's first impression of the app, so we
-                  // want it to look premium / modern from the very
-                  // first frame.
-                  LiquidGlassCard(
-                    padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
-                    borderRadius: 18,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Icon(Icons.auto_stories_rounded,
-                                size: 16, color: scheme.primary),
-                            const SizedBox(width: 6),
-                            Expanded(
-                              child: Text(
-                                uiStrings['welcomeDisclaimerTitle']
-                                        ?[locale] ??
-                                    'A reading companion, not a replacement',
-                                style: TextStyle(
-                                  fontFamily: settings.fontFamily,
-                                  fontSize: (settings.fontSize - 2)
-                                      .clamp(12.0, 15.0)
-                                      .toDouble(),
-                                  fontWeight: FontWeight.w700,
-                                  color: scheme.onSurface,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 6),
-                        Text(
-                          uiStrings['welcomeDisclaimerBody']?[locale] ??
-                              'YsWords is a tool to help you study. The '
-                                  'Bible itself is God\'s Word, and the Holy '
-                                  'Spirit is the primary teacher. AI '
-                                  'features (explanations / search) are '
-                                  'for reference only and can make '
-                                  'mistakes — always verify with Scripture '
-                                  'and trust the Spirit\'s guidance above '
-                                  'any tool.',
-                          style: TextStyle(
-                            fontFamily: settings.fontFamily,
-                            fontSize: (settings.fontSize - 3)
-                                .clamp(11.0, 13.0)
-                                .toDouble(),
-                            color: scheme.onSurfaceVariant,
-                            height: 1.5,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+                  // 2026-05-09 (v1.2.5): spiritual-disclaimer card
+                  // removed at user request — the body copy felt too
+                  // verbose ("说话很啰嗦") for a first-launch screen.
+                  // The same caveat still appears below AI surfaces
+                  // (search, evidence Q&A, word study) where it's
+                  // contextually relevant rather than blanket-asserted
+                  // before the user has even opened the app.
                   const SizedBox(height: 24),
                   if (!_signingIn) ...[
                     Text(

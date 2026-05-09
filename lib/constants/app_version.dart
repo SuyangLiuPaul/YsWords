@@ -313,4 +313,14 @@
 /// there for the moments when you need to tell intl from cn at
 /// a glance. Re-runs `tools/generate_site_icons.py` to refresh
 /// the 3 cn variants; intl variants unchanged.
-const String kAppVersion = '1.2.4';
+///
+/// 2026-05-09 (v1.2.5 — welcome page disclaimer removed): user said
+/// the LiquidGlassCard with the "神的灵才是引导，AI 只是辅助" copy
+/// felt "啰嗦" (verbose) on the first-launch screen. Removed the
+/// whole card. The same caveat still appears below the AI surfaces
+/// themselves (search empty state, evidence Q&A error notice, word
+/// study error card) where it's contextually relevant — we just
+/// don't blanket-assert it before the user has even opened the app.
+/// Cleaned up the now-unused `liquid_glass.dart` import on
+/// welcome_page.dart. All 6 sites redeployed.
+const String kAppVersion = '1.2.5';
