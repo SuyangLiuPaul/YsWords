@@ -425,4 +425,26 @@
 /// instructions. PWA Add-to-Home-Screen is documented as the
 /// recommended mobile install path in the meantime — the per-
 /// site icons (v1.2.3+) were specifically designed for it.
-const String kAppVersion = '1.2.7';
+///
+/// 2026-05-09 (v1.2.8 — post-v1.2.7 audit polish): user asked
+/// "真没有 bug 了嘛" right after v1.2.7 shipped. A targeted Explore
+/// agent on the new BYOK Test code found two real edge cases — both
+/// fixed before they ever bite a user.
+/// • Race condition on `_testStatus` from a stale in-flight Future.
+///   Scenario: paste key A → tap Test (25 s Future starts) → paste
+///   key B → tap Test → key A's slow result lands and briefly
+///   clobbers key B's newer state. Fixed with a generation counter
+///   (`_testGen`) bumped on every test start AND every text edit;
+///   each Future captures `myGen = ++_testGen` and bails out
+///   silently if `myGen != _testGen` by the time it tries to
+///   setState. Five guard sites total (200 success / 200 unexpected
+///   / non-200 / timeout / general catch).
+/// • Unhandled `FormatException` if a HTTP-200 response carries a
+///   non-JSON body (rare CDN slicing / mid-stream truncation). Was
+///   leaking `"FormatException: …"` raw into the status row.
+///   Wrapped the offending `jsonDecode` in a try/catch that surfaces
+///   the localised `aiByokTestUnexpected` message instead.
+/// First polish release shipped via the dev → qat → prod flow from
+/// the start (no shortcut to prod) — exercises the workflow under
+/// a minor change too.
+const String kAppVersion = '1.2.8';

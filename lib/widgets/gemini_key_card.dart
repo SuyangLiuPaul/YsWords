@@ -45,6 +45,13 @@ class GeminiKeyCardState extends State<GeminiKeyCard> {
   bool _saved = false;
   _TestStatus _testStatus = _TestStatus.idle;
   String? _testError;
+  // 2026-05-09 (v1.2.8 audit): generation counter that lets an
+  // in-flight `_test()` Future tell whether its result is still
+  // wanted by the time it lands. Bumped on every test start AND on
+  // every text-change (`_resetTestStatus`). Without this, a user
+  // who pastes key A → taps Test → edits to key B → taps Test could
+  // see key A's slow result briefly clobber key B's fast result.
+  int _testGen = 0;
 
   @override
   void initState() {
@@ -65,6 +72,10 @@ class GeminiKeyCardState extends State<GeminiKeyCard> {
     // now looking at a new key string. Avoids a stale "Key works ✓"
     // message lingering after a paste-replace.
     if (_testStatus != _TestStatus.idle) {
+      // Also bump the generation counter so any in-flight Future
+      // from a previous _test() call won't land setState on the
+      // freshly-cleared _testStatus.
+      _testGen++;
       setState(() {
         _testStatus = _TestStatus.idle;
         _testError = null;
@@ -92,9 +103,15 @@ class GeminiKeyCardState extends State<GeminiKeyCard> {
   /// authenticated against Gemini — not just that the developer's
   /// shared pool happened to have quota.
   Future<void> _test() async {
+    // Snapshot a generation tag for this Future. Compared against
+    // _testGen at every setState to detect "stale" landings (the
+    // user has since edited the field or fired a newer test).
+    final myGen = ++_testGen;
     final raw = _ctrl.text.trim();
     // 1. Local shape validation. Same regex the Netlify function
-    //    uses to reject garbage before forwarding to Gemini.
+    //    uses to reject garbage before forwarding to Gemini. This
+    //    block is sync — no race possible — so we don't bother with
+    //    a generation check.
     if (!RegExp(r'^AIza[A-Za-z0-9_-]{20,80}$').hasMatch(raw)) {
       setState(() {
         _testStatus = _TestStatus.fail;
@@ -121,18 +138,37 @@ class GeminiKeyCardState extends State<GeminiKeyCard> {
             }),
           )
           .timeout(const Duration(seconds: 25));
-      if (!mounted) return;
+      if (!mounted || myGen != _testGen) return;
       if (resp.statusCode == 200) {
-        final body = jsonDecode(resp.body);
+        // 2026-05-09 (v1.2.8 audit): wrap jsonDecode in a try/catch
+        // so a malformed-but-200 body (rare CDN slicing / mid-stream
+        // truncation) shows the localised "Unexpected response"
+        // message instead of leaking a raw `FormatException: …` to
+        // the user.
+        dynamic body;
+        try {
+          body = jsonDecode(resp.body);
+        } catch (_) {
+          if (myGen != _testGen) return;
+          setState(() {
+            _testStatus = _TestStatus.fail;
+            _testError = uiStrings['aiByokTestUnexpected']
+                    ?[widget.settings.locale] ??
+                'Unexpected response from the AI service.';
+          });
+          return;
+        }
         if (body is Map &&
             body['refs'] is List &&
             (body['refs'] as List).isNotEmpty) {
+          if (myGen != _testGen) return;
           setState(() {
             _testStatus = _TestStatus.ok;
             _testError = null;
           });
           return;
         }
+        if (myGen != _testGen) return;
         setState(() {
           _testStatus = _TestStatus.fail;
           _testError = uiStrings['aiByokTestUnexpected']
@@ -148,26 +184,25 @@ class GeminiKeyCardState extends State<GeminiKeyCard> {
           msg = (j['error'] as String).trim();
         }
       } catch (_) {/* fall through to status-code message */}
+      if (myGen != _testGen) return;
       setState(() {
         _testStatus = _TestStatus.fail;
         _testError = msg;
       });
     } on TimeoutException {
-      if (mounted) {
-        setState(() {
-          _testStatus = _TestStatus.fail;
-          _testError = uiStrings['aiByokTestTimeout']
-                  ?[widget.settings.locale] ??
-              'The AI service did not respond in time. Try again.';
-        });
-      }
+      if (!mounted || myGen != _testGen) return;
+      setState(() {
+        _testStatus = _TestStatus.fail;
+        _testError = uiStrings['aiByokTestTimeout']
+                ?[widget.settings.locale] ??
+            'The AI service did not respond in time. Try again.';
+      });
     } catch (e) {
-      if (mounted) {
-        setState(() {
-          _testStatus = _TestStatus.fail;
-          _testError = e.toString();
-        });
-      }
+      if (!mounted || myGen != _testGen) return;
+      setState(() {
+        _testStatus = _TestStatus.fail;
+        _testError = e.toString();
+      });
     }
   }
 
