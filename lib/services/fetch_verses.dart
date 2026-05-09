@@ -110,18 +110,22 @@ class FetchVerses {
         info;
   }
 
-  /// 2026-05-10 (v1.2.10): default retry / timeout knobs for the
-  /// initial verse-asset fetch. Picked so the worst-case wall-clock
-  /// time before falling back to the manual error scaffold stays
-  /// under ~37 s while still tolerating the kinds of transient
-  /// failure that show up in the wild (service-worker partial
-  /// response, mobile-Safari memory blip during a 10 MB JSON
-  /// decode, fonts.googleapis.com DNS hiccup pulling adjacent
-  /// resources). User-reported symptom that motivated this:
-  /// "it says failed to load verse and i need to open it again it
-  /// load. and sometimes it takes a long time to load."
+  /// 2026-05-10 (v1.2.10 → v1.2.12): default retry / timeout knobs
+  /// for the initial verse-asset fetch.
+  ///
+  /// v1.2.10 picked 3 × 12 s. User came back next day saying
+  /// "still failed to load, had to reopen". Diagnosis: Flutter
+  /// web's `rootBundle.loadString` MEMOIZES the in-flight Future
+  /// per-asset — calling it a second time during retry just
+  /// re-awaits the same already-failed promise, NEVER triggering
+  /// a fresh service-worker fetch. So our 3 attempts collapsed
+  /// into 1 effective attempt. Fix in v1.2.12: call
+  /// `rootBundle.clear(path)` for every asset before each retry,
+  /// forcing a clean fetch. Also bumped the per-attempt timeout
+  /// to 20 s so genuinely-slow first-load networks (cold SW
+  /// install + 10 MB JSON over LTE) don't get false-failed.
   static const int _kDefaultMaxAttempts = 3;
-  static const Duration _kDefaultTimeout = Duration(seconds: 12);
+  static const Duration _kDefaultTimeout = Duration(seconds: 20);
 
   /// Load the current version's verse JSON into [mainProvider]. Now
   /// auto-retries up to [maxAttempts] times with exponential backoff
@@ -148,14 +152,27 @@ class FetchVerses {
         if (attempt > 1) {
           // Cache-bust the paragraph map between attempts. If the
           // FIRST load returned a partial-or-corrupt copy, leaving
-          // it cached would poison every subsequent retry. This
-          // mirrors what the manual Retry button has done since
-          // round 56.
+          // it cached would poison every subsequent retry.
           clearParagraphCache();
-          // Exponential-ish backoff: 400 ms after attempt 1,
-          // 1200 ms after attempt 2. Gives the network / service
-          // worker time to recover from a transient blip.
-          final backoffMs = 400 * (1 << (attempt - 2));
+          // 2026-05-10 (v1.2.12): ALSO evict `rootBundle`'s
+          // per-asset cache. This is the part v1.2.10 missed —
+          // Flutter web memoises the in-flight Future for each
+          // loaded asset, so re-calling `loadString(path)`
+          // without an evict just re-awaits the same already-
+          // failed promise instead of starting a fresh
+          // service-worker fetch. Without this, "3 retries"
+          // was effectively 1 try. `evict` is the per-key
+          // operation; the bare `clear()` would nuke every
+          // bundle entry which is overkill (e.g. icon assets
+          // already loaded successfully would have to refetch).
+          rootBundle.evict(_kOldTestamentParagraphRefPath);
+          rootBundle.evict(_kNewTestamentParagraphRefPath);
+          rootBundle.evict(path);
+          // Exponential-ish backoff: 600 ms after attempt 1,
+          // 1500 ms after attempt 2. Slightly longer than v1.2.10
+          // so the SW has more breathing room to recover from a
+          // transient blip.
+          final backoffMs = 600 * (1 << (attempt - 2));
           await Future<void>.delayed(Duration(milliseconds: backoffMs));
         }
         final paraMap =

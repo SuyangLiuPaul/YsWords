@@ -4923,6 +4923,27 @@ const uiStrings = {
     'zh-Hant': '重試',
     'en': 'Retry',
   },
+  // 2026-05-10 (v1.2.12): user reported v1.2.10's auto-retry still
+  // showed "Failed to load" on first cold-start ("dev still failed
+  // load 我重进才 load"). Root cause: Flutter web's rootBundle
+  // memoises the in-flight Future per-asset, so v1.2.10's 3
+  // retries collapsed into 1 effective fetch. Real fix lives in
+  // fetch_verses.dart (rootBundle.clear before each retry +
+  // 20 s timeout). The error scaffold below adds a second
+  // escape-hatch button — if even the new retry can't recover
+  // (e.g. a stale service-worker bundle baked from a prior
+  // deploy), one tap nukes all SW + cache buckets and reloads the
+  // page, no localStorage touched.
+  'hardReloadPage': {
+    'zh-Hans': '清除缓存并重新加载',
+    'zh-Hant': '清除快取並重新載入',
+    'en': 'Reload page (clear cache)',
+  },
+  'showDetails': {
+    'zh-Hans': '显示详情',
+    'zh-Hant': '顯示詳情',
+    'en': 'Show details',
+  },
   // Reload-from-anywhere action — surfaces in the floating-header
   // overflow menu and the empty-reader recovery screen so the user
   // always has a one-tap fix when verses fail to load mid-session

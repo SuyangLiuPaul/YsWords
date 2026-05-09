@@ -508,4 +508,31 @@
 /// for the title + body, leaving the international tour byte-
 /// identical. New `import 'package:yswords/constants/build_flags.dart'`
 /// in onboarding_dialog.
-const String kAppVersion = '1.2.11';
+///
+/// 2026-05-10 (v1.2.12 — v1.2.10's retry was a placebo): user came
+/// back next day saying "dev 还是 failed load 我重进才 load" —
+/// the auto-retry added in v1.2.10 wasn't actually retrying.
+/// Diagnosis: Flutter web's `rootBundle.loadString(path)` memoises
+/// the in-flight Future per-asset. Once attempt 1 timed out, my
+/// attempts 2 and 3 just re-awaited the SAME already-rejected
+/// promise without ever asking the service worker for a fresh
+/// fetch. Three "retries" collapsed into one effective try.
+/// Three fixes:
+/// 1. `rootBundle.clear(path)` for the version JSON + both
+///    paragraph-reference assets BEFORE each retry — forces
+///    Flutter to drop its memoised Future and start a brand-new
+///    SW fetch.
+/// 2. Per-attempt timeout bumped 12 s → 20 s. A 10 MB JSON over
+///    LTE on a cold service-worker install can legitimately take
+///    ~15 s; 12 s was false-failing real loads.
+/// 3. New "Reload page (clear cache)" escape-hatch button on the
+///    error scaffold (web only). Calls into the existing
+///    `window.yswordsClearCacheAndReload()` JS helper that
+///    Settings already uses — unregisters every SW + nukes every
+///    cache bucket + hard-reloads. User-localStorage is preserved.
+///    Plus a "Show details" expander that surfaces the raw
+///    `loadError` string so the user / dev can tell which asset
+///    actually failed without console access.
+/// New ui-strings: `hardReloadPage`, `showDetails`. Backoff also
+/// bumped to 600 / 1500 ms (was 400 / 800).
+const String kAppVersion = '1.2.12';

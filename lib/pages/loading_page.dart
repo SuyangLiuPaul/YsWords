@@ -1,4 +1,7 @@
 import 'dart:async';
+import 'dart:js_interop';
+
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/app_settings.dart';
@@ -469,6 +472,14 @@ class _LoadingPageState extends State<LoadingPage> {
         'Could not load Bible verses. Please check your connection and retry.';
     final retryLabel = uiStrings['retry']?[settings.locale] ?? 'Retry';
 
+    // 2026-05-10 (v1.2.12): pull mainProvider here so the new
+    // "Show details" expander + the conditional sizing of the
+    // Reload-page button can read `loadError`. listen: false
+    // because rebuild on loadError changes is already triggered
+    // by the parent's `context.watch<MainProvider>()` in build().
+    final mainProvider =
+        Provider.of<MainProvider>(context, listen: false);
+
     final dc = ResponsiveBreakpoints.classOf(
         MediaQuery.of(context).size.width);
     final s = ResponsiveBreakpoints.spacingScale(dc);
@@ -525,10 +536,99 @@ class _LoadingPageState extends State<LoadingPage> {
                   ),
                 ),
               ),
+              // 2026-05-10 (v1.2.12): "Reload page" escape hatch.
+              // The Retry button above re-runs FetchVerses inside
+              // the same page lifecycle. If the actual reason for
+              // failure is a stale service-worker bundle (which
+              // CAN happen right after a fresh deploy, even with
+              // the no-cache headers) then any number of in-page
+              // retries will hit the same broken code. This button
+              // calls into web/index.html's
+              // window.yswordsClearCacheAndReload() which
+              // unregisters every SW + nukes every cache bucket
+              // before doing a hard `location.reload()`. User-
+              // localStorage (profiles / bookmarks / settings)
+              // stays intact — only browser/SW cache is cleared.
+              // Web-only; on native (future) this row is hidden.
+              if (kIsWeb) ...[
+                SizedBox(height: 8 * s),
+                TextButton.icon(
+                  onPressed: _retrying ? null : _hardReload,
+                  icon: const Icon(Icons.refresh_rounded, size: 16),
+                  label: Text(
+                    uiStrings['hardReloadPage']?[settings.locale] ??
+                        'Reload page (clear cache)',
+                    style: TextStyle(
+                      fontSize: (settings.fontSize - 2)
+                          .clamp(11.0, 14.0),
+                      fontFamily: settings.fontFamily,
+                    ),
+                  ),
+                ),
+              ],
+              // Diagnostic: collapsible "Show details" expanding to
+              // the raw error message. Helps the user describe what
+              // failed when they report it; lets the dev see real
+              // stack traces in the wild without console access.
+              if (mainProvider.loadError != null &&
+                  mainProvider.loadError != 'empty') ...[
+                SizedBox(height: 12 * s),
+                ConstrainedBox(
+                  constraints: BoxConstraints(maxWidth: 320 * s),
+                  child: Theme(
+                    data: Theme.of(context).copyWith(
+                      dividerColor: Colors.transparent,
+                    ),
+                    child: ExpansionTile(
+                      tilePadding: EdgeInsets.symmetric(
+                          horizontal: 8 * s),
+                      childrenPadding: EdgeInsets.fromLTRB(
+                          12 * s, 0, 12 * s, 8 * s),
+                      title: Text(
+                        uiStrings['showDetails']?[settings.locale] ??
+                            'Show details',
+                        style: TextStyle(
+                          fontSize: (settings.fontSize - 2)
+                              .clamp(11.0, 14.0),
+                          color: Theme.of(context)
+                              .colorScheme
+                              .onSurfaceVariant,
+                        ),
+                      ),
+                      children: [
+                        SelectableText(
+                          mainProvider.loadError!,
+                          style: TextStyle(
+                            fontFamily: 'monospace',
+                            fontSize: (settings.fontSize - 4)
+                                .clamp(10.0, 12.0),
+                            color: Theme.of(context)
+                                .colorScheme
+                                .onSurfaceVariant,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
             ],
           ),
         ),
       ),
     );
   }
+
+  /// Last-resort recovery: nuke every browser/SW cache bucket and
+  /// reload the page. The same JS helper Settings → "Clear cache &
+  /// reload" uses, just exposed on the load-error scaffold so users
+  /// don't have to reach a working dashboard before they can fix a
+  /// stale-bundle problem.
+  void _hardReload() {
+    if (!kIsWeb) return;
+    _yswordsClearCacheAndReload();
+  }
 }
+
+@JS('yswordsClearCacheAndReload')
+external void _yswordsClearCacheAndReload();
