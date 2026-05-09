@@ -1,7 +1,12 @@
+import 'dart:async' show TimeoutException;
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 
 import 'package:yswords/constants/ui_strings.dart';
 import 'package:yswords/models/app_settings.dart';
+import 'package:yswords/services/ai_bible_search_service.dart';
 import 'package:yswords/services/link_opener.dart';
 import 'package:yswords/utils/theme_color_helpers.dart';
 
@@ -28,21 +33,43 @@ class GeminiKeyCard extends StatefulWidget {
   State<GeminiKeyCard> createState() => GeminiKeyCardState();
 }
 
+/// Three-state result of a Test-key roundtrip. The card paints a
+/// matching status row below the input so the user gets unambiguous
+/// feedback without having to dive into the search page to validate
+/// their paste.
+enum _TestStatus { idle, testing, ok, fail }
+
 class GeminiKeyCardState extends State<GeminiKeyCard> {
   late final TextEditingController _ctrl;
   bool _obscure = true;
   bool _saved = false;
+  _TestStatus _testStatus = _TestStatus.idle;
+  String? _testError;
 
   @override
   void initState() {
     super.initState();
     _ctrl = TextEditingController(text: widget.settings.geminiApiKey);
+    _ctrl.addListener(_resetTestStatus);
   }
 
   @override
   void dispose() {
+    _ctrl.removeListener(_resetTestStatus);
     _ctrl.dispose();
     super.dispose();
+  }
+
+  void _resetTestStatus() {
+    // Any edit invalidates the previous test result — the user is
+    // now looking at a new key string. Avoids a stale "Key works ✓"
+    // message lingering after a paste-replace.
+    if (_testStatus != _TestStatus.idle) {
+      setState(() {
+        _testStatus = _TestStatus.idle;
+        _testError = null;
+      });
+    }
   }
 
   Future<void> _save() async {
@@ -52,6 +79,96 @@ class GeminiKeyCardState extends State<GeminiKeyCard> {
     Future<void>.delayed(const Duration(seconds: 2), () {
       if (mounted) setState(() => _saved = false);
     });
+  }
+
+  /// Test the user's key against the live AI Bible Search endpoint
+  /// without saving it first. Lets the user paste, verify, and only
+  /// commit if it actually works.
+  ///
+  /// Implementation note: passing `userApiKey` to the Netlify
+  /// function disables the dev-shared-key fallback chain
+  /// (`callGemini` uses ONLY the override key when present), so a
+  /// 200 response here is conclusive proof the user's key
+  /// authenticated against Gemini — not just that the developer's
+  /// shared pool happened to have quota.
+  Future<void> _test() async {
+    final raw = _ctrl.text.trim();
+    // 1. Local shape validation. Same regex the Netlify function
+    //    uses to reject garbage before forwarding to Gemini.
+    if (!RegExp(r'^AIza[A-Za-z0-9_-]{20,80}$').hasMatch(raw)) {
+      setState(() {
+        _testStatus = _TestStatus.fail;
+        _testError = uiStrings['aiByokTestInvalidShape']
+                ?[widget.settings.locale] ??
+            "Doesn't look like a Gemini API key. It should start with "
+                'AIza… (you can copy one from aistudio.google.com/apikey).';
+      });
+      return;
+    }
+    setState(() {
+      _testStatus = _TestStatus.testing;
+      _testError = null;
+    });
+    try {
+      final resp = await http
+          .post(
+            Uri.parse(AiBibleSearchService.endpoint),
+            headers: const {'Content-Type': 'application/json'},
+            body: jsonEncode({
+              'query': 'love',
+              'locale': widget.settings.locale,
+              'userApiKey': raw,
+            }),
+          )
+          .timeout(const Duration(seconds: 25));
+      if (!mounted) return;
+      if (resp.statusCode == 200) {
+        final body = jsonDecode(resp.body);
+        if (body is Map &&
+            body['refs'] is List &&
+            (body['refs'] as List).isNotEmpty) {
+          setState(() {
+            _testStatus = _TestStatus.ok;
+            _testError = null;
+          });
+          return;
+        }
+        setState(() {
+          _testStatus = _TestStatus.fail;
+          _testError = uiStrings['aiByokTestUnexpected']
+                  ?[widget.settings.locale] ??
+              'Unexpected response from the AI service.';
+        });
+        return;
+      }
+      String msg = 'HTTP ${resp.statusCode}';
+      try {
+        final j = jsonDecode(resp.body);
+        if (j is Map && j['error'] is String) {
+          msg = (j['error'] as String).trim();
+        }
+      } catch (_) {/* fall through to status-code message */}
+      setState(() {
+        _testStatus = _TestStatus.fail;
+        _testError = msg;
+      });
+    } on TimeoutException {
+      if (mounted) {
+        setState(() {
+          _testStatus = _TestStatus.fail;
+          _testError = uiStrings['aiByokTestTimeout']
+                  ?[widget.settings.locale] ??
+              'The AI service did not respond in time. Try again.';
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _testStatus = _TestStatus.fail;
+          _testError = e.toString();
+        });
+      }
+    }
   }
 
   Future<void> _openAiStudio() async {
@@ -139,7 +256,10 @@ class GeminiKeyCardState extends State<GeminiKeyCard> {
               ),
             ),
             SizedBox(height: 8 * s),
-            Row(
+            Wrap(
+              spacing: 8 * s,
+              runSpacing: 6 * s,
+              crossAxisAlignment: WrapCrossAlignment.center,
               children: [
                 FilledButton.icon(
                   icon: Icon(
@@ -153,7 +273,28 @@ class GeminiKeyCardState extends State<GeminiKeyCard> {
                   ),
                   onPressed: _save,
                 ),
-                SizedBox(width: 8 * s),
+                // 2026-05-09 (v1.2.7): Test button — sends a tiny
+                // probe to /api/aiBibleSearch with the current input
+                // (NOT the saved value), waits for a 200 response,
+                // and paints a status row below. Disabled while a
+                // probe is in flight.
+                OutlinedButton.icon(
+                  icon: _testStatus == _TestStatus.testing
+                      ? const SizedBox(
+                          width: 14,
+                          height: 14,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Icon(Icons.bolt_outlined, size: 16),
+                  label: Text(
+                    _testStatus == _TestStatus.testing
+                        ? (uiStrings['aiByokTesting']?[locale] ??
+                            'Testing…')
+                        : (uiStrings['aiByokTest']?[locale] ?? 'Test'),
+                  ),
+                  onPressed:
+                      _testStatus == _TestStatus.testing ? null : _test,
+                ),
                 if (hasKey)
                   OutlinedButton.icon(
                     icon: const Icon(Icons.delete_outline_rounded,
@@ -162,10 +303,14 @@ class GeminiKeyCardState extends State<GeminiKeyCard> {
                     onPressed: () async {
                       _ctrl.clear();
                       await widget.settings.setGeminiApiKey('');
-                      if (mounted) setState(() {});
+                      if (mounted) {
+                        setState(() {
+                          _testStatus = _TestStatus.idle;
+                          _testError = null;
+                        });
+                      }
                     },
                   ),
-                const Spacer(),
                 TextButton.icon(
                   icon: const Icon(Icons.open_in_new_rounded, size: 16),
                   label: Text(
@@ -176,6 +321,47 @@ class GeminiKeyCardState extends State<GeminiKeyCard> {
                 ),
               ],
             ),
+            // Status row below the buttons. Uses paletteAccent so
+            // the success / failure colours match the rest of the
+            // settings page on every theme.
+            if (_testStatus == _TestStatus.ok ||
+                _testStatus == _TestStatus.fail) ...[
+              SizedBox(height: 8 * s),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(
+                    _testStatus == _TestStatus.ok
+                        ? Icons.check_circle_rounded
+                        : Icons.error_outline_rounded,
+                    size: 16,
+                    color: _testStatus == _TestStatus.ok
+                        ? paletteAccent(context, Colors.green)
+                        : paletteAccent(context, Colors.red),
+                  ),
+                  SizedBox(width: 6 * s),
+                  Expanded(
+                    child: Text(
+                      _testStatus == _TestStatus.ok
+                          ? (uiStrings['aiByokTestOk']?[locale] ??
+                              'Key works! AI features will use your quota.')
+                          : (_testError ??
+                              (uiStrings['aiByokTestFailed']?[locale] ??
+                                  'Test failed.')),
+                      style: TextStyle(
+                        fontFamily: widget.settings.fontFamily,
+                        fontSize: (widget.settings.fontSize - 4)
+                            .clamp(11.0, 13.0),
+                        color: _testStatus == _TestStatus.ok
+                            ? paletteAccent(context, Colors.green)
+                            : paletteAccent(context, Colors.red),
+                        height: 1.45,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ],
         ),
       ),

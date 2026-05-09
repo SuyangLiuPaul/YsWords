@@ -371,4 +371,28 @@
 ///   (welcome-disclaimer screenshot pair removed from the table).
 /// • SCREENSHOTS.md — entry 11 marked OBSOLETE; status banner
 ///   updated to v1.2.5 (was stale at v0.1.0).
-const String kAppVersion = '1.2.6';
+///
+/// 2026-05-09 (v1.2.7 — first dev/qat/prod-flow release: BYOK Test
+/// button): user asked for an in-card "Test" mechanism so they can
+/// verify their pasted Gemini key actually authenticates against
+/// Gemini before saving — previously they had to commit, navigate
+/// to the search page, run a query, and hope the result wasn't a
+/// fallback to the dev's shared pool. New behaviour:
+/// • `gemini_key_card.dart` — added a Test button next to Save +
+///   Clear. Tap fires a tiny POST to /api/aiBibleSearch with the
+///   current input text (not the saved value) and `userApiKey: …`
+///   so the Netlify function disables the dev-shared-key fallback
+///   chain (callGemini uses ONLY the override key when present).
+///   A 200 with refs is conclusive proof the user's key worked.
+///   Status row below the buttons shows green check + "Key works!"
+///   or a red X with the actual error from the server / a
+///   localised network-error message.
+/// • Six new ui-string keys: `aiByokTest`, `aiByokTesting`,
+///   `aiByokTestOk`, `aiByokTestFailed`, `aiByokTestInvalidShape`,
+///   `aiByokTestUnexpected`, `aiByokTestTimeout` — all three
+///   locales.
+/// • Inaugural use of the dev → qat → prod release flow: deployed
+///   to yswords-dev + yswords-cn-dev only on the first push;
+///   promoted to qat then prod after the user verified the
+///   feature works on dev.
+const String kAppVersion = '1.2.7';

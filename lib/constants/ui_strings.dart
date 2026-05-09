@@ -2343,6 +2343,50 @@ const uiStrings = {
     'zh-Hant': '取得免費金鑰',
     'en': 'Get free key',
   },
+  // 2026-05-09 (v1.2.7): "Test" button + result row in the BYOK
+  // card. Lets the user verify their pasted key actually
+  // authenticates against Gemini before saving — previously they
+  // had to commit, navigate to the search page, run a query, and
+  // hope the result wasn't a fallback to the dev's shared pool.
+  'aiByokTest': {
+    'zh-Hans': '测试',
+    'zh-Hant': '測試',
+    'en': 'Test',
+  },
+  'aiByokTesting': {
+    'zh-Hans': '测试中…',
+    'zh-Hant': '測試中…',
+    'en': 'Testing…',
+  },
+  'aiByokTestOk': {
+    'zh-Hans': '密钥可用！AI 功能将使用您的额度。',
+    'zh-Hant': '金鑰可用！AI 功能將使用您的配額。',
+    'en': 'Key works! AI features will use your quota.',
+  },
+  'aiByokTestFailed': {
+    'zh-Hans': '测试失败。',
+    'zh-Hant': '測試失敗。',
+    'en': 'Test failed.',
+  },
+  'aiByokTestInvalidShape': {
+    'zh-Hans': '看起来不像 Gemini API 密钥。它应该以 AIza… 开头'
+        '（可以从 aistudio.google.com/apikey 复制一个）。',
+    'zh-Hant': '看起來不像 Gemini API 金鑰。它應該以 AIza… 開頭'
+        '（可以從 aistudio.google.com/apikey 複製一個）。',
+    'en':
+        "Doesn't look like a Gemini API key. It should start with "
+            'AIza… (you can copy one from aistudio.google.com/apikey).',
+  },
+  'aiByokTestUnexpected': {
+    'zh-Hans': 'AI 服务返回了意外的响应。',
+    'zh-Hant': 'AI 服務返回了意外的回應。',
+    'en': 'Unexpected response from the AI service.',
+  },
+  'aiByokTestTimeout': {
+    'zh-Hans': 'AI 服务响应超时，请稍后再试。',
+    'zh-Hant': 'AI 服務回應逾時，請稍後再試。',
+    'en': 'The AI service did not respond in time. Try again.',
+  },
   'show': {'zh-Hans': '显示', 'zh-Hant': '顯示', 'en': 'Show'},
   'hide': {'zh-Hans': '隐藏', 'zh-Hant': '隱藏', 'en': 'Hide'},
   // 'save' and 'clear' already exist elsewhere in this map; reuse them.
