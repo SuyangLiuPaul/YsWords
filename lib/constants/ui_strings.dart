@@ -4883,6 +4883,21 @@ const uiStrings = {
     'zh-Hant': '無法載入聖經經文，請檢查網絡或重試。',
     'en': 'Could not load Bible verses. Please check your connection and retry.',
   },
+  // 2026-05-10 (v1.2.10): in-flight progress strings shown on the
+  // splash while FetchVerses.execute() is retrying. Keeps users
+  // from thinking the app is frozen during a slow first-load.
+  // `{n}` and `{max}` are runtime-replaced with attempt index +
+  // max attempts (e.g. "Retrying… (2/3)").
+  'loadingVerses': {
+    'zh-Hans': '正在加载经文…',
+    'zh-Hant': '正在載入經文…',
+    'en': 'Loading verses…',
+  },
+  'retryingAttempt': {
+    'zh-Hans': '重试中…（第 {n}/{max} 次）',
+    'zh-Hant': '重試中…（第 {n}/{max} 次）',
+    'en': 'Retrying… ({n}/{max})',
+  },
   'retry': {
     'zh-Hans': '重试',
     'zh-Hant': '重試',

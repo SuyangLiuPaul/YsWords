@@ -216,6 +216,24 @@ class MainProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  // 2026-05-10 (v1.2.10): in-flight load progress, used by the splash
+  // page to show "Loading verses…" / "Retrying… (2/3)" so users
+  // don't think the app is frozen during the (sometimes-slow) first
+  // asset fetch. Both fields are 0 when nothing's loading.
+  int loadAttempt = 0;
+  int loadMaxAttempts = 0;
+
+  /// Called by FetchVerses.execute()'s onAttempt callback for every
+  /// retry. `attempt` is 1-indexed; `max` is the max attempts the
+  /// caller will make. Set both to 0 when the load completes (success
+  /// or final failure) to clear the splash subtitle.
+  void setLoadProgress(int attempt, int max) {
+    if (loadAttempt == attempt && loadMaxAttempts == max) return;
+    loadAttempt = attempt;
+    loadMaxAttempts = max;
+    notifyListeners();
+  }
+
   void setVersion(String version) {
     currentVersion = version;
     if (isPrimary) saveCurrentState();

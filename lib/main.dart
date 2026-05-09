@@ -149,9 +149,24 @@ class _MainAppState extends State<MainApp> {
       await mainProvider.restoreState();
 
       if (mainProvider.verses.isEmpty) {
-        await FetchVerses.execute(mainProvider: mainProvider);
+        // 2026-05-10 (v1.2.10): pass an onAttempt callback so the
+        // loading splash can show "Retrying… (2/3)" instead of just
+        // sitting on the logo while a transient asset-fetch failure
+        // gets retried. The default 3 attempts × 12 s timeout means
+        // up to ~37 s wall-clock before we bail to the manual
+        // error scaffold — but in practice the first attempt
+        // succeeds within a couple seconds.
+        await FetchVerses.execute(
+          mainProvider: mainProvider,
+          onAttempt: (attempt, _) =>
+              mainProvider.setLoadProgress(attempt, 3),
+        );
       }
       await FetchBooks.execute(mainProvider: mainProvider);
+      // Clear the in-flight progress now that the load settled
+      // (whether it succeeded or threw — the catch block below also
+      // resets it). Splash subtitle disappears.
+      mainProvider.setLoadProgress(0, 0);
 
       if (mainProvider.verses.isEmpty) {
         mainProvider.setLoadError('empty');
@@ -181,6 +196,9 @@ class _MainAppState extends State<MainApp> {
     } catch (e, st) {
       debugPrint('Bootstrap failed: $e\n$st');
       mainProvider.setLoadError(e.toString());
+      // Clear the splash subtitle on failure too — the load-error
+      // scaffold takes over from here.
+      mainProvider.setLoadProgress(0, 0);
     }
 
     if (mounted) {

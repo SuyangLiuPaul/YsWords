@@ -223,8 +223,20 @@ class _LoadingPageState extends State<LoadingPage> {
     // implicitly.
     FetchVerses.clearParagraphCache();
     try {
-      await FetchVerses.execute(mainProvider: mainProvider);
+      // 2026-05-10 (v1.2.10): same onAttempt wiring as main.dart's
+      // bootstrap so the manual-retry path also shows "Retrying…
+      // (2/3)" if an internal retry kicks in. Manual-retry +
+      // internal-retry stack: pressing Retry once gives up to 3
+      // FetchVerses attempts, so the user effectively gets 6
+      // attempts total (one 3-attempt cycle on auto-boot, then 3
+      // more on the manual click).
+      await FetchVerses.execute(
+        mainProvider: mainProvider,
+        onAttempt: (attempt, _) =>
+            mainProvider.setLoadProgress(attempt, 3),
+      );
       await FetchBooks.execute(mainProvider: mainProvider);
+      mainProvider.setLoadProgress(0, 0);
       if (mainProvider.verses.isNotEmpty) {
         final first = mainProvider.verses.first;
         if (mainProvider.currentBook == null ||
@@ -243,6 +255,7 @@ class _LoadingPageState extends State<LoadingPage> {
       // that includes the path that 404'd, instead of a generic
       // "verses are empty" message.
       mainProvider.setLoadError(e.toString());
+      mainProvider.setLoadProgress(0, 0);
     }
     if (!mounted) return;
     setState(() => _retrying = false);
@@ -388,6 +401,61 @@ class _LoadingPageState extends State<LoadingPage> {
                           ?.withValues(alpha: 0.7),
                     ),
                   ),
+                  // 2026-05-10 (v1.2.10): in-flight load-progress
+                  // subtitle. While the asset fetch is running we
+                  // paint either "Loading verses…" (attempt 1, the
+                  // common case — silent on fast networks) or
+                  // "Retrying… (n/m)" (attempts 2+, when the user
+                  // would otherwise wonder if the app is frozen).
+                  // Goes away as soon as the load settles.
+                  if (mainProvider.loadAttempt > 0) ...[
+                    SizedBox(height: 18 * s),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        SizedBox(
+                          width: 14,
+                          height: 14,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              Theme.of(context)
+                                  .colorScheme
+                                  .primary
+                                  .withValues(alpha: 0.6),
+                            ),
+                          ),
+                        ),
+                        SizedBox(width: 10 * s),
+                        Text(
+                          mainProvider.loadAttempt <= 1
+                              ? (uiStrings['loadingVerses']
+                                      ?[settings.locale] ??
+                                  'Loading verses…')
+                              : ((uiStrings['retryingAttempt']
+                                          ?[settings.locale] ??
+                                      'Retrying… ({n}/{max})')
+                                  .replaceFirst(
+                                      '{n}',
+                                      mainProvider.loadAttempt
+                                          .toString())
+                                  .replaceFirst(
+                                      '{max}',
+                                      mainProvider.loadMaxAttempts
+                                          .toString())),
+                          style: TextStyle(
+                            fontSize: settings.fontSize * 0.85,
+                            fontFamily: settings.fontFamily,
+                            color: Theme.of(context)
+                                .textTheme
+                                .titleSmall
+                                ?.color
+                                ?.withValues(alpha: 0.65),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ],
               ),
       ),

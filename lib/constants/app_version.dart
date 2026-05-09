@@ -462,4 +462,36 @@
 /// now clears v3 / v2 / v1 keys together so a Settings reset
 /// definitely re-shows the tour. Two new ui-string keys:
 /// `onboardAiTitle` + `onboardAiBody` (zh-Hans / zh-Hant / en).
-const String kAppVersion = '1.2.9';
+///
+/// 2026-05-10 (v1.2.10 — verse-load resilience: auto-retry +
+/// timeout + progress UI): user reported "it says failed to load
+/// verse and i need to open it again it load. and sometimes it
+/// takes a long time to load." Three-layer fix in
+/// `lib/services/fetch_verses.dart` + the splash:
+/// • LAYER 1 — retry inside `FetchVerses.execute`. Up to 3 attempts
+///   with exponential-ish backoff (400 ms / 1200 ms) and a fresh
+///   paragraph-cache wipe between attempts (so a corrupt-on-first-
+///   load paragraph map can't poison the retries). Default knobs
+///   (`_kDefaultMaxAttempts`, `_kDefaultTimeout`) callable as named
+///   args by the manual-retry path too.
+/// • LAYER 2 — per-attempt timeout. Each rootBundle.loadString +
+///   parse is wrapped in `.timeout(Duration(seconds: 12))`. Without
+///   this a stalled service-worker fetch sat indefinitely on the
+///   splash. Worst-case wall-clock before bailing to the manual
+///   error scaffold: ~37 s for the auto-retry cycle, then another
+///   ~37 s if the user clicks Retry — a real recovery window for
+///   transient failures (mobile-Safari OOM during JSON decode,
+///   service-worker partial response, GFW DNS hiccup pulling
+///   adjacent resources).
+/// • LAYER 3 — progress UI. New `loadAttempt` / `loadMaxAttempts`
+///   on MainProvider track in-flight retries; the splash paints a
+///   subtle spinner + "Loading verses…" (attempt 1) or
+///   "Retrying… (n/max)" (attempts 2+) below the daily-verse text
+///   so users know something IS happening. Two new ui-string keys:
+///   `loadingVerses` and `retryingAttempt` (zh-Hans / zh-Hant /
+///   en, with `{n}` / `{max}` placeholders).
+/// Tested: flutter analyze + tests pass. The happy-path (attempt 1
+/// succeeds) is byte-identical to v1.2.9 from the user's POV — the
+/// progress subtitle only paints if the load is actually slow
+/// enough to be visible.
+const String kAppVersion = '1.2.10';

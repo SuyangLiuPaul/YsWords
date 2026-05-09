@@ -110,25 +110,78 @@ class FetchVerses {
         info;
   }
 
-  static Future<void> execute({required MainProvider mainProvider}) async {
+  /// 2026-05-10 (v1.2.10): default retry / timeout knobs for the
+  /// initial verse-asset fetch. Picked so the worst-case wall-clock
+  /// time before falling back to the manual error scaffold stays
+  /// under ~37 s while still tolerating the kinds of transient
+  /// failure that show up in the wild (service-worker partial
+  /// response, mobile-Safari memory blip during a 10 MB JSON
+  /// decode, fonts.googleapis.com DNS hiccup pulling adjacent
+  /// resources). User-reported symptom that motivated this:
+  /// "it says failed to load verse and i need to open it again it
+  /// load. and sometimes it takes a long time to load."
+  static const int _kDefaultMaxAttempts = 3;
+  static const Duration _kDefaultTimeout = Duration(seconds: 12);
+
+  /// Load the current version's verse JSON into [mainProvider]. Now
+  /// auto-retries up to [maxAttempts] times with exponential backoff
+  /// before rethrowing the last error.
+  ///
+  /// `onAttempt(attempt, lastError)` fires at the START of each
+  /// attempt with `attempt` 1-indexed and `lastError` set to the
+  /// reason the previous attempt failed (null on the first call).
+  /// The loading splash uses this to paint a "Retrying… (2/3)"
+  /// subtitle so users don't think the app is frozen.
+  static Future<void> execute({
+    required MainProvider mainProvider,
+    int maxAttempts = _kDefaultMaxAttempts,
+    Duration timeoutPerAttempt = _kDefaultTimeout,
+    void Function(int attempt, Object? lastError)? onAttempt,
+  }) async {
     final version = mainProvider.currentVersion.toLowerCase();
     final path = 'assets/$version.json';
 
-    try {
-      final paraMap = await _loadParagraphMap();
-      final verses = await _loadAndParse(path, paraMap);
-      mainProvider.setVerses(verses);
-    } catch (e) {
-      // Round 56: rethrow instead of swallowing. The previous
-      // "log + return" pattern made the Retry button on the loading
-      // page useless — it would call execute(), execute() would log
-      // the error to debugPrint and return cleanly, the loading
-      // page would see verses still empty and re-show the same
-      // error UI without telling the user what actually failed.
-      // Propagating lets the caller surface the real error message
-      // AND attempt recovery (cache-bust, re-fetch, etc.).
-      debugPrint('Error loading verses from $path: $e');
-      rethrow;
+    Object? lastError;
+    for (int attempt = 1; attempt <= maxAttempts; attempt++) {
+      onAttempt?.call(attempt, lastError);
+      try {
+        if (attempt > 1) {
+          // Cache-bust the paragraph map between attempts. If the
+          // FIRST load returned a partial-or-corrupt copy, leaving
+          // it cached would poison every subsequent retry. This
+          // mirrors what the manual Retry button has done since
+          // round 56.
+          clearParagraphCache();
+          // Exponential-ish backoff: 400 ms after attempt 1,
+          // 1200 ms after attempt 2. Gives the network / service
+          // worker time to recover from a transient blip.
+          final backoffMs = 400 * (1 << (attempt - 2));
+          await Future<void>.delayed(Duration(milliseconds: backoffMs));
+        }
+        final paraMap =
+            await _loadParagraphMap().timeout(timeoutPerAttempt);
+        final verses =
+            await _loadAndParse(path, paraMap).timeout(timeoutPerAttempt);
+        mainProvider.setVerses(verses);
+        return; // success — drop out of the retry loop.
+      } catch (e, st) {
+        lastError = e;
+        debugPrint(
+          'FetchVerses attempt $attempt/$maxAttempts failed for $path: '
+          '$e\n$st',
+        );
+        if (attempt == maxAttempts) {
+          // Round 56: rethrow instead of swallowing. The previous
+          // "log + return" pattern made the Retry button on the
+          // loading page useless — it would call execute(),
+          // execute() would log the error to debugPrint and return
+          // cleanly, the loading page would see verses still empty
+          // and re-show the same error UI without telling the user
+          // what actually failed. Propagating lets the caller
+          // surface the real error message.
+          rethrow;
+        }
+      }
     }
   }
 
