@@ -66,8 +66,11 @@ class MainProvider extends ChangeNotifier {
     // needs the cache pays for it.
     _searchKeysCache = null;
     _searchKeysCacheLength = -1;
-    _paragraphGroupsCache = null;
-    _paragraphGroupsCacheKey = null;
+    // 2026-05-10 (v1.2.16): no longer null out the paragraph-groups
+    // cache here — it became a multi-slot LRU keyed by version +
+    // book + chapter, so old entries from a different version stay
+    // useful (don't accidentally clobber a pre-cached chapter the
+    // user might come back to). LRU eviction handles memory cap.
     _bookOrderCache = null;
     // 2026-05-10 (v1.2.14): populate the per-version verse cache so
     // a future switch back to this version is truly instant
@@ -90,12 +93,14 @@ class MainProvider extends ChangeNotifier {
   //
   // Memory tax: ~6 MB per cached verse list × 4 = ~24 MB worst case.
   // Acceptable on every device that can run a Flutter web app.
-  // 2026-05-10 (v1.2.15): bumped 4 → 6 to give the post-boot
-  // background pre-loader headroom for 4 common alternative versions
-  // PLUS the boot-time current version, with one slot of slack so
-  // a single off-list user pick doesn't immediately evict a
-  // pre-loaded staple.
-  static const int _kVersesCacheLimit = 6;
+  // 2026-05-10 (v1.2.16): bumped 6 → 15 to hold ALL 13 bundled
+  // Bible versions plus the boot-time active one and one slot of
+  // slack. v1.2.15 only pre-loaded 4 hand-picked versions; user
+  // pushed back ("都要预加载啊在里面") so the post-boot pre-loader
+  // now hits every version in `bibleVersions`. Memory cost: 13 ×
+  // ~6 MB = ~78 MB for the parsed verse lists. Acceptable on every
+  // device that runs Flutter web (1–2 GB heap budget).
+  static const int _kVersesCacheLimit = 15;
   final LinkedHashMap<String, List<Verse>> _versesCache =
       LinkedHashMap<String, List<Verse>>();
 
@@ -148,11 +153,12 @@ class MainProvider extends ChangeNotifier {
     _selectedIds.clear();
     // Same per-verse caches that setVerses invalidates — these are
     // derived from the verse list so they need a rebuild after the
-    // swap.
+    // swap. v1.2.16: paragraph-groups cache is now multi-slot LRU
+    // keyed by version+chapter, so don't clear it here — entries
+    // from a different version coexist safely and any reusable
+    // chapter cache stays warm for re-visits.
     _searchKeysCache = null;
     _searchKeysCacheLength = -1;
-    _paragraphGroupsCache = null;
-    _paragraphGroupsCacheKey = null;
     _bookOrderCache = null;
     notifyListeners();
     return true;
@@ -197,34 +203,40 @@ class MainProvider extends ChangeNotifier {
     return out;
   }
 
-  // ── Paragraph-grouping cache (v1.0.1 perf) ────────────────────────
-  // The reading pane re-grouped verses into paragraph blocks AND
-  // rebuilt the verseToItemMap on every Consumer rebuild — even when
-  // only an unrelated provider state (highlights, bookmarks, scroll
-  // position) changed. We cache the most-recent (book, chapter,
-  // paragraphMode, verses-length) tuple's outputs and reuse them
-  // until any of those inputs changes.
-  String? _paragraphGroupsCacheKey;
-  ({
-    List<List<Verse>> groups,
-    Map<int, int> verseToItem,
-    Map<int, int> itemToVerseIndex,
-  })? _paragraphGroupsCache;
+  // ── Paragraph-grouping cache (v1.0.1 perf, refactored multi-slot
+  //    LRU in v1.2.16) ────────────────────────
+  // The reading pane re-groups verses into paragraph blocks +
+  // rebuilds verseToItemMap on every Consumer rebuild. Originally
+  // (v1.0.1) a single-slot cache: switching version OR chapter
+  // invalidated and forced recompute. v1.2.16 extends to a 30-
+  // entry LRU keyed by (version | book | chapter | paragraphMode |
+  // versesLength). Benefit: jumping back to a recently-viewed
+  // (version, chapter) pair skips the recompute (~50 ms saved per
+  // switch). Especially useful with v1.2.15+'s background pre-load
+  // since the user is now likely to flip between many cached
+  // versions on the same chapter.
+  static const int _kParagraphCacheLimit = 30;
+  final LinkedHashMap<
+      String,
+      ({
+        List<List<Verse>> groups,
+        Map<int, int> verseToItem,
+        Map<int, int> itemToVerseIndex,
+      })> _paragraphGroupsCache = LinkedHashMap();
 
-  /// Cache key encodes the inputs that affect paragraph grouping
-  /// output. Bumping `verses.length` is a fast proxy for "verses
-  /// list changed"; we also include book + chapter so a chapter
-  /// switch invalidates without needing identity comparison.
+  /// Cache key encodes every input that affects paragraph grouping
+  /// output. Includes `currentVersion` (added v1.2.16) so two
+  /// versions with the same per-chapter verse count don't collide.
   String _paragraphCacheKey({
     required String? book,
     required int? chapter,
     required bool paragraphMode,
     required int versesLength,
   }) =>
-      '${book ?? ''}|${chapter ?? ''}|$paragraphMode|$versesLength';
+      '$currentVersion|${book ?? ''}|${chapter ?? ''}|$paragraphMode|$versesLength';
 
   /// Look up cached paragraph grouping for the given inputs, or
-  /// `null` if the cache is stale.
+  /// `null` on cache miss.
   ({
     List<List<Verse>> groups,
     Map<int, int> verseToItem,
@@ -241,11 +253,17 @@ class MainProvider extends ChangeNotifier {
       paragraphMode: paragraphMode,
       versesLength: versesLength,
     );
-    if (_paragraphGroupsCacheKey == key) return _paragraphGroupsCache;
-    return null;
+    final cached = _paragraphGroupsCache[key];
+    if (cached != null) {
+      // LRU touch: re-insert moves to most-recently-used end.
+      _paragraphGroupsCache.remove(key);
+      _paragraphGroupsCache[key] = cached;
+    }
+    return cached;
   }
 
-  /// Store paragraph grouping output for the given inputs.
+  /// Store paragraph grouping output for the given inputs. Evicts
+  /// the oldest entry if the LRU is at capacity.
   void setCachedParagraphGrouping({
     required String? book,
     required int? chapter,
@@ -255,17 +273,21 @@ class MainProvider extends ChangeNotifier {
     required Map<int, int> verseToItem,
     required Map<int, int> itemToVerseIndex,
   }) {
-    _paragraphGroupsCacheKey = _paragraphCacheKey(
+    final key = _paragraphCacheKey(
       book: book,
       chapter: chapter,
       paragraphMode: paragraphMode,
       versesLength: versesLength,
     );
-    _paragraphGroupsCache = (
+    _paragraphGroupsCache.remove(key);
+    _paragraphGroupsCache[key] = (
       groups: groups,
       verseToItem: verseToItem,
       itemToVerseIndex: itemToVerseIndex,
     );
+    while (_paragraphGroupsCache.length > _kParagraphCacheLimit) {
+      _paragraphGroupsCache.remove(_paragraphGroupsCache.keys.first);
+    }
   }
 
   // ── Book-order cache (v1.0.1 perf) ───────────────────────────────

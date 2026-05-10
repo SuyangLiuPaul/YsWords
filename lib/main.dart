@@ -224,32 +224,56 @@ class _MainAppState extends State<MainApp> {
     }
   }
 
-  /// Background pre-load of common alternative Bible versions, run
-  /// once after bootstrap settles. Spaces each parse out by 4 s so
-  /// the inevitable per-version 1 s json.decode freeze doesn't
-  /// chain into a noticeable 4 s freeze right after boot.
+  /// 2026-05-10 (v1.2.16): background pre-load of ALL 13 Bible
+  /// versions, prioritised so the most-likely-next picks land in
+  /// the LRU first. User wanted "都要预加载啊在里面" — every
+  /// version cached, not just 4 — so a switch to ANY version is
+  /// guaranteed instant once pre-load completes (~40 s post-boot).
+  ///
+  /// Order: simplified Chinese staples first (largest user base),
+  /// then English flagships, then traditional Chinese variants,
+  /// then LJK 1/2 (NT-only specialty). 3 s gap between each parse
+  /// so the inevitable 1 s json.decode freeze gets two breathing-
+  /// room seconds before the next one starts. Total ~39 s of slow
+  /// rolling pre-load.
+  ///
+  /// LRU cap (in MainProvider) bumped to 15 so all 13 versions
+  /// plus the active one and one slot of slack can coexist
+  /// without evicting each other.
   Future<void> _preloadCommonVersions(MainProvider mainProvider) async {
     // Wait long enough for the splash → home transition + the user's
     // first scroll/tap to settle. Anything heavier in the first
     // few seconds competes with the most-likely first interaction.
     await Future<void>.delayed(const Duration(seconds: 5));
     if (!mounted) return;
-    // Hand-picked: KJV (English flagship), CUV (传统 Chinese union),
-    // CUVS-YHWH (simplified Chinese, default version, with divine-
-    // name treatment), CNV (modern 新译本). These four cover the
-    // vast majority of language pairings used by the family in
-    // China + the international audience.
-    const candidates = ['kjv', 'cuv', 'cuvs-yhwh', 'cnv'];
+    const candidates = <String>[
+      // Simplified Chinese staples — largest user base.
+      'cuvs-yhwh',
+      'cuv',
+      'cnv',
+      // English flagships.
+      'kjv',
+      'nasb',
+      'leb',
+      // Traditional Chinese variants — for users who switch script.
+      'cuv-tr',
+      'cuvs-yhwh-tr',
+      'cnv-tr',
+      // LJK 1/2 — NT-only specialty translations, less common.
+      'biblexg',
+      'biblexg-v2',
+      'biblexg-tr',
+      'biblexg-v2-tr',
+    ];
     for (final v in candidates) {
       if (!mounted) return;
       await mainProvider.preloadVersion(v);
       if (!mounted) return;
-      // Breathing room between parses so a 1 s freeze doesn't
-      // visibly hitch the user's reading. 4 s × 4 candidates =
-      // ~16 s of slow rolling pre-load post-boot.
-      await Future<void>.delayed(const Duration(seconds: 4));
+      // 3 s gap keeps each per-version freeze isolated. Total:
+      // 13 versions × ~1 s parse + 3 s gap ≈ 50 s rolling pre-load.
+      await Future<void>.delayed(const Duration(seconds: 3));
     }
-    debugPrint('Background pre-load complete: $candidates');
+    debugPrint('Background pre-load complete: ${candidates.length} versions');
   }
 
   @override

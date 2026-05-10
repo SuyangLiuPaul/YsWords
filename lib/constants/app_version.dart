@@ -614,4 +614,29 @@
 /// wraps it + populates `_versesCache` silently.
 /// `_preloadCommonVersions` lives in `_AppState` next to
 /// `_bootstrap`.
-const String kAppVersion = '1.2.15';
+///
+/// 2026-05-10 (v1.2.16 — pre-load ALL versions + multi-slot
+/// paragraph cache): user pushed back on the 4-version preload
+/// list ("都要预加载啊在里面而且前后一章都要"). Want every
+/// version cached + previous/next chapter switching to be
+/// instant. Two changes:
+/// (a) `_preloadCommonVersions` now iterates the FULL 13-entry
+///     `bibleVersions` list in priority order: simplified Chinese
+///     staples → English → traditional Chinese → LJK 1/2.
+///     Memory cost: 13 × ~6 MB ≈ 78 MB cached parsed lists. LRU
+///     cap bumped 6 → 15 so all 13 + active + slack coexist
+///     without evicting each other. Total background work
+///     ~50 s (13 × ~1 s parse + 3 s gap).
+/// (b) Paragraph-groups cache refactored single-slot → 30-entry
+///     LRU keyed by `currentVersion | book | chapter |
+///     paragraphMode | versesLength`. Old behaviour: any verse-
+///     list change invalidated the entire cache, so switching
+///     versions on the same chapter forced a recompute (~50 ms).
+///     New behaviour: KJV John 3 + CUV John 3 + LJK John 3
+///     coexist as separate keys, all stay warm. Re-visiting a
+///     (version, chapter) pair the user has already seen is now
+///     truly instant — no verse parse AND no paragraph-group
+///     recompute. Addresses the "前后一章" half of the request:
+///     adjacent chapters in the current version stay cached as
+///     long as you keep visiting them.
+const String kAppVersion = '1.2.16';
