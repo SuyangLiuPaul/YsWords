@@ -682,8 +682,11 @@ class _DashboardPageState extends State<DashboardPage> {
                   final ref = parseReference(canonical);
                   if (ref == null) {
                     if (!mounted) return;
+                    final msg = (uiStrings['couldNotParseRef']?[locale] ??
+                            "Couldn't parse reference: {ref}")
+                        .replaceFirst('{ref}', canonical);
                     ScaffoldMessenger.maybeOf(context)?.showSnackBar(SnackBar(
-                      content: Text("Couldn't parse reference: $canonical"),
+                      content: Text(msg),
                       duration: const Duration(seconds: 3),
                     ));
                     return;

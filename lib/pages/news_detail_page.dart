@@ -373,8 +373,12 @@ class NewsDetailPage extends StatelessWidget {
   Future<void> _openReference(BuildContext context) async {
     final ref = parseReference(article.verse.reference);
     if (ref == null) {
+      final locale = context.read<AppSettings>().locale;
+      final msg = (uiStrings['couldNotParseRef']?[locale] ??
+              "Couldn't parse reference: {ref}")
+          .replaceFirst('{ref}', article.verse.reference);
       ScaffoldMessenger.maybeOf(context)?.showSnackBar(SnackBar(
-        content: Text("Couldn't parse reference: ${article.verse.reference}"),
+        content: Text(msg),
         duration: const Duration(seconds: 3),
       ));
       return;

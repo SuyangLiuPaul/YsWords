@@ -145,7 +145,7 @@ class _WordDistributionTableState extends State<WordDistributionTable> {
                       color: scheme.error, size: 32),
                   const SizedBox(height: 8),
                   Text(
-                    'Failed to load: ${snap.error}',
+                    '${uiStrings['loadErrorTitle']?[locale] ?? 'Failed to load'}: ${snap.error}',
                     style: TextStyle(color: scheme.onSurfaceVariant),
                     textAlign: TextAlign.center,
                   ),

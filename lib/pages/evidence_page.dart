@@ -610,8 +610,12 @@ class _EvidenceCard extends StatelessWidget {
       }
     }
     if (ref == null) {
+      final locale = context.read<AppSettings>().locale;
+      final msg = (uiStrings['couldNotParseRef']?[locale] ??
+              "Couldn't parse reference: {ref}")
+          .replaceFirst('{ref}', raw);
       ScaffoldMessenger.maybeOf(context)?.showSnackBar(SnackBar(
-        content: Text("Couldn't parse reference: $raw"),
+        content: Text(msg),
         duration: const Duration(seconds: 3),
       ));
       return;

@@ -2810,6 +2810,11 @@ void _showNoteEditor({
     enforceTimer?.cancel();
     mainProvider.itemPositionsListener.itemPositions
         .removeListener(onPositionsChanged);
+    // 2026-05-10 (v1.2.29): controller created at line ~2529 was
+    // never disposed — every note edit leaked one
+    // TextEditingController + its internal listeners. Bounded but
+    // unbounded across a long session of editing notes.
+    controller.dispose();
     Future.delayed(const Duration(milliseconds: 50), restoreScroll);
   });
   // After the sheet has had time to animate up + the keyboard to
@@ -3546,7 +3551,8 @@ class _FloatingHeader extends StatelessWidget {
                           padding: EdgeInsets.all(iconPad),
                           constraints: const BoxConstraints(
                               minWidth: 36, minHeight: 36),
-                          tooltip: 'Close',
+                          tooltip: uiStrings['tooltipClose']?[locale] ??
+                              'Close',
                         ),
                       if (showSidebarToggle)
                         IconButton(

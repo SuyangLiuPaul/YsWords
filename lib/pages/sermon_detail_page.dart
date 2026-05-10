@@ -240,7 +240,8 @@ class _SermonDetailPageState extends State<SermonDetailPage> {
       if (res == null) {
         setState(() {
           _loading = false;
-          _error = 'No body text available for this sermon.';
+          _error = uiStrings['sermonNoBody']?[appLocale] ??
+              'No body text available for this sermon.';
         });
         return;
       }
@@ -258,7 +259,8 @@ class _SermonDetailPageState extends State<SermonDetailPage> {
       if (!mounted) return;
       setState(() {
         _loading = false;
-        _error = 'Failed to load: $e';
+        _error =
+            '${uiStrings['loadErrorTitle']?[appLocale] ?? 'Failed to load'}: $e';
       });
     }
   }

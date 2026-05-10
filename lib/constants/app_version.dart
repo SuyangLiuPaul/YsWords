@@ -856,7 +856,32 @@
 /// works.
 /// Critical bug: present on every live tier (dev/qat/prod). Push
 /// straight through dev → qat → prod in one shot.
-const String kAppVersion = '1.2.28';
+///
+/// 2026-05-10 (v1.2.29 — post-v1.2.28 audit polish): three audit
+/// agents (hotfix-edge-case + resource-leak + i18n) found:
+/// • `bible_reading_pane.dart::_showNoteEditor` — TextEditingController
+///   created at line ~2529 was never disposed. Each note edit
+///   leaked one controller + its internal listeners. Disposed in
+///   the existing `whenComplete` block.
+/// • `loading_page.dart::_retry` — defensive: moved
+///   `_advanceScheduledOnce = false` reset from PRE-await to
+///   POST-await so a rebuild triggered by `setLoadError(null)`
+///   can't pre-fire a stale-cached-verses Timer mid-fetch. Race
+///   was latent in v1.2.28 (loadError only ever set when verses
+///   are empty, so hasError stays true) but the new ordering
+///   closes it for free.
+/// • i18n sweep — same class as v1.2.21's batch fix. 9 hardcoded
+///   English strings now route through `uiStrings`:
+///     - `bible_reading_pane.dart:3549` Close tooltip
+///     - `word_distribution_table.dart:148` "Failed to load"
+///     - `sermon_detail_page.dart:243,261` body-missing /
+///       failed-to-load error states
+///     - 7 "Couldn't parse reference: $x" SnackBars in
+///       library / news_detail / evidence / evidence_detail /
+///       bible_timeline / dashboard / person_detail_sheet
+/// New ui-string keys: `tooltipClose`, `couldNotParseRef`
+/// (`{ref}` placeholder), `sermonNoBody` — all three locales.
+const String kAppVersion = '1.2.29';
 
 /// 2026-05-10 (v1.2.20): paired with `kAppVersion` so the About
 /// footer's "Last updated …" stamp moves in lockstep with every
@@ -873,4 +898,4 @@ const String kAppVersion = '1.2.28';
 /// the higher precision. Format: ISO local date + 24-h
 /// HH:MM + tz abbreviation. The about-page interpolation is
 /// locale-aware via the `aboutFooterNote` ui-string template.
-const String kAppReleaseTime = '2026-05-10 17:20 AEST';
+const String kAppReleaseTime = '2026-05-10 17:44 AEST';

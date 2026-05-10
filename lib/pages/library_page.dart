@@ -401,8 +401,12 @@ class _PlanTabState extends State<_PlanTab> {
     final ref = parseReference(canonical);
     if (ref == null) {
       if (!mounted) return;
+      final locale = context.read<AppSettings>().locale;
+      final msg = (uiStrings['couldNotParseRef']?[locale] ??
+              "Couldn't parse reference: {ref}")
+          .replaceFirst('{ref}', canonical);
       ScaffoldMessenger.maybeOf(context)?.showSnackBar(SnackBar(
-        content: Text("Couldn't parse reference: $canonical"),
+        content: Text(msg),
         duration: const Duration(seconds: 3),
       ));
       return;

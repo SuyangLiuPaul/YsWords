@@ -4983,6 +4983,32 @@ const uiStrings = {
     'zh-Hant': '載入失敗',
     'en': 'Failed to load',
   },
+  // 2026-05-10 (v1.2.29): localised label for the close-pane
+  // IconButton tooltip in `bible_reading_pane.dart` (sibling
+  // `back` tooltip was already localised; `close` was not).
+  'tooltipClose': {
+    'zh-Hans': '关闭',
+    'zh-Hant': '關閉',
+    'en': 'Close',
+  },
+  // 2026-05-10 (v1.2.29): generic "Couldn't parse: $x" SnackBar
+  // shown when a reference parse fails. Used across 7 surfaces
+  // (library / news_detail / evidence / evidence_detail /
+  // bible_timeline / dashboard / person_detail_sheet). `{ref}`
+  // placeholder gets the raw input that failed.
+  'couldNotParseRef': {
+    'zh-Hans': '无法解析引用：{ref}',
+    'zh-Hant': '無法解析引用：{ref}',
+    'en': "Couldn't parse reference: {ref}",
+  },
+  // 2026-05-10 (v1.2.29): rendered when a sermon's `body.txt` is
+  // missing on disk. Keeps zh users from seeing the English
+  // fallback string in `sermon_detail_page.dart`.
+  'sermonNoBody': {
+    'zh-Hans': '本篇讲道没有文字内容。',
+    'zh-Hant': '本篇講道沒有文字內容。',
+    'en': 'No body text available for this sermon.',
+  },
   'loadErrorBody': {
     'zh-Hans': '无法加载圣经经文，请检查网络或重试。',
     'zh-Hant': '無法載入聖經經文，請檢查網絡或重試。',

@@ -216,12 +216,6 @@ class _LoadingPageState extends State<LoadingPage> {
   Future<void> _retry() async {
     if (_retrying) return;
     setState(() => _retrying = true);
-    // 2026-05-10 (v1.2.28): allow the build()-side safety net to
-    // re-arm after a manual retry. Without this, a successful
-    // recovery wouldn't re-trigger the auto-advance because the
-    // one-shot guard was already tripped during the initial
-    // (failed) load.
-    _advanceScheduledOnce = false;
     final mainProvider = context.read<MainProvider>();
     // Clear the previous error first so the UI immediately reflects
     // that retry has started — without this, a retry that lands on
@@ -274,6 +268,16 @@ class _LoadingPageState extends State<LoadingPage> {
       mainProvider.setLoadProgress(0, 0);
     }
     if (!mounted) return;
+    // 2026-05-10 (v1.2.29): allow the build()-side safety net to
+    // re-arm after a manual retry. Reset POST-await so a rebuild
+    // triggered earlier by `setLoadError(null)` (line ~230) can't
+    // pre-fire a stale-cached-verses Timer mid-fetch. Without this
+    // post-await placement, an in-flight retry whose verses cache
+    // is non-empty could advance to home with stale data while the
+    // FetchVerses retry is still grinding. (The race is latent in
+    // current code — loadError is only set when verses ARE empty —
+    // but the defensive ordering closes it for free.)
+    _advanceScheduledOnce = false;
     setState(() => _retrying = false);
     _scheduleAdvanceIfReady();
   }

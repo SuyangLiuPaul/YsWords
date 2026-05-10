@@ -517,8 +517,11 @@ class PersonDetailSheet extends StatelessWidget {
     // parser handles e.g. "Genesis 1:26-27" cleanly.
     final ref = parseReference(raw);
     if (ref == null) {
+      final msg = (uiStrings['couldNotParseRef']?[locale] ??
+              "Couldn't parse reference: {ref}")
+          .replaceFirst('{ref}', raw);
       ScaffoldMessenger.maybeOf(context)?.showSnackBar(SnackBar(
-        content: Text("Couldn't parse: $raw"),
+        content: Text(msg),
         duration: const Duration(seconds: 2),
       ));
       return;
