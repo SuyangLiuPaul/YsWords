@@ -140,6 +140,54 @@ async function callGeminiWithKey(apiKey, query, locale, model) {
 	});
 }
 
+// 2026-05-11 (v1.2.41): model-level fallback chain. Every site has
+// only 1 Gemini key (no key rotation possible), so when the user-
+// chosen model 429s, we step DOWN to a lighter model with a larger
+// free-tier daily quota and retry. Free-tier RPD (approx):
+//   gemini-3-flash-preview  ~250
+//   gemini-2.5-flash         250
+//   gemini-2.5-flash-lite   1000
+// Stepping down on 429 keeps the experience working ~6× longer per
+// day at the cost of one tier's response quality (still useful for
+// the user's question; better than a hard error).
+function modelStepDown(model) {
+	switch (model) {
+		case 'gemini-3-flash-preview': return 'gemini-2.5-flash';
+		case 'gemini-2.5-flash':        return 'gemini-2.5-flash-lite';
+		default: return null;
+	}
+}
+
+// Inner key-rotation: try every available key with a specific
+// model. Returns `{ ok: true, data }` on first success, or
+// `{ ok: false, status, lastError }` when every key exhausted.
+async function _callGeminiInner(query, locale, keys, model) {
+	let lastError = '';
+	let lastStatus = 0;
+	for (const key of keys) {
+		try {
+			const r = await callGeminiWithKey(key, query, locale, model);
+			if (r.ok) {
+				return { ok: true, data: await r.json() };
+			}
+			const text = await r.text().catch(() => '');
+			console.error(`[aiBibleSearch] ${model} HTTP ${r.status}:`,
+				text.slice(0, 1200));
+			lastError = `HTTP ${r.status}`;
+			lastStatus = r.status;
+			// On 429 / 5xx, try next key. On 4xx (other), abort.
+			if (r.status === 429 || r.status >= 500) continue;
+			break;
+		} catch (e) {
+			lastError = e?.message || String(e);
+			lastStatus = 0;
+			// Network / timeout — try next key.
+			continue;
+		}
+	}
+	return { ok: false, status: lastStatus, lastError };
+}
+
 async function callGemini(query, locale, overrideKey = null, model = MODEL) {
 	const keys = overrideKey ? [overrideKey] : geminiKeys();
 	if (keys.length === 0) {
@@ -150,40 +198,34 @@ async function callGemini(query, locale, overrideKey = null, model = MODEL) {
 		err.statusCode = 503;
 		throw err;
 	}
-	let lastError;
-	for (const key of keys) {
-		try {
-			const r = await callGeminiWithKey(key, query, locale, model);
-			if (!r.ok) {
-				const text = await r.text().catch(() => '');
-				// 2026-05-09 (v1.2.6 audit): same upstream-leak fix
-				// as aiSearch.mjs / aiExplainWord.mjs — log Gemini's
-				// raw response server-side, surface only a generic
-				// status to the client. Previously we'd forward up
-				// to 300 chars of upstream body which can contain
-				// regional error codes / config hints.
-				console.error(`[aiBibleSearch] Gemini ${r.status} body:`,
-					text.slice(0, 1200));
-				lastError = `Upstream AI service error (HTTP ${r.status}). Please try again shortly.`;
-				// On 429 (rate limit) or 5xx, try the next key.
-				if (r.status === 429 || r.status >= 500) continue;
-				const err = new Error(lastError);
-				err.statusCode = r.status;
-				throw err;
-			}
-			return r.json();
-		} catch (e) {
-			lastError = e?.message || String(e);
-			// Network / timeout — try next key.
-			continue;
-		}
+	// 2026-05-11 (v1.2.41): step-down chain. Each key rotation
+	// already covers transient single-key blips at one tier; this
+	// outer loop handles "all keys exhausted at this tier" by
+	// falling through to a lighter model with more quota.
+	let currentModel = model;
+	let lastResult = null;
+	while (currentModel) {
+		const result = await _callGeminiInner(query, locale, keys, currentModel);
+		if (result.ok) return result.data;
+		lastResult = result;
+		// Only step down on quota (429) or upstream 5xx. 4xx-other
+		// (400 / 401 / 403) are caller-side problems — won't be fixed
+		// by another model. Bail.
+		if (result.status !== 429 && result.status < 500) break;
+		const next = modelStepDown(currentModel);
+		if (!next) break; // already at lightest tier
+		console.warn(`[aiBibleSearch] ${currentModel} ${result.status}; ` +
+			`falling back to ${next}.`);
+		currentModel = next;
 	}
 	// 2026-05-08 (v1.1.8): use 429 for quota-exhausted distinct from
 	// 503 (= "GEMINI_API_KEY missing" / actually unconfigured). The
 	// client maps these to different user-facing messages — 503 says
 	// "developer needs to configure", 429 says "quota for today is
 	// used up, try tomorrow or paste your own Gemini key".
-	const err = new Error(`All Gemini keys exhausted. Last error: ${lastError}`);
+	const err = new Error(
+		`All Gemini models exhausted at the lightest tier. ` +
+		`Last status: ${lastResult?.status}, error: ${lastResult?.lastError}`);
 	err.statusCode = 429;
 	err.publicReason = 'AI quota for the developer\'s shared key is exhausted. ' +
 		'Try again later, or paste your own Gemini API key in Settings → AI to use your own quota.';

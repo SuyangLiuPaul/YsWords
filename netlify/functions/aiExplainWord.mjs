@@ -339,12 +339,73 @@ async function callGeminiWithKey(apiKey, prompt, locale, model) {
 	return resp;
 }
 
+// 2026-05-11 (v1.2.41): model step-down chain. See
+// aiBibleSearch.mjs for the full rationale — each site has only
+// 1 Gemini key, so model fallback on 429 is the only way to keep
+// AI responses flowing past the per-tier daily quota.
+function modelStepDown(model) {
+	switch (model) {
+		case 'gemini-3-flash-preview': return 'gemini-2.5-flash';
+		case 'gemini-2.5-flash':        return 'gemini-2.5-flash-lite';
+		default: return null;
+	}
+}
+
+// Inner key-rotation: try every key with one specific model.
+async function _callGeminiInner(prompt, locale, keys, model) {
+	let lastStatus = 0;
+	let lastErrorKind = ''; // 'auth' | 'quota' | 'upstream' | ''
+	let lastUpstreamBody = '';
+	for (let i = 0; i < keys.length; i++) {
+		const apiKey = keys[i];
+		const isLast = i === keys.length - 1;
+		let resp;
+		try {
+			resp = await callGeminiWithKey(apiKey, prompt, locale, model);
+		} catch (e) {
+			console.error(`[aiExplainWord] ${model} key #${i + 1} fetch threw:`,
+				String(e?.message || e).slice(0, 400));
+			lastErrorKind = 'upstream';
+			continue;
+		}
+		if (resp.ok) {
+			const json = await resp.json();
+			const choice = json.choices?.[0];
+			const content = choice?.message?.content;
+			let text = '';
+			if (typeof content === 'string') text = content;
+			else if (Array.isArray(content)) {
+				text = content
+					.map((p) => (typeof p === 'string' ? p : (p?.text || '')))
+					.join('');
+			}
+			return { ok: true, text };
+		}
+		const txt = await resp.text();
+		lastStatus = resp.status;
+		if (resp.status === 429) {
+			lastErrorKind = 'quota';
+			continue;
+		}
+		if (resp.status === 401 || resp.status === 403) {
+			console.error(`[aiExplainWord] ${model} key #${i + 1} rejected`,
+				resp.status, isLast ? '(no keys remaining)' : '(trying next)');
+			lastErrorKind = 'auth';
+			continue;
+		}
+		console.error(`[aiExplainWord] ${model} HTTP ${resp.status}:`,
+			txt.slice(0, 1200));
+		lastErrorKind = 'upstream';
+		lastUpstreamBody = txt.slice(0, 400);
+		break;
+	}
+	return { ok: false, status: lastStatus, errorKind: lastErrorKind, body: lastUpstreamBody };
+}
+
 async function callGemini(prompt, locale, overrideKey = null, model = MODEL) {
 	// BYOK: when the client provided a valid-shape user key, use ONLY
 	// that key — don't fall back to the developer's shared key, since
-	// the user explicitly chose to spend their own quota. If their
-	// key fails (quota / invalid), surface the error directly so they
-	// can fix it on their side.
+	// the user explicitly chose to spend their own quota.
 	const keys = overrideKey ? [overrideKey] : geminiKeys();
 	if (keys.length === 0) {
 		const err = new Error(
@@ -355,78 +416,41 @@ async function callGemini(prompt, locale, overrideKey = null, model = MODEL) {
 		err.statusCode = 503;
 		throw err;
 	}
-	let lastQuotaError = null;
-	let lastError = null;
-	for (let i = 0; i < keys.length; i++) {
-		const apiKey = keys[i];
-		const isLast = i === keys.length - 1;
-		// 2026-05-10 (v1.2.30): wrap fetch in try/catch so a synchronous
-		// throw (DNS hiccup, network error pre-response, malformed key
-		// header) on key #i doesn't abort the whole rotation chain — fall
-		// through to key #i+1 like the 429 / 401 paths already do.
-		let resp;
-		try {
-			resp = await callGeminiWithKey(apiKey, prompt, locale, model);
-		} catch (e) {
-			console.error(`[aiExplainWord] Gemini key #${i + 1} fetch threw:`,
-				String(e?.message || e).slice(0, 400));
-			lastError = new Error('AI service network error.');
-			continue;
-		}
-		if (resp.ok) {
-			const json = await resp.json();
-			const choice = json.choices?.[0];
-			const content = choice?.message?.content;
-			if (typeof content === 'string') return content;
-			if (Array.isArray(content)) {
-				return content.map((p) =>
-					(typeof p === 'string' ? p : (p?.text || ''))).join('');
-			}
-			return '';
-		}
-		const txt = await resp.text();
-		if (resp.status === 429) {
-			// This key is rate-limited — try the next one.
-			lastQuotaError = new Error(
-				'All Gemini API keys are rate-limited (20 RPM / 250 RPD '
-				+ 'free tier each). Please wait a moment and try again.');
-			lastQuotaError.publicReason = lastQuotaError.message;
-			lastQuotaError.statusCode = 429;
-			continue;
-		}
-		if (resp.status === 401 || resp.status === 403) {
-			// Bad key. Skip and try the next one in case it's just one
-			// key that got revoked / expired.
-			// 2026-05-10 (v1.2.30): keep the key index in the SERVER log
-			// (useful for diagnosis) but never let it land on the public
-			// `publicReason` — line 407 used to copy `.message` straight
-			// into the response body, leaking "Gemini key #3 rejected"
-			// + the total key count.
-			console.error(`[aiExplainWord] Gemini key #${i + 1} rejected`,
-				resp.status, isLast ? '(no keys remaining)' : '(trying next)');
-			lastError = new Error('AI service authentication failed.');
-			continue;
-		}
-		// Non-quota, non-auth error — abort the chain (likely the prompt
-		// is malformed or the upstream is down).
-		// 2026-05-09 (v1.2.6 audit): same upstream-leak fix as
-		// aiSearch.mjs — log internally, return a generic public
-		// message instead of forwarding Gemini's raw response body.
-		console.error(`[aiExplainWord] Gemini ${resp.status} body:`,
-			txt.slice(0, 1200));
-		const upstreamErr = new Error(
-			`Upstream AI service error (HTTP ${resp.status}). Please try again shortly.`);
-		upstreamErr.publicReason = upstreamErr.message;
-		upstreamErr.statusCode = 502;
-		throw upstreamErr;
+	let currentModel = model;
+	let lastResult = null;
+	while (currentModel) {
+		const result = await _callGeminiInner(prompt, locale, keys, currentModel);
+		if (result.ok) return result.text;
+		lastResult = result;
+		// Only step down on quota. Auth / upstream errors don't benefit
+		// from a different model.
+		if (result.errorKind !== 'quota') break;
+		const next = modelStepDown(currentModel);
+		if (!next) break;
+		console.warn(`[aiExplainWord] ${currentModel} 429; falling back to ${next}.`);
+		currentModel = next;
 	}
-	if (lastQuotaError) throw lastQuotaError;
-	if (lastError) {
-		lastError.publicReason = lastError.message;
-		lastError.statusCode = 503;
-		throw lastError;
+	if (lastResult?.errorKind === 'quota') {
+		const err = new Error(
+			'Gemini models exhausted across step-down chain.');
+		err.publicReason = 'AI quota for the developer\'s shared key is ' +
+			'exhausted across all free-tier models. Try again later, or ' +
+			'paste your own Gemini API key in Settings → AI to use your ' +
+			'own quota.';
+		err.statusCode = 429;
+		throw err;
 	}
-	throw new Error('Gemini call failed without a status code.');
+	if (lastResult?.errorKind === 'auth') {
+		const err = new Error('AI service authentication failed.');
+		err.publicReason = err.message;
+		err.statusCode = 503;
+		throw err;
+	}
+	const upstreamErr = new Error(
+		`Upstream AI service error (HTTP ${lastResult?.status || '?'}).`);
+	upstreamErr.publicReason = upstreamErr.message;
+	upstreamErr.statusCode = 502;
+	throw upstreamErr;
 }
 
 export default async (req) => {

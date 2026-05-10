@@ -176,6 +176,70 @@ async function callGeminiWithKey(apiKey, prompt, locale, model) {
 	});
 }
 
+// 2026-05-11 (v1.2.41): model step-down chain — same pattern as
+// aiBibleSearch.mjs. When the chosen model 429s on all available
+// keys, drop one tier and retry with a lighter model that has
+// more free-tier quota. See aiBibleSearch's comment for details.
+function modelStepDown(model) {
+	switch (model) {
+		case 'gemini-3-flash-preview': return 'gemini-2.5-flash';
+		case 'gemini-2.5-flash':        return 'gemini-2.5-flash-lite';
+		default: return null;
+	}
+}
+
+// Inner key-rotation: try every key with a specific model.
+// Returns `{ ok: true, text }` / `{ ok: false, status, lastError, isAuth }`.
+async function _callGeminiInner(prompt, locale, keys, model) {
+	let lastError = '';
+	let lastStatus = 0;
+	let allAuth = true;
+	for (let i = 0; i < keys.length; i++) {
+		const apiKey = keys[i];
+		let resp;
+		try {
+			resp = await callGeminiWithKey(apiKey, prompt, locale, model);
+		} catch (e) {
+			console.error(`[aiSearch] ${model} key #${i + 1} fetch threw:`,
+				String(e?.message || e).slice(0, 400));
+			lastError = e?.message || String(e);
+			continue;
+		}
+		if (resp.ok) {
+			const json = await resp.json();
+			const choice = json.choices?.[0];
+			const content = choice?.message?.content;
+			let text = '';
+			if (typeof content === 'string') text = content;
+			else if (Array.isArray(content)) {
+				text = content
+					.map((p) => (typeof p === 'string' ? p : (p?.text || '')))
+					.join('');
+			}
+			return { ok: true, text };
+		}
+		const txt = await resp.text();
+		lastStatus = resp.status;
+		if (resp.status === 429) {
+			lastError = 'rate-limited';
+			allAuth = false;
+			continue;
+		}
+		if (resp.status === 401 || resp.status === 403) {
+			// Bad key — try the next.
+			lastError = `auth ${resp.status}`;
+			continue;
+		}
+		console.error(`[aiSearch] ${model} HTTP ${resp.status}:`,
+			txt.slice(0, 1200));
+		lastError = `HTTP ${resp.status}`;
+		allAuth = false;
+		// 4xx/5xx other-than-quota — break out, model-fallback won't help.
+		break;
+	}
+	return { ok: false, status: lastStatus, lastError, isAuth: allAuth };
+}
+
 async function callGemini(prompt, locale, overrideKey = null, model = MODEL) {
 	// BYOK: same pattern as aiExplainWord — when the client passes a
 	// validated user API key, use only that key.
@@ -189,63 +253,44 @@ async function callGemini(prompt, locale, overrideKey = null, model = MODEL) {
 		err.statusCode = 503;
 		throw err;
 	}
-	let quotaError = null;
-	for (let i = 0; i < keys.length; i++) {
-		const apiKey = keys[i];
-		// 2026-05-10 (v1.2.30): wrap fetch in try/catch so a network-
-		// level throw (DNS hiccup, malformed key header) on key #i
-		// doesn't abort the whole rotation chain — fall through to
-		// key #i+1 like the 429 / 401 paths already do.
-		let resp;
-		try {
-			resp = await callGeminiWithKey(apiKey, prompt, locale, model);
-		} catch (e) {
-			console.error(`[aiSearch] Gemini key #${i + 1} fetch threw:`,
-				String(e?.message || e).slice(0, 400));
-			continue;
-		}
-		if (resp.ok) {
-			const json = await resp.json();
-			const choice = json.choices?.[0];
-			const content = choice?.message?.content;
-			if (typeof content === 'string') return content;
-			if (Array.isArray(content)) {
-				return content.map((p) =>
-					(typeof p === 'string' ? p : (p?.text || ''))).join('');
-			}
-			return '';
-		}
-		const txt = await resp.text();
-		if (resp.status === 429) {
-			quotaError = new Error(
-				'All Gemini API keys are rate-limited (20 RPM / 250 RPD '
-				+ 'free tier each). Please wait a moment and try again.');
-			quotaError.publicReason = quotaError.message;
-			quotaError.statusCode = 429;
-			continue;
-		}
-		if (resp.status === 401 || resp.status === 403) {
-			// Bad key — try the next one in the chain.
-			continue;
-		}
-		// 2026-05-09 (v1.2.6 audit): don't leak the raw upstream body
-		// to the client — Gemini's 5xx responses sometimes contain
-		// internal config hints / regional error codes / partial
-		// stack traces. Log it server-side for debugging, return a
-		// generic message to the client.
-		console.error(`[aiSearch] Gemini ${resp.status} body:`,
-			txt.slice(0, 1200));
-		const upstreamErr = new Error(
-			`Upstream AI service error (HTTP ${resp.status}). Please try again shortly.`);
-		upstreamErr.publicReason = upstreamErr.message;
-		upstreamErr.statusCode = 502;
-		throw upstreamErr;
+	// Step-down chain across model tiers on 429-all-keys-exhausted.
+	let currentModel = model;
+	let lastResult = null;
+	while (currentModel) {
+		const result = await _callGeminiInner(prompt, locale, keys, currentModel);
+		if (result.ok) return result.text;
+		lastResult = result;
+		// Only step down on 429 (true quota exhaustion). Auth or
+		// 4xx/5xx-other won't be fixed by a different model.
+		if (result.status !== 429) break;
+		const next = modelStepDown(currentModel);
+		if (!next) break;
+		console.warn(`[aiSearch] ${currentModel} 429; falling back to ${next}.`);
+		currentModel = next;
 	}
-	if (quotaError) throw quotaError;
-	const err = new Error('All Gemini keys failed authentication.');
-	err.publicReason = err.message;
-	err.statusCode = 503;
-	throw err;
+	// Map terminal state to the right public error.
+	if (lastResult?.isAuth && lastResult?.status !== 429) {
+		const err = new Error('All Gemini keys failed authentication.');
+		err.publicReason = err.message;
+		err.statusCode = 503;
+		throw err;
+	}
+	if (lastResult?.status === 429) {
+		const err = new Error(
+			'Gemini models exhausted across step-down chain. ' +
+			`Last error: ${lastResult.lastError}`);
+		err.publicReason = 'AI quota for the developer\'s shared key is ' +
+			'exhausted across all free-tier models. Try again later, or ' +
+			'paste your own Gemini API key in Settings → AI to use your ' +
+			'own quota.';
+		err.statusCode = 429;
+		throw err;
+	}
+	const upstreamErr = new Error(
+		`Upstream AI service error (HTTP ${lastResult?.status || '?'}).`);
+	upstreamErr.publicReason = upstreamErr.message;
+	upstreamErr.statusCode = 502;
+	throw upstreamErr;
 }
 
 function buildPrompt(query, locale, hits) {

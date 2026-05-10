@@ -1187,6 +1187,31 @@ class _SearchPageState extends State<SearchPage> {
       _lastScanCount = scanCount;
       searchPerformed = true;
     });
+
+    // 2026-05-11 (v1.2.41): persist successful searches to the
+    // recents list so live-search-as-you-type populates Recent
+    // alongside explicit Enter-submit. Pre-fix, only the
+    // `onSubmitted` handler called RecentSearchesService.add —
+    // most users never hit Enter (the 250 ms debounce already
+    // shows results), so their Recent list stayed empty. Symptom
+    // user reported as "after search normally there is recent
+    // search but cannot see those anymore".
+    //
+    // Heuristic-gated to keep the list useful:
+    //   • query length ≥ 3 chars — avoids noisy "lo" / "th"
+    //     partial-typing entries.
+    //   • matches.isNotEmpty — avoids logging failed searches
+    //     that the user clearly didn't find useful.
+    // The dedupe + 12-item cap inside RecentSearchesService.add
+    // keeps the list bounded, and adding "love" then "love is"
+    // simply keeps both — the user can re-run either.
+    if (query.length >= 3 && matches.isNotEmpty) {
+      // Fire-and-forget — no UI dependency on the write completing.
+      // ignore: unawaited_futures
+      RecentSearchesService.add(query).then((_) {
+        if (mounted) _loadRecents();
+      });
+    }
   }
 
   @override

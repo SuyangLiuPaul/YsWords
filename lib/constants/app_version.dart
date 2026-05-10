@@ -882,6 +882,53 @@
 /// New ui-string keys: `tooltipClose`, `couldNotParseRef`
 /// (`{ref}` placeholder), `sermonNoBody` — all three locales.
 ///
+/// 2026-05-11 (v1.2.41 — recents on live-search + backend model
+/// step-down chain): user "ai standard one not working" + "recent
+/// search but cannot see those anymore" + "its working in qat and
+/// prod but not dev".
+///
+/// Two distinct bugs diagnosed:
+///
+/// 1. RECENTS WERE NOT PERSISTING ON LIVE SEARCH. The
+///    search-as-you-type debounce (v1.1.7) calls `search()`
+///    directly without going through the explicit `onSubmitted`
+///    handler — so `RecentSearchesService.add(...)` (which lives
+///    only in onSubmitted) never fired. Most users use live search
+///    (250 ms debounce already shows results, no Enter needed),
+///    so their Recent list stayed empty forever.
+///    Fix: move the recents persistence into `search()` itself,
+///    gated by `query.length >= 3` and `matches.isNotEmpty` so
+///    only useful queries get logged. Both live-search and
+///    onSubmitted now contribute to recents through the same path.
+///
+/// 2. SINGLE-KEY QUOTA EXHAUSTION RETURNS 0 HITS / 429 with no
+///    fallback. Audit revealed every one of the 6 Netlify sites
+///    has only 1 Gemini API key (`GEMINI_API_KEY`, no plural
+///    `GEMINI_API_KEYS`). When that single key 429s (~250 RPD on
+///    free-tier `gemini-2.5-flash`), the existing key-rotation
+///    loop has nothing to fall through to, and the user gets a
+///    hard "quota exhausted" error. User reported this as
+///    "Standard not working on dev" — actually transient quota,
+///    affects every tier at peak load.
+///    Fix: model step-down chain in callGemini across all 3
+///    Netlify functions (aiBibleSearch / aiSearch / aiExplainWord).
+///    When the chosen model returns 429 on all keys, retry with
+///    the next-lighter tier:
+///        gemini-3-flash-preview  → gemini-2.5-flash
+///        gemini-2.5-flash         → gemini-2.5-flash-lite
+///        gemini-2.5-flash-lite   (terminal — 1000 RPD)
+///    Net: a single-key day-long quota budget extends ~6× by
+///    falling through to flash-lite. Users still get an answer
+///    instead of a hard error.
+///    Logs `[fn] gemini-X 429; falling back to gemini-Y.` so the
+///    degradation is visible in Netlify logs.
+///
+/// Free-tier RPD reference (current):
+///   gemini-3-flash-preview  — ~250 RPD
+///   gemini-2.5-flash         — ~250 RPD
+///   gemini-2.5-flash-lite   — ~1000 RPD
+///   gemini-2.5-pro          — PAID ONLY since April 1 2026
+///
 /// 2026-05-11 (v1.2.40 — Deep tier now uses gemini-3-flash-preview):
 /// user "i use my own free gemini api but deep one, when i search
 /// it doesnt turn anything and when i hse exegesis it tunrs no
@@ -1376,7 +1423,7 @@
 /// matching edit needed here.
 const String kAppVersion = String.fromEnvironment(
   'APP_VERSION',
-  defaultValue: '1.2.40',
+  defaultValue: '1.2.41',
 );
 
 /// 2026-05-10 (v1.2.20): paired with `kAppVersion` so the About
