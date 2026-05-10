@@ -366,9 +366,14 @@ export default async (req) => {
 	// dropped (always-false dead code; older clients reading the
 	// field just see undefined → false via `== true`, unchanged).
 	const model = resolveModel(body.aiModel);
-	if (query.length < 2) {
+	// 2026-05-11 (v1.2.43): lowered from `< 2` to `< 1`. The ≥ 2 chars
+	// threshold dropped legitimate 1-character CJK queries (e.g.
+	// `爱` / `信` / `光`) where a single ideograph carries a full
+	// semantic concept. Empty queries still rejected. Upper bound
+	// (2000 chars) unchanged.
+	if (query.length < 1) {
 		return new Response(
-			JSON.stringify({ error: 'Query is required (≥2 chars).' }),
+			JSON.stringify({ error: 'Query is required.' }),
 			{ status: 400, headers: cors });
 	}
 	// 2026-05-07 (v18 audit): cap the upper bound. Without this, a
@@ -385,8 +390,37 @@ export default async (req) => {
 	try {
 		const completion = await callGemini(
 			query, locale, userApiKey || null, model);
-		const text = completion?.choices?.[0]?.message?.content || '';
-		const refs = parseRefs(text);
+		let text = completion?.choices?.[0]?.message?.content || '';
+		let refs = parseRefs(text);
+		// 2026-05-11 (v1.2.43): empty-hits content fallback. LLM
+		// nondeterminism means the same model + prompt can return
+		// `{"refs":[]}` on one call and 10 refs on the next (we
+		// observed `救恩` returning 0 on dev/qat and 10 on prod
+		// within the same minute, same key, same model). When the
+		// requested tier returns ZERO refs AND we have a lighter
+		// model in the step-down chain AND the user isn't on BYOK,
+		// retry ONCE on the lighter tier — the user almost
+		// certainly prefers a slightly-weaker answer over none.
+		// Capped at one extra call to keep the cost bounded; total
+		// upstream calls stay ≤ 2 per request which fits the 22s
+		// deadline budget set in callGemini.
+		if (refs.length === 0 && !userApiKey) {
+			const fallback = modelStepDown(model);
+			if (fallback) {
+				console.warn(`[aiBibleSearch] ${model} returned 0 refs; ` +
+					`retrying on ${fallback} for content quality.`);
+				try {
+					const c2 = await callGemini(
+						query, locale, null, fallback);
+					const t2 = c2?.choices?.[0]?.message?.content || '';
+					const r2 = parseRefs(t2);
+					if (r2.length > 0) {
+						text = t2;
+						refs = r2;
+					}
+				} catch (_) {/* keep original empty result */}
+			}
+		}
 		return new Response(
 			JSON.stringify({ refs, hits: refs.length }),
 			{ status: 200, headers: cors });

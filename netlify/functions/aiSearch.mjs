@@ -379,7 +379,9 @@ export default async (req) => {
 		// 2026-05-11 (v1.2.42): `fellBackToFlash` constant + spread
 		// dropped (always-false dead code).
 		const model = resolveModel(body?.aiModel);
-		if (query.trim().length < 2) {
+		// v1.2.43: lowered from `< 2` to `< 1` so 1-char CJK queries
+		// (e.g. `爱`, `信`, `光` — each a full concept) pass.
+		if (query.trim().length < 1) {
 			return new Response(JSON.stringify({ error: 'query required' }),
 				{ status: 400, headers: cors });
 		}

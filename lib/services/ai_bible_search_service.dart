@@ -41,7 +41,9 @@ class AiBibleSearchService {
     // Server allowlist-clamps invalid values back to default.
     String? aiModel,
   }) async {
-    if (query.trim().length < 2) {
+    // 2026-05-11 (v1.2.43): lowered from `< 2` to `< 1` so single-
+    // character CJK queries (e.g. `爱` / `信`) reach the backend.
+    if (query.trim().isEmpty) {
       return AiBibleSearchResult.empty();
     }
     final http.Response resp;

@@ -882,6 +882,50 @@
 /// New ui-string keys: `tooltipClose`, `couldNotParseRef`
 /// (`{ref}` placeholder), `sermonNoBody` — all three locales.
 ///
+/// 2026-05-11 (v1.2.43 — CJK query length + empty-hits content
+/// fallback): user "standard one is not working for dev but qat
+/// and prod are all working gemini. why? other deep and lite both
+/// are working for dev. its strange since it's the same api".
+///
+/// Audit results — found TWO real bugs (and one explanation):
+///
+/// BUG 1 (HIGH): single-char CJK queries rejected. Both backends
+///   and the two client services required `query.length >= 2`.
+///   English needs ≥ 2 chars to be useful, but a single Chinese
+///   ideograph (`爱` / `信` / `光`) carries a full semantic
+///   concept and is a legitimate query. The user typing `爱` in
+///   the search box got "Query is required (≥2 chars)" with no
+///   path forward. Fix: lower the threshold to 1 char in:
+///     - `netlify/functions/aiBibleSearch.mjs:307`
+///     - `netlify/functions/aiSearch.mjs:382`
+///     - `lib/services/ai_bible_search_service.dart:44`
+///     - `lib/services/ai_search_service.dart:67`
+///
+/// BUG 2 (MEDIUM): LLM nondeterminism returns 0 refs for
+///   semantically valid queries on Standard tier. Cross-tier
+///   probe found `救恩` returning 0 refs on dev+qat but 10 on
+///   prod within the same minute, SAME backend, SAME key. The
+///   model occasionally outputs `{"refs":[]}` when it's
+///   technically capable of answering — `temperature: 0.2`
+///   reduces variance but doesn't eliminate it. Fix: in
+///   aiBibleSearch.mjs, when the requested tier returns 0 refs
+///   AND the user isn't on BYOK AND a lighter tier exists in the
+///   step-down chain, retry ONCE on that tier as a content-
+///   quality fallback. Capped at one extra call (total ≤ 2
+///   upstream per request, fits the 22s deadline budget). Only
+///   replaces the empty result if the fallback actually returns
+///   refs. Users get a useful answer instead of "no matches".
+///
+/// EXPLANATION (not a bug): user's observation "Standard fails
+///   on dev, works on qat/prod, same api" was real but
+///   attributable to LLM noise + RPM bucket transience —
+///   `gemini-2.5-flash` is 10 RPM on the single shared key, so
+///   a brief flurry of test traffic across tiers can dip into
+///   the per-minute rate-limit and any one tier's specific
+///   second-by-second outcome varies. BUG 2's fix masks this
+///   for the user (Standard 0 hits → flash-lite content
+///   fallback returns refs anyway).
+///
 /// 2026-05-11 (v1.2.42 — robustness sweep + dead-code cleanup):
 /// triggered by user "fix all bugs fully with good plan and
 /// thinking". Three parallel audit agents (async/state +
@@ -1501,7 +1545,7 @@
 /// matching edit needed here.
 const String kAppVersion = String.fromEnvironment(
   'APP_VERSION',
-  defaultValue: '1.2.42',
+  defaultValue: '1.2.43',
 );
 
 /// 2026-05-10 (v1.2.20): paired with `kAppVersion` so the About

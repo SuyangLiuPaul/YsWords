@@ -64,7 +64,8 @@ class AiSearchService {
     /// v1.2.26 — picks the Gemini model tier on the server.
     String? aiModel,
   }) async {
-    if (query.trim().length < 2) {
+    // v1.2.43: lowered from `< 2` to allow 1-char CJK queries.
+    if (query.trim().isEmpty) {
       return AiSearchResult.empty();
     }
     final http.Response resp;
