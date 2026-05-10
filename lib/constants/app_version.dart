@@ -781,16 +781,31 @@
 ///   `EdgeInsets.fromLTRB(14, 12, 14, 12)`, all neighbouring
 ///   Settings cards use 16/14. Standardised so the card no
 ///   longer looks visibly tighter than its siblings.
-const String kAppVersion = '1.2.23';
+///
+/// 2026-05-10 (v1.2.24 — release time precision): user asked
+/// "release date and version 同步了吗？另外 release time 具体到
+/// 时间分钟". v1.2.20-23 all shipped on the same calendar date
+/// so the date-only `kAppReleaseDate` couldn't distinguish them.
+/// Renamed `kAppReleaseDate` → `kAppReleaseTime`, expanded
+/// format from "YYYY-MM-DD" to "YYYY-MM-DD HH:MM TZ" so each
+/// release stamps a unique moment. ui-string `aboutFooterNote`
+/// placeholder updated `{date}` → `{time}`. Single dev → qat →
+/// prod cycle in one shot per user request.
+const String kAppVersion = '1.2.24';
 
 /// 2026-05-10 (v1.2.20): paired with `kAppVersion` so the About
-/// footer's "Last updated YYYY-MM-DD" stamp moves in lockstep with
-/// every release. Bump BOTH this and `kAppVersion` together;
-/// nothing else has to change. Format: ISO date (YYYY-MM-DD) for
-/// English locale; the ui-string interpolates this into a
-/// localised template (e.g. zh-Hans uses "2026 年 5 月 10 日").
-/// Fixed in v1.2.20 — previous releases hardcoded the date in
-/// `aboutFooterNote`'s English fallback and stale-drifted (was
-/// stuck on 2026-05-07 even though we shipped through v1.2.19).
-const String kAppReleaseDate = '2026-05-10';
-// (v1.2.21 shipped same day as v1.2.20, so kAppReleaseDate stays.)
+/// footer's "Last updated …" stamp moves in lockstep with every
+/// release. Bump BOTH this and `kAppVersion` together; nothing
+/// else has to change.
+///
+/// 2026-05-10 (v1.2.24): bumped from date-only ("2026-05-10")
+/// to wall-clock-minute precision ("2026-05-10 15:20 AEST").
+/// User pointed out v1.2.20 → v1.2.23 all shipped on the same
+/// day so a date-only stamp couldn't tell them apart — now the
+/// stamp distinguishes back-to-back releases. Constant name
+/// renamed from `kAppReleaseDate` → `kAppReleaseTime` and the
+/// ui-string placeholder from `{date}` → `{time}` to reflect
+/// the higher precision. Format: ISO local date + 24-h
+/// HH:MM + tz abbreviation. The about-page interpolation is
+/// locale-aware via the `aboutFooterNote` ui-string template.
+const String kAppReleaseTime = '2026-05-10 15:20 AEST';

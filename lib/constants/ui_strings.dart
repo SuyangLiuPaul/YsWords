@@ -4029,15 +4029,18 @@ const uiStrings = {
   },
   // 2026-05-10 (v1.2.20): the date used to be hardcoded in this
   // string ("2026-05-07") and stale-drifted across multiple
-  // releases — user noticed at v1.2.19. Now uses a `{date}`
-  // placeholder that the AboutPage footer interpolates with
-  // `kAppReleaseDate` from `lib/constants/app_version.dart`.
-  // Bumping kAppReleaseDate alongside kAppVersion is the
-  // canonical place to keep the footer accurate.
+  // releases — user noticed at v1.2.19. Now uses a placeholder
+  // that the AboutPage footer interpolates with `kAppReleaseTime`
+  // from `lib/constants/app_version.dart`. Bumping
+  // kAppReleaseTime alongside kAppVersion is the canonical place
+  // to keep the footer accurate.
+  // 2026-05-10 (v1.2.24): placeholder upgraded `{date}` → `{time}`
+  // when kAppReleaseDate became kAppReleaseTime (date+H:M+tz)
+  // so back-to-back same-day releases stamp distinct moments.
   'aboutFooterNote': {
-    'zh-Hans': '本页最后更新于 {date}。',
-    'zh-Hant': '本頁最後更新於 {date}。',
-    'en': 'Last updated {date}.',
+    'zh-Hans': '本页最后更新于 {time}。',
+    'zh-Hant': '本頁最後更新於 {time}。',
+    'en': 'Last updated {time}.',
   },
   // Daily News (Round 40 — migrated from sibling DailyNews project).
   'dailyNews': {

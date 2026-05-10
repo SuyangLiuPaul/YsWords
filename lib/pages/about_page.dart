@@ -150,11 +150,14 @@ class AboutPage extends StatelessWidget {
                 // user is on. Compile-time flag — no runtime cost
                 // in the international build.
                 child: Text(
-                  // 2026-05-10 (v1.2.20): footer note now interpolates
-                  // `{date}` with kAppReleaseDate so each version's
-                  // release date follows the version number
-                  // automatically. No more stale-date drift.
-                  '${(uiStrings['aboutFooterNote']?[locale] ?? 'Last updated {date}.').replaceFirst('{date}', kAppReleaseDate)}'
+                  // 2026-05-10 (v1.2.20): footer interpolates with
+                  // kAppReleaseDate (was hardcoded date that drifted).
+                  // 2026-05-10 (v1.2.24): kAppReleaseDate renamed
+                  // to kAppReleaseTime (now wall-clock-minute precision
+                  // — "YYYY-MM-DD HH:MM TZ"), placeholder `{date}` →
+                  // `{time}`. Back-to-back same-day releases now
+                  // distinguishable from the footer alone.
+                  '${(uiStrings['aboutFooterNote']?[locale] ?? 'Last updated {time}.').replaceFirst('{time}', kAppReleaseTime)}'
                       ' · v$kAppVersion'
                       '${kChinaMode ? ' · ${uiStrings['chinaBuildTag']?[locale] ?? 'China build'}' : ''}',
                   textAlign: TextAlign.center,
