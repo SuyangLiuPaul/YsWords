@@ -182,8 +182,13 @@ class _SermonsPageState extends State<SermonsPage> {
             return Center(
               child: Padding(
                 padding: const EdgeInsets.all(24),
-                child: Text('Failed to load sermons: ${snap.error}',
-                    style: TextStyle(color: scheme.error)),
+                // 2026-05-10 (v1.2.21): localised. Sermons-specific
+                // wording falls back to the shared `loadErrorTitle`
+                // if the dedicated ui-string isn't set.
+                child: Text(
+                  '${uiStrings['loadErrorTitle']?[locale] ?? 'Failed to load'}: ${snap.error}',
+                  style: TextStyle(color: scheme.error),
+                ),
               ),
             );
           }

@@ -286,8 +286,14 @@ class _FamilyTreePageState extends State<FamilyTreePage> {
             return Center(
               child: Padding(
                 padding: const EdgeInsets.all(24),
-                child: Text('Failed to load: ${snap.error}',
-                    style: TextStyle(color: scheme.error)),
+                // 2026-05-10 (v1.2.21): localised — was hardcoded
+                // English. Reuses `loadErrorTitle` ui-string that
+                // LoadingPage's error scaffold already uses, with
+                // the raw error suffixed for diagnostics.
+                child: Text(
+                  '${uiStrings['loadErrorTitle']?[locale] ?? 'Failed to load'}: ${snap.error}',
+                  style: TextStyle(color: scheme.error),
+                ),
               ),
             );
           }

@@ -393,8 +393,15 @@ class _LoadingPageState extends State<LoadingPage> {
                     ),
                   ),
                   SizedBox(height: 8 * s),
+                  // 2026-05-10 (v1.2.21): added maxLines + overflow.
+                  // The reference (e.g. "1 Thessalonians 5:16-18")
+                  // could clip on narrow viewports; ellipsis is
+                  // the expected fallback rather than wrapping.
                   Text(
                     '${verse.book} ${verse.chapter}:${verse.verseLabel}',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: settings.fontSize * 0.9,
                       color: Theme.of(context)

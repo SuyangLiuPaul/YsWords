@@ -1,3 +1,5 @@
+import 'dart:async' show StreamSubscription;
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 // ignore: depend_on_referenced_packages
 import 'package:cloud_firestore_web/cloud_firestore_web.dart'
@@ -47,6 +49,12 @@ class CloudAuthService extends ChangeNotifier {
 
   bool _ready = false;
   bool _configured = false;
+  // 2026-05-10 (v1.2.21): track the userChanges() subscription so
+  // `retryInit()` can cancel the previous one before opening a
+  // fresh stream. Without this, every Retry on the cloud-init
+  // failure surface added another permanent listener — typically
+  // bounded (1-3 retries per session) but still leaky.
+  StreamSubscription<User?>? _userChangesSub;
   String? _initError;
   User? _user;
 
@@ -261,7 +269,11 @@ class CloudAuthService extends ChangeNotifier {
       // currentUser misbehave, individual stream events can also
       // arrive in weird shapes. We never want a single bad event to
       // break the listener for the rest of the session.
-      auth.userChanges().listen((u) {
+      // Cancel any prior subscription from a previous retryInit
+      // pass. v1.2.21: was untracked → every retry leaked another
+      // permanent listener.
+      _userChangesSub?.cancel();
+      _userChangesSub = auth.userChanges().listen((u) {
         try {
           _user = u;
           notifyListeners();

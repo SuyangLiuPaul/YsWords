@@ -719,7 +719,29 @@
 ///    side payloads. Now logs to `debugPrint` so a corrupt blob
 ///    surfaces in the dev console instead of silently degrading
 ///    to an empty merge.
-const String kAppVersion = '1.2.20';
+///
+/// 2026-05-10 (v1.2.21 — audit fixes + listener-leak fix):
+/// user said "still more bugs fix fully". Spawned two parallel
+/// audit agents (resource-leak focus + localisation/UI focus);
+/// triaged + fixed real findings:
+/// 1. Three pages had hardcoded English "Failed to load:" error
+///    strings — `family_tree_page.dart:289`,
+///    `bible_timeline_page.dart:82`, `sermons_page.dart:185`.
+///    All three now use the existing localised
+///    `loadErrorTitle` ui-string (which already has zh-Hans /
+///    zh-Hant / en).
+/// 2. `loading_page.dart` splash verse-reference text could clip
+///    on narrow viewports — added `maxLines: 1`,
+///    `overflow: TextOverflow.ellipsis`,
+///    `textAlign: TextAlign.center`.
+/// 3. `cloud_auth_service.dart::_doInit` — the
+///    `auth.userChanges().listen(...)` subscription was untracked.
+///    `retryInit()` could fire `_doInit()` again and accumulate
+///    permanent stream listeners. Now stored as
+///    `_userChangesSub` and cancelled before each fresh
+///    subscription. Bounded leak (1-3 retries/session) but still
+///    worth closing.
+const String kAppVersion = '1.2.21';
 
 /// 2026-05-10 (v1.2.20): paired with `kAppVersion` so the About
 /// footer's "Last updated YYYY-MM-DD" stamp moves in lockstep with
@@ -731,3 +753,4 @@ const String kAppVersion = '1.2.20';
 /// `aboutFooterNote`'s English fallback and stale-drifted (was
 /// stuck on 2026-05-07 even though we shipped through v1.2.19).
 const String kAppReleaseDate = '2026-05-10';
+// (v1.2.21 shipped same day as v1.2.20, so kAppReleaseDate stays.)

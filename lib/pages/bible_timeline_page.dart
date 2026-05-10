@@ -79,8 +79,12 @@ class _BibleTimelinePageState extends State<BibleTimelinePage> {
             return Center(
               child: Padding(
                 padding: const EdgeInsets.all(24),
-                child: Text('Failed to load: ${snap.error}',
-                    style: TextStyle(color: scheme.error)),
+                // 2026-05-10 (v1.2.21): localised via shared
+                // `loadErrorTitle` ui-string.
+                child: Text(
+                  '${uiStrings['loadErrorTitle']?[locale] ?? 'Failed to load'}: ${snap.error}',
+                  style: TextStyle(color: scheme.error),
+                ),
               ),
             );
           }
