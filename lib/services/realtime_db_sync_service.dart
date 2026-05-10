@@ -464,6 +464,77 @@ class RealtimeDbSyncService extends ChangeNotifier {
     return const {};
   }
 
+  // ── BYOK Gemini API key sync (v1.2.17) ──────────────────────────
+  //
+  // Stored at `users/{uid}/account/geminiApiKey` — separate from
+  // the profile-scoped `users/{uid}/sync` blob because the BYOK key
+  // is account-level (one Google sign-in = one Gemini key, regardless
+  // of which YsWords profile is active).
+  //
+  // Firebase rules already enforce per-uid isolation, so the key is
+  // only visible to the signed-in user themselves. But — fair warning
+  // — it does leave the local device when synced. The China build
+  // skips Firebase init at boot, so push/pull silently no-op for
+  // those users; their key stays SharedPreferences-only forever.
+
+  static const String _kByokKeyPath = 'account/geminiApiKey';
+
+  /// Push the current user's Gemini API key to RTDB. Silently no-ops
+  /// when not signed in or Firebase isn't configured (e.g. China
+  /// build). Empty key → null write (clears cloud copy).
+  Future<void> pushGeminiKey(String key) async {
+    final auth = CloudAuthService.instance;
+    if (!auth.isConfigured || !auth.isSignedIn) return;
+    final uid = auth.currentUser?.uid;
+    if (uid == null) return;
+    try {
+      final ref =
+          FirebaseDatabase.instance.ref('users/$uid/$_kByokKeyPath');
+      if (key.trim().isEmpty) {
+        await ref.remove();
+      } else {
+        await ref.set(key.trim());
+      }
+    } on FirebaseException catch (e) {
+      // ignore: avoid_print
+      print('[RTDBSync] pushGeminiKey FirebaseException: '
+          '${e.code} :: ${e.message}');
+    } catch (e) {
+      // ignore: avoid_print
+      print('[RTDBSync] pushGeminiKey failed: $e');
+    }
+  }
+
+  /// Pull the current user's Gemini API key from RTDB. Returns:
+  ///   • the stored key on hit
+  ///   • empty string when the cloud has been explicitly cleared
+  ///   • null on miss / not signed in / Firebase not configured /
+  ///     network error — caller treats null as "no information,
+  ///     keep local".
+  Future<String?> pullGeminiKey() async {
+    final auth = CloudAuthService.instance;
+    if (!auth.isConfigured || !auth.isSignedIn) return null;
+    final uid = auth.currentUser?.uid;
+    if (uid == null) return null;
+    try {
+      final snap = await FirebaseDatabase.instance
+          .ref('users/$uid/$_kByokKeyPath')
+          .get();
+      if (!snap.exists) return '';
+      final v = snap.value;
+      return v is String ? v : '';
+    } on FirebaseException catch (e) {
+      // ignore: avoid_print
+      print('[RTDBSync] pullGeminiKey FirebaseException: '
+          '${e.code} :: ${e.message}');
+      return null;
+    } catch (e) {
+      // ignore: avoid_print
+      print('[RTDBSync] pullGeminiKey failed: $e');
+      return null;
+    }
+  }
+
   Future<Map<String, dynamic>> _snapshotLocal() async {
     final prefs = await SharedPreferences.getInstance();
     final out = <String, dynamic>{};

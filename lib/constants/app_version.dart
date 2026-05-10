@@ -639,4 +639,29 @@
 ///     recompute. Addresses the "前后一章" half of the request:
 ///     adjacent chapters in the current version stay cached as
 ///     long as you keep visiting them.
-const String kAppVersion = '1.2.16';
+///
+/// 2026-05-10 (v1.2.17 — sync BYOK Gemini key across devices):
+/// user asked "可以 sync gemini api across devices push" — yes.
+/// New `users/{uid}/account/geminiApiKey` path on Firebase RTDB
+/// (separate from the per-profile `users/{uid}/sync` blob since
+/// the BYOK key is account-level, not profile-scoped). Firebase
+/// rules enforce per-uid isolation so only the signed-in user
+/// themselves can read/write their own copy.
+/// Push: every `AppSettings.setGeminiApiKey` fire-and-forgets a
+/// write to RTDB after the local SharedPreferences save (silent
+/// no-op when not signed in / Firebase unconfigured / China
+/// build). Pull: `_pullGeminiKeyFromCloudIfEmpty` runs at the
+/// end of `loadSettings()` AND on every CloudAuthService auth-
+/// state change — local-empty-only policy avoids clobbering a
+/// freshly-pasted key the user hasn't synced yet.
+/// `GeminiKeyCard` mirrors the cloud-pulled key into the text
+/// controller via a settings listener (only when controller is
+/// empty, so user mid-typing isn't disrupted) and shows a small
+/// "☁ Signed in — auto-syncs to other devices" disclosure under
+/// the input when applicable. The `aiByokBody` copy was softened
+/// from "never synced across devices" to just "lives on this
+/// device" since the new claim is conditional on auth state.
+/// China build: kChinaMode skips Firebase init, so push/pull no-
+/// op silently and the key remains SharedPreferences-only — same
+/// as before, no regression.
+const String kAppVersion = '1.2.17';

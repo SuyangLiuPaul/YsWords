@@ -2361,18 +2361,37 @@ const uiStrings = {
     'en': 'Use my own Gemini API key',
   },
   'aiByokBody': {
+    // 2026-05-10 (v1.2.17): wording softened from "never synced
+    // across devices" to "lives on this device" — the key now
+    // syncs via the user's own Firebase project to their other
+    // signed-in devices when they're signed in. The new
+    // `aiByokSyncedNote` ui-string carries the explicit cloud-sync
+    // disclosure and only renders below the input when the
+    // condition (signed in + key present + intl build) matches.
     'zh-Hans': '从 Google AI Studio 获取免费密钥并粘贴在这里——之后 AI 功能（原文释义、AI 搜索）'
         '将走您自己的额度（每分钟 15 次，每日 1500 次），而不是与开发者池共享。'
-        '密钥仅保存在本设备本地，不会上传到我们的服务器或同步到其他设备。',
+        '密钥保存在本设备本地。',
     'zh-Hant': '從 Google AI Studio 取得免費金鑰並貼在這裡——之後 AI 功能（原文釋義、AI 搜尋）'
         '將走您自己的配額（每分鐘 15 次，每日 1500 次），而不是與開發者池共享。'
-        '金鑰僅保存在本裝置本地，不會上傳到我們的伺服器或同步到其他裝置。',
+        '金鑰保存在本裝置本地。',
     'en':
         'Paste your free Gemini API key from AI Studio so AI features '
             '(word explanations, AI search) use your own quota (15 RPM / '
             '1500 RPD) instead of the shared developer pool. The key '
-            'lives on this device only — never uploaded to our server '
-            'or synced across devices.',
+            'lives on this device.',
+  },
+  // 2026-05-10 (v1.2.17): cloud-sync disclosure shown only when the
+  // user is signed in (intl build, Firebase available) and has a
+  // key set. Sits in the BYOK card below the buttons. Tells the
+  // user the key is synced to their OWN Firebase project under
+  // `users/{uid}/account/geminiApiKey` — visible only to them per
+  // Firebase rules — so it shows up on every other device they
+  // sign in on.
+  'aiByokSyncedNote': {
+    'zh-Hans': '已登录 — 密钥会自动同步到您账号下的其他已登录设备。',
+    'zh-Hant': '已登入 — 密鑰會自動同步到您帳號下的其他已登入裝置。',
+    'en':
+        'Signed in — the key will auto-sync to your other signed-in devices.',
   },
   'aiByokGetKey': {
     'zh-Hans': '获取免费密钥',

@@ -4,9 +4,11 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
+import 'package:yswords/constants/build_flags.dart';
 import 'package:yswords/constants/ui_strings.dart';
 import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/services/ai_bible_search_service.dart';
+import 'package:yswords/services/cloud_auth_service.dart';
 import 'package:yswords/services/link_opener.dart';
 import 'package:yswords/utils/theme_color_helpers.dart';
 
@@ -58,13 +60,31 @@ class GeminiKeyCardState extends State<GeminiKeyCard> {
     super.initState();
     _ctrl = TextEditingController(text: widget.settings.geminiApiKey);
     _ctrl.addListener(_resetTestStatus);
+    // 2026-05-10 (v1.2.17): when the cloud sync (or any other
+    // out-of-card path) fills in `settings.geminiApiKey` while the
+    // text field is still empty, mirror it into the controller so
+    // the user sees the cloud-pulled key immediately. Don't
+    // overwrite a non-empty controller — the user might be in the
+    // middle of typing a new key.
+    widget.settings.addListener(_onSettingsKeyChanged);
   }
 
   @override
   void dispose() {
+    widget.settings.removeListener(_onSettingsKeyChanged);
     _ctrl.removeListener(_resetTestStatus);
     _ctrl.dispose();
     super.dispose();
+  }
+
+  void _onSettingsKeyChanged() {
+    if (!mounted) return;
+    final remote = widget.settings.geminiApiKey;
+    if (remote.isEmpty) return;
+    if (_ctrl.text.isNotEmpty) return; // user is typing — don't clobber
+    _ctrl.text = remote;
+    // _resetTestStatus fires automatically via the controller
+    // listener; keep it idle/clean.
   }
 
   void _resetTestStatus() {
@@ -290,6 +310,41 @@ class GeminiKeyCardState extends State<GeminiKeyCard> {
                     .clamp(12.0, 14.0),
               ),
             ),
+            // 2026-05-10 (v1.2.17): cloud-sync disclosure. Only
+            // shows when (a) we're not in the China build (Firebase
+            // skipped there), (b) the user is signed in, and (c)
+            // they have a key set — so the line is informative,
+            // not aspirational. Auth-state changes trigger a
+            // rebuild via the AppSettings listener already wired in
+            // initState.
+            if (!kChinaMode &&
+                CloudAuthService.instance.isSignedIn &&
+                hasKey) ...[
+              SizedBox(height: 6 * s),
+              Row(
+                children: [
+                  Icon(
+                    Icons.cloud_done_outlined,
+                    size: 14,
+                    color: paletteAccent(context, Colors.blue),
+                  ),
+                  SizedBox(width: 6 * s),
+                  Expanded(
+                    child: Text(
+                      uiStrings['aiByokSyncedNote']?[locale] ??
+                          'Signed in — the key will auto-sync to your other signed-in devices.',
+                      style: TextStyle(
+                        fontFamily: widget.settings.fontFamily,
+                        fontSize: (widget.settings.fontSize - 5)
+                            .clamp(10.0, 12.0),
+                        color: paletteAccent(context, Colors.blue),
+                        height: 1.4,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
             SizedBox(height: 8 * s),
             Wrap(
               spacing: 8 * s,

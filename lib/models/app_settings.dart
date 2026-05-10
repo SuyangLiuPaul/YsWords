@@ -3,6 +3,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:yswords/models/app_style_preset.dart' show CardMaterial;
 import 'package:yswords/models/dashboard_section.dart';
+import 'package:yswords/services/cloud_auth_service.dart';
+import 'package:yswords/services/realtime_db_sync_service.dart';
 import 'package:yswords/utils/font_catalog.dart';
 
 const _kFontFamily = 'fontFamily';
@@ -196,6 +198,33 @@ class AppSettings extends ChangeNotifier {
     } else {
       await prefs.setString(_kGeminiApiKey, trimmed);
     }
+    // 2026-05-10 (v1.2.17): also push to RTDB so the key is
+    // available on every device the user signs in on. Silent no-op
+    // when not signed in / China build / Firebase unconfigured —
+    // see RealtimeDbSyncService.pushGeminiKey for guards. Fire-and-
+    // forget — local SharedPreferences is the source of truth for
+    // the *current* device, the cloud copy is just a convenience
+    // for other devices.
+    // ignore: unawaited_futures
+    RealtimeDbSyncService.instance.pushGeminiKey(trimmed);
+  }
+
+  /// 2026-05-10 (v1.2.17): pull the Gemini key from RTDB and apply
+  /// to local if (and only if) local is currently empty. Called
+  /// from `loadSettings()` on boot after SharedPrefs has populated
+  /// the local copy, and from a CloudAuthService listener on sign-
+  /// in success. Local-empty-only policy avoids clobbering a key
+  /// the user just pasted on this device but hasn't pushed yet
+  /// (signed out → paste → sign in → would otherwise lose it).
+  Future<void> _pullGeminiKeyFromCloudIfEmpty() async {
+    if (_geminiApiKey.trim().isNotEmpty) return;
+    final remote = await RealtimeDbSyncService.instance.pullGeminiKey();
+    if (remote == null) return; // no info / not signed in
+    if (remote.trim().isEmpty) return; // cloud explicitly empty
+    _geminiApiKey = remote.trim();
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_kGeminiApiKey, remote.trim());
   }
 
   /// The current dashboard render order. Returns a defensive copy so
@@ -673,6 +702,34 @@ class AppSettings extends ChangeNotifier {
     }
 
     notifyListeners();
+
+    // 2026-05-10 (v1.2.17): now that the local key is settled (or
+    // confirmed empty), give the cloud copy a chance to fill in
+    // when local is blank but the user is signed in on another
+    // device that has set one. Fire-and-forget — no point blocking
+    // boot on a network round-trip for a non-essential convenience.
+    // Local-empty-only policy means a freshly-pasted local key
+    // (signed-out → paste → sign-in flow) survives intact; the
+    // pull only fills a vacuum.
+    // ignore: unawaited_futures
+    _pullGeminiKeyFromCloudIfEmpty();
+
+    // Also re-pull whenever the user signs in on this device. The
+    // CloudAuthService notifier fires on every auth-state change;
+    // we narrow to "now signed in AND key is currently empty" via
+    // the same idempotent helper.
+    if (!_authListenerWired) {
+      _authListenerWired = true;
+      CloudAuthService.instance.addListener(_onAuthChangedForByokSync);
+    }
+  }
+
+  bool _authListenerWired = false;
+
+  void _onAuthChangedForByokSync() {
+    if (!CloudAuthService.instance.isSignedIn) return;
+    // ignore: unawaited_futures
+    _pullGeminiKeyFromCloudIfEmpty();
   }
 
   static ThemeMode _parseThemeMode(String? raw) {
