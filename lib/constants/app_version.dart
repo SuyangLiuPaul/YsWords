@@ -882,6 +882,40 @@
 /// New ui-string keys: `tooltipClose`, `couldNotParseRef`
 /// (`{ref}` placeholder), `sermonNoBody` — all three locales.
 ///
+/// 2026-05-10 (v1.2.36 — dark-mode era-title contrast fix +
+/// priorities doc): user reported "for bible timeline and family
+/// tree its hard to see those titles in dark mode". Both pages
+/// rendered era-tinted titles ("OT / NT / Patriarchs / Mosaic /
+/// Conquest / Monarchy / Exile / …") with a hardcoded dark
+/// palette (lightness ~33–44 %) tuned for light surfaces. On the
+/// dark theme's `#121212`-ish surface the titles faded into the
+/// background.
+///
+/// Fix: brightness-aware foreground helpers that lerp the era
+/// colour toward white by 0.45 in dark mode (preserves the
+/// hue / colour-coding while pushing the value high enough to
+/// clear contrast). Backgrounds + borders + low-alpha gradients
+/// keep the raw deeper hue — those are decorative and don't need
+/// to clear text contrast.
+///
+/// • `bible_timeline_page.dart` — new `_eraColorOn(brightness,
+///   era)` helper; `_EraDivider` now uses `fg` for its icon +
+///   title, raw `color` for the gradient + left border.
+/// • `family_tree_page.dart` — same `_eraColorOn` helper plus a
+///   sibling `_readableEraFg(context, eraColor)` that operates on
+///   pre-resolved colors (used by `_BridgeFooter`, `_BridgeChip`,
+///   `_NextEraTag`, the `east_rounded` next-era icon, and the
+///   per-person era pill in `_SearchResultTile`). Era headers
+///   (chevron + history_edu icons + era title + people-count
+///   badge) all switch to the brightness-aware variant.
+///
+/// Plus: new `docs/priorities.md` capturing the high-ROI deferred
+/// items from the v1.2.35 robustness review (CI workflow, error
+/// monitoring, Lam 5:21/22 data fix, test coverage on risky files,
+/// browser-matrix verification). Lives separately from
+/// HANDOFF.md's "Known Issues" so it can be re-prioritised
+/// without rewriting the canonical doc.
+///
 /// 2026-05-10 (v1.2.35 — viewer-local-time release stamp): user
 /// "uodate last edit should based on user's timezone also default
 /// to melbourne one right". v1.2.34 stamped the build moment in
@@ -1155,7 +1189,7 @@
 /// matching edit needed here.
 const String kAppVersion = String.fromEnvironment(
   'APP_VERSION',
-  defaultValue: '1.2.35',
+  defaultValue: '1.2.36',
 );
 
 /// 2026-05-10 (v1.2.20): paired with `kAppVersion` so the About

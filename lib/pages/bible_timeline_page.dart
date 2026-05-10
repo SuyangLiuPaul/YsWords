@@ -272,7 +272,13 @@ class _EraDivider extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // 2026-05-10 (v1.2.36): the icon/text use the brightness-aware
+    // variant so they stay readable on the dark theme; the gradient
+    // and border keep the raw era colour because they're decorative
+    // accents (low alpha + thin border) where the deeper hue is
+    // appropriate.
     final color = _eraColor(era);
+    final fg = _eraColorOn(Theme.of(context).brightness, era);
     return Container(
       margin: const EdgeInsets.only(top: 12),
       padding: const EdgeInsets.fromLTRB(16, 10, 16, 8),
@@ -287,7 +293,7 @@ class _EraDivider extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Icon(Icons.history_edu, size: 14, color: color),
+          Icon(Icons.history_edu, size: 14, color: fg),
           const SizedBox(width: 6),
           Text(
             _eraLabel(era, locale),
@@ -295,7 +301,7 @@ class _EraDivider extends StatelessWidget {
               fontSize: 12,
               fontWeight: FontWeight.w800,
               letterSpacing: 0.6,
-              color: color,
+              color: fg,
             ),
           ),
         ],
@@ -582,4 +588,24 @@ Color _eraColor(String era) {
       return const Color(0xFFB8860B);
   }
   return const Color(0xFF555555);
+}
+
+/// 2026-05-10 (v1.2.36): brightness-aware variant of `_eraColor`.
+/// User reported that era titles ("OT / NT / Patriarchs / …") were
+/// hard to read in dark mode — the palette above is tuned for light
+/// surfaces (lightness ~33–44 %) and fades into the dark theme's
+/// `#121212`-ish surface. Lightening via `Color.lerp(c, Colors.white,
+/// 0.45)` keeps the era's hue (so colour-coding still works) while
+/// pushing the value high enough to clear the WCAG contrast threshold
+/// against a dark surface.
+///
+/// Use this everywhere a hardcoded era colour is rendered as text /
+/// icon / chip-foreground; raw `_eraColor` is fine for backgrounds /
+/// borders / accents that DON'T need to clear contrast.
+Color _eraColorOn(Brightness brightness, String era) {
+  final base = _eraColor(era);
+  if (brightness == Brightness.dark) {
+    return Color.lerp(base, Colors.white, 0.45) ?? base;
+  }
+  return base;
 }

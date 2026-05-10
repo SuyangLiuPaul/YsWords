@@ -832,6 +832,11 @@ class _EraSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = _eraColor(era);
+    // 2026-05-10 (v1.2.36): brightness-aware era foreground used
+    // for the era title text + the chevron / history_edu icons +
+    // the people-count badge. Backgrounds (gradient + alpha-15
+    // badge fill + alpha-30 border) keep the raw deep era hue.
+    final fg = _eraColorOn(Theme.of(context).brightness, era);
     // Section roots = people in this era whose parent is NOT in
     // this era (or has no parent). Spouses-in (no parent) are
     // shown inline as chips on their husband's row, so we exclude
@@ -917,10 +922,10 @@ class _EraSection extends StatelessWidget {
                         ? Icons.chevron_right
                         : Icons.expand_more,
                     size: 22,
-                    color: color,
+                    color: fg,
                   ),
                   const SizedBox(width: 6),
-                  Icon(Icons.history_edu, size: 16, color: color),
+                  Icon(Icons.history_edu, size: 16, color: fg),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Column(
@@ -932,7 +937,7 @@ class _EraSection extends StatelessWidget {
                             fontSize: 13,
                             fontWeight: FontWeight.w800,
                             letterSpacing: 0.4,
-                            color: color,
+                            color: fg,
                           ),
                         ),
                         Padding(
@@ -963,7 +968,7 @@ class _EraSection extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.w700,
-                        color: color,
+                        color: fg,
                       ),
                     ),
                   ),
@@ -1123,6 +1128,11 @@ class _BridgeFooter extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // 2026-05-10 (v1.2.36): brightness-aware foreground for the
+    // "Continues with" icon + label so it stays readable on the
+    // dark theme. The translucent backdrop + border keeps the raw
+    // era hue.
+    final fg = _readableEraFg(context, eraColor);
     return Container(
       margin: const EdgeInsets.only(top: 8, left: 8, right: 8, bottom: 4),
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
@@ -1139,7 +1149,7 @@ class _BridgeFooter extends StatelessWidget {
         spacing: 6,
         runSpacing: 4,
         children: [
-          Icon(Icons.east_rounded, size: 14, color: eraColor),
+          Icon(Icons.east_rounded, size: 14, color: fg),
           const SizedBox(width: 2),
           Text(
             uiStrings['familyTreeContinuesWith']?[locale] ??
@@ -1148,7 +1158,7 @@ class _BridgeFooter extends StatelessWidget {
               fontSize: 11,
               fontWeight: FontWeight.w700,
               letterSpacing: 0.4,
-              color: eraColor,
+              color: fg,
             ),
           ),
           for (final p in bridges)
@@ -1163,6 +1173,19 @@ class _BridgeFooter extends StatelessWidget {
       ),
     );
   }
+}
+
+/// 2026-05-10 (v1.2.36): brightness-aware foreground colour for
+/// era-tinted text/icons. The widgets that receive `eraColor` as a
+/// constructor parameter (rather than the era key) call this helper
+/// to derive a readable variant for the current theme. Mirrors
+/// `_eraColorOn(brightness, era)` but operates on a pre-resolved
+/// `Color`.
+Color _readableEraFg(BuildContext context, Color eraColor) {
+  if (Theme.of(context).brightness == Brightness.dark) {
+    return Color.lerp(eraColor, Colors.white, 0.45) ?? eraColor;
+  }
+  return eraColor;
 }
 
 class _BridgeChip extends StatelessWidget {
@@ -1182,6 +1205,7 @@ class _BridgeChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final fg = _readableEraFg(context, eraColor);
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -1201,14 +1225,14 @@ class _BridgeChip extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               Icon(Icons.person_pin_rounded,
-                  size: 11, color: eraColor),
+                  size: 11, color: fg),
               const SizedBox(width: 3),
               Text(
                 person.localizedName(locale),
                 style: TextStyle(
                   fontSize: 11.5,
                   fontWeight: FontWeight.w700,
-                  color: eraColor,
+                  color: fg,
                 ),
               ),
             ],
@@ -1491,7 +1515,9 @@ class _SearchResultTile extends StatelessWidget {
                                   fontSize: 9.5,
                                   fontWeight: FontWeight.w700,
                                   letterSpacing: 0.5,
-                                  color: eraColor,
+                                  // v1.2.36: brightness-aware fg
+                                  color: _readableEraFg(
+                                      context, eraColor),
                                 ),
                               ),
                             ),
@@ -1712,7 +1738,9 @@ class _BridgeLeafRow extends StatelessWidget {
                   ),
                 ),
                 Icon(Icons.east_rounded,
-                    size: 16, color: targetEraColor),
+                    size: 16,
+                    // v1.2.36: brightness-aware fg
+                    color: _readableEraFg(context, targetEraColor)),
                 // Info button — opens detail without jumping. Tap
                 // row body = jump to next era; this little box =
                 // peek at details first.
@@ -1742,6 +1770,7 @@ class _NextEraTag extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final fg = _readableEraFg(context, targetEraColor);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
       decoration: BoxDecoration(
@@ -1758,7 +1787,7 @@ class _NextEraTag extends StatelessWidget {
           fontSize: 9,
           fontWeight: FontWeight.w700,
           letterSpacing: 0.4,
-          color: targetEraColor,
+          color: fg,
         ),
       ),
     );
@@ -2231,6 +2260,22 @@ Color _eraColor(String era) {
       return const Color(0xFFB8860B);
   }
   return const Color(0xFF555555);
+}
+
+/// 2026-05-10 (v1.2.36): brightness-aware variant of `_eraColor`.
+/// Mirror of the helper added in `bible_timeline_page.dart` for the
+/// same reason — the palette above is tuned for light surfaces and
+/// fades into the dark theme's `#121212`-ish surface, making era
+/// titles ("Patriarchs / Mosaic / …") hard to read in dark mode.
+/// `Color.lerp(c, Colors.white, 0.45)` keeps the era's hue (so
+/// colour-coding still works) while pushing the value high enough
+/// to clear contrast against a dark surface.
+Color _eraColorOn(Brightness brightness, String era) {
+  final base = _eraColor(era);
+  if (brightness == Brightness.dark) {
+    return Color.lerp(base, Colors.white, 0.45) ?? base;
+  }
+  return base;
 }
 
 // ── Comparison-table copy button + floating toast ────────────────
