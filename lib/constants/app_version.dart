@@ -741,7 +741,27 @@
 ///    `_userChangesSub` and cancelled before each fresh
 ///    subscription. Bounded leak (1-3 retries/session) but still
 ///    worth closing.
-const String kAppVersion = '1.2.21';
+///
+/// 2026-05-10 (v1.2.22 — boot perf + UI polish): user said
+/// "increase performance and make sure all bugs fixed and ui ux
+/// should be better". Three changes:
+/// 1. **Hybrid pre-load.** v1.2.18 blocked the splash for ~25 s
+///    eagerly loading all 13 versions. v1.2.22 keeps eager load
+///    for ONLY the top 4 (cuvs-yhwh / cuv / cnv / kjv — 80% of
+///    real-world switches) and defers the other 9 to a fire-
+///    and-forget background pass with 3 s gaps after the splash
+///    dismisses. Splash drops from ~25 s → ~5 s. By ~30 s post-
+///    boot all 13 are still cached.
+/// 2. **About AppBar overflow guard.** Added `maxLines: 1` +
+///    `TextOverflow.ellipsis` to the "About · v1.2.22" title —
+///    on 320 px-class viewports with bumped fontSize the
+///    combined string was clipping mid-word.
+/// 3. **Sync-success snackbar dark-mode fix.** Swapped
+///    hardcoded `Colors.green.shade700` + `Colors.white` →
+///    `paletteAccent(context, Colors.green)` + a brightness-
+///    based contrast for the icon/text. Dark-mode users used to
+///    see white-on-too-light contrast.
+const String kAppVersion = '1.2.22';
 
 /// 2026-05-10 (v1.2.20): paired with `kAppVersion` so the About
 /// footer's "Last updated YYYY-MM-DD" stamp moves in lockstep with

@@ -50,8 +50,13 @@ class AboutPage extends StatelessWidget {
         // the running version directly in the AppBar so it's
         // always one tap away. Also keep the footer entry for
         // historical / copy-paste support purposes.
+        // 2026-05-10 (v1.2.22): added overflow + maxLines so the
+        // combined "About · v1.2.22" doesn't clip on 320 px-class
+        // viewports when the user has bumped settings.fontSize.
         title: Text(
           '${uiStrings['aboutPageTitle']?[locale] ?? 'About'} · v$kAppVersion',
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
         ),
         actions: const [HomeIconButton()],
       ),

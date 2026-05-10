@@ -2172,21 +2172,31 @@ class _SyncStatusRowState extends State<_SyncStatusRow> {
       messenger.hideCurrentSnackBar();
       if (ok) {
         // Success — short, no fuss, dismissible.
+        // 2026-05-10 (v1.2.22): swapped hardcoded
+        // Colors.green.shade700 / Colors.white → theme-aware
+        // colours. The hardcoded green broke in dark mode
+        // (white text on a too-light surface) and clashed with
+        // the user's chosen primary palette.
+        final accent = paletteAccent(context, Colors.green);
+        final onAccent = ThemeData.estimateBrightnessForColor(accent) ==
+                Brightness.dark
+            ? Colors.white
+            : Colors.black;
         messenger.showSnackBar(SnackBar(
           content: Row(
             children: [
-              const Icon(Icons.check_circle_outline,
-                  color: Colors.white, size: 18),
+              Icon(Icons.check_circle_outline,
+                  color: onAccent, size: 18),
               const SizedBox(width: 8),
               Text(
                 uiStrings['syncSuccess']?[locale] ?? 'Synced.',
                 style: TextStyle(
                     fontFamily: widget.settings.fontFamily,
-                    color: Colors.white),
+                    color: onAccent),
               ),
             ],
           ),
-          backgroundColor: Colors.green.shade700,
+          backgroundColor: accent,
           duration: const Duration(milliseconds: 2200),
           behavior: SnackBarBehavior.floating,
         ));
