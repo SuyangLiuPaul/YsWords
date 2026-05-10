@@ -6,7 +6,7 @@ mode chips, dashboard quick-links grid, feedback form). This file
 is the capture brief for whoever takes them — the URL flow,
 suggested viewport size, and the filename to save.
 
-> **Status (2026-05-09, v1.2.5):** **11 rows still relevant** —
+> **Status (2026-05-10, v1.2.31):** **11 rows still relevant** —
 > all captured against the live build and committed into
 > `assets/screenshots/`. The README's *App Screenshots* table uses
 > these in 5 rows × 2 columns; older shots (note popup / multi-

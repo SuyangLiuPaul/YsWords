@@ -652,7 +652,26 @@ class AppSettings extends ChangeNotifier {
   }
 
   Future<void> loadSettings() async {
-    final prefs = await SharedPreferences.getInstance();
+    // 2026-05-10 (v1.2.31): wrap in try/catch so a Safari-private-
+    // browsing localStorage block, an iOS storage quota error, or
+    // any other shared_preferences plugin failure leaves all
+    // settings at compile-time defaults instead of throwing into
+    // the bootstrap catch (which would mis-route the user to the
+    // "Failed to load" verse-error scaffold even though the verse
+    // load is fine). Compile-time defaults are sane: zh-Hans /
+    // system theme / fontSize 20 — user can still use the app.
+    SharedPreferences? prefs;
+    try {
+      prefs = await SharedPreferences.getInstance();
+    } catch (e, st) {
+      debugPrint('AppSettings.loadSettings: shared_preferences '
+          'unavailable, using defaults — $e\n$st');
+      // Notify listeners with default values so the rest of the
+      // tree wires up immediately; later writes via setX(...) will
+      // also fail-soft so functionality degrades gracefully.
+      notifyListeners();
+      return;
+    }
     // Round 56: migrate legacy keys (Times New Roman, Garamond, …)
     // before resolving — DropdownButton would otherwise crash on a
     // value that doesn't match any item.

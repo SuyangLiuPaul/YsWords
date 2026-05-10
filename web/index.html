@@ -32,7 +32,18 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="YsWords">
-  <meta name="theme-color" content="#FFFFFF">
+  <!-- 2026-05-10 (v1.2.31): align theme-color across the meta tags
+       and the manifest. Previously the manifest claimed Material
+       blue (#2196F3) while the meta tag claimed white — Android's
+       installed PWA address-bar would tint blue while iOS Safari
+       and the meta-aware Chrome tab tinted white. Align both to
+       the white surface that the LIGHT theme actually paints. The
+       second meta tag below kicks in when the OS reports
+       prefers-color-scheme: dark so the address bar / status bar
+       matches the app's dark surface (closer to the dark theme's
+       Card colour) instead of staying white. -->
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#FFFFFF">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#1F1F1F">
 
   <!-- iOS Add-to-Home-Screen icons. iOS picks the closest size to
        its current launcher (180×180 on iPhone, 167×167 on iPad,
@@ -112,53 +123,44 @@
   <meta name="msapplication-TileColor" content="#2196F3">
 </head>
 <body>
-  <!-- Cache-busting self-heal. Two failure modes have hit users:
-         A) Old Flutter service worker keeps serving cached HTML.
-         B) Even after the SW is gone, the browser's HTTP disk cache
-            on some clients (mobile Safari especially) holds onto an
-            old main.dart.js until clear-site-data is called.
-       This script handles both:
-         1. Embed a server-side build timestamp (replaced by Netlify
-            at deploy time via the post-processing comment below).
-            Compare to localStorage's last-seen value; if different,
-            force a fresh reload + best-effort cache wipe.
-         2. Unregister every leftover SW + delete every cache bucket
-            (handles A above).
-         3. Auto-reload ONCE if anything was torn down or the build
-            stamp changed, guarded by sessionStorage to prevent
-            loops on uncooperative browsers.
-       Result: every Netlify deploy gets the user onto the new build
-       within the next page load, regardless of which caching layer
-       was being uncooperative. -->
+  <!-- Cache-busting self-heal. Old Flutter service workers from a
+       previous build can keep serving stale HTML / JS to returning
+       users; Netlify's `Cache-Control: no-cache` headers on /,
+       /index.html, /flutter_bootstrap.js, and /main.dart.js handle
+       the HTTP cache layer, but a leftover SW would still bypass
+       that. This script unregisters every SW + nukes every cache
+       bucket on each load and forces a single auto-reload if
+       anything was torn down — guarded by sessionStorage to prevent
+       loops.
+
+       2026-05-10 (v1.2.31): the previous version of this script
+       included a `__BUILD_STAMP__` token meant to be rewritten by
+       a Netlify post-processing step that never existed. The
+       `stampChanged` branch was dead code (`BUILD_STAMP ===
+       '__BUILD_STAMP__'` short-circuited it to false on every
+       deploy). Removed the stamp logic; the SW-unregister path
+       does the heavy lifting alone, plus the `no-cache` HTTP
+       headers ensure the next navigation pulls fresh bytes. The
+       `window.yswordsClearCacheAndReload` helper below remains
+       available for the LoadingPage error scaffold + Settings →
+       "Clear cache & reload" — it's the manual escape hatch on
+       top of the auto-recovery here. -->
   <script>
     (function() {
-      // BUILD_STAMP is rewritten on each deploy by the build script.
-      // Falls back to a fixed string if the build wasn't post-
-      // processed; cache-busting still works via the SW-unregister
-      // path below in that case.
-      var BUILD_STAMP = '__BUILD_STAMP__';
-      var STAMP_KEY = 'yswords_build_stamp';
       var RELOAD_KEY = 'yswords_self_heal_reloaded';
-      var lastStamp;
-      try { lastStamp = localStorage.getItem(STAMP_KEY); } catch (_) {}
       var alreadyReloaded = false;
       try {
         alreadyReloaded = sessionStorage.getItem(RELOAD_KEY) === '1';
       } catch (_) {}
-      var stampChanged = lastStamp !== null && lastStamp !== BUILD_STAMP
-                          && BUILD_STAMP !== '__BUILD_STAMP__';
-      try { localStorage.setItem(STAMP_KEY, BUILD_STAMP); } catch (_) {}
 
-      function maybeReload(reason) {
+      function maybeReload() {
         if (alreadyReloaded) return;
         try { sessionStorage.setItem(RELOAD_KEY, '1'); } catch (_) {}
-        // location.reload() is enough — Netlify's no-cache headers
-        // on / index.html / bootstrap / main.dart.js force network
-        // re-fetch on the reload.
+        // Netlify's no-cache headers on / index.html / bootstrap /
+        // main.dart.js force network re-fetch on the reload.
         location.reload();
       }
 
-      // Service-worker self-heal (handles failure mode A).
       var unregisterCount = 0;
       var swPromise = ('serviceWorker' in navigator)
         ? navigator.serviceWorker.getRegistrations().then(function(regs) {
@@ -178,9 +180,7 @@
         : Promise.resolve();
 
       Promise.all([swPromise, cachePromise]).then(function() {
-        if (stampChanged || unregisterCount > 0) {
-          maybeReload(stampChanged ? 'build' : 'sw');
-        }
+        if (unregisterCount > 0) maybeReload();
       });
     })();
   </script>

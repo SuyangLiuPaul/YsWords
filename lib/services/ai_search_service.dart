@@ -16,11 +16,16 @@ import 'package:yswords/constants/ui_strings.dart';
 /// bible-evidence React project leaked 5 keys exactly because Vite
 /// inlines `VITE_*` env vars).
 ///
-/// Status of the function (2026-04-28): scaffolded but **not deployed**
-/// — needs `firebase login` + `firebase deploy --only functions` from
-/// the repo owner. Until then `ask()` returns `AiSearchResult.empty()
-/// .markUnavailable()` so callers can fall back to local search
-/// without surfacing a confusing error to non-technical users.
+/// Status (2026-05-10, v1.2.31): the backend is **deployed** as a
+/// Netlify Function at `/api/aiSearch` (`netlify/functions/aiSearch.mjs`).
+/// The original "scaffolded but not deployed" branch shipped with
+/// the v1.0.0 line predates the Cloud-Functions → Netlify-Functions
+/// migration in round 52. `ask()` calls the live endpoint and only
+/// returns `AiSearchResult.empty().markUnavailable()` on a 4xx/5xx /
+/// network failure / not-configured response, in which case the
+/// caller (search/evidence pages) falls back to local keyword search
+/// with an inline notice + a "Set up your own Gemini key" CTA
+/// pointing at the BYOK card in Settings (v1.1.10 +).
 class AiSearchService {
   /// Production endpoint. Same-origin call to the Netlify Function
   /// at `/api/aiSearch` (Netlify rewrites this to `/.netlify/

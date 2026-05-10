@@ -100,7 +100,7 @@ any APIs themselves**; everything is at the Firebase project level.
 
 ## App Screenshots
 
-> Captured 2026-05-07 against the v1.0.0 build (UI surfaces are byte-identical at v1.2.5 except for the welcome-page disclaimer card which was removed in v1.2.5 and is no longer shown). Top half of the table covers the dashboard / search / feedback flow; the lower half is the deeper Bible-study surface (word-by-word originals, AI explanations) that landed across rounds 55–56.
+> Captured 2026-05-07 against the v1.0.0 build. UI has shipped substantial polish since (Liquid Glass material picker v1.1.x, BYOK Test button v1.2.7, AI model picker v1.2.26-27, eager-preload progress UI v1.2.18+, About AppBar version label v1.2.19, splash Reload-page button v1.2.12, China-mode tag v1.2.0, six per-tier PWA icons v1.2.3+) — see the HANDOFF banner for a full release log. The screenshots below show the core layout that's still current; the welcome-page disclaimer card was removed in v1.2.5 and isn't shown.
 
 | Dashboard — greeting + Read Bible + Verse of the Day                                                                                  | Quick-links grid (Search · Library · Bible Tools · Daily News · Bible Evidence · Sermons · Family Tree · Bible Timeline · Bible Trivia · Songs · Feedback · Settings) |
 | ------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -161,7 +161,7 @@ flutter run -d chrome          # Debug in browser
 flutter build apk --release    # Release APK
 ```
 
-Requires **Flutter >= 3.22** and **Dart >= 3.2**.
+Requires **Flutter >= 3.22** and **Dart >= 3.2** (active dev/prod builds run on Flutter 3.41.7 / Dart 3.11.5; the SDK constraint in `pubspec.yaml` is `'>=3.2.3 <4.0.0'`).
 
 ---
 
@@ -278,7 +278,7 @@ pubspec.yaml                  Flutter / Dart dependencies + asset
 | Language | Version                    | Source                                             |
 | -------- | -------------------------- | -------------------------------------------------- |
 | English  | KJV, LEB                   | Public domain / Logos Bible Software               |
-| English  | NASB 2020                  | api.bible (requires API key)                       |
+| English  | NASB 2020                  | Bundled at `assets/nasb.json` (text licensed)      |
 | Chinese  | 和合本, 新译本               | getbible.net (free public API)                     |
 | Chinese  | 原文释经圣经 (BIBLEXG)      | https://www.biblexg.com/                           |
 | Chinese  | 雅伟的话 和合本雅伟版        | https://yahwehdehua.net/cn                         |

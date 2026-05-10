@@ -359,6 +359,12 @@ class _StripCard extends StatelessWidget {
                           : Image.asset(
                               'assets/maps/${map.file}',
                               fit: BoxFit.cover,
+                              // 2026-05-10 (v1.2.31): cap decode
+                              // dimensions on the related-maps strip
+                              // thumbnails. Width is `110 * menuScale`
+                              // so 220 px (2× DPR) covers any
+                              // realistic menuScale.
+                              cacheWidth: 220,
                               errorBuilder: (_, __, ___) => Icon(
                                 Icons.collections,
                                 color: scheme.primary,

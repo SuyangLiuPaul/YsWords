@@ -1069,7 +1069,17 @@ class _GreetingCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final settings = context.watch<AppSettings>();
+    // 2026-05-10 (v1.2.31): only fontSize/fontFamily are read in this
+    // card. `context.watch<AppSettings>()` would rebuild on every
+    // unrelated settings change (locale, theme, version, paragraph
+    // mode, profile switch — about 25 fields). Subscribe via
+    // `context.select` to a small (fontSize, fontFamily) record so
+    // the rebuild trigger is precise; `context.read` then snapshots
+    // the live AppSettings instance for any other field access in
+    // the body. Same applies to the other 7 sites in this file.
+    context.select<AppSettings, (double, String)>(
+        (s) => (s.fontSize, s.fontFamily));
+    final settings = context.read<AppSettings>();
     final fs = settings.fontSize;
     final initial = profileName.isEmpty
         ? '?'
@@ -1396,7 +1406,10 @@ class _DashboardPlanCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final settings = context.watch<AppSettings>();
+    // v1.2.31: see comment near line 1072 — select-based subscribe.
+    context.select<AppSettings, (double, String)>(
+        (s) => (s.fontSize, s.fontFamily));
+    final settings = context.read<AppSettings>();
     final fs = settings.fontSize;
     final entry = plan.dayOf(day);
     if (entry == null) return const SizedBox.shrink();
@@ -1482,7 +1495,10 @@ class _PickPlanCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final settings = context.watch<AppSettings>();
+    // v1.2.31: see comment near line 1072 — select-based subscribe.
+    context.select<AppSettings, (double, String)>(
+        (s) => (s.fontSize, s.fontFamily));
+    final settings = context.read<AppSettings>();
     final fs = settings.fontSize;
     return Card(
       color: scheme.surface,
@@ -1555,7 +1571,10 @@ class _CountTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final settings = context.watch<AppSettings>();
+    // v1.2.31: see comment near line 1072 — select-based subscribe.
+    context.select<AppSettings, (double, String)>(
+        (s) => (s.fontSize, s.fontFamily));
+    final settings = context.read<AppSettings>();
     final fs = settings.fontSize;
     return Material(
       color: scheme.surface,
@@ -1744,7 +1763,10 @@ class _LinkTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final settings = context.watch<AppSettings>();
+    // v1.2.31: see comment near line 1072 — select-based subscribe.
+    context.select<AppSettings, (double, String)>(
+        (s) => (s.fontSize, s.fontFamily));
+    final settings = context.read<AppSettings>();
     final fs = settings.fontSize;
     // 2026-05-08 (v1.1.0 — Liquid Glass): replaced Material+Ink+InkWell
     // with the LiquidGlassButton primitive. Hover / press states use
@@ -1792,7 +1814,10 @@ class _ChipBtn extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final settings = context.watch<AppSettings>();
+    // v1.2.31: see comment near line 1072 — select-based subscribe.
+    context.select<AppSettings, (double, String)>(
+        (s) => (s.fontSize, s.fontFamily));
+    final settings = context.read<AppSettings>();
     return Material(
       color: scheme.primary.withValues(alpha: 0.10),
       borderRadius: BorderRadius.circular(8),
@@ -1833,7 +1858,10 @@ class _DashboardEvidenceCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final settings = context.watch<AppSettings>();
+    // v1.2.31: see comment near line 1072 — select-based subscribe.
+    context.select<AppSettings, (double, String)>(
+        (s) => (s.fontSize, s.fontFamily));
+    final settings = context.read<AppSettings>();
     final fs = settings.fontSize;
     final imgUrl =
         evidence.images.isNotEmpty ? evidence.images.first : null;
@@ -1977,7 +2005,10 @@ class _DashboardNewsCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final settings = context.watch<AppSettings>();
+    // v1.2.31: see comment near line 1072 — select-based subscribe.
+    context.select<AppSettings, (double, String)>(
+        (s) => (s.fontSize, s.fontFamily));
+    final settings = context.read<AppSettings>();
     final fs = settings.fontSize;
     final imgUrl =
         (article.image != null && article.image!.isNotEmpty)

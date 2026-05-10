@@ -1038,18 +1038,22 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
               IconButton(
                 icon: const Icon(Icons.table_chart_outlined),
                 iconSize: 18,
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(),
+                // 2026-05-10 (v1.2.31): keep glyph at 18 dp but bump
+                // tap target to 48×48 for Material/WCAG a11y. Was
+                // `padding: zero, constraints: BoxConstraints()` =
+                // ~18 dp tap target (well below 48 dp minimum).
+                constraints:
+                    const BoxConstraints(minWidth: 48, minHeight: 48),
                 tooltip: uiStrings['distributionTable']?[locale] ??
                     'Distribution Table',
                 onPressed: () => _showDistributionTable(context),
               ),
-              const SizedBox(width: 4),
               IconButton(
                 icon: const Icon(Icons.copy_outlined),
                 iconSize: 18,
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(),
+                // v1.2.31: see above — 48 dp minimum tap target.
+                constraints:
+                    const BoxConstraints(minWidth: 48, minHeight: 48),
                 tooltip: uiStrings['copyWordStudy']?[locale] ?? 'Copy word study',
                 onPressed: () => _copyWordEntry(context),
               ),
@@ -2506,7 +2510,7 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
         .replaceAll(notePattern, '')
         .replaceAllMapped(bracePattern, (m) => m.group(1) ?? '')
         .replaceAllMapped(squarePattern, (m) => m.group(1) ?? '')
-        .replaceAll(RegExp(r' {2,}'), ' ')
+        .replaceAll(_kOriginalsMultiSpace, ' ')
         .trim();
   }
 
@@ -2614,6 +2618,25 @@ class _AiChunk {
 ///
 /// Anything not matching falls through verbatim. Output is a list
 /// of TextSpan that can feed `SelectableText.rich`.
+
+// 2026-05-10 (v1.2.31): hoisted regexes — `_parseAiMarkdown` was
+// constructing 3 fresh RegExps per line plus 1 inline pattern per
+// call. For an N-line AI explanation that's 3N + 1 RegExp.compile
+// invocations on every render. Top-level `final` reuses one
+// instance. Same hoist for the `_lookupVerseText` multi-space
+// collapse (called once per visible concordance row).
+final RegExp _kOriginalsMultiSpace = RegExp(r' {2,}');
+final RegExp _kAiMdHorizontalRule = RegExp(r'^\s*([-_*])\1{2,}\s*$');
+final RegExp _kAiMdHeading = RegExp(r'^\s*#{1,6}\s+(.+?)\s*#*\s*$');
+final RegExp _kAiMdBullet = RegExp(r'^(\s*)[-*+]\s+(.+)$');
+final RegExp _kAiMdInlinePattern = RegExp(
+  // 1: ***bold-italic*** | 2: **bold** | 3: *italic* | 4: _italic_
+  r'\*\*\*([^*\n]+?)\*\*\*'
+  r'|\*\*([^*\n]+?)\*\*'
+  r'|(?<!\w)\*([^*\n]+?)\*(?!\w)'
+  r'|(?<!\w)_([^_\n]+?)_(?!\w)',
+);
+
 List<TextSpan> _parseAiMarkdown(
   String input, {
   required TextStyle base,
@@ -2629,19 +2652,17 @@ List<TextSpan> _parseAiMarkdown(
   for (final ln in lines) {
     final stripped = ln.trimRight();
     // Horizontal rule.
-    if (RegExp(r'^\s*([-_*])\1{2,}\s*$').hasMatch(stripped)) continue;
+    if (_kAiMdHorizontalRule.hasMatch(stripped)) continue;
     // Heading — replace with `**heading**\n` so the inline pass
     // turns it into a bold line.
-    final headingMatch =
-        RegExp(r'^\s*#{1,6}\s+(.+?)\s*#*\s*$').firstMatch(stripped);
+    final headingMatch = _kAiMdHeading.firstMatch(stripped);
     if (headingMatch != null) {
       cleaned.add('**${headingMatch.group(1)!}**');
       continue;
     }
     // Bullet — turn into a • line so the inline pass keeps it
     // visually distinct without leaving a stray asterisk.
-    final bulletMatch =
-        RegExp(r'^(\s*)[-*+]\s+(.+)$').firstMatch(stripped);
+    final bulletMatch = _kAiMdBullet.firstMatch(stripped);
     if (bulletMatch != null) {
       cleaned.add('${bulletMatch.group(1)}• ${bulletMatch.group(2)}');
       continue;
@@ -2654,15 +2675,8 @@ List<TextSpan> _parseAiMarkdown(
   // italic / plain spans as we hit each delimiter. Greedy on the
   // `***` pattern first so we don't mis-tokenise it as `**` + `*`.
   final spans = <TextSpan>[];
-  final pattern = RegExp(
-    // 1: ***bold-italic*** | 2: **bold** | 3: *italic* | 4: _italic_
-    r'\*\*\*([^*\n]+?)\*\*\*'
-    r'|\*\*([^*\n]+?)\*\*'
-    r'|(?<!\w)\*([^*\n]+?)\*(?!\w)'
-    r'|(?<!\w)_([^_\n]+?)_(?!\w)',
-  );
   int idx = 0;
-  for (final m in pattern.allMatches(body)) {
+  for (final m in _kAiMdInlinePattern.allMatches(body)) {
     if (m.start > idx) {
       spans.add(TextSpan(text: body.substring(idx, m.start), style: base));
     }

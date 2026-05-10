@@ -26,6 +26,12 @@ import 'package:yswords/widgets/localized_back_button.dart';
 import 'package:yswords/utils/responsive.dart';
 import 'package:flutter/services.dart';
 
+// 2026-05-10 (v1.2.31): hoisted regex — used inside the AI-results
+// `itemBuilder` for every visible row during scroll, plus the
+// "Copy all" loop. Constructing it per-call burned RegExp.compile
+// time; one cached instance is reused.
+final RegExp _kMultiSpaceRe = RegExp(r' {2,}');
+
 // 2026-05-08 (v1.1.7): the `_SearchMode` enum + `_lastMode` field
 // were removed. They drove the active-chip highlight on the
 // `_SearchModeStrip` widget; that strip is gone (text search runs
@@ -80,6 +86,32 @@ class _SearchPageState extends State<SearchPage> {
   bool _aiBusy = false;
   String? _aiNotice; // YsWords-AI status / "no matches" — small inline note.
   bool _lastResultsFromAi = false; // toggles header above _results.
+
+  // 2026-05-10 (v1.2.31): cached verse-index map for the AI-refs
+  // ListView.builder. Previously rebuilt fresh inside `build()` on
+  // every rebuild (theme toggle, font size change, ANY notifyListeners
+  // on settings or main provider) — ~30 k entries. Now built once
+  // per (currentVersion, verses identity) pair and reused. The
+  // `identical(...)` guard catches version cache swaps that don't
+  // change `currentVersion` (e.g. profile switch).
+  String? _cachedVerseIndexVersion;
+  List<Verse>? _cachedVerseIndexVerses;
+  Map<String, String>? _cachedVerseIndex;
+
+  Map<String, String> _getVerseIndex(MainProvider mp) {
+    if (identical(_cachedVerseIndexVerses, mp.verses) &&
+        _cachedVerseIndexVersion == mp.currentVersion &&
+        _cachedVerseIndex != null) {
+      return _cachedVerseIndex!;
+    }
+    _cachedVerseIndexVerses = mp.verses;
+    _cachedVerseIndexVersion = mp.currentVersion;
+    _cachedVerseIndex = <String, String>{
+      for (final v in mp.verses)
+        '${(toEnglish(v.book) ?? v.book)}-${v.chapter}-${v.verse}': v.text,
+    };
+    return _cachedVerseIndex!;
+  }
 
   // 2026-05-08 (v1.1.5): keep the FULL list of refs the AI returned —
   // including those that don't resolve to a verse in the user's
@@ -827,7 +859,7 @@ class _SearchPageState extends State<SearchPage> {
     for (final v in _results) {
       final clean = sanitizeForSearch(v.text)
           .replaceAll('\n', ' ')
-          .replaceAll(RegExp(r' {2,}'), ' ')
+          .replaceAll(_kMultiSpaceRe, ' ')
           .trim();
       lines.add('${v.book} ${v.chapter}:${v.verseLabel}  $clean');
     }
@@ -1841,11 +1873,10 @@ class _SearchPageState extends State<SearchPage> {
         ),
       );
     }
-    // Build a version-independent index for verse text lookup.
-    final verseIndex = <String, String>{
-      for (final v in mainProv.verses)
-        '${(toEnglish(v.book) ?? v.book)}-${v.chapter}-${v.verse}': v.text,
-    };
+    // 2026-05-10 (v1.2.31): cached version-independent verse-text
+    // lookup. See `_getVerseIndex` — rebuilds only on version /
+    // verses-identity change, not every rebuild.
+    final verseIndex = _getVerseIndex(mainProv);
     return ListView.builder(
       controller: _scrollController,
       physics: const BouncingScrollPhysics(),
@@ -1862,7 +1893,7 @@ class _SearchPageState extends State<SearchPage> {
             .replaceAll(notePattern, '')
             .replaceAllMapped(bracePattern, (m) => m.group(1) ?? '')
             .replaceAllMapped(squarePattern, (m) => m.group(1) ?? '')
-            .replaceAll(RegExp(r' {2,}'), ' ')
+            .replaceAll(_kMultiSpaceRe, ' ')
             .trim();
         return DecoratedBox(
           decoration: BoxDecoration(

@@ -1714,7 +1714,12 @@ class _ReaderStatusBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final settings = context.watch<AppSettings>();
+    // 2026-05-10 (v1.2.31): only `menuScale` is read here. Switching
+    // from watch → select<menuScale> stops this status bar from
+    // rebuilding on every unrelated AppSettings notify (font size
+    // slider drag, theme toggle, locale switch, version pick, …).
+    final menuScale =
+        context.select<AppSettings, double>((s) => s.menuScale);
     final scheme = Theme.of(context).colorScheme;
     final bottomInset = MediaQuery.of(context).padding.bottom;
 
@@ -1723,7 +1728,7 @@ class _ReaderStatusBar extends StatelessWidget {
       children: [
         LinearProgressIndicator(
           value: progress,
-          minHeight: (2.5 * settings.menuScale).clamp(2.0, 4.0),
+          minHeight: (2.5 * menuScale).clamp(2.0, 4.0),
           backgroundColor:
               scheme.surfaceContainerHighest.withValues(alpha: 0.3),
           color: scheme.primary.withValues(alpha: 0.7),
@@ -3380,6 +3385,13 @@ class _MapTile extends StatelessWidget {
           child: Image.asset(
             'assets/maps/${map.file}',
             fit: BoxFit.cover,
+            // 2026-05-10 (v1.2.31): cacheWidth/Height cap so a
+            // 44×44 dp thumbnail doesn't decode the source 1500+ px
+            // map image at full resolution. Same v1.0.1 perf
+            // pattern already applied to dashboard / news / evidence
+            // thumbnails. 88 px = 2× DPR.
+            cacheWidth: 88,
+            cacheHeight: 88,
             errorBuilder: (_, __, ___) =>
                 Icon(Icons.collections, size: 22, color: scheme.primary),
           ),
@@ -4709,8 +4721,11 @@ class _SectionHeadingState extends State<_SectionHeading> {
                 IconButton(
                   visualDensity: VisualDensity.compact,
                   padding: EdgeInsets.zero,
+                  // 2026-05-10 (v1.2.31): bump min tap target from
+                  // 32 → 48 dp for Material/WCAG a11y. Glyph stays
+                  // at 18 dp.
                   constraints: const BoxConstraints(
-                      minWidth: 32, minHeight: 32),
+                      minWidth: 48, minHeight: 48),
                   iconSize: 18,
                   splashRadius: 18,
                   tooltip: uiStrings['sectionContextTooltip']

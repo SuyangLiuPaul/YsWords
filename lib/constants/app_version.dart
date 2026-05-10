@@ -882,6 +882,94 @@
 /// New ui-string keys: `tooltipClose`, `couldNotParseRef`
 /// (`{ref}` placeholder), `sermonNoBody` — all three locales.
 ///
+/// 2026-05-10 (v1.2.31 — perf + a11y + web hardening + doc sync):
+/// three more audit agents (performance + a11y, documentation drift,
+/// web/PWA + edge cases) found 11 actionable items after v1.2.30.
+///
+/// PERFORMANCE (Dart):
+/// • `search_page.dart` — the AI-refs ListView's `itemBuilder` was
+///   rebuilding a 30k-entry verseIndex Map fresh inside every `build()`
+///   call (theme toggle, font slider drag — every notifyListeners).
+///   New `_getVerseIndex(mp)` helper caches by `(currentVersion,
+///   verses identity)` so the Map is only built once per version
+///   switch.
+/// • Hoisted RegExps that were constructed per call:
+///     - `search_page.dart` `r' {2,}'` (two sites: Copy-all loop +
+///       inline-row preview text — fired per visible row during
+///       scroll).
+///     - `originals_sheet.dart::_parseAiMarkdown` — 4 RegExps were
+///       constructed per call (3 per line + 1 inline pattern). Top-
+///       level `final` reuses one instance.
+///     - `originals_sheet.dart::_lookupVerseText` `r' {2,}'` (per
+///       concordance row).
+/// • `bible_reading_pane.dart::_MapTile` + `map_viewer_page.dart`
+///   strip thumbnails — `Image.asset` had no cacheWidth/cacheHeight,
+///   so a 44 dp / 110 dp tile was decoding the source 1500+ px map
+///   bitmap. Capped at 88 / 220 px (2× DPR).
+/// • Switched 8 dashboard cards + 1 reading-pane status bar from
+///   `context.watch<AppSettings>()` (rebuild on every notify) to
+///   `context.select` for the precise (fontSize, fontFamily) pair
+///   they actually read. Locale changes / theme toggles / version
+///   switches no longer rebuild every dashboard card.
+///
+/// ACCESSIBILITY (Dart):
+/// • `originals_sheet.dart` distribution-table + copy-word-study
+///   IconButtons had `padding: EdgeInsets.zero` + `constraints:
+///   BoxConstraints()` ⇒ ~18 dp tap target (well below WCAG 48 dp).
+///   Bumped to 48×48 minimum.
+/// • `bible_reading_pane.dart` section-context info IconButton was
+///   constrained to 32×32; same 48×48 fix.
+///
+/// WEB / PWA:
+/// • `web/index.html` `theme_color` meta vs `web/manifest.json`
+///   theme_color disagreed (#FFFFFF vs #2196F3 Material blue) —
+///   Android PWA address bar tinted blue, iOS Safari tinted white.
+///   Aligned both to the white surface the LIGHT theme actually
+///   paints. Plus a second meta tag with
+///   `media="(prefers-color-scheme: dark)" content="#1F1F1F"` so
+///   dark-mode users get a matching status bar instead of stuck
+///   white. Per-tier manifest overlays in
+///   `tools/site-icons/{intl,cn}-{prod,dev,qat}/manifest.json`
+///   updated to match.
+/// • Removed dead `__BUILD_STAMP__` self-heal block from
+///   `web/index.html`. The intended Netlify post-processing step
+///   that rewrites the token never existed (`grep` confirms — only
+///   the four self-references in `index.html` itself), so the
+///   `stampChanged` branch was always false. Kept the SW-unregister
+///   + cache-bucket-nuke + auto-reload-once path which IS
+///   functional. Manual `window.yswordsClearCacheAndReload` (used
+///   by Settings + LoadingPage's "Reload page" button) untouched.
+///
+/// QUALITY (Dart):
+/// • `app_settings.dart::loadSettings` — `SharedPreferences.
+///   getInstance()` could throw on Safari private browsing /
+///   localStorage quota / iOS storage error, propagating into
+///   `main.dart`'s bootstrap catch and routing the user to the
+///   "Failed to load" verse-error scaffold even though the verse
+///   load was fine. Now wrapped in try/catch — defaults are
+///   compile-time sane (zh-Hans / system theme / fontSize 20),
+///   `notifyListeners()` fires so the tree wires up immediately,
+///   and the user keeps a usable app even if persistence is dead.
+///
+/// DOCUMENTATION:
+/// • HANDOFF.md — corrected 14→13 Bible-translations count, splash
+///   diagram updated for the eager-preload behaviour, line counts
+///   bumped (HomePage 285→352, BibleReadingPane 1680→5000), Known
+///   Issues — large-asset/HomePage-size sections refreshed, dropped
+///   the stale Microsoft YaHei "21.8 MB" claim (font was unbundled
+///   in 2026-05).
+/// • README.md — fixed NASB source ("api.bible (requires API key)"
+///   was wrong; it's bundled at `assets/nasb.json`); appended
+///   actual-Flutter-version note (3.41.7) to the SDK floor; updated
+///   the "Captured 2026-05-07 against v1.0.0" caption to point at
+///   the post-v1.0 release log.
+/// • SCREENSHOTS.md — bumped status banner from "v1.2.5" to
+///   "v1.2.31".
+/// • `lib/services/ai_search_service.dart` — class-doc claimed
+///   "scaffolded but not deployed (2026-04-28)" — wrong since
+///   round 52's Cloud Functions → Netlify Functions migration.
+///   Updated to describe the live endpoint behaviour.
+///
 /// 2026-05-10 (v1.2.30 — async correctness + backend hardening):
 /// two more audit agents found 6 confirmed bugs after v1.2.29.
 ///
@@ -938,7 +1026,7 @@
 ///   the client. Now the index lives in the server log only;
 ///   the public message is a generic "AI service authentication
 ///   failed."
-const String kAppVersion = '1.2.30';
+const String kAppVersion = '1.2.31';
 
 /// 2026-05-10 (v1.2.20): paired with `kAppVersion` so the About
 /// footer's "Last updated …" stamp moves in lockstep with every
@@ -955,4 +1043,4 @@ const String kAppVersion = '1.2.30';
 /// the higher precision. Format: ISO local date + 24-h
 /// HH:MM + tz abbreviation. The about-page interpolation is
 /// locale-aware via the `aboutFooterNote` ui-string template.
-const String kAppReleaseTime = '2026-05-10 18:22 AEST';
+const String kAppReleaseTime = '2026-05-10 18:49 AEST';
