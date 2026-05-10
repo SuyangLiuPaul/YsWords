@@ -180,18 +180,11 @@ class AiSearchResult {
   /// search and shows the reason string as a contextual note.
   final String? unavailableReason;
 
-  /// 2026-05-10 (v1.2.37): see ai_bible_search_service.dart's twin
-  /// flag. True when Deep was requested without a BYOK key and the
-  /// backend transparently downgraded to Flash. UI surfaces a small
-  /// notice + BYOK CTA so the user knows real Pro is BYOK-only.
-  final bool fellBackToFlash;
-
   AiSearchResult({
     required this.answer,
     required this.citations,
     required this.hits,
     this.unavailableReason,
-    this.fellBackToFlash = false,
   });
 
   factory AiSearchResult.empty() =>
@@ -213,7 +206,6 @@ class AiSearchResult {
           .map(AiCitation.fromJson)
           .toList(),
       hits: (j['hits'] as num?)?.toInt() ?? 0,
-      fellBackToFlash: j['fellBackToFlash'] == true,
     );
   }
 

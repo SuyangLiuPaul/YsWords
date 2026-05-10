@@ -334,7 +334,8 @@ async function callGeminiWithKey(apiKey, prompt, locale, model) {
 			// tokens off the thinking phase.
 			max_tokens: 4096,
 		}),
-		signal: AbortSignal.timeout(20_000),
+		// v1.2.42: 8s/call (was 20s) — see aiBibleSearch.mjs.
+		signal: AbortSignal.timeout(8_000),
 	});
 	return resp;
 }
@@ -416,12 +417,22 @@ async function callGemini(prompt, locale, overrideKey = null, model = MODEL) {
 		err.statusCode = 503;
 		throw err;
 	}
+	// 2026-05-11 (v1.2.42): step-down chain + BYOK bypass +
+	// deadline budget. See aiBibleSearch.mjs's longer comment.
+	const isByok = !!overrideKey;
+	const deadline = Date.now() + 22_000;
 	let currentModel = model;
 	let lastResult = null;
 	while (currentModel) {
+		if (Date.now() >= deadline - 1000) {
+			console.warn(`[aiExplainWord] deadline reached at ${currentModel}; bailing.`);
+			break;
+		}
 		const result = await _callGeminiInner(prompt, locale, keys, currentModel);
 		if (result.ok) return result.text;
 		lastResult = result;
+		// BYOK never steps down — user picked this tier on their own key.
+		if (isByok) break;
 		// Only step down on quota. Auth / upstream errors don't benefit
 		// from a different model.
 		if (result.errorKind !== 'quota') break;
@@ -527,11 +538,10 @@ export default async (req) => {
 		// forwarding (must match Google's `AIza...` API-key format).
 		const _userKey = (body?.userApiKey || '').toString().trim();
 		const _useUserKey = /^AIza[A-Za-z0-9_-]{20,80}$/.test(_userKey);
-		// 2026-05-11 (v1.2.40): see aiBibleSearch.mjs — Deep now
-		// uses `gemini-3-flash-preview` so the v1.2.37 pre-emptive
-		// Pro→Flash fallback is no longer required.
-		const fellBackToFlash = false;
 		// 2026-05-10 (v1.2.26): tier picker → real model name.
+		// 2026-05-11 (v1.2.42): `fellBackToFlash` constant + spread
+		// removed (always-false dead code since v1.2.40 switched Deep
+		// to gemini-3-flash-preview which works on free tier).
 		const model = resolveModel(body?.aiModel);
 		if (!strongs || !lemma || !book || !chapter || !verse) {
 			return new Response(
@@ -548,10 +558,7 @@ export default async (req) => {
 			model,
 		);
 		return new Response(
-			JSON.stringify({
-				explanation,
-				...(fellBackToFlash ? { fellBackToFlash: true } : {}),
-			}),
+			JSON.stringify({ explanation }),
 			{ status: 200, headers: cors });
 	} catch (err) {
 		// 2026-05-10 (v1.2.30): scrub `err.message` from public body

@@ -136,7 +136,14 @@ async function callGeminiWithKey(apiKey, query, locale, model) {
 			max_tokens: 4096,
 			response_format: { type: 'json_object' },
 		}),
-		signal: AbortSignal.timeout(20_000),
+		// 2026-05-11 (v1.2.42): timeout budget — see callGemini's
+		// deadline-aware wrapper. Per-call cap is tighter than the
+		// pre-v1.2.42 20s to leave room for the step-down chain (up
+		// to 3 models) to complete inside Netlify's 26s function
+		// limit and the client's 25s timeout. 8s/call × 3 = 24s
+		// worst-case; the outer deadline check skips remaining steps
+		// when budget runs low.
+		signal: AbortSignal.timeout(8_000),
 	});
 }
 
@@ -202,12 +209,32 @@ async function callGemini(query, locale, overrideKey = null, model = MODEL) {
 	// already covers transient single-key blips at one tier; this
 	// outer loop handles "all keys exhausted at this tier" by
 	// falling through to a lighter model with more quota.
+	//
+	// 2026-05-11 (v1.2.42): two guards added on top:
+	//   (a) BYOK requests skip the step-down chain entirely. A
+	//       user who explicitly chose Deep on their own key
+	//       deserves either the Pro response or an error — NOT a
+	//       silent downgrade to Standard on their own quota.
+	//   (b) Total wall-clock deadline of 22s (Netlify's function
+	//       cap is 26s, client timeout is 25s; 22s leaves 4s
+	//       headroom for response serialisation + network).
+	//       Before each `_callGeminiInner` we check the remaining
+	//       budget; if < 8s we bail rather than start a call that
+	//       would be killed mid-flight by Netlify.
+	const isByok = !!overrideKey;
+	const deadline = Date.now() + 22_000;
 	let currentModel = model;
 	let lastResult = null;
 	while (currentModel) {
+		if (Date.now() >= deadline - 1000) {
+			console.warn(`[aiBibleSearch] deadline reached at ${currentModel}; bailing.`);
+			break;
+		}
 		const result = await _callGeminiInner(query, locale, keys, currentModel);
 		if (result.ok) return result.data;
 		lastResult = result;
+		// BYOK never steps down — user chose this tier on their own key.
+		if (isByok) break;
 		// Only step down on quota (429) or upstream 5xx. 4xx-other
 		// (400 / 401 / 403) are caller-side problems — won't be fixed
 		// by another model. Bail.
@@ -227,8 +254,11 @@ async function callGemini(query, locale, overrideKey = null, model = MODEL) {
 		`All Gemini models exhausted at the lightest tier. ` +
 		`Last status: ${lastResult?.status}, error: ${lastResult?.lastError}`);
 	err.statusCode = 429;
-	err.publicReason = 'AI quota for the developer\'s shared key is exhausted. ' +
-		'Try again later, or paste your own Gemini API key in Settings → AI to use your own quota.';
+	err.publicReason = isByok
+		? 'Your Gemini key\'s quota is exhausted for the selected tier. ' +
+			'Try again later or pick a lighter tier in Settings → AI.'
+		: 'AI quota for the developer\'s shared key is exhausted. ' +
+			'Try again later, or paste your own Gemini API key in Settings → AI to use your own quota.';
 	throw err;
 }
 
@@ -329,17 +359,13 @@ export default async (req) => {
 	const userApiKey = _useUserKey ? _userKey : '';
 	// 2026-05-10 (v1.2.26): pick Gemini model tier from request,
 	// allowlist-clamped via resolveModel.
-	// 2026-05-11 (v1.2.40): Deep now maps to `gemini-3-flash-preview`
-	// (free-tier compatible thinking model) instead of the now-paid
-	// `gemini-2.5-pro`. The pre-emptive Pro→Flash fallback that
-	// v1.2.37 added — for BYOK or shared keys — is no longer needed
-	// because the model itself works on free tier. The runtime
-	// 429 → fall-through-to-next-key logic in `callGemini` still
-	// covers transient rate-limit hits, and the `fellBackToFlash`
-	// response flag stays as `false` because there's nothing left
-	// to fall back from for normal requests.
+	// 2026-05-11 (v1.2.40): Deep maps to `gemini-3-flash-preview`
+	// instead of paywalled `gemini-2.5-pro`. Pre-emptive Pro→Flash
+	// downgrade removed (no longer needed).
+	// 2026-05-11 (v1.2.42): `fellBackToFlash` constant + spread are
+	// dropped (always-false dead code; older clients reading the
+	// field just see undefined → false via `== true`, unchanged).
 	const model = resolveModel(body.aiModel);
-	const fellBackToFlash = false;
 	if (query.length < 2) {
 		return new Response(
 			JSON.stringify({ error: 'Query is required (≥2 chars).' }),
@@ -362,11 +388,7 @@ export default async (req) => {
 		const text = completion?.choices?.[0]?.message?.content || '';
 		const refs = parseRefs(text);
 		return new Response(
-			JSON.stringify({
-				refs,
-				hits: refs.length,
-				...(fellBackToFlash ? { fellBackToFlash: true } : {}),
-			}),
+			JSON.stringify({ refs, hits: refs.length }),
 			{ status: 200, headers: cors });
 	} catch (e) {
 		// 2026-05-10 (v1.2.30): never fall through to `e.message` for

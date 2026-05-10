@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:yswords/services/profile_service.dart';
 
@@ -9,6 +11,15 @@ import 'package:yswords/services/profile_service.dart';
 class RecentSearchesService {
   static const _baseKey = 'recentSearches';
   static const int maxItems = 12;
+
+  /// 2026-05-11 (v1.2.42): mutex for `add` / `remove` / `clear`.
+  /// All three do a non-atomic read-modify-write on SharedPreferences
+  /// (`getStringList` → mutate → `setStringList`). Without a mutex,
+  /// two concurrent calls — common when v1.2.41's live-search
+  /// triggers `add(...)` while a user simultaneously taps the "X"
+  /// delete on an existing row — can interleave and drop an entry.
+  /// All writes funnel through this single-slot serialised queue.
+  static Future<void> _writeLock = Future<void>.value();
 
   /// Read the list (most-recent first). Empty list when no history.
   static Future<List<String>> list() async {
@@ -23,19 +34,38 @@ class RecentSearchesService {
   static Future<void> add(String query) async {
     final q = query.trim();
     if (q.isEmpty) return;
-    final prefs = await SharedPreferences.getInstance();
-    final key = ProfileService.instance.scopedKey(_baseKey);
-    final cur = prefs.getStringList(key) ?? <String>[];
-    cur.removeWhere((e) => e.toLowerCase() == q.toLowerCase());
-    cur.insert(0, q);
-    if (cur.length > maxItems) cur.removeRange(maxItems, cur.length);
-    await prefs.setStringList(key, cur);
+    // Serialise on `_writeLock` so overlapping `add`s don't
+    // interleave their read-modify-writes. Each new caller waits
+    // for the previous write to complete before reading prefs.
+    final prev = _writeLock;
+    final completer = Completer<void>();
+    _writeLock = completer.future;
+    try {
+      await prev;
+      final prefs = await SharedPreferences.getInstance();
+      final key = ProfileService.instance.scopedKey(_baseKey);
+      final cur = prefs.getStringList(key) ?? <String>[];
+      cur.removeWhere((e) => e.toLowerCase() == q.toLowerCase());
+      cur.insert(0, q);
+      if (cur.length > maxItems) cur.removeRange(maxItems, cur.length);
+      await prefs.setStringList(key, cur);
+    } finally {
+      completer.complete();
+    }
   }
 
   /// Clear all stored queries for the current profile.
   static Future<void> clear() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove(ProfileService.instance.scopedKey(_baseKey));
+    final prev = _writeLock;
+    final completer = Completer<void>();
+    _writeLock = completer.future;
+    try {
+      await prev;
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove(ProfileService.instance.scopedKey(_baseKey));
+    } finally {
+      completer.complete();
+    }
   }
 
   /// 2026-05-07: per-item delete — used by the redesigned recent-
@@ -45,15 +75,23 @@ class RecentSearchesService {
   static Future<void> remove(String query) async {
     final q = query.trim();
     if (q.isEmpty) return;
-    final prefs = await SharedPreferences.getInstance();
-    final key = ProfileService.instance.scopedKey(_baseKey);
-    final cur = prefs.getStringList(key);
-    if (cur == null || cur.isEmpty) return;
-    cur.removeWhere((e) => e.toLowerCase() == q.toLowerCase());
-    if (cur.isEmpty) {
-      await prefs.remove(key);
-    } else {
-      await prefs.setStringList(key, cur);
+    final prev = _writeLock;
+    final completer = Completer<void>();
+    _writeLock = completer.future;
+    try {
+      await prev;
+      final prefs = await SharedPreferences.getInstance();
+      final key = ProfileService.instance.scopedKey(_baseKey);
+      final cur = prefs.getStringList(key);
+      if (cur == null || cur.isEmpty) return;
+      cur.removeWhere((e) => e.toLowerCase() == q.toLowerCase());
+      if (cur.isEmpty) {
+        await prefs.remove(key);
+      } else {
+        await prefs.setStringList(key, cur);
+      }
+    } finally {
+      completer.complete();
     }
   }
 }

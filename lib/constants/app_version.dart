@@ -882,6 +882,84 @@
 /// New ui-string keys: `tooltipClose`, `couldNotParseRef`
 /// (`{ref}` placeholder), `sermonNoBody` — all three locales.
 ///
+/// 2026-05-11 (v1.2.42 — robustness sweep + dead-code cleanup):
+/// triggered by user "fix all bugs fully with good plan and
+/// thinking". Three parallel audit agents (async/state +
+/// backend deep-audit + dead-code) ran against the v1.2.27→v1.2.41
+/// surface area; produced a triaged action list with four real
+/// bugs and a sizeable dead-code cleanup.
+///
+/// BUG FIXES:
+///
+/// A. Backend step-down timeout budget — HIGH. v1.2.41 added a
+///    3-tier model fallback chain but each call used
+///    `AbortSignal.timeout(20_000)`. Worst case = 60 s, which
+///    exceeds Netlify's 26 s function cap AND the client's 25 s
+///    HTTP timeout — so Deep would never actually reach the
+///    flash-lite fallback before getting killed. Fix in all 3
+///    Netlify functions: tighten per-call timeout to 8 s + add
+///    a wall-clock `deadline = Date.now() + 22_000` outer
+///    budget that aborts the chain when remaining time < 1 s.
+///    Now 8 s × 3 = 24 s < 26 s.
+///
+/// B. Recents list pollution — HIGH. v1.2.41 fired
+///    `RecentSearchesService.add(...)` after every successful
+///    debounced live-search → typing "love is the answer" saved
+///    "lov" + "love" + "love " + "love i" + "love is" + … as
+///    separate entries, flushing the user's real history off the
+///    12-item cap. Fix in `search_page.dart`: replaced the
+///    in-`search()` add with a separate `_recentsCommitTimer`
+///    (2.5 s settle-debounce). Only when the user stops typing
+///    for 2.5 s AND the query is still in the box AND it isn't
+///    already the most-recent saved entry does it land in
+///    SharedPreferences. Cancelled in `dispose()`.
+///
+/// C. BYOK silent downgrade — MEDIUM. v1.2.41's step-down chain
+///    ran for BYOK requests too, so a power user picking Deep on
+///    their own free Gemini key would silently get downgraded to
+///    Standard if Pro 429'd — burning their own quota on
+///    Standard-quality output with no signal. v1.2.40's commit
+///    message claimed BYOK bypassed fallback but the code didn't
+///    enforce it. Fix in all 3 backend functions: `isByok` guard
+///    breaks the step-down `while` loop after the first inner
+///    failure when `overrideKey` is set. Public error message
+///    also branches — BYOK gets "Your Gemini key's quota is
+///    exhausted for the selected tier" instead of the
+///    shared-key text.
+///
+/// D. Recents write race — LOW. `RecentSearchesService.add` does
+///    a non-atomic `getStringList` → mutate → `setStringList`.
+///    Two overlapping calls (live-search-add racing a manual
+///    delete) could interleave and drop an entry. Fix:
+///    `Future<void> _writeLock` mutex chains every add / remove /
+///    clear behind the previous write. All three callers go
+///    through the same single-slot queue.
+///
+/// DEAD-CODE CLEANUP:
+///
+/// • Removed `fellBackToFlash` entirely. Backend (3 functions) no
+///   longer emits the field; client services (3 result types) no
+///   longer parse it; client UI surfaces (search/evidence/originals)
+///   no longer have the now-unreachable notice branches; v1.2.37's
+///   trigger words (`'deep tier needs'` / `'gemini api key'` /
+///   `'深入'` / `'gemini api 密钥'` / `'gemini api 密鑰'`) removed
+///   from both `_shouldOfferByokForNotice` heuristics. The flag
+///   was always-`false` after v1.2.40 switched Deep to
+///   `gemini-3-flash-preview`.
+///
+/// • Removed 3 dead ui-string keys (`aiDeepFellBackToStandard`,
+///   `aiModelDeepDisabledTooltip`, `aiModelDeepLockedNote`). The
+///   second + third were v1.2.39 BYOK-gating strings reverted in
+///   v1.2.41; the first was v1.2.37's notice copy.
+///
+/// • Net: lib/ shrinks by ~80 lines; backend functions shrink by
+///   ~30 lines. Same behaviour for users.
+///
+/// Pre-deploy verification:
+///   • flutter analyze — 0 issues
+///   • flutter test — 44/44 pass
+///   • All 3 Netlify functions parse via `node --check`
+///
 /// 2026-05-11 (v1.2.41 — recents on live-search + backend model
 /// step-down chain): user "ai standard one not working" + "recent
 /// search but cannot see those anymore" + "its working in qat and
@@ -1423,7 +1501,7 @@
 /// matching edit needed here.
 const String kAppVersion = String.fromEnvironment(
   'APP_VERSION',
-  defaultValue: '1.2.41',
+  defaultValue: '1.2.42',
 );
 
 /// 2026-05-10 (v1.2.20): paired with `kAppVersion` so the About

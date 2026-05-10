@@ -750,10 +750,7 @@ class _AiSearchDialogState extends State<_AiSearchDialog> {
     const triggers = [
       'quota', 'exhausted', 'rate-limit', 'rate limit',
       'not configured', 'gemini_api_key',
-      // v1.2.37: trigger BYOK CTA when Deep auto-fell-back.
-      'deep tier needs', 'gemini api key',
       '配额', '用完', '没有配置',
-      '深入', 'gemini api 密钥', 'gemini api 密鑰',
     ];
     for (final t in triggers) {
       if (lower.contains(t)) return true;
@@ -888,18 +885,9 @@ class _AiSearchDialogState extends State<_AiSearchDialog> {
     setState(() {
       _busy = false;
       _result = r;
-      // 2026-05-10 (v1.2.37): when the user picked Deep but had no
-      // BYOK key, the backend transparently fell back to Flash. Tell
-      // them so they understand why their "Deep" Q&A ran on Standard
-      // tier — surfaces the same `_notice` channel the unavailable
-      // path uses (the chip + BYOK CTA further down already triggers
-      // on this kind of message).
-      if (r.fellBackToFlash) {
-        _notice = uiStrings['aiDeepFellBackToStandard']
-                ?[widget.locale] ??
-            'Deep tier needs your own Gemini API key — using Standard '
-                'this time. Set a key in Settings → AI for true Deep.';
-      }
+      // 2026-05-11 (v1.2.42): the v1.2.37 fellBackToFlash branch
+      // was removed — v1.2.40's switch to gemini-3-flash-preview
+      // made Deep work on free tier without silent downgrade.
     });
   }
 

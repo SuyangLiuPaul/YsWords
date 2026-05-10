@@ -318,16 +318,9 @@ class _SearchPageState extends State<SearchPage> {
       'rate limit',
       'not configured',
       'gemini_api_key',
-      // 2026-05-10 (v1.2.37): trigger BYOK CTA when Deep auto-
-      // fell-back to Standard so the user can opt into real Pro.
-      'deep tier needs',
-      'gemini api key',
       '配额',
       '用完',
       '没有配置',
-      '深入',
-      'gemini api 密钥',
-      'gemini api 密鑰',
     ];
     for (final t in triggers) {
       if (lower.contains(t)) return true;
@@ -811,20 +804,10 @@ class _SearchPageState extends State<SearchPage> {
       _aiUnresolvedRefDisplays = missingDisplaySet;
       // Compose an inline note that combines: out-of-scope (filter)
       // + missing-from-version drops, when present.
+      // 2026-05-11 (v1.2.42): the v1.2.37 `fellBackToFlash` branch
+      // was removed — v1.2.40's switch to gemini-3-flash-preview
+      // made Deep work on free tier without silent downgrade.
       final notes = <String>[];
-      // 2026-05-10 (v1.2.37): the user picked Deep but didn't have
-      // a BYOK key set, so the backend transparently fell back to
-      // Flash (the dev's shared Pro free-tier quota is too small
-      // for prod traffic). Lead the notice with the explanation +
-      // BYOK CTA so users understand why their "Deep" search ran
-      // on Standard quality. The CTA chip itself is rendered
-      // separately by `_shouldOfferByokForNotice` further down.
-      if (result.fellBackToFlash) {
-        notes.add(uiStrings['aiDeepFellBackToStandard']
-                ?[settings.locale] ??
-            'Deep tier needs your own Gemini API key — using Standard '
-                'this time. Set a key in Settings → AI for true Deep.');
-      }
       if (outOfScope > 0) {
         notes.add((uiStrings['aiBibleSearchOutOfScope']?[settings.locale] ??
                 'YsWords AI also suggested {n} passages outside your '
@@ -861,6 +844,10 @@ class _SearchPageState extends State<SearchPage> {
     // 2026-05-07 (v9): cancel any in-flight debounce so a fired
     // search() doesn't try to setState after the State is gone.
     _liveSearchDebounce?.cancel();
+    // 2026-05-11 (v1.2.42): same for the settle-debounced recents
+    // commit timer — fire-and-forget RecentSearchesService.add
+    // would otherwise race a now-disposed `_loadRecents` setState.
+    _recentsCommitTimer?.cancel();
     _scrollController.dispose();
     _textEditingController.dispose();
     super.dispose();
@@ -1188,30 +1175,55 @@ class _SearchPageState extends State<SearchPage> {
       searchPerformed = true;
     });
 
-    // 2026-05-11 (v1.2.41): persist successful searches to the
-    // recents list so live-search-as-you-type populates Recent
-    // alongside explicit Enter-submit. Pre-fix, only the
-    // `onSubmitted` handler called RecentSearchesService.add —
-    // most users never hit Enter (the 250 ms debounce already
-    // shows results), so their Recent list stayed empty. Symptom
-    // user reported as "after search normally there is recent
-    // search but cannot see those anymore".
-    //
-    // Heuristic-gated to keep the list useful:
-    //   • query length ≥ 3 chars — avoids noisy "lo" / "th"
-    //     partial-typing entries.
-    //   • matches.isNotEmpty — avoids logging failed searches
-    //     that the user clearly didn't find useful.
-    // The dedupe + 12-item cap inside RecentSearchesService.add
-    // keeps the list bounded, and adding "love" then "love is"
-    // simply keeps both — the user can re-run either.
+    // 2026-05-11 (v1.2.42): schedule a settle-debounced recents
+    // commit. v1.2.41 fired `RecentSearchesService.add(...)` on
+    // every successful live-search, which flooded the list with
+    // partial-typing fragments ("lov" / "love" / "love i" /
+    // "love is") and pushed the user's REAL past queries off the
+    // 12-item cap. The new flow:
+    //   • Every `search()` cancels any pending commit and
+    //     re-schedules one 2.5 s after the last keystroke.
+    //   • Only when the user stops typing for 2.5 s does the
+    //     CURRENT live query land in recents.
+    //   • Gates as before: length ≥ 3 + non-empty matches +
+    //     dedup against the most-recent saved entry (so re-
+    //     running the same query in a session doesn't re-touch
+    //     the list).
     if (query.length >= 3 && matches.isNotEmpty) {
-      // Fire-and-forget — no UI dependency on the write completing.
+      _scheduleRecentsCommit(query);
+    }
+  }
+
+  /// 2026-05-11 (v1.2.42): debounced recents commit. Cancelled +
+  /// rescheduled on every successful search; only fires once the
+  /// user has been idle for 2.5 s. Deduped against the in-memory
+  /// `_recents` list so re-running an already-saved query in a
+  /// session doesn't pointlessly re-touch SharedPreferences.
+  Timer? _recentsCommitTimer;
+  void _scheduleRecentsCommit(String query) {
+    _recentsCommitTimer?.cancel();
+    _recentsCommitTimer = Timer(const Duration(milliseconds: 2500), () async {
+      if (!mounted) return;
+      // Re-check the trim+length here (the field could have been
+      // cleared while the timer was queued).
+      final q = _textEditingController.text.trim();
+      if (q.length < 3) return;
+      // Only persist if the timer's snapshot query matches what's
+      // STILL in the box (user hasn't typed away from it).
+      if (q != query) return;
+      // Skip the disk write when this query is already the most-
+      // recent entry. Live-search re-runs the same query on
+      // re-mount, on theme toggle, on Provider notify, etc. —
+      // we don't want any of those to bump SharedPreferences.
+      if (_recents.isNotEmpty &&
+          _recents.first.toLowerCase() == q.toLowerCase()) {
+        return;
+      }
       // ignore: unawaited_futures
-      RecentSearchesService.add(query).then((_) {
+      RecentSearchesService.add(q).then((_) {
         if (mounted) _loadRecents();
       });
-    }
+    });
   }
 
   @override

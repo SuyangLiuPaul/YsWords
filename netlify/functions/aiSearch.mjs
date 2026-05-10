@@ -172,7 +172,9 @@ async function callGeminiWithKey(apiKey, prompt, locale, model) {
 			// think rather than producing more text.
 			max_tokens: 4096,
 		}),
-		signal: AbortSignal.timeout(20_000),
+		// v1.2.42: 8s/call (was 20s) — step-down chain × 3 models
+		// must fit inside Netlify's 26s + client's 25s.
+		signal: AbortSignal.timeout(8_000),
 	});
 }
 
@@ -253,13 +255,22 @@ async function callGemini(prompt, locale, overrideKey = null, model = MODEL) {
 		err.statusCode = 503;
 		throw err;
 	}
-	// Step-down chain across model tiers on 429-all-keys-exhausted.
+	// 2026-05-11 (v1.2.42): step-down chain with BYOK bypass +
+	// deadline budget. See aiBibleSearch.mjs's longer comment.
+	const isByok = !!overrideKey;
+	const deadline = Date.now() + 22_000;
 	let currentModel = model;
 	let lastResult = null;
 	while (currentModel) {
+		if (Date.now() >= deadline - 1000) {
+			console.warn(`[aiSearch] deadline reached at ${currentModel}; bailing.`);
+			break;
+		}
 		const result = await _callGeminiInner(prompt, locale, keys, currentModel);
 		if (result.ok) return result.text;
 		lastResult = result;
+		// BYOK never steps down — user picked this tier on their own key.
+		if (isByok) break;
 		// Only step down on 429 (true quota exhaustion). Auth or
 		// 4xx/5xx-other won't be fixed by a different model.
 		if (result.status !== 429) break;
@@ -365,8 +376,9 @@ export default async (req) => {
 		// 2026-05-11 (v1.2.40): see aiBibleSearch.mjs's note — Deep
 		// now uses `gemini-3-flash-preview` so the v1.2.37
 		// pre-emptive fallback is no longer needed.
+		// 2026-05-11 (v1.2.42): `fellBackToFlash` constant + spread
+		// dropped (always-false dead code).
 		const model = resolveModel(body?.aiModel);
-		const fellBackToFlash = false;
 		if (query.trim().length < 2) {
 			return new Response(JSON.stringify({ error: 'query required' }),
 				{ status: 400, headers: cors });
@@ -405,12 +417,7 @@ export default async (req) => {
 			};
 		});
 		return new Response(
-			JSON.stringify({
-				answer,
-				citations,
-				hits: hits.length,
-				...(fellBackToFlash ? { fellBackToFlash: true } : {}),
-			}),
+			JSON.stringify({ answer, citations, hits: hits.length }),
 			{ status: 200, headers: cors });
 	} catch (err) {
 		// 2026-05-10 (v1.2.30): scrub `err.message` from public body —
