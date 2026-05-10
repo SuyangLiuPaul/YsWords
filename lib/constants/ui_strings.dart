@@ -4937,6 +4937,18 @@ const uiStrings = {
     'zh-Hant': '重試中…（第 {n}/{max} 次）',
     'en': 'Retrying… ({n}/{max})',
   },
+  // 2026-05-10 (v1.2.18): user opted into eager pre-load of all
+  // 13 Bible versions during boot ("反正第一次用才 load version,
+  // 就全部 load 吧"). Splash now paints this subtitle while the
+  // sequential parse runs — typically ~20–30 s on cold boot, less
+  // on warm SW cache. After boot, every version + chapter switch
+  // is a cache hit (instant, no overlay) for the rest of the
+  // session.
+  'loadingVersionsProgress': {
+    'zh-Hans': '正在加载译本：{n}/{total}',
+    'zh-Hant': '正在載入譯本：{n}/{total}',
+    'en': 'Loading versions: {n}/{total}',
+  },
   'retry': {
     'zh-Hans': '重试',
     'zh-Hant': '重試',

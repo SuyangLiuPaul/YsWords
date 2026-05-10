@@ -664,4 +664,20 @@
 /// China build: kChinaMode skips Firebase init, so push/pull no-
 /// op silently and the key remains SharedPreferences-only — same
 /// as before, no regression.
-const String kAppVersion = '1.2.17';
+///
+/// 2026-05-10 (v1.2.18 — eager pre-load during boot): user said
+/// the v1.2.16 background pre-load still let occasional overlays
+/// slip through ("loading 还是 慢 across page... 反正第一次用才
+/// load version，就全部 load 吧"). Made the trade explicit: accept
+/// a longer splash on cold boot (~20–30 s for 12 non-active
+/// versions) in exchange for guaranteed-instant version + chapter
+/// switching for the rest of the session.
+/// `_eagerPreloadAllVersions` now runs INSIDE bootstrap before the
+/// `_loading = false` setState. `MainProvider.versionPreloadCount`
+/// + `versionPreloadTotal` drive a new "Loading versions: 5/13"
+/// splash subtitle (new ui-string `loadingVersionsProgress`)
+/// while the sequential parse runs. After boot, the LRU cache
+/// holds all 13 versions + the active one; every user pick is a
+/// cache hit. The previous fire-and-forget background helper
+/// `_preloadCommonVersions` was removed.
+const String kAppVersion = '1.2.18';

@@ -201,50 +201,42 @@ class _MainAppState extends State<MainApp> {
       mainProvider.setLoadProgress(0, 0);
     }
 
+    // 2026-05-10 (v1.2.18): eager pre-load BEFORE dismissing the
+    // splash. User opted into the "first-launch slow, after that
+    //永远 instant" trade-off ("反正第一次用才 load version,
+    // 就全部 load 吧"). Blocks the splash for ~20–30 s on cold
+    // boot, paints a "Loading versions: 5/13" subtitle so the
+    // wait is explicable. After this returns, every version +
+    // chapter switch in the session is a cache hit — no overlay,
+    // no first-time-cold cost.
+    if (mainProvider.verses.isNotEmpty) {
+      await _eagerPreloadAllVersions(mainProvider);
+    }
+
     if (mounted) {
       setState(() {
         _loading = false;
       });
     }
-    // 2026-05-10 (v1.2.15): once the splash → home transition
-    // is done, kick off a low-priority background pre-load of
-    // the most-common alternative Bible versions. By the time
-    // the user opens the version picker (~10–20 s in), 3 of
-    // these 4 candidates will be sitting in MainProvider's LRU
-    // cache and the switch will be instant ("一瞬间", per user
-    // request) instead of triggering the 1–3 s json.decode +
-    // overlay path.
-    //
-    // Fire-and-forget: errors are swallowed inside
-    // FetchVerses.loadVerseList → preloadVersion. No retry, no
-    // user feedback — this is best-effort cache warming.
-    if (mainProvider.verses.isNotEmpty) {
-      // ignore: unawaited_futures
-      _preloadCommonVersions(mainProvider);
-    }
   }
 
-  /// 2026-05-10 (v1.2.16): background pre-load of ALL 13 Bible
-  /// versions, prioritised so the most-likely-next picks land in
-  /// the LRU first. User wanted "都要预加载啊在里面" — every
-  /// version cached, not just 4 — so a switch to ANY version is
-  /// guaranteed instant once pre-load completes (~40 s post-boot).
+  /// 2026-05-10 (v1.2.18): EAGER pre-load — runs INSIDE bootstrap
+  /// before the splash dismisses. Sequential, no-gap parse of all
+  /// 12 non-active versions. Updates `MainProvider.versionPreload
+  /// Progress` so the splash can paint "Loading versions: 5/13"
+  /// while the user waits. Total cold-boot time: 1–3 s for the
+  /// active version + ~15–25 s for the other 12 = ~20–30 s splash
+  /// before home appears. User explicitly traded boot time for
+  /// guaranteed-instant version switching for the rest of the
+  /// session ("反正第一次用才 load version, 就全部 load 吧").
   ///
-  /// Order: simplified Chinese staples first (largest user base),
-  /// then English flagships, then traditional Chinese variants,
-  /// then LJK 1/2 (NT-only specialty). 3 s gap between each parse
-  /// so the inevitable 1 s json.decode freeze gets two breathing-
-  /// room seconds before the next one starts. Total ~39 s of slow
-  /// rolling pre-load.
-  ///
-  /// LRU cap (in MainProvider) bumped to 15 so all 13 versions
-  /// plus the active one and one slot of slack can coexist
-  /// without evicting each other.
-  Future<void> _preloadCommonVersions(MainProvider mainProvider) async {
-    // Wait long enough for the splash → home transition + the user's
-    // first scroll/tap to settle. Anything heavier in the first
-    // few seconds competes with the most-likely first interaction.
-    await Future<void>.delayed(const Duration(seconds: 5));
+  /// Order: active version skipped (already in cache from
+  /// FetchVerses.execute upstream); simplified Chinese staples
+  /// first (largest user base), then English, then traditional,
+  /// then LJK 1/2. If a load fails (network error, missing asset)
+  /// `preloadVersion` swallows it and we move on — boot must not
+  /// block on a single missing variant.
+  Future<void> _eagerPreloadAllVersions(MainProvider mainProvider) async {
     if (!mounted) return;
     const candidates = <String>[
       // Simplified Chinese staples — largest user base.
@@ -259,21 +251,28 @@ class _MainAppState extends State<MainApp> {
       'cuv-tr',
       'cuvs-yhwh-tr',
       'cnv-tr',
-      // LJK 1/2 — NT-only specialty translations, less common.
+      // LJK 1/2 — NT-only specialty translations.
       'biblexg',
       'biblexg-v2',
       'biblexg-tr',
       'biblexg-v2-tr',
     ];
-    for (final v in candidates) {
+    final toLoad =
+        candidates.where((v) => v != mainProvider.currentVersion).toList();
+    final total = toLoad.length;
+    for (int i = 0; i < total; i++) {
       if (!mounted) return;
-      await mainProvider.preloadVersion(v);
-      if (!mounted) return;
-      // 3 s gap keeps each per-version freeze isolated. Total:
-      // 13 versions × ~1 s parse + 3 s gap ≈ 50 s rolling pre-load.
-      await Future<void>.delayed(const Duration(seconds: 3));
+      // Splash paints the subtitle from this state.
+      mainProvider.setVersionPreloadProgress(i + 1, total);
+      // Yield once per iteration so the splash actually repaints
+      // before the next ~1 s json.decode hogs the main thread.
+      await Future<void>.delayed(Duration.zero);
+      await mainProvider.preloadVersion(toLoad[i]);
     }
-    debugPrint('Background pre-load complete: ${candidates.length} versions');
+    if (!mounted) return;
+    // Clear the subtitle state before the splash dismisses.
+    mainProvider.setVersionPreloadProgress(0, 0);
+    debugPrint('Eager pre-load complete: $total versions');
   }
 
   @override

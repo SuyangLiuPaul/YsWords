@@ -411,7 +411,12 @@ class _LoadingPageState extends State<LoadingPage> {
                   // "Retrying… (n/m)" (attempts 2+, when the user
                   // would otherwise wonder if the app is frozen).
                   // Goes away as soon as the load settles.
-                  if (mainProvider.loadAttempt > 0) ...[
+                  // 2026-05-10 (v1.2.18): added a third state to
+                  // this subtitle. Priority: version-pre-load
+                  // progress > verse-load retry > "Loading verses…".
+                  // Only ONE shows at a time.
+                  if (mainProvider.loadAttempt > 0 ||
+                      mainProvider.versionPreloadTotal > 0) ...[
                     SizedBox(height: 18 * s),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -431,21 +436,33 @@ class _LoadingPageState extends State<LoadingPage> {
                         ),
                         SizedBox(width: 10 * s),
                         Text(
-                          mainProvider.loadAttempt <= 1
-                              ? (uiStrings['loadingVerses']
-                                      ?[settings.locale] ??
-                                  'Loading verses…')
-                              : ((uiStrings['retryingAttempt']
+                          mainProvider.versionPreloadTotal > 0
+                              ? ((uiStrings['loadingVersionsProgress']
                                           ?[settings.locale] ??
-                                      'Retrying… ({n}/{max})')
+                                      'Loading versions: {n}/{total}')
                                   .replaceFirst(
                                       '{n}',
-                                      mainProvider.loadAttempt
+                                      mainProvider.versionPreloadCount
                                           .toString())
                                   .replaceFirst(
-                                      '{max}',
-                                      mainProvider.loadMaxAttempts
-                                          .toString())),
+                                      '{total}',
+                                      mainProvider.versionPreloadTotal
+                                          .toString()))
+                              : (mainProvider.loadAttempt <= 1
+                                  ? (uiStrings['loadingVerses']
+                                          ?[settings.locale] ??
+                                      'Loading verses…')
+                                  : ((uiStrings['retryingAttempt']
+                                              ?[settings.locale] ??
+                                          'Retrying… ({n}/{max})')
+                                      .replaceFirst(
+                                          '{n}',
+                                          mainProvider.loadAttempt
+                                              .toString())
+                                      .replaceFirst(
+                                          '{max}',
+                                          mainProvider.loadMaxAttempts
+                                              .toString()))),
                           style: TextStyle(
                             fontSize: settings.fontSize * 0.85,
                             fontFamily: settings.fontFamily,

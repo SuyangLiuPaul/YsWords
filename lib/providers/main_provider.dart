@@ -344,6 +344,22 @@ class MainProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// 2026-05-10 (v1.2.18): in-flight count for the eager pre-load
+  /// of all 13 Bible versions during boot. The splash paints a
+  /// "Loading versions: 5/13" subtitle when `versionPreloadTotal > 0`
+  /// — clearer than reusing `loadAttempt` (which means retry count
+  /// in the verse-fetch context). Cleared back to 0/0 when pre-
+  /// load completes so the splash subtitle disappears before the
+  /// `_loading = false` setState.
+  int versionPreloadCount = 0;
+  int versionPreloadTotal = 0;
+  void setVersionPreloadProgress(int count, int total) {
+    if (versionPreloadCount == count && versionPreloadTotal == total) return;
+    versionPreloadCount = count;
+    versionPreloadTotal = total;
+    notifyListeners();
+  }
+
   /// 2026-05-10 (v1.2.13): true while a version-switch is in flight
   /// (set by `bible_reading_pane.dart::onVersionSelected`). The
   /// reading pane paints an opaque "Loading [version]…" overlay on
