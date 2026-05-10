@@ -882,6 +882,46 @@
 /// New ui-string keys: `tooltipClose`, `couldNotParseRef`
 /// (`{ref}` placeholder), `sermonNoBody` — all three locales.
 ///
+/// 2026-05-10 (v1.2.33 — divine-name 雅威 → 雅偉 sweep):
+/// follow-up to v1.2.32. User said "很多地方寫雅威但是需要雅偉
+/// 繁體字有時候寫雅伟 需要雅偉" — 1.2.32 only fixed cnv-tr.json's
+/// asset content, missing the 雅威 occurrences scattered across
+/// runtime-render code, version labels, UI strings, Hebrew gloss
+/// data, and bible_evidence content.
+///
+/// Comprehensive scan + fix:
+/// • `text_patterns.dart::_normalizeDivineNames` — THE big one.
+///   Render-side normalisation that converts CUV's `耶和華` to the
+///   project's Yahweh form for every traditional reader. Was
+///   producing `雅威`; now produces `雅偉`.
+/// • `bible_versions.dart` cnv-tr labels: `新譯本·雅威` /
+///   `新譯本（繁體·雅威版）` → `雅偉` / `雅偉版`.
+/// • `ui_strings.dart` zh-Hant footers: `CUVS-YHWH 和合本雅威版`
+///   → `雅偉版`; copyright lines `© 雅威的話事工` →
+///   `雅偉的話事工`; `雅威版社群研經版本` → `雅偉版`.
+/// • `strongs_service.dart`: `_normaliseDivineGloss` 雅威 → 雅偉
+///   (matches the rendered output everywhere else); alias map
+///   gains `雅偉: H3068` while keeping `雅威: H3068` for
+///   backward-compat input matching (users who type the old form
+///   in search still find YHWH).
+/// • `bible_trivia_page.dart`: 9 zh-Hant trivia strings using
+///   `雅威` → `雅偉` (Esther / Ruth / Joshua / Song of Songs /
+///   Joel / Obadiah / Zephaniah).
+/// • `build_verse_content_spans.dart` comment 雅威 → 雅偉.
+/// • `assets/bible_evidence.json`: 10 occurrences (5 zh-Hans +
+///   5 zh-Hant across `solomon_temple_evidence` and
+///   `zerubbabel_second_temple`). zh-Hans → 雅伟, zh-Hant → 雅偉.
+/// • `assets/strongs/hebrew.json`: 4 occurrences (defZh×2 +
+///   defZhTw×2 in H113 + H136 — the Adonai entries that gloss
+///   the term as "等同神的名字 雅威" / "猶太人對雅威的代稱"). Same
+///   per-locale routing.
+///
+/// Final state: 0 user-visible `雅威` anywhere in code or assets.
+/// Remaining `雅威` references are all intentional (history doc
+/// strings + the strongs_service alias map for backward-compat
+/// search). Project canonical pairing 雅伟 / 雅偉 now consistent
+/// across all surfaces.
+///
 /// 2026-05-10 (v1.2.32 — 新譯本 traditional divine-name fix):
 /// user reported "雅伟 雅偉 版本，但是新譯本和合本好像都沒有用對字"
 /// — the simplified→traditional pairing convention everywhere
@@ -1051,7 +1091,7 @@
 ///   the client. Now the index lives in the server log only;
 ///   the public message is a generic "AI service authentication
 ///   failed."
-const String kAppVersion = '1.2.32';
+const String kAppVersion = '1.2.33';
 
 /// 2026-05-10 (v1.2.20): paired with `kAppVersion` so the About
 /// footer's "Last updated …" stamp moves in lockstep with every
@@ -1068,4 +1108,4 @@ const String kAppVersion = '1.2.32';
 /// the higher precision. Format: ISO local date + 24-h
 /// HH:MM + tz abbreviation. The about-page interpolation is
 /// locale-aware via the `aboutFooterNote` ui-string template.
-const String kAppReleaseTime = '2026-05-10 19:22 AEST';
+const String kAppReleaseTime = '2026-05-10 19:37 AEST';

@@ -3896,12 +3896,12 @@ const uiStrings = {
   },
   'aboutVerCuvsYhwh': {
     'zh-Hans': 'CUVS-YHWH 和合本雅伟版（简 / 繁）',
-    'zh-Hant': 'CUVS-YHWH 和合本雅威版（簡 / 繁）',
+    'zh-Hant': 'CUVS-YHWH 和合本雅偉版（簡 / 繁）',
     'en': 'CUVS-YHWH (和合本雅伟版, simplified / traditional)',
   },
   'aboutLicenseCuvsYhwh': {
     'zh-Hans': '© 雅伟的话事工 · 经授权使用。',
-    'zh-Hant': '© 雅威的話事工 · 經授權使用。',
+    'zh-Hant': '© 雅偉的話事工 · 經授權使用。',
     'en':
         '© Yahweh De Hua Ministry · used with permission.',
   },
@@ -3912,7 +3912,7 @@ const uiStrings = {
   },
   'aboutLicenseCnv': {
     'zh-Hans': '© 环球圣经公会 · 雅伟版社群研经版本。',
-    'zh-Hant': '© 環球聖經公會 · 雅威版社群研經版本。',
+    'zh-Hant': '© 環球聖經公會 · 雅偉版社群研經版本。',
     'en':
         '© Worldwide Bible Society · Yahweh-substituted community-study edition.',
   },

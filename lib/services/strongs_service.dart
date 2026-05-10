@@ -154,7 +154,12 @@ class StrongsService {
   static const Map<String, String> _aliasToStrongs = {
     // YHWH (Hebrew) — divine name. All common spellings collapse
     // to H3068, the canonical YHWH entry.
+    // 2026-05-10 (v1.2.33): added 雅偉 as canonical traditional
+    // form alongside the historical 雅威 (kept for backward
+    // compatibility — users who searched 雅威 in v≤1.2.32 sessions
+    // shouldn't get a "no match"). Project canonical is 雅伟 / 雅偉.
     '雅伟': 'H3068',
+    '雅偉': 'H3068',
     '雅威': 'H3068',
     '耶和华': 'H3068',
     '耶和華': 'H3068',
@@ -320,7 +325,7 @@ class StrongsService {
         // (雅伟 / 耶稣 / etc.).
         //
         // Divine-name normalization still applies before matching
-        // (耶和华 -> 雅伟, 耶和華 -> 雅威).
+        // (耶和华 -> 雅伟, 耶和華 -> 雅偉).
         final candidates = <String>[
           _normaliseDivineGloss((entry.glossZh ?? '').trim()),
           _normaliseDivineGloss((entry.glossZhTw ?? '').trim()),
@@ -350,14 +355,20 @@ class StrongsService {
   /// 2026-05-07 (v6): mirror of `_normalizeDivineNames` from
   /// text_patterns.dart, applied to Strong's Chinese glosses
   /// before matching. Maps `耶和华 → 雅伟` (Hans) and
-  /// `耶和華 → 雅威` (Hant) so the user's "雅伟" / "雅威" query
+  /// `耶和華 → 雅偉` (Hant) so the user's "雅伟" / "雅偉" query
   /// finds entries whose raw CBOL gloss still uses the older
   /// transliteration form.
+  ///
+  /// 2026-05-10 (v1.2.33): traditional output corrected from
+  /// `雅威` → `雅偉` to match the project canonical pairing
+  /// 雅伟 / 雅偉. The alias map at the top of `searchByLemma`
+  /// keeps `雅威 → H3068` for backward-compat input-side matching
+  /// (so users who type `雅威` still find YHWH).
   static String _normaliseDivineGloss(String s) {
     if (s.isEmpty) return s;
     return s
         .replaceAll('耶和华', '雅伟')
-        .replaceAll('耶和華', '雅威');
+        .replaceAll('耶和華', '雅偉');
   }
 }
 

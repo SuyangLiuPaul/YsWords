@@ -25,10 +25,17 @@ final _pilcrowPattern = RegExp(r'[¶§]\s*');
 /// Round 56: divine-name normalization. The asset files for the
 /// non-YHWH versions render the Tetragrammaton as `耶和华` /
 /// `耶和華` / `the LORD` / `LORD`. The user wants `雅伟` (S),
-/// `雅威` (T), and `Yahweh` everywhere in the app, regardless of
+/// `雅偉` (T), and `Yahweh` everywhere in the app, regardless of
 /// which version asset file the text came from. We do this at the
 /// render-side sanitizer rather than rewriting the asset JSONs so
 /// the original files stay verifiable against upstream Bible data.
+///
+/// 2026-05-10 (v1.2.33): traditional output corrected from `雅威`
+/// (might/awe) → `雅偉` (great) — the project's canonical
+/// simp→trad pairing is 雅伟 → 雅偉, but this normalisation path
+/// (and several other surfaces) historically used `雅威`. The user
+/// reported "很多地方寫雅威但是需要雅偉". Every traditional CUV
+/// reader sees this output, so it's the highest-impact site.
 ///
 /// Matters of detail:
 ///   • English: only ALL-CAPS `LORD` / `the LORD` is replaced.
@@ -43,7 +50,7 @@ String _normalizeDivineNames(String text) {
   // Chinese — must come before any English work, but order between
   // Hans/Hant doesn't matter (different glyphs).
   out = out.replaceAll('耶和华', '雅伟');
-  out = out.replaceAll('耶和華', '雅威');
+  out = out.replaceAll('耶和華', '雅偉');
   // English — whole-word, case-sensitive on the all-caps form so we
   // don't disturb "Lord" (Adonai/kyrios) or proper nouns.
   out = out.replaceAllMapped(

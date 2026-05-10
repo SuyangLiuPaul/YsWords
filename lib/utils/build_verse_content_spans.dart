@@ -333,7 +333,7 @@ List<InlineSpan> buildVerseContentSpans({
     {
       // Round 56: normalize the visible chunk before rendering — strips
       // the pilcrow/section markers some Bible versions ship in their
-      // asset JSON and rewrites 耶和华/耶和華/the LORD into 雅伟/雅威/
+      // asset JSON and rewrites 耶和华/耶和華/the LORD into 雅伟/雅偉/
       // Yahweh so the divine name is consistent across every version.
       // `displayCleanup` preserves leading/trailing spaces between
       // adjacent chunks (sanitizeForSearch's `.trim()` would collapse

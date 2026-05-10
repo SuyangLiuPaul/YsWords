@@ -98,8 +98,12 @@ const bibleVersions = <BibleVersionInfo>[
   ),
   BibleVersionInfo(
     value: 'cnv-tr',
-    shortLabel: '新譯本·雅威',
-    menuLabel: '新譯本（繁體·雅威版）',
+    // 2026-05-10 (v1.2.33): 雅威 → 雅偉. Project canonical
+    // simp→trad pairing is 雅伟 → 雅偉; historical mistake using
+    // 雅威 (might) instead of 雅偉 (great). User reported
+    // "很多地方寫雅威但是需要雅偉".
+    shortLabel: '新譯本·雅偉',
+    menuLabel: '新譯本（繁體·雅偉版）',
     editionYear: '基於新譯本 1992 / 三版 2011',
   ),
 ];
