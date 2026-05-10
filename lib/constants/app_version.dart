@@ -882,6 +882,56 @@
 /// New ui-string keys: `tooltipClose`, `couldNotParseRef`
 /// (`{ref}` placeholder), `sermonNoBody` — all three locales.
 ///
+/// 2026-05-11 (v1.2.39 — Deep tier hard-disabled when no BYOK,
+/// plus history cleanup): user "when i chose deep in setting ai,
+/// but search with yswords ai, nothing responded still". Backend
+/// auto-fallback added in v1.2.37 was working (live curl
+/// confirmed `pro` request returns refs + `fellBackToFlash:true`),
+/// but the picker still LOOKED selectable for Deep, leading to
+/// confusion when results came back as Flash quality without an
+/// obvious explanation.
+///
+/// User suggestion: "i realize it might because i am using free
+/// tier thats why pro version not available for pro. maybe check
+/// whats availablr models and add or edit accordingly please".
+/// Confirmed — `gemini-2.5-pro`'s free-tier daily quota is ~25
+/// RPD per key vs ~1500 for `flash-lite`; on the dev's shared
+/// 3-key pool, Pro is essentially always exhausted on prod
+/// traffic.
+///
+/// Fix — close the gap in the picker UX:
+/// • `settings_page.dart::_AiModelCard` — when
+///   `settings.geminiApiKey.isEmpty`, the Deep `ButtonSegment`
+///   sets `enabled: false` + a lock icon + a tooltip explaining
+///   the gating. Below the picker, a subtle italic note
+///   reinforces "Deep needs your own Gemini API key (set one in
+///   the BYOK card below). Without it, Deep would silently run
+///   as Standard."
+/// • The picker's `selected` value is computed from an "effective
+///   tier": when `aiModel == 'pro'` AND no BYOK, the selection
+///   maps to `'flash'` so the picker matches what requests will
+///   actually use (the v1.2.37 backend fallback maps that to
+///   Flash anyway). The persisted `settings.aiModel` is NOT
+///   mutated — once the user adds BYOK, Deep becomes selected
+///   automatically.
+/// • The `_AiModelDetailPanel` below the picker reads the same
+///   effective tier so its description matches the picker state.
+/// • Two new ui-strings: `aiModelDeepDisabledTooltip` (shown on
+///   long-press / hover of the locked Deep segment) +
+///   `aiModelDeepLockedNote` (subtle italic note under the
+///   picker). Both have all 3 locales.
+///
+/// History cleanup: user also asked "github make sure remove all
+/// Claude especially i can see two contributors including claude.
+/// remove them". `git filter-branch --msg-filter` stripped
+/// `Co-Authored-By: Claude...` trailers from every commit,
+/// rewrote 11 commits + 10 tags, force-pushed main + tags. The
+/// GitHub Contributors tab will refresh within a few hours;
+/// Claude no longer shows as a co-author on any commit. Backup
+/// branch `backup-pre-claude-strip-2026-05-11` retained locally
+/// for safety. Going forward, commit messages don't include the
+/// trailer.
+///
 /// 2026-05-11 (v1.2.38 — markdown rendering across all AI
 /// surfaces): user "why it is like ** which means it is not
 /// formatted well". Gemini ships `**bold**` / `*italic*` /
@@ -1276,7 +1326,7 @@
 /// matching edit needed here.
 const String kAppVersion = String.fromEnvironment(
   'APP_VERSION',
-  defaultValue: '1.2.38',
+  defaultValue: '1.2.39',
 );
 
 /// 2026-05-10 (v1.2.20): paired with `kAppVersion` so the About

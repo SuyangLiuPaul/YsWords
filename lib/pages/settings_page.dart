@@ -2623,39 +2623,103 @@ class _AiModelCard extends StatelessWidget {
               ),
             ),
             SizedBox(height: 10 * s),
-            Center(
-              child: SegmentedButton<String>(
-                segments: [
-                  ButtonSegment<String>(
-                    value: 'flash-lite',
-                    label: Text(
-                      uiStrings['aiModelFast']?[locale] ?? 'Fast',
+            // 2026-05-11 (v1.2.39): the Deep (gemini-2.5-pro) tier
+            // is essentially unusable on the developer's shared
+            // free-tier keys (Pro free quota is ~25 RPD vs ~1500
+            // for Flash-Lite, exhausted on every prod request).
+            // When the user has no BYOK key set:
+            //   • The Deep segment is DISABLED in the picker so it
+            //     can't be chosen by accident.
+            //   • The picker's `selected` value uses an "effective"
+            //     tier — if the user previously persisted 'pro'
+            //     while they had a key but later cleared it,
+            //     display Standard so the UI matches what their
+            //     requests will actually use (the v1.2.37 backend
+            //     fallback maps 'pro' + no-BYOK → Flash anyway).
+            //   • A small note below the picker explains the gating.
+            // When the user sets BYOK, Deep becomes enabled again;
+            // their persisted preference survives across the gating
+            // change (we don't mutate `settings.aiModel`).
+            () {
+              final hasByok = settings.geminiApiKey.isNotEmpty;
+              final effectiveModel = (!hasByok && settings.aiModel == 'pro')
+                  ? 'flash'
+                  : settings.aiModel;
+              return Center(
+                child: SegmentedButton<String>(
+                  segments: [
+                    ButtonSegment<String>(
+                      value: 'flash-lite',
+                      label: Text(
+                        uiStrings['aiModelFast']?[locale] ?? 'Fast',
+                      ),
+                      icon: const Icon(Icons.bolt_outlined),
                     ),
-                    icon: const Icon(Icons.bolt_outlined),
-                  ),
-                  ButtonSegment<String>(
-                    value: 'flash',
-                    label: Text(
-                      uiStrings['aiModelStandard']?[locale] ?? 'Standard',
+                    ButtonSegment<String>(
+                      value: 'flash',
+                      label: Text(
+                        uiStrings['aiModelStandard']?[locale] ?? 'Standard',
+                      ),
+                      icon: const Icon(Icons.balance_outlined),
                     ),
-                    icon: const Icon(Icons.balance_outlined),
-                  ),
-                  ButtonSegment<String>(
-                    value: 'pro',
-                    label: Text(
-                      uiStrings['aiModelDeep']?[locale] ?? 'Deep',
+                    ButtonSegment<String>(
+                      value: 'pro',
+                      enabled: hasByok,
+                      tooltip: hasByok
+                          ? null
+                          : (uiStrings['aiModelDeepDisabledTooltip']
+                                  ?[locale] ??
+                              'Deep needs your own Gemini API key. '
+                                  'Set one below to enable.'),
+                      label: Text(
+                        uiStrings['aiModelDeep']?[locale] ?? 'Deep',
+                      ),
+                      icon: Icon(hasByok
+                          ? Icons.school_outlined
+                          : Icons.lock_outline_rounded),
                     ),
-                    icon: const Icon(Icons.school_outlined),
+                  ],
+                  selected: {effectiveModel},
+                  onSelectionChanged: (selection) {
+                    if (selection.isNotEmpty) {
+                      settings.setAiModel(selection.first);
+                    }
+                  },
+                ),
+              );
+            }(),
+            // 2026-05-11 (v1.2.39): visible note explaining the
+            // Deep gating when no BYOK is set. Subtle styling so it
+            // doesn't compete with the detail panel below.
+            if (settings.geminiApiKey.isEmpty) ...[
+              SizedBox(height: 8 * s),
+              Row(
+                children: [
+                  Icon(Icons.lock_outline_rounded,
+                      size: 12,
+                      color: scheme.onSurfaceVariant
+                          .withValues(alpha: 0.65)),
+                  SizedBox(width: 4 * s),
+                  Expanded(
+                    child: Text(
+                      uiStrings['aiModelDeepLockedNote']?[locale] ??
+                          'Deep tier needs your own Gemini API key '
+                              '(set one in the BYOK card below). '
+                              'Without it, Deep would silently run as Standard.',
+                      style: TextStyle(
+                        fontFamily: settings.fontFamily,
+                        fontSize: (settings.fontSize - 5)
+                            .clamp(10.0, 12.0),
+                        color: scheme.onSurfaceVariant
+                            .withValues(alpha: 0.7),
+                        fontStyle: FontStyle.italic,
+                        height: 1.4,
+                      ),
+                    ),
                   ),
                 ],
-                selected: {settings.aiModel},
-                onSelectionChanged: (selection) {
-                  if (selection.isNotEmpty) {
-                    settings.setAiModel(selection.first);
-                  }
-                },
               ),
-            ),
+            ],
             SizedBox(height: 12 * s),
             // 2026-05-10 (v1.2.27): per-tier detail panel — updates
             // when user picks a different option. Names the actual
@@ -2663,7 +2727,10 @@ class _AiModelCard extends StatelessWidget {
             // quota reality so users know when to BYOK before
             // hitting "quota exhausted".
             _AiModelDetailPanel(
-                aiModel: settings.aiModel,
+                aiModel: (settings.geminiApiKey.isEmpty &&
+                        settings.aiModel == 'pro')
+                    ? 'flash'
+                    : settings.aiModel,
                 settings: settings,
                 scheme: scheme,
                 s: s),

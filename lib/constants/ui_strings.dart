@@ -2465,6 +2465,23 @@ const uiStrings = {
     'en':
         'Deep tier needs your own Gemini API key — using Standard this time. Set a key in Settings → AI for true Deep responses next time.',
   },
+  // 2026-05-11 (v1.2.39): tooltip on the disabled Deep segment in
+  // the AI tier picker. Shown when the user hovers / long-presses
+  // the locked Deep button without having set a BYOK key.
+  'aiModelDeepDisabledTooltip': {
+    'zh-Hans': '深入需要您自己的 Gemini API 密钥。请先在下方 BYOK 卡片设置一个。',
+    'zh-Hant': '深入需要您自己的 Gemini API 密鑰。請先在下方 BYOK 卡片設置一個。',
+    'en': 'Deep needs your own Gemini API key. Set one below to enable.',
+  },
+  // 2026-05-11 (v1.2.39): subtle note rendered under the AI tier
+  // picker when no BYOK key is set. Explains why Deep is locked +
+  // makes the silent-fallback behaviour explicit.
+  'aiModelDeepLockedNote': {
+    'zh-Hans': '深入需要您自己的 Gemini API 密钥（请到下方 BYOK 卡片设置）。没有密钥时，深入会静默地按 Standard 运行。',
+    'zh-Hant': '深入需要您自己的 Gemini API 密鑰（請到下方 BYOK 卡片設置）。沒有密鑰時，深入會靜默地按 Standard 運行。',
+    'en':
+        'Deep tier needs your own Gemini API key (set one in the BYOK card below). Without it, Deep would silently run as Standard.',
+  },
   // 2026-05-09 (v1.2.7): "Test" button + result row in the BYOK
   // card. Lets the user verify their pasted key actually
   // authenticates against Gemini before saving — previously they
