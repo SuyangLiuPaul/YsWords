@@ -732,8 +732,20 @@ class _BookChapterPickerState extends State<BookChapterPicker> {
             ),
             alignment: Alignment.center,
             padding: const EdgeInsets.symmetric(horizontal: 4),
+            // 2026-05-10 (v1.2.19): switched fit from `scaleDown` →
+            // `contain`. User reported single-word book labels (one
+            // Chinese character like "创" or short English like
+            // "John") looked "bad UI" — they were rendering at their
+            // natural fontSize × 0.9 in a square tile that's
+            // typically 60–80 px, so a 18 px char floated tiny in
+            // the centre with empty space around it. Multi-char
+            // labels like "撒母耳记" filled the tile via scaleDown
+            // (shrunk to fit). With `contain` the text scales UP
+            // when small (single char) and DOWN when large (long
+            // abbrev), preserving aspect ratio either way — every
+            // tile reads at a consistent visual weight.
             child: FittedBox(
-              fit: BoxFit.scaleDown,
+              fit: BoxFit.contain,
               child: Text(
                 shortName,
                 maxLines: 1,

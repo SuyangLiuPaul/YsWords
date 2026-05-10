@@ -680,4 +680,28 @@
 /// holds all 13 versions + the active one; every user pick is a
 /// cache hit. The previous fire-and-forget background helper
 /// `_preloadCommonVersions` was removed.
-const String kAppVersion = '1.2.18';
+///
+/// 2026-05-10 (v1.2.19 — three QC fixes from user testing): user
+/// reported (a) "bibleapp version not showing in dev qat about
+/// page", (b) books grid view "one word chinese or english one"
+/// looked bad, (c) "by clicking verse it doesn't jump to right
+/// verse correctly".
+/// (a) About AppBar title now appends `· v$kAppVersion` so the
+///     running build is visible without scrolling 6+ sections.
+///     Footer entry kept for copy-paste support purposes.
+/// (b) `book_chapter_picker.dart` `_bookTile` swapped
+///     `BoxFit.scaleDown` → `BoxFit.contain` so single-character
+///     labels (Chinese "创", "约" or short English "John")
+///     scale UP to fill the square tile instead of floating tiny
+///     in the centre. Multi-char labels like "撒母耳记上" still
+///     scale DOWN — `contain` does both.
+/// (c) Two defensive fixes in `MainProvider.useCachedVersion`:
+///     evict cross-version paragraph-cache entries (the v1.2.16
+///     LRU was keeping `verseToItemMap`s from other versions
+///     warm; while the verse-grouping was correct, a stale map
+///     surfacing on a chapter rebuild could send the post-frame
+///     pendingJump drain to a wrong index); AND clear any in-
+///     flight `_pendingJumpChapterVerseIndex` before the swap so
+///     a jump queued against the OLD version's chapter doesn't
+///     fire against the new one.
+const String kAppVersion = '1.2.19';

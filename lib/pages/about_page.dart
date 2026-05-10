@@ -43,7 +43,16 @@ class AboutPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         leading: const LocalizedBackButton(),
-        title: Text(uiStrings['aboutPageTitle']?[locale] ?? 'About'),
+        // 2026-05-10 (v1.2.19): user reported "bibleapp version not
+        // showing in dev/qat about page". The footer (~end of a
+        // ListView) requires scrolling past 6+ sections + the cloud-
+        // diagnostic block — most users never see it. Surface
+        // the running version directly in the AppBar so it's
+        // always one tap away. Also keep the footer entry for
+        // historical / copy-paste support purposes.
+        title: Text(
+          '${uiStrings['aboutPageTitle']?[locale] ?? 'About'} · v$kAppVersion',
+        ),
         actions: const [HomeIconButton()],
       ),
       body: Center(

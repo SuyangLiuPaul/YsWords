@@ -138,6 +138,35 @@ class MainProvider extends ChangeNotifier {
     // actually switch to the pre-loaded version.
   }
 
+  /// 2026-05-10 (v1.2.19): nuke the paragraph-groups cache for any
+  /// key that doesn't belong to `version`. Used by `useCachedVersion`
+  /// before swapping verse lists so a STALE `verseToItemMap` from
+  /// a previous version's chapter (still resident in the 30-slot
+  /// LRU because v1.2.16 stopped wiping the cache on version
+  /// switch) can't surface during the next build's cache lookup
+  /// and feed a wrong index map to the post-frame pendingJump
+  /// drain. Symptom user reported as "by clicking verse it doesn't
+  /// jump to right verse correctly" after v1.2.16 + v1.2.18.
+  ///
+  /// Strategy: keep ONLY entries already prefixed with the new
+  /// version's key — those are guaranteed correct. Cross-version
+  /// entries can be dropped; LRU will refill them on demand.
+  void _evictParagraphCacheForVersionSwitch(String newVersion) {
+    final keep = <String, dynamic>{};
+    final prefix = '$newVersion|';
+    for (final entry in _paragraphGroupsCache.entries) {
+      if (entry.key.startsWith(prefix)) keep[entry.key] = entry.value;
+    }
+    _paragraphGroupsCache.clear();
+    keep.forEach((k, v) {
+      _paragraphGroupsCache[k] = v as ({
+        List<List<Verse>> groups,
+        Map<int, int> verseToItem,
+        Map<int, int> itemToVerseIndex,
+      });
+    });
+  }
+
   /// Swap the live `verses` list to the cached parsed list for
   /// `version`, mark `currentVersion`, and notify listeners. Skips
   /// the json.decode pipeline entirely. Returns false if there's no
@@ -148,15 +177,27 @@ class MainProvider extends ChangeNotifier {
     // LRU touch on read.
     _versesCache.remove(version);
     _versesCache[version] = cached;
+    // 2026-05-19 (v1.2.19): evict cross-version paragraph-cache
+    // entries so a stale verseToItemMap can't slip through on the
+    // next build's lookup. v1.2.16's "keep cross-version entries
+    // for warm re-visits" optimisation was sound for paragraph
+    // *groups* but the paired `verseToItemMap` is what drives
+    // pendingJump scroll-targets and a stale one would silently
+    // mis-aim. We only drop entries from OTHER versions; entries
+    // from the new version (warm cache) stay.
+    _evictParagraphCacheForVersionSwitch(version);
+    // 2026-05-19 (v1.2.19): also drop any in-flight pending jump
+    // queued before the swap. The verse index it points at was
+    // computed against the OLD version's chapter; firing it
+    // against the new version's reading-pane build is the most
+    // direct way to land on a wrong verse.
+    _pendingJumpChapterVerseIndex = null;
     currentVersion = version;
     verses = cached;
     _selectedIds.clear();
     // Same per-verse caches that setVerses invalidates — these are
     // derived from the verse list so they need a rebuild after the
-    // swap. v1.2.16: paragraph-groups cache is now multi-slot LRU
-    // keyed by version+chapter, so don't clear it here — entries
-    // from a different version coexist safely and any reusable
-    // chapter cache stays warm for re-visits.
+    // swap.
     _searchKeysCache = null;
     _searchKeysCacheLength = -1;
     _bookOrderCache = null;
