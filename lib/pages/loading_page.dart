@@ -54,6 +54,13 @@ class _LoadingPageState extends State<LoadingPage> {
   Verse? _splashVerse;
   bool _splashVerseLocked = false;
   Timer? _dailyVerseFallback;
+  // 2026-05-10 (v1.2.28): one-shot guard so build()'s safety-net
+  // reschedule of `_scheduleAdvanceIfReady` doesn't keep
+  // re-cancelling the Timer on every Consumer rebuild during
+  // eager pre-load (which fires notifyListeners 12 times).
+  // Reset to false in `_retry` so the manual retry path can
+  // schedule a fresh advance.
+  bool _advanceScheduledOnce = false;
 
   @override
   void initState() {
@@ -209,6 +216,12 @@ class _LoadingPageState extends State<LoadingPage> {
   Future<void> _retry() async {
     if (_retrying) return;
     setState(() => _retrying = true);
+    // 2026-05-10 (v1.2.28): allow the build()-side safety net to
+    // re-arm after a manual retry. Without this, a successful
+    // recovery wouldn't re-trigger the auto-advance because the
+    // one-shot guard was already tripped during the initial
+    // (failed) load.
+    _advanceScheduledOnce = false;
     final mainProvider = context.read<MainProvider>();
     // Clear the previous error first so the UI immediately reflects
     // that retry has started — without this, a retry that lands on
@@ -281,6 +294,28 @@ class _LoadingPageState extends State<LoadingPage> {
 
     if (hasError) {
       return _buildErrorScaffold(context, settings);
+    }
+
+    // 2026-05-10 (v1.2.28): safety-net reschedule. Bug: when the
+    // splash watchdog in `_AppRoot` (4 s) fires BEFORE
+    // FetchVerses.execute resolves on slow connections, LoadingPage
+    // gets mounted with empty `mainProvider.verses` and the initState
+    // call to `_scheduleAdvanceIfReady` returns early without
+    // arming the 3 s auto-advance Timer. Once verses arrive (and the
+    // eager pre-load runs to 12/12), no one re-arms it — the user
+    // sees the splash stuck on "Loading versions: 12/12".
+    //
+    // Fix: the first time we observe a non-error build (verses
+    // populated, no loadError), schedule the advance via a post-
+    // frame callback so it runs AFTER the current build completes.
+    // The `_advanceScheduledOnce` flag prevents the eager pre-load's
+    // 12 notifyListeners callbacks from cancelling-and-rearming the
+    // Timer on every rebuild (which would never let it fire).
+    if (!_advanceScheduledOnce) {
+      _advanceScheduledOnce = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _scheduleAdvanceIfReady();
+      });
     }
 
     // Frozen by _resolveDailyVerseForSplash() — either today's

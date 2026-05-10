@@ -834,7 +834,29 @@
 /// Three new ui-strings: aiModelFastDetail / aiModelStandardDetail
 /// / aiModelDeepDetail. New `_AiModelDetailPanel` widget rendered
 /// below the SegmentedButton.
-const String kAppVersion = '1.2.27';
+///
+/// 2026-05-10 (v1.2.28 — splash-stuck-at-12/12 hotfix): user
+/// reported "loading 13 verse 后就卡在那个 loading page了" —
+/// after the eager pre-load reaches 12/12, the splash stays put
+/// instead of advancing to home. Diagnosis: race between the
+/// `_AppRoot` 4 s splash watchdog and `FetchVerses.execute`. On
+/// slow networks the watchdog fires first, mounting LoadingPage
+/// while `mainProvider.verses` is still empty. LoadingPage's
+/// `initState` calls `_scheduleAdvanceIfReady` which returns
+/// early (`verses.isEmpty`) and the 3 s auto-advance Timer is
+/// never armed. When verses arrive shortly after — and even when
+/// the eager pre-load finishes minting all 12 notifyListeners —
+/// no code path re-arms the Timer.
+/// Fix in loading_page.dart: a one-shot post-frame safety-net in
+/// build() that calls `_scheduleAdvanceIfReady` the first time we
+/// observe a non-error frame (verses populated, no loadError).
+/// New `_advanceScheduledOnce` flag prevents the eager pre-load's
+/// 12 rebuilds from cancelling-and-rearming the Timer on every
+/// notify. The flag is reset in `_retry` so manual recovery still
+/// works.
+/// Critical bug: present on every live tier (dev/qat/prod). Push
+/// straight through dev → qat → prod in one shot.
+const String kAppVersion = '1.2.28';
 
 /// 2026-05-10 (v1.2.20): paired with `kAppVersion` so the About
 /// footer's "Last updated …" stamp moves in lockstep with every
@@ -851,4 +873,4 @@ const String kAppVersion = '1.2.27';
 /// the higher precision. Format: ISO local date + 24-h
 /// HH:MM + tz abbreviation. The about-page interpolation is
 /// locale-aware via the `aboutFooterNote` ui-string template.
-const String kAppReleaseTime = '2026-05-10 16:25 AEST';
+const String kAppReleaseTime = '2026-05-10 17:20 AEST';
