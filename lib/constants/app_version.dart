@@ -791,7 +791,20 @@
 /// release stamps a unique moment. ui-string `aboutFooterNote`
 /// placeholder updated `{date}` → `{time}`. Single dev → qat →
 /// prod cycle in one shot per user request.
-const String kAppVersion = '1.2.24';
+///
+/// 2026-05-10 (v1.2.25 — restored eager-all-13 pre-load): user
+/// noticed v1.2.22's hybrid eager-top-4 + background-9 made the
+/// splash stop at "Loading versions: 4/4" instead of progressing
+/// through all 13 ("load why its 4/4 not all?"). Picked option B
+/// — restore the v1.2.18 behaviour of loading ALL 13 eagerly
+/// during splash, no background phase. Splash now goes 1/12 →
+/// 12/12 (active version skipped, 12 others loaded). Boot
+/// reverts to ~25 s but every session-life version + chapter
+/// switch is instant — no overlay, no surprise wait.
+/// `_backgroundPreloadRemainingVersions` removed; the merged
+/// helper is now `_eagerPreloadAllVersions` (back to v1.2.18's
+/// name).
+const String kAppVersion = '1.2.25';
 
 /// 2026-05-10 (v1.2.20): paired with `kAppVersion` so the About
 /// footer's "Last updated …" stamp moves in lockstep with every
@@ -808,4 +821,4 @@ const String kAppVersion = '1.2.24';
 /// the higher precision. Format: ISO local date + 24-h
 /// HH:MM + tz abbreviation. The about-page interpolation is
 /// locale-aware via the `aboutFooterNote` ui-string template.
-const String kAppReleaseTime = '2026-05-10 15:20 AEST';
+const String kAppReleaseTime = '2026-05-10 15:45 AEST';

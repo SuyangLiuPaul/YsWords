@@ -201,20 +201,22 @@ class _MainAppState extends State<MainApp> {
       mainProvider.setLoadProgress(0, 0);
     }
 
-    // 2026-05-10 (v1.2.22 — hybrid pre-load): user explicitly
-    // pushed back on the v1.2.18 "block boot for all 13"
-    // approach ("increase performance"). New shape:
-    //   • Eager (block splash): top-4 most-common versions —
-    //     simplified-Chinese staples + KJV. ~5 s extra splash
-    //     instead of ~25 s. Covers the most-likely-next switch
-    //     for both Chinese and English readers.
-    //   • Background (post-boot): the other 9 versions, slow-
-    //     rolled with 3 s gaps. By ~30 s after home becomes
-    //     interactive, every version is cached. User can browse
-    //     during this without noticing because reads happen on
-    //     the main thread between gaps.
+    // 2026-05-10 (v1.2.25 — restored eager-all-13): user noticed
+    // the splash showed "Loading versions: 4/4" instead of all 13
+    // and chose option B (slower boot, splash shows full 1/13 →
+    // 13/13 progress, every post-boot switch is instant for the
+    // entire session). Reverts the v1.2.22 hybrid split back to
+    // v1.2.18's all-eager pattern but inherits the v1.2.19+
+    // bug fixes (paragraph-cache LRU evict on version switch,
+    // pendingJump clear, etc).
+    //
+    // Splash blocks for ~25 s on cold boot. After it dismisses
+    // ALL 13 versions are in the LRU; switching between any of
+    // them is a microsecond cache swap (no overlay). Same trade
+    // as v1.2.18: long-but-explicable splash → flawless reading
+    // experience.
     if (mainProvider.verses.isNotEmpty) {
-      await _eagerPreloadCommonVersions(mainProvider);
+      await _eagerPreloadAllVersions(mainProvider);
     }
 
     if (mounted) {
@@ -222,43 +224,49 @@ class _MainAppState extends State<MainApp> {
         _loading = false;
       });
     }
-
-    // Kick off background pre-load AFTER splash dismisses so the
-    // first interactive frame isn't competing for the main thread.
-    if (mainProvider.verses.isNotEmpty) {
-      // ignore: unawaited_futures
-      _backgroundPreloadRemainingVersions(mainProvider);
-    }
   }
 
-  /// 2026-05-10 (v1.2.22 — hybrid pre-load): runs inside bootstrap
-  /// before the splash dismisses, blocking the boot for the top-4
-  /// most-likely-next versions. All 13 versions used to load here
-  /// (v1.2.18) — that traded ~25 s of splash for guaranteed
-  /// instant switching, but user came back asking to "increase
-  /// performance". Compromise: cover the 80% common case
-  /// (Chinese readers + English flagship) eagerly; defer the
-  /// other 9 (less-common scripts + NT-only specialty) to the
-  /// background after the splash dismisses.
+  /// 2026-05-10 (v1.2.25 — restored from v1.2.18): eager pre-load
+  /// of ALL 13 Bible versions before the splash dismisses. User
+  /// chose this trade ("反正第一次用才 load version") again after
+  /// noticing v1.2.22's hybrid stopped at "4/4" in the splash
+  /// progress.
   ///
-  /// Top-4 chosen for maximum coverage:
-  ///   - cuvs-yhwh: simplified-Chinese default
-  ///   - cuv: 和合本 (most-cited Chinese union)
-  ///   - cnv: 新译本 (modern Chinese)
-  ///   - kjv: English flagship (default for non-Chinese readers)
+  /// Sequential, no-gap parse of all 12 non-active versions
+  /// (~15-25 s). Updates `MainProvider.versionPreloadProgress`
+  /// so the splash paints "Loading versions: 5/12" while the
+  /// user waits. Total cold-boot wall-clock: 1-3 s for the
+  /// active version + ~15-25 s for the other 12 = ~20-30 s
+  /// splash before home appears.
   ///
-  /// With 4 instead of 13, splash adds ~3-5 s of extra time
-  /// (vs ~25 s pre-v1.2.22). Boot stays usable.
+  /// Order: simplified Chinese staples (largest user base) →
+  /// English → traditional Chinese → LJK 1/2 NT-only specialty.
+  /// Most-likely-next picks land in the LRU first, so even if
+  /// the user is impatient and force-quits during pre-load,
+  /// the first session-start switches still hit the cache.
   ///
   /// `preloadVersion` is best-effort — swallows failures so a
   /// single missing asset doesn't block boot.
-  Future<void> _eagerPreloadCommonVersions(MainProvider mainProvider) async {
+  Future<void> _eagerPreloadAllVersions(MainProvider mainProvider) async {
     if (!mounted) return;
     const candidates = <String>[
+      // Simplified Chinese staples — largest user base.
       'cuvs-yhwh',
       'cuv',
       'cnv',
+      // English flagships.
       'kjv',
+      'nasb',
+      'leb',
+      // Traditional Chinese variants.
+      'cuv-tr',
+      'cuvs-yhwh-tr',
+      'cnv-tr',
+      // LJK 1/2 — NT-only specialty translations.
+      'biblexg',
+      'biblexg-v2',
+      'biblexg-tr',
+      'biblexg-v2-tr',
     ];
     final toLoad =
         candidates.where((v) => v != mainProvider.currentVersion).toList();
@@ -266,53 +274,14 @@ class _MainAppState extends State<MainApp> {
     for (int i = 0; i < total; i++) {
       if (!mounted) return;
       mainProvider.setVersionPreloadProgress(i + 1, total);
+      // Yield once per iteration so the splash actually repaints
+      // before the next ~1 s json.decode hogs the main thread.
       await Future<void>.delayed(Duration.zero);
       await mainProvider.preloadVersion(toLoad[i]);
     }
     if (!mounted) return;
     mainProvider.setVersionPreloadProgress(0, 0);
-    debugPrint('Eager pre-load complete: $total core versions');
-  }
-
-  /// 2026-05-10 (v1.2.22): background pre-load of the 9 less-common
-  /// versions. Fires after `_loading = false`, runs with 3 s gaps
-  /// between parses so the user's first interaction isn't
-  /// competing for the main thread. Fire-and-forget — no UI
-  /// indicator, errors swallowed silently.
-  ///
-  /// Order: English alternates (NASB / LEB) → traditional Chinese
-  /// (CUV-TR / CUVS-YHWH-TR / CNV-TR) → LJK 1/2 NT-only specialty
-  /// (rarest). By ~30 s post-boot, all 13 versions are cached.
-  Future<void> _backgroundPreloadRemainingVersions(
-      MainProvider mainProvider) async {
-    // Wait long enough for the splash → home transition + first
-    // interactive frame to settle.
-    await Future<void>.delayed(const Duration(seconds: 4));
-    if (!mounted) return;
-    const candidates = <String>[
-      // English alternates.
-      'nasb',
-      'leb',
-      // Traditional Chinese variants.
-      'cuv-tr',
-      'cuvs-yhwh-tr',
-      'cnv-tr',
-      // LJK 1/2 NT-only.
-      'biblexg',
-      'biblexg-v2',
-      'biblexg-tr',
-      'biblexg-v2-tr',
-    ];
-    for (final v in candidates) {
-      if (!mounted) return;
-      if (mainProvider.hasCachedVersion(v)) continue;
-      await mainProvider.preloadVersion(v);
-      if (!mounted) return;
-      // 3 s gap keeps each ~1 s json.decode freeze isolated.
-      // 9 × 3 s ≈ 27 s background work.
-      await Future<void>.delayed(const Duration(seconds: 3));
-    }
-    debugPrint('Background pre-load complete: ${candidates.length} versions');
+    debugPrint('Eager pre-load complete: $total versions');
   }
 
   @override
