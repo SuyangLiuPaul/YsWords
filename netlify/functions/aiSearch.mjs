@@ -189,7 +189,18 @@ async function callGemini(prompt, locale, overrideKey = null, model = MODEL) {
 	let quotaError = null;
 	for (let i = 0; i < keys.length; i++) {
 		const apiKey = keys[i];
-		const resp = await callGeminiWithKey(apiKey, prompt, locale, model);
+		// 2026-05-10 (v1.2.30): wrap fetch in try/catch so a network-
+		// level throw (DNS hiccup, malformed key header) on key #i
+		// doesn't abort the whole rotation chain — fall through to
+		// key #i+1 like the 429 / 401 paths already do.
+		let resp;
+		try {
+			resp = await callGeminiWithKey(apiKey, prompt, locale, model);
+		} catch (e) {
+			console.error(`[aiSearch] Gemini key #${i + 1} fetch threw:`,
+				String(e?.message || e).slice(0, 400));
+			continue;
+		}
 		if (resp.ok) {
 			const json = await resp.json();
 			const choice = json.choices?.[0];
@@ -345,10 +356,15 @@ export default async (req) => {
 			JSON.stringify({ answer, citations, hits: hits.length }),
 			{ status: 200, headers: cors });
 	} catch (err) {
-		console.error('aiSearch error:', err);
+		// 2026-05-10 (v1.2.30): scrub `err.message` from public body —
+		// uncaught errors from `loadDataset` / `JSON.parse` / fetch
+		// throws can leak server paths or dependency state. Server log
+		// retains the full err for debugging.
+		console.error('[aiSearch] uncaught',
+			String(err?.message || err).slice(0, 600));
 		const status = err?.statusCode || 500;
 		return new Response(
-			JSON.stringify({ error: err?.publicReason || String(err?.message || err) }),
+			JSON.stringify({ error: err?.publicReason || 'AI search failed.' }),
 			{ status, headers: cors });
 	}
 };

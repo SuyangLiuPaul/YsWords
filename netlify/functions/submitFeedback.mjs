@@ -86,9 +86,20 @@ export default async (req) => {
 	}
 
 	// User-typed fields
-	const category = String(payload.category || 'General').slice(0, 64);
+	// 2026-05-10 (v1.2.30): strip CR/LF from `category`, `name`, and
+	// `subject` before they can land in the email Subject header. The
+	// Subject is built at line ~157 as `YsWords feedback [${category}]
+	// — ${name}`. A `\n` injected via `category` would split into a
+	// second header (CRLF injection) — Resend likely filters it but
+	// defense in depth.
+	const category = String(payload.category || 'General')
+		.replace(/[\r\n]+/g, ' ')
+		.slice(0, 64);
 	const message = String(payload.message || '').trim();
-	const name = String(payload.name || '').trim().slice(0, 200);
+	const name = String(payload.name || '')
+		.trim()
+		.replace(/[\r\n]+/g, ' ')
+		.slice(0, 200);
 	const replyTo = String(payload.replyTo || '').trim().slice(0, 320);
 
 	// `authEmail`: the user's signed-in (Firebase / Google) email,
@@ -147,11 +158,15 @@ export default async (req) => {
 	if (replyTo && !emailRe.test(replyTo)) {
 		return jsonResponse({ error: 'Invalid reply-to email.' }, 400);
 	}
-	if (authEmail && !emailRe.test(authEmail)) {
-		// Don't fail hard -- bad signed-in email is the dev's
-		// problem (Firebase shouldn't expose invalid). Just blank
-		// it so we don't leak garbage into the body.
-		// (no-op; we keep authEmail and let the recipient see it)
+	// v1.2.30: code now matches its comment intent. An invalid
+	// `authEmail` previously fell through verbatim into the email
+	// body — comment said "blank it" but the implementation didn't.
+	// Bad signed-in email = blanked locally; the rest of the
+	// submission still goes through (it's the dev's problem if
+	// Firebase exposed garbage, not the user's).
+	let authEmailClean = authEmail;
+	if (authEmailClean && !emailRe.test(authEmailClean)) {
+		authEmailClean = '';
 	}
 
 	const subject = `YsWords feedback [${category}]${name ? ` — ${name}` : ''}`;
@@ -170,7 +185,7 @@ export default async (req) => {
 	lines.push('─── Feedback details ────────────────────');
 	lines.push(`Category    : ${category}`);
 	if (name) lines.push(`Name        : ${name}`);
-	if (authEmail) lines.push(`Signed-in   : ${authEmail}`);
+	if (authEmailClean) lines.push(`Signed-in   : ${authEmailClean}`);
 	if (replyTo) lines.push(`Reply-to    : ${replyTo}`);
 	lines.push(`Submitted   : ${serverTime}`);
 	if (clientLocalTime) {
@@ -220,14 +235,20 @@ export default async (req) => {
 		return jsonResponse({ error: `Network error: ${e.message || e}` }, 502);
 	}
 	if (!resp.ok) {
+		// 2026-05-10 (v1.2.30): same class as the v1.2.6 sanitisation
+		// pass on the AI functions — log the upstream body server-side
+		// (Resend errors can leak account state, domain-verification,
+		// quota hints) and return a generic message to the client.
 		let detail = '';
 		try {
 			detail = await resp.text();
 		} catch (_) {
 			detail = `HTTP ${resp.status}`;
 		}
+		console.error('[submitFeedback] Resend',
+			resp.status, detail.slice(0, 1200));
 		return jsonResponse(
-			{ error: `Resend error ${resp.status}: ${detail.slice(0, 300)}` },
+			{ error: `Upstream email service error (HTTP ${resp.status}).` },
 			502,
 		);
 	}

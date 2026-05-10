@@ -728,6 +728,15 @@ class _AiSearchDialogState extends State<_AiSearchDialog> {
   bool _busy = false;
   String? _notice; // shown when AI was unavailable but local matches found
   AiSearchResult? _result;
+  // 2026-05-10 (v1.2.30): generation counter for the AI-ask Future.
+  // The Ask button is disabled while `_busy = true` (line 1109), but
+  // pressing Enter at the keyboard shortcut (line 927) bypasses that
+  // guard. Without this counter, hitting Enter twice in quick succession
+  // could let the older response's setState (line 864 / 873) land after
+  // the newer one, showing stale results. Bump on every _ask entry +
+  // every _ctrl edit (mirrors gemini_key_card.dart's _testGen pattern
+  // shipped in v1.2.8).
+  int _askGen = 0;
 
   /// 2026-05-08 (v1.1.10): heuristic — does this AI-failure notice
   /// indicate a quota / not-configured failure that BYOK can solve?
@@ -835,6 +844,7 @@ class _AiSearchDialogState extends State<_AiSearchDialog> {
   Future<void> _ask() async {
     final q = _ctrl.text.trim();
     if (q.length < 2) return;
+    final myGen = ++_askGen;
     setState(() {
       _busy = true;
       _notice = null;
@@ -852,7 +862,7 @@ class _AiSearchDialogState extends State<_AiSearchDialog> {
       // v1.2.26 — pick the user's chosen AI tier.
       aiModel: settings.aiModel,
     );
-    if (!mounted) return;
+    if (!mounted || myGen != _askGen) return;
 
     if (r.unavailable) {
       // AI service down / not deployed. Don't show a scary error —
@@ -861,6 +871,7 @@ class _AiSearchDialogState extends State<_AiSearchDialog> {
       // the fallback.
       final local =
           BibleEvidenceService.search(widget.all, q, widget.locale);
+      if (myGen != _askGen) return; // re-check after the local match
       setState(() {
         _busy = false;
         _result = r; // keep so the unavailable note surface

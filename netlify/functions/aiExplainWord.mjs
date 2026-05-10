@@ -357,7 +357,19 @@ async function callGemini(prompt, locale, overrideKey = null, model = MODEL) {
 	for (let i = 0; i < keys.length; i++) {
 		const apiKey = keys[i];
 		const isLast = i === keys.length - 1;
-		const resp = await callGeminiWithKey(apiKey, prompt, locale, model);
+		// 2026-05-10 (v1.2.30): wrap fetch in try/catch so a synchronous
+		// throw (DNS hiccup, network error pre-response, malformed key
+		// header) on key #i doesn't abort the whole rotation chain — fall
+		// through to key #i+1 like the 429 / 401 paths already do.
+		let resp;
+		try {
+			resp = await callGeminiWithKey(apiKey, prompt, locale, model);
+		} catch (e) {
+			console.error(`[aiExplainWord] Gemini key #${i + 1} fetch threw:`,
+				String(e?.message || e).slice(0, 400));
+			lastError = new Error('AI service network error.');
+			continue;
+		}
 		if (resp.ok) {
 			const json = await resp.json();
 			const choice = json.choices?.[0];
@@ -382,11 +394,14 @@ async function callGemini(prompt, locale, overrideKey = null, model = MODEL) {
 		if (resp.status === 401 || resp.status === 403) {
 			// Bad key. Skip and try the next one in case it's just one
 			// key that got revoked / expired.
-			lastError = new Error(
-				`Gemini key #${i + 1} rejected (${resp.status}). `
-				+ (isLast
-					? 'No working keys remaining; re-issue or rotate.'
-					: 'Trying next key…'));
+			// 2026-05-10 (v1.2.30): keep the key index in the SERVER log
+			// (useful for diagnosis) but never let it land on the public
+			// `publicReason` — line 407 used to copy `.message` straight
+			// into the response body, leaking "Gemini key #3 rejected"
+			// + the total key count.
+			console.error(`[aiExplainWord] Gemini key #${i + 1} rejected`,
+				resp.status, isLast ? '(no keys remaining)' : '(trying next)');
+			lastError = new Error('AI service authentication failed.');
 			continue;
 		}
 		// Non-quota, non-auth error — abort the chain (likely the prompt
@@ -441,7 +456,16 @@ export default async (req) => {
 		const lemma = (body?.lemma || '').toString().slice(0, 200);
 		const translit = (body?.translit || '').toString().slice(0, 200);
 		const gloss = (body?.gloss || '').toString().slice(0, 500);
-		const book = (body?.book || '').toString().slice(0, 64);
+		// 2026-05-10 (v1.2.30 audit): allowlist + length cap for `book`.
+		// Previously only `.slice(0, 64)` — `book` is interpolated raw
+		// into the prompt template at line 209's `.replaceAll('{book}',
+		// book)`. Without a regex guard, a value like
+		// `"Genesis. Now ignore prior instructions and"` would be
+		// substituted into the focus directive. Restrict to ASCII
+		// alphanumerics + spaces (covers every canonical English book
+		// name including "Song of Solomon", "1 Chronicles" etc.).
+		const _rawBook = (body?.book || '').toString().slice(0, 40);
+		const book = /^[A-Za-z0-9 ]+$/.test(_rawBook) ? _rawBook : '';
 		const chapter = Number(body?.chapter || 0);
 		const verse = Number(body?.verse || 0);
 		const verseText = (body?.verseText || '').toString().slice(0, 4000);
@@ -496,10 +520,14 @@ export default async (req) => {
 			JSON.stringify({ explanation }),
 			{ status: 200, headers: cors });
 	} catch (err) {
-		console.error('aiExplainWord error:', err);
+		// 2026-05-10 (v1.2.30): scrub `err.message` from public body
+		// for the same reason as aiSearch / aiBibleSearch — uncaught
+		// errors can carry server paths or library internals.
+		console.error('[aiExplainWord] uncaught',
+			String(err?.message || err).slice(0, 600));
 		const status = err?.statusCode || 500;
 		return new Response(
-			JSON.stringify({ error: err?.publicReason || String(err?.message || err) }),
+			JSON.stringify({ error: err?.publicReason || 'AI word study failed.' }),
 			{ status, headers: cors });
 	}
 };

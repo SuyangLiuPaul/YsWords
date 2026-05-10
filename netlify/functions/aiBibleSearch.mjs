@@ -300,9 +300,18 @@ export default async (req) => {
 			JSON.stringify({ refs, hits: refs.length }),
 			{ status: 200, headers: cors });
 	} catch (e) {
+		// 2026-05-10 (v1.2.30): never fall through to `e.message` for
+		// the public response body — any thrown error from `loadDataset`,
+		// `JSON.parse`, or upstream fetch can leak server paths /
+		// dependency state. Only `publicReason` (set deliberately on
+		// thrown errors) is allowed; everything else collapses to a
+		// generic message. Server-side log keeps the full detail.
 		const status = e?.statusCode || 500;
-		const reason = e?.publicReason || e?.message ||
-			'AI Bible search failed.';
+		const reason = e?.publicReason || 'AI Bible search failed.';
+		if (!e?.publicReason) {
+			console.error('[aiBibleSearch] uncaught',
+				String(e?.message || e).slice(0, 600));
+		}
 		return new Response(
 			JSON.stringify({ error: reason }),
 			{ status, headers: cors });

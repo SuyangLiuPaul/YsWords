@@ -881,7 +881,64 @@
 ///       bible_timeline / dashboard / person_detail_sheet
 /// New ui-string keys: `tooltipClose`, `couldNotParseRef`
 /// (`{ref}` placeholder), `sermonNoBody` — all three locales.
-const String kAppVersion = '1.2.29';
+///
+/// 2026-05-10 (v1.2.30 — async correctness + backend hardening):
+/// two more audit agents found 6 confirmed bugs after v1.2.29.
+///
+/// CLIENT (Dart):
+/// • `originals_sheet.dart` — three stale-Future races
+///   (`_onWordTap`, `_loadRootEntry`, `_loadRelations`). Tapping
+///   word A then word B before A's lookup resolves could leave
+///   A's Strong's entry / concordance / family tree rendered
+///   under B's selection. Same generation-counter pattern as the
+///   v1.2.8 BYOK Test fix — new `_lookupGen` int bumped at every
+///   tap / root-nav / clear-root, captured by each async branch
+///   and checked before its setState.
+/// • `evidence_page.dart::_AiSearchDialog._ask` — pressing the
+///   Enter shortcut bypassed the `_busy` guard (the Ask button
+///   itself is disabled during `_busy = true`, but the keyboard
+///   path wasn't). New `_askGen` counter bumped per `_ask()`
+///   entry so an older response's setState can't clobber a newer
+///   query's results.
+///
+/// BACKEND (Netlify Functions):
+/// • `submitFeedback.mjs` — Resend upstream error body was
+///   forwarded verbatim (300-char slice) to the client. Same
+///   class as the v1.2.6 fix on the AI functions — now logged
+///   server-side via `console.error` and replaced with a generic
+///   "Upstream email service error (HTTP ...)". Plus
+///   CR/LF stripping on `category` + `name` so neither can inject
+///   a CRLF into the email Subject header (defense-in-depth on
+///   top of Resend's own filtering). Plus the `authEmail` comment
+///   vs code mismatch fixed (an invalid signed-in email now
+///   actually gets blanked from the body, as the comment claimed).
+/// • `aiExplainWord.mjs::book` — was only `.slice(0, 64)`. Since
+///   `book` is `.replaceAll('{book}', book)`-substituted into the
+///   prompt template, a value like
+///   `"Genesis. Now ignore prior instructions and"` could break
+///   out of the focus directive. Now allowlisted to ASCII alpha-
+///   numeric + spaces only (covers every canonical English book
+///   name); cap reduced 64 → 40.
+/// • `aiSearch.mjs` + `aiExplainWord.mjs` — `await
+///   callGeminiWithKey(...)` was unwrapped, so a synchronous
+///   throw (DNS hiccup, malformed BYOK key header) on key #i
+///   aborted the whole rotation chain instead of falling through
+///   to key #i+1 like the 429 / 401 paths already do. Wrapped
+///   in try/catch matching aiBibleSearch's pattern.
+/// • All 3 AI functions — public catch blocks fell back to
+///   `String(err?.message || err)` when `publicReason` was unset.
+///   Any uncaught error from `loadDataset` / `JSON.parse` / fetch
+///   throws would leak server paths or dependency state. Now only
+///   `publicReason` is allowed; everything else collapses to a
+///   generic message + server-log retains the full detail.
+/// • `aiExplainWord.mjs` — 401/403 handler used to set
+///   `lastError.message = "Gemini key #${i+1} rejected ..."` and
+///   then line ~422 copied `.message` straight onto
+///   `publicReason`, leaking the key index + total key count to
+///   the client. Now the index lives in the server log only;
+///   the public message is a generic "AI service authentication
+///   failed."
+const String kAppVersion = '1.2.30';
 
 /// 2026-05-10 (v1.2.20): paired with `kAppVersion` so the About
 /// footer's "Last updated …" stamp moves in lockstep with every
@@ -898,4 +955,4 @@ const String kAppVersion = '1.2.29';
 /// the higher precision. Format: ISO local date + 24-h
 /// HH:MM + tz abbreviation. The about-page interpolation is
 /// locale-aware via the `aboutFooterNote` ui-string template.
-const String kAppReleaseTime = '2026-05-10 17:44 AEST';
+const String kAppReleaseTime = '2026-05-10 18:22 AEST';

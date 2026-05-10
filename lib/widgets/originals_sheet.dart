@@ -124,6 +124,17 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
   // back to where they came from — confusing right after navigation).
   String? _pivotFromNumber;
 
+  // 2026-05-10 (v1.2.30): generation counter for in-flight Strong's /
+  // concordance / relations lookups. Bumped at the start of every new
+  // word tap (`_onWordTap`), root-entry navigation (`_loadRootEntry`),
+  // and clear-root (`_clearRoot`). Each async branch captures the gen
+  // at entry and bails out (no setState) if the gen has moved on by
+  // the time it tries to land. Without this, tapping word A then word
+  // B before A's lookup resolves can leave A's entry/concordance/
+  // family rendered under B's selection — same "stale resolution"
+  // pattern fixed in v1.2.8 (BYOK Test) but not yet here.
+  int _lookupGen = 0;
+
   // ── AI explanation panel ─────────────────────────────────────────
   // Gemini-powered "explain this word in this verse" feature.
   // Tap-to-load (not auto) so we don't burn API calls every time the
@@ -207,6 +218,7 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
   }
 
   Future<void> _onWordTap(OriginalWord w) async {
+    final myGen = ++_lookupGen;
     _clearTapRecognizers();
     _pivotFromNumber = null;
     setState(() {
@@ -238,7 +250,9 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
     final concordanceFuture = ConcordanceService.lookup(w.strongs);
     final entry = await entryFuture;
     final concordance = await concordanceFuture;
-    if (!mounted) return;
+    // v1.2.30: bail if the user has tapped a different word while we
+    // were resolving — preserves selection coherence.
+    if (!mounted || myGen != _lookupGen) return;
     _clearTapRecognizers();
     setState(() {
       _selectedEntry = entry;
@@ -253,11 +267,12 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
               : null;
     });
     // Word family + synonyms load in the background — doesn't block the entry card.
-    unawaited(_loadRelations(w.strongs));
+    unawaited(_loadRelations(w.strongs, gen: myGen));
   }
 
   Future<void> _loadRootEntry(String strongsNumber,
       {String? pivotFromNumber}) async {
+    final myGen = ++_lookupGen;
     _pivotFromNumber = pivotFromNumber;
     _clearTapRecognizers();
     setState(() {
@@ -284,7 +299,9 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
     final concordanceFuture = ConcordanceService.lookup(strongsNumber);
     final entry = await entryFuture;
     final concordance = await concordanceFuture;
-    if (!mounted) return;
+    // v1.2.30: bail if the user navigated to a different entry while
+    // we were resolving.
+    if (!mounted || myGen != _lookupGen) return;
     _clearTapRecognizers();
     setState(() {
       _rootEntry = entry;
@@ -296,7 +313,8 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
     // a cross-language section (LXX or Hebrew Sources), auto-expand the
     // chip pointing back to where they came from so the OT context is
     // visible immediately — saves an extra tap.
-    unawaited(_loadRelations(strongsNumber, pivotFromNumber: pivotFromNumber));
+    unawaited(_loadRelations(strongsNumber,
+        pivotFromNumber: pivotFromNumber, gen: myGen));
   }
 
   void _clearRoot() {
@@ -324,7 +342,11 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
       _aiForStrongs = null;
     });
     if (_selectedWord != null) {
-      unawaited(_loadRelations(_selectedWord!.strongs));
+      // v1.2.30: bump gen so the new relations chain participates in
+      // the staleness check (otherwise a fast tap of clear → tap a
+      // different word could see clearRoot's relations land afterwards).
+      final myGen = ++_lookupGen;
+      unawaited(_loadRelations(_selectedWord!.strongs, gen: myGen));
     }
   }
 
@@ -450,7 +472,12 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
     return buf.toString().trim();
   }
 
-  Future<void> _loadRelations(String number, {String? pivotFromNumber}) async {
+  Future<void> _loadRelations(String number,
+      {String? pivotFromNumber, int? gen}) async {
+    // v1.2.30: callers (`_onWordTap`, `_loadRootEntry`, `_clearRoot`)
+    // pass their generation; if not provided, snapshot the current one
+    // (defensive default, though all known callers now pass it).
+    final myGen = gen ?? _lookupGen;
     final family = await StrongsService.wordFamily(number);
     final compare = await StrongsService.compareWords(number);
     // Hebrew entries get LXX Greek equivalents (forward).
@@ -461,14 +488,14 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
     final hebSrc = number.startsWith('G')
         ? await LxxService.hebrewSourceEntriesFor(number)
         : const <StrongsEntry>[];
-    if (!mounted) return;
+    if (!mounted || myGen != _lookupGen) return;
     // Prefetch concordances for every related entry in parallel.
     final all = <StrongsEntry>[...family, ...compare, ...lxx, ...hebSrc];
     final entries = <String, ConcordanceResult?>{};
     await Future.wait(all.map((e) async {
       entries[e.number] = await ConcordanceService.lookup(e.number);
     }));
-    if (!mounted) return;
+    if (!mounted || myGen != _lookupGen) return;
     // If the user reached this entry by tapping a chip in a related
     // section (Word Family / Synonyms / LXX / Hebrew Sources) on the
     // previous entry, find that "previous" Strong's # in the new
