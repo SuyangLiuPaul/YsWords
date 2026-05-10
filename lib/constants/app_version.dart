@@ -570,4 +570,21 @@
 /// Net: same hard wall-clock parse time (we can't make
 /// json.decode faster without a Web Worker), but **perceived**
 /// time is much shorter — loading state is immediately visible.
-const String kAppVersion = '1.2.13';
+///
+/// 2026-05-10 (v1.2.14 — version cache for "一瞬间" switch):
+/// after v1.2.13 user came back: "为什么换 version 不是一瞬间，
+/// 之前都是一瞬间的". Honest answer: my v1.2.13 overlay made the
+/// loading state MORE visible than the old silent freeze, so it
+/// felt slower even though wall-clock was the same. The real
+/// fix: don't re-parse versions the user has already loaded
+/// this session. New `LinkedHashMap<String, List<Verse>>`
+/// LRU cache on MainProvider holds the last 4 parsed verse
+/// lists (~24 MB worst case). `useCachedVersion(version)` swaps
+/// in the cached list, marks `currentVersion`, invalidates
+/// derived caches, notifies — all in microseconds. The
+/// `onVersionSelected` flow now tries the cache FIRST and
+/// short-circuits with no overlay / no yield / no FetchVerses
+/// when the cache hits. First switch to a brand-new version
+/// still shows the overlay (pure cache miss); second switch
+/// back to it = "一瞬间", what the user expected.
+const String kAppVersion = '1.2.14';

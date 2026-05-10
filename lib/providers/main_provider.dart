@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:collection' show LinkedHashMap;
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:yswords/constants/text_patterns.dart' show sanitizeForSearch;
@@ -67,7 +68,70 @@ class MainProvider extends ChangeNotifier {
     _paragraphGroupsCache = null;
     _paragraphGroupsCacheKey = null;
     _bookOrderCache = null;
+    // 2026-05-10 (v1.2.14): populate the per-version verse cache so
+    // a future switch back to this version is truly instant
+    // ("一瞬间", in the user's words). Skip empty lists — they
+    // represent a failed load, not real data.
+    if (list.isNotEmpty) _cacheVerses(currentVersion, list);
     notifyListeners();
+  }
+
+  // ── Per-version parsed-verse cache (v1.2.14) ────────────────────────
+  //
+  // Why this exists: switching Bible version triggers a synchronous
+  // 5–10 MB `json.decode` that blocks the main thread for 1–3 s.
+  // No isolate fix is available on Flutter web. But re-visiting a
+  // version the user has ALREADY loaded this session doesn't need
+  // to re-parse — the parsed `List<Verse>` is sittable in memory.
+  // This LRU keeps the last `_kVersesCacheLimit` parsed lists so
+  // jumping back to a recently-read version skips the parse step
+  // entirely.
+  //
+  // Memory tax: ~6 MB per cached verse list × 4 = ~24 MB worst case.
+  // Acceptable on every device that can run a Flutter web app.
+  static const int _kVersesCacheLimit = 4;
+  final LinkedHashMap<String, List<Verse>> _versesCache =
+      LinkedHashMap<String, List<Verse>>();
+
+  void _cacheVerses(String version, List<Verse> list) {
+    // LRU touch: remove + re-insert so the most recently used key
+    // sits at the end of the LinkedHashMap iteration order.
+    _versesCache.remove(version);
+    _versesCache[version] = list;
+    while (_versesCache.length > _kVersesCacheLimit) {
+      // Evict oldest (front of the LinkedHashMap).
+      _versesCache.remove(_versesCache.keys.first);
+    }
+  }
+
+  /// True if `version`'s parsed verse list is in the in-memory cache.
+  /// Caller can short-circuit the FetchVerses pipeline when so.
+  bool hasCachedVersion(String version) =>
+      _versesCache.containsKey(version);
+
+  /// Swap the live `verses` list to the cached parsed list for
+  /// `version`, mark `currentVersion`, and notify listeners. Skips
+  /// the json.decode pipeline entirely. Returns false if there's no
+  /// cached list (caller should fall back to FetchVerses.execute).
+  bool useCachedVersion(String version) {
+    final cached = _versesCache[version];
+    if (cached == null) return false;
+    // LRU touch on read.
+    _versesCache.remove(version);
+    _versesCache[version] = cached;
+    currentVersion = version;
+    verses = cached;
+    _selectedIds.clear();
+    // Same per-verse caches that setVerses invalidates — these are
+    // derived from the verse list so they need a rebuild after the
+    // swap.
+    _searchKeysCache = null;
+    _searchKeysCacheLength = -1;
+    _paragraphGroupsCache = null;
+    _paragraphGroupsCacheKey = null;
+    _bookOrderCache = null;
+    notifyListeners();
+    return true;
   }
 
   void setBooks(List<Book> list) {

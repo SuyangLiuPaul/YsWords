@@ -1221,6 +1221,50 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                         p.clearSelectedVerses();
                         final prevVersion = p.currentVersion;
                         final prevEn = toEnglish(p.currentBook);
+                        // 2026-05-10 (v1.2.14): instant-switch path.
+                        // If we already have this version's parsed
+                        // verses in MainProvider's per-version LRU
+                        // cache (populated whenever setVerses fires
+                        // with a non-empty list), skip the entire
+                        // json.decode + FetchVerses pipeline and
+                        // just swap the verse list in. No overlay,
+                        // no spinner, no yield, ~0 ms wall-clock.
+                        // This is what makes "back to a previously-
+                        // visited version" truly "一瞬间" (instant)
+                        // — the user's expected behaviour that
+                        // v1.2.13's overlay made feel slower than
+                        // it should.
+                        if (p.useCachedVersion(version)) {
+                          // Books are derived from verses; rebuild
+                          // them (pure in-memory, fast). No overlay
+                          // because this whole branch should be
+                          // imperceptible.
+                          await FetchBooks.execute(mainProvider: p);
+                          if (!mounted) return;
+                          final targetBook = prevEn == null
+                              ? null
+                              : translateBookName(prevEn, version);
+                          final targetChapter = p.currentChapter;
+                          final match = p.verses.firstWhere(
+                            (v) =>
+                                (targetBook == null ||
+                                    v.book == targetBook) &&
+                                (targetChapter == null ||
+                                    v.chapter == targetChapter),
+                            orElse: () => p.verses.first,
+                          );
+                          p.setCurrentChapter(
+                              book: match.book,
+                              chapter: match.chapter);
+                          p.updateCurrentVerse(verse: match);
+                          p.jumpToTop();
+                          if (mounted) {
+                            setState(() => _visibleItemIndex = 0);
+                          }
+                          return;
+                        }
+                        // Slow path (cache miss): show overlay then
+                        // run the full parse pipeline.
                         // Lookup the target version's short label so
                         // the overlay can show "Loading KJV…" instead
                         // of the generic "Loading version…".
