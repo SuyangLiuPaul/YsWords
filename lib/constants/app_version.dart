@@ -587,4 +587,31 @@
 /// when the cache hits. First switch to a brand-new version
 /// still shows the overlay (pure cache miss); second switch
 /// back to it = "一瞬间", what the user expected.
-const String kAppVersion = '1.2.14';
+///
+/// 2026-05-10 (v1.2.15 — background pre-load common versions):
+/// after v1.2.14 user asked "loading screen 不用，换经文应该是
+/// 很快的吧，要不当进入的时候 loading 已经 loaded 所有 version".
+/// Loading ALL 9 versions on boot would add ~10 s × ~60 MB of
+/// work to startup — not worth it. Instead, after the splash →
+/// home transition settles (5 s post-boot), `_AppState`
+/// kicks off a low-priority background pre-load of four hand-
+/// picked common versions: KJV (English flagship), CUV
+/// (Chinese union 传统), CUVS-YHWH (simplified Chinese with
+/// divine-name treatment, the default), CNV (modern 新译本).
+/// Each parse is followed by a 4 s pause so the inevitable 1 s
+/// json.decode freeze doesn't chain into a noticeable hitch.
+/// By ~16 s post-boot, MainProvider's LRU (now
+/// `_kVersesCacheLimit = 6`, up from 4) holds the active
+/// version PLUS the four common ones. First user-driven
+/// switch to any of those: cache hit → instant. Second+
+/// switch: cache hit → instant. Only off-list versions
+/// (NASB / LEB / *-tr variants) still trigger the overlay on
+/// first pick — and that's a one-time hit before they enter
+/// the LRU too.
+/// New API: `FetchVerses.loadVerseList(version)` — public
+/// static helper that returns a parsed `List<Verse>` without
+/// touching any provider. `MainProvider.preloadVersion(version)`
+/// wraps it + populates `_versesCache` silently.
+/// `_preloadCommonVersions` lives in `_AppState` next to
+/// `_bootstrap`.
+const String kAppVersion = '1.2.15';

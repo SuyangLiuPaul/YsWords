@@ -210,6 +210,32 @@ class FetchVerses {
     _paragraphMapCache = null;
   }
 
+  /// 2026-05-10 (v1.2.15): parse a version's verse JSON into a
+  /// `List<Verse>` WITHOUT touching any MainProvider state. Used by
+  /// the post-boot background pre-loader to stash common alternative
+  /// versions in MainProvider's LRU cache silently, so the user's
+  /// next version-switch is usually a cache hit (and therefore
+  /// instant — no overlay).
+  ///
+  /// Returns the parsed list on success or null on any failure
+  /// (caller treats null as "skip — try a different version or just
+  /// wait for the user to manually switch which gets the proper
+  /// retry pipeline"). No retry / timeout — background work should
+  /// not compete with foreground retries; if the network is bad
+  /// enough to time out a 20 s asset load, the foreground manual
+  /// switch will retry properly with overlay feedback.
+  static Future<List<Verse>?> loadVerseList(String version) async {
+    try {
+      final path = 'assets/${version.toLowerCase()}.json';
+      final paraMap = await _loadParagraphMap();
+      final list = await _loadAndParse(path, paraMap);
+      return list.isEmpty ? null : list;
+    } catch (e, st) {
+      debugPrint('Background loadVerseList($version) failed: $e\n$st');
+      return null;
+    }
+  }
+
   static Future<List<Verse>> _loadAndParse(
     String path,
     Map<String, Map<String, _ParaInfo>> paraMap,

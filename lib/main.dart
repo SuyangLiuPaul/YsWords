@@ -206,6 +206,50 @@ class _MainAppState extends State<MainApp> {
         _loading = false;
       });
     }
+    // 2026-05-10 (v1.2.15): once the splash → home transition
+    // is done, kick off a low-priority background pre-load of
+    // the most-common alternative Bible versions. By the time
+    // the user opens the version picker (~10–20 s in), 3 of
+    // these 4 candidates will be sitting in MainProvider's LRU
+    // cache and the switch will be instant ("一瞬间", per user
+    // request) instead of triggering the 1–3 s json.decode +
+    // overlay path.
+    //
+    // Fire-and-forget: errors are swallowed inside
+    // FetchVerses.loadVerseList → preloadVersion. No retry, no
+    // user feedback — this is best-effort cache warming.
+    if (mainProvider.verses.isNotEmpty) {
+      // ignore: unawaited_futures
+      _preloadCommonVersions(mainProvider);
+    }
+  }
+
+  /// Background pre-load of common alternative Bible versions, run
+  /// once after bootstrap settles. Spaces each parse out by 4 s so
+  /// the inevitable per-version 1 s json.decode freeze doesn't
+  /// chain into a noticeable 4 s freeze right after boot.
+  Future<void> _preloadCommonVersions(MainProvider mainProvider) async {
+    // Wait long enough for the splash → home transition + the user's
+    // first scroll/tap to settle. Anything heavier in the first
+    // few seconds competes with the most-likely first interaction.
+    await Future<void>.delayed(const Duration(seconds: 5));
+    if (!mounted) return;
+    // Hand-picked: KJV (English flagship), CUV (传统 Chinese union),
+    // CUVS-YHWH (simplified Chinese, default version, with divine-
+    // name treatment), CNV (modern 新译本). These four cover the
+    // vast majority of language pairings used by the family in
+    // China + the international audience.
+    const candidates = ['kjv', 'cuv', 'cuvs-yhwh', 'cnv'];
+    for (final v in candidates) {
+      if (!mounted) return;
+      await mainProvider.preloadVersion(v);
+      if (!mounted) return;
+      // Breathing room between parses so a 1 s freeze doesn't
+      // visibly hitch the user's reading. 4 s × 4 candidates =
+      // ~16 s of slow rolling pre-load post-boot.
+      await Future<void>.delayed(const Duration(seconds: 4));
+    }
+    debugPrint('Background pre-load complete: $candidates');
   }
 
   @override

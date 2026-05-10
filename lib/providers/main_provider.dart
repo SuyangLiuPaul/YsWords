@@ -6,6 +6,7 @@ import 'package:yswords/constants/text_patterns.dart' show sanitizeForSearch;
 import 'package:yswords/models/verse.dart';
 import 'package:yswords/models/book.dart';
 import 'package:yswords/services/fetch_books.dart' show bookNameToEnglish;
+import 'package:yswords/services/fetch_verses.dart' show FetchVerses;
 import 'package:yswords/services/realtime_db_sync_service.dart';
 import 'package:yswords/services/profile_service.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
@@ -89,7 +90,12 @@ class MainProvider extends ChangeNotifier {
   //
   // Memory tax: ~6 MB per cached verse list × 4 = ~24 MB worst case.
   // Acceptable on every device that can run a Flutter web app.
-  static const int _kVersesCacheLimit = 4;
+  // 2026-05-10 (v1.2.15): bumped 4 → 6 to give the post-boot
+  // background pre-loader headroom for 4 common alternative versions
+  // PLUS the boot-time current version, with one slot of slack so
+  // a single off-list user pick doesn't immediately evict a
+  // pre-loaded staple.
+  static const int _kVersesCacheLimit = 6;
   final LinkedHashMap<String, List<Verse>> _versesCache =
       LinkedHashMap<String, List<Verse>>();
 
@@ -108,6 +114,24 @@ class MainProvider extends ChangeNotifier {
   /// Caller can short-circuit the FetchVerses pipeline when so.
   bool hasCachedVersion(String version) =>
       _versesCache.containsKey(version);
+
+  /// 2026-05-10 (v1.2.15): background pre-load — parse `version`
+  /// silently and stash it in the LRU cache without touching
+  /// `currentVersion` / `verses` / listeners. No-op if already
+  /// cached or if the version is the one currently displayed.
+  /// Called from main.dart after bootstrap settles, for each common
+  /// alternative version, so a future user switch is a cache hit.
+  Future<void> preloadVersion(String version) async {
+    if (version == currentVersion) return;
+    if (_versesCache.containsKey(version)) return;
+    final list = await FetchVerses.loadVerseList(version);
+    if (list == null) return;
+    _cacheVerses(version, list);
+    // No notifyListeners() — background work, nothing on-screen
+    // depends on what's in the cache, only on the live `verses`
+    // field. The user only finds out about the cache when they
+    // actually switch to the pre-loaded version.
+  }
 
   /// Swap the live `verses` list to the cached parsed list for
   /// `version`, mark `currentVersion`, and notify listeners. Skips
