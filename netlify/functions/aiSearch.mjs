@@ -314,7 +314,17 @@ export default async (req) => {
 		const _userKey = (body?.userApiKey || '').toString().trim();
 		const _useUserKey = /^AIza[A-Za-z0-9_-]{20,80}$/.test(_userKey);
 		// 2026-05-10 (v1.2.26): tier picker → real model name.
-		const model = resolveModel(body?.aiModel);
+		let model = resolveModel(body?.aiModel);
+		// 2026-05-10 (v1.2.37): see aiBibleSearch.mjs — auto-fall-
+		// back Pro → Flash when no BYOK is supplied, since the
+		// dev's shared free-tier Pro quota is consistently
+		// exhausted. Surfaced as `fellBackToFlash: true` in the
+		// response body for the client UI.
+		const wantedPro = (body?.aiModel || '').toString().trim() === 'pro';
+		const fellBackToFlash = wantedPro && !_useUserKey;
+		if (fellBackToFlash) {
+			model = _AI_MODEL_MAP['flash'];
+		}
 		if (query.trim().length < 2) {
 			return new Response(JSON.stringify({ error: 'query required' }),
 				{ status: 400, headers: cors });
@@ -353,7 +363,12 @@ export default async (req) => {
 			};
 		});
 		return new Response(
-			JSON.stringify({ answer, citations, hits: hits.length }),
+			JSON.stringify({
+				answer,
+				citations,
+				hits: hits.length,
+				...(fellBackToFlash ? { fellBackToFlash: true } : {}),
+			}),
 			{ status: 200, headers: cors });
 	} catch (err) {
 		// 2026-05-10 (v1.2.30): scrub `err.message` from public body —

@@ -317,9 +317,16 @@ class _SearchPageState extends State<SearchPage> {
       'rate limit',
       'not configured',
       'gemini_api_key',
+      // 2026-05-10 (v1.2.37): trigger BYOK CTA when Deep auto-
+      // fell-back to Standard so the user can opt into real Pro.
+      'deep tier needs',
+      'gemini api key',
       '配额',
       '用完',
       '没有配置',
+      '深入',
+      'gemini api 密钥',
+      'gemini api 密鑰',
     ];
     for (final t in triggers) {
       if (lower.contains(t)) return true;
@@ -798,6 +805,19 @@ class _SearchPageState extends State<SearchPage> {
       // Compose an inline note that combines: out-of-scope (filter)
       // + missing-from-version drops, when present.
       final notes = <String>[];
+      // 2026-05-10 (v1.2.37): the user picked Deep but didn't have
+      // a BYOK key set, so the backend transparently fell back to
+      // Flash (the dev's shared Pro free-tier quota is too small
+      // for prod traffic). Lead the notice with the explanation +
+      // BYOK CTA so users understand why their "Deep" search ran
+      // on Standard quality. The CTA chip itself is rendered
+      // separately by `_shouldOfferByokForNotice` further down.
+      if (result.fellBackToFlash) {
+        notes.add(uiStrings['aiDeepFellBackToStandard']
+                ?[settings.locale] ??
+            'Deep tier needs your own Gemini API key — using Standard '
+                'this time. Set a key in Settings → AI for true Deep.');
+      }
       if (outOfScope > 0) {
         notes.add((uiStrings['aiBibleSearchOutOfScope']?[settings.locale] ??
                 'YsWords AI also suggested {n} passages outside your '

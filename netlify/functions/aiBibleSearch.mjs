@@ -274,7 +274,21 @@ export default async (req) => {
 	const userApiKey = _useUserKey ? _userKey : '';
 	// 2026-05-10 (v1.2.26): pick Gemini model tier from request,
 	// allowlist-clamped via resolveModel.
-	const model = resolveModel(body.aiModel);
+	let model = resolveModel(body.aiModel);
+	// 2026-05-10 (v1.2.37): the dev's shared Gemini free-tier
+	// keys have a much smaller daily quota for `gemini-2.5-pro`
+	// (the "Deep" tier) than for flash / flash-lite — exhausted
+	// on ~every prod request. When a user picks Deep WITHOUT
+	// supplying a BYOK key, transparently fall back to Flash so
+	// the request succeeds, and surface a `fellBackToFlash` flag
+	// in the response so the client can show a one-line notice
+	// (with a CTA pointing at Settings → BYOK). Users WITH BYOK
+	// get true Pro on their own quota.
+	const wantedPro = (body.aiModel || '').toString().trim() === 'pro';
+	const fellBackToFlash = wantedPro && !_useUserKey;
+	if (fellBackToFlash) {
+		model = _AI_MODEL_MAP['flash'];
+	}
 	if (query.length < 2) {
 		return new Response(
 			JSON.stringify({ error: 'Query is required (≥2 chars).' }),
@@ -297,7 +311,11 @@ export default async (req) => {
 		const text = completion?.choices?.[0]?.message?.content || '';
 		const refs = parseRefs(text);
 		return new Response(
-			JSON.stringify({ refs, hits: refs.length }),
+			JSON.stringify({
+				refs,
+				hits: refs.length,
+				...(fellBackToFlash ? { fellBackToFlash: true } : {}),
+			}),
 			{ status: 200, headers: cors });
 	} catch (e) {
 		// 2026-05-10 (v1.2.30): never fall through to `e.message` for

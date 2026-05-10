@@ -882,6 +882,55 @@
 /// New ui-string keys: `tooltipClose`, `couldNotParseRef`
 /// (`{ref}` placeholder), `sermonNoBody` — all three locales.
 ///
+/// 2026-05-10 (v1.2.37 — Deep tier auto-fallback to Standard
+/// when no BYOK): user reported "ai setting deep for 2.5 pro
+/// version not working in search maybe also in otherfunctions".
+/// Diagnosed: not a bug — `gemini-2.5-pro`'s free-tier quota on
+/// the developer's shared keys is essentially always exhausted
+/// (much smaller than flash/flash-lite). All Pro requests
+/// returned 429 with a quota-exhausted message. Flash and
+/// Flash-Lite both worked.
+///
+/// Fix — transparent fallback + clear messaging:
+///
+/// Backend (3 Netlify functions):
+/// • `aiBibleSearch.mjs` / `aiSearch.mjs` / `aiExplainWord.mjs` —
+///   when `aiModel === 'pro'` AND no BYOK key is supplied, the
+///   resolved model silently downgrades to `flash`. The response
+///   includes `fellBackToFlash: true` so the client UI can show
+///   a one-line notice + BYOK CTA. Users WITH BYOK get true Pro
+///   on their own quota — unchanged.
+///
+/// Client (3 services):
+/// • `ai_bible_search_service.dart` / `ai_search_service.dart` /
+///   `ai_word_service.dart` — result types gain a
+///   `fellBackToFlash` boolean that's read from the backend
+///   response.
+///
+/// UI surfaces (3 sites):
+/// • `search_page.dart` — when `result.fellBackToFlash`, the
+///   `_aiNotice` channel leads with the new
+///   `aiDeepFellBackToStandard` ui-string (3 locales). Existing
+///   BYOK-CTA heuristic gains `'deep tier needs'` /
+///   `'gemini api key'` / 深入 / Gemini API 密钥/密鑰 trigger
+///   words so the chip auto-appears.
+/// • `evidence_page.dart::_AiSearchDialog._ask` — same notice +
+///   heuristic update.
+/// • `originals_sheet.dart::_loadAiExplanation` — prepends the
+///   notice to the explanation chunk text so users see it above
+///   the actual word study output.
+///
+/// Settings:
+/// • `aiModelDeepDetail` ui-string rewritten for all 3 locales
+///   to be explicit: "without BYOK, requests transparently fall
+///   back to Standard (Flash)". Sets accurate expectations
+///   before users pick the tier.
+///
+/// Net result: picking Deep without BYOK still produces a useful
+/// answer (Flash quality) instead of a quota error. The user is
+/// told what happened and offered a one-tap path to set up BYOK
+/// for real Deep responses.
+///
 /// 2026-05-10 (v1.2.36 — dark-mode era-title contrast fix +
 /// priorities doc): user reported "for bible timeline and family
 /// tree its hard to see those titles in dark mode". Both pages
@@ -1189,7 +1238,7 @@
 /// matching edit needed here.
 const String kAppVersion = String.fromEnvironment(
   'APP_VERSION',
-  defaultValue: '1.2.36',
+  defaultValue: '1.2.37',
 );
 
 /// 2026-05-10 (v1.2.20): paired with `kAppVersion` so the About

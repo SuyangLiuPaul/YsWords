@@ -106,7 +106,10 @@ class AiWordService {
       if (exp.isEmpty) {
         return AiWordResult.unavailable('AI returned an empty response.');
       }
-      return AiWordResult.ok(exp);
+      return AiWordResult.ok(
+        exp,
+        fellBackToFlash: j['fellBackToFlash'] == true,
+      );
     } catch (_) {
       return AiWordResult.unavailable(
         'AI explanation returned an unexpected response.',
@@ -119,13 +122,20 @@ class AiWordResult {
   final String explanation;
   final String? unavailableReason;
 
+  /// 2026-05-10 (v1.2.37): mirror of `fellBackToFlash` in the
+  /// other two AI service result types — set true when Deep was
+  /// requested without BYOK and the backend transparently used
+  /// Flash. Originals_sheet renders a small notice + BYOK CTA.
+  final bool fellBackToFlash;
+
   const AiWordResult._({
     required this.explanation,
     this.unavailableReason,
+    this.fellBackToFlash = false,
   });
 
-  factory AiWordResult.ok(String text) =>
-      AiWordResult._(explanation: text);
+  factory AiWordResult.ok(String text, {bool fellBackToFlash = false}) =>
+      AiWordResult._(explanation: text, fellBackToFlash: fellBackToFlash);
   factory AiWordResult.unavailable(String reason) =>
       AiWordResult._(explanation: '', unavailableReason: reason);
 

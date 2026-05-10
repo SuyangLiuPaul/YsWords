@@ -2449,10 +2449,21 @@ const uiStrings = {
         'Standard · Gemini 2.5 Flash. Balanced speed and depth (~3-6 s). Mid-range free-tier quota — usually fine, can run out at peak hours. Best when you want a bit more detail than Fast gives.',
   },
   'aiModelDeepDetail': {
-    'zh-Hans': '深入 · Gemini 2.5 Pro。最详尽的释经分析，但最慢——约 8-15 秒。**免费配额极小**，开发者共享池通常上午就耗尽。强烈建议先在上面 BYOK 卡片粘您自己的 Gemini 密钥，否则可能直接看到"额度耗尽"。',
-    'zh-Hant': '深入 · Gemini 2.5 Pro。最詳盡的釋經分析,但最慢——約 8-15 秒。**免費配額極小**,開發者共享池通常上午就耗盡。強烈建議先在上面 BYOK 卡片貼您自己的 Gemini 密鑰,否則可能直接看到「額度耗盡」。',
+    'zh-Hans': '深入 · Gemini 2.5 Pro。最详尽的释经分析，但最慢——约 8-15 秒。**免费配额极小**——开发者共享池配额几乎总是耗尽。**没有 BYOK 时，请求会自动降级为 Standard（Flash）**——结果会出来，但不是真正的 Pro。要使用真正的 Deep，请先在上面 BYOK 卡片粘您自己的 Gemini 密钥（在 AI Studio 免费生成）。',
+    'zh-Hant': '深入 · Gemini 2.5 Pro。最詳盡的釋經分析，但最慢——約 8-15 秒。**免費配額極小**——開發者共享池配額幾乎總是耗盡。**沒有 BYOK 時，請求會自動降級為 Standard（Flash）**——結果會出來，但不是真正的 Pro。要使用真正的 Deep，請先在上面 BYOK 卡片貼您自己的 Gemini 密鑰（在 AI Studio 免費生成）。',
     'en':
-        'Deep · Gemini 2.5 Pro. The most thorough exegetical analysis, but slowest (~8-15 s). **Free-tier quota is tiny** — the shared developer pool typically runs out by mid-morning. Strongly recommended: paste your own Gemini key in the BYOK card above first, otherwise you may hit "quota exhausted" immediately.',
+        'Deep · Gemini 2.5 Pro. The most thorough exegetical analysis, but slowest (~8-15 s). **Free-tier quota is tiny** — the shared developer pool is essentially always exhausted. **Without BYOK, requests transparently fall back to Standard (Flash)** — you still get an answer, just not real Pro quality. For true Deep responses, paste your own Gemini key in the BYOK card above (free at AI Studio).',
+  },
+  // 2026-05-10 (v1.2.37): one-line notice surfaced inline in
+  // search / evidence / originals when the backend transparently
+  // downgrades a Deep request to Standard (no BYOK + dev's shared
+  // Pro quota is exhausted). Triggers the same BYOK CTA chip the
+  // existing "_shouldOfferByokForNotice" heuristic looks for.
+  'aiDeepFellBackToStandard': {
+    'zh-Hans': '深入 (Pro) 需要您自己的 Gemini API 密钥——本次自动用了 Standard 替代。请到 设置 → AI 设一个密钥，下次就是真正的深入。',
+    'zh-Hant': '深入 (Pro) 需要您自己的 Gemini API 密鑰——本次自動用了 Standard 替代。請到 設定 → AI 設一個密鑰，下次就是真正的深入。',
+    'en':
+        'Deep tier needs your own Gemini API key — using Standard this time. Set a key in Settings → AI for true Deep responses next time.',
   },
   // 2026-05-09 (v1.2.7): "Test" button + result row in the BYOK
   // card. Lets the user verify their pasted key actually

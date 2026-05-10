@@ -415,9 +415,26 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
       if (result.unavailable) {
         _aiError = result.unavailableReason;
       } else {
+        // 2026-05-10 (v1.2.37): when the user picked Deep without a
+        // BYOK key, the backend transparently fell back to Flash.
+        // Prepend a one-line italic notice above the explanation
+        // body so the user knows their "Deep" word study ran on
+        // Standard tier — and a CTA to set their own key for true
+        // Deep responses. The same heuristic-driven BYOK CTA on
+        // the Strong's panel further down already gates on the
+        // word "deep tier needs" / "gemini api key" present in
+        // this notice text.
+        final notice = result.fellBackToFlash
+            ? (uiStrings['aiDeepFellBackToStandard']
+                    ?[widget.locale] ??
+                'Deep tier needs your own Gemini API key — using Standard '
+                    'this time. Set a key in Settings → AI for true Deep.')
+            : null;
         _aiChunks.add(_AiChunk(
           label: _chunkLabel(length: length, scope: scope, locale: widget.locale),
-          text: result.explanation,
+          text: notice == null
+              ? result.explanation
+              : '$notice\n\n${result.explanation}',
         ));
       }
     });

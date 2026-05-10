@@ -170,10 +170,20 @@ class AiBibleSearchResult {
   /// search.
   final String? unavailableReason;
 
+  /// 2026-05-10 (v1.2.37): true when the user picked the Deep
+  /// (`gemini-2.5-pro`) tier WITHOUT supplying their own Gemini
+  /// API key, and the backend transparently fell back to Flash
+  /// because the dev's shared free-tier Pro quota is too small
+  /// for prod traffic. UI surfaces show a small inline notice
+  /// + a CTA pointing to the BYOK card so the user can opt into
+  /// real Pro responses on their own quota.
+  final bool fellBackToFlash;
+
   const AiBibleSearchResult({
     required this.refs,
     required this.hits,
     this.unavailableReason,
+    this.fellBackToFlash = false,
   });
 
   factory AiBibleSearchResult.empty() =>
@@ -189,7 +199,11 @@ class AiBibleSearchResult {
         .map((m) => AiBibleRef.fromJson(Map<String, dynamic>.from(m)))
         .where((r) => r.book.isNotEmpty && r.chapter > 0 && r.verseStart > 0)
         .toList();
-    return AiBibleSearchResult(refs: refs, hits: refs.length);
+    return AiBibleSearchResult(
+      refs: refs,
+      hits: refs.length,
+      fellBackToFlash: j['fellBackToFlash'] == true,
+    );
   }
 
   bool get unavailable => unavailableReason != null;
