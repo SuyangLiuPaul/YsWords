@@ -23,6 +23,7 @@ import 'package:yswords/constants/text_patterns.dart';
 import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/widgets/home_icon_button.dart';
 import 'package:yswords/widgets/localized_back_button.dart';
+import 'package:yswords/utils/ai_markdown.dart' show parseAiMarkdown;
 import 'package:yswords/utils/responsive.dart';
 import 'package:flutter/services.dart';
 
@@ -491,11 +492,17 @@ class _SearchPageState extends State<SearchPage> {
                   const SizedBox(height: 10),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 12),
-                    child: Text(
-                      _aiNotice!,
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: scheme.onSurfaceVariant,
+                    // v1.2.38: shared markdown parser so the
+                    // notice text honours Gemini's `**bold**` etc.
+                    child: Text.rich(
+                      TextSpan(
+                        children: parseAiMarkdown(
+                          _aiNotice!,
+                          base: TextStyle(
+                            fontSize: 12,
+                            color: scheme.onSurfaceVariant,
+                          ),
+                        ),
                       ),
                       textAlign: TextAlign.center,
                     ),
@@ -2036,12 +2043,17 @@ class _SearchPageState extends State<SearchPage> {
                 color: scheme.outlineVariant.withValues(alpha: 0.5),
               ),
             ),
-            child: Text(
-              _aiNotice!,
-              style: TextStyle(
-                fontSize: settings.fontSize * 0.75,
-                color: scheme.onSurfaceVariant,
-                height: 1.4,
+            // v1.2.38: shared markdown parser.
+            child: Text.rich(
+              TextSpan(
+                children: parseAiMarkdown(
+                  _aiNotice!,
+                  base: TextStyle(
+                    fontSize: settings.fontSize * 0.75,
+                    color: scheme.onSurfaceVariant,
+                    height: 1.4,
+                  ),
+                ),
               ),
             ),
           );
@@ -2130,12 +2142,19 @@ class _SearchPageState extends State<SearchPage> {
                 ? null
                 : Padding(
                     padding: const EdgeInsets.only(top: 4),
-                    child: Text(
-                      ref.reason,
-                      style: TextStyle(
-                        fontSize: settings.fontSize * 0.78,
-                        color: scheme.onSurfaceVariant,
-                        height: 1.4,
+                    // 2026-05-11 (v1.2.38): render through shared
+                    // markdown parser so Gemini's `**bold**` etc.
+                    // displays as bold instead of literal `**`.
+                    child: Text.rich(
+                      TextSpan(
+                        children: parseAiMarkdown(
+                          ref.reason,
+                          base: TextStyle(
+                            fontSize: settings.fontSize * 0.78,
+                            color: scheme.onSurfaceVariant,
+                            height: 1.4,
+                          ),
+                        ),
                       ),
                     ),
                   ),

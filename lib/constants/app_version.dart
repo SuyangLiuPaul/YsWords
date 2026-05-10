@@ -882,6 +882,44 @@
 /// New ui-string keys: `tooltipClose`, `couldNotParseRef`
 /// (`{ref}` placeholder), `sermonNoBody` — all three locales.
 ///
+/// 2026-05-11 (v1.2.38 — markdown rendering across all AI
+/// surfaces): user "why it is like ** which means it is not
+/// formatted well". Gemini ships `**bold**` / `*italic*` /
+/// `# heading` / `- bullet` markers in its responses regardless
+/// of system-prompt instructions to the contrary. The
+/// `_parseAiMarkdown` helper added in v1.2.31 was rendering
+/// these correctly on the OriginalsSheet word-study panel only —
+/// every other AI surface still used plain `Text(_aiAnswer)` /
+/// `Text(ref.reason)` etc., so users saw literal `**asterisks**`.
+///
+/// Fix:
+/// • Extracted the parser into `lib/utils/ai_markdown.dart` as
+///   `parseAiMarkdown(String, {required TextStyle base})` with
+///   the same heuristic-based handling (headings → bold lines,
+///   horizontal rules → dropped, bullets → `•`, inline `***` /
+///   `**` / `*` / `_` → bold-italic / bold / italic / italic).
+/// • `lib/widgets/originals_sheet.dart` — refactored to import
+///   the shared util; the local copy + hoisted regex block is
+///   removed (the multi-space regex stays, it's specific to
+///   `_lookupVerseText`).
+/// • `lib/pages/evidence_page.dart` — `_AiSearchDialog` answer
+///   body now uses `SelectableText.rich(parseAiMarkdown(...))`
+///   instead of plain `Text(...)`.
+/// • `lib/pages/search_page.dart` — AI ref `reason` subtitle and
+///   the inline `_aiNotice` banner (both render sites in
+///   `_buildEmptyState` and `_buildAiRefList`) now use
+///   `Text.rich(parseAiMarkdown(...))`.
+/// • `lib/pages/settings_page.dart::_AiModelDetailPanel` — tier
+///   detail panel renders through the parser so the
+///   `aiModelDeepDetail` ui-string's `**Free-tier quota is
+///   tiny**` callout actually appears bold.
+///
+/// Net effect: every AI surface in the app now shows actual
+/// bold/italic/headings/bullets where Gemini emitted markdown,
+/// instead of literal asterisks. Same call shape (`Text.rich` +
+/// `TextSpan` children) so themes, font scaling, dark-mode
+/// colors, and selection all work as before.
+///
 /// 2026-05-10 (v1.2.37 — Deep tier auto-fallback to Standard
 /// when no BYOK): user reported "ai setting deep for 2.5 pro
 /// version not working in search maybe also in otherfunctions".
@@ -1238,7 +1276,7 @@
 /// matching edit needed here.
 const String kAppVersion = String.fromEnvironment(
   'APP_VERSION',
-  defaultValue: '1.2.37',
+  defaultValue: '1.2.38',
 );
 
 /// 2026-05-10 (v1.2.20): paired with `kAppVersion` so the About

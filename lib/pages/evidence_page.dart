@@ -13,6 +13,7 @@ import 'package:yswords/pages/settings_page.dart';
 import 'package:yswords/providers/main_provider.dart';
 import 'package:yswords/services/ai_search_service.dart';
 import 'package:yswords/services/bible_evidence_service.dart';
+import 'package:yswords/utils/ai_markdown.dart' show parseAiMarkdown;
 import 'package:yswords/utils/jump_to_reference.dart';
 import 'package:yswords/utils/reference_parser.dart';
 import 'package:yswords/widgets/confidence_badge.dart';
@@ -1077,12 +1078,23 @@ class _AiSearchDialogState extends State<_AiSearchDialog> {
             if (_result != null &&
                 _result!.answer.isNotEmpty &&
                 !_result!.unavailable) ...[
-              Text(
-                _result!.answer,
-                style: TextStyle(
-                  fontFamily: settings.fontFamily,
-                  fontSize: settings.fontSize,
-                  height: 1.4,
+              // 2026-05-11 (v1.2.38): render the AI answer through
+              // the shared markdown parser so `**bold**` /
+              // `*italic*` / `# heading` / `- bullet` Gemini emits
+              // displays as actual bold/italic/headings/bullets
+              // instead of literal asterisks. User: "why it is
+              // like ** which means it is not formatted well".
+              SelectableText.rich(
+                TextSpan(
+                  children: parseAiMarkdown(
+                    _result!.answer,
+                    base: TextStyle(
+                      fontFamily: settings.fontFamily,
+                      fontSize: settings.fontSize,
+                      height: 1.4,
+                      color: scheme.onSurface,
+                    ),
+                  ),
                 ),
               ),
               const SizedBox(height: 12),

@@ -12,6 +12,7 @@ import 'package:yswords/models/dashboard_section.dart';
 import 'package:yswords/providers/main_provider.dart';
 import 'package:get/get.dart';
 import 'package:yswords/pages/about_page.dart';
+import 'package:yswords/utils/ai_markdown.dart' show parseAiMarkdown;
 import 'package:yswords/utils/theme_color_helpers.dart';
 import 'package:yswords/pages/profiles_page.dart';
 import 'package:yswords/services/cloud_auth_service.dart';
@@ -2716,13 +2717,23 @@ class _AiModelDetailPanel extends StatelessWidget {
               size: 16, color: scheme.primary.withValues(alpha: 0.85)),
           SizedBox(width: 8 * s),
           Expanded(
-            child: Text(
-              uiStrings[detailKey]?[locale] ?? detailEnFallback,
-              style: TextStyle(
-                fontFamily: settings.fontFamily,
-                fontSize: (settings.fontSize - 4).clamp(11.0, 13.0),
-                color: scheme.onSurface.withValues(alpha: 0.78),
-                height: 1.55,
+            // 2026-05-11 (v1.2.38): the tier-detail strings include
+            // markdown emphasis (`**Free-tier quota is tiny**` etc.)
+            // so users could see the trade-offs at a glance. Render
+            // through the shared markdown parser instead of the
+            // raw `Text(...)` so the asterisks resolve to actual
+            // bold spans.
+            child: Text.rich(
+              TextSpan(
+                children: parseAiMarkdown(
+                  uiStrings[detailKey]?[locale] ?? detailEnFallback,
+                  base: TextStyle(
+                    fontFamily: settings.fontFamily,
+                    fontSize: (settings.fontSize - 4).clamp(11.0, 13.0),
+                    color: scheme.onSurface.withValues(alpha: 0.78),
+                    height: 1.55,
+                  ),
+                ),
               ),
             ),
           ),
