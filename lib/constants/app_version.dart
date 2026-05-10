@@ -882,6 +882,31 @@
 /// New ui-string keys: `tooltipClose`, `couldNotParseRef`
 /// (`{ref}` placeholder), `sermonNoBody` — all three locales.
 ///
+/// 2026-05-10 (v1.2.32 — 新譯本 traditional divine-name fix):
+/// user reported "雅伟 雅偉 版本，但是新譯本和合本好像都沒有用對字"
+/// — the simplified→traditional pairing convention everywhere
+/// else in the project is 雅伟 (great, simplified) → 雅偉 (great,
+/// traditional), but `assets/cnv-tr.json` (新譯本 traditional)
+/// used 雅威 (might/awe) instead of 雅偉. Audit confirmed:
+///   • cnv.json (simplified) → 7123× 雅伟  (correct)
+///   • cnv-tr.json (traditional) → 7122× 雅威  ❌ should be 雅偉
+///   • cuvs-yhwh.json / -tr.json → 雅伟 / 雅偉  (correct)
+///   • cuv.json / -tr.json → 耶和华 / 耶和華  (correct, classical
+///     CUV transliteration)
+/// Mass-replaced all 7122 occurrences in `assets/cnv-tr.json`
+/// from 雅威 → 雅偉. Verified: 0 雅威 remaining, 7122 雅偉, total
+/// verse count unchanged at 31102. All other 雅X bigrams (雅各
+/// = Jacob, 雅憫 = Benjamin, 雅敬 = Joiakim, 雅比 = Jabesh, 雅斤
+/// = Jachin, 雅哈 = Jahath …) match between simp and trad — only
+/// the divine name was inconsistent.
+///
+/// Known follow-up (NOT FIXED): Lamentations 5:21 and 5:22 are
+/// duplicates in cnv.json (both contain a hybrid that merges
+/// 5:21+5:22 content), and cnv-tr.json's 5:22 has a
+/// non-canonical paraphrase ("但是您完全拒絕了我們。 你對我們很生
+/// 氣。"). Needs a verified CNV (新譯本) source to correct;
+/// flagged for a future data-quality pass.
+///
 /// 2026-05-10 (v1.2.31 — perf + a11y + web hardening + doc sync):
 /// three more audit agents (performance + a11y, documentation drift,
 /// web/PWA + edge cases) found 11 actionable items after v1.2.30.
@@ -1026,7 +1051,7 @@
 ///   the client. Now the index lives in the server log only;
 ///   the public message is a generic "AI service authentication
 ///   failed."
-const String kAppVersion = '1.2.31';
+const String kAppVersion = '1.2.32';
 
 /// 2026-05-10 (v1.2.20): paired with `kAppVersion` so the About
 /// footer's "Last updated …" stamp moves in lockstep with every
@@ -1043,4 +1068,4 @@ const String kAppVersion = '1.2.31';
 /// the higher precision. Format: ISO local date + 24-h
 /// HH:MM + tz abbreviation. The about-page interpolation is
 /// locale-aware via the `aboutFooterNote` ui-string template.
-const String kAppReleaseTime = '2026-05-10 18:49 AEST';
+const String kAppReleaseTime = '2026-05-10 19:22 AEST';
