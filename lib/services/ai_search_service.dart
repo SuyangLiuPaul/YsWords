@@ -56,6 +56,8 @@ class AiSearchService {
     /// Netlify function uses this key instead of the developer's
     /// shared key. See AiWordService.explain for the rationale.
     String? userApiKey,
+    /// v1.2.26 — picks the Gemini model tier on the server.
+    String? aiModel,
   }) async {
     if (query.trim().length < 2) {
       return AiSearchResult.empty();
@@ -71,6 +73,8 @@ class AiSearchService {
               'locale': locale,
               if (userApiKey != null && userApiKey.isNotEmpty)
                 'userApiKey': userApiKey,
+              if (aiModel != null && aiModel.isNotEmpty)
+                'aiModel': aiModel,
             }),
           )
           .timeout(const Duration(seconds: 25));

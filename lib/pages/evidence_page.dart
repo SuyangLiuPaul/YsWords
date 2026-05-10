@@ -839,11 +839,14 @@ class _AiSearchDialogState extends State<_AiSearchDialog> {
     });
     // BYOK (2026-05): forward the user's Gemini key when set so AI
     // search runs against their own AI Studio quota.
-    final userKey = context.read<AppSettings>().geminiApiKey;
+    final settings = context.read<AppSettings>();
+    final userKey = settings.geminiApiKey;
     final r = await AiSearchService.ask(
       query: q,
       locale: widget.locale,
       userApiKey: userKey.isEmpty ? null : userKey,
+      // v1.2.26 — pick the user's chosen AI tier.
+      aiModel: settings.aiModel,
     );
     if (!mounted) return;
 

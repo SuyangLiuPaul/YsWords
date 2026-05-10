@@ -364,7 +364,8 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
     // their AI Studio quota is consumed instead of the developer's
     // shared one. Passed as a body field; the Netlify function
     // prefers it over the env-var key when present.
-    final userKey = context.read<AppSettings>().geminiApiKey;
+    final settings = context.read<AppSettings>();
+    final userKey = settings.geminiApiKey;
     final result = await AiWordService.explain(
       strongs: entryNumber,
       lemma: entry.lemma,
@@ -378,6 +379,8 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
       length: length,
       scope: scope,
       userApiKey: userKey.isEmpty ? null : userKey,
+      // v1.2.26 — Gemini tier from Settings.
+      aiModel: settings.aiModel,
     );
     // Race-check: if the user navigated to another entry while we
     // were waiting for Gemini, drop the response on the floor — the

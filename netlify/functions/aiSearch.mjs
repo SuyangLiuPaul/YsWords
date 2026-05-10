@@ -31,6 +31,19 @@ import { dirname, join } from 'node:path';
 // for the rationale: 4× daily free quota, no thinking-token budget
 // to fight, fast enough for the brief 1-3 sentence search answers.
 const MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash-lite';
+
+// 2026-05-10 (v1.2.26): per-request AI tier override, identical
+// shape to aiBibleSearch.mjs / aiExplainWord.mjs. Allowlist-clamped.
+const _AI_MODEL_MAP = {
+	'flash-lite': 'gemini-2.5-flash-lite',
+	'flash':      'gemini-2.5-flash',
+	'pro':        'gemini-2.5-pro',
+};
+function resolveModel(tierRaw) {
+	if (typeof tierRaw !== 'string') return MODEL;
+	const tier = tierRaw.trim();
+	return _AI_MODEL_MAP[tier] || MODEL;
+}
 const BASE_URL =
 	(process.env.GEMINI_BASE_URL ||
 		'https://generativelanguage.googleapis.com/v1beta/openai').replace(/\/$/, '');
@@ -133,7 +146,7 @@ function buildSystemMessage(locale) {
 		+ 'invented details.';
 }
 
-async function callGeminiWithKey(apiKey, prompt, locale) {
+async function callGeminiWithKey(apiKey, prompt, locale, model) {
 	const url = `${BASE_URL}/chat/completions`;
 	return fetch(url, {
 		method: 'POST',
@@ -142,7 +155,7 @@ async function callGeminiWithKey(apiKey, prompt, locale) {
 			'Content-Type': 'application/json',
 		},
 		body: JSON.stringify({
-			model: MODEL,
+			model: model,
 			messages: [
 				{ role: 'system', content: buildSystemMessage(locale) },
 				{ role: 'user', content: prompt },
@@ -160,7 +173,7 @@ async function callGeminiWithKey(apiKey, prompt, locale) {
 	});
 }
 
-async function callGemini(prompt, locale, overrideKey = null) {
+async function callGemini(prompt, locale, overrideKey = null, model = MODEL) {
 	// BYOK: same pattern as aiExplainWord — when the client passes a
 	// validated user API key, use only that key.
 	const keys = overrideKey ? [overrideKey] : geminiKeys();
@@ -176,7 +189,7 @@ async function callGemini(prompt, locale, overrideKey = null) {
 	let quotaError = null;
 	for (let i = 0; i < keys.length; i++) {
 		const apiKey = keys[i];
-		const resp = await callGeminiWithKey(apiKey, prompt, locale);
+		const resp = await callGeminiWithKey(apiKey, prompt, locale, model);
 		if (resp.ok) {
 			const json = await resp.json();
 			const choice = json.choices?.[0];
@@ -289,6 +302,8 @@ export default async (req) => {
 		// shape against Google's key format before forwarding.
 		const _userKey = (body?.userApiKey || '').toString().trim();
 		const _useUserKey = /^AIza[A-Za-z0-9_-]{20,80}$/.test(_userKey);
+		// 2026-05-10 (v1.2.26): tier picker → real model name.
+		const model = resolveModel(body?.aiModel);
 		if (query.trim().length < 2) {
 			return new Response(JSON.stringify({ error: 'query required' }),
 				{ status: 400, headers: cors });
@@ -314,6 +329,7 @@ export default async (req) => {
 			buildPrompt(query, locale, hits),
 			locale,
 			_useUserKey ? _userKey : null,
+			model,
 		);
 		const citations = hits.map((e) => {
 			const t = pickLocalized(e.title, locale);

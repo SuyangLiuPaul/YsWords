@@ -25,6 +25,23 @@
 // Reply: { answer: string, refs: [{book, chapter, verseStart, verseEnd, reason}] }
 
 const MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash-lite';
+
+// 2026-05-10 (v1.2.26): per-request AI tier override. Client passes
+// `aiModel` body field with one of the keys below; we map it to the
+// real Gemini model name. Allowlist-clamped — anything else falls
+// back to the env-default. Doc-level intent: keep server-side
+// control of which exact model versions we trust, while letting
+// the user pick speed vs depth.
+const _AI_MODEL_MAP = {
+  'flash-lite': 'gemini-2.5-flash-lite',
+  'flash':      'gemini-2.5-flash',
+  'pro':        'gemini-2.5-pro',
+};
+function resolveModel(tierRaw) {
+  if (typeof tierRaw !== 'string') return MODEL;
+  const tier = tierRaw.trim();
+  return _AI_MODEL_MAP[tier] || MODEL;
+}
 const BASE_URL = (process.env.GEMINI_BASE_URL ||
 	'https://generativelanguage.googleapis.com/v1beta/openai').replace(/\/$/, '');
 
@@ -83,7 +100,7 @@ function buildSystemMessage(locale) {
 	);
 }
 
-async function callGeminiWithKey(apiKey, query, locale) {
+async function callGeminiWithKey(apiKey, query, locale, model) {
 	const url = `${BASE_URL}/chat/completions`;
 	return fetch(url, {
 		method: 'POST',
@@ -92,7 +109,7 @@ async function callGeminiWithKey(apiKey, query, locale) {
 			'Content-Type': 'application/json',
 		},
 		body: JSON.stringify({
-			model: MODEL,
+			model: model,
 			messages: [
 				{ role: 'system', content: buildSystemMessage(locale) },
 				{ role: 'user', content: `Query: ${query}` },
@@ -101,7 +118,8 @@ async function callGeminiWithKey(apiKey, query, locale) {
 			// max_tokens 4096: 2.5-flash-lite uses thinking tokens that
 			// share the max_tokens budget. We want headroom for the model
 			// to think + still produce a 10-ref JSON response (~600
-			// tokens output). 4096 is safe.
+			// tokens output). 4096 is safe across all three tiers
+			// (flash-lite / flash / pro).
 			max_tokens: 4096,
 			response_format: { type: 'json_object' },
 		}),
@@ -109,7 +127,7 @@ async function callGeminiWithKey(apiKey, query, locale) {
 	});
 }
 
-async function callGemini(query, locale, overrideKey = null) {
+async function callGemini(query, locale, overrideKey = null, model = MODEL) {
 	const keys = overrideKey ? [overrideKey] : geminiKeys();
 	if (keys.length === 0) {
 		const err = new Error(
@@ -122,7 +140,7 @@ async function callGemini(query, locale, overrideKey = null) {
 	let lastError;
 	for (const key of keys) {
 		try {
-			const r = await callGeminiWithKey(key, query, locale);
+			const r = await callGeminiWithKey(key, query, locale, model);
 			if (!r.ok) {
 				const text = await r.text().catch(() => '');
 				// 2026-05-09 (v1.2.6 audit): same upstream-leak fix
@@ -254,6 +272,9 @@ export default async (req) => {
 	const _userKey = (body.userApiKey || '').trim();
 	const _useUserKey = /^AIza[A-Za-z0-9_-]{20,80}$/.test(_userKey);
 	const userApiKey = _useUserKey ? _userKey : '';
+	// 2026-05-10 (v1.2.26): pick Gemini model tier from request,
+	// allowlist-clamped via resolveModel.
+	const model = resolveModel(body.aiModel);
 	if (query.length < 2) {
 		return new Response(
 			JSON.stringify({ error: 'Query is required (≥2 chars).' }),
@@ -272,7 +293,7 @@ export default async (req) => {
 	}
 	try {
 		const completion = await callGemini(
-			query, locale, userApiKey || null);
+			query, locale, userApiKey || null, model);
 		const text = completion?.choices?.[0]?.message?.content || '';
 		const refs = parseRefs(text);
 		return new Response(

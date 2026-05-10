@@ -804,7 +804,24 @@
 /// `_backgroundPreloadRemainingVersions` removed; the merged
 /// helper is now `_eagerPreloadAllVersions` (back to v1.2.18's
 /// name).
-const String kAppVersion = '1.2.25';
+///
+/// 2026-05-10 (v1.2.26 — AI model picker): user "dev 可以在
+/// setting 调整选择 ai mode". Adds three-tier AI response
+/// depth selector to Settings → YsWords AI:
+///   - 快 / Fast      → gemini-2.5-flash-lite (default; was the
+///                      hardcoded MODEL constant pre-v1.2.26)
+///   - 标准 / Standard → gemini-2.5-flash
+///   - 深入 / Deep    → gemini-2.5-pro (smaller free-tier quota,
+///                      BYOK key recommended)
+/// New AppSettings field `aiModel` persisted in SharedPrefs +
+/// allowlist-clamped against {'flash-lite', 'flash', 'pro'}. All
+/// three Netlify functions (aiBibleSearch / aiSearch /
+/// aiExplainWord) accept an `aiModel` body param and map to a
+/// real Gemini model via a server-side `resolveModel` helper —
+/// invalid/missing values fall back to the env default. Three
+/// client services thread `aiModel` through. Dev-only deploy
+/// per user request — qat/prod bumps after they verify on dev.
+const String kAppVersion = '1.2.26';
 
 /// 2026-05-10 (v1.2.20): paired with `kAppVersion` so the About
 /// footer's "Last updated …" stamp moves in lockstep with every
@@ -821,4 +838,4 @@ const String kAppVersion = '1.2.25';
 /// the higher precision. Format: ISO local date + 24-h
 /// HH:MM + tz abbreviation. The about-page interpolation is
 /// locale-aware via the `aboutFooterNote` ui-string template.
-const String kAppReleaseTime = '2026-05-10 15:45 AEST';
+const String kAppReleaseTime = '2026-05-10 16:15 AEST';

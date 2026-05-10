@@ -1033,6 +1033,14 @@ class _SettingsPageBodyState extends State<_SettingsPageBody> {
                     uiStrings['settingsSectionAi']?[settings.locale] ?? 'AI'),
               ),
               GeminiKeyCard(settings: settings, s: s),
+              SizedBox(height: 12 * s),
+              // 2026-05-10 (v1.2.26): AI model picker. Three tiers
+              // mapped server-side to gemini-2.5-flash-lite (fast),
+              // gemini-2.5-flash (balanced), gemini-2.5-pro (deep).
+              // Defaults to fast — same model the server used pre-
+              // v1.2.26 — so existing users see no behaviour change
+              // unless they explicitly bump it.
+              _AiModelCard(settings: settings, s: s),
               SizedBox(height: 16 * s),
               KeyedSubtree(
                 key: _aboutKey,
@@ -2563,6 +2571,97 @@ class _NotificationsCardState extends State<_NotificationsCard> {
 
 /// Settings → About — app name, version line, and the unified
 /// ContactLine. Lives at the bottom of the Settings list.
+/// 2026-05-10 (v1.2.26): AI response-depth picker. Three tiers
+/// mapped server-side to gemini-2.5-flash-lite / flash / pro.
+/// Lives just below the BYOK card so the two AI-related cards
+/// stay grouped. Renders as a SegmentedButton — most discoverable
+/// way to surface "pick one of three" without opening a dialog.
+class _AiModelCard extends StatelessWidget {
+  final AppSettings settings;
+  final double s;
+  const _AiModelCard({required this.settings, required this.s});
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final locale = settings.locale;
+    return Card(
+      child: Padding(
+        padding: EdgeInsets.fromLTRB(16 * s, 14 * s, 16 * s, 14 * s),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.psychology_outlined,
+                    size: 18, color: scheme.primary),
+                SizedBox(width: 8 * s),
+                Text(
+                  uiStrings['aiModelTitle']?[locale] ??
+                      'AI response depth',
+                  style: TextStyle(
+                    fontFamily: settings.fontFamily,
+                    fontSize: (settings.fontSize - 1)
+                        .clamp(13.0, 16.0),
+                    fontWeight: FontWeight.w700,
+                    color: scheme.onSurface,
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: 6 * s),
+            Text(
+              uiStrings['aiModelBody']?[locale] ??
+                  'Choose the trade-off between AI speed and depth.',
+              style: TextStyle(
+                fontFamily: settings.fontFamily,
+                fontSize: (settings.fontSize - 4)
+                    .clamp(11.0, 13.0),
+                color: scheme.onSurface.withValues(alpha: 0.78),
+                height: 1.5,
+              ),
+            ),
+            SizedBox(height: 10 * s),
+            Center(
+              child: SegmentedButton<String>(
+                segments: [
+                  ButtonSegment<String>(
+                    value: 'flash-lite',
+                    label: Text(
+                      uiStrings['aiModelFast']?[locale] ?? 'Fast',
+                    ),
+                    icon: const Icon(Icons.bolt_outlined),
+                  ),
+                  ButtonSegment<String>(
+                    value: 'flash',
+                    label: Text(
+                      uiStrings['aiModelStandard']?[locale] ?? 'Standard',
+                    ),
+                    icon: const Icon(Icons.balance_outlined),
+                  ),
+                  ButtonSegment<String>(
+                    value: 'pro',
+                    label: Text(
+                      uiStrings['aiModelDeep']?[locale] ?? 'Deep',
+                    ),
+                    icon: const Icon(Icons.school_outlined),
+                  ),
+                ],
+                selected: {settings.aiModel},
+                onSelectionChanged: (selection) {
+                  if (selection.isNotEmpty) {
+                    settings.setAiModel(selection.first);
+                  }
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class _AboutCard extends StatelessWidget {
   final AppSettings settings;
   final double s;

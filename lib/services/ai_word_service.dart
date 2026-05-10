@@ -44,6 +44,8 @@ class AiWordService {
     /// the shared one. Caller (OriginalsSheet) reads this from
     /// `AppSettings.geminiApiKey`.
     String? userApiKey,
+    /// v1.2.26 — Gemini model tier picked from Settings → AI.
+    String? aiModel,
   }) async {
     final body = <String, dynamic>{
       'strongs': strongs,
@@ -59,6 +61,7 @@ class AiWordService {
       'scope': scope,
       if (userApiKey != null && userApiKey.isNotEmpty)
         'userApiKey': userApiKey,
+      if (aiModel != null && aiModel.isNotEmpty) 'aiModel': aiModel,
     };
     final http.Response resp;
     try {

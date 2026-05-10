@@ -2398,6 +2398,39 @@ const uiStrings = {
     'zh-Hant': '取得免費金鑰',
     'en': 'Get free key',
   },
+  // 2026-05-10 (v1.2.26): AI model picker — three tiers, mapped to
+  // Gemini models on the server.
+  //   '快' / 'Fast'      → flash-lite (default; fastest, simplest)
+  //   '标准' / 'Standard'→ flash      (balanced)
+  //   '深入' / 'Deep'    → pro        (deepest analysis, slower,
+  //                                    smaller free-tier quota —
+  //                                    BYOK key recommended)
+  'aiModelTitle': {
+    'zh-Hans': 'AI 响应深度',
+    'zh-Hant': 'AI 回應深度',
+    'en': 'AI response depth',
+  },
+  'aiModelBody': {
+    'zh-Hans': '选择 AI 回答的速度与详尽度。"深入"使用更强模型但配额较小，建议先在 BYOK 卡片粘您自己的 Gemini 密钥。',
+    'zh-Hant': '選擇 AI 回答的速度與詳盡度。「深入」使用更強模型但配額較小，建議先在 BYOK 卡片貼您自己的 Gemini 密鑰。',
+    'en':
+        'Choose the trade-off between AI speed and depth. "Deep" uses a more capable model with a smaller quota — paste your own Gemini key in the BYOK card above to avoid hitting the shared-pool limit.',
+  },
+  'aiModelFast': {
+    'zh-Hans': '快',
+    'zh-Hant': '快',
+    'en': 'Fast',
+  },
+  'aiModelStandard': {
+    'zh-Hans': '标准',
+    'zh-Hant': '標準',
+    'en': 'Standard',
+  },
+  'aiModelDeep': {
+    'zh-Hans': '深入',
+    'zh-Hant': '深入',
+    'en': 'Deep',
+  },
   // 2026-05-09 (v1.2.7): "Test" button + result row in the BYOK
   // card. Lets the user verify their pasted key actually
   // authenticates against Gemini before saving — previously they

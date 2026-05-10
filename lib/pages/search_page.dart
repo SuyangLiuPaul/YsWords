@@ -658,6 +658,7 @@ class _SearchPageState extends State<SearchPage> {
       query: query,
       locale: settings.locale,
       userApiKey: settings.geminiApiKey.isEmpty ? null : settings.geminiApiKey,
+      aiModel: settings.aiModel,
     );
     if (!mounted) return;
     // 2026-05-08 (v1.1.5): every early-return path now also flips

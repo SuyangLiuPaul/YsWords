@@ -44,6 +44,18 @@ const _kPickVerseAfterChapter = 'pickVerseAfterChapter';
 // adds it to outbound POST bodies destined for our own Netlify
 // function (which forwards to Google without persisting).
 const _kGeminiApiKey = 'geminiApiKey';
+// 2026-05-10 (v1.2.26): user's chosen AI response-depth tier.
+// Maps to a Gemini model on the server side:
+//   'flash-lite' → 'gemini-2.5-flash-lite' (fast, simple, default)
+//   'flash'      → 'gemini-2.5-flash'      (balanced)
+//   'pro'        → 'gemini-2.5-pro'        (deep, slower, smaller quota)
+const _kAiModel = 'aiModel';
+// Allowlist mirrored on the Netlify function side so a corrupt
+// SharedPrefs entry can't drive the server to a model we don't
+// support. Default 'flash-lite' matches the previous hardcoded
+// MODEL constant in netlify/functions/aiBibleSearch.mjs.
+const Set<String> _kAiModelAllowed = {'flash-lite', 'flash', 'pro'};
+const String _kAiModelDefault = 'flash-lite';
 
 // Dashboard layout (Round 55). Every section has its own
 // `dashboard_section_visible_<name>` flag plus a single
@@ -114,6 +126,8 @@ class AppSettings extends ChangeNotifier {
   /// explanations, AI search) are billed against the user's own
   /// AI Studio quota instead of the developer-shared key.
   String _geminiApiKey = '';
+  // 2026-05-10 (v1.2.26): see top-of-file _kAiModel comment.
+  String _aiModel = _kAiModelDefault;
 
   /// Render section / paragraph headings (e.g. "The Sermon on the
   /// Mount" / "登山宝训") above the matched verse in the reading
@@ -186,6 +200,20 @@ class AppSettings extends ChangeNotifier {
   /// when set. Never persisted off-device.
   String get geminiApiKey => _geminiApiKey;
   bool get hasUserGeminiKey => _geminiApiKey.trim().isNotEmpty;
+
+  /// 2026-05-10 (v1.2.26): user's selected AI response-depth tier
+  /// — one of {'flash-lite', 'flash', 'pro'}. Default 'flash-lite'
+  /// matches the previous hardcoded server default.
+  String get aiModel => _aiModel;
+
+  Future<void> setAiModel(String model) async {
+    if (!_kAiModelAllowed.contains(model)) return;
+    if (_aiModel == model) return;
+    _aiModel = model;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_kAiModel, model);
+  }
 
   Future<void> setGeminiApiKey(String key) async {
     final trimmed = key.trim();
@@ -678,6 +706,13 @@ class AppSettings extends ChangeNotifier {
     _pickVerseAfterChapter =
         prefs.getBool(_kPickVerseAfterChapter) ?? false;
     _geminiApiKey = prefs.getString(_kGeminiApiKey) ?? '';
+    // 2026-05-10 (v1.2.26): restore aiModel from prefs. Allowlist
+    // -clamp so a corrupt entry doesn't drive the server to an
+    // unsupported model — invalid values fall back to default.
+    final storedAiModel = prefs.getString(_kAiModel);
+    _aiModel = (storedAiModel != null && _kAiModelAllowed.contains(storedAiModel))
+        ? storedAiModel
+        : _kAiModelDefault;
 
     // Dashboard layout (Round 55): load order list + per-section
     // visibility. Missing entries fall back to defaults; the legacy

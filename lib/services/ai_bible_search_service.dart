@@ -36,6 +36,10 @@ class AiBibleSearchService {
     required String query,
     required String locale,
     String? userApiKey,
+    // 2026-05-10 (v1.2.26): forward the user's chosen AI model
+    // tier ('flash-lite' / 'flash' / 'pro') to the function.
+    // Server allowlist-clamps invalid values back to default.
+    String? aiModel,
   }) async {
     if (query.trim().length < 2) {
       return AiBibleSearchResult.empty();
@@ -51,6 +55,8 @@ class AiBibleSearchService {
               'locale': locale,
               if (userApiKey != null && userApiKey.isNotEmpty)
                 'userApiKey': userApiKey,
+              if (aiModel != null && aiModel.isNotEmpty)
+                'aiModel': aiModel,
             }),
           )
           .timeout(const Duration(seconds: 25));
