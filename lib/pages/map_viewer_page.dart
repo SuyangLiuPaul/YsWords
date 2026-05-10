@@ -376,9 +376,11 @@ class _StripCard extends StatelessWidget {
                                   .withValues(alpha: 0.85),
                               borderRadius: BorderRadius.circular(4),
                             ),
-                            child: const Icon(
+                            // 2026-05-10 (v1.2.23): theme-aware
+                            // onPrimary instead of hardcoded white.
+                            child: Icon(
                               Icons.bookmark_rounded,
-                              color: Colors.white,
+                              color: scheme.onPrimary,
                               size: 10,
                             ),
                           ),

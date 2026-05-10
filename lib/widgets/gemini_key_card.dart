@@ -239,7 +239,10 @@ class GeminiKeyCardState extends State<GeminiKeyCard> {
     final hasKey = widget.settings.hasUserGeminiKey;
     return Card(
       child: Padding(
-        padding: EdgeInsets.fromLTRB(14 * s, 12 * s, 14 * s, 12 * s),
+        // 2026-05-10 (v1.2.23): standardised to 16/14 to match
+        // the rest of the Settings page surfaces. Was 14/12 — looked
+        // visibly tighter than its neighbours.
+        padding: EdgeInsets.fromLTRB(16 * s, 14 * s, 16 * s, 14 * s),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [

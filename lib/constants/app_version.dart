@@ -761,7 +761,27 @@
 ///    `paletteAccent(context, Colors.green)` + a brightness-
 ///    based contrast for the icon/text. Dark-mode users used to
 ///    see white-on-too-light contrast.
-const String kAppVersion = '1.2.22';
+///
+/// 2026-05-10 (v1.2.23 — polish pass: theme-aware colours +
+/// padding consistency): user said "so much more". Picked off
+/// the deferred polish items from v1.2.21/v1.2.22 audits:
+/// • `feedback_page.dart` send-button spinner — was hardcoded
+///   `Colors.white`, now `Theme.of(context).colorScheme.onPrimary`.
+///   Reads correctly under any FilledButton palette.
+/// • `floating_toast.dart` — foreground icon + text colour now
+///   computed from `ThemeData.estimateBrightnessForColor(
+///   background)` so a caller passing a light pastel doesn't
+///   render invisible white text. Default callers (red / green
+///   / blue) still get white as before.
+/// • `map_viewer_page.dart:381` bookmark badge icon — was
+///   hardcoded `Colors.white` over `scheme.primary` background;
+///   now `scheme.onPrimary`. Future palette changes won't break
+///   it.
+/// • `gemini_key_card.dart` Card padding — was
+///   `EdgeInsets.fromLTRB(14, 12, 14, 12)`, all neighbouring
+///   Settings cards use 16/14. Standardised so the card no
+///   longer looks visibly tighter than its siblings.
+const String kAppVersion = '1.2.23';
 
 /// 2026-05-10 (v1.2.20): paired with `kAppVersion` so the About
 /// footer's "Last updated YYYY-MM-DD" stamp moves in lockstep with

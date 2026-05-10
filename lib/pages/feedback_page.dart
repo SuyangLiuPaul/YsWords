@@ -409,12 +409,18 @@ class _FeedbackPageState extends State<FeedbackPage> {
               FilledButton.icon(
                 onPressed: _submitting ? null : _submit,
                 icon: _submitting
-                    ? const SizedBox(
+                    // 2026-05-10 (v1.2.23): theme-aware spinner so
+                    // the in-button progress matches the button's
+                    // foreground in every theme (was hardcoded
+                    // Colors.white — fine for the default blue
+                    // FilledButton in light mode, broke in dark
+                    // mode + custom palettes).
+                    ? SizedBox(
                         width: 16,
                         height: 16,
                         child: CircularProgressIndicator(
                           strokeWidth: 2.4,
-                          color: Colors.white,
+                          color: Theme.of(context).colorScheme.onPrimary,
                         ),
                       )
                     : const Icon(Icons.send_rounded),
