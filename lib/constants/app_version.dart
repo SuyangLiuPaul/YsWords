@@ -882,6 +882,30 @@
 /// New ui-string keys: `tooltipClose`, `couldNotParseRef`
 /// (`{ref}` placeholder), `sermonNoBody` — all three locales.
 ///
+/// 2026-05-10 (v1.2.34 — auto-stamp version + release time): user
+/// "kAppReleaseTime kAppVersion they are automatically update in
+/// app now right?" — they weren't; both were hand-edited every
+/// release. v1.2.34 makes `pubspec.yaml`'s `version:` the single
+/// source of truth and auto-stamps the actual build moment as
+/// `kAppReleaseTime`.
+/// • Both constants now use `String.fromEnvironment` with
+///   sensible fallbacks (last-released / `dev-build`) so plain
+///   `flutter run` still works without setup.
+/// • New `tools/build_web.py` wraps `flutter build web --release`
+///   for both flavours. Reads pubspec's version, captures
+///   `time.strftime('%Y-%m-%d %H:%M %Z')`, passes both via
+///   `--dart-define`. Used in place of the manual
+///   `flutter build web --release ...` invocations.
+/// • Net release flow: bump only `pubspec.yaml`'s `version:` →
+///   run `tools/build_web.py` → run `tools/deploy_site.py
+///   --tier <…>`. Both kAppVersion and kAppReleaseTime are
+///   correct on the live site automatically.
+/// • The fallback default for `kAppVersion` still gets bumped
+///   alongside pubspec each release (so `flutter run` shows the
+///   right version during dev). `kAppReleaseTime`'s fallback is
+///   `'YYYY-MM-DD dev-build'` so dev builds are visually
+///   distinct from real releases on the About page.
+///
 /// 2026-05-10 (v1.2.33 — divine-name 雅威 → 雅偉 sweep):
 /// follow-up to v1.2.32. User said "很多地方寫雅威但是需要雅偉
 /// 繁體字有時候寫雅伟 需要雅偉" — 1.2.32 only fixed cnv-tr.json's
@@ -1091,7 +1115,23 @@
 ///   the client. Now the index lives in the server log only;
 ///   the public message is a generic "AI service authentication
 ///   failed."
-const String kAppVersion = '1.2.33';
+/// 2026-05-10 (v1.2.34): switched from a hardcoded const to a
+/// `String.fromEnvironment` lookup so the build script
+/// (`tools/build_web.py`) can inject the value from
+/// `pubspec.yaml`'s `version:` field at compile time. The
+/// fallback default below applies only to:
+///   • `flutter run` (developer workflow) — fine to be slightly
+///     stale.
+///   • Tests asserting against a fixed string — also fine.
+/// All Netlify deploys go through `tools/build_web.py` which sets
+/// `--dart-define=APP_VERSION=…` from pubspec, so the About page
+/// always reflects the canonical source-of-truth.
+/// Bump `pubspec.yaml`'s `version:` for the next release; no
+/// matching edit needed here.
+const String kAppVersion = String.fromEnvironment(
+  'APP_VERSION',
+  defaultValue: '1.2.34',
+);
 
 /// 2026-05-10 (v1.2.20): paired with `kAppVersion` so the About
 /// footer's "Last updated …" stamp moves in lockstep with every
@@ -1108,4 +1148,11 @@ const String kAppVersion = '1.2.33';
 /// the higher precision. Format: ISO local date + 24-h
 /// HH:MM + tz abbreviation. The about-page interpolation is
 /// locale-aware via the `aboutFooterNote` ui-string template.
-const String kAppReleaseTime = '2026-05-10 19:37 AEST';
+/// 2026-05-10 (v1.2.34): same dart-define injection pattern as
+/// `kAppVersion` above. `tools/build_web.py` stamps the actual
+/// build moment via `--dart-define=APP_RELEASE_TIME=…`. The
+/// fallback only fires on `flutter run` dev builds.
+const String kAppReleaseTime = String.fromEnvironment(
+  'APP_RELEASE_TIME',
+  defaultValue: '2026-05-10 dev-build',
+);
