@@ -384,6 +384,14 @@ Added in v1.2.2: dev + qat tiers exist alongside prod so we can ship code to a n
 
 All 6 sites share identical env vars (5 keys: `GEMINI_API_KEY`, `GEMINI_API_KEY_BACKUP`, `GEMINI_API_KEY_BACKUP_2`, `RESEND_API_KEY`, `FEEDBACK_TO`) so the AI search + feedback pipelines work consistently. Use the `/tmp/mirror_env_v122.py` script (or its successor) to copy env vars across sites when adding new keys.
 
+**⚠️ Firebase Authorized Domains — separate, easy-to-miss step.** Google sign-in (`firebase_auth.signInWithPopup`) only works when the calling page's origin is in Firebase Auth's *Authorized Domains* allow-list. The Netlify site creation in v1.2.2 added the Netlify hosting + env vars but NOT the Firebase domains, which surfaced in v1.2.14 as `auth/invalid-action — The requested action is invalid` on dev/qat sign-in attempts. Whenever you stand up a NEW intl Netlify site you also need to:
+
+1. Open <https://console.firebase.google.com/project/ysword/authentication/settings>
+2. Scroll to "Authorized domains".
+3. Click "Add domain", paste the new netlify.app subdomain.
+
+Currently authorised (post-v1.2.14 backfill): `localhost`, `yswords.netlify.app`, `yswords-dev.netlify.app`, `yswords-cn-dev.netlify.app`, `yswords-qat.netlify.app`, `yswords-cn-qat.netlify.app`. The `-cn-*` entries are technically unnecessary because `kChinaMode` skips Firebase init at boot, but listing them doesn't hurt and future-proofs flag flips.
+
 **Recommended deploy flow**: ship the same commit to dev → qat → prod by re-running `flutter build web` (intl) and `flutter build web --dart-define=CHINA_MODE=true --output=build-cn` (cn) once, then `netlify deploy --prod --dir=… --site=<id>` to whichever tier you're promoting to.
 
 Other Netlify site IDs we touch (not YsWords proper):
