@@ -157,7 +157,15 @@ class AboutPage extends StatelessWidget {
                   // — "YYYY-MM-DD HH:MM TZ"), placeholder `{date}` →
                   // `{time}`. Back-to-back same-day releases now
                   // distinguishable from the footer alone.
-                  '${(uiStrings['aboutFooterNote']?[locale] ?? 'Last updated {time}.').replaceFirst('{time}', kAppReleaseTime)}'
+                  // 2026-05-10 (v1.2.35): swapped raw kAppReleaseTime
+                  // for `formatReleaseTimeLocal()` so the displayed
+                  // stamp converts to the viewer's local timezone —
+                  // a user in NYC sees EST, a user in Beijing sees
+                  // CST, etc. The build script (`tools/build_web.py`)
+                  // now stamps ISO 8601 UTC; the helper parses +
+                  // converts. Falls back to the Melbourne build-
+                  // machine wall-clock string for dev builds.
+                  '${(uiStrings['aboutFooterNote']?[locale] ?? 'Last updated {time}.').replaceFirst('{time}', formatReleaseTimeLocal())}'
                       ' · v$kAppVersion'
                       '${kChinaMode ? ' · ${uiStrings['chinaBuildTag']?[locale] ?? 'China build'}' : ''}',
                   textAlign: TextAlign.center,

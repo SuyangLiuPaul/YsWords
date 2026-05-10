@@ -61,9 +61,13 @@ def read_pubspec_version() -> str:
 
 
 def current_release_time() -> str:
-    """Wall-clock stamp matching the format used in pre-v1.2.34
-    `kAppReleaseTime` literals: `YYYY-MM-DD HH:MM TZ`."""
-    return time.strftime('%Y-%m-%d %H:%M %Z', time.localtime())
+    """ISO 8601 UTC stamp, second-precision — e.g.
+    `2026-05-10T09:48:00Z`. The Flutter app's
+    `formatReleaseTimeLocal()` parses this and renders in the
+    viewer's local timezone. Pre-v1.2.35 this returned a
+    Melbourne wall-clock string; the new format ensures users
+    everywhere see the time in their own zone."""
+    return time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())
 
 
 def run_build(version: str, release_time: str, *, china_mode: bool):

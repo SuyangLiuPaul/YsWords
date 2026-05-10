@@ -882,6 +882,31 @@
 /// New ui-string keys: `tooltipClose`, `couldNotParseRef`
 /// (`{ref}` placeholder), `sermonNoBody` — all three locales.
 ///
+/// 2026-05-10 (v1.2.35 — viewer-local-time release stamp): user
+/// "uodate last edit should based on user's timezone also default
+/// to melbourne one right". v1.2.34 stamped the build moment in
+/// Melbourne wall-clock — every user worldwide saw `19:48 AEST`.
+/// v1.2.35 changes the stamp to ISO 8601 UTC + adds a
+/// `formatReleaseTimeLocal()` helper that converts to the
+/// viewer's local timezone at display time.
+/// • Build script (`tools/build_web.py::current_release_time`)
+///   now emits `time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())`
+///   — e.g. `2026-05-10T09:48:00Z`. Pre-v1.2.35 it emitted the
+///   localtime string `2026-05-10 19:48 AEST`.
+/// • `lib/constants/app_version.dart` adds `formatReleaseTimeLocal()`:
+///   parses the ISO UTC, applies `DateTime.toLocal()`, formats
+///   `YYYY-MM-DD HH:MM TZ`. Falls back to the raw const string if
+///   parsing fails (which only happens during dev `flutter run`).
+/// • `lib/pages/about_page.dart` calls the helper instead of
+///   substituting the raw const into the footer.
+/// • `test/release_time_format_test.dart` pins the new behaviour.
+/// Net result: a Melbourne user sees `2026-05-10 19:48 AEST`, an
+/// NYC user sees `2026-05-10 04:48 EST`, a Beijing user sees
+/// `2026-05-10 17:48 CST` — same instant, every viewer's own
+/// zone. Dev builds without UTC injection still show the
+/// Melbourne-build-machine wall-clock fallback ("default to
+/// Melbourne" per user request).
+///
 /// 2026-05-10 (v1.2.34 — auto-stamp version + release time): user
 /// "kAppReleaseTime kAppVersion they are automatically update in
 /// app now right?" — they weren't; both were hand-edited every
@@ -1130,7 +1155,7 @@
 /// matching edit needed here.
 const String kAppVersion = String.fromEnvironment(
   'APP_VERSION',
-  defaultValue: '1.2.34',
+  defaultValue: '1.2.35',
 );
 
 /// 2026-05-10 (v1.2.20): paired with `kAppVersion` so the About
@@ -1150,9 +1175,69 @@ const String kAppVersion = String.fromEnvironment(
 /// locale-aware via the `aboutFooterNote` ui-string template.
 /// 2026-05-10 (v1.2.34): same dart-define injection pattern as
 /// `kAppVersion` above. `tools/build_web.py` stamps the actual
-/// build moment via `--dart-define=APP_RELEASE_TIME=…`. The
-/// fallback only fires on `flutter run` dev builds.
+/// build moment via `--dart-define=APP_RELEASE_TIME=…`.
+///
+/// 2026-05-10 (v1.2.35): switched the canonical stamp to ISO 8601
+/// UTC (`2026-05-10T09:48:00Z`). Display path goes through
+/// `formatReleaseTimeLocal()` which converts to the viewer's
+/// local timezone — a user in NYC sees `2026-05-10 04:48 EST`,
+/// a user in Beijing sees `2026-05-10 17:48 CST`, etc.
+///
+/// Fallback chain when the stamp can't be parsed:
+///   1. The literal string in this const (a Melbourne wall-clock
+///      stamp from the build machine, e.g. `2026-05-10 19:48 AEST`)
+///      — used during `flutter run` dev workflow when nothing was
+///      injected.
+///   2. If the const ALSO looks like a dev-build placeholder, the
+///      raw value is shown as-is.
+///
+/// The fallback only fires when `tools/build_web.py` wasn't used
+/// for the build, which in practice means dev workflow only.
 const String kAppReleaseTime = String.fromEnvironment(
   'APP_RELEASE_TIME',
-  defaultValue: '2026-05-10 dev-build',
+  defaultValue: '2026-05-10 dev-build (Melbourne)',
 );
+
+/// Returns a user-locale-formatted release time string. Parses
+/// `kAppReleaseTime` as ISO 8601 UTC if possible, then formats
+/// in the viewer's local timezone. Falls back to the raw string
+/// (which is Melbourne wall-clock for dev builds).
+///
+/// Example outputs:
+///   • viewer in Melbourne: `2026-05-10 19:48 AEST`
+///   • viewer in NYC:       `2026-05-10 04:48 EST`
+///   • viewer in Beijing:   `2026-05-10 17:48 CST`
+///   • dev build (no UTC):  `2026-05-10 dev-build (Melbourne)`
+///
+/// Format: `YYYY-MM-DD HH:MM TZ` to match the legacy display.
+String formatReleaseTimeLocal() {
+  final raw = kAppReleaseTime;
+  // ISO 8601 UTC stamps look like `2026-05-10T09:48:00Z` (Z = UTC).
+  // Anything else falls through to the raw display.
+  if (raw.length >= 20 && raw.contains('T') &&
+      (raw.endsWith('Z') || raw.contains('+') || raw.contains('-'))) {
+    try {
+      final utc = DateTime.parse(raw);
+      final local = utc.toLocal();
+      final y = local.year.toString().padLeft(4, '0');
+      final m = local.month.toString().padLeft(2, '0');
+      final d = local.day.toString().padLeft(2, '0');
+      final hh = local.hour.toString().padLeft(2, '0');
+      final mm = local.minute.toString().padLeft(2, '0');
+      // `DateTime.timeZoneName` returns a platform-formatted TZ
+      // name. On web it derives from
+      // `Intl.DateTimeFormat().resolvedOptions().timeZone`; on
+      // native it tries the OS abbreviation. Either way the user
+      // sees something they recognise (`AEST` / `EST` / `CST` /
+      // …). When unavailable it's just an empty string — drop the
+      // separator in that case.
+      final tz = local.timeZoneName;
+      return tz.isEmpty
+          ? '$y-$m-$d $hh:$mm'
+          : '$y-$m-$d $hh:$mm $tz';
+    } catch (_) {
+      // Fall through to raw display below.
+    }
+  }
+  return raw;
+}
