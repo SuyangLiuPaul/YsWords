@@ -459,7 +459,15 @@ class RealtimeDbSyncService extends ChangeNotifier {
       try {
         final decoded = jsonDecode(raw);
         if (decoded is Map) return Map<String, dynamic>.from(decoded);
-      } catch (_) {}
+      } catch (e) {
+        // 2026-05-10 (v1.2.20): was silent. If the cloud blob
+        // is corrupt the user just saw an empty merge result
+        // and no diagnostic. debugPrint surfaces the JSON
+        // parse error to dev console without escalating to a
+        // user-facing snackbar — corrupt remote payloads are
+        // recoverable on the next push, no need to alarm.
+        debugPrint('[RTDBSync] _parseJsonMap decode failed: $e');
+      }
     }
     return const {};
   }

@@ -704,4 +704,30 @@
 ///     flight `_pendingJumpChapterVerseIndex` before the swap so
 ///     a jump queued against the OLD version's chapter doesn't
 ///     fire against the new one.
-const String kAppVersion = '1.2.19';
+///
+/// 2026-05-10 (v1.2.20 — best-effort QC sweep): user said "last
+/// update time is still wrong and try to fix all bugs with best
+/// effort". Two real findings from the targeted audit:
+/// 1. The About footer's "Last updated YYYY-MM-DD" was a hardcoded
+///    string in `aboutFooterNote`. Stale-drifted across v1.2.5 →
+///    v1.2.19 (stuck on 2026-05-07). Now templated with a `{date}`
+///    placeholder that `about_page.dart` interpolates with
+///    `kAppReleaseDate` (declared below). Bump BOTH `kAppVersion`
+///    and `kAppReleaseDate` together — nothing else to update.
+/// 2. `RealtimeDbSyncService._parseJsonMap` had a bare
+///    `catch (_) {}` swallowing JSON-decode failures of cloud-
+///    side payloads. Now logs to `debugPrint` so a corrupt blob
+///    surfaces in the dev console instead of silently degrading
+///    to an empty merge.
+const String kAppVersion = '1.2.20';
+
+/// 2026-05-10 (v1.2.20): paired with `kAppVersion` so the About
+/// footer's "Last updated YYYY-MM-DD" stamp moves in lockstep with
+/// every release. Bump BOTH this and `kAppVersion` together;
+/// nothing else has to change. Format: ISO date (YYYY-MM-DD) for
+/// English locale; the ui-string interpolates this into a
+/// localised template (e.g. zh-Hans uses "2026 年 5 月 10 日").
+/// Fixed in v1.2.20 — previous releases hardcoded the date in
+/// `aboutFooterNote`'s English fallback and stale-drifted (was
+/// stuck on 2026-05-07 even though we shipped through v1.2.19).
+const String kAppReleaseDate = '2026-05-10';
