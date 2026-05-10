@@ -2449,10 +2449,10 @@ const uiStrings = {
         'Standard · Gemini 2.5 Flash. Balanced speed and depth (~3-6 s). Mid-range free-tier quota — usually fine, can run out at peak hours. Best when you want a bit more detail than Fast gives.',
   },
   'aiModelDeepDetail': {
-    'zh-Hans': '深入 · Gemini 2.5 Pro。最详尽的释经分析，但最慢——约 8-15 秒。**免费配额极小**——开发者共享池配额几乎总是耗尽。**没有 BYOK 时，请求会自动降级为 Standard（Flash）**——结果会出来，但不是真正的 Pro。要使用真正的 Deep，请先在上面 BYOK 卡片粘您自己的 Gemini 密钥（在 AI Studio 免费生成）。',
-    'zh-Hant': '深入 · Gemini 2.5 Pro。最詳盡的釋經分析，但最慢——約 8-15 秒。**免費配額極小**——開發者共享池配額幾乎總是耗盡。**沒有 BYOK 時，請求會自動降級為 Standard（Flash）**——結果會出來，但不是真正的 Pro。要使用真正的 Deep，請先在上面 BYOK 卡片貼您自己的 Gemini 密鑰（在 AI Studio 免費生成）。',
+    'zh-Hans': '深入 · Gemini 3 Flash Preview。带"思考"模式的高速推理模型——接近 Pro 级别的释经深度，但速度快得多（约 4-8 秒）。**免费配额可用**：~250 RPD，独立于 Standard / Fast 配额池。Google 在 2026 年 4 月把 gemini-2.5-pro 收费了——所以我们改用这款，免费即可使用，不需要 BYOK。BYOK 仍然推荐用于高频使用（您自己的密钥有独立配额，更稳定）。',
+    'zh-Hant': '深入 · Gemini 3 Flash Preview。帶「思考」模式的高速推理模型——接近 Pro 級別的釋經深度，但速度快得多（約 4-8 秒）。**免費配額可用**：~250 RPD，獨立於 Standard / Fast 配額池。Google 在 2026 年 4 月把 gemini-2.5-pro 收費了——所以我們改用這款，免費即可使用，不需要 BYOK。BYOK 仍然推薦用於高頻使用（您自己的密鑰有獨立配額，更穩定）。',
     'en':
-        'Deep · Gemini 2.5 Pro. The most thorough exegetical analysis, but slowest (~8-15 s). **Free-tier quota is tiny** — the shared developer pool is essentially always exhausted. **Without BYOK, requests transparently fall back to Standard (Flash)** — you still get an answer, just not real Pro quality. For true Deep responses, paste your own Gemini key in the BYOK card above (free at AI Studio).',
+        'Deep · Gemini 3 Flash Preview. High-speed thinking model with near-Pro reasoning quality — substantially faster than Pro (~4-8 s). **Free-tier compatible** at ~250 RPD, with quota separate from the Standard / Fast pools. Google moved gemini-2.5-pro behind a paywall in April 2026, so YsWords switched Deep to this model — free, no BYOK needed. BYOK still recommended for heavy use (your own key has its own quota pool).',
   },
   // 2026-05-10 (v1.2.37): one-line notice surfaced inline in
   // search / evidence / originals when the backend transparently

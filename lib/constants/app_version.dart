@@ -882,6 +882,56 @@
 /// New ui-string keys: `tooltipClose`, `couldNotParseRef`
 /// (`{ref}` placeholder), `sermonNoBody` — all three locales.
 ///
+/// 2026-05-11 (v1.2.40 — Deep tier now uses gemini-3-flash-preview):
+/// user "i use my own free gemini api but deep one, when i search
+/// it doesnt turn anything and when i hse exegesis it tunrs no
+/// quota. can you research online maybe configuration maybe other
+/// models can be used".
+///
+/// Research confirmed the actual cause: Google moved
+/// `gemini-2.5-pro` BEHIND A PAYWALL on April 1, 2026. The free
+/// tier no longer includes Pro for any user — even with their own
+/// AI Studio API key — so every Deep request was hitting an
+/// instant 429 quota-exhausted error. The v1.2.37 backend fallback
+/// would have masked this for shared-key requests but could NOT
+/// help BYOK requests (those skipped the fallback path because the
+/// user explicitly opted into their own quota).
+///
+/// New free-tier-friendly Deep tier:
+/// • `gemini-3-flash-preview` — high-speed thinking model with
+///   configurable reasoning levels (minimal / low / medium /
+///   high) and 1M-token context. "Near-Pro reasoning at
+///   substantially lower latency" per Google's docs. Free input +
+///   output, separate quota pool from flash / flash-lite.
+///
+/// Backend changes (3 Netlify functions: aiBibleSearch /
+/// aiSearch / aiExplainWord):
+/// • `_AI_MODEL_MAP['pro']` switched from `gemini-2.5-pro` to
+///   `gemini-3-flash-preview`.
+/// • Removed the v1.2.37 pre-emptive Pro→Flash fallback logic —
+///   Deep now works natively on free tier (BYOK or shared key)
+///   so no need to silently downgrade. The runtime
+///   429-fall-through-to-next-key in `callGemini` still covers
+///   transient rate-limit hits. `fellBackToFlash` response flag
+///   stays in the contract (always `false` now) for backward
+///   compat with v1.2.37+ clients.
+///
+/// Client changes:
+/// • `settings_page.dart::_AiModelCard` — reverted v1.2.39's BYOK
+///   gating (lock icon / disabled segment / locked-note). Every
+///   tier is enabled now. BYOK is still recommended for heavy
+///   use (the BYOK card sits below this card with that pitch).
+/// • `aiModelDeepDetail` ui-string rewritten for all 3 locales
+///   to name the new model, explain why we switched (April 2026
+///   paywall), and call out that BYOK is no longer required.
+///
+/// Sources used in research:
+/// • https://ai.google.dev/gemini-api/docs/pricing — confirmed
+///   gemini-2.5-pro is "Not available" on free tier; lists 12+
+///   free-tier-eligible models including `gemini-3-flash-preview`.
+/// • https://ai.google.dev/gemini-api/docs/models — model API
+///   identifiers.
+///
 /// 2026-05-11 (v1.2.39 — Deep tier hard-disabled when no BYOK,
 /// plus history cleanup): user "when i chose deep in setting ai,
 /// but search with yswords ai, nothing responded still". Backend
@@ -1326,7 +1376,7 @@
 /// matching edit needed here.
 const String kAppVersion = String.fromEnvironment(
   'APP_VERSION',
-  defaultValue: '1.2.39',
+  defaultValue: '1.2.40',
 );
 
 /// 2026-05-10 (v1.2.20): paired with `kAppVersion` so the About

@@ -32,10 +32,23 @@ const MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash-lite';
 // back to the env-default. Doc-level intent: keep server-side
 // control of which exact model versions we trust, while letting
 // the user pick speed vs depth.
+//
+// 2026-05-11 (v1.2.40): user reported Deep didn't work even with
+// their own free-tier Gemini key. Root cause: as of April 1 2026,
+// Google moved `gemini-2.5-pro` behind a paywall — the free tier
+// no longer includes Pro at all (search confirmed the pricing
+// page now shows "Not available" for Pro on free tier; the dev's
+// shared keys + every user's BYOK free key both 429 instantly).
+// Switched the Deep tier to `gemini-3-flash-preview` — the new
+// free-tier thinking model that delivers near-Pro reasoning with
+// configurable reasoning levels (minimal / low / medium / high)
+// AND a 1M-token context. Free input + output, separate from the
+// flash quota pool, so Deep is now actually usable on free tier
+// without BYOK.
 const _AI_MODEL_MAP = {
   'flash-lite': 'gemini-2.5-flash-lite',
   'flash':      'gemini-2.5-flash',
-  'pro':        'gemini-2.5-pro',
+  'pro':        'gemini-3-flash-preview',
 };
 function resolveModel(tierRaw) {
   if (typeof tierRaw !== 'string') return MODEL;
@@ -274,21 +287,17 @@ export default async (req) => {
 	const userApiKey = _useUserKey ? _userKey : '';
 	// 2026-05-10 (v1.2.26): pick Gemini model tier from request,
 	// allowlist-clamped via resolveModel.
-	let model = resolveModel(body.aiModel);
-	// 2026-05-10 (v1.2.37): the dev's shared Gemini free-tier
-	// keys have a much smaller daily quota for `gemini-2.5-pro`
-	// (the "Deep" tier) than for flash / flash-lite — exhausted
-	// on ~every prod request. When a user picks Deep WITHOUT
-	// supplying a BYOK key, transparently fall back to Flash so
-	// the request succeeds, and surface a `fellBackToFlash` flag
-	// in the response so the client can show a one-line notice
-	// (with a CTA pointing at Settings → BYOK). Users WITH BYOK
-	// get true Pro on their own quota.
-	const wantedPro = (body.aiModel || '').toString().trim() === 'pro';
-	const fellBackToFlash = wantedPro && !_useUserKey;
-	if (fellBackToFlash) {
-		model = _AI_MODEL_MAP['flash'];
-	}
+	// 2026-05-11 (v1.2.40): Deep now maps to `gemini-3-flash-preview`
+	// (free-tier compatible thinking model) instead of the now-paid
+	// `gemini-2.5-pro`. The pre-emptive Pro→Flash fallback that
+	// v1.2.37 added — for BYOK or shared keys — is no longer needed
+	// because the model itself works on free tier. The runtime
+	// 429 → fall-through-to-next-key logic in `callGemini` still
+	// covers transient rate-limit hits, and the `fellBackToFlash`
+	// response flag stays as `false` because there's nothing left
+	// to fall back from for normal requests.
+	const model = resolveModel(body.aiModel);
+	const fellBackToFlash = false;
 	if (query.length < 2) {
 		return new Response(
 			JSON.stringify({ error: 'Query is required (≥2 chars).' }),

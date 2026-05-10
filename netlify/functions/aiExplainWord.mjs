@@ -46,10 +46,13 @@ const MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash-lite';
 
 // 2026-05-10 (v1.2.26): per-request AI tier override, identical
 // shape to aiBibleSearch.mjs / aiSearch.mjs. Allowlist-clamped.
+// 2026-05-11 (v1.2.40): see aiBibleSearch.mjs's note — `pro` now
+// maps to `gemini-3-flash-preview` because Google moved
+// `gemini-2.5-pro` behind a paywall on April 1 2026.
 const _AI_MODEL_MAP = {
 	'flash-lite': 'gemini-2.5-flash-lite',
 	'flash':      'gemini-2.5-flash',
-	'pro':        'gemini-2.5-pro',
+	'pro':        'gemini-3-flash-preview',
 };
 function resolveModel(tierRaw) {
 	if (typeof tierRaw !== 'string') return MODEL;
@@ -500,19 +503,12 @@ export default async (req) => {
 		// forwarding (must match Google's `AIza...` API-key format).
 		const _userKey = (body?.userApiKey || '').toString().trim();
 		const _useUserKey = /^AIza[A-Za-z0-9_-]{20,80}$/.test(_userKey);
-		// 2026-05-10 (v1.2.37): auto-fall-back Pro → Flash when no
-		// BYOK supplied — see aiBibleSearch.mjs / aiSearch.mjs for
-		// the full rationale. Pro free-tier quota on the dev's
-		// shared keys is too small for prod traffic; transparent
-		// fallback keeps Deep "working" for users without their
-		// own key.
-		const wantedPro = (body?.aiModel || '').toString().trim() === 'pro';
-		const fellBackToFlash = wantedPro && !_useUserKey;
+		// 2026-05-11 (v1.2.40): see aiBibleSearch.mjs — Deep now
+		// uses `gemini-3-flash-preview` so the v1.2.37 pre-emptive
+		// Pro→Flash fallback is no longer required.
+		const fellBackToFlash = false;
 		// 2026-05-10 (v1.2.26): tier picker → real model name.
-		let model = resolveModel(body?.aiModel);
-		if (fellBackToFlash) {
-			model = _AI_MODEL_MAP['flash'];
-		}
+		const model = resolveModel(body?.aiModel);
 		if (!strongs || !lemma || !book || !chapter || !verse) {
 			return new Response(
 				JSON.stringify({ error: 'strongs, lemma, book, chapter, verse required' }),
