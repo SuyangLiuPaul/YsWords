@@ -38,7 +38,11 @@ import 'package:yswords/services/sermon_service.dart';
 import 'package:yswords/services/synopsis_service.dart';
 import 'package:yswords/services/tts_service.dart';
 import 'package:yswords/utils/clipboard_helper.dart';
-import 'package:yswords/utils/jump_to_reference.dart' as jumper;
+// 2026-05-10 (v1.2.13): the `as jumper` import was only needed by
+// the `_captureChapterRelativeVerseNum` / `_scrollToVerseInChapter`
+// thin wrappers that v1.2.13 removed alongside the version-switch
+// scroll-restore complexity. Only `prepareJumpToVerse` is still
+// used in this file (jump-to-reference flow on a verse tap).
 import 'package:yswords/utils/jump_to_reference.dart' show prepareJumpToVerse;
 import 'package:yswords/utils/reference_parser.dart';
 import 'package:yswords/utils/responsive.dart';
@@ -429,18 +433,14 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
   }
 
   // Round 56: helpers extracted to `lib/utils/jump_to_reference.dart`
-  // (`captureCurrentVerseNum` / `scrollToVerseNumInChapter`) so the
-  // version-switch path here AND the split-view-open path in
-  // `home_page.dart::_activateSplitView` can share the same logic.
-  // Thin wrappers below preserve the call signatures used elsewhere
-  // in this file.
-  int? _captureChapterRelativeVerseNum(MainProvider p) =>
-      jumper.captureCurrentVerseNum(p);
-
-  void _scrollToVerseInChapter(MainProvider p, int verseNum) {
-    jumper.scrollToVerseNumInChapter(p, verseNum);
-  }
-
+  // 2026-05-10 (v1.2.13): the `_captureChapterRelativeVerseNum`
+  // and `_scrollToVerseInChapter` thin wrappers that lived here
+  // were removed. Their only caller was `onVersionSelected`,
+  // which dropped the verse-precise scroll-restore logic per
+  // user request ("不用 keep state 了"). The underlying
+  // `jumper.captureCurrentVerseNum` / `scrollToVerseNumInChapter`
+  // helpers are still in `lib/utils/jump_to_reference.dart` if a
+  // future feature wants the precise restore back.
   void _switchTo(MainProvider provider, String book, int chap) {
     final matched = provider.verses
         .where((v) => v.book == book && v.chapter == chap)
@@ -1180,125 +1180,122 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                               );
                             },
                       onVersionSelected: (version) async {
+                        // 2026-05-10 (v1.2.13): rewritten end-to-end
+                        // per user feedback "整本圣经 change version
+                        // loading 很久，不用 keepnstate 了，快一点".
+                        //
+                        // OLD flow had two problems:
+                        //   1. The snackbar showed "Loading…" but the
+                        //      reading pane kept rendering the OLD
+                        //      version's verses, frozen, for the
+                        //      1–3 s of synchronous json.decode. To
+                        //      the user: "screen looks broken for a
+                        //      bit, then suddenly switches".
+                        //   2. We tried to preserve the user's
+                        //      chapter-relative verse number across
+                        //      the switch (`_captureChapterRelative
+                        //      VerseNum` + `_scrollToVerseInChapter`)
+                        //      which adds layout-measurement work
+                        //      AND complexity for marginal benefit
+                        //      — the user said outright "不用 keep
+                        //      state 了".
+                        //
+                        // NEW flow:
+                        //   • Set `versionSwitching = true` IMMED-
+                        //     IATELY → the reading pane stack paints
+                        //     an opaque overlay over the old verses
+                        //     (see build() below). User sees a clean
+                        //     loading screen, not frozen text.
+                        //   • Skip _captureChapterRelativeVerseNum.
+                        //   • Skip _scrollToVerseInChapter — the
+                        //     chapter-level reset (jumpToTop after
+                        //     setCurrentChapter) lands the user at
+                        //     the top of the same chapter in the
+                        //     new version. Same passage, just no
+                        //     verse-precise scroll restore.
+                        //   • Clear flag at the end so overlay goes
+                        //     away.
                         if (!mounted) return;
                         final p = context.read<MainProvider>();
                         final messenger = _messengerKey.currentState;
                         p.clearSelectedVerses();
                         final prevVersion = p.currentVersion;
                         final prevEn = toEnglish(p.currentBook);
-                        // Round 56: preserve the user's reading
-                        // position across a version switch. We
-                        // capture the topmost-visible chapter-
-                        // relative verse number BEFORE swapping
-                        // versions, then re-scroll to the same
-                        // verse on the new version after load.
-                        final preservedVerseNum =
-                            _captureChapterRelativeVerseNum(p);
-                        // Round 56: show a loading snackbar — the
-                        // synchronous json.decode for a 5-10 MB
-                        // version file blocks the UI for 1-3 s on
-                        // a slow device, and user feedback was
-                        // "frozen for a while then change one by
-                        // one. very bad experience". A snackbar
-                        // lets them know what's happening even
-                        // when the thread isn't responsive.
-                        messenger?.showSnackBar(
-                          SnackBar(
-                            content: Row(
-                              children: [
-                                const SizedBox(
-                                  width: 16,
-                                  height: 16,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: Text(
-                                    uiStrings['loadingVersion']
-                                            ?[settings.locale] ??
-                                        'Loading version…',
-                                  ),
-                                ),
-                              ],
-                            ),
-                            duration: const Duration(seconds: 8),
-                          ),
-                        );
-                        // Yield to event loop so the snackbar
-                        // actually paints before the heavy parse
-                        // blocks the UI.
+                        // Lookup the target version's short label so
+                        // the overlay can show "Loading KJV…" instead
+                        // of the generic "Loading version…".
+                        final destLabel = bibleVersions
+                            .firstWhere(
+                              (v) => v.value == version,
+                              orElse: () => const BibleVersionInfo(
+                                  value: '',
+                                  shortLabel: '',
+                                  menuLabel: ''),
+                            )
+                            .shortLabel;
+                        p.setVersionSwitching(true, to: destLabel);
+                        // Yield once so the overlay actually paints
+                        // before we kick off the heavy json.decode
+                        // that blocks the main thread for 1–3 s.
                         await Future<void>.delayed(Duration.zero);
-                        p.setVersion(version);
-                        await FetchVerses.execute(mainProvider: p);
-                        if (!mounted) return;
-                        await FetchBooks.execute(mainProvider: p);
-                        if (!mounted) return;
-                        // If the new version failed to load, revert so
-                        // the user keeps reading the previous version.
-                        if (p.verses.isEmpty && prevVersion.isNotEmpty) {
-                          p.setVersion(prevVersion);
+                        try {
+                          p.setVersion(version);
                           await FetchVerses.execute(mainProvider: p);
+                          if (!mounted) return;
                           await FetchBooks.execute(mainProvider: p);
-                        }
-                        if (p.verses.isEmpty) {
-                          messenger?.showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                uiStrings['loadErrorBody']?[
-                                        settings.locale] ??
-                                    'Could not load verses. Please retry.',
+                          if (!mounted) return;
+                          // Failure-recovery: revert to previous
+                          // version so the user keeps reading what
+                          // they had instead of getting an empty
+                          // shell.
+                          if (p.verses.isEmpty && prevVersion.isNotEmpty) {
+                            p.setVersion(prevVersion);
+                            await FetchVerses.execute(mainProvider: p);
+                            await FetchBooks.execute(mainProvider: p);
+                          }
+                          if (p.verses.isEmpty) {
+                            messenger?.showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  uiStrings['loadErrorBody']?[
+                                          settings.locale] ??
+                                      'Could not load verses. Please retry.',
+                                ),
+                                duration: const Duration(seconds: 3),
                               ),
-                              duration: const Duration(seconds: 3),
-                            ),
+                            );
+                            return;
+                          }
+                          // Land on the same chapter in the new
+                          // version (book name translated, chapter
+                          // number reused). Top-of-chapter scroll —
+                          // no verse-precise restore.
+                          final targetBook = prevEn == null
+                              ? null
+                              : translateBookName(prevEn, version);
+                          final targetChapter = p.currentChapter;
+                          final match = p.verses.firstWhere(
+                            (v) =>
+                                (targetBook == null ||
+                                    v.book == targetBook) &&
+                                (targetChapter == null ||
+                                    v.chapter == targetChapter),
+                            orElse: () => p.verses.first,
                           );
-                          return;
-                        }
-                        final targetBook = prevEn == null
-                            ? null
-                            : translateBookName(prevEn, version);
-                        final targetChapter = p.currentChapter;
-                        final match = p.verses.firstWhere(
-                          (v) =>
-                              (targetBook == null ||
-                                  v.book == targetBook) &&
-                              (targetChapter == null ||
-                                  v.chapter == targetChapter),
-                          orElse: () => p.verses.first,
-                        );
-                        p.setCurrentChapter(
-                            book: match.book, chapter: match.chapter);
-                        p.updateCurrentVerse(verse: match);
-                        // Round 56: scroll to the captured verse
-                        // number in the new version, NOT to the
-                        // top. The chapter-relative ordering is
-                        // shared across versions (verse N in
-                        // chapter K is verse N regardless of
-                        // translation), so we can map straight
-                        // through. Falls back to top when the
-                        // captured number doesn't exist (rare —
-                        // e.g. cross-version verse numbering
-                        // differences in the few books where
-                        // they diverge).
-                        if (preservedVerseNum != null) {
-                          _scrollToVerseInChapter(p, preservedVerseNum);
-                        } else {
+                          p.setCurrentChapter(
+                              book: match.book, chapter: match.chapter);
+                          p.updateCurrentVerse(verse: match);
                           p.jumpToTop();
+                          if (mounted) {
+                            setState(() => _visibleItemIndex = 0);
+                          }
+                        } finally {
+                          // Always clear the flag so the overlay
+                          // disappears even on error.
+                          if (mounted) {
+                            p.setVersionSwitching(false);
+                          }
                         }
-                        // Round 56: dismiss the "Loading version…"
-                        // snackbar now that everything has settled.
-                        messenger?.hideCurrentSnackBar();
-                        // NB: we deliberately do NOT reset
-                        // `_visibleItemIndex` to 0 here. The old
-                        // code did, which made the SPL's
-                        // `initialScrollIndex` hint snap back to
-                        // top on the next remount — directly
-                        // contradicting the verse-preservation
-                        // we just restored. Leaving _visibleItemIndex
-                        // alone lets the position-listener update
-                        // it organically once the SPL settles.
                       },
                       onSearch: () {
                         mainProvider.clearSelectedVerses();
@@ -1463,6 +1460,60 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                               deviceClass: dc,
                             ),
                     ),
+                    // 2026-05-10 (v1.2.13): version-switch loading
+                    // overlay. Painted on top of everything in the
+                    // Stack while `MainProvider.versionSwitching`
+                    // is true. Opaque background so the user
+                    // doesn't see the OLD version's verses frozen
+                    // for the 1–3 s of synchronous json.decode
+                    // chewing through the new version's 5–10 MB
+                    // JSON. Background uses scaffold colour so
+                    // it blends with the surrounding chrome and
+                    // looks like an intentional loading state,
+                    // not a glitch.
+                    if (mainProvider.versionSwitching)
+                      Positioned.fill(
+                        child: Material(
+                          color: Theme.of(context).colorScheme.surface,
+                          child: Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                SizedBox(
+                                  width: 32,
+                                  height: 32,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 3,
+                                    valueColor:
+                                        AlwaysStoppedAnimation<Color>(
+                                      Theme.of(context)
+                                          .colorScheme
+                                          .primary,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 18),
+                                Text(
+                                  mainProvider.versionSwitchingTo
+                                          .isNotEmpty
+                                      ? '${uiStrings['loadingVersion']?[settings.locale] ?? 'Loading version'} · ${mainProvider.versionSwitchingTo}'
+                                      : (uiStrings['loadingVersion']
+                                              ?[settings.locale] ??
+                                          'Loading version…'),
+                                  style: TextStyle(
+                                    fontFamily: settings.fontFamily,
+                                    fontSize: settings.fontSize * 0.95,
+                                    fontWeight: FontWeight.w600,
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onSurface,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
                   ],
                 );
                   },

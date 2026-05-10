@@ -535,4 +535,39 @@
 ///    actually failed without console access.
 /// New ui-strings: `hardReloadPage`, `showDetails`. Backoff also
 /// bumped to 600 / 1500 ms (was 400 / 800).
-const String kAppVersion = '1.2.12';
+///
+/// 2026-05-10 (v1.2.13 — version-switch UX rewrite): user said
+/// "整本圣经 change version loading 很久，不用 keepnstate 了，
+/// 快一点其实好像". Two problems with the old flow:
+/// 1. The "Loading version…" snackbar fired but the reading
+///    pane kept rendering the OLD version's verses, frozen, for
+///    the 1–3 s of synchronous `json.decode` of the new
+///    version's 5–10 MB JSON. To the user it looked broken.
+/// 2. We tried to preserve the chapter-relative verse number
+///    across the switch (`_captureChapterRelativeVerseNum` +
+///    `_scrollToVerseInChapter`) — added layout-measurement
+///    work + complexity for marginal benefit. User explicitly
+///    said don't bother.
+/// Fix:
+/// • New `versionSwitching` flag + `versionSwitchingTo` label on
+///   MainProvider, set true the moment `onVersionSelected` fires.
+/// • bible_reading_pane Stack now ends with a `Positioned.fill`
+///   opaque overlay painted whenever `versionSwitching` is true:
+///   spinner + bold "Loading version · KJV" text on a clean
+///   scaffold-coloured background. User sees a clear loading
+///   screen instead of frozen old verses.
+/// • `onVersionSelected` rewritten — sets the flag, yields once
+///   so the overlay paints, runs setVersion / FetchVerses /
+///   FetchBooks, lands the user at the top of the same chapter
+///   number in the new version (book-name translated), clears
+///   the flag in a finally block. No more
+///   `_captureChapterRelativeVerseNum` /
+///   `_scrollToVerseInChapter` — those wrappers were the only
+///   callers of those helpers and got removed too.
+/// • `messenger?.showSnackBar` for "Loading version…" dropped —
+///   the overlay supersedes it. Failure-fallback snackbar still
+///   fires if the new version's JSON is missing.
+/// Net: same hard wall-clock parse time (we can't make
+/// json.decode faster without a Web Worker), but **perceived**
+/// time is much shorter — loading state is immediately visible.
+const String kAppVersion = '1.2.13';

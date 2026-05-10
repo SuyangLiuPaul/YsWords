@@ -234,6 +234,23 @@ class MainProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// 2026-05-10 (v1.2.13): true while a version-switch is in flight
+  /// (set by `bible_reading_pane.dart::onVersionSelected`). The
+  /// reading pane paints an opaque "Loading [version]…" overlay on
+  /// top of the chapter content while this is set, so the user
+  /// doesn't see a frozen 1–3 s of the OLD version's verses while
+  /// `json.decode` chews through 5–10 MB of the new version's JSON.
+  /// Distinct from `loadAttempt` which is for the boot splash.
+  bool versionSwitching = false;
+  String versionSwitchingTo = '';
+
+  void setVersionSwitching(bool v, {String to = ''}) {
+    if (versionSwitching == v && versionSwitchingTo == to) return;
+    versionSwitching = v;
+    versionSwitchingTo = to;
+    notifyListeners();
+  }
+
   void setVersion(String version) {
     currentVersion = version;
     if (isPrimary) saveCurrentState();
