@@ -2411,10 +2411,10 @@ const uiStrings = {
     'en': 'AI response depth',
   },
   'aiModelBody': {
-    'zh-Hans': '选择 AI 回答的速度与详尽度。"深入"使用更强模型但配额较小，建议先在 BYOK 卡片粘您自己的 Gemini 密钥。',
-    'zh-Hant': '選擇 AI 回答的速度與詳盡度。「深入」使用更強模型但配額較小，建議先在 BYOK 卡片貼您自己的 Gemini 密鑰。',
+    'zh-Hans': '选择 AI 回答的速度与详尽度——不同档位对应不同的 Gemini 模型。',
+    'zh-Hant': '選擇 AI 回答的速度與詳盡度——不同檔位對應不同的 Gemini 模型。',
     'en':
-        'Choose the trade-off between AI speed and depth. "Deep" uses a more capable model with a smaller quota — paste your own Gemini key in the BYOK card above to avoid hitting the shared-pool limit.',
+        'Choose the speed-vs-depth trade-off — each tier maps to a different Gemini model.',
   },
   'aiModelFast': {
     'zh-Hans': '快',
@@ -2430,6 +2430,29 @@ const uiStrings = {
     'zh-Hans': '深入',
     'zh-Hant': '深入',
     'en': 'Deep',
+  },
+  // 2026-05-10 (v1.2.27): per-tier detail panel — surfaces under
+  // the SegmentedButton, updates as the user picks. Tells them
+  // (a) which actual Gemini model the tier maps to, (b) which is
+  // the default, (c) relative speed vs depth, and (d) free-tier
+  // quota reality so they know when to BYOK.
+  'aiModelFastDetail': {
+    'zh-Hans': '快 (默认) · Gemini 2.5 Flash-Lite。最快、最简明的回答，约 1-3 秒。免费配额最大——开发者共享池基本不会耗尽。适合日常研经、快速查询。',
+    'zh-Hant': '快 (預設) · Gemini 2.5 Flash-Lite。最快、最簡明的回答，約 1-3 秒。免費配額最大——開發者共享池基本不會耗盡。適合日常研經、快速查詢。',
+    'en':
+        'Fast (default) · Gemini 2.5 Flash-Lite. Quickest answers (~1-3 s), brief and direct. Largest free-tier quota — the shared developer pool almost never runs out. Best for everyday study and quick lookups.',
+  },
+  'aiModelStandardDetail': {
+    'zh-Hans': '标准 · Gemini 2.5 Flash。速度和深度的平衡，约 3-6 秒。免费配额中等，平时充足，高峰时段可能耗尽。适合需要稍详细解释的场景。',
+    'zh-Hant': '標準 · Gemini 2.5 Flash。速度和深度的平衡,約 3-6 秒。免費配額中等,平時充足,高峰時段可能耗盡。適合需要稍詳細解釋的場景。',
+    'en':
+        'Standard · Gemini 2.5 Flash. Balanced speed and depth (~3-6 s). Mid-range free-tier quota — usually fine, can run out at peak hours. Best when you want a bit more detail than Fast gives.',
+  },
+  'aiModelDeepDetail': {
+    'zh-Hans': '深入 · Gemini 2.5 Pro。最详尽的释经分析，但最慢——约 8-15 秒。**免费配额极小**，开发者共享池通常上午就耗尽。强烈建议先在上面 BYOK 卡片粘您自己的 Gemini 密钥，否则可能直接看到"额度耗尽"。',
+    'zh-Hant': '深入 · Gemini 2.5 Pro。最詳盡的釋經分析,但最慢——約 8-15 秒。**免費配額極小**,開發者共享池通常上午就耗盡。強烈建議先在上面 BYOK 卡片貼您自己的 Gemini 密鑰,否則可能直接看到「額度耗盡」。',
+    'en':
+        'Deep · Gemini 2.5 Pro. The most thorough exegetical analysis, but slowest (~8-15 s). **Free-tier quota is tiny** — the shared developer pool typically runs out by mid-morning. Strongly recommended: paste your own Gemini key in the BYOK card above first, otherwise you may hit "quota exhausted" immediately.',
   },
   // 2026-05-09 (v1.2.7): "Test" button + result row in the BYOK
   // card. Lets the user verify their pasted key actually

@@ -2655,8 +2655,78 @@ class _AiModelCard extends StatelessWidget {
                 },
               ),
             ),
+            SizedBox(height: 12 * s),
+            // 2026-05-10 (v1.2.27): per-tier detail panel — updates
+            // when user picks a different option. Names the actual
+            // Gemini model, marks the default, calls out free-tier
+            // quota reality so users know when to BYOK before
+            // hitting "quota exhausted".
+            _AiModelDetailPanel(
+                aiModel: settings.aiModel,
+                settings: settings,
+                scheme: scheme,
+                s: s),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// Detail card that updates with the user's currently-selected AI
+/// tier. Subtle filled background so it reads as informational
+/// (not a warning) but stays distinct from the parent card.
+class _AiModelDetailPanel extends StatelessWidget {
+  final String aiModel;
+  final AppSettings settings;
+  final ColorScheme scheme;
+  final double s;
+  const _AiModelDetailPanel({
+    required this.aiModel,
+    required this.settings,
+    required this.scheme,
+    required this.s,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final locale = settings.locale;
+    final detailKey = switch (aiModel) {
+      'flash' => 'aiModelStandardDetail',
+      'pro' => 'aiModelDeepDetail',
+      _ => 'aiModelFastDetail',
+    };
+    final detailEnFallback = switch (aiModel) {
+      'flash' =>
+          'Standard · Gemini 2.5 Flash. Balanced speed and depth.',
+      'pro' =>
+          'Deep · Gemini 2.5 Pro. Most thorough analysis, smallest free-tier quota — BYOK recommended.',
+      _ => 'Fast (default) · Gemini 2.5 Flash-Lite. Quickest answers, largest free-tier quota.',
+    };
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 12 * s, vertical: 10 * s),
+      decoration: BoxDecoration(
+        color: scheme.surfaceContainerHighest.withValues(alpha: 0.45),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(Icons.info_outline_rounded,
+              size: 16, color: scheme.primary.withValues(alpha: 0.85)),
+          SizedBox(width: 8 * s),
+          Expanded(
+            child: Text(
+              uiStrings[detailKey]?[locale] ?? detailEnFallback,
+              style: TextStyle(
+                fontFamily: settings.fontFamily,
+                fontSize: (settings.fontSize - 4).clamp(11.0, 13.0),
+                color: scheme.onSurface.withValues(alpha: 0.78),
+                height: 1.55,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

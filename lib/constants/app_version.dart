@@ -821,7 +821,20 @@
 /// invalid/missing values fall back to the env default. Three
 /// client services thread `aiModel` through. Dev-only deploy
 /// per user request — qat/prod bumps after they verify on dev.
-const String kAppVersion = '1.2.26';
+///
+/// 2026-05-10 (v1.2.27 — AI model picker: per-tier detail panel):
+/// user "会有写 default model 并且解释哪个好 performance 和 token
+/// 限制之类的是吗". The v1.2.26 picker had a one-line generic body
+/// that didn't tell the user which is the default, what each tier
+/// maps to, or why "Deep" tends to fail without BYOK. v1.2.27 adds
+/// a per-tier detail panel that updates with selection — names the
+/// actual Gemini model, marks the default, calls out free-tier
+/// quota reality so the user knows BYOK is required for the Deep
+/// tier in practice.
+/// Three new ui-strings: aiModelFastDetail / aiModelStandardDetail
+/// / aiModelDeepDetail. New `_AiModelDetailPanel` widget rendered
+/// below the SegmentedButton.
+const String kAppVersion = '1.2.27';
 
 /// 2026-05-10 (v1.2.20): paired with `kAppVersion` so the About
 /// footer's "Last updated …" stamp moves in lockstep with every
@@ -838,4 +851,4 @@ const String kAppVersion = '1.2.26';
 /// the higher precision. Format: ISO local date + 24-h
 /// HH:MM + tz abbreviation. The about-page interpolation is
 /// locale-aware via the `aboutFooterNote` ui-string template.
-const String kAppReleaseTime = '2026-05-10 16:15 AEST';
+const String kAppReleaseTime = '2026-05-10 16:25 AEST';
