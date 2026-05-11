@@ -2,6 +2,8 @@
 
 Living list of things to address next. Append rather than rewrite.
 
+> ⚠️ **RELEASE POLICY**: dev + qat free to push; **prod requires explicit user instruction in the current turn**. See [`release-policy.md`](release-policy.md).
+
 ## High-ROI infrastructure (deferred from 2026-05-10 robustness review)
 
 These were identified as the highest-ROI gaps after v1.2.35. None are blocking, but each closes a real risk.
