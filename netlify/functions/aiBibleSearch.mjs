@@ -299,8 +299,9 @@ async function callGemini(query, locale, overrideKey = null, model = MODEL) {
 		err.publicReason = isByok
 			? 'Your Gemini key\'s quota is exhausted for the selected tier. ' +
 				'Try again later or pick a lighter tier in Settings → AI.'
-			: 'AI quota for the developer\'s shared key is exhausted. ' +
-				'Try again later, or paste your own Gemini API key in Settings → AI to use your own quota.';
+			: 'AI quota for the developer\'s shared key is exhausted across ' +
+				'all free-tier models. Try again later, or paste your own ' +
+				'Gemini API key in Settings → AI to use your own quota.';
 	}
 	throw err;
 }

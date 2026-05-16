@@ -882,6 +882,21 @@
 /// New ui-string keys: `tooltipClose`, `couldNotParseRef`
 /// (`{ref}` placeholder), `sermonNoBody` — all three locales.
 ///
+/// 2026-05-16 (v1.2.46 — harmonised aiBibleSearch quota-error
+/// copy): thorough post-v1.2.45 verification on all 6 sites
+/// exposed a minor copy inconsistency in the developer-shared-key
+/// 429 message. `aiSearch.mjs` + `aiExplainWord.mjs` say "AI quota
+/// for the developer's shared key is exhausted across all
+/// free-tier models." but `aiBibleSearch.mjs` truncated to "AI
+/// quota for the developer's shared key is exhausted." (no
+/// "across all free-tier models" phrase). All three functions
+/// step down across the same free-tier model chain
+/// (gemini-3-flash-preview → gemini-2.5-flash → -lite), so the
+/// shorter wording under-described what was tried. Backend-only
+/// edit; frontend bundle unchanged. flutter analyze + 44/44
+/// tests still green. BYOK message left alone — already
+/// consistent.
+///
 /// 2026-05-11 (v1.2.45 — 祂 → 他 sweep where antecedent is
 /// 耶穌/Christ; 神/雅偉 stays 祂): user "所有app里面提到耶稣不要
 /// 用祂而是他，神雅伟才用祂好好全部改掉". Chinese Christian
@@ -1636,7 +1651,7 @@
 /// matching edit needed here.
 const String kAppVersion = String.fromEnvironment(
   'APP_VERSION',
-  defaultValue: '1.2.45',
+  defaultValue: '1.2.46',
 );
 
 /// 2026-05-10 (v1.2.20): paired with `kAppVersion` so the About
