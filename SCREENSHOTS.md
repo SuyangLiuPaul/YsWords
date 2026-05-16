@@ -6,7 +6,7 @@ mode chips, dashboard quick-links grid, feedback form). This file
 is the capture brief for whoever takes them — the URL flow,
 suggested viewport size, and the filename to save.
 
-> **Status (2026-05-10, v1.2.31):** **11 rows still relevant** —
+> **Status (2026-05-16, v1.2.45):** **11 rows still relevant** —
 > all captured against the live build and committed into
 > `assets/screenshots/`. The README's *App Screenshots* table uses
 > these in 5 rows × 2 columns; older shots (note popup / multi-
@@ -14,7 +14,9 @@ suggested viewport size, and the filename to save.
 > are kept inside a `<details>` collapser further down. Row 11
 > (`screenshot_welcome_disclaimer.png`) is **OBSOLETE** as of
 > v1.2.5 — the disclaimer card was removed from the welcome page;
-> the file is no longer referenced by README.md.
+> the file is no longer referenced by README.md. UI layout is
+> visually unchanged across v1.2.32–v1.2.45 (text-content +
+> backend-fix releases only).
 
 ## How to capture
 
