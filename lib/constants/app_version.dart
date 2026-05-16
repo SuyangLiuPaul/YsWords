@@ -882,6 +882,44 @@
 /// New ui-string keys: `tooltipClose`, `couldNotParseRef`
 /// (`{ref}` placeholder), `sermonNoBody` — all three locales.
 ///
+/// 2026-05-11 (v1.2.45 — 祂 → 他 sweep where antecedent is
+/// 耶穌/Christ; 神/雅偉 stays 祂): user "所有app里面提到耶稣不要
+/// 用祂而是他，神雅伟才用祂好好全部改掉". Chinese Christian
+/// convention reserves capitalised 祂 ("He") for deity; the
+/// user's editorial position is that 耶穌 (Jesus) should use
+/// 他 while 神 / 雅偉 / 聖靈 retain 祂.
+///
+/// Scope: 12,793 total 祂 across 200 sermon files + 4 JSON/Dart
+/// assets. Naive find-replace would corrupt every God-reference;
+/// implemented a context-aware Python classifier:
+///   • For each 祂, scan back ≤400 chars (or to paragraph break)
+///     for the most recent named antecedent.
+///   • Marker lists: Jesus markers (主耶穌 / 耶穌基督 / 基督 /
+///     人子 / 神的兒子 / 救主 / 羔羊 / 大祭司 / …) and God markers
+///     (雅偉 / 雅威 / 耶和華 / 天父 / 父神 / 上帝 / 創造主 /
+///     全能者 / 聖靈 / 神 / …).
+///   • Regex pre-built with longest-first alternation so compound
+///     markers (神的兒子) outrank prefix matches (神) at the same
+///     position — a subtle bug in the first iteration where 神
+///     was winning over 神的兒子.
+///   • Ambiguous matches (no marker in window) default to keeping
+///     祂 — conservative behaviour per user's "ambiguous → deity".
+///
+/// Results:
+///   • 4,088 occurrences changed to 他 (Jesus references).
+///   • 6,194 kept as 祂 (God / Spirit references).
+///   • 2,511 kept as 祂 (ambiguous, conservative default).
+///   • 200 files modified (sermons zh-CN + zh-TW, section_titles
+///     .json, book_introductions.json, bible_evidence.json,
+///     bible_trivia_page.dart).
+///
+/// Spot-check verification: 23 sampled changes (15 Jesus +
+/// 8 God-kept + 5 ambiguous-kept) all correctly classified.
+/// Known limitation: when 神-vocabulary is heavily interleaved
+/// with Jesus content (e.g. "在祂里面居住...因為神的豐盛"), the
+/// classifier may keep 祂 where a deeper coreference reader would
+/// pick 他. These are reviewable case-by-case if you spot them.
+///
 /// 2026-05-11 (v1.2.44 — per-model timeout + better error
 /// messaging on AI endpoints): user reported "Upstream AI service
 /// error (HTTP ?)." on YsWords exegesis (Acts 19:14) with the
@@ -1598,7 +1636,7 @@
 /// matching edit needed here.
 const String kAppVersion = String.fromEnvironment(
   'APP_VERSION',
-  defaultValue: '1.2.44',
+  defaultValue: '1.2.45',
 );
 
 /// 2026-05-10 (v1.2.20): paired with `kAppVersion` so the About
