@@ -172,10 +172,20 @@ async function callGeminiWithKey(apiKey, prompt, locale, model) {
 			// think rather than producing more text.
 			max_tokens: 4096,
 		}),
-		// v1.2.42: 8s/call (was 20s) — step-down chain × 3 models
-		// must fit inside Netlify's 26s + client's 25s.
-		signal: AbortSignal.timeout(8_000),
+		signal: AbortSignal.timeout(modelTimeoutMs(model)),
 	});
+}
+
+// 2026-05-11 (v1.2.43): per-model abort timeout. v1.2.42's flat
+// 8s was too tight for `gemini-3-flash-preview` (thinking model,
+// often 8-15s). See aiBibleSearch.mjs for the full comment.
+function modelTimeoutMs(model) {
+	switch (model) {
+		case 'gemini-3-flash-preview': return 18_000;
+		case 'gemini-2.5-flash':       return 10_000;
+		case 'gemini-2.5-flash-lite':  return 6_000;
+		default: return 10_000;
+	}
 }
 
 // 2026-05-11 (v1.2.41): model step-down chain — same pattern as
@@ -258,11 +268,12 @@ async function callGemini(prompt, locale, overrideKey = null, model = MODEL) {
 	// 2026-05-11 (v1.2.42): step-down chain with BYOK bypass +
 	// deadline budget. See aiBibleSearch.mjs's longer comment.
 	const isByok = !!overrideKey;
-	const deadline = Date.now() + 22_000;
+	// v1.2.43: bumped deadline 22s → 24s; bail buffer 1s → 1.5s.
+	const deadline = Date.now() + 24_000;
 	let currentModel = model;
 	let lastResult = null;
 	while (currentModel) {
-		if (Date.now() >= deadline - 1000) {
+		if (Date.now() >= deadline - 1500) {
 			console.warn(`[aiSearch] deadline reached at ${currentModel}; bailing.`);
 			break;
 		}
@@ -279,26 +290,44 @@ async function callGemini(prompt, locale, overrideKey = null, model = MODEL) {
 		console.warn(`[aiSearch] ${currentModel} 429; falling back to ${next}.`);
 		currentModel = next;
 	}
-	// Map terminal state to the right public error.
-	if (lastResult?.isAuth && lastResult?.status !== 429) {
+	// v1.2.43: branch the public error on terminal failure shape.
+	const status = lastResult?.status ?? 0;
+	if (lastResult?.isAuth && status !== 429) {
 		const err = new Error('All Gemini keys failed authentication.');
 		err.publicReason = err.message;
 		err.statusCode = 503;
 		throw err;
 	}
-	if (lastResult?.status === 429) {
+	if (status === 0) {
+		// Fetch threw / AbortSignal timeout — model was busy, not
+		// out-of-quota. Different user message.
+		const err = new Error(
+			`AI call timed out. Last error: ${lastResult?.lastError}`);
+		err.publicReason = isByok
+			? 'AI response took too long on your Gemini key. The selected ' +
+				'tier may be under heavy use right now — try again, or pick ' +
+				'a lighter tier in Settings → AI.'
+			: 'AI response took too long. The selected tier may be under ' +
+				'heavy use right now — try again, or pick a lighter tier in ' +
+				'Settings → AI.';
+		err.statusCode = 504;
+		throw err;
+	}
+	if (status === 429) {
 		const err = new Error(
 			'Gemini models exhausted across step-down chain. ' +
 			`Last error: ${lastResult.lastError}`);
-		err.publicReason = 'AI quota for the developer\'s shared key is ' +
-			'exhausted across all free-tier models. Try again later, or ' +
-			'paste your own Gemini API key in Settings → AI to use your ' +
-			'own quota.';
+		err.publicReason = isByok
+			? 'Your Gemini key\'s quota is exhausted for the selected tier. ' +
+				'Try again later or pick a lighter tier in Settings → AI.'
+			: 'AI quota for the developer\'s shared key is exhausted across ' +
+				'all free-tier models. Try again later, or paste your own ' +
+				'Gemini API key in Settings → AI to use your own quota.';
 		err.statusCode = 429;
 		throw err;
 	}
 	const upstreamErr = new Error(
-		`Upstream AI service error (HTTP ${lastResult?.status || '?'}).`);
+		`Upstream AI service error (HTTP ${status}).`);
 	upstreamErr.publicReason = upstreamErr.message;
 	upstreamErr.statusCode = 502;
 	throw upstreamErr;

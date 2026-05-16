@@ -113,6 +113,32 @@ function buildSystemMessage(locale) {
 	);
 }
 
+// 2026-05-11 (v1.2.43): per-model abort timeout. v1.2.42 used a
+// flat 8s for every tier — too tight for `gemini-3-flash-preview`,
+// which is a thinking model and routinely needs 8-15s on heavy
+// prompts (especially exegesis). User reported "Upstream AI service
+// error (HTTP ?)" with explanation_len=0 across multiple tries on
+// Acts 19:14 + Deep; curl timing showed all 3 step-down tiers hit
+// their 8s ceiling sequentially (~24s total, then "HTTP ?").
+//
+// New per-model budgets:
+//   gemini-3-flash-preview  18s  (thinking model — needs headroom)
+//   gemini-2.5-flash        10s  (standard)
+//   gemini-2.5-flash-lite    6s  (fastest)
+//
+// Worst-case sum: 18 + 10 + 6 = 34s. Netlify caps at 26s. The
+// outer deadline (24s wall-clock) in callGemini bails before
+// starting a step-down call that wouldn't finish — so in practice
+// the chain is one-or-two tiers, not three, when Deep is selected.
+function modelTimeoutMs(model) {
+	switch (model) {
+		case 'gemini-3-flash-preview': return 18_000;
+		case 'gemini-2.5-flash':       return 10_000;
+		case 'gemini-2.5-flash-lite':  return 6_000;
+		default: return 10_000;
+	}
+}
+
 async function callGeminiWithKey(apiKey, query, locale, model) {
 	const url = `${BASE_URL}/chat/completions`;
 	return fetch(url, {
@@ -136,14 +162,7 @@ async function callGeminiWithKey(apiKey, query, locale, model) {
 			max_tokens: 4096,
 			response_format: { type: 'json_object' },
 		}),
-		// 2026-05-11 (v1.2.42): timeout budget — see callGemini's
-		// deadline-aware wrapper. Per-call cap is tighter than the
-		// pre-v1.2.42 20s to leave room for the step-down chain (up
-		// to 3 models) to complete inside Netlify's 26s function
-		// limit and the client's 25s timeout. 8s/call × 3 = 24s
-		// worst-case; the outer deadline check skips remaining steps
-		// when budget runs low.
-		signal: AbortSignal.timeout(8_000),
+		signal: AbortSignal.timeout(modelTimeoutMs(model)),
 	});
 }
 
@@ -222,11 +241,16 @@ async function callGemini(query, locale, overrideKey = null, model = MODEL) {
 	//       budget; if < 8s we bail rather than start a call that
 	//       would be killed mid-flight by Netlify.
 	const isByok = !!overrideKey;
-	const deadline = Date.now() + 22_000;
+	// 2026-05-11 (v1.2.43): bumped deadline from 22s → 24s.
+	// Combined with per-model timeouts, worst typical case is
+	// Deep 18s + Flash 4s remaining budget; bail with > 1.5s
+	// buffer so the response can still serialise inside Netlify's
+	// 26s function cap.
+	const deadline = Date.now() + 24_000;
 	let currentModel = model;
 	let lastResult = null;
 	while (currentModel) {
-		if (Date.now() >= deadline - 1000) {
+		if (Date.now() >= deadline - 1500) {
 			console.warn(`[aiBibleSearch] deadline reached at ${currentModel}; bailing.`);
 			break;
 		}
@@ -245,20 +269,39 @@ async function callGemini(query, locale, overrideKey = null, model = MODEL) {
 			`falling back to ${next}.`);
 		currentModel = next;
 	}
-	// 2026-05-08 (v1.1.8): use 429 for quota-exhausted distinct from
-	// 503 (= "GEMINI_API_KEY missing" / actually unconfigured). The
-	// client maps these to different user-facing messages — 503 says
-	// "developer needs to configure", 429 says "quota for today is
-	// used up, try tomorrow or paste your own Gemini key".
+	// 2026-05-11 (v1.2.43): branch the public error message on the
+	// terminal failure shape, not just "quota".
+	//   status === 0 → fetch threw / AbortSignal timeout. Show a
+	//     timeout-specific message — the model was busy, not
+	//     out-of-quota.
+	//   status >= 500 → real upstream error.
+	//   otherwise → quota (or terminal cap reached after step-down).
+	const status = lastResult?.status ?? 0;
+	const isTimeout = status === 0;
+	const isUpstream5xx = status >= 500;
 	const err = new Error(
-		`All Gemini models exhausted at the lightest tier. ` +
-		`Last status: ${lastResult?.status}, error: ${lastResult?.lastError}`);
-	err.statusCode = 429;
-	err.publicReason = isByok
-		? 'Your Gemini key\'s quota is exhausted for the selected tier. ' +
-			'Try again later or pick a lighter tier in Settings → AI.'
-		: 'AI quota for the developer\'s shared key is exhausted. ' +
-			'Try again later, or paste your own Gemini API key in Settings → AI to use your own quota.';
+		`Gemini call failed. Last status: ${status}, ` +
+		`error: ${lastResult?.lastError}`);
+	if (isTimeout) {
+		err.statusCode = 504;
+		err.publicReason = isByok
+			? 'AI response took too long on your Gemini key. The selected ' +
+				'tier may be under heavy use right now — try again, or pick ' +
+				'a lighter tier in Settings → AI.'
+			: 'AI response took too long. The selected tier may be under ' +
+				'heavy use right now — try again, or pick a lighter tier in ' +
+				'Settings → AI.';
+	} else if (isUpstream5xx) {
+		err.statusCode = 502;
+		err.publicReason = `Upstream AI service error (HTTP ${status}). Please try again shortly.`;
+	} else {
+		err.statusCode = 429;
+		err.publicReason = isByok
+			? 'Your Gemini key\'s quota is exhausted for the selected tier. ' +
+				'Try again later or pick a lighter tier in Settings → AI.'
+			: 'AI quota for the developer\'s shared key is exhausted. ' +
+				'Try again later, or paste your own Gemini API key in Settings → AI to use your own quota.';
+	}
 	throw err;
 }
 

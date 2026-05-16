@@ -882,6 +882,59 @@
 /// New ui-string keys: `tooltipClose`, `couldNotParseRef`
 /// (`{ref}` placeholder), `sermonNoBody` — all three locales.
 ///
+/// 2026-05-11 (v1.2.44 — per-model timeout + better error
+/// messaging on AI endpoints): user reported "Upstream AI service
+/// error (HTTP ?)." on YsWords exegesis (Acts 19:14) with the
+/// Retry button — the `?` placeholder meant the client received
+/// no HTTP status, which only happens when the fetch itself
+/// threw (AbortSignal timeout or network error).
+///
+/// Diagnosed with timed curl: aiExplainWord + Deep tier on Acts
+/// 19:14 took 25.5 s on try 1, 24.4 s on try 2, then succeeded
+/// in 7.9 s on try 3. The 25-second window was exactly
+/// 3 × 8 s (= v1.2.42's flat per-call timeout × step-down chain
+/// length) — `gemini-3-flash-preview` is a thinking model that
+/// routinely needs 8-15 s on heavy prompts; v1.2.42's 8 s ceiling
+/// killed it mid-thought before it could produce a response, and
+/// the step-down chain then burned through Standard + Fast at
+/// the same 8 s each.
+///
+/// FIX A — per-model abort timeout (3 backend functions):
+///   gemini-3-flash-preview  18 s  (thinking — needs headroom)
+///   gemini-2.5-flash        10 s  (standard)
+///   gemini-2.5-flash-lite    6 s  (fastest)
+///   default                 10 s  (defensive)
+/// `callGeminiWithKey(...)` now picks its `AbortSignal.timeout`
+/// per `model` via a new `modelTimeoutMs(model)` helper. Sum
+/// worst case is 34 s — exceeds Netlify's 26 s cap — but the
+/// outer wall-clock deadline bails before starting a call that
+/// wouldn't finish.
+///
+/// FIX B — bumped deadline budget 22 s → 24 s, bail buffer
+/// 1 s → 1.5 s. Combined with the per-model timeouts, the typical
+/// step-down sequence (Deep 18 s + 4 s budget for retry, or
+/// Standard 10 s + 12 s budget) fits inside Netlify's 26 s cap
+/// with headroom for response serialisation.
+///
+/// FIX C — better public error message branching. Pre-fix, when
+/// the fetch threw (status === 0), the function returned
+/// `"Upstream AI service error (HTTP ?)."` which is both
+/// confusing (the `?`) and misleading (the model was busy, not
+/// erroring upstream). Post-fix:
+///   status === 0  → HTTP 504, message:
+///     "AI response took too long. The selected tier may be
+///     under heavy use right now — try again, or pick a lighter
+///     tier in Settings → AI."
+///   status >= 500 → HTTP 502, message:
+///     "Upstream AI service error (HTTP {actualCode}). Please
+///     try again shortly."
+///   429 (quota)   → unchanged; existing per-BYOK branching.
+/// BYOK requests get a key-specific suffix ("on your Gemini
+/// key").
+///
+/// Same fix applied symmetrically across all 3 Netlify functions
+/// (aiBibleSearch / aiSearch / aiExplainWord).
+///
 /// 2026-05-11 (v1.2.43 — CJK query length + empty-hits content
 /// fallback): user "standard one is not working for dev but qat
 /// and prod are all working gemini. why? other deep and lite both
@@ -1545,7 +1598,7 @@
 /// matching edit needed here.
 const String kAppVersion = String.fromEnvironment(
   'APP_VERSION',
-  defaultValue: '1.2.43',
+  defaultValue: '1.2.44',
 );
 
 /// 2026-05-10 (v1.2.20): paired with `kAppVersion` so the About
