@@ -480,8 +480,13 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                 '[${v.book} ${v.chapter}:${v.verseLabel}] ${sanitizeForSearch(v.text)}')
             .join('\n');
       case 'devotional':
+        // 2026-05-17 (v1.2.48): join with a single space, not '\n'.
+        // 灵修 / 抄经 style flows the verses as ONE continuous
+        // paragraph rather than one-verse-per-line. User report:
+        // "灵修模式不是一节一行而是全部都一起的". Settings preview
+        // mirrors this in getDevotionalFormattedText().
         final versesText =
-            sorted.map((v) => sanitizeForSearch(v.text)).join('\n');
+            sorted.map((v) => sanitizeForSearch(v.text)).join(' ');
         final range = _formatVerseRangeLabels(sorted);
         return '$versesText\n(${first.book} ${first.chapter}:$range)';
       case 'plain':

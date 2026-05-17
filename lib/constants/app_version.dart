@@ -882,6 +882,20 @@
 /// New ui-string keys: `tooltipClose`, `couldNotParseRef`
 /// (`{ref}` placeholder), `sermonNoBody` — all three locales.
 ///
+/// 2026-05-17 (v1.2.48 — devotional flows as one paragraph):
+/// follow-up to v1.2.47 — the user clarified "灵修模式不是
+/// 一节一行而是全部都一起的" (devotional should not be one verse
+/// per line but all together). The previous implementation joined
+/// each verse with `\n`, producing a verse-per-line layout. 灵修
+/// / 抄经 style flows the text as a single continuous paragraph,
+/// then the reference in parens at the end. Two-line fix:
+///   • `getDevotionalFormattedText` in settings_page.dart:
+///     `textParts.join('\n')` → `textParts.join(' ')`.
+///   • `copyVerses` in bible_reading_pane.dart 'devotional'
+///     branch: `sorted.map(...).join('\n')` → `.join(' ')`.
+/// Settings preview now matches the real copy output for
+/// multi-verse selections.
+///
 /// 2026-05-17 (v1.2.47 — copy-format preview fix, devotional
 /// default, real-time BYOK sync): three user-reported issues
 /// landed in one release.
@@ -1706,7 +1720,7 @@
 /// matching edit needed here.
 const String kAppVersion = String.fromEnvironment(
   'APP_VERSION',
-  defaultValue: '1.2.47',
+  defaultValue: '1.2.48',
 );
 
 /// 2026-05-10 (v1.2.20): paired with `kAppVersion` so the About

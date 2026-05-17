@@ -63,7 +63,12 @@ String getDevotionalFormattedText(
   }
 
   final ref = '$book $chapter:${ranges.join(',')}';
-  final fullText = textParts.join('\n');
+  // 2026-05-17 (v1.2.48): devotional mode flows all verse text as
+  // one continuous paragraph — user explicitly wants "all together,
+  // not one verse per line". 灵修 / 抄经 style: text reads as a
+  // single passage, then the reference in parens at the end. Same
+  // change in bible_reading_pane.dart's real copy logic.
+  final fullText = textParts.join(' ');
   return '$fullText\n($ref)';
 }
 
