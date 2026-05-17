@@ -267,14 +267,24 @@ class AppSettings extends ChangeNotifier {
   /// 2026-05-17 (v1.2.47): real-time BYOK sync — subscribes to
   /// RTDB `onValue` and applies remote changes live.
   ///
-  /// Semantics:
-  ///   • First emission (immediately after subscribe): treated as
-  ///     pull-if-empty so a locally-pasted-but-not-pushed key isn't
-  ///     clobbered by a stale cloud value. Same rule the one-shot
-  ///     `_pullGeminiKeyFromCloudIfEmpty` already enforces.
-  ///   • Subsequent emissions: applied unconditionally — they
-  ///     represent the user pasting/clearing the key on another
-  ///     signed-in device, so local should mirror.
+  /// 2026-05-17 (v1.2.51): semantic change — the first-emission
+  /// preservation policy (keep local if non-empty) actively
+  /// surprised users in the most common pattern:
+  ///
+  ///   • Device A: user updates key X → Z (cloud now has Z).
+  ///   • Device B: was offline; reopens app with local key = X.
+  ///     The stream's first emission is Z. v1.2.47 saw local = X
+  ///     (non-empty) and SKIPPED — Device B remained stuck on X.
+  ///
+  /// User report: "why some api for gemini not synced".
+  ///
+  /// New policy: cloud is the source of truth — every emission
+  /// (including the first one) is applied. To preserve the "paste
+  /// on Device B while signed out → sign in" flow, the sign-in
+  /// path (`_doByokSync`) PUSHES local to cloud BEFORE subscribing
+  /// so the stream's first emission is the local value, which
+  /// matches local → no-op, no clobber.
+  ///
   ///   • Echo emissions (cloud value matches local already): no-op,
   ///     guarded by an equality check so we don't fire a redundant
   ///     `notifyListeners()` on every push round-trip.
@@ -285,35 +295,43 @@ class AppSettings extends ChangeNotifier {
   ///   • Cancelled in `_onAuthChangedForByokSync` on sign-out so
   ///     the stream doesn't leak past the auth session.
   StreamSubscription<String?>? _geminiKeySub;
-  bool _hasReceivedFirstGeminiKeyEmission = false;
 
   void _subscribeToGeminiKeyChanges() {
     // Idempotent — avoid stacking subscriptions.
-    if (_geminiKeySub != null) return;
+    if (_geminiKeySub != null) {
+      debugPrint('[YsWords BYOK] subscribe: already subscribed, skip');
+      return;
+    }
     final stream = RealtimeDbSyncService.instance.watchGeminiKey();
-    if (stream == null) return; // not signed in / not configured
-    _hasReceivedFirstGeminiKeyEmission = false;
+    if (stream == null) {
+      debugPrint('[YsWords BYOK] subscribe: stream is null '
+          '(not signed in / not configured)');
+      return;
+    }
+    debugPrint('[YsWords BYOK] subscribing to RTDB stream');
     _geminiKeySub = stream.listen(_handleRemoteGeminiKey);
   }
 
   Future<void> _unsubscribeFromGeminiKeyChanges() async {
+    debugPrint('[YsWords BYOK] unsubscribing from RTDB stream');
     await _geminiKeySub?.cancel();
     _geminiKeySub = null;
-    _hasReceivedFirstGeminiKeyEmission = false;
   }
 
   Future<void> _handleRemoteGeminiKey(String? remote) async {
-    if (remote == null) return; // stream-internal "no info"
-    final isFirst = !_hasReceivedFirstGeminiKeyEmission;
-    _hasReceivedFirstGeminiKeyEmission = true;
-    // First emission: only fill an empty local. After that, accept
-    // every change including clears (cloud-empty → local-empty).
-    if (isFirst) {
-      if (_geminiApiKey.trim().isNotEmpty) return; // keep local
-      if (remote.trim().isEmpty) return; // nothing to fill
+    if (remote == null) {
+      debugPrint('[YsWords BYOK] stream emit: null (skip)');
+      return;
     }
     final trimmed = remote.trim();
-    if (trimmed == _geminiApiKey) return; // echo / no-op
+    debugPrint('[YsWords BYOK] stream emit: '
+        '${trimmed.isEmpty ? "<empty>" : "${trimmed.substring(0, trimmed.length.clamp(0, 6))}…"} '
+        '(local: '
+        '${_geminiApiKey.isEmpty ? "<empty>" : "${_geminiApiKey.substring(0, _geminiApiKey.length.clamp(0, 6))}…"})');
+    if (trimmed == _geminiApiKey) {
+      debugPrint('[YsWords BYOK] echo, no-op');
+      return;
+    }
     _geminiApiKey = trimmed;
     notifyListeners();
     final prefs = await SharedPreferences.getInstance();
@@ -322,6 +340,24 @@ class AppSettings extends ChangeNotifier {
     } else {
       await prefs.setString(_kGeminiApiKey, trimmed);
     }
+    debugPrint('[YsWords BYOK] applied remote → local updated');
+  }
+
+  /// 2026-05-17 (v1.2.51): on sign-in, push local to cloud BEFORE
+  /// subscribing so the first emission matches local — preserves
+  /// the "paste while signed out → sign in" case without the
+  /// first-emission special-case logic. On sign-in with empty
+  /// local, fall back to the existing pull-if-empty so a fresh
+  /// device picks up the cloud's key.
+  Future<void> _doByokSync() async {
+    if (_geminiApiKey.trim().isNotEmpty) {
+      debugPrint('[YsWords BYOK] sign-in: pushing local key to cloud first');
+      await RealtimeDbSyncService.instance.pushGeminiKey(_geminiApiKey.trim());
+    } else {
+      debugPrint('[YsWords BYOK] sign-in: local empty, pulling from cloud');
+      await _pullGeminiKeyFromCloudIfEmpty();
+    }
+    _subscribeToGeminiKeyChanges();
   }
 
   /// The current dashboard render order. Returns a defensive copy so
@@ -834,13 +870,14 @@ class AppSettings extends ChangeNotifier {
     // Local-empty-only policy means a freshly-pasted local key
     // (signed-out → paste → sign-in flow) survives intact; the
     // pull only fills a vacuum.
+    // 2026-05-17 (v1.2.47 + v1.2.51): bootstrap BYOK sync — push
+    // local first if non-empty so cloud reflects this device,
+    // pull otherwise so a fresh device picks up the cloud key.
+    // Then subscribe to live changes so subsequent updates on
+    // other devices arrive in real time. All branches fire-and-
+    // forget; `_doByokSync` itself awaits in order.
     // ignore: unawaited_futures
-    _pullGeminiKeyFromCloudIfEmpty();
-    // 2026-05-17 (v1.2.47): also subscribe to live changes so a
-    // key pasted on device A shows up on device B without waiting
-    // for the next sign-in / app launch. No-op if not signed in;
-    // _onAuthChangedForByokSync wires it up post-sign-in.
-    _subscribeToGeminiKeyChanges();
+    _doByokSync();
 
     // Also re-pull whenever the user signs in on this device. The
     // CloudAuthService notifier fires on every auth-state change;
@@ -863,10 +900,12 @@ class AppSettings extends ChangeNotifier {
       _unsubscribeFromGeminiKeyChanges();
       return;
     }
+    // 2026-05-17 (v1.2.51): push-then-subscribe (or pull-then-
+    // subscribe) so the stream's first emission matches local —
+    // avoids the v1.2.47 surprise where local was preserved even
+    // when cloud had a more recent key from another device.
     // ignore: unawaited_futures
-    _pullGeminiKeyFromCloudIfEmpty();
-    // Subscribe (idempotent) so subsequent cloud changes flow live.
-    _subscribeToGeminiKeyChanges();
+    _doByokSync();
   }
 
   static ThemeMode _parseThemeMode(String? raw) {

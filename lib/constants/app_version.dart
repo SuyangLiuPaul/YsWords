@@ -882,6 +882,41 @@
 /// New ui-string keys: `tooltipClose`, `couldNotParseRef`
 /// (`{ref}` placeholder), `sermonNoBody` — all three locales.
 ///
+/// 2026-05-17 (v1.2.51 — paragraph-mode jump marker + BYOK
+/// sync race-fix): user reported "i think because it is
+/// paragraph mode that's why. juct check fully to fix it.
+/// also why some api for gemini not synced".
+///
+/// (A) Paragraph-mode jump marker. Even with v1.2.50's
+/// `primaryContainer` wash, a search-jump target can be hard
+/// to spot mid-paragraph at a glance — the wash sits behind
+/// inline text in a continuous block of paragraph prose,
+/// and the user has to scan to find the colored region. v1.2.51
+/// adds an inline `►` arrow icon (Icons.east_rounded) right
+/// before the verse number when `isHighlighted` — same place
+/// the bookmark / note glyphs go. Sized to font * 0.9, primary
+/// colour. Auto-clears with the highlight after 3.5 s. Verse-
+/// by-verse mode unchanged (the full-container wash already
+/// stood out without help).
+///
+/// (B) BYOK Gemini key sync: the v1.2.47 "preserve local on
+/// first emission" policy backfired in the most common pattern:
+///   • Device A updates key X → Z. Cloud has Z.
+///   • Device B was offline; reopens with local = X.
+///   • Stream's first emission = Z. v1.2.47 saw local non-empty
+///     and SKIPPED. Device B stayed on X. User report:
+///     "why some api for gemini not synced".
+/// New policy: cloud is source of truth. Every emission applies
+/// unconditionally. To preserve the "paste while signed out →
+/// sign in" flow without that special case, the new
+/// `_doByokSync` pushes local to cloud BEFORE subscribing — so
+/// the stream's first emission echoes local → no-op, no clobber.
+///
+/// Plus a forensic `debugPrint` trail across
+/// `pushGeminiKey` / `watchGeminiKey` / `_handleRemoteGeminiKey`
+/// / `_subscribe…` / `_doByokSync` so the next "sync didn't
+/// work" report has full console diagnostics to point at.
+///
 /// 2026-05-17 (v1.2.50 — search-jump highlight uses
 /// primaryContainer + forensic logging): user reported v1.2.49
 /// still didn't show the highlight clearly. Diagnosis: the
@@ -1788,7 +1823,7 @@
 /// matching edit needed here.
 const String kAppVersion = String.fromEnvironment(
   'APP_VERSION',
-  defaultValue: '1.2.50',
+  defaultValue: '1.2.51',
 );
 
 /// 2026-05-10 (v1.2.20): paired with `kAppVersion` so the About

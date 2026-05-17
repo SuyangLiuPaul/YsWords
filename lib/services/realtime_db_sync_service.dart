@@ -492,24 +492,37 @@ class RealtimeDbSyncService extends ChangeNotifier {
   /// build). Empty key → null write (clears cloud copy).
   Future<void> pushGeminiKey(String key) async {
     final auth = CloudAuthService.instance;
-    if (!auth.isConfigured || !auth.isSignedIn) return;
+    if (!auth.isConfigured) {
+      debugPrint('[RTDBSync] pushGeminiKey: not configured, skip');
+      return;
+    }
+    if (!auth.isSignedIn) {
+      debugPrint('[RTDBSync] pushGeminiKey: not signed in, skip');
+      return;
+    }
     final uid = auth.currentUser?.uid;
-    if (uid == null) return;
+    if (uid == null) {
+      debugPrint('[RTDBSync] pushGeminiKey: uid null, skip');
+      return;
+    }
+    final trimmed = key.trim();
+    debugPrint('[RTDBSync] pushGeminiKey to users/$uid: '
+        '${trimmed.isEmpty ? "<empty/clear>" : "${trimmed.substring(0, trimmed.length.clamp(0, 6))}…"}');
     try {
       final ref =
           FirebaseDatabase.instance.ref('users/$uid/$_kByokKeyPath');
-      if (key.trim().isEmpty) {
+      if (trimmed.isEmpty) {
         await ref.remove();
+        debugPrint('[RTDBSync] pushGeminiKey: removed (clear)');
       } else {
-        await ref.set(key.trim());
+        await ref.set(trimmed);
+        debugPrint('[RTDBSync] pushGeminiKey: set OK');
       }
     } on FirebaseException catch (e) {
-      // ignore: avoid_print
-      print('[RTDBSync] pushGeminiKey FirebaseException: '
+      debugPrint('[RTDBSync] pushGeminiKey FirebaseException: '
           '${e.code} :: ${e.message}');
     } catch (e) {
-      // ignore: avoid_print
-      print('[RTDBSync] pushGeminiKey failed: $e');
+      debugPrint('[RTDBSync] pushGeminiKey failed: $e');
     }
   }
 
@@ -561,23 +574,38 @@ class RealtimeDbSyncService extends ChangeNotifier {
   /// per-uid isolation (Firebase rules), same China-build skip.
   Stream<String?>? watchGeminiKey() {
     final auth = CloudAuthService.instance;
-    if (!auth.isConfigured || !auth.isSignedIn) return null;
+    if (!auth.isConfigured) {
+      debugPrint('[RTDBSync] watchGeminiKey: not configured');
+      return null;
+    }
+    if (!auth.isSignedIn) {
+      debugPrint('[RTDBSync] watchGeminiKey: not signed in');
+      return null;
+    }
     final uid = auth.currentUser?.uid;
-    if (uid == null) return null;
+    if (uid == null) {
+      debugPrint('[RTDBSync] watchGeminiKey: uid null');
+      return null;
+    }
+    debugPrint('[RTDBSync] watchGeminiKey: subscribing to users/$uid');
     try {
       final ref =
           FirebaseDatabase.instance.ref('users/$uid/$_kByokKeyPath');
       return ref.onValue.map((event) {
-        if (!event.snapshot.exists) return '';
+        if (!event.snapshot.exists) {
+          debugPrint('[RTDBSync] watchGeminiKey: event with no snapshot (cloud-cleared)');
+          return '';
+        }
         final v = event.snapshot.value;
-        return v is String ? v : '';
+        final str = v is String ? v : '';
+        debugPrint('[RTDBSync] watchGeminiKey: event with value '
+            '${str.isEmpty ? "<empty>" : "${str.substring(0, str.length.clamp(0, 6))}…"}');
+        return str;
       }).handleError((e) {
-        // ignore: avoid_print
-        print('[RTDBSync] watchGeminiKey stream error: $e');
+        debugPrint('[RTDBSync] watchGeminiKey stream error: $e');
       });
     } catch (e) {
-      // ignore: avoid_print
-      print('[RTDBSync] watchGeminiKey setup failed: $e');
+      debugPrint('[RTDBSync] watchGeminiKey setup failed: $e');
       return null;
     }
   }
