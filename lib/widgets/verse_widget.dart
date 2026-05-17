@@ -40,13 +40,14 @@ class VerseWidget extends StatelessWidget {
         final isReferenceLine = verse.paragraphType == 'reference';
         final inParagraphMode = settings.paragraphMode;
         final isDark = Theme.of(context).brightness == Brightness.dark;
-        // 2026-05-17 (v1.2.49): bumped alpha 0.35/0.55 → 0.5/0.7.
-        // The previous values were too subtle on light backgrounds
-        // — a search-driven verse-jump's transient highlight could
-        // be missed by the user (the colour wash blended too much
-        // with the surrounding text and faded after 1.2 s). Higher
-        // alpha + the longer 2.5 s clear timer in
-        // bible_reading_pane.dart make the jump unambiguous.
+        // 2026-05-17 (v1.2.49) bumped alpha 0.35/0.55 → 0.5/0.7;
+        // 2026-05-17 (v1.2.50) replaced colorScheme.secondary tint
+        // with the same `primaryContainer` colour `isSelected`
+        // uses (see Container `color:` below), so the search /
+        // library / news jump now renders the target verse
+        // identical to a hand-selected one — bold, theme-aware,
+        // unmistakable. Alpha kept for users with a saturated seed
+        // colour who might still want it as a wash.
         final highlightAlpha = isDark ? 0.7 : 0.5;
 
         final spans = <InlineSpan>[];
@@ -124,17 +125,18 @@ class VerseWidget extends StatelessWidget {
                   children: [
                     Container(
                       width: double.infinity,
-                      color: isSelected
+                      color: (isSelected || isHighlighted)
+                          // 2026-05-17 (v1.2.50): use the same
+                          // primaryContainer treatment for both
+                          // selection and transient highlight, so
+                          // the search-jump target stands out the
+                          // way users expect "the verse I tapped"
+                          // to look.
                           ? Theme.of(context).colorScheme.primaryContainer
-                          : isHighlighted
-                              ? Theme.of(context)
-                                  .colorScheme
-                                  .secondary
+                          : highlightColor != null
+                              ? highlightColor
                                   .withValues(alpha: highlightAlpha)
-                              : highlightColor != null
-                                  ? highlightColor
-                                      .withValues(alpha: highlightAlpha)
-                                  : Colors.transparent,
+                              : Colors.transparent,
                       padding: EdgeInsets.fromLTRB(
                           leftIndent, vertPadding, baseIndent, vertPadding),
                       child: RichText(

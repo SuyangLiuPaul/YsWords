@@ -843,7 +843,10 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
         // `isAttached == false` and silently no-op.
         if (mainProvider.hasPendingJump && verses.isNotEmpty) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (!mounted) return;
+            if (!mounted) {
+              debugPrint('[YsWords jump] post-frame bail: !mounted');
+              return;
+            }
             // Round 56 fix for "first note tap goes to top, second
             // works": when Library was reached from the reader's
             // overflow menu, two HomePage instances coexist (the
@@ -861,14 +864,27 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
             // the flag untouched so the visible reader can take
             // it on the next post-frame tick.
             final route = ModalRoute.of(context);
-            if (route != null && !route.isCurrent) return;
+            if (route != null && !route.isCurrent) {
+              debugPrint('[YsWords jump] post-frame bail: '
+                  '!route.isCurrent (older HomePage in stack)');
+              return;
+            }
 
             final mp = context.read<MainProvider>();
             final pendingIdx = mp.consumePendingJump();
-            if (pendingIdx == null) return;
+            if (pendingIdx == null) {
+              debugPrint('[YsWords jump] post-frame bail: '
+                  'consumePendingJump returned null (already consumed)');
+              return;
+            }
             // Defensive clamp: a stale pending jump from a
             // different chapter could land out-of-range.
-            if (pendingIdx < 0 || pendingIdx >= verses.length) return;
+            if (pendingIdx < 0 || pendingIdx >= verses.length) {
+              debugPrint('[YsWords jump] post-frame bail: '
+                  'pendingIdx=$pendingIdx out of range '
+                  '[0, ${verses.length})');
+              return;
+            }
             // Wait for the controller to attach AND for the SPL
             // to have finished its first layout pass. On a fresh
             // HomePage mount the controller can be `isAttached`
@@ -878,17 +894,29 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
             // not-fully-laid-out case more gracefully than
             // `jumpTo`. Plus widen the poll budget to 3 s
             // (60 × 50 ms) for slow-cold-start cases.
-            // 2026-05-17 (v1.2.49): the search / library / news /
-            // evidence "jump to verse" flow now uses a smooth
-            // 350 ms animated scroll with alignment 0.25 — lands
-            // the target verse ~25 % from the top of the viewport
-            // instead of stuck at the edge, so the user sees the
-            // verses around it too. Highlight duration bumped
-            // 1.2 s → 2.5 s; with a sliding transition + a brief
-            // overlay scroll the previous 1.2 s often timed out
-            // BEFORE the user could focus on the target verse.
+            // 2026-05-17 (v1.2.49 + v1.2.50): search / library /
+            // news / evidence "jump to verse" flow renders the
+            // target verse identical to a hand-selected one
+            // (primaryContainer wash). 350 ms smooth scroll +
+            // alignment 0.25 (target lands ~25 % from top so the
+            // surrounding verses stay visible). Highlight clears
+            // after 3.5 s — long enough for the user to orient,
+            // short enough that the verse goes back to normal
+            // when they start reading.
+            //
+            // v1.2.50 added a forensic `debugPrint` chain so users
+            // who still report problems can paste the browser
+            // console output. Each step logs whether it ran or
+            // bailed.
+            debugPrint('[YsWords jump] pendingIdx=$pendingIdx '
+                'verses.length=${verses.length} '
+                'currentBook=${mainProvider.currentBook} '
+                'currentChapter=${mainProvider.currentChapter}');
             void tryJump([int attempt = 0]) {
-              if (!mounted) return;
+              if (!mounted) {
+                debugPrint('[YsWords jump] bail: !mounted (attempt $attempt)');
+                return;
+              }
               if (mp.itemScrollController.isAttached) {
                 try {
                   mp.scrollToIndexAnimated(
@@ -896,7 +924,11 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                     duration: const Duration(milliseconds: 350),
                     alignment: 0.25,
                   );
-                } catch (_) {
+                  debugPrint('[YsWords jump] scrolled to chapter-verse '
+                      'index $pendingIdx (attempt $attempt)');
+                } catch (e) {
+                  debugPrint('[YsWords jump] scroll threw: $e '
+                      '(attempt $attempt) — retrying');
                   // If scrollTo can't run yet (very rare — e.g.
                   // controller detached between the isAttached
                   // check and this call), fall through to retry.
@@ -907,11 +939,23 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                   return;
                 }
                 mp.setHighlightIndex(pendingIdx);
-                Future.delayed(const Duration(milliseconds: 2500),
-                    () => mp.clearHighlightIndex());
+                debugPrint('[YsWords jump] highlight set to $pendingIdx');
+                Future.delayed(const Duration(milliseconds: 3500), () {
+                  // Only clear if the highlight is still on OUR target —
+                  // a subsequent jump (e.g. user navigated chapters) may
+                  // have already overwritten it.
+                  if (mp.highlightIndex == pendingIdx) {
+                    mp.clearHighlightIndex();
+                    debugPrint('[YsWords jump] highlight cleared');
+                  }
+                });
                 return;
               }
-              if (attempt > 60) return;
+              if (attempt > 60) {
+                debugPrint('[YsWords jump] gave up after 60 attempts '
+                    '— controller never attached');
+                return;
+              }
               Future.delayed(const Duration(milliseconds: 50),
                   () => tryJump(attempt + 1));
             }

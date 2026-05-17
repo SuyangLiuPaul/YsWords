@@ -76,21 +76,16 @@ class ParagraphGroupWidget extends StatelessWidget {
 
           Color? bgColor;
           final highlightColor = mainProvider.getHighlightColor(verse);
-          if (isSelected) {
+          if (isSelected || isHighlighted) {
+            // 2026-05-17 (v1.2.50): unified selection + highlight
+            // to `primaryContainer`. The earlier `secondary` tint
+            // (v1.2.49) was still too subtle on parchment / muted
+            // themes — users reported "search verse not
+            // highlighted". `primaryContainer` is the same bold
+            // colour a manually-tapped verse gets, so the search-
+            // jump target is now unmistakable. Auto-clears after
+            // the 3.5 s timer in bible_reading_pane.dart.
             bgColor = Theme.of(context).colorScheme.primaryContainer;
-          } else if (isHighlighted) {
-            // 2026-05-17 (v1.2.49): bumped alpha 0.3 → 0.5 +
-            // brightness-aware tone so the transient highlight
-            // for a search / library / news jump is unmistakable.
-            // Paragraph mode used to share a hardcoded 0.3 while
-            // verse-by-verse mode rode `highlightAlpha`; the two
-            // are now visually consistent at 0.5 (light) /
-            // 0.7 (dark).
-            final isDark = Theme.of(context).brightness == Brightness.dark;
-            bgColor = Theme.of(context)
-                .colorScheme
-                .secondary
-                .withValues(alpha: isDark ? 0.7 : 0.5);
           } else if (highlightColor != null) {
             bgColor = highlightColor.withValues(alpha: 0.35);
           }

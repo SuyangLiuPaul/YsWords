@@ -882,6 +882,36 @@
 /// New ui-string keys: `tooltipClose`, `couldNotParseRef`
 /// (`{ref}` placeholder), `sermonNoBody` — all three locales.
 ///
+/// 2026-05-17 (v1.2.50 — search-jump highlight uses
+/// primaryContainer + forensic logging): user reported v1.2.49
+/// still didn't show the highlight clearly. Diagnosis: the
+/// `colorScheme.secondary` tint (even at the bumped 0.5 / 0.7
+/// alpha) was visually drowned out by parchment / muted seed
+/// palettes — particularly the default lightBlue seed which
+/// puts `secondary` very close to neutral.
+///
+/// Fix: drop the `secondary` tint and make the search-jump
+/// highlight render IDENTICAL to a hand-selected verse —
+/// `colorScheme.primaryContainer` (saturated, theme-aware,
+/// unmistakable). Same path in both `verse_widget.dart` (verse-
+/// by-verse mode) and `paragraph_group_widget.dart` (paragraph
+/// mode). Auto-clears after 3.5 s (bumped from 2.5 s) — long
+/// enough for the user to orient on the verse, short enough
+/// that reading flow isn't disturbed afterwards.
+///
+/// Also added a forensic `debugPrint` chain across the jump
+/// flow: `prepareJumpToVerse` logs the inputs + matched book +
+/// relIdx; the post-frame consumer logs each bail / success
+/// path. Browser-console output now tells us exactly which
+/// step a stuck jump halts at, so any future "verse not
+/// highlighted" report can be diagnosed in seconds rather than
+/// speculating from code-reading alone.
+///
+/// The 3.5 s clear timer also now guards `mp.highlightIndex ==
+/// pendingIdx` before firing — if the user navigates again
+/// before the timer fires, we don't accidentally wipe a fresher
+/// highlight set by the new navigation.
+///
 /// 2026-05-17 (v1.2.49 — search-jump highlight + scroll
 /// visibility): user reported "why in search the verse selected
 /// not highlighted and jump properly". The pendingJump
@@ -1758,7 +1788,7 @@
 /// matching edit needed here.
 const String kAppVersion = String.fromEnvironment(
   'APP_VERSION',
-  defaultValue: '1.2.49',
+  defaultValue: '1.2.50',
 );
 
 /// 2026-05-10 (v1.2.20): paired with `kAppVersion` so the About
