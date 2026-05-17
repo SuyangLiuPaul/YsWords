@@ -55,17 +55,28 @@ class GeminiKeyCardState extends State<GeminiKeyCard> {
   // see key A's slow result briefly clobber key B's fast result.
   int _testGen = 0;
 
+  // 2026-05-17 (v1.2.47): track the last value pushed into `_ctrl`
+  // by the settings listener. Used to distinguish "cloud-driven
+  // change while the user wasn't typing" (safe to mirror into the
+  // text field) from "user edited the field locally" (must NOT
+  // clobber). Compared against `_ctrl.text` at every listener fire.
+  String _lastSyncedKey = '';
+
   @override
   void initState() {
     super.initState();
     _ctrl = TextEditingController(text: widget.settings.geminiApiKey);
+    _lastSyncedKey = widget.settings.geminiApiKey;
     _ctrl.addListener(_resetTestStatus);
-    // 2026-05-10 (v1.2.17): when the cloud sync (or any other
-    // out-of-card path) fills in `settings.geminiApiKey` while the
-    // text field is still empty, mirror it into the controller so
-    // the user sees the cloud-pulled key immediately. Don't
-    // overwrite a non-empty controller — the user might be in the
-    // middle of typing a new key.
+    // 2026-05-10 (v1.2.17) + 2026-05-17 (v1.2.47): keep the text
+    // field in lockstep with `settings.geminiApiKey`. Covers two
+    // flows:
+    //   (a) the one-shot cloud pull on boot / sign-in
+    //   (b) the v1.2.47 real-time listener — when another device
+    //       pastes / clears the key, we want the change to land
+    //       in this device's input without a reboot.
+    // The `_lastSyncedKey` guard preserves any unsaved typing on
+    // this device.
     widget.settings.addListener(_onSettingsKeyChanged);
   }
 
@@ -80,11 +91,24 @@ class GeminiKeyCardState extends State<GeminiKeyCard> {
   void _onSettingsKeyChanged() {
     if (!mounted) return;
     final remote = widget.settings.geminiApiKey;
-    if (remote.isEmpty) return;
-    if (_ctrl.text.isNotEmpty) return; // user is typing — don't clobber
+    if (_ctrl.text == remote) {
+      // Save-echo case OR already in sync — just record the new
+      // baseline so future cloud changes are picked up correctly.
+      _lastSyncedKey = remote;
+      return;
+    }
+    if (_ctrl.text != _lastSyncedKey) {
+      // The user has typed something different from what we last
+      // synced — they're mid-edit. Don't clobber their work.
+      return;
+    }
+    // Genuine cloud-driven update (paste / clear on another
+    // device). Mirror it into the text field — including the
+    // clear case where `remote` is empty.
     _ctrl.text = remote;
+    _lastSyncedKey = remote;
     // _resetTestStatus fires automatically via the controller
-    // listener; keep it idle/clean.
+    // listener; keep the panel clean.
   }
 
   void _resetTestStatus() {

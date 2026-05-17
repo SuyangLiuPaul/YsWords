@@ -2388,10 +2388,10 @@ const uiStrings = {
   // Firebase rules — so it shows up on every other device they
   // sign in on.
   'aiByokSyncedNote': {
-    'zh-Hans': '已登录 — 密钥会自动同步到您账号下的其他已登录设备。',
-    'zh-Hant': '已登入 — 密鑰會自動同步到您帳號下的其他已登入裝置。',
+    'zh-Hans': '已登录 — 密钥会实时同步到您账号下的其他已登录设备（无需重启）。',
+    'zh-Hant': '已登入 — 密鑰會即時同步到您帳號下的其他已登入裝置（無須重啟）。',
     'en':
-        'Signed in — the key will auto-sync to your other signed-in devices.',
+        'Signed in — the key syncs in real time to your other signed-in devices (no restart needed).',
   },
   'aiByokGetKey': {
     'zh-Hans': '获取免费密钥',

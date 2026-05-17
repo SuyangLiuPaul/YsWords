@@ -882,6 +882,61 @@
 /// New ui-string keys: `tooltipClose`, `couldNotParseRef`
 /// (`{ref}` placeholder), `sermonNoBody` — all three locales.
 ///
+/// 2026-05-17 (v1.2.47 — copy-format preview fix, devotional
+/// default, real-time BYOK sync): three user-reported issues
+/// landed in one release.
+///
+/// (1) Copy-format preview — "include verse reference" preview
+/// was wrong. The preview rendered the formatted string then
+/// stripped every `\[...\]` to remove in-verse annotations,
+/// which inadvertently ate the very `[Genesis 1:1]` reference
+/// prefix the option promises. The actual copy logic
+/// (`bible_reading_pane.dart::copyVerses` → `sanitizeForSearch`
+/// in `text_patterns.dart`) only strips `<...>` and `{...}` —
+/// it preserves `[...]` because some translations (KJV) use
+/// brackets for italicised supplied words. Aligned the preview
+/// with the real copy: keep `[...]` everywhere, so users see
+/// exactly what gets copied (both the reference prefix AND the
+/// in-verse italics).
+///
+/// (2) Default copy format → `devotional`. Was `withRef` since
+/// the app's earliest days, but the user prefers devotional
+/// (text first, reference in parens at the end — 灵修 / 抄经
+/// friendly) as the day-to-day default. Three places updated in
+/// `app_settings.dart`: field initialiser (line ~89),
+/// `resetAllSettings` (line ~559), and `loadSettings`
+/// fallback (line ~699). Existing users keep whatever they
+/// picked — the SharedPrefs read short-circuits the fallback
+/// when there's a value already; only fresh installs and
+/// explicit Reset get the new default.
+///
+/// (3) BYOK Gemini key real-time sync. v1.2.17 added pull-on-
+/// boot and pull-on-sign-in, but updates pasted on device A
+/// only reached device B after a reboot or re-sign-in. v1.2.47
+/// adds a true real-time RTDB listener:
+///   • `RealtimeDbSyncService.watchGeminiKey()` returns a
+///     `Stream<String?>` that emits on every change at
+///     `users/{uid}/account/geminiApiKey`. Cloud-clear emits
+///     `''` so device B can mirror the empty state.
+///   • `AppSettings._subscribeToGeminiKeyChanges()` consumes
+///     it. Semantics: first emission after subscribe is
+///     pull-if-empty (preserves a freshly-pasted-but-not-pushed
+///     key); subsequent emissions are applied unconditionally
+///     INCLUDING clears.
+///   • `AppSettings._unsubscribeFromGeminiKeyChanges()` cancels
+///     on sign-out so the stream doesn't leak past the session.
+///   • `GeminiKeyCard._onSettingsKeyChanged` was tightened with
+///     a `_lastSyncedKey` baseline: clouds-driven changes mirror
+///     into the text field even when it's already populated, BUT
+///     only when the field still matches the last synced value
+///     (i.e. the user isn't mid-edit on this device). Save-echoes
+///     are detected and update the baseline without rewriting
+///     the field.
+///   • `aiByokSyncedNote` ui-string updated for all 3 locales
+///     to say "syncs in real time … no restart needed".
+///   • China build still skips (Firebase never initialised); BYOK
+///     stays SharedPreferences-only for those users.
+///
 /// 2026-05-16 (v1.2.46 — harmonised aiBibleSearch quota-error
 /// copy): thorough post-v1.2.45 verification on all 6 sites
 /// exposed a minor copy inconsistency in the developer-shared-key
@@ -1651,7 +1706,7 @@
 /// matching edit needed here.
 const String kAppVersion = String.fromEnvironment(
   'APP_VERSION',
-  defaultValue: '1.2.46',
+  defaultValue: '1.2.47',
 );
 
 /// 2026-05-10 (v1.2.20): paired with `kAppVersion` so the About

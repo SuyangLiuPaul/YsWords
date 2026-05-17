@@ -543,6 +543,45 @@ class RealtimeDbSyncService extends ChangeNotifier {
     }
   }
 
+  /// 2026-05-17 (v1.2.47): real-time listener for the BYOK Gemini
+  /// key. Emits the current cloud value on subscribe and every
+  /// time the cloud value changes after that:
+  ///   • String value → key on cloud
+  ///   • '' (empty string) → cloud explicitly cleared
+  ///   • Stream completes when the user signs out / Firebase not
+  ///     configured (caller resubscribes on next sign-in).
+  ///
+  /// Returns null instead of a stream when the user is not signed
+  /// in or Firebase isn't configured — caller handles that by not
+  /// subscribing at all.
+  ///
+  /// Why this matters: without it, a key pasted on device A only
+  /// reaches device B on next boot or sign-in. With it, device B
+  /// picks up the change live. Same source-of-truth (RTDB), same
+  /// per-uid isolation (Firebase rules), same China-build skip.
+  Stream<String?>? watchGeminiKey() {
+    final auth = CloudAuthService.instance;
+    if (!auth.isConfigured || !auth.isSignedIn) return null;
+    final uid = auth.currentUser?.uid;
+    if (uid == null) return null;
+    try {
+      final ref =
+          FirebaseDatabase.instance.ref('users/$uid/$_kByokKeyPath');
+      return ref.onValue.map((event) {
+        if (!event.snapshot.exists) return '';
+        final v = event.snapshot.value;
+        return v is String ? v : '';
+      }).handleError((e) {
+        // ignore: avoid_print
+        print('[RTDBSync] watchGeminiKey stream error: $e');
+      });
+    } catch (e) {
+      // ignore: avoid_print
+      print('[RTDBSync] watchGeminiKey setup failed: $e');
+      return null;
+    }
+  }
+
   Future<Map<String, dynamic>> _snapshotLocal() async {
     final prefs = await SharedPreferences.getInstance();
     final out = <String, dynamic>{};

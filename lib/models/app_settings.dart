@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -86,7 +88,14 @@ class AppSettings extends ChangeNotifier {
   double _fontSize = 20.0;
   double _lineSpacing = 1.5;
   Color _primaryColor = Colors.lightBlue;
-  String _copyFormat = 'withRef';
+  // 2026-05-17 (v1.2.47): default changed from 'withRef' →
+  // 'devotional' per user request — devotional puts the
+  // reference in parens AFTER the text (灵修 / 抄经 friendly
+  // format) which is the most common day-to-day copy use case.
+  // Existing users keep whatever they had via the SharedPrefs
+  // fallback in `loadSettings()`; only fresh installs (or
+  // `resetAllSettings()`) get the new default.
+  String _copyFormat = 'devotional';
   String _locale = 'zh-Hans';
   ThemeMode _themeMode = ThemeMode.system;
   bool _paragraphMode = true;
@@ -253,6 +262,66 @@ class AppSettings extends ChangeNotifier {
     notifyListeners();
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_kGeminiApiKey, remote.trim());
+  }
+
+  /// 2026-05-17 (v1.2.47): real-time BYOK sync — subscribes to
+  /// RTDB `onValue` and applies remote changes live.
+  ///
+  /// Semantics:
+  ///   • First emission (immediately after subscribe): treated as
+  ///     pull-if-empty so a locally-pasted-but-not-pushed key isn't
+  ///     clobbered by a stale cloud value. Same rule the one-shot
+  ///     `_pullGeminiKeyFromCloudIfEmpty` already enforces.
+  ///   • Subsequent emissions: applied unconditionally — they
+  ///     represent the user pasting/clearing the key on another
+  ///     signed-in device, so local should mirror.
+  ///   • Echo emissions (cloud value matches local already): no-op,
+  ///     guarded by an equality check so we don't fire a redundant
+  ///     `notifyListeners()` on every push round-trip.
+  ///
+  /// Subscription lifecycle:
+  ///   • Started from `loadSettings()` (if already signed in) and
+  ///     from `_onAuthChangedForByokSync` (on every sign-in).
+  ///   • Cancelled in `_onAuthChangedForByokSync` on sign-out so
+  ///     the stream doesn't leak past the auth session.
+  StreamSubscription<String?>? _geminiKeySub;
+  bool _hasReceivedFirstGeminiKeyEmission = false;
+
+  void _subscribeToGeminiKeyChanges() {
+    // Idempotent — avoid stacking subscriptions.
+    if (_geminiKeySub != null) return;
+    final stream = RealtimeDbSyncService.instance.watchGeminiKey();
+    if (stream == null) return; // not signed in / not configured
+    _hasReceivedFirstGeminiKeyEmission = false;
+    _geminiKeySub = stream.listen(_handleRemoteGeminiKey);
+  }
+
+  Future<void> _unsubscribeFromGeminiKeyChanges() async {
+    await _geminiKeySub?.cancel();
+    _geminiKeySub = null;
+    _hasReceivedFirstGeminiKeyEmission = false;
+  }
+
+  Future<void> _handleRemoteGeminiKey(String? remote) async {
+    if (remote == null) return; // stream-internal "no info"
+    final isFirst = !_hasReceivedFirstGeminiKeyEmission;
+    _hasReceivedFirstGeminiKeyEmission = true;
+    // First emission: only fill an empty local. After that, accept
+    // every change including clears (cloud-empty → local-empty).
+    if (isFirst) {
+      if (_geminiApiKey.trim().isNotEmpty) return; // keep local
+      if (remote.trim().isEmpty) return; // nothing to fill
+    }
+    final trimmed = remote.trim();
+    if (trimmed == _geminiApiKey) return; // echo / no-op
+    _geminiApiKey = trimmed;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    if (trimmed.isEmpty) {
+      await prefs.remove(_kGeminiApiKey);
+    } else {
+      await prefs.setString(_kGeminiApiKey, trimmed);
+    }
   }
 
   /// The current dashboard render order. Returns a defensive copy so
@@ -556,7 +625,7 @@ class AppSettings extends ChangeNotifier {
     _fontSize = 20.0;
     _lineSpacing = 1.5;
     _primaryColor = Colors.lightBlue;
-    _copyFormat = 'withRef';
+    _copyFormat = 'devotional';
     _themeMode = ThemeMode.system;
     _paragraphMode = true;
     _menuScale = 1.0;
@@ -696,7 +765,7 @@ class AppSettings extends ChangeNotifier {
     _lineSpacing = (rawLineSpacing * 10).roundToDouble() / 10;
     _primaryColor =
         Color(prefs.getInt(_kPrimaryColor) ?? Colors.lightBlue.toARGB32());
-    _copyFormat = prefs.getString(_kCopyFormat) ?? 'withRef';
+    _copyFormat = prefs.getString(_kCopyFormat) ?? 'devotional';
     _locale = prefs.getString(_kLocale) ?? _detectSystemLocale();
     _themeMode = _parseThemeMode(prefs.getString(_kThemeMode));
     _paragraphMode = prefs.getBool(_kParagraphMode) ?? true;
@@ -767,6 +836,11 @@ class AppSettings extends ChangeNotifier {
     // pull only fills a vacuum.
     // ignore: unawaited_futures
     _pullGeminiKeyFromCloudIfEmpty();
+    // 2026-05-17 (v1.2.47): also subscribe to live changes so a
+    // key pasted on device A shows up on device B without waiting
+    // for the next sign-in / app launch. No-op if not signed in;
+    // _onAuthChangedForByokSync wires it up post-sign-in.
+    _subscribeToGeminiKeyChanges();
 
     // Also re-pull whenever the user signs in on this device. The
     // CloudAuthService notifier fires on every auth-state change;
@@ -781,9 +855,18 @@ class AppSettings extends ChangeNotifier {
   bool _authListenerWired = false;
 
   void _onAuthChangedForByokSync() {
-    if (!CloudAuthService.instance.isSignedIn) return;
+    if (!CloudAuthService.instance.isSignedIn) {
+      // Signed out — tear down the live listener; it will be
+      // re-established on next sign-in. Fire-and-forget; cancel()
+      // returns a Future but there's nothing to await here.
+      // ignore: unawaited_futures
+      _unsubscribeFromGeminiKeyChanges();
+      return;
+    }
     // ignore: unawaited_futures
     _pullGeminiKeyFromCloudIfEmpty();
+    // Subscribe (idempotent) so subsequent cloud changes flow live.
+    _subscribeToGeminiKeyChanges();
   }
 
   static ThemeMode _parseThemeMode(String? raw) {

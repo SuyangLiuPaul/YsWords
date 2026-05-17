@@ -465,10 +465,24 @@ class _SettingsPageBodyState extends State<_SettingsPageBody> {
                             default:
                               formattedText = '$label ${v['text']}';
                           }
+                          // 2026-05-17 (v1.2.47): the previous version
+                          // stripped every `\[...\]` from the formatted
+                          // string, which ate the `[Genesis 1:1]`
+                          // reference prefix in withRef mode — the
+                          // user reported "preview is wrong for the
+                          // include-reference option". The actual copy
+                          // logic (bible_reading_pane.dart::copyVerses
+                          // → sanitizeForSearch in text_patterns.dart)
+                          // strips `<...>` and `{...}` but PRESERVES
+                          // `[...]` because some translations (KJV) use
+                          // brackets for italicised supplied words like
+                          // `In [the] beginning`. Aligning the preview
+                          // with the real copy behaviour: keep the
+                          // reference prefix AND keep any in-verse
+                          // square-bracket italics.
                           final cleanedText = formattedText
                               .replaceAll(RegExp(r'<[^>]*>'), '')
-                              .replaceAll(RegExp(r'\{[^}]*\}'), '')
-                              .replaceAll(RegExp(r'\[[^\]]*\]'), '');
+                              .replaceAll(RegExp(r'\{[^}]*\}'), '');
 
                           return Padding(
                             padding: EdgeInsets.only(
