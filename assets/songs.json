@@ -16,12 +16,29 @@
         "songIndex": "https://www.christiandiscipleschurch.org/content/integrated-list-songs"
       }
     ],
-    "totalSongs": 510,
+    "totalSongs": 511,
     "note": "Theme tags are auto-derived from the title text using a keyword map; they are best-effort, not authoritative. The verse field is only populated for unambiguous cases like Psalm 23 settings.",
     "mediaUrlNote": "CDC entries have audioUrl + pdfUrl derived deterministically from the catalogue code; fydt entries have these populated by the sync script when it scrapes per-song pages. The app today still uses link-out (opening url in a new tab) — these direct media URLs are pre-populated so the app can switch to inline playback or PDF download once licensing is documented, with no further data work.",
-    "lastSyncedAt": "2026-05-10T19:16:06Z"
+    "lastSyncedAt": "2026-05-17T19:20:57Z"
   },
   "songs": [
+    {
+      "id": "cdc:d0152",
+      "title": "To Please Yahweh",
+      "code": "D0152",
+      "language": "en",
+      "source": "cdc",
+      "sourceLabel": "Christian Disciples Church",
+      "url": "https://www.christiandiscipleschurch.org/content/d0152",
+      "audioUrl": "https://www.christiandiscipleschurch.org/sites/default/files/music/mp3/D0152.mp3",
+      "pdfUrl": "https://www.christiandiscipleschurch.org/sites/default/files/music/pdf/D0152.pdf",
+      "themes": [
+        "神的名"
+      ],
+      "verse": null,
+      "firstSeenAt": "2026-05-17T19:20:57Z",
+      "updatedAt": "2026-05-17T19:20:57Z"
+    },
     {
       "id": "cdc:d0154",
       "title": "The Goodness of Yahweh",
