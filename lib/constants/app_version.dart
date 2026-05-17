@@ -882,6 +882,39 @@
 /// New ui-string keys: `tooltipClose`, `couldNotParseRef`
 /// (`{ref}` placeholder), `sermonNoBody` — all three locales.
 ///
+/// 2026-05-18 (v1.2.52 — annotation-stripping double-punct fix):
+/// user reported a copied verse from CUVS-YHWH Rev 1:8 showed
+/// `俄梅戛，，是昔在` — two commas where one should be. Root
+/// cause: the source data file had the same punctuation on
+/// BOTH sides of an annotation (`俄梅戛，<note: ...>，是昔在`),
+/// so when `sanitizeForSearch` / `sanitizeVerseText` stripped
+/// the `<note:>`, the punctuation duplicated.
+///
+/// Two-layer fix:
+///
+///   (A) DATA layer (atomic sweep): scanned every Bible JSON for
+///       the `P<note:X>P` and `P{X}P` patterns where P is one of
+///       `，。；：？！、`. Found 20 occurrences (10 in
+///       `cuvs-yhwh.json` + 10 in the mirrored `cuvs-yhwh-tr.json`,
+///       all in 10 distinct verses — Josh 21:11, 2 Sam 10:5,
+///       Ezek 2:5, Acts 3:26 + 11:12, Col 3:16, 2 Thess 3:3,
+///       Titus 3:7, 1 Pet 1:13, Rev 1:8). Removed the LEADING
+///       punctuation in each (kept the trailing one — the note
+///       hugs the term it annotates, then the natural sentence
+///       punctuation follows). No other Bible asset had the
+///       pattern. JSON validity preserved, 31,102 verses
+///       unchanged in count per file.
+///
+///   (B) RENDER layer (defense-in-depth): added a
+///       `_collapsePostStripDuplicates` pass at the end of
+///       `sanitizeForSearch` / `sanitizeVerseText` in
+///       `text_patterns.dart`. Collapses runs of any CJK punct
+///       (`，。；：？！、`) to one, and runs of ASCII spaces to one.
+///       Catches any future regression — or edge case the data
+///       sweep missed — silently before text reaches the user.
+///       Verified with 9-test unit suite in
+///       `test/sanitize_collapse_test.dart`.
+///
 /// 2026-05-17 (v1.2.51 — paragraph-mode jump marker + BYOK
 /// sync race-fix): user reported "i think because it is
 /// paragraph mode that's why. juct check fully to fix it.
@@ -1823,7 +1856,7 @@
 /// matching edit needed here.
 const String kAppVersion = String.fromEnvironment(
   'APP_VERSION',
-  defaultValue: '1.2.51',
+  defaultValue: '1.2.52',
 );
 
 /// 2026-05-10 (v1.2.20): paired with `kAppVersion` so the About

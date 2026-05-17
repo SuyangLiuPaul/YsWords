@@ -70,21 +70,49 @@ String _normalizeDivineNames(String text) {
 
 /// Strips all annotation markup from verse text, returning clean readable text.
 String sanitizeVerseText(String text) {
-  return _normalizeDivineNames(text
+  return _collapsePostStripDuplicates(_normalizeDivineNames(text
           .replaceAll('\n', '')
           .replaceAll(notePattern, '')
           .replaceAll(bracePattern, '')
           .replaceAll(_pilcrowPattern, ''))
-      .trim();
+      .trim());
 }
 
 /// Strips annotations but preserves square-bracket content (used for display).
 String sanitizeForSearch(String text) {
-  return _normalizeDivineNames(text
+  return _collapsePostStripDuplicates(_normalizeDivineNames(text
           .replaceAll(notePattern, '')
           .replaceAll(bracePattern, '')
           .replaceAll(_pilcrowPattern, ''))
-      .trim();
+      .trim());
+}
+
+/// 2026-05-18 (v1.2.52): defensive post-strip cleanup. When an
+/// annotation in the source data was bracketed by the SAME
+/// punctuation on both sides (e.g. `俄梅戛，<note: …>，是昔在`),
+/// stripping the annotation left the punctuation duplicated
+/// (`俄梅戛，，是昔在`). User report on Rev 1:8 — "复制经文那里
+/// 有两个逗号". 2026-05-18 sweep cleaned the 20 known cases in
+/// `cuvs-yhwh.json` + `cuvs-yhwh-tr.json` at the data layer, but
+/// this collapse runs at the render layer too as defense-in-
+/// depth: any future regression (or edge case we missed) gets
+/// silently corrected before the text reaches the user.
+///
+/// Scope: collapse runs of the same CJK punct (`，。；：？！、`) to
+/// one. Also collapses runs of ASCII spaces to one. Doesn't
+/// touch repeated alphanumerics or anything else — the only way
+/// to legitimately repeat these punct chars is a stripped
+/// annotation, and even then the second one is always a typo
+/// (no canonical translation puts `，，` adjacent in 1:1 text).
+String _collapsePostStripDuplicates(String text) {
+  // Repeated CJK / full-width punctuation → one.
+  text = text.replaceAllMapped(
+    RegExp(r'([，。；：？！、])\1+'),
+    (m) => m.group(1)!,
+  );
+  // Multiple spaces (from English/space-flanked annotations) → one.
+  text = text.replaceAll(RegExp(r'  +'), ' ');
+  return text;
 }
 
 /// Render-time cleanup for a single chunk of verse text inside a
