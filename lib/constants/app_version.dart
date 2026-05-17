@@ -882,6 +882,44 @@
 /// New ui-string keys: `tooltipClose`, `couldNotParseRef`
 /// (`{ref}` placeholder), `sermonNoBody` — all three locales.
 ///
+/// 2026-05-17 (v1.2.49 — search-jump highlight + scroll
+/// visibility): user reported "why in search the verse selected
+/// not highlighted and jump properly". The pendingJump
+/// machinery (resolveAndPrepareJump / prepareJumpToVerse →
+/// BibleReadingPane's post-frame consumer) was correct, but
+/// three UX choices made the result hard to perceive:
+///
+///   (a) Scroll alignment was 0.0 — the target item landed
+///       glued to the very top of the viewport, so in paragraph
+///       mode the highlighted verse could be anywhere inside the
+///       paragraph block at the top edge. Users had to scan for
+///       it. Fix: pass `alignment: 0.25` from the consumer's
+///       scrollToIndexAnimated call so the SPL lands the target
+///       item ~25 % from the top — comfortable reading position,
+///       paragraph context above and below it.
+///   (b) Scroll duration was 1 ms (effectively `jumpTo`). Visual
+///       feedback was nil — the new chapter appeared at its new
+///       position without any animation cue. Fix: 350 ms animated
+///       scroll so the user perceives the navigation.
+///   (c) Highlight visibility too low. `colorScheme.secondary`
+///       with alpha 0.30 (paragraph mode) / 0.35–0.55 (verse-by-
+///       verse) was easy to miss, especially against the cream/
+///       parchment light theme. Plus the 1.2 s clear timer ran
+///       out before the user finished orienting. Fix: alpha
+///       0.5 (light) / 0.7 (dark) across both rendering paths
+///       AND highlight duration 1.2 s → 2.5 s.
+///
+/// Net result: tap a search hit → smooth 350 ms slide to the
+/// target verse (25 % from top) → 2.5 s prominent highlight
+/// wash → fades. Same flow benefits Library / News / Evidence
+/// reference taps for free since they all share the same
+/// pendingJump consumer.
+///
+/// scrollToIndexAnimated signature now accepts an optional
+/// `alignment` parameter (default 0.0, preserves all existing
+/// callers' behaviour). Only the BibleReadingPane jump consumer
+/// passes a non-zero value.
+///
 /// 2026-05-17 (v1.2.48 — devotional flows as one paragraph):
 /// follow-up to v1.2.47 — the user clarified "灵修模式不是
 /// 一节一行而是全部都一起的" (devotional should not be one verse
@@ -1720,7 +1758,7 @@
 /// matching edit needed here.
 const String kAppVersion = String.fromEnvironment(
   'APP_VERSION',
-  defaultValue: '1.2.48',
+  defaultValue: '1.2.49',
 );
 
 /// 2026-05-10 (v1.2.20): paired with `kAppVersion` so the About

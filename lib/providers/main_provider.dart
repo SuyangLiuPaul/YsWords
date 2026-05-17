@@ -781,19 +781,34 @@ class MainProvider extends ChangeNotifier {
     }
   }
 
-  /// Like [jumpToIndex] but uses `scrollTo` with a 1 ms duration.
-  /// Round 56: fixes a "first tap from Library goes to top of
-  /// chapter" bug — `jumpTo` silently no-ops when the
+  /// Like [jumpToIndex] but uses `scrollTo` with a configurable
+  /// duration. Round 56: fixes a "first tap from Library goes to
+  /// top of chapter" bug — `jumpTo` silently no-ops when the
   /// `ScrollablePositionedList` is `isAttached` but hasn't yet
   /// finished measuring its items (true on a fresh HomePage
   /// mount). `scrollTo` with a tiny duration handles that case
   /// gracefully and lands on the right item.
-  void scrollToIndexAnimated({required int index, Duration duration = const Duration(milliseconds: 1)}) {
+  ///
+  /// 2026-05-17 (v1.2.49): added [alignment] so the search /
+  /// reference-jump path can land the target item ~25% from the
+  /// top of the viewport instead of glued to the edge. With
+  /// alignment 0.0 (the old default) a paragraph-mode jump made
+  /// the user hunt for the highlighted verse inside the paragraph
+  /// because the paragraph started right at the viewport top.
+  /// alignment 0.25 keeps the target comfortably in reading
+  /// position whether the SPL item is a single verse or a multi-
+  /// verse paragraph.
+  void scrollToIndexAnimated({
+    required int index,
+    Duration duration = const Duration(milliseconds: 1),
+    double alignment = 0.0,
+  }) {
     final mapped = _verseToItemMap[index] ?? index;
     if (itemScrollController.isAttached) {
       itemScrollController.scrollTo(
         index: mapped,
         duration: duration,
+        alignment: alignment,
       );
     }
   }

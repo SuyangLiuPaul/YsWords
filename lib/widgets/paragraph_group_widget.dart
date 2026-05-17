@@ -79,8 +79,18 @@ class ParagraphGroupWidget extends StatelessWidget {
           if (isSelected) {
             bgColor = Theme.of(context).colorScheme.primaryContainer;
           } else if (isHighlighted) {
-            bgColor =
-                Theme.of(context).colorScheme.secondary.withValues(alpha: 0.3);
+            // 2026-05-17 (v1.2.49): bumped alpha 0.3 → 0.5 +
+            // brightness-aware tone so the transient highlight
+            // for a search / library / news jump is unmistakable.
+            // Paragraph mode used to share a hardcoded 0.3 while
+            // verse-by-verse mode rode `highlightAlpha`; the two
+            // are now visually consistent at 0.5 (light) /
+            // 0.7 (dark).
+            final isDark = Theme.of(context).brightness == Brightness.dark;
+            bgColor = Theme.of(context)
+                .colorScheme
+                .secondary
+                .withValues(alpha: isDark ? 0.7 : 0.5);
           } else if (highlightColor != null) {
             bgColor = highlightColor.withValues(alpha: 0.35);
           }

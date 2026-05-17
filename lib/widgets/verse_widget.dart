@@ -40,7 +40,14 @@ class VerseWidget extends StatelessWidget {
         final isReferenceLine = verse.paragraphType == 'reference';
         final inParagraphMode = settings.paragraphMode;
         final isDark = Theme.of(context).brightness == Brightness.dark;
-        final highlightAlpha = isDark ? 0.55 : 0.35;
+        // 2026-05-17 (v1.2.49): bumped alpha 0.35/0.55 → 0.5/0.7.
+        // The previous values were too subtle on light backgrounds
+        // — a search-driven verse-jump's transient highlight could
+        // be missed by the user (the colour wash blended too much
+        // with the surrounding text and faded after 1.2 s). Higher
+        // alpha + the longer 2.5 s clear timer in
+        // bible_reading_pane.dart make the jump unambiguous.
+        final highlightAlpha = isDark ? 0.7 : 0.5;
 
         final spans = <InlineSpan>[];
 

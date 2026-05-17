@@ -878,11 +878,24 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
             // not-fully-laid-out case more gracefully than
             // `jumpTo`. Plus widen the poll budget to 3 s
             // (60 × 50 ms) for slow-cold-start cases.
+            // 2026-05-17 (v1.2.49): the search / library / news /
+            // evidence "jump to verse" flow now uses a smooth
+            // 350 ms animated scroll with alignment 0.25 — lands
+            // the target verse ~25 % from the top of the viewport
+            // instead of stuck at the edge, so the user sees the
+            // verses around it too. Highlight duration bumped
+            // 1.2 s → 2.5 s; with a sliding transition + a brief
+            // overlay scroll the previous 1.2 s often timed out
+            // BEFORE the user could focus on the target verse.
             void tryJump([int attempt = 0]) {
               if (!mounted) return;
               if (mp.itemScrollController.isAttached) {
                 try {
-                  mp.scrollToIndexAnimated(index: pendingIdx);
+                  mp.scrollToIndexAnimated(
+                    index: pendingIdx,
+                    duration: const Duration(milliseconds: 350),
+                    alignment: 0.25,
+                  );
                 } catch (_) {
                   // If scrollTo can't run yet (very rare — e.g.
                   // controller detached between the isAttached
@@ -894,7 +907,7 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                   return;
                 }
                 mp.setHighlightIndex(pendingIdx);
-                Future.delayed(const Duration(milliseconds: 1200),
+                Future.delayed(const Duration(milliseconds: 2500),
                     () => mp.clearHighlightIndex());
                 return;
               }
