@@ -1338,6 +1338,35 @@ AI Studio API key.
 * No key is ever logged — the function passes it through to Google
   in the same request and lets it die in the response chain.
 
+**Cross-device sync (v1.2.17 → v1.2.47 → v1.2.51)**: the BYOK key
+now syncs across every device the user is signed in on, stored at
+`users/{uid}/account/geminiApiKey` in Firebase RTDB (separate from
+the profile-scoped `users/{uid}/sync` blob because BYOK is account-
+level, not profile-level). Firebase rules enforce per-uid isolation.
+The China build skips Firebase init so BYOK stays SharedPreferences-
+only there.
+
+* v1.2.17 added one-shot `pullGeminiKey()` + `pushGeminiKey(...)` —
+  pull happens once on boot and on auth-state change (only when local
+  is empty, to preserve a freshly-pasted local key).
+* v1.2.47 added a true real-time RTDB `onValue` listener
+  (`watchGeminiKey()` → `Stream<String?>`). Updates on Device A flow
+  to Device B in seconds without requiring a reboot or re-sign-in.
+  Clear on Device A → clears on Device B too.
+* v1.2.51 reworked the "first emission" policy to fix a real cross-
+  device gap: the v1.2.47 first-emission preservation kept a stale
+  local key on Device B if it had been signed in earlier with a
+  different key. New policy: cloud is the source of truth; every
+  emission applies unconditionally. The "paste while signed out →
+  sign in" flow is preserved by `_doByokSync` which PUSHES local to
+  cloud BEFORE subscribing — the stream's first emission echoes
+  local, no clobber.
+
+Forensic `[RTDBSync]` / `[YsWords BYOK]` `debugPrint` chain across
+push / watch / handle / subscribe / sync paths makes any future
+"sync didn't work" report diagnosable from the browser console in
+seconds.
+
 **Files added / changed this strand**:
 
 ```
@@ -3472,7 +3501,7 @@ Extends round 19. The Strong's panel inside `OriginalsSheet` now has a "Used N t
 
 **UI**: `OriginalsSheet`'s entry card grows a divider + a `Wrap` of small primary-colored chips, each tappable. The header shows `Used {count} times` and (when truncated) `showing first {shown} of {total}` in italics. Strong's lookup + concordance lookup fire in parallel from `_onWordTap` so the panel populates in one round-trip.
 
-**Navigation**: `_navigateToConcordanceRef` in `bible_reading_pane.dart` translates the English book name to the current version's locale via `translateBookName(...)`, then runs the same flow as `search_page.dart`'s result tap: `setCurrentChapter` → `updateCurrentVerse` → 250 ms later `jumpToIndex` + `setHighlightIndex`, with the highlight cleared after 1.2 s. Falls back silently when the verse isn't present in the current version (e.g. tapping a Hebrew OT reference while reading the NT-only `biblexg`).
+**Navigation**: `_navigateToConcordanceRef` in `bible_reading_pane.dart` translates the English book name to the current version's locale via `translateBookName(...)`, then runs the same flow as `search_page.dart`'s result tap: `setCurrentChapter` → `updateCurrentVerse` → `setPendingJump` → `Get.off(HomePage)`. The reader's post-frame consumer (gated by `route.isCurrent` to dodge the home→search→home double-mount race) drains the pending jump via `scrollToIndexAnimated(alignment: 0.25, duration: 350 ms)` and `setHighlightIndex`; the verse renders identical to a hand-selected one (`colorScheme.primaryContainer` wash) and, in paragraph mode, gets a `►` arrow icon before the verse number so the eye lands on the right spot inside the prose block. The highlight auto-clears after 3.5 s (guarded by `mp.highlightIndex == pendingIdx` so a follow-up navigation doesn't accidentally wipe a fresher one). v1.2.49–v1.2.51 rewrote this UX after user feedback; v1.2.50 added a forensic `debugPrint` chain so any future "verse not highlighted" report has full browser-console diagnostics to point at. Falls back silently when the verse isn't present in the current version (e.g. tapping a Hebrew OT reference while reading the NT-only `biblexg`).
 
 **Localized strings**: `concordanceUsed`, `concordanceShowingFirst`, `concordanceNoMatchInVersion` (en / zh-Hans / zh-Hant).
 
