@@ -24,6 +24,7 @@ import 'package:yswords/services/profile_service.dart';
 import 'package:yswords/services/book_intro_service.dart';
 import 'package:yswords/services/leb_insights_service.dart';
 import 'package:yswords/services/section_title_service.dart';
+import 'package:yswords/services/url_sync_service.dart';
 import 'package:provider/provider.dart';
 
 void main() {
@@ -230,6 +231,21 @@ class _MainAppState extends State<MainApp> {
     if (mainProvider.verses.isNotEmpty) {
       await _eagerPreloadAllVersions(mainProvider);
     }
+
+    // 2026-05-19 (v1.2.54): URL sync layer — keep the browser URL
+    // in lockstep with the reader state (book / chapter / verse /
+    // version). Web-only: native targets dispatch to the no-op
+    // stub. Runs AFTER restoreState + FetchVerses so the boot URL
+    // (if any) sees a populated `mp.verses` and can find the
+    // referenced book + chapter / verse. On native, this is a
+    // single function call that returns immediately.
+    // ignore: unawaited_futures
+    UrlSyncService.init(
+      mainProvider: mainProvider,
+      appSettings: appSettings,
+    ).catchError((Object e, StackTrace st) {
+      debugPrint('UrlSyncService.init failed: $e\n$st');
+    });
 
     if (mounted) {
       setState(() {

@@ -882,6 +882,81 @@
 /// New ui-string keys: `tooltipClose`, `couldNotParseRef`
 /// (`{ref}` placeholder), `sermonNoBody` — all three locales.
 ///
+/// 2026-05-19 (v1.2.54 — readable deep-link URLs that reflect
+/// reader state): user request — "the link whether you can
+/// improve? like if go which book, the link will have related…
+/// Like /Rev cuvs like thos. think carefully".
+///
+/// The Flutter web build was shipping minified hash-based URLs
+/// (`/#/minified:X4`) — opaque, un-shareable, un-bookmarkable.
+/// v1.2.54 replaces them with a human-readable scheme that
+/// reflects the current reading state, two-way synced:
+///
+///   /#/                       → dashboard / default
+///   /#/genesis                → Genesis 1
+///   /#/genesis/1              → Genesis 1
+///   /#/john/3:16              → John 3, scroll-to-verse 16
+///   /#/john/3:16?v=leb        → same, in LEB translation
+///   /#/revelation/22?v=cuvs-yhwh
+///
+/// Behaviour:
+///
+///   • Cold deep link: visiting any of the URLs above lands the
+///     user at the right book / chapter / verse / version. If
+///     `v=` is present, the version swaps via `setVersion` +
+///     `FetchVerses.execute`. If `:verse` is present, the
+///     verse fires through the same pendingJump consumer used
+///     by search / library / news (smooth scroll + highlight).
+///
+///   • Internal navigation: as the user changes chapter /
+///     verse / version, the URL updates live via
+///     `history.pushState` (debounced 150 ms so a rapid burst
+///     of three `notifyListeners` calls writes one entry, not
+///     three). Browser back / forward then walks the chapter
+///     history.
+///
+///   • Browser back / forward: `popstate` listener re-parses
+///     the hash and re-applies to MainProvider — same code path
+///     as cold boot.
+///
+///   • Loop-guard: an `_isApplyingFromUrl` flag short-circuits
+///     the `state → URL` listener while the `URL → state`
+///     applier is running, so the two paths can't fight.
+///
+/// Slug map: `lib/constants/book_slugs.dart` carries canonical
+/// English → lowercase-no-space slug (`'1 Samuel' → '1samuel'`,
+/// `'Song of Solomon' → 'songofsolomon'`) plus a reverse map
+/// with common short aliases (`gen`, `1sam`, `rev`, `sos`,
+/// `psalm`/`psalms`, `matt`, `phlm`, …) so user-typed URLs
+/// resolve even if they aren't fully canonical.
+///
+/// Cross-platform safety: the service uses the same
+/// conditional-import pattern as `ShareService` /
+/// `BrowserInfoService` / `NotificationService`. Web target gets
+/// `url_sync_service_web.dart` (real `dart:js_interop` bindings
+/// for `window.location.hash` + `window.history.pushState` +
+/// `window.addEventListener('popstate')`). Native targets get
+/// `url_sync_service_stub.dart` — a no-op. No new `dart:js_interop`
+/// imports leak into native compile units (the same isolation
+/// `cloud_sync_service.dart`'s v1.2.7 issue taught us).
+///
+/// `bookNameToEnglish` was already lifted to its own
+/// dependency-free file in v1.2.53 (for the LEB-insights
+/// service); the URL sync service reuses it here for the
+/// reverse "local book name → canonical English" lookup that
+/// drives the slug write.
+///
+/// New 7-test unit suite in `test/book_slugs_test.dart` pins:
+///   • All 66 canonical books have a slug + round-trip
+///   • Numbered books collapse spaces (`1 Samuel → 1samuel`)
+///   • Song of Solomon collapses both spaces
+///   • Short aliases resolve (`gen`, `rev`, `sos`, `1sam`, …)
+///   • Input is normalised (uppercase + leading / trailing
+///     whitespace tolerated)
+///   • Unknown slugs return `null` (no exception)
+///
+/// Total: 73 / 73 tests pass.
+///
 /// 2026-05-18 (v1.2.53 — cross-version LEB translator-insights
 /// overlay): user feedback — "I feel LEB has the best notes or
 /// highlight or something. can you have a look and try to apply
@@ -1926,7 +2001,7 @@
 /// matching edit needed here.
 const String kAppVersion = String.fromEnvironment(
   'APP_VERSION',
-  defaultValue: '1.2.53',
+  defaultValue: '1.2.54',
 );
 
 /// 2026-05-10 (v1.2.20): paired with `kAppVersion` so the About
