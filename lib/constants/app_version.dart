@@ -882,6 +882,76 @@
 /// New ui-string keys: `tooltipClose`, `couldNotParseRef`
 /// (`{ref}` placeholder), `sermonNoBody` — all three locales.
 ///
+/// 2026-05-18 (v1.2.53 — cross-version LEB translator-insights
+/// overlay): user feedback — "I feel LEB has the best notes or
+/// highlight or something. can you have a look and try to apply
+/// those to other versions as well".
+///
+/// Data audit found LEB is the rich outlier in our 13-version
+/// bundle:
+///
+///   • LEB:        23,632 `<note: …>` (77 / 100 verses)
+///   • CUVS-YHWH:   1,290 (4 / 100v)
+///   • biblexg-v2:  1,133 (14 / 100v)
+///   • KJV / NASB / CUV / CNV / biblexg: ≤ 6 in total
+///
+/// LEB's notes are tied to LEB's specific English phrasing, so
+/// they can't be mechanically copied into KJV / CUV / CNV (those
+/// versions phrase things differently — "literal" notes about
+/// Hebrew/Greek don't fit "before the people" the same way they
+/// fit LEB's "in the faces of the people").
+///
+/// Cleanest solution: surface LEB's notes as a SUPPLEMENTARY
+/// overlay when reading any other version. New components:
+///
+///   • `lib/services/leb_insights_service.dart` — singleton.
+///     Idempotent `init()` parses LEB once (~50 ms on web) into a
+///     `bookEnglish|chapter|verse → List<String>` map. ~14.4 k
+///     verses indexed across ~23 k notes. Pre-warmed during
+///     splash bootstrap.
+///   • `lib/constants/book_names.dart` — extracted the existing
+///     `bookNameToEnglish` map from `fetch_books.dart` so test-
+///     only services can consume it without dragging in the
+///     `MainProvider` → `cloud_sync_service.dart` →
+///     `dart:js_interop` chain that breaks compile on VM tests.
+///     `fetch_books.dart` re-exports for backwards compat.
+///   • `lib/widgets/leb_insight_chip.dart` — `buildLebInsightChip`
+///     returns an `InlineSpan` (small `Icons.info_outline_rounded`)
+///     when settings.showLebInsights AND currentVersion != 'leb'
+///     AND service has notes for the verse. Tap → AlertDialog
+///     listing every LEB note for the verse, each on its own
+///     bullet, with `lebInsightAttribution` footer
+///     ("Source: Lexham English Bible").
+///   • `paragraph_group_widget` + `verse_widget` call
+///     `buildLebInsightChip` after rendering the verse content
+///     spans; the chip is appended if non-null. Same render path
+///     for both modes.
+///   • `AppSettings.showLebInsights` — default `true`. Persists
+///     via SharedPreferences key `'showLebInsights'`. Toggle in
+///     Settings → Reading. Users on Chinese versions can opt out
+///     if they find the English notes off-tone.
+///   • Three new ui-strings: `showLebInsights`,
+///     `showLebInsightsSubtitle`, `lebInsightDialogTitle`,
+///     `lebInsightAttribution` — all in en / zh-Hans / zh-Hant.
+///
+/// LEB-asset quirks handled: it ships with truncated `Mic` / `Nah`
+/// book names which are aliased on load to canonical `Micah` /
+/// `Nahum` so lookups by the canonical English form (what
+/// `bookNameToEnglish` produces) still hit. LEB is also missing
+/// Judges + Obadiah entirely; those return empty (service fails
+/// gracefully, chip just doesn't appear for those books).
+///
+/// 13-test unit suite in `test/leb_insights_service_test.dart`
+/// pins:
+///   • is-ready / annotated-verse-count thresholds
+///   • EN / zh-Hans / zh-Hant book-name resolution
+///   • Mic / Nah alias hits
+///   • Judges / Obadiah / nonexistent-book empty returns
+///   • init idempotency
+///   • out-of-range chapter:verse safety
+///
+/// Total: 66 / 66 tests pass.
+///
 /// 2026-05-18 (v1.2.52 — annotation-stripping double-punct fix):
 /// user reported a copied verse from CUVS-YHWH Rev 1:8 showed
 /// `俄梅戛，，是昔在` — two commas where one should be. Root
@@ -1856,7 +1926,7 @@
 /// matching edit needed here.
 const String kAppVersion = String.fromEnvironment(
   'APP_VERSION',
-  defaultValue: '1.2.52',
+  defaultValue: '1.2.53',
 );
 
 /// 2026-05-10 (v1.2.20): paired with `kAppVersion` so the About

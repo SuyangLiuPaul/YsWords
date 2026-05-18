@@ -7,6 +7,7 @@ import 'package:yswords/models/verse.dart';
 import 'package:yswords/providers/main_provider.dart';
 import 'package:yswords/utils/build_verse_content_spans.dart';
 import 'package:yswords/utils/responsive.dart';
+import 'package:yswords/widgets/leb_insight_chip.dart';
 
 /// Renders a group of consecutive verses as one flowing paragraph (RichText).
 /// Used in paragraph mode. Eliminates per-verse line breaks so verses read
@@ -150,6 +151,23 @@ class ParagraphGroupWidget extends StatelessWidget {
             onTextTap: () => mainProvider.toggleVerse(verse: verse),
             spanBgColor: bgColor,
           ));
+
+          // 2026-05-18 (v1.2.53): cross-version LEB insights chip.
+          // Renders a small (i) icon inline after this verse's
+          // content when LEB has a translator note for the same
+          // chapter:verse AND user is reading a non-LEB version
+          // AND the setting is enabled. Returns null otherwise,
+          // so the if-let pattern is the cleanest.
+          final lebChip = buildLebInsightChip(
+            verse: verse,
+            context: context,
+            settings: settings,
+            currentVersion: mainProvider.currentVersion,
+            isSelected: isSelected || isHighlighted,
+          );
+          if (lebChip != null) {
+            allSpans.add(lebChip);
+          }
 
           // Inter-verse separator — assign tap to the verse just rendered
           // so a tap on the whitespace toggles that verse instead of

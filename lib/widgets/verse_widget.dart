@@ -6,6 +6,7 @@ import 'package:yswords/models/verse.dart';
 import 'package:yswords/providers/main_provider.dart';
 import 'package:yswords/utils/build_verse_content_spans.dart';
 import 'package:yswords/utils/responsive.dart';
+import 'package:yswords/widgets/leb_insight_chip.dart';
 
 /// Renders a single verse. Used by:
 ///   - Verse-by-verse mode for every verse
@@ -70,6 +71,23 @@ class VerseWidget extends StatelessWidget {
           superscriptVerseNum: inParagraphMode,
           onTextTap: () => mainProvider.toggleVerse(verse: verse),
         ));
+
+        // 2026-05-18 (v1.2.53): cross-version LEB insights chip
+        // — small (i) icon inline at the end of the verse when
+        // LEB has a translator note for the same chapter:verse
+        // AND user is reading a non-LEB version AND setting is
+        // enabled. Same helper as paragraph_group_widget so the
+        // two render paths stay in lockstep.
+        final lebChip = buildLebInsightChip(
+          verse: verse,
+          context: context,
+          settings: settings,
+          currentVersion: mainProvider.currentVersion,
+          isSelected: isSelected || isHighlighted,
+        );
+        if (lebChip != null) {
+          spans.add(lebChip);
+        }
 
         // Layout: indent + top gap depend on mode and paragraph context
         late final double leftIndent;
