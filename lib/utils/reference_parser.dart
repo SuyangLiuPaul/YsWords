@@ -17,19 +17,52 @@ class BibleReference {
   /// references; greater for ranges like "John 3:16-18".
   final int? verseEnd;
 
+  /// 2026-05-20 (v1.2.62): optional explicit verse list for non-
+  /// contiguous compact refs like `[Gen 1:2,5,7,9-10]`. When set,
+  /// callers (notably `VersePopupSheet`) should use this list as
+  /// the canonical set of cited verses. When null/empty, fall back
+  /// to the contiguous `[verseStart, verseEnd]` range — preserves
+  /// the v1.2.61 BibleReference shape for every prior call site.
+  ///
+  /// Always sorted + deduplicated when set.
+  final List<int> verses;
+
   const BibleReference({
     required this.englishBook,
     required this.chapter,
     this.verseStart,
     this.verseEnd,
+    this.verses = const [],
   });
 
   /// Convenience for "this is the whole chapter" — true when only
   /// chapter was typed (no `:verse` part).
-  bool get isWholeChapter => verseStart == null;
+  bool get isWholeChapter => verseStart == null && verses.isEmpty;
+
+  /// True when the reference covers non-contiguous verses (e.g.
+  /// "1:2,5,7") that can't be expressed as a single start/end pair.
+  bool get hasExplicitVerses => verses.isNotEmpty;
 
   @override
   String toString() {
+    if (verses.isNotEmpty) {
+      // Compact form: '1:2-3,5,7,9-10'
+      final parts = <String>[];
+      int start = verses.first;
+      int end = start;
+      for (var i = 1; i < verses.length; i++) {
+        final v = verses[i];
+        if (v == end + 1) {
+          end = v;
+        } else {
+          parts.add(start == end ? '$start' : '$start-$end');
+          start = v;
+          end = v;
+        }
+      }
+      parts.add(start == end ? '$start' : '$start-$end');
+      return '$englishBook $chapter:${parts.join(',')}';
+    }
     final v = verseStart == null
         ? ''
         : (verseEnd != null && verseEnd! > verseStart!

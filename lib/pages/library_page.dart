@@ -15,7 +15,7 @@ import 'package:yswords/utils/jump_to_reference.dart' as jumper;
 import 'package:yswords/utils/note_reference_parser.dart';
 import 'package:yswords/utils/reference_parser.dart';
 import 'package:yswords/utils/version_mapper.dart' show translateBookName;
-import 'package:yswords/widgets/note_reference_preview_sheet.dart';
+import 'package:yswords/widgets/verse_popup_sheet.dart' show showVersePopup;
 import 'package:yswords/widgets/home_icon_button.dart';
 import 'package:yswords/widgets/localized_back_button.dart';
 
@@ -298,17 +298,24 @@ class _AnnotationTile extends StatelessWidget {
                       height: 1.45,
                     ),
                     refColor: scheme.primary,
-                    // 2026-05-19 (v1.2.61): tap behaviour changed
-                    // from "immediately navigate" to "preview
-                    // sheet". User reads their note, taps a ref,
-                    // sees the referenced verses in a popup with
-                    // expand-to-chapter + open-in-reader options.
-                    // Keeps the user in the note-reading context
-                    // for quick cross-reference glances.
-                    onRefTap: (ref) => showNoteReferencePreviewSheet(
-                      context: context,
-                      ref: ref,
-                    ),
+                    // 2026-05-20 (v1.2.62): unified on the sermon
+                    // page's `VersePopupSheet` — same widget the
+                    // user already knows from "sermon embedded
+                    // verse" popups. Convert NoteReferenceMatch →
+                    // BibleReference, preserving the full comma-
+                    // list verses (e.g. `[1 Kings 15:1,3-4]`) via
+                    // the new optional `verses` field on
+                    // BibleReference. One popup, one truth.
+                    onRefTap: (ref) {
+                      final bibleRef = BibleReference(
+                        englishBook: ref.englishBook,
+                        chapter: ref.chapter,
+                        verseStart: ref.verseStart,
+                        verseEnd: ref.verseEnd,
+                        verses: ref.verses,
+                      );
+                      showVersePopup(context, bibleRef);
+                    },
                   ),
                 ),
               ),

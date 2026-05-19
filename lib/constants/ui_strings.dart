@@ -244,6 +244,18 @@ const uiStrings = {
   },
   'noteSave': {'zh-Hans': '保存', 'zh-Hant': '儲存', 'en': 'Save'},
   'noteDelete': {'zh-Hans': '删除', 'zh-Hant': '刪除', 'en': 'Delete'},
+  // 2026-05-20 (v1.2.62): WeChat-style fullscreen toggle on the
+  // note editor sheet. Compact ↔ fullscreen.
+  'noteExpand': {
+    'zh-Hans': '全屏',
+    'zh-Hant': '全螢幕',
+    'en': 'Expand',
+  },
+  'noteCollapse': {
+    'zh-Hans': '收起',
+    'zh-Hant': '收起',
+    'en': 'Collapse',
+  },
   // 2026-05-19 (v1.2.59): note-editor "+ Verse Reference" button +
   // its book/chapter/verse picker sheet. Tapping a reference in
   // the saved note (Library / wherever displayed) opens the

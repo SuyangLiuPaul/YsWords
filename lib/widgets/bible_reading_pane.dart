@@ -2777,6 +2777,21 @@ void _showNoteEditor({
     restoreScroll();
   });
 
+  // 2026-05-20 (v1.2.62): the editor now supports a WeChat-style
+  // fullscreen toggle — an icon button next to the close button.
+  // Compact mode = current bottom-sheet feel (intrinsic height
+  // ~40-50 % of viewport once the keyboard is up). Fullscreen
+  // mode = the sheet fills the viewport minus the status bar +
+  // safe-area top inset, the TextField expands to fill the
+  // remaining space, and the top corners straighten so it reads
+  // as a full-screen overlay rather than a sheet.
+  //
+  // State lives in a StatefulBuilder so we don't have to convert
+  // the whole editor into a separate StatefulWidget class — the
+  // existing closures (restoreScroll / onPositionsChanged / the
+  // enforceTimer) all still work, just inside a setState-aware
+  // builder.
+  bool isFullscreen = false;
   showModalBottomSheet<void>(
     context: context,
     isScrollControlled: true,
@@ -2785,13 +2800,24 @@ void _showNoteEditor({
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
     ),
-    builder: (sheetCtx) {
+    builder: (sheetCtx) => StatefulBuilder(
+      builder: (sheetCtx, setSheetState) {
       final scheme = Theme.of(sheetCtx).colorScheme;
+      final mq = MediaQuery.of(sheetCtx);
       // v1.2.60: "Delete" button shows when ANY verse in the
       // multi-verse selection has a note (and Delete clears them all).
       final hasExisting = verses.any(
           (v) => (mainProvider.getVerseNote(v) ?? '').isNotEmpty);
-      return Padding(
+      // 2026-05-20 (v1.2.62): in fullscreen the sheet height is
+      // pinned to (viewport - status bar - keyboard); in compact
+      // it stays intrinsic and the Column uses MainAxisSize.min.
+      final fullscreenHeight =
+          mq.size.height - mq.padding.top - mq.viewInsets.bottom;
+      return AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeOut,
+        height: isFullscreen ? fullscreenHeight : null,
+        child: Padding(
         padding: EdgeInsets.only(
           left: 16,
           right: 16,
@@ -2799,7 +2825,8 @@ void _showNoteEditor({
           bottom: MediaQuery.of(sheetCtx).viewInsets.bottom + 16,
         ),
         child: Column(
-          mainAxisSize: MainAxisSize.min,
+          mainAxisSize:
+              isFullscreen ? MainAxisSize.max : MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Container(
@@ -2842,6 +2869,23 @@ void _showNoteEditor({
                     ],
                   ),
                 ),
+                // 2026-05-20 (v1.2.62): WeChat-style expand /
+                // collapse toggle. Compact ↔ fullscreen. State
+                // captured by the surrounding StatefulBuilder.
+                IconButton(
+                  icon: Icon(
+                    isFullscreen
+                        ? Icons.fullscreen_exit_rounded
+                        : Icons.fullscreen_rounded,
+                  ),
+                  tooltip: isFullscreen
+                      ? (uiStrings['noteCollapse']?[locale] ??
+                          'Collapse')
+                      : (uiStrings['noteExpand']?[locale] ??
+                          'Expand'),
+                  onPressed: () => setSheetState(
+                      () => isFullscreen = !isFullscreen),
+                ),
                 IconButton(
                   icon: const Icon(Icons.close),
                   onPressed: () => Navigator.of(sheetCtx).maybePop(),
@@ -2857,55 +2901,83 @@ void _showNoteEditor({
             // becomes visible. Combined with `jumpTo` (instant, no
             // animation) inside restoreScroll, the user never sees
             // the reader leave the verse.
-            Focus(
-              onFocusChange: (hasFocus) {
-                if (hasFocus) {
-                  // Fire several restores in quick succession to
-                  // beat whatever frame is causing the spurious
-                  // jump — at 0, 16, 50, 150, 350 ms. Cheap (jumpTo
-                  // is essentially free when already at the right
-                  // position) and bullet-proof against timing
-                  // variation between devices/browsers.
-                  restoreScroll();
-                  for (final delayMs in const [16, 50, 150, 350]) {
-                    Future.delayed(
-                        Duration(milliseconds: delayMs), restoreScroll);
-                  }
-                }
-              },
-              child: TextField(
-                controller: controller,
-                autofocus: true,
-                maxLines: 8,
-                minLines: 4,
-                textInputAction: TextInputAction.newline,
-                onTap: () {
-                  // Tap fires once when the user touches the field.
-                  // Same multi-shot defense — the keyboard /
-                  // viewport changes that follow can take several
-                  // frames to settle, so we restore until they do.
-                  restoreScroll();
-                  for (final delayMs in const [16, 50, 150, 350]) {
-                    Future.delayed(
-                        Duration(milliseconds: delayMs), restoreScroll);
-                  }
-                },
-                onChanged: (_) {
-                  // First keystroke triggers IME / autocomplete on
-                  // some platforms which can shift the viewport
-                  // again. Restore one more time on the very first
-                  // change.
-                  restoreScroll();
-                },
-                decoration: InputDecoration(
-                  hintText: uiStrings['noteHint']?[locale] ??
-                      'Type your note for this verse…',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
+            // 2026-05-20 (v1.2.62): TextField wrapper. In fullscreen
+            // we put it inside an `Expanded` so it fills all the
+            // remaining vertical space and uses `maxLines: null` +
+            // `expands: true` for an edge-to-edge editing surface.
+            // In compact mode we keep the v1.2.60 `4-8 lines` shape
+            // so the sheet stays at a comfortable intrinsic height.
+            isFullscreen
+                ? Expanded(
+                    child: Focus(
+                      onFocusChange: (hasFocus) {
+                        if (hasFocus) {
+                          restoreScroll();
+                          for (final delayMs in const [16, 50, 150, 350]) {
+                            Future.delayed(
+                                Duration(milliseconds: delayMs), restoreScroll);
+                          }
+                        }
+                      },
+                      child: TextField(
+                        controller: controller,
+                        autofocus: true,
+                        maxLines: null,
+                        expands: true,
+                        textAlignVertical: TextAlignVertical.top,
+                        textInputAction: TextInputAction.newline,
+                        onTap: () {
+                          restoreScroll();
+                          for (final delayMs in const [16, 50, 150, 350]) {
+                            Future.delayed(
+                                Duration(milliseconds: delayMs), restoreScroll);
+                          }
+                        },
+                        onChanged: (_) => restoreScroll(),
+                        decoration: InputDecoration(
+                          hintText: uiStrings['noteHint']?[locale] ??
+                              'Type your note for this verse…',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          contentPadding: const EdgeInsets.all(12),
+                        ),
+                      ),
+                    ),
+                  )
+                : Focus(
+                    onFocusChange: (hasFocus) {
+                      if (hasFocus) {
+                        restoreScroll();
+                        for (final delayMs in const [16, 50, 150, 350]) {
+                          Future.delayed(
+                              Duration(milliseconds: delayMs), restoreScroll);
+                        }
+                      }
+                    },
+                    child: TextField(
+                      controller: controller,
+                      autofocus: true,
+                      maxLines: 8,
+                      minLines: 4,
+                      textInputAction: TextInputAction.newline,
+                      onTap: () {
+                        restoreScroll();
+                        for (final delayMs in const [16, 50, 150, 350]) {
+                          Future.delayed(
+                              Duration(milliseconds: delayMs), restoreScroll);
+                        }
+                      },
+                      onChanged: (_) => restoreScroll(),
+                      decoration: InputDecoration(
+                        hintText: uiStrings['noteHint']?[locale] ??
+                            'Type your note for this verse…',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                    ),
                   ),
-                ),
-              ),
-            ),
             const SizedBox(height: 12),
             // 2026-05-19 (v1.2.59): "+ Verse Reference" button.
             // Opens a 3-step picker (book → chapter → verse) and
@@ -2999,8 +3071,10 @@ void _showNoteEditor({
             ),
           ],
         ),
+        ),
       );
-    },
+      },
+    ),
   ).whenComplete(() {
     // Sheet closed — stop watching positions and stop the
     // per-frame enforcement, do one last defensive restore in

@@ -101,21 +101,35 @@ class _VersePopupSheetState extends State<VersePopupSheet> {
   // `mounted` before touching state.
 
   /// Resolve the cited verses out of MainProvider's loaded
-  /// dataset. We match by english book + chapter (+ verse range
-  /// when in [_fullChapter]=false mode).
+  /// dataset. Match by english book + chapter, then filter to the
+  /// cited verses unless [_fullChapter] is on.
+  ///
+  /// 2026-05-20 (v1.2.62): when the reference carries an explicit
+  /// `verses` list (compact comma-list refs like `1:2,5,7,9-10`
+  /// inserted from a note via the v1.2.61 picker), the per-verse
+  /// filter uses set-membership against that list rather than a
+  /// contiguous `[start, end]` range. Fully backwards-compatible:
+  /// existing sermon refs with `verses=[]` keep the old range
+  /// filter.
   List<Verse> _resolveVerses(MainProvider mp) {
     final ref = widget.reference;
     final all = mp.verses;
     final results = <Verse>[];
+    final explicitVerses =
+        ref.hasExplicitVerses ? ref.verses.toSet() : null;
     for (final v in all) {
       final enBook = bookNameToEnglish[v.book] ?? v.book;
       if (enBook != ref.englishBook) continue;
       if (v.chapter != ref.chapter) continue;
-      if (!_fullChapter && ref.verseStart != null) {
-        final n = v.verse;
-        final start = ref.verseStart!;
-        final end = ref.verseEnd ?? start;
-        if (n < start || n > end) continue;
+      if (!_fullChapter) {
+        if (explicitVerses != null) {
+          if (!explicitVerses.contains(v.verse)) continue;
+        } else if (ref.verseStart != null) {
+          final n = v.verse;
+          final start = ref.verseStart!;
+          final end = ref.verseEnd ?? start;
+          if (n < start || n > end) continue;
+        }
       }
       results.add(v);
     }
@@ -126,6 +140,9 @@ class _VersePopupSheetState extends State<VersePopupSheet> {
   /// when in full-chapter mode.
   bool _isCited(Verse v) {
     final ref = widget.reference;
+    if (ref.hasExplicitVerses) {
+      return ref.verses.contains(v.verse);
+    }
     if (ref.verseStart == null) return false;
     return v.verse >= ref.verseStart! &&
         v.verse <= (ref.verseEnd ?? ref.verseStart!);
@@ -134,9 +151,28 @@ class _VersePopupSheetState extends State<VersePopupSheet> {
   String _refLabel(String locale) {
     final ref = widget.reference;
     final book = localeAwareBookName(ref.englishBook, locale);
-    if (_fullChapter || ref.verseStart == null) {
-      return '$book ${ref.chapter}';
+    if (_fullChapter) return '$book ${ref.chapter}';
+    if (ref.hasExplicitVerses) {
+      // Compact form: '1:2-3,5,7,9-10' built the same way as
+      // BibleReference.toString().
+      final verses = ref.verses;
+      final parts = <String>[];
+      int start = verses.first;
+      int end = start;
+      for (var i = 1; i < verses.length; i++) {
+        final v = verses[i];
+        if (v == end + 1) {
+          end = v;
+        } else {
+          parts.add(start == end ? '$start' : '$start-$end');
+          start = v;
+          end = v;
+        }
+      }
+      parts.add(start == end ? '$start' : '$start-$end');
+      return '$book ${ref.chapter}:${parts.join(',')}';
     }
+    if (ref.verseStart == null) return '$book ${ref.chapter}';
     if (ref.verseEnd != null && ref.verseEnd! > ref.verseStart!) {
       return '$book ${ref.chapter}:${ref.verseStart}-${ref.verseEnd}';
     }
