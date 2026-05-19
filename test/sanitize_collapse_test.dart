@@ -149,4 +149,54 @@ void main() {
       expect(sanitizeVerseText(raw), 'one two three four five');
     });
   });
+
+  // 2026-05-19 (v1.2.58): copy/preview formatter — same shape as
+  // sanitizeForSearch (strip <note:>, keep {phrase} + [supplied])
+  // PLUS replace internal `\n` line breaks with space so v1.2.57's
+  // LJK2 poetry-layout breaks don't leak into clipboard / preview
+  // output and split a single verse across multiple lines inside
+  // an otherwise inline copy format.
+  group('v1.2.58: sanitizeForCopy — clipboard / preview formatter',
+      () {
+    test('replaces internal \\n with a single space (LJK2 Mt 2:6 '
+        'poetry block, joined into one inline copy line)', () {
+      const raw = '犹大地区的伯利恒，\n犹大的头领中\n你绝非最小，'
+          '<note:弥5.2 （七十士本记弥5.1）>\n因为你要出一位首领，\n'
+          '他将放牧我的子民以色列。"<note:撒下5.2，代上11.2>';
+      final out = sanitizeForCopy(raw);
+      expect(out.contains('\n'), isFalse,
+          reason: 'all line breaks should collapse to space');
+      expect(out, contains('犹大地区的伯利恒'));
+      expect(out, contains('他将放牧我的子民以色列'));
+      expect(out.contains('<note:'), isFalse,
+          reason: 'popup-only <note:…> should be fully stripped');
+    });
+
+    test('keeps {phrase} inner content (same as sanitizeForSearch)', () {
+      const raw = 'comforted, because {they exist no longer}<note: '
+          'Literally "they are not">.';
+      final out = sanitizeForCopy(raw);
+      expect(out.contains('they exist no longer'), isTrue);
+      expect(out.contains('{'), isFalse);
+    });
+
+    test('keeps [supplied] markup as-is (no strip, mirrors search)',
+        () {
+      const raw = '主[雅伟]神说：「我是阿拉法」';
+      expect(sanitizeForCopy(raw), '主[雅伟]神说：「我是阿拉法」');
+    });
+
+    test('handles a verse with NO line breaks identically to '
+        'sanitizeForSearch (no regression on the common path)', () {
+      const raw = '我是俄梅戛，<note: …>，是昔在';
+      expect(sanitizeForCopy(raw), sanitizeForSearch(raw));
+    });
+
+    test('LJK2 Mt 1:16 brace+note+cite-style verse stays clean', () {
+      const raw = '雅各生约瑟，即玛利亚的丈夫，玛利亚生耶稣，'
+          '又称基督。';
+      expect(sanitizeForCopy(raw),
+          '雅各生约瑟，即玛利亚的丈夫，玛利亚生耶稣，又称基督。');
+    });
+  });
 }

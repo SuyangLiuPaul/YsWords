@@ -473,11 +473,18 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
 
     final first = sorted.first;
 
+    // 2026-05-19 (v1.2.58): switched from `sanitizeForSearch` to
+    // `sanitizeForCopy` so v1.2.57's internal `\n` poetry line
+    // breaks (LJK2 OT-quote verses) don't leak into the copied
+    // clipboard text and split one verse across multiple lines
+    // inside an otherwise inline format. `sanitizeForCopy`
+    // replaces `\n` → ' ' but keeps `{phrase}` + `[supplied]`
+    // content the same way the search variant does.
     switch (settings.copyFormat) {
       case 'withRef':
         return sorted
             .map((v) =>
-                '[${v.book} ${v.chapter}:${v.verseLabel}] ${sanitizeForSearch(v.text)}')
+                '[${v.book} ${v.chapter}:${v.verseLabel}] ${sanitizeForCopy(v.text)}')
             .join('\n');
       case 'devotional':
         // 2026-05-17 (v1.2.48): join with a single space, not '\n'.
@@ -486,13 +493,13 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
         // "灵修模式不是一节一行而是全部都一起的". Settings preview
         // mirrors this in getDevotionalFormattedText().
         final versesText =
-            sorted.map((v) => sanitizeForSearch(v.text)).join(' ');
+            sorted.map((v) => sanitizeForCopy(v.text)).join(' ');
         final range = _formatVerseRangeLabels(sorted);
         return '$versesText\n(${first.book} ${first.chapter}:$range)';
       case 'plain':
       default:
         final body = sorted
-            .map((v) => '${v.verseLabel} ${sanitizeForSearch(v.text)}')
+            .map((v) => '${v.verseLabel} ${sanitizeForCopy(v.text)}')
             .join('\n');
         return '${first.book} ${first.chapter}\n$body';
     }

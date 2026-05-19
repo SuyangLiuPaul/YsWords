@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show Clipboard, ClipboardData;
 import 'package:yswords/constants/build_flags.dart';
+import 'package:yswords/constants/text_patterns.dart' show sanitizeForCopy;
 import 'package:yswords/constants/ui_strings.dart';
 import 'package:provider/provider.dart';
 import 'package:yswords/models/app_settings.dart';
@@ -42,12 +43,15 @@ String getDevotionalFormattedText(
   if (verses.isEmpty || book == null || chapter == null) return '';
 
   List<int> verseNums = verses.map((v) => v['verse'] as int).toList()..sort();
+  // 2026-05-19 (v1.2.58): use the shared `sanitizeForCopy` helper
+  // (defined in lib/constants/text_patterns.dart) so the preview is
+  // byte-for-byte identical to the real copy output produced by
+  // bible_reading_pane.dart::copyVerses. v1.2.56's brace-content
+  // fix had landed in sanitize but NOT in the three preview regexes
+  // here — they kept stripping `{phrase}` entirely. Plus v1.2.57's
+  // poetry `\n` was leaking through. One helper, one truth.
   List<String> textParts = verses.map((v) {
-    var t = v['text'] as String;
-    t = t.replaceAll(RegExp(r'<note:[^>]*>'), '')
-         .replaceAll(RegExp(r'<[^>]*>'), '')
-         .replaceAll(RegExp(r'\{[^}]*\}'), '');
-    return t;
+    return sanitizeForCopy(v['text'] as String);
   }).toList();
 
   // Build reference string
@@ -461,33 +465,20 @@ class _SettingsPageBodyState extends State<_SettingsPageBody> {
                           final label = v['verseLabel'] as String;
                           final ref =
                               '${currentBook ?? ''} $currentChapter:$label';
-                          String formattedText;
-                          switch (settings.copyFormat) {
-                            case 'withRef':
-                              formattedText = '[$ref] ${v['text']}';
-                              break;
-                            case 'plain':
-                            default:
-                              formattedText = '$label ${v['text']}';
-                          }
-                          // 2026-05-17 (v1.2.47): the previous version
-                          // stripped every `\[...\]` from the formatted
-                          // string, which ate the `[Genesis 1:1]`
-                          // reference prefix in withRef mode — the
-                          // user reported "preview is wrong for the
-                          // include-reference option". The actual copy
-                          // logic (bible_reading_pane.dart::copyVerses
-                          // → sanitizeForSearch in text_patterns.dart)
-                          // strips `<...>` and `{...}` but PRESERVES
-                          // `[...]` because some translations (KJV) use
-                          // brackets for italicised supplied words like
-                          // `In [the] beginning`. Aligning the preview
-                          // with the real copy behaviour: keep the
-                          // reference prefix AND keep any in-verse
-                          // square-bracket italics.
-                          final cleanedText = formattedText
-                              .replaceAll(RegExp(r'<[^>]*>'), '')
-                              .replaceAll(RegExp(r'\{[^}]*\}'), '');
+                          // 2026-05-19 (v1.2.58): switch the preview's
+                          // ad-hoc regex pipeline to the shared
+                          // `sanitizeForCopy` helper so the preview
+                          // matches the real copy output byte-for-byte.
+                          // Earlier regex chain stripped `{phrase}`
+                          // entirely (the v1.2.56 brace bug that was
+                          // only fixed in sanitize), and didn't strip
+                          // `\n` (which v1.2.57 added to ~292 verses
+                          // for poetry layout). Single helper, single
+                          // truth.
+                          final cleanText = sanitizeForCopy(v['text'] as String);
+                          final headerText = settings.copyFormat == 'withRef'
+                              ? '[$ref] '
+                              : '';
 
                           return Padding(
                             padding: EdgeInsets.only(
@@ -514,14 +505,9 @@ class _SettingsPageBodyState extends State<_SettingsPageBody> {
                                             .primary,
                                       ),
                                     ),
-                                    TextSpan(
-                                      text: v['text']
-                                          .toString()
-                                          .replaceAll(RegExp(r'<[^>]*>'), '')
-                                          .replaceAll(RegExp(r'\{[^}]*\}'), ''),
-                                    ),
+                                    TextSpan(text: cleanText),
                                   ] else ...[
-                                    TextSpan(text: cleanedText),
+                                    TextSpan(text: '$headerText$cleanText'),
                                   ],
                                 ],
                               ),

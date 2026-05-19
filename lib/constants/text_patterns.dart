@@ -104,6 +104,32 @@ String sanitizeForSearch(String text) {
       .trim());
 }
 
+/// 2026-05-19 (v1.2.58): clipboard / preview formatter.
+///
+/// Builds on `sanitizeForSearch` (keeps `[supplied]` + `{clarification}`
+/// content, strips `<note:>` popups) and additionally REPLACES INTERNAL
+/// `\n` line breaks WITH SPACE — so:
+///   • multi-verse copy in any of the 3 formats produces clean inline
+///     paragraphs (rather than e.g. one verse spanning 5 lines because
+///     it's an OT-poetry quote with embedded line breaks)
+///   • the settings-page preview UI matches the real copy output
+///     byte-for-byte (the v1.2.56 brace fix landed in `sanitizeForSearch`
+///     but the three preview regexes still stripped braces, drifting
+///     out of sync)
+///
+/// `sanitizeVerseText` keeps stripping `\n` outright (single-verse
+/// number-tap copy is even more strictly "one line"). `sanitizeForSearch`
+/// keeps `\n` (search indexes / library previews where line breaks
+/// are inert).
+String sanitizeForCopy(String text) {
+  return _collapsePostStripDuplicates(_normalizeDivineNames(text
+          .replaceAll(notePattern, '')
+          .replaceAllMapped(bracePattern, (m) => m.group(1) ?? '')
+          .replaceAll(_pilcrowPattern, '')
+          .replaceAll('\n', ' '))
+      .trim());
+}
+
 /// 2026-05-18 (v1.2.52): defensive post-strip cleanup. When an
 /// annotation in the source data was bracketed by the SAME
 /// punctuation on both sides (e.g. `俄梅戛，<note: …>，是昔在`),
