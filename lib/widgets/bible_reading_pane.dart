@@ -1544,9 +1544,23 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                                   .any(mainProvider.isVerseNoted),
                               anyBookmarked: mainProvider.selectedVerses
                                   .any(mainProvider.isBookmarked),
+                              // 2026-05-19 (v1.2.60): pass the FULL
+                              // selection list (sorted by chapter +
+                              // verse) instead of just the first verse.
+                              // Multi-verse notes share text across the
+                              // whole range — WeDevote-style. Single
+                              // selection still works the same way; the
+                              // editor handles both cases uniformly.
                               onNote: () => _showNoteEditor(
                                 context: context,
-                                verse: mainProvider.selectedVerses.first,
+                                verses:
+                                    mainProvider.selectedVerses.toList()
+                                      ..sort((a, b) {
+                                        if (a.chapter != b.chapter) {
+                                          return a.chapter.compareTo(b.chapter);
+                                        }
+                                        return a.verse.compareTo(b.verse);
+                                      }),
                                 locale: settings.locale,
                                 mainProvider: mainProvider,
                               ),
@@ -2595,15 +2609,62 @@ void _navigateToBibleReference({
 /// completion restore the scroll if it has shifted unexpectedly.
 /// This treats the symptom regardless of which underlying browser
 /// quirk caused it.
+/// 2026-05-19 (v1.2.60): editor accepts a LIST of verses, not just
+/// one. Multi-verse selection (long-press + chain-tap a range) opens
+/// ONE editor whose Save writes the same text to every verse in the
+/// selection — WeDevote-style "passage note". Single-verse selection
+/// (one verse only) is the same code path, with [verses].length == 1.
+///
+/// Pre-population: text is taken from the first verse in the
+/// selection that already has a non-empty note (so an existing note
+/// on any verse in the range surfaces and the user can refine it
+/// before re-saving across the whole range).
+///
+/// Delete: clears the note from every verse in the selection (the
+/// user opened ONE editor for the range, "Delete" means "remove the
+/// note from the whole range", not "remove from the first verse
+/// only" — the latter would be confusing).
 void _showNoteEditor({
   required BuildContext context,
-  required Verse verse,
+  required List<Verse> verses,
   required String locale,
   required MainProvider mainProvider,
 }) {
-  final controller = TextEditingController(
-      text: mainProvider.getVerseNote(verse) ?? '');
-  final ref = '${verse.book} ${verse.chapter}:${verse.verseLabel}';
+  if (verses.isEmpty) return;
+  final firstVerse = verses.first;
+  // Pre-populate from the first verse in the selection that has an
+  // existing non-empty note. If none, start empty.
+  String? prefill;
+  for (final v in verses) {
+    final existing = mainProvider.getVerseNote(v);
+    if (existing != null && existing.isNotEmpty) {
+      prefill = existing;
+      break;
+    }
+  }
+  final controller = TextEditingController(text: prefill ?? '');
+  // Reference label: single verse → "Genesis 1:16"; range → "Genesis 1:16-18".
+  String ref;
+  if (verses.length == 1) {
+    ref = '${firstVerse.book} ${firstVerse.chapter}:${firstVerse.verseLabel}';
+  } else {
+    final last = verses.last;
+    final sameChapter = last.book == firstVerse.book && last.chapter == firstVerse.chapter;
+    if (sameChapter) {
+      ref = '${firstVerse.book} ${firstVerse.chapter}:'
+          '${firstVerse.verseLabel}-${last.verseLabel}';
+    } else {
+      // Cross-chapter range (rare but possible if user multi-selected
+      // across a chapter break). Show start + end with full labels.
+      ref = '${firstVerse.book} ${firstVerse.chapter}:${firstVerse.verseLabel} – '
+          '${last.book} ${last.chapter}:${last.verseLabel}';
+    }
+  }
+  // [verse] is used by several downstream operations (scroll
+  // restoration, position capture). Keep the variable name but
+  // alias it to the first verse for backwards compatibility with
+  // the rest of this function's body.
+  final verse = firstVerse;
 
   // Round 56 round 5: actually-correct index handling.
   //
@@ -2726,8 +2787,10 @@ void _showNoteEditor({
     ),
     builder: (sheetCtx) {
       final scheme = Theme.of(sheetCtx).colorScheme;
-      final hasExisting =
-          (mainProvider.getVerseNote(verse) ?? '').isNotEmpty;
+      // v1.2.60: "Delete" button shows when ANY verse in the
+      // multi-verse selection has a note (and Delete clears them all).
+      final hasExisting = verses.any(
+          (v) => (mainProvider.getVerseNote(v) ?? '').isNotEmpty);
       return Padding(
         padding: EdgeInsets.only(
           left: 16,
@@ -2855,7 +2918,13 @@ void _showNoteEditor({
                 if (hasExisting)
                   TextButton.icon(
                     onPressed: () {
-                      mainProvider.clearVerseNote(verse: verse);
+                      // 2026-05-19 (v1.2.60): delete clears the note
+                      // from EVERY verse in the selection (multi-verse
+                      // editor). For single-verse selection this is
+                      // identical to the previous behaviour.
+                      for (final v in verses) {
+                        mainProvider.clearVerseNote(verse: v);
+                      }
                       mainProvider.clearSelectedVerses();
                       Navigator.of(sheetCtx).maybePop();
                     },
@@ -2907,10 +2976,19 @@ void _showNoteEditor({
                 const Spacer(),
                 FilledButton.icon(
                   onPressed: () {
-                    mainProvider.setVerseNote(
-                      verse: verse,
-                      text: controller.text,
-                    );
+                    // 2026-05-19 (v1.2.60): save the same text to
+                    // every verse in the selection — WeDevote-style
+                    // "passage note". Single-verse selection
+                    // writes one note; multi-verse writes N copies
+                    // of the same text. Library tab groups
+                    // consecutive matching notes back into one
+                    // display tile.
+                    for (final v in verses) {
+                      mainProvider.setVerseNote(
+                        verse: v,
+                        text: controller.text,
+                      );
+                    }
                     mainProvider.clearSelectedVerses();
                     Navigator.of(sheetCtx).maybePop();
                   },

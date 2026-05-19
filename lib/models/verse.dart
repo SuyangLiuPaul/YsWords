@@ -1,5 +1,9 @@
 import 'package:flutter/widgets.dart';
-import 'package:yswords/services/fetch_books.dart' show bookNameToEnglish;
+// 2026-05-19 (v1.2.60): import directly from the dependency-free
+// `book_names.dart` (not via `fetch_books.dart`, which pulls in
+// `MainProvider` → `cloud_sync_service` → `dart:js_interop` and
+// blocks any test that touches Verse from compiling on the VM).
+import 'package:yswords/constants/book_names.dart';
 
 @immutable
 class Verse {

@@ -85,28 +85,82 @@ class _NotesTab extends StatelessWidget {
             'No notes yet. Long-press a verse and tap the note icon to add one.',
       );
     }
+    // 2026-05-19 (v1.2.60): group consecutive verses with identical
+    // note text into one tile — collapses WeDevote-style "passage
+    // notes" (where the user selected a range + wrote one note that
+    // got saved to each verse in the range) back into a single row
+    // labelled "Book Ch:V-V". Single-verse notes (the most common
+    // case) stay as one tile, one verse — same as before.
     final entries = _resolveAnnotations(mainProvider, notes.keys);
+    final groups = _groupContiguousNotes(entries, notes);
     return ListView.separated(
       padding: const EdgeInsets.symmetric(vertical: 8),
-      itemCount: entries.length,
+      itemCount: groups.length,
       separatorBuilder: (_, __) => const Divider(height: 1),
       itemBuilder: (_, i) {
-        final v = entries[i];
-        final note = notes[v.id] ?? '';
+        final group = groups[i];
+        final headVerse = group.verses.first;
+        final note = group.text;
+        // Range label: "Genesis 1:16-18" for multi; "Genesis 1:16"
+        // for single. Falls back to single when verses.length == 1.
+        final rangeLabel = group.verses.length == 1
+            ? '${headVerse.book} ${headVerse.chapter}:${headVerse.verseLabel}'
+            : '${headVerse.book} ${headVerse.chapter}:'
+                '${headVerse.verseLabel}-${group.verses.last.verseLabel}';
         return _AnnotationTile(
-          verse: v,
+          verse: headVerse,
+          rangeLabelOverride: rangeLabel,
           locale: locale,
           mainProvider: mainProvider,
           extra: note,
           onCopy: () => ClipboardHelper.copyWithFeedback(
             context,
-            '[${v.book} ${v.chapter}:${v.verseLabel}] '
-            '${sanitizeForSearch(v.text)}\n\n$note',
+            '[$rangeLabel] '
+            '${sanitizeForSearch(headVerse.text)}\n\n$note',
           ),
+          onDeleteAll: () {
+            for (final v in group.verses) {
+              mainProvider.clearVerseNote(verse: v);
+            }
+          },
         );
       },
     );
   }
+}
+
+/// 2026-05-19 (v1.2.60): a logical "passage note" — one note text
+/// shared by N consecutive verses in the same book + chapter.
+class _NoteGroup {
+  final List<Verse> verses;
+  final String text;
+  const _NoteGroup({required this.verses, required this.text});
+}
+
+/// Walks the (already sorted) [entries] and merges adjacent verses
+/// in the same book + chapter that share identical note text into
+/// one [_NoteGroup]. Verses with different text — or any verse that
+/// isn't immediately consecutive in the chapter — start a fresh
+/// group.
+List<_NoteGroup> _groupContiguousNotes(
+    List<Verse> entries, Map<String, String> notes) {
+  final groups = <_NoteGroup>[];
+  for (final v in entries) {
+    final txt = notes[v.id] ?? '';
+    if (groups.isNotEmpty) {
+      final last = groups.last;
+      final lastVerse = last.verses.last;
+      if (last.text == txt &&
+          lastVerse.book == v.book &&
+          lastVerse.chapter == v.chapter &&
+          lastVerse.verse + 1 == v.verse) {
+        last.verses.add(v);
+        continue;
+      }
+    }
+    groups.add(_NoteGroup(verses: [v], text: txt));
+  }
+  return groups;
 }
 
 class _BookmarksTab extends StatelessWidget {
@@ -157,19 +211,34 @@ class _AnnotationTile extends StatelessWidget {
   final String? extra;
   final VoidCallback onCopy;
 
+  /// 2026-05-19 (v1.2.60): when set, overrides the header label to
+  /// show a verse range ("Genesis 1:16-18") for multi-verse "passage
+  /// notes". When null, the tile shows just the single verse's
+  /// reference, same as before.
+  final String? rangeLabelOverride;
+
+  /// 2026-05-19 (v1.2.60): when set, the "Delete" menu item clears
+  /// notes from EVERY verse in the multi-verse passage note rather
+  /// than just the head verse. Single-verse tiles leave this null
+  /// and use the legacy single-verse `clearVerseNote(verse: this.verse)`.
+  final VoidCallback? onDeleteAll;
+
   const _AnnotationTile({
     required this.verse,
     required this.locale,
     required this.mainProvider,
     required this.extra,
     required this.onCopy,
+    this.rangeLabelOverride,
+    this.onDeleteAll,
   });
 
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final settings = context.watch<AppSettings>();
-    final ref = '${verse.book} ${verse.chapter}:${verse.verseLabel}';
+    final ref = rangeLabelOverride ??
+        '${verse.book} ${verse.chapter}:${verse.verseLabel}';
     final preview = sanitizeForSearch(verse.text);
     return ListTile(
       onTap: () => _navigateToVerse(verse, mainProvider),
@@ -246,7 +315,15 @@ class _AnnotationTile extends StatelessWidget {
               break;
             case 'delete':
               if (extra != null) {
-                mainProvider.clearVerseNote(verse: verse);
+                // 2026-05-19 (v1.2.60): if this tile represents a
+                // multi-verse passage note, clear the note from every
+                // verse in the range; otherwise fall back to the
+                // legacy single-verse clear.
+                if (onDeleteAll != null) {
+                  onDeleteAll!();
+                } else {
+                  mainProvider.clearVerseNote(verse: verse);
+                }
               } else {
                 if (mainProvider.isBookmarked(verse)) {
                   mainProvider.toggleBookmark(verse: verse);
