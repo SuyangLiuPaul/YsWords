@@ -2761,16 +2761,34 @@ void _showNoteEditor({
       .addListener(onPositionsChanged);
 
   // Aggressive enforcement: every 16 ms (≈ one frame at 60 fps)
-  // for 1.5 s after the sheet opens, jumpTo the saved index. This
-  // brute-force approach guarantees that no matter which frame
-  // some browser/keyboard quirk fires the jump-to-top, the next
-  // tick puts us back. After 1.5 s the keyboard / sheet animation
-  // should be fully settled; we stop the periodic timer and rely
-  // on the position-listener watch + close-time restore.
+  // jumpTo the saved index. This brute-force approach guarantees
+  // that no matter which frame some browser/keyboard quirk fires
+  // the jump-to-top, the next tick puts us back.
+  //
+  // 2026-05-20 (v1.2.63): extended from 1.5 s (94 ticks) to
+  // 10 s (625 ticks). User reported "when clicking the note it
+  // goes to the top — I need to close the keyboard first then
+  // things stay normal". Root cause: on web (esp. Safari iOS),
+  // the keyboard appearance is decoupled from the sheet open
+  // event — `autofocus: true` doesn't reliably trigger the
+  // keyboard until the user taps the TextField, which can be
+  // several seconds after the sheet animates up. The v1.2.29
+  // 1.5 s window covered the OPEN animation but not the later
+  // first-tap keyboard pop, so the resulting viewport shrink
+  // pulled the SPL to top with no restore active. Bumping to
+  // 10 s comfortably covers any realistic delay.
+  //
+  // Also: a viewInsets watcher inside the StatefulBuilder (below)
+  // fires restoreScroll on EVERY keyboard show / hide event for
+  // the lifetime of the editor — defense-in-depth in case the
+  // user keeps the editor open past 10 s.
+  //
+  // Cost is negligible: jumpTo on an already-correct position is
+  // a no-op trivial call.
   Timer? enforceTimer;
   enforceTimer = Timer.periodic(const Duration(milliseconds: 16), (t) {
-    if (t.tick >= 94) {
-      // ~1.5 s elapsed (94 × 16 ≈ 1504 ms). Stop hammering.
+    if (t.tick >= 625) {
+      // ~10 s elapsed (625 × 16 ≈ 10 s). Stop hammering.
       t.cancel();
       return;
     }
@@ -2800,10 +2818,37 @@ void _showNoteEditor({
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
     ),
-    builder: (sheetCtx) => StatefulBuilder(
+    builder: (sheetCtx) {
+      // 2026-05-20 (v1.2.63): viewInsets watcher closed over by the
+      // StatefulBuilder so we can fire restoreScroll on EVERY
+      // keyboard show / hide event. Lives outside the builder so
+      // we can compare against the previous value.
+      double lastViewInsetsBottom = 0;
+      return StatefulBuilder(
       builder: (sheetCtx, setSheetState) {
       final scheme = Theme.of(sheetCtx).colorScheme;
       final mq = MediaQuery.of(sheetCtx);
+      // 2026-05-20 (v1.2.63): keyboard show / hide listener. Every
+      // time the bottom inset changes (≥4 px to avoid noise from
+      // sub-pixel layout adjustments), fire restoreScroll multiple
+      // times — same multi-shot pattern as the Focus.onFocusChange
+      // handler, so we beat whatever frame the browser uses to
+      // resize the viewport. Defense-in-depth on top of the 10 s
+      // enforceTimer above.
+      final bottomInset = mq.viewInsets.bottom;
+      if ((bottomInset - lastViewInsetsBottom).abs() > 4.0) {
+        lastViewInsetsBottom = bottomInset;
+        // Schedule restores post-frame so the layout is settled
+        // first; multi-shot at 0 / 50 / 150 / 350 / 800 ms covers
+        // both fast and slow keyboard animations.
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          restoreScroll();
+          for (final delayMs in const [50, 150, 350, 800]) {
+            Future.delayed(
+                Duration(milliseconds: delayMs), restoreScroll);
+          }
+        });
+      }
       // v1.2.60: "Delete" button shows when ANY verse in the
       // multi-verse selection has a note (and Delete clears them all).
       final hasExisting = verses.any(
@@ -3074,7 +3119,8 @@ void _showNoteEditor({
         ),
       );
       },
-    ),
+    );
+    },
   ).whenComplete(() {
     // Sheet closed — stop watching positions and stop the
     // per-frame enforcement, do one last defensive restore in
