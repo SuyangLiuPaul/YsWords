@@ -46,7 +46,7 @@ import 'package:yswords/utils/clipboard_helper.dart';
 // used in this file (jump-to-reference flow on a verse tap).
 import 'package:yswords/utils/jump_to_reference.dart' show prepareJumpToVerse;
 import 'package:yswords/utils/note_reference_parser.dart'
-    show extractNoteReferences;
+    show extractNoteReferences, NoteReferenceMatch;
 import 'package:yswords/utils/reference_parser.dart';
 import 'package:yswords/widgets/verse_popup_sheet.dart' show showVersePopup;
 import 'package:yswords/utils/responsive.dart';
@@ -3058,6 +3058,16 @@ void _showNoteEditor({
             Builder(builder: (chipCtx) {
               final refs = extractNoteReferences(controller.text);
               if (refs.isEmpty) return const SizedBox(height: 12);
+              // 2026-05-20 (v1.2.66): for the "cross-canon indicator"
+              // check (Issue 2 — LJK1/2 are NT only; OT refs are
+              // valid but need a full-canon fallback to read), build
+              // a set of english book names that EXIST in the
+              // currently-loaded verses. Anything outside this set
+              // gets the small fallback marker on its chip.
+              final loadedBooksEn = <String>{
+                for (final v in mainProvider.verses)
+                  bookNameToEnglish[v.book] ?? v.book
+              };
               return Padding(
                 padding: const EdgeInsets.only(top: 10, bottom: 6),
                 child: Wrap(
@@ -3065,70 +3075,14 @@ void _showNoteEditor({
                   runSpacing: 6,
                   children: [
                     for (final ref in refs)
-                      ActionChip(
-                        avatar: Icon(
-                          Icons.menu_book_rounded,
-                          size: 16,
-                          color: scheme.primary,
-                        ),
-                        label: Text(
-                          () {
-                            // Inline compact verse-spec formatter
-                            // (groups consecutive verses into ranges)
-                            // so the chip label reads e.g.
-                            // 'John 3:16' / 'Gen 1:2-5' / 'Gen 1:2,5,7'.
-                            final v = ref.verses;
-                            if (v.length == 1) {
-                              return '${ref.englishBook} ${ref.chapter}:'
-                                  '${v.first}';
-                            }
-                            final parts = <String>[];
-                            int start = v.first;
-                            int end = start;
-                            for (var i = 1; i < v.length; i++) {
-                              final n = v[i];
-                              if (n == end + 1) {
-                                end = n;
-                              } else {
-                                parts.add(start == end
-                                    ? '$start'
-                                    : '$start-$end');
-                                start = n;
-                                end = n;
-                              }
-                            }
-                            parts
-                                .add(start == end ? '$start' : '$start-$end');
-                            return '${ref.englishBook} ${ref.chapter}:'
-                                '${parts.join(',')}';
-                          }(),
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: scheme.onSurface,
-                          ),
-                        ),
-                        backgroundColor:
-                            scheme.primaryContainer.withValues(alpha: 0.35),
-                        side: BorderSide(
-                          color: scheme.primary.withValues(alpha: 0.35),
-                          width: 0.7,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                        visualDensity: VisualDensity.compact,
-                        materialTapTargetSize:
-                            MaterialTapTargetSize.shrinkWrap,
-                        onPressed: () {
-                          final bibleRef = BibleReference(
-                            englishBook: ref.englishBook,
-                            chapter: ref.chapter,
-                            verseStart: ref.verseStart,
-                            verseEnd: ref.verseEnd,
-                            verses: ref.verses,
-                          );
-                          showVersePopup(chipCtx, bibleRef);
-                        },
+                      _buildNoteRefChip(
+                        ref: ref,
+                        scheme: scheme,
+                        locale: locale,
+                        currentVersion: mainProvider.currentVersion,
+                        isInCurrentVersion:
+                            loadedBooksEn.contains(ref.englishBook),
+                        chipCtx: chipCtx,
                       ),
                   ],
                 ),
@@ -3250,6 +3204,112 @@ void _showNoteEditor({
   // most common "click textfield → keyboard pops up → reader
   // jumps" timing, even before the user types a single character.
   Future.delayed(const Duration(milliseconds: 350), restoreScroll);
+}
+
+/// 2026-05-20 (v1.2.66): note-editor verse-reference chip.
+///
+/// Locale-aware label: routes the english book name through
+/// `localeAwareBookName` so a user reading a Chinese version sees
+/// '创世记 1:1' on the chip, not 'Genesis 1:1'. The COMPACT verse
+/// spec (1, 1-5, 2,5,7-10) stays as digits since verse numbers are
+/// universal across translations.
+///
+/// Cross-canon indicator: if the ref's book isn't in the loaded
+/// version (e.g. user has LJK2 NT-only loaded and the ref is for
+/// Genesis), a small dotted-border style plus an `info_outline`
+/// icon signals that tapping will need to load the OT companion
+/// version. The popup itself already handles this via
+/// `bibleVersionFullCanonFallback` + `_ensureVersesLoaded`; the
+/// chip marker is purely a heads-up.
+Widget _buildNoteRefChip({
+  required NoteReferenceMatch ref,
+  required ColorScheme scheme,
+  required String locale,
+  required String currentVersion,
+  required bool isInCurrentVersion,
+  required BuildContext chipCtx,
+}) {
+  // Localized book name based on the current reading version
+  // (zh-Hans / zh-Hant → Chinese; English versions → English).
+  // Falls back to the original English book name if the version
+  // isn't in our locale-mapping table.
+  final localizedBook = localeAwareBookName(
+    ref.englishBook,
+    locale,
+    currentVersion,
+  );
+  // Compact verse-spec formatter — same shape as the picker output.
+  String verseSpec;
+  final v = ref.verses;
+  if (v.length == 1) {
+    verseSpec = '${v.first}';
+  } else {
+    final parts = <String>[];
+    int start = v.first;
+    int end = start;
+    for (var i = 1; i < v.length; i++) {
+      final n = v[i];
+      if (n == end + 1) {
+        end = n;
+      } else {
+        parts.add(start == end ? '$start' : '$start-$end');
+        start = n;
+        end = n;
+      }
+    }
+    parts.add(start == end ? '$start' : '$start-$end');
+    verseSpec = parts.join(',');
+  }
+  final label = '$localizedBook ${ref.chapter}:$verseSpec';
+
+  final borderColor = isInCurrentVersion
+      ? scheme.primary.withValues(alpha: 0.35)
+      : scheme.outline.withValues(alpha: 0.5);
+  final bgColor = isInCurrentVersion
+      ? scheme.primaryContainer.withValues(alpha: 0.35)
+      : scheme.surfaceContainerHighest.withValues(alpha: 0.4);
+
+  return ActionChip(
+    avatar: Icon(
+      isInCurrentVersion
+          ? Icons.menu_book_rounded
+          : Icons.swap_horiz_rounded,
+      size: 16,
+      color: isInCurrentVersion
+          ? scheme.primary
+          : scheme.onSurfaceVariant,
+    ),
+    label: Text(
+      label,
+      style: TextStyle(
+        fontSize: 13,
+        color: scheme.onSurface,
+      ),
+    ),
+    backgroundColor: bgColor,
+    side: BorderSide(color: borderColor, width: 0.7),
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+    visualDensity: VisualDensity.compact,
+    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+    // Tooltip explains the swap-horiz icon: tapping will load
+    // a full-canon companion version because the current
+    // version doesn't include this book.
+    tooltip: isInCurrentVersion
+        ? null
+        : (uiStrings['noteChipFallbackTooltip']?[locale] ??
+            'This book isn\'t in your current version — '
+                'tapping will load the full-canon companion'),
+    onPressed: () {
+      final bibleRef = BibleReference(
+        englishBook: ref.englishBook,
+        chapter: ref.chapter,
+        verseStart: ref.verseStart,
+        verseEnd: ref.verseEnd,
+        verses: ref.verses,
+      );
+      showVersePopup(chipCtx, bibleRef);
+    },
+  );
 }
 
 // Round 34 replaced this modal sheet with a dedicated

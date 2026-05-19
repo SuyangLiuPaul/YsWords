@@ -296,6 +296,17 @@ const uiStrings = {
     'zh-Hant': '插入',
     'en': 'Insert',
   },
+  // 2026-05-20 (v1.2.66): chip-tooltip for the cross-canon fallback
+  // indicator on a note-editor ref chip. Surfaces when the ref's
+  // book isn't in the user's current Bible version (e.g. they're
+  // on LJK2 NT-only but the ref is for Genesis); tapping the chip
+  // will trigger `bibleVersionFullCanonFallback` to load CUVS-YHWH.
+  'noteChipFallbackTooltip': {
+    'zh-Hans': '此书卷不在当前译本中——点击将自动切换到完整的和合本雅伟版',
+    'zh-Hant': '此書卷不在當前譯本中——點擊將自動切換到完整的和合本雅偉版',
+    'en': "This book isn't in your current version — tapping will "
+        "load the full-canon companion",
+  },
   // 2026-05-19 (v1.2.61): reference preview sheet (tap a ref in a
   // saved note → bottom sheet shows referenced verses; expand
   // shows whole chapter; open-in-reader navigates fully).
