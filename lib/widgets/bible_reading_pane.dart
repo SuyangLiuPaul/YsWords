@@ -2735,12 +2735,22 @@ void _showNoteEditor({
   }
 
   // Watch the reader's item positions while the sheet is open.
-  // If the topmost visible item suddenly becomes 0 (or close to
-  // it) while our saved position was deep, restore.
+  // If the topmost visible item drifts away from our saved
+  // position (jumps to top OR anywhere unexpected), restore.
+  //
+  // 2026-05-20 (v1.2.64): dropped the `saved <= 5` early-return —
+  // user reported the scroll-restore still failed on iOS even
+  // after v1.2.63's 10s timer + viewInsets watcher. Tightening
+  // analysis: if the user was reading near the top of the chapter
+  // (e.g. verse 3 visible at item index 3), the old guard
+  // disabled the defender entirely. Then any keyboard-induced
+  // remount that snapped the SPL to item 0 stayed there. Now the
+  // defender fires whenever currentTop differs from savedItemIndex
+  // by more than 1 (1-item tolerance for sub-pixel drift).
   void onPositionsChanged() {
     if (!mainProvider.itemScrollController.isAttached) return;
-    final saved = savedItemIndex ?? -1;
-    if (saved <= 5) return; // already near top; nothing to defend
+    final saved = savedItemIndex;
+    if (saved == null) return;
     try {
       final positions =
           mainProvider.itemPositionsListener.itemPositions.value;
@@ -2751,7 +2761,9 @@ void _showNoteEditor({
         ..sort((a, b) => a.itemLeadingEdge.compareTo(b.itemLeadingEdge));
       if (visible.isEmpty) return;
       final currentTop = visible.first.index;
-      if (currentTop <= 2) {
+      // Restore whenever the SPL drifted away from where we saved.
+      // 1-item tolerance for sub-pixel layout adjustments.
+      if ((currentTop - saved).abs() > 1) {
         Future.microtask(restoreScroll);
       }
     } catch (_) {}

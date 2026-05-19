@@ -306,7 +306,18 @@ class _AnnotationTile extends StatelessWidget {
                     // list verses (e.g. `[1 Kings 15:1,3-4]`) via
                     // the new optional `verses` field on
                     // BibleReference. One popup, one truth.
+                    //
+                    // 2026-05-20 (v1.2.64): added forensic
+                    // `debugPrint` chain so users reporting "popup
+                    // not opening" can paste the browser console
+                    // output to point at the failing step.
                     onRefTap: (ref) {
+                      debugPrint(
+                          '[YsWords noteRefTap] tapped '
+                          '${ref.englishBook} ${ref.chapter}:'
+                          '${ref.verses.join(',')} '
+                          '(start=${ref.verseStart} '
+                          'end=${ref.verseEnd})');
                       final bibleRef = BibleReference(
                         englishBook: ref.englishBook,
                         chapter: ref.chapter,
@@ -314,7 +325,18 @@ class _AnnotationTile extends StatelessWidget {
                         verseEnd: ref.verseEnd,
                         verses: ref.verses,
                       );
-                      showVersePopup(context, bibleRef);
+                      try {
+                        showVersePopup(context, bibleRef).then((_) {
+                          debugPrint(
+                              '[YsWords noteRefTap] popup closed');
+                        });
+                        debugPrint(
+                            '[YsWords noteRefTap] showVersePopup called');
+                      } catch (e, st) {
+                        debugPrint(
+                            '[YsWords noteRefTap] showVersePopup '
+                            'threw: $e\n$st');
+                      }
                     },
                   ),
                 ),

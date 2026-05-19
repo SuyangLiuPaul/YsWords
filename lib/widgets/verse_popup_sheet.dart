@@ -299,24 +299,52 @@ class _VersePopupSheetState extends State<VersePopupSheet> {
               ),
             ),
             const Divider(height: 1),
-            // Body: verse list.
+            // Body: verse list. 2026-05-20 (v1.2.64): wrapped in
+            // AnimatedSwitcher so the expand / collapse toggle on
+            // _fullChapter cross-fades between the cited-only and
+            // whole-chapter views (250 ms ease-in-out) instead of
+            // snapping. Each variant gets a distinct ValueKey so
+            // AnimatedSwitcher detects the swap.
             Expanded(
-              child: verses.isEmpty
-                  ? (_loadingVerses
-                      ? const Center(
-                          child: Padding(
-                            padding: EdgeInsets.all(24),
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          ),
-                        )
-                      : _buildEmpty(locale, scheme))
-                  : ListView.builder(
-                      controller: draggable,
-                      padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
-                      itemCount: verses.length,
-                      itemBuilder: (_, i) =>
-                          _buildVerseTile(verses[i], settings, scheme),
+              child: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 250),
+                switchInCurve: Curves.easeOutCubic,
+                switchOutCurve: Curves.easeInCubic,
+                transitionBuilder: (child, animation) {
+                  return FadeTransition(
+                    opacity: animation,
+                    child: SizeTransition(
+                      sizeFactor: animation,
+                      axisAlignment: -1.0,
+                      child: child,
                     ),
+                  );
+                },
+                child: verses.isEmpty
+                    ? (_loadingVerses
+                        ? const Center(
+                            key: ValueKey('loading'),
+                            child: Padding(
+                              padding: EdgeInsets.all(24),
+                              child: CircularProgressIndicator(
+                                  strokeWidth: 2),
+                            ),
+                          )
+                        : KeyedSubtree(
+                            key: const ValueKey('empty'),
+                            child: _buildEmpty(locale, scheme),
+                          ))
+                    : ListView.builder(
+                        key: ValueKey(
+                            _fullChapter ? 'full' : 'cited'),
+                        controller: draggable,
+                        padding:
+                            const EdgeInsets.fromLTRB(20, 12, 20, 24),
+                        itemCount: verses.length,
+                        itemBuilder: (_, i) => _buildVerseTile(
+                            verses[i], settings, scheme),
+                      ),
+              ),
             ),
           ],
         );
