@@ -6,6 +6,7 @@ import 'package:yswords/models/verse.dart';
 import 'package:yswords/providers/main_provider.dart';
 import 'package:yswords/utils/build_verse_content_spans.dart';
 import 'package:yswords/utils/responsive.dart';
+import 'package:yswords/widgets/block_note_card.dart';
 
 /// Renders a single verse. Used by:
 ///   - Verse-by-verse mode for every verse
@@ -198,6 +199,12 @@ class VerseWidget extends StatelessWidget {
                       ),
                   ],
                 ),
+                // 2026-05-19 (v1.2.57): block-level editorial footnotes
+                // (e.g. LJK2 "16节注：…"). Verse-by-verse mode renders
+                // them right after this verse's Container; paragraph
+                // mode does the same via paragraph_group_widget.
+                for (final note in verse.blockNotes)
+                  BlockNoteCard(note: note, settings: settings),
               ],
             ),
           ),

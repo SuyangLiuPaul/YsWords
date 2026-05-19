@@ -11,6 +11,15 @@ class Verse {
   final bool isParagraphStart;
   final String paragraphType;
 
+  /// 2026-05-19 (v1.2.57): block-level editorial footnotes that
+  /// belong to this verse (e.g. LJK2 Matt 1:16's "16节注：「基督」是
+  /// 希伯来语「弥赛亚」的希腊文译音…参约1.41-49"). Rendered as a
+  /// small indented paragraph BELOW the verse, distinct from the
+  /// inline `<note: …>` popup. Empty list when the verse has no
+  /// block notes (the common case across every translation except
+  /// LJK2 / biblexg-v2).
+  final List<String> blockNotes;
+
   const Verse({
     required this.book,
     required this.chapter,
@@ -19,6 +28,7 @@ class Verse {
     required this.text,
     this.isParagraphStart = false,
     this.paragraphType = 'inline',
+    this.blockNotes = const [],
   }) : verseLabel = verseLabel ?? '$verse';
 
   // Always use the English book name so the ID is the same regardless of
@@ -38,6 +48,7 @@ class Verse {
     String? text,
     bool? isParagraphStart,
     String? paragraphType,
+    List<String>? blockNotes,
   }) {
     return Verse(
       book: book ?? this.book,
@@ -47,6 +58,7 @@ class Verse {
       text: text ?? this.text,
       isParagraphStart: isParagraphStart ?? this.isParagraphStart,
       paragraphType: paragraphType ?? this.paragraphType,
+      blockNotes: blockNotes ?? this.blockNotes,
     );
   }
 
@@ -60,6 +72,18 @@ class Verse {
       throw FormatException(
           'Skipping non-numeric entry: chapter="$chapterStr", verse="$verseStr"');
     }
+    // 2026-05-19 (v1.2.57): blockNotes parses as List<String>. Tolerant:
+    // accepts null / missing (most versions have none) and also tolerates
+    // a single string by wrapping it.
+    final blockNotesRaw = json['blockNotes'];
+    final List<String> blockNotes;
+    if (blockNotesRaw is List) {
+      blockNotes = blockNotesRaw.map((e) => e.toString()).toList();
+    } else if (blockNotesRaw is String && blockNotesRaw.isNotEmpty) {
+      blockNotes = [blockNotesRaw];
+    } else {
+      blockNotes = const [];
+    }
     return Verse(
       book: (json['book'] as String?) ?? '',
       chapter: chapterNum,
@@ -68,6 +92,7 @@ class Verse {
       text: (json['text'] as String?) ?? '',
       isParagraphStart: json['isParagraphStart'] as bool? ?? false,
       paragraphType: (json['paragraphType'] as String?) ?? 'inline',
+      blockNotes: blockNotes,
     );
   }
 }

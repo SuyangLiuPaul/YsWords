@@ -7,6 +7,7 @@ import 'package:yswords/models/verse.dart';
 import 'package:yswords/providers/main_provider.dart';
 import 'package:yswords/utils/build_verse_content_spans.dart';
 import 'package:yswords/utils/responsive.dart';
+import 'package:yswords/widgets/block_note_card.dart';
 
 /// Renders a group of consecutive verses as one flowing paragraph (RichText).
 /// Used in paragraph mode. Eliminates per-verse line breaks so verses read
@@ -234,6 +235,16 @@ class ParagraphGroupWidget extends StatelessWidget {
                     ),
                   ),
                 ),
+                // 2026-05-19 (v1.2.57): block-level editorial footnotes.
+                // LJK2 ships ~563 of these — e.g. Matt 1:16's
+                // "16节注：「基督」是希伯来语…" which the upstream
+                // mattwhatsup.github.io site renders as a small
+                // indented paragraph between v16 and v17. Each verse's
+                // `blockNotes` is rendered as its own subtle box BELOW
+                // the verse content, matching the upstream layout.
+                for (final verse in group)
+                  for (final note in verse.blockNotes)
+                    BlockNoteCard(note: note, settings: settings),
               ],
             ),
           ),
@@ -242,3 +253,8 @@ class ParagraphGroupWidget extends StatelessWidget {
     );
   }
 }
+
+// 2026-05-19 (v1.2.57): the BlockNoteCard widget was extracted to
+// `lib/widgets/block_note_card.dart` so verse_widget.dart (verse-
+// by-verse mode) can render block notes the same way as paragraph
+// mode. See that file for the BlockNoteCard implementation.

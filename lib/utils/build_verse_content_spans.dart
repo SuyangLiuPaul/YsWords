@@ -27,8 +27,16 @@ List<InlineSpan> buildVerseContentSpans({
   // a visible gap between the annotation and the following Chinese
   // character. `collapseAnnotationSpacing` is CJK-aware so it does
   // not affect English contexts like `the [LORD] God`.
-  final original = collapseAnnotationSpacing(verse.text.replaceAll('\n', ''));
-  final raw = original.trim();
+  //
+  // 2026-05-19 (v1.2.57): keep INTERNAL `\n` characters so OT-quote
+  // poetry (LJK2 / biblexg-v2 verses with `paragraphType: 'reference'`)
+  // renders with the line breaks the upstream data marked — e.g.
+  // Matt 2:6 quoting Micah 5:2 now lays out as 5 stanzas instead of
+  // one run-on line. Only TRAILING whitespace (including the LEB-
+  // style `…earth--\n` trailing newline) is stripped via `trimRight`.
+  final original =
+      collapseAnnotationSpacing(verse.text.trimRight());
+  final raw = original;
   final parts = raw
       .splitMapJoin(
         combinedPattern,
