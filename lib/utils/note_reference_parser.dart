@@ -31,16 +31,27 @@ import 'package:yswords/utils/reference_parser.dart' show resolveBookName;
 /// References inherit [baseStyle] then override colour + add a
 /// dotted underline, so font / size / italic flow through cleanly.
 
+// 2026-05-19 (v1.2.61): extended regex now also matches compact
+// references with multiple verse-specs separated by commas:
+//   [Book Ch:V]            — single verse
+//   [Book Ch:V-V]          — verse range
+//   [Book Ch:V,V,V-V,V]    — comma-list mixing singles + ranges
+//   [Book Ch:V，V，V-V]      — Chinese full-width commas
+//
+// The verse-spec group captures the WHOLE comma-list (e.g.
+// "2,5,7,9-10"); parsing into individual verses happens in
+// [_parseVerseSpec] which the span-builder calls before
+// constructing the [NoteReferenceMatch].
 final _referenceRegex = RegExp(
-  // [Book Chapter:Verse(-VerseEnd)?]
-  // Book: 1+ non-bracket chars (lets us match 'John', '1 Corinthians',
-  //       '约翰福音', '约' etc. — we filter post-match via
-  //       bookNameToEnglish)
-  // Chapter / verse: ASCII digits (most translations stay ASCII even
-  //       for CJK locales; the data we ship does)
-  // Separator: `:` or `：` (full-width)
-  // Range separator: `-` or `–`
-  r'\[([^\[\]]+?)[ 　]+(\d+)[:：](\d+)(?:[-–](\d+))?\]',
+  // Book group 1: any non-bracket chars (filtered post-match through
+  //               resolveBookName so typos and made-up names fall
+  //               back to plain text without crashing)
+  // Chapter group 2: ASCII digits
+  // Verse-spec group 3: one or more (digit-range) tokens separated by
+  //                     commas. A token is `\d+(?:[-–]\d+)?` —
+  //                     a single number or a hyphenated range.
+  r'\[([^\[\]]+?)[ 　]+(\d+)[:：]'
+  r'(\d+(?:[-–]\d+)?(?:[,，]\s*\d+(?:[-–]\d+)?)*)\]',
 );
 
 class NoteReferenceMatch {
@@ -49,15 +60,64 @@ class NoteReferenceMatch {
   /// out by the parser before this object is constructed.
   final String englishBook;
   final int chapter;
+
+  /// First verse referenced (lowest of [verses]). Kept for
+  /// backwards compatibility with v1.2.59 callers — the jump-to
+  /// path lands on this verse.
   final int verseStart;
+
+  /// Last verse in the FIRST contiguous range. Equivalent to
+  /// `verses.last` for a single-range ref like `1:2-5`. For comma-
+  /// lists like `1:2,5,7,9-10` it's `verses[1] == 2`, NOT 10 —
+  /// callers wanting the absolute last verse should use
+  /// `verses.last`. Kept for v1.2.59 callsite compatibility.
   final int? verseEnd;
+
+  /// 2026-05-19 (v1.2.61): full flat list of every verse the ref
+  /// covers, sorted ascending, de-duplicated.  For `[Gen 1:2,5,7,9-10]`
+  /// this is `[2, 5, 7, 9, 10]`. Single-verse refs have length 1.
+  /// Range refs are exploded into the full set. Empty list never
+  /// occurs — parser only constructs valid matches.
+  final List<int> verses;
 
   const NoteReferenceMatch({
     required this.englishBook,
     required this.chapter,
     required this.verseStart,
     this.verseEnd,
+    this.verses = const [],
   });
+}
+
+/// Parses a verse-spec like "2", "2-5", "2,5,7,9-10" into a sorted
+/// de-duplicated flat list. Returns an empty list when the spec
+/// is malformed (any token fails to parse). Tolerates both ASCII
+/// and CJK comma separators + hyphen / em-dash range markers.
+List<int> _parseVerseSpec(String spec) {
+  final out = <int>{};
+  // Split on either ASCII `,` or CJK `，`. The capturing group
+  // catches both characters so we don't have to normalize first.
+  final tokens = spec.split(RegExp(r'[,，]'));
+  for (var raw in tokens) {
+    final token = raw.trim();
+    if (token.isEmpty) return const [];
+    // Range or single? `-` or `–`.
+    final rangeMatch = RegExp(r'^(\d+)[-–](\d+)$').firstMatch(token);
+    if (rangeMatch != null) {
+      final lo = int.tryParse(rangeMatch.group(1)!);
+      final hi = int.tryParse(rangeMatch.group(2)!);
+      if (lo == null || hi == null || lo > hi) return const [];
+      for (var i = lo; i <= hi; i++) {
+        out.add(i);
+      }
+    } else {
+      final v = int.tryParse(token);
+      if (v == null) return const [];
+      out.add(v);
+    }
+  }
+  final list = out.toList()..sort();
+  return list;
 }
 
 /// Builds an [InlineSpan] list from [noteText]. Any well-formed
@@ -99,16 +159,25 @@ List<InlineSpan> buildNoteSpans({
     // English + full Chinese forms.
     final canonical = resolveBookName(rawBook);
     final chapter = int.tryParse(m.group(2) ?? '');
-    final vStart = int.tryParse(m.group(3) ?? '');
-    final vEnd = int.tryParse(m.group(4) ?? '');
+    final verseSpec = m.group(3) ?? '';
+    final verses = _parseVerseSpec(verseSpec);
 
-    if (canonical != null && chapter != null && vStart != null) {
-      // Valid reference — render as tappable.
+    if (canonical != null &&
+        chapter != null &&
+        verses.isNotEmpty) {
+      // Compute v1.2.59-shape verseStart / verseEnd for backwards
+      // compatibility (jump-to lands on verseStart). For a comma-
+      // list like 2,5,7,9-10 → verseStart=2, verseEnd=null (no
+      // single contiguous range covers the whole spec); for a
+      // pure range 2-5 → verseStart=2, verseEnd=5.
+      final isContiguous = verses.last == verses.first + verses.length - 1;
       final ref = NoteReferenceMatch(
         englishBook: canonical,
         chapter: chapter,
-        verseStart: vStart,
-        verseEnd: vEnd,
+        verseStart: verses.first,
+        verseEnd:
+            (verses.length > 1 && isContiguous) ? verses.last : null,
+        verses: verses,
       );
       spans.add(TextSpan(
         text: noteText.substring(m.start, m.end),
@@ -152,3 +221,52 @@ String formatReferenceForInsertion({
   required int verse,
 }) =>
     '[$englishBook $chapter:$verse]';
+
+/// 2026-05-19 (v1.2.61): compact reference formatter for the new
+/// multi-select picker. Takes a list of verse numbers and produces
+/// the shortest valid reference string, collapsing consecutive
+/// verses into ranges.
+///
+///   [2]           → "[Book 1:2]"
+///   [2,3,4,5]     → "[Book 1:2-5]"
+///   [2,5]         → "[Book 1:2,5]"
+///   [2,3,5,7,9,10] → "[Book 1:2-3,5,7,9-10]"
+///   [] / chapter ≤ 0 / verses with non-positive entries
+///                  → "" (no reference; caller should treat as
+///                       "user cancelled" and not insert anything)
+///
+/// Output is always parseable by the v1.2.61 [_referenceRegex] so
+/// the picker → insertion → re-parse round-trip is lossless.
+String formatCompactReference({
+  required String englishBook,
+  required int chapter,
+  required List<int> verses,
+}) {
+  if (englishBook.isEmpty || chapter <= 0 || verses.isEmpty) return '';
+  // Dedupe + sort
+  final seen = <int>{};
+  final sorted = verses.where((v) {
+    if (v <= 0 || !seen.add(v)) return false;
+    return true;
+  }).toList()
+    ..sort();
+  if (sorted.isEmpty) return '';
+
+  // Group consecutive verses into ranges
+  final parts = <String>[];
+  int start = sorted.first;
+  int end = start;
+  for (var i = 1; i < sorted.length; i++) {
+    final v = sorted[i];
+    if (v == end + 1) {
+      end = v;
+    } else {
+      parts.add(start == end ? '$start' : '$start-$end');
+      start = v;
+      end = v;
+    }
+  }
+  parts.add(start == end ? '$start' : '$start-$end');
+
+  return '[$englishBook $chapter:${parts.join(',')}]';
+}

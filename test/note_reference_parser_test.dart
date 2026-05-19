@@ -185,4 +185,136 @@ void main() {
       );
     });
   });
+
+  // 2026-05-19 (v1.2.61): compact reference formatter — the new
+  // multi-select picker uses this to convert {2, 5, 7, 9, 10}
+  // into "[Book Ch:2,5,7,9-10]".
+  group('formatCompactReference', () {
+    test('single verse → single number', () {
+      expect(
+        formatCompactReference(
+            englishBook: 'John', chapter: 3, verses: [16]),
+        '[John 3:16]',
+      );
+    });
+
+    test('contiguous range collapses to hyphenated form', () {
+      expect(
+        formatCompactReference(
+            englishBook: 'Genesis', chapter: 1, verses: [2, 3, 4, 5]),
+        '[Genesis 1:2-5]',
+      );
+    });
+
+    test('two non-adjacent verses → comma-separated', () {
+      expect(
+        formatCompactReference(
+            englishBook: 'Genesis', chapter: 1, verses: [2, 5]),
+        '[Genesis 1:2,5]',
+      );
+    });
+
+    test('mixed: singles + ranges in canonical compact form', () {
+      expect(
+        formatCompactReference(
+            englishBook: 'Genesis',
+            chapter: 1,
+            verses: [2, 3, 5, 7, 9, 10]),
+        '[Genesis 1:2-3,5,7,9-10]',
+      );
+    });
+
+    test('input is sorted + deduplicated', () {
+      expect(
+        formatCompactReference(
+            englishBook: 'Matt', chapter: 5, verses: [5, 3, 1, 5, 1, 4]),
+        '[Matt 5:1,3-5]',
+      );
+    });
+
+    test('empty verses list → empty string (caller should treat as '
+        '"no insertion")', () {
+      expect(
+        formatCompactReference(
+            englishBook: 'John', chapter: 3, verses: []),
+        '',
+      );
+    });
+
+    test('invalid chapter / book → empty string', () {
+      expect(
+        formatCompactReference(
+            englishBook: 'John', chapter: 0, verses: [1]),
+        '',
+      );
+      expect(
+        formatCompactReference(
+            englishBook: '', chapter: 1, verses: [1]),
+        '',
+      );
+    });
+
+    test('non-positive verse numbers are filtered out', () {
+      expect(
+        formatCompactReference(
+            englishBook: 'John', chapter: 1, verses: [0, -1, 5]),
+        '[John 1:5]',
+      );
+    });
+
+    test('round-trip: compact format parses back to the same '
+        'verse list', () {
+      final compact = formatCompactReference(
+          englishBook: 'Genesis',
+          chapter: 1,
+          verses: [2, 3, 5, 7, 9, 10]);
+      // Parse it through buildNoteSpans + collect via _fireAllRefs
+      final refs = _fireAllRefs(compact);
+      expect(refs.length, 1);
+      expect(refs.first.englishBook, 'Genesis');
+      expect(refs.first.chapter, 1);
+      expect(refs.first.verses, [2, 3, 5, 7, 9, 10]);
+    });
+  });
+
+  // 2026-05-19 (v1.2.61): complex compact references in the parser.
+  // The regex was extended to match `1:2,5,7,9-10` style specs.
+  group('buildNoteSpans — complex compact references', () {
+    test('comma-separated verses [Gen 1:2,5,7]', () {
+      final refs = _fireAllRefs('See [Gen 1:2,5,7]');
+      expect(refs.length, 1);
+      expect(refs.first.englishBook, 'Genesis');
+      expect(refs.first.chapter, 1);
+      expect(refs.first.verses, [2, 5, 7]);
+      // Contiguous? No — verseEnd stays null
+      expect(refs.first.verseEnd, isNull);
+      expect(refs.first.verseStart, 2);
+    });
+
+    test('mixed singles + ranges [Gen 1:2-3,5,9-10]', () {
+      final refs = _fireAllRefs('Read [Gen 1:2-3,5,9-10]');
+      expect(refs.length, 1);
+      expect(refs.first.verses, [2, 3, 5, 9, 10]);
+    });
+
+    test('pure range still works [Gen 1:2-5]', () {
+      final refs = _fireAllRefs('[Gen 1:2-5]');
+      expect(refs.length, 1);
+      expect(refs.first.verses, [2, 3, 4, 5]);
+      // Contiguous range → verseEnd is set for v1.2.59 callers
+      expect(refs.first.verseEnd, 5);
+    });
+
+    test('CJK comma `[Gen 1:2，5，7]` matches', () {
+      final refs = _fireAllRefs('[Gen 1:2，5，7]');
+      expect(refs.length, 1);
+      expect(refs.first.verses, [2, 5, 7]);
+    });
+
+    test('malformed: inverted range [Gen 1:5-2] → falls through as '
+        'plain text', () {
+      final refs = _fireAllRefs('[Gen 1:5-2]');
+      expect(refs, isEmpty);
+    });
+  });
 }

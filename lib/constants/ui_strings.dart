@@ -264,9 +264,49 @@ const uiStrings = {
     'en': 'Pick a chapter',
   },
   'notePickerPickVerse': {
-    'zh-Hans': '选择节',
-    'zh-Hant': '選擇節',
-    'en': 'Pick a verse',
+    'zh-Hans': '选择经文',
+    'zh-Hant': '選擇經文',
+    'en': 'Pick verses',
+  },
+  // 2026-05-19 (v1.2.61): multi-select picker UX strings.
+  'notePickerSelectVerses': {
+    'zh-Hans': '点击一或多节经文',
+    'zh-Hant': '點擊一或多節經文',
+    'en': 'Tap one or more verses',
+  },
+  'notePickerClearSelection': {
+    'zh-Hans': '清空选择',
+    'zh-Hant': '清空選擇',
+    'en': 'Clear selection',
+  },
+  'notePickerInsert': {
+    'zh-Hans': '插入',
+    'zh-Hant': '插入',
+    'en': 'Insert',
+  },
+  // 2026-05-19 (v1.2.61): reference preview sheet (tap a ref in a
+  // saved note → bottom sheet shows referenced verses; expand
+  // shows whole chapter; open-in-reader navigates fully).
+  'notePreviewExpand': {
+    'zh-Hans': '展开整章',
+    'zh-Hant': '展開整章',
+    'en': 'Expand chapter',
+  },
+  'notePreviewCollapse': {
+    'zh-Hans': '收起',
+    'zh-Hant': '收起',
+    'en': 'Collapse',
+  },
+  'notePreviewOpenReader': {
+    'zh-Hans': '在阅读器中打开',
+    'zh-Hant': '在閱讀器中打開',
+    'en': 'Open in Reader',
+  },
+  'notePreviewMissing': {
+    'zh-Hans': '此段经文不在当前的圣经版本中。请在阅读器中打开以切换版本。',
+    'zh-Hant': '此段經文不在當前的聖經版本中。請在閱讀器中打開以切換版本。',
+    'en': "This passage isn't in your current Bible version. "
+        "Open it in the reader to switch versions.",
   },
   // `back` already exists earlier in this map at line ~37 — reused.
   'bookmark': {'zh-Hans': '书签', 'zh-Hant': '書籤', 'en': 'Bookmark'},

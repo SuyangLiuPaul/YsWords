@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 
 import 'package:yswords/constants/book_names.dart';
+import 'package:yswords/constants/text_patterns.dart' show sanitizeForSearch;
 import 'package:yswords/constants/ui_strings.dart';
 import 'package:yswords/models/app_settings.dart';
+import 'package:yswords/models/verse.dart';
 import 'package:yswords/providers/main_provider.dart';
 import 'package:yswords/utils/note_reference_parser.dart'
-    show formatReferenceForInsertion;
+    show formatCompactReference;
 import 'package:yswords/services/fetch_books.dart' show standardBookOrder;
 
 /// 2026-05-19 (v1.2.59): book → chapter → verse picker for the
@@ -50,6 +52,13 @@ class _NoteReferencePickerSheetState
   String? _selectedBookCanonical; // canonical English book name
   int? _selectedChapter;
 
+  /// 2026-05-19 (v1.2.61): multi-select verse picker — set of verse
+  /// numbers the user has tapped on. The verse step shows the full
+  /// verse text and lets the user toggle as many as they want; the
+  /// bottom bar previews the compact reference being built (e.g.
+  /// "Genesis 1:2,5,7,9-10") and the Insert button emits it.
+  final Set<int> _selectedVerses = <int>{};
+
   /// Map canonical English book name → list of unique chapters
   /// available in `mp.verses`. Built lazily on first book pick.
   late final Map<String, List<int>> _chaptersByBook = _buildChaptersByBook();
@@ -66,15 +75,19 @@ class _NoteReferencePickerSheetState
     };
   }
 
-  List<int> _versesIn(String canonicalBook, int chapter) {
-    final out = <int>{};
+  /// 2026-05-19 (v1.2.61): full Verse objects for the multi-select
+  /// step — same filter as [_versesIn] but returns Verse not int,
+  /// so the picker UI can show verse text alongside the toggle.
+  List<Verse> _verseObjectsIn(String canonicalBook, int chapter) {
+    final out = <Verse>[];
     for (final v in widget.mainProvider.verses) {
       final candidate = bookNameToEnglish[v.book] ?? v.book;
       if (candidate == canonicalBook && v.chapter == chapter) {
-        out.add(v.verse);
+        out.add(v);
       }
     }
-    return out.toList()..sort();
+    out.sort((a, b) => a.verse.compareTo(b.verse));
+    return out;
   }
 
   /// Resolve a canonical English book name to the label we should
@@ -309,43 +322,153 @@ class _NoteReferencePickerSheetState
 
   Widget _buildVerseGrid(
       ScrollController scrollController, ColorScheme scheme, double fs) {
+    // 2026-05-19 (v1.2.61): verse step is now a vertical, scrollable
+    // list of full-text verses with multi-select. The user can tap
+    // any number of them; the bottom bar previews the compact ref
+    // string being built and the Insert button emits it.
     final verses =
-        _versesIn(_selectedBookCanonical!, _selectedChapter!);
-    return GridView.builder(
-      controller: scrollController,
-      padding: const EdgeInsets.all(12),
-      gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-        maxCrossAxisExtent: 56,
-        mainAxisExtent: 44,
-        crossAxisSpacing: 6,
-        mainAxisSpacing: 6,
-      ),
-      itemCount: verses.length,
-      itemBuilder: (_, i) {
-        final v = verses[i];
-        return FilledButton.tonal(
-          style: FilledButton.styleFrom(
-            padding: EdgeInsets.zero,
-            backgroundColor: scheme.primaryContainer.withValues(alpha: 0.5),
+        _verseObjectsIn(_selectedBookCanonical!, _selectedChapter!);
+    final preview = formatCompactReference(
+      englishBook: _selectedBookCanonical!,
+      chapter: _selectedChapter!,
+      verses: _selectedVerses.toList(),
+    );
+    return Column(
+      children: [
+        // Selection-summary bar above the list — gives the user
+        // continuous feedback on what they're building.
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          color: scheme.surfaceContainerHighest.withValues(alpha: 0.35),
+          child: Row(
+            children: [
+              Icon(Icons.check_circle_outline_rounded,
+                  size: 16, color: scheme.primary),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  preview.isEmpty
+                      ? (uiStrings['notePickerSelectVerses']
+                              ?[widget.locale] ??
+                          'Tap one or more verses below')
+                      : preview,
+                  style: TextStyle(
+                    fontSize: fs - 3,
+                    color: preview.isEmpty
+                        ? scheme.onSurfaceVariant
+                        : scheme.primary,
+                    fontWeight: preview.isEmpty
+                        ? FontWeight.normal
+                        : FontWeight.w600,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              if (_selectedVerses.isNotEmpty)
+                IconButton(
+                  icon: const Icon(Icons.clear_rounded, size: 18),
+                  tooltip:
+                      uiStrings['notePickerClearSelection']?[widget.locale] ??
+                          'Clear selection',
+                  visualDensity: VisualDensity.compact,
+                  onPressed: () =>
+                      setState(() => _selectedVerses.clear()),
+                ),
+              FilledButton(
+                style: FilledButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 16, vertical: 6),
+                  visualDensity: VisualDensity.compact,
+                ),
+                onPressed: _selectedVerses.isEmpty
+                    ? null
+                    : () => Navigator.of(context).pop(preview),
+                child: Text(
+                  uiStrings['notePickerInsert']?[widget.locale] ??
+                      'Insert',
+                  style: TextStyle(fontSize: fs - 3),
+                ),
+              ),
+            ],
           ),
-          onPressed: () {
-            final ref = formatReferenceForInsertion(
-              englishBook: _selectedBookCanonical!,
-              chapter: _selectedChapter!,
-              verse: v,
-            );
-            Navigator.of(context).pop(ref);
-          },
-          child: Text(
-            '$v',
-            style: TextStyle(
-              fontSize: fs - 2,
-              fontWeight: FontWeight.w600,
-              color: scheme.onPrimaryContainer,
-            ),
+        ),
+        Expanded(
+          child: ListView.separated(
+            controller: scrollController,
+            padding: const EdgeInsets.symmetric(vertical: 6),
+            itemCount: verses.length,
+            separatorBuilder: (_, __) =>
+                Divider(height: 1, color: scheme.outlineVariant),
+            itemBuilder: (_, i) {
+              final v = verses[i];
+              final selected = _selectedVerses.contains(v.verse);
+              return InkWell(
+                onTap: () {
+                  setState(() {
+                    if (selected) {
+                      _selectedVerses.remove(v.verse);
+                    } else {
+                      _selectedVerses.add(v.verse);
+                    }
+                  });
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 12, vertical: 8),
+                  color: selected
+                      ? scheme.primaryContainer.withValues(alpha: 0.35)
+                      : null,
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Verse number + checkmark indicator
+                      SizedBox(
+                        width: 32,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Text(
+                              v.verseLabel,
+                              style: TextStyle(
+                                fontSize: fs - 2,
+                                fontWeight: FontWeight.w700,
+                                color: selected
+                                    ? scheme.primary
+                                    : scheme.onSurfaceVariant,
+                              ),
+                            ),
+                            if (selected)
+                              Icon(Icons.check_circle_rounded,
+                                  size: 14, color: scheme.primary),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      // Verse text (sanitized — no <note: …> popup
+                      // markup, no `{phrase}` braces, no `\n` line
+                      // breaks; just clean reading text).
+                      Expanded(
+                        child: Text(
+                          sanitizeForSearch(v.text),
+                          style: TextStyle(
+                            fontSize: fs - 2,
+                            color: selected
+                                ? scheme.onSurface
+                                : scheme.onSurfaceVariant,
+                            height: 1.4,
+                          ),
+                          maxLines: 4,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
           ),
-        );
-      },
+        ),
+      ],
     );
   }
 
@@ -354,6 +477,7 @@ class _NoteReferencePickerSheetState
       if (_step == _PickerStep.verse) {
         _step = _PickerStep.chapter;
         _selectedChapter = null;
+        _selectedVerses.clear();
       } else if (_step == _PickerStep.chapter) {
         _step = _PickerStep.book;
         _selectedBookCanonical = null;

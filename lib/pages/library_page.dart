@@ -15,6 +15,7 @@ import 'package:yswords/utils/jump_to_reference.dart' as jumper;
 import 'package:yswords/utils/note_reference_parser.dart';
 import 'package:yswords/utils/reference_parser.dart';
 import 'package:yswords/utils/version_mapper.dart' show translateBookName;
+import 'package:yswords/widgets/note_reference_preview_sheet.dart';
 import 'package:yswords/widgets/home_icon_button.dart';
 import 'package:yswords/widgets/localized_back_button.dart';
 
@@ -297,8 +298,17 @@ class _AnnotationTile extends StatelessWidget {
                       height: 1.45,
                     ),
                     refColor: scheme.primary,
-                    onRefTap: (ref) =>
-                        _navigateToReference(ref, mainProvider),
+                    // 2026-05-19 (v1.2.61): tap behaviour changed
+                    // from "immediately navigate" to "preview
+                    // sheet". User reads their note, taps a ref,
+                    // sees the referenced verses in a popup with
+                    // expand-to-chapter + open-in-reader options.
+                    // Keeps the user in the note-reading context
+                    // for quick cross-reference glances.
+                    onRefTap: (ref) => showNoteReferencePreviewSheet(
+                      context: context,
+                      ref: ref,
+                    ),
                   ),
                 ),
               ),
@@ -403,36 +413,11 @@ void _navigateToVerse(Verse v, MainProvider mp) {
   );
 }
 
-/// 2026-05-19 (v1.2.59): tap-handler for `[Book Ch:V]` references
-/// embedded in a user's note text. Resolves the canonical English
-/// book name to the version-local form, synthesises a Verse from
-/// `mp.verses`, and runs the standard pendingJump flow into the
-/// reader. Falls back silently if the target verse isn't in the
-/// loaded version (e.g. user typed `[Genesis 1:1]` while reading an
-/// NT-only version) — caller's UI shouldn't have to handle that
-/// error per-tap; the existing jump infrastructure surfaces it via
-/// its own snackbar.
-void _navigateToReference(NoteReferenceMatch ref, MainProvider mp) {
-  final localBook = translateBookName(ref.englishBook, mp.currentVersion);
-  // Try the locale-mapped name first, fall back to the canonical
-  // English name (some versions ship English book names even in CN
-  // mode, and the translator returns the input when it can't find
-  // a mapping).
-  final candidates = <String>{localBook, ref.englishBook};
-  Verse? target;
-  for (final book in candidates) {
-    target = mp.verses
-        .where((v) =>
-            v.book == book &&
-            v.chapter == ref.chapter &&
-            v.verse == ref.verseStart)
-        .cast<Verse?>()
-        .firstWhere((_) => true, orElse: () => null);
-    if (target != null) break;
-  }
-  if (target == null) return;
-  _navigateToVerse(target, mp);
-}
+// 2026-05-19 (v1.2.61): the v1.2.59 `_navigateToReference` helper
+// is gone. Tapping a ref in a note now opens
+// `showNoteReferencePreviewSheet` which has its own resolve +
+// navigate path (via the "Open in Reader" button). Keeping this
+// comment so future readers don't go hunting for it.
 
 // ── Plan tab ───────────────────────────────────────────────────────
 
