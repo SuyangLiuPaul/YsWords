@@ -68,21 +68,38 @@ String _normalizeDivineNames(String text) {
   return out;
 }
 
-/// Strips all annotation markup from verse text, returning clean readable text.
+/// Strips popup-only annotation markup from verse text, returning
+/// clean readable text suitable for clipboard copy. Preserves the
+/// inner content of `{clarification}` and `[supplied]` brackets
+/// because that content IS part of the verse text — it's just
+/// editorial markup for which words were supplied vs. translated
+/// vs. clarified. Only `<note: …>` (which renders as a popup, not
+/// inline text) is fully stripped.
+///
+/// 2026-05-19 (v1.2.56): user reported copy-paste of LEB Matt 2:18
+/// produced "...because ." — the `{they exist no longer}` content
+/// was being discarded along with the braces. Was a bug: braces are
+/// MARKUP, the phrase inside is content. Both `sanitizeVerseText`
+/// (copy path) and `sanitizeForSearch` (search-index + previews +
+/// most copy paths) now keep the inner phrase. `<note: …>` continues
+/// to be fully stripped because it's a separate popup, not inline
+/// verse text.
 String sanitizeVerseText(String text) {
   return _collapsePostStripDuplicates(_normalizeDivineNames(text
           .replaceAll('\n', '')
           .replaceAll(notePattern, '')
-          .replaceAll(bracePattern, '')
+          .replaceAllMapped(bracePattern, (m) => m.group(1) ?? '')
           .replaceAll(_pilcrowPattern, ''))
       .trim());
 }
 
-/// Strips annotations but preserves square-bracket content (used for display).
+/// Strips annotations but preserves square-bracket content + the
+/// inner content of `{clarification}` braces. See `sanitizeVerseText`
+/// for the v1.2.56 rationale on brace preservation.
 String sanitizeForSearch(String text) {
   return _collapsePostStripDuplicates(_normalizeDivineNames(text
           .replaceAll(notePattern, '')
-          .replaceAll(bracePattern, '')
+          .replaceAllMapped(bracePattern, (m) => m.group(1) ?? '')
           .replaceAll(_pilcrowPattern, ''))
       .trim());
 }

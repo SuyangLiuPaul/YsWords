@@ -84,4 +84,69 @@ void main() {
           '主[雅偉]神說：「我是阿拉法，我是俄梅戛，是昔在」');
     });
   });
+
+  // 2026-05-19 (v1.2.56): user reported LEB Matt 2:18 copy/paste
+  // produced "...because ." — `{they exist no longer}` content was
+  // being stripped along with the braces. Was a bug: braces are
+  // markup, the inner phrase is verse content and must survive in
+  // both copy + search.
+  group('v1.2.56: {brace} inner content preservation', () {
+    test('sanitizeVerseText keeps inner content of {phrase}, '
+        'strips only the braces', () {
+      // The exact LEB Matt 2:18 shape from the user report.
+      const raw = '"A voice was heard in Ramah, weeping and great '
+          'mourning, Rachel weeping [for] her children, and she did '
+          'not want to be comforted, because {they exist no longer}'
+          '<note: Literally "they are not">."<note: A quotation from '
+          'Jer 31:15>';
+      const expected = '"A voice was heard in Ramah, weeping and '
+          'great mourning, Rachel weeping [for] her children, and '
+          'she did not want to be comforted, because they exist no '
+          'longer."';
+      expect(sanitizeVerseText(raw), expected);
+    });
+
+    test('sanitizeForSearch keeps inner content of {phrase} for '
+        'search indexing', () {
+      // After the v1.2.56 fix, searching for "they exist no longer"
+      // should match Matt 2:18 (and any other verse with that phrase
+      // inside a brace).
+      const raw = 'comforted, because {they exist no longer}<note: '
+          'Literally "they are not">.';
+      final out = sanitizeForSearch(raw);
+      expect(out.contains('they exist no longer'), isTrue,
+          reason: 'brace inner content should survive into search index');
+      expect(out.contains('{'), isFalse,
+          reason: 'braces themselves should be stripped');
+      expect(out.contains('Literally'), isFalse,
+          reason: '<note: …> should still be fully stripped');
+    });
+
+    test('sanitizeVerseText keeps multi-word {clarification} from '
+        'LEB Matt 4:12', () {
+      const raw = 'Now [when he]<note: *Here "when" is supplied …> '
+          'heard that John {had been arrested},<note: Literally '
+          '"had been handed over"> he withdrew into Galilee.';
+      final out = sanitizeVerseText(raw);
+      expect(out.contains('had been arrested'), isTrue);
+      expect(out.contains('{'), isFalse);
+      expect(out.contains('}'), isFalse);
+      expect(out.contains('<note:'), isFalse);
+    });
+
+    test('empty {} braces are LEFT ALONE (bracePattern requires 1+ '
+        'inner char, so the literal `{}` doesn\'t match)', () {
+      // Validates we don't crash on an unmatched empty pair — the
+      // input pass-through is the safe, predictable behaviour.
+      expect(sanitizeForSearch('a{}b'), 'a{}b');
+      expect(sanitizeVerseText('a{}b'), 'a{}b');
+    });
+
+    test('multiple {brace} occurrences in one verse all preserve '
+        'inner content', () {
+      const raw = 'one {two} three {four} five';
+      expect(sanitizeForSearch(raw), 'one two three four five');
+      expect(sanitizeVerseText(raw), 'one two three four five');
+    });
+  });
 }
