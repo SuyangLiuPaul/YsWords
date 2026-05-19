@@ -212,6 +212,52 @@ List<InlineSpan> buildNoteSpans({
   return spans.isEmpty ? [TextSpan(text: noteText, style: baseStyle)] : spans;
 }
 
+/// 2026-05-20 (v1.2.65): extract every parseable `[Book Ch:V…]`
+/// reference from [noteText] as a list of [NoteReferenceMatch].
+///
+/// Used by the note editor's live ref-chip strip (the chips that
+/// appear below the TextField as the user types or inserts refs
+/// via the picker). Each chip taps to open the same VersePopupSheet
+/// the Library Notes view uses, so the user can preview a referenced
+/// verse WITHOUT having to save the note first.
+///
+/// Identical filtering rules to [buildNoteSpans]:
+///   • Book name must resolve via [resolveBookName] (English canonical,
+///     common abbreviations, Chinese short / full forms)
+///   • Verse spec must parse to a non-empty sorted list of positive
+///     integers
+///   • Malformed refs (typo book, inverted range, empty spec) are
+///     silently dropped — chip simply doesn't render
+///
+/// Returns the matches in source order (left-to-right in the
+/// note text). Duplicates are NOT deduped — if the user wrote
+/// `[John 3:16]` twice the chip strip shows two chips. (Library
+/// rendering does the same; cheap and predictable.)
+List<NoteReferenceMatch> extractNoteReferences(String noteText) {
+  if (noteText.isEmpty) return const [];
+  final out = <NoteReferenceMatch>[];
+  for (final m in _referenceRegex.allMatches(noteText)) {
+    final rawBook = m.group(1)?.trim() ?? '';
+    final canonical = resolveBookName(rawBook);
+    final chapter = int.tryParse(m.group(2) ?? '');
+    final verseSpec = m.group(3) ?? '';
+    final verses = _parseVerseSpec(verseSpec);
+    if (canonical == null || chapter == null || verses.isEmpty) {
+      continue;
+    }
+    final isContiguous =
+        verses.last == verses.first + verses.length - 1;
+    out.add(NoteReferenceMatch(
+      englishBook: canonical,
+      chapter: chapter,
+      verseStart: verses.first,
+      verseEnd: (verses.length > 1 && isContiguous) ? verses.last : null,
+      verses: verses,
+    ));
+  }
+  return out;
+}
+
 /// Convenience: a `[Book Ch:V]` template the picker sheet emits.
 /// Centralised here so the parser regex and the picker output
 /// can't drift apart.

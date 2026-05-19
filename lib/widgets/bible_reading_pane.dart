@@ -45,7 +45,10 @@ import 'package:yswords/utils/clipboard_helper.dart';
 // scroll-restore complexity. Only `prepareJumpToVerse` is still
 // used in this file (jump-to-reference flow on a verse tap).
 import 'package:yswords/utils/jump_to_reference.dart' show prepareJumpToVerse;
+import 'package:yswords/utils/note_reference_parser.dart'
+    show extractNoteReferences;
 import 'package:yswords/utils/reference_parser.dart';
+import 'package:yswords/widgets/verse_popup_sheet.dart' show showVersePopup;
 import 'package:yswords/utils/responsive.dart';
 import 'package:yswords/utils/short_book_name.dart';
 import 'package:yswords/widgets/google_g_logo.dart';
@@ -3025,7 +3028,17 @@ void _showNoteEditor({
                               Duration(milliseconds: delayMs), restoreScroll);
                         }
                       },
-                      onChanged: (_) => restoreScroll(),
+                      onChanged: (val) {
+                        restoreScroll();
+                        // 2026-05-20 (v1.2.65): trigger a rebuild
+                        // so the ref-chip strip below recomputes
+                        // from the new note text. Using
+                        // setSheetState (StatefulBuilder's setState)
+                        // because the TextField's controller doesn't
+                        // notify its surrounding scope on every
+                        // keystroke.
+                        setSheetState(() {});
+                      },
                       decoration: InputDecoration(
                         hintText: uiStrings['noteHint']?[locale] ??
                             'Type your note for this verse…',
@@ -3035,7 +3048,92 @@ void _showNoteEditor({
                       ),
                     ),
                   ),
-            const SizedBox(height: 12),
+            // 2026-05-20 (v1.2.65): live ref-chip strip. As the
+            // user types or inserts `[Book Ch:V]` references via
+            // the picker, each parseable ref renders as a tappable
+            // ActionChip below the TextField. Tap → opens the same
+            // VersePopupSheet the Library notes view uses, so the
+            // user can preview a referenced verse WITHOUT having
+            // to save the note first. Hidden when no refs present.
+            Builder(builder: (chipCtx) {
+              final refs = extractNoteReferences(controller.text);
+              if (refs.isEmpty) return const SizedBox(height: 12);
+              return Padding(
+                padding: const EdgeInsets.only(top: 10, bottom: 6),
+                child: Wrap(
+                  spacing: 6,
+                  runSpacing: 6,
+                  children: [
+                    for (final ref in refs)
+                      ActionChip(
+                        avatar: Icon(
+                          Icons.menu_book_rounded,
+                          size: 16,
+                          color: scheme.primary,
+                        ),
+                        label: Text(
+                          () {
+                            // Inline compact verse-spec formatter
+                            // (groups consecutive verses into ranges)
+                            // so the chip label reads e.g.
+                            // 'John 3:16' / 'Gen 1:2-5' / 'Gen 1:2,5,7'.
+                            final v = ref.verses;
+                            if (v.length == 1) {
+                              return '${ref.englishBook} ${ref.chapter}:'
+                                  '${v.first}';
+                            }
+                            final parts = <String>[];
+                            int start = v.first;
+                            int end = start;
+                            for (var i = 1; i < v.length; i++) {
+                              final n = v[i];
+                              if (n == end + 1) {
+                                end = n;
+                              } else {
+                                parts.add(start == end
+                                    ? '$start'
+                                    : '$start-$end');
+                                start = n;
+                                end = n;
+                              }
+                            }
+                            parts
+                                .add(start == end ? '$start' : '$start-$end');
+                            return '${ref.englishBook} ${ref.chapter}:'
+                                '${parts.join(',')}';
+                          }(),
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: scheme.onSurface,
+                          ),
+                        ),
+                        backgroundColor:
+                            scheme.primaryContainer.withValues(alpha: 0.35),
+                        side: BorderSide(
+                          color: scheme.primary.withValues(alpha: 0.35),
+                          width: 0.7,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        visualDensity: VisualDensity.compact,
+                        materialTapTargetSize:
+                            MaterialTapTargetSize.shrinkWrap,
+                        onPressed: () {
+                          final bibleRef = BibleReference(
+                            englishBook: ref.englishBook,
+                            chapter: ref.chapter,
+                            verseStart: ref.verseStart,
+                            verseEnd: ref.verseEnd,
+                            verses: ref.verses,
+                          );
+                          showVersePopup(chipCtx, bibleRef);
+                        },
+                      ),
+                  ],
+                ),
+              );
+            }),
             // 2026-05-19 (v1.2.59): "+ Verse Reference" button.
             // Opens a 3-step picker (book → chapter → verse) and
             // inserts the chosen `[Book Ch:V]` at the textfield's
