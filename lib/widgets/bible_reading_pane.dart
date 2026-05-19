@@ -10,6 +10,7 @@ import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:yswords/constants/bible_versions.dart';
 import 'package:yswords/constants/text_patterns.dart';
 import 'package:yswords/constants/ui_strings.dart';
+import 'package:yswords/widgets/note_reference_picker_sheet.dart';
 import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/models/bible_map.dart';
 import 'package:yswords/models/verse.dart';
@@ -2843,6 +2844,12 @@ void _showNoteEditor({
               ),
             ),
             const SizedBox(height: 12),
+            // 2026-05-19 (v1.2.59): "+ Verse Reference" button.
+            // Opens a 3-step picker (book → chapter → verse) and
+            // inserts the chosen `[Book Ch:V]` at the textfield's
+            // cursor position. The reference becomes a tappable
+            // link when viewed in the Library / wherever the note
+            // is displayed.
             Row(
               children: [
                 if (hasExisting)
@@ -2858,6 +2865,45 @@ void _showNoteEditor({
                       style: TextStyle(color: scheme.error),
                     ),
                   ),
+                TextButton.icon(
+                  onPressed: () async {
+                    final settings =
+                        Provider.of<AppSettings>(sheetCtx, listen: false);
+                    final inserted = await showNoteReferencePicker(
+                      context: sheetCtx,
+                      locale: locale,
+                      mainProvider: mainProvider,
+                      settings: settings,
+                    );
+                    if (inserted == null || inserted.isEmpty) return;
+                    // Insert at cursor (or append at end if no
+                    // selection / no focus). TextEditingController
+                    // selection is null when the field has never
+                    // been focused — fall back to end-of-text.
+                    final sel = controller.selection;
+                    final cur = controller.text;
+                    if (sel.isValid && sel.start >= 0 && sel.end <= cur.length) {
+                      final before = cur.substring(0, sel.start);
+                      final after = cur.substring(sel.end);
+                      final next =
+                          '$before$inserted$after';
+                      controller.value = TextEditingValue(
+                        text: next,
+                        selection: TextSelection.collapsed(
+                          offset: (before + inserted).length,
+                        ),
+                      );
+                    } else {
+                      controller.text = cur + inserted;
+                    }
+                  },
+                  icon: Icon(Icons.add_link_rounded, color: scheme.primary),
+                  label: Text(
+                    uiStrings['noteAddReference']?[locale] ??
+                        '+ Verse',
+                    style: TextStyle(color: scheme.primary),
+                  ),
+                ),
                 const Spacer(),
                 FilledButton.icon(
                   onPressed: () {

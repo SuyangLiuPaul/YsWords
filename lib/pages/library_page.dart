@@ -12,6 +12,7 @@ import 'package:yswords/services/profile_service.dart';
 import 'package:yswords/services/reading_plan_service.dart';
 import 'package:yswords/utils/clipboard_helper.dart';
 import 'package:yswords/utils/jump_to_reference.dart' as jumper;
+import 'package:yswords/utils/note_reference_parser.dart';
 import 'package:yswords/utils/reference_parser.dart';
 import 'package:yswords/utils/version_mapper.dart' show translateBookName;
 import 'package:yswords/widgets/home_icon_button.dart';
@@ -208,14 +209,28 @@ class _AnnotationTile extends StatelessWidget {
                   left: BorderSide(color: scheme.primary, width: 2),
                 ),
               ),
-              child: Text(
-                extra!,
-                style: TextStyle(
-                  fontStyle: FontStyle.italic,
-                  fontFamily: settings.fontFamily,
-                  fontSize: settings.fontSize - 2,
-                  color: scheme.onSurfaceVariant,
-                  height: 1.45,
+              // 2026-05-19 (v1.2.59): notes with `[Book Ch:V]`
+              // references render those as tappable links. Tapping
+              // resolves the canonical book through the parser,
+              // synthesises a target Verse against the current
+              // version (or any available version that has it),
+              // and runs the standard pendingJump flow into the
+              // reader.
+              child: RichText(
+                text: TextSpan(
+                  children: buildNoteSpans(
+                    noteText: extra!,
+                    baseStyle: TextStyle(
+                      fontStyle: FontStyle.italic,
+                      fontFamily: settings.fontFamily,
+                      fontSize: settings.fontSize - 2,
+                      color: scheme.onSurfaceVariant,
+                      height: 1.45,
+                    ),
+                    refColor: scheme.primary,
+                    onRefTap: (ref) =>
+                        _navigateToReference(ref, mainProvider),
+                  ),
                 ),
               ),
             ),
@@ -309,6 +324,37 @@ void _navigateToVerse(Verse v, MainProvider mp) {
     () => const HomePage(),
     transition: Transition.rightToLeft,
   );
+}
+
+/// 2026-05-19 (v1.2.59): tap-handler for `[Book Ch:V]` references
+/// embedded in a user's note text. Resolves the canonical English
+/// book name to the version-local form, synthesises a Verse from
+/// `mp.verses`, and runs the standard pendingJump flow into the
+/// reader. Falls back silently if the target verse isn't in the
+/// loaded version (e.g. user typed `[Genesis 1:1]` while reading an
+/// NT-only version) — caller's UI shouldn't have to handle that
+/// error per-tap; the existing jump infrastructure surfaces it via
+/// its own snackbar.
+void _navigateToReference(NoteReferenceMatch ref, MainProvider mp) {
+  final localBook = translateBookName(ref.englishBook, mp.currentVersion);
+  // Try the locale-mapped name first, fall back to the canonical
+  // English name (some versions ship English book names even in CN
+  // mode, and the translator returns the input when it can't find
+  // a mapping).
+  final candidates = <String>{localBook, ref.englishBook};
+  Verse? target;
+  for (final book in candidates) {
+    target = mp.verses
+        .where((v) =>
+            v.book == book &&
+            v.chapter == ref.chapter &&
+            v.verse == ref.verseStart)
+        .cast<Verse?>()
+        .firstWhere((_) => true, orElse: () => null);
+    if (target != null) break;
+  }
+  if (target == null) return;
+  _navigateToVerse(target, mp);
 }
 
 // ── Plan tab ───────────────────────────────────────────────────────

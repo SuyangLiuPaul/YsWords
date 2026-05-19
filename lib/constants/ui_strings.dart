@@ -244,6 +244,31 @@ const uiStrings = {
   },
   'noteSave': {'zh-Hans': '保存', 'zh-Hant': '儲存', 'en': 'Save'},
   'noteDelete': {'zh-Hans': '删除', 'zh-Hant': '刪除', 'en': 'Delete'},
+  // 2026-05-19 (v1.2.59): note-editor "+ Verse Reference" button +
+  // its book/chapter/verse picker sheet. Tapping a reference in
+  // the saved note (Library / wherever displayed) opens the
+  // reader at that verse.
+  'noteAddReference': {
+    'zh-Hans': '+ 经文',
+    'zh-Hant': '+ 經文',
+    'en': '+ Verse',
+  },
+  'notePickerPickBook': {
+    'zh-Hans': '选择书卷',
+    'zh-Hant': '選擇書卷',
+    'en': 'Pick a book',
+  },
+  'notePickerPickChapter': {
+    'zh-Hans': '选择章',
+    'zh-Hant': '選擇章',
+    'en': 'Pick a chapter',
+  },
+  'notePickerPickVerse': {
+    'zh-Hans': '选择节',
+    'zh-Hant': '選擇節',
+    'en': 'Pick a verse',
+  },
+  // `back` already exists earlier in this map at line ~37 — reused.
   'bookmark': {'zh-Hans': '书签', 'zh-Hant': '書籤', 'en': 'Bookmark'},
   // 2026-05-07 (v11): user feedback -- the previous Chinese
   // rendering "我的标记" (literally "My Markings") collided

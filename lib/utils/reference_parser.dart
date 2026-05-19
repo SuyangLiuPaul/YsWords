@@ -128,7 +128,7 @@ BibleReference? parseReference(String input) {
 
   // Last-ditch fallback: bare book name with no chapter (e.g.
   // "Leviticus" or "创世记") — default to chapter 1.
-  final canonical = _resolveBookName(raw.trim());
+  final canonical = resolveBookName(raw.trim());
   if (canonical != null) {
     return BibleReference(englishBook: canonical, chapter: 1);
   }
@@ -150,7 +150,7 @@ BibleReference? _buildRef(
   // Empty book part is invalid — "3:16" alone needs a book.
   if (bookPart.isEmpty) return null;
 
-  final canonical = _resolveBookName(bookPart);
+  final canonical = resolveBookName(bookPart);
   if (canonical == null) return null;
 
   // Single-chapter book: "Jude 14-15" parses as ch 14 ve 15, but Jude
@@ -213,7 +213,7 @@ Map<String, String> _aliasIndex() {
   return map;
 }
 
-String? _resolveBookName(String input) {
+String? resolveBookName(String input) {
   final normalized = _normalize(input);
   if (normalized.isEmpty) return null;
 
@@ -234,7 +234,7 @@ String? _resolveBookName(String input) {
   if (num != null) {
     final n = num.group(1)!;
     final rest = num.group(2)!;
-    final restCanon = _resolveBookName(rest);
+    final restCanon = resolveBookName(rest);
     if (restCanon != null) {
       // Map "1 John" / "2 John" / "3 John" / "1 Cor" etc.
       // The canonical book may already include a number — only
