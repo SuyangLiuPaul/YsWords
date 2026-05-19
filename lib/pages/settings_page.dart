@@ -871,39 +871,6 @@ class _SettingsPageBodyState extends State<_SettingsPageBody> {
                       value: settings.showBookIntro,
                       onChanged: (val) => settings.setShowBookIntro(val),
                     ),
-                    const Divider(height: 1),
-                    // 2026-05-18 (v1.2.53): cross-version LEB
-                    // translator-insights overlay. Default ON.
-                    // Reading any non-LEB version surfaces a tiny
-                    // (i) chip next to verses where LEB has an
-                    // inline <note: …> annotation; tap to view.
-                    SwitchListTile(
-                      title: Text(
-                        uiStrings['showLebInsights']?[settings.locale] ??
-                            'LEB translator insights',
-                        style: TextStyle(
-                          fontSize: settings.fontSize + 2,
-                          fontWeight: FontWeight.w600,
-                          fontFamily: settings.fontFamily,
-                        ),
-                      ),
-                      subtitle: Text(
-                        uiStrings['showLebInsightsSubtitle']
-                                ?[settings.locale] ??
-                            'When reading any non-LEB version, show a '
-                                'small (i) icon next to verses that have '
-                                'an LEB translator note. Tap to view '
-                                'literal renderings, original-language '
-                                'hints, and alternative translations from '
-                                'the Lexham English Bible.',
-                        style: TextStyle(
-                          fontSize: settings.fontSize,
-                          fontFamily: settings.fontFamily,
-                        ),
-                      ),
-                      value: settings.showLebInsights,
-                      onChanged: (val) => settings.setShowLebInsights(val),
-                    ),
                     // Round 56: removed the "Pick verse after
                     // chapter" toggle. The picker now always shows
                     // book → chapter → verse as 3-step grid flow,

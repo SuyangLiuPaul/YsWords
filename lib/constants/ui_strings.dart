@@ -4446,34 +4446,10 @@ const uiStrings = {
     'en': 'Show a collapsible card at the top of chapter 1 with the '
         'book\'s author, date, audience, themes, and key passage.',
   },
-  // 2026-05-18 (v1.2.53): cross-version LEB translator-insights
-  // overlay. Default ON. Reading any non-LEB version surfaces a
-  // small (i) chip next to verses that have an LEB <note: …>
-  // annotation; tapping it shows LEB's note text. LEB readers are
-  // unaffected (their notes already render inline).
-  'showLebInsights': {
-    'zh-Hans': '显示 LEB 译者注释',
-    'zh-Hant': '顯示 LEB 譯者註釋',
-    'en': 'LEB translator insights',
-  },
-  'showLebInsightsSubtitle': {
-    'zh-Hans': '阅读其他译本时，旁边显示 LEB（Lexham English Bible）的字面翻译、原文注释等小提示。点击 (i) 图标查看。',
-    'zh-Hant': '閱讀其他譯本時，旁邊顯示 LEB（Lexham English Bible）的字面翻譯、原文註釋等小提示。點擊 (i) 圖示查看。',
-    'en': 'When reading any non-LEB version, show a small (i) icon next '
-        'to verses that have an LEB translator note. Tap to view '
-        'literal renderings, original-language hints, and alternative '
-        'translations from the Lexham English Bible.',
-  },
-  'lebInsightDialogTitle': {
-    'zh-Hans': 'LEB 译者注释',
-    'zh-Hant': 'LEB 譯者註釋',
-    'en': 'LEB Translator Notes',
-  },
-  'lebInsightAttribution': {
-    'zh-Hans': '来源：Lexham English Bible',
-    'zh-Hant': '來源：Lexham English Bible',
-    'en': 'Source: Lexham English Bible',
-  },
+  // 2026-05-19 (v1.2.55): the v1.2.53 cross-version LEB overlay
+  // ui-strings were removed. LEB's own inline notes render via
+  // the normal `<note:>` book-icon path; biblexg-v2's notes do
+  // the same. No cross-version overlay ui-strings needed.
   'aboutThisBook': {
     'zh-Hans': '关于此卷书',
     'zh-Hant': '關於此卷書',

@@ -882,6 +882,72 @@
 /// New ui-string keys: `tooltipClose`, `couldNotParseRef`
 /// (`{ref}` placeholder), `sermonNoBody` — all three locales.
 ///
+/// 2026-05-19 (v1.2.55 — revert cross-version LEB overlay +
+/// polish the native inline-annotation rendering): user
+/// feedback after observing LEB Matt 4:12 — "Had been arrested
+/// has those few words highlighted and can click and open …
+/// ljk2 also has some that just few words for explanation.
+/// can you check carefully that kind of format should be
+/// applied to this book and other books … can you also remove
+/// that LEB notes format from all other versions."
+///
+/// Two-part action:
+///
+/// (A) REVERT v1.2.53 cross-version LEB overlay.
+///     The `(i)` chip surfacing LEB's notes inside KJV / CUV /
+///     CNV / biblexg / NASB was tonally off — LEB's notes are
+///     tied to LEB's specific English phrasing and read as
+///     noise in other translations. Removed:
+///       • lib/widgets/leb_insight_chip.dart (delete)
+///       • lib/services/leb_insights_service.dart (delete)
+///       • test/leb_insights_service_test.dart (delete)
+///       • AppSettings.showLebInsights + persistence + reset
+///       • 4 ui-string keys (showLebInsights*, lebInsight*)
+///       • Settings → Reading toggle
+///       • render-hook calls in paragraph_group_widget +
+///         verse_widget
+///       • LebInsightsService.init() call in main.dart
+///     `lib/constants/book_names.dart` (extracted by v1.2.53
+///     into its own file) is KEPT — `url_sync_service_web.dart`
+///     (v1.2.54) now depends on it for the same dependency-
+///     isolation reasons.
+///
+/// (B) POLISH the native inline-annotation rendering in
+///     `lib/utils/build_verse_content_spans.dart`. LEB
+///     (23,632 notes / 10,845 braces / 29,158 squares) and
+///     biblexg-v2 (1,133 notes; no braces / squares — those
+///     notes attach to a preceding word, not a wrapped phrase)
+///     already had this format natively; v1.2.55 just tunes
+///     the visuals:
+///       • `{clarification}` chip border + bg: hardcoded teal
+///         → `colorScheme.primary` at alpha 0.55 / 0.12. Now
+///         follows the user's chosen palette instead of always
+///         being teal.
+///       • Inside-chip text colour: `onSecondaryContainer`
+///         (high-contrast on old teal bg) → default body colour.
+///         Reads as "this is verse text, slightly tinted to
+///         signal it's clickable" rather than a badge of foreign
+///         text.
+///       • Inside-chip font size: 0.85× → 1.0× of body. Matches
+///         surrounding prose so the clarification flows as part
+///         of the sentence (which it semantically is).
+///       • Standalone `<note: …>` icon: `Icons.menu_book` at
+///         fontSize × 1.2 → `Icons.notes_rounded` at fontSize
+///         × 0.9. Smaller, more discoverable footnote glyph;
+///         doesn't dominate the line in paragraph mode.
+///
+/// Audit results pinned by this commit:
+///   • LEB: all 64 books carry annotations (Daniel / Ezekiel /
+///     Malachi / Deuteronomy / Leviticus are the densest at
+///     400+ marks per 100 verses).
+///   • biblexg-v2 (CN + TR): 24 / 27 NT books carry notes;
+///     3 short epistles (2/3 John, Philemon) have none —
+///     genuine asset data, not a rendering issue.
+///
+/// 60 / 60 tests pass (was 73 with v1.2.53 + v1.2.54 specific
+/// tests — 13 deleted LEB-insights tests, 7 book-slugs tests
+/// kept from v1.2.54).
+///
 /// 2026-05-19 (v1.2.54 — readable deep-link URLs that reflect
 /// reader state): user request — "the link whether you can
 /// improve? like if go which book, the link will have related…
@@ -2001,7 +2067,7 @@
 /// matching edit needed here.
 const String kAppVersion = String.fromEnvironment(
   'APP_VERSION',
-  defaultValue: '1.2.54',
+  defaultValue: '1.2.55',
 );
 
 /// 2026-05-10 (v1.2.20): paired with `kAppVersion` so the About

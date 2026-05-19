@@ -22,7 +22,6 @@ import 'package:yswords/services/fetch_books.dart';
 import 'package:yswords/services/fetch_verses.dart';
 import 'package:yswords/services/profile_service.dart';
 import 'package:yswords/services/book_intro_service.dart';
-import 'package:yswords/services/leb_insights_service.dart';
 import 'package:yswords/services/section_title_service.dart';
 import 'package:yswords/services/url_sync_service.dart';
 import 'package:provider/provider.dart';
@@ -147,17 +146,15 @@ class _MainAppState extends State<MainApp> {
       BookIntroService.ensureLoaded().catchError((Object e, StackTrace st) {
         debugPrint('BookIntroService.ensureLoaded failed: $e\n$st');
       });
-      // 2026-05-18 (v1.2.53): pre-warm the LEB translator-insights
-      // cache. Parses ~30 k verses, extracts ~23 k <note: …>
-      // annotations into a chapter-verse-keyed map. Fire-and-
-      // forget — the first chapter render usually arrives after
-      // the parse completes (~50 ms on web). Until ready,
-      // `LebInsightsService.notesFor` returns an empty list and
-      // no chip is shown, so there's no UI flicker.
-      // ignore: unawaited_futures
-      LebInsightsService.instance.init().catchError((Object e, StackTrace st) {
-        debugPrint('LebInsightsService.init failed: $e\n$st');
-      });
+      // 2026-05-19 (v1.2.55): reverted the v1.2.53 cross-version
+      // LEB translator-insights overlay. User feedback: "remove
+      // that LEB notes format from all other versions" — LEB's
+      // notes are tied to LEB's specific phrasing, so projecting
+      // them into KJV / CUV / CNV pages was noisy and tonally
+      // off. The inline `[supplied]` / `{clarification}` +
+      // `<note:>` format that's NATIVELY in LEB + biblexg-v2
+      // continues to render as before; only the cross-version
+      // overlay layer was dropped.
       await appSettings.loadSettings();
       await mainProvider.restoreState();
 

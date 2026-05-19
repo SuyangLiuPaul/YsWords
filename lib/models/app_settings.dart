@@ -38,12 +38,6 @@ const _kNotificationsEnabled = 'notificationsEnabled';
 const _kShowSectionTitles = 'showSectionTitles';
 const _kShowBookIntro = 'showBookIntro';
 const _kPickVerseAfterChapter = 'pickVerseAfterChapter';
-// 2026-05-18 (v1.2.53): cross-version translator-insights overlay.
-// When true (default), reading any non-LEB version surfaces a tiny
-// (i) chip next to verses where LEB has an inline `<note: …>`
-// annotation. Tap → popup with the LEB note text. LEB itself is
-// unaffected (its notes already render inline).
-const _kShowLebInsights = 'showLebInsights';
 // User-supplied Gemini API key (BYOK). When non-empty, AI calls are
 // routed through the user's own AI Studio key — gives them their own
 // quota (15 RPM / 1500 RPD on the free tier) and keeps the app
@@ -163,15 +157,6 @@ class AppSettings extends ChangeNotifier {
   /// after clicking book chapter".
   bool _pickVerseAfterChapter = false;
 
-  /// 2026-05-18 (v1.2.53): cross-version LEB translator-insights
-  /// overlay. Default ON. When reading any version other than LEB,
-  /// surfaces a tiny `(i)` chip next to verses that have an LEB
-  /// `<note: …>` annotation. Tap → popup with the LEB note text.
-  /// LEB itself is unaffected (its notes already render inline).
-  /// Users who find the chips noisy can toggle off in
-  /// Settings → Reading.
-  bool _showLebInsights = true;
-
   // ── Dashboard layout (Round 55) ─────────────────────────────────
   // The dashboard now ships with reorder + per-section visibility
   // controls (Settings → Dashboard layout). The user's order is
@@ -217,7 +202,6 @@ class AppSettings extends ChangeNotifier {
   bool get showSectionTitles => _showSectionTitles;
   bool get showBookIntro => _showBookIntro;
   bool get pickVerseAfterChapter => _pickVerseAfterChapter;
-  bool get showLebInsights => _showLebInsights;
 
   /// User-supplied Gemini API key. Empty string when the user is on
   /// the developer-shared key. Caller services (AiWordService /
@@ -556,13 +540,6 @@ class AppSettings extends ChangeNotifier {
     await prefs.setBool(_kShowBookIntro, enabled);
   }
 
-  Future<void> setShowLebInsights(bool enabled) async {
-    if (_showLebInsights == enabled) return;
-    _showLebInsights = enabled;
-    notifyListeners();
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool(_kShowLebInsights, enabled);
-  }
 
   Future<void> setPickVerseAfterChapter(bool enabled) async {
     if (_pickVerseAfterChapter == enabled) return;
@@ -701,7 +678,6 @@ class AppSettings extends ChangeNotifier {
     _showSectionTitles = true;
     _showBookIntro = true;
     _pickVerseAfterChapter = false;
-    _showLebInsights = true;
     _dashboardSectionOrder = List.of(defaultDashboardOrder);
     _dashboardVisibility
       ..clear()
@@ -736,7 +712,6 @@ class AppSettings extends ChangeNotifier {
       _kShowSectionTitles,
       _kShowBookIntro,
       _kPickVerseAfterChapter,
-      _kShowLebInsights,
       _kDashboardSectionOrder,
       for (final s in DashboardSection.values) _kDashboardVisible(s),
       // Re-show the onboarding tour after a reset so the user can
@@ -855,7 +830,6 @@ class AppSettings extends ChangeNotifier {
     _showBookIntro = prefs.getBool(_kShowBookIntro) ?? true;
     _pickVerseAfterChapter =
         prefs.getBool(_kPickVerseAfterChapter) ?? false;
-    _showLebInsights = prefs.getBool(_kShowLebInsights) ?? true;
     _geminiApiKey = prefs.getString(_kGeminiApiKey) ?? '';
     // 2026-05-10 (v1.2.26): restore aiModel from prefs. Allowlist
     // -clamp so a corrupt entry doesn't drive the server to an

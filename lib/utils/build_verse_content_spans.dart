@@ -106,8 +106,16 @@ List<InlineSpan> buildVerseContentSpans({
     }
     if (bracePattern.hasMatch(part)) {
       final annotation = bracePattern.firstMatch(part)!.group(1)!;
-      final isDark = Theme.of(context).brightness == Brightness.dark;
-      final bgColor = Theme.of(context).colorScheme.secondaryContainer;
+      // 2026-05-19 (v1.2.55): theme-aware border + bg for the
+      // `{clarification}` chip. Previously hardcoded teal which
+      // clashed with any non-teal primary colour the user picked.
+      // Now uses `colorScheme.primary` at low alpha so the chip
+      // follows the user's chosen palette and stays subtle but
+      // unambiguously clickable.
+      final scheme = Theme.of(context).colorScheme;
+      final bgColor =
+          scheme.primary.withValues(alpha: 0.12);
+      final borderColor = scheme.primary.withValues(alpha: 0.55);
       spans.add(WidgetSpan(
         alignment: PlaceholderAlignment.middle,
         child: GestureDetector(
@@ -159,7 +167,7 @@ List<InlineSpan> buildVerseContentSpans({
             decoration: BoxDecoration(
               color: bgColor,
               border: Border.all(
-                color: isDark ? Colors.teal.shade200 : Colors.teal,
+                color: borderColor,
                 width: 1,
               ),
               borderRadius: BorderRadius.circular(4),
@@ -170,6 +178,18 @@ List<InlineSpan> buildVerseContentSpans({
                 final regex = RegExp(r'\[([^\[\]]+)\]');
                 final matches = regex.allMatches(annotation);
 
+                // 2026-05-19 (v1.2.55): inside-chip text colour
+                // switched from `onSecondaryContainer` (high-contrast
+                // on the old teal-bg variant) to the regular body
+                // text colour, since the new bg is now a much
+                // lighter primary-tint (alpha 0.12). Normal body
+                // colour reads more naturally as "this is verse
+                // text, slightly tinted to mark it clickable".
+                final bodyColor = Theme.of(context)
+                        .textTheme
+                        .bodyLarge
+                        ?.color ??
+                    scheme.onSurface;
                 if (matches.isNotEmpty) {
                   int lastEnd = 0;
                   for (final match in matches) {
@@ -177,12 +197,10 @@ List<InlineSpan> buildVerseContentSpans({
                       badgeSpans.add(TextSpan(
                         text: annotation.substring(lastEnd, match.start),
                         style: TextStyle(
-                          fontSize: settings.fontSize * 0.85,
+                          fontSize: settings.fontSize,
                           fontFamily: settings.fontFamily,
                           height: settings.lineSpacing,
-                          color: Theme.of(context)
-                              .colorScheme
-                              .onSecondaryContainer,
+                          color: bodyColor,
                         ),
                       ));
                     }
@@ -205,8 +223,7 @@ List<InlineSpan> buildVerseContentSpans({
                             .primary
                             .withValues(alpha: 0.5),
                         decorationThickness: 1.0,
-                        color:
-                            Theme.of(context).colorScheme.onSecondaryContainer,
+                        color: bodyColor,
                       ),
                     ));
                     lastEnd = match.end;
@@ -215,11 +232,10 @@ List<InlineSpan> buildVerseContentSpans({
                     badgeSpans.add(TextSpan(
                       text: annotation.substring(lastEnd),
                       style: TextStyle(
-                        fontSize: settings.fontSize * 0.85,
+                        fontSize: settings.fontSize,
                         fontFamily: settings.fontFamily,
                         height: settings.lineSpacing,
-                        color:
-                            Theme.of(context).colorScheme.onSecondaryContainer,
+                        color: bodyColor,
                       ),
                     ));
                   }
@@ -229,10 +245,10 @@ List<InlineSpan> buildVerseContentSpans({
                   return Text(
                     annotation,
                     style: TextStyle(
-                      fontSize: settings.fontSize * 0.85,
+                      fontSize: settings.fontSize,
                       fontFamily: settings.fontFamily,
                       height: settings.lineSpacing,
-                      color: Theme.of(context).colorScheme.onSecondaryContainer,
+                      color: bodyColor,
                     ),
                   );
                 }
@@ -318,8 +334,16 @@ List<InlineSpan> buildVerseContentSpans({
           child: Padding(
             padding: const EdgeInsets.only(right: 4.0, left: 2.0, bottom: 5.0),
             child: Icon(
-              Icons.menu_book,
-              size: settings.fontSize * 1.2,
+              // 2026-05-19 (v1.2.55): note-marker glyph + size tuned.
+              // The book icon at fontSize * 1.2 used to dominate the
+              // line — especially in paragraph mode where notes
+              // appear mid-prose. Switched to the smaller
+              // `Icons.notes_rounded` at fontSize * 0.9, which reads
+              // as a discoverable footnote marker without breaking
+              // the prose flow. biblexg-v2 (~1,133 notes across NT)
+              // and LEB (~23k) both render this way.
+              Icons.notes_rounded,
+              size: settings.fontSize * 0.9,
               color: isSelected
                   ? Theme.of(context).colorScheme.onPrimaryContainer
                   : Theme.of(context).colorScheme.onSurfaceVariant,
