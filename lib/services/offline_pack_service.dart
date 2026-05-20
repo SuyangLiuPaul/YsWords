@@ -1,6 +1,10 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:js_interop';
+// 2026-05-20 (v1.2.67): `dart:js_interop` removed in favour of
+// the conditional-export helper. Web build still uses
+// `fetch(url)`; native build skips with a debug log (the
+// offline-pack UI is web-only anyway).
+import 'package:yswords/utils/fetch_helper.dart';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
@@ -168,7 +172,7 @@ class OfflinePackService extends ChangeNotifier {
         final myIdx = idx++;
         if (myIdx >= urls.length) break;
         try {
-          await _fetchPromise(urls[myIdx]).toDart;
+          await fetchUrl(urls[myIdx]);
         } catch (_) {
           _failed++;
         }
@@ -388,5 +392,5 @@ class OfflinePackService extends ChangeNotifier {
 // ── Tiny JS interop binding for `fetch(url)`. We don't read the
 // body — the Flutter SW's intercept-and-cache side effect is
 // what makes the fetch worth doing.
-@JS('fetch')
-external JSPromise<JSAny?> _fetchPromise(String url);
+// 2026-05-20 (v1.2.67): `@JS('fetch')` external moved to
+// lib/utils/fetch_helper_web.dart so the file compiles on iOS.

@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:js_interop';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
@@ -8,19 +7,19 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:yswords/services/cloud_auth_service.dart';
 import 'package:yswords/services/profile_service.dart';
-
-// Tiny JS-interop binding for `navigator.onLine`. Lets us short-circuit
-// uploads with a clear "offline" message instead of sitting through the
-// 2-minute Firestore timeout when the user has no network at all.
-@JS('navigator.onLine')
-external bool get _navigatorOnLine;
+// 2026-05-20 (v1.2.67): isOnline lookup moved behind a
+// conditional-export helper so this file compiles on iOS /
+// Android. The web stub reads `navigator.onLine`; the native
+// stub returns `true` (no real connectivity detection on
+// native without adding `connectivity_plus`).
+import 'package:yswords/utils/navigator_online_helper.dart'
+    as netcheck;
 
 bool get _isWebOnline {
-  if (!kIsWeb) return true;
   try {
-    return _navigatorOnLine;
+    return netcheck.isOnline;
   } catch (_) {
-    return true; // older browsers — assume online, let the request fail naturally
+    return true; // older browsers / unsupported runtimes — assume online
   }
 }
 

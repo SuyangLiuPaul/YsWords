@@ -1,4 +1,7 @@
-import 'dart:js_interop';
+// 2026-05-20 (v1.2.67): `dart:js_interop` was here. See
+// `lib/utils/clear_cache_helper.dart` for the conditional-import
+// pattern that replaced it.
+import 'package:yswords/utils/clear_cache_helper.dart';
 
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
@@ -2989,13 +2992,14 @@ class _AboutCard extends StatelessWidget {
     // Storage entries, clear the build-stamp, reload) lives in
     // web/index.html as window.yswordsClearCacheAndReload(). The
     // Dart side just calls it.
-    if (kIsWeb) _clearCacheAndReload();
+    if (kIsWeb) clearCacheAndReload();
   }
 }
 
-// JS interop binding: defined in web/index.html.
-@JS('yswordsClearCacheAndReload')
-external void _clearCacheAndReload();
+// 2026-05-20 (v1.2.67): the `@JS('yswordsClearCacheAndReload')`
+// binding was here. Moved to `lib/utils/clear_cache_helper.dart`
+// (conditional export — web stub + native no-op) so this file
+// compiles on iOS / Android. Same UX, same web behaviour.
 
 /// Round 56: Style-preset picker card. One-tap bundles of
 /// fontFamily / fontSize / lineSpacing / menuScale /

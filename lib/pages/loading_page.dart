@@ -1,5 +1,8 @@
 import 'dart:async';
-import 'dart:js_interop';
+// 2026-05-20 (v1.2.67): `dart:js_interop` was here, blocking
+// native compile. Replaced with a conditional-export helper —
+// see lib/utils/clear_cache_helper.dart.
+import 'package:yswords/utils/clear_cache_helper.dart';
 
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
@@ -689,9 +692,6 @@ class _LoadingPageState extends State<LoadingPage> {
   /// stale-bundle problem.
   void _hardReload() {
     if (!kIsWeb) return;
-    _yswordsClearCacheAndReload();
+    clearCacheAndReload();
   }
 }
-
-@JS('yswordsClearCacheAndReload')
-external void _yswordsClearCacheAndReload();
