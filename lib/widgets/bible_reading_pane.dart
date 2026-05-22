@@ -542,6 +542,13 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
         _chapterMaps = chapterMaps;
         _bookMaps = extraBookMaps;
       });
+    }).catchError((Object e, StackTrace st) {
+      // 2026-05-22 (v1.2.72): map asset reads occasionally fail on
+      // first launch (race with offline-pack hydration). Swallow the
+      // error so it doesn't end up as an unhandled future log;
+      // _chapterMaps stays at its previous value and the picker
+      // will silently fall back to "all maps" / empty state.
+      debugPrint('[BibleReadingPane] map load failed: $e');
     });
     _updateSermonsForBookChapter(book, chapter);
   }
