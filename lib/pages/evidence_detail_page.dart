@@ -84,6 +84,18 @@ class EvidenceDetailPage extends StatelessWidget {
                     cacheHeight: 480,
                     errorBuilder: (_, __, ___) =>
                         _IconHero(icon: evidence.icon),
+                    // 2026-05-22 (v1.2.75): show a category-tinted
+                    // gradient placeholder while loading instead of
+                    // the 80-px emoji — far less jarring on cold
+                    // open or slow connections.
+                    loadingBuilder: (_, child, p) {
+                      if (p == null) return child;
+                      return SizedBox(
+                        height: 240,
+                        width: double.infinity,
+                        child: _HeroShimmer(category: evidence.category),
+                      );
+                    },
                   ),
                 )
               else
@@ -295,6 +307,40 @@ class EvidenceDetailPage extends StatelessWidget {
     Get.to(
       () => const HomePage(),
       transition: Transition.rightToLeft,
+    );
+  }
+}
+
+/// Category-tinted gradient shown while the hero image loads.
+/// Pairs with `_HeroShimmer` in evidence_page.dart's grid cards so
+/// the loading state is consistent across the entry list and the
+/// detail view — no emoji flash anywhere during the network round-trip.
+class _HeroShimmer extends StatelessWidget {
+  final String category;
+  const _HeroShimmer({required this.category});
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final accent = switch (category) {
+      'Manuscripts' => scheme.tertiary,
+      'Archaeology' => scheme.primary,
+      'History'     => scheme.secondary,
+      'Science'     => scheme.tertiary,
+      _             => scheme.primary,
+    };
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            accent.withValues(alpha: 0.22),
+            accent.withValues(alpha: 0.08),
+            scheme.surfaceContainerHighest.withValues(alpha: 0.42),
+          ],
+        ),
+      ),
     );
   }
 }

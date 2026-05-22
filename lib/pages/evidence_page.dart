@@ -483,11 +483,19 @@ class _EvidenceCard extends StatelessWidget {
                           // holding source bitmaps.
                           cacheWidth: 960,
                           cacheHeight: 240,
+                          // 2026-05-22 (v1.2.75): during image fetch
+                          // show a neutral shimmer placeholder instead
+                          // of the emoji. Users were seeing a wall of
+                          // emojis while scrolling because every card
+                          // showed its icon during the loading frames.
+                          // The emoji only renders on hard failure.
                           errorBuilder: (_, __, ___) =>
                               _IconFallback(icon: evidence.icon),
                           loadingBuilder: (_, child, p) {
                             if (p == null) return child;
-                            return _IconFallback(icon: evidence.icon);
+                            return _ShimmerPlaceholder(
+                              category: evidence.category,
+                            );
                           },
                         ),
                       )
@@ -645,6 +653,45 @@ class _IconFallback extends StatelessWidget {
       color: scheme.surfaceContainerHighest.withValues(alpha: 0.5),
       alignment: Alignment.center,
       child: Text(icon, style: const TextStyle(fontSize: 36)),
+    );
+  }
+}
+
+/// Category-tinted gradient placeholder shown while a hero image is
+/// loading. Replaces the previous `_IconFallback` loading state so
+/// the user doesn't see a flash of emoji on every card during the
+/// initial render or while images stream in. Color shifts with
+/// category so the UI still feels alive instead of being a flat grey
+/// rectangle.
+class _ShimmerPlaceholder extends StatelessWidget {
+  final String category;
+  const _ShimmerPlaceholder({required this.category});
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    // Map each evidence category to a colour that hints at the kind
+    // of artefact a user is about to see. Subtle — desaturated enough
+    // to not compete with the real photo once it lands.
+    final accent = switch (category) {
+      'Manuscripts' => scheme.tertiary,
+      'Archaeology' => scheme.primary,
+      'History'     => scheme.secondary,
+      'Science'     => scheme.tertiary,
+      _             => scheme.primary,
+    };
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            accent.withValues(alpha: 0.20),
+            accent.withValues(alpha: 0.06),
+            scheme.surfaceContainerHighest.withValues(alpha: 0.40),
+          ],
+        ),
+      ),
     );
   }
 }
