@@ -54,6 +54,127 @@ class _BookChapterPickerState extends State<BookChapterPicker> {
     super.dispose();
   }
 
+  /// 2026-05-22 (v1.2.76): when the reading pane navigates to a new
+  /// book/chapter (next/prev arrows, search, history, cross-ref jump
+  /// from another tab), the parent rebuilds this widget with new
+  /// `currentBook`/`currentChapter` props but the local
+  /// `_verseStepBook`/`_verseStepChapter` state still points at the
+  /// previous chapter — so the iPad split-view sidebar continues
+  /// showing the OLD verse grid (e.g. "使徒行传 12" while the right
+  /// pane reads 列王纪上 18). Reset the verse-step whenever the
+  /// effective book/chapter changes so the picker stays in sync
+  /// with the active reading pane.
+  @override
+  void didUpdateWidget(covariant BookChapterPicker oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final bookChanged = oldWidget.currentBook != widget.currentBook;
+    final chapterChanged = oldWidget.currentChapter != widget.currentChapter;
+    if (!bookChanged && !chapterChanged) return;
+
+    // Decide what to do with each piece of local state, then commit
+    // all changes in a single setState at the end. Single batched
+    // rebuild is cheaper and avoids three back-to-back frame schedules.
+    bool? newShowOldTestament;
+    String? newVerseStepBook = _verseStepBook;
+    int? newVerseStepChapter = _verseStepChapter;
+    String? newGridSelectedBook = _gridSelectedBook;
+    final newExpand = Map<String, bool>.from(expandStatus);
+    bool anyChange = false;
+
+    final inVerseStep =
+        _verseStepBook != null && _verseStepChapter != null;
+    if (inVerseStep) {
+      if (_verseStepBook == widget.currentBook && chapterChanged) {
+        // Same book, different chapter (Prev/Next button on the
+        // reading pane). Keep the user in verse-step but follow into
+        // the new chapter's verse grid. This matches user intent:
+        // they opened verse-step to pick from this book; navigating
+        // chapters in the pane should slide the grid forward, not
+        // bounce them back out to the chapters strip.
+        newVerseStepChapter = widget.currentChapter;
+        anyChange = true;
+      } else if (_verseStepBook != widget.currentBook) {
+        // Cross-book navigation (search/cross-ref/history) — the
+        // verse-step is no longer relevant. Drop it so the user
+        // doesn't see "使徒行传 12" verses while reading 列王纪上.
+        newVerseStepBook = null;
+        newVerseStepChapter = null;
+        anyChange = true;
+      }
+    }
+
+    // Grid mode: drop the drill-in if the reading pane jumped to a
+    // different book.
+    if (_gridSelectedBook != null &&
+        _gridSelectedBook != widget.currentBook) {
+      newGridSelectedBook = null;
+      anyChange = true;
+    }
+
+    // Expansion state — collapse the old book's chapter strip and
+    // expand the new one so the sidebar updates to surface where the
+    // reader currently is.
+    if (bookChanged && widget.currentBook.isNotEmpty) {
+      if (newExpand.containsKey(oldWidget.currentBook)) {
+        newExpand[oldWidget.currentBook] = false;
+      }
+      if (newExpand.containsKey(widget.currentBook)) {
+        newExpand[widget.currentBook] = true;
+      }
+      final newBookEntry = Provider.of<MainProvider>(context, listen: false)
+          .books
+          .firstWhereOrNull((b) => b.title == widget.currentBook);
+      if (newBookEntry != null) {
+        newShowOldTestament = _isOldTestament(newBookEntry.title);
+      }
+      anyChange = true;
+    }
+
+    if (!anyChange) return;
+
+    setState(() {
+      _verseStepBook = newVerseStepBook;
+      _verseStepChapter = newVerseStepChapter;
+      _gridSelectedBook = newGridSelectedBook;
+      expandStatus
+        ..clear()
+        ..addAll(newExpand);
+      if (newShowOldTestament != null) showOldTestament = newShowOldTestament;
+    });
+
+    // After the testament tab / current book changed, re-run the
+    // initial-scroll handshake so the list view scrolls to the new
+    // current book on the next frame. Cheap one-off — the same
+    // post-frame callback the initState path uses.
+    if (bookChanged && widget.currentBook.isNotEmpty) {
+      _initialScrollDone = false;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted || _initialScrollDone) return;
+        final mainProvider =
+            Provider.of<MainProvider>(context, listen: false);
+        final filtered = mainProvider.books
+            .where((b) => showOldTestament
+                ? _isOldTestament(b.title)
+                : !_isOldTestament(b.title))
+            .toList();
+        final idx =
+            filtered.indexWhere((b) => b.title == widget.currentBook);
+        final currentSettings =
+            Provider.of<AppSettings>(context, listen: false);
+        if (idx != -1 &&
+            currentSettings.booksViewMode != 'grid' &&
+            _autoScrollController.hasClients) {
+          _autoScrollController.scrollToIndex(
+            idx,
+            preferPosition: AutoScrollPosition.begin,
+            duration: const Duration(milliseconds: 250),
+          );
+        }
+        _initialScrollDone = true;
+      });
+    }
+  }
+
   @override
   void initState() {
     super.initState();
