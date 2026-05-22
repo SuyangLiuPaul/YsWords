@@ -52,6 +52,7 @@ import 'package:yswords/widgets/verse_popup_sheet.dart' show showVersePopup;
 import 'package:yswords/utils/responsive.dart';
 import 'package:yswords/utils/short_book_name.dart';
 import 'package:yswords/widgets/google_g_logo.dart';
+import 'package:yswords/widgets/illustration_image.dart';
 import 'package:yswords/utils/floating_toast.dart' show showFloatingToast;
 import 'package:yswords/utils/version_mapper.dart'
     show translateBookName, toEnglish, localeAwareBookName;
@@ -4171,17 +4172,17 @@ class _MapTile extends StatelessWidget {
           width: 44,
           height: 44,
           color: scheme.surfaceContainerHighest.withValues(alpha: 0.5),
-          child: Image.asset(
-            'assets/maps/${map.file}',
+          // 2026-05-23 (v1.2.83): IllustrationImage helper dispatches
+          // asset vs. CDN. Previously this hard-coded the asset path,
+          // so the 1041 entries whose `file` was a Wikimedia URL all
+          // rendered the collections-icon error fallback. They now
+          // resolve to yswords-data CDN images.
+          child: IllustrationImage(
+            map: map,
             fit: BoxFit.cover,
-            // 2026-05-10 (v1.2.31): cacheWidth/Height cap so a
-            // 44×44 dp thumbnail doesn't decode the source 1500+ px
-            // map image at full resolution. Same v1.0.1 perf
-            // pattern already applied to dashboard / news / evidence
-            // thumbnails. 88 px = 2× DPR.
             cacheWidth: 88,
             cacheHeight: 88,
-            errorBuilder: (_, __, ___) =>
+            errorBuilder: (_) =>
                 Icon(Icons.collections, size: 22, color: scheme.primary),
           ),
         ),

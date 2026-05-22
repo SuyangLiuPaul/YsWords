@@ -5,6 +5,7 @@ import 'package:yswords/constants/ui_strings.dart';
 import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/models/bible_map.dart';
 import 'package:yswords/services/map_service.dart';
+import 'package:yswords/widgets/illustration_image.dart';
 import 'package:provider/provider.dart';
 
 /// Full-screen map viewer with a glass header and an optional bottom
@@ -83,33 +84,16 @@ class _MapViewerPageState extends State<MapViewerPage> {
               key: ValueKey('iv_${_current.id}'),
               minScale: 0.5,
               maxScale: 5.0,
+              // 2026-05-23 (v1.2.83): replaced the asset-vs-network
+              // duplication with the IllustrationImage helper that
+              // dispatches on map.source. Same behaviour for the 55
+              // bundled maps; the 1041 paintings now resolve to the
+              // yswords-data CDN instead of failing silently.
               child: Center(
-                child: _current.file.startsWith('http')
-                    ? Image.network(
-                        _current.file,
-                        fit: BoxFit.contain,
-                        webHtmlElementStrategy:
-                            WebHtmlElementStrategy.prefer,
-                        errorBuilder: (_, __, ___) => _imageFallback(scheme),
-                      )
-                    : Image.asset(
-                  'assets/maps/${_current.file}',
+                child: IllustrationImage(
+                  map: _current,
                   fit: BoxFit.contain,
-                  errorBuilder: (_, __, ___) => Center(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.broken_image,
-                            size: 48, color: scheme.outline),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Map unavailable',
-                          style:
-                              TextStyle(color: scheme.outline, fontSize: 14),
-                        ),
-                      ],
-                    ),
-                  ),
+                  errorBuilder: (_) => _imageFallback(scheme),
                 ),
               ),
             ),
@@ -345,31 +329,18 @@ class _StripCard extends StatelessWidget {
                   child: Stack(
                     fit: StackFit.expand,
                     children: [
-                      map.file.startsWith('http')
-                          ? Image.network(
-                              map.file,
-                              fit: BoxFit.cover,
-                              webHtmlElementStrategy:
-                                  WebHtmlElementStrategy.prefer,
-                              errorBuilder: (_, __, ___) => Icon(
-                                Icons.collections,
-                                color: scheme.primary,
-                              ),
-                            )
-                          : Image.asset(
-                              'assets/maps/${map.file}',
-                              fit: BoxFit.cover,
-                              // 2026-05-10 (v1.2.31): cap decode
-                              // dimensions on the related-maps strip
-                              // thumbnails. Width is `110 * menuScale`
-                              // so 220 px (2× DPR) covers any
-                              // realistic menuScale.
-                              cacheWidth: 220,
-                              errorBuilder: (_, __, ___) => Icon(
-                                Icons.collections,
-                                color: scheme.primary,
-                              ),
-                            ),
+                      // 2026-05-23 (v1.2.83): IllustrationImage helper
+                      // — same dispatch logic as the hero, single
+                      // source of truth.
+                      IllustrationImage(
+                        map: map,
+                        fit: BoxFit.cover,
+                        cacheWidth: 220,
+                        errorBuilder: (_) => Icon(
+                          Icons.collections,
+                          color: scheme.primary,
+                        ),
+                      ),
                       if (isRelated && !isCurrent)
                         Positioned(
                           top: 4,
