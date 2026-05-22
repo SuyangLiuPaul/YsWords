@@ -76,10 +76,24 @@ git pull --ff-only origin main --quiet || echo "git pull skipped (working tree d
 successes=0
 failures=0
 
+# Pull APP_VERSION + APP_RELEASE_TIME from pubspec so the native builds
+# carry the same dart-define values that tools/build_web.py injects for
+# web. Without this, native binaries fall back to app_version.dart's
+# hard-coded default and the About page drifts behind pubspec on every
+# release. 2026-05-22 (v1.2.76): user spotted the iOS About page stuck
+# on v1.2.67 — this paragraph fixes the drift permanently.
+APP_VERSION="$(awk '/^version:/ {print $2; exit}' "$PROJECT/pubspec.yaml")"
+APP_RELEASE_TIME="$(date -u '+%Y-%m-%dT%H:%M:%SZ')"
+DEFINES=(
+  --dart-define="APP_VERSION=$APP_VERSION"
+  --dart-define="APP_RELEASE_TIME=$APP_RELEASE_TIME"
+)
+echo "==> APP_VERSION=$APP_VERSION APP_RELEASE_TIME=$APP_RELEASE_TIME"
+
 # ─── iOS BUILD + INSTALLS ────────────────────────────────────────
 echo ""
-echo "→ flutter build ios --release"
-if "$FLUTTER" build ios --release; then
+echo "→ flutter build ios --release ${DEFINES[*]}"
+if "$FLUTTER" build ios --release "${DEFINES[@]}"; then
   # Multi-pass install: at 04:03 ALL iOS devices are deep-asleep with
   # their WiFi radios in low-power maintenance mode. A single attempt
   # times out with CoreDeviceError 4000 ("tunnel interrupted") before
@@ -128,8 +142,8 @@ fi
 
 # ─── ANDROID BUILD + INSTALLS ────────────────────────────────────
 echo ""
-echo "→ flutter build apk --release"
-if "$FLUTTER" build apk --release; then
+echo "→ flutter build apk --release ${DEFINES[*]}"
+if "$FLUTTER" build apk --release "${DEFINES[@]}"; then
   for entry in "${ANDROID_DEVICES[@]}"; do
     mdns="${entry%%|*}"
     rest="${entry#*|}"
@@ -168,10 +182,10 @@ fi
 # bundle. Single-device target (this Mac), no roster — if the script is
 # ever run on a different Mac it'll just install there instead.
 echo ""
-echo "→ flutter build macos --release"
+echo "→ flutter build macos --release ${DEFINES[*]}"
 MACOS_APP_BUILT="$PROJECT/build/macos/Build/Products/Release/yswords.app"
 MACOS_APP_INSTALLED="/Applications/yswords.app"
-if "$FLUTTER" build macos --release; then
+if "$FLUTTER" build macos --release "${DEFINES[@]}"; then
   echo ""
   echo "→ installing to /Applications (this Mac)"
   # If yswords is currently running, replacing the bundle while open

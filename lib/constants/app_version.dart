@@ -2065,9 +2065,17 @@
 /// always reflects the canonical source-of-truth.
 /// Bump `pubspec.yaml`'s `version:` for the next release; no
 /// matching edit needed here.
+// 2026-05-22 (v1.2.76): bumped the fallback so iOS / macOS / Android
+// native builds — which `flutter build` does NOT auto-inject the
+// dart-define for — show the right number on the About page. Only
+// the web pipeline (tools/build_web.py + tools/deploy_site.py) injects
+// `--dart-define=APP_VERSION=…`. Native builds via the manual reinstall
+// script or `flutter build ios|macos|apk` directly inherit this
+// fallback. Keep it in lock-step with `pubspec.yaml`'s `version:` on
+// every release.
 const String kAppVersion = String.fromEnvironment(
   'APP_VERSION',
-  defaultValue: '1.2.67',
+  defaultValue: '1.2.77',
 );
 
 /// 2026-05-10 (v1.2.20): paired with `kAppVersion` so the About
