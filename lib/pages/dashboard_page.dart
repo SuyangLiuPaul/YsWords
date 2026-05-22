@@ -751,12 +751,17 @@ class _DashboardPageState extends State<DashboardPage> {
               ],
             ),
             const SizedBox(height: 8),
-            for (final a in _todayHeadlines)
+            for (var i = 0; i < _todayHeadlines.length; i++)
               _DashboardNewsCard(
-                article: a,
+                article: _todayHeadlines[i],
                 locale: locale,
+                // 2026-05-22 (v1.2.72): swipe between today's headlines
+                // without popping back to the dashboard each time.
                 onTap: () => Get.to(
-                  () => NewsDetailPage(article: a),
+                  () => NewsDetailPage(
+                    articles: _todayHeadlines,
+                    initialIndex: i,
+                  ),
                   transition: Transition.rightToLeft,
                 ),
               ),

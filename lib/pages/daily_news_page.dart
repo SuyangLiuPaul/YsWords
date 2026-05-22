@@ -239,8 +239,17 @@ class _DailyNewsPageState extends State<DailyNewsPage> {
   }
 
   void _open(NewsArticle a) {
+    // 2026-05-22 (v1.2.72): pass the full flat list so the detail
+    // page's PageView can swipe between sibling articles without
+    // popping back to the index. Index falls back to 0 if `a` isn't
+    // in the bundle (defensive — shouldn't happen in practice).
+    final list = _bundle?.allArticles ?? const <NewsArticle>[];
+    final idx = list.indexWhere((x) => x.id == a.id);
     Get.to(
-      () => NewsDetailPage(article: a),
+      () => NewsDetailPage(
+        articles: list.isEmpty ? [a] : list,
+        initialIndex: idx < 0 ? 0 : idx,
+      ),
       transition: Transition.rightToLeft,
     );
   }
