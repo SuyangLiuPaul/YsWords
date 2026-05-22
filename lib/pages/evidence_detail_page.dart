@@ -26,9 +26,34 @@ import 'package:yswords/utils/font_catalog.dart' show kCjkFontFallback;
 ///   • Scripture correlation block — tap the reference to jump
 ///     into the reader at that chapter
 ///   • Academic sources (copy-on-tap)
-class EvidenceDetailPage extends StatelessWidget {
+class EvidenceDetailPage extends StatefulWidget {
   final BibleEvidence evidence;
   const EvidenceDetailPage({super.key, required this.evidence});
+
+  @override
+  State<EvidenceDetailPage> createState() => _EvidenceDetailPageState();
+}
+
+class _EvidenceDetailPageState extends State<EvidenceDetailPage> {
+  // 2026-05-23 (v1.2.80): hero is now a swipeable PageView showing all
+  // images in the evidence.images array. Dot indicator below tracks
+  // the current page so the user knows there are siblings to swipe to.
+  late final PageController _imagePageController;
+  int _imageIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _imagePageController = PageController();
+  }
+
+  @override
+  void dispose() {
+    _imagePageController.dispose();
+    super.dispose();
+  }
+
+  BibleEvidence get evidence => widget.evidence;
 
   @override
   Widget build(BuildContext context) {
@@ -36,7 +61,8 @@ class EvidenceDetailPage extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     final locale = settings.locale;
     final fs = settings.fontSize;
-    final hasImage = evidence.images.isNotEmpty;
+    final images = evidence.images;
+    final hasImage = images.isNotEmpty;
 
     return Scaffold(
       appBar: AppBar(
@@ -61,47 +87,71 @@ class EvidenceDetailPage extends StatelessWidget {
           child: ListView(
             padding: const EdgeInsets.all(16),
             children: [
-              // Hero image area.
+              // Hero image gallery — swipeable PageView showing every
+              // image in `evidence.images`. With one image it degrades
+              // gracefully to a static hero (no dots, no swipe gesture
+              // wasted). With multiple, dots + an "N/total" badge
+              // surface the gallery to the user.
               if (hasImage)
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(12),
-                  // 2026-05-07: <img>-tag strategy — evidence images
-                  // can come from external archaeology / museum CDNs
-                  // that don't set CORS headers; canvaskit XHR
-                  // surfaces those as console errors. <img> renders
-                  // them without same-origin checks.
-                  child: Image.network(
-                    evidence.images.first,
-                    height: 240,
-                    width: double.infinity,
-                    fit: BoxFit.cover,
-                    webHtmlElementStrategy: WebHtmlElementStrategy.prefer,
-                    // 2026-05-08 (v1.0.1 perf): cap detail-page hero
-                    // image decode size. 240 px tall hero on screens
-                    // up to ~600 px wide → 1200 cache px is the
-                    // 2× retina ceiling.
-                    cacheWidth: 1200,
-                    cacheHeight: 480,
-                    // 2026-05-22 (v1.2.78): both LOADING and ERROR
-                    // fall back to the gradient hero — never the
-                    // 80-px emoji. Same rationale as the grid card.
-                    errorBuilder: (_, __, ___) => SizedBox(
-                      height: 240,
-                      width: double.infinity,
-                      child: _HeroShimmer(
-                        category: evidence.category,
-                        showCategoryIcon: true,
-                      ),
-                    ),
-                    loadingBuilder: (_, child, p) {
-                      if (p == null) return child;
-                      return SizedBox(
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+                      child: SizedBox(
                         height: 240,
                         width: double.infinity,
-                        child: _HeroShimmer(category: evidence.category),
-                      );
-                    },
-                  ),
+                        child: PageView.builder(
+                          controller: _imagePageController,
+                          itemCount: images.length,
+                          physics: images.length > 1
+                              ? const PageScrollPhysics()
+                              : const NeverScrollableScrollPhysics(),
+                          onPageChanged: (i) =>
+                              setState(() => _imageIndex = i),
+                          itemBuilder: (_, i) => Image.network(
+                            images[i],
+                            fit: BoxFit.cover,
+                            webHtmlElementStrategy:
+                                WebHtmlElementStrategy.prefer,
+                            cacheWidth: 1200,
+                            cacheHeight: 480,
+                            errorBuilder: (_, __, ___) => _HeroShimmer(
+                              category: evidence.category,
+                              showCategoryIcon: true,
+                            ),
+                            loadingBuilder: (_, child, p) {
+                              if (p == null) return child;
+                              return _HeroShimmer(
+                                  category: evidence.category);
+                            },
+                          ),
+                        ),
+                      ),
+                    ),
+                    if (images.length > 1) ...[
+                      const SizedBox(height: 8),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          for (var i = 0; i < images.length; i++)
+                            Container(
+                              margin: const EdgeInsets.symmetric(
+                                  horizontal: 3),
+                              width: i == _imageIndex ? 18 : 6,
+                              height: 6,
+                              decoration: BoxDecoration(
+                                color: i == _imageIndex
+                                    ? scheme.primary
+                                    : scheme.onSurfaceVariant
+                                        .withValues(alpha: 0.35),
+                                borderRadius: BorderRadius.circular(99),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ],
+                  ],
                 )
               else
                 SizedBox(
