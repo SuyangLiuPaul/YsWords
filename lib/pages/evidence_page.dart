@@ -483,14 +483,20 @@ class _EvidenceCard extends StatelessWidget {
                           // holding source bitmaps.
                           cacheWidth: 960,
                           cacheHeight: 240,
-                          // 2026-05-22 (v1.2.75): during image fetch
-                          // show a neutral shimmer placeholder instead
-                          // of the emoji. Users were seeing a wall of
-                          // emojis while scrolling because every card
-                          // showed its icon during the loading frames.
-                          // The emoji only renders on hard failure.
+                          // 2026-05-22 (v1.2.78): both LOADING and
+                          // ERROR fall back to the gradient placeholder
+                          // — never the emoji. Earlier rounds left the
+                          // emoji on hard image errors, but Wikimedia
+                          // rate-limits (429) and CORS surprises mean
+                          // a non-trivial fraction of cards rendered as
+                          // emoji on first paint. The gradient + small
+                          // category icon reads as "loading / image
+                          // unavailable" without visual jarring.
                           errorBuilder: (_, __, ___) =>
-                              _IconFallback(icon: evidence.icon),
+                              _ShimmerPlaceholder(
+                                category: evidence.category,
+                                showCategoryIcon: true,
+                              ),
                           loadingBuilder: (_, child, p) {
                             if (p == null) return child;
                             return _ShimmerPlaceholder(
@@ -499,7 +505,10 @@ class _EvidenceCard extends StatelessWidget {
                           },
                         ),
                       )
-                    : _IconFallback(icon: evidence.icon),
+                    : _ShimmerPlaceholder(
+                        category: evidence.category,
+                        showCategoryIcon: true,
+                      ),
               ),
               Padding(
                 padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
@@ -642,43 +651,37 @@ class _EvidenceCard extends StatelessWidget {
   }
 }
 
-class _IconFallback extends StatelessWidget {
-  final String icon;
-  const _IconFallback({required this.icon});
+// v1.2.78: `_IconFallback` removed. Was the 36-px emoji shown on image
+// load failure; replaced by `_ShimmerPlaceholder(showCategoryIcon: true)`
+// which uses a Material category icon over the gradient — no emoji.
 
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    return Container(
-      color: scheme.surfaceContainerHighest.withValues(alpha: 0.5),
-      alignment: Alignment.center,
-      child: Text(icon, style: const TextStyle(fontSize: 36)),
-    );
-  }
-}
-
-/// Category-tinted gradient placeholder shown while a hero image is
-/// loading. Replaces the previous `_IconFallback` loading state so
-/// the user doesn't see a flash of emoji on every card during the
-/// initial render or while images stream in. Color shifts with
-/// category so the UI still feels alive instead of being a flat grey
-/// rectangle.
+/// Category-tinted gradient placeholder. Used in two cases:
+///   • While the hero Image.network is still loading (no icon)
+///   • On hard image-load error (with a subtle Material category icon)
+/// In both cases this replaces the previous emoji-only fallback —
+/// users no longer see a wall of emoji-faces in the grid when images
+/// are slow or Wikimedia rate-limits a batch of requests.
 class _ShimmerPlaceholder extends StatelessWidget {
   final String category;
-  const _ShimmerPlaceholder({required this.category});
+  final bool showCategoryIcon;
+  const _ShimmerPlaceholder({
+    required this.category,
+    this.showCategoryIcon = false,
+  });
 
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    // Map each evidence category to a colour that hints at the kind
-    // of artefact a user is about to see. Subtle — desaturated enough
-    // to not compete with the real photo once it lands.
-    final accent = switch (category) {
-      'Manuscripts' => scheme.tertiary,
-      'Archaeology' => scheme.primary,
-      'History'     => scheme.secondary,
-      'Science'     => scheme.tertiary,
-      _             => scheme.primary,
+    // Map each evidence category to a colour + Material icon. Subtle —
+    // desaturated enough that real photos remain the dominant visual
+    // once they land, and the placeholder doesn't visually shout when
+    // a load fails.
+    final (accent, icon) = switch (category) {
+      'Manuscripts' => (scheme.tertiary, Icons.menu_book_outlined),
+      'Archaeology' => (scheme.primary, Icons.terrain_outlined),
+      'History'     => (scheme.secondary, Icons.account_balance_outlined),
+      'Science'     => (scheme.tertiary, Icons.science_outlined),
+      _             => (scheme.primary, Icons.image_outlined),
     };
     return Container(
       decoration: BoxDecoration(
@@ -692,6 +695,15 @@ class _ShimmerPlaceholder extends StatelessWidget {
           ],
         ),
       ),
+      child: showCategoryIcon
+          ? Center(
+              child: Icon(
+                icon,
+                size: 32,
+                color: accent.withValues(alpha: 0.55),
+              ),
+            )
+          : null,
     );
   }
 }
@@ -1217,6 +1229,64 @@ class _LocalMatchTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final settings = context.watch<AppSettings>();
+    // 2026-05-22 (v1.2.78): replaced the 18-px emoji thumbnail with
+    // a 32×32 rounded image thumbnail (falls back to a Material
+    // category icon on load error). Search-result rows used to be
+    // dominated by emoji-faces; now they show the actual artefact
+    // preview, matching what users tap through to.
+    final firstImage =
+        evidence.images.isNotEmpty ? evidence.images.first : null;
+    final accent = switch (evidence.category) {
+      'Manuscripts' => scheme.tertiary,
+      'Archaeology' => scheme.primary,
+      'History'     => scheme.secondary,
+      'Science'     => scheme.tertiary,
+      _             => scheme.primary,
+    };
+    final categoryIcon = switch (evidence.category) {
+      'Manuscripts' => Icons.menu_book_outlined,
+      'Archaeology' => Icons.terrain_outlined,
+      'History'     => Icons.account_balance_outlined,
+      'Science'     => Icons.science_outlined,
+      _             => Icons.image_outlined,
+    };
+    final thumb = Container(
+      width: 32,
+      height: 32,
+      clipBehavior: Clip.antiAlias,
+      decoration: BoxDecoration(
+        color: accent.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: firstImage != null
+          ? Image.network(
+              firstImage,
+              fit: BoxFit.cover,
+              webHtmlElementStrategy: WebHtmlElementStrategy.prefer,
+              cacheWidth: 128,
+              cacheHeight: 128,
+              errorBuilder: (_, __, ___) => Icon(
+                categoryIcon,
+                size: 18,
+                color: accent.withValues(alpha: 0.7),
+              ),
+              loadingBuilder: (_, child, p) {
+                if (p == null) return child;
+                return Center(
+                  child: Icon(
+                    categoryIcon,
+                    size: 18,
+                    color: accent.withValues(alpha: 0.55),
+                  ),
+                );
+              },
+            )
+          : Icon(
+              categoryIcon,
+              size: 18,
+              color: accent.withValues(alpha: 0.7),
+            ),
+    );
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(8),
@@ -1225,8 +1295,7 @@ class _LocalMatchTile extends StatelessWidget {
             const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
         child: Row(
           children: [
-            Text(evidence.icon,
-                style: const TextStyle(fontSize: 18)),
+            thumb,
             const SizedBox(width: 8),
             Expanded(
               child: Column(

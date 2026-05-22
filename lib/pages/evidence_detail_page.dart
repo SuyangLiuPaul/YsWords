@@ -82,12 +82,17 @@ class EvidenceDetailPage extends StatelessWidget {
                     // 2× retina ceiling.
                     cacheWidth: 1200,
                     cacheHeight: 480,
-                    errorBuilder: (_, __, ___) =>
-                        _IconHero(icon: evidence.icon),
-                    // 2026-05-22 (v1.2.75): show a category-tinted
-                    // gradient placeholder while loading instead of
-                    // the 80-px emoji — far less jarring on cold
-                    // open or slow connections.
+                    // 2026-05-22 (v1.2.78): both LOADING and ERROR
+                    // fall back to the gradient hero — never the
+                    // 80-px emoji. Same rationale as the grid card.
+                    errorBuilder: (_, __, ___) => SizedBox(
+                      height: 240,
+                      width: double.infinity,
+                      child: _HeroShimmer(
+                        category: evidence.category,
+                        showCategoryIcon: true,
+                      ),
+                    ),
                     loadingBuilder: (_, child, p) {
                       if (p == null) return child;
                       return SizedBox(
@@ -99,7 +104,14 @@ class EvidenceDetailPage extends StatelessWidget {
                   ),
                 )
               else
-                _IconHero(icon: evidence.icon),
+                SizedBox(
+                  height: 240,
+                  width: double.infinity,
+                  child: _HeroShimmer(
+                    category: evidence.category,
+                    showCategoryIcon: true,
+                  ),
+                ),
               const SizedBox(height: 16),
 
               // Title + confidence badge row.
@@ -311,23 +323,28 @@ class EvidenceDetailPage extends StatelessWidget {
   }
 }
 
-/// Category-tinted gradient shown while the hero image loads.
-/// Pairs with `_HeroShimmer` in evidence_page.dart's grid cards so
-/// the loading state is consistent across the entry list and the
-/// detail view — no emoji flash anywhere during the network round-trip.
+/// Category-tinted gradient shown while the detail hero image loads
+/// OR when there's no image / it errors out. Used in BOTH cases so
+/// the user never sees the 80-px emoji that older builds emitted.
+/// Same visual language as evidence_page.dart's `_ShimmerPlaceholder`
+/// to keep grid + detail consistent.
 class _HeroShimmer extends StatelessWidget {
   final String category;
-  const _HeroShimmer({required this.category});
+  final bool showCategoryIcon;
+  const _HeroShimmer({
+    required this.category,
+    this.showCategoryIcon = false,
+  });
 
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final accent = switch (category) {
-      'Manuscripts' => scheme.tertiary,
-      'Archaeology' => scheme.primary,
-      'History'     => scheme.secondary,
-      'Science'     => scheme.tertiary,
-      _             => scheme.primary,
+    final (accent, icon) = switch (category) {
+      'Manuscripts' => (scheme.tertiary, Icons.menu_book_outlined),
+      'Archaeology' => (scheme.primary, Icons.terrain_outlined),
+      'History'     => (scheme.secondary, Icons.account_balance_outlined),
+      'Science'     => (scheme.tertiary, Icons.science_outlined),
+      _             => (scheme.primary, Icons.image_outlined),
     };
     return Container(
       decoration: BoxDecoration(
@@ -341,29 +358,23 @@ class _HeroShimmer extends StatelessWidget {
           ],
         ),
       ),
+      child: showCategoryIcon
+          ? Center(
+              child: Icon(
+                icon,
+                size: 64,
+                color: accent.withValues(alpha: 0.55),
+              ),
+            )
+          : null,
     );
   }
 }
 
-class _IconHero extends StatelessWidget {
-  final String icon;
-  const _IconHero({required this.icon});
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    return Container(
-      height: 200,
-      width: double.infinity,
-      decoration: BoxDecoration(
-        color: scheme.primary.withValues(alpha: 0.10),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      alignment: Alignment.center,
-      child: Text(icon, style: const TextStyle(fontSize: 80)),
-    );
-  }
-}
+// v1.2.78: `_IconHero` removed. Was the 80-px emoji hero shown when an
+// entry had no image or when Image.network errored out; replaced by
+// `_HeroShimmer(showCategoryIcon: true)` which uses a Material category
+// icon over the gradient — no emoji.
 
 class _Meta extends StatelessWidget {
   final IconData icon;
