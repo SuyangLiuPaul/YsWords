@@ -179,9 +179,11 @@ async function callGeminiWithKey(apiKey, prompt, locale, model) {
 // 2026-05-11 (v1.2.43): per-model abort timeout. v1.2.42's flat
 // 8s was too tight for `gemini-3-flash-preview` (thinking model,
 // often 8-15s). See aiBibleSearch.mjs for the full comment.
+// 2026-05-22 (v1.2.79): Deep 18→14s so Standard fallback fits within
+// the 24s deadline. Detailed rationale in aiBibleSearch.mjs.
 function modelTimeoutMs(model) {
 	switch (model) {
-		case 'gemini-3-flash-preview': return 18_000;
+		case 'gemini-3-flash-preview': return 14_000;
 		case 'gemini-2.5-flash':       return 10_000;
 		case 'gemini-2.5-flash-lite':  return 6_000;
 		default: return 10_000;

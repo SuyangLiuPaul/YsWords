@@ -121,18 +121,29 @@ function buildSystemMessage(locale) {
 // Acts 19:14 + Deep; curl timing showed all 3 step-down tiers hit
 // their 8s ceiling sequentially (~24s total, then "HTTP ?").
 //
-// New per-model budgets:
-//   gemini-3-flash-preview  18s  (thinking model — needs headroom)
+// 2026-05-22 (v1.2.79): Deep budget cut 18→14s. With the 24s outer
+// deadline, an 18s Deep timeout left only 6s of remaining budget —
+// not enough to even start Standard (10s timeout), so the function
+// bailed with "AI response took too long" 80%+ of the time when
+// Gemini's free thinking model was slow (live audit: 4/5 probes hit
+// the ceiling). At 14s Deep, a failure leaves 10s — exactly enough
+// to step down to Standard (which my audit hit in ~4s). Net effect:
+// Deep that succeeds within 14s still works; Deep that would have
+// timed out at 18s now falls back to Standard and the user gets an
+// answer instead of an error.
+//
+// Per-model budgets:
+//   gemini-3-flash-preview  14s  (thinking model — was 18s)
 //   gemini-2.5-flash        10s  (standard)
 //   gemini-2.5-flash-lite    6s  (fastest)
 //
-// Worst-case sum: 18 + 10 + 6 = 34s. Netlify caps at 26s. The
-// outer deadline (24s wall-clock) in callGemini bails before
-// starting a step-down call that wouldn't finish — so in practice
-// the chain is one-or-two tiers, not three, when Deep is selected.
+// Worst-case sum: 14 + 10 + 6 = 30s. The outer deadline (24s
+// wall-clock) in callGemini bails before starting a step-down call
+// that wouldn't finish — in practice the Deep→Standard chain
+// completes in ~18-24s.
 function modelTimeoutMs(model) {
 	switch (model) {
-		case 'gemini-3-flash-preview': return 18_000;
+		case 'gemini-3-flash-preview': return 14_000;
 		case 'gemini-2.5-flash':       return 10_000;
 		case 'gemini-2.5-flash-lite':  return 6_000;
 		default: return 10_000;
