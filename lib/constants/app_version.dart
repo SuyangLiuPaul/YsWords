@@ -2075,7 +2075,7 @@
 // every release.
 const String kAppVersion = String.fromEnvironment(
   'APP_VERSION',
-  defaultValue: '1.2.80',
+  defaultValue: '1.2.81',
 );
 
 /// 2026-05-10 (v1.2.20): paired with `kAppVersion` so the About

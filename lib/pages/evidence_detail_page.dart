@@ -88,67 +88,178 @@ class _EvidenceDetailPageState extends State<EvidenceDetailPage> {
             padding: const EdgeInsets.all(16),
             children: [
               // Hero image gallery — swipeable PageView showing every
-              // image in `evidence.images`. With one image it degrades
-              // gracefully to a static hero (no dots, no swipe gesture
-              // wasted). With multiple, dots + an "N/total" badge
-              // surface the gallery to the user.
+              // image in `evidence.images`. v1.2.81: made discovery
+              // much more obvious. User reported "iOS doesn't show
+              // many images, web app also doesn't, like Hittite
+              // Empire" — the data has 4 images, the gallery was
+              // there, but the 6-px dot indicator was too subtle to
+              // notice. Now: prominent counter chip + arrow hints
+              // + thumbnail filmstrip below.
               if (hasImage)
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     ClipRRect(
                       borderRadius: BorderRadius.circular(12),
-                      child: SizedBox(
-                        height: 240,
-                        width: double.infinity,
-                        child: PageView.builder(
-                          controller: _imagePageController,
-                          itemCount: images.length,
-                          physics: images.length > 1
-                              ? const PageScrollPhysics()
-                              : const NeverScrollableScrollPhysics(),
-                          onPageChanged: (i) =>
-                              setState(() => _imageIndex = i),
-                          itemBuilder: (_, i) => Image.network(
-                            images[i],
-                            fit: BoxFit.cover,
-                            webHtmlElementStrategy:
-                                WebHtmlElementStrategy.prefer,
-                            cacheWidth: 1200,
-                            cacheHeight: 480,
-                            errorBuilder: (_, __, ___) => _HeroShimmer(
-                              category: evidence.category,
-                              showCategoryIcon: true,
-                            ),
-                            loadingBuilder: (_, child, p) {
-                              if (p == null) return child;
-                              return _HeroShimmer(
-                                  category: evidence.category);
-                            },
-                          ),
-                        ),
-                      ),
-                    ),
-                    if (images.length > 1) ...[
-                      const SizedBox(height: 8),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
+                      child: Stack(
                         children: [
-                          for (var i = 0; i < images.length; i++)
-                            Container(
-                              margin: const EdgeInsets.symmetric(
-                                  horizontal: 3),
-                              width: i == _imageIndex ? 18 : 6,
-                              height: 6,
-                              decoration: BoxDecoration(
-                                color: i == _imageIndex
-                                    ? scheme.primary
-                                    : scheme.onSurfaceVariant
-                                        .withValues(alpha: 0.35),
-                                borderRadius: BorderRadius.circular(99),
+                          SizedBox(
+                            height: 240,
+                            width: double.infinity,
+                            child: PageView.builder(
+                              controller: _imagePageController,
+                              itemCount: images.length,
+                              physics: images.length > 1
+                                  ? const PageScrollPhysics()
+                                  : const NeverScrollableScrollPhysics(),
+                              onPageChanged: (i) =>
+                                  setState(() => _imageIndex = i),
+                              itemBuilder: (_, i) => Image.network(
+                                images[i],
+                                fit: BoxFit.cover,
+                                webHtmlElementStrategy:
+                                    WebHtmlElementStrategy.prefer,
+                                cacheWidth: 1200,
+                                cacheHeight: 480,
+                                errorBuilder: (_, __, ___) =>
+                                    _HeroShimmer(
+                                  category: evidence.category,
+                                  showCategoryIcon: true,
+                                ),
+                                loadingBuilder: (_, child, p) {
+                                  if (p == null) return child;
+                                  return _HeroShimmer(
+                                      category: evidence.category);
+                                },
+                              ),
+                            ),
+                          ),
+                          // "N/total" counter chip — top-right of
+                          // the hero, only when there's more than one
+                          // image. Dark background + white text reads
+                          // over any photo.
+                          if (images.length > 1)
+                            Positioned(
+                              top: 10,
+                              right: 10,
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 10, vertical: 5),
+                                decoration: BoxDecoration(
+                                  color: Colors.black.withValues(alpha: 0.55),
+                                  borderRadius:
+                                      BorderRadius.circular(99),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    const Icon(Icons.photo_library_outlined,
+                                        size: 14, color: Colors.white),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      '${_imageIndex + 1}/${images.length}',
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          // Side-arrow hints — make swipe affordance
+                          // explicit. Tapping advances by one image
+                          // (in case the user prefers tap-to-advance
+                          // over swipe).
+                          if (images.length > 1 && _imageIndex > 0)
+                            Positioned(
+                              left: 4,
+                              top: 0,
+                              bottom: 0,
+                              child: Center(
+                                child: _ArrowChip(
+                                  icon: Icons.chevron_left_rounded,
+                                  onTap: () => _imagePageController
+                                      .previousPage(
+                                    duration: const Duration(
+                                        milliseconds: 250),
+                                    curve: Curves.easeOutCubic,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          if (images.length > 1 &&
+                              _imageIndex < images.length - 1)
+                            Positioned(
+                              right: 4,
+                              top: 0,
+                              bottom: 0,
+                              child: Center(
+                                child: _ArrowChip(
+                                  icon: Icons.chevron_right_rounded,
+                                  onTap: () => _imagePageController.nextPage(
+                                    duration: const Duration(
+                                        milliseconds: 250),
+                                    curve: Curves.easeOutCubic,
+                                  ),
+                                ),
                               ),
                             ),
                         ],
+                      ),
+                    ),
+                    // Below the hero: thumbnail filmstrip. Each
+                    // thumbnail is tappable to jump directly to that
+                    // page. Active thumbnail gets a colored ring.
+                    if (images.length > 1) ...[
+                      const SizedBox(height: 10),
+                      SizedBox(
+                        height: 56,
+                        child: ListView.separated(
+                          scrollDirection: Axis.horizontal,
+                          itemCount: images.length,
+                          separatorBuilder: (_, __) =>
+                              const SizedBox(width: 8),
+                          itemBuilder: (_, i) {
+                            final active = i == _imageIndex;
+                            return InkWell(
+                              onTap: () => _imagePageController.animateToPage(
+                                i,
+                                duration: const Duration(milliseconds: 220),
+                                curve: Curves.easeOutCubic,
+                              ),
+                              borderRadius: BorderRadius.circular(8),
+                              child: Container(
+                                width: 72,
+                                height: 56,
+                                clipBehavior: Clip.antiAlias,
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(
+                                    color: active
+                                        ? scheme.primary
+                                        : Colors.transparent,
+                                    width: 2,
+                                  ),
+                                ),
+                                child: Image.network(
+                                  images[i],
+                                  fit: BoxFit.cover,
+                                  webHtmlElementStrategy:
+                                      WebHtmlElementStrategy.prefer,
+                                  cacheWidth: 200,
+                                  cacheHeight: 144,
+                                  errorBuilder: (_, __, ___) =>
+                                      _HeroShimmer(
+                                    category: evidence.category,
+                                    showCategoryIcon: true,
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
+                        ),
                       ),
                     ],
                   ],
@@ -369,6 +480,33 @@ class _EvidenceDetailPageState extends State<EvidenceDetailPage> {
     Get.to(
       () => const HomePage(),
       transition: Transition.rightToLeft,
+    );
+  }
+}
+
+/// Floating navigation chip overlaid on the hero gallery for the
+/// Bible Evidence detail page. Black-on-white circular button — the
+/// user can tap-to-advance one image without having to swipe, which
+/// is the standard discoverability pattern for image galleries on
+/// the web (Instagram + Wikipedia commons viewer both use it).
+class _ArrowChip extends StatelessWidget {
+  final IconData icon;
+  final VoidCallback onTap;
+  const _ArrowChip({required this.icon, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.black.withValues(alpha: 0.42),
+      shape: const CircleBorder(),
+      child: InkWell(
+        onTap: onTap,
+        customBorder: const CircleBorder(),
+        child: Padding(
+          padding: const EdgeInsets.all(6),
+          child: Icon(icon, size: 22, color: Colors.white),
+        ),
+      ),
     );
   }
 }
