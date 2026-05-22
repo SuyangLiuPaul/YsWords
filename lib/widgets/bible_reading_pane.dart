@@ -1734,6 +1734,15 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                             transition: Transition.rightToLeft,
                           );
                         },
+                        onOpenIllustrations: (_chapterMaps.isEmpty &&
+                                _bookMaps.isEmpty)
+                            ? null
+                            : () => _showMapPicker(
+                                  context,
+                                  chapterMaps: _chapterMaps,
+                                  bookMaps: _bookMaps,
+                                  locale: settings.locale,
+                                ),
                         onFontSize: () => _showFontSizeSheet(context, settings),
                         paragraphMode: settings.paragraphMode,
                         onToggleParagraphMode: () => settings
@@ -3812,11 +3821,20 @@ class _MapPickerSheetState extends State<_MapPickerSheet>
               ),
             ),
             // Tab strip — only render when there's more than one tab.
+            // 2026-05-22 (v1.2.72): explicit labelColor / unselected /
+            // indicator. The global `tabBarTheme` in main.dart sets
+            // labelColor = onPrimary (white on a primary-tinted AppBar),
+            // which renders WHITE-ON-WHITE here inside a surface
+            // bottom-sheet. Override locally for readability.
             if (_tabs.length > 1)
               TabBar(
                 controller: _tab,
                 isScrollable: true,
                 tabAlignment: TabAlignment.start,
+                labelColor: scheme.primary,
+                unselectedLabelColor: scheme.onSurfaceVariant,
+                indicatorColor: scheme.primary,
+                dividerColor: Colors.transparent,
                 tabs: [for (final t in _tabs) Tab(text: t.label)],
               ),
             const Divider(height: 1),
@@ -4202,6 +4220,11 @@ class _BibleReaderBottomBar extends StatelessWidget {
   final VoidCallback onPrevChapter;
   final VoidCallback onNextChapter;
   final VoidCallback onOpenNotes;
+  // 2026-05-22 (v1.2.72): Illustrations button — opens the maps
+  // picker sheet directly from the bottom bar (was previously buried
+  // in the floating-header overflow menu). null hides it gracefully
+  // when no chapter is selected.
+  final VoidCallback? onOpenIllustrations;
   final VoidCallback onFontSize;
   final bool paragraphMode;
   final VoidCallback onToggleParagraphMode;
@@ -4213,6 +4236,7 @@ class _BibleReaderBottomBar extends StatelessWidget {
     required this.onPrevChapter,
     required this.onNextChapter,
     required this.onOpenNotes,
+    required this.onOpenIllustrations,
     required this.onFontSize,
     required this.paragraphMode,
     required this.onToggleParagraphMode,
@@ -4286,6 +4310,19 @@ class _BibleReaderBottomBar extends StatelessWidget {
                         tooltip:
                             uiStrings['tabNotes']?[locale] ?? 'Notes',
                         onTap: onOpenNotes,
+                        iconSize: iconSize,
+                        iconPad: iconPad,
+                        scheme: scheme,
+                      ),
+                      _BottomBarBtn(
+                        // 2026-05-22 (v1.2.72): Illustrations — sits
+                        // between Notes and Font, opens the Maps /
+                        // Illustrations bottom-sheet (For this chapter /
+                        // For this book / All illustrations).
+                        icon: Icons.collections_outlined,
+                        tooltip:
+                            uiStrings['maps']?[locale] ?? 'Illustrations',
+                        onTap: onOpenIllustrations,
                         iconSize: iconSize,
                         iconPad: iconPad,
                         scheme: scheme,
