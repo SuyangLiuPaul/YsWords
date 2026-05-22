@@ -1,30 +1,23 @@
 import 'dart:async' show StreamSubscription;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-// ignore: depend_on_referenced_packages
-import 'package:cloud_firestore_web/cloud_firestore_web.dart'
-    show FirebaseFirestoreWeb;
 import 'package:firebase_auth/firebase_auth.dart';
-// ignore: depend_on_referenced_packages
-import 'package:firebase_auth_platform_interface/firebase_auth_platform_interface.dart'
-    show FirebaseAuthPlatform;
-// ignore: depend_on_referenced_packages
-import 'package:firebase_auth_web/firebase_auth_web.dart' show FirebaseAuthWeb;
 import 'package:firebase_core/firebase_core.dart';
-// ignore: depend_on_referenced_packages
-import 'package:firebase_core_platform_interface/firebase_core_platform_interface.dart'
-    show FirebasePlatform;
-// ignore: depend_on_referenced_packages
-import 'package:firebase_core_web/firebase_core_web.dart' show FirebaseCoreWeb;
-// ignore: depend_on_referenced_packages
-import 'package:firebase_database_web/firebase_database_web.dart'
-    show FirebaseDatabaseWeb;
 import 'package:flutter/foundation.dart';
-// ignore: depend_on_referenced_packages
-import 'package:flutter_web_plugins/flutter_web_plugins.dart' show webPluginRegistrar;
+import 'package:google_sign_in/google_sign_in.dart' as gsi;
 
 import 'package:yswords/firebase_options.dart';
 import 'package:yswords/services/profile_service.dart';
+// 2026-05-20 (v1.2.67 follow-up): the v1.2.49 "self-register
+// Firebase web plugins" block (lines ~177-224 below) used to
+// `import 'package:cloud_firestore_web/...'`, etc. directly,
+// which transitively pulls in `dart:ui_web` and breaks the
+// iOS / Android compile. All the web-only imports + the
+// registration body now live in `web_plugin_registrants_web.dart`;
+// the native build resolves to a no-op stub. Web behaviour is
+// byte-for-byte identical.
+import 'package:yswords/services/web_plugin_registrants.dart'
+    show registerWebPluginsIfNeeded;
 
 /// Result of a sign-in / sign-up attempt. Carries either the
 /// authenticated [User] or a friendly [errorMessage] suitable for
@@ -160,6 +153,22 @@ class CloudAuthService extends ChangeNotifier {
         _initError = null;
         return;
       }
+      // 2026-05-21 (v1.2.68 → revised): native builds now ship
+      // platform-specific Firebase config:
+      //   • iOS    — ios/Runner/GoogleService-Info.plist
+      //              (added to Xcode project's Runner target
+      //              Resources phase; Firebase.initializeApp()
+      //              with NO options auto-loads it via the
+      //              FirebaseApp.configure() pattern in the
+      //              native iOS SDK)
+      //   • Android — android/app/google-services.json
+      //               (read by the com.google.gms.google-services
+      //               gradle plugin in android/app/build.gradle.kts;
+      //               Firebase.initializeApp() with NO options
+      //               auto-loads from generated FirebaseInitProvider)
+      // Web still uses DefaultFirebaseOptions.web because the
+      // generated-from-FlutterFire pattern doesn't apply to web —
+      // we hand-wrote the web options in firebase_options.dart.
       // Force FirebaseCoreWeb to be the platform delegate before
       // calling initializeApp. The auto-generated web plugin
       // registrant should already do this, but in some builds (we've
@@ -176,56 +185,32 @@ class CloudAuthService extends ChangeNotifier {
       // of registrant timing.
       if (kIsWeb) {
         step = 'web plugin registrants';
-        // Belt-and-braces: register every Firebase web delegate
-        // ourselves. Flutter's generated `web_plugin_registrant.dart`
-        // is supposed to do this on app boot, but the file is *cached*
-        // in `.dart_tool/flutter_build/<hash>/` and we've seen builds
-        // ship with a stale cache where only `SharedPreferencesPlugin`
-        // got registered — leaving `FirebaseAuthPlatform.instance` at
-        // the default `MethodChannelFirebaseAuth`, which throws
-        // `UnimplementedError: signInWithPopup() is only supported on
-        // web based platforms` for every OAuth call. The symptom on
-        // production was Google sign-in silently failing in iOS PWA
-        // and Chrome alike. Re-registering here is idempotent — each
-        // plugin's `registerWith` is safe to call again — so we're
-        // safe even when the cache *did* run.
-        try {
-          if (FirebasePlatform.instance is! FirebaseCoreWeb) {
-            FirebaseCoreWeb.registerWith(webPluginRegistrar);
-          } else {
-            // Auto-registrant already wired things up — clear the
-            // lazy delegate cache so Firebase picks up the live one.
-            // ignore: invalid_use_of_visible_for_testing_member
-            Firebase.delegatePackingProperty = FirebasePlatform.instance;
-          }
-          if (FirebaseAuthPlatform.instance.runtimeType.toString() !=
-              'FirebaseAuthWeb') {
-            FirebaseAuthWeb.registerWith(webPluginRegistrar);
-          }
-          // Firestore: cheap to re-register; ensures the web delegate
-          // is the one Firestore uses for Channel transport.
-          FirebaseFirestoreWeb.registerWith(webPluginRegistrar);
-          // 2026-05-06: Realtime Database had the same Pigeon channel-
-          // registration bug — symptom was the user-visible error
-          // "Unable to establish connection on channel: dev.flutter.
-          // pigeon.firebase_database_platform_interface.
-          // FirebaseDatabaseHostApi.databaseReferenceSet". Same fix:
-          // re-register the web delegate explicitly so the platform
-          // interface stops trying to talk to a non-existent
-          // MethodChannel receiver on web.
-          FirebaseDatabaseWeb.registerWith(webPluginRegistrar);
-        } catch (e) {
-          // Soft-fail: if registration throws because the plugin is
-          // already wired and the setter verification trips, fall
-          // through. We'd rather report the *real* downstream error
-          // (initializeApp etc.) than mask it with this one.
-          debugPrint('CloudAuthService: web registrant setup: $e');
-        }
+        // 2026-05-20 (v1.2.67): the full registration body —
+        // FirebaseCoreWeb.registerWith / FirebaseAuthWeb /
+        // FirebaseFirestoreWeb / FirebaseDatabaseWeb — moved to
+        // lib/services/web_plugin_registrants_web.dart so the
+        // native compile path doesn't pull in `dart:ui_web` via
+        // those packages. Same belt-and-braces behaviour as
+        // v1.2.49 — idempotent, safe to call when the auto-
+        // registrant already ran.
+        registerWebPluginsIfNeeded();
       }
       step = 'Firebase.initializeApp';
-      await Firebase.initializeApp(
-        options: DefaultFirebaseOptions.web,
-      );
+      // 2026-05-21 (v1.2.68): use DefaultFirebaseOptions.web on web,
+      // but on native (iOS / Android) pass NO options so the native
+      // SDK auto-loads from the platform config file (GoogleService-
+      // Info.plist on iOS, google-services.json on Android via the
+      // gradle plugin). Calling initializeApp with the web options
+      // on iOS crashed with `'com.firebase.core': Configuration fails.
+      // … invalid GOOGLE_APP_ID` because the web app's GOOGLE_APP_ID
+      // doesn't match the iOS bundle.
+      if (kIsWeb) {
+        await Firebase.initializeApp(
+          options: DefaultFirebaseOptions.web,
+        );
+      } else {
+        await Firebase.initializeApp();
+      }
       // Tell Firestore to auto-detect when the WebChannel transport
       // is being blocked (some browser extensions, corporate
       // proxies, mobile carrier networks) and fall back to long-
@@ -381,7 +366,9 @@ class CloudAuthService extends ChangeNotifier {
       if (currentUser?.email != null) 'login_hint': currentUser!.email!,
     });
     try {
-      final cred = await FirebaseAuth.instance.signInWithPopup(provider);
+      // 2026-05-21 (v1.2.68): same platform gate as the main
+      // signInWithGoogle path — signInWithPopup is web-only.
+      final cred = await _googleSignIn(provider);
       final c = cred.credential;
       if (c is OAuthCredential && c.accessToken != null) {
         _driveAccessToken = c.accessToken;
@@ -438,6 +425,50 @@ class CloudAuthService extends ChangeNotifier {
   ///   3. The popup is initiated by a user click — modern browsers
   ///      block popups otherwise. Calling this from a button's
   ///      onPressed handler satisfies the gesture requirement.
+  /// 2026-05-22 (v1.2.71): platform-aware Google sign-in helper. The
+  /// firebase_auth macOS plugin literally returns null for
+  /// `signInWithProvider` (see FLTFirebaseAuthPlugin.m line 1701:
+  /// `signInWithProvider is not supported on the MacOS platform`),
+  /// which the Dart side then surfaces as the "Host platform returned
+  /// null value for non-null return value" error.
+  ///
+  /// To get a real Firebase credential on macOS we go through
+  /// google_sign_in instead — it uses GIDSignIn under the hood,
+  /// opens a browser, gets a Google ID token, and we exchange that
+  /// for a Firebase credential via signInWithCredential. End state
+  /// is identical for the rest of the app (FirebaseAuth.currentUser
+  /// is populated the same way).
+  ///
+  /// Throws [FirebaseAuthException] with code `cancelled` when the
+  /// user dismisses the macOS Google sign-in sheet.
+  Future<UserCredential> _googleSignIn(GoogleAuthProvider provider) async {
+    if (kIsWeb) {
+      return FirebaseAuth.instance.signInWithPopup(provider);
+    }
+    if (defaultTargetPlatform == TargetPlatform.macOS) {
+      final signIn = gsi.GoogleSignIn(
+        scopes: provider.scopes.isEmpty
+            ? const ['email', 'profile']
+            : provider.scopes,
+      );
+      final account = await signIn.signIn();
+      if (account == null) {
+        throw FirebaseAuthException(
+          code: 'cancelled',
+          message: 'Google sign-in cancelled by user.',
+        );
+      }
+      final auth = await account.authentication;
+      final credential = GoogleAuthProvider.credential(
+        idToken: auth.idToken,
+        accessToken: auth.accessToken,
+      );
+      return FirebaseAuth.instance.signInWithCredential(credential);
+    }
+    // iOS / Android: ASWebAuthenticationSession-based provider flow.
+    return FirebaseAuth.instance.signInWithProvider(provider);
+  }
+
   Future<CloudAuthResult> signInWithGoogle() async {
     if (!_configured) {
       return const CloudAuthResult.error('Cloud sync not configured.');
@@ -466,8 +497,12 @@ class CloudAuthService extends ChangeNotifier {
 
     // 1. Popup first.
     try {
-      final cred =
-          await FirebaseAuth.instance.signInWithPopup(provider);
+      // 2026-05-21 (v1.2.68 / v1.2.71): platform-aware Google sign-in.
+      // Web → signInWithPopup. iOS / Android → signInWithProvider.
+      // macOS → google_sign_in + signInWithCredential (firebase_auth's
+      // signInWithProvider is hard-coded to return null on macOS —
+      // FLTFirebaseAuthPlugin.m line 1701).
+      final cred = await _googleSignIn(provider);
       // Capture the Drive OAuth access token from the credential
       // object. firebase_auth_web exposes it via OAuthCredential's
       // accessToken field. Tokens are typically valid for ~1 hour;

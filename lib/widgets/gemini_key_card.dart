@@ -8,6 +8,7 @@ import 'package:yswords/constants/build_flags.dart';
 import 'package:yswords/constants/ui_strings.dart';
 import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/services/ai_bible_search_service.dart';
+import 'package:yswords/services/api_base.dart';
 import 'package:yswords/services/cloud_auth_service.dart';
 import 'package:yswords/services/link_opener.dart';
 import 'package:yswords/utils/theme_color_helpers.dart';
@@ -173,7 +174,7 @@ class GeminiKeyCardState extends State<GeminiKeyCard> {
     try {
       final resp = await http
           .post(
-            Uri.parse(AiBibleSearchService.endpoint),
+            Uri.parse(resolveApiUrl(AiBibleSearchService.endpoint)),
             headers: const {'Content-Type': 'application/json'},
             body: jsonEncode({
               'query': 'love',

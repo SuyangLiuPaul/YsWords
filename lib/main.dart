@@ -25,6 +25,7 @@ import 'package:yswords/services/book_intro_service.dart';
 import 'package:yswords/services/section_title_service.dart';
 import 'package:yswords/services/url_sync_service.dart';
 import 'package:provider/provider.dart';
+import 'package:yswords/utils/font_catalog.dart' show kCjkFontFallback;
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -373,15 +374,15 @@ class _MainAppState extends State<MainApp> {
             ],
             textTheme: ThemeData.light().textTheme.copyWith(
                   bodyLarge: ThemeData.light().textTheme.bodyLarge?.copyWith(
-                        fontFamily: settings.fontFamily,
+                        fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                         fontSize: settings.fontSize,
                       ),
                   bodyMedium: ThemeData.light().textTheme.bodyMedium?.copyWith(
-                        fontFamily: settings.fontFamily,
+                        fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                         fontSize: settings.fontSize - 2,
                       ),
                   titleLarge: ThemeData.light().textTheme.titleLarge?.copyWith(
-                        fontFamily: settings.fontFamily,
+                        fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                         fontSize: settings.fontSize + 4,
                       ),
                 ),
@@ -452,17 +453,17 @@ class _MainAppState extends State<MainApp> {
             ],
             textTheme: ThemeData.dark().textTheme.copyWith(
                   bodyLarge: ThemeData.dark().textTheme.bodyLarge?.copyWith(
-                        fontFamily: settings.fontFamily,
+                        fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                         fontSize: settings.fontSize,
                         color: Color(0xFFCCCCCC),
                       ),
                   bodyMedium: ThemeData.dark().textTheme.bodyMedium?.copyWith(
-                        fontFamily: settings.fontFamily,
+                        fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                         fontSize: settings.fontSize - 2,
                         color: Color(0xFFCCCCCC),
                       ),
                   titleLarge: ThemeData.dark().textTheme.titleLarge?.copyWith(
-                        fontFamily: settings.fontFamily,
+                        fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                         fontSize: settings.fontSize + 4,
                         color: Color(0xFFCCCCCC),
                       ),

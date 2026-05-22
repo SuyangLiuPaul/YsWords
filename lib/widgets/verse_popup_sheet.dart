@@ -14,6 +14,7 @@ import 'package:yswords/utils/floating_toast.dart' show showFloatingToast;
 import 'package:yswords/utils/jump_to_reference.dart' as jumper;
 import 'package:yswords/utils/reference_parser.dart';
 import 'package:yswords/utils/version_mapper.dart' show localeAwareBookName;
+import 'package:yswords/utils/font_catalog.dart' show kCjkFontFallback;
 
 /// Modal bottom sheet that previews a Bible reference in-place
 /// without navigating away. Used by the sermon detail page so
@@ -401,7 +402,7 @@ class _VersePopupSheetState extends State<VersePopupSheet> {
         child: RichText(
           text: TextSpan(
             style: TextStyle(
-              fontFamily: settings.fontFamily,
+              fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
               fontSize: settings.fontSize,
               color: scheme.onSurface,
               height: 1.55,

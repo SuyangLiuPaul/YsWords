@@ -1,15 +1,13 @@
 // Cross-platform notification helper.
 //
-// Web (today's only target): wraps the browser Notification API. Can
-// request permission and fire local "in-page" notifications when the
-// user has the tab open (e.g. "Today's verse is ready", "You haven't
-// read today's reading yet"). Persistent push when the tab is
-// closed needs Firebase Cloud Messaging — a future round.
+// Web: wraps the browser Notification API via notification_service_web.dart.
+// iOS / Android / macOS / desktop: flutter_local_notifications via
+// notification_service_io.dart (v1.2.69+).
 //
-// Other platforms: stubbed to no-op. When we add iOS / Android we
-// swap in `flutter_local_notifications` + FCM in the impl file.
+// FCM (remote push when the app is fully backgrounded) is still a
+// future round — current implementation is local-only.
 
-import 'notification_service_stub.dart'
+import 'notification_service_io.dart'
     if (dart.library.js_interop) 'notification_service_web.dart' as impl;
 
 enum NotificationPermission { granted, denied, prompt, unsupported }

@@ -8,16 +8,14 @@ import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/models/verse.dart';
 import 'package:yswords/pages/home_page.dart';
 import 'package:yswords/providers/main_provider.dart';
-import 'package:yswords/services/profile_service.dart';
-import 'package:yswords/services/reading_plan_service.dart';
 import 'package:yswords/utils/clipboard_helper.dart';
 import 'package:yswords/utils/jump_to_reference.dart' as jumper;
 import 'package:yswords/utils/note_reference_parser.dart';
-import 'package:yswords/utils/reference_parser.dart';
-import 'package:yswords/utils/version_mapper.dart' show translateBookName;
+import 'package:yswords/utils/reference_parser.dart' show BibleReference;
 import 'package:yswords/widgets/verse_popup_sheet.dart' show showVersePopup;
 import 'package:yswords/widgets/home_icon_button.dart';
 import 'package:yswords/widgets/localized_back_button.dart';
+import 'package:yswords/utils/font_catalog.dart' show kCjkFontFallback;
 
 /// "Library" — a single page with two tabs: Notes and Bookmarks.
 /// Each tab shows the user's saved annotations for the current
@@ -30,8 +28,11 @@ class LibraryPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final settings = context.watch<AppSettings>();
     final locale = settings.locale;
+    // 2026-05-21 (v1.2.69): Plan tab removed along with the rest of
+    // the reading-plan feature (crashed iOS, low usage). Library is
+    // now Notes + Bookmarks.
     return DefaultTabController(
-      length: 3,
+      length: 2,
       child: Scaffold(
         appBar: AppBar(
           leading: const LocalizedBackButton(),
@@ -47,10 +48,6 @@ class LibraryPage extends StatelessWidget {
                 icon: const Icon(Icons.bookmark_outline_rounded),
                 text: uiStrings['tabBookmarks']?[locale] ?? 'Bookmarks',
               ),
-              Tab(
-                icon: const Icon(Icons.menu_book_outlined),
-                text: uiStrings['tabPlan']?[locale] ?? 'Plan',
-              ),
             ],
           ),
         ),
@@ -60,7 +57,6 @@ class LibraryPage extends StatelessWidget {
               children: [
                 _NotesTab(mainProvider: mainProvider, locale: locale),
                 _BookmarksTab(mainProvider: mainProvider, locale: locale),
-                _PlanTab(mainProvider: mainProvider, locale: locale),
               ],
             );
           },
@@ -70,63 +66,166 @@ class LibraryPage extends StatelessWidget {
   }
 }
 
-class _NotesTab extends StatelessWidget {
+/// 2026-05-21 (v1.2.70): scope filter for the notes view. WeDevote-
+/// style — readers usually want "what did I write about THIS chapter"
+/// while studying, and a separate "all notes ever" view for review.
+enum _NotesScope { all, chapter, book }
+
+class _NotesTab extends StatefulWidget {
   final MainProvider mainProvider;
   final String locale;
   const _NotesTab({required this.mainProvider, required this.locale});
 
   @override
+  State<_NotesTab> createState() => _NotesTabState();
+}
+
+class _NotesTabState extends State<_NotesTab>
+    with AutomaticKeepAliveClientMixin<_NotesTab> {
+  _NotesScope _scope = _NotesScope.all;
+
+  @override
+  bool get wantKeepAlive => true;
+
+  @override
   Widget build(BuildContext context) {
+    super.build(context);
+    final mainProvider = widget.mainProvider;
+    final locale = widget.locale;
     final notes = mainProvider.verseNotes;
+    final current = mainProvider.currentVerse;
+
+    // Resolve all IDs first, then apply the active scope filter on
+    // the Verse list — comparing book names here works regardless of
+    // version because both `entries` and `current` come from the same
+    // MainProvider snapshot (same loaded version's labelling).
+    final allEntries = _resolveAnnotations(mainProvider, notes.keys);
+    final entries = _filterEntriesByScope(allEntries, current, _scope);
+    final groups = _groupContiguousNotes(entries, notes);
+
+    // The segmented control header is always visible. When the user
+    // has zero notes overall we'd hide it, but that would mean the
+    // user can't even SEE the filter exists. Showing it (even when
+    // every list is empty) helps discoverability.
+    Widget body;
     if (notes.isEmpty) {
-      return _emptyState(
+      body = _emptyState(
         context,
         Icons.sticky_note_2_outlined,
         uiStrings['libraryEmptyNotes']?[locale] ??
             'No notes yet. Long-press a verse and tap the note icon to add one.',
       );
+    } else if (_scope != _NotesScope.all && current == null) {
+      body = _emptyState(
+        context,
+        Icons.menu_book_outlined,
+        uiStrings['notesScopeNeedsLocation']?[locale] ??
+            'Open the Bible first to see notes for this chapter / book.',
+      );
+    } else if (groups.isEmpty) {
+      // The user has notes elsewhere but none matching this scope.
+      String key;
+      String fallback;
+      switch (_scope) {
+        case _NotesScope.chapter:
+          key = 'notesScopeChapterEmpty';
+          fallback = 'No notes in this chapter yet.';
+          break;
+        case _NotesScope.book:
+          key = 'notesScopeBookEmpty';
+          fallback = 'No notes in this book yet.';
+          break;
+        case _NotesScope.all:
+          key = 'libraryEmptyNotes';
+          fallback = 'No notes yet.';
+          break;
+      }
+      body = _emptyState(
+        context,
+        Icons.sticky_note_2_outlined,
+        uiStrings[key]?[locale] ?? fallback,
+      );
+    } else {
+      body = ListView.separated(
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        itemCount: groups.length,
+        separatorBuilder: (_, __) => const Divider(height: 1),
+        itemBuilder: (_, i) {
+          final group = groups[i];
+          final headVerse = group.verses.first;
+          final note = group.text;
+          final rangeLabel = group.verses.length == 1
+              ? '${headVerse.book} ${headVerse.chapter}:${headVerse.verseLabel}'
+              : '${headVerse.book} ${headVerse.chapter}:'
+                  '${headVerse.verseLabel}-${group.verses.last.verseLabel}';
+          return _AnnotationTile(
+            verse: headVerse,
+            rangeLabelOverride: rangeLabel,
+            locale: locale,
+            mainProvider: mainProvider,
+            extra: note,
+            onCopy: () => ClipboardHelper.copyWithFeedback(
+              context,
+              '[$rangeLabel] '
+              '${sanitizeForSearch(headVerse.text)}\n\n$note',
+            ),
+            onDeleteAll: () {
+              for (final v in group.verses) {
+                mainProvider.clearVerseNote(verse: v);
+              }
+            },
+          );
+        },
+      );
     }
-    // 2026-05-19 (v1.2.60): group consecutive verses with identical
-    // note text into one tile — collapses WeDevote-style "passage
-    // notes" (where the user selected a range + wrote one note that
-    // got saved to each verse in the range) back into a single row
-    // labelled "Book Ch:V-V". Single-verse notes (the most common
-    // case) stay as one tile, one verse — same as before.
-    final entries = _resolveAnnotations(mainProvider, notes.keys);
-    final groups = _groupContiguousNotes(entries, notes);
-    return ListView.separated(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      itemCount: groups.length,
-      separatorBuilder: (_, __) => const Divider(height: 1),
-      itemBuilder: (_, i) {
-        final group = groups[i];
-        final headVerse = group.verses.first;
-        final note = group.text;
-        // Range label: "Genesis 1:16-18" for multi; "Genesis 1:16"
-        // for single. Falls back to single when verses.length == 1.
-        final rangeLabel = group.verses.length == 1
-            ? '${headVerse.book} ${headVerse.chapter}:${headVerse.verseLabel}'
-            : '${headVerse.book} ${headVerse.chapter}:'
-                '${headVerse.verseLabel}-${group.verses.last.verseLabel}';
-        return _AnnotationTile(
-          verse: headVerse,
-          rangeLabelOverride: rangeLabel,
-          locale: locale,
-          mainProvider: mainProvider,
-          extra: note,
-          onCopy: () => ClipboardHelper.copyWithFeedback(
-            context,
-            '[$rangeLabel] '
-            '${sanitizeForSearch(headVerse.text)}\n\n$note',
+
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(12, 8, 12, 4),
+          child: SegmentedButton<_NotesScope>(
+            segments: [
+              ButtonSegment(
+                value: _NotesScope.all,
+                label: Text(
+                  uiStrings['notesScopeAll']?[locale] ?? 'All',
+                ),
+              ),
+              ButtonSegment(
+                value: _NotesScope.chapter,
+                label: Text(
+                  uiStrings['notesScopeChapter']?[locale] ?? 'This chapter',
+                ),
+              ),
+              ButtonSegment(
+                value: _NotesScope.book,
+                label: Text(
+                  uiStrings['notesScopeBook']?[locale] ?? 'This book',
+                ),
+              ),
+            ],
+            selected: {_scope},
+            showSelectedIcon: false,
+            onSelectionChanged: (s) => setState(() => _scope = s.first),
           ),
-          onDeleteAll: () {
-            for (final v in group.verses) {
-              mainProvider.clearVerseNote(verse: v);
-            }
-          },
-        );
-      },
+        ),
+        Expanded(child: body),
+      ],
     );
+  }
+
+  /// Filter resolved Verse entries by the active scope. Chapter/book
+  /// scopes require a known [current] location; otherwise we return
+  /// empty and the view shows the "open the Bible first" empty state.
+  List<Verse> _filterEntriesByScope(
+      List<Verse> entries, Verse? current, _NotesScope scope) {
+    if (scope == _NotesScope.all) return entries;
+    if (current == null) return const [];
+    return entries.where((v) {
+      if (v.book != current.book) return false;
+      if (scope == _NotesScope.book) return true;
+      return v.chapter == current.chapter; // chapter scope
+    }).toList();
   }
 }
 
@@ -248,7 +347,7 @@ class _AnnotationTile extends StatelessWidget {
         style: TextStyle(
           fontWeight: FontWeight.w700,
           color: scheme.primary,
-          fontFamily: settings.fontFamily,
+          fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
           fontSize: settings.fontSize,
         ),
       ),
@@ -262,7 +361,7 @@ class _AnnotationTile extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
               color: scheme.onSurface,
-              fontFamily: settings.fontFamily,
+              fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
               fontSize: settings.fontSize - 2,
               height: 1.4,
             ),
@@ -292,7 +391,7 @@ class _AnnotationTile extends StatelessWidget {
                     noteText: extra!,
                     baseStyle: TextStyle(
                       fontStyle: FontStyle.italic,
-                      fontFamily: settings.fontFamily,
+                      fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                       fontSize: settings.fontSize - 2,
                       color: scheme.onSurfaceVariant,
                       height: 1.45,
@@ -448,340 +547,9 @@ void _navigateToVerse(Verse v, MainProvider mp) {
 // navigate path (via the "Open in Reader" button). Keeping this
 // comment so future readers don't go hunting for it.
 
-// ── Plan tab ───────────────────────────────────────────────────────
 
-/// Library tab showing the active reading plan day-by-day. Each day
-/// is a row with chips for the day's readings + a checkbox to mark
-/// the day complete. Today is highlighted and auto-scrolled to.
-class _PlanTab extends StatefulWidget {
-  final MainProvider mainProvider;
-  final String locale;
-  const _PlanTab({required this.mainProvider, required this.locale});
-
-  @override
-  State<_PlanTab> createState() => _PlanTabState();
-}
-
-class _PlanTabState extends State<_PlanTab> {
-  ReadingPlan? _plan;
-  int _today = 1;
-  Set<int> _done = {};
-  bool _loaded = false;
-  final _scrollController = ScrollController();
-
-  @override
-  void initState() {
-    super.initState();
-    _refresh();
-    // Refresh when active profile changes — keeps the displayed
-    // plan + progress synced with whichever account is signed in.
-    ProfileService.instance.addListener(_refresh);
-  }
-
-  @override
-  void dispose() {
-    ProfileService.instance.removeListener(_refresh);
-    _scrollController.dispose();
-    super.dispose();
-  }
-
-  Future<void> _refresh() async {
-    final id = await ReadingPlanService.activeId();
-    if (id == null) {
-      if (!mounted) return;
-      setState(() {
-        _plan = null;
-        _loaded = true;
-      });
-      return;
-    }
-    final plan = await ReadingPlanService.byId(id);
-    if (plan == null) {
-      if (!mounted) return;
-      setState(() {
-        _plan = null;
-        _loaded = true;
-      });
-      return;
-    }
-    final today = await ReadingPlanService.todayOfPlan(plan);
-    final done = await ReadingPlanService.completedDays(plan.id);
-    if (!mounted) return;
-    setState(() {
-      _plan = plan;
-      _today = today;
-      _done = done;
-      _loaded = true;
-    });
-    // Scroll to today on the next frame so the user lands on what
-    // matters first. ~76 dp per row is empirical (rows have wrapping
-    // chips so it varies, but it lands close).
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted || !_scrollController.hasClients) return;
-      final offset = ((today - 3).clamp(0, plan.days)) * 76.0;
-      _scrollController.jumpTo(
-          offset.clamp(0, _scrollController.position.maxScrollExtent));
-    });
-  }
-
-  Future<void> _toggleDay(int day) async {
-    final plan = _plan;
-    if (plan == null) return;
-    final wasDone = _done.contains(day);
-    await ReadingPlanService.setDayCompleted(plan.id, day, !wasDone);
-    final done = await ReadingPlanService.completedDays(plan.id);
-    if (!mounted) return;
-    setState(() => _done = done);
-  }
-
-  Future<void> _jumpToReading(String canonical) async {
-    final ref = parseReference(canonical);
-    if (ref == null) {
-      if (!mounted) return;
-      final locale = context.read<AppSettings>().locale;
-      final msg = (uiStrings['couldNotParseRef']?[locale] ??
-              "Couldn't parse reference: {ref}")
-          .replaceFirst('{ref}', canonical);
-      ScaffoldMessenger.maybeOf(context)?.showSnackBar(SnackBar(
-        content: Text(msg),
-        duration: const Duration(seconds: 3),
-      ));
-      return;
-    }
-    final result = await jumper.resolveAndPrepareJump(
-      reference: ref,
-      mp: widget.mainProvider,
-    );
-    if (!mounted) return;
-    final ok = await jumper.showJumpResultSnackBar(context, result);
-    if (!ok) return;
-    // Replace Library with the reader so the user lands at the verse
-    // regardless of whether Library was opened from the dashboard or
-    // from the reader's own overflow menu (see _navigateToVerse).
-    Get.off(
-      () => const HomePage(),
-      transition: Transition.rightToLeft,
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    if (!_loaded) {
-      return const Center(child: CircularProgressIndicator());
-    }
-    if (_plan == null) {
-      return _emptyState(
-        context,
-        Icons.menu_book_outlined,
-        uiStrings['planLibraryEmpty']?[widget.locale] ??
-            'No reading plan selected. Pick one from Settings.',
-      );
-    }
-    final plan = _plan!;
-    final scheme = Theme.of(context).colorScheme;
-    final settings = context.watch<AppSettings>();
-    final percent = plan.days == 0
-        ? 0
-        : (100 * _done.length / plan.days).round();
-    final progressLabel = (uiStrings['planProgress']?[widget.locale] ??
-            'Progress: {done} / {total} ({percent}%)')
-        .replaceAll('{done}', _done.length.toString())
-        .replaceAll('{total}', plan.days.toString())
-        .replaceAll('{percent}', percent.toString());
-
-    return Column(
-      children: [
-        Container(
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-          color: scheme.surfaceContainerLow,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                plan.localizedName(widget.locale),
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                  color: scheme.primary,
-                ),
-              ),
-              const SizedBox(height: 4),
-              ClipRRect(
-                borderRadius: BorderRadius.circular(4),
-                child: LinearProgressIndicator(
-                  value: plan.days == 0 ? 0 : _done.length / plan.days,
-                  minHeight: 6,
-                  backgroundColor:
-                      scheme.surfaceContainerHighest.withValues(alpha: 0.6),
-                ),
-              ),
-              const SizedBox(height: 4),
-              Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      progressLabel,
-                      style: TextStyle(
-                          fontFamily: settings.fontFamily,
-                          fontSize: (settings.fontSize - 7)
-                              .clamp(12.0, 15.0).toDouble(),
-                          color: scheme.onSurfaceVariant),
-                    ),
-                  ),
-                  TextButton.icon(
-                    onPressed: () {
-                      WidgetsBinding.instance.addPostFrameCallback((_) {
-                        if (!_scrollController.hasClients) return;
-                        final offset = ((_today - 3).clamp(0, plan.days))
-                            .toDouble() * 76.0;
-                        _scrollController.animateTo(
-                          offset.clamp(
-                              0, _scrollController.position.maxScrollExtent),
-                          duration: const Duration(milliseconds: 350),
-                          curve: Curves.easeInOutCubic,
-                        );
-                      });
-                    },
-                    icon: const Icon(Icons.today_outlined, size: 16),
-                    label: Text(
-                      uiStrings['planJumpToToday']?[widget.locale] ??
-                          'Jump to today',
-                      style: TextStyle(
-                          fontFamily: settings.fontFamily,
-                          fontSize: (settings.fontSize - 6)
-                              .clamp(12.0, 15.0).toDouble()),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-        Expanded(
-          child: ListView.separated(
-            controller: _scrollController,
-            itemCount: plan.days,
-            separatorBuilder: (_, __) => const Divider(height: 1),
-            itemBuilder: (_, i) {
-              final day = i + 1;
-              final entry = plan.dayOf(day)!;
-              final isToday = day == _today;
-              final done = _done.contains(day);
-              return Container(
-                color: isToday
-                    ? scheme.primaryContainer.withValues(alpha: 0.25)
-                    : null,
-                padding: const EdgeInsets.fromLTRB(8, 8, 8, 8),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Checkbox(
-                      value: done,
-                      onChanged: (_) => _toggleDay(day),
-                    ),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.only(top: 12, bottom: 4),
-                            child: Text(
-                              isToday
-                                  ? '${(uiStrings['planDayLabel']?[widget.locale] ?? 'Day {day} of {total}').replaceAll('{day}', day.toString()).replaceAll('{total}', plan.days.toString())}  •  ★'
-                                  : 'Day $day',
-                              style: TextStyle(
-                                fontFamily: settings.fontFamily,
-                                fontSize: (settings.fontSize - 6)
-                                    .clamp(12.0, 16.0).toDouble(),
-                                fontWeight: isToday
-                                    ? FontWeight.w700
-                                    : FontWeight.w500,
-                                color: isToday
-                                    ? scheme.primary
-                                    : scheme.onSurfaceVariant,
-                              ),
-                            ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.only(bottom: 8),
-                            child: Wrap(
-                              spacing: 6,
-                              runSpacing: 4,
-                              children: [
-                                for (final r in entry.readings)
-                                  _PlanReadingChip(
-                                    label: _localizeChip(
-                                        r,
-                                        widget.mainProvider.currentVersion),
-                                    done: done,
-                                    onTap: () => _jumpToReading(r),
-                                  ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            },
-          ),
-        ),
-      ],
-    );
-  }
-
-  String _localizeChip(String canonical, String currentVersion) {
-    final ref = parseReference(canonical);
-    if (ref == null) return canonical;
-    final localBook = translateBookName(ref.englishBook, currentVersion);
-    return '$localBook ${ref.chapter}';
-  }
-}
-
-class _PlanReadingChip extends StatelessWidget {
-  final String label;
-  final bool done;
-  final VoidCallback onTap;
-  const _PlanReadingChip({
-    required this.label,
-    required this.done,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    final fg = done ? scheme.outline : scheme.primary;
-    return Material(
-      color: scheme.primary.withValues(alpha: done ? 0.04 : 0.10),
-      borderRadius: BorderRadius.circular(8),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(8),
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-          child: Text(
-            label,
-            style: TextStyle(
-              fontSize: 12.5,
-              fontWeight: FontWeight.w600,
-              color: fg,
-              decoration: done ? TextDecoration.lineThrough : null,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-// Removed: _navigateToReference. Replaced by `_jumpToReading` which
-// uses the shared `resolveAndPrepareJump` helper from
-// `lib/utils/jump_to_reference.dart` so the OT-fallback (CUVS-YHWH on
-// LJK1/LJK2) is consistent with the other cross-link surfaces.
-
+/// Generic empty-state widget used by both library tabs when the user
+/// has no notes / no bookmarks yet. Centered icon + italic hint text.
 Widget _emptyState(BuildContext context, IconData icon, String text) {
   final scheme = Theme.of(context).colorScheme;
   return Center(

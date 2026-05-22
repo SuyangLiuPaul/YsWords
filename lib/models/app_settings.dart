@@ -33,7 +33,6 @@ const _kShowStrongsInOriginals = 'showStrongsInOriginals';
 const _kAutoExpandFirstRef = 'autoExpandFirstRef';
 const _kShowDailyNews = 'showDailyNews';
 const _kShowBibleEvidence = 'showBibleEvidence';
-const _kShowReadingPlan = 'showReadingPlan';
 const _kNotificationsEnabled = 'notificationsEnabled';
 const _kShowSectionTitles = 'showSectionTitles';
 const _kShowBookIntro = 'showBookIntro';
@@ -121,10 +120,6 @@ class AppSettings extends ChangeNotifier {
   /// the Bible Evidence page entry. Default ON.
   bool _showBibleEvidence = true;
 
-  /// Show the Today's Reading card on the dashboard. Default ON.
-  /// Reading-plan picker remains accessible from settings regardless.
-  bool _showReadingPlan = true;
-
   /// Whether the user has opted into notifications. When true, the
   /// app requests browser Notification permission on next launch and
   /// fires local reminders (today's verse, today's reading missed,
@@ -197,7 +192,6 @@ class AppSettings extends ChangeNotifier {
   bool get autoExpandFirstRef => _autoExpandFirstRef;
   bool get showDailyNews => _showDailyNews;
   bool get showBibleEvidence => _showBibleEvidence;
-  bool get showReadingPlan => _showReadingPlan;
   bool get notificationsEnabled => _notificationsEnabled;
   bool get showSectionTitles => _showSectionTitles;
   bool get showBookIntro => _showBookIntro;
@@ -508,14 +502,6 @@ class AppSettings extends ChangeNotifier {
     await prefs.setBool(_kShowBibleEvidence, enabled);
   }
 
-  Future<void> setShowReadingPlan(bool enabled) async {
-    if (_showReadingPlan == enabled) return;
-    _showReadingPlan = enabled;
-    notifyListeners();
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool(_kShowReadingPlan, enabled);
-  }
-
   Future<void> setNotificationsEnabled(bool enabled) async {
     if (_notificationsEnabled == enabled) return;
     _notificationsEnabled = enabled;
@@ -607,9 +593,6 @@ class AppSettings extends ChangeNotifier {
       case DashboardSection.todayEvidence:
         _showBibleEvidence = visible;
         break;
-      case DashboardSection.todayReading:
-        _showReadingPlan = visible;
-        break;
       default:
         break;
     }
@@ -617,16 +600,13 @@ class AppSettings extends ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_kDashboardVisible(section), visible);
     // Mirror legacy keys so a downgrade still picks up the user's
-    // intent on these three (the only ones that pre-dated round 55).
+    // intent on these two (the only ones that pre-dated round 55).
     switch (section) {
       case DashboardSection.todayHeadlines:
         await prefs.setBool(_kShowDailyNews, visible);
         break;
       case DashboardSection.todayEvidence:
         await prefs.setBool(_kShowBibleEvidence, visible);
-        break;
-      case DashboardSection.todayReading:
-        await prefs.setBool(_kShowReadingPlan, visible);
         break;
       default:
         break;
@@ -673,7 +653,6 @@ class AppSettings extends ChangeNotifier {
     _autoExpandFirstRef = false;
     _showDailyNews = true;
     _showBibleEvidence = true;
-    _showReadingPlan = true;
     _notificationsEnabled = false;
     _showSectionTitles = true;
     _showBookIntro = true;
@@ -707,7 +686,6 @@ class AppSettings extends ChangeNotifier {
       _kAutoExpandFirstRef,
       _kShowDailyNews,
       _kShowBibleEvidence,
-      _kShowReadingPlan,
       _kNotificationsEnabled,
       _kShowSectionTitles,
       _kShowBookIntro,
@@ -740,8 +718,6 @@ class AppSettings extends ChangeNotifier {
     _showDailyNews = defaultVisibility[DashboardSection.todayHeadlines] ?? true;
     _showBibleEvidence =
         defaultVisibility[DashboardSection.todayEvidence] ?? true;
-    _showReadingPlan =
-        defaultVisibility[DashboardSection.todayReading] ?? true;
     notifyListeners();
     final prefs = await SharedPreferences.getInstance();
     await prefs.setStringList(
@@ -754,7 +730,6 @@ class AppSettings extends ChangeNotifier {
     }
     await prefs.setBool(_kShowDailyNews, _showDailyNews);
     await prefs.setBool(_kShowBibleEvidence, _showBibleEvidence);
-    await prefs.setBool(_kShowReadingPlan, _showReadingPlan);
   }
 
   Future<void> loadSettings() async {
@@ -824,7 +799,6 @@ class AppSettings extends ChangeNotifier {
     _autoExpandFirstRef = prefs.getBool(_kAutoExpandFirstRef) ?? false;
     _showDailyNews = prefs.getBool(_kShowDailyNews) ?? true;
     _showBibleEvidence = prefs.getBool(_kShowBibleEvidence) ?? true;
-    _showReadingPlan = prefs.getBool(_kShowReadingPlan) ?? true;
     _notificationsEnabled = prefs.getBool(_kNotificationsEnabled) ?? false;
     _showSectionTitles = prefs.getBool(_kShowSectionTitles) ?? true;
     _showBookIntro = prefs.getBool(_kShowBookIntro) ?? true;
@@ -855,7 +829,6 @@ class AppSettings extends ChangeNotifier {
       v ??= switch (s) {
         DashboardSection.todayHeadlines => prefs.getBool(_kShowDailyNews),
         DashboardSection.todayEvidence => prefs.getBool(_kShowBibleEvidence),
-        DashboardSection.todayReading => prefs.getBool(_kShowReadingPlan),
         _ => null,
       };
       _dashboardVisibility[s] = v ?? defaultVisibility[s] ?? true;

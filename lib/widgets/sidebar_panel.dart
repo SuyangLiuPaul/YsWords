@@ -4,6 +4,7 @@ import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/providers/main_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:yswords/widgets/book_chapter_picker.dart';
+import 'package:yswords/utils/font_catalog.dart' show kCjkFontFallback;
 
 class SidebarPanel extends StatelessWidget {
   final String currentBook;
@@ -65,7 +66,7 @@ class SidebarPanel extends StatelessWidget {
                             style: TextStyle(
                               fontSize: settings.fontSize.clamp(14.0, 18.0),
                               fontWeight: FontWeight.w700,
-                              fontFamily: settings.fontFamily,
+                              fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                               color: scheme.onSurface,
                               decoration: TextDecoration.none,
                               decorationColor: Colors.transparent,

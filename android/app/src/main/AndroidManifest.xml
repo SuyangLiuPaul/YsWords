@@ -1,4 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- 2026-05-21 (v1.2.69): runtime notification permission for
+         Android 13+ (TIRAMISU). Older Android grants by default. -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <application
         android:label="yswords"
         android:name="${applicationName}"

@@ -7,6 +7,7 @@ import 'package:yswords/services/avatar_picker_service.dart';
 import 'package:yswords/services/profile_service.dart';
 import 'package:yswords/widgets/home_icon_button.dart';
 import 'package:yswords/widgets/localized_back_button.dart';
+import 'package:yswords/utils/font_catalog.dart' show kCjkFontFallback;
 
 /// Edit the active profile's display name and avatar color tile.
 ///
@@ -188,7 +189,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
               Text(
                 uiStrings['displayName']?[locale] ?? 'Display name',
                 style: TextStyle(
-                  fontFamily: settings.fontFamily,
+                  fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                   fontSize:
                       (settings.fontSize - 2).clamp(12.0, 20.0).toDouble(),
                   fontWeight: FontWeight.w700,
@@ -211,7 +212,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
               Text(
                 uiStrings['avatarColor']?[locale] ?? 'Avatar color',
                 style: TextStyle(
-                  fontFamily: settings.fontFamily,
+                  fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                   fontSize:
                       (settings.fontSize - 2).clamp(12.0, 20.0).toDouble(),
                   fontWeight: FontWeight.w700,
@@ -247,7 +248,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
                 uiStrings['profileEditNotice']?[locale] ??
                     'Profile name and color are stored on this device. If you\'re signed in with Google your photo will appear instead of the colored initial.',
                 style: TextStyle(
-                  fontFamily: settings.fontFamily,
+                  fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                   fontSize:
                       (settings.fontSize - 3).clamp(11.0, 16.0).toDouble(),
                   fontStyle: FontStyle.italic,

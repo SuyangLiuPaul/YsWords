@@ -9,6 +9,7 @@ import 'package:yswords/pages/profile_edit_page.dart';
 import 'package:yswords/services/profile_service.dart';
 import 'package:yswords/widgets/home_icon_button.dart';
 import 'package:yswords/widgets/localized_back_button.dart';
+import 'package:yswords/utils/font_catalog.dart' show kCjkFontFallback;
 
 /// Manage local profiles — switch active profile, add a new one,
 /// rename, or delete. Reachable from Settings → Account.
@@ -215,7 +216,7 @@ class _ProfilesPageState extends State<ProfilesPage> {
                 : Text(
                     '${(uiStrings['profileLocalOnly']?[locale] ?? 'Local profile')} • id: ${p.id}',
                     style: TextStyle(
-                      fontFamily: settings.fontFamily,
+                      fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                       fontSize: (settings.fontSize - 4)
                           .clamp(11.0, 15.0)
                           .toDouble(),

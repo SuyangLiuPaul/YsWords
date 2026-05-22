@@ -25,7 +25,7 @@ import 'package:yswords/widgets/home_icon_button.dart';
 import 'package:yswords/widgets/localized_back_button.dart';
 import 'package:yswords/utils/ai_markdown.dart' show parseAiMarkdown;
 import 'package:yswords/utils/responsive.dart';
-import 'package:flutter/services.dart';
+import 'package:yswords/utils/font_catalog.dart' show kCjkFontFallback;
 
 // 2026-05-10 (v1.2.31): hoisted regex — used inside the AI-results
 // `itemBuilder` for every visible row during scroll, plus the
@@ -1248,6 +1248,12 @@ class _SearchPageState extends State<SearchPage> {
           title: TextField(
             autofocus: true,
             controller: _textEditingController,
+            // 2026-05-22 (v1.2.71): allow up to 2 lines so long
+            // question-style queries don't clip. minLines: 1 keeps
+            // the AppBar's normal height for short queries.
+            minLines: 1,
+            maxLines: 2,
+            keyboardType: TextInputType.text,
             style: TextStyle(
               fontSize: settings.fontSize,
               color: Theme.of(context).appBarTheme.foregroundColor,
@@ -1255,6 +1261,8 @@ class _SearchPageState extends State<SearchPage> {
             cursorColor: Theme.of(context).appBarTheme.foregroundColor,
             decoration: InputDecoration(
               border: InputBorder.none,
+              isDense: true,
+              contentPadding: EdgeInsets.zero,
               hintText: uiStrings['search']?[settings.locale] ?? 'Search',
               hintStyle: TextStyle(
                 color: (Theme.of(context).appBarTheme.foregroundColor ??
@@ -1262,13 +1270,6 @@ class _SearchPageState extends State<SearchPage> {
                     .withValues(alpha: 0.65),
               ),
             ),
-            inputFormatters: [
-              // Allow alphanumerics + Chinese chars + space + the
-              // colon / dash / dot punctuation needed to type Bible
-              // references like "John 3:16" or "约 3:16-18".
-              FilteringTextInputFormatter.allow(
-                  RegExp(r'[0-9a-zA-Z\u4E00-\u9FFF\u00C0-\u024F\u0370-\u03FF\u1F00-\u1FFF\u0590-\u05FF :\-\.：。‐–—]')),
-            ],
             onChanged: (text) {
               // 2026-05-07 (v9): live search-as-you-type. Every
               // keystroke:
@@ -2244,7 +2245,7 @@ class _RecentSearchRow extends StatelessWidget {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
-                  fontFamily: settings.fontFamily,
+                  fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                   fontSize: (settings.fontSize - 1).clamp(13.0, 17.0),
                   color: scheme.onSurface,
                 ),

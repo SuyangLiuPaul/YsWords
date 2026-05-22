@@ -10,6 +10,7 @@ import 'package:yswords/services/strongs_service.dart';
 import 'package:yswords/utils/clipboard_helper.dart';
 import 'package:yswords/widgets/home_icon_button.dart';
 import 'package:yswords/widgets/localized_back_button.dart';
+import 'package:yswords/utils/font_catalog.dart' show kCjkFontFallback;
 
 /// Standalone page for viewing a single Strong's lexicon entry by its
 /// number (e.g. "G25" / "H430"). Reachable from the search bar when
@@ -160,7 +161,7 @@ class _StrongsEntryPageState extends State<StrongsEntryPage> {
                 Text(
                   e.lemma,
                   style: TextStyle(
-                    fontFamily: settings.fontFamily,
+                    fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                     fontSize: lemmaFontSize,
                     fontWeight: FontWeight.w700,
                     color: scheme.primary,
@@ -284,7 +285,7 @@ class _StrongsEntryPageState extends State<StrongsEntryPage> {
               title: Text(
                 '${r.englishBook} ${r.chapter}:${r.verse}',
                 style: TextStyle(
-                    fontFamily: settings.fontFamily,
+                    fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                     fontSize: settings.fontSize - 1,
                     color: scheme.primary,
                     fontWeight: FontWeight.w600),

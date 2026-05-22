@@ -21,6 +21,7 @@ import 'package:yswords/utils/reference_parser.dart'
 import 'package:yswords/utils/version_mapper.dart' show toEnglish, localeAwareBookName;
 import 'package:yswords/widgets/home_icon_button.dart';
 import 'package:yswords/widgets/localized_back_button.dart';
+import 'package:yswords/utils/font_catalog.dart' show kCjkFontFallback;
 
 /// Bible Tools page — three tabs (Overview / Lookup / Distribution).
 /// Round 56 cleanup: the Vocabulary tab and the Strong's-search
@@ -165,7 +166,7 @@ class _OverviewTab extends StatelessWidget {
         Text(
           version.toUpperCase(),
           style: TextStyle(
-            fontFamily: settings.fontFamily,
+            fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
             fontSize: (fs - 6).clamp(13.0, 18.0).toDouble(),
             fontWeight: FontWeight.w700,
             color: scheme.onSurfaceVariant,
@@ -253,13 +254,13 @@ class _LongestShortestList extends StatelessWidget {
             Expanded(
                 child: Text(book,
                     style: TextStyle(
-                      fontFamily: settings.fontFamily,
+                      fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                       fontSize: (fs - 4).clamp(13.0, 18.0).toDouble(),
                       fontWeight: FontWeight.w600,
                     ))),
             Text(_humanNum(b.words),
                 style: TextStyle(
-                  fontFamily: settings.fontFamily,
+                  fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                   fontSize: (fs - 4).clamp(13.0, 18.0).toDouble(),
                   color: scheme.onSurfaceVariant,
                 )),
@@ -275,7 +276,7 @@ class _LongestShortestList extends StatelessWidget {
           child: Text(
             uiStrings['statsLongest']?[locale] ?? 'Longest (by word count)',
             style: TextStyle(
-                fontFamily: settings.fontFamily,
+                fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                 fontSize: (fs - 7).clamp(13.0, 16.0).toDouble(),
                 fontWeight: FontWeight.w700,
                 color: scheme.primary,
@@ -287,7 +288,7 @@ class _LongestShortestList extends StatelessWidget {
         Text(
           uiStrings['statsShortest']?[locale] ?? 'Shortest (by word count)',
           style: TextStyle(
-              fontFamily: settings.fontFamily,
+              fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
               fontSize: (fs - 7).clamp(13.0, 16.0).toDouble(),
               fontWeight: FontWeight.w700,
               color: scheme.tertiary,
@@ -364,13 +365,13 @@ class _BooksTabState extends State<_BooksTab> {
     // (~14pt) up via user font scale so Windows 1080p users can
     // actually read the column titles.
     final headerStyle = TextStyle(
-      fontFamily: settings.fontFamily,
+      fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
       fontSize: (fs - 5).clamp(13.0, 17.0).toDouble(),
       fontWeight: FontWeight.w700,
       color: scheme.onSurface,
     );
     final cellStyle = TextStyle(
-      fontFamily: settings.fontFamily,
+      fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
       fontSize: (fs - 5).clamp(13.0, 16.0).toDouble(),
       color: scheme.onSurface,
     );
@@ -618,7 +619,7 @@ class _VocabularyTabState extends State<_VocabularyTab> {
           (uiStrings['statsScopeTotal']?[l] ?? 'Total words in scope: {n}')
               .replaceAll('{n}', _humanNum(totalWords)),
           style: TextStyle(
-            fontFamily: settings.fontFamily,
+            fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
             fontSize: (fs - 7).clamp(12.0, 15.0).toDouble(),
             color: scheme.onSurfaceVariant,
             fontStyle: FontStyle.italic,
@@ -665,7 +666,7 @@ class _StatCard extends StatelessWidget {
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
-                    fontFamily: settings.fontFamily,
+                    fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                     fontSize: (fs - 7).clamp(12.0, 15.0).toDouble(),
                     fontWeight: FontWeight.w600,
                     color: scheme.onSurfaceVariant,
@@ -709,7 +710,7 @@ class _SectionHeader extends StatelessWidget {
         Text(
           label,
           style: TextStyle(
-            fontFamily: settings.fontFamily,
+            fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
             // Was hardcoded 13. On Windows 1080p that's hard to read,
             // and it ignored the user's font-scale setting. Now scales
             // with `settings.fontSize` while keeping clear hierarchy
@@ -725,7 +726,7 @@ class _SectionHeader extends StatelessWidget {
           Text(
             subtitle!,
             style: TextStyle(
-              fontFamily: settings.fontFamily,
+              fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
               fontSize: (fs - 7).clamp(12.0, 15.0).toDouble(),
               color: scheme.onSurfaceVariant,
               fontStyle: FontStyle.italic,
@@ -1892,7 +1893,7 @@ class _BibleLanguagesCard extends StatelessWidget {
                 child: Text(
                   title,
                   style: TextStyle(
-                    fontFamily: settings.fontFamily,
+                    fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                     fontSize: 14,
                     fontWeight: FontWeight.w700,
                     color: scheme.onSurface,
@@ -1905,7 +1906,7 @@ class _BibleLanguagesCard extends StatelessWidget {
           Text(
             subtitle,
             style: TextStyle(
-              fontFamily: settings.fontFamily,
+              fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
               fontSize: 12,
               height: 1.45,
               color: scheme.onSurface.withValues(alpha: 0.65),
@@ -2306,7 +2307,7 @@ class _AramaicEntryTile extends StatelessWidget {
                     Text(
                       label,
                       style: TextStyle(
-                        fontFamily: settings.fontFamily,
+                        fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                         fontSize: 14,
                         fontWeight: FontWeight.w700,
                         color: scheme.onSurface,
@@ -2343,7 +2344,7 @@ class _AramaicEntryTile extends StatelessWidget {
                       Text(
                         desc,
                         style: TextStyle(
-                          fontFamily: settings.fontFamily,
+                          fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                           fontSize: 12,
                           height: 1.4,
                           color:
@@ -2492,7 +2493,7 @@ class _LanguageRow extends StatelessWidget {
                     child: Text(
                       name,
                       style: TextStyle(
-                        fontFamily: settings.fontFamily,
+                        fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                         fontSize: 15,
                         fontWeight: FontWeight.w700,
                         color: scheme.onSurface,
@@ -2504,7 +2505,7 @@ class _LanguageRow extends StatelessWidget {
                     child: Text(
                       role,
                       style: TextStyle(
-                        fontFamily: settings.fontFamily,
+                        fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                         fontSize: 11,
                         color: scheme.primary,
                         fontWeight: FontWeight.w600,
@@ -2520,7 +2521,7 @@ class _LanguageRow extends StatelessWidget {
                       .whereType<String>()
                       .join(' · '),
                   style: TextStyle(
-                    fontFamily: settings.fontFamily,
+                    fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                     fontSize: 11,
                     color: scheme.onSurface.withValues(alpha: 0.55),
                     fontFeatures: const [FontFeature.tabularFigures()],
@@ -2532,7 +2533,7 @@ class _LanguageRow extends StatelessWidget {
                 Text(
                   sections,
                   style: TextStyle(
-                    fontFamily: settings.fontFamily,
+                    fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                     fontSize: 12,
                     height: 1.5,
                     color: scheme.onSurface.withValues(alpha: 0.85),
@@ -2543,7 +2544,7 @@ class _LanguageRow extends StatelessWidget {
               Text(
                 background,
                 style: TextStyle(
-                  fontFamily: settings.fontFamily,
+                  fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                   fontSize: 12,
                   height: 1.5,
                   color: scheme.onSurface.withValues(alpha: 0.7),
@@ -2947,7 +2948,7 @@ class _BookOriginalsRow extends StatelessWidget {
                   Text(
                     localizedName,
                     style: TextStyle(
-                      fontFamily: settings.fontFamily,
+                      fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                       fontSize: settings.fontSize,
                       fontWeight: FontWeight.w600,
                       color: scheme.onSurface,
@@ -3825,7 +3826,7 @@ class _PassageStudyCard extends StatelessWidget {
                   child: Text(
                     title,
                     style: TextStyle(
-                      fontFamily: settings.fontFamily,
+                      fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                       fontSize: 15,
                       fontWeight: FontWeight.w700,
                       color: scheme.onPrimaryContainer,
@@ -3838,7 +3839,7 @@ class _PassageStudyCard extends StatelessWidget {
             Text(
               desc,
               style: TextStyle(
-                fontFamily: settings.fontFamily,
+                fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                 fontSize: 12,
                 height: 1.45,
                 color: scheme.onSurface.withValues(alpha: 0.75),
@@ -3940,7 +3941,7 @@ class _PopularPassagesCardState extends State<_PopularPassagesCard> {
                 child: Text(
                   title,
                   style: TextStyle(
-                    fontFamily: settings.fontFamily,
+                    fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                     fontSize: 14,
                     fontWeight: FontWeight.w700,
                     color: scheme.onSurface,
@@ -3953,7 +3954,7 @@ class _PopularPassagesCardState extends State<_PopularPassagesCard> {
           Text(
             desc,
             style: TextStyle(
-              fontFamily: settings.fontFamily,
+              fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
               fontSize: 12,
               color: scheme.onSurface.withValues(alpha: 0.65),
               height: 1.4,
@@ -4103,7 +4104,7 @@ class _DailyVerseChip extends StatelessWidget {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
-                  fontFamily: settings.fontFamily,
+                  fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                   fontSize: 11,
                   color: scheme.onSurface.withValues(alpha: 0.65),
                   letterSpacing: 0.2,
@@ -4115,7 +4116,7 @@ class _DailyVerseChip extends StatelessWidget {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
-                  fontFamily: settings.fontFamily,
+                  fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                   fontSize: 13,
                   fontWeight: FontWeight.w700,
                   color: scheme.primary,
@@ -4185,7 +4186,7 @@ class _ExegesisFeaturesCard extends StatelessWidget {
                 child: Text(
                   title,
                   style: TextStyle(
-                    fontFamily: settings.fontFamily,
+                    fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                     fontSize: 14,
                     fontWeight: FontWeight.w700,
                     color: scheme.onSurface,
@@ -4209,7 +4210,7 @@ class _ExegesisFeaturesCard extends StatelessWidget {
                   child: Text(
                     features[i].$2,
                     style: TextStyle(
-                      fontFamily: settings.fontFamily,
+                      fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                       fontSize: 12,
                       height: 1.45,
                       color: scheme.onSurface.withValues(alpha: 0.8),

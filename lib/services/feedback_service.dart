@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:flutter/widgets.dart';
 import 'package:http/http.dart' as http;
 
+import 'package:yswords/services/api_base.dart';
 import 'package:yswords/services/browser_info_stub.dart'
     if (dart.library.js_interop) 'package:yswords/services/browser_info_web.dart';
 
@@ -115,7 +116,7 @@ class FeedbackService {
     try {
       resp = await http
           .post(
-            Uri.parse(endpoint),
+            Uri.parse(resolveApiUrl(endpoint)),
             headers: const {'Content-Type': 'application/json'},
             body: body,
           )

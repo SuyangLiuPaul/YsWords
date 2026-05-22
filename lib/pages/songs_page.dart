@@ -11,6 +11,7 @@ import 'package:yswords/utils/responsive.dart';
 import 'package:yswords/utils/version_mapper.dart' show localeAwareBookName;
 import 'package:yswords/widgets/home_icon_button.dart';
 import 'package:yswords/widgets/localized_back_button.dart';
+import 'package:yswords/utils/font_catalog.dart' show kCjkFontFallback;
 
 /// Round 56: church-songs directory page.
 ///
@@ -282,7 +283,7 @@ class _IntroCard extends StatelessWidget {
                 child: Text(
                   title,
                   style: TextStyle(
-                    fontFamily: settings.fontFamily,
+                    fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                     fontSize: 15,
                     fontWeight: FontWeight.w700,
                     color: scheme.onPrimaryContainer,
@@ -295,7 +296,7 @@ class _IntroCard extends StatelessWidget {
           Text(
             body,
             style: TextStyle(
-              fontFamily: settings.fontFamily,
+              fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
               fontSize: 12,
               height: 1.45,
               color: scheme.onSurface.withValues(alpha: 0.75),
@@ -383,7 +384,7 @@ class _SearchAndFilterBar extends StatelessWidget {
                 ),
                 onChanged: onQuery,
                 style: TextStyle(
-                  fontFamily: settings.fontFamily,
+                  fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                   fontSize:
                       (settings.fontSize - 1).clamp(13.0, 17.0),
                 ),
@@ -889,7 +890,7 @@ class _SongTile extends StatelessWidget {
                     Text(
                       song.title,
                       style: TextStyle(
-                        fontFamily: settings.fontFamily,
+                        fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                         fontSize: (settings.fontSize - 1)
                             .clamp(14.0, 17.0),
                         fontWeight: FontWeight.w600,

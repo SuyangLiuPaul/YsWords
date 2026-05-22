@@ -1390,6 +1390,33 @@ const uiStrings = {
   },
   'tabNotes': {'zh-Hans': '笔记', 'zh-Hant': '筆記', 'en': 'Notes'},
   'tabBookmarks': {'zh-Hans': '书签', 'zh-Hant': '書籤', 'en': 'Bookmarks'},
+  // 2026-05-21 (v1.2.70): Notes scope filter — WeDevote-style.
+  'notesScopeAll': {'zh-Hans': '全部', 'zh-Hant': '全部', 'en': 'All'},
+  'notesScopeChapter': {
+    'zh-Hans': '本章',
+    'zh-Hant': '本章',
+    'en': 'This chapter',
+  },
+  'notesScopeBook': {
+    'zh-Hans': '本书',
+    'zh-Hant': '本書',
+    'en': 'This book',
+  },
+  'notesScopeChapterEmpty': {
+    'zh-Hans': '本章还没有笔记。',
+    'zh-Hant': '本章還沒有筆記。',
+    'en': 'No notes in this chapter yet.',
+  },
+  'notesScopeBookEmpty': {
+    'zh-Hans': '本书还没有笔记。',
+    'zh-Hant': '本書還沒有筆記。',
+    'en': 'No notes in this book yet.',
+  },
+  'notesScopeNeedsLocation': {
+    'zh-Hans': '请先打开圣经,以查看本章/本书的笔记。',
+    'zh-Hant': '請先打開聖經,以查看本章/本書的筆記。',
+    'en': 'Open the Bible first to see notes for this chapter / book.',
+  },
   // ── Reading plans (Round 26) ─────────────────────────────────────
   'tabPlan': {'zh-Hans': '读经计划', 'zh-Hant': '讀經計劃', 'en': 'Plan'},
   'readingPlans': {

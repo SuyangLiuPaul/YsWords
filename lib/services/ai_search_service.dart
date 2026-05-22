@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 import 'package:yswords/constants/ui_strings.dart';
+import 'package:yswords/services/api_base.dart';
 
 /// Calls the YsWords Cloud Function that proxies Gemini for AI-powered
 /// search over the Bible Evidence dataset.
@@ -72,7 +73,7 @@ class AiSearchService {
     try {
       resp = await http
           .post(
-            Uri.parse(endpoint),
+            Uri.parse(resolveApiUrl(endpoint)),
             headers: const {'Content-Type': 'application/json'},
             body: jsonEncode({
               'query': query,
@@ -83,7 +84,7 @@ class AiSearchService {
                 'aiModel': aiModel,
             }),
           )
-          .timeout(const Duration(seconds: 25));
+          .timeout(const Duration(seconds: 60));
     } on TimeoutException {
       return AiSearchResult.unavailable(
         'The AI search took too long. Please try again or rephrase '

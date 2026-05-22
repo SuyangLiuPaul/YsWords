@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>461522287670-ndij2tes352rk5rqek76ect2m1hv6i7d.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.461522287670-ndij2tes352rk5rqek76ect2m1hv6i7d</string>
+	<key>API_KEY</key>
+	<string>AIzaSyBvc0MzzwIjexaSY3RegFwIQdGEnhvyK4E</string>
+	<key>GCM_SENDER_ID</key>
+	<string>461522287670</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.example.yswords</string>
+	<key>PROJECT_ID</key>
+	<string>ysword</string>
+	<key>STORAGE_BUCKET</key>
+	<string>ysword.firebasestorage.app</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:461522287670:ios:e62ee73fa3babda25dec97</string>
+	<key>DATABASE_URL</key>
+	<string>https://ysword-default-rtdb.firebaseio.com</string>
+</dict>
+</plist>

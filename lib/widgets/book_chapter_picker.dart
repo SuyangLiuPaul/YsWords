@@ -13,6 +13,7 @@ import 'package:yswords/constants/ui_strings.dart';
 import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/utils/responsive.dart';
 import 'package:yswords/utils/version_mapper.dart' show toEnglish;
+import 'package:yswords/utils/font_catalog.dart' show kCjkFontFallback;
 
 class BookChapterPicker extends StatefulWidget {
   final String currentBook;
@@ -388,7 +389,7 @@ class _BookChapterPickerState extends State<BookChapterPicker> {
                       uiStrings['versePickerTitle']?[locale] ??
                           'Pick a verse',
                       style: TextStyle(
-                        fontFamily: settings.fontFamily,
+                        fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                         fontSize: settings.fontSize,
                         fontWeight: FontWeight.w700,
                         color: scheme.onSurface,
@@ -407,7 +408,7 @@ class _BookChapterPickerState extends State<BookChapterPicker> {
             child: Text(
               '$book  $chapter',
               style: TextStyle(
-                fontFamily: settings.fontFamily,
+                fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                 fontSize: (settings.fontSize - 2).clamp(12.0, 16.0),
                 color: scheme.onSurfaceVariant,
               ),
@@ -506,7 +507,7 @@ class _BookChapterPickerState extends State<BookChapterPicker> {
         textAlign: TextAlign.center,
         style: TextStyle(
           fontSize: settings.fontSize.clamp(13.0, 17.0).toDouble(),
-          fontFamily: settings.fontFamily,
+          fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
           fontWeight: FontWeight.w700,
         ),
       ),
@@ -569,7 +570,7 @@ class _BookChapterPickerState extends State<BookChapterPicker> {
                   book.title,
                   style: TextStyle(
                       fontSize: settings.fontSize,
-                      fontFamily: settings.fontFamily,
+                      fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                       decoration: TextDecoration.none,
                       color: expandStatus[book.title] == true
                           ? scheme.primary
@@ -623,7 +624,7 @@ class _BookChapterPickerState extends State<BookChapterPicker> {
                             book.title,
                             style: TextStyle(
                               fontSize: settings.fontSize * 1.1,
-                              fontFamily: settings.fontFamily,
+                              fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                               fontWeight: FontWeight.w600,
                               color: scheme.onSurface,
                             ),
@@ -641,7 +642,7 @@ class _BookChapterPickerState extends State<BookChapterPicker> {
                             '${uiStrings['chapters']?[settings.locale] ?? 'ch'}',
                             style: TextStyle(
                               fontSize: settings.fontSize * 0.75,
-                              fontFamily: settings.fontFamily,
+                              fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                               color: scheme.onPrimaryContainer,
                               fontWeight: FontWeight.w500,
                             ),
@@ -754,7 +755,7 @@ class _BookChapterPickerState extends State<BookChapterPicker> {
                 softWrap: false,
                 style: TextStyle(
                   fontSize: settings.fontSize * 0.9,
-                  fontFamily: settings.fontFamily,
+                  fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                   fontWeight: isCurrent ? FontWeight.w700 : FontWeight.w500,
                   color: fgColor,
                   height: 1.1,
@@ -867,7 +868,7 @@ class _BookChapterPickerState extends State<BookChapterPicker> {
             chapter.title.toString(),
             style: TextStyle(
               fontSize: settings.fontSize * 0.95,
-              fontFamily: settings.fontFamily,
+              fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
               fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
               color: selected ? scheme.onPrimary : scheme.onSurface,
             ),
@@ -924,7 +925,7 @@ class _BookChapterPickerState extends State<BookChapterPicker> {
                 chapter.title.toString(),
                 style: TextStyle(
                   fontSize: settings.fontSize * 0.9,
-                  fontFamily: settings.fontFamily,
+                  fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                   color: selected ? scheme.onPrimary : scheme.onSurface,
                 ),
               ),

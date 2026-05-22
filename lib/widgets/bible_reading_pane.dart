@@ -52,7 +52,6 @@ import 'package:yswords/widgets/verse_popup_sheet.dart' show showVersePopup;
 import 'package:yswords/utils/responsive.dart';
 import 'package:yswords/utils/short_book_name.dart';
 import 'package:yswords/widgets/google_g_logo.dart';
-import 'package:yswords/widgets/today_reading_card.dart';
 import 'package:yswords/utils/floating_toast.dart' show showFloatingToast;
 import 'package:yswords/utils/version_mapper.dart'
     show translateBookName, toEnglish, localeAwareBookName;
@@ -60,6 +59,7 @@ import 'package:yswords/widgets/highlights_sheet.dart';
 import 'package:yswords/widgets/originals_sheet.dart';
 import 'package:yswords/widgets/verse_widget.dart';
 import 'package:yswords/widgets/paragraph_group_widget.dart';
+import 'package:yswords/utils/font_catalog.dart' show kCjkFontFallback;
 
 class BibleReadingPane extends StatefulWidget {
   final bool showSidebarToggle;
@@ -90,6 +90,28 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
   int _visibleItemIndex = 0;
   bool _showVersePosition = false;
   Timer? _versePositionTimer;
+
+  // 2026-05-21 (v1.2.70): chrome feature is enabled on every platform.
+  // The iOS-only disable from an earlier hotfix attempt is reverted —
+  // we now filter out the large programmatic-jump scroll deltas (see
+  // [_onScrollDelta]) which were the likely trigger for the swipe-left
+  // grey-screen hang on iPhone. Keeping the constant as a one-place
+  // kill-switch if we need to disable again.
+  bool get _chromeFeatureEnabled => true;
+
+  // 2026-05-21 (v1.2.70): WeDevote-style auto-hide chrome.
+  //   _chromeVisible drives both the top _FloatingHeader and the new
+  //   _BibleReaderBottomBar. Pixel-level scroll detection drives the
+  //   hide/show — more responsive than item-index changes (which can
+  //   stall on long verses that span the screen).
+  //   Thresholds: hide on cumulative scroll-down >= 50 px; show on
+  //   cumulative scroll-up >= 10 px (more sensitive going up, matching
+  //   Kindle / WeDevote / iBooks).
+  //   No idle-timer re-show — once hidden, chrome stays hidden until
+  //   the user explicitly scrolls up, taps, or selects a verse.
+  bool _chromeVisible = true;
+  double _chromeScrollAccumulator = 0;
+  StreamSubscription<double>? _scrollOffsetSub;
   /// Pane-local messenger so SnackBars (e.g. the "Copied!" toast) appear
   /// only in the pane that triggered them. Without this, `ScaffoldMessenger
   /// .of(context)` resolves to the app-root messenger and the toast is
@@ -284,6 +306,7 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
   @override
   void dispose() {
     _versePositionTimer?.cancel();
+    _scrollOffsetSub?.cancel();
     _ttsPoller?.cancel();
     if (_isListening) TtsService.stop();
     _positionsProvider?.itemPositionsListener.itemPositions
@@ -295,9 +318,17 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
     if (_positionsProvider == provider) return;
     _positionsProvider?.itemPositionsListener.itemPositions
         .removeListener(_handleItemPositionsChanged);
+    _scrollOffsetSub?.cancel();
+    _scrollOffsetSub = null;
+    _chromeScrollAccumulator = 0; // fresh slate on provider switch
     _positionsProvider = provider;
     provider.itemPositionsListener.itemPositions
         .addListener(_handleItemPositionsChanged);
+    // 2026-05-22 (v1.2.71): no longer subscribing to
+    // provider.scrollOffsetListener.changes — that stream stops
+    // emitting after the SPL re-mounts (verified bug). Chrome auto-
+    // hide is now driven by NotificationListener<ScrollNotification>
+    // wrapping the SPL, which works on every mount including re-mounts.
   }
 
   void _handleItemPositionsChanged() {
@@ -324,7 +355,165 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
         _visibleItemIndex = nextIndex;
         _showVersePosition = true;
       });
+      // 2026-05-22 (v1.2.71): chrome auto-hide is now driven by
+      // NotificationListener<ScrollNotification> instead of this
+      // item-level path (which silently stopped emitting after
+      // BibleReadingPane re-mount). The ONLY chrome rule still
+      // tied to item-level: force chrome visible when the user
+      // reaches index 0 (top of chapter) so they're never in a
+      // "chrome hidden + can't scroll up" dead state.
+      if (nextIndex == 0 && !_chromeVisible) {
+        _safeChromeSetState(() {
+          _chromeVisible = true;
+          _chromeScrollAccumulator = 0;
+        });
+      }
     }
+  }
+
+  /// Defer a chrome-state change to after the current frame so we never
+  /// call setState during build / layout / paint. Stream listeners and
+  /// ValueListenable callbacks can fire during any of those phases.
+  void _safeChromeSetState(VoidCallback fn) {
+    if (!mounted) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      setState(fn);
+    });
+  }
+
+  /// 2026-05-22 (v1.2.71): NotificationListener handler — catches every
+  /// ScrollUpdateNotification from the SPL directly, which means it
+  /// continues working after BibleReadingPane unmounts + re-mounts
+  /// (the previous provider-based ItemPositionsListener subscription
+  /// silently went dead on the second open). Delegates to the same
+  /// accumulator logic as the old scrollOffsetListener handler.
+  bool _onScrollNotification(ScrollNotification notification) {
+    if (!_chromeFeatureEnabled) return false;
+    if (widget.splitViewActive) return false; // chrome pinned in split
+    if (notification is ScrollUpdateNotification) {
+      final dy = notification.scrollDelta ?? 0;
+      _onScrollDelta(dy);
+    }
+    return false; // never consume — let SPL handle scrolling
+  }
+
+  /// Pixel-level scroll-direction handler. Called from
+  /// [_onScrollNotification] (and the legacy ScrollOffsetListener
+  /// subscription, kept for completeness). Positive delta = user
+  /// scrolling DOWN; negative = UP.
+  void _onScrollDelta(double delta) {
+    if (!mounted || delta == 0) return;
+    // 2026-05-21 (v1.2.70 hotfix): chapter-switch via swipe / Prev /
+    // Next calls `provider.jumpToTop()` which fires a single, huge
+    // negative delta (often -3000+ px) through this stream. On iOS
+    // that synchronous emission inside the gesture handler was the
+    // likely cause of the "swipe-left → grey screen" hang. Filter
+    // anything > 300 px in one event — real user-scroll deltas are
+    // always much smaller (a single scroll tick is < 60 px even on
+    // high-rate trackpads). Also reset the accumulator so the next
+    // real scroll starts from a clean slate.
+    if (delta.abs() > 300) {
+      _chromeScrollAccumulator = 0;
+      return;
+    }
+    // Direction reversal → restart accumulator.
+    if (_chromeScrollAccumulator != 0 &&
+        delta.sign != _chromeScrollAccumulator.sign) {
+      _chromeScrollAccumulator = 0;
+    }
+    _chromeScrollAccumulator += delta;
+    if (_chromeScrollAccumulator >= 50 && _chromeVisible) {
+      _safeChromeSetState(() => _chromeVisible = false);
+      _chromeScrollAccumulator = 0;
+    } else if (_chromeScrollAccumulator <= -10 && !_chromeVisible) {
+      _safeChromeSetState(() => _chromeVisible = true);
+      _chromeScrollAccumulator = 0;
+    }
+  }
+
+  /// Toggle the auto-hide chrome. Called by a tap on the reader's
+  /// empty area (top/bottom margins, gaps between verses). Verses
+  /// themselves consume their own taps for selection so this won't
+  /// fire when the user taps a verse.
+  void _toggleChrome() {
+    if (!mounted) return;
+    // iOS: chrome stays pinned visible (auto-hide disabled to avoid
+    // the grey-screen hang on chapter-switch via swipe).
+    if (!_chromeFeatureEnabled) return;
+    setState(() {
+      _chromeVisible = !_chromeVisible;
+      _chromeScrollAccumulator = 0; // fresh state after manual toggle
+    });
+  }
+
+  /// Quick font-size adjuster sheet, opened from the bottom bar's Aa
+  /// button. Mirrors the slider in Settings → Display but inline so the
+  /// user doesn't lose their reading position. Range matches AppSettings
+  /// (12-32 pt). Closes when the user taps outside the sheet.
+  void _showFontSizeSheet(BuildContext context, AppSettings settings) {
+    showModalBottomSheet(
+      context: context,
+      showDragHandle: true,
+      builder: (sheetCtx) {
+        return SafeArea(
+          top: false,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
+            child: StatefulBuilder(
+              builder: (innerCtx, setSheet) {
+                final size = settings.fontSize;
+                return Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Text(
+                      uiStrings['fontSize']?[settings.locale] ?? 'Font size',
+                      style: const TextStyle(
+                          fontSize: 16, fontWeight: FontWeight.w600),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        IconButton.filledTonal(
+                          icon: const Icon(Icons.text_decrease_rounded),
+                          onPressed: size <= 12
+                              ? null
+                              : () async {
+                                  await settings
+                                      .setFontSize((size - 1).clamp(12, 32));
+                                  setSheet(() {});
+                                },
+                        ),
+                        Text(
+                          size.round().toString(),
+                          style: TextStyle(
+                            fontSize: (size * 1.2).clamp(18.0, 32.0),
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        IconButton.filledTonal(
+                          icon: const Icon(Icons.text_increase_rounded),
+                          onPressed: size >= 32
+                              ? null
+                              : () async {
+                                  await settings
+                                      .setFontSize((size + 1).clamp(12, 32));
+                                  setSheet(() {});
+                                },
+                        ),
+                      ],
+                    ),
+                  ],
+                );
+              },
+            ),
+          ),
+        );
+      },
+    );
   }
 
   void _updateMapsForBookChapter(String book, int chapter) {
@@ -560,7 +749,7 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                       'No verses available',
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    fontFamily: settings.fontFamily,
+                    fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                     fontSize: settings.fontSize * 1.1,
                     fontWeight: FontWeight.w600,
                     color: scheme.onSurface,
@@ -572,7 +761,7 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                       'Could not load Bible verses. Please check your connection and retry.',
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    fontFamily: settings.fontFamily,
+                    fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                     fontSize: settings.fontSize * 0.95,
                     color: scheme.onSurfaceVariant,
                   ),
@@ -584,7 +773,7 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                   label: Text(
                     uiStrings['reload']?[locale] ?? 'Reload',
                     style: TextStyle(
-                      fontFamily: settings.fontFamily,
+                      fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                       fontSize: settings.fontSize,
                     ),
                   ),
@@ -1001,6 +1190,11 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
 
         return SelectionContainer.disabled(
           child: GestureDetector(
+            // 2026-05-21 (v1.2.70): tap on empty area toggles the
+            // auto-hide chrome. Verses absorb their own taps (selection
+            // + popup), so this only fires on the margins / gaps.
+            behavior: HitTestBehavior.translucent,
+            onTap: _toggleChrome,
             onHorizontalDragEnd: (details) {
               final velocity = details.primaryVelocity ?? 0;
               if (velocity < -300) {
@@ -1010,9 +1204,24 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
               }
             },
             child: AnnotatedRegion<SystemUiOverlayStyle>(
+              // 2026-05-22 (v1.2.71): full system-chrome theming —
+              // status-bar text and the Android nav-bar icons follow
+              // the app's brightness, and the nav-bar background
+              // matches the new bottom-bar color (surfaceContainerHighest)
+              // so the bottom-bar visually flows into the system gesture
+              // pill area on iOS / 3-button nav on Android.
               value: SystemUiOverlayStyle(
+                statusBarColor: Colors.transparent,
+                statusBarBrightness:
+                    Theme.of(context).brightness == Brightness.dark
+                        ? Brightness.dark
+                        : Brightness.light,
+                statusBarIconBrightness:
+                    Theme.of(context).brightness == Brightness.dark
+                        ? Brightness.light
+                        : Brightness.dark,
                 systemNavigationBarColor:
-                    Theme.of(context).colorScheme.surface,
+                    Theme.of(context).colorScheme.surfaceContainerHighest,
                 systemNavigationBarIconBrightness:
                     Theme.of(context).brightness == Brightness.dark
                         ? Brightness.light
@@ -1076,7 +1285,16 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                       padding: EdgeInsets.only(
                         right: ResponsiveBreakpoints.readingPadding(dc),
                       ),
-                      child: ScrollablePositionedList.builder(
+                      // 2026-05-22 (v1.2.71): NotificationListener
+                      // catches scroll-update notifications directly
+                      // from the SPL — bypasses the provider's
+                      // ItemPositionsListener which silently stops
+                      // emitting to my handler after BibleReadingPane
+                      // re-mounts (root cause of "auto-hide doesn't
+                      // work on second open").
+                      child: NotificationListener<ScrollNotification>(
+                        onNotification: _onScrollNotification,
+                        child: ScrollablePositionedList.builder(
                         itemCount: paragraphGroups.length + 2,
                         itemBuilder: (context, index) {
                           if (index == 0) {
@@ -1207,7 +1425,19 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                         initialScrollIndex: _visibleItemIndex,
                       ),
                     ),
+                    ),
                     _FloatingHeader(
+                      // 2026-05-22 (v1.2.71): pin chrome visible in
+                      // split view. Each pane's _FloatingHeader is
+                      // Positioned(top:0) RELATIVE to its own Stack
+                      // — in top/bottom split, the bottom pane's
+                      // header sits at the middle of the screen, and
+                      // the auto-hide animation made it appear to
+                      // "jump around" near the bottom half. With
+                      // chrome pinned, both panes' headers stay
+                      // static.
+                      chromeVisible:
+                          widget.splitViewActive ? true : _chromeVisible,
                       showBookInfo: currentVerse != null,
                       book: currentVerse?.book ?? '',
                       chapter: currentVerse?.chapter ?? 0,
@@ -1451,21 +1681,9 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                           ? _toggleListenChapter
                           : null,
                       isListening: _isListening,
-                      // Hide the Today's Reading card while a verse
-                      // selection is active — the selection action bar
-                      // already crowds the screen and the card just
-                      // adds noise. Also hide on the secondary split-
-                      // view pane (no `onSearch`) so the card never
-                      // appears twice on the same screen.
-                      belowHeader: (!isSelected && widget.showSearchAndSettings)
-                          ? TodayReadingCard(
-                              onJump: (ref) => _navigateToBibleReference(
-                                mainProvider: mainProvider,
-                                ref: ref,
-                                locale: settings.locale,
-                              ),
-                            )
-                          : null,
+                      // 2026-05-21 (v1.2.69): TodayReadingCard removed
+                      // along with the rest of the reading-plan feature.
+                      belowHeader: null,
                     ),
                     // Vertical position indicator on the right edge — a
                     // thin track + a small "current/total" pill that
@@ -1492,11 +1710,43 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                           ),
                         ),
                       ),
-                    // Bottom bar — selection actions or progress bar
-                    Align(
-                      alignment: Alignment.bottomCenter,
-                      child: isSelected
-                          ? _SelectionActionBar(
+                    // 2026-05-21 (v1.2.70 hotfix): bottom bar hidden in
+                    // split-view to avoid the grey-screen layout glitch
+                    // when two Positioned(left:0,right:0) bars co-exist
+                    // inside narrow SizedBox-constrained panes. The
+                    // primary pane's top header still works for nav;
+                    // we'll restore the bottom bar in split view once
+                    // the layout interaction is understood.
+                    if (_chromeFeatureEnabled &&
+                        !isSelected &&
+                        !widget.splitViewActive &&
+                        verses.isNotEmpty)
+                      _BibleReaderBottomBar(
+                        visible: _chromeVisible,
+                        deviceClass: dc,
+                        locale: settings.locale,
+                        onPrevChapter: _goToPreviousChapter,
+                        onNextChapter: _goToNextChapter,
+                        onOpenNotes: () {
+                          mainProvider.clearSelectedVerses();
+                          Get.to(
+                            () => const LibraryPage(),
+                            transition: Transition.rightToLeft,
+                          );
+                        },
+                        onFontSize: () => _showFontSizeSheet(context, settings),
+                        paragraphMode: settings.paragraphMode,
+                        onToggleParagraphMode: () => settings
+                            .setParagraphMode(!settings.paragraphMode),
+                      ),
+                    // Bottom bar — selection actions only. (v1.2.69:
+                    // the always-visible reader-progress bar was
+                    // removed; chapter progress is still visible via
+                    // the right-edge pill that fades in while scrolling.)
+                    if (isSelected)
+                      Align(
+                        alignment: Alignment.bottomCenter,
+                        child: _SelectionActionBar(
                               selectedCount:
                                   mainProvider.selectedVerses.length,
                               anyHighlighted: mainProvider.selectedVerses
@@ -1585,12 +1835,8 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                                 }
                                 mainProvider.clearSelectedVerses();
                               },
-                            )
-                          : _ReaderStatusBar(
-                              progress: chapterProgress,
-                              deviceClass: dc,
                             ),
-                    ),
+                      ),
                     // 2026-05-10 (v1.2.13): version-switch loading
                     // overlay. Painted on top of everything in the
                     // Stack while `MainProvider.versionSwitching`
@@ -1632,7 +1878,7 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                                               ?[settings.locale] ??
                                           'Loading version…'),
                                   style: TextStyle(
-                                    fontFamily: settings.fontFamily,
+                                    fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                                     fontSize: settings.fontSize * 0.95,
                                     fontWeight: FontWeight.w600,
                                     color: Theme.of(context)
@@ -1790,78 +2036,113 @@ class _VerticalProgressIndicator extends StatelessWidget {
   }
 }
 
-class _ReaderStatusBar extends StatelessWidget {
-  final double progress;
-  final DeviceClass deviceClass;
-
-  const _ReaderStatusBar({
-    required this.progress,
-    required this.deviceClass,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    // 2026-05-10 (v1.2.31): only `menuScale` is read here. Switching
-    // from watch → select<menuScale> stops this status bar from
-    // rebuilding on every unrelated AppSettings notify (font size
-    // slider drag, theme toggle, locale switch, version pick, …).
-    final menuScale =
-        context.select<AppSettings, double>((s) => s.menuScale);
-    final scheme = Theme.of(context).colorScheme;
-    final bottomInset = MediaQuery.of(context).padding.bottom;
-
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        LinearProgressIndicator(
-          value: progress,
-          minHeight: (2.5 * menuScale).clamp(2.0, 4.0),
-          backgroundColor:
-              scheme.surfaceContainerHighest.withValues(alpha: 0.3),
-          color: scheme.primary.withValues(alpha: 0.7),
-        ),
-        SizedBox(height: bottomInset),
-      ],
-    );
-  }
-}
-
 class _GlassSurface extends StatelessWidget {
   final Widget child;
   final double radius;
 
+  /// 2026-05-21 (v1.2.70): when true, render a fully-opaque surface
+  /// (no blur, alpha 1.0) so the bar visually COVERS the content
+  /// behind it instead of letting verses bleed through.
+  final bool opaque;
+
+  /// 2026-05-21 (v1.2.70): when true, only the top corners are
+  /// rounded — the bottom is flush. Used by the auto-hide bottom bar
+  /// so its surface meets the screen edge cleanly (no rounded curve
+  /// + gap between the bar and the home indicator).
+  final bool topRoundedOnly;
+
+  /// 2026-05-22 (v1.2.71): mirror of [topRoundedOnly] for the top
+  /// auto-hide chrome. Only the BOTTOM corners are rounded — the top
+  /// is flush, so the surface meets the very top edge of the screen
+  /// (covering the status-bar / notch area) with no visible gap.
+  final bool bottomRoundedOnly;
+
   const _GlassSurface({
     required this.child,
     this.radius = 20,
+    this.opaque = false,
+    this.topRoundedOnly = false,
+    this.bottomRoundedOnly = false,
   });
 
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final fillAlpha =
+        opaque ? 1.0 : (isDark ? 0.72 : 0.78);
+    // 2026-05-22 (v1.2.71): when opaque, use surfaceContainerHighest
+    // (Material 3's deepest-tinted variant) so the chrome bar reads
+    // as a clear visual layer — most distinct from the scaffold
+    // background while still feeling like part of the surface family.
+    final fillColor = opaque
+        ? scheme.surfaceContainerHighest
+        : scheme.surface.withValues(alpha: fillAlpha);
+    final br = topRoundedOnly
+        ? BorderRadius.only(
+            topLeft: Radius.circular(radius),
+            topRight: Radius.circular(radius),
+          )
+        : bottomRoundedOnly
+            ? BorderRadius.only(
+                bottomLeft: Radius.circular(radius),
+                bottomRight: Radius.circular(radius),
+              )
+            : BorderRadius.circular(radius);
+    final outlineColor =
+        scheme.outlineVariant.withValues(alpha: isDark ? 0.35 : 0.6);
+    // 2026-05-22 (v1.2.71): bolder hairline on the chrome bars so they
+    // read as distinct strips against the body. Half-rounded variants
+    // (topRoundedOnly / bottomRoundedOnly) are the chrome bars; full-
+    // rounded (selection bar) keeps the subtle outline.
+    final chromeHairlineColor =
+        scheme.outline.withValues(alpha: isDark ? 0.45 : 0.55);
+    final box = DecoratedBox(
+      decoration: BoxDecoration(
+        color: fillColor,
+        borderRadius: br,
+        // Skip the full border for half-rounded variants — only a
+        // single hairline reads cleanly when the surface is flush to
+        // a screen edge.
+        border: topRoundedOnly
+            ? Border(top: BorderSide(color: chromeHairlineColor, width: 0.6))
+            : bottomRoundedOnly
+                ? Border(
+                    bottom: BorderSide(
+                        color: chromeHairlineColor, width: 0.6))
+                : Border.all(color: outlineColor),
+        boxShadow: [
+          BoxShadow(
+            color:
+                scheme.shadow.withValues(alpha: isDark ? 0.22 : 0.12),
+            blurRadius: 24,
+            offset: topRoundedOnly
+                // Cast the shadow UPWARDS for a bottom-anchored bar so
+                // it visually lifts off the verses behind it.
+                ? const Offset(0, -6)
+                : bottomRoundedOnly
+                    // Cast the shadow DOWNWARDS for a top-anchored bar.
+                    ? const Offset(0, 6)
+                    : const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: child,
+    );
+    if (opaque) {
+      // Skip the BackdropFilter when fully opaque — the blur would be
+      // wasted work and on web it can cause noticeable text shimmer
+      // on the verses scrolling behind.
+      return ClipRRect(
+        borderRadius: br,
+        child: box,
+      );
+    }
     return ClipRRect(
-      borderRadius: BorderRadius.circular(radius),
+      borderRadius: br,
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            color: scheme.surface.withValues(alpha: isDark ? 0.72 : 0.78),
-            borderRadius: BorderRadius.circular(radius),
-            border: Border.all(
-              color: scheme.outlineVariant
-                  .withValues(alpha: isDark ? 0.35 : 0.6),
-            ),
-            boxShadow: [
-              BoxShadow(
-                color:
-                    scheme.shadow.withValues(alpha: isDark ? 0.22 : 0.12),
-                blurRadius: 24,
-                offset: const Offset(0, 10),
-              ),
-            ],
-          ),
-          child: child,
-        ),
+        child: box,
       ),
     );
   }
@@ -2054,7 +2335,7 @@ class _SelectionActionBar extends StatelessWidget {
       maxLines: 1,
       overflow: TextOverflow.ellipsis,
       style: TextStyle(
-        fontFamily: settings.fontFamily,
+        fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
         fontSize: fontSize,
         fontWeight: FontWeight.w700,
         color: scheme.onSurface,
@@ -3909,6 +4190,204 @@ class _MapTile extends StatelessWidget {
   }
 }
 
+/// 2026-05-21 (v1.2.70): WeDevote-style auto-hide bottom bar. Renders
+/// a Positioned(bottom: 0) opaque strip with 5 reader tools:
+///   ◀ Prev chapter   📝 My Notes (opens Library)
+///   Aa Font sheet   ¶/⟂ Paragraph mode toggle   Next chapter ▶
+/// Slides off-screen via AnimatedSlide(0, 1.4) when [visible] is false,
+/// and IgnorePointer prevents the hidden bar from catching taps.
+/// Hidden when verses are selected (the _SelectionActionBar takes over).
+class _BibleReaderBottomBar extends StatelessWidget {
+  final bool visible;
+  final VoidCallback onPrevChapter;
+  final VoidCallback onNextChapter;
+  final VoidCallback onOpenNotes;
+  final VoidCallback onFontSize;
+  final bool paragraphMode;
+  final VoidCallback onToggleParagraphMode;
+  final DeviceClass deviceClass;
+  final String locale;
+
+  const _BibleReaderBottomBar({
+    required this.visible,
+    required this.onPrevChapter,
+    required this.onNextChapter,
+    required this.onOpenNotes,
+    required this.onFontSize,
+    required this.paragraphMode,
+    required this.onToggleParagraphMode,
+    required this.deviceClass,
+    required this.locale,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final settings = context.watch<AppSettings>();
+    final scheme = Theme.of(context).colorScheme;
+    final iconSize =
+        (settings.fontSize.clamp(16.0, 28.0) * settings.menuScale)
+            .toDouble();
+    final iconPad = (iconSize * 0.45).clamp(6.0, 10.0);
+    // Bottom bar goes edge-to-edge horizontally so the surface meets
+    // both screen sides (no margin gap). The inset value used by the
+    // top header doesn't apply here — flush bottom-bars are the
+    // WeDevote convention.
+    return Positioned(
+      bottom: 0,
+      left: 0,
+      right: 0,
+      child: IgnorePointer(
+        ignoring: !visible,
+        child: AnimatedSlide(
+          offset: visible ? Offset.zero : const Offset(0, 1.4),
+          // 2026-05-22 (v1.2.71): smoother chrome animation.
+          // 320 ms + easeInOutCubic feels considerably less abrupt
+          // than the previous 200 ms easeOutCubic — both bars now
+          // ease in/out at the same pace.
+          duration: const Duration(milliseconds: 320),
+          curve: Curves.easeInOutCubic,
+          child: _GlassSurface(
+            // Top-rounded only + opaque so the surface fills all the
+            // way down to the screen edge (including the home-indicator
+            // safe area), eliminating the previous background-gap.
+            radius: 22,
+            opaque: true,
+            topRoundedOnly: true,
+            child: SafeArea(
+              top: false,
+              // Inner padding keeps the buttons above the home indicator
+              // even though the surface itself extends underneath it.
+              // Center + ConstrainedBox(maxWidth: 560) keeps the 5
+              // buttons grouped on iPad / desktop / wide browsers —
+              // surface still goes edge-to-edge but the icons don't
+              // drift apart to the corners. On phones (< 560 px wide)
+              // the constraint is a no-op — buttons fill width.
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 560),
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(
+                        horizontal: 4 * settings.menuScale,
+                        vertical: 4 * settings.menuScale),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                      _BottomBarBtn(
+                        icon: Icons.chevron_left_rounded,
+                        tooltip:
+                            uiStrings['previousChapter']?[locale] ?? 'Previous',
+                        onTap: onPrevChapter,
+                        iconSize: iconSize,
+                        iconPad: iconPad,
+                        scheme: scheme,
+                      ),
+                      _BottomBarBtn(
+                        icon: Icons.sticky_note_2_outlined,
+                        tooltip:
+                            uiStrings['tabNotes']?[locale] ?? 'Notes',
+                        onTap: onOpenNotes,
+                        iconSize: iconSize,
+                        iconPad: iconPad,
+                        scheme: scheme,
+                      ),
+                      _BottomBarBtn(
+                        icon: Icons.text_fields_rounded,
+                        tooltip:
+                            uiStrings['fontSize']?[locale] ?? 'Font size',
+                        onTap: onFontSize,
+                        iconSize: iconSize,
+                        iconPad: iconPad,
+                        scheme: scheme,
+                      ),
+                      _BottomBarBtn(
+                        // Paragraph mode ON → icon shows "switch to
+                        // verse mode"; OFF → icon shows "switch to
+                        // paragraph mode". Matches the top-header
+                        // toggle so users can flip from either side.
+                        icon: paragraphMode
+                            ? Icons.format_list_numbered_rounded
+                            : Icons.subject_rounded,
+                        tooltip: paragraphMode
+                            ? (uiStrings['verseMode']?[locale] ?? 'Verse mode')
+                            : (uiStrings['paragraphMode']?[locale] ??
+                                'Paragraph mode'),
+                        onTap: onToggleParagraphMode,
+                        iconSize: iconSize,
+                        iconPad: iconPad,
+                        scheme: scheme,
+                        activeColor: paragraphMode ? scheme.primary : null,
+                      ),
+                      _BottomBarBtn(
+                        icon: Icons.chevron_right_rounded,
+                        tooltip: uiStrings['nextChapter']?[locale] ?? 'Next',
+                        onTap: onNextChapter,
+                        iconSize: iconSize,
+                        iconPad: iconPad,
+                        scheme: scheme,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    ),
+  );
+  }
+}
+
+/// Single icon button for [_BibleReaderBottomBar]. Greyed-out when
+/// [onTap] is null; coloured to [activeColor] when the tool is in
+/// its "on" state (currently bookmarked, currently listening).
+class _BottomBarBtn extends StatelessWidget {
+  final IconData icon;
+  final String tooltip;
+  final VoidCallback? onTap;
+  final double iconSize;
+  final double iconPad;
+  final ColorScheme scheme;
+  final Color? activeColor;
+
+  const _BottomBarBtn({
+    required this.icon,
+    required this.tooltip,
+    required this.onTap,
+    required this.iconSize,
+    required this.iconPad,
+    required this.scheme,
+    this.activeColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final color = onTap == null
+        ? scheme.onSurfaceVariant.withValues(alpha: 0.4)
+        : (activeColor ?? scheme.onSurface);
+    // Hit-target floor: 44 px (Apple HIG) / Material 48 dp. Even when
+    // the user has shrunk the text, the bar's buttons must remain
+    // comfortable to tap on phones — otherwise the bar becomes a
+    // frustrating mis-tap factory on small screens.
+    final hitSize = (iconSize + 2 * iconPad).clamp(44.0, 64.0);
+    return Tooltip(
+      message: tooltip,
+      child: InkResponse(
+        onTap: onTap,
+        radius: hitSize / 2,
+        containedInkWell: false,
+        child: SizedBox(
+          width: hitSize,
+          height: hitSize,
+          child: Center(
+            child: Icon(icon, size: iconSize, color: color),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class _FloatingHeader extends StatelessWidget {
   final bool showBookInfo;
   final String book;
@@ -3953,6 +4432,11 @@ class _FloatingHeader extends StatelessWidget {
   /// the "Today's Reading" card when a reading plan is active.
   final Widget? belowHeader;
 
+  /// 2026-05-21 (v1.2.70): WeDevote-style auto-hide. When false the
+  /// header slides up off-screen with a 200 ms animation and stops
+  /// catching pointer events.
+  final bool chromeVisible;
+
   const _FloatingHeader({
     required this.showBookInfo,
     required this.book,
@@ -3982,6 +4466,7 @@ class _FloatingHeader extends StatelessWidget {
     this.onToggleListen,
     this.isListening = false,
     this.belowHeader,
+    this.chromeVisible = true,
   });
 
   @override
@@ -3994,20 +4479,40 @@ class _FloatingHeader extends StatelessWidget {
         (settings.fontSize.clamp(16.0, 28.0) * settings.menuScale)
             .toDouble();
     final iconPad = (iconSize * 0.45).clamp(6.0, 10.0);
-    final inset = ResponsiveBreakpoints.headerInset(deviceClass);
+    // 2026-05-22 (v1.2.71): no more horizontal inset — header is now
+    // edge-to-edge (matches bottom-bar pattern).
 
+    // 2026-05-22 (v1.2.71): top header has an edge-to-edge opaque
+    // backdrop that extends UP through the status-bar/notch area so
+    // there's no visible gap above the floating card. The existing
+    // rounded card still sits on top of the backdrop with horizontal
+    // margins (Padding below restores the inset).
     return Positioned(
       top: 0,
-      left: inset,
-      right: inset,
-      child: SafeArea(
-        bottom: false,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            _GlassSurface(
-              radius: 22,
-              child: Padding(
+      left: 0,
+      right: 0,
+      child: IgnorePointer(
+        ignoring: !chromeVisible,
+        child: AnimatedSlide(
+          offset: chromeVisible ? Offset.zero : const Offset(0, -1.4),
+          // 2026-05-22 (v1.2.71): smoother chrome animation — matches
+          // the bottom bar's timing.
+          duration: const Duration(milliseconds: 320),
+          curve: Curves.easeInOutCubic,
+          // 2026-05-22 (v1.2.71): single edge-to-edge surface that
+          // matches the bottom bar's pattern — opaque background,
+          // ONLY the bottom corners rounded, surface flush to screen
+          // top (covers status-bar / notch area). The previous "inner
+          // rounded card with border" inside a Material backdrop made
+          // the header read as a floating pill; now it's a single
+          // solid bar like the bottom toolbar.
+          child: _GlassSurface(
+            radius: 22,
+            opaque: true,
+            bottomRoundedOnly: true,
+            child: SafeArea(
+            bottom: false,
+            child: Padding(
                 padding: EdgeInsets.symmetric(
                     horizontal: 6 * settings.menuScale,
                     vertical: 4 * settings.menuScale),
@@ -4095,7 +4600,7 @@ class _FloatingHeader extends StatelessWidget {
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                   style: TextStyle(
-                                    fontFamily: settings.fontFamily,
+                                    fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                                     fontSize: fontSize,
                                     fontWeight: FontWeight.w700,
                                     color: scheme.primary,
@@ -4163,7 +4668,7 @@ class _FloatingHeader extends StatelessWidget {
                             child: Text(
                               shortBibleVersionLabel(version),
                               style: TextStyle(
-                                fontFamily: settings.fontFamily,
+                                fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                                 fontSize: fontSize * 0.85,
                                 fontWeight: FontWeight.w600,
                                 color:
@@ -4561,8 +5066,7 @@ class _FloatingHeader extends StatelessWidget {
             ),
           ),
         ),
-            if (belowHeader != null) belowHeader!,
-          ],
+      ),
         ),
       ),
     );
@@ -5190,7 +5694,7 @@ class _SectionHeadingState extends State<_SectionHeading> {
                 child: Text(
                   widget.title,
                   style: TextStyle(
-                    fontFamily: settings.fontFamily,
+                    fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                     fontSize:
                         (fs + 1).clamp(14.0, 20.0).toDouble(),
                     fontWeight: FontWeight.w700,
@@ -5248,7 +5752,7 @@ class _SectionHeadingState extends State<_SectionHeading> {
                       child: Text(
                         widget.context!,
                         style: TextStyle(
-                          fontFamily: settings.fontFamily,
+                          fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                           fontSize: (fs - 3)
                               .clamp(12.0, 15.0)
                               .toDouble(),
@@ -5292,13 +5796,13 @@ class _BookIntroCardState extends State<_BookIntroCard> {
     final intro = widget.intro;
 
     final textStyle = TextStyle(
-      fontFamily: settings.fontFamily,
+      fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
       fontSize: (fs - 2).clamp(13.0, 16.0).toDouble(),
       color: scheme.onSurface,
       height: 1.55,
     );
     final labelStyle = TextStyle(
-      fontFamily: settings.fontFamily,
+      fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
       fontSize: (fs - 4).clamp(11.0, 13.0).toDouble(),
       fontWeight: FontWeight.w700,
       letterSpacing: 0.6,
@@ -5373,7 +5877,7 @@ class _BookIntroCardState extends State<_BookIntroCard> {
             Text(
               intro.getSubtitle(locale),
               style: TextStyle(
-                fontFamily: settings.fontFamily,
+                fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                 fontSize: (fs).clamp(14.0, 19.0).toDouble(),
                 fontWeight: FontWeight.w700,
                 color: scheme.onSurface,
@@ -5457,7 +5961,7 @@ class _BookIntroCardState extends State<_BookIntroCard> {
                           Text(
                             intro.keyPassage,
                             style: TextStyle(
-                              fontFamily: settings.fontFamily,
+                              fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                               fontSize:
                                   (fs - 1).clamp(13.0, 17.0).toDouble(),
                               fontWeight: FontWeight.w700,

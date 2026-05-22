@@ -20,6 +20,12 @@ plugins {
     id("dev.flutter.flutter-plugin-loader") version "1.0.0"
     id("com.android.application") version "8.7.0" apply false
     id("org.jetbrains.kotlin.android") version "1.8.22" apply false
+    // 2026-05-21 (v1.2.68): Firebase on Android reads
+    // android/app/google-services.json via this gradle plugin.
+    // Declared at settings level + `apply true` in app/build.gradle
+    // so Firebase APIs (auth, Firestore, RTDB) initialise from the
+    // downloaded config instead of crashing on FirebaseApp.initializeApp.
+    id("com.google.gms.google-services") version "4.4.2" apply false
 }
 
 include(":app")

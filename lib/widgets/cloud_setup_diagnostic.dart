@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
 import 'package:yswords/constants/ui_strings.dart';
+import 'package:yswords/services/api_base.dart';
 import 'package:firebase_core/firebase_core.dart' show FirebaseException;
 import 'package:firebase_database/firebase_database.dart';
 import 'package:yswords/services/cloud_auth_service.dart';
@@ -395,7 +396,7 @@ class _CloudSetupDiagnosticState extends State<CloudSetupDiagnostic> {
     try {
       final r = await http
           .post(
-            Uri.parse('/api/aiSearch'),
+            Uri.parse(resolveApiUrl('/api/aiSearch')),
             headers: const {'Content-Type': 'application/json'},
             body: jsonEncode({'query': '', 'locale': 'en'}),
           )

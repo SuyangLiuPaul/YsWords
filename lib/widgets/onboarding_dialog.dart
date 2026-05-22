@@ -5,6 +5,7 @@ import 'package:yswords/constants/build_flags.dart';
 import 'package:yswords/constants/ui_strings.dart';
 import 'package:yswords/models/app_settings.dart';
 import 'package:provider/provider.dart';
+import 'package:yswords/utils/font_catalog.dart' show kCjkFontFallback;
 
 /// First-run onboarding carousel. ~4 slides explaining the
 /// non-obvious features (daily verse, reading plans, library,
@@ -117,7 +118,7 @@ class _OnboardingDialogState extends State<OnboardingDialog> {
                             s.title,
                             textAlign: TextAlign.center,
                             style: TextStyle(
-                              fontFamily: settings.fontFamily,
+                              fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                               fontSize: (settings.fontSize + 2)
                                   .clamp(16.0, 26.0)
                                   .toDouble(),
@@ -130,7 +131,7 @@ class _OnboardingDialogState extends State<OnboardingDialog> {
                             s.body,
                             textAlign: TextAlign.center,
                             style: TextStyle(
-                              fontFamily: settings.fontFamily,
+                              fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                               fontSize: (settings.fontSize - 2)
                                   .clamp(12.0, 18.0)
                                   .toDouble(),

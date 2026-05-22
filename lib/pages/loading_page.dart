@@ -7,6 +7,7 @@ import 'package:yswords/utils/clear_cache_helper.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:yswords/utils/font_catalog.dart' show kCjkFontFallback;
 import '../models/app_settings.dart';
 import '../models/verse.dart';
 import '../providers/main_provider.dart';
@@ -375,7 +376,7 @@ class _LoadingPageState extends State<LoadingPage> {
                         'YsWords',
                         style: TextStyle(
                           fontSize: settings.fontSize * 1.2,
-                          fontFamily: settings.fontFamily,
+                          fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                           color: Theme.of(context).colorScheme.primary,
                           fontWeight: FontWeight.bold,
                         ),
@@ -403,7 +404,7 @@ class _LoadingPageState extends State<LoadingPage> {
                               text: match.group(1),
                               style: TextStyle(
                                 fontSize: settings.fontSize,
-                                fontFamily: settings.fontFamily,
+                                fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                                 height: 1.5,
                                 decoration: TextDecoration.underline,
                                 decorationStyle: TextDecorationStyle.dotted,
@@ -421,7 +422,7 @@ class _LoadingPageState extends State<LoadingPage> {
                               text: part,
                               style: TextStyle(
                                 fontSize: settings.fontSize,
-                                fontFamily: settings.fontFamily,
+                                fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                                 height: 1.5,
                                 color: Theme.of(context)
                                     .textTheme
@@ -514,7 +515,7 @@ class _LoadingPageState extends State<LoadingPage> {
                                               .toString()))),
                           style: TextStyle(
                             fontSize: settings.fontSize * 0.85,
-                            fontFamily: settings.fontFamily,
+                            fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                             color: Theme.of(context)
                                 .textTheme
                                 .titleSmall
@@ -568,7 +569,7 @@ class _LoadingPageState extends State<LoadingPage> {
                 title,
                 style: TextStyle(
                   fontSize: settings.fontSize * 1.1,
-                  fontFamily: settings.fontFamily,
+                  fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                   fontWeight: FontWeight.bold,
                   color: Theme.of(context).colorScheme.primary,
                 ),
@@ -579,7 +580,7 @@ class _LoadingPageState extends State<LoadingPage> {
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: settings.fontSize,
-                  fontFamily: settings.fontFamily,
+                  fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                   height: 1.5,
                   color: Theme.of(context).textTheme.bodyLarge?.color,
                 ),
@@ -598,7 +599,7 @@ class _LoadingPageState extends State<LoadingPage> {
                   retryLabel,
                   style: TextStyle(
                     fontSize: settings.fontSize,
-                    fontFamily: settings.fontFamily,
+                    fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                   ),
                 ),
               ),
@@ -627,7 +628,7 @@ class _LoadingPageState extends State<LoadingPage> {
                     style: TextStyle(
                       fontSize: (settings.fontSize - 2)
                           .clamp(11.0, 14.0),
-                      fontFamily: settings.fontFamily,
+                      fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                     ),
                   ),
                 ),

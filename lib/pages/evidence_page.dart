@@ -19,6 +19,7 @@ import 'package:yswords/utils/reference_parser.dart';
 import 'package:yswords/widgets/confidence_badge.dart';
 import 'package:yswords/widgets/home_icon_button.dart';
 import 'package:yswords/widgets/localized_back_button.dart';
+import 'package:yswords/utils/font_catalog.dart' show kCjkFontFallback;
 
 /// Browse the Biblical Evidence Archive — 225 archaeological,
 /// manuscript, scientific, and historical findings that intersect
@@ -235,7 +236,7 @@ class _EvidencePageState extends State<EvidencePage> {
                       child: TextField(
                         controller: _searchController,
                         style: TextStyle(
-                            fontFamily: settings.fontFamily,
+                            fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                             fontSize: settings.fontSize),
                         decoration: InputDecoration(
                           prefixIcon:
@@ -505,7 +506,7 @@ class _EvidenceCard extends StatelessWidget {
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
-                              fontFamily: settings.fontFamily,
+                              fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                               fontSize: (settings.fontSize - 1)
                                   .clamp(13.0, 18.0)
                                   .toDouble(),
@@ -528,7 +529,7 @@ class _EvidenceCard extends StatelessWidget {
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
-                        fontFamily: settings.fontFamily,
+                        fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                         fontSize: (settings.fontSize - 3)
                             .clamp(11.0, 15.0)
                             .toDouble(),
@@ -563,7 +564,7 @@ class _EvidenceCard extends StatelessWidget {
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: TextStyle(
-                                  fontFamily: settings.fontFamily,
+                                  fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                                   fontSize: (settings.fontSize - 4)
                                       .clamp(11.0, 14.0)
                                       .toDouble(),
@@ -677,7 +678,7 @@ class _Chip extends StatelessWidget {
             color: selected ? accent : scheme.outlineVariant,
             width: selected ? 1.4 : 1),
         labelStyle: TextStyle(
-          fontFamily: settings.fontFamily,
+          fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
           fontSize:
               (settings.fontSize - 2).clamp(12.0, 16.0).toDouble(),
           fontWeight: FontWeight.w600,
@@ -908,6 +909,13 @@ class _AiSearchDialogState extends State<_AiSearchDialog> {
     final locale = widget.locale;
 
     return AlertDialog(
+      // 2026-05-22 (v1.2.71): make the dialog scroll when the AI
+      // answer + citations overflow the screen — previously the
+      // actions row was overlapping the response on phones.
+      scrollable: true,
+      // Tighter horizontal padding on small screens (phones < 360 px
+      // wide were losing ~80 px to default insetPadding).
+      insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
       title: Row(
         children: [
           Icon(Icons.auto_awesome, color: scheme.primary, size: 20),
@@ -915,8 +923,11 @@ class _AiSearchDialogState extends State<_AiSearchDialog> {
           Text(uiStrings['askAi']?[locale] ?? 'Ask AI'),
         ],
       ),
-      content: SizedBox(
-        width: 520,
+      // ConstrainedBox(maxWidth: 520) — phones get the full available
+      // width; iPad / desktop cap at 520 so the dialog doesn't stretch
+      // unreasonably wide on big screens.
+      content: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 520),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -951,7 +962,7 @@ class _AiSearchDialogState extends State<_AiSearchDialog> {
                   maxLines: 3,
                   textInputAction: TextInputAction.send,
                   style: TextStyle(
-                    fontFamily: settings.fontFamily,
+                    fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                     fontSize: settings.fontSize,
                   ),
                   decoration: InputDecoration(
@@ -997,7 +1008,7 @@ class _AiSearchDialogState extends State<_AiSearchDialog> {
                           child: Text(
                             _notice!,
                             style: TextStyle(
-                              fontFamily: settings.fontFamily,
+                              fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                               fontSize: (settings.fontSize - 2)
                                   .clamp(11.0, 14.0)
                                   .toDouble(),
@@ -1048,7 +1059,7 @@ class _AiSearchDialogState extends State<_AiSearchDialog> {
                 uiStrings['keywordMatches']?[locale] ??
                     'Keyword matches',
                 style: TextStyle(
-                  fontFamily: settings.fontFamily,
+                  fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                   fontSize:
                       (settings.fontSize - 2).clamp(11.0, 14.0).toDouble(),
                   fontWeight: FontWeight.w700,
@@ -1077,7 +1088,7 @@ class _AiSearchDialogState extends State<_AiSearchDialog> {
                   children: parseAiMarkdown(
                     _result!.answer,
                     base: TextStyle(
-                      fontFamily: settings.fontFamily,
+                      fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                       fontSize: settings.fontSize,
                       height: 1.4,
                       color: scheme.onSurface,
@@ -1090,7 +1101,7 @@ class _AiSearchDialogState extends State<_AiSearchDialog> {
                 Text(
                   uiStrings['citations']?[locale] ?? 'Citations',
                   style: TextStyle(
-                    fontFamily: settings.fontFamily,
+                    fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                     fontSize:
                         (settings.fontSize - 2).clamp(11.0, 14.0).toDouble(),
                     fontWeight: FontWeight.w700,
@@ -1118,7 +1129,7 @@ class _AiSearchDialogState extends State<_AiSearchDialog> {
               Text(
                 uiStrings['noResults']?[locale] ?? 'No results',
                 style: TextStyle(
-                  fontFamily: settings.fontFamily,
+                  fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                   color: scheme.onSurfaceVariant,
                   fontStyle: FontStyle.italic,
                 ),
@@ -1179,7 +1190,7 @@ class _LocalMatchTile extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
-                      fontFamily: settings.fontFamily,
+                      fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                       fontWeight: FontWeight.w600,
                       color: scheme.onSurface,
                     ),
@@ -1190,7 +1201,7 @@ class _LocalMatchTile extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
-                        fontFamily: settings.fontFamily,
+                        fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                         fontSize: 12,
                         color: scheme.primary,
                       ),

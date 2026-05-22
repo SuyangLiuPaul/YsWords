@@ -44,7 +44,6 @@ import 'package:yswords/utils/theme_color_helpers.dart';
 import 'package:yswords/services/daily_verse_fallback.dart';
 import 'package:yswords/services/daily_verse_service.dart';
 import 'package:yswords/services/profile_service.dart';
-import 'package:yswords/services/reading_plan_service.dart';
 import 'package:yswords/utils/jump_to_reference.dart' as jumper;
 import 'package:yswords/utils/passage_localizer.dart' show localizePassage;
 import 'package:yswords/utils/reference_parser.dart';
@@ -52,6 +51,7 @@ import 'package:yswords/utils/responsive.dart';
 import 'package:yswords/utils/version_mapper.dart' show translateBookName;
 import 'package:yswords/widgets/google_g_logo.dart';
 import 'package:yswords/widgets/onboarding_dialog.dart';
+import 'package:yswords/utils/font_catalog.dart' show kCjkFontFallback;
 
 /// Personal "home" / dashboard. Shows the signed-in user's reading
 /// state at a glance:
@@ -72,9 +72,6 @@ class DashboardPage extends StatefulWidget {
 }
 
 class _DashboardPageState extends State<DashboardPage> {
-  ReadingPlan? _plan;
-  int _planDay = 1;
-  Set<int> _planDone = const {};
   Verse? _dailyVerse;
   /// Set when [_dailyVerse] was resolved from a fallback bundle
   /// (e.g. user is on LJK1, today's verse is OT, we pulled it from
@@ -118,7 +115,6 @@ class _DashboardPageState extends State<DashboardPage> {
     ProfileService.instance.addListener(_onProfileOrAuthChanged);
     CloudAuthService.instance.addListener(_onProfileOrAuthChanged);
     RealtimeDbSyncService.instance.addListener(_onProfileOrAuthChanged);
-    _loadPlan();
     _loadDailyVerse();
     _loadDailyEvidence();
     _loadTodayHeadlines();
@@ -391,26 +387,6 @@ class _DashboardPageState extends State<DashboardPage> {
   void _onProfileOrAuthChanged() {
     if (!mounted) return;
     setState(() {});
-    _loadPlan();
-  }
-
-  Future<void> _loadPlan() async {
-    final id = await ReadingPlanService.activeId();
-    if (id == null) {
-      if (!mounted) return;
-      setState(() => _plan = null);
-      return;
-    }
-    final plan = await ReadingPlanService.byId(id);
-    if (plan == null) return;
-    final day = await ReadingPlanService.todayOfPlan(plan);
-    final done = await ReadingPlanService.completedDays(plan.id);
-    if (!mounted) return;
-    setState(() {
-      _plan = plan;
-      _planDay = day;
-      _planDone = done;
-    });
   }
 
   /// Day-part greeting matching how people actually talk:
@@ -633,7 +609,7 @@ class _DashboardPageState extends State<DashboardPage> {
             Text(
               uiStrings['dailyVerse']?[locale] ?? 'Verse of the Day',
               style: TextStyle(
-                fontFamily: settings.fontFamily,
+                fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                 fontSize: headerSize,
                 fontWeight: FontWeight.w700,
                 color: scheme.primary,
@@ -654,74 +630,6 @@ class _DashboardPageState extends State<DashboardPage> {
                 );
               },
             ),
-          ],
-        );
-
-      case DashboardSection.todayReading:
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Text(
-              uiStrings['todayReading']?[locale] ?? "Today's Reading",
-              style: TextStyle(
-                fontFamily: settings.fontFamily,
-                fontSize: headerSize,
-                fontWeight: FontWeight.w700,
-                color: scheme.primary,
-              ),
-            ),
-            const SizedBox(height: 8),
-            if (_plan != null)
-              _DashboardPlanCard(
-                plan: _plan!,
-                day: _planDay,
-                isDone: _planDone.contains(_planDay),
-                currentVersion: mainProvider.currentVersion,
-                locale: locale,
-                onJump: (canonical) async {
-                  final ref = parseReference(canonical);
-                  if (ref == null) {
-                    if (!mounted) return;
-                    final msg = (uiStrings['couldNotParseRef']?[locale] ??
-                            "Couldn't parse reference: {ref}")
-                        .replaceFirst('{ref}', canonical);
-                    ScaffoldMessenger.maybeOf(context)?.showSnackBar(SnackBar(
-                      content: Text(msg),
-                      duration: const Duration(seconds: 3),
-                    ));
-                    return;
-                  }
-                  final result = await jumper.resolveAndPrepareJump(
-                    reference: ref,
-                    mp: mainProvider,
-                  );
-                  if (!mounted) return;
-                  final ok =
-                      await jumper.showJumpResultSnackBar(context, result);
-                  if (!ok || !mounted) return;
-                  Get.to(
-                    () => const HomePage(),
-                    transition: Transition.rightToLeft,
-                  );
-                },
-                onToggleDone: () async {
-                  if (_plan == null) return;
-                  await ReadingPlanService.setDayCompleted(
-                    _plan!.id,
-                    _planDay,
-                    !_planDone.contains(_planDay),
-                  );
-                  _loadPlan();
-                },
-              )
-            else
-              _PickPlanCard(
-                locale: locale,
-                onTap: () => Get.to(
-                  () => const SettingsPage(),
-                  transition: Transition.rightToLeft,
-                ),
-              ),
           ],
         );
 
@@ -774,7 +682,7 @@ class _DashboardPageState extends State<DashboardPage> {
             Text(
               uiStrings['homeRecentBookmarks']?[locale] ?? 'Recent bookmarks',
               style: TextStyle(
-                fontFamily: settings.fontFamily,
+                fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                 fontSize: headerSize,
                 fontWeight: FontWeight.w700,
                 color: scheme.primary,
@@ -789,7 +697,7 @@ class _DashboardPageState extends State<DashboardPage> {
                 title: Text(
                   '${v.book} ${v.chapter}:${v.verseLabel}',
                   style: TextStyle(
-                      fontFamily: settings.fontFamily,
+                      fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                       fontSize: settings.fontSize,
                       fontWeight: FontWeight.w600),
                 ),
@@ -821,7 +729,7 @@ class _DashboardPageState extends State<DashboardPage> {
                     uiStrings['todayHeadlines']?[locale] ??
                         "Today's Headlines",
                     style: TextStyle(
-                      fontFamily: settings.fontFamily,
+                      fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                       fontSize: headerSize,
                       fontWeight: FontWeight.w700,
                       color: scheme.primary,
@@ -836,7 +744,7 @@ class _DashboardPageState extends State<DashboardPage> {
                   child: Text(
                     uiStrings['viewAll']?[locale] ?? 'View all',
                     style: TextStyle(
-                        fontFamily: settings.fontFamily,
+                        fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                         fontSize: (settings.fontSize - 2).clamp(11.0, 14.0)),
                   ),
                 ),
@@ -863,7 +771,7 @@ class _DashboardPageState extends State<DashboardPage> {
             Text(
               uiStrings['todayEvidence']?[locale] ?? "Today's Evidence",
               style: TextStyle(
-                fontFamily: settings.fontFamily,
+                fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                 fontSize: headerSize,
                 fontWeight: FontWeight.w700,
                 color: scheme.primary,
@@ -1011,7 +919,6 @@ class _DashboardPageState extends State<DashboardPage> {
       _loadTodayHeadlines(),
       _loadDailyEvidence(),
       _loadDailyVerse(),
-      _loadPlan(),
     ]);
   }
 
@@ -1165,7 +1072,7 @@ class _GreetingCard extends StatelessWidget {
                               overflow: TextOverflow.ellipsis,
                               textDirection: TextDirection.ltr,
                               style: TextStyle(
-                                fontFamily: settings.fontFamily,
+                                fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                                 fontSize:
                                     (fs - 3).clamp(11.0, 16.0).toDouble(),
                                 color: scheme.onSurfaceVariant,
@@ -1178,7 +1085,7 @@ class _GreetingCard extends StatelessWidget {
                               overflow: TextOverflow.ellipsis,
                               textDirection: TextDirection.ltr,
                               style: TextStyle(
-                                fontFamily: settings.fontFamily,
+                                fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                                 fontSize:
                                     (fs + 3).clamp(16.0, 28.0).toDouble(),
                                 fontWeight: FontWeight.w700,
@@ -1198,7 +1105,7 @@ class _GreetingCard extends StatelessWidget {
                       uiStrings['welcomeSignInGoogle']?[locale] ??
                           'Sign in with Google',
                       style: TextStyle(
-                        fontFamily: settings.fontFamily,
+                        fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                         fontSize: (fs - 2).clamp(12.0, 15.0).toDouble(),
                       ),
                     ),
@@ -1296,7 +1203,7 @@ class _GreetingCard extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                         textDirection: TextDirection.ltr,
                         style: TextStyle(
-                          fontFamily: settings.fontFamily,
+                          fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                           fontSize: (fs - 3).clamp(11.0, 16.0).toDouble(),
                           color: scheme.onSurfaceVariant,
                         ),
@@ -1315,7 +1222,7 @@ class _GreetingCard extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                         textDirection: TextDirection.ltr,
                         style: TextStyle(
-                          fontFamily: settings.fontFamily,
+                          fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                           fontSize: (fs + 3).clamp(16.0, 28.0).toDouble(),
                           fontWeight: FontWeight.w700,
                           color: scheme.onSurface,
@@ -1333,7 +1240,7 @@ class _GreetingCard extends StatelessWidget {
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: TextStyle(
-                                  fontFamily: settings.fontFamily,
+                                  fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                                   fontSize:
                                       (fs - 4).clamp(11.0, 14.0).toDouble(),
                                   color: scheme.onSurfaceVariant,
@@ -1371,7 +1278,7 @@ class _GreetingCard extends StatelessWidget {
                       uiStrings['welcomeSignInGoogle']?[locale] ??
                           'Sign in with Google',
                       style: TextStyle(
-                        fontFamily: settings.fontFamily,
+                        fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                         fontSize: (fs - 2).clamp(12.0, 18.0).toDouble(),
                         fontWeight: FontWeight.w500,
                       ),
@@ -1381,178 +1288,6 @@ class _GreetingCard extends StatelessWidget {
               ),
           ],
         );
-  }
-}
-
-class _DashboardPlanCard extends StatelessWidget {
-  final ReadingPlan plan;
-  final int day;
-  final bool isDone;
-  final String currentVersion;
-  final String locale;
-  final void Function(String canonical) onJump;
-  final VoidCallback onToggleDone;
-
-  const _DashboardPlanCard({
-    required this.plan,
-    required this.day,
-    required this.isDone,
-    required this.currentVersion,
-    required this.locale,
-    required this.onJump,
-    required this.onToggleDone,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    // v1.2.31: see comment near line 1072 — select-based subscribe.
-    context.select<AppSettings, (double, String)>(
-        (s) => (s.fontSize, s.fontFamily));
-    final settings = context.read<AppSettings>();
-    final fs = settings.fontSize;
-    final entry = plan.dayOf(day);
-    if (entry == null) return const SizedBox.shrink();
-    final dayLabel = (uiStrings['planDayLabel']?[locale] ??
-            'Day {day} of {total}')
-        .replaceAll('{day}', day.toString())
-        .replaceAll('{total}', plan.days.toString());
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    plan.localizedName(locale),
-                    style: TextStyle(
-                      fontFamily: settings.fontFamily,
-                      fontSize: (fs - 2).clamp(12.0, 18.0).toDouble(),
-                      fontWeight: FontWeight.w600,
-                      color: scheme.onSurfaceVariant,
-                    ),
-                  ),
-                ),
-                IconButton(
-                  onPressed: onToggleDone,
-                  icon: Icon(
-                    isDone
-                        ? Icons.check_circle_rounded
-                        : Icons.radio_button_unchecked,
-                    color:
-                        isDone ? scheme.primary : scheme.outline,
-                  ),
-                  tooltip: isDone
-                      ? (uiStrings['planMarkUndone']?[locale] ??
-                          'Mark as unread')
-                      : (uiStrings['planMarkDone']?[locale] ??
-                          'Mark as done'),
-                ),
-              ],
-            ),
-            Text(
-              dayLabel,
-              style: TextStyle(
-                fontFamily: settings.fontFamily,
-                fontSize: (fs - 4).clamp(11.0, 14.0).toDouble(),
-                color: scheme.onSurfaceVariant,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Wrap(
-              spacing: 6,
-              runSpacing: 4,
-              children: [
-                for (final r in entry.readings)
-                  _ChipBtn(
-                    label: _localizeRef(r, currentVersion),
-                    onTap: () => onJump(r),
-                  ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  String _localizeRef(String canonical, String version) {
-    final ref = parseReference(canonical);
-    if (ref == null) return canonical;
-    final localBook = translateBookName(ref.englishBook, version);
-    return '$localBook ${ref.chapter}';
-  }
-}
-
-class _PickPlanCard extends StatelessWidget {
-  final String locale;
-  final VoidCallback onTap;
-  const _PickPlanCard({required this.locale, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    // v1.2.31: see comment near line 1072 — select-based subscribe.
-    context.select<AppSettings, (double, String)>(
-        (s) => (s.fontSize, s.fontFamily));
-    final settings = context.read<AppSettings>();
-    final fs = settings.fontSize;
-    return Card(
-      color: scheme.surface,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: BorderSide(
-          color: scheme.primary.withValues(alpha: 0.25),
-        ),
-      ),
-      elevation: 0,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(14, 12, 8, 12),
-          child: Row(
-            children: [
-              Icon(Icons.menu_book_outlined,
-                  size: 22, color: scheme.primary),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      uiStrings['planHomeHint']?[locale] ??
-                          'Choose a reading plan to see today\'s passages here.',
-                      style: TextStyle(
-                        fontFamily: settings.fontFamily,
-                        fontSize: (fs - 2).clamp(12.0, 18.0).toDouble(),
-                        fontWeight: FontWeight.w600,
-                        color: scheme.primary,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      uiStrings['planHomeHintSub']?[locale] ??
-                          'Tap to open Settings.',
-                      style: TextStyle(
-                        fontFamily: settings.fontFamily,
-                        fontSize: (fs - 4).clamp(11.0, 14.0).toDouble(),
-                        color: scheme.onSurfaceVariant,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Icon(Icons.chevron_right,
-                  size: 20, color: scheme.outline),
-            ],
-          ),
-        ),
-      ),
-    );
   }
 }
 
@@ -1602,7 +1337,7 @@ class _CountTile extends StatelessWidget {
                     Text(
                       count.toString(),
                       style: TextStyle(
-                        fontFamily: settings.fontFamily,
+                        fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                         fontSize:
                             (fs + 6).clamp(20.0, 32.0).toDouble(),
                         fontWeight: FontWeight.w700,
@@ -1618,7 +1353,7 @@ class _CountTile extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
-                    fontFamily: settings.fontFamily,
+                    fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                     fontSize:
                         (fs - 4).clamp(11.0, 14.0).toDouble(),
                     fontWeight: FontWeight.w500,
@@ -1790,7 +1525,7 @@ class _LinkTile extends StatelessWidget {
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
-                fontFamily: settings.fontFamily,
+                fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                 fontSize: (fs - 2).clamp(12.0, 18.0).toDouble(),
                 fontWeight: FontWeight.w600,
                 color: scheme.onSurface,
@@ -1806,45 +1541,6 @@ class _LinkTile extends StatelessWidget {
   }
 }
 
-class _ChipBtn extends StatelessWidget {
-  final String label;
-  final VoidCallback onTap;
-  const _ChipBtn({required this.label, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    // v1.2.31: see comment near line 1072 — select-based subscribe.
-    context.select<AppSettings, (double, String)>(
-        (s) => (s.fontSize, s.fontFamily));
-    final settings = context.read<AppSettings>();
-    return Material(
-      color: scheme.primary.withValues(alpha: 0.10),
-      borderRadius: BorderRadius.circular(8),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(8),
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-          child: Text(
-            label,
-            style: TextStyle(
-              fontFamily: settings.fontFamily,
-              fontSize:
-                  (settings.fontSize - 2).clamp(12.0, 18.0).toDouble(),
-              fontWeight: FontWeight.w600,
-              color: scheme.primary,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-/// Dashboard tile spotlighting today's rotating evidence entry.
-/// Compact: small thumb (image or emoji icon), title + summary
-/// preview, confidence badge, scripture reference. Tap → detail.
 class _DashboardEvidenceCard extends StatelessWidget {
   final BibleEvidence evidence;
   final String locale;
@@ -1919,7 +1615,7 @@ class _DashboardEvidenceCard extends StatelessWidget {
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(
-                                fontFamily: settings.fontFamily,
+                                fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                                 fontSize:
                                     (fs - 1).clamp(13.0, 18.0).toDouble(),
                                 fontWeight: FontWeight.w700,
@@ -1935,7 +1631,7 @@ class _DashboardEvidenceCard extends StatelessWidget {
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
-                          fontFamily: settings.fontFamily,
+                          fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                           fontSize: (fs - 3).clamp(11.0, 15.0).toDouble(),
                           color: scheme.onSurfaceVariant,
                           height: 1.3,
@@ -1953,7 +1649,7 @@ class _DashboardEvidenceCard extends StatelessWidget {
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(
-                                fontFamily: settings.fontFamily,
+                                fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                                 fontSize:
                                     (fs - 4).clamp(11.0, 14.0).toDouble(),
                                 fontWeight: FontWeight.w600,
@@ -2073,7 +1769,7 @@ class _DashboardNewsCard extends StatelessWidget {
                                       article.section.toUpperCase())
                                   .toUpperCase(),
                               style: TextStyle(
-                                fontFamily: settings.fontFamily,
+                                fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                                 fontSize:
                                     (fs - 4).clamp(9.0, 12.0).toDouble(),
                                 fontWeight: FontWeight.w700,
@@ -2088,7 +1784,7 @@ class _DashboardNewsCard extends StatelessWidget {
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: TextStyle(
-                                  fontFamily: settings.fontFamily,
+                                  fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                                   fontSize: (fs - 4)
                                       .clamp(9.0, 12.0)
                                       .toDouble(),
@@ -2104,7 +1800,7 @@ class _DashboardNewsCard extends StatelessWidget {
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
-                            fontFamily: settings.fontFamily,
+                            fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                             fontSize:
                                 (fs - 1).clamp(13.0, 17.0).toDouble(),
                             fontWeight: FontWeight.w700,
@@ -2124,7 +1820,7 @@ class _DashboardNewsCard extends StatelessWidget {
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: TextStyle(
-                                  fontFamily: settings.fontFamily,
+                                  fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                                   fontSize: (fs - 4)
                                       .clamp(11.0, 14.0)
                                       .toDouble(),
@@ -2277,7 +1973,7 @@ class _ContinueReadingHero extends StatelessWidget {
                     Text(
                       ctaTitle,
                       style: TextStyle(
-                        fontFamily: settings.fontFamily,
+                        fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                         fontSize: (fs + 3).clamp(16.0, 24.0).toDouble(),
                         fontWeight: FontWeight.w700,
                         color: scheme.onPrimary,
@@ -2289,7 +1985,7 @@ class _ContinueReadingHero extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
-                        fontFamily: settings.fontFamily,
+                        fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                         fontSize: (fs - 2).clamp(11.0, 16.0).toDouble(),
                         color: scheme.onPrimary.withValues(alpha: 0.85),
                         fontWeight: FontWeight.w500,
@@ -2390,7 +2086,7 @@ class _ResumeSermonHero extends StatelessWidget {
                         Text(
                           ctaTitle,
                           style: TextStyle(
-                            fontFamily: settings.fontFamily,
+                            fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                             fontSize: (fs + 1).clamp(14.0, 20.0).toDouble(),
                             fontWeight: FontWeight.w700,
                             color: scheme.onSurface,
@@ -2402,7 +2098,7 @@ class _ResumeSermonHero extends StatelessWidget {
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
-                            fontFamily: settings.fontFamily,
+                            fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                             fontSize: (fs - 2).clamp(11.0, 15.0).toDouble(),
                             color: scheme.onSurface.withValues(alpha: 0.75),
                             fontWeight: FontWeight.w500,

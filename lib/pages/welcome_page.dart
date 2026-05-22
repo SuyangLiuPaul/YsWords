@@ -7,6 +7,7 @@ import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/services/cloud_auth_service.dart';
 import 'package:yswords/services/profile_service.dart';
 import 'package:yswords/widgets/google_g_logo.dart';
+import 'package:yswords/utils/font_catalog.dart' show kCjkFontFallback;
 
 /// One-time gate shown on first launch (and accessible later from
 /// Settings → Switch profile). Lets the user pick a name so their
@@ -155,7 +156,7 @@ class _WelcomePageState extends State<WelcomePage> {
                     'YsWords',
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                      fontFamily: settings.fontFamily,
+                      fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                       fontSize: (settings.fontSize + 12)
                           .clamp(24.0, 36.0)
                           .toDouble(),
@@ -169,7 +170,7 @@ class _WelcomePageState extends State<WelcomePage> {
                         'Personal Bible study, on every device.',
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                      fontFamily: settings.fontFamily,
+                      fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                       fontSize: (settings.fontSize - 2)
                           .clamp(12.0, 18.0)
                           .toDouble(),
@@ -190,7 +191,7 @@ class _WelcomePageState extends State<WelcomePage> {
                           'How would you like to use YsWords?',
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        fontFamily: settings.fontFamily,
+                        fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                         fontSize: settings.fontSize,
                         fontWeight: FontWeight.w600,
                         color: scheme.onSurface,
@@ -242,7 +243,7 @@ class _WelcomePageState extends State<WelcomePage> {
                               uiStrings['welcomeSignInGoogle']?[locale] ??
                                   'Sign in with Google',
                               style: TextStyle(
-                                fontFamily: settings.fontFamily,
+                                fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                                 fontSize: (settings.fontSize)
                                     .clamp(13.0, 18.0)
                                     .toDouble(),
@@ -269,7 +270,7 @@ class _WelcomePageState extends State<WelcomePage> {
                               : (uiStrings['welcomeSignIn']?[locale] ??
                                   'Sign in'),
                           style: TextStyle(
-                              fontFamily: settings.fontFamily,
+                              fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                               fontSize: (settings.fontSize)
                                   .clamp(13.0, 18.0)
                                   .toDouble()),
@@ -286,7 +287,7 @@ class _WelcomePageState extends State<WelcomePage> {
                           uiStrings['welcomeContinueGuest']?[locale] ??
                               'Continue as guest',
                           style: TextStyle(
-                              fontFamily: settings.fontFamily,
+                              fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                               fontSize: (settings.fontSize)
                                   .clamp(13.0, 18.0)
                                   .toDouble()),
@@ -303,7 +304,7 @@ class _WelcomePageState extends State<WelcomePage> {
                               'Profiles are stored only on this device. No password, no server.'),
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        fontFamily: settings.fontFamily,
+                        fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                         fontSize: (settings.fontSize - 4)
                             .clamp(11.0, 16.0)
                             .toDouble(),
@@ -317,7 +318,7 @@ class _WelcomePageState extends State<WelcomePage> {
                           "What should we call you?",
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        fontFamily: settings.fontFamily,
+                        fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                         fontSize: settings.fontSize,
                         fontWeight: FontWeight.w600,
                         color: scheme.onSurface,

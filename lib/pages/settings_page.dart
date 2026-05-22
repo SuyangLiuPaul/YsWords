@@ -32,7 +32,6 @@ import 'package:yswords/widgets/profile_avatar.dart';
 // 2026-05-07 (v17): fetch_books / fetch_verses imports removed; the
 // only consumer was the deleted "Check for Updates" reload path.
 import 'package:yswords/services/profile_service.dart';
-import 'package:yswords/services/reading_plan_service.dart';
 import 'package:yswords/utils/font_catalog.dart';
 
 import 'package:yswords/services/offline_pack_service.dart';
@@ -90,7 +89,6 @@ enum SettingsSection {
   display,
   reading,
   account,
-  readingPlan,
   dashboardLayout,
   notifications,
   // 2026-05-08 (v1.1.10): when an AI feature hits "quota exhausted"
@@ -150,7 +148,6 @@ class _SettingsPageBodyState extends State<_SettingsPageBody> {
   final _displayKey = GlobalKey();
   final _readingKey = GlobalKey();
   final _accountKey = GlobalKey();
-  final _planKey = GlobalKey();
   final _dashboardKey = GlobalKey();
   final _notificationsKey = GlobalKey();
   final _aiKey = GlobalKey();
@@ -164,8 +161,6 @@ class _SettingsPageBodyState extends State<_SettingsPageBody> {
         return _readingKey;
       case SettingsSection.account:
         return _accountKey;
-      case SettingsSection.readingPlan:
-        return _planKey;
       case SettingsSection.dashboardLayout:
         return _dashboardKey;
       case SettingsSection.notifications:
@@ -276,7 +271,7 @@ class _SettingsPageBodyState extends State<_SettingsPageBody> {
                       Text(
                         uiStrings['fontSize']?[settings.locale] ?? 'Font Size',
                         style: TextStyle(
-                          fontFamily: settings.fontFamily,
+                          fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                           fontSize: settings.fontSize + 2,
                           fontWeight: FontWeight.w600,
                         ),
@@ -304,7 +299,7 @@ class _SettingsPageBodyState extends State<_SettingsPageBody> {
                       Text(
                         uiStrings['menuScale']?[settings.locale] ?? 'Menu Size',
                         style: TextStyle(
-                          fontFamily: settings.fontFamily,
+                          fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                           fontSize: settings.fontSize + 2,
                           fontWeight: FontWeight.w600,
                         ),
@@ -333,7 +328,7 @@ class _SettingsPageBodyState extends State<_SettingsPageBody> {
                         uiStrings['lineSpacing']?[settings.locale] ??
                             'Line Spacing',
                         style: TextStyle(
-                          fontFamily: settings.fontFamily,
+                          fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                           fontSize: settings.fontSize + 2,
                           fontWeight: FontWeight.w600,
                         ),
@@ -362,7 +357,7 @@ class _SettingsPageBodyState extends State<_SettingsPageBody> {
                         uiStrings['samplePreview']?[settings.locale] ??
                             'Sample Preview',
                         style: TextStyle(
-                          fontFamily: settings.fontFamily,
+                          fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                           fontSize: settings.fontSize + 2,
                           fontWeight: FontWeight.w600,
                         ),
@@ -375,7 +370,7 @@ class _SettingsPageBodyState extends State<_SettingsPageBody> {
                             uiStrings['copyFormat']?[settings.locale] ??
                                 'Copy Format',
                             style: TextStyle(
-                              fontFamily: settings.fontFamily,
+                              fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                               fontSize: settings.fontSize + 2,
                               fontWeight: FontWeight.w500,
                             ),
@@ -394,7 +389,7 @@ class _SettingsPageBodyState extends State<_SettingsPageBody> {
                                         'Plain Text',
                                     style: TextStyle(
                                       fontSize: settings.fontSize,
-                                      fontFamily: settings.fontFamily,
+                                      fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                                     ),
                                   )),
                               DropdownMenuItem(
@@ -405,7 +400,7 @@ class _SettingsPageBodyState extends State<_SettingsPageBody> {
                                         'With Reference',
                                     style: TextStyle(
                                       fontSize: settings.fontSize,
-                                      fontFamily: settings.fontFamily,
+                                      fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                                     ),
                                   )),
                               DropdownMenuItem(
@@ -416,7 +411,7 @@ class _SettingsPageBodyState extends State<_SettingsPageBody> {
                                         'Devotional Format',
                                     style: TextStyle(
                                       fontSize: settings.fontSize,
-                                      fontFamily: settings.fontFamily,
+                                      fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                                     ),
                                   )),
                             ],
@@ -432,7 +427,7 @@ class _SettingsPageBodyState extends State<_SettingsPageBody> {
                                 'No verses available',
                         style:
                             Theme.of(context).textTheme.titleMedium?.copyWith(
-                                  fontFamily: settings.fontFamily,
+                                  fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                                   fontWeight: FontWeight.bold,
                                   color: Theme.of(context).colorScheme.primary,
                                   fontSize: settings.fontSize,
@@ -447,7 +442,7 @@ class _SettingsPageBodyState extends State<_SettingsPageBody> {
                             text: TextSpan(
                               style: TextStyle(
                                 fontSize: settings.fontSize,
-                                fontFamily: settings.fontFamily,
+                                fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                                 height: settings.lineSpacing,
                                 color: Theme.of(context)
                                     .textTheme
@@ -490,7 +485,7 @@ class _SettingsPageBodyState extends State<_SettingsPageBody> {
                               text: TextSpan(
                                 style: TextStyle(
                                   fontSize: settings.fontSize,
-                                  fontFamily: settings.fontFamily,
+                                  fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                                   height: settings.lineSpacing,
                                   color: Theme.of(context)
                                       .textTheme
@@ -541,7 +536,7 @@ class _SettingsPageBodyState extends State<_SettingsPageBody> {
                         uiStrings['fontFamily']?[settings.locale] ??
                             'Font Family',
                         style: TextStyle(
-                          fontFamily: settings.fontFamily,
+                          fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                           fontSize: settings.fontSize + 2,
                           fontWeight: FontWeight.w600,
                         ),
@@ -590,7 +585,7 @@ class _SettingsPageBodyState extends State<_SettingsPageBody> {
                               .onSurface
                               .withValues(alpha: 0.6),
                           fontStyle: FontStyle.italic,
-                          fontFamily: settings.fontFamily,
+                          fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                         ),
                       ),
                     ],
@@ -610,7 +605,7 @@ class _SettingsPageBodyState extends State<_SettingsPageBody> {
                           uiStrings['primaryColor']?[settings.locale] ??
                               'Primary Color',
                           style: TextStyle(
-                            fontFamily: settings.fontFamily,
+                            fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                             fontSize: settings.fontSize + 2,
                             fontWeight: FontWeight.w600,
                           ),
@@ -675,7 +670,7 @@ class _SettingsPageBodyState extends State<_SettingsPageBody> {
                         uiStrings['themeMode']?[settings.locale] ??
                             'Theme Mode',
                         style: TextStyle(
-                          fontFamily: settings.fontFamily,
+                          fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                           fontSize: settings.fontSize + 2,
                           fontWeight: FontWeight.w600,
                         ),
@@ -694,7 +689,7 @@ class _SettingsPageBodyState extends State<_SettingsPageBody> {
                                   'System Default',
                               style: TextStyle(
                                 fontSize: settings.fontSize,
-                                fontFamily: settings.fontFamily,
+                                fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                               ),
                             ),
                           ),
@@ -704,7 +699,7 @@ class _SettingsPageBodyState extends State<_SettingsPageBody> {
                               uiStrings['themeDay']?[settings.locale] ?? 'Light Mode',
                               style: TextStyle(
                                 fontSize: settings.fontSize,
-                                fontFamily: settings.fontFamily,
+                                fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                               ),
                             ),
                           ),
@@ -715,7 +710,7 @@ class _SettingsPageBodyState extends State<_SettingsPageBody> {
                                   'Dark Mode',
                               style: TextStyle(
                                 fontSize: settings.fontSize,
-                                fontFamily: settings.fontFamily,
+                                fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                               ),
                             ),
                           ),
@@ -737,7 +732,7 @@ class _SettingsPageBodyState extends State<_SettingsPageBody> {
                         uiStrings['readingMode']?[settings.locale] ??
                             'Reading Mode',
                         style: TextStyle(
-                          fontFamily: settings.fontFamily,
+                          fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                           fontSize: settings.fontSize + 2,
                           fontWeight: FontWeight.w600,
                         ),
@@ -760,7 +755,7 @@ class _SettingsPageBodyState extends State<_SettingsPageBody> {
                                     'Verse by Verse',
                                 style: TextStyle(
                                   fontSize: settings.fontSize * 0.9,
-                                  fontFamily: settings.fontFamily,
+                                  fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                                 ),
                               ),
                               Text(
@@ -768,7 +763,7 @@ class _SettingsPageBodyState extends State<_SettingsPageBody> {
                                     'Paragraph Flow',
                                 style: TextStyle(
                                   fontSize: settings.fontSize * 0.9,
-                                  fontFamily: settings.fontFamily,
+                                  fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                                 ),
                               ),
                             ],
@@ -798,7 +793,7 @@ class _SettingsPageBodyState extends State<_SettingsPageBody> {
                         style: TextStyle(
                           fontSize: settings.fontSize + 2,
                           fontWeight: FontWeight.w600,
-                          fontFamily: settings.fontFamily,
+                          fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                         ),
                       ),
                       subtitle: Text(
@@ -806,7 +801,7 @@ class _SettingsPageBodyState extends State<_SettingsPageBody> {
                             'Render scripture body text in semi-bold weight.',
                         style: TextStyle(
                           fontSize: settings.fontSize,
-                          fontFamily: settings.fontFamily,
+                          fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                         ),
                       ),
                       value: settings.boldVerseText,
@@ -820,7 +815,7 @@ class _SettingsPageBodyState extends State<_SettingsPageBody> {
                         style: TextStyle(
                           fontSize: settings.fontSize + 2,
                           fontWeight: FontWeight.w600,
-                          fontFamily: settings.fontFamily,
+                          fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                         ),
                       ),
                       subtitle: Text(
@@ -830,7 +825,7 @@ class _SettingsPageBodyState extends State<_SettingsPageBody> {
                                 'on the Mount") above the verse.',
                         style: TextStyle(
                           fontSize: settings.fontSize,
-                          fontFamily: settings.fontFamily,
+                          fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                         ),
                       ),
                       value: settings.showSectionTitles,
@@ -844,7 +839,7 @@ class _SettingsPageBodyState extends State<_SettingsPageBody> {
                         style: TextStyle(
                           fontSize: settings.fontSize + 2,
                           fontWeight: FontWeight.w600,
-                          fontFamily: settings.fontFamily,
+                          fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                         ),
                       ),
                       subtitle: Text(
@@ -854,7 +849,7 @@ class _SettingsPageBodyState extends State<_SettingsPageBody> {
                                 'date, themes, and key passage.',
                         style: TextStyle(
                           fontSize: settings.fontSize,
-                          fontFamily: settings.fontFamily,
+                          fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                         ),
                       ),
                       value: settings.showBookIntro,
@@ -873,7 +868,7 @@ class _SettingsPageBodyState extends State<_SettingsPageBody> {
                         style: TextStyle(
                           fontSize: settings.fontSize + 2,
                           fontWeight: FontWeight.w600,
-                          fontFamily: settings.fontFamily,
+                          fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                         ),
                       ),
                       subtitle: Text(
@@ -882,7 +877,7 @@ class _SettingsPageBodyState extends State<_SettingsPageBody> {
                             "Display the G#### / H#### badge under each Hebrew/Greek word in the exegesis sheet.",
                         style: TextStyle(
                           fontSize: settings.fontSize,
-                          fontFamily: settings.fontFamily,
+                          fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                         ),
                       ),
                       value: settings.showStrongsInOriginals,
@@ -897,7 +892,7 @@ class _SettingsPageBodyState extends State<_SettingsPageBody> {
                         style: TextStyle(
                           fontSize: settings.fontSize + 2,
                           fontWeight: FontWeight.w600,
-                          fontFamily: settings.fontFamily,
+                          fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                         ),
                       ),
                       subtitle: Text(
@@ -906,7 +901,7 @@ class _SettingsPageBodyState extends State<_SettingsPageBody> {
                             "Automatically open the first book group of concordance refs in the exegesis sheet.",
                         style: TextStyle(
                           fontSize: settings.fontSize,
-                          fontFamily: settings.fontFamily,
+                          fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                         ),
                       ),
                       value: settings.autoExpandFirstRef,
@@ -939,7 +934,7 @@ class _SettingsPageBodyState extends State<_SettingsPageBody> {
                         uiStrings['interfaceLanguage']?[settings.locale] ??
                             'Interface Language',
                         style: TextStyle(
-                          fontFamily: settings.fontFamily,
+                          fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                           fontSize: settings.fontSize + 2,
                           fontWeight: FontWeight.w600,
                         ),
@@ -956,7 +951,7 @@ class _SettingsPageBodyState extends State<_SettingsPageBody> {
                             child: Text('简体中文',
                                 style: TextStyle(
                                   fontSize: settings.fontSize,
-                                  fontFamily: settings.fontFamily,
+                                  fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                                 )),
                           ),
                           DropdownMenuItem(
@@ -964,7 +959,7 @@ class _SettingsPageBodyState extends State<_SettingsPageBody> {
                             child: Text('繁體中文',
                                 style: TextStyle(
                                   fontSize: settings.fontSize,
-                                  fontFamily: settings.fontFamily,
+                                  fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                                 )),
                           ),
                           DropdownMenuItem(
@@ -972,7 +967,7 @@ class _SettingsPageBodyState extends State<_SettingsPageBody> {
                             child: Text('English',
                                 style: TextStyle(
                                   fontSize: settings.fontSize,
-                                  fontFamily: settings.fontFamily,
+                                  fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                                 )),
                           ),
                         ],
@@ -987,14 +982,8 @@ class _SettingsPageBodyState extends State<_SettingsPageBody> {
               // sync / sign-in controls should be the first thing they
               // see — not buried halfway down. Display/Reading/App
               // still come right after.
-              SizedBox(height: 16 * s),
-              KeyedSubtree(
-                key: _planKey,
-                child: _SectionHeader(
-                    uiStrings['settingsSectionPlan']?[settings.locale] ??
-                        'Reading plans'),
-              ),
-              _ReadingPlanSection(settings: settings, s: s),
+              // 2026-05-21 (v1.2.69): "Reading plans" section removed
+              // along with the rest of the feature.
               SizedBox(height: 16 * s),
               KeyedSubtree(
                 key: _dashboardKey,
@@ -1081,283 +1070,6 @@ class _SettingsPageBodyState extends State<_SettingsPageBody> {
 /// date, and resetting completion progress. Lives at the bottom of
 /// the settings list because it's an opt-in feature and most users
 /// will never touch it.
-class _ReadingPlanSection extends StatefulWidget {
-  final AppSettings settings;
-  final double s;
-  const _ReadingPlanSection({required this.settings, required this.s});
-
-  @override
-  State<_ReadingPlanSection> createState() => _ReadingPlanSectionState();
-}
-
-class _ReadingPlanSectionState extends State<_ReadingPlanSection> {
-  List<ReadingPlan> _plans = [];
-  String? _activeId;
-  DateTime? _startDate;
-  bool _useDate = true;
-  bool _loaded = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _refresh();
-    // Refresh on profile switch so the dropdown / start-date row
-    // reflect whichever account is signed in.
-    ProfileService.instance.addListener(_refresh);
-  }
-
-  @override
-  void dispose() {
-    ProfileService.instance.removeListener(_refresh);
-    super.dispose();
-  }
-
-  Future<void> _refresh() async {
-    final plans = await ReadingPlanService.all();
-    final active = await ReadingPlanService.activeId();
-    final start = await ReadingPlanService.startDate();
-    final useDate = await ReadingPlanService.useDateMode();
-    if (!mounted) return;
-    setState(() {
-      _plans = plans;
-      _activeId = active;
-      _startDate = start;
-      _useDate = useDate;
-      _loaded = true;
-    });
-  }
-
-  Future<void> _confirmReset() async {
-    final locale = widget.settings.locale;
-    final ok = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(uiStrings['planResetProgress']?[locale] ?? 'Reset Progress'),
-        content: Text(uiStrings['planResetProgressConfirm']?[locale] ??
-            'Clear all completion marks for this plan?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(false),
-            child: Text(uiStrings['cancel']?[locale] ?? 'Cancel'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(true),
-            child: Text(uiStrings['planResetProgress']?[locale] ??
-                'Reset Progress'),
-          ),
-        ],
-      ),
-    );
-    if (ok == true && _activeId != null) {
-      await ReadingPlanService.resetProgress(_activeId!);
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text(uiStrings['planResetProgress']?[locale] ?? 'Reset'),
-        duration: const Duration(seconds: 2),
-      ));
-    }
-  }
-
-  Future<void> _pickStartDate() async {
-    final now = DateTime.now();
-    final initial = _startDate ?? DateTime(now.year, now.month, now.day);
-    final d = await showDatePicker(
-      context: context,
-      initialDate: initial,
-      firstDate: DateTime(now.year - 5, 1, 1),
-      lastDate: DateTime(now.year + 5, 12, 31),
-    );
-    if (d != null) {
-      await ReadingPlanService.setStartDate(d);
-      if (!mounted) return;
-      setState(() => _startDate = d);
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final settings = widget.settings;
-    final s = widget.s;
-    final locale = settings.locale;
-    if (!_loaded) {
-      return Card(
-        child: Padding(
-          padding: EdgeInsets.all(16 * s),
-          child: const SizedBox(
-            height: 24,
-            child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
-          ),
-        ),
-      );
-    }
-
-    return Card(
-      child: Padding(
-        padding: EdgeInsets.all(16 * s),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              uiStrings['readingPlans']?[locale] ?? 'Reading Plans',
-              style: TextStyle(
-                fontFamily: settings.fontFamily,
-                fontSize: settings.fontSize + 2,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            SizedBox(height: 8 * s),
-            Text(
-              uiStrings['planChooseActive']?[locale] ?? 'Choose Reading Plan',
-              style: TextStyle(
-                fontFamily: settings.fontFamily,
-                fontSize: settings.fontSize,
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
-            ),
-            SizedBox(height: 6 * s),
-            DropdownButton<String?>(
-              value: _activeId,
-              isExpanded: true,
-              hint: Text(
-                uiStrings['planNoActive']?[locale] ?? 'No reading plan',
-                style: TextStyle(
-                  fontFamily: settings.fontFamily,
-                  fontSize: settings.fontSize,
-                ),
-              ),
-              onChanged: (val) async {
-                await ReadingPlanService.setActiveId(val);
-                if (val != null && _startDate == null) {
-                  // Default start date to today the first time a plan
-                  // is selected so the user immediately sees Day 1.
-                  await ReadingPlanService.setStartDate(DateTime.now());
-                }
-                await _refresh();
-              },
-              items: [
-                DropdownMenuItem<String?>(
-                  value: null,
-                  child: Text(
-                    uiStrings['planNone']?[locale] ?? 'No plan',
-                    style: TextStyle(
-                      fontFamily: settings.fontFamily,
-                      fontSize: settings.fontSize,
-                      fontStyle: FontStyle.italic,
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                ),
-                for (final p in _plans)
-                  DropdownMenuItem<String?>(
-                    value: p.id,
-                    child: Text(
-                      p.localizedName(locale),
-                      style: TextStyle(
-                        fontFamily: settings.fontFamily,
-                        fontSize: settings.fontSize,
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-            if (_activeId != null) ...[
-              SizedBox(height: 8 * s),
-              Text(
-                _plans
-                        .firstWhere(
-                          (p) => p.id == _activeId,
-                          orElse: () => _plans.first,
-                        )
-                        .localizedDescription(locale),
-                style: TextStyle(
-                  fontFamily: settings.fontFamily,
-                  fontSize: settings.fontSize - 1,
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
-              ),
-              SizedBox(height: 12 * s),
-              SwitchListTile(
-                contentPadding: EdgeInsets.zero,
-                title: Text(
-                  uiStrings['planUseCalendarDate']?[locale] ??
-                      'Use calendar date',
-                  style: TextStyle(
-                    fontFamily: settings.fontFamily,
-                    fontSize: settings.fontSize,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                subtitle: Text(
-                  uiStrings['planUseCalendarDateSub']?[locale] ??
-                      'Off = day-of-year (resets every Jan 1).',
-                  style: TextStyle(
-                    fontFamily: settings.fontFamily,
-                    fontSize: settings.fontSize - 2,
-                  ),
-                ),
-                value: _useDate,
-                onChanged: (val) async {
-                  await ReadingPlanService.setUseDateMode(val);
-                  if (!mounted) return;
-                  setState(() => _useDate = val);
-                },
-              ),
-              if (_useDate)
-                ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  leading: const Icon(Icons.calendar_today_outlined),
-                  title: Text(
-                    uiStrings['planStartDate']?[locale] ?? 'Start date',
-                    style: TextStyle(
-                      fontFamily: settings.fontFamily,
-                      fontSize: settings.fontSize,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  subtitle: Text(
-                    _startDate == null
-                        ? '—'
-                        : '${_startDate!.year}-${_startDate!.month.toString().padLeft(2, '0')}-${_startDate!.day.toString().padLeft(2, '0')}',
-                    style: TextStyle(
-                      fontFamily: settings.fontFamily,
-                      fontSize: settings.fontSize - 1,
-                    ),
-                  ),
-                  trailing: const Icon(Icons.chevron_right),
-                  onTap: _pickStartDate,
-                ),
-              SizedBox(height: 4 * s),
-              Align(
-                alignment: Alignment.centerLeft,
-                child: TextButton.icon(
-                  onPressed: _confirmReset,
-                  icon: Icon(Icons.refresh,
-                      color: Theme.of(context).colorScheme.error),
-                  label: Text(
-                    uiStrings['planResetProgress']?[locale] ??
-                        'Reset Progress',
-                    style: TextStyle(
-                      color: Theme.of(context).colorScheme.error,
-                      fontSize: settings.fontSize,
-                      fontFamily: settings.fontFamily,
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-
-/// Settings card for the local "account" / profile system. Shows
-/// the active profile name and a row to open the full profile
-/// switcher (lib/pages/profiles_page.dart). Listens to
-/// ProfileService changes so the displayed name updates as soon
-/// as the user switches.
 class _AccountSection extends StatefulWidget {
   final AppSettings settings;
   final double s;
@@ -1507,7 +1219,7 @@ class _AccountSectionState extends State<_AccountSection> {
                   child: Text(
                     uiStrings['profileTitle']?[locale] ?? 'Profiles',
                     style: TextStyle(
-                      fontFamily: settings.fontFamily,
+                      fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                       fontSize: settings.fontSize + 2,
                       fontWeight: FontWeight.w600,
                     ),
@@ -1536,7 +1248,7 @@ class _AccountSectionState extends State<_AccountSection> {
               title: Text(
                 _displayNameFor(auth, p),
                 style: TextStyle(
-                  fontFamily: settings.fontFamily,
+                  fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                   fontSize: settings.fontSize,
                   fontWeight: FontWeight.w600,
                 ),
@@ -1643,7 +1355,7 @@ class _AccountSectionState extends State<_AccountSection> {
                             .replaceAll(
                                 '{email}', auth.currentUser?.email ?? ''),
                         style: TextStyle(
-                          fontFamily: settings.fontFamily,
+                          fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                           fontSize: (settings.fontSize - 6)
                               .clamp(12.0, 15.0).toDouble(),
                           color: scheme.onSurfaceVariant,
@@ -1690,7 +1402,7 @@ class _AccountSectionState extends State<_AccountSection> {
                             uiStrings['cloudInitFailedTitle']?[locale] ??
                                 'Cloud sign-in temporarily unavailable',
                             style: TextStyle(
-                              fontFamily: settings.fontFamily,
+                              fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                               fontSize: (settings.fontSize - 4)
                                   .clamp(13.0, 16.0).toDouble(),
                               fontWeight: FontWeight.w600,
@@ -1800,7 +1512,7 @@ class _AccountSectionState extends State<_AccountSection> {
                         : (uiStrings["welcomeLocalOnlyNotice"]?[locale] ??
                             "Profiles are stored only on this device. No password, no server.")),
                 style: TextStyle(
-                  fontFamily: settings.fontFamily,
+                  fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                   fontSize: (settings.fontSize - 7)
                       .clamp(12.0, 14.0).toDouble(),
                   fontStyle: FontStyle.italic,
@@ -1839,7 +1551,7 @@ class _SectionHeader extends StatelessWidget {
       child: Text(
         label.toUpperCase(),
         style: TextStyle(
-          fontFamily: settings.fontFamily,
+          fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
           fontSize: size,
           fontWeight: FontWeight.w700,
           letterSpacing: 0.6,
@@ -1874,8 +1586,6 @@ class _DashboardSectionsCard extends StatelessWidget {
         return Icons.headset_mic_rounded;
       case DashboardSection.dailyVerse:
         return Icons.format_quote_rounded;
-      case DashboardSection.todayReading:
-        return Icons.event_note_outlined;
       case DashboardSection.counts:
         return Icons.dashboard_outlined;
       case DashboardSection.recentBookmarks:
@@ -1908,7 +1618,7 @@ class _DashboardSectionsCard extends StatelessWidget {
                 uiStrings['dashboardLayoutHint']?[locale] ??
                     'Drag the handle to reorder. Toggle a row off to hide that block.',
                 style: TextStyle(
-                  fontFamily: settings.fontFamily,
+                  fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                   fontSize: (14 * s).clamp(11.0, 14.0),
                   color: scheme.onSurface.withValues(alpha: 0.65),
                 ),
@@ -1983,7 +1693,7 @@ class _DashboardSectionsCard extends StatelessWidget {
                                   child: Text(
                                     section.label(locale),
                                     style: TextStyle(
-                                      fontFamily: settings.fontFamily,
+                                      fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                                       fontSize: (15 * s).clamp(13.0, 16.0),
                                       fontWeight: FontWeight.w600,
                                       color: scheme.onSurface.withValues(
@@ -2011,7 +1721,7 @@ class _DashboardSectionsCard extends StatelessWidget {
                                       'Always visible — primary entry point.')
                                   : section.description(locale),
                               style: TextStyle(
-                                fontFamily: settings.fontFamily,
+                                fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                                 fontSize: (12.5 * s).clamp(10.5, 13.0),
                                 color:
                                     scheme.onSurface.withValues(alpha: 0.6),
@@ -2048,7 +1758,7 @@ class _DashboardSectionsCard extends StatelessWidget {
                 label: Text(
                   uiStrings['resetToDefault']?[locale] ?? 'Reset to default',
                   style: TextStyle(
-                    fontFamily: settings.fontFamily,
+                    fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                     fontSize: (14 * s).clamp(12.0, 15.0),
                   ),
                 ),
@@ -2116,7 +1826,7 @@ class _SettingsSwitch extends StatelessWidget {
       title: Text(
         label,
         style: TextStyle(
-          fontFamily: settings.fontFamily,
+          fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
           fontSize: settings.fontSize,
           fontWeight: FontWeight.w600,
         ),
@@ -2126,7 +1836,7 @@ class _SettingsSwitch extends StatelessWidget {
           : Text(
               subtitle!,
               style: TextStyle(
-                fontFamily: settings.fontFamily,
+                fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                 fontSize: (settings.fontSize - 3).clamp(11.0, 14.0),
                 color: scheme.onSurfaceVariant,
               ),
@@ -2365,7 +2075,7 @@ class _SyncStatusRowState extends State<_SyncStatusRow> {
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
-                  fontFamily: settings.fontFamily,
+                  fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                   fontSize: (settings.fontSize - 3).clamp(11.0, 14.0),
                   color: color,
                   fontWeight: isSyncing
@@ -2397,7 +2107,7 @@ class _SyncStatusRowState extends State<_SyncStatusRow> {
                       ? (uiStrings['syncingNowShort']?[locale] ?? 'Syncing…')
                       : (uiStrings['syncNow']?[locale] ?? 'Sync now'),
                   style: TextStyle(
-                    fontFamily: settings.fontFamily,
+                    fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                     fontSize: (settings.fontSize - 3).clamp(11.0, 14.0),
                   ),
                 ),
@@ -2548,13 +2258,43 @@ class _NotificationsCardState extends State<_NotificationsCard> {
                   alignment: Alignment.centerLeft,
                   child: TextButton.icon(
                     onPressed: () async {
-                      await NotificationService.show(
-                        title: uiStrings['appName']?[locale] ?? 'YsWords',
-                        body: uiStrings['notificationsTestBody']
-                                ?[locale] ??
-                            'This is a test notification.',
-                        tag: 'yswords-test',
-                      );
+                      // 2026-05-22 (v1.2.71): show in-app feedback for
+                      // the test action so user sees something even if
+                      // the OS-level notification is suppressed (focus
+                      // mode, banner setting = none, etc.). The actual
+                      // notification fires regardless via the plugin
+                      // below — the SnackBar is just a UX
+                      // confirmation that we DID send it.
+                      try {
+                        await NotificationService.show(
+                          title: uiStrings['appName']?[locale] ?? 'YsWords',
+                          body: uiStrings['notificationsTestBody']
+                                  ?[locale] ??
+                              'This is a test notification.',
+                          tag: 'yswords-test',
+                        );
+                        if (!mounted) return;
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              uiStrings['notificationsTestSent']
+                                      ?[locale] ??
+                                  'Test notification sent. If you don\'t see a banner, check iOS Settings → Notifications → YsWords (or system Focus / Do Not Disturb).',
+                            ),
+                            duration: const Duration(seconds: 4),
+                          ),
+                        );
+                      } catch (e) {
+                        if (!mounted) return;
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              'Test notification failed: $e',
+                            ),
+                            duration: const Duration(seconds: 5),
+                          ),
+                        );
+                      }
                     },
                     icon: Icon(Icons.send_outlined,
                         size: 16, color: scheme.primary),
@@ -2562,7 +2302,7 @@ class _NotificationsCardState extends State<_NotificationsCard> {
                       uiStrings['notificationsTest']?[locale] ??
                           'Send test notification',
                       style: TextStyle(
-                        fontFamily: settings.fontFamily,
+                        fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                         fontSize:
                             (settings.fontSize - 2).clamp(12.0, 14.0),
                       ),
@@ -2609,7 +2349,7 @@ class _AiModelCard extends StatelessWidget {
                   uiStrings['aiModelTitle']?[locale] ??
                       'AI response depth',
                   style: TextStyle(
-                    fontFamily: settings.fontFamily,
+                    fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                     fontSize: (settings.fontSize - 1)
                         .clamp(13.0, 16.0),
                     fontWeight: FontWeight.w700,
@@ -2623,7 +2363,7 @@ class _AiModelCard extends StatelessWidget {
               uiStrings['aiModelBody']?[locale] ??
                   'Choose the trade-off between AI speed and depth.',
               style: TextStyle(
-                fontFamily: settings.fontFamily,
+                fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                 fontSize: (settings.fontSize - 4)
                     .clamp(11.0, 13.0),
                 color: scheme.onSurface.withValues(alpha: 0.78),
@@ -2745,7 +2485,7 @@ class _AiModelDetailPanel extends StatelessWidget {
                 children: parseAiMarkdown(
                   uiStrings[detailKey]?[locale] ?? detailEnFallback,
                   base: TextStyle(
-                    fontFamily: settings.fontFamily,
+                    fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                     fontSize: (settings.fontSize - 4).clamp(11.0, 13.0),
                     color: scheme.onSurface.withValues(alpha: 0.78),
                     height: 1.55,
@@ -2785,7 +2525,7 @@ class _AboutCard extends StatelessWidget {
                 Text(
                   uiStrings['appName']?[locale] ?? 'YsWords',
                   style: TextStyle(
-                    fontFamily: settings.fontFamily,
+                    fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                     fontSize: settings.fontSize + 2,
                     fontWeight: FontWeight.w700,
                     color: scheme.onSurface,
@@ -2799,7 +2539,7 @@ class _AboutCard extends StatelessWidget {
                   'A bilingual Bible study app.',
               textAlign: TextAlign.center,
               style: TextStyle(
-                fontFamily: settings.fontFamily,
+                fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                 fontSize: (settings.fontSize - 3).clamp(11.0, 14.0),
                 color: scheme.onSurfaceVariant,
                 fontStyle: FontStyle.italic,
@@ -2845,7 +2585,7 @@ class _AboutCard extends StatelessWidget {
                       'data (highlights, notes, bookmarks) stays put.',
               textAlign: TextAlign.center,
               style: TextStyle(
-                fontFamily: settings.fontFamily,
+                fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                 fontSize: (settings.fontSize - 6).clamp(11.0, 13.0),
                 color: scheme.onSurfaceVariant,
                 fontStyle: FontStyle.italic,
@@ -2896,7 +2636,7 @@ class _AboutCard extends StatelessWidget {
                       'highlights, profile, and language are kept.',
               textAlign: TextAlign.center,
               style: TextStyle(
-                fontFamily: settings.fontFamily,
+                fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                 fontSize: (settings.fontSize - 6).clamp(11.0, 13.0),
                 color: scheme.onSurfaceVariant,
                 fontStyle: FontStyle.italic,
@@ -3026,7 +2766,7 @@ class _StylePresetCard extends StatelessWidget {
               child: Text(
                 uiStrings['stylePresetTitle']?[locale] ?? 'Style preset',
                 style: TextStyle(
-                  fontFamily: settings.fontFamily,
+                  fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                   fontSize: settings.fontSize + 2,
                   fontWeight: FontWeight.w600,
                 ),
@@ -3047,7 +2787,7 @@ class _StylePresetCard extends StatelessWidget {
                                     ?[locale] ??
                                 active.name),
                 style: TextStyle(
-                  fontFamily: settings.fontFamily,
+                  fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                   fontSize: (settings.fontSize - 4).clamp(11.0, 13.0),
                   color: scheme.onSurfaceVariant,
                   fontStyle: FontStyle.italic,
@@ -3102,7 +2842,7 @@ class _StylePresetCard extends StatelessWidget {
                                 Text(
                                   label,
                                   style: TextStyle(
-                                    fontFamily: settings.fontFamily,
+                                    fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                                     fontSize:
                                         (settings.fontSize).clamp(14.0, 18.0),
                                     fontWeight: FontWeight.w600,
@@ -3114,7 +2854,7 @@ class _StylePresetCard extends StatelessWidget {
                                   Text(
                                     desc,
                                     style: TextStyle(
-                                      fontFamily: settings.fontFamily,
+                                      fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                                       fontSize: (settings.fontSize - 4)
                                           .clamp(11.0, 13.0),
                                       color: scheme.onSurface

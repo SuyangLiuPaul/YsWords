@@ -5,6 +5,7 @@ import 'package:yswords/constants/ui_strings.dart';
 import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/services/link_opener.dart';
 import 'package:yswords/utils/clipboard_helper.dart';
+import 'package:yswords/utils/font_catalog.dart' show kCjkFontFallback;
 
 /// Single source of truth for the "Made by Paul Liu · contact" line
 /// shown across YsWords, DailyNews, bible-evidence redirect stub,
@@ -43,7 +44,7 @@ class ContactLine extends StatelessWidget {
     final body = Text.rich(
       TextSpan(
         style: TextStyle(
-          fontFamily: settings.fontFamily,
+          fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
           fontSize: (settings.fontSize - (compact ? 4 : 2))
               .clamp(11.0, 15.0)
               .toDouble(),

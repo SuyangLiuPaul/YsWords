@@ -1,6 +1,11 @@
 plugins {
     id("com.android.application")
     id("kotlin-android")
+    // 2026-05-21 (v1.2.68): apply Google services plugin so the
+    // build picks up android/app/google-services.json and wires
+    // Firebase auto-init at app startup. Plugin declared in
+    // android/settings.gradle.kts.
+    id("com.google.gms.google-services")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
 }
@@ -13,6 +18,10 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
+        // 2026-05-21 (v1.2.69): flutter_local_notifications uses
+        // java.time APIs that need core library desugaring on older
+        // Android. Enabled here + dependency added below.
+        isCoreLibraryDesugaringEnabled = true
     }
 
     kotlinOptions {
@@ -41,4 +50,11 @@ android {
 
 flutter {
     source = "../.."
+}
+
+// 2026-05-21 (v1.2.69): desugar_jdk_libs ships back-ports of java.time
+// and other Java 8+ APIs that flutter_local_notifications relies on.
+// Required by isCoreLibraryDesugaringEnabled above.
+dependencies {
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
 }

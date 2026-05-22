@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "461522287670",
+    "firebase_url": "https://ysword-default-rtdb.firebaseio.com",
+    "project_id": "ysword",
+    "storage_bucket": "ysword.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:461522287670:android:a5d774181f922c2a5dec97",
+        "android_client_info": {
+          "package_name": "com.example.yswords"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "461522287670-cfu84qu501pdpgrvoj07gg6s7m7cb3lo.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.yswords",
+            "certificate_hash": "ceba7cc44f73f9b3d1723b43f7715ae3d7786bbe"
+          }
+        },
+        {
+          "client_id": "461522287670-a1vgu2ganbmf373b6u7nr6pfju21u50r.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDeSScgi-1Fr_SfTj9ud1HEfOO7pM5Mz6I"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "461522287670-a1vgu2ganbmf373b6u7nr6pfju21u50r.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "461522287670-ndij2tes352rk5rqek76ect2m1hv6i7d.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.yswords"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

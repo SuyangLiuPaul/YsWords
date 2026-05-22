@@ -9,6 +9,7 @@ import 'package:yswords/providers/main_provider.dart';
 import 'package:yswords/utils/note_reference_parser.dart'
     show formatCompactReference;
 import 'package:yswords/services/fetch_books.dart' show standardBookOrder;
+import 'package:yswords/utils/font_catalog.dart' show kCjkFontFallback;
 
 /// 2026-05-19 (v1.2.59): book → chapter → verse picker for the
 /// note editor's "+ Reference" button.
@@ -161,7 +162,7 @@ class _NoteReferencePickerSheetState
                       fontSize: 16,
                       fontWeight: FontWeight.w700,
                       color: scheme.onSurface,
-                      fontFamily: settings.fontFamily,
+                      fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                     ),
                   ),
                 ),

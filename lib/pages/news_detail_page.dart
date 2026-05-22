@@ -13,6 +13,7 @@ import 'package:yswords/utils/jump_to_reference.dart';
 import 'package:yswords/utils/reference_parser.dart' show parseReference;
 import 'package:yswords/widgets/home_icon_button.dart';
 import 'package:yswords/widgets/localized_back_button.dart';
+import 'package:yswords/utils/font_catalog.dart' show kCjkFontFallback;
 
 /// Full-page view of a single [NewsArticle]: image, title, summary,
 /// thematic Bible verse + reflection, and a tap-target to jump into
@@ -61,7 +62,7 @@ class NewsDetailPage extends StatelessWidget {
                 '${_sectionLabel(article.section, locale)}  ·  '
                 '${article.source}',
                 style: TextStyle(
-                  fontFamily: settings.fontFamily,
+                  fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                   fontSize: (fs - 3).clamp(11.0, 14.0).toDouble(),
                   fontWeight: FontWeight.w700,
                   letterSpacing: 1.0,
@@ -72,7 +73,7 @@ class NewsDetailPage extends StatelessWidget {
               Text(
                 article.title(locale),
                 style: TextStyle(
-                  fontFamily: settings.fontFamily,
+                  fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                   fontSize: (fs + 6).clamp(20.0, 32.0).toDouble(),
                   fontWeight: FontWeight.w700,
                   color: scheme.onSurface,
@@ -84,7 +85,7 @@ class NewsDetailPage extends StatelessWidget {
                 Text(
                   _formatPublished(article.publishedAt!),
                   style: TextStyle(
-                    fontFamily: settings.fontFamily,
+                    fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                     fontSize: (fs - 3).clamp(11.0, 14.0).toDouble(),
                     color: scheme.onSurfaceVariant,
                   ),
@@ -131,7 +132,7 @@ class NewsDetailPage extends StatelessWidget {
               Text(
                 article.summary(locale),
                 style: TextStyle(
-                  fontFamily: settings.fontFamily,
+                  fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                   fontSize: (fs + 1).clamp(14.0, 18.0).toDouble(),
                   color: scheme.onSurface,
                   height: 1.55,
@@ -181,7 +182,7 @@ class NewsDetailPage extends StatelessWidget {
                           uiStrings['bibleReflection']?[locale] ??
                               'Bible reflection',
                           style: TextStyle(
-                            fontFamily: settings.fontFamily,
+                            fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                             fontSize: (fs - 2)
                                 .clamp(11.0, 14.0)
                                 .toDouble(),
@@ -203,7 +204,7 @@ class NewsDetailPage extends StatelessWidget {
                       child: Text(
                         article.verse.theme(locale),
                         style: TextStyle(
-                          fontFamily: settings.fontFamily,
+                          fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                           fontSize: (fs - 3)
                               .clamp(11.0, 14.0)
                               .toDouble(),
@@ -216,7 +217,7 @@ class NewsDetailPage extends StatelessWidget {
                     Text(
                       article.reflection(locale),
                       style: TextStyle(
-                        fontFamily: settings.fontFamily,
+                        fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                         fontSize:
                             (fs).clamp(14.0, 18.0).toDouble(),
                         color: scheme.onSurface,
@@ -241,7 +242,7 @@ class NewsDetailPage extends StatelessWidget {
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: TextStyle(
-                                  fontFamily: settings.fontFamily,
+                                  fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                                   fontSize: (fs - 1)
                                       .clamp(13.0, 16.0)
                                       .toDouble(),
@@ -261,7 +262,7 @@ class NewsDetailPage extends StatelessWidget {
                     Text(
                       article.verse.text(locale),
                       style: TextStyle(
-                        fontFamily: settings.fontFamily,
+                        fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                         fontSize: (fs - 1)
                             .clamp(13.0, 16.0)
                             .toDouble(),
@@ -431,7 +432,7 @@ class _ArticleBody extends StatelessWidget {
           Text(
             paras[i],
             style: TextStyle(
-              fontFamily: settings.fontFamily,
+              fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
               fontSize: fs.clamp(14.0, 18.0).toDouble(),
               color: scheme.onSurface,
               height: 1.6,

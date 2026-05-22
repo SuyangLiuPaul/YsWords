@@ -12,6 +12,7 @@ import 'package:yswords/utils/clipboard_helper.dart';
 import 'package:yswords/widgets/home_icon_button.dart';
 import 'package:yswords/widgets/liquid_glass.dart';
 import 'package:yswords/widgets/localized_back_button.dart';
+import 'package:yswords/utils/font_catalog.dart' show kCjkFontFallback;
 
 /// 2026-05-07 (v12 → v16): user-facing feedback form. The user
 /// (paulsyliu@gmail.com) wanted a single place inside the app
@@ -309,7 +310,7 @@ class _FeedbackPageState extends State<FeedbackPage> {
                         uiStrings['feedbackIntro']?[locale] ??
                             'Tap "Send via Email" and your default mail app will open with this message ready for you to send to the developer.',
                         style: TextStyle(
-                          fontFamily: settings.fontFamily,
+                          fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                           fontSize: (fs - 3).clamp(11.0, 14.0).toDouble(),
                           color: scheme.onSurfaceVariant,
                           height: 1.45,
@@ -326,7 +327,7 @@ class _FeedbackPageState extends State<FeedbackPage> {
                 uiStrings['feedbackCategoryLabel']?[locale] ??
                     'What is this about?',
                 style: TextStyle(
-                  fontFamily: settings.fontFamily,
+                  fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                   fontSize: (fs - 2).clamp(12.0, 15.0).toDouble(),
                   fontWeight: FontWeight.w600,
                   color: scheme.onSurface,
@@ -353,7 +354,7 @@ class _FeedbackPageState extends State<FeedbackPage> {
                 uiStrings['feedbackMessageLabel']?[locale] ??
                     'Your message *',
                 style: TextStyle(
-                  fontFamily: settings.fontFamily,
+                  fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                   fontSize: (fs - 2).clamp(12.0, 15.0).toDouble(),
                   fontWeight: FontWeight.w600,
                   color: scheme.onSurface,
@@ -429,7 +430,7 @@ class _FeedbackPageState extends State<FeedbackPage> {
                       ? (uiStrings['feedbackSending']?[locale] ?? 'Sending…')
                       : (uiStrings['feedbackSend']?[locale] ?? 'Send'),
                   style: TextStyle(
-                    fontFamily: settings.fontFamily,
+                    fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                     fontSize: (fs - 1).clamp(13.0, 16.0).toDouble(),
                     fontWeight: FontWeight.w700,
                   ),
@@ -446,7 +447,7 @@ class _FeedbackPageState extends State<FeedbackPage> {
                         'just opens your mail app with this content '
                         'pre-filled — you choose whether to hit Send.',
                 style: TextStyle(
-                  fontFamily: settings.fontFamily,
+                  fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                   fontSize: (fs - 4).clamp(10.0, 12.0).toDouble(),
                   color: scheme.onSurfaceVariant,
                   fontStyle: FontStyle.italic,

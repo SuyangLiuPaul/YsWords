@@ -11,6 +11,7 @@ import 'package:yswords/pages/news_detail_page.dart';
 import 'package:yswords/services/daily_news_service.dart';
 import 'package:yswords/widgets/home_icon_button.dart';
 import 'package:yswords/widgets/localized_back_button.dart';
+import 'package:yswords/utils/font_catalog.dart' show kCjkFontFallback;
 
 /// Browse the migrated DailyNews bundle — bilingual world / China /
 /// Australia headlines paired with thematic Bible reflections.
@@ -119,7 +120,7 @@ class _DailyNewsPageState extends State<DailyNewsPage> {
                         Text(
                           uiStrings['loading']?[locale] ?? 'Loading…',
                           style: TextStyle(
-                              fontFamily: settings.fontFamily,
+                              fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                               color: Theme.of(context)
                                   .colorScheme
                                   .onSurfaceVariant),
@@ -272,7 +273,7 @@ class _Masthead extends StatelessWidget {
             uiStrings['dailyNewsTagline']?[locale] ??
                 'News through a biblical lens',
             style: TextStyle(
-              fontFamily: settings.fontFamily,
+              fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
               fontSize: (fs - 2).clamp(11.0, 15.0).toDouble(),
               color: scheme.onSurfaceVariant,
               fontStyle: FontStyle.italic,
@@ -282,7 +283,7 @@ class _Masthead extends StatelessWidget {
           Text(
             dateLabel,
             style: TextStyle(
-              fontFamily: settings.fontFamily,
+              fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
               fontSize: (fs + 2).clamp(15.0, 22.0).toDouble(),
               fontWeight: FontWeight.w700,
               color: scheme.onSurface,
@@ -309,7 +310,7 @@ class _Masthead extends StatelessWidget {
                   child: Text(
                     updatedLabel,
                     style: TextStyle(
-                      fontFamily: settings.fontFamily,
+                      fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                       fontSize: (fs - 3).clamp(10.0, 14.0).toDouble(),
                       color: scheme.onSurfaceVariant,
                     ),
@@ -367,7 +368,7 @@ class _SectionHeader extends StatelessWidget {
           Text(
             section.title(locale),
             style: TextStyle(
-              fontFamily: settings.fontFamily,
+              fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
               fontSize: (fs + 1).clamp(14.0, 20.0).toDouble(),
               fontWeight: FontWeight.w700,
               color: scheme.onSurface,
@@ -377,7 +378,7 @@ class _SectionHeader extends StatelessWidget {
           Text(
             '${section.items.length}',
             style: TextStyle(
-              fontFamily: settings.fontFamily,
+              fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
               fontSize: (fs - 3).clamp(11.0, 14.0).toDouble(),
               color: scheme.onSurfaceVariant,
             ),
@@ -454,7 +455,7 @@ class _HeadlineRow extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
-                    fontFamily: settings.fontFamily,
+                    fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                     fontSize: (fs - 4).clamp(11.0, 14.0).toDouble(),
                     color: scheme.onSurfaceVariant,
                     fontWeight: FontWeight.w600,
@@ -469,7 +470,7 @@ class _HeadlineRow extends StatelessWidget {
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
-                    fontFamily: settings.fontFamily,
+                    fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                     fontSize: (fs - 1).clamp(13.0, 17.0).toDouble(),
                     fontWeight: FontWeight.w600,
                     color: scheme.onSurface,
@@ -521,7 +522,7 @@ class _BibleLensPanel extends StatelessWidget {
           Text(
             uiStrings['bibleLens']?[locale] ?? 'Bible Lens',
             style: TextStyle(
-              fontFamily: settings.fontFamily,
+              fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
               fontSize: (fs - 3).clamp(11.0, 14.0).toDouble(),
               fontWeight: FontWeight.w700,
               letterSpacing: 1.2,
@@ -532,7 +533,7 @@ class _BibleLensPanel extends StatelessWidget {
           Text(
             article.source,
             style: TextStyle(
-              fontFamily: settings.fontFamily,
+              fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
               fontSize: (fs - 2).clamp(11.0, 14.0).toDouble(),
               color: scheme.onSurfaceVariant,
             ),
@@ -543,7 +544,7 @@ class _BibleLensPanel extends StatelessWidget {
             maxLines: 4,
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
-              fontFamily: settings.fontFamily,
+              fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
               fontSize: (fs + 2).clamp(15.0, 22.0).toDouble(),
               fontWeight: FontWeight.w700,
               color: scheme.onSurface,
@@ -589,7 +590,7 @@ class _BibleLensPanel extends StatelessWidget {
             child: Text(
               article.verse.theme(locale),
               style: TextStyle(
-                fontFamily: settings.fontFamily,
+                fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                 fontSize: (fs - 3).clamp(11.0, 14.0).toDouble(),
                 fontWeight: FontWeight.w600,
                 color: scheme.primary,
@@ -602,7 +603,7 @@ class _BibleLensPanel extends StatelessWidget {
             maxLines: 3,
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
-              fontFamily: settings.fontFamily,
+              fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
               fontSize: (fs - 1).clamp(13.0, 16.0).toDouble(),
               color: scheme.onSurface,
               height: 1.45,
@@ -613,7 +614,7 @@ class _BibleLensPanel extends StatelessWidget {
           Text(
             article.verse.reference,
             style: TextStyle(
-              fontFamily: settings.fontFamily,
+              fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
               fontSize: (fs - 2).clamp(11.0, 14.0).toDouble(),
               color: scheme.primary,
               fontWeight: FontWeight.w700,
@@ -628,7 +629,7 @@ class _BibleLensPanel extends StatelessWidget {
             maxLines: 6,
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
-              fontFamily: settings.fontFamily,
+              fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
               fontSize: (fs - 1).clamp(13.0, 16.0).toDouble(),
               color: scheme.onSurfaceVariant,
               height: 1.45,
@@ -679,7 +680,7 @@ class _EmptyState extends StatelessWidget {
                   "No news available",
               textAlign: TextAlign.center,
               style: TextStyle(
-                fontFamily: settings.fontFamily,
+                fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                 fontSize: (settings.fontSize + 2).clamp(14.0, 22.0),
                 fontWeight: FontWeight.w700,
                 color: scheme.onSurface,
@@ -691,7 +692,7 @@ class _EmptyState extends StatelessWidget {
                   "The cron may have skipped this window. Pull down or tap retry to fetch the latest.",
               textAlign: TextAlign.center,
               style: TextStyle(
-                fontFamily: settings.fontFamily,
+                fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                 fontSize: (settings.fontSize - 2).clamp(11.0, 15.0),
                 color: scheme.onSurfaceVariant,
                 height: 1.5,
@@ -741,7 +742,7 @@ class _ErrorState extends StatelessWidget {
             Text(
               uiStrings["loadErrorTitle"]?[locale] ?? "Failed to load",
               style: TextStyle(
-                fontFamily: settings.fontFamily,
+                fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                 fontSize: (settings.fontSize + 2).clamp(14.0, 22.0),
                 fontWeight: FontWeight.w700,
                 color: scheme.error,
@@ -752,7 +753,7 @@ class _ErrorState extends StatelessWidget {
               error,
               textAlign: TextAlign.center,
               style: TextStyle(
-                fontFamily: settings.fontFamily,
+                fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                 fontSize: (settings.fontSize - 2).clamp(11.0, 14.0),
                 color: scheme.onSurfaceVariant,
                 height: 1.45,

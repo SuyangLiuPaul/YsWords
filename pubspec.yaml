@@ -36,6 +36,21 @@ dependencies:
   firebase_database: ^12.0.0
   # Used by AiSearchService to call the Cloud Functions Gemini proxy.
   http: ^1.2.2
+  # 2026-05-21 (v1.2.69): native notifications on iOS / Android /
+  # macOS. Web continues to use the browser Notification API via
+  # notification_service_web.dart. Plugin handles UNUserNotification
+  # permission flow on Apple platforms and POST_NOTIFICATIONS on
+  # Android 13+.
+  flutter_local_notifications: ^19.0.0
+  # 2026-05-22 (v1.2.71): native Google sign-in on macOS. The
+  # firebase_auth `signInWithProvider` is hard-coded to return null
+  # on macOS (FLTFirebaseAuthPlugin.m line 1701 explicitly:
+  # `signInWithProvider is not supported on the MacOS platform`).
+  # google_sign_in produces an ID token natively via GIDSignIn, which
+  # we then exchange for a Firebase credential via signInWithCredential.
+  # Only used on macOS — iOS / Android keep using signInWithProvider,
+  # web keeps signInWithPopup. Mobile/web also have working flows.
+  google_sign_in: ^6.2.1
   # Round 56: dynamically loads Google Fonts at runtime so the
   # font picker's English serif / sans-serif options actually
   # render. Without this, only the two bundled fonts (Roboto +
@@ -77,7 +92,6 @@ flutter:
     - assets/cross_references.json
     - assets/section_titles.json
     - assets/book_introductions.json
-    - assets/reading_plans.json
     - assets/gospel_synopsis.json
     - assets/daily_verses.json
     - assets/bible_evidence.json

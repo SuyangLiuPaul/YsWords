@@ -4,5 +4,20 @@
 <dict>
 	<key>com.apple.security.app-sandbox</key>
 	<true/>
+	<!-- 2026-05-21 (v1.2.68): outbound HTTPS for Firebase Auth +
+	     Firestore + Google Sign-In. Without this, sandboxed macOS
+	     app can't reach googleapis.com / firebaseio.com etc. -->
+	<key>com.apple.security.network.client</key>
+	<true/>
+	<!-- 2026-05-22 (v1.2.71): keychain access for Firebase Auth +
+	     google_sign_in. Sandboxed apps need keychain-access-groups
+	     even for their OWN bundle's keychain; without it,
+	     credential storage fails with "an error occurred when
+	     accessing the keychain". Requires DEVELOPMENT_TEAM to be
+	     set in the Runner build config (YC5JZD3DY7). -->
+	<key>keychain-access-groups</key>
+	<array>
+		<string>$(AppIdentifierPrefix)com.example.yswords</string>
+	</array>
 </dict>
 </plist>

@@ -12,6 +12,7 @@ import 'package:yswords/utils/clipboard_helper.dart';
 import 'package:yswords/utils/jump_to_reference.dart';
 import 'package:yswords/widgets/home_icon_button.dart';
 import 'package:yswords/widgets/localized_back_button.dart';
+import 'package:yswords/utils/font_catalog.dart' show kCjkFontFallback;
 
 /// Standalone highlights browser. Filters by color (or "All") and a
 /// free-text search box; tap a row to jump to the verse in the
@@ -328,7 +329,7 @@ class _FilterChip extends StatelessWidget {
         onSelected: (_) => onTap(),
         selectedColor: scheme.primary.withValues(alpha: 0.18),
         labelStyle: TextStyle(
-          fontFamily: settings.fontFamily,
+          fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
           fontSize:
               (settings.fontSize - 2).clamp(12.0, 16.0).toDouble(),
           fontWeight: FontWeight.w600,

@@ -1,5 +1,9 @@
-# Uncomment this line to define a global platform for your project
-# platform :ios, '12.0'
+# 2026-05-20 (v1.2.67): bumped deployment target to 15.0.
+# cloud_firestore 6.x + Firebase iOS SDK 12.x ship podspecs that
+# require at least iOS 15.0; lower targets caused CocoaPods to
+# reject every Firebase pod with "no compatible versions found".
+# 15.0 covers >99 % of installed iOS devices in 2026.
+platform :ios, '15.0'
 
 # CocoaPods analytics sends network stats synchronously affecting flutter build latency.
 ENV['COCOAPODS_DISABLE_STATS'] = 'true'

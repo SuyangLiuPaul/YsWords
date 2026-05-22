@@ -278,10 +278,9 @@ class OfflinePackService extends ChangeNotifier {
     'assets/sermons/index.json',
     'assets/sermons/refs.json',
     // Added 2026-05 after the "really offline?" audit — these were
-    // missing and caused the songs page / reading-plan picker /
-    // gospel synopsis / daily-news fallback to fail offline.
+    // missing and caused the songs page / gospel synopsis / daily-news
+    // fallback to fail offline. (reading_plans.json removed in v1.2.69.)
     'assets/songs.json',
-    'assets/reading_plans.json',
     'assets/gospel_synopsis.json',
     'assets/daily_news.json',
     'assets/app_icon.png',

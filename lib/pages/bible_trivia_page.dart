@@ -13,6 +13,7 @@ import 'package:yswords/utils/version_mapper.dart' show localeAwareBookName;
 import 'package:yswords/pages/home_page.dart';
 import 'package:yswords/widgets/home_icon_button.dart';
 import 'package:yswords/widgets/localized_back_button.dart';
+import 'package:yswords/utils/font_catalog.dart' show kCjkFontFallback;
 
 /// Curated catalogue of "Bible trivia" / 冷知识 — patterns and
 /// hidden structures most readers don't notice unless someone
@@ -446,7 +447,7 @@ class _TriviaFilterBar extends StatelessWidget {
                 ),
                 onChanged: onQueryChanged,
                 style: TextStyle(
-                  fontFamily: settings.fontFamily,
+                  fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                   fontSize: (settings.fontSize - 1).clamp(13.0, 17.0),
                 ),
               ),
@@ -767,7 +768,7 @@ class _IntroCard extends StatelessWidget {
                       'most readers miss. Tap any entry to read the '
                       'related passage in the reader.',
               style: TextStyle(
-                fontFamily: settings.fontFamily,
+                fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                 fontSize: (settings.fontSize - 2).clamp(12.0, 16.0),
                 color: scheme.onSurface.withValues(alpha: 0.85),
                 height: 1.45,
@@ -846,7 +847,7 @@ class _TriviaTileState extends State<_TriviaTile> {
                     child: Text(
                       tag,
                       style: TextStyle(
-                        fontFamily: settings.fontFamily,
+                        fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                         fontSize:
                             (settings.fontSize - 5).clamp(10.0, 12.0),
                         fontWeight: FontWeight.w700,
@@ -860,7 +861,7 @@ class _TriviaTileState extends State<_TriviaTile> {
                     Text(
                       entry.reference!,
                       style: TextStyle(
-                        fontFamily: settings.fontFamily,
+                        fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                         fontSize:
                             (settings.fontSize - 5).clamp(10.0, 12.0),
                         color: scheme.onSurfaceVariant,
@@ -882,7 +883,7 @@ class _TriviaTileState extends State<_TriviaTile> {
               Text(
                 title,
                 style: TextStyle(
-                  fontFamily: settings.fontFamily,
+                  fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                   fontSize: (settings.fontSize + 1).clamp(14.0, 19.0),
                   fontWeight: FontWeight.w700,
                   color: scheme.onSurface,
@@ -920,7 +921,7 @@ class _TriviaTileState extends State<_TriviaTile> {
                           children: _parseInlineMarkdown(
                             body,
                             base: TextStyle(
-                              fontFamily: settings.fontFamily,
+                              fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                               fontSize: (settings.fontSize - 1)
                                   .clamp(12.0, 17.0),
                               color: scheme.onSurface
@@ -1517,7 +1518,7 @@ Future<void> showBibleTriviaSheet({
                               uiStrings['bibleTrivia']?[locale] ??
                                   'Bible Trivia',
                               style: TextStyle(
-                                fontFamily: settings.fontFamily,
+                                fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                                 fontSize: 16,
                                 fontWeight: FontWeight.w700,
                                 color: scheme.onSurface,
@@ -1526,7 +1527,7 @@ Future<void> showBibleTriviaSheet({
                             Text(
                               '$englishBook  $chapter',
                               style: TextStyle(
-                                fontFamily: settings.fontFamily,
+                                fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                                 fontSize: 12,
                                 color: scheme.onSurfaceVariant,
                                 fontFeatures: const [
@@ -1566,7 +1567,7 @@ Future<void> showBibleTriviaSheet({
                                     'No trivia entries for this chapter yet.',
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
-                                  fontFamily: settings.fontFamily,
+                                  fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                                   fontSize: 13,
                                   color: scheme.onSurface
                                       .withValues(alpha: 0.6),

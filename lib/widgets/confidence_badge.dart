@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import 'package:yswords/constants/ui_strings.dart';
 import 'package:yswords/models/app_settings.dart';
+import 'package:yswords/utils/font_catalog.dart' show kCjkFontFallback;
 
 /// Small pill showing an evidence's confidence level (Definitive /
 /// Strong / Circumstantial). Uses the colors defined on the
@@ -46,7 +47,7 @@ class ConfidenceBadge extends StatelessWidget {
       child: Text(
         label,
         style: TextStyle(
-          fontFamily: settings.fontFamily,
+          fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
           fontSize: fs,
           fontWeight: FontWeight.w600,
           color: color,

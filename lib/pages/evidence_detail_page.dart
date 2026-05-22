@@ -13,6 +13,7 @@ import 'package:yswords/utils/reference_parser.dart';
 import 'package:yswords/widgets/confidence_badge.dart';
 import 'package:yswords/widgets/home_icon_button.dart';
 import 'package:yswords/widgets/localized_back_button.dart';
+import 'package:yswords/utils/font_catalog.dart' show kCjkFontFallback;
 
 /// Full-page view of one [BibleEvidence] entry.
 ///
@@ -97,7 +98,7 @@ class EvidenceDetailPage extends StatelessWidget {
                     child: Text(
                       evidence.localizedTitle(locale),
                       style: TextStyle(
-                        fontFamily: settings.fontFamily,
+                        fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                         fontSize: (fs + 6).clamp(20.0, 32.0).toDouble(),
                         fontWeight: FontWeight.w700,
                         color: scheme.onSurface,
@@ -148,7 +149,7 @@ class EvidenceDetailPage extends StatelessWidget {
                 Text(
                   evidence.localizedSummary(locale),
                   style: TextStyle(
-                    fontFamily: settings.fontFamily,
+                    fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                     fontSize: fs,
                     fontStyle: FontStyle.italic,
                     color: scheme.onSurface,
@@ -166,7 +167,7 @@ class EvidenceDetailPage extends StatelessWidget {
                   child: Text(
                     evidence.localizedDescription(locale),
                     style: TextStyle(
-                      fontFamily: settings.fontFamily,
+                      fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                       fontSize: fs,
                       color: scheme.onSurface,
                       height: 1.55,
@@ -189,7 +190,7 @@ class EvidenceDetailPage extends StatelessWidget {
                       Text(
                         evidence.localizedCorrelation(locale),
                         style: TextStyle(
-                          fontFamily: settings.fontFamily,
+                          fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                           fontSize: fs,
                           color: scheme.onSurface,
                           height: 1.55,
@@ -341,7 +342,7 @@ class _Meta extends StatelessWidget {
           Text(
             label,
             style: TextStyle(
-              fontFamily: settings.fontFamily,
+              fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
               fontSize:
                   (settings.fontSize - 3).clamp(11.0, 15.0).toDouble(),
               color: scheme.onSurfaceVariant,
@@ -378,7 +379,7 @@ class _Section extends StatelessWidget {
           Text(
             label.toUpperCase(),
             style: TextStyle(
-              fontFamily: settings.fontFamily,
+              fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
               fontSize:
                   (settings.fontSize - 3).clamp(11.0, 15.0).toDouble(),
               fontWeight: FontWeight.w700,
@@ -427,7 +428,7 @@ class _ReferenceChip extends StatelessWidget {
               Text(
                 reference,
                 style: TextStyle(
-                  fontFamily: settings.fontFamily,
+                  fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                   fontSize: settings.fontSize,
                   fontWeight: FontWeight.w700,
                   color: scheme.primary,
@@ -440,7 +441,7 @@ class _ReferenceChip extends StatelessWidget {
               Text(
                 uiStrings['readInBible']?[locale] ?? 'Read',
                 style: TextStyle(
-                  fontFamily: settings.fontFamily,
+                  fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                   fontSize:
                       (settings.fontSize - 3).clamp(11.0, 15.0).toDouble(),
                   fontWeight: FontWeight.w600,
@@ -488,7 +489,7 @@ class _SourceTile extends StatelessWidget {
                 child: Text(
                   text,
                   style: TextStyle(
-                    fontFamily: settings.fontFamily,
+                    fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                     fontSize: (settings.fontSize - 2)
                         .clamp(12.0, 17.0)
                         .toDouble(),

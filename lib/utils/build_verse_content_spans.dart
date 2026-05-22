@@ -5,6 +5,7 @@ import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/utils/clipboard_helper.dart';
 import 'package:yswords/constants/text_patterns.dart';
 import 'package:yswords/constants/ui_strings.dart';
+import 'package:yswords/utils/font_catalog.dart' show kCjkFontFallback;
 
 /// Builds InlineSpan list for a single verse (number + text with annotations).
 /// Shared by VerseWidget and ParagraphGroupWidget.
@@ -61,7 +62,7 @@ List<InlineSpan> buildVerseContentSpans({
         superscriptVerseNum ? settings.fontSize * 0.65 : settings.fontSize,
     height: superscriptVerseNum ? 1.0 : settings.lineSpacing,
     fontWeight: superscriptVerseNum ? FontWeight.w600 : FontWeight.w500,
-    fontFamily: settings.fontFamily,
+    fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
     fontStyle: isReferenceLine ? FontStyle.italic : FontStyle.normal,
     color: verseNumColor,
   );
@@ -149,7 +150,7 @@ List<InlineSpan> buildVerseContentSpans({
                   uiStrings['note']?[locale] ?? 'Note',
                   style: TextStyle(
                     fontSize: settings.fontSize + 2,
-                    fontFamily: settings.fontFamily,
+                    fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -161,7 +162,7 @@ List<InlineSpan> buildVerseContentSpans({
                       uiStrings['ok']?[locale] ?? 'OK',
                       style: TextStyle(
                         fontSize: settings.fontSize,
-                        fontFamily: settings.fontFamily,
+                        fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                       ),
                     ),
                   )
@@ -206,7 +207,7 @@ List<InlineSpan> buildVerseContentSpans({
                         text: annotation.substring(lastEnd, match.start),
                         style: TextStyle(
                           fontSize: settings.fontSize,
-                          fontFamily: settings.fontFamily,
+                          fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                           height: settings.lineSpacing,
                           color: bodyColor,
                         ),
@@ -217,7 +218,7 @@ List<InlineSpan> buildVerseContentSpans({
                       text: text,
                       style: TextStyle(
                         fontSize: settings.fontSize,
-                        fontFamily: settings.fontFamily,
+                        fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                         height: settings.lineSpacing,
                         decoration: TextDecoration.underline,
                         decorationStyle: TextDecorationStyle.dotted,
@@ -241,7 +242,7 @@ List<InlineSpan> buildVerseContentSpans({
                       text: annotation.substring(lastEnd),
                       style: TextStyle(
                         fontSize: settings.fontSize,
-                        fontFamily: settings.fontFamily,
+                        fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                         height: settings.lineSpacing,
                         color: bodyColor,
                       ),
@@ -254,7 +255,7 @@ List<InlineSpan> buildVerseContentSpans({
                     annotation,
                     style: TextStyle(
                       fontSize: settings.fontSize,
-                      fontFamily: settings.fontFamily,
+                      fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                       height: settings.lineSpacing,
                       color: bodyColor,
                     ),
@@ -284,7 +285,7 @@ List<InlineSpan> buildVerseContentSpans({
             : null,
         style: TextStyle(
           fontSize: settings.fontSize,
-          fontFamily: settings.fontFamily,
+          fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
           height: settings.lineSpacing,
           decoration: TextDecoration.underline,
           decorationStyle: TextDecorationStyle.dotted,
@@ -319,7 +320,7 @@ List<InlineSpan> buildVerseContentSpans({
                   uiStrings['note']?[locale] ?? 'Note',
                   style: TextStyle(
                     fontSize: settings.fontSize + 2,
-                    fontFamily: settings.fontFamily,
+                    fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -331,7 +332,7 @@ List<InlineSpan> buildVerseContentSpans({
                       uiStrings['ok']?[locale] ?? 'OK',
                       style: TextStyle(
                         fontSize: settings.fontSize,
-                        fontFamily: settings.fontFamily,
+                        fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                       ),
                     ),
                   )
@@ -381,7 +382,7 @@ List<InlineSpan> buildVerseContentSpans({
               color: isSelected
                   ? Theme.of(context).colorScheme.onPrimaryContainer
                   : Theme.of(context).textTheme.bodyLarge?.color,
-              fontFamily: settings.fontFamily,
+              fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
               fontStyle: isReferenceLine ? FontStyle.italic : FontStyle.normal,
               backgroundColor: spanBgColor,
             ),

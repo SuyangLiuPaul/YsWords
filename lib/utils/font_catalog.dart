@@ -61,6 +61,41 @@ class FontOption {
 
 enum FontCategory { bundled, englishSerif, englishSans, chinese, system }
 
+/// 2026-05-22 (v1.2.71): comprehensive CJK font fallback chain. When a
+/// TextStyle sets `fontFamily: settings.fontFamily` it should also set
+/// `fontFamilyFallback: kCjkFontFallback` so rare Chinese characters
+/// (e.g. `赒` U+8D52 in Acts 10:31) render even if the primary font's
+/// subset doesn't include them. Order:
+///   • Apple system → PingFang SC / Heiti SC — complete CJK on macOS/iOS
+///   • Apple legacy → STSong / STFangsong
+///   • Windows → Microsoft YaHei
+///   • Google web → Noto Sans SC / Noto Serif SC — also complete
+///   • Generic CSS → sans-serif (browser picks)
+const List<String> kCjkFontFallback = [
+  'PingFang SC',
+  'PingFang TC',
+  'Heiti SC',
+  'Heiti TC',
+  'STSong',
+  'STFangsong',
+  'STHeiti',
+  'Hiragino Sans GB',
+  'Microsoft YaHei',
+  '微软雅黑',
+  'Source Han Sans SC',
+  'Source Han Sans TC',
+  '思源黑体',
+  'Noto Sans SC',
+  'Noto Sans TC',
+  'Noto Sans CJK SC',
+  'Noto Sans CJK TC',
+  'Noto Serif SC',
+  'Noto Serif TC',
+  'SimSun',
+  '宋体',
+  'sans-serif',
+];
+
 const List<FontOption> _catalog = [
   // ── System default (preferred default since v1.1.2) ──────────────
   // Routes through the OS's native UI font via the CSS font-stack

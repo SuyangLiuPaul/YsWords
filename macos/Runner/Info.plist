@@ -2,6 +2,22 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<!-- 2026-05-21 (v1.2.68): URL scheme registration for the
+	     Google OAuth callback used by signInWithProvider on macOS.
+	     REVERSED_CLIENT_ID matches the value in
+	     macos/Runner/GoogleService-Info.plist (which is shared with
+	     iOS since both targets use the same bundle ID). -->
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>com.googleusercontent.apps.461522287670-ndij2tes352rk5rqek76ect2m1hv6i7d</string>
+			</array>
+		</dict>
+	</array>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleExecutable</key>

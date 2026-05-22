@@ -8,6 +8,7 @@ import 'package:yswords/providers/main_provider.dart';
 import 'package:yswords/utils/build_verse_content_spans.dart';
 import 'package:yswords/utils/responsive.dart';
 import 'package:yswords/widgets/block_note_card.dart';
+import 'package:yswords/utils/font_catalog.dart' show kCjkFontFallback;
 
 /// Renders a group of consecutive verses as one flowing paragraph (RichText).
 /// Used in paragraph mode. Eliminates per-verse line breaks so verses read
@@ -222,7 +223,7 @@ class ParagraphGroupWidget extends StatelessWidget {
                     text: TextSpan(
                       style: TextStyle(
                         fontSize: settings.fontSize,
-                        fontFamily: settings.fontFamily,
+                        fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                         height: settings.lineSpacing,
                         color: Theme.of(context).textTheme.bodyLarge?.color,
                         fontWeight: settings.boldVerseText

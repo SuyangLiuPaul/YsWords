@@ -30,9 +30,8 @@ enum DashboardSection {
   /// resolves on first paint).
   dailyVerse,
 
-  /// Today's Reading card from the active reading plan, or the
-  /// "Pick a reading plan" CTA when none is active. Default on.
-  todayReading,
+  // 2026-05-21 (v1.2.69): todayReading removed along with reading
+  // plan feature.
 
   /// Three-column counts row: bookmarks / notes / highlights. Default
   /// on.
@@ -64,7 +63,6 @@ const List<DashboardSection> defaultDashboardOrder = <DashboardSection>[
   DashboardSection.readBible,
   DashboardSection.resumeSermon,
   DashboardSection.dailyVerse,
-  DashboardSection.todayReading,
   DashboardSection.counts,
   DashboardSection.recentBookmarks,
   DashboardSection.todayHeadlines,
@@ -80,7 +78,6 @@ const Map<DashboardSection, bool> defaultVisibility =
   DashboardSection.readBible: true,
   DashboardSection.resumeSermon: true,
   DashboardSection.dailyVerse: true,
-  DashboardSection.todayReading: true,
   DashboardSection.counts: true,
   DashboardSection.recentBookmarks: true,
   DashboardSection.todayHeadlines: true,
@@ -152,8 +149,6 @@ extension DashboardSectionLabel on DashboardSection {
         return 'Resume Sermon';
       case DashboardSection.dailyVerse:
         return 'Verse of the Day';
-      case DashboardSection.todayReading:
-        return "Today's Reading";
       case DashboardSection.counts:
         return 'Bookmarks / Notes / Highlights';
       case DashboardSection.recentBookmarks:
@@ -175,8 +170,6 @@ extension DashboardSectionLabel on DashboardSection {
         return 'Pick up where you left off in the last sermon you opened.';
       case DashboardSection.dailyVerse:
         return 'One curated verse per day, the same on every device.';
-      case DashboardSection.todayReading:
-        return 'Today\'s passage from your active reading plan.';
       case DashboardSection.counts:
         return 'Counts of bookmarks, notes, and highlights.';
       case DashboardSection.recentBookmarks:

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/utils/responsive.dart';
+import 'package:yswords/utils/font_catalog.dart' show kCjkFontFallback;
 
 /// 2026-05-19 (v1.2.57): block-level editorial footnote rendered
 /// BELOW a verse. Used by both `paragraph_group_widget` (paragraph
@@ -55,7 +56,7 @@ class BlockNoteCard extends StatelessWidget {
           note,
           style: TextStyle(
             fontSize: settings.fontSize * 0.82,
-            fontFamily: settings.fontFamily,
+            fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
             height: settings.lineSpacing,
             fontStyle: FontStyle.italic,
             color: Theme.of(context).textTheme.bodyMedium?.color,
