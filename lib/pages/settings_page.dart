@@ -32,6 +32,7 @@ import 'package:yswords/widgets/profile_avatar.dart';
 // 2026-05-07 (v17): fetch_books / fetch_verses imports removed; the
 // only consumer was the deleted "Check for Updates" reload path.
 import 'package:yswords/services/profile_service.dart';
+import 'package:yswords/services/tts_audio_cache.dart';
 import 'package:yswords/utils/font_catalog.dart';
 
 import 'package:yswords/services/offline_pack_service.dart';
@@ -1039,6 +1040,14 @@ class _SettingsPageBodyState extends State<_SettingsPageBody> {
               // v1.2.26 — so existing users see no behaviour change
               // unless they explicitly bump it.
               _AiModelCard(settings: settings, s: s),
+              SizedBox(height: 12 * s),
+              // 2026-05-23 (v1.2.88): TTS voice prefs (gender + tier
+              // + cache size + clear). Sits in the same AI section
+              // because the underlying call goes through the same
+              // Netlify pipeline. Cache info uses a FutureBuilder so
+              // the displayed size updates after Clear without a
+              // full Settings rebuild.
+              _TtsVoiceCard(settings: settings, s: s),
               SizedBox(height: 16 * s),
               KeyedSubtree(
                 key: _aboutKey,
@@ -2424,6 +2433,221 @@ class _AiModelCard extends StatelessWidget {
                 settings: settings,
                 scheme: scheme,
                 s: s),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// 2026-05-23 (v1.2.88): TTS voice settings card. Lets the user
+/// pick male/female + neural/standard tier, and shows current
+/// audio-cache footprint with a Clear button. Cache size is read
+/// async via FutureBuilder so a Clear updates the display without
+/// rebuilding the entire Settings page.
+class _TtsVoiceCard extends StatefulWidget {
+  final AppSettings settings;
+  final double s;
+  const _TtsVoiceCard({required this.settings, required this.s});
+
+  @override
+  State<_TtsVoiceCard> createState() => _TtsVoiceCardState();
+}
+
+class _TtsVoiceCardState extends State<_TtsVoiceCard> {
+  /// Re-query the cache size each rebuild AND after Clear by
+  /// bumping this counter (FutureBuilder reads from a fresh future
+  /// each build).
+  int _cacheRev = 0;
+
+  String _formatBytes(int n) {
+    if (n < 1024) return '$n B';
+    if (n < 1024 * 1024) return '${(n / 1024).toStringAsFixed(1)} KB';
+    if (n < 1024 * 1024 * 1024) {
+      return '${(n / (1024 * 1024)).toStringAsFixed(1)} MB';
+    }
+    return '${(n / (1024 * 1024 * 1024)).toStringAsFixed(2)} GB';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final s = widget.s;
+    final settings = widget.settings;
+    final scheme = Theme.of(context).colorScheme;
+    final locale = settings.locale;
+    return Card(
+      child: Padding(
+        padding: EdgeInsets.fromLTRB(16 * s, 14 * s, 16 * s, 14 * s),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.record_voice_over_outlined,
+                    size: 18, color: scheme.primary),
+                SizedBox(width: 8 * s),
+                Text(
+                  uiStrings['ttsVoiceTitle']?[locale] ??
+                      'AI voice for read-aloud',
+                  style: TextStyle(
+                    fontFamily: settings.fontFamily,
+                    fontFamilyFallback: kCjkFontFallback,
+                    fontSize: (settings.fontSize - 1).clamp(13.0, 16.0),
+                    fontWeight: FontWeight.w700,
+                    color: scheme.onSurface,
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: 6 * s),
+            Text(
+              uiStrings['ttsVoiceBody']?[locale] ??
+                  'Choose voice gender + quality. Played chapters are cached.',
+              style: TextStyle(
+                fontFamily: settings.fontFamily,
+                fontFamilyFallback: kCjkFontFallback,
+                fontSize: (settings.fontSize - 4).clamp(11.0, 13.0),
+                color: scheme.onSurface.withValues(alpha: 0.78),
+                height: 1.5,
+              ),
+            ),
+            SizedBox(height: 12 * s),
+            // Gender picker
+            Text(
+              uiStrings['ttsVoiceGender']?[locale] ?? 'Voice',
+              style: TextStyle(
+                fontFamily: settings.fontFamily,
+                fontFamilyFallback: kCjkFontFallback,
+                fontSize: (settings.fontSize - 3).clamp(12.0, 14.0),
+                fontWeight: FontWeight.w600,
+                color: scheme.onSurfaceVariant,
+              ),
+            ),
+            SizedBox(height: 6 * s),
+            Center(
+              child: SegmentedButton<String>(
+                segments: [
+                  ButtonSegment<String>(
+                    value: 'female',
+                    label: Text(
+                      uiStrings['ttsVoiceGenderFemale']?[locale] ?? 'Female',
+                    ),
+                    icon: const Icon(Icons.face_3_outlined),
+                  ),
+                  ButtonSegment<String>(
+                    value: 'male',
+                    label: Text(
+                      uiStrings['ttsVoiceGenderMale']?[locale] ?? 'Male',
+                    ),
+                    icon: const Icon(Icons.face_outlined),
+                  ),
+                ],
+                selected: {settings.ttsVoiceGender},
+                onSelectionChanged: (selection) {
+                  if (selection.isNotEmpty) {
+                    settings.setTtsVoiceGender(selection.first);
+                  }
+                },
+              ),
+            ),
+            SizedBox(height: 14 * s),
+            // Tier picker
+            Text(
+              uiStrings['ttsVoiceTier']?[locale] ?? 'Quality',
+              style: TextStyle(
+                fontFamily: settings.fontFamily,
+                fontFamilyFallback: kCjkFontFallback,
+                fontSize: (settings.fontSize - 3).clamp(12.0, 14.0),
+                fontWeight: FontWeight.w600,
+                color: scheme.onSurfaceVariant,
+              ),
+            ),
+            SizedBox(height: 6 * s),
+            Center(
+              child: SegmentedButton<String>(
+                segments: [
+                  ButtonSegment<String>(
+                    value: 'neural',
+                    label: Text(
+                      uiStrings['ttsVoiceTierNeural']?[locale] ??
+                          'Neural (recommended)',
+                    ),
+                    icon: const Icon(Icons.auto_awesome_outlined),
+                  ),
+                  ButtonSegment<String>(
+                    value: 'standard',
+                    label: Text(
+                      uiStrings['ttsVoiceTierStandard']?[locale] ??
+                          'Standard (lighter)',
+                    ),
+                    icon: const Icon(Icons.speed_outlined),
+                  ),
+                ],
+                selected: {settings.ttsVoiceTier},
+                onSelectionChanged: (selection) {
+                  if (selection.isNotEmpty) {
+                    settings.setTtsVoiceTier(selection.first);
+                  }
+                },
+              ),
+            ),
+            SizedBox(height: 14 * s),
+            // Cache footprint + clear
+            Container(
+              padding: EdgeInsets.all(10 * s),
+              decoration: BoxDecoration(
+                color: scheme.surfaceContainerHighest
+                    .withValues(alpha: 0.45),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.sd_card_outlined,
+                      size: 16, color: scheme.onSurfaceVariant),
+                  SizedBox(width: 8 * s),
+                  Expanded(
+                    child: FutureBuilder<int>(
+                      key: ValueKey(_cacheRev),
+                      future: TtsAudioCache.diskBytes(),
+                      builder: (context, snap) {
+                        final size = snap.data ?? 0;
+                        return Text(
+                          '${uiStrings['ttsCacheSize']?[locale] ?? 'Audio cache'}: ${_formatBytes(size)}',
+                          style: TextStyle(
+                            fontFamily: settings.fontFamily,
+                            fontFamilyFallback: kCjkFontFallback,
+                            fontSize: (settings.fontSize - 3)
+                                .clamp(12.0, 14.0),
+                            color: scheme.onSurface
+                                .withValues(alpha: 0.85),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                  TextButton.icon(
+                    onPressed: () async {
+                      await TtsAudioCache.clearAll();
+                      if (!mounted) return;
+                      setState(() => _cacheRev++);
+                      ScaffoldMessenger.maybeOf(context)?.showSnackBar(
+                        SnackBar(
+                          content: Text(
+                              uiStrings['ttsCacheCleared']?[locale] ??
+                                  'Audio cache cleared'),
+                          duration: const Duration(seconds: 2),
+                        ),
+                      );
+                    },
+                    icon: const Icon(Icons.delete_sweep_outlined,
+                        size: 16),
+                    label: Text(
+                      uiStrings['ttsCacheClear']?[locale] ?? 'Clear cache',
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ],
         ),
       ),
