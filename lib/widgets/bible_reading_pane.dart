@@ -169,6 +169,16 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
   // pendingJump from search) doesn't try to "correct" a swipe
   // that's already in flight.
   bool _pageSwipeInFlight = false;
+  // 2026-05-24 (v1.2.98): track the last chapter index we synced
+  // the PageController to. The build-time sync block was
+  // misfiring during normal builds (provider notifies on
+  // selection / highlight / etc., not just chapter changes),
+  // scheduling a redundant jumpToPage that landed on top of an
+  // in-flight swipe and produced the "翻页还是卡顿一下" stutter.
+  // Sync only when this differs from `currentChapterPageIdx` AND
+  // the controller is somewhere else — i.e. an EXTERNAL chapter
+  // change (search / library jump). Pure rebuilds become no-ops.
+  int? _lastSyncedChapterIdx;
 
   @override
   void initState() {
@@ -1475,24 +1485,65 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                                   mainProvider.currentBook,
                                   mainProvider.currentChapter) ??
                               0;
-                      // Sync PageController if currentChapter
-                      // changed externally (not via swipe).
-                      // Runs post-frame so we don't fight an
-                      // in-flight swipe.
-                      if (!_pageSwipeInFlight &&
-                          _pageController.hasClients) {
-                        final controllerPage =
-                            _pageController.page?.round();
-                        if (controllerPage != null &&
-                            controllerPage != currentChapterPageIdx) {
-                          WidgetsBinding.instance
-                              .addPostFrameCallback((_) {
-                            if (!mounted) return;
-                            if (!_pageController.hasClients) return;
-                            if (_pageSwipeInFlight) return;
-                            _pageController
-                                .jumpToPage(currentChapterPageIdx);
-                          });
+                      // 2026-05-24 (v1.2.98): sync only on
+                      // EXTERNAL chapter changes. v1.2.96 fired
+                      // on every build where `controllerPage !=
+                      // currentChapterPageIdx`, which during a
+                      // mid-swipe is constantly true (controller
+                      // is interpolating between pages, provider
+                      // still on the old chapter until settle) —
+                      // it scheduled a `jumpToPage(oldChapter)`
+                      // that fought the gesture and landed as a
+                      // visible snap. User: "翻页还是卡顿一下".
+                      //
+                      // Gate on `_lastSyncedChapterIdx` so we
+                      // act exactly once per actual chapter
+                      // change. Builds triggered by anything
+                      // OTHER than a chapter change (selection,
+                      // highlight, font setting, etc.) become
+                      // no-ops for the PageController.
+                      if (_lastSyncedChapterIdx != currentChapterPageIdx) {
+                        final previousSynced = _lastSyncedChapterIdx;
+                        _lastSyncedChapterIdx = currentChapterPageIdx;
+                        if (previousSynced != null &&
+                            !_pageSwipeInFlight &&
+                            _pageController.hasClients) {
+                          final controllerPage =
+                              _pageController.page?.round();
+                          if (controllerPage != null &&
+                              controllerPage != currentChapterPageIdx) {
+                            // Genuine external change — the
+                            // provider's chapter shifted while
+                            // the controller is on a different
+                            // page. Animate over so the user
+                            // sees the transition smoothly
+                            // (jumpToPage would be jarring for
+                            // a jump triggered by tapping a
+                            // search result).
+                            WidgetsBinding.instance
+                                .addPostFrameCallback((_) {
+                              if (!mounted) return;
+                              if (!_pageController.hasClients) return;
+                              if (_pageSwipeInFlight) return;
+                              final delta = (controllerPage -
+                                      currentChapterPageIdx)
+                                  .abs();
+                              if (delta > 3) {
+                                // Big jump (e.g. Gen 1 → John 3):
+                                // animation would scroll through
+                                // hundreds of pages — just jump.
+                                _pageController
+                                    .jumpToPage(currentChapterPageIdx);
+                              } else {
+                                _pageController.animateToPage(
+                                  currentChapterPageIdx,
+                                  duration:
+                                      const Duration(milliseconds: 300),
+                                  curve: Curves.easeOut,
+                                );
+                              }
+                            });
+                          }
                         }
                       }
                       return PageView.builder(

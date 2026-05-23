@@ -1,0 +1,32 @@
+{
+  "images": [
+    {
+      "size": "60x60",
+      "idiom": "iphone",
+      "filename": "AppIcon-Red@2x.png",
+      "scale": "2x"
+    },
+    {
+      "size": "60x60",
+      "idiom": "iphone",
+      "filename": "AppIcon-Red@3x.png",
+      "scale": "3x"
+    },
+    {
+      "size": "76x76",
+      "idiom": "ipad",
+      "filename": "AppIcon-Red~ipad.png",
+      "scale": "1x"
+    },
+    {
+      "size": "76x76",
+      "idiom": "ipad",
+      "filename": "AppIcon-Red@2x~ipad.png",
+      "scale": "2x"
+    }
+  ],
+  "info": {
+    "version": 1,
+    "author": "xcode"
+  }
+}
