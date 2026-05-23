@@ -37,6 +37,7 @@ import 'package:yswords/services/map_service.dart';
 import 'package:yswords/services/section_title_service.dart';
 import 'package:yswords/services/sermon_service.dart';
 import 'package:yswords/services/synopsis_service.dart';
+import 'package:yswords/services/ai_tts_service.dart';
 import 'package:yswords/services/tts_service.dart';
 import 'package:yswords/utils/clipboard_helper.dart';
 // 2026-05-10 (v1.2.13): the `as jumper` import was only needed by
@@ -157,11 +158,20 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
   /// its own utterance so cancellation is responsive and we can flash
   /// a brief highlight on the verse currently being read (`_isListening`
   /// alone wouldn't surface progress to the user).
+  ///
+  /// 2026-05-23 (v1.2.86): switched the default path from the browser's
+  /// robotic SpeechSynthesis (web-only, low quality) to AI TTS via the
+  /// /api/aiSpeak Netlify function (Google Cloud Neural2/Wavenet
+  /// voices). Works on native iOS / macOS / Android too. Falls back
+  /// to legacy SpeechSynthesis if AI TTS is unavailable (e.g. server
+  /// key missing) — the AppSettings BYOK field becomes the user's
+  /// own Google Cloud TTS key in that case.
   void _toggleListenChapter() {
     // Logical state takes precedence over the browser flag because
     // chrome's speechSynthesis.speaking flickers between chunks.
-    if (_isListening || TtsService.speaking) {
+    if (_isListening || TtsService.speaking || AiTtsService.speaking) {
       TtsService.stop();
+      AiTtsService.stop();
       _stopTtsPolling();
       if (mounted) {
         context.read<MainProvider>().clearHighlightIndex();
@@ -186,6 +196,61 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
         .map((v) => sanitizeForSearch(v.text))
         .toList();
     final locale = _ttsLocaleForVersion(mp.currentVersion);
+
+    final settings = context.read<AppSettings>();
+    final byok = settings.geminiApiKey.trim();
+    AiTtsService.speakSequence(
+      chunks,
+      locale: locale,
+      gender: settings.ttsVoiceGender,
+      tier: settings.ttsVoiceTier,
+      userApiKey: byok.isEmpty ? null : byok,
+      onAdvance: (idx) {
+        if (!mounted) return;
+        mp.setHighlightIndex(idx);
+        if (mp.itemScrollController.isAttached) {
+          mp.scrollToIndex(index: idx);
+        }
+      },
+      onError: (err) {
+        // Fall back to legacy browser SpeechSynthesis on web. On
+        // native, surface the error via SnackBar so the user knows
+        // why audio didn't start. Either way clear the listening
+        // state so the button flips back to Play.
+        if (!mounted) return;
+        // 2026-05-23 (v1.2.86): on web, fall back to legacy browser
+        // SpeechSynthesis so users at least get *some* audio when
+        // the Netlify function is down or the key is exhausted. On
+        // native (iOS / macOS / Android) SpeechSynthesis doesn't
+        // exist, so surface the error directly.
+        if (TtsService.isAvailable) {
+          _legacyTtsSpeakSequence(chunks, locale, mp);
+          return;
+        }
+        ScaffoldMessenger.maybeOf(context)?.showSnackBar(
+          SnackBar(content: Text(err)),
+        );
+        _stopTtsPolling();
+        mp.clearHighlightIndex();
+        setState(() => _isListening = false);
+      },
+      onDone: () {
+        if (!mounted) return;
+        _stopTtsPolling();
+        mp.clearHighlightIndex();
+        setState(() => _isListening = false);
+      },
+    );
+    _startTtsPolling();
+    setState(() => _isListening = true);
+    return;
+  }
+
+  /// Legacy SpeechSynthesis fallback. Same per-verse loop as before
+  /// the AI-TTS rewrite — kept as a safety net when the Netlify
+  /// function is unreachable on web.
+  void _legacyTtsSpeakSequence(
+      List<String> chunks, String locale, MainProvider mp) {
     TtsService.speakSequence(
       chunks,
       locale: locale,
@@ -226,7 +291,11 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
   void _startTtsPolling() {
     _ttsPoller?.cancel();
     _ttsPoller = Timer.periodic(const Duration(milliseconds: 500), (_) {
-      final speaking = TtsService.speaking;
+      // 2026-05-23 (v1.2.86): consider EITHER TTS service active.
+      // AiTtsService is the primary path; TtsService is the
+      // SpeechSynthesis fallback. Either being active means the
+      // button should stay in the "stop" state.
+      final speaking = TtsService.speaking || AiTtsService.speaking;
       if (!speaking && _isListening) {
         if (mounted) setState(() => _isListening = false);
         _stopTtsPolling();
@@ -1256,7 +1325,8 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                     },
                     const SingleActivator(LogicalKeyboardKey.keyT,
                         shift: true): () {
-                      if (TtsService.isAvailable) _toggleListenChapter();
+                      // v1.2.86: AI TTS works everywhere.
+                      _toggleListenChapter();
                     },
                     const SingleActivator(LogicalKeyboardKey.question,
                         shift: true): () =>
@@ -1685,9 +1755,11 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                       // The state class also self-stops the utterance
                       // on dispose so swiping back doesn't leave the
                       // browser narrating an empty page.
-                      onToggleListen: TtsService.isAvailable
-                          ? _toggleListenChapter
-                          : null,
+                      // v1.2.86: AI TTS works on every platform via
+                      // the /api/aiSpeak Netlify function, so the
+                      // button is now always wired. Legacy
+                      // SpeechSynthesis is the on-error fallback.
+                      onToggleListen: _toggleListenChapter,
                       isListening: _isListening,
                       // 2026-05-21 (v1.2.69): TodayReadingCard removed
                       // along with the rest of the reading-plan feature.

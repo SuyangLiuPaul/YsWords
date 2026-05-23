@@ -18,6 +18,7 @@ import 'package:yswords/services/sermon_service.dart';
 import 'package:yswords/utils/reference_parser.dart';
 import 'package:yswords/utils/version_mapper.dart' show localeAwareBookName;
 import 'package:yswords/widgets/home_icon_button.dart';
+import 'package:yswords/widgets/listen_button.dart';
 import 'package:yswords/widgets/localized_back_button.dart';
 
 /// Reads one sermon body in the user's preferred language with a
@@ -347,6 +348,17 @@ class _SermonDetailPageState extends State<SermonDetailPage> {
                 ),
         ),
         actions: [
+          // 2026-05-23 (v1.2.86): AI TTS button. Reads the loaded
+          // sermon body. Auto-chunks long sermons (>5000 chars) into
+          // sequential audio playback.
+          if ((_body ?? '').trim().isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(right: 4),
+              child: ListenButton(
+                text: _body ?? '',
+                compact: true,
+              ),
+            ),
           IconButton(
             icon: const Icon(Icons.copy_rounded, size: 20),
             tooltip: uiStrings['sermonCopyAll']?[settings.locale] ??

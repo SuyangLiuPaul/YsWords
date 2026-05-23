@@ -1,7 +1,7 @@
 name: yswords
 description: "YsWords means Yahweh's words. A bilingual Bible app to help you listen to His voice and abide in Him daily."
 publish_to: 'none'
-version: 1.2.85
+version: 1.2.86
 
 environment:
   sdk: '>=3.2.3 <4.0.0'
@@ -58,6 +58,11 @@ dependencies:
   # "Merriweather" etc. silently fell back to Roboto on web
   # (CanvasKit can't pull from system fonts).
   google_fonts: ^6.2.1
+  # 2026-05-23 (v1.2.86): high-quality AI TTS. AudioPlayer plays the
+  # base64 MP3 bytes returned by the /api/aiSpeak Netlify function
+  # (Google Cloud TTS Neural2 / Wavenet voices). audioplayers picked
+  # over just_audio for simpler bytes-source playback + smaller binary.
+  audioplayers: ^6.1.0
 
 dev_dependencies:
   flutter_test:

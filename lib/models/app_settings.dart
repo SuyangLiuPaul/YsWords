@@ -58,6 +58,19 @@ const _kAiModel = 'aiModel';
 const Set<String> _kAiModelAllowed = {'flash-lite', 'flash', 'pro'};
 const String _kAiModelDefault = 'flash-lite';
 
+// 2026-05-23 (v1.2.86): AI TTS voice preferences. Server maps these
+// to Google Cloud TTS voices:
+//   gender='female' + tier='neural' → en-US-Neural2-F / cmn-CN-Wavenet-A
+//   gender='male'   + tier='neural' → en-US-Neural2-D / cmn-CN-Wavenet-B
+//   tier='standard' → 4× cheaper standard voices (for free-tier
+//                     headroom on heavy users).
+const _kTtsVoiceGender = 'ttsVoiceGender';
+const _kTtsVoiceTier = 'ttsVoiceTier';
+const Set<String> _kTtsGenderAllowed = {'female', 'male'};
+const Set<String> _kTtsTierAllowed = {'neural', 'standard'};
+const String _kTtsGenderDefault = 'female';
+const String _kTtsTierDefault = 'neural';
+
 // Dashboard layout (Round 55). Every section has its own
 // `dashboard_section_visible_<name>` flag plus a single
 // `dashboard_section_order` list that drives the render order.
@@ -132,6 +145,8 @@ class AppSettings extends ChangeNotifier {
   String _geminiApiKey = '';
   // 2026-05-10 (v1.2.26): see top-of-file _kAiModel comment.
   String _aiModel = _kAiModelDefault;
+  String _ttsVoiceGender = _kTtsGenderDefault;
+  String _ttsVoiceTier = _kTtsTierDefault;
 
   /// Render section / paragraph headings (e.g. "The Sermon on the
   /// Mount" / "登山宝训") above the matched verse in the reading
@@ -216,6 +231,33 @@ class AppSettings extends ChangeNotifier {
     notifyListeners();
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_kAiModel, model);
+  }
+
+  /// 2026-05-23 (v1.2.86): AI TTS voice gender — 'female' (default)
+  /// or 'male'. Persisted via SharedPreferences; used by every TTS
+  /// caller (Bible reading pane, sermon detail, evidence detail).
+  String get ttsVoiceGender => _ttsVoiceGender;
+
+  Future<void> setTtsVoiceGender(String gender) async {
+    if (!_kTtsGenderAllowed.contains(gender)) return;
+    if (_ttsVoiceGender == gender) return;
+    _ttsVoiceGender = gender;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_kTtsVoiceGender, gender);
+  }
+
+  /// AI TTS voice tier — 'neural' (default, higher quality) or
+  /// 'standard' (4× cheaper, used by free-tier-conscious users).
+  String get ttsVoiceTier => _ttsVoiceTier;
+
+  Future<void> setTtsVoiceTier(String tier) async {
+    if (!_kTtsTierAllowed.contains(tier)) return;
+    if (_ttsVoiceTier == tier) return;
+    _ttsVoiceTier = tier;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_kTtsVoiceTier, tier);
   }
 
   Future<void> setGeminiApiKey(String key) async {
@@ -812,6 +854,19 @@ class AppSettings extends ChangeNotifier {
     _aiModel = (storedAiModel != null && _kAiModelAllowed.contains(storedAiModel))
         ? storedAiModel
         : _kAiModelDefault;
+
+    // 2026-05-23 (v1.2.86): restore TTS voice prefs. Same
+    // allowlist-clamp pattern as aiModel.
+    final storedTtsGender = prefs.getString(_kTtsVoiceGender);
+    _ttsVoiceGender = (storedTtsGender != null &&
+            _kTtsGenderAllowed.contains(storedTtsGender))
+        ? storedTtsGender
+        : _kTtsGenderDefault;
+    final storedTtsTier = prefs.getString(_kTtsVoiceTier);
+    _ttsVoiceTier = (storedTtsTier != null &&
+            _kTtsTierAllowed.contains(storedTtsTier))
+        ? storedTtsTier
+        : _kTtsTierDefault;
 
     // Dashboard layout (Round 55): load order list + per-section
     // visibility. Missing entries fall back to defaults; the legacy
