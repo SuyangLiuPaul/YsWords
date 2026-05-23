@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <!-- 2026-05-23 (v1.2.89): monthly audio-drip schedule.
+         Fires on the 1st of every month at 03:00 local time.
+         Generates as much TTS audio as the Google Cloud TTS free
+         tier allows (950 K chars / month) then commits + pushes
+         to yswords-data + triggers Netlify deploy. State (which
+         version + verse we got to) persists in
+         ~/.config/yswords/state/audio_free_tier.json so the next
+         month's run resumes from there.
+
+         Install:
+           cp tools/com.yswords.audio-drip.plist ~/Library/LaunchAgents/
+           # Edit the plist to insert your GOOGLE_TTS_API_KEY below
+           launchctl load ~/Library/LaunchAgents/com.yswords.audio-drip.plist
+
+         Verify next fire:
+           launchctl list com.yswords.audio-drip
+
+         Logs:
+           tail /tmp/yswords-audio-drip.log
+    -->
+    <key>Label</key>
+    <string>com.yswords.audio-drip</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>/usr/local/bin/node</string>
+        <string>/Users/pliu0036/Documents/yswords/tools/generate_audio_free_tier.mjs</string>
+    </array>
+
+    <!-- IMPORTANT: paste your Google Cloud TTS API key here before
+         loading the plist. Keep this file out of git after editing
+         (or use a separate copy in ~/Library/LaunchAgents/ that
+         only exists locally). -->
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>GOOGLE_TTS_API_KEY</key>
+        <string>REPLACE_WITH_YOUR_KEY</string>
+        <key>PATH</key>
+        <string>/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin</string>
+    </dict>
+
+    <key>StartCalendarInterval</key>
+    <dict>
+        <key>Day</key>
+        <integer>1</integer>
+        <key>Hour</key>
+        <integer>3</integer>
+        <key>Minute</key>
+        <integer>0</integer>
+    </dict>
+
+    <key>StandardOutPath</key>
+    <string>/tmp/yswords-audio-drip.log</string>
+    <key>StandardErrorPath</key>
+    <string>/tmp/yswords-audio-drip.err.log</string>
+
+    <key>WorkingDirectory</key>
+    <string>/Users/pliu0036/Documents/yswords</string>
+
+    <!-- If the machine is asleep at the scheduled time, run as soon
+         as it wakes. Important because 03:00 is "Mac is sleeping" for
+         most users. -->
+    <key>RunAtLoad</key>
+    <false/>
+</dict>
+</plist>
