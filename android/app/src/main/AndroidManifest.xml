@@ -28,6 +28,102 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+        <!--
+            2026-05-24 (v1.2.97): themed launcher icon variants.
+            Each <activity-alias> below targets MainActivity but
+            ships its own android:icon. Exactly ONE alias (or the
+            main activity) is enabled at a time via PackageManager.
+            setComponentEnabledSetting from the
+            yswords/android_icon MethodChannel (see MainActivity).
+            When the user picks a primaryColor in Settings →
+            AppIconService.updateForColor → channel
+            invokeMethod("setIcon", "Red") → Kotlin enables
+            `.AliasRed` and disables the rest.
+
+            UX caveats:
+              - Launcher icon swap takes ~1-3 s on most launchers;
+                the app may briefly disappear from the grid while
+                Android re-indexes. Some launchers refuse to refresh
+                until reboot.
+              - Disabling the currently-running component is
+                allowed (Android keeps the process alive) but
+                Recents may show the old icon until next launch.
+              - Aliases must hold the LAUNCHER intent filter or
+                they won't surface in the launcher; that requires
+                android:exported="true" (Android 12+).
+        -->
+        <activity-alias
+            android:name=".AliasRed"
+            android:targetActivity=".MainActivity"
+            android:enabled="false"
+            android:exported="true"
+            android:label="yswords"
+            android:icon="@mipmap/ic_launcher_red">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+        <activity-alias
+            android:name=".AliasOrange"
+            android:targetActivity=".MainActivity"
+            android:enabled="false"
+            android:exported="true"
+            android:label="yswords"
+            android:icon="@mipmap/ic_launcher_orange">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+        <activity-alias
+            android:name=".AliasGreen"
+            android:targetActivity=".MainActivity"
+            android:enabled="false"
+            android:exported="true"
+            android:label="yswords"
+            android:icon="@mipmap/ic_launcher_green">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+        <activity-alias
+            android:name=".AliasPurple"
+            android:targetActivity=".MainActivity"
+            android:enabled="false"
+            android:exported="true"
+            android:label="yswords"
+            android:icon="@mipmap/ic_launcher_purple">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+        <activity-alias
+            android:name=".AliasPink"
+            android:targetActivity=".MainActivity"
+            android:enabled="false"
+            android:exported="true"
+            android:label="yswords"
+            android:icon="@mipmap/ic_launcher_pink">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+        <activity-alias
+            android:name=".AliasDark"
+            android:targetActivity=".MainActivity"
+            android:enabled="false"
+            android:exported="true"
+            android:label="yswords"
+            android:icon="@mipmap/ic_launcher_dark">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <meta-data

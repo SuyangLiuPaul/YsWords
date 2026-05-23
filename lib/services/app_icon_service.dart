@@ -1,125 +1,170 @@
-// 2026-05-24 (v1.2.96): bridges the user's primaryColor pick in
-// Settings to iOS's UIApplication.setAlternateIconName. The Swift
-// side lives in ios/Runner/AppDelegate.swift; six alternate icon
-// variants (Red / Orange / Green / Purple / Pink / Dark) ship as
-// loose PNGs at ios/Runner/AppIcon-<Variant>{@2x,@3x,~ipad,
-// @2x~ipad}.png and are declared in CFBundleIcons +
-// CFBundleIcons~ipad in ios/Runner/Info.plist.
+// Themed app-icon swap across iOS / Android / macOS / Web.
 //
-// Non-iOS platforms (web, macOS, Android, Linux, Windows) are a
-// silent no-op: the channel just doesn't fire. Android does support
-// adaptive icon variants via activity-alias swapping, but that's
-// out of scope for v1.2.96 — the user's complaint was iOS-only.
+// v1.2.96 shipped iOS-only via UIApplication.setAlternateIconName.
+// v1.2.97 extends to:
+//
+//   Android: each variant is an <activity-alias> in
+//     android/app/src/main/AndroidManifest.xml. MainActivity.kt
+//     handles the yswords/android_icon channel and toggles aliases
+//     via PackageManager.setComponentEnabledSetting. Launcher icon
+//     swap may take 1-3 s and the app can briefly disappear from
+//     the launcher grid while the system re-indexes — Android-OS
+//     behaviour, not avoidable.
+//
+//   macOS: dock-only. NSApplication.applicationIconImage is the
+//     only public API; Finder / Launchpad / Get-Info icons are
+//     read from AppIcon.icns at install time and CAN'T be changed
+//     at runtime. We ship variant PNGs as Flutter assets at
+//     assets/themed_icons/<Variant>.png, load bytes via
+//     rootBundle.load, and send to MainFlutterWindow.swift's
+//     yswords/macos_icon channel.
+//
+//   Web: favicon-only. document.querySelector('link[rel="icon"]')
+//     swap updates the browser tab. PWA "Add to Home Screen" icon
+//     is captured at install time and not changeable runtime. We
+//     ship variant PNGs at web/icons/Icon-<Variant>-<size>.png and
+//     update the live <link> hrefs.
 
+import 'dart:async';
 import 'dart:io' show Platform;
+import 'dart:typed_data';
 
 import 'package:flutter/foundation.dart' show kIsWeb, debugPrint;
 import 'package:flutter/material.dart' show Color, Colors;
-import 'package:flutter/services.dart' show MethodChannel, PlatformException;
+import 'package:flutter/services.dart'
+    show MethodChannel, PlatformException, rootBundle;
+
+import 'package:yswords/services/app_icon_service_web.dart'
+    if (dart.library.io) 'package:yswords/services/app_icon_service_web_stub.dart'
+    as web_impl;
 
 class AppIconService {
   AppIconService._();
 
-  static const _channel = MethodChannel('yswords/ios_icon');
+  static const _iosChannel = MethodChannel('yswords/ios_icon');
+  static const _androidChannel = MethodChannel('yswords/android_icon');
+  static const _macosChannel = MethodChannel('yswords/macos_icon');
 
-  /// Whether the current platform actually supports alternate icons.
-  /// Only true on iOS / iPadOS. Web, macOS, Android, etc. return false
-  /// so callers can short-circuit.
+  /// True on platforms where we know how to swap *something* (Dock,
+  /// favicon, launcher, home-screen). Used by Settings UI to gate
+  /// any "icon follows theme" toggle in the future.
   static bool get isSupported {
-    if (kIsWeb) return false;
+    if (kIsWeb) return true; // favicon swap works in every browser
     try {
-      return Platform.isIOS;
+      return Platform.isIOS || Platform.isAndroid || Platform.isMacOS;
     } catch (_) {
       return false;
     }
   }
 
-  /// Maps a Material primary color picked by the user in Settings to
-  /// the alternate-icon name shipped in the iOS bundle. Returns null
-  /// for colors that should use the primary icon (light blue default,
-  /// or colors that don't have a dedicated variant — yellow / lime /
-  /// brown fall through to the closest match or to default).
-  ///
-  /// Variants shipped: Red, Orange, Green, Purple, Pink, Dark.
-  /// Anything not in the map → primary icon (null).
-  static String? iconNameForColor(Color color) {
-    // Compare by underlying value so Color(0xff...) literals and the
-    // Colors.X constants both work.
-    final v = (color.r * 255).round() << 16 |
-        (color.g * 255).round() << 8 |
-        (color.b * 255).round();
-    // ignore: deprecated_member_use
-    final raw = color.value & 0xFFFFFF;
-    final key = raw == 0 ? v : raw;
-
-    // Red family
+  /// Returns the variant suffix (Red / Orange / Green / Purple /
+  /// Pink / Dark) for a given Material primaryColor, or null when
+  /// the colour maps to the primary (light-blue) icon.
+  static String? variantForColor(Color color) {
     if (color == Colors.red ||
-        color == Colors.deepOrange ||
-        key == (Colors.red.toARGB32() & 0xFFFFFF) ||
-        key == (Colors.deepOrange.toARGB32() & 0xFFFFFF)) {
-      return 'AppIcon-Red';
+        color == Colors.deepOrange) {
+      return 'Red';
     }
-    // Orange / amber / yellow / lime — all use the Orange variant
     if (color == Colors.orange ||
         color == Colors.amber ||
         color == Colors.yellow ||
         color == Colors.lime) {
-      return 'AppIcon-Orange';
+      return 'Orange';
     }
-    // Green family
     if (color == Colors.lightGreen ||
         color == Colors.green ||
         color == Colors.teal) {
-      return 'AppIcon-Green';
+      return 'Green';
     }
-    // Purple family
     if (color == Colors.deepPurple ||
         color == Colors.purple ||
         color == Colors.indigo) {
-      return 'AppIcon-Purple';
+      return 'Purple';
     }
-    // Pink (Material) — closest to pink variant
     if (color == Colors.pink) {
-      return 'AppIcon-Pink';
+      return 'Pink';
     }
-    // Neutral palette (brown / grey / blueGrey) → dark variant
     if (color == Colors.brown ||
         color == Colors.grey ||
         color == Colors.blueGrey) {
-      return 'AppIcon-Dark';
+      return 'Dark';
     }
-    // Light blue / cyan / blue — default light-blue icon. Return
-    // null to keep the primary icon.
+    // light blue / cyan / blue → primary (no variant)
     return null;
   }
 
-  /// Swap the iOS home-screen icon to match [color]. Pass `null` or a
-  /// color that maps to no variant (light blue, cyan, blue) to revert
-  /// to the primary icon. iOS will show a system alert the first time
-  /// the icon changes for a given session ("You have changed the
-  /// icon for ..."). That alert is OS-controlled and can't be
-  /// suppressed.
-  ///
-  /// Safe to call on non-iOS platforms (no-op).
+  /// iOS naming: `AppIcon-<Variant>` (matches CFBundleAlternateIcons
+  /// key). Null = primary icon.
+  static String? _iosNameForVariant(String? variant) =>
+      variant == null ? null : 'AppIcon-$variant';
+
+  /// Swap the home-screen / dock / favicon to match [color]. No-op
+  /// on unsupported platforms.
   static Future<void> updateForColor(Color? color) async {
-    if (!isSupported) return;
-    final name = color == null ? null : iconNameForColor(color);
-    try {
-      // Read the current icon name so we don't fire setAlternateIconName
-      // (which can trigger the OS alert) when nothing actually changes.
-      final current = await _channel.invokeMethod<String?>('currentIconName');
-      if (current == name) {
-        debugPrint('[AppIconService] icon already $name — skipping');
-        return;
+    if (color == null) return _revertToPrimary();
+    final variant = variantForColor(color);
+
+    if (kIsWeb) {
+      try {
+        web_impl.setFaviconForVariant(variant);
+      } catch (e) {
+        debugPrint('[AppIconService] web favicon swap failed: $e');
       }
-      debugPrint('[AppIconService] swap icon: $current → $name');
-      await _channel
-          .invokeMethod<bool>('setIcon', <String, dynamic>{'name': name});
+      return;
+    }
+
+    try {
+      if (Platform.isIOS) {
+        final name = _iosNameForVariant(variant);
+        final current =
+            await _iosChannel.invokeMethod<String?>('currentIconName');
+        if (current == name) return; // already set; skip OS alert
+        await _iosChannel
+            .invokeMethod<bool>('setIcon', <String, dynamic>{'name': name});
+      } else if (Platform.isAndroid) {
+        final name = _iosNameForVariant(variant); // same string key
+        final current =
+            await _androidChannel.invokeMethod<String?>('currentIconName');
+        if (current == name) return;
+        await _androidChannel
+            .invokeMethod<bool>('setIcon', <String, dynamic>{'name': name});
+      } else if (Platform.isMacOS) {
+        Uint8List? bytes;
+        if (variant != null) {
+          final data = await rootBundle
+              .load('assets/themed_icons/$variant.png');
+          bytes = data.buffer.asUint8List();
+        }
+        await _macosChannel.invokeMethod<bool>(
+            'setIconBytes', <String, dynamic>{'bytes': bytes});
+      }
     } on PlatformException catch (e) {
-      // UNSUPPORTED on simulators / older devices is non-fatal.
       debugPrint('[AppIconService] setIcon failed: $e');
     } catch (e) {
-      debugPrint('[AppIconService] unexpected error: $e');
+      debugPrint('[AppIconService] unexpected: $e');
+    }
+  }
+
+  static Future<void> _revertToPrimary() async {
+    if (kIsWeb) {
+      try {
+        web_impl.setFaviconForVariant(null);
+      } catch (_) {}
+      return;
+    }
+    try {
+      if (Platform.isIOS) {
+        await _iosChannel
+            .invokeMethod<bool>('setIcon', <String, dynamic>{'name': null});
+      } else if (Platform.isAndroid) {
+        await _androidChannel
+            .invokeMethod<bool>('setIcon', <String, dynamic>{'name': null});
+      } else if (Platform.isMacOS) {
+        await _macosChannel.invokeMethod<bool>(
+            'setIconBytes', <String, dynamic>{'bytes': null});
+      }
+    } catch (e) {
+      debugPrint('[AppIconService] revert failed: $e');
     }
   }
 }

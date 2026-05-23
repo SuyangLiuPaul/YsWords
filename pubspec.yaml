@@ -1,7 +1,7 @@
 name: yswords
 description: "YsWords means Yahweh's words. A bilingual Bible app to help you listen to His voice and abide in Him daily."
 publish_to: 'none'
-version: 1.2.96
+version: 1.2.97
 
 environment:
   sdk: '>=3.2.3 <4.0.0'
@@ -63,6 +63,13 @@ dependencies:
   # (Google Cloud TTS Neural2 / Wavenet voices). audioplayers picked
   # over just_audio for simpler bytes-source playback + smaller binary.
   audioplayers: ^6.1.0
+  # 2026-05-24 (v1.2.97): web favicon swap. AppIconServiceWeb uses
+  # the modern package:web DOM bindings (not dart:html) to mutate
+  # <link rel="icon"> when the user changes primaryColor. Already
+  # pulled transitively by Flutter web, but listed explicitly so
+  # the analyzer's `depend_on_referenced_packages` lint stops
+  # complaining about a direct import without a direct dep.
+  web: ^1.0.0
   # 2026-05-23 (v1.2.87): client-side audio cache.
   # path_provider gives us the per-platform cache + app-docs dirs;
   # crypto's SHA-1 turns (text + voice + tier) into a stable cache
@@ -117,6 +124,12 @@ flutter:
     - assets/sermons/en/
     - assets/sermons/zh-CN/
     - assets/sermons/zh-TW/
+    # 2026-05-24 (v1.2.97): themed app-icon PNGs. Used by Dart side
+    # to swap the macOS Dock icon at runtime (rootBundle.load → bytes
+    # → MethodChannel → NSImage(data:) → NSApplication.applicationIconImage).
+    # iOS / Android / Web use platform-native paths (loose PNGs at
+    # ios/Runner/, mipmap-*/ic_launcher_<v>.png, web/icons/Icon-<V>-*.png).
+    - assets/themed_icons/
   fonts:
     - family: Roboto
       fonts:
