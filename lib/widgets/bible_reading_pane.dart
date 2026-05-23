@@ -87,7 +87,8 @@ class BibleReadingPane extends StatefulWidget {
   State<BibleReadingPane> createState() => _BibleReadingPaneState();
 }
 
-class _BibleReadingPaneState extends State<BibleReadingPane> {
+class _BibleReadingPaneState extends State<BibleReadingPane>
+    with SingleTickerProviderStateMixin {
   MainProvider? _positionsProvider;
   int _visibleItemIndex = 0;
   bool _showVersePosition = false;
@@ -112,6 +113,12 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
   //   No idle-timer re-show — once hidden, chrome stays hidden until
   //   the user explicitly scrolls up, taps, or selects a verse.
   bool _chromeVisible = true;
+  // 2026-05-24 (v1.2.92): direction of the most recent chapter
+  // change, so the AnimatedSwitcher wrapping the chapter view can
+  // slide the new chapter in from the correct edge (matches book-
+  // flip UX: next chapter slides in from the right, prev from the
+  // left). 0 = no transition pending / first paint.
+  int _chapterChangeDir = 0;
   double _chromeScrollAccumulator = 0;
   StreamSubscription<double>? _scrollOffsetSub;
   /// Pane-local messenger so SnackBars (e.g. the "Copied!" toast) appear
@@ -144,9 +151,23 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
   bool _isListening = false;
   Timer? _ttsPoller;
 
+  // 2026-05-24 (v1.2.92): drives the horizontal slide-in animation
+  // when the reader switches chapters (next/prev). Goes 0 → 1 over
+  // 260 ms. The Transform.translate wrapping the SPL reads this
+  // value × _chapterChangeDir × paneWidth to slide the new chapter
+  // in from the swipe direction. Not as rich as a finger-tracked
+  // PageView preview (deferred to v1.2.93), but eliminates the
+  // instant-snap feel that user called out.
+  late final AnimationController _chapterSlide;
+
   @override
   void initState() {
     super.initState();
+    _chapterSlide = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 260),
+      value: 1.0, // settled (no slide) by default
+    );
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       final mainProvider = context.read<MainProvider>();
@@ -398,6 +419,7 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
     _versePositionTimer?.cancel();
     _scrollOffsetSub?.cancel();
     _ttsPoller?.cancel();
+    _chapterSlide.dispose();
     if (_isListening) TtsService.stop();
     _positionsProvider?.itemPositionsListener.itemPositions
         .removeListener(_handleItemPositionsChanged);
@@ -670,6 +692,14 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
     final provider = context.read<MainProvider>();
     provider.clearSelectedVerses();
     provider.clearHighlightIndex();
+    _chapterChangeDir = 1;
+    // Kick off the slide-in (controller will be evaluated against
+    // the new chapter's rebuilt SPL). Animation goes 0 → 1 over
+    // 260 ms; the Transform.translate wrapping the SPL paints the
+    // SPL at offset (1 - value) * dir * paneWidth, so the new
+    // chapter slides in from the right (dir=1) over the duration.
+    _chapterSlide.value = 0.0;
+    _chapterSlide.forward();
     final books = provider.books;
     final currentBook = provider.currentBook;
     final currentChapter = provider.currentChapter;
@@ -698,6 +728,9 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
     final provider = context.read<MainProvider>();
     provider.clearSelectedVerses();
     provider.clearHighlightIndex();
+    _chapterChangeDir = -1;
+    _chapterSlide.value = 0.0;
+    _chapterSlide.forward();
     final books = provider.books;
     final currentBook = provider.currentBook;
     final currentChapter = provider.currentChapter;
@@ -1379,7 +1412,28 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
 
                     return Stack(
                       children: [
-                    Padding(
+                    // 2026-05-24 (v1.2.92): chapter-slide animation
+                    // wrapper. When chapter changes via swipe / [ ] /
+                    // bottom-bar buttons, _chapterSlide animates 0→1
+                    // and the new chapter slides in from
+                    // _chapterChangeDir × paneWidth (right=+1,
+                    // left=-1). Outside an animation the controller
+                    // stays at value 1.0 so the SPL paints at zero
+                    // offset (no transform).
+                    AnimatedBuilder(
+                      animation: _chapterSlide,
+                      builder: (ctx, child) {
+                        final t = _chapterSlide.value;
+                        final eased = Curves.easeOutCubic.transform(t);
+                        final dx = (1 - eased) *
+                            _chapterChangeDir.toDouble() *
+                            paneWidth;
+                        return Transform.translate(
+                          offset: Offset(dx, 0),
+                          child: child,
+                        );
+                      },
+                      child: Padding(
                       padding: EdgeInsets.only(
                         right: ResponsiveBreakpoints.readingPadding(dc),
                       ),
@@ -1524,6 +1578,7 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                       ),
                     ),
                     ),
+                    ), // close AnimatedBuilder (v1.2.92)
                     // 2026-05-24 (v1.2.91): mini reader header. When
                     // the auto-hide chrome is hidden, show a tiny
                     // pair of pills at top — version on left, book +
@@ -3291,36 +3346,23 @@ void _showNoteEditor({
     restoreScroll();
   });
 
-  // 2026-05-20 (v1.2.62): the editor now supports a WeChat-style
-  // fullscreen toggle — an icon button next to the close button.
-  // Compact mode = current bottom-sheet feel (intrinsic height
-  // ~40-50 % of viewport once the keyboard is up). Fullscreen
-  // mode = the sheet fills the viewport minus the status bar +
-  // safe-area top inset, the TextField expands to fill the
-  // remaining space, and the top corners straighten so it reads
-  // as a full-screen overlay rather than a sheet.
-  //
-  // State lives in a StatefulBuilder so we don't have to convert
-  // the whole editor into a separate StatefulWidget class — the
-  // existing closures (restoreScroll / onPositionsChanged / the
-  // enforceTimer) all still work, just inside a setState-aware
-  // builder.
-  bool isFullscreen = false;
+  // 2026-05-24 (v1.2.92): the editor was previously expandable
+  // (compact ↔ fullscreen toggle, v1.2.62). User reported the
+  // toggle was buggy on iOS — sometimes closed the sheet
+  // entirely, layout glitches on Android. Root cause:
+  // AnimatedContainer height transition INSIDE a modal sheet is
+  // a known-fragile pattern. The simplest robust fix is to
+  // remove the toggle entirely and always open fullscreen — note
+  // editing is a focused task, fullscreen is the better default
+  // anyway, and there's no longer any compact/fullscreen state
+  // to get wrong.
   showModalBottomSheet<void>(
     context: context,
     isScrollControlled: true,
-    // 2026-05-24 (v1.2.91): user reported on iOS — "note taking in
-    // iOS when expand it doesn't work well it actually closed".
-    // Root cause: the default `enableDrag: true` arms the modal
-    // sheet's drag-to-dismiss gesture controller. When the user
-    // taps the expand toggle, our AnimatedContainer transitions
-    // height from null → fullscreenHeight; on iOS that vertical
-    // layout shift during the same gesture frame is sometimes
-    // interpreted as a downward drag, dismissing the sheet.
-    // Disabling drag-to-dismiss closes the bug completely — users
-    // still close via the X button (top-right of the header row)
-    // or by tapping the backdrop. Compact ↔ fullscreen toggle now
-    // works reliably across iOS / Android / web.
+    // 2026-05-24 (v1.2.91): even with fullscreen always on, keep
+    // drag-to-dismiss disabled — otherwise iOS can interpret the
+    // initial sheet rise as a downward flick and dismiss
+    // immediately. X close button + backdrop tap still dismiss.
     enableDrag: false,
     backgroundColor: Theme.of(context).colorScheme.surface,
     constraints: const BoxConstraints(maxWidth: 720),
@@ -3362,15 +3404,14 @@ void _showNoteEditor({
       // multi-verse selection has a note (and Delete clears them all).
       final hasExisting = verses.any(
           (v) => (mainProvider.getVerseNote(v) ?? '').isNotEmpty);
-      // 2026-05-20 (v1.2.62): in fullscreen the sheet height is
-      // pinned to (viewport - status bar - keyboard); in compact
-      // it stays intrinsic and the Column uses MainAxisSize.min.
+      // 2026-05-24 (v1.2.92): always fullscreen. Sheet height =
+      // viewport - status bar - keyboard. No more compact mode
+      // (eliminated the expand/collapse bug class — see header
+      // comment in _showNoteEditor for the full reasoning).
       final fullscreenHeight =
           mq.size.height - mq.padding.top - mq.viewInsets.bottom;
-      return AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        curve: Curves.easeOut,
-        height: isFullscreen ? fullscreenHeight : null,
+      return SizedBox(
+        height: fullscreenHeight,
         child: Padding(
         padding: EdgeInsets.only(
           left: 16,
@@ -3379,8 +3420,7 @@ void _showNoteEditor({
           bottom: MediaQuery.of(sheetCtx).viewInsets.bottom + 16,
         ),
         child: Column(
-          mainAxisSize:
-              isFullscreen ? MainAxisSize.max : MainAxisSize.min,
+          mainAxisSize: MainAxisSize.max,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Container(
@@ -3423,35 +3463,9 @@ void _showNoteEditor({
                     ],
                   ),
                 ),
-                // 2026-05-20 (v1.2.62): WeChat-style expand /
-                // collapse toggle. Compact ↔ fullscreen. State
-                // captured by the surrounding StatefulBuilder.
-                //
-                // 2026-05-24 (v1.2.91): defer the state flip to a
-                // post-frame callback so the AnimatedContainer's
-                // height transition doesn't share a frame with the
-                // tap-up event — iOS otherwise occasionally routed
-                // the resize back through the modal sheet's gesture
-                // controller as a phantom drag. Paired with
-                // `enableDrag: false` on showModalBottomSheet
-                // (above) this completely closes the bug.
-                IconButton(
-                  icon: Icon(
-                    isFullscreen
-                        ? Icons.fullscreen_exit_rounded
-                        : Icons.fullscreen_rounded,
-                  ),
-                  tooltip: isFullscreen
-                      ? (uiStrings['noteCollapse']?[locale] ??
-                          'Collapse')
-                      : (uiStrings['noteExpand']?[locale] ??
-                          'Expand'),
-                  onPressed: () {
-                    WidgetsBinding.instance.addPostFrameCallback((_) {
-                      setSheetState(() => isFullscreen = !isFullscreen);
-                    });
-                  },
-                ),
+                // 2026-05-24 (v1.2.92): expand toggle removed. The
+                // editor always opens fullscreen now. Only the
+                // close X remains in the header trailing slot.
                 IconButton(
                   icon: const Icon(Icons.close),
                   onPressed: () => Navigator.of(sheetCtx).maybePop(),
@@ -3493,101 +3507,57 @@ void _showNoteEditor({
                 color: scheme.outlineVariant.withValues(alpha: 0.6),
                 height: 12,
                 thickness: 1),
-            // Wrap in a Focus so we can detect the moment the user
-            // taps / focuses the field. That's the exact instant the
-            // browser/keyboard quirk that fires the underlying
-            // jump-to-top happens; calling restoreScroll() at the
-            // same moment locks the position in BEFORE the jump
-            // becomes visible. Combined with `jumpTo` (instant, no
-            // animation) inside restoreScroll, the user never sees
-            // the reader leave the verse.
-            // 2026-05-20 (v1.2.62): TextField wrapper. In fullscreen
-            // we put it inside an `Expanded` so it fills all the
-            // remaining vertical space and uses `maxLines: null` +
-            // `expands: true` for an edge-to-edge editing surface.
-            // In compact mode we keep the v1.2.60 `4-8 lines` shape
-            // so the sheet stays at a comfortable intrinsic height.
-            isFullscreen
-                ? Expanded(
-                    child: Focus(
-                      onFocusChange: (hasFocus) {
-                        if (hasFocus) {
-                          restoreScroll();
-                          for (final delayMs in const [16, 50, 150, 350]) {
-                            Future.delayed(
-                                Duration(milliseconds: delayMs), restoreScroll);
-                          }
-                        }
-                      },
-                      child: TextField(
-                        controller: controller,
-                        autofocus: true,
-                        maxLines: null,
-                        expands: true,
-                        textAlignVertical: TextAlignVertical.top,
-                        textInputAction: TextInputAction.newline,
-                        onTap: () {
-                          restoreScroll();
-                          for (final delayMs in const [16, 50, 150, 350]) {
-                            Future.delayed(
-                                Duration(milliseconds: delayMs), restoreScroll);
-                          }
-                        },
-                        onChanged: (_) => restoreScroll(),
-                        decoration: InputDecoration(
-                          hintText: uiStrings['noteHint']?[locale] ??
-                              'Type your note for this verse…',
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          contentPadding: const EdgeInsets.all(12),
-                        ),
-                      ),
+            // 2026-05-24 (v1.2.92): always-fullscreen body TextField.
+            // Was a compact/fullscreen branching (v1.2.62) before
+            // the v1.2.92 simplification. Wrap in Expanded so the
+            // field fills the remaining vertical space of the
+            // fullscreen sheet; maxLines: null + expands: true
+            // give an edge-to-edge editing surface. Focus +
+            // onChanged trigger scroll-restore on the underlying
+            // SPL since the keyboard popup can shift it.
+            Expanded(
+              child: Focus(
+                onFocusChange: (hasFocus) {
+                  if (hasFocus) {
+                    restoreScroll();
+                    for (final delayMs in const [16, 50, 150, 350]) {
+                      Future.delayed(
+                          Duration(milliseconds: delayMs), restoreScroll);
+                    }
+                  }
+                },
+                child: TextField(
+                  controller: controller,
+                  autofocus: true,
+                  maxLines: null,
+                  expands: true,
+                  textAlignVertical: TextAlignVertical.top,
+                  textInputAction: TextInputAction.newline,
+                  onTap: () {
+                    restoreScroll();
+                    for (final delayMs in const [16, 50, 150, 350]) {
+                      Future.delayed(
+                          Duration(milliseconds: delayMs), restoreScroll);
+                    }
+                  },
+                  onChanged: (_) {
+                    restoreScroll();
+                    // 2026-05-20 (v1.2.65): rebuild so the ref-chip
+                    // strip below recomputes from the new note
+                    // text.
+                    setSheetState(() {});
+                  },
+                  decoration: InputDecoration(
+                    hintText: uiStrings['noteHint']?[locale] ??
+                        'Type your note for this verse…',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
                     ),
-                  )
-                : Focus(
-                    onFocusChange: (hasFocus) {
-                      if (hasFocus) {
-                        restoreScroll();
-                        for (final delayMs in const [16, 50, 150, 350]) {
-                          Future.delayed(
-                              Duration(milliseconds: delayMs), restoreScroll);
-                        }
-                      }
-                    },
-                    child: TextField(
-                      controller: controller,
-                      autofocus: true,
-                      maxLines: 8,
-                      minLines: 4,
-                      textInputAction: TextInputAction.newline,
-                      onTap: () {
-                        restoreScroll();
-                        for (final delayMs in const [16, 50, 150, 350]) {
-                          Future.delayed(
-                              Duration(milliseconds: delayMs), restoreScroll);
-                        }
-                      },
-                      onChanged: (val) {
-                        restoreScroll();
-                        // 2026-05-20 (v1.2.65): trigger a rebuild
-                        // so the ref-chip strip below recomputes
-                        // from the new note text. Using
-                        // setSheetState (StatefulBuilder's setState)
-                        // because the TextField's controller doesn't
-                        // notify its surrounding scope on every
-                        // keystroke.
-                        setSheetState(() {});
-                      },
-                      decoration: InputDecoration(
-                        hintText: uiStrings['noteHint']?[locale] ??
-                            'Type your note for this verse…',
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
-                    ),
+                    contentPadding: const EdgeInsets.all(12),
                   ),
+                ),
+              ),
+            ),
             // 2026-05-20 (v1.2.65): live ref-chip strip. As the
             // user types or inserts `[Book Ch:V]` references via
             // the picker, each parseable ref renders as a tappable
@@ -4589,10 +4559,16 @@ class _MiniReaderHeader extends StatelessWidget {
   }
 }
 
-/// One pill of the mini header. Subtle background (surface-tinted
-/// + alpha) + hairline border so it stays legible over verse text
-/// without competing with content. Small font (12 sp), bold weight
-/// so it reads at a glance.
+/// One pill of the mini header. Themed background (primaryContainer
+/// at theme-aware alpha) + matching primary-tinted outline so the
+/// pill reads as part of the user's chosen palette rather than a
+/// generic grey chip. 14 sp bold for at-a-glance legibility on phone
+/// screens.
+///
+/// 2026-05-24 (v1.2.92): user feedback — "small title 可以 match
+/// theme color 吗 size 也应该合适". Was scheme.surface + 12 sp,
+/// reads as a neutral grey-out chip; now ties to scheme.primary so
+/// it matches whatever palette the user picked in Settings.
 class _MiniHeaderPill extends StatelessWidget {
   final String label;
   final VoidCallback onTap;
@@ -4614,15 +4590,21 @@ class _MiniHeaderPill extends StatelessWidget {
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(16),
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+          padding:
+              const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
           decoration: BoxDecoration(
-            color: scheme.surface.withValues(alpha: isDark ? 0.55 : 0.72),
-            borderRadius: BorderRadius.circular(14),
+            // Primary-container at alpha so it tints the verse-text
+            // background instead of blanking it out. Dark theme uses
+            // a slightly higher alpha (the primaryContainer there is
+            // darker, so it needs more weight to stay legible).
+            color: scheme.primaryContainer
+                .withValues(alpha: isDark ? 0.78 : 0.85),
+            borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: scheme.outlineVariant.withValues(alpha: 0.55),
-              width: 0.5,
+              color: scheme.primary.withValues(alpha: 0.4),
+              width: 0.6,
             ),
           ),
           child: Text(
@@ -4632,10 +4614,10 @@ class _MiniHeaderPill extends StatelessWidget {
             style: TextStyle(
               fontFamily: fontFamily,
               fontFamilyFallback: kCjkFontFallback,
-              fontSize: 12,
+              fontSize: 14,
               fontWeight: FontWeight.w700,
-              color: scheme.onSurface.withValues(alpha: 0.78),
-              letterSpacing: 0.2,
+              color: scheme.onPrimaryContainer,
+              letterSpacing: 0.1,
             ),
           ),
         ),

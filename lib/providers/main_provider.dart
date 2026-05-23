@@ -209,8 +209,10 @@ class MainProvider extends ChangeNotifier {
     // Deduplicate by title while preserving first occurrence
     final seen = <String>{};
     books = list.where((b) => seen.add(b.title)).toList();
-    // Book list changed → bookOrder lookup map is stale.
+    // Book list changed → bookOrder lookup map + chapter pager
+    // index are stale.
     _bookOrderCache = null;
+    _chapterList = null;
     notifyListeners();
   }
 
@@ -869,6 +871,42 @@ class MainProvider extends ChangeNotifier {
 
   // List to store Book Objects
   List<Book> books = [];
+
+  // 2026-05-24 (v1.2.92): flat list of (book, chapter) tuples for
+  // the currently-loaded version. Cached + invalidated whenever
+  // `books` changes via setBooks() / version switch. Drives the
+  // PageView chapter pager in BibleReadingPane — gives the
+  // WeChat / 微读圣经 / WeDevote-style "swipe to next/prev chapter"
+  // feel where the adjacent chapter is visible during the drag.
+  List<({String book, int chapter})>? _chapterList;
+
+  /// Returns the flat (book, chapter) list for the active version
+  /// in canonical Bible order. Lazily computed from `books`.
+  List<({String book, int chapter})> get chapterList {
+    final cached = _chapterList;
+    if (cached != null) return cached;
+    final out = <({String book, int chapter})>[];
+    for (final b in books) {
+      for (final c in b.chapters) {
+        out.add((book: b.title, chapter: c.title));
+      }
+    }
+    _chapterList = out;
+    return out;
+  }
+
+  /// Returns the index of (book, chapter) in [chapterList], or
+  /// `null` if not found. O(n) — could be sped up with a Map cache
+  /// if it shows up in profiles, but only fires on chapter
+  /// transitions which are user-driven so the linear scan is fine.
+  int? findChapterIndex(String? book, int? chapter) {
+    if (book == null || chapter == null) return null;
+    final list = chapterList;
+    for (int i = 0; i < list.length; i++) {
+      if (list[i].book == book && list[i].chapter == chapter) return i;
+    }
+    return null;
+  }
 
   // Method to add a book to the list and notify listeners
   void addBook({required Book book}) {

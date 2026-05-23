@@ -16,6 +16,7 @@ import 'package:yswords/widgets/verse_popup_sheet.dart' show showVersePopup;
 import 'package:yswords/widgets/home_icon_button.dart';
 import 'package:yswords/widgets/localized_back_button.dart';
 import 'package:yswords/utils/font_catalog.dart' show kCjkFontFallback;
+import 'package:yswords/utils/relative_time.dart' show relativeTime;
 
 /// "Library" — a single page with two tabs: Notes and Bookmarks.
 /// Each tab shows the user's saved annotations for the current
@@ -541,6 +542,37 @@ class _AnnotationTile extends StatelessWidget {
           ),
           if (extra != null && extra!.isNotEmpty) ...[
             const SizedBox(height: 6),
+            // 2026-05-24 (v1.2.92): show "Edited 5 分钟前" tag above
+            // the note bubble. Reads the per-verse epoch-ms timestamp
+            // (set by setVerseNote, see MainProvider). Uses the
+            // existing relativeTime() helper that the search-history
+            // rows already use. Hidden when no timestamp is recorded
+            // (defensive — _loadNotes migrates everyone on load).
+            Builder(builder: (_) {
+              final ts = mainProvider.getVerseNoteTimestamp(verse.id);
+              if (ts == null) return const SizedBox.shrink();
+              final when = DateTime.fromMillisecondsSinceEpoch(ts);
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 4, top: 2),
+                child: Row(
+                  children: [
+                    Icon(Icons.history_rounded,
+                        size: 11,
+                        color: scheme.onSurfaceVariant.withValues(alpha: 0.7)),
+                    const SizedBox(width: 4),
+                    Text(
+                      relativeTime(when, locale),
+                      style: TextStyle(
+                        fontSize: (settings.fontSize - 5)
+                            .clamp(10.0, 13.0),
+                        color: scheme.onSurfaceVariant
+                            .withValues(alpha: 0.8),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }),
             Container(
               padding: const EdgeInsets.symmetric(
                   horizontal: 10, vertical: 8),
