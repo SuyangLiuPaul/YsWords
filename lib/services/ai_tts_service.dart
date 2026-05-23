@@ -16,10 +16,13 @@
 
 import 'dart:async' show TimeoutException;
 import 'dart:convert';
+import 'dart:io' show File;
 import 'dart:typed_data';
 
 import 'package:audioplayers/audioplayers.dart';
+import 'package:flutter/foundation.dart' show debugPrint, kIsWeb;
 import 'package:http/http.dart' as http;
+import 'package:path_provider/path_provider.dart';
 
 import 'package:yswords/services/api_base.dart';
 import 'package:yswords/services/tts_audio_cache.dart';
@@ -38,6 +41,65 @@ class AiTtsService {
   static final AudioPlayer _player = AudioPlayer();
   static bool _stopped = false;
   static String? _currentToken;
+
+  /// iOS-specific: configure the AVAudioSession the first time we
+  /// play. Default audioplayers context is `ambient` which silently
+  /// suppresses output when the iPhone silent switch is on; we want
+  /// `playback` so TTS sounds even with silent mode (matches how
+  /// every audiobook / podcast app behaves).
+  static bool _audioContextSet = false;
+  static Future<void> _ensureAudioContext() async {
+    if (_audioContextSet || kIsWeb) return;
+    try {
+      await _player.setAudioContext(AudioContext(
+        iOS: AudioContextIOS(
+          category: AVAudioSessionCategory.playback,
+          options: {AVAudioSessionOptions.mixWithOthers},
+        ),
+        android: AudioContextAndroid(
+          isSpeakerphoneOn: false,
+          stayAwake: false,
+          contentType: AndroidContentType.speech,
+          usageType: AndroidUsageType.media,
+          audioFocus: AndroidAudioFocus.gainTransientMayDuck,
+        ),
+      ));
+      _audioContextSet = true;
+    } catch (e) {
+      debugPrint('AiTtsService: setAudioContext failed: $e');
+    }
+  }
+
+  /// Play [bytes] via the global AudioPlayer. On iOS BytesSource is
+  /// known to hang silently in some configurations (no error, no
+  /// completion event), so we write to a temp file under the app's
+  /// cache dir and use DeviceFileSource — same code path AVAudioPlayer
+  /// uses for normal file playback. Returns when playback completes
+  /// or onError is invoked.
+  static int _tmpCounter = 0;
+  static Future<void> _playBytes(Uint8List bytes) async {
+    await _ensureAudioContext();
+    if (kIsWeb) {
+      // Web: BytesSource works fine, no temp file needed.
+      await _player.play(BytesSource(bytes, mimeType: 'audio/mpeg'));
+      await _player.onPlayerComplete.first;
+      return;
+    }
+    // Native: write bytes → temp file → DeviceFileSource.
+    final dir = await getTemporaryDirectory();
+    final path = '${dir.path}/yswords_tts_${_tmpCounter++}.mp3';
+    final f = File(path);
+    await f.writeAsBytes(bytes, flush: true);
+    try {
+      await _player.play(DeviceFileSource(path));
+      await _player.onPlayerComplete.first;
+    } finally {
+      // Delete temp file on next tick so the player has fully released it.
+      Future<void>.delayed(const Duration(seconds: 1), () async {
+        try { await f.delete(); } catch (_) {/* ignore */}
+      });
+    }
+  }
 
   /// Synthesize [text] and return the raw MP3 bytes. Caller decides
   /// when/how to play; useful for caching or pre-buffering.
@@ -189,9 +251,7 @@ class AiTtsService {
         return;
       }
       try {
-        await _player.play(BytesSource(result.bytes!, mimeType: 'audio/mpeg'));
-        // Wait for completion before next chunk.
-        await _player.onPlayerComplete.first;
+        await _playBytes(result.bytes!);
       } catch (e) {
         onError?.call('Audio playback failed: $e');
         return;
@@ -246,8 +306,7 @@ class AiTtsService {
         return;
       }
       try {
-        await _player.play(BytesSource(result.bytes!, mimeType: 'audio/mpeg'));
-        await _player.onPlayerComplete.first;
+        await _playBytes(result.bytes!);
       } catch (e) {
         onError?.call('Audio playback failed: $e');
         return;
