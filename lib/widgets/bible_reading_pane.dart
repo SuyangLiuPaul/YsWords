@@ -1235,8 +1235,34 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                   mp.scrollToIndexAnimated(
                     index: pendingIdx,
                     duration: const Duration(milliseconds: 350),
-                    alignment: 0.25,
+                    // 2026-05-24 (v1.2.95): user "现在只是到那一章
+                    // 而不是相关节，跳转没有" — alignment 0.25 was
+                    // landing the target verse near the top, which
+                    // visually looks like "just opened the chapter".
+                    // Bumped to 0.38 so the verse sits well inside
+                    // the viewport (with context above and below)
+                    // and the highlight is obviously on a specific
+                    // verse, not the chapter as a whole.
+                    alignment: 0.38,
                   );
+                  // 2026-05-24 (v1.2.95): defensive second-pass scroll
+                  // 380 ms later. With v1.2.94's PageView wrapping
+                  // the SPL, the chapter rebuild can race with the
+                  // first scroll — the SPL's layout pass and the
+                  // scroll request overlap and the verse ends up
+                  // off-target. A re-scroll after the rebuild
+                  // settles guarantees the final position is right.
+                  Future.delayed(const Duration(milliseconds: 380), () {
+                    if (!mounted) return;
+                    if (!mp.itemScrollController.isAttached) return;
+                    try {
+                      mp.scrollToIndexAnimated(
+                        index: pendingIdx,
+                        duration: const Duration(milliseconds: 200),
+                        alignment: 0.38,
+                      );
+                    } catch (_) {/* harmless — already at target */}
+                  });
                   debugPrint('[YsWords jump] scrolled to chapter-verse '
                       'index $pendingIdx (attempt $attempt)');
                 } catch (e) {
@@ -2002,7 +2028,7 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                               // whole range — WeDevote-style. Single
                               // selection still works the same way; the
                               // editor handles both cases uniformly.
-                              onNote: () => _showNoteEditor(
+                              onNote: () => showNoteEditor(
                                 context: context,
                                 verses:
                                     mainProvider.selectedVerses.toList()
@@ -3186,7 +3212,13 @@ void _navigateToBibleReference({
 /// user opened ONE editor for the range, "Delete" means "remove the
 /// note from the whole range", not "remove from the first verse
 /// only" — the latter would be confusing).
-void _showNoteEditor({
+/// 2026-05-24 (v1.2.95): public so Library's note tile can open
+/// the editor directly without navigating to the reader first.
+/// Was private (`_showNoteEditor`) since v1.2.59; user feedback
+/// "按了应该打开笔记本而不是跳到那个经文章节" — tile tap should
+/// open the note, not jump to verse. Verse-ref text retains its
+/// own tap handler for the jump path.
+void showNoteEditor({
   required BuildContext context,
   required List<Verse> verses,
   required String locale,
@@ -3465,15 +3497,31 @@ void _showNoteEditor({
           mainAxisSize: MainAxisSize.max,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              margin: const EdgeInsets.only(bottom: 8),
-              alignment: Alignment.center,
+            // 2026-05-24 (v1.2.95): drag handle is now a tappable
+            // dismiss target. User report: "note 打开，关闭在右上角，
+            // ios 有时候按不到，网页版好点". The top-right X near
+            // the notch / Dynamic Island is awkward to thumb on
+            // iOS. The drag pill at top-center IS reachable. Tap
+            // it to dismiss; drag it down to dismiss
+            // (enableDrag: true from v1.2.94). Both dismiss paths
+            // are obvious + thumb-friendly.
+            GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: () => Navigator.of(sheetCtx).maybePop(),
               child: Container(
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: scheme.outlineVariant,
-                  borderRadius: BorderRadius.circular(2),
+                margin: const EdgeInsets.only(bottom: 8),
+                // Extra vertical padding makes the tap target ~28 pt
+                // tall — comfortably hittable without making the
+                // pill itself visually fat.
+                padding: const EdgeInsets.symmetric(vertical: 10),
+                alignment: Alignment.center,
+                child: Container(
+                  width: 56,
+                  height: 5,
+                  decoration: BoxDecoration(
+                    color: scheme.outlineVariant,
+                    borderRadius: BorderRadius.circular(3),
+                  ),
                 ),
               ),
             ),
@@ -3656,20 +3704,27 @@ void _showNoteEditor({
             // is displayed.
             Row(
               children: [
-                // 2026-05-24 (v1.2.94): thumb-reachable Cancel
-                // button. The X at the top is still there for users
-                // who prefer it, but on tall iPhones the top edge
-                // (near the notch/island) is awkward to thumb-reach.
-                // A Cancel in the bottom row matches iOS sheet
-                // patterns and addresses user feedback: "clicking
-                // close it hard and it is bad UX".
-                TextButton(
+                // 2026-05-24 (v1.2.95): thumb-reachable Cancel
+                // button in an OutlinedButton — more visible than
+                // the v1.2.94 plain TextButton so users see it as
+                // a real dismiss option alongside Save / Delete.
+                // Three dismiss paths now: top drag handle (tap or
+                // swipe down), bottom Cancel, top X. All three
+                // work; user picks whichever is comfortable.
+                OutlinedButton(
                   onPressed: () => Navigator.of(sheetCtx).maybePop(),
-                  child: Text(
-                    uiStrings['cancel']?[locale] ?? 'Cancel',
-                    style: TextStyle(color: scheme.onSurfaceVariant),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: scheme.onSurfaceVariant,
+                    side: BorderSide(
+                      color: scheme.outlineVariant,
+                      width: 0.8,
+                    ),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 14, vertical: 10),
                   ),
+                  child: Text(uiStrings['cancel']?[locale] ?? 'Cancel'),
                 ),
+                const SizedBox(width: 4),
                 if (hasExisting)
                   TextButton.icon(
                     onPressed: () {

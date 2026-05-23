@@ -17,6 +17,7 @@ import 'package:yswords/widgets/home_icon_button.dart';
 import 'package:yswords/widgets/localized_back_button.dart';
 import 'package:yswords/utils/font_catalog.dart' show kCjkFontFallback;
 import 'package:yswords/utils/relative_time.dart' show relativeTime;
+import 'package:yswords/widgets/bible_reading_pane.dart' show showNoteEditor;
 
 /// "Library" — a single page with two tabs: Notes and Bookmarks.
 /// Each tab shows the user's saved annotations for the current
@@ -211,6 +212,17 @@ class _NotesTabState extends State<_NotesTab>
             locale: locale,
             mainProvider: mainProvider,
             extra: note,
+            // 2026-05-24 (v1.2.95): tapping the tile body opens the
+            // note editor for ALL verses in the passage. Tapping
+            // just the verse-ref text (handled inside the tile)
+            // jumps to that verse — matches user expectation
+            // "按了应该打开笔记本而不是跳到那个经文章节".
+            onOpenEditor: () => showNoteEditor(
+              context: context,
+              verses: group.verses,
+              locale: locale,
+              mainProvider: mainProvider,
+            ),
             onCopy: () => ClipboardHelper.copyWithFeedback(
               context,
               // Title goes first in the copied text so pasted notes
@@ -467,6 +479,14 @@ class _AnnotationTile extends StatelessWidget {
   /// and use the legacy single-verse `clearVerseNote(verse: this.verse)`.
   final VoidCallback? onDeleteAll;
 
+  /// 2026-05-24 (v1.2.95): when set, tapping the tile BODY opens
+  /// the note editor instead of navigating to the verse. Tapping
+  /// the verse-ref text inside the tile still navigates (the
+  /// "verse-ref → jump" affordance). Null = legacy behaviour
+  /// (whole tile taps navigate to the verse — used by the Bookmarks
+  /// tab which has no editor concept).
+  final VoidCallback? onOpenEditor;
+
   const _AnnotationTile({
     required this.verse,
     required this.locale,
@@ -476,6 +496,7 @@ class _AnnotationTile extends StatelessWidget {
     this.rangeLabelOverride,
     this.titleOverride,
     this.onDeleteAll,
+    this.onOpenEditor,
   });
 
   @override
@@ -492,41 +513,93 @@ class _AnnotationTile extends StatelessWidget {
     // verse-ref-as-header layout (no visual change for existing
     // notes after upgrade).
     final hasTitle = titleOverride != null && titleOverride!.isNotEmpty;
+    // 2026-05-24 (v1.2.95): when this tile represents a NOTE
+    // (`onOpenEditor` non-null), the primary tap opens the editor
+    // — matching user expectation that "tapping a note opens the
+    // note". Tapping the verse-ref text inside the tile still
+    // navigates (separate GestureDetector below). When this tile
+    // represents a BOOKMARK (`onOpenEditor` null), the legacy
+    // whole-tile navigate behaviour is preserved.
+    final tilePrimaryAction = onOpenEditor ?? () => _navigateToVerse(verse, mainProvider);
+    // Verse-ref text — for notes, always jumps. For bookmarks
+    // (no editor), the outer tap already jumps so the inner tap
+    // would be redundant but harmless.
+    final verseRefTextStyle = TextStyle(
+      fontWeight: FontWeight.w600,
+      color: scheme.primary,
+      fontFamily: settings.fontFamily,
+      fontFamilyFallback: kCjkFontFallback,
+      decoration: onOpenEditor != null
+          ? TextDecoration.underline
+          : TextDecoration.none,
+      decorationStyle: TextDecorationStyle.dotted,
+      decorationColor: scheme.primary.withValues(alpha: 0.6),
+      fontSize: hasTitle
+          ? (settings.fontSize - 3).clamp(11.0, 14.0)
+          : settings.fontSize,
+    );
+    // Reusable tappable ref widget. HitTestBehavior.opaque consumes
+    // the tap so the outer ListTile.onTap doesn't ALSO fire — keeps
+    // the two intents (open editor / jump to verse) strictly
+    // separated. Adds a tiny link icon hint when in note mode.
+    final verseRefWidget = onOpenEditor != null
+        ? GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: () => _navigateToVerse(verse, mainProvider),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 2),
+              child: Row(
+                children: [
+                  Flexible(
+                    child: Text(
+                      ref,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: verseRefTextStyle,
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  Icon(Icons.open_in_new_rounded,
+                      size: 13, color: scheme.primary.withValues(alpha: 0.7)),
+                ],
+              ),
+            ),
+          )
+        : Text(
+            ref,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: verseRefTextStyle,
+          );
     return ListTile(
-      onTap: () => _navigateToVerse(verse, mainProvider),
-      title: Text(
-        hasTitle ? titleOverride! : ref,
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-        style: TextStyle(
-          fontWeight: FontWeight.w700,
-          color: hasTitle ? scheme.onSurface : scheme.primary,
-          fontFamily: settings.fontFamily,
-          fontFamilyFallback: kCjkFontFallback,
-          fontSize: settings.fontSize,
-        ),
-      ),
+      onTap: tilePrimaryAction,
+      title: hasTitle
+          ? Text(
+              titleOverride!,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontWeight: FontWeight.w700,
+                color: scheme.onSurface,
+                fontFamily: settings.fontFamily,
+                fontFamilyFallback: kCjkFontFallback,
+                fontSize: settings.fontSize,
+              ),
+            )
+          // No user title: the verse-ref takes the title slot AND
+          // it's tappable to jump (the verseRefWidget already wraps
+          // the GestureDetector).
+          : verseRefWidget,
       subtitle: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (hasTitle) ...[
             const SizedBox(height: 2),
-            // Verse ref demoted to a secondary line under the title.
-            // Same colour the ref had as a header — gives it a
-            // "link-like" feel that hints at being tappable (the
-            // whole tile is tappable to navigate to the verse).
-            Text(
-              ref,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                fontWeight: FontWeight.w600,
-                color: scheme.primary,
-                fontFamily: settings.fontFamily,
-                fontFamilyFallback: kCjkFontFallback,
-                fontSize: (settings.fontSize - 3).clamp(11.0, 14.0),
-              ),
-            ),
+            // Verse ref as a secondary line under the title. In
+            // note-mode it's now a tappable + underlined chip; in
+            // bookmark-mode it stays plain text (whole tile is the
+            // tap target).
+            verseRefWidget,
           ],
           const SizedBox(height: 4),
           Text(
