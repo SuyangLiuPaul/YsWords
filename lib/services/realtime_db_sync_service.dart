@@ -93,6 +93,12 @@ class RealtimeDbSyncService extends ChangeNotifier {
     // semantics as verseNoteTimestamps — max-of-both per key —
     // ensures the most recent activity wins across devices.
     'recentSearchTimestamps',
+    // 2026-05-24 (v1.2.94): Library → Notes sort mode
+    // ('canonical' / 'recent' / 'oldest'). The v1.2.91 docstring
+    // claimed this synced but it was missing from this list;
+    // adding it now so the user's sort preference follows them
+    // across devices, matching the documented behaviour.
+    'notesSortMode',
     'plan.activeId',
   ];
   static const _stringListKeys = <String>[

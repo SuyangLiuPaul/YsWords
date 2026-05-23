@@ -87,8 +87,7 @@ class BibleReadingPane extends StatefulWidget {
   State<BibleReadingPane> createState() => _BibleReadingPaneState();
 }
 
-class _BibleReadingPaneState extends State<BibleReadingPane>
-    with SingleTickerProviderStateMixin {
+class _BibleReadingPaneState extends State<BibleReadingPane> {
   MainProvider? _positionsProvider;
   int _visibleItemIndex = 0;
   bool _showVersePosition = false;
@@ -113,12 +112,6 @@ class _BibleReadingPaneState extends State<BibleReadingPane>
   //   No idle-timer re-show — once hidden, chrome stays hidden until
   //   the user explicitly scrolls up, taps, or selects a verse.
   bool _chromeVisible = true;
-  // 2026-05-24 (v1.2.92): direction of the most recent chapter
-  // change, so the AnimatedSwitcher wrapping the chapter view can
-  // slide the new chapter in from the correct edge (matches book-
-  // flip UX: next chapter slides in from the right, prev from the
-  // left). 0 = no transition pending / first paint.
-  int _chapterChangeDir = 0;
   double _chromeScrollAccumulator = 0;
   StreamSubscription<double>? _scrollOffsetSub;
   /// Pane-local messenger so SnackBars (e.g. the "Copied!" toast) appear
@@ -151,25 +144,24 @@ class _BibleReadingPaneState extends State<BibleReadingPane>
   bool _isListening = false;
   Timer? _ttsPoller;
 
-  // 2026-05-24 (v1.2.92): drives the horizontal slide-in animation
-  // when the reader switches chapters (next/prev). Goes 0 → 1 over
-  // 260 ms. The Transform.translate wrapping the SPL reads this
-  // value × _chapterChangeDir × paneWidth to slide the new chapter
-  // in from the swipe direction. Real finger-tracked PageView
-  // preview is deferred to a separate focused refactor — the
-  // half-attempt in v1.2.93 was reverted because it needed per-
-  // chapter ItemScrollController + paragraph cache threading + a
-  // _ChapterPreview widget, more than fits a single-batch change.
-  late final AnimationController _chapterSlide;
+  // 2026-05-24 (v1.2.94): 3-page chapter pager. PageView with
+  // pages [prev_preview, current_full_SPL, next_preview] centred
+  // on page 1. User swipes horizontally → adjacent preview slides
+  // in under their finger (the WeDevote / 微读圣经 "book-flip"
+  // feel they asked for). On settle to page 0 or 2 we fire the
+  // existing _goTo{Previous,Next}Chapter then jumpToPage(1) so
+  // the new "current" is centred and a fresh swipe can fire.
+  // _ChapterPreview is lightweight (plain Text in a ListView, no
+  // SPL controller) so two pre-rendered side panels don't blow
+  // memory or fight the mainProvider.itemScrollController.
+  late final PageController _pageController;
+  bool _pageJumpInFlight = false;
 
   @override
   void initState() {
     super.initState();
-    _chapterSlide = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 260),
-      value: 1.0,
-    );
+    _pageController =
+        PageController(initialPage: 1, viewportFraction: 1.0);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       final mainProvider = context.read<MainProvider>();
@@ -421,7 +413,7 @@ class _BibleReadingPaneState extends State<BibleReadingPane>
     _versePositionTimer?.cancel();
     _scrollOffsetSub?.cancel();
     _ttsPoller?.cancel();
-    _chapterSlide.dispose();
+    _pageController.dispose();
     if (_isListening) TtsService.stop();
     _positionsProvider?.itemPositionsListener.itemPositions
         .removeListener(_handleItemPositionsChanged);
@@ -694,9 +686,6 @@ class _BibleReadingPaneState extends State<BibleReadingPane>
     final provider = context.read<MainProvider>();
     provider.clearSelectedVerses();
     provider.clearHighlightIndex();
-    _chapterChangeDir = 1;
-    _chapterSlide.value = 0.0;
-    _chapterSlide.forward();
     final books = provider.books;
     final currentBook = provider.currentBook;
     final currentChapter = provider.currentChapter;
@@ -725,9 +714,6 @@ class _BibleReadingPaneState extends State<BibleReadingPane>
     final provider = context.read<MainProvider>();
     provider.clearSelectedVerses();
     provider.clearHighlightIndex();
-    _chapterChangeDir = -1;
-    _chapterSlide.value = 0.0;
-    _chapterSlide.forward();
     final books = provider.books;
     final currentBook = provider.currentBook;
     final currentChapter = provider.currentChapter;
@@ -1320,16 +1306,14 @@ class _BibleReadingPaneState extends State<BibleReadingPane>
             // 2026-05-21 (v1.2.70): tap on empty area toggles the
             // auto-hide chrome. Verses absorb their own taps (selection
             // + popup), so this only fires on the margins / gaps.
+            //
+            // 2026-05-24 (v1.2.94): removed onHorizontalDragEnd —
+            // the new 3-page PageView captures horizontal swipes
+            // directly (see PageView.builder below), so the outer
+            // gesture detector only needs the tap-to-toggle-chrome
+            // affordance.
             behavior: HitTestBehavior.translucent,
             onTap: _toggleChrome,
-            onHorizontalDragEnd: (details) {
-              final velocity = details.primaryVelocity ?? 0;
-              if (velocity < -300) {
-                _goToNextChapter();
-              } else if (velocity > 300) {
-                _goToPreviousChapter();
-              }
-            },
             child: AnnotatedRegion<SystemUiOverlayStyle>(
               // 2026-05-22 (v1.2.71): full system-chrome theming —
               // status-bar text and the Android nav-bar icons follow
@@ -1409,27 +1393,52 @@ class _BibleReadingPaneState extends State<BibleReadingPane>
 
                     return Stack(
                       children: [
-                    // 2026-05-24 (v1.2.92): chapter-slide animation
-                    // wrapper. When chapter changes via swipe / [ ] /
-                    // bottom-bar buttons, _chapterSlide animates 0→1
-                    // and the new chapter slides in from
-                    // _chapterChangeDir × paneWidth. Outside an
-                    // animation the controller stays at 1.0 so the
-                    // SPL paints at zero offset.
-                    AnimatedBuilder(
-                      animation: _chapterSlide,
-                      builder: (ctx, child) {
-                        final t = _chapterSlide.value;
-                        final eased = Curves.easeOutCubic.transform(t);
-                        final dx = (1 - eased) *
-                            _chapterChangeDir.toDouble() *
-                            paneWidth;
-                        return Transform.translate(
-                          offset: Offset(dx, 0),
-                          child: child,
-                        );
+                    // 2026-05-24 (v1.2.94): 3-page chapter pager.
+                    // Page 0 = prev chapter preview (lightweight
+                    // Text list — no SPL). Page 1 = the real
+                    // current-chapter SPL (full feature set:
+                    // selection, highlights, notes, paragraph
+                    // grouping). Page 2 = next chapter preview.
+                    // Adjacent pages are pre-built so the user
+                    // sees actual adjacent-chapter content while
+                    // their finger is on the screen, not after.
+                    // On settle to 0 or 2, fire the existing
+                    // chapter-change path then post-frame
+                    // jumpToPage(1) so the new "current" is
+                    // centred and a fresh swipe can fire.
+                    PageView.builder(
+                      controller: _pageController,
+                      itemCount: 3,
+                      physics: const PageScrollPhysics(),
+                      onPageChanged: (idx) {
+                        if (_pageJumpInFlight || idx == 1) return;
+                        _pageJumpInFlight = true;
+                        if (idx == 0) {
+                          _goToPreviousChapter();
+                        } else {
+                          _goToNextChapter();
+                        }
+                        WidgetsBinding.instance.addPostFrameCallback((_) {
+                          if (!mounted) {
+                            _pageJumpInFlight = false;
+                            return;
+                          }
+                          if (_pageController.hasClients) {
+                            _pageController.jumpToPage(1);
+                          }
+                          _pageJumpInFlight = false;
+                        });
                       },
-                      child: Padding(
+                      itemBuilder: (pageCtx, pageIdx) {
+                        if (pageIdx != 1) {
+                          return _ChapterPreview(
+                            mainProvider: mainProvider,
+                            settings: settings,
+                            direction: pageIdx == 0 ? -1 : 1,
+                            deviceClass: dc,
+                          );
+                        }
+                        return Padding(
                       padding: EdgeInsets.only(
                         right: ResponsiveBreakpoints.readingPadding(dc),
                       ),
@@ -1573,8 +1582,9 @@ class _BibleReadingPaneState extends State<BibleReadingPane>
                         initialScrollIndex: _visibleItemIndex,
                       ),
                     ),
+                    );
+                      },
                     ),
-                    ), // close AnimatedBuilder (v1.2.92)
                     // 2026-05-24 (v1.2.91): mini reader header. When
                     // the auto-hide chrome is hidden, show a tiny
                     // pair of pills at top — version on left, book +
@@ -2511,21 +2521,33 @@ class _SelectionActionBar extends StatelessWidget {
             uiStrings['originalText']?[settings.locale] ?? 'Original',
         onPressed: onOriginal,
         icon: const Icon(Icons.auto_stories),
-        visualDensity: VisualDensity.compact,
+        // 2026-05-24 (v1.2.94): was VisualDensity.compact (~40 px)
+        // which violates Apple HIG's 44 pt minimum. Standard density
+        // keeps the bar a touch taller but every icon is reliably
+        // tappable on phones.
+        visualDensity: VisualDensity.standard,
       ),
       IconButton(
         tooltip: uiStrings['crossRefs']?[settings.locale] ??
             'Cross-references',
         onPressed: onCrossRefs,
         icon: const Icon(Icons.hub_outlined),
-        visualDensity: VisualDensity.compact,
+        // 2026-05-24 (v1.2.94): was VisualDensity.compact (~40 px)
+        // which violates Apple HIG's 44 pt minimum. Standard density
+        // keeps the bar a touch taller but every icon is reliably
+        // tappable on phones.
+        visualDensity: VisualDensity.standard,
       ),
       IconButton(
         tooltip: uiStrings['relatedSermons']?[settings.locale] ??
             'Related sermons',
         onPressed: onSermons,
         icon: const Icon(Icons.menu_book_outlined),
-        visualDensity: VisualDensity.compact,
+        // 2026-05-24 (v1.2.94): was VisualDensity.compact (~40 px)
+        // which violates Apple HIG's 44 pt minimum. Standard density
+        // keeps the bar a touch taller but every icon is reliably
+        // tappable on phones.
+        visualDensity: VisualDensity.standard,
       ),
       IconButton(
         tooltip: uiStrings['noteAdd']?[settings.locale] ?? 'Note',
@@ -2534,7 +2556,11 @@ class _SelectionActionBar extends StatelessWidget {
             ? Icons.sticky_note_2
             : Icons.sticky_note_2_outlined),
         color: anyNoted ? scheme.primary : null,
-        visualDensity: VisualDensity.compact,
+        // 2026-05-24 (v1.2.94): was VisualDensity.compact (~40 px)
+        // which violates Apple HIG's 44 pt minimum. Standard density
+        // keeps the bar a touch taller but every icon is reliably
+        // tappable on phones.
+        visualDensity: VisualDensity.standard,
       ),
       IconButton(
         tooltip: uiStrings['bookmark']?[settings.locale] ?? 'Bookmark',
@@ -2543,14 +2569,22 @@ class _SelectionActionBar extends StatelessWidget {
             ? Icons.bookmark_rounded
             : Icons.bookmark_outline_rounded),
         color: anyBookmarked ? scheme.primary : null,
-        visualDensity: VisualDensity.compact,
+        // 2026-05-24 (v1.2.94): was VisualDensity.compact (~40 px)
+        // which violates Apple HIG's 44 pt minimum. Standard density
+        // keeps the bar a touch taller but every icon is reliably
+        // tappable on phones.
+        visualDensity: VisualDensity.standard,
       ),
       IconButton(
         tooltip:
             uiStrings['highlight']?[settings.locale] ?? 'Highlight',
         onPressed: () => _showColorPicker(context),
         icon: const Icon(Icons.format_color_fill),
-        visualDensity: VisualDensity.compact,
+        // 2026-05-24 (v1.2.94): was VisualDensity.compact (~40 px)
+        // which violates Apple HIG's 44 pt minimum. Standard density
+        // keeps the bar a touch taller but every icon is reliably
+        // tappable on phones.
+        visualDensity: VisualDensity.standard,
       ),
     ];
 
@@ -3355,11 +3389,15 @@ void _showNoteEditor({
   showModalBottomSheet<void>(
     context: context,
     isScrollControlled: true,
-    // 2026-05-24 (v1.2.91): even with fullscreen always on, keep
-    // drag-to-dismiss disabled — otherwise iOS can interpret the
-    // initial sheet rise as a downward flick and dismiss
-    // immediately. X close button + backdrop tap still dismiss.
-    enableDrag: false,
+    // 2026-05-24 (v1.2.94): drag-to-dismiss re-enabled. Was
+    // disabled in v1.2.91 to dodge the fullscreen-toggle bug, but
+    // v1.2.92 removed the toggle entirely so the AnimatedContainer
+    // height transition that confused iOS is gone. Re-enabling
+    // gives users the iOS-native swipe-down dismiss (drag the top
+    // pill down) — addresses v1.2.93 user feedback "note taking
+    // in iOS clicking close it hard, bad UX". X + backdrop tap
+    // remain as backup dismiss paths.
+    enableDrag: true,
     backgroundColor: Theme.of(context).colorScheme.surface,
     constraints: const BoxConstraints(maxWidth: 720),
     shape: const RoundedRectangleBorder(
@@ -3467,11 +3505,19 @@ void _showNoteEditor({
                     ],
                   ),
                 ),
-                // 2026-05-24 (v1.2.92): expand toggle removed. The
-                // editor always opens fullscreen now. Only the
-                // close X remains in the header trailing slot.
+                // 2026-05-24 (v1.2.94): enlarged X tap target.
+                // Default IconButton is 48 pt but with snug
+                // visualDensity it shrinks below Apple HIG's 44 pt
+                // minimum, which user called out on iOS: "clicking
+                // close it hard and it is bad UX". Explicit 28 pt
+                // icon + EdgeInsets.all(12) padding = 52 pt overall
+                // — comfortably thumb-tappable near the notch.
                 IconButton(
-                  icon: const Icon(Icons.close),
+                  icon: const Icon(Icons.close_rounded, size: 28),
+                  padding: const EdgeInsets.all(12),
+                  constraints:
+                      const BoxConstraints(minWidth: 52, minHeight: 52),
+                  tooltip: uiStrings['tooltipClose']?[locale] ?? 'Close',
                   onPressed: () => Navigator.of(sheetCtx).maybePop(),
                 ),
               ],
@@ -3610,6 +3656,20 @@ void _showNoteEditor({
             // is displayed.
             Row(
               children: [
+                // 2026-05-24 (v1.2.94): thumb-reachable Cancel
+                // button. The X at the top is still there for users
+                // who prefer it, but on tall iPhones the top edge
+                // (near the notch/island) is awkward to thumb-reach.
+                // A Cancel in the bottom row matches iOS sheet
+                // patterns and addresses user feedback: "clicking
+                // close it hard and it is bad UX".
+                TextButton(
+                  onPressed: () => Navigator.of(sheetCtx).maybePop(),
+                  child: Text(
+                    uiStrings['cancel']?[locale] ?? 'Cancel',
+                    style: TextStyle(color: scheme.onSurfaceVariant),
+                  ),
+                ),
                 if (hasExisting)
                   TextButton.icon(
                     onPressed: () {
@@ -4625,6 +4685,138 @@ class _MiniHeaderPill extends StatelessWidget {
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// 2026-05-24 (v1.2.94): lightweight chapter preview rendered as
+/// the lateral pages of the chapter PageView. Shows the same
+/// chapter text the user would see if they committed the swipe —
+/// just enough so they can read the first few verses while
+/// dragging. Deliberately NOT a real SPL: avoids the
+/// ItemScrollController conflict (only one SPL can attach to
+/// mainProvider's controller at a time), keeps memory low when
+/// pre-rendering both prev and next.
+///
+/// [direction] selects which chapter relative to current:
+///   -1 → previous chapter
+///   +1 → next chapter
+class _ChapterPreview extends StatelessWidget {
+  final MainProvider mainProvider;
+  final AppSettings settings;
+  final int direction;
+  final DeviceClass deviceClass;
+
+  const _ChapterPreview({
+    required this.mainProvider,
+    required this.settings,
+    required this.direction,
+    required this.deviceClass,
+  });
+
+  /// Find the (book, chapter) tuple [direction] steps from the
+  /// current location. Returns null at canon edges (Gen 1 prev,
+  /// Rev last next) so callers can render a "you've reached the
+  /// start/end" placeholder.
+  ({String book, int chapter})? _resolveTarget() {
+    final list = mainProvider.chapterList;
+    final idx = mainProvider.findChapterIndex(
+        mainProvider.currentBook, mainProvider.currentChapter);
+    if (idx == null) return null;
+    final target = idx + direction;
+    if (target < 0 || target >= list.length) return null;
+    return list[target];
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final target = _resolveTarget();
+    if (target == null) {
+      // Canon edge — render a minimal "end of Bible" placeholder.
+      return ColoredBox(
+        color: scheme.surface,
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(32),
+            child: Text(
+              uiStrings['endOfBible']?[settings.locale] ??
+                  (settings.locale.startsWith('zh')
+                      ? '已到尽头'
+                      : 'End of Bible'),
+              style: TextStyle(
+                fontSize: settings.fontSize,
+                color: scheme.outline,
+                fontStyle: FontStyle.italic,
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+    // Filter mainProvider.verses to the preview chapter.
+    final verses = mainProvider.verses
+        .where((v) => v.book == target.book && v.chapter == target.chapter)
+        .toList()
+      ..sort((a, b) => a.verse.compareTo(b.verse));
+    final topInset = MediaQuery.of(context).padding.top;
+    return ColoredBox(
+      color: scheme.surface,
+      // ListView so the user can scroll the preview if they want;
+      // matches what the real chapter would feel like during the
+      // swipe transition. NeverScrollable would feel "stuck".
+      child: ListView.builder(
+        // 2 extra slots: chapter heading (idx 0) + trailing
+        // spacer (idx verses.length + 1). Same shape as the real
+        // SPL so visual heights match during a swipe.
+        itemCount: verses.length + 2,
+        padding: EdgeInsets.zero,
+        physics: const NeverScrollableScrollPhysics(),
+        itemBuilder: (ctx, idx) {
+          if (idx == 0) {
+            return SizedBox(
+                height: topInset + 64 * settings.menuScale + 12);
+          }
+          if (idx == verses.length + 1) {
+            return SizedBox(height: 96 * settings.menuScale);
+          }
+          final v = verses[idx - 1];
+          final inset = ResponsiveBreakpoints.readingPadding(deviceClass);
+          return Padding(
+            padding: EdgeInsets.fromLTRB(
+                inset + 16, 4, inset + 16, 4),
+            child: Text.rich(
+              TextSpan(
+                children: [
+                  TextSpan(
+                    text: '${v.verseLabel} ',
+                    style: TextStyle(
+                      fontFamily: settings.fontFamily,
+                      fontFamilyFallback: kCjkFontFallback,
+                      fontWeight: FontWeight.w600,
+                      fontSize: (settings.fontSize - 2).clamp(11.0, 16.0),
+                      color: scheme.primary,
+                    ),
+                  ),
+                  TextSpan(
+                    text: v.text
+                        .replaceAll(RegExp(r'<note:[^>]*>'), '')
+                        .replaceAll(RegExp(r'<[^>]+>'), '')
+                        .replaceAll(RegExp(r'\{[^}]+\}'), ''),
+                    style: TextStyle(
+                      fontFamily: settings.fontFamily,
+                      fontFamilyFallback: kCjkFontFallback,
+                      fontSize: settings.fontSize,
+                      height: 1.6,
+                      color: scheme.onSurface,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
       ),
     );
   }
@@ -6164,7 +6356,11 @@ class _SectionHeadingState extends State<_SectionHeading> {
               if (hasContext) ...[
                 const SizedBox(width: 6),
                 IconButton(
-                  visualDensity: VisualDensity.compact,
+                  // 2026-05-24 (v1.2.94): was VisualDensity.compact (~40 px)
+        // which violates Apple HIG's 44 pt minimum. Standard density
+        // keeps the bar a touch taller but every icon is reliably
+        // tappable on phones.
+        visualDensity: VisualDensity.standard,
                   padding: EdgeInsets.zero,
                   // 2026-05-10 (v1.2.31): bump min tap target from
                   // 32 → 48 dp for Material/WCAG a11y. Glyph stays
