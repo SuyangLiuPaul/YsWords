@@ -4903,8 +4903,9 @@ class _ChapterPreview extends StatelessWidget {
     // current version (defensive — chapterList is built from
     // `books`, but if the version was swapped mid-build the
     // verses list may not include this chapter yet).
-    final hasVerses = mainProvider.verses
-        .any((v) => v.book == book && v.chapter == chapter);
+    // 2026-05-24 (v1.2.99): use the O(1) index helper.
+    final hasVerses =
+        mainProvider.versesInChapter(book, chapter).isNotEmpty;
     if (!hasVerses) {
       // Render a blank surface (same colour as reader) so the
       // PageView's slide animation still has a solid backdrop
@@ -4929,11 +4930,13 @@ class _ChapterPreview extends StatelessWidget {
         ),
       );
     }
-    // Filter mainProvider.verses to the preview chapter.
-    final verses = mainProvider.verses
-        .where((v) => v.book == book && v.chapter == chapter)
-        .toList()
-      ..sort((a, b) => a.verse.compareTo(b.verse));
+    // 2026-05-24 (v1.2.99): O(1) lookup via versesInChapter (replaces
+    // O(n) `.where(...)` filter over all 31000 verses per build).
+    // Was the dominant cost during a chapter swipe — preview rebuilt
+    // for 2-3 visible pages per frame at 60 fps = ~5 M iter/s. User
+    // reported persistent stutter after the v1.2.98 sync-block fix;
+    // this is the remaining hot path.
+    final verses = mainProvider.versesInChapter(book, chapter);
     final topInset = MediaQuery.of(context).padding.top;
     return ColoredBox(
       color: scheme.surface,

@@ -72,6 +72,17 @@ class MainProvider extends ChangeNotifier {
     // useful (don't accidentally clobber a pre-cached chapter the
     // user might come back to). LRU eviction handles memory cap.
     _bookOrderCache = null;
+    // 2026-05-24 (v1.2.99): verses-by-chapter index. The PageView
+    // chapter preview (lib/widgets/bible_reading_pane.dart's
+    // _ChapterPreview) was doing `verses.where((v) => v.book == b &&
+    // v.chapter == c)` on every page rebuild — O(31000) per page
+    // and called for the 2-3 visible neighbour pages during every
+    // swipe. With a swipe gesture running at 60 fps that's
+    // ~5 million iterations / second. User reported persistent
+    // "翻页还是有一点停顿" stutter even after the build-time sync
+    // block fix. Invalidate this here so the next access rebuilds
+    // it for the new verses list.
+    _versesByChapterKey = null;
     // 2026-05-10 (v1.2.14): populate the per-version verse cache so
     // a future switch back to this version is truly instant
     // ("一瞬间", in the user's words). Skip empty lists — they
@@ -258,7 +269,14 @@ class MainProvider extends ChangeNotifier {
   // switch). Especially useful with v1.2.15+'s background pre-load
   // since the user is now likely to flip between many cached
   // versions on the same chapter.
-  static const int _kParagraphCacheLimit = 30;
+  // 2026-05-24 (v1.2.99): bumped 30 → 300. v1.2.96's N-page PageView
+  // means a user swiping a few chapters in either direction
+  // immediately needs the paragraph grouping for prev / current /
+  // next, plus pre-warmed neighbours. Cache miss = ~50 ms recompute
+  // (per the original comment) which the user feels as stutter at
+  // the moment the SPL builds on the new page. 300 entries × small
+  // record per chapter ≈ <5 MB RAM — well within budget.
+  static const int _kParagraphCacheLimit = 300;
   final LinkedHashMap<
       String,
       ({
@@ -266,6 +284,37 @@ class MainProvider extends ChangeNotifier {
         Map<int, int> verseToItem,
         Map<int, int> itemToVerseIndex,
       })> _paragraphGroupsCache = LinkedHashMap();
+
+  // 2026-05-24 (v1.2.99): verses-by-chapter index. Built lazily on
+  // first access and invalidated whenever `verses` changes
+  // (setVerses clears `_versesByChapterKey`). Key format matches
+  // `chapterList` entries: "<book>|<chapter>". Each value is the
+  // pre-sorted verse list for that chapter — same shape the SPL
+  // builder uses.
+  Map<String, List<Verse>>? _versesByChapterKey;
+
+  /// Fast O(1) lookup of verses in a given (book, chapter). Replaces
+  /// the O(n) `verses.where(...)` filter that was hot-pathing the
+  /// PageView preview build. Returns an empty list if the chapter
+  /// doesn't exist in the current version.
+  List<Verse> versesInChapter(String book, int chapter) {
+    final cache = _versesByChapterKey ??= _buildVersesByChapterIndex();
+    return cache['$book|$chapter'] ?? const <Verse>[];
+  }
+
+  Map<String, List<Verse>> _buildVersesByChapterIndex() {
+    final out = <String, List<Verse>>{};
+    for (final v in verses) {
+      final key = '${v.book}|${v.chapter}';
+      out.putIfAbsent(key, () => <Verse>[]).add(v);
+    }
+    // Sort each chapter's verses by verse number once, up front, so
+    // callers don't have to.
+    for (final list in out.values) {
+      list.sort((a, b) => a.verse.compareTo(b.verse));
+    }
+    return out;
+  }
 
   /// Cache key encodes every input that affects paragraph grouping
   /// output. Includes `currentVersion` (added v1.2.16) so two
