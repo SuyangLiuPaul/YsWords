@@ -144,24 +144,41 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
   bool _isListening = false;
   Timer? _ttsPoller;
 
-  // 2026-05-24 (v1.2.94): 3-page chapter pager. PageView with
-  // pages [prev_preview, current_full_SPL, next_preview] centred
-  // on page 1. User swipes horizontally → adjacent preview slides
-  // in under their finger (the WeDevote / 微读圣经 "book-flip"
-  // feel they asked for). On settle to page 0 or 2 we fire the
-  // existing _goTo{Previous,Next}Chapter then jumpToPage(1) so
-  // the new "current" is centred and a fresh swipe can fire.
-  // _ChapterPreview is lightweight (plain Text in a ListView, no
-  // SPL controller) so two pre-rendered side panels don't blow
-  // memory or fight the mainProvider.itemScrollController.
+  // 2026-05-24 (v1.2.96): N-page chapter pager. PageView with one
+  // page per chapter in `mainProvider.chapterList` (~1189 entries
+  // Gen 1 → Rev 22). PageView.builder keeps only the visible page
+  // + a couple cached neighbours alive, so memory is fine.
+  //
+  // Why this replaced the v1.2.94 3-page model: that design called
+  // `jumpToPage(1)` after every settle to keep the SPL centred,
+  // which is an INSTANT snap. User reported "一松手，就马上跳动
+  // 到那一章一瞬间，而不是滑过去" — the snap broke the WeDevote
+  // book-flip feel. With one page per chapter the PageController
+  // index directly tracks the chapter; settle = land = no jump.
+  //
+  // The active page (index == findChapterIndex(currentChapter))
+  // renders the FULL SPL (selection, highlights, notes,
+  // paragraph grouping, mainProvider's controllers). Adjacent
+  // pages render `_ChapterPreview` (lightweight Text list) so we
+  // don't pay the cost of N concurrent SPLs nor fight over the
+  // mainProvider controllers.
   late final PageController _pageController;
-  bool _pageJumpInFlight = false;
+  // Set true between user swipe and the post-frame
+  // `setCurrentChapter` so the build-time controller-sync pass
+  // (which exists to handle EXTERNAL chapter changes, e.g.
+  // pendingJump from search) doesn't try to "correct" a swipe
+  // that's already in flight.
+  bool _pageSwipeInFlight = false;
 
   @override
   void initState() {
     super.initState();
-    _pageController =
-        PageController(initialPage: 1, viewportFraction: 1.0);
+    final mp = context.read<MainProvider>();
+    final initialChapterIdx = mp.findChapterIndex(
+            mp.currentBook, mp.currentChapter) ??
+        0;
+    _pageController = PageController(
+        initialPage: initialChapterIdx, viewportFraction: 1.0);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       final mainProvider = context.read<MainProvider>();
@@ -1419,48 +1436,103 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
 
                     return Stack(
                       children: [
-                    // 2026-05-24 (v1.2.94): 3-page chapter pager.
-                    // Page 0 = prev chapter preview (lightweight
-                    // Text list — no SPL). Page 1 = the real
-                    // current-chapter SPL (full feature set:
-                    // selection, highlights, notes, paragraph
-                    // grouping). Page 2 = next chapter preview.
-                    // Adjacent pages are pre-built so the user
-                    // sees actual adjacent-chapter content while
-                    // their finger is on the screen, not after.
-                    // On settle to 0 or 2, fire the existing
-                    // chapter-change path then post-frame
-                    // jumpToPage(1) so the new "current" is
-                    // centred and a fresh swipe can fire.
-                    PageView.builder(
+                    // 2026-05-24 (v1.2.96): N-page chapter pager —
+                    // one page per chapter in chapterList
+                    // (~1189). Replaces the v1.2.94 3-page model,
+                    // which needed an instant `jumpToPage(1)` to
+                    // re-centre the SPL after every swipe. The
+                    // jump broke the smooth book-flip feel; user
+                    // reported "一松手，就马上跳动到那一章一瞬间".
+                    //
+                    // With one page per chapter, PageController's
+                    // index directly tracks the chapter — swipe
+                    // settles ARE the chapter change, no jump.
+                    // PageView.builder lazily builds + caches
+                    // only the visible page and a couple
+                    // neighbours so memory is bounded.
+                    //
+                    // The active page (idx ==
+                    // _currentChapterPageIdx) renders the full
+                    // SPL with mainProvider's controllers and
+                    // full annotation features; neighbours
+                    // render a lightweight preview while the user
+                    // is dragging towards them. After settle the
+                    // newly-active page rebuilds as the SPL —
+                    // visually the preview → SPL swap happens at
+                    // the same screen position so there is no
+                    // visible snap.
+                    //
+                    // External chapter changes (pendingJump from
+                    // search, library tile, etc.) flow through
+                    // the build-time sync block above which
+                    // animates the PageController to the new
+                    // page when currentChapter shifts outside of
+                    // a user swipe.
+                    Builder(builder: (pageBuildCtx) {
+                      final chapterList = mainProvider.chapterList;
+                      final currentChapterPageIdx =
+                          mainProvider.findChapterIndex(
+                                  mainProvider.currentBook,
+                                  mainProvider.currentChapter) ??
+                              0;
+                      // Sync PageController if currentChapter
+                      // changed externally (not via swipe).
+                      // Runs post-frame so we don't fight an
+                      // in-flight swipe.
+                      if (!_pageSwipeInFlight &&
+                          _pageController.hasClients) {
+                        final controllerPage =
+                            _pageController.page?.round();
+                        if (controllerPage != null &&
+                            controllerPage != currentChapterPageIdx) {
+                          WidgetsBinding.instance
+                              .addPostFrameCallback((_) {
+                            if (!mounted) return;
+                            if (!_pageController.hasClients) return;
+                            if (_pageSwipeInFlight) return;
+                            _pageController
+                                .jumpToPage(currentChapterPageIdx);
+                          });
+                        }
+                      }
+                      return PageView.builder(
                       controller: _pageController,
-                      itemCount: 3,
+                      itemCount: chapterList.length,
                       physics: const PageScrollPhysics(),
                       onPageChanged: (idx) {
-                        if (_pageJumpInFlight || idx == 1) return;
-                        _pageJumpInFlight = true;
-                        if (idx == 0) {
-                          _goToPreviousChapter();
-                        } else {
-                          _goToNextChapter();
+                        // Idx is the chapter's index in
+                        // chapterList. Translate to (book,
+                        // chapter) and update provider. No
+                        // jumpToPage needed — the page IS the
+                        // new current chapter.
+                        if (idx < 0 || idx >= chapterList.length) {
+                          return;
                         }
-                        WidgetsBinding.instance.addPostFrameCallback((_) {
-                          if (!mounted) {
-                            _pageJumpInFlight = false;
-                            return;
-                          }
-                          if (_pageController.hasClients) {
-                            _pageController.jumpToPage(1);
-                          }
-                          _pageJumpInFlight = false;
+                        if (idx == currentChapterPageIdx) return;
+                        _pageSwipeInFlight = true;
+                        final tgt = chapterList[idx];
+                        final provider =
+                            context.read<MainProvider>();
+                        provider.clearSelectedVerses();
+                        provider.clearHighlightIndex();
+                        _switchTo(provider, tgt.book, tgt.chapter);
+                        WidgetsBinding.instance
+                            .addPostFrameCallback((_) {
+                          _pageSwipeInFlight = false;
                         });
                       },
                       itemBuilder: (pageCtx, pageIdx) {
-                        if (pageIdx != 1) {
+                        if (pageIdx != currentChapterPageIdx) {
+                          if (pageIdx < 0 ||
+                              pageIdx >= chapterList.length) {
+                            return const SizedBox.shrink();
+                          }
+                          final tgt = chapterList[pageIdx];
                           return _ChapterPreview(
                             mainProvider: mainProvider,
                             settings: settings,
-                            direction: pageIdx == 0 ? -1 : 1,
+                            book: tgt.book,
+                            chapter: tgt.chapter,
                             deviceClass: dc,
                           );
                         }
@@ -1610,7 +1682,8 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                     ),
                     );
                       },
-                    ),
+                    );
+                    }),
                     // 2026-05-24 (v1.2.91): mini reader header. When
                     // the auto-hide chrome is hidden, show a tiny
                     // pair of pills at top — version on left, book +
@@ -4745,51 +4818,46 @@ class _MiniHeaderPill extends StatelessWidget {
   }
 }
 
-/// 2026-05-24 (v1.2.94): lightweight chapter preview rendered as
-/// the lateral pages of the chapter PageView. Shows the same
-/// chapter text the user would see if they committed the swipe —
-/// just enough so they can read the first few verses while
+/// 2026-05-24 (v1.2.96): lightweight chapter preview rendered for
+/// any PageView page that is NOT the current chapter. Shows the
+/// chapter text so the user can read the first verses while
 /// dragging. Deliberately NOT a real SPL: avoids the
 /// ItemScrollController conflict (only one SPL can attach to
-/// mainProvider's controller at a time), keeps memory low when
-/// pre-rendering both prev and next.
+/// mainProvider's controllers at a time), keeps memory bounded
+/// when PageView caches a couple of neighbour pages.
 ///
-/// [direction] selects which chapter relative to current:
-///   -1 → previous chapter
-///   +1 → next chapter
+/// v1.2.96 takes [book] + [chapter] directly instead of the
+/// previous [direction] (-1 / +1 relative to current), because
+/// the N-page PageView places each chapter at its own page
+/// index — direction no longer maps cleanly.
 class _ChapterPreview extends StatelessWidget {
   final MainProvider mainProvider;
   final AppSettings settings;
-  final int direction;
+  final String book;
+  final int chapter;
   final DeviceClass deviceClass;
 
   const _ChapterPreview({
     required this.mainProvider,
     required this.settings,
-    required this.direction,
+    required this.book,
+    required this.chapter,
     required this.deviceClass,
   });
-
-  /// Find the (book, chapter) tuple [direction] steps from the
-  /// current location. Returns null at canon edges (Gen 1 prev,
-  /// Rev last next) so callers can render a "you've reached the
-  /// start/end" placeholder.
-  ({String book, int chapter})? _resolveTarget() {
-    final list = mainProvider.chapterList;
-    final idx = mainProvider.findChapterIndex(
-        mainProvider.currentBook, mainProvider.currentChapter);
-    if (idx == null) return null;
-    final target = idx + direction;
-    if (target < 0 || target >= list.length) return null;
-    return list[target];
-  }
 
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final target = _resolveTarget();
-    if (target == null) {
-      // Canon edge — render a minimal "end of Bible" placeholder.
+    // Verify the target chapter actually has verses in the
+    // current version (defensive — chapterList is built from
+    // `books`, but if the version was swapped mid-build the
+    // verses list may not include this chapter yet).
+    final hasVerses = mainProvider.verses
+        .any((v) => v.book == book && v.chapter == chapter);
+    if (!hasVerses) {
+      // Render a blank surface (same colour as reader) so the
+      // PageView's slide animation still has a solid backdrop
+      // and the user doesn't see a flash of system background.
       return ColoredBox(
         color: scheme.surface,
         child: Center(
@@ -4812,7 +4880,7 @@ class _ChapterPreview extends StatelessWidget {
     }
     // Filter mainProvider.verses to the preview chapter.
     final verses = mainProvider.verses
-        .where((v) => v.book == target.book && v.chapter == target.chapter)
+        .where((v) => v.book == book && v.chapter == chapter)
         .toList()
       ..sort((a, b) => a.verse.compareTo(b.verse));
     final topInset = MediaQuery.of(context).padding.top;

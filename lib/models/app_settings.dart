@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:yswords/models/app_style_preset.dart' show CardMaterial;
 import 'package:yswords/models/dashboard_section.dart';
+import 'package:yswords/services/app_icon_service.dart';
 import 'package:yswords/services/cloud_auth_service.dart';
 import 'package:yswords/services/realtime_db_sync_service.dart';
 import 'package:yswords/utils/font_catalog.dart';
@@ -480,6 +481,15 @@ class AppSettings extends ChangeNotifier {
     notifyListeners();
     final prefs = await SharedPreferences.getInstance();
     await prefs.setInt(_kPrimaryColor, color.toARGB32());
+    // 2026-05-24 (v1.2.96): also swap the iOS home-screen icon if
+    // the user picked a color that has a matching alternate-icon
+    // variant. Non-iOS platforms are a silent no-op. The OS shows
+    // a one-time alert per session ("icon changed for ...") which
+    // is iOS-imposed and can't be suppressed.
+    // Fire-and-forget — we don't await because the alert is async
+    // and the user's already moved on from Settings.
+    // ignore: unawaited_futures
+    AppIconService.updateForColor(color);
   }
 
   Future<void> setCopyFormat(String format) async {

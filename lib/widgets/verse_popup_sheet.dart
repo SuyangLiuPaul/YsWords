@@ -217,9 +217,32 @@ class _VersePopupSheetState extends State<VersePopupSheet> {
     if (!mounted) return;
     final ok = await jumper.showJumpResultSnackBar(context, result);
     if (!ok || !mounted) return;
-    Navigator.of(context).maybePop(); // close the popup first
+    // 2026-05-24 (v1.2.96): pop ALL modal sheets — popup itself
+    // AND any modal note editor underneath it — then navigate.
+    // The old code called `Navigator.maybePop()` (popped only the
+    // popup) then `Get.to(HomePage)` (PUSHED a new HomePage).
+    //
+    // When the user opens the popup from inside a library note
+    // (Library → tap tile → NoteEditor modal → tap ref in body →
+    // VersePopupSheet on top), the stack was:
+    //   [Dashboard, Library, NoteEditor, VersePopupSheet]
+    // After old code:
+    //   [Dashboard, Library, NoteEditor, HomePage(new)]
+    // — back stack still has NoteEditor + Library underneath the
+    // new HomePage, so pressing back made the note re-appear over
+    // Library. User reported "在note里面按经文，会新的一个page
+    // 跳到那经文位置，如果退出的时候，发现其实重叠了".
+    //
+    // Fix: pop popup + any modal sheets via popUntil on
+    // PageRoute (PageRoute is the parent of full-screen pushed
+    // routes; modal bottom sheets are PopupRoute, not PageRoute).
+    // Then REPLACE the now-top page route with HomePage via
+    // Get.off — this swaps Library/Sermon out so back returns to
+    // Dashboard, not the stale modal stack.
+    final navigator = Navigator.of(context, rootNavigator: true);
+    navigator.popUntil((route) => route is PageRoute);
     if (!mounted) return;
-    Get.to(() => const HomePage(), transition: Transition.rightToLeft);
+    Get.off(() => const HomePage(), transition: Transition.rightToLeft);
   }
 
   @override
