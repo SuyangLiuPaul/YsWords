@@ -22,6 +22,7 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:http/http.dart' as http;
 
 import 'package:yswords/services/api_base.dart';
+import 'package:yswords/services/tts_audio_cache.dart';
 
 class AiTtsService {
   AiTtsService._();
@@ -40,6 +41,12 @@ class AiTtsService {
 
   /// Synthesize [text] and return the raw MP3 bytes. Caller decides
   /// when/how to play; useful for caching or pre-buffering.
+  ///
+  /// 2026-05-23 (v1.2.87): adds a transparent on-disk cache layer
+  /// keyed by (text, locale, gender, tier). Repeated playback of the
+  /// same verse / chapter / sermon paragraph is instant and free —
+  /// no API call. Pass `skipCache: true` to force a fresh synthesis
+  /// (debug only).
   static Future<TtsResult> synthesize({
     required String text,
     required String locale,
@@ -47,6 +54,14 @@ class AiTtsService {
     String tier = 'neural',
     double speakingRate = 1.0,
     String? userApiKey,
+    bool skipCache = false,
+    /// Optional CDN URL to try before calling the TTS API. When the
+    /// caller knows that a pre-generated MP3 already exists for this
+    /// (version, book, chapter, gender) — e.g. CUV chapters mirrored
+    /// to `yswords-data.netlify.app/audio/cuv/{book}/{chapter}_F.mp3` —
+    /// pass the URL here. The fetch is HTTP only; no API quota burnt
+    /// if it succeeds. Falls through to the TTS API on 404/error.
+    String? cdnUrl,
   }) async {
     if (text.trim().isEmpty) {
       return TtsResult.unavailable('Empty text.');
@@ -55,6 +70,37 @@ class AiTtsService {
       return TtsResult.unavailable(
         'Text exceeds 5000 chars. Use synthesizeLong to auto-chunk.',
       );
+    }
+    if (!skipCache) {
+      final cached = await TtsAudioCache.get(
+        text: text, locale: locale, gender: gender, tier: tier,
+      );
+      if (cached != null) return TtsResult.ok(cached);
+    }
+    // Phase B: optional CDN pre-fetch. Caller can pass `cdnUrl` to
+    // hint that a pre-generated MP3 exists at a stable URL on the
+    // yswords-data Netlify CDN (e.g. for Bible chapters). Try that
+    // BEFORE billing the Google TTS API. Falls through to /api/aiSpeak
+    // on 404 / network error so the user always gets audio.
+    if (cdnUrl != null && cdnUrl.isNotEmpty) {
+      try {
+        final r = await http
+            .get(Uri.parse(cdnUrl), headers: const {
+              'Accept': 'audio/mpeg, audio/*',
+            })
+            .timeout(const Duration(seconds: 12));
+        if (r.statusCode == 200 && r.bodyBytes.isNotEmpty) {
+          // ignore: discarded_futures
+          TtsAudioCache.put(
+            text: text,
+            locale: locale,
+            gender: gender,
+            tier: tier,
+            bytes: r.bodyBytes,
+          );
+          return TtsResult.ok(r.bodyBytes);
+        }
+      } catch (_) {/* fall through to TTS API */}
     }
     final body = <String, dynamic>{
       'text': text,
@@ -91,7 +137,14 @@ class AiTtsService {
       final j = jsonDecode(resp.body) as Map<String, dynamic>;
       final b64 = (j['audio'] as String?) ?? '';
       if (b64.isEmpty) return TtsResult.unavailable('Empty audio response.');
-      return TtsResult.ok(base64Decode(b64));
+      final bytes = base64Decode(b64);
+      // Best-effort write to local cache so next play is instant.
+      // Fire-and-forget — don't block the audio start.
+      // ignore: discarded_futures
+      TtsAudioCache.put(
+        text: text, locale: locale, gender: gender, tier: tier, bytes: bytes,
+      );
+      return TtsResult.ok(bytes);
     } on TimeoutException {
       return TtsResult.unavailable('TTS took too long.');
     } catch (e) {
@@ -162,6 +215,12 @@ class AiTtsService {
     void Function(int index)? onAdvance,
     void Function()? onDone,
     void Function(String error)? onError,
+    /// Optional CDN URL builder. Given the chunk index, returns the
+    /// URL where a pre-generated MP3 might exist. Returning null
+    /// skips the CDN fetch for that chunk and goes straight to the
+    /// TTS API. Same fall-through behaviour as the single-call
+    /// `cdnUrl` parameter.
+    String? Function(int index)? cdnUrlFor,
   }) async {
     await stop();
     final token = DateTime.now().microsecondsSinceEpoch.toString();
@@ -179,6 +238,7 @@ class AiTtsService {
         tier: tier,
         speakingRate: speakingRate,
         userApiKey: userApiKey,
+        cdnUrl: cdnUrlFor?.call(i),
       );
       if (_stopped || _currentToken != token) return;
       if (result.unavailable) {

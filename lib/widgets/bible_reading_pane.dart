@@ -199,12 +199,32 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
 
     final settings = context.read<AppSettings>();
     final byok = settings.geminiApiKey.trim();
+    // v1.2.87 Phase B: per-verse CDN pre-fetch. When the user is on
+    // a version + book + chapter that we've pre-generated, the MP3
+    // already exists on yswords-data.netlify.app and we skip the
+    // /api/aiSpeak call (no quota, no latency). URL pattern:
+    //   /audio/<version>/<englishBook>/<chapter>_<verse>_<gender>.mp3
+    // The version slug is lowercased; book is English so the path
+    // is stable across locale UI changes.
+    final versionSlug = (mp.currentVersion).toLowerCase();
+    final englishBook = toEnglish(book) ?? book;
+    final genderChar = settings.ttsVoiceGender == 'male' ? 'M' : 'F';
+    String? cdnUrlFor(int idx) {
+      // Idx maps to chapterVerses[idx].verse (sorted ascending).
+      if (idx < 0 || idx >= chapterVerses.length) return null;
+      final v = chapterVerses[idx].verse;
+      final safeBook = englishBook.replaceAll(' ', '_');
+      return 'https://yswords-data.netlify.app/audio/$versionSlug/'
+          '$safeBook/${chapter}_${v}_$genderChar.mp3';
+    }
+
     AiTtsService.speakSequence(
       chunks,
       locale: locale,
       gender: settings.ttsVoiceGender,
       tier: settings.ttsVoiceTier,
       userApiKey: byok.isEmpty ? null : byok,
+      cdnUrlFor: cdnUrlFor,
       onAdvance: (idx) {
         if (!mounted) return;
         mp.setHighlightIndex(idx);

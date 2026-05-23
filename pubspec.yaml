@@ -1,7 +1,7 @@
 name: yswords
 description: "YsWords means Yahweh's words. A bilingual Bible app to help you listen to His voice and abide in Him daily."
 publish_to: 'none'
-version: 1.2.86
+version: 1.2.87
 
 environment:
   sdk: '>=3.2.3 <4.0.0'
@@ -63,6 +63,12 @@ dependencies:
   # (Google Cloud TTS Neural2 / Wavenet voices). audioplayers picked
   # over just_audio for simpler bytes-source playback + smaller binary.
   audioplayers: ^6.1.0
+  # 2026-05-23 (v1.2.87): client-side audio cache.
+  # path_provider gives us the per-platform cache + app-docs dirs;
+  # crypto's SHA-1 turns (text + voice + tier) into a stable cache
+  # key so a second play of the same verse is instant + free.
+  path_provider: ^2.1.4
+  crypto: ^3.0.5
 
 dev_dependencies:
   flutter_test:
