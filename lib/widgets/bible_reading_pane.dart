@@ -155,9 +155,11 @@ class _BibleReadingPaneState extends State<BibleReadingPane>
   // when the reader switches chapters (next/prev). Goes 0 → 1 over
   // 260 ms. The Transform.translate wrapping the SPL reads this
   // value × _chapterChangeDir × paneWidth to slide the new chapter
-  // in from the swipe direction. Not as rich as a finger-tracked
-  // PageView preview (deferred to v1.2.93), but eliminates the
-  // instant-snap feel that user called out.
+  // in from the swipe direction. Real finger-tracked PageView
+  // preview is deferred to a separate focused refactor — the
+  // half-attempt in v1.2.93 was reverted because it needed per-
+  // chapter ItemScrollController + paragraph cache threading + a
+  // _ChapterPreview widget, more than fits a single-batch change.
   late final AnimationController _chapterSlide;
 
   @override
@@ -166,7 +168,7 @@ class _BibleReadingPaneState extends State<BibleReadingPane>
     _chapterSlide = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 260),
-      value: 1.0, // settled (no slide) by default
+      value: 1.0,
     );
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
@@ -693,11 +695,6 @@ class _BibleReadingPaneState extends State<BibleReadingPane>
     provider.clearSelectedVerses();
     provider.clearHighlightIndex();
     _chapterChangeDir = 1;
-    // Kick off the slide-in (controller will be evaluated against
-    // the new chapter's rebuilt SPL). Animation goes 0 → 1 over
-    // 260 ms; the Transform.translate wrapping the SPL paints the
-    // SPL at offset (1 - value) * dir * paneWidth, so the new
-    // chapter slides in from the right (dir=1) over the duration.
     _chapterSlide.value = 0.0;
     _chapterSlide.forward();
     final books = provider.books;
@@ -1416,10 +1413,9 @@ class _BibleReadingPaneState extends State<BibleReadingPane>
                     // wrapper. When chapter changes via swipe / [ ] /
                     // bottom-bar buttons, _chapterSlide animates 0→1
                     // and the new chapter slides in from
-                    // _chapterChangeDir × paneWidth (right=+1,
-                    // left=-1). Outside an animation the controller
-                    // stays at value 1.0 so the SPL paints at zero
-                    // offset (no transform).
+                    // _chapterChangeDir × paneWidth. Outside an
+                    // animation the controller stays at 1.0 so the
+                    // SPL paints at zero offset.
                     AnimatedBuilder(
                       animation: _chapterSlide,
                       builder: (ctx, child) {
@@ -3404,12 +3400,20 @@ void _showNoteEditor({
       // multi-verse selection has a note (and Delete clears them all).
       final hasExisting = verses.any(
           (v) => (mainProvider.getVerseNote(v) ?? '').isNotEmpty);
-      // 2026-05-24 (v1.2.92): always fullscreen. Sheet height =
-      // viewport - status bar - keyboard. No more compact mode
-      // (eliminated the expand/collapse bug class — see header
-      // comment in _showNoteEditor for the full reasoning).
+      // 2026-05-24 (v1.2.93): height = viewport minus status bar
+      // ONLY. Do NOT also subtract viewInsets.bottom here — the
+      // Padding below already adds viewInsets.bottom to its
+      // bottom inset, and subtracting in BOTH places is a double
+      // subtraction. With a 400 px iOS keyboard up that bug
+      // squeezed the Expanded body TextField to negative height
+      // (user reported: 标题/chips/buttons visible, no body —
+      // see screenshot in conversation). Fix: sheet container =
+      // full visible area below status bar; Padding handles
+      // keyboard avoidance. Was correct in v1.2.91 compact mode
+      // because height was `null` (intrinsic), but broke when
+      // v1.2.92 made fullscreen the only mode.
       final fullscreenHeight =
-          mq.size.height - mq.padding.top - mq.viewInsets.bottom;
+          mq.size.height - mq.padding.top;
       return SizedBox(
         height: fullscreenHeight,
         child: Padding(
