@@ -5059,8 +5059,8 @@
         21
       ]
     },
-    "file": "https://upload.wikimedia.org/wikipedia/commons/6/67/Gustave_Dore_-_Jesus_rides_into_Jerusalem_on_a_donkey_on_Palm_Sunday.jpg",
-    "source": "legacy_url"
+    "file": "illus_dore_gustavedorejesusride.jpg",
+    "source": "cdn"
   },
   {
     "id": "illus_dore_gustavedorejesustalk",
@@ -5081,8 +5081,8 @@
         22
       ]
     },
-    "file": "https://upload.wikimedia.org/wikipedia/commons/7/76/Gustave_Dore_-_Jesus_talks_of_the_tribute_money.jpg",
-    "source": "legacy_url"
+    "file": "illus_dore_gustavedorejesustalk.jpg",
+    "source": "cdn"
   },
   {
     "id": "illus_dore_gustavedorethetransf",
@@ -5103,8 +5103,8 @@
         17
       ]
     },
-    "file": "https://upload.wikimedia.org/wikipedia/commons/2/22/Gustave_Dore_-_The_Transfiguration.jpg",
-    "source": "legacy_url"
+    "file": "illus_dore_gustavedorethetransf.jpg",
+    "source": "cdn"
   },
   {
     "id": "illus_dore_jesusandthedisciples",
@@ -5125,8 +5125,8 @@
         26
       ]
     },
-    "file": "https://upload.wikimedia.org/wikipedia/commons/a/a4/Jesus_and_the_disciples_at_the_Last_Supper.jpg",
-    "source": "legacy_url"
+    "file": "illus_dore_jesusandthedisciples.jpg",
+    "source": "cdn"
   },
   {
     "id": "illus_dore_gustavedorejudasbetr",
@@ -5147,8 +5147,8 @@
         26
       ]
     },
-    "file": "https://upload.wikimedia.org/wikipedia/commons/5/52/Gustave_Dore_-_Judas_betrays_Jesus_with_a_kiss.jpg",
-    "source": "legacy_url"
+    "file": "illus_dore_gustavedorejudasbetr.jpg",
+    "source": "cdn"
   },
   {
     "id": "illus_dore_dorejesusprayinginth",
@@ -5169,8 +5169,8 @@
         26
       ]
     },
-    "file": "https://upload.wikimedia.org/wikipedia/commons/b/b2/DoreJesusPrayingintheGarden.jpg",
-    "source": "legacy_url"
+    "file": "illus_dore_dorejesusprayinginth.jpg",
+    "source": "cdn"
   },
   {
     "id": "illus_dore_gustavedorécrucifixi",
@@ -5213,8 +5213,8 @@
         27
       ]
     },
-    "file": "https://upload.wikimedia.org/wikipedia/commons/2/2c/DoreTheDeadchrist.jpg",
-    "source": "legacy_url"
+    "file": "illus_dore_dorethedeadchristjpg.jpg",
+    "source": "cdn"
   },
   {
     "id": "illus_dore_gustavedorelazarusan",
@@ -5235,8 +5235,8 @@
         16
       ]
     },
-    "file": "https://upload.wikimedia.org/wikipedia/commons/5/59/Gustave_Dore_Lazarus_and_the_Rich_Man.jpg",
-    "source": "legacy_url"
+    "file": "illus_dore_gustavedorelazarusan.jpg",
+    "source": "cdn"
   },
   {
     "id": "illus_dore_gustavedoretheprodig",
@@ -5257,8 +5257,8 @@
         15
       ]
     },
-    "file": "https://upload.wikimedia.org/wikipedia/commons/6/67/Gustave_Dore_-_The_prodigal_son_decides_to_return_to_his_father.jpg",
-    "source": "legacy_url"
+    "file": "illus_dore_gustavedoretheprodig.jpg",
+    "source": "cdn"
   },
   {
     "id": "illus_dore_gustadoretheascensio",
@@ -5279,8 +5279,8 @@
         1
       ]
     },
-    "file": "https://upload.wikimedia.org/wikipedia/commons/2/25/Gusta_Dore_-_The_Ascension.jpg",
-    "source": "legacy_url"
+    "file": "illus_dore_gustadoretheascensio.jpg",
+    "source": "cdn"
   },
   {
     "id": "illus_dore_thedeathofstephenbyg",
@@ -6115,8 +6115,8 @@
         12
       ]
     },
-    "file": "https://upload.wikimedia.org/wikipedia/commons/d/d7/Schnorr_von_Carolsfeld_Bibel_in_Bildern_1860_024.png",
-    "source": "legacy_url"
+    "file": "illus_schnorr_024_abram_leaves_haran.png",
+    "source": "cdn"
   },
   {
     "id": "illus_schnorr_025_abrahams_three_visitors",
@@ -6687,8 +6687,8 @@
         12
       ]
     },
-    "file": "https://upload.wikimedia.org/wikipedia/commons/e/ed/Schnorr_von_Carolsfeld_Bibel_in_Bildern_1860_050.png",
-    "source": "legacy_url"
+    "file": "illus_schnorr_050_pharaoh_frees_hebrews.png",
+    "source": "cdn"
   },
   {
     "id": "illus_schnorr_051_miriams_song",
@@ -7259,8 +7259,8 @@
         7
       ]
     },
-    "file": "https://upload.wikimedia.org/wikipedia/commons/6/6d/Schnorr_von_Carolsfeld_Bibel_in_Bildern_1860_076.png",
-    "source": "legacy_url"
+    "file": "illus_schnorr_076_gideon_choosing_his_soldiers.png",
+    "source": "cdn"
   },
   {
     "id": "illus_schnorr_077_death_of_abimelech",
@@ -26707,5 +26707,1235 @@
     },
     "file": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8c/James_Jacques_Joseph_Tissot_-_Adam_and_Eve_Driven_From_Paradise_-_Google_Art_ProjectFXD.jpg/1280px-James_Jacques_Joseph_Tissot_-_Adam_and_Eve_Driven_From_Paradise_-_Google_Art_ProjectFXD.jpg",
     "source": "legacy_url"
+  },
+  {
+    "id": "parable_mustard_seed_1",
+    "title": {
+      "en": "Parable of the Mustard Seed (1)",
+      "zh-Hans": "芥菜种的比喻(1)",
+      "zh-Hant": "芥菜種的比喻(1)"
+    },
+    "description": {
+      "en": "Jesus likens the kingdom of heaven to a tiny mustard seed that grows into a large tree where birds nest.",
+      "zh-Hans": "耶稣将天国比作一粒小小的芥菜种,长成大树,鸟儿在枝头筑巢。",
+      "zh-Hant": "耶穌將天國比作一粒小小的芥菜種,長成大樹,鳥兒在枝頭築巢。"
+    },
+    "books": {
+      "Matthew": [
+        13,
+        13
+      ],
+      "Mark": [
+        4,
+        4
+      ],
+      "Luke": [
+        13,
+        13
+      ]
+    },
+    "file": "parable_mustard_seed_1.gif",
+    "kind": "parable",
+    "source": "cdn"
+  },
+  {
+    "id": "parable_mustard_seed_2",
+    "title": {
+      "en": "Parable of the Mustard Seed (2)",
+      "zh-Hans": "芥菜种的比喻(2)",
+      "zh-Hant": "芥菜種的比喻(2)"
+    },
+    "description": {
+      "en": "Jesus likens the kingdom of heaven to a tiny mustard seed that grows into a large tree where birds nest.",
+      "zh-Hans": "耶稣将天国比作一粒小小的芥菜种,长成大树,鸟儿在枝头筑巢。",
+      "zh-Hant": "耶穌將天國比作一粒小小的芥菜種,長成大樹,鳥兒在枝頭築巢。"
+    },
+    "books": {
+      "Matthew": [
+        13,
+        13
+      ],
+      "Mark": [
+        4,
+        4
+      ],
+      "Luke": [
+        13,
+        13
+      ]
+    },
+    "file": "parable_mustard_seed_2.jpg",
+    "kind": "parable",
+    "source": "cdn"
+  },
+  {
+    "id": "parable_lost_sheep_1",
+    "title": {
+      "en": "Parable of the Lost Sheep (1)",
+      "zh-Hans": "迷羊的比喻(1)",
+      "zh-Hant": "迷羊的比喻(1)"
+    },
+    "description": {
+      "en": "The shepherd leaves the ninety-nine to find the one lost sheep — a picture of God's heart for the lost.",
+      "zh-Hans": "牧人撇下九十九只羊,去寻找那一只迷失的——神寻找失丧者的心。",
+      "zh-Hant": "牧人撇下九十九隻羊,去尋找那一隻迷失的——神尋找失喪者的心。"
+    },
+    "books": {
+      "Matthew": [
+        18,
+        18
+      ],
+      "Luke": [
+        15,
+        15
+      ]
+    },
+    "file": "parable_lost_sheep_1.jpg",
+    "kind": "parable",
+    "source": "cdn"
+  },
+  {
+    "id": "parable_lost_sheep_2",
+    "title": {
+      "en": "Parable of the Lost Sheep (2)",
+      "zh-Hans": "迷羊的比喻(2)",
+      "zh-Hant": "迷羊的比喻(2)"
+    },
+    "description": {
+      "en": "The shepherd leaves the ninety-nine to find the one lost sheep — a picture of God's heart for the lost.",
+      "zh-Hans": "牧人撇下九十九只羊,去寻找那一只迷失的——神寻找失丧者的心。",
+      "zh-Hant": "牧人撇下九十九隻羊,去尋找那一隻迷失的——神尋找失喪者的心。"
+    },
+    "books": {
+      "Matthew": [
+        18,
+        18
+      ],
+      "Luke": [
+        15,
+        15
+      ]
+    },
+    "file": "parable_lost_sheep_2.jpg",
+    "kind": "parable",
+    "source": "cdn"
+  },
+  {
+    "id": "parable_lost_coin_1",
+    "title": {
+      "en": "Parable of the Lost Coin (1)",
+      "zh-Hans": "失钱的比喻(1)",
+      "zh-Hant": "失錢的比喻(1)"
+    },
+    "description": {
+      "en": "A woman lights a lamp and sweeps until she finds her lost silver coin — heaven rejoices over one sinner who repents.",
+      "zh-Hans": "妇人点灯打扫,直到找到失落的银钱——一个罪人悔改,天上的喜乐。",
+      "zh-Hant": "婦人點燈打掃,直到找到失落的銀錢——一個罪人悔改,天上的喜樂。"
+    },
+    "books": {
+      "Luke": [
+        15,
+        15
+      ]
+    },
+    "file": "parable_lost_coin_1.jpg",
+    "kind": "parable",
+    "source": "cdn"
+  },
+  {
+    "id": "parable_lost_coin_2",
+    "title": {
+      "en": "Parable of the Lost Coin (2)",
+      "zh-Hans": "失钱的比喻(2)",
+      "zh-Hant": "失錢的比喻(2)"
+    },
+    "description": {
+      "en": "A woman lights a lamp and sweeps until she finds her lost silver coin — heaven rejoices over one sinner who repents.",
+      "zh-Hans": "妇人点灯打扫,直到找到失落的银钱——一个罪人悔改,天上的喜乐。",
+      "zh-Hant": "婦人點燈打掃,直到找到失落的銀錢——一個罪人悔改,天上的喜樂。"
+    },
+    "books": {
+      "Luke": [
+        15,
+        15
+      ]
+    },
+    "file": "parable_lost_coin_2.jpg",
+    "kind": "parable",
+    "source": "cdn"
+  },
+  {
+    "id": "parable_rich_fool_1",
+    "title": {
+      "en": "Parable of the Rich Fool (1)",
+      "zh-Hans": "无知财主的比喻(1)",
+      "zh-Hant": "無知財主的比喻(1)"
+    },
+    "description": {
+      "en": "A man hoards crops in bigger barns but his soul is required that night — warning against laying up earthly treasure.",
+      "zh-Hans": "财主拆仓盖更大的仓,当夜灵魂就被取走——警戒积蓄地上财宝。",
+      "zh-Hant": "財主拆倉蓋更大的倉,當夜靈魂就被取走——警戒積蓄地上財寶。"
+    },
+    "books": {
+      "Luke": [
+        12,
+        12
+      ]
+    },
+    "file": "parable_rich_fool_1.jpg",
+    "kind": "parable",
+    "source": "cdn"
+  },
+  {
+    "id": "parable_rich_fool_2",
+    "title": {
+      "en": "Parable of the Rich Fool (2)",
+      "zh-Hans": "无知财主的比喻(2)",
+      "zh-Hant": "無知財主的比喻(2)"
+    },
+    "description": {
+      "en": "A man hoards crops in bigger barns but his soul is required that night — warning against laying up earthly treasure.",
+      "zh-Hans": "财主拆仓盖更大的仓,当夜灵魂就被取走——警戒积蓄地上财宝。",
+      "zh-Hant": "財主拆倉蓋更大的倉,當夜靈魂就被取走——警戒積蓄地上財寶。"
+    },
+    "books": {
+      "Luke": [
+        12,
+        12
+      ]
+    },
+    "file": "parable_rich_fool_2.jpg",
+    "kind": "parable",
+    "source": "cdn"
+  },
+  {
+    "id": "parable_workers_vineyard_1",
+    "title": {
+      "en": "Parable of the Workers in the Vineyard (1)",
+      "zh-Hans": "葡萄园做工人的比喻(1)",
+      "zh-Hant": "葡萄園做工人的比喻(1)"
+    },
+    "description": {
+      "en": "All laborers receive the same wage regardless of hours worked — God's grace is not earned.",
+      "zh-Hans": "无论做工多久,工人都得同样的工价——神的恩典不是赚来的。",
+      "zh-Hant": "無論做工多久,工人都得同樣的工價——神的恩典不是賺來的。"
+    },
+    "books": {
+      "Matthew": [
+        20,
+        20
+      ]
+    },
+    "file": "parable_workers_vineyard_1.jpg",
+    "kind": "parable",
+    "source": "cdn"
+  },
+  {
+    "id": "parable_workers_vineyard_2",
+    "title": {
+      "en": "Parable of the Workers in the Vineyard (2)",
+      "zh-Hans": "葡萄园做工人的比喻(2)",
+      "zh-Hant": "葡萄園做工人的比喻(2)"
+    },
+    "description": {
+      "en": "All laborers receive the same wage regardless of hours worked — God's grace is not earned.",
+      "zh-Hans": "无论做工多久,工人都得同样的工价——神的恩典不是赚来的。",
+      "zh-Hant": "無論做工多久,工人都得同樣的工價——神的恩典不是賺來的。"
+    },
+    "books": {
+      "Matthew": [
+        20,
+        20
+      ]
+    },
+    "file": "parable_workers_vineyard_2.jpg",
+    "kind": "parable",
+    "source": "cdn"
+  },
+  {
+    "id": "parable_wicked_tenants_1",
+    "title": {
+      "en": "Parable of the Wicked Tenants (1)",
+      "zh-Hans": "凶恶园户的比喻(1)",
+      "zh-Hant": "兇惡園戶的比喻(1)"
+    },
+    "description": {
+      "en": "Tenants kill the owner's servants and son — Jesus' indictment of Israel's leaders rejecting God's prophets and Son.",
+      "zh-Hans": "园户杀害主人的仆人和儿子——耶稣指责以色列领袖拒绝神的先知与圣子。",
+      "zh-Hant": "園戶殺害主人的僕人和兒子——耶穌指責以色列領袖拒絕神的先知與聖子。"
+    },
+    "books": {
+      "Matthew": [
+        21,
+        21
+      ],
+      "Mark": [
+        12,
+        12
+      ],
+      "Luke": [
+        20,
+        20
+      ]
+    },
+    "file": "parable_wicked_tenants_1.jpg",
+    "kind": "parable",
+    "source": "cdn"
+  },
+  {
+    "id": "parable_wicked_tenants_2",
+    "title": {
+      "en": "Parable of the Wicked Tenants (2)",
+      "zh-Hans": "凶恶园户的比喻(2)",
+      "zh-Hant": "兇惡園戶的比喻(2)"
+    },
+    "description": {
+      "en": "Tenants kill the owner's servants and son — Jesus' indictment of Israel's leaders rejecting God's prophets and Son.",
+      "zh-Hans": "园户杀害主人的仆人和儿子——耶稣指责以色列领袖拒绝神的先知与圣子。",
+      "zh-Hant": "園戶殺害主人的僕人和兒子——耶穌指責以色列領袖拒絕神的先知與聖子。"
+    },
+    "books": {
+      "Matthew": [
+        21,
+        21
+      ],
+      "Mark": [
+        12,
+        12
+      ],
+      "Luke": [
+        20,
+        20
+      ]
+    },
+    "file": "parable_wicked_tenants_2.jpg",
+    "kind": "parable",
+    "source": "cdn"
+  },
+  {
+    "id": "parable_wedding_banquet_1",
+    "title": {
+      "en": "Parable of the Wedding Banquet (1)",
+      "zh-Hans": "婚筵的比喻(1)",
+      "zh-Hant": "婚筵的比喻(1)"
+    },
+    "description": {
+      "en": "Invited guests refuse the king's wedding feast, so highway-strangers fill the hall — many called, few chosen.",
+      "zh-Hans": "受邀者不来赴王的婚筵,街上的陌生人坐满席——被召的多,选上的少。",
+      "zh-Hant": "受邀者不來赴王的婚筵,街上的陌生人坐滿席——被召的多,選上的少。"
+    },
+    "books": {
+      "Matthew": [
+        22,
+        22
+      ],
+      "Luke": [
+        14,
+        14
+      ]
+    },
+    "file": "parable_wedding_banquet_1.jpg",
+    "kind": "parable",
+    "source": "cdn"
+  },
+  {
+    "id": "parable_wedding_banquet_2",
+    "title": {
+      "en": "Parable of the Wedding Banquet (2)",
+      "zh-Hans": "婚筵的比喻(2)",
+      "zh-Hant": "婚筵的比喻(2)"
+    },
+    "description": {
+      "en": "Invited guests refuse the king's wedding feast, so highway-strangers fill the hall — many called, few chosen.",
+      "zh-Hans": "受邀者不来赴王的婚筵,街上的陌生人坐满席——被召的多,选上的少。",
+      "zh-Hant": "受邀者不來赴王的婚筵,街上的陌生人坐滿席——被召的多,選上的少。"
+    },
+    "books": {
+      "Matthew": [
+        22,
+        22
+      ],
+      "Luke": [
+        14,
+        14
+      ]
+    },
+    "file": "parable_wedding_banquet_2.jpg",
+    "kind": "parable",
+    "source": "cdn"
+  },
+  {
+    "id": "parable_talents",
+    "title": {
+      "en": "Parable of the Talents",
+      "zh-Hans": "按才受托的比喻",
+      "zh-Hant": "按才受託的比喻"
+    },
+    "description": {
+      "en": "Servants are entrusted with talents — those who invest are rewarded; the one who buries his is condemned.",
+      "zh-Hans": "仆人受托银子,投资的得赏赐,埋藏的受责备。",
+      "zh-Hant": "僕人受託銀子,投資的得賞賜,埋藏的受責備。"
+    },
+    "books": {
+      "Matthew": [
+        25,
+        25
+      ],
+      "Luke": [
+        19,
+        19
+      ]
+    },
+    "file": "parable_talents.jpg",
+    "kind": "parable",
+    "source": "cdn"
+  },
+  {
+    "id": "parable_sheep_goats_1",
+    "title": {
+      "en": "The Sheep and the Goats (1)",
+      "zh-Hans": "绵羊与山羊(1)",
+      "zh-Hant": "綿羊與山羊(1)"
+    },
+    "description": {
+      "en": "At the Final Judgment, the King separates sheep from goats — feeding the hungry and visiting the prisoner counted as done to Him.",
+      "zh-Hans": "末日审判,君王将绵羊与山羊分开——给饥者食、探监者,如同做在主身上。",
+      "zh-Hant": "末日審判,君王將綿羊與山羊分開——給飢者食、探監者,如同做在主身上。"
+    },
+    "books": {
+      "Matthew": [
+        25,
+        25
+      ]
+    },
+    "file": "parable_sheep_goats_1.jpg",
+    "kind": "parable",
+    "source": "cdn"
+  },
+  {
+    "id": "parable_sheep_goats_2",
+    "title": {
+      "en": "The Sheep and the Goats (2)",
+      "zh-Hans": "绵羊与山羊(2)",
+      "zh-Hant": "綿羊與山羊(2)"
+    },
+    "description": {
+      "en": "At the Final Judgment, the King separates sheep from goats — feeding the hungry and visiting the prisoner counted as done to Him.",
+      "zh-Hans": "末日审判,君王将绵羊与山羊分开——给饥者食、探监者,如同做在主身上。",
+      "zh-Hant": "末日審判,君王將綿羊與山羊分開——給飢者食、探監者,如同做在主身上。"
+    },
+    "books": {
+      "Matthew": [
+        25,
+        25
+      ]
+    },
+    "file": "parable_sheep_goats_2.jpg",
+    "kind": "parable",
+    "source": "cdn"
+  },
+  {
+    "id": "parable_unforgiving_servant_1",
+    "title": {
+      "en": "Parable of the Unforgiving Servant (1)",
+      "zh-Hans": "不饶恕仆人的比喻(1)",
+      "zh-Hant": "不饒恕僕人的比喻(1)"
+    },
+    "description": {
+      "en": "A servant forgiven a great debt refuses to forgive a fellow servant's small debt — forgive as we have been forgiven.",
+      "zh-Hans": "仆人欠主人大债被免,却不肯饶恕同伴的小债——要照我们被饶恕的去饶恕人。",
+      "zh-Hant": "僕人欠主人大債被免,卻不肯饒恕同伴的小債——要照我們被饒恕的去饒恕人。"
+    },
+    "books": {
+      "Matthew": [
+        18,
+        18
+      ]
+    },
+    "file": "parable_unforgiving_servant_1.jpg",
+    "kind": "parable",
+    "source": "cdn"
+  },
+  {
+    "id": "parable_unforgiving_servant_2",
+    "title": {
+      "en": "Parable of the Unforgiving Servant (2)",
+      "zh-Hans": "不饶恕仆人的比喻(2)",
+      "zh-Hant": "不饒恕僕人的比喻(2)"
+    },
+    "description": {
+      "en": "A servant forgiven a great debt refuses to forgive a fellow servant's small debt — forgive as we have been forgiven.",
+      "zh-Hans": "仆人欠主人大债被免,却不肯饶恕同伴的小债——要照我们被饶恕的去饶恕人。",
+      "zh-Hant": "僕人欠主人大債被免,卻不肯饒恕同伴的小債——要照我們被饒恕的去饒恕人。"
+    },
+    "books": {
+      "Matthew": [
+        18,
+        18
+      ]
+    },
+    "file": "parable_unforgiving_servant_2.jpg",
+    "kind": "parable",
+    "source": "cdn"
+  },
+  {
+    "id": "parable_unforgiving_servant_3",
+    "title": {
+      "en": "Parable of the Unforgiving Servant (3)",
+      "zh-Hans": "不饶恕仆人的比喻(3)",
+      "zh-Hant": "不饒恕僕人的比喻(3)"
+    },
+    "description": {
+      "en": "A servant forgiven a great debt refuses to forgive a fellow servant's small debt — forgive as we have been forgiven.",
+      "zh-Hans": "仆人欠主人大债被免,却不肯饶恕同伴的小债——要照我们被饶恕的去饶恕人。",
+      "zh-Hant": "僕人欠主人大債被免,卻不肯饒恕同伴的小債——要照我們被饒恕的去饒恕人。"
+    },
+    "books": {
+      "Matthew": [
+        18,
+        18
+      ]
+    },
+    "file": "parable_unforgiving_servant_3.jpg",
+    "kind": "parable",
+    "source": "cdn"
+  },
+  {
+    "id": "parable_two_builders_1",
+    "title": {
+      "en": "Wise and Foolish Builders (1)",
+      "zh-Hans": "聪明和愚拙的盖房子人(1)",
+      "zh-Hant": "聰明和愚拙的蓋房子人(1)"
+    },
+    "description": {
+      "en": "The wise builder digs to bedrock; the foolish builds on sand — only hearing AND doing Jesus' words stands the storm.",
+      "zh-Hans": "聪明人把房子盖在磐石上,愚拙人盖在沙土上——惟有听道并行道的能经得起风雨。",
+      "zh-Hant": "聰明人把房子蓋在磐石上,愚拙人蓋在沙土上——惟有聽道並行道的能經得起風雨。"
+    },
+    "books": {
+      "Matthew": [
+        7,
+        7
+      ],
+      "Luke": [
+        6,
+        6
+      ]
+    },
+    "file": "parable_two_builders_1.jpg",
+    "kind": "parable",
+    "source": "cdn"
+  },
+  {
+    "id": "parable_two_builders_2",
+    "title": {
+      "en": "Wise and Foolish Builders (2)",
+      "zh-Hans": "聪明和愚拙的盖房子人(2)",
+      "zh-Hant": "聰明和愚拙的蓋房子人(2)"
+    },
+    "description": {
+      "en": "The wise builder digs to bedrock; the foolish builds on sand — only hearing AND doing Jesus' words stands the storm.",
+      "zh-Hans": "聪明人把房子盖在磐石上,愚拙人盖在沙土上——惟有听道并行道的能经得起风雨。",
+      "zh-Hant": "聰明人把房子蓋在磐石上,愚拙人蓋在沙土上——惟有聽道並行道的能經得起風雨。"
+    },
+    "books": {
+      "Matthew": [
+        7,
+        7
+      ],
+      "Luke": [
+        6,
+        6
+      ]
+    },
+    "file": "parable_two_builders_2.jpg",
+    "kind": "parable",
+    "source": "cdn"
+  },
+  {
+    "id": "parable_two_sons_1",
+    "title": {
+      "en": "Parable of the Two Sons (1)",
+      "zh-Hans": "两个儿子的比喻(1)",
+      "zh-Hant": "兩個兒子的比喻(1)"
+    },
+    "description": {
+      "en": "One son says he won't go to work but goes; the other says he will but doesn't — actual obedience matters more than promise.",
+      "zh-Hans": "一个儿子说不去却去了,另一个说去了却没去——真正顺服胜过空口应许。",
+      "zh-Hant": "一個兒子說不去卻去了,另一個說去了卻沒去——真正順服勝過空口應許。"
+    },
+    "books": {
+      "Matthew": [
+        21,
+        21
+      ]
+    },
+    "file": "parable_two_sons_1.jpg",
+    "kind": "parable",
+    "source": "cdn"
+  },
+  {
+    "id": "parable_two_sons_2",
+    "title": {
+      "en": "Parable of the Two Sons (2)",
+      "zh-Hans": "两个儿子的比喻(2)",
+      "zh-Hant": "兩個兒子的比喻(2)"
+    },
+    "description": {
+      "en": "One son says he won't go to work but goes; the other says he will but doesn't — actual obedience matters more than promise.",
+      "zh-Hans": "一个儿子说不去却去了,另一个说去了却没去——真正顺服胜过空口应许。",
+      "zh-Hant": "一個兒子說不去卻去了,另一個說去了卻沒去——真正順服勝過空口應許。"
+    },
+    "books": {
+      "Matthew": [
+        21,
+        21
+      ]
+    },
+    "file": "parable_two_sons_2.jpg",
+    "kind": "parable",
+    "source": "cdn"
+  },
+  {
+    "id": "parable_friend_midnight_1",
+    "title": {
+      "en": "Parable of the Friend at Night (1)",
+      "zh-Hans": "半夜求饼的朋友(1)",
+      "zh-Hant": "半夜求餅的朋友(1)"
+    },
+    "description": {
+      "en": "A man knocks at midnight begging bread from a friend — persistent prayer prevails.",
+      "zh-Hans": "半夜求饼的朋友——切切恒切的祷告必蒙应允。",
+      "zh-Hant": "半夜求餅的朋友——切切恆切的禱告必蒙應允。"
+    },
+    "books": {
+      "Luke": [
+        11,
+        11
+      ]
+    },
+    "file": "parable_friend_midnight_1.jpg",
+    "kind": "parable",
+    "source": "cdn"
+  },
+  {
+    "id": "parable_friend_midnight_2",
+    "title": {
+      "en": "Parable of the Friend at Night (2)",
+      "zh-Hans": "半夜求饼的朋友(2)",
+      "zh-Hant": "半夜求餅的朋友(2)"
+    },
+    "description": {
+      "en": "A man knocks at midnight begging bread from a friend — persistent prayer prevails.",
+      "zh-Hans": "半夜求饼的朋友——切切恒切的祷告必蒙应允。",
+      "zh-Hant": "半夜求餅的朋友——切切恆切的禱告必蒙應允。"
+    },
+    "books": {
+      "Luke": [
+        11,
+        11
+      ]
+    },
+    "file": "parable_friend_midnight_2.jpg",
+    "kind": "parable",
+    "source": "cdn"
+  },
+  {
+    "id": "parable_friend_midnight_3",
+    "title": {
+      "en": "Parable of the Friend at Night (3)",
+      "zh-Hans": "半夜求饼的朋友(3)",
+      "zh-Hant": "半夜求餅的朋友(3)"
+    },
+    "description": {
+      "en": "A man knocks at midnight begging bread from a friend — persistent prayer prevails.",
+      "zh-Hans": "半夜求饼的朋友——切切恒切的祷告必蒙应允。",
+      "zh-Hant": "半夜求餅的朋友——切切恆切的禱告必蒙應允。"
+    },
+    "books": {
+      "Luke": [
+        11,
+        11
+      ]
+    },
+    "file": "parable_friend_midnight_3.jpg",
+    "kind": "parable",
+    "source": "cdn"
+  },
+  {
+    "id": "parable_persistent_widow",
+    "title": {
+      "en": "Parable of the Persistent Widow",
+      "zh-Hans": "切求的寡妇",
+      "zh-Hant": "切求的寡婦"
+    },
+    "description": {
+      "en": "A widow wears down an unjust judge by her unceasing requests — God will surely vindicate His elect who cry to Him.",
+      "zh-Hans": "寡妇不住地央求,使不义的官也为她伸冤——神的选民日夜呼求,祂岂不更快为他们伸冤?",
+      "zh-Hant": "寡婦不住地央求,使不義的官也為她伸冤——神的選民日夜呼求,祂豈不更快為他們伸冤?"
+    },
+    "books": {
+      "Luke": [
+        18,
+        18
+      ]
+    },
+    "file": "parable_persistent_widow.jpg",
+    "kind": "parable",
+    "source": "cdn"
+  },
+  {
+    "id": "parable_leaven_1",
+    "title": {
+      "en": "Parable of the Leaven (1)",
+      "zh-Hans": "面酵的比喻(1)",
+      "zh-Hant": "麵酵的比喻(1)"
+    },
+    "description": {
+      "en": "A little leaven leavens the whole lump — the kingdom of heaven works invisibly through everything it touches.",
+      "zh-Hans": "一点面酵能使全团发起来——天国如同面酵,默默渗透。",
+      "zh-Hant": "一點麵酵能使全團發起來——天國如同麵酵,默默滲透。"
+    },
+    "books": {
+      "Matthew": [
+        13,
+        13
+      ],
+      "Luke": [
+        13,
+        13
+      ]
+    },
+    "file": "parable_leaven_1.jpg",
+    "kind": "parable",
+    "source": "cdn"
+  },
+  {
+    "id": "parable_leaven_2",
+    "title": {
+      "en": "Parable of the Leaven (2)",
+      "zh-Hans": "面酵的比喻(2)",
+      "zh-Hant": "麵酵的比喻(2)"
+    },
+    "description": {
+      "en": "A little leaven leavens the whole lump — the kingdom of heaven works invisibly through everything it touches.",
+      "zh-Hans": "一点面酵能使全团发起来——天国如同面酵,默默渗透。",
+      "zh-Hant": "一點麵酵能使全團發起來——天國如同麵酵,默默滲透。"
+    },
+    "books": {
+      "Matthew": [
+        13,
+        13
+      ],
+      "Luke": [
+        13,
+        13
+      ]
+    },
+    "file": "parable_leaven_2.jpg",
+    "kind": "parable",
+    "source": "cdn"
+  },
+  {
+    "id": "parable_pearl_great_price_1",
+    "title": {
+      "en": "Parable of the Pearl of Great Price (1)",
+      "zh-Hans": "重价珠子的比喻(1)",
+      "zh-Hant": "重價珠子的比喻(1)"
+    },
+    "description": {
+      "en": "A merchant sells all to buy one priceless pearl — the kingdom is worth everything.",
+      "zh-Hans": "客商变卖一切去买那颗重价珠子——天国值得我们付上一切代价。",
+      "zh-Hant": "客商變賣一切去買那顆重價珠子——天國值得我們付上一切代價。"
+    },
+    "books": {
+      "Matthew": [
+        13,
+        13
+      ]
+    },
+    "file": "parable_pearl_great_price_1.jpg",
+    "kind": "parable",
+    "source": "cdn"
+  },
+  {
+    "id": "parable_pearl_great_price_2",
+    "title": {
+      "en": "Parable of the Pearl of Great Price (2)",
+      "zh-Hans": "重价珠子的比喻(2)",
+      "zh-Hant": "重價珠子的比喻(2)"
+    },
+    "description": {
+      "en": "A merchant sells all to buy one priceless pearl — the kingdom is worth everything.",
+      "zh-Hans": "客商变卖一切去买那颗重价珠子——天国值得我们付上一切代价。",
+      "zh-Hant": "客商變賣一切去買那顆重價珠子——天國值得我們付上一切代價。"
+    },
+    "books": {
+      "Matthew": [
+        13,
+        13
+      ]
+    },
+    "file": "parable_pearl_great_price_2.jpg",
+    "kind": "parable",
+    "source": "cdn"
+  },
+  {
+    "id": "parable_net_1",
+    "title": {
+      "en": "Parable of the Net (1)",
+      "zh-Hans": "撒网的比喻(1)",
+      "zh-Hant": "撒網的比喻(1)"
+    },
+    "description": {
+      "en": "A net gathers fish of every kind — the kingdom is sorted at the end of the age, good kept, bad cast away.",
+      "zh-Hans": "渔网网住各样的鱼——世界的末了,天使要分别善恶。",
+      "zh-Hant": "漁網網住各樣的魚——世界的末了,天使要分別善惡。"
+    },
+    "books": {
+      "Matthew": [
+        13,
+        13
+      ]
+    },
+    "file": "parable_net_1.jpg",
+    "kind": "parable",
+    "source": "cdn"
+  },
+  {
+    "id": "parable_net_2",
+    "title": {
+      "en": "Parable of the Net (2)",
+      "zh-Hans": "撒网的比喻(2)",
+      "zh-Hant": "撒網的比喻(2)"
+    },
+    "description": {
+      "en": "A net gathers fish of every kind — the kingdom is sorted at the end of the age, good kept, bad cast away.",
+      "zh-Hans": "渔网网住各样的鱼——世界的末了,天使要分别善恶。",
+      "zh-Hant": "漁網網住各樣的魚——世界的末了,天使要分別善惡。"
+    },
+    "books": {
+      "Matthew": [
+        13,
+        13
+      ]
+    },
+    "file": "parable_net_2.jpg",
+    "kind": "parable",
+    "source": "cdn"
+  },
+  {
+    "id": "parable_growing_seed_1",
+    "title": {
+      "en": "Parable of the Growing Seed (1)",
+      "zh-Hans": "种子暗暗长大的比喻(1)",
+      "zh-Hant": "種子暗暗長大的比喻(1)"
+    },
+    "description": {
+      "en": "A farmer scatters seed; it sprouts and grows night and day, by itself — the kingdom grows by God's hidden power.",
+      "zh-Hans": "人撒种,种子昼夜暗暗发芽生长——天国靠神隐密的能力增长。",
+      "zh-Hant": "人撒種,種子晝夜暗暗發芽生長——天國靠神隱密的能力增長。"
+    },
+    "books": {
+      "Mark": [
+        4,
+        4
+      ]
+    },
+    "file": "parable_growing_seed_1.jpg",
+    "kind": "parable",
+    "source": "cdn"
+  },
+  {
+    "id": "parable_growing_seed_2",
+    "title": {
+      "en": "Parable of the Growing Seed (2)",
+      "zh-Hans": "种子暗暗长大的比喻(2)",
+      "zh-Hant": "種子暗暗長大的比喻(2)"
+    },
+    "description": {
+      "en": "A farmer scatters seed; it sprouts and grows night and day, by itself — the kingdom grows by God's hidden power.",
+      "zh-Hans": "人撒种,种子昼夜暗暗发芽生长——天国靠神隐密的能力增长。",
+      "zh-Hant": "人撒種,種子晝夜暗暗發芽生長——天國靠神隱密的能力增長。"
+    },
+    "books": {
+      "Mark": [
+        4,
+        4
+      ]
+    },
+    "file": "parable_growing_seed_2.jpg",
+    "kind": "parable",
+    "source": "cdn"
+  },
+  {
+    "id": "parable_barren_fig_tree_1",
+    "title": {
+      "en": "Parable of the Barren Fig Tree (1)",
+      "zh-Hans": "无花果树的比喻(1)",
+      "zh-Hant": "無花果樹的比喻(1)"
+    },
+    "description": {
+      "en": "A fig tree given three years bears no fruit; the vinedresser begs one more year — God's patient call to repentance.",
+      "zh-Hans": "无花果树三年不结果,园主再给一年——神耐心等候人悔改。",
+      "zh-Hant": "無花果樹三年不結果,園主再給一年——神耐心等候人悔改。"
+    },
+    "books": {
+      "Luke": [
+        13,
+        13
+      ]
+    },
+    "file": "parable_barren_fig_tree_1.jpg",
+    "kind": "parable",
+    "source": "cdn"
+  },
+  {
+    "id": "parable_barren_fig_tree_2",
+    "title": {
+      "en": "Parable of the Barren Fig Tree (2)",
+      "zh-Hans": "无花果树的比喻(2)",
+      "zh-Hant": "無花果樹的比喻(2)"
+    },
+    "description": {
+      "en": "A fig tree given three years bears no fruit; the vinedresser begs one more year — God's patient call to repentance.",
+      "zh-Hans": "无花果树三年不结果,园主再给一年——神耐心等候人悔改。",
+      "zh-Hant": "無花果樹三年不結果,園主再給一年——神耐心等候人悔改。"
+    },
+    "books": {
+      "Luke": [
+        13,
+        13
+      ]
+    },
+    "file": "parable_barren_fig_tree_2.jpg",
+    "kind": "parable",
+    "source": "cdn"
+  },
+  {
+    "id": "teaching_sermon_on_plain",
+    "title": {
+      "en": "Sermon on the Plain",
+      "zh-Hans": "平原讲道",
+      "zh-Hant": "平原講道"
+    },
+    "description": {
+      "en": "Luke's parallel to the Sermon on the Mount — beatitudes and woes, love your enemies, the golden rule.",
+      "zh-Hans": "路加版的山上宝训——四福与四祸、爱仇敌、金律。",
+      "zh-Hant": "路加版的山上寶訓——四福與四禍、愛仇敵、金律。"
+    },
+    "books": {
+      "Luke": [
+        6,
+        6
+      ]
+    },
+    "file": "teaching_sermon_on_plain.jpg",
+    "kind": "teaching",
+    "source": "cdn"
+  },
+  {
+    "id": "teaching_bread_of_life_1",
+    "title": {
+      "en": "Bread of Life Discourse (1)",
+      "zh-Hans": "生命之粮的讲论(1)",
+      "zh-Hant": "生命之糧的講論(1)"
+    },
+    "description": {
+      "en": "Jesus declares 'I am the bread of life' — eternal life through eating His flesh and drinking His blood.",
+      "zh-Hans": "耶稣宣告「我就是生命的粮」——吃祂的肉、喝祂的血得永生。",
+      "zh-Hant": "耶穌宣告「我就是生命的糧」——吃祂的肉、喝祂的血得永生。"
+    },
+    "books": {
+      "John": [
+        6,
+        6
+      ]
+    },
+    "file": "teaching_bread_of_life_1.jpg",
+    "kind": "teaching",
+    "source": "cdn"
+  },
+  {
+    "id": "teaching_bread_of_life_2",
+    "title": {
+      "en": "Bread of Life Discourse (2)",
+      "zh-Hans": "生命之粮的讲论(2)",
+      "zh-Hant": "生命之糧的講論(2)"
+    },
+    "description": {
+      "en": "Jesus declares 'I am the bread of life' — eternal life through eating His flesh and drinking His blood.",
+      "zh-Hans": "耶稣宣告「我就是生命的粮」——吃祂的肉、喝祂的血得永生。",
+      "zh-Hant": "耶穌宣告「我就是生命的糧」——吃祂的肉、喝祂的血得永生。"
+    },
+    "books": {
+      "John": [
+        6,
+        6
+      ]
+    },
+    "file": "teaching_bread_of_life_2.jpg",
+    "kind": "teaching",
+    "source": "cdn"
+  },
+  {
+    "id": "teaching_bread_of_life_3",
+    "title": {
+      "en": "Bread of Life Discourse (3)",
+      "zh-Hans": "生命之粮的讲论(3)",
+      "zh-Hant": "生命之糧的講論(3)"
+    },
+    "description": {
+      "en": "Jesus declares 'I am the bread of life' — eternal life through eating His flesh and drinking His blood.",
+      "zh-Hans": "耶稣宣告「我就是生命的粮」——吃祂的肉、喝祂的血得永生。",
+      "zh-Hant": "耶穌宣告「我就是生命的糧」——吃祂的肉、喝祂的血得永生。"
+    },
+    "books": {
+      "John": [
+        6,
+        6
+      ]
+    },
+    "file": "teaching_bread_of_life_3.jpg",
+    "kind": "teaching",
+    "source": "cdn"
+  },
+  {
+    "id": "teaching_vine_branches_1",
+    "title": {
+      "en": "The True Vine (1)",
+      "zh-Hans": "真葡萄树(1)",
+      "zh-Hant": "真葡萄樹(1)"
+    },
+    "description": {
+      "en": "'I am the true vine, you are the branches' — abide in Christ to bear fruit; apart from Him we can do nothing.",
+      "zh-Hans": "「我是真葡萄树,你们是枝子」——常在主里才能结果子;离了祂,我们就不能做什么。",
+      "zh-Hant": "「我是真葡萄樹,你們是枝子」——常在主裏才能結果子;離了祂,我們就不能做什麼。"
+    },
+    "books": {
+      "John": [
+        15,
+        15
+      ]
+    },
+    "file": "teaching_vine_branches_1.jpg",
+    "kind": "teaching",
+    "source": "cdn"
+  },
+  {
+    "id": "teaching_vine_branches_2",
+    "title": {
+      "en": "The True Vine (2)",
+      "zh-Hans": "真葡萄树(2)",
+      "zh-Hant": "真葡萄樹(2)"
+    },
+    "description": {
+      "en": "'I am the true vine, you are the branches' — abide in Christ to bear fruit; apart from Him we can do nothing.",
+      "zh-Hans": "「我是真葡萄树,你们是枝子」——常在主里才能结果子;离了祂,我们就不能做什么。",
+      "zh-Hant": "「我是真葡萄樹,你們是枝子」——常在主裏才能結果子;離了祂,我們就不能做什麼。"
+    },
+    "books": {
+      "John": [
+        15,
+        15
+      ]
+    },
+    "file": "teaching_vine_branches_2.jpg",
+    "kind": "teaching",
+    "source": "cdn"
+  },
+  {
+    "id": "teaching_olivet_discourse_1",
+    "title": {
+      "en": "Olivet Discourse (1)",
+      "zh-Hans": "橄榄山讲论(1)",
+      "zh-Hant": "橄欖山講論(1)"
+    },
+    "description": {
+      "en": "Jesus' prophecy of the temple's destruction and His return — signs of the end, the call to watchfulness.",
+      "zh-Hans": "耶稣预言圣殿被毁与祂的再来——末后的预兆与警醒的呼召。",
+      "zh-Hant": "耶穌預言聖殿被毀與祂的再來——末後的預兆與警醒的呼召。"
+    },
+    "books": {
+      "Matthew": [
+        24,
+        25
+      ],
+      "Mark": [
+        13,
+        13
+      ],
+      "Luke": [
+        21,
+        21
+      ]
+    },
+    "file": "teaching_olivet_discourse_1.jpg",
+    "kind": "teaching",
+    "source": "cdn"
+  },
+  {
+    "id": "teaching_olivet_discourse_2",
+    "title": {
+      "en": "Olivet Discourse (2)",
+      "zh-Hans": "橄榄山讲论(2)",
+      "zh-Hant": "橄欖山講論(2)"
+    },
+    "description": {
+      "en": "Jesus' prophecy of the temple's destruction and His return — signs of the end, the call to watchfulness.",
+      "zh-Hans": "耶稣预言圣殿被毁与祂的再来——末后的预兆与警醒的呼召。",
+      "zh-Hant": "耶穌預言聖殿被毀與祂的再來——末後的預兆與警醒的呼召。"
+    },
+    "books": {
+      "Matthew": [
+        24,
+        25
+      ],
+      "Mark": [
+        13,
+        13
+      ],
+      "Luke": [
+        21,
+        21
+      ]
+    },
+    "file": "teaching_olivet_discourse_2.jpg",
+    "kind": "teaching",
+    "source": "cdn"
+  },
+  {
+    "id": "teaching_olivet_discourse_3",
+    "title": {
+      "en": "Olivet Discourse (3)",
+      "zh-Hans": "橄榄山讲论(3)",
+      "zh-Hant": "橄欖山講論(3)"
+    },
+    "description": {
+      "en": "Jesus' prophecy of the temple's destruction and His return — signs of the end, the call to watchfulness.",
+      "zh-Hans": "耶稣预言圣殿被毁与祂的再来——末后的预兆与警醒的呼召。",
+      "zh-Hant": "耶穌預言聖殿被毀與祂的再來——末後的預兆與警醒的呼召。"
+    },
+    "books": {
+      "Matthew": [
+        24,
+        25
+      ],
+      "Mark": [
+        13,
+        13
+      ],
+      "Luke": [
+        21,
+        21
+      ]
+    },
+    "file": "teaching_olivet_discourse_3.jpg",
+    "kind": "teaching",
+    "source": "cdn"
+  },
+  {
+    "id": "teaching_farewell_discourse_1",
+    "title": {
+      "en": "Upper Room Discourse (1)",
+      "zh-Hans": "楼房训词(1)",
+      "zh-Hant": "樓房訓詞(1)"
+    },
+    "description": {
+      "en": "Jesus' farewell words to His disciples on the night He was betrayed — the promise of the Holy Spirit, the new commandment.",
+      "zh-Hans": "耶稣被卖那夜对门徒的临别讲论——应许圣灵,新命令。",
+      "zh-Hant": "耶穌被賣那夜對門徒的臨別講論——應許聖靈,新命令。"
+    },
+    "books": {
+      "John": [
+        13,
+        17
+      ]
+    },
+    "file": "teaching_farewell_discourse_1.jpg",
+    "kind": "teaching",
+    "source": "cdn"
+  },
+  {
+    "id": "teaching_farewell_discourse_2",
+    "title": {
+      "en": "Upper Room Discourse (2)",
+      "zh-Hans": "楼房训词(2)",
+      "zh-Hant": "樓房訓詞(2)"
+    },
+    "description": {
+      "en": "Jesus' farewell words to His disciples on the night He was betrayed — the promise of the Holy Spirit, the new commandment.",
+      "zh-Hans": "耶稣被卖那夜对门徒的临别讲论——应许圣灵,新命令。",
+      "zh-Hant": "耶穌被賣那夜對門徒的臨別講論——應許聖靈,新命令。"
+    },
+    "books": {
+      "John": [
+        13,
+        17
+      ]
+    },
+    "file": "teaching_farewell_discourse_2.jpg",
+    "kind": "teaching",
+    "source": "cdn"
+  },
+  {
+    "id": "teaching_great_commandment_1",
+    "title": {
+      "en": "The Greatest Commandment (1)",
+      "zh-Hans": "最大的诫命(1)",
+      "zh-Hant": "最大的誡命(1)"
+    },
+    "description": {
+      "en": "Love the Lord your God with all your heart, soul, mind, and strength — and your neighbor as yourself.",
+      "zh-Hans": "尽心尽性尽意尽力爱主你的神,又要爱人如己。",
+      "zh-Hant": "盡心盡性盡意盡力愛主你的神,又要愛人如己。"
+    },
+    "books": {
+      "Matthew": [
+        22,
+        22
+      ],
+      "Mark": [
+        12,
+        12
+      ],
+      "Luke": [
+        10,
+        10
+      ]
+    },
+    "file": "teaching_great_commandment_1.jpg",
+    "kind": "teaching",
+    "source": "cdn"
+  },
+  {
+    "id": "teaching_great_commandment_2",
+    "title": {
+      "en": "The Greatest Commandment (2)",
+      "zh-Hans": "最大的诫命(2)",
+      "zh-Hant": "最大的誡命(2)"
+    },
+    "description": {
+      "en": "Love the Lord your God with all your heart, soul, mind, and strength — and your neighbor as yourself.",
+      "zh-Hans": "尽心尽性尽意尽力爱主你的神,又要爱人如己。",
+      "zh-Hant": "盡心盡性盡意盡力愛主你的神,又要愛人如己。"
+    },
+    "books": {
+      "Matthew": [
+        22,
+        22
+      ],
+      "Mark": [
+        12,
+        12
+      ],
+      "Luke": [
+        10,
+        10
+      ]
+    },
+    "file": "teaching_great_commandment_2.jpg",
+    "kind": "teaching",
+    "source": "cdn"
   }
 ]
