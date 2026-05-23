@@ -7853,8 +7853,8 @@
         12
       ]
     },
-    "file": "https://upload.wikimedia.org/wikipedia/commons/6/65/Schnorr_von_Carolsfeld_Bibel_in_Bildern_1860_103.png",
-    "source": "legacy_url"
+    "file": "illus_schnorr_103_davids_child_dies.png",
+    "source": "cdn"
   },
   {
     "id": "illus_schnorr_104_shimei_curses_david",
@@ -8433,8 +8433,8 @@
         2
       ]
     },
-    "file": "https://upload.wikimedia.org/wikipedia/commons/4/46/Schnorr_von_Carolsfeld_Bibel_in_Bildern_1860_129.png",
-    "source": "legacy_url"
+    "file": "illus_schnorr_129_the_coronation_of_esther.png",
+    "source": "cdn"
   },
   {
     "id": "illus_schnorr_130_mordecai_honored",
@@ -9409,8 +9409,8 @@
         14
       ]
     },
-    "file": "https://upload.wikimedia.org/wikipedia/commons/4/43/Schnorr_von_Carolsfeld_Bibel_in_Bildern_1860_187.png",
-    "source": "legacy_url"
+    "file": "illus_schnorr_187_death_of_john_the_baptist.png",
+    "source": "cdn"
   },
   {
     "id": "illus_schnorr_188_resurrection_at_nain",
@@ -27936,6 +27936,1228 @@
     },
     "file": "teaching_great_commandment_2.jpg",
     "kind": "teaching",
+    "source": "cdn"
+  },
+  {
+    "id": "event_boy_jesus_temple_1",
+    "title": {
+      "en": "The Boy Jesus at the Temple (1)",
+      "zh-Hans": "少年耶稣在圣殿(1)",
+      "zh-Hant": "少年耶穌在聖殿(1)"
+    },
+    "description": {
+      "en": "Twelve-year-old Jesus is found three days later in the Temple, sitting among the teachers, hearing and asking questions.",
+      "zh-Hans": "十二岁的耶稣三天后被找到,在圣殿里坐在教师中间,听讲和发问。",
+      "zh-Hant": "十二歲的耶穌三天後被找到,在聖殿裡坐在教師中間,聽講和發問。"
+    },
+    "books": {
+      "Luke": [
+        2,
+        2
+      ]
+    },
+    "file": "event_boy_jesus_temple_1.jpg",
+    "kind": "scene",
+    "source": "cdn"
+  },
+  {
+    "id": "event_boy_jesus_temple_2",
+    "title": {
+      "en": "The Boy Jesus at the Temple (2)",
+      "zh-Hans": "少年耶稣在圣殿(2)",
+      "zh-Hant": "少年耶穌在聖殿(2)"
+    },
+    "description": {
+      "en": "Twelve-year-old Jesus is found three days later in the Temple, sitting among the teachers, hearing and asking questions.",
+      "zh-Hans": "十二岁的耶稣三天后被找到,在圣殿里坐在教师中间,听讲和发问。",
+      "zh-Hant": "十二歲的耶穌三天後被找到,在聖殿裡坐在教師中間,聽講和發問。"
+    },
+    "books": {
+      "Luke": [
+        2,
+        2
+      ]
+    },
+    "file": "event_boy_jesus_temple_2.jpg",
+    "kind": "scene",
+    "source": "cdn"
+  },
+  {
+    "id": "event_boy_jesus_temple_3",
+    "title": {
+      "en": "The Boy Jesus at the Temple (3)",
+      "zh-Hans": "少年耶稣在圣殿(3)",
+      "zh-Hant": "少年耶穌在聖殿(3)"
+    },
+    "description": {
+      "en": "Twelve-year-old Jesus is found three days later in the Temple, sitting among the teachers, hearing and asking questions.",
+      "zh-Hans": "十二岁的耶稣三天后被找到,在圣殿里坐在教师中间,听讲和发问。",
+      "zh-Hant": "十二歲的耶穌三天後被找到,在聖殿裡坐在教師中間,聽講和發問。"
+    },
+    "books": {
+      "Luke": [
+        2,
+        2
+      ]
+    },
+    "file": "event_boy_jesus_temple_3.jpg",
+    "kind": "scene",
+    "source": "cdn"
+  },
+  {
+    "id": "event_walking_on_water_1",
+    "title": {
+      "en": "Jesus Walking on Water (1)",
+      "zh-Hans": "耶稣在水面上行走(1)",
+      "zh-Hant": "耶穌在水面上行走(1)"
+    },
+    "description": {
+      "en": "Jesus walks on the storm-tossed sea to His disciples; Peter steps out, sinks in doubt, and is caught by the Lord's hand.",
+      "zh-Hans": "耶稣在风浪的海面上走向门徒;彼得下船,因疑惑下沉,被主的手扶住。",
+      "zh-Hant": "耶穌在風浪的海面上走向門徒;彼得下船,因疑惑下沉,被主的手扶住。"
+    },
+    "books": {
+      "Matthew": [
+        14,
+        14
+      ],
+      "Mark": [
+        6,
+        6
+      ],
+      "John": [
+        6,
+        6
+      ]
+    },
+    "file": "event_walking_on_water_1.jpg",
+    "kind": "scene",
+    "source": "cdn"
+  },
+  {
+    "id": "event_walking_on_water_2",
+    "title": {
+      "en": "Jesus Walking on Water (2)",
+      "zh-Hans": "耶稣在水面上行走(2)",
+      "zh-Hant": "耶穌在水面上行走(2)"
+    },
+    "description": {
+      "en": "Jesus walks on the storm-tossed sea to His disciples; Peter steps out, sinks in doubt, and is caught by the Lord's hand.",
+      "zh-Hans": "耶稣在风浪的海面上走向门徒;彼得下船,因疑惑下沉,被主的手扶住。",
+      "zh-Hant": "耶穌在風浪的海面上走向門徒;彼得下船,因疑惑下沉,被主的手扶住。"
+    },
+    "books": {
+      "Matthew": [
+        14,
+        14
+      ],
+      "Mark": [
+        6,
+        6
+      ],
+      "John": [
+        6,
+        6
+      ]
+    },
+    "file": "event_walking_on_water_2.jpg",
+    "kind": "scene",
+    "source": "cdn"
+  },
+  {
+    "id": "event_raising_lazarus_1",
+    "title": {
+      "en": "The Raising of Lazarus (1)",
+      "zh-Hans": "拉撒路复活(1)",
+      "zh-Hant": "拉撒路復活(1)"
+    },
+    "description": {
+      "en": "Jesus weeps at the tomb, then cries 'Lazarus, come forth!' — four days dead, Lazarus walks out alive.",
+      "zh-Hans": "耶稣在坟前哭了,然后呼喊「拉撒路,出来!」——已死四天的拉撒路活着走出。",
+      "zh-Hant": "耶穌在墳前哭了,然後呼喊「拉撒路,出來!」——已死四天的拉撒路活著走出。"
+    },
+    "books": {
+      "John": [
+        11,
+        11
+      ]
+    },
+    "file": "event_raising_lazarus_1.jpg",
+    "kind": "scene",
+    "source": "cdn"
+  },
+  {
+    "id": "event_raising_lazarus_2",
+    "title": {
+      "en": "The Raising of Lazarus (2)",
+      "zh-Hans": "拉撒路复活(2)",
+      "zh-Hant": "拉撒路復活(2)"
+    },
+    "description": {
+      "en": "Jesus weeps at the tomb, then cries 'Lazarus, come forth!' — four days dead, Lazarus walks out alive.",
+      "zh-Hans": "耶稣在坟前哭了,然后呼喊「拉撒路,出来!」——已死四天的拉撒路活着走出。",
+      "zh-Hant": "耶穌在墳前哭了,然後呼喊「拉撒路,出來!」——已死四天的拉撒路活著走出。"
+    },
+    "books": {
+      "John": [
+        11,
+        11
+      ]
+    },
+    "file": "event_raising_lazarus_2.jpg",
+    "kind": "scene",
+    "source": "cdn"
+  },
+  {
+    "id": "event_raising_lazarus_3",
+    "title": {
+      "en": "The Raising of Lazarus (3)",
+      "zh-Hans": "拉撒路复活(3)",
+      "zh-Hant": "拉撒路復活(3)"
+    },
+    "description": {
+      "en": "Jesus weeps at the tomb, then cries 'Lazarus, come forth!' — four days dead, Lazarus walks out alive.",
+      "zh-Hans": "耶稣在坟前哭了,然后呼喊「拉撒路,出来!」——已死四天的拉撒路活着走出。",
+      "zh-Hant": "耶穌在墳前哭了,然後呼喊「拉撒路,出來!」——已死四天的拉撒路活著走出。"
+    },
+    "books": {
+      "John": [
+        11,
+        11
+      ]
+    },
+    "file": "event_raising_lazarus_3.jpg",
+    "kind": "scene",
+    "source": "cdn"
+  },
+  {
+    "id": "event_foot_washing_1",
+    "title": {
+      "en": "Jesus Washes the Disciples' Feet (1)",
+      "zh-Hans": "耶稣为门徒洗脚(1)",
+      "zh-Hant": "耶穌為門徒洗腳(1)"
+    },
+    "description": {
+      "en": "At the Last Supper Jesus girds a towel, fills a basin, and washes His disciples' feet — Lord serving as servant.",
+      "zh-Hans": "在最后晚餐时,耶稣束上手巾,倒水入盆,为门徒洗脚——主作仆人之事。",
+      "zh-Hant": "在最後晚餐時,耶穌束上手巾,倒水入盆,為門徒洗腳——主作僕人之事。"
+    },
+    "books": {
+      "John": [
+        13,
+        13
+      ]
+    },
+    "file": "event_foot_washing_1.jpg",
+    "kind": "scene",
+    "source": "cdn"
+  },
+  {
+    "id": "event_foot_washing_2",
+    "title": {
+      "en": "Jesus Washes the Disciples' Feet (2)",
+      "zh-Hans": "耶稣为门徒洗脚(2)",
+      "zh-Hant": "耶穌為門徒洗腳(2)"
+    },
+    "description": {
+      "en": "At the Last Supper Jesus girds a towel, fills a basin, and washes His disciples' feet — Lord serving as servant.",
+      "zh-Hans": "在最后晚餐时,耶稣束上手巾,倒水入盆,为门徒洗脚——主作仆人之事。",
+      "zh-Hant": "在最後晚餐時,耶穌束上手巾,倒水入盆,為門徒洗腳——主作僕人之事。"
+    },
+    "books": {
+      "John": [
+        13,
+        13
+      ]
+    },
+    "file": "event_foot_washing_2.png",
+    "kind": "scene",
+    "source": "cdn"
+  },
+  {
+    "id": "event_via_dolorosa_1",
+    "title": {
+      "en": "The Carrying of the Cross (1)",
+      "zh-Hans": "背负十字架(1)",
+      "zh-Hant": "背負十字架(1)"
+    },
+    "description": {
+      "en": "Jesus carries His cross through Jerusalem's streets toward Golgotha; Simon of Cyrene is compelled to help.",
+      "zh-Hans": "耶稣背负十字架走过耶路撒冷街道往各各他;古利奈人西门被强迫帮祂背。",
+      "zh-Hant": "耶穌背負十字架走過耶路撒冷街道往各各他;古利奈人西門被強迫幫祂背。"
+    },
+    "books": {
+      "Matthew": [
+        27,
+        27
+      ],
+      "Mark": [
+        15,
+        15
+      ],
+      "Luke": [
+        23,
+        23
+      ],
+      "John": [
+        19,
+        19
+      ]
+    },
+    "file": "event_via_dolorosa_1.jpg",
+    "kind": "scene",
+    "source": "cdn"
+  },
+  {
+    "id": "event_via_dolorosa_2",
+    "title": {
+      "en": "The Carrying of the Cross (2)",
+      "zh-Hans": "背负十字架(2)",
+      "zh-Hant": "背負十字架(2)"
+    },
+    "description": {
+      "en": "Jesus carries His cross through Jerusalem's streets toward Golgotha; Simon of Cyrene is compelled to help.",
+      "zh-Hans": "耶稣背负十字架走过耶路撒冷街道往各各他;古利奈人西门被强迫帮祂背。",
+      "zh-Hant": "耶穌背負十字架走過耶路撒冷街道往各各他;古利奈人西門被強迫幫祂背。"
+    },
+    "books": {
+      "Matthew": [
+        27,
+        27
+      ],
+      "Mark": [
+        15,
+        15
+      ],
+      "Luke": [
+        23,
+        23
+      ],
+      "John": [
+        19,
+        19
+      ]
+    },
+    "file": "event_via_dolorosa_2.jpg",
+    "kind": "scene",
+    "source": "cdn"
+  },
+  {
+    "id": "event_sending_twelve_1",
+    "title": {
+      "en": "Jesus Sends Out the Twelve (1)",
+      "zh-Hans": "差遣十二门徒(1)",
+      "zh-Hant": "差遣十二門徒(1)"
+    },
+    "description": {
+      "en": "Jesus commissions the Twelve, gives them authority over unclean spirits, and sends them out two by two.",
+      "zh-Hans": "耶稣差遣十二门徒,给他们制伏污灵的权柄,两个两个差出去。",
+      "zh-Hant": "耶穌差遣十二門徒,給他們制伏污靈的權柄,兩個兩個差出去。"
+    },
+    "books": {
+      "Matthew": [
+        10,
+        10
+      ],
+      "Mark": [
+        6,
+        6
+      ],
+      "Luke": [
+        9,
+        9
+      ]
+    },
+    "file": "event_sending_twelve_1.jpg",
+    "kind": "scene",
+    "source": "cdn"
+  },
+  {
+    "id": "event_sending_twelve_2",
+    "title": {
+      "en": "Jesus Sends Out the Twelve (2)",
+      "zh-Hans": "差遣十二门徒(2)",
+      "zh-Hant": "差遣十二門徒(2)"
+    },
+    "description": {
+      "en": "Jesus commissions the Twelve, gives them authority over unclean spirits, and sends them out two by two.",
+      "zh-Hans": "耶稣差遣十二门徒,给他们制伏污灵的权柄,两个两个差出去。",
+      "zh-Hant": "耶穌差遣十二門徒,給他們制伏污靈的權柄,兩個兩個差出去。"
+    },
+    "books": {
+      "Matthew": [
+        10,
+        10
+      ],
+      "Mark": [
+        6,
+        6
+      ],
+      "Luke": [
+        9,
+        9
+      ]
+    },
+    "file": "event_sending_twelve_2.jpg",
+    "kind": "scene",
+    "source": "cdn"
+  },
+  {
+    "id": "event_sending_seventy_1",
+    "title": {
+      "en": "Jesus Sends Out the Seventy (1)",
+      "zh-Hans": "差遣七十人(1)",
+      "zh-Hant": "差遣七十人(1)"
+    },
+    "description": {
+      "en": "Jesus appoints seventy disciples and sends them ahead, two by two, into every town and place He was about to go.",
+      "zh-Hans": "耶稣另派七十人,两个两个差遣他们,往自己所要到的各城各地方去。",
+      "zh-Hant": "耶穌另派七十人,兩個兩個差遣他們,往自己所要到的各城各地方去。"
+    },
+    "books": {
+      "Luke": [
+        10,
+        10
+      ]
+    },
+    "file": "event_sending_seventy_1.jpg",
+    "kind": "scene",
+    "source": "cdn"
+  },
+  {
+    "id": "event_sending_seventy_2",
+    "title": {
+      "en": "Jesus Sends Out the Seventy (2)",
+      "zh-Hans": "差遣七十人(2)",
+      "zh-Hant": "差遣七十人(2)"
+    },
+    "description": {
+      "en": "Jesus appoints seventy disciples and sends them ahead, two by two, into every town and place He was about to go.",
+      "zh-Hans": "耶稣另派七十人,两个两个差遣他们,往自己所要到的各城各地方去。",
+      "zh-Hant": "耶穌另派七十人,兩個兩個差遣他們,往自己所要到的各城各地方去。"
+    },
+    "books": {
+      "Luke": [
+        10,
+        10
+      ]
+    },
+    "file": "event_sending_seventy_2.jpg",
+    "kind": "scene",
+    "source": "cdn"
+  },
+  {
+    "id": "event_sending_seventy_3",
+    "title": {
+      "en": "Jesus Sends Out the Seventy (3)",
+      "zh-Hans": "差遣七十人(3)",
+      "zh-Hant": "差遣七十人(3)"
+    },
+    "description": {
+      "en": "Jesus appoints seventy disciples and sends them ahead, two by two, into every town and place He was about to go.",
+      "zh-Hans": "耶稣另派七十人,两个两个差遣他们,往自己所要到的各城各地方去。",
+      "zh-Hant": "耶穌另派七十人,兩個兩個差遣他們,往自己所要到的各城各地方去。"
+    },
+    "books": {
+      "Luke": [
+        10,
+        10
+      ]
+    },
+    "file": "event_sending_seventy_3.jpg",
+    "kind": "scene",
+    "source": "cdn"
+  },
+  {
+    "id": "event_great_commission_1",
+    "title": {
+      "en": "The Great Commission (1)",
+      "zh-Hans": "大使命(1)",
+      "zh-Hant": "大使命(1)"
+    },
+    "description": {
+      "en": "The risen Christ on a Galilean mountain commands the eleven: 'Go, make disciples of all nations, baptizing them...'",
+      "zh-Hans": "复活的基督在加利利山上吩咐十一门徒:「你们要去,使万民作我的门徒,奉父子圣灵的名给他们施洗⋯⋯」",
+      "zh-Hant": "復活的基督在加利利山上吩咐十一門徒:「你們要去,使萬民作我的門徒,奉父子聖靈的名給他們施洗⋯⋯」"
+    },
+    "books": {
+      "Matthew": [
+        28,
+        28
+      ],
+      "Mark": [
+        16,
+        16
+      ]
+    },
+    "file": "event_great_commission_1.png",
+    "kind": "teaching",
+    "source": "cdn"
+  },
+  {
+    "id": "event_great_commission_2",
+    "title": {
+      "en": "The Great Commission (2)",
+      "zh-Hans": "大使命(2)",
+      "zh-Hant": "大使命(2)"
+    },
+    "description": {
+      "en": "The risen Christ on a Galilean mountain commands the eleven: 'Go, make disciples of all nations, baptizing them...'",
+      "zh-Hans": "复活的基督在加利利山上吩咐十一门徒:「你们要去,使万民作我的门徒,奉父子圣灵的名给他们施洗⋯⋯」",
+      "zh-Hant": "復活的基督在加利利山上吩咐十一門徒:「你們要去,使萬民作我的門徒,奉父子聖靈的名給他們施洗⋯⋯」"
+    },
+    "books": {
+      "Matthew": [
+        28,
+        28
+      ],
+      "Mark": [
+        16,
+        16
+      ]
+    },
+    "file": "event_great_commission_2.jpg",
+    "kind": "teaching",
+    "source": "cdn"
+  },
+  {
+    "id": "event_great_commission_3",
+    "title": {
+      "en": "The Great Commission (3)",
+      "zh-Hans": "大使命(3)",
+      "zh-Hant": "大使命(3)"
+    },
+    "description": {
+      "en": "The risen Christ on a Galilean mountain commands the eleven: 'Go, make disciples of all nations, baptizing them...'",
+      "zh-Hans": "复活的基督在加利利山上吩咐十一门徒:「你们要去,使万民作我的门徒,奉父子圣灵的名给他们施洗⋯⋯」",
+      "zh-Hant": "復活的基督在加利利山上吩咐十一門徒:「你們要去,使萬民作我的門徒,奉父子聖靈的名給他們施洗⋯⋯」"
+    },
+    "books": {
+      "Matthew": [
+        28,
+        28
+      ],
+      "Mark": [
+        16,
+        16
+      ]
+    },
+    "file": "event_great_commission_3.jpg",
+    "kind": "teaching",
+    "source": "cdn"
+  },
+  {
+    "id": "event_cleansing_temple_1",
+    "title": {
+      "en": "Jesus Cleanses the Temple (1)",
+      "zh-Hans": "耶稣洁净圣殿(1)",
+      "zh-Hant": "耶穌潔淨聖殿(1)"
+    },
+    "description": {
+      "en": "Jesus drives out the money-changers and dove-sellers from the Temple courts — 'My house shall be called a house of prayer'.",
+      "zh-Hans": "耶稣赶出圣殿里的兑换银钱和卖鸽子的人——「我的殿必称为祷告的殿」。",
+      "zh-Hant": "耶穌趕出聖殿裡的兌換銀錢和賣鴿子的人——「我的殿必稱為禱告的殿」。"
+    },
+    "books": {
+      "Matthew": [
+        21,
+        21
+      ],
+      "Mark": [
+        11,
+        11
+      ],
+      "Luke": [
+        19,
+        19
+      ],
+      "John": [
+        2,
+        2
+      ]
+    },
+    "file": "event_cleansing_temple_1.jpg",
+    "kind": "scene",
+    "source": "cdn"
+  },
+  {
+    "id": "event_cleansing_temple_2",
+    "title": {
+      "en": "Jesus Cleanses the Temple (2)",
+      "zh-Hans": "耶稣洁净圣殿(2)",
+      "zh-Hant": "耶穌潔淨聖殿(2)"
+    },
+    "description": {
+      "en": "Jesus drives out the money-changers and dove-sellers from the Temple courts — 'My house shall be called a house of prayer'.",
+      "zh-Hans": "耶稣赶出圣殿里的兑换银钱和卖鸽子的人——「我的殿必称为祷告的殿」。",
+      "zh-Hant": "耶穌趕出聖殿裡的兌換銀錢和賣鴿子的人——「我的殿必稱為禱告的殿」。"
+    },
+    "books": {
+      "Matthew": [
+        21,
+        21
+      ],
+      "Mark": [
+        11,
+        11
+      ],
+      "Luke": [
+        19,
+        19
+      ],
+      "John": [
+        2,
+        2
+      ]
+    },
+    "file": "event_cleansing_temple_2.jpg",
+    "kind": "scene",
+    "source": "cdn"
+  },
+  {
+    "id": "event_cleansing_temple_3",
+    "title": {
+      "en": "Jesus Cleanses the Temple (3)",
+      "zh-Hans": "耶稣洁净圣殿(3)",
+      "zh-Hant": "耶穌潔淨聖殿(3)"
+    },
+    "description": {
+      "en": "Jesus drives out the money-changers and dove-sellers from the Temple courts — 'My house shall be called a house of prayer'.",
+      "zh-Hans": "耶稣赶出圣殿里的兑换银钱和卖鸽子的人——「我的殿必称为祷告的殿」。",
+      "zh-Hant": "耶穌趕出聖殿裡的兌換銀錢和賣鴿子的人——「我的殿必稱為禱告的殿」。"
+    },
+    "books": {
+      "Matthew": [
+        21,
+        21
+      ],
+      "Mark": [
+        11,
+        11
+      ],
+      "Luke": [
+        19,
+        19
+      ],
+      "John": [
+        2,
+        2
+      ]
+    },
+    "file": "event_cleansing_temple_3.jpg",
+    "kind": "scene",
+    "source": "cdn"
+  },
+  {
+    "id": "event_nativity_topup_1",
+    "title": {
+      "en": "Nativity of Jesus (1)",
+      "zh-Hans": "耶稣降生(1)",
+      "zh-Hant": "耶穌降生(1)"
+    },
+    "description": {
+      "en": "The birth of Christ in Bethlehem — Mary, Joseph, the manger, and the newborn King of Kings.",
+      "zh-Hans": "基督降生在伯利恒——马利亚、约瑟、马槽,与新生的万王之王。",
+      "zh-Hant": "基督降生在伯利恆——馬利亞、約瑟、馬槽,與新生的萬王之王。"
+    },
+    "books": {
+      "Luke": [
+        2,
+        2
+      ],
+      "Matthew": [
+        1,
+        2
+      ]
+    },
+    "file": "event_nativity_topup_1.jpg",
+    "kind": "scene",
+    "source": "cdn"
+  },
+  {
+    "id": "event_nativity_topup_2",
+    "title": {
+      "en": "Nativity of Jesus (2)",
+      "zh-Hans": "耶稣降生(2)",
+      "zh-Hant": "耶穌降生(2)"
+    },
+    "description": {
+      "en": "The birth of Christ in Bethlehem — Mary, Joseph, the manger, and the newborn King of Kings.",
+      "zh-Hans": "基督降生在伯利恒——马利亚、约瑟、马槽,与新生的万王之王。",
+      "zh-Hant": "基督降生在伯利恆——馬利亞、約瑟、馬槽,與新生的萬王之王。"
+    },
+    "books": {
+      "Luke": [
+        2,
+        2
+      ],
+      "Matthew": [
+        1,
+        2
+      ]
+    },
+    "file": "event_nativity_topup_2.jpg",
+    "kind": "scene",
+    "source": "cdn"
+  },
+  {
+    "id": "event_gadara_demoniac_topup_1",
+    "title": {
+      "en": "The Gadarene Demoniac (1)",
+      "zh-Hans": "格拉森被鬼附的人(1)",
+      "zh-Hant": "格拉森被鬼附的人(1)"
+    },
+    "description": {
+      "en": "Jesus casts out the legion of demons from the man among the tombs into the herd of pigs that plunge into the sea.",
+      "zh-Hans": "耶稣赶出坟墓中那人身上的群鬼,鬼进入猪群,猪群闯下海里。",
+      "zh-Hant": "耶穌趕出墳墓中那人身上的群鬼,鬼進入豬群,豬群闖下海裡。"
+    },
+    "books": {
+      "Matthew": [
+        8,
+        8
+      ],
+      "Mark": [
+        5,
+        5
+      ],
+      "Luke": [
+        8,
+        8
+      ]
+    },
+    "file": "event_gadara_demoniac_topup_1.jpg",
+    "kind": "scene",
+    "source": "cdn"
+  },
+  {
+    "id": "event_gadara_demoniac_topup_2",
+    "title": {
+      "en": "The Gadarene Demoniac (2)",
+      "zh-Hans": "格拉森被鬼附的人(2)",
+      "zh-Hant": "格拉森被鬼附的人(2)"
+    },
+    "description": {
+      "en": "Jesus casts out the legion of demons from the man among the tombs into the herd of pigs that plunge into the sea.",
+      "zh-Hans": "耶稣赶出坟墓中那人身上的群鬼,鬼进入猪群,猪群闯下海里。",
+      "zh-Hant": "耶穌趕出墳墓中那人身上的群鬼,鬼進入豬群,豬群闖下海裡。"
+    },
+    "books": {
+      "Matthew": [
+        8,
+        8
+      ],
+      "Mark": [
+        5,
+        5
+      ],
+      "Luke": [
+        8,
+        8
+      ]
+    },
+    "file": "event_gadara_demoniac_topup_2.jpg",
+    "kind": "scene",
+    "source": "cdn"
+  },
+  {
+    "id": "event_woman_hemorrhage_topup_1",
+    "title": {
+      "en": "The Woman with the Issue of Blood (1)",
+      "zh-Hans": "患血漏的女人(1)",
+      "zh-Hant": "患血漏的女人(1)"
+    },
+    "description": {
+      "en": "A woman bleeding twelve years touches the hem of Jesus' garment in faith and is healed.",
+      "zh-Hans": "患血漏十二年的女人凭信摸着耶稣的衣裳䍁子,立即痊愈。",
+      "zh-Hant": "患血漏十二年的女人憑信摸著耶穌的衣裳䍁子,立即痊癒。"
+    },
+    "books": {
+      "Matthew": [
+        9,
+        9
+      ],
+      "Mark": [
+        5,
+        5
+      ],
+      "Luke": [
+        8,
+        8
+      ]
+    },
+    "file": "event_woman_hemorrhage_topup_1.jpg",
+    "kind": "scene",
+    "source": "cdn"
+  },
+  {
+    "id": "event_woman_hemorrhage_topup_2",
+    "title": {
+      "en": "The Woman with the Issue of Blood (2)",
+      "zh-Hans": "患血漏的女人(2)",
+      "zh-Hant": "患血漏的女人(2)"
+    },
+    "description": {
+      "en": "A woman bleeding twelve years touches the hem of Jesus' garment in faith and is healed.",
+      "zh-Hans": "患血漏十二年的女人凭信摸着耶稣的衣裳䍁子,立即痊愈。",
+      "zh-Hant": "患血漏十二年的女人憑信摸著耶穌的衣裳䍁子,立即痊癒。"
+    },
+    "books": {
+      "Matthew": [
+        9,
+        9
+      ],
+      "Mark": [
+        5,
+        5
+      ],
+      "Luke": [
+        8,
+        8
+      ]
+    },
+    "file": "event_woman_hemorrhage_topup_2.jpg",
+    "kind": "scene",
+    "source": "cdn"
+  },
+  {
+    "id": "event_feeding_5000_topup_1",
+    "title": {
+      "en": "Feeding of the Five Thousand (1)",
+      "zh-Hans": "喂饱五千人(1)",
+      "zh-Hant": "餵飽五千人(1)"
+    },
+    "description": {
+      "en": "With five loaves and two fish, Jesus feeds a multitude of five thousand men, plus women and children — twelve baskets are left over.",
+      "zh-Hans": "耶稣用五饼二鱼喂饱五千男人,还有妇女孩子——剩下的零碎装满十二篮。",
+      "zh-Hant": "耶穌用五餅二魚餵飽五千男人,還有婦女孩子——剩下的零碎裝滿十二籃。"
+    },
+    "books": {
+      "Matthew": [
+        14,
+        14
+      ],
+      "Mark": [
+        6,
+        6
+      ],
+      "Luke": [
+        9,
+        9
+      ],
+      "John": [
+        6,
+        6
+      ]
+    },
+    "file": "event_feeding_5000_topup_1.jpg",
+    "kind": "scene",
+    "source": "cdn"
+  },
+  {
+    "id": "event_feeding_5000_topup_2",
+    "title": {
+      "en": "Feeding of the Five Thousand (2)",
+      "zh-Hans": "喂饱五千人(2)",
+      "zh-Hant": "餵飽五千人(2)"
+    },
+    "description": {
+      "en": "With five loaves and two fish, Jesus feeds a multitude of five thousand men, plus women and children — twelve baskets are left over.",
+      "zh-Hans": "耶稣用五饼二鱼喂饱五千男人,还有妇女孩子——剩下的零碎装满十二篮。",
+      "zh-Hant": "耶穌用五餅二魚餵飽五千男人,還有婦女孩子——剩下的零碎裝滿十二籃。"
+    },
+    "books": {
+      "Matthew": [
+        14,
+        14
+      ],
+      "Mark": [
+        6,
+        6
+      ],
+      "Luke": [
+        9,
+        9
+      ],
+      "John": [
+        6,
+        6
+      ]
+    },
+    "file": "event_feeding_5000_topup_2.jpg",
+    "kind": "scene",
+    "source": "cdn"
+  },
+  {
+    "id": "event_rich_young_ruler_topup_1",
+    "title": {
+      "en": "The Rich Young Ruler (1)",
+      "zh-Hans": "财主少年官(1)",
+      "zh-Hant": "財主少年官(1)"
+    },
+    "description": {
+      "en": "A wealthy young man asks how to gain eternal life; told to sell all and follow, he turns away sorrowful.",
+      "zh-Hans": "一位富有的少年官来问如何得永生;主叫他变卖一切来跟从,他忧愁地走了。",
+      "zh-Hant": "一位富有的少年官來問如何得永生;主叫他變賣一切來跟從,他憂愁地走了。"
+    },
+    "books": {
+      "Matthew": [
+        19,
+        19
+      ],
+      "Mark": [
+        10,
+        10
+      ],
+      "Luke": [
+        18,
+        18
+      ]
+    },
+    "file": "event_rich_young_ruler_topup_1.jpg",
+    "kind": "scene",
+    "source": "cdn"
+  },
+  {
+    "id": "event_rich_young_ruler_topup_2",
+    "title": {
+      "en": "The Rich Young Ruler (2)",
+      "zh-Hans": "财主少年官(2)",
+      "zh-Hant": "財主少年官(2)"
+    },
+    "description": {
+      "en": "A wealthy young man asks how to gain eternal life; told to sell all and follow, he turns away sorrowful.",
+      "zh-Hans": "一位富有的少年官来问如何得永生;主叫他变卖一切来跟从,他忧愁地走了。",
+      "zh-Hant": "一位富有的少年官來問如何得永生;主叫他變賣一切來跟從,他憂愁地走了。"
+    },
+    "books": {
+      "Matthew": [
+        19,
+        19
+      ],
+      "Mark": [
+        10,
+        10
+      ],
+      "Luke": [
+        18,
+        18
+      ]
+    },
+    "file": "event_rich_young_ruler_topup_2.jpg",
+    "kind": "scene",
+    "source": "cdn"
+  },
+  {
+    "id": "event_zacchaeus_topup_1",
+    "title": {
+      "en": "Zacchaeus in the Sycamore Tree (1)",
+      "zh-Hans": "撒该上桑树(1)",
+      "zh-Hant": "撒該上桑樹(1)"
+    },
+    "description": {
+      "en": "A short tax-collector climbs a sycamore to see Jesus; Jesus calls him down by name and goes to his house — salvation comes to that home.",
+      "zh-Hans": "矮个税吏爬上桑树要看耶稣;耶稣叫他名字下来,到他家——救恩到了这家。",
+      "zh-Hant": "矮個稅吏爬上桑樹要看耶穌;耶穌叫他名字下來,到他家——救恩到了這家。"
+    },
+    "books": {
+      "Luke": [
+        19,
+        19
+      ]
+    },
+    "file": "event_zacchaeus_topup_1.jpg",
+    "kind": "scene",
+    "source": "cdn"
+  },
+  {
+    "id": "event_zacchaeus_topup_2",
+    "title": {
+      "en": "Zacchaeus in the Sycamore Tree (2)",
+      "zh-Hans": "撒该上桑树(2)",
+      "zh-Hant": "撒該上桑樹(2)"
+    },
+    "description": {
+      "en": "A short tax-collector climbs a sycamore to see Jesus; Jesus calls him down by name and goes to his house — salvation comes to that home.",
+      "zh-Hans": "矮个税吏爬上桑树要看耶稣;耶稣叫他名字下来,到他家——救恩到了这家。",
+      "zh-Hant": "矮個稅吏爬上桑樹要看耶穌;耶穌叫他名字下來,到他家——救恩到了這家。"
+    },
+    "books": {
+      "Luke": [
+        19,
+        19
+      ]
+    },
+    "file": "event_zacchaeus_topup_2.jpg",
+    "kind": "scene",
+    "source": "cdn"
+  },
+  {
+    "id": "event_crown_of_thorns_topup_1",
+    "title": {
+      "en": "The Crown of Thorns (1)",
+      "zh-Hans": "戴荆棘冠冕(1)",
+      "zh-Hant": "戴荊棘冠冕(1)"
+    },
+    "description": {
+      "en": "Roman soldiers strip Jesus, weave a crown of thorns, press it on His head, and mock 'Hail, King of the Jews!'",
+      "zh-Hans": "罗马士兵脱去耶稣衣服,编荆棘冠冕戴在祂头上,戏弄祂「犹太人的王万岁!」",
+      "zh-Hant": "羅馬士兵脫去耶穌衣服,編荊棘冠冕戴在祂頭上,戲弄祂「猶太人的王萬歲!」"
+    },
+    "books": {
+      "Matthew": [
+        27,
+        27
+      ],
+      "Mark": [
+        15,
+        15
+      ],
+      "John": [
+        19,
+        19
+      ]
+    },
+    "file": "event_crown_of_thorns_topup_1.jpg",
+    "kind": "scene",
+    "source": "cdn"
+  },
+  {
+    "id": "event_crown_of_thorns_topup_2",
+    "title": {
+      "en": "The Crown of Thorns (2)",
+      "zh-Hans": "戴荆棘冠冕(2)",
+      "zh-Hant": "戴荊棘冠冕(2)"
+    },
+    "description": {
+      "en": "Roman soldiers strip Jesus, weave a crown of thorns, press it on His head, and mock 'Hail, King of the Jews!'",
+      "zh-Hans": "罗马士兵脱去耶稣衣服,编荆棘冠冕戴在祂头上,戏弄祂「犹太人的王万岁!」",
+      "zh-Hant": "羅馬士兵脫去耶穌衣服,編荊棘冠冕戴在祂頭上,戲弄祂「猶太人的王萬歲!」"
+    },
+    "books": {
+      "Matthew": [
+        27,
+        27
+      ],
+      "Mark": [
+        15,
+        15
+      ],
+      "John": [
+        19,
+        19
+      ]
+    },
+    "file": "event_crown_of_thorns_topup_2.jpg",
+    "kind": "scene",
+    "source": "cdn"
+  },
+  {
+    "id": "event_empty_tomb_topup_1",
+    "title": {
+      "en": "The Empty Tomb (1)",
+      "zh-Hans": "空坟墓(1)",
+      "zh-Hant": "空墳墓(1)"
+    },
+    "description": {
+      "en": "At dawn the women find the stone rolled away; an angel proclaims 'He is not here, He is risen, just as He said.'",
+      "zh-Hans": "黎明时妇女发现石头已挪开;天使宣告「他不在这里,照他所说的,他已经复活了。」",
+      "zh-Hant": "黎明時婦女發現石頭已挪開;天使宣告「他不在這裡,照他所說的,他已經復活了。」"
+    },
+    "books": {
+      "Matthew": [
+        28,
+        28
+      ],
+      "Mark": [
+        16,
+        16
+      ],
+      "Luke": [
+        24,
+        24
+      ],
+      "John": [
+        20,
+        20
+      ]
+    },
+    "file": "event_empty_tomb_topup_1.jpg",
+    "kind": "scene",
+    "source": "cdn"
+  },
+  {
+    "id": "event_empty_tomb_topup_2",
+    "title": {
+      "en": "The Empty Tomb (2)",
+      "zh-Hans": "空坟墓(2)",
+      "zh-Hant": "空墳墓(2)"
+    },
+    "description": {
+      "en": "At dawn the women find the stone rolled away; an angel proclaims 'He is not here, He is risen, just as He said.'",
+      "zh-Hans": "黎明时妇女发现石头已挪开;天使宣告「他不在这里,照他所说的,他已经复活了。」",
+      "zh-Hant": "黎明時婦女發現石頭已挪開;天使宣告「他不在這裡,照他所說的,他已經復活了。」"
+    },
+    "books": {
+      "Matthew": [
+        28,
+        28
+      ],
+      "Mark": [
+        16,
+        16
+      ],
+      "Luke": [
+        24,
+        24
+      ],
+      "John": [
+        20,
+        20
+      ]
+    },
+    "file": "event_empty_tomb_topup_2.jpg",
+    "kind": "scene",
+    "source": "cdn"
+  },
+  {
+    "id": "event_doubting_thomas_topup_1",
+    "title": {
+      "en": "Doubting Thomas (1)",
+      "zh-Hans": "多疑的多马(1)",
+      "zh-Hant": "多疑的多馬(1)"
+    },
+    "description": {
+      "en": "Thomas refuses to believe until he sees and touches the nail-marks; a week later Christ appears and invites his hand into His side.",
+      "zh-Hans": "多马不见钉痕、不摸钉痕就不信;一周后基督显现,邀请他探入肋旁。",
+      "zh-Hant": "多馬不見釘痕、不摸釘痕就不信;一週後基督顯現,邀請他探入肋旁。"
+    },
+    "books": {
+      "John": [
+        20,
+        20
+      ]
+    },
+    "file": "event_doubting_thomas_topup_1.jpg",
+    "kind": "scene",
+    "source": "cdn"
+  },
+  {
+    "id": "event_doubting_thomas_topup_2",
+    "title": {
+      "en": "Doubting Thomas (2)",
+      "zh-Hans": "多疑的多马(2)",
+      "zh-Hant": "多疑的多馬(2)"
+    },
+    "description": {
+      "en": "Thomas refuses to believe until he sees and touches the nail-marks; a week later Christ appears and invites his hand into His side.",
+      "zh-Hans": "多马不见钉痕、不摸钉痕就不信;一周后基督显现,邀请他探入肋旁。",
+      "zh-Hant": "多馬不見釘痕、不摸釘痕就不信;一週後基督顯現,邀請他探入肋旁。"
+    },
+    "books": {
+      "John": [
+        20,
+        20
+      ]
+    },
+    "file": "event_doubting_thomas_topup_2.jpg",
+    "kind": "scene",
+    "source": "cdn"
+  },
+  {
+    "id": "event_birth_john_baptist_topup",
+    "title": {
+      "en": "Birth of John the Baptist",
+      "zh-Hans": "施洗约翰诞生",
+      "zh-Hant": "施洗約翰誕生"
+    },
+    "description": {
+      "en": "Aged Elizabeth bears a son; her husband Zechariah, mute from disbelief, regains speech when he writes 'His name is John'.",
+      "zh-Hans": "年老的以利沙伯生子;之前因不信而哑的丈夫撒迦利亚写下「他的名字是约翰」就开口说话。",
+      "zh-Hant": "年老的以利沙伯生子;之前因不信而啞的丈夫撒迦利亞寫下「他的名字是約翰」就開口說話。"
+    },
+    "books": {
+      "Luke": [
+        1,
+        1
+      ]
+    },
+    "file": "event_birth_john_baptist_topup.jpg",
+    "kind": "scene",
+    "source": "cdn"
+  },
+  {
+    "id": "event_ten_lepers_topup_1",
+    "title": {
+      "en": "Healing of the Ten Lepers (1)",
+      "zh-Hans": "医治十个长大麻风的(1)",
+      "zh-Hant": "醫治十個長大痲瘋的(1)"
+    },
+    "description": {
+      "en": "Ten lepers cry for mercy; all are cleansed on the way to the priests, but only one — a Samaritan — returns to give thanks.",
+      "zh-Hans": "十个长大麻风的求怜悯;往祭司去的路上都得洁净,只有一个撒玛利亚人回来感谢主。",
+      "zh-Hant": "十個長大痲瘋的求憐憫;往祭司去的路上都得潔淨,只有一個撒瑪利亞人回來感謝主。"
+    },
+    "books": {
+      "Luke": [
+        17,
+        17
+      ]
+    },
+    "file": "event_ten_lepers_topup_1.jpg",
+    "kind": "scene",
+    "source": "cdn"
+  },
+  {
+    "id": "event_ten_lepers_topup_2",
+    "title": {
+      "en": "Healing of the Ten Lepers (2)",
+      "zh-Hans": "医治十个长大麻风的(2)",
+      "zh-Hant": "醫治十個長大痲瘋的(2)"
+    },
+    "description": {
+      "en": "Ten lepers cry for mercy; all are cleansed on the way to the priests, but only one — a Samaritan — returns to give thanks.",
+      "zh-Hans": "十个长大麻风的求怜悯;往祭司去的路上都得洁净,只有一个撒玛利亚人回来感谢主。",
+      "zh-Hant": "十個長大痲瘋的求憐憫;往祭司去的路上都得潔淨,只有一個撒瑪利亞人回來感謝主。"
+    },
+    "books": {
+      "Luke": [
+        17,
+        17
+      ]
+    },
+    "file": "event_ten_lepers_topup_2.jpg",
+    "kind": "scene",
+    "source": "cdn"
+  },
+  {
+    "id": "event_blessing_children_topup",
+    "title": {
+      "en": "Jesus Blesses the Children",
+      "zh-Hans": "耶稣给小孩子祝福",
+      "zh-Hant": "耶穌給小孩子祝福"
+    },
+    "description": {
+      "en": "Disciples rebuke parents bringing children; Jesus draws the little ones close — 'Of such is the kingdom of God.'",
+      "zh-Hans": "门徒责备带小孩来的父母;耶稣搂着小孩——「在神国的,正是这样的人」。",
+      "zh-Hant": "門徒責備帶小孩來的父母;耶穌摟著小孩——「在神國的,正是這樣的人」。"
+    },
+    "books": {
+      "Matthew": [
+        19,
+        19
+      ],
+      "Mark": [
+        10,
+        10
+      ],
+      "Luke": [
+        18,
+        18
+      ]
+    },
+    "file": "event_blessing_children_topup.jpg",
+    "kind": "scene",
     "source": "cdn"
   }
 ]
