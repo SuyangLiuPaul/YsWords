@@ -71,6 +71,37 @@ class LibraryPage extends StatelessWidget {
 /// while studying, and a separate "all notes ever" view for review.
 enum _NotesScope { all, chapter, book }
 
+/// 2026-05-24 (v1.2.91): sort order for the notes view. Persisted in
+/// AppSettings.notesSortMode so the user's preference survives app
+/// restart and cloud-sync.
+///   canonical → Genesis → Revelation (verse index in mp.verses)
+///   recent    → most recently created/edited first
+///   oldest    → oldest first
+enum _NotesSort { canonical, recent, oldest }
+
+_NotesSort _sortFromString(String s) {
+  switch (s) {
+    case 'recent':
+      return _NotesSort.recent;
+    case 'oldest':
+      return _NotesSort.oldest;
+    case 'canonical':
+    default:
+      return _NotesSort.canonical;
+  }
+}
+
+String _sortToString(_NotesSort s) {
+  switch (s) {
+    case _NotesSort.recent:
+      return 'recent';
+    case _NotesSort.oldest:
+      return 'oldest';
+    case _NotesSort.canonical:
+      return 'canonical';
+  }
+}
+
 class _NotesTab extends StatefulWidget {
   final MainProvider mainProvider;
   final String locale;
@@ -94,6 +125,10 @@ class _NotesTabState extends State<_NotesTab>
     final locale = widget.locale;
     final notes = mainProvider.verseNotes;
     final current = mainProvider.currentVerse;
+    // 2026-05-24 (v1.2.91): user-selected sort mode, read from
+    // AppSettings so the choice persists + syncs across devices.
+    final settings = context.watch<AppSettings>();
+    final sort = _sortFromString(settings.notesSortMode);
 
     // Resolve all IDs first, then apply the active scope filter on
     // the Verse list — comparing book names here works regardless of
@@ -101,7 +136,12 @@ class _NotesTabState extends State<_NotesTab>
     // MainProvider snapshot (same loaded version's labelling).
     final allEntries = _resolveAnnotations(mainProvider, notes.keys);
     final entries = _filterEntriesByScope(allEntries, current, _scope);
-    final groups = _groupContiguousNotes(entries, notes);
+    // Always group on the canonical-ordered entries so multi-verse
+    // passage notes (Genesis 1:16-18 sharing one note) stay merged.
+    // The chosen sort is applied AFTER grouping — see _sortGroups.
+    final canonicalGroups = _groupContiguousNotes(entries, notes);
+    final groups = _sortGroups(
+        canonicalGroups, sort, mainProvider.verseNoteTimestamps);
 
     // The segmented control header is always visible. When the user
     // has zero notes overall we'd hide it, but that would mean the
@@ -158,15 +198,24 @@ class _NotesTabState extends State<_NotesTab>
               ? '${headVerse.book} ${headVerse.chapter}:${headVerse.verseLabel}'
               : '${headVerse.book} ${headVerse.chapter}:'
                   '${headVerse.verseLabel}-${group.verses.last.verseLabel}';
+          // 2026-05-24 (v1.2.91): pull the title from the head verse.
+          // All verses in a passage note share the same title (set
+          // together by setVerseNote in a single Save), so the head
+          // is canonical.
+          final title = mainProvider.getVerseNoteTitle(headVerse.id);
           return _AnnotationTile(
             verse: headVerse,
             rangeLabelOverride: rangeLabel,
+            titleOverride: title,
             locale: locale,
             mainProvider: mainProvider,
             extra: note,
             onCopy: () => ClipboardHelper.copyWithFeedback(
               context,
-              '[$rangeLabel] '
+              // Title goes first in the copied text so pasted notes
+              // are self-describing — useful when sharing into chat
+              // apps or sermon prep docs.
+              '${title != null ? "$title\n" : ""}[$rangeLabel] '
               '${sanitizeForSearch(headVerse.text)}\n\n$note',
             ),
             onDeleteAll: () {
@@ -183,30 +232,81 @@ class _NotesTabState extends State<_NotesTab>
       children: [
         Padding(
           padding: const EdgeInsets.fromLTRB(12, 8, 12, 4),
-          child: SegmentedButton<_NotesScope>(
-            segments: [
-              ButtonSegment(
-                value: _NotesScope.all,
-                label: Text(
-                  uiStrings['notesScopeAll']?[locale] ?? 'All',
+          child: Row(
+            children: [
+              Expanded(
+                child: SegmentedButton<_NotesScope>(
+                  segments: [
+                    ButtonSegment(
+                      value: _NotesScope.all,
+                      label: Text(
+                        uiStrings['notesScopeAll']?[locale] ?? 'All',
+                      ),
+                    ),
+                    ButtonSegment(
+                      value: _NotesScope.chapter,
+                      label: Text(
+                        uiStrings['notesScopeChapter']?[locale] ??
+                            'This chapter',
+                      ),
+                    ),
+                    ButtonSegment(
+                      value: _NotesScope.book,
+                      label: Text(
+                        uiStrings['notesScopeBook']?[locale] ?? 'This book',
+                      ),
+                    ),
+                  ],
+                  selected: {_scope},
+                  showSelectedIcon: false,
+                  onSelectionChanged: (s) => setState(() => _scope = s.first),
                 ),
               ),
-              ButtonSegment(
-                value: _NotesScope.chapter,
-                label: Text(
-                  uiStrings['notesScopeChapter']?[locale] ?? 'This chapter',
-                ),
-              ),
-              ButtonSegment(
-                value: _NotesScope.book,
-                label: Text(
-                  uiStrings['notesScopeBook']?[locale] ?? 'This book',
-                ),
+              const SizedBox(width: 8),
+              // 2026-05-24 (v1.2.91): sort-order picker. Three modes
+              // (canonical / recent / oldest) live in a compact
+              // PopupMenuButton next to the scope segmented control —
+              // discoverable but not in-the-way for the common
+              // canonical-order case. The current mode is rendered
+              // as a check next to its menu entry. Choice is
+              // persisted in AppSettings (also synced across devices
+              // via RTDB).
+              PopupMenuButton<_NotesSort>(
+                tooltip: uiStrings['notesSortLabel']?[locale] ?? 'Sort',
+                icon: const Icon(Icons.sort),
+                onSelected: (s) {
+                  // Fire-and-forget — setNotesSortMode persists +
+                  // notifies, the context.watch above re-runs build.
+                  // ignore: discarded_futures
+                  settings.setNotesSortMode(_sortToString(s));
+                },
+                itemBuilder: (_) => [
+                  CheckedPopupMenuItem(
+                    value: _NotesSort.canonical,
+                    checked: sort == _NotesSort.canonical,
+                    child: Text(
+                      uiStrings['notesSortCanonical']?[locale] ??
+                          'Bible order',
+                    ),
+                  ),
+                  CheckedPopupMenuItem(
+                    value: _NotesSort.recent,
+                    checked: sort == _NotesSort.recent,
+                    child: Text(
+                      uiStrings['notesSortRecent']?[locale] ??
+                          'Recently updated',
+                    ),
+                  ),
+                  CheckedPopupMenuItem(
+                    value: _NotesSort.oldest,
+                    checked: sort == _NotesSort.oldest,
+                    child: Text(
+                      uiStrings['notesSortOldest']?[locale] ?? 'Oldest first',
+                    ),
+                  ),
+                ],
               ),
             ],
-            selected: {_scope},
-            showSelectedIcon: false,
-            onSelectionChanged: (s) => setState(() => _scope = s.first),
           ),
         ),
         Expanded(child: body),
@@ -263,6 +363,42 @@ List<_NoteGroup> _groupContiguousNotes(
   return groups;
 }
 
+/// 2026-05-24 (v1.2.91): re-order an already-grouped list by the
+/// user's chosen sort mode. Canonical returns the input unchanged
+/// (it was built from the canonical-ordered entry list). Recent /
+/// oldest use the MAX timestamp across the verses in each group
+/// (so a multi-verse passage note's most recent edit drives its
+/// position — matches the user mental model of "when did I last
+/// touch this note").
+///
+/// Verses with no recorded timestamp (defensive — the loader
+/// migrates them on app start) fall back to 0 → they bubble to the
+/// "oldest" end whichever direction the sort runs.
+List<_NoteGroup> _sortGroups(
+  List<_NoteGroup> input,
+  _NotesSort sort,
+  Map<String, int> timestamps,
+) {
+  if (sort == _NotesSort.canonical) return input;
+  int groupTs(_NoteGroup g) {
+    var mx = 0;
+    for (final v in g.verses) {
+      final ts = timestamps[v.id] ?? 0;
+      if (ts > mx) mx = ts;
+    }
+    return mx;
+  }
+  final out = List<_NoteGroup>.of(input);
+  out.sort((a, b) {
+    final ta = groupTs(a);
+    final tb = groupTs(b);
+    return sort == _NotesSort.recent
+        ? tb.compareTo(ta) // newest first
+        : ta.compareTo(tb); // oldest first
+  });
+  return out;
+}
+
 class _BookmarksTab extends StatelessWidget {
   final MainProvider mainProvider;
   final String locale;
@@ -317,6 +453,13 @@ class _AnnotationTile extends StatelessWidget {
   /// reference, same as before.
   final String? rangeLabelOverride;
 
+  /// 2026-05-24 (v1.2.91): user-supplied title. When non-null, the
+  /// title is rendered as the bold primary header at the top of the
+  /// tile, and the verse range is demoted to a smaller secondary
+  /// label below it. When null (no title set), the tile falls back
+  /// to the previous behaviour — verse range as the primary header.
+  final String? titleOverride;
+
   /// 2026-05-19 (v1.2.60): when set, the "Delete" menu item clears
   /// notes from EVERY verse in the multi-verse passage note rather
   /// than just the head verse. Single-verse tiles leave this null
@@ -330,6 +473,7 @@ class _AnnotationTile extends StatelessWidget {
     required this.extra,
     required this.onCopy,
     this.rangeLabelOverride,
+    this.titleOverride,
     this.onDeleteAll,
   });
 
@@ -340,20 +484,49 @@ class _AnnotationTile extends StatelessWidget {
     final ref = rangeLabelOverride ??
         '${verse.book} ${verse.chapter}:${verse.verseLabel}';
     final preview = sanitizeForSearch(verse.text);
+    // 2026-05-24 (v1.2.91): when the user typed a title, surface it
+    // as the bold primary header and demote the verse ref to a
+    // smaller secondary line — same pattern Apple Notes / Google
+    // Keep / WeDevote use. When no title, fall back to the
+    // verse-ref-as-header layout (no visual change for existing
+    // notes after upgrade).
+    final hasTitle = titleOverride != null && titleOverride!.isNotEmpty;
     return ListTile(
       onTap: () => _navigateToVerse(verse, mainProvider),
       title: Text(
-        ref,
+        hasTitle ? titleOverride! : ref,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
         style: TextStyle(
           fontWeight: FontWeight.w700,
-          color: scheme.primary,
-          fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
+          color: hasTitle ? scheme.onSurface : scheme.primary,
+          fontFamily: settings.fontFamily,
+          fontFamilyFallback: kCjkFontFallback,
           fontSize: settings.fontSize,
         ),
       ),
       subtitle: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          if (hasTitle) ...[
+            const SizedBox(height: 2),
+            // Verse ref demoted to a secondary line under the title.
+            // Same colour the ref had as a header — gives it a
+            // "link-like" feel that hints at being tappable (the
+            // whole tile is tappable to navigate to the verse).
+            Text(
+              ref,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontWeight: FontWeight.w600,
+                color: scheme.primary,
+                fontFamily: settings.fontFamily,
+                fontFamilyFallback: kCjkFontFallback,
+                fontSize: (settings.fontSize - 3).clamp(11.0, 14.0),
+              ),
+            ),
+          ],
           const SizedBox(height: 4),
           Text(
             preview,

@@ -24,6 +24,7 @@ import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/widgets/home_icon_button.dart';
 import 'package:yswords/widgets/localized_back_button.dart';
 import 'package:yswords/utils/ai_markdown.dart' show parseAiMarkdown;
+import 'package:yswords/utils/relative_time.dart' show relativeTime;
 import 'package:yswords/utils/responsive.dart';
 import 'package:yswords/utils/font_catalog.dart' show kCjkFontFallback;
 
@@ -67,7 +68,13 @@ class _SearchPageState extends State<SearchPage> {
   String? filterBook;
   /// Recent searches for the active profile. Loaded once on init,
   /// updated whenever the user submits a non-trivial query.
-  List<String> _recents = const [];
+  ///
+  /// 2026-05-24 (v1.2.91): now a list of (query, createdAt) tuples
+  /// instead of raw strings so the UI can render "5 分钟前 /
+  /// 5 minutes ago" next to each row. Ordering still comes from
+  /// the underlying SharedPreferences StringList (most-recent-first
+  /// by insert-at-front); timestamps are display + sync aid only.
+  List<RecentSearchEntry> _recents = const [];
 
   // When the user typed a Strong's-number pattern (e.g. "G2316"), these
   // hold the lookup result; in this mode the regular text-search path
@@ -253,7 +260,7 @@ class _SearchPageState extends State<SearchPage> {
   }
 
   Future<void> _loadRecents() async {
-    final list = await RecentSearchesService.list();
+    final list = await RecentSearchesService.listWithTimestamps();
     if (!mounted) return;
     setState(() => _recents = list);
   }
@@ -560,18 +567,21 @@ class _SearchPageState extends State<SearchPage> {
               ],
             ),
           ),
-          // List of recent queries — each row: query text + per-item
-          // delete button. Tapping the row re-runs that query.
-          for (final q in _recents)
+          // List of recent queries — each row: query text + created
+          // timestamp + per-item delete button. Tapping the row
+          // re-runs that query.
+          for (final entry in _recents)
             _RecentSearchRow(
-              query: q,
+              query: entry.query,
+              createdAt: entry.createdAt,
+              locale: locale,
               onTap: () async {
-                _textEditingController.text = q;
+                _textEditingController.text = entry.query;
                 _textEditingController.selection =
                     TextSelection.fromPosition(
-                  TextPosition(offset: q.length),
+                  TextPosition(offset: entry.query.length),
                 );
-                await RecentSearchesService.add(q);
+                await RecentSearchesService.add(entry.query);
                 await _loadRecents();
                 await search();
                 if (_scrollController.hasClients) {
@@ -579,7 +589,7 @@ class _SearchPageState extends State<SearchPage> {
                 }
               },
               onDelete: () async {
-                await RecentSearchesService.remove(q);
+                await RecentSearchesService.remove(entry.query);
                 await _loadRecents();
               },
             ),
@@ -1216,7 +1226,7 @@ class _SearchPageState extends State<SearchPage> {
       // re-mount, on theme toggle, on Provider notify, etc. —
       // we don't want any of those to bump SharedPreferences.
       if (_recents.isNotEmpty &&
-          _recents.first.toLowerCase() == q.toLowerCase()) {
+          _recents.first.query.toLowerCase() == q.toLowerCase()) {
         return;
       }
       // ignore: unawaited_futures
@@ -2214,19 +2224,28 @@ class _SearchPageState extends State<SearchPage> {
 /// just that entry from the history.
 class _RecentSearchRow extends StatelessWidget {
   final String query;
+  // 2026-05-24 (v1.2.91): when set, the row renders a small
+  // "5 分钟前 / 5 minutes ago" caption under the query so the user
+  // can tell at a glance how fresh each entry is. Null hides the
+  // caption (legacy callers).
+  final DateTime? createdAt;
+  final String locale;
   final VoidCallback onTap;
   final VoidCallback onDelete;
 
   const _RecentSearchRow({
     required this.query,
+    required this.locale,
     required this.onTap,
     required this.onDelete,
+    this.createdAt,
   });
 
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final settings = context.watch<AppSettings>();
+    final relative = createdAt == null ? null : relativeTime(createdAt!, locale);
     return InkWell(
       onTap: onTap,
       child: Padding(
@@ -2240,15 +2259,33 @@ class _RecentSearchRow extends StatelessWidget {
             ),
             const SizedBox(width: 14),
             Expanded(
-              child: Text(
-                query,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
-                  fontSize: (settings.fontSize - 1).clamp(13.0, 17.0),
-                  color: scheme.onSurface,
-                ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    query,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontFamily: settings.fontFamily,
+                      fontFamilyFallback: kCjkFontFallback,
+                      fontSize: (settings.fontSize - 1).clamp(13.0, 17.0),
+                      color: scheme.onSurface,
+                    ),
+                  ),
+                  if (relative != null) ...[
+                    const SizedBox(height: 2),
+                    Text(
+                      relative,
+                      style: TextStyle(
+                        fontSize:
+                            (settings.fontSize - 5).clamp(10.0, 13.0),
+                        color: scheme.onSurfaceVariant.withValues(alpha: 0.8),
+                      ),
+                    ),
+                  ],
+                ],
               ),
             ),
             const SizedBox(width: 8),

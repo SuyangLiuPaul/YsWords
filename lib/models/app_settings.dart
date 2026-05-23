@@ -71,6 +71,20 @@ const Set<String> _kTtsTierAllowed = {'neural', 'standard'};
 const String _kTtsGenderDefault = 'female';
 const String _kTtsTierDefault = 'neural';
 
+// 2026-05-24 (v1.2.91): user's preferred sort order for the
+// Library → Notes tab.
+//   'canonical' → Genesis → Revelation (verse index in the loaded
+//                 Bible; the order the app has used since v1.0)
+//   'recent'    → most recently created/edited first (uses the
+//                 verseNoteTimestamps map in MainProvider)
+//   'oldest'    → oldest first (reverse of 'recent')
+// Defaults to 'canonical' so existing users see no behaviour
+// change until they pick a different sort. Allowlist-clamped on
+// load to match the established pattern for aiModel + tts*.
+const _kNotesSortMode = 'notesSortMode';
+const Set<String> _kNotesSortAllowed = {'canonical', 'recent', 'oldest'};
+const String _kNotesSortDefault = 'canonical';
+
 // Dashboard layout (Round 55). Every section has its own
 // `dashboard_section_visible_<name>` flag plus a single
 // `dashboard_section_order` list that drives the render order.
@@ -147,6 +161,8 @@ class AppSettings extends ChangeNotifier {
   String _aiModel = _kAiModelDefault;
   String _ttsVoiceGender = _kTtsGenderDefault;
   String _ttsVoiceTier = _kTtsTierDefault;
+  // 2026-05-24 (v1.2.91): see _kNotesSortMode comment.
+  String _notesSortMode = _kNotesSortDefault;
 
   /// Render section / paragraph headings (e.g. "The Sermon on the
   /// Mount" / "登山宝训") above the matched verse in the reading
@@ -258,6 +274,20 @@ class AppSettings extends ChangeNotifier {
     notifyListeners();
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_kTtsVoiceTier, tier);
+  }
+
+  /// 2026-05-24 (v1.2.91): which sort to apply in Library → Notes.
+  /// One of 'canonical' / 'recent' / 'oldest'. See _kNotesSortMode
+  /// for semantics. Defaults to 'canonical' for backwards compat.
+  String get notesSortMode => _notesSortMode;
+
+  Future<void> setNotesSortMode(String mode) async {
+    if (!_kNotesSortAllowed.contains(mode)) return;
+    if (_notesSortMode == mode) return;
+    _notesSortMode = mode;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_kNotesSortMode, mode);
   }
 
   Future<void> setGeminiApiKey(String key) async {
@@ -867,6 +897,14 @@ class AppSettings extends ChangeNotifier {
             _kTtsTierAllowed.contains(storedTtsTier))
         ? storedTtsTier
         : _kTtsTierDefault;
+
+    // 2026-05-24 (v1.2.91): Library → Notes sort mode. Same
+    // allowlist-clamp pattern as aiModel + tts*.
+    final storedNotesSort = prefs.getString(_kNotesSortMode);
+    _notesSortMode = (storedNotesSort != null &&
+            _kNotesSortAllowed.contains(storedNotesSort))
+        ? storedNotesSort
+        : _kNotesSortDefault;
 
     // Dashboard layout (Round 55): load order list + per-section
     // visibility. Missing entries fall back to defaults; the legacy

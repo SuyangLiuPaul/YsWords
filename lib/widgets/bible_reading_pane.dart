@@ -1524,6 +1524,24 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                       ),
                     ),
                     ),
+                    // 2026-05-24 (v1.2.91): mini reader header. When
+                    // the auto-hide chrome is hidden, show a tiny
+                    // pair of pills at top — version on left, book +
+                    // chapter on right — so the reader always knows
+                    // their bearings. Tap either pill to re-show
+                    // chrome (no separate version/book pickers from
+                    // the mini — the full header right there is two
+                    // taps away). In split view the full header is
+                    // pinned visible, so the mini stays hidden.
+                    if (currentVerse != null && !widget.splitViewActive)
+                      _MiniReaderHeader(
+                        visible: !_chromeVisible,
+                        version: mainProvider.currentVersion,
+                        book: currentVerse.book,
+                        chapter: currentVerse.chapter,
+                        locale: settings.locale,
+                        onTap: _toggleChrome,
+                      ),
                     _FloatingHeader(
                       // 2026-05-22 (v1.2.71): pin chrome visible in
                       // split view. Each pane's _FloatingHeader is
@@ -1852,9 +1870,19 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                     // the always-visible reader-progress bar was
                     // removed; chapter progress is still visible via
                     // the right-edge pill that fades in while scrolling.)
+                    //
+                    // 2026-05-24 (v1.2.91): switched from
+                    // Align(bottomCenter) → Positioned(bottom/left/
+                    // right: 0) so the bar is anchored to the screen
+                    // edge edge-to-edge instead of floating with
+                    // horizontal margins. Matches the always-visible
+                    // bottom chrome bar's shape — feels like a real
+                    // bottom menu rather than an overlay card.
                     if (isSelected)
-                      Align(
-                        alignment: Alignment.bottomCenter,
+                      Positioned(
+                        bottom: 0,
+                        left: 0,
+                        right: 0,
                         child: _SelectionActionBar(
                               selectedCount:
                                   mainProvider.selectedVerses.length,
@@ -1946,6 +1974,47 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                               },
                             ),
                       ),
+                    // 2026-05-24 (v1.2.91): iOS-style "tap status bar
+                    // to scroll to top". Invisible Positioned strip
+                    // covering only the safe-area top inset (the
+                    // physical status-bar area). HitTestBehavior.opaque
+                    // wins over the outer chrome-toggle GestureDetector
+                    // (line ~1294) so a status-bar tap fires this and
+                    // ONLY this, not the chrome-toggle. Verse content
+                    // sits below the inset so no interference with
+                    // verse selection / chrome toggle on the rest of
+                    // the screen.
+                    //
+                    // Animated scroll (350 ms easeOut) instead of a
+                    // hard jump — matches iOS's smooth scroll-to-top
+                    // behaviour. Falls through to no-op when the
+                    // controller isn't attached yet (split-view mount
+                    // race).
+                    Positioned(
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      height: MediaQuery.of(context)
+                          .padding
+                          .top
+                          .clamp(20.0, 80.0)
+                          .toDouble(),
+                      child: GestureDetector(
+                        behavior: HitTestBehavior.opaque,
+                        onTap: () {
+                          if (!mainProvider
+                              .itemScrollController.isAttached) {
+                            return;
+                          }
+                          mainProvider.itemScrollController.scrollTo(
+                            index: 0,
+                            duration:
+                                const Duration(milliseconds: 350),
+                            curve: Curves.easeOut,
+                          );
+                        },
+                      ),
+                    ),
                     // 2026-05-10 (v1.2.13): version-switch loading
                     // overlay. Painted on top of everything in the
                     // Stack while `MainProvider.versionSwitching`
@@ -2466,16 +2535,32 @@ class _SelectionActionBar extends StatelessWidget {
       color: scheme.primary,
     );
 
-    return SafeArea(
-      top: false,
-      child: Padding(
-        padding: EdgeInsets.fromLTRB(inset, 0, inset, 8),
-        child: _GlassSurface(
-          radius: 22,
-          child: Padding(
-            padding: EdgeInsets.fromLTRB(12 * settings.menuScale,
-                6 * settings.menuScale, 12 * settings.menuScale, 6 * settings.menuScale),
-            child: LayoutBuilder(
+    // 2026-05-24 (v1.2.91): bottom-menu style — edge-to-edge, only
+    // top corners rounded, opaque. Was a floating Card-like bar
+    // with horizontal margins + bottom padding (v1.2.70 design).
+    // User feedback: "when clicking verse the floating should like
+    // bottom menu as well not floating" — i.e. align with the same
+    // shape as the always-visible bottom chrome bar.
+    // The `inset` value is unused now (was driving the horizontal
+    // padding before) — left in place for potential future tweaks.
+    return _GlassSurface(
+      radius: 22,
+      opaque: true,
+      topRoundedOnly: true,
+      child: SafeArea(
+        top: false,
+        // Inner padding keeps the icons above the home indicator
+        // even though the surface itself extends underneath.
+        // Mirrors the structure of _BottomChromeBar so both bars
+        // feel like one consistent piece of UI.
+        child: Padding(
+          padding: EdgeInsets.fromLTRB(
+            12 * settings.menuScale + inset,
+            6 * settings.menuScale,
+            12 * settings.menuScale + inset,
+            6 * settings.menuScale,
+          ),
+          child: LayoutBuilder(
               builder: (ctx, constraints) {
                 // On narrow screens (phones, ~360–600 dp wide) split
                 // the bar into two rows so nothing collides:
@@ -2518,8 +2603,7 @@ class _SelectionActionBar extends StatelessWidget {
             ),
           ),
         ),
-      ),
-    );
+      );
   }
 }
 
@@ -3028,14 +3112,21 @@ void _showNoteEditor({
   // Pre-populate from the first verse in the selection that has an
   // existing non-empty note. If none, start empty.
   String? prefill;
+  String? prefillTitle;
   for (final v in verses) {
     final existing = mainProvider.getVerseNote(v);
     if (existing != null && existing.isNotEmpty) {
       prefill = existing;
+      // 2026-05-24 (v1.2.91): pull the title from the same verse
+      // we pulled the body from. For multi-verse passage notes,
+      // all verses share the same title (setVerseNote writes both
+      // to every verse in the selection), so this is consistent.
+      prefillTitle = mainProvider.getVerseNoteTitle(v.id);
       break;
     }
   }
   final controller = TextEditingController(text: prefill ?? '');
+  final titleController = TextEditingController(text: prefillTitle ?? '');
   // Reference label: single verse → "Genesis 1:16"; range → "Genesis 1:16-18".
   String ref;
   if (verses.length == 1) {
@@ -3218,6 +3309,19 @@ void _showNoteEditor({
   showModalBottomSheet<void>(
     context: context,
     isScrollControlled: true,
+    // 2026-05-24 (v1.2.91): user reported on iOS — "note taking in
+    // iOS when expand it doesn't work well it actually closed".
+    // Root cause: the default `enableDrag: true` arms the modal
+    // sheet's drag-to-dismiss gesture controller. When the user
+    // taps the expand toggle, our AnimatedContainer transitions
+    // height from null → fullscreenHeight; on iOS that vertical
+    // layout shift during the same gesture frame is sometimes
+    // interpreted as a downward drag, dismissing the sheet.
+    // Disabling drag-to-dismiss closes the bug completely — users
+    // still close via the X button (top-right of the header row)
+    // or by tapping the backdrop. Compact ↔ fullscreen toggle now
+    // works reliably across iOS / Android / web.
+    enableDrag: false,
     backgroundColor: Theme.of(context).colorScheme.surface,
     constraints: const BoxConstraints(maxWidth: 720),
     shape: const RoundedRectangleBorder(
@@ -3322,6 +3426,15 @@ void _showNoteEditor({
                 // 2026-05-20 (v1.2.62): WeChat-style expand /
                 // collapse toggle. Compact ↔ fullscreen. State
                 // captured by the surrounding StatefulBuilder.
+                //
+                // 2026-05-24 (v1.2.91): defer the state flip to a
+                // post-frame callback so the AnimatedContainer's
+                // height transition doesn't share a frame with the
+                // tap-up event — iOS otherwise occasionally routed
+                // the resize back through the modal sheet's gesture
+                // controller as a phantom drag. Paired with
+                // `enableDrag: false` on showModalBottomSheet
+                // (above) this completely closes the bug.
                 IconButton(
                   icon: Icon(
                     isFullscreen
@@ -3333,8 +3446,11 @@ void _showNoteEditor({
                           'Collapse')
                       : (uiStrings['noteExpand']?[locale] ??
                           'Expand'),
-                  onPressed: () => setSheetState(
-                      () => isFullscreen = !isFullscreen),
+                  onPressed: () {
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      setSheetState(() => isFullscreen = !isFullscreen);
+                    });
+                  },
                 ),
                 IconButton(
                   icon: const Icon(Icons.close),
@@ -3343,6 +3459,40 @@ void _showNoteEditor({
               ],
             ),
             const SizedBox(height: 12),
+            // 2026-05-24 (v1.2.91): optional title field. Single
+            // line, no autofocus (focus goes to the body so users
+            // who skip titles aren't slowed down). Empty title is
+            // valid — Library tile falls back to the verse ref as
+            // the header. Library tile renders the title in bold
+            // when set, so a typed title essentially "renames"
+            // the note for at-a-glance recognition in the list.
+            TextField(
+              controller: titleController,
+              maxLines: 1,
+              textInputAction: TextInputAction.next,
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: scheme.onSurface,
+              ),
+              decoration: InputDecoration(
+                hintText: uiStrings['noteTitleHint']?[locale] ??
+                    'Title (optional)',
+                hintStyle: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                  color: scheme.onSurfaceVariant.withValues(alpha: 0.6),
+                ),
+                border: InputBorder.none,
+                isDense: true,
+                contentPadding:
+                    const EdgeInsets.symmetric(vertical: 4, horizontal: 0),
+              ),
+            ),
+            Divider(
+                color: scheme.outlineVariant.withValues(alpha: 0.6),
+                height: 12,
+                thickness: 1),
             // Wrap in a Focus so we can detect the moment the user
             // taps / focuses the field. That's the exact instant the
             // browser/keyboard quirk that fires the underlying
@@ -3498,6 +3648,17 @@ void _showNoteEditor({
                       }
                       mainProvider.clearSelectedVerses();
                       Navigator.of(sheetCtx).maybePop();
+                      // 2026-05-24 (v1.2.91): same confirmation toast
+                      // pattern as the Save button — destructive
+                      // actions deserve at least the same visibility.
+                      final scheme = Theme.of(context).colorScheme;
+                      showFloatingToast(
+                        context,
+                        message: uiStrings['noteDeleted']?[locale] ??
+                            'Note deleted',
+                        icon: Icons.delete_outline_rounded,
+                        background: scheme.error,
+                      );
                     },
                     icon: Icon(Icons.delete_outline, color: scheme.error),
                     label: Text(
@@ -3554,14 +3715,44 @@ void _showNoteEditor({
                     // of the same text. Library tab groups
                     // consecutive matching notes back into one
                     // display tile.
+                    //
+                    // 2026-05-24 (v1.2.91): pass the optional title
+                    // to every verse in the selection too. All
+                    // verses in a passage note share one title so
+                    // the Library tile renders consistently.
                     for (final v in verses) {
                       mainProvider.setVerseNote(
                         verse: v,
                         text: controller.text,
+                        title: titleController.text,
                       );
                     }
                     mainProvider.clearSelectedVerses();
+                    // 2026-05-24 (v1.2.91): capture inputs BEFORE
+                    // the sheet pops so the toast reflects what
+                    // actually got persisted. An empty body deletes
+                    // the note (see setVerseNote); distinguish the
+                    // two outcomes for the user-facing confirmation.
+                    final wasDeleted = controller.text.trim().isEmpty;
                     Navigator.of(sheetCtx).maybePop();
+                    // Toast on the reader's outer context (the sheet
+                    // ctx is gone now); use rootOverlay via
+                    // showFloatingToast so we render above any
+                    // closing-sheet animation.
+                    final scheme = Theme.of(context).colorScheme;
+                    showFloatingToast(
+                      context,
+                      message: wasDeleted
+                          ? (uiStrings['noteDeleted']?[locale] ??
+                              'Note deleted')
+                          : (uiStrings['noteSaved']?[locale] ??
+                              'Note saved'),
+                      icon: wasDeleted
+                          ? Icons.delete_outline_rounded
+                          : Icons.check_circle_rounded,
+                      background:
+                          wasDeleted ? scheme.error : scheme.primary,
+                    );
                   },
                   icon: const Icon(Icons.check_rounded),
                   label: Text(uiStrings['noteSave']?[locale] ?? 'Save'),
@@ -3587,6 +3778,9 @@ void _showNoteEditor({
     // TextEditingController + its internal listeners. Bounded but
     // unbounded across a long session of editing notes.
     controller.dispose();
+    // 2026-05-24 (v1.2.91): same hygiene for the new title
+    // controller.
+    titleController.dispose();
     Future.delayed(const Duration(milliseconds: 50), restoreScroll);
   });
   // After the sheet has had time to animate up + the keyboard to
@@ -4309,6 +4503,147 @@ class _MapTile extends StatelessWidget {
 }
 
 /// 2026-05-21 (v1.2.70): WeDevote-style auto-hide bottom bar. Renders
+/// 2026-05-24 (v1.2.91): minimal always-on header rendered ONLY
+/// when the full auto-hide chrome is collapsed. Top-left pill shows
+/// the current Bible version's short label (e.g. "CUV", "LJK2"),
+/// top-right pill shows the book + chapter ("创世记 1", "Genesis 1").
+/// Pills are subtle (low-alpha surface fill, small font) so they
+/// don't compete with verse content. Both pills tap → re-show the
+/// chrome (a one-tap "give me back the toolbar" shortcut).
+///
+/// Sits in the Stack BEFORE [_FloatingHeader] so when chrome is
+/// visible the full header paints on top and covers the mini. A
+/// crossfade animation hides the mini whenever chromeVisible == true,
+/// so we don't get double-painting.
+class _MiniReaderHeader extends StatelessWidget {
+  final bool visible;
+  final String version;
+  final String book;
+  final int chapter;
+  final String locale;
+  final VoidCallback onTap;
+
+  const _MiniReaderHeader({
+    required this.visible,
+    required this.version,
+    required this.book,
+    required this.chapter,
+    required this.locale,
+    required this.onTap,
+  });
+
+  String _versionLabel(String slug) {
+    for (final v in bibleVersions) {
+      if (v.value == slug) return v.shortLabel;
+    }
+    return slug.toUpperCase();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final settings = context.watch<AppSettings>();
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Positioned(
+      top: 0,
+      left: 0,
+      right: 0,
+      child: IgnorePointer(
+        // Ignore taps when fully faded out — otherwise an invisible
+        // strip would still swallow taps along the top edge and
+        // prevent the user from swiping / tapping verses near the
+        // status bar.
+        ignoring: !visible,
+        child: AnimatedOpacity(
+          opacity: visible ? 1.0 : 0.0,
+          duration: const Duration(milliseconds: 220),
+          curve: Curves.easeOut,
+          child: SafeArea(
+            bottom: false,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(12, 6, 12, 0),
+              child: Row(
+                children: [
+                  _MiniHeaderPill(
+                    label: _versionLabel(version),
+                    onTap: onTap,
+                    scheme: scheme,
+                    isDark: isDark,
+                    fontFamily: settings.fontFamily,
+                  ),
+                  const Spacer(),
+                  _MiniHeaderPill(
+                    label: '$book $chapter',
+                    onTap: onTap,
+                    scheme: scheme,
+                    isDark: isDark,
+                    fontFamily: settings.fontFamily,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// One pill of the mini header. Subtle background (surface-tinted
+/// + alpha) + hairline border so it stays legible over verse text
+/// without competing with content. Small font (12 sp), bold weight
+/// so it reads at a glance.
+class _MiniHeaderPill extends StatelessWidget {
+  final String label;
+  final VoidCallback onTap;
+  final ColorScheme scheme;
+  final bool isDark;
+  final String fontFamily;
+
+  const _MiniHeaderPill({
+    required this.label,
+    required this.onTap,
+    required this.scheme,
+    required this.isDark,
+    required this.fontFamily,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(14),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+          decoration: BoxDecoration(
+            color: scheme.surface.withValues(alpha: isDark ? 0.55 : 0.72),
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+              color: scheme.outlineVariant.withValues(alpha: 0.55),
+              width: 0.5,
+            ),
+          ),
+          child: Text(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              fontFamily: fontFamily,
+              fontFamilyFallback: kCjkFontFallback,
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+              color: scheme.onSurface.withValues(alpha: 0.78),
+              letterSpacing: 0.2,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 /// a Positioned(bottom: 0) opaque strip with 5 reader tools:
 ///   ◀ Prev chapter   📝 My Notes (opens Library)
 ///   Aa Font sheet   ¶/⟂ Paragraph mode toggle   Next chapter ▶

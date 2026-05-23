@@ -1417,6 +1417,48 @@ const uiStrings = {
     'zh-Hant': '請先打開聖經,以查看本章/本書的筆記。',
     'en': 'Open the Bible first to see notes for this chapter / book.',
   },
+  // 2026-05-24 (v1.2.91): note editor — optional title field hint.
+  // Empty title = falls back to verse reference as the Library
+  // tile header (current pre-v1.2.91 behaviour).
+  'noteTitleHint': {
+    'zh-Hans': '标题（可选）',
+    'zh-Hant': '標題（可選）',
+    'en': 'Title (optional)',
+  },
+  // 2026-05-24 (v1.2.91): floating-toast confirmation after the
+  // user taps Save or Delete in the note editor. Reassures users
+  // who couldn't tell the difference between "tapped Save" and
+  // "tapped Cancel/closed the sheet" — both close the sheet, but
+  // only the former actually persists.
+  'noteSaved': {
+    'zh-Hans': '笔记已保存',
+    'zh-Hant': '筆記已儲存',
+    'en': 'Note saved',
+  },
+  'noteDeleted': {
+    'zh-Hans': '笔记已删除',
+    'zh-Hant': '筆記已刪除',
+    'en': 'Note deleted',
+  },
+  // 2026-05-24 (v1.2.91): Library → Notes sort picker. Tooltip + the
+  // three sort-mode labels in a PopupMenuButton next to the scope
+  // segmented control.
+  'notesSortLabel': {'zh-Hans': '排序', 'zh-Hant': '排序', 'en': 'Sort'},
+  'notesSortCanonical': {
+    'zh-Hans': '按圣经顺序',
+    'zh-Hant': '按聖經順序',
+    'en': 'Bible order',
+  },
+  'notesSortRecent': {
+    'zh-Hans': '最近更新',
+    'zh-Hant': '最近更新',
+    'en': 'Recently updated',
+  },
+  'notesSortOldest': {
+    'zh-Hans': '最早创建',
+    'zh-Hant': '最早建立',
+    'en': 'Oldest first',
+  },
   // ── Reading plans (Round 26) ─────────────────────────────────────
   'tabPlan': {'zh-Hans': '读经计划', 'zh-Hant': '讀經計劃', 'en': 'Plan'},
   'readingPlans': {

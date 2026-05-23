@@ -436,6 +436,28 @@ class MainProvider extends ChangeNotifier {
   // are, so split-view panes share them.
   Map<String, String> _verseNotes = {};
 
+  // 2026-05-24 (v1.2.91): verse ID → epoch millis of the most
+  // recent setVerseNote() write. Used by Library → Notes to sort
+  // by "recently updated" / "oldest first" in addition to the
+  // canonical Bible order. Persisted alongside `_verseNotes` (own
+  // SharedPreferences key + RTDB sync key) so existing clients
+  // upgrade gracefully — any note without a recorded timestamp is
+  // stamped with the current time on first load after upgrade.
+  Map<String, int> _verseNoteTimestamps = {};
+
+  // 2026-05-24 (v1.2.91): optional user-supplied title for a note.
+  // verseId → title. Empty / missing = no title (the Library tile
+  // falls back to the verse reference as the header). Stored in
+  // its own SharedPreferences key + RTDB sync key so older clients
+  // that don't render titles still work fine.
+  //
+  // For multi-verse passage notes, every verse in the selection
+  // gets the same title written to it (mirroring how the body is
+  // written) — `_groupContiguousNotes` merges adjacent verses by
+  // body equality, and titles are guaranteed equal if bodies are
+  // equal because they were written together.
+  Map<String, String> _verseNoteTitles = {};
+
   // Set of bookmarked verse IDs. Same global persistence as
   // highlights and notes.
   Set<String> _bookmarks = {};
@@ -573,20 +595,72 @@ class MainProvider extends ChangeNotifier {
   /// Read-only snapshot for UI rendering (e.g. notes-list page).
   Map<String, String> get verseNotes => Map.unmodifiable(_verseNotes);
 
+  /// 2026-05-24 (v1.2.91): read-only snapshot of the timestamp map
+  /// for sort-by-time in the Library view.
+  Map<String, int> get verseNoteTimestamps =>
+      Map.unmodifiable(_verseNoteTimestamps);
+
+  /// Returns the epoch-ms when the note for [verseId] was last
+  /// updated, or null if no note exists (or for legacy notes that
+  /// pre-date timestamp tracking and somehow escaped the migration
+  /// pass — defensive only; the loader stamps everything).
+  int? getVerseNoteTimestamp(String verseId) => _verseNoteTimestamps[verseId];
+
+  /// 2026-05-24 (v1.2.91): read-only snapshot of the titles map.
+  Map<String, String> get verseNoteTitles =>
+      Map.unmodifiable(_verseNoteTitles);
+
+  /// Returns the user-supplied title for the note on [verseId], or
+  /// null when no title is set (Library tile falls back to the
+  /// verse reference for the header in that case).
+  String? getVerseNoteTitle(String verseId) {
+    final t = _verseNoteTitles[verseId];
+    if (t == null || t.isEmpty) return null;
+    return t;
+  }
+
   /// Returns true if the verse has any note text attached.
   bool isVerseNoted(Verse v) => (_verseNotes[v.id]?.isNotEmpty ?? false);
 
   /// Returns the note text for [v], or null if no note exists.
   String? getVerseNote(Verse v) => _verseNotes[v.id];
 
-  /// Set or replace the note for [verse]. Pass an empty string to
-  /// remove the note. Persists to SharedPreferences and notifies.
-  void setVerseNote({required Verse verse, required String text}) {
+  /// Set or replace the note for [verse]. Pass an empty string in
+  /// [text] to remove the note. [title] is optional — empty title
+  /// drops any previously-set title for this verse. Persists to
+  /// SharedPreferences and notifies.
+  ///
+  /// 2026-05-24 (v1.2.91): added optional [title] parameter. The
+  /// note editor passes both title + body in one call; the body
+  /// being empty still removes the note (with its title and
+  /// timestamp). Body non-empty + title empty keeps the body and
+  /// clears the title (a one-touch way to remove a no-longer-useful
+  /// title without losing the note itself).
+  void setVerseNote({
+    required Verse verse,
+    required String text,
+    String? title,
+  }) {
     final trimmed = text.trim();
+    final trimmedTitle = (title ?? '').trim();
     if (trimmed.isEmpty) {
       _verseNotes.remove(verse.id);
+      _verseNoteTimestamps.remove(verse.id);
+      _verseNoteTitles.remove(verse.id);
     } else {
       _verseNotes[verse.id] = trimmed;
+      // Every save bumps the timestamp — sort-by-recent shows the
+      // most recently edited note at the top. If users later want
+      // a separate "created" vs "updated" distinction we'd add a
+      // second map; for now WeDevote-style "latest activity" sort
+      // is the most useful single signal.
+      _verseNoteTimestamps[verse.id] =
+          DateTime.now().millisecondsSinceEpoch;
+      if (trimmedTitle.isEmpty) {
+        _verseNoteTitles.remove(verse.id);
+      } else {
+        _verseNoteTitles[verse.id] = trimmedTitle;
+      }
     }
     _saveNotes();
     notifyListeners();
@@ -595,6 +669,8 @@ class MainProvider extends ChangeNotifier {
   /// Same as [setVerseNote] but for an empty string — convenience.
   void clearVerseNote({required Verse verse}) {
     if (_verseNotes.remove(verse.id) != null) {
+      _verseNoteTimestamps.remove(verse.id);
+      _verseNoteTitles.remove(verse.id);
       _saveNotes();
       notifyListeners();
     }
@@ -622,6 +698,24 @@ class MainProvider extends ChangeNotifier {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString(ProfileService.instance.scopedKey('verseNotes'),
           jsonEncode(_verseNotes));
+      // 2026-05-24 (v1.2.91): persist the timestamp sidecar with the
+      // notes. Saved as a JSON {verseId: epochMs} map so users on
+      // older builds (which don't read this key) are unaffected;
+      // they'll keep canonical sort and never see the field.
+      await prefs.setString(
+          ProfileService.instance.scopedKey('verseNoteTimestamps'),
+          jsonEncode(_verseNoteTimestamps));
+      // 2026-05-24 (v1.2.91): persist the optional titles sidecar.
+      // Empty map → remove the key entirely so users who never
+      // typed a title don't carry a phantom `{}` entry around.
+      if (_verseNoteTitles.isEmpty) {
+        await prefs
+            .remove(ProfileService.instance.scopedKey('verseNoteTitles'));
+      } else {
+        await prefs.setString(
+            ProfileService.instance.scopedKey('verseNoteTitles'),
+            jsonEncode(_verseNoteTitles));
+      }
       RealtimeDbSyncService.instance.requestUpload();
     } catch (e, st) {
       debugPrint('MainProvider._saveNotes failed: $e\n$st');
@@ -631,6 +725,8 @@ class MainProvider extends ChangeNotifier {
   Future<void> _loadNotes() async {
     final prefs = await SharedPreferences.getInstance();
     _verseNotes = {};
+    _verseNoteTimestamps = {};
+    _verseNoteTitles = {};
     final json =
         prefs.getString(ProfileService.instance.scopedKey('verseNotes'));
     if (json == null) return;
@@ -638,6 +734,88 @@ class MainProvider extends ChangeNotifier {
     _verseNotes = {
       for (final e in decoded.entries) e.key: e.value as String,
     };
+
+    // 2026-05-24 (v1.2.91): load the timestamp sidecar. For any
+    // note that doesn't have a recorded timestamp (notes created
+    // before this version, or notes synced from an older client),
+    // stamp them with `now` so the sort isn't blank — they all
+    // bunch up at the "newest" end on first launch but become
+    // properly ordered as the user edits them over time.
+    final tsJson = prefs.getString(
+        ProfileService.instance.scopedKey('verseNoteTimestamps'));
+    if (tsJson != null) {
+      try {
+        final tsDecoded = jsonDecode(tsJson) as Map<String, dynamic>;
+        // num covers both int and double — RTDB occasionally
+        // round-trips ints through JS as doubles even when the
+        // value is whole, so coerce defensively.
+        _verseNoteTimestamps = {
+          for (final e in tsDecoded.entries)
+            if (e.value is num) e.key: (e.value as num).toInt(),
+        };
+      } catch (_) {/* corrupt → fall through to migration */}
+    }
+    final nowMs = DateTime.now().millisecondsSinceEpoch;
+    var migrated = false;
+    for (final id in _verseNotes.keys) {
+      if (!_verseNoteTimestamps.containsKey(id)) {
+        _verseNoteTimestamps[id] = nowMs;
+        migrated = true;
+      }
+    }
+    // Drop orphaned timestamps (note was deleted but stamp lingers).
+    final toDrop = <String>[];
+    for (final id in _verseNoteTimestamps.keys) {
+      if (!_verseNotes.containsKey(id)) toDrop.add(id);
+    }
+    for (final id in toDrop) {
+      _verseNoteTimestamps.remove(id);
+    }
+    if (migrated || toDrop.isNotEmpty) {
+      // Persist the migration result so we don't re-migrate every
+      // launch. Fire-and-forget — errors here are non-fatal.
+      // ignore: unawaited_futures
+      prefs.setString(
+          ProfileService.instance.scopedKey('verseNoteTimestamps'),
+          jsonEncode(_verseNoteTimestamps));
+    }
+
+    // 2026-05-24 (v1.2.91): load the optional titles sidecar.
+    // Missing key → no titles (users who never typed a title or
+    // upgraded from <v1.2.91); corrupt JSON → log + treat as
+    // empty. Drop orphan titles (title for a note that was
+    // deleted from another device before this device synced).
+    final titlesJson =
+        prefs.getString(ProfileService.instance.scopedKey('verseNoteTitles'));
+    if (titlesJson != null) {
+      try {
+        final tDecoded = jsonDecode(titlesJson) as Map<String, dynamic>;
+        _verseNoteTitles = {
+          for (final e in tDecoded.entries)
+            if (e.value is String && (e.value as String).isNotEmpty)
+              e.key: e.value as String,
+        };
+      } catch (_) {/* corrupt → empty */}
+    }
+    var titlesChanged = false;
+    final titleOrphans = <String>[];
+    for (final id in _verseNoteTitles.keys) {
+      if (!_verseNotes.containsKey(id)) titleOrphans.add(id);
+    }
+    for (final id in titleOrphans) {
+      _verseNoteTitles.remove(id);
+      titlesChanged = true;
+    }
+    if (titlesChanged) {
+      // ignore: unawaited_futures
+      if (_verseNoteTitles.isEmpty) {
+        prefs.remove(ProfileService.instance.scopedKey('verseNoteTitles'));
+      } else {
+        prefs.setString(
+            ProfileService.instance.scopedKey('verseNoteTitles'),
+            jsonEncode(_verseNoteTitles));
+      }
+    }
   }
 
   void _saveBookmarks() async {

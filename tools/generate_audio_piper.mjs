@@ -54,6 +54,17 @@ const genderArg = (args.gender || 'female').toLowerCase();
 const genders = genderArg === 'both' ? ['female', 'male'] : [genderArg];
 const concurrency = Number(args.concurrency) || 2;
 
+// --books "Matthew,Mark,Luke" filter (case-insensitive). Compared
+// against the English book name (translated via ZH_TO_EN for
+// Chinese versions). If unset, all books are generated. Useful for
+// spot-testing one book before running the whole bible.
+const bookFilter = args.books
+  ? new Set(args.books.split(',').map((s) => s.trim().toLowerCase()).filter(Boolean))
+  : null;
+if (bookFilter) {
+  console.error(`Book filter: ${[...bookFilter].join(', ')}`);
+}
+
 const PROGRESS_FILE = `/tmp/audio_gen_piper.${versionSlug}.json`;
 let progress = {};
 if (fs.existsSync(PROGRESS_FILE)) {
@@ -80,8 +91,11 @@ const PIPER = piperBin();
 console.error(`Using piper binary: ${PIPER}`);
 
 function localeFor(slug) {
+  // Traditional Chinese: any slug ending in -tr.
   if (/-tr$/.test(slug)) return 'zh-Hant';
-  if (/^(cuv|cnv|cuvs-yhwh)$/.test(slug)) return 'zh-Hans';
+  // Simplified Chinese: cuv / cnv / cuvs-yhwh / biblexg (LJK Lü
+  // Zhenzhong) / biblexg-v2 (LJK V2). Anything else is English.
+  if (/^(cuv|cnv|cuvs-yhwh|biblexg(-v2)?)$/.test(slug)) return 'zh-Hans';
   return 'en';
 }
 
@@ -249,6 +263,11 @@ async function run() {
     if (!ZH_TO_EN[v.book] && /^[一-鿿]/.test(v.book)) {
       // Chinese book but no match → log it so we can patch the map.
       safeBookMisses.add(v.book);
+    }
+    // Skip books outside the --books filter (compare to English name).
+    if (bookFilter) {
+      const en = (ZH_TO_EN[v.book] || v.book).toLowerCase();
+      if (!bookFilter.has(en)) continue;
     }
     for (const gender of genders) {
       const voiceFile = VOICES[`${locale}_${gender}`];

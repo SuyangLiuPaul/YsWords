@@ -77,9 +77,33 @@ class RealtimeDbSyncService extends ChangeNotifier {
   static const _stringKeys = <String>[
     'highlights',
     'verseNotes',
+    // 2026-05-24 (v1.2.91): per-note optional user title, encoded
+    // as a JSON {verseId: title} map. Same merge rules as
+    // verseNotes (local wins on per-verse conflict). Older clients
+    // ignore the key.
+    'verseNoteTitles',
+    // 2026-05-24 (v1.2.91): per-note epoch-ms timestamp map,
+    // persisted as a JSON {verseId: ms} string (same encoding as
+    // verseNotes). Older clients ignore unknown keys gracefully —
+    // no migration step required, and any client without sort UI
+    // simply re-uploads whatever it had (timestamps survive).
+    'verseNoteTimestamps',
+    // 2026-05-24 (v1.2.91): per-query epoch-ms timestamp map for
+    // the recent-searches list (JSON {query: ms}). Same merge
+    // semantics as verseNoteTimestamps — max-of-both per key —
+    // ensures the most recent activity wins across devices.
+    'recentSearchTimestamps',
     'plan.activeId',
   ];
-  static const _stringListKeys = <String>['bookmarks'];
+  static const _stringListKeys = <String>[
+    'bookmarks',
+    // 2026-05-24 (v1.2.91): user search history. Was local-only
+    // for 5 months, which led to "搜索记录不见了" reports when
+    // people opened the app on a different device. Now syncs as
+    // a deduped union across devices, capped client-side at
+    // RecentSearchesService.maxItems on next add/remove.
+    'recentSearches',
+  ];
   static const _intKeys = <String>['plan.startMs'];
   static const _boolKeys = <String>['plan.useDate'];
 
@@ -415,7 +439,7 @@ class RealtimeDbSyncService extends ChangeNotifier {
     if (lbm.isNotEmpty || rbm.isNotEmpty) {
       out['bookmarks'] = <String>{...lbm, ...rbm}.toList();
     }
-    for (final k in const ['highlights', 'verseNotes']) {
+    for (final k in const ['highlights', 'verseNotes', 'verseNoteTitles']) {
       final lm = _parseJsonMap(local[k]);
       final rm = _parseJsonMap(remote[k]);
       if (lm.isEmpty && rm.isEmpty) continue;
@@ -423,6 +447,72 @@ class RealtimeDbSyncService extends ChangeNotifier {
       // edited the local copy seconds ago.
       final merged = {...rm, ...lm};
       out[k] = jsonEncode(merged);
+    }
+
+    // 2026-05-24 (v1.2.91): merge verseNoteTimestamps + the
+    // recentSearchTimestamps companion with max-of-both semantics
+    // per key, because BOTH local and remote may have edits and
+    // the one with the later epoch-ms is the more recent activity.
+    // This avoids the "local wins" strategy stomping on a fresher
+    // remote edit that happened to land first.
+    for (final k in const [
+      'verseNoteTimestamps',
+      'recentSearchTimestamps',
+    ]) {
+      final lm = _parseJsonMap(local[k]);
+      final rm = _parseJsonMap(remote[k]);
+      if (lm.isNotEmpty || rm.isNotEmpty) {
+        final merged = <String, int>{};
+        for (final id in {...lm.keys, ...rm.keys}) {
+          final lv = lm[id];
+          final rv = rm[id];
+          final li = (lv is num) ? lv.toInt() : 0;
+          final ri = (rv is num) ? rv.toInt() : 0;
+          final mx = li > ri ? li : ri;
+          if (mx > 0) merged[id] = mx;
+        }
+        if (merged.isNotEmpty) {
+          out[k] = jsonEncode(merged);
+        }
+      }
+    }
+
+    // 2026-05-24 (v1.2.91): merge recentSearches as a deduped
+    // union, preferring the entries ordered by their corresponding
+    // recentSearchTimestamps map (which we just merged above). Case-
+    // insensitive dedup mirrors RecentSearchesService.add(). Cap
+    // at RecentSearchesService.maxItems so the synced blob doesn't
+    // grow unbounded across devices.
+    {
+      final lr =
+          ((local['recentSearches'] as List?) ?? const []).map((e) => e.toString());
+      final rr = ((remote['recentSearches'] as List?) ?? const [])
+          .map((e) => e.toString());
+      if (lr.isNotEmpty || rr.isNotEmpty) {
+        final stamps = _parseJsonMap(out['recentSearchTimestamps']);
+        final seen = <String>{};
+        final union = <String>[];
+        // Walk all entries from both sides, dedup case-insensitive,
+        // preserve original casing on first encounter.
+        for (final q in [...lr, ...rr]) {
+          final k = q.toLowerCase();
+          if (seen.add(k)) union.add(q);
+        }
+        // Sort by timestamp desc (newest first). Unknown stamps
+        // sort as 0 — they fall to the bottom, which is fine for
+        // legacy entries that hadn't been stamped before the sync.
+        int stampFor(String q) {
+          final v = stamps[q.toLowerCase()];
+          return (v is num) ? v.toInt() : 0;
+        }
+        union.sort((a, b) => stampFor(b).compareTo(stampFor(a)));
+        // Hardcoded cap matches RecentSearchesService.maxItems —
+        // can't import from there (would create a cycle) but the
+        // value rarely changes.
+        const cap = 12;
+        if (union.length > cap) union.removeRange(cap, union.length);
+        if (union.isNotEmpty) out['recentSearches'] = union;
+      }
     }
     for (final k in const ['plan.activeId', 'plan.startMs', 'plan.useDate']) {
       if (local.containsKey(k)) {
