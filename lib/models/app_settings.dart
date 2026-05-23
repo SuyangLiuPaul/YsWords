@@ -1,11 +1,15 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:yswords/models/app_style_preset.dart' show CardMaterial;
 import 'package:yswords/models/dashboard_section.dart';
+import 'package:yswords/models/notification_category.dart';
 import 'package:yswords/services/app_icon_service.dart';
+import 'package:yswords/services/notification_scheduler.dart'
+    as scheduler;
 import 'package:yswords/services/cloud_auth_service.dart';
 import 'package:yswords/services/realtime_db_sync_service.dart';
 import 'package:yswords/utils/font_catalog.dart';
@@ -35,6 +39,9 @@ const _kAutoExpandFirstRef = 'autoExpandFirstRef';
 const _kShowDailyNews = 'showDailyNews';
 const _kShowBibleEvidence = 'showBibleEvidence';
 const _kNotificationsEnabled = 'notificationsEnabled';
+// 2026-05-24 (v1.3.0): per-category notification prefs. Stored as a
+// JSON string mapping category id → NotificationCategoryPrefs JSON.
+const _kNotificationCategories = 'notificationCategories';
 const _kShowSectionTitles = 'showSectionTitles';
 const _kShowBookIntro = 'showBookIntro';
 const _kPickVerseAfterChapter = 'pickVerseAfterChapter';
@@ -153,6 +160,9 @@ class AppSettings extends ChangeNotifier {
   /// fires local reminders (today's verse, today's reading missed,
   /// etc.). Default OFF — must be explicit user opt-in.
   bool _notificationsEnabled = false;
+  // 2026-05-24 (v1.3.0): per-category prefs. Lazy default — categories
+  // not in the map fall back to NotificationCategoryPrefs.defaultFor.
+  Map<String, NotificationCategoryPrefs> _notificationCategories = {};
 
   /// User-supplied Gemini API key. When non-empty, AI calls (word
   /// explanations, AI search) are billed against the user's own
@@ -225,6 +235,16 @@ class AppSettings extends ChangeNotifier {
   bool get showDailyNews => _showDailyNews;
   bool get showBibleEvidence => _showBibleEvidence;
   bool get notificationsEnabled => _notificationsEnabled;
+  /// Snapshot map of per-category preferences. Missing entries fall
+  /// back to defaults — use [notificationCategory] for safe lookup.
+  Map<String, NotificationCategoryPrefs> get notificationCategories =>
+      Map.unmodifiable(_notificationCategories);
+
+  /// Safe per-category lookup. Returns the stored prefs if present,
+  /// or the shipped default if the user hasn't touched this category.
+  NotificationCategoryPrefs notificationCategory(String categoryId) =>
+      _notificationCategories[categoryId] ??
+      NotificationCategoryPrefs.defaultFor(categoryId);
   bool get showSectionTitles => _showSectionTitles;
   bool get showBookIntro => _showBookIntro;
   bool get pickVerseAfterChapter => _pickVerseAfterChapter;
@@ -590,6 +610,42 @@ class AppSettings extends ChangeNotifier {
     notifyListeners();
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_kNotificationsEnabled, enabled);
+    // 2026-05-24 (v1.3.0): kick off (or tear down) all scheduled
+    // category notifications when the master toggle flips.
+    // Lazy-import to avoid pulling timezone/native code into web.
+    unawaited(_rescheduleAllSafely());
+  }
+
+  /// Replace per-category prefs and persist. Callers from the
+  /// Settings UI typically call this with a `copyWith` of the
+  /// current category's prefs (e.g. toggling enabled, picking a
+  /// new time). Fires a notify + a reschedule.
+  Future<void> setNotificationCategory(
+      String categoryId, NotificationCategoryPrefs newPrefs) async {
+    if (_notificationCategories[categoryId] == newPrefs) return;
+    _notificationCategories = {
+      ..._notificationCategories,
+      categoryId: newPrefs,
+    };
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    final map = <String, dynamic>{};
+    for (final e in _notificationCategories.entries) {
+      map[e.key] = e.value.toJson();
+    }
+    await prefs.setString(_kNotificationCategories, jsonEncode(map));
+    unawaited(_rescheduleAllSafely());
+  }
+
+  /// Wrapper that pulls the scheduler off the conditional-import
+  /// boundary. On web the scheduler short-circuits internally.
+  Future<void> _rescheduleAllSafely() async {
+    try {
+      await scheduler.rescheduleAll(this);
+    } catch (_) {
+      // Schedule failures shouldn't kill the settings write path.
+      // notification_scheduler logs internally with debugPrint.
+    }
   }
 
   Future<void> setShowSectionTitles(bool enabled) async {
@@ -882,6 +938,27 @@ class AppSettings extends ChangeNotifier {
     _showDailyNews = prefs.getBool(_kShowDailyNews) ?? true;
     _showBibleEvidence = prefs.getBool(_kShowBibleEvidence) ?? true;
     _notificationsEnabled = prefs.getBool(_kNotificationsEnabled) ?? false;
+    // 2026-05-24 (v1.3.0): load per-category notification prefs.
+    // Stored as one JSON object keyed by category id. Missing keys
+    // fall back to NotificationCategoryPrefs.defaultFor at read time
+    // (via the notificationCategory() helper), so we don't need to
+    // pre-populate the map here.
+    final notifCatRaw = prefs.getString(_kNotificationCategories);
+    if (notifCatRaw != null && notifCatRaw.isNotEmpty) {
+      try {
+        final decoded = jsonDecode(notifCatRaw) as Map<String, dynamic>;
+        final map = <String, NotificationCategoryPrefs>{};
+        decoded.forEach((id, value) {
+          if (value is Map<String, dynamic>) {
+            map[id] = NotificationCategoryPrefs.fromJson(value);
+          }
+        });
+        _notificationCategories = map;
+      } catch (_) {
+        // Corrupted JSON — fall back to empty (defaults will apply).
+        _notificationCategories = {};
+      }
+    }
     _showSectionTitles = prefs.getBool(_kShowSectionTitles) ?? true;
     _showBookIntro = prefs.getBool(_kShowBookIntro) ?? true;
     _pickVerseAfterChapter =

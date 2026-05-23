@@ -26,6 +26,7 @@ import 'dart:async' show Timer;
 
 import "package:yswords/services/cloud_sync_service.dart" show CloudSyncStatus;
 import "package:yswords/services/realtime_db_sync_service.dart";
+import 'package:yswords/models/notification_category.dart';
 import 'package:yswords/services/notification_service.dart';
 import 'package:yswords/widgets/contact_line.dart';
 import 'package:yswords/widgets/profile_avatar.dart';
@@ -2319,9 +2320,146 @@ class _NotificationsCardState extends State<_NotificationsCard> {
                   ),
                 ),
               ),
+            // 2026-05-24 (v1.3.0): per-category notification rows.
+            // Each row: enable toggle + tap-to-pick time. Shows only
+            // when the master toggle is on AND OS permission is
+            // granted (because disabled rows would just confuse).
+            if (settings.notificationsEnabled &&
+                perm == NotificationPermission.granted) ...[
+              const SizedBox(height: 8),
+              _NotificationCategoriesSection(settings: settings),
+            ],
           ],
         ),
       ),
+    );
+  }
+}
+
+/// 2026-05-24 (v1.3.0): list of per-category notification toggles +
+/// time pickers. Renders one ListTile per category in
+/// NotificationCategoryIds.phase1. Tapping the trailing time chip
+/// opens a TimePicker; toggling the leading switch flips
+/// .enabled. Both call AppSettings.setNotificationCategory which
+/// reschedules via NotificationScheduler.
+class _NotificationCategoriesSection extends StatelessWidget {
+  final AppSettings settings;
+
+  const _NotificationCategoriesSection({required this.settings});
+
+  String _categoryLabel(String id, String locale) {
+    switch (id) {
+      case NotificationCategoryIds.dailyVerse:
+        return locale.startsWith('zh') ? '每日经文' : 'Daily verse';
+      case NotificationCategoryIds.bibleEvidence:
+        return locale.startsWith('zh') ? '圣经考证' : 'Bible evidence';
+      case NotificationCategoryIds.sermonOfDay:
+        return locale.startsWith('zh') ? '今日讲道' : 'Sermon of the day';
+      case NotificationCategoryIds.newsDigest:
+        return locale.startsWith('zh') ? '新闻摘要' : 'News digest';
+      case NotificationCategoryIds.memoryVerse:
+        return locale.startsWith('zh') ? '晚安经文' : 'Bedtime verse';
+      default:
+        return id;
+    }
+  }
+
+  IconData _categoryIcon(String id) {
+    switch (id) {
+      case NotificationCategoryIds.dailyVerse:
+        return Icons.menu_book_rounded;
+      case NotificationCategoryIds.bibleEvidence:
+        return Icons.travel_explore_rounded;
+      case NotificationCategoryIds.sermonOfDay:
+        return Icons.podcasts_rounded;
+      case NotificationCategoryIds.newsDigest:
+        return Icons.newspaper_rounded;
+      case NotificationCategoryIds.memoryVerse:
+        return Icons.nightlight_round;
+      default:
+        return Icons.notifications_outlined;
+    }
+  }
+
+  String _formatTime(int hour, int minute) =>
+      '${hour.toString().padLeft(2, '0')}:${minute.toString().padLeft(2, '0')}';
+
+  Future<void> _pickTime(
+      BuildContext context, String categoryId) async {
+    final current = settings.notificationCategory(categoryId);
+    final picked = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay(hour: current.hour, minute: current.minute),
+      helpText: settings.locale.startsWith('zh') ? '选择推送时间' : 'Pick time',
+    );
+    if (picked == null) return;
+    await settings.setNotificationCategory(
+      categoryId,
+      current.copyWith(hour: picked.hour, minute: picked.minute),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final locale = settings.locale;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(8, 0, 8, 4),
+          child: Text(
+            locale.startsWith('zh')
+                ? '推送品类（点击编辑时间）'
+                : 'Categories (tap a row to set the time)',
+            style: TextStyle(
+              fontSize: (settings.fontSize - 3).clamp(11.0, 13.0),
+              color: scheme.onSurfaceVariant,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+        ...NotificationCategoryIds.phase1.map((id) {
+          final prefs = settings.notificationCategory(id);
+          return ListTile(
+            dense: true,
+            leading: Icon(_categoryIcon(id),
+                color: prefs.enabled
+                    ? scheme.primary
+                    : scheme.onSurfaceVariant),
+            title: Text(
+              _categoryLabel(id, locale),
+              style: TextStyle(
+                fontFamily: settings.fontFamily,
+                fontFamilyFallback: kCjkFontFallback,
+                fontSize: settings.fontSize - 1,
+                fontWeight: prefs.enabled
+                    ? FontWeight.w600
+                    : FontWeight.normal,
+              ),
+            ),
+            subtitle: Text(
+              _formatTime(prefs.hour, prefs.minute),
+              style: TextStyle(
+                fontFamily: settings.fontFamily,
+                fontFamilyFallback: kCjkFontFallback,
+                fontSize: (settings.fontSize - 3).clamp(11.0, 13.0),
+                color: scheme.onSurfaceVariant,
+              ),
+            ),
+            trailing: Switch(
+              value: prefs.enabled,
+              onChanged: (v) async {
+                await settings.setNotificationCategory(
+                  id,
+                  prefs.copyWith(enabled: v),
+                );
+              },
+            ),
+            onTap: () => _pickTime(context, id),
+          );
+        }),
+      ],
     );
   }
 }

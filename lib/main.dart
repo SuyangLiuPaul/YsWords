@@ -16,6 +16,8 @@ import 'package:yswords/services/sermon_service.dart';
 import 'package:yswords/utils/jump_to_reference.dart' as jumper;
 import 'package:yswords/utils/reference_parser.dart' show BibleReference;
 import 'package:yswords/services/cloud_auth_service.dart';
+import 'package:yswords/services/notification_scheduler.dart'
+    as notif_scheduler;
 import 'package:yswords/services/realtime_db_sync_service.dart';
 import 'package:yswords/services/offline_pack_service.dart';
 import 'package:yswords/services/fetch_books.dart';
@@ -244,6 +246,17 @@ class _MainAppState extends State<MainApp> {
     ).catchError((Object e, StackTrace st) {
       debugPrint('UrlSyncService.init failed: $e\n$st');
     });
+
+    // 2026-05-24 (v1.3.0): refresh scheduled notification content on
+    // every cold start. Cancels stale fires and re-creates the
+    // enabled categories with today's verse / evidence / sermon.
+    // Fire-and-forget — scheduler init is internally guarded so it
+    // can't block app launch.
+    // ignore: unawaited_futures
+    notif_scheduler.rescheduleAll(appSettings).catchError(
+      (Object e, StackTrace st) =>
+          debugPrint('notif scheduler init failed: $e'),
+    );
 
     if (mounted) {
       setState(() {
