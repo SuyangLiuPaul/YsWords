@@ -591,6 +591,35 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
     }
   }
 
+  /// 2026-05-24 (v1.3.8): scroll the active chapter's SPL back to
+  /// verse 1 (item index 0). Triggered by the cross-platform "tap
+  /// status bar" zone added in the Stack below — matches iOS muscle
+  /// memory (tap status bar → scroll-to-top) and brings the same
+  /// affordance to Android / web / macOS where the OS doesn't
+  /// provide it.
+  ///
+  /// Uses mainProvider.itemScrollController which (since v1.3.3) is
+  /// a forwarder pointing at the currently-active _ChapterPage's
+  /// local controller. Animated 350 ms easeOut for an obvious "I'm
+  /// flying back up" affordance — instant jumpTo on a long chapter
+  /// would feel like a teleport.
+  void _scrollChapterToTop() {
+    final mp = context.read<MainProvider>();
+    final c = mp.itemScrollController;
+    if (!c.isAttached) return;
+    c.scrollTo(
+      index: 0,
+      duration: const Duration(milliseconds: 350),
+      curve: Curves.easeOut,
+      alignment: 0,
+    );
+    // Also reveal the chrome — convention is "I'm back at the top,
+    // here are the navigation controls again".
+    if (_chromeFeatureEnabled && !_chromeVisible) {
+      _safeChromeSetState(() => _chromeVisible = true);
+    }
+  }
+
   /// Toggle the auto-hide chrome. Called by a tap on the reader's
   /// empty area (top/bottom margins, gaps between verses). Verses
   /// themselves consume their own taps for selection so this won't
@@ -1724,6 +1753,38 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                         chapter: currentVerse.chapter,
                         locale: settings.locale,
                         onTap: _toggleChrome,
+                      ),
+                    // 2026-05-24 (v1.3.8): cross-platform tap-status-
+                    // bar to scroll-to-top. iOS's system status-bar
+                    // tap behavior only auto-wires when a Scaffold has
+                    // a primary AppBar; our reader uses _FloatingHeader
+                    // (custom Positioned) so neither iOS nor Android
+                    // get the feature by default. User asked "按top
+                    // ios android 会回最上面吗" — answer was no, this
+                    // adds it explicitly.
+                    //
+                    // Implementation: a transparent Positioned strip
+                    // covering ONLY the status-bar area (height ==
+                    // MediaQuery.padding.top). Tap fires
+                    // scrollToIndex(0) via mainProvider's forwarder,
+                    // which routes to the active _ChapterPage's SPL.
+                    // Mini-header pills + _FloatingHeader controls
+                    // sit BELOW this strip (after their SafeArea
+                    // top padding), so this doesn't steal their
+                    // taps. Translucent hit behavior means non-tap
+                    // gestures (pull-down notification shade on
+                    // Android, swipe-down on iOS) still pass through.
+                    if (currentVerse != null)
+                      Positioned(
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        height: MediaQuery.of(context).padding.top
+                            .clamp(20.0, 64.0),
+                        child: GestureDetector(
+                          behavior: HitTestBehavior.translucent,
+                          onTap: _scrollChapterToTop,
+                        ),
                       ),
                     _FloatingHeader(
                       // 2026-05-22 (v1.2.71): pin chrome visible in
