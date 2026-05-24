@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show listEquals;
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -30,10 +31,53 @@ class ParagraphGroupWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer2<MainProvider, AppSettings>(
-      builder: (context, mainProvider, settings, child) {
-        if (group.isEmpty) return const SizedBox.shrink();
+    if (group.isEmpty) return const SizedBox.shrink();
 
+    // 2026-05-24 (v1.3.15) PERF: Consumer2 → Selector. Pre-fix the
+    // whole paragraph group rebuilt on every `notifyListeners()` of
+    // MainProvider — fired by scroll updates (currentVerse tracking),
+    // selection on ANY other verse in the chapter, highlight clears,
+    // bookmark / note mutations on unrelated verses, etc. With a
+    // typical chapter holding 20-50 paragraph groups, that's 20-50
+    // RichText rebuilds (~250 InlineSpan allocations each) per tap.
+    //
+    // The Selector below collapses the dependency to just the state
+    // this specific group cares about:
+    //   • `localHighlight` — -1 unless the highlight index falls
+    //     inside THIS group (then the in-group offset). Groups not
+    //     containing the highlight skip rebuild when highlight
+    //     moves elsewhere.
+    //   • Per-verse (isSelected / isBookmarked / isNoted /
+    //     highlightColor) for every verse in the group.
+    //
+    // shouldRebuild uses `listEquals` because Dart's default List
+    // equality is identity-based. The Selector function still runs
+    // on every notify, but it's O(group.length * 4) ≈ 20 hash
+    // lookups — vs. the full RichText rebuild it now avoids.
+    return Selector<MainProvider, List<Object?>>(
+      selector: (_, mp) {
+        final hi = mp.highlightIndex;
+        final localHighlight = (hi != null &&
+                hi >= startVerseIndex &&
+                hi < startVerseIndex + group.length)
+            ? hi - startVerseIndex
+            : -1;
+        return [
+          localHighlight,
+          for (final v in group) ...[
+            mp.isSelected(v),
+            mp.isBookmarked(v),
+            mp.isVerseNoted(v),
+            mp.getHighlightColor(v),
+          ],
+        ];
+      },
+      shouldRebuild: (prev, curr) => !listEquals(prev, curr),
+      builder: (context, _, __) {
+        // `context.read` doesn't subscribe — the Selector above
+        // owns the subscription. Reads still return live state.
+        final mainProvider = context.read<MainProvider>();
+        final settings = context.watch<AppSettings>();
         final locale = settings.locale;
         final isReference = group.first.paragraphType == 'reference';
         final isParagraphStart = group.first.isParagraphStart == true;
