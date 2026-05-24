@@ -41,19 +41,60 @@ class DailyVerseService {
     return list;
   }
 
+  /// Epoch for the rotation: 2026-01-01. The day index used to pick
+  /// today's verse is `daysSinceEpoch % list.length`. See [todayRef]
+  /// for the why behind this constant.
+  static final DateTime _epoch = DateTime(2026, 1, 1);
+
   /// Returns the canonical English reference (e.g. "John 3:16") for
   /// today, or null if the asset failed to load. Caller is
   /// responsible for parsing + resolving via reference_parser.
+  ///
+  /// 2026-05-24 (v1.3.2) BUG FIX: previous formula was
+  /// `dayOfYear % list.length`. `dayOfYear` is 0-365 and
+  /// `list.length` is 3650 → the modulo was always a no-op, only
+  /// indices 0-365 ever picked, and every year repeated the same
+  /// verse on the same date (2026-05-24 == 2027-05-24 == 2028-05-24…).
+  /// The 10-year-no-repeat promise the asset's _meta makes was
+  /// never honoured.
+  ///
+  /// Fix: anchor on a fixed epoch (2026-01-01 = the date the
+  /// curated list was finalised) and count days since then. The
+  /// modulo against `list.length` (3650) now genuinely rotates
+  /// across the whole pool, cycling back after ~10 years exactly
+  /// as the corpus intends. Same-day-different-device → same index
+  /// (calendar-day boundary, no UTC drift) because we use local
+  /// DateTime and `inDays` rounds to whole days.
+  ///
+  /// Backwards compat: in 2026, `daysSinceEpoch ∈ 0..364` which
+  /// happens to equal `dayOfYear`. So users testing on 2026 dates
+  /// see the SAME verse as the broken formula — no perceived
+  /// regression today, just correct behaviour from 2027 onward.
   static Future<String?> todayRef({DateTime? now}) async {
     _cache ??= await (_loading ??= _load());
     final list = _cache;
     if (list == null || list.isEmpty) return null;
     final n = now ?? DateTime.now();
-    // Day-of-year, 1..366. Using a stable rotation means visiting
-    // the dashboard several times in one day shows the same verse.
-    final start = DateTime(n.year, 1, 1);
-    final dayOfYear = n.difference(start).inDays;
-    return list[dayOfYear % list.length];
+    // Whole-calendar-day boundary, timezone-independent. Negative
+    // dates (before 2026-01-01) are handled by mathematical modulo
+    // — if `daysSinceEpoch` is negative we add `list.length` to
+    // wrap into [0, list.length).
+    final today = DateTime(n.year, n.month, n.day);
+    final daysSinceEpoch = today.difference(_epoch).inDays;
+    final idx =
+        ((daysSinceEpoch % list.length) + list.length) % list.length;
+    return list[idx];
+  }
+
+  /// 2026-05-24 (v1.3.2): eager pre-load for splash. main.dart calls
+  /// this at startup so by the time the LoadingPage queries
+  /// `todayRef()` the JSON is already parsed + cached in memory and
+  /// the response is synchronous-fast. Eliminates the cold-start
+  /// race where the splash's 1.2 s fallback timer would lock to a
+  /// random verse if daily_verses.json hadn't loaded yet.
+  static Future<void> preload() async {
+    if (_cache != null) return;
+    await (_loading ??= _load());
   }
 
   /// Round 56 (continued — Lookup recommended verses): returns the
@@ -75,12 +116,17 @@ class DailyVerseService {
     final base = now ?? DateTime.now();
     final cap = n.clamp(1, list.length);
     final out = <DailyVerseEntry>[];
+    // 2026-05-24 (v1.3.2): use the same epoch-anchored rotation as
+    // todayRef. Previous formula used `dayOfYear % list.length`
+    // which only ever indexed verses 0..365 — see the comment on
+    // todayRef for why that was broken.
     for (int back = 0; back < cap; back++) {
       final day = DateTime(base.year, base.month, base.day)
           .subtract(Duration(days: back));
-      final start = DateTime(day.year, 1, 1);
-      final dayOfYear = day.difference(start).inDays;
-      out.add(DailyVerseEntry(date: day, ref: list[dayOfYear % list.length]));
+      final daysSinceEpoch = day.difference(_epoch).inDays;
+      final idx =
+          ((daysSinceEpoch % list.length) + list.length) % list.length;
+      out.add(DailyVerseEntry(date: day, ref: list[idx]));
     }
     return out;
   }

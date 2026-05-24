@@ -16,6 +16,7 @@ import 'package:yswords/services/sermon_service.dart';
 import 'package:yswords/utils/jump_to_reference.dart' as jumper;
 import 'package:yswords/utils/reference_parser.dart' show BibleReference;
 import 'package:yswords/services/cloud_auth_service.dart';
+import 'package:yswords/services/daily_verse_service.dart';
 import 'package:yswords/services/notification_scheduler.dart'
     as notif_scheduler;
 import 'package:yswords/services/realtime_db_sync_service.dart';
@@ -231,6 +232,16 @@ class _MainAppState extends State<MainApp> {
     if (mainProvider.verses.isNotEmpty) {
       await _eagerPreloadAllVersions(mainProvider);
     }
+
+    // 2026-05-24 (v1.3.2): eager-preload the daily-verses pool so
+    // the splash's todayRef() lookup is synchronous-fast and
+    // doesn't race with the splash's fallback timer. Fire-and-
+    // forget — the result is cached inside DailyVerseService and
+    // any callers that arrive before the load completes await on
+    // the same in-flight Future via the service's internal
+    // `_loading` guard.
+    // ignore: unawaited_futures
+    DailyVerseService.preload();
 
     // 2026-05-19 (v1.2.54): URL sync layer — keep the browser URL
     // in lockstep with the reader state (book / chapter / verse /

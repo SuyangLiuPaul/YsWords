@@ -79,11 +79,19 @@ class _LoadingPageState extends State<LoadingPage> {
   Future<void> _resolveDailyVerseForSplash() async {
     if (_splashVerseLocked) return;
 
-    // Belt-and-braces: even if everything below times out or
-    // throws, we lock to a random pick after 1.2 s so the splash
-    // shows *something*. The auto-advance to home is 3 s total, so
-    // 1.2 s leaves the user with ~1.8 s of verse view.
-    _dailyVerseFallback = Timer(const Duration(milliseconds: 1200), () {
+    // 2026-05-24 (v1.3.2): bumped 1.2 s → 5 s. Previously the
+    // splash would lock to a random verse if daily_verses.json
+    // hadn't loaded within 1.2 s — but on cold-start web /
+    // first-launch native, the JSON can take 2-3 s to fetch +
+    // parse alongside the 5-10 MB Bible bundle. The 1.2 s budget
+    // raced with cold-start and the user reported "loading page
+    // verse is not daily verse" — they were seeing the random
+    // fallback fire before todayRef() returned. 5 s is well past
+    // the realistic cold-start window. main.dart now also calls
+    // DailyVerseService.preload() at bootstrap so subsequent
+    // todayRef() calls are synchronous-fast and this timer almost
+    // never fires.
+    _dailyVerseFallback = Timer(const Duration(milliseconds: 5000), () {
       if (_splashVerseLocked) return;
       _lockRandom();
       if (mounted) setState(() {});
