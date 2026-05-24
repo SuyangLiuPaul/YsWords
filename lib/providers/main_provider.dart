@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:yswords/constants/text_patterns.dart' show sanitizeForSearch;
 import 'package:yswords/models/verse.dart';
 import 'package:yswords/models/book.dart';
+import 'package:yswords/services/error_reporter.dart';
 import 'package:yswords/services/fetch_books.dart' show bookNameToEnglish;
 import 'package:yswords/services/fetch_verses.dart' show FetchVerses;
 import 'package:yswords/services/realtime_db_sync_service.dart';
@@ -160,6 +161,31 @@ class MainProvider extends ChangeNotifier {
   /// Caller can short-circuit the FetchVerses pipeline when so.
   bool hasCachedVersion(String version) =>
       _versesCache.containsKey(version);
+
+  /// 2026-05-24 (v1.3.22): drop all in-memory caches EXCEPT the
+  /// currently-active version. Called from `_MainAppState
+  /// .didHaveMemoryPressure` when iOS / Android signals the app
+  /// to surrender memory. Total reclaim: up to ~70 MB of parsed
+  /// verses + ~10 MB of paragraph groups.
+  ///
+  /// Re-populating after a pressure event happens lazily — the
+  /// next version switch the user makes triggers a fresh
+  /// FetchVerses (slower but recoverable). The current chapter
+  /// stays on-screen because the active version's verses are
+  /// referenced from `_verses`, not just the LRU.
+  void dropCachesOnMemoryPressure() {
+    final active = currentVersion;
+    final keepActive = _versesCache.containsKey(active);
+    final activeList = keepActive ? _versesCache[active] : null;
+    _versesCache.clear();
+    if (keepActive && activeList != null) {
+      _versesCache[active] = activeList;
+    }
+    _paragraphGroupsCache.clear();
+    // No notifyListeners — the on-screen rendering still uses
+    // `_verses` which is unaffected; the dropped caches are only
+    // for would-be future switches that haven't happened yet.
+  }
 
   /// 2026-05-10 (v1.2.15): background pre-load — parse `version`
   /// silently and stash it in the LRU cache without touching
@@ -678,6 +704,10 @@ class MainProvider extends ChangeNotifier {
       RealtimeDbSyncService.instance.requestUpload();
     } catch (e, st) {
       debugPrint('MainProvider._saveHighlights failed: $e\n$st');
+      // v1.3.22: silent debugPrint went nowhere in prod. Highlight
+      // persistence is high-stakes — the user thinks their colour
+      // is saved but the write actually failed.
+      ErrorReporter.report(e, st, source: 'saveHighlights');
     }
   }
 
@@ -849,6 +879,9 @@ class MainProvider extends ChangeNotifier {
       RealtimeDbSyncService.instance.requestUpload();
     } catch (e, st) {
       debugPrint('MainProvider._saveNotes failed: $e\n$st');
+      // v1.3.22: same rationale as saveHighlights — note loss is
+      // user-data loss, not a tolerable silent failure.
+      ErrorReporter.report(e, st, source: 'saveNotes');
     }
   }
 
@@ -956,6 +989,8 @@ class MainProvider extends ChangeNotifier {
       RealtimeDbSyncService.instance.requestUpload();
     } catch (e, st) {
       debugPrint('MainProvider._saveBookmarks failed: $e\n$st');
+      // v1.3.22: bookmark loss is user-data loss.
+      ErrorReporter.report(e, st, source: 'saveBookmarks');
     }
   }
 

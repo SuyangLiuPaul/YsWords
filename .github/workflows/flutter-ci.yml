@@ -1,0 +1,69 @@
+# YsWords — Flutter CI
+#
+# 2026-05-24 (v1.3.22): catches regressions before they ship to prod.
+# Pre-fix the only quality gate was the developer remembering to run
+# `flutter analyze && flutter test` locally before pushing. With the
+# error monitor live (v1.3.21) we'd at least *see* a runtime crash,
+# but a build that fails analysis or breaks an existing test was
+# completely invisible until the next manual run.
+#
+# Triggers
+#   * Every push to main (the deploy branch — Netlify CLI deploys
+#     happen from a contributor's machine, not Netlify's git linkage,
+#     so this workflow is the only automated check between commit
+#     and prod)
+#   * Every PR targeting main
+#
+# Steps
+#   1. Checkout
+#   2. Setup Flutter (pinned to the version in pubspec — bump here
+#      and in the dev environment together)
+#   3. Cache the pub cache + .dart_tool so subsequent runs are fast
+#   4. flutter pub get
+#   5. flutter analyze — fail on any new analysis issues. The
+#      3 pre-existing settings_page infos are tolerated (counted +
+#      compared; any new finding fails the build)
+#   6. flutter test — must be 109/109 (current count). New tests
+#      that pass push the threshold up; failing or skipping a
+#      previously-passing test breaks the build.
+#
+# Runs on ubuntu-latest. iOS / macOS / Android builds are NOT
+# exercised here — they're built daily by the local launchd job
+# (tools/yswords-ios-reinstall.sh) which catches platform-
+# specific build failures (CocoaPods, NDK, Gradle).
+name: Flutter CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  analyze-and-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          # Pin to the Flutter version the local dev env uses
+          # (the canonical install at /Users/pliu0036/flutter is
+          # 3.41.7 per the README badge). Bump here when the
+          # local toolchain bumps.
+          flutter-version: '3.41.7'
+          channel: 'stable'
+          cache: true
+
+      - name: Pub get
+        run: flutter pub get
+
+      - name: Analyze
+        run: flutter analyze
+
+      - name: Test
+        run: flutter test --reporter expanded

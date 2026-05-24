@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:yswords/models/verse.dart';
 import 'package:yswords/providers/main_provider.dart';
+import 'package:yswords/services/error_reporter.dart';
 import 'package:yswords/services/fetch_books.dart'
     show bookNameToEnglish, standardBookOrder;
 
@@ -187,7 +188,13 @@ class FetchVerses {
           'FetchVerses attempt $attempt/$maxAttempts failed for $path: '
           '$e\n$st',
         );
+        // v1.3.22: only report after the FINAL attempt fails — earlier
+        // attempts often recover on retry, so reporting per-attempt
+        // would email about transient flakes that the retry then
+        // healed.
         if (attempt == maxAttempts) {
+          ErrorReporter.report(e, st,
+              source: 'FetchVerses', extra: 'path=$path attempt=$attempt/$maxAttempts');
           // Round 56: rethrow instead of swallowing. The previous
           // "log + return" pattern made the Retry button on the
           // loading page useless — it would call execute(),

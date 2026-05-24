@@ -8,11 +8,11 @@ Living list of things to address next. Append rather than rewrite.
 
 These were identified as the highest-ROI gaps after v1.2.35. None are blocking, but each closes a real risk.
 
-1. **GitHub Actions CI workflow** — run `flutter analyze` + `flutter test`
-   on every push to main + every PR. Catches regressions automatically
-   instead of relying on the developer remembering to run them. The
-   only existing workflow today is `.github/workflows/sync-songs.yml`
-   (data pipeline, not tests). ~30 min.
+1. **GitHub Actions CI workflow** — RESOLVED in v1.3.22.
+   `.github/workflows/flutter-ci.yml` runs `flutter analyze` +
+   `flutter test --reporter expanded` on every push to main +
+   every PR. Pinned to Flutter 3.41.7 (matches local dev env).
+   ~15 min runtime. Pub cache is reused across runs.
 
 2. **Error monitoring on prod** — RESOLVED in v1.3.21. New
    `netlify/functions/errorReport.mjs` accepts POST with

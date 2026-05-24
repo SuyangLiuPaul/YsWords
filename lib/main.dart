@@ -64,7 +64,7 @@ class MainApp extends StatefulWidget {
   State<MainApp> createState() => _MainAppState();
 }
 
-class _MainAppState extends State<MainApp> {
+class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
   bool _loading = true;
 
   /// Watchdog that forces the splash off after 4 s even if bootstrap
@@ -77,6 +77,10 @@ class _MainAppState extends State<MainApp> {
   @override
   void initState() {
     super.initState();
+    // 2026-05-24 (v1.3.22): subscribe to lifecycle events so we can
+    // receive `didHaveMemoryPressure()` callbacks from iOS / Android.
+    // See the override below for the cache-drop behaviour.
+    WidgetsBinding.instance.addObserver(this);
     _splashWatchdog = Timer(const Duration(seconds: 4), () {
       if (_loading && mounted) {
         setState(() {
@@ -89,8 +93,47 @@ class _MainAppState extends State<MainApp> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _splashWatchdog?.cancel();
     super.dispose();
+  }
+
+  /// 2026-05-24 (v1.3.22): OS low-memory hook.
+  ///
+  /// Triggered by iOS `UIApplicationDidReceiveMemoryWarningNotification`
+  /// or Android `onTrimMemory(TRIM_MEMORY_RUNNING_LOW)` /
+  /// `TRIM_MEMORY_RUNNING_CRITICAL`. Before we shipped this hook the
+  /// app held 13 parsed verse lists (~78 MB) + the paragraph LRU
+  /// (~30 MB) + the Flutter image cache in RAM at all times. On
+  /// iPhone-SE-class devices and mid-range Android the OS could
+  /// silently terminate us with no chance to clean up — the user
+  /// would just see the app "crash" when they backgrounded it.
+  ///
+  /// We now respond by dropping the three caches the OS most wants
+  /// us to surrender. The reading pane's CURRENT verse list and
+  /// paragraph map are unaffected — they're held via reference in
+  /// the active providers, not the LRU.
+  @override
+  void didHaveMemoryPressure() {
+    super.didHaveMemoryPressure();
+    debugPrint('[v1.3.22] OS memory pressure — dropping caches');
+    try {
+      // Tier 1: Flutter image cache (avatars, evidence images, news
+      // thumbs, illustrations).
+      PaintingBinding.instance.imageCache.clear();
+      PaintingBinding.instance.imageCache.clearLiveImages();
+    } catch (_) {/* ignore */}
+    try {
+      // Tier 2: verse + paragraph LRU caches on MainProvider.
+      // Provider's dropCachesOnMemoryPressure() preserves the
+      // currently-active version (drop only inactive entries).
+      if (mounted) {
+        context.read<MainProvider>().dropCachesOnMemoryPressure();
+      }
+    } catch (_) {/* ignore */}
+    // Leave a breadcrumb so the error monitor knows we cleared
+    // caches — useful context if a crash follows shortly after.
+    ErrorReporter.breadcrumb('memory:pressure', data: 'caches dropped');
   }
 
   Future<void> _bootstrap() async {
