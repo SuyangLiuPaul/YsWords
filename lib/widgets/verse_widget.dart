@@ -30,14 +30,48 @@ class VerseWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer2<MainProvider, AppSettings>(
-      builder: (context, mainProvider, settings, child) {
+    // 2026-05-24 (v1.3.5) PERF: split the previous Consumer2 into a
+    // Selector on the mp-derived per-verse state + a Consumer on
+    // AppSettings. The Selector record is compared positionally on
+    // every mp.notifyListeners — if THIS verse's interactive state
+    // (selected / highlighted / notedness / bookmark) is unchanged,
+    // the builder is skipped entirely. Pre-fix: tapping any verse
+    // triggered Consumer2 rebuild for every alive VerseWidget
+    // (50+ verses × 3-5 cached chapters ≈ 250 rebuilds). Post-fix:
+    // tap on verse X rebuilds VerseWidget(X) only; others' selectors
+    // see unchanged tuples and short-circuit.
+    //
+    // AppSettings stays as Consumer because its fields (locale,
+    // paragraphMode, fontSize, fontFamily, menuScale) are all used
+    // in this build and notify is rare anyway (font / theme tweaks).
+    return Selector<MainProvider,
+        ({
+      bool isSelected,
+      bool isHighlighted,
+      Color? highlightColor,
+      bool isNoted,
+      bool isBookmarked,
+    })>(
+      selector: (_, mp) => (
+        isSelected: mp.isSelected(verse),
+        isHighlighted: mp.highlightIndex == index,
+        highlightColor: mp.getHighlightColor(verse),
+        isNoted: mp.isVerseNoted(verse),
+        isBookmarked: mp.isBookmarked(verse),
+      ),
+      builder: (context, state, _) {
+        // Re-read settings + mp for callbacks. mp is read (not
+        // watched) here because we only need it for action wiring
+        // — display-affecting state was already captured by the
+        // Selector tuple above.
+        final settings = context.watch<AppSettings>();
+        final mainProvider = context.read<MainProvider>();
         final locale = settings.locale;
-        final isSelected = mainProvider.isSelected(verse);
-        final isHighlighted = mainProvider.highlightIndex == index;
-        final highlightColor = mainProvider.getHighlightColor(verse);
-        final isNoted = mainProvider.isVerseNoted(verse);
-        final isBookmarked = mainProvider.isBookmarked(verse);
+        final isSelected = state.isSelected;
+        final isHighlighted = state.isHighlighted;
+        final highlightColor = state.highlightColor;
+        final isNoted = state.isNoted;
+        final isBookmarked = state.isBookmarked;
         final isReferenceLine = verse.paragraphType == 'reference';
         final inParagraphMode = settings.paragraphMode;
         final isDark = Theme.of(context).brightness == Brightness.dark;
