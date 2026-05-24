@@ -2,6 +2,7 @@
 // `lib/utils/clear_cache_helper.dart` for the conditional-import
 // pattern that replaced it.
 import 'package:yswords/utils/clear_cache_helper.dart';
+import 'package:yswords/utils/clipboard_helper.dart';
 
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
@@ -32,6 +33,7 @@ import 'package:yswords/widgets/contact_line.dart';
 import 'package:yswords/widgets/profile_avatar.dart';
 // 2026-05-07 (v17): fetch_books / fetch_verses imports removed; the
 // only consumer was the deleted "Check for Updates" reload path.
+import 'package:yswords/services/export_service.dart';
 import 'package:yswords/services/install_prompt_service.dart';
 import 'package:yswords/services/profile_service.dart';
 import 'package:yswords/utils/font_catalog.dart';
@@ -1057,6 +1059,10 @@ class _SettingsPageBodyState extends State<_SettingsPageBody> {
               // not already in installed mode, native build hides
               // it entirely).
               const _InstallAppCard(),
+              // 2026-05-24 (v1.3.26): export card — gives the user a
+              // portable copy of their highlights / bookmarks / notes
+              // in Markdown or JSON.
+              const _ExportDataCard(),
               SizedBox(height: 16 * s),
             ],
               ),
@@ -3739,6 +3745,203 @@ class _InstallAppCardState extends State<_InstallAppCard> {
           ],
         ),
       ),
+    );
+  }
+}
+
+/// 2026-05-24 (v1.3.26): export-data card. See file-level header.
+class _ExportDataCard extends StatelessWidget {
+  const _ExportDataCard();
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final settings = context.watch<AppSettings>();
+    final locale = settings.locale;
+    final isZh = locale == 'zh-Hans' || locale == 'zh-Hant';
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.download_outlined,
+                    size: 18, color: scheme.primary),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    isZh ? '导出我的数据' : 'Export my data',
+                    style: TextStyle(
+                      fontFamily: settings.fontFamily,
+                      fontFamilyFallback: kCjkFontFallback,
+                      fontSize:
+                          (settings.fontSize - 1).clamp(13.0, 16.0),
+                      fontWeight: FontWeight.w700,
+                      color: scheme.onSurface,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Text(
+              isZh
+                  ? '导出全部标记、书签和笔记。 Markdown 格式可粘贴到 Notion / Obsidian / Apple Notes 等; JSON 格式是结构化备份。'
+                  : 'Export all highlights, bookmarks, and notes. Markdown pastes cleanly into Notion / Obsidian / Apple Notes / Google Docs. JSON is a structured backup.',
+              style: TextStyle(
+                fontFamily: settings.fontFamily,
+                fontFamilyFallback: kCjkFontFallback,
+                fontSize: (settings.fontSize - 4).clamp(11.0, 13.0),
+                color: scheme.onSurface.withValues(alpha: 0.85),
+                height: 1.5,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: FilledButton.tonalIcon(
+                onPressed: () => _showExportDialog(context),
+                icon: const Icon(Icons.ios_share_outlined, size: 18),
+                label: Text(isZh ? '导出…' : 'Export…'),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _showExportDialog(BuildContext context) async {
+    final mp = context.read<MainProvider>();
+    final settings = context.read<AppSettings>();
+    await showDialog<void>(
+      context: context,
+      builder: (ctx) => _ExportDialog(mp: mp, settings: settings),
+    );
+  }
+}
+
+class _ExportDialog extends StatefulWidget {
+  final MainProvider mp;
+  final AppSettings settings;
+  const _ExportDialog({required this.mp, required this.settings});
+
+  @override
+  State<_ExportDialog> createState() => _ExportDialogState();
+}
+
+class _ExportDialogState extends State<_ExportDialog> {
+  // 'md' or 'json'
+  String _format = 'md';
+  late String _content;
+
+  @override
+  void initState() {
+    super.initState();
+    _content = _generate();
+  }
+
+  String _generate() {
+    return _format == 'md'
+        ? ExportService.toMarkdown(widget.mp)
+        : ExportService.toJson(widget.mp);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final locale = widget.settings.locale;
+    final isZh = locale == 'zh-Hans' || locale == 'zh-Hant';
+    final bytes = _content.length;
+    final sizeLabel = bytes < 1024
+        ? '$bytes B'
+        : bytes < 1024 * 1024
+            ? '${(bytes / 1024).toStringAsFixed(1)} KB'
+            : '${(bytes / (1024 * 1024)).toStringAsFixed(2)} MB';
+    return AlertDialog(
+      title: Text(isZh ? '导出我的数据' : 'Export my data'),
+      content: SizedBox(
+        width: 560,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            SegmentedButton<String>(
+              segments: const [
+                ButtonSegment(
+                  value: 'md',
+                  label: Text('Markdown'),
+                  icon: Icon(Icons.text_snippet_outlined, size: 18),
+                ),
+                ButtonSegment(
+                  value: 'json',
+                  label: Text('JSON'),
+                  icon: Icon(Icons.data_object_outlined, size: 18),
+                ),
+              ],
+              selected: {_format},
+              onSelectionChanged: (s) {
+                if (s.isEmpty) return;
+                setState(() {
+                  _format = s.first;
+                  _content = _generate();
+                });
+              },
+            ),
+            const SizedBox(height: 12),
+            Container(
+              constraints: const BoxConstraints(maxHeight: 280),
+              decoration: BoxDecoration(
+                color: scheme.surfaceContainerHighest
+                    .withValues(alpha: 0.5),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(
+                    color: scheme.outlineVariant.withValues(alpha: 0.6)),
+              ),
+              padding: const EdgeInsets.all(8),
+              child: Scrollbar(
+                child: SelectableText(
+                  _content,
+                  style: const TextStyle(
+                    fontFamily: 'monospace',
+                    fontSize: 11,
+                    height: 1.4,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              isZh ? '大小: $sizeLabel' : 'Size: $sizeLabel',
+              style: TextStyle(
+                fontSize: 11,
+                color: scheme.onSurface.withValues(alpha: 0.6),
+              ),
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: Text(isZh ? '关闭' : 'Close'),
+        ),
+        FilledButton.icon(
+          onPressed: () async {
+            await ClipboardHelper.copyWithFeedback(
+              context,
+              _content,
+              messageOverride:
+                  isZh ? '已复制到剪贴板' : 'Copied to clipboard',
+            );
+          },
+          icon: const Icon(Icons.content_copy_outlined, size: 16),
+          label: Text(isZh ? '复制' : 'Copy'),
+        ),
+      ],
     );
   }
 }
