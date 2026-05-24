@@ -306,16 +306,23 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
         }
       },
       onError: (err) {
-        // Fall back to legacy browser SpeechSynthesis on web. On
-        // native, surface the error via SnackBar so the user knows
-        // why audio didn't start. Either way clear the listening
-        // state so the button flips back to Play.
         if (!mounted) return;
-        // 2026-05-23 (v1.2.86): on web, fall back to legacy browser
-        // SpeechSynthesis so users at least get *some* audio when
-        // the Netlify function is down or the key is exhausted. On
-        // native (iOS / macOS / Android) SpeechSynthesis doesn't
-        // exist, so surface the error directly.
+        // 2026-05-23 (v1.2.86): web fell back to browser
+        // SpeechSynthesis when /api/aiSpeak failed; on native we
+        // had no fallback (the stub was a no-op) so iOS/macOS/
+        // Android just saw a SnackBar.
+        //
+        // 2026-05-24 (v1.3.18): TtsService now wraps `flutter_tts`,
+        // which ships native implementations for iOS (AVSpeech
+        // Synthesizer), macOS (NSSpeechSynthesizer), Android
+        // (TextToSpeech), and Web (SpeechSynthesis). `isAvailable`
+        // is true everywhere we ship, so the fallback always
+        // engages — no more SnackBar dead-ends when the Netlify
+        // function isn't configured (GOOGLE_TTS_API_KEY unset) or
+        // when the user's BYOK Gemini key doesn't have Cloud TTS
+        // enabled. The Chirp 3 HD voices remain the premium path
+        // when an API key is available; native TTS is the always-on
+        // floor.
         if (TtsService.isAvailable) {
           _legacyTtsSpeakSequence(chunks, locale, mp);
           return;

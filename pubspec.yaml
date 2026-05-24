@@ -1,7 +1,7 @@
 name: yswords
 description: "YsWords means Yahweh's words. A bilingual Bible app to help you listen to His voice and abide in Him daily."
 publish_to: 'none'
-version: 1.3.17
+version: 1.3.18
 
 environment:
   sdk: '>=3.2.3 <4.0.0'
@@ -83,6 +83,7 @@ dependencies:
   # key so a second play of the same verse is instant + free.
   path_provider: ^2.1.4
   crypto: ^3.0.5
+  flutter_tts: ^4.2.5
 
 dev_dependencies:
   flutter_test:

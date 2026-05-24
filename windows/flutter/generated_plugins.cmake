@@ -9,6 +9,7 @@ list(APPEND FLUTTER_PLUGIN_LIST
   firebase_core
   firebase_database
   flutter_timezone
+  flutter_tts
 )
 
 list(APPEND FLUTTER_FFI_PLUGIN_LIST
