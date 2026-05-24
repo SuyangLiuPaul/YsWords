@@ -1,17 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:get/get.dart';
+// 2026-05-24 (v1.3.7): get package no longer used directly here —
+// navigateToReader helper encapsulates all push/pop logic.
+// import 'package:get/get.dart';
 import 'package:provider/provider.dart';
 
 import 'package:yswords/constants/text_patterns.dart' show sanitizeVerseText;
 import 'package:yswords/constants/ui_strings.dart';
 import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/models/verse.dart';
-import 'package:yswords/pages/home_page.dart';
+// 2026-05-24 (v1.3.7): home_page direct import gone — navigateToReader
+// helper owns the HomePage construction.
+// import 'package:yswords/pages/home_page.dart';
 import 'package:yswords/providers/main_provider.dart';
 import 'package:yswords/services/fetch_books.dart' show bookNameToEnglish;
 import 'package:yswords/utils/floating_toast.dart' show showFloatingToast;
 import 'package:yswords/utils/jump_to_reference.dart' as jumper;
+import 'package:yswords/utils/navigate_to_reader.dart';
 import 'package:yswords/utils/reference_parser.dart';
 import 'package:yswords/utils/version_mapper.dart' show localeAwareBookName;
 import 'package:yswords/utils/font_catalog.dart' show kCjkFontFallback;
@@ -217,53 +222,13 @@ class _VersePopupSheetState extends State<VersePopupSheet> {
     if (!mounted) return;
     final ok = await jumper.showJumpResultSnackBar(context, result);
     if (!ok || !mounted) return;
-    // 2026-05-24 (v1.3.3): pop modals AND any non-HomePage page
-    // routes ABOVE an existing HomePage, falling back to a fresh
-    // push if HomePage isn't in the stack.
-    //
-    // v1.2.96 popped modals + Get.off(HomePage). But Get.off only
-    // replaces the TOP route. If the stack was
-    //   [Dashboard, HomePage(reader), Library, NoteEditor, Popup]
-    // after popUntil(PageRoute) the stack was
-    //   [Dashboard, HomePage(reader), Library]
-    // and Get.off(HomePage) replaced Library with HomePage:
-    //   [Dashboard, HomePage(reader), HomePage(new)]
-    // — DUPLICATE bible. User reported "bible duplicate了" after
-    // going through a Library note's verse-ref → popup flow.
-    //
-    // Fix: popUntil walks DOWN the stack searching for an existing
-    // HomePage (Get sets settings.name = "/HomePage" by convention
-    // for `Get.to(() => const HomePage())`). If found, all routes
-    // ABOVE it are popped; pendingJump (set by
-    // resolveAndPrepareJump above) fires on that existing reader.
-    // If no HomePage is in the stack, popUntil stops at the root
-    // and we Get.to push a fresh one.
-    final navigator = Navigator.of(context, rootNavigator: true);
-    bool foundExistingHome = false;
-    navigator.popUntil((route) {
-      // Get's auto-naming: route.settings.name == "/HomePage" for
-      // any Get.to(() => const HomePage()) push. We accept either
-      // exact match or trailing match in case a future caller adds
-      // a sub-route prefix.
-      final name = route.settings.name ?? '';
-      if (name == '/HomePage' || name.endsWith('HomePage')) {
-        foundExistingHome = true;
-        return true;
-      }
-      if (route.isFirst) return true; // stop at root (Dashboard)
-      return false;
-    });
-    if (!mounted) return;
-    if (!foundExistingHome) {
-      // No HomePage in the stack — push a fresh one on top of
-      // whatever root route we landed on (Dashboard).
-      Get.to(() => const HomePage(),
-          routeName: '/HomePage',
-          transition: Transition.rightToLeft);
-    }
-    // else: existing HomePage is now at the top. pendingJump is
-    // already set on the provider; the reader picks it up on its
-    // next build pass.
+    // 2026-05-24 (v1.3.7): delegate to the shared navigateToReader
+    // helper. It walks the stack for an existing HomePage (route
+    // name '/HomePage' — set by every push site since v1.3.6), pops
+    // every route above it, and only pushes a fresh HomePage if
+    // none exists. pendingJump (set by resolveAndPrepareJump
+    // above) is consumed by whichever HomePage ends up on top.
+    navigateToReader(context);
   }
 
   @override

@@ -1,15 +1,20 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+// 2026-05-24 (v1.3.7): get no longer used directly here —
+// navigateToReader encapsulates the push logic.
+// import 'package:get/get.dart';
 import 'package:provider/provider.dart';
 
 import 'package:yswords/constants/text_patterns.dart' show sanitizeForSearch;
 import 'package:yswords/constants/ui_strings.dart';
 import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/models/verse.dart';
-import 'package:yswords/pages/home_page.dart';
+// 2026-05-24 (v1.3.7): home_page direct import gone — navigateToReader
+// helper owns the HomePage construction.
+// import 'package:yswords/pages/home_page.dart';
 import 'package:yswords/providers/main_provider.dart';
 import 'package:yswords/utils/clipboard_helper.dart';
 import 'package:yswords/utils/jump_to_reference.dart' as jumper;
+import 'package:yswords/utils/navigate_to_reader.dart';
 import 'package:yswords/utils/note_reference_parser.dart';
 import 'package:yswords/utils/reference_parser.dart' show BibleReference;
 import 'package:yswords/widgets/verse_popup_sheet.dart' show showVersePopup;
@@ -520,7 +525,7 @@ class _AnnotationTile extends StatelessWidget {
     // navigates (separate GestureDetector below). When this tile
     // represents a BOOKMARK (`onOpenEditor` null), the legacy
     // whole-tile navigate behaviour is preserved.
-    final tilePrimaryAction = onOpenEditor ?? () => _navigateToVerse(verse, mainProvider);
+    final tilePrimaryAction = onOpenEditor ?? () => _navigateToVerse(context, verse, mainProvider);
     // Verse-ref text — for notes, always jumps. For bookmarks
     // (no editor), the outer tap already jumps so the inner tap
     // would be redundant but harmless.
@@ -545,7 +550,7 @@ class _AnnotationTile extends StatelessWidget {
     final verseRefWidget = onOpenEditor != null
         ? GestureDetector(
             behavior: HitTestBehavior.opaque,
-            onTap: () => _navigateToVerse(verse, mainProvider),
+            onTap: () => _navigateToVerse(context, verse, mainProvider),
             child: Padding(
               padding: const EdgeInsets.symmetric(vertical: 2),
               child: Row(
@@ -801,25 +806,25 @@ List<Verse> _resolveAnnotations(MainProvider mp, Iterable<String> ids) {
   return out;
 }
 
-void _navigateToVerse(Verse v, MainProvider mp) {
+void _navigateToVerse(BuildContext context, Verse v, MainProvider mp) {
   // pendingJump handshake — see lib/utils/jump_to_reference.dart for
   // the rationale.
   jumper.prepareJumpToVerse(v, mp);
-  // `Get.off(HomePage)` replaces the current Library route with the
-  // bible reader. Critical because Library can be reached from EITHER
-  // the dashboard (most common) OR the reader's overflow menu — and
-  // we want the user to land in the reader at the verse in both
-  // cases. Previous `Get.back()` only worked from the reader path; it
-  // sent the user back to the dashboard from the dashboard path,
-  // which the user reported as "clicking the verse goes back to home
-  // page instead of the bible reader".
-  // 2026-05-24 (v1.3.6): explicit routeName — see main.dart for
-  // the duplicate-HomePage-detection rationale.
-  Get.off(
-    () => const HomePage(),
-    routeName: '/HomePage',
-    transition: Transition.rightToLeft,
-  );
+  // 2026-05-24 (v1.3.7): use the shared `navigateToReader` helper.
+  // Previous Get.off(HomePage) replaced only the TOP route (Library)
+  // — if the user was reading in the Bible Reader before opening
+  // Library, the existing HomePage(reader) stayed at position [1]
+  // in the stack and the new HomePage ended up at [2], producing
+  // the duplicate the user reported as "notes对应verse的经文 …
+  // bible duplicate了".
+  //
+  // navigateToReader walks down the stack searching for an
+  // existing HomePage by route name; if found, pops every route
+  // above it and pendingJump fires on the SAME reader instance.
+  // If no HomePage exists in the stack (e.g. user reached Library
+  // directly from Dashboard with no prior reader push), it pushes
+  // a fresh one on top.
+  navigateToReader(context);
 }
 
 // 2026-05-19 (v1.2.61): the v1.2.59 `_navigateToReference` helper
