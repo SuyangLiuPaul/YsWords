@@ -109,7 +109,15 @@ class VerseWidget extends StatelessWidget {
           vertPadding = (settings.fontSize * 0.4).clamp(6.0, 12.0);
         }
 
-        return Material(
+        // 2026-05-24 (v1.3.4) PERF: RepaintBoundary isolates this
+        // verse's paint layer from sibling verses. Selection,
+        // highlight, or hover state changes on this verse won't
+        // dirty the paint trees of the other 50+ verses in the
+        // chapter — only this verse repaints. Combined with the
+        // SPL.builder's lazy item construction, the total paint
+        // work for a single-verse selection toggle drops from
+        // chapter-scale to verse-scale.
+        return RepaintBoundary(child: Material(
           color: Colors.transparent,
           clipBehavior: Clip.hardEdge,
           child: InkWell(
@@ -208,7 +216,7 @@ class VerseWidget extends StatelessWidget {
               ],
             ),
           ),
-        );
+        ));
       },
     );
   }

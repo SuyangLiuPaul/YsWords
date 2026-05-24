@@ -224,13 +224,29 @@ class _MainAppState extends State<MainApp> {
     // bug fixes (paragraph-cache LRU evict on version switch,
     // pendingJump clear, etc).
     //
-    // Splash blocks for ~25 s on cold boot. After it dismisses
-    // ALL 13 versions are in the LRU; switching between any of
-    // them is a microsecond cache swap (no overlay). Same trade
-    // as v1.2.18: long-but-explicable splash → flawless reading
-    // experience.
+    // 2026-05-24 (v1.3.4) PERF: NON-BLOCKING version preload.
+    // v1.2.25 made this `await`-blocking, so splash sat for ~25 s
+    // until all 13 Bible versions had been json.decode'd into the
+    // in-memory LRU. User: "performance improve entirely". The
+    // cold-start wait was by far the most visible perf cost.
+    //
+    // New: fire-and-forget. The user's active version is already
+    // loaded above (via setVerses from FetchVerses). All OTHER
+    // versions stream into the LRU in the background, one at a
+    // time, after splash dismisses. The user can read / navigate /
+    // search immediately; if they switch to an un-loaded version
+    // before its background load completes, the on-demand
+    // FetchVerses path (already wired for this case) loads it
+    // synchronously in ~1 s. Most users stay on one or two
+    // versions and never notice.
+    //
+    // Memory parity: same final state (~78 MB across all
+    // versions); only the timing of when the slots fill changes.
     if (mainProvider.verses.isNotEmpty) {
-      await _eagerPreloadAllVersions(mainProvider);
+      // ignore: unawaited_futures
+      _eagerPreloadAllVersions(mainProvider).catchError(
+          (Object e, StackTrace st) =>
+              debugPrint('background version preload failed: $e'));
     }
 
     // 2026-05-24 (v1.3.2): eager-preload the daily-verses pool so

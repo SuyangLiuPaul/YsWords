@@ -189,7 +189,10 @@ class ParagraphGroupWidget extends StatelessWidget {
             ? settings.fontSize * 0.35
             : 0;
 
-        return Material(
+        // 2026-05-24 (v1.3.4) PERF: RepaintBoundary isolates this
+        // paragraph group's paint layer — see VerseWidget for the
+        // same rationale.
+        return RepaintBoundary(child: Material(
           color: Colors.transparent,
           clipBehavior: Clip.hardEdge,
           child: InkWell(
@@ -249,7 +252,7 @@ class ParagraphGroupWidget extends StatelessWidget {
               ],
             ),
           ),
-        );
+        ));
       },
     );
   }
