@@ -57,12 +57,13 @@ These were identified as the highest-ROI gaps after v1.2.35. None are blocking, 
 All in `docs/firebase-security-rules.md` + `netlify.toml` + `netlify/functions/_cors.mjs`.
 
 - ✅ CORS lockdown on `errorReport` + `submitFeedback` — only the 6 Netlify origins allowed; off-allowlist browser POSTs hit 403 before any side effect
-- ✅ CSP header on all responses — restricts script / style / font / connect / img to known hosts; blocks frame embedding (clickjacking)
+- ⚠️ CSP header — **REMOVED in v1.3.29** after v1.3.24 → v1.3.28 hotfix loop kept missing hosts (CanvasKit gstatic → fonts.gstatic → Firebase / Google Sign-In). Re-introduction tracked in "open" list below. The rest of the security headers stay.
 - ✅ HSTS preload + X-Frame-Options + X-Content-Type-Options + Referrer-Policy + Permissions-Policy + COOP — defense-in-depth headers via `netlify.toml`
 - ✅ gitleaks in CI — catches accidental commit of API keys / secrets
 - ✅ Firebase rules documented at `docs/firebase-security-rules.md` with verification procedure
 
 Still open as future security work:
+- **Re-introduce CSP via Report-Only first** — deploy a `Content-Security-Policy-Report-Only` header (does NOT block, only reports) → run app through every user flow (sign-in, version switch, AI search, daily verse, evidence images, bookmarks, notes, exegesis, install prompt) on both English + Chinese builds → capture every `csp-report` violation via DevTools console OR a dedicated Netlify function endpoint → enumerate the actual hosts → THEN ship an enforcing CSP. Estimated 1 day of careful tracing. NOT another guess-and-break round.
 - Per-IP rate limiting on Netlify functions (errorReport has session+stack dedupe; submitFeedback has none; AI funcs rely on Gemini quota)
 - BYOK Gemini key at-rest encryption (SharedPreferences plaintext today; could use flutter_secure_storage on native)
 - SRI hashes on external script tags (none today since Flutter web doesn't load external `<script>` tags)

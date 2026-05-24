@@ -58,46 +58,34 @@
     # preloaded the user's first-ever visit is HTTPS-only.
     Strict-Transport-Security = "max-age=63072000; includeSubDomains; preload"
 
-    # CSP — restrict where scripts/styles/images/fonts can come from.
-    # Flutter web is mostly canvas-rendered so the XSS attack surface
-    # is limited, but the bundle still loads external resources at
-    # runtime.
-    #   * scripts:   self + 'wasm-unsafe-eval' (CanvasKit / skwasm)
-    #                + https://www.gstatic.com (CanvasKit JS bundle
-    #                  loaded from gstatic.com/flutter-canvaskit/<hash>/)
-    #                + blob: (Flutter dynamically creates Worker
-    #                  scripts from blob URLs)
-    #   * styles:    self + inline (Flutter injects style tags) +
-    #     fonts.googleapis.com (Google Fonts CSS)
-    #   * fonts:     self + data: (Flutter embeds icon fonts as
-    #     data URIs) + fonts.gstatic.com (Google Fonts payloads)
-    #   * images:    permissive https: — evidence + illustrations
-    #     load from multiple CDNs (yswords-data, Wikimedia, etc.)
-    #   * connect:   self + Netlify Functions + Firebase + Gemini
-    #     proxy + Firebase Realtime DB (wss for the live stream) +
-    #     https://www.gstatic.com (CanvasKit WASM payload fetch)
-    #   * worker:    self + blob: (Flutter web workers)
-    #   * frame-ancestors 'none' — block embedding (clickjacking
-    #     defense); X-Frame-Options below is the legacy companion
+    # 2026-05-24 (v1.3.29 hotfix): CSP REMOVED.
     #
-    # 2026-05-24 (v1.3.27 hotfix): added gstatic.com to script-src
-    # AND connect-src + worker-src — without these the page was
-    # rendering as white-screen because CanvasKit JS + WASM fetches
-    # were blocked by the v1.3.24 CSP. flutter_bootstrap.js loads
-    # `canvaskit.js` + `canvaskit.wasm` from gstatic.com/
-    # flutter-canvaskit/<engine-hash>/ at runtime; without the
-    # allowance the Flutter engine never initialises.
-    # 2026-05-24 (v1.3.28 hotfix): added https://fonts.gstatic.com +
-    # https://fonts.googleapis.com to connect-src. The Dart
-    # `google_fonts` package (used by the font picker for non-bundled
-    # fonts like EB Garamond, Lora, Merriweather, Noto Sans SC, Noto
-    # Serif SC) fetches font binaries via Dart's http package, which
-    # CSP routes through connect-src — NOT font-src. font-src only
-    # covers `<link rel=stylesheet>` + CSS `@font-face url(...)`.
-    # Without these hosts in connect-src, every google_fonts call
-    # silently failed and text rendered in the CanvasKit-bundled
-    # fallback (= garbled text + missing CJK glyphs).
-    Content-Security-Policy = "default-src 'self'; script-src 'self' 'wasm-unsafe-eval' https://www.gstatic.com blob:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self' blob: https://*.netlify.app https://*.firebaseio.com https://*.googleapis.com https://*.firebase.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://generativelanguage.googleapis.com https://www.gstatic.com https://fonts.gstatic.com https://fonts.googleapis.com wss://*.firebaseio.com; worker-src 'self' blob:; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'; upgrade-insecure-requests"
+    # The v1.3.24 → v1.3.28 attempts at a tight CSP repeatedly broke
+    # real functionality because Flutter web + Firebase + Google
+    # Sign-In + the google_fonts package touch many hosts at runtime
+    # and through unusual channels (XHR for fonts that traditionally
+    # used `<link>`, popups for OAuth, iframes for token refresh,
+    # blob: URLs for workers). The whack-a-mole hotfix loop kept
+    # missing one host or another:
+    #   * v1.3.24: shipped CSP — broke CanvasKit (gstatic.com)
+    #   * v1.3.27 hotfix: added gstatic.com → fonts garbled
+    #   * v1.3.28 hotfix: added fonts.* → AI / Firebase / Google
+    #     Sign-In broken
+    #
+    # The other security headers below (HSTS, X-Frame-Options,
+    # X-Content-Type-Options, Referrer-Policy, Permissions-Policy,
+    # COOP) all stay — none of them have host-allowlist issues, all
+    # provide real defense-in-depth value, none of them are at risk
+    # of breaking functionality.
+    #
+    # Re-adding CSP is on the priorities.md "Security baseline →
+    # remaining" list. The right approach next time: deploy a
+    # `Content-Security-Policy-Report-Only` header first, run the
+    # app through a full user-flow capture (sign-in, version
+    # switch, AI search, daily verse fetch, evidence images,
+    # bookmarks, notes, exegesis, install prompt), collect all
+    # `csp-report` violations, then enumerate the actual hosts.
+    # NOT another guess-and-break round.
 
     # X-Frame-Options: legacy companion to CSP `frame-ancestors`.
     # Older browsers honour this but not frame-ancestors; keep both.
