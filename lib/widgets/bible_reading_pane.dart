@@ -97,8 +97,19 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
   // chapter. _attachPositionsListener compares identity and
   // re-subscribes when the active page swaps.
   ItemPositionsListener? _attachedPositionsListener;
-  int _visibleItemIndex = 0;
-  bool _showVersePosition = false;
+  // 2026-05-24 (v1.3.16) PERF: scroll-position state moved to
+  // ValueNotifiers so `_handleItemPositionsChanged` (which fires on
+  // every visible-verse change during scrolling, ~60 Hz) no longer
+  // calls `setState()` on the whole pane. Pre-fix the setState
+  // rebuilt the entire `_BibleReadingPaneState.build()` subtree
+  // including the top-level Consumer2 (~3 KB of children + chrome
+  // + sidebar slot + glass surfaces). Post-fix only the right-edge
+  // position indicator's `ValueListenableBuilder` rebuilds (~80
+  // bytes of widget tree). The notifiers replace what used to be
+  // two `setState`-managed instance fields; reads use `.value`,
+  // writes assign to `.value` (no setState needed).
+  final ValueNotifier<int> _visibleItemIndexNotifier = ValueNotifier(0);
+  final ValueNotifier<bool> _showVersePositionNotifier = ValueNotifier(false);
   Timer? _versePositionTimer;
 
   // 2026-05-21 (v1.2.70): chrome feature is enabled on every platform.
@@ -463,6 +474,8 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
     if (_isListening) TtsService.stop();
     _attachedPositionsListener?.itemPositions
         .removeListener(_handleItemPositionsChanged);
+    _visibleItemIndexNotifier.dispose();
+    _showVersePositionNotifier.dispose();
     super.dispose();
   }
 
@@ -505,15 +518,16 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
       return edge != 0 ? edge : a.index.compareTo(b.index);
     });
     final nextIndex = visible.first.index;
-    if (nextIndex != _visibleItemIndex && mounted) {
+    if (nextIndex != _visibleItemIndexNotifier.value && mounted) {
       _versePositionTimer?.cancel();
       _versePositionTimer = Timer(const Duration(seconds: 2), () {
-        if (mounted) setState(() => _showVersePosition = false);
+        if (mounted) _showVersePositionNotifier.value = false;
       });
-      setState(() {
-        _visibleItemIndex = nextIndex;
-        _showVersePosition = true;
-      });
+      // v1.3.16: notifier assignment instead of setState — only the
+      // position indicator's ValueListenableBuilder rebuilds, not
+      // the whole pane.
+      _visibleItemIndexNotifier.value = nextIndex;
+      _showVersePositionNotifier.value = true;
       // 2026-05-22 (v1.2.71): chrome auto-hide is now driven by
       // NotificationListener<ScrollNotification> instead of this
       // item-level path (which silently stopped emitting after
@@ -835,7 +849,7 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
     provider.setCurrentChapter(book: book, chapter: chap);
     provider.updateCurrentVerse(verse: matched.first);
     provider.jumpToTop();
-    if (mounted) setState(() => _visibleItemIndex = 0);
+    if (mounted) _visibleItemIndexNotifier.value = 0;
     // 2026-05-24 (v1.3.1): pre-warm paragraph cache for next-prev
     // chapters so the user's NEXT swipe lands on a cache hit instead
     // of a ~50 ms recompute. User reported persistent "翻页还是有点
@@ -1456,24 +1470,12 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
           _updateMapsForBookChapter(currentVerse.book, currentVerse.chapter);
         }
         final isSelected = mainProvider.selectedVerses.isNotEmpty;
-        // Items: [chapter header(0), ...paragraphGroups, trailing spacer].
+        // v1.3.16: `visibleItemIndex` / `chapterProgress` /
+        // `visibleVerseIndex` derivations moved INTO the position
+        // indicator's `ValueListenableBuilder` below (lines ~2050).
+        // Items layout for reference (used by the inner builder):
+        //   [chapter header(0), ...paragraphGroups, trailing spacer]
         // So valid item indices are 0 .. paragraphGroups.length + 1.
-        final visibleItemIndex = _visibleItemIndex
-            .clamp(0, paragraphGroups.length + 1)
-            .toInt();
-        final rawVisibleVerseIndex =
-            itemToVerseIndex[visibleItemIndex] ??
-                (visibleItemIndex > paragraphGroups.length
-                    ? verses.length - 1
-                    : 0);
-        final visibleVerseIndex = verses.isEmpty
-            ? 0
-            : rawVisibleVerseIndex.clamp(0, verses.length - 1).toInt();
-        final chapterProgress = verses.isEmpty
-            ? 0.0
-            : ((visibleVerseIndex + 1) / verses.length)
-                .clamp(0.0, 1.0)
-                .toDouble();
 
         return SelectionContainer.disabled(
           child: GestureDetector(
@@ -1921,9 +1923,7 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                               chapter: match.chapter);
                           p.updateCurrentVerse(verse: match);
                           p.jumpToTop();
-                          if (mounted) {
-                            setState(() => _visibleItemIndex = 0);
-                          }
+                          if (mounted) _visibleItemIndexNotifier.value = 0;
                           return;
                         }
                         // Slow path (cache miss): show overlay then
@@ -1993,9 +1993,7 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                               book: match.book, chapter: match.chapter);
                           p.updateCurrentVerse(verse: match);
                           p.jumpToTop();
-                          if (mounted) {
-                            setState(() => _visibleItemIndex = 0);
-                          }
+                          if (mounted) _visibleItemIndexNotifier.value = 0;
                         } finally {
                           // Always clear the flag so the overlay
                           // disappears even on error.
@@ -2059,16 +2057,49 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                             24,
                         bottom: MediaQuery.of(context).padding.bottom + 56,
                         child: IgnorePointer(
-                          child: AnimatedOpacity(
-                            opacity: _showVersePosition ? 1.0 : 0.0,
-                            duration: const Duration(milliseconds: 400),
-                            child: _VerticalProgressIndicator(
-                              progress: chapterProgress,
-                              currentLabel: '${visibleVerseIndex + 1}',
-                              totalLabel: '${verses.length}',
-                              fontFamily: settings.fontFamily,
-                              menuScale: settings.menuScale,
-                            ),
+                          // v1.3.16: nested ValueListenableBuilders so
+                          // scroll-tick updates only rebuild THIS
+                          // subtree (the right-edge position pill),
+                          // not the whole pane. Outer listens to the
+                          // visible-item index → derives chapter
+                          // progress + label. Inner listens to the
+                          // show-position bool → drives AnimatedOpacity.
+                          child: ValueListenableBuilder<int>(
+                            valueListenable: _visibleItemIndexNotifier,
+                            builder: (context, vIdx, _) {
+                              final visibleItemIndex = vIdx
+                                  .clamp(0, paragraphGroups.length + 1)
+                                  .toInt();
+                              final rawVisibleVerseIndex =
+                                  itemToVerseIndex[visibleItemIndex] ??
+                                      (visibleItemIndex > paragraphGroups.length
+                                          ? verses.length - 1
+                                          : 0);
+                              final visibleVerseIndex = verses.isEmpty
+                                  ? 0
+                                  : rawVisibleVerseIndex
+                                      .clamp(0, verses.length - 1)
+                                      .toInt();
+                              final chapterProgress = verses.isEmpty
+                                  ? 0.0
+                                  : ((visibleVerseIndex + 1) / verses.length)
+                                      .clamp(0.0, 1.0)
+                                      .toDouble();
+                              return ValueListenableBuilder<bool>(
+                                valueListenable: _showVersePositionNotifier,
+                                builder: (context, showPos, _) => AnimatedOpacity(
+                                  opacity: showPos ? 1.0 : 0.0,
+                                  duration: const Duration(milliseconds: 400),
+                                  child: _VerticalProgressIndicator(
+                                    progress: chapterProgress,
+                                    currentLabel: '${visibleVerseIndex + 1}',
+                                    totalLabel: '${verses.length}',
+                                    fontFamily: settings.fontFamily,
+                                    menuScale: settings.menuScale,
+                                  ),
+                                ),
+                              );
+                            },
                           ),
                         ),
                       ),
