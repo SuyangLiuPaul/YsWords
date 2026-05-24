@@ -137,13 +137,24 @@ function geminiKeys() {
 // the language directive in the target language so the model
 // locks in the response language before encountering any English
 // context. Same fix as aiExplainWord.mjs.
+// 2026-05-24 (v1.3.13): localize the body of the system message
+// too — the previous version had a Chinese prefix followed by an
+// English description ("You are a Bible-evidence research
+// assistant..."), which gave the model an English anchor before
+// the user prompt arrived and routinely caused English snippets
+// to leak into Chinese answers.
 function buildSystemMessage(locale) {
-	const langPrefix = locale === 'zh-Hans'
-		? '【请用简体中文回答】所有回答必须用简体中文。'
-		: locale === 'zh-Hant'
-			? '【請用繁體中文回答】所有回答必須用繁體中文。'
-			: '[Reply in English]';
-	return langPrefix + ' ' +
+	if (locale === 'zh-Hans') {
+		return '【请用简体中文回答】所有回答必须用简体中文。' +
+			'你是一位圣经考据研究助手。回答要客观、简明,避免立场性' +
+			'言论或捏造细节。';
+	}
+	if (locale === 'zh-Hant') {
+		return '【請用繁體中文回答】所有回答必須用繁體中文。' +
+			'你是一位聖經考據研究助手。回答要客觀、簡明,避免立場性' +
+			'言論或捏造細節。';
+	}
+	return '[Reply in English] ' +
 		'You are a Bible-evidence research assistant. Stay '
 		+ 'factual, concise, and avoid partisan rhetoric or '
 		+ 'invented details.';
@@ -341,11 +352,40 @@ function buildPrompt(query, locale, hits) {
 	// language. With the directive only at line 216 of an
 	// otherwise-English prompt the model defaulted to English; this
 	// configuration makes Gemini reliably honour zh-Hans / zh-Hant.
+	// 2026-05-24 (v1.3.13): localize the instruction body + context
+	// labels for Chinese locales. Previously the directive was in
+	// Chinese but the surrounding instructions (`Answer the user's
+	// question using ONLY ...`, `USER QUESTION:`, `CONTEXT:`) were
+	// English — enough context to push the model toward English
+	// output. Now Chinese readers see a fully-Chinese prompt.
+	const isZh = locale === 'zh-Hans' || locale === 'zh-Hant';
 	const langDirective = locale === 'zh-Hans'
 		? '你必须用简体中文回答，不要用英文（除了书卷名、Strong\'s 编号、人名地名等不可避免的部分）。'
 		: locale === 'zh-Hant'
 			? '你必須用繁體中文回答，不要用英文（除了書卷名、Strong\'s 編號、人名地名等不可避免的部分）。'
 			: 'Reply ONLY in English.';
+	if (isZh) {
+		const ctx = hits
+			.map((e, i) =>
+				`[${i + 1}] id=${e.id}\n` +
+				`  标题: ${flat(pickLocalized(e.title, locale))}\n` +
+				`  经文: ${e.scriptureReference}\n` +
+				`  摘要: ${flat(pickLocalized(e.summary, locale))}`,
+			)
+			.join('\n');
+		return `${langDirective}
+
+请仅根据下方编号的上下文条目回答用户问题。回答要简明(1-3 句)。
+末尾用方括号引用对应条目编号,例如 [1] [3]。如果上下文无法回答
+该问题,请直说"上下文未涵盖此问题"或类似简短说明。
+
+用户问题: ${query}
+
+上下文:
+${ctx}
+
+${langDirective}`;
+	}
 	const ctx = hits
 		.map((e, i) =>
 			`[${i + 1}] id=${e.id}\n` +

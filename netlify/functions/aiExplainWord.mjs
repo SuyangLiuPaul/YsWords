@@ -90,11 +90,33 @@ function languageDirective(locale) {
 	}
 }
 
-// Map a (length, scope) selection to a target word range and the
-// scope-specific framing the prompt builder should use. The defaults
-// (length='default', scope='verse') reproduce the round-53 behaviour
-// — a focused 150-260 word explanation grounded in the cited verse.
-function styleProfile(length, scope) {
+// 2026-05-24 (v1.3.13): on Chinese locales the model routinely
+// leaked English into the response — not just unavoidable bits
+// (Strong's numbers, Hebrew/Greek originals) but full English
+// labels like "Lexical core", whole sentences, English book
+// names ("Genesis" instead of "创世记").
+//
+// Root cause: the `focus` text + `parts.push(...)` body in
+// buildPrompt were 100% English. Two-thirds of what the model
+// read was English context. The "answer in Chinese" directive
+// alone wasn't enough — Gemini defaults to matching the
+// dominant context language. Round-56 added the directive at
+// top + bottom, but the body remained English.
+//
+// Fix: ship a parallel Chinese focus/body. Both directive AND
+// content are Chinese; the model has no English context to fall
+// back to. We ship Simplified for both zh-Hans and zh-Hant
+// callers — the response language directive (which is per-locale
+// Traditional / Simplified) makes the model auto-convert its
+// OUTPUT to the user's preferred variant; the model only reads
+// the prompt and never echoes it back verbatim.
+function styleProfile(length, scope, locale) {
+  const isZh = locale === 'zh-Hans' || locale === 'zh-Hant';
+  return isZh ? _styleProfileZh(length, scope)
+              : _styleProfileEn(length, scope);
+}
+
+function _styleProfileEn(length, scope) {
 	let words;
 	switch (length) {
 		case 'concise': words = '60-110 words'; break;
@@ -203,13 +225,137 @@ function styleProfile(length, scope) {
 	return { words, focus };
 }
 
+// Chinese-locale focus templates. Same semantic structure as the
+// English versions above; written in Simplified Chinese (the
+// directive at top + bottom of buildPrompt makes the model emit
+// Traditional when locale === 'zh-Hant').
+function _styleProfileZh(length, scope) {
+	let words;
+	switch (length) {
+		case 'concise': words = '60-110 字'; break;
+		case 'longer':  words = '300-450 字'; break;
+		case 'deep':    words = '500-750 字'; break;
+		default:        words = '150-260 字';
+	}
+	let focus;
+	switch (scope) {
+		case 'chapter':
+			focus = `请围绕这个词在 {book} {chapter} 整章的功能 — ` +
+				`它在本章其他经文中的出现（如果有），章节论证或叙事的展开，` +
+				`以及这个词如何推进叙事 — 来展开说明。`;
+			break;
+		case 'book':
+			focus = `请围绕这个词在 {book} 整卷书的功能 — 主要出现位置，` +
+				`整卷的神学、叙事弧线或修辞结构 — 展开，并把这些` +
+				`观察连回 {ref}。`;
+			break;
+		case 'wholeBible':
+			focus = `请追溯这个词在整本圣经的用法 — 旧约（希伯来文）和` +
+				`新约（希腊文）的使用，关键段落，以及这个正典脉络` +
+				`如何照亮 {ref} 的意义。如果这是希腊词，请提及七十士` +
+				`译本对应希伯来词的用法；如果是希伯来词，请提及新约` +
+				`通过七十士译本的回响。`;
+			break;
+		case 'otherChapters':
+			focus = `请列举 2-4 处同一词根（lemma）出现的其他显著经文（在` +
+				`其他章节或其他书卷），简要说明每一处的语义差异，然后` +
+				`说明这些其他用法对理解 {ref} 中该词的意义有何启发。`;
+			break;
+		case 'crossTestament':
+			focus = `请跨越两约追溯这个词。如果这是新约（希腊文）词，` +
+				`请指出它在七十士译本中最常翻译的希伯来/旧约词，` +
+				`列举 2-3 处这个概念出现的关键旧约经文，并说明旧约` +
+				`背景如何塑造 {ref} 中的意义。如果是旧约（希伯来文）词，` +
+				`请指出七十士译本所用的希腊词，列举 2-3 处带有相同` +
+				`概念的关键新约经文，并说明新约如何承接这个旧约主题` +
+				`在 {ref} 中的展开。引用经文要具体到 书 章:节。`;
+			break;
+		case 'deepExegesis':
+			focus = `请就 {ref} 提供一份 BDAG 风格的深度释经分析。` +
+				`回答按以下标题分段（标题请用中文加粗，例如 **词义核心**）：\n\n` +
+				`1. **词义核心** — 这个词的主要含义、语义范围，以及关键形态` +
+				`（希腊文的时态/语态/语气/格，或希伯来文的字干/性别/数）。` +
+				`如果词源对意义有启发，请提及。\n\n` +
+				`2. **本节用法** — 这个词在 {ref} 中具体如何运作：句法角色、` +
+				`修饰什么或被什么修饰、它带来的细微之处（普通翻译可能丢失）。\n\n` +
+				`3. **文化 / 历史背景** — 相关的第一世纪（新约）或古近东（旧约）` +
+				`背景 — 社会习俗、法律框架、语言学先例、圣经外文献的平行` +
+				`（七十士译本、死海古卷、约瑟夫、斐洛、古近东碑文等）` +
+				`能阐明该词在此处的力度。\n\n` +
+				`4. **正典脉络** — 同一词根（lemma）在 2-3 处其他关键圣经经文` +
+				`的用法，简述每处的细微差异，以及这些用法与 {ref} 对读时` +
+				`所揭示的意义。\n\n` +
+				`5. **神学分量** — 这个词在 {ref} 中承载的教义或牧养意义。` +
+				`要有实质性，但避免宗派/立场性的论断。\n\n` +
+				`引用经文要精确（书 章:节）。不要捏造细节。如果某个观点在` +
+				`学者间有争议，简要指出。在目标字数范围内，宁可少而精。`;
+			break;
+		default: // 'verse'
+			focus = `请紧扣本节（{ref}）展开。按顺序覆盖：` +
+				`(1) 一句话概括该词围绕本节的核心意义；` +
+				`(2) 主体部分：这个词在 {ref} 中如何运作 — 细微之处、` +
+				`时态/语态/语气（希腊文）或字干（希伯来文）、句法角色、` +
+				`神学分量，以及如果换用近义词会失去什么；` +
+				`(3) 一个加深理解的相关观察。`;
+	}
+	return { words, focus };
+}
+
+// 2026-05-24 (v1.3.13): when the caller is on a Chinese locale,
+// swap the canonical-English book name to its Simplified Chinese
+// equivalent inside the prompt. Without this the model sees
+// "Genesis 1:1" in the user prompt and routinely echoes "Genesis"
+// (instead of "创世记") in its Chinese answer — even with the
+// language directive top + bottom. Traditional readers also get
+// Simplified in the PROMPT — the response-language directive
+// flips the model's OUTPUT to Traditional, and the prompt itself
+// is never echoed verbatim.
+const _BOOK_ZH = {
+	'Genesis': '创世记', 'Exodus': '出埃及记', 'Leviticus': '利未记',
+	'Numbers': '民数记', 'Deuteronomy': '申命记', 'Joshua': '约书亚记',
+	'Judges': '士师记', 'Ruth': '路得记',
+	'1 Samuel': '撒母耳记上', '2 Samuel': '撒母耳记下',
+	'1 Kings': '列王纪上', '2 Kings': '列王纪下',
+	'1 Chronicles': '历代志上', '2 Chronicles': '历代志下',
+	'Ezra': '以斯拉记', 'Nehemiah': '尼希米记', 'Esther': '以斯帖记',
+	'Job': '约伯记', 'Psalms': '诗篇', 'Proverbs': '箴言',
+	'Ecclesiastes': '传道书', 'Song of Solomon': '雅歌',
+	'Song of Songs': '雅歌',
+	'Isaiah': '以赛亚书', 'Jeremiah': '耶利米书',
+	'Lamentations': '耶利米哀歌', 'Ezekiel': '以西结书',
+	'Daniel': '但以理书', 'Hosea': '何西阿书', 'Joel': '约珥书',
+	'Amos': '阿摩司书', 'Obadiah': '俄巴底亚书', 'Jonah': '约拿书',
+	'Micah': '弥迦书', 'Nahum': '那鸿书', 'Habakkuk': '哈巴谷书',
+	'Zephaniah': '西番雅书', 'Haggai': '哈该书',
+	'Zechariah': '撒迦利亚书', 'Malachi': '玛拉基书',
+	'Matthew': '马太福音', 'Mark': '马可福音', 'Luke': '路加福音',
+	'John': '约翰福音', 'Acts': '使徒行传', 'Romans': '罗马书',
+	'1 Corinthians': '哥林多前书', '2 Corinthians': '哥林多后书',
+	'Galatians': '加拉太书', 'Ephesians': '以弗所书',
+	'Philippians': '腓立比书', 'Colossians': '歌罗西书',
+	'1 Thessalonians': '帖撒罗尼迦前书',
+	'2 Thessalonians': '帖撒罗尼迦后书',
+	'1 Timothy': '提摩太前书', '2 Timothy': '提摩太后书',
+	'Titus': '提多书', 'Philemon': '腓利门书', 'Hebrews': '希伯来书',
+	'James': '雅各书', '1 Peter': '彼得前书', '2 Peter': '彼得后书',
+	'1 John': '约翰一书', '2 John': '约翰二书', '3 John': '约翰三书',
+	'Jude': '犹大书', 'Revelation': '启示录',
+};
+
+function localizeBook(book, locale) {
+	if (locale !== 'zh-Hans' && locale !== 'zh-Hant') return book;
+	return _BOOK_ZH[book] || book;
+}
+
 function buildPrompt({ strongs, lemma, translit, gloss, book, chapter, verse, verseText, locale, length, scope }) {
 	const lang = langName(locale);
 	const langDirective = languageDirective(locale);
-	const ref = `${book} ${chapter}:${verse}`;
-	const profile = styleProfile(length, scope);
+	const isZh = locale === 'zh-Hans' || locale === 'zh-Hant';
+	const localBook = localizeBook(book, locale);
+	const ref = `${localBook} ${chapter}:${verse}`;
+	const profile = styleProfile(length, scope, locale);
 	const focus = profile.focus
-		.replaceAll('{book}', book)
+		.replaceAll('{book}', localBook)
 		.replaceAll('{chapter}', String(chapter))
 		.replaceAll('{ref}', ref);
 	const parts = [];
@@ -223,28 +369,56 @@ function buildPrompt({ strongs, lemma, translit, gloss, book, chapter, verse, ve
 	// English.
 	parts.push(langDirective);
 	parts.push('');
-	parts.push(`You are a careful biblical-language exegete.`);
-	parts.push(`The reader is studying ${ref} and has already seen the ` +
-		`lexicon entry for **${lemma}**` +
-		(translit ? ` (${translit})` : '') +
-		` (Strong's ${strongs})${gloss ? ` whose core meaning is "${gloss}"` : ''}.`);
-	parts.push(focus);
-	if (verseText) parts.push(`The verse reads: "${verseText}"`);
-	parts.push('');
-	parts.push(`Target length: ${profile.words}. ` +
-		`Use plain prose only. NEVER use markdown formatting — no ` +
-		`asterisks (*, **, ***), no underscores (_, __), no hash ` +
-		`headings (#, ##, ###), no bullet points (- or *), no ` +
-		`horizontal rules (---). If you want emphasis, use plain ` +
-		`words. Always finish your final sentence — never trail off ` +
-		`mid-thought.`);
-	parts.push('');
-	parts.push(`Stay rigorous. Don't invent etymology. Don't moralize. ` +
-		`Don't hedge with "scholars debate" unless there's a real exegetical ` +
-		`split. If the word is a proper name, focus on the name's ` +
-		`significance in the relevant narrative(s) rather than its ` +
-		`etymological gloss.`);
-	parts.push('');
+	if (isZh) {
+		// 2026-05-24 (v1.3.13): full Chinese prompt body. With the
+		// directive + body + focus all in Chinese and the book name
+		// localized, the model has no English context to anchor on.
+		parts.push(`你是一位严谨的圣经语言释经家。`);
+		parts.push(`读者正在研读 ${ref}，已经看过 **${lemma}**` +
+			(translit ? `（${translit}）` : '') +
+			` 的辞典词条（Strong's ${strongs}）` +
+			(gloss ? `，其核心意义为「${gloss}」` : '') + `。`);
+		parts.push(focus);
+		if (verseText) parts.push(`该经节内容:"${verseText}"`);
+		parts.push('');
+		parts.push(`目标字数:${profile.words}。仅使用普通散文。` +
+			`不要使用 Markdown 格式 — 不要用星号(*、**、***)、` +
+			`下划线(_、__)、井号标题(#、##、###)、` +
+			`项目符号(- 或 *)、横线(---)。如需强调,请用文字` +
+			`本身表达。务必把最后一句写完整 — 不要中途断开。`);
+		parts.push('');
+		parts.push(`保持严谨。不要编造词源。不要说教。` +
+			`不要用"学者们争论"这类含糊措辞,除非真有释经分歧。` +
+			`如果该词是专有名词,请聚焦于这个名字在相关叙事中` +
+			`的意义,而不是字面词源。`);
+		parts.push('');
+		parts.push(`圣经书卷名一律使用中文(例如:创世记、诗篇、` +
+			`马太福音),不要写成英文。`);
+		parts.push('');
+	} else {
+		parts.push(`You are a careful biblical-language exegete.`);
+		parts.push(`The reader is studying ${ref} and has already seen the ` +
+			`lexicon entry for **${lemma}**` +
+			(translit ? ` (${translit})` : '') +
+			` (Strong's ${strongs})${gloss ? ` whose core meaning is "${gloss}"` : ''}.`);
+		parts.push(focus);
+		if (verseText) parts.push(`The verse reads: "${verseText}"`);
+		parts.push('');
+		parts.push(`Target length: ${profile.words}. ` +
+			`Use plain prose only. NEVER use markdown formatting — no ` +
+			`asterisks (*, **, ***), no underscores (_, __), no hash ` +
+			`headings (#, ##, ###), no bullet points (- or *), no ` +
+			`horizontal rules (---). If you want emphasis, use plain ` +
+			`words. Always finish your final sentence — never trail off ` +
+			`mid-thought.`);
+		parts.push('');
+		parts.push(`Stay rigorous. Don't invent etymology. Don't moralize. ` +
+			`Don't hedge with "scholars debate" unless there's a real exegetical ` +
+			`split. If the word is a proper name, focus on the name's ` +
+			`significance in the relevant narrative(s) rather than its ` +
+			`etymological gloss.`);
+		parts.push('');
+	}
 	// Repeat the language directive at the very end so the last
 	// thing the model sees before generating is "answer in X".
 	parts.push(`【${lang}】 ${langDirective}`);
@@ -286,13 +460,34 @@ function geminiKeys() {
 // the language directive in the target language, so the model has
 // already locked in the response language by the time it reaches
 // any English context in the user prompt.
+// 2026-05-24 (v1.3.13): system message body is also localized for
+// Chinese locales — previously the directive was in Chinese but
+// the rest of the system instructions were in English, which gave
+// the model an English anchor before the user prompt even arrived.
 function buildSystemMessage(locale) {
-	const langPrefix = locale === 'zh-Hans'
-		? '【请用简体中文回答】所有回答必须用简体中文。'
-		: locale === 'zh-Hant'
-			? '【請用繁體中文回答】所有回答必須用繁體中文。'
-			: '[Reply in English]';
-	return langPrefix + ' ' +
+	if (locale === 'zh-Hans') {
+		return '【请用简体中文回答】所有回答必须用简体中文。' +
+			'你是一位精准的圣经语言释经家。你的回答简明、准确,紧扣' +
+			'所引经文。不要捏造细节,不要引用你没看过的资料。' +
+			'快速思考(最多几秒),然后一次性产出完整答案。务必把' +
+			'每一句都写完整 — 绝不在中途断开,绝不以逗号或类似' +
+			'"的"、"之"这样的悬空字结尾;如果回应即将被截断,' +
+			'请用一句完整的话收尾。' +
+			'圣经书卷名一律使用中文(例如:创世记、诗篇、马太福音),' +
+			'不要写成英文。';
+	}
+	if (locale === 'zh-Hant') {
+		return '【請用繁體中文回答】所有回答必須用繁體中文。' +
+			'你是一位精準的聖經語言釋經家。你的回答簡明、準確,緊扣' +
+			'所引經文。不要捏造細節,不要引用你沒看過的資料。' +
+			'快速思考(最多幾秒),然後一次性產出完整答案。務必把' +
+			'每一句都寫完整 — 絕不在中途斷開,絕不以逗號或類似' +
+			'「的」、「之」這樣的懸空字結尾;如果回應即將被截斷,' +
+			'請用一句完整的話收尾。' +
+			'聖經書卷名一律使用中文(例如:創世記、詩篇、馬太福音),' +
+			'不要寫成英文。';
+	}
+	return '[Reply in English] ' +
 		'You are a precise biblical-language exegete. You ' +
 		'reply with concise, accurate explanations grounded ' +
 		'in the cited verse. You do not invent details or ' +
