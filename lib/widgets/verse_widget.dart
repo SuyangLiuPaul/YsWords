@@ -5,6 +5,7 @@ import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/models/verse.dart';
 import 'package:yswords/providers/main_provider.dart';
 import 'package:yswords/utils/build_verse_content_spans.dart';
+import 'package:yswords/utils/haptics.dart';
 import 'package:yswords/utils/responsive.dart';
 import 'package:yswords/widgets/block_note_card.dart';
 
@@ -103,7 +104,12 @@ class VerseWidget extends StatelessWidget {
           locale: locale,
           isSelected: isSelected,
           superscriptVerseNum: inParagraphMode,
-          onTextTap: () => mainProvider.toggleVerse(verse: verse),
+          // v1.3.17: light haptic on verse tap — iOS Taptic Engine
+          // selection click, Android vibrator pulse, no-op elsewhere.
+          onTextTap: () {
+            hapticSelect();
+            mainProvider.toggleVerse(verse: verse);
+          },
         ));
 
         // 2026-05-19 (v1.2.55): the v1.2.53 cross-version LEB
@@ -166,7 +172,10 @@ class VerseWidget extends StatelessWidget {
                 .colorScheme
                 .primary
                 .withValues(alpha: 0.10),
-            onTap: () => mainProvider.toggleVerse(verse: verse),
+            onTap: () {
+              hapticSelect();
+              mainProvider.toggleVerse(verse: verse);
+            },
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [

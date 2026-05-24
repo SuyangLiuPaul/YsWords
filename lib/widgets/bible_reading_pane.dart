@@ -40,6 +40,7 @@ import 'package:yswords/services/synopsis_service.dart';
 import 'package:yswords/services/ai_tts_service.dart';
 import 'package:yswords/services/tts_service.dart';
 import 'package:yswords/utils/clipboard_helper.dart';
+import 'package:yswords/utils/haptics.dart';
 // 2026-05-10 (v1.2.13): the `as jumper` import was only needed by
 // the `_captureChapterRelativeVerseNum` / `_scrollToVerseInChapter`
 // thin wrappers that v1.2.13 removed alongside the version-switch
@@ -1541,6 +1542,43 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                     const SingleActivator(LogicalKeyboardKey.question,
                         shift: true): () =>
                         _showShortcutsHelp(context, settings.locale),
+                    // 2026-05-24 (v1.3.17): macOS-native ⌘ shortcuts.
+                    // Mac users expect Command-prefixed shortcuts for
+                    // app-level actions; the bare `[` / `]` / `/`
+                    // bindings above still work but Cmd variants
+                    // surface in the macOS menu-bar habit. Each uses
+                    // SingleActivator with `meta: true` so it maps to
+                    // ⌘ on Mac and to Win/Super on Windows/Linux
+                    // (where the Cmd convention isn't universal but
+                    // doesn't conflict either).
+                    const SingleActivator(LogicalKeyboardKey.bracketLeft,
+                        meta: true): _goToPreviousChapter,
+                    const SingleActivator(LogicalKeyboardKey.bracketRight,
+                        meta: true): _goToNextChapter,
+                    // ⌘F → search. The universal Mac/web convention.
+                    const SingleActivator(LogicalKeyboardKey.keyF,
+                        meta: true): () {
+                      if (widget.showSearchAndSettings) {
+                        Get.to(() => SearchPage(),
+                            transition: Transition.rightToLeft);
+                      }
+                    },
+                    // ⌘, → settings. Standard Mac "open Preferences"
+                    // gesture for any well-behaved app.
+                    const SingleActivator(LogicalKeyboardKey.comma,
+                        meta: true): () {
+                      if (widget.showSearchAndSettings) {
+                        Get.to(() => const SettingsPage(),
+                            transition: Transition.rightToLeft);
+                      }
+                    },
+                    // Ctrl+ variants for Windows / Linux desktop users
+                    // who don't have a Meta key. No-op on Mac because
+                    // Ctrl+F there is line-start.
+                    const SingleActivator(LogicalKeyboardKey.bracketLeft,
+                        control: true): _goToPreviousChapter,
+                    const SingleActivator(LogicalKeyboardKey.bracketRight,
+                        control: true): _goToNextChapter,
                   },
                   child: Focus(
                     autofocus: true,
@@ -1695,6 +1733,10 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                           return;
                         }
                         if (idx == currentChapterPageIdx) return;
+                        // v1.3.17: light haptic on chapter-swipe
+                        // commit — iOS Taptic Engine confirms the
+                        // page-snap; Android vibrator pulse.
+                        hapticLight();
                         _pageSwipeInFlight = true;
                         final tgt = chapterList[idx];
                         final provider =
