@@ -72,3 +72,15 @@ jobs:
 
       - name: Test
         run: flutter test --reporter expanded
+
+      # 2026-05-24 (v1.3.24): gitleaks secret scan. Catches an
+      # accidental commit of GEMINI_API_KEY, RESEND_API_KEY, AWS
+      # creds, Firebase service-account JSONs, etc. before they
+      # land on origin/main. Runs against the whole repo on push
+      # + only the PR diff on pull_request (faster). The local
+      # git-secrets hook is broken per memory's env-quirks; this
+      # is the only reliable secret gate.
+      - name: Gitleaks secret scan
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

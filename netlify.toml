@@ -46,3 +46,57 @@
   for = "/main.dart.js"
   [headers.values]
     Cache-Control = "no-cache, must-revalidate"
+
+# 2026-05-24 (v1.3.24): security headers applied to every response.
+# Documented per-header so future agents know why each entry exists.
+[[headers]]
+  for = "/*"
+  [headers.values]
+    # HSTS — tell the browser to ONLY connect via HTTPS for the next
+    # 2 years, applying to subdomains. `preload` opts into the
+    # browser-vendor HSTS preload list (https://hstspreload.org). Once
+    # preloaded the user's first-ever visit is HTTPS-only.
+    Strict-Transport-Security = "max-age=63072000; includeSubDomains; preload"
+
+    # CSP — restrict where scripts/styles/images/fonts can come from.
+    # Flutter web is mostly canvas-rendered so the XSS attack surface
+    # is limited, but the bundle still loads external resources at
+    # runtime (Google Fonts, Firebase JS SDK, Gemini proxy).
+    #   * scripts:   self + 'wasm-unsafe-eval' (CanvasKit / skwasm)
+    #   * styles:    self + inline (Flutter injects style tags) +
+    #     fonts.googleapis.com (Google Fonts CSS)
+    #   * fonts:     self + data: (Flutter embeds icon fonts as
+    #     data URIs) + fonts.gstatic.com (Google Fonts payloads)
+    #   * images:    permissive https: — evidence + illustrations
+    #     load from multiple CDNs (yswords-data, Wikimedia, etc.)
+    #   * connect:   self + Netlify Functions + Firebase + Gemini
+    #     proxy + Firebase Realtime DB (wss for the live stream)
+    #   * frame-ancestors 'none' — block embedding (clickjacking
+    #     defense); X-Frame-Options below is the legacy companion
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self' https://*.netlify.app https://*.firebaseio.com https://*.googleapis.com https://*.firebase.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://generativelanguage.googleapis.com wss://*.firebaseio.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'; upgrade-insecure-requests"
+
+    # X-Frame-Options: legacy companion to CSP `frame-ancestors`.
+    # Older browsers honour this but not frame-ancestors; keep both.
+    X-Frame-Options = "DENY"
+
+    # Block MIME-type sniffing — protects against an attacker
+    # uploading something with a fake content-type and having the
+    # browser execute it as a script.
+    X-Content-Type-Options = "nosniff"
+
+    # Referrer-Policy — limit what the Referer header reveals to
+    # cross-origin destinations. `strict-origin-when-cross-origin`
+    # sends full URL same-origin, origin only cross-origin, nothing
+    # on downgrade (HTTPS→HTTP).
+    Referrer-Policy = "strict-origin-when-cross-origin"
+
+    # Permissions-Policy — explicitly deny powerful features we
+    # don't use. If a future bundle/dep adds geolocation / camera /
+    # etc. without an exception here, the browser refuses.
+    Permissions-Policy = "geolocation=(), camera=(), microphone=(), payment=(), usb=(), magnetometer=(), gyroscope=(), accelerometer=()"
+
+    # Cross-Origin-Opener-Policy — isolate this origin so OAuth
+    # popups (Firebase sign-in) and other window.opener references
+    # are sandboxed. `same-origin-allow-popups` keeps Firebase's
+    # signInWithPopup working.
+    Cross-Origin-Opener-Policy = "same-origin-allow-popups"

@@ -32,6 +32,8 @@
 // Reply: { ok: true } on success
 //        { error: '...' }  + 4xx/5xx on failure
 
+import { corsHeaders, isAllowedOrigin } from './_cors.mjs';
+
 const TO_DEFAULT = 'paulsyliu@gmail.com';
 const FROM_DEFAULT = 'YsWords Feedback <onboarding@resend.dev>';
 
@@ -42,17 +44,17 @@ export const config = {
 export default async (req) => {
 	// 2026-05-09 (v1.2.6 audit): hoisted CORS headers into a shared
 	// const so EVERY response (success / error / 405 method-not-allowed
-	// / 503 not-configured) carries `Access-Control-Allow-Origin: *`.
-	// Previously the 405 path on line 63 emitted a bare
-	// `new Response('Method Not Allowed', { status: 405 })` with no
-	// CORS, which would 405 cross-origin probes from extensions /
-	// embedded surfaces / strict browser configs even though the
-	// happy path was reachable.
-	const cors = {
-		'Access-Control-Allow-Origin': '*',
-		'Access-Control-Allow-Methods': 'POST, OPTIONS',
-		'Access-Control-Allow-Headers': 'Content-Type',
-	};
+	// / 503 not-configured) carries CORS — without this the 405 path
+	// emitted a bare 405 with no CORS, which would 405 cross-origin
+	// probes from extensions / embedded surfaces / strict browser
+	// configs even though the happy path was reachable.
+	//
+	// 2026-05-24 (v1.3.24): replaced wildcard `*` with `_cors.mjs`'s
+	// origin-allowlist helper. Same allowlist as `errorReport.mjs`.
+	// Any browser POST from an off-allowlist origin (an attacker's
+	// page, a copy of the JS bundle on a clone domain, etc.) now
+	// hits a hard 403 before we waste a Resend send.
+	const cors = corsHeaders(req);
 	if (req.method === 'OPTIONS') {
 		// 2026-05-09 (v1.1.12): null body for 204 — '' triggers
 		// Netlify 502. See aiBibleSearch.mjs for the full note.
@@ -67,12 +69,24 @@ export default async (req) => {
 			},
 		);
 	}
+	if (!isAllowedOrigin(req)) {
+		// v1.3.24: drop off-allowlist browser POSTs before the
+		// Resend send. Native apps (no Origin header) pass through.
+		return new Response(
+			JSON.stringify({ error: 'forbidden' }),
+			{
+				status: 403,
+				headers: { ...cors, 'Content-Type': 'application/json' },
+			},
+		);
+	}
 	const apiKey = (process.env.RESEND_API_KEY || '').trim();
 	if (!apiKey) {
 		// Not configured. Tell the client; they will fall back to mailto.
 		return jsonResponse(
 			{ error: 'Feedback service not configured (RESEND_API_KEY missing).' },
 			503,
+			req,
 		);
 	}
 	const to = (process.env.FEEDBACK_TO || TO_DEFAULT).trim() || TO_DEFAULT;
@@ -82,7 +96,7 @@ export default async (req) => {
 	try {
 		payload = await req.json();
 	} catch (_) {
-		return jsonResponse({ error: 'Invalid JSON body.' }, 400);
+		return jsonResponse({ error: 'Invalid JSON body.' }, 400, req);
 	}
 
 	// User-typed fields
@@ -146,17 +160,17 @@ export default async (req) => {
 	const ua = userAgent || req.headers.get('user-agent') || '';
 
 	if (!message) {
-		return jsonResponse({ error: 'Message is required.' }, 400);
+		return jsonResponse({ error: 'Message is required.' }, 400, req);
 	}
 	if (message.length > 8000) {
-		return jsonResponse({ error: 'Message too long.' }, 400);
+		return jsonResponse({ error: 'Message too long.' }, 400, req);
 	}
 	// 2026-05-09 (v1.2.6 audit): tighter regex — require ≥2-char TLD
 	// + ban whitespace and angle brackets so an attacker can't
 	// inject newline-prefixed email-headers via the reply-to field.
 	const emailRe = /^[^\s@<>]+@[^\s@<>]+\.[a-zA-Z]{2,}$/;
 	if (replyTo && !emailRe.test(replyTo)) {
-		return jsonResponse({ error: 'Invalid reply-to email.' }, 400);
+		return jsonResponse({ error: 'Invalid reply-to email.' }, 400, req);
 	}
 	// v1.2.30: code now matches its comment intent. An invalid
 	// `authEmail` previously fell through verbatim into the email
@@ -232,7 +246,7 @@ export default async (req) => {
 	try {
 		resp = await sendViaResend(apiKey, baseBody);
 	} catch (e) {
-		return jsonResponse({ error: `Network error: ${e.message || e}` }, 502);
+		return jsonResponse({ error: `Network error: ${e.message || e}` }, 502, req);
 	}
 	if (!resp.ok) {
 		// 2026-05-10 (v1.2.30): same class as the v1.2.6 sanitisation
@@ -250,9 +264,10 @@ export default async (req) => {
 		return jsonResponse(
 			{ error: `Upstream email service error (HTTP ${resp.status}).` },
 			502,
+			req,
 		);
 	}
-	return jsonResponse({ ok: true });
+	return jsonResponse({ ok: true }, 200, req);
 };
 
 async function sendViaResend(apiKey, body) {
@@ -266,12 +281,24 @@ async function sendViaResend(apiKey, body) {
 	});
 }
 
-function jsonResponse(obj, status = 200) {
+function jsonResponse(obj, status = 200, req = null) {
+	// v1.3.24: prefer the origin-allowlist headers when we have a
+	// req (every caller inside the default handler now passes it).
+	// The fallback (req==null) stays at `*` for any out-of-band
+	// caller that hasn't been updated — but every active caller
+	// passes req.
+	const corsHdrs = req
+		? corsHeaders(req)
+		: {
+				'Access-Control-Allow-Origin': '*',
+				'Access-Control-Allow-Methods': 'POST, OPTIONS',
+				'Access-Control-Allow-Headers': 'Content-Type',
+			};
 	return new Response(JSON.stringify(obj), {
 		status,
 		headers: {
 			'Content-Type': 'application/json',
-			'Access-Control-Allow-Origin': '*',
+			...corsHdrs,
 			'Cache-Control': 'no-store',
 		},
 	});

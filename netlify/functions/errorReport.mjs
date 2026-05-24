@@ -36,6 +36,8 @@
 // Rate-limited per (IP, error message) so a runaway loop doesn't
 // flood the inbox. Dedupe-window: 60 s.
 
+import { corsHeaders, isAllowedOrigin } from './_cors.mjs';
+
 const TO_DEFAULT = 'lsy95112@gmail.com';
 const FROM_DEFAULT = 'YsWords <onboarding@resend.dev>';
 
@@ -50,46 +52,50 @@ function clampStr(s, max) {
 	return s.length > max ? s.slice(0, max) : s;
 }
 
-function jsonResponse(obj, status = 200) {
+function jsonResponse(req, obj, status = 200) {
 	return new Response(JSON.stringify(obj), {
 		status,
 		headers: {
 			'Content-Type': 'application/json',
-			'Access-Control-Allow-Origin': '*',
-			'Access-Control-Allow-Methods': 'POST, OPTIONS',
-			'Access-Control-Allow-Headers': 'Content-Type',
+			...corsHeaders(req),
 		},
 	});
 }
 
-function noContent() {
+function noContent(req) {
 	return new Response(null, {
 		status: 204,
-		headers: {
-			'Access-Control-Allow-Origin': '*',
-			'Access-Control-Allow-Methods': 'POST, OPTIONS',
-			'Access-Control-Allow-Headers': 'Content-Type',
-		},
+		headers: corsHeaders(req),
 	});
 }
 
 export default async (req) => {
-	if (req.method === 'OPTIONS') return noContent();
+	if (req.method === 'OPTIONS') return noContent(req);
 	if (req.method !== 'POST') {
-		return jsonResponse({ error: 'POST only' }, 405);
+		return jsonResponse(req, { error: 'POST only' }, 405);
+	}
+
+	// 2026-05-24 (v1.3.24): hard-reject off-allowlist browser
+	// POSTs BEFORE we waste a Resend send. The CORS headers
+	// already prevent the attacker's page from reading the
+	// response, but without this check the function still runs
+	// to completion (Netlify can't enforce CORS preflight).
+	// Native apps (no Origin header) bypass this check.
+	if (!isAllowedOrigin(req)) {
+		return jsonResponse(req, { error: 'forbidden' }, 403);
 	}
 
 	let body;
 	try {
 		body = await req.json();
 	} catch (_) {
-		return jsonResponse({ error: 'invalid JSON' }, 400);
+		return jsonResponse(req, { error: 'invalid JSON' }, 400);
 	}
 
 	// Mandatory: error message. Everything else is best-effort context.
 	const error = clampStr(body?.error || '', 2000);
 	if (!error) {
-		return jsonResponse({ error: 'error field required' }, 400);
+		return jsonResponse(req, { error: 'error field required' }, 400);
 	}
 	const stack = clampStr(body?.stack || '', 8000);
 	const source = clampStr(body?.source || 'manual', 64);
@@ -137,7 +143,7 @@ export default async (req) => {
 	const prev = _recentSeen.get(dedupeKey);
 	if (prev && now - prev < _DEDUPE_WINDOW_MS) {
 		// Silent drop. Still return 204 — client doesn't need to know.
-		return noContent();
+		return noContent(req);
 	}
 	_recentSeen.set(dedupeKey, now);
 	// Sweep old entries so the Map doesn't grow unbounded.
@@ -224,7 +230,7 @@ export default async (req) => {
 		// the report so Netlify Function Logs has the trace.
 		console.error('[errorReport] no RESEND_API_KEY — logging only');
 		console.error('[errorReport] ' + text);
-		return noContent();
+		return noContent(req);
 	}
 
 	try {

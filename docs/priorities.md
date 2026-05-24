@@ -52,6 +52,22 @@ These were identified as the highest-ROI gaps after v1.2.35. None are blocking, 
    Chromium, and the China-build inside the GFW haven't been
    exercised end-to-end since v1.2.0. ~half-day.
 
+## Security baseline (added v1.3.24)
+
+All in `docs/firebase-security-rules.md` + `netlify.toml` + `netlify/functions/_cors.mjs`.
+
+- ✅ CORS lockdown on `errorReport` + `submitFeedback` — only the 6 Netlify origins allowed; off-allowlist browser POSTs hit 403 before any side effect
+- ✅ CSP header on all responses — restricts script / style / font / connect / img to known hosts; blocks frame embedding (clickjacking)
+- ✅ HSTS preload + X-Frame-Options + X-Content-Type-Options + Referrer-Policy + Permissions-Policy + COOP — defense-in-depth headers via `netlify.toml`
+- ✅ gitleaks in CI — catches accidental commit of API keys / secrets
+- ✅ Firebase rules documented at `docs/firebase-security-rules.md` with verification procedure
+
+Still open as future security work:
+- Per-IP rate limiting on Netlify functions (errorReport has session+stack dedupe; submitFeedback has none; AI funcs rely on Gemini quota)
+- BYOK Gemini key at-rest encryption (SharedPreferences plaintext today; could use flutter_secure_storage on native)
+- SRI hashes on external script tags (none today since Flutter web doesn't load external `<script>` tags)
+- Dependency vulnerability scan in CI (flutter pub deps + advisory DB)
+
 ## Already deferred / low priority
 
 - **Native builds (APK / iOS)** — RESOLVED in v1.2.67-v1.2.69
