@@ -82,6 +82,15 @@ failures=0
 # hard-coded default and the About page drifts behind pubspec on every
 # release. 2026-05-22 (v1.2.76): user spotted the iOS About page stuck
 # on v1.2.67 — this paragraph fixes the drift permanently.
+# 2026-05-24 (v1.3.9): auto-bump patch on every install run so the
+# About page version + the build timestamp stay in lock-step
+# without manual edits. User asked "version numbers why not update
+# automatically". tools/bump_version.sh writes the new patch back
+# to both pubspec.yaml AND lib/constants/app_version.dart, so the
+# Dart fallback default never drifts behind the Flutter build name.
+if [[ -x "$PROJECT/tools/bump_version.sh" ]]; then
+  "$PROJECT/tools/bump_version.sh"
+fi
 APP_VERSION="$(awk '/^version:/ {print $2; exit}' "$PROJECT/pubspec.yaml")"
 APP_RELEASE_TIME="$(date -u '+%Y-%m-%dT%H:%M:%SZ')"
 DEFINES=(
