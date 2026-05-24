@@ -88,7 +88,15 @@ class BibleReadingPane extends StatefulWidget {
 }
 
 class _BibleReadingPaneState extends State<BibleReadingPane> {
+  // ignore: unused_field
   MainProvider? _positionsProvider;
+  // 2026-05-24 (v1.3.3): track the LISTENER INSTANCE we subscribed to,
+  // not just the provider, because mp.itemPositionsListener is now a
+  // getter that forwards to the active _ChapterPage's local listener
+  // — the instance changes every time the user swipes to a new
+  // chapter. _attachPositionsListener compares identity and
+  // re-subscribes when the active page swaps.
+  ItemPositionsListener? _attachedPositionsListener;
   int _visibleItemIndex = 0;
   bool _showVersePosition = false;
   Timer? _versePositionTimer;
@@ -453,20 +461,27 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
     _ttsPoller?.cancel();
     _pageController.dispose();
     if (_isListening) TtsService.stop();
-    _positionsProvider?.itemPositionsListener.itemPositions
+    _attachedPositionsListener?.itemPositions
         .removeListener(_handleItemPositionsChanged);
     super.dispose();
   }
 
   void _attachPositionsListener(MainProvider provider) {
-    if (_positionsProvider == provider) return;
-    _positionsProvider?.itemPositionsListener.itemPositions
+    // 2026-05-24 (v1.3.3): provider.itemPositionsListener is now a
+    // getter returning the active _ChapterPage's local listener.
+    // Compare the LISTENER instance, not the provider, so we
+    // re-subscribe whenever the user swipes to a new chapter (the
+    // active controllers swap and the listener instance with them).
+    final currentListener = provider.itemPositionsListener;
+    if (identical(_attachedPositionsListener, currentListener)) return;
+    _attachedPositionsListener?.itemPositions
         .removeListener(_handleItemPositionsChanged);
     _scrollOffsetSub?.cancel();
     _scrollOffsetSub = null;
-    _chromeScrollAccumulator = 0; // fresh slate on provider switch
+    _chromeScrollAccumulator = 0; // fresh slate on listener switch
     _positionsProvider = provider;
-    provider.itemPositionsListener.itemPositions
+    _attachedPositionsListener = currentListener;
+    currentListener.itemPositions
         .addListener(_handleItemPositionsChanged);
     // 2026-05-22 (v1.2.71): no longer subscribing to
     // provider.scrollOffsetListener.changes — that stream stops
@@ -477,7 +492,7 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
 
   void _handleItemPositionsChanged() {
     final positions =
-        _positionsProvider?.itemPositionsListener.itemPositions.value;
+        _attachedPositionsListener?.itemPositions.value;
     if (positions == null || positions.isEmpty || !mounted) return;
 
     final visible = positions
@@ -1192,6 +1207,11 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                 v.chapter == mainProvider.currentChapter)
             .toList()
           ..sort((a, b) => a.verse.compareTo(b.verse));
+        // 2026-05-24 (v1.3.3): no longer consumed at this level —
+        // each `_ChapterPage` computes its own. Kept assignment
+        // (with ignore) so removing the line doesn't drift from
+        // the pattern other dependent code uses elsewhere.
+        // ignore: unused_local_variable
         final hasParagraphData =
             verses.any((v) => v.isParagraphStart == true);
 
@@ -1550,6 +1570,18 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                     // animates the PageController to the new
                     // page when currentChapter shifts outside of
                     // a user swipe.
+                    // 2026-05-24 (v1.3.3): NotificationListener at
+                    // the PageView level captures scroll deltas
+                    // from ANY child SPL (via bubble-up) so the
+                    // auto-hide chrome works regardless of which
+                    // _ChapterPage is currently visible. v1.2.71
+                    // had this wrapping the single inline SPL —
+                    // now we need it outside the PageView so it
+                    // catches scrolls from all alive _ChapterPage
+                    // instances.
+                    NotificationListener<ScrollNotification>(
+                      onNotification: _onScrollNotification,
+                      child:
                     Builder(builder: (pageBuildCtx) {
                       final chapterList = mainProvider.chapterList;
                       final currentChapterPageIdx =
@@ -1645,168 +1677,36 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                         });
                       },
                       itemBuilder: (pageCtx, pageIdx) {
-                        if (pageIdx != currentChapterPageIdx) {
-                          if (pageIdx < 0 ||
-                              pageIdx >= chapterList.length) {
-                            return const SizedBox.shrink();
-                          }
-                          final tgt = chapterList[pageIdx];
-                          return _ChapterPreview(
-                            mainProvider: mainProvider,
-                            settings: settings,
-                            book: tgt.book,
-                            chapter: tgt.chapter,
-                            deviceClass: dc,
-                          );
+                        if (pageIdx < 0 ||
+                            pageIdx >= chapterList.length) {
+                          return const SizedBox.shrink();
                         }
-                        return Padding(
-                      padding: EdgeInsets.only(
-                        right: ResponsiveBreakpoints.readingPadding(dc),
-                      ),
-                      // 2026-05-22 (v1.2.71): NotificationListener
-                      // catches scroll-update notifications directly
-                      // from the SPL — bypasses the provider's
-                      // ItemPositionsListener which silently stops
-                      // emitting to my handler after BibleReadingPane
-                      // re-mounts (root cause of "auto-hide doesn't
-                      // work on second open").
-                      child: NotificationListener<ScrollNotification>(
-                        onNotification: _onScrollNotification,
-                        child: ScrollablePositionedList.builder(
-                        itemCount: paragraphGroups.length + 2,
-                        itemBuilder: (context, index) {
-                          if (index == 0) {
-                            final topInset =
-                                MediaQuery.of(context).padding.top;
-                            return SizedBox(
-                                height:
-                                    topInset + 64 * settings.menuScale + 12);
-                          }
-                          final groupIdx = index - 1;
-                          if (groupIdx < paragraphGroups.length) {
-                            final group = paragraphGroups[groupIdx];
-                            int startIdx = 0;
-                            for (int g = 0; g < groupIdx; g++) {
-                              startIdx += paragraphGroups[g].length;
-                            }
-                            final isFirst = groupIdx == 0;
-                            // Look up a section / paragraph heading
-                            // for the FIRST verse in this group.
-                            // Heading carries optional `context` —
-                            // 1-2 sentences of background rendered
-                            // under the title. Both gate on
-                            // settings.showSectionTitles.
-                            SectionHeading? heading;
-                            if (settings.showSectionTitles) {
-                              final firstVerse = group.first;
-                              final englishBook = toEnglish(firstVerse.book) ??
-                                  firstVerse.book;
-                              heading = SectionTitleService.headingAt(
-                                version: mainProvider.currentVersion,
-                                englishBook: englishBook,
-                                chapter: firstVerse.chapter,
-                                verse: firstVerse.verse,
-                              );
-                            }
-                            final body = group.length == 1
-                                ? VerseWidget(
-                                    verse: group.first,
-                                    index: startIdx,
-                                    hasParagraphData: hasParagraphData,
-                                    isFirst: isFirst,
-                                  )
-                                : ParagraphGroupWidget(
-                                    group: group,
-                                    startVerseIndex: startIdx,
-                                    isFirst: isFirst,
-                                  );
-                            // If this is the first paragraph of the
-                            // chapter AND we're at chapter 1 of the
-                            // book AND a book intro is authored AND
-                            // the user hasn't disabled it — wrap the
-                            // body so the intro card renders above
-                            // the (possibly headed) verse block.
-                            Widget rendered = heading == null
-                                ? body
-                                : _SectionHeading(
-                                    title: heading.title,
-                                    context: heading.context,
-                                    isFirst: isFirst,
-                                    child: body,
-                                  );
-                            final firstVerse = group.first;
-                            final englishBook =
-                                toEnglish(firstVerse.book) ?? firstVerse.book;
-                            if (isFirst &&
-                                firstVerse.chapter == 1 &&
-                                settings.showBookIntro) {
-                              final intro =
-                                  BookIntroService.forBook(englishBook);
-                              if (intro != null) {
-                                rendered = Column(
-                                  crossAxisAlignment:
-                                      CrossAxisAlignment.stretch,
-                                  children: [
-                                    _BookIntroCard(
-                                      intro: intro,
-                                      locale: settings.locale,
-                                    ),
-                                    rendered,
-                                  ],
-                                );
-                              }
-                            }
-                            return rendered;
-                          }
-                          // Trailing spacer height matches whichever
-                          // bottom bar is showing (selection action bar
-                          // when verses are selected, otherwise the
-                          // reader status bar). On narrow screens the
-                          // selection bar is now two rows tall (count+
-                          // copy on top, action icons below), so we
-                          // pad more aggressively when selected to
-                          // keep the last verse from being hidden
-                          // under it.
-                          final bottomInset =
-                              MediaQuery.of(context).padding.bottom;
-                          final isPhoneWidth =
-                              MediaQuery.of(context).size.width < 560;
-                          final extra = isSelected
-                              ? (isPhoneWidth
-                                  ? 200 * settings.menuScale
-                                  : 132 * settings.menuScale)
-                              : 96 * settings.menuScale;
-                          return SizedBox(height: bottomInset + extra);
-                        },
-                        itemScrollController:
-                            mainProvider.itemScrollController,
-                        itemPositionsListener:
-                            mainProvider.itemPositionsListener,
-                        scrollOffsetController:
-                            mainProvider.scrollOffsetController,
-                        scrollOffsetListener:
-                            mainProvider.scrollOffsetListener,
-                        // Preserve scroll position across layout
-                        // changes (e.g. opening or closing split
-                        // view). The SPL widget gets recreated when
-                        // its parent's layout structure changes —
-                        // single-pane → side-by-side / top-bottom —
-                        // and it consults `initialScrollIndex` once
-                        // on each mount. We've been tracking
-                        // `_visibleItemIndex` from
-                        // [_attachPositionsListener] all along, so
-                        // feeding it back here makes the new SPL
-                        // restore the user's previous reading
-                        // position instead of slamming back to top
-                        // (the user-reported "open split window, why
-                        // the top window goes back to top" bug).
-                        initialScrollIndex: _visibleItemIndex,
-                      ),
-                    ),
-                    );
+                        final tgt = chapterList[pageIdx];
+                        // 2026-05-24 (v1.3.3): EVERY page is now a
+                        // `_ChapterPage` — same widget type at every
+                        // index. Adjacent pages stay alive via
+                        // AutomaticKeepAliveClientMixin; the
+                        // preview ↔ SPL widget-tree swap is gone.
+                        // Only the active page's controllers feed
+                        // back into mp; inactive pages render their
+                        // own SPL with local controllers so scroll
+                        // position survives the swipe round-trip.
+                        // ValueKey on (book|chapter) lets the
+                        // PageView cache identify each page
+                        // canonically across version switches /
+                        // chapterList rebuilds.
+                        return _ChapterPage(
+                          key: ValueKey(
+                              '${tgt.book}|${tgt.chapter}'),
+                          book: tgt.book,
+                          chapter: tgt.chapter,
+                          isActive: pageIdx == currentChapterPageIdx,
+                          deviceClass: dc,
+                        );
                       },
                     );
                     }),
+                    ),
                     // 2026-05-24 (v1.2.91): mini reader header. When
                     // the auto-hide chrome is hidden, show a tiny
                     // pair of pills at top — version on left, book +
@@ -5066,6 +4966,279 @@ class _ChapterPreview extends StatelessWidget {
             ),
           );
         },
+      ),
+    );
+  }
+}
+
+/// 2026-05-24 (v1.3.3): per-chapter PageView page. Replaces the
+/// v1.2.96 active-SPL-vs-preview split that caused ~1 s of jank on
+/// every swipe (the widget-tree swap between two different types
+/// destroyed and rebuilt everything at settle).
+///
+/// Every visible page in the PageView is now a `_ChapterPage` — the
+/// SAME widget type at every index. Each instance:
+///   - owns its own four `scrollable_positioned_list` controllers
+///     (so all alive SPLs can attach without conflict);
+///   - mixes in `AutomaticKeepAliveClientMixin` so PageView keeps it
+///     alive when scrolled off-screen (cached up to ~3-5 pages);
+///   - if it's the active page (idx matches
+///     `mp.currentBook|chapter`), registers its controllers with
+///     `mp.setActiveChapterControllers` so external scroll commands
+///     (pendingJump from search / library / sermon; jumpToTop on
+///     chapter change; scroll-to-top button) reach the right SPL
+///     through the existing `mp.itemScrollController` getter.
+///
+/// Result: a swipe to the next chapter no longer triggers a
+/// preview→SPL widget-tree replacement. The neighbour page's SPL is
+/// already mounted (kept alive); settling on it is a viewport
+/// translation, not a rebuild. User-perceived stutter drops to zero.
+class _ChapterPage extends StatefulWidget {
+  final String book;
+  final int chapter;
+  final bool isActive;
+  final DeviceClass deviceClass;
+
+  const _ChapterPage({
+    super.key,
+    required this.book,
+    required this.chapter,
+    required this.isActive,
+    required this.deviceClass,
+  });
+
+  @override
+  State<_ChapterPage> createState() => _ChapterPageState();
+}
+
+class _ChapterPageState extends State<_ChapterPage>
+    with AutomaticKeepAliveClientMixin<_ChapterPage> {
+  late final ChapterControllers _controllers;
+
+  // 2026-05-24 (v1.3.3): KeepAlive on every page so PageView's
+  // adjacent-page cache preserves the SPL widget tree across swipes
+  // — eliminates the widget-tree destruction at settle that was the
+  // root cause of the residual "stuck for one sec" stutter.
+  @override
+  bool get wantKeepAlive => true;
+
+  @override
+  void initState() {
+    super.initState();
+    _controllers = ChapterControllers(
+      itemScrollController: ItemScrollController(),
+      scrollOffsetController: ScrollOffsetController(),
+      itemPositionsListener: ItemPositionsListener.create(),
+      scrollOffsetListener: ScrollOffsetListener.create(),
+    );
+    if (widget.isActive) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        context
+            .read<MainProvider>()
+            .setActiveChapterControllers(_controllers);
+      });
+    }
+  }
+
+  @override
+  void didUpdateWidget(_ChapterPage old) {
+    super.didUpdateWidget(old);
+    // Become-active transitions only — we never proactively
+    // de-register because the NEW active page's register call
+    // displaces us atomically.
+    if (widget.isActive && !old.isActive) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        context
+            .read<MainProvider>()
+            .setActiveChapterControllers(_controllers);
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    // Defensive: if we were holding active registration when we
+    // disposed (rare — PageView only disposes pages when the cache
+    // overflows, by which time another page has usually displaced
+    // us), clear the registration so the fallback controllers
+    // become authoritative until the next active page registers.
+    try {
+      final mp = context.read<MainProvider>();
+      if (identical(mp.activeChapterControllers, _controllers)) {
+        mp.setActiveChapterControllers(null);
+      }
+    } catch (_) {
+      // context may already be detached; harmless.
+    }
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    super.build(context); // required for AutomaticKeepAliveClientMixin
+    final mp = context.watch<MainProvider>();
+    final settings = context.watch<AppSettings>();
+
+    final verses = mp.versesInChapter(widget.book, widget.chapter);
+    if (verses.isEmpty) {
+      // Defensive — chapterList claimed this (book, chapter) exists
+      // but the version's verses don't include it. Render the same
+      // "end of canon" placeholder _ChapterPreview uses so the user
+      // gets visual continuity instead of a blank page.
+      return _ChapterPreview(
+        mainProvider: mp,
+        settings: settings,
+        book: widget.book,
+        chapter: widget.chapter,
+        deviceClass: widget.deviceClass,
+      );
+    }
+
+    // Compute or look up paragraphGroups for THIS chapter (each
+    // _ChapterPage has its own (book, chapter); the v1.2.99 cache
+    // is keyed on (version | book | chapter | mode | length) so
+    // adjacent pages share nothing — no interference).
+    final cached = mp.cachedParagraphGrouping(
+      book: widget.book,
+      chapter: widget.chapter,
+      paragraphMode: settings.paragraphMode,
+      versesLength: verses.length,
+    );
+    final List<List<Verse>> paragraphGroups;
+    final Map<int, int> verseToItemMap;
+    final Map<int, int> itemToVerseIndex;
+    if (cached != null) {
+      paragraphGroups = cached.groups;
+      verseToItemMap = cached.verseToItem;
+      itemToVerseIndex = cached.itemToVerseIndex;
+    } else {
+      paragraphGroups = settings.paragraphMode
+          ? _BibleReadingPaneState._groupIntoParagraphs(verses)
+          : verses.map((v) => [v]).toList();
+      final vToI = <int, int>{};
+      final iToV = <int, int>{0: 0};
+      int vIdx = 0;
+      for (int g = 0; g < paragraphGroups.length; g++) {
+        iToV[g + 1] = vIdx;
+        for (int v = 0; v < paragraphGroups[g].length; v++) {
+          vToI[vIdx] = g + 1;
+          vIdx++;
+        }
+      }
+      verseToItemMap = vToI;
+      itemToVerseIndex = iToV;
+      mp.setCachedParagraphGrouping(
+        book: widget.book,
+        chapter: widget.chapter,
+        paragraphMode: settings.paragraphMode,
+        versesLength: verses.length,
+        groups: paragraphGroups,
+        verseToItem: verseToItemMap,
+        itemToVerseIndex: itemToVerseIndex,
+      );
+    }
+
+    // Only the active page contributes to mp.verseToItemMap (used by
+    // pendingJump / selection / highlight). If two alive pages both
+    // wrote, one chapter's map would clobber another's.
+    if (widget.isActive) {
+      mp.setVerseToItemMap(verseToItemMap);
+    }
+
+    final hasParagraphData = paragraphGroups.any((g) => g.length > 1);
+    final isSelected = mp.selectedVerses.isNotEmpty;
+    final dc = widget.deviceClass;
+
+    return Padding(
+      padding: EdgeInsets.only(
+        right: ResponsiveBreakpoints.readingPadding(dc),
+      ),
+      child: ScrollablePositionedList.builder(
+        itemCount: paragraphGroups.length + 2,
+        itemBuilder: (context, index) {
+          if (index == 0) {
+            final topInset = MediaQuery.of(context).padding.top;
+            return SizedBox(
+                height: topInset + 64 * settings.menuScale + 12);
+          }
+          final groupIdx = index - 1;
+          if (groupIdx < paragraphGroups.length) {
+            final group = paragraphGroups[groupIdx];
+            int startIdx = 0;
+            for (int g = 0; g < groupIdx; g++) {
+              startIdx += paragraphGroups[g].length;
+            }
+            final isFirst = groupIdx == 0;
+            SectionHeading? heading;
+            if (settings.showSectionTitles) {
+              final firstVerse = group.first;
+              final englishBook =
+                  toEnglish(firstVerse.book) ?? firstVerse.book;
+              heading = SectionTitleService.headingAt(
+                version: mp.currentVersion,
+                englishBook: englishBook,
+                chapter: firstVerse.chapter,
+                verse: firstVerse.verse,
+              );
+            }
+            final body = group.length == 1
+                ? VerseWidget(
+                    verse: group.first,
+                    index: startIdx,
+                    hasParagraphData: hasParagraphData,
+                    isFirst: isFirst,
+                  )
+                : ParagraphGroupWidget(
+                    group: group,
+                    startVerseIndex: startIdx,
+                    isFirst: isFirst,
+                  );
+            Widget rendered = heading == null
+                ? body
+                : _SectionHeading(
+                    title: heading.title,
+                    context: heading.context,
+                    isFirst: isFirst,
+                    child: body,
+                  );
+            final firstVerse = group.first;
+            final englishBook =
+                toEnglish(firstVerse.book) ?? firstVerse.book;
+            if (isFirst &&
+                firstVerse.chapter == 1 &&
+                settings.showBookIntro) {
+              final intro = BookIntroService.forBook(englishBook);
+              if (intro != null) {
+                rendered = Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    _BookIntroCard(
+                      intro: intro,
+                      locale: settings.locale,
+                    ),
+                    rendered,
+                  ],
+                );
+              }
+            }
+            return rendered;
+          }
+          final bottomInset = MediaQuery.of(context).padding.bottom;
+          final isPhoneWidth =
+              MediaQuery.of(context).size.width < 560;
+          final extra = isSelected
+              ? (isPhoneWidth
+                  ? 200 * settings.menuScale
+                  : 132 * settings.menuScale)
+              : 96 * settings.menuScale;
+          return SizedBox(height: bottomInset + extra);
+        },
+        itemScrollController: _controllers.itemScrollController,
+        itemPositionsListener: _controllers.itemPositionsListener,
+        scrollOffsetController: _controllers.scrollOffsetController,
+        scrollOffsetListener: _controllers.scrollOffsetListener,
       ),
     );
   }

@@ -217,32 +217,51 @@ class _VersePopupSheetState extends State<VersePopupSheet> {
     if (!mounted) return;
     final ok = await jumper.showJumpResultSnackBar(context, result);
     if (!ok || !mounted) return;
-    // 2026-05-24 (v1.2.96): pop ALL modal sheets — popup itself
-    // AND any modal note editor underneath it — then navigate.
-    // The old code called `Navigator.maybePop()` (popped only the
-    // popup) then `Get.to(HomePage)` (PUSHED a new HomePage).
+    // 2026-05-24 (v1.3.3): pop modals AND any non-HomePage page
+    // routes ABOVE an existing HomePage, falling back to a fresh
+    // push if HomePage isn't in the stack.
     //
-    // When the user opens the popup from inside a library note
-    // (Library → tap tile → NoteEditor modal → tap ref in body →
-    // VersePopupSheet on top), the stack was:
-    //   [Dashboard, Library, NoteEditor, VersePopupSheet]
-    // After old code:
-    //   [Dashboard, Library, NoteEditor, HomePage(new)]
-    // — back stack still has NoteEditor + Library underneath the
-    // new HomePage, so pressing back made the note re-appear over
-    // Library. User reported "在note里面按经文，会新的一个page
-    // 跳到那经文位置，如果退出的时候，发现其实重叠了".
+    // v1.2.96 popped modals + Get.off(HomePage). But Get.off only
+    // replaces the TOP route. If the stack was
+    //   [Dashboard, HomePage(reader), Library, NoteEditor, Popup]
+    // after popUntil(PageRoute) the stack was
+    //   [Dashboard, HomePage(reader), Library]
+    // and Get.off(HomePage) replaced Library with HomePage:
+    //   [Dashboard, HomePage(reader), HomePage(new)]
+    // — DUPLICATE bible. User reported "bible duplicate了" after
+    // going through a Library note's verse-ref → popup flow.
     //
-    // Fix: pop popup + any modal sheets via popUntil on
-    // PageRoute (PageRoute is the parent of full-screen pushed
-    // routes; modal bottom sheets are PopupRoute, not PageRoute).
-    // Then REPLACE the now-top page route with HomePage via
-    // Get.off — this swaps Library/Sermon out so back returns to
-    // Dashboard, not the stale modal stack.
+    // Fix: popUntil walks DOWN the stack searching for an existing
+    // HomePage (Get sets settings.name = "/HomePage" by convention
+    // for `Get.to(() => const HomePage())`). If found, all routes
+    // ABOVE it are popped; pendingJump (set by
+    // resolveAndPrepareJump above) fires on that existing reader.
+    // If no HomePage is in the stack, popUntil stops at the root
+    // and we Get.to push a fresh one.
     final navigator = Navigator.of(context, rootNavigator: true);
-    navigator.popUntil((route) => route is PageRoute);
+    bool foundExistingHome = false;
+    navigator.popUntil((route) {
+      // Get's auto-naming: route.settings.name == "/HomePage" for
+      // any Get.to(() => const HomePage()) push. We accept either
+      // exact match or trailing match in case a future caller adds
+      // a sub-route prefix.
+      final name = route.settings.name ?? '';
+      if (name == '/HomePage' || name.endsWith('HomePage')) {
+        foundExistingHome = true;
+        return true;
+      }
+      if (route.isFirst) return true; // stop at root (Dashboard)
+      return false;
+    });
     if (!mounted) return;
-    Get.off(() => const HomePage(), transition: Transition.rightToLeft);
+    if (!foundExistingHome) {
+      // No HomePage in the stack — push a fresh one on top of
+      // whatever root route we landed on (Dashboard).
+      Get.to(() => const HomePage(), transition: Transition.rightToLeft);
+    }
+    // else: existing HomePage is now at the top. pendingJump is
+    // already set on the provider; the reader picks it up on its
+    // next build pass.
   }
 
   @override

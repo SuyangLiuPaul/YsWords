@@ -12,6 +12,36 @@ import 'package:yswords/services/profile_service.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+/// 2026-05-24 (v1.3.3): bundles the four scrollable_positioned_list
+/// controllers that each `_ChapterPage` in the Bible reader PageView
+/// needs to drive its own SPL.
+///
+/// Background: the PageView used to swap between a "preview" widget
+/// and the "active SPL" widget at the same page index every time
+/// the user swiped. The widget-tree replacement cost ~1 s of jank
+/// even after the v1.2.99 cache + v1.3.1 prewarm fixes. v1.3.3
+/// makes every page a real SPL with its own local controllers —
+/// `AutomaticKeepAliveClientMixin` keeps adjacent pages alive across
+/// swipes, so no rebuild happens on settle. The active page (the
+/// one whose chapter matches `mainProvider.currentChapter`)
+/// registers via `setActiveChapterControllers` so external scroll
+/// commands (pendingJump from search / library / sermon refs,
+/// scroll-to-top button, jumpToTop on chapter change) reach the
+/// correct SPL through the existing `itemScrollController` getter.
+class ChapterControllers {
+  final ItemScrollController itemScrollController;
+  final ScrollOffsetController scrollOffsetController;
+  final ItemPositionsListener itemPositionsListener;
+  final ScrollOffsetListener scrollOffsetListener;
+
+  ChapterControllers({
+    required this.itemScrollController,
+    required this.scrollOffsetController,
+    required this.itemPositionsListener,
+    required this.scrollOffsetListener,
+  });
+}
+
 // MainProvider class to extends ChangeNotifier for state management
 
 class MainProvider extends ChangeNotifier {
@@ -397,11 +427,60 @@ class MainProvider extends ChangeNotifier {
     return m;
   }
 
-  // Contollers and Listeners for managing scroll positions and items
-  ItemScrollController itemScrollController = ItemScrollController();
-  ScrollOffsetController scrollOffsetController = ScrollOffsetController();
-  ItemPositionsListener itemPositionsListener = ItemPositionsListener.create();
-  ScrollOffsetListener scrollOffsetListener = ScrollOffsetListener.create();
+  // 2026-05-24 (v1.3.3): per-chapter scroll controllers. Each
+  // `_ChapterPage` in the PageView (lib/widgets/bible_reading_pane.dart)
+  // owns its own ChapterControllers in State; the active page
+  // registers via `setActiveChapterControllers` so external code
+  // (jumper / pendingJump / scroll-to-top) reaching for
+  // `mp.itemScrollController` is routed to the right SPL.
+  //
+  // The fallback instances below are never attached to any SPL —
+  // they exist so external callers can safely read
+  // `mp.itemScrollController` (etc.) before any page has had a
+  // chance to register. The `isAttached` guard those callers
+  // already perform protects them.
+  final ItemScrollController _fallbackItemScrollController =
+      ItemScrollController();
+  final ScrollOffsetController _fallbackScrollOffsetController =
+      ScrollOffsetController();
+  final ItemPositionsListener _fallbackItemPositionsListener =
+      ItemPositionsListener.create();
+  final ScrollOffsetListener _fallbackScrollOffsetListener =
+      ScrollOffsetListener.create();
+
+  ChapterControllers? _activeChapterControllers;
+
+  /// The active chapter page's controllers (or null if none has
+  /// registered yet). Used by BibleReadingPane to detect when the
+  /// active page changes so it can re-attach the auto-hide chrome
+  /// scroll listener to the new page's `itemPositionsListener`.
+  ChapterControllers? get activeChapterControllers =>
+      _activeChapterControllers;
+
+  /// Called by `_ChapterPageState` when it becomes the active
+  /// (current-chapter) page. Subsequent reads of
+  /// `itemScrollController` / `itemPositionsListener` / etc. return
+  /// the controllers passed here. Fires `notifyListeners` so
+  /// observers (auto-hide chrome) can re-attach to the new
+  /// listener instance.
+  void setActiveChapterControllers(ChapterControllers? c) {
+    if (identical(_activeChapterControllers, c)) return;
+    _activeChapterControllers = c;
+    notifyListeners();
+  }
+
+  ItemScrollController get itemScrollController =>
+      _activeChapterControllers?.itemScrollController ??
+      _fallbackItemScrollController;
+  ScrollOffsetController get scrollOffsetController =>
+      _activeChapterControllers?.scrollOffsetController ??
+      _fallbackScrollOffsetController;
+  ItemPositionsListener get itemPositionsListener =>
+      _activeChapterControllers?.itemPositionsListener ??
+      _fallbackItemPositionsListener;
+  ScrollOffsetListener get scrollOffsetListener =>
+      _activeChapterControllers?.scrollOffsetListener ??
+      _fallbackScrollOffsetListener;
 
   // Variables to store the current chapter and book
   int? currentChapter;
