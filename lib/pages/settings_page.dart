@@ -32,6 +32,7 @@ import 'package:yswords/widgets/contact_line.dart';
 import 'package:yswords/widgets/profile_avatar.dart';
 // 2026-05-07 (v17): fetch_books / fetch_verses imports removed; the
 // only consumer was the deleted "Check for Updates" reload path.
+import 'package:yswords/services/install_prompt_service.dart';
 import 'package:yswords/services/profile_service.dart';
 import 'package:yswords/utils/font_catalog.dart';
 
@@ -1051,6 +1052,11 @@ class _SettingsPageBodyState extends State<_SettingsPageBody> {
                         'About'),
               ),
               _AboutCard(settings: settings, s: s),
+              // 2026-05-24 (v1.3.25): PWA install card — only shows
+              // when the install affordance is meaningful (browser
+              // not already in installed mode, native build hides
+              // it entirely).
+              const _InstallAppCard(),
               SizedBox(height: 16 * s),
             ],
               ),
@@ -2269,6 +2275,14 @@ class _NotificationsCardState extends State<_NotificationsCard> {
                       // notification fires regardless via the plugin
                       // below — the SnackBar is just a UX
                       // confirmation that we DID send it.
+                      //
+                      // v1.3.25: capture the messenger BEFORE the
+                      // await so `context` isn't reused after the
+                      // async gap. Also closes the
+                      // `use_build_context_synchronously` info lint
+                      // that previously forced CI to run with
+                      // `--no-fatal-infos`.
+                      final messenger = ScaffoldMessenger.of(context);
                       try {
                         await NotificationService.show(
                           title: uiStrings['appName']?[locale] ?? 'YsWords',
@@ -2278,7 +2292,7 @@ class _NotificationsCardState extends State<_NotificationsCard> {
                           tag: 'yswords-test',
                         );
                         if (!mounted) return;
-                        ScaffoldMessenger.of(context).showSnackBar(
+                        messenger.showSnackBar(
                           SnackBar(
                             content: Text(
                               uiStrings['notificationsTestSent']
@@ -2290,7 +2304,7 @@ class _NotificationsCardState extends State<_NotificationsCard> {
                         );
                       } catch (e) {
                         if (!mounted) return;
-                        ScaffoldMessenger.of(context).showSnackBar(
+                        messenger.showSnackBar(
                           SnackBar(
                             content: Text(
                               'Test notification failed: $e',
@@ -3576,6 +3590,154 @@ class _OfflinePackCardState extends State<_OfflinePackCard> {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// 2026-05-24 (v1.3.25): "Install as App" card.
+///
+/// Shows on web only — native builds short-circuit because the
+/// app is already an installed binary. Within web, the card
+/// branches on what the browser is offering:
+///   * `nativePrompt`   — Chrome / Edge has fired
+///     beforeinstallprompt. Show "Install YsWords" button which
+///     triggers the OS install picker.
+///   * `iosManual`      — iOS Safari has no programmatic install
+///     API. Show a 2-step guide pointing at the Share sheet.
+///   * `desktopManual`  — Desktop browser w/ Add-to-Home-Screen
+///     capability but no beforeinstallprompt yet. Point at the
+///     browser menu.
+///   * `alreadyInstalled` — Hide the card entirely.
+class _InstallAppCard extends StatefulWidget {
+  const _InstallAppCard();
+
+  @override
+  State<_InstallAppCard> createState() => _InstallAppCardState();
+}
+
+class _InstallAppCardState extends State<_InstallAppCard> {
+  InstallFlowKind _flow = InstallFlowKind.notApplicable;
+  bool _busy = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _flow = InstallPromptService.detect();
+    // Chrome's `beforeinstallprompt` can fire anytime after first
+    // load (it's debounced server-side). Re-check after the first
+    // frame so a late-arriving event still flips the UI.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final fresh = InstallPromptService.detect();
+      if (fresh != _flow) setState(() => _flow = fresh);
+    });
+  }
+
+  Future<void> _onInstallPressed() async {
+    if (_busy) return;
+    setState(() => _busy = true);
+    final messenger = ScaffoldMessenger.of(context);
+    final outcome = await InstallPromptService.show();
+    if (!mounted) return;
+    setState(() {
+      _busy = false;
+      _flow = InstallPromptService.detect();
+    });
+    if (outcome == 'accepted') {
+      messenger.showSnackBar(const SnackBar(
+        content: Text('Installing YsWords…'),
+        duration: Duration(seconds: 2),
+      ));
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_flow == InstallFlowKind.notApplicable ||
+        _flow == InstallFlowKind.alreadyInstalled) {
+      return const SizedBox.shrink();
+    }
+    final scheme = Theme.of(context).colorScheme;
+    final settings = context.watch<AppSettings>();
+    final locale = settings.locale;
+    final isZh = locale == 'zh-Hans' || locale == 'zh-Hant';
+
+    String title;
+    String body;
+    Widget? action;
+
+    switch (_flow) {
+      case InstallFlowKind.nativePrompt:
+        title = isZh ? '安装 YsWords' : 'Install YsWords';
+        body = isZh
+            ? '把 YsWords 安装到主屏幕,获得更快的启动速度和离线访问。'
+            : 'Install YsWords to your home screen for faster launch + offline access.';
+        action = FilledButton.icon(
+          onPressed: _busy ? null : _onInstallPressed,
+          icon: const Icon(Icons.install_mobile_outlined, size: 18),
+          label: Text(isZh ? '安装' : 'Install'),
+        );
+        break;
+      case InstallFlowKind.iosManual:
+        title = isZh ? '添加到主屏幕' : 'Add to Home Screen';
+        body = isZh
+            ? '1. 点击 Safari 底部的「分享」按钮（⬆️）\n2. 选择「添加到主屏幕」\n3. 点击「添加」 — YsWords 就会像原生 App 一样运行。'
+            : '1. Tap the Safari Share button at the bottom (⬆️)\n2. Choose "Add to Home Screen"\n3. Tap "Add" — YsWords runs like a native app.';
+        break;
+      case InstallFlowKind.desktopManual:
+        title = isZh ? '安装 YsWords 桌面版' : 'Install YsWords as a desktop app';
+        body = isZh
+            ? '在地址栏右侧找到「安装」图标（⊕）, 或者打开浏览器菜单 → 「安装 YsWords」。安装后 YsWords 会有自己的窗口和 Dock / 开始菜单图标。'
+            : 'Look for the install icon (⊕) on the right side of the address bar, or open the browser menu → "Install YsWords". Once installed YsWords gets its own window + Dock / Start Menu icon.';
+        break;
+      case InstallFlowKind.alreadyInstalled:
+      case InstallFlowKind.notApplicable:
+        return const SizedBox.shrink();
+    }
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.install_mobile_outlined,
+                    size: 18, color: scheme.primary),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    title,
+                    style: TextStyle(
+                      fontFamily: settings.fontFamily,
+                      fontFamilyFallback: kCjkFontFallback,
+                      fontSize:
+                          (settings.fontSize - 1).clamp(13.0, 16.0),
+                      fontWeight: FontWeight.w700,
+                      color: scheme.onSurface,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Text(
+              body,
+              style: TextStyle(
+                fontFamily: settings.fontFamily,
+                fontFamilyFallback: kCjkFontFallback,
+                fontSize: (settings.fontSize - 4).clamp(11.0, 13.0),
+                color: scheme.onSurface.withValues(alpha: 0.85),
+                height: 1.5,
+              ),
+            ),
+            if (action != null) ...[
+              const SizedBox(height: 12),
+              Align(alignment: Alignment.centerLeft, child: action),
+            ],
+          ],
+        ),
       ),
     );
   }

@@ -63,12 +63,13 @@ jobs:
         run: flutter pub get
 
       - name: Analyze
-        # --no-fatal-infos so info-level lints (e.g. the 2 pre-existing
-        # settings_page `use_build_context_synchronously` notes) don't
-        # fail the build. Errors AND warnings still fail. Track + fix
-        # those infos in a future round (priorities.md "test coverage
-        # on risky files" bucket); for now they're known + tolerated.
-        run: flutter analyze --no-fatal-infos
+        # v1.3.25: --no-fatal-infos REMOVED. The 2 pre-existing
+        # settings_page `use_build_context_synchronously` infos were
+        # closed by capturing ScaffoldMessenger before the await,
+        # so flutter analyze now exits 0 cleanly. From this point
+        # forward CI fails on ANY new info-level finding — strictest
+        # quality gate.
+        run: flutter analyze
 
       - name: Test
         run: flutter test --reporter expanded

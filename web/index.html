@@ -184,6 +184,69 @@
       });
     })();
   </script>
+  <!-- 2026-05-24 (v1.3.25): PWA install-prompt bridge.
+       Captures the `beforeinstallprompt` event Chrome / Edge fire
+       when the user could install the PWA. The Flutter side reads
+       `window.yswordsInstall.available` to decide whether to show
+       the "Install YsWords" affordance, and calls
+       `window.yswordsInstall.show()` to trigger the native picker.
+       Also exposes `isStandalone` so the same affordance hides
+       once the user is already running in installed mode.
+
+       Why this is safe alongside the SW-unregister script above:
+       Chrome only fires beforeinstallprompt when a service worker
+       IS registered, so today (with SW being torn down on every
+       load) the event never fires. The bridge is in place for the
+       future round that re-introduces a versioned-cache SW; for
+       now `isStandalone` still works (detects Add-to-Home-Screen
+       installs on iOS Safari + post-install Chrome) so the
+       "already installed" check stays useful. -->
+  <script>
+    window.yswordsInstall = {
+      // True after a beforeinstallprompt event arrives.
+      available: false,
+      // The captured event — Flutter calls `.prompt()` via show().
+      _event: null,
+      // True if the page is running in standalone / installed mode
+      // (Add-to-Home-Screen on iOS, installed PWA on Android,
+      // chrome://apps launch on desktop).
+      get isStandalone() {
+        try {
+          if (window.navigator.standalone === true) return true; // iOS Safari
+          if (window.matchMedia('(display-mode: standalone)').matches) return true;
+          if (window.matchMedia('(display-mode: fullscreen)').matches) return true;
+          if (window.matchMedia('(display-mode: minimal-ui)').matches) return true;
+        } catch (_) {}
+        return false;
+      },
+      // Triggers the browser's native install picker. Returns a
+      // promise that resolves to 'accepted' | 'dismissed' | 'unavailable'.
+      show: async function() {
+        var e = this._event;
+        if (!e) return 'unavailable';
+        try {
+          e.prompt();
+          var choice = await e.userChoice;
+          this._event = null;
+          this.available = false;
+          return (choice && choice.outcome) || 'dismissed';
+        } catch (err) {
+          return 'dismissed';
+        }
+      }
+    };
+    window.addEventListener('beforeinstallprompt', function(e) {
+      // Prevent Chrome's default mini-infobar so we can drive the
+      // UX from the app side.
+      e.preventDefault();
+      window.yswordsInstall._event = e;
+      window.yswordsInstall.available = true;
+    });
+    window.addEventListener('appinstalled', function() {
+      window.yswordsInstall._event = null;
+      window.yswordsInstall.available = false;
+    });
+  </script>
   <!-- Avatar picker: opens an `<input type="file">`, reads the
        chosen image, center-crops to a square, resizes to 256×256
        via Canvas, and resolves with a JPEG data URL. Used by the
