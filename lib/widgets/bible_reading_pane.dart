@@ -5253,9 +5253,20 @@ class _ChapterPageState extends State<_ChapterPage>
         itemCount: paragraphGroups.length + 2,
         itemBuilder: (context, index) {
           if (index == 0) {
+            // 2026-05-24 (v1.3.14): tighten the gap between the
+            // floating chrome and the first verse. The chrome
+            // itself measures roughly (status-bar inset + 44 px)
+            // tall — vertical padding 4 px + IconButton minHeight
+            // 36 px + bottom 4 px. The previous spacer
+            // (topInset + 64*menuScale + 12) reserved ~32 px of
+            // empty space below the chrome at default scale,
+            // which the user reported felt "太大" (too big).
+            // New value reserves ~8 px breathing room below the
+            // chrome at scale 1.0, scaling proportionally when
+            // the user bumps menuScale.
             final topInset = MediaQuery.of(context).padding.top;
             return SizedBox(
-                height: topInset + 64 * settings.menuScale + 12);
+                height: topInset + 48 * settings.menuScale + 4);
           }
           final groupIdx = index - 1;
           if (groupIdx < paragraphGroups.length) {
@@ -5882,6 +5893,19 @@ class _FloatingHeader extends StatelessWidget {
                             minWidth: 36, minHeight: 36),
                         tooltip: uiStrings['home']?[locale] ?? 'Home',
                       ),
+                    // 2026-05-24 (v1.3.14): hide the overflow menu in
+                    // the split-view secondary pane. User asked for
+                    // this — the secondary pane exists only for
+                    // version-comparison reading, so Settings /
+                    // Library / Highlights / Synopsis / Maps /
+                    // Trivia / Listen / etc. (all of which the
+                    // primary pane already exposes) just add noise
+                    // and risk the user changing app state from a
+                    // throwaway pane. `onClose == null` reliably
+                    // identifies the primary pane — `home_page.dart`
+                    // only sets `onClose` on the secondary
+                    // BibleReadingPane.
+                    if (onClose == null)
                     PopupMenuButton<String>(
                       icon: Icon(Icons.more_vert_rounded, size: iconSize),
                       padding: EdgeInsets.all(iconPad),
