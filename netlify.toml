@@ -61,8 +61,12 @@
     # CSP — restrict where scripts/styles/images/fonts can come from.
     # Flutter web is mostly canvas-rendered so the XSS attack surface
     # is limited, but the bundle still loads external resources at
-    # runtime (Google Fonts, Firebase JS SDK, Gemini proxy).
+    # runtime.
     #   * scripts:   self + 'wasm-unsafe-eval' (CanvasKit / skwasm)
+    #                + https://www.gstatic.com (CanvasKit JS bundle
+    #                  loaded from gstatic.com/flutter-canvaskit/<hash>/)
+    #                + blob: (Flutter dynamically creates Worker
+    #                  scripts from blob URLs)
     #   * styles:    self + inline (Flutter injects style tags) +
     #     fonts.googleapis.com (Google Fonts CSS)
     #   * fonts:     self + data: (Flutter embeds icon fonts as
@@ -70,10 +74,20 @@
     #   * images:    permissive https: — evidence + illustrations
     #     load from multiple CDNs (yswords-data, Wikimedia, etc.)
     #   * connect:   self + Netlify Functions + Firebase + Gemini
-    #     proxy + Firebase Realtime DB (wss for the live stream)
+    #     proxy + Firebase Realtime DB (wss for the live stream) +
+    #     https://www.gstatic.com (CanvasKit WASM payload fetch)
+    #   * worker:    self + blob: (Flutter web workers)
     #   * frame-ancestors 'none' — block embedding (clickjacking
     #     defense); X-Frame-Options below is the legacy companion
-    Content-Security-Policy = "default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self' https://*.netlify.app https://*.firebaseio.com https://*.googleapis.com https://*.firebase.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://generativelanguage.googleapis.com wss://*.firebaseio.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'; upgrade-insecure-requests"
+    #
+    # 2026-05-24 (v1.3.27 hotfix): added gstatic.com to script-src
+    # AND connect-src + worker-src — without these the page was
+    # rendering as white-screen because CanvasKit JS + WASM fetches
+    # were blocked by the v1.3.24 CSP. flutter_bootstrap.js loads
+    # `canvaskit.js` + `canvaskit.wasm` from gstatic.com/
+    # flutter-canvaskit/<engine-hash>/ at runtime; without the
+    # allowance the Flutter engine never initialises.
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'wasm-unsafe-eval' https://www.gstatic.com blob:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self' blob: https://*.netlify.app https://*.firebaseio.com https://*.googleapis.com https://*.firebase.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://generativelanguage.googleapis.com https://www.gstatic.com wss://*.firebaseio.com; worker-src 'self' blob:; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'; upgrade-insecure-requests"
 
     # X-Frame-Options: legacy companion to CSP `frame-ancestors`.
     # Older browsers honour this but not frame-ancestors; keep both.
