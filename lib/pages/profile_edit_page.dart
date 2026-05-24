@@ -138,8 +138,11 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
                   radius: 48,
                   backgroundColor: previewColor,
                   foregroundColor: Colors.white,
+                  // v1.3.20: ResizeImage caps the preview decode at
+                  // 192px (radius 48 → 96px display, 2× for Retina).
                   backgroundImage: _selectedPhotoDataUrl != null
-                      ? NetworkImage(_selectedPhotoDataUrl!)
+                      ? ResizeImage(NetworkImage(_selectedPhotoDataUrl!),
+                          width: 192, height: 192)
                       : null,
                   child: _selectedPhotoDataUrl != null
                       ? null

@@ -191,8 +191,11 @@ class _ProfilesPageState extends State<ProfilesPage> {
               foregroundColor: isActive
                   ? scheme.onPrimary
                   : scheme.onSurfaceVariant,
-              backgroundImage:
-                  photo != null ? NetworkImage(photo) : null,
+              // v1.3.20: ResizeImage caps decode at 80px (CircleAvatar
+              // default radius 20 → 40px display, 2× for Retina).
+              backgroundImage: photo != null
+                  ? ResizeImage(NetworkImage(photo), width: 80, height: 80)
+                  : null,
               child: photo != null
                   ? null
                   : Text(

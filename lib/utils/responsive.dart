@@ -13,7 +13,22 @@ class ResponsiveBreakpoints {
   static bool isTabletOrWider(double w) => w >= 600;
   static bool isDesktopOrWider(double w) => w >= 1024;
 
-  static double maxContentWidth(DeviceClass dc) => double.infinity;
+  // 2026-05-24 (v1.3.20): cap reading-column width on tablet+
+  // displays. Pre-fix every breakpoint returned `infinity` so a
+  // 27-inch desktop monitor showed verses spanning the full
+  // viewport — line lengths well past the ~75-char readability
+  // ceiling that comprehension research consistently flags
+  // (Bringhurst, "The Elements of Typographic Style"). Apps like
+  // YouVersion, WeDevote, and iOS Books all cap at ~700-800 px
+  // on desktop for this reason. Phones keep `infinity` to use
+  // the full screen.
+  static double maxContentWidth(DeviceClass dc) => switch (dc) {
+        DeviceClass.miniPhone => double.infinity,
+        DeviceClass.phone => double.infinity,
+        DeviceClass.tablet => 760,
+        DeviceClass.desktop => 880,
+        DeviceClass.tv => 1040,
+      };
 
   static double readingPadding(DeviceClass dc) => switch (dc) {
         DeviceClass.miniPhone => 6,

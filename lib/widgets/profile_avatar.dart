@@ -39,6 +39,13 @@ class ProfileAvatar extends StatelessWidget {
     final fontSize = (radius * 0.75).clamp(11.0, 22.0).toDouble();
 
     if (hasPhoto) {
+      // 2026-05-24 (v1.3.20) PERF: ResizeImage caps the avatar
+      // decode at 2× display size. Google account photos arrive
+      // at 1024×1024 by default; without this they'd sit in image
+      // cache at full resolution for a 24-48 px circle, wasting
+      // ~4 MB per avatar across multiple Dashboard / Settings /
+      // Profiles renders.
+      final cap = (size * 2).round();
       return CircleAvatar(
         radius: radius,
         backgroundColor: tileColor,
@@ -47,7 +54,8 @@ class ProfileAvatar extends StatelessWidget {
         // when the network image is good. The nested ClipOval +
         // Image.network is a defensive belt-and-suspenders that
         // handles error gracefully without surfacing a broken image.
-        backgroundImage: NetworkImage(photoUrl!),
+        backgroundImage:
+            ResizeImage(NetworkImage(photoUrl!), width: cap, height: cap),
         onBackgroundImageError: (_, __) {},
         child: ClipOval(
           child: Image.network(

@@ -1010,7 +1010,16 @@ class _GreetingCard extends StatelessWidget {
                     radius: 24,
                     backgroundColor: tileColor,
                     foregroundColor: scheme.onPrimary,
-                    backgroundImage: NetworkImage(photoUrl!),
+                    // v1.3.20: ResizeImage caps decode at 96px to match
+                    // the nested Image.network's cacheWidth — was the
+                    // last unwrapped NetworkImage in dashboard tiles
+                    // and would otherwise keep a full-res Google avatar
+                    // alive in image cache for a 48px display.
+                    backgroundImage: ResizeImage(
+                      NetworkImage(photoUrl!),
+                      width: 96,
+                      height: 96,
+                    ),
                     onBackgroundImageError: (_, __) {},
                     child: ClipOval(
                       child: Image.network(
