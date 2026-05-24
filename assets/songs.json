@@ -19,7 +19,7 @@
     "totalSongs": 511,
     "note": "Theme tags are auto-derived from the title text using a keyword map; they are best-effort, not authoritative. The verse field is only populated for unambiguous cases like Psalm 23 settings.",
     "mediaUrlNote": "CDC entries have audioUrl + pdfUrl derived deterministically from the catalogue code; fydt entries have these populated by the sync script when it scrapes per-song pages. The app today still uses link-out (opening url in a new tab) — these direct media URLs are pre-populated so the app can switch to inline playback or PDF download once licensing is documented, with no further data work.",
-    "lastSyncedAt": "2026-05-17T19:20:57Z"
+    "lastSyncedAt": "2026-05-24T19:26:40Z"
   },
   "songs": [
     {
