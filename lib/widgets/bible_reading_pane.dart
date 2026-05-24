@@ -1676,16 +1676,36 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                         right: 0,
                         height:
                             MediaQuery.of(context).padding.top + 56,
-                        child: GestureDetector(
-                          behavior: HitTestBehavior.opaque,
-                          onTap: () {
-                            _scrollChapterToTop();
-                            if (_chromeFeatureEnabled &&
-                                !_chromeVisible) {
-                              _safeChromeSetState(
-                                  () => _chromeVisible = true);
-                            }
-                          },
+                        // 2026-05-24 (v1.3.35): wrap the tap-strip in
+                        // IgnorePointer that disables it when chrome
+                        // is visible. Without this gate, the strip's
+                        // opaque GestureDetector covered the chrome's
+                        // top region (status-bar inset + chip row =
+                        // topInset+56 px) and stole taps that should
+                        // have gone to the back-arrow / version / book
+                        // / search / home / 3-dot buttons inside
+                        // _FloatingHeader. User report: "iOS top menu
+                        // 里面所有menu都按不动了".
+                        //
+                        // When chrome is hidden the mini-header chips
+                        // are decorative + the strip is the only thing
+                        // in that band — it should be live so users
+                        // can tap-top to scroll. When chrome is shown
+                        // the FloatingHeader's buttons need first dibs
+                        // on every tap in the top band.
+                        child: IgnorePointer(
+                          ignoring: _chromeVisible,
+                          child: GestureDetector(
+                            behavior: HitTestBehavior.opaque,
+                            onTap: () {
+                              _scrollChapterToTop();
+                              if (_chromeFeatureEnabled &&
+                                  !_chromeVisible) {
+                                _safeChromeSetState(
+                                    () => _chromeVisible = true);
+                              }
+                            },
+                          ),
                         ),
                       ),
                     _FloatingHeader(
@@ -2140,21 +2160,26 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                               },
                             ),
                       ),
-                    // 2026-05-24 (v1.2.91 / v1.3.34): iOS-style tap-top
-                    // to scroll-to-top, this time inside the verse-
-                    // select toolbar overlay. v1.3.34 fix mirrors the
-                    // main reader strip above (line ~1657): enlarged
-                    // from `topInset.clamp(20, 80)` to `topInset + 56`
-                    // so taps below the Dynamic Island (where iOS
+                    // 2026-05-24 (v1.2.91 / v1.3.34 / v1.3.35): iOS-style
+                    // tap-top to scroll-to-top, this time inside the
+                    // verse-select toolbar overlay. v1.3.34 fix
+                    // mirrors the main reader strip above
+                    // (line ~1657): enlarged from
+                    // `topInset.clamp(20, 80)` to `topInset + 56` so
+                    // taps below the Dynamic Island (where iOS
                     // actually forwards them to the app) still hit
-                    // the strip.
+                    // the strip. v1.3.35: gated by IgnorePointer so
+                    // it doesn't steal taps from the FloatingHeader
+                    // buttons when chrome is visible.
                     Positioned(
                       top: 0,
                       left: 0,
                       right: 0,
                       height:
                           MediaQuery.of(context).padding.top + 56,
-                      child: GestureDetector(
+                      child: IgnorePointer(
+                        ignoring: _chromeVisible,
+                        child: GestureDetector(
                         behavior: HitTestBehavior.opaque,
                         onTap: () {
                           if (!mainProvider
@@ -2168,6 +2193,7 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                             curve: Curves.easeOut,
                           );
                         },
+                      ),
                       ),
                     ),
                     // 2026-05-10 (v1.2.13): version-switch loading
