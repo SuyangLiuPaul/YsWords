@@ -1,0 +1,47 @@
+# YsWords gitleaks config — extends the default rule set, then
+# allowlists a small number of false-positive paths.
+#
+# 2026-05-24 (v1.3.27): added after the v1.3.24-introduced gitleaks
+# step in `.github/workflows/flutter-ci.yml` started failing every
+# push with 15 false-positive findings. None were real secrets:
+#
+#   12  CocoaPods SHA1 release hashes in ios/Podfile.lock + macos/
+#       Podfile.lock (public on cocoapods.org — integrity checksums,
+#       not credentials)
+#    2  Firebase Web API keys (google-services.json + firebase_options.
+#       dart) — Google explicitly documents these as safe to publish:
+#       https://firebase.google.com/docs/projects/api-keys
+#       "The apiKey is not used to authorize requests... it
+#       identifies your project." Real security comes from Firebase
+#       Security Rules (audited in docs/firebase-security-rules.md).
+#    3  `captionKey:` references in lib/pages/bible_trivia_page.dart —
+#       these are localized-string lookup keys, NOT API keys.
+#
+# The default ruleset continues to catch real keys (AWS, Stripe,
+# GitHub PATs, Slack tokens, generic-api-key in any path NOT in
+# the allowlist below). We're only suppressing per-path false
+# positives, not weakening the rules globally.
+
+title = "YsWords gitleaks config"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Project-specific false-positive allowlist (see comments above)."
+
+paths = [
+	# CocoaPods lock files — every entry is a SHA1 hash of the
+	# public Pod release on cocoapods.org. Refreshing pods will
+	# replace these hashes; that's expected behavior, not a leak.
+	'''(?i)^(ios|macos)/Podfile\.lock$''',
+
+	# Firebase client configs — Google's documented "safe to
+	# publish" Web API keys (real security = Firebase Rules).
+	'''^android/app/google-services\.json$''',
+	'''^lib/firebase_options\.dart$''',
+
+	# Bible trivia content table — `captionKey: '<lookup-id>'`
+	# is a localization key, not a credential.
+	'''^lib/pages/bible_trivia_page\.dart$''',
+]
