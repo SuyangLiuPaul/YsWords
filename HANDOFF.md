@@ -2,9 +2,32 @@
 
 > ⚠️ **RELEASE POLICY (2026-05-11):** dev + qat may be pushed freely as part of any change. **Prod requires EXPLICIT user instruction in the current turn** — never assume permission carries over, never push prod without being told to. Full policy in [`docs/release-policy.md`](docs/release-policy.md).
 
-> Last updated: 2026-05-24 — **v1.2.95 → v1.3.20 — PageView root-cause refactor, themed iOS/Android/macOS/web app icons, per-category notification scheduler, daily-verse rotation fix, comprehensive perf sweep, navigation dedup, release tooling, YHWH name restoration across all aux assets, version-gap UI, Chinese exegesis prompt fix, split-pane chrome cleanup, paragraph-group Selector + scroll-state ValueNotifier refactor, haptic feedback + macOS Cmd shortcuts, 朗读/TTS feature fully removed, avatar decode caps + responsive reading-column max-width.**
+> Last updated: 2026-05-24 — **v1.2.95 → v1.3.21 — PageView root-cause refactor, themed iOS/Android/macOS/web app icons, per-category notification scheduler, daily-verse rotation fix, comprehensive perf sweep, navigation dedup, release tooling, YHWH name restoration across all aux assets, version-gap UI, Chinese exegesis prompt fix, split-pane chrome cleanup, paragraph-group Selector + scroll-state ValueNotifier refactor, haptic feedback + macOS Cmd shortcuts, 朗读/TTS feature fully removed, avatar decode caps + responsive reading-column max-width, cross-platform error reporting via Resend.**
 >
 > ### v1.3.x highlights (paste this into the next session's context)
+>
+> **v1.3.21** — cross-platform error monitoring. Resolves the
+> long-deferred priorities.md item #2 ("today a crash on
+> yswords.netlify.app is invisible to the developer"). New
+> `netlify/functions/errorReport.mjs` accepts POST with full
+> error context and forwards to lsy95112@gmail.com via the
+> existing Resend account (reuses `RESEND_API_KEY` +
+> `FEEDBACK_TO` env vars — no new infra). Client wiring in
+> `lib/services/error_reporter.dart`: hooks
+> `FlutterError.onError` (sync widget errors),
+> `PlatformDispatcher.instance.onError` (uncaught async),
+> `runZonedGuarded` around `main()` (zone fallback). Auto-
+> breadcrumbs via `lib/utils/breadcrumb_observer.dart`
+> `NavigatorObserver` (records every push/pop). Conditional
+> imports `error_reporter_platform_io.dart` (native) /
+> `error_reporter_platform_web.dart` (web) collect platform
+> name + screen size + OS version + user agent. Payload caps:
+> 2000 char error, 8000 char stack, 20 breadcrumbs, never
+> sends user content (verses / notes / AI prompts). 60-second
+> per-(session × stack-prefix) dedupe in the Netlify function
+> stops a render loop from flooding the inbox. Reporter
+> itself is fire-and-forget — never throws back into the
+> error path that triggered it.
 >
 > **v1.3.20** — cross-device perf + layout fixes. (1) All 4 surviving `NetworkImage` sites (`profile_avatar.dart`, `profiles_page.dart`, `profile_edit_page.dart`, `dashboard_page.dart`) now wrap with `ResizeImage(NetworkImage(url), width: capPx, height: capPx)` so Google account photos (default 1024×1024) decode at 2× display size instead of source resolution. Pre-fix every avatar render allocated ~4 MB in image cache for what's actually a 24-48 px circle; on screens that show multiple avatars (Dashboard greeting, Profiles list, Settings account row) that's tens of MB wasted per scroll. Crucial on lower-RAM devices (iPhone SE class, mid-range Android). (2) `ResponsiveBreakpoints.maxContentWidth(dc)` no longer returns `double.infinity` for every class. New caps: tablet 760, desktop 880, TV 1040. Phones keep `infinity`. Pre-fix on a 27-inch monitor verses spanned the full viewport — line lengths well past the ~75-char readability ceiling. Apps like YouVersion / WeDevote / iOS Books all cap at ~700-800 px on desktop for the same reason. Phones unchanged (already use full width). Consumer: `home_page.dart::_buildSinglePane` Center+ConstrainedBox wrapping. Split-pane mode (`_buildSideBySide` / `_buildTopBottom`) intentionally bypasses the cap because users want both comparison panes filling available space.
 >

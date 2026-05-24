@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:yswords/constants/build_flags.dart';
@@ -17,6 +16,8 @@ import 'package:yswords/utils/jump_to_reference.dart' as jumper;
 import 'package:yswords/utils/reference_parser.dart' show BibleReference;
 import 'package:yswords/services/cloud_auth_service.dart';
 import 'package:yswords/services/daily_verse_service.dart';
+import 'package:yswords/services/error_reporter.dart';
+import 'package:yswords/utils/breadcrumb_observer.dart';
 import 'package:yswords/services/notification_scheduler.dart'
     as notif_scheduler;
 import 'package:yswords/services/realtime_db_sync_service.dart';
@@ -31,23 +32,29 @@ import 'package:provider/provider.dart';
 import 'package:yswords/utils/font_catalog.dart' show kCjkFontFallback;
 
 void main() {
-  WidgetsFlutterBinding.ensureInitialized();
+  // 2026-05-24 (v1.3.21): wrap the whole entrypoint in
+  // runZonedGuarded so uncaught zone errors (async work that
+  // bubbles past PlatformDispatcher) still reach the reporter.
+  // ErrorReporter.init() inside the zone installs the
+  // FlutterError.onError + PlatformDispatcher hooks itself, so
+  // we don't pre-set them here — ErrorReporter chains them
+  // properly.
+  runZonedGuarded<void>(() {
+    WidgetsFlutterBinding.ensureInitialized();
+    ErrorReporter.init();
 
-  FlutterError.onError = FlutterError.dumpErrorToConsole;
-  PlatformDispatcher.instance.onError = (error, stack) {
-    debugPrint('UNCAUGHT: $error\n$stack');
-    return true;
-  };
-
-  runApp(
-    MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (context) => MainProvider()),
-        ChangeNotifierProvider(create: (context) => AppSettings()),
-      ],
-      child: const MainApp(),
-    ),
-  );
+    runApp(
+      MultiProvider(
+        providers: [
+          ChangeNotifierProvider(create: (context) => MainProvider()),
+          ChangeNotifierProvider(create: (context) => AppSettings()),
+        ],
+        child: const MainApp(),
+      ),
+    );
+  }, (error, stack) {
+    ErrorReporter.report(error, stack, source: 'Zone');
+  });
 }
 
 class MainApp extends StatefulWidget {
@@ -354,6 +361,10 @@ class _MainAppState extends State<MainApp> {
   Widget build(BuildContext context) {
     return Consumer<AppSettings>(
       builder: (context, settings, _) {
+        // v1.3.21: keep ErrorReporter informed of the current
+        // locale so crash reports show which language string was
+        // on screen. Cheap call — early-returns when unchanged.
+        ErrorReporter.setLocale(settings.locale);
         // Round 56: switched from `colorSchemeSeed` (default
         // tonal-palette variant) to an explicit
         // `ColorScheme.fromSeed(... vibrant ...)`. The default
@@ -595,6 +606,10 @@ class _MainAppState extends State<MainApp> {
               child: child!,
             );
           },
+          // 2026-05-24 (v1.3.21): BreadcrumbObserver auto-records
+          // every push/pop so error reports include the navigation
+          // trail leading up to the crash.
+          navigatorObservers: [BreadcrumbObserver()],
           home: _loading
               ? const Scaffold(
                   body: Center(

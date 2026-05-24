@@ -14,12 +14,18 @@ These were identified as the highest-ROI gaps after v1.2.35. None are blocking, 
    only existing workflow today is `.github/workflows/sync-songs.yml`
    (data pipeline, not tests). ~30 min.
 
-2. **Error monitoring on prod** — wire `FlutterError.onError` (and a
-   `runZonedGuarded` for async) to either Sentry or a Cloud Function
-   endpoint that captures stack traces. Today, a crash on
-   yswords.netlify.app is invisible to the developer. Decide between
-   Sentry (free tier OK for this volume) or a tiny Resend-or-similar
-   forwarder. ~1 hour.
+2. **Error monitoring on prod** — RESOLVED in v1.3.21. New
+   `netlify/functions/errorReport.mjs` accepts POST with
+   error / stack / version / platform / locale / route /
+   breadcrumbs / device info and emails via the existing
+   Resend account (reuses `RESEND_API_KEY` + `FEEDBACK_TO` env
+   vars). Client side: `lib/services/error_reporter.dart` hooks
+   `FlutterError.onError`, `PlatformDispatcher.instance.onError`,
+   wraps `main()` in `runZonedGuarded`. `BreadcrumbObserver`
+   `NavigatorObserver` auto-records route push/pop trail. Works
+   on every platform we ship (web / iOS / macOS / Android).
+   60-second per-(session × stack) dedupe so a render loop
+   can't flood the inbox.
 
 3. **Lamentations 5:21/5:22 data-quality bug** — flagged in `v1.2.32`'s
    notes. `cnv.json` has both verses set to a hybrid that merges
