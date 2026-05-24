@@ -265,10 +265,12 @@ async function _callGeminiInner(prompt, locale, keys, model) {
 	return { ok: false, status: lastStatus, lastError, isAuth: allAuth };
 }
 
-async function callGemini(prompt, locale, overrideKey = null, model = MODEL) {
+async function callGemini(prompt, locale, overrideKey = null, model = MODEL, ctx = null) {
 	// BYOK: same pattern as aiExplainWord — when the client passes a
-	// validated user API key, use only that key.
-	const keys = overrideKey ? [overrideKey] : geminiKeys();
+	// validated user API key, try that key first. v1.3.30 (2026-05-24):
+	// auto-fall back to the developer's shared key on auth/quota
+	// failure instead of throwing an opaque upstream error.
+	let keys = overrideKey ? [overrideKey] : geminiKeys();
 	if (keys.length === 0) {
 		const err = new Error(
 			'AI search is not configured yet. Set GEMINI_API_KEY in '
@@ -280,7 +282,8 @@ async function callGemini(prompt, locale, overrideKey = null, model = MODEL) {
 	}
 	// 2026-05-11 (v1.2.42): step-down chain with BYOK bypass +
 	// deadline budget. See aiBibleSearch.mjs's longer comment.
-	const isByok = !!overrideKey;
+	let isByok = !!overrideKey;
+	let falledBackFromByok = false;
 	// v1.2.43: bumped deadline 22s → 24s; bail buffer 1s → 1.5s.
 	const deadline = Date.now() + 24_000;
 	let currentModel = model;
@@ -291,8 +294,30 @@ async function callGemini(prompt, locale, overrideKey = null, model = MODEL) {
 			break;
 		}
 		const result = await _callGeminiInner(prompt, locale, keys, currentModel);
-		if (result.ok) return result.text;
+		if (result.ok) {
+			if (ctx) ctx.byokFallback = falledBackFromByok;
+			return result.text;
+		}
 		lastResult = result;
+		// v1.3.30: BYOK failed → fall back to shared developer key.
+		// Trigger on any 4xx from the BYOK key (Gemini returns 400
+		// INVALID_ARGUMENT for malformed/wrong keys, 401/403 for
+		// permission, 429 for quota). 5xx + timeout (status=0) skip
+		// the fallback because the shared key would hit the same
+		// Gemini-side issue.
+		if (isByok && !falledBackFromByok &&
+			result.status >= 400 && result.status < 500) {
+			const sharedKeys = geminiKeys();
+			if (sharedKeys.length > 0) {
+				console.warn(`[aiSearch] BYOK HTTP ${result.status}; ` +
+					`falling back to shared developer key`);
+				keys = sharedKeys;
+				isByok = false;
+				falledBackFromByok = true;
+				currentModel = model;
+				continue;
+			}
+		}
 		// BYOK never steps down — user picked this tier on their own key.
 		if (isByok) break;
 		// Only step down on 429 (true quota exhaustion). Auth or
@@ -303,6 +328,8 @@ async function callGemini(prompt, locale, overrideKey = null, model = MODEL) {
 		console.warn(`[aiSearch] ${currentModel} 429; falling back to ${next}.`);
 		currentModel = next;
 	}
+	// v1.3.30: surface BYOK fallback even when terminal failure.
+	if (ctx) ctx.byokFallback = falledBackFromByok;
 	// v1.2.43: branch the public error on terminal failure shape.
 	const status = lastResult?.status ?? 0;
 	if (lastResult?.isAuth && status !== 429) {
@@ -473,11 +500,13 @@ export default async (req) => {
 				JSON.stringify({ answer: '', citations: [], hits: 0 }),
 				{ status: 200, headers: cors });
 		}
+		const ctx = { byokFallback: false };
 		const answer = await callGemini(
 			buildPrompt(query, locale, hits),
 			locale,
 			_useUserKey ? _userKey : null,
 			model,
+			ctx,
 		);
 		const citations = hits.map((e) => {
 			const t = pickLocalized(e.title, locale);
@@ -490,7 +519,15 @@ export default async (req) => {
 			};
 		});
 		return new Response(
-			JSON.stringify({ answer, citations, hits: hits.length }),
+			JSON.stringify({
+				answer,
+				citations,
+				hits: hits.length,
+				// v1.3.30: surface BYOK→shared-key fallback so the client
+				// can show a subtle notice ("Your Gemini key failed; used
+				// the shared key. Check Settings → AI.").
+				...(ctx.byokFallback && { byokFallback: true }),
+			}),
 			{ status: 200, headers: cors });
 	} catch (err) {
 		// 2026-05-10 (v1.2.30): scrub `err.message` from public body —
