@@ -4940,23 +4940,56 @@ class _ChapterPreview extends StatelessWidget {
     final hasVerses =
         mainProvider.versesInChapter(book, chapter).isNotEmpty;
     if (!hasVerses) {
-      // Render a blank surface (same colour as reader) so the
-      // PageView's slide animation still has a solid backdrop
-      // and the user doesn't see a flash of system background.
+      // 2026-05-24 (v1.3.12): better empty-chapter UI. Previously
+      // every empty page rendered as "已到尽头" (End of Bible) —
+      // which confused users (user: "诗篇显示没有经文，不知道
+      // 怎么按出来的"). The page is empty NOT because they reached
+      // the end of canon, but because they're on a version that
+      // doesn't include this book/chapter (e.g. LJK V2 NT-only +
+      // a stored Psalms note from a previous full-canon version).
+      //
+      // Distinguish two cases:
+      //   1. Canon edge: PageView's first/last page, chapter list
+      //      really does end here. Show the genuine "End of Bible".
+      //   2. Mid-canon hole: chapter exists in the full canon but
+      //      not the current version's books list. Show specific
+      //      "current version doesn't have this chapter" + button
+      //      to switch to a version that does.
+      //
+      // Detection: if `mainProvider.findChapterIndex(book, chapter)`
+      // resolves AND it's not the first/last in chapterList, this
+      // is case 1 (canon edge). Otherwise case 2 (version-specific
+      // gap).
+      // chapterIdx == null means the chapter is NOT in the current
+      // version's chapterList (version doesn't ship this book) —
+      // that's case 2 (version-specific gap), NOT a canon edge.
+      // Genuine canon edges are chapterList[0] (Gen 1) and
+      // chapterList[length-1] (last book's last chapter).
+      final chapterIdx =
+          mainProvider.findChapterIndex(book, chapter);
+      final isEdge = chapterIdx != null &&
+          (chapterIdx == 0 ||
+              chapterIdx == mainProvider.chapterList.length - 1);
+      final isZh = settings.locale.startsWith('zh');
+      final msg = isEdge
+          ? (uiStrings['endOfBible']?[settings.locale] ??
+              (isZh ? '已到尽头' : 'End of Bible'))
+          : (isZh
+              ? '当前版本没有 $book $chapter 章。\n请切换到包含此章节的版本（如 CUVS-YHWH / CNV）。'
+              : '$book $chapter not available in the current version.\nSwitch to a full-canon version (e.g. CUVS-YHWH / CNV / KJV).');
       return ColoredBox(
         color: scheme.surface,
         child: Center(
           child: Padding(
             padding: const EdgeInsets.all(32),
             child: Text(
-              uiStrings['endOfBible']?[settings.locale] ??
-                  (settings.locale.startsWith('zh')
-                      ? '已到尽头'
-                      : 'End of Bible'),
+              msg,
+              textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: settings.fontSize,
                 color: scheme.outline,
                 fontStyle: FontStyle.italic,
+                height: 1.5,
               ),
             ),
           ),
