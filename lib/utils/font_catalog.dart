@@ -64,14 +64,37 @@ enum FontCategory { bundled, englishSerif, englishSans, chinese, system }
 /// 2026-05-22 (v1.2.71): comprehensive CJK font fallback chain. When a
 /// TextStyle sets `fontFamily: settings.fontFamily` it should also set
 /// `fontFamilyFallback: kCjkFontFallback` so rare Chinese characters
-/// (e.g. `赒` U+8D52 in Acts 10:31) render even if the primary font's
-/// subset doesn't include them. Order:
+/// (e.g. `赒` U+8D52 in Acts 10:2, `䍁` U+4341, `𨱔` U+28C54) render
+/// even if the primary font's subset doesn't include them.
+///
+/// 2026-05-24 (v1.3.31): The first entry `NotoSansSC-YsWords` is a
+/// BUNDLED font subset (assets/fonts/NotoSansSC-YsWords.otf) covering
+/// every CJK character used anywhere in the app. It's the only entry
+/// in this list that Flutter web's CanvasKit renderer can actually
+/// see — the rest are CSS names that only work on native iOS / macOS /
+/// Android (where the OS fonts are accessible) or when the browser's
+/// HTML renderer is active. CanvasKit needs fonts loaded into its
+/// Skia font registry, and `fonts:` declarations in `pubspec.yaml`
+/// are the standard way to register a font. Without this first entry
+/// the user would see "X" tofu glyphs for rare characters on the web
+/// build even though the chain has 20+ candidates.
+///
+/// Order rationale:
+///   • Bundled → `NotoSansSC-YsWords` (registered via pubspec, web-safe)
 ///   • Apple system → PingFang SC / Heiti SC — complete CJK on macOS/iOS
 ///   • Apple legacy → STSong / STFangsong
 ///   • Windows → Microsoft YaHei
 ///   • Google web → Noto Sans SC / Noto Serif SC — also complete
 ///   • Generic CSS → sans-serif (browser picks)
 const List<String> kCjkFontFallback = [
+  // FIRST: the bundled subset — only fallback that CanvasKit can resolve
+  // on Flutter web. See `pubspec.yaml` for the bundle declaration + the
+  // build script `tools/build_cjk_font_subset.sh`.
+  'NotoSansSC-YsWords',
+  // After: native-platform / browser-CSS fallbacks. These work on
+  // iOS / macOS / Android where Flutter can access OS-installed fonts,
+  // and on the HTML renderer (not CanvasKit) where the browser
+  // honours CSS font names. Kept as defence-in-depth.
   'PingFang SC',
   'PingFang TC',
   'Heiti SC',

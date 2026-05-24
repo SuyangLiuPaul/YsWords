@@ -1,7 +1,7 @@
 name: yswords
 description: "YsWords means Yahweh's words. A bilingual Bible app to help you listen to His voice and abide in Him daily."
 publish_to: 'none'
-version: 1.3.30
+version: 1.3.31
 
 environment:
   sdk: '>=3.2.3 <4.0.0'
@@ -140,6 +140,40 @@ flutter:
     - family: Roboto
       fonts:
         - asset: assets/fonts/Roboto-VariableFont_wdth,wght.ttf
+    # 2026-05-24 (v1.3.31): bundled Noto Sans CJK SC subset covering
+    # every CJK character used anywhere in the app — Bible text
+    # (CUVS-YHWH, CNV, CUV, BIBLEXG variants), section titles, book
+    # introductions, Strong's lexicons, sermons, family-tree names,
+    # songs, evidence, and UI strings. Subsetted with pyftsubset from
+    # the official Noto Sans CJK SC Regular OTF (SIL OFL, freely
+    # redistributable). Source: https://github.com/notofonts/noto-cjk
+    #
+    # WHY: Flutter web's CanvasKit renderer ONLY uses fonts registered
+    # in its Skia font registry. The `kCjkFontFallback` chain in
+    # `lib/utils/font_catalog.dart` lists CSS font names (PingFang SC,
+    # Microsoft YaHei, …) that CanvasKit cannot resolve unless those
+    # fonts are physically loaded. Without a bundled CJK font, rare
+    # characters like `赒` (Acts 10:2 in CUVS-YHWH), `䍁`, and the
+    # Ext-B char `𨱔` rendered as "X" tofu glyphs because the bundled
+    # Roboto has no CJK coverage. The google_fonts package downloads
+    # Noto Sans SC at runtime if the user picks it as their primary
+    # font, but did NOT cover the fallback case where the user kept
+    # an English primary font + the verse contained CJK.
+    #
+    # The subset is built from `assets/*.json` + `lib/**/*.dart` +
+    # `assets/sermons/*.txt` and gives ~1.88 MB OTF (down from the
+    # 16 MB full Noto Sans CJK SC). Regenerate with:
+    #   tools/build_cjk_font_subset.sh
+    #
+    # The family name is `NotoSansSC-YsWords` — registered first in
+    # `kCjkFontFallback` so CanvasKit consults it before falling
+    # through to the CSS-only system-font names (which are still kept
+    # as further fallbacks for native iOS / macOS / Android where the
+    # OS fonts ARE accessible to Flutter).
+    - family: NotoSansSC-YsWords
+      fonts:
+        - asset: assets/fonts/NotoSansSC-YsWords.otf
+
     # Microsoft YaHei was previously bundled here. It is a proprietary
     # Microsoft font (licence forbids redistribution), so we removed it
     # in 2026-05 — Chinese readers now fall back to Google Fonts'
