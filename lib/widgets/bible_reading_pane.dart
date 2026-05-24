@@ -193,6 +193,17 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
       if (!mounted) return;
       final mainProvider = context.read<MainProvider>();
       _attachPositionsListener(mainProvider);
+      // 2026-05-24 (v1.3.1): warm adjacent chapters on first mount
+      // too — otherwise the user's first swipe out of the
+      // boot-time chapter would still hit the cold path.
+      if (mainProvider.currentBook != null &&
+          mainProvider.currentChapter != null) {
+        Future.microtask(() => _prewarmAdjacentChapters(
+              mainProvider,
+              mainProvider.currentBook!,
+              mainProvider.currentChapter!,
+            ));
+      }
     });
   }
 
@@ -775,14 +786,75 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
   // helpers are still in `lib/utils/jump_to_reference.dart` if a
   // future feature wants the precise restore back.
   void _switchTo(MainProvider provider, String book, int chap) {
-    final matched = provider.verses
-        .where((v) => v.book == book && v.chapter == chap)
-        .toList();
+    final matched = provider.versesInChapter(book, chap);
     if (matched.isEmpty) return;
     provider.setCurrentChapter(book: book, chapter: chap);
     provider.updateCurrentVerse(verse: matched.first);
     provider.jumpToTop();
     if (mounted) setState(() => _visibleItemIndex = 0);
+    // 2026-05-24 (v1.3.1): pre-warm paragraph cache for next-prev
+    // chapters so the user's NEXT swipe lands on a cache hit instead
+    // of a ~50 ms recompute. User reported persistent "翻页还是有点
+    // 卡" even after v1.2.99's 30→300 cache bump and O(1) verse
+    // index. The remaining cost was first-visit paragraph grouping
+    // for chapters the user hasn't been to. Pre-warming the two
+    // closest neighbours eliminates that cost for the common forward/
+    // backward swipe pattern.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      Future.microtask(() => _prewarmAdjacentChapters(provider, book, chap));
+    });
+  }
+
+  /// Compute + cache paragraph groups for the chapter that's one
+  /// step before AND one step after `(book, chap)`. Idempotent —
+  /// cache hits short-circuit. Microtask-scheduled so it never
+  /// blocks the active build.
+  void _prewarmAdjacentChapters(
+      MainProvider provider, String book, int chap) {
+    final settings = context.read<AppSettings>();
+    final idx = provider.findChapterIndex(book, chap);
+    if (idx == null) return;
+    final list = provider.chapterList;
+    for (final delta in const [-1, 1]) {
+      final target = idx + delta;
+      if (target < 0 || target >= list.length) continue;
+      final tgt = list[target];
+      final verses = provider.versesInChapter(tgt.book, tgt.chapter);
+      if (verses.isEmpty) continue;
+      // Cache hit? Skip.
+      final cached = provider.cachedParagraphGrouping(
+        book: tgt.book,
+        chapter: tgt.chapter,
+        paragraphMode: settings.paragraphMode,
+        versesLength: verses.length,
+      );
+      if (cached != null) continue;
+      // Compute + store. Same logic as the main build path so the
+      // cached record matches structure-wise.
+      final paragraphGroups = settings.paragraphMode
+          ? _groupIntoParagraphs(verses)
+          : verses.map((v) => [v]).toList();
+      final vToI = <int, int>{};
+      final iToV = <int, int>{0: 0};
+      int vIdx = 0;
+      for (int g = 0; g < paragraphGroups.length; g++) {
+        iToV[g + 1] = vIdx;
+        for (int v = 0; v < paragraphGroups[g].length; v++) {
+          vToI[vIdx] = g + 1;
+          vIdx++;
+        }
+      }
+      provider.setCachedParagraphGrouping(
+        book: tgt.book,
+        chapter: tgt.chapter,
+        paragraphMode: settings.paragraphMode,
+        versesLength: verses.length,
+        groups: paragraphGroups,
+        verseToItem: vToI,
+        itemToVerseIndex: iToV,
+      );
+    }
   }
 
   // ── Copy / format helpers ───────────────────────────────────────────

@@ -2421,44 +2421,81 @@ class _NotificationCategoriesSection extends StatelessWidget {
         ),
         ...NotificationCategoryIds.phase1.map((id) {
           final prefs = settings.notificationCategory(id);
-          return ListTile(
-            dense: true,
-            leading: Icon(_categoryIcon(id),
-                color: prefs.enabled
-                    ? scheme.primary
-                    : scheme.onSurfaceVariant),
-            title: Text(
-              _categoryLabel(id, locale),
-              style: TextStyle(
-                fontFamily: settings.fontFamily,
-                fontFamilyFallback: kCjkFontFallback,
-                fontSize: settings.fontSize - 1,
-                fontWeight: prefs.enabled
-                    ? FontWeight.w600
-                    : FontWeight.normal,
-              ),
+          // 2026-05-24 (v1.3.1): explicit time-edit chip instead of
+          // tap-the-whole-row. User reported "时间应该可以改的" — they
+          // didn't realise the row was tappable. The chip below has
+          // an edit icon, a focused tappable target, and the local
+          // time hint so it's unambiguous.
+          return Padding(
+            padding: const EdgeInsets.symmetric(
+                horizontal: 8, vertical: 4),
+            child: Row(
+              children: [
+                Icon(_categoryIcon(id),
+                    color: prefs.enabled
+                        ? scheme.primary
+                        : scheme.onSurfaceVariant),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Text(
+                    _categoryLabel(id, locale),
+                    style: TextStyle(
+                      fontFamily: settings.fontFamily,
+                      fontFamilyFallback: kCjkFontFallback,
+                      fontSize: settings.fontSize - 1,
+                      fontWeight: prefs.enabled
+                          ? FontWeight.w600
+                          : FontWeight.normal,
+                    ),
+                  ),
+                ),
+                // Tappable time chip — clearly an editable affordance.
+                ActionChip(
+                  avatar: Icon(Icons.access_time_rounded,
+                      size: 16, color: scheme.primary),
+                  label: Text(
+                    _formatTime(prefs.hour, prefs.minute),
+                    style: TextStyle(
+                      fontSize: (settings.fontSize - 2)
+                          .clamp(12.0, 14.0),
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  onPressed: () => _pickTime(context, id),
+                  tooltip: locale.startsWith('zh')
+                      ? '点击修改本地时间'
+                      : 'Tap to edit (local time)',
+                ),
+                const SizedBox(width: 8),
+                Switch(
+                  value: prefs.enabled,
+                  onChanged: (v) async {
+                    await settings.setNotificationCategory(
+                      id,
+                      prefs.copyWith(enabled: v),
+                    );
+                  },
+                ),
+              ],
             ),
-            subtitle: Text(
-              _formatTime(prefs.hour, prefs.minute),
-              style: TextStyle(
-                fontFamily: settings.fontFamily,
-                fontFamilyFallback: kCjkFontFallback,
-                fontSize: (settings.fontSize - 3).clamp(11.0, 13.0),
-                color: scheme.onSurfaceVariant,
-              ),
-            ),
-            trailing: Switch(
-              value: prefs.enabled,
-              onChanged: (v) async {
-                await settings.setNotificationCategory(
-                  id,
-                  prefs.copyWith(enabled: v),
-                );
-              },
-            ),
-            onTap: () => _pickTime(context, id),
           );
         }),
+        // Help text: clarify times are local + when fires happen.
+        Padding(
+          padding: const EdgeInsets.fromLTRB(8, 8, 8, 4),
+          child: Text(
+            locale.startsWith('zh')
+                ? '所有时间为本地时间。设置改动后立即重排，每天到点自动推送。'
+                : 'Times are local. Changes apply immediately; '
+                    'fires daily at the chosen time.',
+            style: TextStyle(
+              fontSize: (settings.fontSize - 4).clamp(10.0, 12.0),
+              color: scheme.onSurfaceVariant
+                  .withValues(alpha: 0.8),
+              fontStyle: FontStyle.italic,
+            ),
+          ),
+        ),
       ],
     );
   }
