@@ -22,12 +22,43 @@ class ResponsiveBreakpoints {
   // YouVersion, WeDevote, and iOS Books all cap at ~700-800 px
   // on desktop for this reason. Phones keep `infinity` to use
   // the full screen.
+  //
+  // 2026-05-24 (v1.3.33): caps RAISED significantly for two reasons:
+  //   (1) The Bible app is mostly read in Chinese (CUVS-YHWH, CNV,
+  //       …). CJK characters are roughly 2x wider than Latin chars,
+  //       so the ~75-char ceiling translates to a wider column —
+  //       50-60 Chinese chars at 16sp ≈ 1100-1300 px. The previous
+  //       760/880/1040 cap pinched Chinese text to ~30-35 chars
+  //       per line, which felt cramped on tablets / desktops.
+  //   (2) User report on a Xiaomi Pad 7 Ultra (~1800 px wide in
+  //       landscape, falls into the desktop class): the old 880
+  //       cap left ~51% of the screen empty per side. Looked
+  //       broken. iPad Pro 11" in landscape (1194 px, also
+  //       desktop class) had a noticeable 26% margin too but the
+  //       user accepted it; the Mi Pad was the clear breaking
+  //       point. New caps target 5-15% margin across all common
+  //       tablet sizes.
+  //
+  // English readers on very wide monitors will see slightly long
+  // lines but the column is still capped — Bible apps that ship
+  // CJK content prioritise CJK readability over an English-centric
+  // line-length rule.
   static double maxContentWidth(DeviceClass dc) => switch (dc) {
         DeviceClass.miniPhone => double.infinity,
         DeviceClass.phone => double.infinity,
-        DeviceClass.tablet => 760,
-        DeviceClass.desktop => 880,
-        DeviceClass.tv => 1040,
+        // 1100 → iPad mini portrait (768) + iPad portrait (810) +
+        // iPad Pro 11" portrait (834) all stay under the cap (no
+        // crop). iPad Pro 12.9" portrait (1024) also stays just
+        // under.
+        DeviceClass.tablet => 1100,
+        // 1400 → iPad Pro 11" landscape (1194) stays under (no
+        // margin); Xiaomi Pad 7 Ultra landscape (~1800) gets
+        // ~200 px margin per side ≈ 11% (was 26% at 880); 1920
+        // monitor gets ~260 per side ≈ 13.5%.
+        DeviceClass.desktop => 1400,
+        // 1800 → 27" 4K monitor gets reasonable text width while
+        // still leaving substantial margin on ultrawide displays.
+        DeviceClass.tv => 1800,
       };
 
   static double readingPadding(DeviceClass dc) => switch (dc) {

@@ -54,14 +54,122 @@ class StrongsEntry {
   /// - `zh-Hant` → [glossZhTw], falls back to [glossZh] then [gloss].
   /// - `zh-Hans` (or any other `zh-…` script) → [glossZh] then [gloss].
   /// - everything else → [gloss].
+  ///
+  /// 2026-05-24 (v1.3.33): when a Chinese gloss is just a grammar
+  /// prefix (e.g. `glossZh = "接所有格:"` for G1537 ἐκ), it's
+  /// useless on its own — the actual translation lives in `defZh`.
+  /// In that case we synthesise a richer gloss by extracting the
+  /// first translation phrase from `defZh`. Detected via the
+  /// gloss ending in `:` or `：`, OR being very short (≤4 chars)
+  /// and ending in a particle that indicates "see below".
   String localizedGloss(String locale) {
+    String? raw;
+    String? rawDef;
     if (locale == 'zh-Hant') {
-      if ((glossZhTw ?? '').isNotEmpty) return glossZhTw!;
-      if ((glossZh ?? '').isNotEmpty) return glossZh!;
+      if ((glossZhTw ?? '').isNotEmpty) raw = glossZhTw;
+      if ((definitionZhTw ?? '').isNotEmpty) rawDef = definitionZhTw;
+      raw ??= (glossZh?.isNotEmpty ?? false) ? glossZh : null;
+      rawDef ??= (definitionZh?.isNotEmpty ?? false) ? definitionZh : null;
     } else if (locale.startsWith('zh')) {
-      if ((glossZh ?? '').isNotEmpty) return glossZh!;
+      if ((glossZh ?? '').isNotEmpty) raw = glossZh;
+      if ((definitionZh ?? '').isNotEmpty) rawDef = definitionZh;
     }
-    return gloss;
+    raw ??= gloss;
+    if (raw.isNotEmpty && _isStubGloss(raw) && rawDef != null) {
+      final extracted = _extractFirstPhrase(rawDef);
+      if (extracted.isNotEmpty) {
+        // Combine the grammar prefix + extracted translation so the
+        // user sees both "接所有格: 从...出来, 出于" rather than
+        // just the bare prefix.
+        return raw.endsWith(':') || raw.endsWith('：')
+            ? '$raw $extracted'
+            : '$raw — $extracted';
+      }
+    }
+    return raw;
+  }
+
+  /// Detects a `glossZh` that's just a grammar prefix or punctuation
+  /// — the real translation lives in `defZh`.
+  static bool _isStubGloss(String g) {
+    final t = g.trim();
+    if (t.isEmpty) return true;
+    if (t.endsWith(':') || t.endsWith('：')) return true;
+    // Pure punctuation / numbers only.
+    if (RegExp(r'^[\s\d.,;:：，。;()()\[\]【】]+$').hasMatch(t)) return true;
+    return false;
+  }
+
+  /// Pull the first meaningful translation phrase out of a `defZh`
+  /// body. CBOL Chinese definitions follow several shapes:
+  ///
+  /// Shape A (most common — numbered list):
+  ///   `1) [translation], [translation]...\n2) ...\n同义词 见 N`
+  ///
+  /// Shape B (no list, header metadata first):
+  ///   `[strongs-id] [translit] {pron}\n\n源自 [ref]; 形容词\n\n
+  ///    AV - [english-occurrences]\n\n[chinese-translation]`
+  ///
+  /// We try Shape A first (look for `1)`), and fall back to Shape B
+  /// by skipping any line that's pure metadata: transliteration with
+  /// `{...}` braces, lines starting with `源自/AV/TDNT/TWOT/钦定本/BDB`,
+  /// lines that are mostly ASCII (English gloss / etymology).
+  /// Clamp at ~36 chars to keep the gloss card-sized.
+  static String _extractFirstPhrase(String def) {
+    final raw = def.trim();
+    if (raw.isEmpty) return '';
+    // Try Shape A: find the first `1)` or `1.` list marker and
+    // extract its clause.
+    final m = RegExp(r'^[\s\(（]?1[\.\)）][\s]?(.+?)(?=\n[\s\(（]?2[\.\)）]|\n#|同义词|同義詞|$)',
+        multiLine: false, dotAll: true).firstMatch(raw);
+    String? body;
+    if (m != null) {
+      body = m.group(1)?.trim();
+    } else {
+      // Look for a `1)` anywhere in the text (sometimes it's after
+      // metadata blocks separated by blank lines).
+      final idx = raw.indexOf(RegExp(r'(^|\n)[\s\(（]?1[\.\)）]'));
+      if (idx >= 0) {
+        var tail = raw.substring(idx);
+        tail = tail.replaceFirst(RegExp(r'^[\s\n]*[\s\(（]?1[\.\)）][\s]?'), '');
+        final cut = [
+          tail.indexOf(RegExp(r'\n[\s\(（]?2[\.\)）]')),
+          tail.indexOf('同义词'),
+          tail.indexOf('同義詞'),
+          tail.indexOf('\n#'),
+        ].where((i) => i > 0).fold<int>(tail.length, (a, b) => a < b ? a : b);
+        body = tail.substring(0, cut).trim();
+      }
+    }
+    // Shape B fallback: pick the first line that's mostly CJK +
+    // not a metadata header.
+    if (body == null || body.isEmpty) {
+      for (final line in raw.split('\n')) {
+        final t = line.trim();
+        if (t.isEmpty) continue;
+        if (RegExp(r'^[\s\d]+[a-zA-Z]').hasMatch(t)) continue; // ID + translit
+        if (RegExp(r'^(源自|AV|TDNT|TWOT|钦定本|欽定本|BDB|形容词|形容詞|名词|名詞|动词|動詞|副词|副詞|代词|代詞|介词|介詞|虚词|虛詞|连词|連詞|数词|數詞|冠词|冠詞|专有名词|專有名詞|字根型|阴性名词|陰性名詞|阳性名词|陽性名詞)').hasMatch(t)) continue;
+        // Skip lines with `{...}` (pronunciation/transliteration).
+        if (t.contains('{') && t.contains('}')) continue;
+        // CJK ratio: only accept lines where >40% chars are CJK.
+        final cjkCount = t.runes
+            .where((r) => (r >= 0x3400 && r <= 0x9FFF) ||
+                (r >= 0x20000 && r <= 0x2FA1F))
+            .length;
+        if (cjkCount * 100 < t.runes.length * 40) continue;
+        body = t;
+        break;
+      }
+    }
+    if (body == null || body.isEmpty) return '';
+    // Drop trailing reference markers like "(#约 10:39|)".
+    body = body.replaceAll(RegExp(r'\s*\(#[^)]*\)'), '').trim();
+    // Drop trailing ASCII tails (CBOL sometimes appends English).
+    body = body.replaceFirst(RegExp(r'\s*[A-Za-z;,.\s]+$'), '').trim();
+    // Collapse whitespace.
+    body = body.replaceAll(RegExp(r'\s+'), ' ').trim();
+    if (body.length > 36) body = '${body.substring(0, 36)}…';
+    return body;
   }
 
   /// Returns the full definition appropriate for [locale], with the
