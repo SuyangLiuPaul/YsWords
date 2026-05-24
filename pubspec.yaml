@@ -1,7 +1,7 @@
 name: yswords
 description: "YsWords means Yahweh's words. A bilingual Bible app to help you listen to His voice and abide in Him daily."
 publish_to: 'none'
-version: 1.3.18
+version: 1.3.19
 
 environment:
   sdk: '>=3.2.3 <4.0.0'
@@ -58,11 +58,7 @@ dependencies:
   # "Merriweather" etc. silently fell back to Roboto on web
   # (CanvasKit can't pull from system fonts).
   google_fonts: ^6.2.1
-  # 2026-05-23 (v1.2.86): high-quality AI TTS. AudioPlayer plays the
-  # base64 MP3 bytes returned by the /api/aiSpeak Netlify function
-  # (Google Cloud TTS Neural2 / Wavenet voices). audioplayers picked
-  # over just_audio for simpler bytes-source playback + smaller binary.
-  audioplayers: ^6.1.0
+  # 2026-05-24 (v1.3.19): audioplayers removed with the 朗读 feature.
   # 2026-05-24 (v1.3.0): notification scheduler. flutter_local_notifications
   # requires `tz.TZDateTime` for `zonedSchedule`. flutter_timezone gets the
   # device's IANA timezone (e.g. "Australia/Melbourne") at startup so
@@ -77,13 +73,15 @@ dependencies:
   # the analyzer's `depend_on_referenced_packages` lint stops
   # complaining about a direct import without a direct dep.
   web: ^1.0.0
-  # 2026-05-23 (v1.2.87): client-side audio cache.
-  # path_provider gives us the per-platform cache + app-docs dirs;
-  # crypto's SHA-1 turns (text + voice + tier) into a stable cache
-  # key so a second play of the same verse is instant + free.
+  # 2026-05-24 (v1.3.19): path_provider + crypto were originally
+  # added for the TTS audio cache (now removed). Keeping them around
+  # — path_provider has other potential uses (offline asset cache,
+  # debug log writes) and the binary footprint is negligible.
+  # crypto is the same. Drop in a future cleanup if neither gets a
+  # second consumer.
   path_provider: ^2.1.4
   crypto: ^3.0.5
-  flutter_tts: ^4.2.5
+  # 2026-05-24 (v1.3.19): flutter_tts removed with the 朗读 feature.
 
 dev_dependencies:
   flutter_test:

@@ -66,18 +66,11 @@ const _kAiModel = 'aiModel';
 const Set<String> _kAiModelAllowed = {'flash-lite', 'flash', 'pro'};
 const String _kAiModelDefault = 'flash-lite';
 
-// 2026-05-23 (v1.2.86): AI TTS voice preferences. Server maps these
-// to Google Cloud TTS voices:
-//   gender='female' + tier='neural' → en-US-Neural2-F / cmn-CN-Wavenet-A
-//   gender='male'   + tier='neural' → en-US-Neural2-D / cmn-CN-Wavenet-B
-//   tier='standard' → 4× cheaper standard voices (for free-tier
-//                     headroom on heavy users).
-const _kTtsVoiceGender = 'ttsVoiceGender';
-const _kTtsVoiceTier = 'ttsVoiceTier';
-const Set<String> _kTtsGenderAllowed = {'female', 'male'};
-const Set<String> _kTtsTierAllowed = {'neural', 'standard'};
-const String _kTtsGenderDefault = 'female';
-const String _kTtsTierDefault = 'neural';
+// 2026-05-24 (v1.3.19): TTS voice preference constants removed
+// along with the 朗读 feature. Existing SharedPreferences keys
+// (`ttsVoiceGender`, `ttsVoiceTier`) are left untouched on disk
+// — harmless orphan data that a future version can clear during
+// migration if storage size becomes a concern.
 
 // 2026-05-24 (v1.2.91): user's preferred sort order for the
 // Library → Notes tab.
@@ -170,8 +163,7 @@ class AppSettings extends ChangeNotifier {
   String _geminiApiKey = '';
   // 2026-05-10 (v1.2.26): see top-of-file _kAiModel comment.
   String _aiModel = _kAiModelDefault;
-  String _ttsVoiceGender = _kTtsGenderDefault;
-  String _ttsVoiceTier = _kTtsTierDefault;
+  // 2026-05-24 (v1.3.19): TTS fields removed with the 朗读 feature.
   // 2026-05-24 (v1.2.91): see _kNotesSortMode comment.
   String _notesSortMode = _kNotesSortDefault;
 
@@ -270,32 +262,8 @@ class AppSettings extends ChangeNotifier {
     await prefs.setString(_kAiModel, model);
   }
 
-  /// 2026-05-23 (v1.2.86): AI TTS voice gender — 'female' (default)
-  /// or 'male'. Persisted via SharedPreferences; used by every TTS
-  /// caller (Bible reading pane, sermon detail, evidence detail).
-  String get ttsVoiceGender => _ttsVoiceGender;
-
-  Future<void> setTtsVoiceGender(String gender) async {
-    if (!_kTtsGenderAllowed.contains(gender)) return;
-    if (_ttsVoiceGender == gender) return;
-    _ttsVoiceGender = gender;
-    notifyListeners();
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_kTtsVoiceGender, gender);
-  }
-
-  /// AI TTS voice tier — 'neural' (default, higher quality) or
-  /// 'standard' (4× cheaper, used by free-tier-conscious users).
-  String get ttsVoiceTier => _ttsVoiceTier;
-
-  Future<void> setTtsVoiceTier(String tier) async {
-    if (!_kTtsTierAllowed.contains(tier)) return;
-    if (_ttsVoiceTier == tier) return;
-    _ttsVoiceTier = tier;
-    notifyListeners();
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_kTtsVoiceTier, tier);
-  }
+  // 2026-05-24 (v1.3.19): `ttsVoiceGender` / `ttsVoiceTier` getters
+  // + setters removed with the 朗读 feature.
 
   /// 2026-05-24 (v1.2.91): which sort to apply in Library → Notes.
   /// One of 'canonical' / 'recent' / 'oldest'. See _kNotesSortMode
@@ -972,21 +940,12 @@ class AppSettings extends ChangeNotifier {
         ? storedAiModel
         : _kAiModelDefault;
 
-    // 2026-05-23 (v1.2.86): restore TTS voice prefs. Same
-    // allowlist-clamp pattern as aiModel.
-    final storedTtsGender = prefs.getString(_kTtsVoiceGender);
-    _ttsVoiceGender = (storedTtsGender != null &&
-            _kTtsGenderAllowed.contains(storedTtsGender))
-        ? storedTtsGender
-        : _kTtsGenderDefault;
-    final storedTtsTier = prefs.getString(_kTtsVoiceTier);
-    _ttsVoiceTier = (storedTtsTier != null &&
-            _kTtsTierAllowed.contains(storedTtsTier))
-        ? storedTtsTier
-        : _kTtsTierDefault;
+    // 2026-05-24 (v1.3.19): TTS voice pref restore removed with the
+    // 朗读 feature. The stored SharedPreferences keys are left in
+    // place as harmless orphan data.
 
     // 2026-05-24 (v1.2.91): Library → Notes sort mode. Same
-    // allowlist-clamp pattern as aiModel + tts*.
+    // allowlist-clamp pattern as aiModel.
     final storedNotesSort = prefs.getString(_kNotesSortMode);
     _notesSortMode = (storedNotesSort != null &&
             _kNotesSortAllowed.contains(storedNotesSort))

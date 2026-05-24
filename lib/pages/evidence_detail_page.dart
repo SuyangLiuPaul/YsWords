@@ -12,7 +12,6 @@ import 'package:yswords/utils/jump_to_reference.dart';
 import 'package:yswords/utils/reference_parser.dart';
 import 'package:yswords/widgets/confidence_badge.dart';
 import 'package:yswords/widgets/home_icon_button.dart';
-import 'package:yswords/widgets/listen_button.dart';
 import 'package:yswords/widgets/localized_back_button.dart';
 import 'package:yswords/utils/font_catalog.dart' show kCjkFontFallback;
 
@@ -74,16 +73,8 @@ class _EvidenceDetailPageState extends State<EvidenceDetailPage> {
           overflow: TextOverflow.ellipsis,
         ),
         actions: [
-          // 2026-05-23 (v1.2.86): AI TTS button reads the
-          // localized title + summary + description block aloud.
-          ListenButton(
-            text: [
-              evidence.localizedTitle(locale),
-              evidence.localizedSummary(locale),
-              evidence.localizedDescription(locale),
-            ].where((s) => s.trim().isNotEmpty).join('\n\n'),
-            compact: true,
-          ),
+          // 2026-05-24 (v1.3.19): ListenButton (AI TTS) removed with
+          // the rest of the 朗读 feature.
           IconButton(
             tooltip: uiStrings['share']?[locale] ?? 'Share',
             icon: const Icon(Icons.share_outlined),

@@ -37,8 +37,6 @@ import 'package:yswords/services/map_service.dart';
 import 'package:yswords/services/section_title_service.dart';
 import 'package:yswords/services/sermon_service.dart';
 import 'package:yswords/services/synopsis_service.dart';
-import 'package:yswords/services/ai_tts_service.dart';
-import 'package:yswords/services/tts_service.dart';
 import 'package:yswords/utils/clipboard_helper.dart';
 import 'package:yswords/utils/haptics.dart';
 // 2026-05-10 (v1.2.13): the `as jumper` import was only needed by
@@ -157,12 +155,14 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
   List<Sermon> _chapterSermons = const [];
   String _lastSermonsBookChapter = '';
 
-  /// Polled flag mirroring `TtsService.speaking` so the floating-header
-  /// menu can swap its icon/label without recomputing on every frame.
-  /// Updated by a 500 ms ticker that runs only while a TTS utterance
-  /// is active.
-  bool _isListening = false;
-  Timer? _ttsPoller;
+  // 2026-05-24 (v1.3.19): TTS (朗读) feature removed end-to-end at
+  // user request ("then remove 朗读 totally please"). The polled
+  // `_isListening` flag + `_ttsPoller` ticker are gone; so are
+  // `_toggleListenChapter`, `_legacyTtsSpeakSequence`,
+  // `_startTtsPolling`/`_stopTtsPolling`, `_ttsLocaleForVersion`,
+  // the menu item, the keyboard shortcut, and the entire
+  // `lib/services/tts_*` + `lib/widgets/listen_button.dart` files.
+  // See the v1.3.19 entry in HANDOFF.md for the full removal log.
 
   // 2026-05-24 (v1.2.96): N-page chapter pager. PageView with one
   // page per chapter in `mainProvider.chapterList` (~1189 entries
@@ -227,186 +227,9 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
     });
   }
 
-  /// Toggle TTS read-aloud. Plays each verse of the current chapter as
-  /// its own utterance so cancellation is responsive and we can flash
-  /// a brief highlight on the verse currently being read (`_isListening`
-  /// alone wouldn't surface progress to the user).
-  ///
-  /// 2026-05-23 (v1.2.86): switched the default path from the browser's
-  /// robotic SpeechSynthesis (web-only, low quality) to AI TTS via the
-  /// /api/aiSpeak Netlify function (Google Cloud Neural2/Wavenet
-  /// voices). Works on native iOS / macOS / Android too. Falls back
-  /// to legacy SpeechSynthesis if AI TTS is unavailable (e.g. server
-  /// key missing) — the AppSettings BYOK field becomes the user's
-  /// own Google Cloud TTS key in that case.
-  void _toggleListenChapter() {
-    // Logical state takes precedence over the browser flag because
-    // chrome's speechSynthesis.speaking flickers between chunks.
-    if (_isListening || TtsService.speaking || AiTtsService.speaking) {
-      TtsService.stop();
-      AiTtsService.stop();
-      _stopTtsPolling();
-      if (mounted) {
-        context.read<MainProvider>().clearHighlightIndex();
-        setState(() => _isListening = false);
-      }
-      return;
-    }
-    final mp = context.read<MainProvider>();
-    final book = mp.currentBook;
-    final chapter = mp.currentChapter;
-    if (book == null || chapter == null) return;
-    final chapterVerses = mp.verses
-        .where((v) => v.book == book && v.chapter == chapter)
-        .toList()
-      ..sort((a, b) => a.verse.compareTo(b.verse));
-    if (chapterVerses.isEmpty) return;
-    // Strip <note:...> tags and {variant} braces so the synthesizer
-    // doesn't read editorial markup aloud. One chunk per verse so
-    // (a) cancel works deterministically and (b) we can highlight
-    // the current verse in the list as it's spoken.
-    final chunks = chapterVerses
-        .map((v) => sanitizeForSearch(v.text))
-        .toList();
-    final locale = _ttsLocaleForVersion(mp.currentVersion);
-
-    final settings = context.read<AppSettings>();
-    final byok = settings.geminiApiKey.trim();
-    // v1.2.87 Phase B: per-verse CDN pre-fetch. When the user is on
-    // a version + book + chapter that we've pre-generated, the MP3
-    // already exists on yswords-data.netlify.app and we skip the
-    // /api/aiSpeak call (no quota, no latency). URL pattern:
-    //   /audio/<version>/<englishBook>/<chapter>_<verse>_<gender>.mp3
-    // The version slug is lowercased; book is English so the path
-    // is stable across locale UI changes.
-    final versionSlug = (mp.currentVersion).toLowerCase();
-    final englishBook = toEnglish(book) ?? book;
-    final genderChar = settings.ttsVoiceGender == 'male' ? 'M' : 'F';
-    String? cdnUrlFor(int idx) {
-      // Idx maps to chapterVerses[idx].verse (sorted ascending).
-      if (idx < 0 || idx >= chapterVerses.length) return null;
-      final v = chapterVerses[idx].verse;
-      final safeBook = englishBook.replaceAll(' ', '_');
-      return 'https://yswords-data.netlify.app/audio/$versionSlug/'
-          '$safeBook/${chapter}_${v}_$genderChar.mp3';
-    }
-
-    AiTtsService.speakSequence(
-      chunks,
-      locale: locale,
-      gender: settings.ttsVoiceGender,
-      tier: settings.ttsVoiceTier,
-      userApiKey: byok.isEmpty ? null : byok,
-      cdnUrlFor: cdnUrlFor,
-      onAdvance: (idx) {
-        if (!mounted) return;
-        mp.setHighlightIndex(idx);
-        if (mp.itemScrollController.isAttached) {
-          mp.scrollToIndex(index: idx);
-        }
-      },
-      onError: (err) {
-        if (!mounted) return;
-        // 2026-05-23 (v1.2.86): web fell back to browser
-        // SpeechSynthesis when /api/aiSpeak failed; on native we
-        // had no fallback (the stub was a no-op) so iOS/macOS/
-        // Android just saw a SnackBar.
-        //
-        // 2026-05-24 (v1.3.18): TtsService now wraps `flutter_tts`,
-        // which ships native implementations for iOS (AVSpeech
-        // Synthesizer), macOS (NSSpeechSynthesizer), Android
-        // (TextToSpeech), and Web (SpeechSynthesis). `isAvailable`
-        // is true everywhere we ship, so the fallback always
-        // engages — no more SnackBar dead-ends when the Netlify
-        // function isn't configured (GOOGLE_TTS_API_KEY unset) or
-        // when the user's BYOK Gemini key doesn't have Cloud TTS
-        // enabled. The Chirp 3 HD voices remain the premium path
-        // when an API key is available; native TTS is the always-on
-        // floor.
-        if (TtsService.isAvailable) {
-          _legacyTtsSpeakSequence(chunks, locale, mp);
-          return;
-        }
-        ScaffoldMessenger.maybeOf(context)?.showSnackBar(
-          SnackBar(content: Text(err)),
-        );
-        _stopTtsPolling();
-        mp.clearHighlightIndex();
-        setState(() => _isListening = false);
-      },
-      onDone: () {
-        if (!mounted) return;
-        _stopTtsPolling();
-        mp.clearHighlightIndex();
-        setState(() => _isListening = false);
-      },
-    );
-    _startTtsPolling();
-    setState(() => _isListening = true);
-    return;
-  }
-
-  /// Legacy SpeechSynthesis fallback. Same per-verse loop as before
-  /// the AI-TTS rewrite — kept as a safety net when the Netlify
-  /// function is unreachable on web.
-  void _legacyTtsSpeakSequence(
-      List<String> chunks, String locale, MainProvider mp) {
-    TtsService.speakSequence(
-      chunks,
-      locale: locale,
-      onAdvance: (idx) {
-        if (!mounted) return;
-        // Reuse the same in-list highlight machinery used by cross-
-        // ref taps. Index here is the verse's position within the
-        // chapter, which matches the relative index the list expects.
-        mp.setHighlightIndex(idx);
-        // Auto-scroll along so the spoken verse is on screen.
-        if (mp.itemScrollController.isAttached) {
-          mp.scrollToIndex(index: idx);
-        }
-      },
-      onDone: () {
-        if (!mounted) return;
-        mp.clearHighlightIndex();
-        _stopTtsPolling();
-        setState(() => _isListening = false);
-      },
-    );
-    setState(() => _isListening = true);
-    _startTtsPolling();
-  }
-
-  String _ttsLocaleForVersion(String version) {
-    final v = version.toLowerCase();
-    if (v.contains('cuv') ||
-        v.contains('cnv') ||
-        v.contains('biblexg') ||
-        v.contains('-tr')) {
-      // Traditional vs. simplified guess: -tr suffix => zh-TW, else zh-CN.
-      return v.endsWith('-tr') ? 'zh-TW' : 'zh-CN';
-    }
-    return 'en-US';
-  }
-
-  void _startTtsPolling() {
-    _ttsPoller?.cancel();
-    _ttsPoller = Timer.periodic(const Duration(milliseconds: 500), (_) {
-      // 2026-05-23 (v1.2.86): consider EITHER TTS service active.
-      // AiTtsService is the primary path; TtsService is the
-      // SpeechSynthesis fallback. Either being active means the
-      // button should stay in the "stop" state.
-      final speaking = TtsService.speaking || AiTtsService.speaking;
-      if (!speaking && _isListening) {
-        if (mounted) setState(() => _isListening = false);
-        _stopTtsPolling();
-      }
-    });
-  }
-
-  void _stopTtsPolling() {
-    _ttsPoller?.cancel();
-    _ttsPoller = null;
-  }
+  // 2026-05-24 (v1.3.19): TTS toggle + polling + locale-mapper +
+  // legacy SpeechSynthesis fallback all removed. See header
+  // comment for the rationale.
 
   /// Show a small dialog listing the keyboard shortcuts. Triggered by
   /// `?` (Shift+/) on web — pure discoverability help; tapping
@@ -417,7 +240,6 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
       ['/', uiStrings['search']?[locale] ?? 'Search'],
       ['[', uiStrings['previousChapter']?[locale] ?? 'Previous chapter'],
       [']', uiStrings['nextChapter']?[locale] ?? 'Next chapter'],
-      ['Shift + T', uiStrings['ttsListen']?[locale] ?? 'Listen to chapter'],
       ['?', uiStrings['shortcutsHelp']?[locale] ?? 'Keyboard shortcuts'],
     ];
     showDialog<void>(
@@ -477,9 +299,7 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
   void dispose() {
     _versePositionTimer?.cancel();
     _scrollOffsetSub?.cancel();
-    _ttsPoller?.cancel();
     _pageController.dispose();
-    if (_isListening) TtsService.stop();
     _attachedPositionsListener?.itemPositions
         .removeListener(_handleItemPositionsChanged);
     _visibleItemIndexNotifier.dispose();
@@ -1541,11 +1361,8 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                             transition: Transition.rightToLeft);
                       }
                     },
-                    const SingleActivator(LogicalKeyboardKey.keyT,
-                        shift: true): () {
-                      // v1.2.86: AI TTS works everywhere.
-                      _toggleListenChapter();
-                    },
+                    // v1.3.19: Shift+T (toggle TTS) removed with the
+                    // rest of the 朗读 feature.
                     const SingleActivator(LogicalKeyboardKey.question,
                         shift: true): () =>
                         _showShortcutsHelp(context, settings.locale),
@@ -2079,17 +1896,8 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                       // don't have to relaunch the app when verses
                       // fail to load mid-session.
                       onReload: _reloadVerses,
-                      // TTS read-aloud — only on web (or any platform
-                      // where the SpeechSynthesis API is available).
-                      // The state class also self-stops the utterance
-                      // on dispose so swiping back doesn't leave the
-                      // browser narrating an empty page.
-                      // v1.2.86: AI TTS works on every platform via
-                      // the /api/aiSpeak Netlify function, so the
-                      // button is now always wired. Legacy
-                      // SpeechSynthesis is the on-error fallback.
-                      onToggleListen: _toggleListenChapter,
-                      isListening: _isListening,
+                      // 2026-05-24 (v1.3.19): TTS feature removed —
+                      // no more `onToggleListen` / `isListening` wiring.
                       // 2026-05-21 (v1.2.69): TodayReadingCard removed
                       // along with the rest of the reading-plan feature.
                       belowHeader: null,
@@ -5677,13 +5485,6 @@ class _FloatingHeader extends StatelessWidget {
   /// FetchVerses + FetchBooks on the current Bible version. Null
   /// hides the menu item.
   final VoidCallback? onReload;
-  /// Toggles read-aloud (web TTS) for the current chapter. Null hides
-  /// the menu item — set to null on platforms / browsers without
-  /// SpeechSynthesis support.
-  final VoidCallback? onToggleListen;
-  /// True when a TTS utterance is currently in progress, so the menu
-  /// can show "Stop reading" instead of "Listen to chapter".
-  final bool isListening;
   /// Optional widget rendered immediately below the glass header
   /// (still inside the same SafeArea + Positioned region). Used for
   /// the "Today's Reading" card when a reading plan is active.
@@ -5720,8 +5521,6 @@ class _FloatingHeader extends StatelessWidget {
     this.highlightCount = 0,
     this.onHighlights,
     this.onReload,
-    this.onToggleListen,
-    this.isListening = false,
     this.belowHeader,
     this.chromeVisible = true,
   });
@@ -6158,25 +5957,8 @@ class _FloatingHeader extends StatelessWidget {
                         // Gospels. The data is curated from public-
                         // domain harmony tables so non-Gospel books
                         // never have anything to show.
-                        if (onToggleListen != null) {
-                          items.add(PopupMenuItem(
-                            value: 'listen',
-                            onTap: onToggleListen,
-                            child: _menuRow(
-                              context,
-                              icon: isListening
-                                  ? Icons.stop_circle_outlined
-                                  : Icons.volume_up_outlined,
-                              iconColor:
-                                  isListening ? scheme.primary : null,
-                              label: isListening
-                                  ? (uiStrings['ttsStop']?[locale] ??
-                                      'Stop reading')
-                                  : (uiStrings['ttsListen']?[locale] ??
-                                      'Listen to chapter'),
-                            ),
-                          ));
-                        }
+                        // 2026-05-24 (v1.3.19): "Listen to chapter"
+                        // menu item removed with the 朗读 feature.
                         if (SynopsisService.isGospel(toEnglish(book) ?? '')) {
                           items.add(PopupMenuItem(
                             value: 'synopsis',

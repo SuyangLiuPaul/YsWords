@@ -4375,73 +4375,10 @@ const uiStrings = {
     'zh-Hant': '出處',
     'en': 'Occurrences',
   },
-  // ── Verse audio (Round 27D) ─────────────────────────────────────
-  'ttsListen': {
-    'zh-Hans': '朗读本章',
-    'zh-Hant': '朗讀本章',
-    'en': 'Listen to chapter',
-  },
-  'ttsStop': {
-    'zh-Hans': '停止朗读',
-    'zh-Hant': '停止朗讀',
-    'en': 'Stop reading',
-  },
-  // 2026-05-23 (v1.2.88): AI TTS voice settings panel.
-  'ttsVoiceTitle': {
-    'zh-Hans': 'AI 朗读语音',
-    'zh-Hant': 'AI 朗讀語音',
-    'en': 'AI voice for read-aloud',
-  },
-  'ttsVoiceBody': {
-    'zh-Hans': '选择朗读时的男女声和音质。听过的章节会自动缓存,下次秒开免费。',
-    'zh-Hant': '選擇朗讀時的男女聲和音質。聽過的章節會自動快取,下次秒開免費。',
-    'en': "Choose voice gender + quality. Played chapters are cached locally — replays are instant and free.",
-  },
-  'ttsVoiceGender': {
-    'zh-Hans': '声音',
-    'zh-Hant': '聲音',
-    'en': 'Voice',
-  },
-  'ttsVoiceGenderFemale': {
-    'zh-Hans': '女声',
-    'zh-Hant': '女聲',
-    'en': 'Female',
-  },
-  'ttsVoiceGenderMale': {
-    'zh-Hans': '男声',
-    'zh-Hant': '男聲',
-    'en': 'Male',
-  },
-  'ttsVoiceTier': {
-    'zh-Hans': '音质',
-    'zh-Hant': '音質',
-    'en': 'Quality',
-  },
-  'ttsVoiceTierNeural': {
-    'zh-Hans': '神经网络 (推荐)',
-    'zh-Hant': '神經網路 (推薦)',
-    'en': 'Neural (recommended)',
-  },
-  'ttsVoiceTierStandard': {
-    'zh-Hans': '标准 (省流量)',
-    'zh-Hant': '標準 (省流量)',
-    'en': 'Standard (lighter)',
-  },
-  'ttsCacheSize': {
-    'zh-Hans': '语音缓存',
-    'zh-Hant': '語音快取',
-    'en': 'Audio cache',
-  },
-  'ttsCacheClear': {
-    'zh-Hans': '清空缓存',
-    'zh-Hant': '清空快取',
-    'en': 'Clear cache',
-  },
-  'ttsCacheCleared': {
-    'zh-Hans': '语音缓存已清空',
-    'zh-Hant': '語音快取已清空',
-    'en': 'Audio cache cleared',
-  },
+  // 2026-05-24 (v1.3.19): all `tts*` keys removed with the 朗读
+  // feature. Were: ttsListen, ttsStop, ttsVoiceTitle, ttsVoiceBody,
+  // ttsVoiceGender, ttsVoiceGenderFemale/Male, ttsVoiceTier,
+  // ttsVoiceTierNeural/Standard, ttsCacheSize/Clear/Cleared.
   // ── Keyboard shortcuts (Round 27E) ──────────────────────────────
   'shortcutsHelp': {
     'zh-Hans': '键盘快捷键',
