@@ -43,6 +43,18 @@ const _ALLOWLIST_SET = new Set(_ALLOWLIST);
 /// Returns the CORS headers to apply to a response for the given
 /// request. Always safe to spread into a Response's headers.
 export function corsHeaders(req) {
+	// Defensive: if a caller forgets to pass req, fall back to a
+	// wildcard so the response still works. Logged so the bug is
+	// visible in Function Logs. v1.3.24 hotfix added after a stray
+	// `noContent()` call in errorReport's success path returned 502.
+	if (!req || typeof req.headers?.get !== 'function') {
+		console.warn('[cors] corsHeaders called without a Request');
+		return {
+			'Access-Control-Allow-Origin': '*',
+			'Access-Control-Allow-Methods': 'POST, OPTIONS',
+			'Access-Control-Allow-Headers': 'Content-Type',
+		};
+	}
 	const origin = req.headers.get('origin') || '';
 	let allowOrigin;
 	if (!origin) {

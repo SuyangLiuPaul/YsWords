@@ -253,7 +253,7 @@ export default async (req) => {
 
 	// Always 204 — error reporter must never propagate failure
 	// back to the (already-erroring) client.
-	return noContent();
+	return noContent(req);
 };
 
 function escapeHtml(s) {
