@@ -813,8 +813,11 @@ void _navigateToVerse(Verse v, MainProvider mp) {
   // sent the user back to the dashboard from the dashboard path,
   // which the user reported as "clicking the verse goes back to home
   // page instead of the bible reader".
+  // 2026-05-24 (v1.3.6): explicit routeName — see main.dart for
+  // the duplicate-HomePage-detection rationale.
   Get.off(
     () => const HomePage(),
+    routeName: '/HomePage',
     transition: Transition.rightToLeft,
   );
 }

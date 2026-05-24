@@ -682,7 +682,15 @@ class _RootRouterState extends State<_RootRouter> {
         if (!mounted) return;
         await jumper.showJumpResultSnackBar(context, result);
         if (!mounted) return;
+        // 2026-05-24 (v1.3.6): explicit routeName so the
+        // verse_popup_sheet "Open in Reader" path can detect an
+        // existing HomePage in the stack and pop to it instead of
+        // pushing a duplicate. Get's auto-name resolves the
+        // closure's runtimeType to something unpredictable like
+        // `/_Closure` — explicit '/HomePage' is the only reliable
+        // detection key.
         Get.to(() => const HomePage(),
+            routeName: '/HomePage',
             transition: Transition.rightToLeft);
       });
     }

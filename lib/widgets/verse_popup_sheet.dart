@@ -257,7 +257,9 @@ class _VersePopupSheetState extends State<VersePopupSheet> {
     if (!foundExistingHome) {
       // No HomePage in the stack — push a fresh one on top of
       // whatever root route we landed on (Dashboard).
-      Get.to(() => const HomePage(), transition: Transition.rightToLeft);
+      Get.to(() => const HomePage(),
+          routeName: '/HomePage',
+          transition: Transition.rightToLeft);
     }
     // else: existing HomePage is now at the top. pendingJump is
     // already set on the provider; the reader picks it up on its

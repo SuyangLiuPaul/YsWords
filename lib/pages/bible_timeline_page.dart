@@ -243,7 +243,11 @@ class _BibleTimelinePageState extends State<BibleTimelinePage> {
     final ok = await jumper.showJumpResultSnackBar(context, result);
     if (!ok || !context.mounted) return;
     Navigator.of(context).maybePop();
-    Get.to(() => const HomePage(), transition: Transition.rightToLeft);
+    // 2026-05-24 (v1.3.6): explicit routeName — see main.dart for
+    // the duplicate-HomePage-detection rationale.
+    Get.to(() => const HomePage(),
+        routeName: '/HomePage',
+        transition: Transition.rightToLeft);
   }
 }
 
