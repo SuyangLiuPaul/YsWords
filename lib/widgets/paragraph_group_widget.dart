@@ -8,6 +8,7 @@ import 'package:yswords/models/verse.dart';
 import 'package:yswords/providers/main_provider.dart';
 import 'package:yswords/utils/build_verse_content_spans.dart';
 import 'package:yswords/utils/responsive.dart';
+import 'package:yswords/widgets/bible_reading_pane.dart' show showNoteEditor;
 import 'package:yswords/widgets/block_note_card.dart';
 import 'package:yswords/utils/font_catalog.dart' show kCjkFontFallback;
 
@@ -170,17 +171,36 @@ class ParagraphGroupWidget extends StatelessWidget {
             ));
           }
           if (isNoted) {
+            // 2026-05-24 (v1.3.37): the note glyph is now a direct
+            // tap target — tapping opens the existing note editor
+            // for that verse, skipping the select-verse → bottom-bar
+            // "note" two-tap flow. User-reported as a UX gap:
+            // "在verse上那个note标签现在需要选中经文再按note才打开".
+            //
+            // The GestureDetector sits in a WidgetSpan so the icon
+            // remains inline with the surrounding RichText. behaviour
+            // is opaque so the parent verse-tap (selection toggle)
+            // doesn't fire on the glyph's bounding box.
             allSpans.add(WidgetSpan(
               alignment: PlaceholderAlignment.middle,
               child: Padding(
                 padding: const EdgeInsets.only(right: 1),
-                child: Icon(
-                  Icons.sticky_note_2,
-                  size: settings.fontSize * 0.78,
-                  color: Theme.of(context)
-                      .colorScheme
-                      .primary
-                      .withValues(alpha: 0.7),
+                child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () => showNoteEditor(
+                    context: context,
+                    verses: [verse],
+                    locale: locale,
+                    mainProvider: mainProvider,
+                  ),
+                  child: Icon(
+                    Icons.sticky_note_2,
+                    size: settings.fontSize * 0.78,
+                    color: Theme.of(context)
+                        .colorScheme
+                        .primary
+                        .withValues(alpha: 0.7),
+                  ),
                 ),
               ),
             ));

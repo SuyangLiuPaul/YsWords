@@ -7,6 +7,7 @@ import 'package:yswords/providers/main_provider.dart';
 import 'package:yswords/utils/build_verse_content_spans.dart';
 import 'package:yswords/utils/haptics.dart';
 import 'package:yswords/utils/responsive.dart';
+import 'package:yswords/widgets/bible_reading_pane.dart' show showNoteEditor;
 import 'package:yswords/widgets/block_note_card.dart';
 
 /// Renders a single verse. Used by:
@@ -224,17 +225,36 @@ class VerseWidget extends StatelessWidget {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             if (isNoted)
+                              // 2026-05-24 (v1.3.37): wrap note glyph
+                              // in a GestureDetector so a single tap
+                              // opens the editor for this verse
+                              // (previously required select-verse +
+                              // tap bottom-bar "note" — two-tap flow).
+                              // HitTestBehavior.opaque keeps the
+                              // verse-tap selection from firing on
+                              // the glyph's bounding box.
                               Padding(
                                 padding: const EdgeInsets.only(right: 4),
-                                child: Icon(
-                                  Icons.sticky_note_2,
-                                  size: (settings.fontSize * 0.95)
-                                      .clamp(14.0, 22.0)
-                                      .toDouble(),
-                                  color: Theme.of(context)
-                                      .colorScheme
-                                      .primary
-                                      .withValues(alpha: 0.85),
+                                child: GestureDetector(
+                                  behavior: HitTestBehavior.opaque,
+                                  onTap: () => showNoteEditor(
+                                    context: context,
+                                    verses: [verse],
+                                    locale: settings.locale,
+                                    mainProvider: Provider.of<MainProvider>(
+                                        context,
+                                        listen: false),
+                                  ),
+                                  child: Icon(
+                                    Icons.sticky_note_2,
+                                    size: (settings.fontSize * 0.95)
+                                        .clamp(14.0, 22.0)
+                                        .toDouble(),
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .primary
+                                        .withValues(alpha: 0.85),
+                                  ),
                                 ),
                               ),
                             if (isBookmarked)
