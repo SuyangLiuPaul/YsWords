@@ -21,7 +21,7 @@
 
 ## Try it now
 
-🌐 **<https://yswords.netlify.app>** — opens in any modern browser. No install, no sign-in needed. Optional Google sign-in syncs highlights / bookmarks / notes / reading-plan progress across devices.
+🌐 **<https://yswords.netlify.app>** — opens in any modern browser. No install, no sign-in needed. Optional Google sign-in syncs highlights / bookmarks / notes / last-read position across devices.
 
 📱 On mobile, tap your browser's menu → **Add to Home Screen** to install as a PWA — full offline reading after one tap of the *Offline Pack* in Settings.
 
@@ -100,7 +100,7 @@ any APIs themselves**; everything is at the Firebase project level.
 
 ## App Screenshots
 
-> Captured 2026-05-07 against the v1.0.0 build. UI has shipped substantial polish since (Liquid Glass material picker v1.1.x, BYOK Test button v1.2.7, AI model picker v1.2.26-27, eager-preload progress UI v1.2.18+, About AppBar version label v1.2.19, splash Reload-page button v1.2.12, China-mode tag v1.2.0, six per-tier PWA icons v1.2.3+, devotional copy-format default v1.2.47, real-time BYOK key sync v1.2.47, search-jump prominent highlight + paragraph-mode arrow marker v1.2.49-v1.2.51) — see the HANDOFF banner for a full release log. The screenshots below show the core layout that's still current; the welcome-page disclaimer card was removed in v1.2.5 and isn't shown.
+> Captured 2026-05-07 against the v1.0.0 build. UI has shipped substantial polish since — see the HANDOFF banner for a complete v1.x release log. **v1.3.x highlights**: PageView chapter pager with per-page SPL + KeepAlive (v1.2.96 → v1.3.3), themed iOS/Android/macOS/web app icons that follow `primaryColor` (v1.2.96 → v1.2.98), per-category notification scheduler with local-TZ-correct fires (v1.3.0), daily-verse rotation epoch fix (v1.3.2), fine-grained rebuild scope via Selector + ValueNotifier (v1.3.5 + v1.3.15 + v1.3.16), navigation dedup (v1.3.6 → v1.3.8), YHWH name restored across 47 aux files (v1.3.11), version-gap UI (v1.3.12), Chinese exegesis prompt fix (v1.3.13), split-pane chrome cleanup + tighter chapter top gap (v1.3.14), haptic feedback + macOS ⌘ shortcuts (v1.3.17), 朗读/TTS feature removed (v1.3.19), avatar decode caps + responsive reading-column max-width on tablet/desktop (v1.3.20). The screenshots below show the core layout that's still current; the welcome-page disclaimer card was removed in v1.2.5 and isn't shown.
 
 | Dashboard — greeting + Read Bible + Verse of the Day                                                                                  | Quick-links grid (Search · Library · Bible Tools · Daily News · Bible Evidence · Sermons · Family Tree · Bible Timeline · Bible Trivia · Songs · Feedback · Settings) |
 | ------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

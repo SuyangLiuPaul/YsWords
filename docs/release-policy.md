@@ -30,23 +30,35 @@ If unsure, stop and ask: "Want me to push this to prod too, or hold at qat?"
 
 ## Standard workflow
 
+**Preferred (post-v1.3.9):** the `tools/release_web.sh` wrapper
+auto-bumps the patch version, stamps `APP_RELEASE_TIME` as UTC,
+builds web, and deploys to all 4 dev/qat sites in parallel.
+
 ```bash
 # 1. Make changes locally
 flutter analyze && flutter test
 
-# 2. Build with auto-stamped version + time
-python3 tools/build_web.py
+# 2. Bump + build + deploy to dev + qat (one command)
+NETLIFY_AUTH_TOKEN=nfp_xxx... bash tools/release_web.sh
 
-# 3. Deploy to dev — always safe
-python3 tools/deploy_site.py --tier dev
+# 3. Smoke test on https://yswords-dev.netlify.app +
+#    https://yswords-qat.netlify.app
 
-# 4. Smoke test on https://yswords-dev.netlify.app
-
-# 5. Deploy to qat — also safe
-python3 tools/deploy_site.py --tier qat
-
-# 6. STOP. Ask user: "Push to prod?"
+# 4. STOP. Ask user: "Push to prod?"
 #    Only proceed to prod after explicit yes IN THE CURRENT TURN.
+#    Use --no-bump so prod gets the SAME version dev/qat just verified.
+NETLIFY_AUTH_TOKEN=nfp_xxx... bash tools/release_web.sh --no-bump --include-prod
+
+# 5. Install on native devices (iOS / Android / macOS):
+zsh tools/yswords-ios-reinstall.sh
+```
+
+**Legacy (still works):**
+
+```bash
+python3 tools/build_web.py
+python3 tools/deploy_site.py --tier dev
+python3 tools/deploy_site.py --tier qat
 python3 tools/deploy_site.py --tier prod   # ← gated on explicit user instruction
 ```
 

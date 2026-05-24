@@ -6,7 +6,7 @@ mode chips, dashboard quick-links grid, feedback form). This file
 is the capture brief for whoever takes them — the URL flow,
 suggested viewport size, and the filename to save.
 
-> **Status (2026-05-17, v1.2.51):** **11 rows still relevant** —
+> **Status (2026-05-24, v1.3.20):** **10 rows still relevant** —
 > all captured against the live build and committed into
 > `assets/screenshots/`. The README's *App Screenshots* table uses
 > these in 5 rows × 2 columns; older shots (note popup / multi-
@@ -14,12 +14,29 @@ suggested viewport size, and the filename to save.
 > are kept inside a `<details>` collapser further down. Row 11
 > (`screenshot_welcome_disclaimer.png`) is **OBSOLETE** as of
 > v1.2.5 — the disclaimer card was removed from the welcome page;
-> the file is no longer referenced by README.md. UI layout is
-> visually unchanged across v1.2.32–v1.2.51 (text-content +
-> backend-fix + targeted-polish releases only — the
-> highlight-on-jump look from v1.2.50-v1.2.51 isn't covered by
-> the current screenshots; capture a fresh "search → tap result"
-> shot if a re-shoot pass happens).
+> the file is no longer referenced by README.md.
+>
+> **Drift since the shots were captured (informational — UI is
+> still recognisable but not pixel-identical):**
+> * v1.2.70 — auto-hide chrome (header + bottom bar slide off when
+>   scrolling down). Screenshots show the chrome always-visible.
+> * v1.2.96 → v1.3.3 — PageView chapter pager; the reader's swipe
+>   model and chapter-boundary behaviour changed (visually similar
+>   but interaction differs).
+> * v1.2.96 → v1.2.98 — themed app icons (favicon / launcher /
+>   Dock icon now follow `primaryColor`). Screenshots use the
+>   v1.0 fixed-blue icon.
+> * v1.3.10 → v1.3.19 — 朗读/TTS feature was added and then fully
+>   removed. The "Listen to chapter" menu item never made it into
+>   screenshots (added v1.2.86, removed v1.3.19) — nothing to
+>   re-shoot.
+> * v1.3.14 — split-pane chrome cleanup (3-dot menu hidden in
+>   secondary pane). The Split-View screenshots, if any, would
+>   need a fresh shot.
+> * v1.3.20 — reading column on tablet/desktop now caps at
+>   760-1040 px (was edge-to-edge). The "Feedback form on desktop"
+>   shot still captures this aspect ratio correctly but the
+>   Bible reader on desktop monitors is visually different now.
 
 ## How to capture
 
