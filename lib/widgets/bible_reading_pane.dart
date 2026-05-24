@@ -1633,36 +1633,59 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                           if (!_chromeVisible) _toggleChrome();
                         },
                       ),
-                    // 2026-05-24 (v1.3.8): cross-platform tap-status-
-                    // bar to scroll-to-top. iOS's system status-bar
-                    // tap behavior only auto-wires when a Scaffold has
-                    // a primary AppBar; our reader uses _FloatingHeader
-                    // (custom Positioned) so neither iOS nor Android
-                    // get the feature by default. User asked "按top
-                    // ios android 会回最上面吗" — answer was no, this
-                    // adds it explicitly.
+                    // 2026-05-24 (v1.3.8 / v1.3.34): cross-platform
+                    // tap-top → scroll-to-top. iOS's system status-bar
+                    // tap only auto-wires when a Scaffold has a
+                    // primary AppBar driving a PrimaryScrollController;
+                    // our reader uses a custom Positioned _FloatingHeader
+                    // + ScrollablePositionedList (its own ItemScroll-
+                    // Controller, NOT a PrimaryScrollController), so
+                    // neither iOS nor Android get the feature for free.
                     //
-                    // Implementation: a transparent Positioned strip
-                    // covering ONLY the status-bar area (height ==
-                    // MediaQuery.padding.top). Tap fires
-                    // scrollToIndex(0) via mainProvider's forwarder,
-                    // which routes to the active _ChapterPage's SPL.
-                    // Mini-header pills + _FloatingHeader controls
-                    // sit BELOW this strip (after their SafeArea
-                    // top padding), so this doesn't steal their
-                    // taps. Translucent hit behavior means non-tap
-                    // gestures (pull-down notification shade on
-                    // Android, swipe-down on iOS) still pass through.
+                    // v1.3.34 fix: user reported "按了顶部没反应". Root
+                    // cause was the previous strip height of
+                    // `topInset.clamp(20, 64)` — on iPhone 16 Pro Max
+                    // / 15 Pro / 14 Pro that's ~59 px which exactly
+                    // covers the Dynamic Island. iOS reserves the
+                    // Island for system gestures (long-press = expand,
+                    // short tap = often swallowed by the system), so
+                    // taps on that zone never reach the Flutter app.
+                    //
+                    // Three changes to make tap-top reliably work:
+                    //   (1) Enlarge the strip to `topInset + 56` —
+                    //       extends down past the Dynamic Island into
+                    //       the mini-header chip row, so a tap
+                    //       anywhere in the top band (not just on the
+                    //       Island) lands on the strip.
+                    //   (2) Switch from `translucent` to `opaque` — the
+                    //       translucent variant put the strip into a
+                    //       three-way gesture arena (strip + mini-
+                    //       header + outer chrome-toggle GestureDetector
+                    //       at line ~1320) where one of the others
+                    //       could win and call _toggleChrome instead
+                    //       of _scrollChapterToTop. Opaque wins
+                    //       definitively for any tap in the strip's
+                    //       bounding box.
+                    //   (3) Combine actions: scroll-to-top + show
+                    //       chrome. Convention: "I'm at the top, here
+                    //       are the navigation controls".
                     if (currentVerse != null)
                       Positioned(
                         top: 0,
                         left: 0,
                         right: 0,
-                        height: MediaQuery.of(context).padding.top
-                            .clamp(20.0, 64.0),
+                        height:
+                            MediaQuery.of(context).padding.top + 56,
                         child: GestureDetector(
-                          behavior: HitTestBehavior.translucent,
-                          onTap: _scrollChapterToTop,
+                          behavior: HitTestBehavior.opaque,
+                          onTap: () {
+                            _scrollChapterToTop();
+                            if (_chromeFeatureEnabled &&
+                                !_chromeVisible) {
+                              _safeChromeSetState(
+                                  () => _chromeVisible = true);
+                            }
+                          },
                         ),
                       ),
                     _FloatingHeader(
@@ -2117,31 +2140,20 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                               },
                             ),
                       ),
-                    // 2026-05-24 (v1.2.91): iOS-style "tap status bar
-                    // to scroll to top". Invisible Positioned strip
-                    // covering only the safe-area top inset (the
-                    // physical status-bar area). HitTestBehavior.opaque
-                    // wins over the outer chrome-toggle GestureDetector
-                    // (line ~1294) so a status-bar tap fires this and
-                    // ONLY this, not the chrome-toggle. Verse content
-                    // sits below the inset so no interference with
-                    // verse selection / chrome toggle on the rest of
-                    // the screen.
-                    //
-                    // Animated scroll (350 ms easeOut) instead of a
-                    // hard jump — matches iOS's smooth scroll-to-top
-                    // behaviour. Falls through to no-op when the
-                    // controller isn't attached yet (split-view mount
-                    // race).
+                    // 2026-05-24 (v1.2.91 / v1.3.34): iOS-style tap-top
+                    // to scroll-to-top, this time inside the verse-
+                    // select toolbar overlay. v1.3.34 fix mirrors the
+                    // main reader strip above (line ~1657): enlarged
+                    // from `topInset.clamp(20, 80)` to `topInset + 56`
+                    // so taps below the Dynamic Island (where iOS
+                    // actually forwards them to the app) still hit
+                    // the strip.
                     Positioned(
                       top: 0,
                       left: 0,
                       right: 0,
-                      height: MediaQuery.of(context)
-                          .padding
-                          .top
-                          .clamp(20.0, 80.0)
-                          .toDouble(),
+                      height:
+                          MediaQuery.of(context).padding.top + 56,
                       child: GestureDetector(
                         behavior: HitTestBehavior.opaque,
                         onTap: () {
