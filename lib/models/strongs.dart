@@ -78,12 +78,28 @@ class StrongsEntry {
     if (raw.isNotEmpty && _isStubGloss(raw) && rawDef != null) {
       final extracted = _extractFirstPhrase(rawDef);
       if (extracted.isNotEmpty) {
-        // Combine the grammar prefix + extracted translation so the
-        // user sees both "接所有格: 从...出来, 出于" rather than
-        // just the bare prefix.
-        return raw.endsWith(':') || raw.endsWith('：')
-            ? '$raw $extracted'
-            : '$raw — $extracted';
+        // 2026-05-24 (v1.3.36): avoid duplicating the prefix when the
+        // extracted phrase already contains it. CBOL `defZh` typically
+        // has the form `1) [glossZh prefix] [translation], ...` so
+        // pulling the first numbered clause often re-includes the
+        // prefix. Examples that previously double-printed:
+        //   G1537: "接所有格: 接所有格: 从...出来, 出于..."
+        //   H4324: "扫罗王的次女, ... 扫罗王的次女, ..."
+        // Fix: if the extracted phrase already starts with (or
+        // contains as a prefix) the raw gloss, just use the extracted
+        // phrase. Otherwise prepend the raw gloss.
+        final rawTrim = raw.trim();
+        final extTrim = extracted.trim();
+        if (extTrim.startsWith(rawTrim) ||
+            (rawTrim.endsWith(':') || rawTrim.endsWith('：')) &&
+                extTrim.startsWith(rawTrim
+                    .substring(0, rawTrim.length - 1)
+                    .trim())) {
+          return extTrim;
+        }
+        return rawTrim.endsWith(':') || rawTrim.endsWith('：')
+            ? '$rawTrim $extTrim'
+            : '$rawTrim — $extTrim';
       }
     }
     return raw;
