@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:ui';
 
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -1604,15 +1605,22 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                     );
                     }),
                     ),
-                    // 2026-05-24 (v1.2.91): mini reader header. When
-                    // the auto-hide chrome is hidden, show a tiny
-                    // pair of pills at top — version on left, book +
-                    // chapter on right — so the reader always knows
-                    // their bearings. Tap either pill to re-show
-                    // chrome (no separate version/book pickers from
-                    // the mini — the full header right there is two
-                    // taps away). In split view the full header is
-                    // pinned visible, so the mini stays hidden.
+                    // 2026-05-24 (v1.2.91 + v1.3.32): mini reader
+                    // header. When the auto-hide chrome is hidden,
+                    // show a tiny pair of pills at top — version on
+                    // left, book + chapter on right — so the reader
+                    // always knows their bearings. In split view the
+                    // full header is pinned visible, so the mini
+                    // stays hidden.
+                    //
+                    // v1.3.32: tap target now SCROLLS TO TOP of the
+                    // chapter AND re-shows the chrome (user-reported
+                    // "为什么top tap 不go back to top"). The combined
+                    // action is intuitive — user expects "tap top" to
+                    // return to chapter beginning, and bringing the
+                    // full header back is a natural side-effect since
+                    // they've signalled they want to navigate. Chrome
+                    // can still be toggled by tapping verse content.
                     if (currentVerse != null && !widget.splitViewActive)
                       _MiniReaderHeader(
                         visible: !_chromeVisible,
@@ -1620,7 +1628,10 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                         book: currentVerse.book,
                         chapter: currentVerse.chapter,
                         locale: settings.locale,
-                        onTap: _toggleChrome,
+                        onTap: () {
+                          _scrollChapterToTop();
+                          if (!_chromeVisible) _toggleChrome();
+                        },
                       ),
                     // 2026-05-24 (v1.3.8): cross-platform tap-status-
                     // bar to scroll-to-top. iOS's system status-bar
@@ -4655,6 +4666,12 @@ class _MiniReaderHeader extends StatelessWidget {
   final String book;
   final int chapter;
   final String locale;
+
+  /// 2026-05-24 (v1.3.32): tapping the mini-header (either a chip
+  /// OR the empty backdrop between the chips) now SCROLLS TO TOP
+  /// of the chapter, not just toggles chrome. User asked for the
+  /// top band to be a discoverable scroll-to-top zone. Chrome can
+  /// still be toggled by tapping the verse area.
   final VoidCallback onTap;
 
   const _MiniReaderHeader({
@@ -4678,6 +4695,50 @@ class _MiniReaderHeader extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     final settings = context.watch<AppSettings>();
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    // 2026-05-24 (v1.3.32): platform-aware backdrop tuning so the
+    // top band reads as intentional chrome on every host:
+    //   * iOS / macOS / web (CanvasKit) — BackdropFilter blur for
+    //     the Safari URL-bar look. Verses scroll behind, but
+    //     visually obscured by the blur + the translucent surface
+    //     colour layered on top.
+    //   * Android — solid theme.surfaceContainerHigh tint. Material
+    //     3 design guidance prefers an opaque elevated surface
+    //     over a frosted glass effect.
+    //
+    // The backdrop is ALWAYS painted while the mini-header is
+    // visible — without it, verse text bled through the chip
+    // gap and looked broken (user-reported on Acts 10:2 with
+    // the rare-CJK fix landing in v1.3.31).
+    final platform = Theme.of(context).platform;
+    final useBlur = kIsWeb ||
+        platform == TargetPlatform.iOS ||
+        platform == TargetPlatform.macOS;
+    final backdropColor = scheme.surface.withValues(alpha: 0.86);
+    final backdropChild = SafeArea(
+      bottom: false,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(12, 6, 12, 6),
+        child: Row(
+          children: [
+            _MiniHeaderPill(
+              label: _versionLabel(version),
+              onTap: onTap,
+              scheme: scheme,
+              isDark: isDark,
+              fontFamily: settings.fontFamily,
+            ),
+            const Spacer(),
+            _MiniHeaderPill(
+              label: '$book $chapter',
+              onTap: onTap,
+              scheme: scheme,
+              isDark: isDark,
+              fontFamily: settings.fontFamily,
+            ),
+          ],
+        ),
+      ),
+    );
     return Positioned(
       top: 0,
       left: 0,
@@ -4692,30 +4753,29 @@ class _MiniReaderHeader extends StatelessWidget {
           opacity: visible ? 1.0 : 0.0,
           duration: const Duration(milliseconds: 220),
           curve: Curves.easeOut,
-          child: SafeArea(
-            bottom: false,
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(12, 6, 12, 0),
-              child: Row(
-                children: [
-                  _MiniHeaderPill(
-                    label: _versionLabel(version),
-                    onTap: onTap,
-                    scheme: scheme,
-                    isDark: isDark,
-                    fontFamily: settings.fontFamily,
+          // Wrap the entire band in a GestureDetector so that
+          // tapping ANY part of the chip row (chip or empty space
+          // between chips, or the status-bar inset above the
+          // chips) fires scroll-to-top. Chip taps still win
+          // first because _MiniHeaderPill has its own
+          // GestureDetector layered on top.
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: onTap,
+            child: useBlur
+                ? ClipRect(
+                    child: BackdropFilter(
+                      filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+                      child: ColoredBox(
+                        color: backdropColor,
+                        child: backdropChild,
+                      ),
+                    ),
+                  )
+                : ColoredBox(
+                    color: scheme.surfaceContainerHigh.withValues(alpha: 0.94),
+                    child: backdropChild,
                   ),
-                  const Spacer(),
-                  _MiniHeaderPill(
-                    label: '$book $chapter',
-                    onTap: onTap,
-                    scheme: scheme,
-                    isDark: isDark,
-                    fontFamily: settings.fontFamily,
-                  ),
-                ],
-              ),
-            ),
           ),
         ),
       ),
