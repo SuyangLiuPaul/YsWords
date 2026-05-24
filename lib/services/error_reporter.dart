@@ -223,6 +223,41 @@ class ErrorReporter {
   static String _trim(String s, int max) =>
       s.length > max ? s.substring(0, max) : s;
 
+  // ── Test surface ────────────────────────────────────────────────
+  // 2026-05-24 (v1.3.23): minimal accessors so unit tests can verify
+  // the breadcrumb-buffer cap, route tracking, locale tracking, and
+  // payload-cap behavior without scraping a private static directly.
+  // None of these are called from production code.
+
+  /// @visibleForTesting — read-only snapshot of the breadcrumb ring.
+  static List<({DateTime timestamp, String action, String? data})>
+      get breadcrumbsForTest => _breadcrumbs
+          .map((b) =>
+              (timestamp: b.timestamp, action: b.action, data: b.data))
+          .toList(growable: false);
+
+  /// @visibleForTesting — current pinned route.
+  static String get currentRouteForTest => _currentRoute;
+
+  /// @visibleForTesting — pinned locale.
+  static String get appLocaleForTest => _appLocale;
+
+  /// @visibleForTesting — reset all in-memory state so a test can
+  /// start from a clean slate. Does NOT touch the FlutterError /
+  /// PlatformDispatcher hooks (those are global; tests don't install
+  /// them).
+  static void resetForTest() {
+    _breadcrumbs.clear();
+    _appLocale = 'en';
+    _currentRoute = '';
+    _sessionId = null;
+    _initialised = true; // skip the init() guard so breadcrumb() works
+  }
+
+  /// @visibleForTesting — `_trim` exposed so tests can verify the
+  /// payload-cap edge cases.
+  static String trimForTest(String s, int max) => _trim(s, max);
+
   static String _generateSessionId() {
     final now = DateTime.now().millisecondsSinceEpoch.toRadixString(36);
     // ~36 bits of entropy is plenty for in-flight dedup; not security-grade.

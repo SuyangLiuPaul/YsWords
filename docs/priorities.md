@@ -33,14 +33,19 @@ These were identified as the highest-ROI gaps after v1.2.35. None are blocking, 
    paraphrase. Needs a verified 新譯本 CNV source to correct. ~30 min
    when a source is to hand.
 
-4. **Test coverage on the risky files** — current ratio is ~1.25 % by
-   line count (847 / 67 769). Highest-impact additions:
+4. **Test coverage on the risky files** — PARTIAL in v1.3.23
+   (25 new tests added — 134/134 total, up from 109). Locked in
+   the v1.3.21/v1.3.22 infrastructure with `error_reporter_test.dart`
+   (breadcrumb ring + route/locale tracking + payload-cap helper +
+   no-throw guarantee — 19 tests) and `main_provider_cache_test.dart`
+   (memory-pressure cache drop — 5 tests + 1 trim refinement). Still
+   open as future test additions:
    - `FetchVerses.execute` retry/timeout/clear-cache path
    - `MainProvider.useCachedVersion` + paragraph cache eviction
    - `jumpToReference` resolve + scroll
    - Split-pane secondary-provider lifecycle
    - BYOK Test handler (currently only smoke-tested in production)
-   ~few hours.
+   ~few hours each.
 
 5. **Browser-matrix verification** — informally tested on Chromium +
    Safari macOS. iOS Safari (especially private mode), Firefox, old

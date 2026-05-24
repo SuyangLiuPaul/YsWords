@@ -162,6 +162,15 @@ class MainProvider extends ChangeNotifier {
   bool hasCachedVersion(String version) =>
       _versesCache.containsKey(version);
 
+  /// 2026-05-24 (v1.3.23): test-only seeder. Skips the asset I/O
+  /// that `preloadVersion()` does so unit tests can build a known
+  /// LRU state in microseconds. NEVER call this from production
+  /// code paths.
+  @visibleForTesting
+  void cacheVersionForTest(String version, List<Verse> list) {
+    _cacheVerses(version, list);
+  }
+
   /// 2026-05-24 (v1.3.22): drop all in-memory caches EXCEPT the
   /// currently-active version. Called from `_MainAppState
   /// .didHaveMemoryPressure` when iOS / Android signals the app
