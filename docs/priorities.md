@@ -79,8 +79,21 @@ Still open as future security work:
 - **Sermon pipeline Phase 4 + 5** — when the back-end hits 589/589,
   run QA + finalize the verse-index decision. See `MEMORY.md`'s
   sermon entry for context.
+- **CN-native coexist on iOS** — PARTIALLY RESOLVED in v1.3.38.
+  Android coexist works end-to-end (product flavors → `intl` and
+  `cn` install side-by-side via `tools/yswords-cn-install.sh`).
+  iOS is blocked by free-Apple-ID provisioning: Xcode can't auto-
+  generate a profile for a NEW bundle ID (`com.example.yswords.cn`)
+  from the CLI without GUI intervention. Three resolutions when
+  ready: (a) iPhone + iPad users access CN via PWA from
+  `yswords-cn.netlify.app` (`Share → Add to Home Screen` in
+  Safari — works today, no code), (b) enroll in Apple Developer
+  Program ($99/yr — then `tools/yswords-cn-install.sh` works for
+  iOS too), or (c) one-time manual "Try Again" in Xcode for the
+  `.cn` bundle ID to seed the profile, after which CLI builds
+  work until the 7-day free-tier re-sign cycle.
 
-## v1.3.x cycle highlights (2026-05-23 → 2026-05-24)
+## v1.3.x cycle highlights (2026-05-23 → 2026-05-25)
 
 All shipped to prod (yswords + yswords-cn). Detailed entries in
 `HANDOFF.md` § v1.3.x highlights block.
@@ -124,7 +137,58 @@ All shipped to prod (yswords + yswords-cn). Detailed entries in
   `ResponsiveBreakpoints.maxContentWidth` now caps at 760/880/1040
   for tablet/desktop/TV (was `infinity` everywhere — verses spanned
   full-viewport on big monitors past the ~75-char readability
-  ceiling).
+  ceiling). Revised again in v1.3.33 → 1100/1400/1800 to better
+  fit CJK characters on large tablets.
+- **v1.3.21 → v1.3.26** — robustness + security cycle. Cross-platform
+  error reporter via Resend (v1.3.21); GitHub Actions CI + silent-
+  error wrapping + iOS memory-pressure handler (v1.3.22); 25 new
+  tests on the new infra (v1.3.23 → 134/134); CORS lockdown +
+  initial CSP + HSTS + gitleaks + Firebase rules audit (v1.3.24);
+  PWA install affordance + analyze strictness restored (v1.3.25);
+  highlights / bookmarks / notes export as Markdown or JSON (v1.3.26).
+- **v1.3.27 → v1.3.29** — CSP whack-a-mole. v1.3.24's CSP broke
+  CanvasKit (gstatic.com); v1.3.27 added gstatic → fonts garbled;
+  v1.3.28 added fonts.* → AI / Firebase / Google Sign-In broken.
+  v1.3.29 REMOVED CSP entirely; the right approach for re-adding
+  documented inline in `netlify.toml` + the open-list above
+  (Content-Security-Policy-Report-Only first, capture every
+  csp-report violation, then enumerate hosts).
+- **v1.3.30** — BYOK → shared-key auto-fallback for all three
+  AI Netlify Functions. When BYOK returns 4xx (Gemini 400
+  INVALID_ARGUMENT / 401-403 PERMISSION_DENIED / 429
+  RESOURCE_EXHAUSTED), the function silently switches to the
+  shared developer keys and reports `byokFallback: true` in the
+  response. Closes the "exegesis suddenly stopped working" UX
+  trap when a BYOK key expires.
+- **v1.3.31** — bundled `assets/fonts/NotoSansSC-YsWords.otf`
+  (1.88 MB SIL OFL subset of Noto Sans CJK SC covering every
+  CJK char in the app's data: 5,537 ideographs incl. Ext-A
+  `䍁` U+4341 + Ext-B `𨱔` U+28C54). Fixed the rare-CJK
+  tofu-glyph issue on Flutter web (CanvasKit can't see CSS-only
+  fallback fonts). New `tools/build_cjk_font_subset.sh`
+  regenerates the bundle.
+- **v1.3.32 → v1.3.35** — reader top-band UX. Mini-header
+  translucent backdrop with platform-aware blur (BackdropFilter
+  on iOS/macOS/web, solid surfaceContainerHigh tint on Android).
+  Tap-top-to-scroll-to-top fixed for iPhone with Dynamic Island
+  (strip extends past Island + opaque + IgnorePointer when
+  chrome visible so FloatingHeader buttons still work).
+- **v1.3.33** — wider reading-column caps for large tablets
+  (Xiaomi Pad 7 Ultra went from 51% empty margin to 11%) +
+  Strong's stub-gloss recovery for 18 lexicon entries where
+  `glossZh` is just a grammar prefix.
+- **v1.3.36** — Strong's gloss dedupe (the v1.3.33 recovery
+  was prefixing `glossZh` twice for 4 entries where defZh's
+  `1)` clause already started with the same prefix).
+- **v1.3.37** — note glyph next to noted verses is now a
+  direct tap target (one-tap opens the note editor; was
+  decorative, required select-then-tap-note two-tap flow).
+- **v1.3.38** — CN-build native coexist scaffolding. Android
+  product flavors `intl` + `cn` (suffix .cn applicationId,
+  label "YsWords CN") + `tools/yswords-cn-install.sh` that
+  patches the iOS bundle ID + display name temporarily for
+  the CN build. iOS install blocked by free-Apple-ID
+  provisioning (see "Already deferred" list above).
 
 ## Removed features
 
