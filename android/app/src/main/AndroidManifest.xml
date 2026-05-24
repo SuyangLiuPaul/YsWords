@@ -3,7 +3,7 @@
          Android 13+ (TIRAMISU). Older Android grants by default. -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <application
-        android:label="yswords"
+        android:label="@string/app_name"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
@@ -57,7 +57,7 @@
             android:targetActivity=".MainActivity"
             android:enabled="false"
             android:exported="true"
-            android:label="yswords"
+            android:label="@string/app_name"
             android:icon="@mipmap/ic_launcher_red">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -69,7 +69,7 @@
             android:targetActivity=".MainActivity"
             android:enabled="false"
             android:exported="true"
-            android:label="yswords"
+            android:label="@string/app_name"
             android:icon="@mipmap/ic_launcher_orange">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -81,7 +81,7 @@
             android:targetActivity=".MainActivity"
             android:enabled="false"
             android:exported="true"
-            android:label="yswords"
+            android:label="@string/app_name"
             android:icon="@mipmap/ic_launcher_green">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -93,7 +93,7 @@
             android:targetActivity=".MainActivity"
             android:enabled="false"
             android:exported="true"
-            android:label="yswords"
+            android:label="@string/app_name"
             android:icon="@mipmap/ic_launcher_purple">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -105,7 +105,7 @@
             android:targetActivity=".MainActivity"
             android:enabled="false"
             android:exported="true"
-            android:label="yswords"
+            android:label="@string/app_name"
             android:icon="@mipmap/ic_launcher_pink">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -117,7 +117,7 @@
             android:targetActivity=".MainActivity"
             android:enabled="false"
             android:exported="true"
-            android:label="yswords"
+            android:label="@string/app_name"
             android:icon="@mipmap/ic_launcher_dark">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

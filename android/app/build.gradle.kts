@@ -37,6 +37,36 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        // 2026-05-24 (v1.3.38): default app_name. Each productFlavor
+        // below overrides this with its own resValue("app_name", ...)
+        // so the home-screen label differs between the international
+        // and China-mode coexist builds.
+        resValue("string", "app_name", "YsWords")
+    }
+
+    // 2026-05-24 (v1.3.38): product flavors so the international
+    // (default) build and the China-mode build can coexist on the
+    // same Android device. The `cn` flavor uses
+    //   applicationIdSuffix=".cn"  → installs as `com.example.yswords.cn`
+    //   resValue app_name="YsWords CN" → distinct home-screen label
+    // and is paired at build time with `--dart-define=CHINA_MODE=true`
+    // which gates the runtime behavior (Firebase init skipped,
+    // Google Fonts options hidden, etc.). Build commands:
+    //   intl: flutter build apk --release --flavor intl
+    //   cn:   flutter build apk --release --flavor cn --dart-define=CHINA_MODE=true
+    flavorDimensions += "region"
+    productFlavors {
+        create("intl") {
+            dimension = "region"
+            // applicationId + app_name remain the defaultConfig
+            // values; this flavor is just a symmetric label so the
+            // build commands look parallel.
+        }
+        create("cn") {
+            dimension = "region"
+            applicationIdSuffix = ".cn"
+            resValue("string", "app_name", "YsWords CN")
+        }
     }
 
     buildTypes {

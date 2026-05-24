@@ -40,7 +40,7 @@ LOG="/tmp/yswords-ios-reinstall.log"
 FLUTTER="/Users/pliu0036/flutter/bin/flutter"
 PROJECT="/Users/pliu0036/Documents/yswords"
 IOS_APP="$PROJECT/build/ios/iphoneos/Runner.app"
-ANDROID_APK="$PROJECT/build/app/outputs/flutter-apk/app-release.apk"
+ANDROID_APK="$PROJECT/build/app/outputs/flutter-apk/app-intl-release.apk"
 
 # Android toolchain env — same paths as the interactive shell uses.
 export ANDROID_HOME=/opt/homebrew/share/android-commandlinetools
@@ -154,9 +154,14 @@ else
 fi
 
 # ─── ANDROID BUILD + INSTALLS ────────────────────────────────────
+# 2026-05-24 (v1.3.38): the Android product flavors block in
+# android/app/build.gradle.kts now requires `--flavor` on every
+# build. `intl` is the default (international) flavor with the
+# original com.example.yswords applicationId; the `cn` flavor is
+# installed separately by tools/yswords-cn-install.sh.
 echo ""
-echo "→ flutter build apk --release ${DEFINES[*]}"
-if "$FLUTTER" build apk --release "${DEFINES[@]}"; then
+echo "→ flutter build apk --release --flavor intl ${DEFINES[*]}"
+if "$FLUTTER" build apk --release --flavor intl "${DEFINES[@]}"; then
   for entry in "${ANDROID_DEVICES[@]}"; do
     mdns="${entry%%|*}"
     rest="${entry#*|}"
