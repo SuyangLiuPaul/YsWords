@@ -14,11 +14,39 @@
 // Path: /api/aiSpeak (Netlify rewrites to /.netlify/functions/aiSpeak)
 
 // Voice map. Keys are <locale>_<gender>. Tier maps further inside.
-// Picked Wavenet for English+Mandarin because they are the highest
-// quality voices Google offers in the free tier — Neural2 voices
-// have slightly different naming and aren't available for every
-// Chinese variant.
+//
+// 2026-05-24 (v1.3.10): upgraded en-US + zh-Hans defaults to Google
+// Cloud TTS **Chirp 3 HD** voices — released late 2024, Gemini-based
+// generative TTS, currently the highest-quality cloud TTS Google
+// offers. Same 1 M chars/month free quota as the Wavenet voices
+// these replaced.
+//
+// Voice selection rationale (Chirp 3 HD uses astronomical names):
+//   - Aoede:  calm female, ideal for verse narration (Bible reading
+//             benefits from a measured pace + clear emotional reading)
+//   - Charon: clear male, neutral cadence, doesn't dramatise
+//
+// Why not zh-Hant on Chirp 3: Google's initial Chirp 3 HD rollout
+// (https://cloud.google.com/text-to-speech/docs/chirp3-hd) supports
+// en-US + cmn-CN + a dozen others, but does NOT yet include cmn-TW.
+// Traditional Chinese users continue to use Wavenet cmn-TW until
+// Google adds Chirp 3 cmn-TW. Mandarin pronunciation is the same;
+// only orthography differs, so the script handles that anyway.
 const VOICE_MAP = {
+  'en_female':       { langCode: 'en-US',  name: 'en-US-Chirp3-HD-Aoede' },
+  'en_male':         { langCode: 'en-US',  name: 'en-US-Chirp3-HD-Charon' },
+  'zh-Hans_female':  { langCode: 'cmn-CN', name: 'cmn-CN-Chirp3-HD-Aoede' },
+  'zh-Hans_male':    { langCode: 'cmn-CN', name: 'cmn-CN-Chirp3-HD-Charon' },
+  // zh-Hant: Chirp 3 doesn't ship cmn-TW yet — keep Wavenet here.
+  'zh-Hant_female':  { langCode: 'cmn-TW', name: 'cmn-TW-Wavenet-A' },
+  'zh-Hant_male':    { langCode: 'cmn-TW', name: 'cmn-TW-Wavenet-B' },
+};
+
+// 2026-05-24 (v1.3.10): legacy Wavenet voices, accessible via
+// `tier: 'wavenet'` from the client. Kept as a fallback in case
+// Chirp 3 misbehaves on any specific verse / phoneme; the client
+// can opt back into Wavenet without code change.
+const VOICE_MAP_WAVENET = {
   'en_female':       { langCode: 'en-US',  name: 'en-US-Neural2-F' },
   'en_male':         { langCode: 'en-US',  name: 'en-US-Neural2-D' },
   'zh-Hans_female':  { langCode: 'cmn-CN', name: 'cmn-CN-Wavenet-A' },
@@ -46,7 +74,10 @@ function pickVoice(locale, gender, tier) {
       ? 'zh-Hant'
       : 'en';
   const g = gender === 'male' ? 'male' : 'female';
-  const table = tier === 'standard' ? VOICE_MAP_STANDARD : VOICE_MAP;
+  let table;
+  if (tier === 'standard')       table = VOICE_MAP_STANDARD;
+  else if (tier === 'wavenet')   table = VOICE_MAP_WAVENET;
+  else                            table = VOICE_MAP; // default (Chirp 3 HD)
   return table[`${loc}_${g}`] || table['en_female'];
 }
 
