@@ -6,7 +6,7 @@ mode chips, dashboard quick-links grid, feedback form). This file
 is the capture brief for whoever takes them — the URL flow,
 suggested viewport size, and the filename to save.
 
-> **Status (2026-05-24, v1.3.20):** **10 rows still relevant** —
+> **Status (2026-05-24, v1.3.26):** **10 rows still relevant** —
 > all captured against the live build and committed into
 > `assets/screenshots/`. The README's *App Screenshots* table uses
 > these in 5 rows × 2 columns; older shots (note popup / multi-
@@ -37,6 +37,13 @@ suggested viewport size, and the filename to save.
 >   760-1040 px (was edge-to-edge). The "Feedback form on desktop"
 >   shot still captures this aspect ratio correctly but the
 >   Bible reader on desktop monitors is visually different now.
+> * v1.3.25 — new "Install YsWords" card in Settings → About
+>   surfaces a platform-aware install affordance (Chrome native
+>   prompt / iOS Share-sheet guide / desktop browser instructions).
+>   Not in any current screenshot.
+> * v1.3.26 — new "Export my data" card in Settings → About with
+>   Markdown / JSON segmented toggle + scrollable selectable
+>   preview. Not in any current screenshot.
 
 ## How to capture
 
