@@ -87,7 +87,17 @@
     # `canvaskit.js` + `canvaskit.wasm` from gstatic.com/
     # flutter-canvaskit/<engine-hash>/ at runtime; without the
     # allowance the Flutter engine never initialises.
-    Content-Security-Policy = "default-src 'self'; script-src 'self' 'wasm-unsafe-eval' https://www.gstatic.com blob:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self' blob: https://*.netlify.app https://*.firebaseio.com https://*.googleapis.com https://*.firebase.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://generativelanguage.googleapis.com https://www.gstatic.com wss://*.firebaseio.com; worker-src 'self' blob:; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'; upgrade-insecure-requests"
+    # 2026-05-24 (v1.3.28 hotfix): added https://fonts.gstatic.com +
+    # https://fonts.googleapis.com to connect-src. The Dart
+    # `google_fonts` package (used by the font picker for non-bundled
+    # fonts like EB Garamond, Lora, Merriweather, Noto Sans SC, Noto
+    # Serif SC) fetches font binaries via Dart's http package, which
+    # CSP routes through connect-src — NOT font-src. font-src only
+    # covers `<link rel=stylesheet>` + CSS `@font-face url(...)`.
+    # Without these hosts in connect-src, every google_fonts call
+    # silently failed and text rendered in the CanvasKit-bundled
+    # fallback (= garbled text + missing CJK glyphs).
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'wasm-unsafe-eval' https://www.gstatic.com blob:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self' blob: https://*.netlify.app https://*.firebaseio.com https://*.googleapis.com https://*.firebase.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://generativelanguage.googleapis.com https://www.gstatic.com https://fonts.gstatic.com https://fonts.googleapis.com wss://*.firebaseio.com; worker-src 'self' blob:; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'; upgrade-insecure-requests"
 
     # X-Frame-Options: legacy companion to CSP `frame-ancestors`.
     # Older browsers honour this but not frame-ancestors; keep both.
