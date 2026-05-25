@@ -907,12 +907,21 @@ class MainProvider extends ChangeNotifier {
       for (final e in decoded.entries) e.key: e.value as String,
     };
 
-    // 2026-05-24 (v1.2.91): load the timestamp sidecar. For any
-    // note that doesn't have a recorded timestamp (notes created
-    // before this version, or notes synced from an older client),
-    // stamp them with `now` so the sort isn't blank — they all
-    // bunch up at the "newest" end on first launch but become
-    // properly ordered as the user edits them over time.
+    // 2026-05-24 (v1.2.91): load the timestamp sidecar.
+    //
+    // 2026-05-25 (v1.3.39): unknown timestamps now stamped as 0 (the
+    // "unknown time" sentinel), NOT `DateTime.now()`. The old `now`
+    // fallback lied to the user: after a fresh device sync OR an
+    // upgrade from <v1.2.91 OR any RTDB round-trip that dropped the
+    // sidecar, every untyped-stamp note rendered as "刚刚 / just
+    // now" — a note written months ago suddenly showed as just
+    // edited. User report: "the notes created or edit time is not
+    // accurate". The honest fix is to mark the timestamp as unknown
+    // and let the library page skip the "Edited X" label entirely
+    // for those notes. Sort-by-recent treats 0 as oldest (it falls
+    // through to canonical order at the bottom), matching what the
+    // user expects: "I don't know when this was edited, so it can't
+    // claim to be recent".
     final tsJson = prefs.getString(
         ProfileService.instance.scopedKey('verseNoteTimestamps'));
     if (tsJson != null) {
@@ -927,11 +936,11 @@ class MainProvider extends ChangeNotifier {
         };
       } catch (_) {/* corrupt → fall through to migration */}
     }
-    final nowMs = DateTime.now().millisecondsSinceEpoch;
     var migrated = false;
     for (final id in _verseNotes.keys) {
       if (!_verseNoteTimestamps.containsKey(id)) {
-        _verseNoteTimestamps[id] = nowMs;
+        // 0 sentinel — see v1.3.39 note above for the full rationale.
+        _verseNoteTimestamps[id] = 0;
         migrated = true;
       }
     }

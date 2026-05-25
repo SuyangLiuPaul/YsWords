@@ -628,7 +628,17 @@ class _AnnotationTile extends StatelessWidget {
             // (defensive — _loadNotes migrates everyone on load).
             Builder(builder: (_) {
               final ts = mainProvider.getVerseNoteTimestamp(verse.id);
-              if (ts == null) return const SizedBox.shrink();
+              // 2026-05-25 (v1.3.39): treat 0 as "unknown" (legacy
+              // note without a recorded timestamp). Was rendering
+              // as "刚刚 / just now" because the v1.2.91 migration
+              // stamped unknown timestamps with DateTime.now() — a
+              // lie. Now both null AND 0 skip the label entirely;
+              // the user sees no time at all rather than a fake
+              // "edited just now" for a note last touched months
+              // ago.
+              if (ts == null || ts <= 0) {
+                return const SizedBox.shrink();
+              }
               final when = DateTime.fromMillisecondsSinceEpoch(ts);
               return Padding(
                 padding: const EdgeInsets.only(bottom: 4, top: 2),
