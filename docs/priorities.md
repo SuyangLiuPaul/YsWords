@@ -190,6 +190,91 @@ All shipped to prod (yswords + yswords-cn). Detailed entries in
   the CN build. iOS install blocked by free-Apple-ID
   provisioning (see "Already deferred" list above).
 
+- **v1.3.39** — note timestamp honesty. `_loadNotes` migration
+  was stamping unknown notes with `DateTime.now()`, making
+  months-old notes render as "just now" / "刚刚". Now stamps
+  unknown notes with **0** (sentinel for "unknown time");
+  library page's "Edited X" Builder skips rendering when ts
+  is null OR ≤ 0. Existing bad `now` stamps already on disk
+  stay (no way to recover the real edit time post-facto).
+
+- **v1.3.40** — version-switch race fix + locale-aware default
+  version. `MainProvider.useCachedVersion()` (warm-path version
+  switch) wasn't invalidating `_versesByChapterKey`, so
+  switching from a partial-canon version (LJK V2) to a
+  full-canon version (NASB / CUVS-YHWH) showed the
+  contradictory "Switch to a full-canon version" empty-state
+  body under a NASB header. Cold-path `setVerses()` had the
+  fix since v1.2.99 but useCachedVersion was missed. Also:
+  default version on fresh install now branches on
+  `prefs.getString('locale')` — en → NASB, zh-Hant →
+  CUVS-YHWH-TR, zh-Hans → CUVS-YHWH (Yahweh restoration
+  variants).
+
+- **v1.3.41** — cross-device sync extended from
+  highlights/notes/bookmarks to **last-read position + all
+  user prefs**. Two new JSON blobs join the RTDB schema:
+  (1) `lastRead` `{version, book, chapter}` written on every
+  Bible state change, paired with `lastReadTimestamp` int;
+  (2) `userPrefs` JSON containing 22 AppSettings fields (font,
+  theme, color, locale, paragraphMode, dashboardSectionOrder,
+  …) — paired with `userPrefsTimestamp`. `AppSettings.notifyListeners()`
+  overridden to schedule a 600 ms-debounced blob-write so
+  burst-y setter calls produce one upload, not many.
+  `geminiApiKey` excluded (has its own credential-sensitive
+  bidirectional stream at `users/{uid}/account/geminiApiKey`).
+  Conflict resolution: newest-timestamp-wins via the new
+  pair-merge in `_mergeSnapshots`.
+
+- **v1.3.42** — seed-write fix. `MainProvider.saveCurrentState()`
+  only fires on currentVersion / currentBook / currentChapter
+  change. A user who upgraded to v1.3.41 but didn't navigate
+  since boot had an empty `lastRead` RTDB node → Device B
+  saw nothing to pull. Fix: call `saveCurrentState()` once
+  at the end of `restoreState()` so the device's current
+  state pushes on every boot, not just on user-driven
+  changes. Hash-dedupe collapses the redundant upload when
+  state hasn't changed.
+
+- **v1.3.43 → v1.3.44** — sermon-resume cross-device sync.
+  Dashboard's "继续讲道" card reads unscoped `sermons_last_read`
+  prefs key, which wasn't in the sync schema. v1.3.43 added
+  a `sermonId` field to the lastRead blob, but that was a
+  half-fix — three further bugs found via screenshot
+  feedback ("还是没有好好检查一下"): (1) WRITE — `sermons_page._openSermon`
+  writes `sermons_last_read` locally but `saveCurrentState`
+  only fires on Bible state changes, so the upload never
+  happened if the user just opened a sermon → context.read
+  MainProvider.saveCurrentState() called immediately in
+  v1.3.44. (2) READ A — the scoped → unscoped mirror only
+  ran in `restoreState` at app boot, missing live mid-session
+  syncs → moved into `RealtimeDbSyncService._writeRemoteIntoLocal`.
+  (3) READ B — dashboard's `_resumeSermon` field is cached
+  in state; `_onProfileOrAuthChanged` did only setState
+  without re-fetching → now also calls `_loadResumeSermon()`.
+  Scroll-pixel offset deliberately NOT synced (screen-size
+  dependent).
+
+- **🚨 v1.3.45 — EMERGENCY HOTFIX**. Production user
+  reported red `[unknown] set failed: value argument contains
+  an invalid key (plan.activeId) in property 'users.../sync.data'`
+  toast. Root cause: reading-plan feature was REMOVED in
+  v1.2.69 but the RTDB sync schema still hardcoded
+  `plan.activeId` / `plan.startMs` / `plan.useDate` / the
+  `plan.completed.*` prefix loop. RTDB forbids `.` in keys.
+  Any legacy user (signed up before v1.2.69) with a stale
+  `plan.activeId` value in SharedPreferences had **every
+  sync write rejected**. That was the root cause of every
+  "Why all not synced yet" complaint — earlier v1.3.41–
+  v1.3.44 sync work was code-correct but Firebase silently
+  refused the upload. Fix: stripped plan.* from `_stringKeys`
+  / `_intKeys` / `_boolKeys` / `_collectLocalSnapshot` /
+  `_mergeSnapshots` / `_localHasUserData`; added defensive
+  `_isInvalidRtdbKey()` helper that strips any key containing
+  `.`, `#`, `$`, `/`, `[`, `]` — called at snapshot collection
+  AND right before `FirebaseDatabase.set()` so a future
+  regression at worst drops one key, not all sync.
+
 ## Removed features
 
 - **朗读 / TTS (v1.3.19)** — Listen-to-chapter + ListenButton +
