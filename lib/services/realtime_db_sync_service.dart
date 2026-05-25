@@ -100,6 +100,23 @@ class RealtimeDbSyncService extends ChangeNotifier {
     // across devices, matching the documented behaviour.
     'notesSortMode',
     'plan.activeId',
+    // 2026-05-25 (v1.3.41): last-read position. JSON blob
+    // `{"version": "nasb", "book": "John", "chapter": 3}` so reading
+    // on phone resumes on iPad. Conflict resolution: newest
+    // `lastReadTimestamp` wins (see _intKeys below + the merge rule
+    // in _mergeSnapshots). Stored under the scoped `lastRead` key
+    // in SharedPreferences; written/read by MainProvider via the
+    // new lastRead helpers.
+    'lastRead',
+    // 2026-05-25 (v1.3.41): comprehensive user-prefs sync. JSON
+    // blob containing AppSettings fields (locale, theme, font
+    // family/size, primary color, paragraph mode, etc.). Conflict
+    // resolution: newest `userPrefsTimestamp` wins (see _intKeys
+    // + merge rule). geminiApiKey is intentionally NOT in this
+    // blob — it has its own dedicated sync path
+    // (`users/{uid}/account/geminiApiKey`) with bidirectional
+    // streaming because it's security-sensitive.
+    'userPrefs',
   ];
   static const _stringListKeys = <String>[
     'bookmarks',
@@ -110,7 +127,15 @@ class RealtimeDbSyncService extends ChangeNotifier {
     // RecentSearchesService.maxItems on next add/remove.
     'recentSearches',
   ];
-  static const _intKeys = <String>['plan.startMs'];
+  static const _intKeys = <String>[
+    'plan.startMs',
+    // 2026-05-25 (v1.3.41): timestamps that drive newest-wins
+    // conflict resolution for the two big JSON blobs above. Each
+    // blob's write also stamps its companion timestamp so merge
+    // can pick the more recent device's blob.
+    'lastReadTimestamp',
+    'userPrefsTimestamp',
+  ];
   static const _boolKeys = <String>['plan.useDate'];
 
   /// Wire up auth + profile listeners. Call once at app startup
@@ -453,6 +478,45 @@ class RealtimeDbSyncService extends ChangeNotifier {
       // edited the local copy seconds ago.
       final merged = {...rm, ...lm};
       out[k] = jsonEncode(merged);
+    }
+
+    // 2026-05-25 (v1.3.41): merge lastRead + userPrefs as
+    // single-blob newest-write-wins. Each blob has a paired
+    // *Timestamp int key; whichever side has the newer stamp
+    // contributes BOTH the blob and the timestamp. If only one
+    // side has the blob, it wins by default (other side never
+    // wrote one).
+    for (final pair in const [
+      ('lastRead', 'lastReadTimestamp'),
+      ('userPrefs', 'userPrefsTimestamp'),
+    ]) {
+      final blobKey = pair.$1;
+      final tsKey = pair.$2;
+      final lBlob = local[blobKey];
+      final rBlob = remote[blobKey];
+      final lTs = (local[tsKey] is num) ? (local[tsKey] as num).toInt() : 0;
+      final rTs = (remote[tsKey] is num) ? (remote[tsKey] as num).toInt() : 0;
+      String? pickedBlob;
+      int pickedTs = 0;
+      if (lBlob is String && rBlob is String) {
+        if (rTs > lTs) {
+          pickedBlob = rBlob;
+          pickedTs = rTs;
+        } else {
+          pickedBlob = lBlob;
+          pickedTs = lTs;
+        }
+      } else if (lBlob is String) {
+        pickedBlob = lBlob;
+        pickedTs = lTs;
+      } else if (rBlob is String) {
+        pickedBlob = rBlob;
+        pickedTs = rTs;
+      }
+      if (pickedBlob != null) {
+        out[blobKey] = pickedBlob;
+        if (pickedTs > 0) out[tsKey] = pickedTs;
+      }
     }
 
     // 2026-05-24 (v1.2.91): merge verseNoteTimestamps + the

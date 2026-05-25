@@ -1251,13 +1251,62 @@ class MainProvider extends ChangeNotifier {
     if (currentBook != null) prefs.setString('${_storagePrefix}book', currentBook!);
     if (currentChapter != null) prefs.setInt('${_storagePrefix}chapter', currentChapter!);
     prefs.setString('${_storagePrefix}version', currentVersion);
+    // 2026-05-25 (v1.3.41): also persist the last-read state as a
+    // single JSON blob under the ProfileService-scoped 'lastRead'
+    // key. RealtimeDbSyncService picks this up + a paired
+    // 'lastReadTimestamp' int so reading position follows the
+    // user across devices (newest-write-wins). The legacy
+    // per-key triple above (book / chapter / version) stays as
+    // a fallback for older clients that don't speak lastRead.
+    if (isPrimary) {
+      // Only the primary pane drives the sync. The secondary
+      // split-pane has its own _storagePrefix and shouldn't
+      // overwrite the main reading position.
+      final blob = jsonEncode({
+        'version': currentVersion,
+        if (currentBook != null) 'book': currentBook,
+        if (currentChapter != null) 'chapter': currentChapter,
+      });
+      await prefs.setString(
+          ProfileService.instance.scopedKey('lastRead'), blob);
+      await prefs.setInt(
+          ProfileService.instance.scopedKey('lastReadTimestamp'),
+          DateTime.now().millisecondsSinceEpoch);
+      RealtimeDbSyncService.instance.requestUpload();
+    }
   }
 
   Future<void> restoreState() async {
     final prefs = await SharedPreferences.getInstance();
-    final savedVersion = prefs.getString('${_storagePrefix}version');
-    final savedBook = prefs.getString('${_storagePrefix}book');
-    final savedChapter = prefs.getInt('${_storagePrefix}chapter');
+    // 2026-05-25 (v1.3.41): prefer the synced JSON blob over the
+    // legacy per-key triple. The blob is the one written by
+    // saveCurrentState and synced by RealtimeDbSyncService — when
+    // RTDB applies a newer remote write, the blob updates first,
+    // then ProfileService notifies, and the next time the user
+    // re-enters the reader, restoreState picks up the synced
+    // position. Falls through to the legacy keys if no blob
+    // exists yet (existing users upgrading from <v1.3.41).
+    String? savedVersion;
+    String? savedBook;
+    int? savedChapter;
+    if (isPrimary) {
+      final blob = prefs.getString(
+          ProfileService.instance.scopedKey('lastRead'));
+      if (blob != null && blob.isNotEmpty) {
+        try {
+          final m = jsonDecode(blob) as Map<String, dynamic>;
+          savedVersion = (m['version'] as String?)?.toLowerCase();
+          savedBook = m['book'] as String?;
+          final c = m['chapter'];
+          if (c is int) savedChapter = c;
+          if (c is num) savedChapter = c.toInt();
+        } catch (_) {/* corrupt blob → fall through */}
+      }
+    }
+    // Legacy fallback if the blob didn't yield a value.
+    savedVersion ??= prefs.getString('${_storagePrefix}version');
+    savedBook ??= prefs.getString('${_storagePrefix}book');
+    savedChapter ??= prefs.getInt('${_storagePrefix}chapter');
 
     if (savedVersion != null) {
       var v = savedVersion.toLowerCase();

@@ -11,6 +11,7 @@ import 'package:yswords/services/app_icon_service.dart';
 import 'package:yswords/services/notification_scheduler.dart'
     as scheduler;
 import 'package:yswords/services/cloud_auth_service.dart';
+import 'package:yswords/services/profile_service.dart';
 import 'package:yswords/services/realtime_db_sync_service.dart';
 import 'package:yswords/utils/font_catalog.dart';
 
@@ -973,6 +974,24 @@ class AppSettings extends ChangeNotifier {
       _dashboardVisibility[s] = v ?? defaultVisibility[s] ?? true;
     }
 
+    // 2026-05-25 (v1.3.41): if a synced userPrefs JSON blob exists
+    // (written by another device + downloaded via
+    // RealtimeDbSyncService), apply it OVER the legacy individual-
+    // key reads above. The blob is the source of truth when present
+    // — it carries the most-recent device's full settings snapshot
+    // (newest `userPrefsTimestamp` wins via the merge in
+    // RealtimeDbSyncService._mergeSnapshots). Fields the blob
+    // doesn't contain fall through to the legacy values we just
+    // loaded (forward-compatible: an older device that doesn't
+    // know a future field can still overwrite the rest).
+    final userPrefsBlob = prefs.getString(
+        ProfileService.instance.scopedKey('userPrefs'));
+    if (userPrefsBlob != null && userPrefsBlob.isNotEmpty) {
+      try {
+        _applyUserPrefsBlob(jsonDecode(userPrefsBlob) as Map<String, dynamic>);
+      } catch (_) {/* corrupt blob → keep legacy values already loaded */}
+    }
+
     notifyListeners();
 
     // 2026-05-10 (v1.2.17): now that the local key is settled (or
@@ -1003,6 +1022,169 @@ class AppSettings extends ChangeNotifier {
   }
 
   bool _authListenerWired = false;
+
+  // 2026-05-25 (v1.3.41): debounce timer for the comprehensive
+  // userPrefs blob writer. Every change to AppSettings fields
+  // triggers notifyListeners(); we schedule a single blob write
+  // 600 ms later so a burst of consecutive setter calls (e.g.
+  // restoring a sheet that flips 5 toggles in a row) produces
+  // exactly one blob write + one RTDB upload, not five.
+  Timer? _userPrefsWriteDebounce;
+  // While applying the blob from disk, suppress the write-back
+  // scheduler — otherwise we'd echo the same blob right back to
+  // RTDB on every device load.
+  bool _suppressUserPrefsWrite = false;
+
+  @override
+  void notifyListeners() {
+    super.notifyListeners();
+    if (_suppressUserPrefsWrite) return;
+    _userPrefsWriteDebounce?.cancel();
+    _userPrefsWriteDebounce = Timer(const Duration(milliseconds: 600), () {
+      // ignore: unawaited_futures
+      _writeUserPrefsBlob();
+    });
+  }
+
+  /// Serialize all sync-eligible settings into a single JSON blob +
+  /// write it to the ProfileService-scoped `userPrefs` key in
+  /// SharedPreferences + bump the paired `userPrefsTimestamp` int.
+  /// `RealtimeDbSyncService.requestUpload` is then asked to push;
+  /// the existing dedupe + debounce in the sync service coalesces
+  /// rapid back-to-back uploads.
+  ///
+  /// `geminiApiKey` is deliberately excluded — it has its own sync
+  /// path (`users/{uid}/account/geminiApiKey`, bidirectional stream)
+  /// for the credential-security reasons documented near the
+  /// `_kGeminiApiKey` declaration.
+  Future<void> _writeUserPrefsBlob() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final blob = jsonEncode({
+        'fontFamily': _fontSelection,
+        'fontSize': _fontSize,
+        'lineSpacing': _lineSpacing,
+        'primaryColor': _primaryColor.toARGB32(),
+        'copyFormat': _copyFormat,
+        'locale': _locale,
+        'themeMode': _themeMode.name,
+        'paragraphMode': _paragraphMode,
+        'menuScale': _menuScale,
+        'cardMaterial': _cardMaterial.name,
+        'booksViewMode': _booksViewMode,
+        'boldVerseText': _boldVerseText,
+        'showStrongsInOriginals': _showStrongsInOriginals,
+        'autoExpandFirstRef': _autoExpandFirstRef,
+        'notificationsEnabled': _notificationsEnabled,
+        'showSectionTitles': _showSectionTitles,
+        'showBookIntro': _showBookIntro,
+        'pickVerseAfterChapter': _pickVerseAfterChapter,
+        'aiModel': _aiModel,
+        'notesSortMode': _notesSortMode,
+        'dashboardSectionOrder':
+            _dashboardSectionOrder.map((s) => s.name).toList(),
+        'dashboardVisibility': {
+          for (final e in _dashboardVisibility.entries) e.key.name: e.value,
+        },
+      });
+      await prefs.setString(
+          ProfileService.instance.scopedKey('userPrefs'), blob);
+      await prefs.setInt(
+          ProfileService.instance.scopedKey('userPrefsTimestamp'),
+          DateTime.now().millisecondsSinceEpoch);
+      RealtimeDbSyncService.instance.requestUpload();
+    } catch (e) {
+      // Non-fatal — the legacy per-key writes already persisted the
+      // change locally. The sync just won't carry until the next
+      // successful blob write.
+      debugPrint('AppSettings._writeUserPrefsBlob failed: $e');
+    }
+  }
+
+  /// Apply a previously-serialized userPrefs blob onto the live
+  /// state. Called from `loadSettings` after legacy per-key reads
+  /// when the blob is present; takes precedence so a newer
+  /// synced-blob device's preferences win over the local
+  /// individual-key reads. Suppresses the write-back debounce so
+  /// applying the blob doesn't immediately re-upload an identical
+  /// copy.
+  void _applyUserPrefsBlob(Map<String, dynamic> m) {
+    _suppressUserPrefsWrite = true;
+    try {
+      if (m['fontFamily'] is String) {
+        _fontSelection = m['fontFamily'] as String;
+        _fontFamily = resolveFontFamily(_fontSelection);
+      }
+      if (m['fontSize'] is num) _fontSize = (m['fontSize'] as num).toDouble();
+      if (m['lineSpacing'] is num) {
+        _lineSpacing = (m['lineSpacing'] as num).toDouble();
+      }
+      if (m['primaryColor'] is num) {
+        _primaryColor = Color((m['primaryColor'] as num).toInt());
+      }
+      if (m['copyFormat'] is String) _copyFormat = m['copyFormat'] as String;
+      if (m['locale'] is String) _locale = m['locale'] as String;
+      if (m['themeMode'] is String) {
+        _themeMode = _parseThemeMode(m['themeMode'] as String);
+      }
+      if (m['paragraphMode'] is bool) _paragraphMode = m['paragraphMode'] as bool;
+      if (m['menuScale'] is num) _menuScale = (m['menuScale'] as num).toDouble();
+      if (m['cardMaterial'] is String) {
+        _cardMaterial = CardMaterial.values.firstWhere(
+          (c) => c.name == m['cardMaterial'],
+          orElse: () => _cardMaterial,
+        );
+      }
+      if (m['booksViewMode'] is String) {
+        final raw = m['booksViewMode'] as String;
+        _booksViewMode = raw == 'grid' ? 'grid' : 'list';
+      }
+      if (m['boldVerseText'] is bool) _boldVerseText = m['boldVerseText'] as bool;
+      if (m['showStrongsInOriginals'] is bool) {
+        _showStrongsInOriginals = m['showStrongsInOriginals'] as bool;
+      }
+      if (m['autoExpandFirstRef'] is bool) {
+        _autoExpandFirstRef = m['autoExpandFirstRef'] as bool;
+      }
+      if (m['notificationsEnabled'] is bool) {
+        _notificationsEnabled = m['notificationsEnabled'] as bool;
+      }
+      if (m['showSectionTitles'] is bool) {
+        _showSectionTitles = m['showSectionTitles'] as bool;
+      }
+      if (m['showBookIntro'] is bool) {
+        _showBookIntro = m['showBookIntro'] as bool;
+      }
+      if (m['pickVerseAfterChapter'] is bool) {
+        _pickVerseAfterChapter = m['pickVerseAfterChapter'] as bool;
+      }
+      if (m['aiModel'] is String) {
+        final raw = m['aiModel'] as String;
+        _aiModel =
+            _kAiModelAllowed.contains(raw) ? raw : _kAiModelDefault;
+      }
+      if (m['notesSortMode'] is String) {
+        final raw = m['notesSortMode'] as String;
+        _notesSortMode =
+            _kNotesSortAllowed.contains(raw) ? raw : _kNotesSortDefault;
+      }
+      if (m['dashboardSectionOrder'] is List) {
+        final names = (m['dashboardSectionOrder'] as List)
+            .map((e) => e.toString())
+            .toList();
+        _dashboardSectionOrder = normalizeDashboardOrder(names);
+      }
+      if (m['dashboardVisibility'] is Map) {
+        final viz = m['dashboardVisibility'] as Map;
+        for (final s in DashboardSection.values) {
+          final v = viz[s.name];
+          if (v is bool) _dashboardVisibility[s] = v;
+        }
+      }
+    } finally {
+      _suppressUserPrefsWrite = false;
+    }
+  }
 
   void _onAuthChangedForByokSync() {
     if (!CloudAuthService.instance.isSignedIn) {
