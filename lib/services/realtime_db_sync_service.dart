@@ -29,7 +29,7 @@ import 'package:yswords/services/profile_service.dart';
 ///
 /// The `data` map shape is identical to the previous Drive /
 /// Firestore versions — same scoped key set (`highlights`,
-/// `verseNotes`, `bookmarks`, `plan.*`, `plan.completed.*`) — so the
+/// `verseNotes`, `bookmarks`, etc.) — so the
 /// merge logic carries over byte-for-byte and switching back to
 /// Drive (if we ever want it as an opt-in for power users) just
 /// means swapping the I/O layer.
@@ -99,7 +99,15 @@ class RealtimeDbSyncService extends ChangeNotifier {
     // adding it now so the user's sort preference follows them
     // across devices, matching the documented behaviour.
     'notesSortMode',
-    'plan.activeId',
+    // 'plan.activeId' was here through v1.3.44. Removed 2026-05-25
+    // (v1.3.45) — the reading-plan feature was deleted in v1.2.69
+    // and the key contains a `.`, which RTDB forbids: "Keys must
+    // be non-empty strings and can't contain '.', '#', '$', '/',
+    // '[', or ']'." Legacy users with a stale `plan.activeId`
+    // value in SharedPreferences (from before v1.2.69) saw EVERY
+    // sync write get rejected as a result. Same removal below
+    // for plan.startMs (_intKeys) and plan.useDate (_boolKeys),
+    // plus the plan.completed.* prefix loop in _mergeSnapshots.
     // 2026-05-25 (v1.3.41): last-read position. JSON blob
     // `{"version": "nasb", "book": "John", "chapter": 3}` so reading
     // on phone resumes on iPad. Conflict resolution: newest
@@ -128,7 +136,7 @@ class RealtimeDbSyncService extends ChangeNotifier {
     'recentSearches',
   ];
   static const _intKeys = <String>[
-    'plan.startMs',
+    // 'plan.startMs' removed in v1.3.45 (see plan.activeId note above).
     // 2026-05-25 (v1.3.41): timestamps that drive newest-wins
     // conflict resolution for the two big JSON blobs above. Each
     // blob's write also stamps its companion timestamp so merge
@@ -136,7 +144,8 @@ class RealtimeDbSyncService extends ChangeNotifier {
     'lastReadTimestamp',
     'userPrefsTimestamp',
   ];
-  static const _boolKeys = <String>['plan.useDate'];
+  // 'plan.useDate' was here through v1.3.44; removed v1.3.45.
+  static const _boolKeys = <String>[];
 
   /// Wire up auth + profile listeners. Call once at app startup
   /// after CloudAuthService.init() — same pattern as the previous
@@ -357,6 +366,14 @@ class RealtimeDbSyncService extends ChangeNotifier {
     }
     _setStatus(CloudSyncStatus.syncing);
     try {
+      // v1.3.45: final-guard sanitiser — strip any key with
+      // RTDB-forbidden characters (`.`, `#`, `$`, `/`, `[`, `]`)
+      // before upload. The schema lists are already clean, but
+      // this catches any future regression at the boundary instead
+      // of failing the entire write at Firebase. The original
+      // production bug had `plan.activeId` in `_stringKeys` and
+      // EVERY sync write got rejected — defence-in-depth here.
+      payload.removeWhere((k, _) => _isInvalidRtdbKey(k));
       final body = {
         'data': payload,
         'updatedAt': stampedAt,
@@ -446,13 +463,8 @@ class RealtimeDbSyncService extends ChangeNotifier {
     if (hl is String && hl.isNotEmpty && hl != '{}') return true;
     final notes = local['verseNotes'];
     if (notes is String && notes.isNotEmpty && notes != '{}') return true;
-    if (local.containsKey('plan.activeId')) return true;
-    for (final k in local.keys) {
-      if (k.startsWith('plan.completed.')) {
-        final v = local[k];
-        if (v is List && v.isNotEmpty) return true;
-      }
-    }
+    // v1.3.45: plan.activeId / plan.completed.* checks removed —
+    // the reading-plan feature is gone (v1.2.69).
     return false;
   }
 
@@ -584,30 +596,12 @@ class RealtimeDbSyncService extends ChangeNotifier {
         if (union.isNotEmpty) out['recentSearches'] = union;
       }
     }
-    for (final k in const ['plan.activeId', 'plan.startMs', 'plan.useDate']) {
-      if (local.containsKey(k)) {
-        out[k] = local[k];
-      } else if (remote.containsKey(k)) {
-        out[k] = remote[k];
-      }
-    }
-    final completedKeys = <String>{};
-    for (final k in local.keys) {
-      if (k.startsWith('plan.completed.')) completedKeys.add(k);
-    }
-    for (final k in remote.keys) {
-      if (k.startsWith('plan.completed.')) completedKeys.add(k);
-    }
-    for (final k in completedKeys) {
-      final ll = ((local[k] as List?) ?? const [])
-          .map((e) => e.toString())
-          .toList();
-      final rl = ((remote[k] as List?) ?? const [])
-          .map((e) => e.toString())
-          .toList();
-      final union = <String>{...ll, ...rl}.toList();
-      if (union.isNotEmpty) out[k] = union;
-    }
+    // v1.3.45: plan.activeId / plan.startMs / plan.useDate merge
+    // block + the plan.completed.* prefix loop removed. The
+    // reading-plan feature was deleted in v1.2.69 and these dotted
+    // keys were silently breaking ALL RTDB sync writes for users
+    // whose SharedPreferences still had legacy plan.* values
+    // (RTDB rejects keys containing `.`).
     return out;
   }
 
@@ -790,16 +784,27 @@ class RealtimeDbSyncService extends ChangeNotifier {
       final scoped = ProfileService.instance.scopedKey(base);
       if (prefs.containsKey(scoped)) out[base] = prefs.getBool(scoped);
     }
-    final scopedPrefix =
-        ProfileService.instance.scopedKey('plan.completed.');
-    for (final k in prefs.getKeys()) {
-      if (k.startsWith(scopedPrefix)) {
-        final base = k.substring(
-            'profile.${ProfileService.instance.currentId}.'.length);
-        out[base] = prefs.getStringList(k);
-      }
-    }
+    // v1.3.45: plan.completed.* prefix collection removed — feature
+    // gone, keys forbidden by RTDB (contain `.`).
+    // Defensive sanitiser: if any future schema bug puts a key with
+    // RTDB-forbidden characters (`.`, `#`, `$`, `/`, `[`, `]`) into
+    // the upload payload, drop it here so we never send a doomed
+    // write to Firebase. The original v1.3.45 bug let `plan.activeId`
+    // through and EVERY sync write got rejected — this guard means
+    // a future regression at worst loses one key, not all sync.
+    out.removeWhere((k, _) => _isInvalidRtdbKey(k));
     return out;
+  }
+
+  /// RTDB rejects keys with `.`, `#`, `$`, `/`, `[`, `]`. Same rule
+  /// applies to merged snapshots before upload — so this is also
+  /// called from _mergeSnapshots' callers if/when needed.
+  static bool _isInvalidRtdbKey(String key) {
+    if (key.isEmpty) return true;
+    for (final ch in const ['.', '#', '\$', '/', '[', ']']) {
+      if (key.contains(ch)) return true;
+    }
+    return false;
   }
 
   Future<void> _writeRemoteIntoLocal(Map<String, dynamic> data) async {
