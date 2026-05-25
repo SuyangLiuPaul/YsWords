@@ -277,6 +277,20 @@ class MainProvider extends ChangeNotifier {
     _searchKeysCache = null;
     _searchKeysCacheLength = -1;
     _bookOrderCache = null;
+    // 2026-05-25 (v1.3.40): also invalidate the (book, chapter) →
+    // verses index. Without this, switching FROM a partial-canon
+    // version (e.g. LJK V2: Matthew only) TO a full-canon version
+    // (NASB / CUVS-YHWH) left the index pointing at the old
+    // version's data. `versesInChapter('Revelation', 2)` then
+    // returned an empty list (the old version had no Revelation)
+    // even though the new version did, and the page rendered the
+    // "Switch to a full-canon version" empty-state — on a version
+    // that IS full-canon. User report: header showed "Revelation 2
+    // NASB" while body said "not available in current version".
+    // `setVerses` already invalidates this index for the cold-load
+    // path (line 116); this matches that behavior for the warm-
+    // cache path.
+    _versesByChapterKey = null;
     notifyListeners();
     return true;
   }
@@ -1253,6 +1267,33 @@ class MainProvider extends ChangeNotifier {
       // is unambiguously public domain).
       if (v == 'niv') v = 'kjv';
       currentVersion = v;
+    } else {
+      // 2026-05-25 (v1.3.40): no saved version yet → fresh install.
+      // Pick a sensible default based on the user's locale. The
+      // class-level default of 'cuvs-yhwh' was wrong for English
+      // users (Bible app opening in Chinese on first launch felt
+      // broken). AppSettings persists locale under the 'locale'
+      // key — we read it directly here rather than holding a
+      // reference to AppSettings to avoid the load-order coupling.
+      //   en       → NASB (the user-preferred English default)
+      //   zh-Hans  → CUVS-YHWH (和合本 Yahweh, Simplified)
+      //   zh-Hant  → CUVS-YHWH-TR (和合本 Yahweh, Traditional)
+      // Anything else falls through to CUVS-YHWH (Mandarin is the
+      // app's primary audience; the China-mode build is gated by a
+      // build flag, not locale).
+      final locale = prefs.getString('locale') ?? '';
+      switch (locale) {
+        case 'en':
+          currentVersion = 'nasb';
+          break;
+        case 'zh-Hant':
+          currentVersion = 'cuvs-yhwh-tr';
+          break;
+        case 'zh-Hans':
+        default:
+          currentVersion = 'cuvs-yhwh';
+          break;
+      }
     }
     if (savedBook != null) currentBook = savedBook;
     if (savedChapter != null) currentChapter = savedChapter;
