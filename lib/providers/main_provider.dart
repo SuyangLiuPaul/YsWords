@@ -1351,6 +1351,24 @@ class MainProvider extends ChangeNotifier {
     await _loadNotes();
     await _loadBookmarks();
 
+    // 2026-05-25 (v1.3.42): seed the synced lastRead blob on boot
+    // so the device's current position pushes to RTDB even when
+    // the user hasn't changed anything yet this session. Without
+    // this seed, the lastRead blob is only written when
+    // currentVersion / currentBook / currentChapter changes —
+    // meaning a user who upgrades to v1.3.41 + signs in but
+    // doesn't navigate has an empty `users/{uid}/sync/lastRead`
+    // node in RTDB until they swipe to a new chapter. That made
+    // cross-device sync "feel broken on first try" because
+    // Device B opened to an empty RTDB. saveCurrentState() is
+    // idempotent (writes the SAME blob it would on a real change),
+    // and the sync service has hash-based dedupe so calling it
+    // once on every boot is cheap.
+    if (isPrimary) {
+      // ignore: unawaited_futures
+      saveCurrentState();
+    }
+
     notifyListeners();
   }
 }
