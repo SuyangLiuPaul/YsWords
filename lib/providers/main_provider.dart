@@ -1262,10 +1262,27 @@ class MainProvider extends ChangeNotifier {
       // Only the primary pane drives the sync. The secondary
       // split-pane has its own _storagePrefix and shouldn't
       // overwrite the main reading position.
+      //
+      // 2026-05-25 (v1.3.43): also include the "继续讲道" /
+      // resume-sermon state. The dashboard `_loadResumeSermon`
+      // helper reads two unscoped keys: `sermons_last_read`
+      // (sermon ID) and `sermonScroll:{id}:{lang}` (pixel
+      // offset). User report: "有一个有继续讲道在dashboard但是
+      // 其他都没有，这个也有sync吗" — on Device A they have an
+      // active "Continue Sermon" card, but Device B sees nothing
+      // because the sermon ID was device-local. Folding into the
+      // existing lastRead blob keeps the sync surface narrow.
+      // Scroll-pixel offset is intentionally NOT synced because
+      // it's screen-size-dependent — instead, when Device B
+      // applies the blob, it gets the sermon ID and a 0% start
+      // (no progress bar) until the user scrolls themselves.
+      final sermonId = prefs.getString('sermons_last_read');
       final blob = jsonEncode({
         'version': currentVersion,
         if (currentBook != null) 'book': currentBook,
         if (currentChapter != null) 'chapter': currentChapter,
+        if (sermonId != null && sermonId.isNotEmpty)
+          'sermonId': sermonId,
       });
       await prefs.setString(
           ProfileService.instance.scopedKey('lastRead'), blob);
@@ -1300,6 +1317,19 @@ class MainProvider extends ChangeNotifier {
           final c = m['chapter'];
           if (c is int) savedChapter = c;
           if (c is num) savedChapter = c.toInt();
+          // 2026-05-25 (v1.3.43): if the synced blob carries a
+          // sermonId, mirror it back to the unscoped
+          // `sermons_last_read` prefs key the dashboard's
+          // _loadResumeSermon helper reads from. This is what
+          // makes the "继续讲道" card appear on Device B after
+          // Device A scrolled through a sermon. Scroll-position
+          // pixels are intentionally NOT mirrored (screen-size
+          // dependent) — Device B starts at 0% until the user
+          // scrolls themselves.
+          final sermonId = m['sermonId'];
+          if (sermonId is String && sermonId.isNotEmpty) {
+            await prefs.setString('sermons_last_read', sermonId);
+          }
         } catch (_) {/* corrupt blob → fall through */}
       }
     }
