@@ -55,12 +55,27 @@ IOS_DEVICES=(
   "D5B9E2F7-F74E-5F8A-8A08-83008BDBD13C|iPad Pro 11-inch (Paul Liu's iPad)"
 )
 
-# Android device roster — uses the mDNS `adb-<serial>._adb-tls-connect._tcp`
-# format so DHCP IP changes don't break the schedule. Fallback to
-# the current IP:port for the case mDNS doesn't resolve (some
-# WiFi networks block .local mDNS).
+# Android device roster — STABLE device serials only. Previously
+# this list pinned the mDNS pair-suffix (`adb-<serial>-XXXXXX._adb-
+# tls-connect._tcp`) AND a hard-coded ip:port, both of which drift:
+#
+#   • HyperOS 3 (Android 16, V816) assigns a NEW random TCP port
+#     every time the Wireless-debugging toggle is enabled — the old
+#     `192.168.4.19:38027` was already a stale `:44241` the next day.
+#   • The mDNS pair-suffix `-K09tQP` rotates if the device re-pairs.
+#   • HyperOS 3 also auto-DISABLES wireless debugging when the user
+#     leaves the Wireless-debugging settings screen or the device
+#     sleeps — so the broadcast is intermittent by design.
+#
+# 2026-05-26 (v1.3.45 follow-up): script now resolves the device's
+# current ip:port at runtime via `adb mdns services`, matching on
+# the stable serial prefix only. Falls back to the classic
+# `_adb._tcp` port-5555 service (present after `adb tcpip 5555`).
+# If neither broadcast is visible, the device is asleep / off-Wi-Fi
+# / wireless-debug toggle is off — print actionable instructions
+# rather than burning time on stale endpoints.
 ANDROID_DEVICES=(
-  "adb-0907E41001A00540-K09tQP._adb-tls-connect._tcp|192.168.4.19:38027|Xiaomi Pad 7 Ultra (jinghu)"
+  "0907E41001A00540|Xiaomi Pad 7 Ultra (jinghu)"
 )
 
 exec >"$LOG" 2>&1
@@ -162,22 +177,54 @@ fi
 echo ""
 echo "→ flutter build apk --release --flavor intl ${DEFINES[*]}"
 if "$FLUTTER" build apk --release --flavor intl "${DEFINES[@]}"; then
+  # Warm up mDNS — the first poll after `adb start-server` can come
+  # back empty even when broadcasts are live. A short settle lets
+  # the cache populate. Total cost: 3s of one-time wait per run.
+  adb mdns services >/dev/null 2>&1 || true
+  sleep 3
+
   for entry in "${ANDROID_DEVICES[@]}"; do
-    mdns="${entry%%|*}"
-    rest="${entry#*|}"
-    ipport="${rest%%|*}"
-    label="${rest##*|}"
+    serial="${entry%%|*}"
+    label="${entry##*|}"
     echo ""
-    echo "→ installing to $label"
-    # Try mDNS first (survives IP changes); fall back to last-known
-    # IP:port. ADB's `connect` is idempotent — safe to call even if
-    # already connected.
-    adb connect "$mdns" 2>&1 | tail -1 || true
-    adb connect "$ipport" 2>&1 | tail -1 || true
-    # Pick whichever transport is `device` (not offline)
-    device_id="$(adb devices | awk '$2=="device" && ($1 ~ /'"$mdns"'/ || $1 ~ /'"$ipport"'/) {print $1; exit}')"
+    echo "→ resolving wireless ADB endpoint for $label (serial $serial)"
+
+    # First preference: the v2 pair-token service. Match by SERIAL
+    # PREFIX so we tolerate the random `-XXXXXX` pair suffix changing
+    # on re-pair. `index($1, "adb-"s)==1` means "$1 starts with
+    # adb-<serial>" — catches both `adb-SERIAL` (rare, never paired
+    # for tls-connect) and `adb-SERIAL-SUFFIX` (the normal case).
+    addr="$(adb mdns services 2>/dev/null \
+      | awk -v s="adb-$serial" \
+            'index($1, s)==1 && $2 == "_adb-tls-connect._tcp" {print $3; exit}')"
+
+    # Fallback: classic `_adb._tcp` on port 5555. Only present after
+    # `adb tcpip 5555` has been run on the device this boot — unlikely
+    # to be there for HyperOS but cheap to check.
+    if [ -z "$addr" ]; then
+      addr="$(adb mdns services 2>/dev/null \
+        | awk -v s="adb-$serial" \
+              '$1 == s && $2 == "_adb._tcp" {print $3; exit}')"
+    fi
+
+    if [ -z "$addr" ]; then
+      echo "✗ $label is not advertising wireless ADB on this network."
+      echo "  → On the device: Settings → Developer options → Wireless"
+      echo "    debugging → toggle ON and keep that screen visible."
+      echo "    Then re-run this script. Or plug in USB and run"
+      echo "    \`adb install -r $ANDROID_APK\` manually."
+      failures=$((failures + 1))
+      continue
+    fi
+
+    echo "→ found at $addr — connecting + installing"
+    # `adb connect` is idempotent; safe to call even if the transport
+    # is already attached from a previous run.
+    adb connect "$addr" 2>&1 | tail -1 || true
+    device_id="$(adb devices | awk -v a="$addr" \
+        '$2=="device" && $1 == a {print $1; exit}')"
     if [ -z "$device_id" ]; then
-      echo "✗ Could not establish wireless ADB to $label (neither mDNS nor IP)"
+      echo "✗ adb connect to $addr did not yield a 'device' transport"
       failures=$((failures + 1))
       continue
     fi
