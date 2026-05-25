@@ -9,6 +9,7 @@ import 'package:yswords/constants/sermon_topics.dart';
 import 'package:yswords/constants/ui_strings.dart';
 import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/models/sermon.dart';
+import 'package:yswords/providers/main_provider.dart';
 import 'package:yswords/pages/sermon_detail_page.dart';
 import 'package:yswords/services/fetch_books.dart' show standardBookOrder;
 import 'package:yswords/services/sermon_service.dart';
@@ -122,6 +123,16 @@ class _SermonsPageState extends State<SermonsPage> {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_kLastReadKey, sermon.id);
     if (!mounted) return;
+    // 2026-05-25 (v1.3.44): trigger the synced `lastRead` blob to
+    // re-write with the new sermonId. v1.3.43 added the sermonId
+    // field to the blob but `saveCurrentState()` only fires on
+    // Bible state changes — opening a sermon without re-entering
+    // the reader left RTDB with a sermonId-less blob, so Device B
+    // never saw the "继续讲道" card. Calling saveCurrentState
+    // here makes the upload happen at the moment the user actually
+    // opens the sermon.
+    // ignore: unawaited_futures
+    context.read<MainProvider>().saveCurrentState();
     setState(() {
       _lastReadSermonId = sermon.id;
       _flashActive = false; // Don't flash the tile they're leaving

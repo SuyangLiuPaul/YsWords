@@ -386,6 +386,16 @@ class _DashboardPageState extends State<DashboardPage> {
 
   void _onProfileOrAuthChanged() {
     if (!mounted) return;
+    // 2026-05-25 (v1.3.44): re-run the resume-sermon resolver so
+    // that when RealtimeDbSyncService delivers a new `lastRead`
+    // blob (which now carries `sermonId` and mirrors it to the
+    // unscoped `sermons_last_read` key), the dashboard's
+    // "继续讲道" card actually updates on the receiving device.
+    // Previously this listener just did setState — the card's
+    // `_resumeSermon` field is cached in state and never refreshed
+    // mid-session, so the card stayed null/stale.
+    // ignore: unawaited_futures
+    _loadResumeSermon();
     setState(() {});
   }
 

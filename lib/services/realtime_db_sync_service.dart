@@ -819,6 +819,25 @@ class RealtimeDbSyncService extends ChangeNotifier {
       } else if (v == null) {
         await prefs.remove(scoped);
       }
+      // 2026-05-25 (v1.3.44): when delivering a new `lastRead`
+      // blob, mirror the optional sermonId field to the unscoped
+      // `sermons_last_read` prefs key the dashboard's
+      // _loadResumeSermon helper reads from. Previously this
+      // mirror only ran inside MainProvider.restoreState() at
+      // app boot, which meant a sermon opened on Device A
+      // didn't show up on Device B until Device B was restarted.
+      // Doing it here makes the "继续讲道" card appear (or
+      // disappear) on the receiving device as soon as RTDB
+      // delivers the new blob.
+      if (entry.key == 'lastRead' && v is String) {
+        try {
+          final m = jsonDecode(v) as Map<String, dynamic>;
+          final sermonId = m['sermonId'];
+          if (sermonId is String && sermonId.isNotEmpty) {
+            await prefs.setString('sermons_last_read', sermonId);
+          }
+        } catch (_) {/* corrupt blob → leave unscoped key alone */}
+      }
     }
     ProfileService.instance.notifyListeners();
   }
