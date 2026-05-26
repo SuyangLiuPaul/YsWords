@@ -248,17 +248,28 @@ if "$FLUTTER" build apk --release --flavor intl "${DEFINES[@]}"; then
     # on re-pair. `index($1, "adb-"s)==1` means "$1 starts with
     # adb-<serial>" — catches both `adb-SERIAL` (rare, never paired
     # for tls-connect) and `adb-SERIAL-SUFFIX` (the normal case).
+    # Also require $3 to look like `IPv4:port` — sometimes the
+    # mDNS announcement loses its host A-record and shows up as
+    # `:44241` (just the port) when the device's IP rotated or
+    # network blip during multicast advertisement. Without this
+    # guard, `adb connect :44241` would target an empty hostname
+    # and fail with a confusing error.
     addr="$(adb mdns services 2>/dev/null \
       | awk -v s="adb-$serial" \
-            'index($1, s)==1 && $2 == "_adb-tls-connect._tcp" {print $3; exit}')"
+            'index($1, s)==1 && $2 == "_adb-tls-connect._tcp" \
+             && $3 ~ /^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+:[0-9]+$/ \
+             {print $3; exit}')"
 
     # Fallback: classic `_adb._tcp` on port 5555. Only present after
     # `adb tcpip 5555` has been run on the device this boot — unlikely
-    # to be there for HyperOS but cheap to check.
+    # to be there for HyperOS but cheap to check. Same host-validation
+    # guard.
     if [ -z "$addr" ]; then
       addr="$(adb mdns services 2>/dev/null \
         | awk -v s="adb-$serial" \
-              '$1 == s && $2 == "_adb._tcp" {print $3; exit}')"
+              '$1 == s && $2 == "_adb._tcp" \
+               && $3 ~ /^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+:[0-9]+$/ \
+               {print $3; exit}')"
     fi
 
     if [ -z "$addr" ]; then
