@@ -33,6 +33,15 @@ APP_VERSION="$(awk '/^version:/ {print $2; exit}' "$PROJECT/pubspec.yaml")"
 APP_RELEASE_TIME="$(date -u '+%Y-%m-%dT%H:%M:%SZ')"
 echo "==> APP_VERSION=$APP_VERSION APP_RELEASE_TIME=$APP_RELEASE_TIME"
 
+# 2026-05-27 (v1.3.47): refresh the version cache so the launchd-
+# spawned yswords-ios-reinstall.sh has a known-good fallback even
+# if its own awk gets blocked by macOS TCC at 04:00 (the cache
+# lives at `~/.config/yswords/current-version`, outside the
+# TCC-protected `~/Documents` tree).
+VERSION_CACHE="$HOME/.config/yswords/current-version"
+mkdir -p "$(dirname "$VERSION_CACHE")" 2>/dev/null
+printf '%s\n' "$APP_VERSION" > "$VERSION_CACHE" 2>/dev/null || true
+
 cd "$PROJECT"
 "$FLUTTER" build web --release \
   --dart-define="APP_VERSION=$APP_VERSION" \

@@ -110,7 +110,61 @@ failures=0
 if [[ "${BUMP_VERSION:-0}" = "1" && -x "$PROJECT/tools/bump_version.sh" ]]; then
   "$PROJECT/tools/bump_version.sh"
 fi
-APP_VERSION="$(awk '/^version:/ {print $2; exit}' "$PROJECT/pubspec.yaml")"
+# 2026-05-27 (v1.3.47): robust APP_VERSION resolution. At 04:00 the
+# launchd-spawned awk somehow can't open the absolute pubspec.yaml
+# path under ~/Documents (likely macOS TCC on background daemons —
+# repros every overnight fire, never repros interactively). Until
+# that's understood, cascade through multiple read strategies plus
+# a `~/.config/yswords/current-version` cache that the interactive
+# release_web.sh + this script BOTH refresh whenever they succeed —
+# so the next launchd fire has a known-good fallback even if its
+# own awk hits TCC again.
+VERSION_CACHE="$HOME/.config/yswords/current-version"
+
+APP_VERSION=""
+# (1) Direct awk on absolute path — the original method. Works
+#     interactively from Terminal; fails for launchd-spawned awk.
+APP_VERSION="$(awk '/^version:/ {print $2; exit}' "$PROJECT/pubspec.yaml" 2>/dev/null || true)"
+
+# (2) CD-into-PROJECT + relative-path awk. Different syscall path
+#     than the absolute open; may dodge whatever TCC binding the
+#     absolute path tripped over.
+if [ -z "$APP_VERSION" ]; then
+  APP_VERSION="$(cd "$PROJECT" 2>/dev/null && awk '/^version:/ {print $2; exit}' pubspec.yaml 2>/dev/null || true)"
+fi
+
+# (3) grep + shell parameter expansion. Different binary, different
+#     open path. If awk is the one being blocked, grep may sail
+#     through.
+if [ -z "$APP_VERSION" ]; then
+  vline="$(grep -m1 '^version:' "$PROJECT/pubspec.yaml" 2>/dev/null || true)"
+  APP_VERSION="${vline#version: }"
+fi
+
+# (4) Cache file fallback (refreshed below whenever any of 1-3
+#     succeeded on a previous run, including interactive ones).
+if [ -z "$APP_VERSION" ] && [ -r "$VERSION_CACHE" ]; then
+  APP_VERSION="$(tr -d '[:space:]' < "$VERSION_CACHE" 2>/dev/null || true)"
+  echo "WARN: pubspec.yaml unreadable at this run; using cached APP_VERSION=$APP_VERSION from $VERSION_CACHE"
+fi
+
+# (5) Last-ditch sentinel so we NEVER ship `--dart-define=APP_VERSION=`
+#     again. About page falls back to lib/services/app_version.dart's
+#     hard-coded constant, but at least the dart-define isn't an
+#     empty-string black hole.
+if [ -z "$APP_VERSION" ]; then
+  APP_VERSION="unknown"
+  echo "ERROR: could not determine APP_VERSION via any method (pubspec read failed + no cache)."
+  echo "       Shipping APP_VERSION=unknown so the build doesn't blow up."
+fi
+
+# Refresh the cache whenever we got a real version — gives the next
+# launchd fire a safety net. Idempotent + cheap.
+if [ "$APP_VERSION" != "unknown" ]; then
+  mkdir -p "$(dirname "$VERSION_CACHE")" 2>/dev/null
+  printf '%s\n' "$APP_VERSION" > "$VERSION_CACHE" 2>/dev/null || true
+fi
+
 APP_RELEASE_TIME="$(date -u '+%Y-%m-%dT%H:%M:%SZ')"
 DEFINES=(
   --dart-define="APP_VERSION=$APP_VERSION"
@@ -219,12 +273,37 @@ if "$FLUTTER" build apk --release --flavor intl "${DEFINES[@]}"; then
 
     echo "→ found at $addr — connecting + installing"
     # `adb connect` is idempotent; safe to call even if the transport
-    # is already attached from a previous run.
+    # is already attached from a previous run. Still — if a previous
+    # `connect` left the transport in `offline` state (happens when
+    # the device's wireless-debug pair-token has rolled but the
+    # client thinks it's still good), a fresh `disconnect` clears it
+    # before the new `connect` attempt.
+    adb disconnect "$addr" >/dev/null 2>&1 || true
     adb connect "$addr" 2>&1 | tail -1 || true
+    sleep 1
     device_id="$(adb devices | awk -v a="$addr" \
         '$2=="device" && $1 == a {print $1; exit}')"
+    # If the transport is showing but as `offline`, give it one more
+    # disconnect/connect cycle. 2026-05-27: yesterday's launchd run
+    # found the device at mDNS-resolved :44241 but `adb devices`
+    # came back without a `device` line — suggesting the transport
+    # was in `offline` state. This retry catches that case.
+    if [ -z "$device_id" ]; then
+      offline_state="$(adb devices | awk -v a="$addr" '$1 == a {print $2; exit}')"
+      if [ -n "$offline_state" ] && [ "$offline_state" != "device" ]; then
+        echo "  transport showed $offline_state — retrying disconnect+connect"
+        adb disconnect "$addr" >/dev/null 2>&1 || true
+        sleep 2
+        adb connect "$addr" 2>&1 | tail -1 || true
+        sleep 1
+        device_id="$(adb devices | awk -v a="$addr" \
+            '$2=="device" && $1 == a {print $1; exit}')"
+      fi
+    fi
     if [ -z "$device_id" ]; then
       echo "✗ adb connect to $addr did not yield a 'device' transport"
+      echo "  (pair token may have expired — re-pair via the Wireless"
+      echo "  debugging → Pair device with pairing code screen)"
       failures=$((failures + 1))
       continue
     fi
