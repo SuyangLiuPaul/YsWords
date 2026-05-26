@@ -885,7 +885,21 @@ class AppSettings extends ChangeNotifier {
     _primaryColor =
         Color(prefs.getInt(_kPrimaryColor) ?? Colors.lightBlue.toARGB32());
     _copyFormat = prefs.getString(_kCopyFormat) ?? 'devotional';
-    _locale = prefs.getString(_kLocale) ?? _detectSystemLocale();
+    // 2026-05-26 (v1.3.46): persist the detected locale on first
+    // load. Previously `_locale = prefs.get ?? _detectSystemLocale()`
+    // only kept the detection IN MEMORY — the prefs key stayed
+    // empty. `MainProvider.restoreState` reads the prefs key (not
+    // AppSettings.locale) to pick its locale-aware default Bible
+    // version, so an English-locale fresh install hit the
+    // switch's `default:` branch and got CUVS-YHWH instead of the
+    // intended NASB. Writing the detected value back the first
+    // time we see an unset prefs key fixes that without touching
+    // the read path.
+    final persistedLocale = prefs.getString(_kLocale);
+    _locale = persistedLocale ?? _detectSystemLocale();
+    if (persistedLocale == null) {
+      await prefs.setString(_kLocale, _locale);
+    }
     _themeMode = _parseThemeMode(prefs.getString(_kThemeMode));
     _paragraphMode = prefs.getBool(_kParagraphMode) ?? true;
     final rawMenuScale = prefs.getDouble(_kMenuScale) ?? 1.0;

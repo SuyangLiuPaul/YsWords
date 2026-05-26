@@ -1345,6 +1345,36 @@ class MainProvider extends ChangeNotifier {
       // verse list, so route them to KJV (closest English fallback that
       // is unambiguously public domain).
       if (v == 'niv') v = 'kjv';
+      // 2026-05-26 (v1.3.46): one-time migration for English-locale
+      // users whose saved version is the v1.3.40-era class-level
+      // default `cuvs-yhwh`. v1.3.40 introduced locale-aware fresh-
+      // install defaults (en→NASB) but it ONLY ran when savedVersion
+      // was null — pre-v1.3.40 users (and fresh installs that hit
+      // the v1.3.46-fixed-locale-prefs bug) had `cuvs-yhwh` saved
+      // even though they were on English locale, so the new default
+      // never reached them. Heuristic: an English-locale user with
+      // exactly the old class-level default almost certainly didn't
+      // deliberately pick Simplified Chinese; nudge them to NASB.
+      // Anyone who actually wants CUVS-YHWH can switch back in the
+      // version picker; the sentinel prevents this from re-firing.
+      // Only fires on the primary pane (secondary split has its own
+      // `_storagePrefix` and shouldn't be touched).
+      if (isPrimary && v == 'cuvs-yhwh') {
+        final migrated =
+            prefs.getBool('migrated_locale_default_v1346') ?? false;
+        final localeForMigration = prefs.getString('locale') ?? '';
+        if (!migrated && localeForMigration == 'en') {
+          v = 'nasb';
+          // ignore: avoid_print
+          print('[v1.3.46] migrated default from cuvs-yhwh→nasb '
+              '(locale=en)');
+          // Persist the new pick so subsequent boots don't roll back.
+          // The lastRead blob seed-write at the end of restoreState
+          // picks this up and uploads to RTDB.
+          await prefs.setString('${_storagePrefix}version', 'nasb');
+        }
+        await prefs.setBool('migrated_locale_default_v1346', true);
+      }
       currentVersion = v;
     } else {
       // 2026-05-25 (v1.3.40): no saved version yet → fresh install.
