@@ -451,15 +451,25 @@ function buildVersePrompt({ book, chapter, verseStart, verseEnd, verseText, loca
 	parts.push('');
 	if (isZh) {
 		parts.push('你是一位严谨而温暖的圣经教师，帮助普通读者理解经文。');
-		parts.push(`读者正在阅读 ${ref}。请解释这段经文的含义。`);
-		parts.push(`请按顺序覆盖：(1) 一两句话的上下文背景（这段经文在书卷` +
-			`与章节中的位置和处境）；(2) 主体部分：这段经文在说什么、关键词` +
-			`或意象的含义、作者要传达的要点；(3) 一个帮助今天的读者理解` +
+		parts.push(`读者正在阅读 ${ref}。请用连贯的散文段落解释这段经文的含义。`);
+		// v1.3.x: phrase the coverage as prose to weave in — NOT a
+		// numbered list. The old "(1)(2)(3)" structure made the model
+		// emit a bullet/numbered outline with bold headers (+ a leaked
+		// "快速思考：" preamble), which looked messy in the panel.
+		parts.push(`请自然地融入以下几方面（连成通顺的段落，不要分点、` +
+			`不要小标题）：先用一两句交代上下文背景（这段经文在书卷与` +
+			`章节中的位置和处境），再说明经文在说什么、关键词或意象的` +
+			`含义、作者要传达的要点，最后给出一个帮助今天的读者理解` +
 			`或应用的观察。`);
 		if (verseText) parts.push(`经文内容:"${verseText}"`);
 		parts.push('');
-		parts.push(`目标字数:${words}。仅使用普通散文，不要使用 Markdown ` +
-			`(不要用 *、**、#、- 等符号)。务必把最后一句写完整。`);
+		parts.push(`目标字数:${words}。`);
+		parts.push(`格式要求（务必严格遵守）：直接开始解释正文，不要任何` +
+			`前言、问候或「好的」「我们来看」之类的开场白；绝对不要输出` +
+			`「快速思考」「思考」等思考过程或步骤标记。全文用普通、连贯的` +
+			`散文段落（段落之间可用空行分隔），不要使用任何 Markdown：` +
+			`不要星号(*、**)、井号标题(#)、项目符号(-)、数字编号(1. 2. 3.)。` +
+			`务必把最后一句写完整。`);
 		parts.push('');
 		parts.push('保持忠于经文，不要编造历史细节，不要说教，也不要加入' +
 			'宗派立场。圣经书卷名一律使用中文(例如:创世记、诗篇、马太福音)。');
@@ -467,16 +477,25 @@ function buildVersePrompt({ book, chapter, verseStart, verseEnd, verseText, loca
 	} else {
 		parts.push('You are a rigorous yet warm Bible teacher helping an ' +
 			'ordinary reader understand a passage.');
-		parts.push(`The reader is reading ${ref}. Explain what this passage means.`);
-		parts.push(`Cover, in order: (1) one or two sentences of context ` +
-			`(where this sits in the book and chapter, and its situation); ` +
-			`(2) the bulk — what the passage says, the meaning of key words ` +
-			`or images, and the point the author is making; (3) one ` +
-			`observation that helps a reader today understand or apply it.`);
+		parts.push(`The reader is reading ${ref}. Explain what this passage ` +
+			`means in flowing prose paragraphs.`);
+		parts.push(`Weave in naturally (as connected prose — NOT a numbered ` +
+			`list and NOT headed sections): first a sentence or two of ` +
+			`context (where this sits in the book and chapter, and its ` +
+			`situation), then what the passage says, the meaning of key ` +
+			`words or images, and the point the author is making, and ` +
+			`finally one observation that helps a reader today understand ` +
+			`or apply it.`);
 		if (verseText) parts.push(`The passage reads: "${verseText}"`);
 		parts.push('');
-		parts.push(`Target length: ${words}. Use plain prose only — NEVER ` +
-			`markdown (no *, **, #, -, etc.). Always finish your final sentence.`);
+		parts.push(`Target length: ${words}.`);
+		parts.push(`FORMAT (follow strictly): start directly with the ` +
+			`explanation — no preamble, greeting, or "Okay/Sure/Let's look"; ` +
+			`and NEVER output any "thinking", chain-of-thought, or step ` +
+			`markers. Write plain, connected prose paragraphs (a blank line ` +
+			`between paragraphs is fine). Use NO Markdown whatsoever: no ` +
+			`asterisks (*, **), no hash headings (#), no bullets (-), no ` +
+			`numbered lists (1. 2. 3.). Always finish your final sentence.`);
 		parts.push('');
 		parts.push('Stay faithful to the text. Do not invent historical ' +
 			'details. Do not moralize or take denominational positions.');
