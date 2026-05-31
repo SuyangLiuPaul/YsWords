@@ -2806,9 +2806,25 @@ class _SelectionActionBar extends StatelessWidget {
                         ],
                       ),
                       const SizedBox(height: 2),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: actionButtons,
+                      // v1.3.x: the action row grew to 7 icons (added
+                      // AI explain). 7 × 48 px standard-density buttons
+                      // overflow a ~320–340 dp phone, so make the row
+                      // horizontally scrollable — it stays centered when
+                      // everything fits and scrolls only when it can't.
+                      // (spaceEvenly needs a bounded width, incompatible
+                      // with a scroll view, so we center a min-width Row.)
+                      SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        physics: const ClampingScrollPhysics(),
+                        child: ConstrainedBox(
+                          constraints:
+                              BoxConstraints(minWidth: constraints.maxWidth),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            mainAxisSize: MainAxisSize.min,
+                            children: actionButtons,
+                          ),
+                        ),
                       ),
                     ],
                   );
