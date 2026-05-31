@@ -2982,16 +2982,17 @@ class _AiExplainSheetState extends State<_AiExplainSheet> {
       _error = null;
     });
     final key = widget.settings.geminiApiKey.trim();
-    final result = await AiWordService.explainVerse(
-      englishBook: widget.englishBook,
-      chapter: widget.chapter,
-      verseStart: widget.verseStart,
-      verseEnd: widget.verseEnd,
-      verseText: widget.verseText,
-      locale: widget.settings.locale,
-      userApiKey: key.isEmpty ? null : key,
-      aiModel: widget.settings.aiModel,
-    );
+    var result = await _request(key);
+    // v1.3.x: the FIRST call often fails on a Netlify function
+    // cold-start — the lambda + Gemini model spin-up pushes it past
+    // the deadline, then the warm retry succeeds (user report: "第一次
+    // 尝试失败了"). Auto-retry once on failure so a transient cold
+    // start doesn't surface as an error the user has to tap through.
+    if (result.unavailable && mounted) {
+      await Future<void>.delayed(const Duration(milliseconds: 500));
+      if (!mounted) return;
+      result = await _request(key);
+    }
     if (!mounted) return;
     setState(() {
       _loading = false;
@@ -3003,6 +3004,19 @@ class _AiExplainSheetState extends State<_AiExplainSheet> {
         _explanation = result.explanation.trim();
       }
     });
+  }
+
+  Future<AiWordResult> _request(String key) {
+    return AiWordService.explainVerse(
+      englishBook: widget.englishBook,
+      chapter: widget.chapter,
+      verseStart: widget.verseStart,
+      verseEnd: widget.verseEnd,
+      verseText: widget.verseText,
+      locale: widget.settings.locale,
+      userApiKey: key.isEmpty ? null : key,
+      aiModel: widget.settings.aiModel,
+    );
   }
 
   @override
@@ -3029,9 +3043,13 @@ class _AiExplainSheetState extends State<_AiExplainSheet> {
                   Expanded(
                     child: Text(
                       '${uiStrings['aiExplainHeader']?[locale] ?? 'YsWords explanation'} · ${widget.refLabel}',
+                      // v1.3.x: no explicit fontFamily — a bottom sheet
+                      // does NOT inherit the reading-font DefaultTextStyle,
+                      // and forcing settings.fontFamily (the user's Bible
+                      // reading font, often a serif) made the AI panel
+                      // look out of place ("字体看起来很奇怪"). Use the
+                      // default UI font like the word-study panel does.
                       style: TextStyle(
-                        fontFamily: widget.settings.fontFamily,
-                        fontFamilyFallback: kCjkFontFallback,
                         fontSize: 15,
                         fontWeight: FontWeight.w700,
                         color: scheme.onSurface,
@@ -3071,8 +3089,6 @@ class _AiExplainSheetState extends State<_AiExplainSheet> {
                 uiStrings['aiExplainVerseDisclaimer']?[locale] ??
                     'AI-generated; for reference only — let Scripture itself be the authority.',
                 style: TextStyle(
-                  fontFamily: widget.settings.fontFamily,
-                  fontFamilyFallback: kCjkFontFallback,
                   fontSize: 11,
                   fontStyle: FontStyle.italic,
                   color: scheme.onSurfaceVariant.withValues(alpha: 0.8),
@@ -3103,11 +3119,12 @@ class _AiExplainSheetState extends State<_AiExplainSheet> {
       TextSpan(
         children: parseAiMarkdown(
           explanation ?? '',
+          // Matches the word-study panel's AI text exactly (no forced
+          // fontFamily — the sheet's default UI font reads cleanly;
+          // forcing the reading font looked weird). height 1.55.
           base: TextStyle(
-            fontFamily: widget.settings.fontFamily,
-            fontFamilyFallback: kCjkFontFallback,
-            fontSize: widget.settings.fontSize,
-            height: 1.62,
+            fontSize: 15,
+            height: 1.55,
             color: scheme.onSurface,
           ),
         ),
@@ -3128,8 +3145,6 @@ class _AiExplainSheetState extends State<_AiExplainSheet> {
             reason,
             textAlign: TextAlign.center,
             style: TextStyle(
-              fontFamily: widget.settings.fontFamily,
-              fontFamilyFallback: kCjkFontFallback,
               fontSize: 13,
               color: scheme.onSurfaceVariant,
             ),
