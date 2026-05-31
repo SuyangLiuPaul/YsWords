@@ -314,6 +314,47 @@ All shipped to prod (yswords + yswords-cn). Detailed entries in
   Shipped to the 4 dev/qat sites + GitHub + macOS; iPhone/iPad/Mi
   Pad pending device reachability. flutter analyze: 0; test: 165/165.
 
+- **v1.3.52 → v1.3.57 + PROD revert/re-push (2026-05-31)**.
+  - **Blank prod home → revert.** prod (`yswords` + `yswords-cn`) was
+    blanking on v1.3.48/49; user asked to revert with no forward push.
+    Restored both prod sites to **v1.3.47** via `netlify api
+    restoreSiteDeploy`. Initial guess (CSS) was wrong.
+  - **v1.3.54 — real cause of the blank dashboard.** `LeftAccentCard`
+    (added v1.3.50) drew its accent stripe with `Row(crossAxisAlignment:
+    stretch)` + `Expanded(child)`. That forces an unbounded-height
+    stretch pass; the dashboard daily-verse card's child is a
+    `mainAxisSize.max Column` inside a `ListView`, so the pass threw
+    during LAYOUT and blanked the scroll viewport from that card down.
+    Rewrote `LeftAccentCard` to paint the stripe as a `Positioned`
+    overlay inside a `Stack` sized by the content (no stretch, no
+    intrinsic pass → safe for Text / RichText / SelectableText / Column).
+    Added the missing regression test (max-Column child in a ListView).
+  - **v1.3.53/55/56/57 — AI-verse explanation polish.** Copy button +
+    SelectableText body (53); cold-start auto-retry once before erroring
+    (55); render in the scripture font — `settings.fontFamily/fontSize/
+    lineSpacing` — so it reads as one piece with the verse (56); and
+    **buildVersePrompt rewritten to force clean flowing prose** (57) —
+    the old `(1)(2)(3)` phrasing made Gemini emit a markdown OUTLINE +
+    a leaked "快速思考：" preamble. Now bans lists/headings/markdown/
+    preamble; added a defensive client strip of any leaked "快速思考"
+    block. Verified by curling the live function.
+  - **CN Google-login fix.** `yswords-cn` shipped the INTERNATIONAL
+    bundle (Firebase + Google sign-in, useless behind the GFW) because
+    `release_web.sh` built one bundle for all sites. Rewrote it to do
+    TWO builds: international → en sites (dev/qat/`yswords`),
+    `CHINA_MODE=true` → cn sites (cn-dev/cn-qat/`yswords-cn`). CHINA_MODE
+    skips Firebase init → `auth.isConfigured` false → sign-in hidden.
+  - **NATIVE AI gotcha + prod re-push.** Native (iOS/Android/macOS) call
+    the AI function at the hardcoded prod URL (`kYswordsBaseUrl`,
+    `api_base.dart`). While prod was on v1.3.47, the prod function
+    lacked `versePlain` → iOS AI-explain returned "strongs, lemma,
+    book, chapter, verse required". Once v1.3.54 confirmed the
+    blank-home fix, user authorised pushing **v1.3.57 to all 6 sites**
+    (international → en, CHINA_MODE → cn), which also restored the prod
+    `versePlain` function — native AI works again with no reinstall.
+  - Devices: iPhone/iPad/macOS on v1.3.57; Mi Pad pending its
+    wireless-debug screen. flutter analyze: 0; test: 166/166.
+
 ## Removed features
 
 - **朗读 / TTS (v1.3.19)** — Listen-to-chapter + ListenButton +
