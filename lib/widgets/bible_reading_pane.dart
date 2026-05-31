@@ -3043,13 +3043,11 @@ class _AiExplainSheetState extends State<_AiExplainSheet> {
                   Expanded(
                     child: Text(
                       '${uiStrings['aiExplainHeader']?[locale] ?? 'YsWords explanation'} · ${widget.refLabel}',
-                      // v1.3.x: no explicit fontFamily — a bottom sheet
-                      // does NOT inherit the reading-font DefaultTextStyle,
-                      // and forcing settings.fontFamily (the user's Bible
-                      // reading font, often a serif) made the AI panel
-                      // look out of place ("字体看起来很奇怪"). Use the
-                      // default UI font like the word-study panel does.
+                      // Reading font so the header aligns with the
+                      // scripture + explanation below it.
                       style: TextStyle(
+                        fontFamily: widget.settings.fontFamily,
+                        fontFamilyFallback: kCjkFontFallback,
                         fontSize: 15,
                         fontWeight: FontWeight.w700,
                         color: scheme.onSurface,
@@ -3089,6 +3087,8 @@ class _AiExplainSheetState extends State<_AiExplainSheet> {
                 uiStrings['aiExplainVerseDisclaimer']?[locale] ??
                     'AI-generated; for reference only — let Scripture itself be the authority.',
                 style: TextStyle(
+                  fontFamily: widget.settings.fontFamily,
+                  fontFamilyFallback: kCjkFontFallback,
                   fontSize: 11,
                   fontStyle: FontStyle.italic,
                   color: scheme.onSurfaceVariant.withValues(alpha: 0.8),
@@ -3119,12 +3119,18 @@ class _AiExplainSheetState extends State<_AiExplainSheet> {
       TextSpan(
         children: parseAiMarkdown(
           explanation ?? '',
-          // Matches the word-study panel's AI text exactly (no forced
-          // fontFamily — the sheet's default UI font reads cleanly;
-          // forcing the reading font looked weird). height 1.55.
+          // v1.3.x: render in the SAME style as the scripture text the
+          // reader is studying — user wants the explanation "aligned"
+          // with the verse font (字体和经文一样). Mirror the verse
+          // text's family + size + line-spacing exactly so the panel
+          // reads as one piece with the passage. (The earlier "weird"
+          // look was a hardcoded height that didn't match the reader's
+          // line-spacing; v1.3.55 then wrongly dropped the font.)
           base: TextStyle(
-            fontSize: 15,
-            height: 1.55,
+            fontFamily: widget.settings.fontFamily,
+            fontFamilyFallback: kCjkFontFallback,
+            fontSize: widget.settings.fontSize,
+            height: widget.settings.lineSpacing,
             color: scheme.onSurface,
           ),
         ),
@@ -3145,6 +3151,8 @@ class _AiExplainSheetState extends State<_AiExplainSheet> {
             reason,
             textAlign: TextAlign.center,
             style: TextStyle(
+              fontFamily: widget.settings.fontFamily,
+              fontFamilyFallback: kCjkFontFallback,
               fontSize: 13,
               color: scheme.onSurfaceVariant,
             ),
