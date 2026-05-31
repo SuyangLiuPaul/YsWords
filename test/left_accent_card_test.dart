@@ -84,4 +84,60 @@ void main() {
     // ClipRRect clips the stripe + content to the rounded shape.
     expect(find.byType(ClipRRect), findsOneWidget);
   });
+
+  // REGRESSION (v1.3.x): the dashboard "Verse of the Day" card is a
+  // LeftAccentCard whose child is a mainAxisSize.max Column, and it
+  // lives in a ListView (unbounded height). The first implementation
+  // used Row(crossAxisAlignment: stretch) + Expanded(child) which threw
+  // during layout in exactly this configuration — blanking the
+  // dashboard from that card downward. This must render cleanly.
+  testWidgets('mainAxisSize.max Column child inside a ListView does NOT '
+      'throw (the dashboard-blank regression)', (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: ListView(
+            children: [
+              Material(
+                color: const Color(0xFFEEEEEE),
+                borderRadius: BorderRadius.circular(12),
+                child: InkWell(
+                  onTap: () {},
+                  borderRadius: BorderRadius.circular(12),
+                  child: LeftAccentCard(
+                    borderRadius: BorderRadius.circular(12),
+                    accentColor: const Color(0xFF884444),
+                    accentWidth: 3,
+                    outlineColor: const Color(0x66999999),
+                    padding: const EdgeInsets.all(14),
+                    child: Column(
+                      // The dashboard card's Column has no explicit
+                      // mainAxisSize → defaults to max. Reproduce that.
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: const [
+                        Text('In the beginning God created the heavens'),
+                        SizedBox(height: 8),
+                        Row(
+                          children: [
+                            Expanded(child: Text('— Genesis 1:1')),
+                            Icon(Icons.arrow_forward, size: 16),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              // A sibling AFTER the card — must still render (the bug
+              // blanked everything below the failing card).
+              const Text('SECTION BELOW'),
+            ],
+          ),
+        ),
+      ),
+    );
+    expect(tester.takeException(), isNull);
+    expect(find.textContaining('In the beginning'), findsOneWidget);
+    expect(find.text('SECTION BELOW'), findsOneWidget);
+  });
 }

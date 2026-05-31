@@ -65,21 +65,50 @@ class LeftAccentCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final pad = padding.resolve(Directionality.of(context));
+    // The stripe is a POSITIONED overlay, never a `Row` child with
+    // `CrossAxisAlignment.stretch`.
+    //
+    // WHY (v1.3.x regression fix): the first implementation used
+    //   Row(crossAxisAlignment: stretch, [stripe, Expanded(child)])
+    // to make the stripe match the content height. That forces an
+    // unbounded-height stretch/intrinsic pass on the Expanded child.
+    // When the child is a `mainAxisSize.max Column` inside a scroll
+    // view (exactly the dashboard "Verse of the Day" card), the pass
+    // throws during layout — which blanked the dashboard from that
+    // card downward. A `Stack` sized by the content + a `Positioned`
+    // stripe (top:0/bottom:0) needs no stretch and no intrinsic
+    // dimensions, so it's safe for ANY child (Text / RichText /
+    // SelectableText / Column).
     Widget content = ClipRRect(
       borderRadius: borderRadius,
-      child: ColoredBox(
-        color: background ?? Colors.transparent,
-        child: Row(
-          // Stretch the stripe to the full intrinsic height of the
-          // content beside it.
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Container(width: accentWidth, color: accentColor),
-            Expanded(
-              child: Padding(padding: padding, child: child),
+      child: Stack(
+        children: [
+          // Sizing child — full width (tight from the parent), height
+          // driven by [child]. Left inset leaves room for the stripe.
+          Container(
+            width: double.infinity,
+            color: background,
+            padding: EdgeInsets.only(
+              left: accentWidth + pad.left,
+              right: pad.right,
+              top: pad.top,
+              bottom: pad.bottom,
             ),
-          ],
-        ),
+            child: child,
+          ),
+          // Full-height accent stripe pinned to the start edge.
+          Positioned.directional(
+            textDirection: Directionality.of(context),
+            start: 0,
+            top: 0,
+            bottom: 0,
+            child: SizedBox(
+              width: accentWidth,
+              child: ColoredBox(color: accentColor),
+            ),
+          ),
+        ],
       ),
     );
 
