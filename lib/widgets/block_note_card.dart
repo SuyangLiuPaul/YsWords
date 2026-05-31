@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/utils/responsive.dart';
 import 'package:yswords/utils/font_catalog.dart' show kCjkFontFallback;
+import 'package:yswords/widgets/left_accent_card.dart';
 
 /// 2026-05-19 (v1.2.57): block-level editorial footnote rendered
 /// BELOW a verse. Used by both `paragraph_group_widget` (paragraph
@@ -37,20 +38,18 @@ class BlockNoteCard extends StatelessWidget {
         baseIndent + 16,
         settings.fontSize * 0.15,
       ),
-      child: Container(
+      // v1.3.x: was Container(BoxDecoration(border: Border(left:...),
+      // borderRadius: only-right)) — a non-uniform border + radius,
+      // which throws in Border.paint. LeftAccentCard draws the stripe
+      // as a clipped child.
+      child: LeftAccentCard(
         padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
-        decoration: BoxDecoration(
-          color: scheme.primary.withValues(alpha: 0.06),
-          border: Border(
-            left: BorderSide(
-              color: scheme.primary.withValues(alpha: 0.35),
-              width: 3,
-            ),
-          ),
-          borderRadius: const BorderRadius.only(
-            topRight: Radius.circular(4),
-            bottomRight: Radius.circular(4),
-          ),
+        background: scheme.primary.withValues(alpha: 0.06),
+        accentColor: scheme.primary.withValues(alpha: 0.35),
+        accentWidth: 3,
+        borderRadius: const BorderRadius.only(
+          topRight: Radius.circular(4),
+          bottomRight: Radius.circular(4),
         ),
         child: SelectableText(
           note,

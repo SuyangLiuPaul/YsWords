@@ -425,6 +425,67 @@ function buildPrompt({ strongs, lemma, translit, gloss, book, chapter, verse, ve
 	return parts.join('\n');
 }
 
+// v1.3.x: plain-language explanation of a whole VERSE (or short verse
+// range) for an ordinary reader — triggered by `task: 'versePlain'`
+// (the reader taps a verse + the "AI explain" action in the reading
+// pane's selection bar). Reuses all of this function's infra
+// (key rotation, model step-down, BYOK, CORS); only the prompt differs
+// from the word-study path. Always answers in the reader's locale.
+function buildVersePrompt({ book, chapter, verseStart, verseEnd, verseText, locale, length }) {
+	const lang = langName(locale);
+	const langDirective = languageDirective(locale);
+	const isZh = locale === 'zh-Hans' || locale === 'zh-Hant';
+	const localBook = localizeBook(book, locale);
+	const ref = (verseEnd && verseEnd > verseStart)
+		? `${localBook} ${chapter}:${verseStart}-${verseEnd}`
+		: `${localBook} ${chapter}:${verseStart}`;
+	let words;
+	switch (length) {
+		case 'concise': words = isZh ? '60-110 字' : '60-110 words'; break;
+		case 'longer':  words = isZh ? '300-450 字' : '300-450 words'; break;
+		case 'deep':    words = isZh ? '500-750 字' : '500-750 words'; break;
+		default:        words = isZh ? '150-260 字' : '150-260 words';
+	}
+	const parts = [];
+	parts.push(langDirective);
+	parts.push('');
+	if (isZh) {
+		parts.push('你是一位严谨而温暖的圣经教师，帮助普通读者理解经文。');
+		parts.push(`读者正在阅读 ${ref}。请解释这段经文的含义。`);
+		parts.push(`请按顺序覆盖：(1) 一两句话的上下文背景（这段经文在书卷` +
+			`与章节中的位置和处境）；(2) 主体部分：这段经文在说什么、关键词` +
+			`或意象的含义、作者要传达的要点；(3) 一个帮助今天的读者理解` +
+			`或应用的观察。`);
+		if (verseText) parts.push(`经文内容:"${verseText}"`);
+		parts.push('');
+		parts.push(`目标字数:${words}。仅使用普通散文，不要使用 Markdown ` +
+			`(不要用 *、**、#、- 等符号)。务必把最后一句写完整。`);
+		parts.push('');
+		parts.push('保持忠于经文，不要编造历史细节，不要说教，也不要加入' +
+			'宗派立场。圣经书卷名一律使用中文(例如:创世记、诗篇、马太福音)。');
+		parts.push('');
+	} else {
+		parts.push('You are a rigorous yet warm Bible teacher helping an ' +
+			'ordinary reader understand a passage.');
+		parts.push(`The reader is reading ${ref}. Explain what this passage means.`);
+		parts.push(`Cover, in order: (1) one or two sentences of context ` +
+			`(where this sits in the book and chapter, and its situation); ` +
+			`(2) the bulk — what the passage says, the meaning of key words ` +
+			`or images, and the point the author is making; (3) one ` +
+			`observation that helps a reader today understand or apply it.`);
+		if (verseText) parts.push(`The passage reads: "${verseText}"`);
+		parts.push('');
+		parts.push(`Target length: ${words}. Use plain prose only — NEVER ` +
+			`markdown (no *, **, #, -, etc.). Always finish your final sentence.`);
+		parts.push('');
+		parts.push('Stay faithful to the text. Do not invent historical ' +
+			'details. Do not moralize or take denominational positions.');
+		parts.push('');
+	}
+	parts.push(`【${lang}】 ${langDirective}`);
+	return parts.join('\n');
+}
+
 // Build the ordered list of API keys to try. Each entry has its own
 // per-minute and per-day quota in the free tier, so falling back to a
 // secondary key when the primary hits 429 effectively doubles (or
@@ -809,6 +870,41 @@ export default async (req) => {
 		// removed (always-false dead code since v1.2.40 switched Deep
 		// to gemini-3-flash-preview which works on free tier).
 		const model = resolveModel(body?.aiModel);
+		// v1.3.x: `task` selects the prompt family. 'versePlain' explains
+		// a whole verse / short range for a lay reader (reading-pane
+		// selection-bar "AI explain"); default 'wordStudy' is the
+		// original lemma-in-context explanation.
+		const _rawTask = (body?.task || 'wordStudy').toString();
+		const task = ['wordStudy', 'versePlain'].includes(_rawTask)
+			? _rawTask
+			: 'wordStudy';
+		if (task === 'versePlain') {
+			if (!book || !chapter || !verse) {
+				return new Response(
+					JSON.stringify({ error: 'book, chapter, verse required' }),
+					{ status: 400, headers: cors });
+			}
+			// `verse` is the start; optional `verseEnd` extends the range.
+			const _rawEnd = Number(body?.verseEnd || 0);
+			const verseEnd = (_rawEnd > verse) ? _rawEnd : verse;
+			const ctxV = { byokFallback: false };
+			const explanationV = await callGemini(
+				buildVersePrompt({
+					book, chapter, verseStart: verse, verseEnd, verseText,
+					locale, length,
+				}),
+				locale,
+				_useUserKey ? _userKey : null,
+				model,
+				ctxV,
+			);
+			return new Response(
+				JSON.stringify({
+					explanation: explanationV,
+					...(ctxV.byokFallback && { byokFallback: true }),
+				}),
+				{ status: 200, headers: cors });
+		}
 		if (!strongs || !lemma || !book || !chapter || !verse) {
 			return new Response(
 				JSON.stringify({ error: 'strongs, lemma, book, chapter, verse required' }),

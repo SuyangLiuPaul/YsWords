@@ -26,6 +26,8 @@ import 'package:yswords/pages/settings_page.dart';
 import 'package:yswords/pages/stats_page.dart';
 import 'package:yswords/providers/main_provider.dart';
 import 'package:yswords/services/fetch_books.dart';
+import 'package:yswords/services/ai_word_service.dart';
+import 'package:yswords/utils/ai_markdown.dart' show parseAiMarkdown;
 import 'package:yswords/services/concordance_service.dart';
 import 'package:yswords/services/cloud_auth_service.dart';
 import 'package:yswords/constants/sermon_topics.dart';
@@ -2116,6 +2118,11 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                                 locale: settings.locale,
                                 currentVersion: mainProvider.currentVersion,
                               ),
+                              onAiExplain: () => _showAiExplainSheet(
+                                context: context,
+                                verses: mainProvider.selectedVerses,
+                                settings: settings,
+                              ),
                               anyNoted: mainProvider.selectedVerses
                                   .any(mainProvider.isVerseNoted),
                               anyBookmarked: mainProvider.selectedVerses
@@ -2460,16 +2467,16 @@ class _GlassSurface extends StatelessWidget {
       decoration: BoxDecoration(
         color: fillColor,
         borderRadius: br,
-        // Skip the full border for half-rounded variants — only a
-        // single hairline reads cleanly when the surface is flush to
-        // a screen edge.
-        border: topRoundedOnly
-            ? Border(top: BorderSide(color: chromeHairlineColor, width: 0.6))
-            : bottomRoundedOnly
-                ? Border(
-                    bottom: BorderSide(
-                        color: chromeHairlineColor, width: 0.6))
-                : Border.all(color: outlineColor),
+        // v1.3.x: half-rounded chrome bars previously used a single
+        // directional Border side (top / bottom). A non-uniform border
+        // combined with `borderRadius: br` throws "A borderRadius can
+        // only be given on borders with uniform colors" in Border.paint
+        // (the InkDecoration.paintFeature crash family). Use a uniform
+        // thin outline — visually near-identical on a bar that's flush
+        // to a screen edge, and legal alongside a borderRadius.
+        border: (topRoundedOnly || bottomRoundedOnly)
+            ? Border.all(color: chromeHairlineColor, width: 0.6)
+            : Border.all(color: outlineColor),
         boxShadow: [
           BoxShadow(
             color:
@@ -2518,6 +2525,9 @@ class _SelectionActionBar extends StatelessWidget {
   final VoidCallback onOriginal;
   final VoidCallback onCrossRefs;
   final VoidCallback onSermons;
+  /// v1.3.x: AI plain-language explanation of the selected verse(s),
+  /// in the user's locale.
+  final VoidCallback onAiExplain;
   final VoidCallback onNote;
   final VoidCallback onBookmark;
   /// True when at least one of the currently-selected verses is
@@ -2539,6 +2549,7 @@ class _SelectionActionBar extends StatelessWidget {
     required this.onOriginal,
     required this.onCrossRefs,
     required this.onSermons,
+    required this.onAiExplain,
     required this.onNote,
     required this.onBookmark,
     required this.anyBookmarked,
@@ -2667,6 +2678,14 @@ class _SelectionActionBar extends StatelessWidget {
         // which violates Apple HIG's 44 pt minimum. Standard density
         // keeps the bar a touch taller but every icon is reliably
         // tappable on phones.
+        visualDensity: VisualDensity.standard,
+      ),
+      // v1.3.x: AI plain-language explanation of the selection.
+      IconButton(
+        tooltip:
+            uiStrings['aiExplainVerse']?[settings.locale] ?? 'AI explain',
+        onPressed: onAiExplain,
+        icon: const Icon(Icons.auto_awesome),
         visualDensity: VisualDensity.standard,
       ),
       IconButton(
@@ -2852,6 +2871,235 @@ void _showOriginalsSheet({
       },
     ),
   );
+}
+
+/// v1.3.x: AI plain-language explanation of the selected verse(s).
+/// Gathers the selection's reference + text, then opens a bottom sheet
+/// that calls the Gemini-backed `aiExplainWord` function in
+/// `task: 'versePlain'` mode and renders the answer in the user's
+/// locale. Reuses the same BYOK key + model tier as the word study.
+void _showAiExplainSheet({
+  required BuildContext context,
+  required List<Verse> verses,
+  required AppSettings settings,
+}) {
+  if (verses.isEmpty) return;
+  // selectedVerses is already sorted by chapter+verse (see the note at
+  // the _SelectionActionBar call site).
+  final first = verses.first;
+  final last = verses.last;
+  final englishBook = bookNameToEnglish[first.book] ?? first.book;
+  final verseStart = first.verse;
+  final verseEnd = last.verse;
+  // Combine the selected verse text with verse labels so the model
+  // sees exactly what the reader is looking at.
+  final buf = StringBuffer();
+  for (final v in verses) {
+    if (buf.isNotEmpty) buf.write(' ');
+    buf.write('${v.verseLabel} ${v.text}');
+  }
+  var verseText = buf.toString().trim();
+  if (verseText.length > 3500) verseText = '${verseText.substring(0, 3500)}…';
+  final refLabel = verseEnd > verseStart
+      ? '${first.book} ${first.chapter}:$verseStart-$verseEnd'
+      : '${first.book} ${first.chapter}:$verseStart';
+
+  showModalBottomSheet<void>(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Theme.of(context).colorScheme.surface,
+    constraints: const BoxConstraints(maxWidth: 1100),
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+    ),
+    builder: (sheetCtx) => _AiExplainSheet(
+      englishBook: englishBook,
+      chapter: first.chapter,
+      verseStart: verseStart,
+      verseEnd: verseEnd,
+      verseText: verseText,
+      refLabel: refLabel,
+      settings: settings,
+    ),
+  );
+}
+
+/// Bottom-sheet body for the AI verse explanation. Fires the request
+/// on mount; shows a spinner, then the prose (or an error + retry).
+class _AiExplainSheet extends StatefulWidget {
+  const _AiExplainSheet({
+    required this.englishBook,
+    required this.chapter,
+    required this.verseStart,
+    required this.verseEnd,
+    required this.verseText,
+    required this.refLabel,
+    required this.settings,
+  });
+
+  final String englishBook;
+  final int chapter;
+  final int verseStart;
+  final int verseEnd;
+  final String verseText;
+  final String refLabel;
+  final AppSettings settings;
+
+  @override
+  State<_AiExplainSheet> createState() => _AiExplainSheetState();
+}
+
+class _AiExplainSheetState extends State<_AiExplainSheet> {
+  late Future<AiWordResult> _future;
+
+  @override
+  void initState() {
+    super.initState();
+    _future = _request();
+  }
+
+  Future<AiWordResult> _request() {
+    final key = widget.settings.geminiApiKey.trim();
+    return AiWordService.explainVerse(
+      englishBook: widget.englishBook,
+      chapter: widget.chapter,
+      verseStart: widget.verseStart,
+      verseEnd: widget.verseEnd,
+      verseText: widget.verseText,
+      locale: widget.settings.locale,
+      userApiKey: key.isEmpty ? null : key,
+      aiModel: widget.settings.aiModel,
+    );
+  }
+
+  void _retry() => setState(() => _future = _request());
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final locale = widget.settings.locale;
+    final media = MediaQuery.of(context);
+    return SafeArea(
+      child: Padding(
+        padding: EdgeInsets.fromLTRB(
+            20, 16, 20, 16 + media.viewInsets.bottom),
+        child: ConstrainedBox(
+          constraints: BoxConstraints(maxHeight: media.size.height * 0.75),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Icon(Icons.auto_awesome, size: 18, color: scheme.primary),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      '${uiStrings['aiExplainHeader']?[locale] ?? 'YsWords explanation'} · ${widget.refLabel}',
+                      style: TextStyle(
+                        fontFamily: widget.settings.fontFamily,
+                        fontFamilyFallback: kCjkFontFallback,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                        color: scheme.onSurface,
+                      ),
+                    ),
+                  ),
+                  IconButton(
+                    tooltip: uiStrings['close']?[locale] ?? 'Close',
+                    icon: const Icon(Icons.close_rounded),
+                    onPressed: () => Navigator.of(context).maybePop(),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Flexible(
+                child: SingleChildScrollView(
+                  child: FutureBuilder<AiWordResult>(
+                    future: _future,
+                    builder: (context, snap) {
+                      if (snap.connectionState != ConnectionState.done) {
+                        return const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 40),
+                          child: Center(child: CircularProgressIndicator()),
+                        );
+                      }
+                      final result = snap.data;
+                      if (result == null || result.unavailable) {
+                        return _errorBody(
+                          scheme,
+                          locale,
+                          result?.unavailableReason ??
+                              (uiStrings['aiExplainError']?[locale] ??
+                                  'AI explanation is not available right now.'),
+                        );
+                      }
+                      return Text.rich(
+                        TextSpan(
+                          children: parseAiMarkdown(
+                            result.explanation,
+                            base: TextStyle(
+                              fontFamily: widget.settings.fontFamily,
+                              fontFamilyFallback: kCjkFontFallback,
+                              fontSize: widget.settings.fontSize,
+                              height: 1.55,
+                              color: scheme.onSurface,
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ),
+              const SizedBox(height: 10),
+              Text(
+                uiStrings['aiExplainVerseDisclaimer']?[locale] ??
+                    'AI-generated; for reference only — let Scripture itself be the authority.',
+                style: TextStyle(
+                  fontFamily: widget.settings.fontFamily,
+                  fontFamilyFallback: kCjkFontFallback,
+                  fontSize: 11,
+                  fontStyle: FontStyle.italic,
+                  color: scheme.onSurfaceVariant.withValues(alpha: 0.8),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _errorBody(ColorScheme scheme, String locale, String reason) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 24),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.cloud_off_rounded,
+              size: 32, color: scheme.onSurfaceVariant),
+          const SizedBox(height: 12),
+          Text(
+            reason,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontFamily: widget.settings.fontFamily,
+              fontFamilyFallback: kCjkFontFallback,
+              fontSize: 13,
+              color: scheme.onSurfaceVariant,
+            ),
+          ),
+          const SizedBox(height: 16),
+          FilledButton.tonalIcon(
+            onPressed: _retry,
+            icon: const Icon(Icons.refresh_rounded, size: 18),
+            label: Text(uiStrings['retry']?[locale] ?? 'Retry'),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 /// Shows a draggable bottom sheet listing the cross-references

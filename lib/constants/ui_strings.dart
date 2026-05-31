@@ -2376,6 +2376,15 @@ const uiStrings = {
     'zh-Hant': '中文 CBOL 釋義（互補視角）',
     'en': 'Chinese CBOL definition (complementary)',
   },
+  // v1.3.x: collapsible header for the English-only material
+  // (Strong's etymology / derivation, KJV counts) shown in the
+  // Chinese exegesis panel. Collapsed by default so the Chinese
+  // reader sees Chinese first; tap to reveal the English reference.
+  'englishReference': {
+    'zh-Hans': '英文参考',
+    'zh-Hant': '英文參考',
+    'en': 'English reference',
+  },
   // ── AI Bible search (2026-05-07) ─────────────────────────────
   // Triggered from the search page's no-results state. Lets the
   // user ask Gemini for Bible references that match a fuzzy /
@@ -5345,6 +5354,23 @@ const uiStrings = {
     'zh-Hant': '讓 YsWords 解釋此詞在這節經文中的含義（僅供參考）',
     'en':
         'Let YsWords explain this word in this verse (reference only)',
+  },
+  // v1.3.x: reading-pane selection-bar AI verse explanation.
+  'aiExplainVerse': {
+    'zh-Hans': 'AI 解释经文',
+    'zh-Hant': 'AI 解釋經文',
+    'en': 'AI explain',
+  },
+  'aiExplainVerseDisclaimer': {
+    'zh-Hans': 'AI 生成的解释，仅供参考；请以圣经原文为准。',
+    'zh-Hant': 'AI 生成的解釋，僅供參考；請以聖經原文為準。',
+    'en':
+        'AI-generated; for reference only — let Scripture itself be the authority.',
+  },
+  'aiExplainError': {
+    'zh-Hans': 'AI 解释暂时不可用，请稍后再试。',
+    'zh-Hant': 'AI 解釋暫時不可用，請稍後再試。',
+    'en': 'AI explanation is not available right now.',
   },
   'aiExplainAsking': {
     'zh-Hans': 'YsWords 正在生成解释…',

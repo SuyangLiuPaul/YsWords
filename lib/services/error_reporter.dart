@@ -166,6 +166,8 @@ class ErrorReporter {
     String? library,
   }) async {
     if (!_initialised) return;
+    // v1.3.x: drop known-benign noise so the inbox stays signal.
+    if (_isIgnorableNoise(error, stack)) return;
     // Best-effort: cap payload sizes; never send absurd inputs.
     final payload = <String, dynamic>{
       'error': _trim(error, 2000),
@@ -191,6 +193,30 @@ class ErrorReporter {
     // failed POST (offline, CORS, network) never throws back into
     // the error path that triggered the report.
     unawaited(_postSafely(payload));
+  }
+
+  /// True for errors that are well-understood, non-actionable noise —
+  /// the app keeps working and there's nothing to fix. Filtered out
+  /// before a report is sent so the monitoring inbox stays signal.
+  ///
+  /// Currently: CanvasKit's WebGL context-creation failures on iOS
+  /// Chrome (CriOS) / locked-down WebViews — e.g.
+  /// `Error: getParameter is not a function` thrown from
+  /// `canvaskit.js … MakeWebGLContext`. When WebGL is unavailable
+  /// CanvasKit falls back to CPU rendering and the app renders fine;
+  /// the throw is caught by our Zone/PlatformDispatcher handler and is
+  /// not something we can act on. (v1.3.49 web reports.)
+  static bool _isIgnorableNoise(String error, String stack) {
+    final haystack = '$error\n$stack';
+    const benign = <String>[
+      'getParameter is not a function',
+      'MakeWebGLContext',
+      'Failed to create WebGL context',
+    ];
+    for (final p in benign) {
+      if (haystack.contains(p)) return true;
+    }
+    return false;
   }
 
   static Future<void> _postSafely(Map<String, dynamic> payload) async {
@@ -257,6 +283,11 @@ class ErrorReporter {
   /// @visibleForTesting — `_trim` exposed so tests can verify the
   /// payload-cap edge cases.
   static String trimForTest(String s, int max) => _trim(s, max);
+
+  /// @visibleForTesting — the benign-noise predicate, so tests can
+  /// verify which reports are dropped before send.
+  static bool isIgnorableNoiseForTest(String error, String stack) =>
+      _isIgnorableNoise(error, stack);
 
   static String _generateSessionId() {
     final now = DateTime.now().millisecondsSinceEpoch.toRadixString(36);

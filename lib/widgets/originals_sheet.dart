@@ -13,6 +13,8 @@ import 'package:yswords/models/original_word.dart';
 import 'package:yswords/models/strongs.dart';
 import 'package:yswords/models/verse.dart';
 import 'package:yswords/pages/settings_page.dart';
+import 'package:yswords/widgets/collapsible_english_ref.dart';
+import 'package:yswords/widgets/left_accent_card.dart';
 import 'package:yswords/services/ai_word_service.dart';
 import 'package:yswords/services/concordance_service.dart';
 import 'package:yswords/services/lxx_service.dart';
@@ -667,16 +669,15 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
             // version above the original-language line so the reader
             // can compare their translation to the Hebrew/Greek and
             // the per-word glosses below.
-            Container(
-              width: double.infinity,
+            LeftAccentCard(
+              // v1.3.x: was Container(BoxDecoration(border:
+              // Border(left:...), borderRadius:...)) — non-uniform
+              // border + radius throws in Border.paint.
               padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
-              decoration: BoxDecoration(
-                color: scheme.surfaceContainerHighest.withValues(alpha: 0.4),
-                borderRadius: BorderRadius.circular(8),
-                border: Border(
-                  left: BorderSide(color: scheme.primary, width: 3),
-                ),
-              ),
+              background: scheme.surfaceContainerHighest.withValues(alpha: 0.4),
+              borderRadius: BorderRadius.circular(8),
+              accentColor: scheme.primary,
+              accentWidth: 3,
               child: Text(
                 verseText,
                 style: TextStyle(
@@ -1240,10 +1241,13 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
                   ],
                 ),
               ),
-            ] else if (entry.localizedDefinition(locale).isNotEmpty) ...[
+            ] else if (entry.cleanChineseDefinition(locale).isNotEmpty) ...[
               const SizedBox(height: 10),
               Text(
-                entry.localizedDefinition(locale),
+                // v1.3.x: English-only CBOL noise (id header, "AV -"
+                // KJV counts) stripped for Chinese; the English moves
+                // into the collapsible "英文参考" section below.
+                entry.cleanChineseDefinition(locale),
                 style: TextStyle(
                   fontSize: 14,
                   color: scheme.onSurface,
@@ -1276,9 +1280,19 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
             const SizedBox(height: 12),
             _buildAiExplainSection(scheme, locale),
             // Derivation / etymology line with tappable Strong's refs.
+            // v1.3.x: this is English-only. In a Chinese panel, tuck it
+            // behind a collapsed "英文参考" disclosure so the panel reads
+            // as Chinese first; show inline for English readers.
             if ((entry.derivation ?? '').isNotEmpty) ...[
               const SizedBox(height: 10),
-              _buildDerivationRich(entry.derivation!, scheme),
+              if (locale.startsWith('zh'))
+                CollapsibleEnglishRef(
+                  title: uiStrings['englishReference']?[locale] ??
+                      'English reference',
+                  child: _buildDerivationRich(entry.derivation!, scheme),
+                )
+              else
+                _buildDerivationRich(entry.derivation!, scheme),
             ],
             if (_wordFamily.isNotEmpty) ...[
               const SizedBox(height: 12),

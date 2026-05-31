@@ -200,6 +200,46 @@ class StrongsEntry {
     return definition;
   }
 
+  /// v1.3.x: the Chinese definition body with English-only CBOL noise
+  /// stripped, for display in a Chinese-locale exegesis panel.
+  ///
+  /// CBOL's `defZh` for some entries (function words / particles such
+  /// as G302 ἄν) embeds English that bleeds into the "Chinese" view:
+  ///   • a Strong's-id header line — `302 an {an}`
+  ///   • the KJV translation-count block — `AV - whosoever 35, …`
+  ///     and its indented continuation lines
+  ///   • stray all-English etymology lines
+  /// Those are removed here so the panel reads as Chinese; the English
+  /// material is surfaced separately in the UI's collapsible
+  /// "English reference (英文参考)" section. For non-Chinese locales the
+  /// definition is returned unchanged. Never returns empty — if every
+  /// line was English noise we fall back to the original so the user
+  /// still sees *something*.
+  String cleanChineseDefinition(String locale) {
+    final def = localizedDefinition(locale);
+    if (!locale.startsWith('zh') || def.isEmpty) return def;
+    final kept = <String>[];
+    for (final line in def.split('\n')) {
+      final t = line.trim();
+      if (t.isEmpty) {
+        kept.add(line);
+        continue;
+      }
+      // Strong's-id header: "302 an {an}", "3068 Yhvh {yeh-ho-vaw'}".
+      if (RegExp(r'^\d+\s+\S+.*\{').hasMatch(t)) continue;
+      // KJV "AV - …" translation-count block header.
+      if (RegExp(r'^AV\s*[-–—]').hasMatch(t)) continue;
+      // A line with no CJK at all but real ASCII letters → English
+      // (an AV continuation line, or stray etymology). Drop it.
+      final cjk = RegExp(r'[㐀-鿿]').allMatches(t).length;
+      final ascii = RegExp(r'[A-Za-z]').allMatches(t).length;
+      if (cjk == 0 && ascii >= 3) continue;
+      kept.add(line);
+    }
+    var out = kept.join('\n').replaceAll(RegExp(r'\n{3,}'), '\n\n').trim();
+    return out.isEmpty ? def : out;
+  }
+
   /// 2026-05-07: detect proper nouns (names of people, places, deities,
   /// nations) so the UI can render BOTH the English and Chinese
   /// glosses side-by-side instead of just the locale-preferred one.

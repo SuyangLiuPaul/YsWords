@@ -165,4 +165,37 @@ void main() {
       );
     });
   });
+
+  group('benign-noise filter (v1.3.x)', () {
+    test('drops CanvasKit getParameter WebGL failure on iOS Chrome', () {
+      // Real reported shape (v1.3.49 web, CriOS): a TypeError thrown
+      // from canvaskit.js MakeWebGLContext. App falls back to CPU
+      // rendering — nothing to fix, so it must not be reported.
+      const err = 'TypeError: getParameter is not a function';
+      const stack = 'at WebGLRenderingContext.getParameter\n'
+          'at canvaskit.js … MakeWebGLContext';
+      expect(ErrorReporter.isIgnorableNoiseForTest(err, stack), isTrue);
+    });
+
+    test('drops match found only in the stack, not the message', () {
+      expect(
+        ErrorReporter.isIgnorableNoiseForTest(
+            'Error', 'a.MakeWebGLContext (canvaskit.js:16)'),
+        isTrue,
+      );
+    });
+
+    test('keeps genuine app errors', () {
+      expect(
+        ErrorReporter.isIgnorableNoiseForTest(
+            'RangeError: index out of range', '#0 List.[] dart:core'),
+        isFalse,
+      );
+      expect(
+        ErrorReporter.isIgnorableNoiseForTest(
+            'set failed: value argument contains an invalid key', ''),
+        isFalse,
+      );
+    });
+  });
 }

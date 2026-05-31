@@ -81,6 +81,26 @@
   -->
 
   <style>
+    /* CSS reset: strip default body margin/padding and match the
+       app's warm off-white scaffold background. Without this, the
+       browser's default white body + 8px margin bleeds through at
+       the edges of the Flutter CanvasKit canvas on wide viewports
+       (visible as thin white vertical strips flanking the reader). */
+    html, body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      width: 100%;
+      height: 100%;
+      /* Warm off-white matching ColorScheme.fromSeed(crimson).surface
+         in light mode. Falls back gracefully — Flutter's canvas paints
+         over this within ~200ms of boot; this just prevents the white
+         flash / white-edge artifact during and after load. */
+      background-color: #FFF8F6;
+    }
+    @media (prefers-color-scheme: dark) {
+      html, body { background-color: #1F1F1F; }
+    }
     /* Strip browser-injected styling from iOS Safari data-detector <a> tags
        (phone numbers, dates, addresses auto-linked by Safari on the HTML renderer). */
     a[x-apple-data-detectors] {

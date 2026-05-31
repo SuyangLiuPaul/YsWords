@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import 'package:yswords/constants/text_patterns.dart' show sanitizeForSearch;
 import 'package:yswords/constants/ui_strings.dart';
+import 'package:yswords/widgets/left_accent_card.dart';
 import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/models/timeline_event.dart';
 import 'package:yswords/pages/home_page.dart';
@@ -387,20 +388,16 @@ class _EventTile extends StatelessWidget {
                 ),
               ),
               Expanded(
-                child: Container(
-                  margin: const EdgeInsets.only(top: 0),
+                child: LeftAccentCard(
+                  // v1.3.x: was Container(BoxDecoration(border:
+                  // Border(left:...), borderRadius:...)) — non-uniform
+                  // border + radius throws in Border.paint.
                   padding:
                       const EdgeInsets.fromLTRB(10, 6, 10, 8),
-                  decoration: BoxDecoration(
-                    color: scheme.surfaceContainerLow,
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border(
-                      left: BorderSide(
-                        color: color.withValues(alpha: 0.55),
-                        width: 3,
-                      ),
-                    ),
-                  ),
+                  background: scheme.surfaceContainerLow,
+                  borderRadius: BorderRadius.circular(8),
+                  accentColor: color.withValues(alpha: 0.55),
+                  accentWidth: 3,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [

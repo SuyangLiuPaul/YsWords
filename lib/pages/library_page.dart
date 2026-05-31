@@ -18,6 +18,7 @@ import 'package:yswords/utils/navigate_to_reader.dart';
 import 'package:yswords/utils/note_reference_parser.dart';
 import 'package:yswords/utils/reference_parser.dart' show BibleReference;
 import 'package:yswords/widgets/verse_popup_sheet.dart' show showVersePopup;
+import 'package:yswords/widgets/left_accent_card.dart';
 import 'package:yswords/widgets/home_icon_button.dart';
 import 'package:yswords/widgets/localized_back_button.dart';
 import 'package:yswords/utils/font_catalog.dart' show kCjkFontFallback;
@@ -661,16 +662,16 @@ class _AnnotationTile extends StatelessWidget {
                 ),
               );
             }),
-            Container(
+            LeftAccentCard(
+              // v1.3.x: was Container(BoxDecoration(border:
+              // Border(left:...), borderRadius:...)) — non-uniform
+              // border + radius throws in Border.paint.
               padding: const EdgeInsets.symmetric(
                   horizontal: 10, vertical: 8),
-              decoration: BoxDecoration(
-                color: scheme.surfaceContainerHighest.withValues(alpha: 0.5),
-                borderRadius: BorderRadius.circular(8),
-                border: Border(
-                  left: BorderSide(color: scheme.primary, width: 2),
-                ),
-              ),
+              background: scheme.surfaceContainerHighest.withValues(alpha: 0.5),
+              borderRadius: BorderRadius.circular(8),
+              accentColor: scheme.primary,
+              accentWidth: 2,
               // 2026-05-19 (v1.2.59): notes with `[Book Ch:V]`
               // references render those as tappable links. Tapping
               // resolves the canonical book through the parser,

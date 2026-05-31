@@ -8,6 +8,7 @@ import 'package:yswords/models/strongs.dart';
 import 'package:yswords/services/concordance_service.dart';
 import 'package:yswords/services/strongs_service.dart';
 import 'package:yswords/utils/clipboard_helper.dart';
+import 'package:yswords/widgets/collapsible_english_ref.dart';
 import 'package:yswords/widgets/home_icon_button.dart';
 import 'package:yswords/widgets/localized_back_button.dart';
 import 'package:yswords/utils/font_catalog.dart' show kCjkFontFallback;
@@ -201,7 +202,8 @@ class _StrongsEntryPageState extends State<StrongsEntryPage> {
         ),
         const SizedBox(height: 8),
         Text(
-          e.localizedDefinition(locale),
+          // v1.3.x: strip English-only CBOL noise in Chinese locale.
+          e.cleanChineseDefinition(locale),
           style: TextStyle(
             fontSize: settings.fontSize,
             color: scheme.onSurface,
@@ -210,21 +212,16 @@ class _StrongsEntryPageState extends State<StrongsEntryPage> {
         ),
         if ((e.derivation ?? '').isNotEmpty) ...[
           const SizedBox(height: 12),
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: scheme.surfaceContainerHighest.withValues(alpha: 0.5),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Text(
-              '${uiStrings['strongsDerivation']?[locale] ?? 'Derivation'}: ${e.derivation}',
-              style: TextStyle(
-                fontSize: settings.fontSize - 1,
-                color: scheme.onSurfaceVariant,
-                height: 1.4,
-              ),
-            ),
-          ),
+          // v1.3.x: derivation/etymology is English-only — collapse it
+          // behind "英文参考" for Chinese readers; inline for English.
+          if (locale.startsWith('zh'))
+            CollapsibleEnglishRef(
+              title: uiStrings['englishReference']?[locale] ??
+                  'English reference',
+              child: _derivationBox(e, scheme, locale, settings),
+            )
+          else
+            _derivationBox(e, scheme, locale, settings),
         ],
         if (_family.isNotEmpty) ...[
           const SizedBox(height: 20),
@@ -317,6 +314,27 @@ class _StrongsEntryPageState extends State<StrongsEntryPage> {
         fontSize: settings.fontSize,
         fontWeight: FontWeight.w700,
         color: scheme.primary,
+      ),
+    );
+  }
+
+  /// The derivation/etymology card (English). Built once and either
+  /// shown inline (EN) or wrapped in a collapsible "英文参考" (ZH).
+  Widget _derivationBox(StrongsEntry e, ColorScheme scheme, String locale,
+      AppSettings settings) {
+    return Container(
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: scheme.surfaceContainerHighest.withValues(alpha: 0.5),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Text(
+        '${uiStrings['strongsDerivation']?[locale] ?? 'Derivation'}: ${e.derivation}',
+        style: TextStyle(
+          fontSize: settings.fontSize - 1,
+          color: scheme.onSurfaceVariant,
+          height: 1.4,
+        ),
       ),
     );
   }

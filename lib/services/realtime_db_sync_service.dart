@@ -228,8 +228,17 @@ class RealtimeDbSyncService extends ChangeNotifier {
   }
 
   Future<void> _onProfileChanged() async {
+    // v1.3.48: suppress during remote-apply writes. Without this
+    // guard, _writeRemoteIntoLocal → ProfileService.notifyListeners
+    // → _onProfileChanged reset _firstPullAfterSignIn = true, and
+    // the next RTDB echo took the merge+upload path → another echo
+    // → infinite Syncing ↔ Synced flicker loop ("发疯了").
+    if (_suppressLocalListener) return;
     if (CloudAuthService.instance.isSignedIn) {
-      _firstPullAfterSignIn = true;
+      // Only re-subscribe if the profile actually changed (different
+      // uid or no subscription). Don't reset _firstPullAfterSignIn —
+      // that should only happen on genuine auth transitions, not on
+      // data writes within the same profile.
       await _onAuthChanged();
     }
   }

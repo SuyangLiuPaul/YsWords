@@ -65,6 +65,46 @@ class AiWordService {
         'userApiKey': userApiKey,
       if (aiModel != null && aiModel.isNotEmpty) 'aiModel': aiModel,
     };
+    return _send(body);
+  }
+
+  /// v1.3.x: plain-language explanation of a whole verse (or short
+  /// verse range) for an ordinary reader — triggered from the reading
+  /// pane's selection-bar "AI explain" action. Posts to the same
+  /// `/api/aiExplainWord` endpoint with `task: 'versePlain'`, which
+  /// selects the verse-explanation prompt server-side. Answers in the
+  /// user's [locale].
+  static Future<AiWordResult> explainVerse({
+    required String englishBook,
+    required int chapter,
+    required int verseStart,
+    int? verseEnd,
+    String? verseText,
+    required String locale,
+    String length = 'default',
+    String? userApiKey,
+    String? aiModel,
+  }) async {
+    final body = <String, dynamic>{
+      'task': 'versePlain',
+      'book': englishBook,
+      'chapter': chapter,
+      'verse': verseStart,
+      if (verseEnd != null && verseEnd > verseStart) 'verseEnd': verseEnd,
+      if (verseText != null && verseText.isNotEmpty) 'verseText': verseText,
+      'locale': locale,
+      'length': length,
+      if (userApiKey != null && userApiKey.isNotEmpty)
+        'userApiKey': userApiKey,
+      if (aiModel != null && aiModel.isNotEmpty) 'aiModel': aiModel,
+    };
+    return _send(body);
+  }
+
+  /// Shared POST + error/parse used by both [explain] and
+  /// [explainVerse]. Never throws — failures map to
+  /// [AiWordResult.unavailable] with a human-readable reason.
+  static Future<AiWordResult> _send(Map<String, dynamic> body) async {
     final http.Response resp;
     try {
       resp = await http

@@ -452,7 +452,12 @@ class _HeadlineRow extends StatelessWidget {
                 color: scheme.outlineVariant.withValues(alpha: 0.4),
               ),
             ),
-            borderRadius: BorderRadius.circular(8),
+            // v1.3.x: borderRadius removed — a non-uniform Border
+            // (bottom divider only) combined with a borderRadius throws
+            // "A borderRadius can only be given on borders with uniform
+            // colors" in Border.paint. The InkWell above still rounds
+            // the ripple; a full-width list-row divider doesn't need
+            // rounded fill corners.
           ),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,

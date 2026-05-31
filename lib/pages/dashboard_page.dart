@@ -50,6 +50,7 @@ import 'package:yswords/utils/reference_parser.dart';
 import 'package:yswords/utils/responsive.dart';
 import 'package:yswords/utils/version_mapper.dart' show translateBookName;
 import 'package:yswords/widgets/google_g_logo.dart';
+import 'package:yswords/widgets/left_accent_card.dart';
 import 'package:yswords/widgets/onboarding_dialog.dart';
 import 'package:yswords/utils/font_catalog.dart' show kCjkFontFallback;
 
@@ -1427,25 +1428,23 @@ class _DailyVerseCard extends StatelessWidget {
     return Material(
       color: scheme.surface,
       borderRadius: BorderRadius.circular(12),
-      child: Ink(
-        decoration: BoxDecoration(
+      // v1.3.x: was Ink(BoxDecoration(borderRadius: 12, border:
+      // Border(left: primary w3, top/right/bottom: outlineVariant))).
+      // A non-uniform border combined with a borderRadius throws
+      // "A borderRadius can only be given on borders with uniform
+      // colors" in Border.paint — the reported InkDecoration crash on
+      // this daily-verse card. LeftAccentCard draws the left stripe as
+      // a clipped child and the 3 grey sides as a uniform outline.
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: LeftAccentCard(
           borderRadius: BorderRadius.circular(12),
-          border: Border(
-            left: BorderSide(color: scheme.primary, width: 3),
-            top: BorderSide(
-                color: scheme.outlineVariant.withValues(alpha: 0.6)),
-            right: BorderSide(
-                color: scheme.outlineVariant.withValues(alpha: 0.6)),
-            bottom: BorderSide(
-                color: scheme.outlineVariant.withValues(alpha: 0.6)),
-          ),
-        ),
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(12),
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
-            child: Column(
+          accentColor: scheme.primary,
+          accentWidth: 3,
+          outlineColor: scheme.outlineVariant.withValues(alpha: 0.6),
+          padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+          child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
@@ -1504,7 +1503,6 @@ class _DailyVerseCard extends StatelessWidget {
             ),
           ),
         ),
-      ),
     );
   }
 }
