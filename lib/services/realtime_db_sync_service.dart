@@ -867,4 +867,26 @@ class RealtimeDbSyncService extends ChangeNotifier {
 
   /// Debug helper — JSON dump of the current local snapshot.
   Future<String> dumpLocal() async => jsonEncode(await _snapshotLocal());
+
+  // ── @visibleForTesting — the conflict-resolution core is pure, so
+  // it can be exercised without a Firebase backend. These wrappers
+  // exist purely so the test library can reach the private methods.
+
+  /// Newest-wins / union merge of a local + remote snapshot.
+  @visibleForTesting
+  Map<String, dynamic> mergeSnapshotsForTest({
+    required Map<String, dynamic> local,
+    required Map<String, dynamic> remote,
+  }) =>
+      _mergeSnapshots(local: local, remote: remote);
+
+  /// Whether a local snapshot carries user data worth seeding to cloud.
+  @visibleForTesting
+  bool localHasUserDataForTest(Map<String, dynamic> local) =>
+      _localHasUserData(local);
+
+  /// RTDB-key validity guard — rejects keys containing `.`, `#`, `$`,
+  /// `/`, `[`, `]` (the v1.3.45 `plan.activeId` regression class).
+  @visibleForTesting
+  static bool isInvalidRtdbKeyForTest(String key) => _isInvalidRtdbKey(key);
 }

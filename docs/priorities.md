@@ -275,6 +275,45 @@ All shipped to prod (yswords + yswords-cn). Detailed entries in
   AND right before `FirebaseDatabase.set()` so a future
   regression at worst drops one key, not all sync.
 
+- **v1.3.46 → v1.3.51 (2026-05-31)**. (46) locale-aware default
+  version now persists — fresh-install locale wasn't written to
+  prefs so `MainProvider.restoreState` read null and fell to the
+  CUVS-YHWH default even for en users; added write-back +
+  one-time en→NASB migration. (47) APP_VERSION robustness — the
+  04:00 launchd reinstall's `awk` can't read `~/Documents`
+  (macOS TCC on background daemons), so version resolution now
+  cascades through 5 strategies incl. a `~/.config/yswords/
+  current-version` cache outside the protected tree. (48) web
+  `body{margin:0;padding:0;background:#FFF8F6}` reset — fixed the
+  white edge-strips flanking the reader (no CSS reset existed).
+  (49) RTDB sync-flicker — `_onProfileChanged` reset
+  `_firstPullAfterSignIn` and re-ran on the reporter's OWN
+  remote-apply writes, so every echo took the merge+upload path →
+  upload→echo→loop; now bails under `_suppressLocalListener` and
+  never resets the first-pull flag outside genuine auth changes.
+  (50) **AI "explain this verse"** from the reading-pane selection
+  bar — new ✨ action → `_AiExplainSheet` → `AiWordService.explainVerse`
+  → the same `aiExplainWord` function in a new `task:'versePlain'`
+  mode (`buildVersePrompt`; reuses key-rotation / model-step-down /
+  BYOK); answers in the user's locale. Plus 3 fixes: `LeftAccentCard`
+  ends the "borderRadius on a non-uniform `Border(left:/bottom:)`"
+  crash class (the reported `InkDecoration.paintFeature` crash =
+  dashboard daily-verse card); `ErrorReporter` drops benign
+  CanvasKit `getParameter`/`MakeWebGLContext` WebGL noise; Chinese
+  exegesis `cleanChineseDefinition` strips English-only CBOL noise
+  and the derivation collapses into a 英文参考 disclosure. (51)
+  narrow-phone selection-bar action row made horizontally
+  scrollable (7 icons overflowed ≤340 dp). **Phase-2 audit pass:**
+  sync-merge regression tests (newest-wins, plan.* key rejection,
+  union/local-wins), export-dialog responsive width
+  (`double.maxFinite` on phones, cap 560 on desktop), doc sync.
+  Deferred for a focused profiled session: narrowing the remaining
+  broad `Consumer`s → `Selector`, splitting the 7.4k-LOC
+  `bible_reading_pane.dart`, and `kDebugMode`-guarding the
+  deliberate `// ignore: avoid_print` sync/auth debug prints.
+  Shipped to the 4 dev/qat sites + GitHub + macOS; iPhone/iPad/Mi
+  Pad pending device reachability. flutter analyze: 0; test: 165/165.
+
 ## Removed features
 
 - **朗读 / TTS (v1.3.19)** — Listen-to-chapter + ListenButton +

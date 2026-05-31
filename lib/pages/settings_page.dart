@@ -3864,7 +3864,13 @@ class _ExportDialogState extends State<_ExportDialog> {
     return AlertDialog(
       title: Text(isZh ? '导出我的数据' : 'Export my data'),
       content: SizedBox(
-        width: 560,
+        // v1.3.x responsive fix: a fixed 560 overflowed the dialog on
+        // phones (≈390 dp). On narrow screens fill the dialog's own
+        // (smaller) width via double.maxFinite; cap at 560 on tablet /
+        // desktop so the export panel doesn't stretch too wide.
+        width: MediaQuery.of(context).size.width < 640
+            ? double.maxFinite
+            : 560.0,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
