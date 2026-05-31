@@ -2966,17 +2966,23 @@ class _AiExplainSheet extends StatefulWidget {
 }
 
 class _AiExplainSheetState extends State<_AiExplainSheet> {
-  late Future<AiWordResult> _future;
+  bool _loading = true;
+  String? _explanation;
+  String? _error;
 
   @override
   void initState() {
     super.initState();
-    _future = _request();
+    _load();
   }
 
-  Future<AiWordResult> _request() {
+  Future<void> _load() async {
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
     final key = widget.settings.geminiApiKey.trim();
-    return AiWordService.explainVerse(
+    final result = await AiWordService.explainVerse(
       englishBook: widget.englishBook,
       chapter: widget.chapter,
       verseStart: widget.verseStart,
@@ -2986,21 +2992,32 @@ class _AiExplainSheetState extends State<_AiExplainSheet> {
       userApiKey: key.isEmpty ? null : key,
       aiModel: widget.settings.aiModel,
     );
+    if (!mounted) return;
+    setState(() {
+      _loading = false;
+      if (result.unavailable) {
+        _error = result.unavailableReason ??
+            (uiStrings['aiExplainError']?[widget.settings.locale] ??
+                'AI explanation is not available right now.');
+      } else {
+        _explanation = result.explanation.trim();
+      }
+    });
   }
-
-  void _retry() => setState(() => _future = _request());
 
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final locale = widget.settings.locale;
     final media = MediaQuery.of(context);
+    final explanation = _explanation;
+    final hasText = explanation != null && explanation.isNotEmpty;
     return SafeArea(
       child: Padding(
         padding: EdgeInsets.fromLTRB(
             20, 16, 20, 16 + media.viewInsets.bottom),
         child: ConstrainedBox(
-          constraints: BoxConstraints(maxHeight: media.size.height * 0.75),
+          constraints: BoxConstraints(maxHeight: media.size.height * 0.78),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -3021,9 +3038,24 @@ class _AiExplainSheetState extends State<_AiExplainSheet> {
                       ),
                     ),
                   ),
+                  // v1.3.x: one-tap copy of the whole explanation
+                  // (prefixed with the reference). Shown only once the
+                  // text has arrived; the body is also SelectableText
+                  // for partial copy.
+                  if (hasText)
+                    IconButton(
+                      tooltip: uiStrings['copySelection']?[locale] ?? 'Copy',
+                      icon: const Icon(Icons.copy_rounded),
+                      visualDensity: VisualDensity.compact,
+                      onPressed: () => ClipboardHelper.copyWithFeedback(
+                        context,
+                        '${widget.refLabel}\n\n$explanation',
+                      ),
+                    ),
                   IconButton(
                     tooltip: uiStrings['close']?[locale] ?? 'Close',
                     icon: const Icon(Icons.close_rounded),
+                    visualDensity: VisualDensity.compact,
                     onPressed: () => Navigator.of(context).maybePop(),
                   ),
                 ],
@@ -3031,41 +3063,7 @@ class _AiExplainSheetState extends State<_AiExplainSheet> {
               const SizedBox(height: 8),
               Flexible(
                 child: SingleChildScrollView(
-                  child: FutureBuilder<AiWordResult>(
-                    future: _future,
-                    builder: (context, snap) {
-                      if (snap.connectionState != ConnectionState.done) {
-                        return const Padding(
-                          padding: EdgeInsets.symmetric(vertical: 40),
-                          child: Center(child: CircularProgressIndicator()),
-                        );
-                      }
-                      final result = snap.data;
-                      if (result == null || result.unavailable) {
-                        return _errorBody(
-                          scheme,
-                          locale,
-                          result?.unavailableReason ??
-                              (uiStrings['aiExplainError']?[locale] ??
-                                  'AI explanation is not available right now.'),
-                        );
-                      }
-                      return Text.rich(
-                        TextSpan(
-                          children: parseAiMarkdown(
-                            result.explanation,
-                            base: TextStyle(
-                              fontFamily: widget.settings.fontFamily,
-                              fontFamilyFallback: kCjkFontFallback,
-                              fontSize: widget.settings.fontSize,
-                              height: 1.55,
-                              color: scheme.onSurface,
-                            ),
-                          ),
-                        ),
-                      );
-                    },
-                  ),
+                  child: _buildBody(scheme, locale, explanation),
                 ),
               ),
               const SizedBox(height: 10),
@@ -3081,6 +3079,36 @@ class _AiExplainSheetState extends State<_AiExplainSheet> {
                 ),
               ),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBody(ColorScheme scheme, String locale, String? explanation) {
+    if (_loading) {
+      return const Padding(
+        padding: EdgeInsets.symmetric(vertical: 40),
+        child: Center(child: CircularProgressIndicator()),
+      );
+    }
+    if (_error != null) {
+      return _errorBody(scheme, locale, _error!);
+    }
+    // Success — selectable, paragraph-spaced prose so the reader can
+    // copy any part inline (the header button copies the whole thing).
+    // The AI is prompted for plain prose; parseAiMarkdown still renders
+    // any stray emphasis and turns paragraph breaks into real spacing.
+    return SelectableText.rich(
+      TextSpan(
+        children: parseAiMarkdown(
+          explanation ?? '',
+          base: TextStyle(
+            fontFamily: widget.settings.fontFamily,
+            fontFamilyFallback: kCjkFontFallback,
+            fontSize: widget.settings.fontSize,
+            height: 1.62,
+            color: scheme.onSurface,
           ),
         ),
       ),
@@ -3108,7 +3136,7 @@ class _AiExplainSheetState extends State<_AiExplainSheet> {
           ),
           const SizedBox(height: 16),
           FilledButton.tonalIcon(
-            onPressed: _retry,
+            onPressed: _load,
             icon: const Icon(Icons.refresh_rounded, size: 18),
             label: Text(uiStrings['retry']?[locale] ?? 'Retry'),
           ),

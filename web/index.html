@@ -81,21 +81,21 @@
   -->
 
   <style>
-    /* CSS reset: strip default body margin/padding and match the
-       app's warm off-white scaffold background. Without this, the
-       browser's default white body + 8px margin bleeds through at
-       the edges of the Flutter CanvasKit canvas on wide viewports
-       (visible as thin white vertical strips flanking the reader). */
+    /* CSS reset: strip the default body margin + paint a warm
+       background so the browser's default white 8px-margin body
+       doesn't bleed through at the edges of the Flutter canvas
+       (the thin white strips flanking the reader).
+
+       v1.3.x (post-revert): DELIBERATELY minimal. The earlier
+       version also forced `overflow: hidden; width/height: 100%`
+       on html+body — that was unnecessary for the white-edge fix
+       and is the prime suspect for the blank-home regression that
+       reverted prod off v1.3.48/49. Flutter's engine sizes its own
+       view; we only need to kill the margin + set a backdrop colour
+       and let Flutter manage layout/scroll. */
     html, body {
       margin: 0;
       padding: 0;
-      overflow: hidden;
-      width: 100%;
-      height: 100%;
-      /* Warm off-white matching ColorScheme.fromSeed(crimson).surface
-         in light mode. Falls back gracefully — Flutter's canvas paints
-         over this within ~200ms of boot; this just prevents the white
-         flash / white-edge artifact during and after load. */
       background-color: #FFF8F6;
     }
     @media (prefers-color-scheme: dark) {
