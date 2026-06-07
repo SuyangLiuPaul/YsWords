@@ -5068,7 +5068,6 @@ class _MiniReaderHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final settings = context.watch<AppSettings>();
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     // 2026-05-24 (v1.3.32): platform-aware backdrop tuning so the
     // top band reads as intentional chrome on every host:
     //   * iOS / macOS / web (CanvasKit) — BackdropFilter blur for
@@ -5088,27 +5087,52 @@ class _MiniReaderHeader extends StatelessWidget {
         platform == TargetPlatform.iOS ||
         platform == TargetPlatform.macOS;
     final backdropColor = scheme.surface.withValues(alpha: 0.86);
+    // v1.3.x: dropped the rounded "pill" chips (user: "no that circle")
+    // — the labels now sit as plain text directly on the blurred/tinted
+    // top band. Layout: book + chapter on the LEFT, VERSION CENTERED
+    // (user asked for the version in the middle, not top-left). The
+    // whole band is still a scroll-to-top tap target via the
+    // GestureDetector below, so the chips no longer need their own taps.
+    final bookStyle = TextStyle(
+      fontFamily: settings.fontFamily,
+      fontFamilyFallback: kCjkFontFallback,
+      fontSize: 14,
+      fontWeight: FontWeight.w600,
+      color: scheme.onSurfaceVariant,
+    );
+    final versionStyle = TextStyle(
+      fontFamily: settings.fontFamily,
+      fontFamilyFallback: kCjkFontFallback,
+      fontSize: 15,
+      fontWeight: FontWeight.w700,
+      color: scheme.primary,
+      letterSpacing: 0.1,
+    );
     final backdropChild = SafeArea(
       bottom: false,
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(12, 6, 12, 6),
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
         child: Row(
           children: [
-            _MiniHeaderPill(
-              label: _versionLabel(version),
-              onTap: onTap,
-              scheme: scheme,
-              isDark: isDark,
-              fontFamily: settings.fontFamily,
+            // Left: where you are (book + chapter).
+            Expanded(
+              child: Text(
+                '$book $chapter',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: bookStyle,
+              ),
             ),
-            const Spacer(),
-            _MiniHeaderPill(
-              label: '$book $chapter',
-              onTap: onTap,
-              scheme: scheme,
-              isDark: isDark,
-              fontFamily: settings.fontFamily,
+            // Center: the version — the focal indicator.
+            Text(
+              _versionLabel(version),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: versionStyle,
             ),
+            // Equal-flex spacer on the right so the version sits dead
+            // centre regardless of how wide the book label is.
+            const Expanded(child: SizedBox()),
           ],
         ),
       ),
@@ -5150,73 +5174,6 @@ class _MiniReaderHeader extends StatelessWidget {
                     color: scheme.surfaceContainerHigh.withValues(alpha: 0.94),
                     child: backdropChild,
                   ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-/// One pill of the mini header. Themed background (primaryContainer
-/// at theme-aware alpha) + matching primary-tinted outline so the
-/// pill reads as part of the user's chosen palette rather than a
-/// generic grey chip. 14 sp bold for at-a-glance legibility on phone
-/// screens.
-///
-/// 2026-05-24 (v1.2.92): user feedback — "small title 可以 match
-/// theme color 吗 size 也应该合适". Was scheme.surface + 12 sp,
-/// reads as a neutral grey-out chip; now ties to scheme.primary so
-/// it matches whatever palette the user picked in Settings.
-class _MiniHeaderPill extends StatelessWidget {
-  final String label;
-  final VoidCallback onTap;
-  final ColorScheme scheme;
-  final bool isDark;
-  final String fontFamily;
-
-  const _MiniHeaderPill({
-    required this.label,
-    required this.onTap,
-    required this.scheme,
-    required this.isDark,
-    required this.fontFamily,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
-        child: Container(
-          padding:
-              const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
-          decoration: BoxDecoration(
-            // Primary-container at alpha so it tints the verse-text
-            // background instead of blanking it out. Dark theme uses
-            // a slightly higher alpha (the primaryContainer there is
-            // darker, so it needs more weight to stay legible).
-            color: scheme.primaryContainer
-                .withValues(alpha: isDark ? 0.78 : 0.85),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: scheme.primary.withValues(alpha: 0.4),
-              width: 0.6,
-            ),
-          ),
-          child: Text(
-            label,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              fontFamily: fontFamily,
-              fontFamilyFallback: kCjkFontFallback,
-              fontSize: 14,
-              fontWeight: FontWeight.w700,
-              color: scheme.onPrimaryContainer,
-              letterSpacing: 0.1,
-            ),
           ),
         ),
       ),
