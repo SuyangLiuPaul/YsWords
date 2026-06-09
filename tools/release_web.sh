@@ -36,8 +36,12 @@ if [[ "$BUMP" = "1" ]]; then
   "$PROJECT/tools/bump_version.sh"
 fi
 APP_VERSION="$(awk '/^version:/ {print $2; exit}' "$PROJECT/pubspec.yaml")"
-APP_RELEASE_TIME="$(date -u '+%Y-%m-%dT%H:%M:%SZ')"
-echo "==> APP_VERSION=$APP_VERSION APP_RELEASE_TIME=$APP_RELEASE_TIME"
+# 2026-06-09 (v1.3.59): release time is no longer injected per-build.
+# bump_version.sh stamps it into lib/constants/app_version.dart
+# (kAppReleaseTime) so EVERY platform reads one identical value, instead
+# of each build's own wall clock (which made iOS/web/Android disagree and
+# an unset shell var land empty → blank "last updated").
+echo "==> APP_VERSION=$APP_VERSION (release time stamped in source)"
 
 # 2026-05-27 (v1.3.47): refresh the version cache so the launchd-
 # spawned yswords-ios-reinstall.sh has a known-good fallback even
@@ -65,8 +69,7 @@ deploy_sites() {
 # ── International build → English sites (+ prod) ──────────────────
 echo "==> building INTERNATIONAL bundle"
 "$FLUTTER" build web --release \
-  --dart-define="APP_VERSION=$APP_VERSION" \
-  --dart-define="APP_RELEASE_TIME=$APP_RELEASE_TIME"
+  --dart-define="APP_VERSION=$APP_VERSION"
 INTL_SITES=(
   "b745ae1f-0780-4fa3-8478-bdf2f2aaf59a:dev"
   "2bcb6644-2a3a-4050-b6dc-5b059bbe96d3:qat"
@@ -84,7 +87,6 @@ deploy_sites "${INTL_SITES[@]}"
 echo "==> building CHINA bundle (CHINA_MODE=true)"
 "$FLUTTER" build web --release \
   --dart-define="APP_VERSION=$APP_VERSION" \
-  --dart-define="APP_RELEASE_TIME=$APP_RELEASE_TIME" \
   --dart-define="CHINA_MODE=true"
 CN_SITES=(
   "50f1502c-299f-4ff8-a21b-28f53eaee1e1:cn-dev"

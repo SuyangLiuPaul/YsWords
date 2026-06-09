@@ -79,5 +79,25 @@ awk -v new="$NEW" '
 ' "$APP_VERSION_DART" >"$TMP"
 mv "$TMP" "$APP_VERSION_DART"
 
-echo "✓ pubspec.yaml + app_version.dart now at $NEW"
-echo "  release time will auto-stamp at build via APP_RELEASE_TIME"
+# 2026-06-09 (v1.3.59): ALSO stamp kAppReleaseTime's defaultValue with
+# the current UTC ISO-8601 moment. Previously this relied ENTIRELY on
+# each build injecting --dart-define=APP_RELEASE_TIME, which proved
+# unreliable: a gradle no-op or an empty/missing inject left the About
+# footer's "last updated" BLANK (Mi Pad) or showing different values
+# across iOS/web/Android. Stamping the constant makes it a single
+# source of truth baked into the source for EVERY platform —
+# formatReleaseTimeLocal() converts the ISO UTC to the viewer's local
+# timezone. Builds no longer need to pass APP_RELEASE_TIME at all.
+RELEASE_TIME="$(date -u '+%Y-%m-%dT%H:%M:%SZ')"
+TMP="$(mktemp)"
+awk -v rt="$RELEASE_TIME" '
+  /const String kAppReleaseTime = String\.fromEnvironment\(/ { in_block = 1 }
+  in_block && /defaultValue:/ {
+    sub(/defaultValue: '\''[^'\'']*'\''/, "defaultValue: '\''" rt "'\''")
+    in_block = 0
+  }
+  { print }
+' "$APP_VERSION_DART" >"$TMP"
+mv "$TMP" "$APP_VERSION_DART"
+
+echo "✓ pubspec.yaml + app_version.dart now at $NEW (release time: $RELEASE_TIME)"

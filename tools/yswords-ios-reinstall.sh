@@ -165,12 +165,16 @@ if [ "$APP_VERSION" != "unknown" ]; then
   printf '%s\n' "$APP_VERSION" > "$VERSION_CACHE" 2>/dev/null || true
 fi
 
-APP_RELEASE_TIME="$(date -u '+%Y-%m-%dT%H:%M:%SZ')"
+# 2026-06-09 (v1.3.59): release time is NOT injected here anymore.
+# bump_version.sh stamps it into the kAppReleaseTime source constant, so
+# every platform reads one identical value. Injecting `date` per-build
+# made iOS/web/Android disagree, and a launchd run where the shell var
+# came back empty shipped `--dart-define=APP_RELEASE_TIME=` → blank
+# "last updated" on the device (seen on the Mi Pad).
 DEFINES=(
   --dart-define="APP_VERSION=$APP_VERSION"
-  --dart-define="APP_RELEASE_TIME=$APP_RELEASE_TIME"
 )
-echo "==> APP_VERSION=$APP_VERSION APP_RELEASE_TIME=$APP_RELEASE_TIME"
+echo "==> APP_VERSION=$APP_VERSION (release time stamped in source)"
 
 # ─── iOS BUILD + INSTALLS ────────────────────────────────────────
 echo ""

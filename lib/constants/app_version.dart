@@ -2075,7 +2075,7 @@
 // every release.
 const String kAppVersion = String.fromEnvironment(
   'APP_VERSION',
-  defaultValue: '1.3.58',
+  defaultValue: '1.3.59',
 );
 
 /// 2026-05-10 (v1.2.20): paired with `kAppVersion` so the About
@@ -2115,7 +2115,7 @@ const String kAppVersion = String.fromEnvironment(
 /// for the build, which in practice means dev workflow only.
 const String kAppReleaseTime = String.fromEnvironment(
   'APP_RELEASE_TIME',
-  defaultValue: '2026-05-10 dev-build (Melbourne)',
+  defaultValue: '2026-06-09T03:29:57Z',
 );
 
 /// Returns a user-locale-formatted release time string. Parses
@@ -2130,31 +2130,60 @@ const String kAppReleaseTime = String.fromEnvironment(
 ///   • dev build (no UTC):  `2026-05-10 dev-build (Melbourne)`
 ///
 /// Format: `YYYY-MM-DD HH:MM TZ` to match the legacy display.
-String formatReleaseTimeLocal() {
-  final raw = kAppReleaseTime;
+String formatReleaseTimeLocal() =>
+    formatReleaseStamp(kAppReleaseTime, (utc) => utc.toLocal());
+
+/// Formats a UTC offset [Duration] as a stable, platform-independent
+/// label: `UTC+10`, `UTC+8`, `UTC-5`, `UTC+5:30`, `UTC+0`.
+///
+/// 2026-06-09 (v1.3.59): used by [formatReleaseStamp] INSTEAD of
+/// `DateTime.timeZoneName`, which returns a different string per
+/// platform for the same instant — `AEST` on iOS, `GMT+10:00` on
+/// Android, a long IANA/Intl name (or empty) on web. That divergence
+/// was the "format looks different across iOS / web / Android" the user
+/// reported. This is pure arithmetic, so every platform agrees.
+/// Public for testing.
+String formatUtcOffsetLabel(Duration off) {
+  final sign = off.isNegative ? '-' : '+';
+  final oh = off.inHours.abs();
+  final om = off.inMinutes.abs() % 60;
+  return om == 0
+      ? 'UTC$sign$oh'
+      : 'UTC$sign$oh:${om.toString().padLeft(2, '0')}';
+}
+
+/// Pure core of [formatReleaseTimeLocal]: given a raw stamp and a
+/// `toLocal` converter, produces the display string. Split out so the
+/// never-blank guard and the platform-independent formatting can be
+/// unit tested without depending on the host machine's timezone.
+/// Public for testing.
+String formatReleaseStamp(
+  String rawInput,
+  DateTime Function(DateTime utc) toLocal,
+) {
+  final raw = rawInput.trim();
+  // 2026-06-09 (v1.3.59): never render blank. A build that injected an
+  // empty `--dart-define=APP_RELEASE_TIME=` (e.g. an ad-hoc CLI build
+  // where the shell var wasn't set) leaves `raw` empty and the About
+  // footer would show "本页最后更新于 。" with no time — exactly the blank
+  // the user saw on the Mi Pad. Guard it. (Real builds now read the
+  // bump-stamped `kAppReleaseTime` constant, so this only fires on a
+  // misconfigured manual build.)
+  if (raw.isEmpty) return '—';
+
   // ISO 8601 UTC stamps look like `2026-05-10T09:48:00Z` (Z = UTC).
   // Anything else falls through to the raw display.
-  if (raw.length >= 20 && raw.contains('T') &&
+  if (raw.length >= 20 &&
+      raw.contains('T') &&
       (raw.endsWith('Z') || raw.contains('+') || raw.contains('-'))) {
     try {
-      final utc = DateTime.parse(raw);
-      final local = utc.toLocal();
+      final local = toLocal(DateTime.parse(raw));
       final y = local.year.toString().padLeft(4, '0');
       final m = local.month.toString().padLeft(2, '0');
       final d = local.day.toString().padLeft(2, '0');
       final hh = local.hour.toString().padLeft(2, '0');
       final mm = local.minute.toString().padLeft(2, '0');
-      // `DateTime.timeZoneName` returns a platform-formatted TZ
-      // name. On web it derives from
-      // `Intl.DateTimeFormat().resolvedOptions().timeZone`; on
-      // native it tries the OS abbreviation. Either way the user
-      // sees something they recognise (`AEST` / `EST` / `CST` /
-      // …). When unavailable it's just an empty string — drop the
-      // separator in that case.
-      final tz = local.timeZoneName;
-      return tz.isEmpty
-          ? '$y-$m-$d $hh:$mm'
-          : '$y-$m-$d $hh:$mm $tz';
+      return '$y-$m-$d $hh:$mm ${formatUtcOffsetLabel(local.timeZoneOffset)}';
     } catch (_) {
       // Fall through to raw display below.
     }

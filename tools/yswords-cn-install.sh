@@ -51,13 +51,13 @@ echo "→ git pull origin main"
 git -c core.hooksPath=/dev/null pull origin main || true
 
 APP_VERSION="$(awk '/^version:/ {print $2; exit}' pubspec.yaml)"
-APP_RELEASE_TIME="$(date -u '+%Y-%m-%dT%H:%M:%SZ')"
+# v1.3.59: release time stamped into kAppReleaseTime by bump_version.sh,
+# not injected here (keeps it identical across platforms + never empty).
 DEFINES=(
   --dart-define=APP_VERSION="$APP_VERSION"
-  --dart-define=APP_RELEASE_TIME="$APP_RELEASE_TIME"
   --dart-define=CHINA_MODE=true
 )
-echo "APP_VERSION=$APP_VERSION  APP_RELEASE_TIME=$APP_RELEASE_TIME  CHINA_MODE=true"
+echo "APP_VERSION=$APP_VERSION  CHINA_MODE=true (release time stamped in source)"
 
 OK_COUNT=0
 FAIL_COUNT=0
