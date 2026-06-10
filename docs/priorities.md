@@ -42,11 +42,14 @@ These were identified as the highest-ROI gaps after v1.2.35. None are blocking, 
    EXTENDED in v1.3.60 (+53 → **228/228**): responsive overflow
    smoke tests (About/Settings/Library/Dashboard × 4 widths),
    `parseReference` regressions, daily-verse NT-only fallback,
-   `cleanAiExplanation`. Still open as future test additions:
-   - `FetchVerses.execute` retry/timeout/clear-cache path
-   - `MainProvider.useCachedVersion` + paragraph cache eviction
-   - `jumpToReference` resolve + scroll
-   - Split-pane secondary-provider lifecycle
+   `cleanAiExplanation`. EXTENDED AGAIN same day (+8 → **236/236**):
+   `MainProvider.useCachedVersion` (v1.3.40 stale-index regression,
+   LRU round-trips, notify-once — 5 tests) and `FetchVerses.execute`
+   (real-asset happy path, retry/rethrow contract, onAttempt
+   sequence, maxAttempts honored — 3 tests). Still open as future
+   test additions:
+   - `jumpToReference` resolve + scroll (widget-level)
+   - Split-pane secondary-provider lifecycle (widget-level)
    - BYOK Test handler (currently only smoke-tested in production)
    ~few hours each.
 
