@@ -67,6 +67,14 @@ class RealtimeDbSyncService extends ChangeNotifier {
 
   static const String _kLastSyncedAt = 'rtdbSync.lastSyncedAt';
 
+  /// 2026-06-11 audit: upper bound for every awaited RTDB operation
+  /// (`set` / `get` / `remove`). The Firebase SDK retries forever on a
+  /// flaky connection, so an un-timed await could leave the sync
+  /// status stuck on "syncing" indefinitely. 20 s is generous for the
+  /// few-KB payloads involved; on expiry the existing catch blocks
+  /// turn TimeoutException into the error status / null result.
+  static const Duration _kRtdbOpTimeout = Duration(seconds: 20);
+
   CloudSyncStatus get status => _status;
   String? get lastError => _lastError;
   DateTime? get lastSyncedAt => _lastSyncedAt;
@@ -387,7 +395,14 @@ class RealtimeDbSyncService extends ChangeNotifier {
         'data': payload,
         'updatedAt': stampedAt,
       };
-      await FirebaseDatabase.instance.ref('users/$uid/sync').set(body);
+      // 2026-06-11 audit: bound every awaited RTDB op. On a flaky
+      // network `set()`/`get()` can hang indefinitely — the catch
+      // blocks below already map TimeoutException → error status, so
+      // the UI recovers instead of spinning on "syncing" forever.
+      await FirebaseDatabase.instance
+          .ref('users/$uid/sync')
+          .set(body)
+          .timeout(_kRtdbOpTimeout);
       // Remember the data we successfully uploaded so requestUpload
       // can skip subsequent calls that don't actually change content.
       _lastUploadedDataHash = jsonEncode(payload);
@@ -675,10 +690,10 @@ class RealtimeDbSyncService extends ChangeNotifier {
       final ref =
           FirebaseDatabase.instance.ref('users/$uid/$_kByokKeyPath');
       if (trimmed.isEmpty) {
-        await ref.remove();
+        await ref.remove().timeout(_kRtdbOpTimeout);
         debugPrint('[RTDBSync] pushGeminiKey: removed (clear)');
       } else {
-        await ref.set(trimmed);
+        await ref.set(trimmed).timeout(_kRtdbOpTimeout);
         debugPrint('[RTDBSync] pushGeminiKey: set OK');
       }
     } on FirebaseException catch (e) {
@@ -703,7 +718,8 @@ class RealtimeDbSyncService extends ChangeNotifier {
     try {
       final snap = await FirebaseDatabase.instance
           .ref('users/$uid/$_kByokKeyPath')
-          .get();
+          .get()
+          .timeout(_kRtdbOpTimeout);
       if (!snap.exists) return '';
       final v = snap.value;
       return v is String ? v : '';

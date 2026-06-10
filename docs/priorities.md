@@ -38,8 +38,11 @@ These were identified as the highest-ROI gaps after v1.2.35. None are blocking, 
    the v1.3.21/v1.3.22 infrastructure with `error_reporter_test.dart`
    (breadcrumb ring + route/locale tracking + payload-cap helper +
    no-throw guarantee — 19 tests) and `main_provider_cache_test.dart`
-   (memory-pressure cache drop — 5 tests + 1 trim refinement). Still
-   open as future test additions:
+   (memory-pressure cache drop — 5 tests + 1 trim refinement).
+   EXTENDED in v1.3.60 (+53 → **228/228**): responsive overflow
+   smoke tests (About/Settings/Library/Dashboard × 4 widths),
+   `parseReference` regressions, daily-verse NT-only fallback,
+   `cleanAiExplanation`. Still open as future test additions:
    - `FetchVerses.execute` retry/timeout/clear-cache path
    - `MainProvider.useCachedVersion` + paragraph cache eviction
    - `jumpToReference` resolve + scroll
@@ -50,7 +53,11 @@ These were identified as the highest-ROI gaps after v1.2.35. None are blocking, 
 5. **Browser-matrix verification** — informally tested on Chromium +
    Safari macOS. iOS Safari (especially private mode), Firefox, old
    Chromium, and the China-build inside the GFW haven't been
-   exercised end-to-end since v1.2.0. ~half-day.
+   exercised end-to-end since v1.2.0. ~half-day. NOTE: the v1.3.60
+   audit found (and fixed) the single biggest cross-browser defect —
+   `web/index.html` had NO viewport meta since project creation, so
+   mobile browsers laid out at the legacy 980 px desktop width. Any
+   future matrix pass starts from a sane baseline now.
 
 ## Security baseline (added v1.3.24)
 
@@ -354,6 +361,30 @@ All shipped to prod (yswords + yswords-cn). Detailed entries in
     `versePlain` function — native AI works again with no reinstall.
   - Devices: iPhone/iPad/macOS on v1.3.57; Mi Pad pending its
     wireless-debug screen. flutter analyze: 0; test: 166/166.
+
+- **v1.3.58 → v1.3.60 (2026-06-08 → 2026-06-11)**.
+  - **v1.3.58** — mini reader header de-pilled: plain text, book+chapter
+    left, version centered.
+  - **v1.3.59** — release-time stamp consistency. `kAppReleaseTime` is
+    stamped into source by `bump_version.sh` (was injected per-build via
+    `--dart-define`, and an empty inject blanked the About footer on the
+    Mi Pad); footer now renders a self-computed `UTC+10`-style offset
+    instead of the platform-divergent `DateTime.timeZoneName` (iOS said
+    `AEST`, Android `GMT+10:00`, web an IANA name — "格式不一样").
+    Ops fix the next day: the 04:00 launchd job had been running a STALE
+    COPY of the reinstall script at `~/.config/yswords/scripts/` —
+    replaced with an exec shim to the repo script (never drifts again).
+  - **v1.3.60 — full audit (P0–P4, user-confirmed plan).** P0: added the
+    long-missing `<meta name="viewport">` (mobile browsers had used the
+    980 px legacy viewport since project creation); silenced `debugPrint`
+    in release builds (~103 callsites were logging sync/auth detail to
+    the prod web console — one `kReleaseMode` no-op in `main()`); 20 s
+    `.timeout` on every awaited RTDB op so sync can't hang forever. P1:
+    responsive overflow smoke tests. P2: `cleanAiExplanation` extracted +
+    tested; `parseReference` + daily-verse fallback regression tests.
+    P3 perf audit came back CLEAN (shrinkWrap usage correct, image decode
+    caps present, no watch-in-itemBuilder). P4: this doc + README +
+    HANDOFF synced. flutter analyze: 0; test: 228/228.
 
 ## Removed features
 

@@ -28,6 +28,7 @@ import 'package:yswords/providers/main_provider.dart';
 import 'package:yswords/services/fetch_books.dart';
 import 'package:yswords/services/ai_word_service.dart';
 import 'package:yswords/utils/ai_markdown.dart' show parseAiMarkdown;
+import 'package:yswords/utils/ai_text_cleaner.dart';
 import 'package:yswords/services/concordance_service.dart';
 import 'package:yswords/services/cloud_auth_service.dart';
 import 'package:yswords/constants/sermon_topics.dart';
@@ -3001,7 +3002,7 @@ class _AiExplainSheetState extends State<_AiExplainSheet> {
             (uiStrings['aiExplainError']?[widget.settings.locale] ??
                 'AI explanation is not available right now.');
       } else {
-        _explanation = _cleanExplanation(result.explanation);
+        _explanation = cleanAiExplanation(result.explanation);
       }
     });
   }
@@ -3010,23 +3011,6 @@ class _AiExplainSheetState extends State<_AiExplainSheet> {
   /// preamble ("快速思考：…" / "Quick thinking:…") despite the prompt
   /// forbidding it. Drop that leading block so the panel starts with
   /// the actual explanation.
-  String _cleanExplanation(String raw) {
-    var t = raw.trim();
-    final lead = RegExp(
-        r'^\s*(快速思考|思考过程|思考|Quick thinking|Thinking)\s*[:：]',
-        caseSensitive: false);
-    if (lead.hasMatch(t)) {
-      final para = t.indexOf('\n\n');
-      if (para > 0) {
-        t = t.substring(para).trim();
-      } else {
-        final nl = t.indexOf('\n');
-        if (nl > 0) t = t.substring(nl).trim();
-      }
-    }
-    return t;
-  }
-
   Future<AiWordResult> _request(String key) {
     return AiWordService.explainVerse(
       englishBook: widget.englishBook,

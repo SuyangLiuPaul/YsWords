@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart' show kReleaseMode;
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:yswords/constants/build_flags.dart';
@@ -32,6 +33,16 @@ import 'package:provider/provider.dart';
 import 'package:yswords/utils/font_catalog.dart' show kCjkFontFallback;
 
 void main() {
+  // 2026-06-11 audit: silence debugPrint in release builds. ~100
+  // callsites across services/pages log sync + auth detail; debugPrint
+  // is NOT stripped from release builds, so on web all of it landed in
+  // the browser console (information disclosure + log spam). One
+  // global no-op here beats guarding every callsite. ErrorReporter is
+  // unaffected — it reports via its own pipeline, not debugPrint.
+  if (kReleaseMode) {
+    debugPrint = (String? message, {int? wrapWidth}) {};
+  }
+
   // 2026-05-24 (v1.3.21): wrap the whole entrypoint in
   // runZonedGuarded so uncaught zone errors (async work that
   // bubbles past PlatformDispatcher) still reach the reporter.
