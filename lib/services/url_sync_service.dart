@@ -32,6 +32,17 @@ import 'url_sync_service_stub.dart'
     if (dart.library.js_interop) 'url_sync_service_web.dart' as impl;
 
 class UrlSyncService {
+  /// 2026-06-11 (v1.3.61): snapshot `window.location.hash` BEFORE the
+  /// Flutter engine starts. With a plain `MaterialApp(home:)`, the web
+  /// engine reports the initial route ('/') shortly after first frame
+  /// and OVERWRITES the URL fragment — so by the time [init] ran
+  /// (post-restoreState, seconds into boot) a shared deep link like
+  /// `#/revelation/17:1?v=biblexg-v2` was already wiped and the apply
+  /// silently no-op'd; the first state write then replaced the link
+  /// with the boot default. Call this synchronously at the very top of
+  /// `main()`; native targets no-op.
+  static void captureBootHash() => impl.captureBootHash();
+
   /// Initialise. Web reads the boot URL, applies it to providers,
   /// then starts listening for further state / popstate events.
   /// Native targets no-op.

@@ -43,6 +43,13 @@ void main() {
     debugPrint = (String? message, {int? wrapWidth}) {};
   }
 
+  // 2026-06-11 (v1.3.61): snapshot the deep-link hash before the
+  // engine boots — by first frame, Flutter web reports the initial
+  // route and overwrites the URL fragment, losing any shared link
+  // (`#/revelation/17:1?v=biblexg-v2`) before UrlSyncService.init
+  // gets to read it. Native targets no-op.
+  UrlSyncService.captureBootHash();
+
   // 2026-05-24 (v1.3.21): wrap the whole entrypoint in
   // runZonedGuarded so uncaught zone errors (async work that
   // bubbles past PlatformDispatcher) still reach the reporter.

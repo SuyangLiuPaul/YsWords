@@ -14,3 +14,6 @@ Future<void> urlSyncInit({
   // Native targets: no URL bar, nothing to sync. Return immediately.
   return;
 }
+
+/// Native targets: no URL bar, nothing to capture.
+void captureBootHash() {}

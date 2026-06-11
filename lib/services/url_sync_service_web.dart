@@ -39,10 +39,10 @@ import 'dart:js_interop';
 import 'package:flutter/foundation.dart';
 
 import 'package:yswords/constants/bible_versions.dart' show bibleVersions;
-import 'package:yswords/constants/book_names.dart';
 import 'package:yswords/constants/book_slugs.dart';
 import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/providers/main_provider.dart';
+import 'package:yswords/services/fetch_books.dart';
 import 'package:yswords/services/fetch_verses.dart';
 import 'package:yswords/utils/version_mapper.dart' show translateBookName;
 
@@ -80,6 +80,22 @@ extension on _History {
 // ── Module-level state ──────────────────────────────────────────
 
 bool _initialized = false;
+
+/// Deep-link hash captured at the very start of `main()`, before the
+/// Flutter engine can overwrite the URL with the initial route. See
+/// `UrlSyncService.captureBootHash`.
+String? _bootHash;
+
+/// Snapshot the current hash. Must run synchronously in `main()`
+/// before `runApp` — by first frame the engine may already have
+/// rewritten the fragment.
+void captureBootHash() {
+  try {
+    _bootHash = _window.location.hash;
+  } catch (e) {
+    debugPrint('[UrlSync] captureBootHash failed: $e');
+  }
+}
 bool _isApplyingFromUrl = false;
 Timer? _writeDebounce;
 String _lastWrittenUrl = '';
@@ -103,8 +119,18 @@ Future<void> urlSyncInit({
   // (A) URL → state on boot. Best-effort — if the URL is empty,
   // malformed, or points to an unknown book, the existing
   // restoreState() output stays in effect.
+  //
+  // 2026-06-11 (v1.3.61): prefer the hash captured in main() over the
+  // live one. The Flutter web engine reports the initial route ('/')
+  // shortly after first frame and overwrites the fragment, so by the
+  // time this init runs (post-restoreState) the live hash no longer
+  // holds the deep link the user actually opened.
   try {
-    await _applyHashToState(_window.location.hash);
+    final liveHash = _window.location.hash;
+    final bootHash = (_bootHash != null && _bootHash!.length > 1)
+        ? _bootHash!
+        : liveHash;
+    await _applyHashToState(bootHash);
   } catch (e, st) {
     debugPrint('[UrlSync] boot apply failed: $e\n$st');
   }
@@ -180,28 +206,48 @@ Future<void> _applyHashToState(String rawHash) async {
   if (parsed == null) return;
   final mp = _mp;
   if (mp == null) return;
-  final localBook = translateBookName(parsed.book, mp.currentVersion);
-  // Verify the (book, chapter) exists in the loaded verses. If not,
-  // bail — we don't want to leave the reader in a broken state.
-  // Sample: book/chapter must have at least one verse loaded.
-  final hasVerse = mp.verses.any((v) =>
-      (bookNameToEnglish[v.book] ?? v.book) == parsed.book &&
-      v.chapter == parsed.chapter);
-  if (!hasVerse) {
-    debugPrint('[UrlSync] book/chapter not yet loaded; skipping apply '
-        '(${parsed.book} ${parsed.chapter})');
-    return;
-  }
 
   _isApplyingFromUrl = true;
   try {
-    // Optional version swap.
+    // 2026-06-11 (v1.3.61): version swap FIRST — the book-name
+    // translation and the existence check below must run against the
+    // version the LINK points at, not whatever the boot default
+    // happened to be. Pre-fix order translated against the default
+    // version: a fresh en-locale browser booted NASB, so
+    // `translateBookName('Revelation', 'nasb')` returned the ENGLISH
+    // name, then the swap loaded biblexg-v2 (books named 启示录) and
+    // `setCurrentChapter(book: 'Revelation')` found no verses — a
+    // shared link like `#/revelation/17:1?v=biblexg-v2` cold-opened
+    // to the "End of Bible" empty state on a chapter that exists.
     if (parsed.version != null &&
         parsed.version != mp.currentVersion &&
         bibleVersions.any((v) => v.value == parsed.version)) {
       mp.setVersion(parsed.version!);
       await FetchVerses.execute(mainProvider: mp);
+      // v1.3.61: the chapter pager + book picker resolve book names
+      // against `mp.books`, which boot built from the DEFAULT version.
+      // The canonical in-app switch (reading pane version menu) runs
+      // FetchBooks after FetchVerses — without it, a Chinese-named
+      // currentBook can't be found in an English book list and every
+      // reader page renders the "End of Bible" empty state.
+      await FetchBooks.execute(mainProvider: mp);
     }
+
+    // Now translate + verify against the version that is actually
+    // loaded. If the (book, chapter) doesn't exist in it (e.g. an OT
+    // link into an NT-only version), bail — the reader stays where
+    // restoreState put it, in the link's version, and the v1.3.12
+    // version-gap UI explains the rest.
+    final localBook = translateBookName(parsed.book, mp.currentVersion);
+    final hasVerse = mp.verses.any((v) =>
+        (bookNameToEnglish[v.book] ?? v.book) == parsed.book &&
+        v.chapter == parsed.chapter);
+    if (!hasVerse) {
+      debugPrint('[UrlSync] book/chapter not in ${mp.currentVersion}; '
+          'skipping apply (${parsed.book} ${parsed.chapter})');
+      return;
+    }
+
     mp.setCurrentChapter(book: localBook, chapter: parsed.chapter);
     // Optional verse jump.
     if (parsed.verse != null) {
