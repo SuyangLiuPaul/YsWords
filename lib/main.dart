@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'package:flutter/foundation.dart' show kReleaseMode;
+import 'package:flutter/foundation.dart' show kIsWeb, kReleaseMode;
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:yswords/constants/build_flags.dart';
@@ -310,7 +310,16 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
     //
     // Memory parity: same final state (~78 MB across all
     // versions); only the timing of when the slots fill changes.
-    if (mainProvider.verses.isNotEmpty) {
+    // 2026-06-11 (v1.3.61) PERF: web no longer eager-preloads the other
+    // 12 versions. On native that loop reads local asset files — cheap,
+    // and it's what makes version switches instant. On WEB each version
+    // is a network download (0.5–1.4 MB brotli each, ~10 MB+ per cold
+    // session in total) plus a main-thread json.decode of a 2–9 MB
+    // string — real mobile data cost and visible jank while the user is
+    // already reading. The on-demand switch path (FetchVerses) loads a
+    // version in ~1–2 s when actually requested, and the service worker
+    // caches each fetched bundle so later sessions are instant anyway.
+    if (mainProvider.verses.isNotEmpty && !kIsWeb) {
       // ignore: unawaited_futures
       _eagerPreloadAllVersions(mainProvider).catchError(
           (Object e, StackTrace st) =>
