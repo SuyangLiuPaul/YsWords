@@ -40,6 +40,17 @@ class _LoadingPageState extends State<LoadingPage> {
   Timer? _autoAdvance;
   bool _retrying = false;
 
+  /// 2026-06-12 (v1.3.65 robustness): bounded AUTO-retry when the boot
+  /// load fails. FetchVerses already retries 3× internally per attempt;
+  /// this adds an outer self-heal so a transient asset/network failure
+  /// (e.g. a verse-JSON download interrupted during a deploy or a
+  /// network blip) recovers on its own instead of dead-ending on the
+  /// "Failed to load" scaffold until the user taps Retry. After the
+  /// budget is spent the manual scaffold stays as the escape hatch.
+  Timer? _autoRetry;
+  int _autoRetryCount = 0;
+  static const int _kMaxAutoRetries = 3;
+
   /// Splash verse — locked ONCE per mount. The user sees the same
   /// verse on the splash AS the dashboard's "Verse of the Day", which
   /// reinforces the day's theme.
@@ -225,8 +236,30 @@ class _LoadingPageState extends State<LoadingPage> {
     });
   }
 
+  /// Schedule one auto-retry with linear backoff (2 s, 4 s, 6 s) while
+  /// budget remains and no retry is already in flight. Idempotent — a
+  /// pending timer isn't re-armed. Called from build() whenever the
+  /// error state is showing for a genuine load failure.
+  void _maybeScheduleAutoRetry() {
+    if (_retrying || _autoRetry != null) return;
+    if (_autoRetryCount >= _kMaxAutoRetries) return;
+    _autoRetryCount++;
+    final delay = Duration(seconds: 2 * _autoRetryCount);
+    _autoRetry = Timer(delay, () {
+      _autoRetry = null;
+      if (!mounted) return;
+      final mp = context.read<MainProvider>();
+      // Only auto-retry if still in a real error state.
+      if (mp.loadError != null || mp.verses.isEmpty) {
+        _retry();
+      }
+    });
+  }
+
   Future<void> _retry() async {
     if (_retrying) return;
+    _autoRetry?.cancel();
+    _autoRetry = null;
     setState(() => _retrying = true);
     final mainProvider = context.read<MainProvider>();
     // Clear the previous error first so the UI immediately reflects
@@ -297,6 +330,7 @@ class _LoadingPageState extends State<LoadingPage> {
   @override
   void dispose() {
     _autoAdvance?.cancel();
+    _autoRetry?.cancel();
     _dailyVerseFallback?.cancel();
     super.dispose();
   }
@@ -309,6 +343,13 @@ class _LoadingPageState extends State<LoadingPage> {
         mainProvider.loadError != null || mainProvider.verses.isEmpty;
 
     if (hasError) {
+      // v1.3.65: kick off a bounded auto-retry so a transient boot
+      // failure self-heals before the user has to do anything. The
+      // manual Retry / Clear-cache buttons stay as the escape hatch
+      // once the auto budget is spent.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _maybeScheduleAutoRetry();
+      });
       return _buildErrorScaffold(context, settings);
     }
 
