@@ -694,7 +694,7 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
           // 2026-05-24 (v1.3.21): BreadcrumbObserver auto-records
           // every push/pop so error reports include the navigation
           // trail leading up to the crash.
-          navigatorObservers: [BreadcrumbObserver()],
+          navigatorObservers: [BreadcrumbObserver(), _UrlRestoreObserver()],
           home: _loading
               ? const Scaffold(
                   body: Center(
@@ -711,6 +711,21 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
   }
 }
 
+/// v1.3.62 UX: the web engine writes the pushed route's minified name
+/// into the URL fragment (`#/minified:Xt`), clobbering the canonical
+/// share link. This observer asks the URL-sync layer to restore the
+/// proper `#/<book>/<chapter>?v=` fragment shortly after every
+/// push/pop. No-op on native (stub dispatch).
+class _UrlRestoreObserver extends NavigatorObserver {
+  @override
+  void didPush(Route<dynamic> route, Route<dynamic>? previousRoute) =>
+      UrlSyncService.onRouteChanged();
+
+  @override
+  void didPop(Route<dynamic> route, Route<dynamic>? previousRoute) =>
+      UrlSyncService.onRouteChanged();
+}
+
 class _RootRouter extends StatefulWidget {
   final List<Verse> initialVerses;
   const _RootRouter({required this.initialVerses});
@@ -723,6 +738,23 @@ class _RootRouterState extends State<_RootRouter> {
   bool _showHome = false;
   bool _welcomeDone = false;
   bool _deepLinkHandled = false;
+
+  /// v1.3.62 UX: set (via the UrlSyncService callback) when a boot
+  /// hash deep link (`#/<book>/<ch>?v=`) was applied — the next home
+  /// build pushes the reader so shared links open the verse directly
+  /// instead of parking the user on the Dashboard. A flag + rebuild
+  /// (rather than navigating from the callback) because the apply can
+  /// finish before OR after the home/welcome gate appears.
+  bool _bootHashLandingPending = false;
+
+  @override
+  void initState() {
+    super.initState();
+    UrlSyncService.setBootDeepLinkCallback(() {
+      if (!mounted) return;
+      setState(() => _bootHashLandingPending = true);
+    });
+  }
 
   void _advance() {
     if (!mounted || _showHome) return;
@@ -811,6 +843,19 @@ class _RootRouterState extends State<_RootRouter> {
           setState(() => _welcomeDone = true);
         },
       );
+    }
+    // v1.3.62 UX: boot deep link → land in the reader. Runs once,
+    // post-frame, after the gate is out of the way; the reader opens
+    // on the book/chapter the URL-sync apply already set. Same
+    // explicit routeName convention as the notification-tap path
+    // above so popUntil-based dedupe keeps working.
+    if (_showHome && _bootHashLandingPending) {
+      _bootHashLandingPending = false;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        Get.to(() => const HomePage(),
+            routeName: '/HomePage', transition: Transition.rightToLeft);
+      });
     }
     // After Round 32: Dashboard is the home / root page. The Bible
     // reader (HomePage) is pushed on top via Dashboard's "Continue

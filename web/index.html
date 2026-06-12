@@ -23,6 +23,11 @@
        and scale down — a root cause of "iOS web vs Android looks
        different" reports. Standard Flutter-template value. -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- 2026-06-12 (v1.3.62 perf): pre-open the TLS connection to the
+       CDN that serves CanvasKit (~1.5 MB, on the boot critical path).
+       Saves a DNS + TCP + TLS round trip before the engine download
+       can even start. -->
+  <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
   <meta name="description" content="YsWords — A bilingual Bible reader app to help you listen to His voice and abide in Him daily.">
 

@@ -43,6 +43,23 @@ class UrlSyncService {
   /// `main()`; native targets no-op.
   static void captureBootHash() => impl.captureBootHash();
 
+  /// 2026-06-12 (v1.3.62 UX): register a callback fired exactly once
+  /// when a BOOT deep link (a reader hash present at cold open) has
+  /// been successfully applied to MainProvider. main.dart uses it to
+  /// land the user directly in the reader — without it, a shared link
+  /// dropped people on the Dashboard where they had to tap "Read
+  /// Bible" themselves. Native targets never fire it.
+  static void setBootDeepLinkCallback(void Function() cb) =>
+      impl.setBootDeepLinkCallback(cb);
+
+  /// 2026-06-12 (v1.3.62 UX): notify the URL layer that a navigator
+  /// route was pushed/popped. The Flutter web engine writes the
+  /// route's (minified) name into the URL fragment on push — e.g.
+  /// `#/minified:Xt` — clobbering our canonical share link. This
+  /// schedules a rewrite of the proper `#/<book>/<chapter>?v=`
+  /// fragment shortly after the engine's write. Native no-op.
+  static void onRouteChanged() => impl.onRouteChanged();
+
   /// Initialise. Web reads the boot URL, applies it to providers,
   /// then starts listening for further state / popstate events.
   /// Native targets no-op.

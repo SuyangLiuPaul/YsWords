@@ -96,6 +96,43 @@ void captureBootHash() {
     debugPrint('[UrlSync] captureBootHash failed: $e');
   }
 }
+
+/// Fired once after a boot deep link is applied. See
+/// `UrlSyncService.setBootDeepLinkCallback`.
+void Function()? _bootDeepLinkCallback;
+
+/// Latch: true once a boot deep link has been applied. Decouples the
+/// apply (which happens deep in async bootstrap) from callback
+/// registration (which happens when _RootRouter first mounts). Either
+/// can win the race — whichever is second fires the navigation.
+bool _bootDeepLinkApplied = false;
+
+void setBootDeepLinkCallback(void Function() cb) {
+  _bootDeepLinkCallback = cb;
+  // If the apply already happened before the router mounted, fire now
+  // so the late registration isn't dropped.
+  if (_bootDeepLinkApplied) {
+    Timer.run(cb);
+  }
+}
+
+/// Restore the canonical hash after a navigator push/pop. The engine
+/// writes the pushed route's minified name into the fragment
+/// (`#/minified:Xt`); 350 ms later we put the share link back. The
+/// `_lastWrittenUrl = null` reset forces the write even though our
+/// state hasn't changed since the last one.
+void onRouteChanged() {
+  if (!_initialized) return;
+  Timer(const Duration(milliseconds: 350), () {
+    if (_isApplyingFromUrl) return;
+    _lastWrittenUrl = '';
+    try {
+      _writeStateToUrl();
+    } catch (e) {
+      debugPrint('[UrlSync] route-change rewrite failed: $e');
+    }
+  });
+}
 bool _isApplyingFromUrl = false;
 Timer? _writeDebounce;
 String _lastWrittenUrl = '';
@@ -130,7 +167,7 @@ Future<void> urlSyncInit({
     final bootHash = (_bootHash != null && _bootHash!.length > 1)
         ? _bootHash!
         : liveHash;
-    await _applyHashToState(bootHash);
+    await _applyHashToState(bootHash, isBoot: true);
   } catch (e, st) {
     debugPrint('[UrlSync] boot apply failed: $e\n$st');
   }
@@ -201,7 +238,7 @@ void _writeStateToUrl() {
 
 // ── Apply: URL → state ─────────────────────────────────────────
 
-Future<void> _applyHashToState(String rawHash) async {
+Future<void> _applyHashToState(String rawHash, {bool isBoot = false}) async {
   final parsed = _parseHash(rawHash);
   if (parsed == null) return;
   final mp = _mp;
@@ -249,6 +286,16 @@ Future<void> _applyHashToState(String rawHash) async {
     }
 
     mp.setCurrentChapter(book: localBook, chapter: parsed.chapter);
+    // v1.3.62 UX: a successfully-applied BOOT deep link should land
+    // the user in the reader, not on the Dashboard. Fire the
+    // registered callback (main.dart navigates on its next frame).
+    if (isBoot) {
+      _bootDeepLinkApplied = true;
+      final cb = _bootDeepLinkCallback;
+      if (cb != null) {
+        Timer.run(cb);
+      }
+    }
     // Optional verse jump.
     if (parsed.verse != null) {
       final chapterVerses = mp.verses
