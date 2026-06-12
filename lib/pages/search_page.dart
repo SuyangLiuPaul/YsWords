@@ -194,8 +194,15 @@ class _SearchPageState extends State<SearchPage> {
       // Another load is in flight. Poll until it completes (max
       // 10s, 100ms tick) instead of bailing — bailing is what made
       // search look broken in v2.
+      // 2026-06-12 (v1.3.66): `&& mounted` so the poll STOPS the moment
+      // the user leaves the search page. Without it the loop kept
+      // scheduling uncancellable Future.delayed ticks for up to 10s
+      // after dispose — wasted work on a dead widget (and a pending
+      // timer the framework flags).
       final deadline = DateTime.now().add(const Duration(seconds: 10));
-      while (_isLoadingVerses && DateTime.now().isBefore(deadline)) {
+      while (_isLoadingVerses &&
+          mounted &&
+          DateTime.now().isBefore(deadline)) {
         await Future.delayed(const Duration(milliseconds: 100));
       }
       _lastVersesLength = mp.verses.length;

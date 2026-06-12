@@ -46,8 +46,13 @@ These were identified as the highest-ROI gaps after v1.2.35. None are blocking, 
    `MainProvider.useCachedVersion` (v1.3.40 stale-index regression,
    LRU round-trips, notify-once — 5 tests) and `FetchVerses.execute`
    (real-asset happy path, retry/rethrow contract, onAttempt
-   sequence, maxAttempts honored — 3 tests). Still open as future
-   test additions:
+   sequence, maxAttempts honored — 3 tests). EXTENDED in v1.3.63/64
+   (+7): `shouldThrottleRefresh` boundary cases. EXTENDED in v1.3.66
+   (+60 → **303/303**): responsive overflow smoke tests for ALL 19
+   top-level pages × 320/390/768/1280 (the remaining 15 beyond the
+   original 4) — surfaced + fixed one real robustness bug (SearchPage
+   verse-load poll ran up to 10 s after dispose; added `&& mounted`).
+   Still open as future test additions:
    - `jumpToReference` resolve + scroll (widget-level)
    - Split-pane secondary-provider lifecycle (widget-level)
    - BYOK Test handler (currently only smoke-tested in production)
