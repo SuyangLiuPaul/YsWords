@@ -149,6 +149,19 @@ class FetchVerses {
     Object? lastError;
     for (int attempt = 1; attempt <= maxAttempts; attempt++) {
       onAttempt?.call(attempt, lastError);
+      // 2026-06-12 (v1.3.67): ESCALATING timeout — 1× on attempt 1,
+      // 2× on attempt 2, 3× on attempt 3 (20 s / 40 s / 60 s with the
+      // defaults). Field report (ErrorReporter, iPhone Safari on
+      // cellular, zh-Hans → cuvs-yhwh ≈ 1.4 MB brotli): a slow-but-
+      // healthy connection can't finish the download inside a flat
+      // 20 s, and because each retry EVICTS the asset cache and
+      // restarts the fetch from byte 0, retrying made it strictly
+      // worse — boot could never succeed below ~70 KB/s. Attempt 1
+      // stays short so genuinely-hung fetches (the v1.2.12 memoised-
+      // future bug class) are still detected fast; later attempts give
+      // slow links the runway to complete one full download
+      // (~31 KB/s ≈ 250 kbps suffices by attempt 3).
+      final attemptTimeout = timeoutPerAttempt * attempt;
       try {
         if (attempt > 1) {
           // Cache-bust the paragraph map between attempts. If the
@@ -177,9 +190,9 @@ class FetchVerses {
           await Future<void>.delayed(Duration(milliseconds: backoffMs));
         }
         final paraMap =
-            await _loadParagraphMap().timeout(timeoutPerAttempt);
+            await _loadParagraphMap().timeout(attemptTimeout);
         final verses =
-            await _loadAndParse(path, paraMap).timeout(timeoutPerAttempt);
+            await _loadAndParse(path, paraMap).timeout(attemptTimeout);
         mainProvider.setVerses(verses);
         return; // success — drop out of the retry loop.
       } catch (e, st) {
