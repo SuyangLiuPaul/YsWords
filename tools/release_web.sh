@@ -52,6 +52,22 @@ VERSION_CACHE="$HOME/.config/yswords/current-version"
 mkdir -p "$(dirname "$VERSION_CACHE")" 2>/dev/null
 printf '%s\n' "$APP_VERSION" > "$VERSION_CACHE" 2>/dev/null || true
 
+# 2026-06-12: keep the launchd 04:00 entry script in sync. It MUST be a
+# full COPY outside ~/Documents: macOS TCC blocks the launchd-spawned
+# bash from even OPENING a script inside ~/Documents ("Operation not
+# permitted", exit 126) — the 2026-06-10 exec-shim experiment failed
+# exactly that way on its first 04:00 run. Re-copying here (an
+# interactive session, no TCC issue) on every release keeps the copy
+# from drifting, which is what bit us when v1.3.59 removed the
+# APP_RELEASE_TIME inject but the stale copy kept injecting it.
+LAUNCHD_COPY="$HOME/.config/yswords/scripts/yswords-ios-reinstall.sh"
+if [ -d "$(dirname "$LAUNCHD_COPY")" ]; then
+  cp "$PROJECT/tools/yswords-ios-reinstall.sh" "$LAUNCHD_COPY" 2>/dev/null \
+    && chmod +x "$LAUNCHD_COPY" 2>/dev/null \
+    && echo "==> launchd reinstall copy synced" \
+    || echo "WARN: could not sync launchd reinstall copy"
+fi
+
 cd "$PROJECT"
 
 # Deploy build/web to each "id:name" entry (parallel, then wait).
