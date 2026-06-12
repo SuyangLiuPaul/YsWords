@@ -341,10 +341,23 @@ fi
 # bundle. Single-device target (this Mac), no roster — if the script is
 # ever run on a different Mac it'll just install there instead.
 echo ""
-echo "→ flutter build macos --release ${DEFINES[*]}"
+# 2026-06-12 (v1.3.62): macOS via `flutter build macos --config-only`
+# (refreshes Generated.xcconfig: version from pubspec + the dart-defines)
+# THEN raw `xcodebuild -allowProvisioningUpdates`. Plain
+# `flutter build macos` does NOT pass -allowProvisioningUpdates to its
+# inner xcodebuild, so the free-Apple-ID 7-day provisioning profile
+# can't be auto-renewed and the build fails with "No profiles for
+# com.example.yswords". The two-step keeps the bundle version in sync
+# AND renews the profile from CLI (requires an Apple ID signed into
+# Xcode → Settings → Accounts; done 2026-06-11).
+echo "→ flutter build macos --config-only ${DEFINES[*]}"
 MACOS_APP_BUILT="$PROJECT/build/macos/Build/Products/Release/yswords.app"
 MACOS_APP_INSTALLED="/Applications/yswords.app"
-if "$FLUTTER" build macos --release "${DEFINES[@]}"; then
+if "$FLUTTER" build macos --config-only --release "${DEFINES[@]}" \
+    && xcodebuild -workspace "$PROJECT/macos/Runner.xcworkspace" \
+        -scheme Runner -configuration Release \
+        -derivedDataPath "$PROJECT/build/macos" \
+        -allowProvisioningUpdates build; then
   echo ""
   echo "→ installing to /Applications (this Mac)"
   # If yswords is currently running, replacing the bundle while open
