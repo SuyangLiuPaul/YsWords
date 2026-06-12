@@ -4,6 +4,25 @@ import 'package:flutter/services.dart' show rootBundle;
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
+/// 2026-06-12 (v1.3.63): pure throttle decision for
+/// [RemoteDataService.refresh]. Returns true when a background refresh
+/// should be SKIPPED — i.e. the last successful network refresh
+/// ([cacheTimeIso], an ISO-8601 UTC string) is newer than
+/// [minInterval] ago relative to [nowUtc]. A null/unparseable
+/// timestamp or a non-positive interval never throttles (always
+/// allow the refresh). Exposed for testing.
+bool shouldThrottleRefresh(
+  String? cacheTimeIso,
+  Duration minInterval,
+  DateTime nowUtc,
+) {
+  if (minInterval <= Duration.zero) return false;
+  if (cacheTimeIso == null || cacheTimeIso.isEmpty) return false;
+  final at = DateTime.tryParse(cacheTimeIso);
+  if (at == null) return false;
+  return nowUtc.difference(at.toUtc()) < minInterval;
+}
+
 /// Base class for any service that backs a JSON dataset shipped via
 /// the central yswords-data site (https://yswords-data.netlify.app).
 ///
@@ -54,6 +73,18 @@ abstract class RemoteDataService<T> {
   /// HTTP timeout. Subclasses can override.
   Duration get timeout => const Duration(seconds: 12);
 
+  /// 2026-06-12 (v1.3.63 perf): minimum wall-clock gap between the
+  /// background network refreshes that [load] fires on every call.
+  /// Default `Duration.zero` = refresh on every load — correct for
+  /// data that changes often (e.g. the hourly news feed). Services
+  /// backing a rarely-changing archive override this so a returning
+  /// user doesn't re-download the whole dataset on every cold start
+  /// just to surface one card. The bundled/cached copy still loads
+  /// instantly; only the redundant cross-origin GET is skipped. An
+  /// explicit `refresh(force: true)` (pull-to-refresh) always hits the
+  /// network regardless.
+  Duration get minRefreshInterval => Duration.zero;
+
   T? _cached;
   Future<T>? _inflight;
 
@@ -91,9 +122,23 @@ abstract class RemoteDataService<T> {
   }
 
   /// Best-effort network refresh. Updates in-memory + prefs cache on
-  /// success, swallows network errors.
-  Future<void> refresh() async {
+  /// success, swallows network errors. Throttled by
+  /// [minRefreshInterval] unless [force] is set (explicit user
+  /// pull-to-refresh).
+  Future<void> refresh({bool force = false}) async {
     try {
+      // Throttle: if we refreshed from the network within
+      // minRefreshInterval, skip the round trip. The cache timestamp
+      // is only written on a successful network refresh, so the very
+      // first load (no timestamp yet) always fetches once.
+      if (!force && minRefreshInterval > Duration.zero) {
+        final prefs = await SharedPreferences.getInstance();
+        final atStr = prefs.getString(cacheTimePrefsKey);
+        if (shouldThrottleRefresh(
+            atStr, minRefreshInterval, DateTime.now().toUtc())) {
+          return;
+        }
+      }
       final resp =
           await http.get(Uri.parse(remoteUrl)).timeout(timeout);
       if (resp.statusCode != 200) return;

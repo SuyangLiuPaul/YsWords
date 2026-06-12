@@ -32,6 +32,16 @@ class _BibleEvidenceServiceImpl extends RemoteDataService<_EvidenceBundle> {
   @override
   String get cachePrefsKey => 'bibleEvidence.cachedJson.v2';
 
+  /// 2026-06-12 (v1.3.63 perf): the evidence archive is a static-ish
+  /// 225-entry corpus that changes maybe monthly, yet the dashboard's
+  /// single "Today's Evidence" card used to re-download the whole
+  /// ~420 KB dataset from yswords-data on EVERY cold start. Throttle
+  /// the background refresh to twice a day; the bundled/cached copy
+  /// still loads instantly, and the Evidence page's pull-to-refresh
+  /// forces a fresh pull.
+  @override
+  Duration get minRefreshInterval => const Duration(hours: 12);
+
   @override
   _EvidenceBundle parse(Map<String, dynamic> json) {
     final entries = (json['evidences'] as List? ?? const [])
@@ -69,7 +79,9 @@ class BibleEvidenceService {
     return b.entries;
   }
 
-  static Future<void> refresh() => _impl.refresh();
+  /// Explicit refresh (e.g. Evidence-page pull-to-refresh) — always
+  /// hits the network, bypassing the [minRefreshInterval] throttle.
+  static Future<void> refresh() => _impl.refresh(force: true);
   static Future<void> clearCache() => _impl.clearCache();
 
   /// Free-text search across title / summary / location / scripture
