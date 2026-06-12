@@ -146,9 +146,25 @@ abstract class RemoteDataService<T> {
       final j = jsonDecode(body) as Map<String, dynamic>;
       final fresh = parse(j);
 
+      // 2026-06-12 (v1.3.64): stamp "last successful network check" NOW,
+      // before the staleness guard below. cacheTimePrefsKey drives the
+      // refresh throttle (= "did we check recently?"), which is a
+      // different question from "did the body change?". The bundled
+      // asset can ship NEWER than the deployed dataset (built after the
+      // last yswords-data cron), so the guard's early-return was the
+      // norm, not the exception — and it skipped this write, so the
+      // throttle never engaged and the dashboard re-hit the network on
+      // every mount. Recording the check-time unconditionally fixes it.
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(
+        cacheTimePrefsKey,
+        DateTime.now().toUtc().toIso8601String(),
+      );
+
       // If we already have a cached bundle and the network one is
       // strictly older, keep the local one — protects against an
-      // upstream rollback or an empty cron run.
+      // upstream rollback or an empty cron run. (Check-time already
+      // recorded above.)
       final cur = _cached;
       if (cur != null) {
         final curAt = generatedAt(cur);
@@ -159,12 +175,7 @@ abstract class RemoteDataService<T> {
       }
 
       _cached = fresh;
-      final prefs = await SharedPreferences.getInstance();
       await prefs.setString(cachePrefsKey, body);
-      await prefs.setString(
-        cacheTimePrefsKey,
-        DateTime.now().toUtc().toIso8601String(),
-      );
     } catch (_) {
       // Network down, server slow, malformed JSON — keep what we have.
     }
