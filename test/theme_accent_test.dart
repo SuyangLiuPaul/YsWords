@@ -11,17 +11,20 @@ void main() {
     test('clamps lightness into the dark-legible band', () {
       // Very dark seed (navy) must be lifted so it does not vanish on
       // a near-black surface.
+      // Tolerance accounts for the 8-bit colour round-trip
+      // (HSL→Color→HSL nudges lightness by up to ~1/255).
+      const tol = 0.01;
       final navy = darkReadingAccent(const Color(0xFF000033));
       final navyL = HSLColor.fromColor(navy).lightness;
-      expect(navyL, greaterThanOrEqualTo(kDarkAccentMinLightness - 1e-6));
-      expect(navyL, lessThanOrEqualTo(kDarkAccentMaxLightness + 1e-6));
+      expect(navyL, greaterThanOrEqualTo(kDarkAccentMinLightness - tol));
+      expect(navyL, lessThanOrEqualTo(kDarkAccentMaxLightness + tol));
 
       // Near-white seed must be brought down so the accent still carries
       // colour.
       final pale = darkReadingAccent(const Color(0xFFEFEFFF));
       final paleL = HSLColor.fromColor(pale).lightness;
-      expect(paleL, lessThanOrEqualTo(kDarkAccentMaxLightness + 1e-6));
-      expect(paleL, greaterThanOrEqualTo(kDarkAccentMinLightness - 1e-6));
+      expect(paleL, lessThanOrEqualTo(kDarkAccentMaxLightness + tol));
+      expect(paleL, greaterThanOrEqualTo(kDarkAccentMinLightness - tol));
     });
 
     test('preserves the chosen hue', () {
@@ -42,12 +45,37 @@ void main() {
       expect(s, greaterThanOrEqualTo(kDarkAccentMinSaturation - 1e-6));
     });
 
+    test('caps saturation so vivid seeds are not neon as a big fill', () {
+      // A fully-saturated seed must be brought DOWN to the cap so the
+      // light pastel filling a whole card (e.g. the dashboard hero) is
+      // soft rather than harsh/刺眼.
+      const vivid = Color(0xFFFF1744); // near-pure red
+      final s = HSLColor.fromColor(darkReadingAccent(vivid)).saturation;
+      expect(s, lessThanOrEqualTo(kDarkAccentMaxSaturation + 1e-6));
+    });
+
+    test('result is light enough that onAccentColor picks dark text', () {
+      // The dark accent is a LIGHT pastel, so a card filled with it
+      // (Material(color: primary)) should get dark text/icons — the
+      // natural Material-3 dark-mode filled-surface look.
+      for (final seed in const [
+        Color(0xFF00897B), // teal
+        Color(0xFF3F51B5), // indigo
+        Color(0xFFFF1744), // red
+        Color(0xFF000033), // navy
+      ]) {
+        final accent = darkReadingAccent(seed);
+        expect(onAccentColor(accent), const Color(0xFF1A1A1A),
+            reason: 'accent for $seed should be light enough for dark text');
+      }
+    });
+
     test('leaves an already-vivid mid-tone hue recognisable + legible', () {
       const orange = Color(0xFFFB8C00);
       final accent = darkReadingAccent(orange);
       final hsl = HSLColor.fromColor(accent);
-      expect(hsl.lightness, greaterThanOrEqualTo(kDarkAccentMinLightness - 1e-6));
-      expect(hsl.lightness, lessThanOrEqualTo(kDarkAccentMaxLightness + 1e-6));
+      expect(hsl.lightness, greaterThanOrEqualTo(kDarkAccentMinLightness - 0.01));
+      expect(hsl.lightness, lessThanOrEqualTo(kDarkAccentMaxLightness + 0.01));
       expect((hsl.hue - HSLColor.fromColor(orange).hue).abs(), lessThan(2.0));
     });
   });
