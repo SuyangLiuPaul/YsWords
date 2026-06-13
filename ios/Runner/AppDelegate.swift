@@ -42,12 +42,22 @@ import UserNotifications
   func didInitializeImplicitFlutterEngine(_ engineBridge: FlutterImplicitEngineBridge) {
     GeneratedPluginRegistrant.register(with: engineBridge.pluginRegistry)
 
-    // Resolve the plugin registrar to get a binary messenger.
-    let registrar = engineBridge.pluginRegistry.registrar(forPlugin: "yswords-ios-icon")
-    if let registrar = registrar {
+    // 2026-06-14 (v1.3.72): register the icon channel on
+    // `engineBridge.applicationRegistrar.messenger()` — the messenger the
+    // Dart-side default channel actually talks to. The previous code used
+    // `pluginRegistry.registrar(forPlugin:).messenger()`, a DIFFERENT
+    // messenger, so the handler was live but unreachable: Dart's
+    // `invokeMethod('setIcon')` hit no handler → MissingPluginException,
+    // which AppIconService swallows → the home-screen icon never changed
+    // (and v1.3.70's startup re-apply silently no-op'd for the same
+    // reason). This is the documented UIScene-migration pattern
+    // (Flutter 3.41+; see flutter/flutter#185935 and the UISceneDelegate
+    // breaking-change guide). NOT an App-Store-vs-sideload issue —
+    // alternate icons work on development builds.
+    do {
       let channel = FlutterMethodChannel(
         name: "yswords/ios_icon",
-        binaryMessenger: registrar.messenger())
+        binaryMessenger: engineBridge.applicationRegistrar.messenger())
       channel.setMethodCallHandler { (call, result) in
         switch call.method {
         case "currentIconName":
