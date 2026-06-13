@@ -5372,6 +5372,38 @@ const uiStrings = {
     'zh-Hant': 'AI 解釋暫時不可用，請稍後再試。',
     'en': 'AI explanation is not available right now.',
   },
+  // v1.3.68: optional "ask a question about this passage" box in the
+  // reading-pane AI panel.
+  'aiAskQuestionHint': {
+    'zh-Hans': '想问关于这段经文的问题？（可选）',
+    'zh-Hant': '想問關於這段經文的問題？（可選）',
+    'en': 'Ask a question about this passage… (optional)',
+  },
+  'aiAskSend': {
+    'zh-Hans': '提问',
+    'zh-Hant': '提問',
+    'en': 'Ask',
+  },
+  'aiAskYourQuestion': {
+    'zh-Hans': '你的问题',
+    'zh-Hant': '你的問題',
+    'en': 'Your question',
+  },
+  'aiAskAnswering': {
+    'zh-Hans': '正在回答你的问题…',
+    'zh-Hant': '正在回答你的問題…',
+    'en': 'Answering your question…',
+  },
+  'aiAskClear': {
+    'zh-Hans': '返回经文解释',
+    'zh-Hant': '返回經文解釋',
+    'en': 'Back to explanation',
+  },
+  'aiExplainScriptureLabel': {
+    'zh-Hans': '经文',
+    'zh-Hant': '經文',
+    'en': 'Scripture',
+  },
   'aiExplainAsking': {
     'zh-Hans': 'YsWords 正在生成解释…',
     'zh-Hant': 'YsWords 正在生成解釋…',

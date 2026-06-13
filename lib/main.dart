@@ -31,6 +31,8 @@ import 'package:yswords/services/section_title_service.dart';
 import 'package:yswords/services/url_sync_service.dart';
 import 'package:provider/provider.dart';
 import 'package:yswords/utils/font_catalog.dart' show kCjkFontFallback;
+import 'package:yswords/utils/theme_accent.dart'
+    show darkReadingAccent, onAccentColor;
 
 void main() {
   // 2026-06-11 audit: silence debugPrint in release builds. ~100
@@ -449,10 +451,30 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
           brightness: Brightness.light,
           dynamicSchemeVariant: DynamicSchemeVariant.vibrant,
         );
-        final darkScheme = ColorScheme.fromSeed(
+        // 2026-06-13 (v1.3.68): dark mode now tracks the user's chosen
+        // theme colour like light mode does. Material-3's
+        // `fromSeed(... dark ...)` maps `primary` to a pale, low-chroma
+        // tone-80 of the seed — so verse numbers, note/bookmark glyphs,
+        // and section headers (all of which read `colorScheme.primary`,
+        // see lib/utils/build_verse_content_spans.dart) looked washed-out
+        // and generic in dark mode, NOT the hue the user picked (user
+        // report: "dark mode 没有根据 theme color"). We keep the seeded
+        // palette for every container / surface / error tone (the dark
+        // AppBar deliberately stays on `primaryContainer`, which is the
+        // low-chroma tint that reads well at the top of the screen), and
+        // only override `primary` (+ its contrast `onPrimary`) with a
+        // hue-faithful, dark-legible derivation of the seed. That keeps
+        // the chosen colour recognisable on every accent without making
+        // the AppBar garish.
+        final seededDark = ColorScheme.fromSeed(
           seedColor: settings.primaryColor,
           brightness: Brightness.dark,
           dynamicSchemeVariant: DynamicSchemeVariant.vibrant,
+        );
+        final darkAccent = darkReadingAccent(settings.primaryColor);
+        final darkScheme = seededDark.copyWith(
+          primary: darkAccent,
+          onPrimary: onAccentColor(darkAccent),
         );
         return GetMaterialApp(
           debugShowCheckedModeBanner: false,

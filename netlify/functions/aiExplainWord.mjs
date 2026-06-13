@@ -431,7 +431,7 @@ function buildPrompt({ strongs, lemma, translit, gloss, book, chapter, verse, ve
 // pane's selection bar). Reuses all of this function's infra
 // (key rotation, model step-down, BYOK, CORS); only the prompt differs
 // from the word-study path. Always answers in the reader's locale.
-function buildVersePrompt({ book, chapter, verseStart, verseEnd, verseText, locale, length }) {
+function buildVersePrompt({ book, chapter, verseStart, verseEnd, verseText, locale, length, userQuestion }) {
 	const lang = langName(locale);
 	const langDirective = languageDirective(locale);
 	const isZh = locale === 'zh-Hans' || locale === 'zh-Hant';
@@ -439,6 +439,12 @@ function buildVersePrompt({ book, chapter, verseStart, verseEnd, verseText, loca
 	const ref = (verseEnd && verseEnd > verseStart)
 		? `${localBook} ${chapter}:${verseStart}-${verseEnd}`
 		: `${localBook} ${chapter}:${verseStart}`;
+	// v1.3.68: when the reader supplied a free-text question, answer THAT
+	// question (grounded in the passage) instead of emitting the default
+	// whole-passage explanation. Everything else — locale, no-markdown
+	// prose format, faithfulness rules, length band — is shared.
+	const q = (userQuestion || '').trim();
+	const hasQ = q.length > 0;
 	let words;
 	switch (length) {
 		case 'concise': words = isZh ? '60-110 字' : '60-110 words'; break;
@@ -451,16 +457,28 @@ function buildVersePrompt({ book, chapter, verseStart, verseEnd, verseText, loca
 	parts.push('');
 	if (isZh) {
 		parts.push('你是一位严谨而温暖的圣经教师，帮助普通读者理解经文。');
-		parts.push(`读者正在阅读 ${ref}。请用连贯的散文段落解释这段经文的含义。`);
-		// v1.3.x: phrase the coverage as prose to weave in — NOT a
-		// numbered list. The old "(1)(2)(3)" structure made the model
-		// emit a bullet/numbered outline with bold headers (+ a leaked
-		// "快速思考：" preamble), which looked messy in the panel.
-		parts.push(`请自然地融入以下几方面（连成通顺的段落，不要分点、` +
-			`不要小标题）：先用一两句交代上下文背景（这段经文在书卷与` +
-			`章节中的位置和处境），再说明经文在说什么、关键词或意象的` +
-			`含义、作者要传达的要点，最后给出一个帮助今天的读者理解` +
-			`或应用的观察。`);
+		if (hasQ) {
+			// Question mode: answer the reader's specific question, anchored
+			// in the cited passage.
+			parts.push(`读者正在阅读 ${ref}，并就这段经文提出了一个问题。` +
+				`请紧扣这段经文、用连贯的散文段落回答这个问题。`);
+			parts.push(`读者的问题是：「${q}」`);
+			parts.push(`请直接回答这个问题：先正面回应读者所问，必要时简要` +
+				`交代相关的上下文或关键词含义来支持你的回答；只在与问题相关` +
+				`时才展开，不要泛泛重述整段经文。如果问题超出这段经文所能` +
+				`回答的范围，或圣经没有明说，请诚实说明，不要臆测或编造。`);
+		} else {
+			parts.push(`读者正在阅读 ${ref}。请用连贯的散文段落解释这段经文的含义。`);
+			// v1.3.x: phrase the coverage as prose to weave in — NOT a
+			// numbered list. The old "(1)(2)(3)" structure made the model
+			// emit a bullet/numbered outline with bold headers (+ a leaked
+			// "快速思考：" preamble), which looked messy in the panel.
+			parts.push(`请自然地融入以下几方面（连成通顺的段落，不要分点、` +
+				`不要小标题）：先用一两句交代上下文背景（这段经文在书卷与` +
+				`章节中的位置和处境），再说明经文在说什么、关键词或意象的` +
+				`含义、作者要传达的要点，最后给出一个帮助今天的读者理解` +
+				`或应用的观察。`);
+		}
 		if (verseText) parts.push(`经文内容:"${verseText}"`);
 		parts.push('');
 		parts.push(`目标字数:${words}。`);
@@ -477,15 +495,30 @@ function buildVersePrompt({ book, chapter, verseStart, verseEnd, verseText, loca
 	} else {
 		parts.push('You are a rigorous yet warm Bible teacher helping an ' +
 			'ordinary reader understand a passage.');
-		parts.push(`The reader is reading ${ref}. Explain what this passage ` +
-			`means in flowing prose paragraphs.`);
-		parts.push(`Weave in naturally (as connected prose — NOT a numbered ` +
-			`list and NOT headed sections): first a sentence or two of ` +
-			`context (where this sits in the book and chapter, and its ` +
-			`situation), then what the passage says, the meaning of key ` +
-			`words or images, and the point the author is making, and ` +
-			`finally one observation that helps a reader today understand ` +
-			`or apply it.`);
+		if (hasQ) {
+			// Question mode: answer the reader's specific question, anchored
+			// in the cited passage.
+			parts.push(`The reader is reading ${ref} and has a question about ` +
+				`this passage. Answer their question in flowing prose ` +
+				`paragraphs, staying anchored to this passage.`);
+			parts.push(`The reader's question is: "${q}"`);
+			parts.push(`Answer the question directly: address what they asked ` +
+				`first, bringing in only the context or key-word meaning needed ` +
+				`to support your answer; do not simply restate the whole ` +
+				`passage. If the question goes beyond what this passage can ` +
+				`answer, or Scripture does not say, say so honestly rather than ` +
+				`speculating or inventing details.`);
+		} else {
+			parts.push(`The reader is reading ${ref}. Explain what this passage ` +
+				`means in flowing prose paragraphs.`);
+			parts.push(`Weave in naturally (as connected prose — NOT a numbered ` +
+				`list and NOT headed sections): first a sentence or two of ` +
+				`context (where this sits in the book and chapter, and its ` +
+				`situation), then what the passage says, the meaning of key ` +
+				`words or images, and the point the author is making, and ` +
+				`finally one observation that helps a reader today understand ` +
+				`or apply it.`);
+		}
 		if (verseText) parts.push(`The passage reads: "${verseText}"`);
 		parts.push('');
 		parts.push(`Target length: ${words}.`);
@@ -853,6 +886,21 @@ export default async (req) => {
 		const chapter = Number(body?.chapter || 0);
 		const verse = Number(body?.verse || 0);
 		const verseText = (body?.verseText || '').toString().slice(0, 4000);
+		// v1.3.68: optional free-text question about the passage (reading-
+		// pane AI panel's "ask a question" box). When present, the
+		// versePlain prompt answers THIS question grounded in the passage
+		// instead of emitting the default explanation. Clamp hard — this
+		// lands directly in the Gemini prompt, so cap the length and strip
+		// control chars the same defensive way as verseText.
+		const userQuestion = (body?.userQuestion || '')
+			.toString()
+			// Collapse all ASCII control chars (newlines/tabs/etc.) and
+			// runs of whitespace to single spaces so the question stays a
+			// clean single line in the prompt.
+			.replace(/[\u0000-\u001f\u007f]+/g, ' ')
+			.replace(/\s{2,}/g, ' ')
+			.trim()
+			.slice(0, 500);
 		// 2026-05-09 (v1.2.2): clamp `locale` to the three the app
 		// actually localises. The previous .slice(0, 32) capped length
 		// but didn't reject e.g. arbitrary tokens that could land in
@@ -910,7 +958,7 @@ export default async (req) => {
 			const explanationV = await callGemini(
 				buildVersePrompt({
 					book, chapter, verseStart: verse, verseEnd, verseText,
-					locale, length,
+					locale, length, userQuestion,
 				}),
 				locale,
 				_useUserKey ? _userKey : null,

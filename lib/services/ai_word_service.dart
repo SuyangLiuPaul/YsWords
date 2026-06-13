@@ -84,6 +84,12 @@ class AiWordService {
     String length = 'default',
     String? userApiKey,
     String? aiModel,
+    /// v1.3.68 — optional free-text question about the passage from the
+    /// reading-pane AI panel's "ask a question" box. When non-empty the
+    /// server answers THIS question (grounded in the passage) instead of
+    /// the default whole-passage explanation. Empty / null ⇒ unchanged
+    /// default-explanation behaviour.
+    String? userQuestion,
   }) async {
     final body = <String, dynamic>{
       'task': 'versePlain',
@@ -97,6 +103,8 @@ class AiWordService {
       if (userApiKey != null && userApiKey.isNotEmpty)
         'userApiKey': userApiKey,
       if (aiModel != null && aiModel.isNotEmpty) 'aiModel': aiModel,
+      if (userQuestion != null && userQuestion.trim().isNotEmpty)
+        'userQuestion': userQuestion.trim(),
     };
     return _send(body);
   }

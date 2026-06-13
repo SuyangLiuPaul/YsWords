@@ -2967,14 +2967,34 @@ class _AiExplainSheet extends StatefulWidget {
 }
 
 class _AiExplainSheetState extends State<_AiExplainSheet> {
+  // Default whole-passage explanation (auto-loaded on open).
   bool _loading = true;
   String? _explanation;
   String? _error;
+
+  // v1.3.68: optional reader question + its answer. Independent of the
+  // default explanation so asking a question never destroys it — the
+  // panel shows the explanation, then a Q&A block beneath it.
+  final TextEditingController _questionController = TextEditingController();
+  final FocusNode _questionFocus = FocusNode();
+  final ScrollController _bodyScroll = ScrollController();
+  String? _question; // the submitted question (null ⇒ no Q&A shown)
+  String? _answer;
+  String? _qError;
+  bool _qLoading = false;
 
   @override
   void initState() {
     super.initState();
     _load();
+  }
+
+  @override
+  void dispose() {
+    _questionController.dispose();
+    _questionFocus.dispose();
+    _bodyScroll.dispose();
+    super.dispose();
   }
 
   Future<void> _load() async {
@@ -3007,11 +3027,7 @@ class _AiExplainSheetState extends State<_AiExplainSheet> {
     });
   }
 
-  /// Defensive: some model responses still leak a leading "thinking"
-  /// preamble ("快速思考：…" / "Quick thinking:…") despite the prompt
-  /// forbidding it. Drop that leading block so the panel starts with
-  /// the actual explanation.
-  Future<AiWordResult> _request(String key) {
+  Future<AiWordResult> _request(String key, {String? question}) {
     return AiWordService.explainVerse(
       englishBook: widget.englishBook,
       chapter: widget.chapter,
@@ -3021,7 +3037,95 @@ class _AiExplainSheetState extends State<_AiExplainSheet> {
       locale: widget.settings.locale,
       userApiKey: key.isEmpty ? null : key,
       aiModel: widget.settings.aiModel,
+      userQuestion: question,
     );
+  }
+
+  /// v1.3.68: submit the free-text question. Same cold-start auto-retry
+  /// as [_load]. Keeps the typed text so the user can refine + re-ask.
+  Future<void> _askQuestion() async {
+    final q = _questionController.text.trim();
+    if (q.isEmpty || _qLoading) return;
+    _questionFocus.unfocus();
+    setState(() {
+      _question = q;
+      _answer = null;
+      _qError = null;
+      _qLoading = true;
+    });
+    _scrollBodyToEnd();
+    final key = widget.settings.geminiApiKey.trim();
+    var result = await _request(key, question: q);
+    if (result.unavailable && mounted) {
+      await Future<void>.delayed(const Duration(milliseconds: 500));
+      if (!mounted) return;
+      result = await _request(key, question: q);
+    }
+    if (!mounted) return;
+    setState(() {
+      _qLoading = false;
+      if (result.unavailable) {
+        _qError = result.unavailableReason ??
+            (uiStrings['aiExplainError']?[widget.settings.locale] ??
+                'AI explanation is not available right now.');
+      } else {
+        _answer = cleanAiExplanation(result.explanation);
+      }
+    });
+    _scrollBodyToEnd();
+  }
+
+  void _clearQuestion() {
+    setState(() {
+      _question = null;
+      _answer = null;
+      _qError = null;
+      _qLoading = false;
+    });
+    _questionController.clear();
+  }
+
+  // After a question is asked/answered, nudge the scroll so the Q&A
+  // block is in view rather than hidden below the fold.
+  void _scrollBodyToEnd() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || !_bodyScroll.hasClients) return;
+      _bodyScroll.animateTo(
+        _bodyScroll.position.maxScrollExtent,
+        duration: const Duration(milliseconds: 280),
+        curve: Curves.easeOut,
+      );
+    });
+  }
+
+  /// Assemble the full copyable text: reference, scripture, the default
+  /// explanation, and (if asked) the question + its answer.
+  String _composeCopyText(String locale) {
+    final buf = StringBuffer()..writeln(widget.refLabel);
+    if (widget.verseText.isNotEmpty) {
+      buf
+        ..writeln()
+        ..writeln(widget.verseText);
+    }
+    final exp = _explanation;
+    if (exp != null && exp.isNotEmpty) {
+      buf
+        ..writeln()
+        ..writeln(exp);
+    }
+    final q = _question;
+    final a = _answer;
+    if (q != null && q.isNotEmpty) {
+      buf
+        ..writeln()
+        ..writeln('${uiStrings['aiAskYourQuestion']?[locale] ?? 'Your question'}: $q');
+      if (a != null && a.isNotEmpty) {
+        buf
+          ..writeln()
+          ..writeln(a);
+      }
+    }
+    return buf.toString().trim();
   }
 
   @override
@@ -3029,14 +3133,14 @@ class _AiExplainSheetState extends State<_AiExplainSheet> {
     final scheme = Theme.of(context).colorScheme;
     final locale = widget.settings.locale;
     final media = MediaQuery.of(context);
-    final explanation = _explanation;
-    final hasText = explanation != null && explanation.isNotEmpty;
+    final canCopy = (_explanation != null && _explanation!.isNotEmpty) ||
+        (_answer != null && _answer!.isNotEmpty);
     return SafeArea(
       child: Padding(
         padding: EdgeInsets.fromLTRB(
             20, 16, 20, 16 + media.viewInsets.bottom),
         child: ConstrainedBox(
-          constraints: BoxConstraints(maxHeight: media.size.height * 0.78),
+          constraints: BoxConstraints(maxHeight: media.size.height * 0.82),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -3048,8 +3152,6 @@ class _AiExplainSheetState extends State<_AiExplainSheet> {
                   Expanded(
                     child: Text(
                       '${uiStrings['aiExplainHeader']?[locale] ?? 'YsWords explanation'} · ${widget.refLabel}',
-                      // Reading font so the header aligns with the
-                      // scripture + explanation below it.
                       style: TextStyle(
                         fontFamily: widget.settings.fontFamily,
                         fontFamilyFallback: kCjkFontFallback,
@@ -3059,18 +3161,16 @@ class _AiExplainSheetState extends State<_AiExplainSheet> {
                       ),
                     ),
                   ),
-                  // v1.3.x: one-tap copy of the whole explanation
-                  // (prefixed with the reference). Shown only once the
-                  // text has arrived; the body is also SelectableText
-                  // for partial copy.
-                  if (hasText)
+                  // Copy the WHOLE panel (ref + scripture + explanation +
+                  // Q&A). Body text is also SelectableText for partial copy.
+                  if (canCopy)
                     IconButton(
                       tooltip: uiStrings['copySelection']?[locale] ?? 'Copy',
                       icon: const Icon(Icons.copy_rounded),
                       visualDensity: VisualDensity.compact,
                       onPressed: () => ClipboardHelper.copyWithFeedback(
                         context,
-                        '${widget.refLabel}\n\n$explanation',
+                        _composeCopyText(locale),
                       ),
                     ),
                   IconButton(
@@ -3084,9 +3184,20 @@ class _AiExplainSheetState extends State<_AiExplainSheet> {
               const SizedBox(height: 8),
               Flexible(
                 child: SingleChildScrollView(
-                  child: _buildBody(scheme, locale, explanation),
+                  controller: _bodyScroll,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (widget.verseText.isNotEmpty)
+                        _scriptureBlock(scheme, locale),
+                      _explanationSection(scheme, locale),
+                      if (_question != null) _qaSection(scheme, locale),
+                    ],
+                  ),
                 ),
               ),
+              const SizedBox(height: 12),
+              _inputRow(scheme, locale),
               const SizedBox(height: 10),
               Text(
                 uiStrings['aiExplainVerseDisclaimer']?[locale] ??
@@ -3106,7 +3217,53 @@ class _AiExplainSheetState extends State<_AiExplainSheet> {
     );
   }
 
-  Widget _buildBody(ColorScheme scheme, String locale, String? explanation) {
+  // Quoted scripture with a primary-coloured accent bar so the panel
+  // opens with the passage the reader is studying — clear visual
+  // anchoring (排版) before the explanation prose.
+  Widget _scriptureBlock(ColorScheme scheme, String locale) {
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.only(bottom: 14),
+      padding: const EdgeInsets.fromLTRB(14, 10, 12, 12),
+      decoration: BoxDecoration(
+        color: scheme.primary.withValues(alpha: 0.06),
+        borderRadius: const BorderRadius.horizontal(right: Radius.circular(10)),
+        border: Border(
+          left: BorderSide(color: scheme.primary, width: 3),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            uiStrings['aiExplainScriptureLabel']?[locale] ?? 'Scripture',
+            style: TextStyle(
+              fontFamily: widget.settings.fontFamily,
+              fontFamilyFallback: kCjkFontFallback,
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 0.4,
+              color: scheme.primary,
+            ),
+          ),
+          const SizedBox(height: 5),
+          SelectableText(
+            widget.verseText,
+            style: TextStyle(
+              fontFamily: widget.settings.fontFamily,
+              fontFamilyFallback: kCjkFontFallback,
+              fontSize: widget.settings.fontSize,
+              height: widget.settings.lineSpacing,
+              color: scheme.onSurface.withValues(alpha: 0.9),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // The default whole-passage explanation: spinner → error+retry → prose.
+  Widget _explanationSection(ColorScheme scheme, String locale) {
     if (_loading) {
       return const Padding(
         padding: EdgeInsets.symmetric(vertical: 40),
@@ -3114,23 +3271,155 @@ class _AiExplainSheetState extends State<_AiExplainSheet> {
       );
     }
     if (_error != null) {
-      return _errorBody(scheme, locale, _error!);
+      return _errorBody(scheme, locale, _error!, _load);
     }
-    // Success — selectable, paragraph-spaced prose so the reader can
-    // copy any part inline (the header button copies the whole thing).
-    // The AI is prompted for plain prose; parseAiMarkdown still renders
-    // any stray emphasis and turns paragraph breaks into real spacing.
+    return _prose(scheme, _explanation ?? '');
+  }
+
+  // The reader's question + its answer (spinner / error+retry / prose).
+  Widget _qaSection(ColorScheme scheme, String locale) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 18),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Divider(height: 1, color: scheme.outlineVariant.withValues(alpha: 0.5)),
+          const SizedBox(height: 14),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(Icons.help_outline_rounded, size: 16, color: scheme.primary),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  _question ?? '',
+                  style: TextStyle(
+                    fontFamily: widget.settings.fontFamily,
+                    fontFamilyFallback: kCjkFontFallback,
+                    fontSize: widget.settings.fontSize - 1,
+                    fontWeight: FontWeight.w700,
+                    height: widget.settings.lineSpacing,
+                    color: scheme.onSurface,
+                  ),
+                ),
+              ),
+              // Dismiss the Q&A and return to explanation-only.
+              IconButton(
+                tooltip: uiStrings['aiAskClear']?[locale] ?? 'Back to explanation',
+                icon: const Icon(Icons.close_rounded, size: 18),
+                visualDensity: VisualDensity.compact,
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+                onPressed: _clearQuestion,
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          if (_qLoading)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 20),
+              child: Row(
+                children: [
+                  const SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
+                  const SizedBox(width: 12),
+                  Text(
+                    uiStrings['aiAskAnswering']?[locale] ?? 'Answering your question…',
+                    style: TextStyle(
+                      fontFamily: widget.settings.fontFamily,
+                      fontFamilyFallback: kCjkFontFallback,
+                      fontSize: 13,
+                      color: scheme.onSurfaceVariant,
+                    ),
+                  ),
+                ],
+              ),
+            )
+          else if (_qError != null)
+            _errorBody(scheme, locale, _qError!, _askQuestion)
+          else
+            _prose(scheme, _answer ?? ''),
+        ],
+      ),
+    );
+  }
+
+  // The optional question input. A filled, rounded field + send button;
+  // empty input is a no-op so the default-explanation flow is untouched.
+  Widget _inputRow(ColorScheme scheme, String locale) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        Expanded(
+          child: TextField(
+            controller: _questionController,
+            focusNode: _questionFocus,
+            minLines: 1,
+            maxLines: 4,
+            textInputAction: TextInputAction.send,
+            onSubmitted: (_) => _askQuestion(),
+            style: TextStyle(
+              fontFamily: widget.settings.fontFamily,
+              fontFamilyFallback: kCjkFontFallback,
+              fontSize: widget.settings.fontSize - 1,
+              color: scheme.onSurface,
+            ),
+            decoration: InputDecoration(
+              isDense: true,
+              hintText: uiStrings['aiAskQuestionHint']?[locale] ??
+                  'Ask a question about this passage… (optional)',
+              hintStyle: TextStyle(
+                fontFamily: widget.settings.fontFamily,
+                fontFamilyFallback: kCjkFontFallback,
+                fontSize: widget.settings.fontSize - 2,
+                color: scheme.onSurfaceVariant.withValues(alpha: 0.7),
+              ),
+              filled: true,
+              fillColor: scheme.surfaceContainerHighest.withValues(alpha: 0.5),
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(22),
+                borderSide: BorderSide.none,
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(22),
+                borderSide: BorderSide.none,
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(22),
+                borderSide: BorderSide(color: scheme.primary, width: 1.5),
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(width: 8),
+        // Send. Disabled while a question is in flight.
+        IconButton.filled(
+          tooltip: uiStrings['aiAskSend']?[locale] ?? 'Ask',
+          onPressed: _qLoading ? null : _askQuestion,
+          icon: const Icon(Icons.arrow_upward_rounded, size: 20),
+          style: IconButton.styleFrom(
+            backgroundColor: scheme.primary,
+            foregroundColor: scheme.onPrimary,
+          ),
+        ),
+      ],
+    );
+  }
+
+  // Selectable, paragraph-spaced prose. The AI is prompted for plain
+  // prose; parseAiMarkdown renders any stray emphasis and keeps the
+  // reading font + line-spacing so the panel reads as one piece with
+  // the passage.
+  Widget _prose(ColorScheme scheme, String text) {
     return SelectableText.rich(
       TextSpan(
         children: parseAiMarkdown(
-          explanation ?? '',
-          // v1.3.x: render in the SAME style as the scripture text the
-          // reader is studying — user wants the explanation "aligned"
-          // with the verse font (字体和经文一样). Mirror the verse
-          // text's family + size + line-spacing exactly so the panel
-          // reads as one piece with the passage. (The earlier "weird"
-          // look was a hardcoded height that didn't match the reader's
-          // line-spacing; v1.3.55 then wrongly dropped the font.)
+          text,
           base: TextStyle(
             fontFamily: widget.settings.fontFamily,
             fontFamilyFallback: kCjkFontFallback,
@@ -3143,7 +3432,8 @@ class _AiExplainSheetState extends State<_AiExplainSheet> {
     );
   }
 
-  Widget _errorBody(ColorScheme scheme, String locale, String reason) {
+  Widget _errorBody(
+      ColorScheme scheme, String locale, String reason, VoidCallback onRetry) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 24),
       child: Column(
@@ -3164,7 +3454,7 @@ class _AiExplainSheetState extends State<_AiExplainSheet> {
           ),
           const SizedBox(height: 16),
           FilledButton.tonalIcon(
-            onPressed: _load,
+            onPressed: onRetry,
             icon: const Icon(Icons.refresh_rounded, size: 18),
             label: Text(uiStrings['retry']?[locale] ?? 'Retry'),
           ),
