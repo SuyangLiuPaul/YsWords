@@ -884,6 +884,21 @@ class AppSettings extends ChangeNotifier {
     _lineSpacing = (rawLineSpacing * 10).roundToDouble() / 10;
     _primaryColor =
         Color(prefs.getInt(_kPrimaryColor) ?? Colors.lightBlue.toARGB32());
+    // 2026-06-14 (v1.3.70): re-apply the themed home-screen / dock /
+    // favicon icon on startup so it tracks the saved theme colour.
+    // iOS resets `alternateIconName` to the primary icon on every app
+    // reinstall/update (the nightly launchd reinstall + any App Store
+    // update), and updateForColor previously fired ONLY when the user
+    // CHANGED the colour — so after an update the icon reverted to the
+    // default blue and never came back, and re-tapping the already-
+    // selected swatch is a no-op (setPrimaryColor early-returns). Sync
+    // here, once after the first frame so the platform channel is live;
+    // the service no-ops when the icon already matches (no redundant
+    // iOS "you changed the icon" alert on normal launches).
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      // ignore: unawaited_futures
+      AppIconService.updateForColor(_primaryColor);
+    });
     _copyFormat = prefs.getString(_kCopyFormat) ?? 'devotional';
     // 2026-05-26 (v1.3.46): persist the detected locale on first
     // load. Previously `_locale = prefs.get ?? _detectSystemLocale()`

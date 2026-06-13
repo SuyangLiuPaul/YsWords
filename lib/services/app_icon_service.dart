@@ -60,33 +60,43 @@ class AppIconService {
   /// Returns the variant suffix (Red / Orange / Green / Purple /
   /// Pink / Dark) for a given Material primaryColor, or null when
   /// the colour maps to the primary (light-blue) icon.
+  ///
+  /// 2026-06-14 (v1.3.70): compare by ARGB VALUE, not `==`. The picker
+  /// hands us a `MaterialColor` const (e.g. `Colors.red`), but the value
+  /// restored from SharedPreferences on every launch is a plain `Color`
+  /// — and `Color(0xFFF44336) == Colors.red` is FALSE (different
+  /// runtimeType). The old identity check meant the startup re-apply
+  /// (and any post-restart call) mapped every colour to "no variant",
+  /// silently reverting the icon to primary. Value comparison works for
+  /// both the const swatch and the restored plain colour.
   static String? variantForColor(Color color) {
-    if (color == Colors.red ||
-        color == Colors.deepOrange) {
+    final v = color.toARGB32();
+    bool isVal(Color c) => v == c.toARGB32();
+    if (isVal(Colors.red) || isVal(Colors.deepOrange)) {
       return 'Red';
     }
-    if (color == Colors.orange ||
-        color == Colors.amber ||
-        color == Colors.yellow ||
-        color == Colors.lime) {
+    if (isVal(Colors.orange) ||
+        isVal(Colors.amber) ||
+        isVal(Colors.yellow) ||
+        isVal(Colors.lime)) {
       return 'Orange';
     }
-    if (color == Colors.lightGreen ||
-        color == Colors.green ||
-        color == Colors.teal) {
+    if (isVal(Colors.lightGreen) ||
+        isVal(Colors.green) ||
+        isVal(Colors.teal)) {
       return 'Green';
     }
-    if (color == Colors.deepPurple ||
-        color == Colors.purple ||
-        color == Colors.indigo) {
+    if (isVal(Colors.deepPurple) ||
+        isVal(Colors.purple) ||
+        isVal(Colors.indigo)) {
       return 'Purple';
     }
-    if (color == Colors.pink) {
+    if (isVal(Colors.pink)) {
       return 'Pink';
     }
-    if (color == Colors.brown ||
-        color == Colors.grey ||
-        color == Colors.blueGrey) {
+    if (isVal(Colors.brown) ||
+        isVal(Colors.grey) ||
+        isVal(Colors.blueGrey)) {
       return 'Dark';
     }
     // light blue / cyan / blue → primary (no variant)
