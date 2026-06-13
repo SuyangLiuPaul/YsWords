@@ -5404,6 +5404,24 @@ const uiStrings = {
     'zh-Hant': '經文',
     'en': 'Scripture',
   },
+  // v1.3.71: panel no longer auto-generates on open — the user confirms
+  // first (empty question ⇒ explanation, with question ⇒ answer).
+  'aiExplainIdleHint': {
+    'zh-Hans': '可以直接生成这段经文的解释，或先输入你的问题再确认。',
+    'zh-Hant': '可以直接生成這段經文的解釋，或先輸入你的問題再確認。',
+    'en':
+        'Generate an explanation of this passage, or type a question first and confirm.',
+  },
+  'aiExplainGenerate': {
+    'zh-Hans': '解释这段经文',
+    'zh-Hant': '解釋這段經文',
+    'en': 'Explain this passage',
+  },
+  'aiExplainGenerating': {
+    'zh-Hans': '正在生成解释…',
+    'zh-Hant': '正在生成解釋…',
+    'en': 'Generating explanation…',
+  },
   'aiExplainAsking': {
     'zh-Hans': 'YsWords 正在生成解释…',
     'zh-Hant': 'YsWords 正在生成解釋…',

@@ -2075,7 +2075,7 @@
 // every release.
 const String kAppVersion = String.fromEnvironment(
   'APP_VERSION',
-  defaultValue: '1.3.70',
+  defaultValue: '1.3.71',
 );
 
 /// 2026-05-10 (v1.2.20): paired with `kAppVersion` so the About
@@ -2115,7 +2115,7 @@ const String kAppVersion = String.fromEnvironment(
 /// for the build, which in practice means dev workflow only.
 const String kAppReleaseTime = String.fromEnvironment(
   'APP_RELEASE_TIME',
-  defaultValue: '2026-06-13T21:38:31Z',
+  defaultValue: '2026-06-13T21:46:27Z',
 );
 
 /// Returns a user-locale-formatted release time string. Parses
