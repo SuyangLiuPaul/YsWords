@@ -28,6 +28,7 @@ import 'package:yswords/providers/main_provider.dart';
 import 'package:yswords/services/fetch_books.dart';
 import 'package:yswords/services/ai_word_service.dart';
 import 'package:yswords/utils/ai_text_cleaner.dart';
+import 'package:yswords/utils/chapter_scroll_progress.dart';
 import 'package:yswords/services/concordance_service.dart';
 import 'package:yswords/services/cloud_auth_service.dart';
 import 'package:yswords/constants/sermon_topics.dart';
@@ -111,6 +112,18 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
   // two `setState`-managed instance fields; reads use `.value`,
   // writes assign to `.value` (no setState needed).
   final ValueNotifier<int> _visibleItemIndexNotifier = ValueNotifier(0);
+  // 2026-06-15 (v1.3.80): CONTINUOUS visible-item position — the first
+  // visible item's index PLUS the fraction of that item already scrolled
+  // off the top. The integer `_visibleItemIndexNotifier` above is enough
+  // for verse-by-verse mode (one item == one verse, so the right-edge
+  // bar moves smoothly), but in PARAGRAPH mode each item is a whole
+  // paragraph group, so the bar jumped group-to-group (and didn't move
+  // at all while scrolling inside one long paragraph). The build path
+  // interpolates the verse index across the visible group with this
+  // fraction so the bar position tracks "how much is left" proportionally
+  // — exactly what the verse number already implies. Verse-by-verse mode
+  // is intentionally left on its existing formula.
+  final ValueNotifier<double> _visibleItemPosNotifier = ValueNotifier(0.0);
   final ValueNotifier<bool> _showVersePositionNotifier = ValueNotifier(false);
   Timer? _versePositionTimer;
 
@@ -306,6 +319,7 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
     _attachedPositionsListener?.itemPositions
         .removeListener(_handleItemPositionsChanged);
     _visibleItemIndexNotifier.dispose();
+    _visibleItemPosNotifier.dispose();
     _showVersePositionNotifier.dispose();
     super.dispose();
   }
@@ -348,17 +362,36 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
       final edge = a.itemLeadingEdge.compareTo(b.itemLeadingEdge);
       return edge != 0 ? edge : a.index.compareTo(b.index);
     });
-    final nextIndex = visible.first.index;
-    if (nextIndex != _visibleItemIndexNotifier.value && mounted) {
+    final first = visible.first;
+    final nextIndex = first.index;
+
+    // v1.3.80: continuous position = item index + the fraction of that
+    // first visible item already scrolled past the top of the viewport.
+    // itemLeadingEdge is ≤ 0 once the item's top crosses above the
+    // viewport top; the span (trailing − leading) is the item's height
+    // in viewport-fraction units. Drives the proportional right-edge bar
+    // (smooth even while scrolling inside one long paragraph).
+    final span = first.itemTrailingEdge - first.itemLeadingEdge;
+    final withinFrac =
+        span <= 0 ? 0.0 : (-first.itemLeadingEdge / span).clamp(0.0, 1.0);
+    final pos = first.index + withinFrac;
+    if (mounted) {
+      _visibleItemPosNotifier.value = pos;
+      // Keep the pill visible while the position is changing (covers
+      // scrolling within a single big paragraph where the integer index
+      // never moves) and re-arm the 2 s auto-fade.
+      _showVersePositionNotifier.value = true;
       _versePositionTimer?.cancel();
       _versePositionTimer = Timer(const Duration(seconds: 2), () {
         if (mounted) _showVersePositionNotifier.value = false;
       });
+    }
+
+    if (nextIndex != _visibleItemIndexNotifier.value && mounted) {
       // v1.3.16: notifier assignment instead of setState — only the
       // position indicator's ValueListenableBuilder rebuilds, not
       // the whole pane.
       _visibleItemIndexNotifier.value = nextIndex;
-      _showVersePositionNotifier.value = true;
       // 2026-05-22 (v1.2.71): chrome auto-hide is now driven by
       // NotificationListener<ScrollNotification> instead of this
       // item-level path (which silently stopped emitting after
@@ -1977,12 +2010,14 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                           // visible-item index → derives chapter
                           // progress + label. Inner listens to the
                           // show-position bool → drives AnimatedOpacity.
-                          child: ValueListenableBuilder<int>(
-                            valueListenable: _visibleItemIndexNotifier,
-                            builder: (context, vIdx, _) {
-                              final visibleItemIndex = vIdx
-                                  .clamp(0, paragraphGroups.length + 1)
-                                  .toInt();
+                          child: ValueListenableBuilder<double>(
+                            valueListenable: _visibleItemPosNotifier,
+                            builder: (context, itemPos, _) {
+                              final maxItem = paragraphGroups.length + 1;
+                              final clampedPos =
+                                  itemPos.clamp(0.0, maxItem.toDouble());
+                              final visibleItemIndex =
+                                  clampedPos.floor().clamp(0, maxItem).toInt();
                               final rawVisibleVerseIndex =
                                   itemToVerseIndex[visibleItemIndex] ??
                                       (visibleItemIndex > paragraphGroups.length
@@ -1993,11 +2028,31 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                                   : rawVisibleVerseIndex
                                       .clamp(0, verses.length - 1)
                                       .toInt();
-                              final chapterProgress = verses.isEmpty
-                                  ? 0.0
-                                  : ((visibleVerseIndex + 1) / verses.length)
-                                      .clamp(0.0, 1.0)
-                                      .toDouble();
+                              // Bar position. Verse-by-verse mode already
+                              // tracks correctly (one item == one verse) so
+                              // keep its formula untouched. PARAGRAPH mode:
+                              // interpolate the verse index across the
+                              // visible group by the within-item scroll
+                              // fraction so the bar reflects the proportion
+                              // of the chapter remaining, instead of jumping
+                              // group-to-group. The number label stays the
+                              // visible group's leading verse.
+                              final double chapterProgress;
+                              if (verses.isEmpty) {
+                                chapterProgress = 0.0;
+                              } else if (settings.paragraphMode) {
+                                chapterProgress = paragraphScrollProgress(
+                                  itemPos: clampedPos.toDouble(),
+                                  itemToVerseIndex: itemToVerseIndex,
+                                  groupCount: paragraphGroups.length,
+                                  totalVerses: verses.length,
+                                );
+                              } else {
+                                chapterProgress =
+                                    ((visibleVerseIndex + 1) / verses.length)
+                                        .clamp(0.0, 1.0)
+                                        .toDouble();
+                              }
                               return ValueListenableBuilder<bool>(
                                 valueListenable: _showVersePositionNotifier,
                                 builder: (context, showPos, _) => AnimatedOpacity(
