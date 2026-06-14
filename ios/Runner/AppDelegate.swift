@@ -41,54 +41,16 @@ import UserNotifications
   // alive before any Dart code can call into it.
   func didInitializeImplicitFlutterEngine(_ engineBridge: FlutterImplicitEngineBridge) {
     GeneratedPluginRegistrant.register(with: engineBridge.pluginRegistry)
-
-    // 2026-06-14 (v1.3.72): register the icon channel on
-    // `engineBridge.applicationRegistrar.messenger()` — the messenger the
-    // Dart-side default channel actually talks to. The previous code used
-    // `pluginRegistry.registrar(forPlugin:).messenger()`, a DIFFERENT
-    // messenger, so the handler was live but unreachable: Dart's
-    // `invokeMethod('setIcon')` hit no handler → MissingPluginException,
-    // which AppIconService swallows → the home-screen icon never changed
-    // (and v1.3.70's startup re-apply silently no-op'd for the same
-    // reason). This is the documented UIScene-migration pattern
-    // (Flutter 3.41+; see flutter/flutter#185935 and the UISceneDelegate
-    // breaking-change guide). NOT an App-Store-vs-sideload issue —
-    // alternate icons work on development builds.
-    do {
-      let channel = FlutterMethodChannel(
-        name: "yswords/ios_icon",
-        binaryMessenger: engineBridge.applicationRegistrar.messenger())
-      channel.setMethodCallHandler { (call, result) in
-        switch call.method {
-        case "currentIconName":
-          // nil for primary icon, or the alternate-icon name (e.g.
-          // "AppIcon-Red"). Lets Dart sync cached state at startup.
-          result(UIApplication.shared.alternateIconName)
-        case "setIcon":
-          let args = call.arguments as? [String: Any]
-          let name = args?["name"] as? String // null → revert to primary
-          guard UIApplication.shared.supportsAlternateIcons else {
-            result(FlutterError(
-              code: "UNSUPPORTED",
-              message: "Alternate icons not supported on this device",
-              details: nil))
-            return
-          }
-          UIApplication.shared.setAlternateIconName(name) { error in
-            if let err = error {
-              result(FlutterError(
-                code: "FAILED",
-                message: err.localizedDescription,
-                details: nil))
-            } else {
-              result(true)
-            }
-          }
-        default:
-          result(FlutterMethodNotImplemented)
-        }
-      }
-    }
+    // 2026-06-14 (v1.3.75): belt-and-suspenders only. We register the
+    // icon channel here too, BUT the channel the Dart side actually
+    // reaches is the one registered on the live FlutterViewController's
+    // messenger from SceneDelegate.scene(willConnectTo:). On Flutter 3.41
+    // (UIScene), a channel registered in didInitializeImplicitFlutterEngine
+    // still throws MissingPluginException on the Dart side
+    // (flutter/flutter#185935) — which is why v1.3.72's
+    // applicationRegistrar.messenger() registration didn't take and the
+    // iOS icon never changed. The real fix lives in SceneDelegate.
+    registerYsWordsIconChannel(engineBridge.applicationRegistrar.messenger())
   }
 
   // 2026-05-24 (v1.2.98): foreground-notification presentation. iOS
@@ -111,6 +73,51 @@ import UserNotifications
       // iOS 10-13 used the `.alert` option for banner+list. Banner
       // and list were split out in iOS 14.
       completionHandler([.alert, .sound, .badge])
+    }
+  }
+}
+
+// 2026-06-14 (v1.3.75): shared registration for the themed-app-icon
+// channel (`yswords/ios_icon`). Called from BOTH AppDelegate's
+// didInitializeImplicitFlutterEngine (belt) AND, crucially, from
+// SceneDelegate on the LIVE FlutterViewController's binaryMessenger —
+// the messenger the Dart default channel actually uses. Registering on
+// the implicit-engine messenger alone hits flutter/flutter#185935
+// (MissingPluginException after the UIScene migration in 3.41), which is
+// why the iOS icon never switched. Idempotent: setting the handler again
+// on the same channel just replaces it.
+func registerYsWordsIconChannel(_ messenger: FlutterBinaryMessenger) {
+  let channel = FlutterMethodChannel(
+    name: "yswords/ios_icon",
+    binaryMessenger: messenger)
+  channel.setMethodCallHandler { (call, result) in
+    switch call.method {
+    case "currentIconName":
+      // nil for primary icon, or the alternate-icon name (e.g.
+      // "AppIcon-Red"). Lets Dart sync cached state at startup.
+      result(UIApplication.shared.alternateIconName)
+    case "setIcon":
+      let args = call.arguments as? [String: Any]
+      let name = args?["name"] as? String // null → revert to primary
+      guard UIApplication.shared.supportsAlternateIcons else {
+        result(FlutterError(
+          code: "UNSUPPORTED",
+          message: "Alternate icons not supported on this device",
+          details: nil))
+        return
+      }
+      UIApplication.shared.setAlternateIconName(name) { error in
+        if let err = error {
+          result(FlutterError(
+            code: "FAILED",
+            message: err.localizedDescription,
+            details: nil))
+        } else {
+          result(true)
+        }
+      }
+    default:
+      result(FlutterMethodNotImplemented)
     }
   }
 }

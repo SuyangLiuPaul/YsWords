@@ -413,10 +413,21 @@ class _LoadingPageState extends State<LoadingPage> {
         child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Image.asset(
-                    'assets/loading.png',
-                    width: logoSize,
-                    height: logoSize,
+                  // v1.3.75: tint the loading logo with the chosen theme
+                  // colour so it matches the themed app icon + the
+                  // "YsWords / 雅偉之言" text below. loading.png is a single-
+                  // hue silhouette (mostly #295E8C with alpha edges), so a
+                  // srcIn tint recolours it cleanly without losing the mark.
+                  ColorFiltered(
+                    colorFilter: ColorFilter.mode(
+                      Theme.of(context).colorScheme.primary,
+                      BlendMode.srcIn,
+                    ),
+                    child: Image.asset(
+                      'assets/loading.png',
+                      width: logoSize,
+                      height: logoSize,
+                    ),
                   ),
                   SizedBox(height: 24 * s),
                   Column(
