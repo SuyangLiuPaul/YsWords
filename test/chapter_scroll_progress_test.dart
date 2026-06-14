@@ -120,4 +120,50 @@ void main() {
       );
     });
   });
+
+  // v1.3.83: the SAME helpers now drive verse-by-verse mode, where each
+  // paragraph group is a single verse. itemToVerseIndex is then
+  // {0:0, 1:0, 2:1, 3:2, …} (item g+1 → verse index g).
+  group('verse-by-verse mode (one verse per group)', () {
+    const vbvMap = <int, int>{0: 0, 1: 0, 2: 1, 3: 2, 4: 3, 5: 4};
+    const vbvGroupCount = 5; // 5 verses → 5 one-verse groups
+    const vbvTotal = 5;
+
+    double prog(double itemPos) => paragraphScrollProgress(
+          itemPos: itemPos,
+          itemToVerseIndex: vbvMap,
+          groupCount: vbvGroupCount,
+          totalVerses: vbvTotal,
+        );
+    int num(double itemPos) => paragraphCurrentVerseIndex(
+          itemPos: itemPos,
+          itemToVerseIndex: vbvMap,
+          groupCount: vbvGroupCount,
+          totalVerses: vbvTotal,
+        );
+
+    test('bar moves SMOOTHLY within a single verse (sub-verse)', () {
+      expect(prog(1.0), closeTo(0.0, 0.001)); // top of verse 1
+      expect(prog(1.5), closeTo(0.1, 0.001)); // half through verse 1
+      expect(prog(2.0), closeTo(0.2, 0.001)); // top of verse 2
+      expect(prog(6.0), closeTo(1.0, 0.001)); // footer → bottom
+    });
+
+    test('number stays on the verse currently at the top', () {
+      expect(num(1.0), 0); // verse 1
+      expect(num(1.9), 0); // still verse 1 while scrolling through it
+      expect(num(2.0), 1); // verse 2
+      expect(num(5.5), 4); // verse 5
+      expect(num(6.0), 4); // never past the last verse
+    });
+
+    test('progress is monotonic across the whole chapter', () {
+      double prev = -1;
+      for (var x = 0.0; x <= vbvGroupCount + 1; x += 0.11) {
+        final cur = prog(x);
+        expect(cur, greaterThanOrEqualTo(prev));
+        prev = cur;
+      }
+    });
+  });
 }

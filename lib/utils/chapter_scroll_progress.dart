@@ -1,14 +1,14 @@
-/// 2026-06-15 (v1.3.80/81): pure helpers for the reading pane's right-edge
-/// progress pill in PARAGRAPH mode.
+/// 2026-06-15 (v1.3.80/81/83): pure helpers for the reading pane's right-edge
+/// progress pill — used for BOTH paragraph and verse-by-verse mode.
 ///
-/// Verse-by-verse mode tracks fine with the simple `(verseIndex + 1) / total`
-/// formula because each scrollable item is a single verse. Paragraph mode
-/// groups many verses into one item, so that formula made BOTH the bar AND
-/// the number jump group-to-group (and not move at all while scrolling inside
-/// one long paragraph). These interpolate the verse index across the visible
-/// group using the within-item scroll fraction, so the bar position reflects
-/// the proportion of the chapter remaining and the number reflects the verse
-/// you've actually scrolled to.
+/// Paragraph mode groups many verses into one scrollable item; verse-by-verse
+/// mode is just the degenerate case of one verse per group. The OLD
+/// `(verseIndex + 1) / total` formula stepped by whole items, so the bar jumped
+/// group-to-group (and didn't move at all while scrolling inside one long
+/// paragraph) and only ticked at item boundaries. These interpolate the verse
+/// index across the visible item using the within-item scroll fraction, so the
+/// bar position reflects the proportion of the chapter remaining and the number
+/// reflects the verse you've actually scrolled to — smoothly, in either mode.
 ///
 /// [itemPos] is the CONTINUOUS visible-item position: the first visible item's
 /// index plus the fraction of that item already scrolled past the top of the

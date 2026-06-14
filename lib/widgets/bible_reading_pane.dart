@@ -2013,57 +2013,26 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                           child: ValueListenableBuilder<double>(
                             valueListenable: _visibleItemPosNotifier,
                             builder: (context, itemPos, _) {
-                              final maxItem = paragraphGroups.length + 1;
-                              final clampedPos =
-                                  itemPos.clamp(0.0, maxItem.toDouble());
-                              final visibleItemIndex =
-                                  clampedPos.floor().clamp(0, maxItem).toInt();
-                              final rawVisibleVerseIndex =
-                                  itemToVerseIndex[visibleItemIndex] ??
-                                      (visibleItemIndex > paragraphGroups.length
-                                          ? verses.length - 1
-                                          : 0);
-                              final groupLeadingVerseIndex = verses.isEmpty
-                                  ? 0
-                                  : rawVisibleVerseIndex
-                                      .clamp(0, verses.length - 1)
-                                      .toInt();
-                              // Both the bar AND the number. Verse-by-verse
-                              // mode already tracks correctly (one item == one
-                              // verse) so keep its formula untouched. PARAGRAPH
-                              // mode: interpolate the verse index across the
-                              // visible group by the within-item scroll
-                              // fraction so the bar reflects the proportion of
-                              // the chapter remaining AND the number ticks up
-                              // verse-by-verse as you scroll (instead of both
-                              // jumping group-to-group / the number freezing on
-                              // the group's leading verse).
-                              final double chapterProgress;
-                              final int displayVerseIndex;
-                              if (verses.isEmpty) {
-                                chapterProgress = 0.0;
-                                displayVerseIndex = 0;
-                              } else if (settings.paragraphMode) {
-                                chapterProgress = paragraphScrollProgress(
-                                  itemPos: clampedPos.toDouble(),
-                                  itemToVerseIndex: itemToVerseIndex,
-                                  groupCount: paragraphGroups.length,
-                                  totalVerses: verses.length,
-                                );
-                                displayVerseIndex = paragraphCurrentVerseIndex(
-                                  itemPos: clampedPos.toDouble(),
-                                  itemToVerseIndex: itemToVerseIndex,
-                                  groupCount: paragraphGroups.length,
-                                  totalVerses: verses.length,
-                                );
-                              } else {
-                                chapterProgress =
-                                    ((groupLeadingVerseIndex + 1) /
-                                            verses.length)
-                                        .clamp(0.0, 1.0)
-                                        .toDouble();
-                                displayVerseIndex = groupLeadingVerseIndex;
-                              }
+                              // v1.3.83: ONE path for both modes. Verse-by-verse
+                              // mode is just the degenerate case where each
+                              // paragraph group is a single verse, so the same
+                              // continuous interpolation gives the bar smooth
+                              // sub-verse motion AND keeps the number on the
+                              // verse you're actually scrolled to. Bar + number
+                              // share the position so they can never disagree.
+                              final chapterProgress = paragraphScrollProgress(
+                                itemPos: itemPos,
+                                itemToVerseIndex: itemToVerseIndex,
+                                groupCount: paragraphGroups.length,
+                                totalVerses: verses.length,
+                              );
+                              final displayVerseIndex =
+                                  paragraphCurrentVerseIndex(
+                                itemPos: itemPos,
+                                itemToVerseIndex: itemToVerseIndex,
+                                groupCount: paragraphGroups.length,
+                                totalVerses: verses.length,
+                              );
                               return ValueListenableBuilder<bool>(
                                 valueListenable: _showVersePositionNotifier,
                                 builder: (context, showPos, _) => AnimatedOpacity(
