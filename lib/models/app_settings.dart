@@ -1063,6 +1063,17 @@ class AppSettings extends ChangeNotifier {
   // scheduler — otherwise we'd echo the same blob right back to
   // RTDB on every device load.
   bool _suppressUserPrefsWrite = false;
+  // 2026-06-15 (v1.3.80): the last userPrefs blob we actually wrote.
+  // Content guard against the "Syncing↔Synced 发癫" flicker loop:
+  // `notifyListeners()` fires for MANY reasons (incl. rebuilds driven
+  // by a sync-status change that some widget listens to). Each one
+  // used to stamp `userPrefsTimestamp = now()` + call requestUpload —
+  // and because the timestamp changed every time, the sync layer's
+  // own dedupe hash never matched, so it uploaded again, flipped the
+  // status, triggered another rebuild → setter → notifyListeners →
+  // upload … forever. Skipping the write when the serialized content
+  // is byte-identical breaks the feedback loop at the source.
+  String? _lastWrittenUserPrefsBlob;
 
   @override
   void notifyListeners() {
@@ -1086,10 +1097,12 @@ class AppSettings extends ChangeNotifier {
   /// path (`users/{uid}/account/geminiApiKey`, bidirectional stream)
   /// for the credential-security reasons documented near the
   /// `_kGeminiApiKey` declaration.
-  Future<void> _writeUserPrefsBlob() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final blob = jsonEncode({
+  /// Single source of truth for the sync-eligible settings snapshot.
+  /// Used by both the writer and the content-guard primer so the two
+  /// can never drift (a drift would defeat the guard and re-open the
+  /// flicker loop). `geminiApiKey` is deliberately excluded — separate
+  /// sync path.
+  Map<String, dynamic> _userPrefsSnapshot() => {
         'fontFamily': _fontSelection,
         'fontSize': _fontSize,
         'lineSpacing': _lineSpacing,
@@ -1115,7 +1128,19 @@ class AppSettings extends ChangeNotifier {
         'dashboardVisibility': {
           for (final e in _dashboardVisibility.entries) e.key.name: e.value,
         },
-      });
+      };
+
+  Future<void> _writeUserPrefsBlob() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final blob = jsonEncode(_userPrefsSnapshot());
+      // Content guard (v1.3.80): nothing sync-eligible actually
+      // changed → don't bump the timestamp or trigger an upload.
+      // This is the fix for the "Syncing↔Synced 来回跳" loop — a
+      // status-driven rebuild that nudges any setter no longer
+      // churns the sync pipeline when the resulting blob is the same.
+      if (blob == _lastWrittenUserPrefsBlob) return;
+      _lastWrittenUserPrefsBlob = blob;
       await prefs.setString(
           ProfileService.instance.scopedKey('userPrefs'), blob);
       await prefs.setInt(
@@ -1212,6 +1237,10 @@ class AppSettings extends ChangeNotifier {
       }
     } finally {
       _suppressUserPrefsWrite = false;
+      // Prime the content guard with the blob we just applied so the
+      // write-back scheduled by loadSettings' notifyListeners() sees
+      // identical content and skips the redundant seed-upload.
+      _lastWrittenUserPrefsBlob = jsonEncode(_userPrefsSnapshot());
     }
   }
 

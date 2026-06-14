@@ -48,6 +48,15 @@ class ChapterControllers {
 class MainProvider extends ChangeNotifier {
   final String _storagePrefix;
 
+  // 2026-06-15 (v1.3.80): last lastRead blob we synced. Content guard
+  // mirroring AppSettings' userPrefs guard — saveCurrentState() is
+  // called on navigation AND on rebuilds (e.g. PageView re-settling on
+  // the same chapter, restoreState's boot-seed). Without this, each
+  // call stamped lastReadTimestamp = now() + requestUpload even when
+  // the position was unchanged, feeding the Syncing↔Synced flicker
+  // loop. Skip the stamp + upload when the synced blob is identical.
+  String? _lastSyncedReadBlob;
+
   MainProvider({String storagePrefix = ''}) : _storagePrefix = storagePrefix {
     // When the active profile changes, reload all profile-scoped
     // user data (highlights / notes / bookmarks) so the UI flips
@@ -1284,12 +1293,18 @@ class MainProvider extends ChangeNotifier {
         if (sermonId != null && sermonId.isNotEmpty)
           'sermonId': sermonId,
       });
-      await prefs.setString(
-          ProfileService.instance.scopedKey('lastRead'), blob);
-      await prefs.setInt(
-          ProfileService.instance.scopedKey('lastReadTimestamp'),
-          DateTime.now().millisecondsSinceEpoch);
-      RealtimeDbSyncService.instance.requestUpload();
+      // Content guard (v1.3.80): position unchanged → don't bump the
+      // timestamp or trigger an upload (breaks the Syncing↔Synced
+      // flicker loop; see _lastSyncedReadBlob).
+      if (blob != _lastSyncedReadBlob) {
+        _lastSyncedReadBlob = blob;
+        await prefs.setString(
+            ProfileService.instance.scopedKey('lastRead'), blob);
+        await prefs.setInt(
+            ProfileService.instance.scopedKey('lastReadTimestamp'),
+            DateTime.now().millisecondsSinceEpoch);
+        RealtimeDbSyncService.instance.requestUpload();
+      }
     }
   }
 
