@@ -436,6 +436,28 @@ report comes in, ask the user to copy the browser-console
 `[YsWords ...]` / `[RTDBSync ...]` lines first — they pinpoint the
 failing step.
 
+## Open (2026-06-14)
+
+1. **iOS themed-icon — on-device verification PENDING.** Root cause was the
+   `yswords/ios_icon` `MethodChannel` registered on the wrong binary
+   messenger after the UISceneDelegate migration (Flutter 3.41+) → every
+   call silently `MissingPluginException`'d. Fixed v1.3.72
+   (`AppDelegate.didInitializeImplicitFlutterEngine` now uses
+   `engineBridge.applicationRegistrar.messenger()`); v1.3.74 added a
+   release-visible `dart:developer` log (`name:'yswords.icon'`) to read the
+   swap from the device console. The 2026-06-14 reinstall missed the
+   iPhone/iPad (asleep), so they're still on v1.3.72 (no diagnostic). When
+   the iPhone is awake on the Mac's Wi-Fi: `xcrun devicectl device install
+   --device 9FA8108D-… build/ios/iphoneos/Runner.app` then `xcrun devicectl
+   device console --device 9FA8108D-…` filtered for `yswords.icon` while
+   changing the theme colour. A lingering `MissingPluginException` means the
+   messenger fix didn't take and the channel registration needs another look.
+
+2. **AI study-panel follow-ups — token budget.** The follow-up `history`
+   transcript is tail-clamped (~1800 chars client / 2000 server). If long
+   threads start losing early context noticeably, summarise older turns
+   instead of truncating.
+
 ## Notes
 
 - Anything user-facing (UI, copy, accessibility, perf) is shipped immediately

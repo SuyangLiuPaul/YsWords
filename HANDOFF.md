@@ -2,7 +2,7 @@
 
 > ⚠️ **RELEASE POLICY (2026-05-11):** dev + qat may be pushed freely as part of any change. **Prod requires EXPLICIT user instruction in the current turn** — never assume permission carries over, never push prod without being told to. Full policy in [`docs/release-policy.md`](docs/release-policy.md).
 
-> Last updated: 2026-06-14 — **v1.3.73 (dev/qat)** — AI panel is now a multi-turn study chat (follow-ups, length controls, save-to-note); version-switch race + top-bar overflow fixed. iOS icon under live diagnosis. Prior v1.3.72: iOS icon channel-messenger fix. See v1.3.x highlights.
+> Last updated: 2026-06-14 — **v1.3.74 (ALL 6 sites incl. prod)** — AI panel is now a multi-turn study chat (follow-ups, 更简短/更详细, save-to-note, input clears on success / restored on fail); version-switch race + top-bar overflow fixed (v1.3.73); v1.3.74 adds a release-visible `dart:developer` icon-swap log (`name:'yswords.icon'`) so the iOS themed-icon can be diagnosed from the device console. **Device state:** macOS + Mi Pad on v1.3.74; **iPhone + iPad still on v1.3.72** — the 2026-06-14 reinstall missed all 3 passes (both asleep/unreachable), so the iOS-icon on-device verification is PENDING. To finish: wake the iPhone on the Mac's Wi-Fi, then `xcrun devicectl device install --device 9FA8108D-… build/ios/iphoneos/Runner.app` (the v1.3.74 `.app` is already built) and `xcrun devicectl device console --device 9FA8108D-…` filtered for `yswords.icon` while changing the theme colour. Prior v1.3.72: iOS icon channel-messenger fix. See v1.3.x highlights.
 >
 > ### v1.3.x highlights (paste this into the next session's context)
 >
