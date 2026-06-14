@@ -2023,23 +2023,26 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                                       (visibleItemIndex > paragraphGroups.length
                                           ? verses.length - 1
                                           : 0);
-                              final visibleVerseIndex = verses.isEmpty
+                              final groupLeadingVerseIndex = verses.isEmpty
                                   ? 0
                                   : rawVisibleVerseIndex
                                       .clamp(0, verses.length - 1)
                                       .toInt();
-                              // Bar position. Verse-by-verse mode already
-                              // tracks correctly (one item == one verse) so
-                              // keep its formula untouched. PARAGRAPH mode:
-                              // interpolate the verse index across the
+                              // Both the bar AND the number. Verse-by-verse
+                              // mode already tracks correctly (one item == one
+                              // verse) so keep its formula untouched. PARAGRAPH
+                              // mode: interpolate the verse index across the
                               // visible group by the within-item scroll
-                              // fraction so the bar reflects the proportion
-                              // of the chapter remaining, instead of jumping
-                              // group-to-group. The number label stays the
-                              // visible group's leading verse.
+                              // fraction so the bar reflects the proportion of
+                              // the chapter remaining AND the number ticks up
+                              // verse-by-verse as you scroll (instead of both
+                              // jumping group-to-group / the number freezing on
+                              // the group's leading verse).
                               final double chapterProgress;
+                              final int displayVerseIndex;
                               if (verses.isEmpty) {
                                 chapterProgress = 0.0;
+                                displayVerseIndex = 0;
                               } else if (settings.paragraphMode) {
                                 chapterProgress = paragraphScrollProgress(
                                   itemPos: clampedPos.toDouble(),
@@ -2047,11 +2050,19 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                                   groupCount: paragraphGroups.length,
                                   totalVerses: verses.length,
                                 );
+                                displayVerseIndex = paragraphCurrentVerseIndex(
+                                  itemPos: clampedPos.toDouble(),
+                                  itemToVerseIndex: itemToVerseIndex,
+                                  groupCount: paragraphGroups.length,
+                                  totalVerses: verses.length,
+                                );
                               } else {
                                 chapterProgress =
-                                    ((visibleVerseIndex + 1) / verses.length)
+                                    ((groupLeadingVerseIndex + 1) /
+                                            verses.length)
                                         .clamp(0.0, 1.0)
                                         .toDouble();
+                                displayVerseIndex = groupLeadingVerseIndex;
                               }
                               return ValueListenableBuilder<bool>(
                                 valueListenable: _showVersePositionNotifier,
@@ -2060,7 +2071,7 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                                   duration: const Duration(milliseconds: 400),
                                   child: _VerticalProgressIndicator(
                                     progress: chapterProgress,
-                                    currentLabel: '${visibleVerseIndex + 1}',
+                                    currentLabel: '${displayVerseIndex + 1}',
                                     totalLabel: '${verses.length}',
                                     fontFamily: settings.fontFamily,
                                     menuScale: settings.menuScale,

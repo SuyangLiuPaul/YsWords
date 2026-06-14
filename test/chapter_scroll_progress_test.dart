@@ -79,4 +79,45 @@ void main() {
       );
     });
   });
+
+  group('paragraphCurrentVerseIndex (the pill number)', () {
+    int v(double itemPos) => paragraphCurrentVerseIndex(
+          itemPos: itemPos,
+          itemToVerseIndex: itemToVerse,
+          groupCount: groupCount,
+          totalVerses: totalVerses,
+        );
+
+    test('shows the group leading verse at a group boundary', () {
+      expect(v(1.0), 0); // group 0 → verse index 0 (label "1")
+      expect(v(2.0), 8); // group 1 → verse index 8 (label "9")
+      expect(v(3.0), 15); // group 2 → verse index 15 (label "16")
+    });
+
+    test('ticks up verse-by-verse WHILE scrolling inside a paragraph', () {
+      // group 0 spans verse indices 0..8 over itemPos 1.0..2.0.
+      expect(v(1.0), 0);
+      expect(v(1.25), 2); // ~verse index 2
+      expect(v(1.5), 4); // ~verse index 4 — the number moved without a
+      // group change, which is the whole point of this fix.
+      expect(v(1.875), 7);
+    });
+
+    test('never exceeds the last verse index', () {
+      expect(v(4.0), totalVerses - 1); // footer → last verse (19)
+      expect(v(999.0), totalVerses - 1);
+    });
+
+    test('empty chapter returns 0, never negative', () {
+      expect(
+        paragraphCurrentVerseIndex(
+          itemPos: 2.0,
+          itemToVerseIndex: const {0: 0},
+          groupCount: 0,
+          totalVerses: 0,
+        ),
+        0,
+      );
+    });
+  });
 }
