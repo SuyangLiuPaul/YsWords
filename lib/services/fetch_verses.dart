@@ -193,6 +193,20 @@ class FetchVerses {
             await _loadParagraphMap().timeout(attemptTimeout);
         final verses =
             await _loadAndParse(path, paraMap).timeout(attemptTimeout);
+        // 2026-06-14 (v1.3.73): stale-switch guard. `version` was read
+        // from `currentVersion` at the top of execute(); the parse above
+        // is async, so a user who switches versions AGAIN before it
+        // finishes will have moved `currentVersion` on. Committing this
+        // (now stale) list would (a) show the old version's text under
+        // the new version's header, and (b) WORSE — `setVerses` caches
+        // the list under the CURRENT `currentVersion` key, poisoning the
+        // per-version LRU so the wrong text persists on later switches
+        // too (the user's "switching doesn't really switch to the right
+        // version"). Only commit when we're still the current version;
+        // otherwise a newer execute()/useCachedVersion() owns the screen.
+        if (mainProvider.currentVersion.toLowerCase() != version) {
+          return; // superseded — discard silently.
+        }
         mainProvider.setVerses(verses);
         return; // success — drop out of the retry loop.
       } catch (e, st) {

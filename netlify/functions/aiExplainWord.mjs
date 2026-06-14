@@ -431,7 +431,7 @@ function buildPrompt({ strongs, lemma, translit, gloss, book, chapter, verse, ve
 // pane's selection bar). Reuses all of this function's infra
 // (key rotation, model step-down, BYOK, CORS); only the prompt differs
 // from the word-study path. Always answers in the reader's locale.
-function buildVersePrompt({ book, chapter, verseStart, verseEnd, verseText, locale, length, userQuestion }) {
+function buildVersePrompt({ book, chapter, verseStart, verseEnd, verseText, locale, length, userQuestion, history }) {
 	const lang = langName(locale);
 	const langDirective = languageDirective(locale);
 	const isZh = locale === 'zh-Hans' || locale === 'zh-Hant';
@@ -445,6 +445,8 @@ function buildVersePrompt({ book, chapter, verseStart, verseEnd, verseText, loca
 	// prose format, faithfulness rules, length band — is shared.
 	const q = (userQuestion || '').trim();
 	const hasQ = q.length > 0;
+	// v1.3.73: compact transcript of earlier turns (follow-up context).
+	const hist = (history || '').trim();
 	let words;
 	switch (length) {
 		case 'concise': words = isZh ? '60-110 字' : '60-110 words'; break;
@@ -457,6 +459,10 @@ function buildVersePrompt({ book, chapter, verseStart, verseEnd, verseText, loca
 	parts.push('');
 	if (isZh) {
 		parts.push('你是一位严谨而温暖的圣经教师，帮助普通读者理解经文。');
+		if (hist) {
+			parts.push(`以下是你们之前的对话（供参考，请保持连贯，不要重复已说过的内容）：\n${hist}`);
+			parts.push('');
+		}
 		if (hasQ) {
 			// Question mode: answer the reader's specific question, anchored
 			// in the cited passage.
@@ -495,6 +501,11 @@ function buildVersePrompt({ book, chapter, verseStart, verseEnd, verseText, loca
 	} else {
 		parts.push('You are a rigorous yet warm Bible teacher helping an ' +
 			'ordinary reader understand a passage.');
+		if (hist) {
+			parts.push(`Here is the conversation so far (for context — stay ` +
+				`coherent and do not repeat what was already said):\n${hist}`);
+			parts.push('');
+		}
 		if (hasQ) {
 			// Question mode: answer the reader's specific question, anchored
 			// in the cited passage.
@@ -901,6 +912,19 @@ export default async (req) => {
 			.replace(/\s{2,}/g, ' ')
 			.trim()
 			.slice(0, 500);
+		// v1.3.73: optional compact transcript of earlier turns in this
+		// study-panel conversation, so follow-up questions stay coherent.
+		// The client assembles it ("Q: … / A: …"); we keep it bounded and
+		// strip control chars like the other free-text fields. Newlines are
+		// preserved (collapsed runs only) so the Q/A structure survives.
+		const history = (body?.history || '')
+			.toString()
+			// Strip control chars but KEEP newlines (\n) so the Q/A
+			// structure survives; collapse other whitespace runs.
+			.replace(/[\u0000-\u0009\u000b-\u001f\u007f]+/g, ' ')
+			.replace(/[ \t]{2,}/g, ' ')
+			.trim()
+			.slice(0, 2000);
 		// 2026-05-09 (v1.2.2): clamp `locale` to the three the app
 		// actually localises. The previous .slice(0, 32) capped length
 		// but didn't reject e.g. arbitrary tokens that could land in
@@ -958,7 +982,7 @@ export default async (req) => {
 			const explanationV = await callGemini(
 				buildVersePrompt({
 					book, chapter, verseStart: verse, verseEnd, verseText,
-					locale, length, userQuestion,
+					locale, length, userQuestion, history,
 				}),
 				locale,
 				_useUserKey ? _userKey : null,

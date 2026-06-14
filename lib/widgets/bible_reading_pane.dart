@@ -27,7 +27,6 @@ import 'package:yswords/pages/stats_page.dart';
 import 'package:yswords/providers/main_provider.dart';
 import 'package:yswords/services/fetch_books.dart';
 import 'package:yswords/services/ai_word_service.dart';
-import 'package:yswords/utils/ai_markdown.dart' show parseAiMarkdown;
 import 'package:yswords/utils/ai_text_cleaner.dart';
 import 'package:yswords/services/concordance_service.dart';
 import 'package:yswords/services/cloud_auth_service.dart';
@@ -2123,6 +2122,7 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                                 context: context,
                                 verses: mainProvider.selectedVerses,
                                 settings: settings,
+                                mainProvider: mainProvider,
                               ),
                               anyNoted: mainProvider.selectedVerses
                                   .any(mainProvider.isVerseNoted),
@@ -2899,6 +2899,7 @@ void _showAiExplainSheet({
   required BuildContext context,
   required List<Verse> verses,
   required AppSettings settings,
+  required MainProvider mainProvider,
 }) {
   if (verses.isEmpty) return;
   // selectedVerses is already sorted by chapter+verse (see the note at
@@ -2937,6 +2938,8 @@ void _showAiExplainSheet({
       verseText: verseText,
       refLabel: refLabel,
       settings: settings,
+      verses: verses,
+      mainProvider: mainProvider,
     ),
   );
 }
@@ -2952,6 +2955,8 @@ class _AiExplainSheet extends StatefulWidget {
     required this.verseText,
     required this.refLabel,
     required this.settings,
+    required this.verses,
+    required this.mainProvider,
   });
 
   final String englishBook;
@@ -2961,27 +2966,40 @@ class _AiExplainSheet extends StatefulWidget {
   final String verseText;
   final String refLabel;
   final AppSettings settings;
+  // v1.3.73: the selected verses + provider, so an answer can be saved
+  // into the passage's note via showNoteEditor.
+  final List<Verse> verses;
+  final MainProvider mainProvider;
 
   @override
   State<_AiExplainSheet> createState() => _AiExplainSheetState();
 }
 
-class _AiExplainSheetState extends State<_AiExplainSheet> {
-  // v1.3.71: the panel no longer auto-generates on open. The reader
-  // confirms first — an empty question generates the passage
-  // explanation, a typed question gets answered. One result area shows
-  // the latest generation; the question that produced it (if any) is
-  // echoed above the answer.
-  bool _loading = false;
-  String? _result;
-  String? _error;
-  // The question tied to the current result / error / in-flight request.
-  // null ⇒ the default passage explanation.
-  String? _resultQuestion;
+/// v1.3.73: one turn in the AI study conversation. The opening turn has
+/// a null [question] (the passage explanation); later turns carry the
+/// reader's follow-up question.
+class _AiTurn {
+  _AiTurn({this.question});
+  final String? question;
+  String length = 'concise'; // 'concise' | 'default' | 'longer'
+  String? answer;
+  String? error;
+  bool loading = true;
+  String selectedText = ''; // live text selection within the answer
+}
 
+class _AiExplainSheetState extends State<_AiExplainSheet> {
+  // v1.3.73: the panel is now a multi-turn study chat. Generation only
+  // runs on user confirm (never on open); the input clears on success and
+  // is restored only on failure; each answer can be regenerated shorter /
+  // longer and saved (whole or just the selection) into the passage note.
+  final List<_AiTurn> _turns = [];
   final TextEditingController _questionController = TextEditingController();
   final FocusNode _questionFocus = FocusNode();
   final ScrollController _bodyScroll = ScrollController();
+
+  String get _loc => widget.settings.locale;
+  bool get _busy => _turns.any((t) => t.loading);
 
   @override
   void dispose() {
@@ -2991,7 +3009,9 @@ class _AiExplainSheetState extends State<_AiExplainSheet> {
     super.dispose();
   }
 
-  Future<AiWordResult> _request(String key, {String? question}) {
+  Future<AiWordResult> _request(
+      {String? question, required String length, String? history}) {
+    final key = widget.settings.geminiApiKey.trim();
     return AiWordService.explainVerse(
       englishBook: widget.englishBook,
       chapter: widget.chapter,
@@ -2999,51 +3019,121 @@ class _AiExplainSheetState extends State<_AiExplainSheet> {
       verseEnd: widget.verseEnd,
       verseText: widget.verseText,
       locale: widget.settings.locale,
+      length: length,
       userApiKey: key.isEmpty ? null : key,
       aiModel: widget.settings.aiModel,
       userQuestion: question,
+      history: history,
     );
   }
 
-  /// Generate on user confirmation. [question] null/empty ⇒ the default
-  /// passage explanation; otherwise answer the question. Same cold-start
-  /// auto-retry as before (first call can miss the Netlify/Gemini warm-up).
-  Future<void> _generate({String? question}) async {
-    if (_loading) return;
+  // Compact transcript of completed turns before [upto], for follow-up
+  // coherence. Tail-clamped so a long thread can't blow the prompt.
+  String _historyBefore(int upto) {
+    final buf = StringBuffer();
+    for (var i = 0; i < upto && i < _turns.length; i++) {
+      final t = _turns[i];
+      final a = t.answer;
+      if (a == null || a.isEmpty) continue;
+      if (t.question != null && t.question!.isNotEmpty) {
+        buf
+          ..writeln('Q: ${t.question}')
+          ..writeln('A: $a');
+      } else {
+        buf.writeln('Explanation: $a');
+      }
+    }
+    var s = buf.toString().trim();
+    const maxChars = 1800;
+    if (s.length > maxChars) s = s.substring(s.length - maxChars);
+    return s;
+  }
+
+  // Submit the input box. Empty ⇒ opening passage explanation (only when
+  // there are no turns yet); otherwise a follow-up question.
+  Future<void> _submit() async {
+    if (_busy) return;
+    final q = _questionController.text.trim();
+    if (q.isEmpty && _turns.isNotEmpty) return; // need a question to follow up
     _questionFocus.unfocus();
-    setState(() {
-      _loading = true;
-      _error = null;
-      _resultQuestion = question;
-    });
+    _questionController.clear(); // restored only if this turn fails
+    final turn = _AiTurn(question: q.isEmpty ? null : q);
+    setState(() => _turns.add(turn));
     _scrollBodyToEnd();
-    final key = widget.settings.geminiApiKey.trim();
-    var result = await _request(key, question: question);
+    await _runTurn(turn, restoreOnFail: q);
+  }
+
+  Future<void> _runTurn(_AiTurn turn, {String? restoreOnFail}) async {
+    if (!mounted) return;
+    final idx = _turns.indexOf(turn);
+    final history = idx > 0 ? _historyBefore(idx) : '';
+    setState(() {
+      turn.loading = true;
+      turn.error = null;
+    });
+    var result = await _request(
+        question: turn.question,
+        length: turn.length,
+        history: history.isEmpty ? null : history);
+    // v1.3.x cold-start auto-retry — the first call can miss the Netlify
+    // function + Gemini warm-up.
     if (result.unavailable && mounted) {
       await Future<void>.delayed(const Duration(milliseconds: 500));
       if (!mounted) return;
-      result = await _request(key, question: question);
+      result = await _request(
+          question: turn.question,
+          length: turn.length,
+          history: history.isEmpty ? null : history);
     }
     if (!mounted) return;
     setState(() {
-      _loading = false;
+      turn.loading = false;
       if (result.unavailable) {
-        _error = result.unavailableReason ??
-            (uiStrings['aiExplainError']?[widget.settings.locale] ??
+        final reason = result.unavailableReason ??
+            (uiStrings['aiExplainError']?[_loc] ??
                 'AI explanation is not available right now.');
+        if (turn.question != null && turn.answer == null) {
+          // First attempt of a question turn failed → restore the text to
+          // the input box and drop the empty turn (user's request:
+          // "失败才回到 input，否则不用").
+          _turns.remove(turn);
+          if (restoreOnFail != null && restoreOnFail.isNotEmpty) {
+            _questionController.text = restoreOnFail;
+          }
+          _snack(reason);
+        } else if (turn.answer != null) {
+          // A regenerate failed but the previous answer is still good —
+          // keep it on screen, just tell the user the retry failed.
+          _snack(reason);
+        } else {
+          // Opening explanation first-time failure → inline retry button.
+          turn.error = reason;
+        }
       } else {
-        _result = cleanAiExplanation(result.explanation);
+        turn.answer = cleanAiExplanation(result.explanation);
+        turn.error = null;
       }
     });
     _scrollBodyToEnd();
   }
 
-  void _onConfirm() {
-    final q = _questionController.text.trim();
-    _generate(question: q.isEmpty ? null : q);
+  String? _shorter(String length) =>
+      length == 'longer' ? 'default' : (length == 'default' ? 'concise' : null);
+  String? _longer(String length) =>
+      length == 'concise' ? 'default' : (length == 'default' ? 'longer' : null);
+
+  void _regenerate(_AiTurn turn, String length) {
+    if (_busy) return;
+    turn.length = length;
+    _runTurn(turn);
   }
 
-  // Keep the result in view after generating.
+  void _snack(String msg) {
+    ScaffoldMessenger.maybeOf(context)?.showSnackBar(
+      SnackBar(content: Text(msg), duration: const Duration(seconds: 3)),
+    );
+  }
+
   void _scrollBodyToEnd() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted || !_bodyScroll.hasClients) return;
@@ -3055,26 +3145,41 @@ class _AiExplainSheetState extends State<_AiExplainSheet> {
     });
   }
 
-  /// Assemble the full copyable text: reference, scripture, the question
-  /// (if any) and the generated result.
-  String _composeCopyText(String locale) {
+  // Save an answer (its current selection if any, else the whole thing)
+  // into the passage note via the normal editor (append-to-existing).
+  void _saveTurnToNote(_AiTurn turn) {
+    final sel = turn.selectedText.trim();
+    final text = sel.isNotEmpty ? sel : (turn.answer ?? '').trim();
+    if (text.isEmpty) return;
+    final attribution = uiStrings['aiNoteAttribution']?[_loc] ?? '— YsWords AI';
+    final snippet = '「${widget.refLabel}」\n$text\n$attribution';
+    showNoteEditor(
+      context: context,
+      verses: widget.verses,
+      locale: _loc,
+      mainProvider: widget.mainProvider,
+      appendText: snippet,
+    );
+  }
+
+  String _composeCopyText() {
     final buf = StringBuffer()..writeln(widget.refLabel);
     if (widget.verseText.isNotEmpty) {
       buf
         ..writeln()
         ..writeln(widget.verseText);
     }
-    final q = _resultQuestion;
-    if (q != null && q.isNotEmpty) {
-      buf
-        ..writeln()
-        ..writeln('${uiStrings['aiAskYourQuestion']?[locale] ?? 'Your question'}: $q');
-    }
-    final r = _result;
-    if (r != null && r.isNotEmpty) {
-      buf
-        ..writeln()
-        ..writeln(r);
+    for (final t in _turns) {
+      final a = t.answer;
+      if (a == null || a.isEmpty) continue;
+      buf.writeln();
+      if (t.question != null && t.question!.isNotEmpty) {
+        buf
+          ..writeln(
+              '${uiStrings['aiAskYourQuestion']?[_loc] ?? 'Your question'}: ${t.question}')
+          ..writeln();
+      }
+      buf.writeln(a);
     }
     return buf.toString().trim();
   }
@@ -3082,15 +3187,15 @@ class _AiExplainSheetState extends State<_AiExplainSheet> {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final locale = widget.settings.locale;
+    final locale = _loc;
     final media = MediaQuery.of(context);
-    final canCopy = _result != null && _result!.isNotEmpty;
+    final canCopy = _turns.any((t) => (t.answer ?? '').isNotEmpty);
     return SafeArea(
       child: Padding(
-        padding: EdgeInsets.fromLTRB(
-            20, 16, 20, 16 + media.viewInsets.bottom),
+        padding:
+            EdgeInsets.fromLTRB(20, 16, 20, 16 + media.viewInsets.bottom),
         child: ConstrainedBox(
-          constraints: BoxConstraints(maxHeight: media.size.height * 0.82),
+          constraints: BoxConstraints(maxHeight: media.size.height * 0.85),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -3111,18 +3216,13 @@ class _AiExplainSheetState extends State<_AiExplainSheet> {
                       ),
                     ),
                   ),
-                  // Copy the whole panel (ref + scripture + question +
-                  // result). Body text is also SelectableText for partial
-                  // copy. Shown once there is a result.
                   if (canCopy)
                     IconButton(
                       tooltip: uiStrings['copySelection']?[locale] ?? 'Copy',
                       icon: const Icon(Icons.copy_rounded),
                       visualDensity: VisualDensity.compact,
                       onPressed: () => ClipboardHelper.copyWithFeedback(
-                        context,
-                        _composeCopyText(locale),
-                      ),
+                          context, _composeCopyText()),
                     ),
                   IconButton(
                     tooltip: uiStrings['close']?[locale] ?? 'Close',
@@ -3141,7 +3241,11 @@ class _AiExplainSheetState extends State<_AiExplainSheet> {
                     children: [
                       if (widget.verseText.isNotEmpty)
                         _scriptureBlock(scheme, locale),
-                      _resultSection(scheme, locale),
+                      if (_turns.isEmpty)
+                        _idleHint(scheme, locale)
+                      else
+                        for (var i = 0; i < _turns.length; i++)
+                          _turnCard(scheme, locale, _turns[i], i),
                     ],
                   ),
                 ),
@@ -3167,9 +3271,6 @@ class _AiExplainSheetState extends State<_AiExplainSheet> {
     );
   }
 
-  // Quoted scripture with a primary-coloured accent bar so the panel
-  // opens with the passage the reader is studying — clear visual
-  // anchoring (排版) before anything is generated.
   Widget _scriptureBlock(ColorScheme scheme, String locale) {
     return Container(
       width: double.infinity,
@@ -3177,10 +3278,9 @@ class _AiExplainSheetState extends State<_AiExplainSheet> {
       padding: const EdgeInsets.fromLTRB(14, 10, 12, 12),
       decoration: BoxDecoration(
         color: scheme.primary.withValues(alpha: 0.06),
-        borderRadius: const BorderRadius.horizontal(right: Radius.circular(10)),
-        border: Border(
-          left: BorderSide(color: scheme.primary, width: 3),
-        ),
+        borderRadius:
+            const BorderRadius.horizontal(right: Radius.circular(10)),
+        border: Border(left: BorderSide(color: scheme.primary, width: 3)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -3212,108 +3312,199 @@ class _AiExplainSheetState extends State<_AiExplainSheet> {
     );
   }
 
-  // Idle prompt → loading → error+retry → result (with the question
-  // echoed above the answer when one was asked).
-  Widget _resultSection(ColorScheme scheme, String locale) {
-    if (_loading) {
-      final msg = _resultQuestion != null
-          ? (uiStrings['aiAskAnswering']?[locale] ?? 'Answering your question…')
-          : (uiStrings['aiExplainGenerating']?[locale] ??
-              'Generating explanation…');
-      return Padding(
-        padding: const EdgeInsets.symmetric(vertical: 32),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const SizedBox(
-              width: 20,
-              height: 20,
-              child: CircularProgressIndicator(strokeWidth: 2),
-            ),
-            const SizedBox(width: 12),
-            Flexible(
-              child: Text(
-                msg,
-                style: TextStyle(
-                  fontFamily: widget.settings.fontFamily,
-                  fontFamilyFallback: kCjkFontFallback,
-                  fontSize: 13,
-                  color: scheme.onSurfaceVariant,
-                ),
+  Widget _idleHint(ColorScheme scheme, String locale) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 22, horizontal: 4),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(Icons.lightbulb_outline_rounded,
+              size: 18,
+              color: scheme.onSurfaceVariant.withValues(alpha: 0.7)),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              uiStrings['aiExplainIdleHint']?[locale] ??
+                  'Generate an explanation of this passage, or type a question first and confirm.',
+              style: TextStyle(
+                fontFamily: widget.settings.fontFamily,
+                fontFamilyFallback: kCjkFontFallback,
+                fontSize: 13,
+                height: 1.4,
+                color: scheme.onSurfaceVariant,
               ),
             ),
-          ],
-        ),
-      );
-    }
-    if (_error != null) {
-      return _errorBody(
-          scheme, locale, _error!, () => _generate(question: _resultQuestion));
-    }
-    if (_result == null) {
-      // Nothing generated yet — gentle prompt explaining the choice.
-      return Padding(
-        padding: const EdgeInsets.symmetric(vertical: 22, horizontal: 4),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Icon(Icons.lightbulb_outline_rounded,
-                size: 18, color: scheme.onSurfaceVariant.withValues(alpha: 0.7)),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Text(
-                uiStrings['aiExplainIdleHint']?[locale] ??
-                    'Generate an explanation of this passage, or type a question first and confirm.',
-                style: TextStyle(
-                  fontFamily: widget.settings.fontFamily,
-                  fontFamilyFallback: kCjkFontFallback,
-                  fontSize: 13,
-                  height: 1.4,
-                  color: scheme.onSurfaceVariant,
-                ),
-              ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _turnCard(ColorScheme scheme, String locale, _AiTurn turn, int i) {
+    final reading = TextStyle(
+      fontFamily: widget.settings.fontFamily,
+      fontFamilyFallback: kCjkFontFallback,
+      fontSize: widget.settings.fontSize,
+      height: widget.settings.lineSpacing,
+      color: scheme.onSurface,
+    );
+    return Padding(
+      padding: EdgeInsets.only(top: i == 0 ? 0 : 18),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (i > 0)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: Divider(
+                  height: 1,
+                  color: scheme.outlineVariant.withValues(alpha: 0.5)),
             ),
-          ],
-        ),
-      );
-    }
-    // Have a result.
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        if (_resultQuestion != null) ...[
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Icon(Icons.help_outline_rounded, size: 16, color: scheme.primary),
-              const SizedBox(width: 6),
-              Expanded(
-                child: Text(
-                  _resultQuestion!,
-                  style: TextStyle(
-                    fontFamily: widget.settings.fontFamily,
-                    fontFamilyFallback: kCjkFontFallback,
-                    fontSize: widget.settings.fontSize - 1,
-                    fontWeight: FontWeight.w700,
-                    height: widget.settings.lineSpacing,
-                    color: scheme.onSurface,
+          if (turn.question != null && turn.question!.isNotEmpty) ...[
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(Icons.help_outline_rounded,
+                    size: 16, color: scheme.primary),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    turn.question!,
+                    style: reading.copyWith(
+                        fontSize: widget.settings.fontSize - 1,
+                        fontWeight: FontWeight.w700),
                   ),
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 10),
+              ],
+            ),
+            const SizedBox(height: 10),
+          ],
+          if (turn.loading)
+            _loadingRow(scheme, locale, turn.question != null)
+          else if (turn.error != null)
+            _errorBody(scheme, locale, turn.error!, () => _runTurn(turn))
+          else ...[
+            SelectableText(
+              turn.answer ?? '',
+              style: reading,
+              onSelectionChanged: (sel, cause) {
+                final a = turn.answer ?? '';
+                if (sel.isValid &&
+                    !sel.isCollapsed &&
+                    sel.start >= 0 &&
+                    sel.end <= a.length) {
+                  turn.selectedText = sel.textInside(a);
+                } else {
+                  turn.selectedText = '';
+                }
+              },
+            ),
+            const SizedBox(height: 8),
+            _turnActions(scheme, locale, turn),
+          ],
         ],
-        _prose(scheme, _result ?? ''),
+      ),
+    );
+  }
+
+  Widget _turnActions(ColorScheme scheme, String locale, _AiTurn turn) {
+    final shorter = _shorter(turn.length);
+    final longer = _longer(turn.length);
+    return Wrap(
+      spacing: 6,
+      runSpacing: 4,
+      crossAxisAlignment: WrapCrossAlignment.center,
+      children: [
+        if (shorter != null)
+          _miniChip(
+              scheme,
+              Icons.unfold_less_rounded,
+              uiStrings['aiMoreConcise']?[locale] ?? 'More concise',
+              _busy ? null : () => _regenerate(turn, shorter)),
+        if (longer != null)
+          _miniChip(
+              scheme,
+              Icons.unfold_more_rounded,
+              uiStrings['aiMoreDetail']?[locale] ?? 'More detail',
+              _busy ? null : () => _regenerate(turn, longer)),
+        _miniChip(
+            scheme,
+            Icons.bookmark_add_outlined,
+            uiStrings['aiSaveToNote']?[locale] ?? 'Save to note',
+            () => _saveTurnToNote(turn),
+            filled: true),
       ],
     );
   }
 
-  // Optional question field + a confirm button. The button label adapts:
-  // empty field ⇒ "Explain this passage", typed question ⇒ "Ask".
-  // Generation only happens here (on confirm / keyboard submit) — never
-  // automatically on open.
+  Widget _miniChip(ColorScheme scheme, IconData icon, String label,
+      VoidCallback? onTap,
+      {bool filled = false}) {
+    final fg = filled ? scheme.onPrimary : scheme.primary;
+    final bg =
+        filled ? scheme.primary : scheme.primary.withValues(alpha: 0.10);
+    return Material(
+      color: onTap == null ? bg.withValues(alpha: 0.4) : bg,
+      borderRadius: BorderRadius.circular(20),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(20),
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, size: 15, color: fg),
+              const SizedBox(width: 4),
+              Text(
+                label,
+                style: TextStyle(
+                  fontFamily: widget.settings.fontFamily,
+                  fontFamilyFallback: kCjkFontFallback,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: fg,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _loadingRow(ColorScheme scheme, String locale, bool isQuestion) {
+    final msg = isQuestion
+        ? (uiStrings['aiAskAnswering']?[locale] ?? 'Answering your question…')
+        : (uiStrings['aiExplainGenerating']?[locale] ??
+            'Generating explanation…');
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 24),
+      child: Row(
+        children: [
+          const SizedBox(
+              width: 18,
+              height: 18,
+              child: CircularProgressIndicator(strokeWidth: 2)),
+          const SizedBox(width: 12),
+          Flexible(
+            child: Text(
+              msg,
+              style: TextStyle(
+                fontFamily: widget.settings.fontFamily,
+                fontFamilyFallback: kCjkFontFallback,
+                fontSize: 13,
+                color: scheme.onSurfaceVariant,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _inputArea(ColorScheme scheme, String locale) {
+    final firstTurn = _turns.isEmpty;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -3323,7 +3514,7 @@ class _AiExplainSheetState extends State<_AiExplainSheet> {
           minLines: 1,
           maxLines: 4,
           textInputAction: TextInputAction.send,
-          onSubmitted: (_) => _onConfirm(),
+          onSubmitted: (_) => _submit(),
           style: TextStyle(
             fontFamily: widget.settings.fontFamily,
             fontFamilyFallback: kCjkFontFallback,
@@ -3332,8 +3523,10 @@ class _AiExplainSheetState extends State<_AiExplainSheet> {
           ),
           decoration: InputDecoration(
             isDense: true,
-            hintText: uiStrings['aiAskQuestionHint']?[locale] ??
-                'Ask a question about this passage… (optional)',
+            hintText: firstTurn
+                ? (uiStrings['aiAskQuestionHint']?[locale] ??
+                    'Ask a question about this passage… (optional)')
+                : (uiStrings['aiFollowUpHint']?[locale] ?? 'Ask a follow-up…'),
             hintStyle: TextStyle(
               fontFamily: widget.settings.fontFamily,
               fontFamilyFallback: kCjkFontFallback,
@@ -3359,19 +3552,19 @@ class _AiExplainSheetState extends State<_AiExplainSheet> {
           ),
         ),
         const SizedBox(height: 8),
-        // Confirm button — label + icon adapt to whether a question is
-        // typed. Rebuilds on its own via the controller listenable so we
-        // don't rebuild the whole sheet on every keystroke.
         ValueListenableBuilder<TextEditingValue>(
           valueListenable: _questionController,
           builder: (context, value, _) {
             final hasQuestion = value.text.trim().isNotEmpty;
+            // First turn: empty allowed (opening explanation). Later turns:
+            // a follow-up needs a typed question.
+            final canSubmit = !_busy && (firstTurn || hasQuestion);
             final label = hasQuestion
                 ? (uiStrings['aiAskSend']?[locale] ?? 'Ask')
                 : (uiStrings['aiExplainGenerate']?[locale] ??
                     'Explain this passage');
             return FilledButton.icon(
-              onPressed: _loading ? null : _onConfirm,
+              onPressed: canSubmit ? _submit : null,
               icon: Icon(
                 hasQuestion
                     ? Icons.send_rounded
@@ -3398,29 +3591,8 @@ class _AiExplainSheetState extends State<_AiExplainSheet> {
     );
   }
 
-  // Selectable, paragraph-spaced prose. The AI is prompted for plain
-  // prose; parseAiMarkdown renders any stray emphasis and keeps the
-  // reading font + line-spacing so the panel reads as one piece with
-  // the passage.
-  Widget _prose(ColorScheme scheme, String text) {
-    return SelectableText.rich(
-      TextSpan(
-        children: parseAiMarkdown(
-          text,
-          base: TextStyle(
-            fontFamily: widget.settings.fontFamily,
-            fontFamilyFallback: kCjkFontFallback,
-            fontSize: widget.settings.fontSize,
-            height: widget.settings.lineSpacing,
-            color: scheme.onSurface,
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _errorBody(
-      ColorScheme scheme, String locale, String reason, VoidCallback onRetry) {
+  Widget _errorBody(ColorScheme scheme, String locale, String reason,
+      VoidCallback onRetry) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 24),
       child: Column(
@@ -3914,6 +4086,12 @@ void showNoteEditor({
   required List<Verse> verses,
   required String locale,
   required MainProvider mainProvider,
+  /// v1.3.73 — when provided (e.g. "save AI answer to note"), the editor
+  /// opens prefilled with the verse's existing note + this text appended
+  /// (or just this text if there's no existing note), editable before
+  /// saving. Reuses the normal save path; nothing is written until the
+  /// user confirms.
+  String? appendText,
 }) {
   if (verses.isEmpty) return;
   final firstVerse = verses.first;
@@ -3933,7 +4111,14 @@ void showNoteEditor({
       break;
     }
   }
-  final controller = TextEditingController(text: prefill ?? '');
+  // v1.3.73: fold an optional appended snippet (e.g. an AI answer) into
+  // the initial body — after the existing note if there is one.
+  var initialBody = prefill ?? '';
+  final addText = (appendText ?? '').trim();
+  if (addText.isNotEmpty) {
+    initialBody = initialBody.isEmpty ? addText : '$initialBody\n\n$addText';
+  }
+  final controller = TextEditingController(text: initialBody);
   final titleController = TextEditingController(text: prefillTitle ?? '');
   // Reference label: single verse → "Genesis 1:16"; range → "Genesis 1:16-18".
   String ref;
@@ -6281,7 +6466,16 @@ class _FloatingHeader extends StatelessWidget {
                                   'Bible Books'),
                         ),
                       if (showBookInfo) ...[
+                        // 2026-06-14 (v1.3.73): the book name gets layout
+                        // PRIORITY (higher flex) over the version chip. The
+                        // version PopupMenuButton used to be unbounded, so a
+                        // long localized label (e.g. 新译本 / 原文释经版) took
+                        // its full intrinsic width and the Flexible book name
+                        // yielded all the way to an empty ellipsis at narrow
+                        // widths — "书卷不见了". Now both are Flexible and the
+                        // book keeps the larger share; the version ellipsizes.
                         Flexible(
+                          flex: 3,
                           child: InkWell(
                             borderRadius: BorderRadius.circular(8),
                             onTap: onBookTap,
@@ -6319,7 +6513,9 @@ class _FloatingHeader extends StatelessWidget {
                             ),
                           ),
                         ),
-                        PopupMenuButton<String>(
+                        Flexible(
+                          flex: 2,
+                          child: PopupMenuButton<String>(
                           padding: EdgeInsets.zero,
                           position: PopupMenuPosition.under,
                           tooltip: uiStrings['changeVersion']
@@ -6375,6 +6571,9 @@ class _FloatingHeader extends StatelessWidget {
                                 const EdgeInsets.symmetric(horizontal: 6),
                             child: Text(
                               shortBibleVersionLabel(version),
+                              maxLines: 1,
+                              softWrap: false,
+                              overflow: TextOverflow.ellipsis,
                               style: TextStyle(
                                 fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                                 fontSize: fontSize * 0.85,
@@ -6383,6 +6582,7 @@ class _FloatingHeader extends StatelessWidget {
                                     scheme.primary.withValues(alpha: 0.8),
                               ),
                             ),
+                          ),
                           ),
                         ),
                       ],

@@ -90,6 +90,10 @@ class AiWordService {
     /// the default whole-passage explanation. Empty / null ⇒ unchanged
     /// default-explanation behaviour.
     String? userQuestion,
+    /// v1.3.73 — compact transcript of earlier turns in the study-panel
+    /// conversation (the client assembles "Q: … / A: …"), so follow-up
+    /// questions stay coherent. Server clamps + sanitises it.
+    String? history,
   }) async {
     final body = <String, dynamic>{
       'task': 'versePlain',
@@ -105,6 +109,8 @@ class AiWordService {
       if (aiModel != null && aiModel.isNotEmpty) 'aiModel': aiModel,
       if (userQuestion != null && userQuestion.trim().isNotEmpty)
         'userQuestion': userQuestion.trim(),
+      if (history != null && history.trim().isNotEmpty)
+        'history': history.trim(),
     };
     return _send(body);
   }
