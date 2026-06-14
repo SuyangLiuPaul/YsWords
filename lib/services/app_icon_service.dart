@@ -26,6 +26,7 @@
 //     update the live <link> hrefs.
 
 import 'dart:async';
+import 'dart:developer' as developer;
 import 'dart:io' show Platform;
 import 'dart:typed_data';
 
@@ -126,11 +127,23 @@ class AppIconService {
     try {
       if (Platform.isIOS) {
         final name = _iosNameForVariant(variant);
+        // v1.3.74: log via dart:developer (NOT debugPrint, which main.dart
+        // nulls out in release) so the icon swap is diagnosable from the
+        // device console (`xcrun devicectl device console` / Console.app,
+        // filter "yswords.icon") even on a release build. Confirms whether
+        // the platform channel round-trips after the v1.3.72 messenger fix.
+        developer.log('iOS updateForColor variant=$variant target=$name',
+            name: 'yswords.icon');
         final current =
             await _iosChannel.invokeMethod<String?>('currentIconName');
-        if (current == name) return; // already set; skip OS alert
-        await _iosChannel
+        developer.log('iOS currentIconName=$current', name: 'yswords.icon');
+        if (current == name) {
+          developer.log('iOS icon already $name — skip', name: 'yswords.icon');
+          return; // already set; skip OS alert
+        }
+        final ok = await _iosChannel
             .invokeMethod<bool>('setIcon', <String, dynamic>{'name': name});
+        developer.log('iOS setIcon($name) -> $ok', name: 'yswords.icon');
       } else if (Platform.isAndroid) {
         final name = _iosNameForVariant(variant); // same string key
         final current =
@@ -149,8 +162,14 @@ class AppIconService {
             'setIconBytes', <String, dynamic>{'bytes': bytes});
       }
     } on PlatformException catch (e) {
+      developer.log('setIcon PlatformException: $e', name: 'yswords.icon');
       debugPrint('[AppIconService] setIcon failed: $e');
     } catch (e) {
+      // A MissingPluginException lands here — the channel handler wasn't
+      // reachable. This is exactly the v1.3.72 symptom; the device log
+      // makes it visible in a release build.
+      developer.log('setIcon unexpected (channel unreachable?): $e',
+          name: 'yswords.icon');
       debugPrint('[AppIconService] unexpected: $e');
     }
   }
