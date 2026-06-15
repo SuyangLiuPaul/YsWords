@@ -126,10 +126,12 @@ any APIs themselves**; everything is at the Firebase project level.
 
 <h3 align="center">On iPad &amp; large screens</h3>
 
+<p align="center"><img height="320" src="assets/screenshots/screenshot_ipad_split_landscape.png" alt="iPad Split View (landscape)"/><br/><sub><b>Landscape Split View — two full columns side by side (NASB ‖ 和合本雅伟版)</b></sub></p>
+
 <table align="center">
   <tr>
-    <td align="center" valign="top"><img height="380" src="assets/screenshots/screenshot_ipad_split_view.png" alt="iPad Split View"/><br/><sub><b>Split View — side-by-side &amp; bilingual (NASB ‖ 和合本雅伟版)</b></sub></td>
-    <td align="center" valign="top"><img height="380" src="assets/screenshots/screenshot_ipad_reading.png" alt="iPad reading"/><br/><sub><b>Wide reading column</b></sub></td>
+    <td align="center" valign="top"><img height="360" src="assets/screenshots/screenshot_ipad_split_view.png" alt="iPad Split View (portrait)"/><br/><sub><b>Portrait Split View</b></sub></td>
+    <td align="center" valign="top"><img height="360" src="assets/screenshots/screenshot_ipad_reading.png" alt="iPad reading"/><br/><sub><b>Wide reading column</b></sub></td>
   </tr>
 </table>
 
@@ -167,6 +169,20 @@ any APIs themselves**; everything is at the Firebase project level.
     <td align="center" valign="top" width="33%"><img height="340" src="assets/screenshots/screenshot_dark_dashboard.png" alt="Dark dashboard"/><br/><sub><b>Dark dashboard</b></sub></td>
   </tr>
 </table>
+
+<h3 align="center">Your theme, your icon</h3>
+
+<p align="center"><sub>Pick a primary colour in Settings and the app icon recolours to match — the iOS home screen, Android launcher, macOS Dock, and the browser favicon all follow.</sub></p>
+
+<p align="center">
+  <img width="76" src="assets/screenshots/screenshot_icon_blue.png" alt="Blue"/>&nbsp;
+  <img width="76" src="assets/screenshots/screenshot_icon_red.png" alt="Red"/>&nbsp;
+  <img width="76" src="assets/screenshots/screenshot_icon_orange.png" alt="Orange"/>&nbsp;
+  <img width="76" src="assets/screenshots/screenshot_icon_green.png" alt="Green"/>&nbsp;
+  <img width="76" src="assets/screenshots/screenshot_icon_purple.png" alt="Purple"/>&nbsp;
+  <img width="76" src="assets/screenshots/screenshot_icon_pink.png" alt="Pink"/>&nbsp;
+  <img width="76" src="assets/screenshots/screenshot_icon_dark.png" alt="Dark"/>
+</p>
 
 ---
 
