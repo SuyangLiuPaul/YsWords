@@ -352,7 +352,14 @@ class _EvidencePageState extends State<EvidencePage> {
                             crossAxisCount: crossAxisCount,
                             mainAxisSpacing: 12,
                             crossAxisSpacing: 12,
-                            mainAxisExtent: 220,
+                            // v1.3.84: 220 → 240. The 100px hero + the
+                            // Expanded text block (title + 2-line summary +
+                            // tappable scripture row) needed a few px more
+                            // than 220 once the block was Expanded (it had
+                            // been overflowing the column unboundedly — see
+                            // the card). 240 leaves headroom for larger font
+                            // scales and taller CJK text without overflow.
+                            mainAxisExtent: 240,
                           ),
                           itemCount: filtered.length,
                           itemBuilder: (_, i) => _EvidenceCard(
@@ -510,9 +517,18 @@ class _EvidenceCard extends StatelessWidget {
                         showCategoryIcon: true,
                       ),
               ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
-                child: Column(
+              // v1.3.84: Expanded so this text block gets the tile's
+              // BOUNDED remaining height (mainAxisExtent 220 − 100 image).
+              // Without it the block was a non-flex child of the outer
+              // Column, which hands children UNBOUNDED vertical space — so
+              // the `Spacer()` below ("non-zero flex but unbounded
+              // constraints") threw and the whole evidence grid failed to
+              // lay out (blank page + a cascade of RenderBox-not-laid-out
+              // on /EvidencePage, reported from iOS).
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
+                  child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
@@ -605,6 +621,7 @@ class _EvidenceCard extends StatelessWidget {
                     ),
                   ],
                 ),
+              ),
               ),
             ],
           ),

@@ -89,60 +89,83 @@ class _OnboardingDialogState extends State<OnboardingDialog> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              SizedBox(
-                height: 240,
-                child: PageView.builder(
-                  controller: _controller,
-                  onPageChanged: (i) => setState(() => _index = i),
-                  itemCount: slides.length,
-                  itemBuilder: (_, i) {
-                    final s = slides[i];
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 4),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Container(
-                            width: 64,
-                            height: 64,
-                            decoration: BoxDecoration(
-                              color: scheme.primary.withValues(alpha: 0.10),
-                              shape: BoxShape.circle,
+              // Illustration + text carousel. Capped at 240px on roomy
+              // screens (its original fixed height — unchanged there),
+              // but Flexible so it shrinks on short viewports instead of
+              // pushing the dots + buttons past the dialog's max height.
+              // Each page additionally scrolls internally (see below) so
+              // a long slide body at a large font size can never overflow
+              // the area it is given. Together these stop the ~4px bottom
+              // overflow seen on tall phones (long body vs the fixed 240)
+              // and the larger overflow on short ones.
+              Flexible(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxHeight: 240),
+                  child: PageView.builder(
+                    controller: _controller,
+                    onPageChanged: (i) => setState(() => _index = i),
+                    itemCount: slides.length,
+                    itemBuilder: (_, i) {
+                      final s = slides[i];
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 4),
+                        // Center the content when it fits (identical to the
+                        // old layout) but allow it to scroll when the body
+                        // is taller than the available height.
+                        child: LayoutBuilder(
+                          builder: (context, constraints) =>
+                              SingleChildScrollView(
+                            child: ConstrainedBox(
+                              constraints: BoxConstraints(
+                                  minHeight: constraints.maxHeight),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Container(
+                                    width: 64,
+                                    height: 64,
+                                    decoration: BoxDecoration(
+                                      color: scheme.primary.withValues(alpha: 0.10),
+                                      shape: BoxShape.circle,
+                                    ),
+                                    alignment: Alignment.center,
+                                    child: Icon(s.icon,
+                                        size: 32, color: scheme.primary),
+                                  ),
+                                  const SizedBox(height: 16),
+                                  Text(
+                                    s.title,
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
+                                      fontSize: (settings.fontSize + 2)
+                                          .clamp(16.0, 26.0)
+                                          .toDouble(),
+                                      fontWeight: FontWeight.w700,
+                                      color: scheme.onSurface,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    s.body,
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
+                                      fontSize: (settings.fontSize - 2)
+                                          .clamp(12.0, 18.0)
+                                          .toDouble(),
+                                      height: 1.4,
+                                      color: scheme.onSurfaceVariant,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
-                            alignment: Alignment.center,
-                            child: Icon(s.icon,
-                                size: 32, color: scheme.primary),
                           ),
-                          const SizedBox(height: 16),
-                          Text(
-                            s.title,
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
-                              fontSize: (settings.fontSize + 2)
-                                  .clamp(16.0, 26.0)
-                                  .toDouble(),
-                              fontWeight: FontWeight.w700,
-                              color: scheme.onSurface,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            s.body,
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
-                              fontSize: (settings.fontSize - 2)
-                                  .clamp(12.0, 18.0)
-                                  .toDouble(),
-                              height: 1.4,
-                              color: scheme.onSurfaceVariant,
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
+                        ),
+                      );
+                    },
+                  ),
                 ),
               ),
               const SizedBox(height: 12),

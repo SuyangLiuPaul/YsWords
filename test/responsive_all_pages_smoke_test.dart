@@ -20,6 +20,7 @@ import 'package:yswords/pages/songs_page.dart';
 import 'package:yswords/pages/stats_page.dart';
 import 'package:yswords/pages/strongs_entry_page.dart';
 import 'package:yswords/providers/main_provider.dart';
+import 'package:yswords/widgets/onboarding_dialog.dart';
 
 /// 2026-06-12 (v1.3.66 audit): responsive overflow smoke tests for the
 /// remaining 15 top-level pages not already covered by
@@ -119,5 +120,51 @@ void main() {
         await tester.pump(const Duration(milliseconds: 250));
       });
     }
+  }
+
+  // 2026-06-16 (v1.3.83 follow-up): first-run onboarding dialog
+  // (OnboardingDialog) overflowed its content column by ~4px on tall
+  // phones (iPhone 17 Pro, ~402×874) — the fixed-height illustration/
+  // text PageView could not contain a long slide body at the default
+  // font size — and overflowed badly on short viewports because the
+  // 240px illustration area plus dots plus buttons exceeded the dialog
+  // height. We pump the dialog directly (it is a plain Dialog widget,
+  // not pushed via the overlay) at the real device height and at a
+  // range of deliberately short heights; any RenderFlex overflow
+  // surfaces as a layout exception and fails here.
+  //
+  // Heights bracket: 360 (well below any real device — pure stress),
+  // 568 (iPhone SE), 600, and 874 (iPhone 17 Pro, where the original
+  // 4px stripe was reproduced). Width is held at a typical phone
+  // logical width since the dialog caps itself at maxWidth 420.
+  const onboardingHeights = <int>[360, 480, 568, 600, 700, 874];
+  for (final h in onboardingHeights) {
+    testWidgets('OnboardingDialog @ 402x$h no overflow', (tester) async {
+      SharedPreferences.setMockInitialValues(<String, Object>{});
+      addTearDown(tester.view.reset);
+
+      tester.view.devicePixelRatio = 1.0;
+      tester.view.physicalSize = Size(402, h.toDouble());
+
+      await tester.pumpWidget(
+        MultiProvider(
+          providers: [
+            ChangeNotifierProvider(create: (_) => AppSettings()),
+          ],
+          child: const MaterialApp(home: OnboardingDialog()),
+        ),
+      );
+      await tester.pump(const Duration(milliseconds: 100));
+      await tester.pump(const Duration(milliseconds: 400));
+
+      expect(
+        tester.takeException(),
+        isNull,
+        reason: 'OnboardingDialog threw during layout at 402x$h',
+      );
+
+      await tester.pumpWidget(const SizedBox.shrink());
+      await tester.pump(const Duration(milliseconds: 250));
+    });
   }
 }
