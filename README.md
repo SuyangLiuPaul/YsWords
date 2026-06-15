@@ -130,6 +130,20 @@ any APIs themselves**; everything is at the Firebase project level.
 | ----------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
 | <img src="assets/screenshots/screenshot_dark_mode.png" alt="Dark mode reader" height="320"/>    | <img src="assets/screenshots/screenshot_dark_dashboard.png" alt="Dark mode dashboard" height="320"/>   |
 
+### More to explore
+
+| Bible Timeline — 98 dated events with scripture chips                                              | Family Tree — 277 people across biblical eras                                                          |
+| -------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| <img src="assets/screenshots/screenshot_bible_timeline.png" alt="Bible Timeline" height="320"/>    | <img src="assets/screenshots/screenshot_family_tree.png" alt="Family Tree" height="320"/>             |
+
+| Daily News — world headlines through a biblical lens                                               | Bible Trivia — acrostics, divine-name codes, numerical structures                                     |
+| -------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| <img src="assets/screenshots/screenshot_daily_news.png" alt="Daily News" height="320"/>            | <img src="assets/screenshots/screenshot_bible_trivia.png" alt="Bible Trivia" height="320"/>           |
+
+| Sermons — 289 sermons across 20 topics, passage-linked                                             | Songs — 511 bilingual hymns tagged by passage                                                         |
+| -------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| <img src="assets/screenshots/screenshot_sermons.png" alt="Sermons" height="320"/>                  | <img src="assets/screenshots/screenshot_songs.png" alt="Songs" height="320"/>                         |
+
 ---
 
 ## Installation
