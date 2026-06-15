@@ -124,6 +124,15 @@ any APIs themselves**; everything is at the Firebase project level.
   </tr>
 </table>
 
+<h3 align="center">On iPad &amp; large screens</h3>
+
+<table align="center">
+  <tr>
+    <td align="center" valign="top"><img height="380" src="assets/screenshots/screenshot_ipad_split_view.png" alt="iPad Split View"/><br/><sub><b>Split View — side-by-side &amp; bilingual (NASB ‖ 和合本雅伟版)</b></sub></td>
+    <td align="center" valign="top"><img height="380" src="assets/screenshots/screenshot_ipad_reading.png" alt="iPad reading"/><br/><sub><b>Wide reading column</b></sub></td>
+  </tr>
+</table>
+
 <h3 align="center">Discover &amp; explore</h3>
 
 <table align="center">
