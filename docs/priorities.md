@@ -52,6 +52,18 @@ These were identified as the highest-ROI gaps after v1.2.35. None are blocking, 
    top-level pages × 320/390/768/1280 (the remaining 15 beyond the
    original 4) — surfaced + fixed one real robustness bug (SearchPage
    verse-load poll ran up to 10 s after dispose; added `&& mounted`).
+   EXTENDED in v1.3.80 (+2 → **316/316**): sync-flicker guard tests
+   (`saveCurrentState` no-op when reading position unchanged; re-stamp
+   on genuine navigation) — locks the content-guard contract that
+   broke the "Syncing↔Synced 来回跳" loop. EXTENDED in v1.3.81 →
+   v1.3.83 (+14 → **330/330**): paragraph-scroll-progress
+   interpolation — monotonic across the chapter, moves WITHIN a
+   paragraph (not just at group boundaries), group-boundary verse
+   alignment, footer→100%, clamp + empty-chapter no-NaN, the pill
+   NUMBER ticks up verse-by-verse while scrolling inside a paragraph
+   (no longer freezes on the group leader), and the verse-by-verse
+   case of the unified code path (one-verse-per-group → sub-verse
+   smoothness).
    Still open as future test additions:
    - `jumpToReference` resolve + scroll (widget-level)
    - Split-pane secondary-provider lifecycle (widget-level)
@@ -393,6 +405,109 @@ All shipped to prod (yswords + yswords-cn). Detailed entries in
     P3 perf audit came back CLEAN (shrinkWrap usage correct, image decode
     caps present, no watch-in-itemBuilder). P4: this doc + README +
     HANDOFF synced. flutter analyze: 0; test: 228/228.
+
+- **v1.3.61 → v1.3.67 (2026-06-11 → 2026-06-13)**.
+  - **v1.3.61 → v1.3.62** — deep-link cold-open + self-healing reader
+    URL + preconnect. The boot path was racing the deep-link parser; now
+    a missing/invalid `/read/...` recovers to a sensible default instead
+    of blanking.
+  - **v1.3.63 → v1.3.64** — evidence-refresh throttle perf
+    (`shouldThrottleRefresh` boundary tests +7).
+  - **v1.3.65** — boot auto-retry robustness.
+  - **v1.3.66** — full-audit pass 2: responsive smoke tests for ALL 19
+    top-level pages × 4 widths (+60 → 303/303); surfaced + fixed one
+    real robustness bug (SearchPage verse-load poll ran up to 10 s after
+    dispose; added `&& mounted`).
+  - **v1.3.67** — escalating FetchVerses timeout (20/40/60 s). Closed
+    the "failed to load / blank app" mystery on slow cellular via the
+    first ErrorReporter field report.
+
+- **v1.3.68 → v1.3.74 (2026-06-13 → 2026-06-14)**.
+  - **v1.3.68 → v1.3.73** — AI verse panel turned into a multi-turn
+    study chat: optional question box (v1.3.68), confirm-first / no
+    auto-generate (v1.3.71), then follow-ups with conversation history,
+    更简短/更详细 length controls, concise-by-default, input clears on
+    success / restored on failure, and save-to-note (selection or whole
+    answer → note editor, append-or-new) (v1.3.73). Also v1.3.73:
+    version-switch race fix (a superseded async load could clobber the
+    current version and poison the per-version LRU) + top-bar overflow
+    fix (long version labels no longer hide the book name at narrow
+    widths).
+  - **v1.3.69** — dark mode tracks the chosen theme colour with a soft
+    light-pastel accent so the "读经" hero card isn't harsh.
+  - **v1.3.70 → v1.3.72** — themed app icon follows the theme colour
+    reliably. The iOS icon `MethodChannel` was registered on the wrong
+    binary messenger after the UISceneDelegate migration; fixed to
+    `engineBridge.applicationRegistrar.messenger()`.
+  - **v1.3.74** — release-visible `dart:developer` icon diagnostic
+    (`name:'yswords.icon'`) for device-console verification.
+
+- **v1.3.75 → v1.3.79 — iOS themed-icon saga: RESOLVED on stock
+    SceneDelegate (2026-06-14 → 2026-06-15).**
+  - Two attempts (v1.3.75, v1.3.77) registered the icon channel from a
+    custom `FlutterSceneDelegate` subclass via Info.plist
+    `UISceneDelegateClassName` and **black-screened the real iPhone** —
+    on this Flutter 3.41 build, any custom subclass via Info.plist
+    breaks window setup. Both reverted (v1.3.76 / v1.3.78).
+  - **v1.3.79 (final)** — keep `SceneDelegate` stock; rely on
+    `AppDelegate.didInitializeImplicitFlutterEngine` → `applicationRegistrar
+    .messenger()` registration. **Sim-verified** (forced `Colors.red` +
+    `debugPrint` in a debug build → `currentIconName=AppIcon-Red`).
+    Real-device "no change" earlier was install-timing, not a code bug.
+    ⚠️ Do NOT reintroduce a custom `FlutterSceneDelegate` subclass via
+    Info.plist on this Flutter version.
+  - Also v1.3.79: **loading-page logo tints to the theme primary** via
+    `ColorFiltered(BlendMode.srcIn)` on a single-hue silhouette.
+  - **macOS app icon** reshaped to the Big Sur rounded template
+    (~82% body + continuous corners + soft drop shadow) — macOS does
+    NOT auto-mask like iOS, so the old full-bleed square shipped as a
+    square. `AppIcon.appiconset` (all sizes) + the 6
+    `assets/themed_icons/` dock variants regenerated. iOS/Android assets
+    intentionally left full-bleed (their OS auto-masks).
+  - **iOS upgrade lesson:** after a major iOS version jump (the iPhone
+    was on iOS 27.0), reinstall the app via `devicectl device install`
+    before assuming a feature regressed — the OS can drop
+    alternate-icon state.
+
+- **v1.3.80 → v1.3.83 — sync flicker + reading-bar overhaul (2026-06-15).**
+  - **v1.3.80 — cloud-sync "Syncing↔Synced 来回跳 / 发癫" flicker
+    loop fixed.** Root cause: `AppSettings._writeUserPrefsBlob` and
+    `MainProvider.saveCurrentState` stamped a fresh
+    `userPrefsTimestamp` / `lastReadTimestamp = now()` on every
+    `notifyListeners()` (including rebuilds caused by a sync-status
+    change itself), so the changing timestamp defeated the sync layer's
+    own dedupe hash → upload → status flip → rebuild → loop. Fix =
+    **content guard**: only re-stamp + upload when the serialized blob
+    actually changed (`_lastWrittenUserPrefsBlob` /
+    `_lastSyncedReadBlob`); extracted `AppSettings._userPrefsSnapshot()`
+    so writer + guard-primer can't drift. +2 regression tests
+    (`test/sync_flicker_guard_test.dart`).
+  - **v1.3.81 — paragraph-mode reading bar tracks scroll
+    proportionally.** Pre-fix the right-edge pill stepped by whole
+    paragraph groups (and didn't move at all while scrolling inside a
+    long paragraph). `_handleItemPositionsChanged` now also derives a
+    CONTINUOUS visible-item position (`itemIndex + within-item fraction
+    from itemLeadingEdge/itemTrailingEdge`) and the indicator
+    interpolates the verse index across the visible group via pure
+    `paragraphScrollProgress()` (`lib/utils/chapter_scroll_progress.dart`)
+    + 7 tests.
+  - **v1.3.82 — pill NUMBER tracks scroll too** (not just the bar). New
+    `paragraphCurrentVerseIndex()` shares the interp core with
+    `paragraphScrollProgress()` so bar + number can never disagree; the
+    number ticks up verse-by-verse while scrolling inside a paragraph
+    instead of freezing on the group's leading verse. +4 tests.
+  - **v1.3.83 — unified the reading-bar logic.** Verse-by-verse mode
+    now drives the pill through the SAME continuous interpolation as
+    paragraph mode (verse-by-verse is just the one-verse-per-group
+    case), so the bar moves smoothly SUB-verse (instead of stepping by
+    whole verses) and the mode branch in the indicator builder was
+    deleted entirely — one code path for both. +3 tests.
+  - flutter analyze: 0; test: **330 / 330**.
+  - Rollout: deployed all 6 Netlify sites incl. **prod** (yswords +
+    yswords-cn) on user OK; iPhone (iOS 27.0) + iPad on v1.3.83; Mi Pad
+    last on v1.3.81 (offline → APK ready for reconnect); macOS app
+    built (Big Sur rounded icon baked in) — `/Applications` install is
+    blocked from the agent's sandbox; user installs manually.
 
 ## Removed features
 
