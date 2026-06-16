@@ -206,26 +206,23 @@ class _SettingsPageBodyState extends State<_SettingsPageBody> {
           final currentBook = mainProvider.currentBook;
           final currentChapter = mainProvider.currentChapter;
 
+          // 2026-06-16 (v1.3.87): exactly 7 swatches, each mapping 1:1 to one
+          // of the 7 themed app icons (default-blue, Red, Orange, Green,
+          // Purple, Pink, Dark) via AppIconService.variantForColor — so every
+          // pick predictably changes BOTH the theme AND the home-screen / dock
+          // / favicon icon. Previously the picker offered 18 Material colours
+          // that collapsed onto the same 7 icon buckets, so e.g. cyan /
+          // light-blue silently mapped to the default icon → "why didn't my
+          // icon change?". Order matches the README "Your theme, your icon"
+          // row. Keep this list in lock-step with variantForColor's buckets.
           final List<Color> palette = [
-            Colors.red,
-            Colors.deepOrange,
-            Colors.orange,
-            Colors.amber,
-            Colors.yellow,
-            Colors.lime,
-            Colors.lightGreen,
-            Colors.green,
-            Colors.teal,
-            Colors.cyan,
-            Colors.lightBlue,
-            Colors.blue,
-            Colors.indigo,
-            Colors.deepPurple,
-            Colors.purple,
-            Colors.pink,
-            Colors.brown,
-            Colors.grey,
-            Colors.blueGrey,
+            Colors.blue, // → default (blue) icon
+            Colors.red, // → AppIcon-Red
+            Colors.orange, // → AppIcon-Orange
+            Colors.green, // → AppIcon-Green
+            Colors.purple, // → AppIcon-Purple
+            Colors.pink, // → AppIcon-Pink
+            Colors.blueGrey, // → AppIcon-Dark
           ];
 
           final versesInChapter = mainProvider.verses

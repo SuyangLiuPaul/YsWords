@@ -2088,9 +2088,15 @@
 // (1.3.85's tag predated the CI workflows + build fixes, so its tag and
 // any backfilled binaries wouldn't match). Marks the cross-platform CI
 // release infrastructure going live.
+// 2026-06-16 (v1.3.87): theme-colour picker simplified to exactly 7 swatches
+// (blue/red/orange/green/purple/pink/dark-grey) that map 1:1 to the 7 themed
+// app icons via AppIconService.variantForColor. Previously 18 Material colours
+// collapsed onto the same 7 icon buckets, so colours like cyan/light-blue
+// silently mapped to the default icon — "why didn't my icon change?". Now
+// every pick predictably changes both the theme and the icon.
 const String kAppVersion = String.fromEnvironment(
   'APP_VERSION',
-  defaultValue: '1.3.86',
+  defaultValue: '1.3.87',
 );
 
 /// 2026-05-10 (v1.2.20): paired with `kAppVersion` so the About
