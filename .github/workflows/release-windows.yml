@@ -1,0 +1,99 @@
+# YsWords — Windows desktop release build
+#
+# Builds the native Windows (x64) app on a GitHub-hosted windows-latest
+# runner (no local machine needed) and publishes it as a downloadable
+# release asset.
+#
+# Triggers
+#   * push of a version tag  v*   → build, then attach the zip to that
+#     tag's GitHub Release (creating the release if it doesn't exist).
+#     This is the normal path: `git tag v1.3.86 && git push origin v1.3.86`.
+#   * workflow_dispatch (manual "Run workflow" button / gh workflow run)
+#     → always builds + uploads the zip as a downloadable *workflow
+#     artifact*. If you also type an existing tag in the input, it
+#     additionally attaches the zip to that release. Leave the tag blank
+#     to do a safe test build that touches no release.
+#
+# The build includes windows/runner/firebase_msvc_compat.cc, which
+# resolves the prebuilt Firebase C++ libs against modern MSVC vcruntime.
+name: Release Windows
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Existing release tag to attach the build to (blank = test build, artifact only, no release touched)'
+        required: false
+        default: ''
+
+# Needed so the built-in GITHUB_TOKEN can create/upload release assets.
+permissions:
+  contents: write
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.41.7'   # keep in step with flutter-ci.yml
+          channel: 'stable'
+          cache: true
+
+      - name: Pub get
+        run: flutter pub get
+
+      - name: Build Windows (release)
+        run: flutter build windows --release
+
+      - name: Resolve tag
+        id: ver
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "push" ]; then
+            echo "tag=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
+          else
+            echo "tag=${{ github.event.inputs.tag }}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Package zip
+        shell: pwsh
+        run: |
+          $tag = "${{ steps.ver.outputs.tag }}"
+          if ([string]::IsNullOrWhiteSpace($tag)) { $tag = "dev-$($env:GITHUB_SHA.Substring(0,7))" }
+          $src   = "build/windows/x64/runner/Release"
+          $stage = "staging/YsWords"
+          New-Item -ItemType Directory -Force -Path $stage | Out-Null
+          Get-ChildItem $src -Exclude *.lib,*.exp | Copy-Item -Destination $stage -Recurse -Force
+          $zip = "YsWords-Windows-x64-$tag.zip"
+          Compress-Archive -Path "staging/YsWords" -DestinationPath $zip -Force
+          "ZIP=$zip" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          Write-Host "Packaged $zip ($([math]::Round((Get-Item $zip).Length/1MB,1)) MB)"
+
+      - name: Upload workflow artifact (always)
+        uses: actions/upload-artifact@v4
+        with:
+          name: YsWords-Windows-x64
+          path: ${{ env.ZIP }}
+          if-no-files-found: error
+
+      - name: Attach to GitHub Release (tag builds only)
+        if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.event.inputs.tag != '')
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag="${{ steps.ver.outputs.tag }}"
+          gh release view "$tag" >/dev/null 2>&1 || \
+            gh release create "$tag" \
+              --title "$tag — Windows desktop build" \
+              --notes "Automated Windows x64 build. Download the zip, extract, and run \`YsWords\\yswords.exe\`. The exe is unsigned — on first launch click **More info → Run anyway** past Windows SmartScreen."
+          gh release upload "$tag" "$ZIP" --clobber
