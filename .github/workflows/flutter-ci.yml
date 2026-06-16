@@ -47,6 +47,14 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+        with:
+          # 2026-06-16: full history (not the default depth-1 shallow clone).
+          # The Gitleaks step scans the push's commit RANGE (before^..after).
+          # On a multi-commit push the base SHA isn't present in a shallow
+          # checkout, so gitleaks died with `fatal: ambiguous argument
+          # '<sha>^..<sha>': unknown revision` → exit 1 (a CI failure with
+          # ZERO leaks found). fetch-depth: 0 gives it the history it needs.
+          fetch-depth: 0
 
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
