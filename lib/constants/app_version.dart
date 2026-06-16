@@ -2081,9 +2081,16 @@
 // swap to onStop() — the home-screen icon updates once the app is
 // backgrounded and the activity is never torn down. iOS/macOS/web
 // unaffected. See MainActivity.kt + AndroidManifest.xml.
+// 2026-06-16 (v1.3.86): NO app-code change from 1.3.85 — this is the
+// first release built for ALL platforms (Windows / macOS / Linux /
+// Android / iOS) via GitHub Actions. The version is bumped purely so the
+// release tag points at the exact commit the binaries were built from
+// (1.3.85's tag predated the CI workflows + build fixes, so its tag and
+// any backfilled binaries wouldn't match). Marks the cross-platform CI
+// release infrastructure going live.
 const String kAppVersion = String.fromEnvironment(
   'APP_VERSION',
-  defaultValue: '1.3.85',
+  defaultValue: '1.3.86',
 );
 
 /// 2026-05-10 (v1.2.20): paired with `kAppVersion` so the About
