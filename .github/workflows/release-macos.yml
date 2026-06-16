@@ -67,6 +67,18 @@ jobs:
             -e 's/DEVELOPMENT_TEAM = YC5JZD3DY7;/DEVELOPMENT_TEAM = "";/g' \
             "$pbx"
           flutter build macos --release
+          # Xcode injects `com.apple.security.get-task-allow` (a debug
+          # entitlement) when ad-hoc signing without a real identity. On any
+          # Mac that didn't build the app, AppleMobileFileIntegrity then
+          # REFUSES to spawn it ("Launchd job spawn failed", POSIX 163) — the
+          # build is green but the downloaded .app won't open. Re-sign the
+          # whole bundle ad-hoc WITHOUT entitlements so it actually launches.
+          # (Verified locally: this is the exact difference between spawn-fail
+          # and a clean 60s+ run.) The user still clears quarantine on first
+          # open, per the release notes.
+          app="$(ls -d build/macos/Build/Products/Release/*.app | head -1)"
+          codesign --force --deep --sign - "$app"
+          codesign --verify --deep "$app" && echo "ad-hoc re-sign OK: $app"
 
       - name: Resolve tag
         id: ver
