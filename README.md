@@ -104,7 +104,7 @@ any APIs themselves**; everything is at the Firebase project level.
 
 <h3 align="center">Read &amp; study the Word</h3>
 
-<p align="center"><img height="360" src="assets/screenshots/screenshot_split_view.png" alt="Split View"/><br/><sub><b>Split View — two fully independent panes, bilingual side-by-side (here NASB &amp; 和合本雅伟版)</b></sub></p>
+<p align="center"><img height="300" src="assets/screenshots/screenshot_ipad_split_landscape.png" alt="Split View"/><br/><sub><b>Split View — two fully independent panes, bilingual side-by-side (here NASB &amp; 和合本雅伟版)</b></sub></p>
 
 <table align="center">
   <tr>
