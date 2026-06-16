@@ -188,7 +188,16 @@ if "$FLUTTER" build ios --release "${DEFINES[@]}"; then
   # to any failures after a 45s warmup window. Devices waking for one
   # install also tend to wake nearby devices via shared mDNS activity.
   remaining=("${IOS_DEVICES[@]}")
-  declare -A succeeded
+  # NOTE: no `declare -A` here. macOS ships bash 3.2 (the launchd run and
+  # any `bash tools/...` invocation use it), and bash 3.2 has no
+  # associative arrays — `declare -A` errors out, and a plain indexed
+  # `succeeded[$uuid]=1` then makes bash arithmetic-evaluate the UUID
+  # ("value too great for base"), which aborts BOTH install loops right
+  # after the first device → the iPad was silently dropped every run.
+  # Per-device success/failure is already tracked via the `remaining` /
+  # `next_remaining` lists + the `successes`/`failures` counters, so no
+  # extra set is needed. Keep this loop free of bash-4-only syntax so it
+  # runs identically under bash 3.2, bash 4+, and zsh.
   for pass in 1 2 3; do
     [ ${#remaining[@]} -eq 0 ] && break
     echo ""
@@ -201,7 +210,6 @@ if "$FLUTTER" build ios --release "${DEFINES[@]}"; then
       echo "→ pass $pass: installing to $label ($uuid)"
       if xcrun devicectl device install app --device "$uuid" "$IOS_APP"; then
         echo "✓ installed to $label"
-        succeeded[$uuid]=1
         successes=$((successes + 1))
       else
         echo "✗ pass $pass: $label not ready, will retry"
