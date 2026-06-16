@@ -49,8 +49,24 @@ jobs:
       - name: Pub get
         run: flutter pub get
 
-      - name: Build macOS (release)
-        run: flutter build macos --release
+      - name: Build macOS (release, unsigned)
+        run: |
+          # CI has no Apple Developer team or provisioning profile, but the
+          # Runner target ships with automatic signing tied to a team
+          # (DEVELOPMENT_TEAM YC5JZD3DY7) — on the runner that fails with
+          # "No profiles for 'com.example.yswords' were found". Neutralize
+          # signing for THIS checkout only (the edit is never committed):
+          # ad-hoc identity ("-"), manual style, no team → no profile lookup.
+          # The result is an ad-hoc/unsigned .app, which is exactly what we
+          # ship in the zip anyway (users clear the quarantine flag). Local
+          # signed builds are unaffected (the committed pbxproj is untouched).
+          pbx=macos/Runner.xcodeproj/project.pbxproj
+          sed -i '' \
+            -e 's/CODE_SIGN_STYLE = Automatic;/CODE_SIGN_STYLE = Manual;/g' \
+            -e 's/CODE_SIGN_IDENTITY = "Apple Development";/CODE_SIGN_IDENTITY = "-";/g' \
+            -e 's/DEVELOPMENT_TEAM = YC5JZD3DY7;/DEVELOPMENT_TEAM = "";/g' \
+            "$pbx"
+          flutter build macos --release
 
       - name: Resolve tag
         id: ver
