@@ -1,0 +1,98 @@
+# YsWords — macOS desktop release build
+#
+# Builds the native macOS app on a GitHub-hosted macos-latest runner
+# and publishes it as a downloadable release asset. Mirrors
+# release-windows.yml so the release set stays consistent.
+#
+# Signing: the build is NOT signed with a Developer ID (that needs a
+# paid Apple cert in secrets). The .app is ad-hoc/unsigned, so on first
+# launch Gatekeeper blocks it — users clear the quarantine flag (see
+# the release notes) or right-click → Open.
+#
+# Triggers
+#   * push of a version tag  v*   → build, attach the zip to that tag's
+#     GitHub Release (creating it if absent).
+#   * workflow_dispatch (manual) → always uploads the zip as a workflow
+#     *artifact*; type an existing tag to also attach it to that
+#     release, or leave blank for a safe test build.
+name: Release macOS
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Existing release tag to attach the build to (blank = test build, artifact only, no release touched)'
+        required: false
+        default: ''
+
+permissions:
+  contents: write
+
+jobs:
+  build-macos:
+    runs-on: macos-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.41.7'   # keep in step with flutter-ci.yml
+          channel: 'stable'
+          cache: true
+
+      - name: Pub get
+        run: flutter pub get
+
+      - name: Build macOS (release)
+        run: flutter build macos --release
+
+      - name: Resolve tag
+        id: ver
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "push" ]; then
+            echo "tag=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
+          else
+            echo "tag=${{ github.event.inputs.tag }}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Package zip
+        shell: bash
+        run: |
+          tag="${{ steps.ver.outputs.tag }}"
+          [ -z "$tag" ] && tag="dev-${GITHUB_SHA::7}"
+          app="$(ls -d build/macos/Build/Products/Release/*.app | head -1)"
+          if [ -z "$app" ]; then echo "No .app produced"; exit 1; fi
+          pkg="YsWords-macOS-${tag}.zip"
+          # ditto preserves the bundle structure / symlinks / resource
+          # forks that a plain `zip` would corrupt for a macOS .app.
+          ditto -c -k --sequesterRsrc --keepParent "$app" "$pkg"
+          echo "PKG=$pkg" >> "$GITHUB_ENV"
+          echo "Packaged $pkg ($(du -h "$pkg" | cut -f1)) from $app"
+
+      - name: Upload workflow artifact (always)
+        uses: actions/upload-artifact@v7
+        with:
+          name: YsWords-macOS
+          path: ${{ env.PKG }}
+          if-no-files-found: error
+
+      - name: Attach to GitHub Release (tag builds only)
+        if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.event.inputs.tag != '')
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag="${{ steps.ver.outputs.tag }}"
+          gh release view "$tag" >/dev/null 2>&1 || \
+            gh release create "$tag" \
+              --title "$tag" \
+              --notes "Automated macOS desktop build (unsigned). Unzip, then clear the quarantine flag so Gatekeeper allows it: \`xattr -dr com.apple.quarantine YsWords.app\` (or right-click the app → Open the first time)." \
+              || true
+          gh release upload "$tag" "$PKG" --clobber

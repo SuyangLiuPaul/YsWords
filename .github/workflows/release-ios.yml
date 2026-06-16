@@ -1,0 +1,104 @@
+# YsWords — iOS release build (UNSIGNED)
+#
+# Builds the iOS app on a GitHub-hosted macos-latest runner and
+# publishes an UNSIGNED .ipa as a release asset. Mirrors
+# release-windows.yml so the release set stays consistent.
+#
+# IMPORTANT — the .ipa this produces is NOT directly installable.
+# A distributable iOS build needs code signing with a paid Apple
+# Developer account + provisioning profile + certs in secrets, which
+# this repo does not have. We build with --no-codesign so CI still
+# verifies the iOS target COMPILES and produces an artifact that can
+# be re-signed and sideloaded (AltStore / Sideloadly) by a user with
+# their own Apple ID. For most users the PWA (Safari → Share → Add to
+# Home Screen) is the easier route. Drop this file if you don't want
+# an unsigned iOS artifact.
+#
+# Triggers
+#   * push of a version tag  v*   → build, attach the .ipa to that
+#     tag's GitHub Release (creating it if absent).
+#   * workflow_dispatch (manual) → always uploads the .ipa as a
+#     workflow *artifact*; type an existing tag to also attach it, or
+#     leave blank for a safe test build.
+name: Release iOS (unsigned)
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Existing release tag to attach the build to (blank = test build, artifact only, no release touched)'
+        required: false
+        default: ''
+
+permissions:
+  contents: write
+
+jobs:
+  build-ios:
+    runs-on: macos-latest
+    timeout-minutes: 40
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.41.7'   # keep in step with flutter-ci.yml
+          channel: 'stable'
+          cache: true
+
+      - name: Pub get
+        run: flutter pub get
+
+      - name: Build iOS (release, unsigned)
+        run: flutter build ios --release --no-codesign
+
+      - name: Resolve tag
+        id: ver
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "push" ]; then
+            echo "tag=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
+          else
+            echo "tag=${{ github.event.inputs.tag }}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Package unsigned .ipa
+        shell: bash
+        run: |
+          tag="${{ steps.ver.outputs.tag }}"
+          [ -z "$tag" ] && tag="dev-${GITHUB_SHA::7}"
+          app="$(ls -d build/ios/iphoneos/*.app | head -1)"
+          if [ -z "$app" ]; then echo "No .app produced"; exit 1; fi
+          # An .ipa is just a zip with the .app under Payload/.
+          rm -rf Payload && mkdir Payload
+          cp -R "$app" Payload/
+          pkg="YsWords-iOS-${tag}-unsigned.ipa"
+          zip -qry "$pkg" Payload
+          echo "PKG=$pkg" >> "$GITHUB_ENV"
+          echo "Packaged $pkg ($(du -h "$pkg" | cut -f1)) from $app"
+
+      - name: Upload workflow artifact (always)
+        uses: actions/upload-artifact@v7
+        with:
+          name: YsWords-iOS-unsigned
+          path: ${{ env.PKG }}
+          if-no-files-found: error
+
+      - name: Attach to GitHub Release (tag builds only)
+        if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.event.inputs.tag != '')
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag="${{ steps.ver.outputs.tag }}"
+          gh release view "$tag" >/dev/null 2>&1 || \
+            gh release create "$tag" \
+              --title "$tag" \
+              --notes "Automated iOS build — UNSIGNED .ipa, NOT directly installable. Re-sign with your own Apple ID via AltStore / Sideloadly, or use a paid Apple Developer account. Easiest path on iOS is the PWA: open the site in Safari → Share → Add to Home Screen." \
+              || true
+          gh release upload "$tag" "$PKG" --clobber

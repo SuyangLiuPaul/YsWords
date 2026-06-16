@@ -1,0 +1,106 @@
+# YsWords — Android release build
+#
+# Builds the release APK on a GitHub-hosted ubuntu-latest runner and
+# publishes it as a downloadable release asset. Mirrors
+# release-windows.yml so the release set stays consistent.
+#
+# Flavor: builds the `intl` flavor (applicationId com.example.yswords)
+# — the same flavor installed on the user's phones / Mi Pad. The `cn`
+# flavor (applicationIdSuffix .cn) is intentionally not built here.
+#
+# Signing: android/app/build.gradle.kts signs the release build with
+# the DEBUG keystore, so no signing secret is needed — the APK is
+# sideload-installable but is NOT a Play-Store upload artifact.
+#
+# Triggers
+#   * push of a version tag  v*   → build, attach the APK to that tag's
+#     GitHub Release (creating it if absent).
+#   * workflow_dispatch (manual) → always uploads the APK as a workflow
+#     *artifact*; type an existing tag to also attach it to that
+#     release, or leave blank for a safe test build.
+name: Release Android
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Existing release tag to attach the build to (blank = test build, artifact only, no release touched)'
+        required: false
+        default: ''
+
+permissions:
+  contents: write
+
+jobs:
+  build-android:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      # Android Gradle Plugin needs a JDK; flutter-action doesn't set
+      # one up. Temurin 17 matches the local toolchain (openjdk@17).
+      - name: Setup Java (JDK 17)
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.41.7'   # keep in step with flutter-ci.yml
+          channel: 'stable'
+          cache: true
+
+      - name: Pub get
+        run: flutter pub get
+
+      - name: Build APK (release, intl flavor)
+        run: flutter build apk --release --flavor intl
+
+      - name: Resolve tag
+        id: ver
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "push" ]; then
+            echo "tag=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
+          else
+            echo "tag=${{ github.event.inputs.tag }}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Stage APK
+        shell: bash
+        run: |
+          tag="${{ steps.ver.outputs.tag }}"
+          [ -z "$tag" ] && tag="dev-${GITHUB_SHA::7}"
+          src="build/app/outputs/flutter-apk/app-intl-release.apk"
+          pkg="YsWords-Android-${tag}.apk"
+          cp "$src" "$pkg"
+          echo "PKG=$pkg" >> "$GITHUB_ENV"
+          echo "Staged $pkg ($(du -h "$pkg" | cut -f1))"
+
+      - name: Upload workflow artifact (always)
+        uses: actions/upload-artifact@v7
+        with:
+          name: YsWords-Android
+          path: ${{ env.PKG }}
+          if-no-files-found: error
+
+      - name: Attach to GitHub Release (tag builds only)
+        if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.event.inputs.tag != '')
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag="${{ steps.ver.outputs.tag }}"
+          gh release view "$tag" >/dev/null 2>&1 || \
+            gh release create "$tag" \
+              --title "$tag" \
+              --notes "Automated Android build (intl flavor, debug-signed APK — sideload only, not a Play Store build). Download the .apk, enable 'Install unknown apps' for your browser/file manager, and open it to install." \
+              || true
+          gh release upload "$tag" "$PKG" --clobber
