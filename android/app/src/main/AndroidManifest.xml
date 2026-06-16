@@ -45,9 +45,14 @@
                 the app may briefly disappear from the grid while
                 Android re-indexes. Some launchers refuse to refresh
                 until reboot.
-              - Disabling the currently-running component is
-                allowed (Android keeps the process alive) but
-                Recents may show the old icon until next launch.
+              - 2026-06-16 (v1.3.85): the swap is applied in
+                MainActivity.onStop(), NOT the instant the colour
+                changes. Disabling the component the running task is
+                rooted on FINISHES that task (DONT_KILL_APP only
+                spares the process) — doing it in the foreground made
+                the app "quit" on every colour change. Deferring to
+                onStop means the launcher shows the new icon once the
+                user leaves the app, and the activity is never killed.
               - Aliases must hold the LAUNCHER intent filter or
                 they won't surface in the launcher; that requires
                 android:exported="true" (Android 12+).

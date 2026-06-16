@@ -2073,9 +2073,17 @@
 // script or `flutter build ios|macos|apk` directly inherit this
 // fallback. Keep it in lock-step with `pubspec.yaml`'s `version:` on
 // every release.
+// 2026-06-16 (v1.3.85): Android theme-colour icon swap no longer
+// "quits" the app. The launcher-icon swap disables the component the
+// running task is rooted on; doing that in the foreground FINISHES the
+// task (DONT_KILL_APP only spares the process), so the app closed every
+// time the user changed the theme colour. MainActivity now defers the
+// swap to onStop() — the home-screen icon updates once the app is
+// backgrounded and the activity is never torn down. iOS/macOS/web
+// unaffected. See MainActivity.kt + AndroidManifest.xml.
 const String kAppVersion = String.fromEnvironment(
   'APP_VERSION',
-  defaultValue: '1.3.84',
+  defaultValue: '1.3.85',
 );
 
 /// 2026-05-10 (v1.2.20): paired with `kAppVersion` so the About

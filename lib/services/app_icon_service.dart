@@ -10,6 +10,13 @@
 //     swap may take 1-3 s and the app can briefly disappear from
 //     the launcher grid while the system re-indexes — Android-OS
 //     behaviour, not avoidable.
+//     2026-06-16 (v1.3.85): the channel's setIcon now only QUEUES
+//     the swap; MainActivity applies it in onStop() (when the app is
+//     backgrounded). Applying it in the foreground disabled the
+//     component the task is rooted on, which Android tears down even
+//     with DONT_KILL_APP — that made the app "quit" on every colour
+//     change. So on Android the home-screen icon updates once the
+//     user leaves the app, not the instant the colour is picked.
 //
 //   macOS: dock-only. NSApplication.applicationIconImage is the
 //     only public API; Finder / Launchpad / Get-Info icons are
