@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:google_fonts/google_fonts.dart';
 
 import 'package:yswords/constants/build_flags.dart';
@@ -87,9 +88,23 @@ enum FontCategory { bundled, englishSerif, englishSans, chinese, system }
 ///   • Google web → Noto Sans SC / Noto Serif SC — also complete
 ///   • Generic CSS → sans-serif (browser picks)
 const List<String> kCjkFontFallback = [
-  // FIRST: the bundled subset — only fallback that CanvasKit can resolve
-  // on Flutter web. See `pubspec.yaml` for the bundle declaration + the
-  // build script `tools/build_cjk_font_subset.sh`.
+  // 2026-06-16: Latin UI faces FIRST so Latin glyphs render in a clean
+  // sans-serif on native desktop (Windows → Segoe UI; bundled Roboto
+  // elsewhere) instead of falling through to a CJK serif (SimSun 宋体)
+  // when the `-apple-system` token can't be resolved by the native
+  // Skia engine. Per-glyph fallback means CJK characters skip these
+  // (no Latin-only font has the glyph) and still resolve via the CJK
+  // families below. Web/CanvasKit skips the unresolvable system names
+  // and uses bundled Roboto for Latin, then NotoSansSC-YsWords for CJK
+  // — so this is safe on web too.
+  'Segoe UI',
+  'Roboto',
+  'SF Pro Text',
+  'Helvetica Neue',
+  'Arial',
+  // FIRST CJK: the bundled subset — the only CJK fallback that CanvasKit
+  // can resolve on Flutter web. See `pubspec.yaml` for the bundle
+  // declaration + the build script `tools/build_cjk_font_subset.sh`.
   'NotoSansSC-YsWords',
   // After: native-platform / browser-CSS fallbacks. These work on
   // iOS / macOS / Android where Flutter can access OS-installed fonts,
@@ -436,7 +451,13 @@ String resolveFontFamily(String key) {
   // macOS / iOS get San Francisco, Windows gets Segoe UI, Android
   // gets Roboto, Linux gets Cantarell / Noto Sans — without any
   // app-side detection logic.
-  if (key == 'system') return '-apple-system';
+  // On Flutter web a browser resolves the CSS pseudo-token `-apple-system`
+  // to the OS UI font. The native (Windows/macOS/Linux) Skia engine matches
+  // real installed family names only and silently drops `-apple-system`, so
+  // returning it there makes Latin text fall through to a CJK serif. Return
+  // an empty family on native so Flutter walks `fontFamilyFallback` cleanly
+  // (which leads with Segoe UI / bundled Roboto). Use `kIsWeb` to stay web-safe.
+  if (key == 'system') return kIsWeb ? '-apple-system' : '';
   final option = fontOptionFor(key);
   if (option.isGoogleFont) {
     try {
@@ -463,8 +484,10 @@ String resolveFontFamily(String key) {
 TextStyle previewTextStyle(String key, TextStyle base) {
   if (key == 'system') {
     // System default → preview in the leading CSS font-stack token
-    // so the row demonstrates the look the user will get.
-    return base.copyWith(fontFamily: '-apple-system');
+    // so the row demonstrates the look the user will get. On native the
+    // token is unresolvable, so fall through to fontFamilyFallback (empty
+    // family) rather than hard-missing onto a CJK serif. Web-safe via kIsWeb.
+    return base.copyWith(fontFamily: kIsWeb ? '-apple-system' : '');
   }
   final option = fontOptionFor(key);
   if (option.isGoogleFont) {
