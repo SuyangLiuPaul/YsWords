@@ -45,7 +45,9 @@ jobs:
       # Android Gradle Plugin needs a JDK; flutter-action doesn't set
       # one up. Temurin 17 matches the local toolchain (openjdk@17).
       - name: Setup Java (JDK 17)
-        uses: actions/setup-java@v4
+        # v5 runs on Node 24 — v4 ran on Node 20, which GitHub deprecated
+        # (the runner warns and will force Node 24 from 2026-06-16).
+        uses: actions/setup-java@v5
         with:
           distribution: 'temurin'
           java-version: '17'
