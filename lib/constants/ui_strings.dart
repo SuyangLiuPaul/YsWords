@@ -4012,6 +4012,28 @@ const uiStrings = {
     'zh-Hant': '下載',
     'en': 'Download',
   },
+  // 2026-06-18 (v1.3.89): test-notification confirmation. {platform} is
+  // filled in with the actual device (iOS/Android/macOS/Windows/Linux/
+  // browser) — it used to hardcode "iOS" on every device.
+  'notificationsTestSent': {
+    'zh-Hans': '测试通知已发送。如果没有看到横幅，请在 {platform} 的通知设置中查看 YsWords'
+        '（以及系统的专注 / 勿扰模式）。',
+    'zh-Hant': '測試通知已發送。如果沒有看到橫幅，請在 {platform} 的通知設定中查看 YsWords'
+        '（以及系統的專注 / 勿擾模式）。',
+    'en': "Test notification sent. If you don't see a banner, check your "
+        '{platform} notification settings for YsWords (or Focus / Do Not '
+        'Disturb).',
+  },
+  'platformBrowser': {
+    'zh-Hans': '浏览器',
+    'zh-Hant': '瀏覽器',
+    'en': 'browser',
+  },
+  'platformDevice': {
+    'zh-Hans': '设备',
+    'zh-Hant': '裝置',
+    'en': 'device',
+  },
   'aboutOpenButton': {
     'zh-Hans': '版权说明与联系方式',
     'zh-Hant': '版權說明與聯絡方式',

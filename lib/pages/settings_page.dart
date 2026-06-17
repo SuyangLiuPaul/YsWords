@@ -4,7 +4,8 @@
 import 'package:yswords/utils/clear_cache_helper.dart';
 import 'package:yswords/utils/clipboard_helper.dart';
 
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/foundation.dart'
+    show kIsWeb, defaultTargetPlatform, TargetPlatform;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show Clipboard, ClipboardData;
 import 'package:yswords/constants/build_flags.dart';
@@ -2295,13 +2296,40 @@ class _NotificationsCardState extends State<_NotificationsCard> {
                           tag: 'yswords-test',
                         );
                         if (!mounted) return;
+                        // 2026-06-18 (v1.3.89): name the ACTUAL platform in
+                        // the hint — the old text hardcoded "iOS Settings"
+                        // on every device (the localized key didn't even
+                        // exist, so it always hit that English fallback).
+                        final plat = kIsWeb
+                            ? (uiStrings['platformBrowser']?[locale] ??
+                                'browser')
+                            : (defaultTargetPlatform == TargetPlatform.iOS
+                                ? 'iOS'
+                                : defaultTargetPlatform ==
+                                        TargetPlatform.android
+                                    ? 'Android'
+                                    : defaultTargetPlatform ==
+                                            TargetPlatform.macOS
+                                        ? 'macOS'
+                                        : defaultTargetPlatform ==
+                                                TargetPlatform.windows
+                                            ? 'Windows'
+                                            : defaultTargetPlatform ==
+                                                    TargetPlatform.linux
+                                                ? 'Linux'
+                                                : (uiStrings['platformDevice']
+                                                        ?[locale] ??
+                                                    'device'));
+                        final sentMsg = (uiStrings['notificationsTestSent']
+                                    ?[locale] ??
+                                "Test notification sent. If you don't see a "
+                                    'banner, check your {platform} '
+                                    'notification settings for YsWords (or '
+                                    'Focus / Do Not Disturb).')
+                            .replaceAll('{platform}', plat);
                         messenger.showSnackBar(
                           SnackBar(
-                            content: Text(
-                              uiStrings['notificationsTestSent']
-                                      ?[locale] ??
-                                  'Test notification sent. If you don\'t see a banner, check iOS Settings → Notifications → YsWords (or system Focus / Do Not Disturb).',
-                            ),
+                            content: Text(sentMsg),
                             duration: const Duration(seconds: 4),
                           ),
                         );
