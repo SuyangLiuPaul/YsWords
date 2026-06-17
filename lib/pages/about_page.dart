@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'package:yswords/constants/app_version.dart';
+import 'package:yswords/widgets/update_check_tile.dart';
 import 'package:yswords/constants/build_flags.dart';
 import 'package:yswords/constants/ui_strings.dart';
 import 'package:yswords/models/app_settings.dart';
@@ -681,6 +682,9 @@ class _AppLicenseCard extends StatelessWidget {
               ),
               onPressed: () => _openRepo(context),
             ),
+            // 2026-06-16 (v1.3.88): native-only "Check for updates" against
+            // the GitHub release feed (hides itself on web — PWA is current).
+            UpdateCheckTile(locale: locale, scheme: scheme),
           ],
         ),
       ),

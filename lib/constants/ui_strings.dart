@@ -3972,6 +3972,46 @@ const uiStrings = {
     'zh-Hant': '關於與版權說明',
     'en': 'About & Attributions',
   },
+  // 2026-06-16 (v1.3.88): in-app "check for updates" (GitHub Releases).
+  'checkForUpdates': {
+    'zh-Hans': '检查更新',
+    'zh-Hant': '檢查更新',
+    'en': 'Check for updates',
+  },
+  'updateChecking': {
+    'zh-Hans': '检查中…',
+    'zh-Hant': '檢查中…',
+    'en': 'Checking…',
+  },
+  'updateUpToDate': {
+    'zh-Hans': '已是最新版本 (v{v})',
+    'zh-Hant': '已是最新版本 (v{v})',
+    'en': "You're on the latest version (v{v})",
+  },
+  'updateCheckFailed': {
+    'zh-Hans': '无法检查更新，请稍后再试',
+    'zh-Hant': '無法檢查更新，請稍後再試',
+    'en': "Couldn't check for updates — try again later",
+  },
+  'updateAvailableTitle': {
+    'zh-Hans': '有可用更新',
+    'zh-Hant': '有可用更新',
+    'en': 'Update available',
+  },
+  'updateAvailableBody': {
+    'zh-Hans': '新版本 v{new} 已发布（当前 v{cur}）。从 GitHub 下载后安装：'
+        'Android 点开 APK 安装；桌面版解压后运行；iOS 请改用网页版。',
+    'zh-Hant': '新版本 v{new} 已發佈（目前 v{cur}）。從 GitHub 下載後安裝：'
+        'Android 點開 APK 安裝；桌面版解壓後執行；iOS 請改用網頁版。',
+    'en': 'Version v{new} is available (you have v{cur}). Download it from '
+        'GitHub, then install: Android opens the APK; desktop unzips and '
+        'runs. iOS uses the web app.',
+  },
+  'updateDownload': {
+    'zh-Hans': '下载',
+    'zh-Hant': '下載',
+    'en': 'Download',
+  },
   'aboutOpenButton': {
     'zh-Hans': '版权说明与联系方式',
     'zh-Hant': '版權說明與聯絡方式',

@@ -2094,9 +2094,16 @@
 // collapsed onto the same 7 icon buckets, so colours like cyan/light-blue
 // silently mapped to the default icon — "why didn't my icon change?". Now
 // every pick predictably changes both the theme and the icon.
+// 2026-06-16 (v1.3.88): free in-app "Check for updates" (Settings → About).
+// Native builds are distributed via GitHub Releases (no app store), so the
+// new `UpdateService` queries the GitHub Releases API, compares the latest
+// tag to this `kAppVersion`, and — if newer — offers a one-tap download of
+// the right asset per platform (Android .apk / desktop .zip/.tar.gz) via
+// `LinkOpener`. Web hides the tile (the PWA is always current). Not a silent
+// auto-installer (that needs an app store) — it's a check + guided download.
 const String kAppVersion = String.fromEnvironment(
   'APP_VERSION',
-  defaultValue: '1.3.87',
+  defaultValue: '1.3.88',
 );
 
 /// 2026-05-10 (v1.2.20): paired with `kAppVersion` so the About
