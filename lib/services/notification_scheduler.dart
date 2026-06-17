@@ -31,6 +31,7 @@ import 'package:timezone/timezone.dart' as tz;
 
 import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/models/notification_category.dart';
+import 'package:yswords/utils/passage_localizer.dart' show localizePassage;
 
 final FlutterLocalNotificationsPlugin _plugin =
     FlutterLocalNotificationsPlugin();
@@ -103,7 +104,7 @@ Future<void> rescheduleAll(AppSettings settings) async {
     final prefs = settings.notificationCategory(id);
     if (!prefs.enabled) continue;
     try {
-      await _scheduleCategory(id, prefs);
+      await _scheduleCategory(id, prefs, settings.locale);
     } catch (e, st) {
       debugPrint('[scheduler] $id failed: $e\n$st');
     }
@@ -146,10 +147,10 @@ tz.TZDateTime _nextFire(NotificationCategoryPrefs prefs) {
   return candidate;
 }
 
-Future<void> _scheduleCategory(
-    String categoryId, NotificationCategoryPrefs prefs) async {
+Future<void> _scheduleCategory(String categoryId,
+    NotificationCategoryPrefs prefs, String locale) async {
   final fire = _nextFire(prefs);
-  final content = await _resolveContent(categoryId, fire);
+  final content = await _resolveContent(categoryId, fire, locale);
   // Stable int id derived from category string so cancel-by-category
   // works without bookkeeping.
   final id = _idForCategory(categoryId);
@@ -196,23 +197,69 @@ class _ScheduledContent {
   _ScheduledContent(this.title, this.body);
 }
 
+/// 2026-06-16 (v1.3.89): localized category label (the notification title
+/// prefix). These were HARDCODED in Simplified Chinese before, so an
+/// English- or Traditional-Chinese-locale user still got 简体 reminders.
+/// Now they follow the app's effective locale (which itself follows the
+/// system when set to auto), threaded in from `rescheduleAll(settings)`.
+String _label(String categoryId, String locale) {
+  Map<String, String> m;
+  switch (categoryId) {
+    case NotificationCategoryIds.dailyVerse:
+      m = const {'en': 'Daily Verse', 'zh-Hans': '今日经文', 'zh-Hant': '今日經文'};
+      break;
+    case NotificationCategoryIds.bibleEvidence:
+      m = const {
+        'en': 'Bible Evidence',
+        'zh-Hans': '圣经考证',
+        'zh-Hant': '聖經考證'
+      };
+      break;
+    case NotificationCategoryIds.sermonOfDay:
+      m = const {
+        'en': "Today's Sermon",
+        'zh-Hans': '今日讲道',
+        'zh-Hant': '今日講道'
+      };
+      break;
+    case NotificationCategoryIds.newsDigest:
+      m = const {'en': 'Bible News', 'zh-Hans': '圣经新闻', 'zh-Hant': '聖經新聞'};
+      break;
+    case NotificationCategoryIds.memoryVerse:
+      m = const {'en': 'Bedtime Verse', 'zh-Hans': '睡前经文', 'zh-Hant': '睡前經文'};
+      break;
+    default:
+      m = const {'en': 'YsWords', 'zh-Hans': 'YsWords', 'zh-Hant': 'YsWords'};
+  }
+  return m[locale] ?? m['en']!;
+}
+
+/// Localized "tap to open" body, used when only a reference is available.
+String _openPrompt(String locale) {
+  const m = {
+    'en': "Tap to read today's verse in YsWords",
+    'zh-Hans': '点按在 YsWords 中阅读今日经文',
+    'zh-Hant': '點按在 YsWords 中閱讀今日經文',
+  };
+  return m[locale] ?? m['en']!;
+}
+
 /// Look up the title + body for a category fire. Reads from bundled
 /// JSON; web/native parity is irrelevant because web doesn't schedule.
 Future<_ScheduledContent> _resolveContent(
-    String categoryId, tz.TZDateTime fire) async {
+    String categoryId, tz.TZDateTime fire, String locale) async {
   switch (categoryId) {
     case NotificationCategoryIds.dailyVerse:
-      return _resolveDailyVerse(fire);
+      return _resolveDailyVerse(fire, locale);
     case NotificationCategoryIds.bibleEvidence:
-      return _resolveBibleEvidence(fire);
+      return _resolveBibleEvidence(fire, locale);
     case NotificationCategoryIds.sermonOfDay:
-      return _resolveSermonOfDay(fire);
+      return _resolveSermonOfDay(fire, locale);
     case NotificationCategoryIds.newsDigest:
-      return _ScheduledContent('圣经新闻', 'Phase 2 — coming soon');
     case NotificationCategoryIds.memoryVerse:
-      return _ScheduledContent('睡前经文', 'Phase 2 — coming soon');
+      return _ScheduledContent(_label(categoryId, locale), _openPrompt(locale));
     default:
-      return _ScheduledContent('YsWords', '');
+      return _ScheduledContent(_label(categoryId, locale), '');
   }
 }
 
@@ -221,87 +268,87 @@ int _dayOfYear(tz.TZDateTime d) {
   return d.difference(firstDay).inDays + 1;
 }
 
-/// Daily verse: pick from assets/daily_verses.json by day-of-year
-/// modulo the curated pool. Title shows the reference; body shows
-/// up to ~100 chars of the verse text.
-Future<_ScheduledContent> _resolveDailyVerse(tz.TZDateTime fire) async {
+/// Daily verse: `assets/daily_verses.json` → `verses` is a list of
+/// reference STRINGS ("Genesis 1:1"), one per day-of-year. Title =
+/// localized label + the reference localized to the user's language
+/// (`localizePassage`); body = a localized "tap to open" prompt (the JSON
+/// carries no verse text — only the reference).
+Future<_ScheduledContent> _resolveDailyVerse(
+    tz.TZDateTime fire, String locale) async {
+  final label = _label(NotificationCategoryIds.dailyVerse, locale);
   try {
     final raw = await rootBundle.loadString('assets/daily_verses.json');
     final json = jsonDecode(raw) as Map<String, dynamic>;
-    final verses = (json['verses'] as List?) ??
-        (json['entries'] as List?) ??
-        const [];
-    if (verses.isEmpty) {
-      return _ScheduledContent('今日经文', 'YsWords');
-    }
-    final idx = _dayOfYear(fire) % verses.length;
-    final entry = verses[idx] as Map<String, dynamic>;
-    final ref = entry['ref'] as String? ??
-        entry['reference'] as String? ??
-        '';
-    final text = entry['text'] as String? ??
-        entry['preview'] as String? ??
-        '';
-    final body = text.length > 90 ? '${text.substring(0, 90)}…' : text;
+    final verses = (json['verses'] as List?) ?? const [];
+    if (verses.isEmpty) return _ScheduledContent(label, _openPrompt(locale));
+    final ref = verses[_dayOfYear(fire) % verses.length].toString();
+    final localizedRef = localizePassage(ref, locale);
     return _ScheduledContent(
-        ref.isNotEmpty ? '今日经文 · $ref' : '今日经文', body);
+      localizedRef.isNotEmpty ? '$label · $localizedRef' : label,
+      _openPrompt(locale),
+    );
   } catch (e) {
     debugPrint('[scheduler] daily_verses lookup failed: $e');
-    return _ScheduledContent('今日经文', '');
+    return _ScheduledContent(label, _openPrompt(locale));
   }
 }
 
+/// Bible evidence: `assets/bible_evidence.json` → entries live under the
+/// `evidences` key (NOT `entries`/`items` — that read silently returned
+/// empty before). Title = localized label + the entry title; body = the
+/// entry summary.
 Future<_ScheduledContent> _resolveBibleEvidence(
-    tz.TZDateTime fire) async {
+    tz.TZDateTime fire, String locale) async {
+  final label = _label(NotificationCategoryIds.bibleEvidence, locale);
   try {
     final raw = await rootBundle.loadString('assets/bible_evidence.json');
     final json = jsonDecode(raw) as Map<String, dynamic>;
-    final entries = (json['entries'] as List?) ??
+    final entries = (json['evidences'] as List?) ??
+        (json['entries'] as List?) ??
         (json['items'] as List?) ??
         const [];
-    if (entries.isEmpty) {
-      return _ScheduledContent('圣经考证', 'YsWords');
-    }
-    final idx = _dayOfYear(fire) % entries.length;
-    final entry = entries[idx] as Map<String, dynamic>;
-    final title = entry['title'] as String? ?? '圣经考证';
+    if (entries.isEmpty) return _ScheduledContent(label, '');
+    final entry =
+        entries[_dayOfYear(fire) % entries.length] as Map<String, dynamic>;
+    final title = entry['title'] as String? ?? '';
     final summary = entry['summary'] as String? ??
         entry['snippet'] as String? ??
         entry['description'] as String? ??
         '';
     final body =
         summary.length > 90 ? '${summary.substring(0, 90)}…' : summary;
-    return _ScheduledContent('圣经考证 · $title', body);
+    return _ScheduledContent(
+        title.isNotEmpty ? '$label · $title' : label, body);
   } catch (e) {
     debugPrint('[scheduler] bible_evidence lookup failed: $e');
-    return _ScheduledContent('圣经考证', '');
+    return _ScheduledContent(label, '');
   }
 }
 
 Future<_ScheduledContent> _resolveSermonOfDay(
-    tz.TZDateTime fire) async {
+    tz.TZDateTime fire, String locale) async {
+  final label = _label(NotificationCategoryIds.sermonOfDay, locale);
   try {
     final raw = await rootBundle.loadString('assets/sermons/index.json');
     final list = jsonDecode(raw) as List;
     if (list.isEmpty) {
-      return _ScheduledContent('今日讲道', '');
+      return _ScheduledContent(label, '');
     }
     // Deterministic-ish pick: hash of yyyymmdd → index. Spreads
     // sermons across days more evenly than dayOfYear modulo.
     final ymd = fire.year * 10000 + fire.month * 100 + fire.day;
     final rng = Random(ymd);
     final entry = list[rng.nextInt(list.length)] as Map<String, dynamic>;
-    final title = entry['title'] as String? ??
-        entry['name'] as String? ??
-        '今日讲道';
+    final title =
+        entry['title'] as String? ?? entry['name'] as String? ?? '';
     final author =
         entry['author'] as String? ?? entry['preacher'] as String? ?? '';
     return _ScheduledContent(
-      '今日讲道',
+      label,
       author.isNotEmpty ? '$title · $author' : title,
     );
   } catch (e) {
     debugPrint('[scheduler] sermon lookup failed: $e');
-    return _ScheduledContent('今日讲道', '');
+    return _ScheduledContent(label, '');
   }
 }

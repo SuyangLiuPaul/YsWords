@@ -2101,9 +2101,19 @@
 // the right asset per platform (Android .apk / desktop .zip/.tar.gz) via
 // `LinkOpener`. Web hides the tile (the PWA is always current). Not a silent
 // auto-installer (that needs an app store) — it's a check + guided download.
+// 2026-06-16 (v1.3.89): scheduled-notification reminders now follow the
+// app/system language. Their titles were hardcoded Simplified Chinese
+// (今日经文 / 圣经考证 / 今日讲道) and the resolvers read the wrong JSON keys
+// (daily_verses `verses` is a list of reference strings; evidence lives
+// under `evidences`), so non-zh users got Chinese labels with empty
+// bodies. notification_scheduler now threads `settings.locale` through,
+// localizes every category label (en / zh-Hans / zh-Hant), localizes the
+// verse reference via `localizePassage`, and reads the correct keys. Also
+// `setLocale` now re-schedules so a language switch re-localizes pending
+// reminders immediately (not just on next launch).
 const String kAppVersion = String.fromEnvironment(
   'APP_VERSION',
-  defaultValue: '1.3.88',
+  defaultValue: '1.3.89',
 );
 
 /// 2026-05-10 (v1.2.20): paired with `kAppVersion` so the About

@@ -495,6 +495,11 @@ class AppSettings extends ChangeNotifier {
     notifyListeners();
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_kLocale, langCode);
+    // 2026-06-16 (v1.3.89): scheduled-notification titles/bodies are
+    // localized at schedule time, so a language change must re-create them
+    // — otherwise pending reminders keep firing in the OLD language until
+    // the next app launch. (No-op on web; the scheduler guards platform.)
+    unawaited(_rescheduleAllSafely());
   }
 
   Future<void> setThemeMode(ThemeMode mode) async {
