@@ -2144,9 +2144,18 @@
 //  • The AND / OR / ✶ operators weren't obviously explained: the ? beside the
 //    operator bar now opens a focused dialog explaining each with examples
 //    (instead of burying it in the general search-help list).
+// 2026-06-18 (v1.3.93): REVERT the v1.3.90 deferred-to-background iOS icon
+// swap — it regressed working devices. Deferring setAlternateIconName to the
+// app-background transition meant the platform-channel call often didn't
+// complete before iOS suspended the app, so the swap never ran: the iPad
+// (which used to recolor every time) stopped changing entirely. Back to
+// applying the swap immediately in the foreground, which is the behaviour
+// that worked on the iPad (every change) and the iPhone (first change). The
+// iPhone's "subsequent changes don't repaint" remains an iOS 26/27
+// SpringBoard bug with no app-side fix.
 const String kAppVersion = String.fromEnvironment(
   'APP_VERSION',
-  defaultValue: '1.3.92',
+  defaultValue: '1.3.93',
 );
 
 /// 2026-05-10 (v1.2.20): paired with `kAppVersion` so the About
@@ -2186,7 +2195,7 @@ const String kAppVersion = String.fromEnvironment(
 /// for the build, which in practice means dev workflow only.
 const String kAppReleaseTime = String.fromEnvironment(
   'APP_RELEASE_TIME',
-  defaultValue: '2026-06-18T00:32:11Z',
+  defaultValue: '2026-06-18T00:46:36Z',
 );
 
 /// Returns a user-locale-formatted release time string. Parses

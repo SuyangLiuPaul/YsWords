@@ -41,8 +41,6 @@ import 'package:flutter/foundation.dart' show kIsWeb, debugPrint;
 import 'package:flutter/material.dart' show Color, Colors;
 import 'package:flutter/services.dart'
     show MethodChannel, PlatformException, rootBundle;
-import 'package:flutter/widgets.dart'
-    show WidgetsBinding, WidgetsBindingObserver, AppLifecycleState;
 
 import 'package:yswords/services/app_icon_service_web.dart'
     if (dart.library.io) 'package:yswords/services/app_icon_service_web_stub.dart'
@@ -54,10 +52,6 @@ class AppIconService {
   static const _iosChannel = MethodChannel('yswords/ios_icon');
   static const _androidChannel = MethodChannel('yswords/android_icon');
   static const _macosChannel = MethodChannel('yswords/macos_icon');
-
-  /// v1.3.90: defers the iOS home-screen icon swap to the next time the app
-  /// backgrounds (see [_IosIconDeferral] for the why).
-  static final _IosIconDeferral _iosDeferral = _IosIconDeferral();
 
   /// True on platforms where we know how to swap *something* (Dock,
   /// favicon, launcher, home-screen). Used by Settings UI to gate
@@ -139,19 +133,28 @@ class AppIconService {
 
     try {
       if (Platform.isIOS) {
-        // v1.3.90: DON'T apply in the foreground. On iOS 26/27 a foreground
-        // setAlternateIconName only repaints the Home Screen icon the FIRST
-        // time per app session — later picks update alternateIconName but
-        // SpringBoard doesn't redraw until the app leaves the foreground —
-        // and it pops a system alert every time. Applying the swap when the
-        // app next backgrounds fixes both: SpringBoard redraws the icon as
-        // it returns to the Home Screen, on every change, with no alert.
-        // Mirrors the Android onStop-deferred approach (MainActivity.kt).
+        // Apply immediately in the foreground. v1.3.90 tried deferring this
+        // to the app-background transition (to work around iOS 26/27 only
+        // repainting the icon on the FIRST foreground change), but that
+        // REGRESSED working devices: on iOS the app suspends before the
+        // background platform-channel round-trip completes, so the swap
+        // often never ran at all — the iPad (which used to change every
+        // time) stopped changing. Immediate apply restores the iPad and the
+        // iPhone's first change; the iPhone's subsequent-change-not-
+        // repainting is an OS-side SpringBoard bug we can't fix from Dart.
         final name = _iosNameForVariant(variant);
-        developer.log('iOS schedule icon variant=$variant target=$name',
+        developer.log('iOS updateForColor variant=$variant target=$name',
             name: 'yswords.icon');
-        _iosDeferral.schedule(name);
-        return;
+        final current =
+            await _iosChannel.invokeMethod<String?>('currentIconName');
+        developer.log('iOS currentIconName=$current', name: 'yswords.icon');
+        if (current == name) {
+          developer.log('iOS icon already $name — skip', name: 'yswords.icon');
+          return; // already set; skip OS alert
+        }
+        final ok = await _iosChannel
+            .invokeMethod<bool>('setIcon', <String, dynamic>{'name': name});
+        developer.log('iOS setIcon($name) -> $ok', name: 'yswords.icon');
       } else if (Platform.isAndroid) {
         final name = _iosNameForVariant(variant); // same string key
         final current =
@@ -191,9 +194,8 @@ class AppIconService {
     }
     try {
       if (Platform.isIOS) {
-        // v1.3.90: defer to background like the forward swap above.
-        _iosDeferral.schedule(null);
-        return;
+        await _iosChannel
+            .invokeMethod<bool>('setIcon', <String, dynamic>{'name': null});
       } else if (Platform.isAndroid) {
         await _androidChannel
             .invokeMethod<bool>('setIcon', <String, dynamic>{'name': null});
@@ -203,63 +205,6 @@ class AppIconService {
       }
     } catch (e) {
       debugPrint('[AppIconService] revert failed: $e');
-    }
-  }
-}
-
-/// v1.3.90: applies the iOS alternate-icon swap when the app next enters
-/// the background, instead of immediately in the foreground.
-///
-/// WHY: on iOS 26/27, calling `UIApplication.setAlternateIconName` while the
-/// app is active only repaints the Home Screen icon the FIRST time per app
-/// session (subsequent calls update `alternateIconName` but SpringBoard
-/// doesn't redraw until the app backgrounds), and it shows a system alert on
-/// every call. Applying the swap from the background-transition avoids both:
-/// SpringBoard redraws the icon as the app animates back to the Home Screen,
-/// for every change, and no alert is shown when the call is made off the
-/// foreground. The newest pick wins if the user changes colour several times
-/// before leaving the app. Mirrors the Android onStop-deferred swap.
-class _IosIconDeferral with WidgetsBindingObserver {
-  String? _pendingName; // target alternate-icon name; null = primary
-  bool _hasPending = false;
-  bool _registered = false;
-
-  void schedule(String? name) {
-    _pendingName = name;
-    _hasPending = true;
-    if (!_registered) {
-      WidgetsBinding.instance.addObserver(this);
-      _registered = true;
-    }
-  }
-
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.inactive ||
-        state == AppLifecycleState.paused ||
-        state == AppLifecycleState.hidden) {
-      unawaited(_flush());
-    }
-  }
-
-  Future<void> _flush() async {
-    if (!_hasPending) return;
-    _hasPending = false;
-    final name = _pendingName;
-    try {
-      final current = await AppIconService._iosChannel
-          .invokeMethod<String?>('currentIconName');
-      if (current == name) {
-        developer.log('iOS deferred icon already $name — skip',
-            name: 'yswords.icon');
-        return;
-      }
-      final ok = await AppIconService._iosChannel
-          .invokeMethod<bool>('setIcon', <String, dynamic>{'name': name});
-      developer.log('iOS deferred setIcon($name) on background -> $ok',
-          name: 'yswords.icon');
-    } catch (e) {
-      developer.log('iOS deferred setIcon failed: $e', name: 'yswords.icon');
     }
   }
 }
