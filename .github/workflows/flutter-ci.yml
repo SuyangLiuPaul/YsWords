@@ -61,9 +61,9 @@ jobs:
         with:
           # Pin to the Flutter version the local dev env uses
           # (the canonical install at /Users/pliu0036/flutter is
-          # 3.41.7 per the README badge). Bump here when the
+          # 3.44.2 per the README badge). Bump here when the
           # local toolchain bumps.
-          flutter-version: '3.41.7'
+          flutter-version: '3.44.2'
           channel: 'stable'
           cache: true
 

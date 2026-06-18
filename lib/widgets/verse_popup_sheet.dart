@@ -325,7 +325,9 @@ class _VersePopupSheetState extends State<VersePopupSheet> {
                     opacity: animation,
                     child: SizeTransition(
                       sizeFactor: animation,
-                      axisAlignment: -1.0,
+                      // v1.3.95 (Flutter 3.44): axisAlignment (double) →
+                      // alignment. -1.0 on the default vertical axis == top.
+                      alignment: Alignment.topCenter,
                       child: child,
                     ),
                   );

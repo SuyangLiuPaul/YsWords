@@ -1646,9 +1646,11 @@ class _DashboardSectionsCard extends StatelessWidget {
               physics: const NeverScrollableScrollPhysics(),
               buildDefaultDragHandles: false,
               itemCount: order.length,
-              onReorder: (oldIndex, newIndex) {
+              // v1.3.95 (Flutter 3.44): onReorder → onReorderItem, which
+              // already adjusts newIndex for the removed item, so the manual
+              // `if (newIndex > oldIndex) newIndex -= 1` is no longer needed.
+              onReorderItem: (oldIndex, newIndex) {
                 final reordered = List<DashboardSection>.from(order);
-                if (newIndex > oldIndex) newIndex -= 1;
                 final moved = reordered.removeAt(oldIndex);
                 reordered.insert(newIndex, moved);
                 settings.setDashboardSectionOrder(reordered);

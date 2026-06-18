@@ -47,9 +47,16 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.41.7'   # keep in step with flutter-ci.yml
+          flutter-version: '3.44.2'   # keep in step with flutter-ci.yml
           channel: 'stable'
           cache: true
+
+      # v1.3.95: Flutter 3.44 enables Swift Package Manager by default, but the
+      # SPM-resolved Firebase SDK is incompatible with our cloud_firestore
+      # plugin version. Stay on CocoaPods (matches local builds + the prior
+      # working setup) until the plugins ship SPM-compatible releases.
+      - name: Disable Swift Package Manager (use CocoaPods)
+        run: flutter config --no-enable-swift-package-manager
 
       - name: Pub get
         run: flutter pub get

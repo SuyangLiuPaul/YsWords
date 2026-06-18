@@ -611,7 +611,9 @@ class _FamilyTreePageState extends State<FamilyTreePage> {
       // "no context for lukan_lineage / mattatha_lk_31" debug.
       // We only have 9 list items (8 sections + comparison table)
       // so the memory cost is trivial.
-      cacheExtent: double.infinity,
+      // v1.3.95 (Flutter 3.44): dropped the deprecated `cacheExtent:
+      // double.infinity` (its replacement now takes a ScrollCacheExtent
+      // object). Only 9 items here, so the default cache extent is fine.
       padding: const EdgeInsets.only(bottom: 32),
       children: [
         ...sections,

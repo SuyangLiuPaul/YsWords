@@ -1836,8 +1836,20 @@ class _SearchPageState extends State<SearchPage> {
                                 '${verse.book} ${verse.chapter}:'
                                     '${verse.verseLabel}',
                                 verse.text),
+                            // v1.3.95: unified result layout — reference on
+                            // top (coloured, like the Strong's / boolean
+                            // lists), highlighted verse text below.
+                            title: Text(
+                              '${verse.book} ${verse.chapter}:'
+                                  '${verse.verseLabel}',
+                              style: TextStyle(
+                                fontSize: settings.fontSize,
+                                color: Theme.of(context).colorScheme.primary,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
                             // Sanitize verse text: remove <note:…> and {...}, leave […]
-                            title: Builder(
+                            subtitle: Builder(
                               builder: (context) {
                                 final sanitized = sanitizeForSearch(verse.text);
                                 return formatSearchText(
@@ -1846,11 +1858,6 @@ class _SearchPageState extends State<SearchPage> {
                                   context: context,
                                 );
                               },
-                            ),
-                            subtitle: Text(
-                              '${verse.book} ${verse.chapter}:${verse.verseLabel}',
-                              style:
-                                  TextStyle(fontSize: settings.fontSize * 0.85),
                             ),
                           ),
                         );
@@ -2564,7 +2571,7 @@ class _SearchPageState extends State<SearchPage> {
                   child: Text(
                     displayLabel,
                     style: TextStyle(
-                      fontSize: settings.fontSize * 0.95,
+                      fontSize: settings.fontSize,
                       fontWeight: FontWeight.w600,
                       color: unresolved
                           ? scheme.onSurfaceVariant

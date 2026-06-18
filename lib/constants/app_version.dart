@@ -2159,9 +2159,15 @@
 // (text search already did; added to the Strong's-concordance + boolean
 // headers). StrongsEntryPage occurrences are long-press-copyable too. Uniform
 // copy behaviour + toast across all the search modes.
+// 2026-06-18 (v1.3.95): (1) unified search-result layout — every search mode
+// (keyword / AI / Strong's / boolean) now shows the reference on top with the
+// verse text below, so the "different search engines" look consistent.
+// (2) Flutter SDK upgraded 3.41.7 → 3.44.2 (Dart 3.12); fixed the three
+// resulting deprecations (cacheExtent dropped, onReorder → onReorderItem,
+// SizeTransition.axisAlignment → alignment). Analyze clean, 365 tests pass.
 const String kAppVersion = String.fromEnvironment(
   'APP_VERSION',
-  defaultValue: '1.3.94',
+  defaultValue: '1.3.95',
 );
 
 /// 2026-05-10 (v1.2.20): paired with `kAppVersion` so the About
@@ -2201,7 +2207,7 @@ const String kAppVersion = String.fromEnvironment(
 /// for the build, which in practice means dev workflow only.
 const String kAppReleaseTime = String.fromEnvironment(
   'APP_RELEASE_TIME',
-  defaultValue: '2026-06-18T01:19:08Z',
+  defaultValue: '2026-06-18T04:47:54Z',
 );
 
 /// Returns a user-locale-formatted release time string. Parses
