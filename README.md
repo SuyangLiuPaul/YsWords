@@ -202,7 +202,7 @@ flutter run -d chrome          # Debug in browser
 flutter build apk --release    # Release APK
 ```
 
-Requires **Flutter >= 3.22** and **Dart >= 3.2** (active dev/prod builds run on Flutter 3.41.7 / Dart 3.11.5; the SDK constraint in `pubspec.yaml` is `'>=3.2.3 <4.0.0'`).
+Requires **Flutter >= 3.22** and **Dart >= 3.2** (active dev/prod builds run on Flutter 3.44.2 / Dart 3.12; the SDK constraint in `pubspec.yaml` is `'>=3.2.3 <4.0.0'`). On Flutter 3.44 the iOS/macOS builds stay on CocoaPods — run `flutter config --no-enable-swift-package-manager` once per machine (the SPM-resolved Firebase SDK is incompatible with the pinned `cloud_firestore`).
 
 ---
 

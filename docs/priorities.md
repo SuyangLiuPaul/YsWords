@@ -11,7 +11,7 @@ These were identified as the highest-ROI gaps after v1.2.35. None are blocking, 
 1. **GitHub Actions CI workflow** — RESOLVED in v1.3.22.
    `.github/workflows/flutter-ci.yml` runs `flutter analyze` +
    `flutter test --reporter expanded` on every push to main +
-   every PR. Pinned to Flutter 3.41.7 (matches local dev env).
+   every PR. Pinned to Flutter 3.44.2 (matches local dev env).
    ~15 min runtime. Pub cache is reused across runs.
 
 2. **Error monitoring on prod** — RESOLVED in v1.3.21. New
