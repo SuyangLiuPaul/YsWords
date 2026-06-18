@@ -2153,9 +2153,15 @@
 // that worked on the iPad (every change) and the iPhone (first change). The
 // iPhone's "subsequent changes don't repaint" remains an iOS 26/27
 // SpringBoard bug with no app-side fix.
+// 2026-06-18 (v1.3.94): copy from every search result. Long-press any result
+// row (keyword / AI / Strong's-concordance / boolean) to copy
+// "Book ch:verse  text", and every results list now has a "copy all" button
+// (text search already did; added to the Strong's-concordance + boolean
+// headers). StrongsEntryPage occurrences are long-press-copyable too. Uniform
+// copy behaviour + toast across all the search modes.
 const String kAppVersion = String.fromEnvironment(
   'APP_VERSION',
-  defaultValue: '1.3.93',
+  defaultValue: '1.3.94',
 );
 
 /// 2026-05-10 (v1.2.20): paired with `kAppVersion` so the About
@@ -2195,7 +2201,7 @@ const String kAppVersion = String.fromEnvironment(
 /// for the build, which in practice means dev workflow only.
 const String kAppReleaseTime = String.fromEnvironment(
   'APP_RELEASE_TIME',
-  defaultValue: '2026-06-18T00:46:36Z',
+  defaultValue: '2026-06-18T01:19:08Z',
 );
 
 /// Returns a user-locale-formatted release time string. Parses

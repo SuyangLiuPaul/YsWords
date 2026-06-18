@@ -917,6 +917,51 @@ class _SearchPageState extends State<SearchPage> {
     );
   }
 
+  /// 2026-06-18 (v1.3.94): copy ONE result row — long-press any search
+  /// result (text / AI / Strong's / boolean) to copy "Book ch:verse  text".
+  /// Consistent across every search mode; reference-only when no verse text.
+  Future<void> _copyVerseLine(
+      BuildContext context, String reference, String? text) async {
+    final clean = (text == null || text.isEmpty)
+        ? ''
+        : sanitizeForSearch(text)
+            .replaceAll('\n', ' ')
+            .replaceAll(_kMultiSpaceRe, ' ')
+            .trim();
+    await ClipboardHelper.copyWithFeedback(
+      context,
+      clean.isEmpty ? reference : '$reference  $clean',
+    );
+  }
+
+  /// 2026-06-18 (v1.3.94): "copy all" for the Strong's-concordance and
+  /// boolean result lists — same format + toast as the text-search copy-all,
+  /// so every search mode offers a consistent copy-everything action.
+  Future<void> _copyAllRefList(BuildContext context, AppSettings settings,
+      String header, List<ConcordanceRef> refs) async {
+    if (refs.isEmpty) return;
+    final mainProv = Provider.of<MainProvider>(context, listen: false);
+    final verseIndex = _getVerseIndex(mainProv);
+    final lines = <String>[header, ''];
+    for (final r in refs) {
+      final displayBook = localeAwareBookName(
+          r.englishBook, settings.locale, mainProv.currentVersion);
+      final raw = verseIndex['${r.englishBook}-${r.chapter}-${r.verse}'] ?? '';
+      final clean = sanitizeForSearch(raw)
+          .replaceAll('\n', ' ')
+          .replaceAll(_kMultiSpaceRe, ' ')
+          .trim();
+      lines.add('$displayBook ${r.chapter}:${r.verse}  $clean'.trim());
+    }
+    await ClipboardHelper.copyWithFeedback(
+      context,
+      lines.join('\n'),
+      messageOverride: (uiStrings['copyAllResultsToast']?[settings.locale] ??
+              'Copied {n} matches')
+          .replaceAll('{n}', refs.length.toString()),
+    );
+  }
+
   /// 2026-05-07 (post-fix): localized help dialog that documents
   /// every search syntax the page supports. Until now, the
   /// page accepted Strong's numbers, Bible references, lemmas, and
@@ -1785,6 +1830,12 @@ class _SearchPageState extends State<SearchPage> {
                                 transition: Transition.rightToLeft,
                               );
                             },
+                            // v1.3.94: long-press to copy this verse.
+                            onLongPress: () => _copyVerseLine(
+                                context,
+                                '${verse.book} ${verse.chapter}:'
+                                    '${verse.verseLabel}',
+                                verse.text),
                             // Sanitize verse text: remove <note:…> and {...}, leave […]
                             title: Builder(
                               builder: (context) {
@@ -2010,14 +2061,30 @@ class _SearchPageState extends State<SearchPage> {
         .replaceAll('{query}', _booleanQueryLabel(q))
         .replaceAll('{count}', count.toString());
     return Padding(
-      padding: const EdgeInsets.fromLTRB(12, 10, 12, 6),
-      child: Text(
-        summary,
-        textAlign: TextAlign.center,
-        style: TextStyle(
-          fontWeight: FontWeight.w600,
-          fontSize: settings.fontSize,
-        ),
+      padding: const EdgeInsets.fromLTRB(12, 6, 4, 4),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              summary,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontWeight: FontWeight.w600,
+                fontSize: settings.fontSize,
+              ),
+            ),
+          ),
+          IconButton(
+            tooltip:
+                uiStrings['copyAllResults']?[settings.locale] ??
+                    'Copy all results',
+            icon: const Icon(Icons.content_copy_rounded, size: 18),
+            onPressed: (_booleanRefs == null || _booleanRefs!.isEmpty)
+                ? null
+                : () => _copyAllRefList(
+                    context, settings, _booleanQueryLabel(q), _booleanRefs!),
+          ),
+        ],
       ),
     );
   }
@@ -2068,6 +2135,8 @@ class _SearchPageState extends State<SearchPage> {
           ),
           child: ListTile(
             onTap: () => _navigateToRef(ref, mainProv),
+            onLongPress: () => _copyVerseLine(context,
+                '$displayBook ${ref.chapter}:${ref.verse}', preview),
             title: Text(
               '$displayBook ${ref.chapter}:${ref.verse}',
               style: TextStyle(fontSize: settings.fontSize),
@@ -2166,13 +2235,28 @@ class _SearchPageState extends State<SearchPage> {
               ),
             ],
             const SizedBox(height: 6),
-            Text(
-              usedLabel,
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-                color: scheme.onSurface,
-              ),
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    usedLabel,
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: scheme.onSurface,
+                    ),
+                  ),
+                ),
+                if (result != null && result.refs.isNotEmpty)
+                  IconButton(
+                    tooltip: uiStrings['copyAllResults']?[settings.locale] ??
+                        'Copy all results',
+                    icon: const Icon(Icons.content_copy_rounded, size: 18),
+                    visualDensity: VisualDensity.compact,
+                    onPressed: () => _copyAllRefList(
+                        context, settings, '$num · $usedLabel', result.refs),
+                  ),
+              ],
             ),
             if (showingFirst != null) ...[
               const SizedBox(height: 2),
@@ -2295,6 +2379,8 @@ class _SearchPageState extends State<SearchPage> {
           ),
           child: ListTile(
             onTap: () => _navigateToRef(ref, mainProv),
+            onLongPress: () => _copyVerseLine(context,
+                '$displayBook ${ref.chapter}:${ref.verse}', preview),
             title: Text(
               '$displayBook ${ref.chapter}:${ref.verse}',
               style: TextStyle(fontSize: settings.fontSize),
@@ -2469,6 +2555,9 @@ class _SearchPageState extends State<SearchPage> {
                 transition: Transition.rightToLeft,
               );
             },
+            // v1.3.94: long-press to copy the reference (+ AI reason).
+            onLongPress: () => _copyVerseLine(
+                context, displayLabel, ref.reason.isEmpty ? null : ref.reason),
             title: Row(
               children: [
                 Expanded(

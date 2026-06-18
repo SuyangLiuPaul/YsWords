@@ -387,6 +387,13 @@ class _StrongsEntryPageState extends State<StrongsEntryPage> {
                 contentPadding: EdgeInsets.zero,
                 visualDensity: VisualDensity.compact,
                 onTap: () => _navigateToOccurrence(r, mainProv, locale),
+                // v1.3.94: long-press to copy this occurrence verse.
+                onLongPress: () => ClipboardHelper.copyWithFeedback(
+                  context,
+                  (preview != null && preview.isNotEmpty)
+                      ? '$displayBook ${r.chapter}:${r.verse}  $preview'
+                      : '$displayBook ${r.chapter}:${r.verse}',
+                ),
               );
             }),
           if (_concordance!.refs.length > 200)
