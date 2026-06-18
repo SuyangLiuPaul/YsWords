@@ -5,6 +5,8 @@ import 'package:yswords/models/verse.dart';
 import 'package:yswords/providers/main_provider.dart';
 import 'package:yswords/services/ai_bible_search_service.dart';
 import 'package:yswords/services/concordance_service.dart';
+import 'package:yswords/services/fetch_books.dart' show standardBookOrder;
+import 'package:yswords/utils/strongs_boolean_search.dart';
 import 'package:yswords/services/fetch_verses.dart';
 import 'package:yswords/pages/strongs_entry_page.dart';
 import 'package:yswords/pages/home_page.dart';
@@ -82,6 +84,14 @@ class _SearchPageState extends State<SearchPage> {
   String? _strongsKey;
   StrongsEntry? _strongsEntry;
   ConcordanceResult? _strongsResult;
+
+  // 2026-06-18 (v1.3.91): boolean Strong's search — "G25 AND G26",
+  // "G25 OR G26", adjacent-implies-AND, and the "G25*" prefix wildcard.
+  // When [_booleanQuery] is set the UI renders the combined occurrence
+  // refs (set intersection / union) instead of single-Strong's results.
+  StrongsBooleanQuery? _booleanQuery;
+  List<ConcordanceRef>? _booleanRefs;
+  bool _booleanLoading = false;
 
   // 2026-05-07: YsWords AI Bible search state. The user can hit
   // "Search with YsWords AI" when keyword search returns no results,
@@ -290,6 +300,9 @@ class _SearchPageState extends State<SearchPage> {
     _strongsKey = null;
     _strongsEntry = null;
     _strongsResult = null;
+    _booleanQuery = null;
+    _booleanRefs = null;
+    _booleanLoading = false;
     _lastResultsFromAi = false;
     _aiNotice = null;
     // 2026-05-08 (v1.1.5): clear the cached AI refs / unresolved set
@@ -967,6 +980,15 @@ class _SearchPageState extends State<SearchPage> {
                               'to open the lexicon and concordance.',
                     ),
                     _SearchHelpRow(
+                      icon: Icons.join_inner_rounded,
+                      label: uiStrings['searchHelpAdvBoolean']?[locale] ??
+                          'Combine Strong\'s numbers with the AND / OR / ✶ '
+                              'buttons (they appear when you type a number): '
+                              '"G25 AND G26" → verses with BOTH; "G25 OR G26" '
+                              '→ EITHER; "G25✶" → every number starting with '
+                              'G25.',
+                    ),
+                    _SearchHelpRow(
                       icon: Icons.translate_rounded,
                       label: uiStrings['searchHelpAdvLemma']?[locale] ??
                           'Greek / Hebrew word: type ἀγάπη or אהבה. '
@@ -1341,6 +1363,16 @@ class _SearchPageState extends State<SearchPage> {
                 await search();
                 return;
               }
+              // v1.3.91: boolean Strong's query ("G25 AND G26", "G25 OR
+              // G26", "G25*") → combined occurrence search rendered in-page.
+              // parseStrongsBoolean returns null for a single plain number,
+              // so "G2316" still opens the lexicon entry below.
+              final boolQuery = parseStrongsBoolean(trimmed);
+              if (boolQuery != null) {
+                await _runBooleanSearch(boolQuery);
+                if (_scrollController.hasClients) _scrollController.jumpTo(0.0);
+                return;
+              }
               // Strong's-shaped query ("G25", "H430", "Strong G1234")
               // jumps straight to the lexicon entry — common idiom in
               // study-tool searches. Done before reference parsing
@@ -1491,6 +1523,10 @@ class _SearchPageState extends State<SearchPage> {
             ),
             child: Column(
           children: [
+            // v1.3.91: AND / OR / ✶ operator bar — appears once the query
+            // contains a Strong's token, so users can build combined
+            // original-language searches without typing the syntax.
+            _buildOperatorBar(context, settings),
             // 2026-05-08 (v1.1.7): mode-chip strip removed at user
             // request. Reasoning:
             //
@@ -1573,6 +1609,12 @@ class _SearchPageState extends State<SearchPage> {
                   ),
                 ),
               )
+            else if (_booleanQuery != null) ...[
+              _buildBooleanHeader(context, settings),
+              Expanded(
+                child: _buildBooleanRefList(context, settings),
+              ),
+            ]
             else if (_strongsKey != null) ...[
               _buildStrongsHeader(context, settings),
               Expanded(
@@ -1776,6 +1818,221 @@ class _SearchPageState extends State<SearchPage> {
   /// Header for Strong's-search mode: the Strong's number badge,
   /// lemma, and a short result summary. Replaces the bookCounts
   /// summary row used by text search.
+  // ── v1.3.91: operator bar (AND / OR / ✶ buttons) ───────────────────
+  void _insertIntoQuery(String insert) {
+    final c = _textEditingController;
+    final base = c.text;
+    final sel = c.selection;
+    var start = sel.start;
+    var end = sel.end;
+    if (start < 0 || end < 0) {
+      start = base.length;
+      end = base.length;
+    }
+    final newText = base.replaceRange(start, end, insert);
+    c.value = TextEditingValue(
+      text: newText,
+      selection: TextSelection.collapsed(offset: start + insert.length),
+    );
+  }
+
+  Widget _buildOperatorBar(BuildContext context, AppSettings settings) {
+    return ValueListenableBuilder<TextEditingValue>(
+      valueListenable: _textEditingController,
+      builder: (context, value, _) {
+        // Only surface once the query contains a Strong's token, so it
+        // doesn't clutter ordinary keyword searches.
+        if (!RegExp(r'[gGhH]\s*\d').hasMatch(value.text)) {
+          return const SizedBox.shrink();
+        }
+        final scheme = Theme.of(context).colorScheme;
+        Widget chip(String label, String insert, String tip) => Padding(
+              padding: const EdgeInsets.only(right: 6),
+              child: ActionChip(
+                visualDensity: VisualDensity.compact,
+                label: Text(label,
+                    style: const TextStyle(
+                        fontWeight: FontWeight.w700, fontSize: 13)),
+                tooltip: tip,
+                onPressed: () => _insertIntoQuery(insert),
+              ),
+            );
+        return Container(
+          width: double.infinity,
+          padding: const EdgeInsets.fromLTRB(8, 4, 4, 4),
+          child: Row(
+            children: [
+              chip(
+                  'AND',
+                  ' AND ',
+                  uiStrings['searchOpAndTip']?[settings.locale] ??
+                      'Verses with BOTH'),
+              chip(
+                  'OR',
+                  ' OR ',
+                  uiStrings['searchOpOrTip']?[settings.locale] ??
+                      'Verses with EITHER'),
+              chip(
+                  '✶',
+                  '*',
+                  uiStrings['searchOpStarTip']?[settings.locale] ??
+                      'Prefix wildcard'),
+              const Spacer(),
+              IconButton(
+                visualDensity: VisualDensity.compact,
+                tooltip: uiStrings['searchHelpTooltip']?[settings.locale] ??
+                    'Search tips',
+                icon: Icon(Icons.help_outline_rounded,
+                    size: 18, color: scheme.primary),
+                onPressed: () => _showSearchHelp(context, settings),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  // ── v1.3.91: boolean Strong's search ───────────────────────────────
+  Future<void> _runBooleanSearch(StrongsBooleanQuery query) async {
+    setState(() {
+      _resetSearchState();
+      _booleanQuery = query;
+      _booleanLoading = true;
+    });
+    // Resolve each term to its occurrence label-set (expanding wildcards),
+    // then apply the AND/OR set algebra.
+    final termRefs = <StrongsTerm, Set<String>>{};
+    for (final t in query.terms) {
+      if (termRefs.containsKey(t)) continue;
+      final labels = <String>{};
+      if (t.wildcard) {
+        final nums = await ConcordanceService.numbersMatchingPrefix(t.number);
+        for (final n in nums) {
+          final r = await ConcordanceService.lookup(n);
+          if (r != null) labels.addAll(r.refs.map((e) => e.label));
+        }
+      } else {
+        final r = await ConcordanceService.lookup(t.number);
+        if (r != null) labels.addAll(r.refs.map((e) => e.label));
+      }
+      termRefs[t] = labels;
+    }
+    final resultLabels = evaluateStrongsBoolean(
+        query, (t) => termRefs[t] ?? const <String>{});
+    final refs = <ConcordanceRef>[];
+    for (final label in resultLabels) {
+      final parsed = ConcordanceRef.tryParse(label);
+      if (parsed != null) refs.add(parsed);
+    }
+    refs.sort((a, b) {
+      final ai = standardBookOrder.indexOf(a.englishBook);
+      final bi = standardBookOrder.indexOf(b.englishBook);
+      if (ai != bi) return ai.compareTo(bi);
+      if (a.chapter != b.chapter) return a.chapter.compareTo(b.chapter);
+      return a.verse.compareTo(b.verse);
+    });
+    if (!mounted) return;
+    setState(() {
+      _booleanRefs = refs;
+      _booleanLoading = false;
+      searchPerformed = true;
+    });
+  }
+
+  String _booleanQueryLabel(StrongsBooleanQuery q) {
+    final buf = StringBuffer(q.terms.first.toString());
+    for (var i = 0; i < q.ops.length; i++) {
+      buf.write(q.ops[i] == StrongsOp.and ? ' AND ' : ' OR ');
+      buf.write(q.terms[i + 1].toString());
+    }
+    return buf.toString();
+  }
+
+  Widget _buildBooleanHeader(BuildContext context, AppSettings settings) {
+    final q = _booleanQuery!;
+    final count = _booleanRefs?.length ?? 0;
+    final summary = (uiStrings['booleanSearchHeader']?[settings.locale] ??
+            '{query} — {count} verses')
+        .replaceAll('{query}', _booleanQueryLabel(q))
+        .replaceAll('{count}', count.toString());
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(12, 10, 12, 6),
+      child: Text(
+        summary,
+        textAlign: TextAlign.center,
+        style: TextStyle(
+          fontWeight: FontWeight.w600,
+          fontSize: settings.fontSize,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBooleanRefList(BuildContext context, AppSettings settings) {
+    if (_booleanLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    final refs = _booleanRefs ?? const <ConcordanceRef>[];
+    final mainProv = Provider.of<MainProvider>(context, listen: false);
+    if (refs.isEmpty) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Text(
+            uiStrings['noResults']?[settings.locale] ?? 'No results found',
+            style: TextStyle(
+              fontSize: settings.fontSize,
+              color: Theme.of(context).colorScheme.outline,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ),
+      );
+    }
+    final verseIndex = _getVerseIndex(mainProv);
+    return ListView.builder(
+      controller: _scrollController,
+      physics: const BouncingScrollPhysics(),
+      itemCount: refs.length,
+      itemBuilder: (context, index) {
+        final ref = refs[index];
+        final displayBook = localeAwareBookName(
+            ref.englishBook, settings.locale, mainProv.currentVersion);
+        final preview =
+            verseIndex['${ref.englishBook}-${ref.chapter}-${ref.verse}']
+                ?.replaceAll('\n', ' ')
+                .replaceAll(notePattern, '')
+                .replaceAllMapped(bracePattern, (m) => m.group(1) ?? '')
+                .replaceAllMapped(squarePattern, (m) => m.group(1) ?? '')
+                .replaceAll(_kMultiSpaceRe, ' ')
+                .trim();
+        return DecoratedBox(
+          decoration: BoxDecoration(
+            border: Border(
+              bottom: BorderSide(color: Theme.of(context).hoverColor),
+            ),
+          ),
+          child: ListTile(
+            onTap: () => _navigateToRef(ref, mainProv),
+            title: Text(
+              '$displayBook ${ref.chapter}:${ref.verse}',
+              style: TextStyle(fontSize: settings.fontSize),
+            ),
+            subtitle: preview != null && preview.isNotEmpty
+                ? Text(
+                    preview,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(fontSize: settings.fontSize - 2),
+                  )
+                : null,
+          ),
+        );
+      },
+    );
+  }
+
   Widget _buildStrongsHeader(BuildContext context, AppSettings settings) {
     final scheme = Theme.of(context).colorScheme;
     final entry = _strongsEntry;

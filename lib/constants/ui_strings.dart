@@ -3581,6 +3581,42 @@ const uiStrings = {
         'Strong\'s number: type "G2316" / "H7200" to open the lexicon '
             'entry plus every verse that uses that word.',
   },
+  // v1.3.91: combined / boolean Strong's search help + operator tooltips.
+  'searchHelpAdvBoolean': {
+    'zh-Hans':
+        '组合检索：用 AND / OR / ✶ 按钮（输入编号后自动出现）组合多个原文编号。'
+            '「G25 AND G26」=同时含两者的经文；「G25 OR G26」=含其一；'
+            '「G25✶」=所有以 G25 开头的编号。',
+    'zh-Hant':
+        '組合檢索：用 AND / OR / ✶ 按鈕（輸入編號後自動出現）組合多個原文編號。'
+            '「G25 AND G26」=同時含兩者的經文；「G25 OR G26」=含其一；'
+            '「G25✶」=所有以 G25 開頭的編號。',
+    'en':
+        'Combine Strong\'s numbers with the AND / OR / ✶ buttons (they '
+            'appear once you type a number): "G25 AND G26" → verses with '
+            'BOTH; "G25 OR G26" → EITHER; "G25✶" → every number starting '
+            'with G25.',
+  },
+  'booleanSearchHeader': {
+    'zh-Hans': '{query} — 共 {count} 节',
+    'zh-Hant': '{query} — 共 {count} 節',
+    'en': '{query} — {count} verses',
+  },
+  'searchOpAndTip': {
+    'zh-Hans': '同时含两者',
+    'zh-Hant': '同時含兩者',
+    'en': 'Verses with BOTH',
+  },
+  'searchOpOrTip': {
+    'zh-Hans': '含其中之一',
+    'zh-Hant': '含其中之一',
+    'en': 'Verses with EITHER',
+  },
+  'searchOpStarTip': {
+    'zh-Hans': '前缀通配符（如 G25✶）',
+    'zh-Hant': '前綴萬用字元（如 G25✶）',
+    'en': 'Prefix wildcard (e.g. G25✶)',
+  },
   'searchHelpAdvLemma': {
     'zh-Hans': '直接输入希腊文（ἀγάπη）或希伯来文（אהבה）原文词，匹配后会打开对应的词典条目。',
     'zh-Hant': '直接輸入希臘文（ἀγάπη）或希伯來文（אהבה）原文詞，匹配後會打開對應的詞典條目。',

@@ -2128,9 +2128,17 @@
 //  • Localization: the book-intro "key passage" and inserted note references
 //    now use the reading-locale book name (round-trip-safe — see
 //    note_reference_localized_roundtrip_test.dart).
+// 2026-06-18 (v1.3.91): boolean Strong's search. Combine original-language
+// numbers with set operators — "G25 AND G26" (verses with BOTH), "G25 OR
+// G26" (EITHER), adjacent-implies-AND, and the "G25*" prefix wildcard — via
+// tappable AND / OR / ✶ buttons that appear once the query contains a
+// number (no syntax to memorise). Results are clickable with verse previews
+// and jump to the verse. The "how to search" help panel documents it. Also:
+// root references inside a Strong's entry's etymology (e.g. "from G1537")
+// are now tappable → open that root's own lexicon page.
 const String kAppVersion = String.fromEnvironment(
   'APP_VERSION',
-  defaultValue: '1.3.90',
+  defaultValue: '1.3.91',
 );
 
 /// 2026-05-10 (v1.2.20): paired with `kAppVersion` so the About
@@ -2170,7 +2178,7 @@ const String kAppVersion = String.fromEnvironment(
 /// for the build, which in practice means dev workflow only.
 const String kAppReleaseTime = String.fromEnvironment(
   'APP_RELEASE_TIME',
-  defaultValue: '2026-06-17T22:10:44Z',
+  defaultValue: '2026-06-18T00:18:44Z',
 );
 
 /// Returns a user-locale-formatted release time string. Parses

@@ -411,20 +411,60 @@ class _StrongsEntryPageState extends State<StrongsEntryPage> {
   /// shown inline (EN) or wrapped in a collapsible "英文参考" (ZH).
   Widget _derivationBox(StrongsEntry e, ColorScheme scheme, String locale,
       AppSettings settings) {
+    final baseStyle = TextStyle(
+      fontSize: settings.fontSize - 1,
+      color: scheme.onSurfaceVariant,
+      height: 1.4,
+    );
+    final label = uiStrings['strongsDerivation']?[locale] ?? 'Derivation';
+    final text = e.derivation ?? '';
+    // 2026-06-18 (v1.3.91): linkify the root references (e.g. "from G1537",
+    // "Compare H10") inside the etymology so tapping a root opens that
+    // root's own lexicon+occurrences page — the same view as the current
+    // word. Uses a WidgetSpan per link (no TapGestureRecognizer to dispose).
+    final spans = <InlineSpan>[TextSpan(text: '$label: ')];
+    final re = RegExp(r'[GHgh]\d{1,5}');
+    var last = 0;
+    for (final m in re.allMatches(text)) {
+      if (m.start > last) {
+        spans.add(TextSpan(text: text.substring(last, m.start)));
+      }
+      final token = m.group(0)!;
+      final num = parseStrongsNumber(token);
+      if (num != null && num != e.number) {
+        spans.add(WidgetSpan(
+          alignment: PlaceholderAlignment.baseline,
+          baseline: TextBaseline.alphabetic,
+          child: GestureDetector(
+            onTap: () => Get.to(
+              () => StrongsEntryPage(number: num),
+              transition: Transition.rightToLeft,
+            ),
+            child: Text(
+              token,
+              style: baseStyle.copyWith(
+                color: scheme.primary,
+                fontWeight: FontWeight.w700,
+                decoration: TextDecoration.underline,
+              ),
+            ),
+          ),
+        ));
+      } else {
+        spans.add(TextSpan(text: token));
+      }
+      last = m.end;
+    }
+    if (last < text.length) {
+      spans.add(TextSpan(text: text.substring(last)));
+    }
     return Container(
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
         color: scheme.surfaceContainerHighest.withValues(alpha: 0.5),
         borderRadius: BorderRadius.circular(8),
       ),
-      child: Text(
-        '${uiStrings['strongsDerivation']?[locale] ?? 'Derivation'}: ${e.derivation}',
-        style: TextStyle(
-          fontSize: settings.fontSize - 1,
-          color: scheme.onSurfaceVariant,
-          height: 1.4,
-        ),
-      ),
+      child: Text.rich(TextSpan(style: baseStyle, children: spans)),
     );
   }
 }

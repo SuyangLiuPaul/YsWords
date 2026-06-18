@@ -60,6 +60,24 @@ class ConcordanceService {
     return jsonDecode(raw) as Map<String, dynamic>;
   }
 
+  /// 2026-06-18 (v1.3.91): all Strong's numbers in the concordance whose
+  /// normalized form starts with [prefix] (e.g. "G25" → G25, G250, G251, …
+  /// G2599). Powers the `G25*` prefix wildcard in boolean search. Capped at
+  /// [limit] so a very short prefix can't union the whole Bible.
+  static Future<List<String>> numbersMatchingPrefix(String prefix,
+      {int limit = 300}) async {
+    if (prefix.isEmpty) return const [];
+    _cache ??= await (_loading ??= _load());
+    final out = <String>[];
+    for (final key in _cache!.keys) {
+      if (key.startsWith(prefix)) {
+        out.add(key);
+        if (out.length >= limit) break;
+      }
+    }
+    return out;
+  }
+
   static Future<ConcordanceResult?> lookup(String strongsNumber) async {
     if (strongsNumber.isEmpty) return null;
     _cache ??= await (_loading ??= _load());
