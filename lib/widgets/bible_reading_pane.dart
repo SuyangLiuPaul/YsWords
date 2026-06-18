@@ -728,6 +728,37 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
     });
   }
 
+  /// Re-anchor the chapter PageController after a version switch.
+  ///
+  /// A version switch can RESIZE the canon: LJK (NT-only, ~260 pages)
+  /// ↔ a full-canon version (~1189 pages). That silently reinterprets
+  /// every PageController page index. The build-time sync block can't
+  /// always catch it: `currentChapterPageIdx` collapses to 0 via its
+  /// `?? 0` fallback whenever the pre-switch position isn't in the old
+  /// version's canon (the partial-canon empty-state — e.g. an LJK pane
+  /// synced to an OT chapter it doesn't ship). `_lastSyncedChapterIdx`
+  /// then also holds 0, so after switching to a full-canon version
+  /// whose target chapter resolves to that same stale index, the guard
+  /// `_lastSyncedChapterIdx != currentChapterPageIdx` is false and the
+  /// controller is never moved — the PageView stays parked on a stale
+  /// page (user: the 希伯来圣经 / OT chapter only appears after closing +
+  /// reopening the menu, which forces an unrelated rebuild). Forcing the
+  /// re-anchor here makes the new chapter show immediately.
+  void _reanchorPageForVersionSwitch(MainProvider p) {
+    // Invalidate the gate so the next sync pass can't early-return on a
+    // stale-equal index.
+    _lastSyncedChapterIdx = null;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || !_pageController.hasClients) return;
+      final idx =
+          p.findChapterIndex(p.currentBook, p.currentChapter) ?? 0;
+      _lastSyncedChapterIdx = idx;
+      if (_pageController.page?.round() != idx) {
+        _pageController.jumpToPage(idx);
+      }
+    });
+  }
+
   /// Compute + cache paragraph groups for the chapter that's one
   /// step before AND one step after `(book, chap)`. Idempotent —
   /// cache hits short-circuit. Microtask-scheduled so it never
@@ -1879,6 +1910,10 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                           p.updateCurrentVerse(verse: match);
                           p.jumpToTop();
                           if (mounted) _visibleItemIndexNotifier.value = 0;
+                          // Canon may have resized (e.g. LJK NT-only →
+                          // full): force the PageView onto the new
+                          // chapter so it doesn't stay on a stale page.
+                          _reanchorPageForVersionSwitch(p);
                           return;
                         }
                         // Slow path (cache miss): show overlay then
@@ -1949,6 +1984,10 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                           p.updateCurrentVerse(verse: match);
                           p.jumpToTop();
                           if (mounted) _visibleItemIndexNotifier.value = 0;
+                          // Canon may have resized (e.g. LJK NT-only →
+                          // full): force the PageView onto the new
+                          // chapter so it doesn't stay on a stale page.
+                          _reanchorPageForVersionSwitch(p);
                         } finally {
                           // Always clear the flag so the overlay
                           // disappears even on error.

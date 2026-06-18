@@ -2167,7 +2167,7 @@
 // SizeTransition.axisAlignment → alignment). Analyze clean, 365 tests pass.
 const String kAppVersion = String.fromEnvironment(
   'APP_VERSION',
-  defaultValue: '1.3.95',
+  defaultValue: '1.3.96',
 );
 
 /// 2026-05-10 (v1.2.20): paired with `kAppVersion` so the About
@@ -2207,7 +2207,7 @@ const String kAppVersion = String.fromEnvironment(
 /// for the build, which in practice means dev workflow only.
 const String kAppReleaseTime = String.fromEnvironment(
   'APP_RELEASE_TIME',
-  defaultValue: '2026-06-18T04:47:54Z',
+  defaultValue: '2026-06-18T22:46:28Z',
 );
 
 /// Returns a user-locale-formatted release time string. Parses
