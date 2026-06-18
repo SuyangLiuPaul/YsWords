@@ -2,16 +2,27 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:provider/provider.dart';
 
+import 'package:yswords/constants/text_patterns.dart'
+    show notePattern, bracePattern, squarePattern;
 import 'package:yswords/constants/ui_strings.dart';
 import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/models/strongs.dart';
+import 'package:yswords/pages/home_page.dart';
+import 'package:yswords/providers/main_provider.dart';
 import 'package:yswords/services/concordance_service.dart';
 import 'package:yswords/services/strongs_service.dart';
 import 'package:yswords/utils/clipboard_helper.dart';
+import 'package:yswords/utils/jump_to_reference.dart' show prepareJumpToVerse;
+import 'package:yswords/utils/version_mapper.dart'
+    show translateBookName, localeAwareBookName, toEnglish;
 import 'package:yswords/widgets/collapsible_english_ref.dart';
 import 'package:yswords/widgets/home_icon_button.dart';
 import 'package:yswords/widgets/localized_back_button.dart';
 import 'package:yswords/utils/font_catalog.dart' show kCjkFontFallback;
+
+/// Collapses runs of 2+ spaces left after stripping inline annotations
+/// from a verse-text preview. Module-level so it compiles once.
+final RegExp _kMultiSpaceRe = RegExp(r' {2,}');
 
 /// Standalone page for viewing a single Strong's lexicon entry by its
 /// number (e.g. "G25" / "H430"). Reachable from the search bar when
@@ -68,6 +79,52 @@ class _StrongsEntryPageState extends State<StrongsEntryPage> {
     });
   }
 
+  // 2026-06-18 (v1.3.90): cached English-keyed verse-text index for the
+  // current Bible version, so the Occurrences list can show a preview of
+  // each verse and tap-to-jump. Rebuilds only when the loaded verses or
+  // version identity changes (mirrors SearchPage._getVerseIndex).
+  Map<String, String>? _verseIndexCache;
+  Object? _verseIndexForVerses;
+  String? _verseIndexForVersion;
+
+  Map<String, String> _verseIndex(MainProvider mp) {
+    if (identical(_verseIndexForVerses, mp.verses) &&
+        _verseIndexForVersion == mp.currentVersion &&
+        _verseIndexCache != null) {
+      return _verseIndexCache!;
+    }
+    _verseIndexForVerses = mp.verses;
+    _verseIndexForVersion = mp.currentVersion;
+    _verseIndexCache = <String, String>{
+      for (final v in mp.verses)
+        '${toEnglish(v.book) ?? v.book}-${v.chapter}-${v.verse}': v.text,
+    };
+    return _verseIndexCache!;
+  }
+
+  /// Tap handler for an occurrence: jump to that verse in the reader.
+  /// If the verse isn't present in the user's current Bible version
+  /// (e.g. a NT Greek word while reading an OT-only version), show a
+  /// gentle notice instead of silently doing nothing.
+  void _navigateToOccurrence(
+      ConcordanceRef ref, MainProvider mp, String locale) {
+    final localBook = translateBookName(ref.englishBook, mp.currentVersion);
+    final match = mp.verses.where((v) =>
+        v.book == localBook && v.chapter == ref.chapter && v.verse == ref.verse);
+    if (match.isEmpty) {
+      if (!mounted) return;
+      final msg = uiStrings['strongsRefNotInVersion']?[locale] ??
+          'This verse isn\'t in your current Bible version.';
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(msg)));
+      return;
+    }
+    prepareJumpToVerse(match.first, mp);
+    // Replace this page with HomePage so the pendingJump lands the user
+    // on the verse regardless of how the lexicon was reached.
+    Get.off(() => const HomePage(), transition: Transition.rightToLeft);
+  }
+
   @override
   Widget build(BuildContext context) {
     final settings = context.watch<AppSettings>();
@@ -105,6 +162,10 @@ class _StrongsEntryPageState extends State<StrongsEntryPage> {
     final e = _entry!;
     final isGreek = e.number.startsWith('G');
     final lemmaFontSize = settings.fontSize + 8;
+    // 2026-06-18 (v1.3.90): used by the Occurrences list to render a verse
+    // preview and jump to the verse on tap.
+    final mainProv = context.read<MainProvider>();
+    final verseIndex = _verseIndex(mainProv);
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
@@ -274,22 +335,50 @@ class _StrongsEntryPageState extends State<StrongsEntryPage> {
               scheme,
               settings),
           const SizedBox(height: 8),
+          // 2026-06-18 (v1.3.90): each occurrence now shows the verse text
+          // (from the loaded version) and is tappable to jump to that verse.
           for (final r in _concordance!.refs.take(200))
-            ListTile(
-              dense: true,
-              leading: Icon(Icons.menu_book_outlined,
-                  size: 16, color: scheme.outline),
-              title: Text(
-                '${r.englishBook} ${r.chapter}:${r.verse}',
-                style: TextStyle(
-                    fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
-                    fontSize: settings.fontSize - 1,
-                    color: scheme.primary,
-                    fontWeight: FontWeight.w600),
-              ),
-              contentPadding: EdgeInsets.zero,
-              visualDensity: VisualDensity.compact,
-            ),
+            Builder(builder: (context) {
+              final displayBook = localeAwareBookName(
+                  r.englishBook, locale, mainProv.currentVersion);
+              final preview = verseIndex['${r.englishBook}-${r.chapter}-${r.verse}']
+                  ?.replaceAll('\n', ' ')
+                  .replaceAll(notePattern, '')
+                  .replaceAllMapped(bracePattern, (m) => m.group(1) ?? '')
+                  .replaceAllMapped(squarePattern, (m) => m.group(1) ?? '')
+                  .replaceAll(_kMultiSpaceRe, ' ')
+                  .trim();
+              return ListTile(
+                dense: true,
+                leading: Icon(Icons.menu_book_outlined,
+                    size: 16, color: scheme.outline),
+                title: Text(
+                  '$displayBook ${r.chapter}:${r.verse}',
+                  style: TextStyle(
+                      fontFamily: settings.fontFamily,
+                      fontFamilyFallback: kCjkFontFallback,
+                      fontSize: settings.fontSize - 1,
+                      color: scheme.primary,
+                      fontWeight: FontWeight.w600),
+                ),
+                subtitle: (preview != null && preview.isNotEmpty)
+                    ? Text(
+                        preview,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontFamily: settings.fontFamily,
+                          fontFamilyFallback: kCjkFontFallback,
+                          fontSize: settings.fontSize - 3,
+                          color: scheme.onSurfaceVariant,
+                        ),
+                      )
+                    : null,
+                contentPadding: EdgeInsets.zero,
+                visualDensity: VisualDensity.compact,
+                onTap: () => _navigateToOccurrence(r, mainProv, locale),
+              );
+            }),
           if (_concordance!.refs.length > 200)
             Padding(
               padding: const EdgeInsets.only(top: 4),

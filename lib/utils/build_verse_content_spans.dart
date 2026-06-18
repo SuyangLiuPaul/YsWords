@@ -96,7 +96,18 @@ List<InlineSpan> buildVerseContentSpans({
           // Lift superscript a touch so it sits visually above the baseline.
           top: superscriptVerseNum ? settings.fontSize * 0.05 : 0,
         ),
-        child: Text(verse.verseLabel, style: verseNumStyle),
+        // 2026-06-18 (v1.3.90): softWrap:false + maxLines:1 so a 2-digit
+        // verse number (e.g. "10") never character-breaks into "1"/"0" on
+        // two lines when the WidgetSpan child is handed a tight width
+        // constraint in a narrow pane (reported on iPad split view,
+        // paragraph mode). The number is always a few chars, so disabling
+        // wrap can't cause visible overflow.
+        child: Text(
+          verse.verseLabel,
+          style: verseNumStyle,
+          softWrap: false,
+          maxLines: 1,
+        ),
       ),
     ),
   ));

@@ -7714,6 +7714,23 @@ class _SectionHeadingState extends State<_SectionHeading> {
   }
 }
 
+/// 2026-06-18 (v1.3.90): localize the book-name part of a book-intro
+/// keyPassage. The data stores it in English (e.g. "John 3:16",
+/// "Matthew 28:18-20", "Psalm 23"); this swaps the leading book token
+/// for the reading-version-aware name ([localeAwareBookName]) while
+/// keeping the chapter:verse(-range) numbers verbatim. Uses the intro's
+/// own canonical [BookIntro.englishBook] (every keyPassage references its
+/// own book) so the "Psalm" vs canonical "Psalms" spelling can't trip up
+/// the name lookup.
+String localizeKeyPassage(
+    String keyPassage, String englishBook, String locale, String? version) {
+  final kp = keyPassage.trim();
+  final m = RegExp(r'^(.+?)\s+(\d.*)$').firstMatch(kp);
+  if (m == null) return kp; // no numeric tail — leave untouched
+  final numeric = m.group(2)!;
+  return '${localeAwareBookName(englishBook, locale, version)} $numeric';
+}
+
 /// Collapsible card rendered at the top of chapter 1 when the active
 /// book has an authored intro. Shows subtitle + summary by default;
 /// tap "Read more" to expand author / date / audience / themes /
@@ -7902,7 +7919,14 @@ class _BookIntroCardState extends State<_BookIntroCard> {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            intro.keyPassage,
+                            localizeKeyPassage(
+                              intro.keyPassage,
+                              intro.englishBook,
+                              locale,
+                              context
+                                  .read<MainProvider>()
+                                  .currentVersion,
+                            ),
                             style: TextStyle(
                               fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                               fontSize:

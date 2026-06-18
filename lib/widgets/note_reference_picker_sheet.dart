@@ -329,10 +329,17 @@ class _NoteReferencePickerSheetState
     // string being built and the Insert button emits it.
     final verses =
         _verseObjectsIn(_selectedBookCanonical!, _selectedChapter!);
+    // 2026-06-18 (v1.3.90): the inserted reference now reads in the
+    // user's language. `_displayBookName` returns the localized book
+    // name (English for `en`); crucially it picks that name straight out
+    // of `bookNameToEnglish`, so the parser resolves it back to the
+    // canonical English book — the picker → insert → re-parse round-trip
+    // stays lossless and the chip stays tappable.
     final preview = formatCompactReference(
       englishBook: _selectedBookCanonical!,
       chapter: _selectedChapter!,
       verses: _selectedVerses.toList(),
+      displayBook: _displayBookName(_selectedBookCanonical!),
     );
     return Column(
       children: [

@@ -4446,6 +4446,14 @@ const uiStrings = {
     'zh-Hant': '出處',
     'en': 'Occurrences',
   },
+  // v1.3.90: shown when a Strong's occurrence is tapped but the verse
+  // isn't present in the user's currently-loaded Bible version (e.g. a
+  // NT Greek word while reading an OT-only version).
+  'strongsRefNotInVersion': {
+    'zh-Hans': '当前译本中没有这节经文。',
+    'zh-Hant': '目前譯本中沒有這節經文。',
+    'en': 'This verse isn\'t in your current Bible version.',
+  },
   // 2026-05-24 (v1.3.19): all `tts*` keys removed with the 朗读
   // feature. Were: ttsListen, ttsStop, ttsVoiceTitle, ttsVoiceBody,
   // ttsVoiceGender, ttsVoiceGenderFemale/Male, ttsVoiceTier,

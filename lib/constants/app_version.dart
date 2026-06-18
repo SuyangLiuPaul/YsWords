@@ -2111,9 +2111,26 @@
 // verse reference via `localizePassage`, and reads the correct keys. Also
 // `setLocale` now re-schedules so a language switch re-localizes pending
 // reminders immediately (not just on next launch).
+// 2026-06-18 (v1.3.90): bundle of fixes.
+//  • iOS alternate-app-icon @3x: SpringBoard renders ALTERNATE icons from the
+//    loose CFBundleIconFiles PNGs (not Assets.car), and actool only emitted
+//    them at @2x — so @3x iPhones had no image and the swap silently no-op'd
+//    (setAlternateIconName returns success + tracks the name, but the home
+//    icon stays primary). Build phase `ios/inject_alt_icon_loose_3x.sh` now
+//    injects ALPHA-FLATTENED 180×180 @3x loose files (iOS rejects icons with
+//    an alpha channel) from `ios/alt_icons_3x/` and re-seals the signature.
+//    On-device diagnosis confirmed the API path is healthy; if a given iOS 27
+//    iPhone still won't repaint after this, it's a SpringBoard cache issue
+//    (respring/reboot), not the app.
+//  • Search: 2-digit verse numbers no longer character-break ("10"→"1"/"0")
+//    in narrow panes; Strong's-entry Occurrences now show verse text and jump
+//    to the verse on tap.
+//  • Localization: the book-intro "key passage" and inserted note references
+//    now use the reading-locale book name (round-trip-safe — see
+//    note_reference_localized_roundtrip_test.dart).
 const String kAppVersion = String.fromEnvironment(
   'APP_VERSION',
-  defaultValue: '1.3.89',
+  defaultValue: '1.3.90',
 );
 
 /// 2026-05-10 (v1.2.20): paired with `kAppVersion` so the About
@@ -2153,7 +2170,7 @@ const String kAppVersion = String.fromEnvironment(
 /// for the build, which in practice means dev workflow only.
 const String kAppReleaseTime = String.fromEnvironment(
   'APP_RELEASE_TIME',
-  defaultValue: '2026-06-14T14:11:43Z',
+  defaultValue: '2026-06-17T22:10:44Z',
 );
 
 /// Returns a user-locale-formatted release time string. Parses

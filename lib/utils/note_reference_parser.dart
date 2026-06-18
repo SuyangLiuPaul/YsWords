@@ -261,12 +261,19 @@ List<NoteReferenceMatch> extractNoteReferences(String noteText) {
 /// Convenience: a `[Book Ch:V]` template the picker sheet emits.
 /// Centralised here so the parser regex and the picker output
 /// can't drift apart.
+/// [displayBook] (v1.3.90): the book name actually written into the
+/// bracket — a localized name (e.g. 约翰福音) so the inserted reference
+/// reads in the user's language. Defaults to [englishBook] for callers
+/// that want the canonical English form. The parser resolves localized
+/// names back to English, so the round-trip stays lossless (covered by
+/// note_reference_localized_roundtrip_test.dart).
 String formatReferenceForInsertion({
   required String englishBook,
   required int chapter,
   required int verse,
+  String? displayBook,
 }) =>
-    '[$englishBook $chapter:$verse]';
+    '[${displayBook ?? englishBook} $chapter:$verse]';
 
 /// 2026-05-19 (v1.2.61): compact reference formatter for the new
 /// multi-select picker. Takes a list of verse numbers and produces
@@ -287,6 +294,7 @@ String formatCompactReference({
   required String englishBook,
   required int chapter,
   required List<int> verses,
+  String? displayBook,
 }) {
   if (englishBook.isEmpty || chapter <= 0 || verses.isEmpty) return '';
   // Dedupe + sort
@@ -314,5 +322,5 @@ String formatCompactReference({
   }
   parts.add(start == end ? '$start' : '$start-$end');
 
-  return '[$englishBook $chapter:${parts.join(',')}]';
+  return '[${displayBook ?? englishBook} $chapter:${parts.join(',')}]';
 }
