@@ -300,6 +300,11 @@ class _StrongsEntryPageState extends State<StrongsEntryPage> {
                   onTap: () => Get.to(
                         () => StrongsEntryPage(number: f.number),
                         transition: Transition.rightToLeft,
+                        // v1.3.91: a StrongsEntryPage → StrongsEntryPage push
+                        // has the same GetX route name, so without this the
+                        // navigation is silently blocked (preventDuplicates)
+                        // and tapping a related/root word does nothing.
+                        preventDuplicates: false,
                       ),
                 ),
             ],
@@ -322,6 +327,11 @@ class _StrongsEntryPageState extends State<StrongsEntryPage> {
                   onTap: () => Get.to(
                         () => StrongsEntryPage(number: f.number),
                         transition: Transition.rightToLeft,
+                        // v1.3.91: a StrongsEntryPage → StrongsEntryPage push
+                        // has the same GetX route name, so without this the
+                        // navigation is silently blocked (preventDuplicates)
+                        // and tapping a related/root word does nothing.
+                        preventDuplicates: false,
                       ),
                 ),
             ],
@@ -439,6 +449,7 @@ class _StrongsEntryPageState extends State<StrongsEntryPage> {
             onTap: () => Get.to(
               () => StrongsEntryPage(number: num),
               transition: Transition.rightToLeft,
+              preventDuplicates: false,
             ),
             child: Text(
               token,

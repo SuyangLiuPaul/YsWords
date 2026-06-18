@@ -2136,9 +2136,17 @@
 // and jump to the verse. The "how to search" help panel documents it. Also:
 // root references inside a Strong's entry's etymology (e.g. "from G1537")
 // are now tappable → open that root's own lexicon page.
+// 2026-06-18 (v1.3.92): two fixes on the v1.3.91 search work.
+//  • Tapping a related / word-family ("同根词") or etymology-root word in a
+//    Strong's entry did nothing: a StrongsEntryPage → StrongsEntryPage push
+//    shares the same GetX route name, so GetX silently blocked it. Added
+//    preventDuplicates: false to those navigations so you can drill root→root.
+//  • The AND / OR / ✶ operators weren't obviously explained: the ? beside the
+//    operator bar now opens a focused dialog explaining each with examples
+//    (instead of burying it in the general search-help list).
 const String kAppVersion = String.fromEnvironment(
   'APP_VERSION',
-  defaultValue: '1.3.91',
+  defaultValue: '1.3.92',
 );
 
 /// 2026-05-10 (v1.2.20): paired with `kAppVersion` so the About
@@ -2178,7 +2186,7 @@ const String kAppVersion = String.fromEnvironment(
 /// for the build, which in practice means dev workflow only.
 const String kAppReleaseTime = String.fromEnvironment(
   'APP_RELEASE_TIME',
-  defaultValue: '2026-06-18T00:18:44Z',
+  defaultValue: '2026-06-18T00:32:11Z',
 );
 
 /// Returns a user-locale-formatted release time string. Parses

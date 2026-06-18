@@ -1880,16 +1880,69 @@ class _SearchPageState extends State<SearchPage> {
               const Spacer(),
               IconButton(
                 visualDensity: VisualDensity.compact,
-                tooltip: uiStrings['searchHelpTooltip']?[settings.locale] ??
-                    'Search tips',
+                tooltip: uiStrings['operatorHelpTitle']?[settings.locale] ??
+                    'Combined search',
                 icon: Icon(Icons.help_outline_rounded,
                     size: 18, color: scheme.primary),
-                onPressed: () => _showSearchHelp(context, settings),
+                onPressed: () => _showOperatorHelp(context, settings),
               ),
             ],
           ),
         );
       },
+    );
+  }
+
+  /// v1.3.91: focused explainer for the AND / OR / ✶ buttons, opened from
+  /// the ? right beside them (so it's discoverable in-context rather than
+  /// buried in the general search-help dialog).
+  void _showOperatorHelp(BuildContext context, AppSettings settings) {
+    final locale = settings.locale;
+    showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(
+          uiStrings['operatorHelpTitle']?[locale] ?? 'Combined search',
+          style: const TextStyle(fontWeight: FontWeight.w700),
+        ),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _SearchHelpRow(
+                icon: Icons.join_inner_rounded,
+                label: uiStrings['operatorHelpAnd']?[locale] ??
+                    'AND — "G25 AND G26": verses with BOTH.',
+              ),
+              const SizedBox(height: 10),
+              _SearchHelpRow(
+                icon: Icons.join_full_rounded,
+                label: uiStrings['operatorHelpOr']?[locale] ??
+                    'OR — "G25 OR G26": verses with EITHER.',
+              ),
+              const SizedBox(height: 10),
+              _SearchHelpRow(
+                icon: Icons.star_outline_rounded,
+                label: uiStrings['operatorHelpStar']?[locale] ??
+                    '✶ — "G25✶": numbers starting with G25.',
+              ),
+              const SizedBox(height: 10),
+              _SearchHelpRow(
+                icon: Icons.lightbulb_outline_rounded,
+                label: uiStrings['operatorHelpTip']?[locale] ??
+                    'Type a number, then tap a button.',
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: Text(uiStrings['ok']?[locale] ?? 'OK'),
+          ),
+        ],
+      ),
     );
   }
 

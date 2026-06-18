@@ -3617,6 +3617,32 @@ const uiStrings = {
     'zh-Hant': '前綴萬用字元（如 G25✶）',
     'en': 'Prefix wildcard (e.g. G25✶)',
   },
+  // v1.3.91: focused help dialog opened from the ? beside the AND/OR/✶ bar.
+  'operatorHelpTitle': {
+    'zh-Hans': '组合检索（AND / OR / ✶）',
+    'zh-Hant': '組合檢索（AND / OR / ✶）',
+    'en': 'Combined search (AND / OR / ✶)',
+  },
+  'operatorHelpAnd': {
+    'zh-Hans': 'AND —「G25 AND G26」：同时含两个编号的经文。',
+    'zh-Hant': 'AND —「G25 AND G26」：同時含兩個編號的經文。',
+    'en': 'AND — "G25 AND G26": verses that contain BOTH numbers.',
+  },
+  'operatorHelpOr': {
+    'zh-Hans': 'OR —「G25 OR G26」：含其中任一编号的经文。',
+    'zh-Hant': 'OR —「G25 OR G26」：含其中任一編號的經文。',
+    'en': 'OR — "G25 OR G26": verses that contain EITHER number.',
+  },
+  'operatorHelpStar': {
+    'zh-Hans': '✶ —「G25✶」：所有以 G25 开头的 Strong\'s 编号。',
+    'zh-Hant': '✶ —「G25✶」：所有以 G25 開頭的 Strong\'s 編號。',
+    'en': '✶ — "G25✶": every Strong\'s number that starts with G25.',
+  },
+  'operatorHelpTip': {
+    'zh-Hans': '先输入一个编号（如 G25），再点按钮加入 AND / OR / ✶。',
+    'zh-Hant': '先輸入一個編號（如 G25），再點按鈕加入 AND / OR / ✶。',
+    'en': 'Type a Strong\'s number (e.g. G25), then tap a button to add it.',
+  },
   'searchHelpAdvLemma': {
     'zh-Hans': '直接输入希腊文（ἀγάπη）或希伯来文（אהבה）原文词，匹配后会打开对应的词典条目。',
     'zh-Hant': '直接輸入希臘文（ἀγάπη）或希伯來文（אהבה）原文詞，匹配後會打開對應的詞典條目。',
