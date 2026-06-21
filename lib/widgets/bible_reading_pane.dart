@@ -6489,27 +6489,30 @@ class _FloatingHeader extends StatelessWidget {
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          // Back arrow as the leftmost element when
-                          // the reader is pushed (has a parent on
-                          // the navigator stack). Pops one level —
-                          // matches the back-arrow-on-leading
-                          // pattern across all AppBar-based pages.
-                          // Hidden in split view's secondary pane
-                          // (where `onClose` already sits in this
-                          // slot) so we don't get two close-style
-                          // buttons stacking up.
+                          // 2026-06-21: leading button is HOME, not a
+                          // back-arrow. On iPad split view the back-arrow
+                          // (←) collided visually with the sidebar-toggle
+                          // / secondary-pane close chevrons — "两个左
+                          // arrow" the user found confusing. A home icon
+                          // reads unambiguously and jumps straight to the
+                          // Dashboard root (what `maybePop` did anyway
+                          // when the reader was pushed from home). The
+                          // old right-side home action is removed since
+                          // it now lives here (no duplicate home icons).
+                          // Hidden in the split-view secondary pane
+                          // (where `onClose` already sits in this slot).
                           if (onClose == null &&
                               Navigator.of(context).canPop())
                             IconButton(
-                              onPressed: () =>
-                                  Navigator.of(context).maybePop(),
-                              icon: Icon(Icons.arrow_back_rounded,
+                              onPressed: () => Navigator.of(context)
+                                  .popUntil((r) => r.isFirst),
+                              icon: Icon(Icons.home_rounded,
                                   size: iconSize),
                               padding: EdgeInsets.all(iconPad),
                               constraints: const BoxConstraints(
                                   minWidth: 36, minHeight: 36),
                               tooltip:
-                                  uiStrings['back']?[locale] ?? 'Back',
+                                  uiStrings['home']?[locale] ?? 'Home',
                             ),
                           if (onClose != null)
                             IconButton(
@@ -6681,23 +6684,10 @@ class _FloatingHeader extends StatelessWidget {
                             minWidth: 36, minHeight: 36),
                         tooltip: uiStrings['search']?[locale] ?? 'Search',
                       ),
-                    // Home action — jump back to the Dashboard root.
-                    // Sits in the right-side action group, mirroring
-                    // the actions-area HomeIconButton on every
-                    // AppBar page. Self-hides when there's no
-                    // parent route (rare; defends against deep-link
-                    // edge cases).
-                    if (Navigator.of(context).canPop() && onClose == null)
-                      IconButton(
-                        onPressed: () => Navigator.of(context)
-                            .popUntil((r) => r.isFirst),
-                        icon:
-                            Icon(Icons.home_rounded, size: iconSize),
-                        padding: EdgeInsets.all(iconPad),
-                        constraints: const BoxConstraints(
-                            minWidth: 36, minHeight: 36),
-                        tooltip: uiStrings['home']?[locale] ?? 'Home',
-                      ),
+                    // 2026-06-21: the Home action moved to the LEADING
+                    // slot (it replaced the back-arrow). Keeping a second
+                    // home button here would show two home icons on the
+                    // primary pane, so the right-side one is gone.
                     // 2026-05-24 (v1.3.14): hide the overflow menu in
                     // the split-view secondary pane. User asked for
                     // this — the secondary pane exists only for
