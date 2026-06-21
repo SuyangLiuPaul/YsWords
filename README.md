@@ -100,7 +100,7 @@ any APIs themselves**; everything is at the Firebase project level.
 
 ## App Screenshots
 
-<p align="center"><sub>Captured on an iPhone 17 Pro (iOS 26.5). Current release <b>v1.3.96</b>. Download builds for every platform from <a href="https://github.com/SuyangLiuPaul/YsWords/releases/latest">Releases</a>; full release log in <a href="HANDOFF.md">HANDOFF.md</a>.</sub></p>
+<p align="center"><sub>Captured on an iPhone 17 Pro (iOS 26.5). Current release <b>v1.3.97</b>. Download builds for every platform from <a href="https://github.com/SuyangLiuPaul/YsWords/releases/latest">Releases</a>; full release log in <a href="HANDOFF.md">HANDOFF.md</a>.</sub></p>
 
 <h3 align="center">Read &amp; study the Word</h3>
 
