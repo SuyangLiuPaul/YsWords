@@ -4,14 +4,14 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/widgets/version_picker_sheet.dart';
 
-/// 2026-06-22 v2: widget tests for the language-grouped version popup.
-/// The popup is a PopupMenuEntry hosted inside a PopupMenuButton (same
-/// placement as the chapter picker's testament-pill pattern — drops
-/// directly under the chip; no sliding sheet). These tests open the
-/// menu, switch language pills, and verify selection wires through to
-/// the PopupMenuButton's `onSelected`.
+/// 2026-06-22 v3: widget tests for `showLanguageGroupedVersionMenu`.
+///
+/// v3 is the safe rewrite of v1.3.100's crashing custom PopupMenuEntry —
+/// it uses `showMenu` + a regular `PopupMenuItem(enabled: false)`
+/// hosting a stateful body, so there's no PopupMenuEntry subclassing
+/// (the Safari trigger).
 void main() {
-  Future<({AppSettings settings, List<String> picked})> openMenu(
+  Future<({AppSettings settings, Future<String?> future})> openMenu(
     WidgetTester tester, {
     required String currentVersion,
     Size size = const Size(390, 844),
@@ -23,41 +23,39 @@ void main() {
     addTearDown(tester.view.resetDevicePixelRatio);
 
     final settings = AppSettings(); // defaults to zh-Hans locale
-    final picked = <String>[];
+    Future<String?>? future;
     await tester.pumpWidget(
       MaterialApp(
         home: Scaffold(
           body: Center(
-            child: PopupMenuButton<String>(
-              key: const Key('chip'),
-              padding: EdgeInsets.zero,
-              position: PopupMenuPosition.under,
-              itemBuilder: (ctx) => [
-                LanguageGroupedVersionEntry(
-                  currentVersion: currentVersion,
-                  settings: settings,
-                ),
-              ],
-              onSelected: picked.add,
-              child: const Text('chip'),
+            child: Builder(
+              builder: (ctx) => ElevatedButton(
+                onPressed: () {
+                  future = showLanguageGroupedVersionMenu(
+                    context: ctx,
+                    position: const RelativeRect.fromLTRB(120, 200, 80, 0),
+                    currentVersion: currentVersion,
+                    settings: settings,
+                  );
+                },
+                child: const Text('open'),
+              ),
             ),
           ),
         ),
       ),
     );
-    await tester.tap(find.byKey(const Key('chip')));
+    await tester.tap(find.text('open'));
     await tester.pumpAndSettle();
-    return (settings: settings, picked: picked);
+    return (settings: settings, future: future!);
   }
 
   testWidgets('opens on the current version language + lists its editions',
       (tester) async {
     await openMenu(tester, currentVersion: 'cuvs-yhwh');
-    // Pills (zh-Hans labels) are present.
     expect(find.text('英语'), findsOneWidget);
     expect(find.text('繁体'), findsOneWidget);
     expect(find.text('简体'), findsOneWidget);
-    // Lands on Simplified (current version is cuvs-yhwh).
     expect(find.text('和合本雅伟版(简体)'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
@@ -74,23 +72,19 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets(
-      'tapping a different edition reports it via onSelected + closes',
+  testWidgets('tapping a different edition closes + returns its value',
       (tester) async {
     final r = await openMenu(tester, currentVersion: 'cuvs-yhwh');
     await tester.tap(find.text('和合本(简体)')); // cuv
     await tester.pumpAndSettle();
-    expect(r.picked, <String>['cuv']);
-    expect(find.text('和合本雅伟版(简体)'), findsNothing); // menu dismissed
+    expect(await r.future, 'cuv');
   });
 
-  testWidgets('tapping the current edition closes without re-selecting',
-      (tester) async {
+  testWidgets('tapping the current edition closes with null', (tester) async {
     final r = await openMenu(tester, currentVersion: 'cuvs-yhwh');
-    await tester.tap(find.text('和合本雅伟版(简体)')); // the current one
+    await tester.tap(find.text('和合本雅伟版(简体)'));
     await tester.pumpAndSettle();
-    expect(r.picked, isEmpty);
-    expect(find.text('和合本雅伟版(简体)'), findsNothing);
+    expect(await r.future, isNull);
   });
 
   testWidgets('no overflow on an iPad-sized viewport', (tester) async {

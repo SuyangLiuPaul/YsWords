@@ -64,6 +64,8 @@ import 'package:yswords/widgets/highlights_sheet.dart';
 import 'package:yswords/widgets/originals_sheet.dart';
 import 'package:yswords/widgets/verse_widget.dart';
 import 'package:yswords/widgets/paragraph_group_widget.dart';
+import 'package:yswords/widgets/version_picker_sheet.dart'
+    show showLanguageGroupedVersionMenu;
 import 'package:yswords/utils/font_catalog.dart' show kCjkFontFallback;
 
 class BibleReadingPane extends StatefulWidget {
@@ -127,18 +129,19 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
   final ValueNotifier<bool> _showVersePositionNotifier = ValueNotifier(false);
   Timer? _versePositionTimer;
 
-  // 2026-06-22 (v1.3.99): auto-hide chrome disabled per user feedback —
-  // "top bottom menu自动隐藏这个功能其实不好用，去掉" (the auto-hide
-  // header/bottom bar isn't useful; remove it). With this flag false the
-  // entire pixel-scroll handler short-circuits (`_onScrollNotification`
-  // → `_onScrollDelta` no-op), `_toggleChrome` becomes a no-op, and the
-  // tap-to-toggle region above the SPL doesn't react — so `_chromeVisible`
-  // stays at its initial `true` forever and BOTH the top `_FloatingHeader`
-  // AND the bottom `_BibleReaderBottomBar` stay pinned visible. The mini-
-  // header (shown only when `!_chromeVisible`) never renders. Kept as a
-  // gate (not deleted) so the behaviour is reversible in one line if the
-  // user changes their mind. Original v1.2.70 design rationale below.
-  bool get _chromeFeatureEnabled => false;
+  // 2026-05-21 (v1.2.70): chrome feature is enabled on every platform.
+  // The iOS-only disable from an earlier hotfix attempt is reverted —
+  // we now filter out the large programmatic-jump scroll deltas (see
+  // [_onScrollDelta]) which were the likely trigger for the swipe-left
+  // grey-screen hang on iPhone. Keeping the constant as a one-place
+  // kill-switch if we need to disable again.
+  //
+  // 2026-06-22 (v1.3.102): MUST stay `true`. v1.3.99 tried flipping it
+  // to `false` to disable the auto-hide-on-scroll feature — but the
+  // bottom bar's `if (_chromeFeatureEnabled && …)` gate then short-
+  // circuited and the WHOLE bottom bar stopped mounting. Auto-hide is
+  // disabled the right way: `_onScrollDelta` is now a no-op (see below).
+  bool get _chromeFeatureEnabled => true;
 
   // 2026-05-21 (v1.2.70): WeDevote-style auto-hide chrome.
   //   _chromeVisible drives both the top _FloatingHeader and the new
@@ -445,6 +448,20 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
   /// subscription, kept for completeness). Positive delta = user
   /// scrolling DOWN; negative = UP.
   void _onScrollDelta(double delta) {
+    // 2026-06-22 (v1.3.102): auto-hide-on-scroll DISABLED per user
+    // request — "top bottom menu自动隐藏这个功能其实不好用，去掉".
+    // The handler is a no-op now: `_chromeVisible` stays at its initial
+    // `true` forever, so the top FloatingHeader + bottom bar remain
+    // pinned visible while reading. Kept as a separate gate (not via
+    // `_chromeFeatureEnabled`) because that flag also controls whether
+    // the bottom bar widget itself MOUNTS — flipping it false would
+    // remove the bottom bar entirely (v1.3.101 bug). All the rest of
+    // the chrome state machine (`_toggleChrome`, manual reveal on
+    // scroll-to-top, etc.) still works for future use if we ever want
+    // to bring back manual toggle. Original auto-hide algorithm below
+    // is intentionally dead code, kept for diff-clarity.
+    return;
+    // ignore: dead_code
     if (!mounted || delta == 0) return;
     // 2026-05-21 (v1.2.70 hotfix): chapter-switch via swipe / Prev /
     // Next calls `provider.jumpToTop()` which fires a single, huge
@@ -6598,83 +6615,84 @@ class _FloatingHeader extends StatelessWidget {
                         ),
                         Flexible(
                           flex: 2,
-                          // 2026-06-22 (v1.3.101): REVERTED v1.3.100's
-                          // language-grouped custom PopupMenuEntry — a user
-                          // crash report from iPhone Safari showed
-                          // "Null check operator used on a null value" on
-                          // route ahZ<String?> (the popup), reproducible
-                          // after opening / closing the picker a few times.
-                          // The crash originated inside Flutter's
-                          // PopupMenuRoute layout (HL/Rj in the minified
-                          // stack); my custom PopupMenuEntry<String>
-                          // subclass + Navigator.pop<String>(context) dance
-                          // was almost certainly the trigger. Restoring the
-                          // old flat itemBuilder pattern that shipped
-                          // happily for many versions. A proper language-
-                          // grouped picker can be re-attempted later using
-                          // MenuAnchor (which doesn't require PopupMenuEntry
-                          // subclassing) — tracked in HANDOFF.
-                          child: PopupMenuButton<String>(
-                            padding: EdgeInsets.zero,
-                            position: PopupMenuPosition.under,
-                            tooltip: uiStrings['changeVersion']
-                                    ?[settings.locale] ??
-                                'Change Version',
-                            itemBuilder: (context) => availableVersions
-                                .map((v) => PopupMenuItem(
-                                      value: v.value,
-                                      child: ConstrainedBox(
-                                        constraints: const BoxConstraints(
-                                            maxWidth: 280),
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            Text(
-                                              v.menuLabel,
-                                              maxLines: 1,
-                                              overflow:
-                                                  TextOverflow.ellipsis,
-                                            ),
-                                            if (v.editionYear.isNotEmpty)
-                                              Text(
-                                                v.editionYear,
-                                                maxLines: 1,
-                                                overflow:
-                                                    TextOverflow.ellipsis,
-                                                style: TextStyle(
-                                                  fontSize: 11,
-                                                  color: scheme.onSurface
-                                                      .withValues(
-                                                          alpha: 0.55),
-                                                ),
-                                              ),
-                                          ],
-                                        ),
-                                      ),
-                                    ))
-                                .toList(),
-                            onSelected: onVersionSelected,
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 6),
-                              child: Text(
-                                shortBibleVersionLabel(version),
-                                maxLines: 1,
-                                softWrap: false,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                  fontFamily: settings.fontFamily,
-                                  fontFamilyFallback: kCjkFontFallback,
-                                  fontSize: fontSize * 0.85,
-                                  fontWeight: FontWeight.w600,
-                                  color: scheme.primary
-                                      .withValues(alpha: 0.8),
+                          // 2026-06-22 (v1.3.102): language-grouped popup
+                          // — third design pass. Earlier attempts:
+                          //   • v1.3.98 modal bottom sheet — user found it
+                          //     foreign ("不和谐", slid up from bottom).
+                          //   • v1.3.100 custom PopupMenuEntry subclass —
+                          //     crashed iPhone Safari deep inside
+                          //     PopupMenuRoute layout. Reverted in v1.3.101.
+                          // This pass uses the safer pattern:
+                          //   - InkWell on the chip → computes the chip's
+                          //     RelativeRect and calls
+                          //     `showLanguageGroupedVersionMenu`.
+                          //   - That uses `showMenu` with ONE regular
+                          //     `PopupMenuItem(enabled: false)` whose child
+                          //     is a `StatefulBuilder`-style body managing
+                          //     the language tab + version rows. NO custom
+                          //     PopupMenuEntry subclass.
+                          //   - Selected version returns via the Future;
+                          //     we forward to `onVersionSelected` (the
+                          //     existing pipeline — untouched).
+                          // Shared by primary + split-view secondary panes.
+                          child: Builder(builder: (chipCtx) {
+                            return Tooltip(
+                              message: uiStrings['changeVersion']
+                                      ?[settings.locale] ??
+                                  'Change Version',
+                              child: InkWell(
+                                borderRadius: BorderRadius.circular(8),
+                                onTap: () async {
+                                  final box = chipCtx.findRenderObject()
+                                      as RenderBox?;
+                                  final overlay = Overlay.of(chipCtx)
+                                      .context
+                                      .findRenderObject() as RenderBox?;
+                                  if (box == null || overlay == null) return;
+                                  final topLeft = box.localToGlobal(
+                                      Offset.zero,
+                                      ancestor: overlay);
+                                  final bottomRight = box.localToGlobal(
+                                      box.size.bottomRight(Offset.zero),
+                                      ancestor: overlay);
+                                  final position = RelativeRect.fromLTRB(
+                                    topLeft.dx,
+                                    bottomRight.dy + 4,
+                                    overlay.size.width - bottomRight.dx,
+                                    overlay.size.height - bottomRight.dy,
+                                  );
+                                  final picked =
+                                      await showLanguageGroupedVersionMenu(
+                                    context: chipCtx,
+                                    position: position,
+                                    currentVersion: version,
+                                    settings: settings,
+                                  );
+                                  if (picked != null) {
+                                    onVersionSelected(picked);
+                                  }
+                                },
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 6),
+                                  child: Text(
+                                    shortBibleVersionLabel(version),
+                                    maxLines: 1,
+                                    softWrap: false,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      fontFamily: settings.fontFamily,
+                                      fontFamilyFallback: kCjkFontFallback,
+                                      fontSize: fontSize * 0.85,
+                                      fontWeight: FontWeight.w600,
+                                      color: scheme.primary
+                                          .withValues(alpha: 0.8),
+                                    ),
+                                  ),
                                 ),
                               ),
-                            ),
-                          ),
+                            );
+                          }),
                         ),
                       ],
                     ],
