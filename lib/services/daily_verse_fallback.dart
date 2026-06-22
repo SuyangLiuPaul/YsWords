@@ -63,6 +63,7 @@ class DailyVerseFallback {
         value: fallback,
         shortLabel: fallback,
         menuLabel: fallback,
+        language: 'zh-Hans',
       ),
     );
     return info.menuLabel;

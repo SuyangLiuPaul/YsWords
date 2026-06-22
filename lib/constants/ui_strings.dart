@@ -125,6 +125,29 @@ const uiStrings = {
     'zh-Hant': '切換版本',
     'en': 'Change Version',
   },
+  // 2026-06-22: language-grouped version picker. Title + the three
+  // language-tab labels (shown in the app's UI language) + the
+  // per-language section subtitle.
+  'versionPickerTitle': {
+    'zh-Hans': '选择圣经版本',
+    'zh-Hant': '選擇聖經版本',
+    'en': 'Choose a version',
+  },
+  'versionLangEnglish': {
+    'zh-Hans': '英语',
+    'zh-Hant': '英語',
+    'en': 'English',
+  },
+  'versionLangTraditional': {
+    'zh-Hans': '繁体',
+    'zh-Hant': '繁體',
+    'en': 'Traditional',
+  },
+  'versionLangSimplified': {
+    'zh-Hans': '简体',
+    'zh-Hant': '簡體',
+    'en': 'Simplified',
+  },
   'chapter': {
     'zh-Hans': '第 {n} 章',
     'zh-Hant': '第 {n} 章',

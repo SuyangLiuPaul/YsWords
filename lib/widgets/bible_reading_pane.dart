@@ -64,6 +64,7 @@ import 'package:yswords/widgets/highlights_sheet.dart';
 import 'package:yswords/widgets/originals_sheet.dart';
 import 'package:yswords/widgets/verse_widget.dart';
 import 'package:yswords/widgets/paragraph_group_widget.dart';
+import 'package:yswords/widgets/version_picker_sheet.dart';
 import 'package:yswords/utils/font_catalog.dart' show kCjkFontFallback;
 
 class BibleReadingPane extends StatefulWidget {
@@ -1927,7 +1928,8 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                               orElse: () => const BibleVersionInfo(
                                   value: '',
                                   shortLabel: '',
-                                  menuLabel: ''),
+                                  menuLabel: '',
+                                  language: 'zh-Hans'),
                             )
                             .shortLabel;
                         p.setVersionSwitching(true, to: destLabel);
@@ -6592,74 +6594,47 @@ class _FloatingHeader extends StatelessWidget {
                         ),
                         Flexible(
                           flex: 2,
-                          child: PopupMenuButton<String>(
-                          padding: EdgeInsets.zero,
-                          position: PopupMenuPosition.under,
-                          tooltip: uiStrings['changeVersion']
-                                  ?[settings.locale] ??
-                              'Change Version',
-                          itemBuilder: (context) => availableVersions
-                              .map((v) => PopupMenuItem(
-                                    value: v.value,
-                                    // Constrain + ellipsize so localized
-                                    // long labels (e.g.
-                                    // "原文释经圣经第二版 (繁)") never push
-                                    // the popup past the screen edge.
-                                    // Round 56: show editionYear as a
-                                    // dim secondary line so users know
-                                    // which published edition each
-                                    // asset corresponds to (1989 CUV,
-                                    // 2011 CNV, 2020 NASB, …).
-                                    child: ConstrainedBox(
-                                      constraints: const BoxConstraints(
-                                          maxWidth: 280),
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          Text(
-                                            v.menuLabel,
-                                            maxLines: 1,
-                                            overflow:
-                                                TextOverflow.ellipsis,
-                                          ),
-                                          if (v.editionYear.isNotEmpty)
-                                            Text(
-                                              v.editionYear,
-                                              maxLines: 1,
-                                              overflow:
-                                                  TextOverflow.ellipsis,
-                                              style: TextStyle(
-                                                fontSize: 11,
-                                                color: scheme.onSurface
-                                                    .withValues(
-                                                        alpha: 0.55),
-                                              ),
-                                            ),
-                                        ],
-                                      ),
-                                    ),
-                                  ))
-                              .toList(),
-                          onSelected: onVersionSelected,
-                          child: Padding(
-                            padding:
-                                const EdgeInsets.symmetric(horizontal: 6),
-                            child: Text(
-                              shortBibleVersionLabel(version),
-                              maxLines: 1,
-                              softWrap: false,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
-                                fontSize: fontSize * 0.85,
-                                fontWeight: FontWeight.w600,
-                                color:
-                                    scheme.primary.withValues(alpha: 0.8),
+                          // 2026-06-22: tapping the version chip opens the
+                          // language-grouped picker sheet
+                          // (showVersionPickerSheet — English / 繁體 / 简体
+                          // tabs) instead of a flat popup menu listing all
+                          // ~14 editions, which the user found
+                          // overwhelming. The chip itself is visually
+                          // unchanged; `onVersionSelected` (the existing
+                          // version-switch pipeline) is untouched. Works
+                          // for both the primary + split-view secondary
+                          // panes (shared header).
+                          child: Tooltip(
+                            message: uiStrings['changeVersion']
+                                    ?[settings.locale] ??
+                                'Change Version',
+                            child: InkWell(
+                              borderRadius: BorderRadius.circular(8),
+                              onTap: () => showVersionPickerSheet(
+                                context: context,
+                                currentVersion: version,
+                                onSelected: onVersionSelected,
+                                settings: settings,
+                              ),
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 6),
+                                child: Text(
+                                  shortBibleVersionLabel(version),
+                                  maxLines: 1,
+                                  softWrap: false,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    fontFamily: settings.fontFamily,
+                                    fontFamilyFallback: kCjkFontFallback,
+                                    fontSize: fontSize * 0.85,
+                                    fontWeight: FontWeight.w600,
+                                    color: scheme.primary
+                                        .withValues(alpha: 0.8),
+                                  ),
+                                ),
                               ),
                             ),
-                          ),
                           ),
                         ),
                       ],

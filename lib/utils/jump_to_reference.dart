@@ -103,6 +103,7 @@ Future<JumpResolution> resolveAndPrepareJump({
             value: fallback,
             shortLabel: fallback,
             menuLabel: fallback,
+            language: 'zh-Hans',
           ),
         );
         switchedLabel = info.menuLabel;

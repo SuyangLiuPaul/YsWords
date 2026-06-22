@@ -1953,6 +1953,7 @@ class _ContinueReadingHero extends StatelessWidget {
           value: currentVersion!,
           shortLabel: currentVersion!,
           menuLabel: currentVersion!,
+          language: 'zh-Hans',
         ),
       );
       versionLabel = useShort ? info.shortLabel : info.menuLabel;
