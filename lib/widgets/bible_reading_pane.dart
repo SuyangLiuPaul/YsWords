@@ -128,13 +128,18 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
   final ValueNotifier<bool> _showVersePositionNotifier = ValueNotifier(false);
   Timer? _versePositionTimer;
 
-  // 2026-05-21 (v1.2.70): chrome feature is enabled on every platform.
-  // The iOS-only disable from an earlier hotfix attempt is reverted —
-  // we now filter out the large programmatic-jump scroll deltas (see
-  // [_onScrollDelta]) which were the likely trigger for the swipe-left
-  // grey-screen hang on iPhone. Keeping the constant as a one-place
-  // kill-switch if we need to disable again.
-  bool get _chromeFeatureEnabled => true;
+  // 2026-06-22 (v1.3.99): auto-hide chrome disabled per user feedback —
+  // "top bottom menu自动隐藏这个功能其实不好用，去掉" (the auto-hide
+  // header/bottom bar isn't useful; remove it). With this flag false the
+  // entire pixel-scroll handler short-circuits (`_onScrollNotification`
+  // → `_onScrollDelta` no-op), `_toggleChrome` becomes a no-op, and the
+  // tap-to-toggle region above the SPL doesn't react — so `_chromeVisible`
+  // stays at its initial `true` forever and BOTH the top `_FloatingHeader`
+  // AND the bottom `_BibleReaderBottomBar` stay pinned visible. The mini-
+  // header (shown only when `!_chromeVisible`) never renders. Kept as a
+  // gate (not deleted) so the behaviour is reversible in one line if the
+  // user changes their mind. Original v1.2.70 design rationale below.
+  bool get _chromeFeatureEnabled => false;
 
   // 2026-05-21 (v1.2.70): WeDevote-style auto-hide chrome.
   //   _chromeVisible drives both the top _FloatingHeader and the new
@@ -6594,44 +6599,43 @@ class _FloatingHeader extends StatelessWidget {
                         ),
                         Flexible(
                           flex: 2,
-                          // 2026-06-22: tapping the version chip opens the
-                          // language-grouped picker sheet
-                          // (showVersionPickerSheet — English / 繁體 / 简体
-                          // tabs) instead of a flat popup menu listing all
-                          // ~14 editions, which the user found
-                          // overwhelming. The chip itself is visually
-                          // unchanged; `onVersionSelected` (the existing
-                          // version-switch pipeline) is untouched. Works
-                          // for both the primary + split-view secondary
-                          // panes (shared header).
-                          child: Tooltip(
-                            message: uiStrings['changeVersion']
+                          // 2026-06-22 v2: language-grouped popup, same
+                          // placement as the old flat PopupMenuButton (drops
+                          // directly under the chip — user wanted the
+                          // familiar 选章节-style feel, not a sliding sheet).
+                          // The single LanguageGroupedVersionEntry handles
+                          // the language pills + version rows internally;
+                          // `onVersionSelected` (the existing version-switch
+                          // pipeline) is untouched. Shared by both reading
+                          // panes (primary + split-view secondary).
+                          child: PopupMenuButton<String>(
+                            padding: EdgeInsets.zero,
+                            position: PopupMenuPosition.under,
+                            tooltip: uiStrings['changeVersion']
                                     ?[settings.locale] ??
                                 'Change Version',
-                            child: InkWell(
-                              borderRadius: BorderRadius.circular(8),
-                              onTap: () => showVersionPickerSheet(
-                                context: context,
+                            itemBuilder: (ctx) => [
+                              LanguageGroupedVersionEntry(
                                 currentVersion: version,
-                                onSelected: onVersionSelected,
                                 settings: settings,
                               ),
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 6),
-                                child: Text(
-                                  shortBibleVersionLabel(version),
-                                  maxLines: 1,
-                                  softWrap: false,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(
-                                    fontFamily: settings.fontFamily,
-                                    fontFamilyFallback: kCjkFontFallback,
-                                    fontSize: fontSize * 0.85,
-                                    fontWeight: FontWeight.w600,
-                                    color: scheme.primary
-                                        .withValues(alpha: 0.8),
-                                  ),
+                            ],
+                            onSelected: onVersionSelected,
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 6),
+                              child: Text(
+                                shortBibleVersionLabel(version),
+                                maxLines: 1,
+                                softWrap: false,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  fontFamily: settings.fontFamily,
+                                  fontFamilyFallback: kCjkFontFallback,
+                                  fontSize: fontSize * 0.85,
+                                  fontWeight: FontWeight.w600,
+                                  color: scheme.primary
+                                      .withValues(alpha: 0.8),
                                 ),
                               ),
                             ),
