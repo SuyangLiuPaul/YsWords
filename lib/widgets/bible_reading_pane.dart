@@ -64,7 +64,6 @@ import 'package:yswords/widgets/highlights_sheet.dart';
 import 'package:yswords/widgets/originals_sheet.dart';
 import 'package:yswords/widgets/verse_widget.dart';
 import 'package:yswords/widgets/paragraph_group_widget.dart';
-import 'package:yswords/widgets/version_picker_sheet.dart';
 import 'package:yswords/utils/font_catalog.dart' show kCjkFontFallback;
 
 class BibleReadingPane extends StatefulWidget {
@@ -6599,27 +6598,63 @@ class _FloatingHeader extends StatelessWidget {
                         ),
                         Flexible(
                           flex: 2,
-                          // 2026-06-22 v2: language-grouped popup, same
-                          // placement as the old flat PopupMenuButton (drops
-                          // directly under the chip — user wanted the
-                          // familiar 选章节-style feel, not a sliding sheet).
-                          // The single LanguageGroupedVersionEntry handles
-                          // the language pills + version rows internally;
-                          // `onVersionSelected` (the existing version-switch
-                          // pipeline) is untouched. Shared by both reading
-                          // panes (primary + split-view secondary).
+                          // 2026-06-22 (v1.3.101): REVERTED v1.3.100's
+                          // language-grouped custom PopupMenuEntry — a user
+                          // crash report from iPhone Safari showed
+                          // "Null check operator used on a null value" on
+                          // route ahZ<String?> (the popup), reproducible
+                          // after opening / closing the picker a few times.
+                          // The crash originated inside Flutter's
+                          // PopupMenuRoute layout (HL/Rj in the minified
+                          // stack); my custom PopupMenuEntry<String>
+                          // subclass + Navigator.pop<String>(context) dance
+                          // was almost certainly the trigger. Restoring the
+                          // old flat itemBuilder pattern that shipped
+                          // happily for many versions. A proper language-
+                          // grouped picker can be re-attempted later using
+                          // MenuAnchor (which doesn't require PopupMenuEntry
+                          // subclassing) — tracked in HANDOFF.
                           child: PopupMenuButton<String>(
                             padding: EdgeInsets.zero,
                             position: PopupMenuPosition.under,
                             tooltip: uiStrings['changeVersion']
                                     ?[settings.locale] ??
                                 'Change Version',
-                            itemBuilder: (ctx) => [
-                              LanguageGroupedVersionEntry(
-                                currentVersion: version,
-                                settings: settings,
-                              ),
-                            ],
+                            itemBuilder: (context) => availableVersions
+                                .map((v) => PopupMenuItem(
+                                      value: v.value,
+                                      child: ConstrainedBox(
+                                        constraints: const BoxConstraints(
+                                            maxWidth: 280),
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Text(
+                                              v.menuLabel,
+                                              maxLines: 1,
+                                              overflow:
+                                                  TextOverflow.ellipsis,
+                                            ),
+                                            if (v.editionYear.isNotEmpty)
+                                              Text(
+                                                v.editionYear,
+                                                maxLines: 1,
+                                                overflow:
+                                                    TextOverflow.ellipsis,
+                                                style: TextStyle(
+                                                  fontSize: 11,
+                                                  color: scheme.onSurface
+                                                      .withValues(
+                                                          alpha: 0.55),
+                                                ),
+                                              ),
+                                          ],
+                                        ),
+                                      ),
+                                    ))
+                                .toList(),
                             onSelected: onVersionSelected,
                             child: Padding(
                               padding: const EdgeInsets.symmetric(
