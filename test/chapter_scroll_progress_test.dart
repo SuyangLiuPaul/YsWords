@@ -8,6 +8,102 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:yswords/utils/chapter_scroll_progress.dart';
 
 void main() {
+  // 2026-06-28 (v1.3.110): the LIVE bar is PIXEL-proportional — it advances
+  // evenly with the page length (measured item heights), independent of verse
+  // count or paragraph size, in both modes.
+  group('pixelScrollFraction', () {
+    test('0.0 at the very top', () {
+      expect(
+        pixelScrollFraction(
+            firstIndex: 0,
+            firstLeadingEdge: 0.0,
+            itemCount: 5,
+            itemHeights: {for (var i = 0; i < 5; i++) i: 0.5}),
+        0.0,
+      );
+    });
+
+    test('exactly 1.0 at the chapter bottom', () {
+      // 5 items × 0.5 viewport each → total 2.5, maxOffset 1.5. Scrolled so the
+      // top three are above the viewport (above = 1.5) = bottom.
+      expect(
+        pixelScrollFraction(
+            firstIndex: 3,
+            firstLeadingEdge: 0.0,
+            itemCount: 5,
+            itemHeights: {for (var i = 0; i < 5; i++) i: 0.5}),
+        closeTo(1.0, 1e-9),
+      );
+    });
+
+    test('uniform items → EVEN, equal progress steps', () {
+      final heights = {for (var i = 0; i < 5; i++) i: 0.5};
+      double f(int idx) => pixelScrollFraction(
+          firstIndex: idx,
+          firstLeadingEdge: 0.0,
+          itemCount: 5,
+          itemHeights: heights);
+      // firstIndex 0,1,2,3 → 0, 1/3, 2/3, 1 — equal 1/3 steps.
+      expect(f(0), closeTo(0.0, 1e-9));
+      expect(f(1), closeTo(1 / 3, 1e-9));
+      expect(f(2), closeTo(2 / 3, 1e-9));
+      expect(f(3), closeTo(1.0, 1e-9));
+    });
+
+    test('smooth WITHIN an item via the leading edge (sub-item pixels)', () {
+      final heights = {for (var i = 0; i < 3; i++) i: 1.0}; // each = 1 viewport
+      // total 3, maxOffset 2. Half-scrolled through item 0 → above 0.5 → 0.25.
+      expect(
+        pixelScrollFraction(
+            firstIndex: 0,
+            firstLeadingEdge: -0.5,
+            itemCount: 3,
+            itemHeights: heights),
+        closeTo(0.25, 1e-9),
+      );
+    });
+
+    test('content that fits on one screen → 0.0 (nothing to scroll)', () {
+      expect(
+        pixelScrollFraction(
+            firstIndex: 0,
+            firstLeadingEdge: 0.0,
+            itemCount: 2,
+            itemHeights: {0: 0.4, 1: 0.4}),
+        0.0,
+      );
+    });
+
+    test('unmeasured items fall back to the running average', () {
+      // Only item 0 measured (1.0); avg = 1.0 → others assumed 1.0 too.
+      final f = pixelScrollFraction(
+          firstIndex: 1,
+          firstLeadingEdge: 0.0,
+          itemCount: 4,
+          itemHeights: {0: 1.0});
+      expect(f, closeTo(1 / 3, 1e-9)); // above 1.0 / maxOffset 3.0
+    });
+
+    test('degenerate inputs never throw', () {
+      expect(
+        pixelScrollFraction(
+            firstIndex: 0,
+            firstLeadingEdge: 0,
+            itemCount: 0,
+            itemHeights: const {}),
+        0.0,
+      );
+      expect(
+        pixelScrollFraction(
+            firstIndex: 99,
+            firstLeadingEdge: 0,
+            itemCount: 3,
+            itemHeights: {0: 1.0, 1: 1.0, 2: 1.0}),
+        inInclusiveRange(0.0, 1.0),
+      );
+    });
+  });
+
   // 2026-06-28 (v1.3.109): the BAR is an even scroll fraction measured in VERSE
   // units (header → verse 0, footer → last verse), so the small header/footer
   // spacers no longer make it lurch at the start/end. 0.0 at the top, exactly

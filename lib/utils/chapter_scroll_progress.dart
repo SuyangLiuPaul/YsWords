@@ -43,9 +43,55 @@ double _interpolatedVerse({
   return vHere + frac * (vNext - vHere);
 }
 
-/// 2026-06-28: even, monotonic 0.0–1.0 scroll fraction for the right-edge BAR,
-/// decoupled from the verse number. This is `extentBefore / (extentBefore +
-/// extentAfter)` measured in VERSE units (NOT item units):
+/// 2026-06-28 (v1.3.110): PIXEL-proportional scroll fraction for the right-edge
+/// BAR, so it advances EVENLY with the actual page length in BOTH paragraph and
+/// verse modes — independent of how many verses or how long each paragraph is
+/// (user: "based on the page length not the verse number"). `scrollable_
+/// positioned_list` exposes no usable pixel offset, so we estimate it from the
+/// per-item heights the layout reports, in viewport-height units (1.0 = one
+/// screenful):
+///   • [firstIndex] / [firstLeadingEdge] — the first visible item and its top
+///     edge (≤ 0 once scrolled past the viewport top).
+///   • [itemCount] — total items (header + groups + footer).
+///   • [itemHeights] — measured heights (trailingEdge − leadingEdge) per item
+///     index, accumulated as items scroll into view. Unmeasured items fall back
+///     to the running average, so a first pass is approximate and firms up as
+///     more of the chapter is seen.
+///
+/// `above` = content scrolled above the viewport top (full heights of items
+/// before [firstIndex] + the part of the first item past the top). `maxOffset`
+/// = total content − one viewport. progress = above / maxOffset → 0.0 at the
+/// top, exactly 1.0 at the bottom, linear in pixels in between. Returns 0.0 when
+/// the chapter fits on one screen (nothing to scroll). The NUMBER still tracks
+/// the top-of-screen verse via [paragraphCurrentVerseIndex].
+double pixelScrollFraction({
+  required int firstIndex,
+  required double firstLeadingEdge,
+  required int itemCount,
+  required Map<int, double> itemHeights,
+}) {
+  if (itemCount <= 0) return 0.0;
+  final known = itemHeights.values;
+  final avg =
+      known.isEmpty ? 1.0 : known.reduce((a, b) => a + b) / known.length;
+  double heightOf(int i) => itemHeights[i] ?? avg;
+
+  double above = (-firstLeadingEdge).clamp(0.0, double.infinity);
+  final cappedFirst = firstIndex.clamp(0, itemCount);
+  for (var i = 0; i < cappedFirst; i++) {
+    above += heightOf(i);
+  }
+  var total = 0.0;
+  for (var i = 0; i < itemCount; i++) {
+    total += heightOf(i);
+  }
+  final maxOffset = total - 1.0; // total content minus one viewport height
+  if (maxOffset <= 0) return 0.0; // fits on one screen → nothing to scroll
+  return (above / maxOffset).clamp(0.0, 1.0).toDouble();
+}
+
+/// (Superseded by [pixelScrollFraction] for the live bar; kept for reference /
+/// tests.) Even, monotonic 0.0–1.0 scroll fraction measured in VERSE units:
 ///   • [topPos]    = content position at the viewport TOP (first visible item's
 ///     index + the fraction of it scrolled past the top).
 ///   • [bottomPos] = content position at the viewport BOTTOM (last visible

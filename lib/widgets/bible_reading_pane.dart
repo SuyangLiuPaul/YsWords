@@ -126,11 +126,18 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
   // — exactly what the verse number already implies. Verse-by-verse mode
   // is intentionally left on its existing formula.
   final ValueNotifier<double> _visibleItemPosNotifier = ValueNotifier(0.0);
-  // 2026-06-28: content position at the viewport BOTTOM (last visible item).
-  // Pairs with _visibleItemPosNotifier (the top) so the right-edge BAR can be
-  // an even scroll fraction that reaches 1.0 exactly at the chapter bottom,
-  // while the NUMBER keeps tracking the verse at the top of the screen.
-  final ValueNotifier<double> _visibleBottomPosNotifier = ValueNotifier(0.0);
+  // 2026-06-28 (v1.3.110): the right-edge BAR is now a PIXEL-proportional scroll
+  // fraction (even with the page length, in both paragraph + verse modes). This
+  // notifier carries the precomputed 0..1 progress; the NUMBER still uses
+  // _visibleItemPosNotifier (top-of-screen verse).
+  final ValueNotifier<double> _chapterProgressNotifier = ValueNotifier(0.0);
+  // Measured item heights (trailingEdge − leadingEdge, in viewport-height units)
+  // for the ACTIVE chapter, accumulated as items scroll into view. Keyed reset
+  // (_progressKey) whenever the version/book/chapter changes. _progressItemCount
+  // (header + groups + footer) is refreshed from the pill builder each frame.
+  final Map<int, double> _itemHeights = {};
+  String _progressKey = '';
+  int _progressItemCount = 0;
   final ValueNotifier<bool> _showVersePositionNotifier = ValueNotifier(false);
   Timer? _versePositionTimer;
 
@@ -333,7 +340,7 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
         .removeListener(_handleItemPositionsChanged);
     _visibleItemIndexNotifier.dispose();
     _visibleItemPosNotifier.dispose();
-    _visibleBottomPosNotifier.dispose();
+    _chapterProgressNotifier.dispose();
     _showVersePositionNotifier.dispose();
     super.dispose();
   }
@@ -389,26 +396,39 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
     final withinFrac =
         span <= 0 ? 0.0 : (-first.itemLeadingEdge / span).clamp(0.0, 1.0);
     // topPos = content position at the viewport TOP — drives the verse NUMBER
-    // (the verse you're reading). NOT snapped: the number should stay on the
-    // line you're on, e.g. "19/24" even when the bar is already at the bottom.
+    // (the verse you're reading). The number stays on the line you're on, e.g.
+    // "19/24" even when the bar is already at the bottom.
     final pos = first.index + withinFrac;
 
-    // 2026-06-28: bottomPos = content position at the viewport BOTTOM, used by
-    // `chapterScrollFraction` to drive the BAR. Together topPos/bottomPos give
-    // an even, monotonic scroll fraction that lands at exactly 1.0 when the
-    // chapter bottom is reached — so the bar tracks the page smoothly and the
-    // pill reaches the bottom with NO sudden jump (replaces v1.3.107's
-    // end-snap, which the user disliked).
-    final last = visible.last;
-    final lastSpan = last.itemTrailingEdge - last.itemLeadingEdge;
-    final botWithin = lastSpan <= 0
-        ? 1.0
-        : ((1.0 - last.itemLeadingEdge) / lastSpan).clamp(0.0, 1.0);
-    final bottomPos = last.index + botWithin;
+    // 2026-06-28 (v1.3.110): PIXEL-proportional BAR. Cache each visible item's
+    // height (in viewport-height units), reset when the chapter changes, then
+    // estimate the scroll fraction from those heights so the bar advances evenly
+    // with the actual page length in both paragraph + verse modes (not by verse
+    // count). `_progressItemCount` (header + groups + footer) is supplied by the
+    // pill builder.
+    final provider = _positionsProvider;
+    final key = provider == null
+        ? ''
+        : '${provider.currentVersion}|${provider.currentBook}'
+            '|${provider.currentChapter}';
+    if (key != _progressKey) {
+      _progressKey = key;
+      _itemHeights.clear();
+    }
+    for (final p in visible) {
+      final h = p.itemTrailingEdge - p.itemLeadingEdge;
+      if (h > 0) _itemHeights[p.index] = h;
+    }
+    final progress = pixelScrollFraction(
+      firstIndex: first.index,
+      firstLeadingEdge: first.itemLeadingEdge,
+      itemCount: _progressItemCount,
+      itemHeights: _itemHeights,
+    );
 
     if (mounted) {
       _visibleItemPosNotifier.value = pos;
-      _visibleBottomPosNotifier.value = bottomPos;
+      _chapterProgressNotifier.value = progress;
       // Keep the pill visible while the position is changing (covers
       // scrolling within a single big paragraph where the integer index
       // never moves) and re-arm the 2 s auto-fade.
@@ -2100,24 +2120,18 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                             valueListenable: _visibleItemPosNotifier,
                             builder: (context, itemPos, _) =>
                                 ValueListenableBuilder<double>(
-                            valueListenable: _visibleBottomPosNotifier,
-                            builder: (context, bottomPos, _) {
-                              // 2026-06-28: BAR + NUMBER are now decoupled.
-                              //  • BAR = an even scroll fraction (extentBefore /
-                              //    (extentBefore + extentAfter), in item units)
-                              //    that moves proportionally with the page and
-                              //    reaches exactly 1.0 at the chapter bottom —
-                              //    no end-snap (user: "不要最后一刻突然跳到底部").
-                              //  • NUMBER = the verse at the TOP of the screen,
-                              //    so it stays on the line you're reading (e.g.
-                              //    bar at the bottom, number "19/24").
-                              final chapterProgress = chapterScrollFraction(
-                                topPos: itemPos,
-                                bottomPos: bottomPos,
-                                itemToVerseIndex: itemToVerseIndex,
-                                groupCount: paragraphGroups.length,
-                                totalVerses: verses.length,
-                              );
+                            valueListenable: _chapterProgressNotifier,
+                            builder: (context, chapterProgress, _) {
+                              // 2026-06-28 (v1.3.110): BAR + NUMBER decoupled.
+                              //  • BAR = PIXEL-proportional scroll fraction,
+                              //    precomputed in _handleItemPositionsChanged
+                              //    from measured item heights → even with the
+                              //    page length in paragraph AND verse mode,
+                              //    0% at top, 100% at the bottom, no jump.
+                              //  • NUMBER = the verse at the TOP of the screen.
+                              // Keep the active chapter's item count fresh for
+                              // the pixel estimator (header + groups + footer).
+                              _progressItemCount = paragraphGroups.length + 2;
                               final displayVerseIndex =
                                   paragraphCurrentVerseIndex(
                                 itemPos: itemPos,
