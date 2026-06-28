@@ -8,50 +8,65 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:yswords/utils/chapter_scroll_progress.dart';
 
 void main() {
-  // 2026-06-28: the BAR is now an even scroll fraction (decoupled from the
-  // verse number) that reaches exactly 1.0 at the chapter bottom — no
-  // end-snap. itemCount = header + groups + footer.
-  group('chapterScrollFraction', () {
-    test('0.0 at the very top', () {
-      expect(
-        chapterScrollFraction(topPos: 0.0, bottomPos: 3.0, itemCount: 24),
-        0.0,
-      );
+  // 2026-06-28 (v1.3.109): the BAR is an even scroll fraction measured in VERSE
+  // units (header → verse 0, footer → last verse), so the small header/footer
+  // spacers no longer make it lurch at the start/end. 0.0 at the top, exactly
+  // 1.0 the instant the chapter bottom is reached.
+  //
+  // Test layout: a 24-verse verse-by-verse chapter. Items: 0 = header (→ v0),
+  // items 1..24 = the 24 verses (item k → verse k-1), item 25 = footer (absent
+  // from the map → end). groupCount = 24, totalVerses = 24.
+  group('chapterScrollFraction (verse units)', () {
+    final itemToVerse = <int, int>{0: 0, for (var k = 1; k <= 24; k++) k: k - 1};
+    double frac(double top, double bottom) => chapterScrollFraction(
+          topPos: top,
+          bottomPos: bottom,
+          itemToVerseIndex: itemToVerse,
+          groupCount: 24,
+          totalVerses: 24,
+        );
+
+    test('0.0 at the very top (header + first verses on screen)', () {
+      expect(frac(0.0, 4.0), 0.0); // topVerse 0 → above 0
     });
 
-    test('exactly 1.0 when the chapter bottom is reached', () {
-      expect(
-        chapterScrollFraction(topPos: 19.0, bottomPos: 24.0, itemCount: 24),
-        1.0,
-      );
+    test('exactly 1.0 when the footer (chapter bottom) is reached', () {
+      // bottomPos in the footer (index 25) → bottomVerse == totalVerses.
+      expect(frac(19.0, 25.0), 1.0);
     });
 
-    test('reaches 1.0 even though the top-visible item is NOT the last', () {
-      // The crux: scrolled to the bottom, the top-visible verse is ~19/24,
-      // but the bar must still be at the end.
-      expect(
-        chapterScrollFraction(topPos: 18.5, bottomPos: 24.0, itemCount: 24),
-        1.0,
-      );
+    test('reaches 1.0 even though the top-visible verse is ~19/24', () {
+      expect(frac(19.5, 25.0), 1.0);
     });
 
-    test('monotonic + within [0,1] mid-scroll', () {
+    test('header scroll does NOT jump the bar (stays 0 while header passes)',
+        () {
+      // Scrolling THROUGH the header (topPos 0→1) keeps topVerse at 0, so the
+      // bar must not move yet — this is the "start no longer speeds up" fix.
+      expect(frac(0.0, 4.0), 0.0);
+      expect(frac(0.5, 4.5), frac(0.0, 4.0));
+    });
+
+    test('monotonic + within [0,1] across the whole chapter', () {
       double prev = -1;
-      for (var top = 0.0; top <= 18.0; top += 1.0) {
-        final bottom = (top + 6).clamp(0.0, 24.0);
-        final f = chapterScrollFraction(
-            topPos: top, bottomPos: bottom, itemCount: 24);
-        expect(f, greaterThanOrEqualTo(prev));
+      for (var top = 0.0; top <= 24.0; top += 0.5) {
+        final bottom = (top + 5).clamp(0.0, 25.0);
+        final f = frac(top, bottom);
+        expect(f, greaterThanOrEqualTo(prev - 1e-9));
         expect(f, inInclusiveRange(0.0, 1.0));
         prev = f;
       }
     });
 
-    test('degenerate inputs stay clamped + never throw', () {
-      expect(chapterScrollFraction(topPos: 0, bottomPos: 0, itemCount: 0), 0.0);
+    test('empty chapter never throws', () {
       expect(
-        chapterScrollFraction(topPos: 99, bottomPos: 99, itemCount: 24),
-        inInclusiveRange(0.0, 1.0),
+        chapterScrollFraction(
+            topPos: 0,
+            bottomPos: 0,
+            itemToVerseIndex: const {},
+            groupCount: 0,
+            totalVerses: 0),
+        0.0,
       );
     });
   });

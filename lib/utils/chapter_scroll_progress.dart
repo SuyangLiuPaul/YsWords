@@ -45,29 +45,48 @@ double _interpolatedVerse({
 
 /// 2026-06-28: even, monotonic 0.0–1.0 scroll fraction for the right-edge BAR,
 /// decoupled from the verse number. This is `extentBefore / (extentBefore +
-/// extentAfter)` expressed in item-position units:
-///   • [topPos]    = content position at the viewport TOP (the first visible
-///     item's index + the fraction of it scrolled past the top).
-///   • [bottomPos] = content position at the viewport BOTTOM (the last visible
+/// extentAfter)` measured in VERSE units (NOT item units):
+///   • [topPos]    = content position at the viewport TOP (first visible item's
+///     index + the fraction of it scrolled past the top).
+///   • [bottomPos] = content position at the viewport BOTTOM (last visible
 ///     item's index + the fraction of it above the viewport bottom; clamps to
 ///     `index + 1` once the chapter's final item is fully on screen).
-///   • [itemCount] = total scrollable items (header + groups + footer).
 ///
-/// Returns 0.0 at the very top and exactly 1.0 the instant the chapter bottom
-/// is reached (bottomPos == itemCount → "extentAfter" == 0) — so the bar moves
-/// smoothly with the page and lands at the bottom with NO end-snap. Unlike
-/// [paragraphScrollProgress] (which tracks the first-visible verse and therefore
-/// caps below 100% on the final screenful), this reflects the actual scroll
-/// position. The verse NUMBER still uses [paragraphCurrentVerseIndex] so it
-/// reads the verse you're on (e.g. bar at the bottom, number "19/24").
+/// We convert both to a continuous VERSE position via [_interpolatedVerse], then
+/// `above = topVerse`, `below = totalVerses − bottomVerse`, progress =
+/// above/(above+below).
+///
+/// Why verse units, not item units (v1.3.108 → v1.3.109 fix): in item units the
+/// tiny header + footer spacers each count as a whole item, so the bar lurched
+/// FAST past them at the very start and very end (user: "开始和最后都加快"), and
+/// tall-vs-short paragraphs moved it unevenly. In verse units the header maps to
+/// verse 0 and the footer to the last verse, so those distortions vanish and the
+/// bar advances uniformly per verse — while still hitting exactly 0.0 at the top
+/// and 1.0 the instant the chapter bottom is reached. The NUMBER still uses
+/// [paragraphCurrentVerseIndex] (top-of-screen verse), so e.g. at the bottom the
+/// bar is full while the number reads "19/24".
 double chapterScrollFraction({
   required double topPos,
   required double bottomPos,
-  required int itemCount,
+  required Map<int, int> itemToVerseIndex,
+  required int groupCount,
+  required int totalVerses,
 }) {
-  if (itemCount <= 0) return 0.0;
-  final above = topPos.clamp(0.0, itemCount.toDouble());
-  final below = (itemCount - bottomPos).clamp(0.0, itemCount.toDouble());
+  if (totalVerses <= 0) return 0.0;
+  final topVerse = _interpolatedVerse(
+    itemPos: topPos,
+    itemToVerseIndex: itemToVerseIndex,
+    groupCount: groupCount,
+    totalVerses: totalVerses,
+  );
+  final bottomVerse = _interpolatedVerse(
+    itemPos: bottomPos,
+    itemToVerseIndex: itemToVerseIndex,
+    groupCount: groupCount,
+    totalVerses: totalVerses,
+  );
+  final above = topVerse.clamp(0.0, totalVerses.toDouble());
+  final below = (totalVerses - bottomVerse).clamp(0.0, totalVerses.toDouble());
   final denom = above + below;
   if (denom <= 0) return 0.0;
   return (above / denom).clamp(0.0, 1.0).toDouble();

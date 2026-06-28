@@ -2114,7 +2114,9 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                               final chapterProgress = chapterScrollFraction(
                                 topPos: itemPos,
                                 bottomPos: bottomPos,
-                                itemCount: paragraphGroups.length + 2,
+                                itemToVerseIndex: itemToVerseIndex,
+                                groupCount: paragraphGroups.length,
+                                totalVerses: verses.length,
                               );
                               final displayVerseIndex =
                                   paragraphCurrentVerseIndex(
