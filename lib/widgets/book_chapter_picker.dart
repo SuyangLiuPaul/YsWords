@@ -242,6 +242,29 @@ class _BookChapterPickerState extends State<BookChapterPicker> {
 
     return Consumer<MainProvider>(
       builder: (context, mainProvider, child) {
+        // 2026-06-28: keep the testament toggle in sync with the CURRENT
+        // version. `hasOldTestament`/`hasNewTestament` used to be computed
+        // once in initState, so switching to a NT-only edition (LJK1/LJK2)
+        // left the 希伯来圣经 button showing — and selected — even though
+        // that version ships no OT (user report: "open another version and
+        // top those not updated"). didUpdateWidget also early-returns when
+        // only the version changed (same book/chapter), so the toggle never
+        // refreshed. Recompute every build (cheap set-membership over the
+        // book list) from this Consumer's live `mainProvider.books`, then
+        // clamp `showOldTestament` to a testament that actually has books.
+        final bookTitlesEng = mainProvider.books
+            .map<String>((b) => toEnglish(b.title) ?? b.title)
+            .toSet();
+        hasOldTestament =
+            bookTitlesEng.any((b) => oldTestamentBooks.contains(b));
+        hasNewTestament =
+            bookTitlesEng.any((b) => newTestamentBooks.contains(b));
+        if (showOldTestament && !hasOldTestament && hasNewTestament) {
+          showOldTestament = false;
+        } else if (!showOldTestament && !hasNewTestament && hasOldTestament) {
+          showOldTestament = true;
+        }
+
         // Round 56: when a chapter has been picked, switch the entire
         // picker contents to the verse-grid step. Books / chapters
         // disappear; user gets a focused full-width grid of every
