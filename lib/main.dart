@@ -478,6 +478,24 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
         );
         return GetMaterialApp(
           debugShowCheckedModeBanner: false,
+          // 2026-06-28 (v1.3.111): graceful fallback for UNKNOWN named routes.
+          // Diagnosed by source-map-deobfuscating a prod (v1.3.102) crash
+          // report ("Null check operator used on a null value", Android web):
+          // on Flutter web a browser/back/deep-link navigation to a URL path
+          // the app doesn't register reaches the Navigator with an unknown
+          // route name. The app sets only `home:` (no routes/onGenerateRoute),
+          // so Flutter fell through to `onUnknownRoute` — which was null —
+          // crashing inside `_WidgetsAppState._onUnknownRoute`. Returning the
+          // app root for any unknown route means a stray URL never crashes;
+          // the user just lands on the home screen. (Get.to(...) pushes
+          // anonymous routes and is unaffected by this handler.)
+          onUnknownRoute: (RouteSettings settings) => MaterialPageRoute<void>(
+            settings: settings,
+            builder: (ctx) => _RootRouter(
+              initialVerses:
+                  Provider.of<MainProvider>(ctx, listen: false).verses,
+            ),
+          ),
           themeMode: settings.themeMode,
           theme: ThemeData(
             fontFamily: settings.fontFamily,
