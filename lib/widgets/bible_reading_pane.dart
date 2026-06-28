@@ -382,7 +382,29 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
     final span = first.itemTrailingEdge - first.itemLeadingEdge;
     final withinFrac =
         span <= 0 ? 0.0 : (-first.itemLeadingEdge / span).clamp(0.0, 1.0);
-    final pos = first.index + withinFrac;
+    double pos = first.index + withinFrac;
+
+    // 2026-06-28: end-anchor so the progress pill reaches 100% / the last
+    // verse when the chapter is scrolled to the bottom. The first-visible
+    // anchor above can NEVER reach the end on its own, because the final
+    // screenful always shows the last several verses together — so the
+    // "first visible" caps at e.g. 41/58 even though verse 58 is on screen
+    // (user report: "scroll to the end but the bar is not at the end").
+    // Best practice (matches Flutter's own Scrollbar reaching the bottom at
+    // maxScrollExtent): when the LAST laid-out item's bottom is within the
+    // viewport (trailingEdge ≤ 1) AND the header has scrolled off the top
+    // (so we're not just a short chapter that fully fits), the content
+    // bottom is reached → snap the position to that final item. Its index
+    // is the footer (groupCount+1), which `_interpolatedVerse` maps to the
+    // chapter end → bar fills, number shows the last verse.
+    final lastLaidOut =
+        positions.reduce((a, b) => a.index >= b.index ? a : b);
+    final headerScrolledOff =
+        first.index > 0 || first.itemLeadingEdge < -0.001;
+    if (headerScrolledOff && lastLaidOut.itemTrailingEdge <= 1.0001) {
+      pos = lastLaidOut.index.toDouble();
+    }
+
     if (mounted) {
       _visibleItemPosNotifier.value = pos;
       // Keep the pill visible while the position is changing (covers
