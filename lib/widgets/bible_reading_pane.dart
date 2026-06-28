@@ -66,8 +66,6 @@ import 'package:yswords/widgets/verse_widget.dart';
 import 'package:yswords/widgets/paragraph_group_widget.dart';
 import 'package:yswords/widgets/version_picker_sheet.dart'
     show showLanguageGroupedVersionMenu;
-import 'package:yswords/utils/window_controls_inset.dart'
-    show iPadWindowControlTopClearance;
 import 'package:yswords/utils/font_catalog.dart' show kCjkFontFallback;
 
 class BibleReadingPane extends StatefulWidget {
@@ -6505,15 +6503,9 @@ class _FloatingHeader extends StatelessWidget {
             child: SafeArea(
             bottom: false,
             child: Padding(
-                // iPadOS 26 windowed mode: drop the header row (home
-                // button etc.) below the system traffic-light controls,
-                // which SafeArea can't see. 0 everywhere else.
-                padding: EdgeInsets.fromLTRB(
-                    6 * settings.menuScale,
-                    4 * settings.menuScale +
-                        iPadWindowControlTopClearance(context),
-                    6 * settings.menuScale,
-                    4 * settings.menuScale),
+                padding: EdgeInsets.symmetric(
+                    horizontal: 6 * settings.menuScale,
+                    vertical: 4 * settings.menuScale),
                 child: Row(
                   children: [
                     Expanded(

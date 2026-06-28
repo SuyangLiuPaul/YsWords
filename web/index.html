@@ -22,7 +22,17 @@
        browsers lay the page out at the legacy 980px desktop viewport
        and scale down — a root cause of "iOS web vs Android looks
        different" reports. Standard Flutter-template value. -->
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- 2026-06-28: viewport-fit=cover so the page can read
+       env(safe-area-inset-*) (notch / home-indicator / — once Apple
+       wires it up — iPadOS 26 window controls). Without it those env()
+       vars stay 0 and Flutter's SafeArea has nothing to inset against.
+       NOTE: as of iPadOS 26 WebKit does NOT yet report the windowed
+       traffic-light controls through env(safe-area-inset-top) for a PWA
+       (Apple gap; CSS Window Controls Overlay unsupported on iPadOS), so
+       this is forward-looking — it auto-starts working if Apple fixes it.
+       For a clean windowed iPad experience today, use the native app. -->
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <!-- 2026-06-12 (v1.3.62 perf): pre-open the TLS connection to the
        CDN that serves CanvasKit (~1.5 MB, on the boot critical path).
        Saves a DNS + TCP + TLS round trip before the engine download

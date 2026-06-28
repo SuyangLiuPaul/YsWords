@@ -32,6 +32,18 @@
 	<string>6.0</string>
 	<key>CFBundleName</key>
 	<string>yswords</string>
+	<!-- 2026-06-28: opt the native app into LEGACY iPadOS 26 windowing.
+	     With this YES, iPadOS 26 gives the window its own system title bar
+	     to hold the traffic-light controls, so app content sits below them
+	     (no overlap of the 书卷 header / back button) — the Apple-Notes-
+	     like behaviour. Full-screen is unaffected. Flutter doesn't yet
+	     expose the new inline-control inset API (flutter#170461), so this
+	     is the correct fix for now. Side effect: opts out of iOS 26 Liquid
+	     Glass for native UIKit chrome — negligible for a Flutter app, which
+	     draws its own UI. (Web/PWA can't use this; that's an Apple WebKit
+	     gap with no fix yet.) -->
+	<key>UIDesignRequiresCompatibility</key>
+	<true/>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>

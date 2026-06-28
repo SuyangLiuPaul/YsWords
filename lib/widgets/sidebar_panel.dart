@@ -5,8 +5,6 @@ import 'package:yswords/providers/main_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:yswords/widgets/book_chapter_picker.dart';
 import 'package:yswords/utils/font_catalog.dart' show kCjkFontFallback;
-import 'package:yswords/utils/window_controls_inset.dart'
-    show iPadWindowControlTopClearance;
 
 class SidebarPanel extends StatelessWidget {
   final String currentBook;
@@ -56,10 +54,7 @@ class SidebarPanel extends StatelessWidget {
               SafeArea(
                 bottom: false,
                 child: Padding(
-                  // iPadOS 26 windowed mode: drop the 书卷 header below the
-                  // system traffic-light controls (SafeArea can't see them).
-                  padding: EdgeInsets.fromLTRB(
-                      8, 6 + iPadWindowControlTopClearance(context), 4, 4),
+                  padding: const EdgeInsets.fromLTRB(8, 6, 4, 4),
                   child: Row(
                     children: [
                       Expanded(
