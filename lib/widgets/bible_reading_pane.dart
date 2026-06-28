@@ -522,19 +522,19 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
     }
   }
 
-  /// Toggle the auto-hide chrome. Called by a tap on the reader's
-  /// empty area (top/bottom margins, gaps between verses). Verses
-  /// themselves consume their own taps for selection so this won't
-  /// fire when the user taps a verse.
+  /// Toggle the auto-hide chrome. Historically called by a tap on the
+  /// reader's empty area (top/bottom margins, gaps between verses).
+  ///
+  /// 2026-06-28: NO-OP. The user asked for the bible reader to have no
+  /// hide behaviour at all — "when clicking the background white part the
+  /// top and bottom menu will still hide but it shouldn't have auto hide
+  /// or hide function anymore". The scroll auto-hide was already disabled
+  /// (`_onScrollDelta` no-op, v1.3.102); this disables the remaining
+  /// tap-to-hide path too, so `_chromeVisible` stays `true` and both the
+  /// header + bottom bar are permanently pinned. Kept as a method (not
+  /// deleted) so the existing call sites compile unchanged.
   void _toggleChrome() {
-    if (!mounted) return;
-    // iOS: chrome stays pinned visible (auto-hide disabled to avoid
-    // the grey-screen hang on chapter-switch via swipe).
-    if (!_chromeFeatureEnabled) return;
-    setState(() {
-      _chromeVisible = !_chromeVisible;
-      _chromeScrollAccumulator = 0; // fresh state after manual toggle
-    });
+    // Intentionally does nothing — chrome never hides in the reader.
   }
 
   /// Quick font-size adjuster sheet, opened from the bottom bar's Aa
