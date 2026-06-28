@@ -126,6 +126,11 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
   // — exactly what the verse number already implies. Verse-by-verse mode
   // is intentionally left on its existing formula.
   final ValueNotifier<double> _visibleItemPosNotifier = ValueNotifier(0.0);
+  // 2026-06-28: content position at the viewport BOTTOM (last visible item).
+  // Pairs with _visibleItemPosNotifier (the top) so the right-edge BAR can be
+  // an even scroll fraction that reaches 1.0 exactly at the chapter bottom,
+  // while the NUMBER keeps tracking the verse at the top of the screen.
+  final ValueNotifier<double> _visibleBottomPosNotifier = ValueNotifier(0.0);
   final ValueNotifier<bool> _showVersePositionNotifier = ValueNotifier(false);
   Timer? _versePositionTimer;
 
@@ -328,6 +333,7 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
         .removeListener(_handleItemPositionsChanged);
     _visibleItemIndexNotifier.dispose();
     _visibleItemPosNotifier.dispose();
+    _visibleBottomPosNotifier.dispose();
     _showVersePositionNotifier.dispose();
     super.dispose();
   }
@@ -382,31 +388,27 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
     final span = first.itemTrailingEdge - first.itemLeadingEdge;
     final withinFrac =
         span <= 0 ? 0.0 : (-first.itemLeadingEdge / span).clamp(0.0, 1.0);
-    double pos = first.index + withinFrac;
+    // topPos = content position at the viewport TOP — drives the verse NUMBER
+    // (the verse you're reading). NOT snapped: the number should stay on the
+    // line you're on, e.g. "19/24" even when the bar is already at the bottom.
+    final pos = first.index + withinFrac;
 
-    // 2026-06-28: end-anchor so the progress pill reaches 100% / the last
-    // verse when the chapter is scrolled to the bottom. The first-visible
-    // anchor above can NEVER reach the end on its own, because the final
-    // screenful always shows the last several verses together — so the
-    // "first visible" caps at e.g. 41/58 even though verse 58 is on screen
-    // (user report: "scroll to the end but the bar is not at the end").
-    // Best practice (matches Flutter's own Scrollbar reaching the bottom at
-    // maxScrollExtent): when the LAST laid-out item's bottom is within the
-    // viewport (trailingEdge ≤ 1) AND the header has scrolled off the top
-    // (so we're not just a short chapter that fully fits), the content
-    // bottom is reached → snap the position to that final item. Its index
-    // is the footer (groupCount+1), which `_interpolatedVerse` maps to the
-    // chapter end → bar fills, number shows the last verse.
-    final lastLaidOut =
-        positions.reduce((a, b) => a.index >= b.index ? a : b);
-    final headerScrolledOff =
-        first.index > 0 || first.itemLeadingEdge < -0.001;
-    if (headerScrolledOff && lastLaidOut.itemTrailingEdge <= 1.0001) {
-      pos = lastLaidOut.index.toDouble();
-    }
+    // 2026-06-28: bottomPos = content position at the viewport BOTTOM, used by
+    // `chapterScrollFraction` to drive the BAR. Together topPos/bottomPos give
+    // an even, monotonic scroll fraction that lands at exactly 1.0 when the
+    // chapter bottom is reached — so the bar tracks the page smoothly and the
+    // pill reaches the bottom with NO sudden jump (replaces v1.3.107's
+    // end-snap, which the user disliked).
+    final last = visible.last;
+    final lastSpan = last.itemTrailingEdge - last.itemLeadingEdge;
+    final botWithin = lastSpan <= 0
+        ? 1.0
+        : ((1.0 - last.itemLeadingEdge) / lastSpan).clamp(0.0, 1.0);
+    final bottomPos = last.index + botWithin;
 
     if (mounted) {
       _visibleItemPosNotifier.value = pos;
+      _visibleBottomPosNotifier.value = bottomPos;
       // Keep the pill visible while the position is changing (covers
       // scrolling within a single big paragraph where the integer index
       // never moves) and re-arm the 2 s auto-fade.
@@ -2096,19 +2098,23 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                           // show-position bool → drives AnimatedOpacity.
                           child: ValueListenableBuilder<double>(
                             valueListenable: _visibleItemPosNotifier,
-                            builder: (context, itemPos, _) {
-                              // v1.3.83: ONE path for both modes. Verse-by-verse
-                              // mode is just the degenerate case where each
-                              // paragraph group is a single verse, so the same
-                              // continuous interpolation gives the bar smooth
-                              // sub-verse motion AND keeps the number on the
-                              // verse you're actually scrolled to. Bar + number
-                              // share the position so they can never disagree.
-                              final chapterProgress = paragraphScrollProgress(
-                                itemPos: itemPos,
-                                itemToVerseIndex: itemToVerseIndex,
-                                groupCount: paragraphGroups.length,
-                                totalVerses: verses.length,
+                            builder: (context, itemPos, _) =>
+                                ValueListenableBuilder<double>(
+                            valueListenable: _visibleBottomPosNotifier,
+                            builder: (context, bottomPos, _) {
+                              // 2026-06-28: BAR + NUMBER are now decoupled.
+                              //  • BAR = an even scroll fraction (extentBefore /
+                              //    (extentBefore + extentAfter), in item units)
+                              //    that moves proportionally with the page and
+                              //    reaches exactly 1.0 at the chapter bottom —
+                              //    no end-snap (user: "不要最后一刻突然跳到底部").
+                              //  • NUMBER = the verse at the TOP of the screen,
+                              //    so it stays on the line you're reading (e.g.
+                              //    bar at the bottom, number "19/24").
+                              final chapterProgress = chapterScrollFraction(
+                                topPos: itemPos,
+                                bottomPos: bottomPos,
+                                itemCount: paragraphGroups.length + 2,
                               );
                               final displayVerseIndex =
                                   paragraphCurrentVerseIndex(
@@ -2132,7 +2138,7 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                                 ),
                               );
                             },
-                          ),
+                          )),
                         ),
                       ),
                     // 2026-05-21 (v1.2.70 hotfix): bottom bar hidden in

@@ -43,6 +43,36 @@ double _interpolatedVerse({
   return vHere + frac * (vNext - vHere);
 }
 
+/// 2026-06-28: even, monotonic 0.0–1.0 scroll fraction for the right-edge BAR,
+/// decoupled from the verse number. This is `extentBefore / (extentBefore +
+/// extentAfter)` expressed in item-position units:
+///   • [topPos]    = content position at the viewport TOP (the first visible
+///     item's index + the fraction of it scrolled past the top).
+///   • [bottomPos] = content position at the viewport BOTTOM (the last visible
+///     item's index + the fraction of it above the viewport bottom; clamps to
+///     `index + 1` once the chapter's final item is fully on screen).
+///   • [itemCount] = total scrollable items (header + groups + footer).
+///
+/// Returns 0.0 at the very top and exactly 1.0 the instant the chapter bottom
+/// is reached (bottomPos == itemCount → "extentAfter" == 0) — so the bar moves
+/// smoothly with the page and lands at the bottom with NO end-snap. Unlike
+/// [paragraphScrollProgress] (which tracks the first-visible verse and therefore
+/// caps below 100% on the final screenful), this reflects the actual scroll
+/// position. The verse NUMBER still uses [paragraphCurrentVerseIndex] so it
+/// reads the verse you're on (e.g. bar at the bottom, number "19/24").
+double chapterScrollFraction({
+  required double topPos,
+  required double bottomPos,
+  required int itemCount,
+}) {
+  if (itemCount <= 0) return 0.0;
+  final above = topPos.clamp(0.0, itemCount.toDouble());
+  final below = (itemCount - bottomPos).clamp(0.0, itemCount.toDouble());
+  final denom = above + below;
+  if (denom <= 0) return 0.0;
+  return (above / denom).clamp(0.0, 1.0).toDouble();
+}
+
 /// Clamped 0.0–1.0 scroll progress through the chapter (drives the bar fill +
 /// pill position).
 double paragraphScrollProgress({

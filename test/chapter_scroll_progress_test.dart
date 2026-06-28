@@ -8,6 +8,54 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:yswords/utils/chapter_scroll_progress.dart';
 
 void main() {
+  // 2026-06-28: the BAR is now an even scroll fraction (decoupled from the
+  // verse number) that reaches exactly 1.0 at the chapter bottom — no
+  // end-snap. itemCount = header + groups + footer.
+  group('chapterScrollFraction', () {
+    test('0.0 at the very top', () {
+      expect(
+        chapterScrollFraction(topPos: 0.0, bottomPos: 3.0, itemCount: 24),
+        0.0,
+      );
+    });
+
+    test('exactly 1.0 when the chapter bottom is reached', () {
+      expect(
+        chapterScrollFraction(topPos: 19.0, bottomPos: 24.0, itemCount: 24),
+        1.0,
+      );
+    });
+
+    test('reaches 1.0 even though the top-visible item is NOT the last', () {
+      // The crux: scrolled to the bottom, the top-visible verse is ~19/24,
+      // but the bar must still be at the end.
+      expect(
+        chapterScrollFraction(topPos: 18.5, bottomPos: 24.0, itemCount: 24),
+        1.0,
+      );
+    });
+
+    test('monotonic + within [0,1] mid-scroll', () {
+      double prev = -1;
+      for (var top = 0.0; top <= 18.0; top += 1.0) {
+        final bottom = (top + 6).clamp(0.0, 24.0);
+        final f = chapterScrollFraction(
+            topPos: top, bottomPos: bottom, itemCount: 24);
+        expect(f, greaterThanOrEqualTo(prev));
+        expect(f, inInclusiveRange(0.0, 1.0));
+        prev = f;
+      }
+    });
+
+    test('degenerate inputs stay clamped + never throw', () {
+      expect(chapterScrollFraction(topPos: 0, bottomPos: 0, itemCount: 0), 0.0);
+      expect(
+        chapterScrollFraction(topPos: 99, bottomPos: 99, itemCount: 24),
+        inInclusiveRange(0.0, 1.0),
+      );
+    });
+  });
+
   // A chapter of 20 verses grouped into 3 paragraphs:
   //   group 0 → verses 0..7  (item 1, leading verse 0)
   //   group 1 → verses 8..14 (item 2, leading verse 8)
