@@ -8,6 +8,7 @@ import 'package:flutter/foundation.dart'
     show kIsWeb, defaultTargetPlatform, TargetPlatform;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show Clipboard, ClipboardData;
+import 'package:yswords/constants/app_version.dart';
 import 'package:yswords/constants/build_flags.dart';
 import 'package:yswords/constants/text_patterns.dart' show sanitizeForCopy;
 import 'package:yswords/constants/ui_strings.dart';
@@ -2769,6 +2770,25 @@ class _AboutCard extends StatelessWidget {
                 fontSize: (settings.fontSize - 3).clamp(11.0, 14.0),
                 color: scheme.onSurfaceVariant,
                 fontStyle: FontStyle.italic,
+              ),
+            ),
+            SizedBox(height: 4 * s),
+            // 2026-06-29: surface the running version HERE on the Settings
+            // About card. It used to live ONLY on the AboutPage sub-page (its
+            // app-bar title + a footer buried under a long scroll), so a user
+            // on the Settings screen saw no version at all — reported as
+            // "version number not showing" on the Mi Pad. kAppVersion is
+            // guarded against a blank dart-define, so this never renders empty.
+            Text(
+              'v$kAppVersion'
+              '${kChinaMode ? ' · ${uiStrings['chinaBuildTag']?[locale] ?? 'China build'}' : ''}',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontFamily: settings.fontFamily,
+                fontFamilyFallback: kCjkFontFallback,
+                fontSize: (settings.fontSize - 3).clamp(11.0, 14.0),
+                fontWeight: FontWeight.w600,
+                color: scheme.onSurfaceVariant,
               ),
             ),
             SizedBox(height: 6 * s),
