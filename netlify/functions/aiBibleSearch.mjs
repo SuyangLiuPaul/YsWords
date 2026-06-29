@@ -24,7 +24,10 @@
 // Body:  { query: string, locale?: 'en' | 'zh-Hans' | 'zh-Hant', userApiKey?: string }
 // Reply: { answer: string, refs: [{book, chapter, verseStart, verseEnd, reason}] }
 
-const MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash-lite';
+// 2026-06-30: gemini-2.5-flash-lite returns a persistent 503 from Google;
+// retired it (default + tier map + fallback chain) → gemini-2.5-flash. See
+// aiExplainWord.mjs for the full diagnosis.
+const MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
 
 // 2026-05-10 (v1.2.26): per-request AI tier override. Client passes
 // `aiModel` body field with one of the keys below; we map it to the
@@ -46,7 +49,7 @@ const MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash-lite';
 // flash quota pool, so Deep is now actually usable on free tier
 // without BYOK.
 const _AI_MODEL_MAP = {
-  'flash-lite': 'gemini-2.5-flash-lite',
+  'flash-lite': 'gemini-2.5-flash', // was gemini-2.5-flash-lite — Google 503 (2026-06-30)
   'flash':      'gemini-2.5-flash',
   'pro':        'gemini-3-flash-preview',
 };
@@ -190,7 +193,7 @@ async function callGeminiWithKey(apiKey, query, locale, model) {
 function modelStepDown(model) {
 	switch (model) {
 		case 'gemini-3-flash-preview': return 'gemini-2.5-flash';
-		case 'gemini-2.5-flash':        return 'gemini-2.5-flash-lite';
+		case 'gemini-2.5-flash':        return 'gemini-3-flash-preview'; // was -lite (Google 503, 2026-06-30)
 		default: return null;
 	}
 }

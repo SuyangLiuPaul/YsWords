@@ -30,7 +30,10 @@ import { dirname, join } from 'node:path';
 // Default to gemini-2.5-flash-lite (round 55) — see aiExplainWord.mjs
 // for the rationale: 4× daily free quota, no thinking-token budget
 // to fight, fast enough for the brief 1-3 sentence search answers.
-const MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash-lite';
+// 2026-06-30: gemini-2.5-flash-lite returns a persistent 503 from Google;
+// retired it (default + tier map + fallback chain) → gemini-2.5-flash. See
+// aiExplainWord.mjs for the full diagnosis.
+const MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
 
 // 2026-05-10 (v1.2.26): per-request AI tier override, identical
 // shape to aiBibleSearch.mjs / aiExplainWord.mjs. Allowlist-clamped.
@@ -38,7 +41,7 @@ const MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash-lite';
 // maps to `gemini-3-flash-preview` because Google moved
 // `gemini-2.5-pro` behind a paywall on April 1 2026.
 const _AI_MODEL_MAP = {
-	'flash-lite': 'gemini-2.5-flash-lite',
+	'flash-lite': 'gemini-2.5-flash', // was gemini-2.5-flash-lite — Google 503 (2026-06-30)
 	'flash':      'gemini-2.5-flash',
 	'pro':        'gemini-3-flash-preview',
 };
@@ -208,7 +211,7 @@ function modelTimeoutMs(model) {
 function modelStepDown(model) {
 	switch (model) {
 		case 'gemini-3-flash-preview': return 'gemini-2.5-flash';
-		case 'gemini-2.5-flash':        return 'gemini-2.5-flash-lite';
+		case 'gemini-2.5-flash':        return 'gemini-3-flash-preview'; // was -lite (Google 503, 2026-06-30)
 		default: return null;
 	}
 }
