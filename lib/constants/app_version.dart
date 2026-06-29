@@ -2165,10 +2165,18 @@
 // (2) Flutter SDK upgraded 3.41.7 → 3.44.2 (Dart 3.12); fixed the three
 // resulting deprecations (cacheExtent dropped, onReorder → onReorderItem,
 // SizeTransition.axisAlignment → alignment). Analyze clean, 365 tests pass.
-const String kAppVersion = String.fromEnvironment(
+// 2026-06-29: `String.fromEnvironment`'s defaultValue applies ONLY when the
+// key is ABSENT — a build that ships `--dart-define=APP_VERSION=` (present but
+// EMPTY, e.g. a launchd/script run where the shell var came back blank)
+// overrides it with '' and blanks the version on-device (seen on the Mi Pad,
+// which sat on such a build while it couldn't update). Guard the empty case so
+// kAppVersion can never render blank again. Same hazard the script already
+// fixed for APP_RELEASE_TIME by moving it to a source constant.
+const String _envAppVersion = String.fromEnvironment(
   'APP_VERSION',
   defaultValue: '1.3.113',
 );
+const String kAppVersion = _envAppVersion == '' ? '1.3.113' : _envAppVersion;
 
 /// 2026-05-10 (v1.2.20): paired with `kAppVersion` so the About
 /// footer's "Last updated …" stamp moves in lockstep with every
