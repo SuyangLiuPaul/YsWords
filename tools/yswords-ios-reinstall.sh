@@ -25,10 +25,12 @@
 #   2. iPhone + iPad — on the same WiFi as Mac, paired via "Connect
 #      via network" in Xcode Devices and Simulators. Locked is fine,
 #      deep sleep / airplane mode is not.
-#   3. Xiaomi Pad — on the same WiFi as Mac, wireless ADB enabled,
-#      paired via `adb pair` (one-time, then mDNS auto-discovery
-#      handles IP changes). MIUI's "Install via USB" + Pure Mode
-#      tweaks already done in the setup phase.
+#   3. Xiaomi Pad — EITHER plugged in via USB (most reliable; wired ADB
+#      never drops) OR on the same WiFi with wireless ADB enabled, paired
+#      via `adb pair` once. Discovery self-heals: it checks the USB
+#      transport first, then polls mDNS for ~18s (HyperOS keeps turning
+#      Wireless debugging back off, so a single scan often misses it).
+#      MIUI's "Install via USB" + Pure Mode tweaks done in setup.
 #
 # Manual re-run if a scheduled fire misses (e.g. WiFi was down):
 #   ~/Documents/yswords/tools/yswords-ios-reinstall.sh
@@ -253,82 +255,96 @@ if "$FLUTTER" build apk --release --flavor intl "${DEFINES[@]}"; then
     serial="${entry%%|*}"
     label="${entry##*|}"
     echo ""
-    echo "→ resolving wireless ADB endpoint for $label (serial $serial)"
+    echo "→ locating $label (serial $serial) — USB first, then wireless"
 
-    # First preference: the v2 pair-token service. Match by SERIAL
-    # PREFIX so we tolerate the random `-XXXXXX` pair suffix changing
-    # on re-pair. `index($1, "adb-"s)==1` means "$1 starts with
-    # adb-<serial>" — catches both `adb-SERIAL` (rare, never paired
-    # for tls-connect) and `adb-SERIAL-SUFFIX` (the normal case).
-    # Also require $3 to look like `IPv4:port` — sometimes the
-    # mDNS announcement loses its host A-record and shows up as
-    # `:44241` (just the port) when the device's IP rotated or
-    # network blip during multicast advertisement. Without this
-    # guard, `adb connect :44241` would target an empty hostname
-    # and fail with a confusing error.
-    addr="$(adb mdns services 2>/dev/null \
-      | awk -v s="adb-$serial" \
-            'index($1, s)==1 && $2 == "_adb-tls-connect._tcp" \
-             && $3 ~ /^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+:[0-9]+$/ \
-             {print $3; exit}')"
+    # 2026-06-29: self-healing discovery. HyperOS silently turns OFF
+    # Wireless debugging (screen-lock / idle / Wi-Fi reconnect), so a
+    # single mDNS scan often misses the device and the run reports a
+    # spurious "not advertising" failure even though the device is fine.
+    # Two fixes:
+    #   (a) USB FAST PATH — `adb devices` lists the BARE serial for a
+    #       cabled device. Wired ADB never drops, so a plugged-in Mi Pad
+    #       is the most reliable path; check it first and every round.
+    #   (b) RETRY WINDOW — poll up to 6 rounds (~18s), re-warming mDNS
+    #       between tries, so a device that's slow to advertise (or one
+    #       whose Wireless debugging the user just toggled on) still gets
+    #       caught instead of failing instantly.
+    device_id=""
+    addr=""
+    for attempt in 1 2 3 4 5 6; do
+      # (a) USB / any already-attached transport carrying the bare serial.
+      device_id="$(adb devices | awk -v s="$serial" \
+          '$1==s && $2=="device" {print $1; exit}')"
+      if [ -n "$device_id" ]; then
+        echo "→ found $label on USB ($serial)"
+        break
+      fi
 
-    # Fallback: classic `_adb._tcp` on port 5555. Only present after
-    # `adb tcpip 5555` has been run on the device this boot — unlikely
-    # to be there for HyperOS but cheap to check. Same host-validation
-    # guard.
-    if [ -z "$addr" ]; then
+      # (b) Wireless: resolve current ip:port via mDNS. v2 pair-token
+      # service first (match by serial PREFIX to tolerate the random
+      # `-XXXXXX` pair suffix), then legacy `_adb._tcp`:5555. Require $3
+      # to look like IPv4:port so a host-less `:44241` announcement
+      # (IP rotated / multicast blip) doesn't become `adb connect :port`.
       addr="$(adb mdns services 2>/dev/null \
         | awk -v s="adb-$serial" \
-              '$1 == s && $2 == "_adb._tcp" \
-               && $3 ~ /^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+:[0-9]+$/ \
-               {print $3; exit}')"
-    fi
-
-    if [ -z "$addr" ]; then
-      echo "✗ $label is not advertising wireless ADB on this network."
-      echo "  → On the device: Settings → Developer options → Wireless"
-      echo "    debugging → toggle ON and keep that screen visible."
-      echo "    Then re-run this script. Or plug in USB and run"
-      echo "    \`adb install -r $ANDROID_APK\` manually."
-      failures=$((failures + 1))
-      continue
-    fi
-
-    echo "→ found at $addr — connecting + installing"
-    # `adb connect` is idempotent; safe to call even if the transport
-    # is already attached from a previous run. Still — if a previous
-    # `connect` left the transport in `offline` state (happens when
-    # the device's wireless-debug pair-token has rolled but the
-    # client thinks it's still good), a fresh `disconnect` clears it
-    # before the new `connect` attempt.
-    adb disconnect "$addr" >/dev/null 2>&1 || true
-    adb connect "$addr" 2>&1 | tail -1 || true
-    sleep 1
-    device_id="$(adb devices | awk -v a="$addr" \
-        '$2=="device" && $1 == a {print $1; exit}')"
-    # If the transport is showing but as `offline`, give it one more
-    # disconnect/connect cycle. 2026-05-27: yesterday's launchd run
-    # found the device at mDNS-resolved :44241 but `adb devices`
-    # came back without a `device` line — suggesting the transport
-    # was in `offline` state. This retry catches that case.
-    if [ -z "$device_id" ]; then
-      offline_state="$(adb devices | awk -v a="$addr" '$1 == a {print $2; exit}')"
-      if [ -n "$offline_state" ] && [ "$offline_state" != "device" ]; then
-        echo "  transport showed $offline_state — retrying disconnect+connect"
-        adb disconnect "$addr" >/dev/null 2>&1 || true
-        sleep 2
-        adb connect "$addr" 2>&1 | tail -1 || true
-        sleep 1
-        device_id="$(adb devices | awk -v a="$addr" \
-            '$2=="device" && $1 == a {print $1; exit}')"
+              'index($1, s)==1 && $2 == "_adb-tls-connect._tcp" \
+               && $3 ~ /^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+:[0-9]+$/ {print $3; exit}')"
+      if [ -z "$addr" ]; then
+        addr="$(adb mdns services 2>/dev/null \
+          | awk -v s="adb-$serial" \
+                '$1 == s && $2 == "_adb._tcp" \
+                 && $3 ~ /^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+:[0-9]+$/ {print $3; exit}')"
       fi
-    fi
-    if [ -z "$device_id" ]; then
-      echo "✗ adb connect to $addr did not yield a 'device' transport"
-      echo "  (pair token may have expired — re-pair via the Wireless"
-      echo "  debugging → Pair device with pairing code screen)"
+      [ -n "$addr" ] && break
+
+      if [ "$attempt" -lt 6 ]; then
+        echo "  …not visible yet (round $attempt/6) — re-scanning in 3s"
+        adb mdns services >/dev/null 2>&1 || true
+        sleep 3
+      fi
+    done
+
+    if [ -z "$device_id" ] && [ -z "$addr" ]; then
+      echo "✗ $label is not reachable (no USB cable, and not advertising"
+      echo "  wireless ADB after ~18s of scanning)."
+      echo "  → Easiest permanent fix: plug $label in with a USB cable and"
+      echo "    re-run — wired ADB never drops."
+      echo "  → Or on the device: Settings → Developer options → Wireless"
+      echo "    debugging → toggle ON, keep that screen visible, re-run."
       failures=$((failures + 1))
       continue
+    fi
+
+    # Wireless path only (no USB transport yet): connect to the resolved
+    # endpoint. Idempotent; a stale `offline` transport is cleared by a
+    # disconnect first, then re-connected (pair-token roll recovery).
+    if [ -z "$device_id" ]; then
+      echo "→ found at $addr — connecting"
+      adb disconnect "$addr" >/dev/null 2>&1 || true
+      adb connect "$addr" 2>&1 | tail -1 || true
+      sleep 1
+      device_id="$(adb devices | awk -v a="$addr" \
+          '$2=="device" && $1 == a {print $1; exit}')"
+      # Transport present but `offline` → one more disconnect/connect cycle.
+      if [ -z "$device_id" ]; then
+        offline_state="$(adb devices | awk -v a="$addr" '$1 == a {print $2; exit}')"
+        if [ -n "$offline_state" ] && [ "$offline_state" != "device" ]; then
+          echo "  transport showed $offline_state — retrying disconnect+connect"
+          adb disconnect "$addr" >/dev/null 2>&1 || true
+          sleep 2
+          adb connect "$addr" 2>&1 | tail -1 || true
+          sleep 1
+          device_id="$(adb devices | awk -v a="$addr" \
+              '$2=="device" && $1 == a {print $1; exit}')"
+        fi
+      fi
+      if [ -z "$device_id" ]; then
+        echo "✗ adb connect to $addr did not yield a 'device' transport"
+        echo "  (pair token may have expired — re-pair via Wireless"
+        echo "  debugging → Pair device with pairing code, or use USB)"
+        failures=$((failures + 1))
+        continue
+      fi
     fi
     if adb -s "$device_id" install -r "$ANDROID_APK"; then
       echo "✓ installed to $label via $device_id"
