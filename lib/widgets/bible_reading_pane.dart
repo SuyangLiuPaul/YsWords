@@ -5080,6 +5080,14 @@ void _showMapPicker(
   required List<BibleMap> bookMaps,
   required String locale,
 }) {
+  // 2026-06-29: illustration book-group headers must follow the READING
+  // VERSION (NASB → "Genesis", CUVS → "创世记", `-tr` → "創世記"), not the
+  // UI locale. Previously the group passed `locale` ('en') into
+  // translateBookName's VERSION slot; `toLocale('Genesis','en')` doesn't
+  // recognise 'en' as an English version (only kjv/nasb/niv/leb) and fell
+  // through to Chinese — so an English reader saw 创世纪/出埃及记. Thread the
+  // real version in (mirrors HighlightsSheet). See [[feedback_book_name_localization]].
+  final version = context.read<MainProvider>().currentVersion;
   showModalBottomSheet<void>(
     context: context,
     isScrollControlled: true,
@@ -5091,6 +5099,7 @@ void _showMapPicker(
         chapterMaps: chapterMaps,
         bookMaps: bookMaps,
         locale: locale,
+        version: version,
       );
     },
   );
@@ -5100,10 +5109,12 @@ class _MapPickerSheet extends StatefulWidget {
   final List<BibleMap> chapterMaps;
   final List<BibleMap> bookMaps;
   final String locale;
+  final String version;
   const _MapPickerSheet({
     required this.chapterMaps,
     required this.bookMaps,
     required this.locale,
+    required this.version,
   });
 
   @override
@@ -5278,6 +5289,7 @@ class _MapPickerSheetState extends State<_MapPickerSheet>
         return _AllIllustrationsByBook(
           all: _allMaps,
           locale: widget.locale,
+          version: widget.version,
           related: [...widget.chapterMaps, ...widget.bookMaps],
           onCloseSheet: () => Navigator.of(context).pop(),
         );
@@ -5362,11 +5374,13 @@ class _FallbackNote extends StatelessWidget {
 class _AllIllustrationsByBook extends StatefulWidget {
   final List<BibleMap> all;
   final String locale;
+  final String version;
   final List<BibleMap> related;
   final VoidCallback onCloseSheet;
   const _AllIllustrationsByBook({
     required this.all,
     required this.locale,
+    required this.version,
     required this.related,
     required this.onCloseSheet,
   });
@@ -5405,8 +5419,15 @@ class _AllIllustrationsByBookState extends State<_AllIllustrationsByBook> {
     if (q.isEmpty) return true;
     final qLower = q.toLowerCase();
     if (book.toLowerCase().contains(qLower)) return true;
-    final localized = translateBookName(book, 'zh-Hans').toLowerCase();
-    if (localized.contains(qLower)) return true;
+    // Match the name the user actually SEES (reading-version localized) …
+    if (translateBookName(book, widget.version).toLowerCase().contains(qLower)) {
+      return true;
+    }
+    // … plus the Simplified name so a Chinese query always works regardless
+    // of the reading version.
+    if (translateBookName(book, 'zh-Hans').toLowerCase().contains(qLower)) {
+      return true;
+    }
     return false;
   }
 
@@ -5460,6 +5481,7 @@ class _AllIllustrationsByBookState extends State<_AllIllustrationsByBook> {
                   _BookIllustrationGroup(
                     book: entry.key,
                     locale: widget.locale,
+                    version: widget.version,
                     maps: q.isEmpty
                         ? entry.value
                         : entry.value
@@ -5486,6 +5508,7 @@ class _AllIllustrationsByBookState extends State<_AllIllustrationsByBook> {
 class _BookIllustrationGroup extends StatelessWidget {
   final String book;
   final String locale;
+  final String version;
   final List<BibleMap> maps;
   final List<BibleMap> related;
   final VoidCallback onCloseSheet;
@@ -5494,6 +5517,7 @@ class _BookIllustrationGroup extends StatelessWidget {
   const _BookIllustrationGroup({
     required this.book,
     required this.locale,
+    required this.version,
     required this.maps,
     required this.related,
     required this.onCloseSheet,
@@ -5504,7 +5528,10 @@ class _BookIllustrationGroup extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final localizedBook = translateBookName(book, locale);
+    // Follow the reading VERSION, not the UI locale: `book` is the English
+    // canonical key, so translateBookName(book, version) yields "Genesis"
+    // for NASB/KJV, "创世记" for CUVS, "創世記" for the -tr variants.
+    final localizedBook = translateBookName(book, version);
     final headerTpl = uiStrings['illustrationsBookCount']?[locale] ??
         '{book} ({n})';
     final headerText = headerTpl
