@@ -24,10 +24,12 @@
 // Body:  { query: string, locale?: 'en' | 'zh-Hans' | 'zh-Hant', userApiKey?: string }
 // Reply: { answer: string, refs: [{book, chapter, verseStart, verseEnd, reason}] }
 
-// 2026-06-30: gemini-2.5-flash-lite returns a persistent 503 from Google;
-// retired it (default + tier map + fallback chain) → gemini-2.5-flash. See
-// aiExplainWord.mjs for the full diagnosis.
-const MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
+// 2026-06-30: kept as default — flash-lite's 503 is a TRANSIENT high-demand
+// spike, not deprecation. This function's step-down already fires on 5xx; the
+// only gap was the chain lacking a flash-lite fallback (added below). An earlier
+// same-day patch wrongly switched to gemini-2.5-flash (~20 req/day free) —
+// reverted. See aiExplainWord.mjs.
+const MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash-lite';
 
 // 2026-05-10 (v1.2.26): per-request AI tier override. Client passes
 // `aiModel` body field with one of the keys below; we map it to the
@@ -49,7 +51,7 @@ const MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
 // flash quota pool, so Deep is now actually usable on free tier
 // without BYOK.
 const _AI_MODEL_MAP = {
-  'flash-lite': 'gemini-2.5-flash', // was gemini-2.5-flash-lite — Google 503 (2026-06-30)
+  'flash-lite': 'gemini-2.5-flash-lite',
   'flash':      'gemini-2.5-flash',
   'pro':        'gemini-3-flash-preview',
 };
@@ -192,8 +194,9 @@ async function callGeminiWithKey(apiKey, query, locale, model) {
 // the user's question; better than a hard error).
 function modelStepDown(model) {
 	switch (model) {
-		case 'gemini-3-flash-preview': return 'gemini-2.5-flash';
-		case 'gemini-2.5-flash':        return 'gemini-3-flash-preview'; // was -lite (Google 503, 2026-06-30)
+		// 2026-06-30: flash-lite → flash → 3-flash-preview → stop (see aiExplainWord).
+		case 'gemini-2.5-flash-lite':  return 'gemini-2.5-flash';
+		case 'gemini-2.5-flash':        return 'gemini-3-flash-preview';
 		default: return null;
 	}
 }

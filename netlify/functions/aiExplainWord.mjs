@@ -42,13 +42,14 @@
 // e.g. 'gemini-2.5-flash' for higher quality on chapters where
 // reasoning helps more, or 'gemini-2.5-pro' (very limited quota,
 // 5 RPM / 100 RPD).
-// 2026-06-30: Google returns a PERSISTENT 503 for gemini-2.5-flash-lite
-// (verified live: lite → HTTP 503; gemini-2.5-flash + gemini-3-flash-preview
-// → 200). It was the default model AND the 'flash-lite'/"Fast" tier target,
-// so every default AI request failed on every platform. Retired it: default
-// is gemini-2.5-flash, the tier map points 'flash-lite' at flash, and the
-// fallback chain steps to a working model instead of dead-ending on lite.
-const MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
+// 2026-06-30: gemini-2.5-flash-lite stays the default — it's the FASTEST model
+// (~1-2s) with the highest free-tier quota. Its occasional HTTP 503 is a
+// TRANSIENT "high demand" spike (Google's own message), NOT deprecation, so the
+// real fix is that the step-down chain below now falls back on 5xx (not just
+// 429) → gemini-2.5-flash → gemini-3-flash-preview, recovering automatically.
+// (An earlier same-day patch wrongly made gemini-2.5-flash the default; that
+// model's free tier is only ~20 req/day and exhausted fast — reverted.)
+const MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash-lite';
 
 // 2026-05-10 (v1.2.26): per-request AI tier override, identical
 // shape to aiBibleSearch.mjs / aiSearch.mjs. Allowlist-clamped.
@@ -56,7 +57,7 @@ const MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
 // maps to `gemini-3-flash-preview` because Google moved
 // `gemini-2.5-pro` behind a paywall on April 1 2026.
 const _AI_MODEL_MAP = {
-	'flash-lite': 'gemini-2.5-flash', // was gemini-2.5-flash-lite — Google 503 (2026-06-30)
+	'flash-lite': 'gemini-2.5-flash-lite',
 	'flash':      'gemini-2.5-flash',
 	'pro':        'gemini-3-flash-preview',
 };
@@ -685,8 +686,11 @@ function modelTimeoutMs(model) {
 // AI responses flowing past the per-tier daily quota.
 function modelStepDown(model) {
 	switch (model) {
-		case 'gemini-3-flash-preview': return 'gemini-2.5-flash';
-		case 'gemini-2.5-flash':        return 'gemini-3-flash-preview'; // was -lite (Google 503, 2026-06-30)
+		// 2026-06-30: linear escalation so any 503/429 on one model tries a
+		// DIFFERENT model with its own quota: flash-lite (fast, high quota) →
+		// flash (~20/day) → 3-flash-preview → stop. Terminates naturally.
+		case 'gemini-2.5-flash-lite':  return 'gemini-2.5-flash';
+		case 'gemini-2.5-flash':        return 'gemini-3-flash-preview';
 		default: return null;
 	}
 }
@@ -807,12 +811,14 @@ async function callGemini(prompt, locale, overrideKey = null, model = MODEL, ctx
 		}
 		// BYOK never steps down — user picked this tier on their own key.
 		if (isByok) break;
-		// Only step down on quota. Auth / upstream errors don't benefit
-		// from a different model.
-		if (result.errorKind !== 'quota') break;
+		// 2026-06-30: step down on transient upstream 5xx (e.g. flash-lite's
+		// "high demand" 503) as well as 429 quota. Previously a brief 503 spike
+		// on the primary model returned "no result" with no fallback attempt.
+		// Auth errors still bail (a different model won't fix a bad key).
+		if (result.errorKind !== 'quota' && result.errorKind !== 'upstream') break;
 		const next = modelStepDown(currentModel);
 		if (!next) break;
-		console.warn(`[aiExplainWord] ${currentModel} 429; falling back to ${next}.`);
+		console.warn(`[aiExplainWord] ${currentModel} ${result.status} (${result.errorKind}); falling back to ${next}.`);
 		currentModel = next;
 	}
 	// v1.3.30: surface fallback state even on terminal failure so the

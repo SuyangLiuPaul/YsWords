@@ -30,10 +30,11 @@ import { dirname, join } from 'node:path';
 // Default to gemini-2.5-flash-lite (round 55) — see aiExplainWord.mjs
 // for the rationale: 4× daily free quota, no thinking-token budget
 // to fight, fast enough for the brief 1-3 sentence search answers.
-// 2026-06-30: gemini-2.5-flash-lite returns a persistent 503 from Google;
-// retired it (default + tier map + fallback chain) → gemini-2.5-flash. See
-// aiExplainWord.mjs for the full diagnosis.
-const MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
+// 2026-06-30: kept as default — flash-lite's 503 is a TRANSIENT high-demand
+// spike, not deprecation; the step-down chain now falls back on 5xx. An earlier
+// same-day patch wrongly switched to gemini-2.5-flash (only ~20 req/day free) —
+// reverted. See aiExplainWord.mjs.
+const MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash-lite';
 
 // 2026-05-10 (v1.2.26): per-request AI tier override, identical
 // shape to aiBibleSearch.mjs / aiExplainWord.mjs. Allowlist-clamped.
@@ -41,7 +42,7 @@ const MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
 // maps to `gemini-3-flash-preview` because Google moved
 // `gemini-2.5-pro` behind a paywall on April 1 2026.
 const _AI_MODEL_MAP = {
-	'flash-lite': 'gemini-2.5-flash', // was gemini-2.5-flash-lite — Google 503 (2026-06-30)
+	'flash-lite': 'gemini-2.5-flash-lite',
 	'flash':      'gemini-2.5-flash',
 	'pro':        'gemini-3-flash-preview',
 };
@@ -210,8 +211,9 @@ function modelTimeoutMs(model) {
 // more free-tier quota. See aiBibleSearch's comment for details.
 function modelStepDown(model) {
 	switch (model) {
-		case 'gemini-3-flash-preview': return 'gemini-2.5-flash';
-		case 'gemini-2.5-flash':        return 'gemini-3-flash-preview'; // was -lite (Google 503, 2026-06-30)
+		// 2026-06-30: flash-lite → flash → 3-flash-preview → stop (see aiExplainWord).
+		case 'gemini-2.5-flash-lite':  return 'gemini-2.5-flash';
+		case 'gemini-2.5-flash':        return 'gemini-3-flash-preview';
 		default: return null;
 	}
 }
@@ -323,9 +325,9 @@ async function callGemini(prompt, locale, overrideKey = null, model = MODEL, ctx
 		}
 		// BYOK never steps down — user picked this tier on their own key.
 		if (isByok) break;
-		// Only step down on 429 (true quota exhaustion). Auth or
-		// 4xx/5xx-other won't be fixed by a different model.
-		if (result.status !== 429) break;
+		// 2026-06-30: step down on 429 quota AND transient 5xx (flash-lite's
+		// "high demand" 503) — a brief spike used to return "no result".
+		if (result.status !== 429 && result.status < 500) break;
 		const next = modelStepDown(currentModel);
 		if (!next) break;
 		console.warn(`[aiSearch] ${currentModel} 429; falling back to ${next}.`);
