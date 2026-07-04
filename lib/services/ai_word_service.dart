@@ -115,59 +115,74 @@ class AiWordService {
     return _send(body);
   }
 
-  /// Shared POST + error/parse used by both [explain] and
-  /// [explainVerse]. Never throws — failures map to
-  /// [AiWordResult.unavailable] with a human-readable reason.
+  /// Shared POST + error/parse used by both [explain] and [explainVerse].
+  /// Never throws — failures map to [AiWordResult.unavailable] with a
+  /// human-readable reason.
+  ///
+  /// 2026-06-30 robustness: retries TRANSIENT failures — network error,
+  /// timeout, and HTTP 5xx (e.g. Gemini's brief "high demand" 503) — up to 3
+  /// attempts with short backoff, so a momentary spike self-heals before the
+  /// user ever sees an error. Terminal failures (429 quota, 401/403 auth, 404
+  /// not-deployed, empty 200) return immediately — an instant retry won't help.
   static Future<AiWordResult> _send(Map<String, dynamic> body) async {
-    final http.Response resp;
-    try {
-      resp = await http
-          .post(
-            Uri.parse(resolveApiUrl(endpoint)),
-            headers: const {'Content-Type': 'application/json'},
-            body: jsonEncode(body),
-          )
-          .timeout(const Duration(seconds: 60));
-    } on TimeoutException {
-      return AiWordResult.unavailable(
-        'The AI explanation took too long. Please try again.',
-      );
-    } catch (_) {
-      return AiWordResult.unavailable(
-        'AI explanation is not available right now.',
-      );
-    }
-    if (resp.statusCode == 404) {
-      return AiWordResult.unavailable(
-        'AI explanation is not available yet (function not deployed).',
-      );
-    }
-    // Surface the function's `error` field directly when it provided
-    // one (covers 429 quota, 503 not-configured, 401/403 bad key).
-    if (resp.statusCode != 200) {
-      try {
-        final j = jsonDecode(resp.body) as Map<String, dynamic>;
-        final reason = (j['error'] as String?)?.trim();
-        if (reason != null && reason.isNotEmpty) {
-          return AiWordResult.unavailable(reason);
-        }
-      } catch (_) {/* fall through to generic message */}
-      return AiWordResult.unavailable(
-        'AI explanation returned an error (${resp.statusCode}).',
-      );
-    }
-    try {
-      final j = jsonDecode(resp.body) as Map<String, dynamic>;
-      final exp = (j['explanation'] as String?)?.trim() ?? '';
-      if (exp.isEmpty) {
-        return AiWordResult.unavailable('AI returned an empty response.');
+    const backoffs = <Duration>[
+      Duration.zero,
+      Duration(milliseconds: 700),
+      Duration(milliseconds: 1800),
+    ];
+    var transientReason = 'AI is busy right now. Please try again in a moment.';
+    for (var attempt = 0; attempt < backoffs.length; attempt++) {
+      if (backoffs[attempt] > Duration.zero) {
+        await Future<void>.delayed(backoffs[attempt]);
       }
-      return AiWordResult.ok(exp);
-    } catch (_) {
-      return AiWordResult.unavailable(
-        'AI explanation returned an unexpected response.',
-      );
+      final http.Response resp;
+      try {
+        resp = await http
+            .post(
+              Uri.parse(resolveApiUrl(endpoint)),
+              headers: const {'Content-Type': 'application/json'},
+              body: jsonEncode(body),
+            )
+            .timeout(const Duration(seconds: 60));
+      } on TimeoutException {
+        transientReason = 'The AI took too long. Please try again.';
+        continue; // transient → retry
+      } catch (_) {
+        transientReason = 'AI is not available right now (network issue).';
+        continue; // transient → retry
+      }
+      final code = resp.statusCode;
+      if (code == 200) {
+        try {
+          final j = jsonDecode(resp.body) as Map<String, dynamic>;
+          final exp = (j['explanation'] as String?)?.trim() ?? '';
+          if (exp.isNotEmpty) return AiWordResult.ok(exp);
+          return AiWordResult.unavailable('AI returned an empty response.');
+        } catch (_) {
+          return AiWordResult.unavailable(
+              'AI explanation returned an unexpected response.');
+        }
+      }
+      // Non-200: prefer the function's own `error` reason when present.
+      String reason;
+      if (code == 404) {
+        reason = 'AI explanation is not available yet (function not deployed).';
+      } else {
+        reason = 'AI explanation returned an error ($code).';
+        try {
+          final j = jsonDecode(resp.body) as Map<String, dynamic>;
+          final r = (j['error'] as String?)?.trim();
+          if (r != null && r.isNotEmpty) reason = r;
+        } catch (_) {/* keep generic */}
+      }
+      // 5xx = transient upstream → retry; 429/auth/404/other-4xx are terminal.
+      if (code >= 500 && code < 600) {
+        transientReason = 'AI is busy right now. Please try again in a moment.';
+        continue;
+      }
+      return AiWordResult.unavailable(reason);
     }
+    return AiWordResult.unavailable(transientReason); // retries exhausted
   }
 }
 

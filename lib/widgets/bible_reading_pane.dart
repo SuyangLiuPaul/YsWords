@@ -3212,20 +3212,15 @@ class _AiExplainSheetState extends State<_AiExplainSheet> {
       turn.loading = true;
       turn.error = null;
     });
-    var result = await _request(
+    // The service layer now retries transient failures (503 "high demand" /
+    // timeout / network) with backoff, so a redundant client-side cold-start
+    // retry is no longer needed here. restoreOnFail is kept for call-site
+    // compatibility but no longer used — the failed turn now stays on screen
+    // with its question + an inline error instead of being removed.
+    final result = await _request(
         question: turn.question,
         length: turn.length,
         history: history.isEmpty ? null : history);
-    // v1.3.x cold-start auto-retry — the first call can miss the Netlify
-    // function + Gemini warm-up.
-    if (result.unavailable && mounted) {
-      await Future<void>.delayed(const Duration(milliseconds: 500));
-      if (!mounted) return;
-      result = await _request(
-          question: turn.question,
-          length: turn.length,
-          history: history.isEmpty ? null : history);
-    }
     if (!mounted) return;
     setState(() {
       turn.loading = false;
@@ -3233,21 +3228,16 @@ class _AiExplainSheetState extends State<_AiExplainSheet> {
         final reason = result.unavailableReason ??
             (uiStrings['aiExplainError']?[_loc] ??
                 'AI explanation is not available right now.');
-        if (turn.question != null && turn.answer == null) {
-          // First attempt of a question turn failed → restore the text to
-          // the input box and drop the empty turn (user's request:
-          // "失败才回到 input，否则不用").
-          _turns.remove(turn);
-          if (restoreOnFail != null && restoreOnFail.isNotEmpty) {
-            _questionController.text = restoreOnFail;
-          }
-          _snack(reason);
-        } else if (turn.answer != null) {
-          // A regenerate failed but the previous answer is still good —
-          // keep it on screen, just tell the user the retry failed.
+        // 2026-06-30 robustness: NEVER drop the turn on failure. If a good
+        // answer already exists (a failed regenerate), keep it and toast the
+        // reason; otherwise show a PERSISTENT inline error + Retry button —
+        // for the OPENING explanation AND follow-up questions alike.
+        // Previously a failed follow-up deleted the turn + showed only a
+        // fleeting toast, so the question vanished with no visible reason
+        // ("追问没回复"). Retry re-runs this same turn with its stored question.
+        if (turn.answer != null) {
           _snack(reason);
         } else {
-          // Opening explanation first-time failure → inline retry button.
           turn.error = reason;
         }
       } else {

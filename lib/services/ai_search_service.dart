@@ -69,96 +69,99 @@ class AiSearchService {
     if (query.trim().isEmpty) {
       return AiSearchResult.empty();
     }
-    final http.Response resp;
-    try {
-      resp = await http
-          .post(
-            Uri.parse(resolveApiUrl(endpoint)),
-            headers: const {'Content-Type': 'application/json'},
-            body: jsonEncode({
-              'query': query,
-              'locale': locale,
-              if (userApiKey != null && userApiKey.isNotEmpty)
-                'userApiKey': userApiKey,
-              if (aiModel != null && aiModel.isNotEmpty)
-                'aiModel': aiModel,
-            }),
-          )
-          .timeout(const Duration(seconds: 60));
-    } on TimeoutException {
-      return AiSearchResult.unavailable(
-        'The AI search took too long. Please try again or rephrase '
-        'your question.',
-      );
-    } catch (_) {
-      // Network unreachable, DNS failure, CORS preflight reject, or
-      // the function isn't deployed yet (the most common case). We
-      // deliberately do NOT include `e.runtimeType` here — in
-      // release builds it produces minified names like "td" that
-      // mean nothing to users.
-      return AiSearchResult.unavailable(
-        'YsWords search is not available right now. Showing keyword '
-        'matches instead.',
-      );
-    }
-
-    if (resp.statusCode == 404) {
-      // Function isn't deployed at this URL yet.
-      return AiSearchResult.unavailable(
-        'YsWords search is not available yet. Showing keyword matches '
-        'instead.',
-      );
-    }
-    // 2026-05-08 (v1.1.8): surface the server's actual error body
-    // when present so users see "quota exhausted, try again later"
-    // (HTTP 429 from the function) instead of a generic
-    // "returned an error". Previous text "Showing keyword matches
-    // instead" stays as a fallback when no server-side detail is
-    // available.
-    String? serverError() {
+    // 2026-06-30 robustness: retry TRANSIENT failures (network, timeout, HTTP
+    // 5xx — e.g. Gemini's brief "high demand" 503) up to 3 attempts with short
+    // backoff, so a momentary spike self-heals before we downgrade to keyword
+    // search. Terminal failures (404 not-deployed, 429 quota, other 4xx) return
+    // immediately. Same body across attempts.
+    final reqBody = jsonEncode({
+      'query': query,
+      'locale': locale,
+      if (userApiKey != null && userApiKey.isNotEmpty) 'userApiKey': userApiKey,
+      if (aiModel != null && aiModel.isNotEmpty) 'aiModel': aiModel,
+    });
+    const backoffs = <Duration>[
+      Duration.zero,
+      Duration(milliseconds: 700),
+      Duration(milliseconds: 1800),
+    ];
+    var transientReason =
+        'YsWords AI is busy right now. Showing keyword matches — tap Ask to '
+        'try again.';
+    for (var attempt = 0; attempt < backoffs.length; attempt++) {
+      if (backoffs[attempt] > Duration.zero) {
+        await Future<void>.delayed(backoffs[attempt]);
+      }
+      final http.Response resp;
       try {
-        final j = jsonDecode(resp.body);
-        if (j is Map && j['error'] is String) return j['error'] as String;
-      } catch (_) {}
-      return null;
-    }
-    // 2026-05-08 (v1.1.11 polish): localize the 429 / 503 fallback
-    // strings. Server `error` body is still preferred (backend
-    // already produces it in the user's locale); these only surface
-    // when the function returns a code without a parseable body.
-    if (resp.statusCode == 429) {
+        resp = await http
+            .post(
+              Uri.parse(resolveApiUrl(endpoint)),
+              headers: const {'Content-Type': 'application/json'},
+              body: reqBody,
+            )
+            .timeout(const Duration(seconds: 60));
+      } on TimeoutException {
+        transientReason =
+            'The AI search took too long. Please try again or rephrase '
+            'your question.';
+        continue; // transient → retry
+      } catch (_) {
+        // Network / DNS / CORS / not-deployed. No runtimeType — release
+        // builds minify it to meaningless names.
+        transientReason =
+            'YsWords search is not available right now. Showing keyword '
+            'matches instead.';
+        continue; // transient → retry
+      }
+      final code = resp.statusCode;
+      String? serverError() {
+        try {
+          final j = jsonDecode(resp.body);
+          if (j is Map && j['error'] is String) return j['error'] as String;
+        } catch (_) {}
+        return null;
+      }
+      if (code == 200) {
+        try {
+          final body = jsonDecode(resp.body) as Map<String, dynamic>;
+          return AiSearchResult.fromJson(body);
+        } catch (_) {
+          return AiSearchResult.unavailable(
+            'YsWords search returned an unexpected response. Showing '
+            'keyword matches instead.',
+          );
+        }
+      }
+      if (code == 404) {
+        return AiSearchResult.unavailable(
+          'YsWords search is not available yet. Showing keyword matches '
+          'instead.',
+        );
+      }
+      if (code == 429) {
+        return AiSearchResult.unavailable(
+          serverError() ??
+              uiStrings['aiQuotaExhaustedFallback']?[locale] ??
+              'YsWords AI quota for the developer\'s shared key is used '
+                  'up for today. Try again tomorrow, or paste your own '
+                  'Gemini API key in Settings → AI.',
+        );
+      }
+      // 5xx (incl. the transient 503 "high demand") → retry; keep the
+      // server's message as the fallback shown if every attempt fails.
+      if (code >= 500 && code < 600) {
+        transientReason = serverError() ?? transientReason;
+        continue;
+      }
+      // Other terminal non-2xx.
       return AiSearchResult.unavailable(
         serverError() ??
-            uiStrings['aiQuotaExhaustedFallback']?[locale] ??
-            'YsWords AI quota for the developer\'s shared key is used '
-                'up for today. Try again tomorrow, or paste your own '
-                'Gemini API key in Settings → AI.',
+            'YsWords search returned an error ($code). Showing keyword '
+                'matches instead.',
       );
     }
-    if (resp.statusCode == 503) {
-      return AiSearchResult.unavailable(
-        serverError() ??
-            uiStrings['aiNotConfiguredFallback']?[locale] ??
-            'YsWords AI is not configured. The developer needs to set '
-                'GEMINI_API_KEY in Netlify env.',
-      );
-    }
-    if (resp.statusCode != 200) {
-      return AiSearchResult.unavailable(
-        serverError() ??
-            'YsWords search returned an error (${resp.statusCode}). '
-                'Showing keyword matches instead.',
-      );
-    }
-    try {
-      final body = jsonDecode(resp.body) as Map<String, dynamic>;
-      return AiSearchResult.fromJson(body);
-    } catch (_) {
-      return AiSearchResult.unavailable(
-        'YsWords search returned an unexpected response. Showing '
-        'keyword matches instead.',
-      );
-    }
+    return AiSearchResult.unavailable(transientReason); // retries exhausted
   }
 }
 

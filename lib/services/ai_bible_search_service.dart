@@ -47,83 +47,87 @@ class AiBibleSearchService {
     if (query.trim().isEmpty) {
       return AiBibleSearchResult.empty();
     }
-    final http.Response resp;
-    try {
-      resp = await http
-          .post(
-            Uri.parse(resolveApiUrl(endpoint)),
-            headers: const {'Content-Type': 'application/json'},
-            body: jsonEncode({
-              'query': query,
-              'locale': locale,
-              if (userApiKey != null && userApiKey.isNotEmpty)
-                'userApiKey': userApiKey,
-              if (aiModel != null && aiModel.isNotEmpty)
-                'aiModel': aiModel,
-            }),
-          )
-          .timeout(const Duration(seconds: 60));
-    } on TimeoutException {
-      return AiBibleSearchResult.unavailable(
-          'YsWords search took too long. Please try again or rephrase.');
-    } catch (_) {
-      return AiBibleSearchResult.unavailable(
-          'YsWords search is not available right now.');
-    }
-    if (resp.statusCode == 404) {
-      return AiBibleSearchResult.unavailable(
-          'YsWords search is not available yet (function not deployed).');
-    }
-    // 2026-05-08 (v1.1.8): split the previously-conflated 503 path
-    // into two distinct cases so the user sees the actual cause:
-    //   • 503 = function deployed but no API key in Netlify env
-    //     (real "developer needs to configure")
-    //   • 429 = quota for the developer's shared key is used up
-    //     for the day. User-actionable: wait, or paste their own
-    //     Gemini API key in Settings → AI to use their own quota.
-    // Prefer the server's own `error` message body when present so
-    // we keep useful detail (which Gemini sub-status etc.).
-    String? serverError() {
+    // 2026-06-30 robustness: retry TRANSIENT failures (network, timeout, HTTP
+    // 5xx — e.g. Gemini's brief "high demand" 503) up to 3 attempts with short
+    // backoff, so a momentary spike self-heals before we give up. Terminal
+    // failures (404, 429 quota, other 4xx) return immediately. Same body across
+    // attempts.
+    final reqBody = jsonEncode({
+      'query': query,
+      'locale': locale,
+      if (userApiKey != null && userApiKey.isNotEmpty) 'userApiKey': userApiKey,
+      if (aiModel != null && aiModel.isNotEmpty) 'aiModel': aiModel,
+    });
+    const backoffs = <Duration>[
+      Duration.zero,
+      Duration(milliseconds: 700),
+      Duration(milliseconds: 1800),
+    ];
+    var transientReason = 'YsWords AI is busy right now. Please try again.';
+    for (var attempt = 0; attempt < backoffs.length; attempt++) {
+      if (backoffs[attempt] > Duration.zero) {
+        await Future<void>.delayed(backoffs[attempt]);
+      }
+      final http.Response resp;
       try {
-        final j = jsonDecode(resp.body);
-        if (j is Map && j['error'] is String) return j['error'] as String;
-      } catch (_) {}
-      return null;
-    }
-    // 2026-05-08 (v1.1.11 polish): localize the fallback strings via
-    // uiStrings + the request `locale`. The server's `error` body is
-    // still preferred because the backend already produces it in the
-    // same locale; these strings only surface on the rare path where
-    // the function returns a status code without a usable body.
-    if (resp.statusCode == 503) {
-      return AiBibleSearchResult.unavailable(
-        serverError() ??
+        resp = await http
+            .post(
+              Uri.parse(resolveApiUrl(endpoint)),
+              headers: const {'Content-Type': 'application/json'},
+              body: reqBody,
+            )
+            .timeout(const Duration(seconds: 60));
+      } on TimeoutException {
+        transientReason =
+            'YsWords search took too long. Please try again or rephrase.';
+        continue; // transient → retry
+      } catch (_) {
+        transientReason = 'YsWords search is not available right now.';
+        continue; // transient → retry
+      }
+      final code = resp.statusCode;
+      String? serverError() {
+        try {
+          final j = jsonDecode(resp.body);
+          if (j is Map && j['error'] is String) return j['error'] as String;
+        } catch (_) {}
+        return null;
+      }
+      if (code == 200) {
+        try {
+          final body = jsonDecode(resp.body) as Map<String, dynamic>;
+          return AiBibleSearchResult.fromJson(body);
+        } catch (_) {
+          return AiBibleSearchResult.unavailable(
+              'YsWords search returned an unexpected response.');
+        }
+      }
+      if (code == 404) {
+        return AiBibleSearchResult.unavailable(
+            'YsWords search is not available yet (function not deployed).');
+      }
+      if (code == 429) {
+        return AiBibleSearchResult.unavailable(
+          serverError() ??
+              uiStrings['aiQuotaExhaustedFallback']?[locale] ??
+              'YsWords AI quota for the developer\'s shared key is used '
+                  'up for today. Try again tomorrow, or paste your own '
+                  'Gemini API key in Settings → AI to use your own quota.',
+        );
+      }
+      // 5xx (incl. transient 503 "high demand") → retry; keep the server's
+      // message as the fallback shown if every attempt fails.
+      if (code >= 500 && code < 600) {
+        transientReason = serverError() ??
             uiStrings['aiNotConfiguredFallback']?[locale] ??
-            'YsWords AI is not configured. The developer needs to set '
-                'GEMINI_API_KEY in Netlify env.',
+            transientReason;
+        continue;
+      }
+      return AiBibleSearchResult.unavailable(
+        serverError() ?? 'YsWords search returned $code.',
       );
     }
-    if (resp.statusCode == 429) {
-      return AiBibleSearchResult.unavailable(
-        serverError() ??
-            uiStrings['aiQuotaExhaustedFallback']?[locale] ??
-            'YsWords AI quota for the developer\'s shared key is used '
-                'up for today. Try again tomorrow, or paste your own '
-                'Gemini API key in Settings → AI to use your own quota.',
-      );
-    }
-    if (resp.statusCode != 200) {
-      return AiBibleSearchResult.unavailable(
-        serverError() ?? 'YsWords search returned ${resp.statusCode}.',
-      );
-    }
-    try {
-      final body = jsonDecode(resp.body) as Map<String, dynamic>;
-      return AiBibleSearchResult.fromJson(body);
-    } catch (_) {
-      return AiBibleSearchResult.unavailable(
-          'YsWords search returned an unexpected response.');
-    }
+    return AiBibleSearchResult.unavailable(transientReason); // retries exhausted
   }
 }
 
