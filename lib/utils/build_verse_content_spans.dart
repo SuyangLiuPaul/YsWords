@@ -289,11 +289,11 @@ List<InlineSpan> buildVerseContentSpans({
       // down to 1.0 px with a softened (50% alpha) decoration color
       // — still legible as a marker that the word is bracketed but
       // no longer dominates the line.
-      // The bracketed insertion (e.g. [雅伟] where the original had a
-      // pronoun referring to Yahweh) keeps a faint dotted underline —
-      // it is NOT tinted, because it displays as "雅伟" and colouring it
-      // would make the divine NAME look highlighted (user: "not like
-      // God's name"). Only the <note:> footnote marker is recoloured.
+      // 2026-06-30: the bracketed editorial notation ([雅伟] where the
+      // original had a pronoun referring to Yahweh, LEB inserts, etc.) is
+      // itself a notation, so mark it in the theme accent — same as the
+      // <note:> footnote marker — with a clean thin underline for the tap
+      // affordance. (User confirmed they want the [] notation coloured too.)
       spans.add(TextSpan(
         text: annotation,
         recognizer: onTextTap != null
@@ -304,15 +304,15 @@ List<InlineSpan> buildVerseContentSpans({
           fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
           height: settings.lineSpacing,
           decoration: TextDecoration.underline,
-          decorationStyle: TextDecorationStyle.dotted,
+          decorationStyle: TextDecorationStyle.solid,
           decorationColor: Theme.of(context)
               .colorScheme
               .primary
-              .withValues(alpha: 0.5),
+              .withValues(alpha: 0.45),
           decorationThickness: 1.0,
           color: isSelected
               ? Theme.of(context).colorScheme.onPrimaryContainer
-              : Theme.of(context).textTheme.bodyLarge?.color,
+              : Theme.of(context).colorScheme.primary,
           backgroundColor: spanBgColor,
         ),
       ));
