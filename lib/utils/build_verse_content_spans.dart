@@ -289,6 +289,11 @@ List<InlineSpan> buildVerseContentSpans({
       // down to 1.0 px with a softened (50% alpha) decoration color
       // — still legible as a marker that the word is bracketed but
       // no longer dominates the line.
+      // The bracketed insertion (e.g. [雅伟] where the original had a
+      // pronoun referring to Yahweh) keeps a faint dotted underline —
+      // it is NOT tinted, because it displays as "雅伟" and colouring it
+      // would make the divine NAME look highlighted (user: "not like
+      // God's name"). Only the <note:> footnote marker is recoloured.
       spans.add(TextSpan(
         text: annotation,
         recognizer: onTextTap != null
@@ -364,9 +369,12 @@ List<InlineSpan> buildVerseContentSpans({
               // and LEB (~23k) both render this way.
               Icons.notes_rounded,
               size: settings.fontSize * 0.9,
+              // 2026-06-30: accent colour (was a faint onSurfaceVariant grey)
+              // so the footnote marker reads clearly as a tappable notation,
+              // matching the coloured [...] insertions above.
               color: isSelected
                   ? Theme.of(context).colorScheme.onPrimaryContainer
-                  : Theme.of(context).colorScheme.onSurfaceVariant,
+                  : Theme.of(context).colorScheme.primary,
             ),
           ),
         ),
