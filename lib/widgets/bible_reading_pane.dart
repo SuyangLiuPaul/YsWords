@@ -1104,6 +1104,11 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
       ok = false;
     }
     if (!context.mounted) return;
+    // 2026-06-30: dismiss the verse-selection bottom bar after Share,
+    // matching Copy (_copySelectedVerses) — the action is done, so the
+    // selection + its action menu should clear. The toast below is an
+    // overlay and still shows the confirmation.
+    mainProvider.clearSelectedVerses();
     final scheme = Theme.of(context).colorScheme;
     showFloatingToast(
       context,
