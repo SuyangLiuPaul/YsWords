@@ -26,6 +26,10 @@ enum DashboardSection {
   /// (auto-hidden when no sermon has been opened).
   resumeSermon,
 
+  /// "Resume biography" hero — last-read Spiritual Giant + progress.
+  /// Default on (auto-hidden when no figure has been opened).
+  resumeGiant,
+
   /// Verse of the Day card. Default on (auto-hidden until the verse
   /// resolves on first paint).
   dailyVerse,
@@ -62,6 +66,7 @@ enum DashboardSection {
 const List<DashboardSection> defaultDashboardOrder = <DashboardSection>[
   DashboardSection.readBible,
   DashboardSection.resumeSermon,
+  DashboardSection.resumeGiant,
   DashboardSection.dailyVerse,
   DashboardSection.counts,
   DashboardSection.recentBookmarks,
@@ -77,6 +82,7 @@ const Map<DashboardSection, bool> defaultVisibility =
     <DashboardSection, bool>{
   DashboardSection.readBible: true,
   DashboardSection.resumeSermon: true,
+  DashboardSection.resumeGiant: true,
   DashboardSection.dailyVerse: true,
   DashboardSection.counts: true,
   DashboardSection.recentBookmarks: true,
@@ -147,6 +153,8 @@ extension DashboardSectionLabel on DashboardSection {
         return 'Read Bible';
       case DashboardSection.resumeSermon:
         return 'Resume Sermon';
+      case DashboardSection.resumeGiant:
+        return 'Resume Biography';
       case DashboardSection.dailyVerse:
         return 'Verse of the Day';
       case DashboardSection.counts:
@@ -168,6 +176,8 @@ extension DashboardSectionLabel on DashboardSection {
         return 'Primary CTA — jump back to your last reading position.';
       case DashboardSection.resumeSermon:
         return 'Pick up where you left off in the last sermon you opened.';
+      case DashboardSection.resumeGiant:
+        return 'Pick up where you left off in the last biography you opened.';
       case DashboardSection.dailyVerse:
         return 'One curated verse per day, the same on every device.';
       case DashboardSection.counts:

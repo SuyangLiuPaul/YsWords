@@ -1609,6 +1609,11 @@ const uiStrings = {
     'zh-Hant': '繼續講道',
     'en': 'Resume sermon',
   },
+  'resumeGiant': {
+    'zh-Hans': '继续阅读小传',
+    'zh-Hant': '繼續閱讀小傳',
+    'en': 'Resume biography',
+  },
   'dailyVerse': {
     'zh-Hans': '每日金句',
     'zh-Hant': '每日金句',
@@ -3329,6 +3334,16 @@ const uiStrings = {
     'zh-Hans': '从上次离开的讲道继续。',
     'zh-Hant': '從上次離開的講道繼續。',
     'en': 'Pick up where you left off in the last sermon you opened.',
+  },
+  'dashboardSection_resumeGiant_label': {
+    'zh-Hans': '继续阅读小传',
+    'zh-Hant': '繼續閱讀小傳',
+    'en': 'Resume biography',
+  },
+  'dashboardSection_resumeGiant_description': {
+    'zh-Hans': '从上次离开的属灵伟人小传继续。',
+    'zh-Hant': '從上次離開的屬靈偉人小傳繼續。',
+    'en': 'Pick up where you left off in the last biography you opened.',
   },
   'dashboardSection_dailyVerse_label': {
     'zh-Hans': '每日金句',
@@ -5458,6 +5473,41 @@ const uiStrings = {
     'zh-Hans': '讲道',
     'zh-Hant': '講道',
     'en': 'Sermons',
+  },
+  'spiritualGiants': {
+    'zh-Hans': '属灵伟人小传',
+    'zh-Hant': '屬靈偉人小傳',
+    'en': 'Spiritual Giants',
+  },
+  'giantsSearchHint': {
+    'zh-Hans': '按姓名、年代或类别搜索…',
+    'zh-Hant': '按姓名、年代或類別搜尋…',
+    'en': 'Search by name, era or group…',
+  },
+  'giantsNoMatches': {
+    'zh-Hans': '没有符合的人物。',
+    'zh-Hant': '沒有符合的人物。',
+    'en': 'No one matches your search.',
+  },
+  'giantsCountTemplate': {
+    'zh-Hans': '共 {count} 位，分为 {groups} 类',
+    'zh-Hant': '共 {count} 位，分為 {groups} 類',
+    'en': '{count} figures across {groups} groups',
+  },
+  'giantsGroupCount': {
+    'zh-Hans': '{count} 位',
+    'zh-Hant': '{count} 位',
+    'en': '{count} figures',
+  },
+  'giantsCopy': {
+    'zh-Hans': '复制',
+    'zh-Hant': '複製',
+    'en': 'Copy',
+  },
+  'giantsCopied': {
+    'zh-Hans': '已复制',
+    'zh-Hant': '已複製',
+    'en': 'Copied',
   },
   'sermon': {
     'zh-Hans': '讲道',
