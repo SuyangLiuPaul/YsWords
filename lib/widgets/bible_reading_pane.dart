@@ -5390,16 +5390,27 @@ class _AllIllustrationsByBookState extends State<_AllIllustrationsByBook> {
   }
 
   /// Build [book → maps] map preserving canonical OT/NT order.
-  /// A single illustration can map to multiple books (cross-period
-  /// world maps); each book group lists it under that book's section.
+  /// 2026-06-30: each illustration is listed under ONLY its first
+  /// canonical book, so the browse-all catalogue shows every image
+  /// exactly once. Previously it was added to every book in its
+  /// `books` map — but survey maps span up to 38 books (e.g. "Western
+  /// Palestine — OT Survey"), so the same image reappeared group after
+  /// group and read as duplicates (1192 illustrations → 1940 tiles).
+  /// Per-book relevance is unaffected: the "For this book / chapter"
+  /// tabs filter `widget.all` directly and still surface every relevant
+  /// map for the passage being read.
   Map<String, List<BibleMap>> _groupByBook() {
     final order = standardBookOrder;
     final groups = <String, List<BibleMap>>{
       for (final b in order) b: <BibleMap>[],
     };
     for (final m in widget.all) {
-      for (final book in m.books.keys) {
-        if (groups.containsKey(book)) groups[book]!.add(m);
+      final primary = order.firstWhere(
+        (b) => m.books.containsKey(b),
+        orElse: () => '',
+      );
+      if (primary.isNotEmpty && groups.containsKey(primary)) {
+        groups[primary]!.add(m);
       }
     }
     return groups;
