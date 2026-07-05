@@ -876,19 +876,22 @@ class _BookChapterPickerState extends State<BookChapterPicker> {
               ),
             ),
             alignment: Alignment.center,
-            padding: const EdgeInsets.symmetric(horizontal: 4),
+            // 2026-06-30: even padding so the glyph is centred with
+            // consistent breathing room on all four sides.
+            padding: const EdgeInsets.all(7),
             // 2026-05-10 (v1.2.19): switched fit from `scaleDown` →
-            // `contain`. User reported single-word book labels (one
-            // Chinese character like "创" or short English like
-            // "John") looked "bad UI" — they were rendering at their
-            // natural fontSize × 0.9 in a square tile that's
-            // typically 60–80 px, so a 18 px char floated tiny in
-            // the centre with empty space around it. Multi-char
-            // labels like "撒母耳记" filled the tile via scaleDown
-            // (shrunk to fit). With `contain` the text scales UP
-            // when small (single char) and DOWN when large (long
-            // abbrev), preserving aspect ratio either way — every
-            // tile reads at a consistent visual weight.
+            // `contain` so single-char labels ("创") scale UP to fill
+            // the tile and long ones ("撒母耳记") scale DOWN.
+            // 2026-06-30: user reported the CJK glyphs looked THIN and
+            // small. Root cause: w500 weight + a loose line box
+            // (`height: 1.1` plus the CJK font's generous ascent/
+            // descent) meant the FittedBox was fitting a text box far
+            // taller than the visible glyph, so the glyph rendered at
+            // ~half the tile. Fixes: (1) always BOLD (w700) — the big
+            // visibility win for a single stroke-dense character; (2)
+            // `height: 1.0` + a `forceStrutHeight` strut that clamps
+            // the line box to the glyph, so `contain` now scales the
+            // GLYPH (not the whitespace) to fill the tile.
             child: FittedBox(
               fit: BoxFit.contain,
               child: Text(
@@ -897,12 +900,17 @@ class _BookChapterPickerState extends State<BookChapterPicker> {
                 overflow: TextOverflow.ellipsis,
                 textAlign: TextAlign.center,
                 softWrap: false,
+                strutStyle: const StrutStyle(
+                  height: 1.0,
+                  forceStrutHeight: true,
+                  leading: 0,
+                ),
                 style: TextStyle(
-                  fontSize: settings.fontSize * 0.9,
+                  fontSize: settings.fontSize * 1.15,
                   fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
-                  fontWeight: isCurrent ? FontWeight.w700 : FontWeight.w500,
+                  fontWeight: FontWeight.w700,
                   color: fgColor,
-                  height: 1.1,
+                  height: 1.0,
                   letterSpacing: 0,
                 ),
               ),
