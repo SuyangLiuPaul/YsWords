@@ -1599,8 +1599,6 @@ class _DashboardSectionsCard extends StatelessWidget {
         return Icons.menu_book_rounded;
       case DashboardSection.resumeSermon:
         return Icons.headset_mic_rounded;
-      case DashboardSection.resumeGiant:
-        return Icons.groups_outlined;
       case DashboardSection.dailyVerse:
         return Icons.format_quote_rounded;
       case DashboardSection.counts:

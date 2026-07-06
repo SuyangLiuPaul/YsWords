@@ -16,7 +16,6 @@ import 'package:yswords/pages/profile_edit_page.dart';
 import 'package:yswords/pages/profiles_page.dart';
 import 'package:yswords/pages/search_page.dart';
 import 'package:yswords/pages/sermons_page.dart';
-import 'package:yswords/pages/spiritual_giants_page.dart';
 import 'package:yswords/pages/songs_page.dart';
 import 'package:yswords/pages/stats_page.dart';
 import 'package:yswords/pages/strongs_entry_page.dart';
@@ -53,7 +52,6 @@ void main() {
     'EvidencePage': () => const EvidencePage(),
     'DailyNewsPage': () => const DailyNewsPage(),
     'SermonsPage': () => const SermonsPage(),
-    'SpiritualGiantsPage': () => const SpiritualGiantsPage(),
     'SongsPage': () => const SongsPage(),
     'FeedbackPage': () => const FeedbackPage(),
     'HighlightsPage': () => const HighlightsPage(),

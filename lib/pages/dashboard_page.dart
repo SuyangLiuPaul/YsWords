@@ -11,7 +11,6 @@ import 'package:yswords/utils/greeting.dart';
 import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/models/dashboard_section.dart';
 import 'package:yswords/models/sermon.dart';
-import 'package:yswords/models/spiritual_giant.dart';
 import 'package:yswords/models/verse.dart';
 import 'package:yswords/models/bible_evidence.dart';
 import 'package:yswords/models/news_article.dart';
@@ -24,8 +23,6 @@ import 'package:yswords/pages/songs_page.dart';
 import 'package:yswords/pages/family_tree_page.dart';
 import 'package:yswords/pages/sermon_detail_page.dart';
 import 'package:yswords/pages/sermons_page.dart';
-import 'package:yswords/pages/spiritual_giant_detail_page.dart';
-import 'package:yswords/pages/spiritual_giants_page.dart';
 import 'package:yswords/pages/news_detail_page.dart';
 import 'package:yswords/widgets/liquid_glass.dart';
 import 'package:yswords/pages/highlights_page.dart';
@@ -39,8 +36,6 @@ import 'package:yswords/pages/stats_page.dart';
 import 'package:yswords/services/bible_evidence_service.dart';
 import 'package:yswords/services/daily_news_service.dart';
 import 'package:yswords/services/sermon_service.dart';
-import 'package:yswords/services/spiritual_giant_service.dart';
-import 'package:yswords/constants/spiritual_giant_categories.dart';
 import 'package:yswords/providers/main_provider.dart';
 import 'package:yswords/services/cloud_auth_service.dart';
 import 'package:yswords/services/cloud_sync_service.dart' show CloudSyncStatus;
@@ -115,16 +110,6 @@ class _DashboardPageState extends State<DashboardPage> {
   /// shorter than the 24 px threshold the detail page bypasses).
   double? _resumeProgress;
 
-  /// The Spiritual Giant the user was most recently reading (persisted
-  /// as `giants_last_read` by `spiritual_giants_page.dart`). null when
-  /// none has been opened. Drives the "Resume biography" hero.
-  SpiritualGiant? _resumeGiant;
-
-  /// Scroll progress (0.0–1.0) for [_resumeGiant] in the user's UI
-  /// locale, from `giantScroll:<id>:<lang>` + `:max` written by the
-  /// biography detail page. Null when the body was too short to scroll.
-  double? _resumeGiantProgress;
-
   @override
   void initState() {
     super.initState();
@@ -135,7 +120,6 @@ class _DashboardPageState extends State<DashboardPage> {
     _loadDailyEvidence();
     _loadTodayHeadlines();
     _loadResumeSermon();
-    _loadResumeGiant();
     _maybeShowOnboarding();
   }
 
@@ -235,68 +219,6 @@ class _DashboardPageState extends State<DashboardPage> {
     // dispose) so the meter on the dashboard immediately reflects
     // what the user just did.
     await _loadResumeSermon();
-  }
-
-  /// Resolve the user's last-read Spiritual Giant (if any) for the
-  /// "Resume biography" hero. Mirrors [_loadResumeSermon]: read the
-  /// `giants_last_read` id, resolve it via the bundled index, and
-  /// compute scroll progress from the per-figure
-  /// `giantScroll:<id>:<lang>` / `:max` keys written by the biography
-  /// detail page.
-  Future<void> _loadResumeGiant() async {
-    final prefs = await SharedPreferences.getInstance();
-    final lastId = prefs.getString('giants_last_read');
-    if (lastId == null || lastId.isEmpty) {
-      if (!mounted) return;
-      if (_resumeGiant != null) {
-        setState(() {
-          _resumeGiant = null;
-          _resumeGiantProgress = null;
-        });
-      }
-      return;
-    }
-    SpiritualGiant? hit;
-    try {
-      hit = await SpiritualGiantService.instance.byId(lastId);
-    } catch (_) {
-      hit = null;
-    }
-    if (!mounted) return;
-    if (hit == null) {
-      setState(() {
-        _resumeGiant = null;
-        _resumeGiantProgress = null;
-      });
-      return;
-    }
-    final settings = context.read<AppSettings>();
-    final preferred = SpiritualGiant.bodyLangForLocale(settings.locale);
-    final candidates = <String>{preferred, 'en', 'zh-CN', 'zh-TW'};
-    double? progress;
-    for (final lang in candidates) {
-      final key = 'giantScroll:${hit.id}:$lang';
-      final px = prefs.getDouble(key);
-      final max = prefs.getDouble('$key:max');
-      if (px != null && max != null && max > 0) {
-        progress = (px / max).clamp(0.0, 1.0);
-        break;
-      }
-    }
-    setState(() {
-      _resumeGiant = hit;
-      _resumeGiantProgress = progress;
-    });
-  }
-
-  /// Open the saved biography and refresh the resume state on return.
-  Future<void> _openResumeGiant(SpiritualGiant g) async {
-    await Get.to(
-      () => SpiritualGiantDetailPage(giant: g),
-      transition: Transition.rightToLeft,
-    );
-    if (!mounted) return;
-    await _loadResumeGiant();
   }
 
   Future<void> _loadTodayHeadlines() async {
@@ -475,8 +397,6 @@ class _DashboardPageState extends State<DashboardPage> {
     // mid-session, so the card stayed null/stale.
     // ignore: unawaited_futures
     _loadResumeSermon();
-    // ignore: unawaited_futures
-    _loadResumeGiant();
     setState(() {});
   }
 
@@ -690,16 +610,6 @@ class _DashboardPageState extends State<DashboardPage> {
           locale: locale,
           settings: settings,
           onTap: () => _openResumeSermon(_resumeSermon!),
-        );
-
-      case DashboardSection.resumeGiant:
-        if (_resumeGiant == null) return null;
-        return _ResumeGiantHero(
-          giant: _resumeGiant!,
-          progress: _resumeGiantProgress,
-          locale: locale,
-          settings: settings,
-          onTap: () => _openResumeGiant(_resumeGiant!),
         );
 
       case DashboardSection.dailyVerse:
@@ -958,14 +868,6 @@ class _DashboardPageState extends State<DashboardPage> {
               label: uiStrings['sermons']?[locale] ?? 'Sermons',
               onTap: () => Get.to(
                 () => const SermonsPage(),
-                transition: Transition.rightToLeft,
-              ),
-            ),
-            _LinkTile(
-              icon: Icons.groups_outlined,
-              label: uiStrings['spiritualGiants']?[locale] ?? 'Spiritual Giants',
-              onTap: () => Get.to(
-                () => const SpiritualGiantsPage(),
                 transition: Transition.rightToLeft,
               ),
             ),
@@ -2138,127 +2040,6 @@ class _ContinueReadingHero extends StatelessWidget {
 /// `surfaceContainerHigh` so it doesn't compete — but with a primary-
 /// tinted icon + thin progress bar so it still reads as
 /// "you can pick up where you left off".
-/// "Resume biography" hero — the twin of [_ResumeSermonHero] for the
-/// 属灵伟人小传 / Spiritual Giants module. Shows the last-read figure's
-/// accent avatar, name, category, and (when the body was long enough to
-/// scroll) a thin progress meter, so the user can pick up where they
-/// left off.
-class _ResumeGiantHero extends StatelessWidget {
-  final SpiritualGiant giant;
-  final double? progress;
-  final String locale;
-  final AppSettings settings;
-  final VoidCallback onTap;
-
-  const _ResumeGiantHero({
-    required this.giant,
-    required this.progress,
-    required this.locale,
-    required this.settings,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    final fs = settings.fontSize;
-    final accent = giantAccent(giant.category);
-    final ctaTitle = uiStrings['resumeGiant']?[locale] ?? 'Resume biography';
-    final name = giant.localizedName(locale);
-
-    final percent =
-        progress == null ? null : '${(progress!.clamp(0.0, 1.0) * 100).round()}%';
-    final subtitleParts = <String>[
-      name,
-      localizedGiantCategory(giant.category, locale),
-      if (percent != null) percent,
-    ];
-    final subtitle = subtitleParts.join('  ·  ');
-
-    return Material(
-      color: scheme.surfaceContainerHigh,
-      borderRadius: BorderRadius.circular(16),
-      elevation: 0,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 14, 18, 14),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Row(
-                children: [
-                  CircleAvatar(
-                    radius: (fs + 6).clamp(18.0, 26.0).toDouble() * 0.85,
-                    backgroundColor: accent,
-                    child: Text(
-                      name.isNotEmpty ? name.characters.first : '?',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w700,
-                        fontSize: (fs + 2).clamp(15.0, 22.0).toDouble(),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 14),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          ctaTitle,
-                          style: TextStyle(
-                            fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
-                            fontSize: (fs + 1).clamp(14.0, 20.0).toDouble(),
-                            fontWeight: FontWeight.w700,
-                            color: scheme.onSurface,
-                          ),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          subtitle,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
-                            fontSize: (fs - 2).clamp(11.0, 15.0).toDouble(),
-                            color: scheme.onSurface.withValues(alpha: 0.75),
-                            fontWeight: FontWeight.w500,
-                            height: 1.35,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Icon(
-                    Icons.arrow_forward_rounded,
-                    color: scheme.onSurface.withValues(alpha: 0.55),
-                    size: 20,
-                  ),
-                ],
-              ),
-              if (progress != null) ...[
-                const SizedBox(height: 10),
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(2),
-                  child: LinearProgressIndicator(
-                    value: progress!.clamp(0.0, 1.0),
-                    minHeight: 3,
-                    backgroundColor:
-                        scheme.surfaceContainerHighest.withValues(alpha: 0.7),
-                    valueColor: AlwaysStoppedAnimation<Color>(accent),
-                  ),
-                ),
-              ],
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
 class _ResumeSermonHero extends StatelessWidget {
   final Sermon sermon;
   final double? progress;
