@@ -43,6 +43,7 @@ import 'package:yswords/services/sermon_service.dart';
 import 'package:yswords/services/synopsis_service.dart';
 import 'package:yswords/utils/clipboard_helper.dart';
 import 'package:yswords/utils/haptics.dart';
+import 'package:yswords/utils/illustration_grouping.dart';
 // 2026-05-10 (v1.2.13): the `as jumper` import was only needed by
 // the `_captureChapterRelativeVerseNum` / `_scrollToVerseInChapter`
 // thin wrappers that v1.2.13 removed alongside the version-switch
@@ -1108,7 +1109,10 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
     // matching Copy (_copySelectedVerses) — the action is done, so the
     // selection + its action menu should clear. The toast below is an
     // overlay and still shows the confirmation.
-    mainProvider.clearSelectedVerses();
+    // 2026-07-07: only on SUCCESS — a failed clipboard write keeps the
+    // selection so the user can retry with one tap instead of
+    // re-long-pressing every verse.
+    if (ok) mainProvider.clearSelectedVerses();
     final scheme = Theme.of(context).colorScheme;
     showFloatingToast(
       context,
@@ -5395,31 +5399,18 @@ class _AllIllustrationsByBookState extends State<_AllIllustrationsByBook> {
   }
 
   /// Build [book → maps] map preserving canonical OT/NT order.
-  /// 2026-06-30: each illustration is listed under ONLY its first
-  /// canonical book, so the browse-all catalogue shows every image
-  /// exactly once. Previously it was added to every book in its
-  /// `books` map — but survey maps span up to 38 books (e.g. "Western
-  /// Palestine — OT Survey"), so the same image reappeared group after
-  /// group and read as duplicates (1192 illustrations → 1940 tiles).
-  /// Per-book relevance is unaffected: the "For this book / chapter"
-  /// tabs filter `widget.all` directly and still surface every relevant
-  /// map for the passage being read.
-  Map<String, List<BibleMap>> _groupByBook() {
-    final order = standardBookOrder;
-    final groups = <String, List<BibleMap>>{
-      for (final b in order) b: <BibleMap>[],
-    };
-    for (final m in widget.all) {
-      final primary = order.firstWhere(
-        (b) => m.books.containsKey(b),
-        orElse: () => '',
-      );
-      if (primary.isNotEmpty && groups.containsKey(primary)) {
-        groups[primary]!.add(m);
-      }
-    }
-    return groups;
-  }
+  /// 2026-06-30 (v1.3.118): de-duplicated the catalogue — wide survey
+  /// maps used to repeat group after group (1192 illustrations → 1940
+  /// tiles). 2026-07-07: the primary-book-only version of that de-dup
+  /// EMPTIED 13 NT books whose every illustration also touched an
+  /// earlier book (e.g. Ephesians lost "Paul leaves Ephesus" to Acts).
+  /// Now delegates to [groupIllustrationsByBook]: small spans (≤4
+  /// books) list under each tagged book, wide survey maps under their
+  /// first book only, and any still-empty book gets its referencing
+  /// illustrations back. Per-book relevance is unaffected: the "For
+  /// this book / chapter" tabs filter `widget.all` directly.
+  Map<String, List<BibleMap>> _groupByBook() =>
+      groupIllustrationsByBook(widget.all, standardBookOrder);
 
   bool _bookMatches(String book, String q) {
     if (q.isEmpty) return true;
