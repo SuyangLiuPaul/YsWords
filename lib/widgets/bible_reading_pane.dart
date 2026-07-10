@@ -1098,12 +1098,7 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
     final text =
         _formattedSelectedVerses(verses: mainProvider.selectedVerses);
     final payload = '$text\n\n$url';
-    bool ok = true;
-    try {
-      await ClipboardHelper.copyText(payload);
-    } catch (_) {
-      ok = false;
-    }
+    final ok = await ClipboardHelper.copyText(payload);
     if (!context.mounted) return;
     // 2026-06-30: dismiss the verse-selection bottom bar after Share,
     // matching Copy (_copySelectedVerses) — the action is done, so the
@@ -1143,28 +1138,35 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
     // text-selection menu (long-press the copied text in any app).
     final text =
         _formattedSelectedVerses(verses: mainProvider.selectedVerses);
-    await ClipboardHelper.copyText(text);
-    mainProvider.clearSelectedVerses();
+    // 2026-07-10: copyText never throws (prod copy_fail crash on iOS
+    // Safari). Only clear the selection on success so a failed copy
+    // can be retried with one tap.
+    final ok = await ClipboardHelper.copyText(text);
+    if (ok) mainProvider.clearSelectedVerses();
     if (!mounted) return;
     final scheme = Theme.of(context).colorScheme;
-    final copiedLabel =
-        uiStrings['copied']?[settings.locale] ?? 'Copied!';
+    final label = ok
+        ? (uiStrings['copied']?[settings.locale] ?? 'Copied!')
+        : (uiStrings['shareLinkFailed']?[settings.locale] ??
+            'Copy failed — clipboard unavailable');
     _messengerKey.currentState?.showSnackBar(
       SnackBar(
         content: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
-              copiedLabel,
+              label,
               style: TextStyle(
-                color: scheme.onPrimary,
+                color: ok ? scheme.onPrimary : scheme.onError,
                 fontWeight: FontWeight.w600,
               ),
             ),
           ],
         ),
-        backgroundColor: scheme.primary.withValues(alpha: 0.8),
-        duration: const Duration(milliseconds: 800),
+        backgroundColor: ok
+            ? scheme.primary.withValues(alpha: 0.8)
+            : scheme.error,
+        duration: Duration(milliseconds: ok ? 800 : 1800),
       ),
     );
   }

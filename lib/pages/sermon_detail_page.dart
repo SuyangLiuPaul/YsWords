@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:yswords/utils/clipboard_helper.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -503,12 +503,7 @@ class _SermonDetailPageState extends State<SermonDetailPage> {
     buf.writeln('— $attribution');
     buf.writeln(url);
 
-    bool ok = true;
-    try {
-      await Clipboard.setData(ClipboardData(text: buf.toString().trim()));
-    } catch (_) {
-      ok = false;
-    }
+    final ok = await ClipboardHelper.copyText(buf.toString().trim());
     if (!mounted) return;
     final scheme = Theme.of(context).colorScheme;
     showFloatingToast(
@@ -533,12 +528,7 @@ class _SermonDetailPageState extends State<SermonDetailPage> {
     final url =
         'https://yswords.netlify.app/?sermon=${Uri.encodeComponent(s.id)}';
     final payload = '$title\n$url';
-    bool ok = true;
-    try {
-      await Clipboard.setData(ClipboardData(text: payload));
-    } catch (_) {
-      ok = false;
-    }
+    final ok = await ClipboardHelper.copyText(payload);
     if (!mounted) return;
     final scheme = Theme.of(context).colorScheme;
     showFloatingToast(

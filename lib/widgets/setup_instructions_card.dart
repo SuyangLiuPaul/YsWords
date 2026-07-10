@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart' show Clipboard, ClipboardData;
+import 'package:yswords/utils/clipboard_helper.dart';
 
 import 'package:yswords/constants/ui_strings.dart';
 import 'package:yswords/services/link_opener.dart';
@@ -361,9 +361,9 @@ class SetupInstructionsCard extends StatelessWidget {
                   style: const TextStyle(fontSize: 11.5),
                 ),
                 onPressed: () async {
-                  await Clipboard.setData(
-                      const ClipboardData(text: gcloudCmd));
-                  if (!ctx.mounted) return;
+                  final ok =
+                      await ClipboardHelper.copyText(gcloudCmd);
+                  if (!ok || !ctx.mounted) return;
                   ScaffoldMessenger.of(ctx).hideCurrentSnackBar();
                   ScaffoldMessenger.of(ctx).showSnackBar(SnackBar(
                     content: Text(

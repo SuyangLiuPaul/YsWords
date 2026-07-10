@@ -3,15 +3,38 @@ import 'package:flutter/services.dart';
 
 import 'package:yswords/constants/ui_strings.dart';
 import 'package:yswords/services/share_service.dart';
+import 'package:yswords/utils/clipboard_fallback_stub.dart'
+    if (dart.library.js_interop) 'package:yswords/utils/clipboard_fallback_web.dart';
 
 abstract class ClipboardHelper {
-  static Future<void> copyText(String text) async {
-    await Clipboard.setData(ClipboardData(text: text));
+  /// Copy [text] to the system clipboard. Returns whether the copy
+  /// SUCCEEDED — and, critically, NEVER throws.
+  ///
+  /// 2026-07-10 (prod crash report, iOS 18.7 Safari, zh-Hant):
+  /// `PlatformException(copy_fail, Clipboard.setData failed.)` escaped
+  /// to the Zone handler because several call sites awaited
+  /// `Clipboard.setData` unguarded. Safari rejects the async Clipboard
+  /// API outside a user-activation window / without clipboard
+  /// permission. Now every failure is caught here, a synchronous
+  /// legacy `execCommand('copy')` fallback is attempted on web (it
+  /// works in exactly the situations where Safari rejects the async
+  /// API), and callers get a plain bool to drive success/failure
+  /// feedback. All app copy paths must go through this method —
+  /// direct `Clipboard.setData` calls re-introduce the crash class.
+  static Future<bool> copyText(String text) async {
+    try {
+      await Clipboard.setData(ClipboardData(text: text));
+      return true;
+    } catch (_) {
+      return legacyClipboardCopy(text);
+    }
   }
 
-  /// Copy [text] AND show a clear floating "Copied!" snackbar with a
-  /// check icon. Use this instead of [copyText] + manual snackbar for
-  /// every copy action so feedback is consistent across the app.
+  /// Copy [text] AND show a clear floating snackbar — a check-icon
+  /// "Copied!" on success, an error-styled "Copy failed — clipboard
+  /// unavailable" on failure. Use this instead of [copyText] + manual
+  /// snackbar for every copy action so feedback is consistent across
+  /// the app. Never throws.
   ///
   /// The [context] must be a descendant of a [ScaffoldMessenger]. Modal
   /// bottom sheets that want feedback should wrap their body in a
@@ -23,12 +46,15 @@ abstract class ClipboardHelper {
     String text, {
     String? messageOverride,
   }) async {
-    await Clipboard.setData(ClipboardData(text: text));
+    final ok = await copyText(text);
     if (!context.mounted) return;
     final scheme = Theme.of(context).colorScheme;
     final locale = _localeFor(context);
-    final message =
-        messageOverride ?? (uiStrings['copied']?[locale] ?? 'Copied!');
+    final message = ok
+        ? (messageOverride ?? (uiStrings['copied']?[locale] ?? 'Copied!'))
+        : (uiStrings['shareLinkFailed']?[locale] ??
+            'Copy failed — clipboard unavailable');
+    final fg = ok ? scheme.onInverseSurface : scheme.onError;
     final messenger = ScaffoldMessenger.maybeOf(context);
     if (messenger == null) return;
     messenger.hideCurrentSnackBar();
@@ -37,14 +63,17 @@ abstract class ClipboardHelper {
         content: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.check_circle_rounded,
-                color: scheme.onInverseSurface, size: 18),
+            Icon(
+              ok ? Icons.check_circle_rounded : Icons.error_outline_rounded,
+              color: fg,
+              size: 18,
+            ),
             const SizedBox(width: 8),
             Flexible(
               child: Text(
                 message,
                 style: TextStyle(
-                  color: scheme.onInverseSurface,
+                  color: fg,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -52,7 +81,7 @@ abstract class ClipboardHelper {
           ],
         ),
         behavior: SnackBarBehavior.floating,
-        backgroundColor: scheme.inverseSurface,
+        backgroundColor: ok ? scheme.inverseSurface : scheme.error,
         duration: const Duration(milliseconds: 1800),
         margin: const EdgeInsets.all(16),
         shape: RoundedRectangleBorder(

@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:flutter/services.dart';
+import 'package:yswords/utils/clipboard_helper.dart';
 import 'package:provider/provider.dart';
 
 import 'package:yswords/constants/text_patterns.dart' show sanitizeForSearch;
@@ -2346,12 +2346,7 @@ class _ComparisonCopyButtonState extends State<_ComparisonCopyButton> {
 
   Future<void> _handleTap() async {
     final tsv = _buildTsv();
-    bool ok = true;
-    try {
-      await Clipboard.setData(ClipboardData(text: tsv));
-    } catch (_) {
-      ok = false;
-    }
+    final ok = await ClipboardHelper.copyText(tsv);
     if (!mounted) return;
     if (!ok) {
       _showFloatingToast(

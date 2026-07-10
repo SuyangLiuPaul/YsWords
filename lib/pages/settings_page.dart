@@ -7,7 +7,6 @@ import 'package:yswords/utils/clipboard_helper.dart';
 import 'package:flutter/foundation.dart'
     show kIsWeb, defaultTargetPlatform, TargetPlatform;
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart' show Clipboard, ClipboardData;
 import 'package:yswords/constants/app_version.dart';
 import 'package:yswords/constants/build_flags.dart';
 import 'package:yswords/constants/text_patterns.dart' show sanitizeForCopy;
@@ -1484,10 +1483,10 @@ class _AccountSectionState extends State<_AccountSection> {
                             ),
                             onPressed: () async {
                               final messenger = ScaffoldMessenger.of(context);
-                              await Clipboard.setData(
-                                ClipboardData(text: auth.initError!),
+                              final ok = await ClipboardHelper.copyText(
+                                auth.initError!,
                               );
-                              if (!context.mounted) return;
+                              if (!ok || !context.mounted) return;
                               messenger.showSnackBar(
                                 SnackBar(
                                   content: Text(

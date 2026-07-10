@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:yswords/utils/clipboard_helper.dart';
 // 2026-05-24 (v1.3.7): get package no longer used directly here —
 // navigateToReader helper encapsulates all push/pop logic.
 // import 'package:get/get.dart';
@@ -195,12 +195,7 @@ class _VersePopupSheetState extends State<VersePopupSheet> {
       buf.writeln('${v.verse}. ${sanitizeVerseText(v.text)}');
     }
     final scheme = Theme.of(context).colorScheme;
-    bool ok = true;
-    try {
-      await Clipboard.setData(ClipboardData(text: buf.toString().trim()));
-    } catch (_) {
-      ok = false;
-    }
+    final ok = await ClipboardHelper.copyText(buf.toString().trim());
     if (!mounted) return;
     showFloatingToast(
       context,

@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:yswords/utils/clipboard_helper.dart';
 import 'package:get/get.dart';
 import 'package:provider/provider.dart';
 
@@ -296,9 +296,8 @@ class PersonDetailSheet extends StatelessWidget {
     }
 
     final payload = buf.toString().trim();
-    try {
-      await Clipboard.setData(ClipboardData(text: payload));
-    } catch (_) {
+    final copied = await ClipboardHelper.copyText(payload);
+    if (!copied) {
       if (!context.mounted) return false;
       _showFloatingToast(
         context,

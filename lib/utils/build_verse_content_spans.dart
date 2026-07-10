@@ -80,11 +80,13 @@ List<InlineSpan> buildVerseContentSpans({
           return;
         }
         final toCopy = '${verse.verseLabel} ${sanitizeVerseText(verse.text)}';
-        await ClipboardHelper.copyText(toCopy);
+        final ok = await ClipboardHelper.copyText(toCopy);
         if (!context.mounted) return;
-        final msg =
-            (uiStrings['copiedVerse']?[locale] ?? 'Copied verse {verse}')
-                .replaceAll('{verse}', verse.verseLabel);
+        final msg = ok
+            ? (uiStrings['copiedVerse']?[locale] ?? 'Copied verse {verse}')
+                .replaceAll('{verse}', verse.verseLabel)
+            : (uiStrings['shareLinkFailed']?[locale] ??
+                'Copy failed — clipboard unavailable');
         ScaffoldMessenger.of(context)
             .showSnackBar(SnackBar(content: Text(msg)));
       },
