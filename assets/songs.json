@@ -16,10 +16,10 @@
         "songIndex": "https://www.christiandiscipleschurch.org/content/integrated-list-songs"
       }
     ],
-    "totalSongs": 511,
+    "totalSongs": 512,
     "note": "Theme tags are auto-derived from the title text using a keyword map; they are best-effort, not authoritative. The verse field is only populated for unambiguous cases like Psalm 23 settings.",
     "mediaUrlNote": "CDC entries have audioUrl + pdfUrl derived deterministically from the catalogue code; fydt entries have these populated by the sync script when it scrapes per-song pages. The app today still uses link-out (opening url in a new tab) — these direct media URLs are pre-populated so the app can switch to inline playback or PDF download once licensing is documented, with no further data work.",
-    "lastSyncedAt": "2026-07-05T19:36:07Z"
+    "lastSyncedAt": "2026-07-12T19:16:20Z"
   },
   "songs": [
     {
@@ -5985,6 +5985,20 @@
       "verse": "Matthew 11:29",
       "firstSeenAt": "2026-05-05T01:56:01Z",
       "updatedAt": "2026-05-05T01:56:01Z"
+    },
+    {
+      "id": "fydt:song_fenyonggangqiang",
+      "title": "奋勇刚强",
+      "language": "zh",
+      "source": "fydt",
+      "sourceLabel": "福音电台",
+      "url": "https://fydt.org/song/fenyonggangqiang/",
+      "audioUrl": "https://fydt.org/wp-content/uploads/2026/07/S03_072.mp3",
+      "pdfUrl": "https://fydt.org/wp-content/uploads/2026/07/S03_072.pdf",
+      "themes": [],
+      "verse": "Exodus 17:15",
+      "firstSeenAt": "2026-07-12T19:16:18Z",
+      "updatedAt": "2026-07-12T19:16:18Z"
     },
     {
       "id": "fydt:content_fenjinchuanyang",
