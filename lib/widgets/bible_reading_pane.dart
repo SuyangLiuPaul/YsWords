@@ -2111,14 +2111,22 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                     // Vertical position indicator on the right edge — a
                     // thin track + a small "current/total" pill that
                     // slides top-to-bottom as the user reads, then
-                    // auto-fades after 2 s of inactivity.
-                    if (!isSelected && verses.isNotEmpty)
+                    // auto-fades after 2 s of inactivity. Kept visible
+                    // during verse selection too — hiding it here was
+                    // bundled onto the same `isSelected` check the
+                    // bottom-bar swap needed, not a deliberate choice.
+                    // Extra bottom clearance while selected: on narrow
+                    // phones _SelectionActionBar wraps to two rows
+                    // (taller than the single-row chrome bar it
+                    // replaces), so the pill needs more room to clear it.
+                    if (verses.isNotEmpty)
                       Positioned(
                         right: ResponsiveBreakpoints.headerInset(dc) + 4,
                         top: MediaQuery.of(context).padding.top +
                             64 * settings.menuScale +
                             24,
-                        bottom: MediaQuery.of(context).padding.bottom + 56,
+                        bottom: MediaQuery.of(context).padding.bottom +
+                            (isSelected ? 100 : 56),
                         child: IgnorePointer(
                           // v1.3.16: nested ValueListenableBuilders so
                           // scroll-tick updates only rebuild THIS
@@ -3348,7 +3356,7 @@ class _AiExplainSheetState extends State<_AiExplainSheet> {
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      '${uiStrings['aiExplainHeader']?[locale] ?? 'YsWords explanation'} · ${widget.refLabel}',
+                      '${uiStrings['aiExplainHeader']?[locale] ?? 'AI explanation'} · ${widget.refLabel}',
                       style: TextStyle(
                         fontFamily: widget.settings.fontFamily,
                         fontFamilyFallback: kCjkFontFallback,
