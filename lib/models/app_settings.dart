@@ -37,7 +37,6 @@ const _kBooksViewMode = 'booksViewMode';
 const _kBoldVerseText = 'boldVerseText';
 const _kShowStrongsInOriginals = 'showStrongsInOriginals';
 const _kAutoExpandFirstRef = 'autoExpandFirstRef';
-const _kShowDailyNews = 'showDailyNews';
 const _kShowBibleEvidence = 'showBibleEvidence';
 const _kNotificationsEnabled = 'notificationsEnabled';
 // 2026-05-24 (v1.3.0): per-category notification prefs. Stored as a
@@ -141,10 +140,6 @@ class AppSettings extends ChangeNotifier {
   /// each Strong's entry so the user sees verse refs immediately.
   bool _autoExpandFirstRef = false;
 
-  /// Show the Today's Headlines card + Daily News quick-link tile +
-  /// the Daily News page entry. Default ON.
-  bool _showDailyNews = true;
-
   /// Show the Today's Evidence card + Bible Evidence quick-link tile +
   /// the Bible Evidence page entry. Default ON.
   bool _showBibleEvidence = true;
@@ -193,8 +188,8 @@ class AppSettings extends ChangeNotifier {
   // stored as a list of [DashboardSection.name] strings; each
   // section also has its own visibility bool. We seed both from
   // [defaultDashboardOrder] / [defaultVisibility] and migrate the
-  // legacy `showDailyNews` / `showBibleEvidence` / `showReadingPlan`
-  // flags into the new map on first load (see [loadSettings]).
+  // legacy `showBibleEvidence` / `showReadingPlan` flags into the new
+  // map on first load (see [loadSettings]).
 
   /// Current render order of dashboard sections.
   List<DashboardSection> _dashboardSectionOrder =
@@ -225,7 +220,6 @@ class AppSettings extends ChangeNotifier {
   bool get boldVerseText => _boldVerseText;
   bool get showStrongsInOriginals => _showStrongsInOriginals;
   bool get autoExpandFirstRef => _autoExpandFirstRef;
-  bool get showDailyNews => _showDailyNews;
   bool get showBibleEvidence => _showBibleEvidence;
   bool get notificationsEnabled => _notificationsEnabled;
   /// Snapshot map of per-category preferences. Missing entries fall
@@ -562,14 +556,6 @@ class AppSettings extends ChangeNotifier {
     await prefs.setBool(_kAutoExpandFirstRef, enabled);
   }
 
-  Future<void> setShowDailyNews(bool enabled) async {
-    if (_showDailyNews == enabled) return;
-    _showDailyNews = enabled;
-    notifyListeners();
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool(_kShowDailyNews, enabled);
-  }
-
   Future<void> setShowBibleEvidence(bool enabled) async {
     if (_showBibleEvidence == enabled) return;
     _showBibleEvidence = enabled;
@@ -684,7 +670,7 @@ class AppSettings extends ChangeNotifier {
   }
 
   /// Toggle visibility of one dashboard section. Mirrors the legacy
-  /// `setShowDailyNews` / `setShowReadingPlan` / etc. for any new
+  /// `setShowBibleEvidence` / `setShowReadingPlan` / etc. for any new
   /// section; the legacy setters remain available and stay in sync.
   ///
   /// No-op for [DashboardSection.readBible] — it's the app's primary
@@ -699,9 +685,6 @@ class AppSettings extends ChangeNotifier {
     // Mirror into the legacy bools where they exist so any code path
     // still reading the old field gets the same answer.
     switch (section) {
-      case DashboardSection.todayHeadlines:
-        _showDailyNews = visible;
-        break;
       case DashboardSection.todayEvidence:
         _showBibleEvidence = visible;
         break;
@@ -711,12 +694,9 @@ class AppSettings extends ChangeNotifier {
     notifyListeners();
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_kDashboardVisible(section), visible);
-    // Mirror legacy keys so a downgrade still picks up the user's
-    // intent on these two (the only ones that pre-dated round 55).
+    // Mirror legacy key so a downgrade still picks up the user's
+    // intent (the only one that pre-dated round 55).
     switch (section) {
-      case DashboardSection.todayHeadlines:
-        await prefs.setBool(_kShowDailyNews, visible);
-        break;
       case DashboardSection.todayEvidence:
         await prefs.setBool(_kShowBibleEvidence, visible);
         break;
@@ -763,7 +743,6 @@ class AppSettings extends ChangeNotifier {
     _boldVerseText = false;
     _showStrongsInOriginals = true;
     _autoExpandFirstRef = false;
-    _showDailyNews = true;
     _showBibleEvidence = true;
     _notificationsEnabled = false;
     _showSectionTitles = true;
@@ -796,7 +775,6 @@ class AppSettings extends ChangeNotifier {
       _kBoldVerseText,
       _kShowStrongsInOriginals,
       _kAutoExpandFirstRef,
-      _kShowDailyNews,
       _kShowBibleEvidence,
       _kNotificationsEnabled,
       _kShowSectionTitles,
@@ -827,7 +805,6 @@ class AppSettings extends ChangeNotifier {
     _dashboardVisibility
       ..clear()
       ..addAll(defaultVisibility);
-    _showDailyNews = defaultVisibility[DashboardSection.todayHeadlines] ?? true;
     _showBibleEvidence =
         defaultVisibility[DashboardSection.todayEvidence] ?? true;
     notifyListeners();
@@ -840,7 +817,6 @@ class AppSettings extends ChangeNotifier {
       await prefs.setBool(
           _kDashboardVisible(s), defaultVisibility[s] ?? true);
     }
-    await prefs.setBool(_kShowDailyNews, _showDailyNews);
     await prefs.setBool(_kShowBibleEvidence, _showBibleEvidence);
   }
 
@@ -938,7 +914,6 @@ class AppSettings extends ChangeNotifier {
     _showStrongsInOriginals =
         prefs.getBool(_kShowStrongsInOriginals) ?? true;
     _autoExpandFirstRef = prefs.getBool(_kAutoExpandFirstRef) ?? false;
-    _showDailyNews = prefs.getBool(_kShowDailyNews) ?? true;
     _showBibleEvidence = prefs.getBool(_kShowBibleEvidence) ?? true;
     _notificationsEnabled = prefs.getBool(_kNotificationsEnabled) ?? false;
     // 2026-05-24 (v1.3.0): load per-category notification prefs.
@@ -989,19 +964,18 @@ class AppSettings extends ChangeNotifier {
 
     // Dashboard layout (Round 55): load order list + per-section
     // visibility. Missing entries fall back to defaults; the legacy
-    // showDailyNews / showBibleEvidence / showReadingPlan flags
-    // win over the new keys when both are set so a user upgrading
-    // from Round 54 keeps their existing toggles.
+    // showBibleEvidence / showReadingPlan flags win over the new keys
+    // when both are set so a user upgrading from Round 54 keeps their
+    // existing toggles.
     final storedOrder = prefs.getStringList(_kDashboardSectionOrder) ?? const [];
     _dashboardSectionOrder = normalizeDashboardOrder(storedOrder);
     _dashboardVisibility.clear();
     for (final s in DashboardSection.values) {
-      // Prefer the new key; fall back to legacy keys for the three
-      // sections that pre-dated round 55; final fall-back to
+      // Prefer the new key; fall back to the legacy key for the
+      // section that pre-dated round 55; final fall-back to
       // defaultVisibility.
       bool? v = prefs.getBool(_kDashboardVisible(s));
       v ??= switch (s) {
-        DashboardSection.todayHeadlines => prefs.getBool(_kShowDailyNews),
         DashboardSection.todayEvidence => prefs.getBool(_kShowBibleEvidence),
         _ => null,
       };

@@ -29,9 +29,8 @@ enum OfflinePackCategory {
   sermons,
 
   /// Family tree / timeline / evidence / cross-refs / section
-  /// titles / book intros / daily verses / sermon refs / songs /
-  /// reading plans / gospel synopsis / daily news fallback /
-  /// loading + app icon (~10 MB).
+  /// titles / book intros / daily verses / sermon refs /
+  /// reading plans / gospel synopsis / loading + app icon (~10 MB).
   tools,
 
   /// Strong's lexicon (concordance, Hebrew, Greek, LXX cross-
@@ -277,12 +276,10 @@ class OfflinePackService extends ChangeNotifier {
     'assets/web-ot-paragraphs.json',
     'assets/sermons/index.json',
     'assets/sermons/refs.json',
-    // Added 2026-05 after the "really offline?" audit — these were
-    // missing and caused the songs page / gospel synopsis / daily-news
-    // fallback to fail offline. (reading_plans.json removed in v1.2.69.)
-    'assets/songs.json',
+    // Added 2026-05 after the "really offline?" audit — this was
+    // missing and caused the gospel synopsis fallback to fail
+    // offline. (reading_plans.json removed in v1.2.69.)
     'assets/gospel_synopsis.json',
-    'assets/daily_news.json',
     'assets/app_icon.png',
     'assets/loading.png',
   ];
@@ -379,7 +376,7 @@ class OfflinePackService extends ChangeNotifier {
       case OfflinePackCategory.sermons:
         return 26;
       case OfflinePackCategory.tools:
-        return 10; // includes songs/reading_plans/synopsis/daily_news/icons
+        return 10; // includes reading_plans/synopsis/icons
       case OfflinePackCategory.originals:
         return 31; // 14 MB Strong's + 17 MB per-book interlinear
       case OfflinePackCategory.maps:

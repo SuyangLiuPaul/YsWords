@@ -41,17 +41,12 @@ enum DashboardSection {
   /// the user has no bookmarks).
   recentBookmarks,
 
-  /// "Today's Headlines" — top story per Daily News section. Default
-  /// on.
-  todayHeadlines,
-
   /// "Today's Evidence" — one of 225 Bible-evidence entries rotating
   /// by day-of-year. Default on.
   todayEvidence,
 
-  /// Quick-link tiles grid (Library / Statistics / Daily News /
-  /// Bible Evidence / Sermons / Family Tree / Bible Timeline /
-  /// Settings). Default on.
+  /// Quick-link tiles grid (Library / Statistics / Bible Evidence /
+  /// Sermons / Family Tree / Bible Timeline / Settings). Default on.
   quickLinks,
 }
 
@@ -65,7 +60,6 @@ const List<DashboardSection> defaultDashboardOrder = <DashboardSection>[
   DashboardSection.dailyVerse,
   DashboardSection.counts,
   DashboardSection.recentBookmarks,
-  DashboardSection.todayHeadlines,
   DashboardSection.todayEvidence,
   DashboardSection.quickLinks,
 ];
@@ -80,7 +74,6 @@ const Map<DashboardSection, bool> defaultVisibility =
   DashboardSection.dailyVerse: true,
   DashboardSection.counts: true,
   DashboardSection.recentBookmarks: true,
-  DashboardSection.todayHeadlines: true,
   DashboardSection.todayEvidence: true,
   DashboardSection.quickLinks: true,
 };
@@ -153,8 +146,6 @@ extension DashboardSectionLabel on DashboardSection {
         return 'Bookmarks / Notes / Highlights';
       case DashboardSection.recentBookmarks:
         return 'Recent Bookmarks';
-      case DashboardSection.todayHeadlines:
-        return "Today's Headlines";
       case DashboardSection.todayEvidence:
         return "Today's Evidence";
       case DashboardSection.quickLinks:
@@ -174,8 +165,6 @@ extension DashboardSectionLabel on DashboardSection {
         return 'Counts of bookmarks, notes, and highlights.';
       case DashboardSection.recentBookmarks:
         return 'Your five most recently bookmarked verses.';
-      case DashboardSection.todayHeadlines:
-        return 'Top story per section from Daily News.';
       case DashboardSection.todayEvidence:
         return 'One archaeology / manuscript / science entry per day.';
       case DashboardSection.quickLinks:

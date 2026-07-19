@@ -1692,10 +1692,10 @@ const uiStrings = {
     'en': 'Discover',
   },
   'onboardDiscoverBody': {
-    'zh-Hans': '圣经时间轴（97 个事件）、家谱（277 位人物）、圣经证据（225 项考古／抄本／科学发现）、双语每日新闻 + AI 选经文，都可在主页打开。',
-    'zh-Hant': '聖經時間軸（97 個事件）、家譜（277 位人物）、聖經證據（225 項考古／抄本／科學發現）、雙語每日新聞 + AI 選經文，都可在主頁打開。',
+    'zh-Hans': '圣经时间轴（97 个事件）、家谱（277 位人物）、圣经证据（225 项考古／抄本／科学发现），都可在主页打开。',
+    'zh-Hant': '聖經時間軸（97 個事件）、家譜（277 位人物）、聖經證據（225 項考古／抄本／科學發現），都可在主頁打開。',
     'en':
-        'Bible Timeline (97 events), Family Tree (277 people), Bible Evidence (225 archaeology / manuscript / science finds), and bilingual Daily News with an AI-picked verse — all reachable from Home.',
+        'Bible Timeline (97 events), Family Tree (277 people), and Bible Evidence (225 archaeology / manuscript / science finds) — all reachable from Home.',
   },
   'onboardCustomizeTitle': {
     'zh-Hans': '自定义与同步',
@@ -1875,9 +1875,9 @@ const uiStrings = {
     'en': "Pastor Eric's sermons (587 × 3 langs)",
   },
   'offlinePackTools': {
-    'zh-Hans': '研经工具（家谱 / 时间轴 / 证据 / 诗歌 / 互参 / 读经计划等）',
-    'zh-Hant': '研經工具（家譜 / 時間軸 / 證據 / 詩歌 / 互參 / 讀經計劃等）',
-    'en': 'Tools & references (tree / timeline / evidence / songs / refs / plans)',
+    'zh-Hans': '研经工具（家谱 / 时间轴 / 证据 / 互参 / 读经计划等）',
+    'zh-Hant': '研經工具（家譜 / 時間軸 / 證據 / 互參 / 讀經計劃等）',
+    'en': 'Tools & references (tree / timeline / evidence / refs / plans)',
   },
   // Added 2026-05 — exegesis word study + Bible-history maps were
   // previously not pre-cached, so they silently failed offline.
@@ -2909,81 +2909,6 @@ const uiStrings = {
     'zh-Hant': '14 代',
     'en': '14 generations',
   },
-  // ── Songs directory (Round 56) ────────────────────────────────
-  'songsPageTitle': {
-    'zh-Hans': '诗歌',
-    'zh-Hant': '詩歌',
-    'en': 'Songs',
-  },
-  'songsIntroTitle': {
-    'zh-Hans': '诗歌目录',
-    'zh-Hant': '詩歌目錄',
-    'en': 'Church Songs Directory',
-  },
-  'songsIntroBody': {
-    'zh-Hans': '浏览来自福音电台 (fydt.org) 与 Christian Disciples Church 的诗歌。'
-        '点击条目跳转到原站收听音频、阅读歌词、下载 PDF。',
-    'zh-Hant': '瀏覽來自福音電台 (fydt.org) 與 Christian Disciples Church 的詩歌。'
-        '點擊條目跳轉到原站收聽音訊、閱讀歌詞、下載 PDF。',
-    'en':
-        'Browse songs from 福音电台 (fydt.org) and Christian Disciples Church. '
-            'Tap an entry to open the original page where you can listen, read lyrics and download the PDF.',
-  },
-  'songsSearchHint': {
-    'zh-Hans': '搜索歌名、主题或编号…',
-    'zh-Hant': '搜尋歌名、主題或編號…',
-    'en': 'Search song title, theme, or code…',
-  },
-  'songsEmpty': {
-    'zh-Hans': '暂无诗歌数据。',
-    'zh-Hant': '暫無詩歌資料。',
-    'en': 'No songs available.',
-  },
-  'songsOpenFailed': {
-    'zh-Hans': '无法打开原站页面，请稍后再试。',
-    'zh-Hant': '無法開啟原站頁面，請稍後再試。',
-    'en': 'Could not open the original page. Please try again.',
-  },
-  'songsFilterLanguage': {
-    'zh-Hans': '语言',
-    'zh-Hant': '語言',
-    'en': 'Language',
-  },
-  'songsFilterSource': {
-    'zh-Hans': '来源',
-    'zh-Hant': '來源',
-    'en': 'Source',
-  },
-  'songsFilterTheme': {
-    'zh-Hans': '主题',
-    'zh-Hant': '主題',
-    'en': 'Theme',
-  },
-  'songsSortTooltip': {
-    'zh-Hans': '排序',
-    'zh-Hant': '排序',
-    'en': 'Sort',
-  },
-  'songsSortRecent': {
-    'zh-Hans': '最近更新',
-    'zh-Hant': '最近更新',
-    'en': 'Recently updated',
-  },
-  'songsSortAdded': {
-    'zh-Hans': '最近添加',
-    'zh-Hant': '最近添加',
-    'en': 'Recently added',
-  },
-  'songsSortTitle': {
-    'zh-Hans': '按标题',
-    'zh-Hant': '按標題',
-    'en': 'Title (A-Z)',
-  },
-  'songsSortSource': {
-    'zh-Hans': '按来源 / 编号',
-    'zh-Hant': '按來源 / 編號',
-    'en': 'Source / catalogue',
-  },
   // Round 56: hint shown under expanded font dropdown.
   'loadingVersion': {
     'zh-Hans': '正在切换译本…',
@@ -3370,16 +3295,6 @@ const uiStrings = {
     'zh-Hant': '最新收藏的五節經文。',
     'en': 'Your five most recently bookmarked verses.',
   },
-  'dashboardSection_todayHeadlines_label': {
-    'zh-Hans': '今日头条',
-    'zh-Hant': '今日頭條',
-    'en': "Today's Headlines",
-  },
-  'dashboardSection_todayHeadlines_description': {
-    'zh-Hans': '每日新闻每个分类的头条。',
-    'zh-Hant': '每日新聞每個分類的頭條。',
-    'en': 'Top story per section from Daily News.',
-  },
   'dashboardSection_todayEvidence_label': {
     'zh-Hans': '今日证据',
     'zh-Hant': '今日證據',
@@ -3405,11 +3320,6 @@ const uiStrings = {
     'zh-Hans': '通知',
     'zh-Hant': '通知',
     'en': 'Notifications',
-  },
-  'settingsShowDailyNewsHint': {
-    'zh-Hans': '主页"今日头条"卡片与快捷入口。',
-    'zh-Hant': '主頁「今日頭條」卡片與快捷入口。',
-    'en': "Show Today's Headlines card and quick-link tile.",
   },
   'settingsShowEvidenceHint': {
     'zh-Hans': '主页"今日证据"卡片与快捷入口。',
@@ -3466,11 +3376,6 @@ const uiStrings = {
     'zh-Hant': 'YsWords 雅偉之言',
     'en': 'YsWords',
   },
-  'newsRefreshed': {
-    'zh-Hans': '今日头条已更新',
-    'zh-Hant': '今日頭條已更新',
-    'en': "Today's headlines updated.",
-  },
   'startReading': {
     // Hero CTA shown when the user has no saved reading position
     // yet (fresh install). Mirrors continueReading's voice but
@@ -3518,16 +3423,6 @@ const uiStrings = {
     'zh-Hans': '同步失败，请检查网络后重试。',
     'zh-Hant': '同步失敗，請檢查網路後重試。',
     'en': 'Sync failed. Check your connection and try again.',
-  },
-  'newsEmptyTitle': {
-    'zh-Hans': '暂无新闻',
-    'zh-Hant': '暫無新聞',
-    'en': 'No news available',
-  },
-  'newsEmptyBody': {
-    'zh-Hans': '可能是后台任务跳过了本时段。下拉或点击重试可重新拉取。',
-    'zh-Hant': '可能是後台任務跳過了本時段。下拉或點擊重試可重新拉取。',
-    'en': 'The cron may have skipped this window. Pull down or tap retry to fetch the latest.',
   },
   'loading': {
     'zh-Hans': '加载中…',
@@ -3917,16 +3812,6 @@ const uiStrings = {
     'zh-Hans': '共 {n} 条',
     'zh-Hant': '共 {n} 條',
     'en': '{n} results',
-  },
-  // Daily News masthead — "last updated" line. {stamp} is the Sydney
-  // local timestamp of the daily_news.json's generatedAt field.
-  // Both the Flutter app and the Astro site at newsbible.netlify.app
-  // pull from the same upstream source (yswords-data) so this matches
-  // across surfaces.
-  'dailyNewsLastUpdated': {
-    'zh-Hans': '最近更新 {stamp} {tz} · 每小时自动刷新',
-    'zh-Hant': '最近更新 {stamp} {tz} · 每小時自動重新整理',
-    'en': 'Last updated {stamp} {tz} · refreshes hourly',
   },
   // Evidence scope-disclosure banner (chapter / book / archive).
   // Use {n}, {book}, {chapter} as placeholders; the widget does the
@@ -4376,17 +4261,6 @@ const uiStrings = {
     'en':
         'Original to this app · MIT (same as application code).',
   },
-  'aboutSongs': {
-    'zh-Hans': '诗歌列表',
-    'zh-Hant': '詩歌列表',
-    'en': 'Songs directory',
-  },
-  'aboutLicenseSongs': {
-    'zh-Hans': '仅外链 · 不嵌入任何音频 / 歌词 / PDF。',
-    'zh-Hant': '僅外鏈 · 不嵌入任何音訊 / 歌詞 / PDF。',
-    'en':
-        'Link-out only · no audio / lyrics / PDFs are embedded.',
-  },
   'aboutAppLicenseHeading': {
     'zh-Hans': '应用代码：MIT 许可证',
     'zh-Hant': '應用程式碼：MIT 授權',
@@ -4423,71 +4297,10 @@ const uiStrings = {
     'zh-Hant': '本頁最後更新於 {time}。',
     'en': 'Last updated {time}.',
   },
-  // Daily News (Round 40 — migrated from sibling DailyNews project).
-  'dailyNews': {
-    'zh-Hans': '每日新闻',
-    'zh-Hant': '每日新聞',
-    'en': 'Daily News',
-  },
-  'dailyNewsTagline': {
-    'zh-Hans': '以圣经视角看新闻',
-    'zh-Hant': '以聖經視角看新聞',
-    'en': 'News through a biblical lens',
-  },
-  'todayHeadlines': {
-    'zh-Hans': '今日头条',
-    'zh-Hant': '今日頭條',
-    'en': "Today's Headlines",
-  },
-  'bibleLens': {
-    'zh-Hans': '圣经视角',
-    'zh-Hant': '聖經視角',
-    'en': 'Bible Lens',
-  },
-  'bibleReflection': {
-    'zh-Hans': '圣经反思',
-    'zh-Hant': '聖經反思',
-    'en': 'Bible reflection',
-  },
-  'readFullStory': {
-    'zh-Hans': '阅读全文',
-    'zh-Hant': '閱讀全文',
-    'en': 'Read full story',
-  },
-  'readOriginal': {
-    'zh-Hans': '阅读 {source} 原文',
-    'zh-Hant': '閱讀 {source} 原文',
-    'en': 'Read original at {source}',
-  },
-  'openSource': {
-    'zh-Hans': '打开原文',
-    'zh-Hant': '打開原文',
-    'en': 'Open original',
-  },
-  'newsSectionWorld': {
-    'zh-Hans': '国际',
-    'zh-Hant': '國際',
-    'en': 'World',
-  },
-  'newsSectionChina': {
-    'zh-Hans': '中国',
-    'zh-Hant': '中國',
-    'en': 'China',
-  },
-  'newsSectionAustralia': {
-    'zh-Hans': '澳洲',
-    'zh-Hant': '澳洲',
-    'en': 'Australia',
-  },
   'refresh': {
     'zh-Hans': '刷新',
     'zh-Hant': '重新整理',
     'en': 'Refresh',
-  },
-  'viewAll': {
-    'zh-Hans': '查看全部',
-    'zh-Hant': '查看全部',
-    'en': 'View all',
   },
   // ── Gospel synopsis (Round 27B) ─────────────────────────────────
   'synopsis': {

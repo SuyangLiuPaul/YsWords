@@ -7,7 +7,6 @@ import 'package:yswords/models/verse.dart';
 import 'package:yswords/pages/bible_timeline_page.dart';
 import 'package:yswords/pages/bible_trivia_page.dart';
 import 'package:yswords/pages/books_page.dart';
-import 'package:yswords/pages/daily_news_page.dart';
 import 'package:yswords/pages/evidence_page.dart';
 import 'package:yswords/pages/family_tree_page.dart';
 import 'package:yswords/pages/feedback_page.dart';
@@ -16,14 +15,13 @@ import 'package:yswords/pages/profile_edit_page.dart';
 import 'package:yswords/pages/profiles_page.dart';
 import 'package:yswords/pages/search_page.dart';
 import 'package:yswords/pages/sermons_page.dart';
-import 'package:yswords/pages/songs_page.dart';
 import 'package:yswords/pages/stats_page.dart';
 import 'package:yswords/pages/strongs_entry_page.dart';
 import 'package:yswords/providers/main_provider.dart';
 import 'package:yswords/widgets/onboarding_dialog.dart';
 
 /// 2026-06-12 (v1.3.66 audit): responsive overflow smoke tests for the
-/// remaining 15 top-level pages not already covered by
+/// remaining top-level pages not already covered by
 /// responsive_overflow_smoke_test.dart (About/Settings/Library/
 /// Dashboard). Pumps each at the four widths bracketing supported
 /// devices — iPhone SE (320), iPhone 14/15 (390), iPad portrait (768),
@@ -50,9 +48,7 @@ void main() {
     'FamilyTreePage': () => const FamilyTreePage(),
     'BibleTriviaPage': () => const BibleTriviaPage(),
     'EvidencePage': () => const EvidencePage(),
-    'DailyNewsPage': () => const DailyNewsPage(),
     'SermonsPage': () => const SermonsPage(),
-    'SongsPage': () => const SongsPage(),
     'FeedbackPage': () => const FeedbackPage(),
     'HighlightsPage': () => const HighlightsPage(),
     'ProfilesPage': () => const ProfilesPage(),

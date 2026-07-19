@@ -269,7 +269,7 @@ class _OnboardingDialogState extends State<OnboardingDialog> {
           icon: Icons.explore_outlined,
           title: uiStrings['onboardDiscoverTitle']?[locale] ?? 'Discover',
           body: uiStrings['onboardDiscoverBody']?[locale] ??
-              'Bible Timeline (97 events), Family Tree (277 people), Bible Evidence (225 archaeology / manuscript / science finds), and bilingual Daily News with an AI-picked verse — all reachable from Home.',
+              'Bible Timeline (97 events), Family Tree (277 people), and Bible Evidence (225 archaeology / manuscript / science finds) — all reachable from Home.',
         ),
         // 2026-05-10 (v1.2.11): China build (`kChinaMode`) skips
         // Firebase init at boot, so the Google-sign-in line in the

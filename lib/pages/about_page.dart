@@ -625,11 +625,6 @@ class _OtherAttributions extends StatelessWidget {
             'Trivia text + diagrams',
         licence: uiStrings['aboutLicenseOriginal']?[locale] ??
             'Original to this app · MIT (same as application code).',
-      ),
-      _AttribRow(
-        name: uiStrings['aboutSongs']?[locale] ?? 'Songs directory',
-        licence: uiStrings['aboutLicenseSongs']?[locale] ??
-            'Link-out only · no audio / lyrics / PDFs are embedded.',
         last: true,
       ),
     ];

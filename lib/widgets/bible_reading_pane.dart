@@ -4694,23 +4694,38 @@ void showNoteEditor({
                 for (final v in mainProvider.verses)
                   bookNameToEnglish[v.book] ?? v.book
               };
+              // 2026-07-19: bounded single-row, horizontally scrolling
+              // strip instead of an unbounded multi-row Wrap.
+              // extractNoteReferences intentionally does NOT dedup
+              // (see its doc comment), so a note with many (or
+              // repeated) [Book Ch:V] refs used to make the Wrap grow
+              // to N rows — and since it's the only non-flex sibling
+              // of the Expanded body TextField above, every extra row
+              // it claimed shrank the writing area, down to a sliver
+              // for long ref lists. A fixed-height horizontal
+              // ListView caps this strip's footprint at a constant
+              // regardless of ref count. Same bounded-strip pattern
+              // already used elsewhere for "row of chips that must
+              // never compete for vertical space" — see the color
+              // filter row in highlights_page.dart.
               return Padding(
                 padding: const EdgeInsets.only(top: 10, bottom: 6),
-                child: Wrap(
-                  spacing: 6,
-                  runSpacing: 6,
-                  children: [
-                    for (final ref in refs)
-                      _buildNoteRefChip(
-                        ref: ref,
-                        scheme: scheme,
-                        locale: locale,
-                        currentVersion: mainProvider.currentVersion,
-                        isInCurrentVersion:
-                            loadedBooksEn.contains(ref.englishBook),
-                        chipCtx: chipCtx,
-                      ),
-                  ],
+                child: SizedBox(
+                  height: 44,
+                  child: ListView.separated(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: refs.length,
+                    separatorBuilder: (_, __) => const SizedBox(width: 6),
+                    itemBuilder: (_, i) => _buildNoteRefChip(
+                      ref: refs[i],
+                      scheme: scheme,
+                      locale: locale,
+                      currentVersion: mainProvider.currentVersion,
+                      isInCurrentVersion:
+                          loadedBooksEn.contains(refs[i].englishBook),
+                      chipCtx: chipCtx,
+                    ),
+                  ),
                 ),
               );
             }),

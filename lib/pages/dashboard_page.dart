@@ -13,17 +13,13 @@ import 'package:yswords/models/dashboard_section.dart';
 import 'package:yswords/models/sermon.dart';
 import 'package:yswords/models/verse.dart';
 import 'package:yswords/models/bible_evidence.dart';
-import 'package:yswords/models/news_article.dart';
-import 'package:yswords/pages/daily_news_page.dart';
 import 'package:yswords/pages/evidence_detail_page.dart';
 import 'package:yswords/pages/evidence_page.dart';
 import 'package:yswords/pages/bible_timeline_page.dart';
 import 'package:yswords/pages/bible_trivia_page.dart';
-import 'package:yswords/pages/songs_page.dart';
 import 'package:yswords/pages/family_tree_page.dart';
 import 'package:yswords/pages/sermon_detail_page.dart';
 import 'package:yswords/pages/sermons_page.dart';
-import 'package:yswords/pages/news_detail_page.dart';
 import 'package:yswords/widgets/liquid_glass.dart';
 import 'package:yswords/pages/highlights_page.dart';
 import 'package:yswords/pages/home_page.dart';
@@ -34,13 +30,11 @@ import 'package:yswords/pages/search_page.dart';
 import 'package:yswords/pages/settings_page.dart';
 import 'package:yswords/pages/stats_page.dart';
 import 'package:yswords/services/bible_evidence_service.dart';
-import 'package:yswords/services/daily_news_service.dart';
 import 'package:yswords/services/sermon_service.dart';
 import 'package:yswords/providers/main_provider.dart';
 import 'package:yswords/services/cloud_auth_service.dart';
 import 'package:yswords/services/cloud_sync_service.dart' show CloudSyncStatus;
 import 'package:yswords/services/realtime_db_sync_service.dart';
-import 'package:yswords/utils/theme_color_helpers.dart';
 import 'package:yswords/services/daily_verse_fallback.dart';
 import 'package:yswords/services/daily_verse_service.dart';
 import 'package:yswords/services/profile_service.dart';
@@ -91,11 +85,6 @@ class _DashboardPageState extends State<DashboardPage> {
   /// 1.5 MB asset finishes parsing.
   BibleEvidence? _dailyEvidence;
 
-  /// Today's headlines (1 per section) from the migrated DailyNews
-  /// dataset. Loaded after dashboard renders; fires a background
-  /// refresh so the user sees fresher data as they keep the app open.
-  List<NewsArticle> _todayHeadlines = const [];
-
   /// The sermon the user was most recently reading (persisted in
   /// SharedPreferences as `sermons_last_read`). null when the user
   /// has never opened a sermon. Drives the "Resume sermon" hero just
@@ -118,7 +107,6 @@ class _DashboardPageState extends State<DashboardPage> {
     RealtimeDbSyncService.instance.addListener(_onProfileOrAuthChanged);
     _loadDailyVerse();
     _loadDailyEvidence();
-    _loadTodayHeadlines();
     _loadResumeSermon();
     _maybeShowOnboarding();
   }
@@ -219,50 +207,6 @@ class _DashboardPageState extends State<DashboardPage> {
     // dispose) so the meter on the dashboard immediately reflects
     // what the user just did.
     await _loadResumeSermon();
-  }
-
-  Future<void> _loadTodayHeadlines() async {
-    // First paint: cached/bundled (instant, no network).
-    final initial = await DailyNewsService.load();
-    if (!mounted) return;
-    setState(() {
-      _todayHeadlines = DailyNewsService.dashboardHeadlines(initial);
-    });
-
-    // Force a foreground refresh + re-pick so the headlines pick up
-    // today's edition without waiting for the next app launch. The
-    // initial paint above guarantees the user sees something
-    // immediately; this call upgrades to fresher data when ready.
-    await DailyNewsService.refresh();
-    if (!mounted) return;
-    final fresh = await DailyNewsService.load();
-    final newHeadlines = DailyNewsService.dashboardHeadlines(fresh);
-    // Skip rebuild if the picked-headlines list didn't actually
-    // change — avoids a needless paint flicker on dashboards that
-    // are already current. O(n) via Set instead of the previous
-    // O(n²) every+any.
-    final currentIds = _todayHeadlines.map((a) => a.id).toSet();
-    final unchanged = newHeadlines.length == _todayHeadlines.length &&
-        newHeadlines.every((a) => currentIds.contains(a.id));
-    if (unchanged) return;
-    if (!mounted) return;
-    setState(() => _todayHeadlines = newHeadlines);
-    // Subtle confirmation: only show when the user actually has
-    // fresh content. Not on first paint, not on no-op refreshes.
-    final messenger = ScaffoldMessenger.maybeOf(context);
-    if (messenger != null && _todayHeadlines.isNotEmpty) {
-      final settings = context.read<AppSettings>();
-      messenger.hideCurrentSnackBar();
-      messenger.showSnackBar(SnackBar(
-        content: Text(
-          uiStrings['newsRefreshed']?[settings.locale] ??
-              "Today's headlines updated.",
-          style: TextStyle(fontFamily: settings.fontFamily),
-        ),
-        duration: const Duration(milliseconds: 1600),
-        behavior: SnackBarBehavior.floating,
-      ));
-    }
   }
 
   @override
@@ -728,57 +672,6 @@ class _DashboardPageState extends State<DashboardPage> {
           ],
         );
 
-      case DashboardSection.todayHeadlines:
-        if (_todayHeadlines.isEmpty) return null;
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    uiStrings['todayHeadlines']?[locale] ??
-                        "Today's Headlines",
-                    style: TextStyle(
-                      fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
-                      fontSize: headerSize,
-                      fontWeight: FontWeight.w700,
-                      color: scheme.primary,
-                    ),
-                  ),
-                ),
-                TextButton(
-                  onPressed: () => Get.to(
-                    () => const DailyNewsPage(),
-                    transition: Transition.rightToLeft,
-                  ),
-                  child: Text(
-                    uiStrings['viewAll']?[locale] ?? 'View all',
-                    style: TextStyle(
-                        fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
-                        fontSize: (settings.fontSize - 2).clamp(11.0, 14.0)),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            for (var i = 0; i < _todayHeadlines.length; i++)
-              _DashboardNewsCard(
-                article: _todayHeadlines[i],
-                locale: locale,
-                // 2026-05-22 (v1.2.72): swipe between today's headlines
-                // without popping back to the dashboard each time.
-                onTap: () => Get.to(
-                  () => NewsDetailPage(
-                    articles: _todayHeadlines,
-                    initialIndex: i,
-                  ),
-                  transition: Transition.rightToLeft,
-                ),
-              ),
-          ],
-        );
-
       case DashboardSection.todayEvidence:
         if (_dailyEvidence == null) return null;
         return Column(
@@ -844,16 +737,6 @@ class _DashboardPageState extends State<DashboardPage> {
               ),
             ),
             if (settings.isDashboardSectionVisible(
-                DashboardSection.todayHeadlines))
-              _LinkTile(
-                icon: Icons.newspaper_outlined,
-                label: uiStrings['dailyNews']?[locale] ?? 'Daily News',
-                onTap: () => Get.to(
-                  () => const DailyNewsPage(),
-                  transition: Transition.rightToLeft,
-                ),
-              ),
-            if (settings.isDashboardSectionVisible(
                 DashboardSection.todayEvidence))
               _LinkTile(
                 icon: Icons.museum_outlined,
@@ -895,14 +778,6 @@ class _DashboardPageState extends State<DashboardPage> {
                 transition: Transition.rightToLeft,
               ),
             ),
-            _LinkTile(
-              icon: Icons.library_music_rounded,
-              label: uiStrings['songsPageTitle']?[locale] ?? 'Songs',
-              onTap: () => Get.to(
-                () => const SongsPage(),
-                transition: Transition.rightToLeft,
-              ),
-            ),
             // 2026-05-07 (v12): feedback tile -- mailto-driven form
             // page that lands directly in the developer's inbox via
             // the user's mail client.
@@ -932,7 +807,6 @@ class _DashboardPageState extends State<DashboardPage> {
   /// Cheap when network is up, graceful when down.
   Future<void> _pullToRefresh() async {
     await Future.wait<void>([
-      _loadTodayHeadlines(),
       _loadDailyEvidence(),
       _loadDailyVerse(),
     ]);
@@ -1703,196 +1577,6 @@ class _ThumbIcon extends StatelessWidget {
       color: scheme.surfaceContainerHighest.withValues(alpha: 0.4),
       alignment: Alignment.center,
       child: Text(icon, style: const TextStyle(fontSize: 28)),
-    );
-  }
-}
-
-/// One-row Today's-Headlines card on the dashboard. Compact thumbnail
-/// + section label + title + Bible theme. Tap → `NewsDetailPage`.
-class _DashboardNewsCard extends StatelessWidget {
-  final NewsArticle article;
-  final String locale;
-  final VoidCallback onTap;
-
-  const _DashboardNewsCard({
-    required this.article,
-    required this.locale,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    // v1.2.31: see comment near line 1072 — select-based subscribe.
-    context.select<AppSettings, (double, String)>(
-        (s) => (s.fontSize, s.fontFamily));
-    final settings = context.read<AppSettings>();
-    final fs = settings.fontSize;
-    final imgUrl =
-        (article.image != null && article.image!.isNotEmpty)
-            ? article.image
-            : null;
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Material(
-        color: scheme.surface,
-        borderRadius: BorderRadius.circular(12),
-        child: Ink(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-                color: scheme.outlineVariant.withValues(alpha: 0.6)),
-          ),
-          child: InkWell(
-            onTap: onTap,
-            borderRadius: BorderRadius.circular(12),
-            child: Padding(
-              padding: const EdgeInsets.all(10),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
-                    child: SizedBox(
-                      width: 64,
-                      height: 64,
-                      child: imgUrl != null
-                          ? Image.network(
-                              imgUrl,
-                              fit: BoxFit.cover,
-                              // 2026-05-07: <img> tag avoids canvaskit
-                              // XHR + same-origin checks on news CDNs.
-                              webHtmlElementStrategy:
-                                  WebHtmlElementStrategy.prefer,
-                              // 2026-05-08 (v1.0.1 perf): cap decode
-                              // size for the 64×64 dashboard thumb;
-                              // upstream news photos are commonly
-                              // 1200×800+.
-                              cacheWidth: 128,
-                              cacheHeight: 128,
-                              errorBuilder: (_, __, ___) =>
-                                  _NewsThumbFallback(
-                                      sectionId: article.section),
-                            )
-                          : _NewsThumbFallback(
-                              sectionId: article.section),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Text(
-                              (uiStrings['newsSection${_cap(article.section)}']
-                                          ?[locale] ??
-                                      article.section.toUpperCase())
-                                  .toUpperCase(),
-                              style: TextStyle(
-                                fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
-                                fontSize:
-                                    (fs - 4).clamp(9.0, 12.0).toDouble(),
-                                fontWeight: FontWeight.w700,
-                                letterSpacing: 0.8,
-                                color: scheme.primary,
-                              ),
-                            ),
-                            const SizedBox(width: 6),
-                            Flexible(
-                              child: Text(
-                                '· ${article.source}',
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                  fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
-                                  fontSize: (fs - 4)
-                                      .clamp(9.0, 12.0)
-                                      .toDouble(),
-                                  color: scheme.onSurfaceVariant,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          article.title(locale),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
-                            fontSize:
-                                (fs - 1).clamp(13.0, 17.0).toDouble(),
-                            fontWeight: FontWeight.w700,
-                            color: scheme.onSurface,
-                            height: 1.25,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Row(
-                          children: [
-                            Icon(Icons.auto_stories,
-                                size: 12, color: scheme.primary),
-                            const SizedBox(width: 4),
-                            Flexible(
-                              child: Text(
-                                '${article.verse.theme(locale)}  ·  ${article.verse.reference}',
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                  fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
-                                  fontSize: (fs - 4)
-                                      .clamp(11.0, 14.0)
-                                      .toDouble(),
-                                  fontWeight: FontWeight.w600,
-                                  color: scheme.primary,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  String _cap(String s) =>
-      s.isEmpty ? s : s[0].toUpperCase() + s.substring(1);
-}
-
-class _NewsThumbFallback extends StatelessWidget {
-  final String sectionId;
-  const _NewsThumbFallback({required this.sectionId});
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    // Theme-aware fallback thumbnail — paletteBg returns shade100 in
-    // light mode (was washed out in dark) and shade900 with alpha in
-    // dark mode so the thumbnail still has a visible tint either way.
-    final color = sectionId == 'china'
-        ? paletteBg(context, Colors.red)
-        : sectionId == 'australia'
-            ? paletteBg(context, Colors.green)
-            : scheme.primary.withValues(alpha: 0.12);
-    final icon = sectionId == 'china'
-        ? '🌏'
-        : sectionId == 'australia'
-            ? '🦘'
-            : '🌐';
-    return Container(
-      color: color,
-      alignment: Alignment.center,
-      child: Text(icon, style: const TextStyle(fontSize: 26)),
     );
   }
 }
