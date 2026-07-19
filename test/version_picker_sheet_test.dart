@@ -75,9 +75,9 @@ void main() {
   testWidgets('tapping a different edition closes + returns its value',
       (tester) async {
     final r = await openMenu(tester, currentVersion: 'cuvs-yhwh');
-    await tester.tap(find.text('和合本(简体)')); // cuv
+    await tester.tap(find.text('梁家铿译本(简体)')); // biblexg-v2
     await tester.pumpAndSettle();
-    expect(await r.future, 'cuv');
+    expect(await r.future, 'biblexg-v2');
   });
 
   testWidgets('tapping the current edition closes with null', (tester) async {

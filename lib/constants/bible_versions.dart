@@ -83,17 +83,15 @@ const bibleVersions = <BibleVersionInfo>[
   ),
   BibleVersionInfo(
     value: 'biblexg-v2',
-    shortLabel: 'LJK2(简)',
-    menuLabel: '梁家铿译本 第二版(简体)',
+    shortLabel: 'LJK(简)',
+    menuLabel: '梁家铿译本(简体)',
     language: 'zh-Hans',
-    editionYear: '第二版',
   ),
   BibleVersionInfo(
     value: 'biblexg-v2-tr',
-    shortLabel: 'LJK2(繁)',
-    menuLabel: '梁家铿譯本 第二版(繁體)',
+    shortLabel: 'LJK(繁)',
+    menuLabel: '梁家铿譯本(繁體)',
     language: 'zh-Hant',
-    editionYear: '第二版',
   ),
   BibleVersionInfo(
     value: 'cuv',
@@ -129,8 +127,18 @@ const bibleVersions = <BibleVersionInfo>[
   ),
 ];
 
-/// Versions that have placeholder data only — hidden from the picker.
-const disabledVersions = <String>{};
+/// Versions hidden from the picker. `biblexg`/`biblexg-tr` (LJK1, the
+/// first edition of 梁家铿译本) are superseded by the v2 edition and
+/// kept only as a fallback source; `cuv`/`cuv-tr`/`cnv`/`cnv-tr` are
+/// hidden in favour of `cuvs-yhwh`/`cuvs-yhwh-tr`. All remain in
+/// [bibleVersions] (not deleted) so label lookups, the
+/// full-canon-fallback chain, and shared-link version codes for
+/// existing readers keep working.
+const disabledVersions = <String>{
+  'cuv', 'cuv-tr',
+  'cnv', 'cnv-tr',
+  'biblexg', 'biblexg-tr',
+};
 
 /// Versions shown in the picker (excludes disabled ones).
 List<BibleVersionInfo> get availableVersions =>

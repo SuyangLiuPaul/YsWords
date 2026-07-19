@@ -51,9 +51,26 @@ void main() {
     expect(versionsForLanguage('en').map((v) => v.value),
         containsAll(<String>['kjv', 'leb', 'nasb']));
     expect(versionsForLanguage('zh-Hans').map((v) => v.value),
-        containsAll(<String>['cuvs-yhwh', 'cuv', 'cnv']));
+        containsAll(<String>['cuvs-yhwh', 'biblexg-v2']));
     expect(versionsForLanguage('zh-Hant').map((v) => v.value),
-        containsAll(<String>['cuvs-yhwh-tr', 'cuv-tr', 'cnv-tr']));
+        containsAll(<String>['cuvs-yhwh-tr', 'biblexg-v2-tr']));
+  });
+
+  test('cuv/cnv/biblexg(v1) are hidden from the picker but stay resolvable',
+      () {
+    const hidden = <String>[
+      'cuv', 'cuv-tr',
+      'cnv', 'cnv-tr',
+      'biblexg', 'biblexg-tr',
+    ];
+    final availableCodes = availableVersions.map((v) => v.value).toSet();
+    final allCodes = bibleVersions.map((v) => v.value).toSet();
+    for (final code in hidden) {
+      expect(availableCodes.contains(code), isFalse,
+          reason: '$code should be hidden from the picker');
+      expect(allCodes.contains(code), isTrue,
+          reason: '$code should still resolve (labels/fallback/shared links)');
+    }
   });
 
   test('bibleVersionLanguage resolves known codes + falls back safely', () {
