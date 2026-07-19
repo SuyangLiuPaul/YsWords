@@ -5791,7 +5791,15 @@ class _MiniReaderHeader extends StatelessWidget {
             child: useBlur
                 ? ClipRect(
                     child: BackdropFilter(
-                      filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+                      // 2026-07-20: sigma dropped from 18 → 8. Skia's
+                      // gaussian blur cost scales roughly with sigma²,
+                      // and this backdrop repaints every scroll frame
+                      // while the mini-header is visible (i.e. most of
+                      // any real reading session, since the full chrome
+                      // auto-hides quickly) — the biggest single-frame
+                      // cost in the reader's scroll path. 8 still reads
+                      // as a clear frosted-glass blur.
+                      filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
                       child: ColoredBox(
                         color: backdropColor,
                         child: backdropChild,
