@@ -1194,10 +1194,9 @@ class _AccountSectionState extends State<_AccountSection> {
     );
   }
 
-  /// Mirror of dashboard_page._displayNameFor — when signed in,
-  /// prefer Google displayName / email-prefix over the local
-  /// profile name (which can still be "guest" if the credential
-  /// was silently restored at boot without going through
+  /// When signed in, prefer Google displayName / email-prefix over
+  /// the local profile name (which can still be "guest" if the
+  /// credential was silently restored at boot without going through
   /// signInWithGoogleAndAdoptProfile).
   String _displayNameFor(CloudAuthService auth, dynamic profile) {
     if (auth.isSignedIn) {
@@ -1253,8 +1252,6 @@ class _AccountSectionState extends State<_AccountSection> {
                 photoUrl: auth.currentUser?.photoURL ?? p.photoDataUrl,
                 // When signed in, prefer the Google display name so
                 // the avatar's initial matches the title row below.
-                // Mirrors dashboard_page._displayNameFor's logic so
-                // the two surfaces stay in sync on cold-start.
                 name: _displayNameFor(auth, p),
                 avatarColor: p.avatarColorArgb,
                 radius: 22,

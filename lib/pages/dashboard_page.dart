@@ -7,7 +7,6 @@ import 'package:yswords/constants/bible_versions.dart';
 import 'package:yswords/utils/short_book_name.dart' show shortBookName;
 import 'package:yswords/constants/text_patterns.dart' show sanitizeForSearch;
 import 'package:yswords/constants/ui_strings.dart';
-import 'package:yswords/utils/greeting.dart';
 import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/models/dashboard_section.dart';
 import 'package:yswords/models/sermon.dart';
@@ -25,7 +24,6 @@ import 'package:yswords/pages/highlights_page.dart';
 import 'package:yswords/pages/home_page.dart';
 import 'package:yswords/pages/library_page.dart';
 import 'package:yswords/pages/feedback_page.dart';
-import 'package:yswords/pages/profile_edit_page.dart';
 import 'package:yswords/pages/search_page.dart';
 import 'package:yswords/pages/settings_page.dart';
 import 'package:yswords/pages/stats_page.dart';
@@ -33,7 +31,6 @@ import 'package:yswords/services/bible_evidence_service.dart';
 import 'package:yswords/services/sermon_service.dart';
 import 'package:yswords/providers/main_provider.dart';
 import 'package:yswords/services/cloud_auth_service.dart';
-import 'package:yswords/services/cloud_sync_service.dart' show CloudSyncStatus;
 import 'package:yswords/services/realtime_db_sync_service.dart';
 import 'package:yswords/services/daily_verse_fallback.dart';
 import 'package:yswords/services/daily_verse_service.dart';
@@ -43,7 +40,6 @@ import 'package:yswords/utils/passage_localizer.dart' show localizePassage;
 import 'package:yswords/utils/reference_parser.dart';
 import 'package:yswords/utils/responsive.dart';
 import 'package:yswords/utils/version_mapper.dart' show translateBookName;
-import 'package:yswords/widgets/google_g_logo.dart';
 import 'package:yswords/widgets/left_accent_card.dart';
 import 'package:yswords/widgets/onboarding_dialog.dart';
 import 'package:yswords/utils/font_catalog.dart' show kCjkFontFallback;
@@ -344,46 +340,12 @@ class _DashboardPageState extends State<DashboardPage> {
     setState(() {});
   }
 
-  /// Day-part greeting matching how people actually talk:
-  ///   05:00 – 11:59  morning   / 早安
-  ///   12:00 – 17:59  afternoon / 午安
-  ///   18:00 – 21:59  evening   / 晚安
-  ///   22:00 – 04:59  night     / 夜安
-  ///
-  /// Pre-fix bug: `hour < 12` covered 00:00 too, so opening the app at
-  /// midnight greeted you with "Good morning". Logic now lives in
-  /// `utils/greeting.dart` so it can be unit-tested.
-  String _greeting(String locale) => greetingFor(locale: locale);
-
-  /// Pick the most user-friendly name for the greeting:
-  ///   1. Google `displayName` when signed in (covers cold-start
-  ///      where the local profile was never adopted via the
-  ///      sign-in button and would otherwise be "guest")
-  ///   2. Email prefix as a fallback (some Google accounts hide
-  ///      displayName)
-  ///   3. The local profile name (regular local-only flow)
-  String _displayNameFor(CloudAuthService auth, dynamic profile) {
-    if (auth.isSignedIn) {
-      final u = auth.currentUser;
-      final dn = u?.displayName?.trim();
-      if (dn != null && dn.isNotEmpty) return dn;
-      final email = u?.email;
-      if (email != null && email.isNotEmpty) {
-        final at = email.indexOf('@');
-        return at > 0 ? email.substring(0, at) : email;
-      }
-    }
-    return profile.name as String;
-  }
-
   @override
   Widget build(BuildContext context) {
     final settings = context.watch<AppSettings>();
     final mainProvider = context.watch<MainProvider>();
     final scheme = Theme.of(context).colorScheme;
     final locale = settings.locale;
-    final profile = ProfileService.instance.current;
-    final auth = CloudAuthService.instance;
 
     // After Round 36 the Dashboard is *always* the navigator root
     // (the floating-header "Home" entry pops to first instead of
@@ -419,45 +381,6 @@ class _DashboardPageState extends State<DashboardPage> {
         physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.all(16),
         children: [
-          // Greeting + profile / sync status
-          _GreetingCard(
-            greeting: _greeting(locale),
-            // When signed in, prefer the Google display name over
-            // the local profile name. On cold-start the local
-            // profile is often still "guest" because
-            // signInWithGoogleAndAdoptProfile only runs on an
-            // explicit sign-in click — Firebase silently restoring
-            // a persisted credential never adopts the profile, so
-            // the greeting was reading "Good morning, guest" even
-            // though auth.currentUser was a real signed-in user.
-            // Falls back to email-prefix → profile.name in case
-            // displayName is null (some Google accounts hide it).
-            profileName: _displayNameFor(auth, profile),
-            authConfigured: auth.isConfigured,
-            isSignedIn: auth.isSignedIn,
-            email: auth.currentUser?.email,
-            // Render priority: Google profile photo first (when
-            // signed in) → locally-uploaded avatar → color tile +
-            // initial. Pass both URLs; the card picks one.
-            photoUrl: auth.currentUser?.photoURL ?? profile.photoDataUrl,
-            avatarColor: profile.avatarColorArgb,
-            syncStatus: RealtimeDbSyncService.instance.status,
-            locale: locale,
-            onSignIn: () async {
-              final messenger = ScaffoldMessenger.of(context);
-              final result = await CloudAuthService.instance
-                  .signInWithGoogleAndAdoptProfile();
-              if (!mounted) return;
-              if (!result.isOk) {
-                messenger.showSnackBar(SnackBar(
-                  content: Text(result.errorMessage ?? 'Sign-in failed.'),
-                  duration: const Duration(seconds: 3),
-                ));
-              }
-            },
-          ),
-          const SizedBox(height: 16),
-
           // ── DASHBOARD SECTIONS (customizable order + visibility) ──
           // The user controls both the render order and which blocks
           // are visible via Settings → "Dashboard layout" (round 55).
@@ -833,362 +756,6 @@ class _DashboardPageState extends State<DashboardPage> {
 // `jumper.resolveAndPrepareJump` so the OT-fallback (CUVS-YHWH on
 // NT-only versions like LJK1/LJK2) is consistent across every
 // cross-link surface — see `lib/utils/jump_to_reference.dart`.
-
-class _GreetingCard extends StatelessWidget {
-  final String greeting;
-  final String profileName;
-  final bool authConfigured;
-  final bool isSignedIn;
-  final String? email;
-  /// Google profile photo URL when signed in. Falls through to
-  /// initial-on-color when null or fails to load.
-  final String? photoUrl;
-  /// Custom avatar color picked in Profile setup. Used when there's
-  /// no [photoUrl]; falls through to scheme.primary when null.
-  final int? avatarColor;
-  final CloudSyncStatus syncStatus;
-  final String locale;
-  final VoidCallback onSignIn;
-
-  const _GreetingCard({
-    required this.greeting,
-    required this.profileName,
-    required this.authConfigured,
-    required this.isSignedIn,
-    required this.email,
-    required this.photoUrl,
-    required this.avatarColor,
-    required this.syncStatus,
-    required this.locale,
-    required this.onSignIn,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    // 2026-05-10 (v1.2.31): only fontSize/fontFamily are read in this
-    // card. `context.watch<AppSettings>()` would rebuild on every
-    // unrelated settings change (locale, theme, version, paragraph
-    // mode, profile switch — about 25 fields). Subscribe via
-    // `context.select` to a small (fontSize, fontFamily) record so
-    // the rebuild trigger is precise; `context.read` then snapshots
-    // the live AppSettings instance for any other field access in
-    // the body. Same applies to the other 7 sites in this file.
-    context.select<AppSettings, (double, String)>(
-        (s) => (s.fontSize, s.fontFamily));
-    final settings = context.read<AppSettings>();
-    final fs = settings.fontSize;
-    final initial = profileName.isEmpty
-        ? '?'
-        : profileName.characters.first.toUpperCase();
-    final tileColor = avatarColor != null ? Color(avatarColor!) : scheme.primary;
-    // Compact horizontal layout: avatar on the left, greeting + name
-    // stacked in the middle, sign-in button (or sync chip) on the
-    // right. Keeps the card to ~80 dp tall on phones and avoids the
-    // tall empty box that wide-screen layouts produced before.
-    // Tap-to-edit on the avatar opens the Profile editor (rename,
-    // pick avatar color). Most discoverable affordance — users
-    // already mentally associate "tap the avatar" with profile
-    // settings from every social app they use.
-    final avatar = (photoUrl != null && photoUrl!.isNotEmpty)
-                ? CircleAvatar(
-                    radius: 24,
-                    backgroundColor: tileColor,
-                    foregroundColor: scheme.onPrimary,
-                    // v1.3.20: ResizeImage caps decode at 96px to match
-                    // the nested Image.network's cacheWidth — was the
-                    // last unwrapped NetworkImage in dashboard tiles
-                    // and would otherwise keep a full-res Google avatar
-                    // alive in image cache for a 48px display.
-                    backgroundImage: ResizeImage(
-                      NetworkImage(photoUrl!),
-                      width: 96,
-                      height: 96,
-                    ),
-                    onBackgroundImageError: (_, __) {},
-                    child: ClipOval(
-                      child: Image.network(
-                        photoUrl!,
-                        width: 48,
-                        height: 48,
-                        // 2026-05-08 (v1.0.1 perf): cap decode size so
-                        // large Google avatars don't allocate a full-
-                        // resolution bitmap for a 48×48 circle.
-                        // 2× DPR ⇒ 96 cache px is the sharp ceiling.
-                        cacheWidth: 96,
-                        cacheHeight: 96,
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => Text(
-                          initial,
-                          style: const TextStyle(
-                              fontWeight: FontWeight.w700, fontSize: 18),
-                        ),
-                      ),
-                    ),
-                  )
-                : CircleAvatar(
-                    radius: 24,
-                    backgroundColor: tileColor,
-                    foregroundColor: scheme.onPrimary,
-                    child: Text(
-                      initial,
-                      style: const TextStyle(
-                          fontWeight: FontWeight.w700, fontSize: 18),
-                    ),
-                  );
-    // 2026-05-07: at narrow widths the Sign-in-with-Google button on
-    // the right pushes the middle column down to ~120 px, which
-    // truncates "Good morning" to "Good m..." (user complaint).
-    // Detect narrow viewports and stack the sign-in button below the
-    // name instead of side-by-side.
-    final screenW = MediaQuery.of(context).size.width;
-    final stackVertically = screenW < 420 && !isSignedIn && authConfigured;
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 12, 12, 12),
-        child: stackVertically
-            ? Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Row(
-                    children: [
-                      InkWell(
-                        customBorder: const CircleBorder(),
-                        onTap: () => Get.to(
-                          () => const ProfileEditPage(),
-                          transition: Transition.rightToLeft,
-                        ),
-                        child: avatar,
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              greeting,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              textDirection: TextDirection.ltr,
-                              style: TextStyle(
-                                fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
-                                fontSize:
-                                    (fs - 3).clamp(11.0, 16.0).toDouble(),
-                                color: scheme.onSurfaceVariant,
-                              ),
-                            ),
-                            Text(
-                              profileName,
-                              maxLines: 1,
-                              softWrap: false,
-                              overflow: TextOverflow.ellipsis,
-                              textDirection: TextDirection.ltr,
-                              style: TextStyle(
-                                fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
-                                fontSize:
-                                    (fs + 3).clamp(16.0, 28.0).toDouble(),
-                                fontWeight: FontWeight.w700,
-                                color: scheme.onSurface,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 10),
-                  OutlinedButton.icon(
-                    onPressed: onSignIn,
-                    icon: const GoogleGLogo(size: 16),
-                    label: Text(
-                      uiStrings['welcomeSignInGoogle']?[locale] ??
-                          'Sign in with Google',
-                      style: TextStyle(
-                        fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
-                        fontSize: (fs - 2).clamp(12.0, 15.0).toDouble(),
-                      ),
-                    ),
-                    style: OutlinedButton.styleFrom(
-                      backgroundColor: Colors.white,
-                      foregroundColor: const Color(0xFF1F1F1F),
-                      side: const BorderSide(
-                          color: Color(0xFFDADCE0), width: 1),
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 10),
-                    ),
-                  ),
-                ],
-              )
-            : _buildHorizontalLayout(
-                context,
-                scheme,
-                settings,
-                fs,
-                avatar,
-              ),
-      ),
-    );
-  }
-
-  Widget _buildHorizontalLayout(
-    BuildContext context,
-    ColorScheme scheme,
-    AppSettings settings,
-    double fs,
-    Widget avatar,
-  ) {
-    return Row(
-          children: [
-            InkWell(
-              customBorder: const CircleBorder(),
-              onTap: () => Get.to(
-                () => const ProfileEditPage(),
-                transition: Transition.rightToLeft,
-              ),
-              child: Stack(
-                clipBehavior: Clip.none,
-                children: [
-                  avatar,
-                  // Small edit-pencil chip in the bottom-right
-                  // corner makes the affordance unmistakable.
-                  Positioned(
-                    right: -2,
-                    bottom: -2,
-                    child: Container(
-                      width: 18,
-                      height: 18,
-                      decoration: BoxDecoration(
-                        color: scheme.surface,
-                        shape: BoxShape.circle,
-                        border:
-                            Border.all(color: scheme.outline, width: 1),
-                      ),
-                      alignment: Alignment.center,
-                      child: Icon(Icons.edit,
-                          size: 10, color: scheme.onSurfaceVariant),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(width: 12),
-            // Tap on the greeting / profile name / email area routes
-            // to Settings → Account. That section hosts cloud sync,
-            // sign-in/out, profile picker, and Firestore status — the
-            // surface a user is most likely looking for when they
-            // press their own profile. Kept as InkWell + Material
-            // `borderRadius` so the ripple stays inside the card's
-            // visual hit-target. The avatar (with the small edit-
-            // pencil chip) keeps its existing local-profile-edit
-            // affordance — that's a separate intent.
-            Expanded(
-              child: InkWell(
-                borderRadius: BorderRadius.circular(8),
-                onTap: () => Get.to(
-                  () => const SettingsPage(
-                    initialSection: SettingsSection.account,
-                  ),
-                  transition: Transition.rightToLeft,
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 4),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        greeting,
-                        maxLines: 1,
-                        softWrap: false,
-                        overflow: TextOverflow.ellipsis,
-                        textDirection: TextDirection.ltr,
-                        style: TextStyle(
-                          fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
-                          fontSize: (fs - 3).clamp(11.0, 16.0).toDouble(),
-                          color: scheme.onSurfaceVariant,
-                        ),
-                      ),
-                      // iPhone 14 (iOS 17/18 Safari) bug: under specific
-                      // font-fallback conditions the profile name can
-                      // render with each glyph stacked vertically. Forcing
-                      // softWrap:false + LTR direction + maxLines:1 with
-                      // ellipsis prevents Safari from line-breaking
-                      // between every character, even when a fallback
-                      // CJK font has misconfigured horizontal advances.
-                      Text(
-                        profileName,
-                        maxLines: 1,
-                        softWrap: false,
-                        overflow: TextOverflow.ellipsis,
-                        textDirection: TextDirection.ltr,
-                        style: TextStyle(
-                          fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
-                          fontSize: (fs + 3).clamp(16.0, 28.0).toDouble(),
-                          fontWeight: FontWeight.w700,
-                          color: scheme.onSurface,
-                        ),
-                      ),
-                      if (isSignedIn && email != null)
-                        Row(
-                          children: [
-                            Icon(Icons.cloud_done_outlined,
-                                size: 12, color: scheme.primary),
-                            const SizedBox(width: 4),
-                            Flexible(
-                              child: Text(
-                                email!,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                  fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
-                                  fontSize:
-                                      (fs - 4).clamp(11.0, 14.0).toDouble(),
-                                  color: scheme.onSurfaceVariant,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(width: 8),
-            if (!isSignedIn && authConfigured)
-              OutlinedButton(
-                onPressed: onSignIn,
-                style: OutlinedButton.styleFrom(
-                  backgroundColor: Colors.white,
-                  foregroundColor: const Color(0xFF1F1F1F),
-                  side: const BorderSide(
-                      color: Color(0xFFDADCE0), width: 1),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 12, vertical: 10),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const GoogleGLogo(size: 16),
-                    const SizedBox(width: 8),
-                    Text(
-                      uiStrings['welcomeSignInGoogle']?[locale] ??
-                          'Sign in with Google',
-                      style: TextStyle(
-                        fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
-                        fontSize: (fs - 2).clamp(12.0, 18.0).toDouble(),
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-          ],
-        );
-  }
-}
 
 class _CountTile extends StatelessWidget {
   final IconData icon;

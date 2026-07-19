@@ -4363,43 +4363,11 @@ const uiStrings = {
     'en': 'Keyboard shortcuts',
   },
   // ── Profiles / sign-in (Round 28) ──────────────────────────────
-  'welcomeTagline': {
-    'zh-Hans': '随身的个人圣经研读工具。',
-    'zh-Hant': '隨身的個人聖經研讀工具。',
-    'en': 'Personal Bible study, on every device.',
-  },
-  // 2026-05-09 (v1.2.6 audit): welcomeDisclaimerTitle +
-  // welcomeDisclaimerBody keys removed. The LiquidGlassCard that
-  // consumed them was deleted from welcome_page.dart in v1.2.5
-  // (felt verbose for the first-launch surface). The same caveat
-  // still surfaces below the AI features themselves
-  // (search empty state, evidence Q&A error notice, word-study
-  // error card) where it's contextually relevant.
-  'welcomeChooseHowToUse': {
-    'zh-Hans': '请选择使用方式',
-    'zh-Hant': '請選擇使用方式',
-    'en': 'How would you like to use YsWords?',
-  },
-  'welcomeSignIn': {
-    'zh-Hans': '登录',
-    'zh-Hant': '登入',
-    'en': 'Sign in',
-  },
-  'welcomeContinueGuest': {
-    'zh-Hans': '以访客身份继续',
-    'zh-Hant': '以訪客身份繼續',
-    'en': 'Continue as guest',
-  },
   'welcomeLocalOnlyNotice': {
     'zh-Hans': '账号仅保存在本设备，不需要密码、不上传服务器。',
     'zh-Hant': '帳號僅保存在本裝置，不需要密碼、不上傳伺服器。',
     'en':
         'Profiles are stored only on this device. No password, no server.',
-  },
-  'welcomeNamePrompt': {
-    'zh-Hans': '请输入您的称呼',
-    'zh-Hant': '請輸入您的稱呼',
-    'en': "What should we call you?",
   },
   'welcomeNameHint': {
     'zh-Hans': '您的姓名',
@@ -4463,26 +4431,10 @@ const uiStrings = {
     'en': 'Cancel',
   },
   // ── Cloud auth (rounds 29-30) ───────────────────────────────────
-  'welcomeSignInGoogle': {
-    'zh-Hans': '使用 Google 登录',
-    'zh-Hant': '使用 Google 登入',
-    'en': 'Sign in with Google',
-  },
   'cloudSignInGoogle': {
     'zh-Hans': '使用 Google 登录（多设备同步）',
     'zh-Hant': '使用 Google 登入（多裝置同步）',
     'en': 'Sign in with Google',
-  },
-  'welcomeLocalProfile': {
-    'zh-Hans': '本地账号（仅限本设备）',
-    'zh-Hant': '本地帳號（僅限本裝置）',
-    'en': 'Local profile (this device only)',
-  },
-  'welcomeCloudNotice': {
-    'zh-Hans': '登录后笔记、书签、读经进度可在所有设备同步；也可继续使用本地账号或访客模式。',
-    'zh-Hant': '登入後筆記、書籤、讀經進度可在所有裝置同步；也可繼續使用本地帳號或訪客模式。',
-    'en':
-        'Sign in to sync across devices, or use a local profile / guest if you prefer to keep everything on this device.',
   },
   'cloudSignIn': {
     'zh-Hans': '登录以在多设备同步',
@@ -4504,18 +4456,12 @@ const uiStrings = {
     'zh-Hant': '雲端登入暫時無法使用',
     'en': 'Cloud sign-in temporarily unavailable',
   },
-  // 2026-05-09 (v1.2.2): localized fallback messages for the
-  // welcome-page `_signInWithGoogle` flow. Used when Firebase init
-  // retry fails or the sign-in popup itself errors and the underlying
-  // platform message isn't human-friendly. Previously these were
-  // hardcoded English strings ("Cloud sign-in unavailable. Check your
-  // network and retry." / "Sign-in failed.") — a non-English-locale
-  // user would see English text on a transient network blip.
-  'cloudSignInUnavailable': {
-    'zh-Hans': '云端登录暂时不可用，请检查网络后重试。',
-    'zh-Hant': '雲端登入暫時無法使用，請檢查網路後重試。',
-    'en': 'Cloud sign-in unavailable. Check your network and retry.',
-  },
+  // 2026-05-09 (v1.2.2): localized fallback message for the Settings
+  // sign-in flow. Used when the sign-in popup itself errors and the
+  // underlying platform message isn't human-friendly. Previously this
+  // was a hardcoded English string ("Sign-in failed.") — a
+  // non-English-locale user would see English text on a transient
+  // network blip.
   'signInFailed': {
     'zh-Hans': '登录失败。',
     'zh-Hant': '登入失敗。',

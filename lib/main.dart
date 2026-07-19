@@ -11,7 +11,6 @@ import 'package:yswords/pages/sermon_detail_page.dart';
 import 'package:yswords/models/verse.dart';
 import 'package:yswords/providers/main_provider.dart';
 import 'package:yswords/models/app_settings.dart';
-import 'package:yswords/pages/welcome_page.dart';
 import 'package:yswords/services/sermon_service.dart';
 import 'package:yswords/utils/jump_to_reference.dart' as jumper;
 import 'package:yswords/utils/reference_parser.dart' show BibleReference;
@@ -776,7 +775,6 @@ class _RootRouter extends StatefulWidget {
 
 class _RootRouterState extends State<_RootRouter> {
   bool _showHome = false;
-  bool _welcomeDone = false;
   bool _deepLinkHandled = false;
 
   /// v1.3.62 UX: set (via the UrlSyncService callback) when a boot
@@ -784,7 +782,7 @@ class _RootRouterState extends State<_RootRouter> {
   /// build pushes the reader so shared links open the verse directly
   /// instead of parking the user on the Dashboard. A flag + rebuild
   /// (rather than navigating from the callback) because the apply can
-  /// finish before OR after the home/welcome gate appears.
+  /// finish before OR after the home page appears.
   bool _bootHashLandingPending = false;
 
   @override
@@ -870,20 +868,6 @@ class _RootRouterState extends State<_RootRouter> {
 
   @override
   Widget build(BuildContext context) {
-    // Show the welcome / sign-in gate the first time the app is
-    // opened on a given device. After it's dismissed (either by
-    // continuing as Guest or by signing in) the gate stays out of
-    // the way; the switcher in Settings remains the entry point.
-    final showGate =
-        _showHome && !_welcomeDone && !ProfileService.instance.seenWelcome;
-    if (showGate) {
-      return WelcomePage(
-        onDone: () {
-          if (!mounted) return;
-          setState(() => _welcomeDone = true);
-        },
-      );
-    }
     // v1.3.62 UX: boot deep link → land in the reader. Runs once,
     // post-frame, after the gate is out of the way; the reader opens
     // on the book/chapter the URL-sync apply already set. Same
