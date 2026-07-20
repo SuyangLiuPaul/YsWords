@@ -5113,6 +5113,15 @@ const uiStrings = {
     'zh-Hant': '正在載入經文…',
     'en': 'Loading verses…',
   },
+  // 2026-07-21: shown on LoadingPage's friendly "still booting"
+  // scaffold — deliberately upbeat rather than a generic "loading",
+  // since this replaces what used to be a false-positive "Failed to
+  // load" flash on slow connections.
+  'bootLoadingMessage': {
+    'zh-Hans': '飞快加载中…',
+    'zh-Hant': '飛快載入中…',
+    'en': 'Loading fast…',
+  },
   'retryingAttempt': {
     'zh-Hans': '重试中…（第 {n}/{max} 次）',
     'zh-Hant': '重試中…（第 {n}/{max} 次）',

@@ -339,8 +339,16 @@ class _LoadingPageState extends State<LoadingPage> {
   Widget build(BuildContext context) {
     final settings = Provider.of<AppSettings>(context, listen: false);
     final mainProvider = context.watch<MainProvider>();
-    final hasError =
-        mainProvider.loadError != null || mainProvider.verses.isEmpty;
+    // 2026-07-21: a fetch is legitimately still running — either the
+    // original cold-boot bootstrap (main.dart's `_bootstrap()`, which
+    // can take up to ~60 s on a slow connection but gets cut loose
+    // from the splash by an unrelated 4 s watchdog) or a manual retry
+    // from this page. While either is true, `verses.isEmpty` is the
+    // EXPECTED state, not evidence of failure — see
+    // MainProvider.bootInFlight's doc comment for the full story.
+    final loading = mainProvider.bootInFlight || _retrying;
+    final hasError = !loading &&
+        (mainProvider.loadError != null || mainProvider.verses.isEmpty);
 
     if (hasError) {
       // v1.3.65: kick off a bounded auto-retry so a transient boot
@@ -375,6 +383,24 @@ class _LoadingPageState extends State<LoadingPage> {
       });
     }
 
+    // 2026-07-21: opportunistic re-lock. `_resolveDailyVerseForSplash()`
+    // only runs once (in initState) and both of its resolution paths —
+    // the todayRef() lookup and the 5 s fallback timer — bail out
+    // without locking when the verse pool is empty at the moment they
+    // run (see `_lockRandom()`). On the exact slow-boot path this file
+    // now handles gracefully (mainProvider.verses still empty past the
+    // 4 s splash watchdog), that resolution window closes before verses
+    // exist, so `_splashVerse` was getting stuck permanently null even
+    // after a fully successful background load — which then fell
+    // through to the error scaffold below for a load that never
+    // actually failed. Retry here on every build once verses exist;
+    // `_lockRandom()` is idempotent (no-ops once locked) so this is
+    // free on the common fast-load path where locking already
+    // succeeded in initState.
+    if (!_splashVerseLocked && mainProvider.verses.isNotEmpty) {
+      _lockRandom();
+    }
+
     // Frozen by _resolveDailyVerseForSplash() — either today's
     // curated daily verse (matches the dashboard's "Verse of the
     // Day") or a random fallback. The splash shows just the logo
@@ -403,8 +429,17 @@ class _LoadingPageState extends State<LoadingPage> {
     // (with retry button) so the user always has a way to recover
     // without quit-and-relaunch. This is the path the user hit when
     // they reported "sometimes it says no verse but should have".
+    //
+    // 2026-07-21: EXCEPT while a fetch is still legitimately running
+    // (`loading` — see above) — `_splashVerse` can't resolve because
+    // there's nothing to pick from yet (verses is still empty), which
+    // is expected, not a failure. Show the friendly booting scaffold
+    // instead of the alarming error one; it clears itself the moment
+    // verses land and this widget rebuilds.
     if (verse == null) {
-      return _buildErrorScaffold(context, settings);
+      return loading
+          ? _buildBootingScaffold(context, settings)
+          : _buildErrorScaffold(context, settings);
     }
 
     return Scaffold(
@@ -588,6 +623,96 @@ class _LoadingPageState extends State<LoadingPage> {
                   ],
                 ],
               ),
+      ),
+    );
+  }
+
+  /// 2026-07-21: friendly "still loading" scaffold — logo + spinner +
+  /// a "loading fast" message, no alarming cloud-off icon and no
+  /// Retry button (there's nothing to retry; the in-flight fetch just
+  /// needs more time). Shown instead of `_buildErrorScaffold` whenever
+  /// `loading` is true in build(), i.e. the cold-boot bootstrap or a
+  /// manual retry is genuinely still running. Once that fetch resolves
+  /// (success OR final failure) this widget rebuilds into either the
+  /// normal verse splash or the real error scaffold.
+  Widget _buildBootingScaffold(BuildContext context, AppSettings settings) {
+    final dc = ResponsiveBreakpoints.classOf(
+        MediaQuery.of(context).size.width);
+    final s = ResponsiveBreakpoints.spacingScale(dc);
+    final logoSize = ResponsiveBreakpoints.loadingLogoSize(dc);
+
+    return Scaffold(
+      backgroundColor: Theme.of(context).colorScheme.surface,
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            ColorFiltered(
+              colorFilter: ColorFilter.mode(
+                Theme.of(context).colorScheme.primary,
+                BlendMode.srcIn,
+              ),
+              child: Image.asset(
+                'assets/loading.png',
+                width: logoSize,
+                height: logoSize,
+              ),
+            ),
+            SizedBox(height: 24 * s),
+            Text(
+              'YsWords',
+              style: TextStyle(
+                fontSize: settings.fontSize * 1.2,
+                fontFamily: settings.fontFamily,
+                fontFamilyFallback: kCjkFontFallback,
+                color: Theme.of(context).colorScheme.primary,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            SizedBox(height: 4 * s),
+            Text(
+              '雅伟之言',
+              style: TextStyle(
+                fontSize: settings.fontSize * 1.0,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+            ),
+            SizedBox(height: 40 * s),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      Theme.of(context)
+                          .colorScheme
+                          .primary
+                          .withValues(alpha: 0.7),
+                    ),
+                  ),
+                ),
+                SizedBox(width: 12 * s),
+                Text(
+                  uiStrings['bootLoadingMessage']?[settings.locale] ??
+                      'Loading fast…',
+                  style: TextStyle(
+                    fontSize: settings.fontSize * 0.9,
+                    fontFamily: settings.fontFamily,
+                    fontFamilyFallback: kCjkFontFallback,
+                    color: Theme.of(context)
+                        .textTheme
+                        .titleSmall
+                        ?.color
+                        ?.withValues(alpha: 0.75),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -363,6 +363,12 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
           debugPrint('notif scheduler init failed: $e'),
     );
 
+    // Clears the false-positive "Failed to load" window — see
+    // MainProvider.bootInFlight doc comment. Set before the `_loading`
+    // setState so LoadingPage's very next build already sees the
+    // accurate state, regardless of which listener rebuilds first.
+    mainProvider.setBootInFlight(false);
+
     if (mounted) {
       setState(() {
         _loading = false;

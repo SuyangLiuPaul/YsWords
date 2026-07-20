@@ -555,6 +555,33 @@ class MainProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  // 2026-07-21: true for the entire span of `_MainAppState._bootstrap()`
+  // (main.dart), from app launch until that one-shot startup sequence
+  // finishes — success OR failure. Defaults true because bootstrap is
+  // always running at app start.
+  //
+  // Exists to fix a false-positive "Failed to load" flash: `_bootstrap()`
+  // awaits `FetchVerses.execute()`, which legitimately takes anywhere up
+  // to ~60 s on a slow connection (3 escalating-timeout attempts). But a
+  // SEPARATE 4 s splash watchdog in `_MainAppState` unconditionally flips
+  // `_loading = false` regardless of whether bootstrap has finished, so
+  // `LoadingPage` gets mounted with `mainProvider.verses` still empty
+  // whenever the real fetch takes longer than 4 s — a normal outcome on
+  // a cold CDN edge or a slow network, not a failure. `LoadingPage`
+  // previously treated `verses.isEmpty` alone as proof of failure and
+  // showed the alarming error scaffold immediately, which then quietly
+  // fixed itself once the still-running fetch finally resolved in the
+  // background. Reported repeatedly as "always shows Failed to load,
+  // then works after waiting" — this flag lets LoadingPage tell "still
+  // legitimately loading" apart from "genuinely failed".
+  bool bootInFlight = true;
+
+  void setBootInFlight(bool value) {
+    if (bootInFlight == value) return;
+    bootInFlight = value;
+    notifyListeners();
+  }
+
   // 2026-05-10 (v1.2.10): in-flight load progress, used by the splash
   // page to show "Loading verses…" / "Retrying… (2/3)" so users
   // don't think the app is frozen during the (sometimes-slow) first
