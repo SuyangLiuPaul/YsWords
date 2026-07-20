@@ -721,6 +721,17 @@ Shipped to all 6 sites as v1.3.133 (commit `e912ecc`). `flutter analyze` clean, 
 
 ---
 
+## What Has Been Fixed (2026-07-20 continued, v1.3.134)
+
+### Version-picker language tabs made self-referential
+The Bible-version picker groups its ~14 editions under three language tabs (English / Traditional Chinese / Simplified Chinese). `versionLangTraditional`/`versionLangSimplified` were translated per UI locale, so an **English**-locale user saw the bare English words "Traditional"/"Simplified" instead of the script's own name — user asked for these to read as 繁體中文/简体中文 instead. Fixed by making all three tab labels (`versionLangEnglish` too, for consistency — it was also being translated: 英语/英語/English) locale-**independent**: always "English" / "繁體中文" / "简体中文" regardless of the app's current UI language. This matches the convention Settings → Interface Language's own dropdown already uses (hardcodes the same three strings). `version_picker_sheet_test.dart`'s two assertions expecting the old translated/short forms (`英语`/`繁体`/`简体`) updated to match.
+
+Considered but deliberately left alone: the sermon-transcript language chips (`sermon_detail_page.dart`'s `_LanguageToggle`, English/简体/繁體) use the same self-referential idea already, just abbreviated to 1-2 characters in a tight `ChoiceChip` row — a different, more space-constrained UI context than the version-picker's tab headings, so not touched without being asked.
+
+Shipped to all 6 sites as v1.3.134 (commit `0c6c559`). `flutter analyze` clean, 371/371 tests passing.
+
+---
+
 ## What Has Been Fixed (2026-05-04, Round 56)
 
 ### Cloud-sync timeout + sermon title cleanup + dashboard customization + theme vibrance
