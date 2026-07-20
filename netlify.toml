@@ -111,4 +111,21 @@
     # popups (Firebase sign-in) and other window.opener references
     # are sandboxed. `same-origin-allow-popups` keeps Firebase's
     # signInWithPopup working.
+    #
+    # 2026-07-20: this value (plus the absence of a
+    # Cross-Origin-Embedder-Policy header) means `window.
+    # crossOriginIsolated` is false on every deployed site —
+    # verified directly in prod. That blocked multi-threaded skwasm
+    # (Flutter's WebAssembly renderer): it silently fell back to
+    # single-threaded mode, which put enough extra main-thread
+    # contention on cold boot (Skia init + the ~6-8 MB Bible-JSON
+    # decode competing for one thread) to intermittently blow the
+    # FetchVerses 20 s first-attempt timeout — "Failed to load, then
+    # works after retrying" was the exact user-visible symptom.
+    # Reverted to canvaskit (v1.3.132) rather than loosen this
+    # header, since strict `same-origin` COOP breaks
+    # signInWithPopup's window.opener relationship. Don't re-attempt
+    # skwasm without first moving Google Sign-In to a redirect-based
+    # flow (no window.opener dependency) so COOP can go strict and
+    # COEP can be added without breaking auth.
     Cross-Origin-Opener-Policy = "same-origin-allow-popups"
