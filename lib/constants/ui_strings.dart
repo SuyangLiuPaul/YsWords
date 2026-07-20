@@ -133,20 +133,32 @@ const uiStrings = {
     'zh-Hant': '選擇聖經版本',
     'en': 'Choose a version',
   },
+  // 2026-07-21: made these three self-referential / locale-INDEPENDENT
+  // — same value in all three locale slots — instead of translating
+  // "Traditional"/"Simplified" into whatever the UI language happens
+  // to be. A language-name tab should read as that language names
+  // itself (this already matches Settings → Interface Language's
+  // dropdown, which hardcodes 'English' / '简体中文' / '繁體中文'
+  // regardless of the app's current locale — these tabs previously
+  // didn't follow that same convention). Also switched from the
+  // short 2-char forms (繁體/简体) to the full 4-char language names
+  // so English-UI users see 繁體中文/简体中文 rather than the bare
+  // English words "Traditional"/"Simplified", which don't actually
+  // name a script the way the Chinese terms do.
   'versionLangEnglish': {
-    'zh-Hans': '英语',
-    'zh-Hant': '英語',
+    'zh-Hans': 'English',
+    'zh-Hant': 'English',
     'en': 'English',
   },
   'versionLangTraditional': {
-    'zh-Hans': '繁体',
-    'zh-Hant': '繁體',
-    'en': 'Traditional',
+    'zh-Hans': '繁體中文',
+    'zh-Hant': '繁體中文',
+    'en': '繁體中文',
   },
   'versionLangSimplified': {
-    'zh-Hans': '简体',
-    'zh-Hant': '簡體',
-    'en': 'Simplified',
+    'zh-Hans': '简体中文',
+    'zh-Hant': '简体中文',
+    'en': '简体中文',
   },
   'chapter': {
     'zh-Hans': '第 {n} 章',

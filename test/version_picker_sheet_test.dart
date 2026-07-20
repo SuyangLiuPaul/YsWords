@@ -53,9 +53,13 @@ void main() {
   testWidgets('opens on the current version language + lists its editions',
       (tester) async {
     await openMenu(tester, currentVersion: 'cuvs-yhwh');
-    expect(find.text('英语'), findsOneWidget);
-    expect(find.text('繁体'), findsOneWidget);
-    expect(find.text('简体'), findsOneWidget);
+    // 2026-07-21: language tabs are now self-referential / locale-
+    // independent (always 'English' / '繁體中文' / '简体中文',
+    // matching Settings' own Interface Language dropdown) instead of
+    // being translated into whatever the UI locale happens to be.
+    expect(find.text('English'), findsOneWidget);
+    expect(find.text('繁體中文'), findsOneWidget);
+    expect(find.text('简体中文'), findsOneWidget);
     expect(find.text('和合本雅伟版(简体)'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
@@ -63,10 +67,10 @@ void main() {
   testWidgets('switching language pill swaps the edition list',
       (tester) async {
     await openMenu(tester, currentVersion: 'cuvs-yhwh');
-    await tester.tap(find.text('英语'));
+    await tester.tap(find.text('English'));
     await tester.pumpAndSettle();
     expect(find.text('New American Standard Bible'), findsOneWidget);
-    await tester.tap(find.text('繁体'));
+    await tester.tap(find.text('繁體中文'));
     await tester.pumpAndSettle();
     expect(find.text('和合本雅伟版(繁體)'), findsOneWidget);
     expect(tester.takeException(), isNull);
