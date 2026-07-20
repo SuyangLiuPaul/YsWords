@@ -1216,16 +1216,24 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
           return _emptyReaderScaffold(context, settings);
         }
 
-        final verses = mainProvider.verses
-            .where((v) =>
-                v.book == mainProvider.currentBook &&
-                v.chapter == mainProvider.currentChapter)
-            .toList()
-          ..sort((a, b) => a.verse.compareTo(b.verse));
-        // 2026-05-24 (v1.3.3): no longer consumed at this level —
-        // each `_ChapterPage` computes its own. Kept assignment
-        // (with ignore) so removing the line doesn't drift from
-        // the pattern other dependent code uses elsewhere.
+        // 2026-07-21 PERF: this used to be a full
+        // `mainProvider.verses.where(...).toList()..sort(...)` — an
+        // O(31k) filter + sort re-run on EVERY notifyListeners of
+        // either provider, because this Consumer2 wraps the whole
+        // pane. Verse taps, highlights, note saves, bookmark
+        // changes — each paid the full-corpus scan before anything
+        // painted, measured as ~90-100 ms tap→paint latency via the
+        // Event Timing API on the live site. `versesInChapter` is
+        // the provider's (book|chapter)-keyed index: O(1) lookup,
+        // pre-sorted, invalidated on version switch by both
+        // setVerses and useCachedVersion. The returned list is the
+        // cache's own — every use below is read-only; do NOT mutate
+        // it here.
+        final verses = (mainProvider.currentBook != null &&
+                mainProvider.currentChapter != null)
+            ? mainProvider.versesInChapter(
+                mainProvider.currentBook!, mainProvider.currentChapter!)
+            : const <Verse>[];
         // ignore: unused_local_variable
         final hasParagraphData =
             verses.any((v) => v.isParagraphStart == true);
