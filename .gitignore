@@ -49,3 +49,4 @@ functions/package-lock.json
 netlify/functions/node_modules/
 netlify/functions/package-lock.json
 .netlify/
+build-wasm/
