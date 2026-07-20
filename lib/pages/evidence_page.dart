@@ -449,7 +449,14 @@ class _EvidenceCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final settings = context.watch<AppSettings>();
+    // PERF: scoped select instead of full watch<AppSettings>() — this
+    // card is instantiated per evidence entry (225 entries) inside a
+    // ListView.builder; an unrelated settings change would otherwise
+    // rebuild every mounted card. Same pattern as VerseWidget /
+    // ParagraphGroupWidget.
+    context.select<AppSettings, (String, double)>(
+        (s) => (s.fontFamily, s.fontSize));
+    final settings = context.read<AppSettings>();
     final imgUrl =
         evidence.images.isNotEmpty ? evidence.images.first : null;
 
@@ -1245,7 +1252,9 @@ class _LocalMatchTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final settings = context.watch<AppSettings>();
+    // PERF: scoped select — see _EvidenceCard for the rationale.
+    context.select<AppSettings, String>((s) => s.fontFamily);
+    final settings = context.read<AppSettings>();
     // 2026-05-22 (v1.2.78): replaced the 18-px emoji thumbnail with
     // a 32×32 rounded image thumbnail (falls back to a Material
     // category icon on load error). Search-result rows used to be

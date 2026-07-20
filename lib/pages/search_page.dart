@@ -2657,7 +2657,14 @@ class _RecentSearchRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final settings = context.watch<AppSettings>();
+    // PERF: scoped select instead of full watch<AppSettings>() — this
+    // row is instantiated for every recent search query inside a
+    // plain (non-builder) ListView, so ALL rows are always mounted
+    // at once, uncapped. Same pattern as VerseWidget /
+    // ParagraphGroupWidget in bible_reading_pane.
+    context.select<AppSettings, (String, double)>(
+        (s) => (s.fontFamily, s.fontSize));
+    final settings = context.read<AppSettings>();
     final relative = createdAt == null ? null : relativeTime(createdAt!, locale);
     return InkWell(
       onTap: onTap,

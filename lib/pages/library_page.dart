@@ -508,7 +508,15 @@ class _AnnotationTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final settings = context.watch<AppSettings>();
+    // PERF: scoped select instead of full watch<AppSettings>() — this
+    // tile is instantiated per note/bookmark/highlight in a
+    // ListView.separated, which can grow unboundedly for a heavy
+    // user. An unrelated settings change would otherwise rebuild
+    // every mounted tile. Same pattern as VerseWidget /
+    // ParagraphGroupWidget in bible_reading_pane.
+    context.select<AppSettings, (String, double)>(
+        (s) => (s.fontFamily, s.fontSize));
+    final settings = context.read<AppSettings>();
     final ref = rangeLabelOverride ??
         '${verse.book} ${verse.chapter}:${verse.verseLabel}';
     final preview = sanitizeForSearch(verse.text);
