@@ -78,7 +78,25 @@ class ParagraphGroupWidget extends StatelessWidget {
         // `context.read` doesn't subscribe — the Selector above
         // owns the subscription. Reads still return live state.
         final mainProvider = context.read<MainProvider>();
-        final settings = context.watch<AppSettings>();
+        // 2026-07-20 PERF: watch<AppSettings>() -> scoped select. This
+        // builder already runs inside the Selector<MainProvider,...>
+        // above that isolates MainProvider-driven rebuilds (v1.3.15);
+        // watching the *full* AppSettings undid that isolation on the
+        // settings side instead — any AppSettings field change (locale,
+        // theme, primaryColor, paragraphMode, dozens of others) rebuilt
+        // every visible paragraph group. Select only the fields this
+        // builder (and buildVerseContentSpans / BlockNoteCard, which it
+        // calls) actually read. Same pattern already used for
+        // LiquidGlassButton / _GreetingCard / _CountTile.
+        context.select<AppSettings, (String, double, String, double, bool)>(
+            (s) => (
+                  s.locale,
+                  s.fontSize,
+                  s.fontFamily,
+                  s.lineSpacing,
+                  s.boldVerseText,
+                ));
+        final settings = context.read<AppSettings>();
         final locale = settings.locale;
         final isReference = group.first.paragraphType == 'reference';
         final isParagraphStart = group.first.isParagraphStart == true;

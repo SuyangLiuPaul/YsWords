@@ -66,7 +66,28 @@ class VerseWidget extends StatelessWidget {
         // watched) here because we only need it for action wiring
         // — display-affecting state was already captured by the
         // Selector tuple above.
-        final settings = context.watch<AppSettings>();
+        //
+        // 2026-07-20 PERF: watch<AppSettings>() -> scoped select. The
+        // comment this replaced argued AppSettings should stay a full
+        // Consumer because "fields ... are all used in this build and
+        // notify is rare anyway" — but AppSettings has dozens of other
+        // fields (primaryColor, theme mode, cardMaterial, dashboard
+        // layout, AI model, ...) and notifyListeners() fires on any of
+        // them, not just the ones read here. With 50+ alive VerseWidgets
+        // per chapter, any unrelated settings change rebuilt all of
+        // them. Select only the fields this builder (and
+        // buildVerseContentSpans / BlockNoteCard, which it calls)
+        // actually read — same pattern as paragraph_group_widget.dart.
+        context.select<AppSettings,
+            (String, bool, double, String, double, bool)>((s) => (
+              s.locale,
+              s.paragraphMode,
+              s.fontSize,
+              s.fontFamily,
+              s.lineSpacing,
+              s.boldVerseText,
+            ));
+        final settings = context.read<AppSettings>();
         final mainProvider = context.read<MainProvider>();
         final locale = settings.locale;
         final isSelected = state.isSelected;
