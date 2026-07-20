@@ -701,6 +701,26 @@ Debugging why a verified-clean rebuild kept showing stale content: in a `.claude
 
 ---
 
+## What Has Been Fixed (2026-07-20 continued, v1.3.132 → v1.3.133)
+
+> Corrects the skwasm root-cause theory in the entry directly above.
+> The v1.3.132 canvaskit revert shipped believing it fixed the
+> "Failed to load" report; the user then reported it again
+> ("still failed to load loading page") on the SAME canvaskit build,
+> disproving that theory. This entry is what actually fixed it.
+
+### The real cause: a false-positive error screen, not a real failure
+`_MainAppState._bootstrap()` (main.dart) `await`s `FetchVerses.execute()`, which by design can legitimately take up to ~60 s on a slow connection (3 escalating-timeout attempts — 20 s / 40 s / 60 s). But a *separate* 4 s splash watchdog in the same class unconditionally flips `_loading = false` regardless of whether bootstrap has actually finished, so `LoadingPage` gets mounted with `mainProvider.verses` still empty on any load that takes longer than 4 s — a normal outcome on a cold CDN edge or a mediocre connection, not a failure. `LoadingPage.build()`'s `hasError` check treated `verses.isEmpty` alone as sufficient proof of failure, so it showed the alarming "Failed to load" scaffold immediately — then quietly "fixed itself" once the still-running fetch resolved in the background a few seconds later. This is exactly "always shows Failed to load, then works after waiting": nothing was ever actually broken, the UI simply couldn't distinguish "still loading" from "genuinely failed." It reproduces on **any** slow-enough connection regardless of flavor (intl or cn) or renderer — confirmed live via repeated cold-loads on both `yswords.netlify.app` and `yswords-cn.netlify.app`, which is why reverting skwasm in v1.3.132 didn't fix it.
+
+**Fix**: added `MainProvider.bootInFlight` — `true` for the entire span of `_bootstrap()`, `false` once it settles (success or failure). `LoadingPage` now gates `hasError` on `!(bootInFlight || _retrying)` instead of using empty verses as an unconditional failure signal, and — per the user's own suggestion ("loading飞快加载中之类的") — shows a new friendly "still loading" scaffold (logo + spinner + "Loading fast…" / "飞快加载中…") instead of the cloud-off error scaffold while a fetch is genuinely in flight.
+
+### Related latent bug, same code path
+The splash's daily-verse-of-the-day resolution (`_resolveDailyVerseForSplash`) only ever runs once, in `initState`, and silently gives up (`_lockRandom()` no-ops on an empty pool) if the verse list is still empty at that exact moment — precisely the slow-boot case above. That left `_splashVerse` permanently `null` even after a fully successful background load, which fell through to the *same* error scaffold via a second, independent code path (the `if (verse == null)` fallback). Fixed with an opportunistic re-lock in `build()`: retries `_lockRandom()` on every rebuild until it succeeds, once verses actually exist.
+
+Shipped to all 6 sites as v1.3.133 (commit `e912ecc`). `flutter analyze` clean, 371/371 tests passing.
+
+---
+
 ## What Has Been Fixed (2026-05-04, Round 56)
 
 ### Cloud-sync timeout + sermon title cleanup + dashboard customization + theme vibrance
