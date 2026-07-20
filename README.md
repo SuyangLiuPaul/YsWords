@@ -30,7 +30,7 @@
 ## Quick start
 
 ### For users — nothing to install
-Open <https://yswords.netlify.app> and start reading. Tap any verse to copy / highlight / bookmark / get an interlinear word study. The dashboard's quick-links grid puts Search, Library, Statistics, Daily News, Bible Evidence, Family Tree, Bible Trivia, Songs, **Feedback**, and Settings one tap away.
+Open <https://yswords.netlify.app> and start reading. Tap any verse to copy / highlight / bookmark / get an interlinear word study. The dashboard's quick-links grid puts Search, Library, Bible Tools, Bible Evidence, Sermons, Family Tree, Bible Timeline, Bible Trivia, **Feedback**, and Settings one tap away.
 
 ### For developers — clone, run, ship
 ```bash
@@ -86,9 +86,8 @@ any APIs themselves**; everything is at the Firebase project level.
 | Cross-refs   | Treasury of Scripture Knowledge (TSK) + OpenBible.info community votes — 29,319 source verses with their highest-voted to-references; surfaced via the cross-refs sheet on any selected verse |
 | Bible Tools  | Originals overview · Strong's lookup · Word distribution table · Daily verse rotation (curated) · Languages card (Hebrew / Aramaic / Greek deep-dives with tappable passage links) |
 | Bible Trivia | 68 curated entries on hidden patterns, acrostics, divine-name codes, numerical structures · Sorted by canonical Bible order · 4 schematic diagram types (Hebrew alphabet grid, chapter-counts bar chart, threefold sequence, numbered Hebrew words) for the most pattern-heavy entries |
-| Bible Evidence | Browsable archive of 225 archaeology / manuscript / science / history finds with bilingual descriptions and scripture cross-link · **YsWords AI evidence search** ("Ask YsWords" with daily-rotating example queries based on today's evidence; Enter key submits — results reference-only) · Chapter-aware filter from inside the reader |
-| Daily News   | Bilingual world / China / Australia headlines with full article body, YsWords-picked Bible verse, and reflection — refreshed hourly from the central data CDN |
-| Cloud Sync   | Optional Google sign-in syncs highlights + bookmarks + notes via Firebase Realtime Database (own-write echo guard + content-hash skip — no flicker, minimal traffic); offline-first with merge-then-overwrite reconciliation · **BYOK Gemini key real-time sync** across signed-in devices (paste on Device A → appears on Device B in seconds, no restart; clear on Device A → clears on Device B too) |
+| Bible Evidence | Browsable archive of 225 archaeology / manuscript / science / history finds with bilingual descriptions and scripture cross-link · **AI evidence search** (daily-rotating example queries based on today's evidence; Enter key submits — AI-generated, reference-only) · Chapter-aware filter from inside the reader |
+| Cloud Sync   | Optional Google sign-in (from Settings → Account) syncs highlights + bookmarks + notes via Firebase Realtime Database (own-write echo guard + content-hash skip — no flicker, minimal traffic); offline-first with merge-then-overwrite reconciliation · **BYOK Gemini key real-time sync** across signed-in devices (paste on Device A → appears on Device B in seconds, no restart; clear on Device A → clears on Device B too) |
 | Offline Pack | 5-category pre-fetch (Bibles 70 MB / Sermons 26 MB / Tools 10 MB / Originals 31 MB / Maps 29 MB) — full offline use after one-tap download |
 | Reload       | One-tap Reload from the floating-header overflow menu and the empty-reader scaffold so users never have to relaunch the app to recover from a load failure |
 | Copy & Share | Tap verses to multi-select; Copy in **Plain**, **With Reference**, or **Devotional** (default — flows as one continuous paragraph with the reference in parens at the end, 灵修 / 抄经 friendly) formats                            |
@@ -140,31 +139,29 @@ any APIs themselves**; everything is at the Firebase project level.
 <table align="center">
   <tr>
     <td align="center" valign="top" width="33%"><img height="340" src="assets/screenshots/screenshot_search.png" alt="Search"/><br/><sub><b>Search</b></sub></td>
-    <td align="center" valign="top" width="33%"><img height="340" src="assets/screenshots/screenshot_daily_news.png" alt="Daily News"/><br/><sub><b>Daily News</b></sub></td>
     <td align="center" valign="top" width="33%"><img height="340" src="assets/screenshots/screenshot_dashboard_quicklinks.png" alt="Quick-links"/><br/><sub><b>Quick-links</b></sub></td>
+    <td align="center" valign="top" width="33%"><img height="340" src="assets/screenshots/screenshot_bible_evidence.png" alt="Bible Evidence"/><br/><sub><b>Bible Evidence</b></sub></td>
   </tr>
   <tr>
-    <td align="center" valign="top" width="33%"><img height="340" src="assets/screenshots/screenshot_bible_evidence.png" alt="Bible Evidence"/><br/><sub><b>Bible Evidence</b></sub></td>
     <td align="center" valign="top" width="33%"><img height="340" src="assets/screenshots/screenshot_evidence_detail.png" alt="Evidence detail"/><br/><sub><b>Evidence detail</b></sub></td>
     <td align="center" valign="top" width="33%"><img height="340" src="assets/screenshots/screenshot_bible_tools.png" alt="Original languages"/><br/><sub><b>Original languages</b></sub></td>
+    <td align="center" valign="top" width="33%"><img height="340" src="assets/screenshots/screenshot_bible_timeline.png" alt="Bible Timeline"/><br/><sub><b>Bible Timeline</b></sub></td>
   </tr>
   <tr>
-    <td align="center" valign="top" width="33%"><img height="340" src="assets/screenshots/screenshot_bible_timeline.png" alt="Bible Timeline"/><br/><sub><b>Bible Timeline</b></sub></td>
     <td align="center" valign="top" width="33%"><img height="340" src="assets/screenshots/screenshot_family_tree.png" alt="Family Tree"/><br/><sub><b>Family Tree</b></sub></td>
     <td align="center" valign="top" width="33%"><img height="340" src="assets/screenshots/screenshot_bible_trivia.png" alt="Bible Trivia"/><br/><sub><b>Bible Trivia</b></sub></td>
   </tr>
 </table>
 
-<h3 align="center">Sermons, songs &amp; personalize</h3>
+<h3 align="center">Sermons &amp; personalize</h3>
 
 <table align="center">
   <tr>
     <td align="center" valign="top" width="33%"><img height="340" src="assets/screenshots/screenshot_sermons.png" alt="Sermons"/><br/><sub><b>Sermons</b></sub></td>
-    <td align="center" valign="top" width="33%"><img height="340" src="assets/screenshots/screenshot_songs.png" alt="Songs"/><br/><sub><b>Songs</b></sub></td>
     <td align="center" valign="top" width="33%"><img height="340" src="assets/screenshots/screenshot_settings_page.png" alt="Settings"/><br/><sub><b>Settings</b></sub></td>
+    <td align="center" valign="top" width="33%"><img height="340" src="assets/screenshots/screenshot_settings_theme.png" alt="Theme &amp; colour"/><br/><sub><b>Theme &amp; colour</b></sub></td>
   </tr>
   <tr>
-    <td align="center" valign="top" width="33%"><img height="340" src="assets/screenshots/screenshot_settings_theme.png" alt="Theme &amp; colour"/><br/><sub><b>Theme &amp; colour</b></sub></td>
     <td align="center" valign="top" width="33%"><img height="340" src="assets/screenshots/screenshot_dark_mode.png" alt="Dark mode"/><br/><sub><b>Dark mode</b></sub></td>
     <td align="center" valign="top" width="33%"><img height="340" src="assets/screenshots/screenshot_dark_dashboard.png" alt="Dark dashboard"/><br/><sub><b>Dark dashboard</b></sub></td>
   </tr>
@@ -498,8 +495,6 @@ asset files** are licensed separately as listed below.
   loaded at runtime via Google Fonts under the SIL OFL.
 - Sermons (`assets/sermons/`) — © Liang Jia-keng (LJK), used with
   permission.
-- Songs metadata (`assets/songs.json`) — link-out only; no audio /
-  PDF / lyrics are embedded.
 
 ---
 

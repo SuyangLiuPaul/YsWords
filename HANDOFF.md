@@ -666,6 +666,41 @@ The app adapts its layout to all device sizes using `lib/utils/responsive.dart`:
 
 ---
 
+## What Has Been Fixed (2026-07-20, v1.3.125 → v1.3.131)
+
+> Note: this entry picks up directly after the last dated log below
+> (2026-05-05). Everything shipped on `main` in between is real and
+> live but not narrated here — see `git log` / `app_version.dart`.
+> The NASB deity-pronoun capitalization project (`wip(nasb): ...`
+> commits) was in progress before and during this session and is
+> intentionally **not** covered here; it's a separate, ongoing,
+> unfinished body of work.
+
+### Daily News + Songs features removed entirely
+Both dashboard features were fully deleted per user request (Songs' link-out URLs were reported broken; News had no clear ongoing owner): dedicated pages, services, models, settings toggles, dashboard tiles/cards, all `ui_strings` keys, `assets/daily_news.json` + `assets/songs.json`, the `.github/workflows/sync-songs.yml` cron + `scripts/sync_songs.py` scraper. `README.md`'s feature table, quick-links list, and screenshot gallery were updated to match — they still referenced both features.
+
+### First-launch sign-in gate + Home's profile card removed
+`WelcomePage` (the first-run "sign in / continue as guest" screen) no longer shows — the app lands directly on the Dashboard as the Guest profile (`ProfileService` already defaulted there; the gate wasn't load-bearing). The Home dashboard's top greeting card (avatar, "Good morning, Guest", inline Sign-in-with-Google button, sync status) was also removed — Settings → Account already has the full profile switcher + Google sign-in, so it was pure duplication.
+
+### AI-generated content re-labeled as "AI", not "YsWords"
+`aiExplainHeader` literally rendered **"YsWords explanation"** as the title of the AI word/verse explanation sheet — found while auditing for this. Fixed that plus four sibling strings (`aiExplainButton`, `aiExplainAsking`, `aiExplainDisclaimer`, `aiBibleSearchNoMatches`) that named "YsWords" as the actor without ever saying "AI" in at least one locale, despite English siblings elsewhere already using the "AI" / "YsWords AI" pattern. Rule going forward: AI-generated content must always read as obviously AI-generated and reference-only, never as if the app itself is asserting it.
+
+### Reader progress pill: now visible during verse selection
+The right-edge chapter-progress pill (`_VerticalProgressIndicator`) was hidden whenever verses were selected — it shared its `isSelected` guard with the bottom-bar swap (chrome bar → selection action bar) even though the two don't spatially conflict. Removed the guard; added extra bottom clearance for the selected state since `_SelectionActionBar` wraps to two rows on narrow phones.
+
+### Scroll/UI smoothness pass
+User reported the web app felt laggy vs. native pages (e.g. BBC) when scrolling. Root-caused and fixed several real contributors, on top of an architectural ceiling that no in-app tuning removes (CanvasKit/skwasm redraw the whole UI into a `<canvas>` every frame — there's no free native-compositor scroll the way a plain HTML page gets):
+- **Mini-header blur cost**: `_MiniReaderHeader`'s live `BackdropFilter` (shown once the auto-hide chrome dismisses, i.e. most of any real reading session) ran `ImageFilter.blur(sigmaX: 18, sigmaY: 18)` every scroll frame on web/iOS/macOS. Cut to sigma 8 (Skia blur cost scales ~sigma²) — still reads as frosted glass, ~3-4x cheaper. Note: the three `_GlassSurface` chrome bars all pass `opaque: true`, so their own `BackdropFilter` branch was already dead code — not touched.
+- **Unscoped `AppSettings` watches on hot-list item widgets**: `ParagraphGroupWidget` and `VerseWidget` (20-50+ live instances per open chapter) used `context.watch<AppSettings>()`, so *any* unrelated settings change (theme, primary color, dashboard layout, AI model — dozens of fields) rebuilt every visible verse/paragraph. Scoped to `context.select` tuples of only the fields actually read, mirroring the pattern already used for `LiquidGlassButton`/`_GreetingCard`/`_CountTile`. Same fix applied to four more genuinely-long-list item widgets found via a full-app audit: `_EvidenceCard` (evidence_page.dart, 225 entries), `_LocalMatchTile` (evidence_page.dart, AI search results), `_AnnotationTile` (library_page.dart, notes/bookmarks/highlights — unbounded for a heavy user), `_RecentSearchRow` (search_page.dart — rendered via a plain non-virtualized `ListView`, so *every* row is always mounted). Deliberately did **not** touch the ~40 other `context.watch<AppSettings>()` call sites across the app — those are one-per-page, not one-per-list-item, so the blast radius is O(1) not O(list length); much lower value for much more surface area.
+- **Renderer: canvaskit → skwasm**. Flutter Web's default (CanvasKit) compiles Dart to JavaScript, which the browser then JITs. `skwasm` compiles Dart straight to WebAssembly and can run Skia multi-threaded via `crossOriginIsolated` Web Workers — less translation overhead, work movable off the main thread. Was blocked by `flutter_timezone` 4.x (an invalid js-interop cast in its web shim failed the wasm dry-run compile, even though the plugin early-returns on `kIsWeb` and never actually runs there); upgraded to 5.1.0 and fixed the one API break (`FlutterTimezone.getLocalTimezone()` now returns a `TimezoneInfo` record — the IANA name moved to `.identifier`). `flutter build web --wasm` auto-generates a canvaskit fallback for browsers that don't support the threading requirements, so this shouldn't regress anyone. Verified live via the Claude-in-Chrome extension on `yswords.netlify.app` post-deploy (no console errors, reader renders and scrolls correctly) before treating it as safe.
+
+### Environment quirk discovered + documented
+Debugging why a verified-clean rebuild kept showing stale content: in a `.claude/worktrees/*` session, the Browser-pane's static preview server roots itself at `<worktree>/build/web`, silently ignoring the absolute path actually written in `.claude/launch.json`. Cost real time until traced via `lsof -nP -iTCP:<port> -sTCP:LISTEN` → `ps aux | grep <pid>`. Documented in the agent memory system (`machine_env_quirks.md`) so it isn't re-diagnosed from scratch next time.
+
+**All of the above shipped to all 6 sites** (yswords, yswords-cn, yswords-dev, yswords-cn-dev, yswords-qat, yswords-cn-qat), `flutter analyze` clean and 371/371 tests passing at every step.
+
+---
+
 ## What Has Been Fixed (2026-05-04, Round 56)
 
 ### Cloud-sync timeout + sermon title cleanup + dashboard customization + theme vibrance
@@ -4131,7 +4166,22 @@ Paragraph mode was shipped but felt loose compared to WeDevote 微读圣经. Ret
 
 ## Known Issues & Remaining Work
 
-### Native installers (Android APK / Mac / Windows / iOS) — deferred
+> **2026-07-20 correction:** most of the "What Has Been Fixed" log
+> below stops at 2026-05-05 (Round 56), but the project kept moving —
+> `pubspec.yaml` is at v1.3.131 as of this note, and `lib/constants/
+> app_version.dart` has a much more complete (if less narratively
+> organized) changelog covering everything since. Three specific
+> claims in this section are now **false** and are corrected inline:
+> native installers shipped (see the "Native installers" section
+> right below — GitHub Releases now include Android/iOS/macOS/
+> Windows/Linux builds via `.github/workflows/release-*.yml`), a
+> `test/` directory now exists (371 tests across 35 files), and
+> `flutter-ci.yml` now runs `flutter analyze` + `flutter test` on
+> every push. The rest of this section wasn't re-verified line by
+> line — treat older entries as historical, not current fact, and
+> check `git log` / `app_version.dart` before relying on them.
+
+### Native installers (Android APK / Mac / Windows / iOS) — SHIPPED, was deferred
 
 User asked in v1.2.7 for native packages downloadable from the GitHub
 release page. Tried to set up a GitHub Actions workflow that builds
@@ -4178,11 +4228,11 @@ If the dev wants to revive the native APK build effort:
    `git log --diff-filter=D` (it was committed once at
    `57ddf555` then reverted).
 
-### No Tests
-There is no `test/` directory. The README references tests but none exist. Adding unit tests for models, services, and providers would significantly improve robustness.
+### Tests — RESOLVED, was "No Tests"
+`test/` now exists: 35 files, 371 tests (widget tests, responsive-overflow smoke tests across every top-level page at 4 breakpoints, unit tests for parsers/formatters/services). Run with `flutter test`.
 
-### No CI/CD
-The README references `.github/workflows/build.yml` but this file does not exist. A CI workflow that runs `flutter analyze` + `flutter test` on push would catch regressions.
+### CI/CD — RESOLVED, was "No CI/CD"
+`.github/workflows/flutter-ci.yml` runs `flutter analyze` + `flutter test` on push. Native release workflows (`release-android.yml`, `release-ios.yml`, `release-macos.yml`, `release-windows.yml`, `release-linux.yml`) build and publish to GitHub Releases.
 
 ### Large Asset Files
 The 13 Bible JSON files total ~50 MB. The original-language data (round 19) added another ~20 MB (`assets/originals/` ~17 MB across 66 per-book files + `assets/strongs/` ~3 MB). Bibles are loaded entirely into memory via `rootBundle.loadString()`; originals are lazy-loaded per book and Strong's lexicons are lazy-loaded per language. For mobile platforms this works but could be optimized with chapter-level slicing for the Bibles. Eager pre-load (v1.2.18 / v1.2.25) caches all 12 non-active versions during the splash so subsequent version + chapter switches are instant — boot is ~25 s on cold cache in exchange for instant intra-session navigation.
