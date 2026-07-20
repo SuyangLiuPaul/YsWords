@@ -732,6 +732,21 @@ Shipped to all 6 sites as v1.3.134 (commit `0c6c559`). `flutter analyze` clean, 
 
 ---
 
+## What Has Been Fixed (2026-07-20 continued, v1.3.135)
+
+### "Still lagging" investigation — one false alarm, one real re-attempt
+User reported the web app still felt laggy on desktop (scroll, chapter-swipe, tap, general feel) even after the earlier blur-cost + `AppSettings` watch-scoping fixes. Live-profiled a real scroll pass through Psalm 119 (176 verses) on prod: mean 16.7 ms, p95 18.6 ms, **zero frames over 33 ms** — looked clean. Then found what looked like a smoking gun: the app kept ticking `requestAnimationFrame` at a steady 60 fps even fully idle (fresh page, zero interaction) — a classic sign of a rogue animation loop burning CPU in the background.
+
+**That lead was a false alarm.** A control test on `example.com` (plain static HTML, no JS) showed the *identical* continuous 60 fps tick. The Chrome-automation tooling itself has a 60 fps baseline overhead that dominates any signal at this resolution — meaning this profiling method genuinely cannot distinguish real app jank from tooling noise in this environment, for either the idle-loop check or the original "clean" scroll numbers. Recorded this limitation so a future session doesn't waste time down the same path without first re-validating against a static-page control.
+
+**What's real:** the app is on canvaskit (skwasm was reverted in v1.3.132). CanvasKit repaints the entire UI into one `<canvas>` on every change rather than letting the browser's native compositor handle it incrementally — a genuine architectural cost, independent of anything measurable by this tooling. Also worth noting: the original reason skwasm got reverted (a "Failed to load" boot bug) has since been root-caused as **unrelated to the renderer** (see the v1.3.133 entry above — it was a pure `LoadingPage` timing race, fixed via `MainProvider.bootInFlight`). So that specific blocker no longer applies to skwasm.
+
+**Action taken:** re-enabled skwasm (`tools/build_web.py --wasm` — newly added, documented, repeatable; the original v1.3.131 ship was done as an ad hoc command outside the wrapper script). Verified: 4+ cold loads with zero false "Failed to load" flashes, console clean, `window.crossOriginIsolated` still `false` (same COOP constraint as before — skwasm still runs single-threaded), and a scroll frame-profile statistically identical to the canvaskit baseline (mean 16.7 ms, p95 18.6 ms, zero frames >33 ms) — expected, since single-threaded skwasm isn't expected to meaningfully outperform canvaskit. **This is not a confirmed smoothness fix** — it's a safe, low-risk lever pull now that the thing that previously made it risky (the boot bug) turned out to be a different bug entirely. The actual multi-threaded win still requires moving Google Sign-In off the popup flow so COOP can go strict and COEP can be added — not attempted, tracked as the real next step if skwasm-as-is doesn't move the needle.
+
+Deployed to dev + qat as v1.3.135 (commit `9daf5ea`). `flutter analyze` clean, 371/371 tests passing. **Prod pending explicit approval** given the prior incident on this exact renderer switch.
+
+---
+
 ## What Has Been Fixed (2026-05-04, Round 56)
 
 ### Cloud-sync timeout + sermon title cleanup + dashboard customization + theme vibrance
