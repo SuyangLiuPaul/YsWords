@@ -65,7 +65,12 @@ dependencies:
   # tz.local resolves correctly — without this tz.local defaults to UTC
   # and a notification scheduled at "09:00 local" fires at 09:00 UTC.
   timezone: ^0.10.0
-  flutter_timezone: ^4.0.0
+  # 2026-07-20: ^4.0.0 → ^5.1.0. v4.1.1's flutter_timezone_web.dart had
+  # an invalid js-interop runtime cast that failed the wasm dry-run and
+  # blocked `flutter build web --wasm` (skwasm renderer). The plugin
+  # never actually runs on web (notification_scheduler.dart early-
+  # returns on kIsWeb) — it only needed to *compile* cleanly to wasm.
+  flutter_timezone: ^5.1.0
   # 2026-05-24 (v1.2.97): web favicon swap. AppIconServiceWeb uses
   # the modern package:web DOM bindings (not dart:html) to mutate
   # <link rel="icon"> when the user changes primaryColor. Already

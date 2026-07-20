@@ -46,9 +46,11 @@ Future<void> initNotificationScheduler() async {
   if (!_tzReady) {
     tz_data.initializeTimeZones();
     try {
-      final tzName = await FlutterTimezone.getLocalTimezone();
-      tz.setLocalLocation(tz.getLocation(tzName));
-      debugPrint('[scheduler] tz set to $tzName');
+      // flutter_timezone 5.x returns a TimezoneInfo record; the IANA
+      // name ("Australia/Melbourne") now lives on `.identifier`.
+      final tzInfo = await FlutterTimezone.getLocalTimezone();
+      tz.setLocalLocation(tz.getLocation(tzInfo.identifier));
+      debugPrint('[scheduler] tz set to ${tzInfo.identifier}');
     } catch (e) {
       // Fall back to UTC on platforms where flutter_timezone fails
       // (mostly unsupported desktop builds). Daily fires still work,
