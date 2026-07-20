@@ -27,9 +27,21 @@ Usage:
     python3 tools/build_web.py             # both flavours
     python3 tools/build_web.py --intl-only # just the international build
     python3 tools/build_web.py --cn-only   # just the China build
+    python3 tools/build_web.py --wasm      # skwasm renderer instead of canvaskit
 
 Then run:
     python3 tools/deploy_site.py --tier dev    # / qat / prod
+
+2026-07-21: `--wasm` builds with Flutter's skwasm (WebAssembly)
+renderer instead of the default canvaskit. Re-added after v1.3.132
+reverted it — that revert was for a "Failed to load" boot bug that
+turned out to be UNRELATED to the renderer (see LoadingPage /
+MainProvider.bootInFlight, fixed independently in v1.3.133), so it's
+safe to re-try. Still runs single-threaded on every deployed site
+(window.crossOriginIsolated is false — netlify.toml's COOP header is
+same-origin-allow-popups for Firebase signInWithPopup, and there's no
+COEP header), so don't expect a dramatic win; full multi-threaded
+skwasm needs Google Sign-In moved off the popup flow first.
 """
 from __future__ import annotations
 
@@ -70,7 +82,7 @@ def current_release_time() -> str:
     return time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())
 
 
-def run_build(version: str, release_time: str, *, china_mode: bool):
+def run_build(version: str, release_time: str, *, china_mode: bool, wasm: bool):
     cmd = [
         FLUTTER, 'build', 'web', '--release',
         f'--dart-define=APP_VERSION={version}',
@@ -78,8 +90,11 @@ def run_build(version: str, release_time: str, *, china_mode: bool):
     ]
     if china_mode:
         cmd.append('--dart-define=CHINA_MODE=true')
+    if wasm:
+        cmd.append('--wasm')
     label = 'cn' if china_mode else 'intl'
-    print(f'==> Building {label}: APP_VERSION={version}, '
+    renderer = 'skwasm' if wasm else 'canvaskit'
+    print(f'==> Building {label} ({renderer}): APP_VERSION={version}, '
           f'APP_RELEASE_TIME={release_time}')
     res = subprocess.run(cmd, cwd=REPO_ROOT)
     if res.returncode != 0:
@@ -96,20 +111,22 @@ def main() -> int:
                     help='Build only the international flavour')
     ap.add_argument('--cn-only', action='store_true',
                     help='Build only the China flavour')
+    ap.add_argument('--wasm', action='store_true',
+                    help='Use the skwasm renderer instead of canvaskit')
     args = ap.parse_args()
 
     version = read_pubspec_version()
     release_time = current_release_time()
 
     if args.intl_only:
-        run_build(version, release_time, china_mode=False)
+        run_build(version, release_time, china_mode=False, wasm=args.wasm)
         print(f'\nDone. Next: python3 tools/deploy_site.py --tier <dev|qat|prod>')
         return 0
 
     if args.cn_only:
         # Build cn into build/web, then move to build-cn so deploy_site.py
         # finds it at the expected path.
-        run_build(version, release_time, china_mode=True)
+        run_build(version, release_time, china_mode=True, wasm=args.wasm)
         cn_path = os.path.join(REPO_ROOT, 'build-cn')
         web_path = os.path.join(REPO_ROOT, 'build', 'web')
         if os.path.isdir(cn_path):
@@ -119,14 +136,14 @@ def main() -> int:
         return 0
 
     # Default: both flavours. Build intl first, stash, then cn.
-    run_build(version, release_time, china_mode=False)
+    run_build(version, release_time, china_mode=False, wasm=args.wasm)
     web_path = os.path.join(REPO_ROOT, 'build', 'web')
     intl_path = os.path.join(REPO_ROOT, 'build', 'web-intl-stash')
     if os.path.isdir(intl_path):
         shutil.rmtree(intl_path)
     shutil.move(web_path, intl_path)
 
-    run_build(version, release_time, china_mode=True)
+    run_build(version, release_time, china_mode=True, wasm=args.wasm)
     cn_path = os.path.join(REPO_ROOT, 'build-cn')
     if os.path.isdir(cn_path):
         shutil.rmtree(cn_path)
