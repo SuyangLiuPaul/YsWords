@@ -747,6 +747,30 @@ Deployed to dev + qat as v1.3.135 (commit `9daf5ea`). `flutter analyze` clean, 3
 
 ---
 
+## What Has Been Fixed (2026-07-21, v1.3.136) — REAL perf finding, measured
+
+### The measurement that finally worked
+Previous profiling attempts used an injected `requestAnimationFrame` loop — invalidated because the loop itself keeps the compositor ticking (a static page shows the same 60 fps signature). This round used the **passive** `PerformanceObserver` APIs instead (`longtask` + Event Timing `event` entries) — they record main-thread stalls and input→paint latency without scheduling anything themselves. **Use this method for all future web-perf checks; re-validate any rAF-based numbers against a static-page control first.**
+
+### What the clean instrument showed (v1.3.135 baseline, Psalm 119, 2880×1058 physical canvas, skwasm)
+- **Scrolling: clean.** One 54 ms task across a whole heavy-scroll run; zero others >50 ms. The scroll pipeline (ValueNotifier-driven pill, notification-based chrome hide) is genuinely well-factored.
+- **Verse taps: ~90–100 ms main-thread processing before paint** (`pointerdown` 96 ms, `click` 88 ms), and the next tap inherited a 38 ms input delay. This matches the user's "tapping / opening things feels slow" report — and it compounds on larger windows / older hardware.
+
+### Root cause found by code audit
+`BibleReadingPane.build` is one giant `Consumer2<MainProvider, AppSettings>` (≈1,200 lines), and its first act on **every** `notifyListeners` — every tap, highlight, note save, bookmark, boot-preload notify — was `mainProvider.verses.where(book==∧chapter==).toList()..sort(…)`: a **full scan + sort of the ~31,000-verse corpus per rebuild**. The provider has had an O(1) pre-sorted `versesInChapter` index since v1.2.99 (built for the PageView preview path, correctly invalidated on version switches); the outer pane just never migrated. A stale v1.3.3 comment ("no longer consumed at this level") disguised it — the variable is used in 6+ places below.
+
+### Fix + measured result
+Swapped to `versesInChapter` (null-guarded, downstream uses verified read-only). Re-measured on the deployed build with the identical instrument: `pointerdown` **96 → 24-40 ms**; follow-up tap **64 ms/38 ms-delay → 24-56 ms/27 ms-delay**. Remaining ~88 ms on the select-tap's paint completion is the whole-pane Consumer2 rebuild + selection-bar swap.
+
+### Identified next steps (not attempted, in impact order)
+1. **Scope the pane's `Consumer2`** so a selection change doesn't rebuild headers/pills/bottom-bar — the remaining ~88 ms lives here. Large, careful refactor of the 1,200-line builder; isolate `_SelectionActionBar` behind its own listenable first.
+2. **Redirect-based Google Sign-In → strict COOP + COEP → multi-threaded skwasm** — the architectural unlock for rendering cost itself.
+3. Minor: `buildVerseContentSpans` creates `TapGestureRecognizer`s in build without disposal (leak-pattern with RichText; memory, not speed). Also runs 4+ regex passes per verse per rebuild — cacheable if per-item build cost ever shows up in traces.
+
+Deployed dev + qat as v1.3.136 (commit `73c07b1`). `flutter analyze` clean, 371/371 tests. Prod pending explicit approval.
+
+---
+
 ## What Has Been Fixed (2026-05-04, Round 56)
 
 ### Cloud-sync timeout + sermon title cleanup + dashboard customization + theme vibrance
