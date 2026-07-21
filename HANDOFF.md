@@ -734,6 +734,12 @@ Shipped to all 6 sites as v1.3.134 (commit `0c6c559`). `flutter analyze` clean, 
 
 ## What Has Been Fixed (2026-07-20 continued, v1.3.135)
 
+> **⚠️ 2026-07-21 REVERTED — do not re-ship this.** The "safe, low-risk"
+> skwasm re-enable below was **wrong** and caused an active production
+> outage. See the v1.3.139 entry (newest in this 2026-07 block, just
+> below the v1.3.137/138 China entry) for the hard crash evidence and
+> the standing rule. Kept here for the paper trail.
+
 ### "Still lagging" investigation — one false alarm, one real re-attempt
 User reported the web app still felt laggy on desktop (scroll, chapter-swipe, tap, general feel) even after the earlier blur-cost + `AppSettings` watch-scoping fixes. Live-profiled a real scroll pass through Psalm 119 (176 verses) on prod: mean 16.7 ms, p95 18.6 ms, **zero frames over 33 ms** — looked clean. Then found what looked like a smoking gun: the app kept ticking `requestAnimationFrame` at a steady 60 fps even fully idle (fresh page, zero interaction) — a classic sign of a rogue animation loop burning CPU in the background.
 
@@ -790,6 +796,25 @@ Could not directly reproduce China-network conditions from this session — this
 flutter analyze: clean. flutter test: 371/371 passing.
 
 **v1.3.138 update**: user asked to simplify the patience footer to a single "clear cache & reload" button, dropping the explanatory message — the button's label plus its appearance after the threshold is signal enough on its own. Removed the now-unused `bootLoadingMessageSlow` string. Deployed to **all 6 sites including prod** as v1.3.138 (commit `18a5d39`) per explicit approval.
+
+---
+
+## What Has Been Fixed (2026-07-21, v1.3.139) — skwasm REVERTED with hard evidence
+
+### The crash report that settled it
+User reported the app *still* frozen on the loading page and forwarded the ErrorReporter capture: **`FetchVerses` — `TimeoutException after 0:01:00.000000: Future not completed`**, v1.3.138, web, zh-Hans, **iOS**, client IP `130.194.237.254` (**Monash / Australia — a fast connection, not China**). All three escalating `FetchVerses` attempts (20 s / 40 s / 60 s) exhausted; the user was stuck. Crucially, the **stack trace was entirely in `main.dart.js`** — so this iOS WebKit device took the **JS fallback** path of the dual `--wasm` build, and *that fallback couldn't load + parse the large simplified-Chinese full-canon bundle (`cuvs-yhwh`) within 60 s* — whereas the plain canvaskit builds (≤ v1.3.134) loaded it fine for this same user.
+
+### What this proves (and where I was wrong)
+This is the **second** time skwasm broke boot-loading (first: v1.3.132), now backed by a concrete in-the-wild crash instead of a hypothesis. My v1.3.135 call to "re-enable skwasm as a safe, low-risk step" was **wrong on two counts**: (1) single-threaded skwasm was never going to help (`crossOriginIsolated` is `false`), so there was no upside to weigh against the risk; and (2) the dual-build's JS-fallback path is *actively worse* than a pure canvaskit build on iOS WebKit. The earlier "verified fine" checks all ran on **desktop Chrome**, which never exercised the iOS fallback path — the exact gap that let this reach prod.
+
+### Fix
+Reverted to a **pure canvaskit build** (`tools/build_web.py` with no `--wasm`) — the known-good config that shipped through v1.3.134. No Dart code changed (renderer is purely a build-flag choice); build config + version bump only. Verified on live prod via `curl`: `flutter_bootstrap.js` reports `renderer:canvaskit` at v1.3.139 and references only `main.dart.js` (never `main.dart.wasm`); the old `main.dart.wasm` path now returns the SPA HTML fallback (`content-type: text/html`), i.e. the wasm module is gone. Deployed to **all 6 sites incl. prod** (active regression, user locked out).
+
+### STANDING RULE — do not re-ship `--wasm` / skwasm until BOTH are real
+1. Google Sign-In moved off popup auth → COOP can go strict + COEP added → `window.crossOriginIsolated === true` → *multi-threaded* skwasm (the only configuration where it could actually win). **AND**
+2. Verified on a **real iOS WebKit device** (not just desktop Chrome), specifically a cold load on a large Chinese bundle.
+
+Until both hold, **canvaskit is the only supported web renderer.** The v1.3.137 Firebase-init 8 s timeout and the v1.3.138 loading-page patience button both stay — they're unrelated to the renderer and still wanted.
 
 ---
 
