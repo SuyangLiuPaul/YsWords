@@ -67,6 +67,30 @@ class _LoadingPageState extends State<LoadingPage> {
   bool _showPatienceHatch = false;
   static const Duration _kPatienceThreshold = Duration(seconds: 15);
 
+  /// 2026-07-21 (v1.3.140): auto-escalation to the SAME recovery the
+  /// manual "Reload page (clear cache)" button performs. Confirmed
+  /// via a live field report: a user's boot genuinely hung (`FetchVerses`
+  /// exhausted all 3 internal attempts — 20/40/60 s), the renderer
+  /// was NOT the cause (iOS Safari/WebKit never runs skwasm — no
+  /// WasmGC support — so it was already on the canvaskit/JS path both
+  /// before and after the v1.3.139 renderer revert), but manually
+  /// tapping the reload-cache button fixed it instantly. That's the
+  /// signature of a stale/corrupt Service Worker cache surviving
+  /// across a deploy — plausible here given this session shipped 5
+  /// rapid back-to-back deploys (v1.3.135→139) in quick succession,
+  /// exactly the kind of churn that can leave a client's SW pointing
+  /// at content that's since been overwritten. `_retry()`'s
+  /// `rootBundle.evict()` only clears Flutter's in-memory Dart cache —
+  /// it can't force the Service Worker itself to stop serving a stale
+  /// cached response. Rather than rely on the user noticing and
+  /// tapping the button themselves, auto-escalate to the same hard
+  /// reload after a grace period past when the button appears. Safe
+  /// to do silently here specifically because LoadingPage is the
+  /// SPLASH — there is no in-progress user data (no note being typed,
+  /// no scroll position) that a reload could lose.
+  Timer? _autoHardReload;
+  static const Duration _kAutoHardReloadThreshold = Duration(seconds: 25);
+
   /// Splash verse — locked ONCE per mount. The user sees the same
   /// verse on the splash AS the dashboard's "Verse of the Day", which
   /// reinforces the day's theme.
@@ -102,6 +126,22 @@ class _LoadingPageState extends State<LoadingPage> {
       if (!mounted) return;
       setState(() => _showPatienceHatch = true);
     });
+    // 10 s grace period after the manual button appears (15 s) before
+    // performing the same recovery automatically. Re-checks the actual
+    // state when it fires rather than assuming — if boot succeeded in
+    // the meantime (including the 3 s pre-advance grace window
+    // `_scheduleAdvanceIfReady` uses), this is a silent no-op.
+    if (kIsWeb) {
+      _autoHardReload = Timer(_kAutoHardReloadThreshold, () {
+        if (!mounted) return;
+        final mp = context.read<MainProvider>();
+        final stillStuck = mp.bootInFlight ||
+            _retrying ||
+            mp.loadError != null ||
+            mp.verses.isEmpty;
+        if (stillStuck) _hardReload();
+      });
+    }
   }
 
   /// Try the curated daily-verse first; if it doesn't resolve in time,
@@ -353,6 +393,7 @@ class _LoadingPageState extends State<LoadingPage> {
     _autoRetry?.cancel();
     _dailyVerseFallback?.cancel();
     _patienceTimer?.cancel();
+    _autoHardReload?.cancel();
     super.dispose();
   }
 
