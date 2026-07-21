@@ -787,7 +787,9 @@ This also exposed a real gap in the v1.3.133 `bootInFlight` fix: it has no ceili
 
 Could not directly reproduce China-network conditions from this session — this is based on careful code-path review (confirmed the exact awaited network calls and the missing timeout) plus the mechanism matching the user's report exactly, not a live repro. Verified the new strings/logic shipped in the compiled JS bundle.
 
-flutter analyze: clean. flutter test: 371/371 passing. Deployed to dev + qat as v1.3.137 (commit `577a755`). Prod pending explicit approval — this touches the same boot path as the last two incidents (v1.3.132, v1.3.133), so extra caution before shipping wide.
+flutter analyze: clean. flutter test: 371/371 passing.
+
+**v1.3.138 update**: user asked to simplify the patience footer to a single "clear cache & reload" button, dropping the explanatory message — the button's label plus its appearance after the threshold is signal enough on its own. Removed the now-unused `bootLoadingMessageSlow` string. Deployed to **all 6 sites including prod** as v1.3.138 (commit `18a5d39`) per explicit approval.
 
 ---
 
