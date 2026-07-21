@@ -750,59 +750,36 @@ class _LoadingPageState extends State<LoadingPage> {
     );
   }
 
-  /// 2026-07-21: shared "still waiting, here's proof + an out" footer
-  /// for both the booting scaffold and the normal (verse-resolved)
-  /// splash — the latter is the one a genuinely slow boot (e.g. a
-  /// blocked/degraded path to a Google auth server on a network like
-  /// mainland China's) actually gets stuck showing, since the daily-
-  /// verse resolve can succeed well before FetchVerses does. Renders
-  /// nothing until `_showPatienceHatch` flips (15 s in), then shows
-  /// an acknowledging message plus a manual reload escape hatch so
-  /// the user always has SOMETHING to do rather than a static screen
-  /// with no signal of whether it's working or frozen.
+  /// 2026-07-21: shared "still waiting, here's an out" footer for both
+  /// the booting scaffold and the normal (verse-resolved) splash — the
+  /// latter is the one a genuinely slow boot (e.g. a blocked/degraded
+  /// path to a Google auth server on a network like mainland China's)
+  /// actually gets stuck showing, since the daily-verse resolve can
+  /// succeed well before FetchVerses does. Renders nothing until
+  /// `_showPatienceHatch` flips (15 s in), then reveals a single
+  /// "clear cache & reload" button — just one control, no extra
+  /// copy — so the user always has SOMETHING to do rather than a
+  /// static screen with no signal of whether it's working or frozen.
   Widget _buildPatienceFooter(BuildContext context, AppSettings settings) {
-    if (!_showPatienceHatch) return const SizedBox.shrink();
+    if (!_showPatienceHatch || !kIsWeb) return const SizedBox.shrink();
     final dc = ResponsiveBreakpoints.classOf(
         MediaQuery.of(context).size.width);
     final s = ResponsiveBreakpoints.spacingScale(dc);
-    return Column(
-      children: [
-        SizedBox(height: 14 * s),
-        Padding(
-          padding: EdgeInsets.symmetric(horizontal: 32.0 * s),
-          child: Text(
-            uiStrings['bootLoadingMessageSlow']?[settings.locale] ??
-                'Still loading — this can take longer on a slow connection.',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: settings.fontSize * 0.85,
-              fontFamily: settings.fontFamily,
-              fontFamilyFallback: kCjkFontFallback,
-              color: Theme.of(context)
-                  .textTheme
-                  .titleSmall
-                  ?.color
-                  ?.withValues(alpha: 0.65),
-            ),
+    return Padding(
+      padding: EdgeInsets.only(top: 20 * s),
+      child: TextButton.icon(
+        onPressed: _hardReload,
+        icon: const Icon(Icons.refresh_rounded, size: 16),
+        label: Text(
+          uiStrings['hardReloadPage']?[settings.locale] ??
+              'Reload page (clear cache)',
+          style: TextStyle(
+            fontSize: (settings.fontSize - 2).clamp(11.0, 14.0),
+            fontFamily: settings.fontFamily,
+            fontFamilyFallback: kCjkFontFallback,
           ),
         ),
-        if (kIsWeb) ...[
-          SizedBox(height: 6 * s),
-          TextButton.icon(
-            onPressed: _hardReload,
-            icon: const Icon(Icons.refresh_rounded, size: 16),
-            label: Text(
-              uiStrings['hardReloadPage']?[settings.locale] ??
-                  'Reload page (clear cache)',
-              style: TextStyle(
-                fontSize: (settings.fontSize - 2).clamp(11.0, 14.0),
-                fontFamily: settings.fontFamily,
-                fontFamilyFallback: kCjkFontFallback,
-              ),
-            ),
-          ),
-        ],
-      ],
+      ),
     );
   }
 

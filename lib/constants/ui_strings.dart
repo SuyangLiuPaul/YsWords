@@ -5134,15 +5134,6 @@ const uiStrings = {
     'zh-Hant': '飛快載入中…',
     'en': 'Loading fast…',
   },
-  // 2026-07-21: shown once the boot wait crosses a generous patience
-  // threshold (15 s) — acknowledges the wait instead of implying it
-  // should be instant, so a genuinely slow (not broken) connection
-  // doesn't look like a frozen app. Paired with a "Reload page" link.
-  'bootLoadingMessageSlow': {
-    'zh-Hans': '仍在加载中——网络较慢时可能需要更久。',
-    'zh-Hant': '仍在載入中——網絡較慢時可能需要更久。',
-    'en': 'Still loading — this can take longer on a slow connection.',
-  },
   'retryingAttempt': {
     'zh-Hans': '重试中…（第 {n}/{max} 次）',
     'zh-Hant': '重試中…（第 {n}/{max} 次）',
