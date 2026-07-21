@@ -818,6 +818,24 @@ Until both hold, **canvaskit is the only supported web renderer.** The v1.3.137 
 
 ---
 
+## What Has Been Fixed (2026-07-21, v1.3.140) — v1.3.139's diagnosis was WRONG; real fix + standing lesson
+
+### The correction
+User reported a **fresh** load on v1.3.139 still hung. Before re-guessing, verified via research: **Chrome on iOS is required by Apple to run on WebKit's engine (not V8), and WebKit does not support WasmGC.** Flutter's `--wasm` build ships *both* `main.dart.wasm` (skwasm) and `main.dart.js` (canvaskit) and the browser picks whichever it supports at load time — so the iPhone in the original crash report was **never running skwasm at all**, on v1.3.135 through v1.3.138. It was already on the canvaskit/JS fallback path the entire time. The v1.3.139 "revert to pure canvaskit" therefore executed **identical code** to what that device was already running — it could not have fixed anything for this specific report, and confirmed didn't.
+
+### The real diagnosis
+Asked the user three targeted questions instead of guessing again. The decisive answer: the "Reload page (clear cache)" button (appears after 15 s) **reliably fixes the hang when tapped**, on cellular. If this were pure network slowness, clearing cache and re-fetching over the *same* cellular connection would very likely fail again too — it didn't. That's the signature of a **stale/corrupt Service Worker cache**, not a renderer or raw-speed issue — highly plausible given this session shipped **5 rapid back-to-back deploys** (v1.3.135 → v1.3.139) in quick succession, exactly the churn that can leave a client's Service Worker pointing at content since overwritten. This is the same failure *class* `FetchVerses`'s own v1.2.12 fix notes already describe — Flutter's in-memory `rootBundle` Future-memoization bug — just one layer lower: at the Service Worker's HTTP cache, which `rootBundle.evict()` cannot reach or invalidate.
+
+### Fix
+Automated the proven recovery instead of relying on the user noticing a button. New `_autoHardReload` timer (`LoadingPage`, web-only) fires 25 s into a stuck boot (10 s grace past when the manual button appears at 15 s), re-checks the actual state before acting (`bootInFlight` / `_retrying` / `loadError` / `verses.isEmpty`) — if boot succeeded in the meantime, including the 3 s pre-advance grace window `_scheduleAdvanceIfReady` uses, it's a silent no-op — and otherwise calls the same `clearCacheAndReload()` the manual button already uses. Safe to do without confirmation specifically because `LoadingPage` is the splash screen — there is no in-progress user data (no note being typed, no scroll position) a reload could lose.
+
+### Lesson for next time
+When a live user report contradicts a shipped "fix," **verify the causal mechanism before re-shipping a variant of the same guess** — a 2-minute web search here would have caught the WasmGC/WebKit fact *before* the v1.3.139 revert, not after. And: **don't chain many rapid production deploys** without watching for exactly this class of Service Worker staleness — the automated 25 s escalation added here is a safety net for it, but reducing deploy churn during active debugging is the better prevention.
+
+flutter analyze: clean. flutter test: 371/371 passing. Deployed to all 6 sites incl. prod (active regression, user still locked out; commit `eff3d01`).
+
+---
+
 ## What Has Been Fixed (2026-05-04, Round 56)
 
 ### Cloud-sync timeout + sermon title cleanup + dashboard customization + theme vibrance
