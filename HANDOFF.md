@@ -771,6 +771,26 @@ Deployed dev + qat as v1.3.136 (commit `73c07b1`). `flutter analyze` clean, 371/
 
 ---
 
+## What Has Been Fixed (2026-07-21, v1.3.137) — real root cause: unbounded Firebase-auth network call
+
+### The report, and the correction that made it findable
+User sent a screenshot of the app stuck on the splash screen forever — `yswords.netlify.app` (international flavor) accessed from mainland China. Initial read was that this could be a hang introduced by the just-re-enabled skwasm renderer (v1.3.135) and I was mid-way through reverting it back to canvaskit as an emergency rollback. **User interrupted with the correct context first**: "in china very slow then loaded while aus is faster" — it wasn't a permanent hang, just an unusually long wait that resolved on its own. That single clarification prevented reverting the wrong thing.
+
+### Root cause
+`_MainAppState._bootstrap()` (main.dart) fully `await`s `CloudAuthService.instance.init()` before ever reaching `FetchVerses.execute()`. That call makes multiple network round trips to Google's own servers — `Firebase.initializeApp()`, then `auth.getRedirectResult()` — both blocked or heavily throttled by mainland China's Great Firewall. The **China-flavor** build already sidesteps this entirely (skips Firebase init — see the `kChinaMode` comment a few lines above this fix), but nothing stops an **international**-flavor user from being on a China-routed network, and that path had no timeout at all. A degraded connection here could stall the *entire* boot sequence (including the Bible-text fetch, which only starts after this resolves) for as long as the browser's own TCP/TLS timeout takes — far longer than any reasonable splash wait.
+
+This also exposed a real gap in the v1.3.133 `bootInFlight` fix: it has no ceiling. If `_bootstrap()` had genuinely hung (not just been slow) rather than eventually resolving, the user would have been stuck on a screen with **zero controls** — worse than the original false-positive "Failed to load" bug it replaced, which at least had a visible Retry button.
+
+### Fix (two parts, per user's chosen direction: "make the wait more tolerable" over reverting skwasm)
+1. **Bounded the Firebase call**: wrapped `CloudAuthService.instance.init()` in an 8 s `.timeout(...)`. Firebase auth was never required to read the Bible — cap it generously and let boot proceed without cloud auth if it doesn't settle; `CloudAuthService` keeps trying on its own `ChangeNotifier` timeline in the background, and Settings' sign-in becomes available once (if) it resolves. Invisible to normal-network users (the call usually resolves in well under a second).
+2. **Patience escalation in `LoadingPage`**: after a 15 s threshold, both the "booting" scaffold *and* the normal verse-resolved splash — the latter is the screen that actually got stuck showing, since the daily-verse resolve can succeed well before the rest of boot does, and the existing `loadAttempt`/`versionPreload` subtitle only covers the FetchVerses sub-phase, not an earlier stalled Firebase call — switch to a message that acknowledges the wait instead of implying it should be instant, plus reveal a manual "Reload page" escape hatch. New `bootLoadingMessageSlow` ui_strings key; new `_LoadingPageState._showPatienceHatch` + `_patienceTimer`; shared `_buildPatienceFooter()` helper used by both scaffolds.
+
+Could not directly reproduce China-network conditions from this session — this is based on careful code-path review (confirmed the exact awaited network calls and the missing timeout) plus the mechanism matching the user's report exactly, not a live repro. Verified the new strings/logic shipped in the compiled JS bundle.
+
+flutter analyze: clean. flutter test: 371/371 passing. Deployed to dev + qat as v1.3.137 (commit `577a755`). Prod pending explicit approval — this touches the same boot path as the last two incidents (v1.3.132, v1.3.133), so extra caution before shipping wide.
+
+---
+
 ## What Has Been Fixed (2026-05-04, Round 56)
 
 ### Cloud-sync timeout + sermon title cleanup + dashboard customization + theme vibrance
