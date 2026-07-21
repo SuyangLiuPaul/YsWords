@@ -181,7 +181,32 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
       // once a Firebase user signs in, and that's impossible without
       // Firebase Auth working.
       if (!kChinaMode) {
-        await CloudAuthService.instance.init();
+        // 2026-07-21: bounded. `CloudAuthService.instance.init()`
+        // makes multiple awaited network calls to Google's own
+        // servers (`Firebase.initializeApp()`, then
+        // `auth.getRedirectResult()`) — both blocked or heavily
+        // throttled on networks that can't reach Google (mainland
+        // China's Great Firewall being the most common case; the
+        // China-flavor build sidesteps this entirely by skipping
+        // Firebase, see the comment above, but nothing stopped an
+        // INTERNATIONAL-flavor user from being on such a network).
+        // Without a bound, a blocked/degraded path here could stall
+        // the ENTIRE boot sequence — including FetchVerses, which
+        // runs after this — for as long as the browser's own TCP/TLS
+        // timeout takes, far longer than any reasonable splash wait.
+        // User report: "in china very slow then loaded, aus faster" —
+        // this is why. Firebase auth was never required to read the
+        // Bible, so cap it generously and let boot proceed without
+        // cloud auth if it doesn't settle in time; CloudAuthService
+        // keeps trying on its own ChangeNotifier timeline and
+        // Settings' sign-in becomes available once (if) it resolves.
+        try {
+          await CloudAuthService.instance.init().timeout(
+                const Duration(seconds: 8),
+              );
+        } catch (e, st) {
+          debugPrint('CloudAuthService.init timed out or failed: $e\n$st');
+        }
         // Round 56 day-3 (2026-05-06): switched cloud sync from
         // Firestore (CloudSyncService) to Google Drive AppData
         // (DriveSyncService). User reported the Firestore path was

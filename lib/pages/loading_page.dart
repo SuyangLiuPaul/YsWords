@@ -51,6 +51,22 @@ class _LoadingPageState extends State<LoadingPage> {
   int _autoRetryCount = 0;
   static const int _kMaxAutoRetries = 3;
 
+  /// 2026-07-21: patience escalation. A fetch can legitimately still
+  /// be in flight (see `loading` in build()) well past what feels
+  /// like a reasonable wait — a slow/degraded connection (mainland
+  /// China accessing a Netlify-hosted global CDN, for one concrete
+  /// example) can genuinely take this long without anything having
+  /// failed. Rather than leave the user staring at a static "Loading
+  /// fast…" with zero signal that anything is still happening, flip
+  /// this after a generous threshold to (a) switch to a message that
+  /// acknowledges the wait instead of implying it should be instant,
+  /// and (b) reveal a manual "Reload page" escape hatch — so even in
+  /// the worst case (a genuine hang, not just slowness) the user
+  /// isn't trapped with literally no control on screen.
+  Timer? _patienceTimer;
+  bool _showPatienceHatch = false;
+  static const Duration _kPatienceThreshold = Duration(seconds: 15);
+
   /// Splash verse — locked ONCE per mount. The user sees the same
   /// verse on the splash AS the dashboard's "Verse of the Day", which
   /// reinforces the day's theme.
@@ -82,6 +98,10 @@ class _LoadingPageState extends State<LoadingPage> {
     super.initState();
     _resolveDailyVerseForSplash();
     _scheduleAdvanceIfReady();
+    _patienceTimer = Timer(_kPatienceThreshold, () {
+      if (!mounted) return;
+      setState(() => _showPatienceHatch = true);
+    });
   }
 
   /// Try the curated daily-verse first; if it doesn't resolve in time,
@@ -332,6 +352,7 @@ class _LoadingPageState extends State<LoadingPage> {
     _autoAdvance?.cancel();
     _autoRetry?.cancel();
     _dailyVerseFallback?.cancel();
+    _patienceTimer?.cancel();
     super.dispose();
   }
 
@@ -621,6 +642,17 @@ class _LoadingPageState extends State<LoadingPage> {
                       ],
                     ),
                   ],
+                  // 2026-07-21: same patience escalation as the
+                  // booting scaffold. This normal splash is the one
+                  // that actually gets stuck showing on a genuinely
+                  // slow boot — `_splashVerse` can resolve (via the
+                  // 5 s random-fallback) well before FetchVerses does,
+                  // and the loadAttempt/versionPreload subtitle above
+                  // only covers the FetchVerses sub-phase, not e.g. a
+                  // slow/blocked Firebase-auth network call earlier in
+                  // `_bootstrap()` — which otherwise left this screen
+                  // showing zero signal that anything was happening.
+                  if (loading) _buildPatienceFooter(context, settings),
                 ],
               ),
       ),
@@ -711,9 +743,66 @@ class _LoadingPageState extends State<LoadingPage> {
                 ),
               ],
             ),
+            _buildPatienceFooter(context, settings),
           ],
         ),
       ),
+    );
+  }
+
+  /// 2026-07-21: shared "still waiting, here's proof + an out" footer
+  /// for both the booting scaffold and the normal (verse-resolved)
+  /// splash — the latter is the one a genuinely slow boot (e.g. a
+  /// blocked/degraded path to a Google auth server on a network like
+  /// mainland China's) actually gets stuck showing, since the daily-
+  /// verse resolve can succeed well before FetchVerses does. Renders
+  /// nothing until `_showPatienceHatch` flips (15 s in), then shows
+  /// an acknowledging message plus a manual reload escape hatch so
+  /// the user always has SOMETHING to do rather than a static screen
+  /// with no signal of whether it's working or frozen.
+  Widget _buildPatienceFooter(BuildContext context, AppSettings settings) {
+    if (!_showPatienceHatch) return const SizedBox.shrink();
+    final dc = ResponsiveBreakpoints.classOf(
+        MediaQuery.of(context).size.width);
+    final s = ResponsiveBreakpoints.spacingScale(dc);
+    return Column(
+      children: [
+        SizedBox(height: 14 * s),
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: 32.0 * s),
+          child: Text(
+            uiStrings['bootLoadingMessageSlow']?[settings.locale] ??
+                'Still loading — this can take longer on a slow connection.',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: settings.fontSize * 0.85,
+              fontFamily: settings.fontFamily,
+              fontFamilyFallback: kCjkFontFallback,
+              color: Theme.of(context)
+                  .textTheme
+                  .titleSmall
+                  ?.color
+                  ?.withValues(alpha: 0.65),
+            ),
+          ),
+        ),
+        if (kIsWeb) ...[
+          SizedBox(height: 6 * s),
+          TextButton.icon(
+            onPressed: _hardReload,
+            icon: const Icon(Icons.refresh_rounded, size: 16),
+            label: Text(
+              uiStrings['hardReloadPage']?[settings.locale] ??
+                  'Reload page (clear cache)',
+              style: TextStyle(
+                fontSize: (settings.fontSize - 2).clamp(11.0, 14.0),
+                fontFamily: settings.fontFamily,
+                fontFamilyFallback: kCjkFontFallback,
+              ),
+            ),
+          ),
+        ],
+      ],
     );
   }
 
