@@ -836,6 +836,23 @@ flutter analyze: clean. flutter test: 371/371 passing. Deployed to all 6 sites i
 
 ---
 
+## What Has Been Fixed (2026-07-22, v1.3.141) — download progress bar
+
+### The ask
+A bare spinner during boot reads as ambiguous ("is this frozen or working?") — a progress bar reads unambiguously as "actively downloading." User also noted this is fundamentally a **first-load** concern: once the service worker has the Bible-JSON asset cached, a repeat visit resolves near-instantly, so the bar naturally only matters (and is only visible long enough to notice) on a genuine first-time fetch — no explicit "first visit" bookkeeping needed.
+
+### Scope decision
+Confirmed with the user before touching this again, given today's history on this exact page: **indeterminate bar, no byte-level tracking** — not a byte-accurate progress bar. `FetchVerses` uses `rootBundle.loadString()` to fetch the Bible JSON, which has no progress API; getting real byte counts would mean rewriting the core fetch path to a streamed HTTP request — the *exact* code both of today's earlier incidents already touched — for a purely cosmetic win. Not worth that risk today.
+
+### Fix
+New `_buildDownloadBar()` helper (`LoadingPage`) — a `LinearProgressIndicator` in a rounded `SizedBox`, `value: null` (indeterminate) by default. Replaced the small `CircularProgressIndicator` in both the booting scaffold and the normal (verse-resolved) splash's retry-subtitle row. One free refinement: the version-preload sub-case already carries exact counts (`versionPreloadCount`/`versionPreloadTotal`) that were already being computed and shown as text — that specific path now renders a **determinate** bar (`value: count/total`) using data that cost nothing extra to plumb through.
+
+Purely UI — no changes to `FetchVerses`, `MainProvider`, or any of the timer/retry logic added in v1.3.133–140. Verified both flavors boot cleanly on dev with no regression; could not force the exact transient loading-bar window into view via remote browser automation in this environment (tried patching `window.fetch` with an artificial delay, but a full page navigation resets the JS context before the patch can take effect) — relying on clean `flutter analyze` + 371/371 tests + standard, already-proven Flutter widget patterns for this specific visual, not a live screenshot.
+
+flutter analyze: clean. flutter test: 371/371 passing. Deployed to all 6 sites incl. prod (commit `55a918e`).
+
+---
+
 ## What Has Been Fixed (2026-05-04, Round 56)
 
 ### Cloud-sync timeout + sermon title cleanup + dashboard customization + theme vibrance
