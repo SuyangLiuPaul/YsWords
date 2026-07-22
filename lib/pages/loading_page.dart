@@ -625,62 +625,56 @@ class _LoadingPageState extends State<LoadingPage> {
                   if (mainProvider.loadAttempt > 0 ||
                       mainProvider.versionPreloadTotal > 0) ...[
                     SizedBox(height: 18 * s),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        SizedBox(
-                          width: 14,
-                          height: 14,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(
-                              Theme.of(context)
-                                  .colorScheme
-                                  .primary
-                                  .withValues(alpha: 0.6),
-                            ),
-                          ),
-                        ),
-                        SizedBox(width: 10 * s),
-                        Text(
-                          mainProvider.versionPreloadTotal > 0
-                              ? ((uiStrings['loadingVersionsProgress']
+                    Text(
+                      mainProvider.versionPreloadTotal > 0
+                          ? ((uiStrings['loadingVersionsProgress']
+                                      ?[settings.locale] ??
+                                  'Loading versions: {n}/{total}')
+                              .replaceFirst(
+                                  '{n}',
+                                  mainProvider.versionPreloadCount
+                                      .toString())
+                              .replaceFirst(
+                                  '{total}',
+                                  mainProvider.versionPreloadTotal
+                                      .toString()))
+                          : (mainProvider.loadAttempt <= 1
+                              ? (uiStrings['loadingVerses']
+                                      ?[settings.locale] ??
+                                  'Loading verses…')
+                              : ((uiStrings['retryingAttempt']
                                           ?[settings.locale] ??
-                                      'Loading versions: {n}/{total}')
+                                      'Retrying… ({n}/{max})')
                                   .replaceFirst(
                                       '{n}',
-                                      mainProvider.versionPreloadCount
+                                      mainProvider.loadAttempt
                                           .toString())
                                   .replaceFirst(
-                                      '{total}',
-                                      mainProvider.versionPreloadTotal
-                                          .toString()))
-                              : (mainProvider.loadAttempt <= 1
-                                  ? (uiStrings['loadingVerses']
-                                          ?[settings.locale] ??
-                                      'Loading verses…')
-                                  : ((uiStrings['retryingAttempt']
-                                              ?[settings.locale] ??
-                                          'Retrying… ({n}/{max})')
-                                      .replaceFirst(
-                                          '{n}',
-                                          mainProvider.loadAttempt
-                                              .toString())
-                                      .replaceFirst(
-                                          '{max}',
-                                          mainProvider.loadMaxAttempts
-                                              .toString()))),
-                          style: TextStyle(
-                            fontSize: settings.fontSize * 0.85,
-                            fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
-                            color: Theme.of(context)
-                                .textTheme
-                                .titleSmall
-                                ?.color
-                                ?.withValues(alpha: 0.65),
-                          ),
-                        ),
-                      ],
+                                      '{max}',
+                                      mainProvider.loadMaxAttempts
+                                          .toString()))),
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: settings.fontSize * 0.85,
+                        fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
+                        color: Theme.of(context)
+                            .textTheme
+                            .titleSmall
+                            ?.color
+                            ?.withValues(alpha: 0.65),
+                      ),
+                    ),
+                    SizedBox(height: 10 * s),
+                    // Determinate when we already have exact counts
+                    // for free (version pre-load); indeterminate
+                    // during the verse-fetch retry sub-phase, where
+                    // there's no real progress signal to show.
+                    _buildDownloadBar(
+                      context,
+                      value: mainProvider.versionPreloadTotal > 0
+                          ? mainProvider.versionPreloadCount /
+                              mainProvider.versionPreloadTotal
+                          : null,
                     ),
                   ],
                   // 2026-07-21: same patience escalation as the
@@ -751,41 +745,57 @@ class _LoadingPageState extends State<LoadingPage> {
               ),
             ),
             SizedBox(height: 40 * s),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                SizedBox(
-                  width: 16,
-                  height: 16,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    valueColor: AlwaysStoppedAnimation<Color>(
-                      Theme.of(context)
-                          .colorScheme
-                          .primary
-                          .withValues(alpha: 0.7),
-                    ),
-                  ),
-                ),
-                SizedBox(width: 12 * s),
-                Text(
-                  uiStrings['bootLoadingMessage']?[settings.locale] ??
-                      'Loading fast…',
-                  style: TextStyle(
-                    fontSize: settings.fontSize * 0.9,
-                    fontFamily: settings.fontFamily,
-                    fontFamilyFallback: kCjkFontFallback,
-                    color: Theme.of(context)
-                        .textTheme
-                        .titleSmall
-                        ?.color
-                        ?.withValues(alpha: 0.75),
-                  ),
-                ),
-              ],
+            Text(
+              uiStrings['bootLoadingMessage']?[settings.locale] ??
+                  'Loading fast…',
+              style: TextStyle(
+                fontSize: settings.fontSize * 0.9,
+                fontFamily: settings.fontFamily,
+                fontFamilyFallback: kCjkFontFallback,
+                color: Theme.of(context)
+                    .textTheme
+                    .titleSmall
+                    ?.color
+                    ?.withValues(alpha: 0.75),
+              ),
             ),
+            SizedBox(height: 12 * s),
+            _buildDownloadBar(context),
             _buildPatienceFooter(context, settings),
           ],
+        ),
+      ),
+    );
+  }
+
+  /// 2026-07-21: web download progress bar. User feedback: a bare
+  /// spinner reads as ambiguous ("is this frozen or working?"); a
+  /// progress bar reads unambiguously as "actively downloading" —
+  /// and since it's only ever visible while `loading` is true, it
+  /// naturally shows up almost exclusively on a genuine first-time
+  /// (uncached) load: once the service worker has the Bible-JSON
+  /// asset cached, the fetch resolves near-instantly and this bar
+  /// barely has time to render. Deliberately indeterminate (no byte-
+  /// level tracking) EXCEPT for the one sub-case where exact progress
+  /// is already free: `versionPreloadCount`/`versionPreloadTotal`.
+  /// `rootBundle.loadString()` (what `FetchVerses` actually uses) has
+  /// no progress API, so a byte-accurate bar would mean rewriting the
+  /// core fetch path — the same code both of today's earlier
+  /// incidents touched — for a purely cosmetic win. Not worth the
+  /// risk; scoped to UI only.
+  Widget _buildDownloadBar(BuildContext context, {double? value}) {
+    final scheme = Theme.of(context).colorScheme;
+    return SizedBox(
+      width: 220,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(4),
+        child: LinearProgressIndicator(
+          value: value,
+          minHeight: 4,
+          backgroundColor: scheme.primary.withValues(alpha: 0.15),
+          valueColor: AlwaysStoppedAnimation<Color>(
+            scheme.primary.withValues(alpha: 0.7),
+          ),
         ),
       ),
     );
