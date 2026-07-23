@@ -185,6 +185,25 @@ void main() {
       );
     });
 
+    test('drops google_fonts CDN-unreachable failures', () {
+      // Real reported shape (v1.3.113, Android/Huawei ELS-AN00,
+      // zh-Hans): the http GET inside google_fonts'
+      // _httpFetchFontAndSaveToDevice throws when fonts.gstatic.com
+      // is unreachable. font_catalog.dart's resolveFontFamily /
+      // previewTextStyle already catch the synchronous call and fall
+      // back to a system font, so the UI is fine — but the fetch
+      // itself runs in an unawaited Future inside the package with
+      // no .catchError, so it still reaches PlatformDispatcher.
+      const err = 'Exception: Failed to load font with url '
+          'https://fonts.gstatic.com/s/a/5ced104582: '
+          'ClientException with SocketException';
+      const stack = '#0 _httpFetchFontAndSaveToDevice '
+          '(package:google_fonts/src/google_fonts_base.dart:268)\n'
+          '#1 loadFontIfNecessary '
+          '(package:google_fonts/src/google_fonts_base.dart:175)';
+      expect(ErrorReporter.isIgnorableNoiseForTest(err, stack), isTrue);
+    });
+
     test('keeps genuine app errors', () {
       expect(
         ErrorReporter.isIgnorableNoiseForTest(
