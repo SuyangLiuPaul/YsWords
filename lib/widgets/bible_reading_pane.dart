@@ -4651,7 +4651,25 @@ void showNoteEditor({
               child: Focus(
                 onFocusChange: (hasFocus) {
                   if (hasFocus) {
-                    restoreScroll();
+                    // 2026-07-23: must NOT call restoreScroll()
+                    // synchronously here. This callback runs from
+                    // inside Flutter's own FocusManager.
+                    // applyFocusChangesIfNeeded(), which iterates its
+                    // _dirtyNodes set and calls node._notify() —
+                    // that's what invokes this onFocusChange. If
+                    // restoreScroll's jumpTo() synchronously disposes
+                    // off-screen list-item FocusNodes (e.g. the
+                    // autofocus items in the reading pane behind this
+                    // sheet), FocusNode.dispose() removes itself from
+                    // that same _dirtyNodes set mid-iteration, which
+                    // throws ConcurrentModificationError (prod crash,
+                    // v1.3.143, decoded via source map to
+                    // focus_manager.dart:2008). Future.microtask defers
+                    // just past the end of that synchronous loop —
+                    // same escape hatch already used above for the
+                    // positions-listener restore (see
+                    // Future.microtask(restoreScroll) a few lines up).
+                    Future.microtask(restoreScroll);
                     for (final delayMs in const [16, 50, 150, 350]) {
                       Future.delayed(
                           Duration(milliseconds: delayMs), restoreScroll);
