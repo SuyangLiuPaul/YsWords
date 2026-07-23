@@ -47,6 +47,24 @@
   [headers.values]
     Cache-Control = "no-cache, must-revalidate"
 
+# 2026-07-23 (v1.3.143): same class of bug as the entry-file headers
+# above, one layer deeper. main.dart.js reads these two manifest
+# files immediately at boot to resolve bundled assets/fonts, but
+# they had no explicit header — so they fell back to Netlify's
+# default (longer) caching while main.dart.js above is forced fresh
+# on every load. A browser holding a stale cached manifest against a
+# freshly-deployed main.dart.js is exactly "Unable to load asset:
+# AssetManifest.bin.json" (reported in prod right after a deploy).
+[[headers]]
+  for = "/assets/AssetManifest.bin.json"
+  [headers.values]
+    Cache-Control = "no-cache, must-revalidate"
+
+[[headers]]
+  for = "/assets/FontManifest.json"
+  [headers.values]
+    Cache-Control = "no-cache, must-revalidate"
+
 # 2026-05-24 (v1.3.24): security headers applied to every response.
 # Documented per-header so future agents know why each entry exists.
 [[headers]]
