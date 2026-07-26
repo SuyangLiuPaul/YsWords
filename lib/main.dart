@@ -200,13 +200,32 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
         // cloud auth if it doesn't settle in time; CloudAuthService
         // keeps trying on its own ChangeNotifier timeline and
         // Settings' sign-in becomes available once (if) it resolves.
-        try {
-          await CloudAuthService.instance.init().timeout(
-                const Duration(seconds: 8),
-              );
-        } catch (e, st) {
-          debugPrint('CloudAuthService.init timed out or failed: $e\n$st');
-        }
+        // 2026-07-26 (v1.3.145): no longer AWAITED. Bounding it at 8 s
+        // (above) stopped an unbounded stall, but it still put up to
+        // 8 s of Google round-trips IN FRONT of `FetchVerses` on every
+        // international boot — 8 s that the China build never pays,
+        // because the whole block is skipped there. That head-start
+        // gap is precisely why the same phone on the same Australian
+        // network could boot the CN site but stall on the
+        // international one: the splash's auto-recovery deadline was
+        // being consumed by auth before the Bible download even began.
+        //
+        // Nothing on the splash path needs cloud auth — it is only
+        // required for Settings' sign-in and for sync, both of which
+        // happen long after first paint, and CloudAuthService is a
+        // ChangeNotifier so those surfaces update themselves whenever
+        // it lands. So let it warm up CONCURRENTLY and let the Bible
+        // download start immediately. RTDB still waits for auth, since
+        // it is meaningless without a signed-in user.
+        unawaited(
+          CloudAuthService.instance
+              .init()
+              .timeout(const Duration(seconds: 8))
+              .then((_) => RealtimeDbSyncService.instance.init())
+              .catchError((Object e, StackTrace st) {
+            debugPrint('CloudAuthService.init timed out or failed: $e\n$st');
+          }),
+        );
         // Round 56 day-3 (2026-05-06): switched cloud sync from
         // Firestore (CloudSyncService) to Google Drive AppData
         // (DriveSyncService). User reported the Firestore path was
@@ -218,7 +237,9 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
         // and needs zero setup ("appDataFolder" is automatic — no
         // folder picker). CloudSyncService is left in place as a
         // legacy migration source but no longer init'd.
-        RealtimeDbSyncService.instance.init();
+        // (RealtimeDbSyncService.init() is now chained off the auth
+        // future above rather than called inline, so it can't start
+        // a sync socket before auth has settled.)
       }
       // 2026-05-07 (v18 audit): the three pre-warm calls below are
       // intentionally unawaited (best-effort hydration that should

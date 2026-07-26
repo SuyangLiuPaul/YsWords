@@ -11,3 +11,10 @@ void clearCacheAndReload() {
   debugPrint(
       '[clearCacheAndReload] no-op on native platform (no SW cache)');
 }
+
+/// Native stubs for the web auto-recovery latch. There is no reload to
+/// guard against here, so report "already tried" — callers treat that
+/// as "don't auto-recover", which is the correct native behaviour.
+bool bootRecoveryAlreadyTried() => true;
+
+void markBootRecoveryTried() {}

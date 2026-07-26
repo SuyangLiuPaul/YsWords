@@ -88,8 +88,37 @@ class _LoadingPageState extends State<LoadingPage> {
   /// to do silently here specifically because LoadingPage is the
   /// SPLASH — there is no in-progress user data (no note being typed,
   /// no scroll position) that a reload could lose.
+  ///
+  /// 2026-07-26 (v1.3.145) — REGRESSION FIX. As shipped, the timer
+  /// below treated a boot that was merely still IN FLIGHT as "stuck"
+  /// (`stillStuck` OR-ed in `mp.bootInFlight` and `mp.verses.isEmpty`,
+  /// both of which are simply TRUE for every healthy first boot that
+  /// hasn't finished yet). So on any connection that needs more than
+  /// 25 s to pull the ~1.9 MB of boot assets, the splash would wipe the
+  /// cache and reload *on top of the still-running download* — throwing
+  /// away the bytes already transferred and restarting from zero, then
+  /// hitting the same 25 s wall again, forever. Boot could never
+  /// converge below roughly 80 KB/s; the app looked like it was
+  /// "reloading itself in a loop" or hanging.
+  ///
+  /// This is the same failure mode the escalating-timeout comment in
+  /// `FetchVerses` documents at the request layer ("each retry EVICTS
+  /// the asset cache and restarts the fetch from byte 0 … retrying made
+  /// it strictly worse"), reintroduced one layer up at the page layer.
+  ///
+  /// It also explains the field report that the CHINA build was fine
+  /// while the INTERNATIONAL build stalled *on the same device and
+  /// network*: the international boot spends up to 8 s on
+  /// `CloudAuthService.init()` before `FetchVerses` even starts, and
+  /// runs an RTDB socket alongside it, so it reaches the 25 s deadline
+  /// with far less of the download done. China mode skips both.
+  ///
+  /// Three changes make it safe: (a) only a boot that has actually
+  /// FAILED counts as stuck — never one still making progress;
+  /// (b) the deadline is generous; (c) it can fire at most once per
+  /// tab-session (see `bootRecoveryAlreadyTried`).
   Timer? _autoHardReload;
-  static const Duration _kAutoHardReloadThreshold = Duration(seconds: 25);
+  static const Duration _kAutoHardReloadThreshold = Duration(seconds: 45);
 
   /// Splash verse — locked ONCE per mount. The user sees the same
   /// verse on the splash AS the dashboard's "Verse of the Day", which
@@ -131,15 +160,23 @@ class _LoadingPageState extends State<LoadingPage> {
     // state when it fires rather than assuming — if boot succeeded in
     // the meantime (including the 3 s pre-advance grace window
     // `_scheduleAdvanceIfReady` uses), this is a silent no-op.
-    if (kIsWeb) {
+    if (kIsWeb && !bootRecoveryAlreadyTried()) {
       _autoHardReload = Timer(_kAutoHardReloadThreshold, () {
         if (!mounted) return;
         final mp = context.read<MainProvider>();
-        final stillStuck = mp.bootInFlight ||
-            _retrying ||
-            mp.loadError != null ||
+        // A boot that is still running, or one that already produced
+        // verses, is NOT stuck — leave it alone. Only a load that has
+        // actually reported failure (and isn't currently being retried)
+        // is worth nuking the cache for. `bootInFlight` / empty-verses
+        // deliberately do NOT appear here: see the field note above.
+        final genuinelyFailed = !mp.bootInFlight &&
+            !_retrying &&
+            mp.loadError != null &&
             mp.verses.isEmpty;
-        if (stillStuck) _hardReload();
+        if (genuinelyFailed) {
+          markBootRecoveryTried();
+          _hardReload();
+        }
       });
     }
   }
