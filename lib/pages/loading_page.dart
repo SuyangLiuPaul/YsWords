@@ -475,7 +475,38 @@ class _LoadingPageState extends State<LoadingPage> {
     // The `_advanceScheduledOnce` flag prevents the eager pre-load's
     // 12 notifyListeners callbacks from cancelling-and-rearming the
     // Timer on every rebuild (which would never let it fire).
-    if (!_advanceScheduledOnce) {
+    // 2026-07-26 (v1.3.146) — FROZEN-SPLASH FIX. The guard above used
+    // to be a bare `if (!_advanceScheduledOnce)` that set the latch
+    // BEFORE knowing whether `_scheduleAdvanceIfReady()` would actually
+    // arm anything. But that method early-returns without arming a
+    // timer while `verses.isEmpty` — which is exactly the state this
+    // page is in on any boot slower than the 4 s splash watchdog. So:
+    //
+    //   1. splash watchdog mounts LoadingPage at 4 s, verses empty
+    //   2. initState -> _scheduleAdvanceIfReady() -> early return
+    //   3. first build -> latch CONSUMED -> post-frame ->
+    //      _scheduleAdvanceIfReady() -> verses still empty -> early
+    //      return, still no timer
+    //   4. FetchVerses finally succeeds, setVerses() notifies, build
+    //      re-runs with verses populated and bootInFlight false
+    //   5. `!_advanceScheduledOnce` is now false, so nothing ever
+    //      re-arms the advance — and because `loading` is false the
+    //      spinner and the 15 s "Reload page" hatch are both hidden,
+    //      while `hasError` is false because the load SUCCEEDED.
+    //
+    // Net effect: a fully successful boot parked on a static splash
+    // (logo + daily verse, no spinner, no button, no error) forever.
+    // Field-reported as "stuck here forever"; reproduced from the
+    // screenshot state (no spinner + no hatch + no error == loading
+    // false + verses non-empty + advance never armed).
+    //
+    // The latch's original purpose — stop the eager pre-load's ~12
+    // notifyListeners callbacks from cancel-and-rearming the timer on
+    // every rebuild — is preserved: we simply don't spend the latch
+    // until we're actually able to arm the timer.
+    if (!_advanceScheduledOnce &&
+        mainProvider.loadError == null &&
+        mainProvider.verses.isNotEmpty) {
       _advanceScheduledOnce = true;
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) _scheduleAdvanceIfReady();
@@ -724,7 +755,19 @@ class _LoadingPageState extends State<LoadingPage> {
                   // slow/blocked Firebase-auth network call earlier in
                   // `_bootstrap()` — which otherwise left this screen
                   // showing zero signal that anything was happening.
-                  if (loading) _buildPatienceFooter(context, settings),
+                  // 2026-07-26 (v1.3.146): NOT gated on `loading` any
+                  // more. The frozen-splash bug above put this page in
+                  // a state where `loading` was false (boot finished)
+                  // yet the splash never advanced — and the `if
+                  // (loading)` gate meant the user had no spinner, no
+                  // error UI and NO escape hatch either: a completely
+                  // inert screen. `_buildPatienceFooter` already
+                  // self-gates on `_showPatienceHatch` (15 s) and
+                  // `kIsWeb`, and a healthy boot advances at 3 s, so
+                  // this never shows on the normal path — it only
+                  // guarantees that anything still parked here past
+                  // 15 s always has a way out.
+                  _buildPatienceFooter(context, settings),
                 ],
               ),
       ),
