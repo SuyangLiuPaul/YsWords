@@ -15,6 +15,7 @@ import '../services/daily_verse_fallback.dart';
 import '../services/daily_verse_service.dart';
 import '../services/fetch_verses.dart';
 import '../services/fetch_books.dart';
+import '../constants/app_version.dart' show kAppVersion;
 import '../constants/text_patterns.dart';
 import '../constants/ui_strings.dart';
 import '../utils/reference_parser.dart';
@@ -614,6 +615,22 @@ class _LoadingPageState extends State<LoadingPage> {
                           color: Theme.of(context).colorScheme.primary,
                         ),
                       ),
+                      SizedBox(height: 4 * s),
+                      // 2026-07-31: small, muted version label so a
+                      // user reporting a splash/boot issue can just
+                      // read it off the screen instead of digging
+                      // into Settings — makes cross-referencing field
+                      // reports against the deployed build trivial.
+                      Text(
+                        'v$kAppVersion',
+                        style: TextStyle(
+                          fontSize: settings.fontSize * 0.65,
+                          color: Theme.of(context)
+                              .colorScheme
+                              .primary
+                              .withValues(alpha: 0.55),
+                        ),
+                      ),
                     ],
                   ),
                   SizedBox(height: 48 * s),
@@ -822,6 +839,17 @@ class _LoadingPageState extends State<LoadingPage> {
               style: TextStyle(
                 fontSize: settings.fontSize * 1.0,
                 color: Theme.of(context).colorScheme.primary,
+              ),
+            ),
+            SizedBox(height: 4 * s),
+            Text(
+              'v$kAppVersion',
+              style: TextStyle(
+                fontSize: settings.fontSize * 0.65,
+                color: Theme.of(context)
+                    .colorScheme
+                    .primary
+                    .withValues(alpha: 0.55),
               ),
             ),
             SizedBox(height: 40 * s),
