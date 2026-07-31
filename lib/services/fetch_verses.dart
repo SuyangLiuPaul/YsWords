@@ -189,10 +189,19 @@ class FetchVerses {
           final backoffMs = 600 * (1 << (attempt - 2));
           await Future<void>.delayed(Duration(milliseconds: backoffMs));
         }
-        final paraMap =
-            await _loadParagraphMap().timeout(attemptTimeout);
-        final verses =
-            await _loadAndParse(path, paraMap).timeout(attemptTimeout);
+        // 2026-07-31 (v1.3.147): the paragraph-map load and the verse
+        // fetch are two INDEPENDENT network round-trips (see
+        // `_fetchAndDecodeVerses`'s doc comment for the field report
+        // this fixes) — run them concurrently under ONE shared
+        // deadline instead of paying for both sequentially out of the
+        // same per-attempt budget.
+        final results = await Future.wait([
+          _loadParagraphMap(),
+          _fetchAndDecodeVerses(path),
+        ]).timeout(attemptTimeout);
+        final paraMap = results[0] as Map<String, Map<String, _ParaInfo>>;
+        final rawVerses = results[1] as List<Verse>;
+        final verses = _enrichWithParagraphs(rawVerses, paraMap);
         // 2026-06-14 (v1.3.73): stale-switch guard. `version` was read
         // from `currentVersion` at the top of execute(); the parse above
         // is async, so a user who switches versions AGAIN before it
@@ -261,8 +270,13 @@ class FetchVerses {
   static Future<List<Verse>?> loadVerseList(String version) async {
     try {
       final path = 'assets/${version.toLowerCase()}.json';
-      final paraMap = await _loadParagraphMap();
-      final list = await _loadAndParse(path, paraMap);
+      final results = await Future.wait([
+        _loadParagraphMap(),
+        _fetchAndDecodeVerses(path),
+      ]);
+      final paraMap = results[0] as Map<String, Map<String, _ParaInfo>>;
+      final rawVerses = results[1] as List<Verse>;
+      final list = _enrichWithParagraphs(rawVerses, paraMap);
       return list.isEmpty ? null : list;
     } catch (e, st) {
       debugPrint('Background loadVerseList($version) failed: $e\n$st');
@@ -270,10 +284,24 @@ class FetchVerses {
     }
   }
 
-  static Future<List<Verse>> _loadAndParse(
-    String path,
-    Map<String, Map<String, _ParaInfo>> paraMap,
-  ) async {
+  /// 2026-07-31 (v1.3.147): split out of the former `_loadAndParse` so
+  /// the network fetch + decode of the VERSE asset can run CONCURRENTLY
+  /// with `_loadParagraphMap()`'s fetch of the two paragraph-reference
+  /// assets, instead of strictly after it. The paragraph map is only
+  /// consumed by `_enrichWithParagraphs` below — nothing here needs it.
+  ///
+  /// Field report: `TimeoutException — FetchVerses` reported after all
+  /// 3 escalating attempts (20/40/60 s) genuinely exhausted on a slow
+  /// mobile connection. `execute()` used to `await` this fetch AFTER
+  /// already `await`-ing the full paragraph-map load, both under the
+  /// SAME per-attempt timeout — so a slow attempt paid for two
+  /// sequential network round-trips out of one budget (worst case ~2×
+  /// the nominal timeout before either one even got a chance to be the
+  /// one that's slow). Running them concurrently means the shared
+  /// timeout only has to cover whichever one is slower, not both added
+  /// together — roughly doubling the effective per-attempt budget for
+  /// the same wall-clock wait the user already tolerates.
+  static Future<List<Verse>> _fetchAndDecodeVerses(String path) async {
     final jsonString = await rootBundle.loadString(path);
     final dynamic decoded = json.decode(jsonString);
 
@@ -308,11 +336,19 @@ class FetchVerses {
         verses.add(Verse.fromJson(m));
       } catch (_) {}
     }
+    return verses;
+  }
 
-    // Apply shared paragraph metadata to every verse so all translations share
-    // the same paragraph structure. We only override when a source has a
-    // meaningful flag; versions that already carry their own metadata keep
-    // theirs unless the shared source has a stronger signal.
+  /// Apply shared paragraph metadata to every verse so all translations share
+  /// the same paragraph structure, then sort into canonical order. We only
+  /// override when a source has a meaningful flag; versions that already
+  /// carry their own metadata keep theirs unless the shared source has a
+  /// stronger signal. Pure CPU work — no I/O, so it isn't part of the
+  /// timeout race in `execute()`.
+  static List<Verse> _enrichWithParagraphs(
+    List<Verse> verses,
+    Map<String, Map<String, _ParaInfo>> paraMap,
+  ) {
     final enriched = <Verse>[];
     for (final v in verses) {
       final bookEn = bookNameToEnglish[v.book] ?? v.book;
