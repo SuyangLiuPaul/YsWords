@@ -4853,6 +4853,23 @@ void showNoteEditor({
                     } else {
                       controller.text = cur + inserted;
                     }
+                    // 2026-07-31 (v1.3.149): programmatic writes to a
+                    // TextEditingController do NOT fire TextField's
+                    // onChanged — that callback only runs from
+                    // EditableText._formatAndSetValue, which is the
+                    // USER-input path (keyboard/IME). The controller-
+                    // change listener path (_didChangeTextEditingValue)
+                    // only setState()s the field's OWN visible text —
+                    // it never calls onChanged. So the ref-chip strip
+                    // below (rebuilt only from the onChanged handler's
+                    // setSheetState) never saw a reference added via
+                    // this button; it only appeared after saving and
+                    // reopening the note, which rebuilds from scratch.
+                    // Field report: "为什么按了做笔记的经文下面没有实时
+                    // 加入经文在下面而保存后才出现在下面" — the same gap
+                    // the typed-`[Book Ch:V]` path already covers via
+                    // its own onChanged. Mirror that here explicitly.
+                    setSheetState(() {});
                   },
                   icon: Icon(Icons.add_link_rounded, color: scheme.primary),
                   label: Text(
