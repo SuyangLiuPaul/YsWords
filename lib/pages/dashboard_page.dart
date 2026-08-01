@@ -371,6 +371,25 @@ class _DashboardPageState extends State<DashboardPage> {
         leading: null,
         title: Text(uiStrings['home']?[locale] ?? 'Home'),
         centerTitle: true,
+        actions: [
+          // 2026-08-02: field request — a visible, one-tap language
+          // switcher on Home instead of having to dig into Settings →
+          // App → Interface Language every time. Same underlying
+          // `settings.setLocale` call the Settings dropdown already
+          // uses, so both stay in sync and neither is "the real one".
+          PopupMenuButton<String>(
+            tooltip: uiStrings['interfaceLanguage']?[locale] ??
+                'Interface Language',
+            icon: const Icon(Icons.language_rounded),
+            initialValue: settings.locale,
+            onSelected: (val) => settings.setLocale(val),
+            itemBuilder: (context) => const [
+              PopupMenuItem(value: 'zh-Hans', child: Text('简体中文')),
+              PopupMenuItem(value: 'zh-Hant', child: Text('繁體中文')),
+              PopupMenuItem(value: 'en', child: Text('English')),
+            ],
+          ),
+        ],
       ),
       body: Center(
         child: ConstrainedBox(
