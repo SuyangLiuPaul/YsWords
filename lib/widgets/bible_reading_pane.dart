@@ -51,7 +51,11 @@ import 'package:yswords/utils/illustration_grouping.dart';
 // used in this file (jump-to-reference flow on a verse tap).
 import 'package:yswords/utils/jump_to_reference.dart' show prepareJumpToVerse;
 import 'package:yswords/utils/note_reference_parser.dart'
-    show extractNoteReferences, NoteReferenceMatch, buildNoteSpans;
+    show
+        extractNoteReferences,
+        NoteReferenceMatch,
+        buildNoteSpans,
+        spliceComposingUnderline;
 import 'package:yswords/utils/reference_parser.dart';
 import 'package:yswords/widgets/verse_popup_sheet.dart' show showVersePopup;
 import 'package:yswords/utils/responsive.dart';
@@ -4238,22 +4242,25 @@ class _RefHighlightingController extends TextEditingController {
     TextStyle? style,
     required bool withComposing,
   }) {
+    final scheme = Theme.of(context).colorScheme;
+    final refSpans = buildNoteSpans(
+      noteText: text,
+      baseStyle: style ?? const TextStyle(),
+      refColor: scheme.primary,
+      refBackgroundColor: scheme.primaryContainer.withValues(alpha: 0.35),
+    );
+
+    // Splice the IME composing-region underline into our highlighted
+    // spans instead of discarding all highlighting while composing is
+    // active — see spliceComposingUnderline's doc comment for the
+    // field report this fixes.
     final composingRegionOutOfRange =
         !value.isComposingRangeValid || !withComposing;
-    if (!composingRegionOutOfRange) {
-      return super.buildTextSpan(
-          context: context, style: style, withComposing: withComposing);
-    }
-    final scheme = Theme.of(context).colorScheme;
-    return TextSpan(
-      style: style,
-      children: buildNoteSpans(
-        noteText: text,
-        baseStyle: style ?? const TextStyle(),
-        refColor: scheme.primary,
-        refBackgroundColor: scheme.primaryContainer.withValues(alpha: 0.35),
-      ),
-    );
+    final finalSpans = composingRegionOutOfRange
+        ? refSpans
+        : spliceComposingUnderline(refSpans, value.composing,
+            fallbackStyle: style);
+    return TextSpan(style: style, children: finalSpans);
   }
 }
 

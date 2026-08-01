@@ -375,4 +375,82 @@ void main() {
       expect(refSpan.recognizer, isNotNull);
     });
   });
+
+  // 2026-08-02: field report — "如果中文英文插入这个不是跟着变的"
+  // (typing Chinese/English, the highlight doesn't keep up). The note
+  // editor's ref-highlighting controller used to bail out to a
+  // completely PLAIN render for the entire note text whenever any IME
+  // composing session was active anywhere in it, so every already-
+  // inserted [Book Ch:V] pill would flicker away on every pinyin
+  // keystroke. spliceComposingUnderline lets the composing region get
+  // its underline WITHOUT discarding the rest of the text's styling.
+  group('spliceComposingUnderline', () {
+    List<TextSpan> pillSpans(String text) => buildNoteSpans(
+          noteText: text,
+          baseStyle: const TextStyle(fontSize: 14),
+          refColor: const Color(0xFF3730A3),
+          refBackgroundColor: const Color(0x593730A3),
+        ).cast<TextSpan>();
+
+    test('composing region inside plain text splits into 3 parts, '
+        'middle part gets underline', () {
+      final spans = pillSpans('Just a note about prayer.');
+      // "note" starts at index 7, ends at 11.
+      final result = spliceComposingUnderline(
+        spans,
+        const TextRange(start: 7, end: 11),
+      );
+      final joined = result.whereType<TextSpan>().map((s) => s.text).join();
+      expect(joined, 'Just a note about prayer.',
+          reason: 'splicing must not lose or duplicate any text');
+      final composingSpan = result.whereType<TextSpan>().firstWhere(
+            (s) => s.text == 'note',
+          );
+      expect(composingSpan.style?.decoration, TextDecoration.underline);
+    });
+
+    test('composing region overlapping a ref pill keeps the pill '
+        'background AND adds the underline', () {
+      final spans = pillSpans('See [John 3:16] now.');
+      // "[John 3:16]" occupies indices 4..15. Compose over "3:16"
+      // (indices 10..14), well inside the pill span.
+      final result = spliceComposingUnderline(
+        spans,
+        const TextRange(start: 10, end: 14),
+      );
+      final joined = result.whereType<TextSpan>().map((s) => s.text).join();
+      expect(joined, 'See [John 3:16] now.');
+      final composingSpan =
+          result.whereType<TextSpan>().firstWhere((s) => s.text == '3:16');
+      expect(composingSpan.style?.decoration, TextDecoration.underline,
+          reason: 'composing region must show the IME underline');
+      expect(composingSpan.style?.backgroundColor, const Color(0x593730A3),
+          reason: 'the ref pill background must survive composing, not '
+              'be discarded like the old full-text bailout did');
+    });
+
+    test('composing region spanning a span boundary splits both '
+        'sides correctly', () {
+      final spans = pillSpans('[Gen 1:1] hello');
+      // "[Gen 1:1]" is indices 0..9; " hello" starts at 9. Compose
+      // over indices 7..12 — crosses from inside the pill into the
+      // plain suffix.
+      final result = spliceComposingUnderline(
+        spans,
+        const TextRange(start: 7, end: 12),
+      );
+      final joined = result.whereType<TextSpan>().map((s) => s.text).join();
+      expect(joined, '[Gen 1:1] hello',
+          reason: 'no characters lost across the span boundary');
+    });
+
+    test('composing region with no overlap leaves spans untouched', () {
+      final spans = pillSpans('[Gen 1:1] hello');
+      final result = spliceComposingUnderline(
+        spans,
+        const TextRange(start: 100, end: 105),
+      );
+      expect(result, spans);
+    });
+  });
 }

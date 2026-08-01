@@ -351,3 +351,64 @@ String formatCompactReference({
 
   return '[${displayBook ?? englishBook} $chapter:${parts.join(',')}]';
 }
+
+/// 2026-08-02: splice the platform's IME composing-region underline
+/// into an already-styled span list (e.g. from [buildNoteSpans])
+/// WITHOUT discarding the rest of that styling.
+///
+/// Field report: the note editor's ref-highlighting controller used
+/// to bail out to a completely plain render for the WHOLE text
+/// whenever ANY composing session was active anywhere in the note —
+/// so every already-inserted `[Book Ch:V]` pill (English or Chinese)
+/// would flicker back to plain text on every pinyin keystroke, even
+/// far from the composing cursor, then snap back once the syllable
+/// committed. "如果中文英文插入这个不是跟着变的" (typing Chinese/
+/// English, the highlight doesn't keep up).
+///
+/// [composing] must be a valid, non-collapsed range (callers should
+/// check `value.isComposingRangeValid` first — this function doesn't
+/// re-derive that from a bare `TextEditingValue` because
+/// `TextEditingController.value.composing` is what callers already
+/// have on hand). [spans] must be the FLAT `TextSpan(text: ..., style:
+/// ...)` list [buildNoteSpans] returns (no nested children) — that's
+/// the only shape this walks.
+List<InlineSpan> spliceComposingUnderline(
+  List<InlineSpan> spans,
+  TextRange composing, {
+  TextStyle? fallbackStyle,
+}) {
+  final spliced = <InlineSpan>[];
+  var consumed = 0;
+  for (final span in spans) {
+    if (span is! TextSpan || span.text == null) {
+      spliced.add(span);
+      continue;
+    }
+    final spanText = span.text!;
+    final start = consumed;
+    final end = consumed + spanText.length;
+    consumed = end;
+    if (end <= composing.start || start >= composing.end) {
+      // This span doesn't overlap the composing range at all.
+      spliced.add(span);
+      continue;
+    }
+    final composingStyle = (span.style ?? fallbackStyle)
+            ?.merge(const TextStyle(decoration: TextDecoration.underline)) ??
+        const TextStyle(decoration: TextDecoration.underline);
+    final localStart = (composing.start - start).clamp(0, spanText.length);
+    final localEnd = (composing.end - start).clamp(0, spanText.length);
+    if (localStart > 0) {
+      spliced.add(TextSpan(
+          text: spanText.substring(0, localStart), style: span.style));
+    }
+    spliced.add(TextSpan(
+        text: spanText.substring(localStart, localEnd),
+        style: composingStyle));
+    if (localEnd < spanText.length) {
+      spliced.add(TextSpan(
+          text: spanText.substring(localEnd), style: span.style));
+    }
+  }
+  return spliced;
+}
