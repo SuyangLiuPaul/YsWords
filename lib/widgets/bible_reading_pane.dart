@@ -56,7 +56,8 @@ import 'package:yswords/utils/note_reference_parser.dart'
         NoteReferenceMatch,
         buildNoteSpans,
         spliceComposingUnderline,
-        normalizeNoteReferenceBookNames;
+        normalizeNoteReferenceBookNames,
+        formatCompactReference;
 import 'package:yswords/utils/reference_parser.dart';
 import 'package:yswords/widgets/verse_popup_sheet.dart' show showVersePopup;
 import 'package:yswords/utils/responsive.dart';
@@ -4234,6 +4235,66 @@ void _navigateToBibleReference({
 /// Reference highlighting only applies once composition settles —
 /// composing sessions essentially never span a `[...]` boundary in
 /// practice, and this guard makes that a non-issue either way.
+/// 2026-08-02: called from the note body's `onChanged` on every
+/// keystroke. If the character just typed is a `]` that closes a
+/// valid `[Book Ch:V]` reference, immediately rewrites that ONE
+/// reference's book name to the current locale/version's preferred
+/// form — the same resolution [localeAwareBookName] + the chip strip
+/// already use — so the user sees the conversion happen the instant
+/// they finish typing it, not only after Save+reopen.
+///
+/// Field report: normalizing only at Save time (still done, as a
+/// safety net covering paste and any note saved before this feature
+/// existed) meant the user had to save and reopen the note before
+/// seeing anything change, which repeatedly read as "it's still not
+/// converting" — "还是没有变" — even though it correctly would have
+/// on the next save.
+///
+/// Deliberately scoped to just the reference immediately behind the
+/// cursor (not a full-text rescan every keystroke): cheap, and it
+/// can never touch text the user hasn't finished typing yet. Skips
+/// entirely during an active IME composing session and when the
+/// selection isn't a plain collapsed cursor, so it never fights
+/// pinyin input or an active text selection.
+void _maybeLocalizeJustClosedReference(
+  TextEditingController controller,
+  String locale,
+  MainProvider mainProvider,
+) {
+  final value = controller.value;
+  if (value.isComposingRangeValid) return;
+  final selection = value.selection;
+  if (!selection.isValid || !selection.isCollapsed) return;
+  final cursor = selection.baseOffset;
+  final text = value.text;
+  if (cursor <= 0 || cursor > text.length || text[cursor - 1] != ']') {
+    return;
+  }
+  final openIdx = text.lastIndexOf('[', cursor - 1);
+  if (openIdx < 0) return;
+  final candidate = text.substring(openIdx, cursor);
+  final refs = extractNoteReferences(candidate);
+  if (refs.length != 1) return; // must be exactly one clean match
+
+  final ref = refs.first;
+  final displayBook = localeAwareBookName(
+      ref.englishBook, locale, mainProvider.currentVersion);
+  final replacement = formatCompactReference(
+    englishBook: ref.englishBook,
+    chapter: ref.chapter,
+    verses: ref.verses,
+    displayBook: displayBook,
+  );
+  if (replacement.isEmpty || replacement == candidate) return;
+
+  final newText = text.replaceRange(openIdx, cursor, replacement);
+  final newCursor = openIdx + replacement.length;
+  controller.value = TextEditingValue(
+    text: newText,
+    selection: TextSelection.collapsed(offset: newCursor),
+  );
+}
+
 class _RefHighlightingController extends TextEditingController {
   _RefHighlightingController({super.text});
 
@@ -4753,6 +4814,19 @@ void showNoteEditor({
                   },
                   onChanged: (_) {
                     restoreScroll();
+                    // 2026-08-02: the moment a reference is COMPLETED
+                    // (the user just typed the closing "]"), localize
+                    // its book name immediately — field report:
+                    // normalizing only at Save meant the user had to
+                    // save + reopen before seeing anything change,
+                    // which read as "it's still not converting" even
+                    // though it correctly would have on next save.
+                    // Scoped to just the reference that was just
+                    // closed (not a full-text rescan on every
+                    // keystroke) to keep this cheap and to avoid ever
+                    // touching text the user hasn't finished typing.
+                    _maybeLocalizeJustClosedReference(
+                        controller, locale, mainProvider);
                     // 2026-05-20 (v1.2.65): rebuild so the ref-chip
                     // strip below recomputes from the new note
                     // text.
