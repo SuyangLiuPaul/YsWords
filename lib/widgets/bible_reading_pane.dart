@@ -51,7 +51,7 @@ import 'package:yswords/utils/illustration_grouping.dart';
 // used in this file (jump-to-reference flow on a verse tap).
 import 'package:yswords/utils/jump_to_reference.dart' show prepareJumpToVerse;
 import 'package:yswords/utils/note_reference_parser.dart'
-    show extractNoteReferences, NoteReferenceMatch;
+    show extractNoteReferences, NoteReferenceMatch, buildNoteSpans;
 import 'package:yswords/utils/reference_parser.dart';
 import 'package:yswords/widgets/verse_popup_sheet.dart' show showVersePopup;
 import 'package:yswords/utils/responsive.dart';
@@ -4204,6 +4204,59 @@ void _navigateToBibleReference({
   prepareJumpToVerse(hit, mainProvider);
 }
 
+/// 2026-08-01: `TextEditingController` for the note editor's body
+/// field that paints matched `[Book Ch:V]` references as a pill —
+/// coloured, bold, solid background — instead of plain grey text,
+/// WITHOUT changing anything about the underlying stored string.
+/// This is purely a paint-time override (`buildTextSpan`); `text` /
+/// `value` behave exactly like a normal controller, so Save, the
+/// ref-chip strip below, Library display, export, and every other
+/// note-reading surface are all untouched — none of them go through
+/// this class.
+///
+/// Field request: raw `[Book Ch:V]` syntax read as ugly/redundant
+/// next to the tappable chip strip already shown below the field.
+/// A full inline-widget-chip (actually embedding the ActionChip
+/// INSIDE the editable text) isn't achievable with a plain
+/// `TextField` — `EditableText` only supports styled `TextSpan`s in
+/// its editable region, not arbitrary widgets — so this gets the
+/// visual result (looks like a chip) without that rewrite.
+///
+/// IME composing-region safety: while the user is mid-composition
+/// (e.g. typing pinyin before it resolves to Chinese characters),
+/// this defers ENTIRELY to the default implementation so the
+/// platform's own composing-underline behaviour is never touched.
+/// Reference highlighting only applies once composition settles —
+/// composing sessions essentially never span a `[...]` boundary in
+/// practice, and this guard makes that a non-issue either way.
+class _RefHighlightingController extends TextEditingController {
+  _RefHighlightingController({super.text});
+
+  @override
+  TextSpan buildTextSpan({
+    required BuildContext context,
+    TextStyle? style,
+    required bool withComposing,
+  }) {
+    final composingRegionOutOfRange =
+        !value.isComposingRangeValid || !withComposing;
+    if (!composingRegionOutOfRange) {
+      return super.buildTextSpan(
+          context: context, style: style, withComposing: withComposing);
+    }
+    final scheme = Theme.of(context).colorScheme;
+    return TextSpan(
+      style: style,
+      children: buildNoteSpans(
+        noteText: text,
+        baseStyle: style ?? const TextStyle(),
+        refColor: scheme.primary,
+        refBackgroundColor: scheme.primaryContainer.withValues(alpha: 0.35),
+      ),
+    );
+  }
+}
+
 /// Modal text-editing sheet for attaching a note to a single verse.
 /// If the verse already has a note, the editor pre-fills with it
 /// and shows a Delete button.
@@ -4276,7 +4329,7 @@ void showNoteEditor({
   if (addText.isNotEmpty) {
     initialBody = initialBody.isEmpty ? addText : '$initialBody\n\n$addText';
   }
-  final controller = TextEditingController(text: initialBody);
+  final controller = _RefHighlightingController(text: initialBody);
   final titleController = TextEditingController(text: prefillTitle ?? '');
   // Reference label: single verse → "Genesis 1:16"; range → "Genesis 1:16-18".
   String ref;

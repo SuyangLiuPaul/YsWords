@@ -317,4 +317,62 @@ void main() {
       expect(refs, isEmpty);
     });
   });
+
+  // 2026-08-01: pill-highlight mode for the note editor's inline
+  // TextEditingController override — onRefTap omitted (no tap
+  // recognizer, since a TapGestureRecognizer inside an editable
+  // field's own text-selection gesture area is the kind of thing
+  // that's easy to get subtly wrong) and refBackgroundColor supplied
+  // for a solid-background "pill" look instead of the underlined-link
+  // style.
+  group('buildNoteSpans — pill-highlight mode (no onRefTap)', () {
+    test('matched ref gets background + color styling, no recognizer',
+        () {
+      final spans = buildNoteSpans(
+        noteText: 'See [John 3:16] for the gospel.',
+        baseStyle: const TextStyle(fontSize: 14),
+        refColor: const Color(0xFF3730A3),
+        refBackgroundColor: const Color(0x593730A3),
+      );
+      // plain prefix, ref, plain suffix — same 3-span shape as the
+      // tappable-link mode.
+      expect(spans.length, 3);
+      final refSpan = spans[1] as TextSpan;
+      expect(refSpan.text, '[John 3:16]');
+      expect(refSpan.style?.backgroundColor, const Color(0x593730A3));
+      expect(refSpan.style?.color, const Color(0xFF3730A3));
+      // No underline in pill mode — that's the tappable-link mode's
+      // affordance, and would be misleading here since tapping this
+      // span just places the text cursor.
+      expect(refSpan.style?.decoration, isNot(TextDecoration.underline));
+      // The whole point: nothing to accidentally fight the
+      // TextField's own tap-to-place-cursor gesture.
+      expect(refSpan.recognizer, isNull);
+    });
+
+    test('plain-text-only note is unaffected by pill mode', () {
+      final spans = buildNoteSpans(
+        noteText: 'Just a note about prayer.',
+        baseStyle: const TextStyle(),
+        refColor: const Color(0xFF000000),
+        refBackgroundColor: const Color(0x59000000),
+      );
+      expect(spans.length, 1);
+      expect((spans.first as TextSpan).style?.backgroundColor, isNull);
+    });
+
+    test('default (no refBackgroundColor) keeps the original '
+        'underlined-link style — existing callers unaffected', () {
+      final spans = buildNoteSpans(
+        noteText: '[John 3:16]',
+        baseStyle: const TextStyle(),
+        refColor: const Color(0xFF000000),
+        onRefTap: (_) {},
+      );
+      final refSpan = spans.first as TextSpan;
+      expect(refSpan.style?.decoration, TextDecoration.underline);
+      expect(refSpan.style?.backgroundColor, isNull);
+      expect(refSpan.recognizer, isNotNull);
+    });
+  });
 }

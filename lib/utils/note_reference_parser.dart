@@ -121,9 +121,22 @@ List<int> _parseVerseSpec(String spec) {
 }
 
 /// Builds an [InlineSpan] list from [noteText]. Any well-formed
-/// `[Book Ch:V]` becomes a tappable [TextSpan] that invokes
-/// [onRefTap] when tapped. Everything else flows through as plain
-/// text.
+/// `[Book Ch:V]` becomes a styled [TextSpan] — tappable (invoking
+/// [onRefTap]) when [onRefTap] is provided. Everything else flows
+/// through as plain text.
+///
+/// [onRefTap] is optional: pass `null` for read-only rendering
+/// without tap handling (a [TapGestureRecognizer] fighting an
+/// editable field's own selection gesture detector is the kind of
+/// thing that's easy to get subtly wrong, so editable callers —
+/// see the note editor's ref-highlighting `TextEditingController`
+/// — skip it entirely and rely on the separate ref-chip strip for
+/// tap-to-preview).
+///
+/// [refBackgroundColor], when supplied, paints a solid block behind
+/// each matched reference (in addition to [refColor]'s text tint),
+/// giving it a pill-like look. Omit for the original underlined-link
+/// style.
 ///
 /// Returns a single-element list with one plain [TextSpan] when
 /// [noteText] is empty or contains no references — keeps callers
@@ -133,7 +146,8 @@ List<InlineSpan> buildNoteSpans({
   required String noteText,
   required TextStyle baseStyle,
   required Color refColor,
-  required void Function(NoteReferenceMatch ref) onRefTap,
+  void Function(NoteReferenceMatch ref)? onRefTap,
+  Color? refBackgroundColor,
 }) {
   if (noteText.isEmpty) {
     return [TextSpan(text: '', style: baseStyle)];
@@ -181,14 +195,27 @@ List<InlineSpan> buildNoteSpans({
       );
       spans.add(TextSpan(
         text: noteText.substring(m.start, m.end),
-        style: baseStyle.copyWith(
-          color: refColor,
-          decoration: TextDecoration.underline,
-          decorationStyle: TextDecorationStyle.dotted,
-          decorationColor: refColor.withValues(alpha: 0.7),
-          decorationThickness: 1.2,
-        ),
-        recognizer: TapGestureRecognizer()..onTap = () => onRefTap(ref),
+        style: refBackgroundColor != null
+            // Pill look (note editor, inline highlight): solid
+            // background instead of the underlined-link treatment —
+            // dotted underlines read as "tap me" against a plain
+            // background, but inside an editable field with no tap
+            // handler that promise would be broken.
+            ? baseStyle.copyWith(
+                color: refColor,
+                fontWeight: FontWeight.w600,
+                backgroundColor: refBackgroundColor,
+              )
+            : baseStyle.copyWith(
+                color: refColor,
+                decoration: TextDecoration.underline,
+                decorationStyle: TextDecorationStyle.dotted,
+                decorationColor: refColor.withValues(alpha: 0.7),
+                decorationThickness: 1.2,
+              ),
+        recognizer: onRefTap == null
+            ? null
+            : (TapGestureRecognizer()..onTap = () => onRefTap(ref)),
       ));
     } else {
       // Looks like a reference but the book name isn't canonical
