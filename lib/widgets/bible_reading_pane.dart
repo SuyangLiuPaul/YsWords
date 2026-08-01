@@ -55,7 +55,8 @@ import 'package:yswords/utils/note_reference_parser.dart'
         extractNoteReferences,
         NoteReferenceMatch,
         buildNoteSpans,
-        spliceComposingUnderline;
+        spliceComposingUnderline,
+        normalizeNoteReferenceBookNames;
 import 'package:yswords/utils/reference_parser.dart';
 import 'package:yswords/widgets/verse_popup_sheet.dart' show showVersePopup;
 import 'package:yswords/utils/responsive.dart';
@@ -4953,10 +4954,26 @@ void showNoteEditor({
                     // to every verse in the selection too. All
                     // verses in a passage note share one title so
                     // the Library tile renders consistently.
+                    //
+                    // 2026-08-02: normalize every [Book Ch:V] ref's
+                    // book name to the current locale/version before
+                    // persisting — see normalizeNoteReferenceBookNames'
+                    // doc comment. A quick English abbreviation typed
+                    // mid-note (e.g. "[1 Kings 17:21]") previously
+                    // stayed English forever while the read-only chip
+                    // strip already showed "列王纪上 17:21", which
+                    // read as inconsistent. Done at Save (not on every
+                    // keystroke) so it never fights the live cursor
+                    // while the user is still typing.
+                    final savedText = normalizeNoteReferenceBookNames(
+                      controller.text,
+                      (canonical) => localeAwareBookName(
+                          canonical, locale, mainProvider.currentVersion),
+                    );
                     for (final v in verses) {
                       mainProvider.setVerseNote(
                         verse: v,
-                        text: controller.text,
+                        text: savedText,
                         title: titleController.text,
                       );
                     }
@@ -4966,7 +4983,7 @@ void showNoteEditor({
                     // actually got persisted. An empty body deletes
                     // the note (see setVerseNote); distinguish the
                     // two outcomes for the user-facing confirmation.
-                    final wasDeleted = controller.text.trim().isEmpty;
+                    final wasDeleted = savedText.trim().isEmpty;
                     Navigator.of(sheetCtx).maybePop();
                     // Toast on the reader's outer context (the sheet
                     // ctx is gone now); use rootOverlay via

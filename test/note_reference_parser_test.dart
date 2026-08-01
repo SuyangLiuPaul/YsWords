@@ -453,4 +453,68 @@ void main() {
       expect(result, spans);
     });
   });
+
+  // 2026-08-02: field report — "你看下面是列王纪上但是文字是1King".
+  // A manually-typed English abbreviation stayed English in the note
+  // body forever, even though the read-only chip strip already
+  // localized it. normalizeNoteReferenceBookNames rewrites the BOOK
+  // NAME (only) of every valid reference to whatever the caller's
+  // localizer returns, called once at Save time.
+  group('normalizeNoteReferenceBookNames', () {
+    test('rewrites an English abbreviation to the localized name', () {
+      final result = normalizeNoteReferenceBookNames(
+        'See [1 Kings 17:21] please.',
+        (canonical) => canonical == '1 Kings' ? '列王纪上' : canonical,
+      );
+      expect(result, 'See [列王纪上 17:21] please.');
+    });
+
+    test('leaves surrounding text and verse digits untouched', () {
+      final result = normalizeNoteReferenceBookNames(
+        '奴隶\n[2 Kings 4:34] 神迹',
+        (canonical) => canonical == '2 Kings' ? '列王纪下' : canonical,
+      );
+      expect(result, '奴隶\n[列王纪下 4:34] 神迹');
+    });
+
+    test('multiple references in one note all get rewritten', () {
+      final result = normalizeNoteReferenceBookNames(
+        '[1 Kings 17:21] and [2 Kings 4:34]',
+        (canonical) {
+          if (canonical == '1 Kings') return '列王纪上';
+          if (canonical == '2 Kings') return '列王纪下';
+          return canonical;
+        },
+      );
+      expect(result, '[列王纪上 17:21] and [列王纪下 4:34]');
+    });
+
+    test('already-localized references pass through unchanged '
+        '(idempotent)', () {
+      final result = normalizeNoteReferenceBookNames(
+        '[列王纪上 17:21]',
+        (canonical) => canonical == '1 Kings' ? '列王纪上' : canonical,
+      );
+      expect(result, '[列王纪上 17:21]');
+    });
+
+    test('invalid / malformed bracket text is left verbatim', () {
+      const text = '[Not A Real Book 1:1] and plain text';
+      final result = normalizeNoteReferenceBookNames(text, (c) => c);
+      expect(result, text);
+    });
+
+    test('compact multi-verse specs (ranges, commas) survive '
+        'the rewrite intact', () {
+      final result = normalizeNoteReferenceBookNames(
+        '[Gen 1:2-3,5,9-10]',
+        (canonical) => canonical == 'Genesis' ? '创世记' : canonical,
+      );
+      expect(result, '[创世记 1:2-3,5,9-10]');
+    });
+
+    test('empty note returns empty', () {
+      expect(normalizeNoteReferenceBookNames('', (c) => c), '');
+    });
+  });
 }

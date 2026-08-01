@@ -412,3 +412,54 @@ List<InlineSpan> spliceComposingUnderline(
   }
   return spliced;
 }
+
+/// 2026-08-02: rewrites every matched `[Book Ch:V]` reference's BOOK
+/// NAME to [displayBookFor]'s answer, leaving chapter/verse digits,
+/// non-reference text, and any bracket-shaped-but-invalid text
+/// completely untouched.
+///
+/// Field request: a user typing a quick English abbreviation like
+/// `[1 Kings 17:21]` in an otherwise-Chinese note saw the ref-chip
+/// strip correctly preview it as "列王纪上 17:21" (chips always
+/// localize for display — see [buildNoteSpans]'s note-editor caller),
+/// but the note BODY stayed in English, which read as inconsistent:
+/// "你看下面是列王纪上但是文字是1King". Call this once at SAVE time
+/// (not on every keystroke) — see `showNoteEditor`'s Save handler —
+/// so normalizing a reference's script never fights the user's live
+/// cursor position while they're still typing.
+///
+/// [displayBookFor] takes the resolved CANONICAL English book name
+/// and returns the name to substitute — callers pass
+/// `(canonical) => localeAwareBookName(canonical, locale, currentVersion)`,
+/// the exact same resolution the chip strip already uses, so the
+/// saved text and the chip preview always agree.
+String normalizeNoteReferenceBookNames(
+  String noteText,
+  String Function(String canonicalEnglishBook) displayBookFor,
+) {
+  if (noteText.isEmpty) return noteText;
+  final buffer = StringBuffer();
+  var cursor = 0;
+  for (final m in _referenceRegex.allMatches(noteText)) {
+    final rawBook = m.group(1)?.trim() ?? '';
+    final canonical = resolveBookName(rawBook);
+    final chapter = int.tryParse(m.group(2) ?? '');
+    final verseSpec = m.group(3) ?? '';
+    final verses = _parseVerseSpec(verseSpec);
+    if (canonical == null || chapter == null || verses.isEmpty) {
+      continue; // Not a real reference — leave verbatim.
+    }
+    final replacement = formatCompactReference(
+      englishBook: canonical,
+      chapter: chapter,
+      verses: verses,
+      displayBook: displayBookFor(canonical),
+    );
+    if (replacement.isEmpty) continue; // Defensive — shouldn't happen.
+    buffer.write(noteText.substring(cursor, m.start));
+    buffer.write(replacement);
+    cursor = m.end;
+  }
+  buffer.write(noteText.substring(cursor));
+  return buffer.toString();
+}
