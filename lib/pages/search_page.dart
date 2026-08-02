@@ -1329,7 +1329,30 @@ class _SearchPageState extends State<SearchPage> {
           // readable on the saturated AppBar background instead of
           // inheriting the global form-input colors which were tuned
           // for white surfaces.
-          title: TextField(
+          // 2026-08-02 (round 60): the search field previously sat
+          // bare in the AppBar with no visual chrome of its own — a
+          // plain TextField directly on the saturated primary
+          // background. Wrapped in a translucent rounded "pill"
+          // (the same capsule language used by the reading-pane
+          // toolbar's version chip and the Home dashboard's book
+          // pill) so it reads as a distinct, tappable search
+          // control rather than blending into the AppBar.
+          title: Builder(builder: (context) {
+            final fg = Theme.of(context).appBarTheme.foregroundColor ??
+                Theme.of(context).colorScheme.onPrimary;
+            return Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: fg.withValues(alpha: 0.16),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.search_rounded,
+                      size: 20, color: fg.withValues(alpha: 0.85)),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: TextField(
             autofocus: true,
             controller: _textEditingController,
             // 2026-05-22 (v1.2.71): allow up to 2 lines so long
@@ -1340,18 +1363,16 @@ class _SearchPageState extends State<SearchPage> {
             keyboardType: TextInputType.text,
             style: TextStyle(
               fontSize: settings.fontSize,
-              color: Theme.of(context).appBarTheme.foregroundColor,
+              color: fg,
             ),
-            cursorColor: Theme.of(context).appBarTheme.foregroundColor,
+            cursorColor: fg,
             decoration: InputDecoration(
               border: InputBorder.none,
               isDense: true,
               contentPadding: EdgeInsets.zero,
               hintText: uiStrings['search']?[settings.locale] ?? 'Search',
               hintStyle: TextStyle(
-                color: (Theme.of(context).appBarTheme.foregroundColor ??
-                        Theme.of(context).colorScheme.onSurface)
-                    .withValues(alpha: 0.65),
+                color: fg.withValues(alpha: 0.65),
               ),
             ),
             onChanged: (text) {
@@ -1452,7 +1473,30 @@ class _SearchPageState extends State<SearchPage> {
               }
             },
             textInputAction: TextInputAction.search,
-          ),
+                    ),
+                  ),
+                  if (_textEditingController.text.isNotEmpty)
+                    InkWell(
+                      borderRadius: BorderRadius.circular(20),
+                      onTap: () {
+                        setState(() {
+                          _textEditingController.clear();
+                          FocusScope.of(context).unfocus();
+                          _resetSearchState();
+                          searchAll = true;
+                          filterBook = null;
+                        });
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.all(4),
+                        child: Icon(Icons.close_rounded,
+                            size: 18, color: fg.withValues(alpha: 0.85)),
+                      ),
+                    ),
+                ],
+              ),
+            );
+          }),
           actions: [
             // 2026-05-07 (post-fix): help icon. Opens a localized
             // dialog explaining basic + advanced search syntax —
@@ -1539,22 +1583,9 @@ class _SearchPageState extends State<SearchPage> {
                 return items;
               },
             ),
-            // Clear search button when there's input. Uses the
-            // central state reset so leftover AI / Strong's / lemma
-            // suggestion state doesn't bleed into the next search.
-            if (_textEditingController.text.isNotEmpty)
-              IconButton(
-                onPressed: () {
-                  setState(() {
-                    _textEditingController.clear();
-                    FocusScope.of(context).unfocus(); // 关闭键盘
-                    _resetSearchState();
-                    searchAll = true; // ✅ 恢复为整本搜索
-                    filterBook = null; // ✅ 清除书卷筛选
-                  });
-                },
-                icon: const Icon(Icons.close_rounded),
-              ),
+            // 2026-08-02 (round 60): the clear (×) button moved
+            // inside the search pill itself (next to the field), so
+            // it's no longer duplicated here.
             const HomeIconButton(),
           ],
         ),
