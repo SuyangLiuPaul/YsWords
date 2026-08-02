@@ -6894,64 +6894,67 @@ class _FloatingHeader extends StatelessWidget {
                     vertical: 4 * settings.menuScale),
                 child: Row(
                   children: [
-                    Expanded(
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          // 2026-06-21: leading button is HOME, not a
-                          // back-arrow. On iPad split view the back-arrow
-                          // (←) collided visually with the sidebar-toggle
-                          // / secondary-pane close chevrons — "两个左
-                          // arrow" the user found confusing. A home icon
-                          // reads unambiguously and jumps straight to the
-                          // Dashboard root (what `maybePop` did anyway
-                          // when the reader was pushed from home). The
-                          // old right-side home action is removed since
-                          // it now lives here (no duplicate home icons).
-                          // Hidden in the split-view secondary pane
-                          // (where `onClose` already sits in this slot).
-                          if (onClose == null &&
-                              Navigator.of(context).canPop())
-                            IconButton(
-                              onPressed: () => Navigator.of(context)
-                                  .popUntil((r) => r.isFirst),
-                              icon: Icon(Icons.home_rounded,
-                                  size: iconSize),
-                              padding: EdgeInsets.all(iconPad),
-                              constraints: const BoxConstraints(
-                                  minWidth: 36, minHeight: 36),
-                              tooltip:
-                                  uiStrings['home']?[locale] ?? 'Home',
-                            ),
-                          if (onClose != null)
-                            IconButton(
-                              onPressed: onClose,
-                          icon: Icon(Icons.close_rounded, size: iconSize),
-                          padding: EdgeInsets.all(iconPad),
-                          constraints: const BoxConstraints(
-                              minWidth: 36, minHeight: 36),
-                          tooltip: uiStrings['tooltipClose']?[locale] ??
-                              'Close',
+                    // 2026-06-21: leading button is HOME, not a
+                    // back-arrow. On iPad split view the back-arrow
+                    // (←) collided visually with the sidebar-toggle
+                    // / secondary-pane close chevrons — "两个左
+                    // arrow" the user found confusing. A home icon
+                    // reads unambiguously and jumps straight to the
+                    // Dashboard root (what `maybePop` did anyway
+                    // when the reader was pushed from home). The
+                    // old right-side home action is removed since
+                    // it now lives here (no duplicate home icons).
+                    // Hidden in the split-view secondary pane
+                    // (where `onClose` already sits in this slot).
+                    if (onClose == null && Navigator.of(context).canPop())
+                      IconButton(
+                        onPressed: () =>
+                            Navigator.of(context).popUntil((r) => r.isFirst),
+                        icon: Icon(Icons.home_rounded, size: iconSize),
+                        padding: EdgeInsets.all(iconPad),
+                        constraints: const BoxConstraints(
+                            minWidth: 36, minHeight: 36),
+                        tooltip: uiStrings['home']?[locale] ?? 'Home',
+                      ),
+                    if (onClose != null)
+                      IconButton(
+                        onPressed: onClose,
+                        icon: Icon(Icons.close_rounded, size: iconSize),
+                        padding: EdgeInsets.all(iconPad),
+                        constraints: const BoxConstraints(
+                            minWidth: 36, minHeight: 36),
+                        tooltip:
+                            uiStrings['tooltipClose']?[locale] ?? 'Close',
+                      ),
+                    if (showSidebarToggle)
+                      IconButton(
+                        onPressed: onToggleSidebar,
+                        icon: Icon(
+                          sidebarOpen
+                              ? Icons.chevron_left_rounded
+                              : Icons.menu_book_rounded,
+                          size: iconSize,
                         ),
-                      if (showSidebarToggle)
-                        IconButton(
-                          onPressed: onToggleSidebar,
-                          icon: Icon(
-                            sidebarOpen
-                                ? Icons.chevron_left_rounded
-                                : Icons.menu_book_rounded,
-                            size: iconSize,
-                          ),
-                          padding: EdgeInsets.all(iconPad),
-                          constraints: const BoxConstraints(
-                              minWidth: 36, minHeight: 36),
-                          tooltip: sidebarOpen
-                              ? (uiStrings['close']?[settings.locale] ??
-                                  'Close')
-                              : (uiStrings['bibleBooks']?[settings.locale] ??
-                                  'Bible Books'),
-                        ),
-                      if (showBookInfo) ...[
+                        padding: EdgeInsets.all(iconPad),
+                        constraints: const BoxConstraints(
+                            minWidth: 36, minHeight: 36),
+                        tooltip: sidebarOpen
+                            ? (uiStrings['close']?[settings.locale] ??
+                                'Close')
+                            : (uiStrings['bibleBooks']?[settings.locale] ??
+                                'Bible Books'),
+                      ),
+                    // 2026-08-02 (v1.3.158): the book/chapter + version
+                    // pair now centers in the space between the leading
+                    // icons and the trailing action cluster, matching a
+                    // reference screenshot the user liked (two pill
+                    // buttons, centered, smaller type) rather than
+                    // sitting flush-left right after the icons.
+                    if (showBookInfo)
+                      Expanded(
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
                         // 2026-06-14 (v1.3.73): the book name gets layout
                         // PRIORITY (higher flex) over the version chip. The
                         // version PopupMenuButton used to be unbounded, so a
@@ -6963,11 +6966,23 @@ class _FloatingHeader extends StatelessWidget {
                         Flexible(
                           flex: 3,
                           child: InkWell(
-                            borderRadius: BorderRadius.circular(8),
+                            borderRadius: BorderRadius.circular(20),
                             onTap: onBookTap,
-                            child: Padding(
+                            // 2026-08-02 (v1.3.158): pill decoration to
+                            // match the version chip — "圈圈起来" feedback
+                            // — plus a smaller font size so the pair
+                            // reads as one compact, considered unit
+                            // instead of the title dwarfing the chip.
+                            child: Container(
                               padding: const EdgeInsets.symmetric(
-                                  horizontal: 8, vertical: 6),
+                                  horizontal: 8, vertical: 3),
+                              decoration: BoxDecoration(
+                                color: scheme.primary.withValues(alpha: 0.14),
+                                borderRadius: BorderRadius.circular(20),
+                                border: Border.all(
+                                  color: scheme.primary.withValues(alpha: 0.4),
+                                ),
+                              ),
                               // 2026-05-07: short-book-name policy.
                               // User refined the threshold after
                               // testing 390 / 414 / 747 widths: the
@@ -6989,7 +7004,7 @@ class _FloatingHeader extends StatelessWidget {
                                   overflow: TextOverflow.ellipsis,
                                   style: TextStyle(
                                     fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
-                                    fontSize: fontSize,
+                                    fontSize: fontSize * 0.78,
                                     fontWeight: FontWeight.w700,
                                     color: scheme.primary,
                                     decoration: TextDecoration.none,
@@ -6999,6 +7014,7 @@ class _FloatingHeader extends StatelessWidget {
                             ),
                           ),
                         ),
+                        const SizedBox(width: 6),
                         Flexible(
                           flex: 2,
                           // 2026-06-22 (v1.3.102): language-grouped popup
@@ -7089,7 +7105,7 @@ class _FloatingHeader extends StatelessWidget {
                                             fontFamily: settings.fontFamily,
                                             fontFamilyFallback:
                                                 kCjkFontFallback,
-                                            fontSize: fontSize * 0.85,
+                                            fontSize: fontSize * 0.78,
                                             fontWeight: FontWeight.w600,
                                             color: scheme.primary
                                                 .withValues(alpha: 0.85),
@@ -7098,7 +7114,7 @@ class _FloatingHeader extends StatelessWidget {
                                       ),
                                       Icon(
                                         Icons.expand_more_rounded,
-                                        size: (fontSize * 0.85)
+                                        size: (fontSize * 0.78)
                                             .clamp(12.0, 16.0),
                                         color: scheme.primary
                                             .withValues(alpha: 0.7),
@@ -7110,10 +7126,11 @@ class _FloatingHeader extends StatelessWidget {
                             );
                           }),
                         ),
-                      ],
-                    ],
-                  ),
-                ),
+                          ],
+                        ),
+                      )
+                    else
+                      const Spacer(),
                 // Right-side actions: Material 3 best practice — keep
                 // the most-used action (Search) visible and consolidate
                 // everything else into a single overflow menu so the

@@ -73,27 +73,29 @@ const bibleVersions = <BibleVersionInfo>[
   ),
   BibleVersionInfo(
     value: 'biblexg',
-    shortLabel: 'LJK1(简)',
+    // 2026-08-02 (v1.3.158): was 'LJK1(简)' — same Chinese-label fix
+    // as CUVS above, applied to 梁家铿译本 ("梁牧师的版本").
+    shortLabel: '梁家铿一版(简)',
     menuLabel: '梁家铿译本 第一版(简体)',
     language: 'zh-Hans',
     editionYear: '第一版',
   ),
   BibleVersionInfo(
     value: 'biblexg-tr',
-    shortLabel: 'LJK1(繁)',
+    shortLabel: '梁家铿一版(繁)',
     menuLabel: '梁家铿譯本 第一版(繁體)',
     language: 'zh-Hant',
     editionYear: '第一版',
   ),
   BibleVersionInfo(
     value: 'biblexg-v2',
-    shortLabel: 'LJK(简)',
+    shortLabel: '梁家铿(简)',
     menuLabel: '梁家铿译本(简体)',
     language: 'zh-Hans',
   ),
   BibleVersionInfo(
     value: 'biblexg-v2-tr',
-    shortLabel: 'LJK(繁)',
+    shortLabel: '梁家铿(繁)',
     menuLabel: '梁家铿譯本(繁體)',
     language: 'zh-Hant',
   ),
