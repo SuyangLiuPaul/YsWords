@@ -444,6 +444,18 @@ class _DashboardPageState extends State<DashboardPage> {
               PopupMenuItem(value: 'en', child: Text('English')),
             ],
           ),
+          // 2026-08-02: field request — a second, one-tap entry to
+          // Settings directly from the header (the quick-links grid
+          // already has one, but it's several scrolls down on a long
+          // dashboard).
+          IconButton(
+            tooltip: uiStrings['settings']?[locale] ?? 'Settings',
+            icon: const Icon(Icons.settings_outlined),
+            onPressed: () => Get.to(
+              () => const SettingsPage(),
+              transition: Transition.rightToLeft,
+            ),
+          ),
         ],
       ),
       body: Center(
