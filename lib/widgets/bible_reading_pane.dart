@@ -7096,23 +7096,28 @@ class _FloatingHeader extends StatelessWidget {
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
                                       Flexible(
-                                        // 2026-08-02 (v1.3.160): same
-                                        // narrow-screen fallback as the
-                                        // book title next to it — avoids
-                                        // "和合本雅..." truncating with
-                                        // no room left for the chevron.
-                                        child: Builder(builder: (chipTextCtx) {
-                                          final chipScreenW =
-                                              MediaQuery.of(chipTextCtx)
-                                                  .size
-                                                  .width;
-                                          final label = chipScreenW < 390
-                                              ? narrowBibleVersionLabel(
-                                                  version)
-                                              : shortBibleVersionLabel(
-                                                  version);
-                                          return Text(
-                                          label,
+                                        // 2026-08-02 (v1.3.161): the
+                                        // v1.3.160 "< 390px" breakpoint
+                                        // still truncated on phones
+                                        // wider than that (e.g. Pro Max
+                                        // models) because the chip only
+                                        // ever gets a slice of the
+                                        // width — it shares the row
+                                        // with the book-title pill AND
+                                        // the trailing icon cluster, so
+                                        // no screen-width threshold is
+                                        // ever really "wide enough".
+                                        // A pill is inherently a
+                                        // compact control; always show
+                                        // the short form here and
+                                        // reserve the full "和合本雅伟版"
+                                        // for contexts with a whole row
+                                        // to themselves (the version
+                                        // picker's menuLabel, the
+                                        // wide-screen dashboard resume
+                                        // card).
+                                        child: Text(
+                                          narrowBibleVersionLabel(version),
                                           maxLines: 1,
                                           softWrap: false,
                                           overflow: TextOverflow.ellipsis,
@@ -7125,8 +7130,7 @@ class _FloatingHeader extends StatelessWidget {
                                             color: scheme.primary
                                                 .withValues(alpha: 0.85),
                                           ),
-                                        );
-                                        }),
+                                        ),
                                       ),
                                       Icon(
                                         Icons.expand_more_rounded,
