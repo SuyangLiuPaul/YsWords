@@ -1004,42 +1004,62 @@ class _CountTile extends StatelessWidget {
         (s) => (s.fontSize, s.fontFamily));
     final settings = context.read<AppSettings>();
     final fs = settings.fontSize;
-    return Material(
-      color: tint.withValues(alpha: 0.08),
-      borderRadius: BorderRadius.circular(12),
-      child: Ink(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: tint.withValues(alpha: 0.28)),
-        ),
+    // 2026-08-02 (round 60, craft pass): replaced the flat tinted-
+    // wash + hard border with a plain surface card lifted on a soft,
+    // colour-matched shadow, and moved the icon into its own small
+    // badge above the number (a proper "stat card" layout — Notion /
+    // Linear style — instead of icon-and-number crammed into one
+    // row). Tabular figures keep the count column-aligned as it
+    // changes between one and two digits.
+    return Container(
+      decoration: BoxDecoration(
+        color: scheme.surface,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: tint.withValues(alpha: 0.14),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(16),
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(16),
           child: Padding(
             padding: const EdgeInsets.symmetric(
-                horizontal: 12, vertical: 14),
+                horizontal: 14, vertical: 14),
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(icon, color: tint, size: 18),
-                    const SizedBox(width: 6),
-                    Text(
-                      count.toString(),
-                      style: TextStyle(
-                        fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
-                        fontSize:
-                            (fs + 6).clamp(20.0, 32.0).toDouble(),
-                        fontWeight: FontWeight.w700,
-                        color: scheme.onSurface,
-                        height: 1.0,
-                      ),
-                    ),
-                  ],
+                Container(
+                  width: 30,
+                  height: 30,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: tint.withValues(alpha: 0.14),
+                    borderRadius: BorderRadius.circular(9),
+                  ),
+                  child: Icon(icon, color: tint, size: 16),
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 10),
+                Text(
+                  count.toString(),
+                  style: TextStyle(
+                    fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
+                    fontFeatures: const [FontFeature.tabularFigures()],
+                    fontSize:
+                        (fs + 6).clamp(20.0, 32.0).toDouble(),
+                    fontWeight: FontWeight.w800,
+                    color: scheme.onSurface,
+                    height: 1.0,
+                  ),
+                ),
+                const SizedBox(height: 3),
                 Text(
                   label,
                   maxLines: 1,
@@ -1092,7 +1112,20 @@ class _DailyVerseCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final preview = sanitizeForSearch(verse.text);
-    return Material(
+    // 2026-08-02 (round 60, craft pass): soft ambient shadow instead
+    // of a flat outline, matching the other dashboard cards.
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: scheme.shadow.withValues(alpha: 0.05),
+            blurRadius: 14,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
+      child: Material(
       color: scheme.surface,
       borderRadius: BorderRadius.circular(12),
       // v1.3.x: was Ink(BoxDecoration(borderRadius: 12, border:
@@ -1170,6 +1203,7 @@ class _DailyVerseCard extends StatelessWidget {
             ),
           ),
         ),
+      ),
     );
   }
 }
@@ -1250,16 +1284,23 @@ class _DashboardEvidenceCard extends StatelessWidget {
     final fs = settings.fontSize;
     final imgUrl =
         evidence.images.isNotEmpty ? evidence.images.first : null;
-    return Material(
+    // 2026-08-02 (round 60, craft pass): soft ambient shadow instead
+    // of a flat outline, matching the other dashboard cards.
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: scheme.shadow.withValues(alpha: 0.05),
+            blurRadius: 14,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
+      child: Material(
       color: scheme.surface,
       borderRadius: BorderRadius.circular(12),
-      child: Ink(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-              color: scheme.outlineVariant.withValues(alpha: 0.6)),
-        ),
-        child: InkWell(
+      child: InkWell(
           onTap: onTap,
           borderRadius: BorderRadius.circular(12),
           child: Padding(
@@ -1442,64 +1483,112 @@ class _ContinueReadingHero extends StatelessWidget {
         : (uiStrings['continueReadingHint']?[locale] ??
             'Open the Bible from the beginning.');
 
-    return Material(
-      color: scheme.primary,
-      borderRadius: BorderRadius.circular(16),
-      elevation: 0,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 18, 18, 18),
-          child: Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: scheme.onPrimary.withValues(alpha: 0.18),
-                  shape: BoxShape.circle,
+    // 2026-08-02 (round 60, craft pass): the flat single-colour fill
+    // read as generic chrome rather than the app's flagship CTA.
+    // Replaced with a subtle deepening gradient + a colour-matched
+    // ambient shadow (not a plain black drop-shadow — a common
+    // "premium" signature technique: the shadow itself carries the
+    // brand colour) and an oversized, near-invisible watermark icon
+    // in the corner for a bit of visual character at rest.
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(20),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            scheme.primary,
+            Color.lerp(scheme.primary, Colors.black, 0.22)!,
+          ],
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: scheme.primary.withValues(alpha: 0.32),
+            blurRadius: 24,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(20),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: onTap,
+            child: Stack(
+              children: [
+                Positioned(
+                  right: -16,
+                  bottom: -22,
+                  child: Icon(
+                    Icons.menu_book_rounded,
+                    size: 116,
+                    color: scheme.onPrimary.withValues(alpha: 0.08),
+                  ),
                 ),
-                child: Icon(
-                  Icons.menu_book_rounded,
-                  color: scheme.onPrimary,
-                  size: (fs + 8).clamp(20.0, 32.0).toDouble(),
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      ctaTitle,
-                      style: TextStyle(
-                        fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
-                        fontSize: (fs + 3).clamp(16.0, 24.0).toDouble(),
-                        fontWeight: FontWeight.w700,
-                        color: scheme.onPrimary,
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 20, 18, 20),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: scheme.onPrimary.withValues(alpha: 0.18),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          Icons.menu_book_rounded,
+                          color: scheme.onPrimary,
+                          size: (fs + 8).clamp(20.0, 32.0).toDouble(),
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 3),
-                    Text(
-                      positionLine,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
-                        fontSize: (fs - 2).clamp(11.0, 16.0).toDouble(),
-                        color: scheme.onPrimary.withValues(alpha: 0.85),
-                        fontWeight: FontWeight.w500,
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              ctaTitle,
+                              style: TextStyle(
+                                fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
+                                fontSize: (fs + 3).clamp(16.0, 24.0).toDouble(),
+                                fontWeight: FontWeight.w700,
+                                color: scheme.onPrimary,
+                                letterSpacing: 0.1,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              positionLine,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
+                                fontSize: (fs - 2).clamp(11.0, 16.0).toDouble(),
+                                color: scheme.onPrimary.withValues(alpha: 0.85),
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
+                      Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          color: scheme.onPrimary.withValues(alpha: 0.14),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          Icons.arrow_forward_rounded,
+                          color: scheme.onPrimary,
+                          size: 18,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              Icon(
-                Icons.arrow_forward_rounded,
-                color: scheme.onPrimary,
-                size: 22,
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -1552,15 +1641,30 @@ class _ResumeSermonHero extends StatelessWidget {
     ];
     final subtitle = subtitleParts.join('  ·  ');
 
-    return Material(
-      color: scheme.surfaceContainerHigh,
-      borderRadius: BorderRadius.circular(16),
-      elevation: 0,
-      child: InkWell(
+    // 2026-08-02 (round 60, craft pass): soft ambient shadow instead
+    // of a flat bordered fill, matching the radius (20) and shadow
+    // language of the Bible CTA above it — still visually quieter
+    // (no gradient, no colour-matched shadow) so it stays secondary.
+    return Container(
+      decoration: BoxDecoration(
+        color: scheme.surfaceContainerHigh,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: scheme.shadow.withValues(alpha: 0.05),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(20),
+        child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(20),
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 14, 18, 14),
+          padding: const EdgeInsets.fromLTRB(20, 16, 18, 16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -1631,6 +1735,7 @@ class _ResumeSermonHero extends StatelessWidget {
               ],
             ],
           ),
+        ),
         ),
       ),
     );
