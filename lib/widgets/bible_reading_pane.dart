@@ -6936,7 +6936,7 @@ class _FloatingHeader extends StatelessWidget {
                                       ?[settings.locale] ??
                                   'Change Version',
                               child: InkWell(
-                                borderRadius: BorderRadius.circular(8),
+                                borderRadius: BorderRadius.circular(20),
                                 onTap: () async {
                                   final box = chipCtx.findRenderObject()
                                       as RenderBox?;
@@ -6967,22 +6967,52 @@ class _FloatingHeader extends StatelessWidget {
                                     onVersionSelected(picked);
                                   }
                                 },
-                                child: Padding(
+                                // 2026-08-02 (v1.3.155): plain text gave no
+                                // hint this was tappable — "设计不是很好"
+                                // feedback. A tinted pill + chevron is the
+                                // same affordance language chips use
+                                // everywhere else in Material 3 (filter
+                                // chips, dropdown triggers).
+                                child: Container(
                                   padding: const EdgeInsets.symmetric(
-                                      horizontal: 6),
-                                  child: Text(
-                                    shortBibleVersionLabel(version),
-                                    maxLines: 1,
-                                    softWrap: false,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(
-                                      fontFamily: settings.fontFamily,
-                                      fontFamilyFallback: kCjkFontFallback,
-                                      fontSize: fontSize * 0.85,
-                                      fontWeight: FontWeight.w600,
+                                      horizontal: 8, vertical: 3),
+                                  decoration: BoxDecoration(
+                                    color: scheme.primary
+                                        .withValues(alpha: 0.14),
+                                    borderRadius: BorderRadius.circular(20),
+                                    border: Border.all(
                                       color: scheme.primary
-                                          .withValues(alpha: 0.8),
+                                          .withValues(alpha: 0.4),
                                     ),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Flexible(
+                                        child: Text(
+                                          shortBibleVersionLabel(version),
+                                          maxLines: 1,
+                                          softWrap: false,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: TextStyle(
+                                            fontFamily: settings.fontFamily,
+                                            fontFamilyFallback:
+                                                kCjkFontFallback,
+                                            fontSize: fontSize * 0.85,
+                                            fontWeight: FontWeight.w600,
+                                            color: scheme.primary
+                                                .withValues(alpha: 0.85),
+                                          ),
+                                        ),
+                                      ),
+                                      Icon(
+                                        Icons.expand_more_rounded,
+                                        size: (fontSize * 0.85)
+                                            .clamp(12.0, 16.0),
+                                        color: scheme.primary
+                                            .withValues(alpha: 0.7),
+                                      ),
+                                    ],
                                   ),
                                 ),
                               ),
@@ -6999,7 +7029,18 @@ class _FloatingHeader extends StatelessWidget {
                 // book/chapter label on the left has room to render
                 // (avoids "马可..." truncation in narrow layouts and
                 // split view).
-                Row(
+                // 2026-08-02 (v1.3.155): group the trailing actions in a
+                // soft tonal pill instead of two icons floating loose on
+                // the bar — reads as one deliberate control cluster
+                // (matches the version chip's new pill language on the
+                // left) rather than a generic default toolbar.
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 2),
+                  decoration: BoxDecoration(
+                    color: scheme.surfaceContainerHigh.withValues(alpha: 0.6),
+                    borderRadius: BorderRadius.circular(18),
+                  ),
+                  child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     if (showSearchAndSettings)
@@ -7033,6 +7074,23 @@ class _FloatingHeader extends StatelessWidget {
                       padding: EdgeInsets.all(iconPad),
                       tooltip: uiStrings['more']?[locale] ?? 'More',
                       position: PopupMenuPosition.under,
+                      // 2026-08-02 (v1.3.155): custom shape + surface tint
+                      // — the Material default (near-square corners,
+                      // pure-white/black card) is one of the most
+                      // recognizable "generic app" tells. Rounded corners
+                      // + a hairline border + the app's own tinted
+                      // surface make this read as part of THIS app's
+                      // design language rather than a stock widget.
+                      color: scheme.surfaceContainerHigh,
+                      elevation: 6,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        side: BorderSide(
+                          color: scheme.outlineVariant.withValues(alpha: 0.4),
+                        ),
+                      ),
+                      constraints:
+                          const BoxConstraints(minWidth: 240, maxWidth: 300),
                       // Each item fires its action via `onTap` (which
                       // runs the moment the user taps the row, before
                       // the menu's close animation begins) so layout-
@@ -7088,20 +7146,19 @@ class _FloatingHeader extends StatelessWidget {
                           ));
                           items.add(const PopupMenuDivider());
                         }
-                        if (highlightCount > 0) {
-                          items.add(PopupMenuItem(
-                            value: 'highlights',
-                            onTap: () => onHighlights?.call(),
-                            child: _menuRow(
-                              context,
-                              icon: Icons.format_color_fill,
-                              iconColor: scheme.primary,
-                              label: uiStrings['myHighlights']?[locale] ??
-                                  'My Highlights',
-                              trailing: highlightCount.toString(),
-                            ),
-                          ));
-                        }
+                        // 2026-08-02 (v1.3.155): the menu used to be one
+                        // flat list of ~14 rows in insertion order — no
+                        // hierarchy, everything competed equally for
+                        // attention ("设计不是很好" feedback). Regrouped
+                        // into Navigate / This Chapter / Reading / More,
+                        // each with a small eyebrow label, so the menu
+                        // reads as a considered structure at a glance.
+                        items.add(_menuSectionLabel(
+                          context,
+                          uiStrings['menuSectionNavigate']?[locale] ??
+                              'Navigate',
+                          withDivider: false,
+                        ));
                         // Home — pops everything off the stack so
                         // the user lands back on the Dashboard root.
                         // After Round 33 the Dashboard IS the app
@@ -7138,38 +7195,25 @@ class _FloatingHeader extends StatelessWidget {
                             ),
                           ));
                         }
-                        // Library entry — always shown so the user
-                        // can discover Notes / Bookmarks even before
-                        // creating any.
-                        items.add(PopupMenuItem(
-                          value: 'library',
-                          onTap: () {
-                            Get.to(
-                              () => const LibraryPage(),
-                              transition: Transition.rightToLeft,
-                            );
-                          },
-                          child: _menuRow(
-                            context,
-                            icon: Icons.collections_bookmark_outlined,
-                            label: uiStrings['library']?[locale] ?? 'Library',
-                          ),
+                        items.add(_menuSectionLabel(
+                          context,
+                          uiStrings['menuSectionChapter']?[locale] ??
+                              'This Chapter',
                         ));
-                        items.add(PopupMenuItem(
-                          value: 'stats',
-                          onTap: () {
-                            Get.to(
-                              () => const StatsPage(),
-                              transition: Transition.rightToLeft,
-                            );
-                          },
-                          child: _menuRow(
-                            context,
-                            icon: Icons.insights_outlined,
-                            label: uiStrings['statistics']?[locale] ??
-                                'Statistics',
-                          ),
-                        ));
+                        if (highlightCount > 0) {
+                          items.add(PopupMenuItem(
+                            value: 'highlights',
+                            onTap: () => onHighlights?.call(),
+                            child: _menuRow(
+                              context,
+                              icon: Icons.format_color_fill,
+                              iconColor: scheme.primary,
+                              label: uiStrings['myHighlights']?[locale] ??
+                                  'My Highlights',
+                              trailing: highlightCount.toString(),
+                            ),
+                          ));
+                        }
                         // Bible Evidence — pre-filtered to the
                         // current English book AND chapter so users
                         // only see archaeological / manuscript /
@@ -7302,6 +7346,16 @@ class _FloatingHeader extends StatelessWidget {
                                 : null,
                           ),
                         ));
+                        final hasReadingSection = onToggleSplitView != null ||
+                            (showSidebarToggle &&
+                                onToggleParagraphMode != null);
+                        if (hasReadingSection) {
+                          items.add(_menuSectionLabel(
+                            context,
+                            uiStrings['menuSectionReading']?[locale] ??
+                                'Reading',
+                          ));
+                        }
                         if (onToggleSplitView != null) {
                           items.add(PopupMenuItem(
                             value: 'split',
@@ -7339,8 +7393,43 @@ class _FloatingHeader extends StatelessWidget {
                             ),
                           ));
                         }
+                        items.add(_menuSectionLabel(
+                          context,
+                          uiStrings['menuSectionMore']?[locale] ?? 'More',
+                        ));
+                        // Library entry — always shown so the user
+                        // can discover Notes / Bookmarks even before
+                        // creating any.
+                        items.add(PopupMenuItem(
+                          value: 'library',
+                          onTap: () {
+                            Get.to(
+                              () => const LibraryPage(),
+                              transition: Transition.rightToLeft,
+                            );
+                          },
+                          child: _menuRow(
+                            context,
+                            icon: Icons.collections_bookmark_outlined,
+                            label: uiStrings['library']?[locale] ?? 'Library',
+                          ),
+                        ));
+                        items.add(PopupMenuItem(
+                          value: 'stats',
+                          onTap: () {
+                            Get.to(
+                              () => const StatsPage(),
+                              transition: Transition.rightToLeft,
+                            );
+                          },
+                          child: _menuRow(
+                            context,
+                            icon: Icons.insights_outlined,
+                            label: uiStrings['statistics']?[locale] ??
+                                'Statistics',
+                          ),
+                        ));
                         if (showSearchAndSettings) {
-                          items.add(const PopupMenuDivider());
                           items.add(PopupMenuItem(
                             value: 'settings',
                             onTap: onSettings,
@@ -7356,6 +7445,7 @@ class _FloatingHeader extends StatelessWidget {
                       },
                     ),
                   ],
+                  ),
                 ),
               ],
             ),
@@ -7369,6 +7459,12 @@ class _FloatingHeader extends StatelessWidget {
 
   /// Compact menu row used inside the overflow popup. The optional
   /// [trailing] string renders as a small count badge on the right.
+  ///
+  /// 2026-08-02 (v1.3.155): the icon now sits in a small tinted capsule
+  /// instead of floating bare — the same "iconography gets a soft
+  /// background" language iOS/Notion-style context menus use, and it
+  /// gives active-state icons (which already pass `iconColor:
+  /// scheme.primary`) a much clearer highlighted look than color alone.
   Widget _menuRow(
     BuildContext context, {
     required IconData icon,
@@ -7377,10 +7473,20 @@ class _FloatingHeader extends StatelessWidget {
     String? trailing,
   }) {
     final scheme = Theme.of(context).colorScheme;
+    final tint = iconColor ?? scheme.onSurfaceVariant;
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon, size: 18, color: iconColor ?? scheme.onSurfaceVariant),
+        Container(
+          width: 26,
+          height: 26,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: tint.withValues(alpha: 0.12),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(icon, size: 15, color: tint),
+        ),
         const SizedBox(width: 12),
         Text(
           label,
@@ -7410,6 +7516,50 @@ class _FloatingHeader extends StatelessWidget {
           ),
         ],
       ],
+    );
+  }
+
+  /// Small uppercase eyebrow label that groups the overflow menu's
+  /// items into Navigate / This Chapter / Reading / More sections —
+  /// see the v1.3.155 field feedback quoted at the `PopupMenuButton`
+  /// call site. `withDivider` draws a faint hairline above the label;
+  /// only the very first section (right after Home/Navigate, or right
+  /// after the sign-in row) omits it so the menu doesn't open with a
+  /// stray line under its own top edge.
+  PopupMenuEntry<String> _menuSectionLabel(
+    BuildContext context,
+    String label, {
+    bool withDivider = true,
+  }) {
+    final scheme = Theme.of(context).colorScheme;
+    return PopupMenuItem<String>(
+      enabled: false,
+      height: withDivider ? 34 : 24,
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (withDivider)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 6),
+              child: Divider(
+                height: 1,
+                thickness: 1,
+                color: scheme.outlineVariant.withValues(alpha: 0.4),
+              ),
+            ),
+          Text(
+            label.toUpperCase(),
+            style: TextStyle(
+              fontSize: 10.5,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 0.7,
+              color: scheme.onSurfaceVariant.withValues(alpha: 0.75),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

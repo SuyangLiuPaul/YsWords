@@ -378,6 +378,18 @@ const uiStrings = {
   // distinct from "我的高亮" (Highlights).
   'library': {'zh-Hans': '我的收藏', 'zh-Hant': '我的收藏', 'en': 'Library'},
   'statistics': {'zh-Hans': '圣经工具', 'zh-Hant': '聖經工具', 'en': 'Bible Tools'},
+  // v1.3.155: section eyebrow labels for the redesigned reading-pane
+  // overflow menu — groups ~14 previously-flat items so the menu
+  // reads as a considered hierarchy instead of one long undifferentiated
+  // list.
+  'menuSectionNavigate': {'zh-Hans': '导航', 'zh-Hant': '導航', 'en': 'Navigate'},
+  'menuSectionChapter': {
+    'zh-Hans': '本章资源',
+    'zh-Hant': '本章資源',
+    'en': 'This Chapter',
+  },
+  'menuSectionReading': {'zh-Hans': '阅读方式', 'zh-Hant': '閱讀方式', 'en': 'Reading'},
+  'menuSectionMore': {'zh-Hans': '更多', 'zh-Hant': '更多', 'en': 'More'},
   'statsOverview':
       {'zh-Hans': '总览', 'zh-Hant': '總覽', 'en': 'Overview'},
   'statsBooks': {'zh-Hans': '书卷', 'zh-Hant': '書卷', 'en': 'Books'},
