@@ -211,16 +211,26 @@ class _SermonsPageState extends State<SermonsPage> {
                 padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
                 child: Row(
                   children: [
+                    // 2026-08-02 (round 60): filled rounded "pill"
+                    // search field, replacing the plain outlined box
+                    // — matches the capsule language now used across
+                    // Home / Search / the reading-pane toolbar
+                    // instead of a generic Material outline.
                     Expanded(
                       child: TextField(
                         decoration: InputDecoration(
                           isDense: true,
-                          prefixIcon: const Icon(Icons.search, size: 20),
+                          filled: true,
+                          fillColor: scheme.surfaceContainerHighest
+                              .withValues(alpha: 0.6),
+                          prefixIcon: Icon(Icons.search_rounded,
+                              size: 20, color: scheme.onSurfaceVariant),
                           hintText:
                               uiStrings['sermonSearchHint']?[locale] ??
                                   'Search sermons by title or passage…',
                           border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
+                            borderRadius: BorderRadius.circular(24),
+                            borderSide: BorderSide.none,
                           ),
                         ),
                         onChanged: (v) =>
@@ -242,7 +252,9 @@ class _SermonsPageState extends State<SermonsPage> {
                         style: const TextStyle(fontSize: 13),
                       ),
                       style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        padding: const EdgeInsets.symmetric(horizontal: 14),
+                        shape: const StadiumBorder(),
+                        side: BorderSide(color: scheme.outlineVariant),
                         backgroundColor: _filterBook == null
                             ? null
                             : scheme.primaryContainer
@@ -668,6 +680,20 @@ class _TopicGroup extends StatelessWidget {
         collapsedShape: const Border(),
         tilePadding: const EdgeInsets.symmetric(horizontal: 16),
         childrenPadding: const EdgeInsets.only(bottom: 4),
+        // 2026-08-02 (round 60): tinted icon avatar ahead of the
+        // topic label, mirroring the icon-prefixed treatment given
+        // to the Home dashboard and Settings section headers — one
+        // consistent glyph (rather than a per-topic guess) since the
+        // 20 sermon topics don't map cleanly to distinct icons.
+        leading: Container(
+          width: 34,
+          height: 34,
+          decoration: BoxDecoration(
+            color: scheme.primary.withValues(alpha: 0.12),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Icon(Icons.campaign_outlined, size: 18, color: scheme.primary),
+        ),
         title: Text(
           localizedSermonTopic(topic, locale),
           style: const TextStyle(fontWeight: FontWeight.w600),
