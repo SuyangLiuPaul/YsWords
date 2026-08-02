@@ -101,7 +101,19 @@ deploy_sites "${INTL_SITES[@]}"
 # already finished uploading (deploy_sites waits), so overwriting is
 # safe.
 echo "==> building CHINA bundle (CHINA_MODE=true)"
+# 2026-08-02: --no-web-resources-cdn is REQUIRED for the China build.
+# By default Flutter web fetches the ~7 MB CanvasKit wasm from
+# `https://www.gstatic.com/flutter-canvaskit/<rev>/chromium/canvaskit.wasm`
+# — and gstatic.com is blocked in mainland China, which is precisely
+# the audience this bundle exists for. The local copy is already
+# emitted into build/web/canvaskit/ on every build; this flag makes
+# the bootstrap actually USE it (same-origin, served by Netlify)
+# instead of the unreachable CDN.
+# Deliberately NOT applied to the international build above: for
+# users who can reach it, gstatic is a better-peered CDN and is
+# often already warm in the browser cache from other Flutter apps.
 "$FLUTTER" build web --release \
+  --no-web-resources-cdn \
   --dart-define="APP_VERSION=$APP_VERSION" \
   --dart-define="CHINA_MODE=true"
 CN_SITES=(

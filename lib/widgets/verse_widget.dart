@@ -171,15 +171,21 @@ class VerseWidget extends StatelessWidget {
           vertPadding = (settings.fontSize * 0.4).clamp(6.0, 12.0);
         }
 
-        // 2026-05-24 (v1.3.4) PERF: RepaintBoundary isolates this
-        // verse's paint layer from sibling verses. Selection,
-        // highlight, or hover state changes on this verse won't
-        // dirty the paint trees of the other 50+ verses in the
-        // chapter — only this verse repaints. Combined with the
-        // SPL.builder's lazy item construction, the total paint
-        // work for a single-verse selection toggle drops from
-        // chapter-scale to verse-scale.
-        return RepaintBoundary(child: Material(
+        // 2026-08-02 PERF: the explicit RepaintBoundary that used to
+        // wrap this Material was REMOVED — it was a duplicate.
+        // ScrollablePositionedList passes `addRepaintBoundaries: true`
+        // (its default) straight through to the underlying
+        // SliverChildBuilderDelegate, so the framework already wraps
+        // every item in a RepaintBoundary before our builder's widget
+        // is inserted. The v1.3.4 comment that justified adding one
+        // here was correct about WANTING per-verse paint isolation,
+        // but wrong that we had to create it ourselves — we were
+        // nesting a second boundary directly inside the framework's,
+        // producing an extra compositor layer per verse for no gain.
+        // With SPL's 2×-viewport cache extent and 3 chapters kept
+        // alive by the PageView, that redundancy multiplied across
+        // several hundred live verses.
+        return Material(
           color: Colors.transparent,
           clipBehavior: Clip.hardEdge,
           child: InkWell(
@@ -300,7 +306,7 @@ class VerseWidget extends StatelessWidget {
               ],
             ),
           ),
-        ));
+        );
       },
     );
   }
