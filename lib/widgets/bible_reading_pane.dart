@@ -7096,8 +7096,23 @@ class _FloatingHeader extends StatelessWidget {
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
                                       Flexible(
-                                        child: Text(
-                                          shortBibleVersionLabel(version),
+                                        // 2026-08-02 (v1.3.160): same
+                                        // narrow-screen fallback as the
+                                        // book title next to it — avoids
+                                        // "和合本雅..." truncating with
+                                        // no room left for the chevron.
+                                        child: Builder(builder: (chipTextCtx) {
+                                          final chipScreenW =
+                                              MediaQuery.of(chipTextCtx)
+                                                  .size
+                                                  .width;
+                                          final label = chipScreenW < 390
+                                              ? narrowBibleVersionLabel(
+                                                  version)
+                                              : shortBibleVersionLabel(
+                                                  version);
+                                          return Text(
+                                          label,
                                           maxLines: 1,
                                           softWrap: false,
                                           overflow: TextOverflow.ellipsis,
@@ -7110,7 +7125,8 @@ class _FloatingHeader extends StatelessWidget {
                                             color: scheme.primary
                                                 .withValues(alpha: 0.85),
                                           ),
-                                        ),
+                                        );
+                                        }),
                                       ),
                                       Icon(
                                         Icons.expand_more_rounded,

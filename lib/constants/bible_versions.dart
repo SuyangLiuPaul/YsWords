@@ -3,6 +3,14 @@ class BibleVersionInfo {
   final String shortLabel;
   final String menuLabel;
 
+  /// 2026-08-02 (v1.3.160): fallback label for the top-bar version
+  /// pill on narrow screens (< 390 px, same breakpoint the book/
+  /// chapter title already uses). Only set for editions whose
+  /// [shortLabel] is long enough to visibly truncate inside the pill
+  /// at that width (currently just 和合本雅伟版) — everything else
+  /// falls back to [shortLabel] itself via [narrowChipLabel].
+  final String? narrowLabel;
+
   /// 2026-06-22: which language family this edition belongs to, so the
   /// version picker can group the ~14 editions under English / 繁體 /
   /// 简体 tabs instead of one long flat list. Values match the app
@@ -22,6 +30,7 @@ class BibleVersionInfo {
     required this.menuLabel,
     required this.language,
     this.editionYear = '',
+    this.narrowLabel,
   });
 }
 
@@ -67,6 +76,9 @@ const bibleVersions = <BibleVersionInfo>[
     menuLabel: '和合本雅伟版(简体)',
     language: 'zh-Hans',
     editionYear: '基于和合本 1919 / 现代标点 1989',
+    // 2026-08-02 (v1.3.160): "和合本雅伟版" truncates inside the top-bar
+    // pill on narrow phones — falls back to the shorter "雅伟版" there.
+    narrowLabel: '雅伟版',
   ),
   BibleVersionInfo(
     value: 'cuvs-yhwh-tr',
@@ -74,6 +86,7 @@ const bibleVersions = <BibleVersionInfo>[
     menuLabel: '和合本雅伟版(繁體)',
     language: 'zh-Hant',
     editionYear: '基於和合本 1919 / 現代標點 1989',
+    narrowLabel: '雅偉版',
   ),
   BibleVersionInfo(
     value: 'biblexg',
@@ -192,6 +205,25 @@ String shortBibleVersionLabel(String version) {
         ),
       )
       .shortLabel;
+}
+
+/// 2026-08-02 (v1.3.160): narrow-screen variant of
+/// [shortBibleVersionLabel] — mirrors the book/chapter title's own
+/// `screenW < 390` short-name fallback, so the version pill in the
+/// reading-pane header never truncates on a phone-width screen. Falls
+/// back to [shortBibleVersionLabel] itself for every edition that
+/// doesn't define a [BibleVersionInfo.narrowLabel].
+String narrowBibleVersionLabel(String version) {
+  final info = bibleVersions.firstWhere(
+    (item) => item.value == version,
+    orElse: () => BibleVersionInfo(
+      value: version,
+      shortLabel: version,
+      menuLabel: version,
+      language: 'zh-Hans',
+    ),
+  );
+  return info.narrowLabel ?? info.shortLabel;
 }
 
 /// Some bundled versions only ship one Testament — most notably the
