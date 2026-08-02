@@ -229,7 +229,10 @@ class _EvidencePageState extends State<EvidencePage> {
                         count: _all.length,
                         onWiden: _widenScope,
                       ),
-                    // Search.
+                    // 2026-08-02 (round 60): filled rounded "pill"
+                    // search field, matching the capsule language now
+                    // used across Home / Search / Sermons instead of
+                    // a generic Material outline.
                     Padding(
                       padding:
                           const EdgeInsets.fromLTRB(12, 8, 12, 4),
@@ -239,13 +242,17 @@ class _EvidencePageState extends State<EvidencePage> {
                             fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                             fontSize: settings.fontSize),
                         decoration: InputDecoration(
-                          prefixIcon:
-                              const Icon(Icons.search, size: 20),
+                          filled: true,
+                          fillColor: scheme.surfaceContainerHighest
+                              .withValues(alpha: 0.6),
+                          prefixIcon: Icon(Icons.search_rounded,
+                              size: 20, color: scheme.onSurfaceVariant),
                           hintText:
                               uiStrings['search']?[locale] ?? 'Search',
                           isDense: true,
                           border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
+                            borderRadius: BorderRadius.circular(24),
+                            borderSide: BorderSide.none,
                           ),
                           suffixIcon: _query.isEmpty
                               ? null
@@ -1049,9 +1056,13 @@ class _AiSearchDialogState extends State<_AiSearchDialog> {
                     fontSize: settings.fontSize,
                   ),
                   decoration: InputDecoration(
+                    filled: true,
+                    fillColor:
+                        scheme.surfaceContainerHighest.withValues(alpha: 0.6),
                     hintText: _hintText,
                     border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
+                      borderRadius: BorderRadius.circular(16),
+                      borderSide: BorderSide.none,
                     ),
                   ),
                   onSubmitted: (_) => _ask(),
