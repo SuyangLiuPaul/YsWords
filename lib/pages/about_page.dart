@@ -83,28 +83,32 @@ class AboutPage extends StatelessWidget {
               _SectionTitle(
                   text: uiStrings['aboutSectionScriptures']?[locale] ??
                       'Bundled scripture texts',
-                  scheme: scheme),
+                  scheme: scheme,
+                  icon: Icons.menu_book_outlined),
               const SizedBox(height: 6),
               _ScripturesTable(scheme: scheme, locale: locale),
               const SizedBox(height: 20),
               _SectionTitle(
                   text: uiStrings['aboutSectionLexicons']?[locale] ??
                       "Strong's lexicons & original-language data",
-                  scheme: scheme),
+                  scheme: scheme,
+                  icon: Icons.translate_rounded),
               const SizedBox(height: 6),
               _LexiconsTable(scheme: scheme, locale: locale),
               const SizedBox(height: 20),
               _SectionTitle(
                   text: uiStrings['aboutSectionOther']?[locale] ??
                       'Maps · Sermons · Fonts · AI · App icon',
-                  scheme: scheme),
+                  scheme: scheme,
+                  icon: Icons.category_outlined),
               const SizedBox(height: 6),
               _OtherAttributions(scheme: scheme, locale: locale),
               const SizedBox(height: 20),
               _SectionTitle(
                   text: uiStrings['aboutSectionAppLicense']?[locale] ??
                       'Application licence',
-                  scheme: scheme),
+                  scheme: scheme,
+                  icon: Icons.gavel_outlined),
               const SizedBox(height: 6),
               _AppLicenseCard(scheme: scheme, locale: locale),
               const SizedBox(height: 24),
@@ -128,7 +132,8 @@ class AboutPage extends StatelessWidget {
                 _SectionTitle(
                     text: uiStrings['cloudDiagSection']?[locale] ??
                         'Cloud setup status (developer)',
-                    scheme: scheme),
+                    scheme: scheme,
+                    icon: Icons.cloud_sync_outlined),
                 const SizedBox(height: 6),
                 CloudSetupDiagnostic(locale: locale),
                 const SizedBox(height: 8),
@@ -353,19 +358,33 @@ class _ContactCard extends StatelessWidget {
 class _SectionTitle extends StatelessWidget {
   final String text;
   final ColorScheme scheme;
-  const _SectionTitle({required this.text, required this.scheme});
+  /// 2026-08-02 (round 60): optional icon, mirroring the icon-
+  /// prefixed section headers now used on Home / Settings — a small
+  /// tinted glyph ahead of the label so the attribution list reads
+  /// as scannable sections instead of a wall of uppercase text.
+  final IconData? icon;
+  const _SectionTitle({required this.text, required this.scheme, this.icon});
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-      child: Text(
-        text,
-        style: TextStyle(
-          fontSize: 12,
-          fontWeight: FontWeight.w800,
-          color: scheme.primary,
-          letterSpacing: 0.6,
-        ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (icon != null) ...[
+            Icon(icon, size: 15, color: scheme.primary),
+            const SizedBox(width: 6),
+          ],
+          Text(
+            text,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w800,
+              color: scheme.primary,
+              letterSpacing: 0.6,
+            ),
+          ),
+        ],
       ),
     );
   }
