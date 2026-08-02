@@ -101,11 +101,16 @@ class _HighlightsPageState extends State<HighlightsPage> {
             child: TextField(
               controller: _searchController,
               decoration: InputDecoration(
-                prefixIcon: const Icon(Icons.search, size: 20),
+                filled: true,
+                fillColor:
+                    scheme.surfaceContainerHighest.withValues(alpha: 0.6),
+                prefixIcon: Icon(Icons.search_rounded,
+                    size: 20, color: scheme.onSurfaceVariant),
                 hintText: uiStrings['search']?[locale] ?? 'Search',
                 isDense: true,
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(24),
+                  borderSide: BorderSide.none,
                 ),
                 suffixIcon: _query.isEmpty
                     ? null

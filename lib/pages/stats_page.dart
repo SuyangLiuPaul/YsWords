@@ -3629,12 +3629,17 @@ class _StrongsPickerSheetState extends State<_StrongsPickerSheet> {
               TextField(
                 autofocus: true,
                 decoration: InputDecoration(
+                  filled: true,
+                  fillColor:
+                      scheme.surfaceContainerHighest.withValues(alpha: 0.6),
                   hintText: uiStrings['statsLookupHint']?[locale] ??
                       'Search by Strong\'s, lemma, transliteration, or gloss',
                   isDense: true,
-                  prefixIcon: const Icon(Icons.search, size: 20),
+                  prefixIcon: Icon(Icons.search_rounded,
+                      size: 20, color: scheme.onSurfaceVariant),
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: BorderRadius.circular(24),
+                    borderSide: BorderSide.none,
                   ),
                 ),
                 onChanged: (v) => setState(() => _query = v),

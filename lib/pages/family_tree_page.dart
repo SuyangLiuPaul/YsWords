@@ -395,14 +395,21 @@ class _FamilyTreePageState extends State<FamilyTreePage> {
 
   // ── Search field ────────────────────────────────────────────────
 
+  // 2026-08-02 (round 60): filled rounded "pill" search field,
+  // matching the capsule language now used across Home / Search /
+  // Sermons / Bible Evidence instead of a generic Material outline.
   Widget _buildSearchField(String locale) {
+    final scheme = Theme.of(context).colorScheme;
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
       child: TextField(
         controller: _searchController,
         decoration: InputDecoration(
+          filled: true,
+          fillColor: scheme.surfaceContainerHighest.withValues(alpha: 0.6),
           isDense: true,
-          prefixIcon: const Icon(Icons.search, size: 20),
+          prefixIcon: Icon(Icons.search_rounded,
+              size: 20, color: scheme.onSurfaceVariant),
           suffixIcon: _query.isEmpty
               ? null
               : IconButton(
@@ -416,7 +423,8 @@ class _FamilyTreePageState extends State<FamilyTreePage> {
           hintText: uiStrings['familyTreeSearchHint']?[locale] ??
               'Search by name or biography…',
           border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.circular(24),
+            borderSide: BorderSide.none,
           ),
         ),
         onChanged: (v) => setState(() => _query = v),

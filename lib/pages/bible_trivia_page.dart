@@ -438,11 +438,16 @@ class _TriviaFilterBar extends StatelessWidget {
             Expanded(
               child: TextField(
                 decoration: InputDecoration(
+                  filled: true,
+                  fillColor:
+                      scheme.surfaceContainerHighest.withValues(alpha: 0.6),
                   hintText: searchHint,
-                  prefixIcon: const Icon(Icons.search),
+                  prefixIcon: Icon(Icons.search_rounded,
+                      size: 20, color: scheme.onSurfaceVariant),
                   isDense: true,
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: BorderRadius.circular(24),
+                    borderSide: BorderSide.none,
                   ),
                 ),
                 onChanged: onQueryChanged,
@@ -466,7 +471,9 @@ class _TriviaFilterBar extends StatelessWidget {
                 style: const TextStyle(fontSize: 13),
               ),
               style: OutlinedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: 12),
+                padding: const EdgeInsets.symmetric(horizontal: 14),
+                shape: const StadiumBorder(),
+                side: BorderSide(color: scheme.outlineVariant),
                 backgroundColor: bookFilter == 'all'
                     ? null
                     : scheme.primaryContainer.withValues(alpha: 0.4),
