@@ -3,7 +3,9 @@ import 'package:get/get.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:yswords/constants/app_version.dart';
 import 'package:yswords/constants/bible_versions.dart';
+import 'package:yswords/constants/build_flags.dart';
 import 'package:yswords/utils/short_book_name.dart' show shortBookName;
 import 'package:yswords/constants/text_patterns.dart' show sanitizeForSearch;
 import 'package:yswords/constants/ui_strings.dart';
@@ -482,6 +484,8 @@ class _DashboardPageState extends State<DashboardPage> {
             isWide: isWide,
             headerSize: headerSize,
           ),
+          const SizedBox(height: 28),
+          _HomeFooter(locale: locale, scheme: scheme),
         ],
       ),
         ),
@@ -902,6 +906,55 @@ class _DashboardPageState extends State<DashboardPage> {
     final p = ProfileService.instance.current;
     if (p.isGuest) return null;
     return p.name;
+  }
+}
+
+/// Small copyright/tagline + version footer at the bottom of the
+/// dashboard (round 60 field request: "home page 最下面 可以有
+/// copyright...以及 last version update time"). Mirrors the About
+/// page's footer, but phrased at the app level ("app updated {time}")
+/// rather than "this page updated" — Home isn't editorial content
+/// the way the attributions page is.
+class _HomeFooter extends StatelessWidget {
+  final String locale;
+  final ColorScheme scheme;
+  const _HomeFooter({required this.locale, required this.scheme});
+
+  @override
+  Widget build(BuildContext context) {
+    final tagline =
+        uiStrings['appTagline']?[locale] ?? 'A bilingual Bible study app.';
+    final updated = (uiStrings['homeFooterUpdated']?[locale] ??
+            'Updated {time}')
+        .replaceFirst('{time}', formatReleaseTimeLocal());
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.only(bottom: 8),
+        child: Column(
+          children: [
+            Text(
+              '© ${uiStrings['appName']?[locale] ?? 'YsWords'} · $tagline',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 11.5,
+                color: scheme.onSurfaceVariant.withValues(alpha: 0.75),
+                fontStyle: FontStyle.italic,
+              ),
+            ),
+            const SizedBox(height: 3),
+            Text(
+              'v$kAppVersion · $updated'
+              '${kChinaMode ? ' · ${uiStrings['chinaBuildTag']?[locale] ?? 'China build'}' : ''}',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 11,
+                color: scheme.onSurfaceVariant.withValues(alpha: 0.6),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
 

@@ -4354,6 +4354,16 @@ const uiStrings = {
     'zh-Hant': '本頁最後更新於 {time}。',
     'en': 'Last updated {time}.',
   },
+  // Home dashboard footer (round 60): a small copyright/tagline line
+  // + the app version and release time, mirroring the About page's
+  // footer but phrased at the app level ("app updated") rather than
+  // "this page updated" — Home isn't editorial content the way the
+  // attributions page is.
+  'homeFooterUpdated': {
+    'zh-Hans': '更新于 {time}',
+    'zh-Hant': '更新於 {time}',
+    'en': 'Updated {time}',
+  },
   'refresh': {
     'zh-Hans': '刷新',
     'zh-Hant': '重新整理',
