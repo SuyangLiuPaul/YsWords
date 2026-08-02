@@ -42,6 +42,7 @@ import 'package:yswords/utils/responsive.dart';
 import 'package:yswords/utils/version_mapper.dart' show translateBookName;
 import 'package:yswords/widgets/left_accent_card.dart';
 import 'package:yswords/widgets/onboarding_dialog.dart';
+import 'package:yswords/widgets/profile_avatar.dart';
 import 'package:yswords/utils/font_catalog.dart' show kCjkFontFallback;
 
 /// Personal "home" / dashboard. Shows the signed-in user's reading
@@ -365,12 +366,66 @@ class _DashboardPageState extends State<DashboardPage> {
     final headerSize =
         (settings.fontSize - 1).clamp(12.0, 22.0).toDouble();
 
+    final greetingName = _greetingName();
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
         leading: null,
-        title: Text(uiStrings['home']?[locale] ?? 'Home'),
-        centerTitle: true,
+        // 2026-08-02 (round 60, home-page redesign): a flat
+        // primary-colored band read as generic chrome, not a
+        // personal landing page. Surface-toned + no elevation lets
+        // the header recede so the greeting + avatar (the actually
+        // personal part) carry the visual weight instead.
+        backgroundColor: scheme.surface,
+        foregroundColor: scheme.onSurface,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        centerTitle: false,
+        titleSpacing: 16,
+        toolbarHeight: 68,
+        title: Row(
+          children: [
+            ProfileAvatar(
+              photoUrl: CloudAuthService.instance.currentUser?.photoURL ??
+                  ProfileService.instance.current.photoDataUrl,
+              name: greetingName ?? ProfileService.instance.current.name,
+              avatarColor: ProfileService.instance.current.avatarColorArgb,
+              radius: 19,
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    _greetingPhrase(locale),
+                    style: TextStyle(
+                      fontFamily: settings.fontFamily,
+                      fontFamilyFallback: kCjkFontFallback,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      color: scheme.onSurfaceVariant,
+                    ),
+                  ),
+                  if (greetingName != null)
+                    Text(
+                      greetingName,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontFamily: settings.fontFamily,
+                        fontFamilyFallback: kCjkFontFallback,
+                        fontSize: 17,
+                        fontWeight: FontWeight.w700,
+                        color: scheme.onSurface,
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ],
+        ),
         actions: [
           // 2026-08-02: field request — a visible, one-tap language
           // switcher on Home instead of having to dig into Settings →
@@ -503,14 +558,12 @@ class _DashboardPageState extends State<DashboardPage> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text(
-              uiStrings['dailyVerse']?[locale] ?? 'Verse of the Day',
-              style: TextStyle(
-                fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
-                fontSize: headerSize,
-                fontWeight: FontWeight.w700,
-                color: scheme.primary,
-              ),
+            _SectionHeader(
+              icon: Icons.auto_stories_rounded,
+              label: uiStrings['dailyVerse']?[locale] ?? 'Verse of the Day',
+              settings: settings,
+              scheme: scheme,
+              fontSize: headerSize,
             ),
             const SizedBox(height: 8),
             _DailyVerseCard(
@@ -538,6 +591,7 @@ class _DashboardPageState extends State<DashboardPage> {
                 icon: Icons.bookmark_outline_rounded,
                 count: mainProvider.bookmarks.length,
                 label: uiStrings['tabBookmarks']?[locale] ?? 'Bookmarks',
+                tint: scheme.primary,
                 onTap: () => Get.to(
                   () => const LibraryPage(),
                   transition: Transition.rightToLeft,
@@ -550,6 +604,7 @@ class _DashboardPageState extends State<DashboardPage> {
                 icon: Icons.sticky_note_2_outlined,
                 count: mainProvider.verseNotes.length,
                 label: uiStrings['tabNotes']?[locale] ?? 'Notes',
+                tint: scheme.secondary,
                 onTap: () => Get.to(
                   () => const LibraryPage(),
                   transition: Transition.rightToLeft,
@@ -562,6 +617,7 @@ class _DashboardPageState extends State<DashboardPage> {
                 icon: Icons.format_color_fill,
                 count: mainProvider.highlights.length,
                 label: uiStrings['highlights']?[locale] ?? 'Highlights',
+                tint: scheme.tertiary,
                 onTap: () => Get.to(
                   () => const HighlightsPage(),
                   transition: Transition.rightToLeft,
@@ -576,14 +632,13 @@ class _DashboardPageState extends State<DashboardPage> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text(
-              uiStrings['homeRecentBookmarks']?[locale] ?? 'Recent bookmarks',
-              style: TextStyle(
-                fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
-                fontSize: headerSize,
-                fontWeight: FontWeight.w700,
-                color: scheme.primary,
-              ),
+            _SectionHeader(
+              icon: Icons.bookmark_rounded,
+              label:
+                  uiStrings['homeRecentBookmarks']?[locale] ?? 'Recent bookmarks',
+              settings: settings,
+              scheme: scheme,
+              fontSize: headerSize,
             ),
             const SizedBox(height: 8),
             for (final v in _recentBookmarks(mainProvider).take(5))
@@ -619,14 +674,12 @@ class _DashboardPageState extends State<DashboardPage> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text(
-              uiStrings['todayEvidence']?[locale] ?? "Today's Evidence",
-              style: TextStyle(
-                fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
-                fontSize: headerSize,
-                fontWeight: FontWeight.w700,
-                color: scheme.primary,
-              ),
+            _SectionHeader(
+              icon: Icons.museum_rounded,
+              label: uiStrings['todayEvidence']?[locale] ?? "Today's Evidence",
+              settings: settings,
+              scheme: scheme,
+              fontSize: headerSize,
             ),
             const SizedBox(height: 8),
             _DashboardEvidenceCard(
@@ -641,103 +694,139 @@ class _DashboardPageState extends State<DashboardPage> {
         );
 
       case DashboardSection.quickLinks:
-        return GridView.count(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          crossAxisCount: isWide ? 3 : 2,
-          childAspectRatio: isWide ? 3.2 : 2.6,
-          mainAxisSpacing: 8,
-          crossAxisSpacing: 8,
+        // 2026-08-02 (round 60, home-page redesign): the previous
+        // build put all ~10 links in one flat, undifferentiated
+        // grid. Splitting into "frequently used" (the 4 links a
+        // reader taps daily) and "explore more" (everything else)
+        // gives the grid a scan order instead of a wall of equal
+        // tiles.
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // 2026-05-07 (v11): Search tile in the quick-links grid.
-            // The user wanted a one-tap entry to the search function
-            // from the dashboard, in the same row as Settings /
-            // Library / etc. Placed first so it sits in the most
-            // discoverable slot for a frequently-used feature.
-            _LinkTile(
-              icon: Icons.search_rounded,
-              label: uiStrings['search']?[locale] ?? 'Search',
-              onTap: () => Get.to(
-                () => const SearchPage(),
-                transition: Transition.rightToLeft,
-              ),
+            _QuickLinksGroupLabel(
+              label: uiStrings['quickLinksFrequent']?[locale] ??
+                  'Frequently used',
+              settings: settings,
+              scheme: scheme,
             ),
-            _LinkTile(
-              icon: Icons.collections_bookmark_outlined,
-              label: uiStrings['library']?[locale] ?? 'Library',
-              onTap: () => Get.to(
-                () => const LibraryPage(),
-                transition: Transition.rightToLeft,
-              ),
-            ),
-            _LinkTile(
-              icon: Icons.insights_outlined,
-              label: uiStrings['statistics']?[locale] ?? 'Statistics',
-              onTap: () => Get.to(
-                () => const StatsPage(),
-                transition: Transition.rightToLeft,
-              ),
-            ),
-            if (settings.isDashboardSectionVisible(
-                DashboardSection.todayEvidence))
-              _LinkTile(
-                icon: Icons.museum_outlined,
-                label: uiStrings['bibleEvidence']?[locale] ?? 'Bible Evidence',
-                onTap: () => Get.to(
-                  () => const EvidencePage(),
-                  transition: Transition.rightToLeft,
+            const SizedBox(height: 8),
+            GridView.count(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              crossAxisCount: isWide ? 4 : 2,
+              childAspectRatio: isWide ? 3.0 : 2.6,
+              mainAxisSpacing: 8,
+              crossAxisSpacing: 8,
+              children: [
+                // 2026-05-07 (v11): Search tile in the quick-links
+                // grid. The user wanted a one-tap entry to search
+                // from the dashboard. Placed first as the most
+                // discoverable slot for a frequently-used feature.
+                _LinkTile(
+                  icon: Icons.search_rounded,
+                  label: uiStrings['search']?[locale] ?? 'Search',
+                  onTap: () => Get.to(
+                    () => const SearchPage(),
+                    transition: Transition.rightToLeft,
+                  ),
                 ),
-              ),
-            _LinkTile(
-              icon: Icons.menu_book_outlined,
-              label: uiStrings['sermons']?[locale] ?? 'Sermons',
-              onTap: () => Get.to(
-                () => const SermonsPage(),
-                transition: Transition.rightToLeft,
-              ),
+                _LinkTile(
+                  icon: Icons.collections_bookmark_outlined,
+                  label: uiStrings['library']?[locale] ?? 'Library',
+                  onTap: () => Get.to(
+                    () => const LibraryPage(),
+                    transition: Transition.rightToLeft,
+                  ),
+                ),
+                _LinkTile(
+                  icon: Icons.menu_book_outlined,
+                  label: uiStrings['sermons']?[locale] ?? 'Sermons',
+                  onTap: () => Get.to(
+                    () => const SermonsPage(),
+                    transition: Transition.rightToLeft,
+                  ),
+                ),
+                _LinkTile(
+                  icon: Icons.settings_outlined,
+                  label: uiStrings['settings']?[locale] ?? 'Settings',
+                  onTap: () => Get.to(
+                    () => const SettingsPage(),
+                    transition: Transition.rightToLeft,
+                  ),
+                ),
+              ],
             ),
-            _LinkTile(
-              icon: Icons.account_tree_outlined,
-              label: uiStrings['familyTree']?[locale] ?? 'Family Tree',
-              onTap: () => Get.to(
-                () => const FamilyTreePage(),
-                transition: Transition.rightToLeft,
-              ),
+            const SizedBox(height: 16),
+            _QuickLinksGroupLabel(
+              label:
+                  uiStrings['quickLinksExplore']?[locale] ?? 'Explore more',
+              settings: settings,
+              scheme: scheme,
             ),
-            _LinkTile(
-              icon: Icons.timeline_rounded,
-              label: uiStrings['bibleTimeline']?[locale] ?? 'Bible Timeline',
-              onTap: () => Get.to(
-                () => const BibleTimelinePage(),
-                transition: Transition.rightToLeft,
-              ),
-            ),
-            _LinkTile(
-              icon: Icons.auto_awesome_rounded,
-              label: uiStrings['bibleTrivia']?[locale] ?? 'Bible Trivia',
-              onTap: () => Get.to(
-                () => const BibleTriviaPage(),
-                transition: Transition.rightToLeft,
-              ),
-            ),
-            // 2026-05-07 (v12): feedback tile -- mailto-driven form
-            // page that lands directly in the developer's inbox via
-            // the user's mail client.
-            _LinkTile(
-              icon: Icons.feedback_outlined,
-              label: uiStrings['feedback']?[locale] ?? 'Feedback',
-              onTap: () => Get.to(
-                () => const FeedbackPage(),
-                transition: Transition.rightToLeft,
-              ),
-            ),
-            _LinkTile(
-              icon: Icons.settings_outlined,
-              label: uiStrings['settings']?[locale] ?? 'Settings',
-              onTap: () => Get.to(
-                () => const SettingsPage(),
-                transition: Transition.rightToLeft,
-              ),
+            const SizedBox(height: 8),
+            GridView.count(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              crossAxisCount: isWide ? 3 : 2,
+              childAspectRatio: isWide ? 3.2 : 2.6,
+              mainAxisSpacing: 8,
+              crossAxisSpacing: 8,
+              children: [
+                _LinkTile(
+                  icon: Icons.insights_outlined,
+                  label: uiStrings['statistics']?[locale] ?? 'Statistics',
+                  onTap: () => Get.to(
+                    () => const StatsPage(),
+                    transition: Transition.rightToLeft,
+                  ),
+                ),
+                if (settings.isDashboardSectionVisible(
+                    DashboardSection.todayEvidence))
+                  _LinkTile(
+                    icon: Icons.museum_outlined,
+                    label:
+                        uiStrings['bibleEvidence']?[locale] ?? 'Bible Evidence',
+                    onTap: () => Get.to(
+                      () => const EvidencePage(),
+                      transition: Transition.rightToLeft,
+                    ),
+                  ),
+                _LinkTile(
+                  icon: Icons.account_tree_outlined,
+                  label: uiStrings['familyTree']?[locale] ?? 'Family Tree',
+                  onTap: () => Get.to(
+                    () => const FamilyTreePage(),
+                    transition: Transition.rightToLeft,
+                  ),
+                ),
+                _LinkTile(
+                  icon: Icons.timeline_rounded,
+                  label: uiStrings['bibleTimeline']?[locale] ?? 'Bible Timeline',
+                  onTap: () => Get.to(
+                    () => const BibleTimelinePage(),
+                    transition: Transition.rightToLeft,
+                  ),
+                ),
+                _LinkTile(
+                  icon: Icons.auto_awesome_rounded,
+                  label: uiStrings['bibleTrivia']?[locale] ?? 'Bible Trivia',
+                  onTap: () => Get.to(
+                    () => const BibleTriviaPage(),
+                    transition: Transition.rightToLeft,
+                  ),
+                ),
+                // 2026-05-07 (v12): feedback tile -- mailto-driven
+                // form page that lands directly in the developer's
+                // inbox via the user's mail client.
+                _LinkTile(
+                  icon: Icons.feedback_outlined,
+                  label: uiStrings['feedback']?[locale] ?? 'Feedback',
+                  onTap: () => Get.to(
+                    () => const FeedbackPage(),
+                    transition: Transition.rightToLeft,
+                  ),
+                ),
+              ],
             ),
           ],
         );
@@ -769,6 +858,39 @@ class _DashboardPageState extends State<DashboardPage> {
         .reversed
         .toList();
   }
+
+  /// Time-of-day greeting phrase for the dashboard header.
+  String _greetingPhrase(String locale) {
+    final hour = DateTime.now().hour;
+    final key = hour < 12
+        ? 'greetingMorning'
+        : hour < 18
+            ? 'greetingAfternoon'
+            : 'greetingEvening';
+    return uiStrings[key]?[locale] ?? uiStrings[key]?['en'] ?? '';
+  }
+
+  /// Display name for the header greeting — prefers the signed-in
+  /// Google account (matches Settings' `_displayNameFor` priority),
+  /// then the local profile name. Returns null for a guest profile
+  /// so the header shows the greeting phrase alone instead of
+  /// literal "Guest".
+  String? _greetingName() {
+    final auth = CloudAuthService.instance;
+    if (auth.isSignedIn) {
+      final u = auth.currentUser;
+      final dn = u?.displayName?.trim();
+      if (dn != null && dn.isNotEmpty) return dn;
+      final email = u?.email;
+      if (email != null && email.isNotEmpty) {
+        final at = email.indexOf('@');
+        return at > 0 ? email.substring(0, at) : email;
+      }
+    }
+    final p = ProfileService.instance.current;
+    if (p.isGuest) return null;
+    return p.name;
+  }
 }
 
 // Removed: _navigateToReference. Replaced inline above with
@@ -776,15 +898,89 @@ class _DashboardPageState extends State<DashboardPage> {
 // NT-only versions like LJK1/LJK2) is consistent across every
 // cross-link surface — see `lib/utils/jump_to_reference.dart`.
 
+/// Icon-prefixed section header (round 60: Verse of the Day / Recent
+/// bookmarks / Today's Evidence) — a small tinted icon ahead of the
+/// bold label gives each section a scannable glyph instead of a wall
+/// of same-weight text headers.
+class _SectionHeader extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final AppSettings settings;
+  final ColorScheme scheme;
+  final double fontSize;
+  const _SectionHeader({
+    required this.icon,
+    required this.label,
+    required this.settings,
+    required this.scheme,
+    required this.fontSize,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Icon(icon, size: fontSize + 2, color: scheme.primary),
+        const SizedBox(width: 6),
+        Text(
+          label,
+          style: TextStyle(
+            fontFamily: settings.fontFamily,
+            fontFamilyFallback: kCjkFontFallback,
+            fontSize: fontSize,
+            fontWeight: FontWeight.w700,
+            color: scheme.primary,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// Small uppercase-ish sub-header for a quick-links group (round 60).
+/// Mirrors the reading-pane overflow menu's section-label treatment
+/// (`_menuSectionLabel` in bible_reading_pane.dart) for a consistent
+/// "grouped list" visual language across the app.
+class _QuickLinksGroupLabel extends StatelessWidget {
+  final String label;
+  final AppSettings settings;
+  final ColorScheme scheme;
+  const _QuickLinksGroupLabel({
+    required this.label,
+    required this.settings,
+    required this.scheme,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      label,
+      style: TextStyle(
+        fontFamily: settings.fontFamily,
+        fontFamilyFallback: kCjkFontFallback,
+        fontSize: 11.5,
+        fontWeight: FontWeight.w700,
+        letterSpacing: 0.6,
+        color: scheme.onSurfaceVariant.withValues(alpha: 0.8),
+      ),
+    );
+  }
+}
+
 class _CountTile extends StatelessWidget {
   final IconData icon;
   final int count;
   final String label;
   final VoidCallback onTap;
+  /// Per-category accent (round 60: bookmarks/notes/highlights each
+  /// get a distinct theme-derived color instead of three visually
+  /// identical tiles) — tints the icon, count, and tile background.
+  final Color tint;
   const _CountTile({
     required this.icon,
     required this.count,
     required this.label,
+    required this.tint,
     required this.onTap,
   });
 
@@ -797,13 +993,12 @@ class _CountTile extends StatelessWidget {
     final settings = context.read<AppSettings>();
     final fs = settings.fontSize;
     return Material(
-      color: scheme.surface,
+      color: tint.withValues(alpha: 0.08),
       borderRadius: BorderRadius.circular(12),
       child: Ink(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-              color: scheme.outlineVariant.withValues(alpha: 0.6)),
+          border: Border.all(color: tint.withValues(alpha: 0.28)),
         ),
         child: InkWell(
           onTap: onTap,
@@ -817,7 +1012,7 @@ class _CountTile extends StatelessWidget {
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(icon, color: scheme.primary, size: 18),
+                    Icon(icon, color: tint, size: 18),
                     const SizedBox(width: 6),
                     Text(
                       count.toString(),

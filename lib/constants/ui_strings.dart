@@ -1608,6 +1608,25 @@ const uiStrings = {
     'zh-Hant': '主頁',
     'en': 'Home',
   },
+  // Dashboard header greeting — time-of-day phrase shown above the
+  // user's name/avatar (round 60, home-page redesign). Traditional
+  // Chinese uses the more natural 早安/午安/晚安 form rather than a
+  // literal mirror of Simplified's 早上好/下午好/晚上好.
+  'greetingMorning': {
+    'zh-Hans': '早上好',
+    'zh-Hant': '早安',
+    'en': 'Good morning',
+  },
+  'greetingAfternoon': {
+    'zh-Hans': '下午好',
+    'zh-Hant': '午安',
+    'en': 'Good afternoon',
+  },
+  'greetingEvening': {
+    'zh-Hans': '晚上好',
+    'zh-Hant': '晚安',
+    'en': 'Good evening',
+  },
   'homeRecentBookmarks': {
     'zh-Hans': '最近书签',
     'zh-Hant': '最近書籤',
@@ -3806,6 +3825,20 @@ const uiStrings = {
     'zh-Hans': '今日实证',
     'zh-Hant': '今日實證',
     'en': 'Today\'s Evidence',
+  },
+  // Dashboard quick-links grid — split into two labeled groups (round
+  // 60, home-page redesign) instead of one flat undifferentiated
+  // 10-tile grid: the most frequently used entries first, everything
+  // else grouped as "explore".
+  'quickLinksFrequent': {
+    'zh-Hans': '常用',
+    'zh-Hant': '常用',
+    'en': 'Frequently used',
+  },
+  'quickLinksExplore': {
+    'zh-Hans': '更多探索',
+    'zh-Hant': '更多探索',
+    'en': 'Explore more',
   },
   'evidenceDescription': {
     'zh-Hans': '详细说明',
