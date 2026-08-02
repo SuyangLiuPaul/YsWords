@@ -788,6 +788,38 @@ class _SettingsPageBodyState extends State<_SettingsPageBody> {
               Card(
                 child: Column(
                   children: [
+                    // 2026-08-02 (v1.3.156): 护眼 (easy-on-eyes) reading
+                    // theme — a warm sepia palette for the Bible reading
+                    // pane only, independent of the app-wide light/dark
+                    // ThemeMode above. Field request, referencing another
+                    // app's warm-paper reading screen.
+                    SwitchListTile(
+                      title: Text(
+                        uiStrings['readingPaperTheme']?[settings.locale] ??
+                            'Paper reading theme',
+                        style: TextStyle(
+                          fontSize: settings.fontSize + 2,
+                          fontWeight: FontWeight.w600,
+                          fontFamily: settings.fontFamily,
+                          fontFamilyFallback: kCjkFontFallback,
+                        ),
+                      ),
+                      subtitle: Text(
+                        uiStrings['readingPaperThemeSubtitle']
+                                ?[settings.locale] ??
+                            'Switch the reading pane to a warm, paper-like '
+                                'background for more comfortable long '
+                                'reading sessions.',
+                        style: TextStyle(
+                          fontSize: settings.fontSize,
+                          fontFamily: settings.fontFamily,
+                          fontFamilyFallback: kCjkFontFallback,
+                        ),
+                      ),
+                      value: settings.readingPaperTheme,
+                      onChanged: (val) => settings.setReadingPaperTheme(val),
+                    ),
+                    const Divider(height: 1),
                     SwitchListTile(
                       title: Text(
                         uiStrings['boldVerseText']?[settings.locale] ??

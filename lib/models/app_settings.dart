@@ -23,6 +23,13 @@ const _kCopyFormat = 'copyFormat';
 const _kLocale = 'locale';
 const _kThemeMode = 'themeMode';
 const _kParagraphMode = 'paragraphMode';
+// 2026-08-02 (v1.3.156): "护眼" (easy-on-eyes) reading theme — a warm
+// sepia/paper palette for the Bible reading pane, independent of the
+// app-wide light/dark ThemeMode. Modeled after a reference screenshot
+// the user liked (cream background, minimal pill toolbar, larger
+// serif-ish verse numbers) — scoped to the reading pane only, not a
+// global theme swap.
+const _kReadingPaperTheme = 'readingPaperTheme';
 const _kMenuScale = 'menuScale';
 // 2026-05-08 (v1.1.1): which card / tile material to render across
 // the app's framing surfaces. See `lib/models/app_style_preset.dart`
@@ -126,6 +133,7 @@ class AppSettings extends ChangeNotifier {
   String _locale = 'zh-Hans';
   ThemeMode _themeMode = ThemeMode.system;
   bool _paragraphMode = true;
+  bool _readingPaperTheme = false;
   double _menuScale = 1.0;
   // 2026-05-08 (v1.1.1): card / tile material; classic by default.
   CardMaterial _cardMaterial = CardMaterial.classic;
@@ -214,6 +222,7 @@ class AppSettings extends ChangeNotifier {
   String get locale => _locale;
   ThemeMode get themeMode => _themeMode;
   bool get paragraphMode => _paragraphMode;
+  bool get readingPaperTheme => _readingPaperTheme;
   double get menuScale => _menuScale;
   CardMaterial get cardMaterial => _cardMaterial;
   String get booksViewMode => _booksViewMode;
@@ -512,6 +521,14 @@ class AppSettings extends ChangeNotifier {
     await prefs.setBool(_kParagraphMode, enabled);
   }
 
+  Future<void> setReadingPaperTheme(bool enabled) async {
+    if (_readingPaperTheme == enabled) return;
+    _readingPaperTheme = enabled;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_kReadingPaperTheme, enabled);
+  }
+
   // 2026-05-08 (v1.1.1): card / tile material picker. Persisted as
   // the enum's name string so future enum reorderings don't reshuffle
   // user choices the way an int index would.
@@ -737,6 +754,7 @@ class AppSettings extends ChangeNotifier {
     _copyFormat = 'devotional';
     _themeMode = ThemeMode.system;
     _paragraphMode = true;
+    _readingPaperTheme = false;
     _menuScale = 1.0;
     _cardMaterial = CardMaterial.classic;
     _booksViewMode = 'grid';
@@ -765,6 +783,7 @@ class AppSettings extends ChangeNotifier {
       _kCopyFormat,
       _kThemeMode,
       _kParagraphMode,
+      _kReadingPaperTheme,
       _kMenuScale,
       _kCardMaterial,
       // 2026-05-07 (v17): the offlineMode toggle is gone, but we
@@ -898,6 +917,7 @@ class AppSettings extends ChangeNotifier {
     }
     _themeMode = _parseThemeMode(prefs.getString(_kThemeMode));
     _paragraphMode = prefs.getBool(_kParagraphMode) ?? true;
+    _readingPaperTheme = prefs.getBool(_kReadingPaperTheme) ?? false;
     final rawMenuScale = prefs.getDouble(_kMenuScale) ?? 1.0;
     _menuScale = ((rawMenuScale * 10).roundToDouble() / 10).clamp(0.7, 1.5);
     // 2026-05-08 (v1.1.1): card material — default `classic` so
@@ -1090,6 +1110,7 @@ class AppSettings extends ChangeNotifier {
         'locale': _locale,
         'themeMode': _themeMode.name,
         'paragraphMode': _paragraphMode,
+        'readingPaperTheme': _readingPaperTheme,
         'menuScale': _menuScale,
         'cardMaterial': _cardMaterial.name,
         'booksViewMode': _booksViewMode,
@@ -1161,6 +1182,9 @@ class AppSettings extends ChangeNotifier {
         _themeMode = _parseThemeMode(m['themeMode'] as String);
       }
       if (m['paragraphMode'] is bool) _paragraphMode = m['paragraphMode'] as bool;
+      if (m['readingPaperTheme'] is bool) {
+        _readingPaperTheme = m['readingPaperTheme'] as bool;
+      }
       if (m['menuScale'] is num) _menuScale = (m['menuScale'] as num).toDouble();
       if (m['cardMaterial'] is String) {
         _cardMaterial = CardMaterial.values.firstWhere(

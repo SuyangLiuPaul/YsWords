@@ -4628,6 +4628,20 @@ const uiStrings = {
     'zh-Hant': '此節經文暫無人工整理的相互參照。',
     'en': 'No curated cross-references for this verse yet.',
   },
+  // v1.3.156: 护眼纸质阅读主题 — warm sepia background for the Bible
+  // reading pane, independent of the app-wide light/dark theme.
+  'readingPaperTheme': {
+    'zh-Hans': '护眼纸质背景',
+    'zh-Hant': '護眼紙質背景',
+    'en': 'Paper reading theme',
+  },
+  'readingPaperThemeSubtitle': {
+    'zh-Hans': '阅经页面改用暖色纸质背景与更柔和的配色，长时间阅读更舒适。',
+    'zh-Hant': '閱經頁面改用暖色紙質背景與更柔和的配色，長時間閱讀更舒適。',
+    'en':
+        'Switch the reading pane to a warm, paper-like background for more '
+            'comfortable long reading sessions.',
+  },
   'boldVerseText': {
     'zh-Hans': '加粗经文',
     'zh-Hant': '加粗經文',

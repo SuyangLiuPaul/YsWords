@@ -75,6 +75,25 @@ import 'package:yswords/widgets/version_picker_sheet.dart'
     show showLanguageGroupedVersionMenu;
 import 'package:yswords/utils/font_catalog.dart' show kCjkFontFallback;
 
+/// 2026-08-02 (v1.3.156): "护眼" (easy-on-eyes) reading theme — a warm
+/// sepia/paper palette for the Bible reading pane, toggled independently
+/// of the app-wide light/dark [ThemeMode] via `AppSettings.readingPaperTheme`.
+/// Deliberately fixed/warm rather than dark-mode-aware — Kindle/WeChat
+/// Read-style "paper" modes stay warm regardless of system theme, since
+/// the whole point is a paper-like read, not a tinted dark mode.
+class _PaperTheme {
+  static const background = Color(0xFFF7F1E0);
+  static const surface = Color(0xFFEFE5C9);
+  static const ink = Color(0xFF4A3826);
+  static const inkMuted = Color(0xFF7A6A50);
+  static const accent = Color(0xFF9C7A3C);
+  static const border = Color(0xFFDED0A8);
+  /// Selected/highlighted-verse background — a deeper tan so the
+  /// selection still reads clearly against the cream page instead of
+  /// the app's default blue `primaryContainer`.
+  static const selection = Color(0xFFE3D19D);
+}
+
 class BibleReadingPane extends StatefulWidget {
   final bool showSidebarToggle;
   final bool sidebarOpen;
@@ -1565,6 +1584,9 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                   child: Focus(
                     autofocus: true,
                     child: Scaffold(
+                backgroundColor: settings.readingPaperTheme
+                    ? _PaperTheme.background
+                    : null,
                 // Round 56 fix: when the user opens the note editor
                 // (modal bottom sheet) and the keyboard appears, the
                 // default `resizeToAvoidBottomInset: true` shrinks
@@ -2598,12 +2620,19 @@ class _GlassSurface extends StatelessWidget {
   /// (covering the status-bar / notch area) with no visible gap.
   final bool bottomRoundedOnly;
 
+  /// 2026-08-02 (v1.3.156): when true, render with the warm 护眼/paper
+  /// palette instead of the app's blue-tinted Material surface — used
+  /// by the top/bottom chrome bars when `AppSettings.readingPaperTheme`
+  /// is on.
+  final bool paperTheme;
+
   const _GlassSurface({
     required this.child,
     this.radius = 20,
     this.opaque = false,
     this.topRoundedOnly = false,
     this.bottomRoundedOnly = false,
+    this.paperTheme = false,
   });
 
   @override
@@ -2616,9 +2645,11 @@ class _GlassSurface extends StatelessWidget {
     // (Material 3's deepest-tinted variant) so the chrome bar reads
     // as a clear visual layer — most distinct from the scaffold
     // background while still feeling like part of the surface family.
-    final fillColor = opaque
-        ? scheme.surfaceContainerHighest
-        : scheme.surface.withValues(alpha: fillAlpha);
+    final fillColor = paperTheme
+        ? _PaperTheme.surface
+        : opaque
+            ? scheme.surfaceContainerHighest
+            : scheme.surface.withValues(alpha: fillAlpha);
     final br = topRoundedOnly
         ? BorderRadius.only(
             topLeft: Radius.circular(radius),
@@ -2630,14 +2661,15 @@ class _GlassSurface extends StatelessWidget {
                 bottomRight: Radius.circular(radius),
               )
             : BorderRadius.circular(radius);
-    final outlineColor =
-        scheme.outlineVariant.withValues(alpha: isDark ? 0.35 : 0.6);
+    final outlineColor = paperTheme
+        ? _PaperTheme.border
+        : scheme.outlineVariant.withValues(alpha: isDark ? 0.35 : 0.6);
     // 2026-05-22 (v1.2.71): bolder hairline on the chrome bars so they
     // read as distinct strips against the body. Half-rounded variants
     // (topRoundedOnly / bottomRoundedOnly) are the chrome bars; full-
     // rounded (selection bar) keeps the subtle outline.
     final chromeHairlineColor =
-        scheme.outline.withValues(alpha: isDark ? 0.45 : 0.55);
+        paperTheme ? _PaperTheme.border : scheme.outline.withValues(alpha: isDark ? 0.45 : 0.55);
     final box = DecoratedBox(
       decoration: BoxDecoration(
         color: fillColor,
@@ -6362,7 +6394,7 @@ class _ChapterPageState extends State<_ChapterPage>
     final isSelected = mp.selectedVerses.isNotEmpty;
     final dc = widget.deviceClass;
 
-    return Padding(
+    final content = Padding(
       padding: EdgeInsets.only(
         right: ResponsiveBreakpoints.readingPadding(dc),
       ),
@@ -6463,6 +6495,32 @@ class _ChapterPageState extends State<_ChapterPage>
         scrollOffsetListener: _controllers.scrollOffsetListener,
       ),
     );
+
+    if (!settings.readingPaperTheme) return content;
+    // 2026-08-02 (v1.3.156): wrap the verse content in a paper-tinted
+    // Theme override so it flows down through VerseWidget /
+    // ParagraphGroupWidget / buildVerseContentSpans — none of which
+    // take an explicit color parameter, they all read `Theme.of
+    // (context)` directly. This is the standard Flutter pattern for
+    // re-theming a subtree without touching every call site.
+    final baseTheme = Theme.of(context);
+    return Theme(
+      data: baseTheme.copyWith(
+        colorScheme: baseTheme.colorScheme.copyWith(
+          primary: _PaperTheme.accent,
+          onSurface: _PaperTheme.ink,
+          onSurfaceVariant: _PaperTheme.inkMuted,
+          surface: _PaperTheme.background,
+          primaryContainer: _PaperTheme.selection,
+          onPrimaryContainer: _PaperTheme.ink,
+        ),
+        textTheme: baseTheme.textTheme.apply(
+          bodyColor: _PaperTheme.ink,
+          displayColor: _PaperTheme.ink,
+        ),
+      ),
+      child: content,
+    );
   }
 }
 
@@ -6504,7 +6562,21 @@ class _BibleReaderBottomBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final settings = context.watch<AppSettings>();
-    final scheme = Theme.of(context).colorScheme;
+    // 2026-08-02 (v1.3.156): same paper-tinted ColorScheme swap as the
+    // top header — see its comment for why this is a whole-scheme
+    // substitution rather than per-widget overrides.
+    final baseScheme = Theme.of(context).colorScheme;
+    final scheme = settings.readingPaperTheme
+        ? baseScheme.copyWith(
+            primary: _PaperTheme.accent,
+            onSurface: _PaperTheme.ink,
+            onSurfaceVariant: _PaperTheme.inkMuted,
+            outline: _PaperTheme.border,
+            outlineVariant: _PaperTheme.border,
+            surfaceContainerHigh: _PaperTheme.surface,
+            surfaceContainerHighest: _PaperTheme.surface,
+          )
+        : baseScheme;
     final iconSize =
         (settings.fontSize.clamp(16.0, 28.0) * settings.menuScale)
             .toDouble();
@@ -6534,6 +6606,7 @@ class _BibleReaderBottomBar extends StatelessWidget {
             radius: 22,
             opaque: true,
             topRoundedOnly: true,
+            paperTheme: settings.readingPaperTheme,
             child: SafeArea(
               top: false,
               // Inner padding keeps the buttons above the home indicator
@@ -6757,7 +6830,24 @@ class _FloatingHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final settings = context.watch<AppSettings>();
-    final scheme = Theme.of(context).colorScheme;
+    // 2026-08-02 (v1.3.156): when the 护眼/paper reading theme is on,
+    // swap the ColorScheme instance itself for a warm-tinted copy —
+    // every `scheme.primary` / `scheme.onSurfaceVariant` /
+    // `scheme.surfaceContainerHigh` read below (icons, chip fills,
+    // badge backgrounds, hairlines) then picks up the paper palette
+    // for free, without touching each call site individually.
+    final baseScheme = Theme.of(context).colorScheme;
+    final scheme = settings.readingPaperTheme
+        ? baseScheme.copyWith(
+            primary: _PaperTheme.accent,
+            onSurface: _PaperTheme.ink,
+            onSurfaceVariant: _PaperTheme.inkMuted,
+            outline: _PaperTheme.border,
+            outlineVariant: _PaperTheme.border,
+            surfaceContainerHigh: _PaperTheme.surface,
+            surfaceContainerHighest: _PaperTheme.surface,
+          )
+        : baseScheme;
     final fontSize =
         (settings.fontSize.clamp(12.0, 19.0) * settings.menuScale).toDouble();
     final iconSize =
@@ -6795,6 +6885,7 @@ class _FloatingHeader extends StatelessWidget {
             radius: 22,
             opaque: true,
             bottomRoundedOnly: true,
+            paperTheme: settings.readingPaperTheme,
             child: SafeArea(
             bottom: false,
             child: Padding(
