@@ -253,7 +253,8 @@ class _SettingsPageBodyState extends State<_SettingsPageBody> {
                 key: _accountKey,
                 child: _SectionHeader(
                     uiStrings['settingsSectionAccount']?[settings.locale] ??
-                        'Account'),
+                        'Account',
+                    icon: Icons.account_circle_outlined),
               ),
               _AccountSection(settings: settings, s: s),
               SizedBox(height: 16 * s),
@@ -261,7 +262,8 @@ class _SettingsPageBodyState extends State<_SettingsPageBody> {
                 key: _displayKey,
                 child: _SectionHeader(
                     uiStrings['settingsSectionDisplay']?[settings.locale] ??
-                        'Display'),
+                        'Display',
+                    icon: Icons.palette_outlined),
               ),
               Card(
                 child: Padding(
@@ -659,7 +661,8 @@ class _SettingsPageBodyState extends State<_SettingsPageBody> {
                 key: _readingKey,
                 child: _SectionHeader(
                     uiStrings['settingsSectionReading']?[settings.locale] ??
-                        'Reading'),
+                        'Reading',
+                    icon: Icons.menu_book_outlined),
               ),
               Card(
                 child: Padding(
@@ -957,7 +960,8 @@ class _SettingsPageBodyState extends State<_SettingsPageBody> {
               SizedBox(height: 16 * s),
               _SectionHeader(
                   uiStrings['settingsSectionApp']?[settings.locale] ??
-                      'App'),
+                      'App',
+                  icon: Icons.tune_outlined),
               Card(
                 child: Padding(
                   padding: EdgeInsets.all(16 * s),
@@ -1023,7 +1027,8 @@ class _SettingsPageBodyState extends State<_SettingsPageBody> {
                 key: _dashboardKey,
                 child: _SectionHeader(
                     uiStrings['settingsSectionDashboard']?[settings.locale] ??
-                        'Dashboard sections'),
+                        'Dashboard sections',
+                    icon: Icons.dashboard_customize_outlined),
               ),
               _DashboardSectionsCard(settings: settings, s: s),
               // Round 56 day-3 (2026-05-06): the BYOK card was
@@ -1043,7 +1048,8 @@ class _SettingsPageBodyState extends State<_SettingsPageBody> {
                 child: _SectionHeader(
                     uiStrings['settingsSectionNotifications']
                             ?[settings.locale] ??
-                        'Notifications'),
+                        'Notifications',
+                    icon: Icons.notifications_outlined),
               ),
               _NotificationsCard(settings: settings, s: s),
               SizedBox(height: 16 * s),
@@ -1062,7 +1068,8 @@ class _SettingsPageBodyState extends State<_SettingsPageBody> {
               KeyedSubtree(
                 key: _aiKey,
                 child: _SectionHeader(
-                    uiStrings['settingsSectionAi']?[settings.locale] ?? 'AI'),
+                    uiStrings['settingsSectionAi']?[settings.locale] ?? 'AI',
+                    icon: Icons.auto_awesome_outlined),
               ),
               GeminiKeyCard(settings: settings, s: s),
               SizedBox(height: 12 * s),
@@ -1081,7 +1088,8 @@ class _SettingsPageBodyState extends State<_SettingsPageBody> {
                 key: _aboutKey,
                 child: _SectionHeader(
                     uiStrings['settingsSectionAbout']?[settings.locale] ??
-                        'About'),
+                        'About',
+                    icon: Icons.info_outline),
               ),
               _AboutCard(settings: settings, s: s),
               // 2026-05-24 (v1.3.25): PWA install card — only shows
@@ -1577,7 +1585,13 @@ class _AccountSectionState extends State<_AccountSection> {
 /// the existing card layout.
 class _SectionHeader extends StatelessWidget {
   final String label;
-  const _SectionHeader(this.label);
+  /// 2026-08-02 (round 60): icon-prefixed section headers, mirroring
+  /// the same treatment applied to the Home dashboard's section
+  /// headers — a small tinted glyph ahead of the label so the long
+  /// Settings list reads as a scannable set of sections instead of a
+  /// wall of same-weight uppercase text.
+  final IconData? icon;
+  const _SectionHeader(this.label, {this.icon});
 
   @override
   Widget build(BuildContext context) {
@@ -1591,15 +1605,24 @@ class _SectionHeader extends StatelessWidget {
         (settings.fontSize - 2).clamp(11.0, 22.0).toDouble();
     return Padding(
       padding: const EdgeInsets.fromLTRB(4, 4, 4, 8),
-      child: Text(
-        label.toUpperCase(),
-        style: TextStyle(
-          fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
-          fontSize: size,
-          fontWeight: FontWeight.w700,
-          letterSpacing: 0.6,
-          color: scheme.primary,
-        ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (icon != null) ...[
+            Icon(icon, size: size + 3, color: scheme.primary),
+            const SizedBox(width: 6),
+          ],
+          Text(
+            label.toUpperCase(),
+            style: TextStyle(
+              fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
+              fontSize: size,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 0.6,
+              color: scheme.primary,
+            ),
+          ),
+        ],
       ),
     );
   }
