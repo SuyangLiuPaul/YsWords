@@ -55,14 +55,18 @@ const bibleVersions = <BibleVersionInfo>[
   // `assets/niv.json` was also removed in the same change.
   BibleVersionInfo(
     value: 'cuvs-yhwh',
-    shortLabel: 'CUVS(简)',
+    // 2026-08-02 (v1.3.157): was 'CUVS(简)' — user asked for Chinese
+    // versions to show Chinese labels instead of the Latin
+    // abbreviation, for both the Simplified and Traditional edition
+    // ("中文应该用中文的，繁体也是两个版本").
+    shortLabel: '雅伟版(简)',
     menuLabel: '和合本雅伟版(简体)',
     language: 'zh-Hans',
     editionYear: '基于和合本 1919 / 现代标点 1989',
   ),
   BibleVersionInfo(
     value: 'cuvs-yhwh-tr',
-    shortLabel: 'CUVS(繁)',
+    shortLabel: '雅偉版(繁)',
     menuLabel: '和合本雅伟版(繁體)',
     language: 'zh-Hant',
     editionYear: '基於和合本 1919 / 現代標點 1989',

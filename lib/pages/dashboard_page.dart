@@ -1211,7 +1211,7 @@ class _ContinueReadingHero extends StatelessWidget {
     // 2026-05-07 user follow-up: at < 390 px the long form
     // "创世纪 1 · 和合本雅伟版(简体)" overflows and gets ellipsized.
     // Below the threshold we fold both the book (帖前 / 创 / 1Th)
-    // and version (CUVS(简)) to their short labels, which still
+    // and version (雅伟版(简)) to their short labels, which still
     // identify the location unambiguously.
     final screenW = MediaQuery.of(context).size.width;
     final useShort = screenW < 390;
