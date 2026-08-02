@@ -59,14 +59,18 @@ const bibleVersions = <BibleVersionInfo>[
     // versions to show Chinese labels instead of the Latin
     // abbreviation, for both the Simplified and Traditional edition
     // ("中文应该用中文的，繁体也是两个版本").
-    shortLabel: '雅伟版(简)',
+    // 2026-08-02 (v1.3.159): dropped the "(简)" suffix — user pointed
+    // out the simplified/traditional characters themselves already
+    // make that obvious ("看字就知道") — and switched to the fuller
+    // "和合本雅伟版" name instead of the shortened "雅伟版".
+    shortLabel: '和合本雅伟版',
     menuLabel: '和合本雅伟版(简体)',
     language: 'zh-Hans',
     editionYear: '基于和合本 1919 / 现代标点 1989',
   ),
   BibleVersionInfo(
     value: 'cuvs-yhwh-tr',
-    shortLabel: '雅偉版(繁)',
+    shortLabel: '和合本雅偉版',
     menuLabel: '和合本雅伟版(繁體)',
     language: 'zh-Hant',
     editionYear: '基於和合本 1919 / 現代標點 1989',
