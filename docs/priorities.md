@@ -575,17 +575,17 @@ failing step.
 
 ## Open — added 2026-08-04 (v1.4.5 session)
 
-1. **🔴 BLOCKING on prod: Google Sign-In `redirect_uri_mismatch`.** Prod now
-   runs the redirect-based scheme (`authDomain: Uri.base.authority`), so
-   Google is asked to redirect to `https://yswords.netlify.app/__/auth/handler`
-   — which is **not** in the Web OAuth client's *Authorised redirect URIs*
-   (only `ysword.firebaseapp.com`, `yswords-dev`, `yswords-qat` are). The
-   JavaScript-origins list already includes prod; only the redirect URI is
-   missing. **Fix = add that one URI** in Google Cloud Console → APIs &
-   Services → Credentials → Web client. Needs the owner's Google account; not
-   automatable from this repo. The Netlify `/__/auth/handler` proxy is verified
-   healthy on all sites (200 + `fireauth.oauthhelper`). CN sites are exempt —
-   `kChinaMode` hides Google sign-in entirely.
+1. **✅ RESOLVED 2026-08-04 — prod Google Sign-In `redirect_uri_mismatch`.**
+   Shipping the redirect-based scheme (`authDomain: Uri.base.authority`) to
+   prod made Google redirect to `https://yswords.netlify.app/__/auth/handler`,
+   which was **not** in the Web OAuth client's *Authorised redirect URIs*
+   (only `ysword.firebaseapp.com`, `yswords-dev`, `yswords-qat` were — prod
+   was present in JavaScript origins but missing from redirect URIs). Fixed by
+   adding that one URI in Google Cloud Console → APIs & Services →
+   Credentials → Web client; **user confirmed prod sign-in works.** The
+   Netlify `/__/auth/handler` proxy was verified healthy throughout (200 +
+   `fireauth.oauthhelper`). CN sites are exempt — `kChinaMode` hides Google
+   sign-in entirely.
    **Process lesson:** when a deploy first brings a NEW domain onto the
    redirect scheme, register that domain's redirect URI *before* shipping.
    `docs/google-signin-troubleshooting.md` warns about exactly this and it
