@@ -573,6 +573,38 @@ failing step.
    threads start losing early context noticeably, summarise older turns
    instead of truncating.
 
+## Open — added 2026-08-04 (v1.4.5 session)
+
+1. **🔴 BLOCKING on prod: Google Sign-In `redirect_uri_mismatch`.** Prod now
+   runs the redirect-based scheme (`authDomain: Uri.base.authority`), so
+   Google is asked to redirect to `https://yswords.netlify.app/__/auth/handler`
+   — which is **not** in the Web OAuth client's *Authorised redirect URIs*
+   (only `ysword.firebaseapp.com`, `yswords-dev`, `yswords-qat` are). The
+   JavaScript-origins list already includes prod; only the redirect URI is
+   missing. **Fix = add that one URI** in Google Cloud Console → APIs &
+   Services → Credentials → Web client. Needs the owner's Google account; not
+   automatable from this repo. The Netlify `/__/auth/handler` proxy is verified
+   healthy on all sites (200 + `fireauth.oauthhelper`). CN sites are exempt —
+   `kChinaMode` hides Google sign-in entirely.
+   **Process lesson:** when a deploy first brings a NEW domain onto the
+   redirect scheme, register that domain's redirect URI *before* shipping.
+   `docs/google-signin-troubleshooting.md` warns about exactly this and it
+   still got missed for prod.
+
+2. **GitHub Releases lag the repo badly.** Latest release was **v1.3.141**
+   while `main` was at **v1.4.5** — v1.3.143 and all of v1.4.0–v1.4.5 were
+   never tagged, so the in-app update checker (`update_service.dart`, which
+   compares GitHub's latest tag to `kAppVersion`) told native users they were
+   current when they were many versions behind. Cut a tag whenever a version
+   reaches prod, not "later".
+
+3. **`pushPage()` / GetX route-name trap — do not regress.** GetX derives an
+   anonymous route's name from the *builder closure*; a helper whose parameter
+   is typed `Widget` collapses every page onto `/Widget`, and
+   `preventDuplicates` then silently swallows every push after the first.
+   Guarded by `test/app_nav_route_name_test.dart`. Any future navigation
+   helper must derive `routeName` from the widget, never the closure.
+
 ## Notes
 
 - Anything user-facing (UI, copy, accessibility, perf) is shipped immediately
