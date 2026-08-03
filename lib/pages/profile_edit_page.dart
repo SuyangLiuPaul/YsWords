@@ -6,6 +6,7 @@ import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/services/avatar_picker_service.dart';
 import 'package:yswords/services/profile_service.dart';
 import 'package:yswords/widgets/home_icon_button.dart';
+import 'package:yswords/widgets/language_switcher_button.dart';
 import 'package:yswords/widgets/localized_back_button.dart';
 import 'package:yswords/utils/font_catalog.dart' show kCjkFontFallback;
 
@@ -118,6 +119,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
             onPressed: _saving ? null : _save,
             child: Text(uiStrings['save']?[locale] ?? 'Save'),
           ),
+          const LanguageSwitcherButton(),
           const HomeIconButton(),
         ],
       ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:yswords/constants/motion.dart';
 import 'package:yswords/providers/main_provider.dart';
 import 'package:yswords/services/fetch_books.dart';
 import 'package:yswords/services/fetch_verses.dart';
@@ -220,8 +221,8 @@ class _HomePageState extends State<HomePage> {
         // Main reading pane fills the screen; we use AnimatedPadding
         // so it slides right when the sidebar opens.
         AnimatedPadding(
-          duration: const Duration(milliseconds: 250),
-          curve: Curves.easeInOutCubic,
+          duration: AppMotion.standard,
+          curve: AppMotion.symmetric,
           padding: EdgeInsets.only(left: sidebarW),
           child: Center(
             child: ConstrainedBox(
@@ -233,8 +234,8 @@ class _HomePageState extends State<HomePage> {
         // Sidebar — Positioned with top:0/bottom:0 guarantees full
         // screen height; animated width handles open/close transition.
         AnimatedPositioned(
-          duration: const Duration(milliseconds: 250),
-          curve: Curves.easeInOutCubic,
+          duration: AppMotion.standard,
+          curve: AppMotion.symmetric,
           left: 0,
           top: 0,
           bottom: 0,

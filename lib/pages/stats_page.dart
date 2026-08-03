@@ -20,6 +20,7 @@ import 'package:yswords/utils/reference_parser.dart'
     show BibleReference, parseReference;
 import 'package:yswords/utils/version_mapper.dart' show toEnglish, localeAwareBookName;
 import 'package:yswords/widgets/home_icon_button.dart';
+import 'package:yswords/widgets/language_switcher_button.dart';
 import 'package:yswords/widgets/localized_back_button.dart';
 import 'package:yswords/utils/font_catalog.dart' show kCjkFontFallback;
 
@@ -91,6 +92,7 @@ class StatsPage extends StatelessWidget {
             ],
           ),
           actions: const [
+            LanguageSwitcherButton(),
             HomeIconButton(),
           ],
         ),

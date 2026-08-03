@@ -6,6 +6,7 @@ import 'package:yswords/providers/main_provider.dart';
 import 'package:yswords/services/ai_bible_search_service.dart';
 import 'package:yswords/services/concordance_service.dart';
 import 'package:yswords/services/fetch_books.dart' show standardBookOrder;
+import 'package:yswords/utils/app_nav.dart';
 import 'package:yswords/utils/strongs_boolean_search.dart';
 import 'package:yswords/services/fetch_verses.dart';
 import 'package:yswords/pages/strongs_entry_page.dart';
@@ -24,6 +25,7 @@ import 'package:yswords/constants/ui_strings.dart';
 import 'package:yswords/constants/text_patterns.dart';
 import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/widgets/home_icon_button.dart';
+import 'package:yswords/widgets/language_switcher_button.dart';
 import 'package:yswords/widgets/localized_back_button.dart';
 import 'package:yswords/utils/ai_markdown.dart' show parseAiMarkdown;
 import 'package:yswords/utils/relative_time.dart' show relativeTime;
@@ -543,11 +545,8 @@ class _SearchPageState extends State<SearchPage> {
                         style: const TextStyle(fontSize: 12),
                       ),
                       onPressed: () {
-                        Get.to(
-                          () => const SettingsPage(
-                              initialSection: SettingsSection.ai),
-                          transition: Transition.rightToLeft,
-                        );
+                        pushPage(const SettingsPage(
+                              initialSection: SettingsSection.ai));
                       },
                     ),
                   ],
@@ -1445,8 +1444,7 @@ class _SearchPageState extends State<SearchPage> {
               // because "H1" could otherwise match a malformed ref.
               final strongs = parseStrongsNumber(trimmed);
               if (strongs != null) {
-                Get.to(() => StrongsEntryPage(number: strongs),
-                    transition: Transition.rightToLeft);
+                pushPage(StrongsEntryPage(number: strongs));
                 return;
               }
               // Then try parsing as a Bible reference. If it
@@ -1586,6 +1584,7 @@ class _SearchPageState extends State<SearchPage> {
             // 2026-08-02 (round 60): the clear (×) button moved
             // inside the search pill itself (next to the field), so
             // it's no longer duplicated here.
+            const LanguageSwitcherButton(),
             const HomeIconButton(),
           ],
         ),

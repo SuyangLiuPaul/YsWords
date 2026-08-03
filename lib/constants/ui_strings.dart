@@ -1908,9 +1908,9 @@ const uiStrings = {
         'Pre-download Bibles, sermons, and tools so the app launches instantly and works without network.',
   },
   'offlinePackBibles': {
-    'zh-Hans': '圣经译本（共 13 部）',
-    'zh-Hant': '聖經譯本（共 13 部）',
-    'en': 'Bibles (13 translations)',
+    'zh-Hans': '圣经译本（共 7 部）',
+    'zh-Hant': '聖經譯本（共 7 部）',
+    'en': 'Bibles (7 translations)',
   },
   'offlinePackSermons': {
     'zh-Hans': '张熙和牧师讲道（587 篇 ×3 语）',
@@ -4156,11 +4156,6 @@ const uiStrings = {
     'en':
         '© The Lockman Foundation · used under quotation provisions.',
   },
-  'aboutVerCuv': {
-    'zh-Hans': 'CUV 和合本 1919（简 / 繁）',
-    'zh-Hant': 'CUV 和合本 1919（簡 / 繁）',
-    'en': 'CUV 1919 (和合本, simplified / traditional)',
-  },
   'aboutVerCuvsYhwh': {
     'zh-Hans': 'CUVS-YHWH 和合本雅伟版（简 / 繁）',
     'zh-Hant': 'CUVS-YHWH 和合本雅偉版（簡 / 繁）',
@@ -4172,21 +4167,10 @@ const uiStrings = {
     'en':
         '© Yahweh De Hua Ministry · used with permission.',
   },
-  'aboutVerCnv': {
-    'zh-Hans': 'CNV 新译本 1992 / 2011（简 / 繁）',
-    'zh-Hant': 'CNV 新譯本 1992 / 2011（簡 / 繁）',
-    'en': 'CNV 1992 / 2011 (新译本, simplified / traditional)',
-  },
-  'aboutLicenseCnv': {
-    'zh-Hans': '© 环球圣经公会 · 雅伟版社群研经版本。',
-    'zh-Hant': '© 環球聖經公會 · 雅偉版社群研經版本。',
-    'en':
-        '© Worldwide Bible Society · Yahweh-substituted community-study edition.',
-  },
   'aboutVerLjk': {
-    'zh-Hans': 'LJK1 / LJK2 原文释经圣经（简 / 繁）',
-    'zh-Hant': 'LJK1 / LJK2 原文釋經聖經（簡 / 繁）',
-    'en': 'LJK1 / LJK2 (原文释经圣经, simplified / traditional)',
+    'zh-Hans': 'LJK1 / LJK2 梁家铿译本（2025年 · 第二版，简 / 繁）',
+    'zh-Hant': 'LJK1 / LJK2 梁家鏗譯本（2025年 · 第二版，簡 / 繁）',
+    'en': 'LJK1 / LJK2 — Liang Jiakeng translation (2025, 2nd ed., simplified / traditional)',
   },
   'aboutLicenseLjk': {
     'zh-Hans': '© 圣经释经事工 · 经授权使用。',

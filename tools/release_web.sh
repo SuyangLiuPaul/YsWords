@@ -82,6 +82,26 @@ deploy_sites() {
   wait
 }
 
+# 2026-08-03: `flutter build web` does NOT clean stray files it
+# doesn't own out of build/web/ — it only writes/overwrites its own
+# known outputs. tools/release_web_wasm_dev.sh (the dev-only skwasm
+# experiment) writes build/web/_headers to add
+# `Cross-Origin-Embedder-Policy: require-corp` for THAT ONE deploy —
+# but because nothing here ever removed it, it silently rode along
+# into every subsequent normal deploy from this script (v1.3.180,
+# v1.3.181), shipping COEP to ALL FOUR dev/qat sites, not just the
+# intended skwasm target. Concrete damage: it broke Google Sign-In
+# dev-wide — signInWithRedirect's auth iframe (proxied from
+# ysword.firebaseapp.com, no CORP header) got silently blocked by our
+# own page's COEP, hanging Firebase.initializeApp() forever with no
+# error, no timeout, and no way for the user to tell it apart from a
+# real problem on their end. Also re-broke Bible Evidence images
+# (yswords-data.netlify.app lacked a CORP header at the time) the
+# same way. Neither this script nor the wasm one owns cleanup of the
+# OTHER's leftover files, so remove it defensively here, every run —
+# the wasm script re-adds it fresh on its own next run if wanted.
+rm -f "$PROJECT/build/web/_headers"
+
 # ── International build → English sites (+ prod) ──────────────────
 echo "==> building INTERNATIONAL bundle"
 "$FLUTTER" build web --release \

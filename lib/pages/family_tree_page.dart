@@ -13,6 +13,7 @@ import 'package:yswords/services/family_tree_service.dart';
 import 'package:yswords/utils/biblical_role.dart' show localizedRole;
 import 'package:yswords/utils/theme_color_helpers.dart';
 import 'package:yswords/widgets/home_icon_button.dart';
+import 'package:yswords/widgets/language_switcher_button.dart';
 import 'package:yswords/widgets/localized_back_button.dart';
 import 'package:yswords/widgets/person_detail_sheet.dart';
 
@@ -274,7 +275,7 @@ class _FamilyTreePageState extends State<FamilyTreePage> {
       appBar: AppBar(
         leading: const LocalizedBackButton(),
         title: Text(uiStrings['familyTree']?[locale] ?? 'Family Tree'),
-        actions: const [HomeIconButton()],
+        actions: const [LanguageSwitcherButton(), HomeIconButton()],
       ),
       body: FutureBuilder<_TreeData>(
         future: _future,

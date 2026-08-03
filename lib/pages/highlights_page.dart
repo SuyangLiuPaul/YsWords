@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:provider/provider.dart';
 
 import 'package:yswords/constants/text_patterns.dart' show sanitizeForSearch;
@@ -8,9 +7,11 @@ import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/models/verse.dart';
 import 'package:yswords/pages/home_page.dart';
 import 'package:yswords/providers/main_provider.dart';
+import 'package:yswords/utils/app_nav.dart';
 import 'package:yswords/utils/clipboard_helper.dart';
 import 'package:yswords/utils/jump_to_reference.dart';
 import 'package:yswords/widgets/home_icon_button.dart';
+import 'package:yswords/widgets/language_switcher_button.dart';
 import 'package:yswords/widgets/localized_back_button.dart';
 import 'package:yswords/utils/font_catalog.dart' show kCjkFontFallback;
 
@@ -90,6 +91,7 @@ class _HighlightsPageState extends State<HighlightsPage> {
               tooltip: uiStrings['copyAll']?[locale] ?? 'Copy all',
               onPressed: () => _copyAll(context, items, settings),
             ),
+          const LanguageSwitcherButton(),
           const HomeIconButton(),
         ],
       ),
@@ -172,6 +174,7 @@ class _HighlightsPageState extends State<HighlightsPage> {
           else
             Expanded(
               child: ListView.separated(
+                physics: const BouncingScrollPhysics(),
                 padding: const EdgeInsets.symmetric(vertical: 4),
                 itemCount: items.length,
                 separatorBuilder: (_, __) => const Divider(height: 1),
@@ -197,10 +200,7 @@ class _HighlightsPageState extends State<HighlightsPage> {
     // 300 ms `Future.delayed` that often missed cold-start and slow
     // devices, leaving the user stranded at the top of the chapter.
     prepareJumpToVerse(v, mp);
-    Get.to(
-      () => const HomePage(),
-      transition: Transition.rightToLeft,
-    );
+    pushPage(const HomePage());
   }
 
   Future<void> _copyAll(

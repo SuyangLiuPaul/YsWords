@@ -16,7 +16,7 @@ void main() {
   test('happy path: loads a real bundled version end-to-end and '
       'fires onAttempt exactly once', () async {
     final mp = MainProvider();
-    mp.currentVersion = 'biblexg'; // smallest real bundle (NT only)
+    mp.currentVersion = 'biblexg-v2'; // smallest real bundle (NT only)
 
     final attempts = <(int, Object?)>[];
     await FetchVerses.execute(
@@ -25,7 +25,7 @@ void main() {
     );
 
     expect(mp.verses, isNotEmpty,
-        reason: 'biblexg.json must parse into verses');
+        reason: 'biblexg-v2.json must parse into verses');
     expect(mp.versesInChapter('馬太福音', 1).isNotEmpty ||
         mp.versesInChapter('马太福音', 1).isNotEmpty ||
         mp.verses.first.book.isNotEmpty, isTrue);

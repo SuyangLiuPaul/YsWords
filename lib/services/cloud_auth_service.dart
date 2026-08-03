@@ -141,6 +141,43 @@ class CloudAuthService extends ChangeNotifier {
     await _doInit();
   }
 
+  /// Web Firebase options with `authDomain` pointed at the CURRENT
+  /// origin instead of the project default `ysword.firebaseapp.com`.
+  ///
+  /// 2026-08-02: this is the client half of Firebase's documented
+  /// Option 3 for apps not hosted on Firebase Hosting —
+  /// https://firebase.google.com/docs/auth/web/redirect-best-practices
+  /// The server half is the `/__/auth/*` reverse proxy in netlify.toml;
+  /// the two only work as a pair. Pointing authDomain at our own
+  /// origin makes the sign-in helper same-origin with the app, which
+  /// removes the third-party storage access that browsers began
+  /// blocking in 2024 and that was silently losing the credential on
+  /// the way back from Google (getRedirectResult() → null user).
+  ///
+  /// Derived at runtime rather than baked in because dev, qat and prod
+  /// all ship from ONE build (see tools/release_web.sh), so there is no
+  /// single correct compile-time value.
+  ///
+  /// localhost is deliberately left on the default firebaseapp.com
+  /// authDomain: `flutter run -d chrome` has no Netlify in front of it
+  /// to serve the proxy, so an origin-based authDomain would 404 the
+  /// handler. Local dev keeps working the way it always has.
+  FirebaseOptions _webOptions() {
+    const base = DefaultFirebaseOptions.web;
+    final host = Uri.base.host;
+    if (host == 'localhost' || host == '127.0.0.1') return base;
+    return FirebaseOptions(
+      apiKey: base.apiKey,
+      appId: base.appId,
+      messagingSenderId: base.messagingSenderId,
+      projectId: base.projectId,
+      authDomain: Uri.base.authority,
+      storageBucket: base.storageBucket,
+      measurementId: base.measurementId,
+      databaseURL: base.databaseURL,
+    );
+  }
+
   Future<void> _doInit() async {
     // Step-by-step init so we can pinpoint WHICH operation failed —
     // initializeApp, FirebaseAuth.instance access, or userChanges()
@@ -195,6 +232,13 @@ class CloudAuthService extends ChangeNotifier {
         // registrant already ran.
         registerWebPluginsIfNeeded();
       }
+      // 2026-08-03: step-by-step print()s (not debugPrint — silenced
+      // in release) added to pin down a report of the whole init
+      // silently never completing (no FAILED log either, so not an
+      // exception — a hang on some awaited step before
+      // getRedirectResult, which already had its own logging).
+      // ignore: avoid_print
+      print('[CloudAuthService] step=$step starting Firebase.initializeApp');
       step = 'Firebase.initializeApp';
       // 2026-05-21 (v1.2.68): use DefaultFirebaseOptions.web on web,
       // but on native (iOS / Android) pass NO options so the native
@@ -206,11 +250,13 @@ class CloudAuthService extends ChangeNotifier {
       // doesn't match the iOS bundle.
       if (kIsWeb) {
         await Firebase.initializeApp(
-          options: DefaultFirebaseOptions.web,
+          options: _webOptions(),
         );
       } else {
         await Firebase.initializeApp();
       }
+      // ignore: avoid_print
+      print('[CloudAuthService] Firebase.initializeApp done, authDomain=${kIsWeb ? _webOptions().authDomain : "n/a"}');
       // Tell Firestore to auto-detect when the WebChannel transport
       // is being blocked (some browser extensions, corporate
       // proxies, mobile carrier networks) and fall back to long-
@@ -277,6 +323,12 @@ class CloudAuthService extends ChangeNotifier {
       // care about the success path.
       if (kIsWeb) {
         step = 'FirebaseAuth.getRedirectResult';
+        // 2026-08-02: use print(), not debugPrint() — debugPrint is
+        // silenced in release builds (see release_web.sh /
+        // main.dart's kReleaseMode gate), so every debugPrint() in
+        // this block was invisible in exactly the deployed build
+        // where redirect sign-in needed diagnosing. print() survives
+        // release (same reasoning as the catch-all handler below).
         try {
           final pending = await auth.getRedirectResult();
           if (pending.user != null) {
@@ -292,13 +344,49 @@ class CloudAuthService extends ChangeNotifier {
               _driveAccessToken = c.accessToken;
               _driveTokenExpiresAt =
                   DateTime.now().add(const Duration(minutes: 55));
-              debugPrint(
-                  'CloudAuthService: captured Drive access token from redirect result');
+              // ignore: avoid_print
+              print(
+                  '[CloudAuthService] captured Drive access token from redirect result');
             }
-            debugPrint('CloudAuthService: picked up redirect sign-in for ${pending.user!.email}');
+            // ignore: avoid_print
+            print('[CloudAuthService] picked up redirect sign-in for ${pending.user!.email}');
+            // 2026-08-02 (redirect-primary refactor): the popup path's
+            // signInWithGoogleAndAdoptProfile() always ran profile
+            // adoption (match-or-create a local Profile by the Google
+            // display name) right after a successful sign-in. This
+            // getRedirectResult() branch never did — a minor gap while
+            // redirect was only a rare popup-blocked fallback, but a
+            // first-class bug now that redirect is the ONLY web sign-in
+            // path: every web sign-in would authenticate with Firebase
+            // but silently stay on whatever local profile (usually
+            // Guest) was active before. Call the same adoption logic
+            // here too.
+            // ignore: unawaited_futures
+            _adoptProfileFor(pending.user!);
+          } else {
+            // 2026-08-02: diagnose the "redirected back but still
+            // shows signed out" report. getRedirectResult() returning
+            // a null user is indistinguishable, from the public API
+            // alone, between "no redirect was pending" (the normal
+            // case on almost every page load) and "a redirect WAS
+            // pending but its result was lost" (third-party-storage
+            // restrictions breaking the ysword.firebaseapp.com
+            // authDomain hop — see docs/google-signin-troubleshooting.md
+            // §1, §3). Logging auth.currentUser right after tells them
+            // apart: if Firebase's own session restore (independent of
+            // getRedirectResult, backed by IndexedDB persistence)
+            // picked up a signed-in user anyway, the redirect actually
+            // succeeded server-side and this is just a UI/state-sync
+            // gap; if currentUser is ALSO null, the redirect genuinely
+            // never completed and the fix is domain/storage-related,
+            // not code.
+            // ignore: avoid_print
+            print('[CloudAuthService] getRedirectResult: no pending user '
+                '(auth.currentUser=${auth.currentUser?.email ?? "null"})');
           }
         } catch (e) {
-          debugPrint('CloudAuthService: getRedirectResult skipped: $e');
+          // ignore: avoid_print
+          print('[CloudAuthService] getRedirectResult failed: $e');
         }
       }
       _configured = true;
@@ -394,37 +482,18 @@ class CloudAuthService extends ChangeNotifier {
     }
   }
 
-  /// Sign in with Google via Firebase's web flow.
+  /// Platform-aware Google sign-in for non-web platforms.
   ///
-  /// **Two-tier strategy** — see `docs/google-signin-troubleshooting.md`
-  /// for the full story:
+  /// 2026-08-02 (redirect-primary refactor): web no longer calls this
+  /// method as part of [signInWithGoogle] — see that method's own doc
+  /// comment for the current web flow (`signInWithRedirect`, always).
+  /// Requirements for web sign-in (one-time Firebase Console setup —
+  /// Google provider enabled, `yswords.netlify.app` + preview-deploy
+  /// URLs in Authorized domains) still apply; see
+  /// `docs/google-signin-troubleshooting.md` for the full story of how
+  /// web sign-in evolved (popup-primary → popup-with-redirect-fallback
+  /// → redirect-primary).
   ///
-  /// 1. **Popup** (`signInWithPopup`) is tried first. Fast, in-place,
-  ///    no navigation. Works in most desktop browsers.
-  ///
-  /// 2. **Redirect** (`signInWithRedirect`) is the fallback when
-  ///    popup fails for any reason that suggests it CAN'T succeed
-  ///    on this browser — popup-blocker, third-party cookies blocked
-  ///    (Safari especially in PWA mode), web-storage unsupported, or
-  ///    any of Firebase's catch-all internal errors that historically
-  ///    correlate with cross-origin handshake failures.
-  ///
-  ///    Redirect navigates the WHOLE PAGE to Google. After the user
-  ///    consents and Google bounces back to ysword.firebaseapp.com →
-  ///    yswords.netlify.app, `_doInit()` picks up the credential via
-  ///    `getRedirectResult()`. This call returns BEFORE the redirect
-  ///    happens; the user sees the page navigate away and the result
-  ///    text "Redirecting to Google…" briefly before they're gone.
-  ///
-  /// Requirements (one-time, see troubleshooting doc):
-  ///   1. Firebase Console → Authentication → Sign-in method →
-  ///      Google → Enable.
-  ///   2. Firebase Console → Authentication → Settings → Authorized
-  ///      domains → must include `yswords.netlify.app` (and any
-  ///      preview-deploy URLs you use).
-  ///   3. The popup is initiated by a user click — modern browsers
-  ///      block popups otherwise. Calling this from a button's
-  ///      onPressed handler satisfies the gesture requirement.
   /// 2026-05-22 (v1.2.71): platform-aware Google sign-in helper. The
   /// firebase_auth macOS plugin literally returns null for
   /// `signInWithProvider` (see FLTFirebaseAuthPlugin.m line 1701:
@@ -441,6 +510,14 @@ class CloudAuthService extends ChangeNotifier {
   ///
   /// Throws [FirebaseAuthException] with code `cancelled` when the
   /// user dismisses the macOS Google sign-in sheet.
+  ///
+  /// 2026-08-02: web is no longer routed through this helper for the
+  /// primary sign-in flow — see [signInWithGoogle], which calls
+  /// `signInWithRedirect` directly for `kIsWeb`. This method now
+  /// only serves non-web platforms; it's still used by
+  /// [refreshDriveAccessToken]'s (currently unreachable — see that
+  /// method's doc comment) silent-popup path, which is why the web
+  /// branch stays removed rather than the whole method.
   Future<UserCredential> _googleSignIn(GoogleAuthProvider provider) async {
     if (kIsWeb) {
       return FirebaseAuth.instance.signInWithPopup(provider);
@@ -495,13 +572,36 @@ class CloudAuthService extends ChangeNotifier {
     // right one.
     provider.setCustomParameters({'prompt': 'select_account'});
 
-    // 1. Popup first.
+    // 2026-08-02 (redirect-primary refactor): web now goes straight to
+    // signInWithRedirect instead of trying signInWithPopup first. This
+    // used to be a fallback-only path (see _isRetryableAsRedirect,
+    // removed) for the handful of browser conditions where popup
+    // can't complete; it's now the ONLY web path, because strict
+    // Cross-Origin-Opener-Policy (required for the crossOriginIsolated
+    // context Flutter's multithreaded skwasm web renderer needs) is
+    // incompatible with signInWithPopup's window.opener relationship.
+    // The page navigates away here; getRedirectResult() in _doInit()
+    // picks up the credential (including profile adoption via
+    // _adoptProfileFor) on the next load. Non-web platforms are
+    // unaffected — they never used popup on web's terms to begin
+    // with (native provider flow / google_sign_in package).
+    if (kIsWeb) {
+      try {
+        await FirebaseAuth.instance.signInWithRedirect(provider);
+        return const CloudAuthResult.error('Redirecting to Google…');
+      } on FirebaseAuthException catch (e) {
+        return CloudAuthResult.error(_friendlyError(e));
+      } catch (e) {
+        return CloudAuthResult.error(e.toString());
+      }
+    }
+
     try {
       // 2026-05-21 (v1.2.68 / v1.2.71): platform-aware Google sign-in.
-      // Web → signInWithPopup. iOS / Android → signInWithProvider.
-      // macOS → google_sign_in + signInWithCredential (firebase_auth's
-      // signInWithProvider is hard-coded to return null on macOS —
-      // FLTFirebaseAuthPlugin.m line 1701).
+      // iOS / Android → signInWithProvider. macOS → google_sign_in +
+      // signInWithCredential (firebase_auth's signInWithProvider is
+      // hard-coded to return null on macOS — FLTFirebaseAuthPlugin.m
+      // line 1701).
       final cred = await _googleSignIn(provider);
       // Capture the Drive OAuth access token from the credential
       // object. firebase_auth_web exposes it via OAuthCredential's
@@ -544,58 +644,13 @@ class CloudAuthService extends ChangeNotifier {
       }
       return CloudAuthResult.ok(cred.user);
     } on FirebaseAuthException catch (e) {
-      // Some failure codes mean popup CAN'T complete on this browser
-      // — try redirect instead. Others mean the user explicitly
-      // declined or there's a config problem we shouldn't paper over.
-      if (kIsWeb && _isRetryableAsRedirect(e)) {
-        debugPrint('signInWithPopup failed (${e.code}); falling back to redirect.');
-        try {
-          await FirebaseAuth.instance.signInWithRedirect(provider);
-          // Page navigates here; the credential will be captured by
-          // getRedirectResult() during the next init. The line below
-          // only runs in browsers that don't actually navigate (rare
-          // — usually means the redirect itself was blocked).
-          return const CloudAuthResult.error(
-              'Redirecting to Google…');
-        } on FirebaseAuthException catch (e2) {
-          return CloudAuthResult.error(_friendlyError(e2));
-        } catch (e2) {
-          return CloudAuthResult.error(e2.toString());
-        }
-      }
+      // Non-web platform failure (iOS/Android provider flow, or
+      // macOS google_sign_in). No redirect fallback here — that was
+      // web-only machinery, now handled entirely by the kIsWeb
+      // early-return above.
       return CloudAuthResult.error(_friendlyError(e));
     } catch (e) {
-      // Non-FirebaseAuthException failures (web-only crashes, JS
-      // interop errors). Try redirect once before giving up — these
-      // sometimes also indicate the popup mechanism is unhealthy.
-      if (kIsWeb) {
-        debugPrint('signInWithPopup non-Firebase error: $e — trying redirect.');
-        try {
-          await FirebaseAuth.instance.signInWithRedirect(provider);
-          return const CloudAuthResult.error(
-              'Redirecting to Google…');
-        } catch (e2) {
-          return CloudAuthResult.error(e2.toString());
-        }
-      }
       return CloudAuthResult.error(e.toString());
-    }
-  }
-
-  /// Whether a popup failure looks like a "this browser can't do
-  /// popup OAuth, retry with redirect" situation. See
-  /// docs/google-signin-troubleshooting.md §1, §5.
-  bool _isRetryableAsRedirect(FirebaseAuthException e) {
-    switch (e.code) {
-      case 'popup-blocked':            // browser popup blocker
-      case 'popup-closed-by-user':     // Safari third-party-cookie
-      case 'cancelled-popup-request':  // multiple-popup race
-      case 'web-storage-unsupported':  // localStorage/IndexedDB blocked
-      case 'internal-error':           // catch-all that often = above
-      case 'network-request-failed':   // sometimes the popup window
-        return true;
-      default:
-        return false;
     }
   }
 
@@ -613,7 +668,19 @@ class CloudAuthService extends ChangeNotifier {
   Future<CloudAuthResult> signInWithGoogleAndAdoptProfile() async {
     final result = await signInWithGoogle();
     if (!result.isOk) return result;
-    final user = result.user!;
+    await _adoptProfileFor(result.user!);
+    return result;
+  }
+
+  /// Match-or-create a local [Profile] by the signed-in Google
+  /// account's display name (falling back to the email prefix), and
+  /// switch to it. Shared by every path that lands a successful
+  /// Google sign-in: the synchronous popup/native-provider success
+  /// path above, and the web `getRedirectResult()` handler in
+  /// [_doInit] — redirect completes on a fresh page load, so it can't
+  /// return a result inline the way popup does, but the user still
+  /// needs the same profile reconciliation.
+  Future<void> _adoptProfileFor(User user) async {
     final svc = ProfileService.instance;
     final namePart = user.displayName?.trim().isNotEmpty == true
         ? user.displayName!.trim()
@@ -626,7 +693,6 @@ class CloudAuthService extends ChangeNotifier {
       final p = await svc.create(namePart);
       await svc.setCurrent(p.id);
     }
-    return result;
   }
 
   /// Map FirebaseAuth's machine codes to short, plain-English

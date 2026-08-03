@@ -22,7 +22,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 /// categories give the user explicit control over those (large)
 /// downloads.
 enum OfflinePackCategory {
-  /// All 13 Bible translations (~70 MB after NIV removal).
+  /// All 7 Bible translations (~40 MB after NIV/CUV/CNV/LJK1 removal).
   bibles,
 
   /// 587 sermons × up to 3 languages = ~867 files (~26 MB).
@@ -252,14 +252,12 @@ class OfflinePackService extends ChangeNotifier {
     'assets/nasb.json',
     // 'assets/niv.json' removed 2026-05 — NIV asset bundle removed
     // along with its picker entry (see bible_versions.dart).
-    'assets/cuv.json',
-    'assets/cuv-tr.json',
+    // 'assets/cuv.json', 'assets/cuv-tr.json', 'assets/cnv.json',
+    // 'assets/cnv-tr.json', 'assets/biblexg.json',
+    // 'assets/biblexg-tr.json' removed 2026-08 — CUV, CNV, and LJK1
+    // were deleted outright (see bible_versions.dart).
     'assets/cuvs-yhwh.json',
     'assets/cuvs-yhwh-tr.json',
-    'assets/cnv.json',
-    'assets/cnv-tr.json',
-    'assets/biblexg.json',
-    'assets/biblexg-tr.json',
     'assets/biblexg-v2.json',
     'assets/biblexg-v2-tr.json',
   ];
@@ -372,7 +370,7 @@ class OfflinePackService extends ChangeNotifier {
   int approximateMbFor(OfflinePackCategory c) {
     switch (c) {
       case OfflinePackCategory.bibles:
-        return 70; // 13 versions after NIV removal
+        return 40; // 7 versions after NIV/CUV/CNV/LJK1 removal
       case OfflinePackCategory.sermons:
         return 26;
       case OfflinePackCategory.tools:

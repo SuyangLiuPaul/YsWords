@@ -5,6 +5,7 @@ import 'package:yswords/utils/clipboard_helper.dart';
 // import 'package:get/get.dart';
 import 'package:provider/provider.dart';
 
+import 'package:yswords/constants/motion.dart';
 import 'package:yswords/constants/text_patterns.dart' show sanitizeVerseText;
 import 'package:yswords/constants/ui_strings.dart';
 import 'package:yswords/models/app_settings.dart';
@@ -312,9 +313,9 @@ class _VersePopupSheetState extends State<VersePopupSheet> {
             // AnimatedSwitcher detects the swap.
             Expanded(
               child: AnimatedSwitcher(
-                duration: const Duration(milliseconds: 250),
-                switchInCurve: Curves.easeOutCubic,
-                switchOutCurve: Curves.easeInCubic,
+                duration: AppMotion.standard,
+                switchInCurve: AppMotion.enter,
+                switchOutCurve: AppMotion.exit,
                 transitionBuilder: (child, animation) {
                   return FadeTransition(
                     opacity: animation,

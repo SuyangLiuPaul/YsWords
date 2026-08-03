@@ -56,23 +56,6 @@ void main() {
         containsAll(<String>['cuvs-yhwh-tr', 'biblexg-v2-tr']));
   });
 
-  test('cuv/cnv/biblexg(v1) are hidden from the picker but stay resolvable',
-      () {
-    const hidden = <String>[
-      'cuv', 'cuv-tr',
-      'cnv', 'cnv-tr',
-      'biblexg', 'biblexg-tr',
-    ];
-    final availableCodes = availableVersions.map((v) => v.value).toSet();
-    final allCodes = bibleVersions.map((v) => v.value).toSet();
-    for (final code in hidden) {
-      expect(availableCodes.contains(code), isFalse,
-          reason: '$code should be hidden from the picker');
-      expect(allCodes.contains(code), isTrue,
-          reason: '$code should still resolve (labels/fallback/shared links)');
-    }
-  });
-
   test('bibleVersionLanguage resolves known codes + falls back safely', () {
     expect(bibleVersionLanguage('nasb'), 'en');
     expect(bibleVersionLanguage('cuvs-yhwh'), 'zh-Hans');

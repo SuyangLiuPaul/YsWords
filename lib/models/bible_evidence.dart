@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 
+import 'package:yswords/constants/ui_strings.dart';
+
 /// One row in the Biblical Evidence Archive.
 ///
 /// Loaded from `assets/bible_evidence.json` which was migrated from
 /// the standalone bible-evidence.netlify.app project (Vite/React/TS).
-/// Translations for [title], [summary], [description] and
-/// [scripturalCorrelation] are inlined per entry as
-/// `{en, zh-Hans, zh-Hant}` maps so the archive works fully offline.
+/// Translations for [title], [summary], [description],
+/// [scripturalCorrelation], [timeline], [discoveryDate] and [location]
+/// are inlined per entry as `{en, zh-Hans, zh-Hant}` maps so the
+/// archive works fully offline.
 class BibleEvidence {
   final String id;
   /// One of: 'Archaeology', 'Manuscripts', 'Science', 'History'.
@@ -16,9 +19,16 @@ class BibleEvidence {
   /// Dead Sea Scrolls.
   final List<String> bibleBooks;
   /// Era as a free-text phrase ("9th Century BCE", "1st Century CE").
-  final String timeline;
-  final String discoveryDate;
-  final String location;
+  /// Localized like [title]/[summary] — see [localizedTimeline].
+  /// 2026-08-03: was plain English `String` until translated (AI,
+  /// Gemini 2.5 Flash, unreviewed per user instruction) to zh-Hans +
+  /// zh-Hant. Same round also fixed a pre-existing UTF-8 double-
+  /// encoding mojibake in these three fields (en-dash/em-dash bytes
+  /// decoded as separate Latin-1 codepoints, e.g. "1946â\x80\x931956"
+  /// instead of "1946–1956") and in [academicSources].
+  final Map<String, String> timeline;
+  final Map<String, String> discoveryDate;
+  final Map<String, String> location;
   /// Anchor scripture reference for cross-linking into the reader.
   /// Format: "Book Chapter:Verse" or "Book Chapter:Start-End".
   final String scriptureReference;
@@ -58,8 +68,31 @@ class BibleEvidence {
 
   String localizedTitle(String locale) =>
       title[locale] ?? title['en'] ?? id;
+  /// [category] is one of a fixed 4-value taxonomy (Archaeology /
+  /// Manuscripts / Science / History), not free text, so — unlike
+  /// [timeline]/[discoveryDate]/[location], which are per-entry free
+  /// text and would need real translation — it can be localized via a
+  /// simple lookup. Reuses the `category$X` keys in ui_strings.dart,
+  /// which evidence_page.dart's filter chips already relied on
+  /// (`_categoryLabel`); this had no equivalent on the detail page's
+  /// metadata chip until 2026-08-02.
+  String localizedCategory(String locale) =>
+      uiStrings['category$category']?[locale] ?? category;
+  /// Same lookup ConfidenceBadge._label uses ('Definitive' /
+  /// 'Strong' / 'Circumstantial' → `confidence$level` in
+  /// ui_strings.dart). Added here so the share-text builder in
+  /// evidence_detail_page.dart can localize it too, instead of only
+  /// the on-screen badge.
+  String localizedConfidenceLevel(String locale) =>
+      uiStrings['confidence$confidenceLevel']?[locale] ?? confidenceLevel;
   String localizedSummary(String locale) =>
       summary[locale] ?? summary['en'] ?? '';
+  String localizedTimeline(String locale) =>
+      timeline[locale] ?? timeline['en'] ?? '';
+  String localizedDiscoveryDate(String locale) =>
+      discoveryDate[locale] ?? discoveryDate['en'] ?? '';
+  String localizedLocation(String locale) =>
+      location[locale] ?? location['en'] ?? '';
   String localizedDescription(String locale) =>
       description[locale] ?? description['en'] ?? '';
   String localizedCorrelation(String locale) =>
@@ -111,9 +144,9 @@ class BibleEvidence {
       id: j['id'] as String? ?? '',
       category: j['category'] as String? ?? '',
       bibleBooks: ls(j['bibleBooks']),
-      timeline: j['timeline'] as String? ?? '',
-      discoveryDate: j['discoveryDate'] as String? ?? '',
-      location: j['location'] as String? ?? '',
+      timeline: tm(j['timeline']),
+      discoveryDate: tm(j['discoveryDate']),
+      location: tm(j['location']),
       scriptureReference: j['scriptureReference'] as String? ?? '',
       images: ls(j['images']),
       academicSources: ls(j['academicSources']),

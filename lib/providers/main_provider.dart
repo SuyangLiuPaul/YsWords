@@ -912,6 +912,62 @@ class MainProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// 2026-08-03 (v1.4.0): merges data parsed by `ImportService.parse`
+  /// into the CURRENTLY ACTIVE profile. "Merge" means: an imported
+  /// highlight/bookmark/note for a verse ID already present locally
+  /// overwrites that one entry; every other existing entry is left
+  /// untouched. Operates directly on verse-ID strings (not `Verse`
+  /// objects) — highlights/bookmarks/notes are stored as ID-keyed
+  /// maps/sets, and IDs are version-agnostic (see `Verse.id`), so no
+  /// chapter-data lookup is needed to reconstruct a `Verse` for each
+  /// imported entry.
+  ///
+  /// Deliberately does ONE `_saveX()` + `notifyListeners()` per data
+  /// kind (not per entry, unlike calling `setHighlight`/`setVerseNote`
+  /// in a loop) — an import can be dozens-to-hundreds of entries, and
+  /// each `_saveX()` is its own SharedPreferences write plus an RTDB
+  /// upload request. `toggleBookmark`'s toggle semantics are also
+  /// unsafe to call in a loop for already-bookmarked verses (it would
+  /// flip them back off) — a direct `Set` union sidesteps that
+  /// entirely rather than needing a pre-check per verse.
+  ///
+  /// Returns the entry counts actually applied, for the import
+  /// dialog's confirmation toast.
+  ({int highlights, int bookmarks, int notes}) importMergedData({
+    Map<String, int> highlights = const {},
+    Iterable<String> bookmarks = const [],
+    Map<String, ({String text, String? title, int? updatedAtMs})> notes =
+        const {},
+  }) {
+    _highlights.addAll(highlights);
+    _bookmarks.addAll(bookmarks);
+    for (final entry in notes.entries) {
+      _verseNotes[entry.key] = entry.value.text;
+      final title = entry.value.title;
+      if (title != null && title.isNotEmpty) {
+        _verseNoteTitles[entry.key] = title;
+      } else {
+        _verseNoteTitles.remove(entry.key);
+      }
+      _verseNoteTimestamps[entry.key] =
+          entry.value.updatedAtMs ?? DateTime.now().millisecondsSinceEpoch;
+    }
+    if (highlights.isNotEmpty) {
+      _saveHighlights();
+      onHighlightsMutated?.call();
+    }
+    if (bookmarks.isNotEmpty) _saveBookmarks();
+    if (notes.isNotEmpty) _saveNotes();
+    if (highlights.isNotEmpty || bookmarks.isNotEmpty || notes.isNotEmpty) {
+      notifyListeners();
+    }
+    return (
+      highlights: highlights.length,
+      bookmarks: bookmarks.length,
+      notes: notes.length,
+    );
+  }
+
   void _saveNotes() async {
     try {
       final prefs = await SharedPreferences.getInstance();

@@ -1,16 +1,18 @@
 import 'dart:async';
 import 'dart:ui';
 
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/foundation.dart'
+    show kIsWeb, defaultTargetPlatform, TargetPlatform;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:get/get.dart';
 import 'package:provider/provider.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
 import 'package:yswords/constants/bible_versions.dart';
+import 'package:yswords/constants/motion.dart';
 import 'package:yswords/constants/text_patterns.dart';
 import 'package:yswords/constants/ui_strings.dart';
+import 'package:yswords/utils/app_nav.dart';
 import 'package:yswords/widgets/note_reference_picker_sheet.dart';
 import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/models/bible_map.dart';
@@ -579,8 +581,8 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
     if (!c.isAttached) return;
     c.scrollTo(
       index: 0,
-      duration: const Duration(milliseconds: 350),
-      curve: Curves.easeOut,
+      duration: AppMotion.slow,
+      curve: AppMotion.enter,
       alignment: 0,
     );
     // Also reveal the chrome — convention is "I'm back at the top,
@@ -1534,8 +1536,7 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                         _goToNextChapter,
                     const SingleActivator(LogicalKeyboardKey.slash): () {
                       if (widget.showSearchAndSettings) {
-                        Get.to(() => SearchPage(),
-                            transition: Transition.rightToLeft);
+                        pushPage(SearchPage());
                       }
                     },
                     // v1.3.19: Shift+T (toggle TTS) removed with the
@@ -1560,8 +1561,7 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                     const SingleActivator(LogicalKeyboardKey.keyF,
                         meta: true): () {
                       if (widget.showSearchAndSettings) {
-                        Get.to(() => SearchPage(),
-                            transition: Transition.rightToLeft);
+                        pushPage(SearchPage());
                       }
                     },
                     // ⌘, → settings. Standard Mac "open Preferences"
@@ -1569,8 +1569,7 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                     const SingleActivator(LogicalKeyboardKey.comma,
                         meta: true): () {
                       if (widget.showSearchAndSettings) {
-                        Get.to(() => const SettingsPage(),
-                            transition: Transition.rightToLeft);
+                        pushPage(const SettingsPage());
                       }
                     },
                     // Ctrl+ variants for Windows / Linux desktop users
@@ -1714,9 +1713,8 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                               } else {
                                 _pageController.animateToPage(
                                   currentChapterPageIdx,
-                                  duration:
-                                      const Duration(milliseconds: 300),
-                                  curve: Curves.easeOut,
+                                  duration: AppMotion.standard,
+                                  curve: AppMotion.enter,
                                 );
                               }
                             });
@@ -1726,7 +1724,8 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                       return PageView.builder(
                       controller: _pageController,
                       itemCount: chapterList.length,
-                      physics: const PageScrollPhysics(),
+                      physics: const PageScrollPhysics(
+                          parent: BouncingScrollPhysics()),
                       onPageChanged: (idx) {
                         // Idx is the chapter's index in
                         // chapterList. Translate to (book,
@@ -1931,16 +1930,13 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                                   mainProvider.currentVerse?.book ?? '';
                               final provider =
                                   context.read<MainProvider>();
-                              Get.to(
-                                () => BooksPage(
+                              pushPage(
+                                BooksPage(
                                   chapterIdx: chapter,
                                   bookIdx: book,
                                   providerOverride: provider,
                                 ),
-                                transition: Transition.leftToRight,
-                                duration:
-                                    const Duration(milliseconds: 300),
-                                curve: Curves.easeInOut,
+                                reverse: true,
                               );
                             },
                       onVersionSelected: (version) async {
@@ -2112,14 +2108,11 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                       },
                       onSearch: () {
                         mainProvider.clearSelectedVerses();
-                        Get.to(
-                          () => SearchPage(),
-                          transition: Transition.rightToLeft,
-                        );
+                        pushPage(SearchPage());
                       },
                       onSettings: () {
                         mainProvider.clearSelectedVerses();
-                        Get.to(() => SettingsPage());
+                        pushPage(SettingsPage());
                       },
                       highlightCount:
                           mainProvider.highlights.length,
@@ -2129,10 +2122,7 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                       // so the floating-header entry now opens it.
                       // The modal HighlightsSheet remains for the
                       // long-press color-picker context only.
-                      onHighlights: () => Get.to(
-                        () => const HighlightsPage(),
-                        transition: Transition.rightToLeft,
-                      ),
+                      onHighlights: () => pushPage(const HighlightsPage()),
                       // Reload — re-runs FetchVerses+FetchBooks on the
                       // current version. User asked for this so they
                       // don't have to relaunch the app when verses
@@ -2157,7 +2147,32 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                     // replaces), so the pill needs more room to clear it.
                     if (verses.isNotEmpty)
                       Positioned(
-                        right: ResponsiveBreakpoints.headerInset(dc) + 4,
+                        // 2026-08-03: extra right clearance on desktop
+                        // platforms (macOS/Windows/Linux — whether web
+                        // or native). `defaultTargetPlatform` is
+                        // OS-sensitive even on Flutter web, so Mac
+                        // Chrome / Windows Chrome correctly match here
+                        // while iPhone/Android Safari/Chrome don't —
+                        // matching exactly which platforms paint
+                        // Flutter's own persistent Material scrollbar
+                        // (enabled app-wide in main.dart's
+                        // `MaterialScrollBehavior(scrollbars: true)`;
+                        // mobile/touch platforms use a transient,
+                        // fade-on-scroll style instead). Without this,
+                        // the pill sat right on top of that scrollbar's
+                        // track — looked like two redundant position
+                        // indicators stacked on desktop, but was never
+                        // an issue on phones since there's nothing to
+                        // overlap there.
+                        right: ResponsiveBreakpoints.headerInset(dc) +
+                            4 +
+                            (defaultTargetPlatform == TargetPlatform.macOS ||
+                                    defaultTargetPlatform ==
+                                        TargetPlatform.windows ||
+                                    defaultTargetPlatform ==
+                                        TargetPlatform.linux
+                                ? 10
+                                : 0),
                         top: MediaQuery.of(context).padding.top +
                             64 * settings.menuScale +
                             24,
@@ -2231,10 +2246,7 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                         onNextChapter: _goToNextChapter,
                         onOpenNotes: () {
                           mainProvider.clearSelectedVerses();
-                          Get.to(
-                            () => const LibraryPage(),
-                            transition: Transition.rightToLeft,
-                          );
+                          pushPage(const LibraryPage());
                         },
                         onOpenIllustrations: (_chapterMaps.isEmpty &&
                                 _bookMaps.isEmpty)
@@ -2392,9 +2404,8 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                           }
                           mainProvider.itemScrollController.scrollTo(
                             index: 0,
-                            duration:
-                                const Duration(milliseconds: 350),
-                            curve: Curves.easeOut,
+                            duration: AppMotion.slow,
+                            curve: AppMotion.enter,
                           );
                         },
                       ),
@@ -3335,8 +3346,8 @@ class _AiExplainSheetState extends State<_AiExplainSheet> {
       if (!mounted || !_bodyScroll.hasClients) return;
       _bodyScroll.animateTo(
         _bodyScroll.position.maxScrollExtent,
-        duration: const Duration(milliseconds: 280),
-        curve: Curves.easeOut,
+        duration: AppMotion.standard,
+        curve: AppMotion.enter,
       );
     });
   }
@@ -4026,10 +4037,7 @@ class _PreloadedSermonsSheetBody extends StatelessWidget {
                           const Icon(Icons.chevron_right, size: 20),
                       onTap: () {
                         Navigator.of(context).maybePop();
-                        Get.to(
-                          () => SermonDetailPage(sermon: s),
-                          transition: Transition.rightToLeft,
-                        );
+                        pushPage(SermonDetailPage(sermon: s));
                       },
                     );
                   },
@@ -4201,10 +4209,7 @@ class _RelatedSermonsSheetBodyState extends State<_RelatedSermonsSheetBody> {
                     trailing: const Icon(Icons.chevron_right, size: 20),
                     onTap: () {
                       Navigator.of(context).maybePop();
-                      Get.to(
-                        () => SermonDetailPage(sermon: s),
-                        transition: Transition.rightToLeft,
-                      );
+                      pushPage(SermonDetailPage(sermon: s));
                     },
                   );
                 },
@@ -5873,11 +5878,11 @@ class _MapTile extends StatelessWidget {
           Icon(Icons.chevron_right_rounded, size: 20, color: scheme.outline),
       onTap: () {
         onClose();
-        Get.to(() => MapViewerPage(
-              map: map,
-              locale: locale,
-              relatedMaps: related,
-            ));
+        pushPage(MapViewerPage(
+          map: map,
+          locale: locale,
+          relatedMaps: related,
+        ));
       },
     );
   }
@@ -6011,8 +6016,8 @@ class _MiniReaderHeader extends StatelessWidget {
         ignoring: !visible,
         child: AnimatedOpacity(
           opacity: visible ? 1.0 : 0.0,
-          duration: const Duration(milliseconds: 220),
-          curve: Curves.easeOut,
+          duration: AppMotion.standard,
+          curve: AppMotion.enter,
           // Wrap the entire band in a GestureDetector so that
           // tapping ANY part of the chip row (chip or empty space
           // between chips, or the status-bar inset above the
@@ -6594,11 +6599,11 @@ class _BibleReaderBottomBar extends StatelessWidget {
         child: AnimatedSlide(
           offset: visible ? Offset.zero : const Offset(0, 1.4),
           // 2026-05-22 (v1.2.71): smoother chrome animation.
-          // 320 ms + easeInOutCubic feels considerably less abrupt
+          // A slower, symmetric ease feels considerably less abrupt
           // than the previous 200 ms easeOutCubic — both bars now
           // ease in/out at the same pace.
-          duration: const Duration(milliseconds: 320),
-          curve: Curves.easeInOutCubic,
+          duration: AppMotion.slow,
+          curve: AppMotion.symmetric,
           child: _GlassSurface(
             // Top-rounded only + opaque so the surface fills all the
             // way down to the screen edge (including the home-indicator
@@ -6872,8 +6877,8 @@ class _FloatingHeader extends StatelessWidget {
           offset: chromeVisible ? Offset.zero : const Offset(0, -1.4),
           // 2026-05-22 (v1.2.71): smoother chrome animation — matches
           // the bottom bar's timing.
-          duration: const Duration(milliseconds: 320),
-          curve: Curves.easeInOutCubic,
+          duration: AppMotion.slow,
+          curve: AppMotion.symmetric,
           // 2026-05-22 (v1.2.71): single edge-to-edge surface that
           // matches the bottom bar's pattern — opaque background,
           // ONLY the bottom corners rounded, surface flush to screen
@@ -7219,14 +7224,105 @@ class _FloatingHeader extends StatelessWidget {
                       ),
                       constraints:
                           const BoxConstraints(minWidth: 240, maxWidth: 300),
-                      // Each item fires its action via `onTap` (which
-                      // runs the moment the user taps the row, before
-                      // the menu's close animation begins) so layout-
-                      // changing actions like Open Split View take
-                      // effect immediately. Using `onSelected` here
-                      // delayed the callback until after the menu had
-                      // fully animated closed (~250 ms), making the
-                      // first split-view tap feel like it was lost.
+                      // 2026-08-03: this menu used to fire each action via
+                      // a per-item `onTap` (to avoid the ~250ms delay
+                      // `onSelected` adds after the close animation), but
+                      // that's the ONLY PopupMenuButton in the app using
+                      // that pattern — every other one (library_page,
+                      // profiles_page, search_page, language_switcher_
+                      // button) uses the standard button-level
+                      // `onSelected`, and none of those had reported
+                      // issues. Per-item `onTap` turned out to be
+                      // unreliable here — tapping a row would close the
+                      // menu but the action never fired. Reverted to the
+                      // standard `onSelected` switch below; the small
+                      // delay is a worthwhile trade for taps that
+                      // actually work.
+                      onSelected: (value) async {
+                        switch (value) {
+                          case 'cloudSignIn':
+                            final messenger = ScaffoldMessenger.of(context);
+                            final result = await CloudAuthService.instance
+                                .signInWithGoogleAndAdoptProfile();
+                            if (!context.mounted) return;
+                            if (!result.isOk) {
+                              messenger.showSnackBar(SnackBar(
+                                content: Text(
+                                  result.errorMessage ?? 'Sign-in failed.',
+                                ),
+                                duration: const Duration(seconds: 3),
+                              ));
+                            }
+                            break;
+                          case 'home':
+                            Navigator.of(context).popUntil((r) => r.isFirst);
+                            break;
+                          case 'reload':
+                            onReload?.call();
+                            break;
+                          case 'highlights':
+                            onHighlights?.call();
+                            break;
+                          case 'evidence':
+                            pushPage(EvidencePage(
+                              filterBook: toEnglish(book),
+                              filterChapter: chapter,
+                            ));
+                            break;
+                          case 'synopsis':
+                            _showSynopsisSheet(
+                              context: context,
+                              englishBook: toEnglish(book) ?? book,
+                              chapter: chapter,
+                              locale: locale,
+                            );
+                            break;
+                          case 'maps':
+                            _showMapPicker(
+                              context,
+                              chapterMaps: chapterMaps,
+                              bookMaps: bookMaps,
+                              locale: locale,
+                            );
+                            break;
+                          case 'sermons':
+                            _showChapterSermonsSheet(
+                              context: context,
+                              sermons: chapterSermons,
+                              locale: locale,
+                              book: book,
+                              chapter: chapter,
+                            );
+                            break;
+                          case 'trivia':
+                            trivia.showBibleTriviaSheet(
+                              context: context,
+                              englishBook: toEnglish(book) ?? book,
+                              chapter: chapter,
+                              locale: locale,
+                              settings: context.read<AppSettings>(),
+                            );
+                            break;
+                          case 'split':
+                            onToggleSplitView?.call();
+                            break;
+                          case 'paragraph':
+                            onToggleParagraphMode?.call();
+                            break;
+                          case 'library':
+                            pushPage(const LibraryPage());
+                            break;
+                          case 'stats':
+                            pushPage(const StatsPage());
+                            break;
+                          case 'language':
+                            _showLanguagePicker(context, locale);
+                            break;
+                          case 'settings':
+                            onSettings();
+                            break;
+                        }
+                      },
                       itemBuilder: (context) {
                         final items = <PopupMenuEntry<String>>[];
                         // Top-level "Sign in" — only when Firebase
@@ -7237,24 +7333,6 @@ class _FloatingHeader extends StatelessWidget {
                             !CloudAuthService.instance.isSignedIn) {
                           items.add(PopupMenuItem(
                             value: 'cloudSignIn',
-                            onTap: () async {
-                              final messenger =
-                                  ScaffoldMessenger.of(context);
-                              final result = await CloudAuthService
-                                  .instance
-                                  .signInWithGoogleAndAdoptProfile();
-                              if (!context.mounted) return;
-                              if (!result.isOk) {
-                                messenger.showSnackBar(SnackBar(
-                                  content: Text(
-                                    result.errorMessage ??
-                                        'Sign-in failed.',
-                                  ),
-                                  duration:
-                                      const Duration(seconds: 3),
-                                ));
-                              }
-                            },
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
@@ -7295,10 +7373,6 @@ class _FloatingHeader extends StatelessWidget {
                         // to it via popUntil(isFirst).
                         items.add(PopupMenuItem(
                           value: 'home',
-                          onTap: () {
-                            Navigator.of(context)
-                                .popUntil((r) => r.isFirst);
-                          },
                           child: _menuRow(
                             context,
                             icon: Icons.home_outlined,
@@ -7314,7 +7388,6 @@ class _FloatingHeader extends StatelessWidget {
                         if (onReload != null) {
                           items.add(PopupMenuItem(
                             value: 'reload',
-                            onTap: () => onReload!(),
                             child: _menuRow(
                               context,
                               icon: Icons.refresh,
@@ -7331,7 +7404,6 @@ class _FloatingHeader extends StatelessWidget {
                         if (highlightCount > 0) {
                           items.add(PopupMenuItem(
                             value: 'highlights',
-                            onTap: () => onHighlights?.call(),
                             child: _menuRow(
                               context,
                               icon: Icons.format_color_fill,
@@ -7351,15 +7423,6 @@ class _FloatingHeader extends StatelessWidget {
                         // when chapter-specific coverage is thin.
                         items.add(PopupMenuItem(
                           value: 'evidence',
-                          onTap: () {
-                            Get.to(
-                              () => EvidencePage(
-                                filterBook: toEnglish(book),
-                                filterChapter: chapter,
-                              ),
-                              transition: Transition.rightToLeft,
-                            );
-                          },
                           child: _menuRow(
                             context,
                             icon: Icons.museum_outlined,
@@ -7377,12 +7440,6 @@ class _FloatingHeader extends StatelessWidget {
                         if (SynopsisService.isGospel(toEnglish(book) ?? '')) {
                           items.add(PopupMenuItem(
                             value: 'synopsis',
-                            onTap: () => _showSynopsisSheet(
-                              context: context,
-                              englishBook: toEnglish(book) ?? book,
-                              chapter: chapter,
-                              locale: locale,
-                            ),
                             child: _menuRow(
                               context,
                               icon: Icons.compare_arrows_rounded,
@@ -7393,12 +7450,6 @@ class _FloatingHeader extends StatelessWidget {
                         }
                         items.add(PopupMenuItem(
                           value: 'maps',
-                          onTap: () => _showMapPicker(
-                            context,
-                            chapterMaps: chapterMaps,
-                            bookMaps: bookMaps,
-                            locale: locale,
-                          ),
                           child: _menuRow(
                             context,
                             icon: chapterMaps.isNotEmpty
@@ -7415,14 +7466,6 @@ class _FloatingHeader extends StatelessWidget {
                         ));
                         items.add(PopupMenuItem(
                           value: 'sermons',
-                          onTap: () =>
-                              _showChapterSermonsSheet(
-                                context: context,
-                                sermons: chapterSermons,
-                                locale: locale,
-                                book: book,
-                                chapter: chapter,
-                              ),
                           child: _menuRow(
                             context,
                             icon: chapterSermons.isNotEmpty
@@ -7451,13 +7494,6 @@ class _FloatingHeader extends StatelessWidget {
                         ).length;
                         items.add(PopupMenuItem(
                           value: 'trivia',
-                          onTap: () => trivia.showBibleTriviaSheet(
-                            context: context,
-                            englishBook: toEnglish(book) ?? book,
-                            chapter: chapter,
-                            locale: locale,
-                            settings: context.read<AppSettings>(),
-                          ),
                           child: _menuRow(
                             context,
                             icon: triviaCount > 0
@@ -7487,7 +7523,6 @@ class _FloatingHeader extends StatelessWidget {
                         if (onToggleSplitView != null) {
                           items.add(PopupMenuItem(
                             value: 'split',
-                            onTap: () => onToggleSplitView?.call(),
                             child: _menuRow(
                               context,
                               icon: splitViewActive
@@ -7505,7 +7540,6 @@ class _FloatingHeader extends StatelessWidget {
                             onToggleParagraphMode != null) {
                           items.add(PopupMenuItem(
                             value: 'paragraph',
-                            onTap: () => onToggleParagraphMode?.call(),
                             child: _menuRow(
                               context,
                               icon: paragraphMode
@@ -7530,12 +7564,6 @@ class _FloatingHeader extends StatelessWidget {
                         // creating any.
                         items.add(PopupMenuItem(
                           value: 'library',
-                          onTap: () {
-                            Get.to(
-                              () => const LibraryPage(),
-                              transition: Transition.rightToLeft,
-                            );
-                          },
                           child: _menuRow(
                             context,
                             icon: Icons.collections_bookmark_outlined,
@@ -7544,12 +7572,6 @@ class _FloatingHeader extends StatelessWidget {
                         ));
                         items.add(PopupMenuItem(
                           value: 'stats',
-                          onTap: () {
-                            Get.to(
-                              () => const StatsPage(),
-                              transition: Transition.rightToLeft,
-                            );
-                          },
                           child: _menuRow(
                             context,
                             icon: Icons.insights_outlined,
@@ -7557,10 +7579,31 @@ class _FloatingHeader extends StatelessWidget {
                                 'Statistics',
                           ),
                         ));
+                        // 2026-08-03: field request — a language
+                        // switcher on every page, not just Home/
+                        // Settings. The reading pane's own top bar has
+                        // no room for another icon (already leading +
+                        // sidebar toggle + book/version pills + a
+                        // trailing cluster), so it lives here in the
+                        // "More" section instead of crowding the row.
+                        // A PopupMenuButton can't nest cleanly inside
+                        // another PopupMenuButton's itemBuilder, so
+                        // tapping this opens a small bottom sheet with
+                        // the same three choices LanguageSwitcherButton
+                        // offers everywhere else — same `setLocale`
+                        // call, so all entry points stay in sync.
+                        items.add(PopupMenuItem(
+                          value: 'language',
+                          child: _menuRow(
+                            context,
+                            icon: Icons.language_rounded,
+                            label: uiStrings['interfaceLanguage']?[locale] ??
+                                'Interface Language',
+                          ),
+                        ));
                         if (showSearchAndSettings) {
                           items.add(PopupMenuItem(
                             value: 'settings',
-                            onTap: onSettings,
                             child: _menuRow(
                               context,
                               icon: Icons.settings_outlined,
@@ -7644,6 +7687,45 @@ class _FloatingHeader extends StatelessWidget {
           ),
         ],
       ],
+    );
+  }
+
+  /// Bottom sheet with the same three interface-language choices
+  /// `LanguageSwitcherButton` offers on every other page. Used by the
+  /// reading pane's overflow-menu "Language" row instead of a nested
+  /// PopupMenuButton — Flutter's PopupMenuButton doesn't support
+  /// submenus cleanly, and a bottom sheet matches this app's existing
+  /// picker pattern (book/chapter picker, version picker) better than
+  /// a second popup stacked on the first anyway.
+  void _showLanguagePicker(BuildContext context, String currentLocale) {
+    final settings = context.read<AppSettings>();
+    final scheme = Theme.of(context).colorScheme;
+    const options = [
+      ('zh-Hans', '简体中文'),
+      ('zh-Hant', '繁體中文'),
+      ('en', 'English'),
+    ];
+    showModalBottomSheet(
+      context: context,
+      showDragHandle: true,
+      builder: (sheetContext) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            for (final (value, label) in options)
+              ListTile(
+                title: Text(label),
+                trailing: value == currentLocale
+                    ? Icon(Icons.check_rounded, color: scheme.primary)
+                    : null,
+                onTap: () {
+                  settings.setLocale(value);
+                  Navigator.of(sheetContext).pop();
+                },
+              ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -8310,8 +8392,8 @@ class _SectionHeadingState extends State<_SectionHeading> {
         ),
         if (hasContext)
           AnimatedSize(
-            duration: const Duration(milliseconds: 180),
-            curve: Curves.easeOut,
+            duration: AppMotion.fast,
+            curve: AppMotion.enter,
             alignment: Alignment.topLeft,
             child: _expanded
                 ? Padding(
@@ -8483,8 +8565,8 @@ class _BookIntroCardState extends State<_BookIntroCard> {
             // passage. AnimatedSize gives a soft expand/collapse
             // motion without dropping into the verse layout.
             AnimatedSize(
-              duration: const Duration(milliseconds: 200),
-              curve: Curves.easeOut,
+              duration: AppMotion.standard,
+              curve: AppMotion.enter,
               alignment: Alignment.topLeft,
               child: _expanded
                   ? Column(

@@ -95,7 +95,7 @@ class BibleEvidenceService {
       final hay = [
         e.localizedTitle(locale),
         e.localizedSummary(locale),
-        e.location,
+        e.localizedLocation(locale),
         e.scriptureReference,
         e.bibleBooks.join(' '),
         e.category,

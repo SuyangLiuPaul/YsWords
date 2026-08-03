@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import 'package:yswords/constants/motion.dart';
 import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/models/app_style_preset.dart' show CardMaterial;
 
@@ -465,8 +466,8 @@ class _LiquidGlassButtonState extends State<LiquidGlassButton> {
               ? surface
               : AnimatedScale(
                   scale: _pressed ? 0.985 : 1.0,
-                  duration: const Duration(milliseconds: 120),
-                  curve: Curves.easeOut,
+                  duration: AppMotion.fast,
+                  curve: AppMotion.enter,
                   child: surface,
                 ),
         ),

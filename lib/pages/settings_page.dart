@@ -1,13 +1,16 @@
 // 2026-05-20 (v1.2.67): `dart:js_interop` was here. See
 // `lib/utils/clear_cache_helper.dart` for the conditional-import
 // pattern that replaced it.
+import 'package:yswords/utils/app_nav.dart';
 import 'package:yswords/utils/clear_cache_helper.dart';
 import 'package:yswords/utils/clipboard_helper.dart';
 
 import 'package:flutter/foundation.dart'
     show kIsWeb, defaultTargetPlatform, TargetPlatform;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show Clipboard;
 import 'package:yswords/constants/app_version.dart';
+import 'package:yswords/constants/motion.dart';
 import 'package:yswords/constants/build_flags.dart';
 import 'package:yswords/constants/text_patterns.dart' show sanitizeForCopy;
 import 'package:yswords/constants/ui_strings.dart';
@@ -16,7 +19,6 @@ import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/models/app_style_preset.dart';
 import 'package:yswords/models/dashboard_section.dart';
 import 'package:yswords/providers/main_provider.dart';
-import 'package:get/get.dart';
 import 'package:yswords/pages/about_page.dart';
 import 'package:yswords/utils/ai_markdown.dart' show parseAiMarkdown;
 import 'package:yswords/utils/theme_color_helpers.dart';
@@ -35,12 +37,15 @@ import 'package:yswords/widgets/profile_avatar.dart';
 // 2026-05-07 (v17): fetch_books / fetch_verses imports removed; the
 // only consumer was the deleted "Check for Updates" reload path.
 import 'package:yswords/services/export_service.dart';
+import 'package:yswords/services/import_service.dart';
 import 'package:yswords/services/install_prompt_service.dart';
 import 'package:yswords/services/profile_service.dart';
+import 'package:yswords/utils/floating_toast.dart' show showFloatingToast;
 import 'package:yswords/utils/font_catalog.dart';
 
 import 'package:yswords/services/offline_pack_service.dart';
 import 'package:yswords/widgets/home_icon_button.dart';
+import 'package:yswords/widgets/language_switcher_button.dart';
 import 'package:yswords/widgets/localized_back_button.dart';
 import 'package:yswords/widgets/onboarding_dialog.dart';
 import 'package:yswords/utils/responsive.dart';
@@ -129,7 +134,7 @@ class SettingsPage extends StatelessWidget {
           builder: (context, settings, _) =>
               Text(uiStrings['settings']?[settings.locale] ?? 'Settings'),
         ),
-        actions: const [HomeIconButton()],
+        actions: const [LanguageSwitcherButton(), HomeIconButton()],
       ),
       body: _SettingsPageBody(initialSection: initialSection),
     ),
@@ -192,8 +197,8 @@ class _SettingsPageBodyState extends State<_SettingsPageBody> {
       if (ctx == null) return;
       Scrollable.ensureVisible(
         ctx,
-        duration: const Duration(milliseconds: 380),
-        curve: Curves.easeOutCubic,
+        duration: AppMotion.slow,
+        curve: AppMotion.enter,
         alignment: 0.05, // header just below the AppBar
       );
     });
@@ -1101,6 +1106,12 @@ class _SettingsPageBodyState extends State<_SettingsPageBody> {
               // portable copy of their highlights / bookmarks / notes
               // in Markdown or JSON.
               const _ExportDataCard(),
+              SizedBox(height: 10 * s),
+              // 2026-08-03 (v1.4.0): import card — the reverse of
+              // export. Export existed with no way back in; see
+              // _ImportDataCard's own doc comment for the format/
+              // conflict-handling rationale.
+              const _ImportDataCard(),
               SizedBox(height: 16 * s),
             ],
               ),
@@ -1315,10 +1326,7 @@ class _AccountSectionState extends State<_AccountSection> {
                 ),
               ),
               trailing: const Icon(Icons.chevron_right),
-              onTap: () => Get.to(
-                () => const ProfilesPage(),
-                transition: Transition.rightToLeft,
-              ),
+              onTap: () => pushPage(const ProfilesPage()),
             ),
             // Cloud-sync row — Sign in / Sign out depending on state.
             //
@@ -2854,8 +2862,7 @@ class _AboutCard extends StatelessWidget {
                 uiStrings['aboutOpenButton']?[locale] ??
                     'Attributions & licensing',
               ),
-              onPressed: () => Get.to(() => const AboutPage(),
-                  transition: Transition.rightToLeft),
+              onPressed: () => pushPage(const AboutPage()),
             ),
             SizedBox(height: 10 * s),
             // Clear-cache button — wipes service workers + browser
@@ -4042,6 +4049,264 @@ class _ExportDialogState extends State<_ExportDialog> {
           },
           icon: const Icon(Icons.content_copy_outlined, size: 16),
           label: Text(isZh ? '复制' : 'Copy'),
+        ),
+      ],
+    );
+  }
+}
+
+/// 2026-08-03 (v1.4.0): import-data card — the reverse of
+/// `_ExportDataCard`. Paste-JSON, not a file picker: mirrors export's
+/// own copy-to-clipboard UX exactly, works identically on every
+/// platform with zero new dependencies (there's no `file_picker` in
+/// this app — a true file-open dialog would need one, and export
+/// itself doesn't even offer a file-download button, only clipboard).
+/// Only the JSON export format round-trips; Markdown is prose for
+/// pasting into OTHER apps, not parseable back into this one.
+class _ImportDataCard extends StatelessWidget {
+  const _ImportDataCard();
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final settings = context.watch<AppSettings>();
+    final locale = settings.locale;
+    final isZh = locale == 'zh-Hans' || locale == 'zh-Hant';
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.upload_outlined,
+                    size: 18, color: scheme.primary),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    isZh ? '导入我的数据' : 'Import my data',
+                    style: TextStyle(
+                      fontFamily: settings.fontFamily,
+                      fontFamilyFallback: kCjkFontFallback,
+                      fontSize:
+                          (settings.fontSize - 1).clamp(13.0, 16.0),
+                      fontWeight: FontWeight.w700,
+                      color: scheme.onSurface,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Text(
+              isZh
+                  ? '粘贴之前导出的 JSON 备份，恢复标记、书签和笔记。同一节经文的数据会被导入的内容覆盖，其余数据保持不变。'
+                  : 'Paste a previously exported JSON backup to restore highlights, bookmarks, and notes. Imported entries overwrite existing data for the same verse; everything else is left untouched.',
+              style: TextStyle(
+                fontFamily: settings.fontFamily,
+                fontFamilyFallback: kCjkFontFallback,
+                fontSize: (settings.fontSize - 4).clamp(11.0, 13.0),
+                color: scheme.onSurface.withValues(alpha: 0.85),
+                height: 1.5,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: FilledButton.tonalIcon(
+                onPressed: () => _showImportDialog(context),
+                icon: const Icon(Icons.file_open_outlined, size: 18),
+                label: Text(isZh ? '导入…' : 'Import…'),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _showImportDialog(BuildContext context) async {
+    final mp = context.read<MainProvider>();
+    final settings = context.read<AppSettings>();
+    await showDialog<void>(
+      context: context,
+      // 2026-08-03: `pageContext` is the SETTINGS PAGE's context
+      // (captured here, before the dialog opens), distinct from the
+      // dialog's own context passed to _ImportDialog's build method.
+      // On success we pop the dialog THEN show a confirmation toast —
+      // using the dialog's own context for that toast would be
+      // popping-and-then-using an about-to-be-removed context. Same
+      // pattern already used in bible_reading_pane.dart's note-delete
+      // flow (`Navigator.of(sheetCtx).maybePop()` then
+      // `showFloatingToast(context, ...)` with the OUTER context).
+      builder: (ctx) =>
+          _ImportDialog(mp: mp, settings: settings, pageContext: context),
+    );
+  }
+}
+
+class _ImportDialog extends StatefulWidget {
+  final MainProvider mp;
+  final AppSettings settings;
+  final BuildContext pageContext;
+  const _ImportDialog(
+      {required this.mp, required this.settings, required this.pageContext});
+
+  @override
+  State<_ImportDialog> createState() => _ImportDialogState();
+}
+
+class _ImportDialogState extends State<_ImportDialog> {
+  final _controller = TextEditingController();
+  ParsedImport? _parsed;
+  String? _error;
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _onTextChanged(String text) {
+    if (text.trim().isEmpty) {
+      setState(() {
+        _parsed = null;
+        _error = null;
+      });
+      return;
+    }
+    try {
+      final parsed = ImportService.parse(text);
+      setState(() {
+        _parsed = parsed;
+        _error = null;
+      });
+    } catch (e) {
+      setState(() {
+        _parsed = null;
+        _error = e is FormatException ? e.message : e.toString();
+      });
+    }
+  }
+
+  Future<void> _pasteFromClipboard() async {
+    // Best-effort — some browser contexts reject programmatic
+    // clipboard reads outside a fresh user-activation window. The
+    // field is still directly pasteable by the user's own OS paste
+    // gesture regardless of whether this succeeds.
+    try {
+      final data = await Clipboard.getData(Clipboard.kTextPlain);
+      final text = data?.text;
+      if (text != null && text.isNotEmpty) {
+        _controller.text = text;
+        _onTextChanged(text);
+      }
+    } catch (_) {
+      // Silently ignore — no worse off than before the tap.
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final locale = widget.settings.locale;
+    final isZh = locale == 'zh-Hans' || locale == 'zh-Hant';
+    final parsed = _parsed;
+
+    return AlertDialog(
+      title: Text(isZh ? '导入我的数据' : 'Import my data'),
+      content: SizedBox(
+        // Same responsive rule as _ExportDialog.
+        width: MediaQuery.of(context).size.width < 640
+            ? double.maxFinite
+            : 560.0,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Align(
+              alignment: Alignment.centerLeft,
+              child: TextButton.icon(
+                onPressed: _pasteFromClipboard,
+                icon: const Icon(Icons.content_paste_outlined, size: 16),
+                label: Text(isZh ? '从剪贴板粘贴' : 'Paste from clipboard'),
+              ),
+            ),
+            Container(
+              constraints: const BoxConstraints(maxHeight: 280, minHeight: 140),
+              decoration: BoxDecoration(
+                color: scheme.surfaceContainerHighest
+                    .withValues(alpha: 0.5),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(
+                    color: scheme.outlineVariant.withValues(alpha: 0.6)),
+              ),
+              padding: const EdgeInsets.all(8),
+              child: TextField(
+                controller: _controller,
+                onChanged: _onTextChanged,
+                maxLines: null,
+                expands: true,
+                style: const TextStyle(
+                  fontFamily: 'monospace',
+                  fontSize: 11,
+                  height: 1.4,
+                ),
+                decoration: InputDecoration(
+                  border: InputBorder.none,
+                  hintText: isZh
+                      ? '粘贴 JSON 内容…'
+                      : 'Paste exported JSON here…',
+                ),
+              ),
+            ),
+            const SizedBox(height: 6),
+            if (_error != null)
+              Text(
+                _error!,
+                style: TextStyle(fontSize: 11, color: scheme.error),
+              )
+            else if (parsed != null)
+              Text(
+                isZh
+                    ? '找到 ${parsed.highlights.length} 条高亮、${parsed.bookmarks.length} 条书签、${parsed.notes.length} 条笔记——将覆盖同一节经文的本地数据。'
+                    : 'Found ${parsed.highlights.length} highlights · ${parsed.bookmarks.length} bookmarks · ${parsed.notes.length} notes — will overwrite existing data for the same verse.',
+                style: TextStyle(
+                  fontSize: 11,
+                  color: scheme.onSurface.withValues(alpha: 0.6),
+                ),
+              ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: Text(isZh ? '取消' : 'Cancel'),
+        ),
+        FilledButton.icon(
+          onPressed: parsed == null || parsed.totalCount == 0
+              ? null
+              : () {
+                  final result = widget.mp.importMergedData(
+                    highlights: parsed.highlights,
+                    bookmarks: parsed.bookmarks,
+                    notes: parsed.notes,
+                  );
+                  Navigator.of(context).pop();
+                  showFloatingToast(
+                    widget.pageContext,
+                    message: isZh
+                        ? '已导入 ${result.highlights} 条高亮、${result.bookmarks} 条书签、${result.notes} 条笔记'
+                        : 'Imported ${result.highlights} highlights, ${result.bookmarks} bookmarks, ${result.notes} notes',
+                    icon: Icons.check_circle_rounded,
+                    background: scheme.primary,
+                  );
+                },
+          icon: const Icon(Icons.upload_outlined, size: 16),
+          label: Text(isZh ? '导入' : 'Import'),
         ),
       ],
     );

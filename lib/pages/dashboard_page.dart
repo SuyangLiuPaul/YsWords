@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:yswords/constants/app_version.dart';
 import 'package:yswords/constants/bible_versions.dart';
 import 'package:yswords/constants/build_flags.dart';
+import 'package:yswords/utils/app_nav.dart';
 import 'package:yswords/utils/short_book_name.dart' show shortBookName;
 import 'package:yswords/constants/text_patterns.dart' show sanitizeForSearch;
 import 'package:yswords/constants/ui_strings.dart';
@@ -21,6 +21,7 @@ import 'package:yswords/pages/bible_trivia_page.dart';
 import 'package:yswords/pages/family_tree_page.dart';
 import 'package:yswords/pages/sermon_detail_page.dart';
 import 'package:yswords/pages/sermons_page.dart';
+import 'package:yswords/widgets/language_switcher_button.dart';
 import 'package:yswords/widgets/liquid_glass.dart';
 import 'package:yswords/pages/highlights_page.dart';
 import 'package:yswords/pages/home_page.dart';
@@ -41,9 +42,11 @@ import 'package:yswords/utils/jump_to_reference.dart' as jumper;
 import 'package:yswords/utils/passage_localizer.dart' show localizePassage;
 import 'package:yswords/utils/reference_parser.dart';
 import 'package:yswords/utils/responsive.dart';
-import 'package:yswords/utils/version_mapper.dart' show translateBookName;
+import 'package:yswords/utils/version_mapper.dart'
+    show translateBookName, localizedReferenceLabel;
 import 'package:yswords/widgets/left_accent_card.dart';
 import 'package:yswords/widgets/onboarding_dialog.dart';
+import 'package:yswords/widgets/press_scale.dart';
 import 'package:yswords/widgets/profile_avatar.dart';
 import 'package:yswords/utils/font_catalog.dart' show kCjkFontFallback;
 
@@ -197,10 +200,7 @@ class _DashboardPageState extends State<DashboardPage> {
   /// session-progress invariants apply (id is already saved; the
   /// detail page will write a fresh offset on dispose).
   Future<void> _openResumeSermon(Sermon s) async {
-    await Get.to(
-      () => SermonDetailPage(sermon: s),
-      transition: Transition.rightToLeft,
-    );
+    await pushPage(SermonDetailPage(sermon: s));
     if (!mounted) return;
     // Pull the new scroll offset (the detail page wrote it on
     // dispose) so the meter on the dashboard immediately reflects
@@ -431,21 +431,11 @@ class _DashboardPageState extends State<DashboardPage> {
         actions: [
           // 2026-08-02: field request — a visible, one-tap language
           // switcher on Home instead of having to dig into Settings →
-          // App → Interface Language every time. Same underlying
-          // `settings.setLocale` call the Settings dropdown already
-          // uses, so both stay in sync and neither is "the real one".
-          PopupMenuButton<String>(
-            tooltip: uiStrings['interfaceLanguage']?[locale] ??
-                'Interface Language',
-            icon: const Icon(Icons.language_rounded),
-            initialValue: settings.locale,
-            onSelected: (val) => settings.setLocale(val),
-            itemBuilder: (context) => const [
-              PopupMenuItem(value: 'zh-Hans', child: Text('简体中文')),
-              PopupMenuItem(value: 'zh-Hant', child: Text('繁體中文')),
-              PopupMenuItem(value: 'en', child: Text('English')),
-            ],
-          ),
+          // App → Interface Language every time.
+          // 2026-08-03: extracted to LanguageSwitcherButton so every
+          // other page can drop in the same one-liner instead of
+          // duplicating this PopupMenuButton.
+          const LanguageSwitcherButton(),
           // 2026-08-02: field request — a second, one-tap entry to
           // Settings directly from the header (the quick-links grid
           // already has one, but it's several scrolls down on a long
@@ -453,10 +443,7 @@ class _DashboardPageState extends State<DashboardPage> {
           IconButton(
             tooltip: uiStrings['settings']?[locale] ?? 'Settings',
             icon: const Icon(Icons.settings_outlined),
-            onPressed: () => Get.to(
-              () => const SettingsPage(),
-              transition: Transition.rightToLeft,
-            ),
+            onPressed: () => pushPage(const SettingsPage()),
           ),
         ],
       ),
@@ -553,10 +540,7 @@ class _DashboardPageState extends State<DashboardPage> {
           currentVersion: mainProvider.currentVersion,
           locale: locale,
           settings: settings,
-          onTap: () => Get.to(
-            () => const HomePage(),
-            transition: Transition.rightToLeft,
-          ),
+          onTap: () => pushPage(const HomePage()),
         );
 
       case DashboardSection.resumeSermon:
@@ -590,10 +574,7 @@ class _DashboardPageState extends State<DashboardPage> {
               fromVersionLabel: _dailyVerseFromVersionLabel,
               onTap: () {
                 jumper.prepareJumpToVerse(_dailyVerse!, mainProvider);
-                Get.to(
-                  () => const HomePage(),
-                  transition: Transition.rightToLeft,
-                );
+                pushPage(const HomePage());
               },
             ),
           ],
@@ -608,10 +589,7 @@ class _DashboardPageState extends State<DashboardPage> {
                 count: mainProvider.bookmarks.length,
                 label: uiStrings['tabBookmarks']?[locale] ?? 'Bookmarks',
                 tint: scheme.primary,
-                onTap: () => Get.to(
-                  () => const LibraryPage(),
-                  transition: Transition.rightToLeft,
-                ),
+                onTap: () => pushPage(const LibraryPage()),
               ),
             ),
             const SizedBox(width: 8),
@@ -621,10 +599,7 @@ class _DashboardPageState extends State<DashboardPage> {
                 count: mainProvider.verseNotes.length,
                 label: uiStrings['tabNotes']?[locale] ?? 'Notes',
                 tint: scheme.secondary,
-                onTap: () => Get.to(
-                  () => const LibraryPage(),
-                  transition: Transition.rightToLeft,
-                ),
+                onTap: () => pushPage(const LibraryPage()),
               ),
             ),
             const SizedBox(width: 8),
@@ -634,10 +609,7 @@ class _DashboardPageState extends State<DashboardPage> {
                 count: mainProvider.highlights.length,
                 label: uiStrings['highlights']?[locale] ?? 'Highlights',
                 tint: scheme.tertiary,
-                onTap: () => Get.to(
-                  () => const HighlightsPage(),
-                  transition: Transition.rightToLeft,
-                ),
+                onTap: () => pushPage(const HighlightsPage()),
               ),
             ),
           ],
@@ -676,10 +648,7 @@ class _DashboardPageState extends State<DashboardPage> {
                 ),
                 onTap: () {
                   jumper.prepareJumpToVerse(v, mainProvider);
-                  Get.to(
-                    () => const HomePage(),
-                    transition: Transition.rightToLeft,
-                  );
+                  pushPage(const HomePage());
                 },
               ),
           ],
@@ -701,10 +670,7 @@ class _DashboardPageState extends State<DashboardPage> {
             _DashboardEvidenceCard(
               evidence: _dailyEvidence!,
               locale: locale,
-              onTap: () => Get.to(
-                () => EvidenceDetailPage(evidence: _dailyEvidence!),
-                transition: Transition.rightToLeft,
-              ),
+              onTap: () => pushPage(EvidenceDetailPage(evidence: _dailyEvidence!)),
             ),
           ],
         );
@@ -741,34 +707,22 @@ class _DashboardPageState extends State<DashboardPage> {
                 _LinkTile(
                   icon: Icons.search_rounded,
                   label: uiStrings['search']?[locale] ?? 'Search',
-                  onTap: () => Get.to(
-                    () => const SearchPage(),
-                    transition: Transition.rightToLeft,
-                  ),
+                  onTap: () => pushPage(const SearchPage()),
                 ),
                 _LinkTile(
                   icon: Icons.collections_bookmark_outlined,
                   label: uiStrings['library']?[locale] ?? 'Library',
-                  onTap: () => Get.to(
-                    () => const LibraryPage(),
-                    transition: Transition.rightToLeft,
-                  ),
+                  onTap: () => pushPage(const LibraryPage()),
                 ),
                 _LinkTile(
                   icon: Icons.menu_book_outlined,
                   label: uiStrings['sermons']?[locale] ?? 'Sermons',
-                  onTap: () => Get.to(
-                    () => const SermonsPage(),
-                    transition: Transition.rightToLeft,
-                  ),
+                  onTap: () => pushPage(const SermonsPage()),
                 ),
                 _LinkTile(
                   icon: Icons.settings_outlined,
                   label: uiStrings['settings']?[locale] ?? 'Settings',
-                  onTap: () => Get.to(
-                    () => const SettingsPage(),
-                    transition: Transition.rightToLeft,
-                  ),
+                  onTap: () => pushPage(const SettingsPage()),
                 ),
               ],
             ),
@@ -791,10 +745,7 @@ class _DashboardPageState extends State<DashboardPage> {
                 _LinkTile(
                   icon: Icons.insights_outlined,
                   label: uiStrings['statistics']?[locale] ?? 'Statistics',
-                  onTap: () => Get.to(
-                    () => const StatsPage(),
-                    transition: Transition.rightToLeft,
-                  ),
+                  onTap: () => pushPage(const StatsPage()),
                 ),
                 if (settings.isDashboardSectionVisible(
                     DashboardSection.todayEvidence))
@@ -802,34 +753,22 @@ class _DashboardPageState extends State<DashboardPage> {
                     icon: Icons.museum_outlined,
                     label:
                         uiStrings['bibleEvidence']?[locale] ?? 'Bible Evidence',
-                    onTap: () => Get.to(
-                      () => const EvidencePage(),
-                      transition: Transition.rightToLeft,
-                    ),
+                    onTap: () => pushPage(const EvidencePage()),
                   ),
                 _LinkTile(
                   icon: Icons.account_tree_outlined,
                   label: uiStrings['familyTree']?[locale] ?? 'Family Tree',
-                  onTap: () => Get.to(
-                    () => const FamilyTreePage(),
-                    transition: Transition.rightToLeft,
-                  ),
+                  onTap: () => pushPage(const FamilyTreePage()),
                 ),
                 _LinkTile(
                   icon: Icons.timeline_rounded,
                   label: uiStrings['bibleTimeline']?[locale] ?? 'Bible Timeline',
-                  onTap: () => Get.to(
-                    () => const BibleTimelinePage(),
-                    transition: Transition.rightToLeft,
-                  ),
+                  onTap: () => pushPage(const BibleTimelinePage()),
                 ),
                 _LinkTile(
                   icon: Icons.auto_awesome_rounded,
                   label: uiStrings['bibleTrivia']?[locale] ?? 'Bible Trivia',
-                  onTap: () => Get.to(
-                    () => const BibleTriviaPage(),
-                    transition: Transition.rightToLeft,
-                  ),
+                  onTap: () => pushPage(const BibleTriviaPage()),
                 ),
                 // 2026-05-07 (v12): feedback tile -- mailto-driven
                 // form page that lands directly in the developer's
@@ -837,10 +776,7 @@ class _DashboardPageState extends State<DashboardPage> {
                 _LinkTile(
                   icon: Icons.feedback_outlined,
                   label: uiStrings['feedback']?[locale] ?? 'Feedback',
-                  onTap: () => Get.to(
-                    () => const FeedbackPage(),
-                    transition: Transition.rightToLeft,
-                  ),
+                  onTap: () => pushPage(const FeedbackPage()),
                 ),
               ],
             ),
@@ -1334,6 +1270,7 @@ class _DashboardEvidenceCard extends StatelessWidget {
     context.select<AppSettings, (double, String)>(
         (s) => (s.fontSize, s.fontFamily));
     final settings = context.read<AppSettings>();
+    final currentVersion = context.read<MainProvider>().currentVersion;
     final fs = settings.fontSize;
     final imgUrl =
         evidence.images.isNotEmpty ? evidence.images.first : null;
@@ -1428,7 +1365,10 @@ class _DashboardEvidenceCard extends StatelessWidget {
                           const SizedBox(width: 4),
                           Flexible(
                             child: Text(
-                              evidence.scriptureReference,
+                              localizedReferenceLabel(
+                                  evidence.scriptureReference,
+                                  locale,
+                                  currentVersion),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(
@@ -1543,7 +1483,9 @@ class _ContinueReadingHero extends StatelessWidget {
     // "premium" signature technique: the shadow itself carries the
     // brand colour) and an oversized, near-invisible watermark icon
     // in the corner for a bit of visual character at rest.
-    return Container(
+    return PressScale(
+      onTap: onTap,
+      child: Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(20),
         gradient: LinearGradient(
@@ -1644,6 +1586,7 @@ class _ContinueReadingHero extends StatelessWidget {
             ),
           ),
         ),
+      ),
       ),
     );
   }

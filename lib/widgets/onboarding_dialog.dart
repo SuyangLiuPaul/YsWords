@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:yswords/constants/build_flags.dart';
+import 'package:yswords/constants/motion.dart';
 import 'package:yswords/constants/ui_strings.dart';
 import 'package:yswords/models/app_settings.dart';
 import 'package:provider/provider.dart';
@@ -200,8 +201,8 @@ class _OnboardingDialogState extends State<OnboardingDialog> {
                   if (_index < slides.length - 1)
                     FilledButton(
                       onPressed: () => _controller.nextPage(
-                        duration: const Duration(milliseconds: 250),
-                        curve: Curves.easeOutCubic,
+                        duration: AppMotion.standard,
+                        curve: AppMotion.enter,
                       ),
                       child: Padding(
                         padding: const EdgeInsets.symmetric(

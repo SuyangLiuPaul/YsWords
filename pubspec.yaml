@@ -1,7 +1,7 @@
 name: yswords
 description: "YsWords means Yahweh's words. A bilingual Bible app to help you listen to His voice and abide in Him daily."
 publish_to: 'none'
-version: 1.3.173
+version: 1.4.5
 
 environment:
   sdk: '>=3.2.3 <4.0.0'
@@ -101,15 +101,12 @@ flutter:
     - assets/leb.json
     - assets/cuvs-yhwh.json
     - assets/cuvs-yhwh-tr.json
-    - assets/biblexg.json
-    - assets/biblexg-tr.json
     - assets/biblexg-v2.json
     - assets/biblexg-v2-tr.json
-    - assets/cuv.json
-    - assets/cuv-tr.json
-    - assets/cnv.json
-    - assets/cnv-tr.json
     - assets/nasb.json
+    # CUV, CUV-tr, CNV, CNV-tr, biblexg (LJK1), biblexg-tr removed
+    # 2026-08 — deleted outright, superseded by cuvs-yhwh /
+    # biblexg-v2 (see lib/constants/bible_versions.dart).
     # NIV (Biblica/Zondervan) removed in 2026-05 — its complete text
     # cannot be redistributed without a publisher licence.
     - assets/web-ot-paragraphs.json

@@ -1,17 +1,20 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:provider/provider.dart';
 
+import 'package:yswords/constants/motion.dart';
 import 'package:yswords/constants/ui_strings.dart';
 import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/models/bible_evidence.dart';
 import 'package:yswords/pages/home_page.dart';
 import 'package:yswords/providers/main_provider.dart';
+import 'package:yswords/utils/app_nav.dart';
 import 'package:yswords/utils/clipboard_helper.dart';
 import 'package:yswords/utils/jump_to_reference.dart';
 import 'package:yswords/utils/reference_parser.dart';
+import 'package:yswords/utils/version_mapper.dart' show localizedReferenceLabel;
 import 'package:yswords/widgets/confidence_badge.dart';
 import 'package:yswords/widgets/home_icon_button.dart';
+import 'package:yswords/widgets/language_switcher_button.dart';
 import 'package:yswords/widgets/localized_back_button.dart';
 import 'package:yswords/utils/font_catalog.dart' show kCjkFontFallback;
 
@@ -80,6 +83,7 @@ class _EvidenceDetailPageState extends State<EvidenceDetailPage> {
             icon: const Icon(Icons.share_outlined),
             onPressed: () => _share(context, locale),
           ),
+          const LanguageSwitcherButton(),
           const HomeIconButton(),
         ],
       ),
@@ -184,9 +188,8 @@ class _EvidenceDetailPageState extends State<EvidenceDetailPage> {
                                   icon: Icons.chevron_left_rounded,
                                   onTap: () => _imagePageController
                                       .previousPage(
-                                    duration: const Duration(
-                                        milliseconds: 250),
-                                    curve: Curves.easeOutCubic,
+                                    duration: AppMotion.standard,
+                                    curve: AppMotion.enter,
                                   ),
                                 ),
                               ),
@@ -201,9 +204,8 @@ class _EvidenceDetailPageState extends State<EvidenceDetailPage> {
                                 child: _ArrowChip(
                                   icon: Icons.chevron_right_rounded,
                                   onTap: () => _imagePageController.nextPage(
-                                    duration: const Duration(
-                                        milliseconds: 250),
-                                    curve: Curves.easeOutCubic,
+                                    duration: AppMotion.standard,
+                                    curve: AppMotion.enter,
                                   ),
                                 ),
                               ),
@@ -228,8 +230,8 @@ class _EvidenceDetailPageState extends State<EvidenceDetailPage> {
                             return InkWell(
                               onTap: () => _imagePageController.animateToPage(
                                 i,
-                                duration: const Duration(milliseconds: 220),
-                                curve: Curves.easeOutCubic,
+                                duration: AppMotion.standard,
+                                curve: AppMotion.enter,
                               ),
                               borderRadius: BorderRadius.circular(8),
                               child: Container(
@@ -310,22 +312,22 @@ class _EvidenceDetailPageState extends State<EvidenceDetailPage> {
                   if (evidence.category.isNotEmpty)
                     _Meta(
                       icon: Icons.category_outlined,
-                      label: evidence.category,
+                      label: evidence.localizedCategory(locale),
                     ),
-                  if (evidence.timeline.isNotEmpty)
+                  if (evidence.localizedTimeline(locale).isNotEmpty)
                     _Meta(
                       icon: Icons.schedule,
-                      label: evidence.timeline,
+                      label: evidence.localizedTimeline(locale),
                     ),
-                  if (evidence.discoveryDate.isNotEmpty)
+                  if (evidence.localizedDiscoveryDate(locale).isNotEmpty)
                     _Meta(
                       icon: Icons.event_outlined,
-                      label: evidence.discoveryDate,
+                      label: evidence.localizedDiscoveryDate(locale),
                     ),
-                  if (evidence.location.isNotEmpty)
+                  if (evidence.localizedLocation(locale).isNotEmpty)
                     _Meta(
                       icon: Icons.place_outlined,
-                      label: evidence.location,
+                      label: evidence.localizedLocation(locale),
                     ),
                 ],
               ),
@@ -419,10 +421,12 @@ class _EvidenceDetailPageState extends State<EvidenceDetailPage> {
   }
 
   Future<void> _share(BuildContext context, String locale) async {
+    final currentVersion = context.read<MainProvider>().currentVersion;
     final body = StringBuffer()
       ..writeln(evidence.localizedTitle(locale))
-      ..writeln('— ${evidence.confidenceLevel} | '
-          '${evidence.category} | ${evidence.scriptureReference}')
+      ..writeln('— ${evidence.localizedConfidenceLevel(locale)} | '
+          '${evidence.localizedCategory(locale)} | '
+          '${localizedReferenceLabel(evidence.scriptureReference, locale, currentVersion)}')
       ..writeln()
       ..writeln(evidence.localizedSummary(locale))
       ..writeln()
@@ -479,10 +483,7 @@ class _EvidenceDetailPageState extends State<EvidenceDetailPage> {
     if (!context.mounted) return;
     final ok = await showJumpResultSnackBar(context, result);
     if (!ok || !context.mounted) return;
-    Get.to(
-      () => const HomePage(),
-      transition: Transition.rightToLeft,
-    );
+    pushPage(const HomePage());
   }
 }
 
@@ -657,6 +658,7 @@ class _ReferenceChip extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final settings = context.watch<AppSettings>();
+    final currentVersion = context.watch<MainProvider>().currentVersion;
     return Material(
       color: scheme.primary.withValues(alpha: 0.10),
       borderRadius: BorderRadius.circular(8),
@@ -673,7 +675,7 @@ class _ReferenceChip extends StatelessWidget {
                   size: 16, color: scheme.primary),
               const SizedBox(width: 6),
               Text(
-                reference,
+                localizedReferenceLabel(reference, locale, currentVersion),
                 style: TextStyle(
                   fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                   fontSize: settings.fontSize,

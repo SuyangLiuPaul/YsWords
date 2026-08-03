@@ -11,6 +11,7 @@ import 'package:yswords/utils/clipboard_helper.dart';
 import 'package:yswords/utils/responsive.dart';
 import 'package:yswords/widgets/cloud_setup_diagnostic.dart';
 import 'package:yswords/widgets/home_icon_button.dart';
+import 'package:yswords/widgets/language_switcher_button.dart';
 import 'package:yswords/widgets/setup_instructions_card.dart';
 import 'package:yswords/widgets/localized_back_button.dart';
 
@@ -59,7 +60,7 @@ class AboutPage extends StatelessWidget {
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
         ),
-        actions: const [HomeIconButton()],
+        actions: const [LanguageSwitcherButton(), HomeIconButton()],
       ),
       body: Center(
         child: ConstrainedBox(
@@ -510,25 +511,15 @@ class _ScripturesTable extends StatelessWidget {
         url: 'https://www.lockman.org/',
       ),
       _AttribRow(
-        name: uiStrings['aboutVerCuv']?[locale] ?? 'CUV 1919 (和合本, 简/繁)',
-        licence: uiStrings['aboutLicensePublicDomain']?[locale] ??
-            'Public domain (1919 base text).',
-      ),
-      _AttribRow(
         name: uiStrings['aboutVerCuvsYhwh']?[locale] ??
             'CUVS-YHWH (和合本雅伟版, 简/繁)',
         licence: uiStrings['aboutLicenseCuvsYhwh']?[locale] ??
             '© Yahweh De Hua Ministry · used with permission.',
-        url: 'https://yahwehdehua.net/cn',
-      ),
-      _AttribRow(
-        name: uiStrings['aboutVerCnv']?[locale] ?? 'CNV 1992 / 2011 (新译本, 简/繁)',
-        licence: uiStrings['aboutLicenseCnv']?[locale] ??
-            '© Worldwide Bible Society · Yahweh-substituted community-study edition.',
+        url: 'https://yahwehdehua.net/cn/bible',
       ),
       _AttribRow(
         name: uiStrings['aboutVerLjk']?[locale] ??
-            'LJK1 / LJK2 (原文释经圣经, 简/繁)',
+            'LJK1 / LJK2 梁家铿译本（2025年 · 第二版，简/繁）',
         licence: uiStrings['aboutLicenseLjk']?[locale] ??
             '© Bible Exegesis Ministry · used with permission.',
         url: 'https://www.biblexg.com/',

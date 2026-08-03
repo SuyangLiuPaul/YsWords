@@ -24,9 +24,9 @@
 // Either way the stack ends with EXACTLY ONE HomePage.
 
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 
 import 'package:yswords/pages/home_page.dart';
+import 'package:yswords/utils/app_nav.dart';
 
 /// The canonical route name for HomePage. All Get.to / Get.off
 /// pushes of HomePage MUST pass this as `routeName:` so popUntil
@@ -59,8 +59,7 @@ void navigateToReader(BuildContext context) {
     return false;
   });
   if (!foundExistingHome) {
-    Get.to(() => const HomePage(),
-        routeName: kHomePageRouteName,
-        transition: Transition.rightToLeft);
+    pushPage(const HomePage(),
+        routeName: kHomePageRouteName);
   }
 }

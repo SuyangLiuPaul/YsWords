@@ -1,17 +1,20 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:provider/provider.dart';
 
 import 'package:yswords/constants/ui_strings.dart';
 import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/providers/main_provider.dart';
 import 'package:yswords/services/fetch_books.dart' show standardBookOrder;
+import 'package:yswords/utils/app_nav.dart';
+import 'package:yswords/widgets/press_scale.dart';
 import 'package:yswords/utils/jump_to_reference.dart' as jumper;
 import 'package:yswords/utils/reference_parser.dart';
 import 'package:yswords/utils/responsive.dart';
-import 'package:yswords/utils/version_mapper.dart' show localeAwareBookName;
+import 'package:yswords/utils/version_mapper.dart'
+    show localeAwareBookName, localizedReferenceLabel;
 import 'package:yswords/pages/home_page.dart';
 import 'package:yswords/widgets/home_icon_button.dart';
+import 'package:yswords/widgets/language_switcher_button.dart';
 import 'package:yswords/widgets/localized_back_button.dart';
 import 'package:yswords/utils/font_catalog.dart' show kCjkFontFallback;
 
@@ -120,7 +123,7 @@ class _BibleTriviaPageState extends State<BibleTriviaPage> {
       appBar: AppBar(
         leading: const LocalizedBackButton(),
         title: Text(uiStrings['bibleTrivia']?[locale] ?? 'Bible Trivia'),
-        actions: const [HomeIconButton()],
+        actions: const [LanguageSwitcherButton(), HomeIconButton()],
       ),
       body: Center(
         child: ConstrainedBox(
@@ -130,6 +133,7 @@ class _BibleTriviaPageState extends State<BibleTriviaPage> {
             thumbVisibility: true,
             child: ListView.separated(
               controller: _scrollCtrl,
+              physics: const BouncingScrollPhysics(),
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
               itemCount: entries.length + 2,
               separatorBuilder: (_, __) => const SizedBox(height: 12),
@@ -820,17 +824,20 @@ class _TriviaTileState extends State<_TriviaTile> {
     if (!ok || !context.mounted) return;
     // 2026-05-24 (v1.3.6): explicit routeName — see main.dart for
     // the duplicate-HomePage-detection rationale.
-    Get.to(() => const HomePage(),
-        routeName: '/HomePage',
-        transition: Transition.rightToLeft);
+    pushPage(const HomePage(),
+        routeName: '/HomePage');
   }
 
+  // 2026-08-03 (v1.4.5): passive press-scale; the InkWell still owns the tap.
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => PressScale(child: _buildCard(context));
+
+  Widget _buildCard(BuildContext context) {
     final locale = widget.settings.locale;
     final entry = widget.entry;
     final scheme = widget.scheme;
     final settings = widget.settings;
+    final currentVersion = context.read<MainProvider>().currentVersion;
     final title = entry.title[locale] ?? entry.title['en'] ?? '';
     final body = entry.body[locale] ?? entry.body['en'] ?? '';
     final tag = entry.tag[locale] ?? entry.tag['en'] ?? '';
@@ -870,7 +877,8 @@ class _TriviaTileState extends State<_TriviaTile> {
                   const SizedBox(width: 8),
                   if (entry.reference != null)
                     Text(
-                      entry.reference!,
+                      localizedReferenceLabel(
+                          entry.reference!, locale, currentVersion),
                       style: TextStyle(
                         fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                         fontSize:
@@ -1596,16 +1604,14 @@ Future<void> showBibleTriviaSheet({
                                 ),
                                 onPressed: () {
                                   Navigator.of(sheetCtx).maybePop();
-                                  Get.to(
-                                    () => const BibleTriviaPage(),
-                                    transition: Transition.rightToLeft,
-                                  );
+                                  pushPage(const BibleTriviaPage());
                                 },
                               ),
                             ],
                           ),
                         )
                       : ListView.separated(
+                          physics: const BouncingScrollPhysics(),
                           padding: const EdgeInsets.fromLTRB(
                               16, 12, 16, 16),
                           itemCount: entries.length + 1,
@@ -1628,11 +1634,7 @@ Future<void> showBibleTriviaSheet({
                                     onPressed: () {
                                       Navigator.of(sheetCtx)
                                           .maybePop();
-                                      Get.to(
-                                        () => const BibleTriviaPage(),
-                                        transition:
-                                            Transition.rightToLeft,
-                                      );
+                                      pushPage(const BibleTriviaPage());
                                     },
                                   ),
                                 ),

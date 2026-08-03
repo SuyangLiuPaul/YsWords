@@ -11,12 +11,14 @@ import 'package:yswords/pages/home_page.dart';
 import 'package:yswords/providers/main_provider.dart';
 import 'package:yswords/services/concordance_service.dart';
 import 'package:yswords/services/strongs_service.dart';
+import 'package:yswords/utils/app_nav.dart';
 import 'package:yswords/utils/clipboard_helper.dart';
 import 'package:yswords/utils/jump_to_reference.dart' show prepareJumpToVerse;
 import 'package:yswords/utils/version_mapper.dart'
     show translateBookName, localeAwareBookName, toEnglish;
 import 'package:yswords/widgets/collapsible_english_ref.dart';
 import 'package:yswords/widgets/home_icon_button.dart';
+import 'package:yswords/widgets/language_switcher_button.dart';
 import 'package:yswords/widgets/localized_back_button.dart';
 import 'package:yswords/utils/font_catalog.dart' show kCjkFontFallback;
 
@@ -134,7 +136,7 @@ class _StrongsEntryPageState extends State<StrongsEntryPage> {
       appBar: AppBar(
         leading: const LocalizedBackButton(),
         title: Text(widget.number),
-        actions: const [HomeIconButton()],
+        actions: const [LanguageSwitcherButton(), HomeIconButton()],
       ),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
@@ -297,15 +299,14 @@ class _StrongsEntryPageState extends State<StrongsEntryPage> {
                 _RelatedChip(
                   entry: f,
                   locale: locale,
-                  onTap: () => Get.to(
-                        () => StrongsEntryPage(number: f.number),
-                        transition: Transition.rightToLeft,
-                        // v1.3.91: a StrongsEntryPage → StrongsEntryPage push
-                        // has the same GetX route name, so without this the
-                        // navigation is silently blocked (preventDuplicates)
-                        // and tapping a related/root word does nothing.
-                        preventDuplicates: false,
-                      ),
+                  // v1.3.91: a StrongsEntryPage → StrongsEntryPage push
+                  // has the same GetX route name, so without this the
+                  // navigation is silently blocked (preventDuplicates)
+                  // and tapping a related/root word does nothing.
+                  onTap: () => pushPage(
+                    StrongsEntryPage(number: f.number),
+                    preventDuplicates: false,
+                  ),
                 ),
             ],
           ),
@@ -324,15 +325,14 @@ class _StrongsEntryPageState extends State<StrongsEntryPage> {
                 _RelatedChip(
                   entry: f,
                   locale: locale,
-                  onTap: () => Get.to(
-                        () => StrongsEntryPage(number: f.number),
-                        transition: Transition.rightToLeft,
-                        // v1.3.91: a StrongsEntryPage → StrongsEntryPage push
-                        // has the same GetX route name, so without this the
-                        // navigation is silently blocked (preventDuplicates)
-                        // and tapping a related/root word does nothing.
-                        preventDuplicates: false,
-                      ),
+                  // v1.3.91: a StrongsEntryPage → StrongsEntryPage push
+                  // has the same GetX route name, so without this the
+                  // navigation is silently blocked (preventDuplicates)
+                  // and tapping a related/root word does nothing.
+                  onTap: () => pushPage(
+                    StrongsEntryPage(number: f.number),
+                    preventDuplicates: false,
+                  ),
                 ),
             ],
           ),
@@ -453,9 +453,8 @@ class _StrongsEntryPageState extends State<StrongsEntryPage> {
           alignment: PlaceholderAlignment.baseline,
           baseline: TextBaseline.alphabetic,
           child: GestureDetector(
-            onTap: () => Get.to(
-              () => StrongsEntryPage(number: num),
-              transition: Transition.rightToLeft,
+            onTap: () => pushPage(
+              StrongsEntryPage(number: num),
               preventDuplicates: false,
             ),
             child: Text(

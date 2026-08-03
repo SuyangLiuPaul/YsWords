@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:provider/provider.dart';
 
 import 'package:yswords/constants/text_patterns.dart' show sanitizeForSearch;
 import 'package:yswords/constants/ui_strings.dart';
+import 'package:yswords/utils/app_nav.dart';
 import 'package:yswords/widgets/left_accent_card.dart';
 import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/models/timeline_event.dart';
@@ -14,6 +14,7 @@ import 'package:yswords/utils/jump_to_reference.dart' as jumper;
 import 'package:yswords/utils/reference_parser.dart';
 import 'package:yswords/utils/version_mapper.dart' show localeAwareBookName;
 import 'package:yswords/widgets/home_icon_button.dart';
+import 'package:yswords/widgets/language_switcher_button.dart';
 import 'package:yswords/widgets/localized_back_button.dart';
 
 /// Bible timeline — chronological view of ~97 key biblical events
@@ -68,7 +69,7 @@ class _BibleTimelinePageState extends State<BibleTimelinePage> {
         title: Text(
           uiStrings['bibleTimeline']?[locale] ?? 'Bible Timeline',
         ),
-        actions: const [HomeIconButton()],
+        actions: const [LanguageSwitcherButton(), HomeIconButton()],
       ),
       body: FutureBuilder<List<TimelineEvent>>(
         future: _future,
@@ -254,9 +255,8 @@ class _BibleTimelinePageState extends State<BibleTimelinePage> {
     Navigator.of(context).maybePop();
     // 2026-05-24 (v1.3.6): explicit routeName — see main.dart for
     // the duplicate-HomePage-detection rationale.
-    Get.to(() => const HomePage(),
-        routeName: '/HomePage',
-        transition: Transition.rightToLeft);
+    pushPage(const HomePage(),
+        routeName: '/HomePage');
   }
 }
 

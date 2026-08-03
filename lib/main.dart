@@ -12,6 +12,8 @@ import 'package:yswords/models/verse.dart';
 import 'package:yswords/providers/main_provider.dart';
 import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/services/sermon_service.dart';
+import 'package:yswords/utils/app_nav.dart';
+import 'package:yswords/utils/app_scroll_behavior.dart';
 import 'package:yswords/utils/jump_to_reference.dart' as jumper;
 import 'package:yswords/utils/reference_parser.dart' show BibleReference;
 import 'package:yswords/services/cloud_auth_service.dart';
@@ -423,20 +425,17 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
   }
 
   /// 2026-05-10 (v1.2.25 — restored from v1.2.18): eager pre-load
-  /// of ALL 13 Bible versions before the splash dismisses. User
+  /// of ALL Bible versions before the splash dismisses. User
   /// chose this trade ("反正第一次用才 load version") again after
   /// noticing v1.2.22's hybrid stopped at "4/4" in the splash
   /// progress.
   ///
-  /// Sequential, no-gap parse of all 12 non-active versions
-  /// (~15-25 s). Updates `MainProvider.versionPreloadProgress`
-  /// so the splash paints "Loading versions: 5/12" while the
-  /// user waits. Total cold-boot wall-clock: 1-3 s for the
-  /// active version + ~15-25 s for the other 12 = ~20-30 s
-  /// splash before home appears.
+  /// Sequential, no-gap parse of all non-active versions. Updates
+  /// `MainProvider.versionPreloadProgress` so the splash paints
+  /// "Loading versions: N/M" while the user waits.
   ///
   /// Order: simplified Chinese staples (largest user base) →
-  /// English → traditional Chinese → LJK 1/2 NT-only specialty.
+  /// English → traditional Chinese → LJK2 NT-only specialty.
   /// Most-likely-next picks land in the LRU first, so even if
   /// the user is impatient and force-quits during pre-load,
   /// the first session-start switches still hit the cache.
@@ -446,22 +445,16 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
   Future<void> _eagerPreloadAllVersions(MainProvider mainProvider) async {
     if (!mounted) return;
     const candidates = <String>[
-      // Simplified Chinese staples — largest user base.
+      // Simplified Chinese staple — largest user base.
       'cuvs-yhwh',
-      'cuv',
-      'cnv',
       // English flagships.
       'kjv',
       'nasb',
       'leb',
-      // Traditional Chinese variants.
-      'cuv-tr',
+      // Traditional Chinese variant.
       'cuvs-yhwh-tr',
-      'cnv-tr',
-      // LJK 1/2 — NT-only specialty translations.
-      'biblexg',
+      // LJK2 — NT-only specialty translation.
       'biblexg-v2',
-      'biblexg-tr',
       'biblexg-v2-tr',
     ];
     final toLoad =
@@ -611,6 +604,23 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
                       ),
                 ),
             colorScheme: lightScheme,
+            // 2026-08-03 (v1.4.5): one ripple on every platform.
+            //
+            // CORRECTION to an earlier note here: InkSparkle.splashFactory
+            // was briefly blamed for dead taps in the reading-pane overflow
+            // menu. That was wrong — the real cause was `pushPage` letting
+            // GetX derive the same route name for every page, so
+            // `preventDuplicates` silently dropped the navigation (fixed in
+            // v1.4.4, see lib/utils/app_nav.dart).
+            //
+            // We still choose InkRipple over InkSparkle, for a different and
+            // real reason: Flutter's own Material 3 default only uses
+            // InkSparkle off-web (its fragment shader isn't supported on
+            // every web renderer), so leaving it to the default gives web a
+            // different ripple than native. Pinning InkRipple — which is
+            // web-safe and what web already falls back to — makes the press
+            // feedback identical everywhere.
+            splashFactory: InkRipple.splashFactory,
             // 2026-05-08 (v1.1.0): Card & Dialog corner radii bumped
             // to 18 to match Apple's iOS 26 shape language (concentric
             // with the new 24-radius outer surfaces). The app's bespoke
@@ -706,6 +716,9 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
             ),
             colorScheme: darkScheme,
             brightness: Brightness.dark,
+            // 2026-08-03 (v1.4.5): mirror of the light theme — see the
+            // InkRipple rationale there.
+            splashFactory: InkRipple.splashFactory,
             cardTheme: CardThemeData(
               color: Color(0xFF1F1F1F),
               elevation: 2,
@@ -777,8 +790,11 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
           ),
           builder: (context, child) {
             return ScrollConfiguration(
-              behavior:
-                  const MaterialScrollBehavior().copyWith(scrollbars: true),
+              // 2026-08-03 (v1.4.5): AppScrollBehavior adds bouncy physics
+              // to EVERY scrollable app-wide (see its doc comment) instead
+              // of the previous per-widget opt-in that only covered 6 of
+              // ~27 list files. `scrollbars: true` is preserved.
+              behavior: const AppScrollBehavior().copyWith(scrollbars: true),
               child: child!,
             );
           },
@@ -881,8 +897,7 @@ class _RootRouterState extends State<_RootRouter> {
           }
         }
         if (s != null && mounted) {
-          Get.to(() => SermonDetailPage(sermon: s!),
-              transition: Transition.rightToLeft);
+          pushPage(SermonDetailPage(sermon: s));
         }
       });
       return;
@@ -911,9 +926,8 @@ class _RootRouterState extends State<_RootRouter> {
         // closure's runtimeType to something unpredictable like
         // `/_Closure` — explicit '/HomePage' is the only reliable
         // detection key.
-        Get.to(() => const HomePage(),
-            routeName: '/HomePage',
-            transition: Transition.rightToLeft);
+        pushPage(const HomePage(),
+            routeName: '/HomePage');
       });
     }
   }
@@ -929,8 +943,8 @@ class _RootRouterState extends State<_RootRouter> {
       _bootHashLandingPending = false;
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) return;
-        Get.to(() => const HomePage(),
-            routeName: '/HomePage', transition: Transition.rightToLeft);
+        pushPage(const HomePage(),
+            routeName: '/HomePage');
       });
     }
     // After Round 32: Dashboard is the home / root page. The Bible

@@ -1,6 +1,7 @@
 # Google Sign-In Troubleshooting
 
-> Last updated: 2026-05-03 (added §9 stale-registrant failure mode)
+> Last updated: 2026-08-02 (added §10 — web moved to redirect + `/__/auth/*`
+> reverse proxy; §1 and §5 are now HISTORY on web, see §10 first)
 > Owner: `lib/services/cloud_auth_service.dart`
 > Related: `lib/firebase_options.dart`, `lib/services/cloud_sync_service.dart`,
 > `.dart_tool/flutter_build/<hash>/web_plugin_registrant.dart` (generated)
@@ -23,14 +24,16 @@ CloudAuthService.signInWithGoogleAndAdoptProfile()
         ▼
 CloudAuthService.signInWithGoogle()
         │
-        ├─► (preferred) FirebaseAuth.signInWithPopup(GoogleAuthProvider)
-        │        Opens a popup window to ysword.firebaseapp.com → Google
-        │        consent → callback → returns User credential.
+        ├─► WEB: FirebaseAuth.signInWithRedirect(GoogleAuthProvider)
+        │        ALWAYS — popup is no longer used on web at all (2026-08-02,
+        │        see §10). Navigates the WHOLE PAGE to Google. Coming back,
+        │        the credential is captured by getRedirectResult() in
+        │        _doInit(). authDomain is our OWN origin, and /__/auth/* is
+        │        reverse-proxied to ysword.firebaseapp.com by netlify.toml.
         │
-        └─► (fallback) FirebaseAuth.signInWithRedirect(GoogleAuthProvider)
-                 Navigates the WHOLE PAGE to Google. After Google → Firebase
-                 → back to yswords.netlify.app, the credential is captured
-                 by getRedirectResult() called during init().
+        └─► NATIVE: iOS/Android signInWithProvider; macOS google_sign_in
+                 + signInWithCredential. Unaffected by any of the web
+                 popup/redirect/storage story below.
         │
         ▼
 ProfileService.adopt(displayName) — creates or switches to a local
@@ -291,6 +294,75 @@ self-registration in `init()` makes this a non-issue going forward.
 `CloudAuthService._doInit()` even if the registrant looks correct
 on disk. The whole point is that we no longer trust the registrant.
 
+### 10. Redirect completes but the app is still signed out (third-party storage)
+
+**Symptom**: User taps Sign in with Google → full-page redirect to Google
+→ account chooser appears normally ("to continue to ysword.firebaseapp.com")
+→ picks an account → lands back in the app → **still signed out**. Console
+shows, from our own diagnostic line:
+
+```
+[CloudAuthService] getRedirectResult: no pending user (auth.currentUser=null)
+```
+
+Both null is the tell: it isn't a UI-state-sync gap, the credential genuinely
+never arrived. Chrome DevTools → Issues also flags *"Chrome may soon delete
+state for intermediate websites in a recent navigation chain"*, naming
+firebaseapp.com — that intermediate hop is the whole problem.
+
+**Real cause**: `signInWithRedirect` sends the browser to the `authDomain`'s
+sign-in helper (`ysword.firebaseapp.com/__/auth/...`). When the flow returns
+to OUR origin, the SDK must read storage belonging to that helper domain —
+a cross-origin storage access that **browsers began blocking in 2024**.
+Firebase documents this directly:
+https://firebase.google.com/docs/auth/web/redirect-best-practices
+Apps on Firebase Hosting are unaffected; we're on Netlify, so we are.
+
+This is NOT the same as §1 (Safari third-party cookies killing *popup*). It
+hits Chrome too, in normal AND incognito windows, and no amount of retrying
+or code-level fallback fixes it — redirect and popup would both be dead ends
+if we only shuffled between them.
+
+**Fix — Firebase's documented Option 3 (reverse proxy), shipped v1.3.178.**
+Two halves that ONLY work as a pair:
+
+1. `netlify.toml`: proxy `/__/auth/*` → `https://ysword.firebaseapp.com/__/auth/:splat`
+   with `status = 200` + `force = true`. The 200 is load-bearing — it makes
+   Netlify proxy transparently; a 302 would put firebaseapp.com back in the
+   URL bar and reintroduce the cross-origin hop. The rule MUST sit above the
+   `/*` → `/index.html` SPA catch-all (first match wins).
+2. `cloud_auth_service.dart` `_webOptions()`: override `authDomain` to the
+   current origin at runtime. Runtime, not compile-time, because dev/qat/prod
+   ship from one build. localhost is deliberately excluded — no Netlify proxy
+   in front of `flutter run -d chrome`.
+
+**Also required, in Google Cloud Console** (not in this repo — easy to forget
+when adding a new deploy domain): APIs & Services → Credentials → the Web
+OAuth client needs, for EVERY app domain:
+- Authorised JavaScript origins: `https://<domain>`
+- Authorised redirect URIs: `https://<domain>/__/auth/handler`
+
+A missing JavaScript origin surfaces as a bare **Google 500 error page**
+("There was an error. Please try again later. That's all we know.") before
+the account chooser ever appears — that exact symptom preceded this fix and
+is worth recognising on sight.
+
+**Verify the proxy without a browser**:
+
+```bash
+curl -s https://<domain>/__/auth/handler | head -c 120
+# WANT: Firebase helper HTML containing `fireauth.oauthhelper`
+# BAD:  the Flutter shell (`<html spellcheck="false">`) → the SPA catch-all
+#       is winning, i.e. rule order is wrong or the deploy predates the fix.
+```
+
+**Why not just go back to popup?** Popup still works today, but it's on the
+same trajectory — every browser release tightens third-party storage further,
+and Firebase's own guidance treats the proxy as the durable answer. Reverting
+to popup would also re-block strict `Cross-Origin-Opener-Policy`, which is a
+prerequisite for the multithreaded skwasm renderer (see netlify.toml's COOP
+comment).
+
 ---
 
 ## Diagnostic checklist for the next bug report
@@ -411,6 +483,8 @@ Things to keep an eye on:
 
 | Date | Commit | Failure mode | Fix |
 |---|---|---|---|
+| 2026-08-02 | v1.3.178 | §10 redirect returns but credential lost to third-party storage blocking | `/__/auth/*` Netlify reverse proxy + runtime origin `authDomain` (Firebase Option 3) |
+| 2026-08-02 | v1.3.174 | Web popup blocked strict COOP (needed for skwasm) | Web moved to redirect-primary; profile adoption wired into the `getRedirectResult()` path too |
 | 2026-05-03 | `3222acd` | §9 stale registrant — UnimplementedError on every OAuth call | Self-register Firebase web delegates in `init()`, idempotently |
 | 2026-05-03 | `ebd1e92` | Popup succeeds but `_user` stays null | Manually mirror `cred.user` into notifier after `signInWithPopup` returns |
 | 2026-05-03 | (this doc) | – | Added §9, §F.G, change history |

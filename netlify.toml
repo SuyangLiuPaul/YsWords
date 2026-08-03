@@ -15,6 +15,44 @@
   node_bundler = "esbuild"
   included_files = ["assets/bible_evidence.json"]
 
+# 2026-08-02: Firebase Auth reverse proxy. MUST stay above the SPA
+# catch-all below — Netlify evaluates redirect rules top-to-bottom and
+# the first match wins, so `/*` → /index.html would otherwise swallow
+# these and serve the Flutter shell instead of the auth handler.
+#
+# Why this exists: signInWithRedirect sends the browser to the
+# `authDomain`'s sign-in helper (`ysword.firebaseapp.com/__/auth/...`),
+# and when the flow returns to our app domain the SDK has to read the
+# storage belonging to that helper domain. Browsers started blocking
+# exactly that cross-origin storage access in 2024, so the credential
+# arrived back as null — the symptom was "redirects to Google, comes
+# back, still signed out" with `getRedirectResult()` AND
+# `auth.currentUser` both null, plus Chrome's own "may soon delete
+# state for intermediate websites in a recent navigation chain"
+# warning naming firebaseapp.com as the intermediate hop.
+#
+# This is Firebase's documented Option 3 for apps NOT on Firebase
+# Hosting (we're on Netlify):
+# https://firebase.google.com/docs/auth/web/redirect-best-practices
+# Proxying `/__/auth/*` through our own origin makes the app and the
+# sign-in helper same-origin, so there is no third-party storage
+# access left to block.
+#
+# `status = 200` is load-bearing: it makes Netlify PROXY the request
+# transparently. A 302 would put firebaseapp.com back in the URL bar
+# and reintroduce the very cross-origin hop this removes. `force`
+# beats the static-file/SPA handling for this path.
+#
+# Paired with: authDomain is overridden at runtime to the current
+# origin (see cloud_auth_service.dart `_webOptions`), and each app
+# domain's `/__/auth/handler` must be registered in the Google Cloud
+# OAuth client's Authorised redirect URIs.
+[[redirects]]
+  from = "/__/auth/*"
+  to = "https://ysword.firebaseapp.com/__/auth/:splat"
+  status = 200
+  force = true
+
 # Static-file SPA fallback. The Netlify Function URLs (`/api/*` and
 # `/.netlify/functions/*`) are matched and served by Netlify BEFORE
 # this catch-all rewrite, so the function doesn't get swallowed by
@@ -125,25 +163,28 @@
     # etc. without an exception here, the browser refuses.
     Permissions-Policy = "geolocation=(), camera=(), microphone=(), payment=(), usb=(), magnetometer=(), gyroscope=(), accelerometer=()"
 
-    # Cross-Origin-Opener-Policy — isolate this origin so OAuth
-    # popups (Firebase sign-in) and other window.opener references
-    # are sandboxed. `same-origin-allow-popups` keeps Firebase's
-    # signInWithPopup working.
+    # Cross-Origin-Opener-Policy — isolate this origin. Tightened to
+    # strict `same-origin` (2026-08-02).
     #
-    # 2026-07-20: this value (plus the absence of a
-    # Cross-Origin-Embedder-Policy header) means `window.
-    # crossOriginIsolated` is false on every deployed site —
-    # verified directly in prod. That blocked multi-threaded skwasm
-    # (Flutter's WebAssembly renderer): it silently fell back to
-    # single-threaded mode, which put enough extra main-thread
-    # contention on cold boot (Skia init + the ~6-8 MB Bible-JSON
-    # decode competing for one thread) to intermittently blow the
-    # FetchVerses 20 s first-attempt timeout — "Failed to load, then
-    # works after retrying" was the exact user-visible symptom.
-    # Reverted to canvaskit (v1.3.132) rather than loosen this
-    # header, since strict `same-origin` COOP breaks
-    # signInWithPopup's window.opener relationship. Don't re-attempt
-    # skwasm without first moving Google Sign-In to a redirect-based
-    # flow (no window.opener dependency) so COOP can go strict and
-    # COEP can be added without breaking auth.
-    Cross-Origin-Opener-Policy = "same-origin-allow-popups"
+    # 2026-07-20: this had been `same-origin-allow-popups` (plus the
+    # absence of a Cross-Origin-Embedder-Policy header), so `window.
+    # crossOriginIsolated` was false on every deployed site — verified
+    # directly in prod. That blocked multi-threaded skwasm (Flutter's
+    # WebAssembly renderer): it silently fell back to single-threaded
+    # mode, which put enough extra main-thread contention on cold boot
+    # (Skia init + the ~6-8 MB Bible-JSON decode competing for one
+    # thread) to intermittently blow the FetchVerses 20 s first-attempt
+    # timeout — "Failed to load, then works after retrying" was the
+    # exact user-visible symptom. Reverted to canvaskit (v1.3.132)
+    # rather than loosen this header, since strict `same-origin` COOP
+    # breaks signInWithPopup's window.opener relationship.
+    #
+    # 2026-08-02: Google Sign-In on web was moved from signInWithPopup
+    # to signInWithRedirect (see cloud_auth_service.dart) — no
+    # window.opener relationship left to protect, so this can go
+    # strict. A future dev-only skwasm experiment still needs a
+    # Cross-Origin-Embedder-Policy header too (deliberately NOT added
+    # here — scoped to a per-deploy `build/web/_headers` file instead,
+    # since COEP has its own cross-origin-resource risk this repo
+    # hasn't audited for prod yet).
+    Cross-Origin-Opener-Policy = "same-origin"

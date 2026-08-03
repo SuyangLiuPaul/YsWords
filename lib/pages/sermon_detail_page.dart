@@ -18,6 +18,7 @@ import 'package:yswords/services/sermon_service.dart';
 import 'package:yswords/utils/reference_parser.dart';
 import 'package:yswords/utils/version_mapper.dart' show localeAwareBookName;
 import 'package:yswords/widgets/home_icon_button.dart';
+import 'package:yswords/widgets/language_switcher_button.dart';
 import 'package:yswords/widgets/localized_back_button.dart';
 
 /// Reads one sermon body in the user's preferred language with a
@@ -361,6 +362,7 @@ class _SermonDetailPageState extends State<SermonDetailPage> {
                 'Share link',
             onPressed: () => _shareSermon(s, settings.locale),
           ),
+          const LanguageSwitcherButton(),
           const HomeIconButton(),
         ],
         // Reading-progress strip under the AppBar — width-tracks the

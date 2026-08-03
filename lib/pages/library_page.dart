@@ -20,6 +20,7 @@ import 'package:yswords/utils/reference_parser.dart' show BibleReference;
 import 'package:yswords/widgets/verse_popup_sheet.dart' show showVersePopup;
 import 'package:yswords/widgets/left_accent_card.dart';
 import 'package:yswords/widgets/home_icon_button.dart';
+import 'package:yswords/widgets/language_switcher_button.dart';
 import 'package:yswords/widgets/localized_back_button.dart';
 import 'package:yswords/utils/font_catalog.dart' show kCjkFontFallback;
 import 'package:yswords/utils/relative_time.dart' show relativeTime;
@@ -45,7 +46,7 @@ class LibraryPage extends StatelessWidget {
         appBar: AppBar(
           leading: const LocalizedBackButton(),
           title: Text(uiStrings['library']?[locale] ?? 'Library'),
-          actions: const [HomeIconButton()],
+          actions: const [LanguageSwitcherButton(), HomeIconButton()],
           bottom: TabBar(
             tabs: [
               Tab(
@@ -195,6 +196,7 @@ class _NotesTabState extends State<_NotesTab>
       );
     } else {
       body = ListView.separated(
+        physics: const BouncingScrollPhysics(),
         padding: const EdgeInsets.symmetric(vertical: 8),
         itemCount: groups.length,
         separatorBuilder: (_, __) => const Divider(height: 1),
@@ -436,6 +438,7 @@ class _BookmarksTab extends StatelessWidget {
     }
     final entries = _resolveAnnotations(mainProvider, ids);
     return ListView.separated(
+      physics: const BouncingScrollPhysics(),
       padding: const EdgeInsets.symmetric(vertical: 8),
       itemCount: entries.length,
       separatorBuilder: (_, __) => const Divider(height: 1),

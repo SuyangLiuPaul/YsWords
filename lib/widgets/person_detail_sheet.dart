@@ -1,8 +1,8 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:yswords/utils/app_nav.dart';
 import 'package:yswords/utils/clipboard_helper.dart';
-import 'package:get/get.dart';
 import 'package:provider/provider.dart';
 
 import 'package:yswords/constants/ui_strings.dart';
@@ -531,10 +531,7 @@ class PersonDetailSheet extends StatelessWidget {
     final ok = await jumper.showJumpResultSnackBar(context, result);
     if (!ok || !context.mounted) return;
     Navigator.of(context).maybePop();
-    Get.to(
-      () => const HomePage(),
-      transition: Transition.rightToLeft,
-    );
+    pushPage(const HomePage());
   }
 }
 

@@ -2,7 +2,6 @@ import 'dart:async' show unawaited;
 
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:provider/provider.dart';
 
 import 'package:yswords/constants/text_patterns.dart'
@@ -13,6 +12,7 @@ import 'package:yswords/models/original_word.dart';
 import 'package:yswords/models/strongs.dart';
 import 'package:yswords/models/verse.dart';
 import 'package:yswords/pages/settings_page.dart';
+import 'package:yswords/utils/app_nav.dart';
 import 'package:yswords/widgets/collapsible_english_ref.dart';
 import 'package:yswords/widgets/left_accent_card.dart';
 import 'package:yswords/services/ai_word_service.dart';
@@ -1494,11 +1494,8 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
                     !context.read<AppSettings>().hasUserGeminiKey)
                   TextButton.icon(
                     onPressed: () {
-                      Get.to(
-                        () => const SettingsPage(
-                            initialSection: SettingsSection.ai),
-                        transition: Transition.rightToLeft,
-                      );
+                      pushPage(const SettingsPage(
+                            initialSection: SettingsSection.ai));
                     },
                     icon: const Icon(Icons.key_rounded, size: 16),
                     label: Text(

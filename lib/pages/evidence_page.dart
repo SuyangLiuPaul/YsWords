@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show LogicalKeyboardKey;
-import 'package:get/get.dart';
 import 'package:provider/provider.dart';
 
 import 'package:yswords/constants/ui_strings.dart';
+import 'package:yswords/widgets/press_scale.dart';
 import 'package:yswords/models/app_settings.dart';
+import 'package:yswords/utils/app_nav.dart';
 import 'package:yswords/utils/theme_color_helpers.dart';
 import 'package:yswords/models/bible_evidence.dart';
 import 'package:yswords/pages/evidence_detail_page.dart';
@@ -16,8 +17,10 @@ import 'package:yswords/services/bible_evidence_service.dart';
 import 'package:yswords/utils/ai_markdown.dart' show parseAiMarkdown;
 import 'package:yswords/utils/jump_to_reference.dart';
 import 'package:yswords/utils/reference_parser.dart';
+import 'package:yswords/utils/version_mapper.dart' show localizedReferenceLabel;
 import 'package:yswords/widgets/confidence_badge.dart';
 import 'package:yswords/widgets/home_icon_button.dart';
+import 'package:yswords/widgets/language_switcher_button.dart';
 import 'package:yswords/widgets/localized_back_button.dart';
 import 'package:yswords/utils/font_catalog.dart' show kCjkFontFallback;
 
@@ -204,6 +207,7 @@ class _EvidencePageState extends State<EvidencePage> {
             icon: const Icon(Icons.auto_awesome_outlined),
             onPressed: () => _openAiDialog(context, locale),
           ),
+          const LanguageSwitcherButton(),
           const HomeIconButton(),
         ],
       ),
@@ -372,11 +376,8 @@ class _EvidencePageState extends State<EvidencePage> {
                           itemBuilder: (_, i) => _EvidenceCard(
                             evidence: filtered[i],
                             locale: locale,
-                            onTap: () => Get.to(
-                              () => EvidenceDetailPage(
-                                  evidence: filtered[i]),
-                              transition: Transition.rightToLeft,
-                            ),
+                            onTap: () => pushPage(EvidenceDetailPage(
+                                  evidence: filtered[i])),
                           ),
                         ),
                         ),
@@ -409,10 +410,7 @@ class _EvidencePageState extends State<EvidencePage> {
         all: _all,
         onCitationTap: (ev) {
           Navigator.of(context).pop();
-          Get.to(
-            () => EvidenceDetailPage(evidence: ev),
-            transition: Transition.rightToLeft,
-          );
+          pushPage(EvidenceDetailPage(evidence: ev));
         },
       ),
     );
@@ -453,8 +451,13 @@ class _EvidenceCard extends StatelessWidget {
     required this.onTap,
   });
 
+  // 2026-08-03 (v1.4.5): press-scale feedback on the whole card. PressScale
+  // is passive (Listener-based), so the InkWell inside still owns the tap —
+  // see lib/widgets/press_scale.dart.
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => PressScale(child: _buildCard(context));
+
+  Widget _buildCard(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     // PERF: scoped select instead of full watch<AppSettings>() — this
     // card is instantiated per evidence entry (225 entries) inside a
@@ -464,6 +467,7 @@ class _EvidenceCard extends StatelessWidget {
     context.select<AppSettings, (String, double)>(
         (s) => (s.fontFamily, s.fontSize));
     final settings = context.read<AppSettings>();
+    final currentVersion = context.read<MainProvider>().currentVersion;
     final imgUrl =
         evidence.images.isNotEmpty ? evidence.images.first : null;
 
@@ -607,7 +611,10 @@ class _EvidenceCard extends StatelessWidget {
                             const SizedBox(width: 4),
                             Flexible(
                               child: Text(
-                                evidence.scriptureReference,
+                                localizedReferenceLabel(
+                                    evidence.scriptureReference,
+                                    locale,
+                                    currentVersion),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: TextStyle(
@@ -675,10 +682,7 @@ class _EvidenceCard extends StatelessWidget {
     if (!context.mounted) return;
     final ok = await showJumpResultSnackBar(context, result);
     if (!ok || !context.mounted) return;
-    Get.to(
-      () => const HomePage(),
-      transition: Transition.rightToLeft,
-    );
+    pushPage(const HomePage());
   }
 }
 
@@ -1130,11 +1134,8 @@ class _AiSearchDialogState extends State<_AiSearchDialog> {
                             style: const TextStyle(fontSize: 12),
                           ),
                           onPressed: () {
-                            Get.to(
-                              () => const SettingsPage(
-                                  initialSection: SettingsSection.ai),
-                              transition: Transition.rightToLeft,
-                            );
+                            pushPage(const SettingsPage(
+                                  initialSection: SettingsSection.ai));
                           },
                         ),
                       ),
@@ -1206,6 +1207,7 @@ class _AiSearchDialogState extends State<_AiSearchDialog> {
               for (final c in _result!.citations)
                 _CitationTile(
                   citation: c,
+                  locale: locale,
                   onTap: () {
                     final ev = _resolve(c.id);
                     if (ev != null) widget.onCitationTap(ev);
@@ -1266,6 +1268,7 @@ class _LocalMatchTile extends StatelessWidget {
     // PERF: scoped select — see _EvidenceCard for the rationale.
     context.select<AppSettings, String>((s) => s.fontFamily);
     final settings = context.read<AppSettings>();
+    final currentVersion = context.read<MainProvider>().currentVersion;
     // 2026-05-22 (v1.2.78): replaced the 18-px emoji thumbnail with
     // a 32×32 rounded image thumbnail (falls back to a Material
     // category icon on load error). Search-result rows used to be
@@ -1350,7 +1353,10 @@ class _LocalMatchTile extends StatelessWidget {
                   ),
                   if (evidence.scriptureReference.isNotEmpty)
                     Text(
-                      evidence.scriptureReference,
+                      localizedReferenceLabel(
+                          evidence.scriptureReference,
+                          locale,
+                          currentVersion),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
@@ -1373,12 +1379,15 @@ class _LocalMatchTile extends StatelessWidget {
 
 class _CitationTile extends StatelessWidget {
   final AiCitation citation;
+  final String locale;
   final VoidCallback onTap;
-  const _CitationTile({required this.citation, required this.onTap});
+  const _CitationTile(
+      {required this.citation, required this.locale, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final currentVersion = context.read<MainProvider>().currentVersion;
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(8),
@@ -1404,7 +1413,10 @@ class _CitationTile extends StatelessWidget {
                   ),
                   if (citation.scriptureReference.isNotEmpty)
                     Text(
-                      citation.scriptureReference,
+                      localizedReferenceLabel(
+                          citation.scriptureReference,
+                          locale,
+                          currentVersion),
                       style: TextStyle(
                         fontSize: 12,
                         color: scheme.primary,
