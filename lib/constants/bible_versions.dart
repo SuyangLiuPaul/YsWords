@@ -75,7 +75,12 @@ const bibleVersions = <BibleVersionInfo>[
     shortLabel: '和合本雅伟版',
     menuLabel: '和合本雅伟版(简体)',
     language: 'zh-Hans',
-    editionYear: '基于和合本 1919 / 现代标点 1989',
+    // 2026-08-04: the "基于和合本 1919 / 现代标点 1989" sub-line was dropped at
+    // the user's request — the two 雅伟版 rows were the only ones carrying a
+    // note in the version picker, which made the list look inconsistent next
+    // to the 梁家铿译本 rows (no editionYear). `editionYear` defaults to ''
+    // and is only rendered by version_picker_sheet.dart behind an isNotEmpty
+    // guard, so omitting it simply hides the line.
     // 2026-08-02 (v1.3.160): "和合本雅伟版" truncates inside the top-bar
     // pill on narrow phones — falls back to the shorter "雅伟版" there.
     narrowLabel: '雅伟版',
@@ -85,7 +90,7 @@ const bibleVersions = <BibleVersionInfo>[
     shortLabel: '和合本雅偉版',
     menuLabel: '和合本雅伟版(繁體)',
     language: 'zh-Hant',
-    editionYear: '基於和合本 1919 / 現代標點 1989',
+    // 2026-08-04: sub-line removed — see the 简体 entry above.
     narrowLabel: '雅偉版',
   ),
   BibleVersionInfo(
