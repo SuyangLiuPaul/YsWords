@@ -1678,16 +1678,35 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                       // OTHER than a chapter change (selection,
                       // highlight, font setting, etc.) become
                       // no-ops for the PageController.
+                      // 2026-08-07: latch _lastSyncedChapterIdx ONLY when
+                      // the sync actually happened (or was genuinely
+                      // unnecessary). It used to be assigned before the
+                      // guards below, so a build that changed chapter but
+                      // COULDN'T move the controller — mid-swipe, or
+                      // hasClients still false while the sidebar animates
+                      // the pane's layout — still marked the chapter
+                      // "synced". Every later build then saw
+                      // _lastSyncedChapterIdx == currentChapterPageIdx,
+                      // treated it as a no-op, and the PageView stayed on
+                      // the old chapter forever: picking 创世纪 31 from the
+                      // docked sidebar left 28's text under a 31 header.
+                      // Bailing WITHOUT latching lets the next build retry.
                       if (_lastSyncedChapterIdx != currentChapterPageIdx) {
                         final previousSynced = _lastSyncedChapterIdx;
-                        _lastSyncedChapterIdx = currentChapterPageIdx;
-                        if (previousSynced != null &&
-                            !_pageSwipeInFlight &&
+                        if (previousSynced == null) {
+                          // First build — adopt the position, nothing to move.
+                          _lastSyncedChapterIdx = currentChapterPageIdx;
+                        } else if (!_pageSwipeInFlight &&
                             _pageController.hasClients) {
                           final controllerPage =
                               _pageController.page?.round();
-                          if (controllerPage != null &&
-                              controllerPage != currentChapterPageIdx) {
+                          if (controllerPage == currentChapterPageIdx) {
+                            // Already there (e.g. a swipe that just
+                            // settled). Record it; moving would fight the
+                            // gesture, which is what v1.2.96 got wrong.
+                            _lastSyncedChapterIdx = currentChapterPageIdx;
+                          } else if (controllerPage != null) {
+                            _lastSyncedChapterIdx = currentChapterPageIdx;
                             // Genuine external change — the
                             // provider's chapter shifted while
                             // the controller is on a different
