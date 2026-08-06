@@ -1720,22 +1720,24 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                               if (!mounted) return;
                               if (!_pageController.hasClients) return;
                               if (_pageSwipeInFlight) return;
-                              final delta = (controllerPage -
-                                      currentChapterPageIdx)
-                                  .abs();
-                              if (delta > 3) {
-                                // Big jump (e.g. Gen 1 → John 3):
-                                // animation would scroll through
-                                // hundreds of pages — just jump.
-                                _pageController
-                                    .jumpToPage(currentChapterPageIdx);
-                              } else {
-                                _pageController.animateToPage(
-                                  currentChapterPageIdx,
-                                  duration: AppMotion.standard,
-                                  curve: AppMotion.enter,
-                                );
-                              }
+                              // 2026-08-07: ALWAYS jump, never animate.
+                              // animateToPage travels THROUGH every
+                              // intermediate chapter, and each one fires
+                              // onPageChanged — so picking 创世纪 28 from
+                              // 26 reported 27 on the way, rewriting the
+                              // URL and re-firing the picker's
+                              // "follow the pane" sync mid-flight. The
+                              // verse-step then settled on a stale
+                              // chapter and the picker's header
+                              // disagreed with the reader.
+                              //
+                              // An external chapter change is a
+                              // DESTINATION, not a journey: the user
+                              // picked 28, they did not ask to see 27.
+                              // Swipes still animate — they are driven
+                              // by the gesture, never by this branch.
+                              _pageController
+                                  .jumpToPage(currentChapterPageIdx);
                             });
                           }
                         }
