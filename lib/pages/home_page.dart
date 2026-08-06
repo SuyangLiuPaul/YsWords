@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:yswords/constants/motion.dart';
+import 'package:yswords/utils/navigate_to_chapter_verse.dart';
 import 'package:yswords/providers/main_provider.dart';
 import 'package:yswords/services/fetch_books.dart';
 import 'package:yswords/services/fetch_verses.dart';
@@ -35,20 +36,10 @@ class _HomePageState extends State<HomePage> {
     setState(() => _sidebarOpen = !_sidebarOpen);
   }
 
-  void _onSidebarChapterSelected(String book, int chapter) {
+  void _onSidebarChapterSelected(String book, int chapter, {int? verse}) {
     final provider = context.read<MainProvider>();
-    final matched = provider.verses
-        .where((v) => v.book == book && v.chapter == chapter)
-        .toList();
-    if (matched.isEmpty) return;
-    provider.setCurrentChapter(book: book, chapter: chapter);
-    provider.updateCurrentVerse(verse: matched.first);
-    // Round 56 fix: don't clobber a pendingJump set by the picker's
-    // verse-pick step. Only slam to chapter top when no specific
-    // verse jump was queued.
-    if (!provider.hasPendingJump) {
-      provider.jumpToTop();
-    }
+    navigateToChapterVerse(provider, book: book, chapter: chapter,
+        verse: verse);
     setState(() {
       _sidebarOpen = false;
     });

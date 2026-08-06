@@ -9,7 +9,8 @@ import 'package:yswords/utils/font_catalog.dart' show kCjkFontFallback;
 class SidebarPanel extends StatelessWidget {
   final String currentBook;
   final int currentChapter;
-  final void Function(String book, int chapter) onChapterSelected;
+  final void Function(String book, int chapter, {int? verse})
+      onChapterSelected;
   final VoidCallback onClose;
 
   const SidebarPanel({

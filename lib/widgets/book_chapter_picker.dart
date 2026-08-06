@@ -18,7 +18,8 @@ import 'package:yswords/utils/font_catalog.dart' show kCjkFontFallback;
 class BookChapterPicker extends StatefulWidget {
   final String currentBook;
   final int currentChapter;
-  final void Function(String book, int chapter) onChapterSelected;
+  final void Function(String book, int chapter, {int? verse})
+      onChapterSelected;
 
   const BookChapterPicker({
     super.key,
@@ -468,24 +469,27 @@ class _BookChapterPickerState extends State<BookChapterPicker> {
   }
 
   /// Called when the user picks a verse on the in-place verse grid.
-  /// Sets a pendingJump and fires the original onChapterSelected so
-  /// the host page (BooksPage / sidebar) closes the picker and
-  /// navigates the reader. `verseNum == 0` means "top of chapter".
+  /// Hands BOTH the chapter and the verse to the host, which navigates.
+  /// `verseNum == 0` means "top of chapter".
+  ///
+  /// 2026-08-07: this used to call `setPendingJump` HERE and then fire
+  /// `onChapterSelected`. `setPendingJump` notifies synchronously (round
+  /// 52, deliberately), so the reading pane rebuilt while `currentChapter`
+  /// was still the OLD chapter, resolved the verse index against the old
+  /// chapter's item map, and consumed the jump — leaving the reader on
+  /// the previous chapter's text under the new chapter's header. Picking
+  /// 创世纪 31 from 创世纪 28 reliably kept showing 28.
+  ///
+  /// The fix is not to reorder the two calls — that just moves the race.
+  /// "Which chapter" and "which verse" are one intent, so they travel
+  /// together and the host resolves the verse AFTER committing the
+  /// chapter, where the index means what it says.
   void _onVersePicked(MainProvider mainProvider, int verseNum) {
     final book = _verseStepBook;
     final chapter = _verseStepChapter;
     if (book == null || chapter == null) return;
-    if (verseNum > 0) {
-      final chapterVerses = mainProvider.verses
-          .where((v) => v.book == book && v.chapter == chapter)
-          .toList()
-        ..sort((a, b) => a.verse.compareTo(b.verse));
-      final relIdx = chapterVerses.indexWhere((v) => v.verse == verseNum);
-      if (relIdx >= 0) {
-        mainProvider.setPendingJump(chapterVerseIndex: relIdx);
-      }
-    }
-    widget.onChapterSelected(book, chapter);
+    widget.onChapterSelected(book, chapter,
+        verse: verseNum > 0 ? verseNum : null);
   }
 
   void _backFromVerseStep() {

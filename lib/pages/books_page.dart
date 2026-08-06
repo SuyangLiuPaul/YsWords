@@ -8,6 +8,7 @@ import 'package:yswords/widgets/home_icon_button.dart';
 import 'package:yswords/widgets/language_switcher_button.dart';
 import 'package:yswords/widgets/localized_back_button.dart';
 import 'package:yswords/widgets/book_chapter_picker.dart';
+import 'package:yswords/utils/navigate_to_chapter_verse.dart';
 import 'package:yswords/utils/responsive.dart';
 
 class BooksPage extends StatelessWidget {
@@ -63,20 +64,10 @@ class BooksPage extends StatelessWidget {
             child: BookChapterPicker(
               currentBook: bookIdx,
               currentChapter: chapterIdx,
-              onChapterSelected: (book, chapter) {
-                final matched = mainProvider.verses
-                    .where((v) => v.book == book && v.chapter == chapter)
-                    .toList();
-                if (matched.isEmpty) return;
-                mainProvider.setCurrentChapter(book: book, chapter: chapter);
-                mainProvider.updateCurrentVerse(verse: matched.first);
-                // Round 56 fix: don't slam to top if a pendingJump
-                // was set by the picker's verse-pick step. The
-                // previous unconditional jumpToTop was clobbering
-                // the user's verse-level pick. Only jump-to-top when
-                // there's nothing more specific queued.
-                if (!mainProvider.hasPendingJump) {
-                  mainProvider.jumpToTop();
+              onChapterSelected: (book, chapter, {int? verse}) {
+                if (!navigateToChapterVerse(mainProvider,
+                    book: book, chapter: chapter, verse: verse)) {
+                  return;
                 }
                 Get.back();
               },
