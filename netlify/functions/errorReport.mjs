@@ -188,7 +188,8 @@ export default async (req) => {
 
 	const html = `
 <!DOCTYPE html>
-<html><body style="font:14px/1.5 -apple-system,'Segoe UI',sans-serif;color:#222;">
+<html><head><meta charset="utf-8"></head>
+<body style="font:14px/1.5 -apple-system,'Segoe UI',sans-serif;color:#222;">
   <h2 style="margin:0 0 12px;font-size:16px;color:#b91c1c;">${escapeHtml(subjectShort)}</h2>
   <table style="border-collapse:collapse;font-size:13px;">
     <tr><td style="padding:2px 12px 2px 0;color:#666;">Source</td><td>${escapeHtml(source)}</td></tr>
