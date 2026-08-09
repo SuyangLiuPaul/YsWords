@@ -199,10 +199,24 @@ class SongDownloadService extends ChangeNotifier {
   double get batchProgress =>
       _batchTotal == 0 ? 0 : (_batchDone / _batchTotal).clamp(0.0, 1.0);
 
-  /// Rough size of a selection, for the confirm dialog. Shares the
-  /// native build's 4 MB-per-song assumption so the two agree.
-  static int estimateBytes(Iterable<Song> songs) =>
-      songs.where((s) => s.hasPlayableAudio).length * 4 * 1024 * 1024;
+  /// Rough size of a selection, for the confirm dialog.
+  ///
+  /// Same arithmetic as the native build — duration at a typical
+  /// 128 kbps, flat 4 MB where the source publishes no duration — so
+  /// both platforms quote the same figure for the same selection. A
+  /// cruder guess here would have had web and phone disagree about the
+  /// size of an identical download.
+  static int estimateBytes(Iterable<Song> songs) {
+    var total = 0;
+    for (final s in songs) {
+      if (!s.hasPlayableAudio) continue;
+      final secs = s.durationSec;
+      total += secs != null && secs > 0
+          ? (secs * 128 * 1000 / 8).round()
+          : 4 * 1024 * 1024;
+    }
+    return total;
+  }
 
   static String formatBytes(int bytes) => formatDownloadBytes(bytes);
 
