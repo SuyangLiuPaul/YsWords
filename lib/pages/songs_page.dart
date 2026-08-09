@@ -1,0 +1,1656 @@
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import 'package:yswords/constants/ui_strings.dart';
+import 'package:yswords/models/app_settings.dart';
+import 'package:yswords/models/song.dart';
+import 'package:yswords/services/fetch_books.dart' show standardBookOrder;
+import 'package:yswords/services/link_opener.dart';
+import 'package:yswords/services/song_player_service.dart';
+import 'package:yswords/services/song_service.dart';
+import 'package:yswords/utils/responsive.dart';
+import 'package:yswords/utils/version_mapper.dart' show localeAwareBookName;
+import 'package:yswords/widgets/home_icon_button.dart';
+import 'package:yswords/widgets/localized_back_button.dart';
+import 'package:yswords/utils/font_catalog.dart' show kCjkFontFallback;
+
+/// Church-songs directory page.
+///
+/// Round 56 shipped this as a pure index — title, URL, theme tags —
+/// where every tap bounced out to the publishing church's own site.
+/// It was deleted in v1.3.126 when those links went stale after
+/// fydt.org migrated its backend.
+///
+/// 2026-08-09 (v2) rebuilds it against fydt.org's `fydt-api/v1` JSON
+/// API, adds the Indonesian catalogue from cahayapengharapan.org, and
+/// plays the media in-app: 543 songs across three sites, of which 508
+/// have audio, 118 have video and 510 have sheet music. Every entry
+/// names its source on the row itself.
+///
+/// The media is streamed from each church's own servers — nothing is
+/// rehosted here. All three catalogues are published by our own
+/// church's pastors, who approved in-app playback.
+class SongsPage extends StatefulWidget {
+  const SongsPage({super.key});
+
+  @override
+  State<SongsPage> createState() => _SongsPageState();
+}
+
+class _SongsPageState extends State<SongsPage> {
+  Future<List<Song>>? _future;
+  final _scrollCtrl = ScrollController();
+
+  /// 'all' | 'zh' | 'en' | 'id'.
+  String _langFilter = 'all';
+  /// 'all' | one of the source ids in songs.json (`fydt`, `cahaya`,
+  /// `cdc`).
+  String _sourceFilter = 'all';
+  /// 'all' | 'audio' | 'video' | 'score'. Not every song in the
+  /// catalogue has every medium — CDC publishes no video at all and
+  /// ~23 of its mp3s were never uploaded — so this lets someone who
+  /// specifically wants something to listen to or a score to print
+  /// skip the rows that cannot give it to them.
+  String _mediaFilter = 'all';
+  /// 'all' | one of the auto-derived theme tags (Chinese key).
+  String _themeFilter = 'all';
+  /// 'all' | English book name when the song's verse field maps to
+  /// a recognised Bible book. Aligned with sermons-page filter so
+  /// the UX is consistent across the app.
+  String _bookFilter = 'all';
+  String _query = '';
+  /// 'recent' (default — newest first by updatedAt) |
+  /// 'added'  (newest first by firstSeenAt) |
+  /// 'title'  (A→Z by title) |
+  /// 'source' (catalogue order: source then code/title)
+  String _sort = 'recent';
+
+  @override
+  void initState() {
+    super.initState();
+    _future = SongService.load();
+  }
+
+  @override
+  void dispose() {
+    _scrollCtrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final settings = context.watch<AppSettings>();
+    final locale = settings.locale;
+    final scheme = Theme.of(context).colorScheme;
+    final dc = ResponsiveBreakpoints.classOf(
+        MediaQuery.of(context).size.width);
+    final maxW = ResponsiveBreakpoints.settingsMaxWidth(dc);
+
+    return Scaffold(
+      appBar: AppBar(
+        leading: const LocalizedBackButton(),
+        title: Text(uiStrings['songsPageTitle']?[locale] ?? 'Songs'),
+        actions: const [HomeIconButton()],
+      ),
+      body: FutureBuilder<List<Song>>(
+        future: _future,
+        builder: (context, snap) {
+          if (snap.connectionState != ConnectionState.done) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          final all = snap.data ?? const <Song>[];
+          if (all.isEmpty) {
+            return Center(
+              child: Text(
+                uiStrings['songsEmpty']?[locale] ??
+                    'No songs available.',
+                style: TextStyle(color: scheme.onSurfaceVariant),
+              ),
+            );
+          }
+          final themes = SongService.distinctThemes(all);
+          final availableBooks = _booksWithSongs(all);
+          final filtered = _filter(all);
+          final hasFilter = _langFilter != 'all' ||
+              _sourceFilter != 'all' ||
+              _themeFilter != 'all' ||
+              _bookFilter != 'all' ||
+              _mediaFilter != 'all';
+          return Center(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(maxWidth: maxW),
+              child: Column(
+                children: [
+                  Expanded(
+                    child: Scrollbar(
+                controller: _scrollCtrl,
+                thumbVisibility: true,
+                child: ListView.separated(
+                  controller: _scrollCtrl,
+                  padding:
+                      const EdgeInsets.fromLTRB(16, 12, 16, 24),
+                  itemCount: filtered.length + 2,
+                  separatorBuilder: (_, __) =>
+                      const SizedBox(height: 10),
+                  itemBuilder: (_, i) {
+                    if (i == 0) {
+                      return _IntroCard(
+                          settings: settings, scheme: scheme);
+                    }
+                    if (i == 1) {
+                      return _SearchAndFilterBar(
+                        settings: settings,
+                        scheme: scheme,
+                        locale: locale,
+                        query: _query,
+                        hasActiveFilter: hasFilter,
+                        langFilter: _langFilter,
+                        sourceFilter: _sourceFilter,
+                        themeFilter: _themeFilter,
+                        bookFilter: _bookFilter,
+                        mediaFilter: _mediaFilter,
+                        sort: _sort,
+                        availableThemes: themes,
+                        availableBooks: availableBooks,
+                        availableSources:
+                            SongService.distinctSources(all),
+                        availableLanguages:
+                            SongService.distinctLanguages(all),
+                        matchCount: filtered.length,
+                        totalCount: all.length,
+                        onQuery: (v) => setState(() => _query = v),
+                        onClearAll: () => setState(() {
+                          _langFilter = 'all';
+                          _sourceFilter = 'all';
+                          _themeFilter = 'all';
+                          _bookFilter = 'all';
+                          _mediaFilter = 'all';
+                        }),
+                        onLangChanged: (v) =>
+                            setState(() => _langFilter = v),
+                        onSourceChanged: (v) =>
+                            setState(() => _sourceFilter = v),
+                        onThemeChanged: (v) =>
+                            setState(() => _themeFilter = v),
+                        onBookChanged: (v) =>
+                            setState(() => _bookFilter = v),
+                        onMediaChanged: (v) =>
+                            setState(() => _mediaFilter = v),
+                        onSortChanged: (v) =>
+                            setState(() => _sort = v),
+                      );
+                    }
+                    return _SongTile(
+                      song: filtered[i - 2],
+                      settings: settings,
+                      scheme: scheme,
+                      locale: locale,
+                    );
+                  },
+                ),
+              ),
+                  ),
+                  _MiniPlayer(scheme: scheme, locale: locale),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  /// Set of English book names that at least one song's `verse`
+  /// field maps to. Drives the book chip row in the filter sheet —
+  /// books with no songs render dimmed (sermons-page parity).
+  Set<String> _booksWithSongs(List<Song> all) {
+    final out = <String>{};
+    for (final s in all) {
+      final b = s.verseBook;
+      if (b != null) out.add(b);
+    }
+    return out;
+  }
+
+  List<Song> _filter(List<Song> all) {
+    Iterable<Song> out = all;
+    if (_langFilter != 'all') {
+      out = out.where((s) => s.language == _langFilter);
+    }
+    if (_sourceFilter != 'all') {
+      out = out.where((s) => s.source == _sourceFilter);
+    }
+    if (_themeFilter != 'all') {
+      out = out.where((s) => s.themes.contains(_themeFilter));
+    }
+    if (_bookFilter != 'all') {
+      out = out.where((s) => s.verseBook == _bookFilter);
+    }
+    switch (_mediaFilter) {
+      case 'audio':
+        out = out.where((s) => s.hasAudio);
+        break;
+      case 'video':
+        out = out.where((s) => s.hasVideo);
+        break;
+      case 'score':
+        out = out.where((s) => s.scoreUrl != null);
+        break;
+    }
+    final q = _query.trim().toLowerCase();
+    if (q.isNotEmpty) {
+      out = out.where((s) {
+        return s.title.toLowerCase().contains(q) ||
+            (s.code?.toLowerCase().contains(q) ?? false) ||
+            (s.verse?.toLowerCase().contains(q) ?? false) ||
+            s.themes.any((t) => t.toLowerCase().contains(q));
+      });
+    }
+    final list = out.toList();
+    _applySort(list);
+    return list;
+  }
+
+  /// Order the matched songs by the user's chosen sort key.
+  /// Implemented in-place so we don't allocate a second list.
+  void _applySort(List<Song> list) {
+    switch (_sort) {
+      case 'recent':
+        // Newest updatedAt first; ties broken by title for
+        // stable ordering. Songs without timestamps (legacy
+        // entries) sink to the bottom.
+        list.sort((a, b) {
+          final ax = a.updatedAt ?? '';
+          final bx = b.updatedAt ?? '';
+          final cmp = bx.compareTo(ax);
+          return cmp != 0 ? cmp : a.title.compareTo(b.title);
+        });
+        break;
+      case 'added':
+        list.sort((a, b) {
+          final ax = a.firstSeenAt ?? '';
+          final bx = b.firstSeenAt ?? '';
+          final cmp = bx.compareTo(ax);
+          return cmp != 0 ? cmp : a.title.compareTo(b.title);
+        });
+        break;
+      case 'title':
+        list.sort((a, b) => a.title.compareTo(b.title));
+        break;
+      case 'source':
+        list.sort((a, b) {
+          final src = a.source.compareTo(b.source);
+          if (src != 0) return src;
+          final ac = a.code ?? a.title;
+          final bc = b.code ?? b.title;
+          return ac.compareTo(bc);
+        });
+        break;
+    }
+  }
+}
+
+class _IntroCard extends StatelessWidget {
+  final AppSettings settings;
+  final ColorScheme scheme;
+  const _IntroCard({required this.settings, required this.scheme});
+
+  @override
+  Widget build(BuildContext context) {
+    final locale = settings.locale;
+    final title =
+        uiStrings['songsIntroTitle']?[locale] ?? 'Church Songs Directory';
+    final body = uiStrings['songsIntroBody']?[locale] ??
+        'Songs from 福音电台 (fydt.org), Cahaya Pengharapan (Indonesian) '
+            'and Christian Disciples Church. Tap ▶ to listen, or open an '
+            'entry for the instrumental, music video, sheet music and lyrics.';
+    return Container(
+      padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+      decoration: BoxDecoration(
+        color: scheme.primaryContainer.withValues(alpha: 0.35),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+            color: scheme.primary.withValues(alpha: 0.25)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.library_music_rounded,
+                  color: scheme.primary, size: 22),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  title,
+                  style: TextStyle(
+                    fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                    color: scheme.onPrimaryContainer,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Text(
+            body,
+            style: TextStyle(
+              fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
+              fontSize: 12,
+              height: 1.45,
+              color: scheme.onSurface.withValues(alpha: 0.75),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Round 56 (continued): refactored to mirror the sermons-page
+/// pattern. Search field + Filter button inline; tapping the
+/// button opens a modal sheet that hosts every filter (language,
+/// source, theme, book). Active filters render below as deletable
+/// InputChips. Theme labels run through `localizedSongTheme` so
+/// 敬拜 displays as "Worship" / "敬拜" / "敬拜" depending on locale.
+class _SearchAndFilterBar extends StatelessWidget {
+  final AppSettings settings;
+  final ColorScheme scheme;
+  final String locale;
+  final String query;
+  final bool hasActiveFilter;
+  final String langFilter;
+  final String sourceFilter;
+  final String themeFilter;
+  final String bookFilter;
+  final String mediaFilter;
+  final String sort;
+  final List<String> availableThemes;
+  final Set<String> availableBooks;
+  final List<String> availableSources;
+  final List<String> availableLanguages;
+  final int matchCount;
+  final int totalCount;
+  final ValueChanged<String> onQuery;
+  final VoidCallback onClearAll;
+  final ValueChanged<String> onLangChanged;
+  final ValueChanged<String> onSourceChanged;
+  final ValueChanged<String> onThemeChanged;
+  final ValueChanged<String> onBookChanged;
+  final ValueChanged<String> onMediaChanged;
+  final ValueChanged<String> onSortChanged;
+
+  const _SearchAndFilterBar({
+    required this.settings,
+    required this.scheme,
+    required this.locale,
+    required this.query,
+    required this.hasActiveFilter,
+    required this.langFilter,
+    required this.sourceFilter,
+    required this.themeFilter,
+    required this.bookFilter,
+    required this.mediaFilter,
+    required this.sort,
+    required this.availableThemes,
+    required this.availableBooks,
+    required this.availableSources,
+    required this.availableLanguages,
+    required this.matchCount,
+    required this.totalCount,
+    required this.onQuery,
+    required this.onClearAll,
+    required this.onLangChanged,
+    required this.onSourceChanged,
+    required this.onThemeChanged,
+    required this.onBookChanged,
+    required this.onMediaChanged,
+    required this.onSortChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final searchHint = uiStrings['songsSearchHint']?[locale] ??
+        'Search song title, theme, or code…';
+    final filterLabel =
+        uiStrings['sermonFilterByPassage']?[locale] ?? 'Filter';
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: TextField(
+                decoration: InputDecoration(
+                  hintText: searchHint,
+                  prefixIcon: const Icon(Icons.search),
+                  isDense: true,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                onChanged: onQuery,
+                style: TextStyle(
+                  fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
+                  fontSize:
+                      (settings.fontSize - 1).clamp(13.0, 17.0),
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            OutlinedButton.icon(
+              onPressed: () => _openFilterSheet(context),
+              icon: Icon(
+                hasActiveFilter
+                    ? Icons.filter_list_alt
+                    : Icons.filter_list,
+                size: 18,
+              ),
+              label: Text(filterLabel,
+                  style: const TextStyle(fontSize: 13)),
+              style: OutlinedButton.styleFrom(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12),
+                backgroundColor: hasActiveFilter
+                    ? scheme.primaryContainer
+                        .withValues(alpha: 0.4)
+                    : null,
+              ),
+            ),
+            const SizedBox(width: 4),
+            // Round 56: sort picker. Compact PopupMenuButton — same
+            // affordance as the IconButton+Menu pattern used in
+            // sermon_detail_page.dart so the songs page feels
+            // consistent with the rest of the app.
+            PopupMenuButton<String>(
+              tooltip: uiStrings['songsSortTooltip']?[locale] ??
+                  'Sort',
+              icon: const Icon(Icons.sort, size: 20),
+              initialValue: sort,
+              onSelected: onSortChanged,
+              itemBuilder: (_) => [
+                _sortItem('recent',
+                    uiStrings['songsSortRecent']?[locale] ??
+                        'Recently updated',
+                    Icons.update),
+                _sortItem('added',
+                    uiStrings['songsSortAdded']?[locale] ??
+                        'Recently added',
+                    Icons.fiber_new),
+                _sortItem('title',
+                    uiStrings['songsSortTitle']?[locale] ??
+                        'Title (A-Z)',
+                    Icons.sort_by_alpha),
+                _sortItem('source',
+                    uiStrings['songsSortSource']?[locale] ??
+                        'Source / catalogue',
+                    Icons.library_books),
+              ],
+            ),
+          ],
+        ),
+        if (hasActiveFilter) ...[
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 6,
+            runSpacing: 4,
+            children: [
+              if (langFilter != 'all')
+                InputChip(
+                  avatar: const Icon(Icons.language, size: 16),
+                  label: Text(_langDisplayLabel(langFilter)),
+                  onDeleted: () => onLangChanged('all'),
+                ),
+              if (sourceFilter != 'all')
+                InputChip(
+                  avatar: const Icon(Icons.public, size: 16),
+                  label: Text(_sourceDisplayLabel(sourceFilter)),
+                  onDeleted: () => onSourceChanged('all'),
+                ),
+              if (themeFilter != 'all')
+                InputChip(
+                  avatar: const Icon(Icons.label_outline, size: 16),
+                  label: Text(localizedSongTheme(
+                      themeFilter, locale)),
+                  onDeleted: () => onThemeChanged('all'),
+                ),
+              if (bookFilter != 'all')
+                InputChip(
+                  avatar: Icon(Icons.bookmark,
+                      size: 16, color: scheme.primary),
+                  label: Text(
+                      localeAwareBookName(bookFilter, locale)),
+                  onDeleted: () => onBookChanged('all'),
+                ),
+              if (mediaFilter != 'all')
+                InputChip(
+                  avatar: Icon(_mediaIcon(mediaFilter), size: 16),
+                  label: Text(_mediaDisplayLabel(mediaFilter)),
+                  onDeleted: () => onMediaChanged('all'),
+                ),
+              ActionChip(
+                avatar: const Icon(Icons.clear_all, size: 16),
+                label: Text(
+                    uiStrings['clearFilter']?[locale] ?? 'Clear'),
+                onPressed: onClearAll,
+              ),
+            ],
+          ),
+        ],
+        const SizedBox(height: 6),
+        Text(
+          '$matchCount / $totalCount',
+          style: TextStyle(
+            fontSize: 11,
+            color: scheme.onSurfaceVariant,
+            fontFeatures: const [FontFeature.tabularFigures()],
+          ),
+        ),
+      ],
+    );
+  }
+
+  PopupMenuItem<String> _sortItem(
+      String value, String label, IconData icon) {
+    return PopupMenuItem<String>(
+      value: value,
+      child: Row(
+        children: [
+          Icon(icon, size: 18, color: scheme.primary),
+          const SizedBox(width: 10),
+          Text(label),
+          if (sort == value) ...[
+            const Spacer(),
+            Icon(Icons.check, size: 16, color: scheme.primary),
+          ],
+        ],
+      ),
+    );
+  }
+
+  String _langDisplayLabel(String key) =>
+      localizedSongLanguage(key, locale);
+
+  String _sourceDisplayLabel(String key) =>
+      localizedSongSource(key, locale);
+
+  String _mediaDisplayLabel(String key) {
+    switch (key) {
+      case 'audio':
+        return uiStrings['songsFilterHasAudio']?[locale] ?? 'Audio';
+      case 'video':
+        return uiStrings['songsFilterHasVideo']?[locale] ?? 'Video';
+      case 'score':
+        return uiStrings['songsFilterHasScore']?[locale] ?? 'Score';
+    }
+    return key;
+  }
+
+  IconData _mediaIcon(String key) {
+    switch (key) {
+      case 'audio':
+        return Icons.headphones_rounded;
+      case 'video':
+        return Icons.movie_rounded;
+      case 'score':
+        return Icons.picture_as_pdf_rounded;
+    }
+    return Icons.perm_media_rounded;
+  }
+
+  void _openFilterSheet(BuildContext context) {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Theme.of(context).colorScheme.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (sheetCtx) {
+        return _SongFilterSheet(
+          locale: locale,
+          settings: settings,
+          availableThemes: availableThemes,
+          availableBooks: availableBooks,
+          availableSources: availableSources,
+          availableLanguages: availableLanguages,
+          initialLang: langFilter,
+          initialSource: sourceFilter,
+          initialTheme: themeFilter,
+          initialBook: bookFilter,
+          initialMedia: mediaFilter,
+          onApply: (lang, source, theme, book, media) {
+            onLangChanged(lang);
+            onSourceChanged(source);
+            onThemeChanged(theme);
+            onBookChanged(book);
+            onMediaChanged(media);
+            Navigator.of(sheetCtx).pop();
+          },
+          onClear: () {
+            onLangChanged('all');
+            onSourceChanged('all');
+            onThemeChanged('all');
+            onBookChanged('all');
+            onMediaChanged('all');
+            Navigator.of(sheetCtx).pop();
+          },
+        );
+      },
+    );
+  }
+}
+
+/// Modal-sheet filter — mirrors `_PassageFilterSheet` from
+/// sermons_page.dart so users get the same affordance across pages.
+/// Hosts every song filter so the inline bar above stays clean.
+class _SongFilterSheet extends StatefulWidget {
+  final String locale;
+  final AppSettings settings;
+  final List<String> availableThemes;
+  final Set<String> availableBooks;
+  final List<String> availableSources;
+  final List<String> availableLanguages;
+  final String initialLang;
+  final String initialSource;
+  final String initialTheme;
+  final String initialBook;
+  final String initialMedia;
+  final void Function(String lang, String source, String theme, String book,
+      String media) onApply;
+  final VoidCallback onClear;
+
+  const _SongFilterSheet({
+    required this.locale,
+    required this.settings,
+    required this.availableThemes,
+    required this.availableBooks,
+    required this.availableSources,
+    required this.availableLanguages,
+    required this.initialLang,
+    required this.initialSource,
+    required this.initialTheme,
+    required this.initialBook,
+    required this.initialMedia,
+    required this.onApply,
+    required this.onClear,
+  });
+
+  @override
+  State<_SongFilterSheet> createState() => _SongFilterSheetState();
+}
+
+class _SongFilterSheetState extends State<_SongFilterSheet> {
+  late String _lang;
+  late String _source;
+  late String _theme;
+  late String _book;
+  late String _media;
+
+  @override
+  void initState() {
+    super.initState();
+    _lang = widget.initialLang;
+    _source = widget.initialSource;
+    _theme = widget.initialTheme;
+    _book = widget.initialBook;
+    _media = widget.initialMedia;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final locale = widget.locale;
+    final allLabel =
+        uiStrings['statsOriginalsAll']?[locale] ?? 'All';
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Row(
+                children: [
+                  Icon(Icons.tune,
+                      size: 18, color: scheme.primary),
+                  const SizedBox(width: 8),
+                  Text(
+                    uiStrings['sermonFilterByPassage']?[locale] ??
+                        'Filter',
+                    style: const TextStyle(
+                        fontSize: 16, fontWeight: FontWeight.w600),
+                  ),
+                  const Spacer(),
+                  TextButton(
+                    onPressed: widget.onClear,
+                    child: Text(
+                        uiStrings['clearFilter']?[locale] ?? 'Clear'),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close, size: 20),
+                    onPressed: () =>
+                        Navigator.of(context).maybePop(),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              _SectionLabel(
+                  text: uiStrings['songsFilterLanguage']?[locale] ??
+                      'Language',
+                  scheme: scheme),
+              const SizedBox(height: 6),
+              // Wrap of chips rather than a SegmentedButton: adding
+              // Indonesian took this to four options, and four
+              // segments of localised text overflow a narrow phone.
+              Wrap(
+                spacing: 6,
+                runSpacing: 6,
+                children: [
+                  ChoiceChip(
+                    label: Text(allLabel),
+                    selected: _lang == 'all',
+                    onSelected: (_) => setState(() => _lang = 'all'),
+                  ),
+                  for (final code in widget.availableLanguages)
+                    ChoiceChip(
+                      label: Text(localizedSongLanguage(code, locale)),
+                      selected: _lang == code,
+                      onSelected: (_) => setState(() => _lang = code),
+                    ),
+                ],
+              ),
+              const SizedBox(height: 14),
+              _SectionLabel(
+                  text: uiStrings['songsFilterSource']?[locale] ??
+                      'Source',
+                  scheme: scheme),
+              const SizedBox(height: 6),
+              Wrap(
+                spacing: 6,
+                runSpacing: 6,
+                children: [
+                  ChoiceChip(
+                    label: Text(allLabel),
+                    selected: _source == 'all',
+                    onSelected: (_) => setState(() => _source = 'all'),
+                  ),
+                  for (final code in widget.availableSources)
+                    ChoiceChip(
+                      label: Text(localizedSongSource(code, locale)),
+                      selected: _source == code,
+                      onSelected: (_) => setState(() => _source = code),
+                    ),
+                ],
+              ),
+              const SizedBox(height: 14),
+              _SectionLabel(
+                  text: uiStrings['songsFilterMedia']?[locale] ?? 'Media',
+                  scheme: scheme),
+              const SizedBox(height: 6),
+              Wrap(
+                spacing: 6,
+                runSpacing: 6,
+                children: [
+                  ChoiceChip(
+                    label: Text(allLabel),
+                    selected: _media == 'all',
+                    onSelected: (_) => setState(() => _media = 'all'),
+                  ),
+                  ChoiceChip(
+                    avatar: const Icon(Icons.headphones_rounded, size: 16),
+                    label: Text(
+                        uiStrings['songsFilterHasAudio']?[locale] ?? 'Audio'),
+                    selected: _media == 'audio',
+                    onSelected: (_) => setState(() => _media = 'audio'),
+                  ),
+                  ChoiceChip(
+                    avatar: const Icon(Icons.movie_rounded, size: 16),
+                    label: Text(
+                        uiStrings['songsFilterHasVideo']?[locale] ?? 'Video'),
+                    selected: _media == 'video',
+                    onSelected: (_) => setState(() => _media = 'video'),
+                  ),
+                  ChoiceChip(
+                    avatar: const Icon(Icons.picture_as_pdf_rounded, size: 16),
+                    label: Text(
+                        uiStrings['songsFilterHasScore']?[locale] ?? 'Score'),
+                    selected: _media == 'score',
+                    onSelected: (_) => setState(() => _media = 'score'),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 14),
+              _SectionLabel(
+                  text: uiStrings['songsFilterTheme']?[locale] ??
+                      'Theme',
+                  scheme: scheme),
+              const SizedBox(height: 6),
+              ConstrainedBox(
+                constraints: BoxConstraints(
+                    maxHeight:
+                        MediaQuery.of(context).size.height * 0.22),
+                child: SingleChildScrollView(
+                  child: Wrap(
+                    spacing: 6,
+                    runSpacing: 6,
+                    children: [
+                      ChoiceChip(
+                        label: Text(allLabel),
+                        selected: _theme == 'all',
+                        onSelected: (_) =>
+                            setState(() => _theme = 'all'),
+                      ),
+                      for (final t in widget.availableThemes)
+                        ChoiceChip(
+                          label: Text(localizedSongTheme(t, locale)),
+                          selected: _theme == t,
+                          onSelected: (_) =>
+                              setState(() => _theme = t),
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 14),
+              _SectionLabel(
+                  text: uiStrings['sermonFilterBookLabel']
+                              ?[locale] ??
+                      'Book',
+                  scheme: scheme),
+              const SizedBox(height: 6),
+              ConstrainedBox(
+                constraints: BoxConstraints(
+                    maxHeight:
+                        MediaQuery.of(context).size.height * 0.30),
+                child: SingleChildScrollView(
+                  child: Wrap(
+                    spacing: 6,
+                    runSpacing: 6,
+                    children: [
+                      ChoiceChip(
+                        label: Text(allLabel),
+                        selected: _book == 'all',
+                        onSelected: (_) =>
+                            setState(() => _book = 'all'),
+                      ),
+                      for (final b in standardBookOrder)
+                        _BookChip(
+                          book: b,
+                          locale: locale,
+                          hasSongs:
+                              widget.availableBooks.contains(b),
+                          selected: _book == b,
+                          onTap: () => setState(() {
+                            _book = _book == b ? 'all' : b;
+                          }),
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              FilledButton(
+                onPressed: () => widget.onApply(
+                    _lang, _source, _theme, _book, _media),
+                child: Text(
+                    uiStrings['apply']?[locale] ?? 'Apply'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _SectionLabel extends StatelessWidget {
+  final String text;
+  final ColorScheme scheme;
+  const _SectionLabel({required this.text, required this.scheme});
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      text,
+      style: TextStyle(
+        fontSize: 12,
+        fontWeight: FontWeight.w600,
+        color: scheme.onSurface.withValues(alpha: 0.65),
+      ),
+    );
+  }
+}
+
+class _BookChip extends StatelessWidget {
+  final String book;
+  final String locale;
+  final bool hasSongs;
+  final bool selected;
+  final VoidCallback onTap;
+  const _BookChip({
+    required this.book,
+    required this.locale,
+    required this.hasSongs,
+    required this.selected,
+    required this.onTap,
+  });
+  @override
+  Widget build(BuildContext context) {
+    final localized = localeAwareBookName(book, locale, '');
+    return ChoiceChip(
+      label: Text(
+        localized,
+        style: TextStyle(
+          fontSize: 13,
+          color:
+              hasSongs ? null : Theme.of(context).disabledColor,
+        ),
+      ),
+      selected: selected,
+      onSelected: hasSongs ? (_) => onTap() : null,
+    );
+  }
+}
+
+
+/// One row in the directory.
+///
+/// Pre-v2 this was a pure link-out: the whole tile opened the church's
+/// site. It now leads with a play button for the songs we can stream
+/// (a direct mp3), and tapping the row opens the detail sheet with the
+/// alternate mixes, video, score and lyrics. "Open original" is still
+/// there — it just isn't the only thing you can do any more.
+class _SongTile extends StatelessWidget {
+  final Song song;
+  final AppSettings settings;
+  final ColorScheme scheme;
+  final String locale;
+  const _SongTile({
+    required this.song,
+    required this.settings,
+    required this.scheme,
+    required this.locale,
+  });
+
+  void _openDetail(BuildContext context) {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Theme.of(context).colorScheme.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (_) => _SongDetailSheet(
+        song: song,
+        settings: settings,
+        locale: locale,
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final langBadge = {
+      'zh': '中',
+      'en': 'EN',
+      'id': 'ID',
+    }[song.language] ??
+        song.language.toUpperCase();
+
+    return Material(
+      color: scheme.surfaceContainerLow,
+      borderRadius: BorderRadius.circular(10),
+      child: InkWell(
+        onTap: () => _openDetail(context),
+        borderRadius: BorderRadius.circular(10),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(10, 10, 12, 10),
+          child: Row(
+            children: [
+              _PlayButton(
+                song: song,
+                scheme: scheme,
+                locale: locale,
+                fallbackBadge: langBadge,
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      song.title,
+                      style: TextStyle(
+                        fontFamily: settings.fontFamily,
+                        fontFamilyFallback: kCjkFontFallback,
+                        fontSize:
+                            (settings.fontSize - 1).clamp(14.0, 17.0),
+                        fontWeight: FontWeight.w600,
+                        color: scheme.onSurface,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Wrap(
+                      spacing: 6,
+                      runSpacing: 4,
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      children: [
+                        Text(
+                          localizedSongSource(song.source, locale),
+                          style: TextStyle(
+                            fontSize: 11,
+                            color:
+                                scheme.onSurface.withValues(alpha: 0.55),
+                          ),
+                        ),
+                        if (song.creditLine != null)
+                          Text(
+                            '· ${song.creditLine}',
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: scheme.onSurface
+                                  .withValues(alpha: 0.55),
+                            ),
+                          ),
+                        if (song.durationLabel != null)
+                          Text(
+                            '· ${song.durationLabel}',
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: scheme.onSurface
+                                  .withValues(alpha: 0.55),
+                              fontFeatures: const [
+                                FontFeature.tabularFigures()
+                              ],
+                            ),
+                          ),
+                        if (song.verse != null)
+                          Text(
+                            '· ${song.verse}',
+                            style: TextStyle(
+                                fontSize: 11, color: scheme.primary),
+                          ),
+                        for (final t in song.themes.take(2))
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 6, vertical: 1),
+                            decoration: BoxDecoration(
+                              color: scheme.secondaryContainer
+                                  .withValues(alpha: 0.6),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Text(
+                              localizedSongTheme(t, locale),
+                              style: TextStyle(
+                                fontSize: 10,
+                                color: scheme.onSecondaryContainer,
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              // Medium indicators, so the row says what it holds
+              // before you open it.
+              if (song.hasVideo)
+                Icon(Icons.movie_rounded,
+                    size: 16,
+                    color: scheme.onSurface.withValues(alpha: 0.4)),
+              if (song.scoreUrl != null) ...[
+                const SizedBox(width: 4),
+                Icon(Icons.picture_as_pdf_rounded,
+                    size: 16,
+                    color: scheme.onSurface.withValues(alpha: 0.4)),
+              ],
+              const SizedBox(width: 4),
+              Icon(Icons.chevron_right_rounded,
+                  size: 20,
+                  color: scheme.primary.withValues(alpha: 0.6)),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Leading play/pause control. Falls back to the language badge for
+/// rows with no streamable audio (SoundCloud-only, or the handful of
+/// CDC entries whose mp3 was never uploaded), so the column keeps its
+/// alignment and the absence reads as intentional.
+class _PlayButton extends StatelessWidget {
+  final Song song;
+  final ColorScheme scheme;
+  final String locale;
+  final String fallbackBadge;
+  const _PlayButton({
+    required this.song,
+    required this.scheme,
+    required this.locale,
+    required this.fallbackBadge,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    if (!song.hasPlayableAudio) {
+      return Container(
+        width: 40,
+        height: 40,
+        decoration: BoxDecoration(
+          color: scheme.primary.withValues(alpha: 0.10),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        alignment: Alignment.center,
+        child: Text(
+          fallbackBadge,
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w700,
+            color: scheme.primary.withValues(alpha: 0.8),
+          ),
+        ),
+      );
+    }
+
+    final player = SongPlayerService.instance;
+    return ListenableBuilder(
+      listenable: player,
+      builder: (context, _) {
+        final isThis = player.isCurrent(song, SongTrack.vocal);
+        final playing = isThis && player.isPlaying;
+        final loading = isThis && player.isLoading;
+        return Semantics(
+          button: true,
+          label: playing
+              ? (uiStrings['songsPause']?[locale] ?? 'Pause')
+              : (uiStrings['songsPlay']?[locale] ?? 'Play'),
+          child: Material(
+            color: isThis
+                ? scheme.primary
+                : scheme.primary.withValues(alpha: 0.12),
+            borderRadius: BorderRadius.circular(8),
+            child: InkWell(
+              borderRadius: BorderRadius.circular(8),
+              onTap: () => player.toggle(song, SongTrack.vocal),
+              child: SizedBox(
+                width: 40,
+                height: 40,
+                child: loading
+                    ? Padding(
+                        padding: const EdgeInsets.all(11),
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: isThis
+                              ? scheme.onPrimary
+                              : scheme.primary,
+                        ),
+                      )
+                    : Icon(
+                        playing
+                            ? Icons.pause_rounded
+                            : Icons.play_arrow_rounded,
+                        size: 22,
+                        color:
+                            isThis ? scheme.onPrimary : scheme.primary,
+                      ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+/// Detail sheet: everything the catalogue holds for one song —
+/// alternate mixes, video, score, lyrics, and the link back to the
+/// church's own page.
+class _SongDetailSheet extends StatelessWidget {
+  final Song song;
+  final AppSettings settings;
+  final String locale;
+  const _SongDetailSheet({
+    required this.song,
+    required this.settings,
+    required this.locale,
+  });
+
+  Future<void> _open(BuildContext context, String url) async {
+    final ok = await LinkOpener.open(url);
+    if (!ok && context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(
+          uiStrings['songsOpenFailed']?[locale] ??
+              'Could not open the link. Please try again.',
+        ),
+      ));
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final player = SongPlayerService.instance;
+
+    return SafeArea(
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.of(context).size.height * 0.85,
+        ),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          song.title,
+                          style: TextStyle(
+                            fontFamily: settings.fontFamily,
+                            fontFamilyFallback: kCjkFontFallback,
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                            color: scheme.onSurface,
+                          ),
+                        ),
+                        const SizedBox(height: 3),
+                        Text(
+                          [
+                            localizedSongSource(song.source, locale),
+                            if (song.code != null) song.code!,
+                            if (song.creditLine != null) song.creditLine!,
+                            if (song.durationLabel != null)
+                              song.durationLabel!,
+                          ].join(' · '),
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: scheme.onSurfaceVariant,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close, size: 20),
+                    onPressed: () => Navigator.of(context).maybePop(),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Flexible(
+                child: SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // ── Audio mixes ───────────────────────────
+                      if (song.hasPlayableAudio ||
+                          song.hasAlternateMixes) ...[
+                        _SectionLabel(
+                            text: uiStrings['songsSectionAudio']?[locale] ??
+                                'Audio',
+                            scheme: scheme),
+                        const SizedBox(height: 6),
+                        ListenableBuilder(
+                          listenable: player,
+                          builder: (context, _) => Wrap(
+                            spacing: 8,
+                            runSpacing: 8,
+                            children: [
+                              if (song.audioUrl != null)
+                                _TrackChip(
+                                  song: song,
+                                  track: SongTrack.vocal,
+                                  label: uiStrings['songsTrackVocal']
+                                          ?[locale] ??
+                                      'Song',
+                                  icon: Icons.music_note_rounded,
+                                  scheme: scheme,
+                                ),
+                              if (song.instrumentalUrl != null)
+                                _TrackChip(
+                                  song: song,
+                                  track: SongTrack.instrumental,
+                                  label: uiStrings[
+                                              'songsTrackInstrumental']
+                                          ?[locale] ??
+                                      'Instrumental',
+                                  icon: Icons.piano_rounded,
+                                  scheme: scheme,
+                                ),
+                              if (song.accompanimentUrl != null)
+                                _TrackChip(
+                                  song: song,
+                                  track: SongTrack.accompaniment,
+                                  label: uiStrings[
+                                              'songsTrackAccompaniment']
+                                          ?[locale] ??
+                                      'Accompaniment',
+                                  icon: Icons.queue_music_rounded,
+                                  scheme: scheme,
+                                ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 14),
+                      ],
+
+                      // ── Links out ─────────────────────────────
+                      _SectionLabel(
+                          text: uiStrings['songsSectionLinks']?[locale] ??
+                              'Open',
+                          scheme: scheme),
+                      const SizedBox(height: 6),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: [
+                          if (song.videoUrl != null)
+                            _LinkChip(
+                              icon: Icons.movie_rounded,
+                              label: uiStrings['songsWatchMv']?[locale] ??
+                                  'Music video',
+                              onTap: () =>
+                                  _open(context, song.videoUrl!),
+                            ),
+                          if (song.youtubeUrl != null)
+                            _LinkChip(
+                              icon: Icons.smart_display_rounded,
+                              label: 'YouTube',
+                              onTap: () =>
+                                  _open(context, song.youtubeUrl!),
+                            ),
+                          if (song.soundcloudUrl != null)
+                            _LinkChip(
+                              icon: Icons.cloud_rounded,
+                              label: 'SoundCloud',
+                              onTap: () =>
+                                  _open(context, song.soundcloudUrl!),
+                            ),
+                          if (song.scoreUrl != null)
+                            _LinkChip(
+                              icon: Icons.picture_as_pdf_rounded,
+                              label: uiStrings['songsScore']?[locale] ??
+                                  'Sheet music',
+                              onTap: () => _open(context, song.scoreUrl!),
+                            ),
+                          _LinkChip(
+                            icon: Icons.open_in_new_rounded,
+                            label:
+                                uiStrings['songsOpenOriginal']?[locale] ??
+                                    'Original page',
+                            onTap: () => _open(context, song.url),
+                          ),
+                        ],
+                      ),
+
+                      // ── Lyrics ────────────────────────────────
+                      if (song.lyrics != null) ...[
+                        const SizedBox(height: 14),
+                        _SectionLabel(
+                            text: uiStrings['songsSectionLyrics']?[locale] ??
+                                'Lyrics',
+                            scheme: scheme),
+                        const SizedBox(height: 6),
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: scheme.surfaceContainerHighest
+                                .withValues(alpha: 0.5),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: SelectableText(
+                            song.lyrics!,
+                            style: TextStyle(
+                              fontFamily: settings.fontFamily,
+                              fontFamilyFallback: kCjkFontFallback,
+                              fontSize: (settings.fontSize - 2)
+                                  .clamp(13.0, 17.0),
+                              height: 1.6,
+                              color: scheme.onSurface,
+                            ),
+                          ),
+                        ),
+                      ],
+
+                      // ── Themes ────────────────────────────────
+                      if (song.themes.isNotEmpty) ...[
+                        const SizedBox(height: 14),
+                        Wrap(
+                          spacing: 6,
+                          runSpacing: 6,
+                          children: [
+                            for (final t in song.themes)
+                              Chip(
+                                label: Text(
+                                  localizedSongTheme(t, locale),
+                                  style: const TextStyle(fontSize: 11),
+                                ),
+                                visualDensity: VisualDensity.compact,
+                                materialTapTargetSize:
+                                    MaterialTapTargetSize.shrinkWrap,
+                              ),
+                          ],
+                        ),
+                      ],
+
+                      const SizedBox(height: 14),
+                      Text(
+                        uiStrings['songsAttribution']?[locale] ??
+                            'Published by our church. Audio, video and '
+                                'sheet music stream from the source site.',
+                        style: TextStyle(
+                          fontSize: 11,
+                          height: 1.45,
+                          color: scheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// One selectable mix inside the detail sheet.
+class _TrackChip extends StatelessWidget {
+  final Song song;
+  final SongTrack track;
+  final String label;
+  final IconData icon;
+  final ColorScheme scheme;
+  const _TrackChip({
+    required this.song,
+    required this.track,
+    required this.label,
+    required this.icon,
+    required this.scheme,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final player = SongPlayerService.instance;
+    final isThis = player.isCurrent(song, track);
+    final playing = isThis && player.isPlaying;
+    return ActionChip(
+      avatar: Icon(
+        playing ? Icons.pause_rounded : icon,
+        size: 16,
+        color: isThis ? scheme.onPrimaryContainer : null,
+      ),
+      label: Text(label, style: const TextStyle(fontSize: 12)),
+      backgroundColor: isThis ? scheme.primaryContainer : null,
+      onPressed: () => player.toggle(song, track),
+    );
+  }
+}
+
+class _LinkChip extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+  const _LinkChip({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ActionChip(
+      avatar: Icon(icon, size: 16),
+      label: Text(label, style: const TextStyle(fontSize: 12)),
+      onPressed: onTap,
+    );
+  }
+}
+
+/// Persistent transport pinned under the list while something is
+/// playing. Kept on the page rather than in the app shell because
+/// Songs is the only feature with audio — a global bar would be dead
+/// chrome everywhere else.
+class _MiniPlayer extends StatelessWidget {
+  final ColorScheme scheme;
+  final String locale;
+  const _MiniPlayer({required this.scheme, required this.locale});
+
+  @override
+  Widget build(BuildContext context) {
+    final player = SongPlayerService.instance;
+    return ListenableBuilder(
+      listenable: player,
+      builder: (context, _) {
+        final error = player.error;
+        if (error != null) {
+          return Material(
+            color: scheme.errorContainer,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 10, 8, 10),
+              child: Row(
+                children: [
+                  Icon(Icons.error_outline_rounded,
+                      size: 18, color: scheme.onErrorContainer),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      uiStrings['songsPlaybackFailed']?[locale] ??
+                          'Could not play that track.',
+                      style: TextStyle(
+                          fontSize: 12,
+                          color: scheme.onErrorContainer),
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close, size: 18),
+                    color: scheme.onErrorContainer,
+                    onPressed: player.clearError,
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
+
+        final song = player.current;
+        if (song == null) return const SizedBox.shrink();
+
+        final total = player.duration;
+        final pos = player.position;
+        final progress = total.inMilliseconds == 0
+            ? 0.0
+            : (pos.inMilliseconds / total.inMilliseconds).clamp(0.0, 1.0);
+        final trackLabel = switch (player.track) {
+          SongTrack.vocal => null,
+          SongTrack.instrumental =>
+            uiStrings['songsTrackInstrumental']?[locale] ?? 'Instrumental',
+          SongTrack.accompaniment =>
+            uiStrings['songsTrackAccompaniment']?[locale] ??
+                'Accompaniment',
+        };
+
+        return Material(
+          color: scheme.surfaceContainerHigh,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              LinearProgressIndicator(
+                value: progress,
+                minHeight: 2,
+                backgroundColor: scheme.surfaceContainerHighest,
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(14, 8, 6, 8),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            trackLabel == null
+                                ? song.title
+                                : '${song.title} · $trackLabel',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              color: scheme.onSurface,
+                            ),
+                          ),
+                          Text(
+                            '${SongPlayerService.formatDuration(pos)}'
+                            ' / '
+                            '${SongPlayerService.formatDuration(total)}',
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: scheme.onSurfaceVariant,
+                              fontFeatures: const [
+                                FontFeature.tabularFigures()
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    IconButton(
+                      icon: Icon(player.isPlaying
+                          ? Icons.pause_rounded
+                          : Icons.play_arrow_rounded),
+                      color: scheme.primary,
+                      onPressed: () =>
+                          player.toggle(song, player.track),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.stop_rounded),
+                      color: scheme.onSurfaceVariant,
+                      onPressed: player.stop,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}

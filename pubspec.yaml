@@ -87,6 +87,14 @@ dependencies:
   path_provider: ^2.1.4
   crypto: ^3.0.5
   # 2026-05-24 (v1.3.19): flutter_tts removed with the 朗读 feature.
+  # 2026-08-09 (Songs v2): audioplayers is BACK — see the v1.3.19 note
+  # above where it left with 朗读. The Songs directory now plays the
+  # church catalogues' mp3s inline instead of linking out, which the
+  # pastors who publish those sites have approved. Still preferred over
+  # just_audio here because it covers all six targets this app ships to
+  # (web/iOS/Android/macOS/Windows/Linux) from one package, where
+  # just_audio needs a separate media-kit backend for Windows + Linux.
+  audioplayers: ^6.1.0
 
 dev_dependencies:
   flutter_test:
@@ -127,6 +135,13 @@ flutter:
     - assets/sermons/refs.json
     - assets/family_tree.json
     - assets/bible_timeline.json
+    # 2026-08-09 (Songs v2): the combined church-song catalogue —
+    # 543 songs across fydt.org, cahayapengharapan.org and
+    # christiandiscipleschurch.org. Metadata + media URLs only
+    # (~570 KB); the audio/video/PDFs stream from each church's own
+    # servers and are not bundled. Regenerate with
+    # `python3 scripts/sync_songs.py`.
+    - assets/songs.json
     - assets/sermons/en/
     - assets/sermons/zh-CN/
     - assets/sermons/zh-TW/

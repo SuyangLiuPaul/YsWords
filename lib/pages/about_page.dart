@@ -613,6 +613,13 @@ class _OtherAttributions extends StatelessWidget {
             '© Liang Jia-keng · used with permission.',
       ),
       _AttribRow(
+        name: uiStrings['aboutSongs']?[locale] ?? 'Songs directory',
+        licence: uiStrings['aboutLicenseSongs']?[locale] ??
+            '© FYDT / Cahaya Pengharapan / CDC · used with permission. '
+                'Audio, video and scores stream from the source sites; '
+                'nothing is rehosted.',
+      ),
+      _AttribRow(
         name: uiStrings['aboutFontsBundled']?[locale] ??
             'Bundled font: Roboto',
         licence: uiStrings['aboutLicenseRoboto']?[locale] ??

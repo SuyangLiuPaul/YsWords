@@ -29,8 +29,8 @@ enum OfflinePackCategory {
   sermons,
 
   /// Family tree / timeline / evidence / cross-refs / section
-  /// titles / book intros / daily verses / sermon refs /
-  /// reading plans / gospel synopsis / loading + app icon (~10 MB).
+  /// titles / book intros / daily verses / sermon refs / songs /
+  /// reading plans / gospel synopsis / loading + app icon (~11 MB).
   tools,
 
   /// Strong's lexicon (concordance, Hebrew, Greek, LXX cross-
@@ -278,6 +278,12 @@ class OfflinePackService extends ChangeNotifier {
     // missing and caused the gospel synopsis fallback to fail
     // offline. (reading_plans.json removed in v1.2.69.)
     'assets/gospel_synopsis.json',
+    // 2026-08-09 (Songs v2): the catalogue itself is ~570 KB of
+    // metadata and belongs offline so the directory browses, filters
+    // and shows lyrics with no connection. The media it points at is
+    // NOT bundled — audio/video/PDFs stream from each church's own
+    // servers and need a connection.
+    'assets/songs.json',
     'assets/app_icon.png',
     'assets/loading.png',
   ];
@@ -374,7 +380,7 @@ class OfflinePackService extends ChangeNotifier {
       case OfflinePackCategory.sermons:
         return 26;
       case OfflinePackCategory.tools:
-        return 10; // includes reading_plans/synopsis/icons
+        return 11; // includes songs/reading_plans/synopsis/icons
       case OfflinePackCategory.originals:
         return 31; // 14 MB Strong's + 17 MB per-book interlinear
       case OfflinePackCategory.maps:

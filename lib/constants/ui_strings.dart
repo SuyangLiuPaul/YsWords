@@ -4259,6 +4259,24 @@ const uiStrings = {
     'zh-Hant': '© 梁家鏗 · 經授權使用。',
     'en': '© Liang Jia-keng · used with permission.',
   },
+  'aboutSongs': {
+    'zh-Hans': '诗歌列表',
+    'zh-Hant': '詩歌列表',
+    'en': 'Songs directory',
+  },
+  // 2026-08-09 (Songs v2): the old wording was "link-out only · no
+  // audio / lyrics / PDFs are embedded". That is no longer accurate —
+  // the app plays the media now. It still isn't *rehosted*, so the
+  // licence line says exactly that instead.
+  'aboutLicenseSongs': {
+    'zh-Hans': '© 福音电台 / Cahaya Pengharapan / CDC · 经授权使用。'
+        '音频、视频与乐谱均从原站串流，本应用不作转存。',
+    'zh-Hant': '© 福音電台 / Cahaya Pengharapan / CDC · 經授權使用。'
+        '音訊、影片與樂譜均從原站串流，本應用不作轉存。',
+    'en': '© FYDT / Cahaya Pengharapan / CDC · used with permission. '
+        'Audio, video and scores stream from the source sites; '
+        'nothing is rehosted.',
+  },
   'aboutFontsBundled': {
     'zh-Hans': '内置字体：Roboto',
     'zh-Hant': '內置字體：Roboto',
@@ -5332,6 +5350,174 @@ const uiStrings = {
     'zh-Hant': '按經文篩選',
     'en': 'Filter by passage',
   },
+
+  // ── Songs directory (rebuilt 2026-08-09, v2) ──────────────────
+  // These were deleted in v1.3.126 along with the feature. Restored
+  // and extended for the media set the new catalogue carries.
+  'songsPageTitle': {
+    'zh-Hans': '诗歌',
+    'zh-Hant': '詩歌',
+    'en': 'Songs',
+  },
+  'songsIntroTitle': {
+    'zh-Hans': '诗歌目录',
+    'zh-Hant': '詩歌目錄',
+    'en': 'Church Songs Directory',
+  },
+  'songsIntroBody': {
+    'zh-Hans': '来自福音电台 (fydt.org)、印尼 Cahaya Pengharapan 与 '
+        'Christian Disciples Church 的诗歌。点 ▶ 直接收听，'
+        '或打开条目查看伴奏、MV、乐谱与歌词。',
+    'zh-Hant': '來自福音電台 (fydt.org)、印尼 Cahaya Pengharapan 與 '
+        'Christian Disciples Church 的詩歌。點 ▶ 直接收聽，'
+        '或開啟條目查看伴奏、MV、樂譜與歌詞。',
+    'en': 'Songs from 福音电台 (fydt.org), Cahaya Pengharapan '
+        '(Indonesian) and Christian Disciples Church. Tap ▶ to listen, '
+        'or open an entry for the instrumental, music video, sheet '
+        'music and lyrics.',
+  },
+  'songsSearchHint': {
+    'zh-Hans': '搜索歌名、主题或编号…',
+    'zh-Hant': '搜尋歌名、主題或編號…',
+    'en': 'Search song title, theme, or code…',
+  },
+  'songsEmpty': {
+    'zh-Hans': '暂无诗歌数据。',
+    'zh-Hant': '暫無詩歌資料。',
+    'en': 'No songs available.',
+  },
+  'songsOpenFailed': {
+    'zh-Hans': '无法打开链接，请稍后再试。',
+    'zh-Hant': '無法開啟連結，請稍後再試。',
+    'en': 'Could not open the link. Please try again.',
+  },
+  'songsPlaybackFailed': {
+    'zh-Hans': '无法播放该音轨。',
+    'zh-Hant': '無法播放該音軌。',
+    'en': 'Could not play that track.',
+  },
+  'songsFilterLanguage': {
+    'zh-Hans': '语言',
+    'zh-Hant': '語言',
+    'en': 'Language',
+  },
+  'songsFilterSource': {
+    'zh-Hans': '来源',
+    'zh-Hant': '來源',
+    'en': 'Source',
+  },
+  'songsFilterTheme': {
+    'zh-Hans': '主题',
+    'zh-Hant': '主題',
+    'en': 'Theme',
+  },
+  'songsFilterMedia': {
+    'zh-Hans': '媒体',
+    'zh-Hant': '媒體',
+    'en': 'Media',
+  },
+  'songsFilterHasAudio': {
+    'zh-Hans': '有音频',
+    'zh-Hant': '有音訊',
+    'en': 'Audio',
+  },
+  'songsFilterHasVideo': {
+    'zh-Hans': '有视频',
+    'zh-Hant': '有影片',
+    'en': 'Video',
+  },
+  'songsFilterHasScore': {
+    'zh-Hans': '有乐谱',
+    'zh-Hant': '有樂譜',
+    'en': 'Score',
+  },
+  'songsPlay': {
+    'zh-Hans': '播放',
+    'zh-Hant': '播放',
+    'en': 'Play',
+  },
+  'songsPause': {
+    'zh-Hans': '暂停',
+    'zh-Hant': '暫停',
+    'en': 'Pause',
+  },
+  'songsSectionAudio': {
+    'zh-Hans': '音频',
+    'zh-Hant': '音訊',
+    'en': 'Audio',
+  },
+  'songsSectionLinks': {
+    'zh-Hans': '打开',
+    'zh-Hant': '開啟',
+    'en': 'Open',
+  },
+  'songsSectionLyrics': {
+    'zh-Hans': '歌词',
+    'zh-Hant': '歌詞',
+    'en': 'Lyrics',
+  },
+  'songsTrackVocal': {
+    'zh-Hans': '原唱',
+    'zh-Hant': '原唱',
+    'en': 'Song',
+  },
+  'songsTrackInstrumental': {
+    'zh-Hans': '伴奏',
+    'zh-Hant': '伴奏',
+    'en': 'Instrumental',
+  },
+  'songsTrackAccompaniment': {
+    'zh-Hans': '伴唱',
+    'zh-Hant': '伴唱',
+    'en': 'Accompaniment',
+  },
+  'songsWatchMv': {
+    'zh-Hans': 'MV',
+    'zh-Hant': 'MV',
+    'en': 'Music video',
+  },
+  'songsScore': {
+    'zh-Hans': '乐谱',
+    'zh-Hant': '樂譜',
+    'en': 'Sheet music',
+  },
+  'songsOpenOriginal': {
+    'zh-Hans': '原站页面',
+    'zh-Hant': '原站頁面',
+    'en': 'Original page',
+  },
+  'songsAttribution': {
+    'zh-Hans': '由本教会牧者发布。音频、视频与乐谱均从原站串流。',
+    'zh-Hant': '由本教會牧者發布。音訊、影片與樂譜均從原站串流。',
+    'en': 'Published by our church. Audio, video and sheet music '
+        'stream from the source site.',
+  },
+  'songsSortTooltip': {
+    'zh-Hans': '排序',
+    'zh-Hant': '排序',
+    'en': 'Sort',
+  },
+  'songsSortRecent': {
+    'zh-Hans': '最近更新',
+    'zh-Hant': '最近更新',
+    'en': 'Recently updated',
+  },
+  'songsSortAdded': {
+    'zh-Hans': '最近添加',
+    'zh-Hant': '最近添加',
+    'en': 'Recently added',
+  },
+  'songsSortTitle': {
+    'zh-Hans': '按标题',
+    'zh-Hant': '按標題',
+    'en': 'Title (A-Z)',
+  },
+  'songsSortSource': {
+    'zh-Hans': '按来源 / 编号',
+    'zh-Hant': '按來源 / 編號',
+    'en': 'Source / catalogue',
+  },
+
   'aiExplainHeader': {
     'zh-Hans': 'AI 释义',
     'zh-Hant': 'AI 釋義',

@@ -15,6 +15,7 @@ import 'package:yswords/pages/profile_edit_page.dart';
 import 'package:yswords/pages/profiles_page.dart';
 import 'package:yswords/pages/search_page.dart';
 import 'package:yswords/pages/sermons_page.dart';
+import 'package:yswords/pages/songs_page.dart';
 import 'package:yswords/pages/stats_page.dart';
 import 'package:yswords/pages/strongs_entry_page.dart';
 import 'package:yswords/providers/main_provider.dart';
@@ -49,6 +50,7 @@ void main() {
     'BibleTriviaPage': () => const BibleTriviaPage(),
     'EvidencePage': () => const EvidencePage(),
     'SermonsPage': () => const SermonsPage(),
+    'SongsPage': () => const SongsPage(),
     'FeedbackPage': () => const FeedbackPage(),
     'HighlightsPage': () => const HighlightsPage(),
     'ProfilesPage': () => const ProfilesPage(),

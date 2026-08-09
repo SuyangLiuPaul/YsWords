@@ -29,6 +29,7 @@ import 'package:yswords/pages/library_page.dart';
 import 'package:yswords/pages/feedback_page.dart';
 import 'package:yswords/pages/search_page.dart';
 import 'package:yswords/pages/settings_page.dart';
+import 'package:yswords/pages/songs_page.dart';
 import 'package:yswords/pages/stats_page.dart';
 import 'package:yswords/services/bible_evidence_service.dart';
 import 'package:yswords/services/sermon_service.dart';
@@ -769,6 +770,14 @@ class _DashboardPageState extends State<DashboardPage> {
                   icon: Icons.auto_awesome_rounded,
                   label: uiStrings['bibleTrivia']?[locale] ?? 'Bible Trivia',
                   onTap: () => pushPage(const BibleTriviaPage()),
+                ),
+                // 2026-08-09 (Songs v2): back after v1.3.126 removed
+                // it. Note `pushPage`, not the `Get.to` the original
+                // tile used — see the v1.4.4 note in HANDOFF.md.
+                _LinkTile(
+                  icon: Icons.library_music_rounded,
+                  label: uiStrings['songsPageTitle']?[locale] ?? 'Songs',
+                  onTap: () => pushPage(const SongsPage()),
                 ),
                 // 2026-05-07 (v12): feedback tile -- mailto-driven
                 // form page that lands directly in the developer's
