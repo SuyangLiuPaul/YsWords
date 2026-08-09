@@ -73,6 +73,15 @@ void main() {
     // `resolveSongSource` just returns the proxy URL.
     SongPlayerService.useSourceResolver(resolveSongSource);
 
+    // 2026-08-09 (Songs player): boot the platform media session so
+    // playback survives backgrounding and appears on the lock screen /
+    // CarPlay / Android Auto. Deliberately NOT awaited — it is one
+    // feature's setup and must not delay first frame for everyone
+    // else; the player degrades to no-media-session on failure rather
+    // than throwing. See SongPlayerService.init.
+    // ignore: unawaited_futures
+    SongPlayerService.init();
+
     runApp(
       MultiProvider(
         providers: [
