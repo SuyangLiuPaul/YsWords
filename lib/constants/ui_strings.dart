@@ -5396,6 +5396,14 @@ const uiStrings = {
     'zh-Hant': '無法播放該音軌。',
     'en': 'Could not play that track.',
   },
+  // The sheet borrowed the sermons page's 'sermonFilterByPassage'
+  // ("按经文筛选" / "Filter by passage"), which described only one of
+  // the five things it filters. Its own title now.
+  'songsFilterTitle': {
+    'zh-Hans': '筛选',
+    'zh-Hant': '篩選',
+    'en': 'Filter',
+  },
   'songsFilterLanguage': {
     'zh-Hans': '语言',
     'zh-Hant': '語言',

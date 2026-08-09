@@ -415,7 +415,7 @@ class _SearchAndFilterBar extends StatelessWidget {
     final searchHint = uiStrings['songsSearchHint']?[locale] ??
         'Search song title, theme, or code…';
     final filterLabel =
-        uiStrings['sermonFilterByPassage']?[locale] ?? 'Filter';
+        uiStrings['songsFilterTitle']?[locale] ?? 'Filter';
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -713,27 +713,51 @@ class _SongFilterSheetState extends State<_SongFilterSheet> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              // 2026-08-09: Apply lives in the header, not at the
+              // bottom. Adding the Media section pushed the sheet past
+              // a phone screen — with Theme and Book both expanded you
+              // had to scroll through ~60 chips to reach a button whose
+              // whole job is "I'm done". Pinning it here keeps it one
+              // tap away whatever is scrolled into view. The title uses
+              // Expanded so this row degrades by ellipsising the label
+              // rather than overflowing on a narrow phone.
               Row(
                 children: [
-                  Icon(Icons.tune,
-                      size: 18, color: scheme.primary),
+                  Icon(Icons.tune, size: 18, color: scheme.primary),
                   const SizedBox(width: 8),
-                  Text(
-                    uiStrings['sermonFilterByPassage']?[locale] ??
-                        'Filter',
-                    style: const TextStyle(
-                        fontSize: 16, fontWeight: FontWeight.w600),
+                  Expanded(
+                    child: Text(
+                      uiStrings['songsFilterTitle']?[locale] ?? 'Filter',
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                          fontSize: 16, fontWeight: FontWeight.w600),
+                    ),
                   ),
-                  const Spacer(),
                   TextButton(
                     onPressed: widget.onClear,
-                    child: Text(
-                        uiStrings['clearFilter']?[locale] ?? 'Clear'),
+                    style: TextButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(horizontal: 10),
+                      visualDensity: VisualDensity.compact,
+                      minimumSize: const Size(0, 36),
+                    ),
+                    child:
+                        Text(uiStrings['clearFilter']?[locale] ?? 'Clear'),
+                  ),
+                  const SizedBox(width: 4),
+                  FilledButton(
+                    onPressed: () => widget.onApply(
+                        _lang, _source, _theme, _book, _media),
+                    style: FilledButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      visualDensity: VisualDensity.compact,
+                      minimumSize: const Size(0, 36),
+                    ),
+                    child: Text(uiStrings['apply']?[locale] ?? 'Apply'),
                   ),
                   IconButton(
                     icon: const Icon(Icons.close, size: 20),
-                    onPressed: () =>
-                        Navigator.of(context).maybePop(),
+                    visualDensity: VisualDensity.compact,
+                    onPressed: () => Navigator.of(context).maybePop(),
                   ),
                 ],
               ),
@@ -892,13 +916,9 @@ class _SongFilterSheetState extends State<_SongFilterSheet> {
                   ),
                 ),
               ),
-              const SizedBox(height: 16),
-              FilledButton(
-                onPressed: () => widget.onApply(
-                    _lang, _source, _theme, _book, _media),
-                child: Text(
-                    uiStrings['apply']?[locale] ?? 'Apply'),
-              ),
+              // Apply moved to the header row above — see the note
+              // there. Nothing follows the Book section now, so the
+              // sheet ends as soon as the chips do.
             ],
           ),
         ),
