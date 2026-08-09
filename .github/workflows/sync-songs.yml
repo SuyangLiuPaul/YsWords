@@ -1,4 +1,4 @@
-# Weekly refresh of the bundled song-catalogue snapshot.
+# Daily refresh of the bundled song-catalogue snapshot.
 #
 # 2026-08-09: this used to re-run scripts/sync_songs.py, scraping all
 # four church sites a SECOND time — independently of the run that
@@ -23,10 +23,15 @@ name: Sync songs
 
 on:
   schedule:
-    # Mondays 02:00 UTC — after yswords-data's Sunday 18:00 sync has
-    # published, so this picks up the same week's catalogue rather
+    # Daily 02:00 UTC — eight hours after yswords-data's 18:00 sync has
+    # published, so this always picks up that day's catalogue rather
     # than the previous one.
-    - cron: '0 2 * * 1'
+    #
+    # 2026-08-10: was Mondays only, matching the then-weekly upstream.
+    # This job costs the church servers nothing — it downloads the
+    # already-published dataset from our own host — so it simply
+    # follows upstream's cadence.
+    - cron: '0 2 * * *'
   workflow_dispatch: {}
 
 permissions:

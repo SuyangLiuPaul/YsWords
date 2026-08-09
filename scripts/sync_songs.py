@@ -1081,7 +1081,8 @@ def merge(existing, new):
     return normalise(merged)
 
 
-def verify_links(songs, workers=2, delay=0.25):
+def verify_links(songs, workers=2, delay=0.25, timeout=10,
+                 abort_after_timeouts=25):
     """HEAD every media URL in the catalogue and report the dead ones.
 
     This exists because the Songs feature was pulled in v1.3.126 with
@@ -1131,7 +1132,7 @@ def verify_links(songs, workers=2, delay=0.25):
         req = urllib.request.Request(
             url, method='HEAD', headers={'User-Agent': USER_AGENT})
         try:
-            with urllib.request.urlopen(req, timeout=25) as r:
+            with urllib.request.urlopen(req, timeout=timeout) as r:
                 return t, r.status, None
         except urllib.error.HTTPError as e:
             return t, e.code, None
@@ -1141,12 +1142,34 @@ def verify_links(songs, workers=2, delay=0.25):
     print(f'\nVerifying {len(targets)} media URLs '
           f'({workers} workers)…')
     dead = []
+    checked = 0
+    consecutive_timeouts = 0
+    aborted = False
     with concurrent.futures.ThreadPoolExecutor(max_workers=workers) as pool:
         for i, (t, status, err) in enumerate(pool.map(check, targets), 1):
+            checked = i
             if status != 200:
                 dead.append((t, status, err))
+            # A run of timeouts means we are being throttled, not that
+            # the church deleted its music. Grinding through the rest
+            # costs hours (a blocked run once took 2h12m at 25s a
+            # request) and every result after this point is noise.
+            if status is None:
+                consecutive_timeouts += 1
+                if consecutive_timeouts >= abort_after_timeouts:
+                    aborted = True
+                    break
+            else:
+                consecutive_timeouts = 0
             if i % 100 == 0:
                 print(f'  …{i}/{len(targets)} checked, {len(dead)} dead')
+
+    if aborted:
+        print(f'  ! aborted after {consecutive_timeouts} consecutive '
+              f'timeouts at {checked}/{len(targets)} — the server is '
+              f'refusing us, not missing files. Not treated as a '
+              f'failure.', file=sys.stderr)
+        return 0
 
     if not dead:
         print(f'  ✓ all {len(targets)} media URLs return 200')
@@ -1156,12 +1179,16 @@ def verify_links(songs, workers=2, delay=0.25):
     # server". Only the first is the catalogue's problem; a wall of
     # timeouts means we are being throttled and the run is worthless.
     timeouts = [d for d in dead if d[1] is None]
-    if len(timeouts) > len(dead) * 0.5:
-        print(f'  ! {len(timeouts)}/{len(dead)} failures are network '
-              f'timeouts, not HTTP errors — almost certainly rate '
-              f'limiting, not rot. Re-run later before believing this.',
+    http_errors = [d for d in dead if d[1] is not None]
+    if timeouts:
+        print(f'  ! {len(timeouts)} network timeout(s) — could not reach '
+              f'the server. NOT counted as dead links: a timeout means '
+              f'we were refused, not that the file is gone.',
               file=sys.stderr)
-    print(f'  ✗ {len(dead)} unreachable URL(s):')
+    if not http_errors:
+        return 0
+    print(f'  ✗ {len(http_errors)} URL(s) returned an HTTP error:')
+    dead = http_errors
     for (_id, title, field, url), status, err in dead[:40]:
         print(f'    {status or err}  {_id}  {field}  {title[:30]}')
         print(f'      {url}')

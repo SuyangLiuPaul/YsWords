@@ -33,12 +33,12 @@ class _SongServiceImpl extends RemoteDataService<_SongBundle> {
   @override
   String get cachePrefsKey => 'songs.cachedJson.v2';
 
-  /// The upstream catalogue is re-synced weekly (Sundays 18:00 UTC),
-  /// so there is nothing to gain from pulling ~700 KB on every cold
+  /// The upstream catalogue is re-synced daily (18:00 UTC), so there
+  /// is still nothing to gain from pulling ~700 KB on every cold
   /// start. Twelve hours means a new song reaches an active user
-  /// within a day of publication while costing at most two fetches a
-  /// day; the bundled/cached copy still renders instantly, and the
-  /// Songs page's pull-to-refresh forces a fresh pull.
+  /// within half a day of publication while costing at most two
+  /// fetches a day; the bundled/cached copy still renders instantly,
+  /// and the Songs page's pull-to-refresh forces a fresh pull.
   @override
   Duration get minRefreshInterval => const Duration(hours: 12);
 

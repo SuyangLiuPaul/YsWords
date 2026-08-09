@@ -49,30 +49,19 @@ class SongPlayerService extends ChangeNotifier {
     _initStarted = true;
     final handler = SongAudioHandler();
 
-    // 2026-08-09: audio_service is NATIVE-ONLY here.
+    // 2026-08-10: audio_service is back on web.
     //
-    // On web it added a Media Session — a lock-screen card on iOS —
-    // and playback went silent from the same release. Web audio was
-    // verified working at v1.4.13 (a 206 range request and a running
-    // position, on desktop Chrome); every no-sound report arrived
-    // after v1.4.18, which is where audio_service landed. The iOS
-    // lock-screen card is itself new behaviour from audio_service_web,
-    // so the two are linked.
+    // v1.4.22 skipped it here on the theory that it had silenced web
+    // playback — the timeline fitted, but the theory was wrong and the
+    // silence persisted without it. The real cause was audioplayers_web
+    // routing audio through a suspended Web Audio context; web now
+    // uses a bare HTMLAudioElement instead (see
+    // services/playback/song_playback_engine.dart) and that whole
+    // class of problem is gone.
     //
-    // What web loses by skipping it: system media controls, which on
-    // iOS were showing a card for audio nobody could hear. What web
-    // keeps: sound. That is not a close trade.
-    //
-    // Native is untouched — it is where the lock screen, CarPlay and
-    // Android Auto actually matter, and where they are confirmed
-    // working from a real device.
-    if (kIsWeb) {
-      _handler = handler;
-      _mediaSession = false;
-      handler.revision.addListener(instance.notifyListeners);
-      return;
-    }
-
+    // audio_service_web only manages Media Session metadata — it never
+    // touches playback — so with the real cause removed there is no
+    // reason to deny web the system media controls.
     try {
       _handler = await AudioService.init(
         builder: () => handler,

@@ -5,7 +5,6 @@ import 'package:yswords/constants/ui_strings.dart';
 import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/models/song.dart';
 import 'package:yswords/models/song_playlist.dart';
-import 'package:yswords/pages/now_playing_page.dart';
 import 'package:yswords/pages/song_downloads_page.dart';
 import 'package:yswords/pages/song_playlists_page.dart';
 import 'package:yswords/services/song_download_service.dart';
@@ -228,7 +227,6 @@ class _SongsPageState extends State<SongsPage> {
                 ),
               ),
                   ),
-                  _MiniPlayer(scheme: scheme, locale: locale),
                 ],
               ),
             ),
@@ -1828,164 +1826,6 @@ class _LinkChip extends StatelessWidget {
       avatar: Icon(icon, size: 16),
       label: Text(label, style: const TextStyle(fontSize: 12)),
       onPressed: onTap,
-    );
-  }
-}
-
-/// Persistent transport pinned under the list while something is
-/// playing. Kept on the page rather than in the app shell because
-/// Songs is the only feature with audio — a global bar would be dead
-/// chrome everywhere else.
-class _MiniPlayer extends StatelessWidget {
-  final ColorScheme scheme;
-  final String locale;
-  const _MiniPlayer({required this.scheme, required this.locale});
-
-  @override
-  Widget build(BuildContext context) {
-    final player = SongPlayerService.instance;
-    return ListenableBuilder(
-      listenable: player,
-      builder: (context, _) {
-        final error = player.error;
-        if (error != null) {
-          return Material(
-            color: scheme.errorContainer,
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 10, 8, 10),
-              child: Row(
-                children: [
-                  Icon(Icons.error_outline_rounded,
-                      size: 18, color: scheme.onErrorContainer),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Text(
-                      uiStrings['songsPlaybackFailed']?[locale] ??
-                          'Could not play that track.',
-                      style: TextStyle(
-                          fontSize: 12,
-                          color: scheme.onErrorContainer),
-                    ),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.close, size: 18),
-                    color: scheme.onErrorContainer,
-                    onPressed: player.clearError,
-                  ),
-                ],
-              ),
-            ),
-          );
-        }
-
-        final song = player.current;
-        if (song == null) return const SizedBox.shrink();
-
-        final total = player.duration;
-        final pos = player.position;
-        final progress = total.inMilliseconds == 0
-            ? 0.0
-            : (pos.inMilliseconds / total.inMilliseconds).clamp(0.0, 1.0);
-        final trackLabel = switch (player.track) {
-          SongTrack.vocal => null,
-          SongTrack.instrumental =>
-            uiStrings['songsTrackInstrumental']?[locale] ?? 'Instrumental',
-          SongTrack.accompaniment =>
-            uiStrings['songsTrackAccompaniment']?[locale] ??
-                'Accompaniment',
-        };
-
-        final queue = player.queue;
-        return Material(
-          color: scheme.surfaceContainerHigh,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              LinearProgressIndicator(
-                value: progress,
-                minHeight: 2,
-                backgroundColor: scheme.surfaceContainerHighest,
-              ),
-              // The whole strip opens the full player — the standard
-              // gesture, and it keeps the transport row uncluttered
-              // for the controls that matter mid-drive.
-              InkWell(
-                onTap: () => pushPage(const NowPlayingPage()),
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(14, 8, 6, 8),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              trackLabel == null
-                                  ? song.title
-                                  : '${song.title} · $trackLabel',
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w600,
-                                color: scheme.onSurface,
-                              ),
-                            ),
-                            Text(
-                              '${SongPlayerService.formatDuration(pos)}'
-                              ' / '
-                              '${SongPlayerService.formatDuration(total)}'
-                              '${queue.length > 1 ? '  ·  ${queue.index + 1}/${queue.length}' : ''}',
-                              style: TextStyle(
-                                fontSize: 11,
-                                color: scheme.onSurfaceVariant,
-                                fontFeatures: const [
-                                  FontFeature.tabularFigures()
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      // Skip controls only appear for a real queue —
-                      // on a single song they would be dead buttons.
-                      if (queue.length > 1)
-                        IconButton(
-                          icon: const Icon(Icons.skip_previous_rounded),
-                          color: scheme.onSurfaceVariant,
-                          tooltip: uiStrings['songsPrevious']?[locale],
-                          onPressed: player.previous,
-                        ),
-                      IconButton(
-                        icon: Icon(player.isPlaying
-                            ? Icons.pause_rounded
-                            : Icons.play_arrow_rounded),
-                        color: scheme.primary,
-                        onPressed: () => player.toggle(
-                            song, player.track, player.currentUrl),
-                      ),
-                      if (queue.length > 1)
-                        IconButton(
-                          icon: const Icon(Icons.skip_next_rounded),
-                          color: scheme.onSurfaceVariant,
-                          tooltip: uiStrings['songsNext']?[locale],
-                          onPressed: player.next,
-                        )
-                      else
-                        IconButton(
-                          icon: const Icon(Icons.stop_rounded),
-                          color: scheme.onSurfaceVariant,
-                          onPressed: player.stop,
-                        ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-        );
-      },
     );
   }
 }

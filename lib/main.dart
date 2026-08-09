@@ -30,6 +30,7 @@ import 'package:yswords/services/profile_service.dart';
 import 'package:yswords/services/book_intro_service.dart';
 import 'package:yswords/services/section_title_service.dart';
 import 'package:yswords/services/song_download_service.dart';
+import 'package:yswords/widgets/global_mini_player.dart';
 import 'package:yswords/services/song_player_service.dart';
 import 'package:yswords/services/url_sync_service.dart';
 import 'package:provider/provider.dart';
@@ -813,7 +814,15 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
               // of the previous per-widget opt-in that only covered 6 of
               // ~27 list files. `scrollbars: true` is preserved.
               behavior: const AppScrollBehavior().copyWith(scrollbars: true),
-              child: child!,
+              // 2026-08-10: the playback strip is app-wide. It used to
+              // live only on the Songs page, so navigating anywhere
+              // else left a song playing with no title, no transport
+              // and no way to stop it — reported as "switch screens
+              // and I can't hear it", because a vanished player and
+              // stopped audio look identical from the outside.
+              // Wrapping here means a page added later cannot forget
+              // it. Renders nothing when nothing is playing.
+              child: GlobalMiniPlayer(child: child!),
             );
           },
           // 2026-05-24 (v1.3.21): BreadcrumbObserver auto-records

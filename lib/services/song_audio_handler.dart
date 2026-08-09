@@ -2,11 +2,11 @@ import 'dart:async';
 
 import 'package:audio_service/audio_service.dart';
 import 'package:audio_session/audio_session.dart';
-import 'package:audioplayers/audioplayers.dart' as ap;
 import 'package:flutter/foundation.dart';
 
 import 'package:yswords/models/song.dart';
 import 'package:yswords/models/song_queue.dart';
+import 'package:yswords/services/playback/song_playback_engine.dart';
 
 /// Bridges the song queue to the platform media session.
 ///
@@ -22,22 +22,31 @@ import 'package:yswords/models/song_queue.dart';
 /// media-kit backend for Windows and Linux, for no gain here.
 class SongAudioHandler extends BaseAudioHandler with SeekHandler {
   SongAudioHandler() {
-    _player.onPlayerStateChanged.listen((s) {
-      _playing = s == ap.PlayerState.playing;
+    _player.onPlaying.listen((playing) {
+      _playing = playing;
       _broadcast();
     });
-    _player.onDurationChanged.listen((d) {
+    _player.onDuration.listen((d) {
       _duration = d;
       _broadcast();
       _publishMediaItem();
     });
-    _player.onPositionChanged.listen((p) {
+    _player.onPosition.listen((p) {
       _position = p;
       _broadcast();
     });
-    // Auto-advance. `onPlayerComplete` fires only on natural end, not
-    // on stop()/pause(), so this cannot loop on user-initiated stops.
-    _player.onPlayerComplete.listen((_) => _onTrackFinished());
+    // Auto-advance. Fires only on a natural end — not on stop() or
+    // pause() — so this cannot loop on user-initiated stops.
+    _player.onComplete.listen((_) => _onTrackFinished());
+    // Web reports playback failures asynchronously from the element,
+    // long after play() returned, so they arrive here rather than as
+    // a thrown exception.
+    _player.onError.listen((message) {
+      _error = message;
+      _loading = false;
+      notifyUi();
+      _skipPastFailure();
+    });
 
     // ignore: unawaited_futures
     _configureSession();
@@ -87,7 +96,7 @@ class SongAudioHandler extends BaseAudioHandler with SeekHandler {
     }
   }
 
-  final ap.AudioPlayer _player = ap.AudioPlayer();
+  final SongPlaybackEngine _player = SongPlaybackEngine();
 
   /// Injected so this file stays free of the native-only download
   /// layer: given a song and its upstream URL, returns what to
@@ -288,10 +297,7 @@ class SongAudioHandler extends BaseAudioHandler with SeekHandler {
     // state updates or notifications — and the future is awaited
     // afterwards. Everything below this line used to happen before it.
     final resolved = sourceResolver?.call(item.song, item.url) ?? item.url;
-    final source = resolved.startsWith('/') && !kIsWeb
-        ? ap.DeviceFileSource(resolved)
-        : ap.UrlSource(resolved) as ap.Source;
-    final playing = _player.play(source);
+    final playing = _player.play(resolved);
 
     _loading = true;
     _error = null;

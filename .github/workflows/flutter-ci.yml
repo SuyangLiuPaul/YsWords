@@ -67,8 +67,22 @@ jobs:
           channel: 'stable'
           cache: true
 
+      # 2026-08-10: retried. A run failed with `Authentication error
+      # (403)` raised from HostedSource._fetchAdvisories — pub.dev's
+      # security-advisory endpoint, queried *after* the dependency
+      # solve had already succeeded. Nothing to do with our pubspec,
+      # and it cleared on its own. Three tries with a short backoff
+      # turn that class of upstream blip into a slower green run
+      # rather than a red one someone has to re-run by hand.
       - name: Pub get
-        run: flutter pub get
+        run: |
+          for attempt in 1 2 3; do
+            if flutter pub get; then exit 0; fi
+            echo "pub get failed (attempt $attempt/3) — retrying in 15s"
+            sleep 15
+          done
+          echo "pub get failed three times; not a transient blip"
+          exit 1
 
       - name: Analyze
         # v1.3.25: --no-fatal-infos REMOVED. The 2 pre-existing
