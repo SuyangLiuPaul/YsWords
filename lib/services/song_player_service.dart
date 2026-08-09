@@ -39,6 +39,17 @@ class SongPlayerService extends ChangeNotifier {
 
   static final SongPlayerService instance = SongPlayerService._();
 
+  /// Hook letting the download layer redirect playback to a local
+  /// file. Injected rather than imported so this service does not
+  /// depend on the download service — which is native-only, while
+  /// this one runs everywhere. Wired in `main.dart`.
+  static String? Function(Song song, String url)? _sourceResolver;
+
+  static void useSourceResolver(
+      String? Function(Song song, String url) resolver) {
+    _sourceResolver = resolver;
+  }
+
   final AudioPlayer _player = AudioPlayer();
 
   Song? _current;
@@ -167,7 +178,14 @@ class SongPlayerService extends ChangeNotifier {
 
     try {
       await _player.stop();
-      await _player.play(UrlSource(resolvePlaybackUrl(url)));
+      final source = _sourceResolver?.call(song, url);
+      if (source != null && source.startsWith('/')) {
+        // A downloaded file. DeviceFileSource, not UrlSource — the
+        // latter would try to treat the path as a relative URL.
+        await _player.play(DeviceFileSource(source));
+      } else {
+        await _player.play(UrlSource(source ?? resolvePlaybackUrl(url)));
+      }
     } catch (e) {
       // A dead media URL must not take the page down with it — the
       // catalogue points at three third-party servers and any of them

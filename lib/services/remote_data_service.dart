@@ -199,6 +199,14 @@ abstract class RemoteDataService<T> {
     }
   }
 
+  /// The loaded bundle, or null before the first [load] completes.
+  ///
+  /// Synchronous read-only view for callers that need a detail off the
+  /// bundle (its `generatedAt`, a count) without awaiting a second
+  /// load — e.g. a footer showing when the data was published. Never
+  /// triggers a fetch; if it is null, just don't show the detail.
+  T? get cachedOrNull => _cached;
+
   /// Reset everything (test helper / sign-out path).
   Future<void> clearCache() async {
     _cached = null;

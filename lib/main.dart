@@ -29,6 +29,8 @@ import 'package:yswords/services/fetch_verses.dart';
 import 'package:yswords/services/profile_service.dart';
 import 'package:yswords/services/book_intro_service.dart';
 import 'package:yswords/services/section_title_service.dart';
+import 'package:yswords/services/song_download_service.dart';
+import 'package:yswords/services/song_player_service.dart';
 import 'package:yswords/services/url_sync_service.dart';
 import 'package:provider/provider.dart';
 import 'package:yswords/utils/font_catalog.dart' show kCjkFontFallback;
@@ -63,6 +65,13 @@ void main() {
   runZonedGuarded<void>(() {
     WidgetsFlutterBinding.ensureInitialized();
     ErrorReporter.init();
+
+    // 2026-08-09 (Songs offline): let the player prefer a downloaded
+    // file over the network. Injected rather than imported by the
+    // player, which runs on every platform, so it stays free of the
+    // download layer's dart:io dependency. No-ops on web, where
+    // `resolveSongSource` just returns the proxy URL.
+    SongPlayerService.useSourceResolver(resolveSongSource);
 
     runApp(
       MultiProvider(

@@ -1,34 +1,108 @@
-import 'dart:convert';
-
-import 'package:flutter/services.dart';
-
 import 'package:yswords/models/song.dart';
+import 'package:yswords/services/remote_data_service.dart';
 
-/// Loads and caches the songs directory from `assets/songs.json`.
-///
-/// Single in-memory cache — first call parses the file, every later
-/// call returns the cached list. The Songs page invokes this on open
-/// so the ~570 KB parse is only paid when the user actually navigates
-/// there, not at boot.
-class SongService {
-  static List<Song>? _cache;
-  static Map<String, dynamic>? _metaCache;
+/// Bundle wrapper so the catalogue fits [RemoteDataService]'s generic
+/// `T`. Callers still work with `List<Song>`; the unwrapping happens
+/// inside the service.
+class _SongBundle {
+  final List<Song> songs;
+  final Map<String, dynamic>? meta;
+  final DateTime? generatedAt;
+  const _SongBundle(this.songs, this.meta, this.generatedAt);
+}
 
-  static Future<List<Song>> load() async {
-    if (_cache != null) return _cache!;
-    final raw = await rootBundle.loadString('assets/songs.json');
-    final data = json.decode(raw) as Map<String, dynamic>;
-    _metaCache = (data['_meta'] as Map?)?.cast<String, dynamic>();
-    final list = (data['songs'] as List)
-        .map((e) => Song.fromJson(e as Map<String, dynamic>))
+class _SongServiceImpl extends RemoteDataService<_SongBundle> {
+  static const String _defaultRemote =
+      'https://yswords-data.netlify.app/data/songs.json';
+
+  static const String _envUrl = String.fromEnvironment(
+    'SONGS_URL',
+    defaultValue: _defaultRemote,
+  );
+
+  @override
+  String get bundledAssetPath => 'assets/songs.json';
+
+  @override
+  String get remoteUrl => _envUrl;
+
+  /// `v2` — the schema gained `audioTracks` when CDC's per-language
+  /// takes were modelled. A `v1` payload cached before that would
+  /// decode fine but silently lack every alternate mix, so old caches
+  /// must be discarded rather than reused.
+  @override
+  String get cachePrefsKey => 'songs.cachedJson.v2';
+
+  /// The upstream catalogue is re-synced weekly (Sundays 18:00 UTC),
+  /// so there is nothing to gain from pulling ~700 KB on every cold
+  /// start. Twelve hours means a new song reaches an active user
+  /// within a day of publication while costing at most two fetches a
+  /// day; the bundled/cached copy still renders instantly, and the
+  /// Songs page's pull-to-refresh forces a fresh pull.
+  @override
+  Duration get minRefreshInterval => const Duration(hours: 12);
+
+  @override
+  _SongBundle parse(Map<String, dynamic> json) {
+    final songs = (json['songs'] as List? ?? const [])
+        .whereType<Map>()
+        .map((e) => Song.fromJson(Map<String, dynamic>.from(e)))
         .toList();
-    _cache = list;
-    return list;
+    final meta = json['_meta'];
+    DateTime? gen;
+    Map<String, dynamic>? metaMap;
+    if (meta is Map) {
+      metaMap = Map<String, dynamic>.from(meta);
+      final s = meta['generatedAt'];
+      if (s is String) gen = DateTime.tryParse(s);
+    }
+    return _SongBundle(songs, metaMap, gen);
+  }
+
+  @override
+  DateTime? generatedAt(_SongBundle bundle) => bundle.generatedAt;
+}
+
+/// Loads the church-songs catalogue.
+///
+/// 2026-08-09: this used to read `assets/songs.json` and nothing else,
+/// so a song added upstream only reached users when someone cut a new
+/// app build. The catalogue is now published as a dataset on
+/// yswords-data and this rides the same three-tier path the Bible
+/// Evidence archive uses:
+///
+///   1. SharedPreferences cache (last successful network fetch)
+///   2. the bundled `assets/songs.json` snapshot
+///   3. a background refresh from yswords-data
+///
+/// The first call returns instantly from cache or bundle — the network
+/// is never on the critical path — and the refreshed copy is there for
+/// the next one. Offline, or with yswords-data down, the bundled
+/// snapshot keeps the whole directory browsable.
+class SongService {
+  static final _SongServiceImpl _impl = _SongServiceImpl();
+
+  /// Never throws: falls back through cache → bundle.
+  static Future<List<Song>> load() async {
+    final bundle = await _impl.load();
+    return bundle.songs;
+  }
+
+  /// Force a network pull, e.g. from pull-to-refresh. Best-effort —
+  /// a failure leaves the current catalogue in place.
+  static Future<List<Song>> refresh() async {
+    await _impl.refresh(force: true);
+    final bundle = await _impl.load();
+    return bundle.songs;
   }
 
   /// Catalogue metadata (`generatedAt`, per-source counts, the
   /// attribution block). Null until [load] has run.
-  static Map<String, dynamic>? get meta => _metaCache;
+  static Map<String, dynamic>? get meta => _impl.cachedOrNull?.meta;
+
+  /// When the loaded catalogue was generated upstream — shown on the
+  /// page so "why don't I see the new song yet" has an answer.
+  static DateTime? get generatedAt => _impl.cachedOrNull?.generatedAt;
 
   /// Distinct theme tags, most-used first. Drives the theme chip row.
   static List<String> distinctThemes(List<Song> songs) {
@@ -72,12 +146,5 @@ class SongService {
       counts[s.source] = (counts[s.source] ?? 0) + 1;
     }
     return counts;
-  }
-
-  /// Visible for testing — drops the cache so a test can load a
-  /// different fixture.
-  static void resetCacheForTest() {
-    _cache = null;
-    _metaCache = null;
   }
 }
