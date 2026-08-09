@@ -5500,6 +5500,73 @@ const uiStrings = {
     'en': 'Published by our church. Audio, video and sheet music '
         'stream from the source site.',
   },
+  // ── Player (2026-08-09) ───────────────────────────────────────
+  'songsNowPlaying': {
+    'zh-Hans': '正在播放',
+    'zh-Hant': '正在播放',
+    'en': 'Now playing',
+  },
+  'songsNothingPlaying': {
+    'zh-Hans': '当前没有播放。',
+    'zh-Hant': '目前沒有播放。',
+    'en': 'Nothing is playing.',
+  },
+  'songsShuffle': {
+    'zh-Hans': '随机播放',
+    'zh-Hant': '隨機播放',
+    'en': 'Shuffle',
+  },
+  'songsShuffleAll': {
+    'zh-Hans': '随机播放全部',
+    'zh-Hant': '隨機播放全部',
+    'en': 'Shuffle all',
+  },
+  'songsPlayAll': {
+    'zh-Hans': '播放全部',
+    'zh-Hant': '播放全部',
+    'en': 'Play all',
+  },
+  'songsRepeat': {
+    'zh-Hans': '循环',
+    'zh-Hant': '循環',
+    'en': 'Repeat',
+  },
+  'songsNext': {
+    'zh-Hans': '下一首',
+    'zh-Hant': '下一首',
+    'en': 'Next',
+  },
+  'songsPrevious': {
+    'zh-Hans': '上一首',
+    'zh-Hant': '上一首',
+    'en': 'Previous',
+  },
+  'songsStop': {
+    'zh-Hans': '停止',
+    'zh-Hant': '停止',
+    'en': 'Stop',
+  },
+  'songsSleepTimer': {
+    'zh-Hans': '睡眠定时',
+    'zh-Hant': '睡眠定時',
+    'en': 'Sleep timer',
+  },
+  'songsSleepCancel': {
+    'zh-Hans': '取消定时',
+    'zh-Hant': '取消定時',
+    'en': 'Cancel timer',
+  },
+  'songsMinutes': {
+    'zh-Hans': '分钟',
+    'zh-Hant': '分鐘',
+    'en': 'minutes',
+  },
+  'songsQueueEmpty': {
+    'zh-Hans': '这些歌都没有可播放的音频。',
+    'zh-Hant': '這些歌都沒有可播放的音訊。',
+    'en': 'None of these songs have playable audio.',
+  },
+
   'songsSortTooltip': {
     'zh-Hans': '排序',
     'zh-Hant': '排序',

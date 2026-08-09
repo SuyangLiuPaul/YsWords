@@ -4,10 +4,12 @@ import 'package:provider/provider.dart';
 import 'package:yswords/constants/ui_strings.dart';
 import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/models/song.dart';
+import 'package:yswords/pages/now_playing_page.dart';
 import 'package:yswords/services/fetch_books.dart' show standardBookOrder;
 import 'package:yswords/services/link_opener.dart';
 import 'package:yswords/services/song_player_service.dart';
 import 'package:yswords/services/song_service.dart';
+import 'package:yswords/utils/app_nav.dart';
 import 'package:yswords/utils/responsive.dart';
 import 'package:yswords/utils/version_mapper.dart' show localeAwareBookName;
 import 'package:yswords/widgets/home_icon_button.dart';
@@ -184,6 +186,8 @@ class _SongsPageState extends State<SongsPage> {
                             setState(() => _mediaFilter = v),
                         onSortChanged: (v) =>
                             setState(() => _sort = v),
+                        onPlayAll: (shuffle) =>
+                            _playFiltered(filtered, shuffle, locale),
                       );
                     }
                     return _SongTile(
@@ -204,6 +208,45 @@ class _SongsPageState extends State<SongsPage> {
         },
       ),
     );
+  }
+
+  /// Play the songs currently matching the filter as one queue.
+  ///
+  /// Acts on the FILTER, not the whole catalogue: narrow to 安静 +
+  /// 有伴奏 and hit shuffle and you have a quiet driving playlist
+  /// without saving anything first.
+  Future<void> _playFiltered(
+      List<Song> filtered, bool shuffle, String locale) async {
+    final player = SongPlayerService.instance;
+    await player.playQueue(
+      filtered,
+      shuffle: shuffle,
+      label: _queueLabel(locale),
+    );
+    if (!mounted) return;
+    // fromSongs drops anything with no playable audio, so a filter
+    // that matched only SoundCloud-hosted rows yields an empty queue.
+    // Say so rather than appearing to do nothing.
+    if (player.queue.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(uiStrings['songsQueueEmpty']?[locale] ??
+            'None of these songs have playable audio.'),
+      ));
+    }
+  }
+
+  /// A short name for what is playing, shown on the now-playing screen
+  /// and in the OS media session.
+  String _queueLabel(String locale) {
+    final parts = <String>[
+      if (_sourceFilter != 'all') localizedSongSource(_sourceFilter, locale),
+      if (_langFilter != 'all') localizedSongLanguage(_langFilter, locale),
+      if (_themeFilter != 'all') localizedSongTheme(_themeFilter, locale),
+    ];
+    if (parts.isEmpty) {
+      return uiStrings['songsPageTitle']?[locale] ?? 'Songs';
+    }
+    return parts.join(' · ');
   }
 
   /// Set of English book names that at least one song's `verse`
@@ -387,6 +430,8 @@ class _SearchAndFilterBar extends StatelessWidget {
   final ValueChanged<String> onBookChanged;
   final ValueChanged<String> onMediaChanged;
   final ValueChanged<String> onSortChanged;
+  /// Play the current filter result; the bool is 'shuffled'.
+  final void Function(bool shuffle) onPlayAll;
 
   const _SearchAndFilterBar({
     required this.settings,
@@ -414,6 +459,7 @@ class _SearchAndFilterBar extends StatelessWidget {
     required this.onBookChanged,
     required this.onMediaChanged,
     required this.onSortChanged,
+    required this.onPlayAll,
   });
 
   @override
@@ -546,13 +592,51 @@ class _SearchAndFilterBar extends StatelessWidget {
           ),
         ],
         const SizedBox(height: 6),
-        Text(
-          '$matchCount / $totalCount',
-          style: TextStyle(
-            fontSize: 11,
-            color: scheme.onSurfaceVariant,
-            fontFeatures: const [FontFeature.tabularFigures()],
-          ),
+        // Wrap, not Row: at 320px the count plus two labelled buttons
+        // overflows by ~2px, and a hard Row would throw. Wrapping lets
+        // the buttons drop to their own line on the narrowest phones
+        // instead.
+        Wrap(
+          alignment: WrapAlignment.spaceBetween,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          runSpacing: 4,
+          children: [
+            Text(
+              '$matchCount / $totalCount',
+              style: TextStyle(
+                fontSize: 11,
+                color: scheme.onSurfaceVariant,
+                fontFeatures: const [FontFeature.tabularFigures()],
+              ),
+            ),
+            Row(mainAxisSize: MainAxisSize.min, children: [
+            // These act on the CURRENT FILTER, not the whole
+            // catalogue — "shuffle" after narrowing to 安静 + 有伴奏
+            // is the quiet-driving playlist, without needing to save
+            // anything first.
+            TextButton.icon(
+              style: TextButton.styleFrom(
+                visualDensity: VisualDensity.compact,
+                padding: const EdgeInsets.symmetric(horizontal: 10),
+              ),
+              icon: const Icon(Icons.play_arrow_rounded, size: 18),
+              label: Text(uiStrings['songsPlayAll']?[locale] ?? 'Play all',
+                  style: const TextStyle(fontSize: 12)),
+              onPressed: matchCount == 0 ? null : () => onPlayAll(false),
+            ),
+            TextButton.icon(
+              style: TextButton.styleFrom(
+                visualDensity: VisualDensity.compact,
+                padding: const EdgeInsets.symmetric(horizontal: 10),
+              ),
+              icon: const Icon(Icons.shuffle_rounded, size: 18),
+              label: Text(
+                  uiStrings['songsShuffle']?[locale] ?? 'Shuffle',
+                  style: const TextStyle(fontSize: 12)),
+              onPressed: matchCount == 0 ? null : () => onPlayAll(true),
+            ),
+            ]),
+          ],
         ),
       ],
     );
@@ -1647,6 +1731,7 @@ class _MiniPlayer extends StatelessWidget {
                 'Accompaniment',
         };
 
+        final queue = player.queue;
         return Material(
           color: scheme.surfaceContainerHigh,
           child: Column(
@@ -1657,56 +1742,80 @@ class _MiniPlayer extends StatelessWidget {
                 minHeight: 2,
                 backgroundColor: scheme.surfaceContainerHighest,
               ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(14, 8, 6, 8),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            trackLabel == null
-                                ? song.title
-                                : '${song.title} · $trackLabel',
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
-                              color: scheme.onSurface,
+              // The whole strip opens the full player — the standard
+              // gesture, and it keeps the transport row uncluttered
+              // for the controls that matter mid-drive.
+              InkWell(
+                onTap: () => pushPage(const NowPlayingPage()),
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(14, 8, 6, 8),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              trackLabel == null
+                                  ? song.title
+                                  : '${song.title} · $trackLabel',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                                color: scheme.onSurface,
+                              ),
                             ),
-                          ),
-                          Text(
-                            '${SongPlayerService.formatDuration(pos)}'
-                            ' / '
-                            '${SongPlayerService.formatDuration(total)}',
-                            style: TextStyle(
-                              fontSize: 11,
-                              color: scheme.onSurfaceVariant,
-                              fontFeatures: const [
-                                FontFeature.tabularFigures()
-                              ],
+                            Text(
+                              '${SongPlayerService.formatDuration(pos)}'
+                              ' / '
+                              '${SongPlayerService.formatDuration(total)}'
+                              '${queue.length > 1 ? '  ·  ${queue.index + 1}/${queue.length}' : ''}',
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: scheme.onSurfaceVariant,
+                                fontFeatures: const [
+                                  FontFeature.tabularFigures()
+                                ],
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
-                    IconButton(
-                      icon: Icon(player.isPlaying
-                          ? Icons.pause_rounded
-                          : Icons.play_arrow_rounded),
-                      color: scheme.primary,
-                      onPressed: () =>
-                          player.toggle(song, player.track),
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.stop_rounded),
-                      color: scheme.onSurfaceVariant,
-                      onPressed: player.stop,
-                    ),
-                  ],
+                      // Skip controls only appear for a real queue —
+                      // on a single song they would be dead buttons.
+                      if (queue.length > 1)
+                        IconButton(
+                          icon: const Icon(Icons.skip_previous_rounded),
+                          color: scheme.onSurfaceVariant,
+                          tooltip: uiStrings['songsPrevious']?[locale],
+                          onPressed: player.previous,
+                        ),
+                      IconButton(
+                        icon: Icon(player.isPlaying
+                            ? Icons.pause_rounded
+                            : Icons.play_arrow_rounded),
+                        color: scheme.primary,
+                        onPressed: () => player.toggle(
+                            song, player.track, player.currentUrl),
+                      ),
+                      if (queue.length > 1)
+                        IconButton(
+                          icon: const Icon(Icons.skip_next_rounded),
+                          color: scheme.onSurfaceVariant,
+                          tooltip: uiStrings['songsNext']?[locale],
+                          onPressed: player.next,
+                        )
+                      else
+                        IconButton(
+                          icon: const Icon(Icons.stop_rounded),
+                          color: scheme.onSurfaceVariant,
+                          onPressed: player.stop,
+                        ),
+                    ],
+                  ),
                 ),
               ),
             ],
