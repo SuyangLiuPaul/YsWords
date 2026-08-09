@@ -222,12 +222,10 @@
       var unregisterCount = 0;
       var swPromise = ('serviceWorker' in navigator)
         ? navigator.serviceWorker.getRegistrations().then(function(regs) {
-            var stale = regs.filter(function(r) {
-              var url = (r.active && r.active.scriptURL) ||
-                        (r.installing && r.installing.scriptURL) ||
-                        (r.waiting && r.waiting.scriptURL) || '';
-              return url.indexOf(MEDIA_SW) === -1;
-            });
+            // Sweep EVERY worker, including the old media one — see
+            // the note further down for why that worker is gone. This
+            // is what removes it from installs that already have it.
+            var stale = regs;
             unregisterCount = stale.length;
             return Promise.all(stale.map(function(r) {
               return r.unregister().catch(function() {});
@@ -250,15 +248,31 @@
       Promise.all([swPromise, cachePromise]).then(function() {
         if (unregisterCount > 0) maybeReload();
 
-        // Register the media worker only AFTER the sweep, so it is not
-        // caught by its own cleanup on a first run.
-        if ('serviceWorker' in navigator) {
-          navigator.serviceWorker
-            .register(MEDIA_SW, { scope: '/song-media/' })
-            .catch(function() {
-              // Offline media is a bonus; streaming still works
-              // without it, so a failure here is not worth surfacing.
-            });
+        // The media Service Worker is GONE — deliberately.
+        //
+        // It was registered with `scope: '/song-media/'`, and a
+        // worker's scope decides which PAGES it controls, not which
+        // requests it is allowed to see. The app is served from '/',
+        // so it controlled nothing and its fetch handler never ran
+        // once: dead from the day it shipped. Verified in a browser —
+        // `serviceWorker.controller` was null and media came back
+        // from Netlify.
+        //
+        // Widening it to '/' does not work either: Flutter's own
+        // generated worker claims root scope, and two scripts cannot
+        // share one scope — the later registration simply replaces
+        // the earlier. Competing for it would trade offline media for
+        // a stale app shell.
+        //
+        // Web offline playback now reads Cache Storage directly and
+        // hands the audio element a blob URL (see
+        // lib/services/song_download_web.dart). Nothing in the fetch
+        // path, nothing to claim, and no Range-request handling
+        // needed because a blob URL is not fetched over HTTP.
+        //
+        // The `song-media-` cache exemption in the sweep above stays:
+        // that bucket is where downloads live.
+      });
         }
       });
     })();
