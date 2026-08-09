@@ -155,26 +155,14 @@ class ParagraphGroupWidget extends StatelessWidget {
             bgColor = highlightColor.withValues(alpha: 0.35);
           }
 
-          // 2026-05-17 (v1.2.51): paragraph mode hides the target
-          // verse inside a continuous block of text — even with
-          // the primaryContainer wash (v1.2.50) it can be hard to
-          // spot mid-paragraph at a glance. Inline arrow marker
-          // before the verse number when isHighlighted draws the
-          // eye to the exact spot. Auto-clears with the highlight
-          // after 3.5 s (bible_reading_pane.dart's tryJump).
-          if (isHighlighted) {
-            allSpans.add(WidgetSpan(
-              alignment: PlaceholderAlignment.middle,
-              child: Padding(
-                padding: const EdgeInsets.only(right: 3),
-                child: Icon(
-                  Icons.east_rounded,
-                  size: settings.fontSize * 0.9,
-                  color: Theme.of(context).colorScheme.primary,
-                ),
-              ),
-            ));
-          }
+          // 2026-08-09: the inline → marker is REMOVED at the user's
+          // request. It was added in v1.2.51 on the reasoning that the
+          // primaryContainer wash alone was hard to spot mid-paragraph;
+          // in practice the wash reads clearly on its own, and an arrow
+          // sitting inside the running text interrupts the sentence it
+          // is pointing at. The wash and its 3.5 s auto-clear are
+          // unchanged, so the jump target is still marked — just not
+          // with a glyph spliced into the verse.
           if (isBookmarked) {
             allSpans.add(WidgetSpan(
               alignment: PlaceholderAlignment.middle,

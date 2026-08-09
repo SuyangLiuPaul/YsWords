@@ -93,17 +93,30 @@ const bibleVersions = <BibleVersionInfo>[
     // 2026-08-04: sub-line removed — see the 简体 entry above.
     narrowLabel: '雅偉版',
   ),
+  // 2026-08-09: these were the only Chinese editions with NO narrowLabel,
+  // so the top-bar pill had nothing shorter to fall back to and cut
+  // "梁家铿(简)" down to "梁家…" — which names neither the translator nor
+  // the script, the two things the label exists to carry. Worse, BOTH rows
+  // truncated to the identical "梁家…", so the 简/繁 distinction — the only
+  // thing separating them — was exactly what got cut.
+  //
+  // 梁简 / 梁繁 at the user's request. The 雅伟版 rows above have carried a
+  // narrowLabel since v1.3.160 for precisely this reason; this is that fix
+  // reaching the two rows it missed. The wide labels are unchanged, because
+  // "梁家铿(简)" is the right thing to show when there is room for it.
   BibleVersionInfo(
     value: 'biblexg-v2',
     shortLabel: '梁家铿(简)',
     menuLabel: '梁家铿译本(简体)',
     language: 'zh-Hans',
+    narrowLabel: '梁简',
   ),
   BibleVersionInfo(
     value: 'biblexg-v2-tr',
     shortLabel: '梁家铿(繁)',
     menuLabel: '梁家铿譯本(繁體)',
     language: 'zh-Hant',
+    narrowLabel: '梁繁',
   ),
 ];
 
