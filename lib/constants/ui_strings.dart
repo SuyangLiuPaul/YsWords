@@ -5500,6 +5500,130 @@ const uiStrings = {
     'en': 'Published by our church. Audio, video and sheet music '
         'stream from the source site.',
   },
+  // ── Downloads (2026-08-09) ────────────────────────────────────
+  'songsDownloads': {
+    'zh-Hans': '离线下载',
+    'zh-Hant': '離線下載',
+    'en': 'Downloads',
+  },
+  'songsDownload': {
+    'zh-Hans': '下载',
+    'zh-Hant': '下載',
+    'en': 'Download',
+  },
+  'songsDownloadFiltered': {
+    'zh-Hans': '下载当前筛选结果',
+    'zh-Hant': '下載目前篩選結果',
+    'en': 'Download these songs',
+  },
+  'songsNoDownloads': {
+    'zh-Hans': '还没有下载任何诗歌。',
+    'zh-Hant': '還沒有下載任何詩歌。',
+    'en': 'Nothing downloaded yet.',
+  },
+  'songsDeleteAll': {
+    'zh-Hans': '全部删除',
+    'zh-Hant': '全部刪除',
+    'en': 'Delete all',
+  },
+  'songsDeleteAllBody': {
+    'zh-Hans': '从本机删除所有已下载的诗歌？随时可以重新下载。',
+    'zh-Hant': '從本機刪除所有已下載的詩歌？隨時可以重新下載。',
+    'en': 'Remove every downloaded song from this device? They can be '
+        'downloaded again at any time.',
+  },
+  'songsDownloadsWebOnly': {
+    'zh-Hans': '离线下载只在 App 里可用，网页版不行 —— 浏览器没有可管理的存储空间，'
+        '而整个目录约 2.5 GB 音频。',
+    'zh-Hant': '離線下載只在 App 裡可用，網頁版不行 —— 瀏覽器沒有可管理的儲存空間，'
+        '而整個目錄約 2.5 GB 音訊。',
+    'en': 'Downloads are available in the app, not the browser. A web '
+        'page has no storage this can manage, and the catalogue is '
+        'around 2.5 GB of audio.',
+  },
+  'songsDownloadStarted': {
+    'zh-Hans': '已加入下载队列。',
+    'zh-Hant': '已加入下載佇列。',
+    'en': 'Added to the download queue.',
+  },
+  'songsDownloadSize': {
+    'zh-Hans': '约',
+    'zh-Hant': '約',
+    'en': 'about',
+  },
+
+  // ── Playlists (2026-08-09) ────────────────────────────────────
+  'songsPlaylists': {
+    'zh-Hans': '歌单',
+    'zh-Hant': '歌單',
+    'en': 'Playlists',
+  },
+  'songsFavourites': {
+    'zh-Hans': '收藏',
+    'zh-Hant': '收藏',
+    'en': 'Favourites',
+  },
+  'songsNewPlaylist': {
+    'zh-Hans': '新建歌单',
+    'zh-Hant': '新建歌單',
+    'en': 'New playlist',
+  },
+  'songsAddToPlaylist': {
+    'zh-Hans': '加入歌单',
+    'zh-Hant': '加入歌單',
+    'en': 'Add to playlist',
+  },
+  'songsSmartPlaylist': {
+    'zh-Hans': '智能歌单',
+    'zh-Hant': '智慧歌單',
+    'en': 'saved filter',
+  },
+  'songsSavedPlaylist': {
+    'zh-Hans': '已保存为歌单。',
+    'zh-Hant': '已儲存為歌單。',
+    'en': 'Saved as a playlist.',
+  },
+  'songsSaveFilter': {
+    'zh-Hans': '把当前筛选存为歌单',
+    'zh-Hant': '把目前篩選存為歌單',
+    'en': 'Save this filter as a playlist',
+  },
+  'songsDeletePlaylist': {
+    'zh-Hans': '删除这个歌单？诗歌本身不会被删除。',
+    'zh-Hant': '刪除這個歌單？詩歌本身不會被刪除。',
+    'en': 'Delete this playlist? The songs themselves are not removed.',
+  },
+  'songsTrackPreference': {
+    'zh-Hans': '播放音轨',
+    'zh-Hant': '播放音軌',
+    'en': 'Track preference',
+  },
+  'songsSkipMissing': {
+    'zh-Hans': '没有的跳过',
+    'zh-Hant': '沒有的跳過',
+    'en': 'skip if missing',
+  },
+  'songsFallbackVocal': {
+    'zh-Hans': '没有则原唱',
+    'zh-Hant': '沒有則原唱',
+    'en': 'else the sung take',
+  },
+  'rename': {
+    'zh-Hans': '重命名',
+    'zh-Hant': '重新命名',
+    'en': 'Rename',
+  },
+  'delete': {
+    'zh-Hans': '删除',
+    'zh-Hant': '刪除',
+    'en': 'Delete',
+  },
+  'create': {
+    'zh-Hans': '创建',
+    'zh-Hant': '建立',
+    'en': 'Create',
+  },
+
   // ── Player (2026-08-09) ───────────────────────────────────────
   'songsNowPlaying': {
     'zh-Hans': '正在播放',

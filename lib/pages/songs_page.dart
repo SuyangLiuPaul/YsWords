@@ -4,7 +4,13 @@ import 'package:provider/provider.dart';
 import 'package:yswords/constants/ui_strings.dart';
 import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/models/song.dart';
+import 'package:yswords/models/song_playlist.dart';
 import 'package:yswords/pages/now_playing_page.dart';
+import 'package:yswords/pages/song_downloads_page.dart';
+import 'package:yswords/pages/song_playlists_page.dart';
+import 'package:yswords/services/song_download_service.dart';
+import 'package:yswords/services/song_download_types.dart';
+import 'package:yswords/services/song_playlist_service.dart';
 import 'package:yswords/services/fetch_books.dart' show standardBookOrder;
 import 'package:yswords/services/link_opener.dart';
 import 'package:yswords/services/song_player_service.dart';
@@ -103,7 +109,21 @@ class _SongsPageState extends State<SongsPage> {
         // its pre-deletion snapshot brought back an AppBar that had
         // missed the change. Every other page pairs it with the home
         // button — match them.
-        actions: const [LanguageSwitcherButton(), HomeIconButton()],
+        actions: [
+          if (SongDownloadService.isSupported)
+            IconButton(
+              icon: const Icon(Icons.download_for_offline_outlined),
+              tooltip: uiStrings['songsDownloads']?[locale] ?? 'Downloads',
+              onPressed: () => pushPage(const SongDownloadsPage()),
+            ),
+          IconButton(
+            icon: const Icon(Icons.queue_music_rounded),
+            tooltip: uiStrings['songsPlaylists']?[locale] ?? 'Playlists',
+            onPressed: () => pushPage(const SongPlaylistsPage()),
+          ),
+          const LanguageSwitcherButton(),
+          const HomeIconButton(),
+        ],
       ),
       body: FutureBuilder<List<Song>>(
         future: _future,
@@ -193,6 +213,9 @@ class _SongsPageState extends State<SongsPage> {
                             setState(() => _sort = v),
                         onPlayAll: (shuffle) =>
                             _playFiltered(filtered, shuffle, locale),
+                        onSaveFilter: () => _saveFilterAsPlaylist(locale),
+                        onDownloadAll: () =>
+                            _downloadFiltered(filtered, locale),
                       );
                     }
                     return _SongTile(
@@ -238,6 +261,112 @@ class _SongsPageState extends State<SongsPage> {
             'None of these songs have playable audio.'),
       ));
     }
+  }
+
+  /// Queue the filtered songs for offline download, after telling the
+  /// user what it will cost.
+  ///
+  /// The size is an ESTIMATE from duration at ~128 kbps — the
+  /// catalogue does not publish file sizes, and quoting a precise
+  /// figure we cannot know would be worse than admitting the range.
+  /// Downloading all 559 would be multiple gigabytes, so the number
+  /// goes in front of the decision, not after it.
+  Future<void> _downloadFiltered(List<Song> filtered, String locale) async {
+    final service = SongDownloadService.instance;
+    await service.init();
+    final pending =
+        filtered.where((s) => s.hasPlayableAudio && !service.isDownloaded(s));
+    final count = pending.length;
+    if (count == 0) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(uiStrings['songsNoDownloads']?[locale] ??
+            'Nothing to download.'),
+      ));
+      return;
+    }
+    final size = SongDownloadService.estimateBytes(pending);
+    if (!mounted) return;
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(
+            uiStrings['songsDownloadFiltered']?[locale] ?? 'Download'),
+        content: Text('$count · '
+            '${uiStrings['songsDownloadSize']?[locale] ?? 'about'} '
+            '${formatDownloadBytes(size)}'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: Text(uiStrings['cancel']?[locale] ?? 'Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: Text(uiStrings['songsDownload']?[locale] ?? 'Download'),
+          ),
+        ],
+      ),
+    );
+    if (ok != true) return;
+    await service.enqueue(pending);
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text(uiStrings['songsDownloadStarted']?[locale] ??
+          'Added to the download queue.'),
+      action: SnackBarAction(
+        label: uiStrings['songsDownloads']?[locale] ?? 'Downloads',
+        onPressed: () => pushPage(const SongDownloadsPage()),
+      ),
+    ));
+  }
+
+  /// Save the active filter as a smart playlist.
+  ///
+  /// Deliberately saves the FILTER, not the songs it currently
+  /// matches: 63 songs joined the catalogue in one sync this week, and
+  /// a snapshot taken beforehand would have quietly gone stale.
+  Future<void> _saveFilterAsPlaylist(String locale) async {
+    final suggested = _queueLabel(locale);
+    final controller = TextEditingController(text: suggested);
+    final name = await showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(uiStrings['songsSaveFilter']?[locale] ??
+            'Save this filter as a playlist'),
+        content: TextField(controller: controller, autofocus: true),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: Text(uiStrings['cancel']?[locale] ?? 'Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(ctx).pop(controller.text),
+            child: Text(uiStrings['save']?[locale] ?? 'Save'),
+          ),
+        ],
+      ),
+    );
+    if (name == null || name.trim().isEmpty) return;
+
+    await SongPlaylistService.instance.create(
+      name,
+      filter: PlaylistFilter(
+        language: _langFilter,
+        source: _sourceFilter,
+        theme: _themeFilter,
+        book: _bookFilter,
+        media: _mediaFilter,
+        query: _query,
+      ),
+    );
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text(uiStrings['songsSavedPlaylist']?[locale] ?? 'Saved.'),
+      action: SnackBarAction(
+        label: uiStrings['songsPlaylists']?[locale] ?? 'Playlists',
+        onPressed: () => pushPage(const SongPlaylistsPage()),
+      ),
+    ));
   }
 
   /// A short name for what is playing, shown on the now-playing screen
@@ -437,6 +566,10 @@ class _SearchAndFilterBar extends StatelessWidget {
   final ValueChanged<String> onSortChanged;
   /// Play the current filter result; the bool is 'shuffled'.
   final void Function(bool shuffle) onPlayAll;
+  /// Save the active filter as a smart playlist.
+  final VoidCallback onSaveFilter;
+  /// Queue the filtered songs for offline download.
+  final VoidCallback onDownloadAll;
 
   const _SearchAndFilterBar({
     required this.settings,
@@ -465,6 +598,8 @@ class _SearchAndFilterBar extends StatelessWidget {
     required this.onMediaChanged,
     required this.onSortChanged,
     required this.onPlayAll,
+    required this.onSaveFilter,
+    required this.onDownloadAll,
   });
 
   @override
@@ -640,6 +775,21 @@ class _SearchAndFilterBar extends StatelessWidget {
                   style: const TextStyle(fontSize: 12)),
               onPressed: matchCount == 0 ? null : () => onPlayAll(true),
             ),
+            // Saving the FILTER, not the 559 rows it currently
+            // matches — the list stays correct as the catalogue grows.
+            IconButton(
+              icon: const Icon(Icons.bookmark_add_outlined, size: 18),
+              visualDensity: VisualDensity.compact,
+              tooltip: uiStrings['songsSaveFilter']?[locale],
+              onPressed: hasActiveFilter ? onSaveFilter : null,
+            ),
+            if (SongDownloadService.isSupported)
+              IconButton(
+                icon: const Icon(Icons.download_rounded, size: 18),
+                visualDensity: VisualDensity.compact,
+                tooltip: uiStrings['songsDownloadFiltered']?[locale],
+                onPressed: matchCount == 0 ? null : onDownloadAll,
+              ),
             ]),
           ],
         ),
@@ -1210,6 +1360,9 @@ class _SongTile extends StatelessWidget {
                   ],
                 ),
               ),
+              // Offline state, when this platform has downloads.
+              if (SongDownloadService.isSupported)
+                _DownloadIndicator(song: song, scheme: scheme),
               // Medium indicators, so the row says what it holds
               // before you open it.
               if (song.hasVideo)
@@ -1399,6 +1552,12 @@ class _SongDetailSheet extends StatelessWidget {
                         ),
                       ],
                     ),
+                  ),
+                  _FavouriteButton(song: song, locale: locale),
+                  IconButton(
+                    icon: const Icon(Icons.playlist_add_rounded, size: 22),
+                    tooltip: uiStrings['songsAddToPlaylist']?[locale],
+                    onPressed: () => _showAddToPlaylist(context, song, locale),
                   ),
                   IconButton(
                     icon: const Icon(Icons.close, size: 20),
@@ -1826,6 +1985,172 @@ class _MiniPlayer extends StatelessWidget {
             ],
           ),
         );
+      },
+    );
+  }
+}
+
+/// One-tap favourite toggle.
+///
+/// Favourites is an ordinary playlist with a reserved id, so this is
+/// just a shortcut into the same store the Playlists page reads —
+/// no parallel state to keep in sync.
+class _FavouriteButton extends StatelessWidget {
+  final Song song;
+  final String locale;
+  const _FavouriteButton({required this.song, required this.locale});
+
+  @override
+  Widget build(BuildContext context) {
+    final service = SongPlaylistService.instance;
+    final scheme = Theme.of(context).colorScheme;
+    return ListenableBuilder(
+      listenable: service,
+      builder: (context, _) {
+        final on = service.isFavourite(song);
+        return IconButton(
+          icon: Icon(
+            on ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+            size: 22,
+            color: on ? scheme.error : null,
+          ),
+          tooltip: uiStrings['songsFavourites']?[locale] ?? 'Favourites',
+          onPressed: () => service.toggleFavourite(song),
+        );
+      },
+    );
+  }
+}
+
+/// Pick which playlists a song belongs to.
+///
+/// Smart playlists are listed but not selectable: their membership
+/// comes from a saved filter, so "add" would be a lie. Saying why is
+/// better than hiding them and leaving the user wondering where their
+/// playlist went.
+void _showAddToPlaylist(BuildContext context, Song song, String locale) {
+  final service = SongPlaylistService.instance;
+  service.load();
+  showModalBottomSheet<void>(
+    context: context,
+    builder: (sheetCtx) => SafeArea(
+      child: ListenableBuilder(
+        listenable: service,
+        builder: (context, _) {
+          final playlists = service.ordered;
+          final containing = service.playlistIdsContaining(song);
+          return ListView(
+            shrinkWrap: true,
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 14, 16, 6),
+                child: Text(
+                  uiStrings['songsAddToPlaylist']?[locale] ??
+                      'Add to playlist',
+                  style: const TextStyle(
+                      fontSize: 15, fontWeight: FontWeight.w600),
+                ),
+              ),
+              for (final p in playlists)
+                ListTile(
+                  enabled: !p.isSmart,
+                  leading: Icon(
+                    p.isFavourites
+                        ? Icons.favorite_rounded
+                        : (p.isSmart
+                            ? Icons.auto_awesome_motion_rounded
+                            : Icons.queue_music_rounded),
+                  ),
+                  title: Text(p.isFavourites
+                      ? (uiStrings['songsFavourites']?[locale] ??
+                          'Favourites')
+                      : p.name),
+                  subtitle: p.isSmart
+                      ? Text(uiStrings['songsSmartPlaylist']?[locale] ??
+                          'saved filter')
+                      : null,
+                  trailing: containing.contains(p.id)
+                      ? const Icon(Icons.check_rounded)
+                      : null,
+                  onTap: p.isSmart
+                      ? null
+                      : () {
+                          containing.contains(p.id)
+                              ? service.removeSong(p, song)
+                              : service.addSong(p, song);
+                        },
+                ),
+              const Divider(height: 1),
+              ListTile(
+                leading: const Icon(Icons.add_rounded),
+                title: Text(uiStrings['songsNewPlaylist']?[locale] ??
+                    'New playlist'),
+                onTap: () async {
+                  final created = await service.create(song.title);
+                  await service.addSong(created, song);
+                },
+              ),
+            ],
+          );
+        },
+      ),
+    ),
+  );
+}
+
+/// Per-row offline state: a tick when stored, a ring while fetching,
+/// nothing at all otherwise.
+///
+/// Deliberately quiet — most rows are not downloaded and an icon on
+/// every one of 559 would be noise. Only says something when there is
+/// something to say.
+class _DownloadIndicator extends StatelessWidget {
+  final Song song;
+  final ColorScheme scheme;
+  const _DownloadIndicator({required this.song, required this.scheme});
+
+  @override
+  Widget build(BuildContext context) {
+    final service = SongDownloadService.instance;
+    return ListenableBuilder(
+      listenable: service,
+      builder: (context, _) {
+        final status = service.statusOf(song);
+        switch (status.state) {
+          case SongDownloadState.done:
+            return Padding(
+              padding: const EdgeInsets.only(right: 4),
+              child: Icon(Icons.download_done_rounded,
+                  size: 16, color: scheme.primary),
+            );
+          case SongDownloadState.downloading:
+            return Padding(
+              padding: const EdgeInsets.only(right: 4),
+              child: SizedBox(
+                width: 14,
+                height: 14,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  value: status.progress,
+                  color: scheme.primary,
+                ),
+              ),
+            );
+          case SongDownloadState.queued:
+            return Padding(
+              padding: const EdgeInsets.only(right: 4),
+              child: Icon(Icons.schedule_rounded,
+                  size: 15, color: scheme.onSurfaceVariant),
+            );
+          case SongDownloadState.failed:
+            return Padding(
+              padding: const EdgeInsets.only(right: 4),
+              child: Icon(Icons.error_outline_rounded,
+                  size: 15, color: scheme.error),
+            );
+          case SongDownloadState.none:
+            return const SizedBox.shrink();
+        }
       },
     );
   }

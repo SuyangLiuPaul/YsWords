@@ -16,6 +16,8 @@ import 'package:yswords/pages/profiles_page.dart';
 import 'package:yswords/pages/search_page.dart';
 import 'package:yswords/pages/sermons_page.dart';
 import 'package:yswords/pages/now_playing_page.dart';
+import 'package:yswords/pages/song_downloads_page.dart';
+import 'package:yswords/pages/song_playlists_page.dart';
 import 'package:yswords/pages/songs_page.dart';
 import 'package:yswords/pages/stats_page.dart';
 import 'package:yswords/pages/strongs_entry_page.dart';
@@ -55,6 +57,8 @@ void main() {
     // Renders its empty state with nothing playing, which is the
     // layout most likely to be wrong at 320px.
     'NowPlayingPage': () => const NowPlayingPage(),
+    'SongPlaylistsPage': () => const SongPlaylistsPage(),
+    'SongDownloadsPage': () => const SongDownloadsPage(),
     'FeedbackPage': () => const FeedbackPage(),
     'HighlightsPage': () => const HighlightsPage(),
     'ProfilesPage': () => const ProfilesPage(),
