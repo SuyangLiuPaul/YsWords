@@ -31,8 +31,10 @@ Sources
 
   cdc     https://www.christiandiscipleschurch.org — English + Chinese
           Drupal 7, no API of any kind. The integrated-list-songs view
-          gives (title, code) rows; mp3/PDF URLs are derived from the
-          code and verified to resolve.
+          gives (title, code) rows; each song's own page is then read
+          for its real media links. An earlier version DERIVED those
+          from the catalogue code and got it badly wrong — see
+          [fetch_cdc] for what that cost.
 
   fuyindiantai.org is deliberately NOT fetched. It is fydt.org's old
   domain (it 301'd to fydt.org through 2025) and its DNS delegation is
@@ -59,7 +61,26 @@ import urllib.parse
 import urllib.request
 
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-SONGS_JSON = os.path.join(REPO_ROOT, 'assets', 'songs.json')
+
+
+def _default_out():
+    """Where the catalogue lands, picked from the repo layout.
+
+    The same script runs in two repos: here in yswords-data, where the
+    catalogue is a published dataset under `data/`, and in the YsWords
+    app repo, where it is a bundled Flutter asset under `assets/`.
+    Rather than fork the script, detect which tree we are in — and let
+    `--out` / `$SONGS_OUT` override either way.
+    """
+    override = os.environ.get('SONGS_OUT')
+    if override:
+        return os.path.abspath(override)
+    if os.path.isdir(os.path.join(REPO_ROOT, 'data')):
+        return os.path.join(REPO_ROOT, 'data', 'songs.json')
+    return os.path.join(REPO_ROOT, 'assets', 'songs.json')
+
+
+SONGS_JSON = _default_out()
 
 USER_AGENT = 'YsWordsSongsSyncBot/2.0 (+https://yswords.netlify.app)'
 
@@ -334,11 +355,14 @@ def _now_iso():
 FIELD_ORDER = (
     'id', 'title', 'language', 'source', 'sourceLabel', 'code', 'url',
     'artist', 'composer', 'lyricist', 'durationSec',
-    'audioUrl', 'instrumentalUrl', 'accompanimentUrl',
+    'audioUrl', 'instrumentalUrl', 'accompanimentUrl', 'audioTracks',
     'videoUrl', 'youtubeId', 'soundcloudTrackId',
     'scoreUrl', 'artworkUrl', 'lyrics',
     'themes', 'verse', 'firstSeenAt', 'updatedAt',
 )
+
+# Fields whose empty value is a list, not None.
+LIST_FIELDS = ('themes', 'audioTracks')
 
 # Pre-v2 field names, mapped to where they live now. `pdfUrl` became
 # `scoreUrl` when Cahaya joined — its PDFs are sheet music ("lembar
@@ -359,8 +383,9 @@ def make_entry(source, slug, title, url, **extra):
         'sourceLabel': src['label'],
         'code': extra.pop('code', None),
         'url': url,
-        'themes': [],
     })
+    for k in LIST_FIELDS:
+        entry[k] = []
     entry.update({k: v for k, v in extra.items() if k in entry})
     return entry
 
@@ -373,7 +398,7 @@ def normalise(entry):
         value = row.pop(old, None)
         if value and not row.get(new):
             row[new] = value
-    return {k: row.get(k) if k != 'themes' else (row.get('themes') or [])
+    return {k: (row.get(k) or []) if k in LIST_FIELDS else row.get(k)
             for k in FIELD_ORDER}
 
 
@@ -452,6 +477,15 @@ def fetch_fydt(taxonomy, wp_index):
                                       'songUrl'),
             accompanimentUrl=first_url(api.get('songAccompanyFiles'),
                                        'songUrl'),
+            # Same uniform track list CDC now produces, so a consumer
+            # can render every mix from one field regardless of source.
+            audioTracks=build_tracks([
+                (first_url(api.get('songFiles'), 'songUrl'), 'vocal', None),
+                (first_url(api.get('songInstrumentalFiles'), 'songUrl'),
+                 'instrumental', None),
+                (first_url(api.get('songAccompanyFiles'), 'songUrl'),
+                 'accompaniment', None),
+            ]),
             videoUrl=first_url(api.get('mvUrls'), 'url'),
             scoreUrl=first_url(api.get('scoresUrl'), 'url'),
             artworkUrl=api.get('artworkUrl') or None,
@@ -533,6 +567,133 @@ def fetch_cahaya():
 
 # ── christiandiscipleschurch.org ──────────────────────────────────
 
+# CDC's filename suffixes, learned by reading the published pages:
+#   D0180.mp3           the sung track
+#   D0375_English.mp3   \ bilingual songs publish one per language and
+#   D0375_Chinese.mp3   / usually have no bare-code file at all
+#   D0180i.mp3          instrumental  (same 'i' convention fydt uses)
+#   D0415m.mp3          minus-one / accompaniment
+#   D0180_melody.mp3    melody-only guide track
+#   E0440R.mp3          a revised re-recording; still the sung take
+_CDC_SUFFIXES = [
+    ('_english', 'vocal', 'en'),
+    ('_chinese', 'vocal', 'zh'),
+    ('melody', 'instrumental', None),
+    ('_melody', 'instrumental', None),
+    ('i', 'instrumental', None),
+    ('m', 'accompaniment', None),
+    ('r', 'vocal', None),
+    ('', 'vocal', None),
+]
+
+_MP3_RE = re.compile(r'["\'(]([^"\'()\s\\]+\.mp3)["\')]', re.IGNORECASE)
+_PDF_RE = re.compile(r'["\'(]([^"\'()\s\\]+\.pdf)["\')]', re.IGNORECASE)
+
+
+#: Suffixes seen in the wild that were not in the original list —
+#: recorded so the sync can report them rather than silently guess.
+UNKNOWN_CDC_SUFFIXES = set()
+
+
+def classify_cdc_track(filename, code):
+    """('vocal'|'instrumental'|'accompaniment', lang|None) for a CDC
+    mp3 filename, or None when it does not belong to `code`.
+
+    Deliberately PERMISSIVE about suffixes it does not recognise. The
+    first version of this only accepted a fixed list and returned None
+    otherwise — so `E0440R.mp3` was dropped and that song showed up as
+    having no audio at all, which is how this whole class of bug got
+    reported in the first place. Anything whose stem starts with the
+    catalogue code is that song's audio; an unrecognised suffix is
+    treated as another vocal take and recorded in
+    [UNKNOWN_CDC_SUFFIXES] so a new convention surfaces in the sync log
+    instead of quietly costing us a track.
+    """
+    stem = filename[:-4] if filename.lower().endswith('.mp3') else filename
+    # Drupal appends _0, _1… when a file is re-uploaded; same track.
+    stem = re.sub(r'_\d+$', '', stem)
+    if not stem.upper().startswith(code.upper()):
+        return None
+    suffix = stem[len(code):].lower()
+    for candidate, kind, lang in _CDC_SUFFIXES:
+        if suffix == candidate:
+            return kind, lang
+    UNKNOWN_CDC_SUFFIXES.add(suffix)
+    return 'vocal', None
+
+
+def parse_cdc_media(page_html, code):
+    """Pull the real media links out of one CDC song page."""
+    if not page_html:
+        return {'tracks': [], 'score': None}
+
+    # Keyed on the normalised filename stem, NOT on (kind, lang):
+    # since unrecognised suffixes all classify as plain vocal, keying
+    # on the classification would make `D0180.mp3` and `D0180R.mp3`
+    # collide and silently drop one. Each page lists every file twice
+    # (player markup + download link) and `_0` re-uploads normalise
+    # onto the same stem, so this still dedupes what should dedupe.
+    tracks = {}
+    for raw in _MP3_RE.findall(page_html):
+        name = raw.rsplit('/', 1)[-1]
+        classified = classify_cdc_track(name, code)
+        if not classified:
+            continue
+        kind, lang = classified
+        stem = re.sub(r'_\d+$', '', name[:-4]).lower()
+        url = urllib.parse.urljoin(CDC_ROOT, raw.replace('\\/', '/'))
+        tracks.setdefault(stem, {'url': url, 'kind': kind, 'lang': lang})
+
+    score = None
+    for raw in _PDF_RE.findall(page_html):
+        name = raw.rsplit('/', 1)[-1]
+        if name.upper().startswith(code.upper()):
+            score = urllib.parse.urljoin(CDC_ROOT, raw.replace('\\/', '/'))
+            break
+
+    # Sung takes first (language-tagged before the bare one), then the
+    # instrumental, then the minus-one — the order the detail sheet
+    # shows them in.
+    def rank(t):
+        kind_rank = {'vocal': 0, 'instrumental': 1, 'accompaniment': 2}
+        return (kind_rank.get(t['kind'], 3), t['lang'] is None, t['url'])
+
+    return {'tracks': sorted(tracks.values(), key=rank), 'score': score}
+
+
+def build_tracks(candidates):
+    """[(url, kind, lang), …] → the audioTracks list, dropping empties."""
+    return [{'url': url, 'kind': kind, 'lang': lang}
+            for url, kind, lang in candidates if url]
+
+
+def _track_url(tracks, kind):
+    for t in tracks or []:
+        if t['kind'] == kind:
+            return t['url']
+    return None
+
+
+def pick_primary_audio(tracks, language):
+    """Which track the play button uses.
+
+    Prefer a vocal take in the song's own language — a title listed in
+    English should not start playing in Chinese — then any vocal, then
+    nothing. Instrumentals are never primary: someone tapping play on a
+    song expects to hear it sung.
+    """
+    vocals = [t for t in (tracks or []) if t['kind'] == 'vocal']
+    if not vocals:
+        return None
+    for t in vocals:
+        if t['lang'] == language:
+            return t['url']
+    for t in vocals:
+        if t['lang'] is None:
+            return t['url']
+    return vocals[0]['url']
+
+
 def head_ok(url, timeout=25, attempts=2):
     """True when a HEAD on `url` returns 200.
 
@@ -590,10 +751,31 @@ def prune_derived_urls(entries, workers=4):
 
 
 def fetch_cdc(verify=True):
-    """Walk the paginated integrated-list-songs view. mp3/PDF URLs are
-    derived from the catalogue code, then checked — see
-    [prune_derived_urls] for why the check is not optional."""
-    entries = []
+    """Walk the paginated integrated-list-songs view for (title, code,
+    path) rows, then read each song's own page for its real media
+    links.
+
+    2026-08-09: this used to DERIVE the URLs from the catalogue code
+    (`D0180` → `.../mp3/D0180.mp3`) and HEAD-check the guesses. That
+    was wrong in both directions, and a user caught it:
+
+      • It missed every bilingual song. CDC publishes those as
+        `D0375_English.mp3` + `D0375_Chinese.mp3` with no plain
+        `D0375.mp3`, so the guess 404'd and the sync concluded the
+        audio "was never uploaded". It was there the whole time,
+        under a name the guess could not reach — that is where the
+        supposed 23 missing files went.
+      • It missed the instrumental and accompaniment tracks on
+        essentially every CDC song (`D0180i.mp3`, `D0415m.mp3`),
+        because it only ever looked for the bare code.
+
+    Reading the page costs ~283 fetches per sync instead of ~566 HEAD
+    checks, and returns what the church actually published rather than
+    what we hoped it had named things.
+    """
+    import concurrent.futures
+
+    rows = []
     seen = set()
     for page in range(0, 10):
         page_html = http_get(f'{CDC_INDEX}?page={page}')
@@ -608,20 +790,43 @@ def fetch_cdc(verify=True):
             if not title or _is_bad_title(title):
                 continue
             seen.add(code)
-            entries.append(make_entry(
-                'cdc', code.lower(), title, f'{CDC_ROOT}{path}',
-                code=code,
-                language=detect_language(title, default='en'),
-                audioUrl=f'{CDC_ROOT}/sites/default/files/music/mp3/{code}.mp3',
-                scoreUrl=f'{CDC_ROOT}/sites/default/files/music/pdf/{code}.pdf',
-                themes=infer_themes(title),
-                verse=infer_verse(title),
-            ))
+            rows.append((title, code, path))
         if len(seen) == before:
             break
-    print(f'  cdc: {len(entries)} songs')
-    if verify:
-        prune_derived_urls(entries)
+
+    print(f'  cdc: {len(rows)} songs, reading each page for media…')
+
+    def build(row):
+        title, code, path = row
+        url = f'{CDC_ROOT}{path}'
+        media = parse_cdc_media(http_get(url), code)
+        language = detect_language(title, default='en')
+        return make_entry(
+            'cdc', code.lower(), title, url,
+            code=code,
+            language=language,
+            audioUrl=pick_primary_audio(media['tracks'], language),
+            instrumentalUrl=_track_url(media['tracks'], 'instrumental'),
+            accompanimentUrl=_track_url(media['tracks'], 'accompaniment'),
+            audioTracks=media['tracks'],
+            scoreUrl=media['score'],
+            themes=infer_themes(title),
+            verse=infer_verse(title),
+        )
+
+    with concurrent.futures.ThreadPoolExecutor(max_workers=4) as pool:
+        entries = list(pool.map(build, rows))
+
+    with_audio = sum(1 for e in entries if e['audioUrl'])
+    extra = sum(len(e['audioTracks'] or []) for e in entries)
+    print(f'  cdc: {with_audio}/{len(entries)} have audio, '
+          f'{extra} tracks total')
+    if UNKNOWN_CDC_SUFFIXES:
+        # Not a failure — the file IS captured, as a vocal take. But a
+        # new suffix means CDC has a convention we do not model yet, so
+        # say so rather than let it pass unnoticed.
+        print(f'  cdc: note — unrecognised filename suffixes treated as '
+              f'vocal: {sorted(UNKNOWN_CDC_SUFFIXES)}')
     return entries
 
 
@@ -640,7 +845,7 @@ _REFRESH_FIELDS = (
 # merge, or the catalogue would keep serving the dead link forever.
 # head_ok retries, so a blip cannot clear a good URL by itself.
 _MEDIA_FIELDS = (
-    'audioUrl', 'instrumentalUrl', 'accompanimentUrl',
+    'audioUrl', 'instrumentalUrl', 'accompanimentUrl', 'audioTracks',
     'videoUrl', 'youtubeId', 'soundcloudTrackId', 'scoreUrl',
 )
 
@@ -713,11 +918,24 @@ def verify_links(songs, workers=4):
     import concurrent.futures
 
     targets = []
+    seen = set()
     for s in songs:
         for field in ('audioUrl', 'instrumentalUrl', 'accompanimentUrl',
                       'videoUrl', 'scoreUrl'):
             if s.get(field):
                 targets.append((s['id'], s['title'], field, s[field]))
+                seen.add(s[field])
+        # The scalar fields above are drawn FROM audioTracks, but the
+        # extra language variants live only here — check those too, or
+        # a dead Chinese take would ride along unnoticed behind a
+        # healthy English one.
+        for t in s.get('audioTracks') or []:
+            if t.get('url') and t['url'] not in seen:
+                targets.append(
+                    (s['id'], s['title'],
+                     f"track:{t.get('kind')}/{t.get('lang') or '-'}",
+                     t['url']))
+                seen.add(t['url'])
 
     def check(t):
         _id, title, field, url = t
@@ -766,6 +984,8 @@ def load_existing():
 
 
 def main():
+    global SONGS_JSON
+
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument('--dry-run', action='store_true',
                     help='report what would change, write nothing')
@@ -777,7 +997,13 @@ def main():
     ap.add_argument('--no-prune', action='store_true',
                     help="keep CDC's derived URLs without HEAD-checking "
                          'them (faster; ships known-dead links)')
+    ap.add_argument('--out', metavar='PATH',
+                    help='where to write the catalogue (default: '
+                         f'{_default_out()})')
     args = ap.parse_args()
+
+    if args.out:
+        SONGS_JSON = os.path.abspath(args.out)
 
     if args.verify_only:
         stored = load_existing()

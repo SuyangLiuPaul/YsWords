@@ -20,6 +20,41 @@
 /// fuyindiantai.org is *not* a fourth source: it is fydt.org's former
 /// domain, its songs are already here under `fydt`, and its DNS no
 /// longer resolves. See the note in `assets/songs.json` `_meta.notes`.
+/// One audio rendering of a song.
+///
+/// Sources publish more than a single file per song and not always the
+/// same set: fydt has vocal / instrumental / accompaniment mixes, while
+/// CDC adds per-language sung takes (`D0375_English.mp3` +
+/// `D0375_Chinese.mp3`). Modelling them as a list keeps both uniform
+/// and stops a new arrangement from needing a new field.
+class SongTrackInfo {
+  final String url;
+
+  /// 'vocal' | 'instrumental' | 'accompaniment'.
+  final String kind;
+
+  /// 'zh' | 'en' | 'id', but only when the source publishes the same
+  /// song sung in more than one language. Null for mixes and for
+  /// single-language songs.
+  final String? lang;
+
+  const SongTrackInfo({
+    required this.url,
+    required this.kind,
+    this.lang,
+  });
+
+  factory SongTrackInfo.fromJson(Map<String, dynamic> j) => SongTrackInfo(
+        url: j['url'] as String,
+        kind: j['kind'] as String? ?? 'vocal',
+        lang: (j['lang'] as String?)?.trim().isEmpty ?? true
+            ? null
+            : j['lang'] as String,
+      );
+
+  bool get isVocal => kind == 'vocal';
+}
+
 class Song {
   /// Stable identifier — `<source>:<slug>`. fydt uses the WordPress
   /// post id (`fydt:122368`), CDC its catalogue code (`cdc:d0180`),
@@ -63,10 +98,15 @@ class Song {
   final String? audioUrl;
 
   /// Instrumental (伴奏) and accompaniment/minus-one (伴唱) mixes.
-  /// fydt publishes these for much of its catalogue; they surface as
-  /// extra play buttons rather than separate rows.
+  /// Both sources publish these for much of their catalogue; they
+  /// surface as extra play buttons rather than separate rows.
   final String? instrumentalUrl;
   final String? accompanimentUrl;
+
+  /// Every audio rendering, including the per-language sung takes that
+  /// [audioUrl] alone cannot express. The three fields above are
+  /// conveniences drawn from this list.
+  final List<SongTrackInfo> audioTracks;
 
   /// Direct mp4 music video (fydt publishes MVs on its own CDN).
   final String? videoUrl;
@@ -122,6 +162,7 @@ class Song {
     this.audioUrl,
     this.instrumentalUrl,
     this.accompanimentUrl,
+    this.audioTracks = const [],
     this.videoUrl,
     this.youtubeId,
     this.soundcloudTrackId,
@@ -157,6 +198,10 @@ class Song {
       audioUrl: str('audioUrl'),
       instrumentalUrl: str('instrumentalUrl'),
       accompanimentUrl: str('accompanimentUrl'),
+      audioTracks: ((j['audioTracks'] as List?) ?? const [])
+          .map((e) =>
+              SongTrackInfo.fromJson((e as Map).cast<String, dynamic>()))
+          .toList(),
       videoUrl: str('videoUrl'),
       youtubeId: str('youtubeId'),
       soundcloudTrackId: str('soundcloudTrackId'),
@@ -174,11 +219,25 @@ class Song {
 
   /// True when there is a direct mp3 this app can stream itself.
   /// SoundCloud-only rows are false — they open externally.
-  bool get hasPlayableAudio => audioUrl != null;
+  ///
+  /// Falls back to the track list so a song published ONLY as an
+  /// instrumental still plays. CDC has one (D0500, "Here I Am, As I
+  /// Wake" — instrumental + minus-one, no sung take); treating it as
+  /// having no audio would hide a file that is right there.
+  bool get hasPlayableAudio => audioUrl != null || audioTracks.isNotEmpty;
 
   /// Any audio at all, streamable or not. Drives the "has audio"
   /// filter, which users read as "can I listen to this".
-  bool get hasAudio => audioUrl != null || soundcloudTrackId != null;
+  bool get hasAudio => hasPlayableAudio || soundcloudTrackId != null;
+
+  /// The sung takes, in the order the source published them.
+  List<SongTrackInfo> get vocalTracks =>
+      audioTracks.where((t) => t.isVocal).toList();
+
+  /// True when the same song is published sung in more than one
+  /// language — 12 of the CDC entries are.
+  bool get hasMultipleLanguages =>
+      vocalTracks.map((t) => t.lang).whereType<String>().toSet().length > 1;
 
   /// Any video — a direct mp4 MV or a YouTube id.
   bool get hasVideo => videoUrl != null || youtubeId != null;

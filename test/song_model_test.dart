@@ -74,10 +74,82 @@ void main() {
           s.videoUrl,
           s.scoreUrl,
           s.artworkUrl,
+          ...s.audioTracks.map((t) => t.url),
         ]) {
           if (url == null) continue;
           expect(url, startsWith('https://'),
               reason: '${s.id} has a non-https media URL: $url');
+        }
+      }
+    });
+
+    // 2026-08-09 regression guard. CDC's media URLs used to be
+    // DERIVED from the catalogue code (`D0180` → `.../D0180.mp3`).
+    // That silently lost every bilingual song — CDC publishes those as
+    // `D0375_English.mp3` + `D0375_Chinese.mp3` with no bare-code file
+    // — and every instrumental/accompaniment track, because the guess
+    // only ever looked for the bare code. A user noticed songs showing
+    // no audio when the church's own page had two players on it.
+    test('nearly every CDC song has audio', () {
+      final cdc = songs.where((s) => s.source == 'cdc').toList();
+      final withAudio = cdc.where((s) => s.hasAudio).length;
+      expect(cdc.length, greaterThan(200));
+      expect(
+        withAudio,
+        greaterThanOrEqualTo(cdc.length - 5),
+        reason: 'only $withAudio/${cdc.length} CDC songs have audio — the '
+            'sync is probably guessing filenames again instead of '
+            'reading each song page',
+      );
+    });
+
+    test('CDC contributes instrumental and accompaniment tracks', () {
+      final cdc = songs.where((s) => s.source == 'cdc');
+      final instrumental =
+          cdc.where((s) => s.instrumentalUrl != null).length;
+      expect(instrumental, greaterThan(50),
+          reason: 'CDC publishes an "i" instrumental for most songs; '
+              'finding almost none means they are being missed');
+    });
+
+    test('bilingual songs keep both sung takes', () {
+      final bilingual = songs.where((s) => s.hasMultipleLanguages).toList();
+      expect(bilingual, isNotEmpty,
+          reason: 'CDC publishes ~12 songs sung in both English and '
+              'Chinese; none found means the language variants are '
+              'being dropped');
+      for (final s in bilingual) {
+        final langs = s.vocalTracks.map((t) => t.lang).whereType<String>();
+        expect(langs.toSet().length, greaterThan(1));
+        expect(s.audioUrl, isNotNull);
+      }
+    });
+
+    test('the primary audio matches the song\'s own language when '
+        'a take in that language exists', () {
+      for (final s in songs.where((x) => x.hasMultipleLanguages)) {
+        final own =
+            s.vocalTracks.where((t) => t.lang == s.language).toList();
+        if (own.isEmpty) continue;
+        expect(s.audioUrl, own.first.url,
+            reason: '${s.id} is listed as ${s.language} but its play '
+                'button would start a different language');
+      }
+    });
+
+    test('audioUrl/instrumentalUrl/accompanimentUrl agree with '
+        'audioTracks', () {
+      for (final s in songs) {
+        if (s.audioTracks.isEmpty) continue;
+        final urls = s.audioTracks.map((t) => t.url).toSet();
+        for (final derived in [
+          s.audioUrl,
+          s.instrumentalUrl,
+          s.accompanimentUrl,
+        ]) {
+          if (derived == null) continue;
+          expect(urls, contains(derived),
+              reason: '${s.id} has a scalar URL missing from audioTracks');
         }
       }
     });
@@ -230,6 +302,7 @@ void main() {
           s.audioUrl,
           s.instrumentalUrl,
           s.accompanimentUrl,
+          ...s.audioTracks.map((t) => t.url),
         ]) {
           if (url != null) hosts.add(Uri.parse(url).host);
         }

@@ -43,6 +43,11 @@ class SongPlayerService extends ChangeNotifier {
 
   Song? _current;
   SongTrack _track = SongTrack.vocal;
+
+  /// The exact URL now loaded. [SongTrack] has three slots, but a song
+  /// can publish several *vocal* takes (CDC's per-language recordings),
+  /// so the enum alone cannot say which one is playing.
+  String? _currentUrl;
   bool _playing = false;
   bool _loading = false;
   String? _error;
@@ -65,8 +70,15 @@ class SongPlayerService extends ChangeNotifier {
     return published == null ? Duration.zero : Duration(seconds: published);
   }
 
+  String? get currentUrl => _currentUrl;
+
   bool isCurrent(Song song, [SongTrack? track]) =>
       _current?.id == song.id && (track == null || _track == track);
+
+  /// Whether this exact URL is the one loaded — the check the detail
+  /// sheet needs, where two chips can share [SongTrack.vocal].
+  bool isCurrentUrl(Song song, String url) =>
+      _current?.id == song.id && _currentUrl == url;
 
   /// The URL for [track] on [song], or null when that mix does not
   /// exist. SoundCloud rows return null everywhere — they have no
@@ -120,11 +132,22 @@ class SongPlayerService extends ChangeNotifier {
   /// Play [track] of [song]. Tapping the mix that is already playing
   /// pauses it; tapping a paused current track resumes without
   /// re-fetching.
-  Future<void> toggle(Song song, [SongTrack track = SongTrack.vocal]) async {
-    final url = urlFor(song, track);
+  Future<void> toggle(
+    Song song, [
+    SongTrack track = SongTrack.vocal,
+    String? explicitUrl,
+  ]) async {
+    // `explicitUrl` lets a caller pick one specific take — the
+    // per-language vocals both map to SongTrack.vocal, so the enum
+    // cannot distinguish them on its own.
+    final url = explicitUrl ??
+        urlFor(song, track) ??
+        (track == SongTrack.vocal && song.audioTracks.isNotEmpty
+            ? song.audioTracks.first.url
+            : null);
     if (url == null) return;
 
-    if (isCurrent(song, track)) {
+    if (isCurrentUrl(song, url)) {
       if (_playing) {
         await _player.pause();
       } else {
@@ -135,6 +158,7 @@ class SongPlayerService extends ChangeNotifier {
 
     _current = song;
     _track = track;
+    _currentUrl = url;
     _position = Duration.zero;
     _duration = Duration.zero;
     _loading = true;
@@ -150,6 +174,7 @@ class SongPlayerService extends ChangeNotifier {
       // can 404 between syncs. Surface it on the mini-player instead.
       _error = e.toString();
       _current = null;
+      _currentUrl = null;
       _playing = false;
     } finally {
       _loading = false;
@@ -162,6 +187,7 @@ class SongPlayerService extends ChangeNotifier {
   Future<void> stop() async {
     await _player.stop();
     _current = null;
+    _currentUrl = null;
     _playing = false;
     _position = Duration.zero;
     _duration = Duration.zero;

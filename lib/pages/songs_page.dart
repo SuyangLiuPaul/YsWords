@@ -11,6 +11,7 @@ import 'package:yswords/services/song_service.dart';
 import 'package:yswords/utils/responsive.dart';
 import 'package:yswords/utils/version_mapper.dart' show localeAwareBookName;
 import 'package:yswords/widgets/home_icon_button.dart';
+import 'package:yswords/widgets/language_switcher_button.dart';
 import 'package:yswords/widgets/localized_back_button.dart';
 import 'package:yswords/utils/font_catalog.dart' show kCjkFontFallback;
 
@@ -90,7 +91,12 @@ class _SongsPageState extends State<SongsPage> {
       appBar: AppBar(
         leading: const LocalizedBackButton(),
         title: Text(uiStrings['songsPageTitle']?[locale] ?? 'Songs'),
-        actions: const [HomeIconButton()],
+        // LanguageSwitcherButton was added across the app while Songs
+        // was deleted (v1.3.126–v1.4.11), so restoring the page from
+        // its pre-deletion snapshot brought back an AppBar that had
+        // missed the change. Every other page pairs it with the home
+        // button — match them.
+        actions: const [LanguageSwitcherButton(), HomeIconButton()],
       ),
       body: FutureBuilder<List<Song>>(
         future: _future,
@@ -1181,7 +1187,10 @@ class _PlayButton extends StatelessWidget {
     return ListenableBuilder(
       listenable: player,
       builder: (context, _) {
-        final isThis = player.isCurrent(song, SongTrack.vocal);
+        // Any take of this song counts as "this row is playing" —
+        // start the English version from the detail sheet and the row's
+        // button should read as active, not idle.
+        final isThis = player.current?.id == song.id;
         final playing = isThis && player.isPlaying;
         final loading = isThis && player.isLoading;
         return Semantics(
@@ -1322,42 +1331,25 @@ class _SongDetailSheet extends StatelessWidget {
                                 'Audio',
                             scheme: scheme),
                         const SizedBox(height: 6),
+                        // Built from the real track list rather than
+                        // three fixed slots: CDC publishes some songs
+                        // sung in BOTH English and Chinese, and those
+                        // two takes both occupy the "vocal" slot, so a
+                        // fixed layout could only ever show one of
+                        // them.
                         ListenableBuilder(
                           listenable: player,
                           builder: (context, _) => Wrap(
                             spacing: 8,
                             runSpacing: 8,
                             children: [
-                              if (song.audioUrl != null)
+                              for (final t in _tracksFor(song))
                                 _TrackChip(
                                   song: song,
-                                  track: SongTrack.vocal,
-                                  label: uiStrings['songsTrackVocal']
-                                          ?[locale] ??
-                                      'Song',
-                                  icon: Icons.music_note_rounded,
-                                  scheme: scheme,
-                                ),
-                              if (song.instrumentalUrl != null)
-                                _TrackChip(
-                                  song: song,
-                                  track: SongTrack.instrumental,
-                                  label: uiStrings[
-                                              'songsTrackInstrumental']
-                                          ?[locale] ??
-                                      'Instrumental',
-                                  icon: Icons.piano_rounded,
-                                  scheme: scheme,
-                                ),
-                              if (song.accompanimentUrl != null)
-                                _TrackChip(
-                                  song: song,
-                                  track: SongTrack.accompaniment,
-                                  label: uiStrings[
-                                              'songsTrackAccompaniment']
-                                          ?[locale] ??
-                                      'Accompaniment',
-                                  icon: Icons.queue_music_rounded,
+                                  track: _slotFor(t.kind),
+                                  url: t.url,
+                                  label: _trackLabel(t, song, locale),
+                                  icon: _trackIcon(t.kind),
                                   scheme: scheme,
                                 ),
                             ],
@@ -1489,16 +1481,64 @@ class _SongDetailSheet extends StatelessWidget {
   }
 }
 
-/// One selectable mix inside the detail sheet.
+/// The audio takes to offer for [song].
+///
+/// Prefers the catalogue's full `audioTracks` list. Falls back to the
+/// three scalar fields for any row synced before that list existed, so
+/// a stale bundled snapshot still shows its audio.
+List<SongTrackInfo> _tracksFor(Song song) {
+  if (song.audioTracks.isNotEmpty) return song.audioTracks;
+  return [
+    if (song.audioUrl != null)
+      SongTrackInfo(url: song.audioUrl!, kind: 'vocal'),
+    if (song.instrumentalUrl != null)
+      SongTrackInfo(url: song.instrumentalUrl!, kind: 'instrumental'),
+    if (song.accompanimentUrl != null)
+      SongTrackInfo(url: song.accompanimentUrl!, kind: 'accompaniment'),
+  ];
+}
+
+SongTrack _slotFor(String kind) => switch (kind) {
+      'instrumental' => SongTrack.instrumental,
+      'accompaniment' => SongTrack.accompaniment,
+      _ => SongTrack.vocal,
+    };
+
+IconData _trackIcon(String kind) => switch (kind) {
+      'instrumental' => Icons.piano_rounded,
+      'accompaniment' => Icons.queue_music_rounded,
+      _ => Icons.music_note_rounded,
+    };
+
+/// Chip label for one take. A language-tagged vocal is named by its
+/// language ("English" / "中文") — on a bilingual song two chips would
+/// otherwise both read "Song" and be indistinguishable.
+String _trackLabel(SongTrackInfo t, Song song, String locale) {
+  if (t.isVocal && t.lang != null && song.hasMultipleLanguages) {
+    return localizedSongLanguage(t.lang!, locale);
+  }
+  switch (t.kind) {
+    case 'instrumental':
+      return uiStrings['songsTrackInstrumental']?[locale] ?? 'Instrumental';
+    case 'accompaniment':
+      return uiStrings['songsTrackAccompaniment']?[locale] ?? 'Accompaniment';
+    default:
+      return uiStrings['songsTrackVocal']?[locale] ?? 'Song';
+  }
+}
+
+/// One selectable take inside the detail sheet.
 class _TrackChip extends StatelessWidget {
   final Song song;
   final SongTrack track;
+  final String url;
   final String label;
   final IconData icon;
   final ColorScheme scheme;
   const _TrackChip({
     required this.song,
     required this.track,
+    required this.url,
     required this.label,
     required this.icon,
     required this.scheme,
@@ -1507,7 +1547,9 @@ class _TrackChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final player = SongPlayerService.instance;
-    final isThis = player.isCurrent(song, track);
+    // Match on URL, not on the enum slot: two per-language vocals share
+    // SongTrack.vocal, so an enum comparison would highlight both.
+    final isThis = player.isCurrentUrl(song, url);
     final playing = isThis && player.isPlaying;
     return ActionChip(
       avatar: Icon(
@@ -1517,7 +1559,7 @@ class _TrackChip extends StatelessWidget {
       ),
       label: Text(label, style: const TextStyle(fontSize: 12)),
       backgroundColor: isThis ? scheme.primaryContainer : null,
-      onPressed: () => player.toggle(song, track),
+      onPressed: () => player.toggle(song, track, url),
     );
   }
 }
