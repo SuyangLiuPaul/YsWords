@@ -48,6 +48,31 @@ class SongPlayerService extends ChangeNotifier {
     if (_initStarted) return;
     _initStarted = true;
     final handler = SongAudioHandler();
+
+    // 2026-08-09: audio_service is NATIVE-ONLY here.
+    //
+    // On web it added a Media Session — a lock-screen card on iOS —
+    // and playback went silent from the same release. Web audio was
+    // verified working at v1.4.13 (a 206 range request and a running
+    // position, on desktop Chrome); every no-sound report arrived
+    // after v1.4.18, which is where audio_service landed. The iOS
+    // lock-screen card is itself new behaviour from audio_service_web,
+    // so the two are linked.
+    //
+    // What web loses by skipping it: system media controls, which on
+    // iOS were showing a card for audio nobody could hear. What web
+    // keeps: sound. That is not a close trade.
+    //
+    // Native is untouched — it is where the lock screen, CarPlay and
+    // Android Auto actually matter, and where they are confirmed
+    // working from a real device.
+    if (kIsWeb) {
+      _handler = handler;
+      _mediaSession = false;
+      handler.revision.addListener(instance.notifyListeners);
+      return;
+    }
+
     try {
       _handler = await AudioService.init(
         builder: () => handler,
