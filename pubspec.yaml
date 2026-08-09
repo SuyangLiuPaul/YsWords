@@ -95,6 +95,23 @@ dependencies:
   # (web/iOS/Android/macOS/Windows/Linux) from one package, where
   # just_audio needs a separate media-kit backend for Windows + Linux.
   audioplayers: ^6.1.0
+  # 2026-08-09 (Songs player): background playback + system media
+  # controls. audioplayers alone has no concept of a media session, so
+  # locking the phone stops playback and nothing appears on the lock
+  # screen — which makes "listen while driving" impossible.
+  #
+  # audio_service WRAPS the player we already have rather than
+  # replacing it, so this is additive: it supplies the platform media
+  # session (lock screen / Control Center / CarPlay / Android Auto) and
+  # keeps audio alive while backgrounded. On web it implements the
+  # Media Session API, which nothing in this app had ever wired up —
+  # so desktop browsers get system media controls from the same
+  # integration rather than a second one.
+  #
+  # Needs iOS UIBackgroundModes `audio` (ios/Runner/Info.plist) and an
+  # Android foreground service (AndroidManifest.xml). Neither affects
+  # the desktop or web builds.
+  audio_service: ^0.18.15
 
 dev_dependencies:
   flutter_test:

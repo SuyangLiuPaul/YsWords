@@ -111,6 +111,7 @@ class SongPlayerService extends ChangeNotifier {
     'https://fydt.org/': '/song-media/fydt/',
     'https://www.christiandiscipleschurch.org/': '/song-media/cdc/',
     'https://cahayapengharapan.org/': '/song-media/cahaya/',
+    'https://cgdc.hk/': '/song-media/cgdc/',
   };
 
   /// Rewrite an upstream media URL to whatever this platform can

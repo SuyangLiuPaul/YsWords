@@ -1,7 +1,17 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
     <!-- 2026-05-21 (v1.2.69): runtime notification permission for
          Android 13+ (TIRAMISU). Older Android grants by default. -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <!-- 2026-08-09 (Songs player): background audio via audio_service.
+         Android stops playback when the app leaves the foreground
+         unless it runs as a foreground service, so listening while
+         driving needs these. FOREGROUND_SERVICE_MEDIA_PLAYBACK is the
+         typed permission Android 14+ requires alongside the generic
+         one; WAKE_LOCK keeps the CPU alive between buffer refills. -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
     <application
         android:label="@string/app_name"
         android:name="${applicationName}"
@@ -129,6 +139,30 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity-alias>
+        <!-- 2026-08-09 (Songs player): audio_service's playback service
+             and media-button receiver. The service must declare
+             foregroundServiceType="mediaPlayback" or Android 14+
+             refuses to start it; the receiver is what routes headset
+             and steering-wheel buttons to the player, which is the
+             difference between "plays in the car" and "plays in the
+             car but you cannot skip a track without unlocking". -->
+        <service
+            android:name="com.ryanheise.audioservice.AudioService"
+            android:foregroundServiceType="mediaPlayback"
+            android:exported="true"
+            tools:ignore="Instantiatable">
+            <intent-filter>
+                <action android:name="android.media.browse.MediaBrowserService" />
+            </intent-filter>
+        </service>
+        <receiver
+            android:name="com.ryanheise.audioservice.MediaButtonReceiver"
+            android:exported="true"
+            tools:ignore="Instantiatable">
+            <intent-filter>
+                <action android:name="android.intent.action.MEDIA_BUTTON" />
+            </intent-filter>
+        </receiver>
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <meta-data

@@ -120,5 +120,20 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<!-- 2026-08-09 (Songs player): background audio.
+
+	     Without this iOS suspends playback the moment the app leaves
+	     the foreground or the screen locks, which made listening while
+	     driving impossible — the reason the player work exists.
+
+	     `audio` is the ONLY mode declared. The app does no background
+	     fetch, location or processing, and declaring modes an app does
+	     not actually use is a common App Store rejection. Paired with
+	     audio_service, which owns the AVAudioSession and publishes the
+	     now-playing info the lock screen and CarPlay read. -->
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>audio</string>
+	</array>
 </dict>
 </plist>

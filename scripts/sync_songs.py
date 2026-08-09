@@ -103,6 +103,11 @@ SOURCES = {
         'home': 'https://www.christiandiscipleschurch.org',
         'language': 'en',
     },
+    'cgdc': {
+        'label': '基督門徒福音會 CGDC',
+        'home': 'https://cgdc.hk',
+        'language': 'zh',
+    },
 }
 
 _FUYINDIANTAI_NOTE = (
@@ -119,6 +124,27 @@ CAHAYA_AUDIO = 'https://cahayapengharapan.org/pujian/'
 CAHAYA_VIDEO = 'https://cahayapengharapan.org/pujian/video-pujian/'
 CDC_ROOT = 'https://www.christiandiscipleschurch.org'
 CDC_INDEX = f'{CDC_ROOT}/content/integrated-list-songs'
+
+CGDC_ROOT = 'https://cgdc.hk'
+CGDC_PAGES = (f'{CGDC_ROOT}/wp-json/wp/v2/pages'
+              '?per_page=100&_fields=id,slug,link,title')
+
+# The Hong Kong church publishes one Easter-camp songbook per year as a
+# WordPress page whose slug is the year plus "mk" (2023mk, 2024mk, …).
+# Matching the PATTERN rather than listing known years is the whole
+# point: a 2027mk page goes live and the next weekly sync picks it up
+# with no code change.
+CGDC_MK_SLUG_RE = re.compile(r'^(\d{4})mk$')
+
+# Those pages render through the Sonaar player, which emits one <li>
+# per track carrying everything we need as data-attributes.
+CGDC_TRACK_RE = re.compile(
+    r'data-audiopath="(?P<url>[^"]+\.mp3)"'
+    r'(?P<mid>[^>]*?)'
+    r'data-trackTitle="(?P<title>[^"]*)"',
+    re.IGNORECASE)
+CGDC_ALBUM_RE = re.compile(r'data-albumTitle="([^"]*)"', re.IGNORECASE)
+CGDC_TIME_RE = re.compile(r'data-trackTime="([^"]*)"', re.IGNORECASE)
 
 # ── Theme classifier ──────────────────────────────────────────────
 # Applied to titles when the source publishes no taxonomy of its own
@@ -319,6 +345,25 @@ def strip_lyrics(raw):
     return t.strip() or None
 
 
+def normalise_url(url):
+    """Percent-encode a URL's path so it is a valid URI.
+
+    cgdc.hk publishes filenames with raw Chinese characters
+    (`2026-04-Increase-开展.mp3`). Browsers quietly encode those on
+    request, so the links work when clicked — but the raw string is not
+    a valid URI, the JSON Schema's `format: uri` rejects it, and
+    Dart's Uri/http handling of unencoded UTF-8 in a path is not
+    something to rely on. Encoding at sync time means every consumer
+    receives something unambiguous.
+
+    Already-encoded URLs pass through unchanged: `%` is in the safe
+    set, so `%E5%BC%80` is not re-encoded into `%25E5%25BC%2580`.
+    """
+    if not url:
+        return url
+    return urllib.parse.quote(url, safe=":/?#[]@!$&'()*+,;=%~")
+
+
 def first_url(items, *keys):
     """Pull the first non-empty URL out of one of fydt's repeater
     groups, e.g. `songFiles: [{songId, songUrl}]`."""
@@ -354,7 +399,7 @@ def _now_iso():
 # and `git diff` on songs.json stays readable.
 FIELD_ORDER = (
     'id', 'title', 'language', 'source', 'sourceLabel', 'code', 'url',
-    'artist', 'composer', 'lyricist', 'durationSec',
+    'album', 'artist', 'composer', 'lyricist', 'durationSec',
     'audioUrl', 'instrumentalUrl', 'accompanimentUrl', 'audioTracks',
     'videoUrl', 'youtubeId', 'soundcloudTrackId',
     'scoreUrl', 'artworkUrl', 'lyrics',
@@ -398,8 +443,19 @@ def normalise(entry):
         value = row.pop(old, None)
         if value and not row.get(new):
             row[new] = value
-    return {k: (row.get(k) or []) if k in LIST_FIELDS else row.get(k)
-            for k in FIELD_ORDER}
+    out = {k: (row.get(k) or []) if k in LIST_FIELDS else row.get(k)
+           for k in FIELD_ORDER}
+    # Encode every media URL centrally rather than at each fetcher, so
+    # a new source cannot forget to. See [normalise_url].
+    for k in ('audioUrl', 'instrumentalUrl', 'accompanimentUrl',
+              'videoUrl', 'scoreUrl', 'artworkUrl', 'url'):
+        if out.get(k):
+            out[k] = normalise_url(out[k])
+    out['audioTracks'] = [
+        {**t, 'url': normalise_url(t['url'])}
+        for t in (out.get('audioTracks') or []) if t.get('url')
+    ]
+    return out
 
 
 # ── fydt.org ──────────────────────────────────────────────────────
@@ -830,13 +886,132 @@ def fetch_cdc(verify=True):
     return entries
 
 
+# ── cgdc.hk ───────────────────────────────────────────────────────
+
+def fetch_cgdc():
+    """The Hong Kong church's Easter-camp songbooks, one page per year.
+
+    Years are DISCOVERED, never listed: `wp/v2/pages` is filtered by the
+    `\\d{4}mk` slug pattern, so next year's book joins the catalogue on
+    its own. Hard-coding 2023–2026 would have meant a code change every
+    Easter, and in practice it would just have been forgotten.
+
+    Note the printed songbooks for 2021 and 2022 carry QR codes to
+    `cgdc.hk/2021mk` / `2022mk`, and BOTH 404 — those pages are not on
+    the site (no draft, no private copy; checked against the full page
+    list). Nothing can be synced for them until the church republishes;
+    the pattern match will pick them up automatically if it ever does.
+    """
+    pages = http_json(CGDC_PAGES) or []
+    books = []
+    for p in pages:
+        m = CGDC_MK_SLUG_RE.match(p.get('slug') or '')
+        if m:
+            books.append((m.group(1), p.get('link')))
+    books.sort()
+
+    if not books:
+        print('  cgdc: no MK songbook pages found', file=sys.stderr)
+        return []
+
+    # Album names come from the sr_playlist post titles, which are
+    # curated ("2024 Bravery 刚强奋勇"). The pages' own
+    # `data-albumTitle` is not trustworthy — on the 2024 page it is
+    # literally the string "https://cgdc.hk/2024mk", which would
+    # otherwise be carried into the catalogue as an album name.
+    albums_by_year = {}
+    for a in http_json(f'{CGDC_ROOT}/wp-json/wp/v2/sr_playlist'
+                       '?per_page=100&_fields=title') or []:
+        name = clean_title((a.get('title') or {}).get('rendered'))
+        if not name:
+            continue
+        year = re.match(r'^(\d{4})', name)
+        if year:
+            albums_by_year[year.group(1)] = name
+
+    entries = []
+    for year, link in books:
+        page_html = http_get(link)
+        if not page_html:
+            continue
+
+        album = albums_by_year.get(year)
+        if not album:
+            page_album = CGDC_ALBUM_RE.search(page_html)
+            candidate = (clean_title(page_album.group(1))
+                         if page_album else None)
+            # Reject the URL-shaped values some pages carry.
+            album = (candidate
+                     if candidate and not candidate.startswith('http')
+                     else None)
+        times = CGDC_TIME_RE.findall(page_html)
+
+        # Sheet music sits on the same page, keyed by the track number
+        # ("2024-01"). Matching on the FULL filename does not work:
+        # audio carries recording-date suffixes
+        # (2024-01-当刚强非常壮胆-01-04-2024.mp3) while the PDF does
+        # not, and several tracks ship both a Chinese-named and an
+        # English-named score. The track number is the only part both
+        # sides agree on.
+        pdfs = {}
+        for raw in _PDF_RE.findall(page_html):
+            name = urllib.parse.unquote(raw.rsplit('/', 1)[-1])
+            num = re.match(r'^(\d{4}-\d+)', name)
+            if num:
+                pdfs.setdefault(num.group(1),
+                                urllib.parse.urljoin(CGDC_ROOT, raw))
+
+        seen = set()
+        for idx, m in enumerate(CGDC_TRACK_RE.finditer(page_html)):
+            url = urllib.parse.urljoin(CGDC_ROOT, m.group('url'))
+            if url in seen:
+                continue
+            seen.add(url)
+
+            raw_title = clean_title(html.unescape(m.group('title')))
+            stem = urllib.parse.unquote(
+                m.group('url').rsplit('/', 1)[-1])[:-4]
+            title = raw_title or clean_title(stem)
+            if not title:
+                continue
+            # Titles arrive as "2023-02 多结果子" — the track number is
+            # useful as a code, not as part of the name.
+            code = None
+            numbered = re.match(r'^(\d{4}-\d+)\s+(.*)$', title)
+            if numbered:
+                code, title = numbered.group(1), numbered.group(2).strip()
+
+            entries.append(make_entry(
+                'cgdc', f'{year}-{len(seen):02d}', title, link,
+                code=code,
+                language=detect_language(title, default='zh'),
+                durationSec=duration_to_seconds(
+                    times[idx] if idx < len(times) else None),
+                audioUrl=url,
+                audioTracks=build_tracks([(url, 'vocal', None)]),
+                scoreUrl=pdfs.get(code or ''),
+                # The songbook name ("2023 多结果子 Fruitfulness") is an
+                # album, not a theme — themes are a closed vocabulary
+                # with localised labels, and stuffing a free-text
+                # album in there would break that contract.
+                album=album,
+                themes=infer_themes(title),
+                verse=infer_verse(title),
+            ))
+
+    years = ', '.join(y for y, _ in books)
+    print(f'  cgdc: {len(entries)} songs across {len(books)} '
+          f'songbooks ({years})')
+    return entries
+
+
 # ── Merge ─────────────────────────────────────────────────────────
 
 # Fields refreshed from upstream, keeping the stored value when the
 # fresh one is empty. Descriptive metadata only.
 _REFRESH_FIELDS = (
-    'url', 'sourceLabel', 'language', 'code', 'artist', 'composer',
-    'lyricist', 'durationSec', 'artworkUrl', 'lyrics',
+    'url', 'sourceLabel', 'language', 'code', 'album', 'artist',
+    'composer', 'lyricist', 'durationSec', 'artworkUrl', 'lyrics',
 )
 
 # Media links, where the fresh value is AUTHORITATIVE — including when
@@ -1020,12 +1195,49 @@ def main():
     wp_index = fetch_fydt_wp_index()
     fresh = (fetch_fydt(taxonomy, wp_index)
              + fetch_cahaya()
-             + fetch_cdc(verify=not args.no_prune))
+             + fetch_cdc(verify=not args.no_prune)
+             + fetch_cgdc())
 
     if not fresh:
         print('ERROR: every source returned nothing — refusing to write an '
               'empty catalogue.', file=sys.stderr)
         return 1
+
+    # Per-source regression guard.
+    #
+    # The "is `fresh` empty?" check above only catches TOTAL failure. It
+    # does not catch the far more likely case: one site is down, rate-
+    # limiting us, or has changed its markup, while the others answer
+    # fine. That run looks successful and quietly deletes every song
+    # from the failed source — which is exactly what happened on
+    # 2026-08-09, when fydt.org stopped responding mid-sync and a run
+    # produced 393 songs with all 213 fydt entries marked "no longer
+    # upstream".
+    #
+    # A church does not delete 90% of its songbook overnight. Treat a
+    # collapse like that as a failed fetch, not as real news, and exit
+    # non-zero so the weekly workflow fails loudly with the previous
+    # catalogue still in place.
+    if existing:
+        before = {}
+        for s in existing.values():
+            before[s['source']] = before.get(s['source'], 0) + 1
+        after = {}
+        for e in fresh:
+            after[e['source']] = after.get(e['source'], 0) + 1
+
+        collapsed = []
+        for source, was in before.items():
+            now = after.get(source, 0)
+            if was >= 10 and now < was * 0.5:
+                collapsed.append(f'{source}: {was} → {now}')
+        if collapsed:
+            print('ERROR: a source collapsed — almost certainly a failed '
+                  'fetch, not an upstream deletion. Refusing to write.\n'
+                  '       ' + '; '.join(collapsed) +
+                  '\n       Re-run; if the loss is real, delete the '
+                  'stored catalogue to accept it.', file=sys.stderr)
+            return 1
 
     merged = {}
     for entry in fresh:

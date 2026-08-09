@@ -41,9 +41,49 @@ void main() {
       expect(ids.length, songs.length, reason: 'duplicate song ids');
     });
 
-    test('all three catalogues are present', () {
+    test('all four catalogues are present', () {
       final sources = songs.map((s) => s.source).toSet();
-      expect(sources, containsAll(<String>['fydt', 'cahaya', 'cdc']));
+      expect(sources,
+          containsAll(<String>['fydt', 'cahaya', 'cdc', 'cgdc']));
+    });
+
+    // cgdc.hk publishes one Easter-camp songbook per year, and the
+    // sync DISCOVERS them by slug pattern rather than a hardcoded
+    // list — so next year's book joins on its own. If this ever drops
+    // to a suspiciously small number, the discovery has broken.
+    test('cgdc contributes several yearly songbooks', () {
+      final cgdc = songs.where((s) => s.source == 'cgdc').toList();
+      expect(cgdc.length, greaterThan(40));
+      final albums = cgdc.map((s) => s.album).whereType<String>().toSet();
+      expect(albums.length, greaterThanOrEqualTo(4),
+          reason: 'expected one album per camp year');
+      for (final a in albums) {
+        expect(a, isNot(startsWith('http')),
+            reason: 'an album name leaked a URL — cgdc.hk\'s 2024 page '
+                'sets data-albumTitle to its own address, so album '
+                'names must come from the sr_playlist titles');
+      }
+    });
+
+    test('every media URL is a parseable, encoded URI', () {
+      // cgdc.hk publishes filenames with raw Chinese characters; the
+      // sync percent-encodes them. An unencoded path would be an
+      // invalid URI and Dart's handling of it is not something to
+      // rely on.
+      for (final s in songs) {
+        for (final url in [
+          s.audioUrl,
+          s.scoreUrl,
+          ...s.audioTracks.map((t) => t.url),
+        ]) {
+          if (url == null) continue;
+          final uri = Uri.tryParse(url);
+          expect(uri, isNotNull, reason: '${s.id}: unparseable $url');
+          expect(url, isNot(matches(RegExp(r'[^\x00-\x7F]'))),
+              reason: '${s.id}: URL contains raw non-ASCII — '
+                  'should be percent-encoded: $url');
+        }
+      }
     });
 
     test('every language and source has a display label', () {
@@ -307,10 +347,17 @@ void main() {
           if (url != null) hosts.add(Uri.parse(url).host);
         }
       }
+      // Deliberately a literal, not read from SongPlayerService: this
+      // is meant to be an INDEPENDENT check that the netlify.toml
+      // rules cover every host, so deriving it from the same map the
+      // code uses would make it agree with itself and prove nothing.
+      // Adding a source means adding it here, in the Dart proxy map,
+      // AND in netlify.toml.
       const proxied = {
         'fydt.org',
         'www.christiandiscipleschurch.org',
         'cahayapengharapan.org',
+        'cgdc.hk',
       };
       expect(hosts.difference(proxied), isEmpty,
           reason: 'a playable host has no /song-media/* rule in '

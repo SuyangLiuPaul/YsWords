@@ -84,6 +84,11 @@ class Song {
   /// "open original" even when we can play the media inline.
   final String url;
 
+  /// Songbook or release this belongs to, where the source groups its
+  /// songs that way — cgdc.hk publishes one Easter-camp songbook a
+  /// year ("2024 Bravery 刚强奋勇"). Null for flat catalogues.
+  final String? album;
+
   /// Performer credit, as published. fydt writes these as
   /// `'歌手 / 词曲作者'`; the raw string is kept verbatim rather than
   /// split, because the separator is not used consistently upstream.
@@ -155,6 +160,7 @@ class Song {
     required this.sourceLabel,
     this.code,
     required this.url,
+    this.album,
     this.artist,
     this.composer,
     this.lyricist,
@@ -191,6 +197,7 @@ class Song {
       sourceLabel: str('sourceLabel') ?? '',
       code: str('code'),
       url: j['url'] as String,
+      album: str('album'),
       artist: str('artist'),
       composer: str('composer'),
       lyricist: str('lyricist'),
@@ -310,6 +317,14 @@ const Map<String, Map<String, String>> songSourceLabels = {
     'en': 'Christian Disciples Church',
     'zh-Hans': '基督门徒福音会',
     'zh-Hant': '基督門徒福音會',
+  },
+  // cgdc.hk is the Hong Kong church — a DIFFERENT site from
+  // christiandiscipleschurch.org above, despite the similar name. It
+  // publishes the yearly MK Easter-camp songbooks.
+  'cgdc': {
+    'en': 'CGDC Hong Kong',
+    'zh-Hans': '基督门徒福音会（香港）',
+    'zh-Hant': '基督門徒福音會（香港）',
   },
 };
 

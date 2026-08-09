@@ -99,6 +99,12 @@
   status = 200
   force = true
 
+[[redirects]]
+  from = "/song-media/cgdc/*"
+  to = "https://cgdc.hk/:splat"
+  status = 200
+  force = true
+
 # Static-file SPA fallback. The Netlify Function URLs (`/api/*` and
 # `/.netlify/functions/*`) are matched and served by Netlify BEFORE
 # this catch-all rewrite, so the function doesn't get swallowed by
