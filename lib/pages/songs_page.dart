@@ -231,11 +231,20 @@ class _SongsPageState extends State<SongsPage> {
                             _downloadFiltered(filtered, locale),
                       );
                     }
+                    final song = filtered[i - 2];
                     return _SongTile(
-                      song: filtered[i - 2],
+                      song: song,
                       settings: settings,
                       scheme: scheme,
                       locale: locale,
+                      // Tapping play starts the LIST at this song, not
+                      // the song on its own. A one-song queue has
+                      // nothing to skip to, which is why the lock
+                      // screen's ⏮ ⏭ were dead — and queueing what the
+                      // user is looking at is what every music app
+                      // does anyway.
+                      onPlay: () => _playFiltered(filtered, false, locale,
+                          startSongId: song.id),
                     );
                   },
                 ),
@@ -256,11 +265,18 @@ class _SongsPageState extends State<SongsPage> {
   /// 有伴奏 and hit shuffle and you have a quiet driving playlist
   /// without saving anything first.
   Future<void> _playFiltered(
-      List<Song> filtered, bool shuffle, String locale) async {
+    List<Song> filtered,
+    bool shuffle,
+    String locale, {
+    String? startSongId,
+  }) async {
     final player = SongPlayerService.instance;
     await player.playQueue(
       filtered,
       shuffle: shuffle,
+      // By id, not position: fromSongs drops unplayable songs, so a row
+      // number taken from the visible list would land on the wrong one.
+      startSongId: startSongId,
       label: _queueLabel(locale),
     );
     if (!mounted) return;
@@ -1345,11 +1361,14 @@ class _SongTile extends StatelessWidget {
   final AppSettings settings;
   final ColorScheme scheme;
   final String locale;
+  /// Start playing from this row. Queues the whole filtered list.
+  final VoidCallback onPlay;
   const _SongTile({
     required this.song,
     required this.settings,
     required this.scheme,
     required this.locale,
+    required this.onPlay,
   });
 
   void _openDetail(BuildContext context) {
@@ -1392,6 +1411,7 @@ class _SongTile extends StatelessWidget {
                 scheme: scheme,
                 locale: locale,
                 fallbackBadge: langBadge,
+                onPlay: onPlay,
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -1508,11 +1528,15 @@ class _PlayButton extends StatelessWidget {
   final ColorScheme scheme;
   final String locale;
   final String fallbackBadge;
+  /// Start the list from this song. Only used when this row is not
+  /// already the current one — otherwise the button is play/pause.
+  final VoidCallback onPlay;
   const _PlayButton({
     required this.song,
     required this.scheme,
     required this.locale,
     required this.fallbackBadge,
+    required this.onPlay,
   });
 
   @override
@@ -1559,7 +1583,13 @@ class _PlayButton extends StatelessWidget {
             borderRadius: BorderRadius.circular(8),
             child: InkWell(
               borderRadius: BorderRadius.circular(8),
-              onTap: () => player.toggle(song, SongTrack.vocal),
+              // Already the current song → plain play/pause, so a tap
+              // does not restart it. Otherwise start the list here,
+              // which is what gives the lock screen a queue to skip
+              // through.
+              onTap: () => isThis
+                  ? player.toggle(song, SongTrack.vocal, player.currentUrl)
+                  : onPlay(),
               child: SizedBox(
                 width: 40,
                 height: 40,

@@ -90,6 +90,7 @@ class SongQueue {
     TrackFallback fallback = TrackFallback.useVocal,
     String? sourceLabel,
     int startIndex = 0,
+    String? startSongId,
     bool shuffled = false,
     RepeatMode repeat = RepeatMode.off,
     Random? random,
@@ -99,9 +100,21 @@ class SongQueue {
       final resolved = resolveTrack(s, preference, fallback);
       if (resolved != null) items.add(resolved);
     }
+    // Prefer the song id over a positional index.
+    //
+    // [startIndex] counts into the RESULT, which has had every song
+    // with no playable track dropped — so a caller passing "row 12 of
+    // what the user is looking at" lands on the wrong song as soon as
+    // anything above it was unplayable, and an instrumental-only
+    // playlist can drop most of the list. An id cannot drift.
+    var index = startIndex;
+    if (startSongId != null) {
+      final found = items.indexWhere((i) => i.song.id == startSongId);
+      if (found >= 0) index = found;
+    }
     var queue = SongQueue(
       items: items,
-      index: startIndex.clamp(0, items.isEmpty ? 0 : items.length - 1),
+      index: index.clamp(0, items.isEmpty ? 0 : items.length - 1),
       repeat: repeat,
       sourceLabel: sourceLabel,
     );

@@ -130,7 +130,13 @@ class _SongPlaylistDetailPageState extends State<SongPlaylistDetailPage> {
     final player = SongPlayerService.instance;
     await player.playQueue(
       songs,
-      startIndex: startIndex,
+      // By id: fromSongs drops songs with no playable track — and an
+      // instrumental-only playlist with skip can drop most of them —
+      // so a row number from this page would start on the wrong song.
+      startSongId:
+          startIndex >= 0 && startIndex < songs.length
+              ? songs[startIndex].id
+              : null,
       shuffle: shuffle,
       preference: playlist.preference,
       fallback: playlist.fallback,

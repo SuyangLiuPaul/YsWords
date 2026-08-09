@@ -402,19 +402,35 @@ class SongAudioHandler extends BaseAudioHandler with SeekHandler {
 
   /// Push transport state to the OS + any listening UI.
   void _broadcast() {
-    final hasNext = _queue.hasNext;
-    final hasPrev = _queue.hasPrevious;
+    // Skip controls are offered whenever there is a queue at all, not
+    // only when there is something on that side of it.
+    //
+    // Reported from an iPhone: the lock screen showed ⏪ ⏩ and neither
+    // did anything. Two causes. (a) `MediaAction.seekForward` /
+    // `seekBackward` were declared, and audio_service maps those to
+    // MPRemoteCommandCenter's skipForward/skipBackward — but it only
+    // attaches a handler when `fastForwardInterval` / `rewindInterval`
+    // are non-zero, and this app never set them. So iOS was told the
+    // app supports skip-by-interval and then given nothing to call:
+    // buttons that render and do nothing. They are gone.
+    // (b) previous/next were conditional on `hasPrevious`/`hasNext`, so
+    // on the first track of a queue — or a one-song queue, which is
+    // what the row play button used to build — the real ⏮ ⏭ were never
+    // enabled at all, leaving only the dead pair.
+    final multi = _queue.length > 1;
     playbackState.add(PlaybackState(
       controls: [
-        if (hasPrev) MediaControl.skipToPrevious,
+        if (multi) MediaControl.skipToPrevious,
         if (_playing) MediaControl.pause else MediaControl.play,
-        if (hasNext) MediaControl.skipToNext,
+        if (multi) MediaControl.skipToNext,
         MediaControl.stop,
       ],
-      systemActions: const {
+      // `seek` is the scrubber and it works; the interval-skip actions
+      // are deliberately absent — see above.
+      systemActions: {
         MediaAction.seek,
-        MediaAction.seekForward,
-        MediaAction.seekBackward,
+        if (multi) MediaAction.skipToNext,
+        if (multi) MediaAction.skipToPrevious,
       },
       androidCompactActionIndices: const [0, 1, 2],
       processingState: _loading

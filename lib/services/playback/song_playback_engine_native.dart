@@ -98,10 +98,22 @@ class SongPlaybackEngine {
   }
 
   Future<void> dispose() async {
-    try {
-      await _player.dispose();
-    } catch (_) {
-      // Disposing a player that never started is not worth reporting.
+    // `AudioPlayer.dispose()` awaits the same start-up future that
+    // failed for want of a platform side — and it does not fail fast,
+    // it simply never completes. Anything awaiting this then waits
+    // forever; it wedged an entire test file before it was noticed,
+    // and would do the same to a shutdown path on a device where the
+    // plugin is missing.
+    //
+    // Skip it outright when start-up is known to have failed, and cap
+    // it otherwise: a player that will not release in three seconds is
+    // being torn down with the process anyway.
+    if (!_unavailable) {
+      try {
+        await _player.dispose().timeout(const Duration(seconds: 3));
+      } catch (_) {
+        // Disposing a player that never started is not worth reporting.
+      }
     }
     await _position.close();
     await _duration.close();

@@ -164,9 +164,14 @@ class SongPlayerService extends ChangeNotifier {
   }
 
   /// Play a whole list, starting at [startIndex].
+  /// Pass [startSongId] rather than [startIndex] whenever the caller is
+  /// starting from a row the user tapped: unplayable songs are dropped
+  /// while building, so a position taken from the visible list does not
+  /// survive the trip.
   Future<void> playQueue(
     List<Song> songs, {
     int startIndex = 0,
+    String? startSongId,
     TrackPreference preference = TrackPreference.vocal,
     TrackFallback fallback = TrackFallback.useVocal,
     bool shuffle = false,
@@ -178,6 +183,7 @@ class SongPlayerService extends ChangeNotifier {
       preference: preference,
       fallback: fallback,
       startIndex: startIndex,
+      startSongId: startSongId,
       shuffled: shuffle,
       repeat: repeat,
       sourceLabel: label,
