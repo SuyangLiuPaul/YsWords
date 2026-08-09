@@ -114,16 +114,18 @@ class NowPlayingPage extends StatelessWidget {
                     const SizedBox(height: 16),
                     _SecondaryRow(
                         player: player, scheme: scheme, locale: locale),
+                    // "3 / 47" used to be a dead label. It is the only
+                    // place the rest of the queue is visible at all, so
+                    // it is now the way in: tap to see what is coming
+                    // and jump straight to a track without pressing
+                    // next eleven times.
                     if (queue.length > 1) ...[
                       const SizedBox(height: 20),
-                      Align(
-                        alignment: AlignmentDirectional.centerStart,
-                        child: Text(
-                          '${queue.index + 1} / ${queue.length}'
-                          '${queue.sourceLabel == null ? '' : ' · ${queue.sourceLabel}'}',
-                          style: TextStyle(
-                              fontSize: 12, color: scheme.onSurfaceVariant),
-                        ),
+                      _QueueButton(
+                        queue: queue,
+                        scheme: scheme,
+                        locale: locale,
+                        onTap: () => _showQueue(context, locale),
                       ),
                     ],
                   ],
@@ -132,6 +134,250 @@ class NowPlayingPage extends StatelessWidget {
             ),
           );
         },
+      ),
+    );
+  }
+}
+
+void _showQueue(BuildContext context, String locale) {
+  showModalBottomSheet<void>(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Theme.of(context).colorScheme.surface,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+    ),
+    builder: (_) => _QueueSheet(locale: locale),
+  );
+}
+
+class _QueueButton extends StatelessWidget {
+  final SongQueue queue;
+  final ColorScheme scheme;
+  final String locale;
+  final VoidCallback onTap;
+
+  const _QueueButton({
+    required this.queue,
+    required this.scheme,
+    required this.locale,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: scheme.surfaceContainerLow,
+      borderRadius: BorderRadius.circular(10),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(10),
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(14, 10, 10, 10),
+          child: Row(
+            children: [
+              Icon(Icons.queue_music_rounded,
+                  size: 18, color: scheme.primary),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  '${uiStrings['songsQueue']?[locale] ?? 'Queue'}'
+                  '  ·  ${queue.index + 1} / ${queue.length}'
+                  '${queue.sourceLabel == null ? '' : '  ·  ${queue.sourceLabel}'}',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: scheme.onSurfaceVariant,
+                    fontFeatures: const [FontFeature.tabularFigures()],
+                  ),
+                ),
+              ),
+              Icon(Icons.expand_less_rounded,
+                  size: 20, color: scheme.onSurfaceVariant),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// The playing order, with the current track highlighted.
+///
+/// Opens scrolled to the current track rather than to the top: in a
+/// 47-song queue the useful part is "what is next", and starting at
+/// row 1 would make the user find their place by hand.
+class _QueueSheet extends StatefulWidget {
+  final String locale;
+  const _QueueSheet({required this.locale});
+
+  @override
+  State<_QueueSheet> createState() => _QueueSheetState();
+}
+
+class _QueueSheetState extends State<_QueueSheet> {
+  static const _rowHeight = 56.0;
+  late final ScrollController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    final index = SongPlayerService.instance.queue.index;
+    _controller = ScrollController(
+      // Two rows above the current one, so it reads as "here, with
+      // context" instead of pinned to the very top edge.
+      initialScrollOffset: ((index - 2) * _rowHeight).clamp(0.0, 1e6),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final player = SongPlayerService.instance;
+    final scheme = Theme.of(context).colorScheme;
+    final settings = context.watch<AppSettings>();
+    final locale = widget.locale;
+
+    return SafeArea(
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(context).size.height * 0.72),
+        child: ListenableBuilder(
+          listenable: player,
+          builder: (context, _) {
+            final queue = player.queue;
+            return Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 14, 8, 6),
+                  child: Row(
+                    children: [
+                      Icon(Icons.queue_music_rounded,
+                          size: 18, color: scheme.primary),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          uiStrings['songsQueue']?[locale] ?? 'Queue',
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                              fontSize: 16, fontWeight: FontWeight.w600),
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.close, size: 20),
+                        visualDensity: VisualDensity.compact,
+                        onPressed: () => Navigator.of(context).maybePop(),
+                      ),
+                    ],
+                  ),
+                ),
+                Flexible(
+                  child: ListView.builder(
+                    controller: _controller,
+                    itemExtent: _rowHeight,
+                    itemCount: queue.length,
+                    itemBuilder: (context, i) {
+                      final item = queue.items[i];
+                      final current = i == queue.index;
+                      return Material(
+                        color: current
+                            ? scheme.primaryContainer.withValues(alpha: 0.4)
+                            : Colors.transparent,
+                        child: InkWell(
+                          onTap: () => player.playAt(i),
+                          child: Padding(
+                            padding:
+                                const EdgeInsets.symmetric(horizontal: 16),
+                            child: Row(
+                              children: [
+                                SizedBox(
+                                  width: 30,
+                                  child: current
+                                      ? Icon(
+                                          player.isPlaying
+                                              ? Icons.volume_up_rounded
+                                              : Icons.pause_rounded,
+                                          size: 16,
+                                          color: scheme.primary)
+                                      : Text(
+                                          '${i + 1}',
+                                          style: TextStyle(
+                                            fontSize: 11,
+                                            color: scheme.onSurfaceVariant,
+                                            fontFeatures: const [
+                                              FontFeature.tabularFigures()
+                                            ],
+                                          ),
+                                        ),
+                                ),
+                                Expanded(
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        item.song.title,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(
+                                          fontFamily: settings.fontFamily,
+                                          fontFamilyFallback:
+                                              kCjkFontFallback,
+                                          fontSize: 14,
+                                          fontWeight: current
+                                              ? FontWeight.w700
+                                              : FontWeight.w500,
+                                          color: scheme.onSurface,
+                                        ),
+                                      ),
+                                      Text(
+                                        [
+                                          item.song.album ??
+                                              item.song.sourceLabel,
+                                          // Which mix, when it is not
+                                          // the sung take — an
+                                          // instrumental queue should
+                                          // say so on every row.
+                                          if (item.kind == 'instrumental')
+                                            uiStrings[
+                                                        'songsTrackInstrumental']
+                                                    ?[locale] ??
+                                                'Instrumental',
+                                          if (item.kind == 'accompaniment')
+                                            uiStrings[
+                                                        'songsTrackAccompaniment']
+                                                    ?[locale] ??
+                                                'Accompaniment',
+                                        ].join(' · '),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(
+                                            fontSize: 11,
+                                            color: scheme.onSurfaceVariant),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ],
+            );
+          },
+        ),
       ),
     );
   }

@@ -71,6 +71,13 @@ class _SongsPageState extends State<SongsPage> {
   /// a recognised Bible book. Aligned with sermons-page filter so
   /// the UX is consistent across the app.
   String _bookFilter = 'all';
+  /// 'all' | an album name. cgdc releases one album a year
+  /// (`2026 SAIL 乘風破浪`, `2025 Nearer 更亲近`, …), which is how that
+  /// congregation actually refers to its songs — "the 2024 ones" — so
+  /// a year picker is the filter they will reach for. Empty for every
+  /// other source, and the section hides itself when no loaded song
+  /// has an album.
+  String _albumFilter = 'all';
   String _query = '';
   /// 'recent' (default — newest first by updatedAt) |
   /// 'added'  (newest first by firstSeenAt) |
@@ -142,11 +149,13 @@ class _SongsPageState extends State<SongsPage> {
           }
           final themes = SongService.distinctThemes(all);
           final availableBooks = _booksWithSongs(all);
+          final albums = SongService.distinctAlbums(all);
           final filtered = _filter(all);
           final hasFilter = _langFilter != 'all' ||
               _sourceFilter != 'all' ||
               _themeFilter != 'all' ||
               _bookFilter != 'all' ||
+              _albumFilter != 'all' ||
               _mediaFilter != 'all';
           return Center(
             child: ConstrainedBox(
@@ -180,10 +189,12 @@ class _SongsPageState extends State<SongsPage> {
                         sourceFilter: _sourceFilter,
                         themeFilter: _themeFilter,
                         bookFilter: _bookFilter,
+                        albumFilter: _albumFilter,
                         mediaFilter: _mediaFilter,
                         sort: _sort,
                         availableThemes: themes,
                         availableBooks: availableBooks,
+                        availableAlbums: albums,
                         availableSources:
                             SongService.distinctSources(all),
                         availableLanguages:
@@ -196,6 +207,7 @@ class _SongsPageState extends State<SongsPage> {
                           _sourceFilter = 'all';
                           _themeFilter = 'all';
                           _bookFilter = 'all';
+                          _albumFilter = 'all';
                           _mediaFilter = 'all';
                         }),
                         onLangChanged: (v) =>
@@ -206,6 +218,8 @@ class _SongsPageState extends State<SongsPage> {
                             setState(() => _themeFilter = v),
                         onBookChanged: (v) =>
                             setState(() => _bookFilter = v),
+                        onAlbumChanged: (v) =>
+                            setState(() => _albumFilter = v),
                         onMediaChanged: (v) =>
                             setState(() => _mediaFilter = v),
                         onSortChanged: (v) =>
@@ -353,6 +367,7 @@ class _SongsPageState extends State<SongsPage> {
         source: _sourceFilter,
         theme: _themeFilter,
         book: _bookFilter,
+        album: _albumFilter,
         media: _mediaFilter,
         query: _query,
       ),
@@ -371,6 +386,10 @@ class _SongsPageState extends State<SongsPage> {
   /// and in the OS media session.
   String _queueLabel(String locale) {
     final parts = <String>[
+      // Album first when set: it is the most specific thing a user can
+      // pick, and "2025 Nearer 更亲近" on the lock screen says more
+      // than "CGDC · Chinese" ever would.
+      if (_albumFilter != 'all') _albumFilter,
       if (_sourceFilter != 'all') localizedSongSource(_sourceFilter, locale),
       if (_langFilter != 'all') localizedSongLanguage(_langFilter, locale),
       if (_themeFilter != 'all') localizedSongTheme(_themeFilter, locale),
@@ -406,6 +425,9 @@ class _SongsPageState extends State<SongsPage> {
     }
     if (_bookFilter != 'all') {
       out = out.where((s) => s.verseBook == _bookFilter);
+    }
+    if (_albumFilter != 'all') {
+      out = out.where((s) => s.album?.trim() == _albumFilter);
     }
     switch (_mediaFilter) {
       case 'audio':
@@ -546,10 +568,12 @@ class _SearchAndFilterBar extends StatelessWidget {
   final String sourceFilter;
   final String themeFilter;
   final String bookFilter;
+  final String albumFilter;
   final String mediaFilter;
   final String sort;
   final List<String> availableThemes;
   final Set<String> availableBooks;
+  final List<String> availableAlbums;
   final List<String> availableSources;
   final List<String> availableLanguages;
   final int matchCount;
@@ -560,6 +584,7 @@ class _SearchAndFilterBar extends StatelessWidget {
   final ValueChanged<String> onSourceChanged;
   final ValueChanged<String> onThemeChanged;
   final ValueChanged<String> onBookChanged;
+  final ValueChanged<String> onAlbumChanged;
   final ValueChanged<String> onMediaChanged;
   final ValueChanged<String> onSortChanged;
   /// Play the current filter result; the bool is 'shuffled'.
@@ -579,10 +604,12 @@ class _SearchAndFilterBar extends StatelessWidget {
     required this.sourceFilter,
     required this.themeFilter,
     required this.bookFilter,
+    required this.albumFilter,
     required this.mediaFilter,
     required this.sort,
     required this.availableThemes,
     required this.availableBooks,
+    required this.availableAlbums,
     required this.availableSources,
     required this.availableLanguages,
     required this.matchCount,
@@ -593,6 +620,7 @@ class _SearchAndFilterBar extends StatelessWidget {
     required this.onSourceChanged,
     required this.onThemeChanged,
     required this.onBookChanged,
+    required this.onAlbumChanged,
     required this.onMediaChanged,
     required this.onSortChanged,
     required this.onPlayAll,
@@ -713,6 +741,19 @@ class _SearchAndFilterBar extends StatelessWidget {
                   label: Text(
                       localeAwareBookName(bookFilter, locale)),
                   onDeleted: () => onBookChanged('all'),
+                ),
+              if (albumFilter != 'all')
+                InputChip(
+                  avatar: const Icon(Icons.album_outlined, size: 16),
+                  // Album names run to "2025 Nearer 更亲近" — three
+                  // words in two scripts. Bounded so one chip cannot
+                  // take the whole row on a narrow phone.
+                  label: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 150),
+                    child: Text(albumFilter,
+                        maxLines: 1, overflow: TextOverflow.ellipsis),
+                  ),
+                  onDeleted: () => onAlbumChanged('all'),
                 ),
               if (mediaFilter != 'all')
                 InputChip(
@@ -857,19 +898,24 @@ class _SearchAndFilterBar extends StatelessWidget {
           settings: settings,
           availableThemes: availableThemes,
           availableBooks: availableBooks,
+          availableAlbums: availableAlbums,
           availableSources: availableSources,
           availableLanguages: availableLanguages,
-          initialLang: langFilter,
-          initialSource: sourceFilter,
-          initialTheme: themeFilter,
-          initialBook: bookFilter,
-          initialMedia: mediaFilter,
-          onApply: (lang, source, theme, book, media) {
-            onLangChanged(lang);
-            onSourceChanged(source);
-            onThemeChanged(theme);
-            onBookChanged(book);
-            onMediaChanged(media);
+          initial: (
+            lang: langFilter,
+            source: sourceFilter,
+            theme: themeFilter,
+            book: bookFilter,
+            album: albumFilter,
+            media: mediaFilter,
+          ),
+          onApply: (sel) {
+            onLangChanged(sel.lang);
+            onSourceChanged(sel.source);
+            onThemeChanged(sel.theme);
+            onBookChanged(sel.book);
+            onAlbumChanged(sel.album);
+            onMediaChanged(sel.media);
             Navigator.of(sheetCtx).pop();
           },
           onClear: () {
@@ -877,6 +923,7 @@ class _SearchAndFilterBar extends StatelessWidget {
             onSourceChanged('all');
             onThemeChanged('all');
             onBookChanged('all');
+            onAlbumChanged('all');
             onMediaChanged('all');
             Navigator.of(sheetCtx).pop();
           },
@@ -889,20 +936,32 @@ class _SearchAndFilterBar extends StatelessWidget {
 /// Modal-sheet filter — mirrors `_PassageFilterSheet` from
 /// sermons_page.dart so users get the same affordance across pages.
 /// Hosts every song filter so the inline bar above stays clean.
+/// Every facet the sheet edits, carried as one value.
+///
+/// Was six positional `String`s on `onApply`. Adding the album facet
+/// would have made seven interchangeable strings whose order only the
+/// call site knew — a named record costs nothing and makes a
+/// transposed argument a compile error instead of a filter that
+/// silently searches the wrong field.
+typedef SongFilterSelection = ({
+  String lang,
+  String source,
+  String theme,
+  String book,
+  String album,
+  String media,
+});
+
 class _SongFilterSheet extends StatefulWidget {
   final String locale;
   final AppSettings settings;
   final List<String> availableThemes;
   final Set<String> availableBooks;
+  final List<String> availableAlbums;
   final List<String> availableSources;
   final List<String> availableLanguages;
-  final String initialLang;
-  final String initialSource;
-  final String initialTheme;
-  final String initialBook;
-  final String initialMedia;
-  final void Function(String lang, String source, String theme, String book,
-      String media) onApply;
+  final SongFilterSelection initial;
+  final void Function(SongFilterSelection selection) onApply;
   final VoidCallback onClear;
 
   const _SongFilterSheet({
@@ -910,13 +969,10 @@ class _SongFilterSheet extends StatefulWidget {
     required this.settings,
     required this.availableThemes,
     required this.availableBooks,
+    required this.availableAlbums,
     required this.availableSources,
     required this.availableLanguages,
-    required this.initialLang,
-    required this.initialSource,
-    required this.initialTheme,
-    required this.initialBook,
-    required this.initialMedia,
+    required this.initial,
     required this.onApply,
     required this.onClear,
   });
@@ -930,16 +986,18 @@ class _SongFilterSheetState extends State<_SongFilterSheet> {
   late String _source;
   late String _theme;
   late String _book;
+  late String _album;
   late String _media;
 
   @override
   void initState() {
     super.initState();
-    _lang = widget.initialLang;
-    _source = widget.initialSource;
-    _theme = widget.initialTheme;
-    _book = widget.initialBook;
-    _media = widget.initialMedia;
+    _lang = widget.initial.lang;
+    _source = widget.initial.source;
+    _theme = widget.initial.theme;
+    _book = widget.initial.book;
+    _album = widget.initial.album;
+    _media = widget.initial.media;
   }
 
   @override
@@ -951,20 +1009,26 @@ class _SongFilterSheetState extends State<_SongFilterSheet> {
     return SafeArea(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // 2026-08-09: Apply lives in the header, not at the
-              // bottom. Adding the Media section pushed the sheet past
-              // a phone screen — with Theme and Book both expanded you
-              // had to scroll through ~60 chips to reach a button whose
-              // whole job is "I'm done". Pinning it here keeps it one
-              // tap away whatever is scrolled into view. The title uses
-              // Expanded so this row degrades by ellipsising the label
-              // rather than overflowing on a narrow phone.
-              Row(
+        // 2026-08-10: the header sits OUTSIDE the scroll view.
+        //
+        // v1.4.20 moved Apply from the bottom of the sheet to the top,
+        // but left it inside the SingleChildScrollView — so it was
+        // above the sections and still scrolled away with them. Adding
+        // the Album section made the sheet tall enough that scrolling
+        // to a year chip put Apply ~260px above the top of the screen,
+        // which a widget test caught by tapping thin air.
+        //
+        // Header fixed, sections scrolling under it: now Apply is one
+        // tap away whatever is scrolled into view, which is what
+        // moving it up was for.
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // The title uses Expanded so this row degrades by
+            // ellipsising the label rather than overflowing on a
+            // narrow phone.
+            Row(
                 children: [
                   Icon(Icons.tune, size: 18, color: scheme.primary),
                   const SizedBox(width: 8),
@@ -988,8 +1052,14 @@ class _SongFilterSheetState extends State<_SongFilterSheet> {
                   ),
                   const SizedBox(width: 4),
                   FilledButton(
-                    onPressed: () => widget.onApply(
-                        _lang, _source, _theme, _book, _media),
+                    onPressed: () => widget.onApply((
+                      lang: _lang,
+                      source: _source,
+                      theme: _theme,
+                      book: _book,
+                      album: _album,
+                      media: _media,
+                    )),
                     style: FilledButton.styleFrom(
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       visualDensity: VisualDensity.compact,
@@ -1004,171 +1074,215 @@ class _SongFilterSheetState extends State<_SongFilterSheet> {
                   ),
                 ],
               ),
-              const SizedBox(height: 8),
-              _SectionLabel(
-                  text: uiStrings['songsFilterLanguage']?[locale] ??
-                      'Language',
-                  scheme: scheme),
-              const SizedBox(height: 6),
-              // Wrap of chips rather than a SegmentedButton: adding
-              // Indonesian took this to four options, and four
-              // segments of localised text overflow a narrow phone.
-              Wrap(
-                spacing: 6,
-                runSpacing: 6,
-                children: [
-                  ChoiceChip(
-                    label: Text(allLabel),
-                    selected: _lang == 'all',
-                    onSelected: (_) => setState(() => _lang = 'all'),
-                  ),
-                  for (final code in widget.availableLanguages)
-                    ChoiceChip(
-                      label: Text(localizedSongLanguage(code, locale)),
-                      selected: _lang == code,
-                      onSelected: (_) => setState(() => _lang = code),
-                    ),
-                ],
-              ),
-              const SizedBox(height: 14),
-              _SectionLabel(
-                  text: uiStrings['songsFilterSource']?[locale] ??
-                      'Source',
-                  scheme: scheme),
-              const SizedBox(height: 6),
-              Wrap(
-                spacing: 6,
-                runSpacing: 6,
-                children: [
-                  ChoiceChip(
-                    label: Text(allLabel),
-                    selected: _source == 'all',
-                    onSelected: (_) => setState(() => _source = 'all'),
-                  ),
-                  for (final code in widget.availableSources)
-                    ChoiceChip(
-                      label: Text(localizedSongSource(code, locale)),
-                      selected: _source == code,
-                      onSelected: (_) => setState(() => _source = code),
-                    ),
-                ],
-              ),
-              const SizedBox(height: 14),
-              _SectionLabel(
-                  text: uiStrings['songsFilterMedia']?[locale] ?? 'Media',
-                  scheme: scheme),
-              const SizedBox(height: 6),
-              Wrap(
-                spacing: 6,
-                runSpacing: 6,
-                children: [
-                  ChoiceChip(
-                    label: Text(allLabel),
-                    selected: _media == 'all',
-                    onSelected: (_) => setState(() => _media = 'all'),
-                  ),
-                  ChoiceChip(
-                    avatar: const Icon(Icons.headphones_rounded, size: 16),
-                    label: Text(
-                        uiStrings['songsFilterHasAudio']?[locale] ?? 'Audio'),
-                    selected: _media == 'audio',
-                    onSelected: (_) => setState(() => _media = 'audio'),
-                  ),
-                  ChoiceChip(
-                    avatar: const Icon(Icons.movie_rounded, size: 16),
-                    label: Text(
-                        uiStrings['songsFilterHasVideo']?[locale] ?? 'Video'),
-                    selected: _media == 'video',
-                    onSelected: (_) => setState(() => _media = 'video'),
-                  ),
-                  ChoiceChip(
-                    avatar: const Icon(Icons.picture_as_pdf_rounded, size: 16),
-                    label: Text(
-                        uiStrings['songsFilterHasScore']?[locale] ?? 'Score'),
-                    selected: _media == 'score',
-                    onSelected: (_) => setState(() => _media = 'score'),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 14),
-              _SectionLabel(
-                  text: uiStrings['songsFilterTheme']?[locale] ??
-                      'Theme',
-                  scheme: scheme),
-              const SizedBox(height: 6),
-              ConstrainedBox(
-                constraints: BoxConstraints(
-                    maxHeight:
-                        MediaQuery.of(context).size.height * 0.22),
-                child: SingleChildScrollView(
-                  child: Wrap(
-                    spacing: 6,
-                    runSpacing: 6,
-                    children: [
-                      ChoiceChip(
-                        label: Text(allLabel),
-                        selected: _theme == 'all',
-                        onSelected: (_) =>
-                            setState(() => _theme = 'all'),
-                      ),
-                      for (final t in widget.availableThemes)
+            const SizedBox(height: 8),
+            Flexible(
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    _SectionLabel(
+                        text: uiStrings['songsFilterLanguage']?[locale] ??
+                            'Language',
+                        scheme: scheme),
+                    const SizedBox(height: 6),
+                    // Wrap of chips rather than a SegmentedButton: adding
+                    // Indonesian took this to four options, and four
+                    // segments of localised text overflow a narrow phone.
+                    Wrap(
+                      spacing: 6,
+                      runSpacing: 6,
+                      children: [
                         ChoiceChip(
-                          label: Text(localizedSongTheme(t, locale)),
-                          selected: _theme == t,
-                          onSelected: (_) =>
-                              setState(() => _theme = t),
+                          label: Text(allLabel),
+                          selected: _lang == 'all',
+                          onSelected: (_) => setState(() => _lang = 'all'),
                         ),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 14),
-              _SectionLabel(
-                  text: uiStrings['sermonFilterBookLabel']
-                              ?[locale] ??
-                      'Book',
-                  scheme: scheme),
-              const SizedBox(height: 6),
-              ConstrainedBox(
-                constraints: BoxConstraints(
-                    maxHeight:
-                        MediaQuery.of(context).size.height * 0.30),
-                child: SingleChildScrollView(
-                  child: Wrap(
-                    spacing: 6,
-                    runSpacing: 6,
-                    children: [
-                      ChoiceChip(
-                        label: Text(allLabel),
-                        selected: _book == 'all',
-                        onSelected: (_) =>
-                            setState(() => _book = 'all'),
+                        for (final code in widget.availableLanguages)
+                          ChoiceChip(
+                            label: Text(localizedSongLanguage(code, locale)),
+                            selected: _lang == code,
+                            onSelected: (_) => setState(() => _lang = code),
+                          ),
+                      ],
+                    ),
+                    const SizedBox(height: 14),
+                    _SectionLabel(
+                        text: uiStrings['songsFilterSource']?[locale] ??
+                            'Source',
+                        scheme: scheme),
+                    const SizedBox(height: 6),
+                    Wrap(
+                      spacing: 6,
+                      runSpacing: 6,
+                      children: [
+                        ChoiceChip(
+                          label: Text(allLabel),
+                          selected: _source == 'all',
+                          onSelected: (_) => setState(() => _source = 'all'),
+                        ),
+                        for (final code in widget.availableSources)
+                          ChoiceChip(
+                            label: Text(localizedSongSource(code, locale)),
+                            selected: _source == code,
+                            onSelected: (_) => setState(() => _source = code),
+                          ),
+                      ],
+                    ),
+                    // Album — cgdc only, one release a year. Hidden entirely
+                    // when nothing in the loaded catalogue has an album, so
+                    // the other three sources never see a dead section.
+                    if (widget.availableAlbums.isNotEmpty) ...[
+                      const SizedBox(height: 14),
+                      _SectionLabel(
+                          text: uiStrings['songsFilterAlbum']?[locale] ??
+                              'Album / year',
+                          scheme: scheme),
+                      const SizedBox(height: 6),
+                      Wrap(
+                        spacing: 6,
+                        runSpacing: 6,
+                        children: [
+                          ChoiceChip(
+                            label: Text(allLabel),
+                            selected: _album == 'all',
+                            onSelected: (_) => setState(() => _album = 'all'),
+                          ),
+                          for (final a in widget.availableAlbums)
+                            ChoiceChip(
+                              avatar: const Icon(Icons.album_outlined, size: 16),
+                              // Bounded: names carry an English and a Chinese
+                              // title after the year, and an unbounded chip
+                              // would push the row past a 320px screen.
+                              label: ConstrainedBox(
+                                constraints: const BoxConstraints(maxWidth: 190),
+                                child: Text(a,
+                                    maxLines: 1, overflow: TextOverflow.ellipsis),
+                              ),
+                              selected: _album == a,
+                              onSelected: (_) => setState(
+                                  () => _album = _album == a ? 'all' : a),
+                            ),
+                        ],
                       ),
-                      for (final b in standardBookOrder)
-                        _BookChip(
-                          book: b,
-                          locale: locale,
-                          hasSongs:
-                              widget.availableBooks.contains(b),
-                          selected: _book == b,
-                          onTap: () => setState(() {
-                            _book = _book == b ? 'all' : b;
-                          }),
-                        ),
                     ],
-                  ),
+                    const SizedBox(height: 14),
+                    _SectionLabel(
+                        text: uiStrings['songsFilterMedia']?[locale] ?? 'Media',
+                        scheme: scheme),
+                    const SizedBox(height: 6),
+                    Wrap(
+                      spacing: 6,
+                      runSpacing: 6,
+                      children: [
+                        ChoiceChip(
+                          label: Text(allLabel),
+                          selected: _media == 'all',
+                          onSelected: (_) => setState(() => _media = 'all'),
+                        ),
+                        ChoiceChip(
+                          avatar: const Icon(Icons.headphones_rounded, size: 16),
+                          label: Text(
+                              uiStrings['songsFilterHasAudio']?[locale] ?? 'Audio'),
+                          selected: _media == 'audio',
+                          onSelected: (_) => setState(() => _media = 'audio'),
+                        ),
+                        ChoiceChip(
+                          avatar: const Icon(Icons.movie_rounded, size: 16),
+                          label: Text(
+                              uiStrings['songsFilterHasVideo']?[locale] ?? 'Video'),
+                          selected: _media == 'video',
+                          onSelected: (_) => setState(() => _media = 'video'),
+                        ),
+                        ChoiceChip(
+                          avatar: const Icon(Icons.picture_as_pdf_rounded, size: 16),
+                          label: Text(
+                              uiStrings['songsFilterHasScore']?[locale] ?? 'Score'),
+                          selected: _media == 'score',
+                          onSelected: (_) => setState(() => _media = 'score'),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 14),
+                    _SectionLabel(
+                        text: uiStrings['songsFilterTheme']?[locale] ??
+                            'Theme',
+                        scheme: scheme),
+                    const SizedBox(height: 6),
+                    ConstrainedBox(
+                      constraints: BoxConstraints(
+                          maxHeight:
+                              MediaQuery.of(context).size.height * 0.22),
+                      child: SingleChildScrollView(
+                        child: Wrap(
+                          spacing: 6,
+                          runSpacing: 6,
+                          children: [
+                            ChoiceChip(
+                              label: Text(allLabel),
+                              selected: _theme == 'all',
+                              onSelected: (_) =>
+                                  setState(() => _theme = 'all'),
+                            ),
+                            for (final t in widget.availableThemes)
+                              ChoiceChip(
+                                label: Text(localizedSongTheme(t, locale)),
+                                selected: _theme == t,
+                                onSelected: (_) =>
+                                    setState(() => _theme = t),
+                              ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+                    _SectionLabel(
+                        text: uiStrings['sermonFilterBookLabel']
+                                    ?[locale] ??
+                            'Book',
+                        scheme: scheme),
+                    const SizedBox(height: 6),
+                    ConstrainedBox(
+                      constraints: BoxConstraints(
+                          maxHeight:
+                              MediaQuery.of(context).size.height * 0.30),
+                      child: SingleChildScrollView(
+                        child: Wrap(
+                          spacing: 6,
+                          runSpacing: 6,
+                          children: [
+                            ChoiceChip(
+                              label: Text(allLabel),
+                              selected: _book == 'all',
+                              onSelected: (_) =>
+                                  setState(() => _book = 'all'),
+                            ),
+                            for (final b in standardBookOrder)
+                              _BookChip(
+                                book: b,
+                                locale: locale,
+                                hasSongs:
+                                    widget.availableBooks.contains(b),
+                                selected: _book == b,
+                                onTap: () => setState(() {
+                                  _book = _book == b ? 'all' : b;
+                                }),
+                              ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              // Apply moved to the header row above — see the note
-              // there. Nothing follows the Book section now, so the
-              // sheet ends as soon as the chips do.
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
   }
 }
+
 
 class _SectionLabel extends StatelessWidget {
   final String text;
@@ -1552,6 +1666,14 @@ class _SongDetailSheet extends StatelessWidget {
                     ),
                   ),
                   _FavouriteButton(song: song, locale: locale),
+                  // Downloading was bulk-only: you could take the whole
+                  // filter offline but not the one hymn you are looking
+                  // at, which is the commonest case before a flight or
+                  // a drive out of coverage.
+                  if (SongDownloadService.isSupported &&
+                      song.hasPlayableAudio)
+                    _SongDownloadButton(
+                        song: song, scheme: scheme, locale: locale),
                   IconButton(
                     icon: const Icon(Icons.playlist_add_rounded, size: 22),
                     tooltip: uiStrings['songsAddToPlaylist']?[locale],
@@ -1944,6 +2066,91 @@ void _showAddToPlaylist(BuildContext context, Song song, String locale) {
 /// Deliberately quiet — most rows are not downloaded and an icon on
 /// every one of 559 would be noise. Only says something when there is
 /// something to say.
+/// Download / remove one song, from its detail sheet.
+///
+/// Four states in one button because the sheet's header has room for
+/// exactly one: not downloaded → download; queued or downloading →
+/// progress, tap to cancel that song; done → tick, tap to remove;
+/// failed → retry. Native only — [SongDownloadService.isSupported] is
+/// false on web, where the browser cache is the offline story.
+class _SongDownloadButton extends StatelessWidget {
+  final Song song;
+  final ColorScheme scheme;
+  final String locale;
+
+  const _SongDownloadButton({
+    required this.song,
+    required this.scheme,
+    required this.locale,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final service = SongDownloadService.instance;
+    return ListenableBuilder(
+      listenable: service,
+      builder: (context, _) {
+        final status = service.statusOf(song);
+        switch (status.state) {
+          case SongDownloadState.done:
+            return IconButton(
+              icon: const Icon(Icons.download_done_rounded, size: 22),
+              color: scheme.primary,
+              tooltip: uiStrings['songsDeleteDownload']?[locale],
+              onPressed: () => _confirmDelete(context, service),
+            );
+          case SongDownloadState.queued:
+          case SongDownloadState.downloading:
+            return IconButton(
+              tooltip: uiStrings['cancel']?[locale],
+              icon: SizedBox(
+                width: 18,
+                height: 18,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  // Null while the server sends no Content-Length —
+                  // an indeterminate spinner is honest there, a bar
+                  // stuck at 0% is not.
+                  value: status.state == SongDownloadState.downloading
+                      ? status.progress
+                      : null,
+                  color: scheme.primary,
+                ),
+              ),
+              onPressed: () => service.delete(song),
+            );
+          case SongDownloadState.failed:
+            return IconButton(
+              icon: const Icon(Icons.refresh_rounded, size: 22),
+              color: scheme.error,
+              tooltip: status.error,
+              onPressed: () => service.enqueue([song]),
+            );
+          case SongDownloadState.none:
+            return IconButton(
+              icon: const Icon(Icons.download_rounded, size: 22),
+              tooltip: uiStrings['songsDownloadSong']?[locale],
+              onPressed: () => service.enqueue([song]),
+            );
+        }
+      },
+    );
+  }
+
+  void _confirmDelete(BuildContext context, SongDownloadService service) {
+    final messenger = ScaffoldMessenger.of(context);
+    service.delete(song);
+    messenger.showSnackBar(SnackBar(
+      content: Text(
+          uiStrings['songsDownloadRemoved']?[locale] ?? 'Removed from device.'),
+      action: SnackBarAction(
+        label: uiStrings['undo']?[locale] ?? 'Undo',
+        onPressed: () => service.enqueue([song]),
+      ),
+    ));
+  }
+}
+
 class _DownloadIndicator extends StatelessWidget {
   final Song song;
   final ColorScheme scheme;

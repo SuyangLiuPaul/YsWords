@@ -5369,12 +5369,16 @@ const uiStrings = {
   // The listed sources must match what the user can actually see.
   'songsIntroBody': {
     'zh-Hans': '来自福音电台 (fydt.org)、基督门徒福音会与香港 cgdc.hk '
-        '的诗歌。点 ▶ 直接收听，或打开条目查看伴奏、MV、乐谱与歌词。',
+        '的诗歌，每天自动更新。点 ▶ 直接收听，或打开条目查看伴奏、MV、'
+        '乐谱与歌词。筛选后可整批播放、随机播放、存为歌单或下载离线收听。',
     'zh-Hant': '來自福音電台 (fydt.org)、基督門徒福音會與香港 cgdc.hk '
-        '的詩歌。點 ▶ 直接收聽，或開啟條目查看伴奏、MV、樂譜與歌詞。',
+        '的詩歌，每天自動更新。點 ▶ 直接收聽，或開啟條目查看伴奏、MV、'
+        '樂譜與歌詞。篩選後可整批播放、隨機播放、存為歌單或下載離線收聽。',
     'en': 'Songs from 福音电台 (fydt.org), Christian Disciples Church '
-        'and CGDC Hong Kong. Tap ▶ to listen, or open an entry for the '
-        'instrumental, music video, sheet music and lyrics.',
+        'and CGDC Hong Kong, refreshed daily. Tap ▶ to listen, or open '
+        'an entry for the instrumental, music video, sheet music and '
+        'lyrics. Filter, then play or shuffle the result, save it as a '
+        'playlist, or download it for offline listening.',
   },
   'songsSearchHint': {
     'zh-Hans': '搜索歌名、主题或编号…',
@@ -5423,6 +5427,14 @@ const uiStrings = {
     'zh-Hans': '媒体',
     'zh-Hant': '媒體',
     'en': 'Media',
+  },
+  // Only cgdc groups songs into albums, and it releases exactly one a
+  // year — so the label names both, since "专辑" alone would not tell
+  // a user that picking one means picking a year.
+  'songsFilterAlbum': {
+    'zh-Hans': '专辑 / 年份',
+    'zh-Hant': '專輯 / 年份',
+    'en': 'Album / year',
   },
   'songsFilterHasAudio': {
     'zh-Hans': '有音频',
@@ -5577,6 +5589,63 @@ const uiStrings = {
     'zh-Hans': '智能歌单',
     'zh-Hant': '智慧歌單',
     'en': 'saved filter',
+  },
+  'songsRemoveFromPlaylist': {
+    'zh-Hans': '从歌单移除',
+    'zh-Hant': '從歌單移除',
+    'en': 'Remove from playlist',
+  },
+  'songsPlaylistEmpty': {
+    'zh-Hans': '这个歌单还没有诗歌。在诗歌列表里点「加入歌单」。',
+    'zh-Hant': '這個歌單還沒有詩歌。在詩歌列表裡點「加入歌單」。',
+    'en': 'Nothing here yet. Add songs from the list with “Add to playlist”.',
+  },
+  // Explains why a smart playlist cannot be reordered or edited by
+  // hand: it is a filter, so its contents are decided by the catalogue.
+  'songsSmartPlaylistNote': {
+    'zh-Hans': '这是保存的筛选条件，教会上传新诗歌时会自动加进来。',
+    'zh-Hant': '這是儲存的篩選條件，教會上傳新詩歌時會自動加進來。',
+    'en': 'A saved filter — new songs matching it appear here on their own.',
+  },
+  'songsDragToReorder': {
+    'zh-Hans': '长按拖动可调整顺序',
+    'zh-Hant': '長按拖動可調整順序',
+    'en': 'Press and hold a song to reorder',
+  },
+  'songsRemovedFromPlaylist': {
+    'zh-Hans': '已移除。',
+    'zh-Hant': '已移除。',
+    'en': 'Removed.',
+  },
+  'songsDownloadSong': {
+    'zh-Hans': '下载到本机',
+    'zh-Hant': '下載到本機',
+    'en': 'Download for offline',
+  },
+  'songsDeleteDownload': {
+    'zh-Hans': '已下载 · 点按删除',
+    'zh-Hant': '已下載 · 點按刪除',
+    'en': 'Downloaded — tap to remove',
+  },
+  'songsDownloadRemoved': {
+    'zh-Hans': '已从本机删除。',
+    'zh-Hant': '已從本機刪除。',
+    'en': 'Removed from this device.',
+  },
+  'songsQueue': {
+    'zh-Hans': '播放队列',
+    'zh-Hant': '播放佇列',
+    'en': 'Queue',
+  },
+  'songsPlaylistGone': {
+    'zh-Hans': '这个歌单已被删除。',
+    'zh-Hant': '這個歌單已被刪除。',
+    'en': 'This playlist no longer exists.',
+  },
+  'undo': {
+    'zh-Hans': '撤销',
+    'zh-Hant': '復原',
+    'en': 'Undo',
   },
   'songsSavedPlaylist': {
     'zh-Hans': '已保存为歌单。',

@@ -118,6 +118,65 @@ void main() {
       reason: 'Apply should be in the header, not below the filters',
     );
 
+    // …and STAYS there. v1.4.20 put Apply above the sections but left
+    // it inside the same SingleChildScrollView, so it scrolled away
+    // with them — above the fold is worthless if scrolling to the
+    // chips you came for takes the button off-screen.
+    final languageTopBefore = tester.getTopLeft(language).dy;
+    await tester.drag(language, const Offset(0, -400));
+    await tester.pump();
+    expect(tester.getTopLeft(language).dy, lessThan(languageTopBefore),
+        reason: 'the drag should actually scroll the filter body — '
+            'otherwise the assertion below passes for the wrong reason');
+
+    expect(tester.getTopLeft(apply).dy, greaterThanOrEqualTo(0.0),
+        reason: 'Apply must stay on screen after the body is scrolled');
+    await tester.tap(apply);
+    await tester.pump();
+    expect(tester.takeException(), isNull);
+
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pump(const Duration(milliseconds: 400));
+  });
+
+  // cgdc publishes one album a year and its congregation refers to
+  // songs that way ("the 2024 ones"), so the year picker has to reach
+  // the real catalogue rather than a fixture — if a sync ever drops the
+  // album field, this fails instead of shipping an empty section.
+  testWidgets('album section narrows the list to one year', (tester) async {
+    SharedPreferences.setMockInitialValues(<String, Object>{});
+    addTearDown(tester.view.reset);
+
+    final all = (await tester.runAsync(SongService.load))!;
+    final albums = SongService.distinctAlbums(all);
+    expect(albums, isNotEmpty,
+        reason: 'assets/songs.json should carry cgdc albums');
+
+    final newest = albums.first;
+    final expected =
+        all.where((s) => s.album?.trim() == newest).length;
+    expect(expected, greaterThan(0));
+
+    await pumpSongsPage(tester, const Size(390, 844));
+    await openFilterSheet(tester);
+
+    expect(find.text(uiStrings['songsFilterAlbum']![locale]!), findsOneWidget);
+
+    final chip = find.widgetWithText(ChoiceChip, newest);
+    expect(chip, findsOneWidget, reason: 'the newest album should be first');
+    await tester.ensureVisible(chip);
+    await tester.pump();
+    await tester.tap(chip);
+    await tester.pump();
+
+    await tester.tap(find.widgetWithText(FilledButton, applyLabel));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 400));
+
+    expect(tester.takeException(), isNull);
+    expect(find.text('$expected / ${all.length}'), findsOneWidget,
+        reason: 'picking an album should leave only that album\'s songs');
+
     await tester.pumpWidget(const SizedBox.shrink());
     await tester.pump(const Duration(milliseconds: 400));
   });

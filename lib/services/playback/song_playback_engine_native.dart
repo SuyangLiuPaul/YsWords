@@ -20,9 +20,38 @@ class SongPlaybackEngine {
     // caller can use it for auto-advance without looping on
     // user-initiated stops.
     _player.onPlayerComplete.listen(_complete.add);
+
+    // Start listening to the player's start-up before it can fail.
+    //
+    // audioplayers signals a failed platform hand-shake by completing
+    // an internal future with the error. Every command awaits that
+    // future — but if nothing is awaiting at the moment it completes,
+    // the error is unhandled and brings down the enclosing zone. A
+    // widget test surfaced it as an ownerless MissingPluginException.
+    //
+    // setVolume is a harmless probe that begins awaiting in this same
+    // turn, so the failure lands in a catch we own. The realistic
+    // causes are a platform where the plugin was never registered and
+    // a host that refuses to start an audio session; neither should
+    // crash an app whose other twenty features are fine, so it is
+    // latched and reported like any other playback failure and every
+    // command below then no-ops instead of throwing.
+    _player.setVolume(1.0).catchError((Object e) {
+      _unavailable = true;
+      _error.add('audio engine unavailable: $e');
+    });
   }
 
   final ap.AudioPlayer _player = ap.AudioPlayer();
+
+  /// Set once the platform side is known to be missing. Latched rather
+  /// than re-checked: it never recovers within a process.
+  bool _unavailable = false;
+
+  /// True when this device can actually play audio. The UI does not
+  /// branch on it — a failed play surfaces through [onError] like any
+  /// other — but it keeps every later command cheap and quiet.
+  bool get isAvailable => !_unavailable;
 
   final _position = StreamController<Duration>.broadcast();
   final _duration = StreamController<Duration>.broadcast();
@@ -42,17 +71,38 @@ class SongPlaybackEngine {
     final source = url.startsWith('/')
         ? ap.DeviceFileSource(url)
         : ap.UrlSource(url) as ap.Source;
-    await _player.play(source);
+    await _guard(() => _player.play(source));
   }
 
-  Future<void> resume() => _player.resume();
-  Future<void> pause() => _player.pause();
-  Future<void> stop() => _player.stop();
-  Future<void> seek(Duration to) => _player.seek(to);
-  Future<void> setVolume(double volume) => _player.setVolume(volume);
+  Future<void> resume() => _guard(_player.resume);
+  Future<void> pause() => _guard(_player.pause);
+  Future<void> stop() => _guard(_player.stop);
+  Future<void> seek(Duration to) => _guard(() => _player.seek(to));
+  Future<void> setVolume(double volume) =>
+      _guard(() => _player.setVolume(volume));
+
+  /// Run a player command, turning any failure into an [onError] event.
+  ///
+  /// Every one of these awaits `creatingCompleter` internally, so on a
+  /// device where the platform side never came up they would each
+  /// rethrow the same start-up error. Reporting once and returning
+  /// keeps a dead audio stack from propagating into the queue logic,
+  /// which would otherwise abandon the whole playlist on track one.
+  Future<void> _guard(Future<void> Function() action) async {
+    if (_unavailable) return;
+    try {
+      await action();
+    } catch (e) {
+      _error.add('$e');
+    }
+  }
 
   Future<void> dispose() async {
-    await _player.dispose();
+    try {
+      await _player.dispose();
+    } catch (_) {
+      // Disposing a player that never started is not worth reporting.
+    }
     await _position.close();
     await _duration.close();
     await _playing.close();

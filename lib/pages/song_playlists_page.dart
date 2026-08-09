@@ -7,6 +7,7 @@ import 'package:yswords/models/song.dart';
 import 'package:yswords/models/song_playlist.dart';
 import 'package:yswords/models/song_queue.dart';
 import 'package:yswords/pages/now_playing_page.dart';
+import 'package:yswords/pages/song_playlist_detail_page.dart';
 import 'package:yswords/services/song_player_service.dart';
 import 'package:yswords/services/song_playlist_service.dart';
 import 'package:yswords/services/song_service.dart';
@@ -154,7 +155,13 @@ class _PlaylistTile extends StatelessWidget {
       borderRadius: BorderRadius.circular(10),
       child: InkWell(
         borderRadius: BorderRadius.circular(10),
-        onTap: songs.isEmpty ? null : () => _play(context),
+        // Tapping opens the playlist rather than playing it. Play was
+        // the whole tile's job when there was nowhere to open — now
+        // that its contents have a page, opening is the safer default:
+        // it is one tap to play from there, and a mis-tap that starts
+        // 47 songs in the car is worse than one that shows a list.
+        onTap: () => pushPage(
+            SongPlaylistDetailPage(playlistId: playlist.id)),
         child: Padding(
           padding: const EdgeInsets.fromLTRB(14, 12, 8, 12),
           child: Row(
@@ -190,6 +197,13 @@ class _PlaylistTile extends StatelessWidget {
                   ],
                 ),
               ),
+              if (songs.isNotEmpty)
+                IconButton(
+                  icon: const Icon(Icons.play_arrow_rounded, size: 22),
+                  tooltip: uiStrings['songsPlayAll']?[locale],
+                  color: scheme.primary,
+                  onPressed: () => _play(context),
+                ),
               if (songs.isNotEmpty)
                 IconButton(
                   icon: const Icon(Icons.shuffle_rounded, size: 20),

@@ -16,7 +16,9 @@ import 'package:yswords/pages/profiles_page.dart';
 import 'package:yswords/pages/search_page.dart';
 import 'package:yswords/pages/sermons_page.dart';
 import 'package:yswords/pages/now_playing_page.dart';
+import 'package:yswords/models/song_playlist.dart';
 import 'package:yswords/pages/song_downloads_page.dart';
+import 'package:yswords/pages/song_playlist_detail_page.dart';
 import 'package:yswords/pages/song_playlists_page.dart';
 import 'package:yswords/pages/songs_page.dart';
 import 'package:yswords/pages/stats_page.dart';
@@ -58,6 +60,11 @@ void main() {
     // layout most likely to be wrong at 320px.
     'NowPlayingPage': () => const NowPlayingPage(),
     'SongPlaylistsPage': () => const SongPlaylistsPage(),
+    // With empty prefs the favourites playlist exists but holds
+    // nothing, so this renders the empty state — and the header's
+    // count + Play all + Shuffle row is the part that overflows 320px.
+    'SongPlaylistDetailPage': () =>
+        const SongPlaylistDetailPage(playlistId: SongPlaylist.favouritesId),
     'SongDownloadsPage': () => const SongDownloadsPage(),
     'FeedbackPage': () => const FeedbackPage(),
     'HighlightsPage': () => const HighlightsPage(),

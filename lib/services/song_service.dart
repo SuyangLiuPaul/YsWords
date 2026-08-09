@@ -149,6 +149,35 @@ class SongService {
     ];
   }
 
+  /// Album names present in the catalogue, newest first.
+  ///
+  /// Only cgdc groups songs this way — one album per year, named like
+  /// `2025 Nearer 更亲近` — so for a catalogue without albums this is
+  /// empty and the filter section hides itself rather than showing an
+  /// "All" chip with nothing beside it.
+  ///
+  /// Sorted on the leading year descending so next year's album lands
+  /// at the front on its own, with no code change when cgdc publishes
+  /// it. Anything without a leading year sorts last, alphabetically.
+  static List<String> distinctAlbums(List<Song> songs) {
+    final present = <String>{};
+    for (final s in songs) {
+      final a = s.album?.trim();
+      if (a != null && a.isNotEmpty) present.add(a);
+    }
+    final list = present.toList();
+    list.sort((a, b) {
+      final cmp = _albumYear(b).compareTo(_albumYear(a));
+      return cmp != 0 ? cmp : a.compareTo(b);
+    });
+    return list;
+  }
+
+  static final _yearPrefix = RegExp(r'^\s*(\d{4})');
+
+  static int _albumYear(String album) =>
+      int.tryParse(_yearPrefix.firstMatch(album)?.group(1) ?? '') ?? 0;
+
   /// Distinct languages, in a fixed order for the same reason.
   static List<String> distinctLanguages(List<Song> songs) {
     const order = ['zh', 'en', 'id'];

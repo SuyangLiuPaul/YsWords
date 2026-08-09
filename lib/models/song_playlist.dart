@@ -27,6 +27,8 @@ class PlaylistFilter {
   final String source; // 'all' | fydt | cahaya | cdc | cgdc
   final String theme; // 'all' | theme key
   final String book; // 'all' | English book name
+  /// 'all' | an album name such as '2025 Nearer 更亲近'. cgdc only.
+  final String album;
   final String media; // 'all' | audio | video | score
   final String query;
 
@@ -35,6 +37,7 @@ class PlaylistFilter {
     this.source = 'all',
     this.theme = 'all',
     this.book = 'all',
+    this.album = 'all',
     this.media = 'all',
     this.query = '',
   });
@@ -44,6 +47,7 @@ class PlaylistFilter {
       source == 'all' &&
       theme == 'all' &&
       book == 'all' &&
+      album == 'all' &&
       media == 'all' &&
       query.trim().isEmpty;
 
@@ -57,6 +61,7 @@ class PlaylistFilter {
     if (source != 'all') out = out.where((s) => s.source == source);
     if (theme != 'all') out = out.where((s) => s.themes.contains(theme));
     if (book != 'all') out = out.where((s) => s.verseBook == book);
+    if (album != 'all') out = out.where((s) => s.album?.trim() == album);
     switch (media) {
       case 'audio':
         out = out.where((s) => s.hasAudio);
@@ -84,15 +89,19 @@ class PlaylistFilter {
         'source': source,
         'theme': theme,
         'book': book,
+        'album': album,
         'media': media,
         'query': query,
       };
 
+  /// Missing keys default to 'all', so a playlist saved before the
+  /// album facet existed keeps matching exactly what it used to.
   factory PlaylistFilter.fromJson(Map<String, dynamic> j) => PlaylistFilter(
         language: j['language'] as String? ?? 'all',
         source: j['source'] as String? ?? 'all',
         theme: j['theme'] as String? ?? 'all',
         book: j['book'] as String? ?? 'all',
+        album: j['album'] as String? ?? 'all',
         media: j['media'] as String? ?? 'all',
         query: j['query'] as String? ?? '',
       );
