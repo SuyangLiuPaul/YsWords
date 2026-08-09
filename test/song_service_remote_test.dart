@@ -28,7 +28,30 @@ void main() {
     // teaser — offline users get exactly this.
     expect(songs.length, greaterThan(500));
     final sources = songs.map((s) => s.source).toSet();
-    expect(sources, containsAll(<String>['fydt', 'cahaya', 'cdc']));
+    expect(sources, containsAll(<String>['fydt', 'cdc', 'cgdc']));
+  });
+
+  test('hidden sources are filtered out of what the app sees', () async {
+    final songs = await SongService.load();
+    for (final hidden in SongService.hiddenSources) {
+      expect(songs.any((s) => s.source == hidden), isFalse,
+          reason: '$hidden is in hiddenSources but still reaches the UI');
+    }
+  });
+
+  test('the underlying dataset still carries the hidden sources', () async {
+    // Hiding is a PRESENTATION decision. The bundled data — and
+    // yswords-data upstream — stay complete, so re-enabling a source
+    // is emptying a set, not re-running a sync.
+    final raw = await rootBundle.loadString('assets/songs.json');
+    final doc = json.decode(raw) as Map<String, dynamic>;
+    final sources = (doc['songs'] as List)
+        .map((e) => (e as Map)['source'])
+        .toSet();
+    for (final hidden in SongService.hiddenSources) {
+      expect(sources, contains(hidden),
+          reason: 'the data should still be there, just not shown');
+    }
   });
 
   test('the bundled asset parses into the same shape the remote '
@@ -51,12 +74,18 @@ void main() {
             'one, and an unparseable value silently disables that');
   });
 
-  test('a second load is served from memory, not re-parsed', () async {
+  test('a second load reuses the parsed bundle', () async {
     final first = await SongService.load();
     final second = await SongService.load();
-    expect(identical(first, second), isTrue,
-        reason: 'the ~700 KB catalogue should be parsed once per '
-            'session, not on every page open');
+
+    // The LISTS differ — load() filters hidden sources, so it builds a
+    // new list each call — but the Song objects must be the same
+    // instances, which is what proves the ~790 KB JSON was parsed once
+    // per session rather than on every page open. Asserting on the
+    // list identity would have been testing the filter, not the cache.
+    expect(first.length, second.length);
+    expect(identical(first.first, second.first), isTrue,
+        reason: 'the catalogue should be parsed once per session');
   });
 
   test('metadata is available after loading', () async {

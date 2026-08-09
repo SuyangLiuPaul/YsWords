@@ -82,18 +82,38 @@ class _SongServiceImpl extends RemoteDataService<_SongBundle> {
 class SongService {
   static final _SongServiceImpl _impl = _SongServiceImpl();
 
+  /// Sources hidden from the app.
+  ///
+  /// `cahaya` (cahayapengharapan.org) publishes no audio of its own —
+  /// all 47 of its songs live on SoundCloud (27) or YouTube (36), and
+  /// neither exposes a stream URL a player can open, so every one of
+  /// those rows showed a language badge where the other 559 songs show
+  /// a play button. The user asked for them out rather than sitting
+  /// there unplayable next to songs that work.
+  ///
+  /// The data is NOT removed upstream: yswords-data still carries all
+  /// 606 songs, because a data repository's job is to be complete and
+  /// other consumers may want them. This is a presentation decision,
+  /// reversible by emptying this set.
+  ///
+  /// If Cahaya ever hosts mp3s on its own server the way it already
+  /// hosts its sheet-music PDFs, remove `cahaya` here and those 47
+  /// songs become fully playable with no other change.
+  static const Set<String> hiddenSources = {'cahaya'};
+
   /// Never throws: falls back through cache → bundle.
   static Future<List<Song>> load() async {
     final bundle = await _impl.load();
-    return bundle.songs;
+    return bundle.songs
+        .where((s) => !hiddenSources.contains(s.source))
+        .toList();
   }
 
   /// Force a network pull, e.g. from pull-to-refresh. Best-effort —
   /// a failure leaves the current catalogue in place.
   static Future<List<Song>> refresh() async {
     await _impl.refresh(force: true);
-    final bundle = await _impl.load();
-    return bundle.songs;
+    return load();
   }
 
   /// Catalogue metadata (`generatedAt`, per-source counts, the
