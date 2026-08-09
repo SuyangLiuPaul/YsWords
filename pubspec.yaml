@@ -152,12 +152,18 @@ flutter:
     - assets/sermons/refs.json
     - assets/family_tree.json
     - assets/bible_timeline.json
-    # 2026-08-09 (Songs v2): the combined church-song catalogue —
-    # 543 songs across fydt.org, cahayapengharapan.org and
-    # christiandiscipleschurch.org. Metadata + media URLs only
-    # (~570 KB); the audio/video/PDFs stream from each church's own
-    # servers and are not bundled. Regenerate with
-    # `python3 scripts/sync_songs.py`.
+    # 2026-08-09 (Songs v2): the combined church-song catalogue — 606
+    # songs across fydt.org, christiandiscipleschurch.org, cgdc.hk and
+    # cahayapengharapan.org. Metadata + media URLs only (~790 KB); the
+    # audio/video/PDFs stream from each church's own servers and are
+    # not bundled.
+    #
+    # This is the OFFLINE SNAPSHOT. At runtime the app fetches the live
+    # catalogue from yswords-data (see song_service.dart), so this file
+    # only serves users who are offline, behind the GFW, or on first
+    # launch. Refresh it with `python3 scripts/pull_songs_snapshot.py`,
+    # which copies the published dataset — NOT with sync_songs.py,
+    # which would re-scrape all four church sites a second time.
     - assets/songs.json
     - assets/sermons/en/
     - assets/sermons/zh-CN/
