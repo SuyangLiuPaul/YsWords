@@ -230,10 +230,18 @@ class SongPlaylistService extends ChangeNotifier {
           if (!p.isSmart && p.songIds.contains(song.id)) p.id,
       };
 
+  /// Drop the in-memory state.
+  ///
+  /// [keepStored] leaves what is on disk alone, which is how a test
+  /// simulates a fresh launch: clear the cache, call [load] again, and
+  /// whatever comes back came from the device rather than from memory.
+  /// Without it there is no way to tell a working `_persist` from a
+  /// service that has simply never forgotten anything.
   @visibleForTesting
-  Future<void> resetForTest() async {
+  Future<void> resetForTest({bool keepStored = false}) async {
     _playlists.clear();
     _loaded = false;
+    if (keepStored) return;
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_key);
   }

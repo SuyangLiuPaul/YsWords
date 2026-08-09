@@ -65,8 +65,17 @@ class _Strip extends StatelessWidget {
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
-                    uiStrings['songsPlaybackFailed']?[locale] ??
-                        'Could not play that track.',
+                    // 'blocked' means the browser refused to start
+                    // without a tap — the track is fine and one more
+                    // tap plays it. Saying "could not play that track"
+                    // there would send someone hunting for a dead link
+                    // that does not exist.
+                    error == 'blocked'
+                        ? (uiStrings['songsPlaybackBlocked']?[locale] ??
+                            'Tap play again — the browser needs a tap '
+                                'before it will start audio.')
+                        : (uiStrings['songsPlaybackFailed']?[locale] ??
+                            'Could not play that track.'),
                     style: TextStyle(
                         fontSize: 12, color: scheme.onErrorContainer),
                   ),

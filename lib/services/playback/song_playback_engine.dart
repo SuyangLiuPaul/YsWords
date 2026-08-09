@@ -30,5 +30,9 @@
 /// `crossOrigin` in the first place is not needed here either.
 library;
 
+/// Re-exported unconditionally so callers can catch it without knowing
+/// which engine they hold. Only the web one throws it.
+export 'playback_blocked.dart';
+
 export 'song_playback_engine_web.dart'
     if (dart.library.io) 'song_playback_engine_native.dart';

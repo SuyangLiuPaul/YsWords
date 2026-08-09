@@ -5632,6 +5632,14 @@ const uiStrings = {
     'zh-Hant': '已從本機刪除。',
     'en': 'Removed from this device.',
   },
+  // Shown when the browser rejects play() for want of a user gesture —
+  // the track is fine, so this must not read like a broken link.
+  'songsPlaybackBlocked': {
+    'zh-Hans': '浏览器需要你再点一次播放键才会出声。',
+    'zh-Hant': '瀏覽器需要你再點一次播放鍵才會出聲。',
+    'en': 'Tap play again — the browser needs a tap before it will '
+        'start audio.',
+  },
   'songsQueue': {
     'zh-Hans': '播放队列',
     'zh-Hant': '播放佇列',

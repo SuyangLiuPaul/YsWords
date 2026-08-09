@@ -309,6 +309,20 @@ class SongAudioHandler extends BaseAudioHandler with SeekHandler {
     try {
       await playing;
       _failed.remove(item.song.id);
+    } on PlaybackBlockedException catch (e) {
+      // The browser refused to START — not a bad track. Handled apart
+      // from the dead-URL case below, which drops the song and
+      // advances: doing that here would walk the whole queue, refuse
+      // at every step for the same reason, mark all of them dead and
+      // finish with silence and nothing left to play. Stop, say what
+      // happened, and leave the song exactly where it is so one tap
+      // resumes it.
+      debugPrint('[SongAudioHandler] playback blocked: $e');
+      _error = 'blocked';
+      _loading = false;
+      _playing = false;
+      _broadcast();
+      return;
     } catch (e) {
       // One dead URL must not end the listening session. Drop it and
       // move on — the catalogue points at four third-party servers and

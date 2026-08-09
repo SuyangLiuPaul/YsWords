@@ -4,6 +4,8 @@ import 'dart:js_interop';
 
 import 'package:web/web.dart' as web;
 
+import 'package:yswords/services/playback/playback_blocked.dart';
+
 /// Web playback on a bare `HTMLAudioElement`.
 ///
 /// Deliberately does NOT touch the Web Audio API — see the note in
@@ -88,14 +90,48 @@ class SongPlaybackEngine {
   /// lands while the user gesture is still valid — the whole reason
   /// this class exists.
   Future<void> play(String url) async {
-    if (_el.src != url) {
+    // Compared against what we last ASSIGNED, not against `_el.src`.
+    // The element resolves src to an absolute URL, so reading it back
+    // gives `https://host/song-media/…` while the caller passes the
+    // relative `/song-media/…` the proxy uses — they never matched,
+    // and every play re-assigned src and re-downloaded a file the
+    // browser already had.
+    if (_lastSrc != url) {
+      _lastSrc = url;
       _el.src = url;
-      _el.currentTime = 0;
     }
-    await _el.play().toDart;
+    // Always from the top: this method means "start this track". A
+    // resume goes through resume(), which leaves the position alone.
+    _el.currentTime = 0;
+    await _start();
   }
 
-  Future<void> resume() async => _el.play().toDart;
+  String? _lastSrc;
+
+  /// Call `play()` and tell a refusal apart from a broken file.
+  ///
+  /// Browsers reject with `NotAllowedError` when the call did not come
+  /// from a user gesture (and `AbortError` when a new load interrupts a
+  /// pending play). Neither is the track's fault — but left as a
+  /// generic error they are indistinguishable from a 404, and the
+  /// caller drops the song and advances. One refusal then walks the
+  /// whole queue, refusing identically at every step, marking every
+  /// song dead and ending in silence with nothing left to play.
+  ///
+  /// The signal is the element, not the exception object: a decode or
+  /// network failure always sets `element.error`, while a policy
+  /// refusal leaves it null. That avoids reading `name` off a JS value
+  /// whose Dart representation differs between compilers.
+  Future<void> _start() async {
+    try {
+      await _el.play().toDart;
+    } catch (e) {
+      if (_el.error == null) throw PlaybackBlockedException('$e');
+      rethrow;
+    }
+  }
+
+  Future<void> resume() => _start();
 
   Future<void> pause() async => _el.pause();
 
@@ -104,6 +140,12 @@ class SongPlaybackEngine {
     _el.currentTime = 0;
     _playing.add(false);
   }
+
+  /// Whether this engine can play at all. Always true on web: there is
+  /// no plugin to be missing, so a failure can only be per-track and
+  /// arrives on [onError]. Mirrors the native engine's field so callers
+  /// need not know which one they hold.
+  bool get isAvailable => true;
 
   Future<void> seek(Duration to) async {
     _el.currentTime = to.inMilliseconds / 1000.0;
