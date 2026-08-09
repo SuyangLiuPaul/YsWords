@@ -1,8 +1,10 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yswords/models/song.dart';
+import 'package:yswords/services/song_player_service.dart';
 
 /// 2026-08-09 (Songs v2). The previous Songs feature was deleted
 /// because its catalogue rotted without anything catching it, so these
@@ -211,6 +213,53 @@ void main() {
       expect(withDuration(5).durationLabel, '0:05');
       expect(withDuration(null).durationLabel, isNull);
       expect(withDuration(0).durationLabel, isNull);
+    });
+  });
+
+  group('web playback proxy', () {
+    // audioplayers_web forces crossOrigin='anonymous', and none of the
+    // three church servers send Access-Control-Allow-Origin, so web
+    // playback only works when the URL is rewritten to our own origin
+    // (the /song-media/* rules in netlify.toml). If these mappings and
+    // those rules ever drift apart, every play button on the web build
+    // breaks — so pin them.
+    test('every media host in the catalogue has a proxy mapping', () {
+      final hosts = <String>{};
+      for (final s in songs) {
+        for (final url in [
+          s.audioUrl,
+          s.instrumentalUrl,
+          s.accompanimentUrl,
+        ]) {
+          if (url != null) hosts.add(Uri.parse(url).host);
+        }
+      }
+      const proxied = {
+        'fydt.org',
+        'www.christiandiscipleschurch.org',
+        'cahayapengharapan.org',
+      };
+      expect(hosts.difference(proxied), isEmpty,
+          reason: 'a playable host has no /song-media/* rule in '
+              'netlify.toml — web playback would break for it');
+    });
+
+    test('rewrites to the same-origin path on web, passes through '
+        'everywhere else', () {
+      const url = 'https://fydt.org/wp-content/uploads/a.mp3';
+      final resolved = SongPlayerService.resolvePlaybackUrl(url);
+      if (kIsWeb) {
+        expect(resolved, '/song-media/fydt/wp-content/uploads/a.mp3');
+      } else {
+        expect(resolved, url,
+            reason: 'native has no CORS — must stream direct so the '
+                'media never touches our bandwidth');
+      }
+    });
+
+    test('an unknown host is passed through unchanged', () {
+      const url = 'https://example.org/x.mp3';
+      expect(SongPlayerService.resolvePlaybackUrl(url), url);
     });
   });
 

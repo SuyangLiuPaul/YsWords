@@ -82,6 +82,41 @@ class SongPlayerService extends ChangeNotifier {
     }
   }
 
+  /// Upstream media host → the same-origin prefix that proxies it.
+  /// Paired with the `/song-media/*` rules in `netlify.toml`.
+  static const Map<String, String> _webProxyPrefixes = {
+    'https://fydt.org/': '/song-media/fydt/',
+    'https://www.christiandiscipleschurch.org/': '/song-media/cdc/',
+    'https://cahayapengharapan.org/': '/song-media/cahaya/',
+  };
+
+  /// Rewrite an upstream media URL to whatever this platform can
+  /// actually load.
+  ///
+  /// On **web** it goes through our own origin. `audioplayers_web`
+  /// hard-codes `crossOrigin = 'anonymous'` on the <audio> element
+  /// (wrapped_player.dart:78, no way to turn it off), so the browser
+  /// CORS-checks every load — and none of the three church servers
+  /// send `Access-Control-Allow-Origin`. Same-origin sidesteps the
+  /// check entirely rather than asking three sites to reconfigure.
+  ///
+  /// Everywhere else the URL is returned untouched: native HTTP
+  /// clients have no CORS notion, so those platforms stream directly
+  /// from the church and none of the bandwidth touches our host.
+  ///
+  /// An unrecognised host is passed through unchanged — a new source
+  /// added to the catalogue plays direct until a proxy rule for it
+  /// lands in netlify.toml.
+  static String resolvePlaybackUrl(String url) {
+    if (!kIsWeb) return url;
+    for (final entry in _webProxyPrefixes.entries) {
+      if (url.startsWith(entry.key)) {
+        return entry.value + url.substring(entry.key.length);
+      }
+    }
+    return url;
+  }
+
   /// Play [track] of [song]. Tapping the mix that is already playing
   /// pauses it; tapping a paused current track resumes without
   /// re-fetching.
@@ -108,7 +143,7 @@ class SongPlayerService extends ChangeNotifier {
 
     try {
       await _player.stop();
-      await _player.play(UrlSource(url));
+      await _player.play(UrlSource(resolvePlaybackUrl(url)));
     } catch (e) {
       // A dead media URL must not take the page down with it — the
       // catalogue points at three third-party servers and any of them

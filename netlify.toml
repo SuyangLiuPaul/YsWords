@@ -53,6 +53,52 @@
   status = 200
   force = true
 
+# 2026-08-09 (Songs v2): song-media proxy. MUST stay above the SPA
+# catch-all for the same reason the auth proxy does — first match wins.
+#
+# Why this exists: `audioplayers_web` hard-codes
+# `crossOrigin = 'anonymous'` on its <audio> element
+# (audioplayers_web/lib/wrapped_player.dart:78, no opt-out), which
+# turns every playback into a CORS-checked request. None of the three
+# church servers send `Access-Control-Allow-Origin`, so the browser
+# blocks the load outright:
+#
+#   Access to audio at 'https://www.christiandiscipleschurch.org/...
+#   .mp3' from origin 'https://yswords-dev.netlify.app' has been
+#   blocked by CORS policy: No 'Access-Control-Allow-Origin' header
+#   is present on the requested resource.
+#
+# Proxying through our own origin makes the request same-origin, so
+# CORS never enters into it — no header is needed from the churches,
+# and we are not asking three separate sites to reconfigure.
+#
+# `status = 200` is load-bearing: it makes Netlify PROXY rather than
+# redirect. A 302 would send the browser back to the cross-origin URL
+# and reinstate the exact block this removes.
+#
+# ONLY web playback goes through here. Native builds stream straight
+# from the source (no CORS in a native HTTP client) — see
+# `SongPlayerService.resolvePlaybackUrl`, which rewrites URLs on
+# `kIsWeb` only. That keeps the media off our bandwidth everywhere it
+# can be, which matters: these are ~5 MB mp3s.
+[[redirects]]
+  from = "/song-media/fydt/*"
+  to = "https://fydt.org/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/song-media/cdc/*"
+  to = "https://www.christiandiscipleschurch.org/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/song-media/cahaya/*"
+  to = "https://cahayapengharapan.org/:splat"
+  status = 200
+  force = true
+
 # Static-file SPA fallback. The Netlify Function URLs (`/api/*` and
 # `/.netlify/functions/*`) are matched and served by Netlify BEFORE
 # this catch-all rewrite, so the function doesn't get swallowed by
