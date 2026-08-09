@@ -130,17 +130,26 @@ class SongAudioHandler extends BaseAudioHandler with SeekHandler {
   // ── Queue control ───────────────────────────────────────────────
 
   /// Replace the queue and start playing at its current index.
+  ///
+  /// Note the ORDER: playback starts before the queue is published to
+  /// the OS. Publishing is an await, and on iOS web an await between
+  /// the user's tap and the play call costs the gesture activation the
+  /// Web Audio context needs — see [_playCurrent]. The OS queue is a
+  /// display detail; sound is not.
   Future<void> setQueue(SongQueue next, {bool autoPlay = true}) async {
     _queue = next;
     _failed.clear();
-    await _publishQueue();
     if (next.isEmpty) {
+      await _publishQueue();
       await stop();
       return;
     }
     if (autoPlay) {
-      await _playCurrent();
+      final started = _playCurrent();
+      await _publishQueue();
+      await started;
     } else {
+      await _publishQueue();
       _publishMediaItem();
       _broadcast();
     }
@@ -261,6 +270,29 @@ class SongAudioHandler extends BaseAudioHandler with SeekHandler {
     final item = _queue.current;
     if (item == null) return;
 
+    // ── iOS web: play() MUST be reached with the user gesture still
+    // valid. ────────────────────────────────────────────────────────
+    //
+    // audioplayers_web routes audio through the Web Audio API
+    // (`createMediaElementSource` in wrapped_player.recreateNode), so
+    // nothing is audible unless its AudioContext is running. It tries
+    // to `resume()` that context — but iOS only permits
+    // AudioContext.resume() inside a user gesture, and every `await`
+    // between the tap and that call spends the activation.
+    //
+    // The symptom when it fails is precisely what was reported from an
+    // iPhone: element.play() succeeds, currentTime advances, the media
+    // session shows "playing", and there is no sound.
+    //
+    // So the play call is issued FIRST, synchronously, before any
+    // state updates or notifications — and the future is awaited
+    // afterwards. Everything below this line used to happen before it.
+    final resolved = sourceResolver?.call(item.song, item.url) ?? item.url;
+    final source = resolved.startsWith('/') && !kIsWeb
+        ? ap.DeviceFileSource(resolved)
+        : ap.UrlSource(resolved) as ap.Source;
+    final playing = _player.play(source);
+
     _loading = true;
     _error = null;
     _position = Duration.zero;
@@ -269,13 +301,7 @@ class SongAudioHandler extends BaseAudioHandler with SeekHandler {
     _broadcast();
 
     try {
-      final resolved = sourceResolver?.call(item.song, item.url) ?? item.url;
-      await _player.stop();
-      if (resolved.startsWith('/') && !kIsWeb) {
-        await _player.play(ap.DeviceFileSource(resolved));
-      } else {
-        await _player.play(ap.UrlSource(resolved));
-      }
+      await playing;
       _failed.remove(item.song.id);
     } catch (e) {
       // One dead URL must not end the listening session. Drop it and

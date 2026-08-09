@@ -204,11 +204,32 @@
         location.reload();
       }
 
+      // 2026-08-09: the sweep is now NARROWED rather than total.
+      //
+      // Its purpose is to stop a stale Flutter service worker serving
+      // old HTML/JS — that is what caused the incident it was written
+      // for. The song-media worker is a different animal: it is scoped
+      // to /song-media/* only, never touches the app shell, and holds
+      // audio the user asked to keep offline. Tearing it down every
+      // load meant offline listening could never work at all.
+      //
+      // So: unregister every worker EXCEPT ours, and delete every
+      // cache bucket EXCEPT the song-media one. The stale-shell
+      // protection is unchanged.
+      var MEDIA_SW = '/song_media_sw.js';
+      var MEDIA_CACHE_PREFIX = 'song-media-';
+
       var unregisterCount = 0;
       var swPromise = ('serviceWorker' in navigator)
         ? navigator.serviceWorker.getRegistrations().then(function(regs) {
-            unregisterCount = regs.length;
-            return Promise.all(regs.map(function(r) {
+            var stale = regs.filter(function(r) {
+              var url = (r.active && r.active.scriptURL) ||
+                        (r.installing && r.installing.scriptURL) ||
+                        (r.waiting && r.waiting.scriptURL) || '';
+              return url.indexOf(MEDIA_SW) === -1;
+            });
+            unregisterCount = stale.length;
+            return Promise.all(stale.map(function(r) {
               return r.unregister().catch(function() {});
             }));
           }).catch(function() { return; })
@@ -216,14 +237,29 @@
 
       var cachePromise = (window.caches && caches.keys)
         ? caches.keys().then(function(keys) {
-            return Promise.all(keys.map(function(k) {
-              return caches.delete(k).catch(function() {});
-            }));
+            return Promise.all(keys
+              .filter(function(k) {
+                return k.indexOf(MEDIA_CACHE_PREFIX) !== 0;
+              })
+              .map(function(k) {
+                return caches.delete(k).catch(function() {});
+              }));
           }).catch(function() { return; })
         : Promise.resolve();
 
       Promise.all([swPromise, cachePromise]).then(function() {
         if (unregisterCount > 0) maybeReload();
+
+        // Register the media worker only AFTER the sweep, so it is not
+        // caught by its own cleanup on a first run.
+        if ('serviceWorker' in navigator) {
+          navigator.serviceWorker
+            .register(MEDIA_SW, { scope: '/song-media/' })
+            .catch(function() {
+              // Offline media is a bonus; streaming still works
+              // without it, so a failure here is not worth surfacing.
+            });
+        }
       });
     })();
   </script>
