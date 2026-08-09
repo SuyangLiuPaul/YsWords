@@ -25,14 +25,19 @@ import 'package:yswords/utils/font_catalog.dart' show kCjkFontFallback;
 /// fydt.org migrated its backend.
 ///
 /// 2026-08-09 (v2) rebuilds it against fydt.org's `fydt-api/v1` JSON
-/// API, adds the Indonesian catalogue from cahayapengharapan.org, and
-/// plays the media in-app: 543 songs across three sites, of which 508
-/// have audio, 118 have video and 510 have sheet music. Every entry
-/// names its source on the row itself.
+/// API, adds cgdc.hk's yearly camp songbooks, and plays the media
+/// in-app rather than linking out. 559 songs shown, every one of them
+/// with playable audio; each row names its source.
 ///
-/// The media is streamed from each church's own servers — nothing is
-/// rehosted here. All three catalogues are published by our own
-/// church's pastors, who approved in-app playback.
+/// The catalogue upstream holds 606 across four sites. Cahaya
+/// (Indonesian) is hidden here because all 47 of its songs live on
+/// SoundCloud or YouTube, neither of which exposes a stream URL a
+/// player can open — see `SongService.hiddenSources`, which is one set
+/// and reversible if that ever changes.
+///
+/// The media streams from each church's own servers — nothing is
+/// rehosted. All catalogues are published by our own church's
+/// pastors, who approved in-app playback.
 class SongsPage extends StatefulWidget {
   const SongsPage({super.key});
 
@@ -350,9 +355,9 @@ class _IntroCard extends StatelessWidget {
     final title =
         uiStrings['songsIntroTitle']?[locale] ?? 'Church Songs Directory';
     final body = uiStrings['songsIntroBody']?[locale] ??
-        'Songs from 福音电台 (fydt.org), Cahaya Pengharapan (Indonesian) '
-            'and Christian Disciples Church. Tap ▶ to listen, or open an '
-            'entry for the instrumental, music video, sheet music and lyrics.';
+        'Songs from 福音电台 (fydt.org), Christian Disciples Church '
+            'and CGDC Hong Kong. Tap ▶ to listen, or open an entry for '
+            'the instrumental, music video, sheet music and lyrics.';
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
       decoration: BoxDecoration(

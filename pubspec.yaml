@@ -112,6 +112,15 @@ dependencies:
   # Android foreground service (AndroidManifest.xml). Neither affects
   # the desktop or web builds.
   audio_service: ^0.18.15
+  # Pulled in transitively by audio_service, but listed explicitly
+  # because we import it directly to set the audio-session category.
+  #
+  # Load-bearing, not cosmetic: without an explicit `playback`
+  # category iOS treats the audio as ambient and the physical
+  # Ring/Silent switch MUTES it — playback runs, the position
+  # advances, the lock screen shows its controls, and no sound comes
+  # out. Reported from a real iPhone before this was configured.
+  audio_session: ^0.2.0
 
 dev_dependencies:
   flutter_test:

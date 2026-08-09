@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:audio_service/audio_service.dart';
+import 'package:audio_session/audio_session.dart';
 import 'package:audioplayers/audioplayers.dart' as ap;
 import 'package:flutter/foundation.dart';
 
@@ -37,6 +38,53 @@ class SongAudioHandler extends BaseAudioHandler with SeekHandler {
     // Auto-advance. `onPlayerComplete` fires only on natural end, not
     // on stop()/pause(), so this cannot loop on user-initiated stops.
     _player.onPlayerComplete.listen((_) => _onTrackFinished());
+
+    // ignore: unawaited_futures
+    _configureSession();
+  }
+
+  /// Declare this app as a music player to the OS.
+  ///
+  /// Without an explicit category, iOS treats the audio as ambient and
+  /// **the physical Ring/Silent switch mutes it** — playback keeps
+  /// running, the position advances, the lock screen shows controls,
+  /// and no sound comes out. That exact symptom was reported from an
+  /// iPhone with the silent switch on. `AVAudioSessionCategory.playback`
+  /// is what every music app uses to keep playing regardless of the
+  /// switch, and it is also what permits audio to continue while the
+  /// screen is locked.
+  ///
+  /// `usage: media` + `contentType: music` on Android does the
+  /// equivalent: routes to the media volume stream rather than the
+  /// notification one, so the volume keys adjust the right thing.
+  ///
+  /// Note this cannot help the WEB build — a browser page has no
+  /// audio-session category to set, so on iOS Safari/Chrome the silent
+  /// switch mutes web audio and nothing in our code can override it.
+  /// That is a platform rule, and one more reason the native app is
+  /// the answer for listening while driving.
+  Future<void> _configureSession() async {
+    if (kIsWeb) return;
+    try {
+      final session = await AudioSession.instance;
+      await session.configure(const AudioSessionConfiguration(
+        avAudioSessionCategory: AVAudioSessionCategory.playback,
+        avAudioSessionMode: AVAudioSessionMode.defaultMode,
+        androidAudioAttributes: AndroidAudioAttributes(
+          contentType: AndroidAudioContentType.music,
+          usage: AndroidAudioUsage.media,
+        ),
+        // Pause for a phone call, duck for a nav prompt, and resume
+        // after — the behaviour a driver expects.
+        androidAudioFocusGainType:
+            AndroidAudioFocusGainType.gain,
+        androidWillPauseWhenDucked: false,
+      ));
+    } catch (e) {
+      // A misconfigured session must not stop playback from working
+      // at all; it only costs the silent-switch override.
+      debugPrint('[SongAudioHandler] audio session config failed: $e');
+    }
   }
 
   final ap.AudioPlayer _player = ap.AudioPlayer();

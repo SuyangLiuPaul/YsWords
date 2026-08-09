@@ -4269,13 +4269,13 @@ const uiStrings = {
   // the app plays the media now. It still isn't *rehosted*, so the
   // licence line says exactly that instead.
   'aboutLicenseSongs': {
-    'zh-Hans': '© 福音电台 / Cahaya Pengharapan / CDC · 经授权使用。'
+    'zh-Hans': '© 福音电台 / 基督门徒福音会 / cgdc.hk · 经授权使用。'
         '音频、视频与乐谱均从原站串流，本应用不作转存。',
-    'zh-Hant': '© 福音電台 / Cahaya Pengharapan / CDC · 經授權使用。'
+    'zh-Hant': '© 福音電台 / 基督門徒福音會 / cgdc.hk · 經授權使用。'
         '音訊、影片與樂譜均從原站串流，本應用不作轉存。',
-    'en': '© FYDT / Cahaya Pengharapan / CDC · used with permission. '
-        'Audio, video and scores stream from the source sites; '
-        'nothing is rehosted.',
+    'en': '© FYDT / Christian Disciples Church / CGDC Hong Kong · '
+        'used with permission. Audio, video and scores stream from the '
+        'source sites; nothing is rehosted.',
   },
   'aboutFontsBundled': {
     'zh-Hans': '内置字体：Roboto',
@@ -5364,17 +5364,17 @@ const uiStrings = {
     'zh-Hant': '詩歌目錄',
     'en': 'Church Songs Directory',
   },
+  // 2026-08-09: rewritten after Cahaya was hidden (its songs live on
+  // SoundCloud/YouTube and cannot play in-app) and cgdc.hk was added.
+  // The listed sources must match what the user can actually see.
   'songsIntroBody': {
-    'zh-Hans': '来自福音电台 (fydt.org)、印尼 Cahaya Pengharapan 与 '
-        'Christian Disciples Church 的诗歌。点 ▶ 直接收听，'
-        '或打开条目查看伴奏、MV、乐谱与歌词。',
-    'zh-Hant': '來自福音電台 (fydt.org)、印尼 Cahaya Pengharapan 與 '
-        'Christian Disciples Church 的詩歌。點 ▶ 直接收聽，'
-        '或開啟條目查看伴奏、MV、樂譜與歌詞。',
-    'en': 'Songs from 福音电台 (fydt.org), Cahaya Pengharapan '
-        '(Indonesian) and Christian Disciples Church. Tap ▶ to listen, '
-        'or open an entry for the instrumental, music video, sheet '
-        'music and lyrics.',
+    'zh-Hans': '来自福音电台 (fydt.org)、基督门徒福音会与香港 cgdc.hk '
+        '的诗歌。点 ▶ 直接收听，或打开条目查看伴奏、MV、乐谱与歌词。',
+    'zh-Hant': '來自福音電台 (fydt.org)、基督門徒福音會與香港 cgdc.hk '
+        '的詩歌。點 ▶ 直接收聽，或開啟條目查看伴奏、MV、樂譜與歌詞。',
+    'en': 'Songs from 福音电台 (fydt.org), Christian Disciples Church '
+        'and CGDC Hong Kong. Tap ▶ to listen, or open an entry for the '
+        'instrumental, music video, sheet music and lyrics.',
   },
   'songsSearchHint': {
     'zh-Hans': '搜索歌名、主题或编号…',
