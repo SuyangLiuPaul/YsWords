@@ -20,6 +20,29 @@ When you finish, tick it `[x]` with a one-line result. When you discover
 something new, **add it to the queue** rather than fixing it inline and
 forgetting it.
 
+## When nothing in the queue is actionable
+
+This will happen, and sooner than the two weeks are up: most of what is
+left needs something only the user can supply — the publisher's source
+for 梁家鏗譯本, a licensing answer, an Apple ID, a hosting decision.
+
+When every unchecked item is blocked, **do not invent work.** An
+unattended agent inventing scope in a Bible app is worse than an idle
+one. Do exactly one of these, in order of preference, then stop:
+
+1. **Re-run the data audits** and report any drift in the log. Silent
+   growth in a defect count is the thing most worth catching early.
+2. **Widen test coverage of existing behaviour** — no new features, no
+   refactors, no dependencies. A test that would have caught a defect
+   this repo has actually had is worth writing.
+3. If neither applies, write `NOTHING ACTIONABLE` in the log together
+   with the single most useful question the user could answer to
+   unblock the queue, and exit without committing.
+
+Never start a task listed under "Blocked on the user", and never work
+around a block by guessing at the missing information — least of all
+by reconstructing scripture.
+
 ## The one rule that outranks the queue
 
 The user's standing instruction:
