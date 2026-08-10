@@ -219,6 +219,11 @@ class _HighlightsPageState extends State<HighlightsPage> {
   void _showActions(BuildContext context, _HighlightItem it,
       MainProvider mp, String locale) {
     showModalBottomSheet<void>(
+      // useSafeArea: without it Flutter wraps the sheet in
+      // MediaQuery.removePadding(removeTop: true), so any SafeArea
+      // INSIDE the sheet sees padding.top == 0 and does nothing —
+      // the header then draws under the clock and the notch.
+      useSafeArea: true,
       context: context,
       builder: (sheetCtx) {
         return SafeArea(

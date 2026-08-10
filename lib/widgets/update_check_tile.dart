@@ -85,9 +85,13 @@ class _UpdateCheckTileState extends State<UpdateCheckTile> {
             icon: const Icon(Icons.download_rounded, size: 18),
             label: Text(_s('updateDownload', 'Download')),
             onPressed: () {
+              // `context`, not `ctx`: the dialog is popped first, so
+              // ctx's element is defunct by the time a failure would
+              // need to show a SnackBar.
+              final outer = context;
               Navigator.of(ctx).pop();
               if (LinkOpener.isAvailable) {
-                LinkOpener.open(info.downloadUrl);
+                LinkOpener.openOrWarn(outer, info.downloadUrl);
               }
             },
           ),

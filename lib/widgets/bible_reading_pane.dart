@@ -613,6 +613,11 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
   /// (12-32 pt). Closes when the user taps outside the sheet.
   void _showFontSizeSheet(BuildContext context, AppSettings settings) {
     showModalBottomSheet(
+      // useSafeArea: without it Flutter wraps the sheet in
+      // MediaQuery.removePadding(removeTop: true), so any SafeArea
+      // INSIDE the sheet sees padding.top == 0 and does nothing —
+      // the header then draws under the clock and the notch.
+      useSafeArea: true,
       context: context,
       showDragHandle: true,
       builder: (sheetCtx) {
@@ -2810,6 +2815,11 @@ class _SelectionActionBar extends StatelessWidget {
     final locale = settings.locale;
     final ms = settings.menuScale;
     showModalBottomSheet(
+      // useSafeArea: without it Flutter wraps the sheet in
+      // MediaQuery.removePadding(removeTop: true), so any SafeArea
+      // INSIDE the sheet sees padding.top == 0 and does nothing —
+      // the header then draws under the clock and the notch.
+      useSafeArea: true,
       context: context,
       builder: (_) => SafeArea(
         child: Padding(
@@ -3101,6 +3111,11 @@ void _showOriginalsSheet({
   // we rely on the provider reference instead.
   final mainProvider = context.read<MainProvider>();
   showModalBottomSheet<void>(
+    // useSafeArea: without it Flutter wraps the sheet in
+    // MediaQuery.removePadding(removeTop: true), so any SafeArea
+    // INSIDE the sheet sees padding.top == 0 and does nothing —
+    // the header then draws under the clock and the notch.
+    useSafeArea: true,
     context: context,
     isScrollControlled: true,
     backgroundColor: Theme.of(context).colorScheme.surface,
@@ -3161,6 +3176,11 @@ void _showAiExplainSheet({
       : '${first.book} ${first.chapter}:$verseStart';
 
   showModalBottomSheet<void>(
+    // useSafeArea: without it Flutter wraps the sheet in
+    // MediaQuery.removePadding(removeTop: true), so any SafeArea
+    // INSIDE the sheet sees padding.top == 0 and does nothing —
+    // the header then draws under the clock and the notch.
+    useSafeArea: true,
     context: context,
     isScrollControlled: true,
     backgroundColor: Theme.of(context).colorScheme.surface,
@@ -3868,6 +3888,11 @@ void _showCrossRefsSheet({
   final source = firstSorted.first;
   final englishBook = toEnglish(source.book) ?? source.book;
   showModalBottomSheet<void>(
+    // useSafeArea: without it Flutter wraps the sheet in
+    // MediaQuery.removePadding(removeTop: true), so any SafeArea
+    // INSIDE the sheet sees padding.top == 0 and does nothing —
+    // the header then draws under the clock and the notch.
+    useSafeArea: true,
     context: context,
     isScrollControlled: true,
     backgroundColor: Theme.of(context).colorScheme.surface,
@@ -3930,6 +3955,11 @@ void _showChapterSermonsSheet({
   required int chapter,
 }) {
   showModalBottomSheet<void>(
+    // useSafeArea: without it Flutter wraps the sheet in
+    // MediaQuery.removePadding(removeTop: true), so any SafeArea
+    // INSIDE the sheet sees padding.top == 0 and does nothing —
+    // the header then draws under the clock and the notch.
+    useSafeArea: true,
     context: context,
     isScrollControlled: true,
     backgroundColor: Theme.of(context).colorScheme.surface,
@@ -4077,6 +4107,11 @@ void _showRelatedSermonsSheet({
 }) {
   if (verses.isEmpty) return;
   showModalBottomSheet<void>(
+    // useSafeArea: without it Flutter wraps the sheet in
+    // MediaQuery.removePadding(removeTop: true), so any SafeArea
+    // INSIDE the sheet sees padding.top == 0 and does nothing —
+    // the header then draws under the clock and the notch.
+    useSafeArea: true,
     context: context,
     isScrollControlled: true,
     backgroundColor: Theme.of(context).colorScheme.surface,
@@ -4633,6 +4668,11 @@ void showNoteEditor({
   // anyway, and there's no longer any compact/fullscreen state
   // to get wrong.
   showModalBottomSheet<void>(
+    // useSafeArea: without it Flutter wraps the sheet in
+    // MediaQuery.removePadding(removeTop: true), so any SafeArea
+    // INSIDE the sheet sees padding.top == 0 and does nothing —
+    // the header then draws under the clock and the notch.
+    useSafeArea: true,
     context: context,
     isScrollControlled: true,
     // 2026-05-24 (v1.2.94): drag-to-dismiss re-enabled. Was
@@ -5292,6 +5332,11 @@ void _showHighlightsSheet({
 }) {
   final mainProvider = context.read<MainProvider>();
   showModalBottomSheet<void>(
+    // useSafeArea: without it Flutter wraps the sheet in
+    // MediaQuery.removePadding(removeTop: true), so any SafeArea
+    // INSIDE the sheet sees padding.top == 0 and does nothing —
+    // the header then draws under the clock and the notch.
+    useSafeArea: true,
     context: context,
     isScrollControlled: true,
     backgroundColor: Theme.of(context).colorScheme.surface,
@@ -5365,6 +5410,11 @@ void _showMapPicker(
   // real version in (mirrors HighlightsSheet). See [[feedback_book_name_localization]].
   final version = context.read<MainProvider>().currentVersion;
   showModalBottomSheet<void>(
+    // useSafeArea: without it Flutter wraps the sheet in
+    // MediaQuery.removePadding(removeTop: true), so any SafeArea
+    // INSIDE the sheet sees padding.top == 0 and does nothing —
+    // the header then draws under the clock and the notch.
+    useSafeArea: true,
     context: context,
     isScrollControlled: true,
     shape: const RoundedRectangleBorder(
@@ -7727,6 +7777,11 @@ class _FloatingHeader extends StatelessWidget {
       ('en', 'English'),
     ];
     showModalBottomSheet(
+      // useSafeArea: without it Flutter wraps the sheet in
+      // MediaQuery.removePadding(removeTop: true), so any SafeArea
+      // INSIDE the sheet sees padding.top == 0 and does nothing —
+      // the header then draws under the clock and the notch.
+      useSafeArea: true,
       context: context,
       showDragHandle: true,
       builder: (sheetContext) => SafeArea(
@@ -8002,6 +8057,11 @@ void _showSynopsisSheet({
 }) {
   final mainProvider = context.read<MainProvider>();
   showModalBottomSheet<void>(
+    // useSafeArea: without it Flutter wraps the sheet in
+    // MediaQuery.removePadding(removeTop: true), so any SafeArea
+    // INSIDE the sheet sees padding.top == 0 and does nothing —
+    // the header then draws under the clock and the notch.
+    useSafeArea: true,
     context: context,
     isScrollControlled: true,
     backgroundColor: Theme.of(context).colorScheme.surface,

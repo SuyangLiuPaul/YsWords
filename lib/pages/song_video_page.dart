@@ -48,7 +48,7 @@ class SongVideoPage extends StatefulWidget {
     final url = song.videoUrl;
     if (url == null) return;
     if (!isSupported) {
-      await LinkOpener.open(url);
+      await LinkOpener.openOrWarn(context, url, locale: locale);
       return;
     }
     await Navigator.of(context).push(
@@ -126,7 +126,7 @@ class _SongVideoPageState extends State<SongVideoPage> {
               tooltip:
                   uiStrings['songsOpenOriginal']?[widget.locale] ?? 'Original',
               icon: const Icon(Icons.open_in_new_rounded),
-              onPressed: () => LinkOpener.open(url),
+              onPressed: () => LinkOpener.openOrWarn(context, url, locale: widget.locale),
             ),
         ],
       ),
@@ -159,7 +159,7 @@ class _SongVideoPageState extends State<SongVideoPage> {
               OutlinedButton.icon(
                 style: OutlinedButton.styleFrom(
                     foregroundColor: Colors.white),
-                onPressed: () => LinkOpener.open(url),
+                onPressed: () => LinkOpener.openOrWarn(context, url, locale: widget.locale),
                 icon: const Icon(Icons.open_in_new_rounded, size: 18),
                 label: Text(uiStrings['songsOpenOriginal']?[widget.locale] ??
                     'Original page'),

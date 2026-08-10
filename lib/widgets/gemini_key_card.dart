@@ -251,9 +251,11 @@ class GeminiKeyCardState extends State<GeminiKeyCard> {
     }
   }
 
-  Future<void> _openAiStudio() async {
+  Future<void> _openAiStudio(BuildContext context) async {
     if (!LinkOpener.isAvailable) return;
-    await LinkOpener.open('https://aistudio.google.com/apikey');
+    await LinkOpener.openOrWarn(
+        context, 'https://aistudio.google.com/apikey',
+        locale: widget.settings.locale);
   }
 
   @override
@@ -435,7 +437,7 @@ class GeminiKeyCardState extends State<GeminiKeyCard> {
                     uiStrings['aiByokGetKey']?[locale] ??
                         'Get free key',
                   ),
-                  onPressed: _openAiStudio,
+                  onPressed: () => _openAiStudio(context),
                 ),
               ],
             ),

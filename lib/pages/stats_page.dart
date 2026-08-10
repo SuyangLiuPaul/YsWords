@@ -1394,6 +1394,11 @@ class _OverviewFilterBar extends StatelessWidget {
 
   void _openBookSheet(BuildContext context) {
     showModalBottomSheet<void>(
+      // useSafeArea: without it Flutter wraps the sheet in
+      // MediaQuery.removePadding(removeTop: true), so any SafeArea
+      // INSIDE the sheet sees padding.top == 0 and does nothing —
+      // the header then draws under the clock and the notch.
+      useSafeArea: true,
       context: context,
       isScrollControlled: true,
       backgroundColor: Theme.of(context).colorScheme.surface,
@@ -1593,6 +1598,11 @@ class _ExegesisLauncher {
       return;
     }
     showModalBottomSheet<void>(
+      // useSafeArea: without it Flutter wraps the sheet in
+      // MediaQuery.removePadding(removeTop: true), so any SafeArea
+      // INSIDE the sheet sees padding.top == 0 and does nothing —
+      // the header then draws under the clock and the notch.
+      useSafeArea: true,
       context: context,
       isScrollControlled: true,
       backgroundColor: Theme.of(context).colorScheme.surface,
@@ -1623,6 +1633,11 @@ class _ExegesisLauncher {
   }) async {
     final mp = context.read<MainProvider>();
     final picked = await showModalBottomSheet<_PickedRef>(
+      // useSafeArea: without it Flutter wraps the sheet in
+      // MediaQuery.removePadding(removeTop: true), so any SafeArea
+      // INSIDE the sheet sees padding.top == 0 and does nothing —
+      // the header then draws under the clock and the notch.
+      useSafeArea: true,
       context: context,
       isScrollControlled: true,
       backgroundColor: Theme.of(context).colorScheme.surface,
@@ -1675,6 +1690,11 @@ class _ExegesisLauncher {
             ),
     );
     showModalBottomSheet<void>(
+      // useSafeArea: without it Flutter wraps the sheet in
+      // MediaQuery.removePadding(removeTop: true), so any SafeArea
+      // INSIDE the sheet sees padding.top == 0 and does nothing —
+      // the header then draws under the clock and the notch.
+      useSafeArea: true,
       context: context,
       isScrollControlled: true,
       backgroundColor: Theme.of(context).colorScheme.surface,
@@ -1994,6 +2014,11 @@ class _BibleLanguagesCard extends StatelessWidget {
   void _openAramaicSheet(
       BuildContext context, String locale, AppSettings settings) {
     showModalBottomSheet<void>(
+      // useSafeArea: without it Flutter wraps the sheet in
+      // MediaQuery.removePadding(removeTop: true), so any SafeArea
+      // INSIDE the sheet sees padding.top == 0 and does nothing —
+      // the header then draws under the clock and the notch.
+      useSafeArea: true,
       context: context,
       isScrollControlled: true,
       backgroundColor: Theme.of(context).colorScheme.surface,
@@ -3085,6 +3110,11 @@ class _StrongsLookupTabState extends State<_StrongsLookupTab>
   Future<void> _openVersePicker(BuildContext context) async {
     final mp = context.read<MainProvider>();
     final picked = await showModalBottomSheet<_PickedRef>(
+      // useSafeArea: without it Flutter wraps the sheet in
+      // MediaQuery.removePadding(removeTop: true), so any SafeArea
+      // INSIDE the sheet sees padding.top == 0 and does nothing —
+      // the header then draws under the clock and the notch.
+      useSafeArea: true,
       context: context,
       isScrollControlled: true,
       backgroundColor: Theme.of(context).colorScheme.surface,
@@ -3153,6 +3183,11 @@ class _StrongsLookupTabState extends State<_StrongsLookupTab>
       return;
     }
     showModalBottomSheet<void>(
+      // useSafeArea: without it Flutter wraps the sheet in
+      // MediaQuery.removePadding(removeTop: true), so any SafeArea
+      // INSIDE the sheet sees padding.top == 0 and does nothing —
+      // the header then draws under the clock and the notch.
+      useSafeArea: true,
       context: context,
       isScrollControlled: true,
       backgroundColor: Theme.of(context).colorScheme.surface,
@@ -3224,6 +3259,11 @@ class _StrongsLookupTabState extends State<_StrongsLookupTab>
       ),
     );
     showModalBottomSheet<void>(
+      // useSafeArea: without it Flutter wraps the sheet in
+      // MediaQuery.removePadding(removeTop: true), so any SafeArea
+      // INSIDE the sheet sees padding.top == 0 and does nothing —
+      // the header then draws under the clock and the notch.
+      useSafeArea: true,
       context: context,
       isScrollControlled: true,
       backgroundColor: Theme.of(context).colorScheme.surface,
@@ -3347,6 +3387,11 @@ class _WordDistributionTabState extends State<_WordDistributionTab>
     final all = await _lemmasFuture;
     if (!context.mounted) return;
     final picked = await showModalBottomSheet<String>(
+      // useSafeArea: without it Flutter wraps the sheet in
+      // MediaQuery.removePadding(removeTop: true), so any SafeArea
+      // INSIDE the sheet sees padding.top == 0 and does nothing —
+      // the header then draws under the clock and the notch.
+      useSafeArea: true,
       context: context,
       isScrollControlled: true,
       backgroundColor: Theme.of(context).colorScheme.surface,

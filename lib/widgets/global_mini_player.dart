@@ -33,7 +33,29 @@ class GlobalMiniPlayer extends StatelessWidget {
             if (player.current == null && player.error == null) {
               return const SizedBox.shrink();
             }
-            return const _Strip();
+            // NOT `const _Strip()`.
+            //
+            // 2026-08-11, reported from an iPhone as "it is playing but
+            // the bottom is not moving": elapsed time frozen at 0:00 and
+            // the button stuck on ▶, while the row above it correctly
+            // showed ⏸ for the same song.
+            //
+            // A const constructor call is canonicalised, so every
+            // rebuild handed `Element.updateChild` the *identical*
+            // Widget instance. Its `child.widget == newWidget` fast path
+            // then returns early without rebuilding — which silently
+            // disabled this ListenableBuilder altogether. The player was
+            // notifying correctly the whole time (`onPosition` →
+            // `_broadcast()` → `notifyUi()` → `revision`); nothing
+            // downstream ever re-read it.
+            //
+            // Without `const`, each rebuild is a fresh instance, the
+            // identity check fails, and the strip repaints. Do not let a
+            // `prefer_const_constructors` hint put it back: that lint is
+            // wrong for a widget whose entire purpose is to re-read
+            // mutable state on every notification.
+            // ignore: prefer_const_constructors
+            return _Strip();
           },
         ),
       ],

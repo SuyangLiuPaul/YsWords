@@ -2335,6 +2335,11 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
     final locale = widget.locale;
     final scheme = Theme.of(ctx).colorScheme;
     showModalBottomSheet<void>(
+      // useSafeArea: without it Flutter wraps the sheet in
+      // MediaQuery.removePadding(removeTop: true), so any SafeArea
+      // INSIDE the sheet sees padding.top == 0 and does nothing —
+      // the header then draws under the clock and the notch.
+      useSafeArea: true,
       context: ctx,
       isScrollControlled: true,
       backgroundColor: scheme.surface,

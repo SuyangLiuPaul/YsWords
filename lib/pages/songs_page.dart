@@ -23,6 +23,7 @@ import 'package:yswords/widgets/song_actions.dart';
 import 'package:yswords/widgets/home_icon_button.dart';
 import 'package:yswords/widgets/language_switcher_button.dart';
 import 'package:yswords/widgets/localized_back_button.dart';
+import 'package:yswords/widgets/scroll_to_top_on_status_bar_tap.dart';
 import 'package:yswords/utils/font_catalog.dart' show kCjkFontFallback;
 
 /// Church-songs directory page.
@@ -166,7 +167,9 @@ class _SongsPageState extends State<SongsPage> {
               child: Column(
                 children: [
                   Expanded(
-                    child: Scrollbar(
+                    child: ScrollToTopOnStatusBarTap(
+                      controller: _scrollCtrl,
+                      child: Scrollbar(
                 controller: _scrollCtrl,
                 thumbVisibility: true,
                 child: ListView.separated(
@@ -252,6 +255,7 @@ class _SongsPageState extends State<SongsPage> {
                   },
                 ),
               ),
+                    ),
                   ),
                 ],
               ),
@@ -900,6 +904,11 @@ class _SearchAndFilterBar extends StatelessWidget {
 
   void _openFilterSheet(BuildContext context) {
     showModalBottomSheet<void>(
+      // useSafeArea: without it Flutter wraps the sheet in
+      // MediaQuery.removePadding(removeTop: true), so any SafeArea
+      // INSIDE the sheet sees padding.top == 0 and does nothing —
+      // the header then draws under the clock and the notch.
+      useSafeArea: true,
       context: context,
       isScrollControlled: true,
       backgroundColor: Theme.of(context).colorScheme.surface,
@@ -1371,6 +1380,11 @@ class _SongTile extends StatelessWidget {
 
   void _openDetail(BuildContext context) {
     showModalBottomSheet<void>(
+      // useSafeArea: without it Flutter wraps the sheet in
+      // MediaQuery.removePadding(removeTop: true), so any SafeArea
+      // INSIDE the sheet sees padding.top == 0 and does nothing —
+      // the header then draws under the clock and the notch.
+      useSafeArea: true,
       context: context,
       isScrollControlled: true,
       backgroundColor: Theme.of(context).colorScheme.surface,
@@ -1549,21 +1563,40 @@ class _PlayButton extends StatelessWidget {
   /// The scrim is not decoration: a play glyph tinted `primary` over an
   /// arbitrary photograph is a contrast accident waiting to happen, so
   /// over artwork the glyph goes white on a dark wash instead.
-  List<Widget> _artworkLayers(bool active) {
+  ///
+  /// **The scrim and the white glyph are tied to a frame actually
+  /// arriving, not to `artworkUrl != null`.** The first version keyed
+  /// both off the URL, which is wrong in the common case: only fydt
+  /// publishes artwork, fydt.org is intermittently unreachable (it was
+  /// returning nothing at all while this was being written), and a
+  /// failed load then left a black wash and a white-on-nothing icon.
+  /// Artwork we cannot fetch has to degrade to exactly the plain button,
+  /// not to a damaged one.
+  ///
+  /// [face] is called with true only once the image is on screen.
+  Widget _withArtwork(Widget Function(bool onArt) face, bool active) {
     final url = song.artworkUrl;
-    if (url == null) return const [];
-    return [
-      Image.network(url,
-          fit: BoxFit.cover,
-          // Missing artwork is the common case, not an error.
-          errorBuilder: (_, __, ___) => const SizedBox.shrink()),
-      Container(
-        color: Colors.black.withValues(alpha: active ? 0.28 : 0.42),
-      ),
-    ];
+    if (url == null) return face(false);
+    return Image.network(
+      url,
+      fit: BoxFit.cover,
+      // No artwork is the common case (393 of 606 songs), not an error.
+      errorBuilder: (_, __, ___) => face(false),
+      frameBuilder: (_, img, frame, wasSyncLoaded) {
+        if (frame == null && !wasSyncLoaded) return face(false);
+        return Stack(
+          fit: StackFit.expand,
+          children: [
+            img,
+            Container(
+              color: Colors.black.withValues(alpha: active ? 0.28 : 0.42),
+            ),
+            face(true),
+          ],
+        );
+      },
+    );
   }
-
-  bool get _hasArt => song.artworkUrl != null;
 
   @override
   Widget build(BuildContext context) {
@@ -1577,18 +1610,20 @@ class _PlayButton extends StatelessWidget {
             fit: StackFit.expand,
             children: [
               Container(color: scheme.primary.withValues(alpha: 0.10)),
-              ..._artworkLayers(false),
-              Center(
-                child: Text(
-                  fallbackBadge,
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
-                    color: _hasArt
-                        ? Colors.white
-                        : scheme.primary.withValues(alpha: 0.8),
+              _withArtwork(
+                (onArt) => Center(
+                  child: Text(
+                    fallbackBadge,
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      color: onArt
+                          ? Colors.white
+                          : scheme.primary.withValues(alpha: 0.8),
+                    ),
                   ),
                 ),
+                false,
               ),
             ],
           ),
@@ -1630,38 +1665,27 @@ class _PlayButton extends StatelessWidget {
                 child: SizedBox(
                   width: 40,
                   height: 40,
-                  child: Stack(
-                    fit: StackFit.expand,
-                    children: [
-                      ..._artworkLayers(isThis),
-                      Center(
-                        child: loading
-                            ? SizedBox(
-                                width: 18,
-                                height: 18,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: _hasArt
-                                      ? Colors.white
-                                      : (isThis
-                                          ? scheme.onPrimary
-                                          : scheme.primary),
-                                ),
-                              )
-                            : Icon(
-                                playing
-                                    ? Icons.pause_rounded
-                                    : Icons.play_arrow_rounded,
-                                size: 22,
-                                color: _hasArt
-                                    ? Colors.white
-                                    : (isThis
-                                        ? scheme.onPrimary
-                                        : scheme.primary),
-                              ),
-                      ),
-                    ],
-                  ),
+                  child: _withArtwork((onArt) {
+                    final fg = onArt
+                        ? Colors.white
+                        : (isThis ? scheme.onPrimary : scheme.primary);
+                    return Center(
+                      child: loading
+                          ? SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(
+                                  strokeWidth: 2, color: fg),
+                            )
+                          : Icon(
+                              playing
+                                  ? Icons.pause_rounded
+                                  : Icons.play_arrow_rounded,
+                              size: 22,
+                              color: fg,
+                            ),
+                    );
+                  }, isThis),
                 ),
               ),
             ),

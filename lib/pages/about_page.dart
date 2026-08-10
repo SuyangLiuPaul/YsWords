@@ -409,7 +409,7 @@ class _AttribRow extends StatelessWidget {
   Future<void> _open(BuildContext context) async {
     if (url == null) return;
     if (!LinkOpener.isAvailable) return;
-    await LinkOpener.open(url!);
+    await LinkOpener.openOrWarn(context, url!);
   }
 
   @override
@@ -660,7 +660,8 @@ class _AppLicenseCard extends StatelessWidget {
 
   Future<void> _openRepo(BuildContext context) async {
     if (!LinkOpener.isAvailable) return;
-    await LinkOpener.open('https://github.com/SuyangLiuPaul/YsWords');
+    await LinkOpener.openOrWarn(
+        context, 'https://github.com/SuyangLiuPaul/YsWords');
   }
 
   @override

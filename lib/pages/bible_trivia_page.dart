@@ -554,6 +554,11 @@ class _TriviaFilterBar extends StatelessWidget {
   /// memory carries between the two pages.
   void _openBookFilterSheet(BuildContext context) {
     showModalBottomSheet<void>(
+      // useSafeArea: without it Flutter wraps the sheet in
+      // MediaQuery.removePadding(removeTop: true), so any SafeArea
+      // INSIDE the sheet sees padding.top == 0 and does nothing —
+      // the header then draws under the clock and the notch.
+      useSafeArea: true,
       context: context,
       isScrollControlled: true,
       backgroundColor: Theme.of(context).colorScheme.surface,
@@ -1494,6 +1499,11 @@ Future<void> showBibleTriviaSheet({
       triviaForChapter(englishBook: englishBook, chapter: chapter);
   final scheme = Theme.of(context).colorScheme;
   return showModalBottomSheet<void>(
+    // useSafeArea: without it Flutter wraps the sheet in
+    // MediaQuery.removePadding(removeTop: true), so any SafeArea
+    // INSIDE the sheet sees padding.top == 0 and does nothing —
+    // the header then draws under the clock and the notch.
+    useSafeArea: true,
     context: context,
     isScrollControlled: true,
     backgroundColor: scheme.surface,

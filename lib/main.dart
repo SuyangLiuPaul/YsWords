@@ -242,11 +242,35 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
           CloudAuthService.instance
               .init()
               .timeout(const Duration(seconds: 8))
-              .then((_) => RealtimeDbSyncService.instance.init())
               .catchError((Object e, StackTrace st) {
             debugPrint('CloudAuthService.init timed out or failed: $e\n$st');
           }),
         );
+        // 2026-08-11: sync init is NO LONGER chained off the auth
+        // future.
+        //
+        // Reported from an iPhone: signed in as the right account,
+        // profile photo and name on the dashboard, and Notes stuck at 7
+        // / Bookmarks at 0 — "all the notes and contents are not
+        // synced".
+        //
+        // It used to read `.timeout(8s).then((_) => RTDB.init())`. When
+        // auth took longer than eight seconds — a cold start with the
+        // radio waking, or any slow network — the timeout completed the
+        // future with an error, `.then` was skipped, and
+        // `RealtimeDbSyncService.init()` was never called again for the
+        // whole session. Auth itself still finished underneath, which is
+        // why the account looked perfectly signed in while nothing
+        // synced. One slow boot disabled sync until the app was
+        // restarted, and the user had no way to tell.
+        //
+        // The chaining was never needed: `init()` is idempotent and its
+        // whole job is to register a listener on CloudAuthService and
+        // then call `_onAuthChanged()`. It handles the signed-out case
+        // by setting status to disabled and re-runs itself the moment
+        // auth lands. Calling it directly is both simpler and immune to
+        // however long auth takes.
+        RealtimeDbSyncService.instance.init();
         // Round 56 day-3 (2026-05-06): switched cloud sync from
         // Firestore (CloudSyncService) to Google Drive AppData
         // (DriveSyncService). User reported the Firestore path was

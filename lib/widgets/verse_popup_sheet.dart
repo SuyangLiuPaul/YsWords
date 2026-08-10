@@ -441,6 +441,11 @@ class _VersePopupSheetState extends State<VersePopupSheet> {
 /// the given parsed reference.
 Future<void> showVersePopup(BuildContext context, BibleReference ref) {
   return showModalBottomSheet<void>(
+    // useSafeArea: without it Flutter wraps the sheet in
+    // MediaQuery.removePadding(removeTop: true), so any SafeArea
+    // INSIDE the sheet sees padding.top == 0 and does nothing —
+    // the header then draws under the clock and the notch.
+    useSafeArea: true,
     context: context,
     isScrollControlled: true,
     backgroundColor: Theme.of(context).colorScheme.surface,

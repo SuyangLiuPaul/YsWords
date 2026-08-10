@@ -50,7 +50,7 @@ class SongScorePage extends StatelessWidget {
               tooltip: uiStrings['songsOpenOriginal']?[locale] ??
                   'Original page',
               icon: const Icon(Icons.open_in_new_rounded),
-              onPressed: () => LinkOpener.open(url),
+              onPressed: () => LinkOpener.openOrWarn(context, url, locale: locale),
             ),
         ],
       ),
@@ -123,7 +123,7 @@ class SongScorePage extends StatelessWidget {
             if (url != null) ...[
               const SizedBox(height: 16),
               OutlinedButton.icon(
-                onPressed: () => LinkOpener.open(url),
+                onPressed: () => LinkOpener.openOrWarn(context, url, locale: locale),
                 icon: const Icon(Icons.open_in_new_rounded, size: 18),
                 label: Text(uiStrings['songsOpenOriginal']?[locale] ??
                     'Original page'),
@@ -156,7 +156,7 @@ class SongScorePage extends StatelessWidget {
       BuildContext context, Song song, String locale) async {
     if (song.scoreUrl == null) return;
     if (!isSupported) {
-      await LinkOpener.open(song.scoreUrl!);
+      await LinkOpener.openOrWarn(context, song.scoreUrl!, locale: locale);
       return;
     }
     await Navigator.of(context).push(

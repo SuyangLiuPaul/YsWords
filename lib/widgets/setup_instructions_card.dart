@@ -15,9 +15,9 @@ class SetupInstructionsCard extends StatelessWidget {
   const SetupInstructionsCard(
       {super.key, required this.scheme, required this.locale});
 
-  Future<void> _open(String url) async {
+  Future<void> _open(BuildContext context, String url) async {
     if (!LinkOpener.isAvailable) return;
-    await LinkOpener.open(url);
+    await LinkOpener.openOrWarn(context, url, locale: locale);
   }
 
   /// Three-locale picker. Previously the inline strings used
@@ -346,7 +346,7 @@ class SetupInstructionsCard extends StatelessWidget {
                       'Open in Cloud Shell'),
                   style: const TextStyle(fontSize: 11.5),
                 ),
-                onPressed: () => _open(cloudShellUrl),
+                onPressed: () => _open(ctx, cloudShellUrl),
                 style: FilledButton.styleFrom(
                   padding: const EdgeInsets.symmetric(
                       horizontal: 10, vertical: 6),
@@ -468,7 +468,7 @@ class SetupInstructionsCard extends StatelessWidget {
                   icon: const Icon(Icons.open_in_new_rounded, size: 14),
                   label: Text(action,
                       style: const TextStyle(fontSize: 11.5)),
-                  onPressed: () => _open(url),
+                  onPressed: () => _open(ctx, url),
                   style: TextButton.styleFrom(
                     padding: const EdgeInsets.symmetric(
                         horizontal: 8, vertical: 4),

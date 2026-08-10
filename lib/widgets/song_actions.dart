@@ -47,6 +47,11 @@ void showAddToPlaylistSheet(BuildContext context, Song song, String locale) {
   final service = SongPlaylistService.instance;
   service.load();
   showModalBottomSheet<void>(
+    // useSafeArea: without it Flutter wraps the sheet in
+    // MediaQuery.removePadding(removeTop: true), so any SafeArea
+    // INSIDE the sheet sees padding.top == 0 and does nothing —
+    // the header then draws under the clock and the notch.
+    useSafeArea: true,
     context: context,
     builder: (sheetCtx) => SafeArea(
       child: ListenableBuilder(

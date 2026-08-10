@@ -527,9 +527,9 @@ class _ProbeRow extends StatelessWidget {
   final _ProbeResult result;
   const _ProbeRow({required this.result});
 
-  Future<void> _open(String url) async {
+  Future<void> _open(BuildContext context, String url) async {
     if (!LinkOpener.isAvailable) return;
-    await LinkOpener.open(url);
+    await LinkOpener.openOrWarn(context, url);
   }
 
   @override
@@ -605,7 +605,7 @@ class _ProbeRow extends StatelessWidget {
                 icon: const Icon(Icons.open_in_new_rounded, size: 14),
                 label: Text(result.fixLabel ?? 'Open Cloud Console',
                     style: const TextStyle(fontSize: 11)),
-                onPressed: () => _open(result.fixUrl!),
+                onPressed: () => _open(context, result.fixUrl!),
                 style: TextButton.styleFrom(
                   padding:
                       const EdgeInsets.symmetric(horizontal: 8, vertical: 4),

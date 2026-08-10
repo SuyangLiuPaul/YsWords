@@ -168,6 +168,11 @@ class NowPlayingPage extends StatelessWidget {
 
 void _showQueue(BuildContext context, String locale) {
   showModalBottomSheet<void>(
+    // useSafeArea: without it Flutter wraps the sheet in
+    // MediaQuery.removePadding(removeTop: true), so any SafeArea
+    // INSIDE the sheet sees padding.top == 0 and does nothing —
+    // the header then draws under the clock and the notch.
+    useSafeArea: true,
     context: context,
     isScrollControlled: true,
     backgroundColor: Theme.of(context).colorScheme.surface,
@@ -719,6 +724,11 @@ class _SecondaryRow extends StatelessWidget {
 
   void _pickSleep(BuildContext context) {
     showModalBottomSheet<void>(
+      // useSafeArea: without it Flutter wraps the sheet in
+      // MediaQuery.removePadding(removeTop: true), so any SafeArea
+      // INSIDE the sheet sees padding.top == 0 and does nothing —
+      // the header then draws under the clock and the notch.
+      useSafeArea: true,
       context: context,
       builder: (sheetCtx) => SafeArea(
         child: Column(

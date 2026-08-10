@@ -314,6 +314,11 @@ class _PlaylistTile extends StatelessWidget {
   /// to do when a song has not got it.
   void _pickPreference(BuildContext context) {
     showModalBottomSheet<void>(
+      // useSafeArea: without it Flutter wraps the sheet in
+      // MediaQuery.removePadding(removeTop: true), so any SafeArea
+      // INSIDE the sheet sees padding.top == 0 and does nothing —
+      // the header then draws under the clock and the notch.
+      useSafeArea: true,
       context: context,
       builder: (ctx) => SafeArea(
         child: Column(
