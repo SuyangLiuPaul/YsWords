@@ -450,11 +450,22 @@ class _Artwork extends StatelessWidget {
           // per row. RemoteImage shares the failure memo with the list,
           // so opening Now Playing on a song whose art just failed does
           // not re-probe a host we already know is unreachable.
-          child: RemoteImage(
-            url: url,
-            cacheWidth:
-                (side * MediaQuery.devicePixelRatioOf(context)).round(),
-            fallback: (_) => _placeholder(),
+          child: ColoredBox(
+            color: scheme.primaryContainer.withValues(alpha: 0.4),
+            child: RemoteImage(
+              url: url,
+              // `contain`, not `cover`. fydt's covers are square, but
+              // cgdc's artwork is a songbook LOGO and the shapes vary
+              // wildly — 2026 SAIL is 1418×341 (4.16:1) while 2025
+              // Nearer is 531×543. Cropping a wordmark to a square
+              // shows its middle third and reads as nothing at all.
+              // On a square image contain and cover are identical, so
+              // this costs the square ones nothing.
+              fit: BoxFit.contain,
+              cacheWidth:
+                  (side * MediaQuery.devicePixelRatioOf(context)).round(),
+              fallback: (_) => _placeholder(),
+            ),
           ),
         ),
       ),

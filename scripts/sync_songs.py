@@ -146,6 +146,47 @@ CGDC_TRACK_RE = re.compile(
 CGDC_ALBUM_RE = re.compile(r'data-albumTitle="([^"]*)"', re.IGNORECASE)
 CGDC_TIME_RE = re.compile(r'data-trackTime="([^"]*)"', re.IGNORECASE)
 
+# Album art. 2026-08-11: cgdc had 0 of 63 songs with artwork because
+# nothing ever looked — `artworkUrl` was only ever read from fydt's
+# WordPress API. Each songbook page carries exactly one songbook logo
+# in wp-content/uploads.
+#
+# The player's own per-track `poster` is NOT used: it is a Vue binding
+# (`:src="list.tracks[currentTrack].poster"`) filled over admin-ajax,
+# so it is absent from the served HTML. The songbook logo is per-album
+# rather than per-song, which is honest — that IS what this church
+# publishes per Easter camp.
+#
+# Excluded: the site favicon (`cropped-cgdc_hk_website_icon-*`) and
+# Elementor's generated thumbnails, which are crops of the same file
+# under `/elementor/thumbs/`.
+CGDC_IMG_RE = re.compile(
+    r'https://cgdc\.hk/wp-content/uploads/[^"\'\s<>]+\.(?:jpg|jpeg|png|webp)',
+    re.IGNORECASE)
+CGDC_IMG_REJECT_RE = re.compile(
+    r'website_icon|cropped-|/elementor/thumbs/|logo-\d+x\d+\.', re.IGNORECASE)
+# WordPress srcset variants: prefer the original over `-1024x246.png`.
+CGDC_IMG_SIZED_RE = re.compile(r'-\d+x\d+\.\w+$')
+
+
+def _cgdc_album_art(page_html):
+    """The one songbook logo on a cgdc songbook page, or None.
+
+    Returns the FULL-SIZE original where the page also carries WordPress
+    srcset variants, so the app gets to pick its own decode size rather
+    than being stuck with whatever width the page happened to render.
+    """
+    seen = []
+    for u in CGDC_IMG_RE.findall(page_html):
+        if CGDC_IMG_REJECT_RE.search(u):
+            continue
+        if u not in seen:
+            seen.append(u)
+    if not seen:
+        return None
+    full = [u for u in seen if not CGDC_IMG_SIZED_RE.search(u)]
+    return (full or seen)[0]
+
 # ── Theme classifier ──────────────────────────────────────────────
 # Applied to titles when the source publishes no taxonomy of its own
 # (cdc, cahaya). fydt songs get their real `song_category` terms and
@@ -945,6 +986,8 @@ def fetch_cgdc():
                      if candidate and not candidate.startswith('http')
                      else None)
         times = CGDC_TIME_RE.findall(page_html)
+        # One logo per songbook, shared by every track in it.
+        album_art = _cgdc_album_art(page_html)
 
         # Sheet music sits on the same page, keyed by the track number
         # ("2024-01"). Matching on the FULL filename does not work:
@@ -990,6 +1033,9 @@ def fetch_cgdc():
                 audioUrl=url,
                 audioTracks=build_tracks([(url, 'vocal', None)]),
                 scoreUrl=pdfs.get(code or ''),
+                # Per-ALBUM, not per-song — see _cgdc_album_art. Before
+                # this, all 63 cgdc songs had no artwork at all.
+                artworkUrl=album_art,
                 # The songbook name ("2023 多结果子 Fruitfulness") is an
                 # album, not a theme — themes are a closed vocabulary
                 # with localised labels, and stuffing a free-text

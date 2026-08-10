@@ -50,6 +50,14 @@ class RemoteImage extends StatelessWidget {
   /// border, anything that must not appear over the fallback.
   final Widget Function(BuildContext context, Widget image)? onLoaded;
 
+  /// Kept because the rest of this app depends on it: several external
+  /// image hosts send no `Access-Control-Allow-Origin`, and on web
+  /// `prefer` makes Flutter render a real `<img>` element instead of
+  /// decoding bytes it is not allowed to read. Anything converted to
+  /// `RemoteImage` must carry its original value over — dropping it
+  /// looks like nothing on native and silently blanks the image on web.
+  final WebHtmlElementStrategy webHtmlElementStrategy;
+
   const RemoteImage({
     super.key,
     required this.url,
@@ -58,6 +66,7 @@ class RemoteImage extends StatelessWidget {
     this.cacheWidth,
     this.cacheHeight,
     this.onLoaded,
+    this.webHtmlElementStrategy = WebHtmlElementStrategy.never,
   });
 
   static final Map<String, DateTime> _failedAt = {};
@@ -94,6 +103,7 @@ class RemoteImage extends StatelessWidget {
       fit: fit,
       cacheWidth: cacheWidth,
       cacheHeight: cacheHeight,
+      webHtmlElementStrategy: webHtmlElementStrategy,
       errorBuilder: (context, error, _) {
         _failedAt[u] = DateTime.now();
         debugPrint('[RemoteImage] $u failed, muted for '
