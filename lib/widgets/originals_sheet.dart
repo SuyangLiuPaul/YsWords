@@ -15,6 +15,7 @@ import 'package:yswords/pages/settings_page.dart';
 import 'package:yswords/utils/app_nav.dart';
 import 'package:yswords/widgets/collapsible_english_ref.dart';
 import 'package:yswords/widgets/left_accent_card.dart';
+import 'package:yswords/services/tagged_text_service.dart';
 import 'package:yswords/services/ai_word_service.dart';
 import 'package:yswords/services/concordance_service.dart';
 import 'package:yswords/services/lxx_service.dart';
@@ -199,7 +200,16 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
     for (final v in widget.verses) {
       final english = toEnglish(v.book) ?? v.book;
       final words = await OriginalsService.forVerse(english, v.chapter, v.verse);
-      results.add(_VerseOriginals(verse: v, words: words));
+      // Costs nothing on an untagged version: supports() is checked
+      // before any asset is touched.
+      final tagged = await TaggedTextService.forVerse(
+        version: widget.currentVersion ?? '',
+        englishBook: english,
+        chapter: v.chapter,
+        verse: v.verse,
+      );
+      results.add(
+          _VerseOriginals(verse: v, words: words, tagged: tagged));
     }
     // Prefetch Strong's entries for every unique number across all
     // verses so the interlinear gloss row under each chip can render
@@ -271,6 +281,44 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
     });
     // Word family + synonyms load in the background — doesn't block the entry card.
     unawaited(_loadRelations(w.strongs, gen: myGen));
+  }
+
+  /// The translation line, with each tagged word tappable.
+  ///
+  /// Tapping loads the same Strong's entry the original-language chips
+  /// below already open, so there is one destination however the reader
+  /// arrives. Untagged runs — opening quotes, inserted connectives —
+  /// render as ordinary text: a word the tagger left unmarked has no
+  /// answer to give, and making it look tappable would promise one.
+  Widget _taggedVerseLine(List<TaggedRun> runs, ColorScheme scheme) {
+    final base = TextStyle(
+      fontSize: 14,
+      color: scheme.onSurface,
+      height: 1.5,
+    );
+    return Text.rich(
+      TextSpan(
+        children: [
+          for (final run in runs)
+            if (!run.isTagged)
+              TextSpan(text: run.text, style: base)
+            else
+              TextSpan(
+                text: run.text,
+                style: base.copyWith(
+                  // A dotted underline rather than link colouring:
+                  // nearly every word is tappable, and colouring them
+                  // all would repaint scripture as a wall of links.
+                  decoration: TextDecoration.underline,
+                  decorationStyle: TextDecorationStyle.dotted,
+                  decorationColor: scheme.primary.withValues(alpha: 0.45),
+                ),
+                recognizer: (TapGestureRecognizer()
+                  ..onTap = () => _loadRootEntry(run.strongs)),
+              ),
+        ],
+      ),
+    );
   }
 
   Future<void> _loadRootEntry(String strongsNumber,
@@ -678,14 +726,22 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
               borderRadius: BorderRadius.circular(8),
               accentColor: scheme.primary,
               accentWidth: 3,
-              child: Text(
-                verseText,
-                style: TextStyle(
-                  fontSize: 14,
-                  color: scheme.onSurface,
-                  height: 1.5,
-                ),
-              ),
+              // Tap a word in YOUR translation to reach the original
+              // behind it. Until now this line was inert: the panel
+              // could tell you the verse's Greek, but not which Chinese
+              // word rendered which Greek word. Only 和合本雅伟版 is
+              // tagged, so every other version keeps the plain line
+              // rather than showing a gesture that answers nothing.
+              child: vo.tagged == null || vo.tagged!.isEmpty
+                  ? Text(
+                      verseText,
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: scheme.onSurface,
+                        height: 1.5,
+                      ),
+                    )
+                  : _taggedVerseLine(vo.tagged!, scheme),
             ),
           ],
           const SizedBox(height: 10),
@@ -2602,7 +2658,13 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
 class _VerseOriginals {
   final Verse verse;
   final List<OriginalWord>? words;
-  _VerseOriginals({required this.verse, required this.words});
+
+  /// The translation line broken into Strong's-tagged runs, when the
+  /// version the reader is on has tagging. Null means "show the verse
+  /// as plain text" — which is every version except 和合本雅伟版.
+  final List<TaggedRun>? tagged;
+
+  _VerseOriginals({required this.verse, required this.words, this.tagged});
 }
 
 /// One labeled segment in the AI explanation transcript. Multiple
