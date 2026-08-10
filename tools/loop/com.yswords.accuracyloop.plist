@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Label</key>
+	<string>com.yswords.accuracyloop</string>
+	<key>ProcessType</key>
+	<string>Background</string>
+	<key>ProgramArguments</key>
+	<array>
+		<string>/bin/bash</string>
+		<string>/Users/pliu0036/Library/Application Support/yswords-loop/run.sh</string>
+	</array>
+	<!-- Do NOT run at load: the first tick should be an hour after the
+	     human who set this up has stopped working in the same repo,
+	     not immediately alongside them. -->
+	<key>RunAtLoad</key>
+	<false/>
+	<key>StandardErrorPath</key>
+	<string>/Users/pliu0036/Library/Application Support/yswords-loop/launchd.err.log</string>
+	<key>StandardOutPath</key>
+	<string>/Users/pliu0036/Library/Application Support/yswords-loop/launchd.out.log</string>
+	<!-- Hourly, per the user's instruction. StartInterval does not
+	     stack: while one instance runs, ticks are skipped — which is
+	     why run.sh carries its own watchdog. -->
+	<key>StartInterval</key>
+	<integer>3600</integer>
+</dict>
+</plist>
