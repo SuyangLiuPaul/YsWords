@@ -16,6 +16,67 @@ and quoted.**
 
 ## P0 — scripture accuracy
 
+- [ ] **AUDIT EVERY ORIGINAL-LANGUAGE CLAIM THE APP MAKES.**
+      Asked for directly by the user, 2026-08-11, after finding this on
+      創世記 35:18: two visibly different Hebrew words, בֵּן and אוֹנִי,
+      shown as two separate chips **both numbered H1126 and both glossed
+      「拉结为便雅悯所取的名字」**. Their words:
+
+      > 为什么两个字是同一个编号但是看起来不同，这让我觉得 YsWords
+      > 里面 exegesis 其实是不准的
+
+      **That reaction is the correct one and the priority rule applies:
+      an interface that reads plausibly and is wrong gets believed and
+      quoted.** A reader here would conclude that בֵּן on its own means
+      "the name Rachel gave Benjamin". It does not — it means "son".
+
+      The number is not wrong. H1126 is **בֶּן־אוֹנִי**, one compound
+      name joined by maqqef (־), and `assets/originals/genesis.json`
+      stores it as two tokens that each carry the whole compound's
+      number. The lexicon card underneath already renders it correctly
+      as בֶּן־אוֹנִי; only the chips are split.
+
+      **Measured across the whole corpus before touching anything:
+      4,092 runs of adjacent same-Strong tokens in 3,448 verses.** They
+      are NOT one bug — classified by whether each token carries points
+      (niqqud/cantillation) and whether the second starts with a vav:
+
+      | count | class | example | correct action |
+      |---|---|---|---|
+      | 2,207 | maqqef compound, both pointed | בַּעַל־חָנָן H1177, מֵי־זָהָב H4314, בֶּן־אוֹנִי H1126 | render as ONE chip |
+      | 1,377 | ketiv/qere, one token unpointed | `לודיים ־ לוּדִים` H3866 | one chip, marked written/read |
+      | 508 | genuine repetition, second has vav | שָׁלַח ־ וְשֶׁלַח H7974 | **leave alone** |
+
+      **Merging all 4,092 would corrupt those 508**, which are two real
+      occurrences of a name in a genealogy and belong as two chips. The
+      classifier above is a heuristic, not a proof — verify it against
+      the maqqef in the source text if the data carries one, and count
+      what each rule catches before applying it.
+
+      Then keep going: this was found by a user glancing at one verse,
+      which means nothing systematic has ever checked this surface.
+      Still unaudited —
+        • **Strong's number vs lemma.** Does each token's number match
+          the word actually printed? Spot-check against `assets/strongs/`
+          and report a rate before trusting any of it.
+        • **295 runs carry `H0`/`G0`**, which is not a Strong's number;
+          a tap on those can answer nothing (already queued in P1 —
+          fold it in here).
+        • **The tagger/originals convention mismatch.** The Originals
+          audit's headline 24,983 "mistagged" runs is mostly the tagger's
+          inflected-form numbers (G2258 ἦν) against the originals' lemma
+          numbers (G1510). Deliberately not "fixed" — but it has never
+          been re-counted since `assets/originals_versification.json`
+          landed, so the real figure is unknown.
+        • **The Chinese glosses.** They come from CBOL/bible.fhl.net
+          (CC-BY-NC-SA 4.0). Nothing has checked that the gloss shown
+          belongs to the number shown.
+
+      Report counts before changing data, as everywhere else in this
+      queue. A wrong number here is the same class of error as a wrong
+      verse — it is quoted in Bible study.
+
+
 - [x] **The Originals sheet showed the wrong Hebrew in 1,626 verses.**
       `assets/originals/` and `assets/strongs/concordance.json` are
       numbered the way the Hebrew and Greek editions number themselves;
