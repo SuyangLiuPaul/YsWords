@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'dart:async' show unawaited;
+import 'package:flutter/rendering.dart' show ScrollDirection;
+import 'package:scroll_to_index/scroll_to_index.dart';
 import 'package:provider/provider.dart';
 
 import 'package:yswords/constants/ui_strings.dart';
@@ -57,7 +60,31 @@ class SongsPage extends StatefulWidget {
 
 class _SongsPageState extends State<SongsPage> {
   Future<List<Song>>? _future;
-  final _scrollCtrl = ScrollController();
+
+  /// An AutoScrollController rather than a plain one, so the list can be
+  /// sent to a row BY INDEX. Rows are variable height — titles wrap,
+  /// theme chips wrap — so there is no offset arithmetic that would land
+  /// on the right song.
+  final _scrollCtrl = AutoScrollController();
+
+  /// The list exactly as the user is seeing it, captured during build so
+  /// the player listener can locate the playing song without redoing the
+  /// whole filter and sort.
+  List<Song> _visible = const [];
+
+  /// The song the list has already been scrolled to, so repeated
+  /// rebuilds do not keep re-scrolling to the same row.
+  String? _scrolledToId;
+
+  /// When the user last dragged the list themselves.
+  ///
+  /// Auto-advance yanking the list out from under someone who is
+  /// browsing would be worse than the scrolling they asked to avoid, so
+  /// a track change within [_userScrollGrace] of a manual drag is left
+  /// alone. Arriving on the page fresh has no recent drag, so that case
+  /// always scrolls — which is the one being asked for.
+  DateTime? _userScrolledAt;
+  static const _userScrollGrace = Duration(seconds: 6);
 
   /// 'all' | 'zh' | 'en' | 'id'.
   String _langFilter = 'all';
@@ -94,12 +121,45 @@ class _SongsPageState extends State<SongsPage> {
   void initState() {
     super.initState();
     _future = SongService.load();
+    SongPlayerService.instance.addListener(_onPlayerChanged);
   }
 
   @override
   void dispose() {
+    SongPlayerService.instance.removeListener(_onPlayerChanged);
     _scrollCtrl.dispose();
     super.dispose();
+  }
+
+  /// Follow the playing song down the list.
+  ///
+  /// 2026-08-11, asked for by the user: "我在哪里按了歌曲，在这个 list
+  /// 里面自动划到那个地方，不然我要划划划". With 559 rows and a queue
+  /// that auto-advances, the playing song walks steadily away from
+  /// whatever is on screen and finding it again is a long scroll.
+  ///
+  /// Deliberately does nothing when the user has just scrolled — see
+  /// [_userScrolledAt]. Following the song is help; hijacking the
+  /// viewport mid-browse is not.
+  void _onPlayerChanged() {
+    if (!mounted) return;
+    final id = SongPlayerService.instance.current?.id;
+    if (id == null || id == _scrolledToId) return;
+
+    final since = _userScrolledAt == null
+        ? null
+        : DateTime.now().difference(_userScrolledAt!);
+    if (since != null && since < _userScrollGrace) return;
+
+    final row = _visible.indexWhere((s) => s.id == id);
+    if (row < 0) return;   // playing something the current filter hides
+    _scrolledToId = id;
+    // +2: the intro card and the search/filter bar occupy 0 and 1.
+    unawaited(_scrollCtrl.scrollToIndex(
+      row + 2,
+      preferPosition: AutoScrollPosition.middle,
+      duration: const Duration(milliseconds: 450),
+    ));
   }
 
   @override
@@ -162,6 +222,8 @@ class _SongsPageState extends State<SongsPage> {
               _bookFilter != 'all' ||
               _albumFilter != 'all' ||
               _mediaFilter != 'all';
+          // What the player listener searches to find the playing row.
+          _visible = filtered;
           return Center(
             child: ConstrainedBox(
               constraints: BoxConstraints(maxWidth: maxW),
@@ -170,7 +232,18 @@ class _SongsPageState extends State<SongsPage> {
                   Expanded(
                     child: ScrollToTopOnStatusBarTap(
                       controller: _scrollCtrl,
-                      child: Scrollbar(
+                      child: NotificationListener<UserScrollNotification>(
+                        // Only a DRAG counts as the user scrolling.
+                        // `scrollToIndex` also emits ScrollNotifications,
+                        // so listening to those would have the auto-
+                        // scroll suppress its own next move.
+                        onNotification: (n) {
+                          if (n.direction != ScrollDirection.idle) {
+                            _userScrolledAt = DateTime.now();
+                          }
+                          return false;
+                        },
+                        child: Scrollbar(
                 controller: _scrollCtrl,
                 thumbVisibility: true,
                 child: ListView.separated(
@@ -239,23 +312,32 @@ class _SongsPageState extends State<SongsPage> {
                       );
                     }
                     final song = filtered[i - 2];
-                    return _SongTile(
-                      song: song,
-                      settings: settings,
-                      scheme: scheme,
-                      locale: locale,
-                      // Tapping play starts the LIST at this song, not
-                      // the song on its own. A one-song queue has
-                      // nothing to skip to, which is why the lock
-                      // screen's ⏮ ⏭ were dead — and queueing what the
-                      // user is looking at is what every music app
-                      // does anyway.
-                      onPlay: () => _playFiltered(filtered, false, locale,
-                          startSongId: song.id),
+                    // Tagged so `scrollToIndex` can find this row. The
+                    // index is the LIST index, not the song index — the
+                    // intro card and the filter bar hold 0 and 1.
+                    return AutoScrollTag(
+                      key: ValueKey(song.id),
+                      controller: _scrollCtrl,
+                      index: i,
+                      child: _SongTile(
+                        song: song,
+                        settings: settings,
+                        scheme: scheme,
+                        locale: locale,
+                        // Tapping play starts the LIST at this song, not
+                        // the song on its own. A one-song queue has
+                        // nothing to skip to, which is why the lock
+                        // screen's ⏮ ⏭ were dead — and queueing what the
+                        // user is looking at is what every music app
+                        // does anyway.
+                        onPlay: () => _playFiltered(filtered, false, locale,
+                            startSongId: song.id),
+                      ),
                     );
                   },
                 ),
               ),
+                      ),
                     ),
                   ),
                 ],

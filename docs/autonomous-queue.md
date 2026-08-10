@@ -566,6 +566,39 @@ has never seen this repo.
 
 ## P2 — features the user asked for
 
+- [ ] **Per-source cover fallback for the 393 songs with no artwork.**
+      User, 2026-08-11: "没有封面的你可以用他们来源的封面做为歌曲的吗？
+      我相信网站都有相应的网站特有的封面图". They are right — every one of
+      these WordPress sites publishes a 180×180 `apple-touch-icon`,
+      which is the correct asset for this:
+
+        cgdc.hk      /wp-content/uploads/2026/05/cropped-cgdc_hk_website_icon-180x180.jpg
+        cahaya       /wp-content/uploads/2022/03/cropped-cpm-ico-180x180.jpg
+        fydt.org     UNKNOWN — host down all of 2026-08-10/11
+        cdc          UNKNOWN — host down all of 2026-08-10/11
+
+      **Do not start until fydt.org and christiandiscipleschurch.org are
+      both reachable, and do NOT guess their icon URLs.** The reason is
+      arithmetic: of the 393 songs with no artwork, **283 are CDC** and
+      47 are cahaya. cgdc now has real per-album art, and fydt is only 14
+      short. So building this while CDC is down reaches 47 songs and
+      leaves the actual problem untouched — a half-fed mechanism that
+      looks finished.
+
+      When both are up: read each site's `apple-touch-icon` (fall back to
+      `og:image`, then `rel=icon`), **bundle the four files as assets**
+      rather than hot-linking them. Hot-linking would put four more
+      remote images behind every list row, and a down host is exactly the
+      failure that produced the `errno = 60` crash report — bundled
+      assets cannot hang.
+
+      Wire it as a fallback INSIDE `RemoteImage`'s `fallback:` on the
+      song row, so precedence stays: real artwork → source icon → the
+      plain play button. Keep it visibly a source mark, not a fake cover:
+      it says where the song came from, and every row claiming bespoke
+      album art it does not have would be its own small lie.
+
+
 - [ ] **`RemoteImage` for the other image sites — LOW priority, and the
       earlier note here overstated it.** Corrected 2026-08-11 after
       actually reading them: the other 14 `Image.network` calls already
