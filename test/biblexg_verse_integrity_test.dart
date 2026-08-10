@@ -154,6 +154,30 @@ void main() {
     });
   });
 
+  test('約翰福音 12:36 still ends with the half-verse both editions lost', () {
+    // 12:36b 「耶穌說完了這些話，便離開他們，隱藏起來了。」 was buried in the
+    // note card under the 31節註 footnote, so the verse stopped at
+    // 「使你們成為光明之子。」 and the missing sentence read as the editor's.
+    //
+    // Both editions lost it identically, which is why the cross-edition
+    // length check below cannot see it, and why it is pinned by name. A
+    // corpus-wide form would have to read the publisher's source, which
+    // a test does not have — see tools/import_ljk2.py, where the cause
+    // is fixed: a comment node's `{lineBreak, content}` dicts are body,
+    // not footnote, and exactly two exist in the publisher's corpus.
+    const wanted = {
+      'assets/biblexg-v2.json': ['约翰福音', '耶稣说完了这些话，便离开他们，隐藏起来了。'],
+      'assets/biblexg-v2-tr.json': ['約翰福音', '耶穌說完了這些話，便離開他們，隱藏起來了。'],
+    };
+    wanted.forEach((path, want) {
+      final verse = load(path).firstWhere((v) =>
+          v['book'] == want[0] && v['chapter'] == '12' && v['verse'] == '36');
+      expect(verse['text'] as String, endsWith(want[1]), reason: path);
+      expect((verse['blockNotes'] as List).join(), isNot(contains(want[1])),
+          reason: '$path — scripture is still sitting in a note card');
+    });
+  });
+
   test('no verse body carries a critical-apparatus note', () {
     // 羅馬書 16:24 ended 「…兄弟也問候你們。按 NA28 及 UBS5，在此羅馬書完，
     // 但有抄本加插下面讚詞：」 — an editor's note about manuscripts, set as
@@ -182,6 +206,67 @@ void main() {
       expect(offenders, isEmpty,
           reason: '$path — apparatus text inside a verse body');
     }
+  });
+
+  test('the two editions carry the same amount of scripture per verse', () {
+    // 約翰一書 4:16 read 「而神對我們的愛，我們已經明白，而且相信了。」 in
+    // the Traditional and stopped one clause earlier in the Simplified:
+    // 「神就是愛，那住在愛裡的，就住在神裡面，神也住在他裡面。」 was sitting
+    // in a note card, glued to the end of the 13節註 footnote, where it
+    // read as the editor's aside rather than as John's sentence. Both
+    // editions lost 約翰福音 12:36b 「耶穌說完了這些話，便離開他們，隱藏
+    // 起來了。」 the same way.
+    //
+    // Cause: a `type: "comment"` node's `contents` mixes plain footnote
+    // strings with `{lineBreak, content}` dicts, and the dicts are the
+    // preceding verse's own body. Our importer read both as footnote.
+    // Exactly two such nodes exist in the publisher's whole corpus.
+    //
+    // The two editions are the same translation, so a verse should be
+    // the same length in both give or take a character of punctuation.
+    // Every reference that is not is listed with its reason, and a
+    // clause going missing from one side lands far outside this bound.
+    const knownDifferences = <String, String>{
+      // Upstream: the publisher's own Simplified drops scripture the
+      // printed Traditional 註釋本 has. Asked in the publisher letter;
+      // filling either from the other side would be writing scripture.
+      '提摩太后书 3:15': '简体缺「而且你自幼便明白神聖的經典，」',
+      '马可福音 6:7': '简体在「並授予他們權能」处截断，缺「制服不潔的靈」',
+      // The Traditional source sets a short editorial gloss as body text
+      // where the Simplified marks it up as a note. Queued: the gloss
+      // reads as scripture on the Traditional side.
+      '马太福音 9:14': '繁体正文含「通常每逢週一週四」，简体无',
+      '马太福音 27:48': '繁体正文含「士兵解渴的飲料」，简体作注',
+      '马太福音 26:29': '繁体正文含「即葡萄酒」，简体作注',
+      '使徒行传 8:41': '繁体正文含「即向北沿海」，简体作注',
+      '路加福音 9:5': '繁体正文含「作為警告」，简体作注「意即警告」',
+      // Wording: the two official editions differ, pending the publisher.
+      '彼得后书 2:21': '用词不同',
+      '哥林多后书 5:8': '用词不同',
+      '使徒行传 20:4': '用词不同',
+      '腓立比书 2:3': '用词不同',
+      '马可福音 7:15': '用词不同',
+      '罗马书 12:6': '用词不同',
+    };
+    final inlineNote = RegExp(r'<note:.*?>');
+    String body(Map<String, dynamic> v) =>
+        (v['text'] as String).replaceAll(inlineNote, '');
+    final cn = {for (final v in load('assets/biblexg-v2.json')) v['id']: v};
+    final tr = {for (final v in load('assets/biblexg-v2-tr.json')) v['id']: v};
+
+    final offenders = <String>[];
+    for (final entry in cn.entries) {
+      final other = tr[entry.key];
+      if (other == null) continue;
+      final delta = body(entry.value).length - body(other).length;
+      if (delta.abs() <= 3) continue;
+      final ref = '${entry.value['book']} '
+          '${entry.value['chapter']}:${entry.value['verseLabel']}';
+      if (!knownDifferences.containsKey(ref)) offenders.add('$ref ($delta)');
+    }
+    expect(offenders, isEmpty,
+        reason: 'a verse differs in length between the two editions by more '
+            'than punctuation — one side may have lost a clause');
   });
 
   test('no Simplified character survives in the Traditional edition', () {

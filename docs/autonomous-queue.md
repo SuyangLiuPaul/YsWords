@@ -52,11 +52,25 @@ its text as `resources/cn-*.json`. There are **no `tr-*` files** — the
 publisher ships SIMPLIFIED ONLY, so our Traditional is a conversion and
 the Simplified is the side with an authority to check against.
 
-Getting that ordering backwards already produced one wrong report:
-約翰一書 4:16 was written up as "the Simplified is missing 神就是愛…",
-when the publisher's own 4:16 is exactly what our Simplified has. It is
-the Traditional that carries text the translation does not have there.
-**Check the source before believing a diff.**
+約翰一書 4:16 has now been got wrong in BOTH directions, so read this
+before writing up a third: it was first reported as "the Simplified is
+missing 神就是愛…", then corrected to "the publisher's own 4:16 is
+exactly what our Simplified has, so the Traditional carries text the
+translation does not have". **Both were wrong.** The publisher's
+Simplified does carry the clause — inside a `comment` node, which is
+why a plain text search of the verse missed it — and our Simplified had
+lost it. The verse is fixed and the question is out of the letter.
+
+The lesson is not "trust the Simplified" or "trust the Traditional".
+It is **open the publisher's own file and look at the node, not at the
+rendered verse**. A diff of two rendered texts cannot see scripture
+that is sitting in the wrong kind of node on both sides.
+
+One correction to the paragraph above while you are here: the reader
+precaches `cn-*` only, but `tw-*` files **do** exist and
+`tools/import_ljk2.py` fetches them — our Traditional is sourced, not
+converted. That is a third authority worth using; it is what proved
+4:16b belongs in the verse.
 
 **Standing rule — keep the publisher letter shippable.** The user is
 holding `docs/梁家鏗譯本-請教出版方.md` back until it is complete and
@@ -121,6 +135,58 @@ has never seen this repo.
       So `python3 tools/import_ljk2.py` must NOT be re-run wholesale: it
       would both revert every hand-fix and silently adopt the publisher
       revision that §四/§四之二 are still asking about.
+
+- [x] **Two half-verses were being read as the editor's notes, not as
+      scripture — 約翰福音 12:36b and 約翰一書 4:16b.** The verse simply
+      stopped early and the missing sentence appeared in the note card
+      below it, in the editor's voice. 12:36b 「耶穌說完了這些話，便離開
+      他們，隱藏起來了。」 was gone from both editions; 4:16b 「神就是愛，
+      那住在愛裡的…」 from the Simplified only.
+
+      Cause, and it is the mirror image of 羅馬書 16:24: a `comment`
+      node's `contents` array mixes plain footnote strings with
+      `{lineBreak, content}` dicts, and **the dicts are the preceding
+      verse's own body**. `clean_block_comment` read both as footnote —
+      its docstring even guessed the dicts were "the comment quoting
+      another verse". Counted before fixing, not after: **exactly two
+      such nodes exist in the publisher's whole corpus**, and these were
+      both of them. `tools/import_ljk2.py` now splits them.
+
+      Three independent authorities, no guesswork: the printed 註釋本
+      sets both sentences as body before the next verse number, the `tw`
+      source already carries 4:16b in the verse itself, and every
+      translation numbers them as 12:36b / 4:16b. **The sentences were
+      moved out of the note and back into the verse — not one character
+      was written or converted**, and the repair asserted each string
+      against the printed volume, the publisher's JSON and the other
+      edition before writing.
+
+      **This corrected the letter's own headline question.** §一.2 asked
+      the publisher which edition was definitive because "the official
+      Simplified does not have 神就是愛… at all". It does — misfiled in
+      that comment node. Asking would have wasted their time on our
+      defect, exactly like 羅馬書 3:10. Now in §三 as ours, already fixed.
+
+      Found by walking the printed volumes in reading order and looking
+      at what sits BETWEEN two verses our proofread had confirmed —
+      `tools/proofread_ljk_tr.py` checks by containment, so a verse that
+      lost a clause still "matches" and is structurally invisible to it.
+
+- [ ] **18 verses set an editor's gloss as scripture in the Traditional.**
+      Found by the new cross-edition length check. Where the Simplified
+      marks a short gloss as a note, the Traditional prints it inside the
+      verse: 馬太福音 26:29 「…這葡萄藤的果實，**即葡萄酒，**直至那一天」,
+      27:48 「蘸滿了酸酒，**士兵解渴的飲料，**綁在蘆葦竿子上」, 使徒行傳
+      8:41 「再繼續前行，**即向北沿海，**走遍那一帶」, 路加福音 9:5
+      「**作為警告**」 (the Simplified's note reads 「意即警告」), 馬太福音
+      9:14 「都經常禁食，**通常每逢週一週四，**你的門徒卻不禁食」 — that
+      last one the Simplified does not have at all. Same class as 羅馬書
+      16:24: it reads plausibly as the evangelist's words and gets quoted.
+      **18 refs have more `<note:>` in the Simplified than the
+      Traditional, and 18 the other way** — so measure both directions
+      before touching anything, and check the `tw` source to see whether
+      the gloss is unmarked upstream or was flattened by our importer.
+      Pinned meanwhile in `test/biblexg_verse_integrity_test.dart`.
 
 - [ ] **Decide the 427 wording differences with the publisher.**
       Not ours to change. They cluster in 路加福音 (178) and 馬可福音 (89)
@@ -197,10 +263,16 @@ has never seen this repo.
 
 - [ ] **Ask the publisher about the two official editions disagreeing.**
       Drafted in `docs/梁家鏗譯本-請教出版方.md` — the user is passing it
-      to the pastor. The headline: the printed Traditional 約翰一書 4:16
-      ends 「神就是愛，那住在愛裡的…」 and the official Simplified webapp
-      does not have that clause at all. Both are the publisher's own.
-      Until they answer, change neither.
+      to the pastor. Two items, both the publisher's own text: 馬可福音
+      6:7-11, and **提摩太後書 3:15, where the official Simplified drops
+      the opening clause** 「而且你自幼便明白神聖的經典，」 that the
+      printed 註釋本 has and every translation carries. Verified in
+      `cn-2ti.json` itself, not inferred from a diff. Same shape as
+      馬可福音 6:8-11, and not ours to fill by conversion.
+
+      **約翰一書 4:16 used to be the headline here and is no longer a
+      question at all** — the official Simplified does carry the clause,
+      and we were the ones misreading it. See the fixed item above.
 
 - [x] **The Simplified proofread was silently checking only 22 of 27
       books — and 羅馬書 3:10 had lost the scripture it quotes.**

@@ -144,18 +144,39 @@ def html_to_inline(html: str) -> str:
     return s.strip()
 
 
-def clean_block_comment(segments) -> str:
-    """Block comments arrive as a list whose items are EITHER plain
-    HTML strings OR dicts of shape `{lineBreak, content}` (the latter
-    used by 1jo / 2jo etc. when the comment quotes another verse).
-    Join + clean either form.
+def split_block_comment(segments) -> tuple[str, str]:
+    """Separate an editor's footnote from scripture the publisher misfiled.
+
+    A comment node's `contents` holds items of two different kinds, and
+    they are not the same thing:
+
+      * plain HTML strings  → the editor's footnote ("31节注：…")
+      * `{lineBreak, content}` dicts → BODY TEXT of the preceding verse
+
+    Reading the dicts as part of the footnote — as this did — buried two
+    sentences of scripture in a note card: 約翰福音 12:36b
+    「耶穌說完了這些話，便離開他們，隱藏起來了。」 and 約翰一書 4:16b
+    「神就是愛，那住在愛裡的…」. Three independent authorities say they are
+    body: the printed 註釋本 sets both as body text before the next verse
+    number, the `tw` source files carry 4:16b in the verse itself, and
+    the dicts arrive with `lineBreak` — the key the publisher uses for
+    verse content and never for a footnote string.
+
+    Returns `(footnote, body)`; either may be empty.
     """
-    parts: list[str] = []
+    note_parts: list[str] = []
+    body_parts: list[dict] = []
     for seg in segments:
-        if isinstance(seg, str):
-            parts.append(seg)
-        elif isinstance(seg, dict):
-            parts.append(str(seg.get('content', '')))
+        if isinstance(seg, dict):
+            body_parts.append(seg)
+        else:
+            note_parts.append(str(seg))
+    return clean_block_comment(note_parts), assemble_verse_text(body_parts)
+
+
+def clean_block_comment(segments) -> str:
+    """Join + clean the plain-string parts of a block comment."""
+    parts: list[str] = [str(s) for s in segments]
     raw = ' '.join(parts)
     # Hebrew + Greek inline marks: keep the content, drop the tag.
     s = re.sub(r'<mark[^>]*class="(?:hebrew|greek)"[^>]*>(.*?)</mark>',
@@ -254,10 +275,11 @@ def build_book_verses(book_data: list[dict], book_id: int,
                 out.append(v)
             elif t == 'comment':
                 contents = n.get('contents', [])
-                if isinstance(contents, list):
-                    cleaned = clean_block_comment(contents)
-                else:
-                    cleaned = clean_block_comment([str(contents)])
+                if not isinstance(contents, list):
+                    contents = [str(contents)]
+                cleaned, body = split_block_comment(contents)
+                if body and out:
+                    out[-1]['text'] = f"{out[-1]['text']}{body}"
                 if not cleaned:
                     continue
                 if out:
