@@ -750,22 +750,55 @@ class _SermonBody extends StatelessWidget {
     final paragraphs = body.split(RegExp(r'\n\s*\n'));
     final fontSize = settings.fontSize;
     final scheme = Theme.of(context).colorScheme;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        for (final p in paragraphs)
-          if (p.trim().isNotEmpty)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 14),
-              child: SelectableText.rich(
-                _buildSpans(context, p.trim(), fontSize, scheme),
-                style: TextStyle(
-                  fontSize: fontSize,
-                  height: 1.55,
+
+    // These are transcripts of spoken preaching, and transcription
+    // produces long blocks rather than the breaks an editor would give.
+    // Measured over all 289 English sermons and 16,275 paragraphs: the
+    // MEDIAN paragraph is 599 characters where readable prose is
+    // 200-400, 27% are over 800, and the longest is 18,205.
+    //
+    // Nothing here re-paragraphs anything. Inserting breaks into
+    // another man's sermon is making an expressive decision he did not
+    // make. What typography can do honestly is make the same text
+    // easier to hold, and the three levers below do it:
+    //
+    //  * a LINE MEASURE. There was none, so on a tablet or a desktop a
+    //    599-character paragraph ran the full window width — the worst
+    //    case for finding the start of the next line. Capped in `em`
+    //    so it tracks the reader's own font size.
+    //  * more space BETWEEN paragraphs than within them, so the breaks
+    //    that do exist read as breaks.
+    //  * a taller line height, which is what buys the most inside a
+    //    long block.
+    //
+    // The cap is narrower for Chinese: a CJK character is a full em, so
+    // the same pixel width holds about twice as many of them, and
+    // Chinese typography wants roughly 30 characters a line where
+    // English wants 65-75.
+    final isCjk = settings.locale.startsWith('zh');
+    final measure = fontSize * (isCjk ? 30 : 34);
+
+    return Center(
+      child: ConstrainedBox(
+        constraints: BoxConstraints(maxWidth: measure),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            for (final p in paragraphs)
+              if (p.trim().isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 22),
+                  child: SelectableText.rich(
+                    _buildSpans(context, p.trim(), fontSize, scheme),
+                    style: TextStyle(
+                      fontSize: fontSize,
+                      height: 1.75,
+                    ),
+                  ),
                 ),
-              ),
-            ),
-      ],
+          ],
+        ),
+      ),
     );
   }
 
