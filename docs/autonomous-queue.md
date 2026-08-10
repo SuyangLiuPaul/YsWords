@@ -207,15 +207,26 @@ the Traditional that carries text the translation does not have there.
       `test/bible_version_integrity_test.dart` pins all of it and fails
       with the right diagnosis on the pre-fix data.
 
-- [ ] **The LEB's 116 Psalm superscriptions never render.** Found by the
-      audit above. `assets/leb.json` ships them as rows with
-      `verse: "title"` and a null id — legitimately, they are part of
-      the text but not numbered verses — and `fetch_verses.dart:329`
-      filters out every non-numeric verse, so the app silently drops
-      them. Not a falsehood, so it does not jump the queue, but the LEB
-      reader is missing text the asset already has. Needs a model +
-      rendering decision (a superscription is not a verse and should not
-      get a verse number or a highlight id), so it is not a data fix.
+- [x] **The LEB's 116 Psalm superscriptions never rendered — fixed.**
+      `assets/leb.json` ships them as rows with `verse: "title"` and a
+      null id — legitimately, they are part of the text but not
+      numbered verses — and the decoder's "drop any non-numeric verse"
+      rule threw away all 116. Nothing untrue was on screen, which is
+      why no audit caught it; the app was simply showing less scripture
+      than it had.
+
+      The model decision, made rather than deferred: a superscription
+      is **not** a verse, so it gets neither a number nor an id. It
+      rides on verse 1 as `Verse.superscription` and renders above it
+      via `SuperscriptionLine`, outside the verse's InkWell so it can
+      never be selected or highlighted as though it were part of verse
+      1. Numbering it would invent a verse the LEB does not have; an id
+      (`Psalms-3-title`) would be a place no other translation has, so
+      a highlight there could never follow the reader across versions.
+      Verified against the asset: 116 unique chapters, every one with a
+      verse 1, the title row always ahead of it.
+      `test/leb_superscription_test.dart` runs the real asset through
+      the real decoder and fails on the pre-fix code.
 
 ## P1 — Bible study correctness
 
@@ -250,6 +261,8 @@ the Traditional that carries text the translation does not have there.
         archive** before concluding anything: `http://web.archive.org/
         cdx/search/cdx?url=christiandiscipleschurch.org/content/
         124-messages&output=json`.
+      - Retried 2026-08-10 (fourth iteration): still `connect=0.000000`,
+        curl times out with no TCP connect. Unchanged.
       - Related pages found via search, useful once the host is up:
         `/content/ehhc_sermons_public`, `/content/mtparablesvol1`,
         `/contents/matthew_parables_front_matter`.

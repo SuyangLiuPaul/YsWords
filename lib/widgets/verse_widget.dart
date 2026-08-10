@@ -9,6 +9,7 @@ import 'package:yswords/utils/haptics.dart';
 import 'package:yswords/utils/responsive.dart';
 import 'package:yswords/widgets/bible_reading_pane.dart' show showNoteEditor;
 import 'package:yswords/widgets/block_note_card.dart';
+import 'package:yswords/widgets/superscription_line.dart';
 
 /// Renders a single verse. Used by:
 ///   - Verse-by-verse mode for every verse
@@ -185,7 +186,7 @@ class VerseWidget extends StatelessWidget {
         // With SPL's 2×-viewport cache extent and 3 chapters kept
         // alive by the PageView, that redundancy multiplied across
         // several hundred live verses.
-        return Material(
+        final verseBlock = Material(
           color: Colors.transparent,
           clipBehavior: Clip.hardEdge,
           child: InkWell(
@@ -306,6 +307,21 @@ class VerseWidget extends StatelessWidget {
               ],
             ),
           ),
+        );
+
+        // 2026-08-10 (v1.4.37): a psalm superscription sits ABOVE the
+        // verse block and deliberately OUTSIDE its InkWell, so tapping
+        // the heading does not select verse 1 — the heading is not
+        // part of verse 1 and should not be highlightable as if it
+        // were.
+        if (verse.superscription.isEmpty) return verseBlock;
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SuperscriptionLine(
+                verse: verse, settings: settings, locale: locale),
+            verseBlock,
+          ],
         );
       },
     );

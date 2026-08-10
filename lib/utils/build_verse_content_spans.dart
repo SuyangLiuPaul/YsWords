@@ -18,6 +18,10 @@ List<InlineSpan> buildVerseContentSpans({
   bool superscriptVerseNum = false,
   VoidCallback? onTextTap,
   Color? spanBgColor,
+  // False only for a psalm superscription, which has no verse number to
+  // show. Everything else about the line — `[insert]` brackets and
+  // `<note: …>` markers — renders exactly as it does in verse text.
+  bool showVerseNumber = true,
 }) {
   final isReferenceLine = verse.paragraphType == 'reference';
 
@@ -67,7 +71,7 @@ List<InlineSpan> buildVerseContentSpans({
     color: verseNumColor,
   );
 
-  spans.add(WidgetSpan(
+  final verseNumSpan = WidgetSpan(
     alignment: superscriptVerseNum
         ? PlaceholderAlignment.top
         : PlaceholderAlignment.baseline,
@@ -112,7 +116,8 @@ List<InlineSpan> buildVerseContentSpans({
         ),
       ),
     ),
-  ));
+  );
+  if (showVerseNumber) spans.add(verseNumSpan);
 
   // Build text and badge spans
   String? lastPart;

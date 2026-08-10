@@ -10,6 +10,7 @@ import 'package:yswords/utils/build_verse_content_spans.dart';
 import 'package:yswords/utils/responsive.dart';
 import 'package:yswords/widgets/bible_reading_pane.dart' show showNoteEditor;
 import 'package:yswords/widgets/block_note_card.dart';
+import 'package:yswords/widgets/superscription_line.dart';
 import 'package:yswords/utils/font_catalog.dart' show kCjkFontFallback;
 
 /// Renders a group of consecutive verses as one flowing paragraph (RichText).
@@ -262,7 +263,7 @@ class ParagraphGroupWidget extends StatelessWidget {
         // 2026-08-02 PERF: duplicate RepaintBoundary removed — SPL
         // already wraps every item via addRepaintBoundaries. See the
         // matching comment in verse_widget.dart.
-        return Material(
+        final block = Material(
           color: Colors.transparent,
           clipBehavior: Clip.hardEdge,
           child: InkWell(
@@ -322,6 +323,22 @@ class ParagraphGroupWidget extends StatelessWidget {
               ],
             ),
           ),
+        );
+
+        // 2026-08-10 (v1.4.37): a psalm superscription belongs above
+        // verse 1 and outside the block's InkWell, so it is never
+        // selected as though it were part of the verse. Only
+        // `group.first` is consulted because `_groupIntoParagraphs`
+        // always opens a group on the chapter's first verse, which is
+        // the only verse that can carry one.
+        if (group.first.superscription.isEmpty) return block;
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SuperscriptionLine(
+                verse: group.first, settings: settings, locale: locale),
+            block,
+          ],
         );
       },
     );

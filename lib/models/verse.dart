@@ -24,6 +24,17 @@ class Verse {
   /// LJK2 / biblexg-v2).
   final List<String> blockNotes;
 
+  /// 2026-08-10 (v1.4.37): a psalm superscription — the unnumbered
+  /// heading the LEB prints above verse 1 ("A psalm of David at his
+  /// fleeing from the presence of Absalom, his son."). It is
+  /// scripture, but it is NOT a verse, so it deliberately gets no
+  /// verse number and no [id]: numbering it would invent a verse this
+  /// translation does not have, and an id would make a highlight on it
+  /// collide with a real verse in every other version. It rides on
+  /// verse 1 and renders immediately above it. Empty everywhere except
+  /// 116 psalms in the LEB.
+  final String superscription;
+
   const Verse({
     required this.book,
     required this.chapter,
@@ -33,6 +44,7 @@ class Verse {
     this.isParagraphStart = false,
     this.paragraphType = 'inline',
     this.blockNotes = const [],
+    this.superscription = '',
   }) : verseLabel = verseLabel ?? '$verse';
 
   // Always use the English book name so the ID is the same regardless of
@@ -53,6 +65,7 @@ class Verse {
     bool? isParagraphStart,
     String? paragraphType,
     List<String>? blockNotes,
+    String? superscription,
   }) {
     return Verse(
       book: book ?? this.book,
@@ -63,6 +76,7 @@ class Verse {
       isParagraphStart: isParagraphStart ?? this.isParagraphStart,
       paragraphType: paragraphType ?? this.paragraphType,
       blockNotes: blockNotes ?? this.blockNotes,
+      superscription: superscription ?? this.superscription,
     );
   }
 
@@ -97,6 +111,7 @@ class Verse {
       isParagraphStart: json['isParagraphStart'] as bool? ?? false,
       paragraphType: (json['paragraphType'] as String?) ?? 'inline',
       blockNotes: blockNotes,
+      superscription: (json['superscription'] as String?) ?? '',
     );
   }
 }

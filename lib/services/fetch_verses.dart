@@ -303,8 +303,14 @@ class FetchVerses {
   /// the same wall-clock wait the user already tolerates.
   static Future<List<Verse>> _fetchAndDecodeVerses(String path) async {
     final jsonString = await rootBundle.loadString(path);
-    final dynamic decoded = json.decode(jsonString);
+    return decodeVerses(json.decode(jsonString));
+  }
 
+  /// The pure half of [_fetchAndDecodeVerses] — decoded JSON in, verses
+  /// out, no I/O. Split out so a test can run the real asset through the
+  /// real parser instead of restating what the parser is supposed to do.
+  @visibleForTesting
+  static List<Verse> decodeVerses(dynamic decoded) {
     List<Map<String, dynamic>> rawList;
     if (decoded is List) {
       rawList = List<Map<String, dynamic>>.from(decoded);
@@ -324,6 +330,24 @@ class FetchVerses {
       throw Exception('Unsupported verse JSON format');
     }
 
+    // 2026-08-10 (v1.4.37): keep the psalm superscriptions before the
+    // non-numeric filter throws them away. `assets/leb.json` ships 116
+    // rows with `verse: "title"` — the headings the LEB prints above
+    // verse 1 ("A psalm of David at his fleeing from the presence of
+    // Absalom, his son."). They are part of the text, but they are not
+    // numbered verses, so the filter below dropped all 116 and the
+    // reader silently showed less scripture than the asset carried.
+    // They are attached to verse 1 rather than admitted to the list as
+    // pseudo-verses: see `Verse.superscription` for why an id and a
+    // number would both be wrong.
+    final superscriptions = <String, String>{};
+    for (final m in rawList) {
+      if (m['verse']?.toString().trim().toLowerCase() != 'title') continue;
+      final text = m['text']?.toString().trim() ?? '';
+      if (text.isEmpty) continue;
+      superscriptions['${m['book']}|${m['chapter']}'] = text;
+    }
+
     // Filter out entries where verse is non-numeric
     rawList = rawList
         .where((m) => int.tryParse(m['verse']?.toString() ?? '') != null)
@@ -335,6 +359,15 @@ class FetchVerses {
       try {
         verses.add(Verse.fromJson(m));
       } catch (_) {}
+    }
+
+    if (superscriptions.isNotEmpty) {
+      for (var i = 0; i < verses.length; i++) {
+        final v = verses[i];
+        if (v.verse != 1) continue;
+        final s = superscriptions['${v.book}|${v.chapter}'];
+        if (s != null) verses[i] = v.copyWith(superscription: s);
+      }
     }
     return verses;
   }
