@@ -24,6 +24,7 @@ import 'package:yswords/widgets/home_icon_button.dart';
 import 'package:yswords/widgets/language_switcher_button.dart';
 import 'package:yswords/widgets/localized_back_button.dart';
 import 'package:yswords/widgets/scroll_to_top_on_status_bar_tap.dart';
+import 'package:yswords/widgets/remote_image.dart';
 import 'package:yswords/utils/font_catalog.dart' show kCjkFontFallback;
 
 /// Church-songs directory page.
@@ -1574,27 +1575,35 @@ class _PlayButton extends StatelessWidget {
   /// not to a damaged one.
   ///
   /// [face] is called with true only once the image is on screen.
-  Widget _withArtwork(Widget Function(bool onArt) face, bool active) {
-    final url = song.artworkUrl;
-    if (url == null) return face(false);
-    return Image.network(
-      url,
-      fit: BoxFit.cover,
-      // No artwork is the common case (393 of 606 songs), not an error.
-      errorBuilder: (_, __, ___) => face(false),
-      frameBuilder: (_, img, frame, wasSyncLoaded) {
-        if (frame == null && !wasSyncLoaded) return face(false);
-        return Stack(
-          fit: StackFit.expand,
-          children: [
-            img,
-            Container(
-              color: Colors.black.withValues(alpha: active ? 0.28 : 0.42),
-            ),
-            face(true),
-          ],
-        );
-      },
+  ///
+  /// Goes through [RemoteImage] rather than `Image.network` directly.
+  /// This exact widget produced a crash report from an iPhone —
+  /// `SocketException: errno = 60` out of `NetworkImage._loadAsync` —
+  /// because fydt.org (the only source that publishes artwork) was
+  /// unreachable, `NetworkImage` has no timeout, and every row opened
+  /// its own 60-second socket. RemoteImage adds the decode budget, the
+  /// per-URL failure memo and the silence.
+  Widget _withArtwork(BuildContext context, Widget Function(bool onArt) face,
+      bool active) {
+    // 40 logical px at the device's own ratio: decoding a full-size
+    // album cover for a 40×40 slot is what put `memory:pressure` in the
+    // same crash report's breadcrumbs.
+    final px = (40 * MediaQuery.devicePixelRatioOf(context)).round();
+    return RemoteImage(
+      url: song.artworkUrl,
+      cacheWidth: px,
+      cacheHeight: px,
+      fallback: (_) => face(false),
+      onLoaded: (_, img) => Stack(
+        fit: StackFit.expand,
+        children: [
+          img,
+          Container(
+            color: Colors.black.withValues(alpha: active ? 0.28 : 0.42),
+          ),
+          face(true),
+        ],
+      ),
     );
   }
 
@@ -1611,6 +1620,7 @@ class _PlayButton extends StatelessWidget {
             children: [
               Container(color: scheme.primary.withValues(alpha: 0.10)),
               _withArtwork(
+                context,
                 (onArt) => Center(
                   child: Text(
                     fallbackBadge,
@@ -1665,7 +1675,7 @@ class _PlayButton extends StatelessWidget {
                 child: SizedBox(
                   width: 40,
                   height: 40,
-                  child: _withArtwork((onArt) {
+                  child: _withArtwork(context, (onArt) {
                     final fg = onArt
                         ? Colors.white
                         : (isThis ? scheme.onPrimary : scheme.primary);

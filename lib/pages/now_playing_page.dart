@@ -11,6 +11,7 @@ import 'package:yswords/services/song_player_service.dart';
 import 'package:yswords/utils/font_catalog.dart' show kCjkFontFallback;
 import 'package:yswords/utils/responsive.dart';
 import 'package:yswords/widgets/home_icon_button.dart';
+import 'package:yswords/widgets/remote_image.dart';
 import 'package:yswords/widgets/song_actions.dart';
 import 'package:yswords/widgets/language_switcher_button.dart';
 import 'package:yswords/widgets/localized_back_button.dart';
@@ -443,13 +444,18 @@ class _Artwork extends StatelessWidget {
         child: SizedBox(
           width: side,
           height: side,
-          child: url == null
-              ? _placeholder()
-              // Only fydt publishes artwork, so a missing image is the
-              // common case, not an error — fall back silently.
-              : Image.network(url!,
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => _placeholder()),
+          // Only fydt publishes artwork, so a missing image is the
+          // common case, not an error — and fydt.org goes down, which
+          // is how the song list produced a 60-second SocketException
+          // per row. RemoteImage shares the failure memo with the list,
+          // so opening Now Playing on a song whose art just failed does
+          // not re-probe a host we already know is unreachable.
+          child: RemoteImage(
+            url: url,
+            cacheWidth:
+                (side * MediaQuery.devicePixelRatioOf(context)).round(),
+            fallback: (_) => _placeholder(),
+          ),
         ),
       ),
     );

@@ -505,6 +505,51 @@ has never seen this repo.
 
 ## P2 — features the user asked for
 
+- [ ] **Move the other 14 `Image.network` calls onto `RemoteImage`.**
+      A crash report from an iPhone (v1.4.39) was
+      `SocketException: errno = 60` out of `NetworkImage._loadAsync`:
+      the song-list artwork, pointed at fydt.org while it was refusing
+      connections. `NetworkImage` has **no timeout knob** — it waits on
+      the OS, ~60s — and nothing remembered the failure, so every row
+      opened its own socket and every scroll back reopened them. The
+      same report carried `memory:pressure — caches dropped`, because
+      full-size album covers were being decoded into a 40×40 slot.
+
+      `lib/widgets/remote_image.dart` fixes all three (per-URL failure
+      memo with a 10-minute TTL, `cacheWidth`/`cacheHeight` decode
+      budget, and errors swallowed so a church server having a bad night
+      does not drown the crash reporter). **Songs and Now Playing are
+      converted; 14 sites are not**, and they point at hosts just as
+      able to go down:
+
+        lib/models/bible_map.dart (2), lib/pages/evidence_page.dart (3),
+        lib/pages/evidence_detail_page.dart (3),
+        lib/pages/dashboard_page.dart (1),
+        lib/widgets/profile_avatar.dart (3),
+        lib/widgets/illustration_image.dart (2)
+
+      Mechanical, but each needs its own fallback — do not pass a bare
+      `SizedBox` where the old code had a real placeholder.
+
+- [ ] **Extend tap-the-status-bar-to-scroll-to-top past the Songs list.**
+      `lib/widgets/scroll_to_top_on_status_bar_tap.dart` exists and
+      Songs uses it. 26 other scroll views still pass their own
+      `controller:` and so never attach to `PrimaryScrollController`,
+      which is the only thing material's Scaffold drives. Highest value
+      first: Sermons, Search results, the Bible reading pane.
+
+- [ ] **CGDC publishes album art we never look for.** 393 of 606 songs
+      have no `artworkUrl` — CDC, CGDC and Cahaya publish none, and the
+      sync only ever reads it from fydt's WordPress API
+      (`sync_songs.py:547`). But a CGDC song page carries a per-album
+      image (`Sail-logo.png` for 2026 SAIL 乘風破浪) and its player has a
+      per-track `poster` field served over `admin-ajax`. Album-level art
+      for all 63 CGDC songs is a small scraper change; per-track needs
+      the AJAX endpoint. Re-check CDC when the host is reachable — it
+      was down for this whole investigation, so "CDC has no images" is
+      unverified rather than established.
+
+
 **All four done in v1.4.39** (2026-08-11, at the user's request to
 finish the Songs module in one night). Left ticked rather than deleted
 so the bundle-size answer stays on the record.
