@@ -182,6 +182,30 @@ the Traditional that carries text the translation does not have there.
 - **prod deploy.** Every prod push needs explicit permission in the
   moment; it does not carry over. prod is on v1.4.11 and still serves
   the broken LEB and the wrong sermon attribution.
-- **Xcode Apple ID.** iOS and macOS builds fail with "No Accounts";
-  only the user can sign in.
-- **NASB licensing**, and whether 梁家鏗's source can be obtained.
+- **NASB licensing** — `assets/nasb.json` is 7.2 MB and publicly
+  fetchable from both prod sites. The user's stated position is that
+  NASB needs permission; nothing has been done about it. Ask before
+  investing in anything NASB-shaped (including #173-176).
+
+## Unblocked 2026-08-10 — no longer an excuse to skip native work
+
+- **Xcode signing works again.** It failed for weeks with "No Accounts:
+  Add a new account in Accounts settings", which is why
+  `com.yswords.ios-reinstall` shows `runs=7, exit=1`. The user signed
+  in; verified by a real build, not by checking for an account record:
+  `flutter build ios --release` now reports "Automatically signing iOS
+  for device deployment … team YC5JZD3DY7" and produces
+  `build/ios/iphoneos/Runner.app`.
+
+  Two things still gate an actual install, and neither is yours to fix:
+  the iPhone must be unlocked and on the same network as the Mac, and
+  the certificate is a **free** Apple ID one that expires every 7 days,
+  so the app dies on the phone weekly until someone reinstalls. Do not
+  treat a reinstall failure as a code defect without reading
+  `/tmp/yswords-ios-reinstall.log` first.
+
+- **梁家鏗's source is obtained.** Both editions: the publisher's
+  Simplified JSON at `~/.cache/yswords/ljk-source/`, and the printed
+  Traditional 註釋本 PDFs the user supplied (extract with `pdftotext
+  -enc UTF-8`). The Traditional is the authority for the Traditional
+  side — conform to it, do not "correct" it.
