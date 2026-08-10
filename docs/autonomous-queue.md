@@ -165,6 +165,54 @@ the Traditional that carries text the translation does not have there.
 
 ## P1 — Bible study correctness
 
+- [ ] **Reconcile our Matthew sermons against the church's own 124.**
+      The user, 2026-08-10: Bentley has put up Pastor Eric's 124
+      messages on Matthew as a 9-volume work, at
+      `https://www.christiandiscipleschurch.org/content/124-messages`.
+      Compare ours to it and match the correct ones.
+
+      **The site was unreachable when this was queued, and that is the
+      only reason it is not done.** Retry the fetch first each
+      iteration; everything below is already established, so do not
+      re-derive it.
+
+      What was checked on 2026-08-10:
+      - `christiandiscipleschurch.org`, `christiandc.org` and
+        `christiandc.net` are all one host, `149.248.15.146`. None of
+        the three completes a TCP connect (`connect=0.000000s`), and
+        Anthropic's server-side fetcher gets ECONNREFUSED from the same
+        IP — so it is the server, not our network and not a block on
+        this machine. General egress was verified working in the same
+        minute (example.com, archive.org, netlify all 200).
+      - The Wayback CDX API returned 503 on that attempt, so "no
+        snapshot" was never actually established. **Re-check the
+        archive** before concluding anything: `http://web.archive.org/
+        cdx/search/cdx?url=christiandiscipleschurch.org/content/
+        124-messages&output=json`.
+      - Related pages found via search, useful once the host is up:
+        `/content/ehhc_sermons_public`, `/content/mtparablesvol1`,
+        `/contents/matthew_parables_front_matter`.
+
+      What our data looks like, so the comparison starts from facts:
+      - `assets/sermons/index.json` holds **289** sermons.
+      - **102** have a passage beginning `Mt`; 30 `Lk`, 9 `Mk`, 6 `Jn`.
+      - **124 have an EMPTY passage — this is a coincidence, not the
+        Matthew set.** They are topical (34 Regeneration and Renewal,
+        17 Spiritual Direction, 12 The Antichrist …). Do not "match"
+        them to the church's 124 on the strength of the number; that
+        trap is why it is written down here.
+      - The Matthew material sits under four topics: *Matthew and
+        parallels in Luke and Mark* (69), *The Parables of Jesus* (34),
+        *Sermon on the Mount* (18), *The Beatitudes* (10) — 131 in
+        total, against the church's 124. The overlap is what needs
+        establishing.
+
+      Match on passage + title, never on ordinal position. Report the
+      counts — ours only, theirs only, and title/passage disagreements
+      — **before** editing `assets/sermons/`. A sermon we attribute to
+      the wrong Matthew passage is the same class of error as a wrong
+      verse: it reads plausibly and gets believed.
+
 - [ ] **Verify the Strong's tagging against the originals.** `assets/
       tagged/cuvs-yhwh/` now drives "tap a word to see the original".
       Spot-check that a word's Strong's number matches the same verse in
