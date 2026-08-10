@@ -28,9 +28,11 @@ and quoted.**
       boundaries. **Do not reconstruct across editions**: each holds part
       of what the other lost and bridging them needs a 简繁 converter.
       Guessing is what must never happen to a Bible.
-      *Action:* ask the user to obtain the source from 聖經釋經事工, and
-      meanwhile write the audit as a repeatable script + test so the
-      damage cannot silently grow.
+      *Action:* the full defect list is written up for the publisher in
+      `docs/梁家鏗譯本-缺陷報告.md` — the user is taking it to
+      聖經釋經事工. Until the source arrives, do NOT attempt repairs;
+      instead make the audit a repeatable script + test so the damage
+      cannot silently grow.
 
 - [ ] **Make the Bible audit a permanent test.** The LEB was broken from
       the first commit and 500+ green tests never noticed, because tests
