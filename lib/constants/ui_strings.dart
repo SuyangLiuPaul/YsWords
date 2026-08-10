@@ -5654,6 +5654,21 @@ const uiStrings = {
     'zh-Hant': '這些詩歌都沒有這個版本。',
     'en': 'None of these songs have that mix.',
   },
+  'songsRemoveFromQueue': {
+    'zh-Hans': '从队列移除',
+    'zh-Hant': '從佇列移除',
+    'en': 'Remove from queue',
+  },
+  'songsDownloadsFailed': {
+    'zh-Hans': '下载失败',
+    'zh-Hant': '下載失敗',
+    'en': 'Could not be downloaded',
+  },
+  'songsRetryDownload': {
+    'zh-Hans': '重试',
+    'zh-Hant': '重試',
+    'en': 'Retry',
+  },
   'songsQueue': {
     'zh-Hans': '播放队列',
     'zh-Hant': '播放佇列',

@@ -8,6 +8,7 @@ import 'package:yswords/models/song_queue.dart';
 /// these pin the semantics that are easy to get subtly wrong and
 /// miserable to debug through a real audio session.
 void main() {
+  _removalRules();
   Song song(
     String id, {
     String? vocal = 'v',
@@ -209,6 +210,56 @@ void main() {
       final q = SongQueue.fromSongs([song('a')]);
       expect(q.removeAt(5).length, 1);
       expect(q.removeAt(-1).length, 1);
+    });
+  });
+}
+
+/// Dropping a track from a queue you are listening to.
+///
+/// `removeAt` had existed with tests and no caller since the queue was
+/// built; SongAudioHandler.removeFromQueue now uses it, and the parts
+/// worth pinning are the index bookkeeping a listener would notice —
+/// removing something above you must not move you to a different song.
+void _removalRules() {
+  Song s(String id) => Song(
+        id: id,
+        title: id,
+        language: 'zh',
+        source: 'fydt',
+        sourceLabel: 'fydt',
+        url: 'https://x/$id',
+        audioUrl: 'https://x/$id.mp3',
+        audioTracks: [SongTrackInfo(url: 'https://x/$id.mp3', kind: 'vocal')],
+        themes: const [],
+      );
+
+  group('removeAt', () {
+    test('removing above the current track keeps you on it', () {
+      final q = SongQueue.fromSongs(
+          [s('a'), s('b'), s('c'), s('d')], startSongId: 'c');
+      expect(q.current!.song.id, 'c');
+      final next = q.removeAt(0);
+      expect(next.current!.song.id, 'c',
+          reason: 'you should not be moved to another song');
+      expect(next.items.map((i) => i.song.id), ['b', 'c', 'd']);
+    });
+
+    test('removing below the current track keeps you on it', () {
+      final q = SongQueue.fromSongs([s('a'), s('b'), s('c')], startSongId: 'a');
+      final next = q.removeAt(2);
+      expect(next.current!.song.id, 'a');
+      expect(next.length, 2);
+    });
+
+    test('removing the last track empties the queue', () {
+      final q = SongQueue.fromSongs([s('only')]);
+      expect(q.removeAt(0).isEmpty, isTrue);
+    });
+
+    test('an out-of-range index changes nothing', () {
+      final q = SongQueue.fromSongs([s('a'), s('b')]);
+      expect(q.removeAt(9).length, 2);
+      expect(q.removeAt(-1).length, 2);
     });
   });
 }

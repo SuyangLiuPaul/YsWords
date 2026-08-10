@@ -17,6 +17,7 @@ import 'package:yswords/services/song_service.dart';
 import 'package:yswords/utils/app_nav.dart';
 import 'package:yswords/utils/responsive.dart';
 import 'package:yswords/utils/version_mapper.dart' show localeAwareBookName;
+import 'package:yswords/widgets/song_actions.dart';
 import 'package:yswords/widgets/home_icon_button.dart';
 import 'package:yswords/widgets/language_switcher_button.dart';
 import 'package:yswords/widgets/localized_back_button.dart';
@@ -1695,7 +1696,7 @@ class _SongDetailSheet extends StatelessWidget {
                       ],
                     ),
                   ),
-                  _FavouriteButton(song: song, locale: locale),
+                  SongFavouriteButton(song: song, locale: locale),
                   // Downloading was bulk-only: you could take the whole
                   // filter offline but not the one hymn you are looking
                   // at, which is the commonest case before a flight or
@@ -1707,7 +1708,7 @@ class _SongDetailSheet extends StatelessWidget {
                   IconButton(
                     icon: const Icon(Icons.playlist_add_rounded, size: 22),
                     tooltip: uiStrings['songsAddToPlaylist']?[locale],
-                    onPressed: () => _showAddToPlaylist(context, song, locale),
+                    onPressed: () => showAddToPlaylistSheet(context, song, locale),
                   ),
                   IconButton(
                     icon: const Icon(Icons.close, size: 20),
@@ -1982,37 +1983,6 @@ class _LinkChip extends StatelessWidget {
   }
 }
 
-/// One-tap favourite toggle.
-///
-/// Favourites is an ordinary playlist with a reserved id, so this is
-/// just a shortcut into the same store the Playlists page reads —
-/// no parallel state to keep in sync.
-class _FavouriteButton extends StatelessWidget {
-  final Song song;
-  final String locale;
-  const _FavouriteButton({required this.song, required this.locale});
-
-  @override
-  Widget build(BuildContext context) {
-    final service = SongPlaylistService.instance;
-    final scheme = Theme.of(context).colorScheme;
-    return ListenableBuilder(
-      listenable: service,
-      builder: (context, _) {
-        final on = service.isFavourite(song);
-        return IconButton(
-          icon: Icon(
-            on ? Icons.favorite_rounded : Icons.favorite_border_rounded,
-            size: 22,
-            color: on ? scheme.error : null,
-          ),
-          tooltip: uiStrings['songsFavourites']?[locale] ?? 'Favourites',
-          onPressed: () => service.toggleFavourite(song),
-        );
-      },
-    );
-  }
-}
 
 /// Pick which playlists a song belongs to.
 ///
@@ -2020,75 +1990,6 @@ class _FavouriteButton extends StatelessWidget {
 /// comes from a saved filter, so "add" would be a lie. Saying why is
 /// better than hiding them and leaving the user wondering where their
 /// playlist went.
-void _showAddToPlaylist(BuildContext context, Song song, String locale) {
-  final service = SongPlaylistService.instance;
-  service.load();
-  showModalBottomSheet<void>(
-    context: context,
-    builder: (sheetCtx) => SafeArea(
-      child: ListenableBuilder(
-        listenable: service,
-        builder: (context, _) {
-          final playlists = service.ordered;
-          final containing = service.playlistIdsContaining(song);
-          return ListView(
-            shrinkWrap: true,
-            children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 14, 16, 6),
-                child: Text(
-                  uiStrings['songsAddToPlaylist']?[locale] ??
-                      'Add to playlist',
-                  style: const TextStyle(
-                      fontSize: 15, fontWeight: FontWeight.w600),
-                ),
-              ),
-              for (final p in playlists)
-                ListTile(
-                  enabled: !p.isSmart,
-                  leading: Icon(
-                    p.isFavourites
-                        ? Icons.favorite_rounded
-                        : (p.isSmart
-                            ? Icons.auto_awesome_motion_rounded
-                            : Icons.queue_music_rounded),
-                  ),
-                  title: Text(p.isFavourites
-                      ? (uiStrings['songsFavourites']?[locale] ??
-                          'Favourites')
-                      : p.name),
-                  subtitle: p.isSmart
-                      ? Text(uiStrings['songsSmartPlaylist']?[locale] ??
-                          'saved filter')
-                      : null,
-                  trailing: containing.contains(p.id)
-                      ? const Icon(Icons.check_rounded)
-                      : null,
-                  onTap: p.isSmart
-                      ? null
-                      : () {
-                          containing.contains(p.id)
-                              ? service.removeSong(p, song)
-                              : service.addSong(p, song);
-                        },
-                ),
-              const Divider(height: 1),
-              ListTile(
-                leading: const Icon(Icons.add_rounded),
-                title: Text(uiStrings['songsNewPlaylist']?[locale] ??
-                    'New playlist'),
-                onTap: () async {
-                  final created = await service.create(song.title);
-                  await service.addSong(created, song);
-                },
-              ),
-            ],
-          );
-        },
-      ),
-    ),
-  );
-}
 
 /// Per-row offline state: a tick when stored, a ring while fetching,
 /// nothing at all otherwise.

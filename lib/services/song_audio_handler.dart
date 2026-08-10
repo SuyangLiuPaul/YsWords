@@ -186,6 +186,31 @@ class SongAudioHandler extends BaseAudioHandler with SeekHandler {
     _broadcast();
   }
 
+  /// Drop one track from the queue.
+  ///
+  /// `SongQueue.removeAt` has existed with tests since the queue was
+  /// built, with nothing able to call it — so a track you did not want
+  /// stayed until the queue was rebuilt. Removing the track that is
+  /// playing moves to the one that takes its place, which is what
+  /// every player does; removing the last track stops.
+  Future<void> removeFromQueue(int index) async {
+    if (index < 0 || index >= _queue.length) return;
+    final wasCurrent = index == _queue.index;
+    final next = _queue.removeAt(index);
+    if (next.isEmpty) {
+      _queue = next;
+      await _publishQueue();
+      await stop();
+      return;
+    }
+    _queue = next;
+    if (wasCurrent) {
+      await _playCurrent();
+    }
+    await _publishQueue();
+    _broadcast();
+  }
+
   Future<void> setRepeat(RepeatMode mode) async {
     _queue = _queue.copyWith(repeat: mode);
     _broadcast();

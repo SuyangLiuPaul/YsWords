@@ -66,6 +66,15 @@ class _SongDownloadsPageState extends State<SongDownloadsPage> {
                         final downloaded = catalogue
                             .where(_service.isDownloaded)
                             .toList();
+                        // Failures were invisible: the page listed only
+                        // what succeeded, so a batch where five songs
+                        // 404'd showed 42 of 47 and never said why. A
+                        // silent shortfall reads as a bug in the app.
+                        final failed = catalogue
+                            .where((s) =>
+                                _service.statusOf(s).state ==
+                                SongDownloadState.failed)
+                            .toList();
                         return ListView(
                           padding:
                               const EdgeInsets.fromLTRB(16, 12, 16, 24),
@@ -85,6 +94,43 @@ class _SongDownloadsPageState extends State<SongDownloadsPage> {
                                   : () => _confirmDeleteAll(locale),
                             ),
                             const SizedBox(height: 12),
+                            if (failed.isNotEmpty) ...[
+                              Row(
+                                children: [
+                                  Icon(Icons.error_outline_rounded,
+                                      size: 18, color: scheme.error),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text(
+                                      uiStrings['songsDownloadsFailed']
+                                              ?[locale] ??
+                                          'Could not be downloaded',
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w600,
+                                        color: scheme.error,
+                                      ),
+                                    ),
+                                  ),
+                                  TextButton(
+                                    onPressed: () => _service.enqueue(failed),
+                                    child: Text(
+                                        uiStrings['songsRetryDownload']
+                                                ?[locale] ??
+                                            'Retry'),
+                                  ),
+                                ],
+                              ),
+                              for (final s in failed)
+                                _FailedTile(
+                                  song: s,
+                                  settings: settings,
+                                  scheme: scheme,
+                                  error: _service.statusOf(s).error,
+                                  onRetry: () => _service.enqueue([s]),
+                                ),
+                              const SizedBox(height: 16),
+                            ],
                             if (downloaded.isEmpty)
                               Padding(
                                 padding: const EdgeInsets.only(top: 40),
@@ -292,6 +338,54 @@ class _DownloadedTile extends StatelessWidget {
       trailing: IconButton(
         icon: const Icon(Icons.delete_outline_rounded, size: 20),
         onPressed: onDelete,
+      ),
+    );
+  }
+}
+
+/// A download that did not finish, with the reason and a way to try
+/// again. Shown because the alternative — leaving it out of the list —
+/// makes a partial batch look like a broken app.
+class _FailedTile extends StatelessWidget {
+  final Song song;
+  final AppSettings settings;
+  final ColorScheme scheme;
+  final String? error;
+  final VoidCallback onRetry;
+
+  const _FailedTile({
+    required this.song,
+    required this.settings,
+    required this.scheme,
+    required this.error,
+    required this.onRetry,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      contentPadding: EdgeInsets.zero,
+      leading: Icon(Icons.cloud_off_rounded, color: scheme.error),
+      title: Text(
+        song.title,
+        style: TextStyle(
+          fontFamily: settings.fontFamily,
+          fontFamilyFallback: kCjkFontFallback,
+          fontSize: 14,
+        ),
+      ),
+      subtitle: Text(
+        // The upstream reason, not a generic apology — "HTTP 404" tells
+        // the church a file is missing from their server.
+        error ?? song.sourceLabel,
+        maxLines: 2,
+        overflow: TextOverflow.ellipsis,
+        style: TextStyle(fontSize: 11, color: scheme.onSurfaceVariant),
+      ),
+      trailing: IconButton(
+        icon: const Icon(Icons.refresh_rounded, size: 20),
+        tooltip: 'Retry',
+        onPressed: onRetry,
       ),
     );
   }

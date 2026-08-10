@@ -1,0 +1,7 @@
+[shell_environment_policy]
+inherit = "core"
+
+[shell_environment_policy.set]
+ANTHROPIC_BASE_URL = "https://api.anthropic.com"
+ANTHROPIC_AUTH_TOKEN = ""
+ANTHROPIC_API_KEY = ""

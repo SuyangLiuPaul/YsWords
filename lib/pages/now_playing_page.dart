@@ -11,6 +11,7 @@ import 'package:yswords/services/song_player_service.dart';
 import 'package:yswords/utils/font_catalog.dart' show kCjkFontFallback;
 import 'package:yswords/utils/responsive.dart';
 import 'package:yswords/widgets/home_icon_button.dart';
+import 'package:yswords/widgets/song_actions.dart';
 import 'package:yswords/widgets/language_switcher_button.dart';
 import 'package:yswords/widgets/localized_back_button.dart';
 
@@ -37,10 +38,22 @@ class NowPlayingPage extends StatelessWidget {
       appBar: AppBar(
         leading: const LocalizedBackButton(),
         title: Text(uiStrings['songsNowPlaying']?[locale] ?? 'Now playing'),
-        // Every other page pairs these two, and this is a page someone
-        // can sit on for a whole album — it should not be the one place
-        // you cannot change language or get home.
-        actions: const [LanguageSwitcherButton(), HomeIconButton()],
+        // Saving lives here too. This is the screen you are on when you
+        // decide you like a song, and until now keeping it meant going
+        // back to the list to find it again.
+        actions: [
+          if (player.current != null) ...[
+            SongFavouriteButton(song: player.current!, locale: locale),
+            IconButton(
+              icon: const Icon(Icons.playlist_add_rounded, size: 22),
+              tooltip: uiStrings['songsAddToPlaylist']?[locale],
+              onPressed: () =>
+                  showAddToPlaylistSheet(context, player.current!, locale),
+            ),
+          ],
+          const LanguageSwitcherButton(),
+          const HomeIconButton(),
+        ],
       ),
       body: ListenableBuilder(
         listenable: player,
@@ -379,6 +392,20 @@ class _QueueSheetState extends State<_QueueSheet> {
                                       ),
                                     ],
                                   ),
+                                ),
+                                // Drop a track you do not want. The
+                                // queue model has supported this since
+                                // it was built; nothing could call it,
+                                // so an unwanted song stayed until the
+                                // whole queue was rebuilt.
+                                IconButton(
+                                  icon: const Icon(
+                                      Icons.remove_circle_outline, size: 18),
+                                  visualDensity: VisualDensity.compact,
+                                  color: scheme.onSurfaceVariant,
+                                  tooltip: uiStrings[
+                                      'songsRemoveFromQueue']?[locale],
+                                  onPressed: () => player.removeFromQueue(i),
                                 ),
                               ],
                             ),
