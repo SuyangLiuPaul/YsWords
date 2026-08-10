@@ -5540,6 +5540,31 @@ const uiStrings = {
     'zh-Hant': '還沒有下載任何詩歌。',
     'en': 'Nothing downloaded yet.',
   },
+  'songsScoreFailed': {
+    'zh-Hans': '乐谱无法载入。',
+    'zh-Hant': '樂譜無法載入。',
+    'en': 'The sheet music could not be loaded.',
+  },
+  'songsNoScore': {
+    'zh-Hans': '这首诗歌没有乐谱。',
+    'zh-Hant': '這首詩歌沒有樂譜。',
+    'en': 'This song has no sheet music.',
+  },
+  'songsVideoFailed': {
+    'zh-Hans': '视频无法播放。',
+    'zh-Hant': '影片無法播放。',
+    'en': 'The video could not be played.',
+  },
+  'songsSearchDownloadsHint': {
+    'zh-Hans': '搜索已下载的诗歌…',
+    'zh-Hant': '搜尋已下載的詩歌…',
+    'en': 'Search downloads…',
+  },
+  'songsNoSearchMatch': {
+    'zh-Hans': '没有符合的已下载诗歌。',
+    'zh-Hant': '沒有符合的已下載詩歌。',
+    'en': 'No downloaded song matches that.',
+  },
   'songsDeleteAll': {
     'zh-Hans': '全部删除',
     'zh-Hant': '全部刪除',

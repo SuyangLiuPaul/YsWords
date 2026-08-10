@@ -136,10 +136,30 @@ class SongDownloadService extends ChangeNotifier {
     return '${_dir!.path}/${rec.filename}';
   }
 
+  /// Local sheet-music PDF for [song], when one was downloaded with it.
+  /// Null for songs that publish no score, whose score failed, or that
+  /// were downloaded before scores were included.
+  String? localScorePathFor(Song song) {
+    final rec = _index[song.id];
+    final name = rec?.scoreFilename;
+    if (name == null || _dir == null) return null;
+    return '${_dir!.path}/$name';
+  }
+
+  bool hasOfflineScore(Song song) => _index[song.id]?.scoreFilename != null;
+
+  /// Always null on native — the offline score is a real file, reached
+  /// through [localScorePathFor]. Present so the score viewer can ask
+  /// both builds the same two questions without a `kIsWeb` branch.
+  String? offlineScoreSourceFor(Song song) => null;
+
   int get downloadedCount => _index.length;
 
-  int get totalBytes =>
-      _index.values.fold<int>(0, (sum, r) => sum + r.bytes);
+  /// Counts the scores too — this figure is what the Downloads page
+  /// reports as space used, and it has to match what is actually on
+  /// disk or the page is lying about the user's storage.
+  int get totalBytes => _index.values
+      .fold<int>(0, (sum, r) => sum + r.bytes + r.scoreBytes);
 
   int get pendingCount => _queue.length + _active.length;
 
@@ -171,6 +191,11 @@ class SongDownloadService extends ChangeNotifier {
       total += secs != null && secs > 0
           ? (secs * 128 * 1000 / 8).round()
           : 4 * 1024 * 1024;
+      // Sheet music now comes down with the audio. A flat 400 KB: the
+      // scores are 1-4 page engravings and the catalogue publishes no
+      // sizes, so this is the same honest guess the audio figure is,
+      // and leaving it out would under-quote 579 of 606 songs.
+      if (s.scoreUrl != null) total += 400 * 1024;
     }
     return total;
   }
@@ -230,8 +255,11 @@ class SongDownloadService extends ChangeNotifier {
     if (rec != null) {
       try {
         final dir = await _mediaDir();
-        final f = File('${dir.path}/${rec.filename}');
-        if (f.existsSync()) f.deleteSync();
+        for (final name in [rec.filename, rec.scoreFilename]) {
+          if (name == null) continue;
+          final f = File('${dir.path}/$name');
+          if (f.existsSync()) f.deleteSync();
+        }
       } catch (e) {
         debugPrint('[SongDownloadService] delete failed: $e');
       }
@@ -330,6 +358,14 @@ class SongDownloadService extends ChangeNotifier {
       _status[song.id] = SongDownloadStatus(
           state: SongDownloadState.done, bytes: received);
       await _persist();
+
+      // The score rides along AFTER the audio is safely committed, and
+      // its failure is not the song's failure: 579 of 606 songs publish
+      // a PDF, and an offline song without its music is the thing being
+      // fixed here — but a 404 on the PDF must not turn a perfectly
+      // downloaded song red in the Downloads list, nor put it in the
+      // "Retry" batch. Errors are swallowed inside [_downloadScore].
+      await _downloadScore(song);
     } on _Cancelled {
       _status[song.id] = const SongDownloadStatus();
     } catch (e) {
@@ -347,6 +383,46 @@ class SongDownloadService extends ChangeNotifier {
     }
   }
 
+  /// Fetch [song]'s sheet music next to its audio. Best-effort by
+  /// design — see the call site. Never throws.
+  ///
+  /// Not streamed: scores are a few hundred KB against several MB of
+  /// audio, so there is no progress worth reporting and a plain `get`
+  /// keeps the failure surface small. It is also not cancellable, for
+  /// the same reason — by the time it runs the expensive part is done.
+  Future<void> _downloadScore(Song song) async {
+    final url = song.scoreUrl;
+    final rec = _index[song.id];
+    if (url == null || rec == null || rec.scoreFilename != null) return;
+    try {
+      final resp = await http
+          .get(Uri.parse(url))
+          .timeout(const Duration(seconds: 30));
+      if (resp.statusCode != 200 || resp.bodyBytes.isEmpty) return;
+      // The churches' sites answer a missing file with an HTML page and
+      // a 200, so a "successful" fetch can be the site's 404 page. A
+      // PDF starts with %PDF-; anything else is not sheet music and
+      // storing it would show the user a broken viewer later.
+      final b = resp.bodyBytes;
+      if (b.length < 5 ||
+          b[0] != 0x25 || b[1] != 0x50 || b[2] != 0x44 || b[3] != 0x46) {
+        debugPrint('[SongDownloadService] ${song.id} score is not a PDF — '
+            'the site probably served an error page with HTTP 200');
+        return;
+      }
+      final dir = await _mediaDir();
+      final name = '${sha1.convert(utf8.encode(song.id))}.pdf';
+      final tmp = File('${dir.path}/$name.part');
+      await tmp.writeAsBytes(b, flush: true);
+      await tmp.rename('${dir.path}/$name');
+      _index[song.id] = rec.withScore(name, b.length);
+      await _persist();
+      notifyListeners();
+    } catch (e) {
+      debugPrint('[SongDownloadService] ${song.id} score failed: $e');
+    }
+  }
+
   /// Stable filename: the song id is not filesystem-safe (it contains
   /// `:` and, for Cahaya, arbitrary title text), so hash it and keep
   /// the source extension.
@@ -360,14 +436,47 @@ class SongDownloadService extends ChangeNotifier {
 class _DownloadRecord {
   final String filename;
   final int bytes;
-  const _DownloadRecord({required this.filename, required this.bytes});
 
-  Map<String, dynamic> toJson() => {'f': filename, 'b': bytes};
+  /// The sheet-music PDF stored alongside the audio, when the song has
+  /// one and it downloaded. Null covers three different cases that all
+  /// behave the same way — the song publishes no score, the score
+  /// failed, or the record predates scores being downloaded at all.
+  final String? scoreFilename;
+  final int scoreBytes;
+
+  const _DownloadRecord({
+    required this.filename,
+    required this.bytes,
+    this.scoreFilename,
+    this.scoreBytes = 0,
+  });
+
+  /// Short keys because this is re-encoded into SharedPreferences on
+  /// every completed download. The two score keys are omitted when
+  /// absent so existing records keep their current size, and
+  /// [fromJson] tolerates their absence — an index written by an older
+  /// build must keep loading, or an upgrade silently forgets every
+  /// download the user has.
+  Map<String, dynamic> toJson() => {
+        'f': filename,
+        'b': bytes,
+        if (scoreFilename != null) 's': scoreFilename,
+        if (scoreBytes > 0) 'sb': scoreBytes,
+      };
 
   factory _DownloadRecord.fromJson(Map<String, dynamic> j) =>
       _DownloadRecord(
         filename: j['f'] as String,
         bytes: (j['b'] as num?)?.toInt() ?? 0,
+        scoreFilename: j['s'] as String?,
+        scoreBytes: (j['sb'] as num?)?.toInt() ?? 0,
+      );
+
+  _DownloadRecord withScore(String name, int size) => _DownloadRecord(
+        filename: filename,
+        bytes: bytes,
+        scoreFilename: name,
+        scoreBytes: size,
       );
 }
 

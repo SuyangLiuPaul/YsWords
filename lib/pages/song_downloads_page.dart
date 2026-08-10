@@ -30,6 +30,11 @@ class _SongDownloadsPageState extends State<SongDownloadsPage> {
   final _service = SongDownloadService.instance;
   Future<List<Song>>? _catalogue;
 
+  /// Already trimmed and lower-cased — [Song.matchesQuery] expects the
+  /// needle normalised, and normalising it here does it once per
+  /// keystroke instead of once per song per keystroke.
+  String _query = '';
+
   @override
   void initState() {
     super.initState();
@@ -65,6 +70,15 @@ class _SongDownloadsPageState extends State<SongDownloadsPage> {
                       builder: (context, _) {
                         final downloaded = catalogue
                             .where(_service.isDownloaded)
+                            .toList();
+                        // The search narrows the LIST only. The summary
+                        // card keeps reporting the real totals — a
+                        // "12 songs, 48 MB" that shrank as you typed
+                        // would be answering a question nobody asked,
+                        // and space used is exactly the number people
+                        // come to this page for.
+                        final shown = downloaded
+                            .where((s) => s.matchesQuery(_query))
                             .toList();
                         // Failures were invisible: the page listed only
                         // what succeeded, so a batch where five songs
@@ -131,6 +145,33 @@ class _SongDownloadsPageState extends State<SongDownloadsPage> {
                                 ),
                               const SizedBox(height: 16),
                             ],
+                            // Only worth the vertical space once there
+                            // is enough here to lose something in.
+                            if (downloaded.length >= 8) ...[
+                              TextField(
+                                decoration: InputDecoration(
+                                  hintText: uiStrings[
+                                              'songsSearchDownloadsHint']
+                                          ?[locale] ??
+                                      'Search downloads…',
+                                  prefixIcon: const Icon(Icons.search),
+                                  isDense: true,
+                                  border: OutlineInputBorder(
+                                    borderRadius:
+                                        BorderRadius.circular(10),
+                                  ),
+                                ),
+                                onChanged: (v) => setState(
+                                    () => _query = v.trim().toLowerCase()),
+                                style: TextStyle(
+                                  fontFamily: settings.fontFamily,
+                                  fontFamilyFallback: kCjkFontFallback,
+                                  fontSize: (settings.fontSize - 1)
+                                      .clamp(13.0, 17.0),
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                            ],
                             if (downloaded.isEmpty)
                               Padding(
                                 padding: const EdgeInsets.only(top: 40),
@@ -141,8 +182,23 @@ class _SongDownloadsPageState extends State<SongDownloadsPage> {
                                   style: TextStyle(
                                       color: scheme.onSurfaceVariant),
                                 ),
+                              )
+                            // Distinct from "nothing downloaded yet":
+                            // the songs ARE here, this search just did
+                            // not reach them.
+                            else if (shown.isEmpty)
+                              Padding(
+                                padding: const EdgeInsets.only(top: 40),
+                                child: Text(
+                                  uiStrings['songsNoSearchMatch']
+                                          ?[locale] ??
+                                      'No downloaded song matches that.',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                      color: scheme.onSurfaceVariant),
+                                ),
                               ),
-                            for (final s in downloaded)
+                            for (final s in shown)
                               _DownloadedTile(
                                 song: s,
                                 settings: settings,

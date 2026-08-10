@@ -7,6 +7,8 @@ import 'package:yswords/models/song.dart';
 import 'package:yswords/models/song_playlist.dart';
 import 'package:yswords/pages/song_downloads_page.dart';
 import 'package:yswords/pages/song_playlists_page.dart';
+import 'package:yswords/pages/song_score_page.dart';
+import 'package:yswords/pages/song_video_page.dart';
 import 'package:yswords/services/song_download_service.dart';
 import 'package:yswords/services/song_download_types.dart';
 import 'package:yswords/services/song_playlist_service.dart';
@@ -459,12 +461,7 @@ class _SongsPageState extends State<SongsPage> {
     }
     final q = _query.trim().toLowerCase();
     if (q.isNotEmpty) {
-      out = out.where((s) {
-        return s.title.toLowerCase().contains(q) ||
-            (s.code?.toLowerCase().contains(q) ?? false) ||
-            (s.verse?.toLowerCase().contains(q) ?? false) ||
-            s.themes.any((t) => t.toLowerCase().contains(q));
-      });
+      out = out.where((s) => s.matchesQuery(q));
     }
     final list = out.toList();
     _applySort(list);
@@ -1540,23 +1537,60 @@ class _PlayButton extends StatelessWidget {
     required this.onPlay,
   });
 
+  /// Cover art behind the button, when the source publishes any.
+  ///
+  /// 199 of 606 songs have artwork and it used to appear only on the
+  /// Now Playing screen. It rides *behind* the existing 40×40 control
+  /// rather than taking a slot of its own, so the 407 songs without it
+  /// are not left with a hole and every row keeps the same height —
+  /// a list that changes rhythm depending on which source a song came
+  /// from reads as broken rather than as richer.
+  ///
+  /// The scrim is not decoration: a play glyph tinted `primary` over an
+  /// arbitrary photograph is a contrast accident waiting to happen, so
+  /// over artwork the glyph goes white on a dark wash instead.
+  List<Widget> _artworkLayers(bool active) {
+    final url = song.artworkUrl;
+    if (url == null) return const [];
+    return [
+      Image.network(url,
+          fit: BoxFit.cover,
+          // Missing artwork is the common case, not an error.
+          errorBuilder: (_, __, ___) => const SizedBox.shrink()),
+      Container(
+        color: Colors.black.withValues(alpha: active ? 0.28 : 0.42),
+      ),
+    ];
+  }
+
+  bool get _hasArt => song.artworkUrl != null;
+
   @override
   Widget build(BuildContext context) {
     if (!song.hasPlayableAudio) {
-      return Container(
-        width: 40,
-        height: 40,
-        decoration: BoxDecoration(
-          color: scheme.primary.withValues(alpha: 0.10),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        alignment: Alignment.center,
-        child: Text(
-          fallbackBadge,
-          style: TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.w700,
-            color: scheme.primary.withValues(alpha: 0.8),
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(8),
+        child: SizedBox(
+          width: 40,
+          height: 40,
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              Container(color: scheme.primary.withValues(alpha: 0.10)),
+              ..._artworkLayers(false),
+              Center(
+                child: Text(
+                  fallbackBadge,
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    color: _hasArt
+                        ? Colors.white
+                        : scheme.primary.withValues(alpha: 0.8),
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       );
@@ -1591,27 +1625,44 @@ class _PlayButton extends StatelessWidget {
               onTap: () => isThis
                   ? player.toggle(song, SongTrack.vocal, player.currentUrl)
                   : onPlay(),
-              child: SizedBox(
-                width: 40,
-                height: 40,
-                child: loading
-                    ? Padding(
-                        padding: const EdgeInsets.all(11),
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: isThis
-                              ? scheme.onPrimary
-                              : scheme.primary,
-                        ),
-                      )
-                    : Icon(
-                        playing
-                            ? Icons.pause_rounded
-                            : Icons.play_arrow_rounded,
-                        size: 22,
-                        color:
-                            isThis ? scheme.onPrimary : scheme.primary,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: SizedBox(
+                  width: 40,
+                  height: 40,
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      ..._artworkLayers(isThis),
+                      Center(
+                        child: loading
+                            ? SizedBox(
+                                width: 18,
+                                height: 18,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: _hasArt
+                                      ? Colors.white
+                                      : (isThis
+                                          ? scheme.onPrimary
+                                          : scheme.primary),
+                                ),
+                              )
+                            : Icon(
+                                playing
+                                    ? Icons.pause_rounded
+                                    : Icons.play_arrow_rounded,
+                                size: 22,
+                                color: _hasArt
+                                    ? Colors.white
+                                    : (isThis
+                                        ? scheme.onPrimary
+                                        : scheme.primary),
+                              ),
                       ),
+                    ],
+                  ),
+                ),
               ),
             ),
           ),
@@ -1792,11 +1843,14 @@ class _SongDetailSheet extends StatelessWidget {
                         children: [
                           if (song.videoUrl != null)
                             _LinkChip(
+                              // Plays in-app now (mp4 only). Falls back
+                              // to the browser on Windows/Linux, where
+                              // video_player has no implementation.
                               icon: Icons.movie_rounded,
                               label: uiStrings['songsWatchMv']?[locale] ??
                                   'Music video',
-                              onTap: () =>
-                                  _open(context, song.videoUrl!),
+                              onTap: () => SongVideoPage.open(
+                                  context, song, locale),
                             ),
                           if (song.youtubeUrl != null)
                             _LinkChip(
@@ -1814,10 +1868,13 @@ class _SongDetailSheet extends StatelessWidget {
                             ),
                           if (song.scoreUrl != null)
                             _LinkChip(
+                              // Opens in-app, from the downloaded copy
+                              // when there is one.
                               icon: Icons.picture_as_pdf_rounded,
                               label: uiStrings['songsScore']?[locale] ??
                                   'Sheet music',
-                              onTap: () => _open(context, song.scoreUrl!),
+                              onTap: () => SongScorePage.open(
+                                  context, song, locale),
                             ),
                           _LinkChip(
                             icon: Icons.open_in_new_rounded,

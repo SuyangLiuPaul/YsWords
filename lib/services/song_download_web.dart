@@ -80,6 +80,12 @@ class SongDownloadService extends ChangeNotifier {
   /// URL is only a handle to a blob the browser already has on disk,
   /// so holding a few hundred of them is cheap.
   final Map<String, String> _blobUrls = {};
+
+  /// Blob URLs for cached sheet music, keyed by song id. Separate from
+  /// [_blobUrls] because a song can have audio offline and no score, or
+  /// (after a failed PDF) the reverse never — but the two are fetched
+  /// independently and must be revoked independently.
+  final Map<String, String> _scoreBlobUrls = {};
   final Map<String, SongDownloadStatus> _status = {};
   final List<Song> _queue = [];
   final Set<String> _active = {};
@@ -151,13 +157,44 @@ class SongDownloadService extends ChangeNotifier {
   }
 
   void _revoke(String songId) {
-    final u = _blobUrls.remove(songId);
-    if (u != null) {
+    for (final u in [
+      _blobUrls.remove(songId),
+      _scoreBlobUrls.remove(songId),
+    ]) {
+      if (u == null) continue;
       try {
         web.URL.revokeObjectURL(u);
       } catch (_) {/* already gone */}
     }
   }
+
+  /// Cache [song]'s sheet music alongside its audio. Never throws — the
+  /// score is a bonus and its failure must not touch the song's status.
+  Future<void> _downloadScore(Song song) async {
+    final source = song.scoreUrl;
+    if (source == null || _scoreBlobUrls.containsKey(song.id)) return;
+    try {
+      final url = SongPlayerService.resolvePlaybackUrl(source);
+      final res = await web.window.fetch(url.toJS).toDart;
+      if (!res.ok) return;
+      final blob = await res.blob().toDart;
+      if (blob.size.toInt() < 5) return;
+      final cache = await _cache();
+      await cache.put(url.toJS, web.Response(blob as JSAny, _pdfInit())).toDart;
+      _scoreBlobUrls[song.id] = web.URL.createObjectURL(blob);
+    } catch (e) {
+      debugPrint('[SongDownloadService/web] ${song.id} score failed: $e');
+    }
+  }
+
+  /// Same reasoning as [_audioInit]: a blob stored without a type comes
+  /// back as `application/octet-stream`, and a PDF viewer handed that
+  /// will refuse it.
+  static web.ResponseInit _pdfInit() => web.ResponseInit(
+        status: 200,
+        statusText: 'OK',
+        headers: {'Content-Type': 'application/pdf'}.jsify() as JSObject,
+      );
 
   /// The source playback should use for [song] — the offline copy when
   /// there is one, else null so the caller falls back to the network.
@@ -188,6 +225,16 @@ class SongDownloadService extends ChangeNotifier {
   /// is reached through a blob URL instead — see [offlineSourceFor]
   /// and [resolveSongSource].
   String? localPathFor(Song song) => null;
+
+  /// Always null, for the same reason as [localPathFor]. Present so the
+  /// score viewer can ask both builds the same two questions without a
+  /// `kIsWeb` branch: a path first, then a blob URL.
+  String? localScorePathFor(Song song) => null;
+
+  /// Blob URL of the cached sheet music, when it was downloaded.
+  String? offlineScoreSourceFor(Song song) => _scoreBlobUrls[song.id];
+
+  bool hasOfflineScore(Song song) => _scoreBlobUrls.containsKey(song.id);
 
   int get downloadedCount => _index.length;
   int get totalBytes =>
@@ -353,6 +400,11 @@ class SongDownloadService extends ChangeNotifier {
           state: SongDownloadState.done, bytes: bytes);
       _blobUrls[song.id] = web.URL.createObjectURL(blob);
       await _persist();
+
+      // Sheet music, after the audio is committed and outside its
+      // failure path — a missing PDF must not mark a downloaded song
+      // as failed. See the native service for the same reasoning.
+      await _downloadScore(song);
     } catch (e) {
       debugPrint('[SongDownloadService/web] ${song.id} failed: $e');
       _status[song.id] = SongDownloadStatus(

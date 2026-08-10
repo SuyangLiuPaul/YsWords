@@ -121,6 +121,8 @@ dependencies:
   # advances, the lock screen shows its controls, and no sound comes
   # out. Reported from a real iPhone before this was configured.
   audio_session: ^0.2.0
+  pdfrx: ^2.4.7
+  video_player: ^2.13.0
 
 dev_dependencies:
   flutter_test:

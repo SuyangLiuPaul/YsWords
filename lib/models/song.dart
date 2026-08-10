@@ -237,6 +237,26 @@ class Song {
   /// filter, which users read as "can I listen to this".
   bool get hasAudio => hasPlayableAudio || soundcloudTrackId != null;
 
+  /// Free-text match over the fields a user would plausibly type.
+  ///
+  /// Lives on the model so the Songs list and the Downloads page cannot
+  /// drift apart about what "search" means. The same query selecting
+  /// different songs on the two pages would read as the Downloads page
+  /// having lost something the directory can still find.
+  ///
+  /// [q] must already be trimmed and lower-cased by the caller — it is
+  /// called once per song per keystroke, and re-normalising the needle
+  /// inside the loop is work proportional to the catalogue for no
+  /// reason. An empty query matches everything.
+  bool matchesQuery(String q) {
+    if (q.isEmpty) return true;
+    return title.toLowerCase().contains(q) ||
+        (code?.toLowerCase().contains(q) ?? false) ||
+        (verse?.toLowerCase().contains(q) ?? false) ||
+        (artist?.toLowerCase().contains(q) ?? false) ||
+        themes.any((t) => t.toLowerCase().contains(q));
+  }
+
   /// The sung takes, in the order the source published them.
   List<SongTrackInfo> get vocalTracks =>
       audioTracks.where((t) => t.isVocal).toList();
