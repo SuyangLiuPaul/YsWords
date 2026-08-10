@@ -191,6 +191,10 @@ the Traditional that carries text the translation does not have there.
       以弗所書 8, 路加福音 6. Take one book per iteration once the
       publisher answers, and copy their wording exactly — never
       paraphrasing, never merging the two.
+      **`docs/梁家鏗譯本-請教出版方.md` §四 still says 95 節** — that count
+      predates the five unproofread books and the punctuation split.
+      It is 86 wording + 46 punctuation, and 羅馬書 3:10 is no longer one
+      of them. Correct it before that document is sent to anybody.
 
 - [ ] **Then rebuild the Traditional from the corrected Simplified.**
       Only after the Simplified matches the publisher. Our Traditional
