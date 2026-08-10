@@ -282,6 +282,24 @@ has never seen this repo.
 
 ## P1 — Bible study correctness
 
+- [x] **A stale cache outlived every upgrade — fixed in v1.4.39.**
+      The user's screenshot showed 283 CDC songs with a language badge
+      where the play button belongs, while CGDC rows beside them played.
+      The data was never wrong: both the live dataset and the bundled
+      snapshot carry 282/283 with audio. `RemoteDataService._firstLoad`
+      returned the SharedPreferences cache whenever one existed and
+      never compared it to the bundle — and **SharedPreferences survives
+      an app upgrade**, so a cache written during the bad-CDC publish
+      shadowed every corrected release and a reinstall would not have
+      cleared it. Now only a strictly newer bundle displaces the cache,
+      via the `generatedAt` hook that was already there.
+      `test/stale_cache_guard_test.dart` rebuilds the exact bad edition
+      and fails on the pre-fix code.
+
+      **This is worth remembering beyond songs:** the same three-tier
+      loader backs every dataset in the app, so any bad publish used to
+      be permanent for whoever cached it.
+
 - [ ] **Reconcile our Matthew sermons against the church's own 124.**
       The user, 2026-08-10: Bentley has put up Pastor Eric's 124
       messages on Matthew as a 9-volume work, at
@@ -378,15 +396,37 @@ has never seen this repo.
 
 ## P2 — features the user asked for
 
-- [ ] **In-app score (PDF) and video.** 554 songs have sheet music and 82
-      have video, and both currently leave the app. Needs a PDF
-      dependency that works on web + iOS + Android + macOS + Windows;
-      check bundle-size cost before committing to one.
-- [ ] **Downloads should include the score**, so an offline song still
-      has its music.
-- [ ] Search box on the Downloads page (Playlists already has one).
-- [ ] Artwork thumbnails in song list rows — 199 songs have artwork and
-      only Now Playing shows it.
+**All four done in v1.4.39** (2026-08-11, at the user's request to
+finish the Songs module in one night). Left ticked rather than deleted
+so the bundle-size answer stays on the record.
+
+- [x] **In-app score (PDF) and video.** `SongScorePage` (pdfrx) and
+      `SongVideoPage` (video_player). The real count was **579** songs
+      with a score, not 554; 82 with an mp4. Scores prefer the
+      downloaded copy, then the web cache, then the network through the
+      **same same-origin proxy the audio uses** — pdfrx fetches by XHR
+      and no church server sends `Access-Control-Allow-Origin`, so a
+      direct load never gets a byte. Video is mp4-only; YouTube and
+      SoundCloud still open externally, and Windows/Linux keep the
+      link-out because `video_player` has no implementation there and
+      would throw at runtime.
+
+      **Bundle cost, measured before committing to the dependency:**
+      `main.dart.js` gzipped went 1,944,117 → 1,945,132 (**+1,015 B,
+      +0.05%**) because pdfium ships as a separate 5.23 MB wasm asset
+      that is fetched only when a score is opened — never on first
+      paint. Verified served from dev as `application/wasm`; a wrong
+      MIME there breaks `instantiateStreaming` outright.
+
+- [x] **Downloads include the score.** Fetched after the audio is
+      committed, failure swallowed — a 404 on sheet music must not turn
+      a downloaded song red or put it in the Retry batch. Checked for a
+      `%PDF-` magic number first: the churches' sites answer a missing
+      file with an HTML error page and HTTP 200.
+- [x] Search box on the Downloads page — appears at 8+ downloads,
+      narrows the list only, leaves the space total honest.
+- [x] Artwork thumbnails in song list rows — behind the play button, so
+      the 407 songs without artwork are not left with a hole.
 
 ## P3 — known but blocked or deferred
 
