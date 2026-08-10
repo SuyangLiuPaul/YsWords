@@ -1665,6 +1665,8 @@ class _DashboardSectionsCard extends StatelessWidget {
         return Icons.dashboard_outlined;
       case DashboardSection.recentBookmarks:
         return Icons.bookmark_outline_rounded;
+      case DashboardSection.featured:
+        return Icons.star_outline_rounded;
       case DashboardSection.todayEvidence:
         return Icons.museum_outlined;
       case DashboardSection.quickLinks:

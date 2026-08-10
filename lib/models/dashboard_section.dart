@@ -41,6 +41,16 @@ enum DashboardSection {
   /// the user has no bookmarks).
   recentBookmarks,
 
+  /// "Featured" — the church's own media: 獨一真神 and Songs.
+  ///
+  /// 2026-08-11, at the user's request, and added as a SECTION rather
+  /// than hard-coded above Today's Evidence. The dashboard has had
+  /// reorder + per-section visibility since Round 55, so writing the
+  /// order into the widget tree would have taken that control away for
+  /// exactly the block the user cares most about. Default on, and it
+  /// sits above todayEvidence in [defaultDashboardOrder].
+  featured,
+
   /// "Today's Evidence" — one of 225 Bible-evidence entries rotating
   /// by day-of-year. Default on.
   todayEvidence,
@@ -60,6 +70,7 @@ const List<DashboardSection> defaultDashboardOrder = <DashboardSection>[
   DashboardSection.dailyVerse,
   DashboardSection.counts,
   DashboardSection.recentBookmarks,
+  DashboardSection.featured,
   DashboardSection.todayEvidence,
   DashboardSection.quickLinks,
 ];
@@ -74,6 +85,7 @@ const Map<DashboardSection, bool> defaultVisibility =
   DashboardSection.dailyVerse: true,
   DashboardSection.counts: true,
   DashboardSection.recentBookmarks: true,
+  DashboardSection.featured: true,
   DashboardSection.todayEvidence: true,
   DashboardSection.quickLinks: true,
 };
@@ -146,6 +158,8 @@ extension DashboardSectionLabel on DashboardSection {
         return 'Bookmarks / Notes / Highlights';
       case DashboardSection.recentBookmarks:
         return 'Recent Bookmarks';
+      case DashboardSection.featured:
+        return 'Featured';
       case DashboardSection.todayEvidence:
         return "Today's Evidence";
       case DashboardSection.quickLinks:
@@ -165,6 +179,9 @@ extension DashboardSectionLabel on DashboardSection {
         return 'Counts of bookmarks, notes, and highlights.';
       case DashboardSection.recentBookmarks:
         return 'Your five most recently bookmarked verses.';
+      case DashboardSection.featured:
+        return "The church's own media — the video teaching and the songs "
+            'directory.';
       case DashboardSection.todayEvidence:
         return 'One archaeology / manuscript / science entry per day.';
       case DashboardSection.quickLinks:

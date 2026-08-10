@@ -656,6 +656,48 @@ class _DashboardPageState extends State<DashboardPage> {
           ],
         );
 
+      case DashboardSection.featured:
+        // The church's own media, above Today's Evidence — the user
+        // asked for 獨一真神 and Songs to be the first things reachable
+        // rather than buried in the quick-link grid at the bottom.
+        //
+        // Rendered through the section system, so it stays reorderable
+        // and hideable like every other block. Hard-coding it above
+        // todayEvidence would have looked identical on a fresh install
+        // and silently removed that control.
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            _SectionHeader(
+              icon: Icons.star_outline_rounded,
+              label: uiStrings['dashboardFeatured']?[locale] ?? 'Featured',
+              settings: settings,
+              scheme: scheme,
+              fontSize: headerSize,
+            ),
+            const SizedBox(height: 8),
+            _FeaturedCard(
+              icon: Icons.play_circle_outline_rounded,
+              title: uiStrings['oneGodTitle']?[locale] ?? 'The Only True God',
+              subtitle: uiStrings['oneGodSubtitle']?[locale] ??
+                  'Video teaching · English / Cantonese / Mandarin',
+              scheme: scheme,
+              settings: settings,
+              onTap: () => pushPage(const OneGodPage()),
+            ),
+            const SizedBox(height: 8),
+            _FeaturedCard(
+              icon: Icons.library_music_rounded,
+              title: uiStrings['songsPageTitle']?[locale] ?? 'Songs',
+              subtitle: uiStrings['dashboardSongsSubtitle']?[locale] ??
+                  'Hymns from our churches — listen, sheet music, offline',
+              scheme: scheme,
+              settings: settings,
+              onTap: () => pushPage(const SongsPage()),
+            ),
+          ],
+        );
+
       case DashboardSection.todayEvidence:
         if (_dailyEvidence == null) return null;
         return Column(
@@ -923,6 +965,89 @@ class _HomeFooter extends StatelessWidget {
 /// bookmarks / Today's Evidence) — a small tinted icon ahead of the
 /// bold label gives each section a scannable glyph instead of a wall
 /// of same-weight text headers.
+/// A Featured row: icon, title, one line of context, chevron.
+///
+/// Deliberately taller and wordier than a `_LinkTile` — these two are
+/// the church's own media and the point of promoting them above Today's
+/// Evidence is that someone who has never opened them can tell what
+/// they are without tapping.
+class _FeaturedCard extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final ColorScheme scheme;
+  final AppSettings settings;
+  final VoidCallback onTap;
+  const _FeaturedCard({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.scheme,
+    required this.settings,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: scheme.surfaceContainerLow,
+      borderRadius: BorderRadius.circular(12),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(14, 12, 10, 12),
+          child: Row(
+            children: [
+              Container(
+                width: 42,
+                height: 42,
+                decoration: BoxDecoration(
+                  color: scheme.primary.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(icon, size: 22, color: scheme.primary),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      title,
+                      style: TextStyle(
+                        fontFamily: settings.fontFamily,
+                        fontFamilyFallback: kCjkFontFallback,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                        color: scheme.onSurface,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      subtitle,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 12,
+                        height: 1.35,
+                        color: scheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Icon(Icons.chevron_right_rounded,
+                  size: 20, color: scheme.onSurfaceVariant),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class _SectionHeader extends StatelessWidget {
   final IconData icon;
   final String label;

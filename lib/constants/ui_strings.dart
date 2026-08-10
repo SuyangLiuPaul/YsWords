@@ -5548,6 +5548,21 @@ const uiStrings = {
     'zh-Hant': '下載目前篩選結果',
     'en': 'Download these songs',
   },
+  'dashboardFeatured': {
+    'zh-Hans': '精选推荐',
+    'zh-Hant': '精選推薦',
+    'en': 'Featured',
+  },
+  'dashboardSection_featured_label': {
+    'zh-Hans': '精选推荐',
+    'zh-Hant': '精選推薦',
+    'en': 'Featured',
+  },
+  'dashboardSongsSubtitle': {
+    'zh-Hans': '本堂诗歌 · 在线聆听、乐谱、离线下载',
+    'zh-Hant': '本堂詩歌 · 線上聆聽、樂譜、離線下載',
+    'en': 'Hymns from our churches - listen, sheet music, offline',
+  },
   'oneGodTitle': {
     'zh-Hans': '独一真神',
     'zh-Hant': '獨一真神',
