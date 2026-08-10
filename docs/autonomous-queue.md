@@ -58,6 +58,25 @@ when the publisher's own 4:16 is exactly what our Simplified has. It is
 the Traditional that carries text the translation does not have there.
 **Check the source before believing a diff.**
 
+**Standing rule — keep the publisher letter shippable.** The user is
+holding `docs/梁家鏗譯本-請教出版方.md` back until it is complete and
+will then pass it to the pastor, so its state has to be legible without
+reading this queue. It carries a status box at the top. **Every
+iteration that touches the letter updates that box** — the 最後更新
+date, and the ⏳/✅ of any section whose numbers moved.
+
+Flip the heading from 草稿，尚未可寄出 to 定稿 only when §四 and §四之二
+record a *decision* for every difference — a publisher revision we
+adopt, or a defect of ours already fixed — never merely "differs". Say
+so in the run summary when you do; that sentence is the user's signal
+to send it. The 95 → 86+46 correction is exactly the kind of thing that
+must not reach the publisher stale: asking them about 羅馬書 3:10, which
+turned out to be our own defect, would waste their time and ours.
+
+It is a letter, not an append-only log. Fold new findings into the
+section they belong to, and keep it readable end to end by someone who
+has never seen this repo.
+
 - [x] **Character-level proofread of the TRADITIONAL — all five volumes.**
       `tools/proofread_ljk_tr.py` compares our Traditional against the
       printed 註釋本. Whole NT: **7,152 of 7,925 verses match the printed
