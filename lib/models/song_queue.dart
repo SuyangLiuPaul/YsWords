@@ -193,6 +193,36 @@ class SongQueue {
   /// picking a random track on every advance. That is what makes
   /// "previous" meaningful — with per-advance randomness, going back
   /// lands somewhere you have never been, which reads as a bug.
+  /// The same songs, re-resolved to a different mix.
+  ///
+  /// Pure on purpose. The handler used to build this inline, which put
+  /// the only test of "switching to accompaniment keeps you on the same
+  /// song and never reverts to singing" behind an audio plugin — and in
+  /// a test environment that plugin's start-up future never settles, so
+  /// the test wedged rather than failed. The rule being enforced is
+  /// about the queue, not about decoding, so it lives here.
+  ///
+  /// Keeps the playing song selected, keeps the running order (this
+  /// must never reshuffle as a side effect), and returns an EMPTY queue
+  /// when nothing survives [fallback] — the caller decides whether that
+  /// means "leave it alone and say so" or something else.
+  SongQueue withPreference(
+    TrackPreference preference,
+    TrackFallback fallback,
+  ) {
+    if (items.isEmpty) return this;
+    final rebuilt = SongQueue.fromSongs(
+      items.map((i) => i.song),
+      preference: preference,
+      fallback: fallback,
+      shuffled: false,
+      startSongId: current?.song.id,
+      repeat: repeat,
+      sourceLabel: sourceLabel,
+    );
+    return rebuilt.isEmpty ? rebuilt : rebuilt.copyWith(shuffled: shuffled);
+  }
+
   SongQueue withShuffle(bool on, {Random? random}) {
     if (items.isEmpty) return copyWith(shuffled: on);
     final playing = current;

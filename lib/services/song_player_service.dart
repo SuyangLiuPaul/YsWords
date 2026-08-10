@@ -201,6 +201,17 @@ class SongPlayerService extends ChangeNotifier {
   void setSleepTimer(Duration? after) => _h.setSleepTimer(after);
   void clearError() => _h.clearError();
 
+  /// Switch the whole queue between the sung take, the instrumental
+  /// and the accompaniment without losing your place.
+  Future<void> setTrackPreference(
+    TrackPreference preference, {
+    TrackFallback fallback = TrackFallback.useVocal,
+  }) =>
+      _h.setTrackPreference(preference, fallback);
+
+  TrackPreference get trackPreference => _h.preference;
+  TrackFallback get trackFallback => _h.fallback;
+
   bool get isShuffled => _h.songQueue.shuffled;
   RepeatMode get repeatMode => _h.songQueue.repeat;
   bool get hasQueue => _h.songQueue.length > 1;

@@ -111,7 +111,15 @@ class NowPlayingPage extends StatelessWidget {
                     _Scrubber(player: player, scheme: scheme),
                     const SizedBox(height: 8),
                     _Transport(player: player, scheme: scheme, locale: locale),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 14),
+                    // Switch the WHOLE queue's mix mid-listen. The
+                    // per-song chips in the detail sheet only ever
+                    // changed one song, and a playlist's preference
+                    // could only be set before pressing play — so
+                    // "drop the vocals, I'm driving" meant going back
+                    // and rebuilding the queue.
+                    _MixPicker(player: player, scheme: scheme, locale: locale),
+                    const SizedBox(height: 12),
                     _SecondaryRow(
                         player: player, scheme: scheme, locale: locale),
                     // "3 / 47" used to be a dead label. It is the only
@@ -555,6 +563,66 @@ class _Transport extends StatelessWidget {
             RepeatMode.one => RepeatMode.off,
           }),
         ),
+      ],
+    );
+  }
+}
+
+/// Which mix the queue plays: sung take, instrumental, accompaniment.
+///
+/// Large targets and a single row, because the realistic moment for
+/// using it is at a red light. Choosing a non-vocal mix pairs it with
+/// [TrackFallback.skip]: the whole point of an accompaniment queue in
+/// a car is that it never surprises you with singing — so a song that
+/// has no accompaniment drops out rather than reverting to vocals.
+class _MixPicker extends StatelessWidget {
+  final SongPlayerService player;
+  final ColorScheme scheme;
+  final String locale;
+  const _MixPicker({
+    required this.player,
+    required this.scheme,
+    required this.locale,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final current = player.trackPreference;
+    final options = <(TrackPreference, IconData, String)>[
+      (
+        TrackPreference.vocal,
+        Icons.mic_rounded,
+        uiStrings['songsTrackVocal']?[locale] ?? 'Song',
+      ),
+      (
+        TrackPreference.accompaniment,
+        Icons.queue_music_rounded,
+        uiStrings['songsTrackAccompaniment']?[locale] ?? 'Accompaniment',
+      ),
+      (
+        TrackPreference.instrumental,
+        Icons.piano_rounded,
+        uiStrings['songsTrackInstrumental']?[locale] ?? 'Instrumental',
+      ),
+    ];
+
+    return Wrap(
+      alignment: WrapAlignment.center,
+      spacing: 8,
+      runSpacing: 6,
+      children: [
+        for (final (pref, icon, label) in options)
+          ChoiceChip(
+            avatar: Icon(icon, size: 16),
+            label: Text(label, style: const TextStyle(fontSize: 12)),
+            selected: current == pref,
+            onSelected: (_) => player.setTrackPreference(
+              pref,
+              fallback: pref == TrackPreference.vocal
+                  ? TrackFallback.useVocal
+                  : TrackFallback.skip,
+            ),
+          ),
       ],
     );
   }

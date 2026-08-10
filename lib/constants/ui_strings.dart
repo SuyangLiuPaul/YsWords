@@ -5640,6 +5640,13 @@ const uiStrings = {
     'en': 'Tap play again — the browser needs a tap before it will '
         'start audio.',
   },
+  // Switching the queue to a mix that none of its songs carry. Says
+  // why nothing changed, rather than leaving a dead-looking chip.
+  'songsNoTracksForMix': {
+    'zh-Hans': '这些诗歌都没有这个版本。',
+    'zh-Hant': '這些詩歌都沒有這個版本。',
+    'en': 'None of these songs have that mix.',
+  },
   'songsQueue': {
     'zh-Hans': '播放队列',
     'zh-Hant': '播放佇列',

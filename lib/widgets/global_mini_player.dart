@@ -70,12 +70,20 @@ class _Strip extends StatelessWidget {
                     // tap plays it. Saying "could not play that track"
                     // there would send someone hunting for a dead link
                     // that does not exist.
-                    error == 'blocked'
-                        ? (uiStrings['songsPlaybackBlocked']?[locale] ??
-                            'Tap play again — the browser needs a tap '
-                                'before it will start audio.')
-                        : (uiStrings['songsPlaybackFailed']?[locale] ??
-                            'Could not play that track.'),
+                    switch (error) {
+                      // The browser refused to start without a tap —
+                      // the track is fine and one more tap plays it.
+                      'blocked' => uiStrings['songsPlaybackBlocked']
+                              ?[locale] ??
+                          'Tap play again — the browser needs a tap '
+                              'before it will start audio.',
+                      // Asked for a mix nothing in the queue has.
+                      'no-tracks' => uiStrings['songsNoTracksForMix']
+                              ?[locale] ??
+                          'None of these songs have that mix.',
+                      _ => uiStrings['songsPlaybackFailed']?[locale] ??
+                          'Could not play that track.',
+                    },
                     style: TextStyle(
                         fontSize: 12, color: scheme.onErrorContainer),
                   ),

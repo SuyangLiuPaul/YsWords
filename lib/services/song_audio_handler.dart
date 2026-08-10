@@ -28,6 +28,16 @@ class SongAudioHandler extends BaseAudioHandler with SeekHandler {
     });
     _player.onDuration.listen((d) {
       _duration = d;
+      // Restore the position carried across a mix change, now that the
+      // new file is long enough to seek into. Doing it before the
+      // duration is known just gets clamped back to zero.
+      final resume = _resumeAt;
+      if (resume != null) {
+        _resumeAt = null;
+        if (resume > Duration.zero && resume < d) {
+          unawaited(seek(resume));
+        }
+      }
       _broadcast();
       _publishMediaItem();
     });
@@ -180,6 +190,65 @@ class SongAudioHandler extends BaseAudioHandler with SeekHandler {
     _queue = _queue.copyWith(repeat: mode);
     _broadcast();
   }
+
+  /// Which mix the whole queue plays, changed mid-listen.
+  ///
+  /// The per-song chips in the detail sheet only ever affected one
+  /// song, and a playlist's preference could only be set before
+  /// pressing play — so "I am driving, drop the vocals" meant going
+  /// back and rebuilding the queue. This re-resolves every song in
+  /// place, keeps the one that is playing, and carries the position
+  /// across: the mixes are the same arrangement, so 1:12 into the sung
+  /// take is 1:12 into the accompaniment.
+  ///
+  /// Songs with no track of the wanted kind follow [fallback] — the
+  /// point of `skip` is that an accompaniment queue never surprises a
+  /// driver with singing.
+  Future<void> setTrackPreference(
+    TrackPreference preference,
+    TrackFallback fallback,
+  ) async {
+    if (_queue.isEmpty) return;
+    final wasPlaying = _playing;
+    final resumeAt = _position;
+    final currentUrl = _queue.current?.url;
+
+    // The rebuild itself is a pure queue transformation — see
+    // SongQueue.withPreference, which is where its rules are tested.
+    final rebuilt = _queue.withPreference(preference, fallback);
+    if (rebuilt.isEmpty) {
+      // Every song was skipped for want of the wanted mix. Leave the
+      // queue alone rather than stopping the music.
+      _error = 'no-tracks';
+      _broadcast();
+      return;
+    }
+
+    _queue = rebuilt;
+    _preference = preference;
+    _fallback = fallback;
+
+    // Same file still playing → nothing to reload, just republish.
+    if (_queue.current?.url == currentUrl) {
+      await _publishQueue();
+      _broadcast();
+      return;
+    }
+
+    _resumeAt = wasPlaying || resumeAt > Duration.zero ? resumeAt : null;
+    await _playCurrent();
+    await _publishQueue();
+  }
+
+  /// The mix the queue is currently set to, for the UI's highlighting.
+  TrackPreference get preference => _preference;
+  TrackFallback get fallback => _fallback;
+  TrackPreference _preference = TrackPreference.vocal;
+  TrackFallback _fallback = TrackFallback.useVocal;
+
+  /// Position to restore once the next track has loaded. Set only when
+  /// swapping mixes mid-song.
+  Duration? _resumeAt;
 
   /// Sleep timer — pauses playback at [at]. Passing null cancels.
   void setSleepTimer(Duration? after) {
