@@ -28,8 +28,31 @@ when the publisher's own 4:16 is exactly what our Simplified has. It is
 the Traditional that carries text the translation does not have there.
 **Check the source before believing a diff.**
 
+- [x] **Character-level proofread of the TRADITIONAL — all five volumes.**
+      `tools/proofread_ljk_tr.py` compares our Traditional against the
+      printed 註釋本. Whole NT: **7,152 of 7,925 verses match the printed
+      edition word for word (90%)**. Of the remaining 734, 307 differ
+      only in punctuation and 427 in wording. **44 verses / 45 characters
+      were wrong on our side and are fixed**, each one settled by the
+      printed text at that verse rather than by a variant table: 托→託
+      (29), 啓→啟 (6), 游→遊 (3), 毁→毀 and 内→內 (馬可福音 14:58),
+      胄→冑, 审→審, 欲→慾, 话→話, 纪→紀. Three of those were Simplified
+      characters that the 繁→簡 conversion let through.
+      `test/biblexg_verse_integrity_test.dart` now fails if one returns.
+
+- [ ] **Decide the 427 wording differences with the publisher.**
+      Not ours to change. They cluster in 路加福音 (178) and 馬可福音 (89)
+      and read as one consistent later revision — the 2025 印刷版 replaces
+      pronouns with names (馬可福音 9:20「帶到耶穌面前」where we have
+      「帶到他面前」), tightens phrasing (使人不潔 / 使人成為不潔) and
+      prints 身分 where we print 身份. Same question as the 95 Simplified
+      verses, and it should get the same answer. Written up as §四之二 of
+      `docs/梁家鏗譯本-請教出版方.md`. **Until the publisher answers,
+      change nothing** — adopting a revision by guess is rewriting
+      scripture.
+
 - [ ] **Proofread the TRADITIONAL against the printed 註釋本, book by book.**
-      **This now outranks the Simplified proofread.** The user supplied
+      Wording only; the characters are now done (see above). The user supplied
       the publisher's own Traditional PDFs — 《新約聖經 梁家鏗譯本
       （註釋本）》2025 第二版, 5 volumes — and they have a clean text
       layer. Extracted copies live in `/tmp/ljk_tr/*.txt`; re-extract
@@ -48,7 +71,7 @@ the Traditional that carries text the translation does not have there.
       is fixed; the ~117 swallowed verse numbers, the 7 missing verses
       and 約翰一書 4:16 all need checking against the volumes.
 
-      **Structure is now done** (see the two ticked items below); what
+      **Structure and characters are now done**; what
       remains is the WORDING, volume by volume. Our Traditional reads
       like a conversion of an older Simplified revision than the one the
       2025 印刷版 carries — 路加福音 23:32 prints 「和他一同處決」 where we

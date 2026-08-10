@@ -134,6 +134,34 @@ void main() {
     }
   });
 
+  test('no Simplified character survives in the Traditional edition', () {
+    // Our Traditional is a conversion, and the conversion let a handful
+    // of Simplified characters through: 使徒行傳 18:16 read 审判臺,
+    // 羅馬書 10:8 read 這话, 提多書 2:3 read 纪律, 馬可福音 14:58 read
+    // 拆毁 … 三天之内. Each was confirmed against the printed 註釋本 at
+    // that verse before being changed — see tools/proofread_ljk_tr.py.
+    //
+    // Only characters with no Traditional reading at all are listed.
+    // 温, 説, 着 and 满 are NOT here: the printed edition itself uses
+    // them, and conforming to it outranks tidiness.
+    const simplifiedOnly = '审话纪毁内劝议护辞对顿颠';
+    // The printed 註釋本 sets 提多書 3:15 as 「在信仰内愛我們的各位」 —
+    // Simplified 内, in the publisher's own Traditional edition. We
+    // match it, and conforming to the printed text is the standing
+    // instruction even where it looks like a slip. Asked in
+    // docs/梁家鏗譯本-請教出版方.md; pinned here so it cannot spread.
+    const printedItselfReadsSimplified = {'提多書 3:15 — 内'};
+    final offenders = <String>[];
+    for (final v in load('assets/biblexg-v2-tr.json')) {
+      for (final c in simplifiedOnly.split('')) {
+        if ((v['text'] as String).contains(c)) {
+          offenders.add('${v['book']} ${v['chapter']}:${v['verseLabel']} — $c');
+        }
+      }
+    }
+    expect(offenders.toSet(), printedItselfReadsSimplified);
+  });
+
   test('the Traditional still has the 馬可福音 6 that the Simplified lost', () {
     final mark6 = {
       for (final v in load('assets/biblexg-v2-tr.json'))
