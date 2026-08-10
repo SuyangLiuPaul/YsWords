@@ -1121,7 +1121,21 @@ class _CountTile extends StatelessWidget {
   /// Per-category accent (round 60: bookmarks/notes/highlights each
   /// get a distinct theme-derived color instead of three visually
   /// identical tiles) — tints the icon, count, and tile background.
+  ///
+  /// 2026-08-11: the accent is now **conditional on having something
+  /// to show**. Reported from a phone: the 書籤 tile read as lit up
+  /// while sitting at 0, and 筆記 7 / 高亮 2 looked switched off. The
+  /// user's reading — "點亮的應該是有內容的" — is the right one, and
+  /// what was there was worse than a wrong rule: it was NO rule.
+  /// Bookmarks drew `scheme.primary`, which in the red theme is vivid,
+  /// while notes and highlights drew `secondary` and `tertiary`, which
+  /// are muted. So the brightest tile was whichever category happened
+  /// to be assigned `primary`, regardless of what was in it. Three
+  /// fixed colours look intentional, which is exactly why it misled.
   final Color tint;
+
+  /// Whether this category actually holds anything.
+  bool get _hasContent => count > 0;
   const _CountTile({
     required this.icon,
     required this.count,
@@ -1151,7 +1165,9 @@ class _CountTile extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: tint.withValues(alpha: 0.14),
+            color: _hasContent
+                ? tint.withValues(alpha: 0.14)
+                : scheme.shadow.withValues(alpha: 0.04),
             blurRadius: 16,
             offset: const Offset(0, 6),
           ),
@@ -1175,10 +1191,18 @@ class _CountTile extends StatelessWidget {
                   height: 30,
                   alignment: Alignment.center,
                   decoration: BoxDecoration(
-                    color: tint.withValues(alpha: 0.14),
+                    color: _hasContent
+                        ? tint.withValues(alpha: 0.14)
+                        : scheme.onSurface.withValues(alpha: 0.06),
                     borderRadius: BorderRadius.circular(9),
                   ),
-                  child: Icon(icon, color: tint, size: 16),
+                  child: Icon(
+                    icon,
+                    size: 16,
+                    color: _hasContent
+                        ? tint
+                        : scheme.onSurfaceVariant.withValues(alpha: 0.55),
+                  ),
                 ),
                 const SizedBox(height: 10),
                 Text(
@@ -1189,7 +1213,11 @@ class _CountTile extends StatelessWidget {
                     fontSize:
                         (fs + 6).clamp(20.0, 32.0).toDouble(),
                     fontWeight: FontWeight.w800,
-                    color: scheme.onSurface,
+                    // An empty category should read as empty at a
+                    // glance, without having to focus on the digit.
+                    color: _hasContent
+                        ? scheme.onSurface
+                        : scheme.onSurfaceVariant.withValues(alpha: 0.5),
                     height: 1.0,
                   ),
                 ),

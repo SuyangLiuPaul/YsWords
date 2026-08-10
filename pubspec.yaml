@@ -193,6 +193,7 @@ flutter:
     # which would re-scrape all four church sites a second time.
     - assets/songs.json
     - assets/onegod.json
+    - assets/subtitles/01/
     - assets/sermons/en/
     - assets/sermons/zh-CN/
     - assets/sermons/zh-TW/
