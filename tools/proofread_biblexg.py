@@ -15,19 +15,43 @@ once already. 約翰一書 4:16 was written up as "the Simplified is missing
 Simplified has. It is the TRADITIONAL that carries text the translation
 does not have there. Check the source before believing a diff.
 
-WHAT IT FOUND (2026-08-10, first run)
--------------------------------------
-4,826 comparable verses: 4,731 identical after markup is stripped (98%),
-**95 genuinely different in wording** (2%). The differences read as a
-later revision by the publisher rather than as damage —
-以弗所書 2:4 is "神富有愛憐，出於他愛我們的大愛" upstream against our
-"神滿有憐憫，因著他愛我們的大愛". We ship an earlier revision.
+THE BOOK CODES ARE THE PUBLISHER'S, NOT SBL'S
+---------------------------------------------
+Their files are `cn-mt`, `cn-mk`, `cn-lk`, `cn-phi`, `cn-jas` — not the
+`mat` / `mar` / `luk` / `php` / `jam` this map first guessed. Because a
+file with no entry in the map was silently skipped, the first run
+compared 22 books and reported "4,826 comparable verses" without ever
+saying that Matthew, Mark, Luke, Philippians and James — 3,112 verses,
+39% of the NT, and the three Gospels where most of the differences turn
+out to live — had not been looked at. `official()` now RAISES on an
+unmapped file. An audit that quietly checks less than it claims is
+worse than no audit.
+
+WHAT IT FOUND (2026-08-10, with all 27 books)
+---------------------------------------------
+7,920 comparable verses: 7,788 identical after markup is stripped (98%),
+46 differing only in punctuation and **86 genuinely different in
+wording** (1%). The wording differences read as a later revision by the
+publisher rather than as damage — 以弗所書 2:4 is "神富有愛憐，出於他愛
+我們的大愛" upstream against our "神滿有憐憫，因著他愛我們的大愛". We
+ship an earlier revision. Deciding those belongs to the publisher.
+
+One was damage on our side and is fixed: 羅馬書 3:10 read only
+「正如经上所记：」 — the quotation it introduces, 「没有义人，一个也没有，」,
+never reached the reader. The publisher sets it as a poetry node with an
+EMPTY verseIndex and our importer dropped it. One such node exists in
+the whole corpus, so one verse was affected. Settled against both the
+publisher's own file and the printed 註釋本, never written by hand.
+
+The three verses "absent from the publisher" are ours being right:
+路加福音 22:43, 22:44 and 23:17, which the publisher hides inside an
+affix span and we split out.
 
 USAGE
 -----
     python3 tools/proofread_biblexg.py --fetch      # refresh the source
-    python3 tools/proofread_biblexg.py              # report differences
-    python3 tools/proofread_biblexg.py --book eph   # one book
+    python3 tools/proofread_biblexg.py             # report differences
+    python3 tools/proofread_biblexg.py --book eph  # one book
     python3 tools/proofread_biblexg.py --json out.json
 
 It NEVER writes to assets/. Applying a revision is a separate, reviewed
@@ -44,16 +68,24 @@ import urllib.request
 BASE = 'https://mattwhatsup.github.io/ljk-nt-bible-webapp/resources'
 CACHE = os.path.expanduser('~/.cache/yswords/ljk-source')
 
-# The publisher's file codes → the book names our assets use.
+# The publisher's own file codes → the book names our assets use.
 CODE2BOOK = {
-    'mat': '马太福音', 'mar': '马可福音', 'luk': '路加福音', 'joh': '约翰福音',
+    'mt': '马太福音', 'mk': '马可福音', 'lk': '路加福音', 'joh': '约翰福音',
     'act': '使徒行传', 'rom': '罗马书', '1co': '哥林多前书', '2co': '哥林多后书',
-    'gal': '加拉太书', 'eph': '以弗所书', 'php': '腓立比书', 'col': '歌罗西书',
+    'gal': '加拉太书', 'eph': '以弗所书', 'phi': '腓立比书', 'col': '歌罗西书',
     '1th': '帖撒罗尼迦前书', '2th': '帖撒罗尼迦后书', '1ti': '提摩太前书',
     '2ti': '提摩太后书', 'tit': '提多书', 'phm': '腓利门书', 'heb': '希伯来书',
-    'jam': '雅各书', '1pe': '彼得前书', '2pe': '彼得后书', '1jo': '约翰一书',
+    'jas': '雅各书', '1pe': '彼得前书', '2pe': '彼得后书', '1jo': '约翰一书',
     '2jo': '约翰二书', '3jo': '约翰三书', 'jud': '犹大书', 'rev': '启示录',
 }
+
+# `cn-history.json` is the reader's revision log, not scripture.
+NOT_SCRIPTURE = {'history'}
+
+# Codes the SBL-style abbreviations would suggest, so `--book mat` still
+# finds Matthew instead of exiting "unknown book code".
+ALIASES = {'mat': 'mt', 'mar': 'mk', 'mrk': 'mk', 'luk': 'lk',
+           'php': 'phi', 'jam': 'jas', 'jam.': 'jas'}
 
 
 def fetch(force=False):
@@ -80,24 +112,41 @@ def official():
     """
     out, covered = {}, set()
     for path in sorted(glob.glob(os.path.join(CACHE, 'cn-*.json'))):
-        book = CODE2BOOK.get(os.path.basename(path)[3:-5])
-        if not book:
+        code = os.path.basename(path)[3:-5]
+        if code in NOT_SCRIPTURE:
             continue
+        book = CODE2BOOK.get(code)
+        if not book:
+            raise SystemExit(
+                f'cn-{code}.json has no entry in CODE2BOOK. Skipping it '
+                f'silently is how 39% of the NT went unproofread — add '
+                f'the mapping or list the code in NOT_SCRIPTURE.')
         for chapter in json.load(open(path, encoding='utf-8')):
-            cur = None
+            cur, last_key = None, None
             for node in chapter.get('nodeData', []):
                 if node.get('type') == 'chapter':
                     cur = str(node.get('chapterIndex'))
                 elif node.get('type') == 'verse' and cur:
-                    v = str(node.get('verseIndex'))
+                    v = str(node.get('verseIndex') or '')
                     text = ''.join(c.get('content', '')
                                    for c in node.get('contents', []))
+                    if not v.strip():
+                        # A poetry line carrying no number of its own. It
+                        # belongs to the verse it follows — 羅馬書 3:10's
+                        # 「没有义人，一个也没有，」 is the quotation that
+                        # 「正如经上所记：」 introduces, not a verse. Read as
+                        # a verse it looks missing; dropped it IS missing,
+                        # which is exactly what our importer did.
+                        if last_key:
+                            out[last_key] += text
+                        continue
                     if '-' in v:
                         first, last = v.split('-', 1)
-                        out[(book, cur, first)] = text
+                        last_key = (book, cur, first)
                         covered.add((book, cur, last))
                     else:
-                        out[(book, cur, v)] = text
+                        last_key = (book, cur, v)
+                    out[last_key] = text
     return out, covered
 
 
@@ -115,6 +164,14 @@ def norm(s):
     return re.sub(r'[\s　]+', '', s)
 
 
+# Punctuation-only differences are separated out because they are not the
+# same question. The publisher sets 腓立比書 2:6-11 as an unpunctuated
+# hymn and we print it as prose; nothing is said differently. Mixing
+# those 46 in with the wording changes made the revision look larger than
+# it is.
+PUNCT = re.compile(r'[，。！？；：、“”‘’（）〔〕—…《》〈〉·「」『』,.!?;:()\-"\']')
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--fetch', action='store_true', help='refresh the source')
@@ -128,7 +185,7 @@ def main():
 
     src, covered = official()
     if args.book:
-        want = CODE2BOOK.get(args.book)
+        want = CODE2BOOK.get(ALIASES.get(args.book, args.book))
         if not want:
             sys.exit(f'unknown book code: {args.book}')
         src = {k: v for k, v in src.items() if k[0] == want}
@@ -137,15 +194,23 @@ def main():
             for v in json.load(open(args.assets, encoding='utf-8'))}
 
     common = [k for k in set(src) & set(ours)]
-    diff = [k for k in common if norm(src[k]) != norm(ours[k])]
+    all_diff = [k for k in common if norm(src[k]) != norm(ours[k])]
+    punct = {k for k in all_diff
+             if PUNCT.sub('', norm(src[k])) == PUNCT.sub('', norm(ours[k]))}
+    diff = [k for k in all_diff if k not in punct]
     missing = [k for k in set(src) - set(ours) if k not in covered]
 
     print(f'comparable verses : {len(common):,}')
-    print(f'identical         : {len(common) - len(diff):,} '
-          f'({(len(common)-len(diff))*100//max(len(common),1)}%)')
+    print(f'identical         : {len(common) - len(all_diff):,} '
+          f'({(len(common)-len(all_diff))*100//max(len(common),1)}%)')
+    print(f'punctuation only  : {len(punct):,}')
     print(f'wording differs   : {len(diff):,}')
     print(f'absent from ours  : {len(missing):,}')
     print()
+    for k in sorted(missing):
+        print(f'ABSENT FROM OURS  {k[0]} {k[1]}:{k[2] or "(unnumbered)"}')
+        print(f'  publisher: {norm(src[k])}')
+        print()
     for k in sorted(diff):
         print(f'{k[0]} {k[1]}:{k[2]}')
         print(f'  publisher: {norm(src[k])}')

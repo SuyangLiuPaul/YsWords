@@ -134,6 +134,26 @@ void main() {
     }
   });
 
+  test('羅馬書 3:10 still quotes the scripture it introduces', () {
+    // The Simplified read only 「正如经上所记：」 and stopped. The publisher
+    // sets the quotation as a poetry node with an EMPTY verseIndex, and
+    // our importer kept only numbered nodes, so 「没有义人，一个也没有，」
+    // never reached a reader. One such node exists in the publisher's
+    // whole corpus, so this verse was the only casualty — counted, not
+    // assumed. Restored from the publisher's own characters and checked
+    // against the printed 註釋本; nothing here was written by hand.
+    const wanted = {
+      'assets/biblexg-v2.json': ['罗马书', '正如经上所记：没有义人，一个也没有，'],
+      'assets/biblexg-v2-tr.json': ['羅馬書', '正如經上所記：沒有義人，一個也沒有，'],
+    };
+    wanted.forEach((path, want) {
+      final verse = load(path).firstWhere((v) =>
+          v['book'] == want[0] && v['chapter'] == '3' && v['verse'] == '10');
+      expect((verse['text'] as String).replaceAll('\n', ''), want[1],
+          reason: path);
+    });
+  });
+
   test('no Simplified character survives in the Traditional edition', () {
     // Our Traditional is a conversion, and the conversion let a handful
     // of Simplified characters through: 使徒行傳 18:16 read 审判臺,

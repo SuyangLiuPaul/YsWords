@@ -150,18 +150,47 @@ the Traditional that carries text the translation does not have there.
       does not have that clause at all. Both are the publisher's own.
       Until they answer, change neither.
 
-- [ ] **Proofread the Simplified against the publisher, book by book.**
-      `python3 tools/proofread_biblexg.py --book <code>` — 27 NT books.
-      First run: 4,826 comparable verses, **98% identical**, **95
-      genuinely different in wording**, and the differences read as a
-      later revision by the publisher rather than as damage
-      (以弗所書 2:4 upstream "神富有愛憐，出於他愛我們的大愛" against our
-      "神滿有憐憫，因著他愛我們的大愛").
-      Take **one book per iteration**. For each difference decide, and
-      say in the commit, whether it is a publisher revision we should
-      adopt or a defect on our side. Adopting a revision means copying
-      the publisher's wording exactly — never paraphrasing, never
-      merging the two.
+- [x] **The Simplified proofread was silently checking only 22 of 27
+      books — and 羅馬書 3:10 had lost the scripture it quotes.**
+      `CODE2BOOK` guessed SBL-style file codes (`mat`, `mar`, `luk`,
+      `php`, `jam`); the publisher's files are `cn-mt`, `cn-mk`,
+      `cn-lk`, `cn-phi`, `cn-jas`. An unmapped file was skipped with a
+      bare `continue`, so the tool reported "4,826 comparable verses,
+      98% identical" while never opening Matthew, Mark, Luke,
+      Philippians or James — **3,112 verses, 39% of the NT**, including
+      the three Gospels where most of the differences live. `official()`
+      now RAISES on an unmapped file.
+
+      With all 27 books: **7,920 comparable, 7,788 identical, 46
+      differing only in punctuation, 86 in wording, 0 absent.** The
+      punctuation split is new and matters — 腓立比書 2:6-11 is set as an
+      unpunctuated hymn upstream and as prose by us, which is not a
+      textual difference and was inflating the count.
+
+      One was damage on our side and is **fixed**: 羅馬書 3:10 read
+      「正如经上所记：」 and stopped — the quotation it introduces,
+      「没有义人，一个也没有，」, never reached a reader. The publisher sets
+      it as a poetry node with an EMPTY `verseIndex` and our importer
+      kept only numbered nodes. Counted before concluding: exactly one
+      such node exists in the publisher's whole corpus, so this verse
+      was the only casualty. Settled against the publisher's own file
+      AND the printed 註釋本 (「10 正如經上所記：／沒有義人，／一個也沒有，」),
+      and our own Traditional already had it — restored from their
+      characters, not written by hand.
+      `test/biblexg_verse_integrity_test.dart` fails on the old data.
+
+- [ ] **Decide the remaining 86 Simplified wording differences.**
+      `python3 tools/proofread_biblexg.py --book <code>` — aliases mean
+      `--book mat` still finds Matthew. They read as a later publisher
+      revision rather than as damage (以弗所書 2:4 upstream "神富有愛憐，
+      出於他愛我們的大愛" against our "神滿有憐憫，因著他愛我們的大愛"),
+      which makes this the **same question as the 427 Traditional ones
+      and the 路加福音 23:34a call — all three are waiting on the
+      publisher.** Do not adopt any of them by guess.
+      Concentrated in 馬太福音 12, 啟示錄 12, 哥林多前書 11, 馬可福音 8,
+      以弗所書 8, 路加福音 6. Take one book per iteration once the
+      publisher answers, and copy their wording exactly — never
+      paraphrasing, never merging the two.
 
 - [ ] **Then rebuild the Traditional from the corrected Simplified.**
       Only after the Simplified matches the publisher. Our Traditional
@@ -261,8 +290,11 @@ the Traditional that carries text the translation does not have there.
         archive** before concluding anything: `http://web.archive.org/
         cdx/search/cdx?url=christiandiscipleschurch.org/content/
         124-messages&output=json`.
-      - Retried 2026-08-10 (fourth iteration): still `connect=0.000000`,
-        curl times out with no TCP connect. Unchanged.
+      - Retried 2026-08-10 (fourth and fifth iterations): still
+        `connect=0.000000`, curl times out with no TCP connect.
+        Unchanged. The host has been down for five consecutive
+        iterations — worth telling the user, since they may be able to
+        reach Bentley faster than the server will come back.
       - Related pages found via search, useful once the host is up:
         `/content/ehhc_sermons_public`, `/content/mtparablesvol1`,
         `/contents/matthew_parables_front_matter`.
