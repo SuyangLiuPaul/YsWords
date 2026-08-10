@@ -1724,10 +1724,10 @@ const uiStrings = {
     'en': 'Sermons',
   },
   'onboardSermonsBody': {
-    'zh-Hans': '587 篇解经讲道（英／简／繁）。讲道中的经文引用可弹出小窗预览，无需离开。主页有「继续讲道」卡片显示上次进度。',
-    'zh-Hant': '587 篇解經講道（英／簡／繁）。講道中的經文引用可彈出小窗預覽，無需離開。主頁有「繼續講道」卡片顯示上次進度。',
+    'zh-Hans': '289 篇解经讲道（英／简／繁）。讲道中的经文引用可弹出小窗预览，无需离开。主页有「继续讲道」卡片显示上次进度。',
+    'zh-Hant': '289 篇解經講道（英／簡／繁）。講道中的經文引用可彈出小窗預覽，無需離開。主頁有「繼續講道」卡片顯示上次進度。',
     'en':
-        '587 expository sermons in EN / 简 / 繁. Verse refs in the body open a popup so you can peek at scripture without leaving. Home shows a "Resume sermon" card with your progress.',
+        '289 expository sermons in EN / 简 / 繁. Verse refs in the body open a popup so you can peek at scripture without leaving. Home shows a "Resume sermon" card with your progress.',
   },
   'onboardDiscoverTitle': {
     'zh-Hans': '探索工具',
@@ -1912,10 +1912,13 @@ const uiStrings = {
     'zh-Hant': '聖經譯本（共 7 部）',
     'en': 'Bibles (7 translations)',
   },
+  // {name} is filled from sermon_credit.dart — the single source for
+  // the preacher's name. The count was 587, which was the sum of every
+  // sermon's parts mislabelled as a number of sermons; it is 289.
   'offlinePackSermons': {
-    'zh-Hans': '张熙和牧师讲道（587 篇 ×3 语）',
-    'zh-Hant': '張熙和牧師講道（587 篇 ×3 語）',
-    'en': "Pastor Eric's sermons (587 × 3 langs)",
+    'zh-Hans': '{name}讲道（289 篇 ×3 语）',
+    'zh-Hant': '{name}講道（289 篇 ×3 語）',
+    'en': "{name}'s sermons (289 × 3 langs)",
   },
   'offlinePackTools': {
     'zh-Hans': '研经工具（家谱 / 时间轴 / 证据 / 互参 / 读经计划等）',
@@ -4254,10 +4257,14 @@ const uiStrings = {
     'zh-Hant': '講道文本（assets/sermons/）',
     'en': 'Sermons (assets/sermons/)',
   },
+  // 2026-08-10: this credited 梁家铿, who is the translator of the
+  // biblexg BIBLE — a different person from the preacher. Confirmed
+  // with the user. The sermons are Pastor Eric H.H. Chang's, and his
+  // own credit for the translation stays on the biblexg line above.
   'aboutLicenseSermons': {
-    'zh-Hans': '© 梁家铿 · 经授权使用。',
-    'zh-Hant': '© 梁家鏗 · 經授權使用。',
-    'en': '© Liang Jia-keng · used with permission.',
+    'zh-Hans': '© {name} · 经授权使用。',
+    'zh-Hant': '© {name} · 經授權使用。',
+    'en': '© {name} · used with permission.',
   },
   'aboutSongs': {
     'zh-Hans': '诗歌列表',
@@ -5316,9 +5323,9 @@ const uiStrings = {
     'en': 'Sermon',
   },
   'sermonsTagline': {
-    'zh-Hans': '张熙和牧师讲道集',
-    'zh-Hant': '張熙和牧師講道集',
-    'en': "Pastor Eric Chang's sermon library",
+    'zh-Hans': '{name}讲道集',
+    'zh-Hant': '{name}講道集',
+    'en': "{name}'s sermon library",
   },
   'sermonSearchHint': {
     'zh-Hans': '按标题、经文或编号搜索讲道…',

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import 'package:yswords/constants/sermon_credit.dart';
 import 'package:yswords/constants/app_version.dart';
 import 'package:yswords/widgets/update_check_tile.dart';
 import 'package:yswords/constants/build_flags.dart';
@@ -609,8 +610,11 @@ class _OtherAttributions extends StatelessWidget {
       _AttribRow(
         name: uiStrings['aboutSermons']?[locale] ??
             'Sermons (`assets/sermons/`)',
-        licence: uiStrings['aboutLicenseSermons']?[locale] ??
-            '© Liang Jia-keng · used with permission.',
+        licence: withPreacher(
+          uiStrings['aboutLicenseSermons']?[locale] ??
+              '© {name} · used with permission.',
+          locale,
+        ),
       ),
       _AttribRow(
         name: uiStrings['aboutSongs']?[locale] ?? 'Songs directory',

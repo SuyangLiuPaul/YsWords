@@ -6,6 +6,7 @@ import 'package:yswords/utils/clipboard_helper.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:yswords/constants/sermon_credit.dart';
 import 'package:yswords/constants/sermon_topics.dart';
 import 'package:yswords/constants/ui_strings.dart';
 import 'package:yswords/models/app_settings.dart';
@@ -406,6 +407,16 @@ class _SermonDetailPageState extends State<SermonDetailPage> {
                 height: 1.25,
               ),
             ),
+            const SizedBox(height: 4),
+            // Whose sermon this is, under the title. It was possible to
+            // read all 289 of these and never find out.
+            Text(
+              sermonPreacher(settings.locale),
+              style: TextStyle(
+                fontSize: 12,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+            ),
             const SizedBox(height: 6),
             Wrap(
               spacing: 8,
@@ -493,7 +504,9 @@ class _SermonDetailPageState extends State<SermonDetailPage> {
         'From YsWords (Yahweh\'s Words)';
     final buf = StringBuffer();
     buf.writeln(title);
-    final metaParts = <String>[];
+    // Whose sermon it is travels with the text. A quotation pasted into
+    // a group chat used to arrive with a title, a date and no preacher.
+    final metaParts = <String>[sermonPreacher(locale)];
     if (s.displayDate.isNotEmpty && s.displayDate != '—') {
       metaParts.add(s.displayDate);
     }

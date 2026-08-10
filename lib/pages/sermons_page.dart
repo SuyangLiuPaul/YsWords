@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:yswords/constants/sermon_credit.dart';
 import 'package:yswords/constants/motion.dart';
 import 'package:yswords/constants/sermon_topics.dart';
 import 'package:yswords/constants/ui_strings.dart';
@@ -177,9 +178,28 @@ class _SermonsPageState extends State<SermonsPage> {
     return Scaffold(
       appBar: AppBar(
         leading: const LocalizedBackButton(),
-        title: Text(
-          uiStrings['sermons']?[locale] ?? 'Sermons',
-          style: const TextStyle(fontWeight: FontWeight.w600),
+        // Title over a quiet byline. A reader opening this library had
+        // no way to learn whose sermons these are — the name existed
+        // only in strings nothing rendered. Attribution weight, on the
+        // header alone: repeating it down 289 rows would be an advert,
+        // not a credit.
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              uiStrings['sermons']?[locale] ?? 'Sermons',
+              style: const TextStyle(fontWeight: FontWeight.w600),
+            ),
+            Text(
+              sermonPreacher(locale),
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w400,
+                color: scheme.onSurfaceVariant,
+              ),
+            ),
+          ],
         ),
         actions: const [LanguageSwitcherButton(), HomeIconButton()],
       ),

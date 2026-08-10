@@ -9,6 +9,7 @@ import 'package:flutter/foundation.dart'
     show kIsWeb, defaultTargetPlatform, TargetPlatform;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show Clipboard;
+import 'package:yswords/constants/sermon_credit.dart';
 import 'package:yswords/constants/app_version.dart';
 import 'package:yswords/constants/motion.dart';
 import 'package:yswords/constants/build_flags.dart';
@@ -3364,7 +3365,8 @@ class _OfflinePackCardState extends State<_OfflinePackCard> {
       case OfflinePackCategory.bibles:
         return uiStrings['offlinePackBibles']?[locale] ?? 'Bibles';
       case OfflinePackCategory.sermons:
-        return uiStrings['offlinePackSermons']?[locale] ?? 'Sermons';
+        return withPreacher(
+            uiStrings['offlinePackSermons']?[locale] ?? 'Sermons', locale);
       case OfflinePackCategory.tools:
         return uiStrings['offlinePackTools']?[locale] ?? 'Tools & references';
       case OfflinePackCategory.originals:
