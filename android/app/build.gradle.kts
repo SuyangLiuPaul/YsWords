@@ -13,7 +13,14 @@ plugins {
 android {
     namespace = "com.example.yswords"
     compileSdk = flutter.compileSdkVersion
-    ndkVersion = "27.0.12077973"
+    // 2026-08-11 (v1.4.40): raised from 27.0.12077973. Adding pdfrx for
+    // the in-app sheet-music viewer pulls in `jni` (via pdfium_dart),
+    // and both it and integration_test require 28.2.13676358 — the
+    // Android build failed at :app:checkIntlReleaseAarMetadata until
+    // this matched. NDK releases are backward compatible, so taking the
+    // highest required version is the documented fix rather than a
+    // workaround.
+    ndkVersion = "28.2.13676358"
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
