@@ -104,22 +104,66 @@ abstract class RemoteDataService<T> {
   Future<T> _firstLoad() async {
     try {
       final fromCache = await _loadFromPrefs();
-      if (fromCache != null) {
-        _cached = fromCache;
-        // ignore: unawaited_futures
-        refresh();
-        return fromCache;
-      }
-      final raw = await rootBundle.loadString(bundledAssetPath);
-      final bundled = parse(jsonDecode(raw) as Map<String, dynamic>);
-      _cached = bundled;
+      final chosen = await _freshestLocal(fromCache);
+      _cached = chosen;
       // ignore: unawaited_futures
       refresh();
-      return bundled;
+      return chosen;
     } catch (e) {
       _inflight = null;
       rethrow;
     }
+  }
+
+  Future<T> _loadBundled() async {
+    final raw = await rootBundle.loadString(bundledAssetPath);
+    return parse(jsonDecode(raw) as Map<String, dynamic>);
+  }
+
+  /// Pick the newer of the SharedPreferences cache and the bundled
+  /// snapshot, by [generatedAt].
+  ///
+  /// 2026-08-10 (v1.4.39): this used to return the cache whenever one
+  /// existed, and never looked at the bundle. That is wrong in a way
+  /// that does not heal, because **SharedPreferences survives an app
+  /// upgrade**: once a user cached a bad edition, every later release
+  /// shipped a good `assets/songs.json` that was never read.
+  ///
+  /// It was not hypothetical. A yswords-data cron ran while
+  /// christiandiscipleschurch.org was refusing connections and
+  /// published a catalogue whose CDC entries had lost their audio.
+  /// Clients that fetched during that window then showed 283 CDC songs
+  /// with no play button — a language badge where the play button
+  /// belongs — and reinstalling the app did not clear it. `refresh()`
+  /// already guards the network against exactly this (it keeps the
+  /// local copy when the network edition is older); the local tiers
+  /// simply never got the same check.
+  ///
+  /// Only a STRICTLY newer bundle wins, so a user whose cache is
+  /// legitimately ahead of the shipped snapshot — the normal case, and
+  /// the reason the cache is consulted first at all — keeps it. When
+  /// either side has no [generatedAt] the comparison is meaningless
+  /// and the cache stays, preserving the old behaviour for services
+  /// that do not stamp their data.
+  Future<T> _freshestLocal(T? fromCache) async {
+    if (fromCache == null) return _loadBundled();
+    final cacheAt = generatedAt(fromCache);
+    if (cacheAt == null) return fromCache;
+    try {
+      final bundled = await _loadBundled();
+      final bundleAt = generatedAt(bundled);
+      if (bundleAt != null && bundleAt.isAfter(cacheAt)) {
+        debugPrint('[$runtimeType] bundled snapshot ($bundleAt) is newer '
+            'than the cached one ($cacheAt) — using the bundle. A cache '
+            'from a bad publish would otherwise outlive the upgrade.');
+        return bundled;
+      }
+    } catch (e) {
+      // A missing or malformed bundled asset must not take down a
+      // perfectly good cache.
+      debugPrint('[$runtimeType] could not read $bundledAssetPath: $e');
+    }
+    return fromCache;
   }
 
   /// Best-effort network refresh. Updates in-memory + prefs cache on
