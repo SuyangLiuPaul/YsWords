@@ -887,6 +887,24 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
                   color: scheme.onSurfaceVariant,
                 ),
               ),
+            // Ketiv/qere. The WLC keeps the written form on the line and
+            // the read form in a marginal note; we used to emit both as
+            // ordinary words, so 1,222 places printed the same word
+            // twice — once unpointed, once pointed — and 180 of them
+            // offered a Strong's number for a word that is not read.
+            // One chip now, with the other form named rather than
+            // dropped.
+            if (w.ketiv != null || w.qere != null)
+              Text(
+                '${uiStrings[w.ketiv != null ? 'ketivLabel' : 'qereLabel']?[widget.locale] ?? (w.ketiv != null ? 'written' : 'read')}'
+                ' ${w.ketiv ?? w.qere}',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 10,
+                  color: scheme.onSurfaceVariant,
+                  fontStyle: FontStyle.italic,
+                ),
+              ),
             // Strong's # badge — small, monospace, dimmed so it doesn't
             // compete with the lemma but is identifiable at a glance.
             // Force LTR Directionality so the number reads left-to-right

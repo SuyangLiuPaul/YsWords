@@ -335,35 +335,171 @@ def _hebrew_strongs(s_attr: str) -> str:
     return ''
 
 
+MAQQEF = '־'
+
+
+def _wlc_raw_tokens(verse: ET.Element) -> list[dict]:
+    """Every `<w>` of a verse in document order, keeping the three
+    markers the WLC uses to say "these are not two separate words".
+
+    Reading only the `<w>` elements — which this function used to do —
+    loses all three, and the loss is visible to a reader. 創世記 35:18
+    rendered בֶּן and אוֹנִי as two chips both numbered H1126 and both
+    glossed 「拉结为便雅悯所取的名字」, so the page said that בֵּן alone
+    means "the name Rachel gave Benjamin". It means "son".
+
+      maqqefNext  a `<seg type="x-maqqef">־</seg>` sits between this
+                  word and the next, i.e. the printed text joins them.
+      plus        @lemma ends in '+', OSHB's own marker for a non-final
+                  member of a multi-word lexeme. This — not the maqqef —
+                  is the authority for merging: מוֹת־יוּמַת and
+                  קֹדֶשׁ־קָדָשִׁים carry a maqqef and are two words, while
+                  בֵּית לָחֶם is one lexeme with no maqqef at all.
+      role        'ketiv'/'qere'. The WLC keeps the written form on the
+                  line and the read form in a `<note><rdg type="x-qere">`;
+                  reading both as ordinary `<w>` printed every such word
+                  twice, once unpointed and once pointed.
+    """
+    out: list[dict] = []
+    pending_ketiv = 0  # trailing run of ketiv words no note has claimed
+
+    def make(w: ET.Element, role: str) -> dict | None:
+        # morphhb encodes prefix/root boundaries with `/` (e.g.
+        # "בְּ/רֵאשִׁית"). Strip them so the surface form matches the
+        # way the word reads in a Hebrew Bible.
+        text = ''.join(w.itertext()).strip().replace('/', '')
+        if not text:
+            return None
+        lemma = w.get('lemma', '')
+        return {
+            'w': text,
+            's': _hebrew_strongs(lemma),
+            'plus': lemma.rstrip().endswith('+'),
+            'maqqefNext': False,
+            'role': role,
+        }
+
+    for child in verse:
+        if child.tag == f'{NS_OSIS}w':
+            tok = make(child, 'ketiv' if child.get('type') == 'x-ketiv'
+                       else '')
+            if tok is None:
+                continue
+            out.append(tok)
+            pending_ketiv = pending_ketiv + 1 if tok['role'] == 'ketiv' else 0
+        elif child.tag == f'{NS_OSIS}seg':
+            if child.get('type') == 'x-maqqef' and out:
+                out[-1]['maqqefNext'] = True
+        elif child.tag == f'{NS_OSIS}note':
+            qere = [t for t in
+                    (make(w, 'qere')
+                     for rdg in child.iter(f'{NS_OSIS}rdg')
+                     if rdg.get('type') == 'x-qere'
+                     for w in rdg.iter(f'{NS_OSIS}w'))
+                    if t is not None]
+            if not qere:
+                continue
+            # One note can cover several preceding words — Job 38:1's
+            # catchWord is "מנ ה/סערה", two ketiv words replaced by two
+            # qere words. Pairing note-to-word instead of group-to-group
+            # mismatched them and left 22 unpointed ketiv words standing
+            # in the text as though they were read.
+            ketiv = out[len(out) - pending_ketiv:] if pending_ketiv else []
+            del out[len(out) - len(ketiv):]
+            pending_ketiv = 0
+            out.extend(_pair_variant(ketiv, qere))
+    return out
+
+
+def _pair_variant(ketiv: list[dict], qere: list[dict]) -> list[dict]:
+    """Turn one ketiv/qere group into one token per word of the verse.
+
+    The read form is shown, because it is what every translation
+    renders — but only when it carries a Strong's number of its own,
+    since otherwise the chip would print the read word under the written
+    word's number (the לא/לו crux and 18 others). Either way `w` and `s`
+    describe the same word and the other form rides along beside it.
+    """
+    if len(ketiv) == len(qere):
+        pairs = list(zip(ketiv, qere))
+    else:
+        # Unequal groups can't be matched word for word, so the read
+        # words become the text and the written form is named whole.
+        merged = [dict(q) for q in qere] or [dict(k) for k in ketiv]
+        if ketiv and qere:
+            merged[0]['k'] = ' '.join(k['w'] for k in ketiv)
+        return merged
+    out: list[dict] = []
+    for k, q in pairs:
+        if q['s']:
+            tok = dict(q)
+            tok['maqqefNext'] = k['maqqefNext'] or q['maqqefNext']
+            tok['k'] = k['w']
+        else:
+            tok = dict(k)
+            tok['q'] = q['w']
+        out.append(tok)
+    return out
+
+
+def _merge_compounds(tokens: list[dict]) -> list[dict]:
+    """Join the members of a multi-word lexeme into one displayed word,
+    reproducing the WLC's own spelling — maqqef where the WLC prints a
+    maqqef (בֶּן־אוֹנִי), a space where it does not (בֵּית לָחֶם)."""
+    out: list[dict] = []
+    i = 0
+    while i < len(tokens):
+        if not tokens[i]['plus']:
+            out.append(tokens[i])
+            i += 1
+            continue
+        j = i
+        while j < len(tokens) - 1 and tokens[j]['plus']:
+            j += 1
+        parts = tokens[i:j + 1]
+        text = parts[0]['w']
+        for a, b in zip(parts, parts[1:]):
+            text += (MAQQEF if a['maqqefNext'] else ' ') + b['w']
+        merged = dict(parts[-1])
+        merged['w'] = text
+        # 撒母耳記下 21:16 is a ketiv whose qere is itself a two-word
+        # compound (וישבו → וְיִשְׁבִּי בְּנֹב, H3430), so the variant form
+        # rides on the FIRST part and would be dropped by taking the
+        # last one's fields.
+        for key in ('k', 'q'):
+            for p in parts:
+                if p.get(key):
+                    merged[key] = p[key]
+                    break
+        out.append(merged)
+        i = j + 1
+    return out
+
+
 def parse_morphhb_book(osis: str) -> dict:
     raw = fetch(MORPHHB_BOOKS_URL.format(osis=osis), f'morphhb-{osis}.xml')
     root = ET.fromstring(raw)
     out: dict[str, list] = {}
     # Each <verse osisID="Gen.1.1">
     for verse in root.iter(f'{NS_OSIS}verse'):
-        osis_id = verse.get('osisID') or verse.get('sID')
-        if not osis_id or 'sID' in (verse.attrib or {}) and verse.get('eID'):
-            # Skip milestone close tags — they only appear with eID
-            pass
+        osis_id = verse.get('osisID')
         if not osis_id:
             continue
         m = re.match(r'^[^.]+\.(\d+)\.(\d+)$', osis_id)
         if not m:
             continue
         ch, vs = int(m.group(1)), int(m.group(2))
+        tokens = _merge_compounds(_wlc_raw_tokens(verse))
         words: list[dict] = []
-        for w in verse.iter(f'{NS_OSIS}w'):
-            text = ''.join(w.itertext()).strip()
-            if not text:
+        for t in tokens:
+            if not t['s']:
                 continue
-            # morphhb encodes prefix/root boundaries with `/` (e.g.
-            # "בְּ/רֵאשִׁית"). Strip them so the surface form matches
-            # the way the word reads in a Hebrew Bible.
-            text = text.replace('/', '')
-            s = _hebrew_strongs(w.get('lemma', ''))
-            if not s:
-                continue
-            words.append({'w': text, 's': s})
+            entry = {'w': t['w'], 's': t['s']}
+            if t.get('k'):
+                entry['k'] = t['k']
+            if t.get('q'):
+                entry['q'] = t['q']
+            words.append(entry)
         if words:
             out[f'{ch}:{vs}'] = words
     return out

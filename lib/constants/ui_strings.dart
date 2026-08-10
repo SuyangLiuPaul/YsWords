@@ -1078,6 +1078,19 @@ const uiStrings = {
     'zh-Hant': '亞蘭文',
     'en': 'Aramaic',
   },
+  // Ketiv/qere — the Masoretes' note that a word is written one way and
+  // read another. The chip carries one form; these label the other, so
+  // that neither is passed off as a second word of the verse.
+  'ketivLabel': {
+    'zh-Hans': '写作',
+    'zh-Hant': '寫作',
+    'en': 'written',
+  },
+  'qereLabel': {
+    'zh-Hans': '读作',
+    'zh-Hant': '讀作',
+    'en': 'read',
+  },
   // Round 56 (continued — Aramaic copy): tooltip + toast for the
   // copy-list button on the Aramaic passages sheet.
   'aramCopyTooltip': {
