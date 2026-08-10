@@ -164,6 +164,10 @@ flutter:
     - assets/bible_evidence.json
     - assets/strongs/
     - assets/originals/
+    # Both of the above are numbered as the Hebrew and Greek editions
+    # number themselves; this translates a reading reference into
+    # theirs. Without it 詩篇 3:1 shows the superscription.
+    - assets/originals_versification.json
     # Strong's tagging for 和合本雅伟版 — which word on screen
     # renders which original word. 13 MB, one file per book,
     # loaded lazily by TaggedTextService (never all at once).

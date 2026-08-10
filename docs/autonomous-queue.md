@@ -16,6 +16,36 @@ and quoted.**
 
 ## P0 — scripture accuracy
 
+- [x] **The Originals sheet showed the wrong Hebrew in 1,626 verses.**
+      `assets/originals/` and `assets/strongs/concordance.json` are
+      numbered the way the Hebrew and Greek editions number themselves;
+      the app looked both up by the reading text's numbering. So 詩篇 3:1
+      fetched Hebrew 3:1 — the superscription מִזְמוֹר לְדָוִד, which the
+      Hebrew counts as a verse and the CUV prints inside verse 1 without
+      a number — while the reader was looking at 「雅伟啊，我的敌人何其
+      加增」. It named a Hebrew word the verse on screen does not contain,
+      and 1,377 concordance references pointed at verses this app has no
+      page for at all (「Joel 4:9」, 「Malachi 3:21」, 「Psalms 22:32」).
+
+      Measured, not assumed: `tools/audit_originals_alignment.py` scores
+      Strong's-number overlap at offsets −3..+3 and found **91 chapters
+      out of 1,189** sitting at a non-zero offset.
+      `tools/build_versification_map.py` then aligns each book's two
+      verse sequences (banded Needleman-Wunsch on the same overlap) and
+      writes `assets/originals_versification.json` — **1,974 verses in
+      31 books**. It independently reproduces the differences any
+      reference Bible lists (Genesis 31:55 = Hebrew 32:1, Joel 2:28 =
+      Hebrew 3:1, Malachi 4:1 = Hebrew 3:19), which is the reason to
+      trust the ones nobody has memorised. With the map applied the
+      audit reports 0 misaligned chapters and 0 unopenable references.
+
+      **69 reading verses map to a RANGE**, and that matters: 詩篇 51:1
+      carries the two-line superscription and the poem's first line,
+      which the Hebrew numbers 51:1, 51:2 and 51:3, and 1 Chronicles
+      12:4 is Hebrew 12:4 (Ishmaiah the Gibeonite) plus 12:5. Returning
+      one of them would silently drop scripture, so the range is
+      returned whole. `test/originals_versification_test.dart` pins it.
+
 **The publisher's own text is the authority.** biblexg.com's reader is
 `https://mattwhatsup.github.io/ljk-nt-bible-webapp/`, which precaches
 its text as `resources/cn-*.json`. There are **no `tr-*` files** — the
@@ -199,7 +229,13 @@ the Traditional that carries text the translation does not have there.
       only reason it is not done.** Retry the fetch first each
       iteration; everything below is already established, so do not
       re-derive it. Retried 2026-08-10 (second iteration): still
-      `connect=0.000000`, no TCP connect at all.
+      `connect=0.000000`, no TCP connect at all. Retried again
+      2026-08-10 (third iteration): still no TCP connect, and the
+      Wayback CDX question is now **settled** — the API answers (it
+      returns snapshots of the domain root going back to 2001) and it
+      has **no snapshot of `/content/124-messages` or of any
+      `/content*` page**. So the archive is not a way round this; the
+      host has to come back up.
 
       What was checked on 2026-08-10:
       - `christiandiscipleschurch.org`, `christiandc.org` and
@@ -240,8 +276,32 @@ the Traditional that carries text the translation does not have there.
 
 - [ ] **Verify the Strong's tagging against the originals.** `assets/
       tagged/cuvs-yhwh/` now drives "tap a word to see the original".
-      Spot-check that a word's Strong's number matches the same verse in
-      `assets/originals/`, and count the disagreements before trusting it.
+      `tools/audit_strongs_tagging.py` counts the disagreements over the
+      whole corpus rather than spot-checking: 360,946 tagged runs,
+      **24,983 carrying a number that is not in that verse's original**.
+
+      **Most of that is a false alarm and should not be "fixed".** The
+      two datasets use different Strong's conventions — the tagger's
+      inflected-form numbers (G2076 ἐστίν, G5213 ὑμῖν, G2258 ἦν, G2257
+      ἡμῶν) against the originals' lemma numbers (G1510, G4771, G1473).
+      Every one of those resolves correctly in `assets/strongs/`, so the
+      tapped word gives the right lexicon entry. Chasing the count down
+      by rewriting numbers would make the app *less* accurate.
+      The versification defect above was found by this audit and is
+      fixed; that is what the 23.6% was really hiding.
+
+      What is left to decide is the genuinely wrong tail: run the audit
+      with the versification map applied to get a clean count, then look
+      at what remains once the convention difference is factored out.
+
+- [ ] **295 tagged runs carry `H0` / `G0`, which is not a Strong's
+      number.** 253 Hebrew, 42 Greek; neither is a key in
+      `assets/strongs/`, so tapping those words gives "not found".
+      Likely the tagger's marker for the Hebrew direct-object particle
+      or for untagged punctuation. Decide whether they should be
+      untagged runs (no dotted underline, no promise of an answer)
+      rather than tagged ones that cannot answer. Found by
+      `tools/audit_strongs_tagging.py`.
 
 - [ ] **Commentary import (public domain).** One module first — Matthew
       Henry or JFB — via the published `.cmt.mybible` SQLite file, never

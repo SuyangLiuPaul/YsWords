@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/services.dart';
+import 'package:yswords/services/versification_service.dart';
 
 /// Result of a concordance lookup for one Strong's number.
 ///
@@ -87,12 +88,26 @@ class ConcordanceService {
     final r = entry['r'];
     final b = entry['b'];
     if (r is! List) return null;
+    // The index was built from the original-language text and carries
+    // its versification, so 1,377 of its references name verses this
+    // app has no page for — "Joel 4:9" is Joel 3:9 here — and many more
+    // silently name the neighbouring verse. Translate before showing.
+    await VersificationService.ensureLoaded();
     final refs = <ConcordanceRef>[];
+    // A psalm's superscription and its first line are two verses in the
+    // Hebrew and one here, so two references can collapse into one.
+    final seen = <String>{};
     for (final raw in r) {
-      if (raw is String) {
-        final parsed = ConcordanceRef.tryParse(raw);
-        if (parsed != null) refs.add(parsed);
-      }
+      if (raw is! String) continue;
+      final parsed = ConcordanceRef.tryParse(raw);
+      if (parsed == null) continue;
+      final self = '${parsed.chapter}:${parsed.verse}';
+      final reading =
+          await VersificationService.readingRef(parsed.englishBook, self);
+      final ref = reading == self
+          ? parsed
+          : ConcordanceRef.tryParse('${parsed.englishBook} $reading') ?? parsed;
+      if (seen.add(ref.label)) refs.add(ref);
     }
     final byBook = <String, int>{};
     if (b is Map) {

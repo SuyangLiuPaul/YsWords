@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:yswords/models/original_word.dart';
+import 'package:yswords/services/versification_service.dart';
 
 /// Lazy loader for the tagged original-language Bible text.
 ///
@@ -37,6 +38,11 @@ class OriginalsService {
     }
   }
 
+  /// The original-language words for a verse **as the reader numbers
+  /// it**. The asset is numbered as the Hebrew and Greek editions
+  /// number themselves, so the reference is translated first — see
+  /// [VersificationService]. Skipping that step showed the reader a
+  /// psalm's superscription labelled as verse 1.
   static Future<List<OriginalWord>?> forVerse(
     String englishBook,
     int chapter,
@@ -46,8 +52,12 @@ class OriginalsService {
       _byBook[englishBook] =
           await (_loading[englishBook] ??= _load(englishBook));
     }
-    final words = _byBook[englishBook]?['$chapter:$verse'];
-    if (words == null || words.isEmpty) return null;
+    final book = _byBook[englishBook];
+    if (book == null) return null;
+    final refs =
+        await VersificationService.originalRefs(englishBook, chapter, verse);
+    final words = [for (final ref in refs) ...?book[ref]];
+    if (words.isEmpty) return null;
     return words;
   }
 
