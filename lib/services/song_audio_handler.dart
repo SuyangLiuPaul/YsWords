@@ -186,6 +186,24 @@ class SongAudioHandler extends BaseAudioHandler with SeekHandler {
     _broadcast();
   }
 
+  /// Queue a song without interrupting what is playing.
+  ///
+  /// [playNext] puts it directly after the current track; otherwise it
+  /// goes on the end. If nothing is playing there is no queue to add
+  /// to, so it simply starts.
+  Future<void> addToQueue(Song song, {bool playNext = false}) async {
+    final item = SongQueue.resolveTrack(
+        song, TrackPreference.vocal, TrackFallback.useVocal);
+    if (item == null) return;
+    if (_queue.isEmpty) {
+      await setQueue(SongQueue(items: [item], sourceLabel: song.sourceLabel));
+      return;
+    }
+    _queue = _queue.insertAt(playNext ? _queue.index + 1 : _queue.length, item);
+    await _publishQueue();
+    _broadcast();
+  }
+
   /// Drop one track from the queue.
   ///
   /// `SongQueue.removeAt` has existed with tests since the queue was

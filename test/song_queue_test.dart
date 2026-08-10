@@ -8,6 +8,7 @@ import 'package:yswords/models/song_queue.dart';
 /// these pin the semantics that are easy to get subtly wrong and
 /// miserable to debug through a real audio session.
 void main() {
+  _insertionRules();
   _removalRules();
   Song song(
     String id, {
@@ -260,6 +261,54 @@ void _removalRules() {
       final q = SongQueue.fromSongs([s('a'), s('b')]);
       expect(q.removeAt(9).length, 2);
       expect(q.removeAt(-1).length, 2);
+    });
+  });
+}
+
+/// Queueing a song without interrupting what is playing.
+void _insertionRules() {
+  Song s(String id) => Song(
+        id: id,
+        title: id,
+        language: 'zh',
+        source: 'fydt',
+        sourceLabel: 'fydt',
+        url: 'https://x/$id',
+        audioUrl: 'https://x/$id.mp3',
+        audioTracks: [SongTrackInfo(url: 'https://x/$id.mp3', kind: 'vocal')],
+        themes: const [],
+      );
+
+  QueueItem item(String id) =>
+      QueueItem(song: s(id), url: 'https://x/$id.mp3', kind: 'vocal');
+
+  group('insertAt', () {
+    test('play next lands right after the current track', () {
+      final q = SongQueue.fromSongs([s('a'), s('b'), s('c')], startSongId: 'b');
+      final next = q.insertAt(q.index + 1, item('new'));
+      expect(next.items.map((i) => i.song.id), ['a', 'b', 'new', 'c']);
+      expect(next.current!.song.id, 'b',
+          reason: 'queueing must never interrupt what is playing');
+    });
+
+    test('inserting above the current track keeps you on it', () {
+      final q = SongQueue.fromSongs([s('a'), s('b'), s('c')], startSongId: 'c');
+      final next = q.insertAt(0, item('new'));
+      expect(next.current!.song.id, 'c');
+      expect(next.items.first.song.id, 'new');
+    });
+
+    test('adding to the end leaves the position alone', () {
+      final q = SongQueue.fromSongs([s('a'), s('b')], startSongId: 'a');
+      final next = q.insertAt(q.length, item('new'));
+      expect(next.items.map((i) => i.song.id), ['a', 'b', 'new']);
+      expect(next.index, 0);
+    });
+
+    test('an out-of-range position is clamped, not crashed', () {
+      final q = SongQueue.fromSongs([s('a')]);
+      expect(q.insertAt(99, item('new')).length, 2);
+      expect(q.insertAt(-5, item('new2')).length, 2);
     });
   });
 }

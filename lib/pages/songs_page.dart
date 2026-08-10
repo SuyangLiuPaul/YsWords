@@ -1710,6 +1710,29 @@ class _SongDetailSheet extends StatelessWidget {
                     tooltip: uiStrings['songsAddToPlaylist']?[locale],
                     onPressed: () => showAddToPlaylistSheet(context, song, locale),
                   ),
+                  // Queue it without interrupting what is playing.
+                  // Standard in every music app and absent here: you
+                  // heard something you wanted next and the only way to
+                  // get it was to stop the current song.
+                  if (song.hasPlayableAudio)
+                    PopupMenuButton<bool>(
+                      tooltip: '',
+                      icon: const Icon(Icons.queue_rounded, size: 21),
+                      onSelected: (next) => _queueSong(context, song,
+                          playNext: next, locale: locale),
+                      itemBuilder: (_) => [
+                        PopupMenuItem(
+                          value: true,
+                          child: Text(uiStrings['songsPlayNext']?[locale] ??
+                              'Play next'),
+                        ),
+                        PopupMenuItem(
+                          value: false,
+                          child: Text(uiStrings['songsAddToQueue']?[locale] ??
+                              'Add to queue'),
+                        ),
+                      ],
+                    ),
                   IconButton(
                     icon: const Icon(Icons.close, size: 20),
                     onPressed: () => Navigator.of(context).maybePop(),
@@ -2132,4 +2155,18 @@ class _DownloadIndicator extends StatelessWidget {
       },
     );
   }
+}
+
+/// Queue a song, and say so — the queue is off-screen, so without a
+/// confirmation the tap looks like it did nothing.
+Future<void> _queueSong(BuildContext context, Song song,
+    {required bool playNext, required String locale}) async {
+  final messenger = ScaffoldMessenger.of(context);
+  await SongPlayerService.instance.addToQueue(song, playNext: playNext);
+  messenger.showSnackBar(SnackBar(
+    content: Text(playNext
+        ? (uiStrings['songsQueuedNext']?[locale] ?? 'Playing next.')
+        : (uiStrings['songsQueuedEnd']?[locale] ?? 'Added to the queue.')),
+    duration: const Duration(seconds: 2),
+  ));
 }

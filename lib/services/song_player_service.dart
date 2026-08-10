@@ -191,6 +191,10 @@ class SongPlayerService extends ChangeNotifier {
     await _h.setQueue(q);
   }
 
+  /// Queue a song after the current one, or at the end.
+  Future<void> addToQueue(Song song, {bool playNext = false}) =>
+      _h.addToQueue(song, playNext: playNext);
+
   /// Drop a track from the queue you are listening to.
   Future<void> removeFromQueue(int index) => _h.removeFromQueue(index);
 

@@ -5654,6 +5654,26 @@ const uiStrings = {
     'zh-Hant': '這些詩歌都沒有這個版本。',
     'en': 'None of these songs have that mix.',
   },
+  'songsPlayNext': {
+    'zh-Hans': '下一首播放',
+    'zh-Hant': '下一首播放',
+    'en': 'Play next',
+  },
+  'songsAddToQueue': {
+    'zh-Hans': '加入播放队列',
+    'zh-Hant': '加入播放佇列',
+    'en': 'Add to queue',
+  },
+  'songsQueuedNext': {
+    'zh-Hans': '已排到下一首。',
+    'zh-Hant': '已排到下一首。',
+    'en': 'Playing next.',
+  },
+  'songsQueuedEnd': {
+    'zh-Hans': '已加入播放队列。',
+    'zh-Hant': '已加入播放佇列。',
+    'en': 'Added to the queue.',
+  },
   'songsRemoveFromQueue': {
     'zh-Hans': '从队列移除',
     'zh-Hant': '從佇列移除',

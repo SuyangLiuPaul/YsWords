@@ -186,13 +186,6 @@ class SongQueue {
         sourceLabel: sourceLabel ?? this.sourceLabel,
       );
 
-  /// Turn shuffle on or off, keeping the currently-playing item
-  /// selected.
-  ///
-  /// Shuffling REORDERS the list once and keeps that order, rather than
-  /// picking a random track on every advance. That is what makes
-  /// "previous" meaningful — with per-advance randomness, going back
-  /// lands somewhere you have never been, which reads as a bug.
   /// The same songs, re-resolved to a different mix.
   ///
   /// Pure on purpose. The handler used to build this inline, which put
@@ -223,6 +216,28 @@ class SongQueue {
     return rebuilt.isEmpty ? rebuilt : rebuilt.copyWith(shuffled: shuffled);
   }
 
+  /// Put [item] into the queue at [at], keeping the current track
+  /// selected.
+  ///
+  /// Inserting at or before the playing position pushes it down by one,
+  /// so the listener stays on the same song — which is the whole point
+  /// of "play next": it must not interrupt what is playing.
+  SongQueue insertAt(int at, QueueItem item) {
+    final target = at.clamp(0, items.length);
+    final next = [...items]..insert(target, item);
+    return copyWith(
+      items: next,
+      index: target <= index ? index + 1 : index,
+    );
+  }
+
+  /// Turn shuffle on or off, keeping the currently-playing item
+  /// selected.
+  ///
+  /// Shuffling REORDERS the list once and keeps that order, rather than
+  /// picking a random track on every advance. That is what makes
+  /// "previous" meaningful — with per-advance randomness, going back
+  /// lands somewhere you have never been, which reads as a bug.
   SongQueue withShuffle(bool on, {Random? random}) {
     if (items.isEmpty) return copyWith(shuffled: on);
     final playing = current;
