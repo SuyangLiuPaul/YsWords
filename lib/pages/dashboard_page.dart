@@ -30,6 +30,7 @@ import 'package:yswords/pages/feedback_page.dart';
 import 'package:yswords/pages/search_page.dart';
 import 'package:yswords/pages/settings_page.dart';
 import 'package:yswords/pages/songs_page.dart';
+import 'package:yswords/pages/one_god_page.dart';
 import 'package:yswords/pages/stats_page.dart';
 import 'package:yswords/services/bible_evidence_service.dart';
 import 'package:yswords/services/sermon_service.dart';
@@ -778,6 +779,16 @@ class _DashboardPageState extends State<DashboardPage> {
                   icon: Icons.library_music_rounded,
                   label: uiStrings['songsPageTitle']?[locale] ?? 'Songs',
                   onTap: () => pushPage(const SongsPage()),
+                ),
+                // 2026-08-11: 獨一真神 — the church's video teaching,
+                // the same episode recorded in English, Cantonese and
+                // Mandarin. Sits beside Songs because it is the other
+                // thing in this app you WATCH rather than read.
+                _LinkTile(
+                  icon: Icons.play_circle_outline_rounded,
+                  label: uiStrings['oneGodTitle']?[locale] ??
+                      'The Only True God',
+                  onTap: () => pushPage(const OneGodPage()),
                 ),
                 // 2026-05-07 (v12): feedback tile -- mailto-driven
                 // form page that lands directly in the developer's

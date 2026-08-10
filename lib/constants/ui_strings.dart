@@ -5548,6 +5548,40 @@ const uiStrings = {
     'zh-Hant': '下載目前篩選結果',
     'en': 'Download these songs',
   },
+  'oneGodTitle': {
+    'zh-Hans': '独一真神',
+    'zh-Hant': '獨一真神',
+    'en': 'The Only True God',
+  },
+  'oneGodSubtitle': {
+    'zh-Hans': '影片教导 · 英语／广东话／普通话',
+    'zh-Hant': '影片教導 · 英語／廣東話／普通話',
+    'en': 'Video teaching · English / Cantonese / Mandarin',
+  },
+  'oneGodLangEn': {'zh-Hans': '英语', 'zh-Hant': '英語', 'en': 'English'},
+  'oneGodLangYue': {'zh-Hans': '广东话', 'zh-Hant': '廣東話', 'en': 'Cantonese'},
+  'oneGodLangCmn': {'zh-Hans': '普通话', 'zh-Hant': '普通話', 'en': 'Mandarin'},
+  'oneGodTranscript': {
+    'zh-Hans': '讲稿全文',
+    'zh-Hant': '講稿全文',
+    'en': 'Transcript',
+  },
+  'oneGodTranscriptNote': {
+    'zh-Hans': '教导的全文。它不会跟着影片走 —— 原稿没有时间轴。',
+    'zh-Hant': '教導的全文。它不會跟著影片走 —— 原稿沒有時間軸。',
+    'en': 'Full text of the teaching. It does not follow the video — the '
+        'source document carries no timings.',
+  },
+  'oneGodCredit': {
+    'zh-Hans': '基督门徒福音会',
+    'zh-Hant': '基督門徒福音會',
+    'en': 'Christian Disciples Church',
+  },
+  'oneGodEmpty': {
+    'zh-Hans': '暂时还没有影片。',
+    'zh-Hant': '暫時還沒有影片。',
+    'en': 'Nothing here yet.',
+  },
   'songsClosePlayer': {
     'zh-Hans': '关闭播放器',
     'zh-Hant': '關閉播放器',
