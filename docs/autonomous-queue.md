@@ -16,35 +16,52 @@ and quoted.**
 
 ## P0 — scripture accuracy
 
-- [ ] **梁家鏗譯本 is damaged in both editions. Get the publisher's source.**
-      Measured 2026-08-10 across both files:
-      * 7 verses exist in one edition only — Traditional lacks 以弗所書 3:16
-        and 彼得前書 3:11-12; Simplified lacks 馬可福音 6:8-11.
-      * ~117 verses per edition swallow the NEXT verse's number and text
-        ("…管住嘴唇不沾詭詐。11還要避惡行善…").
-      * 8 verses truncated >40% against their counterpart; 以弗所書 3:15
-        stops mid-word at "用權能使你們內".
-      Same signature as the LEB damage — a conversion that lost
-      boundaries. **Do not reconstruct across editions**: each holds part
-      of what the other lost and bridging them needs a 简繁 converter.
-      Guessing is what must never happen to a Bible.
-      *Action:* the full defect list is written up for the publisher in
-      `docs/梁家鏗譯本-缺陷報告.md` — the user is taking it to
-      聖經釋經事工. Until the source arrives, do NOT attempt repairs;
-      instead make the audit a repeatable script + test so the damage
-      cannot silently grow.
+**The publisher's own text is the authority.** biblexg.com's reader is
+`https://mattwhatsup.github.io/ljk-nt-bible-webapp/`, which precaches
+its text as `resources/cn-*.json`. There are **no `tr-*` files** — the
+publisher ships SIMPLIFIED ONLY, so our Traditional is a conversion and
+the Simplified is the side with an authority to check against.
 
-- [ ] **Make the Bible audit a permanent test.** The LEB was broken from
-      the first commit and 500+ green tests never noticed, because tests
-      check that code runs, not that data is true. Add a test that fails
-      on: duplicate references, empty verses, a verse carrying the next
-      verse's number, book tags that do not resolve, and per-book verse
-      counts that drop.
+Getting that ordering backwards already produced one wrong report:
+約翰一書 4:16 was written up as "the Simplified is missing 神就是愛…",
+when the publisher's own 4:16 is exactly what our Simplified has. It is
+the Traditional that carries text the translation does not have there.
+**Check the source before believing a diff.**
+
+- [ ] **Proofread the Simplified against the publisher, book by book.**
+      `python3 tools/proofread_biblexg.py --book <code>` — 27 NT books.
+      First run: 4,826 comparable verses, **98% identical**, **95
+      genuinely different in wording**, and the differences read as a
+      later revision by the publisher rather than as damage
+      (以弗所書 2:4 upstream "神富有愛憐，出於他愛我們的大愛" against our
+      "神滿有憐憫，因著他愛我們的大愛").
+      Take **one book per iteration**. For each difference decide, and
+      say in the commit, whether it is a publisher revision we should
+      adopt or a defect on our side. Adopting a revision means copying
+      the publisher's wording exactly — never paraphrasing, never
+      merging the two.
+
+- [ ] **Then rebuild the Traditional from the corrected Simplified.**
+      Only after the Simplified matches the publisher. Our Traditional
+      is a conversion, and it currently disagrees with the Simplified in
+      ~117 places where it swallowed the next verse's number, plus
+      whole verses it lacks. Rebuilding from a known-good Simplified
+      fixes the cause rather than the symptoms — but it needs a 简→繁
+      converter this repo does not have. Report what is needed rather
+      than hand-converting: hand-converting scripture is guessing.
+
+- [ ] **Make the audit a permanent test.** The LEB was broken from the
+      first commit and 500+ green tests never noticed, because tests
+      check that code runs, not that data is true. Fail the build on:
+      duplicate references, empty verses, a verse carrying the next
+      verse's number, unresolvable book tags, and per-book verse counts
+      that drop.
 
 - [ ] **Audit the remaining versions the same way.** kjv / nasb / leb /
-      cuvs-yhwh / cuvs-yhwh-tr were checked for duplicates, empties and
-      mojibake only. Run the embedded-verse-number and truncation checks
-      across all of them and report counts before changing anything.
+      cuvs-yhwh / cuvs-yhwh-tr were checked only for duplicates,
+      empties and mojibake. Run the embedded-verse-number and
+      truncation checks over all of them and report counts before
+      changing anything.
 
 ## P1 — Bible study correctness
 

@@ -78,7 +78,22 @@ Two habits that go with it:
   across all six targets and say so in the commit; if it is large or
   risky, queue it for the user instead of adding it.
 
+## What to work on, in order
+
+The user's instruction, 2026-08-10: **the whole Bible app's accuracy
+comes before any other function.** So:
+
+1. Anything under **P0 — scripture accuracy** in the queue.
+2. Then **P1 — Bible study correctness**.
+3. Only when both are exhausted, features.
+
+A feature is never more urgent than a verse that is wrong.
+
 ## Definition of done for one iteration
+
+Every iteration ends **pushed to GitHub and deployed to dev**, at the
+user's explicit instruction. An iteration that only commits locally has
+not finished.
 
 1. `flutter analyze` — **check the exit code**, not the output. An
    info-level lint turns CI red and greps for "error" will not see it.
@@ -88,9 +103,11 @@ Two habits that go with it:
 3. Commit with a message that explains **why**, including what the
    defect actually was and how you know. Push to `origin main`
    (fetch/rebase first — another machine works on this branch).
-4. If the change is user-visible, build and deploy dev + qat, then
-   verify `version.json` on all four sites.
-5. Update TODO.md.
+4. **Build and deploy dev + qat, every iteration.** China-mode FIRST,
+   intl second, then confirm `build/web/main.dart.js` exists before
+   deploying. Verify `version.json` on all four sites afterwards.
+   Never prod.
+5. Update `docs/autonomous-queue.md`.
 
 If the work does not reach a green state, **commit nothing**, write what
 you learned into TODO.md, and stop. A half-finished commit is worse than
