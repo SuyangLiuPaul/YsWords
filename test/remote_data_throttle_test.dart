@@ -9,6 +9,7 @@ import 'package:yswords/services/remote_data_service.dart';
 /// decision: rarely-changing archives skip the boot-time GET; the
 /// hourly news feed (interval zero) and explicit refreshes never do.
 void main() {
+  _htmlDetection();
   final now = DateTime.utc(2026, 6, 12, 12, 0, 0);
 
   group('shouldThrottleRefresh', () {
@@ -77,6 +78,33 @@ void main() {
             const Duration(hours: 12), now),
         isFalse,
       );
+    });
+  });
+}
+
+/// A missing file on Netlify comes back **200 with index.html**, not
+/// 404 — the SPA catch-all answers it. So a renamed or unpublished
+/// asset arrives looking like a success and only fails at `jsonDecode`,
+/// in the same silent branch as a real network failure. That made a
+/// broken CDN path indistinguishable from being offline, permanently
+/// and with nothing logged.
+///
+/// The same trap bit this repo's own web build, where
+/// `flutter_bootstrap.js` was served as index.html.
+void _htmlDetection() {
+  group('HTML masquerading as JSON', () {
+    test('recognises the Netlify SPA shell', () {
+      expect(looksLikeHtml('<!DOCTYPE html>\n<html>…'), isTrue);
+      expect(looksLikeHtml('  \n  <html lang="en">'), isTrue,
+          reason: 'leading whitespace is still HTML');
+      expect(looksLikeHtml('<?xml version="1.0"?>'), isTrue);
+    });
+
+    test('lets real payloads through', () {
+      expect(looksLikeHtml('{"songs":[]}'), isFalse);
+      expect(looksLikeHtml('\n\t[1,2,3]'), isFalse);
+      expect(looksLikeHtml(''), isFalse,
+          reason: 'an empty body is a different failure, not HTML');
     });
   });
 }

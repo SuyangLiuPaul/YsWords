@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:http/http.dart' as http;
+import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// 2026-06-12 (v1.3.63): pure throttle decision for
@@ -143,6 +144,24 @@ abstract class RemoteDataService<T> {
           await http.get(Uri.parse(remoteUrl)).timeout(timeout);
       if (resp.statusCode != 200) return;
       final body = resp.body;
+
+      // A missing file on Netlify comes back 200 with index.html, not
+      // 404 — the SPA catch-all answers it. So a renamed or unpublished
+      // asset arrives looking like a success, and `jsonDecode` fails on
+      // the leading `<`. That was already caught below, but it landed
+      // in the same silent branch as "the network is down", making a
+      // broken CDN path indistinguishable from a plane — permanently,
+      // and with nothing in the log to say which.
+      //
+      // Same trap bit this repo's own web build: `flutter_bootstrap.js`
+      // was served as index.html and Chrome refused it for MIME type.
+      if (looksLikeHtml(body)) {
+        debugPrint('[$runtimeType] $remoteUrl returned HTML, not JSON — '
+            'the file is probably missing and Netlify served the SPA '
+            'shell. Keeping the cached copy.');
+        return;
+      }
+
       final j = jsonDecode(body) as Map<String, dynamic>;
       final fresh = parse(j);
 
@@ -215,4 +234,21 @@ abstract class RemoteDataService<T> {
     await prefs.remove(cachePrefsKey);
     await prefs.remove(cacheTimePrefsKey);
   }
+}
+
+/// Whether a response body is an HTML page rather than the JSON we
+/// asked for.
+///
+/// Netlify answers a missing file with 200 and the SPA shell, so this
+/// is the difference between "the data moved" and "the user is
+/// offline". Checked on the first non-space characters: a JSON
+/// document starts `{` or `[`, and nothing we fetch legitimately
+/// begins with `<`.
+@visibleForTesting
+bool looksLikeHtml(String body) {
+  final head = body.trimLeft();
+  if (head.isEmpty) return false;
+  if (head.startsWith('<')) return true;
+  // A UTF-8 BOM ahead of the doctype still means HTML.
+  return head.codeUnitAt(0) == 0xFEFF && head.trimLeft().startsWith('<');
 }

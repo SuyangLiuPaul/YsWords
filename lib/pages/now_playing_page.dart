@@ -10,6 +10,8 @@ import 'package:yswords/models/song_queue.dart';
 import 'package:yswords/services/song_player_service.dart';
 import 'package:yswords/utils/font_catalog.dart' show kCjkFontFallback;
 import 'package:yswords/utils/responsive.dart';
+import 'package:yswords/widgets/home_icon_button.dart';
+import 'package:yswords/widgets/language_switcher_button.dart';
 import 'package:yswords/widgets/localized_back_button.dart';
 
 /// Full-screen player.
@@ -35,6 +37,10 @@ class NowPlayingPage extends StatelessWidget {
       appBar: AppBar(
         leading: const LocalizedBackButton(),
         title: Text(uiStrings['songsNowPlaying']?[locale] ?? 'Now playing'),
+        // Every other page pairs these two, and this is a page someone
+        // can sit on for a whole album — it should not be the one place
+        // you cannot change language or get home.
+        actions: const [LanguageSwitcherButton(), HomeIconButton()],
       ),
       body: ListenableBuilder(
         listenable: player,
