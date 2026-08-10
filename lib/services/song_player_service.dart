@@ -203,6 +203,12 @@ class SongPlayerService extends ChangeNotifier {
   Future<void> playAt(int index) => _h.playAt(index);
   Future<void> seek(Duration to) => _h.seek(to);
   Future<void> stop() => _h.stop();
+
+  /// Stop and put the player away entirely — see
+  /// [SongAudioHandler.dismiss]. This is what the mini-player's ✕ and
+  /// its swipe-away gesture call. `stop()` alone leaves the strip on
+  /// screen, which is the bug this exists to fix.
+  Future<void> dismiss() => _h.dismiss();
   Future<void> setShuffle(bool on) => _h.setShuffle(on);
   Future<void> setRepeat(RepeatMode mode) => _h.setRepeat(mode);
   void setSleepTimer(Duration? after) => _h.setSleepTimer(after);

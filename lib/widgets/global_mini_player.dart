@@ -130,19 +130,50 @@ class _Strip extends StatelessWidget {
         : (pos.inMilliseconds / total.inMilliseconds).clamp(0.0, 1.0);
     final queue = player.queue;
 
-    return Material(
-      color: scheme.surfaceContainerHigh,
-      child: SafeArea(
-        top: false,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            LinearProgressIndicator(
-              value: progress,
-              minHeight: 2,
-              backgroundColor: scheme.surfaceContainerHighest,
-            ),
-            InkWell(
+    // Swipe the strip aside to dismiss it, the way every music app
+    // lets you. The ✕ is the discoverable route; this is the one that
+    // becomes muscle memory. `key` is required by Dismissible and must
+    // be stable for the widget, not the song — keying it on the song id
+    // would make a track change look like a dismissal.
+    return Dismissible(
+      key: const ValueKey('global-mini-player'),
+      direction: DismissDirection.horizontal,
+      onDismissed: (_) => player.dismiss(),
+      background: ColoredBox(
+        color: scheme.surfaceContainerHighest,
+        child: Align(
+          alignment: Alignment.centerLeft,
+          child: Padding(
+            padding: const EdgeInsets.only(left: 20),
+            child: Icon(Icons.close_rounded,
+                size: 20, color: scheme.onSurfaceVariant),
+          ),
+        ),
+      ),
+      secondaryBackground: ColoredBox(
+        color: scheme.surfaceContainerHighest,
+        child: Align(
+          alignment: Alignment.centerRight,
+          child: Padding(
+            padding: const EdgeInsets.only(right: 20),
+            child: Icon(Icons.close_rounded,
+                size: 20, color: scheme.onSurfaceVariant),
+          ),
+        ),
+      ),
+      child: Material(
+        color: scheme.surfaceContainerHigh,
+        child: SafeArea(
+          top: false,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              LinearProgressIndicator(
+                value: progress,
+                minHeight: 2,
+                backgroundColor: scheme.surfaceContainerHighest,
+              ),
+              InkWell(
               onTap: () => pushPage(const NowPlayingPage()),
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(14, 6, 4, 6),
@@ -200,19 +231,31 @@ class _Strip extends StatelessWidget {
                         icon: const Icon(Icons.skip_next_rounded),
                         color: scheme.onSurfaceVariant,
                         onPressed: player.next,
-                      )
-                    else
-                      IconButton(
-                        visualDensity: VisualDensity.compact,
-                        icon: const Icon(Icons.stop_rounded),
-                        color: scheme.onSurfaceVariant,
-                        onPressed: player.stop,
                       ),
+                    // Always present, whatever the queue length.
+                    //
+                    // This used to be an `else` on the branch above: a
+                    // stop button ONLY when the queue held one song. But
+                    // every row's play button queues the whole filtered
+                    // list, so in normal use the queue is long and there
+                    // was no way to put the player away — and `stop()`
+                    // would not have hidden the strip anyway, since it
+                    // keeps the queue. Reported as "去其他页面底下还是有
+                    // 播放器，一直在那里，但是每次退出才没有".
+                    IconButton(
+                      visualDensity: VisualDensity.compact,
+                      icon: const Icon(Icons.close_rounded),
+                      color: scheme.onSurfaceVariant,
+                      tooltip: uiStrings['songsClosePlayer']?[locale] ??
+                          'Close player',
+                      onPressed: player.dismiss,
+                    ),
                   ],
                 ),
               ),
             ),
-          ],
+            ],
+          ),
         ),
       ),
     );

@@ -336,6 +336,35 @@ class SongAudioHandler extends BaseAudioHandler with SeekHandler {
     await super.stop();
   }
 
+  /// Stop AND put the player away: empties the queue so
+  /// `SongPlayerService.current` becomes null and the mini-player strip
+  /// leaves the screen.
+  ///
+  /// 2026-08-11, reported by the user — "如果我不想听了去其他页面底下還是
+  /// 有播放器，一直在那里，但是每次退出才没有". They were right, and it
+  /// was worse than it looked: the strip renders whenever
+  /// `current != null` and **nothing in the app ever set that back to
+  /// null**. [stop] halts playback but deliberately keeps the queue, and
+  /// the strip's stop button only appeared when the queue held a single
+  /// song. Play from a list — which is what every row's play button does
+  /// — and there was no affordance anywhere to dismiss the player.
+  /// Force-quitting really was the only way.
+  ///
+  /// Kept separate from [stop] on purpose: the sleep timer firing, or
+  /// running off the end of a queue, should stop playback and KEEP the
+  /// queue, because pressing play again is the likely next move. This is
+  /// the explicit "I am done listening" gesture and only a user issues
+  /// it.
+  Future<void> dismiss() async {
+    await stop();
+    _queue = SongQueue.empty;
+    _error = null;
+    _loading = false;
+    _broadcast();
+    _publishMediaItem();
+    notifyUi();
+  }
+
   @override
   Future<void> seek(Duration position) => _player.seek(position);
 

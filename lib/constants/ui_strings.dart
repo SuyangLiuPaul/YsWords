@@ -5535,6 +5535,11 @@ const uiStrings = {
     'zh-Hant': '下載目前篩選結果',
     'en': 'Download these songs',
   },
+  'songsClosePlayer': {
+    'zh-Hans': '关闭播放器',
+    'zh-Hant': '關閉播放器',
+    'en': 'Close player',
+  },
   'songsNoDownloads': {
     'zh-Hans': '还没有下载任何诗歌。',
     'zh-Hant': '還沒有下載任何詩歌。',
