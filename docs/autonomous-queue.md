@@ -16,7 +16,11 @@ and quoted.**
 
 ## P0 — scripture accuracy
 
-- [ ] **AUDIT EVERY ORIGINAL-LANGUAGE CLAIM THE APP MAKES.**
+- [x] **AUDIT EVERY ORIGINAL-LANGUAGE CLAIM THE APP MAKES.** Hebrew side
+      done (`e714e31`): the importer kept only `<w>` and lost every marker
+      that says "these are not two words" — 784 multi-word lexemes now
+      render as one chip, 1,229 ketiv/qere as one word marked 寫作/讀作,
+      and the 2,018 genuine repetitions are left alone. Greek still open.
       Asked for directly by the user, 2026-08-11, after finding this on
       創世記 35:18: two visibly different Hebrew words, בֵּן and אוֹנִי,
       shown as two separate chips **both numbered H1126 and both glossed
@@ -36,22 +40,30 @@ and quoted.**
       number. The lexicon card underneath already renders it correctly
       as בֶּן־אוֹנִי; only the chips are split.
 
-      **Measured across the whole corpus before touching anything:
-      4,092 runs of adjacent same-Strong tokens in 3,448 verses.** They
-      are NOT one bug — classified by whether each token carries points
-      (niqqud/cantillation) and whether the second starts with a vav:
+      **The heuristic first written here was wrong and must not be
+      restored.** It proposed merging 2,207 runs on the maqqef. The
+      maqqef is not the authority: מוֹת־יוּמַת, קֹדֶשׁ־קָדָשִׁים, בֶּן־בְּנוֹ
+      and אִישׁ־אִישׁ all carry one and are genuinely two words, while
+      בֵּית לָחֶם is one lexeme with no maqqef at all. Merging on it would
+      have corrupted roughly 2,000 verses in the name of fixing one.
 
-      | count | class | example | correct action |
+      What the source actually marks, and what the importer now reads:
+
+      | count | marker in the WLC | example | action taken |
       |---|---|---|---|
-      | 2,207 | maqqef compound, both pointed | בַּעַל־חָנָן H1177, מֵי־זָהָב H4314, בֶּן־אוֹנִי H1126 | render as ONE chip |
-      | 1,377 | ketiv/qere, one token unpointed | `לודיים ־ לוּדִים` H3866 | one chip, marked written/read |
-      | 508 | genuine repetition, second has vav | שָׁלַח ־ וְשֶׁלַח H7974 | **leave alone** |
+      | 784 | `lemma="1035+"` — OSHB's own "non-final member of a multi-word lexeme" | בֶּן־אוֹנִי H1126, בֵּית לָחֶם H1035, מְהֵר שָׁלָל חָשׁ בַּז H4122 | joined into ONE word, maqqef or space as the WLC prints it |
+      | 1,229 | `<w type="x-ketiv">` + `<note><rdg type="x-qere">` | `לודיים` / `לוּדִים` H3866 | one word; the other form shown as 寫作/讀作 |
+      | 2,018 | nothing — plain repetition | אָכֹל תֹּאכֵל, a name twice in a genealogy | **left alone** |
 
-      **Merging all 4,092 would corrupt those 508**, which are two real
-      occurrences of a name in a genealogy and belong as two chips. The
-      classifier above is a heuristic, not a proof — verify it against
-      the maqqef in the source text if the data carries one, and count
-      what each rule catches before applying it.
+      Proof no scripture moved: every one of the 298,776 tokens was
+      compared as a multiset before and after — 0 words lost, 25
+      recovered. The 2,016-token drop is exactly 800 compound joins plus
+      1,222 ketiv collapses minus 6 ketivs already being dropped, and all
+      180 vanished Strong's numbers only ever appeared on a ketiv.
+      `tools/audit_originals_compounds.py` re-derives the classification
+      from the source and reports 0 drift;
+      `test/originals_word_grouping_test.dart` pins it against the real
+      assets (it fails on the pre-fix data in 1,023 places).
 
       Then keep going: this was found by a user glancing at one verse,
       which means nothing systematic has ever checked this surface.
@@ -67,7 +79,19 @@ and quoted.**
           inflected-form numbers (G2258 ἦν) against the originals' lemma
           numbers (G1510). Deliberately not "fixed" — but it has never
           been re-counted since `assets/originals_versification.json`
-          landed, so the real figure is unknown.
+          landed, and the merge above changed 868 concordance counts and
+          removed 51 numbers that only ever appeared on a ketiv, so the
+          real figure is now doubly unknown.
+        • **Six words are written and, by Masoretic direction, not read
+          at all** (ketiv-welo-qere: an empty `<rdg type="x-qere"/>`) —
+          路得記 3:12, 列王紀下 5:18, 耶利米書 38:16, 39:12, 51:3,
+          以西結書 48:16. They still ship as ordinary words carrying a
+          Strong's number, i.e. the app offers a definition for a word
+          the tradition says is not part of the read text. Decide whether
+          to mark them 「不讀」 or drop them; do not guess.
+        • **The Greek side has never been classified.** ~260 adjacent
+          same-Strong runs in the NT, source OpenGNT, none of them looked
+          at. Do the same measurement there before assuming it is clean.
         • **The Chinese glosses.** They come from CBOL/bible.fhl.net
           (CC-BY-NC-SA 4.0). Nothing has checked that the gloss shown
           belongs to the number shown.
