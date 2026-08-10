@@ -28211,10 +28211,30 @@
   "chapter": "22",
   "verse": "42",
   "verseLabel": "42",
-  "text": "“如果你願意，求你把這一杯拿開，但不要照我的意思，只要成就你的旨意。”43有一位使者從天上向他顯現，給他力量。44他在極度痛苦之中，祈禱越加懇切，汗珠如血，大滴大滴落在地上。",
+  "text": "“如果你願意，求你把這一杯拿開，但不要照我的意思，只要成就你的旨意。”",
   "isParagraphStart": false,
   "paragraphType": "paragraph",
   "id": "42022042"
+ },
+ {
+  "book": "路加福音",
+  "chapter": "22",
+  "verse": "43",
+  "verseLabel": "43",
+  "text": "有一位使者從天上向他顯現，給他力量。",
+  "isParagraphStart": false,
+  "paragraphType": "paragraph",
+  "id": "42022043"
+ },
+ {
+  "book": "路加福音",
+  "chapter": "22",
+  "verse": "44",
+  "verseLabel": "44",
+  "text": "他在極度痛苦之中，祈禱越加懇切，汗珠如血，大滴大滴落在地上。",
+  "isParagraphStart": false,
+  "paragraphType": "paragraph",
+  "id": "42022044"
  },
  {
   "book": "路加福音",
@@ -28644,10 +28664,20 @@
   "chapter": "23",
   "verse": "16",
   "verseLabel": "16",
-  "text": "所以，我懲教了便把他釋放。”17因為每逢節日須為民眾釋放一人。",
+  "text": "所以，我懲教了便把他釋放。”",
   "isParagraphStart": false,
   "paragraphType": "paragraph",
   "id": "42023016"
+ },
+ {
+  "book": "路加福音",
+  "chapter": "23",
+  "verse": "17",
+  "verseLabel": "17",
+  "text": "因為每逢節日須為民眾釋放一人。",
+  "isParagraphStart": false,
+  "paragraphType": "paragraph",
+  "id": "42023017"
  },
  {
   "book": "路加福音",
@@ -62496,10 +62526,20 @@
   "chapter": "3",
   "verse": "15",
   "verseLabel": "15",
-  "text": "天上地上一切家族的名字都是起源於父，<note:參4.6、16>我求父：照着他榮耀的豐富，藉著他的靈，<note:參2.18註，加4.6註，>用權能使你們內在的人堅強起來，",
+  "text": "天上地上一切家族的名字都是起源於父，<note:參4.6，>",
   "isParagraphStart": false,
   "paragraphType": "paragraph",
   "id": "49003015"
+ },
+ {
+  "book": "以弗所書",
+  "chapter": "3",
+  "verse": "16",
+  "verseLabel": "16",
+  "text": "我求父：照着他榮耀的豐富，藉著他的靈，<note:參2.18註，加4.6註，>用權能使你們內在的人堅強起來，",
+  "isParagraphStart": false,
+  "paragraphType": "paragraph",
+  "id": "49003016"
  },
  {
   "book": "以弗所書",
@@ -74447,10 +74487,30 @@
   "chapter": "3",
   "verse": "10",
   "verseLabel": "10",
-  "text": "因為：誰想享受人生，過好日子，就得勒住舌頭不出惡言，管住嘴唇不沾詭詐。11還要避惡行善，覓求和睦，緊追不捨。12因為主慈目眷顧義人，側耳俯聽他們的呼聲，但主跟造孽者作對。<note:詩34.12-16>",
+  "text": "因為：誰想享受人生，過好日子，就得勒住舌頭不出惡言，管住嘴唇不沾詭詐。",
   "isParagraphStart": false,
   "paragraphType": "paragraph",
   "id": "60003010"
+ },
+ {
+  "book": "彼得前書",
+  "chapter": "3",
+  "verse": "11",
+  "verseLabel": "11",
+  "text": "還要避惡行善，覓求和睦，緊追不捨。",
+  "isParagraphStart": false,
+  "paragraphType": "paragraph",
+  "id": "60003011"
+ },
+ {
+  "book": "彼得前書",
+  "chapter": "3",
+  "verse": "12",
+  "verseLabel": "12",
+  "text": "因為主慈目眷顧義人，側耳俯聽他們的呼聲，但主跟造孽者作對。<note:詩34.12-16>",
+  "isParagraphStart": false,
+  "paragraphType": "paragraph",
+  "id": "60003012"
  },
  {
   "book": "彼得前書",

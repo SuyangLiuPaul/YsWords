@@ -48,6 +48,48 @@ the Traditional that carries text the translation does not have there.
       is fixed; the ~117 swallowed verse numbers, the 7 missing verses
       and 約翰一書 4:16 all need checking against the volumes.
 
+      **Structure is now done** (see the two ticked items below); what
+      remains is the WORDING, volume by volume. Our Traditional reads
+      like a conversion of an older Simplified revision than the one the
+      2025 印刷版 carries — 路加福音 23:32 prints 「和他一同處決」 where we
+      have 「和耶穌一同處決」, and 23:33 prints 「將他釘上了十字架」 where we
+      have 「將耶穌釘上了十字架」. Same sense, different wording, so it is
+      the 95-verse revision question again rather than damage. Take one
+      volume per iteration and count before changing anything.
+
+- [x] **Count the swallowed verse numbers properly — it was 5, not 117.**
+      The old figure counted digits inside `<note:>` citations
+      (馬太福音 15:12's note is 「參11.6，13.57」). Stripping markup first
+      leaves 5 verses hiding 7. Root cause found: the publisher marks
+      textually doubtful passages `<span class="affix"><sup>43</sup>…`
+      and our importer flattened the superscript into body text — three
+      such spans in the whole NT, all in Luke. 路加福音 22:43, 22:44,
+      23:17 (both editions) and 彼得前書 3:11, 3:12, 以弗所書 3:16
+      (Traditional) are now addressable verses, per the printed 註釋本.
+      `test/biblexg_verse_integrity_test.dart` fails on the old data.
+
+- [ ] **路加福音 23:34a needs a sub-verse label — the user's call.**
+      The last of the five. The printed 註釋本 prints 34a / 34b; the
+      publisher's Simplified keeps the second half as plain 34. Our
+      verse id is `<book>-<chapter>-<verseLabel>` and highlights key off
+      it ACROSS versions, so labelling ours 34a / 34b would desync a
+      highlight on Luke 23:34 from every other translation, and Dart's
+      unstable sort would not even keep 34a before 34 without a
+      tiebreak. Two honest options, both needing a decision:
+      (a) label them 34a / 34b and accept the one-verse highlight
+      desync, or (b) add a `sortKey` and keep the id at 34.
+
+- [ ] **馬可福音 6:8-11 is missing from the publisher's own Simplified.**
+      Found by the chapter-gap audit. `cn-mk.json` has no 6:8-11 at all
+      and truncates 6:7 mid-sentence at 「并授予他们权能」, dropping
+      「制服不洁的灵」. The printed Traditional has all five verses in
+      full and our Traditional matches it word for word, so the loss is
+      upstream and Simplified-only. These are not variant readings —
+      every manuscript has them. **Do not 繁→简 convert our Traditional
+      to fill it**; that is writing scripture. Asked in
+      `docs/梁家鏗譯本-請教出版方.md`; pinned as a known hole in the
+      integrity test so it cannot quietly grow.
+
 - [ ] **Ask the publisher about the two official editions disagreeing.**
       Drafted in `docs/梁家鏗譯本-請教出版方.md` — the user is passing it
       to the pastor. The headline: the printed Traditional 約翰一書 4:16
@@ -77,12 +119,20 @@ the Traditional that carries text the translation does not have there.
       converter this repo does not have. Report what is needed rather
       than hand-converting: hand-converting scripture is guessing.
 
-- [ ] **Make the audit a permanent test.** The LEB was broken from the
-      first commit and 500+ green tests never noticed, because tests
-      check that code runs, not that data is true. Fail the build on:
-      duplicate references, empty verses, a verse carrying the next
-      verse's number, unresolvable book tags, and per-book verse counts
-      that drop.
+- [x] **Make the audit a permanent test — done for 梁家鏗譯本.**
+      `test/biblexg_verse_integrity_test.dart` fails on duplicate
+      references, empty verses, a verse carrying the next verse's
+      number, and any chapter gap that is not on an explicit list of
+      accounted-for ones (the publisher's own textual omissions,
+      combined labels like Luke 1:"1-4", and the 馬可福音 6:8-11 hole).
+      Verified by running it against the pre-fix data, where it fails
+      with the right diagnosis.
+
+- [ ] **Extend that audit to the other versions.** Same checks over
+      kjv / nasb / leb / cuvs-yhwh / cuvs-yhwh-tr, which have only ever
+      been checked for duplicates, empties and mojibake. Count first and
+      report before changing anything — the gap list has to be built
+      from what each version's publisher actually omits, not assumed.
 
 - [ ] **Audit the remaining versions the same way.** kjv / nasb / leb /
       cuvs-yhwh / cuvs-yhwh-tr were checked only for duplicates,
