@@ -89,6 +89,39 @@ has never seen this repo.
       characters that the 繁→簡 conversion let through.
       `test/biblexg_verse_integrity_test.dart` now fails if one returns.
 
+- [x] **羅馬書 16:24 printed an editor's manuscript note as Paul's words.**
+      Both editions ended the verse 「…兄弟也問候你們。按 NA28 及 UBS5，
+      在此羅馬書完，但有抄本加插下面讚詞：」. Nothing looks broken on
+      screen — which is the danger. A reader has no way to tell where
+      the apostle stops and the critical apparatus starts, and this is
+      the verse where that distinction is the whole point.
+
+      Root cause, and why only this verse: the publisher ships such
+      notes as their own `type: "comment"` node, and our importer
+      already routes those to `blockNotes` (rendered in a separate card
+      below the verse). Counted before fixing rather than after —
+      **exactly 3 `noHidden` comment nodes exist in the publisher's
+      whole corpus**, and the other two, 馬可福音 16:8 and 約翰福音 7:52,
+      were already stored correctly. A corpus-wide scan for apparatus
+      language inside a verse body returns **1 verse per edition**. So
+      this was the only casualty, the same shape as 羅馬書 3:10.
+
+      Settled by three independent authorities, none of them a guess:
+      the publisher's own JSON node type, the printed 註釋本 (which
+      prints it as 「24-27節註：」), and re-running our own importer,
+      which produces the corrected record byte for byte. **The note was
+      moved, not rewritten — no scripture character changed.**
+      `test/biblexg_verse_integrity_test.dart` scans every verse body in
+      both editions and fails on the pre-fix data with the right
+      diagnosis.
+
+      **Worth knowing for the next iteration:** upstream has been
+      revised since our import — a fresh fetch differs in 136 verse
+      texts and rewrites whole notes (哥林多前書 15:11, 提多書 2:14-15).
+      So `python3 tools/import_ljk2.py` must NOT be re-run wholesale: it
+      would both revert every hand-fix and silently adopt the publisher
+      revision that §四/§四之二 are still asking about.
+
 - [ ] **Decide the 427 wording differences with the publisher.**
       Not ours to change. They cluster in 路加福音 (178) and 馬可福音 (89)
       and read as one consistent later revision — the 2025 印刷版 replaces
@@ -210,10 +243,13 @@ has never seen this repo.
       以弗所書 8, 路加福音 6. Take one book per iteration once the
       publisher answers, and copy their wording exactly — never
       paraphrasing, never merging the two.
-      **`docs/梁家鏗譯本-請教出版方.md` §四 still says 95 節** — that count
-      predates the five unproofread books and the punctuation split.
-      It is 86 wording + 46 punctuation, and 羅馬書 3:10 is no longer one
-      of them. Correct it before that document is sent to anybody.
+      **The letter's §四 is now correct** (2026-08-11): re-measured at
+      7,920 comparable / 7,788 identical / 46 punctuation / 86 wording /
+      0 absent, with the old 95 figure explained rather than quietly
+      replaced, the per-book distribution listed, and 羅馬書 3:10 moved
+      to §三 as our own defect. §四 is ticked ✅ in the status box;
+      **§四之二 is the only ⏳ left**, so the Traditional 427 is now the
+      one thing standing between this letter and being sendable.
 
 - [ ] **Then rebuild the Traditional from the corrected Simplified.**
       Only after the Simplified matches the publisher. Our Traditional
@@ -331,11 +367,12 @@ has never seen this repo.
         archive** before concluding anything: `http://web.archive.org/
         cdx/search/cdx?url=christiandiscipleschurch.org/content/
         124-messages&output=json`.
-      - Retried 2026-08-10 (fourth and fifth iterations): still
-        `connect=0.000000`, curl times out with no TCP connect.
-        Unchanged. The host has been down for five consecutive
-        iterations — worth telling the user, since they may be able to
-        reach Bentley faster than the server will come back.
+      - Retried 2026-08-10 (fourth and fifth iterations) and again
+        2026-08-11 (sixth): still `connect=0.000000`, curl times out
+        with no TCP connect. Unchanged across six consecutive
+        iterations. **Tell the user** — they can probably reach Bentley
+        faster than the server will come back, and nothing else about
+        this task can move until it does.
       - Related pages found via search, useful once the host is up:
         `/content/ehhc_sermons_public`, `/content/mtparablesvol1`,
         `/contents/matthew_parables_front_matter`.

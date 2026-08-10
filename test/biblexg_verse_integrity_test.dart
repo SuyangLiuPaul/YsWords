@@ -154,6 +154,36 @@ void main() {
     });
   });
 
+  test('no verse body carries a critical-apparatus note', () {
+    // 羅馬書 16:24 ended 「…兄弟也問候你們。按 NA28 及 UBS5，在此羅馬書完，
+    // 但有抄本加插下面讚詞：」 — an editor's note about manuscripts, set as
+    // though Paul had written it. Nothing looks wrong on screen, which is
+    // exactly the danger: it reads plausibly and gets quoted.
+    //
+    // The publisher ships such notes as their own `type: "comment"` node,
+    // and the printed 註釋本 prints this one as 「24-27節註：」. Our importer
+    // already routes them to `blockNotes`, which renders in a separate
+    // card below the verse; this one verse predated that and kept the
+    // note inline. Counted across the corpus before fixing: exactly three
+    // such notes exist, and the other two (馬可福音 16:8, 約翰福音 7:52)
+    // were already correct — so this was the only casualty. The note was
+    // moved, not rewritten; no scripture character changed.
+    final apparatus = RegExp(
+        r'節注：|节注：|按\s*NA28|參\s*NA28|参\s*NA28|UBS5|聯合聖經公會|联合圣经公会');
+    // `<note:…>` is our own inline cross-reference markup and renders as a
+    // popup, not as scripture, so it is stripped before looking.
+    final inlineNote = RegExp(r'<note:.*?>');
+    for (final path in expectedGaps.keys) {
+      final offenders = [
+        for (final v in load(path))
+          if (apparatus.hasMatch((v['text'] as String).replaceAll(inlineNote, '')))
+            '${v['book']} ${v['chapter']}:${v['verseLabel']}'
+      ];
+      expect(offenders, isEmpty,
+          reason: '$path — apparatus text inside a verse body');
+    }
+  });
+
   test('no Simplified character survives in the Traditional edition', () {
     // Our Traditional is a conversion, and the conversion let a handful
     // of Simplified characters through: 使徒行傳 18:16 read 审判臺,

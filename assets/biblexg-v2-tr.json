@@ -53272,10 +53272,13 @@
   "chapter": "16",
   "verse": "24",
   "verseLabel": "24",
-  "text": "本城司庫以拉斯都和卦爾都<note:舊譯括土>兄弟也問候你們。按 NA28 及 UBS5，在此羅馬書完，但有抄本加插下面讚詞：",
+  "text": "本城司庫以拉斯都和卦爾都<note:舊譯括土>兄弟也問候你們。",
   "isParagraphStart": false,
   "paragraphType": "paragraph",
-  "id": "45016024"
+  "id": "45016024",
+  "blockNotes": [
+   "按 NA28 及 UBS5，在此羅馬書完，但有抄本加插下面讚詞："
+  ]
  },
  {
   "book": "羅馬書",
