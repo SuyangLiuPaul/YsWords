@@ -28,6 +28,33 @@ when the publisher's own 4:16 is exactly what our Simplified has. It is
 the Traditional that carries text the translation does not have there.
 **Check the source before believing a diff.**
 
+- [ ] **Proofread the TRADITIONAL against the printed 註釋本, book by book.**
+      **This now outranks the Simplified proofread.** The user supplied
+      the publisher's own Traditional PDFs — 《新約聖經 梁家鏗譯本
+      （註釋本）》2025 第二版, 5 volumes — and they have a clean text
+      layer. Extracted copies live in `/tmp/ljk_tr/*.txt`; re-extract
+      with `pdftotext -enc UTF-8` from the user's Downloads if missing.
+      This is the first authority we have had for the Traditional side.
+
+      Work one volume at a time and **conform to the printed text, not
+      to good Chinese.** A first pass "corrected" 會堂里→會堂裡,
+      谷糧→穀糧 and 踹谷→踹穀 — every one of those reasonable, and every
+      one WRONG, because the 註釋本 prints 里, 谷 and 谷 in exactly those
+      places. Where the printed edition looks odd, it goes in
+      `docs/梁家鏗譯本-請教出版方.md` for the publisher; it does not get
+      edited here.
+
+      Known to settle this way: our 一台戲 was wrong (printed: 一臺戲) and
+      is fixed; the ~117 swallowed verse numbers, the 7 missing verses
+      and 約翰一書 4:16 all need checking against the volumes.
+
+- [ ] **Ask the publisher about the two official editions disagreeing.**
+      Drafted in `docs/梁家鏗譯本-請教出版方.md` — the user is passing it
+      to the pastor. The headline: the printed Traditional 約翰一書 4:16
+      ends 「神就是愛，那住在愛裡的…」 and the official Simplified webapp
+      does not have that clause at all. Both are the publisher's own.
+      Until they answer, change neither.
+
 - [ ] **Proofread the Simplified against the publisher, book by book.**
       `python3 tools/proofread_biblexg.py --book <code>` — 27 NT books.
       First run: 4,826 comparable verses, **98% identical**, **95
