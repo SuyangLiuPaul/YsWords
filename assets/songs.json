@@ -1,6 +1,6 @@
 {
  "_meta": {
-  "generatedAt": "2026-08-09T11:00:24Z",
+  "generatedAt": "2026-08-09T23:58:33Z",
   "generator": "scripts/sync_songs.py v2",
   "count": 606,
   "bySource": {
@@ -14,9 +14,9 @@
    "en": 122,
    "zh": 437
   },
-  "withAudio": 584,
+  "withAudio": 548,
   "withVideo": 118,
-  "withScore": 579,
+  "withScore": 543,
   "withLyrics": 213,
   "sources": {
    "fydt": {
@@ -69,7 +69,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T11:00:24Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cahaya:allah-kehidupanku",
@@ -101,7 +101,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T11:00:24Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cahaya:bah-ruilah-tali-kasih-kami",
@@ -131,7 +131,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T11:00:24Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cahaya:dengan-cara-mu",
@@ -159,7 +159,7 @@
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T11:00:24Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cahaya:dengan-caramu",
@@ -187,7 +187,7 @@
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T11:00:24Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cahaya:dunia-ini-bukan-rumahku",
@@ -215,7 +215,7 @@
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T11:00:24Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cahaya:engkau-yang-maha",
@@ -243,7 +243,7 @@
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T11:00:24Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cahaya:hadavar-yahweh",
@@ -273,7 +273,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T11:00:24Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cahaya:haleluyah",
@@ -301,7 +301,7 @@
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T11:00:24Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cahaya:hanya-kau-kekuatanku",
@@ -331,7 +331,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T11:00:24Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cahaya:he-is-able",
@@ -359,7 +359,7 @@
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T11:00:24Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cahaya:he-is-able-dia-sanggup",
@@ -387,7 +387,7 @@
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T11:00:24Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cahaya:hiduku-t-lah-kau-ubahkan",
@@ -415,7 +415,7 @@
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T11:00:24Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cahaya:hidup-dengan-rukun",
@@ -446,7 +446,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T11:00:24Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cahaya:hikmat",
@@ -476,7 +476,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T11:00:24Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cahaya:karena-kasih-allah",
@@ -507,7 +507,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T11:00:24Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cahaya:kasih-allah",
@@ -538,7 +538,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T11:00:24Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cahaya:kasih-kekal-selamanya",
@@ -568,7 +568,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T11:00:24Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cahaya:kau-harapanku",
@@ -598,7 +598,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T11:00:24Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cahaya:kau-membuatku-indah",
@@ -626,7 +626,7 @@
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T11:00:24Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cahaya:ku-mau-memuja-mu",
@@ -656,7 +656,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T11:00:24Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cahaya:kuasa-yahweh-jadi-sempurna",
@@ -687,7 +687,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T11:00:24Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cahaya:k-hendak-yahweh-bagi-kita",
@@ -717,7 +717,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T11:00:24Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cahaya:lagu-berkat",
@@ -745,7 +745,7 @@
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T11:00:24Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cahaya:love-endures-until-the-end",
@@ -775,7 +775,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T11:00:24Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cahaya:melawan-arus",
@@ -803,7 +803,7 @@
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T11:00:24Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cahaya:memuja-menyembahmu",
@@ -833,7 +833,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T11:00:24Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cahaya:mendekat-pada-yahweh",
@@ -863,7 +863,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T11:00:24Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cahaya:mulia-bapa",
@@ -893,7 +893,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T11:00:24Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cahaya:mulia-bapa-yahweh",
@@ -924,7 +924,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T11:00:24Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cahaya:orang-yang-lemah-lembut-hidup-oleh-kuasa-roh-yahweh",
@@ -957,7 +957,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T11:00:24Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cahaya:orang-yang-lemah-lembut-hidup-oleh-kuasa-yahweh",
@@ -989,7 +989,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T11:00:24Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cahaya:pandang-mulianya-yahweh-bersinar",
@@ -1020,7 +1020,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T11:00:24Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cahaya:pengharapan-yang-indah",
@@ -1050,7 +1050,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T11:00:24Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cahaya:setiap-hari",
@@ -1078,7 +1078,7 @@
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T11:00:24Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cahaya:sukacita-umat-yahweh",
@@ -1108,7 +1108,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T11:00:24Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cahaya:s-luruh-bumi-penuh-pengenalan-akan-yahweh",
@@ -1138,7 +1138,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T11:00:24Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cahaya:tak-berarti-tanpa-kasih",
@@ -1168,7 +1168,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T11:00:24Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cahaya:tak-pernah-berhenti",
@@ -1196,7 +1196,7 @@
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T11:00:24Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cahaya:tak-satupun",
@@ -1224,7 +1224,7 @@
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T11:00:24Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cahaya:tanpamu-segala-tak-berarti",
@@ -1252,7 +1252,7 @@
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T11:00:24Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cahaya:the-only-true-god",
@@ -1280,7 +1280,7 @@
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T11:00:24Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cahaya:tujuanku-adalah-yahweh",
@@ -1310,7 +1310,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T11:00:24Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cahaya:untukmu",
@@ -1338,7 +1338,7 @@
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T11:00:24Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cahaya:yahweh-allahku-hanya-kau",
@@ -1368,7 +1368,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T11:00:24Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cahaya:yahweh-yang-kekal",
@@ -1398,7 +1398,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T11:00:24Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cahaya:z-hu-hikmat",
@@ -1428,7 +1428,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T11:00:24Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cdc:d0180",
@@ -11021,26 +11021,20 @@
    "composer": null,
    "lyricist": null,
    "durationSec": null,
-   "audioUrl": "https://www.christiandiscipleschurch.org/sites/default/files/music/mp3/E0640.mp3",
+   "audioUrl": null,
    "instrumentalUrl": null,
    "accompanimentUrl": null,
-   "audioTracks": [
-    {
-     "url": "https://www.christiandiscipleschurch.org/sites/default/files/music/mp3/E0640.mp3",
-     "kind": "vocal",
-     "lang": null
-    }
-   ],
+   "audioTracks": [],
    "videoUrl": null,
    "youtubeId": null,
    "soundcloudTrackId": null,
-   "scoreUrl": "https://www.christiandiscipleschurch.org/sites/default/files/music/pdf/E0640.pdf",
+   "scoreUrl": null,
    "artworkUrl": null,
    "lyrics": null,
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T10:53:53Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cdc:e0410",
@@ -11055,20 +11049,14 @@
    "composer": null,
    "lyricist": null,
    "durationSec": null,
-   "audioUrl": "https://www.christiandiscipleschurch.org/sites/default/files/music/mp3/E0410.mp3",
+   "audioUrl": null,
    "instrumentalUrl": null,
    "accompanimentUrl": null,
-   "audioTracks": [
-    {
-     "url": "https://www.christiandiscipleschurch.org/sites/default/files/music/mp3/E0410.mp3",
-     "kind": "vocal",
-     "lang": null
-    }
-   ],
+   "audioTracks": [],
    "videoUrl": null,
    "youtubeId": null,
    "soundcloudTrackId": null,
-   "scoreUrl": "https://www.christiandiscipleschurch.org/sites/default/files/music/pdf/E0410.pdf",
+   "scoreUrl": null,
    "artworkUrl": null,
    "lyrics": null,
    "themes": [
@@ -11076,7 +11064,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T10:53:53Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cdc:d0481",
@@ -11091,20 +11079,14 @@
    "composer": null,
    "lyricist": null,
    "durationSec": null,
-   "audioUrl": "https://www.christiandiscipleschurch.org/sites/default/files/music/mp3/D0481.mp3",
+   "audioUrl": null,
    "instrumentalUrl": null,
    "accompanimentUrl": null,
-   "audioTracks": [
-    {
-     "url": "https://www.christiandiscipleschurch.org/sites/default/files/music/mp3/D0481.mp3",
-     "kind": "vocal",
-     "lang": null
-    }
-   ],
+   "audioTracks": [],
    "videoUrl": null,
    "youtubeId": null,
    "soundcloudTrackId": null,
-   "scoreUrl": "https://www.christiandiscipleschurch.org/sites/default/files/music/pdf/D0481.pdf",
+   "scoreUrl": null,
    "artworkUrl": null,
    "lyrics": null,
    "themes": [
@@ -11112,7 +11094,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T10:53:53Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cdc:e0850",
@@ -11127,20 +11109,14 @@
    "composer": null,
    "lyricist": null,
    "durationSec": null,
-   "audioUrl": "https://www.christiandiscipleschurch.org/sites/default/files/music/mp3/E0850.mp3",
+   "audioUrl": null,
    "instrumentalUrl": null,
    "accompanimentUrl": null,
-   "audioTracks": [
-    {
-     "url": "https://www.christiandiscipleschurch.org/sites/default/files/music/mp3/E0850.mp3",
-     "kind": "vocal",
-     "lang": null
-    }
-   ],
+   "audioTracks": [],
    "videoUrl": null,
    "youtubeId": null,
    "soundcloudTrackId": null,
-   "scoreUrl": "https://www.christiandiscipleschurch.org/sites/default/files/music/pdf/E0850.pdf",
+   "scoreUrl": null,
    "artworkUrl": null,
    "lyrics": null,
    "themes": [
@@ -11148,7 +11124,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T10:53:53Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cdc:e0070",
@@ -11163,26 +11139,20 @@
    "composer": null,
    "lyricist": null,
    "durationSec": null,
-   "audioUrl": "https://www.christiandiscipleschurch.org/sites/default/files/music/mp3/E0070.mp3",
+   "audioUrl": null,
    "instrumentalUrl": null,
    "accompanimentUrl": null,
-   "audioTracks": [
-    {
-     "url": "https://www.christiandiscipleschurch.org/sites/default/files/music/mp3/E0070.mp3",
-     "kind": "vocal",
-     "lang": null
-    }
-   ],
+   "audioTracks": [],
    "videoUrl": null,
    "youtubeId": null,
    "soundcloudTrackId": null,
-   "scoreUrl": "https://www.christiandiscipleschurch.org/sites/default/files/music/pdf/E0070.pdf",
+   "scoreUrl": null,
    "artworkUrl": null,
    "lyrics": null,
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T10:53:53Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cdc:e0220",
@@ -11197,26 +11167,20 @@
    "composer": null,
    "lyricist": null,
    "durationSec": null,
-   "audioUrl": "https://www.christiandiscipleschurch.org/sites/default/files/music/mp3/E0220.mp3",
+   "audioUrl": null,
    "instrumentalUrl": null,
    "accompanimentUrl": null,
-   "audioTracks": [
-    {
-     "url": "https://www.christiandiscipleschurch.org/sites/default/files/music/mp3/E0220.mp3",
-     "kind": "vocal",
-     "lang": null
-    }
-   ],
+   "audioTracks": [],
    "videoUrl": null,
    "youtubeId": null,
    "soundcloudTrackId": null,
-   "scoreUrl": "https://www.christiandiscipleschurch.org/sites/default/files/music/pdf/E0220.pdf",
+   "scoreUrl": null,
    "artworkUrl": null,
    "lyrics": null,
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T10:53:53Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cdc:e0450",
@@ -11231,20 +11195,14 @@
    "composer": null,
    "lyricist": null,
    "durationSec": null,
-   "audioUrl": "https://www.christiandiscipleschurch.org/sites/default/files/music/mp3/E0450.mp3",
+   "audioUrl": null,
    "instrumentalUrl": null,
    "accompanimentUrl": null,
-   "audioTracks": [
-    {
-     "url": "https://www.christiandiscipleschurch.org/sites/default/files/music/mp3/E0450.mp3",
-     "kind": "vocal",
-     "lang": null
-    }
-   ],
+   "audioTracks": [],
    "videoUrl": null,
    "youtubeId": null,
    "soundcloudTrackId": null,
-   "scoreUrl": "https://www.christiandiscipleschurch.org/sites/default/files/music/pdf/E0450.pdf",
+   "scoreUrl": null,
    "artworkUrl": null,
    "lyrics": null,
    "themes": [
@@ -11252,7 +11210,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T10:53:53Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cdc:e0780",
@@ -11267,20 +11225,14 @@
    "composer": null,
    "lyricist": null,
    "durationSec": null,
-   "audioUrl": "https://www.christiandiscipleschurch.org/sites/default/files/music/mp3/E0780.mp3",
+   "audioUrl": null,
    "instrumentalUrl": null,
    "accompanimentUrl": null,
-   "audioTracks": [
-    {
-     "url": "https://www.christiandiscipleschurch.org/sites/default/files/music/mp3/E0780.mp3",
-     "kind": "vocal",
-     "lang": null
-    }
-   ],
+   "audioTracks": [],
    "videoUrl": null,
    "youtubeId": null,
    "soundcloudTrackId": null,
-   "scoreUrl": "https://www.christiandiscipleschurch.org/sites/default/files/music/pdf/E0780.pdf",
+   "scoreUrl": null,
    "artworkUrl": null,
    "lyrics": null,
    "themes": [
@@ -11288,7 +11240,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T10:53:53Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cdc:e0670",
@@ -11303,20 +11255,14 @@
    "composer": null,
    "lyricist": null,
    "durationSec": null,
-   "audioUrl": "https://www.christiandiscipleschurch.org/sites/default/files/music/mp3/E0670.mp3",
+   "audioUrl": null,
    "instrumentalUrl": null,
    "accompanimentUrl": null,
-   "audioTracks": [
-    {
-     "url": "https://www.christiandiscipleschurch.org/sites/default/files/music/mp3/E0670.mp3",
-     "kind": "vocal",
-     "lang": null
-    }
-   ],
+   "audioTracks": [],
    "videoUrl": null,
    "youtubeId": null,
    "soundcloudTrackId": null,
-   "scoreUrl": "https://www.christiandiscipleschurch.org/sites/default/files/music/pdf/E0670.pdf",
+   "scoreUrl": null,
    "artworkUrl": null,
    "lyrics": null,
    "themes": [
@@ -11324,7 +11270,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T10:53:53Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cdc:e0145",
@@ -11339,20 +11285,14 @@
    "composer": null,
    "lyricist": null,
    "durationSec": null,
-   "audioUrl": "https://www.christiandiscipleschurch.org/sites/default/files/music/mp3/E0145.mp3",
+   "audioUrl": null,
    "instrumentalUrl": null,
    "accompanimentUrl": null,
-   "audioTracks": [
-    {
-     "url": "https://www.christiandiscipleschurch.org/sites/default/files/music/mp3/E0145.mp3",
-     "kind": "vocal",
-     "lang": null
-    }
-   ],
+   "audioTracks": [],
    "videoUrl": null,
    "youtubeId": null,
    "soundcloudTrackId": null,
-   "scoreUrl": "https://www.christiandiscipleschurch.org/sites/default/files/music/pdf/E0145.pdf",
+   "scoreUrl": null,
    "artworkUrl": null,
    "lyrics": null,
    "themes": [
@@ -11360,7 +11300,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T10:53:53Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cdc:e0980",
@@ -11375,26 +11315,20 @@
    "composer": null,
    "lyricist": null,
    "durationSec": null,
-   "audioUrl": "https://www.christiandiscipleschurch.org/sites/default/files/music/mp3/E0980.mp3",
+   "audioUrl": null,
    "instrumentalUrl": null,
    "accompanimentUrl": null,
-   "audioTracks": [
-    {
-     "url": "https://www.christiandiscipleschurch.org/sites/default/files/music/mp3/E0980.mp3",
-     "kind": "vocal",
-     "lang": null
-    }
-   ],
+   "audioTracks": [],
    "videoUrl": null,
    "youtubeId": null,
    "soundcloudTrackId": null,
-   "scoreUrl": "https://www.christiandiscipleschurch.org/sites/default/files/music/pdf/E0980.pdf",
+   "scoreUrl": null,
    "artworkUrl": null,
    "lyrics": null,
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T10:53:53Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cdc:e0477",
@@ -11409,26 +11343,20 @@
    "composer": null,
    "lyricist": null,
    "durationSec": null,
-   "audioUrl": "https://www.christiandiscipleschurch.org/sites/default/files/music/mp3/E0477.mp3",
+   "audioUrl": null,
    "instrumentalUrl": null,
    "accompanimentUrl": null,
-   "audioTracks": [
-    {
-     "url": "https://www.christiandiscipleschurch.org/sites/default/files/music/mp3/E0477.mp3",
-     "kind": "vocal",
-     "lang": null
-    }
-   ],
+   "audioTracks": [],
    "videoUrl": null,
    "youtubeId": null,
    "soundcloudTrackId": null,
-   "scoreUrl": "https://www.christiandiscipleschurch.org/sites/default/files/music/pdf/E0477.pdf",
+   "scoreUrl": null,
    "artworkUrl": null,
    "lyrics": null,
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T10:53:53Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cdc:e0080",
@@ -11443,26 +11371,20 @@
    "composer": null,
    "lyricist": null,
    "durationSec": null,
-   "audioUrl": "https://www.christiandiscipleschurch.org/sites/default/files/music/mp3/E0080.mp3",
+   "audioUrl": null,
    "instrumentalUrl": null,
    "accompanimentUrl": null,
-   "audioTracks": [
-    {
-     "url": "https://www.christiandiscipleschurch.org/sites/default/files/music/mp3/E0080.mp3",
-     "kind": "vocal",
-     "lang": null
-    }
-   ],
+   "audioTracks": [],
    "videoUrl": null,
    "youtubeId": null,
    "soundcloudTrackId": null,
-   "scoreUrl": "https://www.christiandiscipleschurch.org/sites/default/files/music/pdf/E0080.pdf",
+   "scoreUrl": null,
    "artworkUrl": null,
    "lyrics": null,
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T10:53:53Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cdc:e0590",
@@ -11477,26 +11399,20 @@
    "composer": null,
    "lyricist": null,
    "durationSec": null,
-   "audioUrl": "https://www.christiandiscipleschurch.org/sites/default/files/music/mp3/E0590.mp3",
+   "audioUrl": null,
    "instrumentalUrl": null,
    "accompanimentUrl": null,
-   "audioTracks": [
-    {
-     "url": "https://www.christiandiscipleschurch.org/sites/default/files/music/mp3/E0590.mp3",
-     "kind": "vocal",
-     "lang": null
-    }
-   ],
+   "audioTracks": [],
    "videoUrl": null,
    "youtubeId": null,
    "soundcloudTrackId": null,
-   "scoreUrl": "https://www.christiandiscipleschurch.org/sites/default/files/music/pdf/E0590.pdf",
+   "scoreUrl": null,
    "artworkUrl": null,
    "lyrics": null,
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T10:53:53Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cdc:e0380",
@@ -11511,26 +11427,20 @@
    "composer": null,
    "lyricist": null,
    "durationSec": null,
-   "audioUrl": "https://www.christiandiscipleschurch.org/sites/default/files/music/mp3/E0380.mp3",
+   "audioUrl": null,
    "instrumentalUrl": null,
    "accompanimentUrl": null,
-   "audioTracks": [
-    {
-     "url": "https://www.christiandiscipleschurch.org/sites/default/files/music/mp3/E0380.mp3",
-     "kind": "vocal",
-     "lang": null
-    }
-   ],
+   "audioTracks": [],
    "videoUrl": null,
    "youtubeId": null,
    "soundcloudTrackId": null,
-   "scoreUrl": "https://www.christiandiscipleschurch.org/sites/default/files/music/pdf/E0380.pdf",
+   "scoreUrl": null,
    "artworkUrl": null,
    "lyrics": null,
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T10:53:53Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cdc:e0610",
@@ -11545,26 +11455,20 @@
    "composer": null,
    "lyricist": null,
    "durationSec": null,
-   "audioUrl": "https://www.christiandiscipleschurch.org/sites/default/files/music/mp3/E0610.mp3",
+   "audioUrl": null,
    "instrumentalUrl": null,
    "accompanimentUrl": null,
-   "audioTracks": [
-    {
-     "url": "https://www.christiandiscipleschurch.org/sites/default/files/music/mp3/E0610.mp3",
-     "kind": "vocal",
-     "lang": null
-    }
-   ],
+   "audioTracks": [],
    "videoUrl": null,
    "youtubeId": null,
    "soundcloudTrackId": null,
-   "scoreUrl": "https://www.christiandiscipleschurch.org/sites/default/files/music/pdf/E0610.pdf",
+   "scoreUrl": null,
    "artworkUrl": null,
    "lyrics": null,
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T10:53:53Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cdc:e0076",
@@ -11579,25 +11483,14 @@
    "composer": null,
    "lyricist": null,
    "durationSec": null,
-   "audioUrl": "https://www.christiandiscipleschurch.org/sites/default/files/music/mp3/E0076.mp3",
-   "instrumentalUrl": "https://www.christiandiscipleschurch.org/sites/default/files/music/mp3/E0076i.mp3",
+   "audioUrl": null,
+   "instrumentalUrl": null,
    "accompanimentUrl": null,
-   "audioTracks": [
-    {
-     "url": "https://www.christiandiscipleschurch.org/sites/default/files/music/mp3/E0076.mp3",
-     "kind": "vocal",
-     "lang": null
-    },
-    {
-     "url": "https://www.christiandiscipleschurch.org/sites/default/files/music/mp3/E0076i.mp3",
-     "kind": "instrumental",
-     "lang": null
-    }
-   ],
+   "audioTracks": [],
    "videoUrl": null,
    "youtubeId": null,
    "soundcloudTrackId": null,
-   "scoreUrl": "https://www.christiandiscipleschurch.org/sites/default/files/music/pdf/E0076.pdf",
+   "scoreUrl": null,
    "artworkUrl": null,
    "lyrics": null,
    "themes": [
@@ -11605,7 +11498,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T10:53:53Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cdc:e0120",
@@ -11620,20 +11513,14 @@
    "composer": null,
    "lyricist": null,
    "durationSec": null,
-   "audioUrl": "https://www.christiandiscipleschurch.org/sites/default/files/music/mp3/E0120.mp3",
+   "audioUrl": null,
    "instrumentalUrl": null,
    "accompanimentUrl": null,
-   "audioTracks": [
-    {
-     "url": "https://www.christiandiscipleschurch.org/sites/default/files/music/mp3/E0120.mp3",
-     "kind": "vocal",
-     "lang": null
-    }
-   ],
+   "audioTracks": [],
    "videoUrl": null,
    "youtubeId": null,
    "soundcloudTrackId": null,
-   "scoreUrl": "https://www.christiandiscipleschurch.org/sites/default/files/music/pdf/E0120.pdf",
+   "scoreUrl": null,
    "artworkUrl": null,
    "lyrics": null,
    "themes": [
@@ -11641,7 +11528,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T10:53:53Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cdc:e0910",
@@ -11656,26 +11543,20 @@
    "composer": null,
    "lyricist": null,
    "durationSec": null,
-   "audioUrl": "https://www.christiandiscipleschurch.org/sites/default/files/music/mp3/E0910.mp3",
+   "audioUrl": null,
    "instrumentalUrl": null,
    "accompanimentUrl": null,
-   "audioTracks": [
-    {
-     "url": "https://www.christiandiscipleschurch.org/sites/default/files/music/mp3/E0910.mp3",
-     "kind": "vocal",
-     "lang": null
-    }
-   ],
+   "audioTracks": [],
    "videoUrl": null,
    "youtubeId": null,
    "soundcloudTrackId": null,
-   "scoreUrl": "https://www.christiandiscipleschurch.org/sites/default/files/music/pdf/E0910.pdf",
+   "scoreUrl": null,
    "artworkUrl": null,
    "lyrics": null,
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T10:53:53Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cdc:e1130",
@@ -11690,20 +11571,14 @@
    "composer": null,
    "lyricist": null,
    "durationSec": null,
-   "audioUrl": "https://www.christiandiscipleschurch.org/sites/default/files/music/mp3/E1130.mp3",
+   "audioUrl": null,
    "instrumentalUrl": null,
    "accompanimentUrl": null,
-   "audioTracks": [
-    {
-     "url": "https://www.christiandiscipleschurch.org/sites/default/files/music/mp3/E1130.mp3",
-     "kind": "vocal",
-     "lang": null
-    }
-   ],
+   "audioTracks": [],
    "videoUrl": null,
    "youtubeId": null,
    "soundcloudTrackId": null,
-   "scoreUrl": "https://www.christiandiscipleschurch.org/sites/default/files/music/pdf/E1130.pdf",
+   "scoreUrl": null,
    "artworkUrl": null,
    "lyrics": null,
    "themes": [
@@ -11711,7 +11586,7 @@
    ],
    "verse": "Psalms 100",
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T10:53:53Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cdc:e0365",
@@ -11726,20 +11601,14 @@
    "composer": null,
    "lyricist": null,
    "durationSec": null,
-   "audioUrl": "https://www.christiandiscipleschurch.org/sites/default/files/music/mp3/E0365.mp3",
+   "audioUrl": null,
    "instrumentalUrl": null,
    "accompanimentUrl": null,
-   "audioTracks": [
-    {
-     "url": "https://www.christiandiscipleschurch.org/sites/default/files/music/mp3/E0365.mp3",
-     "kind": "vocal",
-     "lang": null
-    }
-   ],
+   "audioTracks": [],
    "videoUrl": null,
    "youtubeId": null,
    "soundcloudTrackId": null,
-   "scoreUrl": "https://www.christiandiscipleschurch.org/sites/default/files/music/pdf/E0365.pdf",
+   "scoreUrl": null,
    "artworkUrl": null,
    "lyrics": null,
    "themes": [
@@ -11747,7 +11616,7 @@
    ],
    "verse": "Psalms 23",
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T10:53:53Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cdc:e0050",
@@ -11762,20 +11631,14 @@
    "composer": null,
    "lyricist": null,
    "durationSec": null,
-   "audioUrl": "https://www.christiandiscipleschurch.org/sites/default/files/music/mp3/E0050.mp3",
+   "audioUrl": null,
    "instrumentalUrl": null,
    "accompanimentUrl": null,
-   "audioTracks": [
-    {
-     "url": "https://www.christiandiscipleschurch.org/sites/default/files/music/mp3/E0050.mp3",
-     "kind": "vocal",
-     "lang": null
-    }
-   ],
+   "audioTracks": [],
    "videoUrl": null,
    "youtubeId": null,
    "soundcloudTrackId": null,
-   "scoreUrl": "https://www.christiandiscipleschurch.org/sites/default/files/music/pdf/E0050.pdf",
+   "scoreUrl": null,
    "artworkUrl": null,
    "lyrics": null,
    "themes": [
@@ -11783,7 +11646,7 @@
    ],
    "verse": "Psalms 43",
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T10:53:53Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cdc:e0490",
@@ -11798,20 +11661,14 @@
    "composer": null,
    "lyricist": null,
    "durationSec": null,
-   "audioUrl": "https://www.christiandiscipleschurch.org/sites/default/files/music/mp3/E0490.mp3",
+   "audioUrl": null,
    "instrumentalUrl": null,
    "accompanimentUrl": null,
-   "audioTracks": [
-    {
-     "url": "https://www.christiandiscipleschurch.org/sites/default/files/music/mp3/E0490.mp3",
-     "kind": "vocal",
-     "lang": null
-    }
-   ],
+   "audioTracks": [],
    "videoUrl": null,
    "youtubeId": null,
    "soundcloudTrackId": null,
-   "scoreUrl": "https://www.christiandiscipleschurch.org/sites/default/files/music/pdf/E0490.pdf",
+   "scoreUrl": null,
    "artworkUrl": null,
    "lyrics": null,
    "themes": [
@@ -11819,7 +11676,7 @@
    ],
    "verse": "Psalms 51",
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T10:53:53Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cdc:d0506",
@@ -11834,20 +11691,14 @@
    "composer": null,
    "lyricist": null,
    "durationSec": null,
-   "audioUrl": "https://www.christiandiscipleschurch.org/sites/default/files/music/mp3/D0506.mp3",
+   "audioUrl": null,
    "instrumentalUrl": null,
    "accompanimentUrl": null,
-   "audioTracks": [
-    {
-     "url": "https://www.christiandiscipleschurch.org/sites/default/files/music/mp3/D0506.mp3",
-     "kind": "vocal",
-     "lang": null
-    }
-   ],
+   "audioTracks": [],
    "videoUrl": null,
    "youtubeId": null,
    "soundcloudTrackId": null,
-   "scoreUrl": "https://www.christiandiscipleschurch.org/sites/default/files/music/pdf/D0506.pdf",
+   "scoreUrl": null,
    "artworkUrl": null,
    "lyrics": null,
    "themes": [
@@ -11855,7 +11706,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T10:53:53Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cdc:e0019",
@@ -11870,30 +11721,14 @@
    "composer": null,
    "lyricist": null,
    "durationSec": null,
-   "audioUrl": "https://www.christiandiscipleschurch.org/sites/default/files/music/mp3/E0019.mp3",
-   "instrumentalUrl": "https://www.christiandiscipleschurch.org/sites/default/files/music/mp3/E0019i.mp3",
-   "accompanimentUrl": "https://www.christiandiscipleschurch.org/sites/default/files/music/mp3/E0019m.mp3",
-   "audioTracks": [
-    {
-     "url": "https://www.christiandiscipleschurch.org/sites/default/files/music/mp3/E0019.mp3",
-     "kind": "vocal",
-     "lang": null
-    },
-    {
-     "url": "https://www.christiandiscipleschurch.org/sites/default/files/music/mp3/E0019i.mp3",
-     "kind": "instrumental",
-     "lang": null
-    },
-    {
-     "url": "https://www.christiandiscipleschurch.org/sites/default/files/music/mp3/E0019m.mp3",
-     "kind": "accompaniment",
-     "lang": null
-    }
-   ],
+   "audioUrl": null,
+   "instrumentalUrl": null,
+   "accompanimentUrl": null,
+   "audioTracks": [],
    "videoUrl": null,
    "youtubeId": null,
    "soundcloudTrackId": null,
-   "scoreUrl": "https://www.christiandiscipleschurch.org/sites/default/files/music/pdf/E0019.pdf",
+   "scoreUrl": null,
    "artworkUrl": null,
    "lyrics": null,
    "themes": [
@@ -11903,7 +11738,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T10:53:53Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cdc:e0820",
@@ -11918,20 +11753,14 @@
    "composer": null,
    "lyricist": null,
    "durationSec": null,
-   "audioUrl": "https://www.christiandiscipleschurch.org/sites/default/files/music/mp3/E0820.mp3",
+   "audioUrl": null,
    "instrumentalUrl": null,
    "accompanimentUrl": null,
-   "audioTracks": [
-    {
-     "url": "https://www.christiandiscipleschurch.org/sites/default/files/music/mp3/E0820.mp3",
-     "kind": "vocal",
-     "lang": null
-    }
-   ],
+   "audioTracks": [],
    "videoUrl": null,
    "youtubeId": null,
    "soundcloudTrackId": null,
-   "scoreUrl": "https://www.christiandiscipleschurch.org/sites/default/files/music/pdf/E0820.pdf",
+   "scoreUrl": null,
    "artworkUrl": null,
    "lyrics": null,
    "themes": [
@@ -11939,7 +11768,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T10:53:53Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cdc:e0255",
@@ -11954,20 +11783,14 @@
    "composer": null,
    "lyricist": null,
    "durationSec": null,
-   "audioUrl": "https://www.christiandiscipleschurch.org/sites/default/files/music/mp3/E0255.mp3",
+   "audioUrl": null,
    "instrumentalUrl": null,
    "accompanimentUrl": null,
-   "audioTracks": [
-    {
-     "url": "https://www.christiandiscipleschurch.org/sites/default/files/music/mp3/E0255.mp3",
-     "kind": "vocal",
-     "lang": null
-    }
-   ],
+   "audioTracks": [],
    "videoUrl": null,
    "youtubeId": null,
    "soundcloudTrackId": null,
-   "scoreUrl": "https://www.christiandiscipleschurch.org/sites/default/files/music/pdf/E0255.pdf",
+   "scoreUrl": null,
    "artworkUrl": null,
    "lyrics": null,
    "themes": [
@@ -11975,7 +11798,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T10:53:53Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cdc:e0049",
@@ -11990,30 +11813,14 @@
    "composer": null,
    "lyricist": null,
    "durationSec": null,
-   "audioUrl": "https://www.christiandiscipleschurch.org/sites/default/files/music/mp3/E0049.mp3",
-   "instrumentalUrl": "https://www.christiandiscipleschurch.org/sites/default/files/music/mp3/E0049i.mp3",
-   "accompanimentUrl": "https://www.christiandiscipleschurch.org/sites/default/files/music/mp3/E0049m.mp3",
-   "audioTracks": [
-    {
-     "url": "https://www.christiandiscipleschurch.org/sites/default/files/music/mp3/E0049.mp3",
-     "kind": "vocal",
-     "lang": null
-    },
-    {
-     "url": "https://www.christiandiscipleschurch.org/sites/default/files/music/mp3/E0049i.mp3",
-     "kind": "instrumental",
-     "lang": null
-    },
-    {
-     "url": "https://www.christiandiscipleschurch.org/sites/default/files/music/mp3/E0049m.mp3",
-     "kind": "accompaniment",
-     "lang": null
-    }
-   ],
+   "audioUrl": null,
+   "instrumentalUrl": null,
+   "accompanimentUrl": null,
+   "audioTracks": [],
    "videoUrl": null,
    "youtubeId": null,
    "soundcloudTrackId": null,
-   "scoreUrl": "https://www.christiandiscipleschurch.org/sites/default/files/music/pdf/E0049.pdf",
+   "scoreUrl": null,
    "artworkUrl": null,
    "lyrics": null,
    "themes": [
@@ -12021,7 +11828,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T10:53:53Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cdc:e0079",
@@ -12036,25 +11843,14 @@
    "composer": null,
    "lyricist": null,
    "durationSec": null,
-   "audioUrl": "https://www.christiandiscipleschurch.org/sites/default/files/music/mp3/E0079.mp3",
-   "instrumentalUrl": "https://www.christiandiscipleschurch.org/sites/default/files/music/mp3/E0079i.mp3",
+   "audioUrl": null,
+   "instrumentalUrl": null,
    "accompanimentUrl": null,
-   "audioTracks": [
-    {
-     "url": "https://www.christiandiscipleschurch.org/sites/default/files/music/mp3/E0079.mp3",
-     "kind": "vocal",
-     "lang": null
-    },
-    {
-     "url": "https://www.christiandiscipleschurch.org/sites/default/files/music/mp3/E0079i.mp3",
-     "kind": "instrumental",
-     "lang": null
-    }
-   ],
+   "audioTracks": [],
    "videoUrl": null,
    "youtubeId": null,
    "soundcloudTrackId": null,
-   "scoreUrl": "https://www.christiandiscipleschurch.org/sites/default/files/music/pdf/E0079.pdf",
+   "scoreUrl": null,
    "artworkUrl": null,
    "lyrics": null,
    "themes": [
@@ -12063,7 +11859,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T10:53:53Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cdc:e0250",
@@ -12078,20 +11874,14 @@
    "composer": null,
    "lyricist": null,
    "durationSec": null,
-   "audioUrl": "https://www.christiandiscipleschurch.org/sites/default/files/music/mp3/E0250.mp3",
+   "audioUrl": null,
    "instrumentalUrl": null,
    "accompanimentUrl": null,
-   "audioTracks": [
-    {
-     "url": "https://www.christiandiscipleschurch.org/sites/default/files/music/mp3/E0250.mp3",
-     "kind": "vocal",
-     "lang": null
-    }
-   ],
+   "audioTracks": [],
    "videoUrl": null,
    "youtubeId": null,
    "soundcloudTrackId": null,
-   "scoreUrl": "https://www.christiandiscipleschurch.org/sites/default/files/music/pdf/E0250.pdf",
+   "scoreUrl": null,
    "artworkUrl": null,
    "lyrics": null,
    "themes": [
@@ -12099,7 +11889,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T10:53:53Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cdc:e0034",
@@ -12114,20 +11904,14 @@
    "composer": null,
    "lyricist": null,
    "durationSec": null,
-   "audioUrl": "https://www.christiandiscipleschurch.org/sites/default/files/music/mp3/E0034.mp3",
+   "audioUrl": null,
    "instrumentalUrl": null,
    "accompanimentUrl": null,
-   "audioTracks": [
-    {
-     "url": "https://www.christiandiscipleschurch.org/sites/default/files/music/mp3/E0034.mp3",
-     "kind": "vocal",
-     "lang": null
-    }
-   ],
+   "audioTracks": [],
    "videoUrl": null,
    "youtubeId": null,
    "soundcloudTrackId": null,
-   "scoreUrl": "https://www.christiandiscipleschurch.org/sites/default/files/music/pdf/E0034.pdf",
+   "scoreUrl": null,
    "artworkUrl": null,
    "lyrics": null,
    "themes": [
@@ -12136,7 +11920,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T10:53:53Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cdc:e0092",
@@ -12151,25 +11935,14 @@
    "composer": null,
    "lyricist": null,
    "durationSec": null,
-   "audioUrl": "https://www.christiandiscipleschurch.org/sites/default/files/music/mp3/E0092.mp3",
-   "instrumentalUrl": "https://www.christiandiscipleschurch.org/sites/default/files/music/mp3/E0092i.mp3",
+   "audioUrl": null,
+   "instrumentalUrl": null,
    "accompanimentUrl": null,
-   "audioTracks": [
-    {
-     "url": "https://www.christiandiscipleschurch.org/sites/default/files/music/mp3/E0092.mp3",
-     "kind": "vocal",
-     "lang": null
-    },
-    {
-     "url": "https://www.christiandiscipleschurch.org/sites/default/files/music/mp3/E0092i.mp3",
-     "kind": "instrumental",
-     "lang": null
-    }
-   ],
+   "audioTracks": [],
    "videoUrl": null,
    "youtubeId": null,
    "soundcloudTrackId": null,
-   "scoreUrl": "https://www.christiandiscipleschurch.org/sites/default/files/music/pdf/E0092.pdf",
+   "scoreUrl": null,
    "artworkUrl": null,
    "lyrics": null,
    "themes": [
@@ -12178,7 +11951,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T10:53:53Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cdc:e0710",
@@ -12193,20 +11966,14 @@
    "composer": null,
    "lyricist": null,
    "durationSec": null,
-   "audioUrl": "https://www.christiandiscipleschurch.org/sites/default/files/music/mp3/E0710.mp3",
+   "audioUrl": null,
    "instrumentalUrl": null,
    "accompanimentUrl": null,
-   "audioTracks": [
-    {
-     "url": "https://www.christiandiscipleschurch.org/sites/default/files/music/mp3/E0710.mp3",
-     "kind": "vocal",
-     "lang": null
-    }
-   ],
+   "audioTracks": [],
    "videoUrl": null,
    "youtubeId": null,
    "soundcloudTrackId": null,
-   "scoreUrl": "https://www.christiandiscipleschurch.org/sites/default/files/music/pdf/E0710.pdf",
+   "scoreUrl": null,
    "artworkUrl": null,
    "lyrics": null,
    "themes": [
@@ -12214,7 +11981,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T10:53:53Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cdc:e0032",
@@ -12229,20 +11996,14 @@
    "composer": null,
    "lyricist": null,
    "durationSec": null,
-   "audioUrl": "https://www.christiandiscipleschurch.org/sites/default/files/music/mp3/E0032.mp3",
+   "audioUrl": null,
    "instrumentalUrl": null,
    "accompanimentUrl": null,
-   "audioTracks": [
-    {
-     "url": "https://www.christiandiscipleschurch.org/sites/default/files/music/mp3/E0032.mp3",
-     "kind": "vocal",
-     "lang": null
-    }
-   ],
+   "audioTracks": [],
    "videoUrl": null,
    "youtubeId": null,
    "soundcloudTrackId": null,
-   "scoreUrl": "https://www.christiandiscipleschurch.org/sites/default/files/music/pdf/E0032.pdf",
+   "scoreUrl": null,
    "artworkUrl": null,
    "lyrics": null,
    "themes": [
@@ -12251,7 +12012,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T10:53:53Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cdc:e0140",
@@ -12266,20 +12027,14 @@
    "composer": null,
    "lyricist": null,
    "durationSec": null,
-   "audioUrl": "https://www.christiandiscipleschurch.org/sites/default/files/music/mp3/E0140.mp3",
+   "audioUrl": null,
    "instrumentalUrl": null,
    "accompanimentUrl": null,
-   "audioTracks": [
-    {
-     "url": "https://www.christiandiscipleschurch.org/sites/default/files/music/mp3/E0140.mp3",
-     "kind": "vocal",
-     "lang": null
-    }
-   ],
+   "audioTracks": [],
    "videoUrl": null,
    "youtubeId": null,
    "soundcloudTrackId": null,
-   "scoreUrl": "https://www.christiandiscipleschurch.org/sites/default/files/music/pdf/E0140.pdf",
+   "scoreUrl": null,
    "artworkUrl": null,
    "lyrics": null,
    "themes": [
@@ -12288,7 +12043,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T10:53:53Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cdc:e0016",
@@ -12303,30 +12058,14 @@
    "composer": null,
    "lyricist": null,
    "durationSec": null,
-   "audioUrl": "https://www.christiandiscipleschurch.org/sites/default/files/music/mp3/E0016.mp3",
-   "instrumentalUrl": "https://www.christiandiscipleschurch.org/sites/default/files/music/mp3/E0016i.mp3",
-   "accompanimentUrl": "https://www.christiandiscipleschurch.org/sites/default/files/music/mp3/E0016m.mp3",
-   "audioTracks": [
-    {
-     "url": "https://www.christiandiscipleschurch.org/sites/default/files/music/mp3/E0016.mp3",
-     "kind": "vocal",
-     "lang": null
-    },
-    {
-     "url": "https://www.christiandiscipleschurch.org/sites/default/files/music/mp3/E0016i.mp3",
-     "kind": "instrumental",
-     "lang": null
-    },
-    {
-     "url": "https://www.christiandiscipleschurch.org/sites/default/files/music/mp3/E0016m.mp3",
-     "kind": "accompaniment",
-     "lang": null
-    }
-   ],
+   "audioUrl": null,
+   "instrumentalUrl": null,
+   "accompanimentUrl": null,
+   "audioTracks": [],
    "videoUrl": null,
    "youtubeId": null,
    "soundcloudTrackId": null,
-   "scoreUrl": "https://www.christiandiscipleschurch.org/sites/default/files/music/pdf/E0016.pdf",
+   "scoreUrl": null,
    "artworkUrl": null,
    "lyrics": null,
    "themes": [
@@ -12334,7 +12073,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T10:53:53Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cgdc:2026-03",
@@ -12370,7 +12109,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-09T10:56:59Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cgdc:2026-04",
@@ -12404,7 +12143,7 @@
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-09T10:56:59Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cgdc:2026-05",
@@ -12438,7 +12177,7 @@
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-09T10:56:59Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cgdc:2026-01",
@@ -12472,7 +12211,7 @@
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-09T10:56:59Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cgdc:2026-02",
@@ -12506,7 +12245,7 @@
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-09T10:56:59Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cgdc:2023-13",
@@ -12540,7 +12279,7 @@
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-09T10:56:59Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cgdc:2025-14",
@@ -12574,7 +12313,7 @@
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-09T10:56:59Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cgdc:2025-01",
@@ -12608,7 +12347,7 @@
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-09T10:56:59Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cgdc:2025-15",
@@ -12642,7 +12381,7 @@
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-09T10:56:59Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cgdc:2025-02",
@@ -12676,7 +12415,7 @@
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-09T10:56:59Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cgdc:2023-03",
@@ -12710,7 +12449,7 @@
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-09T10:53:53Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cgdc:2024-16",
@@ -12746,7 +12485,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-09T10:56:59Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cgdc:2023-06",
@@ -12782,7 +12521,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-09T10:53:53Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cgdc:2026-13",
@@ -12816,7 +12555,7 @@
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-09T10:56:59Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cgdc:2026-12",
@@ -12853,7 +12592,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-09T10:56:59Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cgdc:2024-12",
@@ -12889,7 +12628,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-09T10:56:59Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cgdc:2026-09",
@@ -12925,7 +12664,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-09T10:56:59Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cgdc:2024-03",
@@ -12962,7 +12701,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-09T10:56:59Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cgdc:2025-10",
@@ -12996,7 +12735,7 @@
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-09T10:56:59Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cgdc:2023-01",
@@ -13030,7 +12769,7 @@
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-09T10:53:53Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cgdc:2025-04",
@@ -13064,7 +12803,7 @@
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-09T10:56:59Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cgdc:2024-04",
@@ -13098,7 +12837,7 @@
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-09T10:56:59Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cgdc:2024-13",
@@ -13134,7 +12873,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-09T10:56:59Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cgdc:2024-09",
@@ -13168,7 +12907,7 @@
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-09T10:56:59Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cgdc:2026-06",
@@ -13202,7 +12941,7 @@
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-09T10:56:59Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cgdc:2024-01",
@@ -13236,7 +12975,7 @@
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-09T10:56:59Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cgdc:2025-09",
@@ -13270,7 +13009,7 @@
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-09T10:56:59Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cgdc:2025-08",
@@ -13304,7 +13043,7 @@
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-09T10:56:59Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cgdc:2024-08",
@@ -13342,7 +13081,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-09T10:56:59Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cgdc:2026-14",
@@ -13378,7 +13117,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-09T10:56:59Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cgdc:2024-06",
@@ -13412,7 +13151,7 @@
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-09T10:56:59Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cgdc:2025-16",
@@ -13446,7 +13185,7 @@
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-09T10:56:59Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cgdc:2025-07",
@@ -13480,7 +13219,7 @@
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-09T10:56:59Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cgdc:2024-17",
@@ -13514,7 +13253,7 @@
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-09T10:56:59Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cgdc:2023-02",
@@ -13550,7 +13289,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-09T10:53:53Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cgdc:2023-12",
@@ -13586,7 +13325,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-09T10:53:53Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cgdc:2023-09",
@@ -13622,7 +13361,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-09T10:53:53Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cgdc:2025-17",
@@ -13658,7 +13397,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-09T10:56:59Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cgdc:2025-13",
@@ -13692,7 +13431,7 @@
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-09T10:56:59Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cgdc:2026-11",
@@ -13726,7 +13465,7 @@
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-09T10:56:59Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cgdc:2025-06",
@@ -13762,7 +13501,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-09T10:56:59Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cgdc:2023-14",
@@ -13798,7 +13537,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-09T10:53:53Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cgdc:2024-14",
@@ -13834,7 +13573,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-09T10:56:59Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cgdc:2024-11",
@@ -13868,7 +13607,7 @@
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-09T10:56:59Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cgdc:2025-12",
@@ -13902,7 +13641,7 @@
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-09T10:56:59Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cgdc:2024-15",
@@ -13936,7 +13675,7 @@
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-09T10:56:59Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cgdc:2024-05",
@@ -13970,7 +13709,7 @@
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-09T10:56:59Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cgdc:2026-08",
@@ -14004,7 +13743,7 @@
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-09T10:56:59Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cgdc:2026-10",
@@ -14040,7 +13779,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-09T10:56:59Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cgdc:2024-10",
@@ -14077,7 +13816,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-09T10:56:59Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cgdc:2023-05",
@@ -14113,7 +13852,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-09T10:53:53Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cgdc:2023-07",
@@ -14147,7 +13886,7 @@
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-09T10:53:53Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cgdc:2023-04",
@@ -14181,7 +13920,7 @@
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-09T10:53:53Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cgdc:2023-08",
@@ -14215,7 +13954,7 @@
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-09T10:53:53Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cgdc:2024-02",
@@ -14249,7 +13988,7 @@
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-09T10:56:59Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cgdc:2025-18",
@@ -14285,7 +14024,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-09T10:56:59Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cgdc:2025-05",
@@ -14321,7 +14060,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-09T10:56:59Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cgdc:2023-11",
@@ -14357,7 +14096,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-09T10:53:53Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cgdc:2023-10",
@@ -14393,7 +14132,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-09T10:53:53Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cgdc:2026-07",
@@ -14427,7 +14166,7 @@
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-09T10:56:59Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cgdc:2025-11",
@@ -14461,7 +14200,7 @@
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-09T10:56:59Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cgdc:2025-03",
@@ -14495,7 +14234,7 @@
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-09T10:56:59Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "cgdc:2024-07",
@@ -14529,7 +14268,7 @@
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-09T10:56:59Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "fydt:299",
@@ -15682,7 +15421,7 @@
    ],
    "verse": "Matthew 5:14-16",
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T11:00:24Z"
+   "updatedAt": "2026-08-09T23:58:33Z"
   },
   {
    "id": "fydt:569",
