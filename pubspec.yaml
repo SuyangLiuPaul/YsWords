@@ -164,6 +164,10 @@ flutter:
     - assets/bible_evidence.json
     - assets/strongs/
     - assets/originals/
+    # Strong's tagging for 和合本雅伟版 — which word on screen
+    # renders which original word. 13 MB, one file per book,
+    # loaded lazily by TaggedTextService (never all at once).
+    - assets/tagged/cuvs-yhwh/
     - assets/sermons/index.json
     - assets/sermons/refs.json
     - assets/family_tree.json
