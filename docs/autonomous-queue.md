@@ -151,17 +151,41 @@ the Traditional that carries text the translation does not have there.
       Verified by running it against the pre-fix data, where it fails
       with the right diagnosis.
 
-- [ ] **Extend that audit to the other versions.** Same checks over
-      kjv / nasb / leb / cuvs-yhwh / cuvs-yhwh-tr, which have only ever
-      been checked for duplicates, empties and mojibake. Count first and
-      report before changing anything — the gap list has to be built
-      from what each version's publisher actually omits, not assumed.
+- [x] **Extend that audit to the other five versions — done.**
+      (This and "Audit the remaining versions the same way" were the
+      same task listed twice.) kjv / nasb / leb / cuvs-yhwh /
+      cuvs-yhwh-tr: **0 duplicate references, 0 empty verses, 0 stranded
+      verse numbers**, and every book name resolves through
+      `bookNameToEnglish`, so cross-version highlights align.
 
-- [ ] **Audit the remaining versions the same way.** kjv / nasb / leb /
-      cuvs-yhwh / cuvs-yhwh-tr were checked only for duplicates,
-      empties and mojibake. Run the embedded-verse-number and
-      truncation checks over all of them and report counts before
-      changing anything.
+      **16 verses carried a character that is not in scripture** and are
+      fixed: ten stray `|` in the KJV — two of them splitting a word
+      (`hide nothing from m|e`, `he that c|alleth`) — and a stray `{`
+      (申命記 15:15) plus two stray `*` (馬太福音 9:28, 路加福音 24:34)
+      in each CUV edition. Every one settled against an independent
+      import of the same translation (SeekSparks' `kjvs.json` and
+      `cuvs-plus.json`, both different sources from ours), never by
+      writing the verse. Also fixed: all 1,764 verses of 歷代志上/下 in
+      the Traditional CUV carried id prefix `000` and collided with each
+      other — dormant, because the app computes its own id, but wrong.
+
+      Left alone as publisher convention, not damage: the NASB's `[...]`
+      round disputed passages and `*` for the historical present, the
+      LEB's `[...]`/`{...}`, and the CUV editions' `[雅伟]`/`[基督]`.
+      Verse-count differences from the KJV are versification (the
+      critical text's omissions and merges), enumerated in the test.
+      `test/bible_version_integrity_test.dart` pins all of it and fails
+      with the right diagnosis on the pre-fix data.
+
+- [ ] **The LEB's 116 Psalm superscriptions never render.** Found by the
+      audit above. `assets/leb.json` ships them as rows with
+      `verse: "title"` and a null id — legitimately, they are part of
+      the text but not numbered verses — and `fetch_verses.dart:329`
+      filters out every non-numeric verse, so the app silently drops
+      them. Not a falsehood, so it does not jump the queue, but the LEB
+      reader is missing text the asset already has. Needs a model +
+      rendering decision (a superscription is not a verse and should not
+      get a verse number or a highlight id), so it is not a data fix.
 
 ## P1 — Bible study correctness
 
@@ -174,7 +198,8 @@ the Traditional that carries text the translation does not have there.
       **The site was unreachable when this was queued, and that is the
       only reason it is not done.** Retry the fetch first each
       iteration; everything below is already established, so do not
-      re-derive it.
+      re-derive it. Retried 2026-08-10 (second iteration): still
+      `connect=0.000000`, no TCP connect at all.
 
       What was checked on 2026-08-10:
       - `christiandiscipleschurch.org`, `christiandc.org` and
