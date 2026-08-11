@@ -723,6 +723,34 @@ has never seen this repo.
 
 ## P2 — features the user asked for
 
+- [ ] **Re-probe the blocked hosts EVERY iteration, and take the work
+      the moment they answer.**
+      User, 2026-08-11: "api之前没拿到的是不是可以拿到了也加入iteration".
+      The point is that this should not depend on anyone remembering to
+      try.
+
+      `bash tools/check_media_hosts.sh` — a few seconds, exit 0 when all
+      four answer, and it names each host either way so a caller can
+      decide per host rather than all-or-nothing. Run it at the START of
+      an iteration whenever the next queue item needs one of them.
+
+      **When `fydt.org` answers**, these become possible and should be
+      taken in this order:
+      * the 578 fydt songs' artwork and the source-cover fallback,
+      * re-running the songs sync against the fydt API.
+
+      **When `www.christiandiscipleschurch.org` answers:**
+      * reconcile our Matthew sermons against the church's own 124
+        (five consecutive attempts have failed to get a TCP connection),
+      * the 402 CDC songs' artwork.
+
+      **Do not** treat a failure as a reason to retry in a loop, and do
+      not look for a way around it: from the maintainer's Mac the block
+      is a managed-device policy (GlobalProtect + CrowdStrike Falcon +
+      Jamf) and no amount of retrying will change it there. The probe
+      exists so the answer can change by itself when the same work is
+      run somewhere else, or when the policy does.
+
 - [ ] **Native should fall back to the Netlify media proxy when a host
       is unreachable. — DECIDED NOT TO SHIP YET, 2026-08-11.**
       The user chose "先不做，写进队列" after being shown the bandwidth
