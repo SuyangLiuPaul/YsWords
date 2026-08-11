@@ -5563,6 +5563,33 @@ const uiStrings = {
     'zh-Hant': '本堂詩歌 · 線上聆聽、樂譜、離線下載',
     'en': 'Hymns from our churches - listen, sheet music, offline',
   },
+  'misconceptionsTitle': {
+    'zh-Hans': '常见的圣经误解',
+    'zh-Hant': '常見的聖經誤解',
+    'en': 'Common misunderstandings',
+  },
+  'misconceptionsIntro': {
+    'zh-Hans': '大家常说的，和经文实际写的。这里每一处引用都对照过本应用所载的圣经原文；'
+        '凡学界仍有争议的，卡片会直说，而不替你选边。',
+    'zh-Hant': '大家常說的，和經文實際寫的。這裡每一處引用都對照過本應用所載的聖經原文；'
+        '凡學界仍有爭議的，卡片會直說，而不替你選邊。',
+    'en': 'What people often repeat, and what the passage actually says. '
+        'Every citation here is checked against the Bible text this app '
+        'ships. Where scholarship is genuinely divided, the card says so '
+        'instead of picking a side.',
+  },
+  'misconceptionsCatText': {
+    'zh-Hans': '经文明说', 'zh-Hant': '經文明說', 'en': 'The text says',
+  },
+  'misconceptionsCatAbsent': {
+    'zh-Hans': '圣经没有这句', 'zh-Hant': '聖經沒有這句', 'en': 'Not in scripture',
+  },
+  'misconceptionsCatTradition': {
+    'zh-Hans': '译法或传统', 'zh-Hant': '譯法或傳統', 'en': 'Translation or tradition',
+  },
+  'misconceptionsCatDisputed': {
+    'zh-Hans': '仍有争议', 'zh-Hant': '仍有爭議', 'en': 'Genuinely disputed',
+  },
   'oneGodTitle': {
     'zh-Hans': '独一真神',
     'zh-Hant': '獨一真神',

@@ -105,9 +105,19 @@ DashboardSection? parseDashboardSection(String name) {
 /// [DashboardSection] list:
 ///   • drop any unknown / duplicate names
 ///   • append any sections from [defaultDashboardOrder] that the
-///     stored list is missing (so a new section we ship later shows
-///     up at the bottom of the user's existing layout instead of
-///     being silently invisible)
+///     stored list is missing, placed **where [defaultDashboardOrder]
+///     puts it relative to the sections the user already has** — not
+///     appended to the end
+///
+/// That last point changed on 2026-08-11 and it matters. Appending was
+/// the old behaviour, and it meant a new section's default position
+/// only ever applied to fresh installs: anyone already using the app
+/// got it dumped at the bottom, under the quick links. Shipping
+/// `featured` "above Today's Evidence" would then have been true of
+/// nobody who had ever opened the app before. A new section now lands
+/// immediately before the first section that follows it in the default
+/// order and that the user actually has — and falls back to the end
+/// only when there is no such anchor.
 ///
 /// Always returns a complete list containing every enum value
 /// exactly once.
@@ -121,10 +131,21 @@ List<DashboardSection> normalizeDashboardOrder(List<String> stored) {
     out.add(s);
   }
   for (final s in defaultDashboardOrder) {
-    if (!seen.contains(s)) {
-      seen.add(s);
-      out.add(s);
+    if (seen.contains(s)) continue;
+    seen.add(s);
+
+    // Where does the default order say this belongs? Insert it before
+    // the nearest section that follows it there and is already placed.
+    final defaultIdx = defaultDashboardOrder.indexOf(s);
+    var at = out.length;
+    for (var i = defaultIdx + 1; i < defaultDashboardOrder.length; i++) {
+      final anchor = out.indexOf(defaultDashboardOrder[i]);
+      if (anchor >= 0) {
+        at = anchor;
+        break;
+      }
     }
+    out.insert(at, s);
   }
   return out;
 }

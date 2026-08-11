@@ -31,6 +31,7 @@ import 'package:yswords/pages/search_page.dart';
 import 'package:yswords/pages/settings_page.dart';
 import 'package:yswords/pages/songs_page.dart';
 import 'package:yswords/pages/one_god_page.dart';
+import 'package:yswords/pages/misconceptions_page.dart';
 import 'package:yswords/pages/stats_page.dart';
 import 'package:yswords/services/bible_evidence_service.dart';
 import 'package:yswords/services/sermon_service.dart';
@@ -835,6 +836,16 @@ class _DashboardPageState extends State<DashboardPage> {
                 // 2026-05-07 (v12): feedback tile -- mailto-driven
                 // form page that lands directly in the developer's
                 // inbox via the user's mail client.
+                // 2026-08-11: 常見的聖經誤解. Placed in the quick-link
+                // grid at the bottom, where the user asked for it —
+                // this is a reference shelf, not something to greet
+                // someone with on opening the app.
+                _LinkTile(
+                  icon: Icons.psychology_alt_outlined,
+                  label: uiStrings['misconceptionsTitle']?[locale] ??
+                      'Common misunderstandings',
+                  onTap: () => pushPage(const MisconceptionsPage()),
+                ),
                 _LinkTile(
                   icon: Icons.feedback_outlined,
                   label: uiStrings['feedback']?[locale] ?? 'Feedback',
