@@ -3,7 +3,8 @@
     "generatedAt": "2026-08-10T23:08:03Z",
     "videoBase": "https://yswords-media.netlify.app",
     "note": "Video files are NOT in git. They are deployed straight to the media site from a folder — 238 MB for episode 01 alone would bloat the repo permanently, and there are more episodes.",
-    "source": "Christian Disciples Church"
+    "source": "Christian Disciples Church",
+    "subtitleNote": "Timings from Whisper, words from the church document — see scripts/align_subtitles.py. Each recording only carries subtitles in the language it is spoken in: the Chinese and English scripts are 161 and 157 paragraphs and do not correspond, so pairing them across languages would drift."
   },
   "episodes": [
     {
@@ -19,19 +20,30 @@
           "lang": "en",
           "labelKey": "oneGodLangEn",
           "path": "/onegod/01/en.mp4",
-          "durationSec": 1038
+          "durationSec": 1038,
+          "subtitles": {
+            "en": "assets/subtitles/01/en.en.vtt"
+          }
         },
         {
           "lang": "yue",
           "labelKey": "oneGodLangYue",
           "path": "/onegod/01/yue.mp4",
-          "durationSec": 1037
+          "durationSec": 1037,
+          "subtitles": {
+            "zh-Hant": "assets/subtitles/01/yue.zh-Hant.vtt",
+            "zh-Hans": "assets/subtitles/01/yue.zh-Hans.vtt"
+          }
         },
         {
           "lang": "cmn",
           "labelKey": "oneGodLangCmn",
           "path": "/onegod/01/cmn.mp4",
-          "durationSec": 1115
+          "durationSec": 1115,
+          "subtitles": {
+            "zh-Hant": "assets/subtitles/01/cmn.zh-Hant.vtt",
+            "zh-Hans": "assets/subtitles/01/cmn.zh-Hans.vtt"
+          }
         }
       ],
       "transcript": {

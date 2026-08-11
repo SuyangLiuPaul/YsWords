@@ -8,6 +8,7 @@ import 'package:video_player/video_player.dart';
 import 'package:yswords/constants/ui_strings.dart';
 import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/models/one_god_episode.dart';
+import 'package:yswords/models/subtitle_track.dart';
 import 'package:yswords/services/one_god_service.dart';
 import 'package:yswords/utils/font_catalog.dart' show kCjkFontFallback;
 import 'package:yswords/utils/responsive.dart';
@@ -39,6 +40,12 @@ class _OneGodPageState extends State<OneGodPage> {
 
   String _lang = 'cmn';
   bool _showTranscript = false;
+
+  /// Locale key of the subtitle track on screen, or null for off.
+  /// Persisted across a language switch when the new recording offers
+  /// the same one — someone reading Traditional wants Traditional again.
+  String? _subLocale;
+  SubtitleTrack _subs = SubtitleTrack.empty;
 
   @override
   void initState() {
@@ -99,10 +106,23 @@ class _OneGodPageState extends State<OneGodPage> {
       if (resumeAt > Duration.zero && resumeAt < total) {
         await next.seekTo(resumeAt);
       }
+      // Carry the subtitle choice across if this recording has it;
+      // otherwise fall to its first available track rather than
+      // silently turning captions off on someone who was reading them.
+      String? nextSub;
+      if (_subLocale != null && track.subtitles.containsKey(_subLocale)) {
+        nextSub = _subLocale;
+      } else if (_subLocale != null && track.subtitles.isNotEmpty) {
+        nextSub = track.subtitles.keys.first;
+      }
+      final loaded = await _loadSubs(track, nextSub);
+
       setState(() {
         _controller = next;
         _lang = lang;
         _switching = false;
+        _subLocale = nextSub;
+        _subs = loaded;
       });
       // Dispose the OLD controller only after the new one is on screen,
       // so switching language does not flash an empty box.
@@ -117,6 +137,30 @@ class _OneGodPageState extends State<OneGodPage> {
         });
       }
     }
+  }
+
+  Future<SubtitleTrack> _loadSubs(OneGodTrack track, String? locale) async {
+    final path = locale == null ? null : track.subtitles[locale];
+    if (path == null) return SubtitleTrack.empty;
+    try {
+      return SubtitleTrack.parse(await rootBundle.loadString(path));
+    } catch (e) {
+      // A missing or broken caption file must never take the video with
+      // it — subtitles are an accessory to the thing the user came for.
+      debugPrint('[OneGod] subtitles $path failed: $e');
+      return SubtitleTrack.empty;
+    }
+  }
+
+  Future<void> _setSubtitle(OneGodEpisode ep, String? locale) async {
+    final track = ep.trackFor(_lang);
+    if (track == null) return;
+    final loaded = await _loadSubs(track, locale);
+    if (!mounted) return;
+    setState(() {
+      _subLocale = locale;
+      _subs = loaded;
+    });
   }
 
   @override
@@ -179,6 +223,8 @@ class _OneGodPageState extends State<OneGodPage> {
         _player(scheme, locale),
         const SizedBox(height: 12),
         _languageRow(ep, scheme, locale),
+        const SizedBox(height: 8),
+        _subtitleRow(ep, scheme, locale),
         const SizedBox(height: 16),
         Text(
           ep.titleFor(locale),
@@ -262,6 +308,51 @@ class _OneGodPageState extends State<OneGodPage> {
               aspectRatio: c.value.aspectRatio,
               child: VideoPlayer(c),
             ),
+            // Drawn by us, not by the platform: `video_player` has no
+            // caption API that behaves the same on web, iOS, Android
+            // and macOS, and a subtitle that appears on one platform
+            // and not another is worse than none.
+            if (!_subs.isEmpty)
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 0,
+                child: ValueListenableBuilder<VideoPlayerValue>(
+                  valueListenable: c,
+                  builder: (context, v, _) {
+                    final cue = _subs.cueAt(v.position);
+                    if (cue == null) return const SizedBox.shrink();
+                    return Padding(
+                      padding: const EdgeInsets.fromLTRB(12, 0, 12, 10),
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          color: Colors.black.withValues(alpha: 0.62),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 6),
+                          child: Text(
+                            cue.text,
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 15,
+                              height: 1.35,
+                              // A hard shadow keeps it readable over a
+                              // bright frame even where the scrim is
+                              // thin.
+                              shadows: [
+                                Shadow(blurRadius: 3, color: Colors.black),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
             // Only while a language switch is in flight — the old frame
             // stays visible underneath so the screen never goes blank.
             if (_switching)
@@ -336,6 +427,46 @@ class _OneGodPageState extends State<OneGodPage> {
                     if (t.lang != _lang) _open(ep, t.lang);
                   },
           ),
+      ],
+    );
+  }
+
+  /// Subtitle picker. Offers only what THIS recording actually has —
+  /// see [OneGodTrack.subtitles]. Listing a language we cannot
+  /// synchronise would be offering a caption that drifts.
+  Widget _subtitleRow(
+      OneGodEpisode ep, ColorScheme scheme, String locale) {
+    final track = ep.trackFor(_lang);
+    final available = track?.subtitles.keys.toList() ?? const <String>[];
+    if (available.isEmpty) return const SizedBox.shrink();
+
+    const names = {
+      'zh-Hant': 'oneGodSubHant',
+      'zh-Hans': 'oneGodSubHans',
+      'en': 'oneGodSubEn',
+    };
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Icon(Icons.closed_caption_outlined,
+            size: 18, color: scheme.onSurfaceVariant),
+        const SizedBox(width: 8),
+        Wrap(
+          spacing: 6,
+          children: [
+            ChoiceChip(
+              selected: _subLocale == null,
+              label: Text(uiStrings['oneGodSubOff']?[locale] ?? 'Off'),
+              onSelected: (_) => _setSubtitle(ep, null),
+            ),
+            for (final k in available)
+              ChoiceChip(
+                selected: _subLocale == k,
+                label: Text(uiStrings[names[k]]?[locale] ?? k),
+                onSelected: (_) => _setSubtitle(ep, k),
+              ),
+          ],
+        ),
       ],
     );
   }

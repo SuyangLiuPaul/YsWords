@@ -24,11 +24,21 @@ class OneGodTrack {
 
   final int? durationSec;
 
+  /// Subtitle asset per locale key, for THIS recording only.
+  ///
+  /// Timings belong to one take, so a track carries subtitles only in
+  /// the language it is spoken in. The Chinese and English scripts are
+  /// 161 and 157 paragraphs and do not correspond — offering English
+  /// captions over the Mandarin video would drift out of sync and
+  /// attribute the wrong sentence to the wrong moment.
+  final Map<String, String> subtitles;
+
   const OneGodTrack({
     required this.lang,
     required this.labelKey,
     required this.path,
     this.durationSec,
+    this.subtitles = const {},
   });
 
   factory OneGodTrack.fromJson(Map<String, dynamic> j) => OneGodTrack(
@@ -36,6 +46,10 @@ class OneGodTrack {
         labelKey: j['labelKey'] as String? ?? 'oneGodLangEn',
         path: j['path'] as String,
         durationSec: (j['durationSec'] as num?)?.toInt(),
+        subtitles: {
+          for (final e in (j['subtitles'] as Map? ?? {}).entries)
+            e.key as String: e.value as String,
+        },
       );
 }
 

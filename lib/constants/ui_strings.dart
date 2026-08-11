@@ -5576,6 +5576,10 @@ const uiStrings = {
   'oneGodLangEn': {'zh-Hans': '英语', 'zh-Hant': '英語', 'en': 'English'},
   'oneGodLangYue': {'zh-Hans': '广东话', 'zh-Hant': '廣東話', 'en': 'Cantonese'},
   'oneGodLangCmn': {'zh-Hans': '普通话', 'zh-Hant': '普通話', 'en': 'Mandarin'},
+  'oneGodSubOff': {'zh-Hans': '关闭', 'zh-Hant': '關閉', 'en': 'Off'},
+  'oneGodSubHant': {'zh-Hans': '繁体', 'zh-Hant': '繁體', 'en': 'Traditional'},
+  'oneGodSubHans': {'zh-Hans': '简体', 'zh-Hant': '簡體', 'en': 'Simplified'},
+  'oneGodSubEn': {'zh-Hans': '英语', 'zh-Hant': '英語', 'en': 'English'},
   'oneGodTranscript': {
     'zh-Hans': '讲稿全文',
     'zh-Hant': '講稿全文',
