@@ -1232,6 +1232,26 @@ so the bundle-size answer stays on the record.
       cleanly, so it looks transient rather than a broken site config).
       **Until it is fixed, always verify all four `version.json` after a
       release.**
+      **Second occurrence, 2026-08-11, v1.4.65 — same site, same
+      shape.** The script printed 「✓ v1.4.65 deployed」 and exited 0
+      while yswords-qat still served v1.4.64. This time the cause is on
+      record: `netlify api listSiteDeploys` for
+      `2bcb6644-2a3a-4050-b6dc-5b059bbe96d3` returns
+      `state: error, title: "v1.4.65 qat", error_message: "Deploy
+      canceled"` — so the CLI *did* fail, and the bare `wait` threw the
+      status away. Two for two on the same site suggests the parallel
+      `&` fan-out is what gets one deploy canceled, not chance.
+      Recovering it is not just `netlify deploy` again: by the time you
+      notice, `build/web` holds the **China** bundle (it is built
+      second, in place), so redeploying it to an international site
+      would ship CHINA_MODE to yswords-qat. The international bundle has
+      to be rebuilt first — check `flutter_bootstrap.js` mentions
+      `gstatic.com/flutter-canvaskit` to tell the two apart, since the
+      China build passes `--no-web-resources-cdn` and the intl one does
+      not.
+      Worth fixing now rather than measuring further, and worth fetching
+      one repaired asset (not only `version.json`) to confirm a deploy
+      truly landed.
 
 ## P3 — known but blocked or deferred
 
