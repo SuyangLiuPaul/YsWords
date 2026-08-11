@@ -62,23 +62,63 @@ and quoted.**
       `test/bible_version_integrity_test.dart` fails on the pre-fix data
       with the right diagnosis.
 
-- [ ] **~90 more parentheses are demoted the same way, mid-verse.**
-      Found by the same measurement, so it is a count and not a guess:
-      of the 104 note spans the independent tagging carries as
-      scripture, 15 were whole verses (fixed above) and the rest sit
-      inside a verse that still reads — 撒母耳記下 21:12 shows
-      「大衛就去……搬了來」 and hides 「（是因非利士人從前在基利波殺掃羅……）」
-      behind the icon; 利未記 24:11 hides 「（他母親名叫示羅密……）」.
-      Lower harm than a blank verse, which is why it was not bundled
-      into the same change, but it is the same defect: a clause of
-      scripture the reader cannot see.
+- [x] **86 more parentheses were demoted the same way, mid-verse — now
+      restored, in both editions.** 撒母耳記下 21:12 showed
+      「大衛就去……搬了來」 and hid 「（是因非利士人從前在基利波殺掃羅……）」
+      behind the icon; 利未記 24:11 hid 「（他母親名叫示羅密……）」. Lower
+      harm than a blank verse, but the same defect: a clause of
+      scripture the reader cannot see, and which copy, share and search
+      never had.
 
-      The repair is mechanical — splice `（body）` in where the note
-      marker stands — and the evidence rule is already written. **Read
-      all ~90 before applying**: unlike the whole-verse set there is no
-      structural impossibility backing them up, so a false positive here
-      would inject a translator's footnote into the verse body, which is
-      the exact failure this queue exists to prevent.
+      **All 90 candidates were read before applying, and four were
+      refused.** Both witnesses print them inline, and agreeing
+      witnesses still do not make a sentence Bible:
+
+      | left alone | why |
+      |---|---|
+      | 約翰三書 1:14 「15节」 | a versification label, not text — see the new item below |
+      | 約書亞記 19:2 「或名示巴」 | speaks about the rendering |
+      | 約伯記 14:14 「或译：改变」 | a translator's alternative |
+      | 約伯記 20:19 「或译：强取房屋不得再建造」 | a translator's alternative |
+
+      The line drawn: 「基列亞巴就是希伯崙」 says something about the
+      world and stands in the Hebrew, so it is scripture; 「或譯：改變」
+      says something about the translation and exists only because a
+      translator hesitated. Promoting one of those would put a footnote
+      on screen as scripture — the exact failure this item warned about
+      — while leaving it a note loses nothing, because the verse reads
+      whole without it.
+
+      **The verification, not the count, is the evidence.** Splicing the
+      note body back in makes our visible verse text
+      character-for-character identical to the independently imported
+      `assets/tagged/cuvs-yhwh/` in **all 86** — where before the repair
+      it matched in **0 of 86**. One orthographic variant is named rather
+      than "fixed" (但以理書 6:2, our 回復 vs the witness's 回覆; ours is
+      the standard form). SeekSparks' separately sourced `cuvs-plus.json`
+      corroborates 80; the other 6 differ only by the divine name
+      (雅偉/耶和華), which defeats a substring match.
+      `tools/repair_midverse_parentheticals.py`.
+
+      The new test walks the WHOLE corpus against the witness rather
+      than a list of 86 references, so it also fails if a future
+      re-import demotes a parenthesis nobody has seen yet. It reports 86
+      on the pre-fix data and 0 after.
+
+- [ ] **約翰三書 1:14 — does verse 15 deserve its own number?** Found
+      while reading the 90 above. Our asset prints 「願你平安。眾位朋友
+      都問你安……」 as running text inside verse 14 and demoted only the
+      label 「15节」 to a note; the Eagle's View import folds the same
+      sentence into 14 as 「（15节： 願你平安……）」. So no scripture is
+      missing either way — but the app lists 3 John as having 14 verses
+      while most printed editions have 15, and a reader looking up
+      3 John 15 will not find it.
+
+      **Not repairable from evidence, because it is not a text
+      question.** Splicing 「（15节）」 into the verse would print an
+      editorial marker as scripture; splitting the verse changes our
+      versification and every id, highlight and note anchored to
+      3 John 1:14. The user should decide which edition we follow.
 
 - [x] **185 verses printed the importer's own Strong's markers as
       scripture.** Found while measuring the 約伯記 10:20/10:21 item

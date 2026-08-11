@@ -257,6 +257,107 @@ void main() {
       expect(sanitizeVerseText(textOf('cuvs-yhwh-tr', 'Jeremiah 48:10')),
           contains('懶惰為雅偉行事的'));
     });
+
+    /// The same defect one step down in severity: a parenthesis the
+    /// importer demoted that covers only PART of the verse, so the verse
+    /// still reads and a clause of it is hidden behind the icon.
+    /// 撒母耳記下 21:12 showed 「大衛就去……搬了來」 and hid 「（是因非利士
+    /// 人從前在基利波殺掃羅……）」; 利未記 24:11 hid 「（他母親名叫示羅密
+    /// ……）」. 86 clauses in each edition.
+    ///
+    /// Checking a list of 86 references would only prove the tool ran.
+    /// This walks the WHOLE corpus against the independent Eagle's View
+    /// import of the same edition, which kept the distinction ours lost
+    /// — `（…）` parenthetical scripture, `〔…〕` editorial note — so it
+    /// also fails if a future re-import demotes a parenthesis we have
+    /// never seen. Before the repair it reported 86; the four exceptions
+    /// below are the only ones argued rather than measured.
+    test('no note hides text the independent import prints as scripture', () {
+      /// What the witness prints for one verse, brackets included.
+      final cache = <String, Map<String, dynamic>>{};
+      String? witness(String book, String chapter, String verse) {
+        final file = book.toLowerCase().replaceAll(' ', '_');
+        final loaded = cache[file] ??= () {
+          final f = File('assets/tagged/cuvs-yhwh/$file.json');
+          return f.existsSync()
+              ? jsonDecode(f.readAsStringSync()) as Map<String, dynamic>
+              : <String, dynamic>{};
+        }();
+        final runs = loaded['$chapter:$verse'] as List<dynamic>?;
+        if (runs == null) return null;
+        return runs.map((r) => (r as Map)['w'] as String? ?? '').join();
+      }
+
+      final punctuation = RegExp(
+        r'[\s，。、；：？！“”‘’（）()《》〈〉…—－─\-·「」『』〔〕【】'
+        r'\.,;:!\?"' "'" r'0-9a-zA-Z]',
+      );
+      String bare(String s) => s.replaceAll(punctuation, '');
+
+      /// Whether an editorial bracket encloses [body] in [text].
+      bool editorial(String text, String body) {
+        final kept = <int>[];
+        final buffer = StringBuffer();
+        for (var i = 0; i < text.length; i++) {
+          if (!punctuation.hasMatch(text[i])) {
+            kept.add(i);
+            buffer.write(text[i]);
+          }
+        }
+        final at = buffer.toString().indexOf(body);
+        if (at < 0) return true; // the witness does not carry it at all
+        for (var i = kept[at] - 1; i >= 0; i--) {
+          if ('（〔【'.contains(text[i])) return text[i] != '（';
+          if ('）〕】'.contains(text[i])) break;
+        }
+        return false; // unbracketed running scripture
+      }
+
+      // 約翰三書 1:14 is a versification label, not scripture, and the
+      // other three speak about the RENDERING rather than about the
+      // world — a translator's footnote that copy, share and search
+      // would otherwise carry as Bible. Both witnesses print all four
+      // inline; that they agree does not make the sentence scripture.
+      const argued = <String>{
+        '3 John 1:14',   // 15节
+        'Joshua 19:2',   // 或名示巴
+        'Job 14:14',     // 或译：改变
+        'Job 20:19',     // 或译：强取房屋不得再建造
+      };
+
+      final note = RegExp('<note:([^>]*)>');
+      for (final version in ['cuvs-yhwh', 'cuvs-yhwh-tr']) {
+        final hidden = <String>[];
+        for (final v in load(version)) {
+          final ref = appKey(v);
+          if (argued.contains(ref)) continue;
+          final english = bookNameToEnglish[v['book']]!;
+          final w = witness(english, v['chapter'] as String,
+              v['verse'] as String);
+          if (w == null) continue;
+          for (final m in note.allMatches(v['text'] as String)) {
+            final body = bare(m.group(1)!.trim());
+            if (body.isEmpty) continue;
+            if (!editorial(w, body)) hidden.add('$ref — ${m.group(1)!.trim()}');
+          }
+        }
+        expect(hidden, isEmpty, reason: '$version hides scripture in a note');
+      }
+    });
+
+    test('the hidden clauses read as scripture again', () {
+      String textOf(String version, String ref) => load(version)
+          .firstWhere((v) => appKey(v) == ref)['text'] as String;
+
+      expect(sanitizeVerseText(textOf('cuvs-yhwh', '2 Samuel 21:12')),
+          contains('（是因非利士人从前在基利波杀扫罗'));
+      expect(sanitizeVerseText(textOf('cuvs-yhwh-tr', 'Leviticus 24:11')),
+          contains('（他母親名叫示羅密'));
+      // The witness brackets this one 〔…〕 — it explains what a name
+      // means, so it stays a note in both editions.
+      expect(textOf('cuvs-yhwh-tr', 'Judges 6:24'),
+          contains('<note: 就是雅偉賜平安的意思>'));
+    });
   });
 
   test('the sixteen verses an importer damaged now read as scripture', () {
