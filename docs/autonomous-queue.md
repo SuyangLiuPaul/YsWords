@@ -257,21 +257,61 @@ has never seen this repo.
       `tools/proofread_ljk_tr.py` checks by containment, so a verse that
       lost a clause still "matches" and is structurally invisible to it.
 
-- [ ] **18 verses set an editor's gloss as scripture in the Traditional.**
-      Found by the new cross-edition length check. Where the Simplified
-      marks a short gloss as a note, the Traditional prints it inside the
-      verse: 馬太福音 26:29 「…這葡萄藤的果實，**即葡萄酒，**直至那一天」,
-      27:48 「蘸滿了酸酒，**士兵解渴的飲料，**綁在蘆葦竿子上」, 使徒行傳
-      8:41 「再繼續前行，**即向北沿海，**走遍那一帶」, 路加福音 9:5
-      「**作為警告**」 (the Simplified's note reads 「意即警告」), 馬太福音
-      9:14 「都經常禁食，**通常每逢週一週四，**你的門徒卻不禁食」 — that
-      last one the Simplified does not have at all. Same class as 羅馬書
-      16:24: it reads plausibly as the evangelist's words and gets quoted.
-      **18 refs have more `<note:>` in the Simplified than the
-      Traditional, and 18 the other way** — so measure both directions
-      before touching anything, and check the `tw` source to see whether
-      the gloss is unmarked upstream or was flattened by our importer.
-      Pinned meanwhile in `test/biblexg_verse_integrity_test.dart`.
+- [x] **The 36 "gloss as scripture" verses are the publisher's own
+      difference, not ours — measured, and nothing was changed.**
+      This was queued as a P0 defect on the strength of a diff between
+      our two editions: our Traditional prints 「即葡萄酒，」 inside
+      馬太福音 26:29 while our Simplified marks the same words as a note,
+      which is exactly the shape of 羅馬書 16:24, where an editor's
+      manuscript note really had been flattened into the verse.
+
+      **A diff of our own two editions cannot answer this question.** It
+      cannot tell "our importer lost the markup" from "the publisher's
+      two editions differ", and those need opposite responses — the first
+      is ours to fix, the second is ours to ask about and otherwise leave
+      alone. The printed 註釋本 cannot arbitrate it either: `pdftotext`
+      renders a footnote inline, indistinguishable from body text, so the
+      extracted volumes agree with whatever you already believed.
+
+      What settled it: **the publisher ships an official TRADITIONAL
+      electronic edition, `tw-*.json`, all 27 books** — the letter said
+      「只有簡體，沒有繁體檔案」, which was wrong, because their web
+      reader only precaches `cn-*`. With it, `tools/audit_biblexg_notes.py`
+      counts every `<cite>` in the publisher's own files against every
+      `<note:…>` in ours, both editions, all 15,839 verses:
+
+      | | our Traditional | our Simplified |
+      |---|---|---|
+      | notes we dropped | **0** | **0** |
+      | notes we invented | **0** | **0** |
+
+      The ten raw mismatches are each accounted for in the tool and were
+      read individually, never waved through: 4 empty `<cite></cite>`
+      the importer discards on purpose, 3 upstream revisions since our
+      import (哥林多前書 15:11, and 馬太福音 7:11 / 路加福音 11:9 where
+      the publisher moved a cross-reference), and 3 publisher nodes that
+      pack several verses under one `verseIndex` — our importer splits
+      them, so the note lands on the right verse and the tool looks for
+      it on the wrong one.
+
+      So all 36 are the publisher's own two editions disagreeing. Asked
+      as **§四之三** of `docs/梁家鏗譯本-請教出版方.md` (✅, the count is
+      settled); reconciling them ourselves would be editing scripture on
+      a guess. Pinned as a SET, not a count, by
+      `test/biblexg_verse_integrity_test.dart` so a future importer
+      change that flattens a note appears as a new reference.
+
+      **Two corrections to the letter fell out of this**, both of the
+      kind that waste the publisher's time: it listed the materials as
+      Simplified-only, and it blamed 彼得前書 3:10-12 / 以弗所書 3:15-16
+      on "our own Traditional conversion" when it is their own `tw` file
+      that packs those verses into one node.
+
+      Left for a later iteration: this compared note COUNTS, not note
+      TEXT. 以弗所書 3:15 is already known to differ — publisher's
+      Traditional reads 「參4.6、16」, ours 「參4.6，」, i.e. ours followed
+      their Simplified. Counting the text differences is the same
+      revision question as the 427 and should be folded into §四之二.
 
 - [ ] **Decide the 427 wording differences with the publisher.**
       Not ours to change. They cluster in 路加福音 (178) and 馬可福音 (89)
