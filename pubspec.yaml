@@ -171,6 +171,10 @@ flutter:
     # number themselves; this translates a reading reference into
     # theirs. Without it 詩篇 3:1 shows the superscription.
     - assets/originals_versification.json
+    # And this one covers the verses a TRANSLATION merges into one,
+    # marked 「见上节」 in the CUV — 民数记 1:20 carries the Hebrew of
+    # 1:20 and 1:21. Per version, because the KJV beside it does not.
+    - assets/originals_versification_merged.json
     # Strong's tagging for 和合本雅伟版 — which word on screen
     # renders which original word. 13 MB, one file per book,
     # loaded lazily by TaggedTextService (never all at once).

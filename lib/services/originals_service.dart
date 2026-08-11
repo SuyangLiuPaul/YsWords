@@ -43,19 +43,25 @@ class OriginalsService {
   /// number themselves, so the reference is translated first — see
   /// [VersificationService]. Skipping that step showed the reader a
   /// psalm's superscription labelled as verse 1.
+  ///
+  /// [version] matters because a translation may fold two numbered
+  /// verses into one: 民数记 1:20 carries the Hebrew of 1:20 and 1:21,
+  /// and the KJV beside it does not.
   static Future<List<OriginalWord>?> forVerse(
     String englishBook,
     int chapter,
-    int verse,
-  ) async {
+    int verse, {
+    String? version,
+  }) async {
     if (!_byBook.containsKey(englishBook)) {
       _byBook[englishBook] =
           await (_loading[englishBook] ??= _load(englishBook));
     }
     final book = _byBook[englishBook];
     if (book == null) return null;
-    final refs =
-        await VersificationService.originalRefs(englishBook, chapter, verse);
+    final refs = await VersificationService.originalRefs(
+        englishBook, chapter, verse,
+        version: version);
     final words = [for (final ref in refs) ...?book[ref]];
     if (words.isEmpty) return null;
     return words;

@@ -24,6 +24,17 @@
 /// as well as the first line of the psalm, which the Hebrew numbers
 /// 51:1, 51:2 and 51:3. Returning one of the three would silently drop
 /// scripture, so the range is returned whole.
+///
+/// `assets/originals_versification_merged.json` answers a second and
+/// separate question: the CUV translators sometimes fold two numbered
+/// verses into one and print the vacated number as 「见上节」. 民数记
+/// 1:21 is such a verse, and the census total it should hold is at the
+/// end of 1:20 — so the sheet on 1:20 showed half that verse's Hebrew.
+/// That is a property of the TRANSLATION, not of the Hebrew, which is
+/// why it is a per-version overlay rather than part of the map above:
+/// the KJV, NASB and LEB all print 1:21 as a verse of their own, and
+/// widening the shared map would show their readers a Hebrew clause
+/// their verse 20 does not contain.
 library;
 
 import 'dart:convert';
@@ -38,6 +49,12 @@ class VersificationService {
 
   /// book slug → original "c:v" → reading "c:v".
   static Map<String, Map<String, String>>? _inverse;
+
+  /// version → book slug → reading "c:v" → original refs, for the
+  /// verses that version merges into one.
+  static Map<String, Map<String, Map<String, List<String>>>>? _merged;
+  static Future<Map<String, Map<String, Map<String, List<String>>>>>?
+      _mergedLoading;
 
   static String slug(String englishBook) =>
       englishBook.toLowerCase().replaceAll(' ', '_').replaceAll("'", '');
@@ -61,21 +78,50 @@ class VersificationService {
     }
   }
 
+  static Future<Map<String, Map<String, Map<String, List<String>>>>>
+      _loadMerged() async {
+    try {
+      final raw = await rootBundle
+          .loadString('assets/originals_versification_merged.json');
+      final decoded = json.decode(raw) as Map<String, dynamic>;
+      return {
+        for (final version in decoded.entries)
+          version.key: {
+            for (final book in (version.value as Map<String, dynamic>).entries)
+              book.key: {
+                for (final ref in (book.value as Map<String, dynamic>).entries)
+                  ref.key: (ref.value as List).cast<String>(),
+              },
+          },
+      };
+    } catch (_) {
+      return const {};
+    }
+  }
+
   static Future<void> ensureLoaded() async {
     _map ??= await (_loading ??= _load());
+    _merged ??= await (_mergedLoading ??= _loadMerged());
   }
 
   /// The original-language references carrying the text of this reading
   /// verse. Always at least one, and the verse's own reference when the
   /// two editions agree.
+  /// [version] is the version being read. Without it a verse that this
+  /// translation merges with the next one answers with half its own
+  /// original text.
   static Future<List<String>> originalRefs(
     String englishBook,
     int chapter,
-    int verse,
-  ) async {
+    int verse, {
+    String? version,
+  }) async {
     await ensureLoaded();
     final self = '$chapter:$verse';
-    return _map?[slug(englishBook)]?[self] ?? [self];
+    final book = slug(englishBook);
+    final merged =
+        _merged?[version?.toLowerCase() ?? '']?[book]?[self];
+    return merged ?? _map?[book]?[self] ?? [self];
   }
 
   /// The reading reference for an original-language one — the direction

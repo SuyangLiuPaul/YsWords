@@ -406,6 +406,76 @@ has never seen this repo.
       newer than our import — the electronic edition has moved on from
       the print as well. Re-read that assumption before acting on it.
 
+- [x] **71 verses showed only half their Hebrew or Greek, because the
+      CUV prints two numbered verses as one.** 民数记 1:21 is not a verse
+      in this translation — its text reads 「见上节」, and the census total
+      it should carry, 「共有四万六千五百名」, is printed at the end of 1:20.
+      So the Originals sheet on 1:20 showed the Hebrew of 1:20 alone,
+      without שִׁשָּׁה וְאַרְבָּעִים אֶלֶף וַחֲמֵשׁ מֵאוֹת. Nothing untrue was on
+      screen; the reader was simply shown half the verse they were
+      looking at, which is the same shape as the LEB superscriptions.
+
+      Found by finishing the P1 tagging audit below rather than by
+      looking for it: the numbers H705 / H2568 / H3967 kept appearing as
+      "tagged in a verse whose original does not contain them", and they
+      are in the original — the next one.
+
+      **Counted before changing anything, and the marker is the
+      translation's own, never our judgement:** 70 verses read exactly
+      「见上节」, 詩篇 63:6 says the same thing longer
+      (「合和译本并入上一节」), and 約翰福音 7:53 is folded FORWARDS into
+      8:1 (「见下节」) — 72 in all, in 27 books, identical in the
+      Simplified and the Traditional. 詩篇 8:6 absorbs two of them.
+      A verse whose whole text is some other note — 「<note: 有古卷在此
+      有…>」 — is not a merge and was left alone.
+
+      **This could not go in `assets/originals_versification.json`.**
+      That map is applied to every version, and the KJV, NASB and LEB
+      all print 民数记 1:21 as a verse of their own with text in it, so
+      widening it would have fixed the CUV by showing KJV readers a
+      Hebrew clause their verse 20 does not contain — precisely the
+      defect that map exists to remove. Hence
+      `assets/originals_versification_merged.json`, keyed by version,
+      and `originalRefs(..., version:)`. Written by
+      `tools/build_merged_verse_map.py` from the reading text itself.
+
+      Checked, not assumed: every target exists in the originals asset,
+      and the absorbing verse's own tagging accounts for a mean 79% of
+      the absorbed verse's Strong's numbers. The one low score is
+      約伯記 10:20 (12%) and it is explained — `assets/tagged/` divides
+      10:20/10:21 where `assets/cuvs-yhwh.json` merges them, and the
+      reading verse does contain the clause (verified by containment).
+      `test/merged_verse_originals_test.dart` re-derives the 72 from
+      `assets/cuvs-yhwh.json` in Dart rather than trusting the tool, and
+      fails on the pre-fix data at all 72.
+
+- [ ] **551 concordance references still open a 「见上节」 verse.**
+      The other direction of the same defect, measured while fixing the
+      above and deliberately not fixed with it. `VersificationService
+      .readingRef` sends a concordance hit on Hebrew 民数记 1:21 to
+      reading 1:21, whose entire text is 「见上节」 — so the concordance
+      says the word occurs there and the verse shown contains nothing.
+      The word is in 1:20.
+
+      It needs the same version-awareness `originalRefs` just got:
+      `readingRef` takes no version, and the right answer differs by
+      translation (the KJV's 1:21 is a real verse). Note also that
+      `_buildInverse` relies on map ITERATION order to make "the earlier
+      reading verse wins" true, and the keys are sorted as strings, so
+      '9:1' sorts after '10:1'. Sort numerically when touching it.
+
+- [ ] **`assets/tagged/` and `assets/cuvs-yhwh.json` disagree about
+      約伯記 10:20/10:21.** Noticed while building the merged-verse
+      overlay, investigated rather than waved through, and left alone
+      because neither side is wrong about the text. The reading asset
+      prints 10:20 and 10:21 as one verse and marks 10:21 「见上节」;
+      the tagged asset divides them. Verified by containment — the
+      tagged 10:21 text appears verbatim inside reading 10:20 — so no
+      words are lost or invented either way, and the Originals sheet is
+      correct because the overlay widens reading 10:20 to both. Worth
+      knowing about before anyone writes code that assumes the two
+      assets have the same verse keys, which is the real risk here.
+
 - [ ] **Decide the 427 wording differences with the publisher.**
       Not ours to change. They cluster in 路加福音 (178) and 馬可福音 (89)
       and read as one consistent later revision — the 2025 印刷版 replaces
@@ -687,25 +757,49 @@ has never seen this repo.
       the wrong Matthew passage is the same class of error as a wrong
       verse: it reads plausibly and gets believed.
 
-- [ ] **Verify the Strong's tagging against the originals.** `assets/
-      tagged/cuvs-yhwh/` now drives "tap a word to see the original".
-      `tools/audit_strongs_tagging.py` counts the disagreements over the
-      whole corpus rather than spot-checking: 360,946 tagged runs,
-      **24,983 carrying a number that is not in that verse's original**.
+- [x] **Verify the Strong's tagging against the originals.** Done —
+      the honest figure is **1,996 runs, 0.55% of tagged runs**, and
+      nothing read in that tail is data to change.
+      `tools/audit_strongs_tagging.py` counts the whole corpus (66
+      books, 367,589 runs, 360,946 tagged) rather than spot-checking,
+      because one wrong number looks exactly like a right one on screen.
 
-      **Most of that is a false alarm and should not be "fixed".** The
-      two datasets use different Strong's conventions — the tagger's
-      inflected-form numbers (G2076 ἐστίν, G5213 ὑμῖν, G2258 ἦν, G2257
-      ἡμῶν) against the originals' lemma numbers (G1510, G4771, G1473).
-      Every one of those resolves correctly in `assets/strongs/`, so the
-      tapped word gives the right lexicon entry. Chasing the count down
-      by rewriting numbers would make the app *less* accurate.
-      The versification defect above was found by this audit and is
-      fixed; that is what the 23.6% was really hiding.
+      The tool's own first headline — "24,983 carrying a number that is
+      not in that verse's original" — was worthless, and the rewrite now
+      says so in its docstring. Two things inflated it:
 
-      What is left to decide is the genuinely wrong tail: run the audit
-      with the versification map applied to get a clean count, then look
-      at what remains once the convention difference is factored out.
+        * **The two verse numberings differ.** Applying
+          `assets/originals_versification.json` and the new
+          `assets/originals_versification_merged.json` takes the raw
+          25,137 down to **9,765**; the rest of that gap was the audit
+          comparing the wrong two verses. `--no-versification`
+          reproduces the old figure for anyone who wants to see it.
+        * **The two datasets use different Strong's conventions.** The
+          tagger numbers the inflected form (G2076 ἐστί, G2258 ἦν,
+          G5213 ὑμῖν) where the originals number the lemma (G1510 εἰμί,
+          G5210 ὑμεῖς). 5,587 resolve that way, and 2,182 more have the
+          lexicon's own headword printed in the verse verbatim. Every
+          one of them reaches the right lexicon entry, so "fixing" them
+          would make the app less accurate, not more.
+
+      The convention difference is factored out **by the lexicon's own
+      `deriv` field**, never by a table typed into the tool — a
+      hand-written equivalence list is just a second dataset that can be
+      wrong. "a derivative of" and "from" are deliberately not counted
+      as inflection: G697 Ἄρειος Πάγος derives from G4078 πήγνυμι and is
+      not the same word.
+
+      **What the remaining 1,996 (683 distinct numbers) actually are,
+      read verse by verse:** `H0`/`G0` (295, its own item below);
+      suppletive lemmatisation, where the two datasets legitimately file
+      one verb under different headwords (λέγω/εἶπον, ὁράω/εἴδω,
+      הלך/ילך, ἐλαία/ἐλαιών); **Textus-Receptus-vs-critical-text
+      variants** — the CUV was translated from the TR and
+      `assets/originals/` is a critical text, so 1 Cor 10:9
+      (κύριος / Χριστόν) and 1 John 5:7 surface as orphans and are
+      *correct*; and CUV translational additions with no Greek
+      counterpart at all (2 Peter 3:3). Run `--tail 100` and read the
+      verse before concluding any of them is a defect.
 
 - [ ] **295 tagged runs carry `H0` / `G0`, which is not a Strong's
       number.** 253 Hebrew, 42 Greek; neither is a key in

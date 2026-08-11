@@ -199,7 +199,9 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
     final results = <_VerseOriginals>[];
     for (final v in widget.verses) {
       final english = toEnglish(v.book) ?? v.book;
-      final words = await OriginalsService.forVerse(english, v.chapter, v.verse);
+      final words = await OriginalsService.forVerse(
+          english, v.chapter, v.verse,
+          version: widget.currentVersion);
       // Costs nothing on an untagged version: supports() is checked
       // before any asset is touched.
       final tagged = await TaggedTextService.forVerse(
