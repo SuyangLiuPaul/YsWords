@@ -1459,17 +1459,38 @@ class _LinkTile extends StatelessWidget {
         children: [
           Icon(icon, color: scheme.primary, size: 20),
           const SizedBox(width: 8),
+          // One line, scaled down if it does not fit.
+          //
+          // Two rounds of picking a "short enough" label both failed on
+          // the device — "Misunderstandings" broke, then
+          // "Misconceptions" broke, then "Misreadings" broke — because
+          // character count is not width: "Bible Trivia" (12) fits on
+          // one line while "Misreadings" (11) does not, M and s and a
+          // being far wider than i and l and t. Guessing the ceiling
+          // per label cannot work across three locales and a
+          // user-adjustable font size.
+          //
+          // `maxLines: 1` + `softWrap: false` removes mid-word breaking
+          // as a possibility, and FittedBox shrinks only the labels
+          // that need it, so the common ones are untouched. Tiles also
+          // come out a uniform height, which the wrapping version never
+          // managed.
           Expanded(
-            child: Text(
-              label,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
-                fontSize: (fs - 2).clamp(12.0, 18.0).toDouble(),
-                fontWeight: FontWeight.w600,
-                color: scheme.onSurface,
-                height: 1.15,
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: AlignmentDirectional.centerStart,
+              child: Text(
+                label,
+                maxLines: 1,
+                softWrap: false,
+                style: TextStyle(
+                  fontFamily: settings.fontFamily,
+                  fontFamilyFallback: kCjkFontFallback,
+                  fontSize: (fs - 2).clamp(12.0, 18.0).toDouble(),
+                  fontWeight: FontWeight.w600,
+                  color: scheme.onSurface,
+                  height: 1.15,
+                ),
               ),
             ),
           ),

@@ -1,26 +1,21 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yswords/constants/ui_strings.dart';
 
-/// A dashboard tile must never break a word in half.
+/// The dashboard quick-link labels.
 ///
-/// 2026-08-11, from the phone: the misconceptions tile read
-/// "Misunderstandi / ngs". Giving the grid intrinsic-height rows fixed
-/// the clipping, but a single word wider than the tile is still split
-/// mid-word — the ugliest way to wrap, and it happens in one language
-/// at a time, so it is invisible to anyone not reading that one.
+/// **Fitting is no longer this test's job.** The tile lays its label
+/// out on a single line inside a `FittedBox(scaleDown)`, so a label
+/// that does not fit is shrunk, never broken mid-word. That replaced
+/// two failed attempts to pick a label short enough by counting
+/// characters — "Misunderstandings" (17) broke, then "Misconceptions"
+/// (14) broke, then "Misreadings" (11) broke, while "Bible Trivia"
+/// (12) fitted the whole time, because M and s and a are far wider
+/// than i and l and t. Character count was never measuring the thing
+/// that decides.
 ///
-/// **Why a character count and not a real measurement.** `flutter
-/// test` renders with a fixed-width test font where every glyph is a
-/// square of the font size, roughly twice the width of the real one.
-/// Laying text out here and asserting on the result measures the test
-/// font, not the app — a first version of this test "failed" on
-/// Search, Library and Sermons, all of which fit on one line on the
-/// actual device. So this guards the property that actually causes the
-/// break: a single unbreakable word that is too long.
-///
-/// The threshold is calibrated against what ships and renders
-/// correctly today — "Timeline" (8), "Evidence" (8), "Settings" (8) —
-/// and against the one that did not: "Misunderstandings" (17).
+/// What is still worth pinning is the DATA: a missing locale silently
+/// falls back to an English string hard-coded at the call site, which
+/// is invisible to everyone except the reader it fails.
 void main() {
   /// Labels used in the dashboard quick-link grids.
   const keys = [
@@ -39,43 +34,37 @@ void main() {
     'feedback',
   ];
 
-  /// Calibrated against the DEPLOYED build at 375pt, not estimated —
-  /// the first version of this test guessed 14 and "Misconceptions"
-  /// still broke on the device. "Bible Trivia" (12 characters
-  /// including the space) sits on one line; 14 does not fit.
-  ///
-  /// CJK is not at risk: it breaks between any two characters and has
-  /// no unbreakable "word".
-  const maxWordLength = 12;
-
-  test('every quick-link key exists in all three locales', () {
+  test('every quick-link label exists in all three locales', () {
     for (final key in keys) {
       final entry = uiStrings[key];
       expect(entry, isNotNull, reason: '$key is missing from uiStrings');
       for (final locale in ['zh-Hans', 'zh-Hant', 'en']) {
-        expect(entry![locale], isNotNull,
-            reason: '$key has no $locale — the tile would fall back to '
-                'its English hard-coded default');
+        final label = entry![locale];
+        expect(label, isNotNull,
+            reason: '$key has no $locale — the tile would silently fall '
+                'back to the English default hard-coded at the call site');
+        expect(label!.trim(), isNotEmpty, reason: '$key.$locale is blank');
       }
     }
   });
 
-  test('no quick-link label contains a word too long for a tile', () {
-    final problems = <String>[];
+  test('no label is long enough to shrink past readability', () {
+    // Not a fitting rule — a sanity ceiling. The tile scales a long
+    // label down, and past roughly this length the result is too small
+    // to read on a phone even though nothing is clipped or broken.
+    // "The Only True God" (17) is the longest that currently ships and
+    // reads fine, so the bar sits above it rather than under it.
+    const absurd = 24;
     for (final key in keys) {
       for (final locale in ['zh-Hans', 'zh-Hant', 'en']) {
         final label = uiStrings[key]?[locale];
         if (label == null) continue;
-        for (final word in label.split(RegExp(r'\s+'))) {
-          // Latin runs only. CJK has no unbreakable words.
-          if (!RegExp(r'^[A-Za-z][A-Za-z\-]*$').hasMatch(word)) continue;
-          if (word.length > maxWordLength) {
-            problems.add('$key.$locale: "$word" is ${word.length} '
-                'characters — it will be split mid-word');
-          }
-        }
+        expect(label.length, lessThanOrEqualTo(absurd),
+            reason: '$key.$locale is ${label.length} characters '
+                '("$label") and would be scaled down to something too '
+                'small to read — give the tile its own shorter key, as '
+                'misconceptionsTile does');
       }
     }
-    expect(problems, isEmpty, reason: problems.join('\n'));
   });
 }
