@@ -685,6 +685,45 @@ has never seen this repo.
 
 ## P2 — features the user asked for
 
+- [ ] **Native should fall back to the Netlify media proxy when a host
+      is unreachable. — DECIDED NOT TO SHIP YET, 2026-08-11.**
+      The user chose "先不做，写进队列" after being shown the bandwidth
+      cost. **Do not implement this without asking them again.** What
+      follows is the finished investigation so the decision can be
+      picked up cold.
+
+      **The finding.** `netlify.toml` already proxies all four media
+      hosts (`/song-media/fydt/* → https://fydt.org/:splat`, and the
+      same for cdc / cahaya / cgdc). Only the WEB build uses it —
+      `SongPlayerService.resolvePlaybackUrl` opens with
+      `if (!kIsWeb) return url;`, so every native platform streams,
+      downloads and fetches PDFs straight from the church servers.
+
+      **Measured from this Mac, which cannot reach fydt.org at all:**
+      ```
+      direct https://fydt.org/…/S03_006.mp3   no TCP connection
+      via    /song-media/fydt/…/S03_006.mp3   HTTP 206, 86ms, real bytes
+      ```
+      Netlify reaches the upstream fine. So a proxy fallback fixes every
+      restricted device at once — the user's iPad and Xiaomi Pad, and
+      any user behind a filtered network — without diagnosing each one.
+
+      **Why it was not shipped.** It moves media bandwidth onto the
+      user's Netlify account. One "download everything" is 2.1 GB
+      against a 100 GB/month free tier, so a handful of users doing it
+      would blow through the plan. That is their call, not ours.
+
+      **The shape they picked, for when they say yes:**
+      * Direct first, proxy only after the direct attempt fails, and
+        remember the verdict per HOST for the session — otherwise every
+        song pays the 15s timeout again.
+      * Origin: **the dev site**, `https://yswords-dev.netlify.app`
+        (their choice when asked). Note the consequence they accepted:
+        a production build then depends on the dev site staying up.
+      * Four call sites need it, not one: playback
+        (`resolvePlaybackUrl`), downloads (`song_download_io.dart`),
+        artwork (`RemoteImage`) and the score viewer.
+
 - [ ] **Tap-the-status-bar-to-scroll-to-top: 24 pages still lack it.**
       User, 2026-08-11: "我以为所有的page按了top iPhone是会自动划上去的但是
       Sermon这个就不是，也全部检查一下". Sermons is fixed; the audit they
@@ -789,8 +828,20 @@ has never seen this repo.
 > VPN route is installed. Confirmed independently on the user's iPad:
 > of 559 songs only 63 downloaded, and all 63 are the cgdc.hk ones.
 >
-> So work needing cgdc.hk IS actionable now; work needing fydt.org or
-> the church site is not, from this machine.
+> **Cause found.** This Mac is a managed Monash device: GlobalProtect
+> (portal `vpn.gp.monash.edu`, `PanGPS` running), CrowdStrike Falcon as
+> an endpoint-security system extension, and Jamf MDM. A macOS Network
+> Extension filters at the socket layer, not the routing layer, which
+> is exactly why DNS, `route get` and the interface list all looked
+> clean while no SYN ever got a reply. **This is the employer's policy
+> on their own device — do not attempt to work around it.**
+>
+> So work needing cgdc.hk IS actionable from this machine; work needing
+> fydt.org or the church site is NOT, and never will be from here — it
+> needs a different machine, not a retry. The user reports their phone
+> reaches both hosts on the same WiFi, while their iPad and Xiaomi Pad
+> do not; those two are unexplained and do not need explaining if the
+> proxy-fallback item above is ever taken.
 
 - [ ] **Per-source cover fallback for the 393 songs with no artwork.**
       User, 2026-08-11: "没有封面的你可以用他们来源的封面做为歌曲的吗？
