@@ -807,24 +807,32 @@ class _DashboardPageState extends State<DashboardPage> {
                   label: uiStrings['bibleTrivia']?[locale] ?? 'Bible Trivia',
                   onTap: () => pushPage(const BibleTriviaPage()),
                 ),
-                // 2026-08-09 (Songs v2): back after v1.3.126 removed
-                // it. Note `pushPage`, not the `Get.to` the original
-                // tile used — see the v1.4.4 note in HANDOFF.md.
-                _LinkTile(
-                  icon: Icons.library_music_rounded,
-                  label: uiStrings['songsPageTitle']?[locale] ?? 'Songs',
-                  onTap: () => pushPage(const SongsPage()),
-                ),
-                // 2026-08-11: 獨一真神 — the church's video teaching,
-                // the same episode recorded in English, Cantonese and
-                // Mandarin. Sits beside Songs because it is the other
-                // thing in this app you WATCH rather than read.
-                _LinkTile(
-                  icon: Icons.play_circle_outline_rounded,
-                  label: uiStrings['oneGodTitle']?[locale] ??
-                      'The Only True God',
-                  onTap: () => pushPage(const OneGodPage()),
-                ),
+                // Songs and 獨一真神 are the two Featured cards. They
+                // appear HERE only when Featured is switched off —
+                // otherwise the same two links sat on the page twice,
+                // once at the top and once at the bottom. Reported with
+                // a screenshot, 2026-08-11: "好像多了重复了".
+                //
+                // Not simply deleted: Featured is a section the user
+                // can hide in Settings, and hiding it must not take
+                // Songs and the video off the dashboard altogether.
+                if (!settings.isDashboardSectionVisible(
+                    DashboardSection.featured)) ...[
+                  // 2026-08-09 (Songs v2): back after v1.3.126 removed
+                  // it. Note `pushPage`, not the `Get.to` the original
+                  // tile used — see the v1.4.4 note in HANDOFF.md.
+                  _LinkTile(
+                    icon: Icons.library_music_rounded,
+                    label: uiStrings['songsPageTitle']?[locale] ?? 'Songs',
+                    onTap: () => pushPage(const SongsPage()),
+                  ),
+                  _LinkTile(
+                    icon: Icons.play_circle_outline_rounded,
+                    label: uiStrings['oneGodTitle']?[locale] ??
+                        'The Only True God',
+                    onTap: () => pushPage(const OneGodPage()),
+                  ),
+                ],
                 // 2026-05-07 (v12): feedback tile -- mailto-driven
                 // form page that lands directly in the developer's
                 // inbox via the user's mail client.
