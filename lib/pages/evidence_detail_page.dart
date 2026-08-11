@@ -670,31 +670,57 @@ class _ReferenceChip extends StatelessWidget {
               const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           child: Row(
             mainAxisSize: MainAxisSize.min,
+            // Top, not centre: once the reference wraps to two lines the
+            // icon should sit beside the FIRST line rather than float in
+            // the middle of the block.
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(Icons.menu_book_outlined,
-                  size: 16, color: scheme.primary),
+              Padding(
+                padding: const EdgeInsets.only(top: 3),
+                child: Icon(Icons.menu_book_outlined,
+                    size: 16, color: scheme.primary),
+              ),
               const SizedBox(width: 6),
-              Text(
-                localizedReferenceLabel(reference, locale, currentVersion),
-                style: TextStyle(
-                  fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
-                  fontSize: settings.fontSize,
-                  fontWeight: FontWeight.w700,
-                  color: scheme.primary,
+              // Flexible, so a long reference wraps instead of running
+              // off the screen. 2026-08-11, from the phone: an evidence
+              // card citing two passages — 「列王纪上 9:15; 列王纪上
+              // 10:26」 — pushed "→ 阅读经文" past the right edge and
+              // the row was simply cut off by the card.
+              //
+              // MainAxisSize.min is kept so a SHORT reference still
+              // gets a chip the width of its own text, not a bar the
+              // width of the card.
+              Flexible(
+                child: Text(
+                  localizedReferenceLabel(reference, locale, currentVersion),
+                  style: TextStyle(
+                    fontFamily: settings.fontFamily,
+                    fontFamilyFallback: kCjkFontFallback,
+                    fontSize: settings.fontSize,
+                    fontWeight: FontWeight.w700,
+                    color: scheme.primary,
+                  ),
                 ),
               ),
               const SizedBox(width: 6),
-              Icon(Icons.arrow_forward,
-                  size: 14, color: scheme.primary),
+              Padding(
+                padding: const EdgeInsets.only(top: 4),
+                child: Icon(Icons.arrow_forward,
+                    size: 14, color: scheme.primary),
+              ),
               const SizedBox(width: 2),
-              Text(
-                uiStrings['readInBible']?[locale] ?? 'Read',
-                style: TextStyle(
-                  fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
-                  fontSize:
-                      (settings.fontSize - 3).clamp(11.0, 15.0).toDouble(),
-                  fontWeight: FontWeight.w600,
-                  color: scheme.primary,
+              Padding(
+                padding: const EdgeInsets.only(top: 3),
+                child: Text(
+                  uiStrings['readInBible']?[locale] ?? 'Read',
+                  style: TextStyle(
+                    fontFamily: settings.fontFamily,
+                    fontFamilyFallback: kCjkFontFallback,
+                    fontSize:
+                        (settings.fontSize - 3).clamp(11.0, 15.0).toDouble(),
+                    fontWeight: FontWeight.w600,
+                    color: scheme.primary,
+                  ),
                 ),
               ),
             ],

@@ -685,6 +685,38 @@ has never seen this repo.
 
 ## P2 — features the user asked for
 
+- [ ] **Sermon reading: "每个段落一个block也不好experience".**
+      User, 2026-08-11. This is a follow-up on the v1.4.x paragraph work
+      (`lib/pages/sermon_detail_page.dart:749`), which added a line
+      measure, a 1.75 line height and 22pt between paragraphs. That
+      fixed the wall-of-text complaint; the user is now saying the
+      result reads as a series of separate blocks instead of continuous
+      prose.
+
+      **Reproduce before changing anything, and get the exact sermon.**
+      The current code draws no card, border or background per
+      paragraph — only `Padding(bottom: 22)` — so "block" is the user's
+      description of how it READS, not a literal container, or else it
+      is a sermon whose transcript is split differently from the ones
+      that were measured. Open a real sermon at 402pt and at desktop
+      width before forming a theory, and ask the user which sermon if
+      it is not obvious.
+
+      Levers, in order of how safe they are:
+      1. The 22pt gap is large relative to a 1.75 line height — the
+         space between paragraphs is close to the space inside them,
+         which is exactly what makes text read as separate blocks
+         rather than a flowing argument. Try a first-line indent with a
+         much smaller gap, which is what printed prose does.
+      2. The measure is `fontSize * 34` (30 for CJK). On a phone that
+         is wider than the screen and has no effect; the blockiness is
+         therefore a phone-specific complaint about vertical rhythm,
+         not line length.
+
+      **The standing rule still applies: nothing may re-paragraph a
+      sermon.** Inserting or removing breaks in another man's preaching
+      is an expressive decision he did not make. Only typography moves.
+
 - [ ] **The splash re-parses all 7 Bible versions on EVERY cold start.**
       User, 2026-08-11, from the iPhone: "为什么每一次加载的时候都会加载
       中译本，但是iPhone不应该全部已经有了吗，不应该有加载中这个界面".
