@@ -686,17 +686,30 @@ has never seen this repo.
       at the cost of the tap gesture on them.
       Queued below as its own item rather than decided here.
 
-- [ ] **Decide how the Originals sheet handles the 13 verses where the
-      tagged text and the reading text disagree.** See the measurement
-      directly above. The sheet currently prints the tagged runs in
-      place of the verse, so on 約伯記 10:20 it shows half the verse the
-      reader is looking at. Option (b) — a coverage check before
-      rendering the tagged line, falling back to plain text — is the
-      general fix and costs the word-tap gesture on 13 of 31,102
-      verses. Option (a) fixes 約伯記 alone and keeps the gesture.
-      Not done in the same iteration as the markup repair on purpose:
-      that was a data change with a proof, this is a behaviour change
-      with a trade-off.
+- [x] **Took option (b): the Originals sheet now falls back to the
+      reader's own verse whenever the tagged runs would lose text.**
+      No data change — the two imports are both honest and choosing
+      between their wordings would be choosing a reading. What changed
+      is which of the two the sheet is allowed to print AS the verse:
+      `TaggedTextService.coversVerse` requires the tagged runs to carry
+      every ideograph of the reader's verse, in order, and the sheet
+      renders the plain line when they do not.
+
+      **Re-measured before deciding, and the earlier count of 13 was
+      low.** Comparing ideographs only — punctuation and the 〔…〕 the
+      tagged import prints around a note are not scripture — **238 of
+      31,102 verses lose at least one character**, of which 236 reach
+      the sheet (two are already dropped for importer markup). 183 lose
+      a single character to an orthographic or pronoun variant
+      (吗/么, 她/它); the rest lose real text, worst of all 約伯記 10:20
+      at 28 characters. The check is one-directional on purpose: 1,165
+      verses where the tagged import prints MORE than the reader's
+      verse keep the gesture, because nothing is missing there.
+
+      Cost: the word-tap gesture on 0.76% of verses. The text outranks
+      the gesture. `test/tagged_verse_coverage_test.dart` pins the 236
+      so a re-import that starts dropping clauses turns the suite red,
+      and asserts 約伯記 10:20 is in the set.
 
 - [ ] **Decide the 427 wording differences with the publisher.**
       Not ours to change. They cluster in 路加福音 (178) and 馬可福音 (89)

@@ -737,7 +737,15 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
               // word rendered which Greek word. Only 和合本雅伟版 is
               // tagged, so every other version keeps the plain line
               // rather than showing a gesture that answers nothing.
-              child: vo.tagged == null || vo.tagged!.isEmpty
+              //
+              // `coversVerse` is the same trade made once more: the
+              // tagged runs are a separate import and on 238 verses
+              // they lose a word or a whole clause the reader's verse
+              // has. The text outranks the gesture, so those fall back
+              // to the plain line.
+              child: vo.tagged == null ||
+                      vo.tagged!.isEmpty ||
+                      !TaggedTextService.coversVerse(vo.tagged!, verseText)
                   ? Text(
                       verseText,
                       style: TextStyle(

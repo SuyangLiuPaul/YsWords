@@ -159,6 +159,52 @@ class TaggedTextService {
   static final RegExp _importerMarkup =
       RegExp(r'[<>#]|[Ww][HhGgJjMm][0-9]+');
 
+  /// Whether the tagged runs still carry every character of the verse
+  /// the reader is looking at.
+  ///
+  /// The Originals sheet prints the tagged runs **instead of** the
+  /// verse, and `assets/tagged/cuvs-yhwh/` is a separate import of the
+  /// same translation rather than a tagging of our own reading asset.
+  /// Where the two divide a verse differently the sheet showed less
+  /// scripture than the pane behind it: on 約伯記 10:20 the reading
+  /// asset folds 10:21 in and marks it 「见上节」, the tagged asset keeps
+  /// them apart, and the sheet printed the first clause only —
+  /// 「叫我在往而不返之先……可以稍得畅快」 was missing from a panel that
+  /// looked like it was quoting the verse in full.
+  ///
+  /// So the tagged line is only rendered when it loses nothing.
+  /// Measured over the whole corpus that costs the word-tap gesture on
+  /// **238 of 31,102 verses (0.77%)** and never costs a word of text;
+  /// the sheet falls back to the reader's own verse, exactly as it
+  /// already does for an untagged version.
+  ///
+  /// Compared on ideographs alone, deliberately. Punctuation, quotation
+  /// marks and the 〔…〕 the tagged import prints around a note differ
+  /// freely between two imports and are not scripture; and the check is
+  /// one-directional — text the tagged import has and the reader's
+  /// verse does not is not a reason to hide the gesture.
+  static bool coversVerse(List<TaggedRun> runs, String verseText) {
+    final verse = _ideographs(verseText);
+    if (verse.isEmpty) return true;
+    final tagged = _ideographs(runs.map((r) => r.text).join());
+    var i = 0;
+    for (final unit in tagged) {
+      if (unit == verse[i] && ++i == verse.length) return true;
+    }
+    return false;
+  }
+
+  /// CJK ideographs (U+3400–U+9FFF, so Extension A too) as code units.
+  /// No character in that range is a surrogate pair, so code units and
+  /// runes agree here.
+  static List<int> _ideographs(String s) {
+    final out = <int>[];
+    for (final unit in s.codeUnits) {
+      if (unit >= 0x3400 && unit <= 0x9fff) out.add(unit);
+    }
+    return out;
+  }
+
   /// Put a referent gloss back together.
   ///
   /// The 和合本雅伟版 tagger walked the text word by word and treated
