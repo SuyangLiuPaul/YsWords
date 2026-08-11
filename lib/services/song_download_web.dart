@@ -94,6 +94,8 @@ class SongDownloadService extends ChangeNotifier {
   bool _cancelled = false;
   int _batchTotal = 0;
   int _batchDone = 0;
+  int _batchFailed = 0;
+  String? _lastError;
 
   Future<void> init() async {
     if (_loaded || !isSupported) return;
@@ -243,6 +245,11 @@ class SongDownloadService extends ChangeNotifier {
   bool get isBusy => pendingCount > 0;
   int get batchTotal => _batchTotal;
   int get batchDone => _batchDone;
+
+  /// See the native service: "N / M" alone cannot tell a slow batch
+  /// from one where every request is failing.
+  int get batchFailed => _batchFailed;
+  String? get lastError => _lastError;
   double get batchProgress =>
       _batchTotal == 0 ? 0 : (_batchDone / _batchTotal).clamp(0.0, 1.0);
 
@@ -307,6 +314,8 @@ class SongDownloadService extends ChangeNotifier {
     }
     _queue.clear();
     _batchTotal = _batchDone = 0;
+    _batchFailed = 0;
+    _lastError = null;
     notifyListeners();
   }
 
@@ -411,6 +420,14 @@ class SongDownloadService extends ChangeNotifier {
         state: SongDownloadState.failed,
         error: '$e',
       );
+      _batchFailed++;
+      // A browser reports a refused connection as an opaque
+      // "Failed to fetch", so the host has to come from the URL we
+      // asked for rather than from the error.
+      final host = Uri.tryParse(song.audioUrl ?? '')?.host;
+      _lastError = (host != null && host.isNotEmpty)
+          ? 'unreachable: $host'
+          : '$e';
     }
     notifyListeners();
   }

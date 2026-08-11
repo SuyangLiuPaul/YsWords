@@ -173,8 +173,24 @@ class SongDownloadService extends ChangeNotifier {
 
   int get batchTotal => _batchTotal;
   int get batchDone => _batchDone;
+
+  /// How many of [batchDone] failed, and why the last one did.
+  ///
+  /// Without these the UI could only show "N / M", which is the same
+  /// display whether songs are downloading slowly or every single one
+  /// is failing — the user's report was "我其实看不到下载进程都不知道到底
+  /// 有没有真的下载", and they were right that the screen could not
+  /// tell them.
+  int get batchFailed => _batchFailed;
+  String? get lastError => _lastError;
+
   int _batchTotal = 0;
   int _batchDone = 0;
+  int _batchFailed = 0;
+  String? _lastError;
+
+  /// How long to wait for a server to start answering.
+  static const _headersTimeout = Duration(seconds: 15);
 
   /// What [songs] would cost to download, in bytes.
   ///
@@ -247,6 +263,8 @@ class SongDownloadService extends ChangeNotifier {
     _active.clear();
     _batchTotal = 0;
     _batchDone = 0;
+    _batchFailed = 0;
+    _lastError = null;
     notifyListeners();
   }
 
@@ -299,6 +317,11 @@ class SongDownloadService extends ChangeNotifier {
         if (_queue.isEmpty && _active.isEmpty) {
           _batchTotal = 0;
           _batchDone = 0;
+          // _batchFailed and _lastError deliberately survive the reset:
+          // a batch that failed entirely finishes by clearing its
+          // counters, and wiping the reason at the same moment would
+          // leave the screen looking exactly like a batch that never
+          // ran.
         }
         notifyListeners();
         if (!_cancelled) _pump();
@@ -325,7 +348,27 @@ class SongDownloadService extends ChangeNotifier {
       final target = File('${dir.path}/$name');
 
       final request = http.Request('GET', Uri.parse(url));
-      final response = await client.send(request);
+      // A host that never answers must fail in seconds, not minutes.
+      //
+      // 2026-08-11: the user queued 495 songs and the progress sat at
+      // "0 / 495" indefinitely. Nothing was broken in the queue — 495
+      // of the 559 songs live on fydt.org and
+      // www.christiandiscipleschurch.org, which accept no TCP
+      // connection at all from their network, and `send` had no
+      // timeout. Each song therefore held a worker for the OS default
+      // (~75s on iOS) before failing, so with a handful of workers the
+      // batch could not visibly advance. The 63 that DID download were
+      // all cgdc.hk, the one reachable host.
+      //
+      // This bounds the wait for the response HEADERS only; a slow but
+      // live download keeps streaming below without a deadline, so a
+      // large file on a poor connection is not cut off.
+      final response = await client
+          .send(request)
+          .timeout(_headersTimeout, onTimeout: () {
+        throw TimeoutException(
+            'no response from ${Uri.parse(url).host}', _headersTimeout);
+      });
       if (response.statusCode != 200) {
         throw HttpException('HTTP ${response.statusCode}');
       }
@@ -373,6 +416,10 @@ class SongDownloadService extends ChangeNotifier {
         state: SongDownloadState.failed,
         error: e.toString(),
       );
+      _batchFailed++;
+      _lastError = e is TimeoutException
+          ? 'unreachable: ${Uri.tryParse(url)?.host ?? url}'
+          : e.toString();
       debugPrint('[SongDownloadService] ${song.id} failed: $e');
     } finally {
       _clients.remove(song.id)?.close();

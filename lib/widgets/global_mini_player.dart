@@ -65,6 +65,23 @@ class GlobalMiniPlayer extends StatelessWidget {
   }
 }
 
+/// Whether a raw engine error means "the file could not be fetched".
+///
+/// Deliberately substring matching on the platform's own wording: the
+/// engines report a failed source load as an opaque string
+/// (`DarwinAudioError, Failed to set source` on iOS, a
+/// `MEDIA_ERR_NETWORK`-shaped message on web) and there is no error code
+/// to switch on. A miss here costs the older, vaguer message, which is
+/// what shipped before — so this can only improve on it.
+bool _isUnreachable(String error) {
+  final e = error.toLowerCase();
+  return e.contains('failed to set source') ||
+      e.contains('network error') ||
+      e.contains('source not supported') ||
+      e.contains('socketexception') ||
+      e.contains('timed out');
+}
+
 class _Strip extends StatelessWidget {
   const _Strip();
 
@@ -105,6 +122,23 @@ class _Strip extends StatelessWidget {
                       'no-tracks' => uiStrings['songsNoTracksForMix']
                               ?[locale] ??
                           'None of these songs have that mix.',
+                      // The media host could not be reached. Worth
+                      // saying separately: "could not play that track"
+                      // sends someone hunting for a broken song when
+                      // the song is fine and the SERVER is unreachable.
+                      //
+                      // 2026-08-11, reported from an iPad on the user's
+                      // network: PlatformException(DarwinAudioError,
+                      // Failed to set source...). Confirmed from the Mac
+                      // on the same network — fydt.org (578 songs) and
+                      // www.christiandiscipleschurch.org (402) accept no
+                      // TCP connection at all, while cgdc.hk and
+                      // cahayapengharapan.org answer in 100ms.
+                      _ when _isUnreachable(error) =>
+                        uiStrings['songsHostUnreachable']?[locale] ??
+                            'Could not reach the server this song is '
+                                'hosted on. Check the connection, or try '
+                                'a song from another source.',
                       _ => uiStrings['songsPlaybackFailed']?[locale] ??
                           'Could not play that track.',
                     },

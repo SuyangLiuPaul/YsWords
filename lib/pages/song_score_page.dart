@@ -113,8 +113,16 @@ class SongScorePage extends StatelessWidget {
               style: TextStyle(color: scheme.onSurfaceVariant),
             ),
             const SizedBox(height: 4),
+            // A reason, in words, instead of the raw exception.
+            //
+            // 2026-08-11 the user was shown "TimeoutException after
+            // 0:00:05.000000: Future not completed", which tells them
+            // nothing they can act on and looks like the app is broken.
+            // A timeout here means the PDF's host did not answer — for
+            // this song, fydt.org, which serves 578 of the 559 shown
+            // songs' media and is unreachable from their network.
             Text(
-              '$error',
+              _describe(error, url, locale),
               textAlign: TextAlign.center,
               style: TextStyle(
                   fontSize: 11,
@@ -165,4 +173,23 @@ class SongScorePage extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Turn a load failure into something a reader can act on.
+///
+/// Falls back to the raw error for anything unrecognised — an
+/// unhelpful string beats hiding a failure mode nobody anticipated.
+String _describe(Object? error, String? url, String locale) {
+  final e = '$error'.toLowerCase();
+  final networkish = e.contains('timeout') ||
+      e.contains('socketexception') ||
+      e.contains('failed host lookup') ||
+      e.contains('connection refused') ||
+      e.contains('connection closed');
+  if (!networkish) return '$error';
+  final host = url == null ? null : Uri.tryParse(url)?.host;
+  final template = uiStrings['songsScoreUnreachable']?[locale] ??
+      'No answer from {host}. The file is there — this network cannot '
+          'reach it.';
+  return template.replaceFirst('{host}', host ?? '?');
 }

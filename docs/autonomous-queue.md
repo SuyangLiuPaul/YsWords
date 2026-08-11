@@ -685,6 +685,31 @@ has never seen this repo.
 
 ## P2 — features the user asked for
 
+- [ ] **Tap-the-status-bar-to-scroll-to-top: 24 pages still lack it.**
+      User, 2026-08-11: "我以为所有的page按了top iPhone是会自动划上去的但是
+      Sermon这个就不是，也全部检查一下". Sermons is fixed; the audit they
+      asked for, run over `lib/pages/*.dart`:
+
+      **Have it (2):** songs_page (5 scroll views), sermons_page (3).
+
+      **Missing (24 pages, 59 scroll views):** stats_page (14),
+      search_page (9), bible_trivia_page (4), evidence_page (3),
+      family_tree_page (3), library_page (3), dashboard_page (2),
+      evidence_detail_page (2), highlights_page (2),
+      misconceptions_page (2), now_playing_page (2), and 13 pages with
+      one each — about, bible_timeline, feedback, map_viewer,
+      one_god, profile_edit, profiles, sermon_detail, settings,
+      song_downloads, song_playlist_detail, song_playlists,
+      strongs_entry.
+
+      Mechanical work: wrap the scroll view in `ScrollToTopOnStatusBarTap`
+      and give it the controller. Two things to watch — a page with
+      SEVERAL scroll views needs the one the user is looking at, not the
+      first one found (stats_page and search_page are the hard cases,
+      and tabs make the answer depend on the selected tab), and the
+      widget already guards on `ModalRoute.isCurrent` so a page behind a
+      sheet does not steal the tap.
+
 - [ ] **Sermon reading: "每个段落一个block也不好experience".**
       User, 2026-08-11. This is a follow-up on the v1.4.x paragraph work
       (`lib/pages/sermon_detail_page.dart:749`), which added a line
@@ -752,6 +777,20 @@ has never seen this repo.
 
       Whatever ships, the acceptance test is the user's sentence: a
       second cold start on an iPhone must not show a progress line.
+
+> **Host reachability, re-measured 2026-08-11 from the Mac with
+> Tailscale stopped and the sandbox disabled — this corrects what the
+> items below assumed.** `cgdc.hk` (200, 104ms) and
+> `cahayapengharapan.org` (200, 341ms) are UP. `fydt.org` (578 songs)
+> and `www.christiandiscipleschurch.org` (402) resolve — Vultr IPs,
+> 45.77.28.58 and 149.248.15.146 — but accept **no TCP connection at
+> all** from this network, and take the identical route out `en0` as
+> the two that work. Not DNS, not the sandbox, not Tailscale, and no
+> VPN route is installed. Confirmed independently on the user's iPad:
+> of 559 songs only 63 downloaded, and all 63 are the cgdc.hk ones.
+>
+> So work needing cgdc.hk IS actionable now; work needing fydt.org or
+> the church site is not, from this machine.
 
 - [ ] **Per-source cover fallback for the 393 songs with no artwork.**
       User, 2026-08-11: "没有封面的你可以用他们来源的封面做为歌曲的吗？

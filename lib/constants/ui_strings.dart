@@ -5595,6 +5595,27 @@ const uiStrings = {
   /// scales a label that does not fit rather than breaking it — but a
   /// tile that has to shrink to be read is still worse than one that
   /// does not, so this stays brief.
+  'songsScoreUnreachable': {
+    'zh-Hans': '{host} 没有响应。乐谱是在的，只是当前网络连不上它。',
+    'zh-Hant': '{host} 沒有回應。樂譜是在的，只是目前網路連不上它。',
+    'en': 'No answer from {host}. The file is there — this network '
+        'cannot reach it.',
+  },
+  'songsDownloadFailedCount': {
+    'zh-Hans': '{n} 首失败', 'zh-Hant': '{n} 首失敗', 'en': '{n} failed',
+  },
+  'songsDownloadUnreachable': {
+    'zh-Hans': '{host} 没有响应，这些诗歌在当前网络下无法下载。',
+    'zh-Hant': '{host} 沒有回應，這些詩歌在目前網路下無法下載。',
+    'en': 'No answer from {host}. Those songs cannot download on this '
+        'network.',
+  },
+  'songsHostUnreachable': {
+    'zh-Hans': '连不上这首歌所在的服务器。请检查网络，或换一个来源的诗歌。',
+    'zh-Hant': '連不上這首歌所在的伺服器。請檢查網路，或換一個來源的詩歌。',
+    'en': 'Could not reach the server this song is hosted on. Check the '
+        'connection, or try a song from another source.',
+  },
   'misconceptionsTile': {
     'zh-Hans': '常见误解', 'zh-Hant': '常見誤解', 'en': 'Misconceptions',
   },

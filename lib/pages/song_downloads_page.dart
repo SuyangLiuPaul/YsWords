@@ -100,6 +100,8 @@ class _SongDownloadsPageState extends State<SongDownloadsPage> {
                               progress: _service.batchProgress,
                               batchDone: _service.batchDone,
                               batchTotal: _service.batchTotal,
+                              batchFailed: _service.batchFailed,
+                              lastError: _service.lastError,
                               scheme: scheme,
                               locale: locale,
                               onCancel: _service.cancelAll,
@@ -281,6 +283,8 @@ class _SummaryCard extends StatelessWidget {
   final double progress;
   final int batchDone;
   final int batchTotal;
+  final int batchFailed;
+  final String? lastError;
   final ColorScheme scheme;
   final String locale;
   final VoidCallback onCancel;
@@ -293,6 +297,8 @@ class _SummaryCard extends StatelessWidget {
     required this.progress,
     required this.batchDone,
     required this.batchTotal,
+    required this.batchFailed,
+    required this.lastError,
     required this.scheme,
     required this.locale,
     required this.onCancel,
@@ -339,10 +345,47 @@ class _SummaryCard extends StatelessWidget {
             Row(
               children: [
                 Expanded(
-                  child: Text(
-                    '$batchDone / $batchTotal',
-                    style: TextStyle(
-                        fontSize: 12, color: scheme.onSurfaceVariant),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        batchFailed > 0
+                            ? '$batchDone / $batchTotal'
+                                '  ·  ${(uiStrings['songsDownloadFailedCount']
+                                        ?[locale] ??
+                                    '{n} failed')
+                                .replaceFirst('{n}', '$batchFailed')}'
+                            : '$batchDone / $batchTotal',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: batchFailed > 0
+                              ? scheme.error
+                              : scheme.onSurfaceVariant,
+                        ),
+                      ),
+                      // Name the host when the failures are "no answer".
+                      // "0 / 495" on its own reads as "nothing is
+                      // happening"; the user's words were "我其实看不到下载
+                      // 进程都不知道到底有没有真的下载". Something IS
+                      // happening — every request is timing out against a
+                      // server that never replies — and the screen has to
+                      // be able to say so.
+                      if (lastError != null &&
+                          lastError!.startsWith('unreachable: '))
+                        Padding(
+                          padding: const EdgeInsets.only(top: 2),
+                          child: Text(
+                            (uiStrings['songsDownloadUnreachable']?[locale] ??
+                                    'No answer from {host}. Those songs '
+                                        'cannot download on this network.')
+                                .replaceFirst('{host}',
+                                    lastError!.substring('unreachable: '.length)),
+                            style: TextStyle(
+                                fontSize: 11, color: scheme.error),
+                          ),
+                        ),
+                    ],
                   ),
                 ),
                 TextButton(

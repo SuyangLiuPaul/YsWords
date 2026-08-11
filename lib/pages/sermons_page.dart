@@ -21,6 +21,7 @@ import 'package:yswords/utils/version_mapper.dart' show localeAwareBookName;
 import 'package:yswords/widgets/home_icon_button.dart';
 import 'package:yswords/widgets/language_switcher_button.dart';
 import 'package:yswords/widgets/localized_back_button.dart';
+import 'package:yswords/widgets/scroll_to_top_on_status_bar_tap.dart';
 
 /// Topic-grouped browser for the Pastor Eric sermon corpus.
 ///
@@ -196,7 +197,17 @@ class _SermonsPageState extends State<SermonsPage> {
               style: TextStyle(
                 fontSize: 11,
                 fontWeight: FontWeight.w400,
-                color: scheme.onSurfaceVariant,
+                // The AppBar's own foreground, not onSurfaceVariant.
+                //
+                // 2026-08-11, from the phone: "张牧师的名字很难看见".
+                // onSurfaceVariant is the token for text on a SURFACE,
+                // and this sits on the app bar, whose background is the
+                // primary colour — a dark grey-blue on a dark blue bar,
+                // which is close to invisible. 0.78 alpha keeps it
+                // quieter than the title without hiding it.
+                color: (Theme.of(context).appBarTheme.foregroundColor ??
+                        scheme.onPrimary)
+                    .withValues(alpha: 0.78),
               ),
             ),
           ],
@@ -330,7 +341,9 @@ class _SermonsPageState extends State<SermonsPage> {
                           ),
                         ),
                       )
-                    : ListView(
+                    : ScrollToTopOnStatusBarTap(
+                        controller: _scrollController,
+                        child: ListView(
                         controller: _scrollController,
                         padding: const EdgeInsets.symmetric(horizontal: 8),
                         children: [
@@ -342,7 +355,7 @@ class _SermonsPageState extends State<SermonsPage> {
                                 flashActive: _flashActive,
                                 onSermonTap: _openSermon),
                         ],
-                      ),
+                      ),)
               ),
             ],
           );
