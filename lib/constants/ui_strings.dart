@@ -5595,6 +5595,12 @@ const uiStrings = {
   /// scales a label that does not fit rather than breaking it — but a
   /// tile that has to shrink to be read is still worse than one that
   /// does not, so this stays brief.
+  'songsScoreTimedOut': {
+    'zh-Hans': '{host} 没有及时响应。可以重试——网络慢一点就会这样。',
+    'zh-Hant': '{host} 沒有及時回應。可以重試——網路慢一點就會這樣。',
+    'en': '{host} did not respond in time. Try again — a slow '
+        'connection is enough to cause this.',
+  },
   'songsScoreUnreachable': {
     'zh-Hans': '{host} 没有响应。乐谱是在的，只是当前网络连不上它。',
     'zh-Hant': '{host} 沒有回應。樂譜是在的，只是目前網路連不上它。',

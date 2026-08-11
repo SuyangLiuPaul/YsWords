@@ -28,10 +28,47 @@ import 'package:yswords/widgets/localized_back_button.dart';
 /// a byte arrived. [SongPlayerService.resolvePlaybackUrl] rewrites it
 /// onto our own origin; on native it returns the URL untouched, so
 /// phones still stream straight from the church.
-class SongScorePage extends StatelessWidget {
+class SongScorePage extends StatefulWidget {
   final Song song;
   final String locale;
   const SongScorePage({super.key, required this.song, required this.locale});
+
+  /// Whether the in-app viewer is available here.
+  ///
+  /// pdfrx renders through PDFium, which ships for every target this
+  /// app builds — so unlike the video player there is no platform to
+  /// exclude. Kept as a named predicate anyway so the call sites read
+  /// the same as the video ones and a future gap has somewhere to go.
+  static bool get isSupported => true;
+
+  static Future<void> open(
+      BuildContext context, Song song, String locale) async {
+    if (song.scoreUrl == null) return;
+    if (!isSupported) {
+      await LinkOpener.openOrWarn(context, song.scoreUrl!, locale: locale);
+      return;
+    }
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => SongScorePage(song: song, locale: locale),
+      ),
+    );
+  }
+
+  @override
+  State<SongScorePage> createState() => _SongScorePageState();
+}
+
+class _SongScorePageState extends State<SongScorePage> {
+  /// Bumped by Try again. It keys the viewer, so a retry builds a NEW
+  /// PdfViewer rather than asking the failed one to reconsider —
+  /// pdfrx caches its failure and would return it again.
+  int _attempt = 0;
+
+  Song get song => widget.song;
+  String get locale => widget.locale;
+
+  void _retry() => setState(() => _attempt++);
 
   @override
   Widget build(BuildContext context) {
@@ -63,7 +100,11 @@ class SongScorePage extends StatelessWidget {
 
     final localPath = downloads.localScorePathFor(song);
     if (localPath != null) {
-      return PdfViewer.file(localPath, params: _params(context));
+      return PdfViewer.file(
+        localPath,
+        key: ValueKey('score-file-${song.id}-$_attempt'),
+        params: _params(context),
+      );
     }
 
     final blob = downloads.offlineScoreSourceFor(song);
@@ -73,6 +114,7 @@ class SongScorePage extends StatelessWidget {
     // an origin, so it is correct on every deploy target.
     return PdfViewer.uri(
       Uri.base.resolve(target),
+      key: ValueKey('score-${song.id}-$_attempt'),
       params: _params(context),
     );
   }
@@ -130,6 +172,16 @@ class SongScorePage extends StatelessWidget {
             ),
             if (url != null) ...[
               const SizedBox(height: 16),
+              // Retry first: for a timeout it is the fix, and leaving
+              // the app for the original page is a much bigger ask.
+              ...[
+                FilledButton.tonalIcon(
+                  onPressed: _retry,
+                  icon: const Icon(Icons.refresh_rounded, size: 18),
+                  label: Text(uiStrings['retry']?[locale] ?? 'Try again'),
+                ),
+                const SizedBox(height: 8),
+              ],
               OutlinedButton.icon(
                 onPressed: () => LinkOpener.openOrWarn(context, url, locale: locale),
                 icon: const Icon(Icons.open_in_new_rounded, size: 18),
@@ -152,44 +204,43 @@ class SongScorePage extends StatelessWidget {
         ),
       );
 
-  /// Whether the in-app viewer is available here.
-  ///
-  /// pdfrx renders through PDFium, which ships for every target this
-  /// app builds — so unlike the video player there is no platform to
-  /// exclude. Kept as a named predicate anyway so the call sites read
-  /// the same as the video ones and a future gap has somewhere to go.
-  static bool get isSupported => true;
-
-  static Future<void> open(
-      BuildContext context, Song song, String locale) async {
-    if (song.scoreUrl == null) return;
-    if (!isSupported) {
-      await LinkOpener.openOrWarn(context, song.scoreUrl!, locale: locale);
-      return;
-    }
-    await Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (_) => SongScorePage(song: song, locale: locale),
-      ),
-    );
-  }
 }
 
 /// Turn a load failure into something a reader can act on.
 ///
 /// Falls back to the raw error for anything unrecognised — an
 /// unhelpful string beats hiding a failure mode nobody anticipated.
+///
+/// **Says what happened, not what it means.** The first version of this
+/// claimed "this network cannot reach it", and a screenshot showed why
+/// that was wrong: the sheet music for a Christian Disciples Church
+/// song failed while a Christian Disciples Church song was *playing*
+/// from the same host in the mini-player underneath. The host was
+/// reachable; pdfrx's fetch had simply given up after five seconds. A
+/// timeout on our own short deadline is not evidence about the
+/// network, and stating it as one sends the reader to debug their
+/// wifi over what a retry would fix.
 String _describe(Object? error, String? url, String locale) {
   final e = '$error'.toLowerCase();
-  final networkish = e.contains('timeout') ||
-      e.contains('socketexception') ||
-      e.contains('failed host lookup') ||
-      e.contains('connection refused') ||
-      e.contains('connection closed');
-  if (!networkish) return '$error';
   final host = url == null ? null : Uri.tryParse(url)?.host;
-  final template = uiStrings['songsScoreUnreachable']?[locale] ??
-      'No answer from {host}. The file is there — this network cannot '
-          'reach it.';
-  return template.replaceFirst('{host}', host ?? '?');
+
+  // A refusal IS evidence about reachability; a timeout is not.
+  final refused = e.contains('socketexception') ||
+      e.contains('failed host lookup') ||
+      e.contains('connection refused');
+  if (refused) {
+    return (uiStrings['songsScoreUnreachable']?[locale] ??
+            'No answer from {host}. The file is there — this network '
+                'cannot reach it.')
+        .replaceFirst('{host}', host ?? '?');
+  }
+
+  if (e.contains('timeout')) {
+    return (uiStrings['songsScoreTimedOut']?[locale] ??
+            '{host} did not respond in time. Try again — a slow '
+                'connection is enough to cause this.')
+        .replaceFirst('{host}', host ?? '?');
+  }
+
+  return '$error';
 }

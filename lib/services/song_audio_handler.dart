@@ -38,10 +38,13 @@ class SongAudioHandler extends BaseAudioHandler with SeekHandler {
           unawaited(seek(resume));
         }
       }
+      // Real data arrived — this track is alive.
+      if (d > Duration.zero) _cancelStallWatchdog();
       _broadcast();
       _publishMediaItem();
     });
     _player.onPosition.listen((p) {
+      if (p > Duration.zero) _cancelStallWatchdog();
       _position = p;
       _broadcast();
     });
@@ -322,10 +325,16 @@ class SongAudioHandler extends BaseAudioHandler with SeekHandler {
   }
 
   @override
-  Future<void> pause() => _player.pause();
+  Future<void> pause() {
+    // A user pause is not a stall; the watchdog would otherwise fire
+    // on a track paused within 20s of starting.
+    _cancelStallWatchdog();
+    return _player.pause();
+  }
 
   @override
   Future<void> stop() async {
+    _cancelStallWatchdog();
     _sleepTimer?.cancel();
     _sleepAt = null;
     await _player.stop();
@@ -444,6 +453,7 @@ class SongAudioHandler extends BaseAudioHandler with SeekHandler {
     _error = null;
     _position = Duration.zero;
     _duration = Duration.zero;
+    _armStallWatchdog(item);
     _publishMediaItem();
     _broadcast();
 
@@ -479,6 +489,53 @@ class SongAudioHandler extends BaseAudioHandler with SeekHandler {
     _loading = false;
     _broadcast();
   }
+
+  /// Fails a track that starts but never produces any audio.
+  ///
+  /// 2026-08-11, from the phone: "God's Sheepfold" sat at `0:00 / 5:54`
+  /// with the pause button showing and nothing happening. The duration
+  /// comes from the catalogue, so the row looks live while not one byte
+  /// has arrived. It is a Christian Disciples Church song, and that
+  /// host accepts no connection from their network.
+  ///
+  /// `await playing` cannot catch this. The platform sometimes throws
+  /// (the DarwinAudioError report) and sometimes just accepts the
+  /// source and waits forever, and the second case had no bound at
+  /// all — no error, no skip, no message, indefinitely.
+  ///
+  /// Deliberately keyed on "no duration AND no position", not on a
+  /// clock: a slow connection that is genuinely loading reports its
+  /// duration almost immediately, so this cannot cut off a download
+  /// that is merely slow.
+  void _armStallWatchdog(QueueItem item) {
+    _stallTimer?.cancel();
+    _stallTimer = Timer(_stallTimeout, () {
+      if (_duration > Duration.zero || _position > Duration.zero) return;
+      final host = Uri.tryParse(item.url)?.host;
+      debugPrint('[SongAudioHandler] ${item.song.id} produced no audio in '
+          '${_stallTimeout.inSeconds}s (host: $host)');
+      _failed.add(item.song.id);
+      // The same wording the engines use for a failed source load, so
+      // the mini-player's existing classifier reaches the "cannot reach
+      // the server" message rather than "could not play that track".
+      _error = 'failed to set source: no answer from ${host ?? item.url}';
+      _loading = false;
+      _playing = false;
+      _broadcast();
+      unawaited(_skipPastFailure());
+    });
+  }
+
+  void _cancelStallWatchdog() {
+    _stallTimer?.cancel();
+    _stallTimer = null;
+  }
+
+  Timer? _stallTimer;
+
+  /// Long enough that a slow-but-live start is never cut off, short
+  /// enough that a dead host does not leave the user staring at 0:00.
+  static const _stallTimeout = Duration(seconds: 20);
 
   Future<void> _skipPastFailure() async {
     // Every remaining track already failed → stop rather than spin.
