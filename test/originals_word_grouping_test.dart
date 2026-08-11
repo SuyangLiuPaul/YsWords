@@ -175,5 +175,107 @@ void main() {
     expect((index['H1035'] as Map)['n'], 41);
     expect((index['H1126'] as Map)['n'], 1);
     expect((index['H4122'] as Map)['n'], 2);
+    // Ἄρειος Πάγος was counted 4 times for the 2 verses it stands in,
+    // μαρὰν ἀθά twice for one.
+    expect((index['G697'] as Map)['n'], 2);
+    expect((index['G3134'] as Map)['n'], 1);
+  });
+
+  group('the Greek side has the same defect and the same repair', () {
+    // The Hebrew was audited first because a reader reported it. The
+    // Greek had never been looked at, and carries the identical shape:
+    // OpenGNT numbers BOTH tokens of Ἄρειον πάγον G697, whose gloss is
+    // "rock of Ares, a place in Athens", so as two chips the page said
+    // that πάγον on its own means the Areopagus. It means "hill".
+    late Map<String, Map<String, List<Map<String, dynamic>>>> greek;
+    late Map<String, dynamic> lexicon;
+
+    setUpAll(() {
+      greek = {};
+      for (final file
+          in Directory('assets/originals').listSync().whereType<File>()) {
+        if (!file.path.endsWith('.json')) continue;
+        final book = file.uri.pathSegments.last.replaceAll('.json', '');
+        final raw = json.decode(file.readAsStringSync()) as Map<String, dynamic>;
+        final verses = <String, List<Map<String, dynamic>>>{};
+        for (final entry in raw.entries) {
+          final words = (entry.value as List).cast<Map<String, dynamic>>();
+          if (words.isEmpty) continue;
+          if (!(words.first['s'] as String).startsWith('G')) {
+            verses.clear();
+            break;
+          }
+          verses[entry.key] = words;
+        }
+        if (verses.isNotEmpty) greek[book] = verses;
+      }
+      expect(greek.length, 27, reason: 'expected all 27 Greek books');
+      lexicon = json.decode(
+          File('assets/strongs/greek.json').readAsStringSync()) as Map<String, dynamic>;
+    });
+
+    test('no Strong\'s entry naming a phrase is split across two chips', () {
+      // The general invariant, checked against the LEXICON rather than
+      // against OpenGNT — a second source, so this stays true even if
+      // the importer's own rule for spotting a phrase is wrong. On the
+      // pre-fix assets it fails at Acts 17:19, 17:22 and 1 Cor 16:22.
+      final phrase = {
+        for (final e in lexicon.entries)
+          if ((e.value as Map)['lemma'].toString().contains(' ')) e.key
+      };
+      expect(phrase, hasLength(17));
+      final offenders = <String>[];
+      greek.forEach((book, verses) {
+        verses.forEach((ref, words) {
+          for (var i = 0; i < words.length - 1; i++) {
+            if (words[i]['s'] != words[i + 1]['s']) continue;
+            if (!phrase.contains(words[i]['s'])) continue;
+            offenders.add('$book $ref  ${words[i]['w']} | '
+                '${words[i + 1]['w']} (${words[i]['s']})');
+          }
+        });
+      });
+      expect(offenders, isEmpty,
+          reason: 'a chip promises a definition for half of a word:\n'
+              '${offenders.join('\n')}');
+    });
+
+    test('the three joined words are exactly these, spelled as printed', () {
+      final joined = <String>[];
+      greek.forEach((book, verses) {
+        verses.forEach((ref, words) {
+          for (final w in words) {
+            if ((w['w'] as String).contains(' ')) {
+              joined.add('$book $ref ${w['w']} ${w['s']}');
+            }
+          }
+        });
+      });
+      expect(joined..sort(), [
+        '1_corinthians 16:22 Μαράνα θά G3134',
+        'acts 17:19 Ἄρειον πάγον G697',
+        'acts 17:22 Ἀρείου Πάγου G697',
+      ]);
+    });
+
+    test('genuine repetition is left as two words', () {
+      // The counterpart to the Hebrew's 2,018. ἀμὴν ἀμήν, Κύριε Κύριε,
+      // Μάρθα Μάρθα and a genealogy naming a man twice are two words
+      // each, and merging them would be the opposite error.
+      var pairs = 0;
+      greek.forEach((book, verses) {
+        verses.forEach((ref, words) {
+          for (var i = 0; i < words.length - 1; i++) {
+            if (words[i]['s'] == words[i + 1]['s']) pairs++;
+          }
+        });
+      });
+      expect(pairs, 361);
+      for (final w in greek['john']!['3:3']!) {
+        expect((w['w'] as String).contains(' '), isFalse);
+      }
+      expect(greek['john']!['3:3']!.where((w) => w['s'] == 'G281'),
+          hasLength(2));
+    });
   });
 }

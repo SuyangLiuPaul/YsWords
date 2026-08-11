@@ -28,11 +28,17 @@ Everything left over is genuine repetition — an infinitive absolute
 before its verb (אָכֹל תֹּאכֵל), a construct chain (בֶּן־בְּנוֹ), a name
 occurring twice in a genealogy — and belongs as two chips.
 
-    python3 tools/audit_originals_compounds.py            # counts
+The Greek NT has the same defect and the same repair — Acts 17:19 numbers
+both halves of Ἄρειον πάγον G697, whose gloss is the whole place name —
+only the marker differs: OpenGNT's own `lexeme` field, cross-checked
+against Strong's, rather than OSHB's `lemma="…+"`.
+
+    python3 tools/audit_originals_compounds.py            # Hebrew counts
+    python3 tools/audit_originals_compounds.py --greek    # Greek counts
     python3 tools/audit_originals_compounds.py --samples  # + examples
 
-Reads the `.cache/originals/morphhb-<osis>.xml` files build_originals.py
-caches, fetching any that are missing.
+Reads the sources build_originals.py caches under `.cache/originals/`,
+fetching any that are missing.
 """
 
 from __future__ import annotations
@@ -71,11 +77,74 @@ def raw_verses(osis: str) -> dict[str, list[dict]]:
     return out
 
 
+def audit_greek(samples: bool) -> None:
+    """The same question on the Greek side, whose marker is OpenGNT's own
+    `lexeme` field naming several words — Ἄρειος Πάγος, μαρὰν ἀθά.
+
+    Cross-checked against Strong's, a different source: a join is only
+    reported as correct where the lexicon's own lemma for that number is
+    a phrase too. Everything left over is genuine repetition (ἀμὴν ἀμήν,
+    Κύριε Κύριε, a genealogy naming a man twice) and belongs as two
+    chips.
+    """
+    with open(os.path.join(REPO_ROOT, 'assets', 'strongs', 'greek.json'),
+              encoding='utf-8') as f:
+        lexicon = json.load(f)
+    phrase_numbers = {n for n, e in lexicon.items() if ' ' in e['lemma']}
+
+    by_book = B.parse_opengnt()
+    drift: list[str] = []
+    tokens = joined = 0
+    repeats: list[str] = []
+    for english, rebuilt in by_book.items():
+        slug = english.lower().replace(' ', '_')
+        with open(os.path.join(ORIGINALS_DIR, f'{slug}.json'),
+                  encoding='utf-8') as f:
+            shipped = json.load(f)
+        for cv, words in shipped.items():
+            ref = f'{english} {cv}'
+            if rebuilt.get(cv) != words:
+                drift.append(ref)
+                continue
+            tokens += len(words)
+            for w in words:
+                if ' ' not in w['w']:
+                    continue
+                joined += 1
+                if w['s'] not in phrase_numbers:
+                    print(f'  !! {ref} joined {w["w"]} under {w["s"]}, whose '
+                          f'Strong\'s lemma is one word')
+            for a, b in zip(words, words[1:]):
+                if a['s'] != b['s']:
+                    continue
+                if a['s'] in phrase_numbers:
+                    print(f'  !! {ref} {a["w"]} | {b["w"]} still split '
+                          f'under {a["s"]}')
+                repeats.append(f'{ref}  {a["w"]} | {b["w"]}  {a["s"]}')
+
+    print(f'Greek NT words           : {tokens}')
+    print(f'  multi-word lexemes     : {joined}')
+    print(f'verses the importer no '
+          f'longer reproduces        : {len(drift)}')
+    if drift:
+        print('  e.g. ' + ', '.join(drift[:5]))
+    print(f'adjacent same-Strong runs: {len(repeats)}  (genuine repetition)')
+    if samples:
+        for s in repeats[:8]:
+            print(f'      {s}')
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument('--samples', action='store_true',
                     help='print example references for each class')
+    ap.add_argument('--greek', action='store_true',
+                    help='audit the Greek NT instead of the Hebrew OT')
     args = ap.parse_args()
+
+    if args.greek:
+        audit_greek(args.samples)
+        return 0
 
     classes: Counter[str] = Counter()
     samples: dict[str, list[str]] = {}

@@ -20,7 +20,8 @@ and quoted.**
       done (`e714e31`): the importer kept only `<w>` and lost every marker
       that says "these are not two words" — 784 multi-word lexemes now
       render as one chip, 1,229 ketiv/qere as one word marked 寫作/讀作,
-      and the 2,018 genuine repetitions are left alone. Greek still open.
+      and the 2,018 genuine repetitions are left alone. Greek done too
+      (3 splits: Ἄρειον πάγον ×2, Μαράνα θά) — see the bullet below.
       Asked for directly by the user, 2026-08-11, after finding this on
       創世記 35:18: two visibly different Hebrew words, בֵּן and אוֹנִי,
       shown as two separate chips **both numbered H1126 and both glossed
@@ -89,9 +90,46 @@ and quoted.**
           Strong's number, i.e. the app offers a definition for a word
           the tradition says is not part of the read text. Decide whether
           to mark them 「不讀」 or drop them; do not guess.
-        • **The Greek side has never been classified.** ~260 adjacent
-          same-Strong runs in the NT, source OpenGNT, none of them looked
-          at. Do the same measurement there before assuming it is clean.
+        • ~~The Greek side has never been classified.~~ **Done — it had
+          the same defect in 3 places, now fixed.** The estimate of ~260
+          runs was low: there are **364**, and the marker is OpenGNT's
+          own `lexeme` field naming several words, the exact counterpart
+          of OSHB's `lemma="…+"`. A bare space in that field is NOT the
+          marker — it also holds principal-parts lists (`ὅς, ἥ`, 1,409
+          tokens) and homograph disambiguators (`ἰός (2)`); requiring
+          every part to be Greek letters leaves **3 tokens**, and all
+          three were split across two chips:
+
+          | reference | printed | number | each chip claimed |
+          |---|---|---|---|
+          | 使徒行傳 17:19 | Ἄρειον πάγον | G697 | 「雅典一处多石的高地」 |
+          | 使徒行傳 17:22 | Ἀρείου Πάγου | G697 | same |
+          | 哥林多前書 16:22 | Μαράνα θά | G3134 | 「来吧, 主啊!」 |
+
+          So tapping πάγον alone was told it means "the Areopagus" (it
+          means "hill"), and tapping the syllable θά was told it means
+          「来吧,主啊!」. The concordance was wrong the same way — G697
+          「Used 4 times」 for a place named twice, G3134 twice for once.
+
+          Proof no scripture moved: **every one of the 138,013 NT tokens
+          was re-parsed and every verse renders the identical word
+          sequence**; only 3 join points changed, space-for-space as the
+          text prints them. All 27 books reproduced byte-for-byte from
+          upstream before the change, so the diff contains nothing but
+          the repair. The other **361** adjacent same-Strong pairs are
+          genuine repetition — ἀμὴν ἀμήν, Κύριε Κύριε, Μάρθα Μάρθα, a
+          genealogy naming a man twice — and are **left alone**;
+          merging them would be the opposite error.
+          `tools/audit_originals_compounds.py --greek` re-derives it and
+          reports 0 drift; the Greek group in
+          `test/originals_word_grouping_test.dart` checks the invariant
+          against the LEXICON (a second source) and fails on the pre-fix
+          assets at exactly those three references.
+
+          Also settled while measuring: **`assets/originals/` has 0
+          tokens numbered `G0`/`H0`.** The 295 in the P1 item below are
+          the TAGGER's alone, so that item is about `assets/tagged/`
+          only and does not touch the originals.
         • **The Chinese glosses.** They come from CBOL/bible.fhl.net
           (CC-BY-NC-SA 4.0). Nothing has checked that the gloss shown
           belongs to the number shown.

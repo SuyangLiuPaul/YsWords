@@ -533,6 +533,49 @@ def _split_grouped(field: str) -> list[str]:
     return s.split('｜')
 
 
+_GREEK_LETTERS = re.compile(r"^[Ͱ-Ͽἀ-῿̀-ͯ'’]+$")
+
+
+def _is_phrase_lexeme(lexeme: str) -> bool:
+    """True when OpenGNT's `lexeme` names a lexeme that the Greek text
+    prints as SEVERAL words — Ἄρειος Πάγος (G697), μαρὰν ἀθά (G3134).
+
+    This is the Greek counterpart of OSHB's `lemma="1035+"`, and it is
+    the only authority for joining two tokens into one displayed word.
+    Two other things in that field also contain a space and are NOT
+    this: a principal-parts list (`ὅς, ἥ`), excluded by the comma, and a
+    homograph disambiguator (`ἰός (2)`), excluded by requiring every
+    part to be Greek letters.
+    """
+    parts = lexeme.split()
+    return len(parts) > 1 and all(_GREEK_LETTERS.match(p) for p in parts)
+
+
+def _merge_greek_phrases(words: list[dict]) -> list[dict]:
+    """Join the members of a multi-word Greek lexeme into one word.
+
+    Acts 17:19 prints Ἄρειον πάγον and OpenGNT numbers BOTH tokens
+    G697, whose gloss is the whole name — so as two chips the page told
+    a reader that πάγον on its own means "the Areopagus". It means
+    "hill". Same shape as בֶּן־אוֹנִי on the Hebrew side; same repair.
+    The printed spelling is reproduced with the space it is printed
+    with, so no character of the text changes.
+    """
+    out: list[dict] = []
+    for w in words:
+        prev = out[-1] if out else None
+        if (prev is not None
+                and _is_phrase_lexeme(w['lex'])
+                and prev['lex'] == w['lex']
+                and prev['s'] == w['s']):
+            prev['w'] += ' ' + w['w']
+            if w.get('t'):
+                prev['t'] = f"{prev.get('t', '')} {w['t']}".strip()
+            continue
+        out.append(dict(w))
+    return out
+
+
 def parse_opengnt() -> dict[str, dict[str, list]]:
     """Returns {english_book: {"chap:verse": [{w,s,t}, ...]}}.
 
@@ -541,7 +584,8 @@ def parse_opengnt() -> dict[str, dict[str, list]]:
       col 7  〔OGNTk｜OGNTu｜OGNTa｜lexeme｜rmac｜sn〕  accented form + Strong's
       col 9  〔transSBLcap｜transSBL｜modernGreek｜Fon〕
 
-    We pull the accented surface form, the Strong's number, and the
+    We pull the accented surface form, the Strong's number, the lexeme
+    (which says whether the word is half of a multi-word one) and the
     SBL transliteration.
     """
     zdata = fetch(OPENGNT_ZIP_URL, 'opengnt.zip')
@@ -602,10 +646,17 @@ def parse_opengnt() -> dict[str, dict[str, list]]:
 
         bk = by_book.setdefault(english, {})
         verses = bk.setdefault(f'{ch}:{vs}', [])
-        entry = {'w': word, 's': s_num}
+        entry = {'w': word, 's': s_num, 'lex': word_parts[3].strip()}
         if translit:
             entry['t'] = translit
         verses.append(entry)
+
+    for book_data in by_book.values():
+        for cv, words in book_data.items():
+            book_data[cv] = [
+                {k: v for k, v in w.items() if k != 'lex'}
+                for w in _merge_greek_phrases(words)
+            ]
     return by_book
 
 
