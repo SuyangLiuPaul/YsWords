@@ -3,6 +3,8 @@ import 'package:flutter/foundation.dart'
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 
+import 'package:yswords/services/media_focus.dart';
+
 import 'package:yswords/constants/ui_strings.dart';
 import 'package:yswords/models/song.dart';
 import 'package:yswords/services/link_opener.dart';
@@ -69,6 +71,13 @@ class _SongVideoPageState extends State<SongVideoPage> {
   @override
   void initState() {
     super.initState();
+    // Registered so the reverse holds too: starting a hymn pauses
+    // this video. Pause, not dispose — coming back to the page should
+    // find the video where it was.
+    MediaFocus.instance.register(this, () async {
+      final c = _controller;
+      if (c != null && c.value.isPlaying) await c.pause();
+    });
     _init();
   }
 
@@ -89,6 +98,7 @@ class _SongVideoPageState extends State<SongVideoPage> {
         return;
       }
       setState(() => _controller = c);
+      await MediaFocus.instance.claim(this);
       await c.play();
     } catch (e) {
       if (mounted) setState(() => _error = e);
@@ -97,6 +107,7 @@ class _SongVideoPageState extends State<SongVideoPage> {
 
   @override
   void dispose() {
+    MediaFocus.instance.unregister(this);
     // Stopping matters as much as freeing: a video left playing into a
     // disposed page keeps its audio session open and fights the song
     // queue for the output.
@@ -195,7 +206,14 @@ class _SongVideoPageState extends State<SongVideoPage> {
                 icon: Icon(v.isPlaying
                     ? Icons.pause_circle_filled_rounded
                     : Icons.play_circle_filled_rounded),
-                onPressed: () => v.isPlaying ? c.pause() : c.play(),
+                onPressed: () async {
+                  if (v.isPlaying) {
+                    await c.pause();
+                    return;
+                  }
+                  await MediaFocus.instance.claim(this);
+                  await c.play();
+                },
               ),
               const SizedBox(width: 12),
               Text(

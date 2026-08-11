@@ -6,6 +6,8 @@ import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/pages/now_playing_page.dart';
 import 'package:yswords/services/song_player_service.dart';
 import 'package:yswords/utils/app_nav.dart';
+import 'package:yswords/utils/responsive.dart';
+import 'package:yswords/widgets/remote_image.dart';
 
 /// App-wide playback strip.
 ///
@@ -165,7 +167,24 @@ class _Strip extends StatelessWidget {
         color: scheme.surfaceContainerHigh,
         child: SafeArea(
           top: false,
-          child: Column(
+          // The BAR stays full-bleed — a music bar that stopped at a
+          // column edge would look detached from the window. Its
+          // CONTENTS are centred in the same column every page uses.
+          //
+          // Reported from the web build: "网页版下面设计歌曲这个部分不行
+          // iPhone版本没问题". On a phone the strip is the column, so
+          // nothing looked wrong; on a desktop window the title was
+          // pinned to the far left and the buttons to the far right
+          // with a metre of empty bar between them, while the page
+          // itself sat in a 640px column in the middle.
+          child: Center(
+            child: ConstrainedBox(
+            constraints: BoxConstraints(
+              maxWidth: ResponsiveBreakpoints.settingsMaxWidth(
+                  ResponsiveBreakpoints.classOf(
+                      MediaQuery.of(context).size.width)),
+            ),
+            child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               LinearProgressIndicator(
@@ -179,6 +198,38 @@ class _Strip extends StatelessWidget {
                 padding: const EdgeInsets.fromLTRB(14, 6, 4, 6),
                 child: Row(
                   children: [
+                    // Small enough to cost nothing, big enough to tell
+                    // you what is playing at a glance. `cacheWidth`
+                    // keeps the decode budget at the displayed size.
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(6),
+                      child: SizedBox(
+                        width: 34,
+                        height: 34,
+                        child: RemoteImage(
+                          // These hosts (fydt.org, CDC) send no
+                          // Access-Control-Allow-Origin, so on web
+                          // CanvasKit may not read the bytes it just
+                          // downloaded and the artwork renders blank.
+                          // `prefer` makes Flutter lay out a real <img>
+                          // element, which the browser is allowed to
+                          // paint cross-origin. Native ignores this.
+                          // Reported: "为什么歌曲的图片在iPhone有web没有呢".
+                          webHtmlElementStrategy:
+                              WebHtmlElementStrategy.prefer,
+                          url: song.artworkUrl,
+                          cacheWidth: 102,
+                          cacheHeight: 102,
+                          fit: BoxFit.cover,
+                          fallback: (_) => ColoredBox(
+                            color: scheme.surfaceContainerHighest,
+                            child: Icon(Icons.music_note_rounded,
+                                size: 18, color: scheme.onSurfaceVariant),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -255,6 +306,8 @@ class _Strip extends StatelessWidget {
               ),
             ),
             ],
+          ),
+            ),
           ),
         ),
       ),

@@ -1,8 +1,8 @@
 {
   "_meta": {
     "note": "Every citation is verified against assets/kjv.json by scripts/build_misconceptions.py before this file is written. Entries are categorised text / absent / tradition / disputed, and a disputed entry must never be rendered as a settled correction.",
-    "checked": 42,
-    "countChecks": 15
+    "checked": 48,
+    "countChecks": 18
   },
   "entries": [
     {
@@ -609,6 +609,59 @@
           "chapter": "1",
           "verse": "16",
           "must": "thrones"
+        }
+      ]
+    },
+    {
+      "id": "ark-is-a-box",
+      "topic": "translation",
+      "category": "text",
+      "claim": {
+        "zh-Hans": "挪亚方舟是一艘船，像图画里那样有船头、龙骨和风帆。",
+        "zh-Hant": "挪亞方舟是一艘船，像圖畫裡那樣有船頭、龍骨和風帆。",
+        "en": "Noah's ark was a ship, with a bow, a keel and sails, the way it is always drawn."
+      },
+      "says": {
+        "zh-Hans": "**希伯来原文用的字是 תֵּבָה（tebah），意思是「箱子」。**这个字在整本希伯来圣经只出现 **28 次**，而且只在两个地方：创世记里挪亚的方舟（26 次），和出埃及记 2:3、2:5 里摩西那个蒲草箱子——一个漂在河边芦苇丛中的篮子。同一个字，同一类东西：一个能浮起来、把里面的东西保住的容器。\n\n经文给的也是箱子的尺寸，不是船的线条：长三百肘、宽五十肘、高三十肘（创 6:15），一扇窗、旁边一个门、上中下三层（创 6:16）。**没有提到船头、龙骨、舵、桅杆、帆或桨——一样都没有。**希伯来文另有「船」这个字（אֳנִיָּה），全书用了 31 次，却一次也没有用在方舟上。\n\n这不是抠字眼，是关乎这段记载在说什么：方舟不是用来航行的，是用来漂的。创世记 8:4 说它「停在」亚拉腊山上——它从没有被驾驶过，也没有航向。保全他们的不是挪亚的操舵。\n\n顺带一提，中文和英文里「约柜」的「柜／ark」是另一个字（אֲרוֹן，aron，全书 202 次），跟方舟毫无关系；创世记 50:26 里同一个字指的是约瑟的棺材。两个字在中文英文里碰巧撞在一起，在希伯来文里从不相干。",
+        "zh-Hant": "**希伯來原文用的字是 תֵּבָה（tebah），意思是「箱子」。**這個字在整本希伯來聖經只出現 **28 次**，而且只在兩個地方：創世記裡挪亞的方舟（26 次），和出埃及記 2:3、2:5 裡摩西那個蒲草箱子——一個漂在河邊蘆葦叢中的籃子。同一個字，同一類東西：一個能浮起來、把裡面的東西保住的容器。\n\n經文給的也是箱子的尺寸，不是船的線條：長三百肘、寬五十肘、高三十肘（創 6:15），一扇窗、旁邊一個門、上中下三層（創 6:16）。**沒有提到船頭、龍骨、舵、桅桿、帆或槳——一樣都沒有。**希伯來文另有「船」這個字（אֳנִיָּה），全書用了 31 次，卻一次也沒有用在方舟上。\n\n這不是摳字眼，是關乎這段記載在說什麼：方舟不是用來航行的，是用來漂的。創世記 8:4 說它「停在」亞拉臘山上——它從沒有被駕駛過，也沒有航向。保全他們的不是挪亞的操舵。\n\n順帶一提，中文和英文裡「約櫃」的「櫃／ark」是另一個字（אֲרוֹן，aron，全書 202 次），跟方舟毫無關係；創世記 50:26 裡同一個字指的是約瑟的棺材。兩個字在中文英文裡碰巧撞在一起，在希伯來文裡從不相干。",
+        "en": "**The Hebrew word is תֵּבָה (tebah) — a box, a chest.** It occurs **28 times** in the whole Hebrew Bible, in exactly two places: Noah's ark in Genesis (26), and the basket of bulrushes Moses was laid in at Exodus 2:3 and 2:5 — a container floating in the reeds by a riverbank. Same word, same kind of object: something that floats and keeps what is inside it alive.\n\nThe measurements given are a box's, not a hull's: three hundred cubits by fifty by thirty (Gen 6:15), one window, a door in the side, and three decks (Gen 6:16). **No bow, no keel, no rudder, no mast, no sail, no oars are mentioned — not one.** Hebrew has a perfectly good word for ship (אֳנִיָּה), used 31 times, and it is never once used of the ark.\n\nThis is not pedantry about a word; it is what the account is saying. The ark was not built to sail but to float. Genesis 8:4 says it *rested* on the mountains of Ararat — it was never steered and had no course. What preserved them was not Noah's seamanship.\n\nWorth adding: the \"ark\" of the covenant is a different Hebrew word altogether (אֲרוֹן, aron, 202 times), unrelated to this one — and at Genesis 50:26 that same word means Joseph's coffin. The two arks collide only in English."
+      },
+      "refs": [
+        {
+          "book": "Genesis",
+          "chapter": "6",
+          "verse": "15",
+          "must": "three hundred cubits"
+        },
+        {
+          "book": "Genesis",
+          "chapter": "6",
+          "verse": "16",
+          "must": "door of the ark shalt thou set in the side"
+        },
+        {
+          "book": "Exodus",
+          "chapter": "2",
+          "verse": "3",
+          "must": "ark of bulrushes"
+        },
+        {
+          "book": "Exodus",
+          "chapter": "2",
+          "verse": "5",
+          "must": "saw the ark among the flags"
+        },
+        {
+          "book": "Genesis",
+          "chapter": "8",
+          "verse": "4",
+          "must": "ark rested"
+        },
+        {
+          "book": "Genesis",
+          "chapter": "50",
+          "verse": "26",
+          "must": "put in a coffin"
         }
       ]
     }

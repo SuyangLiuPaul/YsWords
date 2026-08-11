@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 
 import 'package:yswords/models/song.dart';
 import 'package:yswords/models/song_queue.dart';
+import 'package:yswords/services/media_focus.dart';
 import 'package:yswords/services/song_audio_handler.dart';
 
 /// Which mix of a song is playing. fydt and CDC both publish up to
@@ -28,7 +29,11 @@ enum SongTrack { vocal, instrumental, accompaniment }
 /// platform channels), playback still works through the bare handler,
 /// just without system controls. Songs playing beats a crash.
 class SongPlayerService extends ChangeNotifier {
-  SongPlayerService._();
+  SongPlayerService._() {
+    // Registered for the life of the app: this is a singleton, so
+    // there is nothing to unregister and no leak to avoid.
+    MediaFocus.instance.register(this, _pauseForFocus);
+  }
 
   static final SongPlayerService instance = SongPlayerService._();
 
@@ -152,10 +157,19 @@ class SongPlayerService extends ChangeNotifier {
       if (isPlaying) {
         await _h.pause();
       } else {
+        // Resuming counts as starting to make sound — a video that is
+        // running has to give way, same as on a fresh play.
+        unawaited(MediaFocus.instance.claim(this));
         await _h.play();
       }
       return;
     }
+
+    // NOT awaited before `setQueue`: on iOS web the play() call has to
+    // land inside the user's gesture, and awaiting anything first
+    // spends it. Pausing a video a beat late is invisible; losing the
+    // gesture means silence.
+    unawaited(MediaFocus.instance.claim(this));
 
     await _h.setQueue(SongQueue(
       items: [QueueItem(song: song, url: url, kind: _kindOf(t))],
@@ -188,6 +202,7 @@ class SongPlayerService extends ChangeNotifier {
       repeat: repeat,
       sourceLabel: label,
     );
+    unawaited(MediaFocus.instance.claim(this));
     await _h.setQueue(q);
   }
 
@@ -199,6 +214,11 @@ class SongPlayerService extends ChangeNotifier {
   Future<void> removeFromQueue(int index) => _h.removeFromQueue(index);
 
   Future<void> next() => _h.skipToNext();
+
+  /// Registered with [MediaFocus] so a video can silence the hymn.
+  /// Pause, never stop: the queue and the position stay put.
+  Future<void> _pauseForFocus() => isPlaying ? _h.pause() : Future.value();
+
   Future<void> previous() => _h.skipToPrevious();
   Future<void> playAt(int index) => _h.playAt(index);
   Future<void> seek(Duration to) => _h.seek(to);

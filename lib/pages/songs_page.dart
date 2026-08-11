@@ -1672,6 +1672,11 @@ class _PlayButton extends StatelessWidget {
     // same crash report's breadcrumbs.
     final px = (40 * MediaQuery.devicePixelRatioOf(context)).round();
     return RemoteImage(
+      // fydt.org / CDC send no Access-Control-Allow-Origin, so on web
+      // CanvasKit is not permitted to read the bytes and every row's
+      // artwork came out blank while iOS showed it fine. `prefer` lays
+      // out a real <img>, which the browser may paint cross-origin.
+      webHtmlElementStrategy: WebHtmlElementStrategy.prefer,
       url: song.artworkUrl,
       cacheWidth: px,
       cacheHeight: px,

@@ -739,13 +739,8 @@ class _DashboardPageState extends State<DashboardPage> {
               scheme: scheme,
             ),
             const SizedBox(height: 8),
-            GridView.count(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              crossAxisCount: isWide ? 4 : 2,
-              childAspectRatio: isWide ? 3.0 : 2.6,
-              mainAxisSpacing: 8,
-              crossAxisSpacing: 8,
+            _LinkGrid(
+              columns: isWide ? 4 : 2,
               children: [
                 // 2026-05-07 (v11): Search tile in the quick-links
                 // grid. The user wanted a one-tap entry to search
@@ -781,13 +776,8 @@ class _DashboardPageState extends State<DashboardPage> {
               scheme: scheme,
             ),
             const SizedBox(height: 8),
-            GridView.count(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              crossAxisCount: isWide ? 3 : 2,
-              childAspectRatio: isWide ? 3.2 : 2.6,
-              mainAxisSpacing: 8,
-              crossAxisSpacing: 8,
+            _LinkGrid(
+              columns: isWide ? 3 : 2,
               children: [
                 _LinkTile(
                   icon: Icons.insights_outlined,
@@ -844,8 +834,11 @@ class _DashboardPageState extends State<DashboardPage> {
                 // someone with on opening the app.
                 _LinkTile(
                   icon: Icons.psychology_alt_outlined,
-                  label: uiStrings['misconceptionsTitle']?[locale] ??
-                      'Common misunderstandings',
+                  // A SHORTER label than the page's own title: at two
+                  // columns "Common misunderstandings" has to break, and
+                  // it broke mid-word ("Common misu / nderstandings").
+                  label: uiStrings['misconceptionsTile']?[locale] ??
+                      'Misunderstandings',
                   onTap: () => pushPage(const MisconceptionsPage()),
                 ),
                 _LinkTile(
@@ -1379,6 +1372,47 @@ class _DailyVerseCard extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+/// A grid of link tiles whose rows are as tall as their tallest tile.
+///
+/// Was `GridView.count` with a fixed `childAspectRatio`, which sets an
+/// exact tile HEIGHT from the width. Any label needing a second line —
+/// "Bible Evidence" and "Bible Timeline" at desktop width, "The Only
+/// True God" everywhere — was drawn and then clipped, so the card read
+/// "Bible Evidenc". Reported from both the web build and the phone,
+/// 2026-08-11.
+///
+/// A Wrap of fixed-width, intrinsic-height children cannot clip: each
+/// row takes the height its own contents need. Font size, locale and
+/// translation length stop being able to break the layout, which is
+/// the property that matters here — this grid is rendered in three
+/// languages at a user-controlled text size.
+class _LinkGrid extends StatelessWidget {
+  final int columns;
+  final List<Widget> children;
+  const _LinkGrid({required this.columns, required this.children});
+
+  static const double _gap = 8;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, c) {
+        // `floorToDouble` keeps the row from overflowing by a fraction
+        // of a pixel and drawing Flutter's overflow stripes.
+        final w =
+            ((c.maxWidth - _gap * (columns - 1)) / columns).floorToDouble();
+        return Wrap(
+          spacing: _gap,
+          runSpacing: _gap,
+          children: [
+            for (final child in children) SizedBox(width: w, child: child),
+          ],
+        );
+      },
     );
   }
 }

@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:yswords/services/media_focus.dart';
 import 'package:yswords/services/playback/song_playback_engine.dart';
 
 /// One audio file of a sermon.
@@ -46,7 +47,12 @@ class SermonAudioPart {
 /// which is the honest state. A play button that 404s would be worse
 /// than no play button.
 class SermonAudioService extends ChangeNotifier {
-  SermonAudioService._();
+  SermonAudioService._() {
+    // One sound at a time — a hymn or a video starting pauses the
+    // sermon, and vice versa. See [MediaFocus].
+    MediaFocus.instance.register(
+        this, () async => _playing ? await _player.pause() : null);
+  }
 
   static final SermonAudioService instance = SermonAudioService._();
 
@@ -155,9 +161,16 @@ class SermonAudioService extends ChangeNotifier {
     if (!isConfigured || parts == null || parts.isEmpty) return;
 
     if (_sermonId == sermonId) {
-      await (_playing ? _player.pause() : _player.resume());
+      if (_playing) {
+        await _player.pause();
+      } else {
+        await MediaFocus.instance.claim(this);
+        await _player.resume();
+      }
       return;
     }
+
+    await MediaFocus.instance.claim(this);
 
     _sermonId = sermonId;
     _error = null;

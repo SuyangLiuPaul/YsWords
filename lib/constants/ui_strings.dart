@@ -5590,6 +5590,11 @@ const uiStrings = {
   'misconceptionsCatDisputed': {
     'zh-Hans': '仍有争议', 'zh-Hant': '仍有爭議', 'en': 'Genuinely disputed',
   },
+  /// Deliberately shorter than [misconceptionsTitle]: the dashboard tile
+  /// is half a phone wide, and the full title broke mid-word there.
+  'misconceptionsTile': {
+    'zh-Hans': '常见误解', 'zh-Hant': '常見誤解', 'en': 'Misunderstandings',
+  },
   'misconceptionsTopic': {
     'zh-Hans': '主题', 'zh-Hant': '主題', 'en': 'Topic',
   },

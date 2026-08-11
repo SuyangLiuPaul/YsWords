@@ -331,14 +331,16 @@ class _MisconceptionsPageState extends State<MisconceptionsPage> {
             ],
           ),
           const SizedBox(height: 10),
-          Text(
-            _pick(e['says'] as Map<String, dynamic>?, locale),
-            style: TextStyle(
-              fontFamily: settings.fontFamily,
-              fontFamilyFallback: kCjkFontFallback,
-              fontSize: (settings.fontSize - 2).clamp(13.0, 17.0),
-              height: 1.75,
-              color: scheme.onSurface,
+          Text.rich(
+            _bold(
+              _pick(e['says'] as Map<String, dynamic>?, locale),
+              TextStyle(
+                fontFamily: settings.fontFamily,
+                fontFamilyFallback: kCjkFontFallback,
+                fontSize: (settings.fontSize - 2).clamp(13.0, 17.0),
+                height: 1.75,
+                color: scheme.onSurface,
+              ),
             ),
           ),
           if (refs.isNotEmpty) ...[
@@ -494,6 +496,42 @@ class _MisconceptionsPageState extends State<MisconceptionsPage> {
           uiStrings['feedbackFailure']?[locale] ??
           'Could not send. Please try again.'),
     ));
+  }
+
+  /// Render `**...**` as actual bold instead of printing the asterisks.
+  ///
+  /// The entry text marks its key sentence — "四福音里一次也没有", "但数
+  /// 一句话不等于解决一个问题" — and a plain [Text] showed the markers
+  /// raw: "**这是一个可以数的事实。**". Reported from the phone with a
+  /// screenshot, 2026-08-11.
+  ///
+  /// A deliberately small parser, not a Markdown package: the only
+  /// syntax the generated text uses is `**`. An unpaired `**` is left
+  /// as literal text rather than swallowing the rest of the card.
+  static TextSpan _bold(String text, TextStyle base) {
+    final spans = <TextSpan>[];
+    final strong = base.copyWith(fontWeight: FontWeight.w700);
+    var i = 0;
+    while (i < text.length) {
+      final open = text.indexOf('**', i);
+      if (open < 0) {
+        spans.add(TextSpan(text: text.substring(i), style: base));
+        break;
+      }
+      final close = text.indexOf('**', open + 2);
+      if (close < 0) {
+        // Unpaired — show what is there rather than guessing.
+        spans.add(TextSpan(text: text.substring(i), style: base));
+        break;
+      }
+      if (open > i) {
+        spans.add(TextSpan(text: text.substring(i, open), style: base));
+      }
+      spans.add(TextSpan(
+          text: text.substring(open + 2, close), style: strong));
+      i = close + 2;
+    }
+    return TextSpan(children: spans, style: base);
   }
 
   Widget _categoryChip(String category, String locale, ColorScheme scheme) {

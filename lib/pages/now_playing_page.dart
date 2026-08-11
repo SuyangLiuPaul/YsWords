@@ -453,6 +453,9 @@ class _Artwork extends StatelessWidget {
           child: ColoredBox(
             color: scheme.primaryContainer.withValues(alpha: 0.4),
             child: RemoteImage(
+              // See songs_page.dart: no CORS header on the artwork
+              // hosts, so web needs a real <img> element.
+              webHtmlElementStrategy: WebHtmlElementStrategy.prefer,
               url: url,
               // `contain`, not `cover`. fydt's covers are square, but
               // cgdc's artwork is a songbook LOGO and the shapes vary

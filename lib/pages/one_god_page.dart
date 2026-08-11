@@ -5,6 +5,8 @@ import 'package:flutter/services.dart' show rootBundle;
 import 'package:provider/provider.dart';
 import 'package:video_player/video_player.dart';
 
+import 'package:yswords/services/media_focus.dart';
+
 import 'package:yswords/constants/ui_strings.dart';
 import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/models/one_god_episode.dart';
@@ -49,6 +51,13 @@ class _OneGodPageState extends State<OneGodPage> {
   @override
   void initState() {
     super.initState();
+    // Registered so the reverse holds too: starting a hymn pauses
+    // this video. Pause, not dispose — coming back to the page should
+    // find the video where it was.
+    MediaFocus.instance.register(this, () async {
+      final c = _controller;
+      if (c != null && c.value.isPlaying) await c.pause();
+    });
     _load();
   }
 
@@ -127,7 +136,10 @@ class _OneGodPageState extends State<OneGodPage> {
       // so switching language does not flash an empty box.
       await previous?.pause();
       await previous?.dispose();
-      if (wasPlaying) await next.play();
+      if (wasPlaying) {
+        await MediaFocus.instance.claim(this);
+        await next.play();
+      }
     } catch (e) {
       if (mounted) {
         setState(() {
@@ -164,6 +176,7 @@ class _OneGodPageState extends State<OneGodPage> {
 
   @override
   void dispose() {
+    MediaFocus.instance.unregister(this);
     _controller?.pause();
     _controller?.dispose();
     super.dispose();
@@ -374,7 +387,17 @@ class _OneGodPageState extends State<OneGodPage> {
                 icon: Icon(v.isPlaying
                     ? Icons.pause_circle_filled_rounded
                     : Icons.play_circle_filled_rounded),
-                onPressed: () => v.isPlaying ? c.pause() : c.play(),
+                onPressed: () async {
+                  if (v.isPlaying) {
+                    await c.pause();
+                    return;
+                  }
+                  // A video starting silences the hymn (and any
+                  // sermon) — asked for by the user: "如果视频在播应该
+                  // 歌曲会自动停，vice versa是吧".
+                  await MediaFocus.instance.claim(this);
+                  await c.play();
+                },
               ),
               IconButton(
                 iconSize: 26,
