@@ -31,7 +31,19 @@ import 'package:yswords/widgets/bible_reading_pane.dart' show showNoteEditor;
 /// loaded Bible version, sorted in canonical Bible order.
 /// Tapping any item navigates to that verse.
 class LibraryPage extends StatelessWidget {
-  const LibraryPage({super.key});
+  /// Which tab to open on: 0 = Notes, 1 = Bookmarks.
+  ///
+  /// 2026-08-11: reported as "按书签，跳到的是笔记". The dashboard's
+  /// Bookmarks and Notes tiles both pushed `const LibraryPage()` — the
+  /// identical widget — and the controller had no `initialIndex`, so
+  /// both landed on tab 0, which is Notes. Tapping a tile that says
+  /// Bookmarks and counts bookmarks could never have opened Bookmarks.
+  ///
+  /// Defaults to 0 so the generic "Library" quick link is unchanged;
+  /// only callers that mean a specific tab pass one.
+  final int initialTab;
+
+  const LibraryPage({super.key, this.initialTab = 0});
 
   @override
   Widget build(BuildContext context) {
@@ -42,6 +54,7 @@ class LibraryPage extends StatelessWidget {
     // now Notes + Bookmarks.
     return DefaultTabController(
       length: 2,
+      initialIndex: initialTab.clamp(0, 1),
       child: Scaffold(
         appBar: AppBar(
           leading: const LocalizedBackButton(),

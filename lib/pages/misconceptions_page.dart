@@ -13,6 +13,8 @@ import 'package:yswords/utils/font_catalog.dart' show kCjkFontFallback;
 import 'package:yswords/utils/jump_to_reference.dart';
 import 'package:yswords/utils/reference_parser.dart';
 import 'package:yswords/utils/responsive.dart';
+import 'package:yswords/utils/version_mapper.dart'
+    show localizedReferenceLabel;
 import 'package:yswords/widgets/home_icon_button.dart';
 import 'package:yswords/widgets/language_switcher_button.dart';
 import 'package:yswords/widgets/localized_back_button.dart';
@@ -204,8 +206,16 @@ class _MisconceptionsPageState extends State<MisconceptionsPage> {
                     visualDensity: VisualDensity.compact,
                     avatar: Icon(Icons.menu_book_outlined,
                         size: 15, color: scheme.primary),
+                    // Localised, like every other reference in the app.
+                    // The stored citation is English because that is what
+                    // kjv.json is keyed by and what the build script
+                    // verifies against — but showing "Acts 13:9" on a page
+                    // written in Chinese made the app look like it was
+                    // quoting a different book from the one it opens.
                     label: Text(
-                      '${r['book']} ${r['chapter']}:${r['verse']}',
+                      localizedReferenceLabel(
+                          '${r['book']} ${r['chapter']}:${r['verse']}',
+                          locale),
                       style: const TextStyle(fontSize: 12),
                     ),
                     // Every claim is one tap from the passage it rests

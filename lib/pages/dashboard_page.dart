@@ -592,7 +592,9 @@ class _DashboardPageState extends State<DashboardPage> {
                 count: mainProvider.bookmarks.length,
                 label: uiStrings['tabBookmarks']?[locale] ?? 'Bookmarks',
                 tint: scheme.primary,
-                onTap: () => pushPage(const LibraryPage()),
+                // Tab 1. Both count tiles used to push the identical
+                // `const LibraryPage()`, so this one opened Notes.
+                onTap: () => pushPage(const LibraryPage(initialTab: 1)),
               ),
             ),
             const SizedBox(width: 8),
@@ -602,7 +604,7 @@ class _DashboardPageState extends State<DashboardPage> {
                 count: mainProvider.verseNotes.length,
                 label: uiStrings['tabNotes']?[locale] ?? 'Notes',
                 tint: scheme.secondary,
-                onTap: () => pushPage(const LibraryPage()),
+                onTap: () => pushPage(const LibraryPage(initialTab: 0)),
               ),
             ),
             const SizedBox(width: 8),

@@ -39,7 +39,6 @@ class _OneGodPageState extends State<OneGodPage> {
   bool _switching = false;
 
   String _lang = 'cmn';
-  bool _showTranscript = false;
 
   /// Locale key of the subtitle track on screen, or null for off.
   /// Persisted across a language switch when the new recording offers
@@ -215,7 +214,6 @@ class _OneGodPageState extends State<OneGodPage> {
       );
     }
     final ep = bundle.episodes.first;
-    final transcript = ep.transcriptFor(locale);
 
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 28),
@@ -241,14 +239,6 @@ class _OneGodPageState extends State<OneGodPage> {
           uiStrings['oneGodCredit']?[locale] ?? 'Christian Disciples Church',
           style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant),
         ),
-        if (transcript.isNotEmpty) ...[
-          const SizedBox(height: 16),
-          _transcriptToggle(scheme, locale, transcript.length),
-          if (_showTranscript) ...[
-            const SizedBox(height: 10),
-            _transcript(transcript, settings, scheme),
-          ],
-        ],
       ],
     );
   }
@@ -471,68 +461,7 @@ class _OneGodPageState extends State<OneGodPage> {
     );
   }
 
-  Widget _transcriptToggle(
-      ColorScheme scheme, String locale, int paragraphs) {
-    return Row(
-      children: [
-        Expanded(
-          child: Text(
-            uiStrings['oneGodTranscript']?[locale] ?? 'Transcript',
-            style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: scheme.onSurface),
-          ),
-        ),
-        Switch(
-          value: _showTranscript,
-          onChanged: (v) => setState(() => _showTranscript = v),
-        ),
-      ],
-    );
-  }
 
-  Widget _transcript(
-      List<String> paras, AppSettings settings, ColorScheme scheme) {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(14, 12, 14, 14),
-      decoration: BoxDecoration(
-        color: scheme.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Said plainly rather than left to be discovered: the church's
-          // document has no timings anywhere in it, so this text cannot
-          // follow the video and must not look like it is trying to.
-          Text(
-            uiStrings['oneGodTranscriptNote']?[settings.locale] ??
-                'Full text of the teaching. It does not follow the video '
-                    '— the source document carries no timings.',
-            style: TextStyle(
-                fontSize: 11,
-                fontStyle: FontStyle.italic,
-                color: scheme.onSurfaceVariant),
-          ),
-          const SizedBox(height: 10),
-          for (final p in paras) ...[
-            SelectableText(
-              p,
-              style: TextStyle(
-                fontFamily: settings.fontFamily,
-                fontFamilyFallback: kCjkFontFallback,
-                fontSize: settings.fontSize.clamp(14.0, 20.0),
-                height: 1.75,
-                color: scheme.onSurface,
-              ),
-            ),
-            const SizedBox(height: 10),
-          ],
-        ],
-      ),
-    );
-  }
 
   static String _hms(Duration d) {
     final h = d.inHours;

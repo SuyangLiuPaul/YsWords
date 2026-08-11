@@ -1,11 +1,13 @@
 {
   "_meta": {
     "note": "Every citation is verified against assets/kjv.json by scripts/build_misconceptions.py before this file is written. Entries are categorised text / absent / tradition / disputed, and a disputed entry must never be rendered as a settled correction.",
-    "checked": 13
+    "checked": 36,
+    "countChecks": 8
   },
   "entries": [
     {
       "id": "saul-paul",
+      "topic": "people",
       "category": "text",
       "claim": {
         "zh-Hans": "保罗信主后，神把他的名字从「扫罗」改成「保罗」。",
@@ -34,6 +36,7 @@
     },
     {
       "id": "forbidden-fruit-apple",
+      "topic": "events",
       "category": "tradition",
       "claim": {
         "zh-Hans": "亚当夏娃吃的禁果是苹果。",
@@ -56,6 +59,7 @@
     },
     {
       "id": "jonah-whale",
+      "topic": "translation",
       "category": "tradition",
       "claim": {
         "zh-Hans": "「圣经说约拿被鲸鱼吞了」是错的。",
@@ -84,6 +88,7 @@
     },
     {
       "id": "three-kings",
+      "topic": "events",
       "category": "absent",
       "claim": {
         "zh-Hans": "有三位博士（或三位王）来朝拜婴孩耶稣。",
@@ -112,6 +117,7 @@
     },
     {
       "id": "money-root-of-evil",
+      "topic": "sayings",
       "category": "text",
       "claim": {
         "zh-Hans": "圣经说「金钱是万恶之根」。",
@@ -134,6 +140,7 @@
     },
     {
       "id": "mary-magdalene-prostitute",
+      "topic": "people",
       "category": "absent",
       "claim": {
         "zh-Hans": "抹大拉的马利亚是妓女。",
@@ -162,6 +169,7 @@
     },
     {
       "id": "lucifer-satan",
+      "topic": "translation",
       "category": "tradition",
       "claim": {
         "zh-Hans": "以赛亚书 14:12 的「路西弗」就是撒但的名字。",
@@ -190,6 +198,7 @@
     },
     {
       "id": "hebrews-author",
+      "topic": "authorship",
       "category": "disputed",
       "claim": {
         "zh-Hans": "希伯来书是保罗写的。",
@@ -212,6 +221,7 @@
     },
     {
       "id": "god-helps-those",
+      "topic": "sayings",
       "category": "absent",
       "claim": {
         "zh-Hans": "圣经说「神帮助自助者」。",
@@ -224,6 +234,313 @@
         "en": "It is not in the Bible — not in any book, not in any verse. The idea is from Greek fable, and its English currency comes from Franklin's Poor Richard's Almanack."
       },
       "refs": []
+    },
+    {
+      "id": "noah-two-of-each",
+      "topic": "events",
+      "category": "text",
+      "claim": {
+        "zh-Hans": "方舟上的动物都是一公一母，每种一对。",
+        "zh-Hant": "方舟上的動物都是一公一母，每種一對。",
+        "en": "The animals boarded the ark two by two, a pair of each kind."
+      },
+      "says": {
+        "zh-Hans": "两种说法经文里都有，但常被记漏一半。创世记 7:9 确实说「一对一对」地进方舟；而 7:2 先交代了分别：洁净的畜类要「每样七公七母」，不洁净的才是「一公一母」。七对的用途在 8:20 显明——出方舟后献祭用的正是洁净的牲畜。",
+        "zh-Hant": "兩種說法經文裡都有，但常被記漏一半。創世記 7:9 確實說「一對一對」地進方舟；而 7:2 先交代了分別：潔淨的畜類要「每樣七公七母」，不潔淨的才是「一公一母」。七對的用途在 8:20 顯明——出方舟後獻祭用的正是潔淨的牲畜。",
+        "en": "Both are in the text, but half of it is usually forgotten. Genesis 7:9 does say they went in \"two and two\"; 7:2 has already drawn the distinction — clean beasts \"by sevens\", unclean ones \"by two\". What the extra pairs were for becomes clear in 8:20, where Noah sacrifices from the clean animals after leaving the ark."
+      },
+      "refs": [
+        {
+          "book": "Genesis",
+          "chapter": "7",
+          "verse": "2",
+          "must": "by sevens"
+        },
+        {
+          "book": "Genesis",
+          "chapter": "7",
+          "verse": "9",
+          "must": "two and two"
+        }
+      ]
+    },
+    {
+      "id": "all-things-work-together",
+      "topic": "sayings",
+      "category": "text",
+      "claim": {
+        "zh-Hans": "罗马书 8:28 说「万事都互相效力」——凡事发生都有神的美意。",
+        "zh-Hant": "羅馬書 8:28 說「萬事都互相效力」——凡事發生都有神的美意。",
+        "en": "Romans 8:28 promises everything happens for a reason."
+      },
+      "says": {
+        "zh-Hans": "经文有一个明确的对象，引用时常被略去：「万事都互相效力，叫**爱神的人**得益处，就是按他旨意被召的人。」这是对特定的人说的应许，不是一句关于世事的通则。",
+        "zh-Hant": "經文有一個明確的對象，引用時常被略去：「萬事都互相效力，叫**愛神的人**得益處，就是按他旨意被召的人。」這是對特定的人說的應許，不是一句關於世事的通則。",
+        "en": "The verse names who it is addressed to, and the quotation usually drops it: \"all things work together for good **to them that love God**, to them who are the called according to his purpose.\" It is a promise to particular people, not a general rule about events."
+      },
+      "refs": [
+        {
+          "book": "Romans",
+          "chapter": "8",
+          "verse": "28",
+          "must": "them that love God"
+        }
+      ]
+    },
+    {
+      "id": "magi-at-the-manger",
+      "topic": "events",
+      "category": "text",
+      "claim": {
+        "zh-Hans": "博士和牧羊人一同在马槽旁朝拜刚出生的耶稣。",
+        "zh-Hant": "博士和牧羊人一同在馬槽旁朝拜剛出生的耶穌。",
+        "en": "The magi worshipped the newborn Jesus at the manger, alongside the shepherds."
+      },
+      "says": {
+        "zh-Hans": "马太福音 2:11 说博士进的是「房子」，不是马槽——马槽只出现在路加福音的记载里，而那里没有博士。时间也对不上：希律照着博士所告诉他的时候，下令杀「两岁以里」的男孩（太 2:16），这说明博士到达时已经过了一段时间。",
+        "zh-Hant": "馬太福音 2:11 說博士進的是「房子」，不是馬槽——馬槽只出現在路加福音的記載裡，而那裡沒有博士。時間也對不上：希律照著博士所告訴他的時候，下令殺「兩歲以裡」的男孩（太 2:16），這說明博士到達時已經過了一段時間。",
+        "en": "Matthew 2:11 has them entering a house, not a stable — the manger belongs to Luke's account, which has no magi. The timing does not fit either: Herod, going by what the magi told him, killed boys \"two years old and under\" (Matthew 2:16), which implies a considerable gap."
+      },
+      "refs": [
+        {
+          "book": "Matthew",
+          "chapter": "2",
+          "verse": "11",
+          "must": "house"
+        },
+        {
+          "book": "Matthew",
+          "chapter": "2",
+          "verse": "16",
+          "must": "two years old and under"
+        }
+      ]
+    },
+    {
+      "id": "eye-of-needle-gate",
+      "topic": "sayings",
+      "category": "tradition",
+      "claim": {
+        "zh-Hans": "「针眼」是耶路撒冷一道矮门的名字，骆驼跪下卸货就能通过。",
+        "zh-Hant": "「針眼」是耶路撒冷一道矮門的名字，駱駝跪下卸貨就能通過。",
+        "en": "The \"eye of the needle\" was a low gate in Jerusalem that a camel could squeeze through on its knees."
+      },
+      "says": {
+        "zh-Hans": "**这一条要反过来纠正：被广传的不是经文，而是那个解释。**马太福音 19:24 只说「骆驼穿过针的眼」。耶路撒冷有一道叫「针眼」的小门——这个说法最早出现在中世纪的注释里，没有任何古代文献或考古证据支持。而且它把话讲反了：门徒听完的反应是「这样谁能得救呢」（19:25），正说明他们听见的是「不可能」，不是「跪下就行」。",
+        "zh-Hant": "**這一條要反過來糾正：被廣傳的不是經文，而是那個解釋。**馬太福音 19:24 只說「駱駝穿過針的眼」。耶路撒冷有一道叫「針眼」的小門——這個說法最早出現在中世紀的註釋裡，沒有任何古代文獻或考古證據支持。而且它把話講反了：門徒聽完的反應是「這樣誰能得救呢」（19:25），正說明他們聽見的是「不可能」，不是「跪下就行」。",
+        "en": "**This one corrects the explanation, not the text.** Matthew 19:24 says only \"a camel to go through the eye of a needle\". The Jerusalem gate story first appears in medieval commentary and has no ancient source or archaeological support. It also inverts the point: the disciples answer \"Who then can be saved?\" (19:25), which is the reaction to an impossibility, not to a tight squeeze."
+      },
+      "refs": [
+        {
+          "book": "Matthew",
+          "chapter": "19",
+          "verse": "24",
+          "must": "eye of a needle"
+        },
+        {
+          "book": "Matthew",
+          "chapter": "19",
+          "verse": "25",
+          "must": "Who then can be saved"
+        }
+      ]
+    },
+    {
+      "id": "be-still",
+      "topic": "sayings",
+      "category": "text",
+      "claim": {
+        "zh-Hans": "诗篇 46:10「你们要休息，要知道我是神」是叫人安静默想。",
+        "zh-Hant": "詩篇 46:10「你們要休息，要知道我是神」是叫人安靜默想。",
+        "en": "Psalm 46:10 \"Be still, and know that I am God\" is a call to quiet meditation."
+      },
+      "says": {
+        "zh-Hans": "上一节定了场景：「他止息刀兵，直到地极；他折弓、断枪，把战车焚烧在火中」（诗 46:9）。这句话是对**列国**说的——停手，认清谁是神。同一节的后半也是这个方向：「我必在外邦中被尊崇，在遍地上也被尊崇。」用它安静自己的心并无不可，但那不是这句话原本在说的事。",
+        "zh-Hant": "上一節定了場景：「他止息刀兵，直到地極；他折弓、斷槍，把戰車焚燒在火中」（詩 46:9）。這句話是對**列國**說的——停手，認清誰是神。同一節的後半也是這個方向：「我必在外邦中被尊崇，在遍地上也被尊崇。」用它安靜自己的心並無不可，但那不是這句話原本在說的事。",
+        "en": "The previous verse sets the scene: \"He maketh wars to cease unto the end of the earth; he breaketh the bow, and cutteth the spear in sunder\" (46:9). The line is addressed to the nations — stop, and recognise who God is. The rest of the same verse points the same way: \"I will be exalted among the heathen.\" Using it for personal quiet is no crime; it is simply not what the sentence was saying."
+      },
+      "refs": [
+        {
+          "book": "Psalms",
+          "chapter": "46",
+          "verse": "10",
+          "must": "Be still"
+        },
+        {
+          "book": "Psalms",
+          "chapter": "46",
+          "verse": "9",
+          "must": "wars to cease"
+        }
+      ]
+    },
+    {
+      "id": "judge-not",
+      "topic": "sayings",
+      "category": "text",
+      "claim": {
+        "zh-Hans": "马太福音 7:1「你们不要论断人」意思是永远不可评断别人。",
+        "zh-Hant": "馬太福音 7:1「你們不要論斷人」意思是永遠不可評斷別人。",
+        "en": "Matthew 7:1 \"Judge not\" means never evaluate anyone."
+      },
+      "says": {
+        "zh-Hans": "同一段话在四节之后自己给出了结论：「你这假冒为善的人，先去掉自己眼中的梁木，**然后才能看得清楚，去掉你弟兄眼中的刺**」（太 7:5）。结尾不是「不要去掉」，而是「先处理自己的，然后才看得清楚」。被禁止的是伪善的论断，不是分辨本身。",
+        "zh-Hant": "同一段話在四節之後自己給出了結論：「你這假冒為善的人，先去掉自己眼中的梁木，**然後才能看得清楚，去掉你弟兄眼中的刺**」（太 7:5）。結尾不是「不要去掉」，而是「先處理自己的，然後才看得清楚」。被禁止的是偽善的論斷，不是分辨本身。",
+        "en": "The same passage states its own conclusion four verses later: \"Thou hypocrite, first cast out the beam out of thine own eye; **and then shalt thou see clearly to cast out the mote out of thy brother's eye**\" (Matthew 7:5). It does not end in \"leave the mote alone\" but in \"deal with your own first, then you will see clearly\". What is forbidden is hypocritical judgement, not discernment."
+      },
+      "refs": [
+        {
+          "book": "Matthew",
+          "chapter": "7",
+          "verse": "1",
+          "must": "Judge not"
+        },
+        {
+          "book": "Matthew",
+          "chapter": "7",
+          "verse": "5",
+          "must": "see clearly"
+        }
+      ]
+    },
+    {
+      "id": "i-am-god-never-said",
+      "topic": "sayings",
+      "category": "text",
+      "claim": {
+        "zh-Hans": "福音书里有耶稣说「我是神」的记载。",
+        "zh-Hant": "福音書裡有耶穌說「我是神」的記載。",
+        "en": "The Gospels record Jesus saying \"I am God\"."
+      },
+      "says": {
+        "zh-Hans": "**这是一个可以数的事实。**「我是神」（I am God）这句话在全本圣经出现 9 次，**四福音里一次也没有**。那 9 处全是旧约中神自己说的（创 35:11、46:3；诗 46:10、50:7；赛 43:12、45:22、46:9），加上以西结 28:9 那句对推罗君王的反问。\n\n**但数一句话不等于解决一个问题。** 讨论这件事时常被引用的经文都真实存在，各家读法不同：约翰福音 8:58「还没有亚伯拉罕就有了我」、10:30「我与父原为一」、14:9「人看见了我，就是看见了父」、20:28 多马说「我的主，我的神」；另一边常引的是约翰福音 17:3「认识你独一的真神」、14:28「父是比我大的」、马可福音 13:32「那日子、那时辰，没有人知道……子也不知道」。本卡片只报告字句的分布，不替任何一方作结论——上面每一处都可以点开自己读。",
+        "zh-Hant": "**這是一個可以數的事實。**「我是神」（I am God）這句話在全本聖經出現 9 次，**四福音裡一次也沒有**。那 9 處全是舊約中神自己說的（創 35:11、46:3；詩 46:10、50:7；賽 43:12、45:22、46:9），加上以西結 28:9 那句對推羅君王的反問。\n\n**但數一句話不等於解決一個問題。** 討論這件事時常被引用的經文都真實存在，各家讀法不同：約翰福音 8:58「還沒有亞伯拉罕就有了我」、10:30「我與父原為一」、14:9「人看見了我，就是看見了父」、20:28 多馬說「我的主，我的神」；另一邊常引的是約翰福音 17:3「認識你獨一的真神」、14:28「父是比我大的」、馬可福音 13:32「那日子、那時辰，沒有人知道……子也不知道」。本卡片只報告字句的分佈，不替任何一方作結論——上面每一處都可以點開自己讀。",
+        "en": "**This part is countable.** The phrase \"I am God\" occurs 9 times in the whole Bible and **not once in the four Gospels**. All nine are God speaking in the Old Testament (Genesis 35:11, 46:3; Psalms 46:10, 50:7; Isaiah 43:12, 45:22, 46:9), plus Ezekiel 28:9 taunting the prince of Tyre.\n\n**But counting a phrase does not settle a question.** The passages people bring to this discussion are real and are read differently: John 8:58 \"Before Abraham was, I am\", 10:30 \"I and my Father are one\", 14:9 \"he that hath seen me hath seen the Father\", 20:28 Thomas's \"My Lord and my God\"; and on the other side John 17:3 \"thee the only true God\", 14:28 \"my Father is greater than I\", Mark 13:32 \"neither the Son, but the Father\". This card reports where the words fall and draws no conclusion for you — every passage above opens with a tap."
+      },
+      "refs": [
+        {
+          "book": "Isaiah",
+          "chapter": "45",
+          "verse": "22",
+          "must": "I am God"
+        },
+        {
+          "book": "John",
+          "chapter": "8",
+          "verse": "58",
+          "must": "Before Abraham"
+        },
+        {
+          "book": "John",
+          "chapter": "10",
+          "verse": "30",
+          "must": "are one"
+        },
+        {
+          "book": "John",
+          "chapter": "20",
+          "verse": "28",
+          "must": "My LORD and my God"
+        },
+        {
+          "book": "John",
+          "chapter": "17",
+          "verse": "3",
+          "must": "only true God"
+        },
+        {
+          "book": "John",
+          "chapter": "14",
+          "verse": "28",
+          "must": "greater than I"
+        },
+        {
+          "book": "Mark",
+          "chapter": "13",
+          "verse": "32",
+          "must": "neither the Son"
+        }
+      ]
+    },
+    {
+      "id": "theos-outnumbers-iesous",
+      "topic": "sayings",
+      "category": "text",
+      "claim": {
+        "zh-Hans": "新约既然是讲耶稣的，「耶稣」一定是出现最多的名词。",
+        "zh-Hant": "新約既然是講耶穌的，「耶穌」一定是出現最多的名詞。",
+        "en": "Since the New Testament is about Jesus, \"Jesus\" must be its most frequent name."
+      },
+      "says": {
+        "zh-Hans": "在本应用所载的希腊文新约里数过：θεός（神，G2316）**1,317** 次，Ἰησοῦς（耶稣，G2424）**917** 次。\n\n更值得看的是分布：四福音里耶稣（566）多于神（305），这很自然，因为那是叙述他生平的书卷；**但四福音以外，神（1,012）几乎是耶稣（351）的三倍。**这只是词频，不是教义论证——但它是可以自己数出来的。",
+        "zh-Hant": "在本應用所載的希臘文新約裡數過：θεός（神，G2316）**1,317** 次，Ἰησοῦς（耶穌，G2424）**917** 次。\n\n更值得看的是分佈：四福音裡耶穌（566）多於神（305），這很自然，因為那是敘述他生平的書卷；**但四福音以外，神（1,012）幾乎是耶穌（351）的三倍。**這只是詞頻，不是教義論證——但它是可以自己數出來的。",
+        "en": "Counted in the Greek New Testament this app ships: θεός (God, G2316) **1,317** times, Ἰησοῦς (Jesus, G2424) **917**.\n\nThe distribution is the interesting part. In the four Gospels Jesus (566) outnumbers God (305), which is what you would expect of books narrating his life; **outside them, God (1,012) outnumbers Jesus (351) by nearly three to one.** This is word frequency, not a doctrinal argument — but it is something you can count yourself."
+      },
+      "refs": []
+    },
+    {
+      "id": "lord-jesus-after-ascension",
+      "topic": "sayings",
+      "category": "text",
+      "claim": {
+        "zh-Hans": "「主耶稣」是福音书里常见的称呼。",
+        "zh-Hant": "「主耶穌」是福音書裡常見的稱呼。",
+        "en": "\"Lord Jesus\" is a common form of address in the Gospels."
+      },
+      "says": {
+        "zh-Hans": "数过希腊文：κύριος 紧接 Ἰησοῦς（「主耶稣」）在全新约出现 **56 次**，其中**四福音里只有 2 次** —— 馬可福音 16:19 和 路加福音 24:3，**而这两处都在复活之后**（一处是升天，一处是空坟墓）。其余 54 次全在使徒行传和书信里，使徒行传单独占 15 次。\n\n换句话说：门徒跟随他的时候不这样称呼他，这个称呼属于复活与升天之后的教会。",
+        "zh-Hant": "數過希臘文：κύριος 緊接 Ἰησοῦς（「主耶穌」）在全新約出現 **56 次**，其中**四福音裡只有 2 次** —— 馬可福音 16:19 和 路加福音 24:3，**而這兩處都在復活之後**（一處是升天，一處是空墳墓）。其餘 54 次全在使徒行傳和書信裡，使徒行傳單獨佔 15 次。\n\n換句話說：門徒跟隨他的時候不這樣稱呼他，這個稱呼屬於復活與升天之後的教會。",
+        "en": "Counted in the Greek: κύριος immediately followed by Ἰησοῦς (\"Lord Jesus\") occurs **56 times** in the New Testament, of which **only 2 are in the four Gospels** — Mark 16:19 and Luke 24:3, **and both are after the resurrection** (the ascension, and the empty tomb). The other 54 are all in Acts and the letters, 15 in Acts alone.\n\nPut plainly: it is not how the disciples addressed him while they followed him. The title belongs to the church after the resurrection and ascension."
+      },
+      "refs": [
+        {
+          "book": "Mark",
+          "chapter": "16",
+          "verse": "19",
+          "must": "Lord"
+        },
+        {
+          "book": "Luke",
+          "chapter": "24",
+          "verse": "3",
+          "must": "Lord Jesus"
+        }
+      ]
+    },
+    {
+      "id": "matthew-effect",
+      "topic": "sayings",
+      "category": "tradition",
+      "claim": {
+        "zh-Hans": "「马太效应」（强者愈强、弱者愈弱）出自马太福音，是圣经的教导。",
+        "zh-Hant": "「馬太效應」（強者愈強、弱者愈弱）出自馬太福音，是聖經的教導。",
+        "en": "The \"Matthew effect\" — the rich get richer — is a teaching of Matthew's Gospel."
+      },
+      "says": {
+        "zh-Hans": "这个词是社会学家 Robert Merton 在 1968 年提出的，取自马太福音 25:29「凡有的，还要加给他，叫他有余；没有的，连他所有的也要夺过来。」\n\n但那节经文的上下文不是讲财富分配。它是**才干的比喻**的结尾：主人远行前把家业交给仆人（25:14），回来后与他们算账；被夺去的那位是把银子埋起来、什么都没做的仆人，下一节称他为「无用的仆人」（25:30）。比喻讲的是**如何对待主人所托付的**，不是社会上的贫富累积。\n\n术语本身没有错——Merton 也从未说那是解经；错的是把社会学的名字回过头当成经文的意思。",
+        "zh-Hant": "這個詞是社會學家 Robert Merton 在 1968 年提出的，取自馬太福音 25:29「凡有的，還要加給他，叫他有餘；沒有的，連他所有的也要奪過來。」\n\n但那節經文的上下文不是講財富分配。它是**才幹的比喻**的結尾：主人遠行前把家業交給僕人（25:14），回來後與他們算賬；被奪去的那位是把銀子埋起來、什麼都沒做的僕人，下一節稱他為「無用的僕人」（25:30）。比喻講的是**如何對待主人所託付的**，不是社會上的貧富累積。\n\n術語本身沒有錯——Merton 也從未說那是解經；錯的是把社會學的名字回過頭當成經文的意思。",
+        "en": "The term was coined by the sociologist Robert Merton in 1968, taking its name from Matthew 25:29: \"unto every one that hath shall be given… but from him that hath not shall be taken away even that which he hath.\"\n\nThe context is not wealth distribution. It closes the **parable of the talents**: a master entrusts his goods to servants before travelling (25:14) and settles accounts on his return. The one who loses what he has is the servant who buried it and did nothing; the next verse calls him \"the unprofitable servant\" (25:30). The parable is about what you do with what you were entrusted, not about advantage accumulating in society.\n\nThe term itself is fine — Merton never offered it as exegesis. The mistake is reading the sociology back into the passage."
+      },
+      "refs": [
+        {
+          "book": "Matthew",
+          "chapter": "25",
+          "verse": "29",
+          "must": "shall be given"
+        },
+        {
+          "book": "Matthew",
+          "chapter": "25",
+          "verse": "14",
+          "must": "delivered unto them his goods"
+        },
+        {
+          "book": "Matthew",
+          "chapter": "25",
+          "verse": "30",
+          "must": "unprofitable servant"
+        }
+      ]
     }
   ]
 }
