@@ -648,6 +648,42 @@ has never seen this repo.
 
 ## P2 — features the user asked for
 
+- [ ] **The splash re-parses all 7 Bible versions on EVERY cold start.**
+      User, 2026-08-11, from the iPhone: "为什么每一次加载的时候都会加载
+      中译本，但是iPhone不应该全部已经有了吗，不应该有加载中这个界面".
+
+      They are right, and the diagnosis is not what the wording suggests
+      — **nothing is being downloaded.** On iOS every version ships in
+      the bundle. What the splash is waiting on is `json.decode`:
+      `_eagerPreloadAllVersions` (`lib/main.dart:488`) walks 7 versions
+      before the splash dismisses, and `MainProvider.preloadVersion`
+      (`lib/providers/main_provider.dart:214`) short-circuits only on
+      `_versesCache`, which is an in-memory LRU that dies with the
+      process. So the work is redone in full at every launch, and the
+      comment in `main.dart` describing it as first-run-only
+      ("反正第一次用才 load version") has never been true.
+
+      **Do not simply delete the pre-load.** The user chose it
+      deliberately in v1.2.25, after v1.2.22's hybrid was rejected. The
+      goal is to get it OFF the boot path, not to remove it:
+
+      1. Measure first, on a real device, not the simulator: how long
+         does each version's decode actually take, and how much of the
+         splash is decode versus the rest of boot? The `~1 s` in the
+         main.dart comment is an estimate nobody has checked.
+      2. Preferred fix — dismiss the splash after the ACTIVE version
+         is ready, and continue the other 6 in the background. A
+         version switch that arrives before its decode finishes already
+         has a loading state (`bible_reading_pane.dart:2476`), so the
+         worst case is a state that already exists and is already
+         handled.
+      3. If decode itself is the cost, the real fix is not to decode:
+         a pre-parsed binary form the OS can mmap. Bigger job, measure
+         before proposing it.
+
+      Whatever ships, the acceptance test is the user's sentence: a
+      second cold start on an iPhone must not show a progress line.
+
 - [ ] **Per-source cover fallback for the 393 songs with no artwork.**
       User, 2026-08-11: "没有封面的你可以用他们来源的封面做为歌曲的吗？
       我相信网站都有相应的网站特有的封面图". They are right — every one of
