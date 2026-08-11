@@ -39,11 +39,14 @@ void main() {
     'feedback',
   ];
 
-  /// A two-column tile on a 375pt phone leaves roughly 100pt for the
-  /// label. At the app's largest tile font that is about 14 Latin
-  /// characters; CJK is not at risk, since it breaks between any two
-  /// characters and never mid-"word".
-  const maxWordLength = 14;
+  /// Calibrated against the DEPLOYED build at 375pt, not estimated —
+  /// the first version of this test guessed 14 and "Misconceptions"
+  /// still broke on the device. "Bible Trivia" (12 characters
+  /// including the space) sits on one line; 14 does not fit.
+  ///
+  /// CJK is not at risk: it breaks between any two characters and has
+  /// no unbreakable "word".
+  const maxWordLength = 12;
 
   test('every quick-link key exists in all three locales', () {
     for (final key in keys) {

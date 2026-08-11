@@ -5591,9 +5591,16 @@ const uiStrings = {
     'zh-Hans': '仍有争议', 'zh-Hant': '仍有爭議', 'en': 'Genuinely disputed',
   },
   /// Deliberately shorter than [misconceptionsTitle]: the dashboard tile
-  /// is half a phone wide, and the full title broke mid-word there.
+  /// is half a phone wide, and a label that does not fit is broken
+  /// MID-WORD, not wrapped at a space.
+  ///
+  /// Measured on the deployed build at 375pt rather than estimated:
+  /// "Misunderstandings" (17) broke, "Misconceptions" (14) still broke,
+  /// and "Bible Trivia" (12) sits on one line — so ~12 characters is
+  /// the real ceiling. "Misreadings" is the longest accurate word that
+  /// clears it.
   'misconceptionsTile': {
-    'zh-Hans': '常见误解', 'zh-Hant': '常見誤解', 'en': 'Misconceptions',
+    'zh-Hans': '常见误解', 'zh-Hant': '常見誤解', 'en': 'Misreadings',
   },
   'misconceptionsTopic': {
     'zh-Hans': '主题', 'zh-Hant': '主題', 'en': 'Topic',
