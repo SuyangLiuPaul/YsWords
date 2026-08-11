@@ -313,6 +313,24 @@ has never seen this repo.
       their Simplified. Counting the text differences is the same
       revision question as the 427 and should be folded into §四之二.
 
+- [ ] **Count the note TEXT differences against the publisher, both
+      editions.** Falls straight out of the item above, which only
+      counted notes and not what they say. One is already known:
+      以弗所書 3:15's citation reads 「參4.6、16」 in the publisher's
+      Traditional and 「參4.6，」 in ours — ours followed their Simplified,
+      which suggests our Traditional notes may be Simplified-sourced more
+      widely than the verse text is. `tools/audit_biblexg_notes.py`
+      already loads both sides, so this is a comparison to add to it
+      rather than a new tool. **Report a count before changing
+      anything**, and expect most of it to be the same 2025-revision
+      question as the 427 — in which case it belongs in §四之二 of the
+      publisher letter, not in a fix.
+
+      Lower priority than a verse defect: a wrong cross-reference in an
+      editor's note is a bad pointer, not a false claim about what
+      scripture says. But it is still quoted in Bible study, so it is
+      above any feature.
+
 - [ ] **Decide the 427 wording differences with the publisher.**
       Not ours to change. They cluster in 路加福音 (178) and 馬可福音 (89)
       and read as one consistent later revision — the 2025 印刷版 replaces
