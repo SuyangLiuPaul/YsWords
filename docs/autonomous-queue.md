@@ -896,13 +896,6 @@ has never seen this repo.
       silently blanking the image on web. `RemoteImage` now takes the
       parameter for exactly that reason.
 
-- [ ] **Extend tap-the-status-bar-to-scroll-to-top past the Songs list.**
-      `lib/widgets/scroll_to_top_on_status_bar_tap.dart` exists and
-      Songs uses it. 26 other scroll views still pass their own
-      `controller:` and so never attach to `PrimaryScrollController`,
-      which is the only thing material's Scaffold drives. Highest value
-      first: Sermons, Search results, the Bible reading pane.
-
 - [ ] **CGDC publishes album art we never look for.** 393 of 606 songs
       have no `artworkUrl` — CDC, CGDC and Cahaya publish none, and the
       sync only ever reads it from fydt's WordPress API
