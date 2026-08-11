@@ -8,6 +8,9 @@ import 'package:yswords/constants/ui_strings.dart';
 import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/pages/home_page.dart';
 import 'package:yswords/providers/main_provider.dart';
+import 'package:yswords/services/feedback_service.dart';
+import 'package:yswords/services/link_opener.dart';
+import 'package:yswords/utils/clipboard_helper.dart';
 import 'package:yswords/utils/app_nav.dart';
 import 'package:yswords/utils/font_catalog.dart' show kCjkFontFallback;
 import 'package:yswords/utils/jump_to_reference.dart';
@@ -49,8 +52,36 @@ class MisconceptionsPage extends StatefulWidget {
 }
 
 class _MisconceptionsPageState extends State<MisconceptionsPage> {
+  /// Where reader suggestions go when the mail function is not
+  /// configured. Same address the Feedback page uses.
+  static const String _devEmail = 'paulsyliu@gmail.com';
+
   List<Map<String, dynamic>> _entries = const [];
   Object? _error;
+
+  /// 'all' or one of the topic tags on the entries.
+  String _topic = 'all';
+
+  /// 'all' or one of text / absent / tradition / disputed.
+  String _category = 'all';
+
+  bool _filtersOpen = false;
+
+  List<Map<String, dynamic>> get _filtered => [
+        for (final e in _entries)
+          if ((_topic == 'all' || e['topic'] == _topic) &&
+              (_category == 'all' || e['category'] == _category))
+            e,
+      ];
+
+  List<String> get _topics {
+    final out = <String>[];
+    for (final e in _entries) {
+      final t = e['topic'] as String?;
+      if (t != null && !out.contains(t)) out.add(t);
+    }
+    return out;
+  }
 
   @override
   void initState() {
@@ -112,11 +143,23 @@ class _MisconceptionsPageState extends State<MisconceptionsPage> {
                   padding: const EdgeInsets.fromLTRB(16, 12, 16, 28),
                   children: [
                     _intro(scheme, locale),
+                    const SizedBox(height: 12),
+                    _filterBar(scheme, locale),
                     const SizedBox(height: 14),
-                    for (final e in _entries) ...[
+                    for (final e in _filtered) ...[
                       _card(e, settings, locale, scheme),
                       const SizedBox(height: 12),
                     ],
+                    if (_filtered.isEmpty)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 30),
+                        child: Text(
+                          uiStrings['misconceptionsNoMatch']?[locale] ??
+                              'Nothing matches those filters.',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(color: scheme.onSurfaceVariant),
+                        ),
+                      ),
                   ],
                 ),
         ),
@@ -140,6 +183,109 @@ class _MisconceptionsPageState extends State<MisconceptionsPage> {
               fontSize: 13, height: 1.6, color: scheme.onSurfaceVariant),
         ),
       );
+
+  /// Collapsed by default: this is a reference list people read
+  /// top-to-bottom, and a permanent double row of chips would push the
+  /// first card off a phone screen. The count is shown on the toggle so
+  /// an active filter is never invisible.
+  Widget _filterBar(ColorScheme scheme, String locale) {
+    const topicKeys = {
+      'people': 'misconceptionsTopicPeople',
+      'sayings': 'misconceptionsTopicSayings',
+      'events': 'misconceptionsTopicEvents',
+      'translation': 'misconceptionsTopicTranslation',
+      'authorship': 'misconceptionsTopicAuthorship',
+      'canon': 'misconceptionsTopicCanon',
+    };
+    const catKeys = {
+      'text': 'misconceptionsCatText',
+      'absent': 'misconceptionsCatAbsent',
+      'tradition': 'misconceptionsCatTradition',
+      'disputed': 'misconceptionsCatDisputed',
+    };
+    final active = _topic != 'all' || _category != 'all';
+    final all = uiStrings['statsOriginalsAll']?[locale] ?? 'All';
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: OutlinedButton.icon(
+                onPressed: () =>
+                    setState(() => _filtersOpen = !_filtersOpen),
+                icon: Icon(active ? Icons.filter_list_alt : Icons.filter_list,
+                    size: 18),
+                label: Text(
+                  active
+                      ? '${uiStrings['songsFilterTitle']?[locale] ?? 'Filter'}'
+                          ' · ${_filtered.length}/${_entries.length}'
+                      : (uiStrings['songsFilterTitle']?[locale] ?? 'Filter'),
+                  style: const TextStyle(fontSize: 13),
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            // The submission form lives here, next to the filter, where
+            // the user asked for it — someone who has just read the list
+            // is exactly the person who knows what is missing from it.
+            Expanded(
+              child: FilledButton.tonalIcon(
+                onPressed: () => _openSubmitSheet(locale),
+                icon: const Icon(Icons.add_comment_outlined, size: 18),
+                label: Text(
+                  uiStrings['misconceptionsSubmit']?[locale] ?? 'Suggest one',
+                  style: const TextStyle(fontSize: 13),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ),
+          ],
+        ),
+        if (_filtersOpen) ...[
+          const SizedBox(height: 10),
+          Text(uiStrings['misconceptionsTopic']?[locale] ?? 'Topic',
+              style: TextStyle(
+                  fontSize: 11, color: scheme.onSurfaceVariant)),
+          const SizedBox(height: 6),
+          Wrap(spacing: 6, runSpacing: 6, children: [
+            ChoiceChip(
+              selected: _topic == 'all',
+              label: Text(all, style: const TextStyle(fontSize: 12)),
+              onSelected: (_) => setState(() => _topic = 'all'),
+            ),
+            for (final t in _topics)
+              ChoiceChip(
+                selected: _topic == t,
+                label: Text(uiStrings[topicKeys[t]]?[locale] ?? t,
+                    style: const TextStyle(fontSize: 12)),
+                onSelected: (_) => setState(() => _topic = t),
+              ),
+          ]),
+          const SizedBox(height: 10),
+          Text(uiStrings['misconceptionsCategory']?[locale] ?? 'Kind',
+              style: TextStyle(
+                  fontSize: 11, color: scheme.onSurfaceVariant)),
+          const SizedBox(height: 6),
+          Wrap(spacing: 6, runSpacing: 6, children: [
+            ChoiceChip(
+              selected: _category == 'all',
+              label: Text(all, style: const TextStyle(fontSize: 12)),
+              onSelected: (_) => setState(() => _category = 'all'),
+            ),
+            for (final c in catKeys.keys)
+              ChoiceChip(
+                selected: _category == c,
+                label: Text(uiStrings[catKeys[c]]?[locale] ?? c,
+                    style: const TextStyle(fontSize: 12)),
+                onSelected: (_) => setState(() => _category = c),
+              ),
+          ]),
+        ],
+      ],
+    );
+  }
 
   Widget _card(Map<String, dynamic> e, AppSettings settings, String locale,
       ColorScheme scheme) {
@@ -232,6 +378,124 @@ class _MisconceptionsPageState extends State<MisconceptionsPage> {
     );
   }
 
+  /// Reader submissions. Goes through the same `FeedbackService` the
+  /// Feedback page uses — a Netlify function that emails the
+  /// maintainer, falling back to the user's mail client when the
+  /// function is unconfigured, so a suggestion is never silently lost.
+  ///
+  /// Tagged `misconception` in the category field so these arrive
+  /// separable from ordinary feedback.
+  Future<void> _openSubmitSheet(String locale) async {
+    final claimCtl = TextEditingController();
+    final whyCtl = TextEditingController();
+    final refCtl = TextEditingController();
+    final contactCtl = TextEditingController();
+
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      // useSafeArea: without it Flutter removes the top padding and a
+      // full-height sheet draws under the clock.
+      useSafeArea: true,
+      backgroundColor: Theme.of(context).colorScheme.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (sheetCtx) => Padding(
+        padding: EdgeInsets.only(
+          left: 16,
+          right: 16,
+          top: 16,
+          bottom: MediaQuery.of(sheetCtx).viewInsets.bottom + 16,
+        ),
+        child: _SubmitForm(
+          locale: locale,
+          claimCtl: claimCtl,
+          whyCtl: whyCtl,
+          refCtl: refCtl,
+          contactCtl: contactCtl,
+          onSend: () => _send(sheetCtx, locale, claimCtl.text, whyCtl.text,
+              refCtl.text, contactCtl.text),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _send(BuildContext sheetCtx, String locale, String claim,
+      String why, String refs, String contact) async {
+    if (claim.trim().isEmpty) return;
+    final settings = context.read<AppSettings>();
+    final mp = context.read<MainProvider>();
+    final messenger = ScaffoldMessenger.of(context);
+
+    final body = StringBuffer()
+      ..writeln('常见说法 / The claim:')
+      ..writeln(claim.trim())
+      ..writeln()
+      ..writeln('经文实际说什么 / What the text says:')
+      ..writeln(why.trim().isEmpty ? '(not given)' : why.trim())
+      ..writeln()
+      ..writeln('经文出处 / Suggested references:')
+      ..writeln(refs.trim().isEmpty ? '(not given)' : refs.trim());
+
+    final result = await FeedbackService.submit(
+      context: sheetCtx,
+      category: 'misconception',
+      message: body.toString(),
+      replyTo: contact.trim().isEmpty ? null : contact.trim(),
+      appLocale: settings.locale,
+      bibleVersion: mp.currentVersion,
+    );
+    if (!mounted) return;
+
+    if (result.ok) {
+      if (sheetCtx.mounted) Navigator.of(sheetCtx).pop();
+      messenger.showSnackBar(SnackBar(
+        content: Text(uiStrings['misconceptionsThanks']?[locale] ??
+            'Thank you. It will be checked against scripture before it is '
+                'added.'),
+        duration: const Duration(seconds: 4),
+      ));
+      return;
+    }
+
+    // Same fallback ladder as the Feedback page: if the mail function
+    // is not configured, hand the text to the mail client, and if
+    // there is no mail client, to the clipboard. A suggestion the
+    // reader took the trouble to type must not evaporate.
+    if (result.unconfigured) {
+      final subject = 'yswords · misconception suggestion';
+      final mailto = 'mailto:$_devEmail'
+          '?subject=${Uri.encodeComponent(subject)}'
+          '&body=${Uri.encodeComponent(body.toString())}';
+      final opened = await LinkOpener.open(mailto);
+      if (!mounted) return;
+      if (!opened) {
+        await ClipboardHelper.copyWithFeedback(
+          context,
+          'To: $_devEmail\nSubject: $subject\n\n$body',
+          messageOverride: uiStrings['feedbackCopiedFallback']?[locale] ??
+              'Mail app unavailable - copied to the clipboard instead.',
+        );
+        return;
+      }
+      if (sheetCtx.mounted) Navigator.of(sheetCtx).pop();
+      messenger.showSnackBar(SnackBar(
+        content: Text(uiStrings['feedbackOpenedMail']?[locale] ??
+            'Mail app opened. Tap Send to deliver your suggestion.'),
+      ));
+      return;
+    }
+
+    // A real failure. Leave the sheet open so what they typed is
+    // still there to retry.
+    messenger.showSnackBar(SnackBar(
+      content: Text(result.errorMessage ??
+          uiStrings['feedbackFailure']?[locale] ??
+          'Could not send. Please try again.'),
+    ));
+  }
+
   Widget _categoryChip(String category, String locale, ColorScheme scheme) {
     const keys = {
       'text': 'misconceptionsCatText',
@@ -254,6 +518,138 @@ class _MisconceptionsPageState extends State<MisconceptionsPage> {
         uiStrings[keys[category]]?[locale] ?? category,
         style: TextStyle(
             fontSize: 11, fontWeight: FontWeight.w700, color: color),
+      ),
+    );
+  }
+}
+
+/// The suggestion form. Four fields, and the second one is the point:
+/// asking "what does the passage actually say" up front sets the
+/// standard this module is held to, and gives whoever reviews the
+/// submission something to verify rather than an opinion to weigh.
+class _SubmitForm extends StatefulWidget {
+  final String locale;
+  final TextEditingController claimCtl;
+  final TextEditingController whyCtl;
+  final TextEditingController refCtl;
+  final TextEditingController contactCtl;
+  final Future<void> Function() onSend;
+  const _SubmitForm({
+    required this.locale,
+    required this.claimCtl,
+    required this.whyCtl,
+    required this.refCtl,
+    required this.contactCtl,
+    required this.onSend,
+  });
+
+  @override
+  State<_SubmitForm> createState() => _SubmitFormState();
+}
+
+class _SubmitFormState extends State<_SubmitForm> {
+  bool _sending = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final l = widget.locale;
+    InputDecoration deco(String label, String hint) => InputDecoration(
+          labelText: label,
+          hintText: hint,
+          isDense: true,
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+        );
+
+    return SingleChildScrollView(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.add_comment_outlined, size: 20, color: scheme.primary),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  uiStrings['misconceptionsSubmitTitle']?[l] ??
+                      'Suggest a misunderstanding',
+                  style: const TextStyle(
+                      fontSize: 16, fontWeight: FontWeight.w700),
+                ),
+              ),
+              IconButton(
+                icon: const Icon(Icons.close),
+                onPressed: () => Navigator.of(context).pop(),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Text(
+            uiStrings['misconceptionsSubmitNote']?[l] ??
+                'Everything added here is checked against the Bible text '
+                    'this app ships before it appears. A reference makes '
+                    'that possible — without one it may not be usable.',
+            style: TextStyle(
+                fontSize: 12, height: 1.5, color: scheme.onSurfaceVariant),
+          ),
+          const SizedBox(height: 14),
+          TextField(
+            controller: widget.claimCtl,
+            maxLines: 2,
+            decoration: deco(
+              uiStrings['misconceptionsFieldClaim']?[l] ?? 'The common claim',
+              uiStrings['misconceptionsFieldClaimHint']?[l] ??
+                  'e.g. Paul was renamed from Saul',
+            ),
+          ),
+          const SizedBox(height: 10),
+          TextField(
+            controller: widget.whyCtl,
+            maxLines: 3,
+            decoration: deco(
+              uiStrings['misconceptionsFieldWhy']?[l] ??
+                  'What the text actually says',
+              '',
+            ),
+          ),
+          const SizedBox(height: 10),
+          TextField(
+            controller: widget.refCtl,
+            decoration: deco(
+              uiStrings['misconceptionsFieldRefs']?[l] ?? 'References',
+              'Acts 13:9; Acts 22:28',
+            ),
+          ),
+          const SizedBox(height: 10),
+          TextField(
+            controller: widget.contactCtl,
+            keyboardType: TextInputType.emailAddress,
+            decoration: deco(
+              uiStrings['misconceptionsFieldContact']?[l] ??
+                  'Your email (optional)',
+              '',
+            ),
+          ),
+          const SizedBox(height: 16),
+          FilledButton.icon(
+            onPressed: _sending
+                ? null
+                : () async {
+                    setState(() => _sending = true);
+                    await widget.onSend();
+                    if (mounted) setState(() => _sending = false);
+                  },
+            icon: _sending
+                ? const SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(strokeWidth: 2))
+                : const Icon(Icons.send_rounded, size: 18),
+            label: Text(uiStrings['feedbackSend']?[l] ?? 'Send'),
+          ),
+          const SizedBox(height: 8),
+        ],
       ),
     );
   }

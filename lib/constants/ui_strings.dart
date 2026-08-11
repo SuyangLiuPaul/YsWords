@@ -5590,6 +5590,79 @@ const uiStrings = {
   'misconceptionsCatDisputed': {
     'zh-Hans': '仍有争议', 'zh-Hant': '仍有爭議', 'en': 'Genuinely disputed',
   },
+  'misconceptionsTopic': {
+    'zh-Hans': '主题', 'zh-Hant': '主題', 'en': 'Topic',
+  },
+  'misconceptionsCategory': {
+    'zh-Hans': '类别', 'zh-Hant': '類別', 'en': 'Kind',
+  },
+  'misconceptionsTopicPeople': {
+    'zh-Hans': '人物', 'zh-Hant': '人物', 'en': 'People',
+  },
+  'misconceptionsTopicSayings': {
+    'zh-Hans': '常引的话', 'zh-Hant': '常引的話', 'en': 'Sayings',
+  },
+  'misconceptionsTopicEvents': {
+    'zh-Hans': '事件', 'zh-Hant': '事件', 'en': 'Events',
+  },
+  'misconceptionsTopicTranslation': {
+    'zh-Hans': '翻译', 'zh-Hant': '翻譯', 'en': 'Translation',
+  },
+  'misconceptionsTopicAuthorship': {
+    'zh-Hans': '作者', 'zh-Hant': '作者', 'en': 'Authorship',
+  },
+  'misconceptionsTopicCanon': {
+    'zh-Hans': '正典与编排', 'zh-Hant': '正典與編排', 'en': 'Canon & arrangement',
+  },
+  'misconceptionsNoMatch': {
+    'zh-Hans': '这两个筛选条件下没有条目。',
+    'zh-Hant': '這兩個篩選條件下沒有條目。',
+    'en': 'Nothing matches those filters.',
+  },
+  'misconceptionsSubmit': {
+    'zh-Hans': '我要投稿', 'zh-Hant': '我要投稿', 'en': 'Suggest one',
+  },
+  'misconceptionsSubmitTitle': {
+    'zh-Hans': '投稿一个常见误解',
+    'zh-Hant': '投稿一個常見誤解',
+    'en': 'Suggest a misunderstanding',
+  },
+  'misconceptionsSubmitNote': {
+    'zh-Hans': '收到后会先对照本应用所载的圣经原文核查，通过了才会加进来。'
+        '写上经文出处才查得动——没有出处的多半用不上。',
+    'zh-Hant': '收到後會先對照本應用所載的聖經原文核查，通過了才會加進來。'
+        '寫上經文出處才查得動——沒有出處的多半用不上。',
+    'en': 'Everything added here is checked against the Bible text this app '
+        'ships before it appears. A reference is what makes that possible - '
+        'without one it may not be usable.',
+  },
+  'misconceptionsFieldClaim': {
+    'zh-Hans': '大家常说的', 'zh-Hant': '大家常說的', 'en': 'The common claim',
+  },
+  'misconceptionsFieldClaimHint': {
+    'zh-Hans': '例：扫罗信主后改名叫保罗',
+    'zh-Hant': '例：掃羅信主後改名叫保羅',
+    'en': 'e.g. Saul was renamed Paul at his conversion',
+  },
+  'misconceptionsFieldWhy': {
+    'zh-Hans': '经文实际说什么',
+    'zh-Hant': '經文實際說什麼',
+    'en': 'What the text actually says',
+  },
+  'misconceptionsFieldRefs': {
+    'zh-Hans': '经文出处', 'zh-Hant': '經文出處', 'en': 'References',
+  },
+  'misconceptionsFieldContact': {
+    'zh-Hans': '你的邮箱（选填）',
+    'zh-Hant': '你的信箱（選填）',
+    'en': 'Your email (optional)',
+  },
+  'misconceptionsThanks': {
+    'zh-Hans': '谢谢。会先对照经文核查过再决定是否加入。',
+    'zh-Hant': '謝謝。會先對照經文核查過再決定是否加入。',
+    'en': 'Thank you. It will be checked against scripture before it is '
+        'added.',
+  },
   'oneGodTitle': {
     'zh-Hans': '独一真神',
     'zh-Hant': '獨一真神',

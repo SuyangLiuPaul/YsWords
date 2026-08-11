@@ -103,6 +103,37 @@ void main() {
     }
   });
 
+  test('every entry has a topic the filter offers a chip for', () {
+    // The filter row hard-codes its topic labels. An entry carrying a
+    // topic that isn't in that map would be reachable only under "All"
+    // — present in the list but filtered into nothing, which looks
+    // exactly like a missing entry.
+    const offered = {
+      'people',
+      'sayings',
+      'events',
+      'translation',
+      'authorship',
+      'canon',
+    };
+    for (final e in entries) {
+      expect(offered, contains(e['topic']),
+          reason: '${e['id']} has topic ${e['topic']}, which has no chip in '
+              'MisconceptionsPage._filterBar');
+    }
+  });
+
+  test('each topic and each category actually selects something', () {
+    // A chip that always yields an empty list is a dead control. If a
+    // topic loses its last entry the chip should go with it.
+    for (final t in entries.map((e) => e['topic']).toSet()) {
+      expect(entries.where((e) => e['topic'] == t), isNotEmpty);
+    }
+    for (final c in entries.map((e) => e['category']).toSet()) {
+      expect(entries.where((e) => e['category'] == c), isNotEmpty);
+    }
+  });
+
   test('the asset records that it was verified', () {
     expect((doc['_meta'] as Map)['checked'], greaterThan(0));
   });

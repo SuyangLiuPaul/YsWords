@@ -689,6 +689,128 @@ ENTRIES = [
              'must': 'unprofitable servant'},
         ],
     },
+    {
+        'id': 'major-minor-prophets',
+        'topic': 'canon',
+        'category': 'tradition',
+        'category_note': '',
+        'claim': {
+            'zh-Hans': '圣经把先知书分成「大先知书」和「小先知书」，大的更重要。',
+            'zh-Hant': '聖經把先知書分成「大先知書」和「小先知書」，大的更重要。',
+            'en': 'The Bible divides the prophets into Major and Minor, the '
+                  'major ones being more important.',
+        },
+        'says': {
+            'zh-Hans': '**这个划分不是圣经本身作的，是后人按篇幅归类的。**'
+                       '「大」「小」指的是长短，不是分量。\n\n'
+                       '而且连长短这个标准都没有严格执行：'
+                       '被归为「大先知书」的耶利米哀歌只有 **154 节**，'
+                       '比被归为「小先知书」的撒迦利亚书（**211 节**）还短。\n\n'
+                       '在希伯来圣经里，那十二卷根本不是十二本书，'
+                       '而是合为一卷，称为「十二书」（תרי עשר）——'
+                       '因为十二卷加起来（1,050 节）才够抄在一个卷轴上，'
+                       '与以赛亚（1,292 节）、耶利米（1,364 节）各自一卷相当。'
+                       '所以那个「小」字，本来说的是卷轴，不是价值。',
+            'zh-Hant': '**這個劃分不是聖經本身作的，是後人按篇幅歸類的。**'
+                       '「大」「小」指的是長短，不是分量。\n\n'
+                       '而且連長短這個標準都沒有嚴格執行：'
+                       '被歸為「大先知書」的耶利米哀歌只有 **154 節**，'
+                       '比被歸為「小先知書」的撒迦利亞書（**211 節**）還短。\n\n'
+                       '在希伯來聖經裡，那十二卷根本不是十二本書，'
+                       '而是合為一卷，稱為「十二書」（תרי עשר）——'
+                       '因為十二卷加起來（1,050 節）才夠抄在一個卷軸上，'
+                       '與以賽亞（1,292 節）、耶利米（1,364 節）各自一卷相當。'
+                       '所以那個「小」字，本來說的是卷軸，不是價值。',
+            'en': '**Scripture does not make this division — later editors '
+                  'did, by length.** Major and Minor mean long and short, not '
+                  'weighty and slight.\n\nThe length rule is not even applied '
+                  'consistently: Lamentations, filed under the Major '
+                  'Prophets, runs to **154 verses** — shorter than Zechariah '
+                  '(**211**), filed under the Minor ones.\n\nIn the Hebrew '
+                  'Bible the twelve are not twelve books at all but one, "The '
+                  'Twelve" (תרי עשר), because together (1,050 verses) they '
+                  'filled a single scroll of about the size Isaiah (1,292) or '
+                  'Jeremiah (1,364) needed on their own. The word "minor" was '
+                  'describing a scroll, not a value.',
+        },
+        'refs': [],
+    },
+    {
+        'id': 'angel-hierarchy',
+        'topic': 'people',
+        'category': 'tradition',
+        'claim': {
+            'zh-Hans': '天使有严格的等级，加百列是最大的天使。',
+            'zh-Hant': '天使有嚴格的等級，加百列是最大的天使。',
+            'en': 'Angels have a strict rank order, and Gabriel is the '
+                  'highest angel.',
+        },
+        'says': {
+            'zh-Hans': '**两个方向都要更正，而第二个更少人知道。**\n\n'
+                       '一、加百列全圣经只出现 4 次（但 8:16、9:21、路 1:19、'
+                       '1:26），**从来没有被称为天使长**。他自己的说法是'
+                       '「我是站在神面前的加百列」（路 1:19）。'
+                       '「天使长」这个词全圣经只出现 2 次（帖前 4:16、犹 9），'
+                       '而犹大书 9 点名的是**米迦勒**。'
+                       '但以理书 10:13 也称米迦勒为「大君中的一位」——'
+                       '「一位」这个说法本身就表示还有别的。\n\n'
+                       '二、**但「严格的等级」本身也不是圣经说的。**'
+                       '经文确实提到多种天上的活物：基路伯（创 3:24）、'
+                       '撒拉弗（赛 6:2）、以及「有位的、主治的、执政的、掌权的」'
+                       '（西 1:16）——但那是列举，不是排名。'
+                       '圣经从未把它们排出高低次序。\n\n'
+                       '我们熟悉的九级天使体系（撒拉弗、基路伯、座天使……）'
+                       '出自约公元 500 年托名「亚略巴古的丢尼修」的著作，'
+                       '是后来的系统化，不是经文的分类。'
+                       '所以说「基路伯比加百列高」，同样是在断言经文没有给的次序。',
+            'zh-Hant': '**兩個方向都要更正，而第二個更少人知道。**\n\n'
+                       '一、加百列全聖經只出現 4 次（但 8:16、9:21、路 1:19、'
+                       '1:26），**從來沒有被稱為天使長**。他自己的說法是'
+                       '「我是站在神面前的加百列」（路 1:19）。'
+                       '「天使長」這個詞全聖經只出現 2 次（帖前 4:16、猶 9），'
+                       '而猶大書 9 點名的是**米迦勒**。'
+                       '但以理書 10:13 也稱米迦勒為「大君中的一位」——'
+                       '「一位」這個說法本身就表示還有別的。\n\n'
+                       '二、**但「嚴格的等級」本身也不是聖經說的。**'
+                       '經文確實提到多種天上的活物：基路伯（創 3:24）、'
+                       '撒拉弗（賽 6:2）、以及「有位的、主治的、執政的、掌權的」'
+                       '（西 1:16）——但那是列舉，不是排名。'
+                       '聖經從未把它們排出高低次序。\n\n'
+                       '我們熟悉的九級天使體系（撒拉弗、基路伯、座天使……）'
+                       '出自約公元 500 年託名「亞略巴古的丟尼修」的著作，'
+                       '是後來的系統化，不是經文的分類。'
+                       '所以說「基路伯比加百列高」，同樣是在斷言經文沒有給的次序。',
+            'en': '**Both halves need correcting, and the second is the less '
+                  'well known.**\n\nFirst: Gabriel appears four times in the '
+                  'whole Bible (Daniel 8:16, 9:21, Luke 1:19, 1:26) and is '
+                  '**never called an archangel**. His own words are "I am '
+                  'Gabriel, that stand in the presence of God" (Luke 1:19). '
+                  'The word "archangel" occurs exactly twice (1 Thess 4:16, '
+                  'Jude 9), and Jude 9 names **Michael**. Daniel 10:13 calls '
+                  'Michael "one of the chief princes" — "one of" implying '
+                  'others.\n\nSecond: **the strict hierarchy is not '
+                  'scripture either.** The text names several kinds of '
+                  'heavenly beings — cherubim (Genesis 3:24), seraphim '
+                  '(Isaiah 6:2), "thrones, dominions, principalities, powers" '
+                  '(Colossians 1:16) — but that is a list, not a ranking. '
+                  'Scripture nowhere orders them above one another.\n\nThe '
+                  'familiar nine orders come from the writings attributed to '
+                  'Dionysius the Areopagite, around AD 500 — a later '
+                  'systematisation, not the Bible\'s own scheme. So "cherubim '
+                  'outrank Gabriel" asserts an order the text does not give '
+                  'either.',
+        },
+        'refs': [
+            {'book': 'Luke', 'chapter': '1', 'verse': '19', 'must': 'I am Gabriel'},
+            {'book': 'Jude', 'chapter': '1', 'verse': '9',
+             'must': 'Michael the archangel'},
+            {'book': 'Daniel', 'chapter': '10', 'verse': '13',
+             'must': 'one of the chief princes'},
+            {'book': 'Genesis', 'chapter': '3', 'verse': '24', 'must': 'Cherubims'},
+            {'book': 'Isaiah', 'chapter': '6', 'verse': '2', 'must': 'seraphims'},
+            {'book': 'Colossians', 'chapter': '1', 'verse': '16', 'must': 'thrones'},
+        ],
+    },
 ]
 
 
@@ -772,6 +894,20 @@ def main():
         ('lord-jesus-in-gospels', len(lj['gospels']), 2),
         ('lord-jesus-elsewhere', lj['rest'], 54),
         ('i-am-god-whole-bible', _kjv_phrase_count(rows, 'I am God'), 9),
+        ('lamentations-verses',
+         sum(1 for r in rows if r['book'] == 'Lamentations'), 154),
+        ('zechariah-verses',
+         sum(1 for r in rows if r['book'] == 'Zechariah'), 211),
+        ('isaiah-verses',
+         sum(1 for r in rows if r['book'] == 'Isaiah'), 1292),
+        ('jeremiah-verses',
+         sum(1 for r in rows if r['book'] == 'Jeremiah'), 1364),
+        ('the-twelve-verses',
+         sum(1 for r in rows if r['book'] in {
+             'Hosea', 'Joel', 'Amos', 'Obadiah', 'Jonah', 'Micah', 'Nahum',
+             'Habakkuk', 'Zephaniah', 'Haggai', 'Zechariah', 'Malachi'}), 1050),
+        ('gabriel-mentions', _kjv_phrase_count(rows, 'Gabriel'), 4),
+        ('archangel-mentions', _kjv_phrase_count(rows, 'archangel'), 2),
         ('i-am-god-in-gospels',
          _kjv_phrase_count(rows, 'I am God',
                            {'Matthew', 'Mark', 'Luke', 'John'}), 0),
