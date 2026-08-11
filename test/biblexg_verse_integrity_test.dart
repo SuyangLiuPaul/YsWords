@@ -359,6 +359,56 @@ void main() {
     expect(offenders.toSet(), printedItselfReadsSimplified);
   });
 
+  test('each edition writes the annotation marker in its own script', () {
+    // 註 / 注 cannot go in the character list above, because 注 has a
+    // perfectly good Traditional reading (注意) and appears 35 times in
+    // the Traditional verse bodies. But as the marker that ends a
+    // cross-reference — 「參可12.42註」, "see the note at Mark 12:42" —
+    // the Traditional is 註 and the Simplified 注, and our two editions
+    // are each internally consistent: 109/109 and 108/108.
+    //
+    // Pinned because the publisher's own tw-rev.json is NOT consistent.
+    // It sets 啟示錄 20:4 as 「參啟1.2注」 with the Simplified character,
+    // against 註 everywhere else in that same file. The printed
+    // 《新約聖經 梁家鏗譯本（註釋本）》2025 第二版 prints 「參 1.2 註」,
+    // so ours is the reading that matches the print and theirs is the
+    // slip — do not "fix" ours towards their electronic edition.
+    // Measured by tools/audit_biblexg_notes.py, which compares the text
+    // of every note in both editions against the publisher's own files.
+    final note = RegExp(r'<note:(.*?)>');
+    String markers(String path, String wrong) => [
+          for (final v in load(path))
+            for (final m in note.allMatches(v['text'] as String))
+              if (m.group(1)!.contains(wrong))
+                '${v['book']} ${v['chapter']}:${v['verseLabel']} — ${m.group(1)}'
+        ].join('\n');
+
+    expect(markers('assets/biblexg-v2-tr.json', '注'), isEmpty,
+        reason: 'a Simplified 注 has reached a Traditional note. The '
+            'printed 註釋本 sets 註; check it at that verse before '
+            'accepting the publisher electronic edition.');
+    expect(markers('assets/biblexg-v2.json', '註'), isEmpty,
+        reason: 'a Traditional 註 has reached a Simplified note');
+  });
+
+  test('以弗所書 3:15 keeps the printed edition\'s cross-reference', () {
+    // The publisher's current tw-eph.json reads 「參4.6、16」; the printed
+    // 2025 第二版 reads 「參 4.6，」, which is what we ship. So this is an
+    // upstream revision that post-dates the printed volume, not a case
+    // of our Traditional having been built from their Simplified — 3:16
+    // right beside it ships their Traditional's 「參2.18註」 against
+    // their Simplified's 注.
+    //
+    // Pinned so that a future re-import of the publisher's files adopts
+    // the revision as a decision rather than silently. §四之二 of
+    // docs/梁家鏗譯本-請教出版方.md is asking them about exactly this.
+    final eph = load('assets/biblexg-v2-tr.json').firstWhere((v) =>
+        v['book'] == '以弗所書' &&
+        v['chapter'] == '3' &&
+        v['verseLabel'] == '15');
+    expect(eph['text'], contains('<note:參4.6，>'));
+  });
+
   test('the Traditional still has the 馬可福音 6 that the Simplified lost', () {
     final mark6 = {
       for (final v in load('assets/biblexg-v2-tr.json'))

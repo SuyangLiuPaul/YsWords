@@ -313,23 +313,60 @@ has never seen this repo.
       their Simplified. Counting the text differences is the same
       revision question as the 427 and should be folded into §四之二.
 
-- [ ] **Count the note TEXT differences against the publisher, both
-      editions.** Falls straight out of the item above, which only
-      counted notes and not what they say. One is already known:
-      以弗所書 3:15's citation reads 「參4.6、16」 in the publisher's
-      Traditional and 「參4.6，」 in ours — ours followed their Simplified,
-      which suggests our Traditional notes may be Simplified-sourced more
-      widely than the verse text is. `tools/audit_biblexg_notes.py`
-      already loads both sides, so this is a comparison to add to it
-      rather than a new tool. **Report a count before changing
-      anything**, and expect most of it to be the same 2025-revision
-      question as the 427 — in which case it belongs in §四之二 of the
-      publisher letter, not in a fix.
+- [x] **Counted the note TEXT differences — 12, and not one is ours.**
+      The previous item counted that a note is *there*; this counts what
+      it *says*, which is what a reader follows. `audit_biblexg_notes.py`
+      gained a second pass: **1,134/1,135 Traditional and 1,133/1,134
+      Simplified note strings, 6 chapters per edition differing.**
 
-      Lower priority than a verse defect: a wrong cross-reference in an
-      editor's note is a bad pointer, not a false claim about what
-      scripture says. But it is still quoted in Bible study, so it is
-      above any feature.
+      **Compare per CHAPTER, not per verse** — that is the one design
+      decision here and it is load-bearing. The publisher packs several
+      verses into one `verseIndex` in four places and our importer splits
+      them, so a verse-keyed comparison skips exactly those verses,
+      including 以弗所書 3:15 — the only difference that was already
+      known when this was written. Both sides are normalised by
+      stripping HTML and whitespace; leaving the markup in reports 33
+      differences that are all `<mark class="hebrew">`.
+
+      All 12 settled against a third source, never a diff of our own two
+      editions: 4 are upstream revisions since our import (哥林多前書
+      15:11's 「福音」 gloss, the 馬太福音 7:11 / 路加福音 11:13
+      cross-reference move), 3 per edition are our punctuation against
+      upstream's unpunctuated hymn (提摩太前書 3:16, 雅各書 2:8,
+      啟示錄 7:17) — the same class as the 307/46 already counted — and
+      two were settled by the printed 註釋本:
+
+      • **啟示錄 20:4 — the publisher's own `tw-rev.json` reads 「參啟1.2注」
+        with the Simplified 注**, against 註 everywhere else in that same
+        file and in the print. Ours reads 註. Measured before concluding:
+        our Traditional writes the annotation marker 註 in 109 notes out
+        of 109 and our Simplified 注 in 108 of 108, so ours is consistent
+        and theirs is the slip. **Do not "fix" ours towards it.**
+      • **以弗所書 3:15 — the print reads 「參 4.6，」, which is what we
+        ship; their current `tw` adds 「、16」.** An upstream revision
+        post-dating the printed volume.
+
+      **This kills the queue's own speculation that our Traditional notes
+      are Simplified-sourced.** 3:16 right beside it ships their
+      Traditional's 「參2.18註」 against their Simplified's 注. Ours is
+      sourced from the Traditional; 3:15 agrees with their Simplified
+      only because the print does.
+
+      Both print-settled findings are pinned in
+      `test/biblexg_verse_integrity_test.dart`, verified to fail on
+      perturbed data. The 注/註 one could not go in the existing
+      Simplified-character test — 注 has a real Traditional reading and
+      appears 35 times in the Traditional verse bodies — which is why it
+      had never been caught. Written up as the 補 subsection of §四之三
+      in `docs/梁家鏗譯本-請教出版方.md` (✅).
+
+      **Worth knowing:** at 啟示錄 20:4 our verse body matches the
+      printed 2025 二版 word for word (「坐在其上的，神為他們伸張正義。」)
+      while the publisher's electronic `tw` differs (「坐在那些寶座上的
+      … 他們就是」). So there are **three** states of this text, not two,
+      and the 427 item below is wrong to assume the print is uniformly
+      newer than our import — the electronic edition has moved on from
+      the print as well. Re-read that assumption before acting on it.
 
 - [ ] **Decide the 427 wording differences with the publisher.**
       Not ours to change. They cluster in 路加福音 (178) and 馬可福音 (89)

@@ -22,9 +22,12 @@ volumes agree with whatever you already believed.
 
 What it compares
 ----------------
-For each of the 7,919/7,920 verses, the count of `<cite>` elements in the
-publisher's `tw-*.json` / `cn-*.json` against the count of `<note:…>`
-markers in our shipped `assets/biblexg-v2-tr.json` / `biblexg-v2.json`.
+Two passes, because they catch different things.
+
+**Pass 1 — counts, per verse.** For each of the 7,919/7,920 verses, the
+count of `<cite>` elements in the publisher's `tw-*.json` / `cn-*.json`
+against the count of `<note:…>` markers in our shipped
+`assets/biblexg-v2-tr.json` / `biblexg-v2.json`.
 
   ours < publisher  → we dropped an editorial note, and if the note was
                       inline its words are now sitting in the verse as
@@ -32,6 +35,28 @@ markers in our shipped `assets/biblexg-v2-tr.json` / `biblexg-v2.json`.
   ours > publisher  → we invented one.
 
 Result as of 2026-08-11 — 0 of either that is not accounted for below.
+
+**Pass 2 — text, per chapter.** Pass 1 says a note is there; it does not
+say it points anywhere near the right place. A wrong cross-reference is
+not a false claim about what scripture says, but it is quoted in Bible
+study, so it is worth a count.
+
+It compares the multiset of note strings in a chapter, not verse by
+verse, and that choice is load-bearing: the publisher packs several
+verses into one `verseIndex` in four places and our importer splits
+them, so a verse-keyed text comparison silently skips exactly those
+verses — including 以弗所書 3:15, the one difference that was already
+known when this pass was written. At chapter level the packing cannot
+hide anything.
+
+Both sides are normalised by stripping HTML (`<mark class="hebrew">`,
+`<span class="affix">`, `<sup>`, which our importer drops on purpose)
+and removing whitespace. Neither carries meaning in a citation, and
+leaving them in reports 33 differences that are all markup.
+
+Result as of 2026-08-11 — 1,134/1,135 tw and 1,133/1,134 cn note
+strings, **6 chapters per edition whose text differs, and not one of
+them is a defect of ours.** All are listed in ACCOUNTED_FOR_TEXT below.
 
 Known non-defects, all verified individually rather than waved through:
 
@@ -58,6 +83,7 @@ import os
 import re
 import sys
 import urllib.request
+from collections import Counter
 
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SRC_BASE = 'https://mattwhatsup.github.io/ljk-nt-bible-webapp/resources'
@@ -96,6 +122,19 @@ BOOKS = [
 
 CITE = re.compile(r'<cite>(.*?)</cite>', re.S)
 NOTE = re.compile(r'<note:(.*?)>', re.S)
+TAG = re.compile(r'<[^>]+>')
+BLANK = re.compile(r'[\s​　]+')
+
+
+def normalise(note: str) -> str:
+    """A citation's text with markup and whitespace removed.
+
+    The publisher wraps原文 in `<mark class="hebrew">`, doubtful words in
+    `<span class="affix">` and inserted verse numbers in `<sup>`; our
+    importer drops all three deliberately. Comparing them raw reports 33
+    differences that are entirely markup and no difference in wording.
+    """
+    return BLANK.sub('', TAG.sub('', note))
 
 # Verses where our note count legitimately differs from the publisher's,
 # each with the reason established by reading the node. Keyed by the
@@ -118,6 +157,45 @@ ACCOUNTED_FOR = {
     ('cn', '马太福音 23:36'): 'empty <cite></cite>, discarded on purpose',
     ('cn', '马太福音 27:50'): 'empty <cite></cite>, discarded on purpose',
     ('cn', '提摩太后书 3:3'): 'empty <cite></cite>, discarded on purpose',
+}
+
+# Chapters whose note TEXT differs from the publisher's current file, each
+# with the authority that settled it. Keyed (lang, book, chapter).
+#
+# Every one of these was read against a third source before being written
+# down — the printed 《新約聖經 梁家鏗譯本（註釋本）》2025 第二版, or the
+# publisher's other edition. None is a defect of ours, and none is fixed
+# here: adopting an upstream revision by guess is rewriting scripture.
+ACCOUNTED_FOR_TEXT = {
+    # Upstream revisions since our import. Same question as the 427
+    # Traditional / 86 Simplified wording differences — §四之二 of the
+    # publisher letter, not a repair.
+    ('tw', '哥林多前書', '15'): 'upstream revision adds the gloss 「福音」',
+    ('cn', '哥林多前书', '15'): 'upstream revision adds the gloss 「福音」',
+    ('cn', '马太福音', '7'): 'upstream moved 參路11.9-13 to 7:11; ours predates it',
+    ('cn', '路加福音', '11'): 'upstream merged 參太7.7-8 and 參徒1-2章 into one '
+                             'note on 11:13; ours predates it',
+    # Upstream revisions that post-date the PRINTED 2025 second edition,
+    # which is the authority for our Traditional. Ours matches the print.
+    ('tw', '以弗所書', '3'): "3:15 — printed 註釋本 sets 「參 4.6，」, which is "
+                            'what we ship; the publisher\'s current tw adds '
+                            '「、16」. Ours is not Simplified-sourced: 3:16 '
+                            'ships their tw\'s 「參2.18註」 against their cn\'s 注',
+    ('tw', '啟示錄', '20'): "20:4 — publisher's own tw prints 「參啟1.2注」 with "
+                           'the Simplified 注, against 註 everywhere else in '
+                           'their own file and in the printed 註釋本. Ours '
+                           'reads 註 and is the one that matches the print',
+    # Our edition punctuates where the current upstream does not. Same
+    # class as the 307 tw / 46 cn punctuation differences the verse
+    # proofread already counted — 腓立比書 2:6-11 is the known example.
+    ('tw', '提摩太前書', '3'): '3:16 — the hymn is unpunctuated upstream and '
+                              'set as punctuated lines by us, note included',
+    ('cn', '提摩太前书', '3'): '3:16 — the hymn is unpunctuated upstream and '
+                              'set as punctuated lines by us, note included',
+    ('tw', '雅各書', '2'): '2:8 — trailing 「，」; upstream drops it, we keep it',
+    ('cn', '雅各书', '2'): '2:8 — trailing 「，」; upstream drops it, we keep it',
+    ('tw', '啟示錄', '7'): '7:17 — trailing 「。」; upstream drops it, we keep it',
+    ('cn', '启示录', '7'): '7:17 — trailing 「。」; upstream drops it, we keep it',
 }
 
 
@@ -204,23 +282,72 @@ def audit(lang: str, asset: str, book_index: int, refresh: bool) -> int:
     return unexplained
 
 
+def audit_text(lang: str, asset: str, book_index: int, refresh: bool) -> int:
+    """Compare what the notes SAY, per chapter. See the module docstring
+    for why this is keyed on the chapter and not on the verse."""
+    mine_by_chapter: dict = {}
+    for (book, chapter, _), notes in ours(asset).items():
+        counter = mine_by_chapter.setdefault((book, chapter), Counter())
+        counter.update(n for n in map(normalise, notes) if n)
+
+    unexplained = ours_total = theirs_total = differing = 0
+    for row in BOOKS:
+        abbr, name = row[0], row[book_index]
+        theirs_by_chapter: dict = {}
+        for (chapter, _), cites in publisher_cites(
+                fetch(lang, abbr, refresh)).items():
+            counter = theirs_by_chapter.setdefault(chapter, Counter())
+            counter.update(c for c in map(normalise, cites) if c)
+        for chapter, theirs in theirs_by_chapter.items():
+            mine = mine_by_chapter.get((name, chapter), Counter())
+            ours_total += sum(mine.values())
+            theirs_total += sum(theirs.values())
+            if mine == theirs:
+                continue
+            differing += 1
+            reason = ACCOUNTED_FOR_TEXT.get((lang, name, chapter))
+            missing = list((theirs - mine).elements())
+            extra = list((mine - theirs).elements())
+            if reason:
+                print(f'  ok  {name} {chapter}: {reason}')
+            else:
+                unexplained += 1
+                print(f'  ** {name} {chapter}: our notes do not say what the '
+                      f"publisher's do")
+                print(f'       only theirs: {missing}')
+                print(f'       only ours  : {extra}')
+    print(f'  {lang}: {ours_total} notes ours / {theirs_total} theirs, '
+          f'{differing} chapters differ, {unexplained} unexplained')
+    return unexplained
+
+
 def main() -> int:
     refresh = '--refresh' in sys.argv
     total = 0
+    print('== Do we carry every note? (count, per verse)')
     print('Traditional (tw-*.json → assets/biblexg-v2-tr.json)')
     total += audit('tw', 'assets/biblexg-v2-tr.json', 2, refresh)
     print()
     print('Simplified (cn-*.json → assets/biblexg-v2.json)')
     total += audit('cn', 'assets/biblexg-v2.json', 1, refresh)
     print()
+    print('== Do they say the same thing? (text, per chapter)')
+    print('Traditional')
+    total += audit_text('tw', 'assets/biblexg-v2-tr.json', 2, refresh)
+    print()
+    print('Simplified')
+    total += audit_text('cn', 'assets/biblexg-v2.json', 1, refresh)
+    print()
     if total:
-        print(f'FAIL — {total} verses where our editorial notes do not '
+        print(f'FAIL — {total} places where our editorial notes do not '
               f'match the publisher and no reason is on record.')
-        print('An inline note we dropped is now printed as scripture. '
-              'Read the publisher node before changing anything.')
+        print('A note we dropped may now be printed as scripture, and a '
+              'note that differs is a cross-reference pointing somewhere '
+              'the publisher does not. Read the publisher node, and the '
+              'printed 註釋本, before changing anything.')
         return 1
-    print('OK — every editorial note in both editions matches the '
-          "publisher's own file.")
+    print('OK — both editions carry every editorial note the publisher '
+          'does, and each one says what theirs says.')
     return 0
 
 
