@@ -978,6 +978,21 @@ so the bundle-size answer stays on the record.
 - [x] Artwork thumbnails in song list rows — behind the play button, so
       the 407 songs without artwork are not left with a hole.
 
+- [ ] **`release_web.sh` can report success when a site did not deploy.**
+      Hit on 2026-08-11 during the v1.4.61 release: `deploy_sites` runs
+      each `netlify deploy` with `&` and then a bare `wait`, which
+      returns 0 whatever the jobs did — so `set -e` never fires. The run
+      printed 「✓ v1.4.61 deployed」 while **yswords-qat was still serving
+      v1.4.60 and the pre-fix Greek asset**. Caught only because this
+      iteration checks `version.json` on all four sites afterwards; a run
+      that trusted the script's own ✓ would have left one site behind.
+      Fix is small — collect the background PIDs and `wait "$pid" ||
+      fail` each one — but it changes the release path, so measure the
+      failure rate first (re-running with `--no-bump` deployed all four
+      cleanly, so it looks transient rather than a broken site config).
+      **Until it is fixed, always verify all four `version.json` after a
+      release.**
+
 ## P3 — known but blocked or deferred
 
 - [ ] EC018 / EC019 sermon transcripts are raw speech recognition —
