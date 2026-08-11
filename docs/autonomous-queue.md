@@ -449,20 +449,37 @@ has never seen this repo.
       `assets/cuvs-yhwh.json` in Dart rather than trusting the tool, and
       fails on the pre-fix data at all 72.
 
-- [ ] **551 concordance references still open a 「见上节」 verse.**
-      The other direction of the same defect, measured while fixing the
-      above and deliberately not fixed with it. `VersificationService
-      .readingRef` sends a concordance hit on Hebrew 民数记 1:21 to
+- [x] **554 concordance references opened a 「见上节」 verse — fixed.**
+      The other direction of the same defect. `VersificationService
+      .readingRef` sent a concordance hit on Hebrew 民数记 1:21 to
       reading 1:21, whose entire text is 「见上节」 — so the concordance
-      says the word occurs there and the verse shown contains nothing.
+      said the word occurs there and the verse shown contained nothing.
       The word is in 1:20.
 
-      It needs the same version-awareness `originalRefs` just got:
-      `readingRef` takes no version, and the right answer differs by
-      translation (the KJV's 1:21 is a real verse). Note also that
-      `_buildInverse` relies on map ITERATION order to make "the earlier
-      reading verse wins" true, and the keys are sorted as strings, so
-      '9:1' sorts after '10:1'. Sort numerically when touching it.
+      Counted before changing anything: **554**, not the 551 estimated
+      here — the estimate missed the two note-only markers (詩篇 63:6's
+      「合和译本并入上一节」 and 約翰福音 7:53's 「见下节」). Worst hit are
+      民数记 (120), 申命記 (78) and 詩篇 (35), across 70 distinct verses.
+      Only `cuvs-yhwh` and `cuvs-yhwh-tr` carry such markers; the KJV,
+      NASB, LEB and both 梁家鏗 editions have none, so the fix must not
+      touch them — `readingRef` now takes a `version` and consults the
+      per-version merged overlay before the shared map, the mirror of
+      what `originalRefs` already did.
+
+      Threaded through `ConcordanceService.lookup(number, version:)` to
+      the Originals sheet, the Strong's entry page and boolean Strong's
+      search. The Strong's entry page reloads on a version switch
+      (`didChangeDependencies`) — without that its list would keep the
+      numbering of whatever version was current when the page opened.
+
+      `_buildInverse` also sorted its keys as strings, so '10:1' beat
+      '9:1' for "the earlier reading verse wins"; it now compares
+      numerically. No reference actually changed as a result — measured,
+      0 of them — so this is a latent trap closed, not a defect fixed.
+
+      The new sweep in `test/merged_verse_originals_test.dart` walks
+      every concordance reference through the real service and fails on
+      the pre-fix behaviour at all 554.
 
 - [ ] **`assets/tagged/` and `assets/cuvs-yhwh.json` disagree about
       約伯記 10:20/10:21.** Noticed while building the merged-verse

@@ -79,7 +79,14 @@ class ConcordanceService {
     return out;
   }
 
-  static Future<ConcordanceResult?> lookup(String strongsNumber) async {
+  /// [version] is the version the references will be opened in. Without
+  /// it, 554 of them land on a verse the CUV merged into its neighbour
+  /// and prints as 「见上节」 — the concordance says the word occurs
+  /// there and the verse shown contains nothing.
+  static Future<ConcordanceResult?> lookup(
+    String strongsNumber, {
+    String? version,
+  }) async {
     if (strongsNumber.isEmpty) return null;
     _cache ??= await (_loading ??= _load());
     final entry = _cache![strongsNumber];
@@ -102,8 +109,9 @@ class ConcordanceService {
       final parsed = ConcordanceRef.tryParse(raw);
       if (parsed == null) continue;
       final self = '${parsed.chapter}:${parsed.verse}';
-      final reading =
-          await VersificationService.readingRef(parsed.englishBook, self);
+      final reading = await VersificationService.readingRef(
+          parsed.englishBook, self,
+          version: version);
       final ref = reading == self
           ? parsed
           : ConcordanceRef.tryParse('${parsed.englishBook} $reading') ?? parsed;

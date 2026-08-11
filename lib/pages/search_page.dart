@@ -2036,6 +2036,9 @@ class _SearchPageState extends State<SearchPage> {
 
   // ── v1.3.91: boolean Strong's search ───────────────────────────────
   Future<void> _runBooleanSearch(StrongsBooleanQuery query) async {
+    // Read before the first await: the occurrence labels are numbered
+    // for the version they will be opened in.
+    final version = context.read<MainProvider>().currentVersion;
     setState(() {
       _resetSearchState();
       _booleanQuery = query;
@@ -2050,11 +2053,12 @@ class _SearchPageState extends State<SearchPage> {
       if (t.wildcard) {
         final nums = await ConcordanceService.numbersMatchingPrefix(t.number);
         for (final n in nums) {
-          final r = await ConcordanceService.lookup(n);
+          final r = await ConcordanceService.lookup(n, version: version);
           if (r != null) labels.addAll(r.refs.map((e) => e.label));
         }
       } else {
-        final r = await ConcordanceService.lookup(t.number);
+        final r =
+            await ConcordanceService.lookup(t.number, version: version);
         if (r != null) labels.addAll(r.refs.map((e) => e.label));
       }
       termRefs[t] = labels;

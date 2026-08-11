@@ -56,6 +56,10 @@ class VersificationService {
   static Future<Map<String, Map<String, Map<String, List<String>>>>>?
       _mergedLoading;
 
+  /// version → book slug → original "c:v" → reading "c:v", for the same
+  /// merges read the other way round.
+  static Map<String, Map<String, Map<String, String>>>? _mergedInverse;
+
   static String slug(String englishBook) =>
       englishBook.toLowerCase().replaceAll(' ', '_').replaceAll("'", '');
 
@@ -128,37 +132,80 @@ class VersificationService {
   /// the concordance needs, since its references are the Hebrew's and
   /// Greek's own. "Joel 4:9" is a verse this app has no page for; it is
   /// Joel 3:9 here.
+  ///
+  /// [version] matters for the same reason it does in [originalRefs],
+  /// and in the opposite direction: where a translation folds two
+  /// numbered verses into one it prints the vacated number as
+  /// 「见上节」, so a concordance hit on Hebrew 民数记 1:21 sent to
+  /// reading 1:21 opens a verse whose entire text is "see the previous
+  /// verse". The word is in 1:20. Without [version] the answer stays the
+  /// shared one, which is the right answer for the KJV, NASB and LEB —
+  /// all three print 1:21 as a verse of their own.
   static Future<String> readingRef(
     String englishBook,
-    String originalRef,
-  ) async {
+    String originalRef, {
+    String? version,
+  }) async {
     await ensureLoaded();
+    final book = slug(englishBook);
+    final merged = _mergedInverse ??= _buildMergedInverse();
+    final folded = merged[version?.toLowerCase() ?? '']?[book]?[originalRef];
+    if (folded != null) return folded;
     final inverse = _inverse ??= _buildInverse();
-    return inverse[slug(englishBook)]?[originalRef] ?? originalRef;
+    return inverse[book]?[originalRef] ?? originalRef;
   }
 
-  static Map<String, Map<String, String>> _buildInverse() {
-    final out = <String, Map<String, String>>{};
-    for (final book in (_map ?? const {}).entries) {
-      final table = <String, String>{};
-      for (final entry in book.value.entries) {
-        for (final original in entry.value) {
-          // Two reading verses can share one original verse — the Greek
-          // of Romans 16:23 is split across 16:23 and 16:24 here. The
-          // earlier reading verse wins, so the reference still lands on
-          // text that contains the word.
-          table.putIfAbsent(original, () => entry.key);
-        }
+  /// Two reading verses can share one original verse — the Greek of
+  /// Romans 16:23 is split across 16:23 and 16:24 here. The earlier
+  /// reading verse wins, so the reference still lands on text that
+  /// contains the word. "Earlier" has to be decided numerically: the
+  /// keys are strings, in which '10:1' sorts before '9:1'.
+  static Map<String, String> _invert(Map<String, List<String>> byReading) {
+    final table = <String, String>{};
+    final readings = byReading.keys.toList()..sort(_compareRefs);
+    for (final reading in readings) {
+      for (final original in byReading[reading]!) {
+        table.putIfAbsent(original, () => reading);
       }
-      out[book.key] = table;
     }
-    return out;
+    return table;
   }
+
+  static int _compareRefs(String a, String b) {
+    final ac = a.split(':'), bc = b.split(':');
+    for (var i = 0; i < ac.length && i < bc.length; i++) {
+      final x = int.tryParse(ac[i]), y = int.tryParse(bc[i]);
+      if (x == null || y == null) {
+        final s = ac[i].compareTo(bc[i]);
+        if (s != 0) return s;
+        continue;
+      }
+      if (x != y) return x - y;
+    }
+    return ac.length - bc.length;
+  }
+
+  static Map<String, Map<String, String>> _buildInverse() => {
+        for (final book in (_map ?? const {}).entries)
+          book.key: _invert(book.value),
+      };
+
+  static Map<String, Map<String, Map<String, String>>> _buildMergedInverse() =>
+      {
+        for (final version in (_merged ?? const {}).entries)
+          version.key.toLowerCase(): {
+            for (final book in version.value.entries)
+              book.key: _invert(book.value),
+          },
+      };
 
   @visibleForTesting
   static void resetForTest() {
     _map = null;
     _loading = null;
     _inverse = null;
+    _merged = null;
+    _mergedLoading = null;
+    _mergedInverse = null;
   }
 }

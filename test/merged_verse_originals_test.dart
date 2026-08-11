@@ -194,4 +194,83 @@ void main() {
             version: 'cuvs-yhwh'),
         ['3:1', '3:2']);
   });
+
+  test('a concordance hit on a merged verse opens the verse that prints it',
+      () async {
+    TestWidgetsFlutterBinding.ensureInitialized();
+    VersificationService.resetForTest();
+
+    // The other direction of the same defect. Hebrew 民数记 1:21 is a
+    // verse of its own; the CUV prints it inside 1:20 and leaves 1:21
+    // reading 「见上节」. Sending the concordance there says the word
+    // occurs in a verse that contains nothing.
+    expect(
+        await VersificationService.readingRef('Numbers', '1:21',
+            version: 'cuvs-yhwh'),
+        '1:20');
+    expect(
+        await VersificationService.readingRef('Numbers', '1:21',
+            version: 'cuvs-yhwh-tr'),
+        '1:20');
+    // The KJV's 1:21 is a real verse with the census total in it.
+    expect(
+        await VersificationService.readingRef('Numbers', '1:21',
+            version: 'kjv'),
+        '1:21');
+    expect(await VersificationService.readingRef('Numbers', '1:21'), '1:21');
+
+    // 詩篇 8:7 and 8:8 are both 「见上节」, so the base map's answer for
+    // Hebrew 8:8 — reading 8:7 — is itself a placeholder.
+    expect(
+        await VersificationService.readingRef('Psalms', '8:8',
+            version: 'cuvs-yhwh'),
+        '8:6');
+    // 約翰福音 7:53 is printed inside 8:1, the verse AFTER it.
+    expect(
+        await VersificationService.readingRef('John', '7:53',
+            version: 'cuvs-yhwh'),
+        '8:1');
+    // The base map still applies where there is no merge.
+    expect(
+        await VersificationService.readingRef('Joel', '4:9',
+            version: 'cuvs-yhwh'),
+        '3:9');
+  });
+
+  test('no concordance reference opens a 「见上节」 verse', () async {
+    TestWidgetsFlutterBinding.ensureInitialized();
+    VersificationService.resetForTest();
+
+    final marks = pointers('cuvs-yhwh');
+    final concordance = json.decode(
+        File('assets/strongs/concordance.json').readAsStringSync()) as Map;
+    final label = RegExp(r'^(.+?)\s+(\d+:\d+)$');
+
+    final landsOnNothing = <String>[];
+    var checked = 0;
+    for (final entry in concordance.values) {
+      if (entry is! Map) continue;
+      for (final raw in (entry['r'] as List? ?? const [])) {
+        if (raw is! String) continue;
+        final m = label.firstMatch(raw);
+        if (m == null) continue;
+        final book =
+            m.group(1)!.toLowerCase().replaceAll(' ', '_').replaceAll("'", '');
+        if (!marks.containsKey(book)) continue;
+        final reading = await VersificationService.readingRef(
+            m.group(1)!, m.group(2)!,
+            version: 'cuvs-yhwh');
+        checked++;
+        if (marks[book]!.containsKey(reading)) {
+          landsOnNothing.add('$raw → $book $reading, which reads 「见上节」');
+        }
+      }
+    }
+    // Guard against the sweep silently checking nothing.
+    expect(checked, greaterThan(10000));
+    expect(landsOnNothing, isEmpty,
+        reason: '${landsOnNothing.length} concordance references open a verse '
+            'whose entire text is a pointer at another verse, e.g. '
+            '${landsOnNothing.take(5).toList()}');
+  });
 }

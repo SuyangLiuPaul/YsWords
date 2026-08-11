@@ -51,13 +51,21 @@ class _StrongsEntryPageState extends State<StrongsEntryPage> {
   bool _loading = true;
   bool _notFound = false;
 
+  /// The occurrence list is numbered for the version it will be opened
+  /// in, so it has to be rebuilt when the reader switches version —
+  /// see [ConcordanceService.lookup].
+  String? _loadedForVersion;
+
   @override
-  void initState() {
-    super.initState();
-    _load();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final version = Provider.of<MainProvider>(context).currentVersion;
+    if (version == _loadedForVersion) return;
+    _loadedForVersion = version;
+    _load(version);
   }
 
-  Future<void> _load() async {
+  Future<void> _load(String version) async {
     final entry = await StrongsService.lookup(widget.number);
     if (entry == null) {
       if (!mounted) return;
@@ -70,7 +78,7 @@ class _StrongsEntryPageState extends State<StrongsEntryPage> {
     final family = await StrongsService.wordFamily(widget.number);
     final compare = await StrongsService.compareWords(widget.number);
     final concordance =
-        await ConcordanceService.lookup(widget.number);
+        await ConcordanceService.lookup(widget.number, version: version);
     if (!mounted) return;
     setState(() {
       _entry = entry;

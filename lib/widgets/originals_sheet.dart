@@ -262,7 +262,8 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
     // concordance is a single shared file that gets warmed by the
     // first lookup of the session.
     final entryFuture = StrongsService.lookup(w.strongs);
-    final concordanceFuture = ConcordanceService.lookup(w.strongs);
+    final concordanceFuture = ConcordanceService.lookup(w.strongs,
+        version: widget.currentVersion);
     final entry = await entryFuture;
     final concordance = await concordanceFuture;
     // v1.2.30: bail if the user has tapped a different word while we
@@ -349,7 +350,8 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
       _aiForStrongs = null;
     });
     final entryFuture = StrongsService.lookup(strongsNumber);
-    final concordanceFuture = ConcordanceService.lookup(strongsNumber);
+    final concordanceFuture = ConcordanceService.lookup(strongsNumber,
+        version: widget.currentVersion);
     final entry = await entryFuture;
     final concordance = await concordanceFuture;
     // v1.2.30: bail if the user navigated to a different entry while
@@ -549,7 +551,8 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
     final all = <StrongsEntry>[...family, ...compare, ...lxx, ...hebSrc];
     final entries = <String, ConcordanceResult?>{};
     await Future.wait(all.map((e) async {
-      entries[e.number] = await ConcordanceService.lookup(e.number);
+      entries[e.number] = await ConcordanceService.lookup(e.number,
+          version: widget.currentVersion);
     }));
     if (!mounted || myGen != _lookupGen) return;
     // If the user reached this entry by tapping a chip in a related
@@ -2312,13 +2315,15 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
 
     // Word family — fetch concordance per entry; cached after first lookup.
     for (final famEntry in _wordFamily) {
-      final famConc = await ConcordanceService.lookup(famEntry.number);
+      final famConc = await ConcordanceService.lookup(famEntry.number,
+          version: widget.currentVersion);
       writeEntry('Family', famEntry, famConc);
     }
 
     // Synonyms / compare references.
     for (final synEntry in _compareWords) {
-      final synConc = await ConcordanceService.lookup(synEntry.number);
+      final synConc = await ConcordanceService.lookup(synEntry.number,
+          version: widget.currentVersion);
       writeEntry('Synonym', synEntry, synConc);
     }
 
@@ -2326,14 +2331,16 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
     // already cached in _relatedConcordances from _loadRelations.
     for (final lxxEntry in _lxxEquivalents) {
       final lxxConc = _relatedConcordances[lxxEntry.number] ??
-          await ConcordanceService.lookup(lxxEntry.number);
+          await ConcordanceService.lookup(lxxEntry.number,
+              version: widget.currentVersion);
       writeEntry('LXX', lxxEntry, lxxConc);
     }
 
     // Hebrew sources (Greek → Hebrew). Mirror of LXX for NT entries.
     for (final hebEntry in _hebrewSources) {
       final hebConc = _relatedConcordances[hebEntry.number] ??
-          await ConcordanceService.lookup(hebEntry.number);
+          await ConcordanceService.lookup(hebEntry.number,
+              version: widget.currentVersion);
       writeEntry('HebrewSource', hebEntry, hebConc);
     }
 
