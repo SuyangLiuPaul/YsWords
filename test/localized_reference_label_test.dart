@@ -50,5 +50,19 @@ void main() {
     test('empty locale-independent default (no locale-specific mapping) keeps English', () {
       expect(localizedReferenceLabel('Genesis 1:1', 'fr'), 'Genesis 1:1');
     });
+
+    test("the misconception form's example reference localizes", () {
+      // The submit form's References field showed the hint "Acts 13:9;
+      // Acts 22:28" hard-coded in English while every label around it
+      // was Chinese. Reported 2026-08-11: 「feedback里面提示acts 如果中文
+      // 也要变吧」. A form asking for a reference should show its example
+      // in the language it is asking in.
+      const example = 'Acts 13:9; Acts 22:28';
+      expect(localizedReferenceLabel(example, 'zh-Hans'),
+          '使徒行传 13:9; 使徒行传 22:28');
+      expect(localizedReferenceLabel(example, 'zh-Hant'),
+          '使徒行傳 13:9; 使徒行傳 22:28');
+      expect(localizedReferenceLabel(example, 'en'), example);
+    });
   });
 }
