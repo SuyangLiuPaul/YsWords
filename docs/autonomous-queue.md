@@ -16,6 +16,70 @@ and quoted.**
 
 ## P0 — scripture accuracy
 
+- [x] **15 verses of the CUV were blank on screen — the importer had
+      filed them as footnotes.** Both editions, so 30 verse instances.
+      以賽亞書 23:13, 約書亞記 2:6, 撒母耳記上 5:5 / 21:7, 列王紀上 11:32,
+      尼希米記 3:26, 約伯記 15:19 / 31:6 / 31:30 / 31:32, 以賽亞書 32:19,
+      耶利米書 15:12 / 29:2 / 48:10 / 50:28.
+
+      The CUV sets some verses entirely in parentheses — narrative
+      asides like 「（先是女人領二人上了房頂……）」 — and our importer
+      turned every parenthesis into `<note: …>`. A note is not text: the
+      reading pane renders it as a tappable book icon, and
+      `sanitizeVerseText` drops it, so copy, share, search and the
+      Originals sheet's verse line all saw an empty string. Where the
+      parenthesis covered the WHOLE verse the reader got a verse number,
+      an icon, and **no scripture at all**.
+
+      Every structural check the repo already had passes on this data —
+      the reference is unique, the text is non-empty on disk, no stray
+      character — because they all read the file rather than what the
+      reader sees. The new test sanitises through the app's own
+      `sanitizeVerseText` before asserting.
+
+      **Which notes are scripture was decided by evidence, not by
+      reading the Chinese.** `assets/tagged/cuvs-yhwh/` is a separate
+      import of the same edition and it kept the distinction ours lost:
+      `（…）` for parenthetical scripture, `〔…〕` for an editorial or
+      variant note. Measured over all 1,290 of our `<note:>` spans it
+      brackets 1,134 as editorial, carries 104 as scripture and lacks 52
+      entirely — so the great majority of our notes really are notes.
+      SeekSparks' separately sourced `cuvs-plus.json` agrees on every one
+      of the 15. **Seven whole-verse notes were left exactly as they
+      were**, because there the edition itself says the text is not
+      there — 馬可福音 7:16 / 9:44 / 9:46, 使徒行傳 8:37 / 15:34
+      (「有古卷在此有」), 約翰福音 7:53 (「見下節」), 詩篇 63:6
+      (「並入上一節」) — and the witness brackets exactly those seven
+      `〔…〕`. Promoting one of them would put a disputed reading on
+      screen as scripture.
+
+      No text came from another edition: the restored verse is our own
+      note body moved back into the verse inside the parentheses the CUV
+      prints. One character was restored — 約書亞記 2:6 read 所擺的麻**中**
+      where both independent copies read 所擺的麻**秸**中 — and it is
+      named in the tool rather than fixed silently.
+      `tools/repair_demoted_parentheticals.py`;
+      `test/bible_version_integrity_test.dart` fails on the pre-fix data
+      with the right diagnosis.
+
+- [ ] **~90 more parentheses are demoted the same way, mid-verse.**
+      Found by the same measurement, so it is a count and not a guess:
+      of the 104 note spans the independent tagging carries as
+      scripture, 15 were whole verses (fixed above) and the rest sit
+      inside a verse that still reads — 撒母耳記下 21:12 shows
+      「大衛就去……搬了來」 and hides 「（是因非利士人從前在基利波殺掃羅……）」
+      behind the icon; 利未記 24:11 hides 「（他母親名叫示羅密……）」.
+      Lower harm than a blank verse, which is why it was not bundled
+      into the same change, but it is the same defect: a clause of
+      scripture the reader cannot see.
+
+      The repair is mechanical — splice `（body）` in where the note
+      marker stands — and the evidence rule is already written. **Read
+      all ~90 before applying**: unlike the whole-verse set there is no
+      structural impossibility backing them up, so a false positive here
+      would inject a translator's footnote into the verse body, which is
+      the exact failure this queue exists to prevent.
+
 - [x] **185 verses printed the importer's own Strong's markers as
       scripture.** Found while measuring the 約伯記 10:20/10:21 item
       below, which asked whether `assets/tagged/` and the reading asset

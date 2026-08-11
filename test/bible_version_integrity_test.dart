@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yswords/constants/book_names.dart';
+import 'package:yswords/constants/text_patterns.dart';
 
 /// Structural audit of the five whole-Bible versions, the same way
 /// `biblexg_verse_integrity_test.dart` audits the 梁家鏗譯本.
@@ -197,6 +198,65 @@ void main() {
         );
       });
     }
+  });
+
+  group('nothing is hidden behind a footnote icon', () {
+    /// A verse whose whole text is `<note: …>` passes every check above
+    /// — it is unique, non-empty on disk, and carries no stray
+    /// character — and still shows the reader NOTHING. The reading pane
+    /// renders a note as a tappable book icon, and every sanitised path
+    /// (copy, share, search, the Originals sheet's verse line) drops it
+    /// outright.
+    ///
+    /// The CUV sets whole verses in parentheses — 以賽亞書 23:13,
+    /// 約書亞記 2:6 and 13 others are narrative asides — and our
+    /// importer turned every parenthesis into a note, so those verses
+    /// were blank on screen in both CUV editions.
+    ///
+    /// The seven below are not that. Each is a place where the edition
+    /// ITSELF says the text is not there — 「有古卷在此有」, 「見下節」,
+    /// 「並入上一節」 — and the independent Eagle's View import of the
+    /// same edition agrees, bracketing exactly these seven `〔…〕` and
+    /// the other fifteen `（…）`. Promoting one of these into the verse
+    /// body would put a disputed reading on screen as scripture.
+    const editorialOnly = <String>{
+      'Psalms 63:6',
+      'Mark 7:16',
+      'Mark 9:44',
+      'Mark 9:46',
+      'John 7:53',
+      'Acts 8:37',
+      'Acts 15:34',
+    };
+
+    for (final version in versions) {
+      test('$version shows text for every verse it lists', () {
+        final blank = <String>[
+          for (final v in load(version))
+            if (sanitizeVerseText(v['text'] as String).isEmpty &&
+                !editorialOnly.contains(appKey(v)))
+              appKey(v)
+        ];
+        expect(blank, isEmpty);
+      });
+    }
+
+    test('the fifteen parenthetical verses read as scripture again', () {
+      String textOf(String version, String ref) => load(version)
+          .firstWhere((v) => appKey(v) == ref)['text'] as String;
+
+      // 麻秸 (flax stalks), not 麻: our asset had dropped the character
+      // and both independent copies — the Eagle's View tagging and
+      // SeekSparks' cuvs-plus — read 所擺的麻秸中.
+      expect(sanitizeVerseText(textOf('cuvs-yhwh', 'Joshua 2:6')),
+          contains('所摆的麻秸中'));
+      expect(sanitizeVerseText(textOf('cuvs-yhwh-tr', 'Joshua 2:6')),
+          contains('所擺的麻秸中'));
+      expect(sanitizeVerseText(textOf('cuvs-yhwh', 'Isaiah 23:13')),
+          startsWith('（看哪'));
+      expect(sanitizeVerseText(textOf('cuvs-yhwh-tr', 'Jeremiah 48:10')),
+          contains('懶惰為雅偉行事的'));
+    });
   });
 
   test('the sixteen verses an importer damaged now read as scripture', () {
