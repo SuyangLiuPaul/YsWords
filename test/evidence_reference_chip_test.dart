@@ -87,23 +87,28 @@ void main() {
     });
   }
 
-  testWidgets('a short reference still gets a chip, not a full-width bar',
+  testWidgets('the reference and the Read affordance flow as one block',
       (tester) async {
-    // The fix adds Flexible; keeping MainAxisSize.min is what stops the
-    // chip stretching across the whole card when the text is short.
+    // The property that fixes the second report. A Row placed its
+    // trailing children beside the whole text BLOCK, so with two
+    // references 「→ 阅读经文」 sat at the end of line one while
+    // 「10:26」 continued underneath it — nothing clipped, and
+    // unreadable. They must live in a single RichText so they wrap
+    // together and the affordance always follows the LAST reference.
     addTearDown(tester.view.reset);
-    await _pump(tester, 'John 3:16', const Size(402, 874));
+    await _pump(tester, '1 Kings 9:15; 1 Kings 10:26', const Size(375, 812));
 
-    expect(tester.takeException(), isNull);
-
-    final chip = find.byIcon(Icons.menu_book_outlined);
-    expect(chip, findsWidgets);
-    // The row must be narrower than the page it sits on.
-    final width = tester.getSize(find.ancestor(
-      of: chip.first,
-      matching: find.byType(Row),
-    ).first).width;
-    expect(width, lessThan(360),
-        reason: 'a one-reference chip should hug its text');
+    final rich = find.byWidgetPredicate((w) {
+      if (w is! RichText) return false;
+      final plain = w.text.toPlainText();
+      // Whichever locale AppSettings defaults to — the point is that
+      // the label and the last reference share one paragraph.
+      const readLabels = ['Read', '阅读经文', '閱讀經文'];
+      return plain.contains('10:26') &&
+          readLabels.any(plain.contains);
+    });
+    expect(rich, findsOneWidget,
+        reason: 'the last reference and the Read label must be in the '
+            'same paragraph, not in sibling widgets');
   });
 }

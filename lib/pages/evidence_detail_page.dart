@@ -668,31 +668,32 @@ class _ReferenceChip extends StatelessWidget {
         child: Padding(
           padding:
               const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            // Top, not centre: once the reference wraps to two lines the
-            // icon should sit beside the FIRST line rather than float in
-            // the middle of the block.
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding: const EdgeInsets.only(top: 3),
-                child: Icon(Icons.menu_book_outlined,
-                    size: 16, color: scheme.primary),
-              ),
-              const SizedBox(width: 6),
-              // Flexible, so a long reference wraps instead of running
-              // off the screen. 2026-08-11, from the phone: an evidence
-              // card citing two passages — 「列王纪上 9:15; 列王纪上
-              // 10:26」 — pushed "→ 阅读经文" past the right edge and
-              // the row was simply cut off by the card.
-              //
-              // MainAxisSize.min is kept so a SHORT reference still
-              // gets a chip the width of its own text, not a bar the
-              // width of the card.
-              Flexible(
-                child: Text(
-                  localizedReferenceLabel(reference, locale, currentVersion),
+          // Laid out as ONE flowing paragraph, not a Row.
+          //
+          // 2026-08-11, second report on this chip. Making the
+          // reference Flexible stopped it being cut off, but a Row
+          // places its trailing children beside the whole text BLOCK,
+          // not after the last word — so with two references the
+          // 「→ 阅读经文」 sat at the end of line one and 「10:26」
+          // continued underneath it. Correct, and unreadable.
+          //
+          // WidgetSpans put the icons in the text stream, so everything
+          // wraps together and the affordance always follows the last
+          // reference, however many there are.
+          child: Text.rich(
+            TextSpan(
+              children: [
+                WidgetSpan(
+                  alignment: PlaceholderAlignment.middle,
+                  child: Padding(
+                    padding: const EdgeInsets.only(right: 6),
+                    child: Icon(Icons.menu_book_outlined,
+                        size: 16, color: scheme.primary),
+                  ),
+                ),
+                TextSpan(
+                  text: localizedReferenceLabel(
+                      reference, locale, currentVersion),
                   style: TextStyle(
                     fontFamily: settings.fontFamily,
                     fontFamilyFallback: kCjkFontFallback,
@@ -701,18 +702,16 @@ class _ReferenceChip extends StatelessWidget {
                     color: scheme.primary,
                   ),
                 ),
-              ),
-              const SizedBox(width: 6),
-              Padding(
-                padding: const EdgeInsets.only(top: 4),
-                child: Icon(Icons.arrow_forward,
-                    size: 14, color: scheme.primary),
-              ),
-              const SizedBox(width: 2),
-              Padding(
-                padding: const EdgeInsets.only(top: 3),
-                child: Text(
-                  uiStrings['readInBible']?[locale] ?? 'Read',
+                WidgetSpan(
+                  alignment: PlaceholderAlignment.middle,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 6),
+                    child: Icon(Icons.arrow_forward,
+                        size: 14, color: scheme.primary),
+                  ),
+                ),
+                TextSpan(
+                  text: uiStrings['readInBible']?[locale] ?? 'Read',
                   style: TextStyle(
                     fontFamily: settings.fontFamily,
                     fontFamilyFallback: kCjkFontFallback,
@@ -722,8 +721,8 @@ class _ReferenceChip extends StatelessWidget {
                     color: scheme.primary,
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
