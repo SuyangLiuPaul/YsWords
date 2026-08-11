@@ -118,9 +118,10 @@ class TaggedTextService {
       final decoded = json.decode(raw) as Map<String, dynamic>;
       final out = <String, List<TaggedRun>>{
         for (final e in decoded.entries)
-          e.key: reuniteGlossRuns((e.value as List)
-              .map((r) => TaggedRun.fromJson(r as Map<String, dynamic>))
-              .toList(growable: false)),
+          if (!carriesImporterMarkup(e.value as List))
+            e.key: reuniteGlossRuns((e.value as List)
+                .map((r) => TaggedRun.fromJson(r as Map<String, dynamic>))
+                .toList(growable: false)),
       };
       _cache[key] = out;
       return out;
@@ -131,6 +132,32 @@ class TaggedTextService {
       return const {};
     }
   }
+
+  /// A leftover Strong's marker in the printed text — `<WH7931s>`,
+  /// `主#`, a bare `WH853x`.
+  ///
+  /// The Originals sheet prints these runs *instead of* the verse, so a
+  /// marker that survives the import is shown to the reader as
+  /// scripture: 詩篇 7:5 read `使<WH7931s>我的榮耀歸於灰塵` in 183
+  /// verses' worth of places. The data is repaired
+  /// (`tools/repair_tagged_markup.py`), and two verses could not be
+  /// settled from evidence because the marker swallowed a Chinese
+  /// character the reading asset shows belongs in a different clause.
+  ///
+  /// Dropping the whole verse rather than scrubbing the run: the
+  /// gesture is worth less than the text, and the sheet already falls
+  /// back to the reader's own verse when a verse has no tagging.
+  @visibleForTesting
+  static bool carriesImporterMarkup(List<dynamic> runs) {
+    for (final r in runs) {
+      final w = (r as Map<String, dynamic>)['w'];
+      if (w is String && _importerMarkup.hasMatch(w)) return true;
+    }
+    return false;
+  }
+
+  static final RegExp _importerMarkup =
+      RegExp(r'[<>#]|[Ww][HhGgJjMm][0-9]+');
 
   /// Put a referent gloss back together.
   ///

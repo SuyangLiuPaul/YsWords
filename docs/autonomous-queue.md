@@ -16,6 +16,66 @@ and quoted.**
 
 ## P0 — scripture accuracy
 
+- [x] **185 verses printed the importer's own Strong's markers as
+      scripture.** Found while measuring the 約伯記 10:20/10:21 item
+      below, which asked whether `assets/tagged/` and the reading asset
+      agree. The verse keys agree perfectly — 31,102 on each side, 0
+      divergence, measured — but the TEXT does not, and the reason
+      turned out to be worse than a numbering question.
+
+      The Originals sheet prints the tagged runs **instead of** the
+      verse (`originals_sheet.dart` renders `_taggedVerseLine(vo.tagged!)`
+      for any verse that has tagging), so `assets/tagged/cuvs-yhwh/` is
+      scripture on screen. It carried 207 leftover markers in 185
+      verses:
+
+      | reference | printed to the reader |
+      |---|---|
+      | 詩篇 7:5 | `使<WH7931s>我的荣耀归于灰尘` |
+      | 創世記 3:16 | `又对<WH413<女人说` |
+      | 列王紀上 21:8 | `送给<WH5612x那些与拿伯同城居住的长老>贵胄` |
+      | 路加福音 20:42 | `对我主# 说` |
+
+      The last two are why this is an accuracy defect and not a
+      cosmetic one. In 列王紀上 21:8 the marker **swallows twelve
+      characters of the verse**, so a reader cannot tell which part is
+      scripture; and `主#` stands where the edition prints 主[基督] —
+      its own referent gloss, the same bracket the importer kept intact
+      for 主[雅伟] two words earlier in the very same verse
+      (使徒行傳 2:34). 17 such placeholders in 15 verses.
+
+      **The rule was derived from the data, not guessed.** Every marker
+      is `<` or `>` with ASCII glued to it, or a bare `WH853x` that lost
+      both brackets (耶利米書 34:8); ASCII appears nowhere else in the
+      asset except inside the CUV's own 〔創10:3作"利法"〕 cross-reference
+      notes, 59 tokens, none carrying `WH`. `tools/repair_tagged_markup.py`
+      strips exactly that and checks **every repaired verse against
+      `assets/cuvs-yhwh.json`** — the text the reader is actually
+      looking at — refusing any repair that does not move the verse
+      closer to it. The `#` becomes `[基督]` only where the reading
+      verse has `[基督]`; no character is invented anywhere.
+
+      Proof no scripture moved: 183 verses repaired, 205 runs touched,
+      and of those **188 lost ASCII only — the Chinese is byte-identical
+      — and 17 gained 基督**, nothing else. Every run's Strong's number,
+      grammar codes and implied numbers are untouched. All 66 files
+      round-trip byte-identically through the writer, so the diff
+      contains nothing but the repair.
+
+      **Two verses are left for a human and must not be guessed at.**
+      歷代志上 21:17 stores `行了恶<WH的8687>` and 耶利米書 4:22 stores
+      `愚昧无知<WH873我7>的儿女` — each marker ate a Chinese character,
+      and the reading asset shows both belong in a different clause
+      (「吩咐數點百姓**的**不是我嗎」, 「不認識**我**」). Deleting the marker
+      strands the character where it does not belong; moving it is
+      reconstruction. `TaggedTextService` now drops any verse whose runs
+      still carry a marker, so neither reaches a reader — the tap
+      gesture is worth less than the text, and the sheet already falls
+      back to the reader's own verse.
+      `test/tagged_text_markup_test.dart` pins all of it against the
+      real assets and fails on the pre-fix data with the right
+      diagnosis.
+
 - [x] **AUDIT EVERY ORIGINAL-LANGUAGE CLAIM THE APP MAKES.** Hebrew side
       done (`e714e31`): the importer kept only `<w>` and lost every marker
       that says "these are not two words" — 784 multi-word lexemes now
@@ -481,17 +541,58 @@ has never seen this repo.
       every concordance reference through the real service and fails on
       the pre-fix behaviour at all 554.
 
-- [ ] **`assets/tagged/` and `assets/cuvs-yhwh.json` disagree about
-      約伯記 10:20/10:21.** Noticed while building the merged-verse
-      overlay, investigated rather than waved through, and left alone
-      because neither side is wrong about the text. The reading asset
-      prints 10:20 and 10:21 as one verse and marks 10:21 「见上节」;
-      the tagged asset divides them. Verified by containment — the
-      tagged 10:21 text appears verbatim inside reading 10:20 — so no
-      words are lost or invented either way, and the Originals sheet is
-      correct because the overlay widens reading 10:20 to both. Worth
-      knowing about before anyone writes code that assumes the two
-      assets have the same verse keys, which is the real risk here.
+- [x] **`assets/tagged/` and `assets/cuvs-yhwh.json` disagree about
+      約伯記 10:20/10:21 — measured across the whole corpus.** The risk
+      this item named, that the two assets have different verse keys,
+      **does not exist**: 31,102 keys on each side, 0 in one and not the
+      other, all 66 books. The disagreement is in the TEXT, and counting
+      it is what turned up the 185 markup verses fixed above.
+
+      After that repair, **13 verses remain where the tagged text loses
+      words the reader's verse has** — and because the Originals sheet
+      prints the tagged runs instead of the verse, those words are
+      missing from the sheet:
+
+      | reference | missing from the sheet |
+      |---|---|
+      | 約伯記 10:20 | 「叫我在往而不返之先…可以稍得畅快」 — a whole clause |
+      | 列王紀上 21:8 | *(was 12 characters; repaired above)* |
+      | 士師記 15:7 | 非利士人 (tagged reads 他们) |
+      | 士師記 15:13 | 以坦 |
+      | 尼希米記 1:2 | 关于 ×2 |
+      | 以西結書 10:1 | 之中 |
+      | 阿摩司書 6:8 | 万军之神 (word order differs) |
+      | 箴言 4:6 | 她 (tagged reads 它) |
+      | 撒母耳記下 21:8 | 姊姊 (tagged reads 姐姐) |
+      | 士師記 20:6 | 扔菏 (tagged reads 凶淫) |
+      | 尼希米記 2:19, 3:3, 歷代志上 15:3 | 你们 / 他们 / 众人 |
+
+      **These are not damage — they are two different imports of the
+      same translation**, and the wording differences read as edition
+      variants (姊姊/姐姐, 她/它, 回覆/回复). Do not "fix" them by
+      copying one into the other; that is choosing a reading. 約伯記
+      10:20/10:21 is the one structural case: the reading asset folds
+      both into 10:20 and marks 10:21 「见上节」 while the tagged asset
+      divides them, so the sheet shows the first half only. Two honest
+      options, and the second needs no data change:
+      (a) join the tagged 10:21 runs into 10:20 — the concatenation
+      reproduces reading 10:20 exactly, so it is evidence-based, or
+      (b) have the sheet fall back to the reader's own verse text
+      whenever the tagged runs would lose words, which covers all 13
+      at the cost of the tap gesture on them.
+      Queued below as its own item rather than decided here.
+
+- [ ] **Decide how the Originals sheet handles the 13 verses where the
+      tagged text and the reading text disagree.** See the measurement
+      directly above. The sheet currently prints the tagged runs in
+      place of the verse, so on 約伯記 10:20 it shows half the verse the
+      reader is looking at. Option (b) — a coverage check before
+      rendering the tagged line, falling back to plain text — is the
+      general fix and costs the word-tap gesture on 13 of 31,102
+      verses. Option (a) fixes 約伯記 alone and keeps the gesture.
+      Not done in the same iteration as the markup repair on purpose:
+      that was a data change with a proof, this is a behaviour change
+      with a trade-off.
 
 - [ ] **Decide the 427 wording differences with the publisher.**
       Not ours to change. They cluster in 路加福音 (178) and 馬可福音 (89)
