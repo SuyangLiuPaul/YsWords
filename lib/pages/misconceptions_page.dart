@@ -656,7 +656,13 @@ class _SubmitFormState extends State<_SubmitForm> {
             controller: widget.refCtl,
             decoration: deco(
               uiStrings['misconceptionsFieldRefs']?[l] ?? 'References',
-              'Acts 13:9; Acts 22:28',
+              // Run through the app's own book-name mapping rather than
+              // hard-coded English. A Chinese reader typing into a
+              // Chinese form was being shown "Acts 13:9" as the model
+              // answer — reported 2026-08-11: "feedback里面提示acts
+              // 如果中文也要变吧". The example should be in the same
+              // language as the form asking for it.
+              localizedReferenceLabel('Acts 13:9; Acts 22:28', l),
             ),
           ),
           const SizedBox(height: 10),
