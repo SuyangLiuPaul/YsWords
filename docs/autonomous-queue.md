@@ -1097,9 +1097,9 @@ has never seen this repo.
         cdx/search/cdx?url=christiandiscipleschurch.org/content/
         124-messages&output=json`.
       - Retried 2026-08-10 (fourth and fifth iterations) and again
-        2026-08-11 (sixth) and 2026-08-12 (seventh through eleventh):
+        2026-08-11 (sixth) and 2026-08-12 (seventh through twelfth):
         still `connect=0.000000`, curl times out with no TCP connect.
-        Unchanged across eleven consecutive iterations, while cgdc.hk and
+        Unchanged across twelve consecutive iterations, while cgdc.hk and
         cahayapengharapan.org answered 200 in the same probe — so it is
         that host, not the probe. **Tell the user** — they can probably reach Bentley
         faster than the server will come back, and nothing else about
@@ -1228,22 +1228,40 @@ has never seen this repo.
          render `_dragValue ?? position` so the stream cannot overwrite
          a drag in progress. Needs the widget to be stateful.
 
-      2. **Choosing Accompaniment keeps playing the vocal until you tap
-         it a second time.** "我播放按了中间accom那个但是还在唱歌，按对一
-         次才有的". The chip shows selected while the audio has not
-         changed — state and sound disagree, which is worse than the
-         switch simply failing.
+      2. ~~**Choosing Accompaniment keeps playing the vocal until you
+         tap it a second time.**~~ **Two defects found and fixed
+         (v1.4.75); the report is only PARTLY explained — see the last
+         paragraph.** "我播放按了中间accom那个但是还在唱歌，按对一次才有的".
 
-         Start at `song_audio_handler.dart:278`: after
-         `SongQueue.withPreference` the handler compares the rebuilt
-         current URL with the old one and, if they match, republishes
-         WITHOUT reloading. That branch is the only way to end up with
-         the preference recorded and the old file still playing, so
-         either `withPreference` is not rewriting the CURRENT item on
-         the first call, or it falls back to vocal and the chip should
-         not have shown as selected. Read `SongQueue.withPreference`
-         first — its rules are unit-tested, so the truth is already
-         pinned somewhere.
+         **You were thrown back to track one.** The song you are
+         listening to usually has no accompaniment — 108 of 609 songs
+         publish one, 208 an instrumental, and both only on two of the
+         four sources — so `TrackFallback.skip` drops it, which is the
+         whole point of that fallback. `withPreference` then asked
+         `fromSongs` for the old song by id, and when it was not found
+         the index was left at its default of **0**. Asking for
+         accompaniment on song 300 of "all songs" restarted the queue at
+         song 1, and `setTrackPreference` carried the position across,
+         seeking that unrelated song to where you had been in the other.
+         Now the index is counted by POSITION (the survivors before you
+         are the ones before your replacement), so you go FORWARD to the
+         next song that has the mix, and the position carries across the
+         same song only.
+
+         **And on some queues the chip could not work at all.** CGDC and
+         Cahaya record neither alternate mix, so a queue filtered to them
+         offered an Accompaniment chip whose only effect was `no-tracks`
+         on the strip. `SongQueue.hasMix` answers that from the queue and
+         the picker now greys the chip out rather than taking the tap.
+
+         **What is still not explained is "还在唱歌".** Both defects above
+         change the audio (to the wrong song, or not at all); neither
+         leaves the sung take playing with the chip selected. If it
+         happens again, ask which source the song was from and whether
+         the title changed — the remaining suspect is `_playCurrent`
+         failing on a blocked host (fydt.org and CDC accept no connection
+         from that network, and they are the only two sources with
+         accompaniments) while the old audio keeps running.
 
       3. **The sleep timer needs a custom duration.** "sleep can you
          have customized time". Today it is a fixed 30-minute preset.
