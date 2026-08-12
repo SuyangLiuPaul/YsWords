@@ -1,22 +1,22 @@
 {
  "_meta": {
-  "generatedAt": "2026-08-09T20:59:17Z",
+  "generatedAt": "2026-08-11T18:53:10Z",
   "generator": "scripts/sync_songs.py v2",
-  "count": 606,
+  "count": 609,
   "bySource": {
    "cahaya": 47,
-   "cdc": 283,
+   "cdc": 286,
    "cgdc": 63,
    "fydt": 213
   },
   "byLanguage": {
    "id": 47,
-   "en": 122,
+   "en": 125,
    "zh": 437
   },
-  "withAudio": 584,
+  "withAudio": 587,
   "withVideo": 118,
-  "withScore": 579,
+  "withScore": 580,
   "withLyrics": 213,
   "sources": {
    "fydt": {
@@ -69,7 +69,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T20:59:17Z"
+   "updatedAt": "2026-08-11T18:53:10Z"
   },
   {
    "id": "cahaya:allah-kehidupanku",
@@ -101,7 +101,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T20:59:17Z"
+   "updatedAt": "2026-08-11T18:53:10Z"
   },
   {
    "id": "cahaya:bah-ruilah-tali-kasih-kami",
@@ -131,7 +131,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T20:59:17Z"
+   "updatedAt": "2026-08-11T18:53:10Z"
   },
   {
    "id": "cahaya:dengan-cara-mu",
@@ -159,7 +159,7 @@
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T20:59:17Z"
+   "updatedAt": "2026-08-11T18:53:10Z"
   },
   {
    "id": "cahaya:dengan-caramu",
@@ -187,7 +187,7 @@
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T20:59:17Z"
+   "updatedAt": "2026-08-11T18:53:10Z"
   },
   {
    "id": "cahaya:dunia-ini-bukan-rumahku",
@@ -215,7 +215,7 @@
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T20:59:17Z"
+   "updatedAt": "2026-08-11T18:53:10Z"
   },
   {
    "id": "cahaya:engkau-yang-maha",
@@ -243,7 +243,7 @@
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T20:59:17Z"
+   "updatedAt": "2026-08-11T18:53:10Z"
   },
   {
    "id": "cahaya:hadavar-yahweh",
@@ -273,7 +273,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T20:59:17Z"
+   "updatedAt": "2026-08-11T18:53:10Z"
   },
   {
    "id": "cahaya:haleluyah",
@@ -301,7 +301,7 @@
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T20:59:17Z"
+   "updatedAt": "2026-08-11T18:53:10Z"
   },
   {
    "id": "cahaya:hanya-kau-kekuatanku",
@@ -331,7 +331,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T20:59:17Z"
+   "updatedAt": "2026-08-11T18:53:10Z"
   },
   {
    "id": "cahaya:he-is-able",
@@ -359,7 +359,7 @@
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T20:59:17Z"
+   "updatedAt": "2026-08-11T18:53:10Z"
   },
   {
    "id": "cahaya:he-is-able-dia-sanggup",
@@ -387,7 +387,7 @@
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T20:59:17Z"
+   "updatedAt": "2026-08-11T18:53:10Z"
   },
   {
    "id": "cahaya:hiduku-t-lah-kau-ubahkan",
@@ -415,7 +415,7 @@
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T20:59:17Z"
+   "updatedAt": "2026-08-11T18:53:10Z"
   },
   {
    "id": "cahaya:hidup-dengan-rukun",
@@ -446,7 +446,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T20:59:17Z"
+   "updatedAt": "2026-08-11T18:53:10Z"
   },
   {
    "id": "cahaya:hikmat",
@@ -476,7 +476,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T20:59:17Z"
+   "updatedAt": "2026-08-11T18:53:10Z"
   },
   {
    "id": "cahaya:karena-kasih-allah",
@@ -507,7 +507,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T20:59:17Z"
+   "updatedAt": "2026-08-11T18:53:10Z"
   },
   {
    "id": "cahaya:kasih-allah",
@@ -538,7 +538,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T20:59:17Z"
+   "updatedAt": "2026-08-11T18:53:10Z"
   },
   {
    "id": "cahaya:kasih-kekal-selamanya",
@@ -568,7 +568,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T20:59:17Z"
+   "updatedAt": "2026-08-11T18:53:10Z"
   },
   {
    "id": "cahaya:kau-harapanku",
@@ -598,7 +598,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T20:59:17Z"
+   "updatedAt": "2026-08-11T18:53:10Z"
   },
   {
    "id": "cahaya:kau-membuatku-indah",
@@ -626,7 +626,7 @@
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T20:59:17Z"
+   "updatedAt": "2026-08-11T18:53:10Z"
   },
   {
    "id": "cahaya:ku-mau-memuja-mu",
@@ -656,7 +656,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T20:59:17Z"
+   "updatedAt": "2026-08-11T18:53:10Z"
   },
   {
    "id": "cahaya:kuasa-yahweh-jadi-sempurna",
@@ -687,7 +687,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T20:59:17Z"
+   "updatedAt": "2026-08-11T18:53:10Z"
   },
   {
    "id": "cahaya:k-hendak-yahweh-bagi-kita",
@@ -717,7 +717,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T20:59:17Z"
+   "updatedAt": "2026-08-11T18:53:10Z"
   },
   {
    "id": "cahaya:lagu-berkat",
@@ -745,7 +745,7 @@
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T20:59:17Z"
+   "updatedAt": "2026-08-11T18:53:10Z"
   },
   {
    "id": "cahaya:love-endures-until-the-end",
@@ -775,7 +775,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T20:59:17Z"
+   "updatedAt": "2026-08-11T18:53:10Z"
   },
   {
    "id": "cahaya:melawan-arus",
@@ -803,7 +803,7 @@
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T20:59:17Z"
+   "updatedAt": "2026-08-11T18:53:10Z"
   },
   {
    "id": "cahaya:memuja-menyembahmu",
@@ -833,7 +833,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T20:59:17Z"
+   "updatedAt": "2026-08-11T18:53:10Z"
   },
   {
    "id": "cahaya:mendekat-pada-yahweh",
@@ -863,7 +863,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T20:59:17Z"
+   "updatedAt": "2026-08-11T18:53:10Z"
   },
   {
    "id": "cahaya:mulia-bapa",
@@ -893,7 +893,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T20:59:17Z"
+   "updatedAt": "2026-08-11T18:53:10Z"
   },
   {
    "id": "cahaya:mulia-bapa-yahweh",
@@ -924,7 +924,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T20:59:17Z"
+   "updatedAt": "2026-08-11T18:53:10Z"
   },
   {
    "id": "cahaya:orang-yang-lemah-lembut-hidup-oleh-kuasa-roh-yahweh",
@@ -957,7 +957,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T20:59:17Z"
+   "updatedAt": "2026-08-11T18:53:10Z"
   },
   {
    "id": "cahaya:orang-yang-lemah-lembut-hidup-oleh-kuasa-yahweh",
@@ -989,7 +989,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T20:59:17Z"
+   "updatedAt": "2026-08-11T18:53:10Z"
   },
   {
    "id": "cahaya:pandang-mulianya-yahweh-bersinar",
@@ -1020,7 +1020,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T20:59:17Z"
+   "updatedAt": "2026-08-11T18:53:10Z"
   },
   {
    "id": "cahaya:pengharapan-yang-indah",
@@ -1050,7 +1050,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T20:59:17Z"
+   "updatedAt": "2026-08-11T18:53:10Z"
   },
   {
    "id": "cahaya:setiap-hari",
@@ -1078,7 +1078,7 @@
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T20:59:17Z"
+   "updatedAt": "2026-08-11T18:53:10Z"
   },
   {
    "id": "cahaya:sukacita-umat-yahweh",
@@ -1108,7 +1108,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T20:59:17Z"
+   "updatedAt": "2026-08-11T18:53:10Z"
   },
   {
    "id": "cahaya:s-luruh-bumi-penuh-pengenalan-akan-yahweh",
@@ -1138,7 +1138,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T20:59:17Z"
+   "updatedAt": "2026-08-11T18:53:10Z"
   },
   {
    "id": "cahaya:tak-berarti-tanpa-kasih",
@@ -1168,7 +1168,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T20:59:17Z"
+   "updatedAt": "2026-08-11T18:53:10Z"
   },
   {
    "id": "cahaya:tak-pernah-berhenti",
@@ -1196,7 +1196,7 @@
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T20:59:17Z"
+   "updatedAt": "2026-08-11T18:53:10Z"
   },
   {
    "id": "cahaya:tak-satupun",
@@ -1224,7 +1224,7 @@
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T20:59:17Z"
+   "updatedAt": "2026-08-11T18:53:10Z"
   },
   {
    "id": "cahaya:tanpamu-segala-tak-berarti",
@@ -1252,7 +1252,7 @@
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T20:59:17Z"
+   "updatedAt": "2026-08-11T18:53:10Z"
   },
   {
    "id": "cahaya:the-only-true-god",
@@ -1280,7 +1280,7 @@
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T20:59:17Z"
+   "updatedAt": "2026-08-11T18:53:10Z"
   },
   {
    "id": "cahaya:tujuanku-adalah-yahweh",
@@ -1310,7 +1310,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T20:59:17Z"
+   "updatedAt": "2026-08-11T18:53:10Z"
   },
   {
    "id": "cahaya:untukmu",
@@ -1338,7 +1338,7 @@
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T20:59:17Z"
+   "updatedAt": "2026-08-11T18:53:10Z"
   },
   {
    "id": "cahaya:yahweh-allahku-hanya-kau",
@@ -1368,7 +1368,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T20:59:17Z"
+   "updatedAt": "2026-08-11T18:53:10Z"
   },
   {
    "id": "cahaya:yahweh-yang-kekal",
@@ -1398,7 +1398,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T20:59:17Z"
+   "updatedAt": "2026-08-11T18:53:10Z"
   },
   {
    "id": "cahaya:z-hu-hikmat",
@@ -1428,7 +1428,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T20:59:17Z"
+   "updatedAt": "2026-08-11T18:53:10Z"
   },
   {
    "id": "cdc:d0180",
@@ -1925,6 +1925,42 @@
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
    "updatedAt": "2026-08-09T10:53:53Z"
+  },
+  {
+   "id": "cdc:h02",
+   "title": "Christ the Lord is Risen Today",
+   "language": "en",
+   "source": "cdc",
+   "sourceLabel": "Christian Disciples Church",
+   "code": "H02",
+   "url": "https://www.christiandiscipleschurch.org/content/h02",
+   "album": "Classic Piano Hymns",
+   "artist": null,
+   "composer": null,
+   "lyricist": null,
+   "durationSec": null,
+   "audioUrl": "https://www.christiandiscipleschurch.org/sites/default/files/hymns/mp3/Christ_the_Lord_is_Risen_Today.mp3",
+   "instrumentalUrl": null,
+   "accompanimentUrl": null,
+   "audioTracks": [
+    {
+     "url": "https://www.christiandiscipleschurch.org/sites/default/files/hymns/mp3/Christ_the_Lord_is_Risen_Today.mp3",
+     "kind": "vocal",
+     "lang": "en"
+    }
+   ],
+   "videoUrl": null,
+   "youtubeId": null,
+   "soundcloudTrackId": null,
+   "scoreUrl": null,
+   "artworkUrl": null,
+   "lyrics": null,
+   "themes": [
+    "神的名"
+   ],
+   "verse": null,
+   "firstSeenAt": "2026-08-11T18:53:10Z",
+   "updatedAt": "2026-08-11T18:53:10Z"
   },
   {
    "id": "cdc:d0186",
@@ -3092,6 +3128,40 @@
    "updatedAt": "2026-08-09T10:53:53Z"
   },
   {
+   "id": "cdc:h01",
+   "title": "I Sing the Mighty Power of God",
+   "language": "en",
+   "source": "cdc",
+   "sourceLabel": "Christian Disciples Church",
+   "code": "H01",
+   "url": "https://www.christiandiscipleschurch.org/content/h01",
+   "album": "Classic Piano Hymns",
+   "artist": null,
+   "composer": null,
+   "lyricist": null,
+   "durationSec": null,
+   "audioUrl": "https://www.christiandiscipleschurch.org/sites/default/files/hymns/mp3/I_Sing_the_Mighty_Power_of_God.mp3",
+   "instrumentalUrl": null,
+   "accompanimentUrl": null,
+   "audioTracks": [
+    {
+     "url": "https://www.christiandiscipleschurch.org/sites/default/files/hymns/mp3/I_Sing_the_Mighty_Power_of_God.mp3",
+     "kind": "vocal",
+     "lang": "en"
+    }
+   ],
+   "videoUrl": null,
+   "youtubeId": null,
+   "soundcloudTrackId": null,
+   "scoreUrl": null,
+   "artworkUrl": null,
+   "lyrics": null,
+   "themes": [],
+   "verse": null,
+   "firstSeenAt": "2026-08-11T18:53:10Z",
+   "updatedAt": "2026-08-11T18:53:10Z"
+  },
+  {
    "id": "cdc:d0178",
    "title": "I Want a Principle",
    "language": "en",
@@ -3568,6 +3638,40 @@
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
    "updatedAt": "2026-08-09T10:53:53Z"
+  },
+  {
+   "id": "cdc:h03",
+   "title": "Like a River Glorious",
+   "language": "en",
+   "source": "cdc",
+   "sourceLabel": "Christian Disciples Church",
+   "code": "H03",
+   "url": "https://www.christiandiscipleschurch.org/content/h03",
+   "album": "Classic Piano Hymns",
+   "artist": null,
+   "composer": null,
+   "lyricist": null,
+   "durationSec": null,
+   "audioUrl": "https://www.christiandiscipleschurch.org/sites/default/files/hymns/mp3/Like_a_River_Glorious.mp3",
+   "instrumentalUrl": null,
+   "accompanimentUrl": null,
+   "audioTracks": [
+    {
+     "url": "https://www.christiandiscipleschurch.org/sites/default/files/hymns/mp3/Like_a_River_Glorious.mp3",
+     "kind": "vocal",
+     "lang": "en"
+    }
+   ],
+   "videoUrl": null,
+   "youtubeId": null,
+   "soundcloudTrackId": null,
+   "scoreUrl": null,
+   "artworkUrl": null,
+   "lyrics": null,
+   "themes": [],
+   "verse": null,
+   "firstSeenAt": "2026-08-11T18:53:10Z",
+   "updatedAt": "2026-08-11T18:53:10Z"
   },
   {
    "id": "cdc:d0156",
@@ -12363,14 +12467,14 @@
    "youtubeId": null,
    "soundcloudTrackId": null,
    "scoreUrl": "https://cgdc.hk/wp-content/uploads/2026/05/2026-03-Ask-%E7%A5%88%E6%B1%82.pdf",
-   "artworkUrl": null,
+   "artworkUrl": "https://cgdc.hk/wp-content/uploads/2026/05/Sail-logo.png",
    "lyrics": null,
    "themes": [
     "祷告"
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-09T20:59:17Z"
+   "updatedAt": "2026-08-11T18:53:10Z"
   },
   {
    "id": "cgdc:2026-04",
@@ -12399,12 +12503,12 @@
    "youtubeId": null,
    "soundcloudTrackId": null,
    "scoreUrl": "https://cgdc.hk/wp-content/uploads/2026/05/2026-04-Increase-%E5%BC%80%E5%B1%95.pdf",
-   "artworkUrl": null,
+   "artworkUrl": "https://cgdc.hk/wp-content/uploads/2026/05/Sail-logo.png",
    "lyrics": null,
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-09T20:59:17Z"
+   "updatedAt": "2026-08-11T18:53:10Z"
   },
   {
    "id": "cgdc:2026-05",
@@ -12433,12 +12537,12 @@
    "youtubeId": null,
    "soundcloudTrackId": null,
    "scoreUrl": "https://cgdc.hk/wp-content/uploads/2026/05/2026-05-Learn-%E8%B0%A6%E5%8D%91%E6%95%88%E6%B3%95.pdf",
-   "artworkUrl": null,
+   "artworkUrl": "https://cgdc.hk/wp-content/uploads/2026/05/Sail-logo.png",
    "lyrics": null,
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-09T20:59:17Z"
+   "updatedAt": "2026-08-11T18:53:10Z"
   },
   {
    "id": "cgdc:2026-01",
@@ -12467,12 +12571,12 @@
    "youtubeId": null,
    "soundcloudTrackId": null,
    "scoreUrl": "https://cgdc.hk/wp-content/uploads/2026/05/2026-01-Sail-%E4%B9%98%E9%A3%8E%E7%A0%B4%E6%B5%AA.pdf",
-   "artworkUrl": null,
+   "artworkUrl": "https://cgdc.hk/wp-content/uploads/2026/05/Sail-logo.png",
    "lyrics": null,
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-09T20:59:17Z"
+   "updatedAt": "2026-08-11T18:53:10Z"
   },
   {
    "id": "cgdc:2026-02",
@@ -12501,12 +12605,12 @@
    "youtubeId": null,
    "soundcloudTrackId": null,
    "scoreUrl": "https://cgdc.hk/wp-content/uploads/2026/05/2026-02-Simple-%E5%AF%B9%E7%A5%9E%E7%BA%AF%E4%B8%80.pdf",
-   "artworkUrl": null,
+   "artworkUrl": "https://cgdc.hk/wp-content/uploads/2026/05/Sail-logo.png",
    "lyrics": null,
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-09T20:59:17Z"
+   "updatedAt": "2026-08-11T18:53:10Z"
   },
   {
    "id": "cgdc:2023-13",
@@ -12535,12 +12639,12 @@
    "youtubeId": null,
    "soundcloudTrackId": null,
    "scoreUrl": "https://cgdc.hk/wp-content/uploads/2026/06/2023-14-%E9%85%8D%E5%BE%97.pdf",
-   "artworkUrl": null,
+   "artworkUrl": "https://cgdc.hk/wp-content/uploads/2026/06/EC2023-fruitfulness_weblogo.jpg",
    "lyrics": null,
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-09T20:59:17Z"
+   "updatedAt": "2026-08-11T18:53:10Z"
   },
   {
    "id": "cgdc:2025-14",
@@ -12569,12 +12673,12 @@
    "youtubeId": null,
    "soundcloudTrackId": null,
    "scoreUrl": "https://cgdc.hk/wp-content/uploads/2026/05/2025-13-%E4%BD%A0%E7%9A%84%E6%84%8F%E5%BF%B5%EF%BC%8C%E4%BD%A0%E7%9A%84%E9%81%93%E8%B7%AF-2025-04-09.pdf",
-   "artworkUrl": null,
+   "artworkUrl": "https://cgdc.hk/wp-content/uploads/2026/05/2025nearer_mkcgdclogo.png",
    "lyrics": null,
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-09T20:59:17Z"
+   "updatedAt": "2026-08-11T18:53:10Z"
   },
   {
    "id": "cgdc:2025-01",
@@ -12603,12 +12707,12 @@
    "youtubeId": null,
    "soundcloudTrackId": null,
    "scoreUrl": "https://cgdc.hk/wp-content/uploads/2026/05/2025-01-%E6%9B%B4%E4%BA%B2%E8%BF%91-2025-04-09.pdf",
-   "artworkUrl": null,
+   "artworkUrl": "https://cgdc.hk/wp-content/uploads/2026/05/2025nearer_mkcgdclogo.png",
    "lyrics": null,
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-09T20:59:17Z"
+   "updatedAt": "2026-08-11T18:53:10Z"
   },
   {
    "id": "cgdc:2025-15",
@@ -12637,12 +12741,12 @@
    "youtubeId": null,
    "soundcloudTrackId": null,
    "scoreUrl": "https://cgdc.hk/wp-content/uploads/2026/05/2025-13-%E4%BD%A0%E7%9A%84%E6%84%8F%E5%BF%B5%EF%BC%8C%E4%BD%A0%E7%9A%84%E9%81%93%E8%B7%AF-2025-04-09.pdf",
-   "artworkUrl": null,
+   "artworkUrl": "https://cgdc.hk/wp-content/uploads/2026/05/2025nearer_mkcgdclogo.png",
    "lyrics": null,
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-09T20:59:17Z"
+   "updatedAt": "2026-08-11T18:53:10Z"
   },
   {
    "id": "cgdc:2025-02",
@@ -12671,12 +12775,12 @@
    "youtubeId": null,
    "soundcloudTrackId": null,
    "scoreUrl": "https://cgdc.hk/wp-content/uploads/2026/05/2025-01-%E6%9B%B4%E4%BA%B2%E8%BF%91-2025-04-09.pdf",
-   "artworkUrl": null,
+   "artworkUrl": "https://cgdc.hk/wp-content/uploads/2026/05/2025nearer_mkcgdclogo.png",
    "lyrics": null,
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-09T20:59:17Z"
+   "updatedAt": "2026-08-11T18:53:10Z"
   },
   {
    "id": "cgdc:2023-03",
@@ -12705,12 +12809,12 @@
    "youtubeId": null,
    "soundcloudTrackId": null,
    "scoreUrl": "https://cgdc.hk/wp-content/uploads/2026/06/2023-04-%E4%B8%BA%E4%B8%96%E4%BB%A3%E5%93%80%E6%81%B8.pdf",
-   "artworkUrl": null,
+   "artworkUrl": "https://cgdc.hk/wp-content/uploads/2026/06/EC2023-fruitfulness_weblogo.jpg",
    "lyrics": null,
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-09T20:59:17Z"
+   "updatedAt": "2026-08-11T18:53:10Z"
   },
   {
    "id": "cgdc:2024-16",
@@ -12739,14 +12843,14 @@
    "youtubeId": null,
    "soundcloudTrackId": null,
    "scoreUrl": "https://cgdc.hk/wp-content/uploads/2026/05/2024-16-%E4%BA%89%E6%88%98.pdf",
-   "artworkUrl": null,
+   "artworkUrl": "https://cgdc.hk/wp-content/uploads/2026/05/2024BraveryLogo.png",
    "lyrics": null,
    "themes": [
     "得胜"
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-09T20:59:17Z"
+   "updatedAt": "2026-08-11T18:53:10Z"
   },
   {
    "id": "cgdc:2023-06",
@@ -12775,14 +12879,14 @@
    "youtubeId": null,
    "soundcloudTrackId": null,
    "scoreUrl": "https://cgdc.hk/wp-content/uploads/2026/06/2023-07-%E4%BC%A0%E7%88%B1.pdf",
-   "artworkUrl": null,
+   "artworkUrl": "https://cgdc.hk/wp-content/uploads/2026/06/EC2023-fruitfulness_weblogo.jpg",
    "lyrics": null,
    "themes": [
     "爱"
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-09T20:59:17Z"
+   "updatedAt": "2026-08-11T18:53:10Z"
   },
   {
    "id": "cgdc:2026-13",
@@ -12811,12 +12915,12 @@
    "youtubeId": null,
    "soundcloudTrackId": null,
    "scoreUrl": "https://cgdc.hk/wp-content/uploads/2026/05/2026-13-%E4%BD%9C%E4%BD%A0%E8%89%AF%E5%96%84%E5%BF%A0%E5%83%95.pdf",
-   "artworkUrl": null,
+   "artworkUrl": "https://cgdc.hk/wp-content/uploads/2026/05/Sail-logo.png",
    "lyrics": null,
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-09T20:59:17Z"
+   "updatedAt": "2026-08-11T18:53:10Z"
   },
   {
    "id": "cgdc:2026-12",
@@ -12845,7 +12949,7 @@
    "youtubeId": null,
    "soundcloudTrackId": null,
    "scoreUrl": "https://cgdc.hk/wp-content/uploads/2026/05/2026-12-%E4%BD%BF%E4%B8%87%E6%B0%91%E5%81%9A%E8%80%B6%E7%A8%A3%E7%9A%84%E9%97%A8%E5%BE%92.pdf",
-   "artworkUrl": null,
+   "artworkUrl": "https://cgdc.hk/wp-content/uploads/2026/05/Sail-logo.png",
    "lyrics": null,
    "themes": [
     "见证",
@@ -12853,7 +12957,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-09T20:59:17Z"
+   "updatedAt": "2026-08-11T18:53:10Z"
   },
   {
    "id": "cgdc:2024-12",
@@ -12882,14 +12986,14 @@
    "youtubeId": null,
    "soundcloudTrackId": null,
    "scoreUrl": "https://cgdc.hk/wp-content/uploads/2026/05/2024-12-%E4%BF%A1%E9%9D%A0%E4%B8%AD%E5%BE%97%E5%8A%9B.pdf",
-   "artworkUrl": null,
+   "artworkUrl": "https://cgdc.hk/wp-content/uploads/2026/05/2024BraveryLogo.png",
    "lyrics": null,
    "themes": [
     "信心"
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-09T20:59:17Z"
+   "updatedAt": "2026-08-11T18:53:10Z"
   },
   {
    "id": "cgdc:2026-09",
@@ -12918,14 +13022,14 @@
    "youtubeId": null,
    "soundcloudTrackId": null,
    "scoreUrl": "https://cgdc.hk/wp-content/uploads/2026/05/2026-09-%E5%8B%87%E6%95%A2%E5%AE%A3%E6%89%AC.pdf",
-   "artworkUrl": null,
+   "artworkUrl": "https://cgdc.hk/wp-content/uploads/2026/05/Sail-logo.png",
    "lyrics": null,
    "themes": [
     "见证"
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-09T20:59:17Z"
+   "updatedAt": "2026-08-11T18:53:10Z"
   },
   {
    "id": "cgdc:2024-03",
@@ -12954,7 +13058,7 @@
    "youtubeId": null,
    "soundcloudTrackId": null,
    "scoreUrl": "https://cgdc.hk/wp-content/uploads/2026/05/2024-03-%E5%90%8C%E5%BF%83%E4%B9%90%E6%84%8F.pdf",
-   "artworkUrl": null,
+   "artworkUrl": "https://cgdc.hk/wp-content/uploads/2026/05/2024BraveryLogo.png",
    "lyrics": null,
    "themes": [
     "心",
@@ -12962,7 +13066,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-09T20:59:17Z"
+   "updatedAt": "2026-08-11T18:53:10Z"
   },
   {
    "id": "cgdc:2025-10",
@@ -12991,12 +13095,12 @@
    "youtubeId": null,
    "soundcloudTrackId": null,
    "scoreUrl": "https://cgdc.hk/wp-content/uploads/2026/05/2025-09-%E5%9C%A8%E9%9B%85%E4%BC%9F%E8%8D%A3%E5%85%89%E4%B8%AD-2025-04-09.pdf",
-   "artworkUrl": null,
+   "artworkUrl": "https://cgdc.hk/wp-content/uploads/2026/05/2025nearer_mkcgdclogo.png",
    "lyrics": null,
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-09T20:59:17Z"
+   "updatedAt": "2026-08-11T18:53:10Z"
   },
   {
    "id": "cgdc:2023-01",
@@ -13025,12 +13129,12 @@
    "youtubeId": null,
    "soundcloudTrackId": null,
    "scoreUrl": "https://cgdc.hk/wp-content/uploads/2026/06/2023-02-%E5%A4%9A%E7%BB%93%E6%9E%9C%E5%AD%90.pdf",
-   "artworkUrl": null,
+   "artworkUrl": "https://cgdc.hk/wp-content/uploads/2026/06/EC2023-fruitfulness_weblogo.jpg",
    "lyrics": null,
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-09T20:59:17Z"
+   "updatedAt": "2026-08-11T18:53:10Z"
   },
   {
    "id": "cgdc:2025-04",
@@ -13059,12 +13163,12 @@
    "youtubeId": null,
    "soundcloudTrackId": null,
    "scoreUrl": "https://cgdc.hk/wp-content/uploads/2026/05/2025-03-%E5%A5%87%E5%A6%99%E5%B8%B6%E9%A0%98-2025-04-09.pdf",
-   "artworkUrl": null,
+   "artworkUrl": "https://cgdc.hk/wp-content/uploads/2026/05/2025nearer_mkcgdclogo.png",
    "lyrics": null,
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-09T20:59:17Z"
+   "updatedAt": "2026-08-11T18:53:10Z"
   },
   {
    "id": "cgdc:2024-04",
@@ -13093,12 +13197,12 @@
    "youtubeId": null,
    "soundcloudTrackId": null,
    "scoreUrl": "https://cgdc.hk/wp-content/uploads/2026/05/2024-04-%E5%A5%8B%E5%8B%87%E5%88%9A%E5%BC%BA.pdf",
-   "artworkUrl": null,
+   "artworkUrl": "https://cgdc.hk/wp-content/uploads/2026/05/2024BraveryLogo.png",
    "lyrics": null,
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-09T20:59:17Z"
+   "updatedAt": "2026-08-11T18:53:10Z"
   },
   {
    "id": "cgdc:2024-13",
@@ -13127,14 +13231,14 @@
    "youtubeId": null,
    "soundcloudTrackId": null,
    "scoreUrl": "https://cgdc.hk/wp-content/uploads/2026/05/2024-13-%E5%A5%94%E8%B7%91%E5%90%8C%E5%BE%97%E8%83%9C-Run-to-Win.pdf",
-   "artworkUrl": null,
+   "artworkUrl": "https://cgdc.hk/wp-content/uploads/2026/05/2024BraveryLogo.png",
    "lyrics": null,
    "themes": [
     "得胜"
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-09T20:59:17Z"
+   "updatedAt": "2026-08-11T18:53:10Z"
   },
   {
    "id": "cgdc:2024-09",
@@ -13163,12 +13267,12 @@
    "youtubeId": null,
    "soundcloudTrackId": null,
    "scoreUrl": "https://cgdc.hk/wp-content/uploads/2026/05/2024-09-%E5%A5%96%E8%B5%8F.pdf",
-   "artworkUrl": null,
+   "artworkUrl": "https://cgdc.hk/wp-content/uploads/2026/05/2024BraveryLogo.png",
    "lyrics": null,
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-09T20:59:17Z"
+   "updatedAt": "2026-08-11T18:53:10Z"
   },
   {
    "id": "cgdc:2026-06",
@@ -13197,12 +13301,12 @@
    "youtubeId": null,
    "soundcloudTrackId": null,
    "scoreUrl": "https://cgdc.hk/wp-content/uploads/2026/05/2026-06-%E5%BA%84%E7%A8%BC%E5%B0%86%E5%8F%AF%E6%94%B6%E5%89%B2.pdf",
-   "artworkUrl": null,
+   "artworkUrl": "https://cgdc.hk/wp-content/uploads/2026/05/Sail-logo.png",
    "lyrics": null,
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-09T20:59:17Z"
+   "updatedAt": "2026-08-11T18:53:10Z"
   },
   {
    "id": "cgdc:2024-01",
@@ -13231,12 +13335,12 @@
    "youtubeId": null,
    "soundcloudTrackId": null,
    "scoreUrl": "https://cgdc.hk/wp-content/uploads/2026/05/2024-01-%E5%BD%93%E5%88%9A%E5%BC%BA%E9%9D%9E%E5%B8%B8%E5%A3%AE%E8%83%86.pdf",
-   "artworkUrl": null,
+   "artworkUrl": "https://cgdc.hk/wp-content/uploads/2026/05/2024BraveryLogo.png",
    "lyrics": null,
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-09T20:59:17Z"
+   "updatedAt": "2026-08-11T18:53:10Z"
   },
   {
    "id": "cgdc:2025-09",
@@ -13265,12 +13369,12 @@
    "youtubeId": null,
    "soundcloudTrackId": null,
    "scoreUrl": "https://cgdc.hk/wp-content/uploads/2026/05/2025-08-%E5%BD%BC%E6%AD%A4%E5%BB%BA%E7%AB%8B-Edify-2025-04-06.pdf",
-   "artworkUrl": null,
+   "artworkUrl": "https://cgdc.hk/wp-content/uploads/2026/05/2025nearer_mkcgdclogo.png",
    "lyrics": null,
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-09T20:59:17Z"
+   "updatedAt": "2026-08-11T18:53:10Z"
   },
   {
    "id": "cgdc:2025-08",
@@ -13299,12 +13403,12 @@
    "youtubeId": null,
    "soundcloudTrackId": null,
    "scoreUrl": "https://cgdc.hk/wp-content/uploads/2026/05/2025-07-%E4%BB%8E%E7%A5%9E%E6%9D%A5%E7%9A%84%E7%88%B12025-04-09.pdf",
-   "artworkUrl": null,
+   "artworkUrl": "https://cgdc.hk/wp-content/uploads/2026/05/2025nearer_mkcgdclogo.png",
    "lyrics": null,
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-09T20:59:17Z"
+   "updatedAt": "2026-08-11T18:53:10Z"
   },
   {
    "id": "cgdc:2024-08",
@@ -13333,7 +13437,7 @@
    "youtubeId": null,
    "soundcloudTrackId": null,
    "scoreUrl": "https://cgdc.hk/wp-content/uploads/2026/05/2024-08-%E6%88%91%E5%BF%83%E7%A7%B0%E9%A2%82%E9%9B%85%E4%BC%9F.pdf",
-   "artworkUrl": null,
+   "artworkUrl": "https://cgdc.hk/wp-content/uploads/2026/05/2024BraveryLogo.png",
    "lyrics": null,
    "themes": [
     "心",
@@ -13342,7 +13446,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-09T20:59:17Z"
+   "updatedAt": "2026-08-11T18:53:10Z"
   },
   {
    "id": "cgdc:2026-14",
@@ -13371,14 +13475,14 @@
    "youtubeId": null,
    "soundcloudTrackId": null,
    "scoreUrl": "https://cgdc.hk/wp-content/uploads/2026/05/2026-14-%E6%88%91%E8%A6%81%E7%A7%B0%E8%B0%A2%E4%BD%A0.pdf",
-   "artworkUrl": null,
+   "artworkUrl": "https://cgdc.hk/wp-content/uploads/2026/05/Sail-logo.png",
    "lyrics": null,
    "themes": [
     "感恩"
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-09T20:59:17Z"
+   "updatedAt": "2026-08-11T18:53:10Z"
   },
   {
    "id": "cgdc:2024-06",
@@ -13407,12 +13511,12 @@
    "youtubeId": null,
    "soundcloudTrackId": null,
    "scoreUrl": "https://cgdc.hk/wp-content/uploads/2026/05/2024-06-%E6%8A%AC%E8%B5%B7%E5%A4%B4%E6%9D%A5.pdf",
-   "artworkUrl": null,
+   "artworkUrl": "https://cgdc.hk/wp-content/uploads/2026/05/2024BraveryLogo.png",
    "lyrics": null,
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-09T20:59:17Z"
+   "updatedAt": "2026-08-11T18:53:10Z"
   },
   {
    "id": "cgdc:2025-16",
@@ -13441,12 +13545,12 @@
    "youtubeId": null,
    "soundcloudTrackId": null,
    "scoreUrl": "https://cgdc.hk/wp-content/uploads/2026/05/2025-14-%E6%8A%B5%E6%93%8B-2025-04-09.pdf",
-   "artworkUrl": null,
+   "artworkUrl": "https://cgdc.hk/wp-content/uploads/2026/05/2025nearer_mkcgdclogo.png",
    "lyrics": null,
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-09T20:59:17Z"
+   "updatedAt": "2026-08-11T18:53:10Z"
   },
   {
    "id": "cgdc:2025-07",
@@ -13475,12 +13579,12 @@
    "youtubeId": null,
    "soundcloudTrackId": null,
    "scoreUrl": "https://cgdc.hk/wp-content/uploads/2026/05/2025-06-%E6%92%92%E7%A7%8D-2025-04-09.pdf",
-   "artworkUrl": null,
+   "artworkUrl": "https://cgdc.hk/wp-content/uploads/2026/05/2025nearer_mkcgdclogo.png",
    "lyrics": null,
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-09T20:59:17Z"
+   "updatedAt": "2026-08-11T18:53:10Z"
   },
   {
    "id": "cgdc:2024-17",
@@ -13509,12 +13613,12 @@
    "youtubeId": null,
    "soundcloudTrackId": null,
    "scoreUrl": "https://cgdc.hk/wp-content/uploads/2026/05/2024-17-%E6%94%BB%E5%85%8B%E5%B7%B1%E8%BA%AB.pdf",
-   "artworkUrl": null,
+   "artworkUrl": "https://cgdc.hk/wp-content/uploads/2026/05/2024BraveryLogo.png",
    "lyrics": null,
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-09T20:59:17Z"
+   "updatedAt": "2026-08-11T18:53:10Z"
   },
   {
    "id": "cgdc:2023-02",
@@ -13543,14 +13647,14 @@
    "youtubeId": null,
    "soundcloudTrackId": null,
    "scoreUrl": "https://cgdc.hk/wp-content/uploads/2026/06/2023-03-%E6%95%AC%E7%95%8F%E9%9B%85%E4%BC%9F.pdf",
-   "artworkUrl": null,
+   "artworkUrl": "https://cgdc.hk/wp-content/uploads/2026/06/EC2023-fruitfulness_weblogo.jpg",
    "lyrics": null,
    "themes": [
     "神的名"
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-09T20:59:17Z"
+   "updatedAt": "2026-08-11T18:53:10Z"
   },
   {
    "id": "cgdc:2023-12",
@@ -13579,14 +13683,14 @@
    "youtubeId": null,
    "soundcloudTrackId": null,
    "scoreUrl": "https://cgdc.hk/wp-content/uploads/2026/06/2023-13-%E6%96%B0%E5%A4%A9%E6%96%B0%E5%9C%B0.pdf",
-   "artworkUrl": null,
+   "artworkUrl": "https://cgdc.hk/wp-content/uploads/2026/06/EC2023-fruitfulness_weblogo.jpg",
    "lyrics": null,
    "themes": [
     "重生"
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-09T20:59:17Z"
+   "updatedAt": "2026-08-11T18:53:10Z"
   },
   {
    "id": "cgdc:2023-09",
@@ -13615,14 +13719,14 @@
    "youtubeId": null,
    "soundcloudTrackId": null,
    "scoreUrl": "https://cgdc.hk/wp-content/uploads/2026/06/2023-10-%E6%99%A8%E6%98%9F%E5%9C%A8%E5%BF%83%E4%B8%AD.pdf",
-   "artworkUrl": null,
+   "artworkUrl": "https://cgdc.hk/wp-content/uploads/2026/06/EC2023-fruitfulness_weblogo.jpg",
    "lyrics": null,
    "themes": [
     "心"
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-09T20:59:17Z"
+   "updatedAt": "2026-08-11T18:53:10Z"
   },
   {
    "id": "cgdc:2025-17",
@@ -13651,14 +13755,14 @@
    "youtubeId": null,
    "soundcloudTrackId": null,
    "scoreUrl": "https://cgdc.hk/wp-content/uploads/2026/05/2025-15-%E6%9B%B4%E6%96%B0%E6%94%B9%E5%8F%98-2025-04-09.pdf",
-   "artworkUrl": null,
+   "artworkUrl": "https://cgdc.hk/wp-content/uploads/2026/05/2025nearer_mkcgdclogo.png",
    "lyrics": null,
    "themes": [
     "重生"
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-09T20:59:17Z"
+   "updatedAt": "2026-08-11T18:53:10Z"
   },
   {
    "id": "cgdc:2025-13",
@@ -13687,12 +13791,12 @@
    "youtubeId": null,
    "soundcloudTrackId": null,
    "scoreUrl": "https://cgdc.hk/wp-content/uploads/2026/05/2025-12-%E6%9C%8D%E4%BA%8B-2025-04-09.pdf",
-   "artworkUrl": null,
+   "artworkUrl": "https://cgdc.hk/wp-content/uploads/2026/05/2025nearer_mkcgdclogo.png",
    "lyrics": null,
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-09T20:59:17Z"
+   "updatedAt": "2026-08-11T18:53:10Z"
   },
   {
    "id": "cgdc:2026-11",
@@ -13721,12 +13825,12 @@
    "youtubeId": null,
    "soundcloudTrackId": null,
    "scoreUrl": "https://cgdc.hk/wp-content/uploads/2026/05/2026-11-%E6%9F%94%E5%92%8C%E8%B0%A6%E5%8D%91.pdf",
-   "artworkUrl": null,
+   "artworkUrl": "https://cgdc.hk/wp-content/uploads/2026/05/Sail-logo.png",
    "lyrics": null,
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-09T20:59:17Z"
+   "updatedAt": "2026-08-11T18:53:10Z"
   },
   {
    "id": "cgdc:2025-06",
@@ -13755,14 +13859,14 @@
    "youtubeId": null,
    "soundcloudTrackId": null,
    "scoreUrl": "https://cgdc.hk/wp-content/uploads/2026/05/2025-05-%E6%AF%8F%E6%97%A9%E6%99%A8%EF%BC%8C%E8%BF%99%E9%83%BD%E6%98%AF%E6%96%B0%E7%9A%84-2025-03-27.pdf",
-   "artworkUrl": null,
+   "artworkUrl": "https://cgdc.hk/wp-content/uploads/2026/05/2025nearer_mkcgdclogo.png",
    "lyrics": null,
    "themes": [
     "重生"
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-09T20:59:17Z"
+   "updatedAt": "2026-08-11T18:53:10Z"
   },
   {
    "id": "cgdc:2023-14",
@@ -13791,14 +13895,14 @@
    "youtubeId": null,
    "soundcloudTrackId": null,
    "scoreUrl": "https://cgdc.hk/wp-content/uploads/2026/06/2023-15-%E6%B1%82%E4%BD%A0%E7%82%BC%E5%87%80.pdf",
-   "artworkUrl": null,
+   "artworkUrl": "https://cgdc.hk/wp-content/uploads/2026/06/EC2023-fruitfulness_weblogo.jpg",
    "lyrics": null,
    "themes": [
     "祷告"
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-09T20:59:17Z"
+   "updatedAt": "2026-08-11T18:53:10Z"
   },
   {
    "id": "cgdc:2024-14",
@@ -13827,14 +13931,14 @@
    "youtubeId": null,
    "soundcloudTrackId": null,
    "scoreUrl": "https://cgdc.hk/wp-content/uploads/2026/05/2024-14-%E7%88%B1%E5%88%B0%E5%BA%95.pdf",
-   "artworkUrl": null,
+   "artworkUrl": "https://cgdc.hk/wp-content/uploads/2026/05/2024BraveryLogo.png",
    "lyrics": null,
    "themes": [
     "爱"
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-09T20:59:17Z"
+   "updatedAt": "2026-08-11T18:53:10Z"
   },
   {
    "id": "cgdc:2024-11",
@@ -13863,12 +13967,12 @@
    "youtubeId": null,
    "soundcloudTrackId": null,
    "scoreUrl": "https://cgdc.hk/wp-content/uploads/2026/05/2024-11-%E7%95%99%E4%B8%8B%E5%8D%B0%E8%AE%B0.pdf",
-   "artworkUrl": null,
+   "artworkUrl": "https://cgdc.hk/wp-content/uploads/2026/05/2024BraveryLogo.png",
    "lyrics": null,
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-09T20:59:17Z"
+   "updatedAt": "2026-08-11T18:53:10Z"
   },
   {
    "id": "cgdc:2025-12",
@@ -13897,12 +14001,12 @@
    "youtubeId": null,
    "soundcloudTrackId": null,
    "scoreUrl": "https://cgdc.hk/wp-content/uploads/2026/05/2025-11-%E5%BC%82%E8%B1%A1%E4%B8%AD%E5%90%8C%E8%A1%8C2025-03-27.pdf",
-   "artworkUrl": null,
+   "artworkUrl": "https://cgdc.hk/wp-content/uploads/2026/05/2025nearer_mkcgdclogo.png",
    "lyrics": null,
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-09T20:59:17Z"
+   "updatedAt": "2026-08-11T18:53:10Z"
   },
   {
    "id": "cgdc:2024-15",
@@ -13931,12 +14035,12 @@
    "youtubeId": null,
    "soundcloudTrackId": null,
    "scoreUrl": "https://cgdc.hk/wp-content/uploads/2026/05/2024-15-%E7%9C%8B%E8%A7%81.pdf",
-   "artworkUrl": null,
+   "artworkUrl": "https://cgdc.hk/wp-content/uploads/2026/05/2024BraveryLogo.png",
    "lyrics": null,
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-09T20:59:17Z"
+   "updatedAt": "2026-08-11T18:53:10Z"
   },
   {
    "id": "cgdc:2024-05",
@@ -13965,12 +14069,12 @@
    "youtubeId": null,
    "soundcloudTrackId": null,
    "scoreUrl": "https://cgdc.hk/wp-content/uploads/2026/05/2024-05-%E8%87%AA%E7%94%B1.pdf",
-   "artworkUrl": null,
+   "artworkUrl": "https://cgdc.hk/wp-content/uploads/2026/05/2024BraveryLogo.png",
    "lyrics": null,
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-09T20:59:17Z"
+   "updatedAt": "2026-08-11T18:53:10Z"
   },
   {
    "id": "cgdc:2026-08",
@@ -13999,12 +14103,12 @@
    "youtubeId": null,
    "soundcloudTrackId": null,
    "scoreUrl": "https://cgdc.hk/wp-content/uploads/2026/05/2026-08-%E8%89%AF%E5%96%84%E7%9A%84%E7%A5%9E.pdf",
-   "artworkUrl": null,
+   "artworkUrl": "https://cgdc.hk/wp-content/uploads/2026/05/Sail-logo.png",
    "lyrics": null,
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-09T20:59:17Z"
+   "updatedAt": "2026-08-11T18:53:10Z"
   },
   {
    "id": "cgdc:2026-10",
@@ -14033,14 +14137,14 @@
    "youtubeId": null,
    "soundcloudTrackId": null,
    "scoreUrl": "https://cgdc.hk/wp-content/uploads/2026/05/2026-10-%E8%A1%8C%E5%9C%A8%E4%BD%A0%E5%BF%83%E6%84%8F.pdf",
-   "artworkUrl": null,
+   "artworkUrl": "https://cgdc.hk/wp-content/uploads/2026/05/Sail-logo.png",
    "lyrics": null,
    "themes": [
     "心"
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-09T20:59:17Z"
+   "updatedAt": "2026-08-11T18:53:10Z"
   },
   {
    "id": "cgdc:2024-10",
@@ -14069,7 +14173,7 @@
    "youtubeId": null,
    "soundcloudTrackId": null,
    "scoreUrl": "https://cgdc.hk/wp-content/uploads/2026/05/2024-10-%E8%AD%A6%E9%86%92%E7%A5%B7%E5%91%8A.pdf",
-   "artworkUrl": null,
+   "artworkUrl": "https://cgdc.hk/wp-content/uploads/2026/05/2024BraveryLogo.png",
    "lyrics": null,
    "themes": [
     "祷告",
@@ -14077,7 +14181,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-09T20:59:17Z"
+   "updatedAt": "2026-08-11T18:53:10Z"
   },
   {
    "id": "cgdc:2023-05",
@@ -14106,14 +14210,14 @@
    "youtubeId": null,
    "soundcloudTrackId": null,
    "scoreUrl": "https://cgdc.hk/wp-content/uploads/2026/06/2023-06-%E8%AE%A4%E8%AF%86%E9%9B%85%E4%BC%9F%E4%B8%8D%E4%B8%80%E6%A0%B7.pdf",
-   "artworkUrl": null,
+   "artworkUrl": "https://cgdc.hk/wp-content/uploads/2026/06/EC2023-fruitfulness_weblogo.jpg",
    "lyrics": null,
    "themes": [
     "神的名"
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-09T20:59:17Z"
+   "updatedAt": "2026-08-11T18:53:10Z"
   },
   {
    "id": "cgdc:2023-07",
@@ -14142,12 +14246,12 @@
    "youtubeId": null,
    "soundcloudTrackId": null,
    "scoreUrl": "https://cgdc.hk/wp-content/uploads/2026/06/2023-08-%E8%AE%A9%E8%96%AA%E7%81%AB%E7%9B%B8%E4%BC%A0.pdf",
-   "artworkUrl": null,
+   "artworkUrl": "https://cgdc.hk/wp-content/uploads/2026/06/EC2023-fruitfulness_weblogo.jpg",
    "lyrics": null,
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-09T20:59:17Z"
+   "updatedAt": "2026-08-11T18:53:10Z"
   },
   {
    "id": "cgdc:2023-04",
@@ -14176,12 +14280,12 @@
    "youtubeId": null,
    "soundcloudTrackId": null,
    "scoreUrl": "https://cgdc.hk/wp-content/uploads/2026/06/2023-05-%E8%AE%B0%E5%BF%B5.pdf",
-   "artworkUrl": null,
+   "artworkUrl": "https://cgdc.hk/wp-content/uploads/2026/06/EC2023-fruitfulness_weblogo.jpg",
    "lyrics": null,
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-09T20:59:17Z"
+   "updatedAt": "2026-08-11T18:53:10Z"
   },
   {
    "id": "cgdc:2023-08",
@@ -14210,12 +14314,12 @@
    "youtubeId": null,
    "soundcloudTrackId": null,
    "scoreUrl": "https://cgdc.hk/wp-content/uploads/2026/06/2023-09-%E8%B0%81%E8%83%BD%E5%83%8F%E4%BD%A0.pdf",
-   "artworkUrl": null,
+   "artworkUrl": "https://cgdc.hk/wp-content/uploads/2026/06/EC2023-fruitfulness_weblogo.jpg",
    "lyrics": null,
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-09T20:59:17Z"
+   "updatedAt": "2026-08-11T18:53:10Z"
   },
   {
    "id": "cgdc:2024-02",
@@ -14244,12 +14348,12 @@
    "youtubeId": null,
    "soundcloudTrackId": null,
    "scoreUrl": "https://cgdc.hk/wp-content/uploads/2026/05/2024-02-%E8%B0%A6%E5%8D%91%E4%BA%8B%E5%A5%89-Humbly-to-Serve.pdf",
-   "artworkUrl": null,
+   "artworkUrl": "https://cgdc.hk/wp-content/uploads/2026/05/2024BraveryLogo.png",
    "lyrics": null,
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-09T20:59:17Z"
+   "updatedAt": "2026-08-11T18:53:10Z"
   },
   {
    "id": "cgdc:2025-18",
@@ -14278,14 +14382,14 @@
    "youtubeId": null,
    "soundcloudTrackId": null,
    "scoreUrl": "https://cgdc.hk/wp-content/uploads/2026/05/2025-16-%E9%81%8D%E5%9C%B0%E6%89%AC%E5%A3%B0%E8%B5%9E%E7%BE%8E%E7%A5%9E-2025-04-04.pdf",
-   "artworkUrl": null,
+   "artworkUrl": "https://cgdc.hk/wp-content/uploads/2026/05/2025nearer_mkcgdclogo.png",
    "lyrics": null,
    "themes": [
     "赞美"
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-09T20:59:17Z"
+   "updatedAt": "2026-08-11T18:53:10Z"
   },
   {
    "id": "cgdc:2025-05",
@@ -14314,14 +14418,14 @@
    "youtubeId": null,
    "soundcloudTrackId": null,
    "scoreUrl": "https://cgdc.hk/wp-content/uploads/2026/05/2025-04-%E9%9B%85%E4%BC%9F%E4%BD%9C%E7%8E%8B-2025-04-09.pdf",
-   "artworkUrl": null,
+   "artworkUrl": "https://cgdc.hk/wp-content/uploads/2026/05/2025nearer_mkcgdclogo.png",
    "lyrics": null,
    "themes": [
     "神的名"
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-09T20:59:17Z"
+   "updatedAt": "2026-08-11T18:53:10Z"
   },
   {
    "id": "cgdc:2023-11",
@@ -14350,14 +14454,14 @@
    "youtubeId": null,
    "soundcloudTrackId": null,
    "scoreUrl": "https://cgdc.hk/wp-content/uploads/2026/06/2023-12-%E9%9B%85%E4%BC%9F%E4%BD%A0%E8%8B%A5%E6%84%BF%E6%84%8F.pdf",
-   "artworkUrl": null,
+   "artworkUrl": "https://cgdc.hk/wp-content/uploads/2026/06/EC2023-fruitfulness_weblogo.jpg",
    "lyrics": null,
    "themes": [
     "神的名"
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-09T20:59:17Z"
+   "updatedAt": "2026-08-11T18:53:10Z"
   },
   {
    "id": "cgdc:2023-10",
@@ -14386,14 +14490,14 @@
    "youtubeId": null,
    "soundcloudTrackId": null,
    "scoreUrl": "https://cgdc.hk/wp-content/uploads/2026/06/2023-11-%E9%9B%85%E4%BC%9F%E6%AE%BF%E7%9A%84%E5%B1%B1%E5%BF%85%E5%9D%9A%E7%AB%8B.pdf",
-   "artworkUrl": null,
+   "artworkUrl": "https://cgdc.hk/wp-content/uploads/2026/06/EC2023-fruitfulness_weblogo.jpg",
    "lyrics": null,
    "themes": [
     "神的名"
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-09T20:59:17Z"
+   "updatedAt": "2026-08-11T18:53:10Z"
   },
   {
    "id": "cgdc:2026-07",
@@ -14422,12 +14526,12 @@
    "youtubeId": null,
    "soundcloudTrackId": null,
    "scoreUrl": "https://cgdc.hk/wp-content/uploads/2026/05/2026-07-%E9%9B%85%E5%81%89%E6%88%91%E5%94%AF%E4%B8%80%E6%B8%B4%E6%85%95.pdf",
-   "artworkUrl": null,
+   "artworkUrl": "https://cgdc.hk/wp-content/uploads/2026/05/Sail-logo.png",
    "lyrics": null,
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-09T20:59:17Z"
+   "updatedAt": "2026-08-11T18:53:10Z"
   },
   {
    "id": "cgdc:2025-11",
@@ -14456,12 +14560,12 @@
    "youtubeId": null,
    "soundcloudTrackId": null,
    "scoreUrl": "https://cgdc.hk/wp-content/uploads/2026/05/2025-10-%E9%9B%85%E4%BC%9F%E6%B0%B8%E8%BF%9C%E5%9D%9A%E7%AB%8B-2025-04-16.pdf",
-   "artworkUrl": null,
+   "artworkUrl": "https://cgdc.hk/wp-content/uploads/2026/05/2025nearer_mkcgdclogo.png",
    "lyrics": null,
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-09T20:59:17Z"
+   "updatedAt": "2026-08-11T18:53:10Z"
   },
   {
    "id": "cgdc:2025-03",
@@ -14490,12 +14594,12 @@
    "youtubeId": null,
    "soundcloudTrackId": null,
    "scoreUrl": "https://cgdc.hk/wp-content/uploads/2026/05/2025-02-%E9%A1%98%E6%84%8F%E9%A0%86%E6%9C%8D%E4%BD%A0-2025-04-09.pdf",
-   "artworkUrl": null,
+   "artworkUrl": "https://cgdc.hk/wp-content/uploads/2026/05/2025nearer_mkcgdclogo.png",
    "lyrics": null,
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-09T20:59:17Z"
+   "updatedAt": "2026-08-11T18:53:10Z"
   },
   {
    "id": "cgdc:2024-07",
@@ -14524,12 +14628,12 @@
    "youtubeId": null,
    "soundcloudTrackId": null,
    "scoreUrl": "https://cgdc.hk/wp-content/uploads/2026/05/2024-07-%E9%A3%8E%E9%97%BB%E6%9C%89%E4%BD%A0.pdf",
-   "artworkUrl": null,
+   "artworkUrl": "https://cgdc.hk/wp-content/uploads/2026/05/2024BraveryLogo.png",
    "lyrics": null,
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-09T20:59:17Z"
+   "updatedAt": "2026-08-11T18:53:10Z"
   },
   {
    "id": "fydt:299",
@@ -15674,7 +15778,7 @@
    "videoUrl": null,
    "youtubeId": null,
    "soundcloudTrackId": null,
-   "scoreUrl": null,
+   "scoreUrl": "https://fydt.org/wp-content/uploads/2019/06/S01_038.pdf",
    "artworkUrl": null,
    "lyrics": "你们是世上的光\n屹立在山上的城\n不能被遮盖\n不能被遮盖*\n\n你们是世上的盐\n能使生命添彩\n不可被践踏\n不可被践踏*\n\n*副歌：\n让你的光照在人面前\n有好的行为\n使他们看见\n就将一切荣耀和颂赞\n尽归于天父",
    "themes": [
@@ -15682,7 +15786,7 @@
    ],
    "verse": "Matthew 5:14-16",
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T20:59:17Z"
+   "updatedAt": "2026-08-11T18:53:10Z"
   },
   {
    "id": "fydt:569",
