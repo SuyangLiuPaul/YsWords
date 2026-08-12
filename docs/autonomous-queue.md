@@ -1140,6 +1140,72 @@ has never seen this repo.
 
 ## P2 — features the user asked for
 
+- [ ] **Rename 獨一真神 to "Featured video" — LOW priority.**
+      User, 2026-08-12: "独一真神那个板块换名字叫featured video之后里面我
+      会要变成YouTube link".
+
+      Two steps, and only the first is asked for now:
+      1. **Rename.** `oneGodTitle` is used at 4 sites. The page itself
+         keeps its own heading; what changes is the SECTION label. Give
+         the section its own key rather than editing `oneGodTitle` in
+         place — the video's actual title is still 獨一真神, and the
+         Featured card already has a separate subtitle.
+      2. **Later, not now:** the content becomes YouTube links instead
+         of the self-hosted MP4s. Do NOT start this until the user says
+         so — it changes the subtitle track story completely (the burned
+         cue files in `assets/subtitles/` are ours; YouTube captions are
+         not), and it decides whether the Netlify-hosted 238 MB of video
+         can be dropped. Ask before touching it.
+
+- [ ] **An interactive Bible chronology chart — LOW priority, several
+      iterations.**
+      User, 2026-08-12, with a reference PDF (staged at
+      `docs/reference/364673272-World-History-Chart-Bible-Chronology.pdf`):
+      "我要你参考这个图，你做一个可以iteractive的放在一个板块里面…而且是
+      featured，但是这个会更费时间". They said explicitly it is not high
+      priority and expected it to span several iterations.
+
+      **The reference is Adams' "World History Chart in Accordance with
+      Bible Chronology": a fan/spiral of parallel nation-streams from
+      creation to 2000 AD, colour-coded by descent — Semitic, Hamitic,
+      Japhetic, Cain's line, and the Christian church.
+
+      **Two constraints that decide the whole design.**
+
+      1. **It is under copyright.** The sheet itself reads "Copyright
+         2012, All Rights Reserved. Published by Bible Charts and Maps,
+         LLC. ISBN 978-0-9787327-2-3". The PDF is a REFERENCE for the
+         idea — parallel lifelines, descent colouring, a readable
+         spiral — and must not be traced, re-typeset, or have its data
+         transcribed. Build from `assets/bible_timeline.json` (98
+         events, already trilingual with refs and personIds) and from
+         the genealogies in our own Bible text.
+
+      2. **Its dates are Ussher, and Ussher is one chronology among
+         several.** The chart puts creation at 4004 BC. The Masoretic,
+         Septuagint and Samaritan genealogies of Genesis 5 and 11
+         disagree by roughly 1,500 years, and that is a real scholarly
+         division, not an error to pick a side in. Under the user's own
+         standing rule — 经文一定要准确 — a chart that prints "4004 BC"
+         as a fact is exactly the kind of thing that "reads plausibly
+         and is wrong and gets quoted". Either show the ranges, or
+         label the scheme being used on the chart itself. The
+         misconceptions module already sets the tone for how this app
+         handles a genuinely divided question.
+
+      **Do not start it as a new page.** `lib/pages/bible_timeline_page.dart`
+      (620 lines) and `assets/bible_timeline.json` already exist and are
+      already linked from Explore more. Decide first whether this is a
+      new VIEW on that data or a replacement for that page; shipping a
+      second, prettier timeline beside the existing one is the outcome
+      to avoid.
+
+      Suggested first iteration, before any drawing: extend the data
+      model with what a lifeline chart needs and cannot currently
+      express — birth/death years per person, parent links, and the
+      chronology scheme each date belongs to — and write the test that
+      every year is sourced. The rendering is the easy half.
+
 - [ ] **The AI exegesis panel cannot be scrolled — a nested scroll view
       inside the sheet.**
       User, 2026-08-12, with a screenshot of 創世紀 36:3: the AI answer
