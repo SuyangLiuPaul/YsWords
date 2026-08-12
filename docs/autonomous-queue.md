@@ -1142,6 +1142,60 @@ has never seen this repo.
 
 ## P2 — features the user asked for
 
+- [ ] **Now Playing: four things from the phone, 2026-08-12.**
+      All four reported together with a screenshot and a crash report.
+      Take them in this order — the second is a functional defect, the
+      first is only awkward.
+
+      1. **The seek bar fights your finger.** "我发现拖动的时候很难不顺".
+         `now_playing_page.dart:512` — `onChanged: (v) => player.seek(...)`
+         seeks on EVERY drag frame. Each seek makes the position stream
+         emit, which rebuilds the Slider from the ENGINE's position
+         rather than the finger's, so the thumb is dragged backwards
+         while you hold it. The standard shape fixes it: hold a local
+         `_dragValue` in `onChanged`, seek once in `onChangeEnd`, and
+         render `_dragValue ?? position` so the stream cannot overwrite
+         a drag in progress. Needs the widget to be stateful.
+
+      2. **Choosing Accompaniment keeps playing the vocal until you tap
+         it a second time.** "我播放按了中间accom那个但是还在唱歌，按对一
+         次才有的". The chip shows selected while the audio has not
+         changed — state and sound disagree, which is worse than the
+         switch simply failing.
+
+         Start at `song_audio_handler.dart:278`: after
+         `SongQueue.withPreference` the handler compares the rebuilt
+         current URL with the old one and, if they match, republishes
+         WITHOUT reloading. That branch is the only way to end up with
+         the preference recorded and the old file still playing, so
+         either `withPreference` is not rewriting the CURRENT item on
+         the first call, or it falls back to vocal and the chip should
+         not have shown as selected. Read `SongQueue.withPreference`
+         first — its rules are unit-tested, so the truth is already
+         pinned somewhere.
+
+      3. **The sleep timer needs a custom duration.** "sleep can you
+         have customized time". Today it is a fixed 30-minute preset.
+         Offer a few presets (15 / 30 / 45 / 60) plus a custom picker,
+         and the one most music apps have and this app would use in a
+         car: "end of this song".
+
+      4. **Artwork can hang for 75 seconds and be reported as a crash.**
+         `SocketException: Operation timed out (errno = 60)` on
+         /NowPlayingPage, from `NetworkImage._loadAsync`. The song was a
+         FYDT one, so the artwork host is fydt.org.
+
+         **`NetworkImage` has no timeout knob** — this is why it took
+         the OS default. `RemoteImage` already keeps a per-URL failure
+         memo, but the first attempt still costs 75s and still reports.
+         Options, in increasing order of work: widen the memo from URL
+         to HOST so one failure spares every other row from that host;
+         or back the provider with an http client that has a timeout,
+         which is the only way to actually bound the first attempt.
+         Whichever ships, an unreachable artwork host must not produce
+         a crash report — it is an expected condition on a filtered
+         network, and burying real crashes under it is the second cost.
+
 - [ ] **Turn the featured video into a SERIES section — "Standing at
       the Cross / 在十字架下, A 10-Part Journey / 人生十堂课".**
       User, 2026-08-12: "那个featured video现有的删掉变成这里面的video，
