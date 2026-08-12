@@ -1140,6 +1140,43 @@ has never seen this repo.
 
 ## P2 — features the user asked for
 
+- [ ] **The AI exegesis panel cannot be scrolled — a nested scroll view
+      inside the sheet.**
+      User, 2026-08-12, with a screenshot of 創世紀 36:3: the AI answer
+      is visibly cut mid-sentence ("也削弱了名字本身所承载的家族谱") and
+      "I realize I cannot scroll down".
+
+      **Cause** (`lib/widgets/originals_sheet.dart:1607`): the answer is
+      wrapped in `ConstrainedBox(maxHeight: 320)` → `Scrollbar` →
+      `SingleChildScrollView`, and that whole thing sits inside the
+      sheet's own outer `ListView` (line 666). Two scrollables stacked
+      in the same axis: a drag started inside the inner box is
+      ambiguous, and in practice the sheet takes it, so the inner region
+      never moves. The scrollbar renders — which is why it looks like it
+      should work — and the content underneath stays put.
+
+      **Preferred fix: delete the inner scroll view.** Let the text flow
+      into the outer list and scroll with everything else. The cap
+      exists so the direction buttons (本章 / 本書卷 / 深度釋經) stay
+      reachable without scrolling past a long answer, but that is a
+      weaker goal than being able to read the answer at all, and the
+      buttons are only a swipe away once the panel scrolls normally.
+
+      If the cap is kept instead, the inner view needs its own
+      `ScrollController` plus a `NotificationListener`/`ScrollPhysics`
+      arrangement that hands the gesture back to the sheet only at the
+      inner extent — worth doing only if someone first confirms the
+      buttons genuinely become hard to reach without it.
+
+      **Check the same shape elsewhere while in there.** The user also
+      asked whether the sermon block is the same problem. It is a
+      different item (see "Sermon reading" below — that one is about
+      paragraph rhythm, not scrolling), but any OTHER bounded-height
+      scrollable nested in a scrollable has this defect by
+      construction. Already searched: of the 20 `maxHeight` uses in
+      `lib/`, this is the **only** one wrapping a scroll view, so
+      fixing it fixes the whole class. Do not go hunting again.
+
 - [ ] **The web app is letterboxed on Android tablets: the manifest
       locks portrait.**
       User, 2026-08-12, from a Xiaomi Pad: "webapp打开两边是黑的不能像
