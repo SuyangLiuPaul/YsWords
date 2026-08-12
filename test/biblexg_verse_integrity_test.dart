@@ -270,7 +270,7 @@ void main() {
             'than punctuation — one side may have lost a clause');
   });
 
-  test('the two editions disagree about a note in exactly 36 verses', () {
+  test('the two editions disagree about a note in exactly 32 verses', () {
     // An editor's gloss flattened out of its note and into the verse body
     // is the 羅馬書 16:24 defect, and it is invisible on screen: the verse
     // reads plausibly and gets quoted as the evangelist's words. The only
@@ -281,26 +281,32 @@ void main() {
     // between the two answers matters. Checked against the publisher's
     // own `tw-*.json` and `cn-*.json` by tools/audit_biblexg_notes.py:
     // our Traditional carries every `<cite>` theirs carries and invents
-    // none, and so does our Simplified. **All 36 are the publisher's own
-    // difference between their two editions** — their Traditional prints
+    // none, and so does our Simplified. The rest are the publisher's own
+    // difference between their two editions — their Traditional prints
     // 「即葡萄酒，」 inside 馬太福音 26:29 as body text, their Simplified
     // marks it up. Asked in docs/梁家鏗譯本-請教出版方.md; reconciling
     // them ourselves would be editing scripture on a guess.
     //
-    // The printed 註釋本 cannot arbitrate this, which is why it was not
-    // used: pdftotext renders a footnote inline and indistinguishable
-    // from body text.
+    // This comment used to say the printed 註釋本 could not arbitrate it,
+    // because pdftotext renders a footnote inline and indistinguishable
+    // from body text. That was a limitation of the extraction, not of the
+    // book. `pdftohtml -xml` keeps each run's font size, and the 二版 sets
+    // scripture at 17pt and the editor's voice at 12pt — per occurrence,
+    // so 加拉太書 3:7 and 3:9 set 稱義 at 12pt while 3:8 and 3:11 set the
+    // same two characters as body. That settled four of the 36:
+    // 路加福音 9:5, 約翰福音 12:25, 加拉太書 3:7 and 3:9 are the editor's,
+    // and our Traditional now marks them so (tools/audit_printed_typography.py).
     //
     // Pinned as a set rather than a count so that a future importer
     // change flattening a note shows up as a NEW reference here.
     const knownNoteDifferences = <String>{
       '马太福音 10:8', '马太福音 13:21', '马太福音 22:45', '马太福音 26:29',
-      '马太福音 27:48', '路加福音 6:3', '路加福音 9:5', '路加福音 9:17',
+      '马太福音 27:48', '路加福音 6:3', '路加福音 9:17',
       '路加福音 9:46', '路加福音 10:5', '路加福音 19:38', '约翰福音 1:18',
-      '约翰福音 6:45', '约翰福音 12:25', '使徒行传 8:5', '使徒行传 8:41',
+      '约翰福音 6:45', '使徒行传 8:5', '使徒行传 8:41',
       '罗马书 8:29', '罗马书 11:2', '罗马书 11:27', '罗马书 12:6',
       '哥林多前书 6:11', '哥林多前书 15:27', '哥林多后书 6:17',
-      '哥林多后书 6:18', '加拉太书 3:7', '加拉太书 3:9', '以弗所书 2:8',
+      '哥林多后书 6:18', '以弗所书 2:8',
       '以弗所书 3:12', '以弗所书 4:25', '以弗所书 6:3', '歌罗西书 3:10',
       '帖撒罗尼迦前书 5:19', '提摩太后书 3:15', '启示录 3:1',
       '启示录 8:12', '启示录 12:17',

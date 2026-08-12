@@ -537,6 +537,9 @@ has never seen this repo.
       alone. The printed 註釋本 cannot arbitrate it either: `pdftotext`
       renders a footnote inline, indistinguishable from body text, so the
       extracted volumes agree with whatever you already believed.
+      **(2026-08-12: that last sentence was wrong and is corrected by the
+      typography item below — the limitation was `pdftotext`, not the
+      book. Four of these 36 are now settled and repaired.)**
 
       What settled it: **the publisher ships an official TRADITIONAL
       electronic edition, `tw-*.json`, all 27 books** — the letter said
@@ -785,8 +788,76 @@ has never seen this repo.
       change nothing** — adopting a revision by guess is rewriting
       scripture.
 
+- [x] **The printed 註釋本 DOES distinguish the editor's voice from
+      scripture — it is in the type size. 4 verses repaired, 27 asked.**
+      Two places in this repo said the print could not arbitrate
+      footnote-vs-body: the item above, and a comment in
+      `test/biblexg_verse_integrity_test.dart`. Both were describing a
+      limitation of `pdftotext`, which flattens a page to characters.
+      `pdftohtml -xml` keeps every run's font size, and the 2025 二版 sets
+      four of them: **18pt chapter headings, 17pt scripture (16pt on pages
+      the typesetter tightened), 12pt the editor's voice — inline supplied
+      words AND the footnote blocks — 8pt verse numbers.**
+
+      It is per-OCCURRENCE, not per-word, which is how you know it is
+      deliberate: 加拉太書 3:7 and 3:9 set 稱義 at 12pt while 3:8 and 3:11
+      set the same two characters at 17pt. The publisher's electronic
+      editions lost that distinction and we inherited the loss.
+
+      `tools/audit_printed_typography.py` parses all five volumes per
+      VERSE (the 8pt numbers make that possible, which is what
+      `proofread_ljk_tr.py` gave up on) and measured the whole corpus:
+      **7,810 printed verses, 7,049 of ours character-identical to the
+      printed BODY, and 31 spans in ~28 verses that we print as scripture
+      and the book sets at 12pt.**
+
+      **Only 4 were repaired**, and `--apply` refuses unless three
+      independent authorities agree: the print sets it at 12pt, the
+      printed body does not contain it, and the publisher's own Simplified
+      already marks it as a note. 路加福音 9:5「作為警告。」,
+      約翰福音 12:25「保留」, 加拉太書 3:7 and 3:9「稱義」 — each moved
+      into a `<note:…>`; not one character was written, converted or
+      reordered, and the diff is 4 lines. That takes
+      `knownNoteDifferences` in the integrity test from 36 to 32; it fails
+      on the old data.
+
+      **The other 27 were left alone.** They are translator-supplied
+      words in the manner of the KJV's italics (馬太福音 9:18 會堂的,
+      使徒行傳 20:28 兒子, 加拉太書 3:23 的準則, 哥林多前書 15:50 的身體)
+      and **both** electronic editions print them as text — only the book
+      differs, so it is a question for the publisher, now §四之三之二 of
+      `docs/梁家鏗譯本-請教出版方.md`, not a defect of ours to repair on
+      one witness.
+
+      Two traps worth keeping. **16pt is body**: reading `>= 17` as
+      scripture reports six whole verses of 使徒行傳 7:56-8:1 as glosses,
+      because that page was dropped a point to fit. And **footnote blocks
+      are not always at the foot** — page 26 of volume 2 has one between
+      verses 12 and 13 — so an inline gloss is identified by sharing a
+      LINE with body text, not by its position on the page.
+
+      One rule had to be tightened before it was trusted. A gloss the two
+      editions word DIFFERENTLY cannot be found by matching the span —
+      路加福音 9:5 trails 「作為警告。」 where the print and the Simplified
+      both say 「意即警告。」 — so the tool also admits the shape "our
+      visible text is the printed body plus a tail". A looser first draft
+      (any extra span in a verse that happens to carry a footnote) found
+      ten, and **nine were ordinary wording differences sitting beside an
+      unrelated footnote** (馬可福音 15:21 揹耶穌/背他, 腓立比書 2:1 甚麼/
+      任何, 羅馬書 12:6 照著信心的程度去做/應與信心成比例). Those belong
+      to the 427; marking them as notes would have hidden translated words
+      as an editor's. Nine wrong out of ten is what a loose rule costs.
+
+      Also found: 使徒行傳 4:1 is followed in the print by a 17pt body
+      sentence 「撒都該人否認復活。」 that neither electronic edition has.
+      Reported to the publisher; **not inserted** — writing a verse on one
+      witness is the thing this queue must never do.
+
 - [ ] **Proofread the TRADITIONAL against the printed 註釋本, book by book.**
-      Wording only; the characters are now done (see above). The user supplied
+      Wording only; the characters are now done (see above), and the
+      正文/註釋 distinction is now settled by type size (see the
+      typography item above — run `tools/audit_printed_typography.py`
+      before assuming the print agrees with our text). The user supplied
       the publisher's own Traditional PDFs — 《新約聖經 梁家鏗譯本
       （註釋本）》2025 第二版, 5 volumes — and they have a clean text
       layer. Extracted copies live in `/tmp/ljk_tr/*.txt`; re-extract
@@ -1026,9 +1097,9 @@ has never seen this repo.
         cdx/search/cdx?url=christiandiscipleschurch.org/content/
         124-messages&output=json`.
       - Retried 2026-08-10 (fourth and fifth iterations) and again
-        2026-08-11 (sixth) and 2026-08-12 (seventh, eighth and ninth):
+        2026-08-11 (sixth) and 2026-08-12 (seventh through eleventh):
         still `connect=0.000000`, curl times out with no TCP connect.
-        Unchanged across nine consecutive iterations, while cgdc.hk and
+        Unchanged across eleven consecutive iterations, while cgdc.hk and
         cahayapengharapan.org answered 200 in the same probe — so it is
         that host, not the probe. **Tell the user** — they can probably reach Bentley
         faster than the server will come back, and nothing else about

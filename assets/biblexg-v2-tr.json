@@ -22062,7 +22062,7 @@
   "chapter": "9",
   "verse": "5",
   "verseLabel": "5",
-  "text": "若有誰不歡迎你們，你們離開那城鎮時，要把腳上的塵土跺落，見證他們的錯。作為警告。",
+  "text": "若有誰不歡迎你們，你們離開那城鎮時，要把腳上的塵土跺落，見證他們的錯。<note:作為警告。>",
   "isParagraphStart": false,
   "paragraphType": "paragraph",
   "id": "42009005"
@@ -35335,7 +35335,7 @@
   "chapter": "12",
   "verse": "25",
   "verseLabel": "25",
-  "text": "那熱衷於保留自己生命的，便失去生命；只有恨自己在這世上的生命的，必保衛生命直到永生。",
+  "text": "那熱衷於<note:保留>自己生命的，便失去生命；只有恨自己在這世上的生命的，必保衛生命直到永生。",
   "isParagraphStart": false,
   "paragraphType": "paragraph",
   "id": "43012025"
@@ -60882,7 +60882,7 @@
   "chapter": "3",
   "verse": "7",
   "verseLabel": "7",
-  "text": "所以你們要明白，那些基於“信”稱義的，就是亞伯拉罕的子孫。",
+  "text": "所以你們要明白，那些基於“信”<note:稱義>的，就是亞伯拉罕的子孫。",
   "isParagraphStart": true,
   "paragraphType": "paragraph",
   "id": "48003007"
@@ -60902,7 +60902,7 @@
   "chapter": "3",
   "verse": "9",
   "verseLabel": "9",
-  "text": "可見，那些基於“信”稱義的，和信心堅定的亞伯拉罕都一同得福。",
+  "text": "可見，那些基於“信”<note:稱義>的，和信心堅定的亞伯拉罕都一同得福。",
   "isParagraphStart": false,
   "paragraphType": "paragraph",
   "id": "48003009"
